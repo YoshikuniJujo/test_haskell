@@ -28,14 +28,14 @@ GdkDevice memo
 	+ [x] `gdkDeviceGetVendorId`
 	+ [x] `gdkDeviceGetProductId`
 	+ [x] `gdkDeviceListSlaveDevices`
-	+ [ ] GEOMETRY
+	+ [x] GEOMETRY
 		+ [x] `gdkDeviceWarp`
 			- [x] try it with master
 			- [x] try it with physical
 		+ [x] `gdkDeviceGetPosition`
 		+ [x] `gdkDeviceGetPositionDouble`
-		+ [ ] `gdkDeviceGetWindowAtPosition`
-		+ [ ] `gdkDeviceGetWindowAtPositionDouble`
+		+ [x] `gdkDeviceGetWindowAtPosition`
+		+ [x] `gdkDeviceGetWindowAtPositionDouble`
 	+ [ ] STATE
 		+ [ ] `gdkDeviceGetHasCursor`
 		+ [ ] `gdkDeviceGetLastEventWindow`

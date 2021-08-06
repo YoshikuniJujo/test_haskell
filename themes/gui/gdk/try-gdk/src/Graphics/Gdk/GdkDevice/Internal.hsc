@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -227,23 +227,25 @@ foreign import ccall "gdk_device_get_position_double"
 	c_gdk_device_get_position_double ::
 	GdkDevice -> Ptr (Ptr GdkScreen) -> Ptr CDouble -> Ptr CDouble -> IO ()
 
-gdkDeviceGetWindowAtPosition :: GdkDevice -> IO (CInt, CInt)
+gdkDeviceGetWindowAtPosition ::
+	GdkDeviceMasterPointer -> IO (GdkWindow, (CInt, CInt))
 gdkDeviceGetWindowAtPosition d = alloca \px -> alloca \py -> do
-	c_gdk_device_get_window_at_position d px py
-	(,) <$> peek px <*> peek py
+	w <- c_gdk_device_get_window_at_position (getGdkDevice d) px py
+	(w ,) <$> ((,) <$> peek px <*> peek py)
 
 foreign import ccall "gdk_device_get_window_at_position"
 	c_gdk_device_get_window_at_position ::
-	GdkDevice -> Ptr CInt -> Ptr CInt -> IO ()
+	GdkDevice -> Ptr CInt -> Ptr CInt -> IO GdkWindow
 
-gdkDeviceGetWindowAtPositionDouble :: GdkDevice -> IO (CDouble, CDouble)
+gdkDeviceGetWindowAtPositionDouble ::
+	GdkDeviceMasterPointer -> IO (GdkWindow, (CDouble, CDouble))
 gdkDeviceGetWindowAtPositionDouble d = alloca \px -> alloca \py -> do
-	c_gdk_device_get_window_at_position_double d px py
-	(,) <$> peek px <*> peek py
+	w <- c_gdk_device_get_window_at_position_double (getGdkDevice d) px py
+	(w ,) <$> ((,) <$> peek px <*> peek py)
 
 foreign import ccall "gdk_device_get_window_at_position_double"
 	c_gdk_device_get_window_at_position_double ::
-	GdkDevice -> Ptr CDouble -> Ptr CDouble -> IO ()
+	GdkDevice -> Ptr CDouble -> Ptr CDouble -> IO GdkWindow
 
 foreign import ccall "gdk_device_get_last_event_window"
 	gdkDeviceGetLastEventWindow :: GdkDevice -> IO GdkWindow

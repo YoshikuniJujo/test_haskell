@@ -361,11 +361,10 @@ checkEventSealed opacity pos size d st = \case
 			gdkDeviceWarp pnt (gdkDisplayGetDefaultScreen d) 100 100
 		when (checkKeyVal 'r' kv) do
 			pnt <- gdkSeatGetPointer st
-			let	pnt' = getGdkDevice pnt
 			print =<< gdkDeviceGetPosition pnt
 			print =<< gdkDeviceGetPositionDouble pnt
-			print =<< gdkDeviceGetWindowAtPosition pnt'
-			print =<< gdkDeviceGetWindowAtPositionDouble pnt'
+			print =<< gdkDeviceGetWindowAtPosition pnt
+			print =<< gdkDeviceGetWindowAtPositionDouble pnt
 		when (checkKeyVal 'c' kv) do
 			putStrLn "`c' pressed!"
 			putStr "gdkWindowGetGeometry: "
