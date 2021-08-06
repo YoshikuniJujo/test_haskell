@@ -76,8 +76,11 @@ gdkAxisFlagList :: GdkAxisFlags -> [GdkAxisFlag]
 gdkAxisFlagList (GdkAxisFlags afs) =
 	GdkAxisFlag <$> separateBits (#{size GdkAxisFlags} * 8) afs
 
+gdkDeviceGetAxes :: IsGdkDevice d => d 'Pointer -> IO GdkAxisFlags
+gdkDeviceGetAxes = c_gdk_device_get_axes . getGdkDevice
+
 foreign import ccall "gdk_device_get_axes"
-	gdkDeviceGetAxes :: GdkDevice -> IO GdkAxisFlags
+	c_gdk_device_get_axes :: GdkDevice -> IO GdkAxisFlags
 
 gdkDeviceGetAxis :: GdkDevice -> GdkAxes -> GdkAxisUse -> IO (Maybe CDouble)
 gdkDeviceGetAxis d (GdkAxes fas) au = withForeignPtr fas \pas -> alloca \v -> do

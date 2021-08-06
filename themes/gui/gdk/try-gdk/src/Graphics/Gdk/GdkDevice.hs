@@ -3,7 +3,7 @@
 
 module Graphics.Gdk.GdkDevice (
 	-- * GDK DEVICE
-	IsGdkDevice, GdkDeviceMaster, GdkDevicePhysical,
+	IsGdkDevice, GdkDeviceMaster, GdkDevicePhysical, PK(..),
 
 	-- * DISPLAY AND SEAT
 	gdkDeviceGetDisplay, gdkDeviceGetSeat,

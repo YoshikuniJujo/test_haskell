@@ -23,7 +23,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkMonitor
-import Graphics.Gdk.GdkDevice.Internal
+import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Visuals
@@ -72,7 +72,7 @@ main = do
 
 	slvs :: [GdkDevicePhysical 'Pointer] <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
-	for_ slvs \slv@(getGdkDevice -> slv') -> do
+	for_ slvs \slv -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn $ "\t\t" ++ gdkDeviceGetVendorId slv
@@ -83,7 +83,7 @@ main = do
 			n <- gdkDeviceGetNAxes slv
 			putStrLn $ "\t\t" ++ show n
 			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes slv
-			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv'
+			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv
 			for_ [0 .. fromIntegral n - 1] \i ->
 				putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetAxisUse slv i
 
