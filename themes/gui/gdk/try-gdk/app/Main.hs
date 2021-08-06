@@ -85,7 +85,7 @@ main = do
 			putStrLn . ("\t\t" ++) . show =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes slv
 			putStrLn . ("\t\t" ++) . show . gdkAxisFlagList =<< gdkDeviceGetAxes slv'
 			for_ [0 .. fromIntegral n - 1] \i ->
-				putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetAxisUse slv' i
+				putStrLn . ("\t\t" ++) . show =<< gdkDeviceGetAxisUse slv i
 
 	gdkDisplayGetPrimaryMonitor d >>= \case
 		Nothing -> putStrLn "no primary monitor"

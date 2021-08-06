@@ -44,8 +44,11 @@ gdkDeviceSetAxisUse = c_gdk_device_set_axis_use . getGdkDevice
 foreign import ccall "gdk_device_set_axis_use"
 	c_gdk_device_set_axis_use :: GdkDevice -> CUInt -> GdkAxisUse -> IO ()
 
+gdkDeviceGetAxisUse :: IsGdkDevice d => d 'Pointer -> CUInt -> IO GdkAxisUse
+gdkDeviceGetAxisUse = c_gdk_device_get_axis_use . getGdkDevice
+
 foreign import ccall "gdk_device_get_axis_use"
-	gdkDeviceGetAxisUse :: GdkDevice -> CUInt -> IO GdkAxisUse
+	c_gdk_device_get_axis_use :: GdkDevice -> CUInt -> IO GdkAxisUse
 
 gdkDeviceGetNAxes :: IsGdkDevice d => d pk -> IO CInt
 gdkDeviceGetNAxes = c_gdk_device_get_n_axes . getGdkDevice

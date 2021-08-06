@@ -43,7 +43,7 @@ GdkDevice memo
 		+ [x] `gdkDeviceGetLastEventWindow`
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [x] `gdkDeviceSetAxisUse`
-	+ [ ] `gdkDeviceGetAxisUse`
+	+ [x] `gdkDeviceGetAxisUse`
 	+ [ ] `gdkDeviceGetNAxes`
 	+ [ ] `gdkDeviceGetAxes`
 	+ [ ] `gdkDeviceGetAxis`
@@ -51,7 +51,6 @@ GdkDevice memo
 	+ [ ] `gdkDeviceGetAxisValue`
 	+ [ ] `gdkAxesCopyFromPtr`
 * [ ] repair `Graphics.Gdk.EventStructures`
-* [ ] consider to remove `SomeGdkDevice` and `SomeGdkDeviceMaster`
 
 refactor export list
 --------------------
