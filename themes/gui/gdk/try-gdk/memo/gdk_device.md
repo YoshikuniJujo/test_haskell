@@ -33,7 +33,7 @@ GdkDevice memo
 			- [x] try it with master
 			- [x] try it with physical
 		+ [x] `gdkDeviceGetPosition`
-		+ [ ] `gdkDeviceGetPositionDouble`
+		+ [x] `gdkDeviceGetPositionDouble`
 		+ [ ] `gdkDeviceGetWindowAtPosition`
 		+ [ ] `gdkDeviceGetWindowAtPositionDouble`
 	+ [ ] STATE

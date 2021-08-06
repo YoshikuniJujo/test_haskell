@@ -26,10 +26,8 @@ module Graphics.Gdk.GdkDevice.Internal (
 
 	-- * GEOMETRY
 	gdkDeviceWarp,
-	gdkDeviceGetPosition,
-	gdkDeviceGetPositionDouble,
-	gdkDeviceGetWindowAtPosition,
-	gdkDeviceGetWindowAtPositionDouble,
+	gdkDeviceGetPosition, gdkDeviceGetPositionDouble,
+	gdkDeviceGetWindowAtPosition, gdkDeviceGetWindowAtPositionDouble,
 
 	-- * STATE
 	gdkDeviceGetHasCursor,
@@ -219,9 +217,10 @@ gdkDeviceGetPosition d = alloca \pps -> alloca \px -> alloca \py -> do
 foreign import ccall "gdk_device_get_position" c_gdk_device_get_position ::
 	GdkDevice -> Ptr (Ptr GdkScreen) -> Ptr CInt -> Ptr CInt -> IO ()
 
-gdkDeviceGetPositionDouble :: GdkDevice -> IO (GdkScreen, (CDouble, CDouble))
+gdkDeviceGetPositionDouble ::
+	GdkDeviceMasterPointer -> IO (GdkScreen, (CDouble, CDouble))
 gdkDeviceGetPositionDouble d = alloca \pps -> alloca \px -> alloca \py -> do
-	c_gdk_device_get_position_double d pps px py
+	c_gdk_device_get_position_double (getGdkDevice d) pps px py
 	(,) <$> (GdkScreen <$> peek pps) <*> ((,) <$> peek px <*> peek py)
 
 foreign import ccall "gdk_device_get_position_double"

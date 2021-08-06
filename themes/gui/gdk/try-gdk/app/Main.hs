@@ -363,7 +363,7 @@ checkEventSealed opacity pos size d st = \case
 			pnt <- gdkSeatGetPointer st
 			let	pnt' = getGdkDevice pnt
 			print =<< gdkDeviceGetPosition pnt
-			print =<< gdkDeviceGetPositionDouble pnt'
+			print =<< gdkDeviceGetPositionDouble pnt
 			print =<< gdkDeviceGetWindowAtPosition pnt'
 			print =<< gdkDeviceGetWindowAtPositionDouble pnt'
 		when (checkKeyVal 'c' kv) do
