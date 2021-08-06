@@ -8,23 +8,28 @@ GdkDevice memo
 	+ GdkDeviceMasterPointer
 	+ GdkDeviceMasterKeyboard
 	+ consder to make class IsGdkDeviceMaster
-* [x] repair `Graphics.Gdk.GdkDevice`
-	+ [x] gdkDisplayDeviceIsGrabbed
-* [x] repair `Graphics.Gdk.GdkSeat`
-	+ [x] `gdkSeatGetPointer`
-	+ [x] `gdkSeatGetKeyboard`
-	+ [x] `gdkSeatGetSlaves`
+* [x] make `SomeGdkDevice` system
+	+ [x] define `SomeGdkDevice`
+	+ [x] define `SomeGdkDeviceMaster`
+	+ [x] refactor about it
+	+ [x] refactor export list
 * [ ] repair `Graphics.Gdk.GdkDevice`
-	+ [x] `gdkDeviceGetDisplay`
-	+ [x] `gdkDeviceGetSeat`
-	+ [x] `gdkDeviceGetName`
-	+ [x] `gdkDeviceGetDeviceType`
-	+ [x] `gdkDeviceGetSource`
-	+ [x] `gdkDeviceGetVendorId`
-	+ [x] `gdkDeviceGetProductId`
+	+ [ ] gdkDisplayDeviceIsGrabbed
+* [ ] repair `Graphics.Gdk.GdkSeat`
+	+ [ ] `gdkSeatGetPointer`
+	+ [ ] `gdkSeatGetKeyboard`
+	+ [ ] `gdkSeatGetSlaves`
+* [ ] repair `Graphics.Gdk.GdkDevice`
+	+ [ ] `gdkDeviceGetDisplay`
+	+ [ ] `gdkDeviceGetSeat`
+	+ [ ] `gdkDeviceGetName`
+	+ [ ] `gdkDeviceGetDeviceType`
+	+ [ ] `gdkDeviceGetSource`
+	+ [ ] `gdkDeviceGetVendorId`
+	+ [ ] `gdkDeviceGetProductId`
 	+ [ ] `gdkDeviceListSlaveDevices`
 	+ [ ] GEOMETRY
-		+ [x] `gdkDeviceWarp`
+		+ [ ] `gdkDeviceWarp`
 			- [x] try it with master
 			- [x] try it with physical
 		+ [ ] `gdkDeviceGetPosition`

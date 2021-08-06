@@ -71,12 +71,12 @@ main = do
 
 	slvs <- gdkSeatGetSlaves st GdkSeatCapabilityAll
 	putStrLn "Slave devices:"
-	for_ slvs \slv@(toGdkDevice -> slv') -> do
-		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv'
-		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv'
+	for_ slvs \slv@(getGdkDevice . toGdkDevice -> slv') -> do
+		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
+		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
 		putStrLn $ "\t\t" ++ gdkDeviceGetVendorId slv
 		putStrLn $ "\t\t" ++ gdkDeviceGetProductId slv
-		s <- gdkDeviceGetSource slv'
+		s <- gdkDeviceGetSource slv
 		putStrLn $ "\t\t" ++ show s
 		when (s /= GdkSourceKeyboard) do
 			n <- gdkDeviceGetNAxes slv'
@@ -360,7 +360,7 @@ checkEventSealed opacity pos size d st = \case
 			pnt <- gdkSeatGetPointer st
 			gdkDeviceWarp pnt (gdkDisplayGetDefaultScreen d) 100 100
 		when (checkKeyVal 'r' kv) do
-			pnt <- toGdkDevice <$> gdkSeatGetPointer st
+			pnt <- getGdkDevice . toGdkDevice <$> gdkSeatGetPointer st
 			print =<< gdkDeviceGetPosition pnt
 			print =<< gdkDeviceGetPositionDouble pnt
 			print =<< gdkDeviceGetWindowAtPosition pnt

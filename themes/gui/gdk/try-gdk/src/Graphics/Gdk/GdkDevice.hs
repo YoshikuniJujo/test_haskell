@@ -4,7 +4,7 @@
 module Graphics.Gdk.GdkDevice (
 	-- * GDK DEVICE
 	-- ** IS GDK DEVICE
-	IsGdkDevice, GdkDevice, GdkDeviceMaster, GdkDevicePhysical,
+	IsGdkDevice, GdkDevice, GdkDevicePhysical,
 	-- ** IS GDK DEVICE MASTER
 	IsGdkDeviceMaster, GdkDeviceMasterPointer, GdkDeviceMasterKeyboard,
 
