@@ -13,26 +13,26 @@ GdkDevice memo
 	+ [x] define `SomeGdkDeviceMaster`
 	+ [x] refactor about it
 	+ [x] refactor export list
+* [x] repair `Graphics.Gdk.GdkDevice`
+	+ [x] gdkDisplayDeviceIsGrabbed
+* [x] repair `Graphics.Gdk.GdkSeat`
+	+ [x] `gdkSeatGetPointer`
+	+ [x] `gdkSeatGetKeyboard`
+	+ [x] `gdkSeatGetSlaves`
 * [ ] repair `Graphics.Gdk.GdkDevice`
-	+ [ ] gdkDisplayDeviceIsGrabbed
-* [ ] repair `Graphics.Gdk.GdkSeat`
-	+ [ ] `gdkSeatGetPointer`
-	+ [ ] `gdkSeatGetKeyboard`
-	+ [ ] `gdkSeatGetSlaves`
-* [ ] repair `Graphics.Gdk.GdkDevice`
-	+ [ ] `gdkDeviceGetDisplay`
-	+ [ ] `gdkDeviceGetSeat`
-	+ [ ] `gdkDeviceGetName`
-	+ [ ] `gdkDeviceGetDeviceType`
-	+ [ ] `gdkDeviceGetSource`
-	+ [ ] `gdkDeviceGetVendorId`
-	+ [ ] `gdkDeviceGetProductId`
-	+ [ ] `gdkDeviceListSlaveDevices`
+	+ [x] `gdkDeviceGetDisplay`
+	+ [x] `gdkDeviceGetSeat`
+	+ [x] `gdkDeviceGetName`
+	+ [x] `gdkDeviceGetDeviceType`
+	+ [x] `gdkDeviceGetSource`
+	+ [x] `gdkDeviceGetVendorId`
+	+ [x] `gdkDeviceGetProductId`
+	+ [x] `gdkDeviceListSlaveDevices`
 	+ [ ] GEOMETRY
-		+ [ ] `gdkDeviceWarp`
+		+ [x] `gdkDeviceWarp`
 			- [x] try it with master
 			- [x] try it with physical
-		+ [ ] `gdkDeviceGetPosition`
+		+ [x] `gdkDeviceGetPosition`
 		+ [ ] `gdkDeviceGetPositionDouble`
 		+ [ ] `gdkDeviceGetWindowAtPosition`
 		+ [ ] `gdkDeviceGetWindowAtPositionDouble`
@@ -48,6 +48,8 @@ GdkDevice memo
 	+ [ ] `gdkDeviceListAxes`
 	+ [ ] `gdkDeviceGetAxisValue`
 	+ [ ] `gdkAxesCopyFromPtr`
+* [ ] repair `Graphics.Gdk.EventStructures`
+* [ ] consider to remove `SomeGdkDevice` and `SomeGdkDeviceMaster`
 
 refactor export list
 --------------------
@@ -55,21 +57,21 @@ refactor export list
 * [x] consider to remove GdkDeviceTool
 * [x] refactor structure
 * [x] make `Graphics.Gdk.GdkDevice.Internal`
-* [x] GDK DEVICE
-* [x] DISPLAY AND SEAT
-	+ [x] `gdkDeviceGetDisplay`
-	+ [x] `gdkDeviceGetSeat`
+* [ ] GDK DEVICE
+* [ ] DISPLAY AND SEAT
+	+ [ ] `gdkDeviceGetDisplay`
+	+ [ ] `gdkDeviceGetSeat`
 * [ ] IDENTITY
 	+ [x] rearrange
-	+ [x] `gdkDeviceGetName`
+	+ [ ] `gdkDeviceGetName`
 	+ [ ] `gdkDeviceGetDeviceType`
 	+ [ ] `gdkDeviceGetSource`
 	+ [ ] `gdkDeviceGetVenderId`
 	+ [ ] `gdkDeviceGetProductId`
-* [x] SLAVES
+* [ ] SLAVES
 	+ `gdkDeviceListSlaveDevices`
 	+ [x] consider whether or not to use maybe value
-	+ [x] others
+	+ [ ] others
 * [ ] GEOMETRY
 * [ ] STATE
 * [ ] GDK DEVICE TYPE

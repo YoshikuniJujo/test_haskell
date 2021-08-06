@@ -211,9 +211,9 @@ gdkDeviceGetSeat = c_gdk_device_get_seat . getGdkDevice . toGdkDevice
 foreign import ccall "gdk_device_get_seat"
 	c_gdk_device_get_seat :: GdkDevice -> IO GdkSeat
 
-gdkDeviceGetPosition :: GdkDevice -> IO (GdkScreen, (CInt, CInt))
+gdkDeviceGetPosition :: GdkDeviceMasterPointer -> IO (GdkScreen, (CInt, CInt))
 gdkDeviceGetPosition d = alloca \pps -> alloca \px -> alloca \py -> do
-	c_gdk_device_get_position d pps px py
+	c_gdk_device_get_position (getGdkDevice d) pps px py
 	(,) <$> (GdkScreen <$> peek pps) <*> ((,) <$> peek px <*> peek py)
 
 foreign import ccall "gdk_device_get_position" c_gdk_device_get_position ::
