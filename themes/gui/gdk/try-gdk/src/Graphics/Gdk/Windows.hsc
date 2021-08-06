@@ -140,7 +140,7 @@ gdkWindowDestroy w = do
 	mapM_ c_g_object_unref cs
 	c_gdk_window_destroy w
 
-allPointerDevice :: GdkDisplay -> IO [GdkDeviceMasterPointer 'Pointer]
+allPointerDevice :: GdkDisplay -> IO [GdkDeviceMaster 'Pointer]
 allPointerDevice d = mapM gdkSeatGetPointer =<< gdkDisplayListSeats d
 
 foreign import ccall "gdk_window_destroy"
@@ -152,10 +152,10 @@ c_gdk_window_get_cursor' w = (<$> c_gdk_window_get_cursor w) \case
 
 foreign import ccall "gdk_window_get_device_cursor"
 	c_gdk_window_get_device_cursor ::
-		GdkWindow -> GdkDeviceMasterPointer 'Pointer -> IO (Ptr GdkCursor)
+		GdkWindow -> GdkDeviceMaster 'Pointer -> IO (Ptr GdkCursor)
 
 c_gdk_window_get_device_cursor' ::
-	GdkWindow -> GdkDeviceMasterPointer 'Pointer -> IO (Maybe (Ptr GdkCursor))
+	GdkWindow -> GdkDeviceMaster 'Pointer -> IO (Maybe (Ptr GdkCursor))
 c_gdk_window_get_device_cursor' w dv = (<$> c_gdk_window_get_device_cursor w dv) \case
 	NullPtr -> Nothing; p -> Just p
 
@@ -536,20 +536,20 @@ foreign import ccall "gdk_window_set_support_multidevice"
 	c_gdk_window_set_support_multidevice ::
 		GdkWindow -> #{type gboolean} -> IO ()
 
-gdkWindowGetDeviceCursor :: GdkWindow -> GdkDeviceMasterPointer 'Pointer -> IO (Maybe GdkCursor)
+gdkWindowGetDeviceCursor :: GdkWindow -> GdkDeviceMaster 'Pointer -> IO (Maybe GdkCursor)
 gdkWindowGetDeviceCursor w dv = c_gdk_window_get_device_cursor w dv >>= \case
 	NullPtr -> pure Nothing
 	c -> Just . GdkCursor
 		<$> (c_g_object_ref c >> newForeignPtr c (c_g_object_unref c))
 
-gdkWindowSetDeviceCursor :: GdkWindow -> GdkDeviceMasterPointer 'Pointer -> GdkCursor -> IO ()
+gdkWindowSetDeviceCursor :: GdkWindow -> GdkDeviceMaster 'Pointer -> GdkCursor -> IO ()
 gdkWindowSetDeviceCursor w d (GdkCursor fc) = do
 	whenMaybe c_g_object_unref =<< c_gdk_window_get_device_cursor' w d
 	withForeignPtr fc $ \c -> c_g_object_ref c >> c_gdk_window_set_device_cursor w d c
 
 foreign import ccall "gdk_window_set_device_cursor"
 	c_gdk_window_set_device_cursor ::
-		GdkWindow -> GdkDeviceMasterPointer 'Pointer -> Ptr GdkCursor -> IO ()
+		GdkWindow -> GdkDeviceMaster 'Pointer -> Ptr GdkCursor -> IO ()
 
 foreign import ccall "gdk_window_get_device_events"
 	gdkWindowGetDeviceEvents ::

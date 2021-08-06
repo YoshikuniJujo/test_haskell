@@ -13,41 +13,34 @@ GdkDevice memo
 	+ [x] define `SomeGdkDeviceMaster`
 	+ [x] refactor about it
 	+ [x] refactor export list
-* [ ] consider to make `GdkDeviceMaster :: PK -> *`
+* [x] consider to make `GdkDeviceMaster :: PK -> *`
 		and `GdkDevicePhysical :: PK -> *`
 	+ [x] define `data PK = Pointer | Keyboard derivng Show`
 	+ [x] define `newtype GdkDevicePhysical pk = ...`
-	+ [ ] define `newtype GdkDeviceMaster pk = ...`
-	+ [ ] others
-* [x] repair `Graphics.Gdk.GdkDevice`
-	+ [x] gdkDisplayDeviceIsGrabbed
-* [x] repair `Graphics.Gdk.GdkSeat`
-	+ [x] `gdkSeatGetPointer`
-	+ [x] `gdkSeatGetKeyboard`
-	+ [x] `gdkSeatGetSlaves`
-* [x] repair `Graphics.Gdk.GdkDevice`
-	+ [x] `gdkDeviceGetDisplay`
-	+ [x] `gdkDeviceGetSeat`
-	+ [x] `gdkDeviceGetName`
-	+ [x] `gdkDeviceGetDeviceType`
-	+ [x] `gdkDeviceGetSource`
-	+ [x] `gdkDeviceGetVendorId`
-	+ [x] `gdkDeviceGetProductId`
-	+ [x] `gdkDeviceListSlaveDevices`
-	+ [x] GEOMETRY
-		+ [x] `gdkDeviceWarp`
-			- [x] try it with master
-			- [x] try it with physical
-		+ [x] `gdkDeviceGetPosition`
-		+ [x] `gdkDeviceGetPositionDouble`
-		+ [x] `gdkDeviceGetWindowAtPosition`
-		+ [x] `gdkDeviceGetWindowAtPositionDouble`
-		+ [x] `gdkDeviceGetHasCursor`
-			- [x] check
-			- [x] remove it
-		+ [x] `gdkDeviceGetLastEventWindow`
-			- [x] move it to GEOMETRY
-			- [x] others
+	+ [x] define `newtype GdkDeviceMaster pk = ...`
+	+ [x] others
+* [ ] repair `Graphics.Gdk.GdkDevice`
+	+ [ ] gdkDisplayDeviceIsGrabbed
+* [ ] repair `Graphics.Gdk.GdkSeat`
+	+ [ ] `gdkSeatGetPointer`
+	+ [ ] `gdkSeatGetKeyboard`
+	+ [ ] `gdkSeatGetSlaves`
+* [ ] repair `Graphics.Gdk.GdkDevice`
+	+ [ ] `gdkDeviceGetDisplay`
+	+ [ ] `gdkDeviceGetSeat`
+	+ [ ] `gdkDeviceGetName`
+	+ [ ] `gdkDeviceGetDeviceType`
+	+ [ ] `gdkDeviceGetSource`
+	+ [ ] `gdkDeviceGetVendorId`
+	+ [ ] `gdkDeviceGetProductId`
+	+ [ ] `gdkDeviceListSlaveDevices`
+	+ [ ] GEOMETRY
+		+ [ ] `gdkDeviceWarp`
+		+ [ ] `gdkDeviceGetPosition`
+		+ [ ] `gdkDeviceGetPositionDouble`
+		+ [ ] `gdkDeviceGetWindowAtPosition`
+		+ [ ] `gdkDeviceGetWindowAtPositionDouble`
+		+ [ ] `gdkDeviceGetLastEventWindow`
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [ ] `gdkDeviceSetAxisUse`
 	+ [ ] `gdkDeviceGetAxisUse`

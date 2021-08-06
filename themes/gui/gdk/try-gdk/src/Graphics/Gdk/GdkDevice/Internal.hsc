@@ -9,9 +9,8 @@
 
 module Graphics.Gdk.GdkDevice.Internal (
 	-- * GDK DEVICE
-	GetGdkDevice (..), IsGdkDevice,
-	GdkDevice(..), GdkDevicePhysical(..),
-	GdkDeviceMasterPointer(..), GdkDeviceMasterKeyboard,
+	IsGdkDevice(..),
+	GdkDevice(..), GdkDeviceMaster(..), GdkDevicePhysical(..),
 
 	PK(..), PointerOrKeyboard, filterPK,
 
@@ -77,43 +76,37 @@ enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
 	("GdkSourceTrackpoint", #{const GDK_SOURCE_TRACKPOINT}),
 	("GdkSourceTabletPad", #{const GDK_SOURCE_TABLET_PAD}) ]
 
+class IsGdkDevice (d :: PK -> *) where getGdkDevice :: d pk -> GdkDevice
+newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving (Show, Storable)
+
+newtype GdkDeviceMaster (pk :: PK) = GdkDeviceMaster (Ptr GdkDevice)
+	deriving (Show, Storable)
+
+instance IsGdkDevice GdkDeviceMaster where
+	getGdkDevice (GdkDeviceMaster pd) = GdkDevice pd
+
+newtype GdkDevicePhysical (pk :: PK)  = GdkDevicePhysical (Ptr GdkDevice)
+	deriving (Show, Storable)
+
+instance IsGdkDevice GdkDevicePhysical where
+	getGdkDevice (GdkDevicePhysical pd) = GdkDevice pd
+
 data PK = Pointer | Keyboard deriving Show
 
 class PointerOrKeyboard (pk :: PK) where
 	pointerOrKeyboard :: Ptr GdkDevice -> IO Bool
 
 instance PointerOrKeyboard 'Pointer where
-	pointerOrKeyboard d = (/= GdkSourceKeyboard) . GdkInputSource <$> c_gdk_device_get_source (GdkDevice d)
+	pointerOrKeyboard d = (/= GdkSourceKeyboard)
+		. GdkInputSource <$> c_gdk_device_get_source (GdkDevice d)
 
 instance PointerOrKeyboard 'Keyboard where
-	pointerOrKeyboard d = (== GdkSourceKeyboard) . GdkInputSource <$> c_gdk_device_get_source (GdkDevice d)
+	pointerOrKeyboard d = (== GdkSourceKeyboard)
+		. GdkInputSource <$> c_gdk_device_get_source (GdkDevice d)
 
-filterPK :: forall (pk :: PK) . PointerOrKeyboard pk => [Ptr GdkDevice] -> IO [Ptr GdkDevice]
+filterPK :: forall (pk :: PK) . PointerOrKeyboard pk =>
+	[Ptr GdkDevice] -> IO [Ptr GdkDevice]
 filterPK = filterM (pointerOrKeyboard @pk)
-
-class GetGdkDevice (d :: PK -> *) where getGdkDevice :: d pk -> GdkDevice
-
-newtype GdkDevice = GdkDevice (Ptr GdkDevice) deriving (Show, Storable)
-
-class GetGdkDevice d => IsGdkDevice (d :: PK -> *)
-
-instance IsGdkDevice GdkDeviceMasterPointer
-
-newtype GdkDeviceMasterPointer (pk :: PK) = GdkDeviceMasterPointer (Ptr GdkDevice)
-	deriving (Show, Storable)
-
-instance GetGdkDevice GdkDeviceMasterPointer where
-	getGdkDevice (GdkDeviceMasterPointer pd) = GdkDevice pd
-
-type GdkDeviceMasterKeyboard = GdkDeviceMasterPointer
-
-newtype GdkDevicePhysical (pk :: PK)  = GdkDevicePhysical (Ptr GdkDevice)
-	deriving (Show, Storable)
-
-instance GetGdkDevice GdkDevicePhysical where
-	getGdkDevice (GdkDevicePhysical pd) = GdkDevice pd
-
-instance IsGdkDevice GdkDevicePhysical
 
 gdkDeviceGetName :: IsGdkDevice d => d pk -> IO String
 gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name (getGdkDevice d)
@@ -142,7 +135,7 @@ gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source (getGdkDevice 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	GdkDevice -> IO #type GdkInputSource
 
-gdkDeviceListSlaveDevices :: GdkDeviceMasterPointer pk -> IO [GdkDevicePhysical pk]
+gdkDeviceListSlaveDevices :: GdkDeviceMaster pk -> IO [GdkDevicePhysical pk]
 gdkDeviceListSlaveDevices d = do
 	gl <- c_gdk_device_list_slave_devices $ getGdkDevice d
 	maybe (error "never occur") (map GdkDevicePhysical) <$> (g_list_to_list gl <* c_g_list_free gl)
@@ -168,7 +161,7 @@ foreign import ccall "gdk_device_get_display"
 	c_gdk_device_get_display :: GdkDevice -> IO GdkDisplay
 
 foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
-	GdkDeviceMasterPointer pk -> GdkScreen -> CInt -> CInt -> IO ()
+	GdkDeviceMaster pk -> GdkScreen -> CInt -> CInt -> IO ()
 
 gdkDeviceGetSeat :: IsGdkDevice d => d pk -> IO GdkSeat
 gdkDeviceGetSeat = c_gdk_device_get_seat . getGdkDevice
@@ -176,7 +169,7 @@ gdkDeviceGetSeat = c_gdk_device_get_seat . getGdkDevice
 foreign import ccall "gdk_device_get_seat"
 	c_gdk_device_get_seat :: GdkDevice -> IO GdkSeat
 
-gdkDeviceGetPosition :: GdkDeviceMasterPointer pk -> IO (GdkScreen, (CInt, CInt))
+gdkDeviceGetPosition :: GdkDeviceMaster 'Pointer -> IO (GdkScreen, (CInt, CInt))
 gdkDeviceGetPosition d = alloca \pps -> alloca \px -> alloca \py -> do
 	c_gdk_device_get_position (getGdkDevice d) pps px py
 	(,) <$> (GdkScreen <$> peek pps) <*> ((,) <$> peek px <*> peek py)
@@ -185,7 +178,7 @@ foreign import ccall "gdk_device_get_position" c_gdk_device_get_position ::
 	GdkDevice -> Ptr (Ptr GdkScreen) -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkDeviceGetPositionDouble ::
-	GdkDeviceMasterPointer pk -> IO (GdkScreen, (CDouble, CDouble))
+	GdkDeviceMaster 'Pointer -> IO (GdkScreen, (CDouble, CDouble))
 gdkDeviceGetPositionDouble d = alloca \pps -> alloca \px -> alloca \py -> do
 	c_gdk_device_get_position_double (getGdkDevice d) pps px py
 	(,) <$> (GdkScreen <$> peek pps) <*> ((,) <$> peek px <*> peek py)
@@ -195,7 +188,7 @@ foreign import ccall "gdk_device_get_position_double"
 	GdkDevice -> Ptr (Ptr GdkScreen) -> Ptr CDouble -> Ptr CDouble -> IO ()
 
 gdkDeviceGetWindowAtPosition ::
-	GdkDeviceMasterPointer pk -> IO (GdkWindow, (CInt, CInt))
+	GdkDeviceMaster 'Pointer -> IO (GdkWindow, (CInt, CInt))
 gdkDeviceGetWindowAtPosition d = alloca \px -> alloca \py -> do
 	w <- c_gdk_device_get_window_at_position (getGdkDevice d) px py
 	(w ,) <$> ((,) <$> peek px <*> peek py)
@@ -205,7 +198,7 @@ foreign import ccall "gdk_device_get_window_at_position"
 	GdkDevice -> Ptr CInt -> Ptr CInt -> IO GdkWindow
 
 gdkDeviceGetWindowAtPositionDouble ::
-	GdkDeviceMasterPointer pk -> IO (GdkWindow, (CDouble, CDouble))
+	GdkDeviceMaster 'Pointer -> IO (GdkWindow, (CDouble, CDouble))
 gdkDeviceGetWindowAtPositionDouble d = alloca \px -> alloca \py -> do
 	w <- c_gdk_device_get_window_at_position_double (getGdkDevice d) px py
 	(w ,) <$> ((,) <$> peek px <*> peek py)
@@ -214,7 +207,7 @@ foreign import ccall "gdk_device_get_window_at_position_double"
 	c_gdk_device_get_window_at_position_double ::
 	GdkDevice -> Ptr CDouble -> Ptr CDouble -> IO GdkWindow
 
-gdkDeviceGetLastEventWindow :: GdkDeviceMasterPointer pk -> IO GdkWindow
+gdkDeviceGetLastEventWindow :: GdkDeviceMaster 'Pointer -> IO GdkWindow
 gdkDeviceGetLastEventWindow =
 	c_gdk_device_get_last_event_window . getGdkDevice
 
