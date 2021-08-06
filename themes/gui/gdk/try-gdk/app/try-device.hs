@@ -4,9 +4,12 @@
 module Main where
 
 import Data.Foldable
+import Data.Maybe
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice.Internal
+import Graphics.Gdk.GdkDevice.GdkAxes
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 main :: IO ()
 main = do
@@ -43,6 +46,15 @@ main = do
 	gdkDisplayFlush dpy
 
 	print =<< gdkDeviceGetLastEventWindow pnt
+
+	print =<< gdkDeviceGetNAxes pnt
+	for_ pnts \ps -> print =<< gdkDeviceGetNAxes ps
+--	print =<< gdkDeviceGetNAxes kbd
+--	for_ kbds \ks -> print =<< gdkDeviceGetNAxes ks
+
+	print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes pnt
+	for_ pnts \ps ->
+		print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes ps
 
 printDevice :: IsGdkDevice d => d -> IO ()
 printDevice d = do

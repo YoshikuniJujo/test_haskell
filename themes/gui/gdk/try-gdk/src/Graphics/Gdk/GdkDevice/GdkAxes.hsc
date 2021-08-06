@@ -43,8 +43,11 @@ foreign import ccall "gdk_device_set_axis_use"
 foreign import ccall "gdk_device_get_axis_use"
 	gdkDeviceGetAxisUse :: GdkDevice -> CUInt -> IO GdkAxisUse
 
+gdkDeviceGetNAxes :: IsGdkDevice d => d -> IO CInt
+gdkDeviceGetNAxes = c_gdk_device_get_n_axes . getGdkDevice . toGdkDevice
+
 foreign import ccall "gdk_device_get_n_axes"
-	gdkDeviceGetNAxes :: GdkDevice -> IO CInt
+	c_gdk_device_get_n_axes :: GdkDevice -> IO CInt
 
 enum "GdkAxisFlag" ''#{type GdkAxisFlags} [''Show] [
 	("GdkAxisFlagX", #{const GDK_AXIS_FLAG_X}),
@@ -82,9 +85,9 @@ foreign import ccall "gdk_device_get_axis"
 		GdkDevice -> Ptr CDouble -> GdkAxisUse -> Ptr CDouble ->
 		IO #{type gboolean}
 
-gdkDeviceListAxes :: GdkDevice -> IO (Maybe [GdkAtom])
+gdkDeviceListAxes :: IsGdkDevice d => d -> IO (Maybe [GdkAtom])
 gdkDeviceListAxes d =
-	(map GdkAtom <$>) <$> (g_list_to_list =<< c_gdk_device_list_axes d)
+	(map GdkAtom <$>) <$> (g_list_to_list =<< c_gdk_device_list_axes (getGdkDevice $ toGdkDevice d))
 
 foreign import ccall "gdk_device_list_axes"
 	c_gdk_device_list_axes :: GdkDevice -> IO (Ptr (GList GdkAtom))
@@ -105,7 +108,7 @@ foreign import ccall "gdk_device_get_axis_value"
 
 gdkAxesCopyFromPtr :: GdkDevice -> Ptr CDouble -> IO GdkAxes
 gdkAxesCopyFromPtr d a = GdkAxes <$> do
-	n <- gdkDeviceGetNAxes d
+	n <- c_gdk_device_get_n_axes d
 	p <- mallocArray $ fromIntegral n
 	copyArray p a $ fromIntegral n
 	newForeignPtr p $ free p
