@@ -19,30 +19,30 @@ GdkDevice memo
 	+ [x] define `newtype GdkDevicePhysical pk = ...`
 	+ [x] define `newtype GdkDeviceMaster pk = ...`
 	+ [x] others
-* [ ] repair `Graphics.Gdk.GdkDevice`
-	+ [ ] gdkDisplayDeviceIsGrabbed
-* [ ] repair `Graphics.Gdk.GdkSeat`
-	+ [ ] `gdkSeatGetPointer`
-	+ [ ] `gdkSeatGetKeyboard`
-	+ [ ] `gdkSeatGetSlaves`
-* [ ] repair `Graphics.Gdk.GdkDevice`
-	+ [ ] `gdkDeviceGetDisplay`
-	+ [ ] `gdkDeviceGetSeat`
-	+ [ ] `gdkDeviceGetName`
-	+ [ ] `gdkDeviceGetDeviceType`
-	+ [ ] `gdkDeviceGetSource`
-	+ [ ] `gdkDeviceGetVendorId`
-	+ [ ] `gdkDeviceGetProductId`
-	+ [ ] `gdkDeviceListSlaveDevices`
-	+ [ ] GEOMETRY
-		+ [ ] `gdkDeviceWarp`
-		+ [ ] `gdkDeviceGetPosition`
-		+ [ ] `gdkDeviceGetPositionDouble`
-		+ [ ] `gdkDeviceGetWindowAtPosition`
-		+ [ ] `gdkDeviceGetWindowAtPositionDouble`
-		+ [ ] `gdkDeviceGetLastEventWindow`
+* [x] repair `Graphics.Gdk.GdkDisplay`
+	+ [x] gdkDisplayDeviceIsGrabbed
+* [x] repair `Graphics.Gdk.GdkSeat`
+	+ [x] `gdkSeatGetPointer`
+	+ [x] `gdkSeatGetKeyboard`
+	+ [x] `gdkSeatGetSlaves`
+* [x] repair `Graphics.Gdk.GdkDevice`
+	+ [x] `gdkDeviceGetDisplay`
+	+ [x] `gdkDeviceGetSeat`
+	+ [x] `gdkDeviceGetName`
+	+ [x] `gdkDeviceGetDeviceType`
+	+ [x] `gdkDeviceGetSource`
+	+ [x] `gdkDeviceGetVendorId`
+	+ [x] `gdkDeviceGetProductId`
+	+ [x] `gdkDeviceListSlaveDevices`
+	+ [x] GEOMETRY
+		+ [x] `gdkDeviceWarp`
+		+ [x] `gdkDeviceGetPosition`
+		+ [x] `gdkDeviceGetPositionDouble`
+		+ [x] `gdkDeviceGetWindowAtPosition`
+		+ [x] `gdkDeviceGetWindowAtPositionDouble`
+		+ [x] `gdkDeviceGetLastEventWindow`
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
-	+ [ ] `gdkDeviceSetAxisUse`
+	+ [x] `gdkDeviceSetAxisUse`
 	+ [ ] `gdkDeviceGetAxisUse`
 	+ [ ] `gdkDeviceGetNAxes`
 	+ [ ] `gdkDeviceGetAxes`

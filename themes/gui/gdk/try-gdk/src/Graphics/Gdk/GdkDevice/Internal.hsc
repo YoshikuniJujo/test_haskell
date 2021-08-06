@@ -161,7 +161,7 @@ foreign import ccall "gdk_device_get_display"
 	c_gdk_device_get_display :: GdkDevice -> IO GdkDisplay
 
 foreign import ccall "gdk_device_warp" gdkDeviceWarp ::
-	GdkDeviceMaster pk -> GdkScreen -> CInt -> CInt -> IO ()
+	GdkDeviceMaster 'Pointer -> GdkScreen -> CInt -> CInt -> IO ()
 
 gdkDeviceGetSeat :: IsGdkDevice d => d pk -> IO GdkSeat
 gdkDeviceGetSeat = c_gdk_device_get_seat . getGdkDevice

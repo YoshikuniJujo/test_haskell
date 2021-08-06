@@ -41,8 +41,6 @@ main = do
 	printDevice pnt
 
 	gdkDeviceWarp pnt scr 100 100
---	gdkDeviceWarp (toGdkDevice kbd) scr 100 100
---	gdkDeviceWarp (toGdkDevice $ pnts !! 1) scr 100 100
 	gdkDisplayFlush dpy
 
 	print =<< gdkDeviceGetLastEventWindow pnt

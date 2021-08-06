@@ -21,7 +21,7 @@ import Data.Int
 import Data.Sealed.Internal
 import System.IO.Unsafe
 
-import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.GdkDevice.GdkAxes
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType

@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -37,8 +38,11 @@ enum "GdkAxisUse" ''#{type GdkAxisUse} [''Show] [
 	("GdkAxisSlider", #{const GDK_AXIS_SLIDER}),
 	("GdkAxisLast", #{const GDK_AXIS_LAST}) ]
 
+gdkDeviceSetAxisUse :: IsGdkDevice d => d 'Pointer -> CUInt -> GdkAxisUse -> IO ()
+gdkDeviceSetAxisUse = c_gdk_device_set_axis_use . getGdkDevice
+
 foreign import ccall "gdk_device_set_axis_use"
-	gdkDeviceSetAxisUse :: GdkDevice -> CUInt -> GdkAxisUse -> IO ()
+	c_gdk_device_set_axis_use :: GdkDevice -> CUInt -> GdkAxisUse -> IO ()
 
 foreign import ccall "gdk_device_get_axis_use"
 	gdkDeviceGetAxisUse :: GdkDevice -> CUInt -> IO GdkAxisUse
