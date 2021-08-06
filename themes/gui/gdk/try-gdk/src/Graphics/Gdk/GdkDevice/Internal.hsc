@@ -236,5 +236,9 @@ foreign import ccall "gdk_device_get_window_at_position_double"
 	c_gdk_device_get_window_at_position_double ::
 	GdkDevice -> Ptr CDouble -> Ptr CDouble -> IO GdkWindow
 
+gdkDeviceGetLastEventWindow :: GdkDeviceMasterPointer -> IO GdkWindow
+gdkDeviceGetLastEventWindow =
+	c_gdk_device_get_last_event_window . getGdkDevice
+
 foreign import ccall "gdk_device_get_last_event_window"
-	gdkDeviceGetLastEventWindow :: GdkDevice -> IO GdkWindow
+	c_gdk_device_get_last_event_window :: GdkDevice -> IO GdkWindow

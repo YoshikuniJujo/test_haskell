@@ -42,6 +42,8 @@ main = do
 --	gdkDeviceWarp (toGdkDevice $ pnts !! 1) scr 100 100
 	gdkDisplayFlush dpy
 
+	print =<< gdkDeviceGetLastEventWindow pnt
+
 printDevice :: IsGdkDevice d => d -> IO ()
 printDevice d = do
 	n <- gdkDeviceGetName d

@@ -19,7 +19,7 @@ GdkDevice memo
 	+ [x] `gdkSeatGetPointer`
 	+ [x] `gdkSeatGetKeyboard`
 	+ [x] `gdkSeatGetSlaves`
-* [ ] repair `Graphics.Gdk.GdkDevice`
+* [x] repair `Graphics.Gdk.GdkDevice`
 	+ [x] `gdkDeviceGetDisplay`
 	+ [x] `gdkDeviceGetSeat`
 	+ [x] `gdkDeviceGetName`
@@ -36,13 +36,12 @@ GdkDevice memo
 		+ [x] `gdkDeviceGetPositionDouble`
 		+ [x] `gdkDeviceGetWindowAtPosition`
 		+ [x] `gdkDeviceGetWindowAtPositionDouble`
-	+ [ ] STATE
 		+ [x] `gdkDeviceGetHasCursor`
 			- [x] check
 			- [x] remove it
-		+ [ ] `gdkDeviceGetLastEventWindow`
+		+ [x] `gdkDeviceGetLastEventWindow`
 			- [x] move it to GEOMETRY
-			- [ ] others
+			- [x] others
 * [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [ ] `gdkDeviceSetAxisUse`
 	+ [ ] `gdkDeviceGetAxisUse`
