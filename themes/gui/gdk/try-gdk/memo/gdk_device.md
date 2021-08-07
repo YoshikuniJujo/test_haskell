@@ -47,7 +47,7 @@ GdkDevice memo
 	+ [x] `gdkDeviceGetNAxes`
 	+ [x] `gdkDeviceGetAxes`
 	+ [x] `gdkDeviceGetAxis`
-	+ [ ] `gdkDeviceListAxes`
+	+ [x] `gdkDeviceListAxes`
 	+ [ ] `gdkDeviceGetAxisValue`
 	+ [ ] `gdkAxesCopyFromPtr`
 * [ ] repair `Graphics.Gdk.EventStructures`

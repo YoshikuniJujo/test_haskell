@@ -95,7 +95,7 @@ foreign import ccall "gdk_device_get_axis"
 		GdkDevice -> Ptr CDouble -> GdkAxisUse -> Ptr CDouble ->
 		IO #{type gboolean}
 
-gdkDeviceListAxes :: IsGdkDevice d => d pk -> IO (Maybe [GdkAtom])
+gdkDeviceListAxes :: IsGdkDevice d => d 'Pointer -> IO (Maybe [GdkAtom])
 gdkDeviceListAxes d =
 	(map GdkAtom <$>) <$> (g_list_to_list =<< c_gdk_device_list_axes (getGdkDevice d))
 
