@@ -34,5 +34,5 @@ main = do
 			print $ gdkEventMotionY m
 			print $ gdkEventMotionXRoot m
 			print $ gdkEventMotionYRoot m
-			print =<< gdkDeviceGetAxis d as GdkAxisPressure
+--			print =<< gdkDeviceGetAxis d as GdkAxisPressure
 		e -> True <$ print e

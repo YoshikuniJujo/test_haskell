@@ -82,9 +82,9 @@ gdkDeviceGetAxes = c_gdk_device_get_axes . getGdkDevice
 foreign import ccall "gdk_device_get_axes"
 	c_gdk_device_get_axes :: GdkDevice -> IO GdkAxisFlags
 
-gdkDeviceGetAxis :: GdkDevice -> GdkAxes -> GdkAxisUse -> IO (Maybe CDouble)
+gdkDeviceGetAxis :: IsGdkDevice d => d 'Pointer -> GdkAxes -> GdkAxisUse -> IO (Maybe CDouble)
 gdkDeviceGetAxis d (GdkAxes fas) au = withForeignPtr fas \pas -> alloca \v -> do
-	b <- c_gdk_device_get_axis d pas au v
+	b <- c_gdk_device_get_axis (getGdkDevice d) pas au v
 	case b of
 		#{const FALSE} -> pure Nothing
 		#{const TRUE} -> Just <$> peek v

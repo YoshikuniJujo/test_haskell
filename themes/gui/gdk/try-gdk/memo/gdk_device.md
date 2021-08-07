@@ -46,7 +46,7 @@ GdkDevice memo
 	+ [x] `gdkDeviceGetAxisUse`
 	+ [x] `gdkDeviceGetNAxes`
 	+ [x] `gdkDeviceGetAxes`
-	+ [ ] `gdkDeviceGetAxis`
+	+ [x] `gdkDeviceGetAxis`
 	+ [ ] `gdkDeviceListAxes`
 	+ [ ] `gdkDeviceGetAxisValue`
 	+ [ ] `gdkAxesCopyFromPtr`
