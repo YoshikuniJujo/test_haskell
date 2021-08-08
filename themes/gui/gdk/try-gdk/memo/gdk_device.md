@@ -49,8 +49,16 @@ GdkDevice memo
 	+ [x] `gdkDeviceGetAxis`
 	+ [x] `gdkDeviceListAxes`
 	+ [x] `gdkDeviceGetAxisValue`
-	+ [ ] `gdkAxesCopyFromPtr`
 * [ ] repair `Graphics.Gdk.EventStructures`
+	+ [x] check what kind of device will return
+		- `GdkDeviceMaster 'Pointer`
+	+ [x] check type is master
+	+ [ ] check source is not keyboard
+	+ [ ] define `checkGdkDeviceMasterPointer :: GdkDevice -> IO Bool`
+	+ [ ] use `GdkDeviceMaster Pointer` instead of `GdkDevice`
+		- [ ] button
+		- [ ] scroll
+		- [ ] motion
 
 refactor export list
 --------------------

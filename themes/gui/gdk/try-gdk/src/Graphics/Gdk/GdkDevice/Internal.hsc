@@ -23,6 +23,7 @@ module Graphics.Gdk.GdkDevice.Internal (
 	gdkDeviceGetProductId,
 	gdkDeviceGetSource,
 	gdkDeviceGetDeviceType,
+	gdkDeviceGetDeviceTypeInternal,
 
 	-- * SLAVES
 	gdkDeviceListSlaveDevices,
@@ -150,6 +151,9 @@ enum "GdkDeviceType" ''#{type GdkDeviceType} [''Show] [
 
 gdkDeviceGetDeviceType :: IsGdkDevice d => d pk -> IO GdkDeviceType
 gdkDeviceGetDeviceType d = GdkDeviceType <$> c_gdk_device_get_device_type (getGdkDevice d)
+
+gdkDeviceGetDeviceTypeInternal :: GdkDevice -> IO GdkDeviceType
+gdkDeviceGetDeviceTypeInternal d = GdkDeviceType <$> c_gdk_device_get_device_type d
 
 foreign import ccall "gdk_device_get_device_type" c_gdk_device_get_device_type ::
 	GdkDevice -> IO #{type GdkDeviceType}

@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, CApiFFI #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -306,6 +306,11 @@ pattern GdkEventGdkTripleButtonPress e <- GdkEvent
 pattern GdkEventGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent s
 pattern GdkEventGdkButtonRelease e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonRelease, e))
+
+checkGdkDeviceIsMaster :: GdkDevice -> IO Bool
+checkGdkDeviceIsMaster d = (<$> gdkDeviceGetDeviceTypeInternal d) \case
+	GdkDeviceTypeMaster -> True
+	_ -> False
 
 ---------------------------------------------------------------------------
 -- GDK EVENT SCROLL                                                      --
