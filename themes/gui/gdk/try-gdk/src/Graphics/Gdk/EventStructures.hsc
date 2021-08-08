@@ -307,6 +307,10 @@ pattern GdkEventGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent s
 pattern GdkEventGdkButtonRelease e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonRelease, e))
 
+checkGdkDeviceMasterPointer :: GdkDevice -> IO Bool
+checkGdkDeviceMasterPointer d =
+	(&&) <$> checkGdkDeviceIsMaster d <*> checkGdkDeviceIsPointer d
+
 checkGdkDeviceIsMaster :: GdkDevice -> IO Bool
 checkGdkDeviceIsMaster d = (<$> gdkDeviceGetDeviceTypeInternal d) \case
 	GdkDeviceTypeMaster -> True
