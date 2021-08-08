@@ -312,6 +312,11 @@ checkGdkDeviceIsMaster d = (<$> gdkDeviceGetDeviceTypeInternal d) \case
 	GdkDeviceTypeMaster -> True
 	_ -> False
 
+checkGdkDeviceIsPointer :: GdkDevice -> IO Bool
+checkGdkDeviceIsPointer d = (<$> gdkDeviceGetSourceInternal d) \case
+	GdkSourceKeyboard -> False
+	_ -> True
+
 ---------------------------------------------------------------------------
 -- GDK EVENT SCROLL                                                      --
 ---------------------------------------------------------------------------

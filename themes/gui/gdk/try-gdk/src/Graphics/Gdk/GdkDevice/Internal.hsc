@@ -22,6 +22,7 @@ module Graphics.Gdk.GdkDevice.Internal (
 	gdkDeviceGetVendorId,
 	gdkDeviceGetProductId,
 	gdkDeviceGetSource,
+	gdkDeviceGetSourceInternal,
 	gdkDeviceGetDeviceType,
 	gdkDeviceGetDeviceTypeInternal,
 
@@ -132,6 +133,9 @@ foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 
 gdkDeviceGetSource :: IsGdkDevice d => d pk -> IO GdkInputSource
 gdkDeviceGetSource d = GdkInputSource <$> c_gdk_device_get_source (getGdkDevice d)
+
+gdkDeviceGetSourceInternal :: GdkDevice -> IO GdkInputSource
+gdkDeviceGetSourceInternal d = GdkInputSource <$> c_gdk_device_get_source d
 
 foreign import ccall "gdk_device_get_source" c_gdk_device_get_source ::
 	GdkDevice -> IO #type GdkInputSource
