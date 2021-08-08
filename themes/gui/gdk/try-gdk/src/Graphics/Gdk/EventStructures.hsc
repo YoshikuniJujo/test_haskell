@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell, CApiFFI #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -306,6 +307,12 @@ pattern GdkEventGdkTripleButtonPress e <- GdkEvent
 pattern GdkEventGdkButtonRelease :: Sealed s GdkEventButtonRaw -> GdkEvent s
 pattern GdkEventGdkButtonRelease e <-
 	GdkEvent (gdkEventTypeRaw GdkEventButtonRaw_ -> (GdkButtonRelease, e))
+
+toGdkDeviceMasterPointer :: GdkDevice -> GdkDeviceMaster 'Pointer
+toGdkDeviceMasterPointer d@(GdkDevice pd) = unsafePerformIO do
+	b <- checkGdkDeviceMasterPointer d
+	pure $ if b then GdkDeviceMaster pd
+		else error "The device which a event hsa should be master pointer"
 
 checkGdkDeviceMasterPointer :: GdkDevice -> IO Bool
 checkGdkDeviceMasterPointer d =

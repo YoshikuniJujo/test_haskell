@@ -55,7 +55,7 @@ GdkDevice memo
 	+ [x] check type is master
 	+ [x] check source is not keyboard
 	+ [x] define `checkGdkDeviceMasterPointer :: GdkDevice -> IO Bool`
-	+ [ ] define `toGdkDeviceMasterPointer :: GdkDevice -> GdkDeviceMaster Pointer`
+	+ [x] define `toGdkDeviceMasterPointer :: GdkDevice -> GdkDeviceMaster Pointer`
 	+ [ ] use `GdkDeviceMaster Pointer` instead of `GdkDevice`
 		- [ ] button
 		- [ ] scroll
