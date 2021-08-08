@@ -41,7 +41,7 @@ GdkDevice memo
 		+ [x] `gdkDeviceGetWindowAtPosition`
 		+ [x] `gdkDeviceGetWindowAtPositionDouble`
 		+ [x] `gdkDeviceGetLastEventWindow`
-* [ ] repair `Graphics.Gdk.GdkDevice.GdkAxes`
+* [x] repair `Graphics.Gdk.GdkDevice.GdkAxes`
 	+ [x] `gdkDeviceSetAxisUse`
 	+ [x] `gdkDeviceGetAxisUse`
 	+ [x] `gdkDeviceGetNAxes`
@@ -67,17 +67,17 @@ refactor export list
 * [x] consider to remove GdkDeviceTool
 * [x] refactor structure
 * [x] make `Graphics.Gdk.GdkDevice.Internal`
-* [ ] GDK DEVICE
-* [ ] DISPLAY AND SEAT
-	+ [ ] `gdkDeviceGetDisplay`
-	+ [ ] `gdkDeviceGetSeat`
+* [x] GDK DEVICE
+* [x] DISPLAY AND SEAT
+	+ [x] `gdkDeviceGetDisplay`
+	+ [x] `gdkDeviceGetSeat`
 * [ ] IDENTITY
 	+ [x] rearrange
 	+ [ ] `gdkDeviceGetName`
 	+ [ ] `gdkDeviceGetDeviceType`
 	+ [ ] `gdkDeviceGetSource`
-	+ [ ] `gdkDeviceGetVenderId`
-	+ [ ] `gdkDeviceGetProductId`
+	+ [x] `gdkDeviceGetVenderId`
+	+ [x] `gdkDeviceGetProductId`
 * [ ] SLAVES
 	+ `gdkDeviceListSlaveDevices`
 	+ [x] consider whether or not to use maybe value

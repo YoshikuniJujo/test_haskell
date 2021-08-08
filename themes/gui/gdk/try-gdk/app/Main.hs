@@ -75,8 +75,8 @@ main = do
 	for_ slvs \slv -> do
 		putStrLn . ("\t" ++) . show =<< gdkDeviceGetDeviceType slv
 		putStrLn . ("\t" ++) =<< gdkDeviceGetName slv
-		putStrLn $ "\t\t" ++ gdkDeviceGetVendorId slv
-		putStrLn $ "\t\t" ++ gdkDeviceGetProductId slv
+		putStrLn $ "\t\t" ++ show (gdkDeviceGetVendorId slv)
+		putStrLn $ "\t\t" ++ show (gdkDeviceGetProductId slv)
 		s <- gdkDeviceGetSource slv
 		putStrLn $ "\t\t" ++ show s
 		when (s /= GdkSourceKeyboard) do

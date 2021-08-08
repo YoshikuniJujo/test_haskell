@@ -116,17 +116,18 @@ gdkDeviceGetName d = peekCString =<< c_gdk_device_get_name (getGdkDevice d)
 foreign import ccall "gdk_device_get_name" c_gdk_device_get_name ::
 	GdkDevice -> IO CString
 
-gdkDeviceGetVendorId :: GdkDevicePhysical pk -> String
+gdkDeviceGetVendorId :: GdkDevicePhysical pk -> Maybe String
 gdkDeviceGetVendorId d = unsafePerformIO $ c_gdk_device_get_vendor_id d >>= \case
-	NullPtr -> error "never occur"
-	cs -> peekCString cs
+	NullPtr -> pure Nothing
+	cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_vendor_id" c_gdk_device_get_vendor_id ::
 	GdkDevicePhysical pk -> IO CString
 
-gdkDeviceGetProductId :: GdkDevicePhysical pk -> String
+gdkDeviceGetProductId :: GdkDevicePhysical pk -> Maybe String
 gdkDeviceGetProductId d = unsafePerformIO $ c_gdk_device_get_product_id d >>= \case
-	NullPtr -> error "never occur"; cs -> peekCString cs
+	NullPtr -> pure Nothing
+	cs -> Just <$> peekCString cs
 
 foreign import ccall "gdk_device_get_product_id" c_gdk_device_get_product_id ::
 	GdkDevicePhysical pk -> IO CString

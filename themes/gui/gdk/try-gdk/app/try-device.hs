@@ -38,7 +38,12 @@ main = do
 	for_ kbds \ks -> putStrLn . ('\t' :) =<< gdkDeviceGetName ks
 	putStrLn ""
 
-	printDevice pnt
+	putStrLn "POINTER"
+	printDevice pnt >> putStrLn ""
+	printDevicePhysical `mapM_` pnts
+	putStrLn "KEYBOARD"
+	printDevice kbd >> putStrLn ""
+	printDevicePhysical `mapM_` kbds
 
 	gdkDeviceWarp pnt scr 100 100
 	gdkDisplayFlush dpy
@@ -61,10 +66,11 @@ printDevice d = do
 	putStrLn $ '\t' : show t
 	putStrLn $ '\t' : show s
 
-{-
-	v <- gdkDeviceGetVendorId d
-	p <- gdkDeviceGetProductId d
+printDevicePhysical :: GdkDevicePhysical pk -> IO ()
+printDevicePhysical d = do
+	printDevice d
+	let	v = gdkDeviceGetVendorId d
+		p = gdkDeviceGetProductId d
 	putStrLn $ '\t' : show v
 	putStrLn $ '\t' : show p
 	putStrLn ""
-	-}
