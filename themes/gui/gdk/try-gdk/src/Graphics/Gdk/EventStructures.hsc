@@ -273,7 +273,7 @@ data GdkEventButton = GdkEventButton {
 	gdkEventButtonAxes :: GdkAxes,
 	gdkEventButtonState :: [GdkModifierTypeSingleBit],
 	gdkEventButtonButton :: CUInt,
-	gdkEventButtonDevice :: GdkDevice,
+	gdkEventButtonDevice :: GdkDeviceMaster 'Pointer,
 	gdkEventButtonXRoot, gdkEventButtonYRoot :: CDouble }
 	deriving Show
 
@@ -289,7 +289,7 @@ gdkEventButton (unsafeUnseal -> r) = GdkEventButton
 		(gdkEventButtonRawDevice r) (gdkEventButtonRawAxes r))
 	(gdkModifierTypeSingleBitList $ gdkEventButtonRawState r)
 	(gdkEventButtonRawButton r)
-	(gdkEventButtonRawDevice r)
+	(toGdkDeviceMasterPointer $ gdkEventButtonRawDevice r)
 	(gdkEventButtonRawXRoot r) (gdkEventButtonRawYRoot r)
 
 pattern GdkEventGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
@@ -390,7 +390,7 @@ data GdkEventScroll = GdkEventScroll {
 	gdkEventScrollX, gdkEventScrollY :: CDouble,
 	gdkEventScrollState :: [GdkModifierTypeSingleBit],
 	gdkEventScrollDirection :: GdkScrollDirection,
-	gdkEventScrollDevice :: GdkDevice,
+	gdkEventScrollDevice :: GdkDeviceMaster 'Pointer,
 	gdkEventScrollXRoot, gdkEventScrollYRoot :: CDouble,
 	gdkEventScrollDeltas :: Maybe (CDouble, CDouble),
 	gdkEventScrollIsStop :: Bool }
@@ -406,7 +406,7 @@ gdkEventScroll (unsafeUnseal -> s) = GdkEventScroll
 	(gdkEventScrollRawX s) (gdkEventScrollRawY s)
 	(gdkModifierTypeSingleBitList $ gdkEventScrollRawState s)
 	(gdkEventScrollRawDirection s)
-	(gdkEventScrollRawDevice s)
+	(toGdkDeviceMasterPointer $ gdkEventScrollRawDevice s)
 	(gdkEventScrollRawXRoot s) (gdkEventScrollRawYRoot s)
 	(case gdkEventScrollRawDirection s of
 		GdkScrollSmooth -> Just
@@ -460,7 +460,7 @@ data GdkEventMotion = GdkEventMotion {
 	gdkEventMotionAxes :: GdkAxes,
 	gdkEventMotionState :: [GdkModifierTypeSingleBit],
 	gdkEventMotionIsHint :: Bool,
-	gdkEventMotionDevice :: GdkDevice,
+	gdkEventMotionDevice :: GdkDeviceMaster 'Pointer,
 	gdkEventMotionXRoot :: CDouble, gdkEventMotionYRoot :: CDouble }
 	deriving Show
 
@@ -478,7 +478,7 @@ gdkEventMotion (unsafeUnseal -> r) = GdkEventMotion
 	(case gdkEventMotionRawIsHint r of
 		FalseInt16 -> False; TrueInt16 -> True
 		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")
-	(gdkEventMotionRawDevice r)
+	(toGdkDeviceMasterPointer $ gdkEventMotionRawDevice r)
 	(gdkEventMotionRawXRoot r) (gdkEventMotionRawYRoot r)
 
 pattern GdkEventGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEvent s
