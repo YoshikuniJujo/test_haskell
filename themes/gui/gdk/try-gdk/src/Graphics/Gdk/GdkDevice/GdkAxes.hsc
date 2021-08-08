@@ -102,10 +102,10 @@ gdkDeviceListAxes d =
 foreign import ccall "gdk_device_list_axes"
 	c_gdk_device_list_axes :: GdkDevice -> IO (Ptr (GList GdkAtom))
 
-gdkDeviceGetAxisValue :: GdkDevice -> GdkAxes -> GdkAtom -> IO (Maybe CDouble)
+gdkDeviceGetAxisValue :: IsGdkDevice d => d 'Pointer -> GdkAxes -> GdkAtom -> IO (Maybe CDouble)
 gdkDeviceGetAxisValue d (GdkAxes fas) lb =
 	withForeignPtr fas \pas -> alloca \v ->
-		c_gdk_device_get_axis_value d pas lb v >>= \case
+		c_gdk_device_get_axis_value (getGdkDevice d) pas lb v >>= \case
 			#{const FALSE} -> pure Nothing
 			#{const TRUE} -> Just <$> peek v
 			_ -> error $ "gdk_device_get_axis_value" ++
