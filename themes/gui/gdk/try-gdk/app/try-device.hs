@@ -3,8 +3,11 @@
 
 module Main where
 
+import Control.Monad
 import Data.Foldable
 import Data.Maybe
+import System.Environment
+import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice.Internal
@@ -13,49 +16,63 @@ import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 main :: IO ()
 main = do
+	(ss, as, es) <- getOpt Permute [
+		optDispAndSeat, optList, optIdentity, optAxes, optGeometry ] <$> getArgs
+	putStrLn `mapM_` es
 	dpy <- gdkDisplayOpen ""
 	let	scr = gdkDisplayGetDefaultScreen dpy
-	print dpy
-	print scr
 	st <- gdkDisplayGetDefaultSeat dpy
-	print st
 	pnt <- gdkSeatGetPointer st
 	kbd <- gdkSeatGetKeyboard st
-	print pnt
-	print kbd
-	print =<< gdkDeviceGetDisplay pnt
-	print =<< gdkDeviceGetDisplay kbd
-	print =<< gdkDeviceGetSeat pnt
-	print =<< gdkDeviceGetSeat kbd
-	putStrLn ""
+
+	if OptDisplayAndSeat `notElem` ss then pure () else do
+		print dpy
+		print scr
+		print st
+		print pnt
+		print kbd
+
+		print =<< gdkDeviceGetDisplay pnt
+		print =<< gdkDeviceGetDisplay kbd
+		print =<< gdkDeviceGetSeat pnt
+		print =<< gdkDeviceGetSeat kbd
+		putStrLn ""
 
 	pnts <- gdkDeviceListSlaveDevices pnt
 	kbds <- gdkDeviceListSlaveDevices kbd
-	putStrLn =<< gdkDeviceGetName pnt
-	for_ pnts \ps -> putStrLn . ('\t' :) =<< gdkDeviceGetName ps
-	putStrLn ""
-	putStrLn =<< gdkDeviceGetName kbd
-	for_ kbds \ks -> putStrLn . ('\t' :) =<< gdkDeviceGetName ks
-	putStrLn ""
 
-	putStrLn "POINTER"
-	printDevice pnt >> putStrLn ""
-	printDevicePhysical `mapM_` pnts
-	putStrLn "KEYBOARD"
-	printDevice kbd >> putStrLn ""
-	printDevicePhysical `mapM_` kbds
+	if OptList `notElem` ss then pure () else do
+		putStrLn =<< gdkDeviceGetName pnt
+		for_ pnts \ps -> putStrLn . ('\t' :) =<< gdkDeviceGetName ps
+		putStrLn ""
+		putStrLn =<< gdkDeviceGetName kbd
+		for_ kbds \ks -> putStrLn . ('\t' :) =<< gdkDeviceGetName ks
 
-	gdkDeviceWarp pnt scr 100 100
-	gdkDisplayFlush dpy
+	sequence_ $ (<$> ss) (flip withOptIdentity \nm -> do
+		printDeviceIf nm pnt
+		printDevicePhysicalIf nm `mapM_` pnts
+		printDeviceIf nm kbd
+		printDevicePhysicalIf nm `mapM_` kbds)
 
-	print =<< gdkDeviceGetLastEventWindow pnt
+	if OptGeometry `notElem` ss then pure () else do
+		gdkDeviceWarp pnt scr 100 100
+		gdkDisplayFlush dpy
 
-	print =<< gdkDeviceGetNAxes pnt
-	for_ pnts \ps -> print =<< gdkDeviceGetNAxes ps
+		print =<< gdkDeviceGetLastEventWindow pnt
 
-	print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes pnt
-	for_ pnts \ps ->
-		print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes ps
+	if OptAxes `notElem` ss then pure () else do
+
+		print =<< gdkDeviceGetNAxes pnt
+		for_ pnts \ps -> print =<< gdkDeviceGetNAxes ps
+
+		print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes pnt
+		for_ pnts \ps ->
+			print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes ps
+
+printDeviceIf :: IsGdkDevice d => String -> d pk -> IO ()
+printDeviceIf n0 d = do
+	n <- gdkDeviceGetName d
+	if n == n0 then printDevice d else pure ()
 
 printDevice :: IsGdkDevice d => d pk -> IO ()
 printDevice d = do
@@ -66,6 +83,11 @@ printDevice d = do
 	putStrLn $ '\t' : show t
 	putStrLn $ '\t' : show s
 
+printDevicePhysicalIf :: String -> GdkDevicePhysical pk -> IO ()
+printDevicePhysicalIf n0 d = do
+	n <- gdkDeviceGetName d
+	if n == n0 then printDevicePhysical d else pure ()
+
 printDevicePhysical :: GdkDevicePhysical pk -> IO ()
 printDevicePhysical d = do
 	printDevice d
@@ -73,4 +95,28 @@ printDevicePhysical d = do
 		p = gdkDeviceGetProductId d
 	putStrLn $ '\t' : show v
 	putStrLn $ '\t' : show p
-	putStrLn ""
+
+data OptSetting
+	= OptIdentity String
+	| OptList
+	| OptAxes
+	| OptGeometry
+	| OptDisplayAndSeat
+	deriving (Eq, Show)
+
+withOptIdentity :: OptSetting -> (String -> IO a) -> IO ()
+withOptIdentity (OptIdentity n) f = void $ f n
+withOptIdentity _ _ = pure ()
+
+optDispAndSeat, optList, optIdentity, optAxes, optGeometry :: OptDescr OptSetting
+optDispAndSeat = Option ['d'] ["display-and-seat"] (NoArg OptDisplayAndSeat)
+	"Show display and seat"
+
+optList = Option ['l'] ["list"] (NoArg OptList) "Show devices"
+
+optIdentity = Option ['i'] ["identity"] (ReqArg OptIdentity "device name")
+	"Show identity"
+
+optAxes = Option ['a'] ["axes"] (NoArg OptAxes) "Show axes"
+
+optGeometry = Option ['g'] ["geometry"] (NoArg OptGeometry) "Show geometry"
