@@ -12,7 +12,11 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.GdkDevice.GdkAxes
+import Graphics.Gdk.Windows
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
+
+import Graphics.Gdk.Events
+import Try.Tools
 
 main :: IO ()
 main = do
@@ -55,11 +59,27 @@ main = do
 		printDevicePhysicalIf nm `mapM_` kbds)
 
 	if OptGeometry `notElem` ss then pure () else do
+
+		w <- gdkWindowNew Nothing defaultGdkWindowAttr
+		gdkWindowShow w
+		gdkDisplayFlush dpy
+		gdkDisplaySync dpy
+
+		gdkWithEventGet print
+		gdkWithEventGet print
+		gdkWithEventGet print
+		gdkWithEventGet print
+		gdkWithEventGet print
+		gdkWithEventGet print
+		gdkWithEventGet print
+		gdkWithEventGet print
+--		_ <- getLine
+
 		print =<< gdkDeviceGetPosition pnt
 		print =<< gdkDeviceGetPositionDouble pnt
 		print =<< gdkDeviceGetWindowAtPosition pnt
 		print =<< gdkDeviceGetWindowAtPositionDouble pnt
-		gdkDeviceWarp pnt scr 100 100
+		gdkDeviceWarp pnt scr 1450 150
 		gdkDisplayFlush dpy
 		print =<< gdkDeviceGetPosition pnt
 		print =<< gdkDeviceGetPositionDouble pnt

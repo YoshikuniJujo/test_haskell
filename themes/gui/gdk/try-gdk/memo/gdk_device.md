@@ -88,16 +88,17 @@ refactor export list
 		- [x] remove screen from return value
 	+ [x] `gdkDeviceGetPositionDouble`
 		- [x] remove screen from return value
-	+ [ ] `gdkDeviceGetWindowAtPosition`
+	+ [x] `gdkDeviceGetWindowAtPosition`
 		- [x] return maybe value
-		- [ ] make and show window
-		- [ ] try with a window
-	+ [ ] `gdkDeviceGetWindowAtPositionDouble`
+		- [x] make and show window
+		- [x] try with a window
+	+ [x] `gdkDeviceGetWindowAtPositionDouble`
 		- [x] return maybe value
-		- [ ] try with a window
-	+ [ ] `gdkDeviceGetLastEventWindow`
+		- [x] try with a window
+	+ [x] `gdkDeviceGetLastEventWindow`
 		- [x] return maybe value
-		- [ ] try with a window
+		- [x] try with a window
+	+ [ ] repair GEOMETRY parts of `try-device`
 * [ ] GDK DEVICE TYPE
 * [ ] GDK INPUT SOURCE
 
