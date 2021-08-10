@@ -86,9 +86,13 @@ module hierarchy
 	+ GdkScreen
 		- Internal
 	+ GdkSeat
+		- Internal
 	+ GdkMonitor
+		- Internal
 	+ GdkDevice
+		- Internal
 		- GdkAxes
+			* Internal
 	+ PointsAndRectangle
 	+ Visuals
 	+ Cursors

@@ -23,7 +23,7 @@ import Data.Sealed.Internal
 import System.IO.Unsafe
 
 import Graphics.Gdk.GdkDevice.Internal
-import Graphics.Gdk.GdkDevice.GdkAxes
+import Graphics.Gdk.GdkDevice.GdkAxes.Internal
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms

@@ -5,11 +5,17 @@ todo
 ----
 
 * [x] add export list
-* [ ] consider to make Graphics.Gdk.GdkDevice.GdkAxes.Internal
+* [x] consider to make Graphics.Gdk.GdkDevice.GdkAxes.Internal
 * [ ] refactor expor list
-	+ [ ] GDK AXES
+	+ [x] GDK AXES
 	+ [ ] DEVICE
-	+ [ ] COPY
+		- [ ] `gdkDeviceSetAxisUse`
+		- [ ] `gdkDeviceGetAxisUse`
+		- [ ] `gdkDeviceGetNAxes`
+		- [ ] `gdkDeviceGetAxes`
+		- [ ] `gdkDeviceGetAxis`
+		- [ ] `gdkDeviceListAxes`
+		- [ ] `gdkDeviceGetAxisValue`
 	+ [ ] GDK AXIS USE
 	+ [ ] GDK AXIS FLAGS
 		- [ ] Multiple Flags

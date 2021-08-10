@@ -4,9 +4,9 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDevice.GdkAxes (
+module Graphics.Gdk.GdkDevice.GdkAxes.Internal (
 	-- * GDK AXES
-	GdkAxes,
+	GdkAxes(..),
 
 	-- * DEVICE
 	gdkDeviceSetAxisUse,
@@ -23,7 +23,7 @@ module Graphics.Gdk.GdkDevice.GdkAxes (
 	gdkAxesCopyFromPtr,
 
 	-- * GDK AXIS USE
-	GdkAxisUse,
+	GdkAxisUse(..),
 	pattern GdkAxisIgnore,
 	pattern GdkAxisX, pattern GdkAxisY,
 	pattern GdkAxisPressure,
@@ -34,11 +34,11 @@ module Graphics.Gdk.GdkDevice.GdkAxes (
 
 	-- * GDK AXIS FLAGS
 	-- ** Multiple Flags
-	GdkAxisFlags, gdkAxisFlags,
+	GdkAxisFlags(..), gdkAxisFlags,
 	pattern GdkAxisNoFlags,
 
 	-- ** Single Flag
-	GdkAxisFlag,
+	GdkAxisFlag(..),
 	gdkAxisFlagList,
 	pattern GdkAxisFlagX, pattern GdkAxisFlagY,
 	pattern GdkAxisFlagPressure,
