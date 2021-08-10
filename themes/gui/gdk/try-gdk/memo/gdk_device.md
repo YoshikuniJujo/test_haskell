@@ -86,8 +86,8 @@ refactor export list
 	+ [x] `gdkDeviceWarp`
 	+ [x] `gdkDeviceGetPosition`
 		- [x] remove screen from return value
-	+ [ ] `gdkDeviceGetPositionDouble`
-		- [ ] remove screen from return value
+	+ [x] `gdkDeviceGetPositionDouble`
+		- [x] remove screen from return value
 	+ [ ] `gdkDeviceGetWindowAtPosition`
 	+ [ ] `gdkDeviceGetWindowAtPositionDouble`
 	+ [ ] `gdkDeviceGetLastEventWindow`

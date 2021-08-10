@@ -187,10 +187,10 @@ foreign import ccall "gdk_device_get_position" c_gdk_device_get_position ::
 	GdkDevice -> Ptr (Ptr GdkScreen) -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkDeviceGetPositionDouble ::
-	GdkDeviceMaster 'Pointer -> IO (GdkScreen, (CDouble, CDouble))
-gdkDeviceGetPositionDouble d = alloca \pps -> alloca \px -> alloca \py -> do
-	c_gdk_device_get_position_double (getGdkDevice d) pps px py
-	(,) <$> (GdkScreen <$> peek pps) <*> ((,) <$> peek px <*> peek py)
+	GdkDeviceMaster 'Pointer -> IO (CDouble, CDouble)
+gdkDeviceGetPositionDouble d = alloca \px -> alloca \py -> do
+	c_gdk_device_get_position_double (getGdkDevice d) NullPtr px py
+	(,) <$> peek px <*> peek py
 
 foreign import ccall "gdk_device_get_position_double"
 	c_gdk_device_get_position_double ::

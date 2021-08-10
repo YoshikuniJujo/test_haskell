@@ -56,9 +56,11 @@ main = do
 
 	if OptGeometry `notElem` ss then pure () else do
 		print =<< gdkDeviceGetPosition pnt
+		print =<< gdkDeviceGetPositionDouble pnt
 		gdkDeviceWarp pnt scr 100 100
 		gdkDisplayFlush dpy
 		print =<< gdkDeviceGetPosition pnt
+		print =<< gdkDeviceGetPositionDouble pnt
 
 		print =<< gdkDeviceGetLastEventWindow pnt
 
