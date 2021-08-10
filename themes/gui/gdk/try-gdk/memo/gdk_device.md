@@ -71,19 +71,26 @@ refactor export list
 * [x] DISPLAY AND SEAT
 	+ [x] `gdkDeviceGetDisplay`
 	+ [x] `gdkDeviceGetSeat`
-* [ ] IDENTITY
+* [x] IDENTITY
 	+ [x] rearrange
-	+ [ ] `gdkDeviceGetName`
-	+ [ ] `gdkDeviceGetDeviceType`
-	+ [ ] `gdkDeviceGetSource`
+	+ [x] `gdkDeviceGetName`
+	+ [x] `gdkDeviceGetDeviceType`
+	+ [x] `gdkDeviceGetSource`
 	+ [x] `gdkDeviceGetVenderId`
 	+ [x] `gdkDeviceGetProductId`
-* [ ] SLAVES
+* [x] SLAVES
 	+ `gdkDeviceListSlaveDevices`
 	+ [x] consider whether or not to use maybe value
-	+ [ ] others
+	+ [x] others
 * [ ] GEOMETRY
-* [ ] STATE
+	+ [x] `gdkDeviceWarp`
+	+ [x] `gdkDeviceGetPosition`
+		- [x] remove screen from return value
+	+ [ ] `gdkDeviceGetPositionDouble`
+		- [ ] remove screen from return value
+	+ [ ] `gdkDeviceGetWindowAtPosition`
+	+ [ ] `gdkDeviceGetWindowAtPositionDouble`
+	+ [ ] `gdkDeviceGetLastEventWindow`
 * [ ] GDK DEVICE TYPE
 * [ ] GDK INPUT SOURCE
 

@@ -55,8 +55,10 @@ main = do
 		printDevicePhysicalIf nm `mapM_` kbds)
 
 	if OptGeometry `notElem` ss then pure () else do
+		print =<< gdkDeviceGetPosition pnt
 		gdkDeviceWarp pnt scr 100 100
 		gdkDisplayFlush dpy
+		print =<< gdkDeviceGetPosition pnt
 
 		print =<< gdkDeviceGetLastEventWindow pnt
 
