@@ -92,7 +92,7 @@ refactor export list
 		- [x] return maybe value
 		- [ ] try with a window
 	+ [ ] `gdkDeviceGetWindowAtPositionDouble`
-		- [ ] return maybe value
+		- [x] return maybe value
 		- [ ] try with a window
 	+ [ ] `gdkDeviceGetLastEventWindow`
 		- [ ] return maybe value

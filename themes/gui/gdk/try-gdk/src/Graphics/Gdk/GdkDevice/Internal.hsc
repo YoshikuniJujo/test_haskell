@@ -209,10 +209,12 @@ foreign import ccall "gdk_device_get_window_at_position"
 	GdkDevice -> Ptr CInt -> Ptr CInt -> IO GdkWindow
 
 gdkDeviceGetWindowAtPositionDouble ::
-	GdkDeviceMaster 'Pointer -> IO (GdkWindow, (CDouble, CDouble))
+	GdkDeviceMaster 'Pointer -> IO (Maybe (GdkWindow, (CDouble, CDouble)))
 gdkDeviceGetWindowAtPositionDouble d = alloca \px -> alloca \py -> do
 	w <- c_gdk_device_get_window_at_position_double (getGdkDevice d) px py
-	(w ,) <$> ((,) <$> peek px <*> peek py)
+	case w of
+		GdkWindow NullPtr -> pure Nothing
+		_ -> Just . (w ,) <$> ((,) <$> peek px <*> peek py)
 
 foreign import ccall "gdk_device_get_window_at_position_double"
 	c_gdk_device_get_window_at_position_double ::
