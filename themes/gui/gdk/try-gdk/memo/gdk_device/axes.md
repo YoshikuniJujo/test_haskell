@@ -1,6 +1,12 @@
 GdkDevice axes memo
 ===================
 
+todo
+----
+
+* [ ] add export list
+* [ ] refactor expor list
+
 Function
 --------
 

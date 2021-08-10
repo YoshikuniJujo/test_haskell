@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -16,7 +17,9 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 import Graphics.Gdk.Events
+import Graphics.Gdk.EventStructures
 import Try.Tools
+import Try.Tools.DoWhile
 
 main :: IO ()
 main = do
@@ -65,15 +68,9 @@ main = do
 		gdkDisplayFlush dpy
 		gdkDisplaySync dpy
 
-		gdkWithEventGet print
-		gdkWithEventGet print
-		gdkWithEventGet print
-		gdkWithEventGet print
-		gdkWithEventGet print
-		gdkWithEventGet print
-		gdkWithEventGet print
-		gdkWithEventGet print
---		_ <- getLine
+		doWhile_ $ gdkWithEventGet \case
+			Nothing -> pure False
+			Just (GdkEventGdkAny (gdkEventAny -> e)) -> print e >> pure True
 
 		print =<< gdkDeviceGetPosition pnt
 		print =<< gdkDeviceGetPositionDouble pnt

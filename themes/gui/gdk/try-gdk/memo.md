@@ -52,7 +52,7 @@ todo new
 		- [x] GdkSeat
 		- [x] GdkMonitor
 		- [ ] GdkDevice
-			* [ ] itself
+			* [x] itself
 			* [ ] GdkAxes
 		- [ ] PointsAndRectangle
 		- [ ] Visuals

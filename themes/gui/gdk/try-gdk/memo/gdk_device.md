@@ -82,7 +82,7 @@ refactor export list
 	+ `gdkDeviceListSlaveDevices`
 	+ [x] consider whether or not to use maybe value
 	+ [x] others
-* [ ] GEOMETRY
+* [x] GEOMETRY
 	+ [x] `gdkDeviceWarp`
 	+ [x] `gdkDeviceGetPosition`
 		- [x] remove screen from return value
@@ -98,9 +98,9 @@ refactor export list
 	+ [x] `gdkDeviceGetLastEventWindow`
 		- [x] return maybe value
 		- [x] try with a window
-	+ [ ] repair GEOMETRY parts of `try-device`
-* [ ] GDK DEVICE TYPE
-* [ ] GDK INPUT SOURCE
+	+ [x] repair GEOMETRY parts of `try-device`
+* [x] GDK DEVICE TYPE
+* [x] GDK INPUT SOURCE
 
 Function
 --------
