@@ -4,8 +4,16 @@ GdkDevice axes memo
 todo
 ----
 
-* [ ] add export list
+* [x] add export list
+* [ ] consider to make Graphics.Gdk.GdkDevice.GdkAxes.Internal
 * [ ] refactor expor list
+	+ [ ] GDK AXES
+	+ [ ] DEVICE
+	+ [ ] COPY
+	+ [ ] GDK AXIS USE
+	+ [ ] GDK AXIS FLAGS
+		- [ ] Multiple Flags
+		- [ ] Single Flags
 
 Function
 --------

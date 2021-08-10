@@ -4,7 +4,49 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDevice.GdkAxes where
+module Graphics.Gdk.GdkDevice.GdkAxes (
+	-- * GDK AXES
+	GdkAxes,
+
+	-- * DEVICE
+	gdkDeviceSetAxisUse,
+	gdkDeviceGetAxisUse,
+
+	gdkDeviceGetNAxes,
+	gdkDeviceGetAxes,
+
+	gdkDeviceGetAxis,
+	gdkDeviceListAxes,
+	gdkDeviceGetAxisValue,
+
+	-- * COPY
+	gdkAxesCopyFromPtr,
+
+	-- * GDK AXIS USE
+	GdkAxisUse,
+	pattern GdkAxisIgnore,
+	pattern GdkAxisX, pattern GdkAxisY,
+	pattern GdkAxisPressure,
+	pattern GdkAxisXtilt, pattern GdkAxisYtilt,
+	pattern GdkAxisWheel, pattern GdkAxisDistance,
+	pattern GdkAxisRotation, pattern GdkAxisSlider,
+	pattern GdkAxisLast,
+
+	-- * GDK AXIS FLAGS
+	-- ** Multiple Flags
+	GdkAxisFlags, gdkAxisFlags,
+	pattern GdkAxisNoFlags,
+
+	-- ** Single Flag
+	GdkAxisFlag,
+	gdkAxisFlagList,
+	pattern GdkAxisFlagX, pattern GdkAxisFlagY,
+	pattern GdkAxisFlagPressure,
+	pattern GdkAxisFlagXtilt, pattern GdkAxisFlagYtilt,
+	pattern GdkAxisFlagWheel, pattern GdkAxisFlagDistance,
+	pattern GdkAxisFlagRotation, pattern GdkAxisFlagSlider
+
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
