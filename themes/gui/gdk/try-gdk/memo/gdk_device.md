@@ -90,12 +90,13 @@ refactor export list
 		- [x] remove screen from return value
 	+ [ ] `gdkDeviceGetWindowAtPosition`
 		- [x] return maybe value
+		- [ ] make and show window
 		- [ ] try with a window
 	+ [ ] `gdkDeviceGetWindowAtPositionDouble`
 		- [x] return maybe value
 		- [ ] try with a window
 	+ [ ] `gdkDeviceGetLastEventWindow`
-		- [ ] return maybe value
+		- [x] return maybe value
 		- [ ] try with a window
 * [ ] GDK DEVICE TYPE
 * [ ] GDK INPUT SOURCE

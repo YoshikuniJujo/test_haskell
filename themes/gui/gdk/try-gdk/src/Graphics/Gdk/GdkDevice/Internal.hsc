@@ -220,9 +220,10 @@ foreign import ccall "gdk_device_get_window_at_position_double"
 	c_gdk_device_get_window_at_position_double ::
 	GdkDevice -> Ptr CDouble -> Ptr CDouble -> IO GdkWindow
 
-gdkDeviceGetLastEventWindow :: GdkDeviceMaster 'Pointer -> IO GdkWindow
-gdkDeviceGetLastEventWindow =
-	c_gdk_device_get_last_event_window . getGdkDevice
+gdkDeviceGetLastEventWindow :: GdkDeviceMaster 'Pointer -> IO (Maybe GdkWindow)
+gdkDeviceGetLastEventWindow d =
+	(<$> c_gdk_device_get_last_event_window (getGdkDevice d)) \case
+		GdkWindow NullPtr -> Nothing; w -> Just w
 
 foreign import ccall "gdk_device_get_last_event_window"
 	c_gdk_device_get_last_event_window :: GdkDevice -> IO GdkWindow
