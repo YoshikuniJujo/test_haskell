@@ -11,7 +11,7 @@ todo
 	+ [ ] DEVICE
 		- [ ] `gdkDeviceSetAxisUse`
 		- [ ] `gdkDeviceGetAxisUse`
-		- [ ] `gdkDeviceGetNAxes`
+		- [x] `gdkDeviceGetNAxes`
 		- [ ] `gdkDeviceGetAxes`
 		- [ ] `gdkDeviceGetAxis`
 		- [ ] `gdkDeviceListAxes`

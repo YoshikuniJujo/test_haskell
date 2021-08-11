@@ -68,6 +68,7 @@ todo new
 			* [ ] GdkKeySyms
 		- [ ] PropertiesAndAtoms.GdkAtom
 		- [ ] Exception
+* [ ] check `gdk_event_get_source_device`
 
 module hierarchy
 ----------------

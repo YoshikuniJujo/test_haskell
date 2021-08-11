@@ -244,6 +244,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gdk
+  try-axes:
+    main:                try-axes.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gdk
 
 tests:
   try-gdk-test:

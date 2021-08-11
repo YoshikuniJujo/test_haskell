@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f0cef0c73097ca87bcde6a5097ebad6aa2a4259a3833e31f8964917174ea4086
+-- hash: feb6438664173c6e05582c0d61c40a1ba833a040c5ad054b9497e7f1cd810095
 
 name:           try-gdk
 version:        0.1.0.0
@@ -106,6 +106,28 @@ executable simple
 
 executable test-cursor
   main-is: test-cursor.hs
+  other-modules:
+      Main
+      Paths_try_gdk
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
+    , glib-stopgap
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-gdk
+  default-language: Haskell2010
+
+executable try-axes
+  main-is: try-axes.hs
   other-modules:
       Main
       Paths_try_gdk
