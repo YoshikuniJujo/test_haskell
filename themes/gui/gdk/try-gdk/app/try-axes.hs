@@ -7,6 +7,7 @@ module Main where
 
 import Control.Monad
 import Data.Foldable
+import Data.Maybe
 import System.Environment
 import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
@@ -61,6 +62,7 @@ main = do
 			GdkEventGdkKeyPress (gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) -> pure False
 			GdkEventGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
 				printAxisValues (gdkEventMotionDevice m) (gdkEventMotionAxes m)
+				printAxisValues (fromJust $ gdkEventMotionSourceDevice m) (gdkEventMotionAxes m)
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printAxis :: IsGdkDevice d => d 'Pointer -> IO ()
@@ -114,3 +116,5 @@ axisNameUsePairs = [
 	("Xtilt", GdkAxisXtilt), ("Ytilt", GdkAxisYtilt),
 	("Wheel", GdkAxisWheel), ("Distance", GdkAxisDistance),
 	("Rotation", GdkAxisRotation), ("Slider", GdkAxisSlider) ]
+
+-- printAxisValueFromStr :: IsGdkDevice d => d 'Pointer ->
