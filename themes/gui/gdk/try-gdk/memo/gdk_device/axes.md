@@ -14,14 +14,14 @@ todo
 	+ [ ] WITH AXIS USE
 		- [ ] `gdkDeviceSetAxisUse`
 		- [x] `gdkDeviceGetAxisUse`
-		- [ ] `gdkDeviceGetAxis`
+		- [x] `gdkDeviceGetAxis`
 			* [x] GdkAxisX and GdkAxisY
 			* [x] GdkAxisPressure
-			* [ ] GdkAxisXtilt and GdkAxisYtilt
-			* [ ] GdkAxisWheel
-			* [ ] GdkAxisDistance
-			* [ ] GdkAxisRotation
-			* [ ] GdkAxisSlider
+			* [x] GdkAxisXtilt and GdkAxisYtilt
+			* [x] GdkAxisWheel
+			* [x] GdkAxisDistance
+			* [x] GdkAxisRotation
+			* [x] GdkAxisSlider
 	+ [ ] WITH ATOMS
 		- [x] `gdkDeviceListAxes`
 		- [ ] `gdkDeviceGetAxisValue`

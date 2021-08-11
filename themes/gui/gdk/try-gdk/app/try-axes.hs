@@ -102,5 +102,7 @@ printAxisValues d as = do
 
 axisNameUsePairs :: [(String, GdkAxisUse)]
 axisNameUsePairs = [
-	("X", GdkAxisX), ("Y", GdkAxisY), ("Pressure", GdkAxisPressure)
-	]
+	("X", GdkAxisX), ("Y", GdkAxisY), ("Pressure", GdkAxisPressure),
+	("Xtilt", GdkAxisXtilt), ("Ytilt", GdkAxisYtilt),
+	("Wheel", GdkAxisWheel), ("Distance", GdkAxisDistance),
+	("Rotation", GdkAxisRotation), ("Slider", GdkAxisSlider) ]
