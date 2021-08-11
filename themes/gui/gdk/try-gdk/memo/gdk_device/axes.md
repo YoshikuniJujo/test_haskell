@@ -15,6 +15,13 @@ todo
 		- [ ] `gdkDeviceSetAxisUse`
 		- [x] `gdkDeviceGetAxisUse`
 		- [ ] `gdkDeviceGetAxis`
+			* [x] GdkAxisX and GdkAxisY
+			* [x] GdkAxisPressure
+			* [ ] GdkAxisXtilt and GdkAxisYtilt
+			* [ ] GdkAxisWheel
+			* [ ] GdkAxisDistance
+			* [ ] GdkAxisRotation
+			* [ ] GdkAxisSlider
 	+ [ ] WITH ATOMS
 		- [x] `gdkDeviceListAxes`
 		- [ ] `gdkDeviceGetAxisValue`
