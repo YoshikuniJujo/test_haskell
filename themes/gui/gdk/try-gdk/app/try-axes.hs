@@ -63,6 +63,7 @@ main = do
 			GdkEventGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
 				printAxisValues (gdkEventMotionDevice m) (gdkEventMotionAxes m)
 				printAxisValues (fromJust $ gdkEventMotionSourceDevice m) (gdkEventMotionAxes m)
+				printAxisValuesFromStr (gdkEventMotionDevice m) (gdkEventMotionAxes m)
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printAxis :: IsGdkDevice d => d 'Pointer -> IO ()
@@ -117,4 +118,14 @@ axisNameUsePairs = [
 	("Wheel", GdkAxisWheel), ("Distance", GdkAxisDistance),
 	("Rotation", GdkAxisRotation), ("Slider", GdkAxisSlider) ]
 
--- printAxisValueFromStr :: IsGdkDevice d => d 'Pointer ->
+printAxisValuesFromStr :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
+printAxisValuesFromStr d as = do
+	printAxisValueFromStr d as `mapM_` [
+		"Rel X", "Rel Y", "Rel Horiz Wheel", "Rel Vert Wheel",
+		"Abs X", "Abs Y", "Abs Pressure", "Abs Tilt X", "Abs Tilt Y",
+		"Abs Wheel" ]
+
+printAxisValueFromStr :: IsGdkDevice d => d 'Pointer -> GdkAxes -> String -> IO ()
+printAxisValueFromStr d as str = do
+	mv <- gdkDeviceGetAxisValue d as =<< gdkAtomIntern str
+	putStrLn $ str ++ ": " ++ show mv
