@@ -24,6 +24,9 @@ module Graphics.Gdk.GdkDevice (
 	gdkDeviceGetWindowAtPosition, gdkDeviceGetWindowAtPositionDouble,
 	gdkDeviceGetLastEventWindow,
 
+	-- * GET N KEYS
+	gdkDeviceGetNKeys,
+
 	-- * GDK DEVICE TYPE
 	GdkDeviceType,
 	pattern GdkDeviceTypeMaster, pattern GdkDeviceTypeSlave,

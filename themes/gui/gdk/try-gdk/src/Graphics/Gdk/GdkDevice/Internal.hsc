@@ -35,6 +35,9 @@ module Graphics.Gdk.GdkDevice.Internal (
 	gdkDeviceGetWindowAtPosition, gdkDeviceGetWindowAtPositionDouble,
 	gdkDeviceGetLastEventWindow,
 
+	-- * GET N KEYS
+	gdkDeviceGetNKeys,
+
 	-- * GDK DEVICE TYPE
 	GdkDeviceType(..),
 	pattern GdkDeviceTypeMaster, pattern GdkDeviceTypeSlave,
@@ -227,3 +230,9 @@ gdkDeviceGetLastEventWindow d =
 
 foreign import ccall "gdk_device_get_last_event_window"
 	c_gdk_device_get_last_event_window :: GdkDevice -> IO GdkWindow
+
+gdkDeviceGetNKeys :: IsGdkDevice d => d 'Keyboard -> IO CInt
+gdkDeviceGetNKeys = c_gdk_device_get_n_keys . getGdkDevice
+
+foreign import ccall "gdk_device_get_n_keys"
+	c_gdk_device_get_n_keys :: GdkDevice -> IO CInt

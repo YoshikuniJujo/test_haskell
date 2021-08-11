@@ -22,8 +22,17 @@ main = do
 	printAxis pnt
 	printAxis `mapM_` pnts
 
+	printKeys kbd
+	printKeys `mapM_` kbds
+
 printAxis :: IsGdkDevice d => d 'Pointer -> IO ()
 printAxis d = do
 	putStrLn =<< gdkDeviceGetName d
 	putStrLn . ("\tgdkDeviceGetNAxes: " ++) . show =<< gdkDeviceGetNAxes d
+	putStrLn ""
+
+printKeys :: IsGdkDevice d => d 'Keyboard -> IO ()
+printKeys d = do
+	putStrLn =<< gdkDeviceGetName d
+	putStrLn . ("\tgdkDeviceGetNKeys: " ++) . show =<< gdkDeviceGetNKeys d
 	putStrLn ""

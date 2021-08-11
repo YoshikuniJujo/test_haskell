@@ -99,7 +99,7 @@ refactor export list
 		- [x] return maybe value
 		- [x] try with a window
 	+ [x] repair GEOMETRY parts of `try-device`
-* [ ] GET N KEYS
+* [x] GET N KEYS
 	+ `gdk_device_get_n_keys`
 * [x] GDK DEVICE TYPE
 * [x] GDK INPUT SOURCE
