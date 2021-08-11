@@ -10,9 +10,9 @@ todo
 	+ [x] GDK AXES
 	+ [ ] DEVICE
 		- [ ] `gdkDeviceSetAxisUse`
-		- [ ] `gdkDeviceGetAxisUse`
+		- [x] `gdkDeviceGetAxisUse`
 		- [x] `gdkDeviceGetNAxes`
-		- [ ] `gdkDeviceGetAxes`
+		- [x] `gdkDeviceGetAxes`
 		- [ ] `gdkDeviceGetAxis`
 		- [ ] `gdkDeviceListAxes`
 		- [ ] `gdkDeviceGetAxisValue`

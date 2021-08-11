@@ -5,6 +5,7 @@
 module Main where
 
 import Control.Monad
+import Data.Foldable
 import System.Environment
 import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
@@ -36,7 +37,10 @@ main = do
 printAxis :: IsGdkDevice d => d 'Pointer -> IO ()
 printAxis d = do
 	putStrLn =<< gdkDeviceGetName d
-	putStrLn . ("\tgdkDeviceGetNAxes: " ++) . show =<< gdkDeviceGetNAxes d
+	n <- gdkDeviceGetNAxes d
+	for_ [0 .. fromIntegral $ n - 1] \i ->
+		putStrLn . ("\tgdkDeviceGetAxisUse " ++) . (show i ++)
+			. (": " ++) . show =<< gdkDeviceGetAxisUse d i
 	putStrLn . ("\tgdkDeviceGetAxes: " ++) . show . gdkAxisFlagList
 		=<< gdkDeviceGetAxes d
 	putStrLn ""
