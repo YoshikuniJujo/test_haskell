@@ -314,9 +314,18 @@ toGdkDeviceMasterPointer d@(GdkDevice pd) = unsafePerformIO do
 	pure $ if b then GdkDeviceMaster pd
 		else error "The device which a event hsa should be master pointer"
 
+toGdkDevicePhysicalPointer :: GdkDevice -> Maybe (GdkDevicePhysical 'Pointer)
+toGdkDevicePhysicalPointer d@(GdkDevice pd) = unsafePerformIO do
+	b <- checkGdkDevicePhysicalPointer d
+	pure $ if b then Just $ GdkDevicePhysical pd else Nothing
+
 checkGdkDeviceMasterPointer :: GdkDevice -> IO Bool
 checkGdkDeviceMasterPointer d =
 	(&&) <$> checkGdkDeviceIsMaster d <*> checkGdkDeviceIsPointer d
+
+checkGdkDevicePhysicalPointer :: GdkDevice -> IO Bool
+checkGdkDevicePhysicalPointer d =
+	(&&) <$> (not <$> checkGdkDeviceIsMaster d) <*> checkGdkDeviceIsPointer d
 
 checkGdkDeviceIsMaster :: GdkDevice -> IO Bool
 checkGdkDeviceIsMaster d = (<$> gdkDeviceGetDeviceTypeInternal d) \case
@@ -447,11 +456,19 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 			[| #{poke GdkEventMotion, is_hint} |]),
 		("device", ''GdkDevice, [| #{peek GdkEventMotion, device} |],
 			[| #{poke GdkEventMotion, device} |]),
+		("sourceDevice", ''GdkDevice, [| c_gdk_device_get_source_device |],
+			[| c_gdk_device_set_source_device |]),
 		("xRoot", ''CDouble, [| #{peek GdkEventMotion, x_root} |],
 			[| #{poke GdkEventMotion, x_root} |]),
 		("yRoot", ''CDouble, [| #{peek GdkEventMotion, y_root} |],
 			[| #{poke GdkEventMotion, y_root} |]) ]
 	[''Show]
+
+foreign import ccall "gdk_event_get_source_device"
+	c_gdk_device_get_source_device :: Ptr GdkEventMotionRaw -> IO GdkDevice
+
+foreign import ccall "gdk_event_set_source_device"
+	c_gdk_device_set_source_device :: Ptr GdkEventMotionRaw -> GdkDevice -> IO ()
 
 data GdkEventMotion = GdkEventMotion {
 	gdkEventMotionWindow :: GdkWindow, gdkEventMotionSendEvent :: Bool,
@@ -461,6 +478,7 @@ data GdkEventMotion = GdkEventMotion {
 	gdkEventMotionState :: [GdkModifierTypeSingleBit],
 	gdkEventMotionIsHint :: Bool,
 	gdkEventMotionDevice :: GdkDeviceMaster 'Pointer,
+	gdkEventMotionSourceDevice :: Maybe (GdkDevicePhysical 'Pointer),
 	gdkEventMotionXRoot :: CDouble, gdkEventMotionYRoot :: CDouble }
 	deriving Show
 
@@ -479,6 +497,7 @@ gdkEventMotion (unsafeUnseal -> r) = GdkEventMotion
 		FalseInt16 -> False; TrueInt16 -> True
 		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")
 	(toGdkDeviceMasterPointer $ gdkEventMotionRawDevice r)
+	(toGdkDevicePhysicalPointer $ gdkEventMotionRawSourceDevice r)
 	(gdkEventMotionRawXRoot r) (gdkEventMotionRawYRoot r)
 
 pattern GdkEventGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEvent s

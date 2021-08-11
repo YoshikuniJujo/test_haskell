@@ -5,9 +5,11 @@
 module Main where
 
 import Control.Monad
+import Data.Maybe
 import System.Environment
 
 import Graphics.Gdk.General
+import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
@@ -34,5 +36,6 @@ main = do
 			print $ gdkEventMotionY m
 			print $ gdkEventMotionXRoot m
 			print $ gdkEventMotionYRoot m
+			putStrLn =<< gdkDeviceGetName (fromJust $ gdkEventMotionSourceDevice m)
 			print =<< gdkDeviceGetAxis d as GdkAxisPressure
 		e -> True <$ print e
