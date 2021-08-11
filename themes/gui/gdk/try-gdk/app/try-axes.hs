@@ -25,14 +25,19 @@ import Try.Tools
 main :: IO ()
 main = do
 	(ss, _as, es) <- getOpt Permute [
-		optPointer, optKeyboard, optMotion ] <$> getArgs
+		optPointer, optKeyboard, optMotion, optSetAxisUse ] <$> getArgs
 	putStrLn `mapM_` es
 
 	dpy <- gdkDisplayOpen ""
 	st <- gdkDisplayGetDefaultSeat dpy
+	pnt <- gdkSeatGetPointer st
+
+	when (OptSetAxisUse `elem` ss) do
+		gdkDeviceSetAxisUse pnt 0 GdkAxisX
+		gdkDeviceSetAxisUse pnt 1 GdkAxisY
+		gdkDeviceSetAxisUse pnt 2 GdkAxisPressure
 
 	when (OptPointer `elem` ss) do
-		pnt <- gdkSeatGetPointer st
 		pnts <- gdkDeviceListSlaveDevices pnt
 		printAxis pnt
 		printAxis `mapM_` pnts
@@ -81,12 +86,15 @@ data OptSetting
 	= OptPointer
 	| OptKeyboard
 	| OptMotion
+	| OptSetAxisUse
 	deriving (Show, Eq)
 
-optPointer, optKeyboard, optMotion :: OptDescr OptSetting
+optPointer, optKeyboard, optMotion, optSetAxisUse :: OptDescr OptSetting
 optPointer = Option ['p'] ["pointer"] (NoArg OptPointer) "Show pointers"
 optKeyboard = Option ['k'] ["keyboard"] (NoArg OptKeyboard) "Show keyboards"
 optMotion = Option ['m'] ["motion"] (NoArg OptMotion) "Show motion"
+optSetAxisUse = Option ['u'] ["set-axis-use"] (NoArg OptSetAxisUse)
+	"Set axis use"
 
 eventMask :: [GdkEventMaskSingleBit]
 eventMask = [

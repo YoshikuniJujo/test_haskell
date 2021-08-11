@@ -11,8 +11,8 @@ todo
 	+ [x] NUMBER AND AVAILABLE
 		- [x] `gdkDeviceGetNAxes`
 		- [x] `gdkDeviceGetAxes`
-	+ [ ] WITH AXIS USE
-		- [ ] `gdkDeviceSetAxisUse`
+	+ [x] WITH AXIS USE
+		- [x] `gdkDeviceSetAxisUse`
 		- [x] `gdkDeviceGetAxisUse`
 		- [x] `gdkDeviceGetAxis`
 			* [x] GdkAxisX and GdkAxisY
