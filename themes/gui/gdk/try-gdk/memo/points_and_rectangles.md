@@ -1,6 +1,15 @@
 Points and Rectangles memo
 ==========================
 
+todo new
+--------
+
+* [ ] make `Graphics.Gdk.PointsAndRectangles.Internal`
+* [ ] refactor export list
+	+ [ ] GDK RECTANGLE
+	+ [ ] GDK RECTANGLE PRIM
+	+ [ ] FUNCTION
+
 Function
 --------
 

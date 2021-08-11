@@ -6,7 +6,7 @@ todo
 
 * [x] add export list
 * [x] consider to make Graphics.Gdk.GdkDevice.GdkAxes.Internal
-* [ ] refactor expor list
+* [x] refactor expor list
 	+ [x] GDK AXES
 	+ [x] NUMBER AND AVAILABLE
 		- [x] `gdkDeviceGetNAxes`
@@ -22,13 +22,13 @@ todo
 			* [x] GdkAxisDistance
 			* [x] GdkAxisRotation
 			* [x] GdkAxisSlider
-	+ [ ] WITH ATOMS
+	+ [x] WITH ATOMS
 		- [x] `gdkDeviceListAxes`
-		- [ ] `gdkDeviceGetAxisValue`
-	+ [ ] GDK AXIS USE
-	+ [ ] GDK AXIS FLAGS
-		- [ ] Multiple Flags
-		- [ ] Single Flags
+		- [x] `gdkDeviceGetAxisValue`
+	+ [x] GDK AXIS USE
+	+ [x] GDK AXIS FLAGS
+		- [x] Multiple Flags
+		- [x] Single Flags
 
 Function
 --------

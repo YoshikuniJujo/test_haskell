@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.PointsAndRectangles (
+module Graphics.Gdk.PointsAndRectangles.Internal (
 	-- * GDK RECTANGLE
 	GdkRectangle(..),
 	pattern GdkRectangle,

@@ -93,7 +93,7 @@ import Graphics.Gdk.GdkDisplay.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice.Internal
-import Graphics.Gdk.PointsAndRectangles
+import Graphics.Gdk.PointsAndRectangles.Internal
 import Graphics.Gdk.Visuals
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors

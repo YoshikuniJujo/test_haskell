@@ -50,7 +50,7 @@ import Data.Int
 import System.GLib.Bool
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
-import Graphics.Gdk.PointsAndRectangles
+import Graphics.Gdk.PointsAndRectangles.Internal
 
 #include <gdk/gdk.h>
 

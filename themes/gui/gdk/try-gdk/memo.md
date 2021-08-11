@@ -51,9 +51,9 @@ todo new
 		- [x] GdkScreen
 		- [x] GdkSeat
 		- [x] GdkMonitor
-		- [ ] GdkDevice
+		- [x] GdkDevice
 			* [x] itself
-			* [ ] GdkAxes
+			* [x] GdkAxes
 		- [ ] PointsAndRectangle
 		- [ ] Visuals
 		- [ ] Cursors
