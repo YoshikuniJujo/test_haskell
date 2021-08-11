@@ -8,13 +8,15 @@ todo
 * [x] consider to make Graphics.Gdk.GdkDevice.GdkAxes.Internal
 * [ ] refactor expor list
 	+ [x] GDK AXES
-	+ [ ] DEVICE
-		- [ ] `gdkDeviceSetAxisUse`
-		- [x] `gdkDeviceGetAxisUse`
+	+ [x] NUMBER AND AVAILABLE
 		- [x] `gdkDeviceGetNAxes`
 		- [x] `gdkDeviceGetAxes`
+	+ [ ] WITH AXIS USE
+		- [ ] `gdkDeviceSetAxisUse`
+		- [x] `gdkDeviceGetAxisUse`
 		- [ ] `gdkDeviceGetAxis`
-		- [ ] `gdkDeviceListAxes`
+	+ [ ] WITH ATOMS
+		- [x] `gdkDeviceListAxes`
 		- [ ] `gdkDeviceGetAxisValue`
 	+ [ ] GDK AXIS USE
 	+ [ ] GDK AXIS FLAGS

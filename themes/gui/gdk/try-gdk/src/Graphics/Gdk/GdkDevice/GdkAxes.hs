@@ -5,14 +5,16 @@ module Graphics.Gdk.GdkDevice.GdkAxes (
 	-- * GDK AXES
 	GdkAxes,
 
-	-- * DEVICE
-	gdkDeviceSetAxisUse,
-	gdkDeviceGetAxisUse,
-
+	-- * NUMBER AND AVAILABLE
 	gdkDeviceGetNAxes,
 	gdkDeviceGetAxes,
 
+	-- * WITH AXIS USE
+	gdkDeviceSetAxisUse,
+	gdkDeviceGetAxisUse,
 	gdkDeviceGetAxis,
+
+	-- * WITH ATOMS
 	gdkDeviceListAxes,
 	gdkDeviceGetAxisValue,
 

@@ -12,6 +12,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.GdkDevice.GdkAxes
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 main :: IO ()
 main = do
@@ -37,12 +38,14 @@ main = do
 printAxis :: IsGdkDevice d => d 'Pointer -> IO ()
 printAxis d = do
 	putStrLn =<< gdkDeviceGetName d
+	putStrLn . ("\tgdkDeviceGetAxes: " ++) . show . gdkAxisFlagList
+		=<< gdkDeviceGetAxes d
 	n <- gdkDeviceGetNAxes d
 	for_ [0 .. fromIntegral $ n - 1] \i ->
 		putStrLn . ("\tgdkDeviceGetAxisUse " ++) . (show i ++)
 			. (": " ++) . show =<< gdkDeviceGetAxisUse d i
-	putStrLn . ("\tgdkDeviceGetAxes: " ++) . show . gdkAxisFlagList
-		=<< gdkDeviceGetAxes d
+	putStrLn . ("\tgdkDeviceListAxes: " ++) . show
+		=<< mapM gdkAtomName =<< gdkDeviceListAxes d
 	putStrLn ""
 
 printKeys :: IsGdkDevice d => d 'Keyboard -> IO ()

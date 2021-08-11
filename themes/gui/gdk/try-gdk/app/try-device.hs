@@ -6,7 +6,6 @@ module Main where
 
 import Control.Monad
 import Data.Foldable
-import Data.Maybe
 import System.Environment
 import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
@@ -23,7 +22,7 @@ import Try.Tools.DoWhile
 
 main :: IO ()
 main = do
-	(ss, as, es) <- getOpt Permute [
+	(ss, _as, es) <- getOpt Permute [
 		optDispAndSeat, optList, optIdentity, optAxes, optGeometry ] <$> getArgs
 	putStrLn `mapM_` es
 	dpy <- gdkDisplayOpen ""
@@ -90,9 +89,9 @@ main = do
 		print =<< gdkDeviceGetNAxes pnt
 		for_ pnts \ps -> print =<< gdkDeviceGetNAxes ps
 
-		print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes pnt
+		print =<< mapM gdkAtomName =<< gdkDeviceListAxes pnt
 		for_ pnts \ps ->
-			print =<< mapM gdkAtomName . fromJust =<< gdkDeviceListAxes ps
+			print =<< mapM gdkAtomName =<< gdkDeviceListAxes ps
 
 printDeviceIf :: IsGdkDevice d => String -> d pk -> IO ()
 printDeviceIf n0 d = do
