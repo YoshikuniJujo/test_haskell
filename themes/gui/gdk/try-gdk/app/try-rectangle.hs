@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -7,12 +8,13 @@ import Graphics.Gdk.PointsAndRectangles
 
 main :: IO ()
 main = do
-	let	r1 = GdkRectangle 123 456 789 987
+	let	r1 = GdkRectangle 10 20 30 40
 		r2 = GdkRectangle {
-			gdkRectangleX = 987,
-			gdkRectangleY = 654,
-			gdkRectangleWidth = 321,
-			gdkRectangleHeight = 123 }
+			gdkRectangleX = 20,
+			gdkRectangleY = 30,
+			gdkRectangleWidth = 50,
+			gdkRectangleHeight = 70 }
+		r3 = GdkRectangle 40 60 70 80
 	print r1
 	print r2
 	print =<< gdkRectangleThaw r1
@@ -20,3 +22,8 @@ main = do
 	print =<< gdkRectangleFreeze rp1
 	print rp1
 	print =<< gdkRectangleCopy rp1
+
+	ri :: GdkRectangleIO <- gdkRectangleNew
+	print =<< gdkRectangleIntersect r1 r2 ri
+	print =<< gdkRectangleFreeze ri
+	print =<< gdkRectangleIntersect r1 r3 ri
