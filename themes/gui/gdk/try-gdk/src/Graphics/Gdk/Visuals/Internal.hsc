@@ -27,7 +27,6 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Enum
-import Data.Int
 import Data.Word
 import System.IO.Unsafe
 
@@ -68,21 +67,23 @@ foreign import ccall "gdk_visual_get_red_pixel_details"
 	c_gdk_visual_get_red_pixel_details ::
 		Ptr GdkVisual -> Ptr Word32 -> Ptr CInt -> Ptr CInt -> IO ()
 
-gdkVisualGetGreenPixelDetails :: GdkVisual -> IO (#{type guint32}, #{type gint}, #{type gint})
-gdkVisualGetGreenPixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p -> do
-	c_gdk_visual_get_green_pixel_details v m s p
-	(,,) <$> peek m <*> peek s <*> peek p
+gdkVisualGetGreenPixelDetails :: GdkVisual -> (Word32, CInt, CInt)
+gdkVisualGetGreenPixelDetails (GdkVisual v) =
+	unsafePerformIO $ alloca \m -> alloca \s -> alloca \p -> do
+		c_gdk_visual_get_green_pixel_details v m s p
+		(,,) <$> peek m <*> peek s <*> peek p
 
 foreign import ccall "gdk_visual_get_green_pixel_details" c_gdk_visual_get_green_pixel_details ::
-	Ptr GdkVisual -> Ptr #{type guint32} -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+	Ptr GdkVisual -> Ptr Word32 -> Ptr CInt -> Ptr CInt -> IO ()
 
-gdkVisualGetBluePixelDetails :: GdkVisual -> IO (#{type guint32}, #{type gint}, #{type gint})
-gdkVisualGetBluePixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p -> do
-	c_gdk_visual_get_blue_pixel_details v m s p
-	(,,) <$> peek m <*> peek s <*> peek p
+gdkVisualGetBluePixelDetails :: GdkVisual -> (Word32, CInt, CInt)
+gdkVisualGetBluePixelDetails (GdkVisual v) =
+	unsafePerformIO $ alloca \m -> alloca \s -> alloca \p -> do
+		c_gdk_visual_get_blue_pixel_details v m s p
+		(,,) <$> peek m <*> peek s <*> peek p
 
 foreign import ccall "gdk_visual_get_blue_pixel_details" c_gdk_visual_get_blue_pixel_details ::
-	Ptr GdkVisual -> Ptr #{type guint32} -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()
+	Ptr GdkVisual -> Ptr Word32 -> Ptr CInt -> Ptr CInt -> IO ()
 
 gdkVisualGetScreen :: GdkVisual -> GdkScreen
 gdkVisualGetScreen (GdkVisual p) =

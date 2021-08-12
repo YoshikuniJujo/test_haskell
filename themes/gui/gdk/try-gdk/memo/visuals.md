@@ -2,7 +2,7 @@ Visuals memo
 ============
 
 * [x] make `Graphics.Gdk.Visuals`
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] structure
 	+ [x] GDK VISUAL
 	+ [x] SCREEN
@@ -13,10 +13,10 @@ Visuals memo
 		- [x] patterns
 	+ [x] DEPTH
 		- `gdkVisualGetDepth`
-	+ [ ] RED, GREEN AND BLUE
+	+ [x] RED, GREEN AND BLUE
 		- [x] `gdkVisualGetRedPixelDetails`
-		- [ ] `gdkVisualGetGreenPixelDetails`
-		- [ ] `gdkVisualBluePixelDetails`
+		- [x] `gdkVisualGetGreenPixelDetails`
+		- [x] `gdkVisualBluePixelDetails`
 
 Function
 --------

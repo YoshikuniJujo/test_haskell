@@ -11,7 +11,6 @@ import Control.Arrow
 import Control.Monad
 import Control.Concurrent
 import Data.Foldable
-import Data.Traversable
 import Data.Maybe
 import Data.List
 import Data.Char
@@ -123,9 +122,9 @@ main = do
 			putStrLn $ "Types of visuals: " ++ show ((head &&& length) <$> group ts)
 			let	rds = flip map vs gdkVisualGetRedPixelDetails
 			putStrLn $ "Red pixel details of visuals: " ++ show ((head &&& length) <$> group rds)
-			grs <- for vs gdkVisualGetGreenPixelDetails
+			let	grs = flip map vs gdkVisualGetGreenPixelDetails
 			putStrLn $ "Green pixel details of visuals: " ++ show ((head &&& length) <$> group grs)
-			bls <- for vs gdkVisualGetBluePixelDetails
+			let	bls = flip map vs gdkVisualGetBluePixelDetails
 			putStrLn $ "Blue pixel details of visuals: " ++ show ((head &&& length) <$> group bls)
 	putStrLn "gdkScreenGetToplevelWindows #1"
 	gdkScreenGetToplevelWindows scrn >>=
@@ -230,9 +229,9 @@ printVisual v = do
 	putStrLn $ "Types of visual: " ++ show t
 	let	rd = gdkVisualGetRedPixelDetails v
 	putStrLn $ "Red pixel details of visual: " ++ show rd
-	gr <- gdkVisualGetGreenPixelDetails v
+	let	gr = gdkVisualGetGreenPixelDetails v
 	putStrLn $ "Green pixel details of visual: " ++ show gr
-	bl <- gdkVisualGetBluePixelDetails v
+	let	bl = gdkVisualGetBluePixelDetails v
 	putStrLn $ "Blue pixel details of visual: " ++ show bl
 
 printVisibleRegion :: GdkWindow -> IO ()

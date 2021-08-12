@@ -18,3 +18,9 @@ main = do
 	print $ gdkVisualGetVisualType va
 	print $ gdkVisualGetDepth vs
 	print $ gdkVisualGetDepth va
+	print $ gdkVisualGetRedPixelDetails vs
+	print $ gdkVisualGetRedPixelDetails va
+	print $ gdkVisualGetGreenPixelDetails vs
+	print $ gdkVisualGetGreenPixelDetails va
+	print $ gdkVisualGetBluePixelDetails vs
+	print $ gdkVisualGetBluePixelDetails va
