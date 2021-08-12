@@ -3,6 +3,14 @@ Visuals memo
 
 * [x] make `Graphics.Gdk.Visuals`
 * [ ] refactor export list
+	+ [x] GDK VISUAL
+	+ [ ] FUNCTION
+		- [x] `gdkVisualGetScreen`
+		- [ ] `gdkVisualGetDepth`
+		- [ ] `gdkVisualGetRedPixelDetails`
+		- [ ] `gdkVisualGetGreenPixelDetails`
+		- [ ] `gdkVisualBluePixelDetails`
+	+ [ ] GDK VISUAL TYPE
 
 Function
 --------

@@ -6,11 +6,11 @@ module Graphics.Gdk.Visuals (
 	GdkVisual,
 
 	-- * FUNCTION
+	gdkVisualGetScreen,
 	gdkVisualGetDepth,
 	gdkVisualGetRedPixelDetails,
 	gdkVisualGetGreenPixelDetails,
 	gdkVisualGetBluePixelDetails,
-	gdkVisualGetScreen,
 
 	-- * GDK VISUAL TYPE
 	GdkVisualType,

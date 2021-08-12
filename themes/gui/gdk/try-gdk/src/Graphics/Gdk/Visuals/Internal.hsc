@@ -28,6 +28,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Data.Int
 import Data.Word
+import System.IO.Unsafe
 
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 
@@ -79,8 +80,9 @@ gdkVisualGetBluePixelDetails (GdkVisual v) = alloca \m -> alloca \s -> alloca \p
 	c_gdk_visual_get_blue_pixel_details v m s p
 	(,,) <$> peek m <*> peek s <*> peek p
 
+gdkVisualGetScreen :: GdkVisual -> GdkScreen
+gdkVisualGetScreen (GdkVisual p) =
+	unsafePerformIO $ GdkScreen <$> c_gdk_visual_get_screen p
+
 foreign import ccall "gdk_visual_get_screen" c_gdk_visual_get_screen ::
 	Ptr GdkVisual -> IO (Ptr GdkScreen)
-
-gdkVisualGetScreen :: GdkVisual -> IO GdkScreen
-gdkVisualGetScreen (GdkVisual p) = GdkScreen <$> c_gdk_visual_get_screen p
