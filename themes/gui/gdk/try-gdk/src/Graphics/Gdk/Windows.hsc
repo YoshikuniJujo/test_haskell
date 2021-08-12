@@ -94,7 +94,7 @@ import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.PointsAndRectangles.Internal
-import Graphics.Gdk.Visuals
+import Graphics.Gdk.Visuals.Internal
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows.GdkWindowAttr

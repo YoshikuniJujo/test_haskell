@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Visuals (
+module Graphics.Gdk.Visuals.Internal (
 	-- * TYPE
 	GdkVisual(..),
 
