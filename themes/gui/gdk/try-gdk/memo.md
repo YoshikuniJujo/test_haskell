@@ -55,7 +55,7 @@ todo new
 			* [x] itself
 			* [x] GdkAxes
 		- [x] PointsAndRectangle
-		- [ ] Visuals
+		- [x] Visuals
 		- [ ] Cursors
 		- [ ] Windows
 			* [ ] itself

@@ -1,6 +1,11 @@
 Cursors memo
 ============
 
+* [x] make `Graphics.Gdk.Cursors.Internal`
+* [ ] refactor export list
+	+ [ ] structure
+	+ [ ] others
+
 Function
 --------
 

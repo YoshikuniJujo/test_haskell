@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Cursors (
+module Graphics.Gdk.Cursors.Internal (
 	-- * TYPE
 	GdkCursor(..),
 

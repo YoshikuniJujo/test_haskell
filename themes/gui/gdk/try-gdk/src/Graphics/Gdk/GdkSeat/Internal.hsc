@@ -51,7 +51,7 @@ import Data.Int
 import Graphics.Gdk.General
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import Graphics.Gdk.GdkDevice.Internal
-import Graphics.Gdk.Cursors
+import Graphics.Gdk.Cursors.Internal
 import {-# SOURCE #-} Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
 
