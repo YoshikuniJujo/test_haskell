@@ -8,6 +8,8 @@ Cursors memo
 	+ [x] DISPLAY
 	+ [ ] CURSOR NEW
 		- [ ] From Surface
+			* [x] try `cairoFormatArgb32`
+			* [ ] try others
 		- [ ] From Name
 		- [ ] From Cursor Type
 			* [ ] gdkCursorNewForDisplay
