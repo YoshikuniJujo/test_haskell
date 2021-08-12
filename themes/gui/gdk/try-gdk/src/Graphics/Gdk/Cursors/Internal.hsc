@@ -64,6 +64,7 @@ import Foreign.Concurrent
 import Foreign.C
 import Foreign.C.Enum
 import Data.Int
+import System.IO.Unsafe
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 
@@ -82,9 +83,9 @@ mkGdkCursor' f p = GdkCursor <$> newForeignPtr p (f >> c_g_object_unref p)
 
 foreign import ccall "g_object_unref" c_g_object_unref :: Ptr a -> IO ()
 
-gdkCursorGetDisplay :: GdkCursor -> IO GdkDisplay
-gdkCursorGetDisplay (GdkCursor fc) =
-	withForeignPtr fc \c -> GdkDisplay <$> c_gdk_cursor_get_display c
+gdkCursorGetDisplay :: GdkCursor -> GdkDisplay
+gdkCursorGetDisplay (GdkCursor fc) = unsafePerformIO
+	$ withForeignPtr fc \c -> GdkDisplay <$> c_gdk_cursor_get_display c
 
 foreign import ccall "gdk_cursor_get_display" c_gdk_cursor_get_display ::
 	Ptr GdkCursor -> IO (Ptr GdkDisplay)

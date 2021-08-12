@@ -4,8 +4,8 @@ Cursors memo
 * [x] make `Graphics.Gdk.Cursors.Internal`
 * [ ] refactor export list
 	+ [x] structure
-	+ [ ] GDK CURSOR
-	+ [ ] DISPLAY
+	+ [x] GDK CURSOR
+	+ [x] DISPLAY
 	+ [ ] CURSOR NEW
 		- [ ] From Surface
 		- [ ] From Name
