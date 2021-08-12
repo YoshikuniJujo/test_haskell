@@ -10,6 +10,11 @@ Cursors memo
 		- [ ] From Surface
 		- [ ] From Name
 		- [ ] From Cursor Type
+			* [ ] gdkCursorNewForDisplay
+				+ [ ] check no cursor type
+				+ [ ] repair it
+			* [ ] gdkCursorGetCursorType
+				+ [ ] repair it
 
 Function
 --------
