@@ -262,6 +262,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gdk
+  try-visuals:
+    main:                try-visuals.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gdk
 
 tests:
   try-gdk-test:

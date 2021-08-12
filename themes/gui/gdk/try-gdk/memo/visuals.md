@@ -3,6 +3,7 @@ Visuals memo
 
 * [x] make `Graphics.Gdk.Visuals`
 * [ ] refactor export list
+	+ [ ] structure
 	+ [x] GDK VISUAL
 	+ [ ] FUNCTION
 		- [x] `gdkVisualGetScreen`
