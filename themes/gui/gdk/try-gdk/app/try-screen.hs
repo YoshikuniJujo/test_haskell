@@ -4,6 +4,7 @@
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad
 import Data.Maybe
 import Data.List
@@ -86,7 +87,7 @@ printWindowStack wau = withGdkWindowAutoUnref wau \w ->
 printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do
 	let	t = gdkVisualGetVisualType v
-	d <- gdkVisualGetDepth v
+		d = gdkVisualGetDepth v
 	r <- gdkVisualGetRedPixelDetails v
 	g <- gdkVisualGetGreenPixelDetails v
 	b <- gdkVisualGetBluePixelDetails v
@@ -100,10 +101,10 @@ printVisual ttl v = do
 type PixelDetails = (Word32, Int32, Int32)
 
 peekVisual :: GdkVisual ->
-	IO (GdkVisualType, Int32, PixelDetails, PixelDetails, PixelDetails)
+	IO (GdkVisualType, CInt, PixelDetails, PixelDetails, PixelDetails)
 peekVisual v = do
 	let	t = gdkVisualGetVisualType v
-	d <- gdkVisualGetDepth v
+		d = gdkVisualGetDepth v
 	r <- gdkVisualGetRedPixelDetails v
 	g <- gdkVisualGetGreenPixelDetails v
 	b <- gdkVisualGetBluePixelDetails v

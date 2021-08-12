@@ -107,8 +107,8 @@ main = do
 	putStrLn . ("Number of monitors: " ++) . show =<< gdkDisplayGetNMonitors d
 	Just scrn <- gdkScreenGetDefault
 	vsl <- gdkScreenGetSystemVisual scrn
-	putStrLn . ("Depth of system visual: " ++) . show =<< gdkVisualGetDepth vsl
-	maybe (putStrLn "No rgba visual") (\v -> putStrLn . ("Depth of rgba visual: " ++) . show =<< gdkVisualGetDepth v)
+	putStrLn . ("Depth of system visual: " ++) . show $ gdkVisualGetDepth vsl
+	maybe (putStrLn "No rgba visual") (\v -> putStrLn . ("Depth of rgba visual: " ++) . show $ gdkVisualGetDepth v)
 		=<< gdkScreenGetRgbaVisual scrn
 	putStrLn . ("Screen is composited: " ++) . show =<< gdkScreenIsComposited scrn
 	rtwn <- gdkScreenGetRootWindow scrn
@@ -117,7 +117,7 @@ main = do
 	gdkScreenListVisuals scrn >>= \case
 		vs -> do
 		--	print vs
-			ds <- for vs gdkVisualGetDepth
+			let	ds = flip map vs gdkVisualGetDepth
 			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
 			let	ts = flip map vs gdkVisualGetVisualType
 			putStrLn $ "Types of visuals: " ++ show ((head &&& length) <$> group ts)
@@ -161,7 +161,7 @@ main = do
 	print GdkWindowToplevel
 	print GdkWindowRoot
 	putStrLn . gdkDisplayGetName =<< gdkWindowGetDisplay w
-	print =<< gdkVisualGetDepth =<< gdkWindowGetVisual w
+	print . gdkVisualGetDepth =<< gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w
@@ -224,7 +224,7 @@ doWhile act = maybe (doWhile act) pure =<< act
 		
 printVisual :: GdkVisual -> IO ()
 printVisual v = do
-	d <- gdkVisualGetDepth v
+	let	d = gdkVisualGetDepth v
 	putStrLn $ "Depth of visual: " ++ show d
 	let	t = gdkVisualGetVisualType v
 	putStrLn $ "Types of visual: " ++ show t

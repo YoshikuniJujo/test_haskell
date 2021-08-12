@@ -25,6 +25,7 @@ module Graphics.Gdk.Visuals.Internal (
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.Enum
 import Data.Int
 import Data.Word
@@ -44,11 +45,11 @@ enum "GdkVisualType" ''#{type GdkVisualType} [''Show, ''Eq] [
 	("GdkVisualTrueColor", #{const GDK_VISUAL_TRUE_COLOR}),
 	("GdkVisualDirectColor", #{const GDK_VISUAL_DIRECT_COLOR}) ]
 
-foreign import ccall "gdk_visual_get_depth" c_gdk_visual_get_depth ::
-	Ptr GdkVisual -> IO #type gint
+gdkVisualGetDepth :: GdkVisual -> CInt
+gdkVisualGetDepth (GdkVisual p) = unsafePerformIO $ c_gdk_visual_get_depth p
 
-gdkVisualGetDepth :: GdkVisual -> IO #type gint
-gdkVisualGetDepth (GdkVisual p) = c_gdk_visual_get_depth p
+foreign import ccall "gdk_visual_get_depth"
+	c_gdk_visual_get_depth :: Ptr GdkVisual -> IO CInt
 
 foreign import ccall "gdk_visual_get_visual_type" c_gdk_visual_get_visual_type ::
 	Ptr GdkVisual -> IO #type GdkVisualType

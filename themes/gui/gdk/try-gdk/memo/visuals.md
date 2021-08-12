@@ -7,11 +7,11 @@ Visuals memo
 	+ [x] GDK VISUAL
 	+ [x] SCREEN
 		- `gdkVisualGetScreen`
-	+ [ ] GDK VISUAL TYPE
+	+ [x] GDK VISUAL TYPE
 		- [x] `gdkVisualGetVisualType`
-		- [ ] `data GdkVisualType`
-		- [ ] patterns
-	+ [ ] DEPTH
+		- [x] `data GdkVisualType`
+		- [x] patterns
+	+ [x] DEPTH
 		- `gdkVisualGetDepth`
 	+ [ ] RED, GREEN AND BLUE
 		- [ ] `gdkVisualGetRedPixelDetails`

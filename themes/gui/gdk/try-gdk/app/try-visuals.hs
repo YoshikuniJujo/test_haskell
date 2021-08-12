@@ -16,3 +16,5 @@ main = do
 	print $ gdkVisualGetScreen va
 	print $ gdkVisualGetVisualType vs
 	print $ gdkVisualGetVisualType va
+	print $ gdkVisualGetDepth vs
+	print $ gdkVisualGetDepth va
