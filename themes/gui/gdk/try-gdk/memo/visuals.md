@@ -1,6 +1,9 @@
 Visuals memo
 ============
 
+* [ ] make `Graphics.Gdk.Visuals`
+* [ ] refactor export list
+
 Function
 --------
 

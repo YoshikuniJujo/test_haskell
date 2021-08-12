@@ -26,6 +26,7 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Struct
 import Data.Int
+import System.IO.Unsafe
 import System.GLib.Bool
 
 #include <gdk/gdk.h>
@@ -80,9 +81,9 @@ gdkRectangleUnion (GdkRectangle_ fs) (GdkRectangle_ ft) (GdkRectanglePrim fd) =
 foreign import ccall "gdk_rectangle_union" c_gdk_rectangle_union ::
 	Ptr GdkRectangle -> Ptr GdkRectangle -> Ptr GdkRectangle -> IO ()
 
-gdkRectangleEqual :: GdkRectangle -> GdkRectangle -> IO Bool
-gdkRectangleEqual (GdkRectangle_ fr1) (GdkRectangle_ fr2) =
-	withForeignPtr fr1 \pr1 -> withForeignPtr fr2 \pr2 ->
+gdkRectangleEqual :: GdkRectangle -> GdkRectangle -> Bool
+gdkRectangleEqual (GdkRectangle_ fr1) (GdkRectangle_ fr2) = unsafePerformIO
+	$ withForeignPtr fr1 \pr1 -> withForeignPtr fr2 \pr2 ->
 		gbooleanToBool <$> c_gdk_rectangle_equal pr1 pr2
 
 foreign import ccall "gdk_rectangle_equal" c_gdk_rectangle_equal ::

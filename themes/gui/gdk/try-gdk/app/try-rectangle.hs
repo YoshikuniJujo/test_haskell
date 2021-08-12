@@ -28,7 +28,9 @@ main = do
 	print =<< gdkRectangleIntersect r1 r2 ri
 	print =<< gdkRectangleFreeze ri
 	print =<< gdkRectangleIntersect r1 r3 ri
-	print $ union r1 r2
+	let	ru = union r1 r2
+	print ru
+	print . gdkRectangleEqual ru $ GdkRectangle 10 20 60 80
 
 union :: GdkRectangle -> GdkRectangle -> GdkRectangle
 union r1 r2 = runST do

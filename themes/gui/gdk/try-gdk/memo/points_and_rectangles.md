@@ -5,7 +5,7 @@ todo new
 --------
 
 * [x] make `Graphics.Gdk.PointsAndRectangles.Internal`
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] GDK RECTANGLE
 		- [x] `data GdkRectangle`
 		- [x] `pattern GdkRectangle`
@@ -21,10 +21,10 @@ todo new
 		- [x] `gdkRectangleFreeze`
 		- [x] `gdkRectangleThaw`
 		- [x] `gdkRectangleCopy`
-	+ [ ] FUNCTION
+	+ [x] FUNCTION
 		- [x] `gdkRectangleIntersect`
 		- [x] `gdkRectangleUnion`
-		- [ ] `gdkRectangleEqual`
+		- [x] `gdkRectangleEqual`
 
 Function
 --------

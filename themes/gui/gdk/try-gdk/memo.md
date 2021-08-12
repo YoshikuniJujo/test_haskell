@@ -54,7 +54,7 @@ todo new
 		- [x] GdkDevice
 			* [x] itself
 			* [x] GdkAxes
-		- [ ] PointsAndRectangle
+		- [x] PointsAndRectangle
 		- [ ] Visuals
 		- [ ] Cursors
 		- [ ] Windows
