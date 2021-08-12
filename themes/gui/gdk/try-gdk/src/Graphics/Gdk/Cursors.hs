@@ -2,17 +2,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Cursors (
-	-- * TYPE
+	-- * GDK CURSOR
 	GdkCursor,
 
-	-- * FUNCTION
+	-- * DISPLAY
 	gdkCursorGetDisplay,
-	gdkCursorNewFromSurface,
-	gdkCursorNewFromName,
 
-	-- * GDK CURSOR TYPE
-	GdkCursorType,
+	-- * CURSOR NEW
+	-- ** From Surface
+	gdkCursorNewFromSurface,
+	-- ** From Name
+	gdkCursorNewFromName,
+	-- ** From Cursor Type
 	gdkCursorNewForDisplay, gdkCursorGetCursorType,
+	GdkCursorType,
 	pattern GdkXCursor, pattern GdkArrow,
 	pattern GdkBasedArrowDown, pattern GdkBasedArrowUp,
 	pattern GdkBoat, pattern GdkBogosity,
