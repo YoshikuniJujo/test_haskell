@@ -14,14 +14,17 @@ todo new
 		- [x] `gdkRectangleWidth`
 		- [x] `gdkRectangleHeight`
 	+ [ ] GDK RECTANGLE PRIM
-		- [ ] `data GdkRectanglePrim`
+		- [x] `data GdkRectanglePrim`
 		- [ ] `type GdkRectangleIO`
 		- [ ] `type GdkRectangleST`
-		- [ ] `gdkRectangleNew`
-		- [ ] `gdkRectangleFreeze`
-		- [ ] `gdkRectangleThaw`
-		- [ ] `gdkRectangleCopy`
+		- [x] `gdkRectangleNew`
+		- [x] `gdkRectangleFreeze`
+		- [x] `gdkRectangleThaw`
+		- [x] `gdkRectangleCopy`
 	+ [ ] FUNCTION
+		- [ ] `gdkRectangleIntersect`
+		- [ ] `gdkRectangleUnion`
+		- [ ] `gdkRectangleEqual`
 
 Function
 --------
