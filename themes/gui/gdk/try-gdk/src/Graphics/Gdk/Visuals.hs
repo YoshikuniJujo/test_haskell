@@ -2,22 +2,25 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Visuals (
-	-- * TYPE
+	-- * GDK VISUAL
 	GdkVisual,
 
-	-- * FUNCTION
+	-- * SCREEN
 	gdkVisualGetScreen,
-	gdkVisualGetDepth,
-	gdkVisualGetRedPixelDetails,
-	gdkVisualGetGreenPixelDetails,
-	gdkVisualGetBluePixelDetails,
 
 	-- * GDK VISUAL TYPE
-	GdkVisualType,
 	gdkVisualGetVisualType,
+	GdkVisualType,
 	pattern GdkVisualStaticGray, pattern GdkVisualGrayscale,
 	pattern GdkVisualStaticColor, pattern GdkVisualPseudoColor,
-	pattern GdkVisualTrueColor, pattern GdkVisualDirectColor
-) where
+	pattern GdkVisualTrueColor, pattern GdkVisualDirectColor,
+
+	-- * DEPTH
+	gdkVisualGetDepth,
+
+	-- * RED, GREEN AND BLUE
+	gdkVisualGetRedPixelDetails,
+	gdkVisualGetGreenPixelDetails,
+	gdkVisualGetBluePixelDetails ) where
 
 import Graphics.Gdk.Visuals.Internal
