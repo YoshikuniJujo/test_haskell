@@ -119,7 +119,7 @@ main = do
 		--	print vs
 			ds <- for vs gdkVisualGetDepth
 			putStrLn $ "Depth of visuals: " ++ show ((head &&& length) <$> group ds)
-			ts <- for vs gdkVisualGetVisualType
+			let	ts = flip map vs gdkVisualGetVisualType
 			putStrLn $ "Types of visuals: " ++ show ((head &&& length) <$> group ts)
 			rds <- for vs gdkVisualGetRedPixelDetails
 			putStrLn $ "Red pixel details of visuals: " ++ show ((head &&& length) <$> group rds)
@@ -226,7 +226,7 @@ printVisual :: GdkVisual -> IO ()
 printVisual v = do
 	d <- gdkVisualGetDepth v
 	putStrLn $ "Depth of visual: " ++ show d
-	t <- gdkVisualGetVisualType v
+	let	t = gdkVisualGetVisualType v
 	putStrLn $ "Types of visual: " ++ show t
 	rd <- gdkVisualGetRedPixelDetails v
 	putStrLn $ "Red pixel details of visual: " ++ show rd

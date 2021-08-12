@@ -85,7 +85,7 @@ printWindowStack wau = withGdkWindowAutoUnref wau \w ->
 
 printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do
-	t <- gdkVisualGetVisualType v
+	let	t = gdkVisualGetVisualType v
 	d <- gdkVisualGetDepth v
 	r <- gdkVisualGetRedPixelDetails v
 	g <- gdkVisualGetGreenPixelDetails v
@@ -102,7 +102,7 @@ type PixelDetails = (Word32, Int32, Int32)
 peekVisual :: GdkVisual ->
 	IO (GdkVisualType, Int32, PixelDetails, PixelDetails, PixelDetails)
 peekVisual v = do
-	t <- gdkVisualGetVisualType v
+	let	t = gdkVisualGetVisualType v
 	d <- gdkVisualGetDepth v
 	r <- gdkVisualGetRedPixelDetails v
 	g <- gdkVisualGetGreenPixelDetails v

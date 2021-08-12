@@ -53,8 +53,9 @@ gdkVisualGetDepth (GdkVisual p) = c_gdk_visual_get_depth p
 foreign import ccall "gdk_visual_get_visual_type" c_gdk_visual_get_visual_type ::
 	Ptr GdkVisual -> IO #type GdkVisualType
 
-gdkVisualGetVisualType :: GdkVisual -> IO GdkVisualType
-gdkVisualGetVisualType (GdkVisual p) = GdkVisualType <$> c_gdk_visual_get_visual_type p
+gdkVisualGetVisualType :: GdkVisual -> GdkVisualType
+gdkVisualGetVisualType (GdkVisual p) =
+	unsafePerformIO $ GdkVisualType <$> c_gdk_visual_get_visual_type p
 
 foreign import ccall "gdk_visual_get_red_pixel_details" c_gdk_visual_get_red_pixel_details ::
 	Ptr GdkVisual -> Ptr #{type guint32} -> Ptr #{type gint} -> Ptr #{type gint} -> IO ()

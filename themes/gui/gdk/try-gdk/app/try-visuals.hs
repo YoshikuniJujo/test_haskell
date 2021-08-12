@@ -14,3 +14,5 @@ main = do
 	Just va <- gdkScreenGetRgbaVisual scr
 	print $ gdkVisualGetScreen vs
 	print $ gdkVisualGetScreen va
+	print $ gdkVisualGetVisualType vs
+	print $ gdkVisualGetVisualType va

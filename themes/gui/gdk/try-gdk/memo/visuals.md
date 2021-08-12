@@ -8,7 +8,7 @@ Visuals memo
 	+ [x] SCREEN
 		- `gdkVisualGetScreen`
 	+ [ ] GDK VISUAL TYPE
-		- [ ] `gdkVisualGetVisualType`
+		- [x] `gdkVisualGetVisualType`
 		- [ ] `data GdkVisualType`
 		- [ ] patterns
 	+ [ ] DEPTH
