@@ -14,7 +14,7 @@ Visuals memo
 	+ [x] DEPTH
 		- `gdkVisualGetDepth`
 	+ [ ] RED, GREEN AND BLUE
-		- [ ] `gdkVisualGetRedPixelDetails`
+		- [x] `gdkVisualGetRedPixelDetails`
 		- [ ] `gdkVisualGetGreenPixelDetails`
 		- [ ] `gdkVisualBluePixelDetails`
 

@@ -88,7 +88,7 @@ printVisual :: String -> GdkVisual -> IO ()
 printVisual ttl v = do
 	let	t = gdkVisualGetVisualType v
 		d = gdkVisualGetDepth v
-	r <- gdkVisualGetRedPixelDetails v
+		r = gdkVisualGetRedPixelDetails v
 	g <- gdkVisualGetGreenPixelDetails v
 	b <- gdkVisualGetBluePixelDetails v
 	putStrLn ttl
@@ -98,14 +98,15 @@ printVisual ttl v = do
 	putStrLn $ "\tGreenPixelDetails: " ++ show g
 	putStrLn $ "\tBluePixelDetails : " ++ show b
 
-type PixelDetails = (Word32, Int32, Int32)
+type PixelDetails = (Word32, CInt, CInt)
+type PixelDetailsOld = (Word32, Int32, Int32)
 
 peekVisual :: GdkVisual ->
-	IO (GdkVisualType, CInt, PixelDetails, PixelDetails, PixelDetails)
+	IO (GdkVisualType, CInt, PixelDetails, PixelDetailsOld, PixelDetailsOld)
 peekVisual v = do
 	let	t = gdkVisualGetVisualType v
 		d = gdkVisualGetDepth v
-	r <- gdkVisualGetRedPixelDetails v
+		r = gdkVisualGetRedPixelDetails v
 	g <- gdkVisualGetGreenPixelDetails v
 	b <- gdkVisualGetBluePixelDetails v
 	pure (t, d, r, g, b)
