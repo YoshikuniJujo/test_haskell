@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -27,3 +28,10 @@ main = do
 	print =<< gdkRectangleIntersect r1 r2 ri
 	print =<< gdkRectangleFreeze ri
 	print =<< gdkRectangleIntersect r1 r3 ri
+	print $ union r1 r2
+
+union :: GdkRectangle -> GdkRectangle -> GdkRectangle
+union r1 r2 = runST do
+	ru :: GdkRectangleST s <- gdkRectangleNew
+	gdkRectangleUnion r1 r2 ru
+	gdkRectangleFreeze ru
