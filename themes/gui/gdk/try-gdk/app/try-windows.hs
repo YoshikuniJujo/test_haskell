@@ -29,6 +29,7 @@ main = do
 	gdkWindowHide w0
 	gdkDisplayFlush dpy
 	threadDelay 1000000
+	gdkWindowLower w0
 	gdkWindowShowUnraised w0
 	gdkDisplayFlush dpy
 	threadDelay 1000000
