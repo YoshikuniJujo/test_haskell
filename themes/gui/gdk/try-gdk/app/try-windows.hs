@@ -20,7 +20,9 @@ main = do
 	w1 <- gdkWindowNew (Just wr) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
 		900 700 GdkInputOutput GdkWindowToplevel
-	gdkWindowShow w0
+	gdkWindowShowUnraised w0
+	gdkDisplayFlush dpy
+	threadDelay 1000000
 	gdkWindowShow w1
 	gdkDisplayFlush dpy
 	threadDelay 1000000
