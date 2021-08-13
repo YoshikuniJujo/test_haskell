@@ -7,67 +7,94 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows (
-	-- * TYPE
-	GdkWindow(..), withGdkWindowAutoUnref,
-	GdkWindowAutoUnref(..), GdkWindowNeedUnref, mkGdkWindowAutoUnref,
+	-- * GDK WINDOW AND GDK WINDOW AUTO UNREF
+	GdkWindow(..), GdkWindowAutoUnref(..), withGdkWindowAutoUnref,
+	GdkWindowNeedUnref, mkGdkWindowAutoUnref,
 
-	-- * Checked
-	gdkWindowNew, gdkWindowDestroy, gdkWindowGetWindowType,
-	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
+	-- * NEW, DESTROY AND SHOW
+	gdkWindowNew, gdkWindowDestroy,
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
-	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,
-	gdkWindowIsInputOnly, gdkWindowIsShaped, gdkWindowGetState,
-	gdkWindowWithdraw,
-	gdkWindowIconify, gdkWindowDeiconify, gdkWindowStick, gdkWindowUnstick,
-	gdkWindowMaximize, gdkWindowUnmaximize,
-	gdkWindowFullscreen, gdkWindowUnfullscreen,
-	gdkWindowGetFullscreenMode, gdkWindowSetFullscreenMode,
-	gdkWindowSetKeepAbove, gdkWindowSetKeepBelow,
-	gdkWindowSetOpacity,
-	gdkWindowSetPassThrough, gdkWindowGetPassThrough,
-	gdkWindowMove, gdkWindowResize, gdkWindowMoveResize,
-	gdkWindowReparent,
-	gdkWindowRaise, gdkWindowLower,
-	gdkWindowFocus,
-	gdkWindowWithDrawFrame,
-	gdkWindowGetVisibleRegion,
-	gdkWindowSetTitle,
-	gdkWindowSetCursor, gdkWindowGetCursor,
-	gdkWindowGetGeometry,
-	gdkWindowGetWidth, gdkWindowGetHeight,
-	gdkWindowSetModalHint, gdkWindowGetModalHint,
-	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
-	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
-	gdkWindowSetUrgencyHint,
-	gdkWindowGetPosition, gdkWindowGetRootOrigin, gdkWindowGetFrameExtents,
-	gdkWindowGetOrigin, gdkWindowGetRootCoords,
-	gdkWindowGetParent, gdkWindowGetToplevel, gdkWindowPeekChildren,
+
+	-- * DISPLAY, SCREEN, VISUAL AND WINDOW
+	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
+	gdkGetDefaultRootWindow, gdkWindowGetParent, gdkWindowReparent,
+	gdkWindowGetToplevel, gdkWindowPeekChildren,
+
+	-- * EVENT
+	-- ** Event Mask
 	gdkWindowGetEvents, gdkWindowSetEvents,
-	gdkWindowSetTransientFor,
-
-	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations, gdkWMDecorationList,
-	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
-	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
-	pattern GdkDecorMaximize,
-	gdkWindowSetDecorations, gdkWindowGetDecorations,
-
-	gdkGetDefaultRootWindow,
-
-	gdkWindowGetSupportMultidevice, gdkWindowSetSupportMultidevice,
-	gdkWindowGetDeviceCursor, gdkWindowSetDeviceCursor,
 	gdkWindowGetDeviceEvents, gdkWindowSetDeviceEvents,
 	gdkWindowGetSourceEvents, gdkWindowSetSourceEvents,
+	-- ** Event Compression
 	gdkWindowGetEventCompression, gdkWindowSetEventCompression,
 
-	-- * GdkWindowType
+	-- * TITLE AND CURSOR
+	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
+	gdkWindowGetDeviceCursor, gdkWindowSetDeviceCursor,
+
+	-- * MULTIPLE DEVICE
+	gdkWindowGetSupportMultidevice, gdkWindowSetSupportMultidevice,
+
+	-- * WITH DRAW FRAME
+	gdkWindowWithDrawFrame, gdkWindowGetVisibleRegion,
+
+	-- * WINDOW TYPE
+	gdkWindowGetWindowType,
 	GdkWindowType(..),
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
 	pattern GdkWindowChild, pattern GdkWindowTemp, pattern GdkWindowForeign,
 	pattern GdkWindowOffscreen, pattern GdkWindowSubsurface,
 
-	-- * GdkWindowTypeHint
+	-- * IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
+	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,
+	gdkWindowIsInputOnly, gdkWindowIsShaped,
+
+	-- * GDK WINDOW STATES
+	gdkWindowGetState,
+	gdkWindowWithdraw,
+	gdkWindowIconify, gdkWindowDeiconify, gdkWindowStick, gdkWindowUnstick,
+	gdkWindowMaximize, gdkWindowUnmaximize,
+	gdkWindowFullscreen, gdkWindowUnfullscreen,
+	-- ** GDK FULLSCREEN MODE
+	GdkFullscreenMode(..),
+	pattern GdkFullscreenOnCurrentMonitor,
+	pattern GdkFullscreenOnAllMonitors,
+	gdkWindowGetFullscreenMode, gdkWindowSetFullscreenMode,
+
+	-- * GEOMETRY AND OPACITY
+	gdkWindowSetKeepAbove, gdkWindowSetKeepBelow,
+
+	gdkWindowMove, gdkWindowResize, gdkWindowMoveResize,
+	gdkWindowRaise, gdkWindowLower, gdkWindowFocus,
+
+	gdkWindowGetGeometry,
+	gdkWindowGetWidth, gdkWindowGetHeight,
+	gdkWindowGetPosition, gdkWindowGetRootOrigin, gdkWindowGetFrameExtents,
+	gdkWindowGetOrigin, gdkWindowGetRootCoords,
+
+	gdkWindowSetOpacity,
+
+	-- * WINDOW BEHAVIER AND APPEARANCE
+	-- ** Pass Through
+	gdkWindowSetPassThrough, gdkWindowGetPassThrough,
+	-- ** Modal Hint
+	gdkWindowSetModalHint, gdkWindowGetModalHint,
+	-- ** Window Type Hint
+	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
 	GdkWindowTypeHint,
 	pattern GdkWindowTypeHintNormal, pattern GdkWindowTypeHintDialog,
+	-- ** Task Bar, Pager and Urgency
+	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
+	gdkWindowSetUrgencyHint,
+	-- ** Transient For
+	gdkWindowSetTransientFor,
+	-- ** Gdk Wm Decoration
+	gdkWindowSetDecorations, gdkWindowGetDecorations,
+	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations, gdkWMDecorationList,
+	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
+	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
+	pattern GdkDecorMaximize,
+
 	) where
 
 import Foreign.Ptr

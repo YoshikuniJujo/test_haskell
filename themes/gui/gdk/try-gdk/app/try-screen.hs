@@ -9,7 +9,6 @@ import Control.Monad
 import Data.Maybe
 import Data.List
 import Data.Word
-import Data.Int
 import Data.Color
 import System.Environment
 

@@ -1,10 +1,31 @@
 Windows memo
 ============
 
+* [x] refactor export list some
+* [ ] move `GdkWindowState` to `Graphics.Gdk.Windows`
 * [ ] make `Graphics.Gdk.Windows.Internal`
 * [ ] refactor export list
 	+ [ ] structure
-	+ [ ] others
+	+ [ ] GDK WINDOW AND GDK WINDOW AUTO UNREF
+	+ [ ] NEW, DESTROY AND SHOW
+	+ [ ] DISPLAY, SCREEN, VISUAL AND WINDOW
+	+ [ ] EVENT
+		- [ ] Event Mask
+		- [ ] Event Compression
+	+ [ ] TITLE AND CURSOR
+	+ [ ] MULTIPLE DEVICE
+	+ [ ] WITH DRAW FRAME
+	+ [ ] WINDOW TYPE
+	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
+	+ [ ] GDK WINDOW STATES
+	+ [ ] GEOMETRY AND OPACITY
+	+ [ ] WINDOW BEHAVIER AND APPEARANCE
+		- [ ] Pass Through
+		- [ ] Modal Hint
+		- [ ] Window Type Hint
+		- [ ] Task Bar, Pager and Urgency
+		- [ ] Transient For
+		- [ ] Gdk Wm Decoration
 
 Function
 --------
