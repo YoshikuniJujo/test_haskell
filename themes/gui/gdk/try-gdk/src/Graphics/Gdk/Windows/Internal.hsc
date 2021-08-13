@@ -198,8 +198,11 @@ gdkWindowGetDisplay = unsafePerformIO . c_gdk_window_get_display
 foreign import ccall "gdk_window_get_display"
 	c_gdk_window_get_display :: GdkWindow -> IO GdkDisplay
 
+gdkWindowGetScreen :: GdkWindow -> GdkScreen
+gdkWindowGetScreen = unsafePerformIO . c_gdk_window_get_screen
+
 foreign import ccall "gdk_window_get_screen"
-	gdkWindowGetScreen :: GdkWindow -> IO GdkScreen
+	c_gdk_window_get_screen :: GdkWindow -> IO GdkScreen
 
 foreign import ccall "gdk_window_get_visual"
 	gdkWindowGetVisual :: GdkWindow -> IO GdkVisual

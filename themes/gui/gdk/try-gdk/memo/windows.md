@@ -16,7 +16,7 @@ Windows memo
 		- [x] `gdkWindowHide`
 	+ [ ] DISPLAY, SCREEN, VISUAL AND WINDOW
 		- [x] `gdkWindowGetDisplay`
-		- [ ] `gdkWindowGetScreen`
+		- [x] `gdkWindowGetScreen`
 		- [ ] `gdkWindowGetVisual`
 		- [ ] `gdkGetDefaultRootWindow`
 		- [ ] `gdkWindowGetParent`

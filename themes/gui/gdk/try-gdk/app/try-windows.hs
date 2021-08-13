@@ -13,7 +13,8 @@ import Graphics.Gdk.Windows.GdkEventMask
 main :: IO ()
 main = do
 	dpy <- gdkDisplayOpen ""
-	wr <- gdkScreenGetRootWindow $ gdkDisplayGetDefaultScreen dpy
+	let	scr = gdkDisplayGetDefaultScreen dpy
+	wr <- gdkScreenGetRootWindow scr
 	w0 <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
 		900 700 GdkInputOutput GdkWindowToplevel
@@ -22,6 +23,8 @@ main = do
 		900 700 GdkInputOutput GdkWindowToplevel
 	print dpy
 	print $ gdkWindowGetDisplay w0
+	print scr
+	print $ gdkWindowGetScreen w0
 
 	gdkWindowShow w0
 	gdkDisplayFlush dpy
