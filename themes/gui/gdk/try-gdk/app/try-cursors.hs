@@ -33,7 +33,7 @@ main = do
 	c0 <- gdkCursorNewForDisplay dpy GdkArrow
 	print $ gdkCursorGetDisplay c0
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits []) 100 100 GdkInputOutput GdkWindowToplevel
+		(gdkEventMaskMultiBits []) 500 350 GdkInputOutput GdkWindowToplevel
 	gdkWindowShow w
 	gdkWindowSetCursor w =<< optionsToCursor dpy os
 
