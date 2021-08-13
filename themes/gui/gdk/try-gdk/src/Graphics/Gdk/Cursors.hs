@@ -15,7 +15,8 @@ module Graphics.Gdk.Cursors (
 	gdkCursorNewFromName,
 	-- ** From Cursor Type
 	gdkCursorNewForDisplay, gdkCursorGetCursorType,
-	GdkCursorType, GdkNoCursorType,
+	-- *** GDK CURSOR TYPE
+	GdkCursorType,
 	pattern GdkXCursor, pattern GdkArrow,
 	pattern GdkBasedArrowDown, pattern GdkBasedArrowUp,
 	pattern GdkBoat, pattern GdkBogosity,
@@ -54,8 +55,10 @@ module Graphics.Gdk.Cursors (
 	pattern GdkTopTee, pattern GdkTrek,
 	pattern GdkUlAngle, pattern GdkUmbrella,
 	pattern GdkUrAngle, pattern GdkWatch,
-	pattern GdkXterm, pattern GdkLastCursor,
-	pattern GdkBlankCursor, pattern GdkCursorIsPixmap
+	pattern GdkXterm, pattern GdkBlankCursor,
+	-- *** GDK NO CURSOR TYPE
+	GdkNoCursorType,
+	pattern GdkLastCursor, pattern GdkCursorIsPixmap
 
 	) where
 

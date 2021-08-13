@@ -2,11 +2,11 @@ Cursors memo
 ============
 
 * [x] make `Graphics.Gdk.Cursors.Internal`
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] structure
 	+ [x] GDK CURSOR
 	+ [x] DISPLAY
-	+ [ ] CURSOR NEW
+	+ [x] CURSOR NEW
 		- [x] From Surface
 			* [x] try `cairoFormatArgb32`
 			* [x] try `cairoFormatRgb24`
@@ -15,13 +15,13 @@ Cursors memo
 			* [x] try `cairoFormatRgb16565`
 			* [x] try `cairoFormatRgb30`
 		- [x] From Name
-		- [ ] From Cursor Type
+		- [x] From Cursor Type
 			* [x] gdkCursorNewForDisplay
 				+ [x] check no cursor type
 				+ [x] repair it
-			* [ ] gdkCursorGetCursorType
+			* [x] gdkCursorGetCursorType
 				+ [x] repair it
-				+ [ ] others
+				+ [x] others
 
 Function
 --------

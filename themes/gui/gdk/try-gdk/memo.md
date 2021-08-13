@@ -56,7 +56,7 @@ todo new
 			* [x] GdkAxes
 		- [x] PointsAndRectangle
 		- [x] Visuals
-		- [ ] Cursors
+		- [x] Cursors
 		- [ ] Windows
 			* [ ] itself
 			* [ ] GdkWindowAttr

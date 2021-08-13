@@ -1,6 +1,11 @@
 Windows memo
 ============
 
+* [ ] make `Graphics.Gdk.Windows.Internal`
+* [ ] refactor export list
+	+ [ ] structure
+	+ [ ] others
+
 Function
 --------
 
