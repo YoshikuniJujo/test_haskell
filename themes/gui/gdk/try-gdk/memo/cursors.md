@@ -16,11 +16,12 @@ Cursors memo
 			* [x] try `cairoFormatRgb30`
 		- [x] From Name
 		- [ ] From Cursor Type
-			* [ ] gdkCursorNewForDisplay
-				+ [ ] check no cursor type
-				+ [ ] repair it
+			* [x] gdkCursorNewForDisplay
+				+ [x] check no cursor type
+				+ [x] repair it
 			* [ ] gdkCursorGetCursorType
-				+ [ ] repair it
+				+ [x] repair it
+				+ [ ] others
 
 Function
 --------

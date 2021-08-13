@@ -26,7 +26,7 @@ import Try.Tools.DoWhile
 main :: IO ()
 main = do
 	(os, _as, es) <- getOpt Permute [
-		optSurface, optName ] <$> getArgs
+		optSurface, optName, optCursorType ] <$> getArgs
 	putStrLn `mapM_` es
 	dpy <- gdkDisplayOpen ""
 	print dpy
@@ -62,15 +62,20 @@ drawCursor cf = do
 data Option
 	= OptSurface Format
 	| OptName String
+	| OptCursorType GdkCursorType
 	deriving Show
 
 data Format = Argb32 | Rgb24 | A8 | A1 | Rgb16565 | Rgb30 deriving Show
 
-optSurface, optName :: OptDescr Option
+optSurface, optName, optCursorType :: OptDescr Option
 optSurface = Option ['s'] ["surface"]
 	(ReqArg (OptSurface . format) "Image Format") "From Surface"
 
 optName = Option ['n'] ["name"] (ReqArg OptName "Name") "From Name"
+
+optCursorType = Option ['t'] ["cursor-type"]
+	(ReqArg (OptCursorType . cursorTypeFromStr) "Cursor Type")
+	"From Cursor Type"
 
 format :: String -> Format
 format "Rgb24" = Rgb24
@@ -88,6 +93,18 @@ fromFormat A1 = cairoFormatA1
 fromFormat Rgb16565 = cairoFormatRgb16565
 fromFormat Rgb30 = cairoFormatRgb30
 
+cursorTypeFromStr :: String -> GdkCursorType
+cursorTypeFromStr "XCursor" = GdkXCursor
+cursorTypeFromStr "Arrow" = GdkArrow
+cursorTypeFromStr "BasedArrowDown" = GdkBasedArrowDown
+cursorTypeFromStr "BasedArrowUp" = GdkBasedArrowUp
+cursorTypeFromStr "Gumby" = GdkGumby
+cursorTypeFromStr "Boat" = GdkBoat
+cursorTypeFromStr "Watch" = GdkWatch
+cursorTypeFromStr "Xterm" = GdkXterm
+cursorTypeFromStr "BlankCursor" = GdkBlankCursor
+cursorTypeFromStr _ = GdkXCursor
+
 optionsToCursor :: GdkDisplay -> [Option] -> IO GdkCursor
 optionsToCursor dpy [] = do
 	s <- drawCursor cairoFormatArgb32
@@ -96,3 +113,4 @@ optionsToCursor dpy (OptSurface f : _) = do
 	s <- drawCursor $ fromFormat f
 	gdkCursorNewFromSurface dpy s 15 15
 optionsToCursor dpy (OptName n : _) = gdkCursorNewFromName dpy n
+optionsToCursor dpy (OptCursorType t : _) = gdkCursorNewForDisplay dpy t

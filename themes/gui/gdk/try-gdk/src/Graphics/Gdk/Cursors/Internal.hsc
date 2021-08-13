@@ -13,7 +13,7 @@ module Graphics.Gdk.Cursors.Internal (
 	gdkCursorNewFromName,
 
 	-- * GDK CURSOR TYPE
-	GdkCursorType(..),
+	GdkCursorType(..), GdkNoCursorType(..),
 	gdkCursorNewForDisplay, gdkCursorGetCursorType,
 	pattern GdkXCursor, pattern GdkArrow,
 	pattern GdkBasedArrowDown, pattern GdkBasedArrowUp,
@@ -178,8 +178,10 @@ enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkUmbrella", #{const GDK_UMBRELLA}),
 	("GdkUrAngle", #{const GDK_UR_ANGLE}), ("GdkWatch", #{const GDK_WATCH}),
 	("GdkXterm", #{const GDK_XTERM}),
+	("GdkBlankCursor", #{const GDK_BLANK_CURSOR}) ]
+
+enum "GdkNoCursorType" ''#{type GdkCursorType} [''Show] [
 	("GdkLastCursor", #{const GDK_LAST_CURSOR}),
-	("GdkBlankCursor", #{const GDK_BLANK_CURSOR}),
 	("GdkCursorIsPixmap", #{const GDK_CURSOR_IS_PIXMAP}) ]
 
 gdkCursorNewForDisplay :: GdkDisplay -> GdkCursorType -> IO GdkCursor
@@ -190,9 +192,12 @@ foreign import ccall "gdk_cursor_new_for_display"
 	c_gdk_cursor_new_for_display ::
 	GdkDisplay -> #{type GdkCursorType} -> IO (Ptr GdkCursor)
 
-gdkCursorGetCursorType :: GdkCursor -> IO GdkCursorType
+gdkCursorGetCursorType :: GdkCursor -> IO (Either GdkNoCursorType GdkCursorType)
 gdkCursorGetCursorType (GdkCursor fc) = withForeignPtr fc \c ->
-	GdkCursorType <$> c_gdk_cursor_get_cursor_type c
+	(<$> c_gdk_cursor_get_cursor_type c) \case
+		t@(#{const GDK_LAST_CURSOR}) -> Left $ GdkNoCursorType t
+		t@(#{const GDK_CURSOR_IS_PIXMAP}) -> Left $ GdkNoCursorType t
+		t -> Right $ GdkCursorType t
 
 foreign import ccall "gdk_cursor_get_cursor_type" c_gdk_cursor_get_cursor_type ::
 	Ptr GdkCursor -> IO #{type GdkCursorType}
