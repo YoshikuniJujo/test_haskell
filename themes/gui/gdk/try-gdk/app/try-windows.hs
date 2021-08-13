@@ -3,7 +3,9 @@
 module Main where
 
 import Control.Concurrent
+
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -11,8 +13,14 @@ import Graphics.Gdk.Windows.GdkEventMask
 main :: IO ()
 main = do
 	dpy <- gdkDisplayOpen ""
-	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits []) 900 700 GdkInputOutput GdkWindowToplevel
-	gdkWindowShow w
+	wr <- gdkScreenGetRootWindow $ gdkDisplayGetDefaultScreen dpy
+	w0 <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+		(gdkEventMaskMultiBits [])
+		900 700 GdkInputOutput GdkWindowToplevel
+	w1 <- gdkWindowNew (Just wr) $ minimalGdkWindowAttr
+		(gdkEventMaskMultiBits [])
+		900 700 GdkInputOutput GdkWindowToplevel
+	gdkWindowShow w0
+	gdkWindowShow w1
 	gdkDisplayFlush dpy
 	threadDelay 2000000

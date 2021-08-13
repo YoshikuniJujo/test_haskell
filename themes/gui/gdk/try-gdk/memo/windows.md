@@ -8,8 +8,7 @@ Windows memo
 	+ [x] GDK WINDOW AND GDK WINDOW AUTO UNREF
 		- [x] `gdkWindowNew`
 			* [x] try `Nothing`
-			* [ ] try `Just foo`
-			* [ ] others
+			* [x] try `Just foo`
 		- [ ] `gdkWindowDestroy`
 		- [ ] `gdkWindowShow`
 		- [ ] `gdkWindowShowUnraised`
