@@ -113,6 +113,7 @@ import Data.Bits
 import Data.Bits.Misc
 import Data.Word
 import Data.Int
+import System.IO.Unsafe
 import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
@@ -161,7 +162,7 @@ foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
 gdkWindowDestroy :: GdkWindow -> IO ()
 gdkWindowDestroy w = do
 	whenMaybe c_g_object_unref =<< c_gdk_window_get_cursor' w
-	d <- gdkWindowGetDisplay w
+	let	d = gdkWindowGetDisplay w
 	dvps <- allPointerDevice d
 	cs <- catMaybes <$> mapM (c_gdk_window_get_device_cursor' w) dvps
 	mapM_ c_g_object_unref cs
@@ -191,8 +192,11 @@ foreign import ccall "gdk_window_get_cursor" c_gdk_window_get_cursor :: GdkWindo
 foreign import ccall "gdk_window_get_window_type"
 	gdkWindowGetWindowType :: GdkWindow -> IO GdkWindowType
 
+gdkWindowGetDisplay :: GdkWindow -> GdkDisplay
+gdkWindowGetDisplay = unsafePerformIO . c_gdk_window_get_display
+
 foreign import ccall "gdk_window_get_display"
-	gdkWindowGetDisplay :: GdkWindow -> IO GdkDisplay
+	c_gdk_window_get_display :: GdkWindow -> IO GdkDisplay
 
 foreign import ccall "gdk_window_get_screen"
 	gdkWindowGetScreen :: GdkWindow -> IO GdkScreen

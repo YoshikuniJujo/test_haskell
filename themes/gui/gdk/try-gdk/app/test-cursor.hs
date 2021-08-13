@@ -36,7 +36,7 @@ main = do
 	print GdkLeaveNotify
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
-	d <- gdkWindowGetDisplay w
+	let	d = gdkWindowGetDisplay w
 	st <- gdkDisplayGetDefaultSeat d
 	pnt <- gdkSeatGetPointer st
 	_pds <- gdkDeviceListSlaveDevices pnt

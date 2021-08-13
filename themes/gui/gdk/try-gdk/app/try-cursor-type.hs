@@ -21,7 +21,7 @@ main = do
 	cnt <- newIORef 0
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
-	d <- gdkWindowGetDisplay w
+	let	d = gdkWindowGetDisplay w
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False
 	gdkWindowSetEvents w $ gdkEventMaskMultiBits [

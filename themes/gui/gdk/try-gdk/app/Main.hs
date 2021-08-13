@@ -159,7 +159,7 @@ main = do
 	print =<< gdkWindowGetDecorations w
 	print GdkWindowToplevel
 	print GdkWindowRoot
-	putStrLn . gdkDisplayGetName =<< gdkWindowGetDisplay w
+	putStrLn . gdkDisplayGetName $ gdkWindowGetDisplay w
 	print . gdkVisualGetDepth =<< gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w

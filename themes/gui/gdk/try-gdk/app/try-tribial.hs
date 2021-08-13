@@ -20,7 +20,7 @@ main = do
 	w <- gdkWindowNew Nothing defaultGdkWindowAttr
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
-	dpy <- gdkWindowGetDisplay w
+	let	dpy = gdkWindowGetDisplay w
 	c <- gdkCursorNewForDisplay dpy GdkMan
 	gdkWindowSetCursor w c
 	print c
