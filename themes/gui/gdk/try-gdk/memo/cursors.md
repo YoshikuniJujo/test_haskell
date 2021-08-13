@@ -14,7 +14,7 @@ Cursors memo
 			* [x] try `cairoFormatA1`
 			* [x] try `cairoFormatRgb16565`
 			* [x] try `cairoFormatRgb30`
-		- [ ] From Name
+		- [x] From Name
 		- [ ] From Cursor Type
 			* [ ] gdkCursorNewForDisplay
 				+ [ ] check no cursor type

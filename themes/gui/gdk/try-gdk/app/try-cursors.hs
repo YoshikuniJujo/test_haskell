@@ -26,7 +26,7 @@ import Try.Tools.DoWhile
 main :: IO ()
 main = do
 	(os, _as, es) <- getOpt Permute [
-		optSurface ] <$> getArgs
+		optSurface, optName ] <$> getArgs
 	putStrLn `mapM_` es
 	dpy <- gdkDisplayOpen ""
 	print dpy
@@ -61,13 +61,16 @@ drawCursor cf = do
 
 data Option
 	= OptSurface Format
+	| OptName String
 	deriving Show
 
 data Format = Argb32 | Rgb24 | A8 | A1 | Rgb16565 | Rgb30 deriving Show
 
-optSurface :: OptDescr Option
+optSurface, optName :: OptDescr Option
 optSurface = Option ['s'] ["surface"]
 	(ReqArg (OptSurface . format) "Image Format") "From Surface"
+
+optName = Option ['n'] ["name"] (ReqArg OptName "Name") "From Name"
 
 format :: String -> Format
 format "Rgb24" = Rgb24
@@ -92,3 +95,4 @@ optionsToCursor dpy [] = do
 optionsToCursor dpy (OptSurface f : _) = do
 	s <- drawCursor $ fromFormat f
 	gdkCursorNewFromSurface dpy s 15 15
+optionsToCursor dpy (OptName n : _) = gdkCursorNewFromName dpy n
