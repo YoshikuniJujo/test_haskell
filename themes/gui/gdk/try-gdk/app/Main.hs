@@ -155,12 +155,12 @@ main = do
 	print =<< gdkWindowPeekChildren w
 	putStr "CHILDREN OF PARENT WINDOW: "
 	print =<< mapM gdkWindowGetWindowType . fromJust =<< gdkWindowPeekChildren =<< gdkWindowGetParent w
-	printVisual =<< gdkWindowGetVisual w
+	printVisual $ gdkWindowGetVisual w
 	print =<< gdkWindowGetDecorations w
 	print GdkWindowToplevel
 	print GdkWindowRoot
 	putStrLn . gdkDisplayGetName $ gdkWindowGetDisplay w
-	print . gdkVisualGetDepth =<< gdkWindowGetVisual w
+	print . gdkVisualGetDepth $ gdkWindowGetVisual w
 	putStrLn . ("Window is destroyed: " ++) . show =<< gdkWindowIsDestroyed w
 	putStrLn . ("Window is visible: " ++) . show =<< gdkWindowIsVisible w
 	putStrLn . ("Window is viewable: " ++) . show =<< gdkWindowIsViewable w

@@ -17,7 +17,7 @@ Windows memo
 	+ [ ] DISPLAY, SCREEN, VISUAL AND WINDOW
 		- [x] `gdkWindowGetDisplay`
 		- [x] `gdkWindowGetScreen`
-		- [ ] `gdkWindowGetVisual`
+		- [x] `gdkWindowGetVisual`
 		- [ ] `gdkGetDefaultRootWindow`
 		- [ ] `gdkWindowGetParent`
 		- [ ] `gdkWindowReparent`

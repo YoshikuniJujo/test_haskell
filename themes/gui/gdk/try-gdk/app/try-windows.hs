@@ -25,6 +25,9 @@ main = do
 	print $ gdkWindowGetDisplay w0
 	print scr
 	print $ gdkWindowGetScreen w0
+	print =<< gdkScreenGetSystemVisual scr
+	print =<< gdkScreenGetRgbaVisual scr
+	print $ gdkWindowGetVisual w0
 
 	gdkWindowShow w0
 	gdkDisplayFlush dpy
