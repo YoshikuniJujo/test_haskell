@@ -10,7 +10,7 @@ Cursors memo
 		- [ ] From Surface
 			* [x] try `cairoFormatArgb32`
 			* [x] try `cairoFormatRgb24`
-			* [ ] try `cairoFormatA8`
+			* [x] try `cairoFormatA8`
 			* [ ] try `cairoFormatA1`
 			* [ ] try `cairoFormatRgb16565`
 			* [ ] try `cairoFormatRgb30`

@@ -33,7 +33,7 @@ main = do
 	c0 <- gdkCursorNewForDisplay dpy GdkArrow
 	print $ gdkCursorGetDisplay c0
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits []) 500 350 GdkInputOutput GdkWindowToplevel
+		(gdkEventMaskMultiBits []) 700 450 GdkInputOutput GdkWindowToplevel
 	gdkWindowShow w
 	gdkWindowSetCursor w =<< optionsToCursor dpy os
 
@@ -46,7 +46,7 @@ drawCursor :: PrimMonad m => CairoFormatT -> m (CairoSurfaceImageT s (PrimState 
 drawCursor cf = do
 	s <- cairoImageSurfaceCreate cf 50 50
 	cr <- cairoCreate s
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 1 0
+	cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 1 0 0.5
 	cairoSetLineWidth cr 3
 	cairoMoveTo cr 15 15
 	cairoLineTo cr 15 30
@@ -63,7 +63,7 @@ data Option
 	= OptSurface Format
 	deriving Show
 
-data Format = Argb32 | Rgb24 deriving Show
+data Format = Argb32 | Rgb24 | A8 deriving Show
 
 optSurface :: OptDescr Option
 optSurface = Option ['s'] ["surface"]
@@ -71,11 +71,13 @@ optSurface = Option ['s'] ["surface"]
 
 format :: String -> Format
 format "Rgb24" = Rgb24
+format "A8" = A8
 format _ = Argb32
 
 fromFormat :: Format -> CairoFormatT
 fromFormat Argb32 = cairoFormatArgb32
 fromFormat Rgb24 = cairoFormatRgb24
+fromFormat A8 = cairoFormatA8
 
 optionsToCursor :: GdkDisplay -> [Option] -> IO GdkCursor
 optionsToCursor dpy [] = do
