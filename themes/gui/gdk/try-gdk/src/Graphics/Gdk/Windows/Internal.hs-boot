@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Windows where
+module Graphics.Gdk.Windows.Internal where
 
 import Foreign.Ptr
 import Foreign.Storable

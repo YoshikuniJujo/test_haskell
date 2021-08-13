@@ -66,7 +66,7 @@ import System.GLib.DoublyLinkedLists
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkSeat.Internal
-import {-# SOURCE #-} Graphics.Gdk.Windows
+import {-# SOURCE #-} Graphics.Gdk.Windows.Internal
 
 #include <gdk/gdk.h>
 

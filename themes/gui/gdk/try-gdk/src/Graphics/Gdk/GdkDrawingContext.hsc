@@ -14,7 +14,7 @@ import Data.Int
 import System.GLib.Bool
 
 import Data.CairoContext
-import {-# SOURCE #-} Graphics.Gdk.Windows
+import {-# SOURCE #-} Graphics.Gdk.Windows.Internal
 
 import Graphics.Cairo.Drawing.Regions
 

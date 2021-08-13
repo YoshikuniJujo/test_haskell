@@ -2,11 +2,10 @@ Windows memo
 ============
 
 * [x] refactor export list some
-* [ ] move `GdkWindowState` to `Graphics.Gdk.Windows`
-* [ ] make `Graphics.Gdk.Windows.Internal`
+* [x] make `Graphics.Gdk.Windows.Internal`
 * [ ] refactor export list
-	+ [ ] structure
-	+ [ ] GDK WINDOW AND GDK WINDOW AUTO UNREF
+	+ [x] structure
+	+ [x] GDK WINDOW AND GDK WINDOW AUTO UNREF
 	+ [ ] NEW, DESTROY AND SHOW
 	+ [ ] DISPLAY, SCREEN, VISUAL AND WINDOW
 	+ [ ] EVENT

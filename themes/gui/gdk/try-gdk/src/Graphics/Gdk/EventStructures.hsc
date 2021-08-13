@@ -24,7 +24,7 @@ import System.IO.Unsafe
 
 import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.GdkDevice.GdkAxes.Internal
-import {-# SOURCE #-} Graphics.Gdk.Windows
+import {-# SOURCE #-} Graphics.Gdk.Windows.Internal
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.EventStructures.GdkKeySyms
 

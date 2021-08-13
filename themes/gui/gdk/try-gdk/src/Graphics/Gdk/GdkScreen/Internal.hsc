@@ -30,7 +30,7 @@ import System.GLib.Bool
 import System.GLib.DoublyLinkedLists
 
 import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
-import Graphics.Gdk.Windows
+import Graphics.Gdk.Windows.Internal
 import Graphics.Gdk.Visuals.Internal
 
 #include <gdk/gdk.h>

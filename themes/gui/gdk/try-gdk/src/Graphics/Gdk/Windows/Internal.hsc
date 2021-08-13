@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Windows (
+module Graphics.Gdk.Windows.Internal (
 	-- * GDK WINDOW AND GDK WINDOW AUTO UNREF
 	GdkWindow(..), GdkWindowAutoUnref(..), withGdkWindowAutoUnref,
 	GdkWindowNeedUnref, mkGdkWindowAutoUnref,
