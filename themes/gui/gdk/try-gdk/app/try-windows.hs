@@ -23,4 +23,7 @@ main = do
 	gdkWindowShow w0
 	gdkWindowShow w1
 	gdkDisplayFlush dpy
-	threadDelay 2000000
+	threadDelay 1000000
+	gdkWindowDestroy w0
+	gdkDisplayFlush dpy
+	threadDelay 1000000

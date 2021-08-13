@@ -9,7 +9,7 @@ Windows memo
 		- [x] `gdkWindowNew`
 			* [x] try `Nothing`
 			* [x] try `Just foo`
-		- [ ] `gdkWindowDestroy`
+		- [x] `gdkWindowDestroy`
 		- [ ] `gdkWindowShow`
 		- [ ] `gdkWindowShowUnraised`
 		- [ ] `gdkWindowHide`
