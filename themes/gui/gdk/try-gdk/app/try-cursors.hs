@@ -63,7 +63,7 @@ data Option
 	= OptSurface Format
 	deriving Show
 
-data Format = Argb32 | Rgb24 | A8 deriving Show
+data Format = Argb32 | Rgb24 | A8 | A1 | Rgb16565 | Rgb30 deriving Show
 
 optSurface :: OptDescr Option
 optSurface = Option ['s'] ["surface"]
@@ -72,12 +72,18 @@ optSurface = Option ['s'] ["surface"]
 format :: String -> Format
 format "Rgb24" = Rgb24
 format "A8" = A8
+format "A1" = A1
+format "Rgb16565" = Rgb16565
+format "Rgb30" = Rgb30
 format _ = Argb32
 
 fromFormat :: Format -> CairoFormatT
 fromFormat Argb32 = cairoFormatArgb32
 fromFormat Rgb24 = cairoFormatRgb24
 fromFormat A8 = cairoFormatA8
+fromFormat A1 = cairoFormatA1
+fromFormat Rgb16565 = cairoFormatRgb16565
+fromFormat Rgb30 = cairoFormatRgb30
 
 optionsToCursor :: GdkDisplay -> [Option] -> IO GdkCursor
 optionsToCursor dpy [] = do

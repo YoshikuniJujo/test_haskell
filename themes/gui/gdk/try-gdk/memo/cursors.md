@@ -7,13 +7,13 @@ Cursors memo
 	+ [x] GDK CURSOR
 	+ [x] DISPLAY
 	+ [ ] CURSOR NEW
-		- [ ] From Surface
+		- [x] From Surface
 			* [x] try `cairoFormatArgb32`
 			* [x] try `cairoFormatRgb24`
 			* [x] try `cairoFormatA8`
-			* [ ] try `cairoFormatA1`
-			* [ ] try `cairoFormatRgb16565`
-			* [ ] try `cairoFormatRgb30`
+			* [x] try `cairoFormatA1`
+			* [x] try `cairoFormatRgb16565`
+			* [x] try `cairoFormatRgb30`
 		- [ ] From Name
 		- [ ] From Cursor Type
 			* [ ] gdkCursorNewForDisplay
