@@ -6,6 +6,14 @@ Windows memo
 * [ ] refactor export list
 	+ [x] structure
 	+ [x] GDK WINDOW AND GDK WINDOW AUTO UNREF
+		- [x] `gdkWindowNew`
+			* [x] try `Nothing`
+			* [ ] try `Just foo`
+			* [ ] others
+		- [ ] `gdkWindowDestroy`
+		- [ ] `gdkWindowShow`
+		- [ ] `gdkWindowShowUnraised`
+		- [ ] `gdkWindowHide`
 	+ [ ] NEW, DESTROY AND SHOW
 	+ [ ] DISPLAY, SCREEN, VISUAL AND WINDOW
 	+ [ ] EVENT
