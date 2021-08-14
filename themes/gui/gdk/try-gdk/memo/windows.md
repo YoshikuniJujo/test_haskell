@@ -20,7 +20,7 @@ Windows memo
 		- [x] `gdkWindowGetVisual`
 		- [x] `gdkGetDefaultRootWindow`
 		- [x] `gdkWindowGetToplevel`
-		- [ ] `gdkWindowGetParent`
+		- [x] `gdkWindowGetParent`
 		- [ ] `gdkWindowReparent`
 		- [ ] `gdkWindowPeekChildren`
 	+ [ ] EVENT

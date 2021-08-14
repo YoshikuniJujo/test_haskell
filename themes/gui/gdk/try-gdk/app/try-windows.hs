@@ -35,6 +35,9 @@ main = do
 	print w0
 	print =<< gdkWindowGetToplevel w0
 
+	print wr
+	print =<< gdkWindowGetParent w0
+
 	gdkWindowShow w0
 	gdkDisplayFlush dpy
 	threadDelay 1000000
