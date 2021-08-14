@@ -21,6 +21,10 @@ main = do
 	w1 <- gdkWindowNew (Just wr) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
 		900 700 GdkInputOutput GdkWindowToplevel
+	wc <- gdkWindowNew (Just w0) $ minimalGdkWindowAttr
+		(gdkEventMaskMultiBits [])
+		500 300 GdkInputOutput GdkWindowChild
+
 	print dpy
 	print $ gdkWindowGetDisplay w0
 	print scr
@@ -38,7 +42,14 @@ main = do
 	print wr
 	print =<< gdkWindowGetParent w0
 
+	print w0
+	print =<< gdkWindowGetParent wc
+	gdkWindowReparent wc w1 100 100
+	print w1
+	print =<< gdkWindowGetParent wc
+
 	gdkWindowShow w0
+	gdkWindowShow wc
 	gdkDisplayFlush dpy
 	threadDelay 1000000
 	gdkWindowShow w1

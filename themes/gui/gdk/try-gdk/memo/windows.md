@@ -21,7 +21,9 @@ Windows memo
 		- [x] `gdkGetDefaultRootWindow`
 		- [x] `gdkWindowGetToplevel`
 		- [x] `gdkWindowGetParent`
-		- [ ] `gdkWindowReparent`
+		- [x] `gdkWindowReparent`
+			* [x] make child window
+			* [x] reparent
 		- [ ] `gdkWindowPeekChildren`
 	+ [ ] EVENT
 		- [ ] Event Mask
