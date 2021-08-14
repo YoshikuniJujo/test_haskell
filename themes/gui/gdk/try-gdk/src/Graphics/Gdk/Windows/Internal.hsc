@@ -17,8 +17,8 @@ module Graphics.Gdk.Windows.Internal (
 
 	-- * DISPLAY, SCREEN, VISUAL AND WINDOW
 	gdkWindowGetDisplay, gdkWindowGetScreen, gdkWindowGetVisual,
-	gdkGetDefaultRootWindow, gdkWindowGetParent, gdkWindowReparent,
-	gdkWindowGetToplevel, gdkWindowPeekChildren,
+	gdkGetDefaultRootWindow, gdkWindowGetToplevel,
+	gdkWindowGetParent, gdkWindowReparent, gdkWindowPeekChildren,
 
 	-- * EVENT
 	-- ** Event Mask

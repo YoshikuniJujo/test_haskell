@@ -18,10 +18,10 @@ Windows memo
 		- [x] `gdkWindowGetDisplay`
 		- [x] `gdkWindowGetScreen`
 		- [x] `gdkWindowGetVisual`
-		- [ ] `gdkGetDefaultRootWindow`
+		- [x] `gdkGetDefaultRootWindow`
+		- [ ] `gdkWindowGetToplevel`
 		- [ ] `gdkWindowGetParent`
 		- [ ] `gdkWindowReparent`
-		- [ ] `gdkWindowGetToplevel`
 		- [ ] `gdkWindowPeekChildren`
 	+ [ ] EVENT
 		- [ ] Event Mask

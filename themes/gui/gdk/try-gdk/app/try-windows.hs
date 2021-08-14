@@ -29,6 +29,9 @@ main = do
 	print =<< gdkScreenGetRgbaVisual scr
 	print $ gdkWindowGetVisual w0
 
+	print =<< gdkScreenGetRootWindow scr
+	print =<< gdkGetDefaultRootWindow
+
 	gdkWindowShow w0
 	gdkDisplayFlush dpy
 	threadDelay 1000000
