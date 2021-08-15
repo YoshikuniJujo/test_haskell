@@ -14,7 +14,7 @@ Windows memo
 		- [x] `gdkWindowShow`
 		- [x] `gdkWindowShowUnraised`
 		- [x] `gdkWindowHide`
-	+ [ ] DISPLAY, SCREEN, VISUAL AND WINDOW
+	+ [x] DISPLAY, SCREEN, VISUAL AND WINDOW
 		- [x] `gdkWindowGetDisplay`
 		- [x] `gdkWindowGetScreen`
 		- [x] `gdkWindowGetVisual`
@@ -24,7 +24,7 @@ Windows memo
 		- [x] `gdkWindowReparent`
 			* [x] make child window
 			* [x] reparent
-		- [ ] `gdkWindowPeekChildren`
+		- [x] `gdkWindowPeekChildren`
 	+ [ ] EVENT
 		- [ ] Event Mask
 		- [ ] Event Compression

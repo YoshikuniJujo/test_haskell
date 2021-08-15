@@ -48,6 +48,9 @@ main = do
 	print w1
 	print =<< gdkWindowGetParent wc
 
+	print wc
+	print =<< gdkWindowPeekChildren w1
+
 	gdkWindowShow w0
 	gdkWindowShow wc
 	gdkDisplayFlush dpy
