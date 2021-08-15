@@ -27,7 +27,15 @@ Windows memo
 		- [x] `gdkWindowPeekChildren`
 	+ [ ] EVENT
 		- [ ] Event Mask
+			* [x] `gdkWindowGetEvents`
+			* [ ] `gdkWindowSetEvents`
+			* [ ] `gdkWindowGetDeviceEvents`
+			* [ ] `gdkWindowSetDeviceEvents`
+			* [ ] `gdkWindowGetSourceEvents`
+			* [ ] `gdkWindowSetSourceEvents`
 		- [ ] Event Compression
+			* [ ] `gdkWindowGetEventCompression`
+			* [ ] `gdkWindowSetEventCompression`
 	+ [ ] TITLE AND CURSOR
 	+ [ ] MULTIPLE DEVICE
 	+ [ ] WITH DRAW FRAME

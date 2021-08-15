@@ -16,7 +16,7 @@ main = do
 	let	scr = gdkDisplayGetDefaultScreen dpy
 	wr <- gdkScreenGetRootWindow scr
 	w0 <- gdkWindowNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits [])
+		(gdkEventMaskMultiBits [GdkPointerMotionMask])
 		900 700 GdkInputOutput GdkWindowToplevel
 	w1 <- gdkWindowNew (Just wr) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
@@ -50,6 +50,8 @@ main = do
 
 	print wc
 	print =<< gdkWindowPeekChildren w1
+
+	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 
 	gdkWindowShow w0
 	gdkWindowShow wc
