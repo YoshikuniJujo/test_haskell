@@ -3,9 +3,9 @@ Windows memo
 
 * [x] refactor export list some
 * [x] make `Graphics.Gdk.Windows.Internal`
-* [ ] add options to reduce outputs
-	+ [ ] `--display-screen-etc`
-	+ [ ] others
+* [x] add options to reduce outputs
+	+ [x] `--display-screen-etc`
+	+ [x] `--show-device`
 * [ ] refactor export list
 	+ [x] structure
 	+ [x] GDK WINDOW AND GDK WINDOW AUTO UNREF
