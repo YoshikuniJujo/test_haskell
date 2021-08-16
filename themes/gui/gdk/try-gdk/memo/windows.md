@@ -43,7 +43,7 @@ Windows memo
 				+ [ ] add main loop
 				+ [x] use `GetOpt`
 				+ [ ] check event mask of master device
-					- [ ] pointer device
+					- [x] pointer device
 					- [ ] keyboard device
 				+ [ ] check event mask of physical device
 					- [ ] pointer device

@@ -21,7 +21,7 @@ main :: IO ()
 main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
-			optWindowEvents ]
+			optWindowEvents, optPointerDeviceEvents ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -71,6 +71,8 @@ main = do
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
 	gdkWindowSetEvents w0 . gdkEventMaskMultiBits $ getOptWindowEventMask ss
+	gdkWindowSetDeviceEvents w0 pnt . gdkEventMaskMultiBits
+		$ getOptPointerDeviceEventMask ss
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
 
@@ -102,10 +104,11 @@ data OptSetting
 	| OptDisplayScreen
 	| OptShowDevice
 	| OptWindowEvents [GdkEventMaskSingleBit]
+	| OptPointerDeviceEvents [GdkEventMaskSingleBit]
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
-	optWindowEvents ::
+	optWindowEvents, optPointerDeviceEvents ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -121,10 +124,18 @@ optWindowEvents = Option ['w'] ["window-events"]
 	(ReqArg (OptWindowEvents . readEventMask) "Event Mask")
 	"Set Window Event Mask"
 
+optPointerDeviceEvents = Option ['p'] ["pointer-device-events"]
+	(ReqArg (OptPointerDeviceEvents . readEventMask) "Event Mask")
+	"Set pointer device event mask"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
-getOptWindowEventMask :: [OptSetting] -> [GdkEventMaskSingleBit]
+getOptWindowEventMask, getOptPointerDeviceEventMask :: [OptSetting] -> [GdkEventMaskSingleBit]
 getOptWindowEventMask [] = []
 getOptWindowEventMask (OptWindowEvents ems : _) = ems
 getOptWindowEventMask (_ : ss) = getOptWindowEventMask ss
+
+getOptPointerDeviceEventMask [] = []
+getOptPointerDeviceEventMask (OptPointerDeviceEvents ems : _) = ems
+getOptPointerDeviceEventMask (_ : ss) = getOptPointerDeviceEventMask ss
