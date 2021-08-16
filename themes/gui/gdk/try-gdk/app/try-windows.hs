@@ -1,8 +1,14 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Control.Monad
 import Control.Concurrent
+import Data.Maybe
+import Text.Read
+import System.Environment
+import System.Console.GetOpt
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
@@ -13,6 +19,10 @@ import Graphics.Gdk.Windows.GdkEventMask
 
 main :: IO ()
 main = do
+	(ss, _as, es) <- getOpt Permute [
+		optWindowShowAndHide, optWindowEvents ] <$> getArgs
+	putStrLn `mapM_` es
+	print ss
 	dpy <- gdkDisplayOpen ""
 	let	scr = gdkDisplayGetDefaultScreen dpy
 	st <- gdkDisplayGetDefaultSeat dpy
@@ -59,27 +69,49 @@ main = do
 
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
-	gdkWindowSetEvents w0 $ gdkEventMaskMultiBits [GdkKeyPressMask]
+	gdkWindowSetEvents w0 . gdkEventMaskMultiBits $ getOptWindowEventMask ss
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
 
-	gdkWindowShow w0
-	gdkWindowShow wc
-	gdkDisplayFlush dpy
-	threadDelay 1000000
-	gdkWindowShow w1
-	gdkDisplayFlush dpy
-	threadDelay 1000000
-	gdkWindowHide w0
-	gdkDisplayFlush dpy
-	threadDelay 1000000
-	gdkWindowLower w0
-	gdkWindowShowUnraised w0
-	gdkDisplayFlush dpy
-	threadDelay 1000000
-	gdkWindowShow w0
-	gdkDisplayFlush dpy
-	threadDelay 1000000
-	gdkWindowDestroy w0
-	gdkDisplayFlush dpy
-	threadDelay 1000000
+	when (OptWindowShowAndHide `elem` ss) do
+		gdkWindowShow w0
+		gdkWindowShow wc
+		gdkDisplayFlush dpy
+		threadDelay 1000000
+		gdkWindowShow w1
+		gdkDisplayFlush dpy
+		threadDelay 1000000
+		gdkWindowHide w0
+		gdkDisplayFlush dpy
+		threadDelay 1000000
+		gdkWindowLower w0
+		gdkWindowShowUnraised w0
+		gdkDisplayFlush dpy
+		threadDelay 1000000
+		gdkWindowShow w0
+		gdkDisplayFlush dpy
+		threadDelay 1000000
+		gdkWindowDestroy w0
+		gdkDisplayFlush dpy
+		threadDelay 1000000
+
+data OptSetting
+	= OptWindowShowAndHide
+	| OptWindowEvents [GdkEventMaskSingleBit]
+	deriving (Show, Eq)
+
+optWindowShowAndHide, optWindowEvents :: OptDescr OptSetting
+optWindowShowAndHide = Option ['s'] ["show-and-hide"]
+	(NoArg OptWindowShowAndHide) "Show and Hide some windows"
+
+optWindowEvents = Option ['w'] ["window-events"]
+	(ReqArg (OptWindowEvents . readEventMask) "Event Mask")
+	"Set Window Event Mask"
+
+readEventMask :: String -> [GdkEventMaskSingleBit]
+readEventMask = fromMaybe [] . readMaybe
+
+getOptWindowEventMask :: [OptSetting] -> [GdkEventMaskSingleBit]
+getOptWindowEventMask [] = []
+getOptWindowEventMask (OptWindowEvents ems : _) = ems
+getOptWindowEventMask (_ : ss) = getOptWindowEventMask ss

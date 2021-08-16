@@ -31,7 +31,7 @@ import Data.Word
 
 #include <gdk/gdk.h>
 
-enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show] [
+enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show, ''Read, ''Eq] [
 	("GdkExposureMask", #{const GDK_EXPOSURE_MASK}),
 	("GdkPointerMotionMask", #{const GDK_POINTER_MOTION_MASK}),
 	("GdkButtonMotionMask", #{const GDK_BUTTON_MOTION_MASK}),

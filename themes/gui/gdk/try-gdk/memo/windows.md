@@ -3,6 +3,9 @@ Windows memo
 
 * [x] refactor export list some
 * [x] make `Graphics.Gdk.Windows.Internal`
+* [ ] add options to reduce outputs
+	+ [ ] `--display-screen-etc`
+	+ [ ] others
 * [ ] refactor export list
 	+ [x] structure
 	+ [x] GDK WINDOW AND GDK WINDOW AUTO UNREF
@@ -38,7 +41,7 @@ Windows memo
 				+ [ ] check keyboard physical device event mask
 			* [ ] `gdkWindowSetDeviceEvents`
 				+ [ ] add main loop
-				+ [ ] use `GetOpt`
+				+ [x] use `GetOpt`
 				+ [ ] check event mask of master device
 					- [ ] pointer device
 					- [ ] keyboard device
