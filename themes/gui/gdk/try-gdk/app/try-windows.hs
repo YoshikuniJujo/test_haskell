@@ -52,6 +52,8 @@ main = do
 	print =<< gdkWindowPeekChildren w1
 
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
+	gdkWindowSetEvents w0 $ gdkEventMaskMultiBits [GdkKeyPressMask]
+	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 
 	gdkWindowShow w0
 	gdkWindowShow wc

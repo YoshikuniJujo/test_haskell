@@ -28,8 +28,14 @@ Windows memo
 	+ [ ] EVENT
 		- [ ] Event Mask
 			* [x] `gdkWindowGetEvents`
-			* [ ] `gdkWindowSetEvents`
+			* [x] `gdkWindowSetEvents`
 			* [ ] `gdkWindowGetDeviceEvents`
+				+ [ ] get pointer device
+				+ [ ] check pointer device event mask
+				+ [ ] check pointer physical device event mask
+				+ [ ] get keyboard device
+				+ [ ] check keyboard device event mask
+				+ [ ] check keyboard physical device event mask
 			* [ ] `gdkWindowSetDeviceEvents`
 			* [ ] `gdkWindowGetSourceEvents`
 			* [ ] `gdkWindowSetSourceEvents`
