@@ -14,6 +14,7 @@ import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
+import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -68,10 +69,13 @@ main = do
 	st <- gdkDisplayGetDefaultSeat dpy
 	pnt <- gdkSeatGetPointer st
 	kbd <- gdkSeatGetKeyboard st
+	pnts <- gdkDeviceListSlaveDevices pnt
 
 	when (OptShowDevice `elem` ss) do
 		print pnt
 		print kbd
+		putStrLn ""
+		print pnts
 
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
