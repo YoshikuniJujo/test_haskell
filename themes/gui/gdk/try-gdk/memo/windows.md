@@ -40,7 +40,7 @@ Windows memo
 				+ [ ] check keyboard device event mask
 				+ [ ] check keyboard physical device event mask
 			* [ ] `gdkWindowSetDeviceEvents`
-				+ [ ] add main loop
+				+ [x] add main loop
 				+ [x] use `GetOpt`
 				+ [ ] check event mask of master device
 					- [x] pointer device

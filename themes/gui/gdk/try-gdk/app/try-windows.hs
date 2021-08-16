@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -16,12 +17,16 @@ import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
+import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
+
+import Try.Tools
 
 main :: IO ()
 main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
-			optWindowEvents, optPointerDeviceEvents ]
+			optMainLoop, optWindowEvents, optPointerDeviceEvents ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -98,16 +103,27 @@ main = do
 		gdkDisplayFlush dpy
 		threadDelay 1000000
 
+	when (OptMainLoop `elem` ss) do
+		gdkWindowShow w0
+		mainLoop \case
+			GdkEventGdkDelete _d -> pure False
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
+					-> pure False
+			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+
 data OptSetting
 	= OptHelp
 	| OptWindowShowAndHide
 	| OptDisplayScreen
 	| OptShowDevice
+	| OptMainLoop
 	| OptWindowEvents [GdkEventMaskSingleBit]
 	| OptPointerDeviceEvents [GdkEventMaskSingleBit]
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
+	optMainLoop,
 	optWindowEvents, optPointerDeviceEvents ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
@@ -119,6 +135,8 @@ optDisplayScreen = Option ['d'] ["display-screen-etc"]
 	(NoArg OptDisplayScreen) "Get display, screen and so on"
 
 optShowDevice = Option ['v'] ["show-device"] (NoArg OptShowDevice) "Show Device"
+
+optMainLoop = Option ['l'] ["main-loop"] (NoArg OptMainLoop) "Go to main loop"
 
 optWindowEvents = Option ['w'] ["window-events"]
 	(ReqArg (OptWindowEvents . readEventMask) "Event Mask")
