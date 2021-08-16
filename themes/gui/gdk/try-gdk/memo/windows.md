@@ -30,13 +30,21 @@ Windows memo
 			* [x] `gdkWindowGetEvents`
 			* [x] `gdkWindowSetEvents`
 			* [ ] `gdkWindowGetDeviceEvents`
-				+ [ ] get pointer device
-				+ [ ] check pointer device event mask
+				+ [x] get pointer device
+				+ [x] check pointer device event mask
 				+ [ ] check pointer physical device event mask
-				+ [ ] get keyboard device
+				+ [x] get keyboard device
 				+ [ ] check keyboard device event mask
 				+ [ ] check keyboard physical device event mask
 			* [ ] `gdkWindowSetDeviceEvents`
+				+ [ ] add main loop
+				+ [ ] use `GetOpt`
+				+ [ ] check event mask of master device
+					- [ ] pointer device
+					- [ ] keyboard device
+				+ [ ] check event mask of physical device
+					- [ ] pointer device
+					- [ ] keyboard device
 			* [ ] `gdkWindowGetSourceEvents`
 			* [ ] `gdkWindowSetSourceEvents`
 		- [ ] Event Compression

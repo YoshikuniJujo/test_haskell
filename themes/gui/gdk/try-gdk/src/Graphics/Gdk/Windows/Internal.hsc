@@ -588,8 +588,12 @@ foreign import ccall "gdk_window_set_device_cursor"
 	c_gdk_window_set_device_cursor ::
 		GdkWindow -> GdkDeviceMaster 'Pointer -> Ptr GdkCursor -> IO ()
 
+gdkWindowGetDeviceEvents ::
+	IsGdkDevice d => GdkWindow -> d pk -> IO GdkEventMaskMultiBits
+gdkWindowGetDeviceEvents w = c_gdk_window_get_device_events w . getGdkDevice
+
 foreign import ccall "gdk_window_get_device_events"
-	gdkWindowGetDeviceEvents ::
+	c_gdk_window_get_device_events ::
 		GdkWindow -> GdkDevice -> IO GdkEventMaskMultiBits
 
 foreign import ccall "gdk_window_set_device_events"

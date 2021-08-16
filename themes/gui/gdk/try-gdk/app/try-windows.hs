@@ -6,6 +6,7 @@ import Control.Concurrent
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
+import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -14,6 +15,11 @@ main :: IO ()
 main = do
 	dpy <- gdkDisplayOpen ""
 	let	scr = gdkDisplayGetDefaultScreen dpy
+	st <- gdkDisplayGetDefaultSeat dpy
+	pnt <- gdkSeatGetPointer st
+	print pnt
+	kbd <- gdkSeatGetKeyboard st
+	print kbd
 	wr <- gdkScreenGetRootWindow scr
 	w0 <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkPointerMotionMask])
@@ -52,8 +58,10 @@ main = do
 	print =<< gdkWindowPeekChildren w1
 
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
+	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
 	gdkWindowSetEvents w0 $ gdkEventMaskMultiBits [GdkKeyPressMask]
 	print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
+	print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
 
 	gdkWindowShow w0
 	gdkWindowShow wc
