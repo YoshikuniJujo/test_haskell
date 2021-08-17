@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c67e28ff77a26498aa8ea36988d84bc95b6c28afcea3b28a49789d8cfab97dd8
+-- hash: 10ae86b609b5fe4ef92b86f749690bc9e7ca43da30d832896164343f3cf8a68e
 
 name:           try-gdk
 version:        0.1.0.0
@@ -461,28 +461,6 @@ executable try-monitor
 
 executable try-motion
   main-is: try-motion.hs
-  other-modules:
-      Main
-      Paths_try_gdk
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
-    , primitive
-    , simple-cairo
-    , simple-pango
-    , text
-    , try-gdk
-  default-language: Haskell2010
-
-executable try-multidevice
-  main-is: try-multidevice.hs
   other-modules:
       Main
       Paths_try_gdk

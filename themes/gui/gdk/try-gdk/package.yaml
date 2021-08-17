@@ -136,15 +136,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gdk
-  try-multidevice:
-    main:                try-multidevice.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-gdk
   try-motion:
     main:                try-motion.hs
     source-dirs:         app

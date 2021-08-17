@@ -60,9 +60,11 @@ Windows memo
 			* consider to remove it
 		- [x] `gdkWindowSetDeviceCursor`
 			* consider to remove it
-	+ [ ] MULTIPLE DEVICE
+	+ [x] MULTIPLE DEVICE
 		- consider to remove it
 	+ [ ] WITH DRAW FRAME
+		- [ ] `gdkWindowWithDrawFrame`
+		- [ ] `gdkWindowGetVisibleRegion`
 	+ [ ] WINDOW TYPE
 	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
 	+ [ ] GDK WINDOW STATES

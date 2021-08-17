@@ -23,9 +23,6 @@ module Graphics.Gdk.Windows (
 	-- * TITLE AND CURSOR
 	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
 
-	-- * MULTIPLE DEVICE
-	gdkWindowGetSupportMultidevice, gdkWindowSetSupportMultidevice,
-
 	-- * WITH DRAW FRAME
 	gdkWindowWithDrawFrame, gdkWindowGetVisibleRegion,
 

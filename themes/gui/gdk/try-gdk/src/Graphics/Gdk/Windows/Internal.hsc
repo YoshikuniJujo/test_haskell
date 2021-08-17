@@ -29,9 +29,6 @@ module Graphics.Gdk.Windows.Internal (
 	-- * TITLE AND CURSOR
 	gdkWindowSetTitle, gdkWindowSetCursor, gdkWindowGetCursor,
 
-	-- * MULTIPLE DEVICE
-	gdkWindowGetSupportMultidevice, gdkWindowSetSupportMultidevice,
-
 	-- * WITH DRAW FRAME
 	gdkWindowWithDrawFrame, gdkWindowGetVisibleRegion,
 
@@ -535,21 +532,6 @@ foreign import ccall "gdk_window_get_decorations"
 
 foreign import ccall "gdk_get_default_root_window"
 	gdkGetDefaultRootWindow :: IO GdkWindow
-
-gdkWindowGetSupportMultidevice :: GdkWindow -> IO Bool
-gdkWindowGetSupportMultidevice w =
-	gbooleanToBool <$> c_gdk_window_get_support_multidevice w
-
-foreign import ccall "gdk_window_get_support_multidevice"
-	c_gdk_window_get_support_multidevice :: GdkWindow -> IO #{type gboolean}
-
-gdkWindowSetSupportMultidevice :: GdkWindow -> Bool -> IO ()
-gdkWindowSetSupportMultidevice w =
-	c_gdk_window_set_support_multidevice w . boolToGboolean
-
-foreign import ccall "gdk_window_set_support_multidevice"
-	c_gdk_window_set_support_multidevice ::
-		GdkWindow -> #{type gboolean} -> IO ()
 
 gdkWindowGetEventCompression :: GdkWindow -> IO Bool
 gdkWindowGetEventCompression w =
