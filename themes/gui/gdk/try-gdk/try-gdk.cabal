@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c67e28ff77a26498aa8ea36988d84bc95b6c28afcea3b28a49789d8cfab97dd8
+-- hash: 84cb46c01b0ac86c9a3913d92a7b8baaf03422daad37692c105bdc9f22eca792
 
 name:           try-gdk
 version:        0.1.0.0
@@ -77,6 +77,7 @@ library
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -98,6 +99,7 @@ executable simple
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -120,6 +122,7 @@ executable test-cursor
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -142,6 +145,7 @@ executable try-axes
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -164,6 +168,7 @@ executable try-button
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -186,6 +191,7 @@ executable try-cairo-tribial
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -208,6 +214,7 @@ executable try-cursor-name
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -230,6 +237,7 @@ executable try-cursor-type
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -252,6 +260,7 @@ executable try-cursors
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -274,6 +283,7 @@ executable try-decorations
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -296,6 +306,7 @@ executable try-device
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -318,6 +329,7 @@ executable try-display
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -340,6 +352,7 @@ executable try-display-manager
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -362,6 +375,7 @@ executable try-draw
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -383,6 +397,7 @@ executable try-gdk-exe
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -405,6 +420,7 @@ executable try-general
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -427,6 +443,7 @@ executable try-key-press
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -449,6 +466,7 @@ executable try-monitor
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -471,6 +489,7 @@ executable try-motion
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -493,6 +512,7 @@ executable try-multidevice
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -515,6 +535,7 @@ executable try-primitive
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -537,6 +558,7 @@ executable try-rectangle
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -559,6 +581,7 @@ executable try-screen
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -581,6 +604,7 @@ executable try-seat
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -603,6 +627,7 @@ executable try-show-events
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -625,6 +650,7 @@ executable try-tribial
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -647,6 +673,7 @@ executable try-visuals
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -669,6 +696,7 @@ executable try-window-type-hint
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -691,6 +719,7 @@ executable try-windows
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc
@@ -713,6 +742,7 @@ test-suite try-gdk-test
       base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , glib-stopgap
     , nowdoc

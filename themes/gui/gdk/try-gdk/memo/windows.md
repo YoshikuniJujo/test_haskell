@@ -46,7 +46,7 @@ Windows memo
 					- [x] pointer device
 					- [ ] keyboard device
 				+ [ ] check event mask of physical device
-					- [ ] pointer device
+					- [x] pointer device
 					- [ ] keyboard device
 			* [ ] `gdkWindowGetSourceEvents`
 			* [ ] `gdkWindowSetSourceEvents`
