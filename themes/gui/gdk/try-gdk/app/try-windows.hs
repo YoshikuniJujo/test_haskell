@@ -30,8 +30,7 @@ main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
-			optEvents, optWindowEvents, optPointerDeviceEvents,
-			optPointerPhysicalDevice, optSource ]
+			optWindowEvents ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -130,17 +129,11 @@ data OptSetting
 	| OptShowDevice
 	| OptShowEvents
 	| OptMainLoop
-	| OptEvents [GdkEventMaskSingleBit]
 	| OptWindowEvents [GdkEventMaskSingleBit]
-	| OptPointerDeviceEvents [GdkEventMaskSingleBit]
-	| OptPointerPhysicalDevice String
-	| OptSource GdkInputSource
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
-	optShowEvents, optMainLoop,
-	optEvents, optWindowEvents, optPointerDeviceEvents, optPointerPhysicalDevice,
-	optSource ::
+	optShowEvents, optMainLoop, optWindowEvents ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -156,37 +149,17 @@ optShowEvents = Option ['e'] ["show-events"] (NoArg OptShowEvents) "Show events"
 
 optMainLoop = Option ['l'] ["main-loop"] (NoArg OptMainLoop) "Go to main loop"
 
-optEvents = Option [] ["events"]
-	(ReqArg (OptEvents . readEventMask) "Event Mask")
-	"Set event mask"
-
 optWindowEvents = Option ['w'] ["window-events"]
 	(ReqArg (OptWindowEvents . readEventMask) "Event Mask")
 	"Set Window Event Mask"
 
-optPointerDeviceEvents = Option ['p'] ["pointer-device-events"]
-	(ReqArg (OptPointerDeviceEvents . readEventMask) "Event Mask")
-	"Set pointer device event mask"
-
-optPointerPhysicalDevice = Option [] ["pointer-physical-device"]
-	(ReqArg OptPointerPhysicalDevice "Device Name")
-	"Set pointer physical device name"
-
-optSource = Option [] ["source"]
-	(ReqArg (OptSource . read) "Input Source")
-	"Set input source"
-
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
-getOptWindowEventMask, getOptPointerDeviceEventMask :: [OptSetting] -> [GdkEventMaskSingleBit]
+getOptWindowEventMask :: [OptSetting] -> [GdkEventMaskSingleBit]
 getOptWindowEventMask [] = []
 getOptWindowEventMask (OptWindowEvents ems : _) = ems
 getOptWindowEventMask (_ : ss) = getOptWindowEventMask ss
-
-getOptPointerDeviceEventMask [] = []
-getOptPointerDeviceEventMask (OptPointerDeviceEvents ems : _) = ems
-getOptPointerDeviceEventMask (_ : ss) = getOptPointerDeviceEventMask ss
 	
 runOpt :: GdkWindow -> [OptSetting] -> IO ()
 runOpt _ [] = pure ()
