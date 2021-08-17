@@ -80,8 +80,8 @@ Windows memo
 		- [x] `gdkWindowDeiconify`
 		- [x] `gdkWindowStick`
 		- [x] `gdkWindowUnstick`
-		- [ ] `gdkWindowMaximize`
-		- [ ] `gdkWindowUnmaximize`
+		- [x] `gdkWindowMaximize`
+		- [x] `gdkWindowUnmaximize`
 		- [ ] `gdkWindowFullscreen`
 		- [ ] `gdkWindowUnfullscreen`
 		- [ ] Gdk Fullscreen Mode
