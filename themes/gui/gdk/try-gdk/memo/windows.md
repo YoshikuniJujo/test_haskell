@@ -55,13 +55,11 @@ Windows memo
 	+ [ ] TITLE AND CURSOR
 		- [x] `gdkWindowSetTitle`
 		- [x] `gdkWindowSetCursor`
-		- [ ] `gdkWindowGetCursor`
+		- [x] `gdkWindowGetCursor`
 		- [ ] `gdkWindowGetDeviceCursor`
-			* [ ] try it
-			* [ ] consider to remove it
+			* consider to remove it
 		- [ ] `gdkWindowSetDeviceCursor`
-			* [ ] try it
-			* [ ] consider to remove it
+			* consider to remove it
 	+ [ ] MULTIPLE DEVICE
 	+ [ ] WITH DRAW FRAME
 	+ [ ] WINDOW TYPE

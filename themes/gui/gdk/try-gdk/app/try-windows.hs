@@ -185,5 +185,7 @@ runOpt d w (OptTitle t : ss) = gdkWindowSetTitle w t >> runOpt d w ss
 runOpt d w (OptCursor ct : ss) = do
 	c <- gdkCursorNewForDisplay d ct
 	gdkWindowSetCursor w c
+	Just c' <- gdkWindowGetCursor w
+	print =<< gdkCursorGetCursorType c'
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
