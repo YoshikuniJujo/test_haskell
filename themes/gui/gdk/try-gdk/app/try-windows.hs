@@ -135,6 +135,14 @@ main = do
 					-> pure False
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
+	when (OptWindowInfo `elem` ss) do
+		print =<< gdkWindowIsDestroyed w0
+
+	gdkWindowDestroy w0
+
+	when (OptWindowInfo `elem` ss) do
+		print =<< gdkWindowIsDestroyed w0
+
 data OptSetting
 	= OptHelp
 	| OptWindowShowAndHide

@@ -68,7 +68,7 @@ Windows memo
 	+ [x] WINDOW TYPE
 		- `gdkWindowGetWindowType`
 	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
-		- [ ] `gdkWindowIsDestroyed`
+		- [x] `gdkWindowIsDestroyed`
 		- [ ] `gdkWindowIsVisible`
 		- [ ] `gdkWindowIsViewable`
 		- [ ] `gdkWindowIsInputOnly`
