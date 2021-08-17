@@ -9,7 +9,6 @@ import Control.Concurrent
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 

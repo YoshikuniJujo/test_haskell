@@ -65,11 +65,14 @@ Windows memo
 	+ [x] WITH DRAW FRAME
 		- [x] `gdkWindowWithDrawFrame`
 		- [x] `gdkWindowGetVisibleRegion`
-	+ [ ] WINDOW TYPE
-		- [ ] `gdkWindowGetWindowType`
-		- [ ] `data GdkWindowType`
-		- [ ] patterns
+	+ [x] WINDOW TYPE
+		- `gdkWindowGetWindowType`
 	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
+		- [ ] `gdkWindowIsDestroyed`
+		- [ ] `gdkWindowIsVisible`
+		- [ ] `gdkWindowIsViewable`
+		- [ ] `gdkWindowIsInputOnly`
+		- [ ] `gdkWindowIsShaped`
 	+ [ ] GDK WINDOW STATES
 	+ [ ] GEOMETRY AND OPACITY
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE

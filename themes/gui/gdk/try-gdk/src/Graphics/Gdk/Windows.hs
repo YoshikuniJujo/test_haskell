@@ -28,10 +28,6 @@ module Graphics.Gdk.Windows (
 
 	-- * WINDOW TYPE
 	gdkWindowGetWindowType,
-	GdkWindowType,
-	pattern GdkWindowRoot, pattern GdkWindowToplevel,
-	pattern GdkWindowChild, pattern GdkWindowTemp, pattern GdkWindowForeign,
-	pattern GdkWindowOffscreen, pattern GdkWindowSubsurface,
 
 	-- * IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
 	gdkWindowIsDestroyed, gdkWindowIsVisible, gdkWindowIsViewable,

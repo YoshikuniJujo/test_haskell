@@ -35,7 +35,8 @@ main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
-			optWindowEvents, optNoEventCompression, optTitle, optCursor ]
+			optWindowEvents, optNoEventCompression, optTitle,
+			optCursor, optWindowInfo ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -145,11 +146,12 @@ data OptSetting
 	| OptNoEventCompression
 	| OptTitle String
 	| OptCursor GdkCursorType
+	| OptWindowInfo
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 	optShowEvents, optMainLoop, optWindowEvents, optNoEventCompression,
-	optTitle, optCursor ::
+	optTitle, optCursor, optWindowInfo ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -177,6 +179,9 @@ optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
 optCursor = Option [] ["cursor"] (ReqArg (OptCursor . read) "Cursor Type")
 	"Set cursor"
 
+optWindowInfo = Option ['i'] ["info"] (NoArg OptWindowInfo)
+	"Show window information"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
@@ -198,5 +203,8 @@ runOpt d w (OptCursor ct : ss) = do
 	gdkWindowSetCursor w c
 	Just c' <- gdkWindowGetCursor w
 	print =<< gdkCursorGetCursorType c'
+	runOpt d w ss
+runOpt d w (OptWindowInfo : ss) = do
+	print =<< gdkWindowGetWindowType w
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
