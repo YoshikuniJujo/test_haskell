@@ -67,13 +67,27 @@ Windows memo
 		- [x] `gdkWindowGetVisibleRegion`
 	+ [x] WINDOW TYPE
 		- `gdkWindowGetWindowType`
-	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
+	+ [x] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
 		- [x] `gdkWindowIsDestroyed`
-		- [ ] `gdkWindowIsVisible`
-		- [ ] `gdkWindowIsViewable`
-		- [ ] `gdkWindowIsInputOnly`
-		- [ ] `gdkWindowIsShaped`
+		- [x] `gdkWindowIsVisible`
+		- [x] `gdkWindowIsViewable`
+		- [x] `gdkWindowIsInputOnly`
+		- [x] `gdkWindowIsShaped`
 	+ [ ] GDK WINDOW STATES
+		- [ ] `gdkWindowGetState`
+		- [ ] `gdkWindowWithdraw`
+		- [ ] `gdkWindowIconify`
+		- [ ] `gdkWindowDeiconify`
+		- [ ] `gdkWindowStick`
+		- [ ] `gdkWindowUnstick`
+		- [ ] `gdkWindowMaximize`
+		- [ ] `gdkWindowUnmaximize`
+		- [ ] `gdkWindowFullscreen`
+		- [ ] `gdkWindowUnfullscreen`
+		- [ ] Gdk Fullscreen Mode
+			* [ ] `gdkWindowGetFullscreenMode`
+			* [ ] `gdkWindowSetFullscreenMode`
+			* [ ] `data GdkFullscreenMode`
 	+ [ ] GEOMETRY AND OPACITY
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
 		- [ ] Pass Through

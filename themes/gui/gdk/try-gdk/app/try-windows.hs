@@ -137,6 +137,10 @@ main = do
 
 	when (OptWindowInfo `elem` ss) do
 		print =<< gdkWindowIsDestroyed w0
+		print =<< gdkWindowIsVisible w0
+		print =<< gdkWindowIsViewable w0
+		print =<< gdkWindowIsInputOnly w0
+		print =<< gdkWindowIsShaped w0
 
 	gdkWindowDestroy w0
 
