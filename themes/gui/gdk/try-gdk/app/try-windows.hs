@@ -133,6 +133,11 @@ main = do
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_s)
+					-> True <$ do
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
