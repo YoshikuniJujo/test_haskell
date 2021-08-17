@@ -62,10 +62,13 @@ Windows memo
 			* consider to remove it
 	+ [x] MULTIPLE DEVICE
 		- consider to remove it
-	+ [ ] WITH DRAW FRAME
-		- [ ] `gdkWindowWithDrawFrame`
-		- [ ] `gdkWindowGetVisibleRegion`
+	+ [x] WITH DRAW FRAME
+		- [x] `gdkWindowWithDrawFrame`
+		- [x] `gdkWindowGetVisibleRegion`
 	+ [ ] WINDOW TYPE
+		- [ ] `gdkWindowGetWindowType`
+		- [ ] `data GdkWindowType`
+		- [ ] patterns
 	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED
 	+ [ ] GDK WINDOW STATES
 	+ [ ] GEOMETRY AND OPACITY

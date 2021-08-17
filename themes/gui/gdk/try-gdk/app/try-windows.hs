@@ -9,6 +9,7 @@ import Control.Monad
 import Control.Concurrent
 import Data.Foldable
 import Data.Maybe
+import Data.Color
 import Text.Read
 import System.Environment
 import System.Console.GetOpt
@@ -23,6 +24,9 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.GdkDrawingContext
+
+import Graphics.Cairo.Drawing.CairoT
 
 import Try.Tools
 
@@ -118,6 +122,13 @@ main = do
 		gdkWindowShow w0
 		mainLoop \case
 			GdkEventGdkDelete _d -> pure False
+			GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ do
+				print f
+				r <- gdkWindowGetVisibleRegion w0
+				gdkWindowWithDrawFrame w0 r \dc -> do
+					cr <- gdkDrawingContextGetCairoContext dc
+					cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
+					cairoPaint cr
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
