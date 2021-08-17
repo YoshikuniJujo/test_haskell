@@ -28,7 +28,7 @@ Windows memo
 			* [x] make child window
 			* [x] reparent
 		- [x] `gdkWindowPeekChildren`
-	+ [ ] EVENT
+	+ [x] EVENT
 		- [x] Event Mask
 			* [x] `gdkWindowGetEvents`
 			* [x] `gdkWindowSetEvents`
@@ -49,10 +49,19 @@ Windows memo
 				+ consider to remove it
 			* [x] `gdkWindowSetSourceEvents`
 				+ consider to remove it
-		- [ ] Event Compression
-			* [ ] `gdkWindowGetEventCompression`
-			* [ ] `gdkWindowSetEventCompression`
+		- [x] Event Compression
+			* [x] `gdkWindowGetEventCompression`
+			* [x] `gdkWindowSetEventCompression`
 	+ [ ] TITLE AND CURSOR
+		- [ ] `gdkWindowSetTitle`
+		- [ ] `gdkWindowSetCursor`
+		- [ ] `gdkWindowGetCursor`
+		- [ ] `gdkWindowGetDeviceCursor`
+			* [ ] try it
+			* [ ] consider to remove it
+		- [ ] `gdkWindowSetDeviceCursor`
+			* [ ] try it
+			* [ ] consider to remove it
 	+ [ ] MULTIPLE DEVICE
 	+ [ ] WITH DRAW FRAME
 	+ [ ] WINDOW TYPE
