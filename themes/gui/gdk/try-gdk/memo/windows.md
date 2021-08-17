@@ -78,8 +78,8 @@ Windows memo
 		- [x] `gdkWindowWithdraw`
 		- [x] `gdkWindowIconify`
 		- [x] `gdkWindowDeiconify`
-		- [ ] `gdkWindowStick`
-		- [ ] `gdkWindowUnstick`
+		- [x] `gdkWindowStick`
+		- [x] `gdkWindowUnstick`
 		- [ ] `gdkWindowMaximize`
 		- [ ] `gdkWindowUnmaximize`
 		- [ ] `gdkWindowFullscreen`

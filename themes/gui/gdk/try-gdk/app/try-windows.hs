@@ -167,6 +167,18 @@ main = do
 						gdkWindowDeiconify w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_t)
+					-> True <$ do
+						gdkWindowStick w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u)
+					-> True <$ do
+						gdkWindowUnstick w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
