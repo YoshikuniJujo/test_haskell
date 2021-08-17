@@ -130,6 +130,13 @@ main = do
 					cr <- gdkDrawingContextGetCairoContext dc
 					cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
 					cairoPaint cr
+			GdkEventGdkWindowState (gdkEventWindowState -> s) -> True <$ do
+				print s
+				print . gdkWindowStateList
+					$ gdkEventWindowStateChangedMask s
+				print . gdkWindowStateList
+					$ gdkEventWindowStateNewWindowState s
+				print . gdkWindowStateList=<< gdkWindowGetState w0
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
