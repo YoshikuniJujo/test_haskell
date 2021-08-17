@@ -161,6 +161,8 @@ main = do
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
 						gdkDisplayFlush dpy
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
 						threadDelay 1000000
 						gdkWindowDeiconify w0
 						print . gdkWindowStateList
