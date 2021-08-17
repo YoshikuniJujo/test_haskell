@@ -30,7 +30,7 @@ main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
-			optWindowEvents, optNoEventCompression ]
+			optWindowEvents, optNoEventCompression, optTitle ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -131,6 +131,7 @@ data OptSetting
 	| OptMainLoop
 	| OptWindowEvents [GdkEventMaskSingleBit]
 	| OptNoEventCompression
+	| OptTitle String
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
@@ -157,6 +158,8 @@ optWindowEvents = Option ['w'] ["window-events"]
 optNoEventCompression = Option ['c'] ["no-event-compression"]
 	(NoArg OptNoEventCompression) "Disable event compression"
 
+optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
@@ -172,4 +175,5 @@ runOpt w (OptNoEventCompression : ss) = do
 	gdkWindowSetEventCompression w False
 	print =<< gdkWindowGetEventCompression w
 	runOpt w ss
+runOpt w (OptTitle t : ss) = gdkWindowSetTitle w t >> runOpt w ss
 runOpt w (_ : ss) = runOpt w ss

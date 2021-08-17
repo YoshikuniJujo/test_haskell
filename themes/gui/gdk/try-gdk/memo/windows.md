@@ -53,7 +53,7 @@ Windows memo
 			* [x] `gdkWindowGetEventCompression`
 			* [x] `gdkWindowSetEventCompression`
 	+ [ ] TITLE AND CURSOR
-		- [ ] `gdkWindowSetTitle`
+		- [x] `gdkWindowSetTitle`
 		- [ ] `gdkWindowSetCursor`
 		- [ ] `gdkWindowGetCursor`
 		- [ ] `gdkWindowGetDeviceCursor`
