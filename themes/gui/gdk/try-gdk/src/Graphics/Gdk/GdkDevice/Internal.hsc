@@ -70,7 +70,7 @@ import {-# SOURCE #-} Graphics.Gdk.Windows.Internal
 
 #include <gdk/gdk.h>
 
-enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Eq] [
+enum "GdkInputSource" ''#{type GdkInputSource} [''Show, ''Read, ''Eq] [
 	("GdkSourceMouse", #{const GDK_SOURCE_MOUSE}),
 	("GdkSourcePen", #{const GDK_SOURCE_PEN}),
 	("GdkSourceEraser", #{const GDK_SOURCE_ERASER}),

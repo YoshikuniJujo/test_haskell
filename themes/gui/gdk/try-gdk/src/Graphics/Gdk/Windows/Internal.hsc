@@ -23,8 +23,6 @@ module Graphics.Gdk.Windows.Internal (
 	-- * EVENT
 	-- ** Event Mask
 	gdkWindowGetEvents, gdkWindowSetEvents,
-	gdkWindowGetDeviceEvents, gdkWindowSetDeviceEvents,
-	gdkWindowGetSourceEvents, gdkWindowSetSourceEvents,
 	-- ** Event Compression
 	gdkWindowGetEventCompression, gdkWindowSetEventCompression,
 
@@ -587,30 +585,6 @@ gdkWindowSetDeviceCursor w d (GdkCursor fc) = do
 foreign import ccall "gdk_window_set_device_cursor"
 	c_gdk_window_set_device_cursor ::
 		GdkWindow -> GdkDeviceMaster 'Pointer -> Ptr GdkCursor -> IO ()
-
-gdkWindowGetDeviceEvents ::
-	IsGdkDevice d => GdkWindow -> d pk -> IO GdkEventMaskMultiBits
-gdkWindowGetDeviceEvents w = c_gdk_window_get_device_events w . getGdkDevice
-
-foreign import ccall "gdk_window_get_device_events"
-	c_gdk_window_get_device_events ::
-		GdkWindow -> GdkDevice -> IO GdkEventMaskMultiBits
-
-gdkWindowSetDeviceEvents ::
-	IsGdkDevice d => GdkWindow -> d pk -> GdkEventMaskMultiBits -> IO ()
-gdkWindowSetDeviceEvents w = c_gdk_window_set_device_events w . getGdkDevice
-
-foreign import ccall "gdk_window_set_device_events"
-	c_gdk_window_set_device_events ::
-		GdkWindow -> GdkDevice -> GdkEventMaskMultiBits -> IO ()
-
-foreign import ccall "gdk_window_get_source_events"
-	gdkWindowGetSourceEvents ::
-		GdkWindow -> GdkInputSource -> IO GdkEventMaskMultiBits
-
-foreign import ccall "gdk_window_set_source_events"
-	gdkWindowSetSourceEvents ::
-		GdkWindow -> GdkInputSource -> GdkEventMaskMultiBits -> IO ()
 
 gdkWindowGetEventCompression :: GdkWindow -> IO Bool
 gdkWindowGetEventCompression w =

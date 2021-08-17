@@ -29,27 +29,26 @@ Windows memo
 			* [x] reparent
 		- [x] `gdkWindowPeekChildren`
 	+ [ ] EVENT
-		- [ ] Event Mask
+		- [x] Event Mask
 			* [x] `gdkWindowGetEvents`
 			* [x] `gdkWindowSetEvents`
-			* [ ] `gdkWindowGetDeviceEvents`
+			* [x] `gdkWindowGetDeviceEvents`
 				+ [x] get pointer device
 				+ [x] check pointer device event mask
-				+ [ ] check pointer physical device event mask
 				+ [x] get keyboard device
-				+ [ ] check keyboard device event mask
-				+ [ ] check keyboard physical device event mask
-			* [ ] `gdkWindowSetDeviceEvents`
+				+ [x] consider to remove it
+			* [x] `gdkWindowSetDeviceEvents`
 				+ [x] add main loop
 				+ [x] use `GetOpt`
-				+ [ ] check event mask of master device
+				+ [x] check event mask of master device
 					- [x] pointer device
-					- [ ] keyboard device
-				+ [ ] check event mask of physical device
+				+ [x] check event mask of physical device
 					- [x] pointer device
-					- [ ] keyboard device
-			* [ ] `gdkWindowGetSourceEvents`
-			* [ ] `gdkWindowSetSourceEvents`
+				+ [x] consider to remove it
+			* [x] `gdkWindowGetSourceEvents`
+				+ consider to remove it
+			* [x] `gdkWindowSetSourceEvents`
+				+ consider to remove it
 		- [ ] Event Compression
 			* [ ] `gdkWindowGetEventCompression`
 			* [ ] `gdkWindowSetEventCompression`

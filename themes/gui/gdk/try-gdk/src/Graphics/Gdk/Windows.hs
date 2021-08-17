@@ -17,8 +17,6 @@ module Graphics.Gdk.Windows (
 	-- * EVENT
 	-- ** Event Mask
 	gdkWindowGetEvents, gdkWindowSetEvents,
-	gdkWindowGetDeviceEvents, gdkWindowSetDeviceEvents,
-	gdkWindowGetSourceEvents, gdkWindowSetSourceEvents,
 	-- ** Event Compression
 	gdkWindowGetEventCompression, gdkWindowSetEventCompression,
 

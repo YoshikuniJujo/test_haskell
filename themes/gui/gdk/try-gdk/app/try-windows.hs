@@ -7,7 +7,7 @@ module Main where
 
 import Control.Monad
 import Control.Concurrent
-import Data.Map.Strict ((!?))
+import Data.Foldable
 import Data.Maybe
 import Text.Read
 import System.Environment
@@ -25,15 +25,13 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
-import qualified Data.Map.Strict as M
-
 main :: IO ()
 main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
 			optEvents, optWindowEvents, optPointerDeviceEvents,
-			optPointerPhysicalDevice ]
+			optPointerPhysicalDevice, optSource ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -78,23 +76,21 @@ main = do
 	pnts <- gdkDeviceListSlaveDevices pnt
 	kbds <- gdkDeviceListSlaveDevices kbd
 
-	pntt <- getPhysicalDeviceTable pnt
-
-	runOpt w0 pntt ss
+	runOpt w0 ss
 
 	when (OptShowDevice `elem` ss) do
 		putStrLn =<< gdkDeviceGetName pnt
-		(putStrLn <=< gdkDeviceGetName) `mapM_` pnts
+		print =<< gdkDeviceGetSource pnt
+		for_ pnts \p -> do
+			putStrLn =<< gdkDeviceGetName p
+			print =<< gdkDeviceGetSource p
 		putStrLn ""
 		putStrLn =<< gdkDeviceGetName kbd
 		(putStrLn <=< gdkDeviceGetName) `mapM_` kbds
 
 	gdkWindowSetEvents w0 . gdkEventMaskMultiBits $ getOptWindowEventMask ss
-	gdkWindowSetDeviceEvents w0 pnt . gdkEventMaskMultiBits
-		$ getOptPointerDeviceEventMask ss
 	when (OptShowEvents `elem` ss) do
 		print . gdkEventMaskSingleBitList =<< gdkWindowGetEvents w0
-		print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w0 pnt
 
 	when (OptWindowShowAndHide `elem` ss) do
 		gdkWindowShow w0
@@ -138,11 +134,13 @@ data OptSetting
 	| OptWindowEvents [GdkEventMaskSingleBit]
 	| OptPointerDeviceEvents [GdkEventMaskSingleBit]
 	| OptPointerPhysicalDevice String
+	| OptSource GdkInputSource
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 	optShowEvents, optMainLoop,
-	optEvents, optWindowEvents, optPointerDeviceEvents, optPointerPhysicalDevice ::
+	optEvents, optWindowEvents, optPointerDeviceEvents, optPointerPhysicalDevice,
+	optSource ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -174,6 +172,10 @@ optPointerPhysicalDevice = Option [] ["pointer-physical-device"]
 	(ReqArg OptPointerPhysicalDevice "Device Name")
 	"Set pointer physical device name"
 
+optSource = Option [] ["source"]
+	(ReqArg (OptSource . read) "Input Source")
+	"Set input source"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
@@ -185,20 +187,7 @@ getOptWindowEventMask (_ : ss) = getOptWindowEventMask ss
 getOptPointerDeviceEventMask [] = []
 getOptPointerDeviceEventMask (OptPointerDeviceEvents ems : _) = ems
 getOptPointerDeviceEventMask (_ : ss) = getOptPointerDeviceEventMask ss
-
-getPhysicalDeviceTable :: GdkDeviceMaster pk -> IO (M.Map String (GdkDevicePhysical pk))
-getPhysicalDeviceTable m = (M.fromList <$>)
-	$ gdkDeviceListSlaveDevices m >>=
-		mapM \s -> (,) <$> gdkDeviceGetName s <*> pure s
 	
-
-runOpt :: GdkWindow -> M.Map String (GdkDevicePhysical 'Pointer) -> [OptSetting] -> IO ()
-runOpt _ _ [] = pure ()
-runOpt w ppt (OptPointerPhysicalDevice ppn : OptEvents ems : ss) = do
-	case ppt !? ppn of
-		Nothing -> putStrLn $ "No such name device: " ++ ppn
-		Just pp -> do
-			gdkWindowSetDeviceEvents w pp $ gdkEventMaskMultiBits ems
-			print . gdkEventMaskSingleBitList =<< gdkWindowGetDeviceEvents w pp
-	runOpt w ppt ss
-runOpt w ppt (_ : ss) = runOpt w ppt ss
+runOpt :: GdkWindow -> [OptSetting] -> IO ()
+runOpt _ [] = pure ()
+runOpt w (_ : ss) = runOpt w ss
