@@ -76,8 +76,8 @@ Windows memo
 	+ [ ] GDK WINDOW STATES
 		- [x] `gdkWindowGetState`
 		- [x] `gdkWindowWithdraw`
-		- [ ] `gdkWindowIconify`
-		- [ ] `gdkWindowDeiconify`
+		- [x] `gdkWindowIconify`
+		- [x] `gdkWindowDeiconify`
 		- [ ] `gdkWindowStick`
 		- [ ] `gdkWindowUnstick`
 		- [ ] `gdkWindowMaximize`

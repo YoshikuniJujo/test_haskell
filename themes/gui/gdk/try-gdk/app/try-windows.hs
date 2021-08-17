@@ -154,6 +154,17 @@ main = do
 						gdkDisplayFlush dpy
 						threadDelay 1000000
 						gdkWindowShow w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_i)
+					-> True <$ do
+						gdkWindowIconify w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
+						gdkDisplayFlush dpy
+						threadDelay 1000000
+						gdkWindowDeiconify w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
