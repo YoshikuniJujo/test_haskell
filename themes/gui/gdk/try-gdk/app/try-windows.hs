@@ -145,6 +145,15 @@ main = do
 					-> True <$ do
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_w)
+					-> True <$ do
+						gdkWindowWithdraw w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
+						gdkDisplayFlush dpy
+						threadDelay 1000000
+						gdkWindowShow w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do

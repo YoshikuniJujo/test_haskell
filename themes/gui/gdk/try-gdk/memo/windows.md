@@ -75,7 +75,7 @@ Windows memo
 		- [x] `gdkWindowIsShaped`
 	+ [ ] GDK WINDOW STATES
 		- [x] `gdkWindowGetState`
-		- [ ] `gdkWindowWithdraw`
+		- [x] `gdkWindowWithdraw`
 		- [ ] `gdkWindowIconify`
 		- [ ] `gdkWindowDeiconify`
 		- [ ] `gdkWindowStick`
