@@ -52,15 +52,16 @@ Windows memo
 		- [x] Event Compression
 			* [x] `gdkWindowGetEventCompression`
 			* [x] `gdkWindowSetEventCompression`
-	+ [ ] TITLE AND CURSOR
+	+ [x] TITLE AND CURSOR
 		- [x] `gdkWindowSetTitle`
 		- [x] `gdkWindowSetCursor`
 		- [x] `gdkWindowGetCursor`
-		- [ ] `gdkWindowGetDeviceCursor`
+		- [x] `gdkWindowGetDeviceCursor`
 			* consider to remove it
-		- [ ] `gdkWindowSetDeviceCursor`
+		- [x] `gdkWindowSetDeviceCursor`
 			* consider to remove it
 	+ [ ] MULTIPLE DEVICE
+		- consider to remove it
 	+ [ ] WITH DRAW FRAME
 	+ [ ] WINDOW TYPE
 	+ [ ] IS DESTROYED, VISIBLE, VIEWABLE, INPUT ONLY OR SHAPED

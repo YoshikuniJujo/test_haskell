@@ -12,7 +12,6 @@ import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
-import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -41,7 +40,7 @@ main = do
 	gdkWindowShow w
 	gdkWindowSetSupportMultidevice w True
 --	gdkWindowSetCursor w =<< gdkCursorNewForDisplay d GdkHand2
-	gdkWindowSetDeviceCursor w dvp =<< gdkCursorNewForDisplay d GdkMouse
+--	gdkWindowSetDeviceCursor w dvp =<< gdkCursorNewForDisplay d GdkMouse
 	print =<< gdkWindowGetSupportMultidevice w
 	doWhile_ do
 		threadDelay 100000
