@@ -17,6 +17,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -30,7 +31,7 @@ main = do
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
-			optWindowEvents, optNoEventCompression, optTitle ]
+			optWindowEvents, optNoEventCompression, optTitle, optCursor ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -75,7 +76,7 @@ main = do
 	pnts <- gdkDeviceListSlaveDevices pnt
 	kbds <- gdkDeviceListSlaveDevices kbd
 
-	runOpt w0 ss
+	runOpt dpy w0 ss
 
 	when (OptShowDevice `elem` ss) do
 		putStrLn =<< gdkDeviceGetName pnt
@@ -132,10 +133,12 @@ data OptSetting
 	| OptWindowEvents [GdkEventMaskSingleBit]
 	| OptNoEventCompression
 	| OptTitle String
+	| OptCursor GdkCursorType
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
-	optShowEvents, optMainLoop, optWindowEvents, optNoEventCompression ::
+	optShowEvents, optMainLoop, optWindowEvents, optNoEventCompression,
+	optTitle, optCursor ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -160,6 +163,9 @@ optNoEventCompression = Option ['c'] ["no-event-compression"]
 
 optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
 
+optCursor = Option [] ["cursor"] (ReqArg (OptCursor . read) "Cursor Type")
+	"Set cursor"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
@@ -168,12 +174,16 @@ getOptWindowEventMask [] = []
 getOptWindowEventMask (OptWindowEvents ems : _) = ems
 getOptWindowEventMask (_ : ss) = getOptWindowEventMask ss
 	
-runOpt :: GdkWindow -> [OptSetting] -> IO ()
-runOpt _ [] = pure ()
-runOpt w (OptNoEventCompression : ss) = do
+runOpt :: GdkDisplay -> GdkWindow -> [OptSetting] -> IO ()
+runOpt _ _ [] = pure ()
+runOpt d w (OptNoEventCompression : ss) = do
 	print =<< gdkWindowGetEventCompression w
 	gdkWindowSetEventCompression w False
 	print =<< gdkWindowGetEventCompression w
-	runOpt w ss
-runOpt w (OptTitle t : ss) = gdkWindowSetTitle w t >> runOpt w ss
-runOpt w (_ : ss) = runOpt w ss
+	runOpt d w ss
+runOpt d w (OptTitle t : ss) = gdkWindowSetTitle w t >> runOpt d w ss
+runOpt d w (OptCursor ct : ss) = do
+	c <- gdkCursorNewForDisplay d ct
+	gdkWindowSetCursor w c
+	runOpt d w ss
+runOpt d w (_ : ss) = runOpt d w ss

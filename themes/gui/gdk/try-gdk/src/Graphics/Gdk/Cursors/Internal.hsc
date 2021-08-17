@@ -115,7 +115,7 @@ gdkCursorNewFromName (GdkDisplay d) nm = withCString nm \cnm ->
 foreign import ccall "gdk_cursor_new_from_name" c_gdk_cursor_new_from_name ::
 	Ptr GdkDisplay -> CString -> IO (Ptr GdkCursor)
 
-enum "GdkCursorType" ''#{type GdkCursorType} [''Show] [
+enum "GdkCursorType" ''#{type GdkCursorType} [''Show, ''Read, ''Eq] [
 	("GdkXCursor", #{const GDK_X_CURSOR}), ("GdkArrow", #{const GDK_ARROW}),
 	("GdkBasedArrowDown", #{const GDK_BASED_ARROW_DOWN}),
 	("GdkBasedArrowUp", #{const GDK_BASED_ARROW_UP}),
