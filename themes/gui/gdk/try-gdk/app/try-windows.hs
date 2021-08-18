@@ -11,6 +11,7 @@ import Control.Concurrent
 import Data.Foldable
 import Data.Maybe
 import Data.Color
+import Data.IORef
 import Text.Read
 import System.Environment
 import System.Console.GetOpt
@@ -34,6 +35,7 @@ import Try.Tools
 
 main :: IO ()
 main = do
+	skipTaskbar <- newIORef False
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
@@ -261,6 +263,12 @@ main = do
 						b <- gdkWindowGetModalHint w1
 						gdkWindowSetModalHint w1 $ not b
 						print =<< gdkWindowGetModalHint w1
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_e)
+					-> True <$ do
+						b <- not <$> readIORef skipTaskbar
+						gdkWindowSetSkipTaskbarHint w0 b
+						writeIORef skipTaskbar b
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> c) ->
 					True <$ print c
