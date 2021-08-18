@@ -36,7 +36,7 @@ main = do
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
 			optWindowEvents, optNoEventCompression, optTitle,
-			optCursor, optWindowInfo ]
+			optCursor, optWindowInfo, optRaise, optFocus ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -232,7 +232,10 @@ main = do
 						gdkWindowLower w0
 						gdkDisplayFlush dpy
 						threadDelay 1000000
-						gdkWindowRaise w0 >> gdkWindowFocus w0 ts
+						when (OptRaise `elem` ss) $ gdkWindowRaise w0
+						when (OptFocus `elem` ss) $ gdkWindowFocus w0 ts
+						print ts
+						print . gdkWindowStateList =<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
@@ -270,11 +273,13 @@ data OptSetting
 	| OptTitle String
 	| OptCursor GdkCursorType
 	| OptWindowInfo
+	| OptRaise
+	| OptFocus
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 	optShowEvents, optMainLoop, optWindowEvents, optNoEventCompression,
-	optTitle, optCursor, optWindowInfo ::
+	optTitle, optCursor, optWindowInfo, optRaise, optFocus ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -304,6 +309,10 @@ optCursor = Option [] ["cursor"] (ReqArg (OptCursor . read) "Cursor Type")
 
 optWindowInfo = Option ['i'] ["info"] (NoArg OptWindowInfo)
 	"Show window information"
+
+optRaise = Option ['r'] ["raise"] (NoArg OptRaise) "Do raise"
+
+optFocus = Option ['f'] ["focus"] (NoArg OptFocus) "Do focus"
 
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
