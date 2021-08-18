@@ -115,7 +115,7 @@ Windows memo
 					- [x] `gdkWindowGetRootOrigin`
 			* [ ] move and resize
 				- [ ] `gdkWindowMoveResize`
-				- [ ] `gdkWindowMove`
+				- [x] `gdkWindowMove`
 				- [ ] `gdkWindowResize`
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
 		- [ ] Pass Through
