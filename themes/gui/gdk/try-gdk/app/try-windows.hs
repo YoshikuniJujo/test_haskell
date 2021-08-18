@@ -212,6 +212,18 @@ main = do
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_j)
 					-> True <$ fullScreenModeCurrent w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_a)
+					-> True <$ do
+						gdkWindowSetKeepAbove w0 True
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_b)
+					-> True <$ do
+						gdkWindowSetKeepBelow w0 True
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do

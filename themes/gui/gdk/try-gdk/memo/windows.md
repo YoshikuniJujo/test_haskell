@@ -93,8 +93,8 @@ Windows memo
 			* [x] classify z and xy
 			* [x] others
 		- [ ] Z Axis
-			* [ ] `gdkWindowSetKeepAbove`
-			* [ ] `gdkWindowSetKeepBelow`
+			* [x] `gdkWindowSetKeepAbove`
+			* [x] `gdkWindowSetKeepBelow`
 			* [ ] `gdkWindowRaise`
 			* [ ] `gdkWindowLower`
 			* [ ] `gdkWindowFocus`
