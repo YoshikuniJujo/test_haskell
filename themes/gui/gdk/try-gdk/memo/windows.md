@@ -95,8 +95,8 @@ Windows memo
 		- [ ] Z Axis
 			* [x] `gdkWindowSetKeepAbove`
 			* [x] `gdkWindowSetKeepBelow`
-			* [ ] `gdkWindowRaise`
-			* [ ] `gdkWindowLower`
+			* [x] `gdkWindowRaise`
+			* [x] `gdkWindowLower`
 			* [ ] `gdkWindowFocus`
 			* [ ] `gdkWindowSetOpacity`
 		- [ ] XY Axis

@@ -224,6 +224,12 @@ main = do
 						gdkWindowSetKeepBelow w0 True
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_r)
+					-> True <$ gdkWindowRaise w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_l)
+					-> True <$ gdkWindowLower w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
