@@ -105,9 +105,9 @@ Windows memo
 			* [ ] get position and size
 				+ [ ] window
 					- [x] `gdkWindowGetGeometry`
-					- [ ] `gdkWindowGetPosition`
-					- [ ] `gdkWindowGetWideh`
-					- [ ] `gdkWindowGetHeight`
+					- [x] `gdkWindowGetPosition`
+					- [x] `gdkWindowGetWideh`
+					- [x] `gdkWindowGetHeight`
 					- [ ] `gdkWindowGetOrigin`
 					- [ ] `gdkWindowGetRootCoords`
 				+ [ ] frame

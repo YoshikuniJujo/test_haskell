@@ -5,6 +5,7 @@
 
 module Main where
 
+import Foreign.C.Types
 import Control.Monad
 import Control.Concurrent
 import Data.Foldable
@@ -140,6 +141,7 @@ main = do
 			GdkEventGdkConfigure (gdkEventConfigure -> c) -> True <$ do
 				print c
 				print =<< gdkWindowGetGeometry w0
+				print =<< getPositionAndSize w0
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
@@ -347,5 +349,11 @@ runOpt d w (OptWindowInfo : ss) = do
 	print =<< gdkWindowGetWindowType w
 	print =<< gdkWindowGetFullscreenMode w
 	print =<< gdkWindowGetGeometry w
+	print =<< getPositionAndSize w
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
+
+getPositionAndSize :: GdkWindow -> IO ((CInt, CInt), (CInt, CInt))
+getPositionAndSize w = (,)
+	<$> gdkWindowGetPosition w
+	<*> ((,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w)
