@@ -250,6 +250,12 @@ main = do
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_p)
 					-> True <$ gdkWindowSetOpacity w0 1
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_r)
+					-> True <$ do
+						b <- gdkWindowGetPassThrough w0
+						gdkWindowSetPassThrough w0 $ not b
+						print =<< gdkWindowGetPassThrough w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do

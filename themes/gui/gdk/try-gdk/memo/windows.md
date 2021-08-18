@@ -88,7 +88,7 @@ Windows memo
 			* [x] `gdkWindowGetFullscreenMode`
 			* [x] `gdkWindowSetFullscreenMode`
 			* [x] `data GdkFullscreenMode`
-	+ [ ] GEOMETRY AND OPACITY
+	+ [x] GEOMETRY AND OPACITY
 		- [x] structure
 			* [x] classify z and xy
 			* [x] others
@@ -101,7 +101,7 @@ Windows memo
 				+ [x] second argument to `MilliSecond`
 				+ [x] others
 			* [x] `gdkWindowSetOpacity`
-		- [ ] XY Axis
+		- [x] XY Axis
 			* [x] get position and size
 				+ [x] window
 					- [x] `gdkWindowGetGeometry`
@@ -113,13 +113,17 @@ Windows memo
 				+ [x] frame
 					- [x] `gdkWindowGetFrameExtents`
 					- [x] `gdkWindowGetRootOrigin`
-			* [ ] move and resize
-				- [ ] `gdkWindowMoveResize`
+			* [x] move and resize
+				- [x] `gdkWindowMoveResize`
 				- [x] `gdkWindowMove`
 				- [x] `gdkWindowResize`
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
 		- [ ] Pass Through
+			* [ ] `gdkWindowSetPassThrough`
+			* [ ] `gdkWindowGetPassThrough`
 		- [ ] Modal Hint
+			* [ ] `gdkWindowSetModalHint`
+			* [ ] `gdkWindowGetModalHint`
 		- [ ] Window Type Hint
 		- [ ] Task Bar, Pager and Urgency
 		- [ ] Transient For
