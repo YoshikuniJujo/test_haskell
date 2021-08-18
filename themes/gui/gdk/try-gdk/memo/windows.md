@@ -102,7 +102,7 @@ Windows memo
 				+ [x] others
 			* [x] `gdkWindowSetOpacity`
 		- [ ] XY Axis
-			* [ ] get position and size
+			* [x] get position and size
 				+ [x] window
 					- [x] `gdkWindowGetGeometry`
 					- [x] `gdkWindowGetPosition`
@@ -110,9 +110,9 @@ Windows memo
 					- [x] `gdkWindowGetHeight`
 					- [x] `gdkWindowGetOrigin`
 					- [x] `gdkWindowGetRootCoords`
-				+ [ ] frame
-					- [ ] `gdkWindowGetFrameExtents`
-					- [ ] `gdkWindowGetRootOrigin`
+				+ [x] frame
+					- [x] `gdkWindowGetFrameExtents`
+					- [x] `gdkWindowGetRootOrigin`
 			* [ ] move and resize
 				- [ ] `gdkWindowMoveResize`
 				- [ ] `gdkWindowMove`

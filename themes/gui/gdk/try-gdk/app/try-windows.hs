@@ -19,6 +19,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.PointsAndRectangles
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
@@ -144,6 +145,8 @@ main = do
 				print =<< getPositionAndSize w0
 				print =<< gdkWindowGetOrigin w0
 				print =<< gdkWindowGetRootCoords w0 100 200
+				print =<< getFrameExtents w0
+				print =<< gdkWindowGetRootOrigin w0
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
@@ -354,6 +357,8 @@ runOpt d w (OptWindowInfo : ss) = do
 	print =<< getPositionAndSize w
 	print =<< gdkWindowGetOrigin w
 	print =<< gdkWindowGetRootCoords w 100 200
+	print =<< getFrameExtents w
+	print =<< gdkWindowGetRootOrigin w
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
 
@@ -361,3 +366,9 @@ getPositionAndSize :: GdkWindow -> IO ((CInt, CInt), (CInt, CInt))
 getPositionAndSize w = (,)
 	<$> gdkWindowGetPosition w
 	<*> ((,) <$> gdkWindowGetWidth w <*> gdkWindowGetHeight w)
+
+getFrameExtents :: GdkWindow -> IO GdkRectangle
+getFrameExtents w = do
+	r <- gdkRectangleNew
+	gdkWindowGetFrameExtents w r
+	gdkRectangleFreeze r
