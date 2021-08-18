@@ -255,6 +255,15 @@ main = do
 					-> True <$ do
 						gdkWindowSetTransientFor w1 w0
 						gdkWindowShow w1
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_d)
+					-> True <$ do
+						b <- gdkWindowGetModalHint w1
+						gdkWindowSetModalHint w1 $ not b
+						print =<< gdkWindowGetModalHint w1
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> c) ->
+					True <$ print c
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
