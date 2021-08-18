@@ -82,8 +82,8 @@ Windows memo
 		- [x] `gdkWindowUnstick`
 		- [x] `gdkWindowMaximize`
 		- [x] `gdkWindowUnmaximize`
-		- [ ] `gdkWindowFullscreen`
-		- [ ] `gdkWindowUnfullscreen`
+		- [x] `gdkWindowFullscreen`
+		- [x] `gdkWindowUnfullscreen`
 		- [ ] Gdk Fullscreen Mode
 			* [ ] `gdkWindowGetFullscreenMode`
 			* [ ] `gdkWindowSetFullscreenMode`

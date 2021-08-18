@@ -191,6 +191,18 @@ main = do
 						gdkWindowUnmaximize w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_f)
+					-> True <$ do
+						gdkWindowFullscreen w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_g)
+					-> True <$ do
+						gdkWindowUnfullscreen w0
+						print . gdkWindowStateList
+							=<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
