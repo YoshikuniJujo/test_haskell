@@ -89,6 +89,32 @@ Windows memo
 			* [x] `gdkWindowSetFullscreenMode`
 			* [x] `data GdkFullscreenMode`
 	+ [ ] GEOMETRY AND OPACITY
+		- [x] structure
+			* [x] classify z and xy
+			* [x] others
+		- [ ] Z Axis
+			* [ ] `gdkWindowSetKeepAbove`
+			* [ ] `gdkWindowSetKeepBelow`
+			* [ ] `gdkWindowRaise`
+			* [ ] `gdkWindowLower`
+			* [ ] `gdkWindowFocus`
+			* [ ] `gdkWindowSetOpacity`
+		- [ ] XY Axis
+			* [ ] get position and size
+				+ [ ] window
+					- [ ] `gdkWindowGetGeometry`
+					- [ ] `gdkWindowGetPosition`
+					- [ ] `gdkWindowGetWideh`
+					- [ ] `gdkWindowGetHeight`
+					- [ ] `gdkWindowGetOrigin`
+					- [ ] `gdkWindowGetRootCoords`
+				+ [ ] frame
+					- [ ] `gdkWindowGetFrameExtents`
+					- [ ] `gdkWindowGetRootOrigin`
+			* [ ] move and resize
+				- [ ] `gdkWindowMoveResize`
+				- [ ] `gdkWindowMove`
+				- [ ] `gdkWindowResize`
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
 		- [ ] Pass Through
 		- [ ] Modal Hint

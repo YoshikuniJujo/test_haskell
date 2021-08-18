@@ -46,17 +46,20 @@ module Graphics.Gdk.Windows (
 	pattern GdkFullscreenOnAllMonitors,
 
 	-- * GEOMETRY AND OPACITY
+	-- ** Z Axis
 	gdkWindowSetKeepAbove, gdkWindowSetKeepBelow,
-
-	gdkWindowMove, gdkWindowResize, gdkWindowMoveResize,
 	gdkWindowRaise, gdkWindowLower, gdkWindowFocus,
-
-	gdkWindowGetGeometry,
-	gdkWindowGetWidth, gdkWindowGetHeight,
-	gdkWindowGetPosition, gdkWindowGetRootOrigin, gdkWindowGetFrameExtents,
-	gdkWindowGetOrigin, gdkWindowGetRootCoords,
-
 	gdkWindowSetOpacity,
+	-- ** XY Axis
+	-- *** get position and size
+	-- **** window
+	gdkWindowGetGeometry,
+	gdkWindowGetPosition, gdkWindowGetWidth, gdkWindowGetHeight,
+	gdkWindowGetOrigin, gdkWindowGetRootCoords,
+	-- **** frame
+	gdkWindowGetFrameExtents, gdkWindowGetRootOrigin,
+	-- *** move and resize
+	gdkWindowMoveResize, gdkWindowMove, gdkWindowResize,
 
 	-- * WINDOW BEHAVIER AND APPEARANCE
 	-- ** Pass Through
