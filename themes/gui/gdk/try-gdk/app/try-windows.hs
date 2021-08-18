@@ -38,7 +38,7 @@ main = do
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
 			optWindowEvents, optNoEventCompression, optTitle,
-			optCursor, optWindowInfo, optRaise, optFocus ]
+			optCursor, optWindowInfo, optRaise, optFocus, optTypeHint ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -303,11 +303,12 @@ data OptSetting
 	| OptWindowInfo
 	| OptRaise
 	| OptFocus
+	| OptTypeHint GdkWindowTypeHint
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 	optShowEvents, optMainLoop, optWindowEvents, optNoEventCompression,
-	optTitle, optCursor, optWindowInfo, optRaise, optFocus ::
+	optTitle, optCursor, optWindowInfo, optRaise, optFocus, optTypeHint ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 
@@ -342,6 +343,9 @@ optRaise = Option ['r'] ["raise"] (NoArg OptRaise) "Do raise"
 
 optFocus = Option ['f'] ["focus"] (NoArg OptFocus) "Do focus"
 
+optTypeHint = Option [] ["type-hint"] (ReqArg (OptTypeHint . read) "TypeHint")
+	"Set window type hint"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
@@ -373,7 +377,10 @@ runOpt d w (OptWindowInfo : ss) = do
 	print =<< gdkWindowGetRootCoords w 100 200
 	print =<< getFrameExtents w
 	print =<< gdkWindowGetRootOrigin w
+	print =<< gdkWindowGetTypeHint w
 	runOpt d w ss
+runOpt d w (OptTypeHint t : ss) =
+	gdkWindowSetTypeHint w t >> runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
 
 getPositionAndSize :: GdkWindow -> IO ((CInt, CInt), (CInt, CInt))

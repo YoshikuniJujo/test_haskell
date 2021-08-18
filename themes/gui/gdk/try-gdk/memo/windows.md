@@ -123,11 +123,11 @@ Windows memo
 				+ consider to remove it
 			* [x] `gdkWindowGetPassThrough`
 				+ consider to remove it
-		- [ ] Transient For
+		- [x] Transient For
 			* `gdkWindowSetTransientFor`
-		- [ ] Modal Hint
-			* [ ] `gdkWindowSetModalHint`
-			* [ ] `gdkWindowGetModalHint`
+		- [x] Modal Hint
+			* [x] `gdkWindowSetModalHint`
+			* [x] `gdkWindowGetModalHint`
 		- [ ] Window Type Hint
 		- [ ] Task Bar, Pager and Urgency
 		- [ ] Gdk Wm Decoration
