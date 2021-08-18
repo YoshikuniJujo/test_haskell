@@ -34,6 +34,6 @@ main = do
 						GdkKey_k -> (0, - 1)
 						GdkKey_l -> (1, 0)
 						_ -> (0, 0)
-				(x, y) <- gdkWindowGetPosition w
+				(x, y) <- gdkWindowGetRootOrigin w
 				gdkWindowMove w (x + dx) (y + dy)
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
