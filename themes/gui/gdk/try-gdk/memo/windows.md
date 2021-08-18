@@ -103,13 +103,13 @@ Windows memo
 			* [x] `gdkWindowSetOpacity`
 		- [ ] XY Axis
 			* [ ] get position and size
-				+ [ ] window
+				+ [x] window
 					- [x] `gdkWindowGetGeometry`
 					- [x] `gdkWindowGetPosition`
 					- [x] `gdkWindowGetWideh`
 					- [x] `gdkWindowGetHeight`
-					- [ ] `gdkWindowGetOrigin`
-					- [ ] `gdkWindowGetRootCoords`
+					- [x] `gdkWindowGetOrigin`
+					- [x] `gdkWindowGetRootCoords`
 				+ [ ] frame
 					- [ ] `gdkWindowGetFrameExtents`
 					- [ ] `gdkWindowGetRootOrigin`

@@ -142,6 +142,8 @@ main = do
 				print c
 				print =<< gdkWindowGetGeometry w0
 				print =<< getPositionAndSize w0
+				print =<< gdkWindowGetOrigin w0
+				print =<< gdkWindowGetRootCoords w0 100 200
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
@@ -350,6 +352,8 @@ runOpt d w (OptWindowInfo : ss) = do
 	print =<< gdkWindowGetFullscreenMode w
 	print =<< gdkWindowGetGeometry w
 	print =<< getPositionAndSize w
+	print =<< gdkWindowGetOrigin w
+	print =<< gdkWindowGetRootCoords w 100 200
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
 
