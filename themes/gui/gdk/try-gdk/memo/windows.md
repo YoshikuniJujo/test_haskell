@@ -102,7 +102,7 @@ Windows memo
 		- [ ] XY Axis
 			* [ ] get position and size
 				+ [ ] window
-					- [ ] `gdkWindowGetGeometry`
+					- [x] `gdkWindowGetGeometry`
 					- [ ] `gdkWindowGetPosition`
 					- [ ] `gdkWindowGetWideh`
 					- [ ] `gdkWindowGetHeight`

@@ -137,6 +137,9 @@ main = do
 				print . gdkWindowStateList
 					$ gdkEventWindowStateNewWindowState s
 				print . gdkWindowStateList=<< gdkWindowGetState w0
+			GdkEventGdkConfigure (gdkEventConfigure -> c) -> True <$ do
+				print c
+				print =<< gdkWindowGetGeometry w0
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
 					-> pure False
@@ -306,5 +309,6 @@ runOpt d w (OptCursor ct : ss) = do
 runOpt d w (OptWindowInfo : ss) = do
 	print =<< gdkWindowGetWindowType w
 	print =<< gdkWindowGetFullscreenMode w
+	print =<< gdkWindowGetGeometry w
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
