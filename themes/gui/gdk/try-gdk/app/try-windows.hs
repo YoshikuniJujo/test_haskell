@@ -237,6 +237,12 @@ main = do
 							when (OptFocus `elem` ss) $ gdkWindowFocus w0 ts
 							print ts
 							print . gdkWindowStateList =<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_o)
+					-> True <$ gdkWindowSetOpacity w0 0.5
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_p)
+					-> True <$ gdkWindowSetOpacity w0 1
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do

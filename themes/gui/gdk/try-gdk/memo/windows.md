@@ -92,7 +92,7 @@ Windows memo
 		- [x] structure
 			* [x] classify z and xy
 			* [x] others
-		- [ ] Z Axis
+		- [x] Z Axis
 			* [x] `gdkWindowSetKeepAbove`
 			* [x] `gdkWindowSetKeepBelow`
 			* [x] `gdkWindowRaise`
@@ -100,7 +100,7 @@ Windows memo
 			* [x] `gdkWindowFocus`
 				+ [x] second argument to `MilliSecond`
 				+ [x] others
-			* [ ] `gdkWindowSetOpacity`
+			* [x] `gdkWindowSetOpacity`
 		- [ ] XY Axis
 			* [ ] get position and size
 				+ [ ] window
