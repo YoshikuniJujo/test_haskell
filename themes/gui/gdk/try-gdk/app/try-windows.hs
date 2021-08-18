@@ -36,6 +36,7 @@ import Try.Tools
 main :: IO ()
 main = do
 	skipTaskbar <- newIORef False
+	skipPager <- newIORef False
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
@@ -269,6 +270,12 @@ main = do
 						b <- not <$> readIORef skipTaskbar
 						gdkWindowSetSkipTaskbarHint w0 b
 						writeIORef skipTaskbar b
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_v)
+					-> True <$ do
+						b <- not <$> readIORef skipPager
+						gdkWindowSetSkipPagerHint w0 b
+						writeIORef skipPager b
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> c) ->
 					True <$ print c

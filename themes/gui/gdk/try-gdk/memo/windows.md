@@ -131,7 +131,7 @@ Windows memo
 		- [x] Window Type Hint
 		- [ ] Task Bar, Pager and Urgency
 			* [x] `gdkWindowSetSkipTaskbarHint`
-			* [ ] `gdkWindowSetSkipPagerHint`
+			* [x] `gdkWindowSetSkipPagerHint`
 			* [ ] `gdkWindowSetUrgencyHint`
 		- [ ] Gdk Wm Decoration
 			* [ ] structure
