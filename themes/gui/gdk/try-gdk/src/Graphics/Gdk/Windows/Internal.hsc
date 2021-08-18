@@ -305,7 +305,7 @@ foreign import ccall "gdk_window_raise" gdkWindowRaise :: GdkWindow -> IO ()
 foreign import ccall "gdk_window_lower" gdkWindowLower :: GdkWindow -> IO ()
 
 foreign import ccall "gdk_window_focus"
-	gdkWindowFocus :: GdkWindow -> Word32 -> IO ()
+	gdkWindowFocus :: GdkWindow -> MilliSecond -> IO ()
 
 gdkWindowWithDrawFrame :: GdkWindow ->
 	CairoRegionT RealWorld -> (forall t . GdkDrawingContext t -> IO a) -> IO a

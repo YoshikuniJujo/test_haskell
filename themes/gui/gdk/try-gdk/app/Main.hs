@@ -258,6 +258,7 @@ checkEventSealed opacity pos size d st = \case
 		let	k = gdkEventKey k_
 			w = gdkEventKeyWindow k
 			kv = gdkEventKeyKeyval k
+			ts = gdkEventKeyTime k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv
 		putStrLn $ "GdkModifierType: " ++ show (gdkEventKeyState k)
 		when (checkKeyVal 'h' kv) $ do
@@ -351,7 +352,7 @@ checkEventSealed opacity pos size d st = \case
 				_ -> error "never occur"
 		when (checkKeyVal 'v' kv) $ do
 			gdkWindowLower w
-			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w >> gdkWindowFocus w 0
+			void . forkIO $ threadDelay 2000000 >> gdkWindowRaise w >> gdkWindowFocus w ts
 		when (checkKeyVal 'p' kv) $ do
 			putStrLn . ("Window size: " ++) . show =<< gdkWindowGetPosition w
 		when (checkKeyVal 's' kv) $ do

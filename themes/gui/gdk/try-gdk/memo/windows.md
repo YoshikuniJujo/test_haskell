@@ -97,7 +97,9 @@ Windows memo
 			* [x] `gdkWindowSetKeepBelow`
 			* [x] `gdkWindowRaise`
 			* [x] `gdkWindowLower`
-			* [ ] `gdkWindowFocus`
+			* [x] `gdkWindowFocus`
+				+ [x] second argument to `MilliSecond`
+				+ [x] others
 			* [ ] `gdkWindowSetOpacity`
 		- [ ] XY Axis
 			* [ ] get position and size
