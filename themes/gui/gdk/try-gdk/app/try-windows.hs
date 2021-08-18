@@ -50,7 +50,7 @@ main = do
 		900 700 GdkInputOutput GdkWindowToplevel
 	w1 <- gdkWindowNew (Just wr) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
-		900 700 GdkInputOutput GdkWindowToplevel
+		450 350 GdkInputOutput GdkWindowToplevel
 	wc <- gdkWindowNew (Just w0) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
 		500 300 GdkInputOutput GdkWindowChild
@@ -253,9 +253,8 @@ main = do
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_r)
 					-> True <$ do
-						b <- gdkWindowGetPassThrough w0
-						gdkWindowSetPassThrough w0 $ not b
-						print =<< gdkWindowGetPassThrough w0
+						gdkWindowSetTransientFor w1 w0
+						gdkWindowShow w1
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do

@@ -62,8 +62,8 @@ module Graphics.Gdk.Windows (
 	gdkWindowMoveResize, gdkWindowMove, gdkWindowResize,
 
 	-- * WINDOW BEHAVIER AND APPEARANCE
-	-- ** Pass Through
-	gdkWindowSetPassThrough, gdkWindowGetPassThrough,
+	-- ** Transient For
+	gdkWindowSetTransientFor,
 	-- ** Modal Hint
 	gdkWindowSetModalHint, gdkWindowGetModalHint,
 	-- ** Window Type Hint
@@ -73,8 +73,6 @@ module Graphics.Gdk.Windows (
 	-- ** Task Bar, Pager and Urgency
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
 	gdkWindowSetUrgencyHint,
-	-- ** Transient For
-	gdkWindowSetTransientFor,
 	-- ** Gdk Wm Decoration
 	gdkWindowSetDecorations, gdkWindowGetDecorations,
 	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations, gdkWMDecorationList,

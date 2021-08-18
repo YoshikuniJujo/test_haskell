@@ -118,15 +118,18 @@ Windows memo
 				- [x] `gdkWindowMove`
 				- [x] `gdkWindowResize`
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
-		- [ ] Pass Through
-			* [ ] `gdkWindowSetPassThrough`
-			* [ ] `gdkWindowGetPassThrough`
+		- [x] Pass Through
+			* [x] `gdkWindowSetPassThrough`
+				+ consider to remove it
+			* [x] `gdkWindowGetPassThrough`
+				+ consider to remove it
+		- [ ] Transient For
+			* `gdkWindowSetTransientFor`
 		- [ ] Modal Hint
 			* [ ] `gdkWindowSetModalHint`
 			* [ ] `gdkWindowGetModalHint`
 		- [ ] Window Type Hint
 		- [ ] Task Bar, Pager and Urgency
-		- [ ] Transient For
 		- [ ] Gdk Wm Decoration
 
 Function
