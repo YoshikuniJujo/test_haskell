@@ -231,11 +231,12 @@ main = do
 					-> True <$ do
 						gdkWindowLower w0
 						gdkDisplayFlush dpy
-						threadDelay 1000000
-						when (OptRaise `elem` ss) $ gdkWindowRaise w0
-						when (OptFocus `elem` ss) $ gdkWindowFocus w0 ts
-						print ts
-						print . gdkWindowStateList =<< gdkWindowGetState w0
+						forkIO do
+							threadDelay 1000000
+							when (OptRaise `elem` ss) $ gdkWindowRaise w0
+							when (OptFocus `elem` ss) $ gdkWindowFocus w0 ts
+							print ts
+							print . gdkWindowStateList =<< gdkWindowGetState w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
