@@ -280,9 +280,11 @@ main = do
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_x)
 					-> True <$ do
+						threadDelay 1000000
 						b <- not <$> readIORef urgency
 						gdkWindowSetUrgencyHint w0 b
 						writeIORef urgency b
+						print b
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> c) ->
 					True <$ print c
