@@ -129,10 +129,10 @@ Windows memo
 			* [x] `gdkWindowSetModalHint`
 			* [x] `gdkWindowGetModalHint`
 		- [x] Window Type Hint
-		- [ ] Task Bar, Pager and Urgency
+		- [x] Task Bar, Pager and Urgency
 			* [x] `gdkWindowSetSkipTaskbarHint`
 			* [x] `gdkWindowSetSkipPagerHint`
-			* [ ] `gdkWindowSetUrgencyHint`
+			* [x] `gdkWindowSetUrgencyHint`
 		- [ ] Gdk Wm Decoration
 			* [ ] structure
 			* [ ] `gdkWindowSetDecorations`
