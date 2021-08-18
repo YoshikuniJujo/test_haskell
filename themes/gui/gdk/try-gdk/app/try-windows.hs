@@ -37,6 +37,7 @@ main :: IO ()
 main = do
 	skipTaskbar <- newIORef False
 	skipPager <- newIORef False
+	urgency <- newIORef False
 	let	opts = [
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
@@ -276,6 +277,12 @@ main = do
 						b <- not <$> readIORef skipPager
 						gdkWindowSetSkipPagerHint w0 b
 						writeIORef skipPager b
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_x)
+					-> True <$ do
+						b <- not <$> readIORef urgency
+						gdkWindowSetUrgencyHint w0 b
+						writeIORef urgency b
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> c) ->
 					True <$ print c
