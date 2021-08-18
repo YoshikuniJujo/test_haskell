@@ -39,11 +39,11 @@ module Graphics.Gdk.Windows (
 	gdkWindowIconify, gdkWindowDeiconify, gdkWindowStick, gdkWindowUnstick,
 	gdkWindowMaximize, gdkWindowUnmaximize,
 	gdkWindowFullscreen, gdkWindowUnfullscreen,
-	-- ** GDK FULLSCREEN MODE
+	-- ** Gdk Fullscreen Mode
+	gdkWindowGetFullscreenMode, gdkWindowSetFullscreenMode,
 	GdkFullscreenMode,
 	pattern GdkFullscreenOnCurrentMonitor,
 	pattern GdkFullscreenOnAllMonitors,
-	gdkWindowGetFullscreenMode, gdkWindowSetFullscreenMode,
 
 	-- * GEOMETRY AND OPACITY
 	gdkWindowSetKeepAbove, gdkWindowSetKeepBelow,

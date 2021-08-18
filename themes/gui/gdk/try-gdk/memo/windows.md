@@ -73,7 +73,7 @@ Windows memo
 		- [x] `gdkWindowIsViewable`
 		- [x] `gdkWindowIsInputOnly`
 		- [x] `gdkWindowIsShaped`
-	+ [ ] GDK WINDOW STATES
+	+ [x] GDK WINDOW STATES
 		- [x] `gdkWindowGetState`
 		- [x] `gdkWindowWithdraw`
 		- [x] `gdkWindowIconify`
@@ -84,10 +84,10 @@ Windows memo
 		- [x] `gdkWindowUnmaximize`
 		- [x] `gdkWindowFullscreen`
 		- [x] `gdkWindowUnfullscreen`
-		- [ ] Gdk Fullscreen Mode
-			* [ ] `gdkWindowGetFullscreenMode`
-			* [ ] `gdkWindowSetFullscreenMode`
-			* [ ] `data GdkFullscreenMode`
+		- [x] Gdk Fullscreen Mode
+			* [x] `gdkWindowGetFullscreenMode`
+			* [x] `gdkWindowSetFullscreenMode`
+			* [x] `data GdkFullscreenMode`
 	+ [ ] GEOMETRY AND OPACITY
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
 		- [ ] Pass Through

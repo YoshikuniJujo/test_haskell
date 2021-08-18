@@ -249,7 +249,7 @@ foreign import ccall "gdk_window_fullscreen"
 foreign import ccall "gdk_window_unfullscreen"
 	gdkWindowUnfullscreen :: GdkWindow -> IO ()
 
-enum "GdkFullscreenMode" ''#{type GdkFullscreenMode} [''Show] [
+enum "GdkFullscreenMode" ''#{type GdkFullscreenMode} [''Show, ''Read, ''Eq] [
 	("GdkFullscreenOnCurrentMonitor",
 		#{const GDK_FULLSCREEN_ON_CURRENT_MONITOR}),
 	("GdkFullscreenOnAllMonitors",

@@ -203,6 +203,12 @@ main = do
 						gdkWindowUnfullscreen w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_h)
+					-> True <$ fullScreenModeAllMonitor w0
+			GdkEventGdkKeyPress
+				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_j)
+					-> True <$ fullScreenModeCurrent w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
@@ -216,6 +222,17 @@ main = do
 
 	when (OptWindowInfo `elem` ss) do
 		print =<< gdkWindowIsDestroyed w0
+
+fullScreenModeAllMonitor :: GdkWindow -> IO ()
+fullScreenModeAllMonitor w = do
+	gdkWindowSetFullscreenMode w GdkFullscreenOnAllMonitors
+	print =<< gdkWindowGetFullscreenMode w
+
+fullScreenModeCurrent :: GdkWindow -> IO ()
+fullScreenModeCurrent w = do
+	gdkWindowSetFullscreenMode w GdkFullscreenOnCurrentMonitor
+	print =<< gdkWindowGetFullscreenMode w
+
 
 data OptSetting
 	= OptHelp
@@ -288,5 +305,6 @@ runOpt d w (OptCursor ct : ss) = do
 	runOpt d w ss
 runOpt d w (OptWindowInfo : ss) = do
 	print =<< gdkWindowGetWindowType w
+	print =<< gdkWindowGetFullscreenMode w
 	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
