@@ -19,7 +19,7 @@ import Try.Tools
 
 main :: IO ()
 main = do
-	let	opts = [optDelta]
+	let	opts = [optDelta, optMoveResize]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	let	delta = getDelta ss
@@ -49,16 +49,22 @@ main = do
 				(x, y) <- gdkWindowGetRootOrigin win
 				w <- gdkWindowGetWidth win
 				h <- gdkWindowGetHeight win
-				gdkWindowMove win (x + dx) (y + dy)
-				gdkWindowResize win (w + dw) (h + dh)
+				if (OptMoveResize `elem` ss)
+				then gdkWindowMoveResize win
+					(x + dx) (y + dy) (w + dw) (h + dh)
+				else do	gdkWindowMove win (x + dx) (y + dy)
+					gdkWindowResize win (w + dw) (h + dh)
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
-data Setting = Delta CInt deriving Show
+data Setting = OptDelta CInt | OptMoveResize deriving (Show, Eq)
 
-optDelta :: OptDescr Setting
-optDelta = Option ['d'] ["delta"] (ReqArg (Delta . read) "Delta") "Set delta"
+optDelta, optMoveResize :: OptDescr Setting
+optDelta = Option ['d'] ["delta"] (ReqArg (OptDelta . read) "Delta") "Set delta"
+
+optMoveResize = Option ['m'] ["move-resize"] (NoArg OptMoveResize)
+	"use gdkWindowMoveResize"
 
 getDelta :: [Setting] -> CInt
 getDelta [] = 1
-getDelta (Delta d : _) = d
+getDelta (OptDelta d : _) = d
 getDelta (_ : ss) = getDelta ss

@@ -116,7 +116,7 @@ Windows memo
 			* [ ] move and resize
 				- [ ] `gdkWindowMoveResize`
 				- [x] `gdkWindowMove`
-				- [ ] `gdkWindowResize`
+				- [x] `gdkWindowResize`
 	+ [ ] WINDOW BEHAVIER AND APPEARANCE
 		- [ ] Pass Through
 		- [ ] Modal Hint
