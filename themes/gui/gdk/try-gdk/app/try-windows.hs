@@ -229,7 +229,11 @@ main = do
 					-> True <$ gdkWindowRaise w0
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_l)
-					-> True <$ gdkWindowLower w0
+					-> True <$ do
+						gdkWindowLower w0
+						gdkDisplayFlush dpy
+						threadDelay 1000000
+						gdkWindowRaise w0
 			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 	when (OptWindowInfo `elem` ss) do
