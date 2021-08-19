@@ -1,6 +1,13 @@
 GdkWindowAttr memo
 ==================
 
+* [x] make `Graphics.Gdk.Windows.GdkWindowAttr.Internal`
+* [ ] refactor export list
+	+ [x] structure
+	+ [ ] GDK WINDOW ATTRIBUTE
+	+ [ ] GDK WINDOW WINDOW CLASS
+	+ [ ] GDK WINDOW TYPE
+
 todo
 ----
 

@@ -334,7 +334,8 @@ data OptSetting
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 	optShowEvents, optMainLoop, optWindowEvents, optNoEventCompression,
-	optTitle, optCursor, optWindowInfo, optRaise, optFocus, optTypeHint ::
+	optTitle, optCursor, optWindowInfo, optRaise, optFocus, optTypeHint,
+	optDecoration ::
 	OptDescr OptSetting
 optHelp = Option ['h'] ["help"] (NoArg OptHelp) "Show help"
 

@@ -6,7 +6,7 @@ Windows memo
 * [x] add options to reduce outputs
 	+ [x] `--display-screen-etc`
 	+ [x] `--show-device`
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] structure
 	+ [x] GDK WINDOW AND GDK WINDOW AUTO UNREF
 	+ [x] NEW, DESTROY AND SHOW
@@ -117,7 +117,7 @@ Windows memo
 				- [x] `gdkWindowMoveResize`
 				- [x] `gdkWindowMove`
 				- [x] `gdkWindowResize`
-	+ [ ] WINDOW BEHAVIER AND APPEARANCE
+	+ [x] WINDOW BEHAVIER AND APPEARANCE
 		- [x] Pass Through
 			* [x] `gdkWindowSetPassThrough`
 				+ consider to remove it
@@ -133,27 +133,26 @@ Windows memo
 			* [x] `gdkWindowSetSkipTaskbarHint`
 			* [x] `gdkWindowSetSkipPagerHint`
 			* [x] `gdkWindowSetUrgencyHint`
-		- [ ] Gdk Wm Decoration
+		- [x] Gdk Wm Decoration
 			* [x] structure
 			* [x] `gdkWindowSetDecorations`
 			* [x] `gdkWindowGetDecorations`
-			* [ ] `GdkWindowDecorations`
-				+ [ ] type
-				+ [ ] function
+			* [x] `GdkWindowDecorations`
+				+ [x] type
+				+ [x] function
 					- `gdkWMDecorations`
-				+ [ ] patterns
-					- `pattern GdkDecorAll`
-			* [ ] `GdkWindowDecoration`
-				+ [ ] type
-				+ [ ] function
+			* [x] `GdkWindowDecoration`
+				+ [x] type
+				+ [x] function
 					- `gdkWMDecorationList`
-				+ [ ] patterns
-					- [ ] `pattern GdkDecorBorder`
-					- [ ] `pattern GdkDecorResizeh`
-					- [ ] `pattern GdkDecorTitle`
-					- [ ] `pattern GdkDecorMenu`
-					- [ ] `pattern GdkDecorMinimize`
-					- [ ] `pattern GdkDecorMaximize`
+				+ [x] patterns
+					- [x] `pattern GdkDecorAll`
+					- [x] `pattern GdkDecorBorder`
+					- [x] `pattern GdkDecorResizeh`
+					- [x] `pattern GdkDecorTitle`
+					- [x] `pattern GdkDecorMenu`
+					- [x] `pattern GdkDecorMinimize`
+					- [x] `pattern GdkDecorMaximize`
 
 Function
 --------

@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Windows.GdkWindowAttr (
+module Graphics.Gdk.Windows.GdkWindowAttr.Internal (
 	GdkWindowAttr(..), withGdkWindowAttr, minimalGdkWindowAttr,
 	GdkWindowAttributesTypes(..),
 	GdkWindowWindowClass(..), pattern GdkInputOutput, pattern GdkInputOnly,
@@ -33,7 +33,7 @@ import Graphics.Gdk.Windows.GdkEventMask
 
 #include <gdk/gdk.h>
 
-enum "GdkWindowType" ''#{type GdkWindowType} [''Show] [
+enum "GdkWindowType" ''#{type GdkWindowType} [''Show, ''Read, ''Eq] [
 	("GdkWindowRoot", #{const GDK_WINDOW_ROOT}),
 	("GdkWindowToplevel", #{const GDK_WINDOW_TOPLEVEL}),
 	("GdkWindowChild", #{const GDK_WINDOW_CHILD}),
@@ -59,7 +59,7 @@ enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
 	("GdkWaNoredir", #{const GDK_WA_NOREDIR}),
 	("GdkWaTypeHint", #{const GDK_WA_TYPE_HINT}) ]
 
-enum "GdkWindowWindowClass" ''#{type GdkWindowWindowClass} [''Show] [
+enum "GdkWindowWindowClass" ''#{type GdkWindowWindowClass} [''Show, ''Read, ''Eq] [
 	("GdkInputOutput", #{const GDK_INPUT_OUTPUT}),
 	("GdkInputOnly", #{const GDK_INPUT_ONLY}) ]
 

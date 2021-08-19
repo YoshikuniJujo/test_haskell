@@ -58,7 +58,7 @@ todo new
 		- [x] Visuals
 		- [x] Cursors
 		- [ ] Windows
-			* [ ] itself
+			* [x] itself
 			* [ ] GdkWindowAttr
 			* [ ] GdkEventMask
 			* [ ] GdkModifierType
