@@ -81,9 +81,9 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetUrgencyHint,
 	-- ** Gdk Wm Decoration
 	gdkWindowSetDecorations, gdkWindowGetDecorations,
-	GdkWMDecorations, gdkWMDecorations, pattern GdkDecorAll,
-	GdkWMDecoration, gdkWMDecorationList,
-	pattern GdkDecorBorder, pattern GdkDecorResizeh,
+	GdkWmDecorations, gdkWmDecorations,
+	GdkWmDecoration, gdkWmDecorationList,
+	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
 	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
 	pattern GdkDecorMaximize,
 

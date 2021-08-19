@@ -135,8 +135,8 @@ Windows memo
 			* [x] `gdkWindowSetUrgencyHint`
 		- [ ] Gdk Wm Decoration
 			* [x] structure
-			* [ ] `gdkWindowSetDecorations`
-			* [ ] `gdkWindowGetDecorations`
+			* [x] `gdkWindowSetDecorations`
+			* [x] `gdkWindowGetDecorations`
 			* [ ] `GdkWindowDecorations`
 				+ [ ] type
 				+ [ ] function

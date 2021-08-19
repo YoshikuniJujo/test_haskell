@@ -42,7 +42,8 @@ main = do
 			optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
 			optShowEvents, optMainLoop,
 			optWindowEvents, optNoEventCompression, optTitle,
-			optCursor, optWindowInfo, optRaise, optFocus, optTypeHint ]
+			optCursor, optWindowInfo, optRaise, optFocus, optTypeHint,
+			optDecoration ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	when (OptHelp `elem` ss) . putStr $ usageInfo "try-windows" opts
@@ -328,6 +329,7 @@ data OptSetting
 	| OptRaise
 	| OptFocus
 	| OptTypeHint GdkWindowTypeHint
+	| OptDecoration [GdkWmDecoration]
 	deriving (Show, Eq)
 
 optHelp, optWindowShowAndHide, optDisplayScreen, optShowDevice,
@@ -370,6 +372,9 @@ optFocus = Option ['f'] ["focus"] (NoArg OptFocus) "Do focus"
 optTypeHint = Option [] ["type-hint"] (ReqArg (OptTypeHint . read) "TypeHint")
 	"Set window type hint"
 
+optDecoration = Option [] ["decoration"] (ReqArg (OptDecoration . read) "Decoration")
+	"Set decoration"
+
 readEventMask :: String -> [GdkEventMaskSingleBit]
 readEventMask = fromMaybe [] . readMaybe
 
@@ -402,9 +407,14 @@ runOpt d w (OptWindowInfo : ss) = do
 	print =<< getFrameExtents w
 	print =<< gdkWindowGetRootOrigin w
 	print =<< gdkWindowGetTypeHint w
+	print . (gdkWmDecorationList <$>) =<< gdkWindowGetDecorations w
 	runOpt d w ss
 runOpt d w (OptTypeHint t : ss) =
 	gdkWindowSetTypeHint w t >> runOpt d w ss
+runOpt d w (OptDecoration dc : ss) = do
+	putStr "Decoration: " >> print dc
+	gdkWindowSetDecorations w $ gdkWmDecorations dc
+	runOpt d w ss
 runOpt d w (_ : ss) = runOpt d w ss
 
 getPositionAndSize :: GdkWindow -> IO ((CInt, CInt), (CInt, CInt))

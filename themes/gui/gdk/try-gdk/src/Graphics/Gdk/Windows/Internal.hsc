@@ -84,7 +84,7 @@ module Graphics.Gdk.Windows.Internal (
 	gdkWindowSetTransientFor,
 	-- ** Gdk Wm Decoration
 	gdkWindowSetDecorations, gdkWindowGetDecorations,
-	GdkWMDecoration, GdkWMDecorations, gdkWMDecorations, gdkWMDecorationList,
+	GdkWmDecoration, GdkWmDecorations, gdkWmDecorations, gdkWmDecorationList,
 	pattern GdkDecorAll, pattern GdkDecorBorder, pattern GdkDecorResizeh,
 	pattern GdkDecorTitle, pattern GdkDecorMenu, pattern GdkDecorMinimize,
 	pattern GdkDecorMaximize,
@@ -481,7 +481,7 @@ foreign import ccall "gdk_window_set_events"
 foreign import ccall "gdk_window_set_transient_for"
 	gdkWindowSetTransientFor :: GdkWindow -> GdkWindow -> IO ()
 
-enum "GdkWMDecoration" ''#{type GdkWMDecoration} [''Show, ''Read] [
+enum "GdkWmDecoration" ''#{type GdkWMDecoration} [''Show, ''Read, ''Eq] [
 	("GdkDecorAll", #{const GDK_DECOR_ALL}),
 	("GdkDecorBorder", #{const GDK_DECOR_BORDER}),
 	("GdkDecorResizeh", #{const GDK_DECOR_RESIZEH}),
@@ -490,29 +490,29 @@ enum "GdkWMDecoration" ''#{type GdkWMDecoration} [''Show, ''Read] [
 	("GdkDecorMinimize", #{const GDK_DECOR_MINIMIZE}),
 	("GdkDecorMaximize", #{const GDK_DECOR_MAXIMIZE}) ]
 
-newtype GdkWMDecorations = GdkWMDecorations #{type GdkWMDecoration} deriving Show
+newtype GdkWmDecorations = GdkWmDecorations #{type GdkWMDecoration} deriving Show
 
-getGdkWMDecoration :: GdkWMDecoration -> #{type GdkWMDecoration}
-getGdkWMDecoration (GdkWMDecoration wmd) = wmd
+getGdkWmDecoration :: GdkWmDecoration -> #{type GdkWMDecoration}
+getGdkWmDecoration (GdkWmDecoration wmd) = wmd
 
-getGdkWMDecorations :: GdkWMDecorations -> #{type GdkWMDecoration}
-getGdkWMDecorations (GdkWMDecorations wmd) = wmd
+getGdkWmDecorations :: GdkWmDecorations -> #{type GdkWMDecoration}
+getGdkWmDecorations (GdkWmDecorations wmd) = wmd
 
-gdkWMDecorations :: [GdkWMDecoration] -> GdkWMDecorations
-gdkWMDecorations = GdkWMDecorations . foldr (.|.) 0 . map getGdkWMDecoration
+gdkWmDecorations :: [GdkWmDecoration] -> GdkWmDecorations
+gdkWmDecorations = GdkWmDecorations . foldr (.|.) 0 . map getGdkWmDecoration
 
-gdkWMDecorationList :: GdkWMDecorations -> [GdkWMDecoration]
-gdkWMDecorationList = map GdkWMDecoration
-	. separateBits (#{size GdkWMDecoration} * 8) . getGdkWMDecorations
+gdkWmDecorationList :: GdkWmDecorations -> [GdkWmDecoration]
+gdkWmDecorationList = map GdkWmDecoration
+	. separateBits (#{size GdkWMDecoration} * 8) . getGdkWmDecorations
 
 foreign import ccall "gdk_window_set_decorations"
-	gdkWindowSetDecorations :: GdkWindow -> GdkWMDecorations -> IO ()
+	gdkWindowSetDecorations :: GdkWindow -> GdkWmDecorations -> IO ()
 
-gdkWindowGetDecorations :: GdkWindow -> IO (Maybe GdkWMDecorations)
+gdkWindowGetDecorations :: GdkWindow -> IO (Maybe GdkWmDecorations)
 gdkWindowGetDecorations w = alloca \d -> do
 	c_gdk_window_get_decorations w d >>= \case
 		#{const FALSE} -> pure Nothing
-		#{const TRUE} -> Just . GdkWMDecorations <$> peek d
+		#{const TRUE} -> Just . GdkWmDecorations <$> peek d
 		_ -> error "gboolean should be FALSE or TRUE"
 
 foreign import ccall "gdk_window_get_decorations"

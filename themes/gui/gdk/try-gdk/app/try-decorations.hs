@@ -33,14 +33,14 @@ main = do
 	(_pn, as) <- join $ gdkInit <$> getProgName <*> getArgs
 	print as
 	let	ds = catMaybes $ readMaybe <$> as
-		ds' = gdkWMDecorations ds
+		ds' = gdkWmDecorations ds
 	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
 		100 100 GdkInputOutput GdkWindowToplevel
 	print ds
 	gdkWindowSetDecorations w ds'
-	print $ gdkWMDecorationList ds'
-	maybe (putStrLn "no decorations") (print . gdkWMDecorationList)
+	print $ gdkWmDecorationList ds'
+	maybe (putStrLn "no decorations") (print . gdkWmDecorationList)
 		=<< gdkWindowGetDecorations w
 	gdkWindowShow w
 	doWhile_ do
