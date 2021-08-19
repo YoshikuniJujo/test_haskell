@@ -134,12 +134,26 @@ Windows memo
 			* [x] `gdkWindowSetSkipPagerHint`
 			* [x] `gdkWindowSetUrgencyHint`
 		- [ ] Gdk Wm Decoration
-			* [ ] structure
+			* [x] structure
 			* [ ] `gdkWindowSetDecorations`
 			* [ ] `gdkWindowGetDecorations`
 			* [ ] `GdkWindowDecorations`
+				+ [ ] type
+				+ [ ] function
+					- `gdkWMDecorations`
+				+ [ ] patterns
+					- `pattern GdkDecorAll`
 			* [ ] `GdkWindowDecoration`
-			* [ ] patterns
+				+ [ ] type
+				+ [ ] function
+					- `gdkWMDecorationList`
+				+ [ ] patterns
+					- [ ] `pattern GdkDecorBorder`
+					- [ ] `pattern GdkDecorResizeh`
+					- [ ] `pattern GdkDecorTitle`
+					- [ ] `pattern GdkDecorMenu`
+					- [ ] `pattern GdkDecorMinimize`
+					- [ ] `pattern GdkDecorMaximize`
 
 Function
 --------
