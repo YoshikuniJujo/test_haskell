@@ -14,6 +14,16 @@ module Graphics.Gdk.Windows.GdkWindowAttr (
 	pattern GdkWindowRoot, pattern GdkWindowToplevel,
 	pattern GdkWindowChild, pattern GdkWindowTemp,
 	pattern GdkWindowForeign, pattern GdkWindowOffscreen,
-	pattern GdkWindowSubsurface ) where
+	pattern GdkWindowSubsurface,
+
+	-- * GDK WINDOW TYPE HINT
+	GdkWindowTypeHint(..),
+	pattern GdkWindowTypeHintNormal, pattern GdkWindowTypeHintDialog,
+	pattern GdkWindowTypeHintMenu, pattern GdkWindowTypeHintToolbar,
+	pattern GdkWindowTypeHintSplashscreen, pattern GdkWindowTypeHintUtility,
+	pattern GdkWindowTypeHintDock, pattern GdkWindowTypeHintDesktop,
+	pattern GdkWindowTypeHintDropdownMenu, pattern GdkWindowTypeHintPopupMenu,
+	pattern GdkWindowTypeHintTooltip, pattern GdkWindowTypeHintNotification,
+	pattern GdkWindowTypeHintCombo, pattern GdkWindowTypeHintDnd ) where
 
 import Graphics.Gdk.Windows.GdkWindowAttr.Internal

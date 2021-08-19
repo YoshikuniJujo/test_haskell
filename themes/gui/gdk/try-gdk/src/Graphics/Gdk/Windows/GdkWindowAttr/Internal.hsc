@@ -12,6 +12,14 @@ module Graphics.Gdk.Windows.GdkWindowAttr.Internal (
 	pattern GdkWindowChild, pattern GdkWindowTemp,
 	pattern GdkWindowForeign, pattern GdkWindowOffscreen,
 	pattern GdkWindowSubsurface,
+	GdkWindowTypeHint(..),
+	pattern GdkWindowTypeHintNormal, pattern GdkWindowTypeHintDialog,
+	pattern GdkWindowTypeHintMenu, pattern GdkWindowTypeHintToolbar,
+	pattern GdkWindowTypeHintSplashscreen, pattern GdkWindowTypeHintUtility,
+	pattern GdkWindowTypeHintDock, pattern GdkWindowTypeHintDesktop,
+	pattern GdkWindowTypeHintDropdownMenu, pattern GdkWindowTypeHintPopupMenu,
+	pattern GdkWindowTypeHintTooltip, pattern GdkWindowTypeHintNotification,
+	pattern GdkWindowTypeHintCombo, pattern GdkWindowTypeHintDnd,
 	whenMaybe ) where
 
 import Foreign.Ptr
@@ -42,8 +50,6 @@ enum "GdkWindowType" ''#{type GdkWindowType} [''Show, ''Read, ''Eq] [
 	("GdkWindowOffscreen", #{const GDK_WINDOW_OFFSCREEN}),
 	("GdkWindowSubsurface", #{const GDK_WINDOW_SUBSURFACE}) ]
 
-newtype GdkWindowTypeHint = GdkWindowTypeHint #{type GdkWindowTypeHint} deriving Show
-
 newtype GdkWindowAttributesTypes =
 	GdkWindowAttributesTypes #{type GdkWindowAttributesType} deriving Show
 
@@ -62,6 +68,26 @@ enum "GdkWindowAttributesType" ''#{type GdkWindowAttributesType} [''Show] [
 enum "GdkWindowWindowClass" ''#{type GdkWindowWindowClass} [''Show, ''Read, ''Eq] [
 	("GdkInputOutput", #{const GDK_INPUT_OUTPUT}),
 	("GdkInputOnly", #{const GDK_INPUT_ONLY}) ]
+
+enum "GdkWindowTypeHint" ''#{type GdkWindowTypeHint} [''Show, ''Read, ''Eq] [
+	("GdkWindowTypeHintNormal", #{const GDK_WINDOW_TYPE_HINT_NORMAL}),
+	("GdkWindowTypeHintDialog", #{const GDK_WINDOW_TYPE_HINT_DIALOG}),
+	("GdkWindowTypeHintMenu", #{const GDK_WINDOW_TYPE_HINT_MENU}),
+	("GdkWindowTypeHintToolbar", #{const GDK_WINDOW_TYPE_HINT_TOOLBAR}),
+	("GdkWindowTypeHintSplashscreen",
+		#{const GDK_WINDOW_TYPE_HINT_SPLASHSCREEN}),
+	("GdkWindowTypeHintUtility", #{const GDK_WINDOW_TYPE_HINT_UTILITY}),
+	("GdkWindowTypeHintDock", #{const GDK_WINDOW_TYPE_HINT_DOCK}),
+	("GdkWindowTypeHintDesktop", #{const GDK_WINDOW_TYPE_HINT_DESKTOP}),
+	("GdkWindowTypeHintDropdownMenu",
+		#{const GDK_WINDOW_TYPE_HINT_DROPDOWN_MENU}),
+	("GdkWindowTypeHintPopupMenu",
+		#{const GDK_WINDOW_TYPE_HINT_POPUP_MENU}),
+	("GdkWindowTypeHintTooltip", #{const GDK_WINDOW_TYPE_HINT_TOOLTIP}),
+	("GdkWindowTypeHintNotification",
+		#{const GDK_WINDOW_TYPE_HINT_NOTIFICATION}),
+	("GdkWindowTypeHintCombo", #{const GDK_WINDOW_TYPE_HINT_COMBO}),
+	("GdkWindowTypeHintDnd", #{const GDK_WINDOW_TYPE_HINT_DND}) ]
 
 data GdkWindowAttr = GdkWindowAttr {
 	gdkWindowAttrTitle :: Maybe String,

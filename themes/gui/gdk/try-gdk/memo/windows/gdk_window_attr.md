@@ -2,11 +2,25 @@ GdkWindowAttr memo
 ==================
 
 * [x] make `Graphics.Gdk.Windows.GdkWindowAttr.Internal`
+* [x] move `GdkWindowTypeHint` to `Graphics.Gdk.Window.GdkWindowAttr.Internal`
 * [ ] refactor export list
 	+ [x] structure
 	+ [ ] GDK WINDOW ATTRIBUTE
+		- [ ] `data GdkWindowAttr`
+			* [ ] `gdkWindowAttrTitle`
+			* [ ] `gdkWindowAttrEventMask`
+			* [ ] `gdkWindowAttrX`, `gdkWindowAttrY`
+			* [ ] `gdkWindowAttrWidth`, `gdkWindowAttrHeight`
+			* [ ] `gdkWindowAttrWclass`
+			* [ ] `gdkWindowAttrVisual`
+			* [ ] `gdkWindowAttrWindowType`
+			* [ ] `gdkWindowAttrCursor`
+			* [ ] `gdkWindowAttrOverrideRedirect`
+			* [ ] `gdkWindowAttrTypeHint`
+		- [ ] `minimalGdkWindowAttr`
 	+ [ ] GDK WINDOW WINDOW CLASS
 	+ [ ] GDK WINDOW TYPE
+	+ [ ] GDK WINDOW TYPE HINT
 
 todo
 ----

@@ -68,14 +68,6 @@ module Graphics.Gdk.Windows (
 	gdkWindowSetModalHint, gdkWindowGetModalHint,
 	-- ** Window Type Hint
 	gdkWindowSetTypeHint, gdkWindowGetTypeHint,
-	GdkWindowTypeHint,
-	pattern GdkWindowTypeHintNormal, pattern GdkWindowTypeHintDialog,
-	pattern GdkWindowTypeHintMenu, pattern GdkWindowTypeHintToolbar,
-	pattern GdkWindowTypeHintSplashscreen, pattern GdkWindowTypeHintUtility,
-	pattern GdkWindowTypeHintDock, pattern GdkWindowTypeHintDesktop,
-	pattern GdkWindowTypeHintDropdownMenu, pattern GdkWindowTypeHintPopupMenu,
-	pattern GdkWindowTypeHintTooltip, pattern GdkWindowTypeHintNotification,
-	pattern GdkWindowTypeHintCombo, pattern GdkWindowTypeHintDnd,
 	-- ** Task Bar, Pager and Urgency
 	gdkWindowSetSkipTaskbarHint, gdkWindowSetSkipPagerHint,
 	gdkWindowSetUrgencyHint,
