@@ -289,6 +289,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-gdk
+  try-window-attr:
+    main:                try-window-attr.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-gdk
 
 tests:
   try-gdk-test:
