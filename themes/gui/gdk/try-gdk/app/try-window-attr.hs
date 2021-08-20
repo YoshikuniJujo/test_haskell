@@ -29,7 +29,7 @@ main :: IO ()
 main = do
 	let	opts = [
 			optTitle, optEvents, optPosition, optSize, optWclass,
-			optVisual ]
+			optVisual, optWindowType ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	dpy <- gdkDisplayOpen ""
 	let	scr = gdkDisplayGetDefaultScreen dpy
@@ -46,6 +46,7 @@ main = do
 	print v
 	print $ gdkVisualGetVisualType v
 	print $ gdkVisualGetDepth v
+	print =<< gdkWindowGetWindowType w
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
@@ -71,9 +72,11 @@ data OptSetting
 	| OptSize (CInt, CInt)
 	| OptWclass GdkWindowWindowClass
 	| OptVisual Visual
+	| OptWindowType GdkWindowType
 	deriving Show
 
-optTitle, optEvents, optPosition, optSize, optWclass, optVisual :: OptDescr OptSetting
+optTitle, optEvents, optPosition, optSize, optWclass, optVisual, optWindowType
+	:: OptDescr OptSetting
 optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
 
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "Event masks")
@@ -90,6 +93,10 @@ optWclass = Option ['w'] ["wclass"] (ReqArg (OptWclass . read) "Wclass")
 
 optVisual = Option ['v'] ["visual"] (ReqArg (OptVisual . read) "Visual")
 	"Set visual"
+
+optWindowType =
+	Option [] ["window-type"] (ReqArg (OptWindowType . read) "Window Type")
+		"Set window type"
 
 optsToAttr :: GdkVisual -> GdkVisual -> [OptSetting] -> GdkWindowAttr
 optsToAttr _sysv _rgbav [] = minimalGdkWindowAttr
@@ -108,3 +115,5 @@ optsToAttr sysv rgbav (OptVisual System : ss) =
 	(optsToAttr sysv rgbav ss) { gdkWindowAttrVisual = Just sysv }
 optsToAttr sysv rgbav (OptVisual Rgba : ss) =
 	(optsToAttr sysv rgbav ss) { gdkWindowAttrVisual = Just rgbav }
+optsToAttr sysv rgbav (OptWindowType wt : ss) =
+	(optsToAttr sysv rgbav ss) { gdkWindowAttrWindowType = wt }

@@ -12,10 +12,12 @@ GdkWindowAttr memo
 			* [ ] `gdkWindowAttrX`, `gdkWindowAttrY`
 			* [x] `gdkWindowAttrWidth`, `gdkWindowAttrHeight`
 			* [x] `gdkWindowAttrWclass`
-			* [ ] `gdkWindowAttrVisual`
+			* [x] `gdkWindowAttrVisual`
 				+ [x] draw with translucent green
-				+ [ ] compare system visual and RGBA visual
+				+ [x] compare system visual and RGBA visual
 			* [ ] `gdkWindowAttrWindowType`
+				+ [ ] consider to remove types other than toplevel
+				+ [ ] others
 			* [ ] `gdkWindowAttrCursor`
 			* [ ] `gdkWindowAttrOverrideRedirect`
 			* [ ] `gdkWindowAttrTypeHint`
