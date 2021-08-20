@@ -36,7 +36,7 @@ main = do
 		ds' = gdkWmDecorations ds
 	w <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
-		100 100 GdkInputOutput GdkWindowToplevel
+		100 100 GdkInputOutput
 	print ds
 	gdkWindowSetDecorations w ds'
 	print $ gdkWmDecorationList ds'

@@ -28,7 +28,7 @@ main = do
 		(gdkEventMaskMultiBits [
 			GdkKeyPressMask
 			])
-		900 700 GdkInputOutput GdkWindowToplevel
+		900 700 GdkInputOutput
 	gdkWindowShow win
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False

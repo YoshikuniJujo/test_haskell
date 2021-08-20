@@ -5,7 +5,8 @@ GdkWindowAttr memo
 * [x] move `GdkWindowTypeHint` to `Graphics.Gdk.Window.GdkWindowAttr.Internal`
 * [x] `gdkWindowNew`: should return maybe value
 * [x] define `gdkToplevelNew`
-* [ ] remove windot type from minimal
+* [x] remove window type from minimal
+* [ ] remove window class from minimal
 * [ ] refactor export list
 	+ [x] structure
 	+ [ ] GDK WINDOW ATTRIBUTE

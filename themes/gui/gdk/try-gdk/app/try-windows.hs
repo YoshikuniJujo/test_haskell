@@ -52,13 +52,13 @@ main = do
 	wr <- gdkScreenGetRootWindow scr
 	w0 <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
-		900 700 GdkInputOutput GdkWindowToplevel
+		900 700 GdkInputOutput
 	w1 <- gdkToplevelNew (Just wr) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
-		450 350 GdkInputOutput GdkWindowToplevel
+		450 350 GdkInputOutput
 	wc <- gdkToplevelNew (Just w0) $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [])
-		500 300 GdkInputOutput GdkWindowChild
+		500 300 GdkInputOutput
 
 	when (OptDisplayScreen `elem` ss) do
 		print dpy

@@ -115,9 +115,9 @@ gdkWindowAttrTypeHintRaw a =
 	(\(GdkWindowTypeHint th) -> th) <$> gdkWindowAttrTypeHint a
 
 minimalGdkWindowAttr :: GdkEventMaskMultiBits -> CInt -> CInt ->
-	GdkWindowWindowClass -> GdkWindowType -> GdkWindowAttr
-minimalGdkWindowAttr em w h wc wt = GdkWindowAttr
-	Nothing em Nothing Nothing w h wc Nothing wt Nothing Nothing Nothing
+	GdkWindowWindowClass -> GdkWindowAttr
+minimalGdkWindowAttr em w h wc = GdkWindowAttr
+	Nothing em Nothing Nothing w h wc Nothing GdkWindowToplevel Nothing Nothing Nothing
 
 withGdkWindowAttr :: GdkWindowAttr ->
 	(Ptr GdkWindowAttr -> GdkWindowAttributesTypes -> IO a) -> IO a
