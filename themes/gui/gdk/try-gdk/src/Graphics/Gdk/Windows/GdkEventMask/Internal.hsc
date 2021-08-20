@@ -55,7 +55,7 @@ enum "GdkEventMaskSingleBit" ''#{type GdkEventMask} [''Show, ''Read, ''Eq] [
 	("GdkTouchpadGestureMask", #{const GDK_TOUCHPAD_GESTURE_MASK}),
 	("GdkTabletPadMask", #{const GDK_TABLET_PAD_MASK}) ]
 
-enum "GdkEventMaskMultiBits" ''#{type GdkEventMask} [''Show] [
+enum "GdkEventMaskMultiBits" ''#{type GdkEventMask} [''Show, ''Read, ''Eq] [
 	("GdkZeroEventsMask", 0),
 	("GdkAllEventsMask", #{const GDK_ALL_EVENTS_MASK}) ]
 

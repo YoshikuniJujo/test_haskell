@@ -5,13 +5,13 @@ GdkEventMask memo
 	+ structure
 * [x] make `Graphics.Gdk.Windows.GdkEventMask.Internal`
 * [ ] refactor export list
-	+ [ ] structure
-	+ [ ] GDK EVENT MASK MULTIPLE BITS
-		- [ ] `newtype GdkEventMaskMultiBits`
-		- [ ] `gdkEventMaskMultiBits`
-		- [ ] patterns
-			* [ ] `GdkZeroEventsMask`
-			* [ ] `GdkAllEventsMask`
+	+ [x] structure
+	+ [x] GDK EVENT MASK MULTIPLE BITS
+		- [x] `data GdkEventMaskMultiBits`
+		- [x] `gdkEventMaskMultiBits`
+		- [x] patterns
+			* [x] `GdkZeroEventsMask`
+			* [x] `GdkAllEventsMask`
 	+ [ ] GDK EVENT MASK SINGLE BIT
 		- [ ] `data GdkEventMaskSingleBit`
 		- [ ] `gdkEventMaskSingleBitList`
