@@ -9,6 +9,8 @@ import System.Environment
 import System.Console.GetOpt
 
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkScreen
+import Graphics.Gdk.Visuals
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkWindowAttr.Internal
@@ -22,12 +24,21 @@ main :: IO ()
 main = do
 	let	opts = [optTitle, optEvents, optPosition, optSize, optWclass]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
-	_ <- gdkDisplayOpen ""
+	dpy <- gdkDisplayOpen ""
+	let	scr = gdkDisplayGetDefaultScreen dpy
+	sysv <- gdkScreenGetSystemVisual scr
+	rgbav <- gdkScreenGetRgbaVisual scr
 	putStrLn `mapM_` es
 	let	attr = optsToAttr ss
 	print attr
 	withGdkWindowAttr attr \x y -> print x >> print y
 	w <- gdkWindowNew Nothing attr
+	let	v = gdkWindowGetVisual w
+	print sysv
+	print rgbav
+	print v
+	print $ gdkVisualGetVisualType v
+	print $ gdkVisualGetDepth v
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
