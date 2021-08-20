@@ -122,8 +122,7 @@ optTypeHint = Option ['h'] ["type-hint"]
 
 optsToAttr :: GdkVisual -> GdkVisual -> [OptSetting] -> GdkWindowAttr
 optsToAttr _sysv _rgbav [] = minimalGdkWindowAttr
-	(gdkEventMaskMultiBits [GdkKeyPressMask, GdkFocusChangeMask])
-	100 100 GdkInputOutput
+	(gdkEventMaskMultiBits [GdkKeyPressMask, GdkFocusChangeMask]) 100 100
 optsToAttr sysv rgbav (OptTitle t : ss) = (optsToAttr sysv rgbav ss) { gdkWindowAttrTitle = Just t }
 optsToAttr sysv rgbav (OptEvents es : ss) =
 	(optsToAttr sysv rgbav ss) { gdkWindowAttrEventMask = gdkEventMaskMultiBits es }

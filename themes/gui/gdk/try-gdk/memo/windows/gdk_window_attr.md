@@ -6,7 +6,7 @@ GdkWindowAttr memo
 * [x] `gdkWindowNew`: should return maybe value
 * [x] define `gdkToplevelNew`
 * [x] remove window type from minimal
-* [ ] remove window class from minimal
+* [x] remove window class from minimal
 * [ ] refactor export list
 	+ [x] structure
 	+ [ ] GDK WINDOW ATTRIBUTE

@@ -37,4 +37,4 @@ main = do
 
 gdkWindowAttr :: GdkWindowAttr
 gdkWindowAttr = minimalGdkWindowAttr
-	(gdkEventMaskMultiBits [GdkKeyPressMask]) 400 400 GdkInputOutput
+	(gdkEventMaskMultiBits [GdkKeyPressMask]) 400 400

@@ -53,7 +53,6 @@ main = do
 		w <- gdkToplevelNew Nothing
 			$ minimalGdkWindowAttr
 				(gdkEventMaskMultiBits eventMask) 100 100
-				GdkInputOutput
 		gdkWindowSetEventCompression w False
 		gdkWindowShow w
 		gdkDisplayFlush dpy

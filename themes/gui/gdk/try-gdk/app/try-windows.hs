@@ -51,14 +51,11 @@ main = do
 	let	scr = gdkDisplayGetDefaultScreen dpy
 	wr <- gdkScreenGetRootWindow scr
 	w0 <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits [])
-		900 700 GdkInputOutput
+		(gdkEventMaskMultiBits []) 900 700
 	w1 <- gdkToplevelNew (Just wr) $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits [])
-		450 350 GdkInputOutput
+		(gdkEventMaskMultiBits []) 450 350
 	wc <- gdkToplevelNew (Just w0) $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits [])
-		500 300 GdkInputOutput
+		(gdkEventMaskMultiBits []) 500 300
 
 	when (OptDisplayScreen `elem` ss) do
 		print dpy

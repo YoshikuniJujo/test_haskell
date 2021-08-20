@@ -27,8 +27,7 @@ main = do
 	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [
 			GdkKeyPressMask
-			])
-		900 700 GdkInputOutput
+			]) 900 700
 	gdkWindowShow win
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False

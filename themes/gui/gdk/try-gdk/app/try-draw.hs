@@ -39,9 +39,7 @@ main = do
 				GdkEnterNotifyMask, GdkLeaveNotifyMask, GdkPointerMotionMask,
 --				GdkAllEventsMask,
 				GdkPointerMotionMask
-				])
-			400 400
-			GdkInputOutput
+				]) 400 400
 	w <- gdkToplevelNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	gdkWindowShow w
 	gdkWindowSetEvents w $ gdkEventMaskMultiBits [

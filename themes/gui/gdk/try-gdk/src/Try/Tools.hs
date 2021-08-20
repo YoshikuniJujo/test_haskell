@@ -36,5 +36,4 @@ defaultGdkWindowAttr :: GdkWindowAttr
 defaultGdkWindowAttr = minimalGdkWindowAttr (gdkEventMaskMultiBits [
 		GdkExposureMask, GdkButtonPressMask, GdkKeyPressMask, GdkPointerMotionMask, GdkButtonMotionMask,
 		GdkButtonReleaseMask -- , gdkAllEventsMask
-		])
-	400 400 GdkInputOutput
+		]) 400 400
