@@ -3,14 +3,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.Windows.GdkEventMask (
-	-- * TYPES
-	GdkEventMaskMultiBits(..), GdkEventMaskSingleBit,
-	gdkEventMaskMultiBits, gdkEventMaskSingleBitList,
-
-	-- * MEMBERS OF GDK EVENT MASK MULTI BITS
+	-- * GDK EVENT MASK MULTIPLE BITS
+	GdkEventMaskMultiBits(..), gdkEventMaskMultiBits,
 	pattern GdkZeroEventsMask, pattern GdkAllEventsMask,
 
-	-- * MEMBERS OF GDK EVENT MASK SINGLE BIT
+	-- * GDK EVENT MASK SINGLE BIT
+	GdkEventMaskSingleBit, gdkEventMaskSingleBitList,
 	pattern GdkExposureMask, pattern GdkPointerMotionMask,
 	pattern GdkButtonMotionMask, pattern GdkButton1MotionMask,
 	pattern GdkButton2MotionMask, pattern GdkButton3MotionMask,

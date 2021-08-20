@@ -59,7 +59,7 @@ todo new
 		- [x] Cursors
 		- [ ] Windows
 			* [x] itself
-			* [ ] GdkWindowAttr
+			* [x] GdkWindowAttr
 			* [ ] GdkEventMask
 			* [ ] GdkModifierType
 		- [ ] GdkDrawingContext

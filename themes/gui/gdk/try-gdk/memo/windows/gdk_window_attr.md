@@ -7,10 +7,10 @@ GdkWindowAttr memo
 * [x] define `gdkToplevelNew`
 * [x] remove window type from minimal
 * [x] remove window class from minimal
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] structure
-	+ [ ] GDK WINDOW ATTRIBUTE
-		- [ ] `data GdkWindowAttr`
+	+ [x] GDK WINDOW ATTRIBUTE
+		- [x] `data GdkWindowAttr`
 			* [x] `gdkWindowAttrTitle`
 			* [x] `gdkWindowAttrEventMask`
 			* [x] `gdkWindowAttrX`, `gdkWindowAttrY`
@@ -19,16 +19,14 @@ GdkWindowAttr memo
 			* [x] `gdkWindowAttrVisual`
 				+ [x] draw with translucent green
 				+ [x] compare system visual and RGBA visual
-			* [ ] `gdkWindowAttrWindowType`
-				+ [ ] consider to remove types other than toplevel
-				+ [ ] others
+			* [x] `gdkWindowAttrWindowType`
 			* [x] `gdkWindowAttrCursor`
 			* [x] `gdkWindowAttrOverrideRedirect`
 			* [x] `gdkWindowAttrTypeHint`
-		- [ ] `minimalGdkWindowAttr`
-	+ [ ] GDK WINDOW WINDOW CLASS
-	+ [ ] GDK WINDOW TYPE
-	+ [ ] GDK WINDOW TYPE HINT
+		- [x] `minimalGdkWindowAttr`
+	+ [x] GDK WINDOW WINDOW CLASS
+	+ [x] GDK WINDOW TYPE
+	+ [x] GDK WINDOW TYPE HINT
 
 todo
 ----
