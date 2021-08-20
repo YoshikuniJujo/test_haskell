@@ -18,7 +18,7 @@ GdkWindowAttr memo
 			* [ ] `gdkWindowAttrWindowType`
 				+ [ ] consider to remove types other than toplevel
 				+ [ ] others
-			* [ ] `gdkWindowAttrCursor`
+			* [x] `gdkWindowAttrCursor`
 			* [ ] `gdkWindowAttrOverrideRedirect`
 			* [ ] `gdkWindowAttrTypeHint`
 		- [ ] `minimalGdkWindowAttr`

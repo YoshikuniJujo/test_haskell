@@ -13,6 +13,7 @@ import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkScreen
 import Graphics.Gdk.Visuals
+import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkWindowAttr.Internal
@@ -29,14 +30,17 @@ main :: IO ()
 main = do
 	let	opts = [
 			optTitle, optEvents, optPosition, optSize, optWclass,
-			optVisual, optWindowType ]
+			optVisual, optWindowType, optCursor ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	dpy <- gdkDisplayOpen ""
 	let	scr = gdkDisplayGetDefaultScreen dpy
 	sysv <- gdkScreenGetSystemVisual scr
 	rgbav <- gdkScreenGetRgbaVisual scr
 	putStrLn `mapM_` es
-	let	attr = optsToAttr sysv (fromMaybe sysv rgbav) ss
+	crs <- maybe (pure Nothing) (\ct -> Just <$> gdkCursorNewForDisplay dpy ct)
+		$ optsGetCursorType ss
+	let	attr = (optsToAttr sysv (fromMaybe sysv rgbav) ss)
+			{ gdkWindowAttrCursor = crs }
 	print attr
 	withGdkWindowAttr attr \x y -> print x >> print y
 	w <- gdkWindowNew Nothing attr
@@ -73,10 +77,11 @@ data OptSetting
 	| OptWclass GdkWindowWindowClass
 	| OptVisual Visual
 	| OptWindowType GdkWindowType
+	| OptCursor GdkCursorType
 	deriving Show
 
-optTitle, optEvents, optPosition, optSize, optWclass, optVisual, optWindowType
-	:: OptDescr OptSetting
+optTitle, optEvents, optPosition, optSize, optWclass, optVisual, optWindowType,
+	optCursor :: OptDescr OptSetting
 optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
 
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "Event masks")
@@ -98,6 +103,9 @@ optWindowType =
 	Option [] ["window-type"] (ReqArg (OptWindowType . read) "Window Type")
 		"Set window type"
 
+optCursor = Option ['c'] ["cursor"] (ReqArg (OptCursor . read) "Cursor Type")
+	"Set cursor type"
+
 optsToAttr :: GdkVisual -> GdkVisual -> [OptSetting] -> GdkWindowAttr
 optsToAttr _sysv _rgbav [] = minimalGdkWindowAttr
 	(gdkEventMaskMultiBits [GdkKeyPressMask, GdkFocusChangeMask])
@@ -117,3 +125,9 @@ optsToAttr sysv rgbav (OptVisual Rgba : ss) =
 	(optsToAttr sysv rgbav ss) { gdkWindowAttrVisual = Just rgbav }
 optsToAttr sysv rgbav (OptWindowType wt : ss) =
 	(optsToAttr sysv rgbav ss) { gdkWindowAttrWindowType = wt }
+optsToAttr sysv rgbav (OptCursor _ : ss) = (optsToAttr sysv rgbav ss)
+
+optsGetCursorType :: [OptSetting] -> Maybe GdkCursorType
+optsGetCursorType [] = Nothing
+optsGetCursorType (OptCursor c : _) = Just c
+optsGetCursorType (_ : ss) = optsGetCursorType ss
