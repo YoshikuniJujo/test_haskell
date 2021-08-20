@@ -9,8 +9,8 @@ GdkWindowAttr memo
 		- [ ] `data GdkWindowAttr`
 			* [x] `gdkWindowAttrTitle`
 			* [x] `gdkWindowAttrEventMask`
-			* [x] `gdkWindowAttrX`, `gdkWindowAttrY`
-			* [ ] `gdkWindowAttrWidth`, `gdkWindowAttrHeight`
+			* [ ] `gdkWindowAttrX`, `gdkWindowAttrY`
+			* [x] `gdkWindowAttrWidth`, `gdkWindowAttrHeight`
 			* [ ] `gdkWindowAttrWclass`
 			* [ ] `gdkWindowAttrVisual`
 			* [ ] `gdkWindowAttrWindowType`

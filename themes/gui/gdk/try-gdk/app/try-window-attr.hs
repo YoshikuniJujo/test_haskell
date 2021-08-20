@@ -20,7 +20,7 @@ import Try.Tools
 
 main :: IO ()
 main = do
-	let	opts = [optTitle, optEvents, optPosition]
+	let	opts = [optTitle, optEvents, optPosition, optSize]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	_ <- gdkDisplayOpen ""
 	putStrLn `mapM_` es
@@ -41,9 +41,10 @@ data OptSetting
 	= OptTitle String
 	| OptEvents [GdkEventMaskSingleBit]
 	| OptPosition (CInt, CInt)
+	| OptSize (CInt, CInt)
 	deriving Show
 
-optTitle, optEvents, optPosition :: OptDescr OptSetting
+optTitle, optEvents, optPosition, optSize :: OptDescr OptSetting
 optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
 
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "Event masks")
@@ -51,6 +52,9 @@ optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "Event masks")
 
 optPosition = Option ['p'] ["position"] (ReqArg (OptPosition . read) "(X,Y)")
 	"Set position"
+
+optSize = Option ['s'] ["size"] (ReqArg (OptSize . read) "(W,H)")
+	"Set size"
 
 optsToAttr :: [OptSetting] -> GdkWindowAttr
 optsToAttr [] = minimalGdkWindowAttr
@@ -61,3 +65,5 @@ optsToAttr (OptEvents es : ss) =
 	(optsToAttr ss) { gdkWindowAttrEventMask = gdkEventMaskMultiBits es }
 optsToAttr (OptPosition (x, y) : ss) =
 	(optsToAttr ss) { gdkWindowAttrX = Just x, gdkWindowAttrY = Just y }
+optsToAttr (OptSize (w, h) : ss) =
+	(optsToAttr ss) { gdkWindowAttrWidth = w, gdkWindowAttrHeight = h }
