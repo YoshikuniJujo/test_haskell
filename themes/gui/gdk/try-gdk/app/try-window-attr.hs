@@ -31,7 +31,7 @@ main = do
 	let	opts = [
 			optTitle, optEvents, optPosition, optSize, optWclass,
 			optVisual, optWindowType, optCursor,
-			optOverrideRedirect ]
+			optOverrideRedirect, optTypeHint ]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	dpy <- gdkDisplayOpen ""
 	let	scr = gdkDisplayGetDefaultScreen dpy
@@ -84,10 +84,11 @@ data OptSetting
 	| OptWindowType GdkWindowType
 	| OptCursor GdkCursorType
 	| OptOverrideRedirect Bool
+	| OptTypeHint GdkWindowTypeHint
 	deriving Show
 
 optTitle, optEvents, optPosition, optSize, optWclass, optVisual, optWindowType,
-	optCursor, optOverrideRedirect :: OptDescr OptSetting
+	optCursor, optOverrideRedirect, optTypeHint :: OptDescr OptSetting
 optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
 
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "Event masks")
@@ -116,6 +117,9 @@ optOverrideRedirect = Option ['r'] ["override-redirect"]
 	(ReqArg (OptOverrideRedirect . read) "Bool")
 	"Set override redirect"
 
+optTypeHint = Option ['h'] ["type-hint"]
+	(ReqArg (OptTypeHint . read) "Type Hint") "Set type hint"
+
 optsToAttr :: GdkVisual -> GdkVisual -> [OptSetting] -> GdkWindowAttr
 optsToAttr _sysv _rgbav [] = minimalGdkWindowAttr
 	(gdkEventMaskMultiBits [GdkKeyPressMask, GdkFocusChangeMask])
@@ -138,6 +142,8 @@ optsToAttr sysv rgbav (OptWindowType wt : ss) =
 optsToAttr sysv rgbav (OptCursor _ : ss) = (optsToAttr sysv rgbav ss)
 optsToAttr sysv rgbav (OptOverrideRedirect b : ss) =
 	(optsToAttr sysv rgbav ss) { gdkWindowAttrOverrideRedirect = Just b }
+optsToAttr sysv rgbav (OptTypeHint h : ss) =
+	(optsToAttr sysv rgbav ss) { gdkWindowAttrTypeHint = Just h }
 
 optsGetCursorType :: [OptSetting] -> Maybe GdkCursorType
 optsGetCursorType [] = Nothing

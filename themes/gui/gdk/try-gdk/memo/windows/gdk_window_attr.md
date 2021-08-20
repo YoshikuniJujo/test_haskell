@@ -20,7 +20,7 @@ GdkWindowAttr memo
 				+ [ ] others
 			* [x] `gdkWindowAttrCursor`
 			* [x] `gdkWindowAttrOverrideRedirect`
-			* [ ] `gdkWindowAttrTypeHint`
+			* [x] `gdkWindowAttrTypeHint`
 		- [ ] `minimalGdkWindowAttr`
 	+ [ ] GDK WINDOW WINDOW CLASS
 	+ [ ] GDK WINDOW TYPE
