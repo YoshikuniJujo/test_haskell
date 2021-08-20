@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0eb5e62ad4826c86f092f17a9931bcb8171afc210f4ea724066c534701854cdd
+-- hash: 76e3f9e5b30d7190da9eadbe8444f2a03394917f790d9eb34cec12de69d8aa20
 
 name:           try-gdk
 version:        0.1.0.0
@@ -60,6 +60,7 @@ library
       Graphics.Gdk.Visuals.Internal
       Graphics.Gdk.Windows
       Graphics.Gdk.Windows.GdkEventMask
+      Graphics.Gdk.Windows.GdkEventMask.Internal
       Graphics.Gdk.Windows.GdkModifierType
       Graphics.Gdk.Windows.GdkWindowAttr
       Graphics.Gdk.Windows.GdkWindowAttr.Internal

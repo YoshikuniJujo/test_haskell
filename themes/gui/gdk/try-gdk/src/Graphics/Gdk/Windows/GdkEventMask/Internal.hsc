@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Windows.GdkEventMask (
+module Graphics.Gdk.Windows.GdkEventMask.Internal (
 	-- * GDK EVENT MASK MULTIPLE BITS
 	GdkEventMaskMultiBits(..), gdkEventMaskMultiBits,
 	pattern GdkZeroEventsMask, pattern GdkAllEventsMask,

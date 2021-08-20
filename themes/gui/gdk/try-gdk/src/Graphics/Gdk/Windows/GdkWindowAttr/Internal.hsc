@@ -37,7 +37,7 @@ import Data.Word
 
 import Graphics.Gdk.Visuals.Internal
 import Graphics.Gdk.Cursors.Internal
-import Graphics.Gdk.Windows.GdkEventMask
+import Graphics.Gdk.Windows.GdkEventMask.Internal
 
 #include <gdk/gdk.h>
 

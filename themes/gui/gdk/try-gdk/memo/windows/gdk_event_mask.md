@@ -3,7 +3,7 @@ GdkEventMask memo
 
 * [x] refactor export list
 	+ structure
-* [ ] make `Graphics.Gdk.Windows.GdkEventMask.Internal`
+* [x] make `Graphics.Gdk.Windows.GdkEventMask.Internal`
 * [ ] refactor export list
 	+ [ ] structure
 	+ [ ] GDK EVENT MASK MULTIPLE BITS
