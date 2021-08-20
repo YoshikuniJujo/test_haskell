@@ -11,6 +11,7 @@ import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
+import Graphics.Gdk.Windows.GdkWindowAttr.Internal
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -23,7 +24,10 @@ main = do
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	_ <- gdkDisplayOpen ""
 	putStrLn `mapM_` es
-	w <- gdkWindowNew Nothing $ optsToAttr ss
+	let	attr = optsToAttr ss
+	print attr
+	withGdkWindowAttr attr \x y -> print x >> print y
+	w <- gdkWindowNew Nothing attr
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
