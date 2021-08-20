@@ -53,6 +53,7 @@ main = do
 	print $ gdkVisualGetDepth v
 	print =<< gdkWindowGetWindowType w
 	gdkWindowShow w
+	gdkWindowRaise w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkConfigure (gdkEventConfigure -> c) -> True <$ print c
@@ -63,6 +64,9 @@ main = do
 				cr <- gdkDrawingContextGetCairoContext dc
 				cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 0.5 0 0.5
 				cairoPaint cr
+		GdkEventGdkButtonPress (gdkEventButton -> b) -> True <$ do
+			print b
+			gdkWindowFocus w $ gdkEventButtonTime b
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				pure False
