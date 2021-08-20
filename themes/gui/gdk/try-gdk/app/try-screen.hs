@@ -39,7 +39,7 @@ main = do
 	mscr <- gdkScreenGetDefault
 	print mscr
 	maybe (putStrLn "No default screens") run mscr
-	win <- gdkWindowNew Nothing defaultGdkWindowAttr
+	win <- gdkToplevelNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
 	gdkDisplayFlush =<< gdkDisplayGetDefault
 	void getLine

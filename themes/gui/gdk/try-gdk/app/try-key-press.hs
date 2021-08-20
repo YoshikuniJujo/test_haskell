@@ -21,7 +21,7 @@ import Try.Tools.DoWhile
 main :: IO ()
 main = do
 	(_, _as) <- join $ gdkInit <$> getProgName <*> getArgs
-	w <- gdkWindowNew Nothing gdkWindowAttr
+	w <- gdkToplevelNew Nothing gdkWindowAttr
 	gdkWindowShow w
 	doWhile_ do
 		threadDelay 100000

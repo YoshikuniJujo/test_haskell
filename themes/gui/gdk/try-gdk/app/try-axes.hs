@@ -50,7 +50,7 @@ main = do
 		printKeys `mapM_` kbds
 
 	when (OptMotion `elem` ss) do
-		w <- gdkWindowNew Nothing
+		w <- gdkToplevelNew Nothing
 			$ minimalGdkWindowAttr
 				(gdkEventMaskMultiBits eventMask) 100 100
 				GdkInputOutput GdkWindowToplevel

@@ -24,7 +24,7 @@ main = do
 	putStrLn `mapM_` es
 	let	delta = getDelta ss
 	_dpy <- gdkDisplayOpen ""
-	win <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [
 			GdkKeyPressMask
 			])

@@ -16,7 +16,7 @@ import Try.Tools
 main :: IO ()
 main = do
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
-	w <- gdkWindowNew Nothing defaultGdkWindowAttr
+	w <- gdkToplevelNew Nothing defaultGdkWindowAttr
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
 	mainLoop \case

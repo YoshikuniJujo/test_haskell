@@ -34,7 +34,7 @@ main = do
 	print as
 	let	ds = catMaybes $ readMaybe <$> as
 		ds' = gdkWmDecorations ds
-	w <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+	w <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask])
 		100 100 GdkInputOutput GdkWindowToplevel
 	print ds

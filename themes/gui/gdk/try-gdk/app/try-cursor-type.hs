@@ -20,7 +20,7 @@ main :: IO ()
 main = do
 	cnt <- newIORef 0
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
-	w <- gdkWindowNew Nothing defaultGdkWindowAttr
+	w <- gdkToplevelNew Nothing defaultGdkWindowAttr
 	let	d = gdkWindowGetDisplay w
 	gdkWindowShow w
 	gdkWindowSetEventCompression w False

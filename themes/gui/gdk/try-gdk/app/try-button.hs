@@ -19,7 +19,7 @@ import Try.Tools
 main :: IO ()
 main = do
 	print =<< join (gdkInit <$> getProgName <*> getArgs)
-	w <- gdkWindowNew Nothing defaultGdkWindowAttr {
+	w <- gdkToplevelNew Nothing defaultGdkWindowAttr {
 		gdkWindowAttrEventMask = gdkEventMaskMultiBits [
 			GdkKeyPressMask,
 			GdkButtonPressMask, GdkButtonReleaseMask,

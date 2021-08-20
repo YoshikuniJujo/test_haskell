@@ -17,7 +17,7 @@ module Graphics.Gdk.Windows.GdkWindowAttr (
 	pattern GdkWindowSubsurface,
 
 	-- * GDK WINDOW TYPE HINT
-	GdkWindowTypeHint(..),
+	GdkWindowTypeHint,
 	pattern GdkWindowTypeHintNormal, pattern GdkWindowTypeHintDialog,
 	pattern GdkWindowTypeHintMenu, pattern GdkWindowTypeHintToolbar,
 	pattern GdkWindowTypeHintSplashscreen, pattern GdkWindowTypeHintUtility,

@@ -62,7 +62,7 @@ main = do
 
 	if OptGeometry `notElem` ss then pure () else do
 
-		w <- gdkWindowNew Nothing defaultGdkWindowAttr
+		w <- gdkToplevelNew Nothing defaultGdkWindowAttr
 		gdkWindowShow w
 		gdkDisplayFlush dpy
 		gdkDisplaySync dpy

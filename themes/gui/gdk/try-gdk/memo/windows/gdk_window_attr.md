@@ -3,13 +3,16 @@ GdkWindowAttr memo
 
 * [x] make `Graphics.Gdk.Windows.GdkWindowAttr.Internal`
 * [x] move `GdkWindowTypeHint` to `Graphics.Gdk.Window.GdkWindowAttr.Internal`
+* [x] `gdkWindowNew`: should return maybe value
+* [x] define `gdkToplevelNew`
+* [ ] remove windot type from minimal
 * [ ] refactor export list
 	+ [x] structure
 	+ [ ] GDK WINDOW ATTRIBUTE
 		- [ ] `data GdkWindowAttr`
 			* [x] `gdkWindowAttrTitle`
 			* [x] `gdkWindowAttrEventMask`
-			* [ ] `gdkWindowAttrX`, `gdkWindowAttrY`
+			* [x] `gdkWindowAttrX`, `gdkWindowAttrY`
 			* [x] `gdkWindowAttrWidth`, `gdkWindowAttrHeight`
 			* [x] `gdkWindowAttrWclass`
 			* [x] `gdkWindowAttrVisual`

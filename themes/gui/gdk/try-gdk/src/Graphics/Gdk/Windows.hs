@@ -6,7 +6,7 @@ module Graphics.Gdk.Windows (
 	GdkWindow, GdkWindowAutoUnref, withGdkWindowAutoUnref,
 
 	-- * NEW, DESTROY AND SHOW
-	gdkWindowNew, gdkWindowDestroy,
+	gdkWindowNew, gdkToplevelNew, gdkWindowDestroy,
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
 
 	-- * DISPLAY, SCREEN, VISUAL AND WINDOW

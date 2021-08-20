@@ -12,7 +12,7 @@ module Graphics.Gdk.Windows.Internal (
 	GdkWindowNeedUnref, mkGdkWindowAutoUnref,
 
 	-- * NEW, DESTROY AND SHOW
-	gdkWindowNew, gdkWindowDestroy,
+	gdkWindowNew, gdkToplevelNew, gdkWindowDestroy,
 	gdkWindowShow, gdkWindowShowUnraised, gdkWindowHide,
 
 	-- * DISPLAY, SCREEN, VISUAL AND WINDOW
@@ -130,15 +130,24 @@ withGdkWindowAutoUnref :: GdkWindowAutoUnref -> (GdkWindow -> IO a) -> IO ()
 withGdkWindowAutoUnref (GdkWindowAutoUnref fwnu) f = void
 	$ withForeignPtr fwnu \pwnu -> f (GdkWindow $ castPtr pwnu)
 
-gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> IO GdkWindow
-gdkWindowNew mw a = maybe ($ nullPtr) (\(GdkWindow pw) -> ($ pw)) mw \pw -> do
+gdkWindowNew :: Maybe GdkWindow -> GdkWindowAttr -> IO (Maybe GdkWindow)
+gdkWindowNew mw a = maybeGdkWindow <$> maybe ($ nullPtr) (\(GdkWindow pw) -> ($ pw)) mw \pw -> do
 	whenMaybe cursorRef $ gdkWindowAttrCursor a
+	withGdkWindowAttr a \pa ts -> c_gdk_window_new pw pa ts
+	where cursorRef (GdkCursor fc) = withForeignPtr fc c_g_object_ref
+
+maybeGdkWindow :: Ptr GdkWindow -> Maybe GdkWindow
+maybeGdkWindow = \case NullPtr -> Nothing; p -> Just $ GdkWindow p
+
+gdkToplevelNew :: Maybe GdkWindow -> GdkWindowAttr -> IO GdkWindow
+gdkToplevelNew mw a = GdkWindow <$> maybe ($ nullPtr) (\(GdkWindow pw) -> ($ pw)) mw \pw -> do
+	whenMaybe cursorRef $ gdkWindowAttrCursor $ a { gdkWindowAttrWindowType = GdkWindowToplevel }
 	withGdkWindowAttr a \pa ts -> c_gdk_window_new pw pa ts
 	where cursorRef (GdkCursor fc) = withForeignPtr fc c_g_object_ref
 
 foreign import ccall "gdk_window_new" c_gdk_window_new ::
 	Ptr GdkWindow -> Ptr GdkWindowAttr -> GdkWindowAttributesTypes ->
-	IO GdkWindow
+	IO (Ptr GdkWindow)
 
 foreign import ccall "g_object_ref" c_g_object_ref :: Ptr a -> IO ()
 

@@ -28,8 +28,8 @@ main = do
 	printGdkDevice =<< gdkSeatGetKeyboard st
 	mapM_ (printGdkDevice @_ @'Pointer) =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
 	mapM_ (printGdkDevice @_ @'Keyboard) =<< gdkSeatGetSlaves st GdkSeatCapabilityAll
-	win <- gdkWindowNew Nothing defaultGdkWindowAttr
-	win2 <- gdkWindowNew Nothing defaultGdkWindowAttr
+	win <- gdkToplevelNew Nothing defaultGdkWindowAttr
+	win2 <- gdkToplevelNew Nothing defaultGdkWindowAttr
 	gdkWindowShow win
 	gdkWindowShow win2
 	gdkDisplayFlush dpy

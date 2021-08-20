@@ -44,7 +44,7 @@ main = do
 			{ gdkWindowAttrCursor = crs }
 	print attr
 	withGdkWindowAttr attr \x y -> print x >> print y
-	w <- gdkWindowNew Nothing attr
+	w <- gdkToplevelNew Nothing attr
 	let	v = gdkWindowGetVisual w
 	print sysv
 	print rgbav

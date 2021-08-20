@@ -142,7 +142,7 @@ main = do
 			400 400
 			GdkInputOutput GdkWindowToplevel
 	putStrLn "*** GDK WINDOW NEW ***"
-	w <- gdkWindowNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
+	w <- gdkToplevelNew Nothing wattr { gdkWindowAttrTitle = Just "試験窓" }
 	printVisibleRegion w
 	print =<< gdkWindowGetWindowType w
 	putStr "PARENT WINDOW: "
@@ -388,7 +388,7 @@ checkEventSealed opacity pos size d st = \case
 			print =<< gdkWindowGetRootCoords w 100 200
 		when (checkKeyVal 'd' kv) do
 			putStrLn "`d' pressed"
-			w' <- gdkWindowNew Nothing $ minimalGdkWindowAttr
+			w' <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 				GdkZeroEventsMask 100 100 GdkInputOutput GdkWindowToplevel
 			gdkWindowSetTransientFor w' w
 			gdkWindowSetModalHint w' True

@@ -57,7 +57,7 @@ main = do
 			print $ gdkDisplayGetName nd
 			gdkDisplayClose nd
 		Nothing -> pure ()
-	w <- gdkWindowNew Nothing defaultGdkWindowAttr
+	w <- gdkToplevelNew Nothing defaultGdkWindowAttr
 	gdkWindowShow w
 	putStr "gdkDisplaySupportsCursorColor: "
 	print =<< gdkDisplaySupportsCursorColor dd
