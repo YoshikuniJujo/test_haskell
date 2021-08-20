@@ -5,6 +5,8 @@
 module Main where
 
 import Foreign.C.Types
+import Data.Maybe
+import Data.Color
 import System.Environment
 import System.Console.GetOpt
 
@@ -17,6 +19,9 @@ import Graphics.Gdk.Windows.GdkWindowAttr.Internal
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.GdkDrawingContext
+
+import Graphics.Cairo.Drawing.CairoT
 
 import Try.Tools
 
@@ -43,6 +48,13 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkConfigure (gdkEventConfigure -> c) -> True <$ print c
+		GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ do
+			print f
+			r <- gdkWindowGetVisibleRegion w
+			gdkWindowWithDrawFrame w r \dc -> do
+				cr <- gdkDrawingContextGetCairoContext dc
+				cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 0.5 0 0.5
+				cairoPaint cr
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				pure False
@@ -73,7 +85,7 @@ optWclass = Option ['w'] ["wclass"] (ReqArg (OptWclass . read) "Wclass")
 
 optsToAttr :: [OptSetting] -> GdkWindowAttr
 optsToAttr [] = minimalGdkWindowAttr
-	(gdkEventMaskMultiBits [GdkKeyPressMask])
+	(gdkEventMaskMultiBits [GdkKeyPressMask, GdkFocusChangeMask])
 	100 100 GdkInputOutput GdkWindowToplevel
 optsToAttr (OptTitle t : ss) = (optsToAttr ss) { gdkWindowAttrTitle = Just t }
 optsToAttr (OptEvents es : ss) =

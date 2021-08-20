@@ -13,6 +13,8 @@ GdkWindowAttr memo
 			* [x] `gdkWindowAttrWidth`, `gdkWindowAttrHeight`
 			* [x] `gdkWindowAttrWclass`
 			* [ ] `gdkWindowAttrVisual`
+				+ [x] draw with translucent green
+				+ [ ] compare system visual and RGBA visual
 			* [ ] `gdkWindowAttrWindowType`
 			* [ ] `gdkWindowAttrCursor`
 			* [ ] `gdkWindowAttrOverrideRedirect`
