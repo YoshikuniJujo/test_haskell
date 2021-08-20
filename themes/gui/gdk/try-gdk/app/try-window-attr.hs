@@ -18,7 +18,7 @@ import Try.Tools
 
 main :: IO ()
 main = do
-	let	opts = [optTitle]
+	let	opts = [optTitle, optEvents]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	_ <- gdkDisplayOpen ""
 	putStrLn `mapM_` es
@@ -32,13 +32,19 @@ main = do
 
 data OptSetting
 	= OptTitle String
+	| OptEvents [GdkEventMaskSingleBit]
 	deriving Show
 
-optTitle :: OptDescr OptSetting
+optTitle, optEvents :: OptDescr OptSetting
 optTitle = Option ['t'] ["title"] (ReqArg OptTitle "Title") "Set title"
+
+optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "Event masks")
+	"Set event mask"
 
 optsToAttr :: [OptSetting] -> GdkWindowAttr
 optsToAttr [] = minimalGdkWindowAttr
 	(gdkEventMaskMultiBits [GdkKeyPressMask])
 	100 100 GdkInputOutput GdkWindowToplevel
 optsToAttr (OptTitle t : ss) = (optsToAttr ss) { gdkWindowAttrTitle = Just t }
+optsToAttr (OptEvents es : ss) =
+	(optsToAttr ss) { gdkWindowAttrEventMask = gdkEventMaskMultiBits es }
