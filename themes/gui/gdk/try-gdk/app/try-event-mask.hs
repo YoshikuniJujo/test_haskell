@@ -12,6 +12,7 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
@@ -22,11 +23,14 @@ main = do
 	putStrLn `mapM_` es
 	print ss
 	_ <- gdkDisplayOpen ""
-	win <- gdkToplevelNew Nothing
-		$ minimalGdkWindowAttr (gdkEventMaskMultiBits []) 400 300
+	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
+		(gdkEventMaskMultiBits $ optsToEventMaskList ss) 400 300
 	gdkWindowShow win
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
+		GdkEventGdkKeyPress
+			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
+				pure False
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting
@@ -36,3 +40,8 @@ data OptSetting
 optEvents :: OptDescr OptSetting
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "EventMask")
 	"Set event mask"
+
+optsToEventMaskList :: [OptSetting] -> [GdkEventMaskSingleBit]
+optsToEventMaskList = \case
+	[] -> [GdkKeyPressMask]
+	OptEvents ems : _ -> ems
