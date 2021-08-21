@@ -13,8 +13,8 @@ GdkEventMask memo
 			* [x] `GdkZeroEventsMask`
 			* [x] `GdkAllEventsMask`
 	+ [ ] GDK EVENT MASK SINGLE BIT
-		- [ ] `data GdkEventMaskSingleBit`
-		- [ ] `gdkEventMaskSingleBitList`
+		- [x] `data GdkEventMaskSingleBit`
+		- [x] `gdkEventMaskSingleBitList`
 		- [ ] pattens
 			* [ ] `GdkExposureMask`
 			* [ ] `GdkPointerMotionMask`
