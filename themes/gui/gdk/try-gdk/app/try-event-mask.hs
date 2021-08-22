@@ -32,6 +32,13 @@ main = do
 		GdkEventGdkDelete (gdkEventAny -> e) -> False <$ (print e >> gdkWindowDestroy win)
 		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$ print e
 		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ print e
+		GdkEventGdkButtonPress (gdkEventButton -> e) -> True <$ print e
+		GdkEventGdkDoubleButtonPress (gdkEventButton -> e) -> True <$ do
+			putStrLn "DOUBLE"
+			print e
+		GdkEventGdkTripleButtonPress (gdkEventButton -> e) -> True <$ do
+			putStrLn "TRIPLE"
+			print e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				False <$ gdkWindowDestroy win
@@ -57,6 +64,7 @@ optsToEventMask = \case
 	[] -> gdkEventMaskMultiBits [GdkKeyPressMask]
 	OptEvents ems : _ -> gdkEventMaskMultiBits ems
 	OptAllEvents : _ -> GdkAllEventsMask
+	_ : ss -> optsToEventMask ss
 
 optsToCompression :: [OptSetting] -> Bool
 optsToCompression [] = True

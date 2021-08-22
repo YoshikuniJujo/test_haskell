@@ -18,11 +18,11 @@ GdkEventMask memo
 		- [ ] pattens
 			* [ ] `GdkExposureMask`
 			* [x] `GdkPointerMotionMask`
-			* [ ] `GdkButtonMotionMask`
-			* [ ] `GdkButton1MotionMask`
-			* [ ] `GdkButton2MotionMask`
-			* [ ] `GdkButton3MotionMask`
-			* [ ] `GdkButtonPressMask`
+			* [x] `GdkButtonMotionMask`
+			* [x] `GdkButton1MotionMask`
+			* [x] `GdkButton2MotionMask`
+			* [x] `GdkButton3MotionMask`
+			* [x] `GdkButtonPressMask`
 			* [ ] `GdkButtonReleaseMask`
 			* [ ] `GdkKeyPressMask`
 			* [ ] `GdkKeyReleaseMask`
