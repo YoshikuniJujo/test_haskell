@@ -17,7 +17,7 @@ GdkEventMask memo
 		- [x] `gdkEventMaskSingleBitList`
 		- [ ] pattens
 			* [ ] `GdkExposureMask`
-			* [ ] `GdkPointerMotionMask`
+			* [x] `GdkPointerMotionMask`
 			* [ ] `GdkButtonMotionMask`
 			* [ ] `GdkButton1MotionMask`
 			* [ ] `GdkButton2MotionMask`
