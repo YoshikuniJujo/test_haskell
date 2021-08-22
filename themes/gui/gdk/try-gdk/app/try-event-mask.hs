@@ -27,10 +27,12 @@ main = do
 		(gdkEventMaskMultiBits $ optsToEventMaskList ss) 400 300
 	gdkWindowShow win
 	mainLoop \case
-		GdkEventGdkDelete _d -> pure False
+		GdkEventGdkNothing (gdkEventAny -> e) -> True <$ print e
+		GdkEventGdkDelete (gdkEventAny -> e) -> True <$ (print e >> gdkWindowDestroy win)
+		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$ print e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-				pure False
+				True <$ gdkWindowDestroy win
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting

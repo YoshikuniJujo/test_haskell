@@ -36,7 +36,7 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 
 enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkNothing", #{const GDK_NOTHING}), ("GdkDelete", #{const GDK_DELETE}),
-	("GdkExpose", #{const GDK_EXPOSE}),
+	("GdkDestroy", #{const GDK_DESTROY}), ("GdkExpose", #{const GDK_EXPOSE}),
 	("GdkMotionNotify", #{const GDK_MOTION_NOTIFY}),
 	("GdkButtonPress", #{const GDK_BUTTON_PRESS}),
 	("Gdk2ButtonPress", #{const GDK_2BUTTON_PRESS}),
@@ -135,6 +135,10 @@ pattern GdkEventGdkNothing ea <-
 pattern GdkEventGdkDelete :: Sealed s GdkEventAnyRaw -> GdkEvent s
 pattern GdkEventGdkDelete ea <-
 	GdkEvent (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkDelete, ea))
+
+pattern GdkEventGdkDestroy :: Sealed s GdkEventAnyRaw -> GdkEvent s
+pattern GdkEventGdkDestroy ea <-
+	GdkEvent (gdkEventTypeRaw GdkEventAnyRaw_ -> (GdkDestroy, ea))
 
 pattern GdkEventGdkMap :: Sealed s GdkEventAnyRaw -> GdkEvent s
 pattern GdkEventGdkMap e <-
