@@ -18,32 +18,36 @@ import Try.Tools
 
 main :: IO ()
 main = do
-	let	opts = [optEvents]
+	let	opts = [optEvents, optAllEvents]
 	(ss, _as, es) <- getOpt Permute opts <$> getArgs
 	putStrLn `mapM_` es
 	print ss
 	_ <- gdkDisplayOpen ""
 	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits $ optsToEventMaskList ss) 400 300
+		(optsToEventMask ss) 400 300
 	gdkWindowShow win
 	mainLoop \case
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$ print e
-		GdkEventGdkDelete (gdkEventAny -> e) -> True <$ (print e >> gdkWindowDestroy win)
+		GdkEventGdkDelete (gdkEventAny -> e) -> False <$ (print e >> gdkWindowDestroy win)
 		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$ print e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-				True <$ gdkWindowDestroy win
+				False <$ gdkWindowDestroy win
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting
 	= OptEvents [GdkEventMaskSingleBit]
+	| OptAllEvents
 	deriving Show
 
-optEvents :: OptDescr OptSetting
+optEvents, optAllEvents :: OptDescr OptSetting
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "EventMask")
 	"Set event mask"
 
-optsToEventMaskList :: [OptSetting] -> [GdkEventMaskSingleBit]
-optsToEventMaskList = \case
-	[] -> [GdkKeyPressMask]
-	OptEvents ems : _ -> ems
+optAllEvents = Option ['a'] ["all-events"] (NoArg OptAllEvents) "Set all event mask"
+
+optsToEventMask :: [OptSetting] -> GdkEventMaskMultiBits
+optsToEventMask = \case
+	[] -> gdkEventMaskMultiBits [GdkKeyPressMask]
+	OptEvents ems : _ -> gdkEventMaskMultiBits ems
+	OptAllEvents : _ -> GdkAllEventsMask
