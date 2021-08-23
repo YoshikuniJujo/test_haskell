@@ -33,6 +33,7 @@ main = do
 		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$ print e
 		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ print e
 		GdkEventGdkButtonPress (gdkEventButton -> e) -> True <$ print e
+		GdkEventGdkButtonRelease (gdkEventButton -> e) -> True <$ print e
 		GdkEventGdkDoubleButtonPress (gdkEventButton -> e) -> True <$ do
 			putStrLn "DOUBLE"
 			print e
