@@ -24,7 +24,7 @@ GdkEventMask memo
 			* [x] `GdkButton3MotionMask`
 			* [x] `GdkButtonPressMask`
 			* [x] `GdkButtonReleaseMask`
-			* [ ] `GdkKeyPressMask`
+			* [x] `GdkKeyPressMask`
 			* [ ] `GdkKeyReleaseMask`
 			* [ ] `GdkEnterNotifyMask`
 			* [ ] `GdkLeaveNotifyMask`

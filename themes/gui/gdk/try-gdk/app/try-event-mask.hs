@@ -43,6 +43,7 @@ main = do
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				False <$ gdkWindowDestroy win
+		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting
