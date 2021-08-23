@@ -25,11 +25,11 @@ GdkEventMask memo
 			* [x] `GdkButtonPressMask`
 			* [x] `GdkButtonReleaseMask`
 			* [x] `GdkKeyPressMask`
-			* [ ] `GdkKeyReleaseMask`
-			* [ ] `GdkEnterNotifyMask`
-			* [ ] `GdkLeaveNotifyMask`
-			* [ ] `GdkFocusChangeMask`
-			* [ ] `GdkStructureMask`
+			* [x] `GdkKeyReleaseMask`
+			* [x] `GdkEnterNotifyMask`
+			* [x] `GdkLeaveNotifyMask`
+			* [x] `GdkFocusChangeMask`
+			* [x] `GdkStructureMask`
 			* [ ] `GdkPropertyChangeMask`
 			* [ ] `GdkVisibilityNotifyMask`
 			* [ ] `GdkProximityInMask`

@@ -44,6 +44,17 @@ main = do
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				False <$ gdkWindowDestroy win
 		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
+		GdkEventGdkKeyRelease (gdkEventKey -> e) -> True <$ do
+			putStrLn "RELEASE"
+			print e
+		GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ do
+			putStrLn "ENTER"
+			print e
+		GdkEventGdkLeaveNotify (gdkEventCrossing -> e) -> True <$ do
+			putStrLn "LEAVE"
+			print e
+		GdkEventGdkFocusChange (gdkEventFocus -> e) -> True <$ print e
+		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting
