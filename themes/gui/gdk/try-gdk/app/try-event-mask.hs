@@ -55,6 +55,8 @@ main = do
 			print e
 		GdkEventGdkFocusChange (gdkEventFocus -> e) -> True <$ print e
 		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
+		GdkEventGdkPropertyNotify (gdkEventProperty -> e) -> True <$ do
+			print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting
