@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.GdkDrawingContext (
+module Graphics.Gdk.GdkDrawingContext.Internal (
 
 	-- * GDK DRAWING CONTEXT
 	GdkDrawingContext(..),
