@@ -31,7 +31,7 @@ GdkEventMask memo
 			* [x] `GdkFocusChangeMask`
 			* [x] `GdkStructureMask`
 			* [x] `GdkPropertyChangeMask`
-			* [ ] `GdkVisibilityNotifyMask`
+			* [x] `GdkVisibilityNotifyMask`
 			* [ ] `GdkProximityInMask`
 			* [ ] `GdkProximityOutMask`
 			* [ ] `GdkSubstructureMask`
