@@ -106,7 +106,7 @@ import Graphics.Gdk.GdkDisplay.Internal
 import {-# SOURCE #-} Graphics.Gdk.GdkScreen.Internal
 import Graphics.Gdk.PointsAndRectangles.Internal
 import Graphics.Gdk.Visuals.Internal
-import Graphics.Gdk.GdkDrawingContext
+import Graphics.Gdk.GdkDrawingContext.Internal
 import Graphics.Gdk.Cursors.Internal
 import Graphics.Gdk.Windows.GdkWindowAttr.Internal
 import Graphics.Gdk.Windows.GdkEventMask.Internal

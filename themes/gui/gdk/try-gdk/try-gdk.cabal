@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 347946a08ccb0bf665c536e96462d26608241299c862da6c260811cda5839758
+-- hash: 9fb6fcc6997d2904cc96a7ab12358c231cdfdae654bf6c19a8665bf4af7bd745
 
 name:           try-gdk
 version:        0.1.0.0
@@ -355,6 +355,28 @@ executable try-display-manager
 
 executable try-draw
   main-is: try-draw.hs
+  other-modules:
+      Main
+      Paths_try_gdk
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
+    , glib-stopgap
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-gdk
+  default-language: Haskell2010
+
+executable try-drawing-context
+  main-is: try-drawing-context.hs
   other-modules:
       Main
       Paths_try_gdk

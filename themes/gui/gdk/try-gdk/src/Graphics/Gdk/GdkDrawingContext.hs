@@ -3,7 +3,7 @@
 module Graphics.Gdk.GdkDrawingContext (
 
 	-- * GDK DRAWING CONTEXT
-	GdkDrawingContext(..),
+	GdkDrawingContext,
 
 	-- * IS VALID
 	gdkDrawingContextIsValid,

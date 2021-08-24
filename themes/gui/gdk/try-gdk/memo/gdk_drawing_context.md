@@ -5,8 +5,16 @@ GdkDrawingContext memo
 * [x] refactor export list
 * [x] make `Graphics.Gdk.GdkDrawingContext.Internal`
 * [ ] refactor export list
-	+ [ ] structure
-	+ [ ] ohters
+	+ [x] structure
+	+ [x] GDK DRAWING CONTEXT
+		- `GdkDrawingContext`
+	+ [x] IS VALID
+		- `gdkDrawingContextIsValid`
+	+ [ ] WINDOW AND CLIP
+		- [ ] `gdkDrawingContextGetWindow`
+		- [ ] `gdkDrawingContextGetClip`
+	+ [ ] CAIRO CONTEXT
+		- `gdkDarwingContextGetCairoContext`
 
 old
 ---
