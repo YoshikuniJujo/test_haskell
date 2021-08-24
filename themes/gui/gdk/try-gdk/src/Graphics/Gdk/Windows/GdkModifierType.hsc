@@ -3,7 +3,20 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Windows.GdkModifierType where
+module Graphics.Gdk.Windows.GdkModifierType (
+	-- * GDK MODIFIER TYPE MULTI BITS
+	GdkModifierTypeMultiBits, gdkModifierTypeMultiBits,
+	pattern GdkShiftMask, pattern GdkLockMask, pattern GdkControlMask,
+	pattern GdkMod1Mask, pattern GdkMod2Mask, pattern GdkMod3Mask,
+	pattern GdkMod4Mask, pattern GdkMod5Mask,
+	pattern GdkButton1Mask, pattern GdkButton2Mask, pattern GdkButton3Mask,
+	pattern GdkButton4Mask, pattern GdkButton5Mask,
+	pattern GdkSuperMask, pattern GdkHyperMask, pattern GdkMetaMask,
+
+	-- * GDK MODIFIER TYPE SINGLE BIT
+	GdkModifierTypeSingleBit, gdkModifierTypeSingleBitList,
+	pattern GdkZeroModifierMask, pattern GdkAllModifierMask
+	) where
 
 import Foreign.Storable
 import Foreign.C.Enum
@@ -32,8 +45,8 @@ enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show] [
 	("GdkMetaMask", #{const GDK_META_MASK}) ]
 
 enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show, ''Storable] [
-	("GdkNoModifierMask", 0),
-	("GdkModifierMask", #{const GDK_MODIFIER_MASK}) ]
+	("GdkZeroModifierMask", 0),
+	("GdkAllModifierMask", #{const GDK_MODIFIER_MASK}) ]
 
 gdkModifierTypeMultiBits ::
 	[GdkModifierTypeSingleBit] -> GdkModifierTypeMultiBits

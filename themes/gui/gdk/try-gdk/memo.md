@@ -60,7 +60,7 @@ todo new
 		- [ ] Windows
 			* [x] itself
 			* [x] GdkWindowAttr
-			* [ ] GdkEventMask
+			* [x] GdkEventMask
 			* [ ] GdkModifierType
 		- [ ] GdkDrawingContext
 		- [ ] Events
