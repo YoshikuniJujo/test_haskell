@@ -25,7 +25,7 @@ import Data.Word
 
 #include <gdk/gdk.h>
 
-enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show] [
+enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show, ''Read, ''Eq] [
 	("GdkShiftMask", #{const GDK_SHIFT_MASK}),
 	("GdkLockMask", #{const GDK_LOCK_MASK}),
 	("GdkControlMask", #{const GDK_CONTROL_MASK}),

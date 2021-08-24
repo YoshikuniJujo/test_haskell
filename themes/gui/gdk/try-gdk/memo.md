@@ -57,11 +57,11 @@ todo new
 		- [x] PointsAndRectangle
 		- [x] Visuals
 		- [x] Cursors
-		- [ ] Windows
+		- [x] Windows
 			* [x] itself
 			* [x] GdkWindowAttr
 			* [x] GdkEventMask
-			* [ ] GdkModifierType
+			* [x] GdkModifierType
 		- [ ] GdkDrawingContext
 		- [ ] Events
 		- [ ] EventStructures
