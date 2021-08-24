@@ -3,9 +3,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.GdkDrawingContext (
+
+	-- * GDK DRAWING CONTEXT
 	GdkDrawingContext(..),
+
+	-- * IS VALID
+	gdkDrawingContextIsValid,
+
+	-- * WINDOW AND CLIP
 	gdkDrawingContextGetWindow, gdkDrawingContextGetClip,
-	gdkDrawingContextGetCairoContext, gdkDrawingContextIsValid ) where
+
+	-- * CAIRO CONTEXT
+	gdkDrawingContextGetCairoContext ) where
 
 import Foreign.Ptr
 import Foreign.Concurrent

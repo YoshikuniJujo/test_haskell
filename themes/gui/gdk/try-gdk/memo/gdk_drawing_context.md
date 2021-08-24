@@ -2,6 +2,16 @@ GdkDrawingContext memo
 ======================
 
 * [x] make export list
+* [x] refactor export list
+* [ ] make `Graphics.Gdk.GdkDrawingContext.Internal`
+* [ ] refactor export list
+	+ [ ] structure
+	+ [ ] ohters
+
+old
+---
+
+* [x] make export list
 * [x] `gdkDrawingContextGetWindow`
 * [x] `gdkDrawingContextGetClip`
 	+ [x] repair `gdkWindowWithDrawFrame`
