@@ -12,6 +12,9 @@ import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 
+import Graphics.Cairo.Drawing.Regions
+import Graphics.Cairo.Utilities.Types
+
 import Try.Tools
 
 main :: IO ()
@@ -31,6 +34,16 @@ main = do
 				print =<< gdkDrawingContextIsValid cxt
 				print win
 				print =<< gdkDrawingContextGetWindow cxt
+				print r
+				r' <- gdkDrawingContextGetClip cxt
+				print r'
+				print =<< cairoRegionNumRectangles r
+				print =<< cairoRegionNumRectangles r'
+				rct <- cairoRectangleIntTNew
+				print =<< cairoRegionGetRectangle r 0 rct
+				print =<< cairoRectangleIntTFreeze rct
+				print =<< cairoRegionGetRectangle r' 0 rct
+				print =<< cairoRectangleIntTFreeze rct
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 			pure False

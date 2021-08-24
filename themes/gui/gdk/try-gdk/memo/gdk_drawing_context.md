@@ -10,9 +10,9 @@ GdkDrawingContext memo
 		- `GdkDrawingContext`
 	+ [x] IS VALID
 		- `gdkDrawingContextIsValid`
-	+ [ ] WINDOW AND CLIP
+	+ [x] WINDOW AND CLIP
 		- [x] `gdkDrawingContextGetWindow`
-		- [ ] `gdkDrawingContextGetClip`
+		- [x] `gdkDrawingContextGetClip`
 	+ [ ] CAIRO CONTEXT
 		- `gdkDarwingContextGetCairoContext`
 
