@@ -61,6 +61,7 @@ main = do
 			putStrLn =<< gdkAtomName (gdkEventPropertyAtom e)
 		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) ->
 			True <$ print e
+		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$ print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting

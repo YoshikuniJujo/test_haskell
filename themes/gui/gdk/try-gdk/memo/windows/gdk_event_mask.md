@@ -4,7 +4,7 @@ GdkEventMask memo
 * [x] refactor export list
 	+ structure
 * [x] make `Graphics.Gdk.Windows.GdkEventMask.Internal`
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] structure
 	+ [x] GDK EVENT MASK MULTIPLE BITS
 		- [x] `data GdkEventMaskMultiBits`
@@ -12,11 +12,11 @@ GdkEventMask memo
 		- [x] patterns
 			* [x] `GdkZeroEventsMask`
 			* [x] `GdkAllEventsMask`
-	+ [ ] GDK EVENT MASK SINGLE BIT
+	+ [x] GDK EVENT MASK SINGLE BIT
 		- [x] `data GdkEventMaskSingleBit`
 		- [x] `gdkEventMaskSingleBitList`
-		- [ ] pattens
-			* [ ] `GdkExposureMask`
+		- [x] pattens
+			* `GdkExposureMask`: no check
 			* [x] `GdkPointerMotionMask`
 			* [x] `GdkButtonMotionMask`
 			* [x] `GdkButton1MotionMask`
@@ -32,11 +32,11 @@ GdkEventMask memo
 			* [x] `GdkStructureMask`
 			* [x] `GdkPropertyChangeMask`
 			* [x] `GdkVisibilityNotifyMask`
-			* [ ] `GdkProximityInMask`
-			* [ ] `GdkProximityOutMask`
-			* [ ] `GdkSubstructureMask`
-			* [ ] `GdkScrollMask`
-			* [ ] `GdkTouchMask`
-			* [ ] `GdkSmoothScrollMask`
-			* [ ] `GdkTouchpadGestureMsak`
-			* [ ] `GdkTablePadMask`
+			* `GdkProximityInMask`: no check
+			* `GdkProximityOutMask`: no check
+			* `GdkSubstructureMask`: no check
+			* [x] `GdkScrollMask`
+			* `GdkTouchMask`: no check
+			* [x] `GdkSmoothScrollMask`
+			* `GdkTouchpadGestureMsak`: no check
+			* `GdkTablePadMask`: no check
