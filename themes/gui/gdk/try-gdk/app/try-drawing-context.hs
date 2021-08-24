@@ -29,6 +29,8 @@ main = do
 			gdkWindowWithDrawFrame win r \cxt -> do
 				print cxt
 				print =<< gdkDrawingContextIsValid cxt
+				print win
+				print =<< gdkDrawingContextGetWindow cxt
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 			pure False
