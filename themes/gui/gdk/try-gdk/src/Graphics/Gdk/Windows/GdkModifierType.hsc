@@ -6,17 +6,16 @@
 module Graphics.Gdk.Windows.GdkModifierType (
 	-- * GDK MODIFIER TYPE MULTI BITS
 	GdkModifierTypeMultiBits, gdkModifierTypeMultiBits,
+	pattern GdkZeroModifierMask, pattern GdkAllModifierMask,
+
+	-- * GDK MODIFIER TYPE SINGLE BIT
+	GdkModifierTypeSingleBit, gdkModifierTypeSingleBitList,
 	pattern GdkShiftMask, pattern GdkLockMask, pattern GdkControlMask,
 	pattern GdkMod1Mask, pattern GdkMod2Mask, pattern GdkMod3Mask,
 	pattern GdkMod4Mask, pattern GdkMod5Mask,
 	pattern GdkButton1Mask, pattern GdkButton2Mask, pattern GdkButton3Mask,
 	pattern GdkButton4Mask, pattern GdkButton5Mask,
-	pattern GdkSuperMask, pattern GdkHyperMask, pattern GdkMetaMask,
-
-	-- * GDK MODIFIER TYPE SINGLE BIT
-	GdkModifierTypeSingleBit, gdkModifierTypeSingleBitList,
-	pattern GdkZeroModifierMask, pattern GdkAllModifierMask
-	) where
+	pattern GdkSuperMask, pattern GdkHyperMask, pattern GdkMetaMask ) where
 
 import Foreign.Storable
 import Foreign.C.Enum
@@ -44,7 +43,7 @@ enum "GdkModifierTypeSingleBit" ''#{type GdkModifierType} [''Show] [
 	("GdkHyperMask", #{const GDK_HYPER_MASK}),
 	("GdkMetaMask", #{const GDK_META_MASK}) ]
 
-enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show, ''Storable] [
+enum "GdkModifierTypeMultiBits" ''#{type GdkModifierType} [''Show, ''Read, ''Eq, ''Storable] [
 	("GdkZeroModifierMask", 0),
 	("GdkAllModifierMask", #{const GDK_MODIFIER_MASK}) ]
 
