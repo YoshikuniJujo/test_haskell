@@ -30,7 +30,7 @@ GdkEventMask memo
 			* [x] `GdkLeaveNotifyMask`
 			* [x] `GdkFocusChangeMask`
 			* [x] `GdkStructureMask`
-			* [ ] `GdkPropertyChangeMask`
+			* [x] `GdkPropertyChangeMask`
 			* [ ] `GdkVisibilityNotifyMask`
 			* [ ] `GdkProximityInMask`
 			* [ ] `GdkProximityOutMask`

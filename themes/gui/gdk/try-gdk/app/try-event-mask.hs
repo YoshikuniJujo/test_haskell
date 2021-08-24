@@ -13,6 +13,7 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 import Try.Tools
 
@@ -57,6 +58,7 @@ main = do
 		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
 		GdkEventGdkPropertyNotify (gdkEventProperty -> e) -> True <$ do
 			print e
+			putStrLn =<< gdkAtomName (gdkEventPropertyAtom e)
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 data OptSetting
