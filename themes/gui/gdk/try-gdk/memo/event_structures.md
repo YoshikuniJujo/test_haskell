@@ -5,9 +5,12 @@ todo
 ----
 
 * [x] add export list
-* [ ] add some to export list
+* [x] add some to export list
 * [ ] refactor export list
 	+ [ ] structure
+		- [x] some
+		- [ ] remove GdkEventType patterns
+		- [ ] others
 	+ [ ] others
 * [ ] make `Graphics.Gdk.EventStructures.Internal`
 * [ ] refactor export list

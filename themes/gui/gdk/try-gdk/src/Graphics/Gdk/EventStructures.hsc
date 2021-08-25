@@ -7,59 +7,67 @@
 
 module Graphics.Gdk.EventStructures (
 
-	GdkEvent(..), GdkEventTag,
-	GdkWindowStates(..), MilliSecond(..),
-	c_gdk_event_free,
+	-- * GDK EVENT
+	GdkEvent(..), GdkEventTag, c_gdk_event_free,
 
+	-- * GDK EVENT ANY
+	GdkEventAny(..), gdkEventAny,
+	pattern GdkEventGdkAny, pattern GdkEventGdkNothing,
+	pattern GdkEventGdkDelete, pattern GdkEventGdkDestroy,
+
+	-- * GDK EVENT KEY
+	GdkEventKey(..), gdkEventKey,
+	pattern GdkEventGdkKeyPress, pattern GdkEventGdkKeyRelease,
+	MilliSecond(..),
+
+	-- * GDK EVENT BUTTON
+	GdkEventButton(..), gdkEventButton,
+	pattern GdkEventGdkButtonPress, pattern GdkEventGdkButtonRelease,
+
+	-- * GDK EVENT SCROLL
+	pattern GdkEventGdkScroll, gdkEventScroll,
+
+	-- * GDK EVENT MOTION
+	GdkEventMotion(..), GdkEventMotionRaw, gdkEventMotion,
+	pattern GdkEventGdkMotionNotify,
+
+	-- * GDK EVENT VISIBILITY
+	GdkEventVisibility(..), gdkEventVisibility,
+	pattern GdkEventGdkVisibilityNotify,
+
+	-- * GDK EVENT CROSSING
+	gdkEventCrossing,
+	pattern GdkEventGdkEnterNotify,
+	pattern GdkEventGdkLeaveNotify,
+
+	-- * GDK EVENT FOCUS
+	gdkEventFocus, pattern GdkEventGdkFocusChange,
+
+	-- * GDK EVENT CONFIGURE
+	GdkEventConfigure(..), gdkEventConfigure, pattern GdkEventGdkConfigure,
+
+	-- * GDK EVENT PROPERTY
+	GdkEventProperty(..), gdkEventProperty,
+	pattern GdkEventGdkPropertyNotify,
+
+	-- * GDK EVENT WINDOW STATE
+	GdkEventWindowState(..), gdkEventWindowState,
+	pattern GdkEventGdkWindowState,
+	-- ** Gdk Window State
+	GdkWindowStates(..), gdkWindowStateList, gdkWindowStateCheck,
 	pattern GdkWindowStateAbove,
 	pattern GdkWindowStateBelow,
 	pattern GdkWindowStateFullscreen,
 	pattern GdkWindowStateSticky,
 	pattern GdkWindowStateMaximized,
-	gdkWindowStateCheck,
 
-	GdkEventAny(..),
-	pattern GdkEventGdkAny, gdkEventAny,
-	pattern GdkEventGdkDelete,
-
-	GdkEventMotion(..), GdkEventMotionRaw,
-	pattern GdkEventGdkMotionNotify, gdkEventMotion,
-
-	pattern GdkEventGdkKeyPress, gdkEventKey, GdkEventKey(..),
-
-	pattern GdkEventGdkFocusChange, gdkEventFocus,
-
-	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,
-
-	GdkEventWindowState(..),
-	pattern GdkEventGdkWindowState, gdkEventWindowState,
-	gdkWindowStateList,
-
-	GdkEventConfigure(..),
-	pattern GdkEventGdkConfigure, gdkEventConfigure,
-
-	GdkEventVisibility(..),
-	pattern GdkEventGdkVisibilityNotify, gdkEventVisibility,
-
-	pattern GdkEventGdkEnterNotify, gdkEventCrossing,
-	pattern GdkEventGdkLeaveNotify,
-
-	GdkEventProperty(..),
-	pattern GdkEventGdkPropertyNotify, gdkEventProperty,
-
-	pattern GdkEventGdkScroll, gdkEventScroll,
-
-	pattern GdkEventGdkNothing, pattern GdkEventGdkDestroy,
-
-	GdkEventButton(..),
-	pattern GdkEventGdkButtonPress, pattern GdkEventGdkButtonRelease,
-	gdkEventButton,
-
+	-- * GDK EVENT TYPE
 	pattern GdkEventGdkDoubleButtonPress,
 	pattern GdkEventGdkTripleButtonPress,
-	pattern GdkEventGdkKeyRelease,
+	pattern GdkKeyPress,
+	pattern GdkEnterNotify, pattern GdkLeaveNotify,
+	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,
 
-	pattern GdkKeyPress, pattern GdkEnterNotify, pattern GdkLeaveNotify,
 	) where
 
 import Foreign.Ptr
