@@ -10,10 +10,39 @@ module Graphics.Gdk.EventStructures (
 	-- * GDK EVENT
 	GdkEvent(..), GdkEventTag, c_gdk_event_free,
 
+	-- * GDK EVENT TYPE
+	GdkEventType,
+	pattern GdkNothing, pattern GdkDelete, pattern GdkDestroy,
+	pattern GdkExpose, pattern GdkMotionNotify,
+	pattern GdkButtonPress,
+	pattern GdkDoubleButtonPress, pattern GdkTripleButtonPress,
+	pattern GdkButtonRelease,
+	pattern GdkKeyPress, pattern GdkKeyRelease,
+	pattern GdkEnterNotify, pattern GdkLeaveNotify,
+	pattern GdkFocusChange, pattern GdkConfigure,
+	pattern GdkMap, pattern GdkUnmap,
+	pattern GdkPropertyNotify,
+	pattern GdkSelectionClear, pattern GdkSelectionRequest,
+	pattern GdkSelectionNotify,
+	pattern GdkProximityIn, pattern GdkProximityOut,
+	pattern GdkDragEnter, pattern GdkDragLeave, pattern GdkDragMotion,
+	pattern GdkDragStatus,
+	pattern GdkDropStart, pattern GdkDropFinished,
+	pattern GdkClientEvent, pattern GdkVisibilityNotify,
+	pattern GdkScroll, pattern GdkWindowState,
+	pattern GdkSetting, pattern GdkOwnerChange, pattern GdkGrabBroken,
+	pattern GdkDamage,
+	pattern GdkTouchBegin, pattern GdkTouchUpdate, pattern GdkTouchEnd,
+	pattern GdkTouchCancel,
+	pattern GdkTouchpadSwipe, pattern GdkTouchpadPinch,
+	pattern GdkPadButtonPress, pattern GdkPadButtonRelease,
+	pattern GdkPadStrip, pattern GdkPadGroupMode,
+
 	-- * GDK EVENT ANY
 	GdkEventAny(..), gdkEventAny,
 	pattern GdkEventGdkAny, pattern GdkEventGdkNothing,
 	pattern GdkEventGdkDelete, pattern GdkEventGdkDestroy,
+	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,
 
 	-- * GDK EVENT KEY
 	GdkEventKey(..), gdkEventKey,
@@ -23,6 +52,8 @@ module Graphics.Gdk.EventStructures (
 	-- * GDK EVENT BUTTON
 	GdkEventButton(..), gdkEventButton,
 	pattern GdkEventGdkButtonPress, pattern GdkEventGdkButtonRelease,
+	pattern GdkEventGdkDoubleButtonPress,
+	pattern GdkEventGdkTripleButtonPress,
 
 	-- * GDK EVENT SCROLL
 	pattern GdkEventGdkScroll, gdkEventScroll,
@@ -61,13 +92,6 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkWindowStateSticky,
 	pattern GdkWindowStateMaximized,
 
-	-- * GDK EVENT TYPE
-	pattern GdkEventGdkDoubleButtonPress,
-	pattern GdkEventGdkTripleButtonPress,
-	pattern GdkKeyPress,
-	pattern GdkEnterNotify, pattern GdkLeaveNotify,
-	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,
-
 	) where
 
 import Foreign.Ptr
@@ -102,9 +126,9 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkDestroy", #{const GDK_DESTROY}), ("GdkExpose", #{const GDK_EXPOSE}),
 	("GdkMotionNotify", #{const GDK_MOTION_NOTIFY}),
 	("GdkButtonPress", #{const GDK_BUTTON_PRESS}),
-	("Gdk2ButtonPress", #{const GDK_2BUTTON_PRESS}),
+--	("Gdk2ButtonPress", #{const GDK_2BUTTON_PRESS}),
 	("GdkDoubleButtonPress", #{const GDK_DOUBLE_BUTTON_PRESS}),
-	("Gdk3ButtonPress", #{const GDK_3BUTTON_PRESS}),
+--	("Gdk3ButtonPress", #{const GDK_3BUTTON_PRESS}),
 	("GdkTripleButtonPress", #{const GDK_TRIPLE_BUTTON_PRESS}),
 	("GdkButtonRelease", #{const GDK_BUTTON_RELEASE}),
 	("GdkKeyPress", #{const GDK_KEY_PRESS}),
@@ -133,7 +157,20 @@ enum "GdkEventType" ''#{type GdkEventType} [''Show, ''Storable] [
 	("GdkWindowState_", #{const GDK_WINDOW_STATE}),
 	("GdkSetting", #{const GDK_SETTING}),
 	("GdkOwnerChange", #{const GDK_OWNER_CHANGE}),
-	("GdkGrabBroken", #{const GDK_GRAB_BROKEN}) ]
+	("GdkGrabBroken", #{const GDK_GRAB_BROKEN}),
+	("GdkDamage", #{const GDK_DAMAGE}),
+	("GdkTouchBegin", #{const GDK_TOUCH_BEGIN}),
+	("GdkTouchUpdate", #{const GDK_TOUCH_UPDATE}),
+	("GdkTouchEnd", #{const GDK_TOUCH_END}),
+	("GdkTouchCancel", #{const GDK_TOUCH_CANCEL}),
+	("GdkTouchpadSwipe", #{const GDK_TOUCHPAD_SWIPE}),
+	("GdkTouchpadPinch", #{const GDK_TOUCHPAD_PINCH}),
+	("GdkPadButtonPress", #{const GDK_BUTTON_PRESS}),
+	("GdkPadButtonRelease", #{const GDK_PAD_BUTTON_RELEASE}),
+	("GdkPadRing", #{const GDK_PAD_RING}),
+	("GdkPadStrip", #{const GDK_PAD_STRIP}),
+	("GdkPadGroupMode", #{const GDK_PAD_GROUP_MODE})
+	]
 
 ---------------------------------------------------------------------------
 -- GDK EVENT                                                             --

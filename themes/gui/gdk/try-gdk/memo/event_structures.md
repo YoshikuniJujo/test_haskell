@@ -9,7 +9,9 @@ todo
 * [ ] refactor export list
 	+ [ ] structure
 		- [x] some
-		- [ ] remove GdkEventType patterns
+		- [x] add GdkEventType
+			* [x] add type
+			* [x] add patterns
 		- [ ] others
 	+ [ ] others
 * [ ] make `Graphics.Gdk.EventStructures.Internal`
