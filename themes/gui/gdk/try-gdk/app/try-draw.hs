@@ -69,7 +69,6 @@ checkEvent = \case
 		True <$ (print c >> drawRedLine (gdkEventConfigureWindow c))
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
-		drawRedLine $ tryGdkEventSealedMapWindow m
 		pure True
 	GdkEventGdkWindowState (gdkEventWindowState -> s) -> True <$ do
 		print s

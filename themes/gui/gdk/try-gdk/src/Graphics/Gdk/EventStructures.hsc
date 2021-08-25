@@ -5,7 +5,61 @@
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.EventStructures where
+module Graphics.Gdk.EventStructures (
+	GdkEvent(..), GdkEventTag,
+	GdkWindowStates(..), MilliSecond(..),
+	c_gdk_event_free,
+
+	pattern GdkWindowStateAbove,
+	pattern GdkWindowStateBelow,
+	pattern GdkWindowStateFullscreen,
+	pattern GdkWindowStateSticky,
+	pattern GdkWindowStateMaximized,
+	gdkWindowStateCheck,
+
+	GdkEventAny(..),
+	pattern GdkEventGdkAny, gdkEventAny,
+	pattern GdkEventGdkDelete,
+
+	GdkEventMotion(..), GdkEventMotionRaw,
+	pattern GdkEventGdkMotionNotify, gdkEventMotion,
+
+	pattern GdkEventGdkKeyPress, gdkEventKey, GdkEventKey(..),
+
+	pattern GdkEventGdkFocusChange, gdkEventFocus,
+
+	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,
+
+	GdkEventWindowState(..),
+	pattern GdkEventGdkWindowState, gdkEventWindowState,
+	gdkWindowStateList,
+
+	GdkEventConfigure(..),
+	pattern GdkEventGdkConfigure, gdkEventConfigure,
+
+	GdkEventVisibility(..),
+	pattern GdkEventGdkVisibilityNotify, gdkEventVisibility,
+
+	pattern GdkEventGdkEnterNotify, gdkEventCrossing,
+	pattern GdkEventGdkLeaveNotify,
+
+	GdkEventProperty(..),
+	pattern GdkEventGdkPropertyNotify, gdkEventProperty,
+
+	pattern GdkEventGdkScroll, gdkEventScroll,
+
+	pattern GdkEventGdkNothing, pattern GdkEventGdkDestroy,
+
+	GdkEventButton(..),
+	pattern GdkEventGdkButtonPress, pattern GdkEventGdkButtonRelease,
+	gdkEventButton,
+
+	pattern GdkEventGdkDoubleButtonPress,
+	pattern GdkEventGdkTripleButtonPress,
+	pattern GdkEventGdkKeyRelease,
+
+	pattern GdkKeyPress, pattern GdkEnterNotify, pattern GdkLeaveNotify,
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
@@ -842,6 +896,3 @@ pattern GdkEventGdkWindowState e <- GdkEvent
 ---------------------------------------------------------------------------
 -- GDK EVENT SETTING
 ---------------------------------------------------------------------------
-
-tryGdkEventSealedMapWindow :: Sealed s GdkEventAnyRaw -> GdkWindow
-tryGdkEventSealedMapWindow (unsafeUnseal -> e) = gdkEventAnyRawWindow e

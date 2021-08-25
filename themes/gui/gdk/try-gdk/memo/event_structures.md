@@ -1,6 +1,22 @@
 Event Structures memo
 =====================
 
+todo
+----
+
+* [x] add export list
+* [ ] add some to export list
+* [ ] refactor export list
+	+ [ ] structure
+	+ [ ] others
+* [ ] make `Graphics.Gdk.EventStructures.Internal`
+* [ ] refactor export list
+	+ [ ] structure
+	+ [ ] others
+
+old todo
+--------
+
 * [x] rename `GdkEvent` to `GdkEventTag`
 * [x] rename `GdkEventSealed` to `GdkEvent`
 * [x] define `gdkDisplayWithEventGet` instead of `gdkDisplayGetEvent`
