@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9fb6fcc6997d2904cc96a7ab12358c231cdfdae654bf6c19a8665bf4af7bd745
+-- hash: 984de91fe4da20c86024edd6fe690fc612de4b3dcec4bae4264691fbec372104
 
 name:           try-gdk
 version:        0.1.0.0
@@ -399,6 +399,28 @@ executable try-drawing-context
 
 executable try-event-mask
   main-is: try-event-mask.hs
+  other-modules:
+      Main
+      Paths_try_gdk
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
+    , glib-stopgap
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-gdk
+  default-language: Haskell2010
+
+executable try-events
+  main-is: try-events.hs
   other-modules:
       Main
       Paths_try_gdk

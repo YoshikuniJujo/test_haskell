@@ -62,7 +62,7 @@ todo new
 			* [x] GdkWindowAttr
 			* [x] GdkEventMask
 			* [x] GdkModifierType
-		- [ ] GdkDrawingContext
+		- [x] GdkDrawingContext
 		- [ ] Events
 		- [ ] EventStructures
 			* [ ] GdkKeySyms
