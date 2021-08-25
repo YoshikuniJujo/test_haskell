@@ -21,22 +21,27 @@ main = do
 	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask]) 700 500
 	gdkWindowShow win
-	mainLoop 500000 \case
-		GdkEventGdkDelete (gdkEventAny -> e) -> False <$ print e
-		GdkEventGdkWindowState (gdkEventWindowState -> e) -> True <$ do
-			print e
-			print . gdkWindowStateList
-				$ gdkEventWindowStateChangedMask e
-			print . gdkWindowStateList
-				$ gdkEventWindowStateNewWindowState e
-		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
-		GdkEventGdkMap (gdkEventAny -> e) -> True <$ print e
-		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) ->
-			True <$ print e
-		GdkEventGdkKeyPress (gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-			pure False
-		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
-		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+	mainLoop 100000 \e -> do
+		print =<< gdkEventsPending
+		gdkWithEventPeek print
+		processEvent e
+
+processEvent :: GdkEvent s -> IO Bool
+processEvent = \case
+	GdkEventGdkDelete (gdkEventAny -> e) -> False <$ print e
+	GdkEventGdkWindowState (gdkEventWindowState -> e) -> True <$ do
+		print e
+		print . gdkWindowStateList
+			$ gdkEventWindowStateChangedMask e
+		print . gdkWindowStateList
+			$ gdkEventWindowStateNewWindowState e
+	GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
+	GdkEventGdkMap (gdkEventAny -> e) -> True <$ print e
+	GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) -> True <$ print e
+	GdkEventGdkKeyPress (gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
+		pure False
+	GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
+	GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
 mainLoop slp f = gdkWithEventGet \case

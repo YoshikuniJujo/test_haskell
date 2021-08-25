@@ -5,7 +5,8 @@ Events memo
 	+ [ ] GET EVENT
 		- [x] `gdkWithEventGet`
 		- [ ] `gdkWithEventPeek`
-		- [ ] `gdkEventsPending`
+			* remove it
+		- [x] `gdkEventsPending`
 	+ [ ] DEBUG
 		- [ ] `gdkGetShowEvents`
 		- [ ] `gdkSetShowEvents`
