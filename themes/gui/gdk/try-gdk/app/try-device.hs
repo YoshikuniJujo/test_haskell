@@ -67,7 +67,7 @@ main = do
 		gdkDisplayFlush dpy
 		gdkDisplaySync dpy
 
-		doWhile_ $ gdkWithEventGet \case
+		doWhile_ $ gdkWithEvent \case
 			Nothing -> pure False
 			Just (GdkEventGdkAny (gdkEventAny -> e)) -> print e >> pure True
 

@@ -43,16 +43,16 @@ processEvent = \case
 	GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
-mainLoop slp f = gdkWithEventGet \case
+mainLoop slp f = gdkWithEvent \case
 	Nothing -> threadDelay slp >> mainLoop slp f
 	Just e -> f e >>= \case False -> pure (); True -> mainLoop slp f
 
 gdkWithAllEvents :: (forall s . GdkEvent s -> IO a) -> IO [a]
-gdkWithAllEvents f = gdkWithEventGet \case
+gdkWithAllEvents f = gdkWithEvent \case
 	Nothing -> pure []
 	Just e -> (:) <$> f e <*> gdkWithAllEvents f
 
 gdkWithAllEvents_ :: (forall s . GdkEvent s -> IO a) -> IO ()
-gdkWithAllEvents_ f = gdkWithEventGet \case
+gdkWithAllEvents_ f = gdkWithEvent \case
 	Nothing -> pure ()
 	Just e -> f e >> gdkWithAllEvents_ f

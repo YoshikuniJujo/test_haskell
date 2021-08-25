@@ -39,7 +39,7 @@ main = do
 	gdkWindowSetCursor w c
 	print =<< gdkCursorGetCursorType c
 
-	doWhile_ $ gdkWithEventGet $ pure . maybe False (const True)
+	doWhile_ $ gdkWithEvent $ pure . maybe False (const True)
 
 	gdkDisplayFlush dpy
 	void getLine

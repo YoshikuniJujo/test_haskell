@@ -6,7 +6,7 @@
 
 module Graphics.Gdk.Events (
 	-- * GET EVENT
-	gdkWithEventGet, gdkEventsPending,
+	gdkWithEvent, gdkEventsPending,
 
 	-- * DEBUG
 	gdkGetShowEvents, gdkSetShowEvents
@@ -29,8 +29,8 @@ gdkEventsPending = gbooleanToBool <$> c_gdk_events_pending
 foreign import ccall "gdk_events_pending"
 	c_gdk_events_pending :: IO #type gboolean
 
-gdkWithEventGet :: (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
-gdkWithEventGet f = c_gdk_event_get >>= \case
+gdkWithEvent :: (forall s . Maybe (GdkEvent s) -> IO a) -> IO a
+gdkWithEvent f = c_gdk_event_get >>= \case
 	NullPtr -> f Nothing
 	p -> (f . Just . GdkEvent =<< newForeignPtr p (pure ()))
 		<* c_gdk_event_free p

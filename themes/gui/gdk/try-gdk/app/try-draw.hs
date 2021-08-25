@@ -48,7 +48,7 @@ main = do
 		GdkPointerMotionMask ] -- , GdkAllEventsMask ]
 	doWhile_ do
 		threadDelay 100000
-		doWhile $ gdkWithEventGet \case
+		doWhile $ gdkWithEvent \case
 			Just e -> do
 				b <- checkEvent e
 				pure if b then Nothing else Just False
