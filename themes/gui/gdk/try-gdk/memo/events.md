@@ -1,16 +1,16 @@
 Events memo
 ===========
 
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] GET EVENT
 		- [x] `gdkWithEventGet`
 			* rename to `gdkWithEvent`
 		- [x] `gdkWithEventPeek`
 			* remove it
 		- [x] `gdkEventsPending`
-	+ [ ] DEBUG
-		- [ ] `gdkGetShowEvents`
-		- [ ] `gdkSetShowEvents`
+	+ [x] DEBUG
+		- [x] `gdkGetShowEvents`
+		- [x] `gdkSetShowEvents`
 
 Function
 --------

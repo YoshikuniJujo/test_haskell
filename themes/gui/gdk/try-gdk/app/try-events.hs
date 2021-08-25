@@ -6,6 +6,8 @@
 module Main where
 
 import Control.Concurrent
+import System.Environment
+import System.Console.GetOpt
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
@@ -17,10 +19,14 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 
 main :: IO ()
 main = do
+	(ss, _as, es) <- getOpt Permute [optShowEvents] <$> getArgs
+	putStrLn `mapM_` es
 	_ <- gdkDisplayOpen ""
 	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [GdkKeyPressMask]) 700 500
 	gdkWindowShow win
+	gdkSetShowEvents $ optsToShowEvents ss
+	print =<< gdkGetShowEvents
 	mainLoop 100000 \e -> do
 		print =<< gdkEventsPending
 		processEvent e
@@ -56,3 +62,12 @@ gdkWithAllEvents_ :: (forall s . GdkEvent s -> IO a) -> IO ()
 gdkWithAllEvents_ f = gdkWithEvent \case
 	Nothing -> pure ()
 	Just e -> f e >> gdkWithAllEvents_ f
+
+data OptSetting = OptShowEvents deriving Show
+
+optShowEvents :: OptDescr OptSetting
+optShowEvents = Option ['s'] ["show-events"] (NoArg OptShowEvents) "Show events"
+
+optsToShowEvents :: [OptSetting] -> Bool
+optsToShowEvents [] = False
+optsToShowEvents (OptShowEvents : _) = True
