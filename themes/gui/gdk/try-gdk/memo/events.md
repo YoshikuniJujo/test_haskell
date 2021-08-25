@@ -3,8 +3,9 @@ Events memo
 
 * [ ] refactor export list
 	+ [ ] GET EVENT
-		- [x] `gdkWithEventGet`
-		- [ ] `gdkWithEventPeek`
+		- [ ] `gdkWithEventGet`
+			* rename to `gdkWithEvent`
+		- [x] `gdkWithEventPeek`
 			* remove it
 		- [x] `gdkEventsPending`
 	+ [ ] DEBUG

@@ -23,7 +23,6 @@ main = do
 	gdkWindowShow win
 	mainLoop 100000 \e -> do
 		print =<< gdkEventsPending
-		gdkWithEventPeek print
 		processEvent e
 
 processEvent :: GdkEvent s -> IO Bool
