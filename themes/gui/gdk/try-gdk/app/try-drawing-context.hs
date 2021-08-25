@@ -4,6 +4,9 @@
 
 module Main where
 
+import Data.Maybe
+import Data.Color
+
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
@@ -12,6 +15,7 @@ import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
 
+import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
 import Graphics.Cairo.Utilities.Types
 
@@ -40,10 +44,13 @@ main = do
 				print =<< cairoRegionNumRectangles r
 				print =<< cairoRegionNumRectangles r'
 				rct <- cairoRectangleIntTNew
-				print =<< cairoRegionGetRectangle r 0 rct
+				cairoRegionGetRectangle r 0 rct
 				print =<< cairoRectangleIntTFreeze rct
-				print =<< cairoRegionGetRectangle r' 0 rct
+				cairoRegionGetRectangle r' 0 rct
 				print =<< cairoRectangleIntTFreeze rct
+				cr <- gdkDrawingContextGetCairoContext cxt
+				cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
+				cairoPaint cr
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 			pure False
