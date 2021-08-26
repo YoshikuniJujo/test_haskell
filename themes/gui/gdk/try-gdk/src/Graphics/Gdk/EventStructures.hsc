@@ -11,7 +11,7 @@ module Graphics.Gdk.EventStructures (
 	GdkEvent(..), GdkEventTag, c_gdk_event_free,
 
 	-- * GDK EVENT ANY
-	GdkEventAny(..), gdkEventAny,
+	GdkEventAny(..), GdkEventAnyRaw, gdkEventAny,
 	pattern GdkEventGdkAny, pattern GdkEventGdkNothing,
 	pattern GdkEventGdkDelete, pattern GdkEventGdkDestroy,
 	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,

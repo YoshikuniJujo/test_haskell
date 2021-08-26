@@ -9,13 +9,24 @@ todo
 * [x] separate `GdkEventType` to `Graphics.Gdk.EventStructures.GdkEventType`
 * [x] remove `GdkEventType` from `Graphics.Gdk.EventStructures`
 * [ ] refactor export list
-	+ [ ] structure
+	+ [x] structure
 		- [x] some
 		- [x] add GdkEventType
 			* [x] add type
 			* [x] add patterns
-		- [ ] others
-	+ [ ] others
+	+ [ ] GDK EVENT
+	+ [x] GDK EVENT ANY
+	+ [ ] GDK EVENT KEY
+	+ [ ] GDK EVENT BUTTON
+	+ [ ] GDK EVENT SCROLL
+	+ [ ] GDK EVENT MOTION
+	+ [ ] GDK EVENT VISIBILITY
+	+ [ ] GDK EVENT CROSSING
+	+ [ ] GDK EVENT FOCUS
+	+ [ ] GDK EVENT CONFIGURE
+	+ [ ] GDK EVENT PROPERTY
+	+ [ ] GDK EVENT WINDOW STYLE
+		- [ ] Gdk Window State
 * [ ] make `Graphics.Gdk.EventStructures.Internal`
 * [ ] refactor export list
 	+ [ ] structure
