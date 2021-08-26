@@ -5,7 +5,7 @@
 
 module Graphics.Gdk.Windows.GdkModifierType (
 	-- * GDK MODIFIER TYPE MULTI BITS
-	GdkModifierTypeMultiBits, gdkModifierTypeMultiBits,
+	GdkModifierTypeMultiBits, gdkModifierTypeMultiBits, gdkModifierTypeCheck,
 	pattern GdkZeroModifierMask, pattern GdkAllModifierMask,
 
 	-- * GDK MODIFIER TYPE SINGLE BIT
@@ -51,6 +51,12 @@ gdkModifierTypeMultiBits ::
 	[GdkModifierTypeSingleBit] -> GdkModifierTypeMultiBits
 gdkModifierTypeMultiBits = GdkModifierTypeMultiBits
 	. foldr ((.|.) . (\(GdkModifierTypeSingleBit mt) -> mt)) 0
+
+gdkModifierTypeCheck ::
+	GdkModifierTypeSingleBit -> GdkModifierTypeMultiBits -> Bool
+gdkModifierTypeCheck
+	(GdkModifierTypeSingleBit m) (GdkModifierTypeMultiBits ms) =
+	m .&. ms /= zeroBits
 
 gdkModifierTypeSingleBitList ::
 	GdkModifierTypeMultiBits -> [GdkModifierTypeSingleBit]

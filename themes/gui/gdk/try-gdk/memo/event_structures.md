@@ -8,6 +8,8 @@ todo
 * [x] add some to export list
 * [x] separate `GdkEventType` to `Graphics.Gdk.EventStructures.GdkEventType`
 * [x] remove `GdkEventType` from `Graphics.Gdk.EventStructures`
+* [x] define `gdkModifierTypeCheck ::`
+	`GdkModifierTypeSingleBit -> GdkModifierTypeMultiBits -> Bool`
 * [ ] refactor export list
 	+ [x] structure
 		- [x] some
@@ -17,6 +19,8 @@ todo
 	+ [ ] GDK EVENT
 	+ [x] GDK EVENT ANY
 	+ [ ] GDK EVENT KEY
+		- [ ] use `GdkModifierTypeMultiBits` instesad of
+			`[GdkModifierTypeSingleBit]`
 	+ [ ] GDK EVENT BUTTON
 	+ [ ] GDK EVENT SCROLL
 	+ [ ] GDK EVENT MOTION
