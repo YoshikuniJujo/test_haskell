@@ -7,7 +7,7 @@ todo
 * [x] add export list
 * [x] add some to export list
 * [x] separate `GdkEventType` to `Graphics.Gdk.EventStructures.GdkEventType`
-* [ ] remove `GdkEventType` from `Graphics.Gdk.EventStructures`
+* [x] remove `GdkEventType` from `Graphics.Gdk.EventStructures`
 * [ ] refactor export list
 	+ [ ] structure
 		- [x] some
