@@ -17,7 +17,7 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkEventGdkMap, pattern GdkEventGdkUnmap,
 
 	-- * GDK EVENT KEY
-	GdkEventKey(..), gdkEventKey,
+	GdkEventKey(..), GdkEventKeyRaw, gdkEventKey,
 	pattern GdkEventGdkKeyPress, pattern GdkEventGdkKeyRelease,
 	MilliSecond(..),
 
@@ -179,7 +179,8 @@ gdkEventTypeRaw c =
 	unsafePerformIO . (`withForeignPtr` #{peek GdkEventAny, type}) &&&
 	seal . c . castForeignPtr
 
-newtype MilliSecond = MilliSecond #{type guint32} deriving (Show, Storable)
+newtype MilliSecond = MilliSecond #{type guint32}
+	deriving (Show, Eq, Ord, Storable)
 
 ---------------------------------------------------------------------------
 -- GDK EVENT KEY                                                         --

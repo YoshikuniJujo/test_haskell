@@ -18,15 +18,24 @@ todo
 			* [x] add patterns
 	+ [ ] GDK EVENT
 	+ [x] GDK EVENT ANY
-	+ [ ] GDK EVENT KEY
-		- [ ] `data GdkEventKey`
+	+ [x] GDK EVENT KEY
+		- [x] `data GdkEventKey`
 			* [x] use `GdkModifierTypeMultiBits` instesad of
 				`[GdkModifierTypeSingleBit]`
-			* [ ] others
-		- [ ] `data GdkEventKeyRaw`
-		- [ ] `pattern GdkEventGdkKeyPress`
-		- [ ] `pattern GdkEventGdkKeyRelease`
+			* [x] others
+		- [x] function `gdkEventKey`
+		- [x] `data GdkEventKeyRaw`
+		- [x] `pattern GdkEventGdkKeyPress`
+		- [x] `pattern GdkEventGdkKeyRelease`
+		- [x] `MilliSecond`
 	+ [ ] GDK EVENT BUTTON
+		- [ ] `data GdkEventButton`
+		- [ ] `data GdkEventButtonRaw`
+		- [ ] function `gdkEventButton`
+		- [ ] `pattern GdkEventGdkButtonPress`
+		- [ ] `pattern GdkEventGdkButtonRelease`
+		- [ ] `pattern GdkEventGdkDoubleButtonPress`
+		- [ ] `pattern GdkEventGdkTripleButtonPress`
 	+ [ ] GDK EVENT SCROLL
 	+ [ ] GDK EVENT MOTION
 	+ [ ] GDK EVENT VISIBILITY
