@@ -220,7 +220,7 @@ struct "GdkEventKeyRaw" #{size GdkEventKey}
 data GdkEventKey = GdkEventKey {
 	gdkEventKeyWindow :: GdkWindow, gdkEventKeySendEvent :: Bool,
 	gdkEventKeyTime :: MilliSecond,
-	gdkEventKeyState :: [GdkModifierTypeSingleBit],
+	gdkEventKeyState :: GdkModifierTypeMultiBits,
 	gdkEventKeyKeyval :: GdkKeySym, gdkEventKeyHardwareKeycode :: Word16,
 	gdkEventKeyGroup :: Word8, gdkEventKeyIsModifier :: Bool }
 	deriving Show
@@ -232,7 +232,7 @@ gdkEventKey (unsafeUnseal -> r) = GdkEventKey
 		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error "gdkEventKeyRawSendEvent should be FALSE or TRUE")
 	(gdkEventKeyRawTime r)
-	(gdkModifierTypeSingleBitList $ gdkEventKeyRawState r)
+	(gdkEventKeyRawState r)
 	(gdkEventKeyRawKeyval r) (gdkEventKeyRawHardwareKeycode r)
 	(gdkEventKeyRawGroup r)
 	(case gdkEventKeyRawIsModifier r of

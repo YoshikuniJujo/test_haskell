@@ -19,8 +19,13 @@ todo
 	+ [ ] GDK EVENT
 	+ [x] GDK EVENT ANY
 	+ [ ] GDK EVENT KEY
-		- [ ] use `GdkModifierTypeMultiBits` instesad of
-			`[GdkModifierTypeSingleBit]`
+		- [ ] `data GdkEventKey`
+			* [x] use `GdkModifierTypeMultiBits` instesad of
+				`[GdkModifierTypeSingleBit]`
+			* [ ] others
+		- [ ] `data GdkEventKeyRaw`
+		- [ ] `pattern GdkEventGdkKeyPress`
+		- [ ] `pattern GdkEventGdkKeyRelease`
 	+ [ ] GDK EVENT BUTTON
 	+ [ ] GDK EVENT SCROLL
 	+ [ ] GDK EVENT MOTION
