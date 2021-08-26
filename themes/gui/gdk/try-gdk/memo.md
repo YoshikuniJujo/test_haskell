@@ -65,6 +65,8 @@ todo new
 		- [x] GdkDrawingContext
 		- [x] Events
 		- [ ] EventStructures
+			* [ ] itself
+			* [ ] GdkEventType
 			* [ ] GdkKeySyms
 		- [ ] PropertiesAndAtoms.GdkAtom
 		- [ ] Exception
