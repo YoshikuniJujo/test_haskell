@@ -299,7 +299,7 @@ data GdkEventButton = GdkEventButton {
 	deriving Show
 
 foreign import ccall "gdk_event_get_source_device"
-	c_gdk_device_get_source_device :: Ptr re -> IO GdkDevice
+	c_gdk_event_get_source_device :: Ptr re -> IO GdkDevice
 
 gdkEventButton :: Sealed s GdkEventButtonRaw -> GdkEventButton
 gdkEventButton (unsafeUnseal -> r@(GdkEventButtonRaw_ fe)) = GdkEventButton
@@ -315,7 +315,7 @@ gdkEventButton (unsafeUnseal -> r@(GdkEventButtonRaw_ fe)) = GdkEventButton
 	(gdkEventButtonRawButton r)
 	(toGdkDeviceMasterPointer $ gdkEventButtonRawDevice r)
 	(toGdkDevicePhysicalPointer . unsafePerformIO
-		$ withForeignPtr fe c_gdk_device_get_source_device)
+		$ withForeignPtr fe c_gdk_event_get_source_device)
 	(gdkEventButtonRawXRoot r) (gdkEventButtonRawYRoot r)
 
 pattern GdkEventGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
@@ -442,7 +442,7 @@ gdkEventScroll (unsafeUnseal -> s@(GdkEventScrollRaw_ fs)) = GdkEventScroll
 	(gdkEventScrollRawDirection s)
 	(toGdkDeviceMasterPointer $ gdkEventScrollRawDevice s)
 	(toGdkDevicePhysicalPointer . unsafePerformIO
-		$ withForeignPtr fs c_gdk_device_get_source_device)
+		$ withForeignPtr fs c_gdk_event_get_source_device)
 	(gdkEventScrollRawXRoot s) (gdkEventScrollRawYRoot s)
 	(case gdkEventScrollRawDirection s of
 		GdkScrollSmooth -> Just
@@ -515,7 +515,7 @@ gdkEventMotion (unsafeUnseal -> r@(GdkEventMotionRaw_ fr)) = GdkEventMotion
 		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")
 	(toGdkDeviceMasterPointer $ gdkEventMotionRawDevice r)
 	(toGdkDevicePhysicalPointer . unsafePerformIO $
-		withForeignPtr fr c_gdk_device_get_source_device)
+		withForeignPtr fr c_gdk_event_get_source_device)
 	(gdkEventMotionRawXRoot r) (gdkEventMotionRawYRoot r)
 
 pattern GdkEventGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEvent s
