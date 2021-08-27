@@ -38,7 +38,7 @@ todo
 		- [x] `pattern GdkEventGdkKeyPress`
 		- [x] `pattern GdkEventGdkKeyRelease`
 		- [x] `MilliSecond`
-	+ [ ] GDK EVENT BUTTON
+	+ [x] GDK EVENT BUTTON
 		- [x] `data GdkEventButton`
 			* [x] use `GdkModifierTypeMultiBits`
 			* [x] add `gdkEventButtonSourceDevice`
@@ -46,9 +46,9 @@ todo
 		- [x] `data GdkEventButtonRaw`
 		- [x] function `gdkEventButton`
 		- [x] `pattern GdkEventGdkButtonPress`
-		- [ ] `pattern GdkEventGdkButtonRelease`
-		- [ ] `pattern GdkEventGdkDoubleButtonPress`
-		- [ ] `pattern GdkEventGdkTripleButtonPress`
+		- [x] `pattern GdkEventGdkButtonRelease`
+		- [x] `pattern GdkEventGdkDoubleButtonPress`
+		- [x] `pattern GdkEventGdkTripleButtonPress`
 	+ [ ] GDK EVENT SCROLL
 	+ [ ] GDK EVENT MOTION
 	+ [ ] GDK EVENT VISIBILITY

@@ -77,6 +77,12 @@ main = do
 					putStr =<< gdkAtomName a
 					putStr ": "
 					print =<< gdkDeviceGetAxisValue sd axes a
+		GdkEventGdkButtonRelease (gdkEventButton -> e) -> True <$
+			(putStrLn "BUTTON RELEASE" >> print e)
+		GdkEventGdkDoubleButtonPress (gdkEventButton -> e) -> True <$
+			(putStrLn "DOUBLE BUTTON PRESS" >> print e)
+		GdkEventGdkTripleButtonPress (gdkEventButton -> e) -> True <$
+			(putStrLn "TRIPLE BUTTON PRESS" >> print e)
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
