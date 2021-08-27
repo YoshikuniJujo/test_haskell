@@ -49,16 +49,23 @@ todo
 		- [x] `pattern GdkEventGdkButtonRelease`
 		- [x] `pattern GdkEventGdkDoubleButtonPress`
 		- [x] `pattern GdkEventGdkTripleButtonPress`
-	+ [ ] GDK EVENT SCROLL
-		- [ ] `data GdkEventScroll`
-			* [x] use `GdkModifierTypeMultiBits
+	+ [x] GDK EVENT SCROLL
+		- [x] `data GdkEventScroll`
+			* [x] use `GdkModifierTypeMultiBits`
 			* [x] `GdkScrollDirection`
 			* [x] add `gdkEventScrollSourceDevice`
-			* [ ] others
-		- [ ] `data GdkEventScrollRaw`
-		- [ ] function `gdkEventScroll`
-		- [ ] `pattern GdkEventGdkScroll`
+			* [x] others
+		- [x] `data GdkEventScrollRaw`
+		- [x] function `gdkEventScroll`
+		- [x] `pattern GdkEventGdkScroll`
 	+ [ ] GDK EVENT MOTION
+		- [ ] `data GdkEventMotion`
+			* [ ] use `GdkModifireTypeMultiBits`
+			* [ ] repair `gdkEventMotionSourceDevice`
+			* [ ] others
+		- [ ] `data GdkEventMotionRaw`
+		- [ ] function `gdkEventMotion`
+		- [ ] `pattern GdkEventGdkMotionNotify`
 	+ [ ] GDK EVENT VISIBILITY
 	+ [ ] GDK EVENT CROSSING
 	+ [ ] GDK EVENT FOCUS

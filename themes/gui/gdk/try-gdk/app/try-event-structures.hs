@@ -83,6 +83,9 @@ main = do
 			(putStrLn "DOUBLE BUTTON PRESS" >> print e)
 		GdkEventGdkTripleButtonPress (gdkEventButton -> e) -> True <$
 			(putStrLn "TRIPLE BUTTON PRESS" >> print e)
+		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$ do
+			putStrLn "SCROLL"
+			print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
