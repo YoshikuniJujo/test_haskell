@@ -18,16 +18,24 @@ todo
 			* [x] add type
 			* [x] add patterns
 	+ [ ] GDK EVENT
-	+ [x] GDK EVENT ANY
-	+ [x] GDK EVENT KEY
+	+ [ ] GDK EVENT ANY
+		- [x] some
+		- [ ] patterns
+			* [x] `GdkEventAny`
+			* [x] `GdkEventGdkNothing`
+			* [ ] `GdkEventGdkDelete`
+			* [ ] `GdkEventGdkDestroy`
+			* [ ] `GdkEventGdkMap`
+			* [ ] `GdkEventGdkUnmap`
+	+ [ ] GDK EVENT KEY
 		- [x] `data GdkEventKey`
 			* [x] use `GdkModifierTypeMultiBits` instesad of
 				`[GdkModifierTypeSingleBit]`
 			* [x] others
 		- [x] function `gdkEventKey`
 		- [x] `data GdkEventKeyRaw`
-		- [x] `pattern GdkEventGdkKeyPress`
-		- [x] `pattern GdkEventGdkKeyRelease`
+		- [ ] `pattern GdkEventGdkKeyPress`
+		- [ ] `pattern GdkEventGdkKeyRelease`
 		- [x] `MilliSecond`
 	+ [ ] GDK EVENT BUTTON
 		- [ ] `data GdkEventButton`
