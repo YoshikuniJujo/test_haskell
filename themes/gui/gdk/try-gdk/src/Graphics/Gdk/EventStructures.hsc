@@ -28,7 +28,8 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkEventGdkTripleButtonPress,
 
 	-- * GDK EVENT SCROLL
-	pattern GdkEventGdkScroll, gdkEventScroll,
+	GdkEventScroll(..), GdkEventScrollRaw, gdkEventScroll,
+	pattern GdkEventGdkScroll,
 
 	-- * GDK EVENT MOTION
 	GdkEventMotion(..), GdkEventMotionRaw, gdkEventMotion,
