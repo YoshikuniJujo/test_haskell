@@ -5,7 +5,11 @@
 
 module Main where
 
+import Control.Monad
 import Control.Concurrent
+import System.Environment
+import System.Console.GetOpt
+import System.Exit
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
@@ -17,12 +21,15 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 
 main :: IO ()
 main = do
+	(ss, _as, es) <- getOpt Permute [optEvents] <$> getArgs
+	putStrLn `mapM_` es
+	when (not $ null es) exitFailure
+	print ss
 	_dpy <- gdkDisplayOpen ""
-	win <- gdkToplevelNew Nothing
-		$ minimalGdkWindowAttr (gdkEventMaskMultiBits [
-			GdkKeyPressMask ]) 700 500
+	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
+		(gdkEventMaskMultiBits (optToEvents ss)) 700 500
 	gdkWindowShow win
-	mainLoop 500000 \case
+	mainLoop 100000 \case
 		GdkEventGdkDelete (gdkEventAny -> e) -> False <$
 			(putStrLn "DELETE" >> print e)
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
@@ -37,3 +44,13 @@ mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
 mainLoop slp f = gdkWithEvent \case
 	Nothing -> threadDelay slp >> mainLoop slp f
 	Just e -> f e >>= \case False -> pure (); True -> mainLoop slp f
+
+data OptSetting = OptEvents [GdkEventMaskSingleBit] deriving Show
+
+optEvents :: OptDescr OptSetting
+optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "EventMaskList")
+	"Set event mask list"
+
+optToEvents :: [OptSetting] -> [GdkEventMaskSingleBit]
+optToEvents [] = [GdkKeyPressMask]
+optToEvents (OptEvents es : _) = es

@@ -11,7 +11,7 @@ todo
 * [x] define `gdkModifierTypeCheck ::`
 	`GdkModifierTypeSingleBit -> GdkModifierTypeMultiBits -> Bool`
 * [x] add `app/try-event-structures.hs`
-* [ ] use `GetOpt` to set event masks
+* [x] use `GetOpt` to set event masks
 * [ ] refactor export list
 	+ [x] structure
 		- [x] some
