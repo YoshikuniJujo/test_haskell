@@ -39,12 +39,12 @@ todo
 		- [x] `pattern GdkEventGdkKeyRelease`
 		- [x] `MilliSecond`
 	+ [ ] GDK EVENT BUTTON
-		- [ ] `data GdkEventButton`
+		- [x] `data GdkEventButton`
 			* [x] use `GdkModifierTypeMultiBits`
 			* [x] add `gdkEventButtonSourceDevice`
-			* [ ] others
-		- [ ] `data GdkEventButtonRaw`
-		- [ ] function `gdkEventButton`
+			* [x] others
+		- [x] `data GdkEventButtonRaw`
+		- [x] function `gdkEventButton`
 		- [x] `pattern GdkEventGdkButtonPress`
 		- [ ] `pattern GdkEventGdkButtonRelease`
 		- [ ] `pattern GdkEventGdkDoubleButtonPress`

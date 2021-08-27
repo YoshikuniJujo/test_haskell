@@ -22,7 +22,7 @@ module Graphics.Gdk.EventStructures (
 	MilliSecond(..),
 
 	-- * GDK EVENT BUTTON
-	GdkEventButton(..), gdkEventButton,
+	GdkEventButton(..), GdkEventButtonRaw, gdkEventButton,
 	pattern GdkEventGdkButtonPress, pattern GdkEventGdkButtonRelease,
 	pattern GdkEventGdkDoubleButtonPress,
 	pattern GdkEventGdkTripleButtonPress,
