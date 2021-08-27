@@ -30,10 +30,12 @@ main = do
 		(gdkEventMaskMultiBits (optToEvents ss)) 700 500
 	gdkWindowShow win
 	mainLoop 100000 \case
-		GdkEventGdkDelete (gdkEventAny -> e) -> False <$
-			(putStrLn "DELETE" >> print e)
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
 			(putStrLn "NOTHING" >> print e)
+		GdkEventGdkDelete (gdkEventAny -> e) -> True <$
+			(putStrLn "DELETE" >> print e >> gdkWindowDestroy win)
+		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$
+			(putStrLn "DESTROY" >> print e)
 --		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
