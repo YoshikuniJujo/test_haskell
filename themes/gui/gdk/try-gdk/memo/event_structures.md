@@ -61,7 +61,7 @@ todo
 	+ [ ] GDK EVENT MOTION
 		- [ ] `data GdkEventMotion`
 			* [ ] use `GdkModifireTypeMultiBits`
-			* [ ] repair `gdkEventMotionSourceDevice`
+			* [x] repair `gdkEventMotionSourceDevice`
 			* [ ] others
 		- [ ] `data GdkEventMotionRaw`
 		- [ ] function `gdkEventMotion`

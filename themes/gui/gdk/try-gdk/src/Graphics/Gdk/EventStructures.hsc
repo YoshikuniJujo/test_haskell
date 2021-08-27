@@ -481,16 +481,11 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 			[| #{poke GdkEventMotion, is_hint} |]),
 		("device", ''GdkDevice, [| #{peek GdkEventMotion, device} |],
 			[| #{poke GdkEventMotion, device} |]),
-		("sourceDevice", ''GdkDevice, [| c_gdk_device_get_source_device |],
-			[| c_gdk_device_set_source_device |]),
 		("xRoot", ''CDouble, [| #{peek GdkEventMotion, x_root} |],
 			[| #{poke GdkEventMotion, x_root} |]),
 		("yRoot", ''CDouble, [| #{peek GdkEventMotion, y_root} |],
 			[| #{poke GdkEventMotion, y_root} |]) ]
 	[''Show]
-
-foreign import ccall "gdk_event_set_source_device"
-	c_gdk_device_set_source_device :: Ptr GdkEventMotionRaw -> GdkDevice -> IO ()
 
 data GdkEventMotion = GdkEventMotion {
 	gdkEventMotionWindow :: GdkWindow, gdkEventMotionSendEvent :: Bool,
@@ -505,7 +500,7 @@ data GdkEventMotion = GdkEventMotion {
 	deriving Show
 
 gdkEventMotion :: Sealed s GdkEventMotionRaw -> GdkEventMotion
-gdkEventMotion (unsafeUnseal -> r) = GdkEventMotion
+gdkEventMotion (unsafeUnseal -> r@(GdkEventMotionRaw_ fr)) = GdkEventMotion
 	(gdkEventMotionRawWindow r)
 	(case gdkEventMotionRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -519,7 +514,8 @@ gdkEventMotion (unsafeUnseal -> r) = GdkEventMotion
 		FalseInt16 -> False; TrueInt16 -> True
 		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")
 	(toGdkDeviceMasterPointer $ gdkEventMotionRawDevice r)
-	(toGdkDevicePhysicalPointer $ gdkEventMotionRawSourceDevice r)
+	(toGdkDevicePhysicalPointer . unsafePerformIO $
+		withForeignPtr fr c_gdk_device_get_source_device)
 	(gdkEventMotionRawXRoot r) (gdkEventMotionRawYRoot r)
 
 pattern GdkEventGdkMotionNotify :: Sealed s GdkEventMotionRaw -> GdkEvent s
