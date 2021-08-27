@@ -30,6 +30,9 @@ todo
 		- [x] `MilliSecond`
 	+ [ ] GDK EVENT BUTTON
 		- [ ] `data GdkEventButton`
+			* [x] use `GdkModifierTypeMultiBits`
+			* [ ] add `gdkEventButtonSourceDevice`
+			* [ ] others
 		- [ ] `data GdkEventButtonRaw`
 		- [ ] function `gdkEventButton`
 		- [ ] `pattern GdkEventGdkButtonPress`

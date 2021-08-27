@@ -286,7 +286,7 @@ data GdkEventButton = GdkEventButton {
 	gdkEventButtonTime :: MilliSecond,
 	gdkEventButtonX, gdkEventButtonY :: CDouble,
 	gdkEventButtonAxes :: GdkAxes,
-	gdkEventButtonState :: [GdkModifierTypeSingleBit],
+	gdkEventButtonState :: GdkModifierTypeMultiBits,
 	gdkEventButtonButton :: CUInt,
 	gdkEventButtonDevice :: GdkDeviceMaster 'Pointer,
 	gdkEventButtonXRoot, gdkEventButtonYRoot :: CDouble }
@@ -302,7 +302,7 @@ gdkEventButton (unsafeUnseal -> r) = GdkEventButton
 	(gdkEventButtonRawX r) (gdkEventButtonRawY r)
 	(unsafePerformIO $ gdkAxesCopyFromPtr
 		(gdkEventButtonRawDevice r) (gdkEventButtonRawAxes r))
-	(gdkModifierTypeSingleBitList $ gdkEventButtonRawState r)
+	(gdkEventButtonRawState r)
 	(gdkEventButtonRawButton r)
 	(toGdkDeviceMasterPointer $ gdkEventButtonRawDevice r)
 	(gdkEventButtonRawXRoot r) (gdkEventButtonRawYRoot r)
