@@ -30,6 +30,10 @@ module Graphics.Gdk.EventStructures (
 	-- * GDK EVENT SCROLL
 	GdkEventScroll(..), GdkEventScrollRaw, gdkEventScroll,
 	pattern GdkEventGdkScroll,
+	GdkScrollDirection,
+	pattern GdkScrollUp, pattern GdkScrollDown,
+	pattern GdkScrollLeft, pattern GdkScrollRight,
+	pattern GdkScrollSmooth,
 
 	-- * GDK EVENT MOTION
 	GdkEventMotion(..), GdkEventMotionRaw, gdkEventMotion,
