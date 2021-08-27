@@ -15,6 +15,7 @@ import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
+import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
@@ -40,10 +41,17 @@ main = do
 			(putStrLn "MAP" >> print e)
 		GdkEventGdkUnmap (gdkEventAny -> e) -> True <$
 			(putStrLn "UNMAP" >> print e)
---		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 			pure False
+		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ do
+			putStrLn "KEY PRESS"
+			print e
+			print . gdkModifierTypeSingleBitList $ gdkEventKeyState e
+		GdkEventGdkKeyRelease (gdkEventKey -> e) -> True <$ do
+			putStrLn "KEY RELEASE"
+			print e
+			print . gdkModifierTypeSingleBitList $ gdkEventKeyState e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()

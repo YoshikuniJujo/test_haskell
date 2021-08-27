@@ -28,15 +28,15 @@ todo
 			* [ ] `GdkEventGdkDestroy`
 			* [x] `GdkEventGdkMap`
 			* [ ] `GdkEventGdkUnmap`
-	+ [ ] GDK EVENT KEY
+	+ [x] GDK EVENT KEY
 		- [x] `data GdkEventKey`
 			* [x] use `GdkModifierTypeMultiBits` instesad of
 				`[GdkModifierTypeSingleBit]`
 			* [x] others
 		- [x] function `gdkEventKey`
 		- [x] `data GdkEventKeyRaw`
-		- [ ] `pattern GdkEventGdkKeyPress`
-		- [ ] `pattern GdkEventGdkKeyRelease`
+		- [x] `pattern GdkEventGdkKeyPress`
+		- [x] `pattern GdkEventGdkKeyRelease`
 		- [x] `MilliSecond`
 	+ [ ] GDK EVENT BUTTON
 		- [ ] `data GdkEventButton`
