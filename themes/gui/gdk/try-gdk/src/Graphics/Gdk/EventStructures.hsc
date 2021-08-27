@@ -40,8 +40,11 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkEventGdkMotionNotify,
 
 	-- * GDK EVENT VISIBILITY
-	GdkEventVisibility(..), gdkEventVisibility,
+	GdkEventVisibility(..), GdkEventVisibilityRaw, gdkEventVisibility,
 	pattern GdkEventGdkVisibilityNotify,
+	GdkVisibilityState,
+	pattern GdkVisibilityUnobscured, pattern GdkVisibilityPartial,
+	pattern GdkVisibilityFullyObscured,
 
 	-- * GDK EVENT CROSSING
 	gdkEventCrossing,

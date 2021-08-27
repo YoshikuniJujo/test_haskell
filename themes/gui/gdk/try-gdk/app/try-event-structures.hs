@@ -83,6 +83,8 @@ main = do
 			printDeviceAxes (gdkEventMotionDevice e) axes
 			maybe (pure ()) (`printDeviceAxes` axes)
 				$ gdkEventMotionSourceDevice e
+		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) -> True <$
+			(putStrLn "VISIBILITY NOTIFY" >> print e)
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
