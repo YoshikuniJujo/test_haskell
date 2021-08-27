@@ -45,7 +45,7 @@ todo
 			* [ ] others
 		- [ ] `data GdkEventButtonRaw`
 		- [ ] function `gdkEventButton`
-		- [ ] `pattern GdkEventGdkButtonPress`
+		- [x] `pattern GdkEventGdkButtonPress`
 		- [ ] `pattern GdkEventGdkButtonRelease`
 		- [ ] `pattern GdkEventGdkDoubleButtonPress`
 		- [ ] `pattern GdkEventGdkTripleButtonPress`

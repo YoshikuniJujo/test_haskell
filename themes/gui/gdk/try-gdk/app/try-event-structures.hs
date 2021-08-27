@@ -7,11 +7,14 @@ module Main where
 
 import Control.Monad
 import Control.Concurrent
+import Data.Foldable
 import System.Environment
 import System.Console.GetOpt
 import System.Exit
 
 import Graphics.Gdk.GdkDisplay
+import Graphics.Gdk.GdkDevice
+import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -19,6 +22,7 @@ import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.EventStructures.GdkKeySyms
+import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 main :: IO ()
 main = do
@@ -52,6 +56,27 @@ main = do
 			putStrLn "KEY RELEASE"
 			print e
 			print . gdkModifierTypeSingleBitList $ gdkEventKeyState e
+		GdkEventGdkButtonPress (gdkEventButton -> e) -> True <$ do
+			putStrLn "BUTTON PRESS"
+			print e
+			let	axes = gdkEventButtonAxes e
+				d = gdkEventButtonDevice e
+			print =<< gdkDeviceGetName d
+			aa <- gdkDeviceListAxes (gdkEventButtonDevice e)
+			for_ aa \a -> do
+				putStr "\t"
+				putStr =<< gdkAtomName a
+				putStr ": "
+				print =<< gdkDeviceGetAxisValue d axes a
+
+			(\f -> maybe (pure ()) f (gdkEventButtonSourceDevice e)) \sd -> do
+				print =<< gdkDeviceGetName sd
+				aa' <- gdkDeviceListAxes sd
+				for_ aa' \a -> do
+					putStr "\t"
+					putStr =<< gdkAtomName a
+					putStr ": "
+					print =<< gdkDeviceGetAxisValue sd axes a
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
