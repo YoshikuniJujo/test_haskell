@@ -492,7 +492,7 @@ data GdkEventMotion = GdkEventMotion {
 	gdkEventMotionTime :: MilliSecond,
 	gdkEventMotionX :: CDouble, gdkEventMotionY :: CDouble,
 	gdkEventMotionAxes :: GdkAxes,
-	gdkEventMotionState :: [GdkModifierTypeSingleBit],
+	gdkEventMotionState :: GdkModifierTypeMultiBits,
 	gdkEventMotionIsHint :: Bool,
 	gdkEventMotionDevice :: GdkDeviceMaster 'Pointer,
 	gdkEventMotionSourceDevice :: Maybe (GdkDevicePhysical 'Pointer),
@@ -509,7 +509,7 @@ gdkEventMotion (unsafeUnseal -> r@(GdkEventMotionRaw_ fr)) = GdkEventMotion
 	(gdkEventMotionRawX r) (gdkEventMotionRawY r)
 	(unsafePerformIO $ gdkAxesCopyFromPtr
 		(gdkEventMotionRawDevice r) (gdkEventMotionRawAxes r))
-	(gdkModifierTypeSingleBitList $ gdkEventMotionRawState r)
+	(gdkEventMotionRawState r)
 	(case gdkEventMotionRawIsHint r of
 		FalseInt16 -> False; TrueInt16 -> True
 		_ -> error "gdkEventMotionRawIsHint should be FALSE or TRUE")

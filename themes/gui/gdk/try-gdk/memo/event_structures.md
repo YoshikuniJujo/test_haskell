@@ -60,7 +60,7 @@ todo
 		- [x] `pattern GdkEventGdkScroll`
 	+ [ ] GDK EVENT MOTION
 		- [ ] `data GdkEventMotion`
-			* [ ] use `GdkModifireTypeMultiBits`
+			* [x] use `GdkModifireTypeMultiBits`
 			* [x] repair `gdkEventMotionSourceDevice`
 			* [ ] others
 		- [ ] `data GdkEventMotionRaw`
