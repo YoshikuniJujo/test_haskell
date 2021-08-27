@@ -51,7 +51,7 @@ todo
 		- [x] `pattern GdkEventGdkTripleButtonPress`
 	+ [ ] GDK EVENT SCROLL
 		- [ ] `data GdkEventScroll`
-			* [ ] use `GdkModifierTypeMultiBits
+			* [x] use `GdkModifierTypeMultiBits
 			* [x] `GdkScrollDirection`
 			* [ ] add `gdkEventScrollSourceDevice`
 			* [ ] others

@@ -421,7 +421,7 @@ data GdkEventScroll = GdkEventScroll {
 	gdkEventScrollWindow :: GdkWindow, gdkEventScrollSendEvent :: Bool,
 	gdkEventScrollTime :: MilliSecond,
 	gdkEventScrollX, gdkEventScrollY :: CDouble,
-	gdkEventScrollState :: [GdkModifierTypeSingleBit],
+	gdkEventScrollState :: GdkModifierTypeMultiBits,
 	gdkEventScrollDirection :: GdkScrollDirection,
 	gdkEventScrollDevice :: GdkDeviceMaster 'Pointer,
 	gdkEventScrollXRoot, gdkEventScrollYRoot :: CDouble,
@@ -437,7 +437,7 @@ gdkEventScroll (unsafeUnseal -> s) = GdkEventScroll
 		_ -> error "gdkEventScrollRawSendEvent should be FALSE or TRUE")
 	(gdkEventScrollRawTime s)
 	(gdkEventScrollRawX s) (gdkEventScrollRawY s)
-	(gdkModifierTypeSingleBitList $ gdkEventScrollRawState s)
+	(gdkEventScrollRawState s)
 	(gdkEventScrollRawDirection s)
 	(toGdkDeviceMasterPointer $ gdkEventScrollRawDevice s)
 	(gdkEventScrollRawXRoot s) (gdkEventScrollRawYRoot s)
