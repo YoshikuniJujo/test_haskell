@@ -10,7 +10,8 @@ todo
 * [x] remove `GdkEventType` from `Graphics.Gdk.EventStructures`
 * [x] define `gdkModifierTypeCheck ::`
 	`GdkModifierTypeSingleBit -> GdkModifierTypeMultiBits -> Bool`
-* [ ] add `app/try-event-structures.hs`
+* [x] add `app/try-event-structures.hs`
+* [ ] use `GetOpt` to set event masks
 * [ ] refactor export list
 	+ [x] structure
 		- [x] some
@@ -23,7 +24,7 @@ todo
 		- [ ] patterns
 			* [x] `GdkEventAny`
 			* [x] `GdkEventGdkNothing`
-			* [ ] `GdkEventGdkDelete`
+			* [x] `GdkEventGdkDelete`
 			* [ ] `GdkEventGdkDestroy`
 			* [ ] `GdkEventGdkMap`
 			* [ ] `GdkEventGdkUnmap`

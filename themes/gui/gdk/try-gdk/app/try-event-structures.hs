@@ -23,7 +23,8 @@ main = do
 			GdkKeyPressMask ]) 700 500
 	gdkWindowShow win
 	mainLoop 500000 \case
-		GdkEventGdkDelete _d -> pure False
+		GdkEventGdkDelete (gdkEventAny -> e) -> False <$
+			(putStrLn "DELETE" >> print e)
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
 			(putStrLn "NOTHING" >> print e)
 --		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
