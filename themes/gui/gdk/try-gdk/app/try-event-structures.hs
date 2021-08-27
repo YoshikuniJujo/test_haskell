@@ -21,13 +21,13 @@ import Graphics.Gdk.EventStructures.GdkKeySyms
 
 main :: IO ()
 main = do
-	(ss, _as, es) <- getOpt Permute [optEvents] <$> getArgs
+	(ss, _as, es) <- getOpt Permute [optEvents, optAllEvents] <$> getArgs
 	putStrLn `mapM_` es
 	when (not $ null es) exitFailure
 	print ss
 	_dpy <- gdkDisplayOpen ""
-	win <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits (optToEvents ss)) 700 500
+	win <- gdkToplevelNew Nothing
+		$ minimalGdkWindowAttr (optToEvents ss) 700 500
 	gdkWindowShow win
 	mainLoop 100000 \case
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
@@ -47,12 +47,16 @@ mainLoop slp f = gdkWithEvent \case
 	Nothing -> threadDelay slp >> mainLoop slp f
 	Just e -> f e >>= \case False -> pure (); True -> mainLoop slp f
 
-data OptSetting = OptEvents [GdkEventMaskSingleBit] deriving Show
+data OptSetting = OptEvents [GdkEventMaskSingleBit] | OptAllEvents deriving Show
 
-optEvents :: OptDescr OptSetting
+optEvents, optAllEvents :: OptDescr OptSetting
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "EventMaskList")
 	"Set event mask list"
 
-optToEvents :: [OptSetting] -> [GdkEventMaskSingleBit]
-optToEvents [] = [GdkKeyPressMask]
-optToEvents (OptEvents es : _) = es
+optAllEvents = Option ['a'] ["all-events"] (NoArg OptAllEvents)
+	"Set all event mask on"
+
+optToEvents :: [OptSetting] -> GdkEventMaskMultiBits
+optToEvents [] = gdkEventMaskMultiBits [GdkKeyPressMask]
+optToEvents (OptAllEvents : _) = GdkAllEventsMask
+optToEvents (OptEvents es : _) = gdkEventMaskMultiBits es
