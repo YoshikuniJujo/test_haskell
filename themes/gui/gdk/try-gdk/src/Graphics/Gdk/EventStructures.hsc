@@ -289,11 +289,15 @@ data GdkEventButton = GdkEventButton {
 	gdkEventButtonState :: GdkModifierTypeMultiBits,
 	gdkEventButtonButton :: CUInt,
 	gdkEventButtonDevice :: GdkDeviceMaster 'Pointer,
+	gdkEventButtonSourceDevice :: Maybe (GdkDevicePhysical 'Pointer),
 	gdkEventButtonXRoot, gdkEventButtonYRoot :: CDouble }
 	deriving Show
 
+foreign import ccall "gdk_event_get_source_device"
+	c_gdk_device_get_source_device :: Ptr re -> IO GdkDevice
+
 gdkEventButton :: Sealed s GdkEventButtonRaw -> GdkEventButton
-gdkEventButton (unsafeUnseal -> r) = GdkEventButton
+gdkEventButton (unsafeUnseal -> r@(GdkEventButtonRaw_ fe)) = GdkEventButton
 	(gdkEventButtonRawWindow r)
 	(case gdkEventButtonRawSendEvent r of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -305,6 +309,8 @@ gdkEventButton (unsafeUnseal -> r) = GdkEventButton
 	(gdkEventButtonRawState r)
 	(gdkEventButtonRawButton r)
 	(toGdkDeviceMasterPointer $ gdkEventButtonRawDevice r)
+	(toGdkDevicePhysicalPointer . unsafePerformIO
+		$ withForeignPtr fe c_gdk_device_get_source_device)
 	(gdkEventButtonRawXRoot r) (gdkEventButtonRawYRoot r)
 
 pattern GdkEventGdkButtonPress :: Sealed s GdkEventButtonRaw -> GdkEvent s
@@ -474,9 +480,6 @@ struct "GdkEventMotionRaw" #{size GdkEventMotion}
 		("yRoot", ''CDouble, [| #{peek GdkEventMotion, y_root} |],
 			[| #{poke GdkEventMotion, y_root} |]) ]
 	[''Show]
-
-foreign import ccall "gdk_event_get_source_device"
-	c_gdk_device_get_source_device :: Ptr GdkEventMotionRaw -> IO GdkDevice
 
 foreign import ccall "gdk_event_set_source_device"
 	c_gdk_device_set_source_device :: Ptr GdkEventMotionRaw -> GdkDevice -> IO ()

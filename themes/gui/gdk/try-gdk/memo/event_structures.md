@@ -10,6 +10,7 @@ todo
 * [x] remove `GdkEventType` from `Graphics.Gdk.EventStructures`
 * [x] define `gdkModifierTypeCheck ::`
 	`GdkModifierTypeSingleBit -> GdkModifierTypeMultiBits -> Bool`
+* [ ] add `app/try-event-structures.hs`
 * [ ] refactor export list
 	+ [x] structure
 		- [x] some
@@ -31,7 +32,7 @@ todo
 	+ [ ] GDK EVENT BUTTON
 		- [ ] `data GdkEventButton`
 			* [x] use `GdkModifierTypeMultiBits`
-			* [ ] add `gdkEventButtonSourceDevice`
+			* [x] add `gdkEventButtonSourceDevice`
 			* [ ] others
 		- [ ] `data GdkEventButtonRaw`
 		- [ ] function `gdkEventButton`
