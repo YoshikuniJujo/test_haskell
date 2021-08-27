@@ -53,7 +53,7 @@ todo
 		- [ ] `data GdkEventScroll`
 			* [x] use `GdkModifierTypeMultiBits
 			* [x] `GdkScrollDirection`
-			* [ ] add `gdkEventScrollSourceDevice`
+			* [x] add `gdkEventScrollSourceDevice`
 			* [ ] others
 		- [ ] `data GdkEventScrollRaw`
 		- [ ] function `gdkEventScroll`

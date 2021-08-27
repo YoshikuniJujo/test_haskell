@@ -424,13 +424,14 @@ data GdkEventScroll = GdkEventScroll {
 	gdkEventScrollState :: GdkModifierTypeMultiBits,
 	gdkEventScrollDirection :: GdkScrollDirection,
 	gdkEventScrollDevice :: GdkDeviceMaster 'Pointer,
+	gdkEventScrollSourceDevice :: Maybe (GdkDevicePhysical 'Pointer),
 	gdkEventScrollXRoot, gdkEventScrollYRoot :: CDouble,
 	gdkEventScrollDeltas :: Maybe (CDouble, CDouble),
 	gdkEventScrollIsStop :: Bool }
 	deriving Show
 
 gdkEventScroll :: Sealed s GdkEventScrollRaw -> GdkEventScroll
-gdkEventScroll (unsafeUnseal -> s) = GdkEventScroll
+gdkEventScroll (unsafeUnseal -> s@(GdkEventScrollRaw_ fs)) = GdkEventScroll
 	(gdkEventScrollRawWindow s)
 	(case gdkEventScrollRawSendEvent s of
 		FalseInt8 -> False; TrueInt8 -> True
@@ -440,6 +441,8 @@ gdkEventScroll (unsafeUnseal -> s) = GdkEventScroll
 	(gdkEventScrollRawState s)
 	(gdkEventScrollRawDirection s)
 	(toGdkDeviceMasterPointer $ gdkEventScrollRawDevice s)
+	(toGdkDevicePhysicalPointer . unsafePerformIO
+		$ withForeignPtr fs c_gdk_device_get_source_device)
 	(gdkEventScrollRawXRoot s) (gdkEventScrollRawYRoot s)
 	(case gdkEventScrollRawDirection s of
 		GdkScrollSmooth -> Just
