@@ -26,7 +26,7 @@ todo
 			* [x] `GdkEventGdkNothing`
 			* [x] `GdkEventGdkDelete`
 			* [ ] `GdkEventGdkDestroy`
-			* [ ] `GdkEventGdkMap`
+			* [x] `GdkEventGdkMap`
 			* [ ] `GdkEventGdkUnmap`
 	+ [ ] GDK EVENT KEY
 		- [x] `data GdkEventKey`

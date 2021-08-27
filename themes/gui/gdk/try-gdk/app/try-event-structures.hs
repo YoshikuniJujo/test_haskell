@@ -32,10 +32,14 @@ main = do
 	mainLoop 100000 \case
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
 			(putStrLn "NOTHING" >> print e)
-		GdkEventGdkDelete (gdkEventAny -> e) -> True <$
+		GdkEventGdkDelete (gdkEventAny -> e) -> False <$
 			(putStrLn "DELETE" >> print e >> gdkWindowDestroy win)
 		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$
 			(putStrLn "DESTROY" >> print e)
+		GdkEventGdkMap (gdkEventAny -> e) -> True <$
+			(putStrLn "MAP" >> print e)
+		GdkEventGdkUnmap (gdkEventAny -> e) -> True <$
+			(putStrLn "UNMAP" >> print e)
 --		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
