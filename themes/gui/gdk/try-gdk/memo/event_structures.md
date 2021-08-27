@@ -58,15 +58,22 @@ todo
 		- [x] `data GdkEventScrollRaw`
 		- [x] function `gdkEventScroll`
 		- [x] `pattern GdkEventGdkScroll`
-	+ [ ] GDK EVENT MOTION
-		- [ ] `data GdkEventMotion`
+	+ [x] GDK EVENT MOTION
+		- [x] `data GdkEventMotion`
 			* [x] use `GdkModifireTypeMultiBits`
 			* [x] repair `gdkEventMotionSourceDevice`
-			* [ ] others
-		- [ ] `data GdkEventMotionRaw`
-		- [ ] function `gdkEventMotion`
-		- [ ] `pattern GdkEventGdkMotionNotify`
+			* [x] others
+		- [x] `data GdkEventMotionRaw`
+		- [x] function `gdkEventMotion`
+		- [x] `pattern GdkEventGdkMotionNotify`
 	+ [ ] GDK EVENT VISIBILITY
+		- [ ] `data GdkEventVisibility`
+		- [ ] `data GdkEventVisibilityRaw`
+		- [ ] function `gdkEventVisibility`
+		- [ ] `pattern GdkEventGdkVisibilityNotify`
+		- [ ] data `GdkVisibilityState`
+			* [ ] type
+			* [ ] patterns
 	+ [ ] GDK EVENT CROSSING
 	+ [ ] GDK EVENT FOCUS
 	+ [ ] GDK EVENT CONFIGURE

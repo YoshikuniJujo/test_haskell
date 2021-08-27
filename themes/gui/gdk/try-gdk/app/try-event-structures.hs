@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -26,13 +27,15 @@ import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 main :: IO ()
 main = do
-	(ss, _as, es) <- getOpt Permute [optEvents, optAllEvents] <$> getArgs
+	(ss, _as, es) <- getOpt Permute [
+		optEvents, optAllEvents, optNoEventCompression ] <$> getArgs
 	putStrLn `mapM_` es
 	when (not $ null es) exitFailure
 	print ss
 	_dpy <- gdkDisplayOpen ""
 	win <- gdkToplevelNew Nothing
 		$ minimalGdkWindowAttr (optToEvents ss) 700 500
+	gdkWindowSetEventCompression win $ optToEventCompression ss
 	gdkWindowShow win
 	mainLoop 100000 \case
 		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
@@ -60,49 +63,66 @@ main = do
 			putStrLn "BUTTON PRESS"
 			print e
 			let	axes = gdkEventButtonAxes e
-				d = gdkEventButtonDevice e
-			print =<< gdkDeviceGetName d
-			aa <- gdkDeviceListAxes (gdkEventButtonDevice e)
-			for_ aa \a -> do
-				putStr "\t"
-				putStr =<< gdkAtomName a
-				putStr ": "
-				print =<< gdkDeviceGetAxisValue d axes a
-
-			(\f -> maybe (pure ()) f (gdkEventButtonSourceDevice e)) \sd -> do
-				print =<< gdkDeviceGetName sd
-				aa' <- gdkDeviceListAxes sd
-				for_ aa' \a -> do
-					putStr "\t"
-					putStr =<< gdkAtomName a
-					putStr ": "
-					print =<< gdkDeviceGetAxisValue sd axes a
+			printDeviceAxes (gdkEventButtonDevice e) axes
+			maybe (pure ()) (`printDeviceAxes` axes)
+				$ gdkEventButtonSourceDevice e
 		GdkEventGdkButtonRelease (gdkEventButton -> e) -> True <$
 			(putStrLn "BUTTON RELEASE" >> print e)
 		GdkEventGdkDoubleButtonPress (gdkEventButton -> e) -> True <$
 			(putStrLn "DOUBLE BUTTON PRESS" >> print e)
 		GdkEventGdkTripleButtonPress (gdkEventButton -> e) -> True <$
 			(putStrLn "TRIPLE BUTTON PRESS" >> print e)
-		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$ do
-			putStrLn "SCROLL"
+		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$
+			(putStrLn "SCROLL" >> print e)
+		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ do
+			putStrLn "MOTION NOTIFY"
 			print e
+			print . gdkModifierTypeSingleBitList
+				$ gdkEventMotionState e
+			let	axes = gdkEventMotionAxes e
+			printDeviceAxes (gdkEventMotionDevice e) axes
+			maybe (pure ()) (`printDeviceAxes` axes)
+				$ gdkEventMotionSourceDevice e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+
+printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
+printDeviceAxes d axes = do
+	print =<< gdkDeviceGetName d
+	aa <- gdkDeviceListAxes d
+	for_ aa \a -> do
+		putStr "\t"
+		putStr =<< gdkAtomName a
+		putStr ": "
+		print =<< gdkDeviceGetAxisValue d axes a
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()
 mainLoop slp f = gdkWithEvent \case
 	Nothing -> threadDelay slp >> mainLoop slp f
 	Just e -> f e >>= \case False -> pure (); True -> mainLoop slp f
 
-data OptSetting = OptEvents [GdkEventMaskSingleBit] | OptAllEvents deriving Show
+data OptSetting
+	= OptEvents [GdkEventMaskSingleBit]
+	| OptAllEvents
+	| OptNoEventCompression
+	deriving Show
 
-optEvents, optAllEvents :: OptDescr OptSetting
+optEvents, optAllEvents, optNoEventCompression :: OptDescr OptSetting
 optEvents = Option ['e'] ["events"] (ReqArg (OptEvents . read) "EventMaskList")
 	"Set event mask list"
 
 optAllEvents = Option ['a'] ["all-events"] (NoArg OptAllEvents)
 	"Set all event mask on"
 
+optNoEventCompression = Option ['c'] ["no-event-compression"]
+	(NoArg OptNoEventCompression) "Set no event comparession"
+
 optToEvents :: [OptSetting] -> GdkEventMaskMultiBits
 optToEvents [] = gdkEventMaskMultiBits [GdkKeyPressMask]
 optToEvents (OptAllEvents : _) = GdkAllEventsMask
 optToEvents (OptEvents es : _) = gdkEventMaskMultiBits es
+optToEvents (_ : ss) = optToEvents ss
+
+optToEventCompression :: [OptSetting] -> Bool
+optToEventCompression [] = True
+optToEventCompression (OptNoEventCompression : _) = False
+optToEventCompression (_ : ss) = optToEventCompression ss
