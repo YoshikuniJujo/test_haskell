@@ -66,15 +66,22 @@ todo
 		- [x] `data GdkEventMotionRaw`
 		- [x] function `gdkEventMotion`
 		- [x] `pattern GdkEventGdkMotionNotify`
-	+ [ ] GDK EVENT VISIBILITY
-		- [ ] `data GdkEventVisibility`
-		- [ ] `data GdkEventVisibilityRaw`
-		- [ ] function `gdkEventVisibility`
-		- [ ] `pattern GdkEventGdkVisibilityNotify`
-		- [ ] data `GdkVisibilityState`
-			* [ ] type
-			* [ ] patterns
+	+ [x] GDK EVENT VISIBILITY
+		- [x] `data GdkEventVisibility`
+		- [x] `data GdkEventVisibilityRaw`
+		- [x] function `gdkEventVisibility`
+		- [x] `pattern GdkEventGdkVisibilityNotify`
+		- [x] data `GdkVisibilityState`
+			* [x] type
+			* [x] patterns
 	+ [ ] GDK EVENT CROSSING
+		- [x] add to export list
+		- [ ] add to try-event-structures
+		- [ ] `data GdkEventCrossing`
+		- [ ] `data GdkEventCrossingRaw`
+		- [ ] function `gdkEventCrossing`
+		- [ ] `pattern GdkEventGdkEnterNotify`
+		- [ ] `pattern GdkEventGdkLeaveNotify`
 	+ [ ] GDK EVENT FOCUS
 	+ [ ] GDK EVENT CONFIGURE
 	+ [ ] GDK EVENT PROPERTY

@@ -47,9 +47,8 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkVisibilityFullyObscured,
 
 	-- * GDK EVENT CROSSING
-	gdkEventCrossing,
-	pattern GdkEventGdkEnterNotify,
-	pattern GdkEventGdkLeaveNotify,
+	GdkEventCrossing(..), GdkEventCrossingRaw, gdkEventCrossing,
+	pattern GdkEventGdkEnterNotify, pattern GdkEventGdkLeaveNotify,
 
 	-- * GDK EVENT FOCUS
 	gdkEventFocus, pattern GdkEventGdkFocusChange,
