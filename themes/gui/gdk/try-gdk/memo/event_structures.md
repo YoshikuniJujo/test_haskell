@@ -76,8 +76,17 @@ todo
 			* [x] patterns
 	+ [ ] GDK EVENT CROSSING
 		- [x] add to export list
-		- [ ] add to try-event-structures
+		- [x] add to try-event-structures
 		- [ ] `data GdkEventCrossing`
+			* [ ] `gdkEventCrossingWindow`
+			* [ ] `gdkEventCrossingSendEvent`
+			* [ ] `gdkEventCrossingSubWindow`
+			* [ ] `gdkEventCrossingTime`
+			* [ ] `gdkEventCrossingX` and `gdkEventCrossingY`
+			* [ ] `gdkEventCrossingMode`
+			* [ ] `gdkEventCrossingDetail`
+			* [ ] `gdkEventCrossingFocus`
+			* [ ] `gdkEventCrossingState`
 		- [ ] `data GdkEventCrossingRaw`
 		- [ ] function `gdkEventCrossing`
 		- [ ] `pattern GdkEventGdkEnterNotify`

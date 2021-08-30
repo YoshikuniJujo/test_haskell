@@ -85,6 +85,12 @@ main = do
 				$ gdkEventMotionSourceDevice e
 		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) -> True <$
 			(putStrLn "VISIBILITY NOTIFY" >> print e)
+		GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ do
+			putStrLn "ENTER NOTIFY"
+			print e
+		GdkEventGdkLeaveNotify (gdkEventCrossing -> e) -> True <$ do
+			putStrLn "LEAVE NOTIFY"
+			print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
