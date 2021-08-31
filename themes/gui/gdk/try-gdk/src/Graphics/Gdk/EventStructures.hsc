@@ -67,7 +67,8 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkEventGdkFocusChange,
 
 	-- * GDK EVENT CONFIGURE
-	GdkEventConfigure(..), gdkEventConfigure, pattern GdkEventGdkConfigure,
+	GdkEventConfigure(..), GdkEventConfigureRaw, gdkEventConfigure,
+	pattern GdkEventGdkConfigure,
 
 	-- * GDK EVENT PROPERTY
 	GdkEventProperty(..), gdkEventProperty,
