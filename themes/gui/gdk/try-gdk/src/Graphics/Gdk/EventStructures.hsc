@@ -74,6 +74,7 @@ module Graphics.Gdk.EventStructures (
 	) where
 
 import Foreign.Ptr
+import Foreign.Ptr.Misc
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Storable
 import Foreign.C.Types
@@ -588,13 +589,15 @@ enum "GdkNotifyType" ''#{type GdkNotifyType} [''Show, ''Storable] [
 	("GdkNotifyNonlinearVirtual", #{const GDK_NOTIFY_NONLINEAR_VIRTUAL}),
 	("GdkNotifyUnknown", #{const GDK_NOTIFY_UNKNOWN}) ]
 
+type PtrGdkWindow = Ptr GdkWindow
+
 struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 	[	("window", ''GdkWindow, [| #{peek GdkEventCrossing, window} |],
 			[| #{poke GdkEventCrossing, window} |]),
 		("sendEvent", ''BoolInt8,
 			[| #{peek GdkEventCrossing, send_event} |],
 			[| #{poke GdkEventCrossing, send_event} |]),
-		("subwindow", ''GdkWindow,
+		("subwindow", ''PtrGdkWindow,
 			[| #{peek GdkEventCrossing, subwindow} |],
 			[| #{poke GdkEventCrossing, subwindow} |]),
 		("time", ''MilliSecond, [| #{peek GdkEventCrossing, time} |],
@@ -624,7 +627,7 @@ struct "GdkEventCrossingRaw" #{size GdkEventCrossing}
 data GdkEventCrossing = GdkEventCrossing {
 	gdkEventCrossingWindow :: GdkWindow,
 	gdkEventCrossingSendEvent :: Bool,
-	gdkEventCrossingSubwindow :: GdkWindow,
+	gdkEventCrossingSubwindow :: Maybe GdkWindow,
 	gdkEventCrossingTime :: MilliSecond,
 	gdkEventCrossingX, gdkEventCrossingY :: CDouble,
 	gdkEventCrossingXRoot, gdkEventCrossingYRoot :: CDouble,
@@ -641,7 +644,7 @@ gdkEventCrossing (unsafeUnseal -> r) = GdkEventCrossing
 		FalseInt8 -> False; TrueInt8 -> True
 		_ -> error $ "gdkEventCrossingRawSendEvent " ++
 			"should be FALSE or TRUE")
-	(gdkEventCrossingRawSubwindow r)
+	(toGdkWindow $ gdkEventCrossingRawSubwindow r)
 	(gdkEventCrossingRawTime r)
 	(gdkEventCrossingRawX r) (gdkEventCrossingRawY r)
 	(gdkEventCrossingRawXRoot r) (gdkEventCrossingRawYRoot r)
@@ -650,6 +653,9 @@ gdkEventCrossing (unsafeUnseal -> r) = GdkEventCrossing
 		FalseGBoolean -> False; TrueGBoolean -> True
 		_ -> error $ "gdkEventCrossingRawFocus should be FALSE or TRUE")
 	(gdkModifierTypeSingleBitList $ gdkEventCrossingRawState r)
+
+toGdkWindow :: Ptr GdkWindow -> Maybe GdkWindow
+toGdkWindow = \case NullPtr -> Nothing; p -> Just $ GdkWindow p
 
 pattern GdkEventGdkEnterNotify :: Sealed s GdkEventCrossingRaw -> GdkEvent s
 pattern GdkEventGdkEnterNotify e <- GdkEvent

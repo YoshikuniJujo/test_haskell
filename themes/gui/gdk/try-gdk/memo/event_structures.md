@@ -78,11 +78,11 @@ todo
 		- [x] add to export list
 		- [x] add to try-event-structures
 		- [ ] `data GdkEventCrossing`
-			* [ ] `gdkEventCrossingWindow`
-			* [ ] `gdkEventCrossingSendEvent`
-			* [ ] `gdkEventCrossingSubWindow`
-			* [ ] `gdkEventCrossingTime`
-			* [ ] `gdkEventCrossingX` and `gdkEventCrossingY`
+			* [x] `gdkEventCrossingWindow`
+			* [x] `gdkEventCrossingSendEvent`
+			* [x] `gdkEventCrossingSubWindow`
+			* [x] `gdkEventCrossingTime`
+			* [x] `gdkEventCrossingX` and `gdkEventCrossingY`
 			* [ ] `gdkEventCrossingMode`
 			* [ ] `gdkEventCrossingDetail`
 			* [ ] `gdkEventCrossingFocus`
