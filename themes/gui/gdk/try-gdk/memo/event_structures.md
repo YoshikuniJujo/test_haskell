@@ -74,27 +74,33 @@ todo
 		- [x] data `GdkVisibilityState`
 			* [x] type
 			* [x] patterns
-	+ [ ] GDK EVENT CROSSING
+	+ [x] GDK EVENT CROSSING
 		- [x] add to export list
 		- [x] add to try-event-structures
-		- [ ] `data GdkEventCrossing`
+		- [x] `data GdkEventCrossing`
 			* [x] `gdkEventCrossingWindow`
 			* [x] `gdkEventCrossingSendEvent`
 			* [x] `gdkEventCrossingSubWindow`
 			* [x] `gdkEventCrossingTime`
 			* [x] `gdkEventCrossingX` and `gdkEventCrossingY`
 			* [x] `gdkEventCrossingMode`
-			* [ ] `gdkEventCrossingDetail`
-			* [ ] `gdkEventCrossingFocus`
-			* [ ] `gdkEventCrossingState`
-		- [ ] `data GdkEventCrossingRaw`
-		- [ ] function `gdkEventCrossing`
-		- [ ] `pattern GdkEventGdkEnterNotify`
-		- [ ] `pattern GdkEventGdkLeaveNotify`
+			* [x] `gdkEventCrossingDetail`
+			* [x] `gdkEventCrossingFocus`
+			* [x] `gdkEventCrossingState`
+		- [x] `data GdkEventCrossingRaw`
+		- [x] function `gdkEventCrossing`
+		- [x] `pattern GdkEventGdkEnterNotify`
+		- [x] `pattern GdkEventGdkLeaveNotify`
 	+ [ ] GDK EVENT FOCUS
+		- [ ] add to export list
+		- [ ] add to try-event-structures
+		- [ ] `data GdkEventFocus`
+		- [ ] `data GdkEventFocusRaw`
+		- [ ] function `gdkEventFocus`
+		- [ ] pattern `GdkEventGdkFocusChange`
 	+ [ ] GDK EVENT CONFIGURE
 	+ [ ] GDK EVENT PROPERTY
-	+ [ ] GDK EVENT WINDOW STYLE
+	+ [ ] GDK EVENT WINDOW STATE
 		- [ ] Gdk Window State
 * [ ] make `Graphics.Gdk.EventStructures.Internal`
 * [ ] refactor export list

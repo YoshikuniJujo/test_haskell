@@ -57,6 +57,10 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkCrossingStateChanged,
 	pattern GdkCrossingTouchBegin, pattern GdkCrossingTouchEnd,
 	pattern GdkCrossingDeviceSwitch,
+	-- ** Gdk Notify Type
+	pattern GdkNotifyAncestor, pattern GdkNotifyVirtual,
+	pattern GdkNotifyInferior, pattern GdkNotifyNonlinear,
+	pattern GdkNotifyNonlinearVirtual, pattern GdkNotifyUnknown,
 
 	-- * GDK EVENT FOCUS
 	gdkEventFocus, pattern GdkEventGdkFocusChange,
@@ -591,7 +595,7 @@ enum "GdkCrossingMode" ''#{type GdkCrossingMode} [''Show, ''Storable] [
 
 enum "GdkNotifyType" ''#{type GdkNotifyType} [''Show, ''Storable] [
 	("GdkNotifyAncestor", #{const GDK_NOTIFY_ANCESTOR}),
-	("GdkNotifyVirtural", #{const GDK_NOTIFY_VIRTUAL}),
+	("GdkNotifyVirtual", #{const GDK_NOTIFY_VIRTUAL}),
 	("GdkNotifyInferior", #{const GDK_NOTIFY_INFERIOR}),
 	("GdkNotifyNonlinear", #{const GDK_NOTIFY_NONLINEAR}),
 	("GdkNotifyNonlinearVirtual", #{const GDK_NOTIFY_NONLINEAR_VIRTUAL}),
