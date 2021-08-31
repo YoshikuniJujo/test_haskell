@@ -107,6 +107,12 @@ todo
 		- [x] function `gdkEventConfigure`
 		- [x] `pattern GdkEventGdkConfigure`
 	+ [ ] GDK EVENT PROPERTY
+		- [x] add to export list
+		- [ ] add to try-event-structures
+		- [ ] `data GdkEventProperty`
+		- [ ] `data GdkEventPropertyRaw`
+		- [ ] function `gdkEventProperty`
+		- [ ] `pattern GdkEventGdkPropertyNotify`
 	+ [ ] GDK EVENT WINDOW STATE
 		- [ ] Gdk Window State
 * [ ] make `Graphics.Gdk.EventStructures.Internal`

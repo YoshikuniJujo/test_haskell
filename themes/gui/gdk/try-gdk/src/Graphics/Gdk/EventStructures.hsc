@@ -71,7 +71,7 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkEventGdkConfigure,
 
 	-- * GDK EVENT PROPERTY
-	GdkEventProperty(..), gdkEventProperty,
+	GdkEventProperty(..), GdkEventPropertyRaw, gdkEventProperty,
 	pattern GdkEventGdkPropertyNotify,
 
 	-- * GDK EVENT WINDOW STATE
