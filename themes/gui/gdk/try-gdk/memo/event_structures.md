@@ -92,7 +92,7 @@ todo
 		- [x] `pattern GdkEventGdkEnterNotify`
 		- [x] `pattern GdkEventGdkLeaveNotify`
 	+ [ ] GDK EVENT FOCUS
-		- [ ] add to export list
+		- [x] add to export list
 		- [ ] add to try-event-structures
 		- [ ] `data GdkEventFocus`
 		- [ ] `data GdkEventFocusRaw`

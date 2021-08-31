@@ -63,7 +63,8 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkNotifyNonlinearVirtual, pattern GdkNotifyUnknown,
 
 	-- * GDK EVENT FOCUS
-	gdkEventFocus, pattern GdkEventGdkFocusChange,
+	GdkEventFocus(..), GdkEventFocusRaw, gdkEventFocus,
+	pattern GdkEventGdkFocusChange,
 
 	-- * GDK EVENT CONFIGURE
 	GdkEventConfigure(..), gdkEventConfigure, pattern GdkEventGdkConfigure,
