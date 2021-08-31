@@ -93,6 +93,9 @@ main = do
 			print e
 		GdkEventGdkFocusChange (gdkEventFocus -> e) -> True <$ print e
 		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
+		GdkEventGdkPropertyNotify (gdkEventProperty -> e) -> True <$ do
+			print e
+			putStrLn =<< gdkAtomName (gdkEventPropertyAtom e)
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
