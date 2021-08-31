@@ -83,7 +83,7 @@ todo
 			* [x] `gdkEventCrossingSubWindow`
 			* [x] `gdkEventCrossingTime`
 			* [x] `gdkEventCrossingX` and `gdkEventCrossingY`
-			* [ ] `gdkEventCrossingMode`
+			* [x] `gdkEventCrossingMode`
 			* [ ] `gdkEventCrossingDetail`
 			* [ ] `gdkEventCrossingFocus`
 			* [ ] `gdkEventCrossingState`

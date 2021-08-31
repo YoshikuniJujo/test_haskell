@@ -49,6 +49,14 @@ module Graphics.Gdk.EventStructures (
 	-- * GDK EVENT CROSSING
 	GdkEventCrossing(..), GdkEventCrossingRaw, gdkEventCrossing,
 	pattern GdkEventGdkEnterNotify, pattern GdkEventGdkLeaveNotify,
+	-- ** Gdk Crossing Mode
+	GdkCrossingMode,
+	pattern GdkCrossingNormal,
+	pattern GdkCrossingGrab, pattern GdkCrossingUngrab,
+	pattern GdkCrossingGtkGrab, pattern GdkCrossingGtkUngrab,
+	pattern GdkCrossingStateChanged,
+	pattern GdkCrossingTouchBegin, pattern GdkCrossingTouchEnd,
+	pattern GdkCrossingDeviceSwitch,
 
 	-- * GDK EVENT FOCUS
 	gdkEventFocus, pattern GdkEventGdkFocusChange,
