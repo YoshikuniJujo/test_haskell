@@ -113,6 +113,7 @@ todo
 		- [ ] `data GdkEventPropertyRaw`
 		- [ ] function `gdkEventProperty`
 		- [ ] `pattern GdkEventGdkPropertyNotify`
+		- [ ] Gdk Property State
 	+ [ ] GDK EVENT WINDOW STATE
 		- [ ] Gdk Window State
 * [ ] make `Graphics.Gdk.EventStructures.Internal`
