@@ -92,6 +92,7 @@ main = do
 			putStrLn "LEAVE NOTIFY"
 			print e
 		GdkEventGdkFocusChange (gdkEventFocus -> e) -> True <$ print e
+		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()

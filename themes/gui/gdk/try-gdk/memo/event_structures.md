@@ -98,14 +98,14 @@ todo
 		- [x] `data GdkEventFocusRaw`
 		- [x] function `gdkEventFocus`
 		- [x] `pattern GdkEventGdkFocusChange`
-	+ [ ] GDK EVENT CONFIGURE
-		- [ ] add to try-event-structures
-		- [ ] `data GdkEventConfigure`
-		- [ ] `data GdkEventConfigureRaw`
+	+ [x] GDK EVENT CONFIGURE
+		- [x] add to try-event-structures
+		- [x] `data GdkEventConfigure`
+		- [x] `data GdkEventConfigureRaw`
 			* [x] add to export list
-			* [ ] others
-		- [ ] function `gdkEventConfigure`
-		- [ ] `pattern GdkEventGdkConfigure`
+			* [x] others
+		- [x] function `gdkEventConfigure`
+		- [x] `pattern GdkEventGdkConfigure`
 	+ [ ] GDK EVENT PROPERTY
 	+ [ ] GDK EVENT WINDOW STATE
 		- [ ] Gdk Window State
