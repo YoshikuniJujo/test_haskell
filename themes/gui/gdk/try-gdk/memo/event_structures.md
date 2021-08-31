@@ -91,14 +91,19 @@ todo
 		- [x] function `gdkEventCrossing`
 		- [x] `pattern GdkEventGdkEnterNotify`
 		- [x] `pattern GdkEventGdkLeaveNotify`
-	+ [ ] GDK EVENT FOCUS
+	+ [x] GDK EVENT FOCUS
 		- [x] add to export list
-		- [ ] add to try-event-structures
-		- [ ] `data GdkEventFocus`
-		- [ ] `data GdkEventFocusRaw`
-		- [ ] function `gdkEventFocus`
-		- [ ] pattern `GdkEventGdkFocusChange`
+		- [x] add to try-event-structures
+		- [x] `data GdkEventFocus`
+		- [x] `data GdkEventFocusRaw`
+		- [x] function `gdkEventFocus`
+		- [x] `pattern GdkEventGdkFocusChange`
 	+ [ ] GDK EVENT CONFIGURE
+		- [ ] `data GdkEventConfigure`
+		- [ ] `data GdkEventConfigureRaw`
+			* [ ] add to export list
+		- [ ] function `gdkEventConfigure`
+		- [ ] `pattern GdkEventGdkConfigure`
 	+ [ ] GDK EVENT PROPERTY
 	+ [ ] GDK EVENT WINDOW STATE
 		- [ ] Gdk Window State
