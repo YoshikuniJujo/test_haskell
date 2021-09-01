@@ -3,7 +3,33 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.EventStructures.GdkEventType where
+module Graphics.Gdk.EventStructures.GdkEventType (
+	-- * GDK EVENT TYPE
+	GdkEventType,
+
+	-- * MEMBERS
+	pattern GdkNothing, pattern GdkDelete, pattern GdkDestroy,
+	pattern GdkExpose, pattern GdkMotionNotify,
+	pattern GdkButtonPress,
+	pattern GdkDoubleButtonPress, pattern GdkTripleButtonPress,
+	pattern GdkButtonRelease,
+	pattern GdkKeyPress, pattern GdkKeyRelease,
+	pattern GdkEnterNotify, pattern GdkLeaveNotify,
+	pattern GdkFocusChange, pattern GdkConfigure,
+	pattern GdkMap, pattern GdkUnmap,
+	pattern GdkPropertyNotify,
+	pattern GdkSelectionClear, pattern GdkSelectionRequest,
+	pattern GdkSelectionNotify,
+	pattern GdkProximityIn, pattern GdkProximityOut,
+	pattern GdkDragEnter, pattern GdkDragLeave, pattern GdkDragStatus,
+	pattern GdkDropStart, pattern GdkDropFinished,
+	pattern GdkClientEvent, pattern GdkVisibilityNotify,
+	pattern GdkScroll, pattern GdkWindowState_, pattern GdkSetting,
+	pattern GdkOwnerChange, pattern GdkGrabBroken, pattern GdkDamage,
+	pattern GdkTouchBegin, pattern GdkTouchEnd, pattern GdkTouchCancel,
+	pattern GdkTouchpadSwipe, pattern GdkTouchpadPinch,
+	pattern GdkPadButtonPress, pattern GdkPadButtonRelease,
+	pattern GdkPadRing, pattern GdkPadStrip, pattern GdkPadGroupMode ) where
 
 import Foreign.Storable
 import Foreign.C.Enum

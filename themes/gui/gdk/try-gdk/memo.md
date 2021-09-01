@@ -66,7 +66,7 @@ todo new
 		- [x] Events
 		- [ ] EventStructures
 			* [x] itself
-			* [ ] GdkEventType
+			* [x] GdkEventType
 			* [ ] GdkKeySyms
 		- [ ] PropertiesAndAtoms.GdkAtom
 		- [ ] Exception
