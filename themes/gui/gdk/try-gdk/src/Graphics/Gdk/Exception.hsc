@@ -2,7 +2,13 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Exception where
+module Graphics.Gdk.Exception (
+	-- * GDK EXCEPTION
+	GdkException, gdkExceptionFromException, gdkExceptionToException,
+	-- * GDK EXCEPTION MEMBERS
+	GdkInitFail(..), gdkInitFail,
+	GdkNoDefaultDisplay(..), GdkCannotOpenDisplay(..),
+	GdkIndexOutOfRange(..) ) where
 
 import Control.Exception
 import Control.Exception.Hierarchy
@@ -15,8 +21,7 @@ data GdkIndexOutOfRange = GdkIndexOutOfRange deriving Show
 exceptionHierarchy Nothing $ ExNode "GdkException" [
 	ExType ''GdkInitFail,
 	ExType ''GdkNoDefaultDisplay, ExType ''GdkCannotOpenDisplay,
-	ExType ''GdkIndexOutOfRange
-	]
+	ExType ''GdkIndexOutOfRange ]
 
 gdkInitFail :: IO a
 gdkInitFail = throw GdkInitFail

@@ -13,7 +13,7 @@ todo new
 	+ [x] `GdkWindowWindowClass`
 	+ [x] `GdkGrabStatus`
 * [x] move contents of module Types to appropriate module
-* [ ] refactor export list
+* [x] refactor export list
 	+ [x] Data
 		- [x] Bits.Misc
 		- [x] Sealed
@@ -22,7 +22,7 @@ todo new
 		- [x] itself
 		- [x] DoWhile
 	+ [x] Foreign.Ptr.Misc
-	+ [ ] Graphics.Gdk
+	+ [x] Graphics.Gdk
 		- [x] General
 			* [x] make trial
 				+ [x] `gdkInit`
@@ -69,8 +69,7 @@ todo new
 			* [x] GdkEventType
 			* [x] GdkKeySyms
 		- [x] PropertiesAndAtoms.GdkAtom
-		- [ ] Exception
-* [ ] check `gdk_event_get_source_device`
+		- [x] Exception
 
 module hierarchy
 ----------------
