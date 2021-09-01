@@ -81,7 +81,7 @@ module Graphics.Gdk.EventStructures (
 	GdkEventWindowState(..), GdkEventWindowStateRaw, gdkEventWindowState,
 	pattern GdkEventGdkWindowState,
 	-- ** Gdk Window State
-	GdkWindowStates(..), gdkWindowStateList, gdkWindowStateCheck,
+	GdkWindowStates(..), GdkWindowState, gdkWindowStateList, gdkWindowStateCheck,
 	pattern GdkWindowStateWithdrawn, pattern GdkWindowStateIconified,
 	pattern GdkWindowStateMaximized, pattern GdkWindowStateSticky,
 	pattern GdkWindowStateFullscreen,

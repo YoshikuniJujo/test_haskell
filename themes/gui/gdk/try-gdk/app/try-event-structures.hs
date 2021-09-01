@@ -96,6 +96,12 @@ main = do
 		GdkEventGdkPropertyNotify (gdkEventProperty -> e) -> True <$ do
 			print e
 			putStrLn =<< gdkAtomName (gdkEventPropertyAtom e)
+		GdkEventGdkWindowState (gdkEventWindowState -> e) -> True <$ do
+			print e
+			print . gdkWindowStateList
+				$ gdkEventWindowStateChangedMask e
+			print . gdkWindowStateList
+				$ gdkEventWindowStateNewWindowState e
 		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
 
 printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
