@@ -6,6 +6,9 @@ module Graphics.Gdk.EventStructures (
 	-- * GDK EVENT
 	GdkEvent,
 
+	-- * SEALED
+	Sealed,
+
 	-- * GDK EVENT ANY
 	GdkEventAny(..), GdkEventAnyRaw, gdkEventAny,
 	pattern GdkEventGdkAny, pattern GdkEventGdkNothing,

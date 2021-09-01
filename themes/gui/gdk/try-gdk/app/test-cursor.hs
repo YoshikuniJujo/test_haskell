@@ -7,7 +7,6 @@ import Foreign.C.Types
 import Control.Monad
 import Control.Monad.Primitive
 import Data.Char
-import Data.Sealed
 import System.Environment
 
 import Graphics.Gdk.General

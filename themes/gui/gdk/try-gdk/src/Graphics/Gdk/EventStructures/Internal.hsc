@@ -10,6 +10,9 @@ module Graphics.Gdk.EventStructures.Internal (
 	-- * GDK EVENT
 	GdkEvent(..), GdkEventTag, c_gdk_event_free,
 
+	-- * SEALED
+	Sealed, seal, unsafeUnseal,
+
 	-- * GDK EVENT ANY
 	GdkEventAny(..), GdkEventAnyRaw, gdkEventAny,
 	pattern GdkEventGdkAny, pattern GdkEventGdkNothing,

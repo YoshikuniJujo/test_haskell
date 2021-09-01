@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b8a0f104774819d8b326d70d5bdad2358fffe5d91419bd2e12e16fb4c21294e0
+-- hash: f0af3cc51f5aba6af784228721a34def510ae86cafe5d43bf42fd1fa08c06252
 
 name:           try-gdk
 version:        0.1.0.0
@@ -27,17 +27,13 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Bits.Misc
-      Data.Sealed
-      Data.Sealed.Internal
-      Foreign.Ptr.Misc
       Graphics.Gdk.Cursors
       Graphics.Gdk.Cursors.Internal
-      Graphics.Gdk.Events
       Graphics.Gdk.EventStructures
       Graphics.Gdk.EventStructures.GdkEventType
       Graphics.Gdk.EventStructures.GdkKeySyms
       Graphics.Gdk.EventStructures.Internal
+      Graphics.Gdk.Events
       Graphics.Gdk.Exception
       Graphics.Gdk.GdkDevice
       Graphics.Gdk.GdkDevice.GdkAxes
@@ -71,6 +67,10 @@ library
       Try.Tools
       Try.Tools.DoWhile
   other-modules:
+      Data.Bits.Misc
+      Data.Sealed
+      Data.Sealed.Internal
+      Foreign.Ptr.Misc
       Paths_try_gdk
   hs-source-dirs:
       src

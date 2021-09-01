@@ -71,9 +71,10 @@ todo new
 		- [x] PropertiesAndAtoms.GdkAtom
 		- [x] Exception
 * [x] use newest lts
-* [ ] make export modules list
-	+ [ ] list up all modules
-	+ [ ] remove some modules
+* [x] make export modules list
+	+ [x] list up all modules
+	+ [x] remove some modules
+* [ ] make it independent
 
 module hierarchy
 ----------------
