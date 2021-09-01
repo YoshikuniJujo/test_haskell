@@ -70,6 +70,10 @@ todo new
 			* [x] GdkKeySyms
 		- [x] PropertiesAndAtoms.GdkAtom
 		- [x] Exception
+* [x] use newest lts
+* [ ] make export modules list
+	+ [ ] list up all modules
+	+ [ ] remove some modules
 
 module hierarchy
 ----------------
