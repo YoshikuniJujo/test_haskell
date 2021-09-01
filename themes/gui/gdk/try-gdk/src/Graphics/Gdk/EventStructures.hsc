@@ -78,17 +78,19 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkPropertyNewValue, pattern GdkPropertyDelete,
 
 	-- * GDK EVENT WINDOW STATE
-	GdkEventWindowState(..), gdkEventWindowState,
+	GdkEventWindowState(..), GdkEventWindowStateRaw, gdkEventWindowState,
 	pattern GdkEventGdkWindowState,
 	-- ** Gdk Window State
 	GdkWindowStates(..), gdkWindowStateList, gdkWindowStateCheck,
-	pattern GdkWindowStateAbove,
-	pattern GdkWindowStateBelow,
+	pattern GdkWindowStateWithdrawn, pattern GdkWindowStateIconified,
+	pattern GdkWindowStateMaximized, pattern GdkWindowStateSticky,
 	pattern GdkWindowStateFullscreen,
-	pattern GdkWindowStateSticky,
-	pattern GdkWindowStateMaximized,
-
-	) where
+	pattern GdkWindowStateAbove, pattern GdkWindowStateBelow,
+	pattern GdkWindowStateFocused, pattern GdkWindowStateTiled,
+	pattern GdkWindowStateTopTiled, pattern GdkWindowStateTopResizable,
+	pattern GdkWindowStateRightTiled, pattern GdkWindowStateRightResizable,
+	pattern GdkWindowStateBottomTiled, pattern GdkWindowStateBottomResizable,
+	pattern GdkWindowStateLeftTiled, pattern GdkWindowStateLeftResizable ) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Misc
@@ -817,13 +819,14 @@ enum "GdkWindowState" ''#{type GdkWindowState} [''Show, ''Storable] [
 	("GdkWindowStateAbove", #{const GDK_WINDOW_STATE_ABOVE}),
 	("GdkWindowStateBelow", #{const GDK_WINDOW_STATE_BELOW}),
 	("GdkWindowStateFocused", #{const GDK_WINDOW_STATE_FOCUSED}),
+	("GdkWindowStateTiled", #{const GDK_WINDOW_STATE_TILED}),
 	("GdkWindowStateTopTiled", #{const GDK_WINDOW_STATE_TOP_TILED}),
-	("GdkWidnwoStateTopResizable", #{const GDK_WINDOW_STATE_TOP_RESIZABLE}),
+	("GdkWindowStateTopResizable", #{const GDK_WINDOW_STATE_TOP_RESIZABLE}),
 	("GdkWindowStateRightTiled", #{const GDK_WINDOW_STATE_RIGHT_TILED}),
 	("GdkWindowStateRightResizable",
 		#{const GDK_WINDOW_STATE_RIGHT_RESIZABLE}),
 	("GdkWindowStateBottomTiled", #{const GDK_WINDOW_STATE_BOTTOM_TILED}),
-	("GdkWindowStaetBottomResizable",
+	("GdkWindowStateBottomResizable",
 		#{const GDK_WINDOW_STATE_BOTTOM_RESIZABLE}),
 	("GdkWindowStateLeftTiled", #{const GDK_WINDOW_STATE_LEFT_TILED}),
 	("GdkWindowStateLeftResizable",
