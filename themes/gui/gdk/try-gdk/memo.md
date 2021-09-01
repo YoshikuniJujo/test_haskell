@@ -74,7 +74,7 @@ todo new
 * [x] make export modules list
 	+ [x] list up all modules
 	+ [x] remove some modules
-* [ ] make it independent
+* [x] make it independent
 
 module hierarchy
 ----------------

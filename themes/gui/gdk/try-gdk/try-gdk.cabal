@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f0af3cc51f5aba6af784228721a34def510ae86cafe5d43bf42fd1fa08c06252
+-- hash: 954b1d491d94c65be3110ef17e4e69a64b3da2a31d90c6621d2edba7884e2bc6
 
 name:           try-gdk
 version:        0.1.0.0
@@ -27,66 +27,17 @@ source-repository head
 
 library
   exposed-modules:
-      Graphics.Gdk.Cursors
-      Graphics.Gdk.Cursors.Internal
-      Graphics.Gdk.EventStructures
-      Graphics.Gdk.EventStructures.GdkEventType
-      Graphics.Gdk.EventStructures.GdkKeySyms
-      Graphics.Gdk.EventStructures.Internal
-      Graphics.Gdk.Events
-      Graphics.Gdk.Exception
-      Graphics.Gdk.GdkDevice
-      Graphics.Gdk.GdkDevice.GdkAxes
-      Graphics.Gdk.GdkDevice.GdkAxes.Internal
-      Graphics.Gdk.GdkDevice.Internal
-      Graphics.Gdk.GdkDisplay
-      Graphics.Gdk.GdkDisplay.Internal
-      Graphics.Gdk.GdkDisplayManager
-      Graphics.Gdk.GdkDisplayManager.Internal
-      Graphics.Gdk.GdkDrawingContext
-      Graphics.Gdk.GdkDrawingContext.Internal
-      Graphics.Gdk.GdkMonitor
-      Graphics.Gdk.GdkMonitor.Internal
-      Graphics.Gdk.GdkScreen
-      Graphics.Gdk.GdkScreen.Internal
-      Graphics.Gdk.GdkSeat
-      Graphics.Gdk.GdkSeat.Internal
-      Graphics.Gdk.General
-      Graphics.Gdk.PointsAndRectangles
-      Graphics.Gdk.PointsAndRectangles.Internal
-      Graphics.Gdk.PropertiesAndAtoms.GdkAtom
-      Graphics.Gdk.Visuals
-      Graphics.Gdk.Visuals.Internal
-      Graphics.Gdk.Windows
-      Graphics.Gdk.Windows.GdkEventMask
-      Graphics.Gdk.Windows.GdkEventMask.Internal
-      Graphics.Gdk.Windows.GdkModifierType
-      Graphics.Gdk.Windows.GdkWindowAttr
-      Graphics.Gdk.Windows.GdkWindowAttr.Internal
-      Graphics.Gdk.Windows.Internal
       Try.Tools
       Try.Tools.DoWhile
   other-modules:
-      Data.Bits.Misc
-      Data.Sealed
-      Data.Sealed.Internal
-      Foreign.Ptr.Misc
       Paths_try_gdk
   hs-source-dirs:
       src
-  include-dirs:
-      include
-  pkgconfig-depends:
-      gdk-3.0
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
   default-language: Haskell2010
@@ -101,13 +52,9 @@ executable simple
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -123,13 +70,9 @@ executable test-cursor
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -145,13 +88,9 @@ executable try-axes
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -167,13 +106,9 @@ executable try-button
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -189,13 +124,9 @@ executable try-cairo-tribial
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -211,13 +142,9 @@ executable try-cursor-name
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -233,13 +160,9 @@ executable try-cursor-type
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -255,13 +178,9 @@ executable try-cursors
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -277,13 +196,9 @@ executable try-decorations
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -299,13 +214,9 @@ executable try-device
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -321,13 +232,9 @@ executable try-display
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -343,13 +250,9 @@ executable try-display-manager
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -365,13 +268,9 @@ executable try-draw
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -387,13 +286,9 @@ executable try-drawing-context
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -409,13 +304,9 @@ executable try-event-mask
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -431,13 +322,9 @@ executable try-event-structures
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -453,13 +340,9 @@ executable try-events
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -474,13 +357,9 @@ executable try-gdk-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -496,13 +375,9 @@ executable try-general
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -518,13 +393,9 @@ executable try-key-press
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -540,13 +411,9 @@ executable try-monitor
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -562,13 +429,9 @@ executable try-motion
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -584,13 +447,9 @@ executable try-primitive
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -606,13 +465,9 @@ executable try-rectangle
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -628,13 +483,9 @@ executable try-screen
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -650,13 +501,9 @@ executable try-seat
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -672,13 +519,9 @@ executable try-show-events
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -694,13 +537,9 @@ executable try-tribial
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -716,13 +555,9 @@ executable try-visuals
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -738,13 +573,9 @@ executable try-window-attr
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -760,13 +591,9 @@ executable try-window-type-hint
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -782,13 +609,9 @@ executable try-windows
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -804,13 +627,9 @@ executable try-windows-move
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk
@@ -826,13 +645,9 @@ test-suite try-gdk-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , c-enum
-    , c-struct
-    , exception-hierarchy
-    , glib-stopgap
-    , nowdoc
     , primitive
     , simple-cairo
+    , simple-gdk3
     , simple-pango
     , text
     , try-gdk

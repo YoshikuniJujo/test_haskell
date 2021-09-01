@@ -23,58 +23,12 @@ dependencies:
 - base >= 4.7 && < 5
 - primitive
 - text
+- simple-gdk3
 - simple-cairo
 - simple-pango
-- exception-hierarchy
-- glib-stopgap
-- c-enum
-- c-struct
-- nowdoc
 
 library:
   source-dirs: src
-  pkg-config-dependencies: gdk-3.0
-  include-dirs: include
-  exposed-modules:
-  - Graphics.Gdk.Cursors
-  - Graphics.Gdk.Cursors.Internal
-  - Graphics.Gdk.EventStructures
-  - Graphics.Gdk.EventStructures.GdkEventType
-  - Graphics.Gdk.EventStructures.GdkKeySyms
-  - Graphics.Gdk.EventStructures.Internal
-  - Graphics.Gdk.Events
-  - Graphics.Gdk.Exception
-  - Graphics.Gdk.GdkDevice
-  - Graphics.Gdk.GdkDevice.GdkAxes
-  - Graphics.Gdk.GdkDevice.GdkAxes.Internal
-  - Graphics.Gdk.GdkDevice.Internal
-  - Graphics.Gdk.GdkDisplay
-  - Graphics.Gdk.GdkDisplay.Internal
-  - Graphics.Gdk.GdkDisplayManager
-  - Graphics.Gdk.GdkDisplayManager.Internal
-  - Graphics.Gdk.GdkDrawingContext
-  - Graphics.Gdk.GdkDrawingContext.Internal
-  - Graphics.Gdk.GdkMonitor
-  - Graphics.Gdk.GdkMonitor.Internal
-  - Graphics.Gdk.GdkScreen
-  - Graphics.Gdk.GdkScreen.Internal
-  - Graphics.Gdk.GdkSeat
-  - Graphics.Gdk.GdkSeat.Internal
-  - Graphics.Gdk.General
-  - Graphics.Gdk.PointsAndRectangles
-  - Graphics.Gdk.PointsAndRectangles.Internal
-  - Graphics.Gdk.PropertiesAndAtoms.GdkAtom
-  - Graphics.Gdk.Visuals
-  - Graphics.Gdk.Visuals.Internal
-  - Graphics.Gdk.Windows
-  - Graphics.Gdk.Windows.GdkEventMask
-  - Graphics.Gdk.Windows.GdkEventMask.Internal
-  - Graphics.Gdk.Windows.GdkModifierType
-  - Graphics.Gdk.Windows.GdkWindowAttr
-  - Graphics.Gdk.Windows.GdkWindowAttr.Internal
-  - Graphics.Gdk.Windows.Internal
-  - Try.Tools
-  - Try.Tools.DoWhile
 
 executables:
   try-gdk-exe:
