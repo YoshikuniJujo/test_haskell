@@ -64,11 +64,11 @@ todo new
 			* [x] GdkModifierType
 		- [x] GdkDrawingContext
 		- [x] Events
-		- [ ] EventStructures
+		- [x] EventStructures
 			* [x] itself
 			* [x] GdkEventType
-			* [ ] GdkKeySyms
-		- [ ] PropertiesAndAtoms.GdkAtom
+			* [x] GdkKeySyms
+		- [x] PropertiesAndAtoms.GdkAtom
 		- [ ] Exception
 * [ ] check `gdk_event_get_source_device`
 

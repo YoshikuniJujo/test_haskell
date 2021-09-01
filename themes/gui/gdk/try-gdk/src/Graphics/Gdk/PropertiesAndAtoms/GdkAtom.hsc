@@ -4,6 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Graphics.Gdk.PropertiesAndAtoms.GdkAtom (
+	-- * GDK ATOM
 	GdkAtom(..), pattern GdkNone, gdkAtomIntern, gdkAtomName ) where
 
 import Foreign.Ptr
