@@ -19,7 +19,7 @@ import Foreign.Concurrent
 import Data.Int
 import System.GLib.Bool
 
-import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.Internal
 
 #include <gdk/gdk.h>
 

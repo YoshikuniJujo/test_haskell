@@ -57,7 +57,7 @@ import Graphics.Gdk.GdkSeat.Internal
 import Graphics.Gdk.GdkMonitor.Internal
 import Graphics.Gdk.GdkDevice.Internal
 import {-# SOURCE #-} Graphics.Gdk.Windows.Internal
-import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.Internal
 import Graphics.Gdk.Exception
 import System.GLib.DoublyLinkedLists
 

@@ -5,7 +5,7 @@
 {-# LANGUAGE GeneralisedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.EventStructures (
+module Graphics.Gdk.EventStructures.Internal (
 
 	-- * GDK EVENT
 	GdkEvent(..), GdkEventTag, c_gdk_event_free,
@@ -58,6 +58,7 @@ module Graphics.Gdk.EventStructures (
 	pattern GdkCrossingTouchBegin, pattern GdkCrossingTouchEnd,
 	pattern GdkCrossingDeviceSwitch,
 	-- ** Gdk Notify Type
+	GdkNotifyType,
 	pattern GdkNotifyAncestor, pattern GdkNotifyVirtual,
 	pattern GdkNotifyInferior, pattern GdkNotifyNonlinear,
 	pattern GdkNotifyNonlinearVirtual, pattern GdkNotifyUnknown,

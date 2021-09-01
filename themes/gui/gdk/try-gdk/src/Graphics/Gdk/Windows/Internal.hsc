@@ -110,7 +110,7 @@ import Graphics.Gdk.GdkDrawingContext.Internal
 import Graphics.Gdk.Cursors.Internal
 import Graphics.Gdk.Windows.GdkWindowAttr.Internal
 import Graphics.Gdk.Windows.GdkEventMask.Internal
-import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.Internal
 
 import Graphics.Cairo.Drawing.Regions
 

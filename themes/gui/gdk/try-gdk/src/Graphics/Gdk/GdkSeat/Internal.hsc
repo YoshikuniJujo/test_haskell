@@ -53,7 +53,7 @@ import {-# SOURCE #-} Graphics.Gdk.GdkDisplay.Internal
 import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.Cursors.Internal
 import {-# SOURCE #-} Graphics.Gdk.Windows.Internal
-import Graphics.Gdk.EventStructures
+import Graphics.Gdk.EventStructures.Internal
 
 import System.GLib.DoublyLinkedLists
 import System.GLib.Pointerable

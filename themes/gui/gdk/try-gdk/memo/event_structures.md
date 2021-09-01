@@ -122,10 +122,7 @@ todo
 		- [x] function `gdkEventWindowState`
 		- [x] `pattern GdkEventGdkWindowState`
 		- [x] Gdk Window State
-* [ ] make `Graphics.Gdk.EventStructures.Internal`
-* [ ] refactor export list
-	+ [ ] structure
-	+ [ ] others
+* [x] make `Graphics.Gdk.EventStructures.Internal`
 
 old todo
 --------
