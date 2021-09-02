@@ -44,6 +44,7 @@ dependencies:
 - containers
 - serialise
 - exception-hierarchy
+- simple-gdk3
 
 library:
   source-dirs: src

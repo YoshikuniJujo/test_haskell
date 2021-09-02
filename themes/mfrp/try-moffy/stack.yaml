@@ -47,6 +47,14 @@ extra-deps:
   commit: 23a243df2ca44306ca8cb8e93f286c524a77c332
 - git: https://github.com/YoshikuniJujo/type-flip
   commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+- git: https://github.com/YoshikuniJujo/simple-gdk3
+  commit: c0dac1b8616bb75d98927368b15546fb1ed74653
+- git: https://github.com/YoshikuniJujo/simple-cairo
+  commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+- git: https://github.com/YoshikuniJujo/cairo-image
+  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- git: https://github.com/YoshikuniJujo/glib-stopgap
+  commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

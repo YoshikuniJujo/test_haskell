@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3c7d55a3fa4716d1adce186c9c6922ac584cab63733d56152019a678ba5019ca
+-- hash: 60fdfe3cd12e963ae47310dde606a00255c1e25eb5578a33f923409660450a72
 
 name:           try-moffy
 version:        0.1.0.0
@@ -162,6 +162,7 @@ library
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -197,6 +198,7 @@ executable draw
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -233,6 +235,7 @@ executable followbox
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -269,6 +272,7 @@ executable followboxGtk
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -304,6 +308,7 @@ executable try-moffy-exe
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -340,6 +345,7 @@ executable tryCairo
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -376,6 +382,7 @@ executable tryCairoText
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -412,6 +419,7 @@ executable tryCairoTextExtents
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -448,6 +456,7 @@ executable tryConfigure
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -484,6 +493,7 @@ executable tryCount
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -520,6 +530,7 @@ executable tryDefaultWindow
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -556,6 +567,7 @@ executable tryDeleteEvent
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -592,6 +604,7 @@ executable tryFillPolygon
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -628,6 +641,7 @@ executable tryGdk
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -664,6 +678,7 @@ executable tryGtk
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -700,6 +715,7 @@ executable tryKey
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -736,6 +752,7 @@ executable tryMultiWindow
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -772,6 +789,7 @@ executable tryPango
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -808,6 +826,7 @@ executable tryPngCursor
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -844,6 +863,7 @@ executable tryPngCursorEvent
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -880,6 +900,7 @@ executable tryScroll
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text
@@ -916,6 +937,7 @@ test-suite try-moffy-test
     , random
     , serialise
     , simple-field
+    , simple-gdk3
     , stm
     , template-haskell
     , text

@@ -37,6 +37,50 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/type-flip
     commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
+- completed:
+    name: simple-gdk3
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/simple-gdk3
+    pantry-tree:
+      size: 4064
+      sha256: 5a21eef1d662f8887263fdd54c67b8e646c6777234e46d238197e7f7c990fa89
+    commit: c0dac1b8616bb75d98927368b15546fb1ed74653
+  original:
+    git: https://github.com/YoshikuniJujo/simple-gdk3
+    commit: c0dac1b8616bb75d98927368b15546fb1ed74653
+- completed:
+    name: simple-cairo
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/simple-cairo
+    pantry-tree:
+      size: 5014
+      sha256: 1f93542acd1705e91dad32435e7dcb1f7589cbec89bc84e4151bd1bb4a831c28
+    commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+  original:
+    git: https://github.com/YoshikuniJujo/simple-cairo
+    commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+- completed:
+    name: cairo-image
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/cairo-image
+    pantry-tree:
+      size: 887
+      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
+    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+  original:
+    git: https://github.com/YoshikuniJujo/cairo-image
+    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- completed:
+    name: glib-stopgap
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    pantry-tree:
+      size: 1273
+      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+  original:
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 snapshots:
 - completed:
     size: 587126
