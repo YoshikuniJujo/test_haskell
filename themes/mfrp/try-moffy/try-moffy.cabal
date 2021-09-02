@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a1d0cf29d607b3f27cdb3f46654d8d12c9be593bc1ec518aa1f18a752f0cc387
+-- hash: 3c7d55a3fa4716d1adce186c9c6922ac584cab63733d56152019a678ba5019ca
 
 name:           try-moffy
 version:        0.1.0.0
@@ -89,8 +89,8 @@ library
       Foreign.Tools
       Graphics.Cairo
       Graphics.CairoType
-      Graphics.Gdk
-      Graphics.Gdk.Event
+      Graphics.GdkOld
+      Graphics.GdkOld.Event
       Graphics.Gtk
       Graphics.Gtk.Values
       Graphics.Pango
@@ -121,10 +121,12 @@ library
       Trial.Followbox.TypeSynonym
       Trial.Followbox.ViewType
       Trial.Followbox.XFieldHandle
+      Trial.Paper
       Trial.TryCalcTextExtents
       Trial.TryConfigureEvent
       Trial.TryDefaultWindow
       Trial.TryFillPolygon
+      Trial.TryGdk
       Trial.TryKey
       Trial.TryLock
       Trial.TryMultiWindow

@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk where
+module Graphics.GdkOld where
 
 import Foreign.Ptr
 import Foreign.Marshal

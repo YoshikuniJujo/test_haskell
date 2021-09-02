@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Graphics.Gdk.Event where
+module Graphics.GdkOld.Event where
 
 import GHC.Stack
 import Foreign.Ptr
@@ -12,7 +12,7 @@ import Foreign.Storable
 import Data.Word
 import Data.Int
 
-import Graphics.Gdk
+import Graphics.GdkOld
 
 #include <gdk/gdk.h>
 

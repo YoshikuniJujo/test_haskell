@@ -9,8 +9,8 @@ import Foreign.Storable
 import Control.Monad
 import Control.Concurrent
 import System.Environment
-import Graphics.Gdk
-import Graphics.Gdk.Event
+import Graphics.GdkOld
+import Graphics.GdkOld.Event
 import Graphics.Cairo
 
 import Data.Bool
