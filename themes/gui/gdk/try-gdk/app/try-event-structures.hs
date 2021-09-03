@@ -38,16 +38,16 @@ main = do
 	gdkWindowSetEventCompression win $ optToEventCompression ss
 	gdkWindowShow win
 	mainLoop 100000 \case
-		GdkEventGdkNothing (gdkEventAny -> e) -> True <$
-			(putStrLn "NOTHING" >> print e)
-		GdkEventGdkDelete (gdkEventAny -> e) -> False <$
-			(putStrLn "DELETE" >> print e >> gdkWindowDestroy win)
-		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$
-			(putStrLn "DESTROY" >> print e)
-		GdkEventGdkMap (gdkEventAny -> e) -> True <$
-			(putStrLn "MAP" >> print e)
-		GdkEventGdkUnmap (gdkEventAny -> e) -> True <$
-			(putStrLn "UNMAP" >> print e)
+		GdkEventGdkNothing e -> True <$
+			(putStrLn "NOTHING" >> (print =<< gdkEventAny e))
+		GdkEventGdkDelete e -> False <$
+			(putStrLn "DELETE" >> (print =<< gdkEventAny e) >> gdkWindowDestroy win)
+		GdkEventGdkDestroy e -> False <$
+			(putStrLn "DESTROY" >> (print =<< gdkEventAny e))
+		GdkEventGdkMap e -> True <$
+			(putStrLn "MAP" >> (print =<< gdkEventAny e))
+		GdkEventGdkUnmap e -> True <$
+			(putStrLn "UNMAP" >> (print =<< gdkEventAny e))
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 			pure False
@@ -102,7 +102,7 @@ main = do
 				$ gdkEventWindowStateChangedMask e
 			print . gdkWindowStateList
 				$ gdkEventWindowStateNewWindowState e
-		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 printDeviceAxes :: IsGdkDevice d => d 'Pointer -> GdkAxes -> IO ()
 printDeviceAxes d axes = do

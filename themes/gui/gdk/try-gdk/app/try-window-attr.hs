@@ -70,7 +70,7 @@ main = do
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				pure False
-		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 data Visual = System | Rgba deriving (Show, Read, Eq)
 

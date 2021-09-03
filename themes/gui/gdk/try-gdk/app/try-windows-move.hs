@@ -53,7 +53,7 @@ main = do
 					(x + dx) (y + dy) (w + dw) (h + dh)
 				else do	gdkWindowMove win (x + dx) (y + dy)
 					gdkWindowResize win (w + dw) (h + dh)
-		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 data Setting = OptDelta CInt | OptMoveResize deriving (Show, Eq)
 

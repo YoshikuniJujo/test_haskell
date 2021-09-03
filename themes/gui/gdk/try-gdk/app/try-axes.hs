@@ -63,7 +63,7 @@ main = do
 				printAxisValues (gdkEventMotionDevice m) (gdkEventMotionAxes m)
 				printAxisValues (fromJust $ gdkEventMotionSourceDevice m) (gdkEventMotionAxes m)
 				printAxisValuesFromStr (gdkEventMotionDevice m) (gdkEventMotionAxes m)
-			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+			GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 printAxis :: IsGdkDevice d => d 'Pointer -> IO ()
 printAxis d = do

@@ -69,7 +69,7 @@ main = do
 
 		doWhile_ $ gdkWithEvent \case
 			Nothing -> pure False
-			Just (GdkEventGdkAny (gdkEventAny -> e)) -> print e >> pure True
+			Just (GdkEventGdkAny e) -> (print =<< gdkEventAny e) >> pure True
 
 		print =<< gdkDeviceGetPosition pnt
 		print =<< gdkDeviceGetPositionDouble pnt

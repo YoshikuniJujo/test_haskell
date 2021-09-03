@@ -1,6 +1,13 @@
 Event Structures memo
 =====================
 
+todo new
+--------
+
+* [ ] make fields of events strict
+	+ [ ] `GdkEventButton`
+	+ [ ] others
+
 todo
 ----
 

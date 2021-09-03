@@ -68,7 +68,8 @@ main = do
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_h) -> True
 			<$ gdkWindowHide win
-		GdkEventGdkAny (gdkEventAny -> e) -> True <$ do
+		GdkEventGdkAny e_ -> True <$ do
+			e <- gdkEventAny e_
 			print e
 			print $ gdkEventAnyWindow e
 

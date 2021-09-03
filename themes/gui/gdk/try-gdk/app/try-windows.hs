@@ -286,7 +286,7 @@ main = do
 			GdkEventGdkKeyPress
 				(gdkEventKeyKeyval . gdkEventKey -> c) ->
 					True <$ print c
-			GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+			GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 	when (OptWindowInfo `elem` ss) do
 		print =<< gdkWindowIsDestroyed w0

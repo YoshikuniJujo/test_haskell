@@ -29,9 +29,9 @@ main = do
 	gdkWindowSetEventCompression win $ optsToCompression ss
 	gdkWindowShow win
 	mainLoop \case
-		GdkEventGdkNothing (gdkEventAny -> e) -> True <$ print e
-		GdkEventGdkDelete (gdkEventAny -> e) -> False <$ (print e >> gdkWindowDestroy win)
-		GdkEventGdkDestroy (gdkEventAny -> e) -> False <$ print e
+		GdkEventGdkNothing e -> True <$ (print =<< gdkEventAny e)
+		GdkEventGdkDelete e -> False <$ ((print =<< gdkEventAny e) >> gdkWindowDestroy win)
+		GdkEventGdkDestroy e -> False <$ (print =<< gdkEventAny e)
 		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ print e
 		GdkEventGdkButtonPress (gdkEventButton -> e) -> True <$ print e
 		GdkEventGdkButtonRelease (gdkEventButton -> e) -> True <$ print e
@@ -62,7 +62,7 @@ main = do
 		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) ->
 			True <$ print e
 		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$ print e
-		GdkEventGdkAny (gdkEventAny -> e) -> True <$ print e
+		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 data OptSetting
 	= OptEvents [GdkEventMaskSingleBit]
