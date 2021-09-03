@@ -10,7 +10,7 @@ module Control.Moffy.Event.Mouse (
 	MouseEv, MouseBtn(..), Point,
 	-- * Event
 	-- ** Mouse Down
-	MouseDown, pattern OccMouseDown,
+	MouseDown(..), pattern OccMouseDown,
 	mouseDown, leftClick, middleClick, rightClick,
 	-- ** Mouse Up
 	MouseUp, pattern OccMouseUp, mouseUp, leftUp, middleUp, rightUp,

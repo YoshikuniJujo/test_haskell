@@ -232,6 +232,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy
+  tryGdkNew:
+    main:                tryGdkNew.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy
 
 tests:
   try-moffy-test:

@@ -1,6 +1,13 @@
 memo
 ====
 
+todo
+----
+
+* [x] add `Map GdkWindow WindowId`
+* [x] handler to process window new event and mouse down event
+* [ ] others
+
 structure
 ---------
 
