@@ -59,19 +59,20 @@ main = do
 			putStrLn "KEY RELEASE"
 			print e
 			print . gdkModifierTypeSingleBitList $ gdkEventKeyState e
-		GdkEventGdkButtonPress (gdkEventButton -> e) -> True <$ do
+		GdkEventGdkButtonPress e_ -> True <$ do
+			e <- gdkEventButton e_
 			putStrLn "BUTTON PRESS"
 			print e
 			let	axes = gdkEventButtonAxes e
 			printDeviceAxes (gdkEventButtonDevice e) axes
 			maybe (pure ()) (`printDeviceAxes` axes)
 				$ gdkEventButtonSourceDevice e
-		GdkEventGdkButtonRelease (gdkEventButton -> e) -> True <$
-			(putStrLn "BUTTON RELEASE" >> print e)
-		GdkEventGdkDoubleButtonPress (gdkEventButton -> e) -> True <$
-			(putStrLn "DOUBLE BUTTON PRESS" >> print e)
-		GdkEventGdkTripleButtonPress (gdkEventButton -> e) -> True <$
-			(putStrLn "TRIPLE BUTTON PRESS" >> print e)
+		GdkEventGdkButtonRelease e -> True <$
+			(putStrLn "BUTTON RELEASE" >> (print =<< gdkEventButton e))
+		GdkEventGdkDoubleButtonPress e -> True <$
+			(putStrLn "DOUBLE BUTTON PRESS" >> (print =<< gdkEventButton e))
+		GdkEventGdkTripleButtonPress e -> True <$
+			(putStrLn "TRIPLE BUTTON PRESS" >> (print =<< gdkEventButton e))
 		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$
 			(putStrLn "SCROLL" >> print e)
 		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ do

@@ -64,7 +64,8 @@ main = do
 				cr <- gdkDrawingContextGetCairoContext dc
 				cairoSetSourceRgba cr . fromJust $ rgbaDouble 0 0.5 0 0.5
 				cairoPaint cr
-		GdkEventGdkButtonPress (gdkEventButton -> b) -> True <$ do
+		GdkEventGdkButtonPress b_ -> True <$ do
+			b <- gdkEventButton b_
 			print b
 			gdkWindowFocus w $ gdkEventButtonTime b
 		GdkEventGdkKeyPress

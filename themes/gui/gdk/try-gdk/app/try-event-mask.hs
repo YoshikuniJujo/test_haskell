@@ -33,14 +33,14 @@ main = do
 		GdkEventGdkDelete e -> False <$ ((print =<< gdkEventAny e) >> gdkWindowDestroy win)
 		GdkEventGdkDestroy e -> False <$ (print =<< gdkEventAny e)
 		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ print e
-		GdkEventGdkButtonPress (gdkEventButton -> e) -> True <$ print e
-		GdkEventGdkButtonRelease (gdkEventButton -> e) -> True <$ print e
-		GdkEventGdkDoubleButtonPress (gdkEventButton -> e) -> True <$ do
+		GdkEventGdkButtonPress e -> True <$ (print =<< gdkEventButton e)
+		GdkEventGdkButtonRelease e -> True <$ (print =<< gdkEventButton e)
+		GdkEventGdkDoubleButtonPress e -> True <$ do
 			putStrLn "DOUBLE"
-			print e
-		GdkEventGdkTripleButtonPress (gdkEventButton -> e) -> True <$ do
+			print =<< gdkEventButton e
+		GdkEventGdkTripleButtonPress e -> True <$ do
 			putStrLn "TRIPLE"
-			print e
+			print =<< gdkEventButton e
 		GdkEventGdkKeyPress
 			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
 				False <$ gdkWindowDestroy win

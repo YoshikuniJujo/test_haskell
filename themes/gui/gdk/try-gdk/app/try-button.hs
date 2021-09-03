@@ -30,16 +30,16 @@ main = do
 			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
 			_ -> pure True
 		GdkEventGdkButtonPress b -> True <$ do
-			putStrLn ("GdkButtonPress: " ++ show (gdkEventButton b))
+			putStrLn . ("GdkButtonPress: " ++) . show =<< gdkEventButton b
 			print (1 :: Int)
 		GdkEventGdkDoubleButtonPress b -> True <$ do
-			putStrLn ("GdkDoubleButtonPress: " ++ show (gdkEventButton b))
+			putStrLn . ("GdkDoubleButtonPress: " ++) . show =<< gdkEventButton b
 			print (2 :: Int)
 		GdkEventGdkTripleButtonPress b -> True <$ do
-			putStrLn ("GdkTripleButtonPress: " ++ show (gdkEventButton b))
+			putStrLn . ("GdkTripleButtonPress: " ++) . show =<< gdkEventButton b
 			print (3 :: Int)
 		GdkEventGdkButtonRelease b -> True <$ do
-			putStrLn ("GdkButtonRelease: " ++ show (gdkEventButton b))
+			putStrLn . ("GdkButtonRelease: " ++) . show =<< gdkEventButton b
 			print (1 :: Int)
 		GdkEventGdkScroll (gdkEventScroll -> s) -> True <$ print s
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
