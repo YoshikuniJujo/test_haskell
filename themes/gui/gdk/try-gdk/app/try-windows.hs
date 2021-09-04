@@ -149,26 +149,23 @@ main = do
 				print =<< gdkWindowGetRootCoords w0 100 200
 				print =<< getFrameExtents w0
 				print =<< gdkWindowGetRootOrigin w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q)
-					-> pure False
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_s)
-					-> True <$ do
+			GdkEventGdkKeyPress e -> do
+				k <- gdkEventKey e
+				print k
+				let	ts = gdkEventKeyTime k
+				case gdkEventKeyKeyval k of
+					GdkKey_q -> pure False
+					GdkKey_e -> True <$ do
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_w)
-					-> True <$ do
+					GdkKey_w -> True <$ do
 						gdkWindowWithdraw w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
 						gdkDisplayFlush dpy
 						threadDelay 1000000
 						gdkWindowShow w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_i)
-					-> True <$ do
+					GdkKey_i -> True <$ do
 						gdkWindowIconify w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
@@ -179,65 +176,43 @@ main = do
 						gdkWindowDeiconify w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_t)
-					-> True <$ do
+					GdkKey_t -> True <$ do
 						gdkWindowStick w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u)
-					-> True <$ do
+					GdkKey_u -> True <$ do
 						gdkWindowUnstick w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_m)
-					-> True <$ do
+					GdkKey_m -> True <$ do
 						gdkWindowMaximize w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_n)
-					-> True <$ do
+					GdkKey_n -> True <$ do
 						gdkWindowUnmaximize w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_f)
-					-> True <$ do
+					GdkKey_f -> True <$ do
 						gdkWindowFullscreen w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_g)
-					-> True <$ do
+					GdkKey_g -> True <$ do
 						gdkWindowUnfullscreen w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_h)
-					-> True <$ fullScreenModeAllMonitor w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_j)
-					-> True <$ fullScreenModeCurrent w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_a)
-					-> True <$ do
+					GdkKey_h -> True <$
+						fullScreenModeAllMonitor w0
+					GdkKey_j -> True <$
+						fullScreenModeCurrent w0
+					GdkKey_a -> True <$ do
 						gdkWindowSetKeepAbove w0 True
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_b)
-					-> True <$ do
+					GdkKey_b -> True <$ do
 						gdkWindowSetKeepBelow w0 True
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKey -> GdkEventKey {
-					gdkEventKeyKeyval = GdkKey_l,
-					gdkEventKeyTime = ts })
-					-> True <$ do
+					GdkKey_l -> True <$ do
 						gdkWindowLower w0
 						gdkDisplayFlush dpy
 						forkIO do
@@ -246,46 +221,32 @@ main = do
 							when (OptFocus `elem` ss) $ gdkWindowFocus w0 ts
 							print ts
 							print . gdkWindowStateList =<< gdkWindowGetState w0
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_o)
-					-> True <$ gdkWindowSetOpacity w0 0.5
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_p)
-					-> True <$ gdkWindowSetOpacity w0 1
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_r)
-					-> True <$ do
+					GdkKey_o -> True <$ do
+						gdkWindowSetOpacity w0 0.5
+					GdkKey_p -> True <$ do
+						gdkWindowSetOpacity w0 1
+					GdkKey_r -> True <$ do
 						gdkWindowSetTransientFor w1 w0
 						gdkWindowShow w1
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_d)
-					-> True <$ do
+					GdkKey_d -> True <$ do
 						b <- gdkWindowGetModalHint w1
 						gdkWindowSetModalHint w1 $ not b
 						print =<< gdkWindowGetModalHint w1
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_e)
-					-> True <$ do
+					GdkKey_y -> True <$ do
 						b <- not <$> readIORef skipTaskbar
 						gdkWindowSetSkipTaskbarHint w0 b
 						writeIORef skipTaskbar b
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_v)
-					-> True <$ do
+					GdkKey_v -> True <$ do
 						b <- not <$> readIORef skipPager
 						gdkWindowSetSkipPagerHint w0 b
 						writeIORef skipPager b
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> GdkKey_x)
-					-> True <$ do
+					GdkKey_x -> True <$ do
 						threadDelay 1000000
 						b <- not <$> readIORef urgency
 						gdkWindowSetUrgencyHint w0 b
 						writeIORef urgency b
 						print b
-			GdkEventGdkKeyPress
-				(gdkEventKeyKeyval . gdkEventKey -> c) ->
-					True <$ print c
+					_ -> pure True
 			GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 	when (OptWindowInfo `elem` ss) do

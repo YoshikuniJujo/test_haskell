@@ -41,13 +41,14 @@ main = do
 		GdkEventGdkTripleButtonPress e -> True <$ do
 			putStrLn "TRIPLE"
 			print =<< gdkEventButton e
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-				False <$ gdkWindowDestroy win
-		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
-		GdkEventGdkKeyRelease (gdkEventKey -> e) -> True <$ do
+		GdkEventGdkKeyPress e -> do
+			k <- gdkEventKey e
+			print k
+			pure case gdkEventKeyKeyval k of
+				GdkKey_q -> False; _ -> True
+		GdkEventGdkKeyRelease e -> True <$ do
 			putStrLn "RELEASE"
-			print e
+			print =<< gdkEventKey e
 		GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ do
 			putStrLn "ENTER"
 			print e

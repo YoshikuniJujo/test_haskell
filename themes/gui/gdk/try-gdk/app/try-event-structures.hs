@@ -48,17 +48,17 @@ main = do
 			(putStrLn "MAP" >> (print =<< gdkEventAny e))
 		GdkEventGdkUnmap e -> True <$
 			(putStrLn "UNMAP" >> (print =<< gdkEventAny e))
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-			pure False
-		GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ do
+		GdkEventGdkKeyPress e -> do
 			putStrLn "KEY PRESS"
-			print e
-			print . gdkModifierTypeSingleBitList $ gdkEventKeyState e
-		GdkEventGdkKeyRelease (gdkEventKey -> e) -> True <$ do
+			k <- gdkEventKey e
+			print k
+			print . gdkModifierTypeSingleBitList $ gdkEventKeyState k
+			pure case gdkEventKeyKeyval k of
+				GdkKey_q -> False; _ -> True
+		GdkEventGdkKeyRelease e -> True <$ do
 			putStrLn "KEY RELEASE"
-			print e
-			print . gdkModifierTypeSingleBitList $ gdkEventKeyState e
+			print =<< gdkEventKey e
+			print . gdkModifierTypeSingleBitList . gdkEventKeyState =<< gdkEventKey e
 		GdkEventGdkButtonPress e_ -> True <$ do
 			e <- gdkEventButton e_
 			putStrLn "BUTTON PRESS"

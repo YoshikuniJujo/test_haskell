@@ -36,38 +36,24 @@ main = do
 	gmb <- gdkCursorNewForDisplay dpy GdkGumby
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-			pure False
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_s) ->
-			True <$ (print =<< gdkSeatGrabSimple st win)
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_o) -> True <$
-			(print =<< gdkSeatGrab st win
-				GdkSeatCapabilityAll
-				True Nothing Nothing noGdkSeatGrabPrepare)
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_c) -> True <$
-			(print =<< gdkSeatGrab st win
-				GdkSeatCapabilityAll
-				False (Just gmb) Nothing noGdkSeatGrabPrepare)
-		e@(GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_e)) -> True <$
-			(print =<< gdkSeatGrab st win
-				GdkSeatCapabilityAll
-				False Nothing (Just e) noGdkSeatGrabPrepare)
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_p) -> True
-			<$ (print =<< gdkSeatGrab st win
-				GdkSeatCapabilityAll
-				False Nothing Nothing (Just (fun, 123)))
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_u) ->
-			True <$ gdkSeatUngrab st
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_h) -> True
-			<$ gdkWindowHide win
+		e_@(GdkEventGdkKeyPress e) -> gdkEventKey e >>= \k -> case gdkEventKeyKeyval k of
+			GdkKey_q -> pure False
+			GdkKey_s -> True <$ (print =<< gdkSeatGrabSimple st win)
+			GdkKey_o -> True <$ (print =<< gdkSeatGrab st win
+						GdkSeatCapabilityAll
+						True Nothing Nothing noGdkSeatGrabPrepare)
+			GdkKey_c -> True <$ (print =<< gdkSeatGrab st win
+						GdkSeatCapabilityAll
+						False (Just gmb) Nothing noGdkSeatGrabPrepare)
+			GdkKey_e -> True <$ (print =<< gdkSeatGrab st win
+						GdkSeatCapabilityAll
+						False Nothing (Just e_) noGdkSeatGrabPrepare)
+			GdkKey_p -> True <$ (print =<< gdkSeatGrab st win
+						GdkSeatCapabilityAll
+						False Nothing Nothing (Just (fun, 123)))
+			GdkKey_u -> True <$ gdkSeatUngrab st
+			GdkKey_h -> True <$ gdkWindowHide win
+			_ -> True <$ print k
 		GdkEventGdkAny e_ -> True <$ do
 			e <- gdkEventAny e_
 			print e

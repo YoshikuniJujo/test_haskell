@@ -24,9 +24,10 @@ main = do
 	gdkWindowSetTitle w "あいうえお"
 	gdkWindowShow w
 	mainLoop \case
-		GdkEventGdkKeyPress k -> case gdkEventKey k of
-			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
-			_ -> pure True
+		GdkEventGdkKeyPress e -> do
+			k <- gdkEventKey e
+			case gdkEventKeyKeyval k of
+				GdkKey_q -> pure False; _ -> pure True
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
 			let	d = gdkEventMotionDevice m

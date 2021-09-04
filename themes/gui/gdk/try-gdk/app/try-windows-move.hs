@@ -31,11 +31,12 @@ main = do
 	gdkWindowShow win
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) -> pure False
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> c) -> True <$ do
-				let	(dx, dy, dw, dh) = case c of
+		GdkEventGdkKeyPress e -> do
+			k <- gdkEventKey e
+			case gdkEventKeyKeyval k of
+				GdkKey_q -> pure False
+				c -> True <$ do
+					let (dx, dy, dw, dh) = case c of
 						GdkKey_h -> (- delta, 0, 0, 0)
 						GdkKey_j -> (0, delta, 0, 0)
 						GdkKey_k -> (0, - delta, 0, 0)
@@ -45,14 +46,14 @@ main = do
 						GdkKey_f -> (0, 0, 0, delta)
 						GdkKey_g -> (0, 0, delta, 0)
 						_ -> (0, 0, 0, 0)
-				(x, y) <- gdkWindowGetRootOrigin win
-				w <- gdkWindowGetWidth win
-				h <- gdkWindowGetHeight win
-				if (OptMoveResize `elem` ss)
-				then gdkWindowMoveResize win
-					(x + dx) (y + dy) (w + dw) (h + dh)
-				else do	gdkWindowMove win (x + dx) (y + dy)
-					gdkWindowResize win (w + dw) (h + dh)
+					(x, y) <- gdkWindowGetRootOrigin win
+					w <- gdkWindowGetWidth win
+					h <- gdkWindowGetHeight win
+					if (OptMoveResize `elem` ss)
+					then gdkWindowMoveResize win
+						(x + dx) (y + dy) (w + dw) (h + dh)
+					else do	gdkWindowMove win (x + dx) (y + dy)
+						gdkWindowResize win (w + dw) (h + dh)
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 data Setting = OptDelta CInt | OptMoveResize deriving (Show, Eq)

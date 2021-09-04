@@ -67,15 +67,14 @@ main = do
 	print =<< gdkDisplayGetDefaultCursorSize dd
 	mainLoopDisplay dd \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkKeyPress k_ -> do
-			case gdkEventKey k_ of
-				GdkEventKey { gdkEventKeyKeyval = GdkKey_q } ->
-					pure False
-				GdkEventKey { gdkEventKeyKeyval = GdkKey_g } ->
-					True <$ gdkSeatGrabSimple st w
-				GdkEventKey { gdkEventKeyKeyval = GdkKey_u } ->
-					True <$ gdkSeatUngrab st
-				k -> True <$ print k
+		GdkEventGdkKeyPress k_ -> gdkEventKey k_ >>= \case
+			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } ->
+				pure False
+			GdkEventKey { gdkEventKeyKeyval = GdkKey_g } ->
+				True <$ gdkSeatGrabSimple st w
+			GdkEventKey { gdkEventKeyKeyval = GdkKey_u } ->
+				True <$ gdkSeatUngrab st
+			k -> True <$ print k
 		e -> True <$ do
 			print e
 			print =<< gdkDisplayDeviceIsGrabbed dd ptr

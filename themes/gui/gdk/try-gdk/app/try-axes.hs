@@ -58,7 +58,11 @@ main = do
 		gdkDisplayFlush dpy
 		mainLoop \case
 			GdkEventGdkDelete _d -> pure False
-			GdkEventGdkKeyPress (gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) -> pure False
+			GdkEventGdkKeyPress e -> do
+				k <- gdkEventKey e
+				print k
+				pure case gdkEventKeyKeyval k of
+					GdkKey_q -> False; _ -> True
 			GdkEventGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
 				printAxisValues (gdkEventMotionDevice m) (gdkEventMotionAxes m)
 				printAxisValues (fromJust $ gdkEventMotionSourceDevice m) (gdkEventMotionAxes m)

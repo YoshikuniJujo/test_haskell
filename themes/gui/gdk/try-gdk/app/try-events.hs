@@ -43,9 +43,10 @@ processEvent = \case
 	GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
 	GdkEventGdkMap e -> True <$ (print =<< gdkEventAny e)
 	GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) -> True <$ print e
-	GdkEventGdkKeyPress (gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-		pure False
-	GdkEventGdkKeyPress (gdkEventKey -> e) -> True <$ print e
+	GdkEventGdkKeyPress e_ -> do
+		e <- gdkEventKey e_
+		print e
+		pure case gdkEventKeyKeyval e of GdkKey_q -> False; _ -> True
 	GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()

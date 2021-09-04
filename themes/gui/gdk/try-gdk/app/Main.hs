@@ -254,8 +254,8 @@ checkEventSealed opacity pos size d st = \case
 		putStrLn $ "GDK_DELETE: " ++ show dl
 		pure False
 	GdkEventGdkKeyPress k_ -> do
-		let	k = gdkEventKey k_
-			w = gdkEventKeyWindow k
+		k <- gdkEventKey k_
+		let	w = gdkEventKeyWindow k
 			kv = gdkEventKeyKeyval k
 			ts = gdkEventKeyTime k
 		putStrLn $ "GDK_KEY_PRESS: " ++ show k ++ ": " ++ show kv

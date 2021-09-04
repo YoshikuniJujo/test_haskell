@@ -51,7 +51,9 @@ main = do
 				cr <- gdkDrawingContextGetCairoContext cxt
 				cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
 				cairoPaint cr
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-			pure False
+		GdkEventGdkKeyPress e -> do
+			print e
+			k <- gdkEventKey e
+			case gdkEventKeyKeyval k of
+				GdkKey_q -> pure False; _ -> pure True
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)

@@ -59,7 +59,7 @@ main = do
 checkEvent :: GdkEvent s -> IO Bool
 checkEvent = \case
 	GdkEventGdkKeyPress k -> do
-		let	kv = gdkEventKeyKeyval $ gdkEventKey k
+		kv <- gdkEventKeyKeyval <$> gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> True <$ print v
 	GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ putStrLn ("ENTER: " ++ show e)

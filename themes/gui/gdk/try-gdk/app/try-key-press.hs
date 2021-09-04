@@ -26,7 +26,8 @@ main = do
 	doWhile_ do
 		threadDelay 100000
 		doWhile $ gdkWithEvent \case
-			Just (GdkEventGdkKeyPress (gdkEventKey -> k)) -> do
+			Just (GdkEventGdkKeyPress e) -> do
+				k <- gdkEventKey e
 				print $ gdkEventKeyHardwareKeycode k
 				print $ gdkEventKeyKeyval k
 				pure case k of

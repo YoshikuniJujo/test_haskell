@@ -22,7 +22,7 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k -> do
-			let	kv = gdkEventKeyKeyval $ gdkEventKey k
+			kv <- gdkEventKeyKeyval <$> gdkEventKey k
 			print k
 			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
 		e -> True <$ print e

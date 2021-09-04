@@ -68,9 +68,11 @@ main = do
 			b <- gdkEventButton b_
 			print b
 			gdkWindowFocus w $ gdkEventButtonTime b
-		GdkEventGdkKeyPress
-			(gdkEventKeyKeyval . gdkEventKey -> GdkKey_q) ->
-				pure False
+		GdkEventGdkKeyPress e_ -> do
+			e <- gdkEventKey e_
+			print e
+			pure case gdkEventKeyKeyval e of
+				GdkKey_q -> False; _ -> True
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 data Visual = System | Rgba deriving (Show, Read, Eq)
