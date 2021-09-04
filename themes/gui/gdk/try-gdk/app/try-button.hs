@@ -41,7 +41,7 @@ main = do
 		GdkEventGdkButtonRelease b -> True <$ do
 			putStrLn . ("GdkButtonRelease: " ++) . show =<< gdkEventButton b
 			print (1 :: Int)
-		GdkEventGdkScroll (gdkEventScroll -> s) -> True <$ print s
+		GdkEventGdkScroll s -> True <$ (print =<< gdkEventScroll s)
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 getClickCount :: GdkEvent s -> Maybe Int

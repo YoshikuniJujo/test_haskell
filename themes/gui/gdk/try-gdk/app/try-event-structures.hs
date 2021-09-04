@@ -73,8 +73,8 @@ main = do
 			(putStrLn "DOUBLE BUTTON PRESS" >> (print =<< gdkEventButton e))
 		GdkEventGdkTripleButtonPress e -> True <$
 			(putStrLn "TRIPLE BUTTON PRESS" >> (print =<< gdkEventButton e))
-		GdkEventGdkScroll (gdkEventScroll -> e) -> True <$
-			(putStrLn "SCROLL" >> print e)
+		GdkEventGdkScroll e -> True <$
+			(putStrLn "SCROLL" >> (print =<< gdkEventScroll e))
 		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ do
 			putStrLn "MOTION NOTIFY"
 			print e
