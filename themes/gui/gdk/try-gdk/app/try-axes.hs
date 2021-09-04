@@ -63,7 +63,8 @@ main = do
 				print k
 				pure case gdkEventKeyKeyval k of
 					GdkKey_q -> False; _ -> True
-			GdkEventGdkMotionNotify (gdkEventMotion -> m) -> True <$ do
+			GdkEventGdkMotionNotify e -> True <$ do
+				m <- gdkEventMotion e
 				printAxisValues (gdkEventMotionDevice m) (gdkEventMotionAxes m)
 				printAxisValues (fromJust $ gdkEventMotionSourceDevice m) (gdkEventMotionAxes m)
 				printAxisValuesFromStr (gdkEventMotionDevice m) (gdkEventMotionAxes m)

@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-gdk3
-  commit: f167181ddc8aacc00f48d97594a34da50d923400
+  commit: d96ab6e8f4ed2015e8b342ece45bac56d9dc9f0f
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
 - git: https://github.com/YoshikuniJujo/cairo-image

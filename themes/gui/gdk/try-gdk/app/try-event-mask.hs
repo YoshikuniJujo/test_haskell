@@ -32,7 +32,7 @@ main = do
 		GdkEventGdkNothing e -> True <$ (print =<< gdkEventAny e)
 		GdkEventGdkDelete e -> False <$ ((print =<< gdkEventAny e) >> gdkWindowDestroy win)
 		GdkEventGdkDestroy e -> False <$ (print =<< gdkEventAny e)
-		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ print e
+		GdkEventGdkMotionNotify e -> True <$ (print =<< gdkEventMotion e)
 		GdkEventGdkButtonPress e -> True <$ (print =<< gdkEventButton e)
 		GdkEventGdkButtonRelease e -> True <$ (print =<< gdkEventButton e)
 		GdkEventGdkDoubleButtonPress e -> True <$ do

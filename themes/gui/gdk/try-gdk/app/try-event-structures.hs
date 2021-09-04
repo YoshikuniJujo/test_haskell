@@ -75,7 +75,8 @@ main = do
 			(putStrLn "TRIPLE BUTTON PRESS" >> (print =<< gdkEventButton e))
 		GdkEventGdkScroll e -> True <$
 			(putStrLn "SCROLL" >> (print =<< gdkEventScroll e))
-		GdkEventGdkMotionNotify (gdkEventMotion -> e) -> True <$ do
+		GdkEventGdkMotionNotify e_ -> True <$ do
+			e <- gdkEventMotion e_
 			putStrLn "MOTION NOTIFY"
 			print e
 			print . gdkModifierTypeSingleBitList

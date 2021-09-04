@@ -54,7 +54,7 @@ main = do
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkMotionNotify m -> True <$ do
 			putStr "GDK_MOTION_NOTIFY: "
-			print $ gdkEventMotionPos m
+			print =<< gdkEventMotionPos m
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval <$> gdkEventKey k
 			when (kv == GdkKeySym (fromIntegral $ ord 'c'))
@@ -99,6 +99,7 @@ drawCursor = do
 	cairoStroke cr
 	pure s
 
-gdkEventMotionPos :: Sealed s GdkEventMotionRaw -> (CDouble, CDouble)
-gdkEventMotionPos m_ = (gdkEventMotionX m, gdkEventMotionY m)
-	where m = gdkEventMotion m_
+gdkEventMotionPos :: Sealed s GdkEventMotionRaw -> IO (CDouble, CDouble)
+gdkEventMotionPos m_ = do
+	m <- gdkEventMotion m_
+	pure (gdkEventMotionX m, gdkEventMotionY m)

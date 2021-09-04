@@ -10,11 +10,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-gdk3
     pantry-tree:
       size: 4110
-      sha256: de0049d2edf72a68f6aba4cbef4e55fb88d21f31e153312de1db657625f37a7b
-    commit: f167181ddc8aacc00f48d97594a34da50d923400
+      sha256: 622aafc24e96d5888dc705a1b7136d5b0dfa88ee6c39667bf623933c2158686f
+    commit: d96ab6e8f4ed2015e8b342ece45bac56d9dc9f0f
   original:
     git: https://github.com/YoshikuniJujo/simple-gdk3
-    commit: f167181ddc8aacc00f48d97594a34da50d923400
+    commit: d96ab6e8f4ed2015e8b342ece45bac56d9dc9f0f
 - completed:
     name: simple-cairo
     version: 0.1.0.0
