@@ -61,16 +61,18 @@ checkEvent = \case
 	GdkEventGdkKeyPress k -> do
 		kv <- gdkEventKeyKeyval <$> gdkEventKey k
 		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
-	GdkEventGdkVisibilityNotify (gdkEventVisibility -> v) -> True <$ print v
-	GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ putStrLn ("ENTER: " ++ show e)
-	GdkEventGdkLeaveNotify (gdkEventCrossing -> l) -> True <$ putStrLn ("LEAVE: " ++ show l)
-	GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ print f
-	GdkEventGdkConfigure (gdkEventConfigure -> c) ->
+	GdkEventGdkVisibilityNotify v -> True <$ (print =<< gdkEventVisibility v)
+	GdkEventGdkEnterNotify e -> True <$ (putStrLn . ("ENTER: " ++) . show =<< gdkEventCrossing e)
+	GdkEventGdkLeaveNotify l -> True <$ (putStrLn . ("LEAVE: " ++) . show =<< gdkEventCrossing l)
+	GdkEventGdkFocusChange f -> True <$ (print =<< gdkEventFocus f)
+	GdkEventGdkConfigure e -> do
+		c <- gdkEventConfigure e
 		True <$ (print c >> drawRedLine (gdkEventConfigureWindow c))
 	GdkEventGdkMap m -> do
 		putStrLn $ "GDK_MAP: " ++ show m
 		pure True
-	GdkEventGdkWindowState (gdkEventWindowState -> s) -> True <$ do
+	GdkEventGdkWindowState e -> True <$ do
+		s <- gdkEventWindowState e
 		print s
 		print . gdkWindowStateList $ gdkEventWindowStateChangedMask s
 		print . gdkWindowStateList $ gdkEventWindowStateNewWindowState s

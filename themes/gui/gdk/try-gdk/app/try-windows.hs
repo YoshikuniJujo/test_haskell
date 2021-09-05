@@ -127,22 +127,22 @@ main = do
 		gdkWindowShow w0
 		mainLoop \case
 			GdkEventGdkDelete _d -> pure False
-			GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ do
-				print f
+			GdkEventGdkFocusChange f -> True <$ do
+				print =<< gdkEventFocus f
 				r <- gdkWindowGetVisibleRegion w0
 				gdkWindowWithDrawFrame w0 r \dc -> do
 					cr <- gdkDrawingContextGetCairoContext dc
 					cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
 					cairoPaint cr
-			GdkEventGdkWindowState (gdkEventWindowState -> s) -> True <$ do
-				print s
+			GdkEventGdkWindowState e -> True <$ do
+				s <- gdkEventWindowState e
 				print . gdkWindowStateList
 					$ gdkEventWindowStateChangedMask s
 				print . gdkWindowStateList
 					$ gdkEventWindowStateNewWindowState s
 				print . gdkWindowStateList=<< gdkWindowGetState w0
-			GdkEventGdkConfigure (gdkEventConfigure -> c) -> True <$ do
-				print c
+			GdkEventGdkConfigure e -> True <$ do
+				print =<< gdkEventConfigure e
 				print =<< gdkWindowGetGeometry w0
 				print =<< getPositionAndSize w0
 				print =<< gdkWindowGetOrigin w0

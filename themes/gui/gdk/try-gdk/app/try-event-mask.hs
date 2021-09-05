@@ -49,19 +49,20 @@ main = do
 		GdkEventGdkKeyRelease e -> True <$ do
 			putStrLn "RELEASE"
 			print =<< gdkEventKey e
-		GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ do
+		GdkEventGdkEnterNotify e -> True <$ do
 			putStrLn "ENTER"
-			print e
-		GdkEventGdkLeaveNotify (gdkEventCrossing -> e) -> True <$ do
+			print =<< gdkEventCrossing e
+		GdkEventGdkLeaveNotify e -> True <$ do
 			putStrLn "LEAVE"
-			print e
-		GdkEventGdkFocusChange (gdkEventFocus -> e) -> True <$ print e
-		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
-		GdkEventGdkPropertyNotify (gdkEventProperty -> e) -> True <$ do
+			print =<< gdkEventCrossing e
+		GdkEventGdkFocusChange e -> True <$ (print =<< gdkEventFocus e)
+		GdkEventGdkConfigure e -> True <$ (print =<< gdkEventConfigure e)
+		GdkEventGdkPropertyNotify e_ -> True <$ do
+			e <- gdkEventProperty e_
 			print e
 			putStrLn =<< gdkAtomName (gdkEventPropertyAtom e)
-		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) ->
-			True <$ print e
+		GdkEventGdkVisibilityNotify e ->
+			True <$ (print =<< gdkEventVisibility e)
 		GdkEventGdkScroll e -> True <$ (print =<< gdkEventScroll e)
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 

@@ -30,7 +30,8 @@ main = do
 	gdkWindowShow win
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ do
+		GdkEventGdkFocusChange e -> True <$ do
+			f <- gdkEventFocus e
 			print f
 			r <- gdkWindowGetVisibleRegion win
 			gdkWindowWithDrawFrame win r \cxt -> do

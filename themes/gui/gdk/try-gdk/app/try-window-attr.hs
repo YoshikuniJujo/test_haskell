@@ -56,9 +56,9 @@ main = do
 	gdkWindowRaise w
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
-		GdkEventGdkConfigure (gdkEventConfigure -> c) -> True <$ print c
-		GdkEventGdkFocusChange (gdkEventFocus -> f) -> True <$ do
-			print f
+		GdkEventGdkConfigure c -> True <$ (print =<< gdkEventConfigure c)
+		GdkEventGdkFocusChange f -> True <$ do
+			print =<< gdkEventFocus f
 			r <- gdkWindowGetVisibleRegion w
 			gdkWindowWithDrawFrame w r \dc -> do
 				cr <- gdkDrawingContextGetCairoContext dc

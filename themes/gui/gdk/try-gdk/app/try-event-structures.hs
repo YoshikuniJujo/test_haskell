@@ -85,20 +85,22 @@ main = do
 			printDeviceAxes (gdkEventMotionDevice e) axes
 			maybe (pure ()) (`printDeviceAxes` axes)
 				$ gdkEventMotionSourceDevice e
-		GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) -> True <$
-			(putStrLn "VISIBILITY NOTIFY" >> print e)
-		GdkEventGdkEnterNotify (gdkEventCrossing -> e) -> True <$ do
+		GdkEventGdkVisibilityNotify e -> True <$
+			(putStrLn "VISIBILITY NOTIFY" >> (print =<< gdkEventVisibility e))
+		GdkEventGdkEnterNotify e -> True <$ do
 			putStrLn "ENTER NOTIFY"
-			print e
-		GdkEventGdkLeaveNotify (gdkEventCrossing -> e) -> True <$ do
+			print =<< gdkEventCrossing e
+		GdkEventGdkLeaveNotify e -> True <$ do
 			putStrLn "LEAVE NOTIFY"
-			print e
-		GdkEventGdkFocusChange (gdkEventFocus -> e) -> True <$ print e
-		GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
-		GdkEventGdkPropertyNotify (gdkEventProperty -> e) -> True <$ do
+			print =<< gdkEventCrossing e
+		GdkEventGdkFocusChange e -> True <$ (print =<< gdkEventFocus e)
+		GdkEventGdkConfigure e -> True <$ (print =<< gdkEventConfigure e)
+		GdkEventGdkPropertyNotify e_ -> True <$ do
+			e <- gdkEventProperty e_
 			print e
 			putStrLn =<< gdkAtomName (gdkEventPropertyAtom e)
-		GdkEventGdkWindowState (gdkEventWindowState -> e) -> True <$ do
+		GdkEventGdkWindowState e_ -> True <$ do
+			e <- gdkEventWindowState e_
 			print e
 			print . gdkWindowStateList
 				$ gdkEventWindowStateChangedMask e

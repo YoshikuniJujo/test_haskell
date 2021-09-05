@@ -34,15 +34,16 @@ main = do
 processEvent :: GdkEvent s -> IO Bool
 processEvent = \case
 	GdkEventGdkDelete e -> False <$ (print =<< gdkEventAny e)
-	GdkEventGdkWindowState (gdkEventWindowState -> e) -> True <$ do
+	GdkEventGdkWindowState e_ -> True <$ do
+		e <- gdkEventWindowState e_
 		print e
 		print . gdkWindowStateList
 			$ gdkEventWindowStateChangedMask e
 		print . gdkWindowStateList
 			$ gdkEventWindowStateNewWindowState e
-	GdkEventGdkConfigure (gdkEventConfigure -> e) -> True <$ print e
+	GdkEventGdkConfigure e -> True <$ (print =<< gdkEventConfigure e)
 	GdkEventGdkMap e -> True <$ (print =<< gdkEventAny e)
-	GdkEventGdkVisibilityNotify (gdkEventVisibility -> e) -> True <$ print e
+	GdkEventGdkVisibilityNotify e -> True <$ (print =<< gdkEventVisibility e)
 	GdkEventGdkKeyPress e_ -> do
 		e <- gdkEventKey e_
 		print e
