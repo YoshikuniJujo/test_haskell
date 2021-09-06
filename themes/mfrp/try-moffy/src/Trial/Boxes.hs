@@ -7,7 +7,9 @@
 
 module Trial.Boxes (
 	-- * Sig boxes
-	boxes ) where
+	boxes,
+	-- * OTHERS
+	doubler ) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
