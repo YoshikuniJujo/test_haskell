@@ -31,4 +31,4 @@ main = do
 		(retrySt $ liftHandle' (handleGdk wid i2w w2i) `mergeSt` handleDefaultWindow) do
 		w <- adjust windowNew
 		adjust $ storeDefaultWindow w
-		adjust sameClick
+		adjust leftClick
