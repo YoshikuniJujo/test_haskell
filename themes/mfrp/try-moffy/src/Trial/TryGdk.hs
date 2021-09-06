@@ -12,11 +12,15 @@ import Data.Type.Set
 import Data.OneOrMore
 import qualified Data.OneOrMoreApp as App
 import Data.Map
+import Data.Time
+import Data.Time.Clock.TAI
 
 import Control.Moffy
+import Control.Moffy.Event.Time
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle as H
+import Control.Moffy.Handle.Time
 
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
@@ -25,6 +29,12 @@ import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 
 import Debug.Trace
+
+handleGdk' ::
+	TVar WindowId ->
+	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
+	HandleIo' ((DiffTime, ()), (Mode, AbsoluteTime)) (Mode, AbsoluteTime) IO (WindowNew :- MouseDown :- TimeEv)
+handleGdk' wid i2w w2i = handleTimeEvPlus . pushInput . const . liftHandle' $ handleGdk wid i2w w2i
 
 handleGdk ::
 	TVar WindowId ->

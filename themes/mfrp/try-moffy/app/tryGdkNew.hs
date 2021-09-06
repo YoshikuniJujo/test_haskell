@@ -8,6 +8,7 @@ module Main where
 import Control.Concurrent.STM (atomically, newTVar)
 import Control.Moffy
 import Control.Moffy.Run
+import Control.Moffy.Event.Time
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse.DefaultWindow
