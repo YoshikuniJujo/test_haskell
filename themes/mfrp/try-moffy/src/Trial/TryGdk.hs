@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds, TypeOperators #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,6 +9,7 @@ module Trial.TryGdk where
 import Foreign.C.Types
 import Control.Concurrent
 import Control.Concurrent.STM
+import Data.Type.Flip
 import Data.Type.Set
 import Data.OneOrMore
 import qualified Data.OneOrMoreApp as App
@@ -24,6 +26,7 @@ import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle as H
 import Control.Moffy.Handle.Time
 import Control.Moffy.Handle.DefaultWindow
+import Control.Moffy.Run
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
@@ -31,6 +34,25 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+
+tryGdk :: Show r => (GdkWindow -> a -> IO ()) -> Sig s TryGdkEv a r -> IO ()
+tryGdk vw sg = do
+	(wid, i2w, w2i, t) <- initialize
+	(print =<<) . ($ initTryGdkState t)
+		$ interpretSt @_ @TryGdkEv (handle wid i2w w2i)
+			(viewGdk vw i2w)
+			(sigGdk sg)
+
+viewGdk :: (GdkWindow -> a -> IO ()) ->
+	TVar (Map WindowId GdkWindow) -> (WindowId, a) -> IO ()
+viewGdk vw i2w (i, x) = do
+	w <- (! i) <$> atomically (readTVar i2w)
+	vw w x
+
+sigGdk :: Sig s TryGdkEv a r -> Sig s TryGdkEv (WindowId, a) r
+sigGdk sg = do
+	w <- adjustSig defaultWindowNew
+	(w ,) <$%> sg
 
 type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- TimeEv
 

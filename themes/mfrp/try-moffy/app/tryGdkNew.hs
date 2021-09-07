@@ -5,13 +5,8 @@
 
 module Main where
 
-import Control.Concurrent.STM (atomically, TVar, readTVar)
 import Control.Moffy
-import Control.Moffy.Run
-import Control.Moffy.Event.Window
 import Control.Moffy.Viewable.Shape
-import Data.Type.Flip
-import Data.Map (Map, (!))
 import Data.Maybe
 import Data.Color
 import Trial.TryGdk
@@ -24,16 +19,10 @@ import Graphics.Gdk.GdkDrawingContext
 import Trial.Boxes
 
 main :: IO ()
-main = do
-	(wid, i2w, w2i, t) <- initialize
-	(print =<<) . ($ initTryGdkState t) $ interpretSt @_ @TryGdkEv
-		(handle wid i2w w2i) (uncurry $ showColor i2w) do
-		w <- adjustSig defaultWindowNew
-		(w ,) <$%> adjustSig cycleColor
+main = tryGdk showColor $ adjustSig cycleColor
 
-showColor :: TVar (Map WindowId GdkWindow) -> WindowId -> BColor -> IO ()
-showColor i2w i bc = do
-	w <- (! i) <$> atomically (readTVar i2w)
+showColor :: GdkWindow -> BColor -> IO ()
+showColor w bc = do
 	r <- gdkWindowGetVisibleRegion w
 	gdkWindowWithDrawFrame w r \ctx -> do
 		cr <- gdkDrawingContextGetCairoContext ctx
