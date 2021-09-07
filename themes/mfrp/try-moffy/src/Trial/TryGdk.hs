@@ -28,8 +28,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 
-import Debug.Trace
-
 handleGdk' :: TimeState s =>
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) -> (DiffTime, ()) ->
@@ -63,8 +61,7 @@ handleMouseDown w2i (unSingleton -> MouseDownReq) = do
 	getMouseDown w2i
 
 eventButtonToMouseDown :: Map GdkWindow WindowId -> GdkEventButton -> Occurred MouseDown
-eventButtonToMouseDown w2i e =
-	trace (show w ++ " " ++ show w2i ++ " " ++ show b) $ OccMouseDown (w2i ! w) $ numToButton b
+eventButtonToMouseDown w2i e = OccMouseDown (w2i ! w) $ numToButton b
 	where
 	w = gdkEventButtonWindow e
 	b = gdkEventButtonButton e

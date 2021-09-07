@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3f2ac05702d93743040dd26d57b267f1c2b0d85fc4f693d8bcc271cd38239db6
+-- hash: bc767aada26f496e21f9275447151836d6e022c5ca4cb745f5b15c56ee3fb091
 
 name:           try-moffy
 version:        0.1.0.0
@@ -161,6 +161,7 @@ library
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -197,6 +198,7 @@ executable draw
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -234,6 +236,7 @@ executable followbox
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -271,6 +274,7 @@ executable followboxGtk
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -307,6 +311,7 @@ executable try-moffy-exe
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -344,6 +349,7 @@ executable tryCairo
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -381,6 +387,7 @@ executable tryCairoText
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -418,6 +425,7 @@ executable tryCairoTextExtents
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -455,6 +463,7 @@ executable tryConfigure
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -492,6 +501,7 @@ executable tryCount
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -529,6 +539,7 @@ executable tryDefaultWindow
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -566,6 +577,7 @@ executable tryDeleteEvent
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -603,6 +615,7 @@ executable tryFillPolygon
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -640,6 +653,7 @@ executable tryGdk
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -677,6 +691,7 @@ executable tryGdkNew
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -714,6 +729,7 @@ executable tryGtk
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -751,6 +767,7 @@ executable tryKey
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -788,6 +805,7 @@ executable tryMultiWindow
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -825,6 +843,7 @@ executable tryPango
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -862,6 +881,7 @@ executable tryPngCursor
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -899,6 +919,7 @@ executable tryPngCursorEvent
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -936,6 +957,7 @@ executable tryScroll
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
@@ -973,6 +995,7 @@ test-suite try-moffy-test
     , process
     , random
     , serialise
+    , simple-cairo
     , simple-field
     , simple-gdk3
     , stm
