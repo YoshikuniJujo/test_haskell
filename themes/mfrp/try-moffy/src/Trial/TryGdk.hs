@@ -11,22 +11,70 @@ import Control.Concurrent.STM
 import Data.Type.Set
 import Data.OneOrMore
 import qualified Data.OneOrMoreApp as App
-import Data.Map
+import Data.Map (Map, empty, insert, (!))
 import Data.Time
 import Data.Time.Clock.TAI
+import Data.Time.Clock.System
 
 import Control.Moffy
 import Control.Moffy.Event.Time
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Mouse
 import Control.Moffy.Handle as H
 import Control.Moffy.Handle.Time
+import Control.Moffy.Handle.DefaultWindow
 
+import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+
+type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- TimeEv
+
+initialize :: IO (
+	TVar WindowId,
+	TVar (Map WindowId GdkWindow), TVar (Map GdkWindow WindowId),
+	AbsoluteTime )
+initialize = do
+	gdkDisplayOpen ""
+	wid <- atomically . newTVar $ WindowId 0
+	i2w <- atomically $ newTVar empty
+	w2i <- atomically $ newTVar empty
+	t <- getTAITime
+	pure (wid, i2w, w2i, t)
+
+defaultWindowNew :: Sig s (WindowNew :- StoreDefaultWindow :- 'Nil) a WindowId
+defaultWindowNew = do
+	w <- waitFor $ adjust windowNew
+	w <$ waitFor (adjust $ storeDefaultWindow w)
+
+data TryGdkState = TryGdkState {
+	windowId :: Maybe WindowId,
+	timeMode :: Mode,
+	lastTime :: AbsoluteTime } deriving Show
+
+instance DefaultWindowState TryGdkState where
+	getDefaultWindow = windowId
+	putDefaultWindow s wid = s { windowId = Just wid }
+	
+instance TimeState TryGdkState where
+	getMode = timeMode
+	putMode s m = s { timeMode = m }
+	getLatestTime = lastTime
+	putLatestTime s t = s { lastTime = t }
+
+initTryGdkState :: AbsoluteTime -> TryGdkState
+initTryGdkState = TryGdkState Nothing InitialMode
+
+getTAITime :: IO AbsoluteTime
+getTAITime = systemToTAITime <$> getSystemTime
+
+handle :: TVar WindowId -> TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
+	HandleSt TryGdkState IO (WindowNew :- DefaultWindowEv :+: MouseDown :- TimeEv)
+handle wid i2w w2i = retrySt $ handleGdk' wid i2w w2i (0.1, ()) `mergeSt` handleDefaultWindow
 
 handleGdk' :: TimeState s =>
 	TVar WindowId ->
