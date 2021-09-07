@@ -54,7 +54,7 @@ sigGdk sg = do
 	w <- adjustSig defaultWindowNew
 	(w ,) <$%> sg
 
-type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- TimeEv
+type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- MouseMove :- TimeEv
 
 initialize :: IO (
 	TVar WindowId,
@@ -95,19 +95,19 @@ getTAITime :: IO AbsoluteTime
 getTAITime = systemToTAITime <$> getSystemTime
 
 handle :: TVar WindowId -> TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
-	HandleSt TryGdkState IO (WindowNew :- DefaultWindowEv :+: MouseDown :- TimeEv)
+	HandleSt TryGdkState IO TryGdkEv
 handle wid i2w w2i = retrySt $ handleGdk' wid i2w w2i (0.1, ()) `mergeSt` handleDefaultWindow
 
 handleGdk' :: TimeState s =>
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) -> (DiffTime, ()) ->
-	HandleSt' s IO (WindowNew :- MouseDown :- TimeEv)
+	HandleSt' s IO (WindowNew :- MouseDown :- MouseMove :- TimeEv)
 handleGdk' wid i2w w2i = popInput . handleTimeEvPlus . pushInput . const . liftHandle' $ handleGdk wid i2w w2i
 
 handleGdk ::
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
-	Handle' IO (WindowNew :- MouseDown :- 'Nil)
+	Handle' IO (WindowNew :- MouseDown :- MouseMove :- 'Nil)
 handleGdk wid i2w w2i rqs = do
 	handleWindowNew wid i2w w2i `H.merge` handleMouseDown w2i $ rqs
 
@@ -126,8 +126,8 @@ handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	pure r
 
 handleMouseDown ::
-	TVar (Map GdkWindow WindowId) -> Handle' IO (Singleton MouseDown)
-handleMouseDown w2i (unSingleton -> MouseDownReq) = do
+	TVar (Map GdkWindow WindowId) -> Handle' IO (MouseDown :- MouseMove :- 'Nil)
+handleMouseDown w2i _ = do
 	getMouseDown w2i
 
 eventButtonToMouseDown :: Map GdkWindow WindowId -> GdkEventButton -> Occurred MouseDown
@@ -136,19 +136,26 @@ eventButtonToMouseDown w2i e = OccMouseDown (w2i ! w) $ numToButton b
 	w = gdkEventButtonWindow e
 	b = gdkEventButtonButton e
 
+eventButtonToMouseMove :: Map GdkWindow WindowId -> GdkEventButton -> Occurred MouseMove
+eventButtonToMouseMove w2i e = OccMouseMove (w2i ! w) (x, y)
+	where
+	w = gdkEventButtonWindow e
+	x = realToFrac $ gdkEventButtonX e
+	y = realToFrac $ gdkEventButtonY e
+
 numToButton :: CUInt -> MouseBtn
 numToButton 1 = ButtonLeft
 numToButton 2 = ButtonMiddle
 numToButton 3 = ButtonRight
 numToButton n = ButtonUnknown $ fromIntegral n
 
-toMouseDown :: Map GdkWindow WindowId -> GdkEvent s -> IO (Maybe (EvOccs (Singleton MouseDown)))
+toMouseDown :: Map GdkWindow WindowId -> GdkEvent s -> IO (Maybe (EvOccs (MouseDown :- MouseMove :- 'Nil)))
 toMouseDown w2i (GdkEventGdkButtonPress e_) = do
 	e <- gdkEventButton e_
-	pure . Just . App.Singleton $ eventButtonToMouseDown w2i e
+	pure . Just $ eventButtonToMouseMove w2i e App.>- App.Singleton (eventButtonToMouseDown w2i e)
 toMouseDown _ _ = pure Nothing
 
-getMouseDown :: TVar (Map GdkWindow WindowId) -> IO (Maybe (EvOccs (Singleton MouseDown)))
+getMouseDown :: TVar (Map GdkWindow WindowId) -> IO (Maybe (EvOccs (MouseDown :- MouseMove :- 'Nil)))
 getMouseDown tw2i = gdkWithEvent \case
 	Just e@(GdkEventGdkAny a_) -> do
 		a <- gdkEventAny a_

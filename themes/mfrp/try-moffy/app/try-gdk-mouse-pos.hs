@@ -2,5 +2,11 @@
 
 module Main where
 
+import Control.Moffy
+import Control.Moffy.Event.Mouse.DefaultWindow
+
+import Trial.TryGdk
+import Trial.Boxes
+
 main :: IO ()
-main = putStrLn "Foo"
+main = tryGdk (const print) $ adjustSig mousePos
