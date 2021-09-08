@@ -15,10 +15,12 @@ import Data.Type.Flip
 import Data.Type.Set
 import Data.OneOrMore
 import qualified Data.OneOrMoreApp as App
+import Data.Maybe
 import Data.Map (Map, empty, insert, (!))
 import Data.Time
 import Data.Time.Clock.TAI
 import Data.Time.Clock.System
+import Data.Color
 
 import Control.Moffy
 import Control.Moffy.Event.Time
@@ -31,6 +33,10 @@ import Control.Moffy.Handle as H
 import Control.Moffy.Handle.Time
 import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Run
+import Control.Moffy.Viewable.Shape
+
+import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Paths
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
@@ -38,6 +44,20 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
+import Graphics.Gdk.GdkDrawingContext
+
+showRect :: GdkWindow -> Rect -> IO ()
+showRect w (Rect (l_, u_) (r_, d_)) = do
+	let (l, u, r, d) = lurd l_ u_ r_ d_
+	rgn <- gdkWindowGetVisibleRegion w
+	gdkWindowWithDrawFrame w rgn \ctx -> do
+		cr <- gdkDrawingContextGetCairoContext ctx
+		cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
+		cairoRectangle cr l u (r - l) (d - u)
+		cairoFill cr
+	where lurd l u r d = (
+		realToFrac $ l `min` r, realToFrac $ u `min` d,
+		realToFrac $ l `max` r, realToFrac $ u `max` d )
 
 tryGdk :: (Show a, Show r) => (GdkWindow -> a -> IO ()) -> Sig s TryGdkEv a r -> IO ()
 tryGdk vw sg = do
