@@ -98,7 +98,7 @@ mouseMove :: WindowId -> React s (Singleton MouseMove) Point
 mouseMove wid0 = maybe (mouseMove wid0) pure =<<
 	await MouseMoveReq \(OccMouseMove wid p) -> bool Nothing (Just p) (wid == wid0)
 
-mousePos :: WindowId -> Sig s (Singleton MouseMove) Point ()
+mousePos :: WindowId -> Sig s (Singleton MouseMove) Point r
 mousePos = repeat . mouseMove
 
 ---------------------------------------------------------------------------

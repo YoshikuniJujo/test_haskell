@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -9,4 +10,4 @@ import Trial.TryGdk
 import Trial.Boxes
 
 main :: IO ()
-main = tryGdk (const print) $ adjustSig mousePos
+main = tryGdk @_ @() (const print) $ adjustSig mousePos

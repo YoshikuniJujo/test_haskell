@@ -43,7 +43,7 @@ leftUp, middleUp, rightUp :: React s (LoadDefaultWindow :- M.MouseUp :- 'Nil) ()
 mouseMove :: React s (LoadDefaultWindow :- M.MouseMove :- 'Nil) M.Point
 mouseMove = adjust . M.mouseMove =<< adjust loadDefaultWindow
 
-mousePos :: Sig s (LoadDefaultWindow :- M.MouseMove :- 'Nil) M.Point ()
+mousePos :: Sig s (LoadDefaultWindow :- M.MouseMove :- 'Nil) M.Point r
 mousePos = repeat mouseMove
 
 mouseScroll :: React s (LoadDefaultWindow :- M.MouseScroll :- 'Nil) (Double, Double)
