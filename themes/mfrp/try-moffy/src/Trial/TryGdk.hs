@@ -120,7 +120,7 @@ getTAITime = systemToTAITime <$> getSystemTime
 
 handle :: TVar WindowId -> TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
 	HandleSt TryGdkState IO TryGdkEv
-handle wid i2w w2i = retrySt $ handleGdk' wid i2w w2i (0.1, ()) `mergeSt` handleDefaultWindow
+handle wid i2w w2i = retrySt $ handleGdk' wid i2w w2i (0.05, ()) `mergeSt` handleDefaultWindow
 
 handleGdk' :: TimeState s =>
 	TVar WindowId ->
@@ -210,4 +210,4 @@ getMouseDown tw2i = gdkWithEvent \case
 	Just e@(GdkEventGdkAny a_) -> do
 		a <- gdkEventAny a_
 		pure Nothing
-	Nothing -> threadDelay 100000 >> pure Nothing
+	Nothing -> threadDelay 50000 >> pure Nothing
