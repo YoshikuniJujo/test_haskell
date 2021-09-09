@@ -25,7 +25,7 @@ main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
 		optColor, optMousePos, optCurRect, optWiggleRect, optPosInside,
-		optFirstPoint, optCompleteRect ] <$> getArgs
+		optFirstPoint, optCompleteRect, optDefineRect ] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
@@ -40,15 +40,16 @@ main = do
 			$ repeat firstPoint
 		[OptCompleteRect] -> tryGdk showRect . adjustSig
 			$ completeRect (300, 200)
+		[OptDefineRect] -> tryGdk showRect $ adjustSig defineRect 
 		_ -> putStrLn "Bad options"
 
 data OptSetting
 	= OptColor | OptMousePos | OptCurRect | OptWiggleRect | OptPosInside
-	| OptFirstPoint | OptCompleteRect
+	| OptFirstPoint | OptCompleteRect | OptDefineRect
 	deriving (Show, Eq)
 
 optColor, optMousePos, optCurRect, optWiggleRect, optPosInside, optFirstPoint,
-	optCompleteRect :: OptDescr OptSetting
+	optCompleteRect, optDefineRect :: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
@@ -63,6 +64,8 @@ optFirstPoint = Option ['f'] ["first-point"] (NoArg OptFirstPoint) "First point"
 
 optCompleteRect =
 	Option [] ["complete-rect"] (NoArg OptCompleteRect) "Complete rect"
+
+optDefineRect = Option ['d'] ["define-rect"] (NoArg OptDefineRect) "Define rect"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do
