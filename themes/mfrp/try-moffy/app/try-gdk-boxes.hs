@@ -24,8 +24,8 @@ import Trial.Paper
 main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
-		optColor, optMousePos, optCurRect, optWiggleRect, optPosInside
-		] <$> getArgs
+		optColor, optMousePos, optCurRect, optWiggleRect, optPosInside,
+		optFirstPoint ] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
@@ -36,23 +36,23 @@ main = do
 		[OptPosInside] -> tryGdk @_ @() (const print) . adjustSig
 			. repeat $ posInside
 				(Rect (300, 200) (600, 400)) mousePos
+		[OptFirstPoint] -> tryGdk @_ @() (const print) . adjustSig
+			$ repeat firstPoint
 		_ -> putStrLn "Bad options"
 
 data OptSetting
-	= OptColor
-	| OptMousePos
-	| OptCurRect
-	| OptWiggleRect
-	| OptPosInside
+	= OptColor | OptMousePos | OptCurRect | OptWiggleRect | OptPosInside
+	| OptFirstPoint
 	deriving (Show, Eq)
 
-optColor, optMousePos, optCurRect, optWiggleRect, optPosInside
+optColor, optMousePos, optCurRect, optWiggleRect, optPosInside, optFirstPoint
 	:: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
 optCurRect = Option ['r'] ["cur-rect"] (NoArg OptCurRect) "Cur rect"
 optWiggleRect = Option ['w'] ["wiggle-rect"] (NoArg OptWiggleRect) "Wiggle rect"
 optPosInside = Option ['p'] ["pos-inside"] (NoArg OptPosInside) "Pos inside"
+optFirstPoint = Option ['f'] ["first-point"] (NoArg OptFirstPoint) "First point"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do
