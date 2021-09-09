@@ -78,7 +78,7 @@ sigGdk sg = do
 	w <- adjustSig defaultWindowNew
 	(w ,) <$%> sg
 
-type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- MouseMove :- TimeEv :+: DeleteEvent :- 'Nil
+type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- MouseUp :- MouseMove :- TimeEv :+: DeleteEvent :- 'Nil
 
 initialize :: IO (
 	TVar WindowId,
@@ -125,13 +125,13 @@ handle wid i2w w2i = retrySt $ handleGdk' wid i2w w2i (0.05, ()) `mergeSt` handl
 handleGdk' :: TimeState s =>
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) -> (DiffTime, ()) ->
-	HandleSt' s IO (WindowNew :- MouseDown :- MouseMove :- TimeEv :+: DeleteEvent :- 'Nil)
+	HandleSt' s IO (WindowNew :- MouseDown :- MouseUp :- MouseMove :- TimeEv :+: DeleteEvent :- 'Nil)
 handleGdk' wid i2w w2i = popInput . handleTimeEvPlus . pushInput . const . liftHandle' $ handleGdk wid i2w w2i
 
 handleGdk ::
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
-	Handle' IO (WindowNew :- MouseDown :- MouseMove :- DeleteEvent :- 'Nil)
+	Handle' IO (WindowNew :- MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil)
 handleGdk wid i2w w2i rqs = do
 	handleWindowNew wid i2w w2i `H.merge` handleMouseDown w2i $ rqs
 
@@ -140,7 +140,9 @@ handleWindowNew ::
 	TVar (Map GdkWindow WindowId) -> Handle' IO (Singleton WindowNew)
 handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	w <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
-		(gdkEventMaskMultiBits [GdkButtonPressMask, GdkButtonMotionMask]) 700 500
+		(gdkEventMaskMultiBits [
+			GdkButtonPressMask, GdkButtonReleaseMask,
+			GdkButtonMotionMask ]) 700 500
 	gdkWindowSetEventCompression w False
 	gdkWindowShow w
 	r <- atomically do
@@ -152,12 +154,18 @@ handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	pure r
 
 handleMouseDown ::
-	TVar (Map GdkWindow WindowId) -> Handle' IO (MouseDown :- MouseMove :- DeleteEvent :- 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil)
 handleMouseDown w2i _ = do
 	getMouseDown w2i
 
 eventButtonToMouseDown :: Map GdkWindow WindowId -> GdkEventButton -> Occurred MouseDown
 eventButtonToMouseDown w2i e = OccMouseDown (w2i ! w) $ numToButton b
+	where
+	w = gdkEventButtonWindow e
+	b = gdkEventButtonButton e
+
+eventButtonToMouseUp :: Map GdkWindow WindowId -> GdkEventButton -> Occurred MouseUp
+eventButtonToMouseUp w2i e = OccMouseUp (w2i ! w) $ numToButton b
 	where
 	w = gdkEventButtonWindow e
 	b = gdkEventButtonButton e
@@ -182,17 +190,22 @@ numToButton 2 = ButtonMiddle
 numToButton 3 = ButtonRight
 numToButton n = ButtonUnknown $ fromIntegral n
 
-toMouseDown :: Map GdkWindow WindowId -> GdkEventButton -> Maybe (EvOccs (MouseDown :- MouseMove :- DeleteEvent :- 'Nil))
+toMouseDown, toMouseUp :: Map GdkWindow WindowId -> GdkEventButton ->
+	Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil))
 toMouseDown w2i e =
 	Just $ App.expand
 		(eventButtonToMouseMove w2i e App.>- App.Singleton (eventButtonToMouseDown w2i e) :: EvOccs (MouseDown :- MouseMove :- 'Nil))
 
-toMouseMove :: Map GdkWindow WindowId -> GdkEventMotion -> Maybe (EvOccs (MouseDown :- MouseMove :- DeleteEvent :- 'Nil))
+toMouseUp w2i e =
+	Just $ App.expand
+		(eventButtonToMouseMove w2i e App.>- App.Singleton (eventButtonToMouseUp w2i e) :: EvOccs (MouseUp :- MouseMove :- 'Nil))
+
+toMouseMove :: Map GdkWindow WindowId -> GdkEventMotion -> Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil))
 toMouseMove w2i e =
 	Just $ App.expand
 		(App.Singleton $ eventMotionToMouseMove w2i e)
 
-getMouseDown :: TVar (Map GdkWindow WindowId) -> IO (Maybe (EvOccs (MouseDown :- MouseMove :- DeleteEvent :- 'Nil)))
+getMouseDown :: TVar (Map GdkWindow WindowId) -> IO (Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil)))
 getMouseDown tw2i = gdkWithEvent \case
 	Just (GdkEventGdkDelete e_) -> do
 		e <- gdkEventAny e_
@@ -203,6 +216,10 @@ getMouseDown tw2i = gdkWithEvent \case
 		e <- gdkEventButton e_
 		w2i <- atomically $ readTVar tw2i
 		pure $ toMouseDown w2i e
+	Just (GdkEventGdkButtonRelease e_) -> do
+		e <- gdkEventButton e_
+		w2i <- atomically $ readTVar tw2i
+		pure $ toMouseUp w2i e
 	Just (GdkEventGdkMotionNotify e_) -> do
 		e <- gdkEventMotion e_
 		w2i <- atomically $ readTVar tw2i
