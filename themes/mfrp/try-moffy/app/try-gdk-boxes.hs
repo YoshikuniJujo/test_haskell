@@ -17,25 +17,29 @@ import Graphics.Gdk.GdkDrawingContext
 
 import Trial.TryGdk
 import Trial.Boxes
+import Trial.Paper
 
 main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
-		optColor, optMousePos ] <$> getArgs
+		optColor, optMousePos, optCurRect ] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
 		[OptMousePos] -> tryGdk @_ @() (const print) $ adjustSig mousePos
+		[OptCurRect] -> tryGdk @_ @() showRect . adjustSig $ curRect (100, 100)
 		_ -> putStrLn "Bad options"
 
 data OptSetting
 	= OptColor
 	| OptMousePos
+	| OptCurRect
 	deriving (Show, Eq)
 
-optColor, optMousePos :: OptDescr OptSetting
+optColor, optMousePos, optCurRect :: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
+optCurRect = Option ['r'] ["cur-rect"] (NoArg OptCurRect) "Cur rect"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do

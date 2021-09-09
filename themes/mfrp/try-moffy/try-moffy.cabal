@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 85ff880ea5d5d720f02464b3eb236afeb94c5a8aac3841c3daa60cb3638d2bdb
+-- hash: a8bd74ff4b25419c380fc944f775777d0fb76637286990bc5e419f1bf0a75fd1
 
 name:           try-moffy
 version:        0.1.0.0
@@ -290,44 +290,6 @@ executable followboxGtk
 
 executable try-gdk-boxes
   main-is: try-gdk-boxes.hs
-  other-modules:
-      Main
-      Paths_try_moffy
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      JuicyPixels
-    , JuicyPixels-extra
-    , X11
-    , X11-xft
-    , aeson
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , exception-hierarchy
-    , extra-data-yj
-    , http-conduit
-    , monads-tf
-    , process
-    , random
-    , serialise
-    , simple-cairo
-    , simple-field
-    , simple-gdk3
-    , stm
-    , template-haskell
-    , text
-    , time
-    , transformers
-    , try-moffy
-    , type-flip
-    , unordered-containers
-    , vector
-  default-language: Haskell2010
-
-executable try-gdk-cur-rect
-  main-is: try-gdk-cur-rect.hs
   other-modules:
       Main
       Paths_try_moffy
