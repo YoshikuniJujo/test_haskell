@@ -1,6 +1,4 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -9,17 +7,29 @@ import Control.Moffy
 import Control.Moffy.Viewable.Shape
 import Data.Maybe
 import Data.Color
-import Trial.TryGdk
-
+import System.Environment
+import System.Console.GetOpt
 import Graphics.Cairo.Drawing.CairoT
-
 import Graphics.Gdk.Windows
 import Graphics.Gdk.GdkDrawingContext
 
+import Trial.TryGdk
 import Trial.Boxes
 
 main :: IO ()
-main = tryGdk showColor $ adjustSig cycleColor
+main = do
+	(os, _as, ems) <- getOpt Permute [optColor] <$> getArgs
+	putStrLn `mapM_` ems
+	case os of
+		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
+		_ -> putStrLn "Bad options"
+
+data OptSetting
+	= OptColor
+	deriving (Show, Eq)
+
+optColor :: OptDescr OptSetting
+optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do

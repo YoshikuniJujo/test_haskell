@@ -9,7 +9,7 @@ module Trial.Boxes (
 	-- * Sig boxes
 	boxes,
 	-- * OTHERS
-	doubler, cycleColor, wiggleRect ) where
+	doubler, cycleColor, wiggleRect, firstPoint ) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
 
