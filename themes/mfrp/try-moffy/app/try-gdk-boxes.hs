@@ -22,24 +22,28 @@ import Trial.Paper
 main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
-		optColor, optMousePos, optCurRect ] <$> getArgs
+		optColor, optMousePos, optCurRect, optWiggleRect ] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
 		[OptMousePos] -> tryGdk @_ @() (const print) $ adjustSig mousePos
 		[OptCurRect] -> tryGdk @_ @() showRect . adjustSig $ curRect (100, 100)
+		[OptWiggleRect] -> tryGdk @_ @() showRect
+			. adjustSig . wiggleRect $ Rect (300, 200) (600, 400)
 		_ -> putStrLn "Bad options"
 
 data OptSetting
 	= OptColor
 	| OptMousePos
 	| OptCurRect
+	| OptWiggleRect
 	deriving (Show, Eq)
 
-optColor, optMousePos, optCurRect :: OptDescr OptSetting
+optColor, optMousePos, optCurRect, optWiggleRect :: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
 optCurRect = Option ['r'] ["cur-rect"] (NoArg OptCurRect) "Cur rect"
+optWiggleRect = Option ['w'] ["wiggle-rect"] (NoArg OptWiggleRect) "Wiggle rect"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do
