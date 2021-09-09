@@ -4,6 +4,8 @@
 
 module Main where
 
+import Prelude hiding (repeat)
+
 import Control.Moffy
 import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Viewable.Shape
@@ -22,7 +24,8 @@ import Trial.Paper
 main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
-		optColor, optMousePos, optCurRect, optWiggleRect ] <$> getArgs
+		optColor, optMousePos, optCurRect, optWiggleRect, optPosInside
+		] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
@@ -30,6 +33,9 @@ main = do
 		[OptCurRect] -> tryGdk @_ @() showRect . adjustSig $ curRect (100, 100)
 		[OptWiggleRect] -> tryGdk @_ @() showRect
 			. adjustSig . wiggleRect $ Rect (300, 200) (600, 400)
+		[OptPosInside] -> tryGdk @_ @() (const print) . adjustSig
+			. repeat $ posInside
+				(Rect (300, 200) (600, 400)) mousePos
 		_ -> putStrLn "Bad options"
 
 data OptSetting
@@ -37,13 +43,16 @@ data OptSetting
 	| OptMousePos
 	| OptCurRect
 	| OptWiggleRect
+	| OptPosInside
 	deriving (Show, Eq)
 
-optColor, optMousePos, optCurRect, optWiggleRect :: OptDescr OptSetting
+optColor, optMousePos, optCurRect, optWiggleRect, optPosInside
+	:: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
 optCurRect = Option ['r'] ["cur-rect"] (NoArg OptCurRect) "Cur rect"
 optWiggleRect = Option ['w'] ["wiggle-rect"] (NoArg OptWiggleRect) "Wiggle rect"
+optPosInside = Option ['p'] ["pos-inside"] (NoArg OptPosInside) "Pos inside"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do
