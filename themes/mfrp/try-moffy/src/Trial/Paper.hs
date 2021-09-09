@@ -16,6 +16,7 @@ sameClick = (==) <$> mouseDown <*> mouseDown
 curRect :: Point -> Sig s (LoadDefaultWindow :- MouseMove :- 'Nil) Rect r
 curRect p1 = Rect p1 <$%> mousePos
 
+posInside :: Rect -> Sig s es (Double, Double) () -> React s es (Either (Double, Double) ())
 posInside rct = find (`inside` rct)
 	where (x, y) `inside` Rect (l, u) (r, d) =
 		(l <= x && x <= r || r <= x && x <= l) &&
