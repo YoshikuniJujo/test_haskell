@@ -1,9 +1,11 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Moffy
+import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Viewable.Shape
 import Data.Maybe
 import Data.Color
@@ -18,18 +20,22 @@ import Trial.Boxes
 
 main :: IO ()
 main = do
-	(os, _as, ems) <- getOpt Permute [optColor] <$> getArgs
+	(os, _as, ems) <- getOpt Permute [
+		optColor, optMousePos ] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
+		[OptMousePos] -> tryGdk @_ @() (const print) $ adjustSig mousePos
 		_ -> putStrLn "Bad options"
 
 data OptSetting
 	= OptColor
+	| OptMousePos
 	deriving (Show, Eq)
 
-optColor :: OptDescr OptSetting
+optColor, optMousePos :: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
+optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
 
 showColor :: GdkWindow -> BColor -> IO ()
 showColor w bc = do
