@@ -11,16 +11,15 @@ module Control.Moffy.Handle.XField (
 	handle, handle', handleWith) where
 
 import Control.Moffy (EvReqs, EvOccs)
+import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Delete (DeleteEvent, pattern OccDeleteEvent)
 import Control.Moffy.Event.Window
-import Control.Moffy.Event.Key (KeyEv)
-import Control.Moffy.Event.Mouse (MouseEv)
 import Control.Moffy.Event.CalcTextExtents
 import Control.Moffy.Handle (Handle', ExpandableOccurred, before)
 import Control.Moffy.Handle.XField.Key (pattern KeyEv)
 import Control.Moffy.Handle.XField.Mouse (pattern MouseEv)
 import Control.Moffy.Handle.XField.CalcTextExtents
-import Data.Type.Set (Singleton, (:-), (:+:))
+import Data.Type.Set (Singleton)
 import Data.Time (DiffTime)
 import Field (
 	Field, flushField, Event', evEvent, Event(..),
@@ -29,8 +28,6 @@ import Field (
 import Data.OneOrMoreApp
 
 import qualified Control.Moffy.Handle as H
-
-import Control.Moffy.Event.Cursor
 
 ---------------------------------------------------------------------------
 
@@ -41,19 +38,19 @@ import Control.Moffy.Event.Cursor
 -- GUI EV
 ---------------------------------------------------------------------------
 
-type GuiEv = CursorEv :+: WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
+-- type GuiEv = CursorEv :+: WindowEv :+: DeleteEvent :- KeyEv :+: MouseEv
 
 ---------------------------------------------------------------------------
 -- HANDLE
 ---------------------------------------------------------------------------
 
-handle' :: Maybe DiffTime -> Field -> Handle' IO (CalcTextExtents :- GuiEv)
+handle' :: Maybe DiffTime -> Field -> Handle' IO GuiEv
 handle' mt f = (handleWindowNew `H.merge` ((Just <$>) . handleCalcTextExtents f)) `before` handle mt f
 
 handleWindowNew :: Applicative m => Handle' m (Singleton WindowNew)
 handleWindowNew _ = pure . Just . Singleton . OccWindowNew $ WindowId 0
 
-handle, handleGen :: Maybe DiffTime -> Field -> Handle' IO GuiEv
+handle, handleGen :: Maybe DiffTime -> Field -> Handle' IO NoTextExtents
 handle mt f = handleWindowNew `before` handleGen mt f
 handleGen = handleWith \case
 	KeyEv kev -> Just $ expand kev; MouseEv mev -> Just $ expand mev

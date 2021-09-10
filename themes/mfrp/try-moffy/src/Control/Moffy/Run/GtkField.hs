@@ -15,13 +15,13 @@ import Foreign.Ptr
 
 import Control.Monad
 import Control.Moffy
-import Control.Moffy.Event.Delete as M (DeleteEvent, pattern OccDeleteEvent)
+import Control.Moffy.Event.Gui
+import Control.Moffy.Event.Delete as M (pattern OccDeleteEvent)
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Cursor
 import Control.Moffy.Event.Key (
-	KeyEv, pattern OccKeyDown, pattern OccKeyUp, Key(..) )
+	pattern OccKeyDown, pattern OccKeyUp, Key(..) )
 import Control.Moffy.Event.Mouse (
-	MouseEv,
 	MouseDown, pattern OccMouseDown,  MouseUp, pattern OccMouseUp,
 	MouseMove, pattern OccMouseMove, MouseBtn(..),
 	MouseScroll, pattern OccMouseScroll )
@@ -57,10 +57,6 @@ newToOldDrawingArea da = New.pointer da $ pure . GtkWidget . castPtr
 
 newToOldWindow :: New.GtkWindow -> IO GtkWidget
 newToOldWindow win = New.pointer win $ pure . GtkWidget . castPtr
-
--- GUI EVENT
-
-type GuiEv = CursorEv :+: WindowEv :+: CalcTextExtents :- M.DeleteEvent :- KeyEv :+: MouseEv
 
 -- RUN GTK MAIN
 
