@@ -4,7 +4,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Trial.TryGdk where
+module Trial.TryGdk.Boxes where
 
 import Prelude hiding (break)
 

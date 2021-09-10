@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7506b75a287038382eb210a1c51fc226881e0695b7db5f8b9d587e2f83f8eb26
+-- hash: 5fa57e6c84afbb30cad7a3f52266241051270110a0a396ba652bd3a40717582b
 
 name:           try-moffy
 version:        0.1.0.0
@@ -126,7 +126,7 @@ library
       Trial.TryConfigureEvent
       Trial.TryDefaultWindow
       Trial.TryFillPolygon
-      Trial.TryGdk
+      Trial.TryGdk.Boxes
       Trial.TryKey
       Trial.TryLock
       Trial.TryMultiWindow

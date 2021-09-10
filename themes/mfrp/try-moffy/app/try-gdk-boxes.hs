@@ -12,7 +12,7 @@ import Control.Moffy.Viewable.Shape
 import System.Environment
 import System.Console.GetOpt
 
-import Trial.TryGdk
+import Trial.TryGdk.Boxes
 import Trial.Boxes
 import Trial.Paper
 
