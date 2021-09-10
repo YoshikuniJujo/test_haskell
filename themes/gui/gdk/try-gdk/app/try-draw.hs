@@ -9,6 +9,7 @@ import Control.Monad
 import Control.Concurrent
 import Data.Maybe
 import Data.Char
+import Data.KeySym
 import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplay
@@ -18,7 +19,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
@@ -60,7 +60,7 @@ checkEvent :: GdkEvent s -> IO Bool
 checkEvent = \case
 	GdkEventGdkKeyPress k -> do
 		kv <- gdkEventKeyKeyval <$> gdkEventKey k
-		pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
+		pure $ kv /= KeySym (fromIntegral $ ord 'q')
 	GdkEventGdkVisibilityNotify v -> True <$ (print =<< gdkEventVisibility v)
 	GdkEventGdkEnterNotify e -> True <$ (putStrLn . ("ENTER: " ++) . show =<< gdkEventCrossing e)
 	GdkEventGdkLeaveNotify l -> True <$ (putStrLn . ("LEAVE: " ++) . show =<< gdkEventCrossing l)

@@ -26,6 +26,7 @@ dependencies:
 - simple-gdk3
 - simple-cairo
 - simple-pango
+- x-keysym
 
 library:
   source-dirs: src

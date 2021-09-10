@@ -6,6 +6,7 @@
 module Main where
 
 import Control.Concurrent
+import Data.KeySym
 import System.Environment
 import System.Console.GetOpt
 
@@ -15,7 +16,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 main :: IO ()
 main = do
@@ -47,7 +47,7 @@ processEvent = \case
 	GdkEventGdkKeyPress e_ -> do
 		e <- gdkEventKey e_
 		print e
-		pure case gdkEventKeyKeyval e of GdkKey_q -> False; _ -> True
+		pure case gdkEventKeyKeyval e of Xk_q -> False; _ -> True
 	GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 mainLoop :: Int -> (forall s . GdkEvent s -> IO Bool) -> IO ()

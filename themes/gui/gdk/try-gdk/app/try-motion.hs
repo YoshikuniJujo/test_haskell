@@ -6,6 +6,7 @@ module Main where
 
 import Control.Monad
 import Data.Maybe
+import Data.KeySym
 import System.Environment
 
 import Graphics.Gdk.General
@@ -13,7 +14,6 @@ import Graphics.Gdk.GdkDevice
 import Graphics.Gdk.GdkDevice.GdkAxes
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Try.Tools
 
 main :: IO ()
@@ -27,7 +27,7 @@ main = do
 		GdkEventGdkKeyPress e -> do
 			k <- gdkEventKey e
 			case gdkEventKeyKeyval k of
-				GdkKey_q -> pure False; _ -> pure True
+				Xk_q -> pure False; _ -> pure True
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkMotionNotify e -> True <$ do
 			m <- gdkEventMotion e

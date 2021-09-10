@@ -6,13 +6,14 @@
 
 module Main where
 
+import Data.KeySym
+
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkDevice.Internal
 import Graphics.Gdk.Cursors
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
@@ -37,22 +38,22 @@ main = do
 	mainLoop \case
 		GdkEventGdkDelete _d -> pure False
 		e_@(GdkEventGdkKeyPress e) -> gdkEventKey e >>= \k -> case gdkEventKeyKeyval k of
-			GdkKey_q -> pure False
-			GdkKey_s -> True <$ (print =<< gdkSeatGrabSimple st win)
-			GdkKey_o -> True <$ (print =<< gdkSeatGrab st win
+			Xk_q -> pure False
+			Xk_s -> True <$ (print =<< gdkSeatGrabSimple st win)
+			Xk_o -> True <$ (print =<< gdkSeatGrab st win
 						GdkSeatCapabilityAll
 						True Nothing Nothing noGdkSeatGrabPrepare)
-			GdkKey_c -> True <$ (print =<< gdkSeatGrab st win
+			Xk_c -> True <$ (print =<< gdkSeatGrab st win
 						GdkSeatCapabilityAll
 						False (Just gmb) Nothing noGdkSeatGrabPrepare)
-			GdkKey_e -> True <$ (print =<< gdkSeatGrab st win
+			Xk_e -> True <$ (print =<< gdkSeatGrab st win
 						GdkSeatCapabilityAll
 						False Nothing (Just e_) noGdkSeatGrabPrepare)
-			GdkKey_p -> True <$ (print =<< gdkSeatGrab st win
+			Xk_p -> True <$ (print =<< gdkSeatGrab st win
 						GdkSeatCapabilityAll
 						False Nothing Nothing (Just (fun, 123)))
-			GdkKey_u -> True <$ gdkSeatUngrab st
-			GdkKey_h -> True <$ gdkWindowHide win
+			Xk_u -> True <$ gdkSeatUngrab st
+			Xk_h -> True <$ gdkWindowHide win
 			_ -> True <$ print k
 		GdkEventGdkAny e_ -> True <$ do
 			e <- gdkEventAny e_

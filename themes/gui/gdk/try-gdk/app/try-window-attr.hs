@@ -7,6 +7,7 @@ module Main where
 import Foreign.C.Types
 import Data.Maybe
 import Data.Color
+import Data.KeySym
 import System.Environment
 import System.Console.GetOpt
 
@@ -19,7 +20,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkWindowAttr.Internal
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.GdkDrawingContext
 
 import Graphics.Cairo.Drawing.CairoT
@@ -72,7 +72,7 @@ main = do
 			e <- gdkEventKey e_
 			print e
 			pure case gdkEventKeyKeyval e of
-				GdkKey_q -> False; _ -> True
+				Xk_q -> False; _ -> True
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)
 
 data Visual = System | Rgba deriving (Show, Read, Eq)

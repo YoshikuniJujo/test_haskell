@@ -6,6 +6,7 @@ module Main where
 
 import Control.Monad
 import Control.Exception
+import Data.KeySym
 import System.Environment
 import System.Console.GetOpt
 
@@ -16,7 +17,6 @@ import Graphics.Gdk.GdkSeat
 import Graphics.Gdk.GdkMonitor
 import Graphics.Gdk.Windows
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Exception
 
 import Try.Tools
@@ -68,11 +68,11 @@ main = do
 	mainLoopDisplay dd \case
 		GdkEventGdkDelete _d -> pure False
 		GdkEventGdkKeyPress k_ -> gdkEventKey k_ >>= \case
-			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } ->
+			GdkEventKey { gdkEventKeyKeyval = Xk_q } ->
 				pure False
-			GdkEventKey { gdkEventKeyKeyval = GdkKey_g } ->
+			GdkEventKey { gdkEventKeyKeyval = Xk_g } ->
 				True <$ gdkSeatGrabSimple st w
-			GdkEventKey { gdkEventKeyKeyval = GdkKey_u } ->
+			GdkEventKey { gdkEventKeyKeyval = Xk_u } ->
 				True <$ gdkSeatUngrab st
 			k -> True <$ print k
 		e -> True <$ do

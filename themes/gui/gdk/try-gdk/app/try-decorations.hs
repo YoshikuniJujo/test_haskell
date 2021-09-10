@@ -8,6 +8,7 @@ import Control.Monad
 import Control.Concurrent
 import Data.Maybe
 import Data.Char
+import Data.KeySym
 import Text.Read
 import System.Environment
 
@@ -23,7 +24,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.GdkDrawingContext
 
 import Try.Tools.DoWhile
@@ -57,6 +57,6 @@ main = do
 				pure Nothing
 			Just (GdkEventGdkKeyPress k) -> do
 				kv <- gdkEventKeyKeyval <$> gdkEventKey k
-				pure . Just $ kv /= GdkKeySym (fromIntegral $ ord 'q')
+				pure . Just $ kv /= KeySym (fromIntegral $ ord 'q')
 			Just _ -> pure Nothing
 			Nothing -> pure $ Just True

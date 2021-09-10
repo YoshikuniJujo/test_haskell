@@ -15,6 +15,7 @@ import Data.Maybe
 import Data.List
 import Data.Char
 import Data.IORef
+import Data.KeySym
 import System.Environment
 import Graphics.Gdk.General
 import Graphics.Gdk.GdkDisplayManager
@@ -32,7 +33,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 import Graphics.Cairo.Drawing.CairoT
@@ -242,8 +242,8 @@ printVisibleRegion w = do
 	cairoRegionGetRectangle vr 0 vrrp
 	print =<< cairoRectangleIntTFreeze vrrp
 
-checkKeyVal :: Char -> GdkKeySym -> Bool
-checkKeyVal c ks = ks == GdkKeySym (fromIntegral $ ord c)
+checkKeyVal :: Char -> KeySym -> Bool
+checkKeyVal c ks = ks == KeySym (fromIntegral $ ord c)
 
 checkEventSealed :: IORef CDouble -> IORef Int -> IORef Int -> GdkDisplay -> GdkSeat -> GdkEvent s -> IO Bool
 checkEventSealed opacity pos size d st = \case

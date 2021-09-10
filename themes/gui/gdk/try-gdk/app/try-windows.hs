@@ -12,6 +12,7 @@ import Data.Foldable
 import Data.Maybe
 import Data.Color
 import Data.IORef
+import Data.KeySym
 import Text.Read
 import System.Environment
 import System.Console.GetOpt
@@ -26,7 +27,6 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.GdkDrawingContext
 
 import Graphics.Cairo.Drawing.CairoT
@@ -154,18 +154,18 @@ main = do
 				print k
 				let	ts = gdkEventKeyTime k
 				case gdkEventKeyKeyval k of
-					GdkKey_q -> pure False
-					GdkKey_e -> True <$ do
+					Xk_q -> pure False
+					Xk_e -> True <$ do
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_w -> True <$ do
+					Xk_w -> True <$ do
 						gdkWindowWithdraw w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
 						gdkDisplayFlush dpy
 						threadDelay 1000000
 						gdkWindowShow w0
-					GdkKey_i -> True <$ do
+					Xk_i -> True <$ do
 						gdkWindowIconify w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
@@ -176,43 +176,43 @@ main = do
 						gdkWindowDeiconify w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_t -> True <$ do
+					Xk_t -> True <$ do
 						gdkWindowStick w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_u -> True <$ do
+					Xk_u -> True <$ do
 						gdkWindowUnstick w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_m -> True <$ do
+					Xk_m -> True <$ do
 						gdkWindowMaximize w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_n -> True <$ do
+					Xk_n -> True <$ do
 						gdkWindowUnmaximize w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_f -> True <$ do
+					Xk_f -> True <$ do
 						gdkWindowFullscreen w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_g -> True <$ do
+					Xk_g -> True <$ do
 						gdkWindowUnfullscreen w0
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_h -> True <$
+					Xk_h -> True <$
 						fullScreenModeAllMonitor w0
-					GdkKey_j -> True <$
+					Xk_j -> True <$
 						fullScreenModeCurrent w0
-					GdkKey_a -> True <$ do
+					Xk_a -> True <$ do
 						gdkWindowSetKeepAbove w0 True
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_b -> True <$ do
+					Xk_b -> True <$ do
 						gdkWindowSetKeepBelow w0 True
 						print . gdkWindowStateList
 							=<< gdkWindowGetState w0
-					GdkKey_l -> True <$ do
+					Xk_l -> True <$ do
 						gdkWindowLower w0
 						gdkDisplayFlush dpy
 						forkIO do
@@ -221,26 +221,26 @@ main = do
 							when (OptFocus `elem` ss) $ gdkWindowFocus w0 ts
 							print ts
 							print . gdkWindowStateList =<< gdkWindowGetState w0
-					GdkKey_o -> True <$ do
+					Xk_o -> True <$ do
 						gdkWindowSetOpacity w0 0.5
-					GdkKey_p -> True <$ do
+					Xk_p -> True <$ do
 						gdkWindowSetOpacity w0 1
-					GdkKey_r -> True <$ do
+					Xk_r -> True <$ do
 						gdkWindowSetTransientFor w1 w0
 						gdkWindowShow w1
-					GdkKey_d -> True <$ do
+					Xk_d -> True <$ do
 						b <- gdkWindowGetModalHint w1
 						gdkWindowSetModalHint w1 $ not b
 						print =<< gdkWindowGetModalHint w1
-					GdkKey_y -> True <$ do
+					Xk_y -> True <$ do
 						b <- not <$> readIORef skipTaskbar
 						gdkWindowSetSkipTaskbarHint w0 b
 						writeIORef skipTaskbar b
-					GdkKey_v -> True <$ do
+					Xk_v -> True <$ do
 						b <- not <$> readIORef skipPager
 						gdkWindowSetSkipPagerHint w0 b
 						writeIORef skipPager b
-					GdkKey_x -> True <$ do
+					Xk_x -> True <$ do
 						threadDelay 1000000
 						b <- not <$> readIORef urgency
 						gdkWindowSetUrgencyHint w0 b

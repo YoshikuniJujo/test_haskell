@@ -5,6 +5,7 @@
 module Main where
 
 import Foreign.C.Types
+import Data.KeySym
 import System.Environment
 import System.Console.GetOpt
 
@@ -13,7 +14,6 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
@@ -34,17 +34,17 @@ main = do
 		GdkEventGdkKeyPress e -> do
 			k <- gdkEventKey e
 			case gdkEventKeyKeyval k of
-				GdkKey_q -> pure False
+				Xk_q -> pure False
 				c -> True <$ do
 					let (dx, dy, dw, dh) = case c of
-						GdkKey_h -> (- delta, 0, 0, 0)
-						GdkKey_j -> (0, delta, 0, 0)
-						GdkKey_k -> (0, - delta, 0, 0)
-						GdkKey_l -> (delta, 0, 0, 0)
-						GdkKey_s -> (0, 0, - delta, 0)
-						GdkKey_d -> (0, 0, 0, - delta)
-						GdkKey_f -> (0, 0, 0, delta)
-						GdkKey_g -> (0, 0, delta, 0)
+						Xk_h -> (- delta, 0, 0, 0)
+						Xk_j -> (0, delta, 0, 0)
+						Xk_k -> (0, - delta, 0, 0)
+						Xk_l -> (delta, 0, 0, 0)
+						Xk_s -> (0, 0, - delta, 0)
+						Xk_d -> (0, 0, 0, - delta)
+						Xk_f -> (0, 0, 0, delta)
+						Xk_g -> (0, 0, delta, 0)
 						_ -> (0, 0, 0, 0)
 					(x, y) <- gdkWindowGetRootOrigin win
 					w <- gdkWindowGetWidth win

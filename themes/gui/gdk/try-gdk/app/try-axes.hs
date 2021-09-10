@@ -8,6 +8,7 @@ module Main where
 import Control.Monad
 import Data.Foldable
 import Data.Maybe
+import Data.KeySym
 import System.Environment
 import System.Console.GetOpt
 import Graphics.Gdk.GdkDisplay
@@ -19,7 +20,6 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
@@ -62,7 +62,7 @@ main = do
 				k <- gdkEventKey e
 				print k
 				pure case gdkEventKeyKeyval k of
-					GdkKey_q -> False; _ -> True
+					Xk_q -> False; _ -> True
 			GdkEventGdkMotionNotify e -> True <$ do
 				m <- gdkEventMotion e
 				printAxisValues (gdkEventMotionDevice m) (gdkEventMotionAxes m)

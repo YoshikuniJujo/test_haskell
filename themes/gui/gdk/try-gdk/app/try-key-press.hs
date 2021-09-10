@@ -6,6 +6,7 @@ module Main where
 
 import Control.Monad
 import Control.Concurrent
+import Data.KeySym
 import System.Environment
 
 import Graphics.Gdk.General
@@ -14,7 +15,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools.DoWhile
 
@@ -31,7 +31,7 @@ main = do
 				print $ gdkEventKeyHardwareKeycode k
 				print $ gdkEventKeyKeyval k
 				pure case k of
-					GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> Just False
+					GdkEventKey { gdkEventKeyKeyval = Xk_q } -> Just False
 					_ -> Nothing
 			Just e -> Nothing <$ print e
 			Nothing -> pure $ Just True

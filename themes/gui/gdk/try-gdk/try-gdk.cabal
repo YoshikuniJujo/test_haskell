@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 954b1d491d94c65be3110ef17e4e69a64b3da2a31d90c6621d2edba7884e2bc6
+-- hash: 2c76050fef58c949d7cc8b0ff091485fa3fe42b23b2b26d5afe474f750ea91f0
 
 name:           try-gdk
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
     , simple-gdk3
     , simple-pango
     , text
+    , x-keysym
   default-language: Haskell2010
 
 executable simple
@@ -58,6 +59,7 @@ executable simple
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable test-cursor
@@ -76,6 +78,7 @@ executable test-cursor
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-axes
@@ -94,6 +97,7 @@ executable try-axes
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-button
@@ -112,6 +116,7 @@ executable try-button
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-cairo-tribial
@@ -130,6 +135,7 @@ executable try-cairo-tribial
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-cursor-name
@@ -148,6 +154,7 @@ executable try-cursor-name
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-cursor-type
@@ -166,6 +173,7 @@ executable try-cursor-type
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-cursors
@@ -184,6 +192,7 @@ executable try-cursors
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-decorations
@@ -202,6 +211,7 @@ executable try-decorations
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-device
@@ -220,6 +230,7 @@ executable try-device
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-display
@@ -238,6 +249,7 @@ executable try-display
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-display-manager
@@ -256,6 +268,7 @@ executable try-display-manager
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-draw
@@ -274,6 +287,7 @@ executable try-draw
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-drawing-context
@@ -292,6 +306,7 @@ executable try-drawing-context
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-event-mask
@@ -310,6 +325,7 @@ executable try-event-mask
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-event-structures
@@ -328,6 +344,7 @@ executable try-event-structures
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-events
@@ -346,6 +363,7 @@ executable try-events
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-gdk-exe
@@ -363,6 +381,7 @@ executable try-gdk-exe
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-general
@@ -381,6 +400,7 @@ executable try-general
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-key-press
@@ -399,6 +419,7 @@ executable try-key-press
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-monitor
@@ -417,6 +438,7 @@ executable try-monitor
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-motion
@@ -435,6 +457,7 @@ executable try-motion
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-primitive
@@ -453,6 +476,7 @@ executable try-primitive
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-rectangle
@@ -471,6 +495,7 @@ executable try-rectangle
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-screen
@@ -489,6 +514,7 @@ executable try-screen
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-seat
@@ -507,6 +533,7 @@ executable try-seat
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-show-events
@@ -525,6 +552,7 @@ executable try-show-events
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-tribial
@@ -543,6 +571,7 @@ executable try-tribial
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-visuals
@@ -561,6 +590,7 @@ executable try-visuals
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-window-attr
@@ -579,6 +609,7 @@ executable try-window-attr
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-window-type-hint
@@ -597,6 +628,7 @@ executable try-window-type-hint
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-windows
@@ -615,6 +647,7 @@ executable try-windows
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 executable try-windows-move
@@ -633,6 +666,7 @@ executable try-windows-move
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010
 
 test-suite try-gdk-test
@@ -651,4 +685,5 @@ test-suite try-gdk-test
     , simple-pango
     , text
     , try-gdk
+    , x-keysym
   default-language: Haskell2010

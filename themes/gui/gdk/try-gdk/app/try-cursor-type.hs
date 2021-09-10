@@ -6,13 +6,13 @@ module Main where
 import Control.Monad
 import Data.Char
 import Data.IORef
+import Data.KeySym
 import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Cursors
 import Try.Tools
 
@@ -34,20 +34,20 @@ main = do
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval <$> gdkEventKey k
 			print kv
-			when (kv == GdkKeySym 65505 || kv == GdkKeySym 65506) $ modifyIORef cnt (+ 1)
+			when (kv == KeySym 65505 || kv == KeySym 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
 			c <- gdkCursorNewForDisplay d $ cursorType n kv
 			print =<< gdkCursorGetCursorType c
 			gdkWindowSetCursor w c
-			pure $ kv == GdkKey_q
+			pure $ kv == Xk_q
 		_ -> pure True
 
-cursorType :: Int -> GdkKeySym -> GdkCursorType
+cursorType :: Int -> KeySym -> GdkCursorType
 cursorType n = case n `mod` 4 of
 	0 -> cursorType0; 1 -> cursorType1; 2 -> cursorType2; 3 -> cursorType3
 	_ -> error "never occur"
 
-cursorType0 :: GdkKeySym -> GdkCursorType
+cursorType0 :: KeySym -> GdkCursorType
 cursorType0 kv
 	| checkKeyVal kv 'a' = GdkXCursor
 	| checkKeyVal kv 'b' = GdkArrow
@@ -76,7 +76,7 @@ cursorType0 kv
 	| checkKeyVal kv 'z' = GdkExchange
 	| otherwise = GdkXCursor
 
-cursorType1 :: GdkKeySym -> GdkCursorType
+cursorType1 :: KeySym -> GdkCursorType
 cursorType1 kv
 	| checkKeyVal kv 'a' = GdkFleur
 	| checkKeyVal kv 'b' = GdkGobbler
@@ -105,7 +105,7 @@ cursorType1 kv
 	| checkKeyVal kv 'z' = GdkRightbutton
 	| otherwise = GdkFleur
 
-cursorType2 :: GdkKeySym -> GdkCursorType
+cursorType2 :: KeySym -> GdkCursorType
 cursorType2 kv
 	| checkKeyVal kv 'a' = GdkRtlLogo
 	| checkKeyVal kv 'b' = GdkSailboat
@@ -134,7 +134,7 @@ cursorType2 kv
 	| checkKeyVal kv 'z' = GdkWatch
 	| otherwise = GdkRtlLogo
 
-cursorType3 :: GdkKeySym -> GdkCursorType
+cursorType3 :: KeySym -> GdkCursorType
 cursorType3 kv
 	| checkKeyVal kv 'a' = GdkXterm
 --	| checkKeyVal kv 'b' = GdkLastCursor
@@ -142,8 +142,8 @@ cursorType3 kv
 --	| checkKeyVal kv 'd' = GdkCursorIsPixmap
 	| otherwise = GdkXterm
 
-toKeyval :: Char -> GdkKeySym
-toKeyval = GdkKeySym . fromIntegral . ord
+toKeyval :: Char -> KeySym
+toKeyval = KeySym . fromIntegral . ord
 
-checkKeyVal :: GdkKeySym -> Char -> Bool
+checkKeyVal :: KeySym -> Char -> Bool
 checkKeyVal kv c = kv == toKeyval c

@@ -6,13 +6,13 @@ module Main where
 import Control.Monad
 import Data.Char
 import Data.IORef
+import Data.KeySym
 import System.Environment
 
 import Graphics.Gdk.General
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.Cursors
 import Try.Tools
 
@@ -33,17 +33,17 @@ main = do
 		GdkEventGdkKeyPress k -> do
 			kv <- gdkEventKeyKeyval <$> gdkEventKey k
 			print kv
-			when (kv == GdkKeySym 65505 || kv == GdkKeySym 65506) $ modifyIORef cnt (+ 1)
+			when (kv == KeySym 65505 || kv == KeySym 65506) $ modifyIORef cnt (+ 1)
 			n <- readIORef cnt
 			gdkWindowSetCursor w =<< gdkCursorNewFromName d (cursorName n kv)
-			pure $ kv /= GdkKeySym (fromIntegral $ ord 'q')
+			pure $ kv /= KeySym (fromIntegral $ ord 'q')
 		_ -> pure True
 
-cursorName :: Int -> GdkKeySym -> String
+cursorName :: Int -> KeySym -> String
 cursorName n = case n `mod` 2 of
 	0 -> cursorName0; 1 -> cursorName1; _ -> error "never occur"
 
-cursorName0 :: GdkKeySym -> String
+cursorName0 :: KeySym -> String
 cursorName0 kv
 	| kv == toKeyval 'a' = "none"
 	| kv == toKeyval 'b' = "default"
@@ -72,7 +72,7 @@ cursorName0 kv
 	| kv == toKeyval 'z' = "w-resize"
 	| otherwise = "default"
 
-cursorName1 :: GdkKeySym -> String
+cursorName1 :: KeySym -> String
 cursorName1 kv
 	| kv == toKeyval 'a' = "ne-resize"
 	| kv == toKeyval 'b' = "nw-resize"
@@ -86,5 +86,5 @@ cursorName1 kv
 	| kv == toKeyval 'j' = "zoom-out"
 	| otherwise = "ne-resize"
 
-toKeyval :: Char -> GdkKeySym
-toKeyval = GdkKeySym . fromIntegral . ord
+toKeyval :: Char -> KeySym
+toKeyval = KeySym . fromIntegral . ord

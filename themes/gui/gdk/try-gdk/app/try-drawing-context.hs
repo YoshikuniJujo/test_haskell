@@ -6,6 +6,7 @@ module Main where
 
 import Data.Maybe
 import Data.Color
+import Data.KeySym
 
 import Graphics.Gdk.GdkDisplay
 import Graphics.Gdk.Windows
@@ -13,7 +14,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.GdkDrawingContext
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Regions
@@ -56,5 +56,5 @@ main = do
 			print e
 			k <- gdkEventKey e
 			case gdkEventKeyKeyval k of
-				GdkKey_q -> pure False; _ -> pure True
+				Xk_q -> pure False; _ -> pure True
 		GdkEventGdkAny e -> True <$ (print =<< gdkEventAny e)

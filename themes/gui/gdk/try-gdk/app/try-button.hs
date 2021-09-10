@@ -5,6 +5,7 @@
 module Main where
 
 import Control.Monad
+import Data.KeySym
 import System.Environment
 
 import Graphics.Gdk.General
@@ -12,7 +13,6 @@ import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
@@ -27,7 +27,7 @@ main = do
 	gdkWindowShow w
 	mainLoop \case
 		GdkEventGdkKeyPress k -> gdkEventKey k >>= \case
-			GdkEventKey { gdkEventKeyKeyval = GdkKey_q } -> pure False
+			GdkEventKey { gdkEventKeyKeyval = Xk_q } -> pure False
 			_ -> pure True
 		GdkEventGdkButtonPress b -> True <$ do
 			putStrLn . ("GdkButtonPress: " ++) . show =<< gdkEventButton b

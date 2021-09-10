@@ -9,6 +9,7 @@ module Main where
 import Control.Monad
 import Control.Concurrent
 import Data.Foldable
+import Data.KeySym
 import System.Environment
 import System.Console.GetOpt
 import System.Exit
@@ -22,7 +23,6 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Windows.GdkModifierType
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 import Graphics.Gdk.PropertiesAndAtoms.GdkAtom
 
 main :: IO ()
@@ -54,7 +54,7 @@ main = do
 			print k
 			print . gdkModifierTypeSingleBitList $ gdkEventKeyState k
 			pure case gdkEventKeyKeyval k of
-				GdkKey_q -> False; _ -> True
+				Xk_q -> False; _ -> True
 		GdkEventGdkKeyRelease e -> True <$ do
 			putStrLn "KEY RELEASE"
 			print =<< gdkEventKey e

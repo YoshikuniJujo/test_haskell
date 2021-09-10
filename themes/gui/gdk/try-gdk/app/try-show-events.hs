@@ -5,6 +5,7 @@
 module Main where
 
 import Control.Monad
+import Data.KeySym
 import System.Environment
 
 import Graphics.Gdk.General
@@ -13,7 +14,6 @@ import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
-import Graphics.Gdk.EventStructures.GdkKeySyms
 
 import Try.Tools
 
@@ -32,5 +32,5 @@ main = do
 		GdkEventGdkKeyPress e -> do
 			k <- gdkEventKey e
 			case gdkEventKeyKeyval k of
-				GdkKey_q -> pure False; _ -> pure True
+				Xk_q -> pure False; _ -> pure True
 		GdkEventGdkAny _ -> pure True
