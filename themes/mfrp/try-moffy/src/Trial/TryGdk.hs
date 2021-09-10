@@ -46,6 +46,16 @@ import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.GdkDrawingContext
 
+showBox :: GdkWindow -> Box -> IO ()
+showBox w (Box (Rect (l_, u_) (r_, d_)) bc) = do
+	let (l, u, r, d) = lurd l_ u_ r_ d_
+	rgn <- gdkWindowGetVisibleRegion w
+	gdkWindowWithDrawFrame w rgn \ctx -> do
+		cr <- gdkDrawingContextGetCairoContext ctx
+		cairoSetSourceRgb cr $ bColorToRgb bc
+		cairoRectangle cr l u (r - l) (d - u)
+		cairoFill cr
+
 showRect :: GdkWindow -> Rect -> IO ()
 showRect w (Rect (l_, u_) (r_, d_)) = do
 	let (l, u, r, d) = lurd l_ u_ r_ d_
@@ -55,9 +65,28 @@ showRect w (Rect (l_, u_) (r_, d_)) = do
 		cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0.5 0
 		cairoRectangle cr l u (r - l) (d - u)
 		cairoFill cr
-	where lurd l u r d = (
+
+lurd :: Double -> Double -> Double -> Double ->
+	(CDouble, CDouble, CDouble, CDouble)
+lurd l u r d = (
 		realToFrac $ l `min` r, realToFrac $ u `min` d,
 		realToFrac $ l `max` r, realToFrac $ u `max` d )
+
+showColor :: GdkWindow -> BColor -> IO ()
+showColor w bc = do
+	r <- gdkWindowGetVisibleRegion w
+	gdkWindowWithDrawFrame w r \ctx -> do
+		cr <- gdkDrawingContextGetCairoContext ctx
+		cairoSetSourceRgb cr $ bColorToRgb bc
+		cairoPaint cr
+
+bColorToRgb :: BColor -> Rgb
+bColorToRgb Red = fromJust $ rgbDouble 0.5 0 0
+bColorToRgb Green = fromJust $ rgbDouble 0 0.5 0
+bColorToRgb Blue = fromJust $ rgbDouble 0 0 0.5
+bColorToRgb Yellow = fromJust $ rgbDouble 0.5 0.5 0
+bColorToRgb Cyan = fromJust $ rgbDouble 0 0.5 0.5
+bColorToRgb Magenta = fromJust $ rgbDouble 0.5 0 0.5
 
 tryGdk :: (Show a, Show r) => (GdkWindow -> a -> IO ()) -> Sig s TryGdkEv a r -> IO ()
 tryGdk vw sg = do

@@ -9,13 +9,8 @@ import Prelude hiding (repeat)
 import Control.Moffy
 import Control.Moffy.Event.Mouse.DefaultWindow
 import Control.Moffy.Viewable.Shape
-import Data.Maybe
-import Data.Color
 import System.Environment
 import System.Console.GetOpt
-import Graphics.Cairo.Drawing.CairoT
-import Graphics.Gdk.Windows
-import Graphics.Gdk.GdkDrawingContext
 
 import Trial.TryGdk
 import Trial.Boxes
@@ -25,7 +20,8 @@ main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
 		optColor, optMousePos, optCurRect, optWiggleRect, optPosInside,
-		optFirstPoint, optCompleteRect, optDefineRect ] <$> getArgs
+		optFirstPoint, optCompleteRect, optDefineRect, optChooseBoxColor
+		] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
 		[OptColor] -> tryGdk showColor $ adjustSig cycleColor
@@ -41,15 +37,17 @@ main = do
 		[OptCompleteRect] -> tryGdk showRect . adjustSig
 			$ completeRect (300, 200)
 		[OptDefineRect] -> tryGdk showRect $ adjustSig defineRect 
+		[OptChooseBoxColor] -> tryGdk showBox . adjustSig
+			. chooseBoxColor $ Rect (300, 200) (600, 400)
 		_ -> putStrLn "Bad options"
 
 data OptSetting
 	= OptColor | OptMousePos | OptCurRect | OptWiggleRect | OptPosInside
-	| OptFirstPoint | OptCompleteRect | OptDefineRect
+	| OptFirstPoint | OptCompleteRect | OptDefineRect | OptChooseBoxColor
 	deriving (Show, Eq)
 
 optColor, optMousePos, optCurRect, optWiggleRect, optPosInside, optFirstPoint,
-	optCompleteRect, optDefineRect :: OptDescr OptSetting
+	optCompleteRect, optDefineRect, optChooseBoxColor :: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
@@ -67,18 +65,5 @@ optCompleteRect =
 
 optDefineRect = Option ['d'] ["define-rect"] (NoArg OptDefineRect) "Define rect"
 
-showColor :: GdkWindow -> BColor -> IO ()
-showColor w bc = do
-	r <- gdkWindowGetVisibleRegion w
-	gdkWindowWithDrawFrame w r \ctx -> do
-		cr <- gdkDrawingContextGetCairoContext ctx
-		cairoSetSourceRgb cr $ bColorToRgb bc
-		cairoPaint cr
-
-bColorToRgb :: BColor -> Rgb
-bColorToRgb Red = fromJust $ rgbDouble 0.5 0 0
-bColorToRgb Green = fromJust $ rgbDouble 0 0.5 0
-bColorToRgb Blue = fromJust $ rgbDouble 0 0 0.5
-bColorToRgb Yellow = fromJust $ rgbDouble 0.5 0.5 0
-bColorToRgb Cyan = fromJust $ rgbDouble 0 0.5 0.5
-bColorToRgb Magenta = fromJust $ rgbDouble 0.5 0 0.5
+optChooseBoxColor = Option
+	[] ["choose-box-color"] (NoArg OptChooseBoxColor) "Choose box color"
