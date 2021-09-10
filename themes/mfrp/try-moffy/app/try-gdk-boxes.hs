@@ -41,6 +41,7 @@ main = do
 		[OptChooseBoxColor] -> tryGdk showBox . adjustSig
 			. chooseBoxColor $ Rect (300, 200) (600, 400)
 		[OptBox] -> tryGdk showBox $ adjustSig box
+		[] -> tryGdk showBoxes boxes
 		_ -> putStrLn "Bad options"
 
 data OptSetting

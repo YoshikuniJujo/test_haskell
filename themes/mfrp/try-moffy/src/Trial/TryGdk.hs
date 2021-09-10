@@ -36,6 +36,7 @@ import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Run
 import Control.Moffy.Viewable.Shape
 
+import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 
@@ -49,15 +50,26 @@ import Graphics.Gdk.GdkDrawingContext
 
 import Trial.Boxes.BoxEv
 
-showBox :: GdkWindow -> Box -> IO ()
-showBox w (Box (Rect (l_, u_) (r_, d_)) bc) = do
-	let (l, u, r, d) = lurd l_ u_ r_ d_
+showBoxes :: GdkWindow -> [Box] -> IO ()
+showBoxes w bs = do
 	rgn <- gdkWindowGetVisibleRegion w
 	gdkWindowWithDrawFrame w rgn \ctx -> do
 		cr <- gdkDrawingContextGetCairoContext ctx
-		cairoSetSourceRgb cr $ bColorToRgb bc
-		cairoRectangle cr l u (r - l) (d - u)
-		cairoFill cr
+		drawBox cr `mapM_` bs
+
+showBox :: GdkWindow -> Box -> IO ()
+showBox w b = do
+	rgn <- gdkWindowGetVisibleRegion w
+	gdkWindowWithDrawFrame w rgn \ctx -> do
+		cr <- gdkDrawingContextGetCairoContext ctx
+		drawBox cr b
+
+drawBox :: CairoTIO s -> Box -> IO ()
+drawBox cr (Box (Rect (l_, u_) (r_, d_)) bc) = do
+	let (l, u, r, d) = lurd l_ u_ r_ d_
+	cairoSetSourceRgb cr $ bColorToRgb bc
+	cairoRectangle cr l u (r - l) (d - u)
+	cairoFill cr
 
 showRect :: GdkWindow -> Rect -> IO ()
 showRect w (Rect (l_, u_) (r_, d_)) = do
