@@ -20,7 +20,8 @@ main :: IO ()
 main = do
 	(os, _as, ems) <- getOpt Permute [
 		optColor, optMousePos, optCurRect, optWiggleRect, optPosInside,
-		optFirstPoint, optCompleteRect, optDefineRect, optChooseBoxColor
+		optFirstPoint, optCompleteRect, optDefineRect,
+		optChooseBoxColor, optBox
 		] <$> getArgs
 	putStrLn `mapM_` ems
 	case os of
@@ -39,15 +40,17 @@ main = do
 		[OptDefineRect] -> tryGdk showRect $ adjustSig defineRect 
 		[OptChooseBoxColor] -> tryGdk showBox . adjustSig
 			. chooseBoxColor $ Rect (300, 200) (600, 400)
+		[OptBox] -> tryGdk showBox $ adjustSig box
 		_ -> putStrLn "Bad options"
 
 data OptSetting
 	= OptColor | OptMousePos | OptCurRect | OptWiggleRect | OptPosInside
 	| OptFirstPoint | OptCompleteRect | OptDefineRect | OptChooseBoxColor
+	| OptBox
 	deriving (Show, Eq)
 
 optColor, optMousePos, optCurRect, optWiggleRect, optPosInside, optFirstPoint,
-	optCompleteRect, optDefineRect, optChooseBoxColor :: OptDescr OptSetting
+	optCompleteRect, optDefineRect, optChooseBoxColor, optBox :: OptDescr OptSetting
 optColor = Option ['c'] ["color"] (NoArg OptColor) "Cycle color"
 
 optMousePos = Option ['m'] ["mouse-pos"] (NoArg OptMousePos) "Mouse position"
@@ -67,3 +70,5 @@ optDefineRect = Option ['d'] ["define-rect"] (NoArg OptDefineRect) "Define rect"
 
 optChooseBoxColor = Option
 	[] ["choose-box-color"] (NoArg OptChooseBoxColor) "Choose box color"
+
+optBox = Option ['b'] ["box"] (NoArg OptBox) "Box"

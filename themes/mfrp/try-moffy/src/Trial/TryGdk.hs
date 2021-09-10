@@ -29,6 +29,7 @@ import Control.Moffy.Event.DefaultWindow
 import Control.Moffy.Event.Delete (pattern OccDeleteEvent)
 import Control.Moffy.Event.Delete.DefaultWindow
 import Control.Moffy.Event.Mouse
+import Control.Moffy.Event.Key
 import Control.Moffy.Handle as H
 import Control.Moffy.Handle.Time
 import Control.Moffy.Handle.DefaultWindow
@@ -45,6 +46,8 @@ import Graphics.Gdk.Windows.GdkEventMask
 import Graphics.Gdk.Events
 import Graphics.Gdk.EventStructures
 import Graphics.Gdk.GdkDrawingContext
+
+import Trial.Boxes.BoxEv
 
 showBox :: GdkWindow -> Box -> IO ()
 showBox w (Box (Rect (l_, u_) (r_, d_)) bc) = do
@@ -107,7 +110,8 @@ sigGdk sg = do
 	w <- adjustSig defaultWindowNew
 	(w ,) <$%> sg
 
-type TryGdkEv = WindowNew :- DefaultWindowEv :+: MouseDown :- MouseUp :- MouseMove :- TimeEv :+: DeleteEvent :- 'Nil
+-- type TryGdkEv = WindowEv :+: DefaultWindowEv :+: MouseDown :- MouseUp :- MouseMove :- KeyEv :+: TimeEv :+: DeleteEvent :- 'Nil
+type TryGdkEv = BoxEv -- WindowEv :+: DefaultWindowEv :+: MouseDown :- MouseUp :- MouseMove :- KeyEv :+: TimeEv :+: DeleteEvent :- 'Nil
 
 initialize :: IO (
 	TVar WindowId,
@@ -154,15 +158,15 @@ handle wid i2w w2i = retrySt $ handleGdk' wid i2w w2i (0.05, ()) `mergeSt` handl
 handleGdk' :: TimeState s =>
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) -> (DiffTime, ()) ->
-	HandleSt' s IO (WindowNew :- MouseDown :- MouseUp :- MouseMove :- TimeEv :+: DeleteEvent :- 'Nil)
+	HandleSt' s IO (WindowEv :+: MouseDown :- MouseUp :- MouseMove :- MouseScroll :- KeyEv :+: TimeEv :+: DeleteEvent :- 'Nil)
 handleGdk' wid i2w w2i = popInput . handleTimeEvPlus . pushInput . const . liftHandle' $ handleGdk wid i2w w2i
 
 handleGdk ::
 	TVar WindowId ->
 	TVar (Map WindowId GdkWindow) -> TVar (Map GdkWindow WindowId) ->
-	Handle' IO (WindowNew :- MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil)
+	Handle' IO (WindowEv :+: MouseDown :- MouseUp :- MouseMove :- MouseScroll :- KeyEv :+: DeleteEvent :- 'Nil)
 handleGdk wid i2w w2i rqs = do
-	handleWindowNew wid i2w w2i `H.merge` handleMouseDown w2i $ rqs
+	H.expand @_ @_ @WindowEv (handleWindowNew wid i2w w2i) `H.merge` handleMouseDown w2i $ rqs
 
 handleWindowNew ::
 	TVar WindowId -> TVar (Map WindowId GdkWindow) ->
@@ -183,7 +187,7 @@ handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	pure r
 
 handleMouseDown ::
-	TVar (Map GdkWindow WindowId) -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (MouseDown :- MouseUp :- MouseMove :- MouseScroll :- KeyEv :+: DeleteEvent :- 'Nil)
 handleMouseDown w2i _ = do
 	getMouseDown w2i
 
@@ -220,7 +224,7 @@ numToButton 3 = ButtonRight
 numToButton n = ButtonUnknown $ fromIntegral n
 
 toMouseDown, toMouseUp :: Map GdkWindow WindowId -> GdkEventButton ->
-	Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil))
+	Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- MouseScroll :- KeyEv :+: DeleteEvent :- 'Nil))
 toMouseDown w2i e =
 	Just $ App.expand
 		(eventButtonToMouseMove w2i e App.>- App.Singleton (eventButtonToMouseDown w2i e) :: EvOccs (MouseDown :- MouseMove :- 'Nil))
@@ -229,12 +233,12 @@ toMouseUp w2i e =
 	Just $ App.expand
 		(eventButtonToMouseMove w2i e App.>- App.Singleton (eventButtonToMouseUp w2i e) :: EvOccs (MouseUp :- MouseMove :- 'Nil))
 
-toMouseMove :: Map GdkWindow WindowId -> GdkEventMotion -> Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil))
+toMouseMove :: Map GdkWindow WindowId -> GdkEventMotion -> Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- MouseScroll :- KeyEv :+: DeleteEvent :- 'Nil))
 toMouseMove w2i e =
 	Just $ App.expand
 		(App.Singleton $ eventMotionToMouseMove w2i e)
 
-getMouseDown :: TVar (Map GdkWindow WindowId) -> IO (Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- DeleteEvent :- 'Nil)))
+getMouseDown :: TVar (Map GdkWindow WindowId) -> IO (Maybe (EvOccs (MouseDown :- MouseUp :- MouseMove :- MouseScroll :- KeyEv :+: DeleteEvent :- 'Nil)))
 getMouseDown tw2i = gdkWithEvent \case
 	Just (GdkEventGdkDelete e_) -> do
 		e <- gdkEventAny e_

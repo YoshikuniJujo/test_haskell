@@ -10,7 +10,7 @@ module Trial.Boxes (
 	boxes,
 	-- * OTHERS
 	doubler, cycleColor, wiggleRect, firstPoint, completeRect, defineRect,
-	chooseBoxColor
+	chooseBoxColor, box
 	) where
 
 import Prelude hiding (repeat, cycle, scanl, until)
