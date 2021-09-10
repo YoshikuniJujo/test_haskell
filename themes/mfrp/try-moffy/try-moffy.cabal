@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9c1ba09f98f7297f4aec880e8ad2807ddb04078f6ce2115f79f71eea44044773
+-- hash: bc88a389a5e305ba5da85ba953a6d7ae1447a8f6639942ee1200d9aa5029aba3
 
 name:           try-moffy
 version:        0.1.0.0
@@ -128,6 +128,7 @@ library
       Trial.TryDefaultWindow
       Trial.TryFillPolygon
       Trial.TryGdk.Boxes
+      Trial.TryGdk.Gui
       Trial.TryKey
       Trial.TryLock
       Trial.TryMultiWindow
@@ -138,6 +139,7 @@ library
       Trial.TrySharing
       Trial.TrySharing.ThreadId
       Trial.TryThreadId
+      Trial.TryWindowKey
   other-modules:
       Paths_try_moffy
   hs-source-dirs:
@@ -291,6 +293,44 @@ executable followboxGtk
 
 executable try-gdk-boxes
   main-is: try-gdk-boxes.hs
+  other-modules:
+      Main
+      Paths_try_moffy
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , JuicyPixels-extra
+    , X11
+    , X11-xft
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , exception-hierarchy
+    , extra-data-yj
+    , http-conduit
+    , monads-tf
+    , process
+    , random
+    , serialise
+    , simple-cairo
+    , simple-field
+    , simple-gdk3
+    , stm
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , try-moffy
+    , type-flip
+    , unordered-containers
+    , vector
+  default-language: Haskell2010
+
+executable try-gdk-gui
+  main-is: try-gdk-gui.hs
   other-modules:
       Main
       Paths_try_moffy

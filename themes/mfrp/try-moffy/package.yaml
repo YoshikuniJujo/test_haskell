@@ -242,6 +242,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-moffy
+  try-gdk-gui:
+    main:                try-gdk-gui.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-moffy
 
 tests:
   try-moffy-test:
