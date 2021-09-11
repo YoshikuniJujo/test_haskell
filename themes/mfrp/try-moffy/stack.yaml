@@ -48,7 +48,9 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/type-flip
   commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
 - git: https://github.com/YoshikuniJujo/simple-gdk3
-  commit: dcebf67ebfff54f88fe920f0c0585dc3572ddc9b
+  commit: 763aafd42f91308ec4959df41cc2d4b6af25b4fa
+- git: https://github.com/YoshikuniJujo/x-keysym
+  commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
 - git: https://github.com/YoshikuniJujo/cairo-image

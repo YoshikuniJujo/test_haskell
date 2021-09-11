@@ -29,6 +29,7 @@ import Control.Moffy.Event.CalcTextExtents
 import Control.Concurrent
 import Control.Concurrent.STM hiding (retry)
 import Data.Type.Set
+import Data.KeySym
 import Data.OneOrMore (project)
 import System.Glib
 import Graphics.Gtk as Gtk
@@ -206,10 +207,10 @@ deleteEvent wid c = True <$ do
 
 keyDown, keyUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventKey -> IO Bool
 keyDown wid c ev = (False <$) $ atomically . writeTChan c . expand
-		=<< Singleton . OccKeyDown wid . Key . fromIntegral <$> keyval ev
+		=<< Singleton . OccKeyDown wid . KeySym . fromIntegral <$> keyval ev
 
 keyUp wid c ev = (False <$) $ atomically . writeTChan c . expand
-	=<< Singleton . OccKeyUp wid . Key . fromIntegral <$> keyval ev
+	=<< Singleton . OccKeyUp wid . KeySym . fromIntegral <$> keyval ev
 
 buttonDown, buttonUp :: WindowId -> TChan (EvOccs GuiEv) -> GdkEventButton -> IO Bool
 buttonDown wid c ev = (True <$) $ atomically . writeTChan c . expand =<< occ

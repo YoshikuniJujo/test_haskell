@@ -22,6 +22,7 @@ import Control.Moffy.Event.Key.Internal (Key(..))
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
 import Data.Char (chr)
+import Data.KeySym
 
 import Control.Moffy.Event.Key.Internal.TryKeyValue
 
@@ -42,9 +43,9 @@ import Control.Moffy.Event.Key.Internal.TryKeyValue
 data KeyDown = KeyDownReq deriving (Show, Eq, Ord)
 numbered [t| KeyDown |]
 instance Request KeyDown where
-	data Occurred KeyDown = OccKeyDown WindowId Key deriving Show
+	data Occurred KeyDown = OccKeyDown WindowId KeySym deriving Show
 
-keyDown :: WindowId -> React s (Singleton KeyDown) Key
+keyDown :: WindowId -> React s (Singleton KeyDown) KeySym
 keyDown wid0 = maybe (keyDown wid0) pure =<<
 	await KeyDownReq \(OccKeyDown wid k) -> bool Nothing (Just k) $ wid == wid0
 
@@ -52,9 +53,9 @@ keyDown wid0 = maybe (keyDown wid0) pure =<<
 
 data KeyUp = KeyUpReq deriving (Show, Eq, Ord)
 numbered [t| KeyUp |]
-instance Request KeyUp where data Occurred KeyUp = OccKeyUp WindowId Key deriving Show
+instance Request KeyUp where data Occurred KeyUp = OccKeyUp WindowId KeySym deriving Show
 
-keyUp :: WindowId -> React s (Singleton KeyUp) Key
+keyUp :: WindowId -> React s (Singleton KeyUp) KeySym
 keyUp wid0 = maybe (keyUp wid0) pure =<<
 	await KeyUpReq \(OccKeyUp wid k) -> bool Nothing (Just k) $ wid == wid0
 

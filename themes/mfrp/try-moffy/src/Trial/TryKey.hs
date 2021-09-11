@@ -20,6 +20,7 @@ import Control.Moffy.Handle.XField (handle)
 import Control.Moffy.Run (interpretSt, interpretReactSt)
 import Data.Type.Set ((:-))
 import Data.Or (Or)
+import Data.KeySym
 
 import Field (openField, closeField, exposureMask, keyPressMask, keyReleaseMask)
 
@@ -61,8 +62,8 @@ keySig = () <$ do
 
 asciiKey :: React s (LoadDefaultWindow :- KeyEv) Char
 asciiKey = adjust keyDown >>= \case
-	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKey
+	Xk_Return -> pure '\n'; c -> pure 'x'
 
 asciiKeyUp :: React s (LoadDefaultWindow :- KeyEv) Char
 asciiKeyUp = adjust keyUp >>= \case
-	AsciiKey c -> pure c; XkReturn -> pure '\n'; _ -> asciiKeyUp
+	; Xk_Return -> pure '\n'; c -> pure 'x'

@@ -20,6 +20,7 @@ import Control.Moffy.Run.TChan
 import Data.Type.Set
 import Data.Type.Flip
 import Data.Bool
+import Data.KeySym
 
 import Data.OneOfThem as Oot
 import qualified Data.Map as Map
@@ -40,8 +41,8 @@ threeWindows = do
 pressQ :: WindowId -> React s (Singleton KeyDown) ()
 pressQ wid = bool (pressQ wid) (pure ()) . isQ =<< keyDown wid
 
-isQ :: Key -> Bool
-isQ (AsciiKey 'q') = True
+isQ :: KeySym -> Bool
+isQ Xk_q = True
 isQ _ = False
 
 ddw :: WindowId -> Sig s GuiEv Bool ()

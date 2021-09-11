@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: bc88a389a5e305ba5da85ba953a6d7ae1447a8f6639942ee1200d9aa5029aba3
+-- hash: 9cb58e214d9a70fde551c109a976226be497fc728721034addbdfbd4284559a1
 
 name:           try-moffy
 version:        0.1.0.0
@@ -175,6 +175,7 @@ library
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable draw
@@ -213,6 +214,7 @@ executable draw
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable followbox
@@ -251,6 +253,7 @@ executable followbox
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable followboxGtk
@@ -289,6 +292,7 @@ executable followboxGtk
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable try-gdk-boxes
@@ -327,6 +331,7 @@ executable try-gdk-boxes
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable try-gdk-gui
@@ -365,6 +370,7 @@ executable try-gdk-gui
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable try-moffy-exe
@@ -402,6 +408,7 @@ executable try-moffy-exe
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryCairo
@@ -440,6 +447,7 @@ executable tryCairo
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryCairoText
@@ -478,6 +486,7 @@ executable tryCairoText
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryCairoTextExtents
@@ -516,6 +525,7 @@ executable tryCairoTextExtents
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryConfigure
@@ -554,6 +564,7 @@ executable tryConfigure
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryCount
@@ -592,6 +603,7 @@ executable tryCount
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryDefaultWindow
@@ -630,6 +642,7 @@ executable tryDefaultWindow
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryDeleteEvent
@@ -668,6 +681,7 @@ executable tryDeleteEvent
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryFillPolygon
@@ -706,6 +720,7 @@ executable tryFillPolygon
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryGdk
@@ -744,6 +759,7 @@ executable tryGdk
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryGtk
@@ -782,6 +798,7 @@ executable tryGtk
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryKey
@@ -820,6 +837,7 @@ executable tryKey
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryMultiWindow
@@ -858,6 +876,7 @@ executable tryMultiWindow
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryPango
@@ -896,6 +915,7 @@ executable tryPango
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryPngCursor
@@ -934,6 +954,7 @@ executable tryPngCursor
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryPngCursorEvent
@@ -972,6 +993,7 @@ executable tryPngCursorEvent
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 executable tryScroll
@@ -1010,6 +1032,7 @@ executable tryScroll
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010
 
 test-suite try-moffy-test
@@ -1048,4 +1071,5 @@ test-suite try-moffy-test
     , type-flip
     , unordered-containers
     , vector
+    , x-keysym
   default-language: Haskell2010

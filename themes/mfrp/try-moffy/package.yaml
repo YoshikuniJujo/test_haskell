@@ -46,6 +46,7 @@ dependencies:
 - exception-hierarchy
 - simple-cairo
 - simple-gdk3
+- x-keysym
 
 library:
   source-dirs: src

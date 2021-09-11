@@ -42,12 +42,23 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-gdk3
     pantry-tree:
-      size: 4110
-      sha256: f96db025aabe0d4cfba3b567e1b27b5e4f78d13df3a830e630938832f506cf1c
-    commit: dcebf67ebfff54f88fe920f0c0585dc3572ddc9b
+      size: 4020
+      sha256: 58df2a1292c7b2782b2516a6c109fa7ead4ff152c165e977f67012b67ec088bc
+    commit: 763aafd42f91308ec4959df41cc2d4b6af25b4fa
   original:
     git: https://github.com/YoshikuniJujo/simple-gdk3
-    commit: dcebf67ebfff54f88fe920f0c0585dc3572ddc9b
+    commit: 763aafd42f91308ec4959df41cc2d4b6af25b4fa
+- completed:
+    name: x-keysym
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/x-keysym
+    pantry-tree:
+      size: 754
+      sha256: 7d7bf5e414a57950bc89937197aefe0d38cee0c7dcff41d2846a9b94f6b3d223
+    commit: e5e069590dbea7038540b66d9545df33b185e9bf
+  original:
+    git: https://github.com/YoshikuniJujo/x-keysym
+    commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - completed:
     name: simple-cairo
     version: 0.1.0.0

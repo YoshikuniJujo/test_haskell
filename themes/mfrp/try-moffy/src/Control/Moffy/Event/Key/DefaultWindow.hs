@@ -12,13 +12,14 @@ module Control.Moffy.Event.Key.DefaultWindow (
 import Control.Moffy
 import Control.Moffy.Event.DefaultWindow
 import Data.Type.Set
+import Data.KeySym
 
 import Control.Moffy.Event.Key.Internal.TryKeyValue
 
 import qualified Control.Moffy.Event.Key as K
 
-keyDown :: React s (LoadDefaultWindow :- K.KeyDown :- 'Nil) K.Key
+keyDown :: React s (LoadDefaultWindow :- K.KeyDown :- 'Nil) KeySym
 keyDown = adjust . K.keyDown =<< adjust loadDefaultWindow
 
-keyUp :: React s (LoadDefaultWindow :- K.KeyUp :- 'Nil) K.Key
+keyUp :: React s (LoadDefaultWindow :- K.KeyUp :- 'Nil) KeySym
 keyUp = adjust . K.keyUp =<< adjust loadDefaultWindow

@@ -12,6 +12,7 @@ import Control.Moffy.Handle as H
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Map
+import Data.KeySym
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -49,5 +50,5 @@ handleKeyDown tw2i _ = gdkWithEvent \case
 		print e
 		w2i <- atomically $ readTVar tw2i
 		let	w = w2i ! gdkEventKeyWindow e
-		pure . Just . App.Singleton . OccKeyDown w $ Key 123
+		pure . Just . App.Singleton . OccKeyDown w $ gdkEventKeyKeyval e
 	_ -> pure Nothing
