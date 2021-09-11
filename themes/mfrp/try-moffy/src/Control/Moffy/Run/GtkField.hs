@@ -19,8 +19,7 @@ import Control.Moffy.Event.Gui
 import Control.Moffy.Event.Delete as M (pattern OccDeleteEvent)
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Cursor
-import Control.Moffy.Event.Key (
-	pattern OccKeyDown, pattern OccKeyUp, Key(..) )
+import Control.Moffy.Event.Key (pattern OccKeyDown, pattern OccKeyUp)
 import Control.Moffy.Event.Mouse (
 	MouseDown, pattern OccMouseDown,  MouseUp, pattern OccMouseUp,
 	MouseMove, pattern OccMouseMove, MouseBtn(..),

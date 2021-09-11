@@ -6,15 +6,12 @@ module Control.Moffy.Event.Key.DefaultWindow (
 	K.KeyEv,
 	K.KeyDown, keyDown,
 	K.KeyUp, keyUp,
-	K.Key(..), pattern K.AsciiKey,
-	module Control.Moffy.Event.Key.Internal.TryKeyValue ) where
+	) where
 
 import Control.Moffy
 import Control.Moffy.Event.DefaultWindow
 import Data.Type.Set
 import Data.KeySym
-
-import Control.Moffy.Event.Key.Internal.TryKeyValue
 
 import qualified Control.Moffy.Event.Key as K
 

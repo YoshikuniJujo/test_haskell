@@ -8,7 +8,7 @@ module Control.Moffy.Handle.XField.Key (
 import Control.Moffy (EvOccs)
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key (
-	KeyEv, Key(..), pattern OccKeyDown, pattern OccKeyUp )
+	KeyEv, pattern OccKeyDown, pattern OccKeyUp )
 import Data.KeySym
 import Field (Event', Event(..), evEvent, evKeySym)
 

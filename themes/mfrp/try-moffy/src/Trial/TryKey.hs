@@ -12,8 +12,7 @@ import Control.Moffy (Sig, React, adjust, adjustSig, waitFor, first, repeat, bre
 import Control.Moffy.Event.Delete (DeleteEvent, deleteEvent)
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.DefaultWindow
-import Control.Moffy.Event.Key.DefaultWindow (
-	KeyEv, keyDown, keyUp, pattern AsciiKey, pattern XkReturn )
+import Control.Moffy.Event.Key.DefaultWindow (KeyEv, keyDown, keyUp)
 import Control.Moffy.Handle (retrySt, beforeSt, liftHandle')
 import Control.Moffy.Handle.DefaultWindow
 import Control.Moffy.Handle.XField (handle)

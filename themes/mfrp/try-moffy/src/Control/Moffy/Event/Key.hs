@@ -11,20 +11,14 @@ module Control.Moffy.Event.Key (
 	-- * Key Down Event
 	KeyDown, pattern OccKeyDown, keyDown,
 	-- * Key Up Event
-	KeyUp, pattern OccKeyUp, keyUp,
-	-- * Key
-	Key(..), pattern AsciiKey,
-	module Control.Moffy.Event.Key.Internal.TryKeyValue ) where
+	KeyUp, pattern OccKeyUp, keyUp
+	) where
 
 import Control.Moffy (React, Request(..), await)
 import Control.Moffy.Event.Window
-import Control.Moffy.Event.Key.Internal (Key(..))
 import Data.Type.Set (numbered, pattern Nil, Singleton, (:-))
 import Data.Bool (bool)
-import Data.Char (chr)
 import Data.KeySym
-
-import Control.Moffy.Event.Key.Internal.TryKeyValue
 
 ---------------------------------------------------------------------------
 
@@ -62,14 +56,3 @@ keyUp wid0 = maybe (keyUp wid0) pure =<<
 -- KEY EVENT
 
 type KeyEv = KeyDown :- KeyUp :- 'Nil
-
----------------------------------------------------------------------------
--- PATTERN
----------------------------------------------------------------------------
-
-pattern AsciiKey :: Char -> Key
-pattern AsciiKey c <- (asciiKey -> Just c)
-
-asciiKey :: Key -> Maybe Char
-asciiKey (Key k) =
-	bool Nothing (Just . chr $ fromIntegral k) (0x20 <= k && k <= 0x7e)
