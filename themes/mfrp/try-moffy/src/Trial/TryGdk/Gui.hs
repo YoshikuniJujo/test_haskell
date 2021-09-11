@@ -12,7 +12,6 @@ import Control.Moffy.Handle as H
 import Data.Type.Set
 import Data.OneOrMore
 import Data.Map
-import Data.KeySym
 import Graphics.Gdk.Windows
 import Graphics.Gdk.Windows.GdkWindowAttr
 import Graphics.Gdk.Windows.GdkEventMask
@@ -22,8 +21,10 @@ import Graphics.Gdk.EventStructures
 import qualified Data.OneOrMoreApp as App
 
 handleGdk :: TVar WindowId -> TVar (Map WindowId GdkWindow) ->
-	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowNew :- KeyDown :- 'Nil)
-handleGdk nid i2w w2i = handleWindowNew nid i2w w2i `H.merge` handleKeyDown w2i
+	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowNew :- WindowDestroy :- KeyDown :- 'Nil)
+handleGdk nid i2w w2i =
+	(H.expand $ handleWindowNew nid i2w w2i :: Handle' IO (WindowNew :- WindowDestroy :- 'Nil))
+	`H.merge` handleKeyDown w2i
 
 handleWindowNew ::
 	TVar WindowId -> TVar (Map WindowId GdkWindow) ->
