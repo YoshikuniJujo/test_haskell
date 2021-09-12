@@ -33,7 +33,7 @@ handleWindowNew ::
 handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	w <- gdkToplevelNew Nothing $ minimalGdkWindowAttr
 		(gdkEventMaskMultiBits [
-			GdkKeyPressMask,
+			GdkKeyPressMask, GdkKeyReleaseMask,
 			GdkButtonPressMask, GdkButtonReleaseMask,
 			GdkButtonMotionMask ]) 700 500
 	gdkWindowSetEventCompression w False
