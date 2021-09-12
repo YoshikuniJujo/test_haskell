@@ -19,4 +19,4 @@ main = do
 	wid <- atomically . newTVar $ WindowId 0
 	i2w <- atomically $ newTVar empty
 	w2i <- atomically $ newTVar empty
-	print =<< interpretReact (retry $ handleGdk wid i2w w2i) tryWindow
+	print =<< interpret (retry $ handleGdk wid i2w w2i) print tryWindowConfigure
