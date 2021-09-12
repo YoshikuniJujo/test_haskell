@@ -7,6 +7,7 @@ import Prelude hiding (repeat, until)
 
 import Control.Monad
 import Control.Moffy
+import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key
 import Data.Type.Set
@@ -22,12 +23,12 @@ tryWindow = do
 clickKey :: WindowId -> KeySym -> React s (Singleton KeyDown) ()
 clickKey w k = keyDown w >>= bool (clickKey w k) (pure ()) . (== k)
 
-tryWindowConfigure :: Sig s (WindowEv :+: KeyEv :+: 'Nil) (Configure, KeySym) ()
+tryWindowConfigure :: Sig s (DeleteEvent :- WindowEv :+: KeyEv :+: 'Nil) (Configure, KeySym) ()
 tryWindowConfigure = do
 	w <- waitFor $ adjust windowNew
 	void . adjustSig
 --		$ ((,) <$%> repeat (windowConfigure w) <*%> repeat (keyUp w))
-		$ configureKeyUp w `until` clickKey w Xk_q
+		$ configureKeyUp w `until` (clickKey w Xk_q `first` deleteEvent w)
 
 configureKeyUp :: WindowId -> Sig s (WindowConfigure :- KeyUp :- 'Nil) (Configure, KeySym) ()
 configureKeyUp w = (,) <$%> repeat (adjust $ windowConfigure w) <*%> repeat (adjust $ keyUp w)

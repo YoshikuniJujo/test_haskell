@@ -7,6 +7,7 @@ module Trial.TryGdk.Gui where
 
 import Control.Concurrent
 import Control.Concurrent.STM
+import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Window
 import Control.Moffy.Event.Key
 import Control.Moffy.Handle as H
@@ -22,7 +23,7 @@ import Graphics.Gdk.EventStructures
 import qualified Data.OneOrMoreApp as App
 
 handleGdk :: TVar WindowId -> TVar (Map WindowId GdkWindow) ->
-	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowEv :+: KeyEv :+: 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (DeleteEvent :- WindowEv :+: KeyEv :+: 'Nil)
 handleGdk nid i2w w2i =
 	(H.expand $ handleWindowNew nid i2w w2i :: Handle' IO (WindowNew :- WindowDestroy :- 'Nil))
 	`H.merge` handleWindowConfigureKey w2i
@@ -47,9 +48,14 @@ handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	pure r
 
 handleWindowConfigureKey ::
-	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowConfigure :- KeyEv :+: 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (DeleteEvent :- WindowConfigure :- KeyEv :+: 'Nil)
 handleWindowConfigureKey tw2i _ =
 	gdkWithEvent \case
+		Just (GdkEventGdkDelete e_) -> do
+			e <- gdkEventAny e_
+			w2i <- atomically $ readTVar tw2i
+			let	i = w2i ! gdkEventAnyWindow e
+			pure . Just . App.expand . App.Singleton $ OccDeleteEvent i
 		Just (GdkEventGdkConfigure e_) -> do
 			e <- gdkEventConfigure e_
 			w2i <- atomically $ readTVar tw2i
