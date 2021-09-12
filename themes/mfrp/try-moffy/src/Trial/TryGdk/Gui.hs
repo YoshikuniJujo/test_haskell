@@ -22,10 +22,10 @@ import Graphics.Gdk.EventStructures
 import qualified Data.OneOrMoreApp as App
 
 handleGdk :: TVar WindowId -> TVar (Map WindowId GdkWindow) ->
-	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowEv :+: KeyDown :- 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowEv :+: KeyEv :+: 'Nil)
 handleGdk nid i2w w2i =
 	(H.expand $ handleWindowNew nid i2w w2i :: Handle' IO (WindowNew :- WindowDestroy :- 'Nil))
-	`H.merge` handleWindowConfigureKeyDown w2i
+	`H.merge` handleWindowConfigureKey w2i
 
 handleWindowNew ::
 	TVar WindowId -> TVar (Map WindowId GdkWindow) ->
@@ -46,9 +46,9 @@ handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 		pure . Just . App.Singleton $ OccWindowNew i
 	pure r
 
-handleWindowConfigureKeyDown ::
-	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowConfigure :- KeyDown :- 'Nil)
-handleWindowConfigureKeyDown tw2i _ =
+handleWindowConfigureKey ::
+	TVar (Map GdkWindow WindowId) -> Handle' IO (WindowConfigure :- KeyEv :+: 'Nil)
+handleWindowConfigureKey tw2i _ =
 	gdkWithEvent \case
 		Just (GdkEventGdkConfigure e_) -> do
 			e <- gdkEventConfigure e_
@@ -64,5 +64,10 @@ handleWindowConfigureKeyDown tw2i _ =
 			w2i <- atomically $ readTVar tw2i
 			let	w = w2i ! gdkEventKeyWindow e
 			pure . Just . App.expand . App.Singleton . OccKeyDown w $ gdkEventKeyKeyval e
+		Just (GdkEventGdkKeyRelease e_) -> do
+			e <- gdkEventKey e_
+			w2i <- atomically $ readTVar tw2i
+			let	w = w2i ! gdkEventKeyWindow e
+			pure . Just . App.expand . App.Singleton . OccKeyUp w $ gdkEventKeyKeyval e
 		Just _ -> pure Nothing
 		Nothing -> threadDelay 50000 >> pure Nothing
