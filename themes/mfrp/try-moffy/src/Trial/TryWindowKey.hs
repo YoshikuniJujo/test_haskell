@@ -9,6 +9,7 @@ import Control.Monad
 import Control.Moffy
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.Key
 import Data.Type.Set
 import Data.Type.Flip
@@ -23,12 +24,15 @@ tryWindow = do
 clickKey :: WindowId -> KeySym -> React s (Singleton KeyDown) ()
 clickKey w k = keyDown w >>= bool (clickKey w k) (pure ()) . (== k)
 
-tryWindowConfigure :: Sig s (DeleteEvent :- WindowEv :+: KeyEv :+: 'Nil) (Configure, KeySym) ()
+tryWindowConfigure :: Sig s (DeleteEvent :- WindowEv :+: MouseDown :- KeyEv :+: 'Nil) (Configure, MouseBtn, KeySym) ()
 tryWindowConfigure = do
 	w <- waitFor $ adjust windowNew
 	void . adjustSig
 --		$ ((,) <$%> repeat (windowConfigure w) <*%> repeat (keyUp w))
 		$ configureKeyUp w `until` (clickKey w Xk_q `first` deleteEvent w)
 
-configureKeyUp :: WindowId -> Sig s (WindowConfigure :- KeyUp :- 'Nil) (Configure, KeySym) ()
-configureKeyUp w = (,) <$%> repeat (adjust $ windowConfigure w) <*%> repeat (adjust $ keyUp w)
+configureKeyUp :: WindowId -> Sig s (WindowConfigure :- MouseDown :- KeyUp :- 'Nil) (Configure, MouseBtn, KeySym) ()
+configureKeyUp w = (,,)
+	<$%> repeat (adjust $ windowConfigure w)
+	<*%> repeat (adjust $ mouseDown w)
+	<*%> repeat (adjust $ keyUp w)

@@ -5,10 +5,12 @@
 
 module Trial.TryGdk.Gui where
 
+import Foreign.C.Types
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Moffy.Event.Delete
 import Control.Moffy.Event.Window
+import Control.Moffy.Event.Mouse
 import Control.Moffy.Event.Key
 import Control.Moffy.Handle as H
 import Data.Type.Set
@@ -23,7 +25,7 @@ import Graphics.Gdk.EventStructures
 import qualified Data.OneOrMoreApp as App
 
 handleGdk :: TVar WindowId -> TVar (Map WindowId GdkWindow) ->
-	TVar (Map GdkWindow WindowId) -> Handle' IO (DeleteEvent :- WindowEv :+: KeyEv :+: 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (DeleteEvent :- WindowEv :+: MouseDown :- KeyEv :+: 'Nil)
 handleGdk nid i2w w2i =
 	(H.expand $ handleWindowNew nid i2w w2i :: Handle' IO (WindowNew :- WindowDestroy :- 'Nil))
 	`H.merge` handleWindowConfigureKey w2i
@@ -48,7 +50,7 @@ handleWindowNew nid i2w w2i (unSingleton -> WindowNewReq) = do
 	pure r
 
 handleWindowConfigureKey ::
-	TVar (Map GdkWindow WindowId) -> Handle' IO (DeleteEvent :- WindowConfigure :- KeyEv :+: 'Nil)
+	TVar (Map GdkWindow WindowId) -> Handle' IO (DeleteEvent :- WindowConfigure :- MouseDown :- KeyEv :+: 'Nil)
 handleWindowConfigureKey tw2i _ =
 	gdkWithEvent \case
 		Just (GdkEventGdkDelete e_) -> do
@@ -65,6 +67,11 @@ handleWindowConfigureKey tw2i _ =
 				w = fromIntegral $ gdkEventConfigureWidth e
 				h = fromIntegral $ gdkEventConfigureHeight e
 			pure . Just . App.expand . App.Singleton . OccWindowConfigure i $ Configure (x, y) (w, h)
+		Just (GdkEventGdkButtonPress e_) -> do
+			e <- gdkEventButton e_
+			w2i <- atomically $ readTVar tw2i
+			let	w = w2i ! gdkEventButtonWindow e
+			pure . Just . App.expand . App.Singleton . OccMouseDown w . numToButton $ gdkEventButtonButton e
 		Just (GdkEventGdkKeyPress e_) -> do
 			e <- gdkEventKey e_
 			w2i <- atomically $ readTVar tw2i
@@ -77,3 +84,9 @@ handleWindowConfigureKey tw2i _ =
 			pure . Just . App.expand . App.Singleton . OccKeyUp w $ gdkEventKeyKeyval e
 		Just _ -> pure Nothing
 		Nothing -> threadDelay 50000 >> pure Nothing
+
+numToButton :: CUInt -> MouseBtn
+numToButton 1 = ButtonLeft
+numToButton 2 = ButtonMiddle
+numToButton 3 = ButtonRight
+numToButton n = ButtonUnknown $ fromIntegral n
