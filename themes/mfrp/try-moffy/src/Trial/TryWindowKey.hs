@@ -24,15 +24,16 @@ tryWindow = do
 clickKey :: WindowId -> KeySym -> React s (Singleton KeyDown) ()
 clickKey w k = keyDown w >>= bool (clickKey w k) (pure ()) . (== k)
 
-tryWindowConfigure :: Sig s (DeleteEvent :- WindowEv :+: MouseDown :- KeyEv :+: 'Nil) (Configure, MouseBtn, KeySym) ()
+tryWindowConfigure :: Sig s (DeleteEvent :- WindowEv :+: MouseMove :- MouseDown :- KeyEv :+: 'Nil) (Configure, Point, MouseBtn, KeySym) ()
 tryWindowConfigure = do
 	w <- waitFor $ adjust windowNew
 	void . adjustSig
 --		$ ((,) <$%> repeat (windowConfigure w) <*%> repeat (keyUp w))
 		$ configureKeyUp w `until` (clickKey w Xk_q `first` deleteEvent w)
 
-configureKeyUp :: WindowId -> Sig s (WindowConfigure :- MouseDown :- KeyUp :- 'Nil) (Configure, MouseBtn, KeySym) ()
-configureKeyUp w = (,,)
+configureKeyUp :: WindowId -> Sig s (WindowConfigure :- MouseMove :- MouseDown :- KeyUp :- 'Nil) (Configure, Point, MouseBtn, KeySym) ()
+configureKeyUp w = (,,,)
 	<$%> repeat (adjust $ windowConfigure w)
+	<*%> repeat (adjust $ mouseMove w)
 	<*%> repeat (adjust $ mouseDown w)
 	<*%> repeat (adjust $ keyUp w)
