@@ -1,0 +1,4 @@
+メモ
+====
+
+* check colored emoji
