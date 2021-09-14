@@ -24,6 +24,8 @@ source-repository head
   location: https://github.com/githubuser/try-simple-cairo-new
 
 library
+  exposed-modules:
+      MakePng
   other-modules:
       Paths_try_simple_cairo_new
   hs-source-dirs:
