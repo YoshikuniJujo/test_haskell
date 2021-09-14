@@ -37,6 +37,7 @@ library
     , cairo-image
     , simple-cairo
     , simple-pango
+    , text
   default-language: Haskell2010
 
 executable try-simple-cairo-new-exe
@@ -53,6 +54,26 @@ executable try-simple-cairo-new-exe
     , cairo-image
     , simple-cairo
     , simple-pango
+    , text
+    , try-simple-cairo-new
+  default-language: Haskell2010
+
+executable try-sloth
+  main-is: try-sloth.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo_new
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , simple-cairo
+    , simple-pango
+    , text
     , try-simple-cairo-new
   default-language: Haskell2010
 
@@ -71,5 +92,6 @@ test-suite try-simple-cairo-new-test
     , cairo-image
     , simple-cairo
     , simple-pango
+    , text
     , try-simple-cairo-new
   default-language: Haskell2010

@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- text
 - JuicyPixels
 - simple-cairo
 - cairo-image
@@ -33,6 +34,15 @@ library:
 executables:
   try-simple-cairo-new-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo-new
+  try-sloth:
+    main:                try-sloth.hs
     source-dirs:         app
     ghc-options:
     - -threaded
