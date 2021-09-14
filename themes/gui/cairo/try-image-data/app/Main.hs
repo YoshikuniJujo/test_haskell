@@ -17,5 +17,5 @@ main = do
 		sfcTrans = Transform 1 0 0 1 0 0,
 		sfcSource = Source
 			. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.4 0.8 0.2 1.0,
-		sfcMask = MaskStroke $ Rectangle 16 16 96 96 }
+		sfcMask = MaskStroke . Paths 7 $ Rectangle 16 16 96 96 }
 	makePng sr "pngs/simple.png"

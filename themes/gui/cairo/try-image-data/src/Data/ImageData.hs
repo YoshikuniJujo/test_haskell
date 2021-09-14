@@ -42,7 +42,12 @@ data SurfaceTypeColor t where
 
 deriving instance Show (SurfaceTypeColor t)
 
-data Paths
+data Paths = Paths {
+	pathsLineWidth :: Double,
+	pathsShape :: Shape }
+	deriving Show
+
+data Shape
 	= Rectangle {
 		rectX :: Double, rectY :: Double,
 		rectWidth :: Double, rectHeight :: Double }

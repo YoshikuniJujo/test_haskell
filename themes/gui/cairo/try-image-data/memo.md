@@ -21,8 +21,11 @@ todo
 	+ [ ] PatternMesh
 * [ ] Paths
 	+ [x] rectangle
-	+ [ ] add pen width
-	+ [ ] add other settings
+	+ [x] line width
+	+ [ ] dash
+	+ [ ] fill rule
+	+ [ ] line cap
+	+ [ ] line join
 	+ [ ] others
 
 Pattern

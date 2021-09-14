@@ -10,6 +10,7 @@ import Control.Monad.ST
 import Data.ImageData
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.CairoT.Setting
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
@@ -50,6 +51,11 @@ cairoDrawMask cr = \case
 	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
 
 cairoDrawPaths :: CairoTIO s -> Paths -> IO ()
-cairoDrawPaths cr = \case
+cairoDrawPaths cr Paths { pathsLineWidth = lw, pathsShape = sp } = do
+	cairoSet cr . LineWidth $ realToFrac lw
+	cairoDrawShape cr sp
+
+cairoDrawShape :: CairoTIO s -> Shape -> IO ()
+cairoDrawShape cr = \case
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
