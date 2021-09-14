@@ -11,7 +11,7 @@ todo
 	+ [ ] MaskAlpha
 	+ [x] MaskPaint
 	+ [ ] MaskStroke
-	+ [ ] MaskFill
+	+ [x] MaskFill
 	+ [ ] MaskGlyphs
 * [ ] Alpha
 * [ ] Pattern
@@ -20,6 +20,10 @@ todo
 	+ [ ] PatternGradient
 	+ [ ] PatternMesh
 * [ ] Paths
+	+ [x] rectangle
+	+ [ ] add pen width
+	+ [ ] add other settings
+	+ [ ] others
 
 Pattern
 ------

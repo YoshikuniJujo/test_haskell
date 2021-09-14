@@ -24,7 +24,7 @@ data Source t = Source (Pattern 'Rgba) deriving Show
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
---	| MaskStroke Paths
+	| MaskStroke Paths
 	| MaskFill Paths
 --	| MaskGlyphs Glyphs
 	deriving Show

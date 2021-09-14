@@ -46,6 +46,7 @@ cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
 	MaskAlpha alp -> error "yet"
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
+	MaskStroke pth -> cairoDrawPaths cr pth >> cairoStroke cr
 	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
 
 cairoDrawPaths :: CairoTIO s -> Paths -> IO ()
