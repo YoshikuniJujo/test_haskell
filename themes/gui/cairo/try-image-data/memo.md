@@ -1,6 +1,25 @@
 メモ
 ====
 
+todo
+----
+
+* [ ] Surface
+* [x] Transform
+* [ ] Source
+* [ ] Mask
+	+ [ ] MaskAlpha
+	+ [x] MaskPaint
+	+ [ ] MaskStroke
+	+ [ ] MaskFill
+	+ [ ] MaskGlyphs
+* [ ] Alpha
+* [ ] Pattern
+	+ [ ] PatternSurface
+	+ [x] PatternColor
+	+ [ ] PatternGradient
+	+ [ ] PatternMesh
+
 Pattern
 ------
 

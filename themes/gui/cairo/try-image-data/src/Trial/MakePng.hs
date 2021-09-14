@@ -3,6 +3,7 @@
 
 module Trial.MakePng where
 
+import Control.Monad.ST
 import Data.Int
 import Data.CairoContext
 import Data.CairoImage
@@ -17,7 +18,9 @@ pngWith fp w h act = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 w h
 	cr <- cairoCreate sr
 	act cr
-	cairoImageSurfaceGetCairoImage sr >>= \case
-		CairoImageArgb32 ci ->
-			writePng fp $ cairoArgb32ToJuicyRGBA8 ci
-		_ -> error "never occur"
+	makePng sr fp
+
+makePng :: CairoSurfaceImageT s RealWorld -> FilePath -> IO ()
+makePng sr fp = cairoImageSurfaceGetCairoImage sr >>= \case
+	CairoImageArgb32 ci -> writePng fp $ cairoArgb32ToJuicyRGBA8 ci
+	_ -> error "never occur"
