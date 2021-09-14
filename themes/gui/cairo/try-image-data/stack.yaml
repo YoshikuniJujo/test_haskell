@@ -40,7 +40,13 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps:
+- git: https://github.com/YoshikuniJujo/simple-cairo
+  commit: ba97da2dc8fb25bf71f864c521ee755ddf8c8dd1
+- git: https://github.com/YoshikuniJujo/cairo-image
+  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- git: https://github.com/YoshikuniJujo/JuicyCairo
+  commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
