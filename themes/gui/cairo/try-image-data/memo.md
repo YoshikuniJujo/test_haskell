@@ -19,6 +19,7 @@ todo
 	+ [x] PatternColor
 	+ [ ] PatternGradient
 	+ [ ] PatternMesh
+* [ ] Paths
 
 Pattern
 ------

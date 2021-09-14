@@ -24,8 +24,8 @@ data Source t = Source (Pattern 'Rgba) deriving Show
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
---	| MaskStroke Path
---	| MaskFill Path
+--	| MaskStroke Paths
+	| MaskFill Paths
 --	| MaskGlyphs Glyphs
 	deriving Show
 
@@ -41,3 +41,9 @@ data SurfaceTypeColor t where
 	ColorRgba :: Rgba -> SurfaceTypeColor 'Rgba
 
 deriving instance Show (SurfaceTypeColor t)
+
+data Paths
+	= Rectangle {
+		rectX :: Double, rectY :: Double,
+		rectWidth :: Double, rectHeight :: Double }
+	deriving Show
