@@ -9,7 +9,7 @@ import Data.Color
 data SurfaceType = Alpha | Rgba deriving Show
 
 data Surface (t :: SurfaceType) = Surface {
-	sfcWidth :: Integer, sfcHeight :: Integer, surfaceDraw :: [Draw t] }
+	sfcWidth :: Integer, sfcHeight :: Integer, surfaceDraws :: [Draw t] }
 	deriving Show
 
 data Draw (t :: SurfaceType) = Draw {
@@ -27,8 +27,8 @@ data Source t = Source (Pattern 'Rgba) deriving Show
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
-	| MaskStroke Paths
-	| MaskFill Paths
+	| MaskStroke Shape
+	| MaskFill Shape
 --	| MaskGlyphs Glyphs
 	deriving Show
 
@@ -45,12 +45,12 @@ data SurfaceTypeColor t where
 
 deriving instance Show (SurfaceTypeColor t)
 
-data Paths = Paths {
-	pathsLineWidth :: Double,
-	pathsShape :: Shape }
+data Shape = Shape {
+	shapeLineWidth :: Double,
+	shapePaths :: Path }
 	deriving Show
 
-data Shape
+data Path
 	= Rectangle {
 		rectX :: Double, rectY :: Double,
 		rectWidth :: Double, rectHeight :: Double }

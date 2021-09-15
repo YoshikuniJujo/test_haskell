@@ -26,7 +26,7 @@ drawSurface sfc@Surface {
 	pure sr
 
 cairoDrawSurface :: CairoTIO s -> Surface 'Rgba -> IO ()
-cairoDrawSurface cr Surface { surfaceDraw = drws } =
+cairoDrawSurface cr Surface { surfaceDraws = drws } =
 	cairoDrawDraw cr `mapM_` drws
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
@@ -54,12 +54,12 @@ cairoDrawMask cr = \case
 	MaskStroke pth -> cairoDrawPaths cr pth >> cairoStroke cr
 	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
 
-cairoDrawPaths :: CairoTIO s -> Paths -> IO ()
-cairoDrawPaths cr Paths { pathsLineWidth = lw, pathsShape = sp } = do
+cairoDrawPaths :: CairoTIO s -> Shape -> IO ()
+cairoDrawPaths cr Shape { shapeLineWidth = lw, shapePaths = sp } = do
 	cairoSet cr . LineWidth $ realToFrac lw
 	cairoDrawShape cr sp
 
-cairoDrawShape :: CairoTIO s -> Shape -> IO ()
+cairoDrawShape :: CairoTIO s -> Path -> IO ()
 cairoDrawShape cr = \case
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
