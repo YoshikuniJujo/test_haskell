@@ -27,8 +27,8 @@ data Source t = Source (Pattern 'Rgba) deriving Show
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
-	| MaskStroke Shape
-	| MaskFill Shape
+	| MaskStroke LineWidth LineJoin Path
+	| MaskFill Path
 --	| MaskGlyphs Glyphs
 	deriving Show
 
@@ -44,12 +44,6 @@ data SurfaceTypeColor t where
 	ColorRgba :: Rgba -> SurfaceTypeColor 'Rgba
 
 deriving instance Show (SurfaceTypeColor t)
-
-data Shape = Shape {
-	shapeLineWidth :: LineWidth,
-	shapeLineJoin :: LineJoin,
-	shapePaths :: Path }
-	deriving Show
 
 newtype LineWidth = LineWidth Double deriving Show
 

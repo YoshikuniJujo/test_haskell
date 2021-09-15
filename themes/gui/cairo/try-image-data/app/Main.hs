@@ -22,7 +22,6 @@ main = do
 			Draw {	drawTrans = Transform 1 0 0 1 0 0,
 				drawSource = Source
 					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.05 0.1 0.025 1.0,
-				drawMask = MaskStroke . Shape
-					(LineWidth 64) (LineJoinMiter 1) $ Rectangle 96 96 544 544 }
+				drawMask = MaskStroke (LineWidth 64) (LineJoinMiter 1) $ Rectangle 96 96 544 544 }
 			] }
 	makePng sr "pngs/simple.png"
