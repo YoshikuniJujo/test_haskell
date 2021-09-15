@@ -25,12 +25,12 @@ todo
 	+ [ ] dash
 	+ [ ] fill rule
 	+ [ ] line cap
-	+ [ ] line join
-		- [ ] miter
-			* [ ] miter limit
-			* [ ] others
-		- [ ] round
-		- [ ] bevel
+	+ [x] line join
+		- [x] miter
+			* [x] miter limit
+			* [x] others
+		- [x] round
+		- [x] bevel
 	+ [ ] others
 
 Pattern

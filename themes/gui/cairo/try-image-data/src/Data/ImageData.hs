@@ -46,8 +46,14 @@ data SurfaceTypeColor t where
 deriving instance Show (SurfaceTypeColor t)
 
 data Shape = Shape {
-	shapeLineWidth :: Double,
+	shapeLineWidth :: LineWidth,
+	shapeLineJoin :: LineJoin,
 	shapePaths :: Path }
+	deriving Show
+
+newtype LineWidth = LineWidth Double deriving Show
+
+data LineJoin = LineJoinMiter Double | LineJoinRound | LineJoinBevel
 	deriving Show
 
 data Path

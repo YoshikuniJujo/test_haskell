@@ -7,10 +7,10 @@
 module Trial.TryCairo where
 
 import Control.Monad.ST
-import Data.ImageData
+import Data.ImageData as I
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
-import Graphics.Cairo.Drawing.CairoT.Setting
+import Graphics.Cairo.Drawing.CairoT.Setting as Cr
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
@@ -55,9 +55,18 @@ cairoDrawMask cr = \case
 	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
 
 cairoDrawPaths :: CairoTIO s -> Shape -> IO ()
-cairoDrawPaths cr Shape { shapeLineWidth = lw, shapePaths = sp } = do
-	cairoSet cr . LineWidth $ realToFrac lw
-	cairoDrawShape cr sp
+cairoDrawPaths cr Shape {
+	shapeLineWidth = I.LineWidth lw,
+	shapeLineJoin = lj,
+	shapePaths = sp } =
+	do	cairoSet cr . Cr.LineWidth $ realToFrac lw
+		case lj of
+			I.LineJoinMiter (realToFrac -> ml) -> do
+				cairoSet cr Cr.LineJoinMiter
+				cairoSet cr $ MiterLimit ml
+			I.LineJoinRound -> cairoSet cr Cr.LineJoinRound
+			I.LineJoinBevel -> cairoSet cr Cr.LineJoinBevel
+		cairoDrawShape cr sp
 
 cairoDrawShape :: CairoTIO s -> Path -> IO ()
 cairoDrawShape cr = \case
