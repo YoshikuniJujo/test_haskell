@@ -40,6 +40,10 @@ main = pngWith "pngs/try-line-join.png" 768 896 \cr -> do
 	cairoLineTo cr 270 520
 	cairoStroke cr
 
+	cairoRectangle cr 384 608 128 128
+	cairoLineTo cr 264 736
+	cairoStroke cr
+
 tryLineCap :: CairoTIO s -> Int -> LineCap -> IO ()
 tryLineCap cr i c = do
 	cairoSet cr c
