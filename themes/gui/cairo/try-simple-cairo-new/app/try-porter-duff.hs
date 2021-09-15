@@ -17,18 +17,37 @@ import Graphics.Cairo.Drawing.Paths
 import MakePng
 
 main :: IO ()
-main = pngWith "pngs/try-porter-duff-0.png" 768 896 \cr ->
-	for_ (zip [0 ..] operators) \(i :: Int, op) ->
+main = for_ (zip
+	(("pngs/try-porter-duff-" ++) . (++ ".png") . show <$> [0 :: Int ..])
+	(separate 12 $ operators ++ blendModes)) \(fp, os) -> samples fp os
+
+samples :: FilePath -> [Operator] -> IO ()
+samples fp ops = pngWith fp 768 896 \cr ->
+	for_ (zip [0 ..] ops) \(i :: Int, op) ->
 		tryPorterDuff cr
 			(256 * fromIntegral (i `div` 4))
 			(224 * fromIntegral (i `mod` 4))
 			op
 
+separate :: Int -> [a] -> [[a]]
+separate _ [] = []
+separate n xs = take n xs : separate n (drop n xs)
+
 operators :: [Operator]
 operators = [
 	OperatorClear, OperatorSource, OperatorOver, OperatorIn, OperatorOut,
 	OperatorAtop, OperatorDest, OperatorDestOver, OperatorDestIn,
-	OperatorDestOut, OperatorDestAtop, OperatorXor ]
+	OperatorDestOut, OperatorDestAtop, OperatorXor, OperatorAdd,
+	OperatorSaturate ]
+
+blendModes :: [Operator]
+blendModes = [
+	OperatorMultiply, OperatorScreen, OperatorOverlay, OperatorDarken,
+	OperatorLighten, OperatorColorDodge, OperatorColorBurn,
+	OperatorHardLight, OperatorSoftLight, OperatorDifference,
+	OperatorExclusion,
+	OperatorHslHue, OperatorHslSaturation, OperatorHslColor,
+	OperatorHslLuminosity ]
 
 tryPorterDuff :: CairoTIO r -> CDouble -> CDouble -> Operator -> IO ()
 tryPorterDuff cr x0 y0 op = do
