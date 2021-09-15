@@ -51,8 +51,8 @@ cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
 	MaskAlpha alp -> error "yet"
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
-	MaskStroke lw lj pth -> cairoDrawPaths cr lw lj pth >> cairoStroke cr
-	MaskFill pth -> cairoDrawShape cr pth >> cairoFill cr
+	MaskStroke lw lj pth -> cairoDrawPaths cr lw lj `mapM_` pth >> cairoStroke cr
+	MaskFill pth -> cairoDrawShape cr `mapM_` pth >> cairoFill cr
 
 cairoDrawPaths :: CairoTIO s -> I.LineWidth -> I.LineJoin -> Path -> IO ()
 cairoDrawPaths cr (I.LineWidth lw) lj sp =
