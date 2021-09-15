@@ -26,8 +26,12 @@ drawSurface sfc@Surface {
 	pure sr
 
 cairoDrawSurface :: CairoTIO s -> Surface 'Rgba -> IO ()
-cairoDrawSurface cr Surface
-	{ sfcTrans = tr, sfcSource = src, sfcMask = msk } = do
+cairoDrawSurface cr Surface { surfaceDraw = drws } =
+	cairoDrawDraw cr `mapM_` drws
+
+cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
+cairoDrawDraw cr Draw {
+	drawTrans = tr, drawSource = src, drawMask = msk } = do
 	cairoTransform cr =<< transToCairoMatrixT tr
 	cairoDrawSource cr src
 	cairoDrawMask cr msk

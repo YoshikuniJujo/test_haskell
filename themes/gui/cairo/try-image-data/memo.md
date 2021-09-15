@@ -26,6 +26,11 @@ todo
 	+ [ ] fill rule
 	+ [ ] line cap
 	+ [ ] line join
+		- [ ] miter
+			* [ ] miter limit
+			* [ ] others
+		- [ ] round
+		- [ ] bevel
 	+ [ ] others
 
 Pattern

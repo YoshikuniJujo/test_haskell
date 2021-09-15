@@ -9,8 +9,11 @@ import Data.Color
 data SurfaceType = Alpha | Rgba deriving Show
 
 data Surface (t :: SurfaceType) = Surface {
-	sfcWidth :: Integer, sfcHeight :: Integer,
-	sfcTrans :: Transform, sfcSource :: Source t, sfcMask :: Mask }
+	sfcWidth :: Integer, sfcHeight :: Integer, surfaceDraw :: [Draw t] }
+	deriving Show
+
+data Draw (t :: SurfaceType) = Draw {
+	drawTrans :: Transform, drawSource :: Source t, drawMask :: Mask }
 	deriving Show
 
 data Transform = Transform {

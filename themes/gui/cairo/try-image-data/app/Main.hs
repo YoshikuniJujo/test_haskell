@@ -12,10 +12,16 @@ import Trial.MakePng
 main :: IO ()
 main = do
 	sr <- drawSurface Surface {
-		sfcWidth = 128,
-		sfcHeight = 128,
-		sfcTrans = Transform 1 0 0 1 0 0,
-		sfcSource = Source
-			. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.4 0.8 0.2 1.0,
-		sfcMask = MaskStroke . Paths 7 $ Rectangle 16 16 96 96 }
+		sfcWidth = 768,
+		sfcHeight = 896,
+		surfaceDraw = [
+			Draw {	drawTrans = Transform 1 0 0 1 0 0,
+				drawSource = Source
+					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.15 0.3 0.05 1.0,
+				drawMask = MaskPaint 1 },
+			Draw {	drawTrans = Transform 1 0 0 1 0 0,
+				drawSource = Source
+					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.05 0.1 0.025 1.0,
+				drawMask = MaskStroke . Paths 64 $ Rectangle 96 96 544 544 }
+			] }
 	makePng sr "pngs/simple.png"
