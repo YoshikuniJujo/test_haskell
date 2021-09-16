@@ -15,7 +15,7 @@ main = do
 		sfcHeight = 896,
 		surfaceDraws = [
 			Draw {	drawOperator = OperatorOver,
-				drawClip = [],
+				drawClip = [[Rectangle 16 16 256 256]],
 				drawSource = Source . PatternColor . ColorRgba
 					. fromJust $ rgbaDouble 0.15 0.3 0.05 1.0,
 				drawMask = MaskPaint 1 },
