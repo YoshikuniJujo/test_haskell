@@ -14,7 +14,13 @@ data Surface (t :: SurfaceType) = Surface {
 	deriving Show
 
 data Draw (t :: SurfaceType) = Draw {
+	drawOperator :: Operator,
 	drawClip :: [[Path]], drawSource :: Source t, drawMask :: Mask }
+	deriving Show
+
+data Operator
+	= OperatorClear | OperatorSource | OperatorOver
+	| OperatorIn | OperatorOut | OperatorAtop
 	deriving Show
 
 data Transform = Transform {

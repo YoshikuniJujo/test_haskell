@@ -12,6 +12,7 @@ import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting as Cr
 import Graphics.Cairo.Drawing.CairoT.Clip
+import Graphics.Cairo.Drawing.CairoT.CairoOperatorT as Cr
 import Graphics.Cairo.Drawing.Paths.Basic
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
@@ -31,7 +32,10 @@ cairoDrawSurface cr Surface { surfaceDraws = drws } =
 	cairoDrawDraw cr `mapM_` drws
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
-cairoDrawDraw cr Draw { drawClip = clp, drawSource = src, drawMask = msk } = do
+cairoDrawDraw cr Draw {
+	drawOperator = op,
+	drawClip = clp, drawSource = src, drawMask = msk } = do
+	cairoSet cr $ getOperator op
 	(\pss -> (\ps -> cairoDrawPaths cr ps >> cairoClip cr) `mapM_` pss) clp
 	cairoDrawSource cr src >> cairoDrawMask cr msk
 	cairoResetClip cr
@@ -80,3 +84,12 @@ cairoDrawPath cr = \case
 		where
 		[xc, yc, r] = realToFrac <$> [xc_, yc_, r_]
 		[a1, a2] = realToFrac <$> [a1_, a2_]
+
+getOperator :: I.Operator -> Cr.Operator
+getOperator = \case
+	I.OperatorClear -> Cr.OperatorClear
+	I.OperatorSource -> Cr.OperatorSource
+	I.OperatorOver -> Cr.OperatorOver
+	I.OperatorIn -> Cr.OperatorIn
+	I.OperatorOut -> Cr.OperatorOut
+	I.OperatorAtop -> Cr.OperatorAtop
