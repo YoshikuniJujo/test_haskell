@@ -77,6 +77,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-simple-cairo-new
+  try-transform:
+    main:                try-transform.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo-new
 
 tests:
   try-simple-cairo-new-test:
