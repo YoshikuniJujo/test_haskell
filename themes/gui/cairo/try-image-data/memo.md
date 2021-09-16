@@ -5,7 +5,8 @@ todo
 ----
 
 * [ ] Surface
-* [x] Transform
+* [ ] Transform
+	+ [ ] copy transformation to Path
 * [ ] Source
 * [ ] Mask
 	+ [ ] MaskAlpha
