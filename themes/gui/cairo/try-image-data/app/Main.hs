@@ -15,13 +15,15 @@ main = do
 		sfcWidth = 768,
 		sfcHeight = 896,
 		surfaceDraws = [
-			Draw {	drawSource = Source
+			Draw {	drawClip = Just [Rectangle 8 8 752 880],
+				drawSource = Source
 					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.15 0.3 0.05 1.0,
 				drawMask = MaskPaint 1 },
-			Draw {	drawSource = Source
+			Draw {	drawClip = Nothing,
+				drawSource = Source
 					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.05 0.1 0.025 1.0,
 				drawMask = MaskStroke (LineWidth 64) (LineJoinMiter 1) [
-					PathTransform $ rot (- pi / 12) (- 70) 120,
+					PathTransform $ rot (- pi / 12) (- 68) 128,
 					Rectangle 96 96 544 544 ] }
 			] }
 	makePng sr "pngs/simple.png"

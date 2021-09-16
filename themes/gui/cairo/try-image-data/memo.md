@@ -36,7 +36,7 @@ todo
 		- [x] round
 		- [x] bevel
 	+ [ ] others
-* [ ] Clip
+* [x] Clip
 * [ ] Operator
 
 Pattern

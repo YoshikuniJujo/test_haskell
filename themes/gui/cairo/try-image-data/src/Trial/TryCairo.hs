@@ -11,6 +11,7 @@ import Data.ImageData as I
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting as Cr
+import Graphics.Cairo.Drawing.CairoT.Clip
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
@@ -30,8 +31,10 @@ cairoDrawSurface cr Surface { surfaceDraws = drws } =
 	cairoDrawDraw cr `mapM_` drws
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
-cairoDrawDraw cr Draw { drawSource = src, drawMask = msk } =
+cairoDrawDraw cr Draw { drawClip = clp, drawSource = src, drawMask = msk } = do
+	maybe (pure ()) (\ps -> cairoDrawPath cr `mapM_` ps >> cairoClip cr) clp
 	cairoDrawSource cr src >> cairoDrawMask cr msk
+	cairoResetClip cr
 
 transToCairoMatrixT :: Transform -> IO (CairoMatrixT RealWorld)
 transToCairoMatrixT (Transform xx_ yx_ xy_ yy_ x0_ y0_) =
@@ -48,22 +51,19 @@ cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
 	MaskAlpha alp -> error "yet"
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
-	MaskStroke lw lj pth -> cairoDrawPaths cr lw lj `mapM_` pth >> cairoStroke cr
-	MaskFill pth -> cairoDrawShape cr `mapM_` pth >> cairoFill cr
-
-cairoDrawPaths :: CairoTIO s -> I.LineWidth -> I.LineJoin -> Path -> IO ()
-cairoDrawPaths cr (I.LineWidth lw) lj sp =
-	do	cairoSet cr . Cr.LineWidth $ realToFrac lw
+	MaskStroke (I.LineWidth lw) lj pth -> do
+		cairoSet cr . Cr.LineWidth $ realToFrac lw
 		case lj of
 			I.LineJoinMiter (realToFrac -> ml) -> do
 				cairoSet cr Cr.LineJoinMiter
 				cairoSet cr $ MiterLimit ml
 			I.LineJoinRound -> cairoSet cr Cr.LineJoinRound
 			I.LineJoinBevel -> cairoSet cr Cr.LineJoinBevel
-		cairoDrawShape cr sp
+		cairoDrawPath cr `mapM_` pth >> cairoStroke cr
+	MaskFill pth -> cairoDrawPath cr `mapM_` pth >> cairoFill cr
 
-cairoDrawShape :: CairoTIO s -> Path -> IO ()
-cairoDrawShape cr = \case
+cairoDrawPath :: CairoTIO s -> Path -> IO ()
+cairoDrawPath cr = \case
 	PathTransform tr -> cairoTransform cr =<< transToCairoMatrixT tr
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
