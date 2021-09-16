@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - text
 - JuicyPixels
+- union-angle
 - simple-cairo
 - cairo-image
 - JuicyCairo
@@ -79,6 +80,15 @@ executables:
     - try-simple-cairo-new
   try-transform:
     main:                try-transform.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-simple-cairo-new
+  try-arc:
+    main:                try-arc.hs
     source-dirs:         app
     ghc-options:
     - -threaded

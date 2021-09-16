@@ -38,6 +38,27 @@ library
     , simple-cairo
     , simple-pango
     , text
+    , union-angle
+  default-language: Haskell2010
+
+executable try-arc
+  main-is: try-arc.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo_new
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 executable try-fill
@@ -57,6 +78,7 @@ executable try-fill
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 executable try-line-join
@@ -76,6 +98,7 @@ executable try-line-join
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 executable try-porter-duff
@@ -95,6 +118,7 @@ executable try-porter-duff
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 executable try-simple-cairo-new-exe
@@ -113,6 +137,7 @@ executable try-simple-cairo-new-exe
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 executable try-sloth
@@ -132,6 +157,7 @@ executable try-sloth
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 executable try-transform
@@ -151,6 +177,7 @@ executable try-transform
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
 
 test-suite try-simple-cairo-new-test
@@ -170,4 +197,5 @@ test-suite try-simple-cairo-new-test
     , simple-pango
     , text
     , try-simple-cairo-new
+    , union-angle
   default-language: Haskell2010
