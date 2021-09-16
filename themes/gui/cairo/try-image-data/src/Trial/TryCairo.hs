@@ -32,7 +32,7 @@ cairoDrawSurface cr Surface { surfaceDraws = drws } =
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
 cairoDrawDraw cr Draw { drawClip = clp, drawSource = src, drawMask = msk } = do
-	maybe (pure ()) (\ps -> cairoDrawPaths cr ps >> cairoClip cr) clp
+	(\pss -> (\ps -> cairoDrawPaths cr ps >> cairoClip cr) `mapM_` pss) clp
 	cairoDrawSource cr src >> cairoDrawMask cr msk
 	cairoResetClip cr
 

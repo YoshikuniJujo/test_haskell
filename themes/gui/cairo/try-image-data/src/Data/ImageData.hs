@@ -14,7 +14,7 @@ data Surface (t :: SurfaceType) = Surface {
 	deriving Show
 
 data Draw (t :: SurfaceType) = Draw {
-	drawClip :: Maybe [Path], drawSource :: Source t, drawMask :: Mask }
+	drawClip :: [[Path]], drawSource :: Source t, drawMask :: Mask }
 	deriving Show
 
 data Transform = Transform {
