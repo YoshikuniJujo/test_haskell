@@ -12,7 +12,7 @@ import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting as Cr
 import Graphics.Cairo.Drawing.CairoT.Clip
-import Graphics.Cairo.Drawing.Paths
+import Graphics.Cairo.Drawing.Paths.Basic
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -32,7 +32,7 @@ cairoDrawSurface cr Surface { surfaceDraws = drws } =
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
 cairoDrawDraw cr Draw { drawClip = clp, drawSource = src, drawMask = msk } = do
-	maybe (pure ()) (\ps -> cairoDrawPath cr `mapM_` ps >> cairoClip cr) clp
+	maybe (pure ()) (\ps -> cairoDrawPaths cr ps >> cairoClip cr) clp
 	cairoDrawSource cr src >> cairoDrawMask cr msk
 	cairoResetClip cr
 
@@ -59,11 +59,24 @@ cairoDrawMask cr = \case
 				cairoSet cr $ MiterLimit ml
 			I.LineJoinRound -> cairoSet cr Cr.LineJoinRound
 			I.LineJoinBevel -> cairoSet cr Cr.LineJoinBevel
-		cairoDrawPath cr `mapM_` pth >> cairoStroke cr
-	MaskFill pth -> cairoDrawPath cr `mapM_` pth >> cairoFill cr
+		cairoDrawPaths cr pth >> cairoStroke cr
+	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
+
+cairoDrawPaths :: CairoTIO s -> [Path] -> IO ()
+cairoDrawPaths cr pths = do
+	cairoDrawPath cr `mapM_` pths
+	cairoIdentityMatrix cr
 
 cairoDrawPath :: CairoTIO s -> Path -> IO ()
 cairoDrawPath cr = \case
 	PathTransform tr -> cairoTransform cr =<< transToCairoMatrixT tr
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
+	Arc xc_ yc_ r_ a1_ a2_ -> cairoArc cr xc yc r a1 a2
+		where
+		[xc, yc, r] = realToFrac <$> [xc_, yc_, r_]
+		[a1, a2] = realToFrac <$> [a1_, a2_]
+	ArcNegative xc_ yc_ r_ a1_ a2_ -> cairoArcNegative cr xc yc r a1 a2
+		where
+		[xc, yc, r] = realToFrac <$> [xc_, yc_, r_]
+		[a1, a2] = realToFrac <$> [a1_, a2_]

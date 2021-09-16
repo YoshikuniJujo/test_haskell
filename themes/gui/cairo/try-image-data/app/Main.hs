@@ -4,6 +4,7 @@
 module Main where
 
 import Data.Maybe
+import Data.Angle
 import Data.Color
 import Data.ImageData
 import Trial.TryCairo
@@ -24,7 +25,17 @@ main = do
 					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.05 0.1 0.025 1.0,
 				drawMask = MaskStroke (LineWidth 64) (LineJoinMiter 1) [
 					PathTransform $ rot (- pi / 12) (- 68) 128,
-					Rectangle 96 96 544 544 ] }
+					Rectangle 96 96 544 544 ] },
+			Draw {	drawClip = Nothing,
+				drawSource = Source
+					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.5 0.2 0.1 1.0,
+				drawMask = MaskStroke (LineWidth 64) (LineJoinMiter 100) [
+					Arc 320 96 96 (Degree 0) (Degree 120) ] },
+			Draw {	drawClip = Nothing,
+				drawSource = Source
+					. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.5 0.2 0.1 1.0,
+				drawMask = MaskStroke (LineWidth 64) (LineJoinMiter 100) [
+					ArcNegative 512 384 96 (Degree 0) (Degree 120) ] }
 			] }
 	makePng sr "pngs/simple.png"
 

@@ -4,6 +4,7 @@
 
 module Data.ImageData where
 
+import Data.Angle
 import Data.Color
 
 data SurfaceType = Alpha | Rgba deriving Show
@@ -55,4 +56,9 @@ data Path
 	| Rectangle {
 		rectX :: Double, rectY :: Double,
 		rectWidth :: Double, rectHeight :: Double }
+	| Arc {	arcCenterX :: Double, arcCenterY :: Double, arcRadius :: Double,
+		arcAngleBegin :: Angle Double, srcAngleEnd :: Angle Double }
+	| ArcNegative {
+		arcCenterX :: Double, arcCenterY :: Double, arcRadius :: Double,
+		arcAngleBegin :: Angle Double, srcAngleEnd :: Angle Double }
 	deriving Show
