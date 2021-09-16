@@ -25,6 +25,7 @@ todo
 	+ [ ] PatternMesh
 * [ ] Paths
 	+ [x] rectangle
+	+ [ ] arc
 	+ [x] line width
 	+ [ ] dash
 	+ [ ] fill rule
@@ -36,7 +37,8 @@ todo
 		- [x] round
 		- [x] bevel
 	+ [ ] others
-* [x] Clip
+* [ ] Clip
+	+ [ ] multi clip
 * [ ] Operator
 
 Pattern
