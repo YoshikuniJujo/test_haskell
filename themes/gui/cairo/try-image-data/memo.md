@@ -37,8 +37,9 @@ todo
 		- [x] round
 		- [x] bevel
 	+ [ ] others
-* [x] Clip
+* [ ] Clip
 	+ [x] multi clip
+	+ [ ] add fill rule
 * [ ] Operator
 
 Pattern
