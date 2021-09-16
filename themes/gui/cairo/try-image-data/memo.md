@@ -6,7 +6,10 @@ todo
 
 * [ ] Surface
 * [ ] Transform
-	+ [ ] copy transformation to Path
+	+ [x] copy transformation to Path
+	+ [ ] copy transformation to Gradient
+	+ [ ] copy transformation to Mesh
+	+ [x] remove transformation from Draw
 * [ ] Source
 * [ ] Mask
 	+ [ ] MaskAlpha

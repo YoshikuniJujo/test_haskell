@@ -13,7 +13,7 @@ data Surface (t :: SurfaceType) = Surface {
 	deriving Show
 
 data Draw (t :: SurfaceType) = Draw {
-	drawTrans :: Transform, drawSource :: Source t, drawMask :: Mask }
+	drawSource :: Source t, drawMask :: Mask }
 	deriving Show
 
 data Transform = Transform {
@@ -51,7 +51,8 @@ data LineJoin = LineJoinMiter Double | LineJoinRound | LineJoinBevel
 	deriving Show
 
 data Path
-	= Rectangle {
+	= PathTransform Transform
+	| Rectangle {
 		rectX :: Double, rectY :: Double,
 		rectWidth :: Double, rectHeight :: Double }
 	deriving Show

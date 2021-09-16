@@ -30,11 +30,8 @@ cairoDrawSurface cr Surface { surfaceDraws = drws } =
 	cairoDrawDraw cr `mapM_` drws
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
-cairoDrawDraw cr Draw {
-	drawTrans = tr, drawSource = src, drawMask = msk } = do
-	cairoTransform cr =<< transToCairoMatrixT tr
-	cairoDrawSource cr src
-	cairoDrawMask cr msk
+cairoDrawDraw cr Draw { drawSource = src, drawMask = msk } =
+	cairoDrawSource cr src >> cairoDrawMask cr msk
 
 transToCairoMatrixT :: Transform -> IO (CairoMatrixT RealWorld)
 transToCairoMatrixT (Transform xx_ yx_ xy_ yy_ x0_ y0_) =
@@ -67,5 +64,6 @@ cairoDrawPaths cr (I.LineWidth lw) lj sp =
 
 cairoDrawShape :: CairoTIO s -> Path -> IO ()
 cairoDrawShape cr = \case
+	PathTransform tr -> cairoTransform cr =<< transToCairoMatrixT tr
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
