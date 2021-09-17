@@ -111,3 +111,18 @@ getOperator = \case
 	I.OperatorXor -> Cr.OperatorXor
 	I.OperatorAdd -> Cr.OperatorAdd
 	I.OperatorSaturate -> Cr.OperatorSaturate
+	I.OperatorMultiply -> Cr.OperatorMultiply
+	I.OperatorScreen -> Cr.OperatorScreen
+	I.OperatorOverlay -> Cr.OperatorOverlay
+	I.OperatorDarken -> Cr.OperatorDarken
+	I.OperatorLighten -> Cr.OperatorLighten
+	I.OperatorColorDodge -> Cr.OperatorColorDodge
+	I.OperatorColorBurn -> Cr.OperatorColorBurn
+	I.OperatorHardLight -> Cr.OperatorHardLight
+	I.OperatorSoftLight -> Cr.OperatorSoftLight
+	I.OperatorDifference -> Cr.OperatorDifference
+	I.OperatorExclusion -> Cr.OperatorExclusion
+	I.OperatorHslHue -> Cr.OperatorHslHue
+	I.OperatorHslSaturation -> Cr.OperatorHslSaturation
+	I.OperatorHslColor -> Cr.OperatorHslColor
+	I.OperatorHslLuminosity -> Cr.OperatorHslLuminosity

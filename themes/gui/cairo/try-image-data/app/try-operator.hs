@@ -34,12 +34,7 @@ separate :: Int -> [a] -> [[a]]
 separate n = \case [] -> []; xs -> take n xs : separate n (drop n xs)
 
 operators :: [Operator]
-operators = [
-	OperatorClear,
-	OperatorSource, OperatorOver, OperatorIn, OperatorOut, OperatorAtop,
-	OperatorDest, OperatorDestOver, OperatorDestIn, OperatorDestOut,
-	OperatorDestAtop,
-	OperatorXor, OperatorAdd, OperatorSaturate ]
+operators = [OperatorClear .. OperatorHslLuminosity]
 
 porterDuff :: Double -> Double -> Operator -> Clip 'Rgba
 porterDuff x0 y0 op = Clip {

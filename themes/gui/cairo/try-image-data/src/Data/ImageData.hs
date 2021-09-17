@@ -26,7 +26,14 @@ data Operator
 	| OperatorIn | OperatorOut | OperatorAtop
 	| OperatorDest | OperatorDestOver | OperatorDestIn | OperatorDestOut
 	| OperatorDestAtop | OperatorXor | OperatorAdd | OperatorSaturate
-	deriving Show
+	| OperatorMultiply | OperatorScreen | OperatorOverlay
+	| OperatorDarken | OperatorLighten
+	| OperatorColorDodge | OperatorColorBurn
+	| OperatorHardLight | OperatorSoftLight
+	| OperatorDifference | OperatorExclusion
+	| OperatorHslHue | OperatorHslSaturation
+	| OperatorHslColor | OperatorHslLuminosity
+	deriving (Show, Enum)
 
 data Transform = Transform {
 	transXx :: Double, transYx :: Double,
