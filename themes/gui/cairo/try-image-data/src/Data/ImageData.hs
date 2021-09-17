@@ -32,7 +32,7 @@ data Transform = Transform {
 	transX0 :: Double, transY0 :: Double }
 	deriving Show
 
-data Source t = Source (Pattern 'Rgba) deriving Show
+data Source t = Source (Pattern t) deriving Show
 
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
