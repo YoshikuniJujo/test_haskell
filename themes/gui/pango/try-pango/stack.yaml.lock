@@ -17,11 +17,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
       size: 3680
-      sha256: ee81b1b694d4ea06101df2cf8870fbd2c24f47c29af5498433f897e1619c296b
-    commit: 0aacf7eee92726f40494b3a2903647b6f12a0cf6
+      sha256: d978c39f35554908f14a08bf5897bf91fb2c761f4af5fa8cc73896513d0601f3
+    commit: 3f1626ff42a3ed1db07aed921221f26ef7e488b6
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 0aacf7eee92726f40494b3a2903647b6f12a0cf6
+    commit: 3f1626ff42a3ed1db07aed921221f26ef7e488b6
 - completed:
     name: simple-cairo
     version: 0.1.0.0
@@ -68,7 +68,7 @@ packages:
     commit: 7e668ebcd7784080f4da33d291b567659a66357c
 snapshots:
 - completed:
-    size: 585392
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/1.yaml
-    sha256: 4e4c5e435a2f1c6f3c650f282db0f387f806406ed4fe6ef1aa4e6add9035d065
-  original: lts-18.1
+    size: 587546
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/10.yaml
+    sha256: 88b4f81e162ba3adc230a9fcccc4d19ac116377656bab56c7382ca88598b257a
+  original: lts-18.10

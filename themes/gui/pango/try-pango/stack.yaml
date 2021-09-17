@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-18.1
+resolver: lts-18.10
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -42,7 +42,7 @@ packages:
 extra-deps:
 - union-angle-0.1.0.1
 - git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 0aacf7eee92726f40494b3a2903647b6f12a0cf6
+  commit: 3f1626ff42a3ed1db07aed921221f26ef7e488b6
 - git: https://github.com/YoshikuniJujo/simple-cairo
   commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
 - git: https://github.com/YoshikuniJujo/cairo-image
