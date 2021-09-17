@@ -43,10 +43,10 @@ data Mask
 	deriving Show
 
 data Pattern t
-	= PatternSurface (Surface t)
+	= PatternSurface Transform (Surface t)
 	| PatternColor (SurfaceTypeColor t)
---	| PatternGradient foo bar
---	| PatternMesh foo bar
+--	| PatternGradient Transform foo bar
+--	| PatternMesh Transform foo bar
 	deriving Show
 
 data SurfaceTypeColor t where

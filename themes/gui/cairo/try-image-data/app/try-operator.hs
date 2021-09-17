@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,36 +18,46 @@ main = do
 	sr <- drawSurface Surface {
 		sfcWidth = 768,
 		sfcHeight = 896,
-		surfaceClips = [
-			Clip {	clipBounds = [[Rectangle 16 16 256 256]],
-				clipDraws = [
-					Draw {	drawOperator = OperatorOver,
-						drawSource = Source . PatternColor . ColorRgba
-							. fromJust $ rgbaDouble 0.15 0.3 0.05 1.0,
-						drawMask = MaskPaint 1 } ] },
-			Clip {	clipBounds = [],
-				clipDraws = [
-					Draw {	drawOperator = OperatorOver,
-						drawSource = Source . PatternColor . ColorRgba
-							. fromJust $ rgbaDouble 0.3 0.15 0.05 1.0,
-						drawMask = MaskFill [Rectangle 32 32 64 64] },
-					Draw {	drawOperator = OperatorClear,
-						drawSource = Source . PatternColor . ColorRgba
-							. fromJust $ rgbaDouble 0.15 0.05 0.3 1.0,
-						drawMask = MaskFill [Rectangle 48 48 64 64] } ] },
-			Clip {	clipBounds = [[Rectangle 256 256 256 192]],
-				clipDraws = ichimatsu 16 16 100 100 },
-			porterDuff 0 0 OperatorOver
-			] }
+		surfaceClips = (<$> zip [0 ..] operators) \(i :: Int, op) ->
+			porterDuff
+				(256 * fromIntegral (i `div` 4))
+				(224 * fromIntegral (i `mod` 4)) op
+		}
 	makePng sr "pngs/try-operator.png"
+
+operators :: [Operator]
+operators = [
+	OperatorClear, OperatorSource, OperatorOver, OperatorIn,
+	OperatorOut, OperatorAtop ]
 
 porterDuff :: Double -> Double -> Operator -> Clip 'Rgba
 porterDuff x0 y0 op = Clip {
 	clipBounds = [[Rectangle l t 192 152]],
 	clipDraws = ichimatsu l t 100 100 ++ [
+		Draw {
+			drawOperator = OperatorOver,
+			drawSource = Source $ PatternSurface (Transform 1 0 0 1 (- l') (- t')) (sample op),
+			drawMask = MaskPaint 1 }
 		]
 	}
 	where l = x0 + 16; t = y0 + 16; l' = l + 16; t' = t + 16
+
+sample :: Operator -> Surface 'Rgba
+sample op = Surface {
+		sfcWidth = 192, sfcHeight = 152,
+		surfaceClips = [
+			Clip { clipBounds = [], clipDraws = [
+				Draw {
+					drawOperator = OperatorOver,
+					drawSource = Source . PatternColor . ColorRgba
+						. fromJust $ rgbaDouble 0.7 0 0 0.8,
+					drawMask = MaskFill [Rectangle 0 0 120 90] },
+				Draw {
+					drawOperator = op,
+					drawSource = Source . PatternColor . ColorRgba
+						. fromJust $ rgbaDouble 0 0 0.9 0.4,
+					drawMask = MaskFill [Rectangle 40 30 120 90] }
+				] } ] }
 
 ichimatsu :: Double -> Double -> Int -> Int -> [Draw 'Rgba]
 ichimatsu x0 y0 w h = (=<< [0 .. h]) \i -> (<$> [0 .. w]) \j ->

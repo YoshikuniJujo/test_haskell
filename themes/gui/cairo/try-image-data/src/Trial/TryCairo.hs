@@ -14,6 +14,8 @@ import Graphics.Cairo.Drawing.CairoT.Setting as Cr
 import Graphics.Cairo.Drawing.CairoT.Clip
 import Graphics.Cairo.Drawing.CairoT.CairoOperatorT as Cr
 import Graphics.Cairo.Drawing.Paths.Basic
+import Graphics.Cairo.Drawing.CairoPatternT.Basic
+import Graphics.Cairo.Drawing.CairoPatternT.Setting
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Utilities.CairoMatrixT
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -51,7 +53,12 @@ transToCairoMatrixT (Transform xx_ yx_ xy_ yy_ x0_ y0_) =
 
 cairoDrawSource :: CairoTIO s -> Source 'Rgba -> IO ()
 cairoDrawSource cr (Source ptn) = case ptn of
-	PatternSurface sfc -> error "yet"
+	PatternSurface tfm sfc -> do
+		t <- transToCairoMatrixT tfm
+		s <- drawSurface sfc
+		pt <- cairoPatternCreateForSurface s
+		cairoPatternSetMatrix pt t
+		cairoSetSource cr pt
 	PatternColor (ColorRgba clr) -> cairoSetSourceRgba cr clr
 
 cairoDrawMask :: CairoTIO s -> Mask -> IO ()
