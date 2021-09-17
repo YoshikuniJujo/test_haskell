@@ -4,8 +4,10 @@
 todo
 ----
 
-* [ ] make type Rgba more general
+* [x] make type Rgba more general
 * [ ] Surface
+	+ [x] vector
+	+ [ ] raster
 * [ ] Transform
 	+ [x] copy transformation to Path
 	+ [ ] copy transformation to Gradient
