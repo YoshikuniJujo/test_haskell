@@ -28,15 +28,18 @@ drawSurface sfc@Surface {
 	pure sr
 
 cairoDrawSurface :: CairoTIO s -> Surface 'Rgba -> IO ()
-cairoDrawSurface cr Surface { surfaceDraws = drws } =
+cairoDrawSurface cr Surface { surfaceClips = clps } =
+	cairoDrawClip cr `mapM_` clps
+
+cairoDrawClip :: CairoTIO s -> Clip 'Rgba -> IO ()
+cairoDrawClip cr Clip { clipBounds = bs, clipDraws = drws } = do
+	(\ps -> cairoDrawPaths cr ps >> cairoClip cr) `mapM_` bs
 	cairoDrawDraw cr `mapM_` drws
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
 cairoDrawDraw cr Draw {
-	drawOperator = op,
-	drawClip = clp, drawSource = src, drawMask = msk } = do
+	drawOperator = op, drawSource = src, drawMask = msk } = do
 	cairoSet cr $ getOperator op
-	(\pss -> (\ps -> cairoDrawPaths cr ps >> cairoClip cr) `mapM_` pss) clp
 	cairoDrawSource cr src >> cairoDrawMask cr msk
 	cairoResetClip cr
 

@@ -10,12 +10,15 @@ import Data.Color
 data SurfaceType = Alpha | Rgba deriving Show
 
 data Surface (t :: SurfaceType) = Surface {
-	sfcWidth :: Integer, sfcHeight :: Integer, surfaceDraws :: [Draw t] }
+	sfcWidth :: Integer, sfcHeight :: Integer, surfaceClips :: [Clip t] }
+	deriving Show
+
+data Clip (t :: SurfaceType) = Clip {
+	clipBounds :: [[Path]], clipDraws :: [Draw t] }
 	deriving Show
 
 data Draw (t :: SurfaceType) = Draw {
-	drawOperator :: Operator,
-	drawClip :: [[Path]], drawSource :: Source t, drawMask :: Mask }
+	drawOperator :: Operator, drawSource :: Source t, drawMask :: Mask }
 	deriving Show
 
 data Operator
