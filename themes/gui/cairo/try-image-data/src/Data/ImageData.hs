@@ -60,7 +60,7 @@ data Pattern t
 
 data SurfaceTypeColor t where
 	ColorAlpha :: Double -> SurfaceTypeColor 'Alpha
-	ColorRgba :: Rgba -> SurfaceTypeColor 'Rgba
+	ColorRgba :: Rgba Double -> SurfaceTypeColor 'Rgba
 
 deriving instance Show (SurfaceTypeColor t)
 

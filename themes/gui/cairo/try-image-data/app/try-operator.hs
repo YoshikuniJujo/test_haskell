@@ -5,7 +5,6 @@
 
 module Main where
 
-import Foreign.C.Types
 import Data.Foldable
 import Data.Maybe
 import Data.Bool
@@ -77,7 +76,7 @@ darkSquare, snowSquare :: Double -> Double -> Draw 'Rgba
 darkSquare = graySquare 0.6 ichimatsuSize
 snowSquare = graySquare 0.7 ichimatsuSize
 
-graySquare :: CDouble -> Double -> Double -> Double -> Draw 'Rgba
+graySquare :: Double -> Double -> Double -> Double -> Draw 'Rgba
 graySquare l s x y = Draw {
 	drawOperator = OperatorOver,
 	drawSource = Source . PatternColor . ColorRgba

@@ -42,7 +42,7 @@ todo
 	+ [x] multi clip
 	+ [x] clip should be more large
 	+ [ ] add fill rule
-* [ ] Operator
+* [x] Operator
 
 Pattern
 ------

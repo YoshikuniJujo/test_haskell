@@ -7,6 +7,7 @@
 module Trial.TryCairo where
 
 import Control.Monad.ST
+import Data.Color
 import Data.ImageData as I
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
@@ -59,7 +60,7 @@ cairoDrawSource cr (Source ptn) = case ptn of
 		pt <- cairoPatternCreateForSurface s
 		cairoPatternSetMatrix pt t
 		cairoSetSource cr pt
-	PatternColor (ColorRgba clr) -> cairoSetSourceRgba cr clr
+	PatternColor (ColorRgba clr) -> cairoSetSourceRgba cr $ rgbaRealToFrac clr
 
 cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
