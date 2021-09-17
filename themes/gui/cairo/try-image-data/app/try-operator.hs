@@ -34,14 +34,24 @@ main = do
 						drawSource = Source . PatternColor . ColorRgba
 							. fromJust $ rgbaDouble 0.15 0.05 0.3 1.0,
 						drawMask = MaskFill [Rectangle 48 48 64 64] } ] },
-			Clip {	clipBounds = [[Rectangle 256 256 256 192]], clipDraws = ichimatsu 100 100 }
+			Clip {	clipBounds = [[Rectangle 256 256 256 192]],
+				clipDraws = ichimatsu 16 16 100 100 },
+			porterDuff 0 0 OperatorOver
 			] }
 	makePng sr "pngs/try-operator.png"
 
-ichimatsu :: Int -> Int -> [Draw 'Rgba]
-ichimatsu w h = (=<< [0 .. h]) \i -> (<$> [0 .. w]) \j ->
+porterDuff :: Double -> Double -> Operator -> Clip 'Rgba
+porterDuff x0 y0 op = Clip {
+	clipBounds = [[Rectangle l t 192 152]],
+	clipDraws = ichimatsu l t 100 100 ++ [
+		]
+	}
+	where l = x0 + 16; t = y0 + 16; l' = l + 16; t' = t + 16
+
+ichimatsu :: Double -> Double -> Int -> Int -> [Draw 'Rgba]
+ichimatsu x0 y0 w h = (=<< [0 .. h]) \i -> (<$> [0 .. w]) \j ->
 	bool darkSquare snowSquare (drop i (cycle [False, True]) !! j)
-		(fromIntegral j * ichimatsuSize) (fromIntegral i * ichimatsuSize)
+		(x0 + fromIntegral j * ichimatsuSize) (y0 + fromIntegral i * ichimatsuSize)
 
 ichimatsuSize :: Double
 ichimatsuSize = 32
