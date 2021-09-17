@@ -103,3 +103,11 @@ getOperator = \case
 	I.OperatorIn -> Cr.OperatorIn
 	I.OperatorOut -> Cr.OperatorOut
 	I.OperatorAtop -> Cr.OperatorAtop
+	I.OperatorDest -> Cr.OperatorDest
+	I.OperatorDestOver -> Cr.OperatorDestOver
+	I.OperatorDestIn -> Cr.OperatorDestIn
+	I.OperatorDestOut -> Cr.OperatorDestOut
+	I.OperatorDestAtop -> Cr.OperatorDestAtop
+	I.OperatorXor -> Cr.OperatorXor
+	I.OperatorAdd -> Cr.OperatorAdd
+	I.OperatorSaturate -> Cr.OperatorSaturate

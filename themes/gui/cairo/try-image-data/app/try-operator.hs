@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,6 +6,7 @@
 module Main where
 
 import Foreign.C.Types
+import Data.Foldable
 import Data.Maybe
 import Data.Bool
 import Data.Color
@@ -14,21 +15,31 @@ import Trial.TryCairo
 import Trial.MakePng
 
 main :: IO ()
-main = do
+main = for_ (zip [0 :: Int ..] $ separate 12 operators) \(i, ops) ->
+	page ("pngs/try-operator-" ++ show i ++ ".png") ops
+
+page :: FilePath -> [Operator] -> IO ()
+page fp ops = do
 	sr <- drawSurface Surface {
 		sfcWidth = 768,
 		sfcHeight = 896,
-		surfaceClips = (<$> zip [0 ..] operators) \(i :: Int, op) ->
+		surfaceClips = (<$> zip [0 ..] ops) \(i :: Int, op) ->
 			porterDuff
 				(256 * fromIntegral (i `div` 4))
 				(224 * fromIntegral (i `mod` 4)) op
 		}
-	makePng sr "pngs/try-operator.png"
+	makePng sr fp
+
+separate :: Int -> [a] -> [[a]]
+separate n = \case [] -> []; xs -> take n xs : separate n (drop n xs)
 
 operators :: [Operator]
 operators = [
-	OperatorClear, OperatorSource, OperatorOver, OperatorIn,
-	OperatorOut, OperatorAtop ]
+	OperatorClear,
+	OperatorSource, OperatorOver, OperatorIn, OperatorOut, OperatorAtop,
+	OperatorDest, OperatorDestOver, OperatorDestIn, OperatorDestOut,
+	OperatorDestAtop,
+	OperatorXor, OperatorAdd, OperatorSaturate ]
 
 porterDuff :: Double -> Double -> Operator -> Clip 'Rgba
 porterDuff x0 y0 op = Clip {

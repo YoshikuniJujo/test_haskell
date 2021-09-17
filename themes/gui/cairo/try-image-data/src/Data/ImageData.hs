@@ -24,6 +24,8 @@ data Draw (t :: SurfaceType) = Draw {
 data Operator
 	= OperatorClear | OperatorSource | OperatorOver
 	| OperatorIn | OperatorOut | OperatorAtop
+	| OperatorDest | OperatorDestOver | OperatorDestIn | OperatorDestOut
+	| OperatorDestAtop | OperatorXor | OperatorAdd | OperatorSaturate
 	deriving Show
 
 data Transform = Transform {
