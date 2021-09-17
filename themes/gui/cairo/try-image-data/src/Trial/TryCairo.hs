@@ -35,13 +35,13 @@ cairoDrawClip :: CairoTIO s -> Clip 'Rgba -> IO ()
 cairoDrawClip cr Clip { clipBounds = bs, clipDraws = drws } = do
 	(\ps -> cairoDrawPaths cr ps >> cairoClip cr) `mapM_` bs
 	cairoDrawDraw cr `mapM_` drws
+	cairoResetClip cr
 
 cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
 cairoDrawDraw cr Draw {
 	drawOperator = op, drawSource = src, drawMask = msk } = do
 	cairoSet cr $ getOperator op
 	cairoDrawSource cr src >> cairoDrawMask cr msk
-	cairoResetClip cr
 
 transToCairoMatrixT :: Transform -> IO (CairoMatrixT RealWorld)
 transToCairoMatrixT (Transform xx_ yx_ xy_ yy_ x0_ y0_) =

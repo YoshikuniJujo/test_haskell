@@ -4,6 +4,7 @@
 todo
 ----
 
+* [ ] make type Rgba more general
 * [ ] Surface
 * [ ] Transform
 	+ [x] copy transformation to Path

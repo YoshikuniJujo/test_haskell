@@ -1,8 +1,12 @@
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Foreign.C.Types
 import Data.Maybe
+import Data.Bool
 import Data.Color
 import Data.ImageData
 import Trial.TryCairo
@@ -29,12 +33,26 @@ main = do
 					Draw {	drawOperator = OperatorClear,
 						drawSource = Source . PatternColor . ColorRgba
 							. fromJust $ rgbaDouble 0.15 0.05 0.3 1.0,
-						drawMask = MaskFill [Rectangle 48 48 64 64] } ] } ] }
+						drawMask = MaskFill [Rectangle 48 48 64 64] } ] },
+			Clip {	clipBounds = [[Rectangle 256 256 256 192]], clipDraws = ichimatsu 100 100 }
+			] }
 	makePng sr "pngs/try-operator.png"
 
-{-
-graySquare :: Double -> Double -> Draw 'Rgba
-graySquare l s = Draw {
+ichimatsu :: Int -> Int -> [Draw 'Rgba]
+ichimatsu w h = (=<< [0 .. h]) \i -> (<$> [0 .. w]) \j ->
+	bool darkSquare snowSquare (drop i (cycle [False, True]) !! j)
+		(fromIntegral j * ichimatsuSize) (fromIntegral i * ichimatsuSize)
+
+ichimatsuSize :: Double
+ichimatsuSize = 32
+
+darkSquare, snowSquare :: Double -> Double -> Draw 'Rgba
+darkSquare = graySquare 0.6 ichimatsuSize
+snowSquare = graySquare 0.7 ichimatsuSize
+
+graySquare :: CDouble -> Double -> Double -> Double -> Draw 'Rgba
+graySquare l s x y = Draw {
 	drawOperator = OperatorOver,
-	drawClip
-	-}
+	drawSource = Source . PatternColor . ColorRgba
+		. fromJust $ rgbaDouble l l l 1.0,
+	drawMask = MaskFill [Rectangle x y s s] }
