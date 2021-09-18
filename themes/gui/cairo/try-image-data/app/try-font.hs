@@ -15,8 +15,8 @@ main :: IO ()
 main = do
 	sr <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
 	cr <- cairoCreate sr
-	drawFont cr 16 16 (Font "Hermit") "abcあいう"
 	drawFont cr 16 64 (Font "sans") "abcあいう"
 	drawFont cr 16 112 (Font "serif") "abcあいう"
 	drawFont cr 16 160 (Font "soulcraft") "abcあいう"
+	drawFont cr 16 208 (Font "Source Han Sans VF") "abcあいう"
 	makePng sr "pngs/try-font.png"
