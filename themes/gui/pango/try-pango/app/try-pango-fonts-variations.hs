@@ -9,6 +9,7 @@ import Control.Monad.Primitive
 import Data.Char
 import Data.CairoImage
 import Data.JuicyCairo
+import Data.Font.VariationAxis
 import System.Environment
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
