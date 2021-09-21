@@ -13,4 +13,4 @@ usual font
 Variable font
 -------------
 
-* [ ] Variants
+* [x] Variants

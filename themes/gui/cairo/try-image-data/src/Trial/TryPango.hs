@@ -9,6 +9,7 @@ import Data.CairoContext
 
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
+import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 
@@ -30,7 +31,8 @@ drawFont cr x y fnt t = do
 			pangoFontDescriptionSet fd $ toVariant v
 			pangoFontDescriptionSet fd $ toWeight w
 			pangoFontDescriptionSet fd $ toStretch st
-		_ -> pure ()
+		VariableFont { variableFontVariations = v } ->
+			pangoFontDescriptionSetVariationsMap fd v
 	fd' <- pangoFontDescriptionFreeze fd
 
 	cairoMoveTo cr x y

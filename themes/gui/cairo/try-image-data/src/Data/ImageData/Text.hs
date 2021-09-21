@@ -2,6 +2,8 @@
 
 module Data.ImageData.Text where
 
+import Data.Font.VariationAxis
+
 data Font
 	= Font {
 		fontFamily :: String,
@@ -12,7 +14,8 @@ data Font
 		fontStretch :: FontStretch }
 	| VariableFont {
 		variableFontFamily :: String,
-		variableFontSize :: FontSize }
+		variableFontSize :: FontSize,
+		variableFontVariations :: Variations }
 	deriving Show
 
 data FontSize = FontSize Double | AbsoluteFontSize Double deriving Show

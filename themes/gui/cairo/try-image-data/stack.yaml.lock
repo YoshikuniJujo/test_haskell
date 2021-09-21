@@ -42,12 +42,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
-      size: 3680
-      sha256: d978c39f35554908f14a08bf5897bf91fb2c761f4af5fa8cc73896513d0601f3
-    commit: 3f1626ff42a3ed1db07aed921221f26ef7e488b6
+      size: 3830
+      sha256: be2e4697001f423ccd84a72d7f6a76b5646c8f86c94eaadafa5cea27ad8a0a55
+    commit: 07314757b58f349a62b158620b858d71aaa81d8a
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 3f1626ff42a3ed1db07aed921221f26ef7e488b6
+    commit: 07314757b58f349a62b158620b858d71aaa81d8a
 - completed:
     name: glib-stopgap
     version: 0.1.0.0
