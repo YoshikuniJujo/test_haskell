@@ -284,6 +284,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-layout-line:
+    main:                try-layout-line.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:
