@@ -26,12 +26,15 @@ main = do
 		fontStyle = StyleItalic,
 		fontVariant = VariantSmallCaps } "abcあいう"
 	drawFont cr 16 208 (normalFont "soulcraft") "abcあいう"
-	drawFont cr 16 256 (VariableFont "Source Han Sans VF") "abcあいう"
+	drawFont cr 16 256 (normalFont "soulcraft") {
+		fontSize = FontSize 48 } "abcあいう"
 
-	drawFont cr 16 304 (normalFont "sans") {
+	drawFont cr 16 336 (normalFont "sans") {
 		fontStretch = StretchUltraCondensed } "abcあいう"
-	drawFont cr 16 352 (normalFont "sans") {
+	drawFont cr 16 384 (normalFont "sans") {
 		fontStretch = StretchUltraExpanded } "abcあいう"
+
+	drawFont cr 16 512 (VariableFont "Source Han Sans VF" (FontSize 32)) "abcあいう"
 
 	for_ (zip [0 ..] [WeightThin .. WeightUltraheavy]) \(i :: Int, w) ->
 		drawFont cr 316 (16 + 48 * fromIntegral i)
@@ -42,6 +45,7 @@ main = do
 normalFont :: String -> Font
 normalFont ff = Font {
 	fontFamily = ff,
+	fontSize = FontSize 32,
 	fontStyle = StyleNormal,
 	fontVariant = VariantNormal,
 	fontWeight = WeightNormal,

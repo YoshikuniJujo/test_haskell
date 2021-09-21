@@ -8,7 +8,9 @@ usual font
 * [x] Variant
 * [x] Weight
 * [x] Stretch
-* [ ] Size
+* [x] Size
 
 Variable font
 -------------
+
+* [ ] Variants

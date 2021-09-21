@@ -22,7 +22,7 @@ drawFont cr x y fnt t = do
 
 	fd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet fd . Family $ getFontFamily fnt
-	pangoFontDescriptionSet fd $ Size 32
+	pangoFontDescriptionSet fd $ getFontSize fnt
 	case fnt of
 		Font {	fontStyle = s, fontVariant = v, fontWeight = w,
 			fontStretch = st } -> do
@@ -43,6 +43,15 @@ getFontFamily :: Font -> String
 getFontFamily = \case
 	Font { fontFamily = ff } -> ff
 	VariableFont { variableFontFamily = ff } -> ff
+
+getFontSize :: Font -> Size
+getFontSize = \case
+	Font { fontSize = s } -> toSize s
+	VariableFont { variableFontSize = s } -> toSize s
+
+toSize :: FontSize -> Size
+toSize (FontSize s) = Size $ realToFrac s
+toSize (AbsoluteFontSize s) = AbsoluteSize $ realToFrac s
 
 toStyle :: FontStyle -> PangoStyle
 toStyle = \case

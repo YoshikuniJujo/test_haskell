@@ -5,14 +5,17 @@ module Data.ImageData.Text where
 data Font
 	= Font {
 		fontFamily :: String,
+		fontSize :: FontSize,
 		fontStyle :: FontStyle,
 		fontVariant :: FontVariant,
 		fontWeight :: FontWeight,
 		fontStretch :: FontStretch }
 	| VariableFont {
-		variableFontFamily :: String
-		}
+		variableFontFamily :: String,
+		variableFontSize :: FontSize }
 	deriving Show
+
+data FontSize = FontSize Double | AbsoluteFontSize Double deriving Show
 
 data FontStyle = StyleNormal | StyleOblique | StyleItalic deriving Show
 
