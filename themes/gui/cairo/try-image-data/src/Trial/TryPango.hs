@@ -1,21 +1,68 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TryPango where
 
 import Foreign.C.Types
+import Control.Monad.Primitive
+import Control.Monad.ST
+import Data.Foldable
 import Data.CairoContext
 
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Rendering.Cairo
 
 import qualified Data.Text as T
 
 import Data.ImageData.Text
+
+drawLayout :: CairoTIO s -> Layout -> IO ()
+drawLayout cr lyot = do
+	pl <- pangoCairoCreateLayout cr
+	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
+	pangoLayoutSet pl $ makeTextAttrList lyot
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+
+makeTextAttrList :: Layout -> PangoTextAttrList
+makeTextAttrList lyot = runST do
+	pl <- pangoTextAttrListNew . T.concat . (textText <$>) $ layoutText lyot
+	forM_ (getAttrs lyot) \(fnt, (s, e)) -> do
+		fd <- getFont fnt
+		attr <- pangoAttrFontDescNew fd
+		pangoTextAttrListInsert pl attr s e
+	pangoTextAttrListFreeze pl
+
+getAttrs :: Layout -> [(Font, (Int, Int))]
+getAttrs lyot = zip (textFont <$> layoutText lyot) (getStartAndEnds lyot)
+
+getStartAndEnds :: Layout -> [(Int, Int)]
+getStartAndEnds = startAndEnds . (T.length . textText <$>) . layoutText
+
+startAndEnds :: [Int] -> [(Int, Int)]
+startAndEnds [] = []
+startAndEnds xs = ps `zip` tail ps
+	where ps = scanl (+) 0 xs
+
+getFont :: PrimMonad m => Font -> m (PangoFontDescriptionPrim (PrimState m))
+getFont fnt = do
+	fd <- pangoFontDescriptionNew
+	pangoFontDescriptionSet fd . Family $ getFontFamily fnt
+	pangoFontDescriptionSet fd $ getFontSize fnt
+	case fnt of
+		Font {	fontStyle = s, fontVariant = v, fontWeight = w,
+			fontStretch = st } -> do
+			pangoFontDescriptionSet fd $ toStyle s
+			pangoFontDescriptionSet fd $ toVariant v
+			pangoFontDescriptionSet fd $ toWeight w
+			pangoFontDescriptionSet fd $ toStretch st
+		VariableFont { variableFontVariations = v } ->
+			pangoFontDescriptionSetVariationsMap fd v
+	pure fd
 
 drawFont :: CairoTIO s -> CDouble -> CDouble -> Font -> T.Text -> IO ()
 drawFont cr x y fnt t = do

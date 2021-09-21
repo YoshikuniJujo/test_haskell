@@ -60,6 +60,3 @@ normalFont ff = Font {
 	fontVariant = VariantNormal,
 	fontWeight = WeightNormal,
 	fontStretch = StretchNormal }
-
-weight :: Double -> Variations
-weight w = variationsSetAxis (Weight w) variationsEmpty
