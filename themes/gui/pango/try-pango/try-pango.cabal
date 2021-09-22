@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7c4b4d31664ff9fd79a83f52990d2dfa2bc5057eb82b6c6c82df374f18db973a
+-- hash: 00c319153cccb9d9a08128258f8b76bd70136dd7c42c642e3d4c26748cd5718f
 
 name:           try-pango
 version:        0.1.0.0
@@ -49,6 +49,7 @@ library
     , template-haskell
     , text
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable simple
@@ -73,6 +74,7 @@ executable simple
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-glib-quark
@@ -97,6 +99,7 @@ executable try-glib-quark
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-layout-line
@@ -121,6 +124,7 @@ executable try-layout-line
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-attrs
@@ -145,6 +149,7 @@ executable try-pango-attrs
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-attrs-markup
@@ -169,6 +174,7 @@ executable try-pango-attrs-markup
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-attrs-markup-stream
@@ -193,6 +199,7 @@ executable try-pango-attrs-markup-stream
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-bidirectional-text
@@ -217,6 +224,7 @@ executable try-pango-bidirectional-text
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-context
@@ -241,6 +249,7 @@ executable try-pango-context
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-exe
@@ -264,6 +273,7 @@ executable try-pango-exe
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-font-description-add-axis
@@ -288,6 +298,7 @@ executable try-pango-font-description-add-axis
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts
@@ -312,6 +323,7 @@ executable try-pango-fonts
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts-literata
@@ -336,6 +348,7 @@ executable try-pango-fonts-literata
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts-montserrat
@@ -360,6 +373,7 @@ executable try-pango-fonts-montserrat
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts-soulcraft
@@ -384,6 +398,7 @@ executable try-pango-fonts-soulcraft
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts-source-han-sans-vf
@@ -408,6 +423,7 @@ executable try-pango-fonts-source-han-sans-vf
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts-unset
@@ -432,6 +448,7 @@ executable try-pango-fonts-unset
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-fonts-variations
@@ -456,6 +473,7 @@ executable try-pango-fonts-variations
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-gravity
@@ -480,6 +498,7 @@ executable try-pango-gravity
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-language
@@ -504,6 +523,7 @@ executable try-pango-language
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-layout
@@ -528,6 +548,7 @@ executable try-pango-layout
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-layout-innocuous
@@ -552,6 +573,7 @@ executable try-pango-layout-innocuous
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-markup
@@ -576,6 +598,7 @@ executable try-pango-markup
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-matrix
@@ -600,6 +623,7 @@ executable try-pango-matrix
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-simple
@@ -624,6 +648,7 @@ executable try-pango-simple
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-tab-array
@@ -648,6 +673,7 @@ executable try-pango-tab-array
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pango-vertical-text
@@ -672,6 +698,7 @@ executable try-pango-vertical-text
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-tribial
@@ -696,6 +723,7 @@ executable try-tribial
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-variations
@@ -720,6 +748,7 @@ executable try-variations
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 test-suite try-pango-test
@@ -744,4 +773,5 @@ test-suite try-pango-test
     , text
     , try-pango
     , union-angle
+    , union-color
   default-language: Haskell2010

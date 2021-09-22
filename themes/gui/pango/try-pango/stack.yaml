@@ -42,11 +42,13 @@ packages:
 extra-deps:
 - union-angle-0.1.0.1
 - git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 6e9e6e9d5074f4320260ac7bf57e767318571d53
+  commit: 7423abab5b0b53dc65bde4ab93e0f35417b0ecf2
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+  commit: ee391f137f90b3eebd50ee3fe46ecbf868920518
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- git: https://github.com/YoshikuniJujo/union-color
+  commit: c1199422ab647ddf3b95df8ae3a4ff5992c30479
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 - git: https://github.com/YOshikuniJujo/glib-stopgap

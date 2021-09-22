@@ -28,6 +28,7 @@ dependencies:
 - JuicyCairo
 - nowdoc
 - union-angle
+- union-color
 - cairo-image
 - simple-cairo
 - simple-pango

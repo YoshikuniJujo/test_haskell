@@ -9,7 +9,7 @@ import Control.Monad.Primitive
 import Data.Char
 import Data.CairoImage
 import Data.JuicyCairo
-import Data.Font.VariationAxis
+import Data.Font.VariationAxis hiding (Weight(..))
 import System.Environment
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
@@ -23,21 +23,21 @@ import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations hiding (Weight
 
 import qualified Data.Text as T
 
-pangoFontDescriptionAddAxis "Inline" "BLDA"
-pangoFontDescriptionAddAxis "Worm" "BLDB"
-pangoFontDescriptionAddAxis "Weight" "WMX2"
-pangoFontDescriptionAddAxis "InlineSkeleton" "SKLA"
-pangoFontDescriptionAddAxis "WormSkeleton" "SKLB"
-pangoFontDescriptionAddAxis "Stripes" "SKLD"
-pangoFontDescriptionAddAxis "Rounded" "TRMA"
-pangoFontDescriptionAddAxis "Flared" "TRMB"
-pangoFontDescriptionAddAxis "RoundedSlab" "TRMC"
-pangoFontDescriptionAddAxis "Sheared" "TRMD"
-pangoFontDescriptionAddAxis "Bifurcated" "TRME"
-pangoFontDescriptionAddAxis "OpenInlineTerminal" "TRMF"
-pangoFontDescriptionAddAxis "Slab" "TRMG"
-pangoFontDescriptionAddAxis "InlineTerminal" "TRMK"
-pangoFontDescriptionAddAxis "WormTerminal" "TRML"
+fontDescriptionAddAxis "Inline" "BLDA"
+fontDescriptionAddAxis "Worm" "BLDB"
+fontDescriptionAddAxis "Weight" "WMX2"
+fontDescriptionAddAxis "InlineSkeleton" "SKLA"
+fontDescriptionAddAxis "WormSkeleton" "SKLB"
+fontDescriptionAddAxis "Stripes" "SKLD"
+fontDescriptionAddAxis "Rounded" "TRMA"
+fontDescriptionAddAxis "Flared" "TRMB"
+fontDescriptionAddAxis "RoundedSlab" "TRMC"
+fontDescriptionAddAxis "Sheared" "TRMD"
+fontDescriptionAddAxis "Bifurcated" "TRME"
+fontDescriptionAddAxis "OpenInlineTerminal" "TRMF"
+fontDescriptionAddAxis "Slab" "TRMG"
+fontDescriptionAddAxis "InlineTerminal" "TRMK"
+fontDescriptionAddAxis "WormTerminal" "TRML"
 
 main :: IO ()
 main = getArgs >>= \case
@@ -81,7 +81,7 @@ main = getArgs >>= \case
 			_ -> error "never occur"
 	_ -> error "need blda and skla"
 
-setAxisFromString :: (PangoFontDescriptionAxis a, PrimMonad m) =>
+setAxisFromString :: (FontDescriptionAxis a, PrimMonad m) =>
 	PangoFontDescriptionPrim (PrimState m) -> (Double -> a) -> String -> m ()
 setAxisFromString fd mk = \case
 	a | all ((||) <$> isDigit <*> (== '.')) a -> pangoFontDescriptionSetAxis fd . mk $ read a

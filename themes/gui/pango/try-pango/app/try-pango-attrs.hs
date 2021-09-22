@@ -6,6 +6,8 @@ module Main where
 
 import Control.Monad.Primitive
 import Data.Foldable
+import Data.Maybe
+import Data.Color
 import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
@@ -116,11 +118,13 @@ main = do
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al6
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.5 0.1
+
 	al7 <- pangoTextAttrListNew . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
 	at11 <- pangoAttrNew $ Strikethrough True
-	at12 <- pangoAttrNew $ StrikethroughColor maxBound 0 0
+	at12 <- pangoAttrNew . StrikethroughColor $ RgbWord16 @Double 0 maxBound 0
 	pangoTextAttrListInsert al7 at11 0 maxBound
-	pangoTextAttrListInsert al7 at12 0 maxBound
+	pangoTextAttrListInsert al7 at12 10 maxBound
 
 	cairoMoveTo cr 0 190
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al7
