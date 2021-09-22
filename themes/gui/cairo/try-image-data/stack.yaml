@@ -42,13 +42,15 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: 82b84d1b0d5ada9492976cb8a3b3c29cc789db43
+  commit: ee391f137f90b3eebd50ee3fe46ecbf868920518
 - git: https://github.com/YoshikuniJujo/cairo-image
   commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- git: https://github.com/YoshikuniJujo/union-color
+  commit: c1199422ab647ddf3b95df8ae3a4ff5992c30479
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
 - git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 07314757b58f349a62b158620b858d71aaa81d8a
+  commit: 7423abab5b0b53dc65bde4ab93e0f35417b0ecf2
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 

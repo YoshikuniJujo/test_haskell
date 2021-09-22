@@ -9,12 +9,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 5015
-      sha256: a0045982dd13dd4d5cd0db19aa2005cb1db6272997bb01f3abfa522a4ad27396
-    commit: 82b84d1b0d5ada9492976cb8a3b3c29cc789db43
+      size: 4958
+      sha256: 5141754f5fe8abaaaf1dce5f46cf1a0c14b0681e63590389c70619b7b71f4fb1
+    commit: ee391f137f90b3eebd50ee3fe46ecbf868920518
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: 82b84d1b0d5ada9492976cb8a3b3c29cc789db43
+    commit: ee391f137f90b3eebd50ee3fe46ecbf868920518
 - completed:
     name: cairo-image
     version: 0.1.0.0
@@ -26,6 +26,17 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/cairo-image
     commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+- completed:
+    name: union-color
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/union-color
+    pantry-tree:
+      size: 570
+      sha256: b326ca41e516bace05d8824e310804ed2213057a042657ce31b0793daeb534a9
+    commit: c1199422ab647ddf3b95df8ae3a4ff5992c30479
+  original:
+    git: https://github.com/YoshikuniJujo/union-color
+    commit: c1199422ab647ddf3b95df8ae3a4ff5992c30479
 - completed:
     name: JuicyCairo
     version: 0.1.0.0
@@ -43,11 +54,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
       size: 3830
-      sha256: be2e4697001f423ccd84a72d7f6a76b5646c8f86c94eaadafa5cea27ad8a0a55
-    commit: 07314757b58f349a62b158620b858d71aaa81d8a
+      sha256: 9df9958023c01e52ad76b4e71488a3be4865c088f73e8aee55c9e681f745da90
+    commit: 7423abab5b0b53dc65bde4ab93e0f35417b0ecf2
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 07314757b58f349a62b158620b858d71aaa81d8a
+    commit: 7423abab5b0b53dc65bde4ab93e0f35417b0ecf2
 - completed:
     name: glib-stopgap
     version: 0.1.0.0

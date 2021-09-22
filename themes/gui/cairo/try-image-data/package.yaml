@@ -28,6 +28,7 @@ dependencies:
 - JuicyCairo
 - simple-cairo
 - cairo-image
+- union-color
 - simple-pango
 
 library:
