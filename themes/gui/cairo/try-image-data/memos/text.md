@@ -5,9 +5,9 @@ Text Attributes
 ---------------
 
 * [x] font
-* [ ] strike through
-	+ [ ] itself
-	+ [ ] color
+* [x] strike through
+	+ [x] itself
+	+ [x] color
 * [ ] underline
 	+ [ ] itself
 	+ [ ] color

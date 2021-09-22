@@ -19,7 +19,7 @@ import Graphics.Pango.Rendering.Cairo
 
 import qualified Data.Text as T
 
-import Data.ImageData.Text
+import Data.ImageData.Text as I
 
 drawLayout :: CairoTIO s -> Layout -> IO ()
 drawLayout cr lyot = do
@@ -31,14 +31,25 @@ drawLayout cr lyot = do
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do
 	pl <- pangoTextAttrListNew . T.concat . (textText <$>) $ layoutText lyot
-	forM_ (getAttrs lyot) \(fnt, (s, e)) -> do
+	forM_ (getAttrs lyot) \(TextAttrs { textAttrsFont = fnt, textAttrsStrikethrough = stthr }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
+		attrs <- attrStrikethrough stthr
 		pangoTextAttrListInsert pl attr s e
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` attrs
 	pangoTextAttrListFreeze pl
 
-getAttrs :: Layout -> [(Font, (Int, Int))]
-getAttrs lyot = zip (textFont <$> layoutText lyot) (getStartAndEnds lyot)
+attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
+attrStrikethrough NoStrikethrough = pure []
+attrStrikethrough StrikethroughWithForegroundColor =
+	(: []) <$> pangoAttrNew (Strikethrough True)
+attrStrikethrough (StrikethroughWithColor rgb) = do
+	a1 <- pangoAttrNew $ Strikethrough True
+	a2 <- pangoAttrNew $ StrikethroughColor rgb
+	pure [a1, a2]
+
+getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
+getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)
 
 getStartAndEnds :: Layout -> [(Int, Int)]
 getStartAndEnds = startAndEnds . (T.length . textText <$>) . layoutText

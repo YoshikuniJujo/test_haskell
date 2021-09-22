@@ -3,6 +3,8 @@
 
 module Data.ImageData.Text where
 
+import Data.Maybe
+import Data.Color
 import Data.Font.VariationAxis
 
 import qualified Data.Text as T
@@ -13,12 +15,14 @@ data Layout = Layout {
 
 sampleLayout :: Layout
 sampleLayout = Layout [
-	Text (sampleFont "soulcraft" 32) "abc",
-	Text (sampleFont "sazanami" 32) "あいう",
-	Text (sampleFont "sans" 32) "def",
-	Text (sampleFont "serif" 32) "ghi\n",
-	Text (sourceHanSansVf 32 100) "あいう",
-	Text (sourceHanSansVf 32 300) "えお"]
+	Text (textAttrsFromFont $ sampleFont "soulcraft" 32) "abc",
+	Text (textAttrsFromFont $ sampleFont "sazanami" 32) {
+		textAttrsStrikethrough = StrikethroughWithForegroundColor } "あいう",
+	Text (textAttrsFromFont $ sampleFont "sans" 32) "def",
+	Text (textAttrsFromFont $ sampleFont "serif" 32) {
+		textAttrsStrikethrough = StrikethroughWithColor . fromJust $ rgbDouble 0.2 0.5 0.1 } "ghi\n",
+	Text (textAttrsFromFont $ sourceHanSansVf 32 100) "あいう",
+	Text (textAttrsFromFont $ sourceHanSansVf 32 300) "えお"]
 
 sampleFont :: String -> Double -> Font
 sampleFont fm sz = Font {
@@ -36,7 +40,23 @@ sourceHanSansVf sz wgt =
 weight :: Double -> Variations
 weight w = variationsSetAxis (Weight w) variationsEmpty
 
-data Text = Text { textFont :: Font, textText :: T.Text } deriving Show
+data Text = Text { textAttrs :: TextAttrs, textText :: T.Text } deriving Show
+
+textAttrsFromFont :: Font -> TextAttrs
+textAttrsFromFont fnt = TextAttrs {
+	textAttrsFont = fnt,
+	textAttrsStrikethrough = NoStrikethrough }
+
+data TextAttrs = TextAttrs {
+	textAttrsFont :: Font,
+	textAttrsStrikethrough :: Strikethrough }
+	deriving Show
+
+data Strikethrough
+	= NoStrikethrough
+	| StrikethroughWithForegroundColor
+	| StrikethroughWithColor (Rgb Double)
+	deriving Show
 
 data Font
 	= Font {
