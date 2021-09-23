@@ -24,10 +24,17 @@ import Data.ImageData.Text as I
 drawLayout :: CairoTIO s -> Layout -> IO ()
 drawLayout cr lyot = do
 	pl <- pangoCairoCreateLayout cr
-	pangoLayoutSet pl . toWidth $ layoutWidth lyot
+	pangoLayoutSet pl . toWidth . layoutAttrsWidth $ layoutAttrs lyot
+	pangoLayoutSet pl . toWrap . layoutAttrsWrap $ layoutAttrs lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
 	pangoLayoutSet pl $ makeTextAttrList lyot
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+
+toWrap :: LayoutWrap -> PangoWrapMode
+toWrap = \case
+	LayoutWrapWord -> PangoWrapWord
+	LayoutWrapChar -> PangoWrapChar
+	LayoutWrapWordChar -> PangoWrapWordChar
 
 toWidth :: LayoutWidth -> LO.Width
 toWidth LayoutWidthDefault = WidthDefault

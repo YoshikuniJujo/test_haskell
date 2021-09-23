@@ -10,15 +10,42 @@ import Data.Font.VariationAxis
 import qualified Data.Text as T
 
 data Layout = Layout {
-	layoutWidth :: LayoutWidth,
+	layoutAttrs :: LayoutAttrs,
 	layoutText :: [Text] }
+	deriving Show
+
+data LayoutAttrs = LayoutAttrs {
+	layoutAttrsWidth :: LayoutWidth,
+	layoutAttrsWrap :: LayoutWrap
+	}
+	deriving Show
+
+data LayoutWrap = LayoutWrapWord | LayoutWrapChar | LayoutWrapWordChar
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
 
+sampleForWrap :: LayoutWidth -> LayoutWrap -> Layout
+sampleForWrap wdt wrp = Layout {
+	layoutAttrs = LayoutAttrs {
+		layoutAttrsWidth = wdt,
+		layoutAttrsWrap = wrp },
+	layoutText = [
+		Text (textAttrsFromFont $ sampleFont "sans" 16) $
+			"In the beginning God created the heaven and the earth. " <>
+			"And the earth was without form, and void; " <>
+			"and darkness was upon the face of the deep. " <>
+			"And the Spirit of God moved upon the face of the waters. " <>
+			"And God said, Let there be light: and there was light."
+		]
+	}
+
 sampleForWidth :: LayoutWidth -> Layout
 sampleForWidth w = Layout {
-	layoutWidth = w,
+	layoutAttrs = LayoutAttrs {
+		layoutAttrsWidth = w,
+		layoutAttrsWrap = LayoutWrapWord
+		},
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "sazanami" 32) $
 			"いろはにほへとちりぬるをわかよたれそつねならぬ" <>
@@ -28,7 +55,10 @@ sampleForWidth w = Layout {
 
 sampleLayout :: Layout
 sampleLayout = Layout {
-	layoutWidth = LayoutWidthDefault,
+	layoutAttrs = LayoutAttrs {
+		layoutAttrsWidth = LayoutWidthDefault,
+		layoutAttrsWrap = LayoutWrapWord
+		},
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "soulcraft" 32) "abc",
 		Text (textAttrsFromFont $ sampleFont "sazanami" 32) {

@@ -71,6 +71,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-layout-wrap:
+    main:                try-layout-wrap.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

@@ -25,9 +25,9 @@ Text Attributes
 Layout settings
 ---------------
 
-* [ ] width
+* [x] width
 * [ ] height
-* [ ] wrap mode
+* [x] wrap mode
 * [ ] ellipsize mode
 * [ ] indent
 * [ ] line spacing
