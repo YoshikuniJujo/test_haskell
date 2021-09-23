@@ -10,19 +10,35 @@ import Data.Font.VariationAxis
 import qualified Data.Text as T
 
 data Layout = Layout {
+	layoutWidth :: LayoutWidth,
 	layoutText :: [Text] }
 	deriving Show
 
+data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
+
+sampleForWidth :: LayoutWidth -> Layout
+sampleForWidth w = Layout {
+	layoutWidth = w,
+	layoutText = [
+		Text (textAttrsFromFont $ sampleFont "sazanami" 32) $
+			"いろはにほへとちりぬるをわかよたれそつねならぬ" <>
+			"うゐのおくやまけふこえてあさきゆめみしゑひもせす"
+		]
+	}
+
 sampleLayout :: Layout
-sampleLayout = Layout [
-	Text (textAttrsFromFont $ sampleFont "soulcraft" 32) "abc",
-	Text (textAttrsFromFont $ sampleFont "sazanami" 32) {
-		textAttrsStrikethrough = StrikethroughWithForegroundColor } "あいう",
-	Text (textAttrsFromFont $ sampleFont "sans" 32) "def",
-	Text (textAttrsFromFont $ sampleFont "serif" 32) {
-		textAttrsStrikethrough = StrikethroughWithColor . fromJust $ rgbDouble 0.2 0.5 0.1 } "ghi\n",
-	Text (textAttrsFromFont $ sourceHanSansVf 32 100) "あいう",
-	Text (textAttrsFromFont $ sourceHanSansVf 32 300) "えお"]
+sampleLayout = Layout {
+	layoutWidth = LayoutWidthDefault,
+	layoutText = [
+		Text (textAttrsFromFont $ sampleFont "soulcraft" 32) "abc",
+		Text (textAttrsFromFont $ sampleFont "sazanami" 32) {
+			textAttrsStrikethrough = StrikethroughWithForegroundColor } "あいう",
+		Text (textAttrsFromFont $ sampleFont "sans" 32) "def",
+		Text (textAttrsFromFont $ sampleFont "serif" 32) {
+			textAttrsStrikethrough = StrikethroughWithColor . fromJust $ rgbDouble 0.2 0.5 0.1 } "ghi\n",
+		Text (textAttrsFromFont $ sourceHanSansVf 32 100) "あいう",
+		Text (textAttrsFromFont $ sourceHanSansVf 32 300) "えお"]
+	}
 
 sampleFont :: String -> Double -> Font
 sampleFont fm sz = Font {

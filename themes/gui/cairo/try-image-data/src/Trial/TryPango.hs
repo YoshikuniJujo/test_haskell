@@ -13,7 +13,7 @@ import Data.CairoContext
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
-import Graphics.Pango.Basic.LayoutObjects.PangoLayout
+import Graphics.Pango.Basic.LayoutObjects.PangoLayout as LO
 import Graphics.Pango.Basic.TextAttributes
 import Graphics.Pango.Rendering.Cairo
 
@@ -24,9 +24,14 @@ import Data.ImageData.Text as I
 drawLayout :: CairoTIO s -> Layout -> IO ()
 drawLayout cr lyot = do
 	pl <- pangoCairoCreateLayout cr
+	pangoLayoutSet pl . toWidth $ layoutWidth lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
 	pangoLayoutSet pl $ makeTextAttrList lyot
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+
+toWidth :: LayoutWidth -> LO.Width
+toWidth LayoutWidthDefault = WidthDefault
+toWidth (LayoutWidth w) = LO.Width $ realToFrac w
 
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do
