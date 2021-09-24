@@ -26,9 +26,14 @@ drawLayout cr lyot = do
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSet pl . toWidth . layoutAttrsWidth $ layoutAttrs lyot
 	pangoLayoutSet pl . toWrap . layoutAttrsWrap $ layoutAttrs lyot
+	pangoLayoutSet pl . toEllipsize . layoutAttrsEllipsize $ layoutAttrs lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
 	pangoLayoutSet pl $ makeTextAttrList lyot
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+
+toWidth :: LayoutWidth -> LO.Width
+toWidth LayoutWidthDefault = WidthDefault
+toWidth (LayoutWidth w) = LO.Width $ realToFrac w
 
 toWrap :: LayoutWrap -> PangoWrapMode
 toWrap = \case
@@ -36,9 +41,12 @@ toWrap = \case
 	LayoutWrapChar -> PangoWrapChar
 	LayoutWrapWordChar -> PangoWrapWordChar
 
-toWidth :: LayoutWidth -> LO.Width
-toWidth LayoutWidthDefault = WidthDefault
-toWidth (LayoutWidth w) = LO.Width $ realToFrac w
+toEllipsize :: LayoutEllipsize -> PangoEllipsizeMode
+toEllipsize = \case
+	LayoutEllipsizeNone -> PangoEllipsizeNone
+	LayoutEllipsizeStart -> PangoEllipsizeStart
+	LayoutEllipsizeMiddle -> PangoEllipsizeMiddle
+	LayoutEllipsizeEnd -> PangoEllipsizeEnd
 
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do

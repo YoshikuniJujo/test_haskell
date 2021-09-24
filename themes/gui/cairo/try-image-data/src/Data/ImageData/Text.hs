@@ -16,23 +16,29 @@ data Layout = Layout {
 
 data LayoutAttrs = LayoutAttrs {
 	layoutAttrsWidth :: LayoutWidth,
-	layoutAttrsWrap :: LayoutWrap
-	}
-	deriving Show
-
-data LayoutWrap = LayoutWrapWord | LayoutWrapChar | LayoutWrapWordChar
+	layoutAttrsWrap :: LayoutWrap,
+	layoutAttrsEllipsize :: LayoutEllipsize }
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
 
-sampleForWrap :: LayoutWidth -> LayoutWrap -> Layout
-sampleForWrap wdt wrp = Layout {
+data LayoutWrap = LayoutWrapWord | LayoutWrapChar | LayoutWrapWordChar
+	deriving Show
+
+data LayoutEllipsize
+	= LayoutEllipsizeNone
+	| LayoutEllipsizeStart | LayoutEllipsizeMiddle | LayoutEllipsizeEnd
+	deriving Show
+
+sampleForWrap :: LayoutWidth -> LayoutWrap -> LayoutEllipsize -> Layout
+sampleForWrap wdt wrp elp = Layout {
 	layoutAttrs = LayoutAttrs {
 		layoutAttrsWidth = wdt,
-		layoutAttrsWrap = wrp },
+		layoutAttrsWrap = wrp,
+		layoutAttrsEllipsize = elp },
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "sans" 16) $
-			"In the beginning God created the heaven and the earth. " <>
+			"In the beginning God created the heaven and the earth.\n" <>
 			"And the earth was without form, and void; " <>
 			"and darkness was upon the face of the deep. " <>
 			"And the Spirit of God moved upon the face of the waters. " <>
@@ -44,7 +50,8 @@ sampleForWidth :: LayoutWidth -> Layout
 sampleForWidth w = Layout {
 	layoutAttrs = LayoutAttrs {
 		layoutAttrsWidth = w,
-		layoutAttrsWrap = LayoutWrapWord
+		layoutAttrsWrap = LayoutWrapWord,
+		layoutAttrsEllipsize = LayoutEllipsizeNone
 		},
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "sazanami" 32) $
@@ -57,7 +64,8 @@ sampleLayout :: Layout
 sampleLayout = Layout {
 	layoutAttrs = LayoutAttrs {
 		layoutAttrsWidth = LayoutWidthDefault,
-		layoutAttrsWrap = LayoutWrapWord
+		layoutAttrsWrap = LayoutWrapWord,
+		layoutAttrsEllipsize = LayoutEllipsizeNone
 		},
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "soulcraft" 32) "abc",

@@ -19,16 +19,13 @@ main = do
 	cairoMoveTo cr 32 32
 	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapWord LayoutEllipsizeNone
 
-	cairoMoveTo cr 32 200
-	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapChar LayoutEllipsizeNone
+	cairoMoveTo cr 32 190
+	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapWord LayoutEllipsizeStart
 
-	cairoMoveTo cr 32 370
-	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapWordChar LayoutEllipsizeNone
+	cairoMoveTo cr 32 260
+	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapWord LayoutEllipsizeMiddle
 
-	cairoMoveTo cr 650 16
-	drawLayout cr $ sampleForWrap (LayoutWidth 80) LayoutWrapWord LayoutEllipsizeNone
+	cairoMoveTo cr 32 330
+	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapWord LayoutEllipsizeEnd
 
-	cairoMoveTo cr 760 16
-	drawLayout cr $ sampleForWrap (LayoutWidth 80) LayoutWrapWordChar LayoutEllipsizeNone
-
-	makePng sr "pngs/try-layout-wrap.png"
+	makePng sr "pngs/try-layout-ellipsize.png"
