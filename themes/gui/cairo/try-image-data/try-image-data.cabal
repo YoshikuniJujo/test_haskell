@@ -134,6 +134,50 @@ executable try-layout-ellipsize
     , union-color
   default-language: Haskell2010
 
+executable try-layout-indent
+  main-is: try-layout-indent.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
+executable try-layout-line-spacing
+  main-is: try-layout-line-spacing.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
 executable try-layout-wrap
   main-is: try-layout-wrap.hs
   other-modules:

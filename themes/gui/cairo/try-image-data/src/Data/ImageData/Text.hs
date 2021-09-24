@@ -18,7 +18,9 @@ data LayoutAttrs = LayoutAttrs {
 	layoutAttrsWidth :: LayoutWidth,
 	layoutAttrsHeight :: LayoutHeight,
 	layoutAttrsWrap :: LayoutWrap,
-	layoutAttrsEllipsize :: LayoutEllipsize }
+	layoutAttrsEllipsize :: LayoutEllipsize,
+	layoutAttrsIndent :: LayoutIndent,
+	layoutAttrsLineSpacing :: LayoutLineSpacing }
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
@@ -34,37 +36,56 @@ data LayoutEllipsize
 	| LayoutEllipsizeStart | LayoutEllipsizeMiddle | LayoutEllipsizeEnd
 	deriving Show
 
+newtype LayoutIndent = LayoutIndent Double deriving Show
+
+newtype LayoutLineSpacing = LayoutLineSpacing Double deriving Show
+
+sampleForLineSpacing :: LayoutLineSpacing -> Layout
+sampleForLineSpacing s = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600,
+		layoutAttrsLineSpacing = s },
+	layoutText = [genesis] }
+
 sampleForHeight :: LayoutWidth -> LayoutEllipsize -> LayoutHeight -> Layout
 sampleForHeight wdt elp = setSampleHeight $ sampleForWrap wdt LayoutWrapWord elp
 
 setSampleHeight :: Layout -> LayoutHeight -> Layout
 setSampleHeight (Layout a t) h = Layout a { layoutAttrsHeight = h } t
 
+sampleForIndent :: LayoutIndent -> Layout
+sampleForIndent i = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600, layoutAttrsIndent = i },
+	layoutText = [genesis] }
+
+defaultLayoutAttrs :: LayoutAttrs
+defaultLayoutAttrs = LayoutAttrs {
+	layoutAttrsWidth = LayoutWidthDefault,
+	layoutAttrsHeight = LayoutHeightDefault,
+	layoutAttrsWrap = LayoutWrapWord,
+	layoutAttrsEllipsize = LayoutEllipsizeNone,
+	layoutAttrsIndent = LayoutIndent 0,
+	layoutAttrsLineSpacing = LayoutLineSpacing 0 }
+
+genesis :: Text
+genesis = Text (textAttrsFromFont $ sampleFont "sans" 16) $
+		"In the beginning God created the heaven and the earth.\n" <>
+		"And the earth was without form, and void; " <>
+		"and darkness was upon the face of the deep. " <>
+		"And the Spirit of God moved upon the face of the waters. " <>
+		"And God said, Let there be light: and there was light."
+
 sampleForWrap :: LayoutWidth -> LayoutWrap -> LayoutEllipsize -> Layout
 sampleForWrap wdt wrp elp = Layout {
-	layoutAttrs = LayoutAttrs {
-		layoutAttrsWidth = wdt,
-		layoutAttrsHeight = LayoutHeightDefault,
-		layoutAttrsWrap = wrp,
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = wdt, layoutAttrsWrap = wrp,
 		layoutAttrsEllipsize = elp },
-	layoutText = [
-		Text (textAttrsFromFont $ sampleFont "sans" 16) $
-			"In the beginning God created the heaven and the earth.\n" <>
-			"And the earth was without form, and void; " <>
-			"and darkness was upon the face of the deep. " <>
-			"And the Spirit of God moved upon the face of the waters. " <>
-			"And God said, Let there be light: and there was light."
-		]
-	}
+	layoutText = [genesis] }
 
 sampleForWidth :: LayoutWidth -> Layout
 sampleForWidth w = Layout {
-	layoutAttrs = LayoutAttrs {
-		layoutAttrsWidth = w,
-		layoutAttrsHeight = LayoutHeightDefault,
-		layoutAttrsWrap = LayoutWrapWord,
-		layoutAttrsEllipsize = LayoutEllipsizeNone
-		},
+	layoutAttrs = defaultLayoutAttrs { layoutAttrsWidth = w },
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "sazanami" 32) $
 			"いろはにほへとちりぬるをわかよたれそつねならぬ" <>
@@ -74,12 +95,7 @@ sampleForWidth w = Layout {
 
 sampleLayout :: Layout
 sampleLayout = Layout {
-	layoutAttrs = LayoutAttrs {
-		layoutAttrsWidth = LayoutWidthDefault,
-		layoutAttrsHeight = LayoutHeightDefault,
-		layoutAttrsWrap = LayoutWrapWord,
-		layoutAttrsEllipsize = LayoutEllipsizeNone
-		},
+	layoutAttrs = defaultLayoutAttrs,
 	layoutText = [
 		Text (textAttrsFromFont $ sampleFont "soulcraft" 32) "abc",
 		Text (textAttrsFromFont $ sampleFont "sazanami" 32) {

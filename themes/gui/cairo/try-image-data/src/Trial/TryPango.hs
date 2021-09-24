@@ -28,6 +28,8 @@ drawLayout cr lyot = do
 	pangoLayoutSet pl . toHeight . layoutAttrsHeight $ layoutAttrs lyot
 	pangoLayoutSet pl . toWrap . layoutAttrsWrap $ layoutAttrs lyot
 	pangoLayoutSet pl . toEllipsize . layoutAttrsEllipsize $ layoutAttrs lyot
+	pangoLayoutSet pl . toIndent . layoutAttrsIndent $ layoutAttrs lyot
+	pangoLayoutSet pl . toLineSpacing . layoutAttrsLineSpacing $ layoutAttrs lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
 	pangoLayoutSet pl $ makeTextAttrList lyot
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
@@ -54,6 +56,12 @@ toEllipsize = \case
 	LayoutEllipsizeStart -> PangoEllipsizeStart
 	LayoutEllipsizeMiddle -> PangoEllipsizeMiddle
 	LayoutEllipsizeEnd -> PangoEllipsizeEnd
+
+toIndent :: LayoutIndent -> Indent
+toIndent (LayoutIndent i) = Indent $ realToFrac i
+
+toLineSpacing :: LayoutLineSpacing -> LineSpacing
+toLineSpacing (LayoutLineSpacing s) = LineSpacing $ realToFrac s
 
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do

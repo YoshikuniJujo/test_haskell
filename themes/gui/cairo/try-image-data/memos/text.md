@@ -26,11 +26,11 @@ Layout settings
 ---------------
 
 * [x] width
-* [ ] height
+* [x] height
 * [x] wrap mode
 * [x] ellipsize mode
-* [ ] indent
-* [ ] line spacing
+* [x] indent
+* [x] line spacing
 * [ ] justify
 * [ ] auto dir
 * [ ] alignment
