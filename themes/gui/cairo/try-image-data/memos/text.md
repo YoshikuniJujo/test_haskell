@@ -28,7 +28,7 @@ Layout settings
 * [x] width
 * [ ] height
 * [x] wrap mode
-* [ ] ellipsize mode
+* [x] ellipsize mode
 * [ ] indent
 * [ ] line spacing
 * [ ] justify

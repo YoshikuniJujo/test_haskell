@@ -28,4 +28,13 @@ main = do
 	cairoMoveTo cr 32 330
 	drawLayout cr $ sampleForWrap (LayoutWidth 600) LayoutWrapWord LayoutEllipsizeEnd
 
+	cairoMoveTo cr 32 450
+	drawLayout cr $ sampleForHeight (LayoutWidth 600) LayoutEllipsizeEnd LayoutHeightDefault
+
+	cairoMoveTo cr 32 520
+	drawLayout cr . sampleForHeight (LayoutWidth 600) LayoutEllipsizeEnd $ LayoutHeight 100
+
+	cairoMoveTo cr 32 640
+	drawLayout cr . sampleForHeight (LayoutWidth 600) LayoutEllipsizeEnd $ LayoutLines 2
+
 	makePng sr "pngs/try-layout-ellipsize.png"

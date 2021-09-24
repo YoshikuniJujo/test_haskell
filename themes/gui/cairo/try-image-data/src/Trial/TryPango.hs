@@ -25,6 +25,7 @@ drawLayout :: CairoTIO s -> Layout -> IO ()
 drawLayout cr lyot = do
 	pl <- pangoCairoCreateLayout cr
 	pangoLayoutSet pl . toWidth . layoutAttrsWidth $ layoutAttrs lyot
+	pangoLayoutSet pl . toHeight . layoutAttrsHeight $ layoutAttrs lyot
 	pangoLayoutSet pl . toWrap . layoutAttrsWrap $ layoutAttrs lyot
 	pangoLayoutSet pl . toEllipsize . layoutAttrsEllipsize $ layoutAttrs lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
@@ -34,6 +35,12 @@ drawLayout cr lyot = do
 toWidth :: LayoutWidth -> LO.Width
 toWidth LayoutWidthDefault = WidthDefault
 toWidth (LayoutWidth w) = LO.Width $ realToFrac w
+
+toHeight :: LayoutHeight -> LO.Height
+toHeight = \case
+	LayoutHeightDefault -> HeightDefault
+	LayoutHeight h -> Height $ realToFrac h
+	LayoutLines ls -> LinesPerParagraph $ fromIntegral ls
 
 toWrap :: LayoutWrap -> PangoWrapMode
 toWrap = \case

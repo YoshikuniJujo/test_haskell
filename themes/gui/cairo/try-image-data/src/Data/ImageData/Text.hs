@@ -16,11 +16,15 @@ data Layout = Layout {
 
 data LayoutAttrs = LayoutAttrs {
 	layoutAttrsWidth :: LayoutWidth,
+	layoutAttrsHeight :: LayoutHeight,
 	layoutAttrsWrap :: LayoutWrap,
 	layoutAttrsEllipsize :: LayoutEllipsize }
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
+
+data LayoutHeight = LayoutHeightDefault | LayoutHeight Double | LayoutLines Int
+	deriving Show
 
 data LayoutWrap = LayoutWrapWord | LayoutWrapChar | LayoutWrapWordChar
 	deriving Show
@@ -30,10 +34,17 @@ data LayoutEllipsize
 	| LayoutEllipsizeStart | LayoutEllipsizeMiddle | LayoutEllipsizeEnd
 	deriving Show
 
+sampleForHeight :: LayoutWidth -> LayoutEllipsize -> LayoutHeight -> Layout
+sampleForHeight wdt elp = setSampleHeight $ sampleForWrap wdt LayoutWrapWord elp
+
+setSampleHeight :: Layout -> LayoutHeight -> Layout
+setSampleHeight (Layout a t) h = Layout a { layoutAttrsHeight = h } t
+
 sampleForWrap :: LayoutWidth -> LayoutWrap -> LayoutEllipsize -> Layout
 sampleForWrap wdt wrp elp = Layout {
 	layoutAttrs = LayoutAttrs {
 		layoutAttrsWidth = wdt,
+		layoutAttrsHeight = LayoutHeightDefault,
 		layoutAttrsWrap = wrp,
 		layoutAttrsEllipsize = elp },
 	layoutText = [
@@ -50,6 +61,7 @@ sampleForWidth :: LayoutWidth -> Layout
 sampleForWidth w = Layout {
 	layoutAttrs = LayoutAttrs {
 		layoutAttrsWidth = w,
+		layoutAttrsHeight = LayoutHeightDefault,
 		layoutAttrsWrap = LayoutWrapWord,
 		layoutAttrsEllipsize = LayoutEllipsizeNone
 		},
@@ -64,6 +76,7 @@ sampleLayout :: Layout
 sampleLayout = Layout {
 	layoutAttrs = LayoutAttrs {
 		layoutAttrsWidth = LayoutWidthDefault,
+		layoutAttrsHeight = LayoutHeightDefault,
 		layoutAttrsWrap = LayoutWrapWord,
 		layoutAttrsEllipsize = LayoutEllipsizeNone
 		},
