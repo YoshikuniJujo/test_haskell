@@ -9,6 +9,8 @@ import Data.Font.VariationAxis
 
 import qualified Data.Text as T
 
+import Graphics.Pango.Basic.ScriptsAndLanguages.PangoLanguage
+
 data Layout = Layout {
 	layoutAttrs :: LayoutAttrs,
 	layoutText :: [Text] }
@@ -42,6 +44,15 @@ newtype LayoutIndent = LayoutIndent Double deriving Show
 newtype LayoutLineSpacing = LayoutLineSpacing Double deriving Show
 
 newtype LayoutJustify = LayoutJustify Bool deriving Show
+
+sampleForAutoDir :: Layout
+sampleForAutoDir = Layout {
+	layoutAttrs = defaultLayoutAttrs,
+	layoutText = [arabic] }
+
+arabic :: Text
+arabic = Text (textAttrsFromFont $ sampleFont "sans" 16)
+	$ pangoLanguageGetSampleString $ PangoLanguage "ar"
 
 sampleForJustify :: LayoutJustify -> Layout
 sampleForJustify j = Layout {
