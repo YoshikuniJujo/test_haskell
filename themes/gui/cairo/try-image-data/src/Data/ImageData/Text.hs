@@ -20,7 +20,8 @@ data LayoutAttrs = LayoutAttrs {
 	layoutAttrsWrap :: LayoutWrap,
 	layoutAttrsEllipsize :: LayoutEllipsize,
 	layoutAttrsIndent :: LayoutIndent,
-	layoutAttrsLineSpacing :: LayoutLineSpacing }
+	layoutAttrsLineSpacing :: LayoutLineSpacing,
+	layoutAttrsJustify :: LayoutJustify }
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
@@ -39,6 +40,15 @@ data LayoutEllipsize
 newtype LayoutIndent = LayoutIndent Double deriving Show
 
 newtype LayoutLineSpacing = LayoutLineSpacing Double deriving Show
+
+newtype LayoutJustify = LayoutJustify Bool deriving Show
+
+sampleForJustify :: LayoutJustify -> Layout
+sampleForJustify j = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600,
+		layoutAttrsJustify = j },
+	layoutText = [genesis] }
 
 sampleForLineSpacing :: LayoutLineSpacing -> Layout
 sampleForLineSpacing s = Layout {
@@ -66,7 +76,8 @@ defaultLayoutAttrs = LayoutAttrs {
 	layoutAttrsWrap = LayoutWrapWord,
 	layoutAttrsEllipsize = LayoutEllipsizeNone,
 	layoutAttrsIndent = LayoutIndent 0,
-	layoutAttrsLineSpacing = LayoutLineSpacing 0 }
+	layoutAttrsLineSpacing = LayoutLineSpacing 0,
+	layoutAttrsJustify = LayoutJustify False }
 
 genesis :: Text
 genesis = Text (textAttrsFromFont $ sampleFont "sans" 16) $

@@ -37,4 +37,10 @@ main = do
 	cairoMoveTo cr 32 640
 	drawLayout cr . sampleForHeight (LayoutWidth 600) LayoutEllipsizeEnd $ LayoutLines 2
 
+	cairoMoveTo cr 32 760
+	drawLayout cr . sampleForJustify $ LayoutJustify False
+
+	cairoMoveTo cr 32 900
+	drawLayout cr . sampleForJustify $ LayoutJustify True
+
 	makePng sr "pngs/try-layout-ellipsize.png"

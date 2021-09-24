@@ -31,7 +31,7 @@ Layout settings
 * [x] ellipsize mode
 * [x] indent
 * [x] line spacing
-* [ ] justify
+* [x] justify
 * [ ] auto dir
 * [ ] alignment
 * [ ] paragraph mode
