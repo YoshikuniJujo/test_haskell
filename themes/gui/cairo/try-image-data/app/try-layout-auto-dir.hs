@@ -13,11 +13,15 @@ import Trial.MakePng
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 900 1200
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32 1000 1200
 	cr <- cairoCreate sr
 
 	cairoMoveTo cr 32 32
-	drawLayout cr sampleForAutoDir
+	drawLayout cr . sampleForAutoDir $ LayoutAutoDir True
+
+	cairoMoveTo cr 32 96
+	drawLayout cr . sampleForAutoDir $ LayoutAutoDir False
+
 	{-
 	drawLayout cr . sampleForLineSpacing $ LayoutLineSpacing 0
 

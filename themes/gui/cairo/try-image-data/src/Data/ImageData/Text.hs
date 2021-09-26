@@ -23,7 +23,8 @@ data LayoutAttrs = LayoutAttrs {
 	layoutAttrsEllipsize :: LayoutEllipsize,
 	layoutAttrsIndent :: LayoutIndent,
 	layoutAttrsLineSpacing :: LayoutLineSpacing,
-	layoutAttrsJustify :: LayoutJustify }
+	layoutAttrsJustify :: LayoutJustify,
+	layoutAttrsAutoDir :: LayoutAutoDir }
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
@@ -45,9 +46,12 @@ newtype LayoutLineSpacing = LayoutLineSpacing Double deriving Show
 
 newtype LayoutJustify = LayoutJustify Bool deriving Show
 
-sampleForAutoDir :: Layout
-sampleForAutoDir = Layout {
-	layoutAttrs = defaultLayoutAttrs,
+newtype LayoutAutoDir = LayoutAutoDir Bool deriving Show
+
+sampleForAutoDir :: LayoutWidth -> LayoutAutoDir -> Layout
+sampleForAutoDir w ad = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = w, layoutAttrsAutoDir = ad },
 	layoutText = [arabic] }
 
 arabic :: Text
@@ -88,7 +92,8 @@ defaultLayoutAttrs = LayoutAttrs {
 	layoutAttrsEllipsize = LayoutEllipsizeNone,
 	layoutAttrsIndent = LayoutIndent 0,
 	layoutAttrsLineSpacing = LayoutLineSpacing 0,
-	layoutAttrsJustify = LayoutJustify False }
+	layoutAttrsJustify = LayoutJustify False,
+	layoutAttrsAutoDir = LayoutAutoDir True }
 
 genesis :: Text
 genesis = Text (textAttrsFromFont $ sampleFont "sans" 16) $

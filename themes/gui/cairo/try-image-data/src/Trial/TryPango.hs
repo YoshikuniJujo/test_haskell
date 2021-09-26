@@ -31,6 +31,7 @@ drawLayout cr lyot = do
 	pangoLayoutSet pl . toIndent . layoutAttrsIndent $ layoutAttrs lyot
 	pangoLayoutSet pl . toLineSpacing . layoutAttrsLineSpacing $ layoutAttrs lyot
 	pangoLayoutSet pl . toJustify . layoutAttrsJustify $ layoutAttrs lyot
+	pangoLayoutSet pl . toAutoDir . layoutAttrsAutoDir $ layoutAttrs lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
 	pangoLayoutSet pl $ makeTextAttrList lyot
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
@@ -66,6 +67,9 @@ toLineSpacing (LayoutLineSpacing s) = LineSpacing $ realToFrac s
 
 toJustify :: LayoutJustify -> Justify
 toJustify (LayoutJustify j) = Justify j
+
+toAutoDir :: LayoutAutoDir -> AutoDir
+toAutoDir (LayoutAutoDir ad) = AutoDir ad
 
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do
