@@ -12,10 +12,11 @@ import Data.Color
 import Data.CairoContext
 
 import Graphics.Cairo.Drawing.Paths
+import Graphics.Pango.Basic.GlyphStorage
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.Fonts.PangoFontDescription.Variations
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout as LO
-import Graphics.Pango.Basic.TextAttributes
+import Graphics.Pango.Basic.TextAttributes as P
 import Graphics.Pango.Rendering.Cairo
 
 import qualified Data.Text as T
@@ -89,13 +90,15 @@ makeTextAttrList lyot = runST do
 	forM_ (getAttrs lyot) \(TextAttrs {
 		textAttrsFont = fnt,
 		textAttrsStrikethrough = stthr,
-		textAttrsUnderline = ul }, (s, e)) -> do
+		textAttrsUnderline = ul,
+		textAttrsShape = msp }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
 		attrs2 <- attrUnderline ul
+		attr2 <- maybe (pure []) (((: []) <$>) . attrShape) msp
 		pangoTextAttrListInsert pl attr s e
-		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2)
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
@@ -124,6 +127,16 @@ toUnderlineStyle = \case
 	UnderlineDouble -> PangoUnderlineDouble
 	UnderlineLow -> PangoUnderlineLow
 	UnderlineError -> PangoUnderlineError
+
+attrShape :: PrimMonad m => I.Shape -> m (PangoAttribute (PrimState m))
+attrShape = pangoAttrNew . toShape
+
+toShape :: I.Shape -> P.Shape
+toShape (I.Shape ir lr) = P.Shape (toRectangle ir) (toRectangle lr)
+
+toRectangle :: Rectangle -> PangoRectangleFixed
+toRectangle (Rectangle x y w h) =
+	PangoRectangleFixed (realToFrac x) (realToFrac y) (realToFrac w) (realToFrac h)
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)

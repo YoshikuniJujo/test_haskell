@@ -11,7 +11,7 @@ Text Attributes
 * [x] underline
 	+ [x] itself
 	+ [x] color
-* [ ] shape
+* [x] shape
 * [ ] scale
 * [ ] rise
 * [ ] letter spacing

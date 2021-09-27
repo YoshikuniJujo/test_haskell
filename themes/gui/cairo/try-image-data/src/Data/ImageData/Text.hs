@@ -55,6 +55,16 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
+sampleForShape :: Layout
+sampleForShape = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 300 },
+	layoutText = [
+		Text (textAttrsFromFont $ sampleFont "sans" 32) "abc",
+		Text (textAttrsFromFont $ sampleFont "sans" 32)
+			{ textAttrsShape = Just $ Shape (Rectangle 5 10 50 50) (Rectangle 0 0 70 70) } "def",
+		Text (textAttrsFromFont $ sampleFont "sans" 32) "ghi\njklmnopqrstu" ] }
+
 sampleForUnderline :: [Underline] -> Layout
 sampleForUnderline uls = Layout {
 	layoutAttrs = defaultLayoutAttrs {
@@ -191,12 +201,14 @@ textAttrsFromFont :: Font -> TextAttrs
 textAttrsFromFont fnt = TextAttrs {
 	textAttrsFont = fnt,
 	textAttrsStrikethrough = StrikethroughNone,
-	textAttrsUnderline = UnderlineNone }
+	textAttrsUnderline = UnderlineNone,
+	textAttrsShape = Nothing }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
 	textAttrsStrikethrough :: Strikethrough,
-	textAttrsUnderline :: Underline }
+	textAttrsUnderline :: Underline,
+	textAttrsShape :: Maybe Shape }
 	deriving Show
 
 data Strikethrough
@@ -212,6 +224,13 @@ data Underline
 
 data UnderlineStyle
 	= UnderlineSingle | UnderlineDouble | UnderlineLow | UnderlineError
+	deriving Show
+
+data Shape = Shape Rectangle Rectangle deriving Show
+
+data Rectangle = Rectangle {
+	rectangleX, rectangleY :: Double,
+	rectangleWidth, rectanbleHeight :: Double }
 	deriving Show
 
 data Font
