@@ -17,25 +17,11 @@ main = do
 	cr <- cairoCreate sr
 
 	cairoMoveTo cr 32 32
-	drawLayout cr . sampleForAutoDir $ LayoutAutoDir True
+	drawLayout cr $ sampleForAutoDir
+		(LayoutWidth 700) (LayoutAutoDir True)
 
-	cairoMoveTo cr 32 96
-	drawLayout cr . sampleForAutoDir $ LayoutAutoDir False
-
-	{-
-	drawLayout cr . sampleForLineSpacing $ LayoutLineSpacing 0
-
-	cairoMoveTo cr 32 232
-	drawLayout cr . sampleForLineSpacing $ LayoutLineSpacing 1
-
-	cairoMoveTo cr 32 432
-	drawLayout cr . sampleForLineSpacing $ LayoutLineSpacing 0.8
-
-	cairoMoveTo cr 32 632
-	drawLayout cr . sampleForLineSpacing $ LayoutLineSpacing 1.5
-
-	cairoMoveTo cr 32 882
-	drawLayout cr . sampleForLineSpacing $ LayoutLineSpacing 2
-	-}
+	cairoMoveTo cr 32 128
+	drawLayout cr $ sampleForAutoDir
+		(LayoutWidth 700) (LayoutAutoDir False)
 
 	makePng sr "pngs/try-layout-auto-dir.png"
