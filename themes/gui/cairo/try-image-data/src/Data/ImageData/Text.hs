@@ -55,6 +55,18 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
+sampleForUnderline :: [Underline] -> Layout
+sampleForUnderline uls = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600,
+		layoutAttrsLineSpacing = LayoutLineSpacing 1.5 },
+	layoutText = underlineToText <$> uls }
+
+underlineToText :: Underline -> Text
+underlineToText ul =
+	Text (textAttrsFromFont $ sampleFont "sans" 32)
+		{ textAttrsUnderline = ul } "あいうえお Hello, world!\n"
+
 sampleForSingleParagraph :: LayoutSingleParagraph -> Layout
 sampleForSingleParagraph sp = Layout {
 	layoutAttrs = defaultLayoutAttrs {
@@ -178,17 +190,28 @@ data Text = Text { textAttrs :: TextAttrs, textText :: T.Text } deriving Show
 textAttrsFromFont :: Font -> TextAttrs
 textAttrsFromFont fnt = TextAttrs {
 	textAttrsFont = fnt,
-	textAttrsStrikethrough = NoStrikethrough }
+	textAttrsStrikethrough = StrikethroughNone,
+	textAttrsUnderline = UnderlineNone }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
-	textAttrsStrikethrough :: Strikethrough }
+	textAttrsStrikethrough :: Strikethrough,
+	textAttrsUnderline :: Underline }
 	deriving Show
 
 data Strikethrough
-	= NoStrikethrough
+	= StrikethroughNone
 	| StrikethroughWithForegroundColor
 	| StrikethroughWithColor (Rgb Double)
+	deriving Show
+
+data Underline
+	= UnderlineNone
+	| Underline UnderlineStyle (Maybe (Rgb Double))
+	deriving Show
+
+data UnderlineStyle
+	= UnderlineSingle | UnderlineDouble | UnderlineLow | UnderlineError
 	deriving Show
 
 data Font

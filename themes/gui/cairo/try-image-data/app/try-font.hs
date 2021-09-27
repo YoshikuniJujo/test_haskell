@@ -5,7 +5,6 @@
 module Main where
 
 import Data.Foldable
-import Data.Font.VariationAxis
 import Data.ImageData.Text
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Surfaces.ImageSurfaces

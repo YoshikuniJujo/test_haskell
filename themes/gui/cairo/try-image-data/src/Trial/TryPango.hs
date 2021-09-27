@@ -8,6 +8,7 @@ import Foreign.C.Types
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Foldable
+import Data.Color
 import Data.CairoContext
 
 import Graphics.Cairo.Drawing.Paths
@@ -85,22 +86,44 @@ toSingleParagraph (LayoutSingleParagraph sp) = SingleParagraphMode sp
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do
 	pl <- pangoTextAttrListNew . T.concat . (textText <$>) $ layoutText lyot
-	forM_ (getAttrs lyot) \(TextAttrs { textAttrsFont = fnt, textAttrsStrikethrough = stthr }, (s, e)) -> do
+	forM_ (getAttrs lyot) \(TextAttrs {
+		textAttrsFont = fnt,
+		textAttrsStrikethrough = stthr,
+		textAttrsUnderline = ul }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
+		attrs2 <- attrUnderline ul
 		pangoTextAttrListInsert pl attr s e
-		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` attrs
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
-attrStrikethrough NoStrikethrough = pure []
+attrStrikethrough StrikethroughNone = pure []
 attrStrikethrough StrikethroughWithForegroundColor =
 	(: []) <$> pangoAttrNew (Strikethrough True)
 attrStrikethrough (StrikethroughWithColor rgb) = do
 	a1 <- pangoAttrNew $ Strikethrough True
 	a2 <- pangoAttrNew $ StrikethroughColor rgb
 	pure [a1, a2]
+
+attrUnderline :: PrimMonad m => Underline -> m [PangoAttribute (PrimState m)]
+attrUnderline ul = (:)
+	<$> pangoAttrNew pul
+	<*> maybe (pure []) (((: []) <$>) . pangoAttrNew . UnderlineColor) mc
+	where (pul, mc) = toUnderline ul
+
+toUnderline :: Underline -> (PangoUnderline, Maybe (Rgb Double))
+toUnderline = \case
+	UnderlineNone -> (PangoUnderlineNone, Nothing)
+	Underline us mc -> (toUnderlineStyle us, mc)
+
+toUnderlineStyle :: UnderlineStyle -> PangoUnderline
+toUnderlineStyle = \case
+	UnderlineSingle -> PangoUnderlineSingle
+	UnderlineDouble -> PangoUnderlineDouble
+	UnderlineLow -> PangoUnderlineLow
+	UnderlineError -> PangoUnderlineError
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)

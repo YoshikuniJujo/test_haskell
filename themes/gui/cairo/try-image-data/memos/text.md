@@ -8,9 +8,9 @@ Text Attributes
 * [x] strike through
 	+ [x] itself
 	+ [x] color
-* [ ] underline
-	+ [ ] itself
-	+ [ ] color
+* [x] underline
+	+ [x] itself
+	+ [x] color
 * [ ] shape
 * [ ] scale
 * [ ] rise
