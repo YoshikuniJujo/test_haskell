@@ -17,11 +17,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
       size: 3830
-      sha256: 9df9958023c01e52ad76b4e71488a3be4865c088f73e8aee55c9e681f745da90
-    commit: 7423abab5b0b53dc65bde4ab93e0f35417b0ecf2
+      sha256: 05b2ec747694eb603887d3cc8c46ed9496deca5f3c8a8e917e0c8f366efe4f30
+    commit: ec167db0a6fdafb2739c7a1fe0722b6248b36c09
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 7423abab5b0b53dc65bde4ab93e0f35417b0ecf2
+    commit: ec167db0a6fdafb2739c7a1fe0722b6248b36c09
 - completed:
     name: simple-cairo
     version: 0.1.0.0

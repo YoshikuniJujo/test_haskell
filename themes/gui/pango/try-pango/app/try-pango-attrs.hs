@@ -135,8 +135,10 @@ main = do
 		PangoUnderlineNone, PangoUnderlineSingle, PangoUnderlineDouble,
 		PangoUnderlineLow, PangoUnderlineError ]
 	applyInOrder' al8 $ (`zip` [7, 14 ..]) [
-		UnderlineColor 0 0 0, UnderlineColor 0 0 maxBound,
-		UnderlineColor 0 (maxBound `div` 3 * 2) 0, UnderlineColor maxBound 0 0 ]
+		UnderlineColor @Double $ RgbWord16 0 0 0,
+		UnderlineColor $ RgbWord16 0 0 maxBound,
+		UnderlineColor $ RgbWord16 0 (maxBound `div` 3 * 2) 0,
+		UnderlineColor $ RgbWord16 maxBound 0 0 ]
 
 	cairoMoveTo cr 0 210
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al8
