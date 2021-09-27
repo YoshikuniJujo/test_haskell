@@ -32,6 +32,6 @@ Layout settings
 * [x] indent
 * [x] line spacing
 * [x] justify
-* [ ] auto dir
-* [ ] alignment
+* [x] auto dir
+* [x] alignment
 * [ ] paragraph mode
