@@ -34,4 +34,4 @@ Layout settings
 * [x] justify
 * [x] auto dir
 * [x] alignment
-* [ ] paragraph mode
+* [x] paragraph mode

@@ -24,4 +24,10 @@ main = do
 	drawLayout cr $ sampleForAutoDir
 		(LayoutWidth 700) (LayoutAutoDir False)
 
+	cairoMoveTo cr 32 256
+	drawLayout cr . sampleForSingleParagraph $ LayoutSingleParagraph False
+
+	cairoMoveTo cr 32 416
+	drawLayout cr . sampleForSingleParagraph $ LayoutSingleParagraph True
+
 	makePng sr "pngs/try-layout-auto-dir.png"

@@ -25,7 +25,8 @@ data LayoutAttrs = LayoutAttrs {
 	layoutAttrsLineSpacing :: LayoutLineSpacing,
 	layoutAttrsJustify :: LayoutJustify,
 	layoutAttrsAutoDir :: LayoutAutoDir,
-	layoutAttrsAlignment :: LayoutAlignment }
+	layoutAttrsAlignment :: LayoutAlignment,
+	layoutAttrsSingleParagraph :: LayoutSingleParagraph }
 	deriving Show
 
 data LayoutWidth = LayoutWidthDefault | LayoutWidth Double deriving Show
@@ -51,6 +52,15 @@ newtype LayoutAutoDir = LayoutAutoDir Bool deriving Show
 
 data LayoutAlignment
 	= LayoutAlignLeft | LayoutAlignCenter | LayoutAlignRight deriving Show
+
+newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
+
+sampleForSingleParagraph :: LayoutSingleParagraph -> Layout
+sampleForSingleParagraph sp = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600,
+		layoutAttrsSingleParagraph = sp },
+	layoutText = [genesis] }
 
 sampleForAlignment :: LayoutAlignment -> Layout
 sampleForAlignment aln = Layout {
@@ -105,7 +115,8 @@ defaultLayoutAttrs = LayoutAttrs {
 	layoutAttrsLineSpacing = LayoutLineSpacing 0,
 	layoutAttrsJustify = LayoutJustify False,
 	layoutAttrsAutoDir = LayoutAutoDir True,
-	layoutAttrsAlignment = LayoutAlignLeft }
+	layoutAttrsAlignment = LayoutAlignLeft,
+	layoutAttrsSingleParagraph = LayoutSingleParagraph False }
 
 genesis :: Text
 genesis = Text (textAttrsFromFont $ sampleFont "sans" 16) $

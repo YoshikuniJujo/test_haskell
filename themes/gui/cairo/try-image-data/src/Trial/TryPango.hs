@@ -33,6 +33,7 @@ drawLayout cr lyot = do
 	pangoLayoutSet pl . toJustify . layoutAttrsJustify $ layoutAttrs lyot
 	pangoLayoutSet pl . toAutoDir . layoutAttrsAutoDir $ layoutAttrs lyot
 	pangoLayoutSet pl . toAlignment . layoutAttrsAlignment $ layoutAttrs lyot
+	pangoLayoutSet pl . toSingleParagraph . layoutAttrsSingleParagraph $ layoutAttrs lyot
 	pangoLayoutSet pl . T.concat . (textText <$>) $ layoutText lyot
 	pangoLayoutSet pl $ makeTextAttrList lyot
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
@@ -77,6 +78,9 @@ toAlignment = \case
 	LayoutAlignLeft -> PangoAlignLeft
 	LayoutAlignCenter -> PangoAlignCenter
 	LayoutAlignRight -> PangoAlignRight
+
+toSingleParagraph :: LayoutSingleParagraph -> SingleParagraphMode
+toSingleParagraph (LayoutSingleParagraph sp) = SingleParagraphMode sp
 
 makeTextAttrList :: Layout -> PangoTextAttrList
 makeTextAttrList lyot = runST do
