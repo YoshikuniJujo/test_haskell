@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 00c319153cccb9d9a08128258f8b76bd70136dd7c42c642e3d4c26748cd5718f
+-- hash: 7f23ea20da6016cd579aa29c296b1e8d08c5578fc5004d6e6767190fb297e4d8
 
 name:           try-pango
 version:        0.1.0.0
@@ -678,6 +678,31 @@ executable try-pango-tab-array
 
 executable try-pango-vertical-text
   main-is: try-pango-vertical-text.hs
+  other-modules:
+      Main
+      Paths_try_pango
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , glib-stopgap
+    , nowdoc
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , template-haskell
+    , text
+    , try-pango
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
+executable try-shape
+  main-is: try-shape.hs
   other-modules:
       Main
       Paths_try_pango
