@@ -25,15 +25,15 @@ source-repository head
 
 library
   exposed-modules:
-      Data.ImageData
+      Foo
       Lib
-      TryCairo
   other-modules:
       Paths_try_cairo_bug
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , primitive
     , simple-cairo
     , union-angle
     , union-color
@@ -48,6 +48,7 @@ executable try-cairo-bug-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , primitive
     , simple-cairo
     , try-cairo-bug
     , union-angle
@@ -64,6 +65,7 @@ test-suite try-cairo-bug-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , primitive
     , simple-cairo
     , try-cairo-bug
     , union-angle
