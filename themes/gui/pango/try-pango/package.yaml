@@ -303,6 +303,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-pango
+  try-color:
+    main:                try-color.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-pango
 
 tests:
   try-pango-test:
