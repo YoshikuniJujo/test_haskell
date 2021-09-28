@@ -68,6 +68,14 @@ sampleForColor = Layout {
 		Text fontSans {
 			textAttrsForegroundColor =
 				ForegroundColor <$> rgbaDouble 0.2 0.5 0.1 0.25 }
+			"foobar ",
+		Text fontSans {
+			textAttrsBackgroundColor =
+				BackgroundColor <$> rgbaDouble 0.5 0.5 0.5 1 }
+			"foobar ",
+		Text fontSans {
+			textAttrsBackgroundColor =
+				BackgroundColor <$> rgbaDouble 0.2 0.5 0.1 0.5 }
 			"foobar "
 		] }
 
@@ -257,7 +265,8 @@ textAttrsFromFont fnt = TextAttrs {
 	textAttrsScale = Scale 1,
 	textAttrsRise = Rise 0,
 	textAttrsLetterSpacing = LetterSpacing 0,
-	textAttrsForegroundColor = Nothing }
+	textAttrsForegroundColor = Nothing,
+	textAttrsBackgroundColor = Nothing }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
@@ -267,7 +276,8 @@ data TextAttrs = TextAttrs {
 	textAttrsScale :: Scale,
 	textAttrsRise :: Rise,
 	textAttrsLetterSpacing :: LetterSpacing,
-	textAttrsForegroundColor :: Maybe ForegroundColor }
+	textAttrsForegroundColor :: Maybe ForegroundColor,
+	textAttrsBackgroundColor :: Maybe BackgroundColor }
 	deriving Show
 
 data Strikethrough
@@ -299,6 +309,8 @@ newtype Rise = Rise Double deriving Show
 newtype LetterSpacing = LetterSpacing Double deriving Show
 
 newtype ForegroundColor = ForegroundColor (Rgba Double) deriving Show
+
+newtype BackgroundColor = BackgroundColor (Rgba Double) deriving Show
 
 data Font
 	= Font {

@@ -97,7 +97,8 @@ makeTextAttrList lyot = runST do
 		textAttrsScale = scl,
 		textAttrsRise = rs,
 		textAttrsLetterSpacing = ls,
-		textAttrsForegroundColor = fc }, (s, e)) -> do
+		textAttrsForegroundColor = fc,
+		textAttrsBackgroundColor = bc }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
@@ -107,9 +108,10 @@ makeTextAttrList lyot = runST do
 		attr4 <- (: []) <$> attrRise rs
 		attr5 <- (: []) <$> attrLetterSpacing ls
 		attrs3 <- maybe (pure []) attrForegroundColor fc
+		attrs4 <- maybe (pure []) attrBackgroundColor bc
 		pangoTextAttrListInsert pl attr s e
 		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (
-			attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4 ++ attr5 ++ attrs3)
+			attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4 ++ attr5 ++ attrs3 ++ attrs4)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
@@ -174,6 +176,14 @@ attrForegroundColor (toForegroundColor -> (c, a)) = (\a1 a2 -> [a1, a2])
 toForegroundColor :: I.ForegroundColor -> (P.ForegroundColor Double, P.ForegroundAlpha Double)
 toForegroundColor (I.ForegroundColor rgba) =
 	(P.ForegroundColor *** P.ForegroundAlpha) $ fromRgba rgba
+
+attrBackgroundColor :: PrimMonad m => I.BackgroundColor -> m [PangoAttribute (PrimState m)]
+attrBackgroundColor (toBackgroundColor -> (c, a)) = (\a1 a2 -> [a1, a2])
+	<$> pangoAttrNew c <*> pangoAttrNew a
+
+toBackgroundColor :: I.BackgroundColor -> (P.BackgroundColor Double, P.BackgroundAlpha Double)
+toBackgroundColor (I.BackgroundColor rgba) =
+	(P.BackgroundColor *** P.BackgroundAlpha) $ fromRgba rgba
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)
