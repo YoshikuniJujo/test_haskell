@@ -55,6 +55,25 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
+sampleForColor :: Layout
+sampleForColor = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 300 },
+	layoutText = [
+		Text fontSans "foobar ",
+		Text fontSans {
+			textAttrsForegroundColor =
+				ForegroundColor <$> rgbaDouble 0 0 0 0.25 }
+			"foobar ",
+		Text fontSans {
+			textAttrsForegroundColor =
+				ForegroundColor <$> rgbaDouble 0.2 0.5 0.1 0.25 }
+			"foobar "
+		] }
+
+fontSans :: TextAttrs
+fontSans = textAttrsFromFont $ sampleFont "sans" 64
+
 sampleForRise :: Layout
 sampleForRise = Layout {
 	layoutAttrs = defaultLayoutAttrs {
@@ -237,7 +256,8 @@ textAttrsFromFont fnt = TextAttrs {
 	textAttrsShape = Nothing,
 	textAttrsScale = Scale 1,
 	textAttrsRise = Rise 0,
-	textAttrsLetterSpacing = LetterSpacing 0 }
+	textAttrsLetterSpacing = LetterSpacing 0,
+	textAttrsForegroundColor = Nothing }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
@@ -246,7 +266,8 @@ data TextAttrs = TextAttrs {
 	textAttrsShape :: Maybe Shape,
 	textAttrsScale :: Scale,
 	textAttrsRise :: Rise,
-	textAttrsLetterSpacing :: LetterSpacing }
+	textAttrsLetterSpacing :: LetterSpacing,
+	textAttrsForegroundColor :: Maybe ForegroundColor }
 	deriving Show
 
 data Strikethrough
@@ -276,6 +297,8 @@ newtype Scale = Scale Double deriving Show
 newtype Rise = Rise Double deriving Show
 
 newtype LetterSpacing = LetterSpacing Double deriving Show
+
+newtype ForegroundColor = ForegroundColor (Rgba Double) deriving Show
 
 data Font
 	= Font {

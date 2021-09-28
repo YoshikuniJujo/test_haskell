@@ -16,10 +16,10 @@ Text Attributes
 * [x] rise
 * [x] letter spacing
 * [ ] color
-	+ [ ] foreground
+	+ [x] foreground
 	+ [ ] background
 * [ ] alpha
-	+ [ ] foreground
+	+ [x] foreground
 	+ [ ] background
 
 Layout settings

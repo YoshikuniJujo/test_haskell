@@ -152,6 +152,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-color:
+    main:                try-color.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

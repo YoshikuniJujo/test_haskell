@@ -64,7 +64,7 @@ cairoDrawSource cr (Source ptn) = case ptn of
 
 cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
-	MaskAlpha alp -> error "yet"
+	MaskAlpha _alp -> error "yet"
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
 	MaskStroke (I.LineWidth lw) lj pth -> do
 		cairoSet cr . Cr.LineWidth $ realToFrac lw

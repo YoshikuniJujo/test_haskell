@@ -1,10 +1,12 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Trial.TryPango where
 
 import Foreign.C.Types
+import Control.Arrow
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Foldable
@@ -94,7 +96,8 @@ makeTextAttrList lyot = runST do
 		textAttrsShape = msp,
 		textAttrsScale = scl,
 		textAttrsRise = rs,
-		textAttrsLetterSpacing = ls }, (s, e)) -> do
+		textAttrsLetterSpacing = ls,
+		textAttrsForegroundColor = fc }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
@@ -103,8 +106,10 @@ makeTextAttrList lyot = runST do
 		attr3 <- (((: []) <$>) . attrScale) scl
 		attr4 <- (: []) <$> attrRise rs
 		attr5 <- (: []) <$> attrLetterSpacing ls
+		attrs3 <- maybe (pure []) attrForegroundColor fc
 		pangoTextAttrListInsert pl attr s e
-		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4 ++ attr5)
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (
+			attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4 ++ attr5 ++ attrs3)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
@@ -161,6 +166,14 @@ attrLetterSpacing = pangoAttrNew . toLetterSpacing
 
 toLetterSpacing :: I.LetterSpacing -> P.LetterSpacing
 toLetterSpacing (I.LetterSpacing ls) = P.LetterSpacing $ realToFrac ls
+
+attrForegroundColor :: PrimMonad m => I.ForegroundColor -> m [PangoAttribute (PrimState m)]
+attrForegroundColor (toForegroundColor -> (c, a)) = (\a1 a2 -> [a1, a2])
+	<$> pangoAttrNew c <*> pangoAttrNew a
+
+toForegroundColor :: I.ForegroundColor -> (P.ForegroundColor Double, P.ForegroundAlpha Double)
+toForegroundColor (I.ForegroundColor rgba) =
+	(P.ForegroundColor *** P.ForegroundAlpha) $ fromRgba rgba
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)
