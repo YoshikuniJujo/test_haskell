@@ -12,7 +12,7 @@ Text Attributes
 	+ [x] itself
 	+ [x] color
 * [x] shape
-* [ ] scale
+* [x] scale
 * [ ] rise
 * [ ] letter spacing
 * [ ] color

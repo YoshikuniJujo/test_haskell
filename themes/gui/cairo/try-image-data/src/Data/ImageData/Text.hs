@@ -55,6 +55,22 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
+sampleForScale :: Layout
+sampleForScale = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600 },
+	layoutText =
+		zipWith scaledText
+			(Scale <$> [0.1, 0.2 ..])
+			(T.singleton <$> ['a' .. 'z']) ++
+		zipWith scaledText
+			(Scale <$> [0.1, 0.13 ..])
+			(T.singleton <$> ['あ' .. 'ん']) }
+
+scaledText :: Scale -> T.Text -> Text
+scaledText scl = Text (textAttrsFromFont $ sampleFont "sans" 16)
+	{ textAttrsScale = Just scl }
+
 sampleForShape :: Layout
 sampleForShape = Layout {
 	layoutAttrs = defaultLayoutAttrs {
@@ -202,13 +218,15 @@ textAttrsFromFont fnt = TextAttrs {
 	textAttrsFont = fnt,
 	textAttrsStrikethrough = StrikethroughNone,
 	textAttrsUnderline = UnderlineNone,
-	textAttrsShape = Nothing }
+	textAttrsShape = Nothing,
+	textAttrsScale = Nothing }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
 	textAttrsStrikethrough :: Strikethrough,
 	textAttrsUnderline :: Underline,
-	textAttrsShape :: Maybe Shape }
+	textAttrsShape :: Maybe Shape,
+	textAttrsScale :: Maybe Scale }
 	deriving Show
 
 data Strikethrough
@@ -232,6 +250,8 @@ data Rectangle = Rectangle {
 	rectangleX, rectangleY :: Double,
 	rectangleWidth, rectanbleHeight :: Double }
 	deriving Show
+
+data Scale = Scale Double deriving Show
 
 data Font
 	= Font {

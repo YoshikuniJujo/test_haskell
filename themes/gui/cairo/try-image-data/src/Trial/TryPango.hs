@@ -91,14 +91,16 @@ makeTextAttrList lyot = runST do
 		textAttrsFont = fnt,
 		textAttrsStrikethrough = stthr,
 		textAttrsUnderline = ul,
-		textAttrsShape = msp }, (s, e)) -> do
+		textAttrsShape = msp,
+		textAttrsScale = mscl }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
 		attrs2 <- attrUnderline ul
 		attr2 <- maybe (pure []) (((: []) <$>) . attrShape) msp
+		attr3 <- maybe (pure []) (((: []) <$>) . attrScale) mscl
 		pangoTextAttrListInsert pl attr s e
-		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2)
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2 ++ attr3)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
@@ -137,6 +139,12 @@ toShape (I.Shape ir lr) = P.Shape (toRectangle ir) (toRectangle lr)
 toRectangle :: Rectangle -> PangoRectangleFixed
 toRectangle (Rectangle x y w h) =
 	PangoRectangleFixed (realToFrac x) (realToFrac y) (realToFrac w) (realToFrac h)
+
+attrScale :: PrimMonad m => I.Scale -> m (PangoAttribute (PrimState m))
+attrScale = pangoAttrNew . toScale
+
+toScale :: I.Scale -> P.Scale
+toScale (I.Scale scl) = P.Scale $ realToFrac scl
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)

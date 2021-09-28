@@ -2,7 +2,6 @@
 
 module Main where
 
-import Data.Color
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -18,6 +17,9 @@ main = do
 	cr <- cairoCreate sr
 
 	cairoMoveTo cr 32 32
-	drawLayout cr $ sampleForShape
+	drawLayout cr sampleForShape
+
+	cairoMoveTo cr 32 256
+	drawLayout cr sampleForScale
 
 	makePng sr "pngs/try-shape.png"
