@@ -55,6 +55,15 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
+sampleTeX :: Layout
+sampleTeX = Layout {
+	layoutAttrs = defaultLayoutAttrs,
+	layoutText = [
+		Text (textAttrsFromFont $ sampleFont "sans" 32) "T",
+		Text (textAttrsFromFont $ sampleFont "sans" 32)
+			{ textAttrsRise = Rise $ - 16 } "E",
+		Text (textAttrsFromFont $ sampleFont "sans" 32) "X" ] }
+
 sampleForRise :: Layout
 sampleForRise = Layout {
 	layoutAttrs = defaultLayoutAttrs {

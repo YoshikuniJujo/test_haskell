@@ -25,4 +25,7 @@ main = do
 	cairoMoveTo cr 32 576
 	drawLayout cr sampleForRise
 
+	cairoMoveTo cr 128 768
+	drawLayout cr sampleTeX
+
 	makePng sr "pngs/try-shape.png"
