@@ -17,11 +17,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-pango
     pantry-tree:
       size: 3830
-      sha256: 4657e478e6dd7390591f6dde6b610017ff5c2170fd9408c4d8cf3061996e279b
-    commit: 638db25b8e5b5ecb0360649a5ce1647fe8b7e1ae
+      sha256: 04d899761301a7931951238ad618d33e70a4384fc0f5e858e5e37bc99dd8c351
+    commit: 29d86652bf47ecc8e29793ff92a56982212bdde1
   original:
     git: https://github.com/YoshikuniJujo/simple-pango
-    commit: 638db25b8e5b5ecb0360649a5ce1647fe8b7e1ae
+    commit: 29d86652bf47ecc8e29793ff92a56982212bdde1
 - completed:
     name: simple-cairo
     version: 0.1.0.0
@@ -50,11 +50,11 @@ packages:
     git: https://github.com/YoshikuniJujo/union-color
     pantry-tree:
       size: 570
-      sha256: b326ca41e516bace05d8824e310804ed2213057a042657ce31b0793daeb534a9
-    commit: c1199422ab647ddf3b95df8ae3a4ff5992c30479
+      sha256: a45ac984bd7748e131cc261e7815d1de18c498f6206e6637b42523cf6c6b84da
+    commit: a356fa7ff4435bfc62c31a5e9a6ecd073c4002f3
   original:
     git: https://github.com/YoshikuniJujo/union-color
-    commit: c1199422ab647ddf3b95df8ae3a4ff5992c30479
+    commit: a356fa7ff4435bfc62c31a5e9a6ecd073c4002f3
 - completed:
     name: JuicyCairo
     version: 0.1.0.0

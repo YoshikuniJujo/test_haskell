@@ -109,8 +109,8 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al6 <- pangoTextAttrListNew . pangoLanguageGetSampleString =<< pangoLanguageGetDefault
-	at9 <- pangoAttrNew $ ForegroundColor 0 (maxBound `div` 2) 0
-	at10 <- pangoAttrNew $ BackgroundColor 0 0 maxBound
+	at9 <- pangoAttrNew . ForegroundColor $ RgbWord16 @Double 0 (maxBound `div` 2) 0
+	at10 <- pangoAttrNew . BackgroundColor $ RgbWord16 @Double 0 0 maxBound
 	pangoTextAttrListInsert al6 at9 0 15
 	pangoTextAttrListInsert al6 at10 10 maxBound
 
@@ -234,7 +234,10 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al15 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ PangoLanguage "en"
-	applyInOrder' al15 $ zip (ForegroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
+	applyInOrder' al15 $ zip
+		(ForegroundAlpha . AlphaWord16 @Double
+			<$> [maxBound `div` 42, maxBound `div` 21 .. ])
+		[1 .. 42]
 
 	cairoMoveTo cr 0 400
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al15
@@ -242,8 +245,12 @@ main = do
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 	al16 <- pangoTextAttrListNew . pangoLanguageGetSampleString $ PangoLanguage "en"
-	(\a -> pangoTextAttrListChange al16 a 0 maxBound) =<< pangoAttrNew (BackgroundColor 0 (maxBound `div` 2) 0)
-	applyInOrder' al16 $ zip (BackgroundAlpha <$> [maxBound `div` 42, maxBound `div` 21 .. ]) [1 .. 42]
+	(\a -> pangoTextAttrListChange al16 a 0 maxBound) =<< pangoAttrNew
+		(BackgroundColor $ RgbWord16 @Double 0 (maxBound `div` 2) 0)
+	applyInOrder' al16 $ zip
+		(BackgroundAlpha . AlphaWord16 @Double
+			<$> [maxBound `div` 42, maxBound `div` 21 .. ])
+		[1 .. 42]
 
 	cairoMoveTo cr 0 430
 	pangoLayoutSet pl =<< pangoTextAttrListFreeze al16

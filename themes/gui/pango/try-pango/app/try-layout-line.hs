@@ -15,7 +15,6 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.LayoutObjects.PangoLayoutLine
-import Graphics.Pango.Basic.VerticalText
 import Graphics.Pango.Rendering.Cairo
 
 import qualified Data.Text as T

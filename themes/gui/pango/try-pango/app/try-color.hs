@@ -4,6 +4,7 @@
 
 module Main where
 
+import Data.Color
 import Data.CairoImage
 import Data.JuicyCairo
 import Codec.Picture
@@ -13,10 +14,7 @@ import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Basic.TextAttributes
-import Graphics.Pango.Basic.VerticalText
 import Graphics.Pango.Rendering.Cairo
-
-import qualified Data.Text as T
 
 main :: IO ()
 main = do
@@ -29,9 +27,10 @@ main = do
 	fd' <- pangoFontDescriptionFreeze fd
 
 	al <- pangoTextAttrListNew "Hello, world!\nこんにちは、世界!\n\x1f9a5"
-	at1 <- pangoAttrNew $ ForegroundColor (maxBound `div` 10) (maxBound `div` 2) (maxBound `div` 20)
-	at2 <- pangoAttrNew $ ForegroundAlpha 0
-	at3 <- pangoAttrNew $ ForegroundAlpha 10
+	at1 <- pangoAttrNew . ForegroundColor $ RgbWord16 @Double
+		(maxBound `div` 10) (maxBound `div` 2) (maxBound `div` 20)
+	at2 <- pangoAttrNew . ForegroundAlpha $ AlphaWord16 @Double 0
+	at3 <- pangoAttrNew . ForegroundAlpha $ AlphaWord16 @Double 10
 	pangoTextAttrListInsert al at1 0 15
 	pangoTextAttrListInsert al at2 10 17
 	pangoTextAttrListInsert al at3 17 19
