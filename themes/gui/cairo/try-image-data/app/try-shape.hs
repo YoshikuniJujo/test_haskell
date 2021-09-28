@@ -13,7 +13,7 @@ import Trial.MakePng
 
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 670 650
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32 670 850
 	cr <- cairoCreate sr
 
 	cairoMoveTo cr 32 32
@@ -21,5 +21,8 @@ main = do
 
 	cairoMoveTo cr 32 256
 	drawLayout cr sampleForScale
+
+	cairoMoveTo cr 32 576
+	drawLayout cr sampleForRise
 
 	makePng sr "pngs/try-shape.png"

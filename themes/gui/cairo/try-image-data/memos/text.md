@@ -13,7 +13,7 @@ Text Attributes
 	+ [x] color
 * [x] shape
 * [x] scale
-* [ ] rise
+* [x] rise
 * [ ] letter spacing
 * [ ] color
 	+ [ ] foreground

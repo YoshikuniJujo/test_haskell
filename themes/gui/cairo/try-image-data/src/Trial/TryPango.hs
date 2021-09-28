@@ -92,15 +92,17 @@ makeTextAttrList lyot = runST do
 		textAttrsStrikethrough = stthr,
 		textAttrsUnderline = ul,
 		textAttrsShape = msp,
-		textAttrsScale = mscl }, (s, e)) -> do
+		textAttrsScale = scl,
+		textAttrsRise = rs }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
 		attrs2 <- attrUnderline ul
 		attr2 <- maybe (pure []) (((: []) <$>) . attrShape) msp
-		attr3 <- maybe (pure []) (((: []) <$>) . attrScale) mscl
+		attr3 <- (((: []) <$>) . attrScale) scl
+		attr4 <- (: []) <$> attrRise rs
 		pangoTextAttrListInsert pl attr s e
-		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2 ++ attr3)
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
@@ -145,6 +147,12 @@ attrScale = pangoAttrNew . toScale
 
 toScale :: I.Scale -> P.Scale
 toScale (I.Scale scl) = P.Scale $ realToFrac scl
+
+attrRise :: PrimMonad m => I.Rise -> m (PangoAttribute (PrimState m))
+attrRise = pangoAttrNew . toRise
+
+toRise :: I.Rise -> P.Rise
+toRise (I.Rise rs) = P.Rise $ realToFrac rs
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)

@@ -55,6 +55,22 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
+sampleForRise :: Layout
+sampleForRise = Layout {
+	layoutAttrs = defaultLayoutAttrs {
+		layoutAttrsWidth = LayoutWidth 600 },
+	layoutText =
+		zipWith risedText
+			(Rise <$> [0, 0.5 .. ])
+			(T.singleton <$> ['a' .. 'z']) ++
+		zipWith risedText
+			(Rise <$> [0, - 0.5 .. ])
+			(T.singleton <$> ['あ' .. 'ん']) }
+
+risedText :: Rise -> T.Text -> Text
+risedText rs = Text (textAttrsFromFont $ sampleFont "sans" 16)
+	{ textAttrsRise = rs }
+
 sampleForScale :: Layout
 sampleForScale = Layout {
 	layoutAttrs = defaultLayoutAttrs {
@@ -69,7 +85,7 @@ sampleForScale = Layout {
 
 scaledText :: Scale -> T.Text -> Text
 scaledText scl = Text (textAttrsFromFont $ sampleFont "sans" 16)
-	{ textAttrsScale = Just scl }
+	{ textAttrsScale = scl }
 
 sampleForShape :: Layout
 sampleForShape = Layout {
@@ -219,14 +235,16 @@ textAttrsFromFont fnt = TextAttrs {
 	textAttrsStrikethrough = StrikethroughNone,
 	textAttrsUnderline = UnderlineNone,
 	textAttrsShape = Nothing,
-	textAttrsScale = Nothing }
+	textAttrsScale = Scale 1,
+	textAttrsRise = Rise 0 }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
 	textAttrsStrikethrough :: Strikethrough,
 	textAttrsUnderline :: Underline,
 	textAttrsShape :: Maybe Shape,
-	textAttrsScale :: Maybe Scale }
+	textAttrsScale :: Scale,
+	textAttrsRise :: Rise }
 	deriving Show
 
 data Strikethrough
@@ -251,7 +269,9 @@ data Rectangle = Rectangle {
 	rectangleWidth, rectanbleHeight :: Double }
 	deriving Show
 
-data Scale = Scale Double deriving Show
+newtype Scale = Scale Double deriving Show
+
+newtype Rise = Rise Double deriving Show
 
 data Font
 	= Font {
