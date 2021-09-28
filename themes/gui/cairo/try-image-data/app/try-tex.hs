@@ -3,6 +3,9 @@
 
 module Main where
 
+import Data.Maybe
+import Data.Color
+
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Surfaces.ImageSurfaces
@@ -12,13 +15,21 @@ import Data.ImageData.Text
 import Trial.TryPango
 import Trial.MakePng
 
+scale :: Double
+scale = 16
+
 main :: IO ()
 main = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 224 104
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32
+		(round $ 224 * scale) (round $ 104 * scale)
 	cr <- cairoCreate sr
 
-	cairoMoveTo cr 40 0
-	drawLayout cr $ sampleTeX 64
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 1 1 1
+	cairoPaint cr
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0 0 0
+	cairoMoveTo cr (realToFrac $ 40 * scale) 0
+	drawLayout cr . sampleTeX $ 64 * scale
 
 	makePng sr "pngs/try-tex.png"
 
