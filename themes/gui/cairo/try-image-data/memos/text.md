@@ -14,7 +14,7 @@ Text Attributes
 * [x] shape
 * [x] scale
 * [x] rise
-* [ ] letter spacing
+* [x] letter spacing
 * [ ] color
 	+ [ ] foreground
 	+ [ ] background
