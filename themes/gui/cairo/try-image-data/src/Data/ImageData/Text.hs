@@ -55,15 +55,6 @@ data LayoutAlignment
 
 newtype LayoutSingleParagraph = LayoutSingleParagraph Bool deriving Show
 
-sampleTeX :: Layout
-sampleTeX = Layout {
-	layoutAttrs = defaultLayoutAttrs,
-	layoutText = [
-		Text (textAttrsFromFont $ sampleFont "sans" 32) "T",
-		Text (textAttrsFromFont $ sampleFont "sans" 32)
-			{ textAttrsRise = Rise $ - 16 } "E",
-		Text (textAttrsFromFont $ sampleFont "sans" 32) "X" ] }
-
 sampleForRise :: Layout
 sampleForRise = Layout {
 	layoutAttrs = defaultLayoutAttrs {
@@ -245,7 +236,8 @@ textAttrsFromFont fnt = TextAttrs {
 	textAttrsUnderline = UnderlineNone,
 	textAttrsShape = Nothing,
 	textAttrsScale = Scale 1,
-	textAttrsRise = Rise 0 }
+	textAttrsRise = Rise 0,
+	textAttrsLetterSpacing = LetterSpacing 0 }
 
 data TextAttrs = TextAttrs {
 	textAttrsFont :: Font,
@@ -253,7 +245,8 @@ data TextAttrs = TextAttrs {
 	textAttrsUnderline :: Underline,
 	textAttrsShape :: Maybe Shape,
 	textAttrsScale :: Scale,
-	textAttrsRise :: Rise }
+	textAttrsRise :: Rise,
+	textAttrsLetterSpacing :: LetterSpacing }
 	deriving Show
 
 data Strikethrough
@@ -281,6 +274,8 @@ data Rectangle = Rectangle {
 newtype Scale = Scale Double deriving Show
 
 newtype Rise = Rise Double deriving Show
+
+newtype LetterSpacing = LetterSpacing Double deriving Show
 
 data Font
 	= Font {

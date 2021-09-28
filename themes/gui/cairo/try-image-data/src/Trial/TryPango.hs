@@ -93,7 +93,8 @@ makeTextAttrList lyot = runST do
 		textAttrsUnderline = ul,
 		textAttrsShape = msp,
 		textAttrsScale = scl,
-		textAttrsRise = rs }, (s, e)) -> do
+		textAttrsRise = rs,
+		textAttrsLetterSpacing = ls }, (s, e)) -> do
 		fd <- getFont fnt
 		attr <- pangoAttrFontDescNew fd
 		attrs <- attrStrikethrough stthr
@@ -101,8 +102,9 @@ makeTextAttrList lyot = runST do
 		attr2 <- maybe (pure []) (((: []) <$>) . attrShape) msp
 		attr3 <- (((: []) <$>) . attrScale) scl
 		attr4 <- (: []) <$> attrRise rs
+		attr5 <- (: []) <$> attrLetterSpacing ls
 		pangoTextAttrListInsert pl attr s e
-		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4)
+		(\a -> pangoTextAttrListInsert pl a s e) `mapM_` (attrs ++ attrs2 ++ attr2 ++ attr3 ++ attr4 ++ attr5)
 	pangoTextAttrListFreeze pl
 
 attrStrikethrough :: PrimMonad m => I.Strikethrough -> m [PangoAttribute (PrimState m)]
@@ -153,6 +155,12 @@ attrRise = pangoAttrNew . toRise
 
 toRise :: I.Rise -> P.Rise
 toRise (I.Rise rs) = P.Rise $ realToFrac rs
+
+attrLetterSpacing :: PrimMonad m => I.LetterSpacing -> m (PangoAttribute (PrimState m))
+attrLetterSpacing = pangoAttrNew . toLetterSpacing
+
+toLetterSpacing :: I.LetterSpacing -> P.LetterSpacing
+toLetterSpacing (I.LetterSpacing ls) = P.LetterSpacing $ realToFrac ls
 
 getAttrs :: Layout -> [(TextAttrs, (Int, Int))]
 getAttrs lyot = zip (textAttrs <$> layoutText lyot) (getStartAndEnds lyot)
