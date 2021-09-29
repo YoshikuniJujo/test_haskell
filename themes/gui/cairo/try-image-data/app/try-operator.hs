@@ -42,7 +42,7 @@ porterDuff x0 y0 op = Clip {
 	clipDraws = ichimatsu l t 100 100 ++ [
 		Draw {
 			drawOperator = OperatorOver,
-			drawSource = Source $ PatternSurface (Transform 1 0 0 1 (- l') (- t')) (sample op),
+			drawSource = Source $ PatternNonSolid (Transform 1 0 0 1 (- l') (- t')) (PatternSurface $ sample op),
 			drawMask = MaskPaint 1 }
 		]
 	}
@@ -56,12 +56,12 @@ sample op = Surface {
 		Clip { clipBounds = [], clipDraws = [
 			Draw {
 				drawOperator = OperatorOver,
-				drawSource = Source . PatternColor . ColorRgba
+				drawSource = Source . PatternSolid . ColorRgba
 					. fromJust $ rgbaDouble 0.7 0 0 0.8,
 				drawMask = MaskFill [Rectangle 0 0 120 90] },
 			Draw {
 				drawOperator = op,
-				drawSource = Source . PatternColor . ColorRgba
+				drawSource = Source . PatternSolid . ColorRgba
 					. fromJust $ rgbaDouble 0 0 0.9 0.4,
 				drawMask = MaskFill [Rectangle 40 30 120 90] }
 			] } ] }
@@ -81,6 +81,6 @@ snowSquare = graySquare 0.7 ichimatsuSize
 graySquare :: Double -> Double -> Double -> Double -> Draw 'Rgba
 graySquare l s x y = Draw {
 	drawOperator = OperatorOver,
-	drawSource = Source . PatternColor . ColorRgba
+	drawSource = Source . PatternSolid . ColorRgba
 		. fromJust $ rgbaDouble l l l 1.0,
 	drawMask = MaskFill [Rectangle x y s s] }

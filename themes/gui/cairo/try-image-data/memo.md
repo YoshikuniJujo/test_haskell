@@ -32,13 +32,15 @@ todo
 	+ [x] MaskTextLayout
 * [ ] Alpha
 * [ ] Pattern
-	+ [ ] filter
-	+ [ ] extend
-	+ [ ] matrix
-* [ ] PatternBase
-	+ [ ] PatternSurface
-	+ [x] PatternColor
-	+ [ ] PatternGradient
+	+ [x] PatternSolid
+	+ [ ] PatternNonSolid
+		- [ ] filter
+		- [ ] extend
+		- [x] matrix
+* [ ] PatternNonSolid
+	+ [x] PatternSurface
+	+ [ ] PatternGradientLinear
+	+ [ ] PatternGradientRadial
 	+ [ ] PatternMesh
 * [ ] Paths
 	+ [x] move to

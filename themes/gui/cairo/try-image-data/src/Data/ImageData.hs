@@ -65,8 +65,8 @@ data Mask
 	deriving Show
 
 data Pattern t
-	= PatternSurface Transform (Surface t)
-	| PatternColor (SurfaceTypeColor t)
+	= PatternSolid (SurfaceTypeColor t)
+	| PatternNonSolid Transform (PatternNonSolid t)
 --	| PatternGradient Transform foo bar
 --	| PatternMesh Transform foo bar
 	deriving Show
@@ -74,6 +74,10 @@ data Pattern t
 data SurfaceTypeColor t where
 	ColorAlpha :: Double -> SurfaceTypeColor 'Alpha
 	ColorRgba :: Rgba Double -> SurfaceTypeColor 'Rgba
+
+data PatternNonSolid t
+	= PatternSurface (Surface t)
+	deriving Show
 
 deriving instance Show (SurfaceTypeColor t)
 

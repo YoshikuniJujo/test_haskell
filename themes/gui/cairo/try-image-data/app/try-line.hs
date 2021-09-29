@@ -27,6 +27,6 @@ sampleForCap :: LineCap -> (Double, Double) -> (Double, Double) -> Draw 'Rgba
 sampleForCap lc (x1, y1) (x2, y2) = Draw {
 	drawOperator = OperatorOver,
 	drawSource = Source
-		. PatternColor . ColorRgba . fromJust $ rgbaDouble 0 0 0 1,
+		. PatternSolid . ColorRgba . fromJust $ rgbaDouble 0 0 0 1,
 	drawMask = MaskStroke (LineWidth 32) lc (LineJoinMiter 10)
 		[MoveTo x1 y1, LineTo x2 y2] }

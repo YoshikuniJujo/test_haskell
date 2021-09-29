@@ -27,6 +27,6 @@ draw img = (`makePng` "pngs/try-surface-source.png") =<< makeSurface Surface {
 			clipDraws = [
 				Draw {
 					drawOperator = OperatorOver,
-					drawSource = Source $ PatternSurface (Transform 1 0 0 1 112 16)
+					drawSource = Source . PatternNonSolid (Transform 1 0 0 1 112 16) $ PatternSurface
 						Surface { surfaceBase = img, surfaceClips = [] },
 					drawMask = MaskFill [Arc 288 256 192 0 (2 * pi)] } ] } ] }

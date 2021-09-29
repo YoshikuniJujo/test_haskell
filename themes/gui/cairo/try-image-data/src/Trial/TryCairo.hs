@@ -62,13 +62,13 @@ transToCairoMatrixT (Transform xx_ yx_ xy_ yy_ x0_ y0_) =
 
 cairoDrawSource :: CairoTIO s -> Source 'Rgba -> IO ()
 cairoDrawSource cr (Source ptn) = case ptn of
-	PatternSurface tfm sfc -> do
+	PatternSolid (ColorRgba clr) -> cairoSetSourceRgba cr $ rgbaRealToFrac clr
+	PatternNonSolid tfm (PatternSurface sfc) -> do
 		t <- transToCairoMatrixT tfm
 		s <- makeSurface sfc
 		pt <- cairoPatternCreateForSurface s
 		cairoPatternSetMatrix pt t
 		cairoSetSource cr pt
-	PatternColor (ColorRgba clr) -> cairoSetSourceRgba cr $ rgbaRealToFrac clr
 
 cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
