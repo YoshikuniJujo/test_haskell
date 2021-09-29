@@ -101,6 +101,26 @@ executable try-line-join
     , union-angle
   default-language: Haskell2010
 
+executable try-pattern
+  main-is: try-pattern.hs
+  other-modules:
+      Main
+      Paths_try_simple_cairo_new
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-simple-cairo-new
+    , union-angle
+  default-language: Haskell2010
+
 executable try-porter-duff
   main-is: try-porter-duff.hs
   other-modules:
