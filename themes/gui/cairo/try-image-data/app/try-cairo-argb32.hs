@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -6,7 +7,6 @@ module Main where
 import Data.Maybe
 import Data.Angle
 import Data.Color
-import Data.CairoImage
 import Data.ImageData
 import System.Environment
 import Trial.TryCairo
@@ -16,11 +16,11 @@ import Trial.ReadPng
 main :: IO ()
 main = do
 	[fp] <- getArgs
-	maybe (putStrLn "bad image file") draw =<< readArgb32 fp
+	maybe (putStrLn "bad image file") draw =<< readSurfaceBaseArgb32 fp
 
-draw :: Argb32 -> IO ()
+draw :: SurfaceBase 'Rgba -> IO ()
 draw img = (`makePng` "pngs/try-cairo-argb32.png") =<< makeSurface Surface {
-	surfaceBase = SurfaceBaseArgb32 img,
+	surfaceBase = img,
 	surfaceClips = [
 		Clip {	clipBounds = [[Rectangle 8 8 752 880]],
 			clipDraws = [

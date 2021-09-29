@@ -107,11 +107,11 @@ cairoDrawPath cr = \case
 	LineTo (realToFrac -> x) (realToFrac -> y) -> cairoLineTo cr x y
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
-	Arc xc_ yc_ r_ a1_ a2_ -> cairoArc cr xc yc r a1 a2
+	Arc xc_ yc_ r_ a1_ a2_ -> cairoNewSubPath cr >> cairoArc cr xc yc r a1 a2
 		where
 		[xc, yc, r] = realToFrac <$> [xc_, yc_, r_]
 		[a1, a2] = realToFrac <$> [a1_, a2_]
-	ArcNegative xc_ yc_ r_ a1_ a2_ -> cairoArcNegative cr xc yc r a1 a2
+	ArcNegative xc_ yc_ r_ a1_ a2_ -> cairoNewSubPath cr >> cairoArcNegative cr xc yc r a1 a2
 		where
 		[xc, yc, r] = realToFrac <$> [xc_, yc_, r_]
 		[a1, a2] = realToFrac <$> [a1_, a2_]
