@@ -19,7 +19,7 @@ todo
 	+ [x] MaskPaint
 	+ [ ] MaskStroke
 	+ [x] MaskFill
-	+ [ ] MaskGlyphs
+	+ [x] MaskTextLayout
 * [ ] Alpha
 * [ ] Pattern
 	+ [ ] PatternSurface

@@ -7,11 +7,15 @@ module Data.ImageData where
 import Data.Angle
 import Data.Color
 
+import Data.ImageData.Text
+
 data SurfaceType = Alpha | Rgba deriving Show
 
 data Surface (t :: SurfaceType) = Surface {
-	sfcWidth :: Integer, sfcHeight :: Integer, surfaceClips :: [Clip t] }
+	sfcWidth :: Integer, sfcHeight :: Integer, surfaceClips :: DrawScript t }
 	deriving Show
+
+type DrawScript t = [Clip t]
 
 data Clip (t :: SurfaceType) = Clip {
 	clipBounds :: [[Path]], clipDraws :: [Draw t] }
@@ -48,7 +52,7 @@ data Mask
 	| MaskPaint Double
 	| MaskStroke LineWidth LineJoin [Path]
 	| MaskFill [Path]
---	| MaskGlyphs Glyphs
+	| MaskTextLayout Transform Layout
 	deriving Show
 
 data Pattern t

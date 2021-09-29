@@ -224,6 +224,13 @@ sampleForWidth w = Layout {
 		]
 	}
 
+simpleLayout :: Layout
+simpleLayout = Layout {
+	layoutAttrs = defaultLayoutAttrs,
+	layoutText = [
+		Text (textAttrsFromFont $ sampleFont "sazanami" 32) "いろはにほへと"
+		] }
+
 sampleLayout :: Layout
 sampleLayout = Layout {
 	layoutAttrs = defaultLayoutAttrs,

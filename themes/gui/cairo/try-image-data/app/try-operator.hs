@@ -19,7 +19,7 @@ main = for_ (zip [0 :: Int ..] $ separate 12 operators) \(i, ops) ->
 
 page :: FilePath -> [Operator] -> IO ()
 page fp ops = do
-	sr <- drawSurface Surface {
+	sr <- makeSurface Surface {
 		sfcWidth = 768,
 		sfcHeight = 896,
 		surfaceClips = (<$> zip [0 ..] ops) \(i :: Int, op) ->

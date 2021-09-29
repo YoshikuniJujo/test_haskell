@@ -7,12 +7,12 @@ import Data.Maybe
 import Data.Angle
 import Data.Color
 import Data.ImageData
+import Data.ImageData.Text hiding (Rectangle)
 import Trial.TryCairo
 import Trial.MakePng
 
 main :: IO ()
-main = do
-	sr <- makeSurface Surface {
+main = (`makePng` "pngs/try-cairo-layout.png") =<< makeSurface Surface {
 		sfcWidth = 768,
 		sfcHeight = 896,
 		surfaceClips = [
@@ -45,8 +45,14 @@ main = do
 					Draw {	drawOperator = OperatorOver,
 						drawSource = Source
 							. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.15 0.1 0.25 1.0,
-						drawMask = MaskPaint 1 } ] } ] }
-	makePng sr "pngs/simple.png"
+						drawMask = MaskPaint 1 } ] },
+			Clip {	clipBounds = [],
+				clipDraws = [
+					Draw {	drawOperator = OperatorOver,
+						drawSource = Source
+							. PatternColor . ColorRgba . fromJust $ rgbaDouble 0.6 0.65 0.1 1.0,
+						drawMask = MaskTextLayout (Transform 1 0 0 1 200 400) simpleLayout } ] }
+			] }
 
 rot :: Double -> Double -> Double -> Transform
 rot a = Transform (cos a) (- sin a) (sin a) (cos a)

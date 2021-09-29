@@ -22,17 +22,17 @@ import Graphics.Cairo.Utilities.CairoMatrixT
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 
-drawSurface :: Surface 'Rgba -> IO (CairoSurfaceImageT s RealWorld)
-drawSurface sfc@Surface {
-	sfcWidth = (fromInteger -> w), sfcHeight = (fromInteger -> h) } = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 w h
-	cr <- cairoCreate sr
-	cairoDrawSurface cr sfc
-	pure sr
+import Trial.TryPango
 
-cairoDrawSurface :: CairoTIO s -> Surface 'Rgba -> IO ()
-cairoDrawSurface cr Surface { surfaceClips = clps } =
-	cairoDrawClip cr `mapM_` clps
+makeSurface :: Surface 'Rgba -> IO (CairoSurfaceImageT s RealWorld)
+makeSurface Surface {
+	sfcWidth = (fromInteger -> w), sfcHeight = (fromInteger -> h),
+	surfaceClips = clps } = do
+	sr <- cairoImageSurfaceCreate cairoFormatArgb32 w h
+	sr <$ ((`cairoRunDrawScript` clps) =<< cairoCreate sr)
+
+cairoRunDrawScript :: CairoTIO s -> DrawScript 'Rgba -> IO ()
+cairoRunDrawScript cr = (cairoDrawClip cr `mapM_`)
 
 cairoDrawClip :: CairoTIO s -> Clip 'Rgba -> IO ()
 cairoDrawClip cr Clip { clipBounds = bs, clipDraws = drws } = do
@@ -56,7 +56,7 @@ cairoDrawSource :: CairoTIO s -> Source 'Rgba -> IO ()
 cairoDrawSource cr (Source ptn) = case ptn of
 	PatternSurface tfm sfc -> do
 		t <- transToCairoMatrixT tfm
-		s <- drawSurface sfc
+		s <- makeSurface sfc
 		pt <- cairoPatternCreateForSurface s
 		cairoPatternSetMatrix pt t
 		cairoSetSource cr pt
@@ -76,6 +76,9 @@ cairoDrawMask cr = \case
 			I.LineJoinBevel -> cairoSet cr Cr.LineJoinBevel
 		cairoDrawPaths cr pth >> cairoStroke cr
 	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
+	MaskTextLayout tr l -> do
+		cairoTransform cr =<< transToCairoMatrixT tr
+		drawLayout cr l
 
 cairoDrawPaths :: CairoTIO s -> [Path] -> IO ()
 cairoDrawPaths cr pths = do
