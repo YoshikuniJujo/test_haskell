@@ -20,8 +20,9 @@ main = for_ (zip [0 :: Int ..] $ separate 12 operators) \(i, ops) ->
 page :: FilePath -> [Operator] -> IO ()
 page fp ops = do
 	sr <- makeSurface Surface {
-		sfcWidth = 768,
-		sfcHeight = 896,
+		surfaceBase = SurfaceBaseBlank {
+			surfaceBaseWidth = 768,
+			surfaceBaseHeight = 896 }, 
 		surfaceClips = (<$> zip [0 ..] ops) \(i :: Int, op) ->
 			porterDuff
 				(256 * fromIntegral (i `div` 4))
@@ -49,20 +50,21 @@ porterDuff x0 y0 op = Clip {
 
 sample :: Operator -> Surface 'Rgba
 sample op = Surface {
-		sfcWidth = 192, sfcHeight = 152,
-		surfaceClips = [
-			Clip { clipBounds = [], clipDraws = [
-				Draw {
-					drawOperator = OperatorOver,
-					drawSource = Source . PatternColor . ColorRgba
-						. fromJust $ rgbaDouble 0.7 0 0 0.8,
-					drawMask = MaskFill [Rectangle 0 0 120 90] },
-				Draw {
-					drawOperator = op,
-					drawSource = Source . PatternColor . ColorRgba
-						. fromJust $ rgbaDouble 0 0 0.9 0.4,
-					drawMask = MaskFill [Rectangle 40 30 120 90] }
-				] } ] }
+	surfaceBase = SurfaceBaseBlank {
+		surfaceBaseWidth = 192, surfaceBaseHeight = 152 },
+	surfaceClips = [
+		Clip { clipBounds = [], clipDraws = [
+			Draw {
+				drawOperator = OperatorOver,
+				drawSource = Source . PatternColor . ColorRgba
+					. fromJust $ rgbaDouble 0.7 0 0 0.8,
+				drawMask = MaskFill [Rectangle 0 0 120 90] },
+			Draw {
+				drawOperator = op,
+				drawSource = Source . PatternColor . ColorRgba
+					. fromJust $ rgbaDouble 0 0 0.9 0.4,
+				drawMask = MaskFill [Rectangle 40 30 120 90] }
+			] } ] }
 
 ichimatsu :: Double -> Double -> Int -> Int -> [Draw 'Rgba]
 ichimatsu x0 y0 w h = (=<< [0 .. h]) \i -> (<$> [0 .. w]) \j ->

@@ -25,11 +25,16 @@ import Graphics.Cairo.Values
 import Trial.TryPango
 
 makeSurface :: Surface 'Rgba -> IO (CairoSurfaceImageT s RealWorld)
-makeSurface Surface {
-	sfcWidth = (fromInteger -> w), sfcHeight = (fromInteger -> h),
-	surfaceClips = clps } = do
-	sr <- cairoImageSurfaceCreate cairoFormatArgb32 w h
+makeSurface Surface { surfaceBase = sb, surfaceClips = clps } = do
+	sr <- makeSurfaceBase sb
 	sr <$ ((`cairoRunDrawScript` clps) =<< cairoCreate sr)
+
+makeSurfaceBase :: SurfaceBase 'Rgba -> IO (CairoSurfaceImageT s RealWorld)
+makeSurfaceBase = \case
+	SurfaceBaseBlank {
+		surfaceBaseWidth = (fromIntegral -> w),
+		surfaceBaseHeight = (fromIntegral -> h) } ->
+		cairoImageSurfaceCreate cairoFormatArgb32 w h
 
 cairoRunDrawScript :: CairoTIO s -> DrawScript 'Rgba -> IO ()
 cairoRunDrawScript cr = (cairoDrawClip cr `mapM_`)

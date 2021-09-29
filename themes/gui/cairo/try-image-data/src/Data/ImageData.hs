@@ -6,13 +6,19 @@ module Data.ImageData where
 
 import Data.Angle
 import Data.Color
+import Data.CairoImage
 
 import Data.ImageData.Text
 
 data SurfaceType = Alpha | Rgba deriving Show
 
-data Surface (t :: SurfaceType) = Surface {
-	sfcWidth :: Integer, sfcHeight :: Integer, surfaceClips :: DrawScript t }
+data Surface (t :: SurfaceType) =
+	Surface { surfaceBase :: SurfaceBase t, surfaceClips :: DrawScript t }
+	deriving Show
+
+data SurfaceBase (t :: SurfaceType)
+	= SurfaceBaseBlank {
+		surfaceBaseWidth :: Integer, surfaceBaseHeight :: Integer }
 	deriving Show
 
 type DrawScript t = [Clip t]
