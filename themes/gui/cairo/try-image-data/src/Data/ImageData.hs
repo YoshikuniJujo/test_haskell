@@ -19,6 +19,7 @@ data Surface (t :: SurfaceType) =
 data SurfaceBase (t :: SurfaceType)
 	= SurfaceBaseBlank {
 		surfaceBaseWidth :: Integer, surfaceBaseHeight :: Integer }
+	| SurfaceBaseArgb32 Argb32
 	deriving Show
 
 type DrawScript t = [Clip t]

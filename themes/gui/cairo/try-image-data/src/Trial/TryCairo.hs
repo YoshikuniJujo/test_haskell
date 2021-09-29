@@ -8,8 +8,9 @@ module Trial.TryCairo where
 
 import Control.Monad.ST
 import Data.Color
-import Data.ImageData as I
+import Data.CairoImage
 import Data.CairoContext
+import Data.ImageData as I
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting as Cr
 import Graphics.Cairo.Drawing.CairoT.Clip
@@ -35,6 +36,8 @@ makeSurfaceBase = \case
 		surfaceBaseWidth = (fromIntegral -> w),
 		surfaceBaseHeight = (fromIntegral -> h) } ->
 		cairoImageSurfaceCreate cairoFormatArgb32 w h
+	SurfaceBaseArgb32 img ->
+		cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 img
 
 cairoRunDrawScript :: CairoTIO s -> DrawScript 'Rgba -> IO ()
 cairoRunDrawScript cr = (cairoDrawClip cr `mapM_`)
