@@ -18,28 +18,33 @@ todo
 	+ [ ] MaskAlpha
 	+ [x] MaskPaint
 	+ [ ] MaskStroke
+		- [x] line width
+		- [ ] dash
+		- [x] line cap
+		- [x] line join
+			* [x] miter
+				+ [x] miter limit
+				+ [x] others
+			* [x] round
+			* [x] bevel
 	+ [ ] MaskFill
 		- [ ] fill rule
 	+ [x] MaskTextLayout
 * [ ] Alpha
 * [ ] Pattern
+	+ [ ] filter
+	+ [ ] extend
+	+ [ ] matrix
+* [ ] PatternBase
 	+ [ ] PatternSurface
 	+ [x] PatternColor
 	+ [ ] PatternGradient
 	+ [ ] PatternMesh
 * [ ] Paths
+	+ [x] move to
+	+ [x] line to
 	+ [x] rectangle
 	+ [x] arc
-	+ [x] line width
-	+ [ ] dash
-	+ [ ] fill rule
-	+ [ ] line cap
-	+ [x] line join
-		- [x] miter
-			* [x] miter limit
-			* [x] others
-		- [x] round
-		- [x] bevel
 	+ [ ] others
 * [ ] Clip
 	+ [x] multi clip

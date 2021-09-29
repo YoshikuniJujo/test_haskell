@@ -179,6 +179,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-line:
+    main:                try-line.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

@@ -74,8 +74,9 @@ cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
 	MaskAlpha _alp -> error "yet"
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
-	MaskStroke (I.LineWidth lw) lj pth -> do
+	MaskStroke (I.LineWidth lw) lc lj pth -> do
 		cairoSet cr . Cr.LineWidth $ realToFrac lw
+		cairoSet cr $ toLineCap lc
 		case lj of
 			I.LineJoinMiter (realToFrac -> ml) -> do
 				cairoSet cr Cr.LineJoinMiter
@@ -88,6 +89,12 @@ cairoDrawMask cr = \case
 		cairoTransform cr =<< transToCairoMatrixT tr
 		drawLayout cr l
 
+toLineCap :: I.LineCap -> Cr.LineCap
+toLineCap = \case
+	I.LineCapButt -> Cr.LineCapButt
+	I.LineCapRound -> Cr.LineCapRound
+	I.LineCapSquare -> Cr.LineCapSquare
+
 cairoDrawPaths :: CairoTIO s -> [Path] -> IO ()
 cairoDrawPaths cr pths = do
 	cairoDrawPath cr `mapM_` pths
@@ -96,6 +103,8 @@ cairoDrawPaths cr pths = do
 cairoDrawPath :: CairoTIO s -> Path -> IO ()
 cairoDrawPath cr = \case
 	PathTransform tr -> cairoTransform cr =<< transToCairoMatrixT tr
+	MoveTo (realToFrac -> x) (realToFrac -> y) -> cairoMoveTo cr x y
+	LineTo (realToFrac -> x) (realToFrac -> y) -> cairoLineTo cr x y
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
 	Arc xc_ yc_ r_ a1_ a2_ -> cairoArc cr xc yc r a1 a2

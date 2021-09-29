@@ -59,7 +59,7 @@ data Source t = Source (Pattern t) deriving Show
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
-	| MaskStroke LineWidth LineJoin [Path]
+	| MaskStroke LineWidth LineCap LineJoin [Path]
 	| MaskFill [Path]
 	| MaskTextLayout Transform Layout
 	deriving Show
@@ -79,11 +79,15 @@ deriving instance Show (SurfaceTypeColor t)
 
 newtype LineWidth = LineWidth Double deriving Show
 
+data LineCap = LineCapButt | LineCapRound | LineCapSquare deriving Show
+
 data LineJoin = LineJoinMiter Double | LineJoinRound | LineJoinBevel
 	deriving Show
 
 data Path
 	= PathTransform Transform
+	| MoveTo { moveToX :: Double, moveToY :: Double }
+	| LineTo { lineToX :: Double, lineToY :: Double }
 	| Rectangle {
 		rectX :: Double, rectY :: Double,
 		rectWidth :: Double, rectHeight :: Double }
