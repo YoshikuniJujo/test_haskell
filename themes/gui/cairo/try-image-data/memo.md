@@ -5,9 +5,9 @@ todo
 ----
 
 * [x] make type Rgba more general
-* [ ] Surface
+* [x] Surface
 	+ [x] vector
-	+ [ ] raster
+	+ [x] raster
 * [ ] Transform
 	+ [x] copy transformation to Path
 	+ [ ] copy transformation to Gradient
@@ -18,7 +18,8 @@ todo
 	+ [ ] MaskAlpha
 	+ [x] MaskPaint
 	+ [ ] MaskStroke
-	+ [x] MaskFill
+	+ [ ] MaskFill
+		- [ ] fill rule
 	+ [x] MaskTextLayout
 * [ ] Alpha
 * [ ] Pattern

@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies, GADTs, StandaloneDeriving #-}
 {-# LANGUAGE DataKinds, KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -16,11 +16,13 @@ data Surface (t :: SurfaceType) =
 	Surface { surfaceBase :: SurfaceBase t, surfaceClips :: DrawScript t }
 	deriving Show
 
-data SurfaceBase (t :: SurfaceType)
-	= SurfaceBaseBlank {
-		surfaceBaseWidth :: Integer, surfaceBaseHeight :: Integer }
-	| SurfaceBaseArgb32 Argb32
-	deriving Show
+data SurfaceBase (t :: SurfaceType) where
+	SurfaceBaseBlank ::
+		{ surfaceBaseWidth :: Integer, surfaceBaseHeight :: Integer } -> SurfaceBase t
+	SurfaceBaseA8 :: A8 -> SurfaceBase 'Alpha
+	SurfaceBaseArgb32 :: Argb32 -> SurfaceBase 'Rgba
+
+deriving instance Show (SurfaceBase t)
 
 type DrawScript t = [Clip t]
 
