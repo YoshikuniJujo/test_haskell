@@ -21,6 +21,7 @@ main = (`makePng` "pngs/try-line.png") =<< makeSurface Surface {
 				sampleForCap LineCapButt (100, 100) (300, 100),
 				sampleForCap LineCapRound (100, 150) (300, 150),
 				sampleForCap LineCapSquare (100, 200) (300, 200),
+				sampleForCap LineCapRound (100, 250) (100, 250),
 
 				sampleForDash (LineDash [] 0)
 					LineCapButt (100, 300) (500, 300),
@@ -34,7 +35,11 @@ main = (`makePng` "pngs/try-line.png") =<< makeSurface Surface {
 				sampleForDash (LineDash [64] 0)
 					LineCapRound (100, 500) (500, 500),
 				sampleForDash (LineDash [64] 32)
-					LineCapRound (100, 550) (500, 550)
+					LineCapRound (100, 550) (500, 550),
+				sampleForDash (LineDash [64, 64, 0.0, 64] 0)
+					LineCapRound (100, 600) (500, 600),
+				sampleForDash (LineDash [64, 64, 0.0, 64] 0)
+					LineCapSquare (100, 650) (500, 650)
 				] } ] }
 
 sampleForCap :: LineCap -> (Double, Double) -> (Double, Double) -> Draw 'Rgba
