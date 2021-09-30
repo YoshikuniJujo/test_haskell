@@ -74,8 +74,9 @@ cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
 	MaskAlpha _alp -> error "yet"
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
-	MaskStroke (I.LineWidth lw) lc lj pth -> do
+	MaskStroke (I.LineWidth lw) ld lc lj pth -> do
 		cairoSet cr . Cr.LineWidth $ realToFrac lw
+		cairoSet cr $ toDash ld
 		cairoSet cr $ toLineCap lc
 		case lj of
 			I.LineJoinMiter (realToFrac -> ml) -> do
@@ -88,6 +89,9 @@ cairoDrawMask cr = \case
 	MaskTextLayout tr l -> do
 		cairoTransform cr =<< transToCairoMatrixT tr
 		drawLayout cr l
+
+toDash :: LineDash -> Dash
+toDash (LineDash ds os) = Dash (realToFrac <$> ds) (realToFrac os)
 
 toLineCap :: I.LineCap -> Cr.LineCap
 toLineCap = \case

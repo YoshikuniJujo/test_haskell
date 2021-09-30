@@ -59,7 +59,7 @@ data Source t = Source (Pattern t) deriving Show
 data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
-	| MaskStroke LineWidth LineCap LineJoin [Path]
+	| MaskStroke LineWidth LineDash LineCap LineJoin [Path]
 	| MaskFill [Path]
 	| MaskTextLayout Transform Layout
 	deriving Show
@@ -82,6 +82,10 @@ data PatternNonSolid t
 deriving instance Show (SurfaceTypeColor t)
 
 newtype LineWidth = LineWidth Double deriving Show
+
+data LineDash = LineDash {
+	lineDashDashes :: [Double],
+	lineDashOffset :: Double } deriving Show
 
 data LineCap = LineCapButt | LineCapRound | LineCapSquare deriving Show
 
