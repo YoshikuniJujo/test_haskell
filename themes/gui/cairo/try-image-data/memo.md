@@ -35,6 +35,8 @@ todo
 	+ [x] PatternSolid
 	+ [ ] PatternNonSolid
 		- [ ] filter
+			* [ ] make 2x2 ruster image pattern
+			* [ ] others
 		- [ ] extend
 		- [x] matrix
 * [ ] PatternNonSolid
