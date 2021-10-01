@@ -19,11 +19,15 @@ main = do
 draw :: SurfaceBase 'Rgba -> IO ()
 draw img = (`makePng` "pngs/try-surface-source.png") =<< makeSurface Surface {
 	surfaceBase = SurfaceBaseBlank 576 512,
-	surfaceClips = [
-		Clip {	clipBounds = [],
-			clipDraws = [
-				Draw {
-					drawOperator = OperatorOver,
-					drawSource = Source . PatternNonSolid PatternFilterGood (Transform 1 0 0 1 112 16) $ PatternSurface
-						Surface { surfaceBase = img, surfaceClips = [] },
-					drawMask = MaskFill [Arc 288 256 192 0 (2 * pi)] } ] } ] }
+	surfaceClips = [clip img] }
+
+clip :: SurfaceBase 'Rgba -> Clip 'Rgba
+clip img = Clip {
+	clipBounds = [],
+	clipDraws = [Draw {	
+		drawOperator = OperatorOver,
+		drawSource = Source . PatternNonSolid PatternFilterGood
+				PatternExtendNone (Transform 1 0 0 1 112 16)
+			$ PatternSurface Surface {
+				surfaceBase = img, surfaceClips = [] },
+		drawMask = MaskFill [Arc 288 256 192 0 (2 * pi)] }] }

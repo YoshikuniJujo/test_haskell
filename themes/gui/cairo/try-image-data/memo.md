@@ -14,6 +14,7 @@ todo
 	+ [ ] copy transformation to Mesh
 	+ [x] remove transformation from Draw
 * [ ] Source
+	+ consider to remove
 * [ ] Mask
 	+ [ ] MaskAlpha
 	+ [x] MaskPaint
@@ -31,14 +32,14 @@ todo
 		- [ ] fill rule
 	+ [x] MaskTextLayout
 * [ ] Alpha
-* [ ] Pattern
+* [x] Pattern
 	+ [x] PatternSolid
-	+ [ ] PatternNonSolid
+	+ [x] PatternNonSolid
 		- [x] filter
 			* [x] make 128x128 ruster image
 			* [x] make 2x2 ruster image pattern
 			* [x] others
-		- [ ] extend
+		- [x] extend
 		- [x] matrix
 * [ ] PatternNonSolid
 	+ [x] PatternSurface

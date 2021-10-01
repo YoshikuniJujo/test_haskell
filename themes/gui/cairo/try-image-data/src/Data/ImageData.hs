@@ -68,6 +68,7 @@ data Pattern t
 	= PatternSolid (SurfaceTypeColor t)
 	| PatternNonSolid {
 		patternFilter :: PatternFilter,
+		patternExtend :: PatternExtend,
 		patternMatrix :: Transform,
 		patternBody :: PatternNonSolid t }
 --	| PatternGradient Transform foo bar
@@ -77,6 +78,11 @@ data Pattern t
 data PatternFilter
 	= PatternFilterFast | PatternFilterGood | PatternFilterBest
 	| PatternFilterNearest | PatternFilterBilinear
+	deriving Show
+
+data PatternExtend
+	= PatternExtendNone | PatternExtendRepeat
+	| PatternExtendReflect | PatternExtendPad
 	deriving Show
 
 data SurfaceTypeColor t where

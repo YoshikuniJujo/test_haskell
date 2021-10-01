@@ -206,6 +206,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-pattern-extend:
+    main:                try-pattern-extend.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

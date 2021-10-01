@@ -37,6 +37,7 @@ clip is ps pf x y = Clip {
 	clipDraws = [
 		Draw {	drawOperator = OperatorOver,
 			drawSource = Source . PatternNonSolid pf
+					PatternExtendNone
 					(Transform rt 0 0 rt
 						(fromInteger $ - ps * x)
 						(fromInteger $ - ps * y))
