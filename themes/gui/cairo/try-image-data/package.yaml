@@ -224,6 +224,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-surface-mask:
+    main:                try-surface-mask.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

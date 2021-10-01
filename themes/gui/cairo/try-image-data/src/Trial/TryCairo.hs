@@ -7,6 +7,7 @@
 module Trial.TryCairo where
 
 import Control.Monad.ST
+import Data.Maybe
 import Data.Color
 import Data.CairoImage
 import Data.CairoContext
@@ -25,24 +26,26 @@ import Graphics.Cairo.Values
 
 import Trial.TryPango
 
-makeSurface :: Surface 'Rgba -> IO (CairoSurfaceImageT s RealWorld)
+makeSurface :: Surface t -> IO (CairoSurfaceImageT s RealWorld)
 makeSurface Surface { surfaceBase = sb, surfaceClips = clps } = do
 	sr <- makeSurfaceBase sb
 	sr <$ ((`cairoRunDrawScript` clps) =<< cairoCreate sr)
 
-makeSurfaceBase :: SurfaceBase 'Rgba -> IO (CairoSurfaceImageT s RealWorld)
+makeSurfaceBase :: SurfaceBase t -> IO (CairoSurfaceImageT s RealWorld)
 makeSurfaceBase = \case
 	SurfaceBaseBlank {
 		surfaceBaseWidth = (fromIntegral -> w),
 		surfaceBaseHeight = (fromIntegral -> h) } ->
 		cairoImageSurfaceCreate cairoFormatArgb32 w h
+	SurfaceBaseA8 img ->
+		cairoImageSurfaceCreateForCairoImage $ CairoImageA8 img
 	SurfaceBaseArgb32 img ->
 		cairoImageSurfaceCreateForCairoImage $ CairoImageArgb32 img
 
-cairoRunDrawScript :: CairoTIO s -> DrawScript 'Rgba -> IO ()
+cairoRunDrawScript :: CairoTIO s -> DrawScript t -> IO ()
 cairoRunDrawScript cr = (cairoDrawClip cr `mapM_`)
 
-cairoDrawClip :: CairoTIO s -> Clip 'Rgba -> IO ()
+cairoDrawClip :: CairoTIO s -> Clip t -> IO ()
 cairoDrawClip cr Clip { clipBounds = bs, clipDraws = drws } = do
 	(\(Bound fr ps) -> do
 		cairoSet cr $ toFillRule fr
@@ -50,7 +53,7 @@ cairoDrawClip cr Clip { clipBounds = bs, clipDraws = drws } = do
 	cairoDrawDraw cr `mapM_` drws
 	cairoResetClip cr
 
-cairoDrawDraw :: CairoTIO s -> Draw 'Rgba -> IO ()
+cairoDrawDraw :: CairoTIO s -> Draw t -> IO ()
 cairoDrawDraw cr Draw {
 	drawOperator = op, drawSource = src, drawMask = msk } = do
 	cairoSet cr $ getOperator op
@@ -62,9 +65,11 @@ transToCairoMatrixT (Transform xx_ yx_ xy_ yy_ x0_ y0_) =
 	where
 	[xx, yx, xy, yy, x0, y0] = realToFrac <$> [xx_, xy_, yx_, yy_, x0_, y0_]
 
-cairoDrawSource :: CairoTIO s -> Source 'Rgba -> IO ()
+cairoDrawSource :: CairoTIO s -> Source t -> IO ()
 cairoDrawSource cr (Source ptn) = case ptn of
 	PatternSolid (ColorRgba clr) -> cairoSetSourceRgba cr $ rgbaRealToFrac clr
+	PatternSolid (ColorAlpha a) -> cairoSetSourceRgba cr
+		$ toRgba (fromJust $ rgbDouble 0 0 0) (fromJust . alphaDouble $ realToFrac a)
 	PatternNonSolid pf pe tfm (PatternSurface sfc) -> do
 		t <- transToCairoMatrixT tfm
 		s <- makeSurface sfc
@@ -73,6 +78,19 @@ cairoDrawSource cr (Source ptn) = case ptn of
 		cairoPatternSet pt $ toCairoExtendT pe
 		cairoPatternSetMatrix pt t
 		cairoSetSource cr pt
+
+makeMaskPattern :: Pattern 'Alpha -> IO (CairoPatternT RealWorld)
+makeMaskPattern = \case
+	PatternSolid (ColorAlpha a) -> (CairoPatternTSolid <$>)
+		. cairoPatternCreateRgba . fromJust . rgbaDouble 0 0 0 $ realToFrac a
+	PatternNonSolid pf pe tfm (PatternSurface sfc) -> do
+		t <- transToCairoMatrixT tfm
+		s <- makeSurface sfc
+		pt <- cairoPatternCreateForSurface s
+		cairoPatternSet pt $ toCairoFilterT pf
+		cairoPatternSet pt $ toCairoExtendT pe
+		cairoPatternSetMatrix pt t
+		pure $ CairoPatternTSurface pt
 
 toCairoFilterT :: PatternFilter -> CairoFilterT
 toCairoFilterT = \case
@@ -91,7 +109,7 @@ toCairoExtendT = \case
 
 cairoDrawMask :: CairoTIO s -> Mask -> IO ()
 cairoDrawMask cr = \case
-	MaskAlpha _alp -> error "yet"
+	MaskAlpha alp -> cairoMask cr =<< makeMaskPattern alp
 	MaskPaint alp -> cairoPaintWithAlpha cr $ realToFrac alp
 	MaskStroke (I.LineWidth lw) ld lc lj pth -> do
 		cairoSet cr . Cr.LineWidth $ realToFrac lw

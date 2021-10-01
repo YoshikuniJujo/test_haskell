@@ -15,8 +15,8 @@ todo
 	+ [x] remove transformation from Draw
 * [ ] Source
 	+ consider to remove
-* [ ] Mask
-	+ [ ] MaskAlpha
+* [x] Mask
+	+ [x] MaskAlpha
 	+ [x] MaskPaint
 	+ [x] MaskStroke
 		- [x] line width
