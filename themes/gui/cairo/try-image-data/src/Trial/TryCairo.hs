@@ -70,27 +70,43 @@ cairoDrawSource cr (Source ptn) = case ptn of
 	PatternSolid (ColorRgba clr) -> cairoSetSourceRgba cr $ rgbaRealToFrac clr
 	PatternSolid (ColorAlpha a) -> cairoSetSourceRgba cr
 		$ toRgba (fromJust $ rgbDouble 0 0 0) (fromJust . alphaDouble $ realToFrac a)
-	PatternNonSolid pf pe tfm (PatternSurface sfc) -> do
+	PatternNonSolid pf pe tfm nspt -> do
 		t <- transToCairoMatrixT tfm
-		s <- makeSurface sfc
-		pt <- cairoPatternCreateForSurface s
+		pt <- nonSolidPattern nspt
 		cairoPatternSet pt $ toCairoFilterT pf
 		cairoPatternSet pt $ toCairoExtendT pe
 		cairoPatternSetMatrix pt t
 		cairoSetSource cr pt
 
+nonSolidPattern :: PatternNonSolid t -> IO (CairoPatternT RealWorld)
+nonSolidPattern = \case
+	PatternSurface sfc -> CairoPatternTSurface
+		<$> (cairoPatternCreateForSurface =<< makeSurface sfc)
+	PatternGradient (GradientFrameLinear (x1_, y1_) (x2_, y2_)) pcs -> do
+		pt <- cairoPatternCreateLinear x1 y1 x2 y2
+		uncurry (addColorStop pt) `mapM_` pcs
+		pure . CairoPatternTGradient $ CairoPatternGradientTLinear pt
+		where [x1, y1, x2, y2] = realToFrac <$> [x1_, y1_, x2_, y2_]
+
+addColorStop :: IsCairoPatternGradientT pt => pt RealWorld ->
+	Double -> SurfaceTypeColor t -> IO ()
+addColorStop pt r = \case
+	ColorAlpha a -> cairoPatternAddColorStopRgba pt (realToFrac r)
+		. fromJust . rgbaDouble 0 0 0 $ realToFrac a
+	ColorRgba clr -> cairoPatternAddColorStopRgba pt (realToFrac r)
+		(rgbaRealToFrac clr)
+
 makeMaskPattern :: Pattern 'Alpha -> IO (CairoPatternT RealWorld)
 makeMaskPattern = \case
 	PatternSolid (ColorAlpha a) -> (CairoPatternTSolid <$>)
 		. cairoPatternCreateRgba . fromJust . rgbaDouble 0 0 0 $ realToFrac a
-	PatternNonSolid pf pe tfm (PatternSurface sfc) -> do
+	PatternNonSolid pf pe tfm nspt -> do
 		t <- transToCairoMatrixT tfm
-		s <- makeSurface sfc
-		pt <- cairoPatternCreateForSurface s
+		pt <- nonSolidPattern nspt
 		cairoPatternSet pt $ toCairoFilterT pf
 		cairoPatternSet pt $ toCairoExtendT pe
 		cairoPatternSetMatrix pt t
-		pure $ CairoPatternTSurface pt
+		pure pt
 
 toCairoFilterT :: PatternFilter -> CairoFilterT
 toCairoFilterT = \case

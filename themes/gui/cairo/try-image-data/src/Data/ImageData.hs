@@ -95,6 +95,11 @@ data SurfaceTypeColor t where
 
 data PatternNonSolid t
 	= PatternSurface (Surface t)
+	| PatternGradient GradientFrame [(Double, SurfaceTypeColor t)]
+	deriving Show
+
+data GradientFrame
+	= GradientFrameLinear (Double, Double) (Double, Double)
 	deriving Show
 
 deriving instance Show (SurfaceTypeColor t)

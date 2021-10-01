@@ -43,7 +43,7 @@ todo
 		- [x] matrix
 * [ ] PatternNonSolid
 	+ [x] PatternSurface
-	+ [ ] PatternGradientLinear
+	+ [x] PatternGradientLinear
 	+ [ ] PatternGradientRadial
 	+ [ ] PatternMesh
 * [ ] Paths
