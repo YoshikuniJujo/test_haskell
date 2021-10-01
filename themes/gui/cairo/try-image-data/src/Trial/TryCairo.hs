@@ -102,7 +102,9 @@ cairoDrawMask cr = \case
 			I.LineJoinRound -> cairoSet cr Cr.LineJoinRound
 			I.LineJoinBevel -> cairoSet cr Cr.LineJoinBevel
 		cairoDrawPaths cr pth >> cairoStroke cr
-	MaskFill pth -> cairoDrawPaths cr pth >> cairoFill cr
+	MaskFill fr pth -> do
+		cairoSet cr $ toFillRule fr
+		cairoDrawPaths cr pth >> cairoFill cr
 	MaskTextLayout tr l -> do
 		cairoTransform cr =<< transToCairoMatrixT tr
 		drawLayout cr l
@@ -115,6 +117,11 @@ toLineCap = \case
 	I.LineCapButt -> Cr.LineCapButt
 	I.LineCapRound -> Cr.LineCapRound
 	I.LineCapSquare -> Cr.LineCapSquare
+
+toFillRule :: I.FillRule -> Cr.FillRule
+toFillRule = \case
+	I.FillRuleWinding -> Cr.FillRuleWinding
+	I.FillRuleEvenOdd -> Cr.FillRuleEvenOdd
 
 cairoDrawPaths :: CairoTIO s -> [Path] -> IO ()
 cairoDrawPaths cr pths = do

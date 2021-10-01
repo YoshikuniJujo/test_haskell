@@ -60,9 +60,11 @@ data Mask
 	= MaskAlpha (Pattern 'Alpha)
 	| MaskPaint Double
 	| MaskStroke LineWidth LineDash LineCap LineJoin [Path]
-	| MaskFill [Path]
+	| MaskFill FillRule [Path]
 	| MaskTextLayout Transform Layout
 	deriving Show
+
+data FillRule = FillRuleWinding | FillRuleEvenOdd deriving Show
 
 data Pattern t
 	= PatternSolid (SurfaceTypeColor t)

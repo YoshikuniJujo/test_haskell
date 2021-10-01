@@ -28,8 +28,8 @@ todo
 				+ [x] others
 			* [x] round
 			* [x] bevel
-	+ [ ] MaskFill
-		- [ ] fill rule
+	+ [x] MaskFill
+		- [x] fill rule
 	+ [x] MaskTextLayout
 * [ ] Alpha
 * [x] Pattern

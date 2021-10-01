@@ -61,12 +61,12 @@ sample op = Surface {
 				drawOperator = OperatorOver,
 				drawSource = Source . PatternSolid . ColorRgba
 					. fromJust $ rgbaDouble 0.7 0 0 0.8,
-				drawMask = MaskFill [Rectangle 0 0 120 90] },
+				drawMask = MaskFill FillRuleWinding [Rectangle 0 0 120 90] },
 			Draw {
 				drawOperator = op,
 				drawSource = Source . PatternSolid . ColorRgba
 					. fromJust $ rgbaDouble 0 0 0.9 0.4,
-				drawMask = MaskFill [Rectangle 40 30 120 90] }
+				drawMask = MaskFill FillRuleWinding [Rectangle 40 30 120 90] }
 			] } ] }
 
 ichimatsu :: Double -> Double -> Int -> Int -> [Draw 'Rgba]
@@ -86,4 +86,4 @@ graySquare l s x y = Draw {
 	drawOperator = OperatorOver,
 	drawSource = Source . PatternSolid . ColorRgba
 		. fromJust $ rgbaDouble l l l 1.0,
-	drawMask = MaskFill [Rectangle x y s s] }
+	drawMask = MaskFill FillRuleWinding [Rectangle x y s s] }
