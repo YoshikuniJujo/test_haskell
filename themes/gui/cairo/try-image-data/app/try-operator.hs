@@ -38,7 +38,7 @@ operators = [OperatorClear .. OperatorHslLuminosity]
 
 porterDuff :: Double -> Double -> Operator -> Clip 'Rgba
 porterDuff x0 y0 op = Clip {
-	clipBounds = [[Rectangle l t 192 152]],
+	clipBounds = [Bound FillRuleWinding [Rectangle l t 192 152]],
 	clipDraws = ichimatsu l t 100 100 ++ [
 		Draw {
 			drawOperator = OperatorOver,

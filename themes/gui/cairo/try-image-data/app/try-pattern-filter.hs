@@ -30,7 +30,7 @@ main = do
 
 clip :: Integer -> Integer -> PatternFilter -> Integer -> Integer -> Clip 'Rgba
 clip is ps pf x y = Clip {
-	clipBounds = [[
+	clipBounds = [Bound FillRuleWinding [
 		Rectangle
 			(fromInteger $ is * x) (fromInteger $ is * y)
 			(fromInteger is) (fromInteger is) ]],

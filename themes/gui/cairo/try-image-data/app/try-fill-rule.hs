@@ -18,7 +18,19 @@ main = (`makePng` "pngs/try-fill-rule.png") =<< makeSurface Surface {
 		Clip {	clipBounds = [],
 			clipDraws = concat [
 				draw FillRuleWinding 0 0,
-				draw FillRuleEvenOdd 300 0 ] } ] }
+				draw FillRuleEvenOdd 300 0 ] },
+		Clip {	clipBounds = [Bound FillRuleWinding $ paths 0 300],
+			clipDraws = [Draw {
+				drawOperator = OperatorOver,
+				drawSource = Source . PatternSolid . ColorRgba . fromJust
+					$ rgbaDouble 0.7 0.7 0.7 1,
+				drawMask = MaskPaint 1 }] },
+		Clip {	clipBounds = [Bound FillRuleEvenOdd $ paths 300 300],
+			clipDraws = [Draw {
+				drawOperator = OperatorOver,
+				drawSource = Source . PatternSolid . ColorRgba . fromJust
+					$ rgbaDouble 0.7 0.7 0.7 1,
+				drawMask = MaskPaint 1 }] } ] }
 
 draw :: FillRule -> Double -> Double -> [Draw 'Rgba]
 draw fr x y = [

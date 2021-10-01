@@ -44,7 +44,9 @@ cairoRunDrawScript cr = (cairoDrawClip cr `mapM_`)
 
 cairoDrawClip :: CairoTIO s -> Clip 'Rgba -> IO ()
 cairoDrawClip cr Clip { clipBounds = bs, clipDraws = drws } = do
-	(\ps -> cairoDrawPaths cr ps >> cairoClip cr) `mapM_` bs
+	(\(Bound fr ps) -> do
+		cairoSet cr $ toFillRule fr
+		cairoDrawPaths cr ps >> cairoClip cr) `mapM_` bs
 	cairoDrawDraw cr `mapM_` drws
 	cairoResetClip cr
 

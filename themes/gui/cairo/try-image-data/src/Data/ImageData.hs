@@ -27,8 +27,10 @@ deriving instance Show (SurfaceBase t)
 type DrawScript t = [Clip t]
 
 data Clip (t :: SurfaceType) = Clip {
-	clipBounds :: [[Path]], clipDraws :: [Draw t] }
+	clipBounds :: [Bound], clipDraws :: [Draw t] }
 	deriving Show
+
+data Bound = Bound FillRule [Path] deriving Show
 
 data Draw (t :: SurfaceType) = Draw {
 	drawOperator :: Operator, drawSource :: Source t, drawMask :: Mask }

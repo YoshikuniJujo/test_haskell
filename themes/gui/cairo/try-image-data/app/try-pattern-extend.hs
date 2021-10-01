@@ -33,7 +33,7 @@ clip2 = clip imgSize ptnSize color2
 
 clip :: Integer -> Integer -> MakePixel -> PatternExtend -> Integer -> Integer -> Clip 'Rgba
 clip is ps clr pe x y = Clip {
-	clipBounds = [[
+	clipBounds = [Bound FillRuleWinding [
 		Rectangle
 			(fromInteger $ is * x) (fromInteger $ is * y)
 			(fromInteger is) (fromInteger is) ]],

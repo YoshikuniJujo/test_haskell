@@ -53,10 +53,10 @@ todo
 	+ [x] rectangle
 	+ [x] arc
 	+ [ ] others
-* [ ] Clip
+* [x] Clip
 	+ [x] multi clip
 	+ [x] clip should be more large
-	+ [ ] add fill rule
+	+ [x] add fill rule
 * [x] Operator
 
 Pattern
