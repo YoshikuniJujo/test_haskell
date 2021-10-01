@@ -126,6 +126,7 @@ cairoDrawPath cr = \case
 	PathTransform tr -> cairoTransform cr =<< transToCairoMatrixT tr
 	MoveTo (realToFrac -> x) (realToFrac -> y) -> cairoMoveTo cr x y
 	LineTo (realToFrac -> x) (realToFrac -> y) -> cairoLineTo cr x y
+	ClosePath -> cairoClosePath cr
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
 	Arc xc_ yc_ r_ a1_ a2_ -> cairoNewSubPath cr >> cairoArc cr xc yc r a1 a2

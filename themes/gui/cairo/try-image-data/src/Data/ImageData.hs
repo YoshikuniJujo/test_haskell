@@ -110,6 +110,7 @@ data Path
 	= PathTransform Transform
 	| MoveTo { moveToX :: Double, moveToY :: Double }
 	| LineTo { lineToX :: Double, lineToY :: Double }
+	| ClosePath
 	| Rectangle {
 		rectX :: Double, rectY :: Double,
 		rectWidth :: Double, rectHeight :: Double }
