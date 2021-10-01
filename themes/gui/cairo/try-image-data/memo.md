@@ -49,6 +49,7 @@ todo
 * [ ] Paths
 	+ [x] move to
 	+ [x] line to
+	+ [ ] close path
 	+ [x] rectangle
 	+ [x] arc
 	+ [ ] others

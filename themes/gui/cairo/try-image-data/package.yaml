@@ -215,6 +215,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-fill-rule:
+    main:                try-fill-rule.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:
