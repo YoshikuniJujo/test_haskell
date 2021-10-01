@@ -7,23 +7,26 @@ module Main where
 import Foreign.C.Types
 import Data.CairoImage
 import Data.ImageData
+import System.Environment
+
 import Trial.TryCairo
 import Trial.MakePng
 
-imgSize, ptnSize :: Integer
+imgSize :: Integer
 imgSize = 256
-ptnSize = 2
 
 main :: IO ()
-main = (`makePng` "pngs/try-pattern-filter.png") =<< makeSurface Surface {
-	surfaceBase = SurfaceBaseBlank {
-		surfaceBaseWidth = imgSize * 2, surfaceBaseHeight = imgSize * 3 },
-	surfaceClips = [
-		clip imgSize ptnSize PatternFilterFast 0 0,
-		clip imgSize ptnSize PatternFilterGood 1 0,
-		clip imgSize ptnSize PatternFilterBest 0 1,
-		clip imgSize ptnSize PatternFilterNearest 1 1,
-		clip imgSize ptnSize PatternFilterBilinear 0 2 ] }
+main = do
+	ptnSize : _ <- (read <$>) <$> getArgs
+	(`makePng` "pngs/try-pattern-filter.png") =<< makeSurface Surface {
+		surfaceBase = SurfaceBaseBlank {
+			surfaceBaseWidth = imgSize * 2, surfaceBaseHeight = imgSize * 3 },
+		surfaceClips = [
+			clip imgSize ptnSize PatternFilterFast 0 0,
+			clip imgSize ptnSize PatternFilterGood 1 0,
+			clip imgSize ptnSize PatternFilterBest 0 1,
+			clip imgSize ptnSize PatternFilterNearest 1 1,
+			clip imgSize ptnSize PatternFilterBilinear 0 2 ] }
 
 clip :: Integer -> Integer -> PatternFilter -> Integer -> Integer -> Clip 'Rgba
 clip is ps pf x y = Clip {
