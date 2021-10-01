@@ -66,9 +66,17 @@ data Mask
 
 data Pattern t
 	= PatternSolid (SurfaceTypeColor t)
-	| PatternNonSolid Transform (PatternNonSolid t)
+	| PatternNonSolid {
+		patternFilter :: PatternFilter,
+		patternMatrix :: Transform,
+		patternBody :: PatternNonSolid t }
 --	| PatternGradient Transform foo bar
 --	| PatternMesh Transform foo bar
+	deriving Show
+
+data PatternFilter
+	= PatternFilterFast | PatternFilterGood | PatternFilterBest
+	| PatternFilterNearest | PatternFilterBilinear
 	deriving Show
 
 data SurfaceTypeColor t where

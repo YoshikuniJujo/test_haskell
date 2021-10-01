@@ -19,18 +19,21 @@ main = (`makePng` "pngs/try-pattern-filter.png") =<< makeSurface Surface {
 	surfaceBase = SurfaceBaseBlank {
 		surfaceBaseWidth = imgSize * 2, surfaceBaseHeight = imgSize * 3 },
 	surfaceClips = [
-		clip imgSize ptnSize 0 0, clip imgSize ptnSize 1 0,
-		clip imgSize ptnSize 0 1 ] }
+		clip imgSize ptnSize PatternFilterFast 0 0,
+		clip imgSize ptnSize PatternFilterGood 1 0,
+		clip imgSize ptnSize PatternFilterBest 0 1,
+		clip imgSize ptnSize PatternFilterNearest 1 1,
+		clip imgSize ptnSize PatternFilterBilinear 0 2 ] }
 
-clip :: Integer -> Integer -> Integer -> Integer -> Clip 'Rgba
-clip is ps x y = Clip {
+clip :: Integer -> Integer -> PatternFilter -> Integer -> Integer -> Clip 'Rgba
+clip is ps pf x y = Clip {
 	clipBounds = [[
 		Rectangle
 			(fromInteger $ is * x) (fromInteger $ is * y)
 			(fromInteger is) (fromInteger is) ]],
 	clipDraws = [
 		Draw {	drawOperator = OperatorOver,
-			drawSource = Source . PatternNonSolid
+			drawSource = Source . PatternNonSolid pf
 					(Transform rt 0 0 rt
 						(fromInteger $ - ps * x)
 						(fromInteger $ - ps * y))

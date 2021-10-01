@@ -42,7 +42,7 @@ porterDuff x0 y0 op = Clip {
 	clipDraws = ichimatsu l t 100 100 ++ [
 		Draw {
 			drawOperator = OperatorOver,
-			drawSource = Source $ PatternNonSolid (Transform 1 0 0 1 (- l') (- t')) (PatternSurface $ sample op),
+			drawSource = Source $ PatternNonSolid PatternFilterGood (Transform 1 0 0 1 (- l') (- t')) (PatternSurface $ sample op),
 			drawMask = MaskPaint 1 }
 		]
 	}
