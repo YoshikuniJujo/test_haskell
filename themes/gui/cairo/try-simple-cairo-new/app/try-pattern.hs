@@ -18,6 +18,8 @@ main = pngWith "pngs/try-pattern.png" 768 768 \cr -> do
 	cairoRectangle cr 8 8 176 176
 	cairoClip cr
 	pt <- cairoPatternCreateLinear 64 64 128 128
+	print =<< cairoPatternGetFilter pt
+
 	cairoPatternSet pt CairoExtendNone
 	cairoPatternAddColorStopRgb pt 0.1 . fromJust $ rgbDouble 0 0.6 0
 	cairoPatternAddColorStopRgb pt 0.9 . fromJust $ rgbDouble 0.6 0 0

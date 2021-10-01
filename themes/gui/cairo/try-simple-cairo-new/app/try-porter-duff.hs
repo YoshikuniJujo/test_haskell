@@ -81,7 +81,7 @@ ichimatsu cr l t w h =
 
 
 
-grey, white :: Rgb
+grey, white :: Rgb CDouble
 grey = fromJust $ rgbDouble 0.7 0.7 0.7
 white = fromJust $ rgbDouble 1 1 1
 
