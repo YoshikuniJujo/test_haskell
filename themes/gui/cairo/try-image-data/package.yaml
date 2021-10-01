@@ -197,6 +197,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-pattern-filter:
+    main:                try-pattern-filter.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

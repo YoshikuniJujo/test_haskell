@@ -17,9 +17,9 @@ todo
 * [ ] Mask
 	+ [ ] MaskAlpha
 	+ [x] MaskPaint
-	+ [ ] MaskStroke
+	+ [x] MaskStroke
 		- [x] line width
-		- [ ] dash
+		- [x] dash
 		- [x] line cap
 		- [x] line join
 			* [x] miter
@@ -35,7 +35,8 @@ todo
 	+ [x] PatternSolid
 	+ [ ] PatternNonSolid
 		- [ ] filter
-			* [ ] make 2x2 ruster image pattern
+			* [x] make 128x128 ruster image
+			* [x] make 2x2 ruster image pattern
 			* [ ] others
 		- [ ] extend
 		- [x] matrix
