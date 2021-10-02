@@ -6,6 +6,7 @@
 
 module Trial.TryCairo where
 
+import Foreign.C.Types
 import Control.Monad.ST
 import Data.Maybe
 import Data.Color
@@ -87,6 +88,16 @@ nonSolidPattern = \case
 		uncurry (addColorStop pt) `mapM_` pcs
 		pure . CairoPatternTGradient $ CairoPatternGradientTLinear pt
 		where [x1, y1, x2, y2] = realToFrac <$> [x1_, y1_, x2_, y2_]
+	PatternGradient (GradientFrameRadial c1 c2) pcs -> do
+		let	((x1, y1), r1) = circleXyr c1
+			((x2, y2), r2) = circleXyr c2
+		pt <- cairoPatternCreateRadial x1 y1 r1 x2 y2 r2
+		uncurry (addColorStop pt) `mapM_` pcs
+		pure . CairoPatternTGradient $ CairoPatternGradientTRadial pt
+
+circleXyr :: Circle -> ((CDouble, CDouble), CDouble)
+circleXyr (Circle ((realToFrac -> x), (realToFrac -> y)) (realToFrac -> r)) =
+	((x, y), r)
 
 addColorStop :: IsCairoPatternGradientT pt => pt RealWorld ->
 	Double -> SurfaceTypeColor t -> IO ()

@@ -100,7 +100,10 @@ data PatternNonSolid t
 
 data GradientFrame
 	= GradientFrameLinear (Double, Double) (Double, Double)
+	| GradientFrameRadial Circle Circle
 	deriving Show
+
+data Circle = Circle (Double, Double) Double deriving Show
 
 deriving instance Show (SurfaceTypeColor t)
 

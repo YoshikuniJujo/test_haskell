@@ -44,7 +44,7 @@ todo
 * [ ] PatternNonSolid
 	+ [x] PatternSurface
 	+ [x] PatternGradientLinear
-	+ [ ] PatternGradientRadial
+	+ [x] PatternGradientRadial
 	+ [ ] PatternMesh
 * [ ] Paths
 	+ [x] move to
