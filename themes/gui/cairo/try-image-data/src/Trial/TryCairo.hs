@@ -180,6 +180,8 @@ cairoDrawPath cr = \case
 	PathTransform tr -> cairoTransform cr =<< transToCairoMatrixT tr
 	MoveTo (realToFrac -> x) (realToFrac -> y) -> cairoMoveTo cr x y
 	LineTo (realToFrac -> x) (realToFrac -> y) -> cairoLineTo cr x y
+	CurveTo (toPoint -> (x1, y1)) (toPoint -> (x2, y2))
+		(toPoint -> (xe, ye)) -> cairoCurveTo cr x1 y1 x2 y2 xe ye
 	ClosePath -> cairoClosePath cr
 	Rectangle x_ y_ w_ h_ -> cairoRectangle cr x y w h
 		where [x, y, w, h] = realToFrac <$> [x_, y_, w_, h_]
@@ -191,6 +193,9 @@ cairoDrawPath cr = \case
 		where
 		[xc, yc, r] = realToFrac <$> [xc_, yc_, r_]
 		[a1, a2] = realToFrac <$> [a1_, a2_]
+
+toPoint :: I.Point -> (CDouble, CDouble)
+toPoint (I.Point (realToFrac -> x) (realToFrac -> y)) = (x, y)
 
 getOperator :: I.Operator -> Cr.Operator
 getOperator = \case

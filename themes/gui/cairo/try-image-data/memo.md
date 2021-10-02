@@ -46,13 +46,13 @@ todo
 	+ [x] PatternGradientLinear
 	+ [x] PatternGradientRadial
 	+ [ ] PatternMesh
-* [ ] Paths
+* [x] Paths
 	+ [x] move to
 	+ [x] line to
 	+ [x] close path
 	+ [x] rectangle
 	+ [x] arc
-	+ [ ] others
+	+ [x] curve to
 * [x] Clip
 	+ [x] multi clip
 	+ [x] clip should be more large

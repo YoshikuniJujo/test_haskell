@@ -122,6 +122,9 @@ data Path
 	= PathTransform Transform
 	| MoveTo { moveToX :: Double, moveToY :: Double }
 	| LineTo { lineToX :: Double, lineToY :: Double }
+	| CurveTo {
+		curveToControl1 :: Point, curveToControl2 :: Point,
+		curveToEnd :: Point }
 	| ClosePath
 	| Rectangle {
 		rectX :: Double, rectY :: Double,
@@ -132,3 +135,5 @@ data Path
 		arcCenterX :: Double, arcCenterY :: Double, arcRadius :: Double,
 		arcAngleBegin :: Angle Double, srcAngleEnd :: Angle Double }
 	deriving Show
+
+data Point = Point { pointX :: Double, pointY :: Double } deriving Show
