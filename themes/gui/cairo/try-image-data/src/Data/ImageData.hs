@@ -75,8 +75,6 @@ data Pattern t
 		patternExtend :: PatternExtend,
 		patternMatrix :: Transform,
 		patternBody :: PatternNonSolid t }
---	| PatternGradient Transform foo bar
---	| PatternMesh Transform foo bar
 	deriving Show
 
 data PatternFilter
@@ -93,9 +91,12 @@ data SurfaceTypeColor t where
 	ColorAlpha :: Double -> SurfaceTypeColor 'Alpha
 	ColorRgba :: Rgba Double -> SurfaceTypeColor 'Rgba
 
+deriving instance Show (SurfaceTypeColor t)
+
 data PatternNonSolid t
 	= PatternSurface (Surface t)
 	| PatternGradient GradientFrame [(Double, SurfaceTypeColor t)]
+	| PatternMesh MeshPaths MeshColors MeshControlPoints
 	deriving Show
 
 data GradientFrame
@@ -105,7 +106,23 @@ data GradientFrame
 
 data Circle = Circle (Double, Double) Double deriving Show
 
-deriving instance Show (SurfaceTypeColor t)
+data MeshPaths = MeshPaths
+	MeshMoveTo MeshLineCurveTo MeshLineCurveTo MeshLineCurveTo MeshCloseTo
+	deriving Show
+
+data MeshColors =
+	MeshColors (Rgba Double) (Rgba Double) (Rgba Double) (Rgba Double)
+	deriving Show
+
+data MeshControlPoints = MeshControlPoints
+	(Maybe Point) (Maybe Point) (Maybe Point) (Maybe Point) deriving Show
+
+data MeshMoveTo = MeshMoveTo Double Double deriving Show
+
+data MeshLineCurveTo =
+	MeshLineTo Double Double | MeshCurveTo Point Point Point deriving Show
+
+data MeshCloseTo = MeshCloseTo | MeshCloseCurveTo Point Point deriving Show
 
 newtype LineWidth = LineWidth Double deriving Show
 

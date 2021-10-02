@@ -242,6 +242,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-image-data
+  try-mesh:
+    main:                try-mesh.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-image-data
 
 tests:
   try-image-data-test:

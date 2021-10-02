@@ -8,10 +8,8 @@ todo
 * [x] Surface
 	+ [x] vector
 	+ [x] raster
-* [ ] Transform
+* [x] Transform
 	+ [x] copy transformation to Path
-	+ [ ] copy transformation to Gradient
-	+ [ ] copy transformation to Mesh
 	+ [x] remove transformation from Draw
 * [ ] Source
 	+ consider to remove
@@ -31,7 +29,6 @@ todo
 	+ [x] MaskFill
 		- [x] fill rule
 	+ [x] MaskTextLayout
-* [ ] Alpha
 * [x] Pattern
 	+ [x] PatternSolid
 	+ [x] PatternNonSolid
@@ -46,6 +43,8 @@ todo
 	+ [x] PatternGradientLinear
 	+ [x] PatternGradientRadial
 	+ [ ] PatternMesh
+		- [x] implement
+		- [ ] more trials
 * [x] Paths
 	+ [x] move to
 	+ [x] line to
@@ -58,6 +57,7 @@ todo
 	+ [x] clip should be more large
 	+ [x] add fill rule
 * [x] Operator
+* [ ] consider to unify `CurveTo`, `LineTo`, `MoveTo`, `CloseTo` and so on
 
 Pattern
 ------

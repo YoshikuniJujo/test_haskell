@@ -27,6 +27,9 @@ import Graphics.Cairo.Values
 
 import Trial.TryPango
 
+import qualified Graphics.Cairo.Drawing.CairoPatternT.Mesh as M
+import qualified Graphics.Cairo.Drawing.Paths.CairoPathT as P
+
 makeSurface :: Surface t -> IO (CairoSurfaceImageT s RealWorld)
 makeSurface Surface { surfaceBase = sb, surfaceClips = clps } = do
 	sr <- makeSurfaceBase sb
@@ -94,6 +97,14 @@ nonSolidPattern = \case
 		pt <- cairoPatternCreateRadial x1 y1 r1 x2 y2 r2
 		uncurry (addColorStop pt) `mapM_` pcs
 		pure . CairoPatternTGradient $ CairoPatternGradientTRadial pt
+	PatternMesh pts clrs cps -> do
+		let	(mt, lct1, lct2, lct3, ct) = fromMeshPaths pts
+			(c0, c1, c2, c3) = fromMeshColors clrs
+			(cp0, cp1, cp2, cp3) = fromMeshControlPoints cps
+		pt <- M.cairoPatternCreateMesh
+		M.cairoMeshPatternAddPatch
+			pt mt lct1 lct2 lct3 ct c0 c1 c2 c3 cp0 cp1 cp2 cp3
+		pure $ M.CairoPatternTMesh pt
 
 circleXyr :: Circle -> ((CDouble, CDouble), CDouble)
 circleXyr (Circle ((realToFrac -> x), (realToFrac -> y)) (realToFrac -> r)) =
@@ -106,6 +117,40 @@ addColorStop pt r = \case
 		. fromJust . rgbaDouble 0 0 0 $ realToFrac a
 	ColorRgba clr -> cairoPatternAddColorStopRgba pt (realToFrac r)
 		(rgbaRealToFrac clr)
+
+fromMeshPaths :: MeshPaths ->
+	(P.MoveTo, P.LineCurveTo, P.LineCurveTo, P.LineCurveTo, P.CloseTo)
+fromMeshPaths (MeshPaths mt lct1 lct2 lct3 ct) = (
+	toMoveTo mt, toLineCurveTo lct1, toLineCurveTo lct2,
+	toLineCurveTo lct3, toCloseTo ct )
+
+fromMeshColors :: MeshColors -> (M.Color, M.Color, M.Color, M.Color)
+fromMeshColors (MeshColors c0_ c1_ c2_ c3_) = (c0, c1, c2, c3)
+	where [c0, c1, c2, c3] = toColor <$> [c0_, c1_, c2_, c3_]
+
+fromMeshControlPoints :: MeshControlPoints ->
+	(Maybe M.Point, Maybe M.Point, Maybe M.Point, Maybe M.Point)
+fromMeshControlPoints (MeshControlPoints c0_ c1_ c2_ c3_) = (c0, c1, c2, c3)
+	where [c0, c1, c2, c3] = (toPoint' <$>) <$> [c0_, c1_, c2_, c3_]
+
+toMoveTo :: MeshMoveTo -> P.MoveTo
+toMoveTo (MeshMoveTo (realToFrac -> x) (realToFrac -> y)) = P.MoveTo x y
+
+toLineCurveTo :: MeshLineCurveTo -> P.LineCurveTo
+toLineCurveTo (MeshLineTo (realToFrac -> x) (realToFrac -> y)) = P.LineTo x y
+toLineCurveTo (MeshCurveTo p1 p2 pe) = P.CurveTo x1 y1 x2 y2 xe ye
+	where (x1, y1) = toPoint p1; (x2, y2) = toPoint p2; (xe, ye) = toPoint pe
+
+toCloseTo :: MeshCloseTo -> P.CloseTo
+toCloseTo MeshCloseTo = P.CloseLineTo
+toCloseTo (MeshCloseCurveTo p1 p2) = P.CloseCurveTo x1 y1 x2 y2
+	where (x1, y1) = toPoint p1; (x2, y2) = toPoint p2
+
+toColor :: Rgba Double -> M.Color
+toColor = M.ColorRgba . rgbaRealToFrac
+
+toPoint' :: I.Point -> M.Point
+toPoint' p = let (x, y) = toPoint p in M.Point x y
 
 makeMaskPattern :: Pattern 'Alpha -> IO (CairoPatternT RealWorld)
 makeMaskPattern = \case
