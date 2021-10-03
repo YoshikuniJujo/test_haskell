@@ -96,7 +96,7 @@ deriving instance Show (SurfaceTypeColor t)
 data PatternNonSolid t
 	= PatternSurface (Surface t)
 	| PatternGradient GradientFrame [(Double, SurfaceTypeColor t)]
-	| PatternMesh MeshPaths MeshColors MeshControlPoints
+	| PatternMesh [PatternQuadrangle]
 	deriving Show
 
 data GradientFrame
@@ -105,6 +105,9 @@ data GradientFrame
 	deriving Show
 
 data Circle = Circle (Double, Double) Double deriving Show
+
+data PatternQuadrangle =
+	PatternQuadrangle MeshPaths MeshColors MeshControlPoints deriving Show
 
 data MeshPaths = MeshPaths
 	MeshMoveTo MeshLineCurveTo MeshLineCurveTo MeshLineCurveTo MeshCloseTo
