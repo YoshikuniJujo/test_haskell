@@ -38,11 +38,14 @@ operators = [OperatorClear .. OperatorHslLuminosity]
 
 porterDuff :: Double -> Double -> Operator -> Clip 'Rgba
 porterDuff x0 y0 op = Clip {
-	clipBounds = [[Rectangle l t 192 152]],
+	clipBounds = [Bound FillRuleWinding [Rectangle l t 192 152]],
 	clipDraws = ichimatsu l t 100 100 ++ [
 		Draw {
 			drawOperator = OperatorOver,
-			drawSource = Source $ PatternNonSolid (Transform 1 0 0 1 (- l') (- t')) (PatternSurface $ sample op),
+			drawSource = Source $ PatternNonSolid PatternFilterGood
+				PatternExtendNone
+				(Transform 1 0 0 1 (- l') (- t'))
+				(PatternSurface $ sample op),
 			drawMask = MaskPaint 1 }
 		]
 	}
@@ -58,12 +61,12 @@ sample op = Surface {
 				drawOperator = OperatorOver,
 				drawSource = Source . PatternSolid . ColorRgba
 					. fromJust $ rgbaDouble 0.7 0 0 0.8,
-				drawMask = MaskFill [Rectangle 0 0 120 90] },
+				drawMask = MaskFill FillRuleWinding [Rectangle 0 0 120 90] },
 			Draw {
 				drawOperator = op,
 				drawSource = Source . PatternSolid . ColorRgba
 					. fromJust $ rgbaDouble 0 0 0.9 0.4,
-				drawMask = MaskFill [Rectangle 40 30 120 90] }
+				drawMask = MaskFill FillRuleWinding [Rectangle 40 30 120 90] }
 			] } ] }
 
 ichimatsu :: Double -> Double -> Int -> Int -> [Draw 'Rgba]
@@ -83,4 +86,4 @@ graySquare l s x y = Draw {
 	drawOperator = OperatorOver,
 	drawSource = Source . PatternSolid . ColorRgba
 		. fromJust $ rgbaDouble l l l 1.0,
-	drawMask = MaskFill [Rectangle x y s s] }
+	drawMask = MaskFill FillRuleWinding [Rectangle x y s s] }

@@ -26,6 +26,7 @@ dependencies:
 - union-angle
 - simple-cairo
 - cairo-image
+- union-color
 - JuicyCairo
 - simple-pango
 

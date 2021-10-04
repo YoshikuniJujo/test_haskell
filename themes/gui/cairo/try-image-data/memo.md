@@ -8,18 +8,17 @@ todo
 * [x] Surface
 	+ [x] vector
 	+ [x] raster
-* [ ] Transform
+* [x] Transform
 	+ [x] copy transformation to Path
-	+ [ ] copy transformation to Gradient
-	+ [ ] copy transformation to Mesh
 	+ [x] remove transformation from Draw
 * [ ] Source
-* [ ] Mask
-	+ [ ] MaskAlpha
+	+ consider to remove
+* [x] Mask
+	+ [x] MaskAlpha
 	+ [x] MaskPaint
-	+ [ ] MaskStroke
+	+ [x] MaskStroke
 		- [x] line width
-		- [ ] dash
+		- [x] dash
 		- [x] line cap
 		- [x] line join
 			* [x] miter
@@ -27,32 +26,38 @@ todo
 				+ [x] others
 			* [x] round
 			* [x] bevel
-	+ [ ] MaskFill
-		- [ ] fill rule
+	+ [x] MaskFill
+		- [x] fill rule
 	+ [x] MaskTextLayout
-* [ ] Alpha
-* [ ] Pattern
+* [x] Pattern
 	+ [x] PatternSolid
-	+ [ ] PatternNonSolid
-		- [ ] filter
-		- [ ] extend
+	+ [x] PatternNonSolid
+		- [x] filter
+			* [x] make 128x128 ruster image
+			* [x] make 2x2 ruster image pattern
+			* [x] others
+		- [x] extend
 		- [x] matrix
-* [ ] PatternNonSolid
+* [x] PatternNonSolid
 	+ [x] PatternSurface
-	+ [ ] PatternGradientLinear
-	+ [ ] PatternGradientRadial
-	+ [ ] PatternMesh
-* [ ] Paths
+	+ [x] PatternGradientLinear
+	+ [x] PatternGradientRadial
+	+ [x] PatternMesh
+		- [x] implement
+		- [x] more trials
+* [x] Paths
 	+ [x] move to
 	+ [x] line to
+	+ [x] close path
 	+ [x] rectangle
 	+ [x] arc
-	+ [ ] others
-* [ ] Clip
+	+ [x] curve to
+* [x] Clip
 	+ [x] multi clip
 	+ [x] clip should be more large
-	+ [ ] add fill rule
+	+ [x] add fill rule
 * [x] Operator
+* [ ] consider to unify `CurveTo`, `LineTo`, `MoveTo`, `CloseTo` and so on
 
 Pattern
 ------

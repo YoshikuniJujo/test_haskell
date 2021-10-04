@@ -114,8 +114,52 @@ executable try-color
     , union-color
   default-language: Haskell2010
 
+executable try-fill-rule
+  main-is: try-fill-rule.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
 executable try-font
   main-is: try-font.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
+executable try-gradient
+  main-is: try-gradient.hs
   other-modules:
       Main
       Paths_try_image_data
@@ -333,6 +377,28 @@ executable try-line
     , union-color
   default-language: Haskell2010
 
+executable try-mesh
+  main-is: try-mesh.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
 executable try-operator
   main-is: try-operator.hs
   other-modules:
@@ -355,8 +421,74 @@ executable try-operator
     , union-color
   default-language: Haskell2010
 
+executable try-pattern-extend
+  main-is: try-pattern-extend.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
+executable try-pattern-filter
+  main-is: try-pattern-filter.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
 executable try-shape
   main-is: try-shape.hs
+  other-modules:
+      Main
+      Paths_try_image_data
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , try-image-data
+    , union-angle
+    , union-color
+  default-language: Haskell2010
+
+executable try-surface-mask
+  main-is: try-surface-mask.hs
   other-modules:
       Main
       Paths_try_image_data

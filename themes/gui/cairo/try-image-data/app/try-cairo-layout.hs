@@ -16,7 +16,7 @@ main = (`makePng` "pngs/try-cairo-layout.png") =<< makeSurface Surface {
 	surfaceBase = SurfaceBaseBlank {
 		surfaceBaseWidth = 768, surfaceBaseHeight = 896 },
 	surfaceClips = [
-		Clip {	clipBounds = [[Rectangle 8 8 752 880]],
+		Clip {	clipBounds = [Bound FillRuleWinding [Rectangle 8 8 752 880]],
 			clipDraws = [
 				Draw {	drawOperator = OperatorOver,
 					drawSource = Source
@@ -40,7 +40,9 @@ main = (`makePng` "pngs/try-cairo-layout.png") =<< makeSurface Surface {
 						. PatternSolid . ColorRgba . fromJust $ rgbaDouble 0.5 0.2 0.1 1.0,
 					drawMask = MaskStroke (LineWidth 64) (LineDash [] 0) LineCapButt (LineJoinMiter 100) [
 						ArcNegative 512 384 96 (Degree 0) (Degree 120) ] } ] },
-		Clip {	clipBounds = [[Rectangle 128 512 128 128], [Arc 224 512 64 (Degree 0) (Degree 360)]],
+		Clip {	clipBounds = [
+				Bound FillRuleWinding [Rectangle 128 512 128 128],
+				Bound FillRuleWinding[Arc 224 512 64 (Degree 0) (Degree 360)]],
 			clipDraws = [
 				Draw {	drawOperator = OperatorOver,
 					drawSource = Source

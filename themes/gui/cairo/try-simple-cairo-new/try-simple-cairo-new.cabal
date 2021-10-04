@@ -39,6 +39,7 @@ library
     , simple-pango
     , text
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-arc
@@ -59,6 +60,7 @@ executable try-arc
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-fill
@@ -79,6 +81,7 @@ executable try-fill
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-line-join
@@ -99,6 +102,7 @@ executable try-line-join
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-pattern
@@ -119,6 +123,7 @@ executable try-pattern
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-porter-duff
@@ -139,6 +144,7 @@ executable try-porter-duff
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-simple-cairo-new-exe
@@ -158,6 +164,7 @@ executable try-simple-cairo-new-exe
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-sloth
@@ -178,6 +185,7 @@ executable try-sloth
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 executable try-transform
@@ -198,6 +206,7 @@ executable try-transform
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
 
 test-suite try-simple-cairo-new-test
@@ -218,4 +227,5 @@ test-suite try-simple-cairo-new-test
     , text
     , try-simple-cairo-new
     , union-angle
+    , union-color
   default-language: Haskell2010
