@@ -32,6 +32,8 @@ void init(void)
 int
 main(int argc, char *argv[])
 {
+	glutInitWindowPosition(100, 100);
+	glutInitWindowSize(320, 240);
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA);
 	glutCreateWindow(argv[0]);
