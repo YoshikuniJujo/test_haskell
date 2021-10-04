@@ -38,13 +38,13 @@ todo
 			* [x] others
 		- [x] extend
 		- [x] matrix
-* [ ] PatternNonSolid
+* [x] PatternNonSolid
 	+ [x] PatternSurface
 	+ [x] PatternGradientLinear
 	+ [x] PatternGradientRadial
-	+ [ ] PatternMesh
+	+ [x] PatternMesh
 		- [x] implement
-		- [ ] more trials
+		- [x] more trials
 * [x] Paths
 	+ [x] move to
 	+ [x] line to
