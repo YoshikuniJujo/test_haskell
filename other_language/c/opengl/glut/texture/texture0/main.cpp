@@ -19,7 +19,7 @@ static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* 環境光強度 */
 
 #define TEXWIDTH 256
 #define TEXHEIGHT 256
-static const char texture1[] = "tire.raw";
+static const char texture1[] = "tire2.raw";
 
 /*
 ** 初期化
@@ -27,7 +27,7 @@ static const char texture1[] = "tire.raw";
 static void init(void)
 {
 
-	GLubyte texture[TEXHEIGHT][TEXWIDTH][3];
+	GLubyte texture[TEXHEIGHT][TEXWIDTH][4];
 	FILE *fp;
 
 	if ((fp = fopen(texture1, "rb")) != NULL) {
@@ -38,13 +38,26 @@ static void init(void)
 		perror(texture1);
 	}
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, TEXWIDTH, TEXHEIGHT,
-		GL_RGB, GL_UNSIGNED_BYTE, texture);
+	gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, TEXWIDTH, TEXHEIGHT,
+		GL_RGBA, GL_UNSIGNED_BYTE, texture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+
+#if 0
+	static const GLfloat blend[] = { 0.0, 1.0, 0.0, 1.0 };
+	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, blend);
+#endif
+
+	glAlphaFunc(GL_GREATER, 0.5);
 
 /*
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXWIDTH, TEXHEIGHT, 0,
@@ -77,20 +90,27 @@ static void scene(void)
   /* 材質の設定 */
   glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 
+  glEnable(GL_ALPHA_TEST);
+// glDisable(GL_ALPHA_TEST);
+
   glEnable(GL_TEXTURE_2D);
   
   /* １枚の４角形を描く */
   glNormal3d(0.0, 0.0, 1.0);
   glBegin(GL_QUADS);
-  glTexCoord2d(0.0, 1.0);
+  glTexCoord2d(0.0, 2.0);
   glVertex3d(-1.0, -1.0,  0.0);
-  glTexCoord2d(1.0, 1.0);
+  glTexCoord2d(2.0, 2.0);
   glVertex3d( 1.0, -1.0,  0.0);
-  glTexCoord2d(1.0, 0.0);
+  glTexCoord2d(2.0, 0.0);
   glVertex3d( 1.0,  1.0,  0.0);
   glTexCoord2d(0.0, 0.0);
   glVertex3d(-1.0,  1.0,  0.0);
   glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+
+  glDisable(GL_ALPHA_TEST);
 }
 
 
@@ -100,8 +120,21 @@ static void scene(void)
 
 #include "trackball.h" /* トラックボール処理用関数の宣言 */
 
+#define FRAMES 360
+
 static void display(void)
 {
+	static int frame = 0;
+	double t = (double)frame / (double)FRAMES;
+
+	if (++frame >= FRAMES) frame = 0;
+
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glTranslated(0.5, 0.5, 0.0);
+	glRotated(t * 360.0, 0.0, 0.0, 1.0);
+	glTranslated(-1.0, -1.0, 0.0);
+
   /* モデルビュー変換行列の初期化 */
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();

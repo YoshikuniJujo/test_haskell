@@ -17,3 +17,6 @@ main = do
 	img <- readImageRGB8 fp
 	print . BS.length . BS.pack . V.toList $ imageData img
 	BS.writeFile "../texture0/tire.raw" . BS.pack . V.toList $ imageData img
+	img' <- readImageRGBA8 fp
+	print . BS.length . BS.pack . V.toList $ imageData img'
+	BS.writeFile "../texture0/tire2.raw" . BS.pack . V.toList $ imageData img'
