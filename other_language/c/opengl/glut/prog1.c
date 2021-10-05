@@ -86,6 +86,19 @@ motion(int x, int y)
 }
 
 void
+keyboard(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case 'q':
+	case 'Q':
+	case '\033':
+		exit(0);
+	default:
+		printf("%d\n", key);
+		break; }
+}
+
+void
 init(void)
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -103,6 +116,7 @@ main(int argc, char *argv[])
 	glutReshapeFunc(resize);
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
+	glutKeyboardFunc(keyboard);
 	init();
 	glutMainLoop();
 	return 0;
