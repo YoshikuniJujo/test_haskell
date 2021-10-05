@@ -41,6 +41,20 @@ GLdouble color[][3] = {
 	{ 1.0, 0.0, 1.0 },
 	{ 0.0, 1.0, 1.0 } };
 
+GLdouble normal[][3] = {
+	{  0.0,  0.0, -1.0 },
+	{  1.0,  0.0,  0.0 },
+	{  0.0,  0.0,  1.0 },
+	{ -1.0,  0.0,  0.0 },
+	{  0.0, -1.0,  0.0 },
+	{  0.0,  1.0,  0.0 } };
+
+GLfloat light0pos[] = { 0.0, 3.0, 5.0, 1.0 };
+GLfloat light1pos[] = { 5.0, 3.0, 0.0, 1.0 };
+
+GLfloat green[] = { 0.0, 1.0, 0.0, 1.0 };
+GLfloat red[] = { 0.8, 0.2, 0.2, 1.0 };
+
 void
 idle(void)
 {
@@ -58,12 +72,19 @@ display (void)
 
 	glLoadIdentity();
 	gluLookAt(3.0, 4.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
+	glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+
 	glRotated((double) r, 0.0, 1.0, 0.0);
 
-	glColor3d(0.0, 0.0, 0.0);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, red);
+
+//	glColor3d(0.0, 0.0, 0.0);
 	glBegin(GL_QUADS);
 	for (j = 0; j < 6; ++j) {
-		glColor3dv(color[j]);
+		glNormal3dv(normal[j]);
+//		glColor3dv(color[j]);
 		for (i = 0; i < 4; ++i) {
 			glVertex3dv(vertex[face[j][i]]); } }
 	glEnd();
@@ -124,6 +145,9 @@ init(void)
 	glFrontFace(GL_CW);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 }
 
 int
