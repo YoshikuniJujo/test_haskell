@@ -12,6 +12,7 @@ import Data.Color
 import Data.CairoContext
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.CairoT.Setting
+import Graphics.Cairo.Drawing.CairoT.CairoOperatorT
 import Graphics.Cairo.Drawing.Paths
 import Graphics.Cairo.Drawing.Transformations
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
@@ -55,8 +56,8 @@ layoutArc cr fd a0 cs = for_ ([a0, a0 + (pi / 16) ..] `zip` cs) \(a, c) ->
 
 main :: IO ()
 main = pngWith "pngs/try-logo.png" 256 256 \cr -> do
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.3 0.3 0.3
-	cairoPaint cr
+--	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.3 0.3 0.3
+--	cairoPaint cr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.15 0.15 0.15
 	cairoArc cr 128 128 128 0 (2 * pi)
@@ -67,11 +68,14 @@ main = pngWith "pngs/try-logo.png" 256 256 \cr -> do
 	cairoFill cr
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.15 0.15 0.15
+	cairoSet cr OperatorClear
 	cairoSet cr $ LineWidth 12
 	cairoSet cr LineCapRound
 	cairoSet cr $ Dash [32, 20] 0
 	cairoArc cr 128 128 68 (- pi / 2) (3 / 2 * pi)
 	cairoStroke cr
+
+	cairoSet cr OperatorOver
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
 	fd_ <- pangoFontDescriptionNew
