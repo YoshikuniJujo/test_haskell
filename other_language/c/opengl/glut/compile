@@ -1,1 +1,1 @@
-gcc `pkg-config --cflags --libs opengl glu glut` $1 -o ${1%.*}
+gcc `pkg-config --cflags --libs opengl glu glut glew` $1 -o ${1%.*}
