@@ -25,15 +25,35 @@ source-repository head
 
 library
   exposed-modules:
+      Fbo
       Lib
   other-modules:
       Paths_try_gdk_gl
   hs-source-dirs:
       src
   build-depends:
-      OpenGL
+      GLUT
+    , OpenGL
     , base >=4.7 && <5
+    , simple-cairo
     , simple-gdk3
+  default-language: Haskell2010
+
+executable try-fbo
+  main-is: try-fbo.hs
+  other-modules:
+      Main
+      Paths_try_gdk_gl
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLUT
+    , OpenGL
+    , base >=4.7 && <5
+    , simple-cairo
+    , simple-gdk3
+    , try-gdk-gl
   default-language: Haskell2010
 
 executable try-gdk-gl-exe
@@ -44,8 +64,10 @@ executable try-gdk-gl-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      OpenGL
+      GLUT
+    , OpenGL
     , base >=4.7 && <5
+    , simple-cairo
     , simple-gdk3
     , try-gdk-gl
   default-language: Haskell2010
@@ -59,8 +81,10 @@ test-suite try-gdk-gl-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      OpenGL
+      GLUT
+    , OpenGL
     , base >=4.7 && <5
+    , simple-cairo
     , simple-gdk3
     , try-gdk-gl
   default-language: Haskell2010
