@@ -25,6 +25,8 @@ dependencies:
 - simple-cairo
 - GLUT
 - OpenGL
+- x-keysym
+- union-color
 
 library:
   source-dirs: src

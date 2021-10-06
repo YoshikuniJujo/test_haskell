@@ -24,6 +24,7 @@ main = do
 	callbacks wdt hgt
 
 	(fb, cb) <- initializeFbo fboWidth fboHeight
+	print cb
 	displayCallback $= do
 		drawFramebuffer fb fboWidth fboHeight
 		drawTexture cb wdt hgt
