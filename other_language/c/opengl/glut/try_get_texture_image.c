@@ -1,32 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define GL_GLEXT_PROTOTYPES
+#include <GL/glut.h>
 
-#if defined(WIN32)
-//#  pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
-#  pragma comment(lib, "glew32.lib")
-#  include "glew.h"
-#  include "glut.h"
-#elif defined(__APPLE__) || defined(MACOSX)
-#  include <GLUT/glut.h>
-#else
-#  define GL_GLEXT_PROTOTYPES
-#  include <GL/glut.h>
-#endif
+static int width, height;
 
-static int width, height;   // ?E?B???h?E?̕??ƍ???
-
-#define FBOWIDTH 16
+#define FBOWIDTH 64
 #define FBOHEIGHT 32
 
 static GLuint fb;
 static GLuint cb;
 static GLuint rb;
 
-GLubyte image[32][16][4];
+GLubyte image[FBOHEIGHT][FBOWIDTH][4];
 
-/*
-** ??????
-*/
 static void init(void)
 {
 
@@ -53,47 +40,35 @@ static void init(void)
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  // ?w?i?F
   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-  // ????
   glEnable(GL_LIGHT0);
 }
 
-/*
-** ???ʕ\??
-*/
 static void display(void)
 {
-  // ?????ϊ??s???̐ݒ?
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(30.0, (GLdouble)width / (GLdouble)height, 1.0, 10.0);
 
-  // ???f???r???[?ϊ??s???̐ݒ?
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   gluLookAt(3.0, 4.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
   
-  // ?r???[?|?[?g?̐ݒ?
   glViewport(0, 0, FBOWIDTH, FBOHEIGHT);
 
-  // ?B?ʏ��????L???ɂ???
   glEnable(GL_DEPTH_TEST);
 
-  // ?A?e?t?????L???ɂ???
   glEnable(GL_LIGHTING);
 
   glBindFramebuffer(GL_FRAMEBUFFER, fb);
 
-  // ?J???[?o?b?t?@?ƃf?v?X?o?b?t?@???N???A
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  // ?V?[???̕`??
   glutSolidTeapot(1.0);
   glFlush();
 
-  glGetTextureImage(cb, 0, GL_RGBA, GL_UNSIGNED_BYTE, 32 * 32 * 4, image);
+  glGetTextureImage(cb, 0, GL_RGBA, GL_UNSIGNED_BYTE, FBOWIDTH * FBOHEIGHT * 4, image);
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -127,31 +102,40 @@ static void display(void)
   glFlush();
 }
 
-/*
-** ?E?B???h?E?T?C?Y?̕ύX
-*/
 static void resize(int w, int h)
 {
-  // ?E?B???h?E?̃T?C?Y???ۑ?????
   width = w;
   height = h;
 }
 
-/*
-** ?L?[?{?[?h????
-*/
+void
+dot(GLubyte px[])
+{
+	int n = (int)px[0] + (int)px[1] + (int)px[2];
+	if (n < 0xc0) printf(" ");
+	else if (n < 0x180) printf(".");
+	else if (n < 0x240) printf("+");
+	else printf("*");
+}
+
 static void keyboard(unsigned char key, int x, int y)
 {
   switch (key) {
   case 'q':
   case 'Q':
   case '\033':
-    // ESC ?? q ?? Q ???^?C?v???????I??
-	for (int i = 0; i < 32; i++) {
-  		for (int j = 0; j < 16; j++) {
+	for (int i = 0; i < FBOHEIGHT; i++) {
+		for (int j = 0; j < FBOWIDTH; j++) {
 			for (int k = 0; k < 4; k++) {
 				printf("%02x", image[i][j][k]);
 			}
+			printf(" ");
+		}
+		printf("\n");
+	}
+	for (int i = 0; i < FBOHEIGHT; i++) {
+		for (int j = 0; j < FBOWIDTH; j++) {
+			dot(image[i][j]);
 			printf(" ");
 		}
 		printf("\n");
@@ -162,9 +146,6 @@ static void keyboard(unsigned char key, int x, int y)
   }
 }
 
-/*
-** ???C???v???O????
-*/
 int main(int argc, char *argv[])
 {
   glutInit(&argc, argv);
