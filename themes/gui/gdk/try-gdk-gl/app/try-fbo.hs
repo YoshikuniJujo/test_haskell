@@ -10,7 +10,6 @@ import Control.Monad
 import Data.Bool
 import Data.IORef
 import Graphics.UI.GLUT
-import System.Environment
 
 import Fbo
 
@@ -20,13 +19,9 @@ fboWidth = 512; fboHeight = 512
 main :: IO ()
 main = do
 	(wdt, hgt) <- (,) <$> newIORef 0 <*> newIORef 0
-	pn <- getProgName
-	void $ initialize pn =<< getArgs
+	(pn, _) <- initializeGlut
 	void $ createWindow pn
-	reshapeCallback $= Just \(Size w h) ->
-		writeIORef wdt w >> writeIORef hgt h
-	keyboardCallback $= Just \c p ->
-		print (c, p) >> bool (return ()) leaveMainLoop (c == 'q')
+	callbacks wdt hgt
 
 	(fb, cb) <- initializeFbo fboWidth fboHeight
 	displayCallback $= do
@@ -34,3 +29,10 @@ main = do
 		drawTexture cb wdt hgt
 
 	mainLoop
+
+callbacks :: IORef GLsizei -> IORef GLsizei -> IO ()
+callbacks wdt hgt = do
+	reshapeCallback $= Just \(Size w h) ->
+		writeIORef wdt w >> writeIORef hgt h
+	keyboardCallback $= Just \c p ->
+		print (c, p) >> bool (return ()) leaveMainLoop (c == 'q')

@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,7 +6,13 @@ module Fbo where
 
 import Foreign.Ptr
 import Data.IORef
+import System.Environment
 import Graphics.UI.GLUT
+
+initializeGlut :: IO (String, [String])
+initializeGlut = do
+	pn <- getProgName
+	(pn ,) <$> (initialize pn =<< getArgs)
 
 drawFramebuffer :: FramebufferObject -> GLsizei -> GLsizei -> DisplayCallback
 drawFramebuffer fb fw fh = do
