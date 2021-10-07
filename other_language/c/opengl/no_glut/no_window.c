@@ -51,6 +51,7 @@ make_texture(double sz)
 	glViewport(0, 0, FBOWIDTH, FBOHEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, fb);
 
+	// BIG SQUARE
 	glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(-0.9, -0.9);
@@ -59,6 +60,7 @@ make_texture(double sz)
 	glVertex2d(-0.9, 0.9);
 	glEnd();
 
+	// SMALL SQUARE
 	glBegin(GL_LINE_LOOP);
 	glVertex2d(0.0, 0.0);
 	glVertex2d(sz, 0.0);
@@ -70,80 +72,24 @@ make_texture(double sz)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-/*
- * Create an RGB, double-buffered window.
- * Return the window and context handles.
- */
 static void
-make_window( Display *dpy, const char *name,
-             int x, int y, int width, int height,
-             GLXContext *ctxRet)
+make_context(Display *dpy, GLXContext *ctxRet)
 {
-   int attribs[64];
-   int i = 0;
+	GLXContext ctx;
+	XVisualInfo *visinfo;
+	int attrs[] = { None };
 
-   int scrnum;
-   XSetWindowAttributes attr;
-   unsigned long mask;
-   Window root;
-   Window win;
-   GLXContext ctx;
-   XVisualInfo *visinfo;
+	visinfo = glXChooseVisual(dpy, DefaultScreen(dpy), attrs);
+	if (!visinfo) {
+		printf("Error: couldn't get an RGB, Double-buffered visual\n");
+		exit(1); }
+	ctx = glXCreateContext( dpy, visinfo, NULL, True );
+	if (!ctx) {
+		printf("Error: glXCreateContext failed\n"); exit(1); }
 
-   attribs[i++] = GLX_RGBA;
-   attribs[i++] = GLX_DOUBLEBUFFER;
-
-   attribs[i++] = GLX_RED_SIZE;
-   attribs[i++] = 1;
-   attribs[i++] = GLX_GREEN_SIZE;
-   attribs[i++] = 1;
-   attribs[i++] = GLX_BLUE_SIZE;
-   attribs[i++] = 1;
-   attribs[i++] = GLX_DEPTH_SIZE;
-   attribs[i++] = 1;
-
-   attribs[i++] = None;
-
-   scrnum = DefaultScreen( dpy );
-   root = RootWindow( dpy, scrnum );
-
-   visinfo = glXChooseVisual(dpy, scrnum, attribs);
-   if (!visinfo) {
-      printf("Error: couldn't get an RGB, Double-buffered");
-      printf(" visual\n");
-      exit(1);
-   }
-
-   /* window attributes */
-   attr.background_pixel = 0;
-   attr.border_pixel = 0;
-   attr.colormap = XCreateColormap( dpy, root, visinfo->visual, AllocNone);
-   attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
-   /* XXX this is a bad way to get a borderless window! */
-   mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-   /* set hints and properties */
-   {
-      XSizeHints sizehints;
-      sizehints.x = x;
-      sizehints.y = y;
-      sizehints.width  = width;
-      sizehints.height = height;
-      sizehints.flags = USSize | USPosition;
-   }
-
-   ctx = glXCreateContext( dpy, visinfo, NULL, True );
-   if (!ctx) {
-      printf("Error: glXCreateContext failed\n");
-      exit(1);
-   }
-
-   XFree(visinfo);
-
-   *ctxRet = ctx;
+	XFree(visinfo);
+	*ctxRet = ctx;
 }
-
-double size = 0.8;
 
 void
 dot(GLubyte px[])
@@ -156,48 +102,45 @@ dot(GLubyte px[])
 	else printf("#");
 }
 
+void
+output_image(GLubyte img[FBOHEIGHT][FBOWIDTH][4])
+{
+	FILE *fp = fopen("no_window.raw", "w");
+	fwrite(img, 4, FBOWIDTH * FBOHEIGHT, fp);
+	fclose(fp);
+
+	for (int i = 0; i < FBOHEIGHT; i++) {
+		for (int j = 0; j < FBOWIDTH; j ++) {
+			dot(img[i][j]); }
+		printf("\n"); }
+}
+
 int
 main(int argc, char *argv[])
 {
-   unsigned int winWidth = 300, winHeight = 300;
-   int x = 0, y = 0;
-   Display *dpy;
-   GLXContext ctx;
-   char *dpyName = NULL;
-   int i;
+	Display *dpy;
+	GLXContext ctx;
+	double size = 0.8;
 
-   if (argc == 2) {
-   	double s = atof(argv[1]);
-	printf("%f\n", s);
-   	if (0.1 <= s && s < 0.8) { size = s; } }
+	if (argc == 2) {
+		double s = atof(argv[1]);
+		if (0.1 <= s && s < 0.8) { size = s; } }
 
-   dpy = XOpenDisplay(dpyName);
-   if (!dpy) {
-      printf("Error: couldn't open display %s\n",
-	     dpyName ? dpyName : getenv("DISPLAY"));
-      return -1; }
-
-   make_window(dpy, "glxgears", x, y, winWidth, winHeight, &ctx);
-   glXMakeCurrent(dpy, None, ctx);
-
-   init();
+	dpy = XOpenDisplay(NULL);
+	if (!dpy) {
+		printf("Error: couldn't open display %s\n", getenv("DISPLAY"));
+		return -1; }
+	make_context(dpy, &ctx);
+	glXMakeCurrent(dpy, None, ctx);
+	init();
 	make_texture(size);
-	glGetTextureImage(cb, 0, GL_RGBA, GL_UNSIGNED_BYTE, FBOWIDTH * FBOHEIGHT * 4, image);
+	glGetTextureImage(
+		cb, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		FBOWIDTH * FBOHEIGHT * 4, image );
+	glXMakeCurrent(dpy, None, NULL);
+	glXDestroyContext(dpy, ctx);
+	XCloseDisplay(dpy);
 
-   glXMakeCurrent(dpy, None, NULL);
-   glXDestroyContext(dpy, ctx);
-   XCloseDisplay(dpy);
-
-   FILE *fp = fopen("no_window.raw", "w");
-   fwrite(image, 4, FBOWIDTH * FBOHEIGHT, fp);
-   fclose(fp);
-
-   for (int i = 0; i < FBOHEIGHT; i++) {
-   	for (int j = 0; j < FBOWIDTH; j ++) {
-		dot(image[i][j]);
-	}
-	printf("\n");
-   }
-
-   return 0;
+	output_image(image);
+	return 0;
 }
