@@ -3,11 +3,6 @@
 #define GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
 
-/* Event handler results: */
-#define NOP 0
-#define EXIT 1
-#define DRAW 2
-
 /* Image size */
 #define FBOWIDTH 64
 #define FBOHEIGHT 32
@@ -17,8 +12,6 @@ GLubyte image[FBOHEIGHT][FBOWIDTH][4];
 static GLuint fb;
 static GLuint cb;
 static GLuint rb;
-
-int globalWidth, globalHeight;
 
 static void
 init(void)
@@ -77,45 +70,6 @@ make_texture(double sz)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static void
-display_texture(void)
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glViewport(0, 0, globalWidth, globalHeight);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glBindTexture(GL_TEXTURE_2D, cb);
-	glEnable(GL_TEXTURE_2D);
-
-	glColor3d(1.0, 1.0, 1.0);
-	glBegin(GL_TRIANGLE_FAN);
-	glTexCoord2d(0.0, 0.0);
-	glVertex2d(-1.0, -1.0);
-	glTexCoord2d(1.0, 0.0);
-	glVertex2d(1.0, -1.0);
-	glTexCoord2d(1.0, 1.0);
-	glVertex2d(1.0, 1.0);
-	glTexCoord2d(0.0, 1.0);
-	glVertex2d(-1.0, 1.0);
-	glEnd();
-
-	glDisable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-/* new window size or exposure */
-static void
-reshape(int width, int height)
-{
-	globalWidth = width;
-	globalHeight = height;
-	glViewport(0, 0, (GLint) width, (GLint) height);
-}
-
 /*
  * Create an RGB, double-buffered window.
  * Return the window and context handles.
@@ -123,7 +77,7 @@ reshape(int width, int height)
 static void
 make_window( Display *dpy, const char *name,
              int x, int y, int width, int height,
-             Window *winRet, GLXContext *ctxRet)
+             GLXContext *ctxRet)
 {
    int attribs[64];
    int i = 0;
@@ -136,11 +90,9 @@ make_window( Display *dpy, const char *name,
    GLXContext ctx;
    XVisualInfo *visinfo;
 
-   /* Singleton attributes. */
    attribs[i++] = GLX_RGBA;
    attribs[i++] = GLX_DOUBLEBUFFER;
 
-   /* Key/value attributes. */
    attribs[i++] = GLX_RED_SIZE;
    attribs[i++] = 1;
    attribs[i++] = GLX_GREEN_SIZE;
@@ -170,10 +122,6 @@ make_window( Display *dpy, const char *name,
    /* XXX this is a bad way to get a borderless window! */
    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-   win = XCreateWindow( dpy, root, x, y, width, height,
-		        0, visinfo->depth, InputOutput,
-		        visinfo->visual, mask, &attr );
-
    /* set hints and properties */
    {
       XSizeHints sizehints;
@@ -182,9 +130,6 @@ make_window( Display *dpy, const char *name,
       sizehints.width  = width;
       sizehints.height = height;
       sizehints.flags = USSize | USPosition;
-      XSetNormalHints(dpy, win, &sizehints);
-      XSetStandardProperties(dpy, win, name, name,
-                              None, (char **)NULL, 0, &sizehints);
    }
 
    ctx = glXCreateContext( dpy, visinfo, NULL, True );
@@ -195,64 +140,10 @@ make_window( Display *dpy, const char *name,
 
    XFree(visinfo);
 
-   *winRet = win;
    *ctxRet = ctx;
 }
 
-/**
- * Handle one X event.
- * \return NOP, EXIT or DRAW
- */
-static int
-handle_event(Display *dpy, Window win, XEvent *event)
-{
-   (void) dpy;
-   (void) win;
-
-   switch (event->type) {
-   case Expose:
-      return DRAW;
-   case ConfigureNotify:
-      reshape(event->xconfigure.width, event->xconfigure.height);
-      break;
-   case KeyPress:
-      {
-         char buffer[10];
-            XLookupString(&event->xkey, buffer, sizeof(buffer),
-                          NULL, NULL);
-            if (buffer[0] == 27 || buffer[0] == 'q') {
-               /* escape */
-	       glGetTextureImage(cb, 0, GL_RGBA, GL_UNSIGNED_BYTE, FBOWIDTH * FBOHEIGHT * 4, image);
-               return EXIT;
-            }
-         return DRAW;
-      }
-   }
-   return NOP;
-}
-
 double size = 0.8;
-
-static void
-event_loop(Display *dpy, Window win)
-{
-   while (1) {
-      int op;
-      while (XPending(dpy) > 0) {
-         XEvent event;
-         XNextEvent(dpy, &event);
-         op = handle_event(dpy, win, &event);
-         if (op == EXIT)
-            return;
-         else if (op == DRAW)
-            break;
-      }
-
-	make_texture(size);
-	display_texture();
-	glXSwapBuffers(dpy, win);
-   }
-}
 
 void
 dot(GLubyte px[])
@@ -271,15 +162,14 @@ main(int argc, char *argv[])
    unsigned int winWidth = 300, winHeight = 300;
    int x = 0, y = 0;
    Display *dpy;
-   Window win;
    GLXContext ctx;
    char *dpyName = NULL;
    int i;
 
    if (argc == 2) {
-	double s = atof(argv[1]);
+   	double s = atof(argv[1]);
 	printf("%f\n", s);
-	if (0.1 <= s && s < 0.8) { size = s; } }
+   	if (0.1 <= s && s < 0.8) { size = s; } }
 
    dpy = XOpenDisplay(dpyName);
    if (!dpy) {
@@ -287,31 +177,23 @@ main(int argc, char *argv[])
 	     dpyName ? dpyName : getenv("DISPLAY"));
       return -1; }
 
-   make_window(dpy, "glxgears", x, y, winWidth, winHeight, &win, &ctx);
-   XMapWindow(dpy, win);
-   glXMakeCurrent(dpy, win, ctx);
+   make_window(dpy, "glxgears", x, y, winWidth, winHeight, &ctx);
+   glXMakeCurrent(dpy, None, ctx);
 
    init();
-
-   /* Set initial projection/viewing transformation.
-    * We can't be sure we'll get a ConfigureNotify event when the window
-    * first appears.
-    */
-   reshape(winWidth, winHeight);
-
-   event_loop(dpy, win);
+	make_texture(size);
+	glGetTextureImage(cb, 0, GL_RGBA, GL_UNSIGNED_BYTE, FBOWIDTH * FBOHEIGHT * 4, image);
 
    glXMakeCurrent(dpy, None, NULL);
    glXDestroyContext(dpy, ctx);
-   XDestroyWindow(dpy, win);
    XCloseDisplay(dpy);
 
-   FILE *fp = fopen("simple.raw", "w");
+   FILE *fp = fopen("no_window.raw", "w");
    fwrite(image, 4, FBOWIDTH * FBOHEIGHT, fp);
    fclose(fp);
 
    for (int i = 0; i < FBOHEIGHT; i++) {
-	for (int j = 0; j < FBOWIDTH; j ++) {
+   	for (int j = 0; j < FBOWIDTH; j ++) {
 		dot(image[i][j]);
 	}
 	printf("\n");
