@@ -1,1 +1,1 @@
-gcc `pkg-config --cflags --libs gl glx x11` -lm $1 -o ${1%.*}
+gcc `pkg-config --cflags --libs gl glew glx x11` -lm $1 -o ${1%.*}

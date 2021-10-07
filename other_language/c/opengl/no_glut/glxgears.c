@@ -33,6 +33,7 @@
 #include <string.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
@@ -51,6 +52,8 @@ typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
 
 #include <sys/time.h>
 #include <unistd.h>
+
+int globalWidth, globalHeight;
 
 /* return current time (in seconds) */
 static double
@@ -108,6 +111,14 @@ static GLfloat eyesep = 5.0;		/* Eye separation. */
 static GLfloat fix_point = 40.0;	/* Fixation point distance.  */
 static GLfloat left, right, asp;	/* Stereo frustum params.  */
 
+#define FBOWIDTH 512
+#define FBOHEIGHT 512
+
+GLubyte image[FBOHEIGHT][FBOWIDTH][4];
+
+static GLuint fb;
+static GLuint cb;
+static GLuint rb;
 
 /*
  *
@@ -251,6 +262,9 @@ gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width,
 static void
 draw(void)
 {
+	glViewport(0, 0, FBOWIDTH, FBOHEIGHT);
+   glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glPushMatrix();
@@ -277,6 +291,37 @@ draw(void)
    glPopMatrix();
 
    glPopMatrix();
+
+   glFlush();
+   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+   glViewport(0, 0, globalWidth, globalHeight);
+   glDisable(GL_LIGHTING);
+   glDisable(GL_DEPTH_TEST);
+   glBindTexture(GL_TEXTURE_2D, cb);
+   glEnable(GL_TEXTURE_2D);
+
+   glColor3d(1.0, 1.0, 1.0);
+   glBegin(GL_TRIANGLE_FAN);
+   glTexCoord2d(0.0, 0.0);
+   glVertex2d(-1.0, -1.0);
+   glTexCoord2d(1.0, 0.0);
+   glVertex2d(1.0, -1.0);
+   glTexCoord2d(1.0, 1.0);
+   glVertex2d(1.0, 1.0);
+   glTexCoord2d(0.0, 1.0);
+   glVertex2d(-1.0, 1.0);
+   glEnd();
+
+   glDisable(GL_TEXTURE_2D);
+   glEnable(GL_LIGHTING);
+   glEnable(GL_DEPTH_TEST);
+   glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 
@@ -342,7 +387,7 @@ draw_frame(Display *dpy, Window win)
    glXSwapBuffers(dpy, win);
 
    frames++;
-   
+
    if (tRate0 < 0.0)
       tRate0 = t;
    if (t - tRate0 >= 5.0) {
@@ -356,11 +401,13 @@ draw_frame(Display *dpy, Window win)
    }
 }
 
-
 /* new window size or exposure */
 static void
 reshape(int width, int height)
 {
+	globalWidth = width;
+	globalHeight = height;
+
    glViewport(0, 0, (GLint) width, (GLint) height);
 
    if (stereo) {
@@ -379,13 +426,11 @@ reshape(int width, int height)
       glLoadIdentity();
       glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
    }
-   
+
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
    glTranslatef(0.0, 0.0, -40.0);
 }
-   
-
 
 static void
 init(void)
@@ -421,6 +466,31 @@ init(void)
    glEndList();
 
    glEnable(GL_NORMALIZE);
+
+   glGenTextures(1, &cb);
+   printf("%d\n", cb);
+   glBindTexture(GL_TEXTURE_2D, cb);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, FBOWIDTH, FBOHEIGHT, 0, GL_RGBA,
+	GL_UNSIGNED_BYTE, 0);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   glGenRenderbuffers(1, &rb);
+   printf("%d\n", rb);
+   glBindRenderbuffer(GL_RENDERBUFFER, rb);
+   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+	FBOWIDTH, FBOHEIGHT);
+   glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+   glGenFramebuffers(1, &fb);
+   glBindFramebuffer(GL_FRAMEBUFFER, fb);
+
+   glFramebufferTexture2D(GL_FRAMEBUFFER,
+	GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, cb, 0);
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -669,8 +739,9 @@ handle_event(Display *dpy, Window win, XEvent *event)
          else {
             XLookupString(&event->xkey, buffer, sizeof(buffer),
                           NULL, NULL);
-            if (buffer[0] == 27) {
+            if (buffer[0] == 27 || buffer[0] == 'q') {
                /* escape */
+	       glGetTextureImage(cb, 0, GL_RGBA, GL_UNSIGNED_BYTE, FBOWIDTH * FBOHEIGHT * 4, image);
                return EXIT;
             }
             else if (buffer[0] == 'a' || buffer[0] == 'A') {
@@ -801,6 +872,11 @@ main(int argc, char *argv[])
    glXDestroyContext(dpy, ctx);
    XDestroyWindow(dpy, win);
    XCloseDisplay(dpy);
+
+   FILE *fp;
+   fp = fopen("image.raw", "w");
+   fwrite(image, 4, FBOWIDTH * FBOHEIGHT, fp);
+   fclose(fp);
 
    return 0;
 }
