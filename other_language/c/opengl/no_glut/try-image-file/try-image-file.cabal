@@ -34,6 +34,7 @@ library
       JuicyPixels
     , base >=4.7 && <5
     , bytestring
+    , filepath
   default-language: Haskell2010
 
 executable try-image-file-exe
@@ -47,6 +48,7 @@ executable try-image-file-exe
       JuicyPixels
     , base >=4.7 && <5
     , bytestring
+    , filepath
     , try-image-file
   default-language: Haskell2010
 
@@ -62,5 +64,6 @@ test-suite try-image-file-test
       JuicyPixels
     , base >=4.7 && <5
     , bytestring
+    , filepath
     , try-image-file
   default-language: Haskell2010
