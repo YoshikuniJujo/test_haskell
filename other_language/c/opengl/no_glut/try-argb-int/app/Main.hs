@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -12,9 +13,12 @@ main = do
 	glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes print
 	glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes {
 		glxRgba = True, glxDoublebuffer = True,
-		glxRedSize = 1, glxGreenSize = 1, glxBlueSize = 1, glxDepthSize = 1 }
-		print
+		glxRedSize = 1, glxGreenSize = 1, glxBlueSize = 1, glxDepthSize = 1 } \v -> do
+		print v
+		ctx <- glXCreateContext dpy v Nothing True
+		print ctx
+		glXDestroyContext dpy ctx
 	xCloseDisplay dpy
 
-makeContext :: Display -> GlxContext -> IO ()
+makeContext :: Display -> GlXContext -> IO ()
 makeContext dpy ctx = pure ()

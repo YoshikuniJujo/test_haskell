@@ -9,6 +9,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Control.Exception
 import Data.Bool
+import Data.Int
 import System.IO.Unsafe
 import System.Environment
 
@@ -41,7 +42,7 @@ xCloseDisplay (Display p) = c_XCloseDisplay p
 
 foreign import ccall "XCloseDisplay" c_XCloseDisplay :: Ptr Display -> IO ()
 
-newtype GlxContext = GlxContext (Ptr GlxContext) deriving Show
+newtype GlXContext = GlXContext (Ptr GlXContext) deriving Show
 
 newtype ScreenNumber = ScreenNumber CInt deriving Show
 
@@ -109,3 +110,25 @@ xFreeXVisualInfo :: XVisualInfo -> IO ()
 xFreeXVisualInfo (XVisualInfo p) = c_XFreeXVisualInfo p
 
 foreign import ccall "XFree" c_XFreeXVisualInfo :: Ptr XVisualInfo -> IO ()
+
+boolToCbool :: Bool -> #{type Bool}
+boolToCbool = bool #{const False} #{const True}
+
+getGlXContext :: Maybe GlXContext -> Ptr GlXContext
+getGlXContext = \case Nothing -> NullPtr; Just (GlXContext pc) -> pc
+
+
+glXCreateContext ::
+	Display -> XVisualInfo -> Maybe GlXContext -> Bool -> IO GlXContext
+glXCreateContext (Display pd) (XVisualInfo pv) ctx dr = GlXContext
+	<$> c_glXCreateContext pd pv (getGlXContext ctx) (boolToCbool dr)
+
+foreign import ccall "glXCreateContext" c_glXCreateContext ::
+	Ptr Display -> Ptr XVisualInfo -> Ptr GlXContext -> #{type Bool} ->
+	IO (Ptr GlXContext)
+
+glXDestroyContext :: Display -> GlXContext -> IO ()
+glXDestroyContext (Display pd) (GlXContext pc) = c_glXDestroyContext pd pc
+
+foreign import ccall "glXDestroyContext"
+	c_glXDestroyContext :: Ptr Display -> Ptr GlXContext -> IO ()
