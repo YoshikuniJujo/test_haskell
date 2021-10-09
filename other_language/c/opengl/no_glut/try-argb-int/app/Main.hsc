@@ -6,15 +6,18 @@ module Main where
 
 import Prelude hiding (init)
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Marshal
 import Data.Foldable
 import Data.Word
+import Numeric
 import Graphics.Rendering.OpenGL
 import Graphics.GL
 
 import Lib
 import TryFbo
+import Juicy
 
 #include <GL/glx.h>
 
@@ -49,6 +52,10 @@ main = do
 			bsss <- groups (fromIntegral fboWidth) . groups 4
 				<$> peekArray (fromIntegral $ fboWidth * fboHeight * 4) p
 			print @[[[Word8]]] bsss
+			iss <- groups (fromIntegral fboWidth)
+				<$> peekArray (fromIntegral $ fboWidth * fboHeight) (castPtr p)
+			print $ ((flip (showHex @Word32) "") <$>) <$> iss
+			writeArgbPng "foo.png" iss
 			for_ bsss \bss -> do
 				for_ bss \cs -> do
 					let	[b, g, r, a] = fromIntegral <$> cs

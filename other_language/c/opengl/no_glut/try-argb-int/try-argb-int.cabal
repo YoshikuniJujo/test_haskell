@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Exception
+      Juicy
       Lib
       Ptr
       TryFbo
@@ -36,7 +37,8 @@ library
   pkgconfig-depends:
       x11, glx
   build-depends:
-      OpenGL
+      JuicyPixels
+    , OpenGL
     , OpenGLRaw
     , base >=4.7 && <5
     , exception-hierarchy
@@ -50,7 +52,8 @@ executable try-argb-int-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      OpenGL
+      JuicyPixels
+    , OpenGL
     , OpenGLRaw
     , base >=4.7 && <5
     , exception-hierarchy
@@ -66,7 +69,8 @@ test-suite try-argb-int-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      OpenGL
+      JuicyPixels
+    , OpenGL
     , OpenGLRaw
     , base >=4.7 && <5
     , exception-hierarchy
