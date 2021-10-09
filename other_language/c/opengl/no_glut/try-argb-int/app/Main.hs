@@ -17,6 +17,8 @@ main = do
 		print v
 		ctx <- glXCreateContext dpy v Nothing True
 		print ctx
+		glXMakeCurrent dpy Nothing (Just ctx)
+		glXMakeCurrent dpy Nothing Nothing
 		glXDestroyContext dpy ctx
 	xCloseDisplay dpy
 

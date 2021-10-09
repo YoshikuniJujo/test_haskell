@@ -114,6 +114,11 @@ foreign import ccall "XFree" c_XFreeXVisualInfo :: Ptr XVisualInfo -> IO ()
 boolToCbool :: Bool -> #{type Bool}
 boolToCbool = bool #{const False} #{const True}
 
+cboolToBool :: #{type Bool} -> Bool
+cboolToBool = \case
+	#{const False} -> False; #{const True} -> True
+	_ -> error "cboolToBool: not False nor True"
+
 getGlXContext :: Maybe GlXContext -> Ptr GlXContext
 getGlXContext = \case Nothing -> NullPtr; Just (GlXContext pc) -> pc
 
@@ -132,3 +137,15 @@ glXDestroyContext (Display pd) (GlXContext pc) = c_glXDestroyContext pd pc
 
 foreign import ccall "glXDestroyContext"
 	c_glXDestroyContext :: Ptr Display -> Ptr GlXContext -> IO ()
+
+newtype GlXDrawable = GlXDrawable (Ptr GlXDrawable) deriving Show
+
+getGlXDrawable :: Maybe GlXDrawable -> Ptr GlXDrawable
+getGlXDrawable = \case Nothing -> NullPtr; Just (GlXDrawable p) -> p
+
+glXMakeCurrent :: Display -> Maybe GlXDrawable -> Maybe GlXContext -> IO Bool
+glXMakeCurrent (Display pd) md mc = cboolToBool
+	<$> c_glXMakeCurrent pd (getGlXDrawable md) (getGlXContext mc)
+
+foreign import ccall "glXMakeCurrent" c_glXMakeCurrent ::
+	Ptr Display -> Ptr GlXDrawable -> Ptr GlXContext -> IO #{type Bool}
