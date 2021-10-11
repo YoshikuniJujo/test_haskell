@@ -5,3 +5,4 @@ memo
 	+ [ ] check errors
 	+ [ ] make exceptions
 	+ [ ] throw exceptions
+* [ ] make function `foo :: IO () -> IO Image`
