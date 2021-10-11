@@ -6,3 +6,5 @@ memo
 	+ [ ] make exceptions
 	+ [ ] throw exceptions
 * [ ] make function `foo :: IO () -> IO Image`
+* [ ] use `ForeignPtr`
+* [ ] return `cairo-image.Data.CairoImage.Internal.Argb32`

@@ -45,6 +45,7 @@ main = do
 		flush
 
 		bindFramebuffer Framebuffer $= defaultFramebufferObject
+
 		allocaBytes (fromIntegral $ fboWidth * fboHeight * 4) \p -> do
 			getTextureImage cb 0 glBgra glUnsignedInt_8_8_8_8_rev
 				(fboWidth * fboHeight * 4) p
