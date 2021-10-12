@@ -23,7 +23,7 @@ main :: IO ()
 main = do
 	dpy <- xOpenDisplay Nothing
 
-	argb <- render dpy 64 32 do
+	argb <- render dpy (Size 64 32) do
 		clearColor $= Color4 0.8 0.4 0.05 1.0
 		clear [ColorBuffer]
 		color (Color3 1 1 1 :: Color3 GLdouble)

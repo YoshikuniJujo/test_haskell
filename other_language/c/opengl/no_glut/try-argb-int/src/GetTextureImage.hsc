@@ -25,8 +25,8 @@ type Format = GLenum
 type Type = GLenum
 type BufSize = GLsizei
 
-render :: Display -> GLsizei -> GLsizei -> IO () -> IO Argb32
-render dpy w h dr = glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes {
+render :: Display -> Size -> IO () -> IO Argb32
+render dpy s@(Size w h) dr = glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes {
 	glxRgba = True, glxDoublebuffer = True,
 	glxRedSize = 1, glxGreenSize = 1, glxBlueSize = 1, glxDepthSize = 1 } \v -> do
 	print v
@@ -34,7 +34,7 @@ render dpy w h dr = glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttri
 	print ctx
 	True <- glXMakeCurrent dpy Nothing (Just ctx)
 	(fb, cb) <- init w h
-	viewport $= (Position 0 0, Size w h)
+	viewport $= (Position 0 0, s)
 	bindFramebuffer Framebuffer $= fb
 
 	dr
