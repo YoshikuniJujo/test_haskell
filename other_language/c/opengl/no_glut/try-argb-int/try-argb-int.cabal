@@ -28,8 +28,8 @@ library
       Exception
       GetTextureImage
       Lib
+      PngArgb32
       Ptr
-      TryFbo
   other-modules:
       Paths_try_argb_int
   hs-source-dirs:

@@ -11,13 +11,12 @@ import Foreign.ForeignPtr (withForeignPtr)
 import Foreign.Marshal
 import Data.Foldable
 import Data.Word
-import Data.JuicyCairo
 import Data.CairoImage.Internal
-import Codec.Picture
 import Graphics.Rendering.OpenGL
 
 import Lib
 import GetTextureImage
+import PngArgb32
 
 main :: IO ()
 main = do
@@ -31,9 +30,6 @@ main = do
 
 	writePngArgb32 "foo.png" argb
 	asciiArgb32 argb
-
-writePngArgb32 :: FilePath -> Argb32 -> IO ()
-writePngArgb32 fp = writePng fp . cairoArgb32ToJuicyRGBA8
 
 asciiArgb32 :: Argb32 -> IO ()
 asciiArgb32 argb = do
