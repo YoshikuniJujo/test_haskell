@@ -10,7 +10,7 @@ import GetTextureImage
 import PngArgb32
 
 main :: IO ()
-main = writePngArgb32 "tenuki.png" =<< render (Size 512 512) do
+main = writePngArgb32 "tenuki-prog2.png" =<< render (Size 512 512) do
 	clearColor $= Color4 1.1 1.0 1.0 1.0
 	clear [ColorBuffer]
 	renderPrimitive Polygon do

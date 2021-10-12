@@ -60,6 +60,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-argb-int
+  try-tenuki-prog2:
+    main:                try-tenuki-prog2.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-argb-int
 
 tests:
   try-argb-int-test:
