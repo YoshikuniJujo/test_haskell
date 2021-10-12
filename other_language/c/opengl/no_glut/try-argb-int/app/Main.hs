@@ -21,9 +21,7 @@ import GetTextureImage
 
 main :: IO ()
 main = do
-	dpy <- xOpenDisplay Nothing
-
-	argb <- render dpy (Size 64 32) do
+	argb <- render (Size 64 32) do
 		clearColor $= Color4 0.8 0.4 0.05 1.0
 		clear [ColorBuffer]
 		color (Color3 1 1 1 :: Color3 GLdouble)
@@ -31,7 +29,6 @@ main = do
 			Vertex2 (- 0.9) (- 0.9) :: Vertex2 GLdouble,
 			Vertex2 (- 0.9) 0.9, Vertex2 0.9 0.9 ]
 
-	xCloseDisplay dpy
 	writePngArgb32 "foo.png" argb
 	asciiArgb32 argb
 

@@ -25,37 +25,40 @@ type Format = GLenum
 type Type = GLenum
 type BufSize = GLsizei
 
-render :: Display -> Size -> IO () -> IO Argb32
-render dpy s@(Size w h) dr = glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes {
-	glxRgba = True, glxDoublebuffer = True,
-	glxRedSize = 1, glxGreenSize = 1, glxBlueSize = 1, glxDepthSize = 1 } \v -> do
-	print v
-	ctx <- glXCreateContext dpy v Nothing True
-	print ctx
-	True <- glXMakeCurrent dpy Nothing (Just ctx)
-	(fb, cb) <- init w h
-	viewport $= (Position 0 0, s)
-	bindFramebuffer Framebuffer $= fb
+render :: Size -> IO () -> IO Argb32
+render s@(Size w h) dr = do
+	dpy <- xOpenDisplay Nothing
+	argb' <- glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes {
+		glxRgba = True, glxDoublebuffer = True,
+		glxRedSize = 1, glxGreenSize = 1, glxBlueSize = 1, glxDepthSize = 1 } \v -> do
+		print v
+		ctx <- glXCreateContext dpy v Nothing True
+		print ctx
+		True <- glXMakeCurrent dpy Nothing (Just ctx)
+		(fb, cb) <- init w h
+		viewport $= (Position 0 0, s)
+		bindFramebuffer Framebuffer $= fb
 
-	dr
+		dr
 
-	flush
+		flush
 
-	bindFramebuffer Framebuffer $= defaultFramebufferObject
+		bindFramebuffer Framebuffer $= defaultFramebufferObject
 
-	p <- mallocBytes (fromIntegral $ w * h * 4)
+		p <- mallocBytes (fromIntegral $ w * h * 4)
 
-	getTextureImage cb 0 glBgra glUnsignedInt_8_8_8_8_rev
-		(w * h * 4) p
-	iss <- groups (fromIntegral w)
-		<$> peekArray (fromIntegral $ w * h) (castPtr p)
-	print $ ((flip (showHex @Word32) "") <$>) <$> iss
-	argb <- makeArgb32 (fromIntegral w) (fromIntegral h) p
+		getTextureImage cb 0 glBgra glUnsignedInt_8_8_8_8_rev
+			(w * h * 4) p
+		iss <- groups (fromIntegral w)
+			<$> peekArray (fromIntegral $ w * h) (castPtr p)
+		print $ ((flip (showHex @Word32) "") <$>) <$> iss
+		argb <- makeArgb32 (fromIntegral w) (fromIntegral h) p
 
-	True <- glXMakeCurrent dpy Nothing Nothing
-	glXDestroyContext dpy ctx
+		True <- glXMakeCurrent dpy Nothing Nothing
+		glXDestroyContext dpy ctx
 
-	pure argb
+		pure argb
+	argb' <$ xCloseDisplay dpy
 
 makeArgb32 :: CInt -> CInt -> Ptr Word32 -> IO Argb32
 makeArgb32 w h p = getArgb32 <$> do
