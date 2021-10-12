@@ -149,3 +149,7 @@ glXMakeCurrent (Display pd) md mc = cboolToBool
 
 foreign import ccall "glXMakeCurrent" c_glXMakeCurrent ::
 	Ptr Display -> Ptr GlXDrawable -> Ptr GlXContext -> IO #{type Bool}
+
+groups :: Int -> [a] -> [[a]]
+groups _ [] = []
+groups n xs = take n xs : groups n (drop n xs)
