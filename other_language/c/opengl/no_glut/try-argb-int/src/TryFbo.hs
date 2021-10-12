@@ -5,15 +5,11 @@ module TryFbo where
 import Foreign.Ptr
 import Graphics.Rendering.OpenGL
 
-fboWidth, fboHeight :: GLsizei
-fboWidth = 64
-fboHeight = 32
-
-init :: IO (FramebufferObject, TextureObject)
-init = do
+init :: GLsizei -> GLsizei -> IO (FramebufferObject, TextureObject)
+init w h = do
 	cb <- genObjectName
 	textureBinding Texture2D $= Just cb
-	texImage2D Texture2D NoProxy 0 RGBA' (TextureSize2D fboWidth fboHeight)
+	texImage2D Texture2D NoProxy 0 RGBA' (TextureSize2D w h)
 		0 (PixelData RGBA UnsignedByte nullPtr)
 	textureWrapMode Texture2D S $= (Repeated, ClampToEdge)
 	textureWrapMode Texture2D T $= (Repeated, ClampToEdge)
@@ -22,7 +18,7 @@ init = do
 
 	rb <- genObjectName
 	bindRenderbuffer Renderbuffer $= rb
-	renderbufferStorage Renderbuffer DepthComponent' $ RenderbufferSize fboWidth fboHeight
+	renderbufferStorage Renderbuffer DepthComponent' $ RenderbufferSize w h
 	bindRenderbuffer Renderbuffer $= noRenderbufferObject
 
 	fb <- genObjectName

@@ -24,6 +24,8 @@ dependencies:
 - OpenGL
 - OpenGLRaw
 - JuicyPixels
+- JuicyCairo
+- cairo-image
 - exception-hierarchy
 
 library:

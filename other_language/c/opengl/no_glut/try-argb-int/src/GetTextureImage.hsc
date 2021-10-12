@@ -13,7 +13,7 @@ type Type = GLenum
 type BufSize = GLsizei
 
 getTextureImage ::
-	TextureObject -> Level -> Format -> Type -> BufSize -> Ptr () -> IO ()
+	TextureObject -> Level -> Format -> Type -> BufSize -> Ptr a -> IO ()
 getTextureImage (TextureObject cbi) lvl fmt tp sz p =
 	glGetTextureImage cbi lvl fmt tp sz p
 
