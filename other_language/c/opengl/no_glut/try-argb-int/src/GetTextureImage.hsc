@@ -12,7 +12,6 @@ import Foreign.Marshal
 import Foreign.C.Types
 import Data.Word
 import Data.CairoImage.Internal
-import Numeric
 import Graphics.Rendering.OpenGL
 import Graphics.GL
 
@@ -30,9 +29,7 @@ render s@(Size w h) dr = do
 	argb' <- glXChooseVisualWith dpy (xDefaultScreen dpy) defaultGlxAttributes {
 		glxRgba = True, glxDoublebuffer = True,
 		glxRedSize = 1, glxGreenSize = 1, glxBlueSize = 1, glxDepthSize = 1 } \v -> do
-		print v
 		ctx <- glXCreateContext dpy v Nothing True
-		print ctx
 		True <- glXMakeCurrent dpy Nothing (Just ctx)
 		(fb, cb) <- init w h
 		viewport $= (Position 0 0, s)
@@ -48,9 +45,6 @@ render s@(Size w h) dr = do
 
 		getTextureImage cb 0 glBgra glUnsignedInt_8_8_8_8_rev
 			(w * h * 4) p
-		iss <- groups (fromIntegral w)
-			<$> peekArray (fromIntegral $ w * h) (castPtr p)
-		print $ ((flip (showHex @Word32) "") <$>) <$> iss
 		argb <- makeArgb32 (fromIntegral w) (fromIntegral h) p
 
 		True <- glXMakeCurrent dpy Nothing Nothing
