@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
+#include <vector>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -54,7 +55,7 @@ private:
 
 		std::cout << "glfwExtensions:" << std::endl;
 		for (int i = 0; i < glfwExtensionCount; i++) {
-			std::cout << glfwExtensions[i] << std::endl;
+			std::cout << '\t' << glfwExtensions[i] << std::endl;
 		}
 
 		createInfo.enabledExtensionCount = glfwExtensionCount;
@@ -66,6 +67,20 @@ private:
 			throw std::runtime_error("failed to create instance!");
 		}
 
+		uint32_t extensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+		std::cout << "extensionCount = " << extensionCount << std::endl;
+
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+		std::cout << "available extensions:\n";
+
+		for (const auto& extension : extensions) {
+			std::cout << '\t' << extension.extensionName << '\n';
+		}
+
 	}
 
 	void mainLoop() {
@@ -75,6 +90,7 @@ private:
 	}
 
 	void cleanup() {
+		vkDestroyInstance(instance, nullptr);
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
