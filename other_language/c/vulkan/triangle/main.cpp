@@ -18,6 +18,10 @@ const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
+const std::vector<const char*> deviceExtensions = {
+	VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 #ifdef NDEBUG
 	const bool enableValidationLayers = false;
 #else
@@ -128,6 +132,9 @@ private:
 			createInfo.enabledLayerCount = 0;
 		}
 
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
 		if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create logical device!");
 		}
@@ -157,6 +164,9 @@ private:
 
 		if (candidates.rbegin()->first > 0) {
 			physicalDevice = candidates.rbegin()->second;
+			if (!isDeviceSuitable(physicalDevice)) {
+				throw std::runtime_error("failed to find a suitable GPU!");
+			}
 		} else {
 			throw std::runtime_error("failed to find a suitable GPU!");
 		}
@@ -197,10 +207,32 @@ private:
 
 		QueueFamilyIndices indices = findQueueFamilies(device);
 
-		return	deviceProperties.deviceType ==
-				VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+		bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+		return	(	deviceProperties.deviceType ==
+					VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ||
+				deviceProperties.deviceType ==
+					VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ) &&
 			deviceFeatures.geometryShader &&
-			indices.isComplete();
+			indices.isComplete() && extensionsSupported;
+	}
+
+	bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(
+			device, nullptr, &extensionCount, nullptr );
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(
+			device, nullptr, &extensionCount, availableExtensions.data());
+
+		std::set<std::string> requiredExtensions(
+			deviceExtensions.begin(), deviceExtensions.end());
+
+		for (const auto& extension : availableExtensions) {
+			requiredExtensions.erase(extension.extensionName);
+		}
+
+		return requiredExtensions.empty();
 	}
 
 	struct QueueFamilyIndices {
