@@ -6,7 +6,9 @@
 #include <stdexcept>
 #include <cstdlib>
 #include <vector>
+#include <map>
 #include <cstring>
+#include <optional>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -85,24 +87,93 @@ private:
 
 		std::vector<VkPhysicalDevice> devices(deviceCount);
 		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+		std::multimap<int, VkPhysicalDevice> candidates;
+
 		for (const auto& device : devices) {
-			if (isDeviceSuitable(device)) {
-				physicalDevice = device;
-				break;
-			}
+			int score = rateDeviceSuitability(device);
+			std::cout << "SCORE: " << score << std::endl;
+			candidates.insert(std::make_pair(score, device));
 		}
 
-		if (physicalDevice == VK_NULL_HANDLE) {
+		if (candidates.rbegin()->first > 0) {
+			physicalDevice = candidates.rbegin()->second;
+		} else {
 			throw std::runtime_error("failed to find a suitable GPU!");
 		}
+	}
 
-		VkPhysicalDeviceProperties dvProps;
-		vkGetPhysicalDeviceProperties(physicalDevice, &dvProps);
-		std::cout << dvProps.deviceName << std::endl;
+	int rateDeviceSuitability(VkPhysicalDevice device) {
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+		int score = 0;
+
+		if (deviceProperties.deviceType ==
+			VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+			score += 1000;
+		}
+
+		score += deviceProperties.limits.maxImageDimension2D;
+
+		if (!deviceFeatures.geometryShader) { return 0; }
+
+		return score;
 	}
 
 	bool isDeviceSuitable(VkPhysicalDevice device) {
-		return true;
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+		std::cout << deviceProperties.deviceName << std::endl;
+		std::cout << deviceProperties.deviceType << std::endl;
+		std::cout << VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU << std::endl;
+		std::cout << deviceFeatures.geometryShader << std::endl;
+
+		QueueFamilyIndices indices = findQueueFamilies(device);
+
+		return	deviceProperties.deviceType ==
+				VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+			deviceFeatures.geometryShader &&
+			indices.isComplete();
+	}
+
+	struct QueueFamilyIndices {
+		std::optional<uint32_t> graphicsFamily;
+
+		bool isComplete() {
+			return graphicsFamily.has_value();
+		}
+	};
+
+	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+		QueueFamilyIndices indices;
+
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(
+			device, &queueFamilyCount, nullptr );
+
+		std::vector<VkQueueFamilyProperties>
+			queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(
+			device, &queueFamilyCount, queueFamilies.data() );
+
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies) {
+			if (indices.isComplete()) { break; }
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				indices.graphicsFamily = i;
+			}
+			i++;
+		}
+
+		return indices;
 	}
 
 	void populateDebugMessengerCreateInfo(
