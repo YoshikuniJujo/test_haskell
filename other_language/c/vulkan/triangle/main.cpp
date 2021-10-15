@@ -86,6 +86,30 @@ private:
 		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
+		createSwapChain();
+	}
+
+	struct SwapChainSupportDetails {
+		VkSurfaceCapabilitiesKHR capabilities;
+		std::vector<VkSurfaceFormatKHR> formats;
+		std::vector<VkPresentModeKHR> presentModes;
+	};
+
+	void createSwapChain() {
+		SwapChainSupportDetails swapChainSupport =
+			querySwapChainSupport(physicalDevice);
+
+		std::cout << swapChainSupport.capabilities.currentExtent.width << std::endl;
+		std::cout << swapChainSupport.capabilities.currentExtent.height << std::endl;
+	}
+
+	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
+		SwapChainSupportDetails details;
+
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+			device, surface, &details.capabilities);
+
+		return details;
 	}
 
 	void createSurface() {
