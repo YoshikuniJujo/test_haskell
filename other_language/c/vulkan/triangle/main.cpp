@@ -101,6 +101,19 @@ private:
 
 		std::cout << swapChainSupport.capabilities.currentExtent.width << std::endl;
 		std::cout << swapChainSupport.capabilities.currentExtent.height << std::endl;
+
+		std::cout << swapChainSupport.formats.size() << std::endl;
+		std::cout << swapChainSupport.formats[0].format << std::endl;
+		std::cout << swapChainSupport.formats[0].colorSpace << std::endl;
+		std::cout << VK_FORMAT_B8G8R8A8_SRGB << std::endl;
+		std::cout << swapChainSupport.formats[1].format << std::endl;
+		std::cout << swapChainSupport.formats[1].colorSpace << std::endl;
+		std::cout << VK_FORMAT_B8G8R8A8_UNORM << std::endl;
+		std::cout << swapChainSupport.presentModes.size() << std::endl;
+		std::cout << swapChainSupport.presentModes[0] << std::endl;
+		std::cout << swapChainSupport.presentModes[1] << std::endl;
+		std::cout << swapChainSupport.presentModes[2] << std::endl;
+		std::cout << swapChainSupport.presentModes[3] << std::endl;
 	}
 
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
@@ -108,6 +121,25 @@ private:
 
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
 			device, surface, &details.capabilities);
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+
+		if (formatCount != 0) {
+			details.formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(
+				device, surface, &formatCount, details.formats.data());
+		}
+
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(
+			device, surface, &presentModeCount, nullptr);
+
+		if (presentModeCount != 0) {
+			details.presentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(
+				device, surface, &presentModeCount, details.presentModes.data());
+		}
 
 		return details;
 	}
@@ -233,12 +265,20 @@ private:
 
 		bool extensionsSupported = checkDeviceExtensionSupport(device);
 
+		bool swapChainAdequate = false;
+		if (extensionsSupported) {
+			SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+			swapChainAdequate =
+				!swapChainSupport.formats.empty() &&
+				!swapChainSupport.presentModes.empty();
+		}
+
 		return	(	deviceProperties.deviceType ==
 					VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU ||
 				deviceProperties.deviceType ==
 					VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ) &&
 			deviceFeatures.geometryShader &&
-			indices.isComplete() && extensionsSupported;
+			indices.isComplete() && extensionsSupported && swapChainAdequate;
 	}
 
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
