@@ -120,6 +120,11 @@ private:
 
 		std::cout << surfaceFormat.format << std::endl;
 		std::cout << surfaceFormat.colorSpace << std::endl;
+
+		VkPresentModeKHR presentMode = chooseSwapPresentMode(
+			swapChainSupport.presentModes);
+
+		std::cout << presentMode << std::endl;
 	}
 
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
@@ -163,6 +168,17 @@ private:
 		}
 
 		return availableFormats[0];
+	}
+
+	VkPresentModeKHR chooseSwapPresentMode(
+		const std::vector<VkPresentModeKHR>& availablePresentModes ) {
+		for (const auto& availablePresentMode : availablePresentModes) {
+			if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+				return availablePresentMode;
+			}
+		}
+
+		return VK_PRESENT_MODE_FIFO_KHR;
 	}
 
 	void createSurface() {
