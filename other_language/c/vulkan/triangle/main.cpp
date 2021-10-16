@@ -10,6 +10,8 @@
 #include <set>
 #include <cstring>
 #include <optional>
+#include <cstdint>
+#include <algorithm>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -125,6 +127,11 @@ private:
 			swapChainSupport.presentModes);
 
 		std::cout << presentMode << std::endl;
+
+		VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+
+		std::cout << extent.width << std::endl;
+		std::cout << extent.height << std::endl;
 	}
 
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
@@ -179,6 +186,30 @@ private:
 		}
 
 		return VK_PRESENT_MODE_FIFO_KHR;
+	}
+
+	VkExtent2D chooseSwapExtent(
+		const VkSurfaceCapabilitiesKHR& capabilities) {
+		if (capabilities.currentExtent.width != UINT32_MAX) {
+			return capabilities.currentExtent;
+		} else {
+			int width, height;
+			glfwGetFramebufferSize(window, &width, &height);
+
+			VkExtent2D actualExtent = {
+				static_cast<uint32_t>(width),
+				static_cast<uint32_t>(height)
+			};
+
+			actualExtent.width = std::clamp(
+				actualExtent.width, capabilities.minImageExtent.width,
+				capabilities.maxImageExtent.width);
+			actualExtent.height = std::clamp(
+				actualExtent.height, capabilities.minImageExtent.height,
+				capabilities.maxImageExtent.height);
+
+			return actualExtent;
+		}
 	}
 
 	void createSurface() {
