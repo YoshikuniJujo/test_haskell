@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <fstream>
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
@@ -84,8 +86,9 @@ private:
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
-	VkSemaphore imageAvailableSemaphore;
-	VkSemaphore renderFinishedSemaphore;
+	std::vector<VkSemaphore> imageAvailableSemaphores;
+	std::vector<VkSemaphore> renderFinishedSemaphores;
+	size_t currentFrame = 0;
 
 	void initWindow() {
 		glfwInit();
@@ -113,15 +116,23 @@ private:
 	}
 
 	void createSemaphores() {
+		imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+
 		VkSemaphoreCreateInfo semaphoreInfo{};
 		semaphoreInfo.sType =
 			VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		if (	vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-				&imageAvailableSemaphore) != VK_SUCCESS ||
-			vkCreateSemaphore(device, &semaphoreInfo, nullptr,
-				&renderFinishedSemaphore) != VK_SUCCESS) {
-			throw std::runtime_error(
-				"failed to create semaphores!");
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			if (	vkCreateSemaphore(device, &semaphoreInfo,
+					nullptr, &imageAvailableSemaphores[i])
+					!= VK_SUCCESS ||
+				vkCreateSemaphore(device, &semaphoreInfo,
+					nullptr, &renderFinishedSemaphores[i])
+					!= VK_SUCCESS) {
+				throw std::runtime_error(
+					"failed to create semaphores for a frame!");
+			}
 		}
 	}
 
@@ -1034,12 +1045,12 @@ private:
 	void drawFrame() {
 		uint32_t imageIndex;
 		vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
-			imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+			imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+		VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
 		VkPipelineStageFlags waitStages[] = {
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 		submitInfo.waitSemaphoreCount = 1;
@@ -1049,7 +1060,7 @@ private:
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-		VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+		VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -1074,11 +1085,16 @@ private:
 		vkQueuePresentKHR(presentQueue, &presentInfo);
 
 		vkQueueWaitIdle(presentQueue);
+		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
 
 	void cleanup() {
-		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
-		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vkDestroySemaphore(device, renderFinishedSemaphores[i],
+				nullptr);
+			vkDestroySemaphore(device, imageAvailableSemaphores[i],
+				nullptr);
+		}
 		vkDestroyCommandPool(device, commandPool, nullptr);
 		for (auto framebuffer : swapChainFramebuffers) {
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
