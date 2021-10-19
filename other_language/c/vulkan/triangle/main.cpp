@@ -84,6 +84,8 @@ private:
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	VkCommandPool commandPool;
 	std::vector<VkCommandBuffer> commandBuffers;
+	VkSemaphore imageAvailableSemaphore;
+	VkSemaphore renderFinishedSemaphore;
 
 	void initWindow() {
 		glfwInit();
@@ -107,6 +109,20 @@ private:
 		createFrameBuffers();
 		createCommandPool();
 		createCommandBuffers();
+		createSemaphores();
+	}
+
+	void createSemaphores() {
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType =
+			VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		if (	vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+				&imageAvailableSemaphore) != VK_SUCCESS ||
+			vkCreateSemaphore(device, &semaphoreInfo, nullptr,
+				&renderFinishedSemaphore) != VK_SUCCESS) {
+			throw std::runtime_error(
+				"failed to create semaphores!");
+		}
 	}
 
 	void createCommandBuffers() {
@@ -993,10 +1009,16 @@ private:
 	void mainLoop() {
 		while (!glfwWindowShouldClose(window)) {
 			glfwPollEvents();
+			drawFrame();
 		}
 	}
 
+	void drawFrame() {
+	}
+
 	void cleanup() {
+		vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+		vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
 		vkDestroyCommandPool(device, commandPool, nullptr);
 		for (auto framebuffer : swapChainFramebuffers) {
 			vkDestroyFramebuffer(device, framebuffer, nullptr);
