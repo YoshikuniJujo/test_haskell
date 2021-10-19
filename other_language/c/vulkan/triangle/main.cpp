@@ -83,6 +83,7 @@ private:
 	VkPipeline graphicsPipeline;
 	std::vector<VkFramebuffer> swapChainFramebuffers;
 	VkCommandPool commandPool;
+	std::vector<VkCommandBuffer> commandBuffers;
 
 	void initWindow() {
 		glfwInit();
@@ -105,6 +106,24 @@ private:
 		createGraphicsPipeline();
 		createFrameBuffers();
 		createCommandPool();
+		createCommandBuffers();
+	}
+
+	void createCommandBuffers() {
+		commandBuffers.resize(swapChainFramebuffers.size());
+
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType =
+			VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
+
+		if (vkAllocateCommandBuffers(
+			device, &allocInfo, commandBuffers.data() ) != VK_SUCCESS) {
+			throw std::runtime_error(
+				"failed to allocate command buffers!" );
+		}
 	}
 
 	void createCommandPool() {
