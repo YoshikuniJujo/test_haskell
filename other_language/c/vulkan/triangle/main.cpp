@@ -92,6 +92,8 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
 
+	bool framebufferResized = false;
+
 	void initWindow() {
 		glfwInit();
 
@@ -99,6 +101,15 @@ private:
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		
 		window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+		glfwSetWindowUserPointer(window, this);
+		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+	}
+
+	static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		auto app = reinterpret_cast<HelloTriangleApplication*>
+			(glfwGetWindowUserPointer(window));
+		app->framebufferResized = true;
 	}
 
 	void initVulkan() {
@@ -1127,7 +1138,8 @@ private:
 		vkQueuePresentKHR(presentQueue, &presentInfo);
 
 		if (	result == VK_ERROR_OUT_OF_DATE_KHR ||
-			result == VK_SUBOPTIMAL_KHR ) {
+			result == VK_SUBOPTIMAL_KHR || framebufferResized ) {
+			framebufferResized = false;
 			recreateSwapChain();
 		} else if (result != VK_SUCCESS) {
 			throw std::runtime_error(
