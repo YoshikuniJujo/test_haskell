@@ -18,6 +18,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const uint32_t WIDTH = 800;
