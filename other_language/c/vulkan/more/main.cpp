@@ -174,18 +174,35 @@ private:
 	void createVertexBuffer() {
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();;
 
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
 		createBuffer(
-			bufferSize,
-			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
 			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			vertexBuffer, vertexBufferMemory);
+			stagingBuffer, stagingBufferMemory );
+
+		std::cout << "after first createBuffer" << std::endl;
 
 		void* data;
 		vkMapMemory(
-			device, vertexBufferMemory, 0, bufferSize, 0, &data );
+			device, stagingBufferMemory, 0, bufferSize, 0, &data );
 		memcpy(data, vertices.data(), (size_t) bufferSize);
-		vkUnmapMemory(device, vertexBufferMemory);
+		vkUnmapMemory(device, stagingBufferMemory);
+
+		std::cout << "before second createBuffer" << std::endl;
+
+		createBuffer(
+			bufferSize,
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			vertexBuffer, vertexBufferMemory );
+
+		copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+		vkDestroyBuffer(device, stagingBuffer, nullptr);
+		vkFreeMemory(device, stagingBufferMemory, nullptr);
 	}
 
 	void createBuffer(
@@ -199,7 +216,7 @@ private:
 		bufferInfo.usage = usage;
 		bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer)
+		if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer)
 			!= VK_SUCCESS) {
 			throw std::runtime_error(
 				"failed to create vertex buffer!");
@@ -226,7 +243,7 @@ private:
 				"failed to allocate vertex buffer memory!" );
 		}
 
-		vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
+		vkBindBufferMemory(device, buffer, bufferMemory, 0);
 	}
 
 	void copyBuffer(
