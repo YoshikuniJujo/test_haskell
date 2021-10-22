@@ -285,6 +285,35 @@ private:
 		vkBindImageMemory(device, image, imageMemory, 0);
 	}
 
+	void transitionImageLayout(
+		VkImage image, VkFormat format,
+		VkImageLayout oldLayout, VkImageLayout newLayout ) {
+
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		barrier.image = image;
+		auto& srr = barrier.subresourceRange;
+		srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		srr.baseMipLevel = 0; srr.levelCount = 1;
+		srr.baseArrayLayer = 0; srr.layerCount = 1;
+
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = 0;
+
+		vkCmdPipelineBarrier(
+			commandBuffer, 0, 0, 0, 0, nullptr, 0, nullptr, 1,
+			&barrier );
+
+		endSingleTimeCommands(commandBuffer);
+	}
+
 	void createDescriptorSets() {
 		std::vector<VkDescriptorSetLayout> layouts(
 			swapChainImages.size(), descriptorSetLayout );
