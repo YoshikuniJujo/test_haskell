@@ -314,6 +314,34 @@ private:
 		endSingleTimeCommands(commandBuffer);
 	}
 
+	void copyBufferToImage(
+		VkBuffer buffer, VkImage image,
+		uint32_t width, uint32_t height ) {
+
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+		VkBufferImageCopy region{};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+
+		auto& isr = region.imageSubresource;
+		isr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		isr.mipLevel = 0;
+		isr.baseArrayLayer = 0;
+		isr.layerCount = 1;
+
+		region.imageOffset = {0, 0, 0};
+		region.imageExtent = { width, height, 1 };
+
+		vkCmdCopyBufferToImage(
+			commandBuffer, buffer, image,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &region );
+
+		endSingleTimeCommands(commandBuffer);
+	}
+
 	void createDescriptorSets() {
 		std::vector<VkDescriptorSetLayout> layouts(
 			swapChainImages.size(), descriptorSetLayout );
