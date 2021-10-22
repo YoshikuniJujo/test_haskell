@@ -8,5 +8,9 @@ ${APPNAME}: main.cpp
 test: ${APPNAME}
 	./${APPNAME}
 
+tryStbImage: tryStbImage.cpp
+	g++ tryStbImage.cpp -o tryStbImage
+
 clean:
 	rm -f ${APPNAME}
+	rm -f tryStbImage
