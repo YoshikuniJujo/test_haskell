@@ -153,6 +153,7 @@ private:
 	VkDeviceMemory indexBufferMemory;
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
+	VkImageView textureImageView;
 
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
@@ -196,6 +197,7 @@ private:
 		std::cout << "BEFORE CREATE TEXTURE IMAGE" << std::endl;
 		createTextureImage();
 		std::cout << "AFTER CREATE TEXTURE IMAGE" << std::endl;
+		createTextureImageView();
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
@@ -203,6 +205,10 @@ private:
 		createDescriptorSets();
 		createCommandBuffers();
 		createSyncObjects();
+	}
+
+	void createTextureImageView() {
+
 	}
 
 	void createTextureImage() {
