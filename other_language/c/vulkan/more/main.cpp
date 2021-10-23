@@ -193,7 +193,9 @@ private:
 		createGraphicsPipeline();
 		createFrameBuffers();
 		createCommandPool();
+		std::cout << "BEFORE CREATE TEXTURE IMAGE" << std::endl;
 		createTextureImage();
+		std::cout << "AFTER CREATE TEXTURE IMAGE" << std::endl;
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
@@ -240,11 +242,13 @@ private:
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			textureImage, textureImageMemory );
 
+		std::cout << "BEFORE TRANSITION IMAGE LAYOUT" << std::endl;
 		transitionImageLayout(
 			textureImage, VK_FORMAT_R8G8B8A8_SRGB,
 			VK_IMAGE_LAYOUT_UNDEFINED,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL );
 
+		std::cout << "BEFORE COPY BUFFER TO IMAGE" << std::endl;
 		copyBufferToImage(
 			stagingBuffer, textureImage,
 			static_cast<uint32_t>(textWidth),
@@ -307,7 +311,7 @@ private:
 		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
 		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout = oldLayout;
 		barrier.newLayout = newLayout;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
