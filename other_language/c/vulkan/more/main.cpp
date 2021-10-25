@@ -208,7 +208,33 @@ private:
 	}
 
 	void createTextureImageView() {
+		textureImageView =
+			createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	}
 
+	VkImageView createImageView(VkImage image, VkFormat format) {
+		VkImageViewCreateInfo viewInfo{};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = image;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.format = format;
+
+		auto& srr = viewInfo.subresourceRange;
+		srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		srr.baseMipLevel = 0;
+		srr.levelCount = 1;
+		srr.baseArrayLayer = 0;
+		srr.layerCount = 1;
+
+		VkImageView imageView;
+		if (vkCreateImageView(
+			device, &viewInfo, nullptr, &imageView ) != VK_SUCCESS)
+		{
+			throw std::runtime_error(
+				"failed to create texture image view!" );
+		}
+
+		return imageView;
 	}
 
 	void createTextureImage() {
@@ -1082,30 +1108,9 @@ private:
 
 	void createImageViews() {
 		swapChainImageViews.resize(swapChainImages.size());
-		for (size_t i = 0; i < swapChainImages.size(); i++) {
-			VkImageViewCreateInfo createInfo{};
-			createInfo.sType =
-				VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			createInfo.image = swapChainImages[i];
-			createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-			createInfo.format = swapChainImageFormat;
-
-			createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-			createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-			createInfo.subresourceRange.aspectMask =
-				VK_IMAGE_ASPECT_COLOR_BIT;
-			createInfo.subresourceRange.baseMipLevel = 0;
-			createInfo.subresourceRange.levelCount = 1;
-			createInfo.subresourceRange.baseArrayLayer = 0;
-			createInfo.subresourceRange.layerCount = 1;
-
-			if (vkCreateImageView(device, &createInfo, nullptr,
-				&swapChainImageViews[i]) != VK_SUCCESS) {
-				throw std::runtime_error("failed to create image views!");
-			}
+		for (uint32_t i = 0; i < swapChainImages.size(); i++) {
+			swapChainImageViews[i] = createImageView(
+				swapChainImages[i], swapChainImageFormat );
 		}
 	}
 
@@ -1795,6 +1800,8 @@ private:
 		std::cout << "BEGIN CLEANUP" << std::endl;
 
 		cleanupSwapChain();
+
+		vkDestroyImageView(device, textureImageView, nullptr);
 
 		vkDestroyImage(device, textureImage, nullptr);
 		vkFreeMemory(device, textureImageMemory, nullptr);
