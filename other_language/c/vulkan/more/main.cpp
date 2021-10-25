@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <fstream>
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
@@ -114,10 +115,18 @@ const std::vector<Vertex> vertices = {
 	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
 	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
 	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+
+	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+	{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 
-const std::vector<uint16_t> indices = {0, 1, 2, 2, 3, 0};
+const std::vector<uint16_t> indices = {
+	0, 1, 2, 2, 3, 0,
+	4, 5, 6, 6, 7, 4
+};
 
 class HelloTriangleApplication {
 public:
@@ -161,6 +170,9 @@ private:
 	VkDeviceMemory textureImageMemory;
 	VkImageView textureImageView;
 	VkSampler textureSampler;
+	VkImage depthImage;
+	VkDeviceMemory depthImageMemory;
+	VkImageView depthImageView;
 
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
@@ -201,6 +213,7 @@ private:
 		createGraphicsPipeline();
 		createFrameBuffers();
 		createCommandPool();
+		createDepthResources();
 		std::cout << "BEFORE CREATE TEXTURE IMAGE" << std::endl;
 		createTextureImage();
 		std::cout << "AFTER CREATE TEXTURE IMAGE" << std::endl;
@@ -213,6 +226,59 @@ private:
 		createDescriptorSets();
 		createCommandBuffers();
 		createSyncObjects();
+	}
+
+	void createDepthResources() {
+		VkFormat depthFormat = findDepthFormat();
+
+		createImage(
+			swapChainExtent.width, swapChainExtent.height,
+			depthFormat, VK_IMAGE_TILING_OPTIMAL,
+			VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			depthImage, depthImageMemory );
+		depthImageView = createImageView(
+			depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT );
+
+		transitionImageLayout(
+			depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL );
+	}
+
+	VkFormat findDepthFormat() {
+		return findSupportedFormat (
+			{	VK_FORMAT_D32_SFLOAT,
+				VK_FORMAT_D32_SFLOAT_S8_UINT,
+				VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+		);
+	}
+
+	bool hasStencilComponent(VkFormat format) {
+		return	format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
+			format == VK_FORMAT_D24_UNORM_S8_UINT;
+	}
+
+	VkFormat findSupportedFormat(
+		const std::vector<VkFormat>& candidates, VkImageTiling tiling,
+		VkFormatFeatureFlags features ) {
+		for (VkFormat format : candidates) {
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(
+				physicalDevice, format, &props );
+			if (	tiling == VK_IMAGE_TILING_LINEAR &&
+				(props.linearTilingFeatures & features)
+					== features ) {
+				return format;
+			} else if (	tiling == VK_IMAGE_TILING_OPTIMAL &&
+					(props.optimalTilingFeatures & features)
+						== features ) {
+				return format;
+			}
+		}
+
+		throw std::runtime_error("failed to find supported format!");
 	}
 
 	void createTextureSampler() {
@@ -253,11 +319,14 @@ private:
 	}
 
 	void createTextureImageView() {
-		textureImageView =
-			createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+		textureImageView = createImageView(
+			textureImage, VK_FORMAT_R8G8B8A8_SRGB,
+			VK_IMAGE_ASPECT_COLOR_BIT );
 	}
 
-	VkImageView createImageView(VkImage image, VkFormat format) {
+	VkImageView createImageView(
+		VkImage image, VkFormat format,
+		VkImageAspectFlags aspectFlags ) {
 		VkImageViewCreateInfo viewInfo{};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = image;
@@ -265,7 +334,7 @@ private:
 		viewInfo.format = format;
 
 		auto& srr = viewInfo.subresourceRange;
-		srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		srr.aspectMask = aspectFlags;
 		srr.baseMipLevel = 0;
 		srr.levelCount = 1;
 		srr.baseArrayLayer = 0;
@@ -399,7 +468,17 @@ private:
 
 		barrier.image = image;
 		auto& srr = barrier.subresourceRange;
-		srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+		if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+			srr.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+			if (hasStencilComponent(format)) {
+				srr.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+		} else {
+			srr.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
+
 		srr.baseMipLevel = 0; srr.levelCount = 1;
 		srr.baseArrayLayer = 0; srr.layerCount = 1;
 
@@ -425,6 +504,19 @@ private:
 			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 			destinationStage =
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		} else if (
+			oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+			newLayout ==
+				VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			) {
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask =
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage =
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 		} else {
 			throw std::invalid_argument(
 				"unsupported layout transition!" );
@@ -1186,7 +1278,8 @@ private:
 		swapChainImageViews.resize(swapChainImages.size());
 		for (uint32_t i = 0; i < swapChainImages.size(); i++) {
 			swapChainImageViews[i] = createImageView(
-				swapChainImages[i], swapChainImageFormat );
+				swapChainImages[i], swapChainImageFormat,
+				VK_IMAGE_ASPECT_COLOR_BIT );
 		}
 	}
 
