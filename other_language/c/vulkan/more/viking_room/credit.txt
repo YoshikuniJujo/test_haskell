@@ -1,0 +1,4 @@
+viking_room.obj
+viking_room.png
+
+modeled by nigelgoh (https://sketchfab.com/nigelgoh)
