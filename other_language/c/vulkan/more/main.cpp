@@ -22,6 +22,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
+
+#include <unordered_map>
+
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const uint32_t WIDTH = 800;
@@ -114,23 +119,6 @@ struct UniformBufferObject {
 	alignas(16) glm::mat4 proj;
 };
 
-const std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-
-	{{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-	{{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-	{{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-	{{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-};
-
-const std::vector<uint16_t> indices = {
-	0, 1, 2, 2, 3, 0,
-	4, 5, 6, 6, 7, 4
-};
-
 class HelloTriangleApplication {
 public:
 	void run() {
@@ -165,8 +153,6 @@ private:
 	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
-	VkBuffer vertexBuffer;
-	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 	VkImage textureImage;
@@ -182,6 +168,11 @@ private:
 
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
+
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> indices;
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
 
 	bool framebufferResized = false;
 
@@ -222,6 +213,7 @@ private:
 		std::cout << "AFTER CREATE TEXTURE IMAGE" << std::endl;
 		createTextureImageView();
 		createTextureSampler();
+		loadModel();
 		createVertexBuffer();
 		createIndexBuffer();
 		createUniformBuffers();
@@ -229,6 +221,43 @@ private:
 		createDescriptorSets();
 		createCommandBuffers();
 		createSyncObjects();
+	}
+
+	void loadModel() {
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
+
+		if (!tinyobj::LoadObj(
+			&attrib, &shapes, &materials, &warn, &err,
+			MODEL_PATH.c_str() )) {
+			throw std::runtime_error(warn + err);
+		}
+
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				Vertex vertex{};
+
+				auto& vs = attrib.vertices;
+
+				vertex.pos = {
+					vs[3 * index.vertex_index + 0],
+					vs[3 * index.vertex_index + 1],
+					vs[3 * index.vertex_index + 2] };
+
+				auto& tcs = attrib.texcoords;
+
+				vertex.texCoord = {
+					tcs[2 * index.texcoord_index + 0],
+					1.0f - tcs[2 * index.texcoord_index + 1] };
+
+				vertex.color = {1.0f, 1.0f, 1.0f};
+
+				vertices.push_back(vertex);
+				indices.push_back(indices.size());
+			}
+		}
 	}
 
 	void createDepthResources() {
@@ -979,7 +1008,7 @@ private:
 			vkCmdBindVertexBuffers(commandBuffers[i],
 				0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffers[i],
-				indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+				indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 //			vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
 			vkCmdBindDescriptorSets(
