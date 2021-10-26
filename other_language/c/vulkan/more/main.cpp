@@ -27,6 +27,9 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
+const std::string MODEL_PATH = "viking_room/viking_room.obj";
+const std::string TEXTURE_PATH = "viking_room/viking_room.png";
+
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
@@ -354,7 +357,7 @@ private:
 	void createTextureImage() {
 		int textWidth, textHeight, textChannels;
 		stbi_uc* pixels = stbi_load(
-			"textures/texture.jpg", &textWidth, &textHeight,
+			TEXTURE_PATH.c_str(), &textWidth, &textHeight,
 			&textChannels, STBI_rgb_alpha);
 		VkDeviceSize imageSize = textWidth * textHeight * 4;
 
@@ -870,6 +873,7 @@ private:
 
 	void recreateSwapChain() {
 		int width = 0, height = 0;
+		glfwGetFramebufferSize(window, &width, &height);
 		while (width == 0 || height == 0) {
 			glfwGetFramebufferSize(window, &width, &height);
 			glfwWaitEvents();
