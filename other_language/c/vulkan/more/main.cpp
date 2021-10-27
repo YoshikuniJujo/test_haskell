@@ -180,6 +180,7 @@ private:
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
 	VkImageView depthImageView;
+	VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
 
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
@@ -1753,12 +1754,46 @@ private:
 
 		if (candidates.rbegin()->first > 0) {
 			physicalDevice = candidates.rbegin()->second;
+			msaaSamples = getMaxUsableSampleCount();
 			if (!isDeviceSuitable(physicalDevice)) {
 				throw std::runtime_error("failed to find a suitable GPU!");
 			}
 		} else {
 			throw std::runtime_error("failed to find a suitable GPU!");
 		}
+	}
+
+	VkSampleCountFlagBits getMaxUsableSampleCount() {
+		VkPhysicalDeviceProperties physicalDeviceProperties;
+		vkGetPhysicalDeviceProperties(
+			physicalDevice, &physicalDeviceProperties );
+
+		printf("FRAMEBUFFER COLOR SAMPLE COUNTS: %08x\n",
+			physicalDeviceProperties
+				.limits.framebufferColorSampleCounts);
+		printf("FRAMEBUFFER DEPTH SAMPLE COUNTS: %08x\n",
+			physicalDeviceProperties
+				.limits.framebufferDepthSampleCounts);
+
+		printf("VK_SAMPLE_COUNT_64_BIT: %08x\n", VK_SAMPLE_COUNT_64_BIT);
+		printf("VK_SAMPLE_COUNT_16_BIT: %08x\n", VK_SAMPLE_COUNT_16_BIT);
+		printf("VK_SAMPLE_COUNT_2_BIT: %08x\n", VK_SAMPLE_COUNT_2_BIT);
+		printf("VK_SAMPLE_COUNT_1_BIT: %08x\n", VK_SAMPLE_COUNT_1_BIT);
+
+		VkSampleCountFlags counts =
+			physicalDeviceProperties
+				.limits.framebufferColorSampleCounts &
+			physicalDeviceProperties
+				.limits.framebufferDepthSampleCounts;
+
+		if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+		if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+		if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+		if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+		if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+		if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+		return VK_SAMPLE_COUNT_1_BIT;
 	}
 
 	int rateDeviceSuitability(VkPhysicalDevice device) {
