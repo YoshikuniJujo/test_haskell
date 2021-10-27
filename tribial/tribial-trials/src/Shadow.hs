@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Wname-shadowing #-}
+{-# OPTIONS_GHC -Wname-shadowing -fwarn-unused-matches -fwarn-unused-bind #-}
 
 module Shadow where
 
@@ -19,3 +19,9 @@ main = do
 
 foo :: Int
 foo = let foo = 8 in foo
+
+bar x = 123
+
+baz = \x -> 456
+
+hoge = \_x -> 456
