@@ -1,0 +1,51 @@
+name:                try-vulkan-tutorial
+version:             0.1.0.0
+github:              "githubuser/try-vulkan-tutorial"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2021 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-tutorial#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- vulkan
+- c-enum
+
+library:
+  source-dirs: src
+
+executables:
+  try-vulkan-tutorial-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -lglfw
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-tutorial
+
+tests:
+  try-vulkan-tutorial-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-tutorial
