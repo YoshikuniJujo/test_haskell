@@ -1,14 +1,21 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
+import Data.Word
+
+import qualified Data.Vector as V
+import qualified Data.ByteString as BS
 
 #include <GLFW/glfw3.h>
 
@@ -52,3 +59,19 @@ foreign import ccall "glfwWindowShouldClose"
 	c_glfwWindowShouldClose :: GlfwWindow -> IO CInt
 
 foreign import ccall "glfwPollEvents" glfwPollEvents :: IO ()
+
+glfwGetRequiredInstanceExtensions :: IO (V.Vector BS.ByteString)
+glfwGetRequiredInstanceExtensions = alloca \pn -> do
+	ps <- c_glfwGetRequiredInstanceExtensions pn
+	n <- peek pn
+	byteStringVector (fromIntegral n) ps
+
+foreign import ccall "glfwGetRequiredInstanceExtensions"
+	c_glfwGetRequiredInstanceExtensions :: Ptr Word32 -> IO (Ptr CString)
+
+byteStringVector :: Int -> Ptr CString -> IO (V.Vector BS.ByteString)
+byteStringVector n p = V.mapM BS.packCString =<< makeVector n p
+
+makeVector :: forall a . Storable a => Int -> Ptr a -> IO (V.Vector a)
+makeVector n p = V.generateM n \i ->
+	peek $ p `plusPtr` (i * sizeOf (undefined :: a))

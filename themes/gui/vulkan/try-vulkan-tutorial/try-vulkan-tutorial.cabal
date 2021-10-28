@@ -32,7 +32,9 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
+    , vector
     , vulkan
   default-language: Haskell2010
 
@@ -45,8 +47,10 @@ executable try-vulkan-tutorial-exe
   ghc-options: -lglfw -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , try-vulkan-tutorial
+    , vector
     , vulkan
   default-language: Haskell2010
 
@@ -60,7 +64,9 @@ test-suite try-vulkan-tutorial-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , try-vulkan-tutorial
+    , vector
     , vulkan
   default-language: Haskell2010

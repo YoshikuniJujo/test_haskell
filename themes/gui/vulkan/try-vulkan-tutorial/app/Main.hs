@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -7,16 +8,20 @@ import Data.Bool
 import Vulkan.Zero
 import Vulkan.Version
 
-import qualified Vulkan as V
+import qualified Data.Vector as Vc
+import qualified Vulkan as Vk
 
 import Lib
 
 main :: IO ()
 main = do
+	(Vk.SUCCESS, ps) <- Vk.enumerateInstanceExtensionProperties Nothing
+	print $ length ps
+	print `mapM_` ps
 	w <- initWindow
-	initVulkan
+	i <- initVulkan
 	mainLoop w
-	cleanup w
+	cleanup w i
 
 initWindow :: IO GlfwWindow
 initWindow = do
@@ -25,20 +30,25 @@ initWindow = do
 	glfwWindowHint GlfwResizable GlfwFalse
 	glfwCreateWindowSimple 800 600 "Vulkan"
 
-initVulkan :: IO ()
+initVulkan :: IO Vk.Instance
 initVulkan = do
 	createInstance
 
-createInstance :: IO ()
+createInstance :: IO Vk.Instance
 createInstance = do
 	let	appInfo = zero {
-			V.applicationName = Just "Hello Triangle",
-			V.applicationVersion = MAKE_API_VERSION 1 0 0,
-			V.engineName = Just "No Engine",
-			V.engineVersion = MAKE_API_VERSION 1 0 0,
---			V.apiVersion = V.API_VERSION_1_0
-			}
-	pure ()
+			Vk.applicationName = Just "Hello Triangle",
+			Vk.applicationVersion = MAKE_API_VERSION 1 0 0,
+			Vk.engineName = Just "No Engine",
+			Vk.engineVersion = MAKE_API_VERSION 1 0 0,
+			Vk.apiVersion = Vk.API_VERSION_1_0 }
+	es <- glfwGetRequiredInstanceExtensions
+	print es
+	let	createInfo = zero {
+		Vk.applicationInfo = Just appInfo,
+		Vk.enabledLayerNames = Vc.empty,
+		Vk.enabledExtensionNames = es }
+	Vk.createInstance createInfo Nothing
 
 mainLoop :: GlfwWindow -> IO ()
 mainLoop w = do
@@ -46,7 +56,8 @@ mainLoop w = do
 	glfwPollEvents
 	bool (mainLoop w) (pure ()) cls
 
-cleanup :: GlfwWindow -> IO ()
-cleanup w = do
+cleanup :: GlfwWindow -> Vk.Instance -> IO ()
+cleanup w i = do
+	Vk.destroyInstance i Nothing
 	glfwDestroyWindow w
 	glfwTerminate
