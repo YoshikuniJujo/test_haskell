@@ -27,6 +27,7 @@ library
   exposed-modules:
       Lib
       ThEnv
+      VulkanTools
   other-modules:
       Paths_try_vulkan_tutorial
   hs-source-dirs:
