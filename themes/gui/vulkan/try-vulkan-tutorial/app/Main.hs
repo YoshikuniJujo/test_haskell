@@ -6,11 +6,13 @@
 module Main where
 
 import Foreign.C.Types
+import Data.List
 import Data.Bool
 import Vulkan.Zero
 import Vulkan.Version
 
 import qualified Data.Vector as Vc
+import qualified Data.ByteString as BS
 import qualified Vulkan as Vk
 
 import Lib
@@ -19,8 +21,14 @@ import ThEnv
 width, height :: CInt
 width = 800; height = 600
 
+validationLayers :: [BS.ByteString]
+validationLayers = [
+	"VK_LAYER_KHRONOS_validation"
+	]
+
 enableValidationLayers :: Bool
-enableValidationLayers = maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
+enableValidationLayers =
+	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
 main :: IO ()
 main = do
@@ -28,6 +36,8 @@ main = do
 	print $ length ps
 	print `mapM_` ps
 	print enableValidationLayers
+	print =<< checkValidationLayerSupport
+
 	w <- initWindow
 	i <- initVulkan
 	mainLoop w
@@ -71,3 +81,9 @@ cleanup w i = do
 	Vk.destroyInstance i Nothing
 	glfwDestroyWindow w
 	glfwTerminate
+
+checkValidationLayerSupport :: IO Bool
+checkValidationLayerSupport = do
+	(Vk.SUCCESS, lps) <- Vk.enumerateInstanceLayerProperties
+	print `mapM_` lps
+	pure . null $ validationLayers \\ (Vk.layerName <$> Vc.toList lps)
