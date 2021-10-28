@@ -6,6 +6,7 @@
 module Main where
 
 import Foreign.C.Types
+import Control.Monad
 import Data.List
 import Data.Bool
 import Vulkan.Zero
@@ -21,8 +22,8 @@ import ThEnv
 width, height :: CInt
 width = 800; height = 600
 
-validationLayers :: [BS.ByteString]
-validationLayers = [
+validationLayers :: Vc.Vector BS.ByteString
+validationLayers = Vc.fromList [
 	"VK_LAYER_KHRONOS_validation"
 	]
 
@@ -56,19 +57,30 @@ initVulkan = do
 
 createInstance :: IO Vk.Instance
 createInstance = do
+	ck <- checkValidationLayerSupport
+	when (enableValidationLayers && not ck)
+		$ error "validation layers requested, but not available!"
 	let	appInfo = zero {
 			Vk.applicationName = Just "Hello Triangle",
 			Vk.applicationVersion = MAKE_API_VERSION 1 0 0,
 			Vk.engineName = Just "No Engine",
 			Vk.engineVersion = MAKE_API_VERSION 1 0 0,
 			Vk.apiVersion = Vk.API_VERSION_1_0 }
-	es <- glfwGetRequiredInstanceExtensions
+	es <- getRequiredExtensions
 	print es
 	let	createInfo = zero {
 		Vk.applicationInfo = Just appInfo,
-		Vk.enabledLayerNames = Vc.empty,
+		Vk.enabledLayerNames =
+			bool Vc.empty validationLayers enableValidationLayers,
 		Vk.enabledExtensionNames = es }
 	Vk.createInstance createInfo Nothing
+
+getRequiredExtensions :: IO (Vc.Vector BS.ByteString)
+getRequiredExtensions = do
+	glfwExtensions <- glfwGetRequiredInstanceExtensions
+	pure $ bool id
+		(`Vc.snoc` "VK_EXT_debug_utils")
+		enableValidationLayers glfwExtensions
 
 mainLoop :: GlfwWindow -> IO ()
 mainLoop w = do
@@ -86,4 +98,4 @@ checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport = do
 	(Vk.SUCCESS, lps) <- Vk.enumerateInstanceLayerProperties
 	print `mapM_` lps
-	pure . null $ validationLayers \\ (Vk.layerName <$> Vc.toList lps)
+	pure . null $ Vc.toList validationLayers \\ (Vk.layerName <$> Vc.toList lps)
