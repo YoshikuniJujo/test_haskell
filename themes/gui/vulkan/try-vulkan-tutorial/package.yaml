@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- template-haskell
 - vector
 - bytestring
 - vulkan
@@ -32,6 +33,16 @@ library:
 executables:
   try-vulkan-tutorial-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -lglfw
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-vulkan-tutorial
+  try-th-env:
+    main:                try-th-env.hs
     source-dirs:         app
     ghc-options:
     - -lglfw

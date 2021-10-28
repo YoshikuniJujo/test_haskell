@@ -1,9 +1,11 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Foreign.C.Types
 import Data.Bool
 import Vulkan.Zero
 import Vulkan.Version
@@ -12,12 +14,20 @@ import qualified Data.Vector as Vc
 import qualified Vulkan as Vk
 
 import Lib
+import ThEnv
+
+width, height :: CInt
+width = 800; height = 600
+
+enableValidationLayers :: Bool
+enableValidationLayers = maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
 main :: IO ()
 main = do
 	(Vk.SUCCESS, ps) <- Vk.enumerateInstanceExtensionProperties Nothing
 	print $ length ps
 	print `mapM_` ps
+	print enableValidationLayers
 	w <- initWindow
 	i <- initVulkan
 	mainLoop w
@@ -28,7 +38,7 @@ initWindow = do
 	glfwInit
 	glfwWindowHint GlfwClientApi GlfwNoApi
 	glfwWindowHint GlfwResizable GlfwFalse
-	glfwCreateWindowSimple 800 600 "Vulkan"
+	glfwCreateWindowSimple width height "Vulkan"
 
 initVulkan :: IO Vk.Instance
 initVulkan = do
