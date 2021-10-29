@@ -10,7 +10,10 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
+import Control.Monad
 import Data.Foldable
+import Data.Traversable
+import Data.List
 import Data.Bool
 
 import qualified Graphics.Vulkan as Vk
@@ -18,6 +21,11 @@ import qualified Graphics.Vulkan.Core_1_0 as Vk
 import qualified Graphics.UI.GLFW as Glfw
 
 import ThEnv
+
+validationLayers :: [String]
+validationLayers = [
+	"VK_LAYER_KHRONOS_validation"
+	]
 
 enableValidationLayers :: Bool
 enableValidationLayers =
@@ -45,27 +53,32 @@ initVulkan = do
 	createInstance
 
 createInstance :: IO Vk.VkInstance
-createInstance = withCString "Hello Triangle" \cstr_ht ->
-	withCString "No Engine" \cstr_ne -> do
-		Glfw.getRequiredInstanceExtensions >>= \es -> withArrayLen es \n es' -> do
-			appInfo :: Vk.VkApplicationInfo <- Vk.newVkData \p -> do
-				Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_APPLICATION_INFO
-				Vk.writeField @"pApplicationName" p cstr_ht
-				Vk.writeField @"applicationVersion" p $ Vk._VK_MAKE_VERSION 1 0 0
-				Vk.writeField @"pEngineName" p cstr_ne
-				Vk.writeField @"engineVersion" p $ Vk._VK_MAKE_VERSION 1 0 0
-				Vk.writeField @"apiVersion" p Vk.VK_API_VERSION_1_0
-			createInfo :: Vk.VkInstanceCreateInfo <- Vk.newVkData \p -> do
-				Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-				Vk.writeField @"pApplicationInfo" p $ Vk.unsafePtr appInfo
-				Vk.writeField @"enabledExtensionCount" p $ fromIntegral n
-				Vk.writeField @"ppEnabledExtensionNames" p es'
-				Vk.writeField @"enabledLayerCount" p 0
-			i <- malloc
-			Vk.VK_SUCCESS <- Vk.vkCreateInstance (Vk.unsafePtr createInfo) nullPtr i
-			Vk.touchVkData createInfo
-			Vk.touchVkData appInfo
-			peek i
+createInstance = do
+	when enableValidationLayers do
+		b <- checkValidationLayerSupport
+		when (not b) $ error
+			"validation layers requested, but not available!"
+	withCString "Hello Triangle" \cstr_ht ->
+		withCString "No Engine" \cstr_ne -> do
+			Glfw.getRequiredInstanceExtensions >>= \es -> withArrayLen es \n es' -> do
+				appInfo :: Vk.VkApplicationInfo <- Vk.newVkData \p -> do
+					Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_APPLICATION_INFO
+					Vk.writeField @"pApplicationName" p cstr_ht
+					Vk.writeField @"applicationVersion" p $ Vk._VK_MAKE_VERSION 1 0 0
+					Vk.writeField @"pEngineName" p cstr_ne
+					Vk.writeField @"engineVersion" p $ Vk._VK_MAKE_VERSION 1 0 0
+					Vk.writeField @"apiVersion" p Vk.VK_API_VERSION_1_0
+				createInfo :: Vk.VkInstanceCreateInfo <- Vk.newVkData \p -> do
+					Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+					Vk.writeField @"pApplicationInfo" p $ Vk.unsafePtr appInfo
+					Vk.writeField @"enabledExtensionCount" p $ fromIntegral n
+					Vk.writeField @"ppEnabledExtensionNames" p es'
+					Vk.writeField @"enabledLayerCount" p 0
+				i <- malloc
+				Vk.VK_SUCCESS <- Vk.vkCreateInstance (Vk.unsafePtr createInfo) nullPtr i
+				Vk.touchVkData createInfo
+				Vk.touchVkData appInfo
+				peek i
 
 checkExtensionSupport :: IO ()
 checkExtensionSupport = alloca \pn -> do
@@ -80,6 +93,23 @@ checkExtensionSupport = alloca \pn -> do
 			ln = Vk.fieldArrayLength @"extensionName" @Vk.VkExtensionProperties
 		putStrLn . ('\t' :) =<< peekCStringLen (Vk.unsafePtr p `plusPtr` os, ln)
 		Vk.touchVkData p
+
+checkValidationLayerSupport :: IO Bool
+checkValidationLayerSupport = alloca \pn -> do
+	Vk.VK_SUCCESS <- Vk.vkEnumerateInstanceLayerProperties pn nullPtr
+	n <- peek pn
+	(pp, ps) <- Vk.mallocVkDataArray $ fromIntegral n
+	Vk.VK_SUCCESS <- Vk.vkEnumerateInstanceLayerProperties pn pp
+	print $ length ps
+	vls <- for ps \p -> do
+		peekCStringLen (Vk.unsafePtr p `plusPtr` os, ln)
+			<* Vk.touchVkData p
+	let	vls' = takeWhile (/= '\NUL') <$> vls
+	print vls'
+	pure . null $ validationLayers \\ vls'
+	where
+	os = Vk.fieldOffset @"layerName" @Vk.VkLayerProperties
+	ln = Vk.fieldArrayLength @"layerName" @Vk.VkLayerProperties
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
