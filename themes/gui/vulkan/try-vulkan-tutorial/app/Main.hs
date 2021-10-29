@@ -5,8 +5,10 @@
 
 module Main where
 
+import Foreign.Ptr
 import Foreign.C.Types
 import Control.Monad
+import Data.Bits
 import Data.List
 import Data.Bool
 import Vulkan.Zero
@@ -14,10 +16,12 @@ import Vulkan.Version
 
 import qualified Data.Vector as Vc
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import qualified Vulkan as Vk
 
 import Lib
 import ThEnv
+import VulkanTools
 
 width, height :: CInt
 width = 800; height = 600
@@ -53,7 +57,9 @@ initWindow = do
 
 initVulkan :: IO Vk.Instance
 initVulkan = do
-	createInstance
+	i <- createInstance
+	setupDebugMessenger i
+	pure i
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -74,6 +80,21 @@ createInstance = do
 			bool Vc.empty validationLayers enableValidationLayers,
 		Vk.enabledExtensionNames = es }
 	Vk.createInstance createInfo Nothing
+
+setupDebugMessenger :: Vk.Instance -> IO ()
+setupDebugMessenger i = if not enableValidationLayers then pure () else do
+	let	createInfo = zero {
+			Vk.messageSeverity =
+				Vk.DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT .|.
+				Vk.DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT .|.
+				Vk.DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+			Vk.messageType =
+				Vk.DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT .|.
+				Vk.DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT .|.
+				Vk.DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+			Vk.userData = nullPtr }
+	createInfo' <- setFnUserCallback createInfo debugCallback
+	pure ()
 
 getRequiredExtensions :: IO (Vc.Vector BS.ByteString)
 getRequiredExtensions = do
@@ -99,3 +120,8 @@ checkValidationLayerSupport = do
 	(Vk.SUCCESS, lps) <- Vk.enumerateInstanceLayerProperties
 	print `mapM_` lps
 	pure . null $ Vc.toList validationLayers \\ (Vk.layerName <$> Vc.toList lps)
+
+debugCallback :: Vk.FN_vkDebugUtilsMessengerCallbackEXT
+debugCallback _messageSeverity _messageType pCallbackData _pUserData =
+	Vk.FALSE <$ (BSC.putStrLn . ("validation layer: " <>)
+		. Vk.message =<< Vk.peekCStruct pCallbackData)
