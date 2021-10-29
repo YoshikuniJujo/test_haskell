@@ -128,6 +128,12 @@ checkValidationLayerSupport = alloca \pn -> do
 	os = Vk.fieldOffset @"layerName" @Vk.VkLayerProperties
 	ln = Vk.fieldArrayLength @"layerName" @Vk.VkLayerProperties
 
+debugCallback :: Vk.HS_vkDebugUtilsMessengerCallbackEXT
+debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
+	msg <- Vk.readField @"pMessage" pCallbackData
+	putStrLn . ("validation layer: " ++) =<< peekCString msg
+	pure Vk.VK_FALSE
+
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
 	sc <- Glfw.windowShouldClose w
