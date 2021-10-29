@@ -65,7 +65,7 @@ createInstance = do
 			"validation layers requested, but not available!"
 	withCString "Hello Triangle" \cstr_ht ->
 		withCString "No Engine" \cstr_ne ->
-			Glfw.getRequiredInstanceExtensions >>= \es -> withArrayLen es \n es' ->
+			getRequiredExtensions \es -> withArrayLen es \n es' ->
 				withCStringArray validationLayers \cvls -> do
 					appInfo :: Vk.VkApplicationInfo <- Vk.newVkData \p -> do
 						Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_APPLICATION_INFO
@@ -89,6 +89,13 @@ createInstance = do
 					Vk.touchVkData createInfo
 					Vk.touchVkData appInfo
 					peek i
+
+getRequiredExtensions :: ([CString] -> IO a) -> IO a
+getRequiredExtensions f = do
+	extensions <- Glfw.getRequiredInstanceExtensions
+	if enableValidationLayers
+	then withCString "VK_EXT_debug_utils" \cs -> f (extensions ++ [cs])
+	else f extensions
 
 checkExtensionSupport :: IO ()
 checkExtensionSupport = alloca \pn -> do
