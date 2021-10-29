@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
@@ -16,8 +17,15 @@ import qualified Graphics.Vulkan as Vk
 import qualified Graphics.Vulkan.Core_1_0 as Vk
 import qualified Graphics.UI.GLFW as Glfw
 
+import ThEnv
+
+enableValidationLayers :: Bool
+enableValidationLayers =
+	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
+
 main :: IO ()
 main = do
+	print enableValidationLayers
 	w <- initWindow
 	i <- initVulkan
 	mainLoop w
