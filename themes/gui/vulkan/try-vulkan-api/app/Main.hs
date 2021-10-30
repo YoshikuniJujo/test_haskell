@@ -88,7 +88,11 @@ createInstance = do
 						then do	Vk.writeField @"enabledLayerCount" p
 								. fromIntegral $ length validationLayers
 							Vk.writeField @"ppEnabledLayerNames" p cvls
-						else Vk.writeField @"enabledLayerCount" p 0
+							debugCreateInfo <- populateDebugMessengerCreateInfo
+							Vk.writeField @"pNext" p . castPtr $ Vk.unsafePtr debugCreateInfo
+							Vk.touchVkData debugCreateInfo
+						else do	Vk.writeField @"enabledLayerCount" p 0
+							Vk.writeField @"pNext" p nullPtr
 					i <- malloc
 					Vk.VK_SUCCESS <- Vk.vkCreateInstance (Vk.unsafePtr createInfo) nullPtr i
 					Vk.touchVkData createInfo
@@ -120,7 +124,14 @@ setupDebugMessenger :: Vk.VkInstance -> IO (Ptr Vk.VkDebugUtilsMessengerEXT)
 setupDebugMessenger i = if not enableValidationLayers then pure nullPtr else do
 	pDebugMessenger :: Ptr Vk.VkDebugUtilsMessengerEXT <- malloc
 	vkCreateDebugUtilsMessengerEXT <- createDebugUtilsMessengerEXT i
-	createInfo :: Vk.VkDebugUtilsMessengerCreateInfoEXT <- Vk.newVkData \p -> do
+	createInfo <- populateDebugMessengerCreateInfo
+	Vk.VK_SUCCESS <- vkCreateDebugUtilsMessengerEXT i (Vk.unsafePtr createInfo) nullPtr pDebugMessenger
+	Vk.touchVkData createInfo
+	pure pDebugMessenger
+
+populateDebugMessengerCreateInfo :: IO Vk.VkDebugUtilsMessengerCreateInfoEXT
+populateDebugMessengerCreateInfo = do
+	Vk.newVkData \p -> do
 		Vk.writeField @"sType" p
 			Vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT
 		Vk.writeField @"messageSeverity" p $
@@ -134,9 +145,6 @@ setupDebugMessenger i = if not enableValidationLayers then pure nullPtr else do
 		Vk.writeField @"pfnUserCallback" p
 			=<< wrapDebugUtilsMessengerCallbackEXT debugCallback
 		Vk.writeField @"pUserData" p nullPtr
-	Vk.VK_SUCCESS <- vkCreateDebugUtilsMessengerEXT i (Vk.unsafePtr createInfo) nullPtr pDebugMessenger
-	Vk.touchVkData createInfo
-	pure pDebugMessenger
 
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport = alloca \pn -> do
