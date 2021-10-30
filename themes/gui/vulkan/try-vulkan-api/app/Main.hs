@@ -13,13 +13,16 @@ import Foreign.C.String
 import Control.Monad
 import Data.Foldable
 import Data.Traversable
+import Data.Bits
 import Data.List
 import Data.Bool
 
 import qualified Graphics.Vulkan as Vk
 import qualified Graphics.Vulkan.Core_1_0 as Vk
+import qualified Graphics.Vulkan.Ext.VK_EXT_debug_utils as Vk
 import qualified Graphics.UI.GLFW as Glfw
 
+import Lib
 import ThEnv
 
 validationLayers :: [String]
@@ -40,9 +43,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	i <- initVulkan
+	(i, dm) <- initVulkan
 	mainLoop w
-	cleanup w i
+	cleanup w i dm
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -52,10 +55,12 @@ initWindow = do
 	Just w <- Glfw.createWindow 800 600 "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO Vk.VkInstance
+initVulkan :: IO (Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT)
 initVulkan = do
 	checkExtensionSupport
-	createInstance
+	i <- createInstance
+	dm <- setupDebugMessenger i
+	pure (i, dm)
 
 createInstance :: IO Vk.VkInstance
 createInstance = do
@@ -111,6 +116,28 @@ checkExtensionSupport = alloca \pn -> do
 		putStrLn . ('\t' :) =<< peekCStringLen (Vk.unsafePtr p `plusPtr` os, ln)
 		Vk.touchVkData p
 
+setupDebugMessenger :: Vk.VkInstance -> IO (Ptr Vk.VkDebugUtilsMessengerEXT)
+setupDebugMessenger i = if not enableValidationLayers then pure nullPtr else do
+	pDebugMessenger :: Ptr Vk.VkDebugUtilsMessengerEXT <- malloc
+	vkCreateDebugUtilsMessengerEXT <- createDebugUtilsMessengerEXT i
+	createInfo :: Vk.VkDebugUtilsMessengerCreateInfoEXT <- Vk.newVkData \p -> do
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT
+		Vk.writeField @"messageSeverity" p $
+			Vk.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT .|.
+			Vk.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT .|.
+			Vk.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+		Vk.writeField @"messageType" p $
+			Vk.VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT .|.
+			Vk.VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT .|.
+			Vk.VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
+		Vk.writeField @"pfnUserCallback" p
+			=<< wrapDebugUtilsMessengerCallbackEXT debugCallback
+		Vk.writeField @"pUserData" p nullPtr
+	Vk.VK_SUCCESS <- vkCreateDebugUtilsMessengerEXT i (Vk.unsafePtr createInfo) nullPtr pDebugMessenger
+	Vk.touchVkData createInfo
+	pure pDebugMessenger
+
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport = alloca \pn -> do
 	Vk.VK_SUCCESS <- Vk.vkEnumerateInstanceLayerProperties pn nullPtr
@@ -140,8 +167,12 @@ mainLoop w = do
 	Glfw.pollEvents
 	bool (mainLoop w) (pure ()) sc
 
-cleanup :: Glfw.Window -> Vk.VkInstance -> IO ()
-cleanup w i = do
+cleanup :: Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT -> IO ()
+cleanup w i pdm = do
+	when enableValidationLayers do
+		vkDestroyDebugUtilsMessengerEXT <-
+			createDestroyDebugUtilsMessengerEXT i
+		peek pdm >>= \dm -> vkDestroyDebugUtilsMessengerEXT i dm nullPtr
 	Vk.vkDestroyInstance i nullPtr
 	Glfw.destroyWindow w
 	Glfw.terminate
