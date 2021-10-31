@@ -60,7 +60,16 @@ initVulkan = do
 	checkExtensionSupport
 	i <- createInstance
 	dm <- setupDebugMessenger i
+	pickPhysicalDevice i
 	pure (i, dm)
+
+pickPhysicalDevice :: Vk.VkInstance -> IO ()
+pickPhysicalDevice i = alloca \pn -> do
+	Vk.VK_SUCCESS <- Vk.vkEnumeratePhysicalDevices i pn nullPtr
+	n <- peek pn
+	putStrLn $ "PHYSICAL DEVICE NUMBER: " ++ show n
+	when (n == 0) $ error "failed to find GPUs with Vulkan support!"
+	pure ()
 
 createInstance :: IO Vk.VkInstance
 createInstance = do
