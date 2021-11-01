@@ -64,11 +64,22 @@ initVulkan = do
 	pure (i, dm)
 
 pickPhysicalDevice :: Vk.VkInstance -> IO ()
-pickPhysicalDevice i = alloca \pn -> do
+pickPhysicalDevice i = alloca \pn -> alloca \pdp -> do
 	Vk.VK_SUCCESS <- Vk.vkEnumeratePhysicalDevices i pn nullPtr
 	n <- peek pn
 	putStrLn $ "PHYSICAL DEVICE NUMBER: " ++ show n
 	when (n == 0) $ error "failed to find GPUs with Vulkan support!"
+	pDevices <- mallocArray $ fromIntegral n
+	Vk.VK_SUCCESS <- Vk.vkEnumeratePhysicalDevices i pn pDevices
+	ds <- peekArray (fromIntegral n) pDevices
+	for_ ds \d -> do
+		Vk.vkGetPhysicalDeviceProperties d pdp
+		print =<< peek pdp
+		print =<< Vk.readField @"deviceName" pdp
+		let	os = Vk.fieldOffset @"deviceName" @Vk.VkPhysicalDeviceProperties
+			ln = Vk.fieldArrayLength @"deviceName" @Vk.VkPhysicalDeviceProperties
+		putStrLn . ('\t' :) =<< peekCStringLen (pdp `plusPtr` os, ln)
+--		Vk.touchVkData pdp
 	pure ()
 
 createInstance :: IO Vk.VkInstance
