@@ -21,6 +21,7 @@ import Data.Bool
 import qualified Graphics.Vulkan as Vk
 import qualified Graphics.Vulkan.Core_1_0 as Vk
 import qualified Graphics.Vulkan.Ext.VK_EXT_debug_utils as Vk
+import qualified Graphics.Vulkan.Ext.VK_KHR_surface as Vk
 import qualified Graphics.UI.GLFW as Glfw
 
 import Lib
@@ -44,9 +45,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d) <- initVulkan
+	(i, dm, d, sfc) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d
+	cleanup w i dm d sfc
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -56,14 +57,22 @@ initWindow = do
 	Just w <- Glfw.createWindow 800 600 "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO (Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice)
-initVulkan = do
+initVulkan :: Glfw.Window -> IO (
+	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
+	Vk.VkSurfaceKHR )
+initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
 	dm <- setupDebugMessenger i
+	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i
 	(d, gq) <- createLogicalDevice pd
-	pure (i, dm, d)
+	pure (i, dm, d, sfc)
+
+createSurface :: Vk.VkInstance -> Glfw.Window -> IO Vk.VkSurfaceKHR
+createSurface i w = alloca \pSurface -> do
+	Vk.VK_SUCCESS <- Glfw.createWindowSurface i w nullPtr pSurface
+	peek pSurface
 
 createLogicalDevice :: Vk.VkPhysicalDevice -> IO (Vk.VkDevice, Vk.VkQueue)
 createLogicalDevice pd = alloca \pQueuePriority -> do
@@ -269,13 +278,16 @@ mainLoop w = do
 	Glfw.pollEvents
 	bool (mainLoop w) (pure ()) sc
 
-cleanup :: Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT -> Vk.VkDevice -> IO ()
-cleanup w i pdm d = do
+cleanup ::
+	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
+	Vk.VkDevice -> Vk.VkSurfaceKHR -> IO ()
+cleanup w i pdm d sfc = do
 	Vk.vkDestroyDevice d nullPtr
 	when enableValidationLayers do
 		vkDestroyDebugUtilsMessengerEXT <-
 			createDestroyDebugUtilsMessengerEXT i
 		peek pdm >>= \dm -> vkDestroyDebugUtilsMessengerEXT i dm nullPtr
+	Vk.vkDestroySurfaceKHR i sfc nullPtr
 	Vk.vkDestroyInstance i nullPtr
 	Glfw.destroyWindow w
 	Glfw.terminate
