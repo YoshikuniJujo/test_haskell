@@ -65,8 +65,8 @@ initVulkan w = do
 	i <- createInstance
 	dm <- setupDebugMessenger i
 	sfc <- createSurface i w
-	pd <- pickPhysicalDevice i
-	(d, gq) <- createLogicalDevice pd
+	pd <- pickPhysicalDevice i sfc
+	(d, gq) <- createLogicalDevice pd sfc
 	pure (i, dm, d, sfc)
 
 createSurface :: Vk.VkInstance -> Glfw.Window -> IO Vk.VkSurfaceKHR
@@ -74,10 +74,10 @@ createSurface i w = alloca \pSurface -> do
 	Vk.VK_SUCCESS <- Glfw.createWindowSurface i w nullPtr pSurface
 	peek pSurface
 
-createLogicalDevice :: Vk.VkPhysicalDevice -> IO (Vk.VkDevice, Vk.VkQueue)
-createLogicalDevice pd = alloca \pQueuePriority -> do
+createLogicalDevice :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO (Vk.VkDevice, Vk.VkQueue)
+createLogicalDevice pd sfc = alloca \pQueuePriority -> do
 	withCStringArray validationLayers \cvls -> do
-		indices <- findQueueFamilies pd
+		indices <- findQueueFamilies pd sfc
 		queueCreateInfo :: Vk.VkDeviceQueueCreateInfo <- Vk.newVkData \p -> do
 			Vk.clearStorable p
 			Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
@@ -111,8 +111,8 @@ createLogicalDevice pd = alloca \pQueuePriority -> do
 		free pGraphicsQueue
 		pure (device, graphicsQueue)
 
-pickPhysicalDevice :: Vk.VkInstance -> IO Vk.VkPhysicalDevice
-pickPhysicalDevice i = alloca \pn -> do
+pickPhysicalDevice :: Vk.VkInstance -> Vk.VkSurfaceKHR -> IO Vk.VkPhysicalDevice
+pickPhysicalDevice i sfc = alloca \pn -> do
 	Vk.VK_SUCCESS <- Vk.vkEnumeratePhysicalDevices i pn nullPtr
 	n <- peek pn
 	putStrLn $ "PHYSICAL DEVICE NUMBER: " ++ show n
@@ -120,21 +120,22 @@ pickPhysicalDevice i = alloca \pn -> do
 	pDevices <- mallocArray $ fromIntegral n
 	Vk.VK_SUCCESS <- Vk.vkEnumeratePhysicalDevices i pn pDevices
 	ds <- peekArray (fromIntegral n) pDevices
-	ds' <- (`filterM` ds) \d -> isDeviceSuitable d
+	ds' <- (`filterM` ds) \d -> isDeviceSuitable d sfc
 	when (null ds') $ error "failed to find a suitable GPU!"
 	pure $ head ds'
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Maybe Vk.Word32,
+	presentFamily :: Maybe Vk.Word32,
 	isComplete :: QueueFamilyIndices -> Bool
 	}
 
 queueFamilyIndices0 :: QueueFamilyIndices
-queueFamilyIndices0 = QueueFamilyIndices Nothing \q ->
-	isJust $ graphicsFamily q
+queueFamilyIndices0 = QueueFamilyIndices Nothing Nothing \q ->
+	isJust (graphicsFamily q) && isJust (presentFamily q)
 
-isDeviceSuitable :: Vk.VkPhysicalDevice -> IO Bool
-isDeviceSuitable d = alloca \pdp -> alloca \pdf -> do
+isDeviceSuitable :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO Bool
+isDeviceSuitable d sfc = alloca \pdp -> alloca \pdf -> do
 	Vk.vkGetPhysicalDeviceProperties d pdp
 	print =<< peek pdp
 	print =<< Vk.readField @"deviceName" pdp
@@ -146,11 +147,11 @@ isDeviceSuitable d = alloca \pdp -> alloca \pdf -> do
 	print =<< peek pdf
 	print =<< Vk.readField @"geometryShader" pdf
 
-	indices <- findQueueFamilies d
+	indices <- findQueueFamilies d sfc
 	pure $ isComplete indices indices
 
-findQueueFamilies :: Vk.VkPhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies d = alloca \pn -> do
+findQueueFamilies :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO QueueFamilyIndices
+findQueueFamilies d sfc = alloca \pn -> do
 	Vk.vkGetPhysicalDeviceQueueFamilyProperties d pn nullPtr
 	n <- peek pn
 	pqfps <- mallocArray $ fromIntegral n
@@ -159,9 +160,14 @@ findQueueFamilies d = alloca \pn -> do
 	print qfps
 	flags <- for qfps \qfp -> Vk.readField @"queueFlags" (Vk.unsafePtr qfp)
 	print flags
+	flags' <- for [0 .. n - 1] \i -> alloca \pb -> do
+		Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfaceSupportKHR d i sfc pb
+		peek pb
+	print flags'
 	pure queueFamilyIndices0 {
 		graphicsFamily = fromIntegral
-			<$> findIndex ((/= zeroBits) . (.&. Vk.VK_QUEUE_GRAPHICS_BIT)) flags
+			<$> findIndex ((/= zeroBits) . (.&. Vk.VK_QUEUE_GRAPHICS_BIT)) flags,
+		presentFamily = fromIntegral <$> findIndex (== Vk.VK_TRUE) flags'
 		}
 
 createInstance :: IO Vk.VkInstance
