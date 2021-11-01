@@ -44,9 +44,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm) <- initVulkan
+	(i, dm, d) <- initVulkan
 	mainLoop w
-	cleanup w i dm
+	cleanup w i dm d
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -56,13 +56,51 @@ initWindow = do
 	Just w <- Glfw.createWindow 800 600 "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO (Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT)
+initVulkan :: IO (Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice)
 initVulkan = do
 	checkExtensionSupport
 	i <- createInstance
 	dm <- setupDebugMessenger i
 	pd <- pickPhysicalDevice i
-	pure (i, dm)
+	(d, gq) <- createLogicalDevice pd
+	pure (i, dm, d)
+
+createLogicalDevice :: Vk.VkPhysicalDevice -> IO (Vk.VkDevice, Vk.VkQueue)
+createLogicalDevice pd = alloca \pQueuePriority -> do
+	withCStringArray validationLayers \cvls -> do
+		indices <- findQueueFamilies pd
+		queueCreateInfo :: Vk.VkDeviceQueueCreateInfo <- Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+			Vk.writeField @"queueFamilyIndex" p . fromJust $ graphicsFamily indices
+			Vk.writeField @"queueCount" p 1
+			poke pQueuePriority 1
+			Vk.writeField @"pQueuePriorities" p pQueuePriority
+		deviceFeatures :: Vk.VkPhysicalDeviceFeatures <- Vk.mallocVkData
+		Vk.clearStorable $ Vk.unsafePtr deviceFeatures
+		createInfo :: Vk.VkDeviceCreateInfo <- Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
+			Vk.writeField @"pQueueCreateInfos" p $ Vk.unsafePtr queueCreateInfo
+			Vk.writeField @"queueCreateInfoCount" p 1
+			Vk.writeField @"pEnabledFeatures" p $ Vk.unsafePtr deviceFeatures
+			Vk.writeField @"enabledExtensionCount" p 0
+			if enableValidationLayers
+			then do	Vk.writeField @"enabledLayerCount" p . fromIntegral $ length validationLayers
+				Vk.writeField @"ppEnabledLayerNames" p cvls
+			else Vk.writeField @"enabledLayerCount" p 0
+		Vk.touchVkData queueCreateInfo
+		Vk.touchVkData deviceFeatures
+		pVkDevice <- malloc
+		Vk.VK_SUCCESS <- Vk.vkCreateDevice pd (Vk.unsafePtr createInfo) nullPtr pVkDevice
+		Vk.touchVkData createInfo
+		pGraphicsQueue <- malloc
+		device <- peek pVkDevice
+		Vk.vkGetDeviceQueue device (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
+		graphicsQueue <- peek pGraphicsQueue
+		free pVkDevice
+		free pGraphicsQueue
+		pure (device, graphicsQueue)
 
 pickPhysicalDevice :: Vk.VkInstance -> IO Vk.VkPhysicalDevice
 pickPhysicalDevice i = alloca \pn -> do
@@ -231,8 +269,9 @@ mainLoop w = do
 	Glfw.pollEvents
 	bool (mainLoop w) (pure ()) sc
 
-cleanup :: Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT -> IO ()
-cleanup w i pdm = do
+cleanup :: Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT -> Vk.VkDevice -> IO ()
+cleanup w i pdm d = do
+	Vk.vkDestroyDevice d nullPtr
 	when enableValidationLayers do
 		vkDestroyDebugUtilsMessengerEXT <-
 			createDestroyDebugUtilsMessengerEXT i
