@@ -73,7 +73,25 @@ initVulkan w = do
 	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i sfc
 	(d, gq, pq) <- createLogicalDevice pd sfc
+	createSwapChain pd sfc
 	pure (i, dm, d, sfc)
+
+createSwapChain :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO ()
+createSwapChain pd sfc = do
+	swapChainSupport <- querySwapChainSupport pd sfc
+	surfaceFormat <- chooseSwapSurfaceFormat $ formats swapChainSupport
+	pure ()
+
+chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
+chooseSwapSurfaceFormat availableFormats = do
+	afs <- (`filterM` availableFormats) \af -> do
+		fmt <- Vk.readField @"format" (Vk.unsafePtr af)
+		cs <- Vk.readField @"colorSpace" (Vk.unsafePtr af)
+		pure $	fmt == Vk.VK_FORMAT_B8G8R8A8_SRGB &&
+			cs == Vk.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+	print afs
+	Vk.touchVkData `mapM_` availableFormats
+	pure . head $ afs ++ availableFormats
 
 createSurface :: Vk.VkInstance -> Glfw.Window -> IO Vk.VkSurfaceKHR
 createSurface i w = alloca \pSurface -> do
@@ -180,7 +198,7 @@ querySwapChainSupport d sfc = do
 	cpbs <- alloca \pcpbs -> do
 		Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfaceCapabilitiesKHR d sfc pcpbs
 		peek pcpbs
-	putStrLn $ "dertails.capabilities: " ++ show cpbs
+	putStrLn $ "details.capabilities: " ++ show cpbs
 	fmts <- alloca \pn -> do
 		Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfaceFormatsKHR d sfc pn nullPtr
 		n <- peek pn
