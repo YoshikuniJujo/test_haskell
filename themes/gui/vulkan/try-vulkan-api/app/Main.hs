@@ -33,6 +33,11 @@ validationLayers = [
 	"VK_LAYER_KHRONOS_validation"
 	]
 
+deviceExtensions :: [String]
+deviceExtensions = [
+	"VK_KHR_swapchain"
+	]
+
 withCStringArray :: [String] -> (Ptr CString -> IO a) -> IO a
 withCStringArray ss f = do
 	css <- newCString `mapM` ss
@@ -77,7 +82,7 @@ createSurface i w = alloca \pSurface -> do
 
 createLogicalDevice :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO (Vk.VkDevice, Vk.VkQueue, Vk.VkQueue)
 createLogicalDevice pd sfc = alloca \pQueuePriority -> do
-	withCStringArray validationLayers \cvls -> do
+	withCStringArray validationLayers \cvls -> withCStringArray deviceExtensions \cdes -> do
 		indices <- findQueueFamilies pd sfc
 		let	uniqueQueueFamilies = St.fromList [
 				graphicsFamily indices, presentFamily indices ]
@@ -99,7 +104,8 @@ createLogicalDevice pd sfc = alloca \pQueuePriority -> do
 				Vk.writeField @"pQueueCreateInfos" p pQueueCreateInfos
 				Vk.writeField @"queueCreateInfoCount" p 1
 				Vk.writeField @"pEnabledFeatures" p $ Vk.unsafePtr deviceFeatures
-				Vk.writeField @"enabledExtensionCount" p 0
+				Vk.writeField @"enabledExtensionCount" p . fromIntegral $ length deviceExtensions
+				Vk.writeField @"ppEnabledExtensionNames" p cdes
 				if enableValidationLayers
 				then do	Vk.writeField @"enabledLayerCount" p . fromIntegral $ length validationLayers
 					Vk.writeField @"ppEnabledLayerNames" p cvls
@@ -157,7 +163,23 @@ isDeviceSuitable d sfc = alloca \pdp -> alloca \pdf -> do
 	print =<< Vk.readField @"geometryShader" pdf
 
 	indices <- findQueueFamilies d sfc
-	pure $ isComplete indices indices
+
+	extensionsSupported <- checkDeviceExtensionSupport d
+	pure $ isComplete indices indices && extensionsSupported
+
+checkDeviceExtensionSupport :: Vk.VkPhysicalDevice -> IO Bool
+checkDeviceExtensionSupport d = alloca \pn ->  do
+	Vk.VK_SUCCESS <- Vk.vkEnumerateDeviceExtensionProperties d nullPtr pn nullPtr
+	n <- peek pn
+	putStrLn $ "EXTENSION PROPERTY NUMBER: " ++ show n
+	allocaArray (fromIntegral n) \pAvailableExtensions -> do
+		Vk.VK_SUCCESS <- Vk.vkEnumerateDeviceExtensionProperties d
+			nullPtr pn pAvailableExtensions
+		putStrLn "EXTENSION PROPERTIES: "
+		ens <- mapM ((takeWhile (/= '\NUL') <$>) . peekExtensionName)
+			=<< peekArray (fromIntegral n) pAvailableExtensions
+		(putStrLn . ('\t' :)) `mapM_` ens
+		pure . null $ deviceExtensions \\ ens
 
 findQueueFamilies :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO QueueFamilyIndices
 findQueueFamilies d sfc = alloca \pn -> do
@@ -231,11 +253,13 @@ checkExtensionSupport = alloca \pn -> do
 	Vk.VK_SUCCESS <- Vk.vkEnumerateInstanceExtensionProperties nullPtr pn pp
 	print $ length ps
 	putStrLn "available extensions:"
-	for_ ps \p -> do
-		let	os = Vk.fieldOffset @"extensionName" @Vk.VkExtensionProperties
-			ln = Vk.fieldArrayLength @"extensionName" @Vk.VkExtensionProperties
-		putStrLn . ('\t' :) =<< peekCStringLen (Vk.unsafePtr p `plusPtr` os, ln)
-		Vk.touchVkData p
+	for_ ps \p -> putStrLn . ('\t' :) =<< peekExtensionName p
+
+peekExtensionName :: Vk.VkExtensionProperties -> IO String
+peekExtensionName p = peekCStringLen (Vk.unsafePtr p `plusPtr` os, ln)
+	<* Vk.touchVkData p
+	where	os = Vk.fieldOffset @"extensionName" @Vk.VkExtensionProperties
+		ln = Vk.fieldArrayLength @"extensionName" @Vk.VkExtensionProperties
 
 setupDebugMessenger :: Vk.VkInstance -> IO (Ptr Vk.VkDebugUtilsMessengerEXT)
 setupDebugMessenger i = if not enableValidationLayers then pure nullPtr else do
