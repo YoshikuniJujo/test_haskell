@@ -165,7 +165,39 @@ isDeviceSuitable d sfc = alloca \pdp -> alloca \pdf -> do
 	indices <- findQueueFamilies d sfc
 
 	extensionsSupported <- checkDeviceExtensionSupport d
-	pure $ isComplete indices indices && extensionsSupported
+	swapChainAdequate <- if not extensionsSupported then pure False else do
+		swapChainSupport <- querySwapChainSupport d sfc
+		pure $ not (null $ formats swapChainSupport) && not (null $ presentModes swapChainSupport)
+	pure $ isComplete indices indices && extensionsSupported && swapChainAdequate
+
+data SwapChainSupportDetails = SwapChainSupportDetails {
+	capabilities :: Vk.VkSurfaceCapabilitiesKHR,
+	formats :: [Vk.VkSurfaceFormatKHR],
+	presentModes :: [Vk.VkPresentModeKHR] } deriving Show
+
+querySwapChainSupport :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO SwapChainSupportDetails
+querySwapChainSupport d sfc = do
+	cpbs <- alloca \pcpbs -> do
+		Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfaceCapabilitiesKHR d sfc pcpbs
+		peek pcpbs
+	putStrLn $ "dertails.capabilities: " ++ show cpbs
+	fmts <- alloca \pn -> do
+		Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfaceFormatsKHR d sfc pn nullPtr
+		n <- peek pn
+		if n == 0 then pure []
+		else allocaArray (fromIntegral n) \pfmts -> do
+			Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfaceFormatsKHR d sfc pn pfmts
+			peekArray (fromIntegral n) pfmts
+	print fmts
+	pms <- alloca \pn -> do
+		Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfacePresentModesKHR d sfc pn nullPtr
+		n <- fromIntegral <$> peek pn
+		if n == 0 then pure []
+		else allocaArray n \ppms -> do
+			Vk.VK_SUCCESS <- Vk.vkGetPhysicalDeviceSurfacePresentModesKHR d sfc pn ppms
+			peekArray n ppms
+	print pms
+	pure $ SwapChainSupportDetails cpbs fmts pms
 
 checkDeviceExtensionSupport :: Vk.VkPhysicalDevice -> IO Bool
 checkDeviceExtensionSupport d = alloca \pn ->  do
