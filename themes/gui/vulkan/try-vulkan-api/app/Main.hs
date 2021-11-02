@@ -73,15 +73,16 @@ initVulkan w = do
 	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i sfc
 	(d, gq, pq) <- createLogicalDevice pd sfc
-	createSwapChain pd sfc
+	createSwapChain w pd sfc
 	pure (i, dm, d, sfc)
 
-createSwapChain :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO ()
-createSwapChain pd sfc = do
+createSwapChain :: Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO ()
+createSwapChain win pd sfc = do
 	swapChainSupport <- querySwapChainSupport pd sfc
 	surfaceFormat <- chooseSwapSurfaceFormat $ formats swapChainSupport
 	let	presentMode =
 			chooseSwapPresentMode $ presentModes swapChainSupport
+	extent <- chooseSwapExtent win $ capabilities swapChainSupport
 	pure ()
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
@@ -100,6 +101,29 @@ chooseSwapPresentMode availablePresentModes = let
 	pms = filter
 		(== Vk.VK_PRESENT_MODE_MAILBOX_KHR) availablePresentModes in
 	head $ pms ++ [Vk.VK_PRESENT_MODE_FIFO_KHR]
+
+chooseSwapExtent :: Glfw.Window -> Vk.VkSurfaceCapabilitiesKHR -> IO Vk.VkExtent2D
+chooseSwapExtent win caps = do
+	ce <- Vk.readField @"currentExtent" $ Vk.unsafePtr caps
+	w <- Vk.readField @"width" $ Vk.unsafePtr ce
+	print w
+	mne <- Vk.readField @"minImageExtent" $ Vk.unsafePtr caps
+	mnew <- Vk.readField @"width" $ Vk.unsafePtr mne
+	mneh <- Vk.readField @"height" $ Vk.unsafePtr mne
+	mxe <- Vk.readField @"maxImageExtent" $ Vk.unsafePtr caps
+	mxew <- Vk.readField @"width" $ Vk.unsafePtr mxe
+	mxeh <- Vk.readField @"height" $ Vk.unsafePtr mxe
+	Vk.touchVkData caps
+	if w < maxBound then pure ce else do
+		(w', h) <- Glfw.getFramebufferSize win
+		Vk.newVkData \p -> do
+			Vk.writeField @"width" p
+				$ clamp (fromIntegral w') mnew mxew
+			Vk.writeField @"height" p
+				$ clamp (fromIntegral h) mneh mxeh
+
+clamp :: Ord n => n -> n -> n -> n
+clamp x mn mx | x < mn = mn | x > mx = mx | otherwise = x
 
 createSurface :: Vk.VkInstance -> Glfw.Window -> IO Vk.VkSurfaceKHR
 createSurface i w = alloca \pSurface -> do
