@@ -18,6 +18,7 @@ import Data.Maybe
 import Data.List
 import Data.Bool
 
+import qualified Data.Set as St
 import qualified Graphics.Vulkan as Vk
 import qualified Graphics.Vulkan.Core_1_0 as Vk
 import qualified Graphics.Vulkan.Ext.VK_EXT_debug_utils as Vk
@@ -66,7 +67,7 @@ initVulkan w = do
 	dm <- setupDebugMessenger i
 	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i sfc
-	(d, gq) <- createLogicalDevice pd sfc
+	(d, gq, pq) <- createLogicalDevice pd sfc
 	pure (i, dm, d, sfc)
 
 createSurface :: Vk.VkInstance -> Glfw.Window -> IO Vk.VkSurfaceKHR
@@ -74,42 +75,50 @@ createSurface i w = alloca \pSurface -> do
 	Vk.VK_SUCCESS <- Glfw.createWindowSurface i w nullPtr pSurface
 	peek pSurface
 
-createLogicalDevice :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO (Vk.VkDevice, Vk.VkQueue)
+createLogicalDevice :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO (Vk.VkDevice, Vk.VkQueue, Vk.VkQueue)
 createLogicalDevice pd sfc = alloca \pQueuePriority -> do
 	withCStringArray validationLayers \cvls -> do
 		indices <- findQueueFamilies pd sfc
-		queueCreateInfo :: Vk.VkDeviceQueueCreateInfo <- Vk.newVkData \p -> do
-			Vk.clearStorable p
-			Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
-			Vk.writeField @"queueFamilyIndex" p . fromJust $ graphicsFamily indices
-			Vk.writeField @"queueCount" p 1
-			poke pQueuePriority 1
-			Vk.writeField @"pQueuePriorities" p pQueuePriority
-		deviceFeatures :: Vk.VkPhysicalDeviceFeatures <- Vk.mallocVkData
-		Vk.clearStorable $ Vk.unsafePtr deviceFeatures
-		createInfo :: Vk.VkDeviceCreateInfo <- Vk.newVkData \p -> do
-			Vk.clearStorable p
-			Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
-			Vk.writeField @"pQueueCreateInfos" p $ Vk.unsafePtr queueCreateInfo
-			Vk.writeField @"queueCreateInfoCount" p 1
-			Vk.writeField @"pEnabledFeatures" p $ Vk.unsafePtr deviceFeatures
-			Vk.writeField @"enabledExtensionCount" p 0
-			if enableValidationLayers
-			then do	Vk.writeField @"enabledLayerCount" p . fromIntegral $ length validationLayers
-				Vk.writeField @"ppEnabledLayerNames" p cvls
-			else Vk.writeField @"enabledLayerCount" p 0
-		Vk.touchVkData queueCreateInfo
-		Vk.touchVkData deviceFeatures
-		pVkDevice <- malloc
-		Vk.VK_SUCCESS <- Vk.vkCreateDevice pd (Vk.unsafePtr createInfo) nullPtr pVkDevice
-		Vk.touchVkData createInfo
-		pGraphicsQueue <- malloc
-		device <- peek pVkDevice
-		Vk.vkGetDeviceQueue device (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
-		graphicsQueue <- peek pGraphicsQueue
-		free pVkDevice
-		free pGraphicsQueue
-		pure (device, graphicsQueue)
+		let	uniqueQueueFamilies = St.fromList [
+				graphicsFamily indices, presentFamily indices ]
+		putStrLn $ "uniqueQueueFamilies: " ++ show uniqueQueueFamilies
+		poke pQueuePriority 1
+		queueCreateInfos :: [Vk.VkDeviceQueueCreateInfo] <- for (toList uniqueQueueFamilies) \queueFamily ->
+			Vk.newVkData \p -> do
+				Vk.clearStorable p
+				Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO
+				Vk.writeField @"queueFamilyIndex" p $ fromJust queueFamily
+				Vk.writeField @"queueCount" p 1
+				Vk.writeField @"pQueuePriorities" p pQueuePriority
+		withArray queueCreateInfos \pQueueCreateInfos -> do
+			deviceFeatures :: Vk.VkPhysicalDeviceFeatures <- Vk.mallocVkData
+			Vk.clearStorable $ Vk.unsafePtr deviceFeatures
+			createInfo :: Vk.VkDeviceCreateInfo <- Vk.newVkData \p -> do
+				Vk.clearStorable p
+				Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO
+				Vk.writeField @"pQueueCreateInfos" p pQueueCreateInfos
+				Vk.writeField @"queueCreateInfoCount" p 1
+				Vk.writeField @"pEnabledFeatures" p $ Vk.unsafePtr deviceFeatures
+				Vk.writeField @"enabledExtensionCount" p 0
+				if enableValidationLayers
+				then do	Vk.writeField @"enabledLayerCount" p . fromIntegral $ length validationLayers
+					Vk.writeField @"ppEnabledLayerNames" p cvls
+				else Vk.writeField @"enabledLayerCount" p 0
+			Vk.touchVkData deviceFeatures
+			pVkDevice <- malloc
+			Vk.VK_SUCCESS <- Vk.vkCreateDevice pd (Vk.unsafePtr createInfo) nullPtr pVkDevice
+			Vk.touchVkData createInfo
+			pGraphicsQueue <- malloc
+			device <- peek pVkDevice
+			Vk.vkGetDeviceQueue device (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
+			pPresentQueue <- malloc
+			Vk.vkGetDeviceQueue device (fromJust $ presentFamily indices) 0 pPresentQueue
+			graphicsQueue <- peek pGraphicsQueue
+			presentQueue <- peek pPresentQueue
+			free pVkDevice
+			free pGraphicsQueue
+			free pPresentQueue
+			pure (device, graphicsQueue, presentQueue)
 
 pickPhysicalDevice :: Vk.VkInstance -> Vk.VkSurfaceKHR -> IO Vk.VkPhysicalDevice
 pickPhysicalDevice i sfc = alloca \pn -> do
