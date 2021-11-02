@@ -80,6 +80,8 @@ createSwapChain :: Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO ()
 createSwapChain pd sfc = do
 	swapChainSupport <- querySwapChainSupport pd sfc
 	surfaceFormat <- chooseSwapSurfaceFormat $ formats swapChainSupport
+	let	presentMode =
+			chooseSwapPresentMode $ presentModes swapChainSupport
 	pure ()
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
@@ -92,6 +94,12 @@ chooseSwapSurfaceFormat availableFormats = do
 	print afs
 	Vk.touchVkData `mapM_` availableFormats
 	pure . head $ afs ++ availableFormats
+
+chooseSwapPresentMode :: [Vk.VkPresentModeKHR] -> Vk.VkPresentModeKHR
+chooseSwapPresentMode availablePresentModes = let
+	pms = filter
+		(== Vk.VK_PRESENT_MODE_MAILBOX_KHR) availablePresentModes in
+	head $ pms ++ [Vk.VK_PRESENT_MODE_FIFO_KHR]
 
 createSurface :: Vk.VkInstance -> Glfw.Window -> IO Vk.VkSurfaceKHR
 createSurface i w = alloca \pSurface -> do
