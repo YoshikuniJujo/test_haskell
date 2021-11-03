@@ -21,8 +21,10 @@ import Data.Bool
 import qualified Data.Set as St
 import qualified Graphics.Vulkan as Vk
 import qualified Graphics.Vulkan.Core_1_0 as Vk
+import qualified Graphics.Vulkan.Core_1_2 as Vk
 import qualified Graphics.Vulkan.Ext.VK_EXT_debug_utils as Vk
 import qualified Graphics.Vulkan.Ext.VK_KHR_surface as Vk
+import qualified Graphics.Vulkan.Ext.VK_KHR_swapchain as Vk
 import qualified Graphics.UI.GLFW as Glfw
 
 import Lib
@@ -92,6 +94,21 @@ createSwapChain win pd sfc = do
 			(imageCountMax > 0 && imageCountMin + 1 > imageCountMax)
 	Vk.touchVkData cap
 	print imageCount
+	createInfo :: Vk.VkSwapchainCreateInfoKHR <- Vk.newVkData \p -> do
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
+		Vk.writeField @"surface" p sfc
+		Vk.writeField @"minImageCount" p imageCount
+		Vk.writeField @"imageFormat" p =<<
+			Vk.readField @"format" (Vk.unsafePtr surfaceFormat)
+		Vk.writeField @"imageColorSpace" p =<<
+			Vk.readField @"colorSpace" (Vk.unsafePtr surfaceFormat)
+		Vk.touchVkData surfaceFormat
+		Vk.writeField @"imageExtent" p extent
+		Vk.writeField @"imageArrayLayers" p 1
+		Vk.writeField @"imageUsage" p
+			Vk.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+	pure ()
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
 chooseSwapSurfaceFormat availableFormats = do
