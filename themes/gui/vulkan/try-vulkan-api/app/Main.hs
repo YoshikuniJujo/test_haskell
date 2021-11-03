@@ -83,7 +83,15 @@ createSwapChain win pd sfc = do
 	let	presentMode =
 			chooseSwapPresentMode $ presentModes swapChainSupport
 	extent <- chooseSwapExtent win $ capabilities swapChainSupport
-	pure ()
+	let	cap = capabilities swapChainSupport
+	imageCountMin <- Vk.readField @"minImageCount" (Vk.unsafePtr cap)
+	imageCountMax <- Vk.readField @"maxImageCount" $ Vk.unsafePtr cap
+	let	imageCount = bool
+			(imageCountMin + 1)
+			imageCountMax
+			(imageCountMax > 0 && imageCountMin + 1 > imageCountMax)
+	Vk.touchVkData cap
+	print imageCount
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
 chooseSwapSurfaceFormat availableFormats = do
