@@ -108,6 +108,22 @@ createSwapChain win pd sfc = do
 		Vk.writeField @"imageArrayLayers" p 1
 		Vk.writeField @"imageUsage" p
 			Vk.VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+		indices <- findQueueFamilies pd sfc
+		putStrLn "INDICES: "
+		putStrLn . ('\t' :) . show $ graphicsFamily indices
+		putStrLn . ('\t' :) . show $ presentFamily indices
+		if graphicsFamily indices /= presentFamily indices
+		then do	Vk.writeField @"imageSharingMode" p
+				Vk.VK_SHARING_MODE_CONCURRENT
+			Vk.writeField @"queueFamilyIndexCount" p 2
+			withArray (
+				maybeToList (graphicsFamily indices) ++
+				maybeToList (presentFamily indices) ) \pis ->
+				Vk.writeField @"pQueueFamilyIndices" p pis
+		else do	Vk.writeField @"imageSharingMode" p
+				Vk.VK_SHARING_MODE_EXCLUSIVE
+			Vk.writeField @"queueFamilyIndexCount" p 0
+			Vk.writeField @"pQueueFamilyIndices" p nullPtr
 	pure ()
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
