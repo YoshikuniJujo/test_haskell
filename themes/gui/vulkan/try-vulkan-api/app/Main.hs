@@ -75,11 +75,11 @@ initVulkan w = do
 	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i sfc
 	(d, gq, pq) <- createLogicalDevice pd sfc
-	createSwapChain w pd sfc
+	createSwapChain w pd d sfc
 	pure (i, dm, d, sfc)
 
-createSwapChain :: Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO ()
-createSwapChain win pd sfc = do
+createSwapChain :: Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkDevice -> Vk.VkSurfaceKHR -> IO Vk.VkSwapchainKHR
+createSwapChain win pd d sfc = do
 	swapChainSupport <- querySwapChainSupport pd sfc
 	surfaceFormat <- chooseSwapSurfaceFormat $ formats swapChainSupport
 	let	presentMode =
@@ -95,6 +95,7 @@ createSwapChain win pd sfc = do
 	Vk.touchVkData cap
 	print imageCount
 	createInfo :: Vk.VkSwapchainCreateInfoKHR <- Vk.newVkData \p -> do
+		Vk.clearStorable p
 		Vk.writeField @"sType" p
 			Vk.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
 		Vk.writeField @"surface" p sfc
@@ -124,7 +125,18 @@ createSwapChain win pd sfc = do
 				Vk.VK_SHARING_MODE_EXCLUSIVE
 			Vk.writeField @"queueFamilyIndexCount" p 0
 			Vk.writeField @"pQueueFamilyIndices" p nullPtr
-	pure ()
+		Vk.writeField @"preTransform" p
+			=<< Vk.readField @"currentTransform" (
+				Vk.unsafePtr $ capabilities swapChainSupport )
+		Vk.writeField @"compositeAlpha" p
+			Vk.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+		Vk.writeField @"presentMode" p presentMode
+		Vk.writeField @"clipped" p Vk.VK_TRUE
+		Vk.writeField @"oldSwapchain" p Vk.VK_NULL_HANDLE
+	alloca \pSwapchain -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateSwapchainKHR
+			d (Vk.unsafePtr createInfo) nullPtr pSwapchain
+		peek pSwapchain
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
 chooseSwapSurfaceFormat availableFormats = do
