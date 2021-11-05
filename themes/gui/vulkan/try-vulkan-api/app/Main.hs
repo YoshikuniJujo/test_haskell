@@ -53,7 +53,7 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce) <- initVulkan w
 	mainLoop w
 	cleanup w i dm d sfc sc
 
@@ -67,7 +67,7 @@ initWindow = do
 
 initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
-	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR )
+	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat, Vk.VkExtent2D )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -75,10 +75,12 @@ initVulkan w = do
 	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i sfc
 	(d, gq, pq) <- createLogicalDevice pd sfc
-	sc <- createSwapChain w pd d sfc
-	pure (i, dm, d, sfc, sc)
+	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
+	pure (i, dm, d, sfc, sc, scis, scif, sce)
 
-createSwapChain :: Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkDevice -> Vk.VkSurfaceKHR -> IO Vk.VkSwapchainKHR
+createSwapChain ::
+	Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkDevice -> Vk.VkSurfaceKHR ->
+	IO (Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat, Vk.VkExtent2D)
 createSwapChain win pd d sfc = do
 	swapChainSupport <- querySwapChainSupport pd sfc
 	surfaceFormat <- chooseSwapSurfaceFormat $ formats swapChainSupport
@@ -133,10 +135,18 @@ createSwapChain win pd d sfc = do
 		Vk.writeField @"presentMode" p presentMode
 		Vk.writeField @"clipped" p Vk.VK_TRUE
 		Vk.writeField @"oldSwapchain" p Vk.VK_NULL_HANDLE
-	alloca \pSwapchain -> do
+	sc <- alloca \pSwapchain -> do
 		Vk.VK_SUCCESS <- Vk.vkCreateSwapchainKHR
 			d (Vk.unsafePtr createInfo) nullPtr pSwapchain
 		peek pSwapchain
+	scis <- alloca \pn -> do
+		Vk.VK_SUCCESS <- Vk.vkGetSwapchainImagesKHR d sc pn nullPtr
+		n <- fromIntegral <$> peek pn
+		pSwapChainImages <- mallocArray n
+		Vk.VK_SUCCESS <- Vk.vkGetSwapchainImagesKHR d sc pn pSwapChainImages
+		peekArray n pSwapChainImages <* free pSwapChainImages
+	scif <- Vk.readField @"format" $ Vk.unsafePtr surfaceFormat
+	pure (sc, scis, scif, extent)
 
 chooseSwapSurfaceFormat :: [Vk.VkSurfaceFormatKHR] -> IO Vk.VkSurfaceFormatKHR
 chooseSwapSurfaceFormat availableFormats = do
