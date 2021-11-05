@@ -53,9 +53,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc) <- initVulkan w
+	(i, dm, d, sfc, sc) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc
+	cleanup w i dm d sfc sc
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -67,7 +67,7 @@ initWindow = do
 
 initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
-	Vk.VkSurfaceKHR )
+	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -75,8 +75,8 @@ initVulkan w = do
 	sfc <- createSurface i w
 	pd <- pickPhysicalDevice i sfc
 	(d, gq, pq) <- createLogicalDevice pd sfc
-	createSwapChain w pd d sfc
-	pure (i, dm, d, sfc)
+	sc <- createSwapChain w pd d sfc
+	pure (i, dm, d, sfc, sc)
 
 createSwapChain :: Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkDevice -> Vk.VkSurfaceKHR -> IO Vk.VkSwapchainKHR
 createSwapChain win pd d sfc = do
@@ -454,8 +454,9 @@ mainLoop w = do
 
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
-	Vk.VkDevice -> Vk.VkSurfaceKHR -> IO ()
-cleanup w i pdm d sfc = do
+	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> IO ()
+cleanup w i pdm d sfc sc = do
+	Vk.vkDestroySwapchainKHR d sc nullPtr
 	Vk.vkDestroyDevice d nullPtr
 	when enableValidationLayers do
 		vkDestroyDebugUtilsMessengerEXT <-
