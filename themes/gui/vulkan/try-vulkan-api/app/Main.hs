@@ -53,9 +53,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce, scivs) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc sc
+	cleanup w i dm d sfc sc scivs
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -67,7 +67,8 @@ initWindow = do
 
 initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
-	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat, Vk.VkExtent2D )
+	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
+	Vk.VkExtent2D, [Vk.VkImageView] )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -76,7 +77,38 @@ initVulkan w = do
 	pd <- pickPhysicalDevice i sfc
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
-	pure (i, dm, d, sfc, sc, scis, scif, sce)
+	scivs <- createImageViews d scis scif
+	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs)
+
+createImageViews :: Vk.VkDevice -> [Vk.VkImage] -> Vk.VkFormat -> IO [Vk.VkImageView]
+createImageViews d scis scif = for scis \sci -> do
+	srr <- Vk.newVkData \p -> do
+		Vk.writeField @"aspectMask" p Vk.VK_IMAGE_ASPECT_COLOR_BIT
+		Vk.writeField @"baseMipLevel" p 0
+		Vk.writeField @"levelCount" p 1
+		Vk.writeField @"baseArrayLayer" p 0
+		Vk.writeField @"layerCount" p 1
+	createInfo :: Vk.VkImageViewCreateInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO
+		Vk.writeField @"image" p sci
+		Vk.writeField @"viewType" p Vk.VK_IMAGE_VIEW_TYPE_2D
+		Vk.writeField @"format" p scif
+		cmp <- Vk.readField @"components" p
+		Vk.writeField @"r" (Vk.unsafePtr cmp)
+			Vk.VK_COMPONENT_SWIZZLE_IDENTITY
+		Vk.writeField @"g" (Vk.unsafePtr cmp)
+			Vk.VK_COMPONENT_SWIZZLE_IDENTITY
+		Vk.writeField @"b" (Vk.unsafePtr cmp)
+			Vk.VK_COMPONENT_SWIZZLE_IDENTITY
+		Vk.writeField @"a" (Vk.unsafePtr cmp)
+			Vk.VK_COMPONENT_SWIZZLE_IDENTITY
+		Vk.writeField @"subresourceRange" p srr
+	alloca \pSwapChainImageView -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateImageView
+			d (Vk.unsafePtr createInfo) nullPtr pSwapChainImageView
+		peek pSwapChainImageView
 
 createSwapChain ::
 	Glfw.Window -> Vk.VkPhysicalDevice -> Vk.VkDevice -> Vk.VkSurfaceKHR ->
@@ -464,8 +496,9 @@ mainLoop w = do
 
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
-	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> IO ()
-cleanup w i pdm d sfc sc = do
+	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] -> IO ()
+cleanup w i pdm d sfc sc scivs = do
+	for_ scivs \sciv -> Vk.vkDestroyImageView d sciv nullPtr
 	Vk.vkDestroySwapchainKHR d sc nullPtr
 	Vk.vkDestroyDevice d nullPtr
 	when enableValidationLayers do
