@@ -78,7 +78,11 @@ initVulkan w = do
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
 	scivs <- createImageViews d scis scif
+	createGraphicsPipeline
 	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs)
+
+createGraphicsPipeline :: IO ()
+createGraphicsPipeline = pure ()
 
 createImageViews :: Vk.VkDevice -> [Vk.VkImage] -> Vk.VkFormat -> IO [Vk.VkImageView]
 createImageViews d scis scif = for scis \sci -> do
