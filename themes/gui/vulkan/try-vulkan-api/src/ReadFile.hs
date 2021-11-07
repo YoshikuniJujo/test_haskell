@@ -15,4 +15,5 @@ readFile fp = do
 	n <- fromIntegral <$> S.hFileSize h
 	b <- mallocBytes n
 	n' <- S.hGetBuf h b n
+	S.hClose h
 	(, n') <$> newForeignPtr b (free b)
