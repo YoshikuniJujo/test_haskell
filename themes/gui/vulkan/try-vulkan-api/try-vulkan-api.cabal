@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      ReadFile
       ThEnv
   other-modules:
       Paths_try_vulkan_api
