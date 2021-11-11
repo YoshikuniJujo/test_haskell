@@ -81,19 +81,27 @@ initVulkan w = do
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
 	scivs <- createImageViews d scis scif
-	createGraphicsPipeline
+	createGraphicsPipeline d
 	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs)
 
-createGraphicsPipeline :: IO ()
-createGraphicsPipeline = do
+createGraphicsPipeline :: Vk.VkDevice -> IO ()
+createGraphicsPipeline d = do
 	vertShaderCode <- R.readFile "shaders/vert.spv"
 	fragShaderCode <- R.readFile "shaders/frag.spv"
-	print vertShaderCode
+
+	vertShaderModule <- createShaderModule d vertShaderCode
+	fragShaderModule <- createShaderModule d fragShaderCode
+
+	print vertShaderModule
+
+	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
+	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 	pure ()
 
 createShaderModule :: Vk.VkDevice -> (ForeignPtr Vk.Word32, Int) -> IO Vk.VkShaderModule
 createShaderModule d (dt, sz) = do
 	createInfo <- Vk.newVkData \(p :: Ptr Vk.VkShaderModuleCreateInfo) -> do
+		Vk.clearStorable p
 		Vk.writeField @"sType" p
 			Vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO
 		Vk.writeField @"codeSize" p $ fromIntegral sz
