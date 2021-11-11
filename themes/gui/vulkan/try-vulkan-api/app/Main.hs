@@ -7,6 +7,7 @@
 module Main where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
@@ -29,6 +30,8 @@ import qualified Graphics.UI.GLFW as Glfw
 
 import Lib
 import ThEnv
+
+import qualified ReadFile as R
 
 validationLayers :: [String]
 validationLayers = [
@@ -82,7 +85,23 @@ initVulkan w = do
 	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs)
 
 createGraphicsPipeline :: IO ()
-createGraphicsPipeline = pure ()
+createGraphicsPipeline = do
+	vertShaderCode <- R.readFile "shaders/vert.spv"
+	fragShaderCode <- R.readFile "shaders/frag.spv"
+	print vertShaderCode
+	pure ()
+
+createShaderModule :: Vk.VkDevice -> (ForeignPtr Vk.Word32, Int) -> IO Vk.VkShaderModule
+createShaderModule d (dt, sz) = do
+	createInfo <- Vk.newVkData \(p :: Ptr Vk.VkShaderModuleCreateInfo) -> do
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO
+		Vk.writeField @"codeSize" p $ fromIntegral sz
+		withForeignPtr dt $ Vk.writeField @"pCode" p
+	alloca \pShaderModule -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateShaderModule
+			d (Vk.unsafePtr createInfo) nullPtr pShaderModule
+		peek pShaderModule
 
 createImageViews :: Vk.VkDevice -> [Vk.VkImage] -> Vk.VkFormat -> IO [Vk.VkImageView]
 createImageViews d scis scif = for scis \sci -> do
