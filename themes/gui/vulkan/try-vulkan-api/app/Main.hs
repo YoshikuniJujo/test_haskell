@@ -94,6 +94,24 @@ createGraphicsPipeline d = do
 
 	print vertShaderModule
 
+	vertShaderStageInfo :: Vk.VkPipelineShaderStageCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
+			Vk.writeField @"stage" p Vk.VK_SHADER_STAGE_VERTEX_BIT
+			Vk.writeField @"module" p vertShaderModule
+			withCString "main" $ Vk.writeField @"pName" p
+	fragShaderStageInfo :: Vk.VkPipelineShaderStageCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO
+			Vk.writeField @"stage" p Vk.VK_SHADER_STAGE_FRAGMENT_BIT
+			Vk.writeField @"module" p fragShaderModule
+			withCString "main" $ Vk.writeField @"pName" p
+	let	shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 	pure ()
