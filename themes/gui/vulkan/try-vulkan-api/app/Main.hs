@@ -112,6 +112,16 @@ createGraphicsPipeline d = do
 			withCString "main" $ Vk.writeField @"pName" p
 	let	shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
 
+	vertexInputInfo :: Vk.VkPipelineVertexInputStateCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+			Vk.writeField @"vertexBindingDescriptionCount" p 0
+			Vk.writeField @"pVertexBindingDescriptions" p nullPtr
+			Vk.writeField @"vertexAttributeDescriptionCount" p 0
+			Vk.writeField @"pVertexAttributeDescriptions" p nullPtr
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 	pure ()
