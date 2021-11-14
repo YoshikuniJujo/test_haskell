@@ -122,6 +122,15 @@ createGraphicsPipeline d = do
 			Vk.writeField @"vertexAttributeDescriptionCount" p 0
 			Vk.writeField @"pVertexAttributeDescriptions" p nullPtr
 
+	inputAssembly :: Vk.VkPipelineInputAssemblyStateCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO
+			Vk.writeField @"topology" p
+				Vk.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+			Vk.writeField @"primitiveRestartEnable" p Vk.VK_FALSE
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 	pure ()
