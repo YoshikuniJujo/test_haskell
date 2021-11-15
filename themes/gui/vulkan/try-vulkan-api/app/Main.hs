@@ -56,9 +56,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc sc scivs pllo rp gpl
+	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -72,7 +72,7 @@ initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
 	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
 	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout, Vk.VkRenderPass,
-	Vk.VkPipeline )
+	Vk.VkPipeline, [Vk.VkFramebuffer] )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -84,7 +84,31 @@ initVulkan w = do
 	scivs <- createImageViews d scis scif
 	rp <- createRenderPass d scif
 	(pllo, gpl) <- createGraphicsPipeline d sce rp
-	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl)
+	scfbs <- createFrameBuffers d rp sce scivs
+	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs)
+
+createFrameBuffers ::
+	Vk.VkDevice -> Vk.VkRenderPass -> Vk.VkExtent2D -> [Vk.VkImageView] ->
+	IO [Vk.VkFramebuffer]
+createFrameBuffers d rp sce = mapM $ createFrameBuffer d rp sce
+
+createFrameBuffer ::
+	Vk.VkDevice -> Vk.VkRenderPass -> Vk.VkExtent2D ->
+	Vk.VkImageView -> IO Vk.VkFramebuffer
+createFrameBuffer d rp sce iv = withArray [iv] \atms -> do
+	frameBufferInfo :: Vk.VkFramebufferCreateInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO
+		Vk.writeField @"renderPass" p rp
+		Vk.writeField @"attachmentCount" p 1
+		Vk.writeField @"pAttachments" p atms
+		Vk.writeField @"width" p =<< Vk.readField @"width" (Vk.unsafePtr sce)
+		Vk.writeField @"height" p =<< Vk.readField @"height" (Vk.unsafePtr sce)
+		Vk.writeField @"layers" p 1
+	alloca \p -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateFramebuffer d
+			(Vk.unsafePtr frameBufferInfo) nullPtr p
+		peek p
 
 createRenderPass :: Vk.VkDevice -> Vk.VkFormat -> IO Vk.VkRenderPass
 createRenderPass d scif = do
@@ -261,7 +285,7 @@ createGraphicsPipeline d sce rp = do
 			(Vk.unsafePtr pipelineLayoutInfo) nullPtr p
 		peek p
 
-	gpl <- withArray shaderStages \pShaderStages -> alloca \p -> do
+	gpl <- withArray shaderStages \pShaderStages -> alloca \pGpl -> do
 		pipelineInfo :: Vk.VkGraphicsPipelineCreateInfo <- Vk.newVkData \p -> do
 			Vk.clearStorable p
 			Vk.writeField @"sType" p
@@ -282,8 +306,8 @@ createGraphicsPipeline d sce rp = do
 			Vk.writeField @"basePipelineHandle" p Vk.VK_NULL_HANDLE
 			Vk.writeField @"basePipelineIndex" p $ - 1
 		Vk.VK_SUCCESS <- Vk.vkCreateGraphicsPipelines d
-			Vk.VK_NULL_HANDLE 1 (Vk.unsafePtr pipelineInfo) nullPtr p
-		peek p
+			Vk.VK_NULL_HANDLE 1 (Vk.unsafePtr pipelineInfo) nullPtr pGpl
+		peek pGpl
 
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
@@ -719,9 +743,10 @@ mainLoop w = do
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
 	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] ->
-	Vk.VkPipelineLayout -> Vk.VkRenderPass -> Vk.VkPipeline ->
+	Vk.VkPipelineLayout -> Vk.VkRenderPass -> Vk.VkPipeline -> [Vk.VkFramebuffer] ->
 	IO ()
-cleanup w i pdm d sfc sc scivs pllo rp gpl = do
+cleanup w i pdm d sfc sc scivs pllo rp gpl scfbs = do
+	(\scfb -> Vk.vkDestroyFramebuffer d scfb nullPtr) `mapM_` scfbs
 	Vk.vkDestroyPipeline d gpl nullPtr
 	Vk.vkDestroyPipelineLayout d pllo nullPtr
 	Vk.vkDestroyRenderPass d rp nullPtr
