@@ -81,11 +81,11 @@ initVulkan w = do
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
 	scivs <- createImageViews d scis scif
-	createGraphicsPipeline d
+	createGraphicsPipeline d sce
 	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs)
 
-createGraphicsPipeline :: Vk.VkDevice -> IO ()
-createGraphicsPipeline d = do
+createGraphicsPipeline :: Vk.VkDevice -> Vk.VkExtent2D -> IO ()
+createGraphicsPipeline d sce = do
 	vertShaderCode <- R.readFile "shaders/vert.spv"
 	fragShaderCode <- R.readFile "shaders/frag.spv"
 
@@ -130,10 +130,34 @@ createGraphicsPipeline d = do
 			Vk.writeField @"topology" p
 				Vk.VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 			Vk.writeField @"primitiveRestartEnable" p Vk.VK_FALSE
+	viewport :: Vk.VkViewport <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"x" p 0
+		Vk.writeField @"y" p 0
+		Vk.writeField @"width" p . realToFrac =<< Vk.readField @"width" (Vk.unsafePtr sce)
+		Vk.writeField @"height" p . realToFrac =<< Vk.readField @"height" (Vk.unsafePtr sce)
+		Vk.writeField @"minDepth" p 0
+		Vk.writeField @"maxDepth" p 1
+
+	pos :: Vk.VkOffset2D <- Vk.newVkData \p -> do
+		Vk.writeField @"x" p 0
+		Vk.writeField @"y" p 0
+	scissor :: Vk.VkRect2D <- Vk.newVkData \p -> do
+		Vk.writeField @"offset" p pos
+		Vk.writeField @"extent" p sce
+
+	viewportState :: Vk.VkPipelineViewportStateCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO
+			Vk.writeField @"viewportCount" p 1
+			Vk.writeField @"pViewports" p $ Vk.unsafePtr viewport
+			Vk.writeField @"scissorCount" p 1
+			Vk.writeField @"pScissors" p $ Vk.unsafePtr scissor
 
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
-	pure ()
 
 createShaderModule :: Vk.VkDevice -> (ForeignPtr Vk.Word32, Int) -> IO Vk.VkShaderModule
 createShaderModule d (dt, sz) = do
