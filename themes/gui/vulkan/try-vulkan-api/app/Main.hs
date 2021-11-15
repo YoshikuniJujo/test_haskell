@@ -184,6 +184,33 @@ createGraphicsPipeline d sce = do
 			Vk.writeField @"alphaToCoverageEnable" p Vk.VK_FALSE
 			Vk.writeField @"alphaToOneEnable" p Vk.VK_FALSE
 
+	colorBlendAttachment :: Vk.VkPipelineColorBlendAttachmentState <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"colorWriteMask" p $
+				Vk.VK_COLOR_COMPONENT_R_BIT .|.
+				Vk.VK_COLOR_COMPONENT_G_BIT .|.
+				Vk.VK_COLOR_COMPONENT_B_BIT .|.
+				Vk.VK_COLOR_COMPONENT_A_BIT
+			Vk.writeField @"blendEnable" p Vk.VK_FALSE
+			Vk.writeField @"srcColorBlendFactor" p Vk.VK_BLEND_FACTOR_ONE
+			Vk.writeField @"dstColorBlendFactor" p Vk.VK_BLEND_FACTOR_ZERO
+			Vk.writeField @"colorBlendOp" p Vk.VK_BLEND_OP_ADD
+			Vk.writeField @"srcAlphaBlendFactor" p Vk.VK_BLEND_FACTOR_ONE
+			Vk.writeField @"dstAlphaBlendFactor" p Vk.VK_BLEND_FACTOR_ZERO
+			Vk.writeField @"alphaBlendOp" p Vk.VK_BLEND_OP_ADD
+
+	colorBlending :: Vk.VkPipelineColorBlendStateCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO
+			Vk.writeField @"logicOpEnable" p Vk.VK_FALSE
+			Vk.writeField @"logicOp" p Vk.VK_LOGIC_OP_COPY
+			Vk.writeField @"attachmentCount" p 1
+			Vk.writeField @"pAttachments" p $ Vk.unsafePtr colorBlendAttachment
+			Vk.writeField @"blendConstants" p 0
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 
