@@ -56,9 +56,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce, scivs) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc sc scivs
+	cleanup w i dm d sfc sc scivs pllo
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -71,7 +71,7 @@ initWindow = do
 initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
 	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
-	Vk.VkExtent2D, [Vk.VkImageView] )
+	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -81,10 +81,10 @@ initVulkan w = do
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
 	scivs <- createImageViews d scis scif
-	createGraphicsPipeline d sce
-	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs)
+	pllo <- createGraphicsPipeline d sce
+	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo)
 
-createGraphicsPipeline :: Vk.VkDevice -> Vk.VkExtent2D -> IO ()
+createGraphicsPipeline :: Vk.VkDevice -> Vk.VkExtent2D -> IO Vk.VkPipelineLayout
 createGraphicsPipeline d sce = do
 	vertShaderCode <- R.readFile "shaders/vert.spv"
 	fragShaderCode <- R.readFile "shaders/frag.spv"
@@ -211,8 +211,24 @@ createGraphicsPipeline d sce = do
 			Vk.writeField @"pAttachments" p $ Vk.unsafePtr colorBlendAttachment
 			Vk.writeField @"blendConstants" p 0
 
+	pipelineLayoutInfo :: Vk.VkPipelineLayoutCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO
+			Vk.writeField @"setLayoutCount" p 0
+			Vk.writeField @"pSetLayouts" p nullPtr
+			Vk.writeField @"pushConstantRangeCount" p 0
+			Vk.writeField @"pPushConstantRanges" p nullPtr
+
+	pipelineLayout <- alloca \p -> do
+		Vk.VK_SUCCESS <- Vk.vkCreatePipelineLayout d
+			(Vk.unsafePtr pipelineLayoutInfo) nullPtr p
+		peek p
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
+	pure pipelineLayout
 
 createShaderModule :: Vk.VkDevice -> (ForeignPtr Vk.Word32, Int) -> IO Vk.VkShaderModule
 createShaderModule d (dt, sz) = do
@@ -643,8 +659,11 @@ mainLoop w = do
 
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
-	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] -> IO ()
-cleanup w i pdm d sfc sc scivs = do
+	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] ->
+	Vk.VkPipelineLayout ->
+	IO ()
+cleanup w i pdm d sfc sc scivs pllo = do
+	Vk.vkDestroyPipelineLayout d pllo nullPtr
 	for_ scivs \sciv -> Vk.vkDestroyImageView d sciv nullPtr
 	Vk.vkDestroySwapchainKHR d sc nullPtr
 	Vk.vkDestroyDevice d nullPtr
