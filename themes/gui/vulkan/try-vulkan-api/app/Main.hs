@@ -56,9 +56,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc sc scivs pllo
+	cleanup w i dm d sfc sc scivs pllo rp
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -71,7 +71,7 @@ initWindow = do
 initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
 	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
-	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout )
+	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout, Vk.VkRenderPass )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -81,12 +81,12 @@ initVulkan w = do
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
 	scivs <- createImageViews d scis scif
-	createRenderPass scif
+	rp <- createRenderPass d scif
 	pllo <- createGraphicsPipeline d sce
-	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo)
+	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp)
 
-createRenderPass :: Vk.VkFormat -> IO ()
-createRenderPass scif = do
+createRenderPass :: Vk.VkDevice -> Vk.VkFormat -> IO Vk.VkRenderPass
+createRenderPass d scif = do
 	colorAttachment :: Vk.VkAttachmentDescription <- Vk.newVkData \p -> do
 		Vk.clearStorable p
 		Vk.writeField @"format" p scif
@@ -106,7 +106,17 @@ createRenderPass scif = do
 		Vk.writeField @"pipelineBindPoint" p Vk.VK_PIPELINE_BIND_POINT_GRAPHICS
 		Vk.writeField @"colorAttachmentCount" p 1
 		Vk.writeField @"pColorAttachments" p $ Vk.unsafePtr colorAttachmentRef
-	pure ()
+	renderPassInfo :: Vk.VkRenderPassCreateInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO
+		Vk.writeField @"attachmentCount" p 1
+		Vk.writeField @"pAttachments" p $ Vk.unsafePtr colorAttachment
+		Vk.writeField @"subpassCount" p 1
+		Vk.writeField @"pSubpasses" p $ Vk.unsafePtr subpass
+	alloca \p -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateRenderPass d
+			(Vk.unsafePtr renderPassInfo) nullPtr p
+		peek p
 
 createGraphicsPipeline :: Vk.VkDevice -> Vk.VkExtent2D -> IO Vk.VkPipelineLayout
 createGraphicsPipeline d sce = do
@@ -684,10 +694,11 @@ mainLoop w = do
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
 	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] ->
-	Vk.VkPipelineLayout ->
+	Vk.VkPipelineLayout -> Vk.VkRenderPass ->
 	IO ()
-cleanup w i pdm d sfc sc scivs pllo = do
+cleanup w i pdm d sfc sc scivs pllo rp = do
 	Vk.vkDestroyPipelineLayout d pllo nullPtr
+	Vk.vkDestroyRenderPass d rp nullPtr
 	for_ scivs \sciv -> Vk.vkDestroyImageView d sciv nullPtr
 	Vk.vkDestroySwapchainKHR d sc nullPtr
 	Vk.vkDestroyDevice d nullPtr
