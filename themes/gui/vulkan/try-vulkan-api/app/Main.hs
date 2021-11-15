@@ -81,8 +81,23 @@ initVulkan w = do
 	(d, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd d sfc
 	scivs <- createImageViews d scis scif
+	createRenderPass scif
 	pllo <- createGraphicsPipeline d sce
 	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo)
+
+createRenderPass :: Vk.VkFormat -> IO ()
+createRenderPass scif = do
+	colorAttachment :: Vk.VkAttachmentDescription <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"format" p scif
+		Vk.writeField @"samples" p Vk.VK_SAMPLE_COUNT_1_BIT
+		Vk.writeField @"loadOp" p Vk.VK_ATTACHMENT_LOAD_OP_CLEAR
+		Vk.writeField @"storeOp" p Vk.VK_ATTACHMENT_STORE_OP_STORE
+		Vk.writeField @"stencilLoadOp" p Vk.VK_ATTACHMENT_LOAD_OP_DONT_CARE
+		Vk.writeField @"stencilStoreOp" p Vk.VK_ATTACHMENT_STORE_OP_DONT_CARE
+		Vk.writeField @"initialLayout" p Vk.VK_IMAGE_LAYOUT_UNDEFINED
+		Vk.writeField @"finalLayout" p Vk.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	pure ()
 
 createGraphicsPipeline :: Vk.VkDevice -> Vk.VkExtent2D -> IO Vk.VkPipelineLayout
 createGraphicsPipeline d sce = do
