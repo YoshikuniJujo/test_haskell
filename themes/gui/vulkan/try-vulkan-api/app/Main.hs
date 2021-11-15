@@ -97,6 +97,15 @@ createRenderPass scif = do
 		Vk.writeField @"stencilStoreOp" p Vk.VK_ATTACHMENT_STORE_OP_DONT_CARE
 		Vk.writeField @"initialLayout" p Vk.VK_IMAGE_LAYOUT_UNDEFINED
 		Vk.writeField @"finalLayout" p Vk.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	colorAttachmentRef :: Vk.VkAttachmentReference <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"attachment" p 0
+		Vk.writeField @"layout" p Vk.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	subpass :: Vk.VkSubpassDescription <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"pipelineBindPoint" p Vk.VK_PIPELINE_BIND_POINT_GRAPHICS
+		Vk.writeField @"colorAttachmentCount" p 1
+		Vk.writeField @"pColorAttachments" p $ Vk.unsafePtr colorAttachmentRef
 	pure ()
 
 createGraphicsPipeline :: Vk.VkDevice -> Vk.VkExtent2D -> IO Vk.VkPipelineLayout
