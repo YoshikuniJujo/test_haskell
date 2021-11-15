@@ -172,6 +172,18 @@ createGraphicsPipeline d sce = do
 			Vk.writeField @"depthBiasClamp" p 0
 			Vk.writeField @"depthBiasSlopeFactor" p 0
 
+	multisampling :: Vk.VkPipelineMultisampleStateCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
+			Vk.writeField @"sampleShadingEnable" p Vk.VK_FALSE
+			Vk.writeField @"rasterizationSamples" p Vk.VK_SAMPLE_COUNT_1_BIT
+			Vk.writeField @"minSampleShading" p 1
+			Vk.writeField @"pSampleMask" p nullPtr
+			Vk.writeField @"alphaToCoverageEnable" p Vk.VK_FALSE
+			Vk.writeField @"alphaToOneEnable" p Vk.VK_FALSE
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 
