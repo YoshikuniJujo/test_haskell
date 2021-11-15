@@ -156,6 +156,22 @@ createGraphicsPipeline d sce = do
 			Vk.writeField @"scissorCount" p 1
 			Vk.writeField @"pScissors" p $ Vk.unsafePtr scissor
 
+	rasterizer :: Vk.VkPipelineRasterizationStateCreateInfo <-
+		Vk.newVkData \p -> do
+			Vk.clearStorable p
+			Vk.writeField @"sType" p
+				Vk.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO
+			Vk.writeField @"depthClampEnable" p Vk.VK_FALSE
+			Vk.writeField @"rasterizerDiscardEnable" p Vk.VK_FALSE
+			Vk.writeField @"polygonMode" p Vk.VK_POLYGON_MODE_FILL
+			Vk.writeField @"lineWidth" p 1
+			Vk.writeField @"cullMode" p Vk.VK_CULL_MODE_BACK_BIT
+			Vk.writeField @"frontFace" p Vk.VK_FRONT_FACE_CLOCKWISE
+			Vk.writeField @"depthBiasEnable" p Vk.VK_FALSE
+			Vk.writeField @"depthBiasConstantFactor" p 0
+			Vk.writeField @"depthBiasClamp" p 0
+			Vk.writeField @"depthBiasSlopeFactor" p 0
+
 	Vk.vkDestroyShaderModule d fragShaderModule nullPtr
 	Vk.vkDestroyShaderModule d vertShaderModule nullPtr
 
