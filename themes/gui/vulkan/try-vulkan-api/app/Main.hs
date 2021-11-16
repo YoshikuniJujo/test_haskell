@@ -103,7 +103,30 @@ createCommandBuffers d scfbs cp = do
 		Vk.writeField @"level" p Vk.VK_COMMAND_BUFFER_LEVEL_PRIMARY
 		Vk.writeField @"commandBufferCount" p . fromIntegral $ length scfbs
 	Vk.VK_SUCCESS <- Vk.vkAllocateCommandBuffers d (Vk.unsafePtr allocaInfo) commandBuffers
+	forArray_ commandBuffers (length scfbs) beginCommandBuffer
 	pure commandBuffers
+
+forArray_ :: Storable a => Ptr a -> Int -> (a -> IO ()) -> IO ()
+forArray_ p n f
+	| n < 1 = pure ()
+	| otherwise = do
+		f =<< peek p
+		forArray_ (p `advancePtr` 1) (n - 1) f
+
+beginCommandBuffer :: Vk.VkCommandBuffer -> IO ()
+beginCommandBuffer cb = do
+	beginInfo :: Vk.VkCommandBufferBeginInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO
+		Vk.writeField @"flags" p
+			$ Vk.VkCommandBufferUsageBitmask 0
+		Vk.writeField @"pInheritanceInfo" p nullPtr
+	Vk.VK_SUCCESS <- Vk.vkBeginCommandBuffer cb (Vk.unsafePtr beginInfo)
+	pure ()
+
+index :: Storable a => Ptr a -> Int -> Ptr a
+index = advancePtr
 
 createCommandPool ::
 	Vk.VkDevice -> Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO Vk.VkCommandPool
