@@ -248,6 +248,17 @@ createRenderPass d scif = do
 		Vk.writeField @"pipelineBindPoint" p Vk.VK_PIPELINE_BIND_POINT_GRAPHICS
 		Vk.writeField @"colorAttachmentCount" p 1
 		Vk.writeField @"pColorAttachments" p $ Vk.unsafePtr colorAttachmentRef
+	dependency :: Vk.VkSubpassDependency <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"srcSubpass" p Vk.VK_SUBPASS_EXTERNAL
+		Vk.writeField @"dstSubpass" p 0
+		Vk.writeField @"srcStageMask" p
+			Vk.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+		Vk.writeField @"srcAccessMask" p $ Vk.VkAccessBitmask 0
+		Vk.writeField @"dstStageMask" p
+			Vk.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+		Vk.writeField @"dstAccessMask" p
+			Vk.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
 	renderPassInfo :: Vk.VkRenderPassCreateInfo <- Vk.newVkData \p -> do
 		Vk.clearStorable p
 		Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO
@@ -255,6 +266,8 @@ createRenderPass d scif = do
 		Vk.writeField @"pAttachments" p $ Vk.unsafePtr colorAttachment
 		Vk.writeField @"subpassCount" p 1
 		Vk.writeField @"pSubpasses" p $ Vk.unsafePtr subpass
+		Vk.writeField @"dependencyCount" p 1
+		Vk.writeField @"pDependencies" p $ Vk.unsafePtr dependency
 	alloca \p -> do
 		Vk.VK_SUCCESS <- Vk.vkCreateRenderPass d
 			(Vk.unsafePtr renderPassInfo) nullPtr p
