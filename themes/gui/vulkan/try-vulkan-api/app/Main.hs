@@ -56,9 +56,9 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs, cp,
-		ias, rfs) <- initVulkan w
-	mainLoop w d sc ias
+	(i, dm, d, gq, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs, cp,
+		cbs, ias, rfs) <- initVulkan w
+	mainLoop w d gq sc cbs ias rfs
 	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs cp ias rfs
 
 initWindow :: IO Glfw.Window
@@ -70,11 +70,11 @@ initWindow = do
 	pure w
 
 initVulkan :: Glfw.Window -> IO (
-	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
+	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice, Vk.VkQueue,
 	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
 	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout, Vk.VkRenderPass,
 	Vk.VkPipeline, [Vk.VkFramebuffer], Vk.VkCommandPool,
-	Vk.VkSemaphore, Vk.VkSemaphore
+	Ptr Vk.VkCommandBuffer, Vk.VkSemaphore, Vk.VkSemaphore
 	)
 initVulkan w = do
 	checkExtensionSupport
@@ -89,10 +89,10 @@ initVulkan w = do
 	(pllo, gpl) <- createGraphicsPipeline d sce rp
 	scfbs <- createFrameBuffers d rp sce scivs
 	cp <- createCommandPool d pd sfc
-	cb <- createCommandBuffers d sce rp gpl scfbs cp
+	cbs <- createCommandBuffers d sce rp gpl scfbs cp
 	(ias, rfs) <- createSemaphores d
-	pure (	i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs,
-		cp, ias, rfs )
+	pure (	i, dm, d, gq, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs,
+		cp, cbs, ias, rfs )
 
 createSemaphores :: Vk.VkDevice -> IO (Vk.VkSemaphore, Vk.VkSemaphore)
 createSemaphores d = do
@@ -851,18 +851,36 @@ debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 	putStrLn . ("validation layer: " ++) =<< peekCString msg
 	pure Vk.VK_FALSE
 
-mainLoop :: Glfw.Window -> Vk.VkDevice -> Vk.VkSwapchainKHR -> Vk.VkSemaphore -> IO ()
-mainLoop w d sc ias = do
+mainLoop :: Glfw.Window -> Vk.VkDevice -> Vk.VkQueue -> Vk.VkSwapchainKHR -> Ptr Vk.VkCommandBuffer -> Vk.VkSemaphore -> Vk.VkSemaphore -> IO ()
+mainLoop w d gq sc cbs ias rfs = do
 	b <- Glfw.windowShouldClose w
 	Glfw.pollEvents
-	drawFrame d sc ias
-	bool (mainLoop w d sc ias) (pure ()) b
+	drawFrame d gq sc cbs ias rfs
+	bool (mainLoop w d gq sc cbs ias rfs) (pure ()) b
 
-drawFrame :: Vk.VkDevice -> Vk.VkSwapchainKHR -> Vk.VkSemaphore -> IO ()
-drawFrame d sc ias = do
+drawFrame :: Vk.VkDevice -> Vk.VkQueue -> Vk.VkSwapchainKHR -> Ptr Vk.VkCommandBuffer -> Vk.VkSemaphore -> Vk.VkSemaphore -> IO ()
+drawFrame d gq sc cbs ias rfs = do
 	imageIndex <- alloca \p -> do
 		Vk.vkAcquireNextImageKHR d sc maxBound ias Vk.VK_NULL_HANDLE p
 		peek p
+	waitSemaphores <- malloc
+	poke waitSemaphores ias
+	waitStages <- malloc
+	poke waitStages Vk.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+	signalSemaphores <- malloc
+	poke signalSemaphores rfs
+	submitInfo :: Vk.VkSubmitInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_SUBMIT_INFO
+		Vk.writeField @"waitSemaphoreCount" p 1
+		Vk.writeField @"pWaitSemaphores" p waitSemaphores
+		Vk.writeField @"pWaitDstStageMask" p waitStages
+		Vk.writeField @"commandBufferCount" p 1
+		Vk.writeField @"pCommandBuffers" p $ cbs `index` fromIntegral imageIndex
+		Vk.writeField @"signalSemaphoreCount" p 1
+		Vk.writeField @"pSignalSemaphores" p signalSemaphores
+	Vk.VK_SUCCESS <- Vk.vkQueueSubmit gq 1
+		(Vk.unsafePtr submitInfo) Vk.VK_NULL_HANDLE
 	pure ()
 
 cleanup ::
