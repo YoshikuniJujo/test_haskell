@@ -87,13 +87,16 @@ initVulkan w = do
 	(pllo, gpl) <- createGraphicsPipeline d sce rp
 	scfbs <- createFrameBuffers d rp sce scivs
 	cp <- createCommandPool d pd sfc
-	cb <- createCommandBuffers d scfbs cp
+	cb <- createCommandBuffers d sce rp gpl scfbs cp
 	pure (	i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs,
 		cp
 		)
 
-createCommandBuffers :: Vk.VkDevice -> [Vk.VkFramebuffer] -> Vk.VkCommandPool -> IO (Ptr Vk.VkCommandBuffer)
-createCommandBuffers d scfbs cp = do
+createCommandBuffers ::
+	Vk.VkDevice -> Vk.VkExtent2D ->
+	Vk.VkRenderPass -> Vk.VkPipeline -> [Vk.VkFramebuffer] -> Vk.VkCommandPool ->
+	IO (Ptr Vk.VkCommandBuffer)
+createCommandBuffers d sce rp gpl scfbs cp = do
 	commandBuffers :: Ptr Vk.VkCommandBuffer <- mallocArray $ length scfbs
 	allocaInfo :: Vk.VkCommandBufferAllocateInfo <- Vk.newVkData \p -> do
 		Vk.clearStorable p
@@ -103,18 +106,19 @@ createCommandBuffers d scfbs cp = do
 		Vk.writeField @"level" p Vk.VK_COMMAND_BUFFER_LEVEL_PRIMARY
 		Vk.writeField @"commandBufferCount" p . fromIntegral $ length scfbs
 	Vk.VK_SUCCESS <- Vk.vkAllocateCommandBuffers d (Vk.unsafePtr allocaInfo) commandBuffers
-	forArray_ commandBuffers (length scfbs) beginCommandBuffer
+	forArrayList_ commandBuffers scfbs $ beginCommandBuffer sce rp gpl
 	pure commandBuffers
 
-forArray_ :: Storable a => Ptr a -> Int -> (a -> IO ()) -> IO ()
-forArray_ p n f
-	| n < 1 = pure ()
-	| otherwise = do
-		f =<< peek p
-		forArray_ (p `advancePtr` 1) (n - 1) f
+forArrayList_ :: Storable a => Ptr a -> [b] -> (a -> b -> IO ()) -> IO ()
+forArrayList_ _ [] _ = pure ()
+forArrayList_ p (x : xs) f = do
+	(`f` x) =<< peek p
+	forArrayList_ (p `advancePtr` 1) xs f
 
-beginCommandBuffer :: Vk.VkCommandBuffer -> IO ()
-beginCommandBuffer cb = do
+beginCommandBuffer ::
+	Vk.VkExtent2D -> Vk.VkRenderPass -> Vk.VkPipeline ->
+	Vk.VkCommandBuffer -> Vk.VkFramebuffer -> IO ()
+beginCommandBuffer sce rp gpl cb scfb = do
 	beginInfo :: Vk.VkCommandBufferBeginInfo <- Vk.newVkData \p -> do
 		Vk.clearStorable p
 		Vk.writeField @"sType" p
@@ -123,6 +127,44 @@ beginCommandBuffer cb = do
 			$ Vk.VkCommandBufferUsageBitmask 0
 		Vk.writeField @"pInheritanceInfo" p nullPtr
 	Vk.VK_SUCCESS <- Vk.vkBeginCommandBuffer cb (Vk.unsafePtr beginInfo)
+
+	renderAreaOffset :: Vk.VkOffset2D <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"x" p 0
+		Vk.writeField @"y" p 0
+
+	renderArea :: Vk.VkRect2D <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"offset" p renderAreaOffset
+		Vk.writeField @"extent" p sce
+
+	clearColorValue :: Vk.VkClearColorValue <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeFieldArrayUnsafe @"float32" 0 p 0
+		Vk.writeFieldArrayUnsafe @"float32" 1 p 0
+		Vk.writeFieldArrayUnsafe @"float32" 2 p 0
+		Vk.writeFieldArrayUnsafe @"float32" 3 p 1
+
+	clearColor :: Vk.VkClearValue <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"color" p clearColorValue
+
+	renderPassInfo :: Vk.VkRenderPassBeginInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO
+		Vk.writeField @"renderPass" p rp
+		Vk.writeField @"framebuffer" p scfb
+		Vk.writeField @"renderArea" p renderArea
+		Vk.writeField @"clearValueCount" p 1
+		Vk.writeField @"pClearValues" p $ Vk.unsafePtr clearColor
+
+	Vk.vkCmdBeginRenderPass cb
+		(Vk.unsafePtr renderPassInfo) Vk.VK_SUBPASS_CONTENTS_INLINE
+	Vk.vkCmdBindPipeline cb Vk.VK_PIPELINE_BIND_POINT_GRAPHICS gpl
+	Vk.vkCmdDraw cb 3 1 0 0
+	Vk.vkCmdEndRenderPass cb
+	Vk.VK_SUCCESS <- Vk.vkEndCommandBuffer cb
 	pure ()
 
 index :: Storable a => Ptr a -> Int -> Ptr a
@@ -796,7 +838,11 @@ mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
 	sc <- Glfw.windowShouldClose w
 	Glfw.pollEvents
+	drawFrame
 	bool (mainLoop w) (pure ()) sc
+
+drawFrame :: IO ()
+drawFrame = pure ()
 
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
