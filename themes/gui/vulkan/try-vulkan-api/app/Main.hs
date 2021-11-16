@@ -56,9 +56,10 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs, cp
+		) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs
+	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs cp
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -72,7 +73,7 @@ initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
 	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
 	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout, Vk.VkRenderPass,
-	Vk.VkPipeline, [Vk.VkFramebuffer] )
+	Vk.VkPipeline, [Vk.VkFramebuffer], Vk.VkCommandPool )
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -85,7 +86,27 @@ initVulkan w = do
 	rp <- createRenderPass d scif
 	(pllo, gpl) <- createGraphicsPipeline d sce rp
 	scfbs <- createFrameBuffers d rp sce scivs
-	pure (i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs)
+	cp <- createCommandPool d pd sfc
+	pure (	i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs,
+		cp
+		)
+
+createCommandPool ::
+	Vk.VkDevice -> Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO Vk.VkCommandPool
+createCommandPool d pd sfc = do
+	queueFamilyIndices <- findQueueFamilies pd sfc
+
+	poolInfo :: Vk.VkCommandPoolCreateInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO
+		Vk.writeField @"queueFamilyIndex" p . fromJust
+			$ graphicsFamily queueFamilyIndices
+		Vk.writeField @"flags" p $ Vk.VkCommandPoolCreateBitmask 0
+	alloca \p -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateCommandPool d
+			(Vk.unsafePtr poolInfo) nullPtr p
+		peek p
 
 createFrameBuffers ::
 	Vk.VkDevice -> Vk.VkRenderPass -> Vk.VkExtent2D -> [Vk.VkImageView] ->
@@ -744,8 +765,10 @@ cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
 	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] ->
 	Vk.VkPipelineLayout -> Vk.VkRenderPass -> Vk.VkPipeline -> [Vk.VkFramebuffer] ->
+	Vk.VkCommandPool ->
 	IO ()
-cleanup w i pdm d sfc sc scivs pllo rp gpl scfbs = do
+cleanup w i pdm d sfc sc scivs pllo rp gpl scfbs cp = do
+	Vk.vkDestroyCommandPool d cp nullPtr
 	(\scfb -> Vk.vkDestroyFramebuffer d scfb nullPtr) `mapM_` scfbs
 	Vk.vkDestroyPipeline d gpl nullPtr
 	Vk.vkDestroyPipelineLayout d pllo nullPtr
