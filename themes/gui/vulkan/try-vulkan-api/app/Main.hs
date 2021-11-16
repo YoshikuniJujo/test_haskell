@@ -56,10 +56,10 @@ main :: IO ()
 main = do
 	print enableValidationLayers
 	w <- initWindow
-	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs, cp
-		) <- initVulkan w
+	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs, cp,
+		ias, rfs) <- initVulkan w
 	mainLoop w
-	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs cp
+	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs cp ias rfs
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -73,7 +73,9 @@ initVulkan :: Glfw.Window -> IO (
 	Vk.VkInstance, Ptr Vk.VkDebugUtilsMessengerEXT, Vk.VkDevice,
 	Vk.VkSurfaceKHR, Vk.VkSwapchainKHR, [Vk.VkImage], Vk.VkFormat,
 	Vk.VkExtent2D, [Vk.VkImageView], Vk.VkPipelineLayout, Vk.VkRenderPass,
-	Vk.VkPipeline, [Vk.VkFramebuffer], Vk.VkCommandPool )
+	Vk.VkPipeline, [Vk.VkFramebuffer], Vk.VkCommandPool,
+	Vk.VkSemaphore, Vk.VkSemaphore
+	)
 initVulkan w = do
 	checkExtensionSupport
 	i <- createInstance
@@ -88,9 +90,24 @@ initVulkan w = do
 	scfbs <- createFrameBuffers d rp sce scivs
 	cp <- createCommandPool d pd sfc
 	cb <- createCommandBuffers d sce rp gpl scfbs cp
+	(ias, rfs) <- createSemaphores d
 	pure (	i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs,
-		cp
-		)
+		cp, ias, rfs )
+
+createSemaphores :: Vk.VkDevice -> IO (Vk.VkSemaphore, Vk.VkSemaphore)
+createSemaphores d = do
+	semaphoreInfo :: Vk.VkSemaphoreCreateInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p Vk.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO
+	imageAvailableSemaphore <- alloca \p -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateSemaphore d
+			(Vk.unsafePtr semaphoreInfo) nullPtr p
+		peek p
+	renderFinishedSemaphore <- alloca \p -> do
+		Vk.VK_SUCCESS <- Vk.vkCreateSemaphore d
+			(Vk.unsafePtr semaphoreInfo) nullPtr p
+		peek p
+	pure (imageAvailableSemaphore, renderFinishedSemaphore)
 
 createCommandBuffers ::
 	Vk.VkDevice -> Vk.VkExtent2D ->
@@ -848,9 +865,11 @@ cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
 	Vk.VkDevice -> Vk.VkSurfaceKHR -> Vk.VkSwapchainKHR -> [Vk.VkImageView] ->
 	Vk.VkPipelineLayout -> Vk.VkRenderPass -> Vk.VkPipeline -> [Vk.VkFramebuffer] ->
-	Vk.VkCommandPool ->
+	Vk.VkCommandPool -> Vk.VkSemaphore -> Vk.VkSemaphore ->
 	IO ()
-cleanup w i pdm d sfc sc scivs pllo rp gpl scfbs cp = do
+cleanup w i pdm d sfc sc scivs pllo rp gpl scfbs cp ias rfs = do
+	Vk.vkDestroySemaphore d rfs nullPtr
+	Vk.vkDestroySemaphore d ias nullPtr
 	Vk.vkDestroyCommandPool d cp nullPtr
 	(\scfb -> Vk.vkDestroyFramebuffer d scfb nullPtr) `mapM_` scfbs
 	Vk.vkDestroyPipeline d gpl nullPtr
