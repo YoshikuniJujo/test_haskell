@@ -87,9 +87,23 @@ initVulkan w = do
 	(pllo, gpl) <- createGraphicsPipeline d sce rp
 	scfbs <- createFrameBuffers d rp sce scivs
 	cp <- createCommandPool d pd sfc
+	cb <- createCommandBuffers d scfbs cp
 	pure (	i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs,
 		cp
 		)
+
+createCommandBuffers :: Vk.VkDevice -> [Vk.VkFramebuffer] -> Vk.VkCommandPool -> IO (Ptr Vk.VkCommandBuffer)
+createCommandBuffers d scfbs cp = do
+	commandBuffers :: Ptr Vk.VkCommandBuffer <- mallocArray $ length scfbs
+	allocaInfo :: Vk.VkCommandBufferAllocateInfo <- Vk.newVkData \p -> do
+		Vk.clearStorable p
+		Vk.writeField @"sType" p
+			Vk.VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO
+		Vk.writeField @"commandPool" p cp
+		Vk.writeField @"level" p Vk.VK_COMMAND_BUFFER_LEVEL_PRIMARY
+		Vk.writeField @"commandBufferCount" p . fromIntegral $ length scfbs
+	Vk.VK_SUCCESS <- Vk.vkAllocateCommandBuffers d (Vk.unsafePtr allocaInfo) commandBuffers
+	pure commandBuffers
 
 createCommandPool ::
 	Vk.VkDevice -> Vk.VkPhysicalDevice -> Vk.VkSurfaceKHR -> IO Vk.VkCommandPool
