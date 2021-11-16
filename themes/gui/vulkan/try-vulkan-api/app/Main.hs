@@ -58,7 +58,7 @@ main = do
 	w <- initWindow
 	(i, dm, d, sfc, sc, scis, scif, sce, scivs, pllo, rp, gpl, scfbs, cp,
 		ias, rfs) <- initVulkan w
-	mainLoop w
+	mainLoop w d sc ias
 	cleanup w i dm d sfc sc scivs pllo rp gpl scfbs cp ias rfs
 
 initWindow :: IO Glfw.Window
@@ -851,15 +851,19 @@ debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 	putStrLn . ("validation layer: " ++) =<< peekCString msg
 	pure Vk.VK_FALSE
 
-mainLoop :: Glfw.Window -> IO ()
-mainLoop w = do
-	sc <- Glfw.windowShouldClose w
+mainLoop :: Glfw.Window -> Vk.VkDevice -> Vk.VkSwapchainKHR -> Vk.VkSemaphore -> IO ()
+mainLoop w d sc ias = do
+	b <- Glfw.windowShouldClose w
 	Glfw.pollEvents
-	drawFrame
-	bool (mainLoop w) (pure ()) sc
+	drawFrame d sc ias
+	bool (mainLoop w d sc ias) (pure ()) b
 
-drawFrame :: IO ()
-drawFrame = pure ()
+drawFrame :: Vk.VkDevice -> Vk.VkSwapchainKHR -> Vk.VkSemaphore -> IO ()
+drawFrame d sc ias = do
+	imageIndex <- alloca \p -> do
+		Vk.vkAcquireNextImageKHR d sc maxBound ias Vk.VK_NULL_HANDLE p
+		peek p
+	pure ()
 
 cleanup ::
 	Glfw.Window -> Vk.VkInstance -> Ptr Vk.VkDebugUtilsMessengerEXT ->
