@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Cglm
       Vulkan
       Vulkan.Exception
   other-modules:
@@ -40,6 +41,25 @@ library
     , c-enum
     , c-struct
     , exception-hierarchy
+    , ranged-list
+  default-language: Haskell2010
+
+executable try-glm
+  main-is: try-glm.hs
+  other-modules:
+      Main
+      Paths_try_my_vulkan
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
+    , ranged-list
+    , try-my-vulkan
   default-language: Haskell2010
 
 executable try-my-vulkan-exe
@@ -55,6 +75,7 @@ executable try-my-vulkan-exe
     , c-enum
     , c-struct
     , exception-hierarchy
+    , ranged-list
     , try-my-vulkan
   default-language: Haskell2010
 
@@ -72,5 +93,6 @@ test-suite try-my-vulkan-test
     , c-enum
     , c-struct
     , exception-hierarchy
+    , ranged-list
     , try-my-vulkan
   default-language: Haskell2010

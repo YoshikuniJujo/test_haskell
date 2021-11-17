@@ -25,6 +25,7 @@ dependencies:
 - c-enum
 - c-struct
 - exception-hierarchy
+- ranged-list
 
 library:
   source-dirs: src
@@ -35,6 +36,15 @@ library:
 executables:
   try-my-vulkan-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan
+  try-glm:
+    main:                try-glm.hs
     source-dirs:         app
     ghc-options:
     - -threaded
