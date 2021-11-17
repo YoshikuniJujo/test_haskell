@@ -14,13 +14,9 @@ main = do
 	Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 	Just window <- Glfw.createWindow 800 600 "Vulkan window" Nothing Nothing
 
-	while_ do
+	fix \loop -> bool (pure ()) loop =<< do
 		Glfw.pollEvents
-		sc <- Glfw.windowShouldClose window
-		pure $ not sc
+		not <$> Glfw.windowShouldClose window
 
 	Glfw.destroyWindow window
 	Glfw.terminate
-
-while_ :: Monad m => m Bool -> m ()
-while_ act = fix \f -> bool (pure ()) f =<< act
