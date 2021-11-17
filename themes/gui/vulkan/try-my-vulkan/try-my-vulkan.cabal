@@ -25,14 +25,21 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Vulkan
+      Vulkan.Exception
   other-modules:
       Paths_try_my_vulkan
   hs-source-dirs:
       src
+  pkgconfig-depends:
+      vulkan
+    , cglm
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
   default-language: Haskell2010
 
 executable try-my-vulkan-exe
@@ -45,6 +52,9 @@ executable try-my-vulkan-exe
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
     , try-my-vulkan
   default-language: Haskell2010
 
@@ -59,5 +69,8 @@ test-suite try-my-vulkan-test
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , c-enum
+    , c-struct
+    , exception-hierarchy
     , try-my-vulkan
   default-language: Haskell2010
