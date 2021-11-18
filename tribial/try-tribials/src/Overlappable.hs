@@ -13,3 +13,6 @@ instance {-# OVERLAPPABLE #-} IsChar a where isChar _ = "It isn't Char."
 class SayIsChar c where sayIsChar :: c -> IO ()
 
 instance IsChar c => SayIsChar c where sayIsChar c = putStrLn $ isChar c
+
+sayIsChar2 :: IsChar c => c -> IO ()
+sayIsChar2 c = putStrLn $ isChar c
