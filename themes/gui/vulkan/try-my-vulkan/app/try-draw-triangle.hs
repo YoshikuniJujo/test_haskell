@@ -5,7 +5,6 @@ module Main where
 
 import Control.Monad.Fix
 import Data.Bool
-import Data.Word
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
@@ -32,7 +31,11 @@ initWindow = do
 	pure w
 
 initVulkan :: IO ()
-initVulkan = pure ()
+initVulkan = do
+	createInstance
+
+createInstance :: IO ()
+createInstance = pure ()
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
