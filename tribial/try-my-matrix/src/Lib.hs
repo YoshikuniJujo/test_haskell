@@ -42,3 +42,23 @@ unzipLengthL ((x, y) :. xys) = (x :. xs, y :. ys)
 mapUncons :: (Functor (LengthL i), 1 <= j) =>
 	LengthL i (LengthL j a) -> (LengthL i a, LengthL i (LengthL (j - 1) a))
 mapUncons = unzipLengthL . (uncons <$>)
+
+class Cross i k j where
+	cross :: Num n => LengthL i (LengthL k n) ->
+		LengthL k (LengthL j n) -> LengthL i (LengthL j n)
+
+instance Cross 0 k j where cross _ _ = NilL
+
+instance {-# OVERLAPPABLE #-} (
+	1 <= i, Cross (i - 1) k j, MultiInner k j ) =>
+	Cross i k j where
+	cross (r :. rs) m = multiInner r m :. cross rs m
+
+m1 :: LengthL 2 (LengthL 3 Int)
+m1 =	(1 :. 2 :. 3 :. NilL) :.
+	(4 :. 5 :. 6 :. NilL) :. NilL
+
+m2 :: LengthL 3 (LengthL 4 Int)
+m2 =	(1 :. 2 :. 3 :. 4 :. NilL) :.
+	(5 :. 6 :. 7 :. 8 :. NilL) :.
+	(9 :. 10 :. 11 :. 12 :. NilL) :. NilL
