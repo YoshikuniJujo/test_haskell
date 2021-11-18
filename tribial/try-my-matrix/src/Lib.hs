@@ -2,8 +2,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances, FlexibleContexts, UndecidableInstances #-}
--- {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+-- {-# OPTIONS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
 module Lib where
 
@@ -27,17 +27,18 @@ instance MultiInner k 0 where
 	multiInner _ _ = NilL
 
 instance {-# OVERLAPPABLE #-}
-	(Inner k, MultiInner k (j - 1), MapUncons (k - 1)) => MultiInner k j where
+	(Inner k, MultiInner k (j - 1), 1 <= j, 1 <= k, Functor (LengthL k)) => MultiInner k j where
 	multiInner v m = inner v r0 :. multiInner v rs
 		where (r0, rs) = mapUncons m
 
-class MapUncons i where
-	mapUncons :: 1 <= j => LengthL i (LengthL j a) ->
-		(LengthL i a, LengthL i (LengthL (j - 1) a))
+uncons :: 1 <= i => LengthL i a -> (a, LengthL (i - 1) a)
+uncons (x :. xs) = (x, xs)
 
-instance MapUncons 0 where mapUncons _ = (NilL, NilL)
+unzipLengthL :: LengthL i (a, b) -> (LengthL i a, LengthL i b)
+unzipLengthL NilL = (NilL, NilL)
+unzipLengthL ((x, y) :. xys) = (x :. xs, y :. ys)
+	where (xs, ys) = unzipLengthL xys
 
-instance {-# OVERLAPPABLE #-} MapUncons (i - 1) => MapUncons i where
-	mapUncons ((h :. t) :. hts) = (h :. hs, t :. ts)
-		where (hs, ts) = mapUncons hts
-	mapUncons NilL = error "never occur"
+mapUncons :: (Functor (LengthL i), 1 <= j) =>
+	LengthL i (LengthL j a) -> (LengthL i a, LengthL i (LengthL (j - 1) a))
+mapUncons = unzipLengthL . (uncons <$>)
