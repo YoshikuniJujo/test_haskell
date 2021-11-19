@@ -10,39 +10,14 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
-import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Struct
 import Control.Exception
 import Data.Word
-import System.IO.Unsafe
 
 import Vulkan.Exception
 
 #include <vulkan/vulkan.h>
-
-type PtrVoid = Ptr ()
-
-type ForeignString = ForeignPtr CChar
-
-foreignString :: String -> ForeignString
-foreignString str = unsafePerformIO do
-	cstr <- newCString str
-	newForeignPtr cstr $ free cstr
-
-foreignStringToString :: ForeignString -> String
-foreignStringToString fp =
-	unsafePerformIO $ withForeignPtr fp \cstr -> peekCString cstr
-
-struct "ApplicationInfo" #{size VkApplicationInfo} [
-	("sType", ''(), [| const $ pure () |],
-		[| \p _ -> #{poke VkApplicationInfo, sType} p
-			(#{const VK_STRUCTURE_TYPE_APPLICATION_INFO} ::
-				#{type VkStructureType}) |]),
-	("pNext", ''PtrVoid, [| #{peek VkApplicationInfo, pNext} |],
-		[| #{poke VkApplicationInfo, pNext} |])
-	]
-	[''Show, ''Eq]
 
 pokeCString :: Int -> CString -> String -> IO ()
 pokeCString n cs str = withCString str \cs_ -> copyBytes cs cs_ n

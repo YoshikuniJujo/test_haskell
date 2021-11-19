@@ -28,6 +28,7 @@ library
       Cglm
       Vulkan
       Vulkan.Exception
+      Vulkan.Internal
   other-modules:
       Paths_try_my_vulkan
   hs-source-dirs:
