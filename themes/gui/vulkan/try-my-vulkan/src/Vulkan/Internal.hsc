@@ -8,10 +8,12 @@
 module Vulkan.Internal where
 
 import Foreign.Ptr
+import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
+import Data.List
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -185,5 +187,7 @@ struct "InstanceCreateInfo" #{size VkInstanceCreateInfo} [
 		[| #{poke VkInstanceCreateInfo, ppEnabledExtensionNames} |]) ]
 	[''Show]
 
--- withCStrings :: Num n => [String] -> (n -> Ptr CString -> IO a) -> IO a
--- withCStrings strs = do
+withCStrings :: Num n => [String] -> (n -> Ptr CString -> IO a) -> IO a
+withCStrings strs f = do
+	cstrs <- newCString `mapM` strs
+	withArray cstrs (f $ genericLength strs) <* free `mapM_` cstrs
