@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan where
@@ -17,7 +18,43 @@ import Data.Word
 
 import Vulkan.Exception
 
+import qualified Vulkan.Internal as I
+
 #include <vulkan/vulkan.h>
+
+data ApplicationInfo a = ApplicationInfo {
+	applicationInfoNext :: a,
+	applicationInfoApplicationName :: String,
+	applicationInfoApplicationVersion :: I.ApiVersion,
+	applicationInfoEngineName :: String,
+	applicationInfoEngineVersion :: I.ApiVersion,
+	applicationInfoApiVersion :: I.ApiVersion }
+	deriving Show
+
+class Pointable a where
+	withPointer :: a -> (Ptr a -> IO b) -> IO b
+	fromPointer :: Ptr a -> IO a
+
+instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
+	withPointer x f = alloca \p -> poke p x >> f p
+	fromPointer = peek
+
+withApplicationInfo :: Pointable a =>
+	ApplicationInfo a -> (I.ApplicationInfo -> IO b) -> IO b
+withApplicationInfo ai f = withPointer (applicationInfoNext ai) \pnxt ->
+	withCString (applicationInfoApplicationName ai) \canm ->
+		withCString (applicationInfoEngineName ai) \cenm ->
+			f I.ApplicationInfo {
+				I.applicationInfoSType = (),
+				I.applicationInfoPNext = castPtr pnxt,
+				I.applicationInfoPApplicationName = canm,
+				I.applicationInfoApplicationVersion =
+					applicationInfoApplicationVersion ai,
+				I.applicationInfoPEngineName = cenm,
+				I.applicationInfoEngineVersion =
+					applicationInfoEngineVersion ai,
+				I.applicationInfoApiVersion =
+					applicationInfoApiVersion ai }
 
 pokeCString :: Int -> CString -> String -> IO ()
 pokeCString n cs str = withCString str \cs_ -> copyBytes cs cs_ n

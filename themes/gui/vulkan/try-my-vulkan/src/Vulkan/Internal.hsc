@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Internal where
@@ -16,6 +17,9 @@ import Data.Word
 
 type PtrVoid = Ptr ()
 
+newtype ApiVersion = ApiVersion #{type uint32_t}
+	deriving (Show, Eq, Ord, Storable)
+
 struct "ApplicationInfo" #{size VkApplicationInfo} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkApplicationInfo, sType} p
@@ -26,22 +30,20 @@ struct "ApplicationInfo" #{size VkApplicationInfo} [
 	("pApplicationName", ''CString,
 		[| #{peek VkApplicationInfo, pApplicationName} |],
 		[| #{poke VkApplicationInfo, pApplicationName} |]),
-	("applicationVersion", ''#{type uint32_t},
+	("applicationVersion", ''ApiVersion,
 		[| #{peek VkApplicationInfo, applicationVersion} |],
 		[| #{poke VkApplicationInfo, applicationVersion} |]),
 	("pEngineName", ''CString,
 		[| #{peek VkApplicationInfo, pEngineName} |],
 		[| #{poke VkApplicationInfo, pEngineName} |]),
-	("engineVersion", ''#{type uint32_t},
+	("engineVersion", ''ApiVersion,
 		[| #{peek VkApplicationInfo, engineVersion} |],
 		[| #{poke VkApplicationInfo, engineVersion} |]),
-	("apiVersion", ''#{type uint32_t},
+	("apiVersion", ''ApiVersion,
 		[| #{peek VkApplicationInfo, apiVersion} |],
 		[| #{poke VkApplicationInfo, apiVersion} |])
 	]
 	[''Show, ''Eq]
-
-newtype ApiVersion = ApiVersion #{type uint32_t} deriving (Show, Eq, Ord)
 
 foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
 	Word8 -> Word8 -> Word16 -> Word16 -> ApiVersion
