@@ -88,6 +88,25 @@ withAllocationCallbacks ac f = withPointer ud \pud -> do
 	ial = allocationCallbacksFnInternalAllocation ac
 	ifr = allocationCallbacksFnInternalFree ac
 
+data InstanceCreateInfo a b = InstanceCreateInfo {
+	instanceCreateInfoNext :: a,
+	instanceCreateInfoFlags :: I.InstanceCreateFlags,
+	instanceCreateInfoApplicationInfo :: ApplicationInfo b,
+	instanceCreateInfoEnabledLayers :: [String],
+	instanceCreateInfoExtensions :: [String] }
+	deriving Show
+
+withInstanceCreateInfo :: (Pointable a, Pointable b) =>
+	InstanceCreateInfo a b -> (I.InstanceCreateInfo -> IO c) -> IO c
+withInstanceCreateInfo ic f = withPointer (instanceCreateInfoNext ic) \pnxt ->
+	withApplicationInfo (instanceCreateInfoApplicationInfo ic) \(I.ApplicationInfo_ fai) ->
+		I.withCStrings (instanceCreateInfoEnabledLayers ic) \eln els ->
+			I.withCStrings (instanceCreateInfoExtensions ic) \en es ->
+				withForeignPtr fai \pai ->
+					f $ I.InstanceCreateInfo () (castPtr pnxt)
+						(instanceCreateInfoFlags ic) pai
+						eln els en es
+
 newtype Instance = Instance (Ptr Instance) deriving Show
 
 {-
