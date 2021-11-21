@@ -7,8 +7,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan (
-	module Vulkan, I.makeApiVersion, I.apiVersion1_0, pattern I.InstanceCreateFlagsZero
-	) where
+	module Vulkan, I.makeApiVersion, I.apiVersion1_0,
+	pattern I.InstanceCreateFlagsZero,
+	I.FnAllocationFunction, I.FnReallocationFunction, I.FnFreeFunction,
+	I.FnInternalAllocationNotification, I.FnInternalFreeNotification ) where
 
 import Foreign.Ptr
 import Foreign.Marshal

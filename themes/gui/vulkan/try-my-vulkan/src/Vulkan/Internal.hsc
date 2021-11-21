@@ -59,7 +59,7 @@ wrapReallocationFunction = wrapReallocationFunctionGen . (. castPtr)
 foreign import ccall "wrapper" wrapReallocationFunctionGen ::
 	FnReallocationFunction () -> IO PfnReallocationFunction
 
-type FnFreeFunction a = Ptr a -> Ptr () -> IO (Ptr ())
+type FnFreeFunction a = Ptr a -> Ptr () -> IO ()
 
 type PfnFreeFunction = FunPtr (FnFreeFunction ())
 

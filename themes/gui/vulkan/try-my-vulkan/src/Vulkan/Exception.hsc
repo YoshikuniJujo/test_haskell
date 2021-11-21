@@ -18,7 +18,9 @@ enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq] [
 	("Timeout", #{const VK_TIMEOUT}),
 	("EventSet", #{const VK_EVENT_SET}),
 	("EventReset", #{const VK_EVENT_RESET}),
-	("Incomplete", #{const VK_INCOMPLETE})
+	("Incomplete", #{const VK_INCOMPLETE}),
+	("ErrorOutOfHostMemory", #{const VK_ERROR_OUT_OF_HOST_MEMORY}),
+	("ErrorOutOfDeviceMemory", #{const VK_ERROR_OUT_OF_DEVICE_MEMORY})
 	]
 
 exceptionHierarchy Nothing (ExType ''Result)
