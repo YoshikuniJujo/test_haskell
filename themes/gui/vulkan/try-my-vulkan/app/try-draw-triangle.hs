@@ -35,7 +35,23 @@ initVulkan = do
 	createInstance
 
 createInstance :: IO ()
-createInstance = pure ()
+createInstance = do
+	let	appInfo = Vk.ApplicationInfo {
+			Vk.applicationInfoNext = Nothing :: Maybe Bool,
+			Vk.applicationInfoApplicationName = "Hello Triangle",
+			Vk.applicationInfoApplicationVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoEngineName = "No Engine",
+			Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoApiVersion = Vk.apiVersion1_0 }
+		createInfo = Vk.InstanceCreateInfo {
+			Vk.instanceCreateInfoNext = Nothing :: Maybe Bool,
+			Vk.instanceCreateInfoApplicationInfo = appInfo,
+			Vk.instanceCreateInfoFlags = Vk.InstanceCreateFlagsZero,
+			Vk.instanceCreateInfoEnabledLayers = [],
+			Vk.instanceCreateInfoExtensions = [] }
+	i <- Vk.createInstance createInfo (Nothing :: Maybe (Vk.AllocationCallbacks ()))
+	print i
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do

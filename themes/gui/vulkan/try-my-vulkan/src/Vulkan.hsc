@@ -1,11 +1,14 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan where
+module Vulkan (
+	module Vulkan, I.makeApiVersion, I.apiVersion1_0, pattern I.InstanceCreateFlagsZero
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -14,7 +17,6 @@ import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.Concurrent
 import Foreign.C.String
 import Foreign.C.Struct
-import Control.Exception
 import Data.Word
 
 import Vulkan.Exception
@@ -24,7 +26,7 @@ import qualified Vulkan.Internal as I
 #include <vulkan/vulkan.h>
 
 data ApplicationInfo a = ApplicationInfo {
-	applicationInfoNext :: a,
+	applicationInfoNext :: Maybe a,
 	applicationInfoApplicationName :: String,
 	applicationInfoApplicationVersion :: I.ApiVersion,
 	applicationInfoEngineName :: String,
@@ -40,9 +42,14 @@ instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
 	withPointer x f = alloca \p -> poke p x >> f p
 	fromPointer = peek
 
+withMaybePointer :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
+withMaybePointer mx f = case mx of
+	Nothing -> f nullPtr
+	Just x -> withPointer x f
+
 withApplicationInfo :: Pointable a =>
 	ApplicationInfo a -> (I.ApplicationInfo -> IO b) -> IO b
-withApplicationInfo ai f = withPointer (applicationInfoNext ai) \pnxt ->
+withApplicationInfo ai f = withMaybePointer (applicationInfoNext ai) \pnxt ->
 	withCString (applicationInfoApplicationName ai) \canm ->
 		withCString (applicationInfoEngineName ai) \cenm ->
 			f I.ApplicationInfo {
@@ -65,6 +72,12 @@ data AllocationCallbacks a = AllocationCallbacks {
 	allocationCallbacksFnInternalAllocation ::
 		I.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: I.FnInternalFreeNotification a }
+
+withAllocationCallbacksPtr :: Pointable a =>
+	AllocationCallbacks a -> (Ptr I.AllocationCallbacks -> IO b) -> IO b
+withAllocationCallbacksPtr ac f =
+	withAllocationCallbacks ac \(I.AllocationCallbacks_ fac) ->
+		withForeignPtr fac f
 
 withAllocationCallbacks :: Pointable a =>
 	AllocationCallbacks a -> (I.AllocationCallbacks -> IO b) -> IO b
@@ -89,16 +102,22 @@ withAllocationCallbacks ac f = withPointer ud \pud -> do
 	ifr = allocationCallbacksFnInternalFree ac
 
 data InstanceCreateInfo a b = InstanceCreateInfo {
-	instanceCreateInfoNext :: a,
+	instanceCreateInfoNext :: Maybe a,
 	instanceCreateInfoFlags :: I.InstanceCreateFlags,
 	instanceCreateInfoApplicationInfo :: ApplicationInfo b,
 	instanceCreateInfoEnabledLayers :: [String],
 	instanceCreateInfoExtensions :: [String] }
 	deriving Show
 
+withInstanceCreateInfoPtr :: (Pointable a, Pointable b) =>
+	InstanceCreateInfo a b -> (Ptr I.InstanceCreateInfo -> IO c) -> IO c
+withInstanceCreateInfoPtr ici f =
+	withInstanceCreateInfo ici \(I.InstanceCreateInfo_ fici) ->
+		withForeignPtr fici f
+
 withInstanceCreateInfo :: (Pointable a, Pointable b) =>
 	InstanceCreateInfo a b -> (I.InstanceCreateInfo -> IO c) -> IO c
-withInstanceCreateInfo ic f = withPointer (instanceCreateInfoNext ic) \pnxt ->
+withInstanceCreateInfo ic f = withMaybePointer (instanceCreateInfoNext ic) \pnxt ->
 	withApplicationInfo (instanceCreateInfoApplicationInfo ic) \(I.ApplicationInfo_ fai) ->
 		I.withCStrings (instanceCreateInfoEnabledLayers ic) \eln els ->
 			I.withCStrings (instanceCreateInfoExtensions ic) \en es ->
@@ -107,13 +126,21 @@ withInstanceCreateInfo ic f = withPointer (instanceCreateInfoNext ic) \pnxt ->
 						(instanceCreateInfoFlags ic) pai
 						eln els en es
 
-newtype Instance = Instance (Ptr Instance) deriving Show
+newtype Instance = Instance (Ptr Instance) deriving (Show, Storable)
 
-{-
+createInstance :: (Pointable a, Pointable b, Storable c) =>
+	InstanceCreateInfo a b -> Maybe (AllocationCallbacks c) -> IO Instance
+createInstance ici mac = alloca \pist -> withInstanceCreateInfoPtr ici \pici -> do
+	r <- case mac of
+		Nothing -> c_vkCreateInstance pici nullPtr pist
+		Just ac -> withAllocationCallbacksPtr ac \pac ->
+			c_vkCreateInstance pici pac pist
+	throwUnlessSuccess r
+	peek pist
+
 foreign import ccall "vkCreateInstance" c_vkCreateInstance ::
 	Ptr I.InstanceCreateInfo -> Ptr I.AllocationCallbacks -> Ptr Instance ->
 	IO Result
-	-}
 
 pokeCString :: Int -> CString -> String -> IO ()
 pokeCString n cs str = withCString str \cs_ -> copyBytes cs cs_ n
@@ -142,11 +169,11 @@ enumerateInstanceExtensionProperties :: Maybe String -> IO [ExtensionProperties]
 enumerateInstanceExtensionProperties =
 	flip withMaybeCString \cs -> alloca \pn -> do
 		r <- c_vkEnumerateInstanceExtensionProperties cs pn nullPtr
-		case r of Success -> pure (); _ -> throw r
+		throwUnlessSuccess r
 		n <- peek pn
 		allocaArray (fromIntegral n) \pProps -> do
 			r' <- c_vkEnumerateInstanceExtensionProperties cs pn pProps
-			case r' of Success -> pure (); _ -> throw r'
+			throwUnlessSuccess r'
 			peekArray (fromIntegral n) pProps
 
 withMaybeCString :: Maybe String -> (CString -> IO a) -> IO a

@@ -1,11 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Exception where
 
 import Foreign.C.Enum
+import Control.Exception
 import Control.Exception.Hierarchy
 import Data.Int
 
@@ -21,3 +22,6 @@ enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq] [
 	]
 
 exceptionHierarchy Nothing (ExType ''Result)
+
+throwUnlessSuccess :: Result -> IO ()
+throwUnlessSuccess = \case Success -> pure (); e -> throw e
