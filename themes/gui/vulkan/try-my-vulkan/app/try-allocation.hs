@@ -39,13 +39,19 @@ fnAllocation :: Vk.FnAllocationFunction ()
 fnAllocation _pud sz _algn _scp = mallocBytes $ fromIntegral sz
 
 fnReallocation :: Vk.FnReallocationFunction ()
-fnReallocation _ _ _ _ _ = pure nullPtr
+fnReallocation _ _ _ _ _ = do
+	putStrLn "REALLOCATION"
+	pure nullPtr
 
 fnFree :: Vk.FnFreeFunction ()
-fnFree _ _ = pure ()
+fnFree _pud p = do
+	putStrLn $ "FREE: " ++ show p
+	free p
 
 fnInternalAllocation :: Vk.FnInternalAllocationNotification ()
-fnInternalAllocation _ _ _ _ = pure ()
+fnInternalAllocation _ _ _ _ = do
+	putStrLn "INTERNAL ALLOCATION"
 
 fnInternalFree :: Vk.FnInternalFreeNotification ()
-fnInternalFree _ _ _ _ = pure ()
+fnInternalFree _ _ _ _ = do
+	putStrLn "INTERNAL FREE"

@@ -1,6 +1,4 @@
 memo
 ====
 
-* define withCStrings
-* define withInstanceCreateInfo
-* define createInstance
+* [ ] AllocationCallbacks: make InternalFoo nullable
