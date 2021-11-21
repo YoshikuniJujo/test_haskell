@@ -3,6 +3,7 @@
 module Main where
 
 import Foreign.Ptr
+import Foreign.Marshal
 
 import qualified Vulkan as Vk
 
@@ -35,7 +36,7 @@ main = do
 	print i
 
 fnAllocation :: Vk.FnAllocationFunction ()
-fnAllocation _ _ _ _ = pure nullPtr
+fnAllocation _pud sz _algn _scp = mallocBytes $ fromIntegral sz
 
 fnReallocation :: Vk.FnReallocationFunction ()
 fnReallocation _ _ _ _ _ = pure nullPtr
