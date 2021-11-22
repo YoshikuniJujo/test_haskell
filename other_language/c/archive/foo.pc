@@ -1,0 +1,6 @@
+libdir=/home/tatsuya/project/test_haskell/other_language/c/archive
+
+Name: Foo
+Description: Foo
+Version: 0.1
+Libs: -L${libdir} -lfoo
