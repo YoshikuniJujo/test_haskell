@@ -1,0 +1,15 @@
+% mkdir ~/.qiita
+% mkdir ~/.qiita/include
+% mkdir ~/.qiita/lib
+
+% cp foo.h ~/.qiita/include
+% gcc --shared -o libfoo.so foo.c
+% cp libfoo.so ~/.qiita/lib
+% gcc -I~/.qiita/include -L~/.qiita/lib -lfoo main.c -o sum
+
+% mkdir ~/.qiita/share
+% mkdir ~/.qiita/share/pkgconfig
+% cp foo.pc ~/.qiita/share/pkgconfig
+% gcc `PKG_CONFIG_PATH=~/.qiita/share/pkgconfig pkg-config foo --cflags --libs` main.c -o sum
+
+% LD_LIBRARY_PATH=~/.qiita/lib ./sum
