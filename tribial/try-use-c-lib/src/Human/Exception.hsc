@@ -1,14 +1,27 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Human.Exception where
 
-import Foreign.C.Enum
+import Control.Exception
+import Control.Exception.Hierarchy
+import Data.Typeable
 import Data.Word
 
 #include <human.h>
 
-enum "DrawHumanResult" ''#{type HmDrawHumanResult} [''Show, ''Read] [
-	("DrawHumanResultSuccess", #{const HM_DRAW_HUMAN_SUCCESS})
-	]
+data DrawHumanPartialError = DrawHumanPartialError deriving (Typeable, Show)
+data DrawHumanOffscreenError = DrawHumanOffscreenError deriving (Typeable, Show)
+
+data DrawHumanUnknownError = DrawHumanUnknownError #{type HmDrawHumanResult}
+	deriving (Typeable, Show)
+
+exceptionHierarchy Nothing (
+	ExNode "DrawHumanError" [
+		ExNode "DrawHumanOutOfFieldError" [
+			ExType ''DrawHumanPartialError,
+			ExType ''DrawHumanOffscreenError ],
+		ExType ''DrawHumanUnknownError ] )
