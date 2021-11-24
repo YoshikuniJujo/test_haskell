@@ -1,20 +1,20 @@
 #ifndef _HUMAN_H
 #define _HUMAN_H
 
-int left(int x, int y);
-int right(int x, int y);
-int top(int x, int y);
-int bottom(int x, int y);
+int hm_left(int x, int y);
+int hm_right(int x, int y);
+int hm_top(int x, int y);
+int hm_bottom(int x, int y);
 
-void init_field(void);
+void hm_init_field(void);
 
 typedef enum {
-	DRAW_HUMAN_SUCCESS,
-	DRAW_HUMAN_PARTIAL,
-	DRAW_HUMAN_OFFSCREEN }
-	DrawHumanResult;
+	HM_DRAW_HUMAN_SUCCESS,
+	HM_DRAW_HUMAN_PARTIAL,
+	HM_DRAW_HUMAN_OFFSCREEN }
+	HmDrawHumanResult;
 
-DrawHumanResult draw_human(int x, int y);
+HmDrawHumanResult hm_draw_human(int x, int y);
 
 typedef char Field[23][80];
 
