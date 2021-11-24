@@ -17,9 +17,9 @@ Field hm_field;
 
 void
 hm_init_field(void) {
-	for (int i = 0; i < 22; i++) {
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
-		for (j = 0; j < 79; j++) {
+		for (j = 0; j < FIELD_WIDTH; j++) {
 			hm_field[i][j] = '.';
 		}
 		hm_field[i][j] = '\0';
@@ -42,6 +42,5 @@ hm_draw_human(int x, int y) {
 	hm_field[y + 2][x] = '/';
 	hm_field[y + 2][x + 2] = '\\';
 	hm_draw_field();
-
 	return 0;
 }

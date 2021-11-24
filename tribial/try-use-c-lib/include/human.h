@@ -16,6 +16,9 @@ typedef enum {
 
 HmDrawHumanResult hm_draw_human(int x, int y);
 
-typedef char Field[23][80];
+#define FIELD_WIDTH	79
+#define FIELD_HEIGHT	23
+
+typedef char Field[FIELD_HEIGHT][FIELD_WIDTH + 1];
 
 #endif
