@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Human
 
 main :: IO ()
 main = putStrLn "Slozsoft"

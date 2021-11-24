@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Lib where
+module Human where
 
 import Foreign.C.Types
 import Foreign.C.Enum

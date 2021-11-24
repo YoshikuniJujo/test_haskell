@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Human
   other-modules:
       Paths_try_use_c_lib
   hs-source-dirs:
