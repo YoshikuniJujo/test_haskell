@@ -33,7 +33,7 @@ draw_field(void) {
 	}
 }
 
-int
+DrawHumanResult
 draw_human(int x, int y) {
 	field[y][x] = '\\';
 	field[y][x + 1] = 'o';

@@ -8,7 +8,13 @@ int bottom(int x, int y);
 
 void init_field(void);
 
-int draw_human(int x, int y);
+typedef enum {
+	DRAW_HUMAN_SUCCESS,
+	DRAW_HUMAN_PARTIAL,
+	DRAW_HUMAN_OFFSCREEN }
+	DrawHumanResult;
+
+DrawHumanResult draw_human(int x, int y);
 
 typedef char Field[23][80];
 
