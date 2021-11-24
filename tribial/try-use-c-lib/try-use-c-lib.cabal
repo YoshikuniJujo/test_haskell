@@ -35,6 +35,7 @@ library
       include
   c-sources:
       csrc/human.c
+      csrc/linked_list.c
   build-depends:
       base >=4.7 && <5
     , c-enum
