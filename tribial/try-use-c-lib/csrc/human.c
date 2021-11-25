@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <human.h>
 
@@ -45,7 +46,8 @@ hm_check_inside(int x, int y) {
 }
 
 void
-hm_field0_set_char(int x, int y, char c) {
+hm_field0_set_char(int x, int y, char c)
+{
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
 		hm_field0[y][x] = c;
 	}
@@ -62,4 +64,29 @@ hm_field0_draw_human(int x, int y) {
 	hm_field0_draw();
 
 	return hm_check_inside(x, y);
+}
+
+Field*
+hm_field_new(void)
+{
+	Field *f;
+	f = (Field *)malloc(sizeof(Field));
+
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
+		int j;
+		for (j = 0; j < FIELD_WIDTH; j++) {
+			(*f)[i][j] = '.';
+		}
+		*f[i][j] = '\0';
+	}
+
+	return f;
+}
+
+void
+hm_field_draw(Field *f)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
+		printf("%s\n", (*f)[i]);
+	}
 }

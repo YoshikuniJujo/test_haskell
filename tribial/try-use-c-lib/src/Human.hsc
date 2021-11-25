@@ -4,6 +4,7 @@
 
 module Human where
 
+import Foreign.Ptr
 import Foreign.C.Types
 import Foreign.C.Enum
 import Control.Exception
@@ -37,3 +38,9 @@ field0DrawHuman x y = do
 
 foreign import ccall "hm_field0_draw_human"
 	c_hm_field0_draw_human :: CInt -> CInt -> IO DrawHumanResult
+
+newtype Field = Field (Ptr Field) deriving Show
+
+foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr Field)
+
+foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr Field -> IO ()
