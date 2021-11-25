@@ -24,22 +24,22 @@ foreign import ccall "hm_bottom" c_hm_bottom :: CInt -> CInt -> CInt
 foreign import ccall "hm_field0_init" c_hm_field0_init :: IO ()
 foreign import ccall "hm_field0_draw" c_hm_field0_draw :: IO ()
 
-enum "DrawHumanResult" ''#{type HmDrawHumanResult} [''Show, ''Read] [
-	("DrawHumanResultSuccess", #{const HM_DRAW_HUMAN_SUCCESS}),
-	("DrawHumanResultPartial", #{const HM_DRAW_HUMAN_PARTIAL}),
-	("DrawHumanResultOffscreen", #{const HM_DRAW_HUMAN_OFFSCREEN}) ]
+enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
+	("PutHumanResultSuccess", #{const HM_PUT_HUMAN_SUCCESS}),
+	("PutHumanResultPartial", #{const HM_PUT_HUMAN_PARTIAL}),
+	("PutHumanResultOffscreen", #{const HM_PUT_HUMAN_OFFSCREEN}) ]
 
 field0DrawHuman :: CInt -> CInt -> IO ()
 field0DrawHuman x y = do
 	r <- c_hm_field0_draw_human x y
 	case r of
-		DrawHumanResultSuccess -> pure ()
-		DrawHumanResultPartial -> throw DrawHumanPartialError
-		DrawHumanResultOffscreen -> throw DrawHumanOffscreenError
-		DrawHumanResult n -> throw $ DrawHumanUnknownError n
+		PutHumanResultSuccess -> pure ()
+		PutHumanResultPartial -> throw PutHumanPartialError
+		PutHumanResultOffscreen -> throw PutHumanOffscreenError
+		PutHumanResult n -> throw $ PutHumanUnknownError n
 
 foreign import ccall "hm_field0_draw_human"
-	c_hm_field0_draw_human :: CInt -> CInt -> IO DrawHumanResult
+	c_hm_field0_draw_human :: CInt -> CInt -> IO PutHumanResult
 
 newtype Field = Field (ForeignPtr Field) deriving Show
 

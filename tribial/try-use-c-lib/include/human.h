@@ -9,12 +9,12 @@ int hm_bottom(int x, int y);
 void hm_field0_init(void);
 
 typedef enum {
-	HM_DRAW_HUMAN_SUCCESS,
-	HM_DRAW_HUMAN_PARTIAL,
-	HM_DRAW_HUMAN_OFFSCREEN }
-	HmDrawHumanResult;
+	HM_PUT_HUMAN_SUCCESS,
+	HM_PUT_HUMAN_PARTIAL,
+	HM_PUT_HUMAN_OFFSCREEN }
+	HmPutHumanResult;
 
-HmDrawHumanResult hm_field0_draw_human(int x, int y);
+HmPutHumanResult hm_field0_draw_human(int x, int y);
 
 #define FIELD_WIDTH	79
 #define FIELD_HEIGHT	23

@@ -34,15 +34,15 @@ hm_field0_draw(void) {
 	}
 }
 
-HmDrawHumanResult
+HmPutHumanResult
 hm_check_inside(int x, int y) {
 	if (	0 <= hm_left(x, y) && hm_right(x, y) < FIELD_WIDTH &&
 		0 <= hm_top(x, y) && hm_bottom(x, y) < FIELD_HEIGHT ) {
-		return HM_DRAW_HUMAN_SUCCESS; }
+		return HM_PUT_HUMAN_SUCCESS; }
 	else if (	(0 <= hm_right(x, y) && hm_left(x, y) < FIELD_WIDTH) &&
 			(0 <= hm_bottom(x, y) && hm_top(x, y) < FIELD_HEIGHT) ) {
-		return HM_DRAW_HUMAN_PARTIAL; }
-	else {	return HM_DRAW_HUMAN_OFFSCREEN; }
+		return HM_PUT_HUMAN_PARTIAL; }
+	else {	return HM_PUT_HUMAN_OFFSCREEN; }
 }
 
 void
@@ -53,7 +53,7 @@ hm_field0_set_char(int x, int y, char c)
 	}
 }
 
-HmDrawHumanResult
+HmPutHumanResult
 hm_field0_draw_human(int x, int y) {
 	hm_field0_set_char(x, y, '\\');
 	hm_field0_set_char(x + 1, y, 'o');

@@ -13,15 +13,15 @@ import Data.Word
 
 #include <human.h>
 
-data DrawHumanPartialError = DrawHumanPartialError deriving (Typeable, Show)
-data DrawHumanOffscreenError = DrawHumanOffscreenError deriving (Typeable, Show)
+data PutHumanPartialError = PutHumanPartialError deriving (Typeable, Show)
+data PutHumanOffscreenError = PutHumanOffscreenError deriving (Typeable, Show)
 
-data DrawHumanUnknownError = DrawHumanUnknownError #{type HmDrawHumanResult}
+data PutHumanUnknownError = PutHumanUnknownError #{type HmPutHumanResult}
 	deriving (Typeable, Show)
 
 exceptionHierarchy Nothing (
-	ExNode "DrawHumanError" [
-		ExNode "DrawHumanOutOfFieldError" [
-			ExType ''DrawHumanPartialError,
-			ExType ''DrawHumanOffscreenError ],
-		ExType ''DrawHumanUnknownError ] )
+	ExNode "PutHumanError" [
+		ExNode "PutHumanOutOfFieldError" [
+			ExType ''PutHumanPartialError,
+			ExType ''PutHumanOffscreenError ],
+		ExType ''PutHumanUnknownError ] )
