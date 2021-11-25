@@ -18,22 +18,22 @@ foreign import ccall "hm_right" c_hm_right :: CInt -> CInt -> CInt
 foreign import ccall "hm_top" c_hm_top :: CInt -> CInt -> CInt
 foreign import ccall "hm_bottom" c_hm_bottom :: CInt -> CInt -> CInt
 
-foreign import ccall "hm_init_field" c_hm_init_field :: IO ()
-foreign import ccall "hm_draw_field" c_hm_draw_field :: IO ()
+foreign import ccall "hm_field0_init" c_hm_field0_init :: IO ()
+foreign import ccall "hm_field0_draw" c_hm_field0_draw :: IO ()
 
 enum "DrawHumanResult" ''#{type HmDrawHumanResult} [''Show, ''Read] [
 	("DrawHumanResultSuccess", #{const HM_DRAW_HUMAN_SUCCESS}),
 	("DrawHumanResultPartial", #{const HM_DRAW_HUMAN_PARTIAL}),
 	("DrawHumanResultOffscreen", #{const HM_DRAW_HUMAN_OFFSCREEN}) ]
 
-drawHuman :: CInt -> CInt -> IO ()
-drawHuman x y = do
-	r <- c_hm_draw_human x y
+field0DrawHuman :: CInt -> CInt -> IO ()
+field0DrawHuman x y = do
+	r <- c_hm_field0_draw_human x y
 	case r of
 		DrawHumanResultSuccess -> pure ()
 		DrawHumanResultPartial -> throw DrawHumanPartialError
 		DrawHumanResultOffscreen -> throw DrawHumanOffscreenError
 		DrawHumanResult n -> throw $ DrawHumanUnknownError n
 
-foreign import ccall "hm_draw_human"
-	c_hm_draw_human :: CInt -> CInt -> IO DrawHumanResult
+foreign import ccall "hm_field0_draw_human"
+	c_hm_field0_draw_human :: CInt -> CInt -> IO DrawHumanResult

@@ -13,23 +13,23 @@ hm_top(int x, int y) { return y; }
 int
 hm_bottom(int x, int y) { return y + 2; }
 
-Field hm_field;
+Field hm_field0;
 
 void
-hm_init_field(void) {
+hm_field0_init(void) {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
 		for (j = 0; j < FIELD_WIDTH; j++) {
-			hm_field[i][j] = '.';
+			hm_field0[i][j] = '.';
 		}
-		hm_field[i][j] = '\0';
+		hm_field0[i][j] = '\0';
 	}
 }
 
 void
-hm_draw_field(void) {
+hm_field0_draw(void) {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", hm_field[i]);
+		printf("%s\n", hm_field0[i]);
 	}
 }
 
@@ -45,21 +45,21 @@ hm_check_inside(int x, int y) {
 }
 
 void
-hm_set_char(int x, int y, char c) {
+hm_field0_set_char(int x, int y, char c) {
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
-		hm_field[y][x] = c;
+		hm_field0[y][x] = c;
 	}
 }
 
 HmDrawHumanResult
-hm_draw_human(int x, int y) {
-	hm_set_char(x, y, '\\');
-	hm_set_char(x + 1, y, 'o');
-	hm_set_char(x + 1, y + 1, 'A');
-	hm_set_char(x + 2, y + 1, '\\');
-	hm_set_char(x, y + 2, '/');
-	hm_set_char(x + 2, y + 2, '\\');
-	hm_draw_field();
+hm_field0_draw_human(int x, int y) {
+	hm_field0_set_char(x, y, '\\');
+	hm_field0_set_char(x + 1, y, 'o');
+	hm_field0_set_char(x + 1, y + 1, 'A');
+	hm_field0_set_char(x + 2, y + 1, '\\');
+	hm_field0_set_char(x, y + 2, '/');
+	hm_field0_set_char(x + 2, y + 2, '\\');
+	hm_field0_draw();
 
 	return hm_check_inside(x, y);
 }
