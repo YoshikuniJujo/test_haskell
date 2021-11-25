@@ -42,21 +42,21 @@ field0DrawHuman x y = do
 foreign import ccall "hm_field0_draw_human"
 	c_hm_field0_draw_human :: CInt -> CInt -> IO PutHumanResult
 
-newtype Field = Field (ForeignPtr Field) deriving Show
+newtype Field s = Field (ForeignPtr (Field s)) deriving Show
 
-fieldNew :: IO Field
+fieldNew :: IO (Field s)
 fieldNew = Field <$> do
 	p <- c_hm_field_new
 	newForeignPtr p $ c_hm_field_destroy p
 
-fieldDraw :: Field -> IO ()
+fieldDraw :: Field s -> IO ()
 fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 
-foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr Field)
-foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr Field -> IO ()
-foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr Field -> IO ()
+foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr (Field s))
+foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr (Field s) -> IO ()
+foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr (Field s) -> IO ()
 
-fieldPutHuman :: Field -> CInt -> CInt -> IO ()
+fieldPutHuman :: Field s -> CInt -> CInt -> IO ()
 fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
 	r <- c_hm_field_put_human pf x y
 	case r of
@@ -66,4 +66,4 @@ fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
 		PutHumanResult n -> throw $ PutHumanUnknownError n
 
 foreign import ccall "hm_field_put_human"
-	c_hm_field_put_human :: Ptr Field -> CInt -> CInt -> IO PutHumanResult
+	c_hm_field_put_human :: Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult

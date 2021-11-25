@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <human.h>
 
 int
@@ -14,23 +15,23 @@ hm_top(int x, int y) { return y; }
 int
 hm_bottom(int x, int y) { return y + 2; }
 
-Field hm_field0;
+HmField hm_field0;
 
 void
 hm_field0_init(void) {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
 		for (j = 0; j < FIELD_WIDTH; j++) {
-			hm_field0[i][j] = '.';
+			hm_field0[i * (FIELD_WIDTH + 1) + j] = '.';
 		}
-		hm_field0[i][j] = '\0';
+		hm_field0[i * (FIELD_WIDTH + 1) + j] = '\0';
 	}
 }
 
 void
 hm_field0_draw(void) {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", hm_field0[i]);
+		printf("%s\n", hm_field0 + i * (FIELD_WIDTH + 1));
 	}
 }
 
@@ -49,7 +50,7 @@ void
 hm_field0_set_char(int x, int y, char c)
 {
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
-		hm_field0[y][x] = c;
+		hm_field0[y * (FIELD_WIDTH + 1) + x] = c;
 	}
 }
 
@@ -66,47 +67,47 @@ hm_field0_draw_human(int x, int y) {
 	return hm_check_inside(x, y);
 }
 
-Field*
+HmField
 hm_field_new(void)
 {
-	Field *f;
-	f = (Field *)malloc(sizeof(Field));
+	HmField f;
+	f = (HmField)malloc(sizeof(HmFieldArray));
 
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
 		for (j = 0; j < FIELD_WIDTH; j++) {
-			(*f)[i][j] = '.';
+			f[i * (FIELD_WIDTH + 1) + j] = '.';
 		}
-		*f[i][j] = '\0';
+		f[i * (FIELD_WIDTH + 1) + j] = '\0';
 	}
 
 	return f;
 }
 
 void
-hm_field_draw(Field *f)
+hm_field_draw(HmField f)
 {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", (*f)[i]);
+		printf("%s\n", f + i * (FIELD_WIDTH + 1));
 	}
 }
 
 void
-hm_field_destroy(Field *f)
+hm_field_destroy(HmField f)
 {
 	free(f);
 }
 
 void
-hm_field_set_char(Field *f, int x, int y, char c)
+hm_field_set_char(HmField f, int x, int y, char c)
 {
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
-		(*f)[y][x] = c;
+		f[y * (FIELD_WIDTH + 1) + x] = c;
 	}
 }
 
 HmPutHumanResult
-hm_field_put_human(Field *f, int x, int y)
+hm_field_put_human(HmField f, int x, int y)
 {
 	hm_field_set_char(f, x, y, '\\');
 	hm_field_set_char(f, x + 1, y, 'o');
@@ -117,3 +118,22 @@ hm_field_put_human(Field *f, int x, int y)
 
 	return hm_check_inside(x, y);
 }
+
+/*
+HmImage
+hm_field_get_image(HmField f)
+{
+	HmImage img;
+
+	img = (HmImage)malloc(sizeof(HmImageArray));
+	memcpy(img, f, (FIELD_WIDTH + 1) * FIELD_HEIGHT);
+
+	return img;
+}
+
+void
+hm_image_destroy(HmImage img)
+{
+	free(img);
+}
+*/
