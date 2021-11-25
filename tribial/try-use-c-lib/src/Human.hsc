@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -54,3 +55,15 @@ fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr Field)
 foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr Field -> IO ()
 foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr Field -> IO ()
+
+fieldPutHuman :: Field -> CInt -> CInt -> IO ()
+fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
+	r <- c_hm_field_put_human pf x y
+	case r of
+		PutHumanResultSuccess -> pure ()
+		PutHumanResultPartial -> throw PutHumanPartialError
+		PutHumanResultOffscreen -> throw PutHumanOffscreenError
+		PutHumanResult n -> throw $ PutHumanUnknownError n
+
+foreign import ccall "hm_field_put_human"
+	c_hm_field_put_human :: Ptr Field -> CInt -> CInt -> IO PutHumanResult

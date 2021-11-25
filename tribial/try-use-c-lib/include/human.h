@@ -21,4 +21,8 @@ HmPutHumanResult hm_field0_draw_human(int x, int y);
 
 typedef char Field[FIELD_HEIGHT][FIELD_WIDTH + 1];
 
+Field *hm_field_new(void);
+void hm_field_draw(Field *f);
+HmPutHumanResult hm_field_put_human(Field *f, int x, int y);
+
 #endif

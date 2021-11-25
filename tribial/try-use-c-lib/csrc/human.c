@@ -96,3 +96,24 @@ hm_field_destroy(Field *f)
 {
 	free(f);
 }
+
+void
+hm_field_set_char(Field *f, int x, int y, char c)
+{
+	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
+		(*f)[y][x] = c;
+	}
+}
+
+HmPutHumanResult
+hm_field_put_human(Field *f, int x, int y)
+{
+	hm_field_set_char(f, x, y, '\\');
+	hm_field_set_char(f, x + 1, y, 'o');
+	hm_field_set_char(f, x + 1, y + 1, 'A');
+	hm_field_set_char(f, x + 2, y + 1, '\\');
+	hm_field_set_char(f, x, y + 2, '/');
+	hm_field_set_char(f, x + 2, y + 2, '\\');
+
+	return hm_check_inside(x, y);
+}
