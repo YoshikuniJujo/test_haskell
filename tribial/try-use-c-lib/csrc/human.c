@@ -90,3 +90,9 @@ hm_field_draw(Field *f)
 		printf("%s\n", (*f)[i]);
 	}
 }
+
+void
+hm_field_destroy(Field *f)
+{
+	free(f);
+}

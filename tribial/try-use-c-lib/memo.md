@@ -1,5 +1,5 @@
 memo
 ====
 
-* [ ] `hm_field_destroy`
-* [ ] Field: use `ForeignPtr` instead of `Ptr`
+* [x] `hm_field_destroy`
+* [x] Field: use `ForeignPtr` instead of `Ptr`

@@ -5,6 +5,8 @@
 module Human where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.C.Types
 import Foreign.C.Enum
 import Control.Exception
@@ -39,8 +41,16 @@ field0DrawHuman x y = do
 foreign import ccall "hm_field0_draw_human"
 	c_hm_field0_draw_human :: CInt -> CInt -> IO DrawHumanResult
 
-newtype Field = Field (Ptr Field) deriving Show
+newtype Field = Field (ForeignPtr Field) deriving Show
+
+fieldNew :: IO Field
+fieldNew = Field <$> do
+	p <- c_hm_field_new
+	newForeignPtr p $ c_hm_field_destroy p
+
+fieldDraw :: Field -> IO ()
+fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 
 foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr Field)
-
 foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr Field -> IO ()
+foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr Field -> IO ()
