@@ -5,4 +5,4 @@ memo
 * [x] Field: use `ForeignPtr` instead of `Ptr`
 * [x] rename `HmDrawHumanResult` to `HmPutHumanResult`
 * [x] ST monad
-* [ ] primitive
+* [x] primitive

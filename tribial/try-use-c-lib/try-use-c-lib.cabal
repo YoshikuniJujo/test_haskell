@@ -40,6 +40,7 @@ library
       base >=4.7 && <5
     , c-enum
     , exception-hierarchy
+    , primitive
   default-language: Haskell2010
 
 executable try-use-c-lib-exe
@@ -53,6 +54,7 @@ executable try-use-c-lib-exe
       base >=4.7 && <5
     , c-enum
     , exception-hierarchy
+    , primitive
     , try-use-c-lib
   default-language: Haskell2010
 
@@ -68,5 +70,6 @@ test-suite try-use-c-lib-test
       base >=4.7 && <5
     , c-enum
     , exception-hierarchy
+    , primitive
     , try-use-c-lib
   default-language: Haskell2010

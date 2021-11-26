@@ -10,6 +10,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C.Types
 import Foreign.C.Enum
+import Control.Monad.Primitive
 import Control.Monad.ST
 import Control.Monad.ST.Unsafe
 import Control.Exception
@@ -46,13 +47,16 @@ foreign import ccall "hm_field0_draw_human"
 
 newtype Field s = Field (ForeignPtr (Field s)) deriving Show
 
-fieldNew :: IO (Field s)
-fieldNew = Field <$> do
+fieldNewRaw :: IO (Field s)
+fieldNewRaw = Field <$> do
 	p <- c_hm_field_new
 	newForeignPtr p $ c_hm_field_destroy p
 
 fieldNewSt :: ST s (Field s)
-fieldNewSt = unsafeIOToST fieldNew
+fieldNewSt = unsafeIOToST fieldNewRaw
+
+fieldNew :: PrimMonad m => m (Field (PrimState m))
+fieldNew = unsafeIOToPrim fieldNewRaw
 
 fieldDraw :: Field s -> IO ()
 fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
@@ -61,8 +65,8 @@ foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr (Field s))
 foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr (Field s) -> IO ()
 foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr (Field s) -> IO ()
 
-fieldPutHuman :: Field s -> CInt -> CInt -> IO ()
-fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
+fieldPutHumanRaw :: Field s -> CInt -> CInt -> IO ()
+fieldPutHumanRaw (Field ff) x y = withForeignPtr ff \pf -> do
 	r <- c_hm_field_put_human pf x y
 	case r of
 		PutHumanResultSuccess -> pure ()
@@ -71,20 +75,26 @@ fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
 		PutHumanResult n -> throw $ PutHumanUnknownError n
 
 fieldPutHumanSt :: Field s -> CInt -> CInt -> ST s ()
-fieldPutHumanSt f x y = unsafeIOToST $ fieldPutHuman f x y
+fieldPutHumanSt f x y = unsafeIOToST $ fieldPutHumanRaw f x y
+
+fieldPutHuman :: PrimMonad m => Field (PrimState m) -> CInt -> CInt -> m ()
+fieldPutHuman f x y = unsafeIOToPrim $ fieldPutHumanRaw f x y
 
 foreign import ccall "hm_field_put_human"
 	c_hm_field_put_human :: Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
 
 newtype Image = Image (ForeignPtr Image) deriving Show
 
-fieldGetImage :: Field s -> IO Image
-fieldGetImage (Field ff) = Image <$> withForeignPtr ff \pf -> do
+fieldGetImageRaw :: Field s -> IO Image
+fieldGetImageRaw (Field ff) = Image <$> withForeignPtr ff \pf -> do
 	pimg <- c_hm_field_get_image pf
 	newForeignPtr pimg $ c_hm_image_destroy pimg
 
 fieldGetImageSt :: Field s -> ST s Image
-fieldGetImageSt f = unsafeIOToST $ fieldGetImage f
+fieldGetImageSt f = unsafeIOToST $ fieldGetImageRaw f
+
+fieldGetImage :: PrimMonad m => Field (PrimState m) -> m Image
+fieldGetImage f = unsafeIOToPrim $ fieldGetImageRaw f
 
 foreign import ccall "hm_field_get_image"
 	c_hm_field_get_image :: Ptr (Field s) -> IO (Ptr Image)
