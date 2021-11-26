@@ -39,4 +39,11 @@ typedef struct { HmHead head_size; HmArm left_arm; HmArm right_arm; } HmHuman;
 HmPutHumanResult
 hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y);
 
+HmHuman *hm_human_copy(HmHuman *hm);
+void hm_human_free(HmHuman *hm);
+
+void flipHead(HmHuman *hm);
+void flipLeftArm(HmHuman *hm);
+void flipRightArm(HmHuman *hm);
+
 #endif
