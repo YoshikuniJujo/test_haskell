@@ -15,23 +15,23 @@ hm_top(int x, int y) { return y; }
 int
 hm_bottom(int x, int y) { return y + 2; }
 
-HmField hm_field0;
+HmFieldArray hm_field0;
 
 void
 hm_field0_init(void) {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
 		for (j = 0; j < FIELD_WIDTH; j++) {
-			hm_field0[i * (FIELD_WIDTH + 1) + j] = '.';
+			hm_field0[i][j] = '.';
 		}
-		hm_field0[i * (FIELD_WIDTH + 1) + j] = '\0';
+		hm_field0[i][j] = '\0';
 	}
 }
 
 void
 hm_field0_draw(void) {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", hm_field0 + i * (FIELD_WIDTH + 1));
+		printf("%s\n", hm_field0[i]);
 	}
 }
 
@@ -50,7 +50,7 @@ void
 hm_field0_set_char(int x, int y, char c)
 {
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
-		hm_field0[y * (FIELD_WIDTH + 1) + x] = c;
+		hm_field0[y][x] = c;
 	}
 }
 
@@ -76,9 +76,9 @@ hm_field_new(void)
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
 		for (j = 0; j < FIELD_WIDTH; j++) {
-			f[i * (FIELD_WIDTH + 1) + j] = '.';
+			f[i][j] = '.';
 		}
-		f[i * (FIELD_WIDTH + 1) + j] = '\0';
+		f[i][j] = '\0';
 	}
 
 	return f;
@@ -88,7 +88,7 @@ void
 hm_field_draw(HmField f)
 {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", f + i * (FIELD_WIDTH + 1));
+		printf("%s\n", f[i]);
 	}
 }
 
@@ -102,7 +102,7 @@ void
 hm_field_set_char(HmField f, int x, int y, char c)
 {
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
-		f[y * (FIELD_WIDTH + 1) + x] = c;
+		f[y][x] = c;
 	}
 }
 
@@ -136,4 +136,5 @@ hm_image_destroy(HmImage img)
 {
 	free(img);
 }
+
 */

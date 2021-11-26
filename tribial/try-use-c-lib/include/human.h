@@ -19,8 +19,8 @@ HmPutHumanResult hm_field0_draw_human(int x, int y);
 #define FIELD_WIDTH	79
 #define FIELD_HEIGHT	23
 
-typedef char HmFieldArray[FIELD_HEIGHT * (FIELD_WIDTH + 1)];
-typedef char *HmField;
+typedef char HmFieldArray[FIELD_HEIGHT][FIELD_WIDTH + 1];
+typedef char (*HmField)[FIELD_WIDTH + 1];
 
 HmField hm_field_new(void);
 void hm_field_destroy(HmField f);
