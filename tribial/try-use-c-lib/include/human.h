@@ -32,4 +32,11 @@ typedef char (*HmImage)[FIELD_WIDTH + 1];
 
 HmImage hm_field_get_image(HmField f);
 
+typedef enum { HM_SMALL_HEAD, HM_LARGE_HEAD } HmHead;
+typedef enum { HM_DOWN_ARM, HM_UP_ARM } HmArm;
+typedef struct { HmHead head_size; HmArm left_arm; HmArm right_arm; } HmHuman;
+
+HmPutHumanResult
+hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y);
+
 #endif
