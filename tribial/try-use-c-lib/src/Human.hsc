@@ -10,6 +10,8 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C.Types
 import Foreign.C.Enum
+import Control.Monad.ST
+import Control.Monad.ST.Unsafe
 import Control.Exception
 import Data.Word
 
@@ -49,6 +51,9 @@ fieldNew = Field <$> do
 	p <- c_hm_field_new
 	newForeignPtr p $ c_hm_field_destroy p
 
+fieldNewSt :: ST s (Field s)
+fieldNewSt = unsafeIOToST fieldNew
+
 fieldDraw :: Field s -> IO ()
 fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 
@@ -65,6 +70,9 @@ fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
 		PutHumanResultOffscreen -> throw PutHumanOffscreenError
 		PutHumanResult n -> throw $ PutHumanUnknownError n
 
+fieldPutHumanSt :: Field s -> CInt -> CInt -> ST s ()
+fieldPutHumanSt f x y = unsafeIOToST $ fieldPutHuman f x y
+
 foreign import ccall "hm_field_put_human"
 	c_hm_field_put_human :: Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
 
@@ -74,6 +82,9 @@ fieldGetImage :: Field s -> IO Image
 fieldGetImage (Field ff) = Image <$> withForeignPtr ff \pf -> do
 	pimg <- c_hm_field_get_image pf
 	newForeignPtr pimg $ c_hm_image_destroy pimg
+
+fieldGetImageSt :: Field s -> ST s Image
+fieldGetImageSt f = unsafeIOToST $ fieldGetImage f
 
 foreign import ccall "hm_field_get_image"
 	c_hm_field_get_image :: Ptr (Field s) -> IO (Ptr Image)
