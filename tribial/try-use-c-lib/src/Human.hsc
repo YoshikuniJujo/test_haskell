@@ -67,3 +67,20 @@ fieldPutHuman (Field ff) x y = withForeignPtr ff \pf -> do
 
 foreign import ccall "hm_field_put_human"
 	c_hm_field_put_human :: Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
+
+newtype Image = Image (ForeignPtr Image) deriving Show
+
+fieldGetImage :: Field s -> IO Image
+fieldGetImage (Field ff) = Image <$> withForeignPtr ff \pf -> do
+	pimg <- c_hm_field_get_image pf
+	newForeignPtr pimg $ c_hm_image_destroy pimg
+
+foreign import ccall "hm_field_get_image"
+	c_hm_field_get_image :: Ptr (Field s) -> IO (Ptr Image)
+
+foreign import ccall "hm_image_destroy" c_hm_image_destroy :: Ptr Image -> IO ()
+
+imageDraw :: Image -> IO ()
+imageDraw (Image fimg) = withForeignPtr fimg c_hm_image_draw
+
+foreign import ccall "hm_image_draw" c_hm_image_draw :: Ptr Image -> IO ()

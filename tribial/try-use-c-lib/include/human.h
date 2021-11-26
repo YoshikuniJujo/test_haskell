@@ -27,11 +27,9 @@ void hm_field_destroy(HmField f);
 void hm_field_draw(HmField f);
 HmPutHumanResult hm_field_put_human(HmField f, int x, int y);
 
-/*
 typedef char HmImageArray[FIELD_HEIGHT][FIELD_WIDTH + 1];
-typedef char *HmImage;
+typedef char (*HmImage)[FIELD_WIDTH + 1];
 
 HmImage hm_field_get_image(HmField f);
-*/
 
 #endif

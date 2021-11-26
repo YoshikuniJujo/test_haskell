@@ -119,7 +119,6 @@ hm_field_put_human(HmField f, int x, int y)
 	return hm_check_inside(x, y);
 }
 
-/*
 HmImage
 hm_field_get_image(HmField f)
 {
@@ -132,9 +131,15 @@ hm_field_get_image(HmField f)
 }
 
 void
+hm_image_draw(HmImage img)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
+		printf("%s\n", img[i]);
+	}
+}
+
+void
 hm_image_destroy(HmImage img)
 {
 	free(img);
 }
-
-*/
