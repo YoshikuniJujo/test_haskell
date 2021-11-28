@@ -32,6 +32,7 @@ library:
   c-sources:
   - csrc/human.c
   - csrc/queue.c
+  - csrc/petit_mem_alloc.c
   - csrc/linked_list.c
 
 executables:
