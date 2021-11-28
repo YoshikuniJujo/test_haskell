@@ -31,11 +31,21 @@ library:
   include-dirs: include
   c-sources:
   - csrc/human.c
+  - csrc/queue.c
   - csrc/linked_list.c
 
 executables:
   try-use-c-lib-exe:
     main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-use-c-lib
+  try-queue:
+    main:                try-queue.hs
     source-dirs:         app
     ghc-options:
     - -threaded
