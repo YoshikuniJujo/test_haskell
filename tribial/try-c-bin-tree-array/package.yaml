@@ -25,7 +25,9 @@ dependencies:
 library:
   source-dirs: src
   include-dirs: include
-  c-sources: csrc/bin-tree-array.c
+  c-sources:
+  - csrc/bin-tree-array.c
+  - csrc/use-bin-tree-array.c
 
 executables:
   try-c-bin-tree-array-exe:
