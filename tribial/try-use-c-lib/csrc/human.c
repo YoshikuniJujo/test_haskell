@@ -256,3 +256,6 @@ hm_get_event(void)
 
 	return hm_make_event_tick();
 }
+
+void
+hm_event_destroy(HmEvent *ev) { free_memory(ev); }

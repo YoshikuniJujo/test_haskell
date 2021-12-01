@@ -195,3 +195,4 @@ struct "EventTick" #{size HmEventTick}
 	[''Show]
 
 foreign import ccall "hm_get_event" c_hm_get_event :: IO (Ptr Event)
+foreign import ccall "hm_event_destroy" c_hm_event_free :: Ptr Event -> IO ()

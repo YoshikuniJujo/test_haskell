@@ -6,5 +6,13 @@ memo
 * [x] rename `HmDrawHumanResult` to `HmPutHumanResult`
 * [x] ST monad
 * [x] primitive
-* [ ] make `hm_event_destroy`
+* [x] make `hm_event_destroy`
+* [ ] make `getEvent`
+	+ set finalizer
 * [ ] define `pattern EventTick`
+* [ ] define C key event
+	+ use queue
+* [ ] test GC
+* [ ] separate old Event to Human.OldEvent
+* [ ] make new Event structure
+	+ use `Foo s` pattern
