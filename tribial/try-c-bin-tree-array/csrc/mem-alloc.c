@@ -89,4 +89,3 @@ put_used(int i, int sz, char *buf)
 		put_used(LEFT_CHILD(i), hf, buf);
 		put_used(RIGHT_CHILD(i), hf, buf + hf); }
 }
-
