@@ -1,8 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <mem-alloc.h>
-#include <mem-alloc-local.h>
+#include <mem_alloc.h>
+#include <mem_alloc_local.h>
 
 typedef struct { bool allocated; int used; } AllocInfo;
 

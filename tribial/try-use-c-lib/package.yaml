@@ -34,7 +34,7 @@ library:
   - csrc/queue.c
   - csrc/petit_mem_alloc.c
   - csrc/linked_list.c
-  - csrc/mem-alloc.c
+  - csrc/mem_alloc.c
 
 executables:
   try-use-c-lib-exe:
