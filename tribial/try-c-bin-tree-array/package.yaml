@@ -28,6 +28,7 @@ library:
   c-sources:
   - csrc/bin-tree-array.c
   - csrc/use-bin-tree-array.c
+  - csrc/mem-alloc.c
 
 executables:
   try-c-bin-tree-array-exe:
