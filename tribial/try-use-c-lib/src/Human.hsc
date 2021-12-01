@@ -172,3 +172,26 @@ foreign import ccall "hm_human_flip_left_arm"
 	c_hm_human_flip_left_arm :: Ptr Human -> IO ()
 foreign import ccall "hm_human_flip_right_arm"
 	c_hm_human_flip_right_arm :: Ptr Human -> IO ()
+
+data Event = Event (ForeignPtr Event) deriving Show
+
+enum "EventType" ''#{type HmEventType} [''Show, ''Storable] [
+	("EventTypeTick", #{const HM_EVENT_TYPE_TICK})
+	]
+
+struct "EventAny" #{size HmEventAny}
+	[	("eventType", ''EventType,
+			[| #{peek HmEventAny, event_type} |],
+			[| #{poke HmEventAny, event_type} |]) ]
+	[''Show]
+
+struct "EventTick" #{size HmEventTick}
+	[	("eventType", ''EventType,
+			[| #{peek HmEventTick, event_type} |],
+			[| #{poke HmEventTick, event_type} |]),
+		("times", ''CInt,
+			[| #{peek HmEventTick, times} |],
+			[| #{poke HmEventTick, times} |]) ]
+	[''Show]
+
+foreign import ccall "hm_get_event" c_hm_get_event :: IO (Ptr Event)

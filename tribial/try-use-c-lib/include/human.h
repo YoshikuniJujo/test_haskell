@@ -46,4 +46,21 @@ void flipHead(HmHuman *hm);
 void flipLeftArm(HmHuman *hm);
 void flipRightArm(HmHuman *hm);
 
+typedef enum {
+	HM_EVENT_TYPE_TICK
+	} HmEventType;
+
+typedef struct {
+	HmEventType event_type;
+	} HmEventAny;
+
+typedef struct {
+	HmEventType event_type;
+	int times;
+	} HmEventTick;
+
+typedef union {
+	HmEventTick event_tick;
+	} HmEvent;
+
 #endif
