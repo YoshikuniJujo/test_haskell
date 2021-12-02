@@ -14,5 +14,6 @@ memo
 	+ use queue
 * [x] test GC
 * [x] separate old Event to Human.OldEvent
-* [ ] make new Event structure
+* [x] make new Event structure
 	+ use `Foo s` pattern
+* [x] define `pattern EventTick`

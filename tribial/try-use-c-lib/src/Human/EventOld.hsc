@@ -50,7 +50,7 @@ getEventType (Event fev) = unsafePerformIO
 
 getEventTick :: Event -> (EventType, EventTick)
 getEventTick ev@(Event fev) =
-	(getEventType ev , EventTick_ $ castForeignPtr fev)
+	(getEventType ev, EventTick_ $ castForeignPtr fev)
 
 pattern EventEventTick :: EventTick -> Event
 pattern EventEventTick evt <- (getEventTick -> (EventTypeTick, evt)) where
