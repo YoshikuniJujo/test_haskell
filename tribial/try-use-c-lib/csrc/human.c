@@ -240,8 +240,9 @@ hm_make_event_tick(void)
 	int t = hm_tick();
 	HmEvent *ev = allocate_memory(sizeof(HmEvent));
 
-	ev->event_tick.event_type = HM_EVENT_TYPE_TICK;
-	ev->event_tick.times = t;
+	if (ev != NULL) {
+		ev->event_tick.event_type = HM_EVENT_TYPE_TICK;
+		ev->event_tick.times = t; }
 
 	return ev;
 }
