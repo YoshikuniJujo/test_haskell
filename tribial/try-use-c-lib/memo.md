@@ -9,7 +9,7 @@ memo
 * [x] make `hm_event_destroy`
 * [x] make `getEvent`
 	+ set finalizer
-* [ ] define `pattern EventTick`
+* [x] define `pattern EventTick`
 * [ ] define C key event
 	+ use queue
 * [ ] test GC

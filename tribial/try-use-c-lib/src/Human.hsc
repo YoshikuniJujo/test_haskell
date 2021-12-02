@@ -18,6 +18,7 @@ import Control.Monad.ST
 import Control.Monad.ST.Unsafe
 import Control.Exception
 import Data.Word
+import System.IO.Unsafe
 
 import Human.Exception
 
@@ -186,10 +187,7 @@ struct "EventAny" #{size HmEventAny}
 	[''Show]
 
 struct "EventTick" #{size HmEventTick}
-	[	("eventType", ''EventType,
-			[| #{peek HmEventTick, event_type} |],
-			[| #{poke HmEventTick, event_type} |]),
-		("times", ''CInt,
+	[	("times", ''CInt,
 			[| #{peek HmEventTick, times} |],
 			[| #{poke HmEventTick, times} |]) ]
 	[''Show]
@@ -201,3 +199,15 @@ getEvent = Event <$> do
 
 foreign import ccall "hm_get_event" c_hm_get_event :: IO (Ptr Event)
 foreign import ccall "hm_event_destroy" c_hm_event_free :: Ptr Event -> IO ()
+
+getEventType :: Event -> EventType
+getEventType (Event fev) = unsafePerformIO
+	$ withForeignPtr fev #{peek HmEventAny, event_type}
+
+getEventTick :: Event -> (EventType, EventTick)
+getEventTick ev@(Event fev) =
+	(getEventType ev , EventTick_ $ castForeignPtr fev)
+
+pattern EventEventTick :: EventTick -> Event
+pattern EventEventTick evt <- (getEventTick -> (EventTypeTick, evt)) where
+	EventEventTick (EventTick_ fev) = Event $ castForeignPtr fev
