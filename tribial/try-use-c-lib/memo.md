@@ -12,7 +12,7 @@ memo
 * [x] define `pattern EventTick`
 * [ ] define C key event
 	+ use queue
-* [ ] test GC
-* [ ] separate old Event to Human.OldEvent
+* [x] test GC
+* [x] separate old Event to Human.OldEvent
 * [ ] make new Event structure
 	+ use `Foo s` pattern

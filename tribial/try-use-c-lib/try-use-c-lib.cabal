@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Human
+      Human.EventOld
       Human.Exception
       Queue
   other-modules:

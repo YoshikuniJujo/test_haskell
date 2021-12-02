@@ -5,7 +5,7 @@ module Main where
 
 import Control.Monad
 
-import Human
+import Human.EventOld
 
 main :: IO ()
 main = replicateM_ 10 do
