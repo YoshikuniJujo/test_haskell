@@ -195,7 +195,7 @@ struct "EventTick" #{size HmEventTick}
 getEvent :: IO Event
 getEvent = Event <$> do
 	pe <- c_hm_get_event
-	newForeignPtr pe $ c_hm_event_free pe
+	newForeignPtr pe $ putStrLn "FINALIZE" >> c_hm_event_free pe
 
 foreign import ccall "hm_get_event" c_hm_get_event :: IO (Ptr Event)
 foreign import ccall "hm_event_destroy" c_hm_event_free :: Ptr Event -> IO ()
