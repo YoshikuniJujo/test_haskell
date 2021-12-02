@@ -7,7 +7,7 @@ memo
 * [x] ST monad
 * [x] primitive
 * [x] make `hm_event_destroy`
-* [ ] make `getEvent`
+* [x] make `getEvent`
 	+ set finalizer
 * [ ] define `pattern EventTick`
 * [ ] define C key event
