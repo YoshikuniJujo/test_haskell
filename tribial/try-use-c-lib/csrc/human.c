@@ -248,8 +248,11 @@ hm_make_event_tick(void)
 }
 
 HmEvent *
-hm_get_event(void)
+hm_get_event(char (*get_char)())
 {
+	char c = get_char();
+	printf("%c\n", c);
+
 	struct timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = 10000;

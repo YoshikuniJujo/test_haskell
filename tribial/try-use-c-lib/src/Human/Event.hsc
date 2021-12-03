@@ -16,6 +16,7 @@ import Foreign.C.Enum
 import Foreign.C.Struct
 import Control.Exception
 import Data.Word
+import Data.Char
 import System.IO
 import System.IO.Unsafe
 
@@ -26,15 +27,24 @@ import qualified Data.ByteString as BS
 data Event s = Event (Ptr (Event s)) deriving Show
 
 withEvent :: (forall s . Event s -> IO a) -> IO a
-withEvent f = bracket c_hm_get_event c_hm_event_destroy $ f . Event
+withEvent f = bracket
+	(c_hm_get_event =<< c_wrap_get_char dummyGetCChar)
+	c_hm_event_destroy $ f . Event
 
-foreign import ccall "hm_get_event" c_hm_get_event :: IO (Ptr (Event s))
+foreign import ccall "hm_get_event" c_hm_get_event ::
+	FunPtr (IO CChar) -> IO (Ptr (Event s))
+
+dummyGetCChar :: IO CChar
+dummyGetCChar = pure . fromIntegral $ ord 'x'
 
 hGetCChar :: Handle -> IO CChar
 hGetCChar h = (`BS.useAsCString` peek) =<< BS.hGet h 1
 
 foreign import ccall "hm_event_destroy"
 	c_hm_event_destroy :: Ptr (Event s) -> IO ()
+
+foreign import ccall "wrapper"
+	c_wrap_get_char :: IO CChar -> IO (FunPtr (IO CChar))
 
 enum "EventType" ''#{type HmEventType} [''Show, ''Storable] [
 	("EventTypeTick", #{const HM_EVENT_TYPE_TICK})
