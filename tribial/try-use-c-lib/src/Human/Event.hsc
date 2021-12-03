@@ -10,17 +10,19 @@ module Human.Event where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Enum
 import Foreign.C.Struct
+import Control.Monad
+import Control.Concurrent
+import Control.Concurrent.STM
 import Control.Exception
 import Data.Word
 import Data.Char
 import System.IO
 import System.IO.Unsafe
-
-import qualified Data.ByteString as BS
 
 #include <human.h>
 
@@ -34,11 +36,21 @@ withEvent f = bracket
 foreign import ccall "hm_get_event" c_hm_get_event ::
 	FunPtr (IO CChar) -> IO (Ptr (Event s))
 
+hGetCCharList :: Handle -> IO [CChar]
+hGetCCharList h = allocaBytes 64 \cstr -> do
+	cnt <- hGetBufSome h cstr 64
+	peekArray cnt cstr
+
+hGetAndPushCChar :: Handle -> IO (TChan CChar)
+hGetAndPushCChar h = do
+	ch <- atomically newTChan
+	_ <- forkIO $ forever do
+		cs <- hGetCCharList h
+		(atomically . writeTChan ch) `mapM_` cs
+	pure ch
+
 dummyGetCChar :: IO CChar
 dummyGetCChar = pure . fromIntegral $ ord 'x'
-
-hGetCChar :: Handle -> IO CChar
-hGetCChar h = (`BS.useAsCString` peek) =<< BS.hGet h 1
 
 foreign import ccall "hm_event_destroy"
 	c_hm_event_destroy :: Ptr (Event s) -> IO ()
