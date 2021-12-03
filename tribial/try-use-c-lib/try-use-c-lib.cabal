@@ -44,6 +44,7 @@ library
       csrc/mem_alloc.c
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , exception-hierarchy
@@ -60,6 +61,7 @@ executable try-old-event
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , exception-hierarchy
@@ -77,6 +79,7 @@ executable try-queue
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , exception-hierarchy
@@ -93,6 +96,7 @@ executable try-use-c-lib-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , exception-hierarchy
@@ -110,6 +114,7 @@ test-suite try-use-c-lib-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , exception-hierarchy

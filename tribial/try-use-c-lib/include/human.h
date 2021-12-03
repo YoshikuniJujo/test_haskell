@@ -59,8 +59,14 @@ typedef struct {
 	int times;
 	} HmEventTick;
 
+typedef struct {
+	HmEventType event_type;
+	char character;
+	} HmEventChar;
+
 typedef union {
 	HmEventTick event_tick;
+	HmEventChar event_char;
 	} HmEvent;
 
 #endif

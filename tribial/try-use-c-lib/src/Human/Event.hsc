@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -15,7 +16,10 @@ import Foreign.C.Enum
 import Foreign.C.Struct
 import Control.Exception
 import Data.Word
+import System.IO
 import System.IO.Unsafe
+
+import qualified Data.ByteString as BS
 
 #include <human.h>
 
@@ -25,6 +29,9 @@ withEvent :: (forall s . Event s -> IO a) -> IO a
 withEvent f = bracket c_hm_get_event c_hm_event_destroy $ f . Event
 
 foreign import ccall "hm_get_event" c_hm_get_event :: IO (Ptr (Event s))
+
+hGetCChar :: Handle -> IO CChar
+hGetCChar h = (`BS.useAsCString` peek) =<< BS.hGet h 1
 
 foreign import ccall "hm_event_destroy"
 	c_hm_event_destroy :: Ptr (Event s) -> IO ()

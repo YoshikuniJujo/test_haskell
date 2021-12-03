@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <inttypes.h>
 #include <queue.h>
 
 Queue*
@@ -60,3 +61,6 @@ unsnoc(Queue *queue)
 
 	return v;
 }
+
+void cons_char(char c, Queue *q) { cons((void *)(uintptr_t)c, q); }
+char unsnoc_char(Queue *q) { return (char)(uintptr_t)unsnoc(q); }
