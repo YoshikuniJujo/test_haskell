@@ -19,6 +19,7 @@ import Control.Monad
 import Control.Concurrent
 import Control.Concurrent.STM
 import Control.Exception
+import Data.Bool
 import Data.Word
 import Data.Char
 import System.IO
@@ -28,9 +29,9 @@ import System.IO.Unsafe
 
 data Event s = Event (Ptr (Event s)) deriving Show
 
-withEvent :: (forall s . Event s -> IO a) -> IO a
-withEvent f = bracket
-	(c_hm_get_event =<< c_wrap_get_char dummyGetCChar)
+withEvent :: TChan CChar -> (forall s . Event s -> IO a) -> IO a
+withEvent ch f = bracket
+	(c_hm_get_event =<< c_wrap_get_char (getCChar ch))
 	c_hm_event_destroy $ f . Event
 
 foreign import ccall "hm_get_event" c_hm_get_event ::
@@ -48,6 +49,10 @@ hGetAndPushCChar h = do
 		cs <- hGetCCharList h
 		(atomically . writeTChan ch) `mapM_` cs
 	pure ch
+
+getCChar :: TChan CChar -> IO CChar
+getCChar ch = atomically
+	$ bool (readTChan ch) (pure 0) =<< isEmptyTChan ch
 
 dummyGetCChar :: IO CChar
 dummyGetCChar = pure . fromIntegral $ ord 'x'
