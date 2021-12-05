@@ -64,7 +64,8 @@ foreign import ccall "wrapper"
 	c_wrap_get_char :: IO CChar -> IO (FunPtr (IO CChar))
 
 enum "EventType" ''#{type HmEventType} [''Show, ''Storable] [
-	("EventTypeTick", #{const HM_EVENT_TYPE_TICK})
+	("EventTypeTick", #{const HM_EVENT_TYPE_TICK}),
+	("EventTypeChar", #{const HM_EVENT_TYPE_CHAR})
 	]
 
 eventType :: Event s -> EventType
@@ -87,3 +88,19 @@ getEventTick ev@(Event pev) =
 
 pattern EventEventTick :: Sealed s EventTick -> Event s
 pattern EventEventTick evt <- (getEventTick -> (EventTypeTick, evt))
+
+struct "EventChar" #{size HmEventChar}
+	[	("character", ''CChar,
+			[| #{peek HmEventChar, character} |],
+			[| #{poke HmEventChar, character} |]) ]
+	[''Show]
+
+getEventChar :: Event s -> (EventType, Sealed s EventChar)
+getEventChar ev@(Event pev) =
+	(eventType ev, Sealed . EventChar_ . noFinalizer $ castPtr pev)
+
+pattern EventEventChar :: Sealed s EventChar -> Event s
+pattern EventEventChar evc <- (getEventChar -> (EventTypeChar, evc))
+
+eventCharToCharacter :: Sealed s EventChar -> CChar
+eventCharToCharacter (Sealed evc) = eventCharCharacter evc

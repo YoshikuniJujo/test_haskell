@@ -10,7 +10,7 @@ memo
 * [x] make `getEvent`
 	+ set finalizer
 * [x] define `pattern EventTick`
-* [ ] define C key event
+* [x] define C key event
 	+ use queue
 * [x] test GC
 * [x] separate old Event to Human.OldEvent

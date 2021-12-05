@@ -47,7 +47,8 @@ void flipLeftArm(HmHuman *hm);
 void flipRightArm(HmHuman *hm);
 
 typedef enum {
-	HM_EVENT_TYPE_TICK
+	HM_EVENT_TYPE_TICK,
+	HM_EVENT_TYPE_CHAR
 	} HmEventType;
 
 typedef struct {
