@@ -61,10 +61,15 @@ fieldNewSt = unsafeIOToST fieldNewRaw
 fieldNew :: PrimMonad m => m (Field (PrimState m))
 fieldNew = unsafeIOToPrim fieldNewRaw
 
+fieldClear :: PrimMonad m => Field (PrimState m) -> m ()
+fieldClear (Field ff) = unsafeIOToPrim
+	$ withForeignPtr ff c_hm_field_clear
+
 fieldDraw :: Field s -> IO ()
 fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 
 foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr (Field s))
+foreign import ccall "hm_field_clear" c_hm_field_clear :: Ptr (Field s) -> IO ()
 foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr (Field s) -> IO ()
 foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr (Field s) -> IO ()
 

@@ -75,6 +75,14 @@ hm_field_new(void)
 	HmField f;
 	f = (HmField)malloc(sizeof(HmFieldArray));
 
+	hm_field_clear(f);
+
+	return f;
+}
+
+void
+hm_field_clear(HmField f)
+{
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
 		for (j = 0; j < FIELD_WIDTH; j++) {
@@ -82,8 +90,6 @@ hm_field_new(void)
 		}
 		f[i][j] = '\0';
 	}
-
-	return f;
 }
 
 void

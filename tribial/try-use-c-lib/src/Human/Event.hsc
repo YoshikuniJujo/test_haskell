@@ -89,6 +89,9 @@ getEventTick ev@(Event pev) =
 pattern EventEventTick :: Sealed s EventTick -> Event s
 pattern EventEventTick evt <- (getEventTick -> (EventTypeTick, evt))
 
+eventTickToTimes :: Sealed s EventTick -> CInt
+eventTickToTimes (Sealed evt) = eventTickTimes evt
+
 struct "EventChar" #{size HmEventChar}
 	[	("character", ''CChar,
 			[| #{peek HmEventChar, character} |],

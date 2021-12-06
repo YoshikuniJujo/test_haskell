@@ -23,6 +23,7 @@ typedef char HmFieldArray[FIELD_HEIGHT][FIELD_WIDTH + 1];
 typedef char (*HmField)[FIELD_WIDTH + 1];
 
 HmField hm_field_new(void);
+void hm_field_clear(HmField f);
 void hm_field_destroy(HmField f);
 void hm_field_draw(HmField f);
 HmPutHumanResult hm_field_put_human(HmField f, int x, int y);
