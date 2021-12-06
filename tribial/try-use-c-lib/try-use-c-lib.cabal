@@ -29,6 +29,7 @@ library
       Human.Event
       Human.EventOld
       Human.Exception
+      Human.MainLoop
       Queue
   other-modules:
       Paths_try_use_c_lib
