@@ -21,12 +21,16 @@ data GameState = GameState {
 
 initGameState :: GameState
 initGameState = GameState {
-	gameStateHero = Hero { heroX = 0, heroRun = Stand, heroJump = NotJump },
+	gameStateHero = Hero {
+		heroX = 0, heroXMilli = 0,
+		heroRun = Stand, heroJump = NotJump },
 	gameStateEnemies = [] }
 
 dummyGameState :: GameState
 dummyGameState = GameState {
-	gameStateHero = Hero { heroX = 0, heroRun = Forward, heroJump = NotJump },
+	gameStateHero = Hero {
+		heroX = 0, heroXMilli = 0,
+		heroRun = Forward, heroJump = NotJump },
 	gameStateEnemies = [] }
 
 gameDraw :: Field RealWorld -> GameState -> IO ()
@@ -41,7 +45,7 @@ gameEvent g@GameState { gameStateHero = h, gameStateEnemies = es } = \case
 	_ -> g
 
 data Hero = Hero {
-	heroX :: CInt,
+	heroX :: CInt, heroXMilli :: CInt,
 	heroRun :: Run,
 	heroJump :: Jump } deriving Show
 
@@ -59,8 +63,12 @@ getHeroY Hero { heroJump = j } = case j of
 		landY - round (t * (100 - t) / 400)
 
 heroStep :: Hero -> Hero
-heroStep h@Hero { heroX = x, heroRun = r, heroJump = _j } = let
-	x' = case r of Forward -> x + 1; _ -> x
-	in h { heroX = x' }
+heroStep h@Hero { heroRun = r, heroJump = _j } = case r of
+	Forward -> heroForward h 20
+	_ -> h
+
+heroForward :: Hero -> CInt -> Hero
+heroForward h@Hero { heroX = x, heroXMilli = xm } dxm = h {
+	heroX = x + (xm + dxm) `div` 100, heroXMilli = (xm + dxm) `mod` 100 }
 
 data Enemy = Enemy CInt deriving Show
