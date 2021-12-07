@@ -5,6 +5,8 @@
 
 module Game where
 
+import Prelude hiding (Either(..))
+
 import Foreign.C.Types
 import Control.Monad.ST
 
@@ -42,6 +44,7 @@ gameDraw f GameState { gameStateHero = h, gameStateEnemies = _e } = do
 gameEvent :: GameState -> Event -> GameState
 gameEvent g@GameState { gameStateHero = h, gameStateEnemies = es } = \case
 	Tick -> GameState { gameStateHero = heroStep h, gameStateEnemies = es }
+	Left -> g { gameStateHero = heroLeft h }
 	_ -> g
 
 data Hero = Hero {
@@ -64,11 +67,21 @@ getHeroY Hero { heroJump = j } = case j of
 
 heroStep :: Hero -> Hero
 heroStep h@Hero { heroRun = r, heroJump = _j } = case r of
-	Forward -> heroForward h 20
+	Backward -> heroBackward h 10
+	Forward -> heroForward h 10
 	_ -> h
 
 heroForward :: Hero -> CInt -> Hero
 heroForward h@Hero { heroX = x, heroXMilli = xm } dxm = h {
 	heroX = x + (xm + dxm) `div` 100, heroXMilli = (xm + dxm) `mod` 100 }
+
+heroBackward :: Hero -> CInt -> Hero
+heroBackward h = heroForward h . negate
+
+heroLeft :: Hero -> Hero
+heroLeft h@Hero { heroRun = r } = case r of
+	BackDash -> h { heroRun = BackDash }
+	Backward -> h { heroRun = BackDash }
+	_ -> h { heroRun = Backward }
 
 data Enemy = Enemy CInt deriving Show

@@ -3,6 +3,8 @@
 
 module Main where
 
+import Prelude hiding (Either(..))
+
 import Control.Concurrent.STM
 
 import Human
@@ -20,6 +22,9 @@ main = do
 				modifyTVar gs (`gameEvent` Tick)
 				readTVar gs
 		EventEventChar evc -> do
-			print evc
+			case eventCharToCharacter evc of
+				104 -> atomically do
+					modifyTVar gs (`gameEvent` Left)
+				_ -> pure ()
 			pure $ eventCharToCharacter evc /= 113
 		_ -> pure True
