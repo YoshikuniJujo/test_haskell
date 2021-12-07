@@ -14,7 +14,7 @@ import Game
 
 main :: IO ()
 main = do
-	gs <- atomically $ newTVar dummyGameState
+	gs <- atomically $ newTVar initGameState
 	f <- fieldNew
 	mainLoop \case
 		EventEventTick _evt -> do

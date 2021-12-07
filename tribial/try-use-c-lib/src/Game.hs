@@ -9,6 +9,7 @@ import Prelude hiding (Either(..))
 
 import Foreign.C.Types
 import Control.Monad.ST
+import System.Random
 
 import Human
 
@@ -20,7 +21,9 @@ landY = c_hm_y_from_bottom $ fieldHeight - 2
 data GameState = GameState {
 	gameStateHero :: Hero,
 	gameStateEnemies :: [Enemy],
-	gameStateFailure :: Bool } deriving Show
+	gameStateEnemyEnergy :: Int,
+	gameStateFailure :: Bool,
+	gameStateRandomGen :: StdGen } deriving Show
 
 initGameState :: GameState
 initGameState = GameState {
@@ -28,7 +31,9 @@ initGameState = GameState {
 		heroX = 0, heroXMilli = 0,
 		heroRun = Stand, heroJumping = NotJump },
 	gameStateEnemies = [],
-	gameStateFailure = False }
+	gameStateEnemyEnergy = 0,
+	gameStateFailure = False,
+	gameStateRandomGen = mkStdGen 8 }
 
 dummyGameState :: GameState
 dummyGameState = GameState {
@@ -36,7 +41,9 @@ dummyGameState = GameState {
 		heroX = 0, heroXMilli = 0,
 		heroRun = Stand, heroJumping = NotJump },
 	gameStateEnemies = [Enemy 50 0, Enemy 30 0, Enemy 65 0],
-	gameStateFailure = False }
+	gameStateEnemyEnergy = 0,
+	gameStateFailure = False,
+	gameStateRandomGen = mkStdGen 8 }
 
 doesGameFailure :: GameState -> Bool
 doesGameFailure = gameStateFailure
@@ -57,11 +64,24 @@ enemy = Human {
 	humanLeftArm = UpArm,
 	humanRightArm = UpArm }
 
+enemyEnergyAdd :: Int -> Int -> (Maybe Enemy, Int)
+enemyEnergyAdd eng deng
+	| eng + deng > 1000 = (Just $ Enemy 70 0, (eng + deng) `mod` 1000)
+	| otherwise = (Nothing, eng + deng)
+
 gameEvent :: GameState -> Event -> GameState
-gameEvent g@GameState { gameStateHero = h, gameStateEnemies = es } = \case
-	Tick -> let h' = heroStep h; es' = filter (not . checkBeat h') es in
-		g {	gameStateHero = h', gameStateEnemies = map (`enemyLeft` 10) es',
-			gameStateFailure = checkOverlap h' `any` es' }
+gameEvent g@GameState {
+	gameStateHero = h, gameStateEnemies = es, gameStateEnemyEnergy = ee,
+	gameStateRandomGen = rg } = \case
+	Tick -> let
+		h' = heroStep h
+		(me, ee') = enemyEnergyAdd ee 3
+		es' = filter (not . checkBeat h') es
+		es'' = maybe es' (: es') me
+		(dex, g') = randomR (- 50, 100) rg in
+		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) $ map (`enemyLeft` dex) es'',
+			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
+			gameStateRandomGen = g' }
 	Left -> g { gameStateHero = heroLeft h }
 	Stop -> g { gameStateHero = h { heroRun = Stand } }
 	Right -> g { gameStateHero = heroRight h }
@@ -148,3 +168,7 @@ data Enemy = Enemy { enemyX :: CInt, enemyXMilli :: CInt } deriving Show
 enemyLeft :: Enemy -> CInt -> Enemy
 enemyLeft Enemy { enemyX = x, enemyXMilli = xm } dxm = Enemy {
 	enemyX = x + (xm - dxm) `div` 100, enemyXMilli = (xm - dxm) `mod` 100 }
+
+enemyLeftOver :: Enemy -> Bool
+enemyLeftOver (Enemy x _) =
+	x < 0 || x > 75
