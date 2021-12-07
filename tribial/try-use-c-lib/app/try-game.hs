@@ -23,8 +23,10 @@ main = do
 				readTVar gs
 		EventEventChar evc -> do
 			case eventCharToCharacter evc of
-				104 -> atomically do
-					modifyTVar gs (`gameEvent` Left)
+				104 -> atomically
+					$ modifyTVar gs (`gameEvent` Left)
+				107 -> atomically
+					$ modifyTVar gs (`gameEvent` Jump)
 				_ -> pure ()
 			pure $ eventCharToCharacter evc /= 113
 		_ -> pure True
