@@ -23,10 +23,19 @@ import Human.Exception
 
 #include <human.h>
 
+fieldWidth, fieldHeight :: CInt
+fieldWidth = #{const FIELD_WIDTH}
+fieldHeight = #{const FIELD_HEIGHT}
+
 foreign import ccall "hm_left" c_hm_left :: CInt -> CInt -> CInt
 foreign import ccall "hm_right" c_hm_right :: CInt -> CInt -> CInt
 foreign import ccall "hm_top" c_hm_top :: CInt -> CInt -> CInt
 foreign import ccall "hm_bottom" c_hm_bottom :: CInt -> CInt -> CInt
+
+foreign import ccall "hm_x_from_left" c_hm_x_from_left :: CInt -> CInt
+foreign import ccall "hm_x_from_right" c_hm_x_from_right :: CInt -> CInt
+foreign import ccall "hm_y_from_top" c_hm_y_from_top :: CInt -> CInt
+foreign import ccall "hm_y_from_bottom" c_hm_y_from_bottom :: CInt -> CInt
 
 foreign import ccall "hm_field0_init" c_hm_field0_init :: IO ()
 foreign import ccall "hm_field0_draw" c_hm_field0_draw :: IO ()
@@ -65,7 +74,7 @@ fieldClear :: PrimMonad m => Field (PrimState m) -> m ()
 fieldClear (Field ff) = unsafeIOToPrim
 	$ withForeignPtr ff c_hm_field_clear
 
-fieldDraw :: Field s -> IO ()
+fieldDraw :: Field RealWorld -> IO ()
 fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 
 foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr (Field s))

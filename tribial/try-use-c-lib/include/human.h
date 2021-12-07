@@ -6,6 +6,11 @@ int hm_right(int x, int y);
 int hm_top(int x, int y);
 int hm_bottom(int x, int y);
 
+int hm_x_from_left(int l);
+int hm_x_from_right(int r);
+int hm_y_from_top(int t);
+int hm_y_from_bottom(int b);
+
 void hm_field0_init(void);
 
 typedef enum {
