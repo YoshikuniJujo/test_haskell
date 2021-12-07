@@ -9,6 +9,7 @@ import Prelude hiding (Either(..))
 
 import Foreign.C.Types
 import Control.Monad.ST
+import Data.List
 import System.Random
 
 import Human
@@ -23,7 +24,8 @@ data GameState = GameState {
 	gameStateEnemies :: [Enemy],
 	gameStateEnemyEnergy :: Int,
 	gameStateFailure :: Bool,
-	gameStateRandomGen :: StdGen } deriving Show
+	gameStateRandomGen :: StdGen,
+	gameStatePoint :: Int } deriving Show
 
 initGameState :: GameState
 initGameState = GameState {
@@ -33,7 +35,8 @@ initGameState = GameState {
 	gameStateEnemies = [],
 	gameStateEnemyEnergy = 0,
 	gameStateFailure = False,
-	gameStateRandomGen = mkStdGen 8 }
+	gameStateRandomGen = mkStdGen 8,
+	gameStatePoint = 0 }
 
 dummyGameState :: GameState
 dummyGameState = GameState {
@@ -43,7 +46,8 @@ dummyGameState = GameState {
 	gameStateEnemies = [Enemy 50 0, Enemy 30 0, Enemy 65 0],
 	gameStateEnemyEnergy = 0,
 	gameStateFailure = False,
-	gameStateRandomGen = mkStdGen 8 }
+	gameStateRandomGen = mkStdGen 8,
+	gameStatePoint = 0 }
 
 doesGameFailure :: GameState -> Bool
 doesGameFailure = gameStateFailure
@@ -72,16 +76,16 @@ enemyEnergyAdd eng deng
 gameEvent :: GameState -> Event -> GameState
 gameEvent g@GameState {
 	gameStateHero = h, gameStateEnemies = es, gameStateEnemyEnergy = ee,
-	gameStateRandomGen = rg } = \case
+	gameStateRandomGen = rg, gameStatePoint = p } = \case
 	Tick -> let
 		h' = heroStep h
 		(me, ee') = enemyEnergyAdd ee 3
-		es' = filter (not . checkBeat h') es
+		(es', bs) = partition (not . checkBeat h') es
 		es'' = maybe es' (: es') me
-		(dex, g') = randomR (- 50, 100) rg in
+		(dex, g') = randomR (- 60, 100) rg in
 		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) $ map (`enemyLeft` dex) es'',
 			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
-			gameStateRandomGen = g' }
+			gameStateRandomGen = g', gameStatePoint = p + 10 * length bs }
 	Left -> g { gameStateHero = heroLeft h }
 	Stop -> g { gameStateHero = h { heroRun = Stand } }
 	Right -> g { gameStateHero = heroRight h }

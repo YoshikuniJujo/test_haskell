@@ -39,3 +39,4 @@ main = do
 	if gameStateFailure s
 		then putStrLn "Y O U   L O S E !"
 		else putStrLn "B Y E !"
+	print $ gameStatePoint s
