@@ -8,6 +8,7 @@ module Game where
 import Prelude hiding (Either(..))
 
 import Foreign.C.Types
+import Control.Arrow
 import Control.Monad.ST
 import Data.List
 import System.Random
@@ -79,17 +80,23 @@ gameEvent g@GameState {
 	gameStateRandomGen = rg, gameStatePoint = p } = \case
 	Tick -> let
 		h' = heroStep h
-		(me, ee') = enemyEnergyAdd ee 3
+		(me, ee') = enemyEnergyAdd ee 6
 		(es', bs) = partition (not . checkBeat h') es
 		es'' = maybe es' (: es') me
-		(dex, g') = randomR (- 60, 100) rg in
-		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) $ map (`enemyLeft` dex) es'',
+		(es''', g') = enemyMove rg es'' in
+--		(dex, g') = randomR (- 60, 100) rg in
+		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) es''', -- $ map (`enemyLeft` dex) es'',
 			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
 			gameStateRandomGen = g', gameStatePoint = p + 10 * length bs }
 	Left -> g { gameStateHero = heroLeft h }
 	Stop -> g { gameStateHero = h { heroRun = Stand } }
 	Right -> g { gameStateHero = heroRight h }
 	Jump -> g { gameStateHero = heroJump h }
+
+enemyMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
+enemyMove g [] = ([], g)
+enemyMove g (e : es) = let
+	(dex, g') = randomR (- 40, 80) g in first (enemyLeft e dex :) $ enemyMove g' es
 
 checkBeat :: Hero -> Enemy -> Bool
 checkBeat h e@(Enemy ex _) = checkOverlap h e && hb == et
@@ -126,8 +133,8 @@ fieldPutHero f h@Hero { heroX = x } = fieldPutHuman f x $ getHeroY h
 getHeroY :: Hero -> CInt
 getHeroY Hero { heroJumping = j } = case j of
 	NotJump -> landY
-	Jumping (fromIntegral @_ @Double . (`mod` 100) -> t) ->
-		landY - round (t * (100 - t) / 400)
+	Jumping (fromIntegral @_ @Double . (`mod` 80) -> t) ->
+		landY - round (t * (80 - t) / 700)
 
 heroStep :: Hero -> Hero
 heroStep h@Hero { heroRun = r, heroJumping = j } = let
