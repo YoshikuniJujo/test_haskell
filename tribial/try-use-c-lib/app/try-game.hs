@@ -27,6 +27,8 @@ main = do
 					$ modifyTVar gs (`gameEvent` Left)
 				107 -> atomically
 					$ modifyTVar gs (`gameEvent` Jump)
+				108 -> atomically
+					$ modifyTVar gs (`gameEvent` Right)
 				_ -> pure ()
 			pure $ eventCharToCharacter evc /= 113
 		_ -> pure True

@@ -45,6 +45,7 @@ gameEvent :: GameState -> Event -> GameState
 gameEvent g@GameState { gameStateHero = h, gameStateEnemies = es } = \case
 	Tick -> GameState { gameStateHero = heroStep h, gameStateEnemies = es }
 	Left -> g { gameStateHero = heroLeft h }
+	Right -> g { gameStateHero = heroRight h }
 	Jump -> g { gameStateHero = heroJump h }
 	_ -> g
 
@@ -90,6 +91,12 @@ heroLeft h@Hero { heroRun = r } = case r of
 	BackDash -> h { heroRun = BackDash }
 	Backward -> h { heroRun = BackDash }
 	_ -> h { heroRun = Backward }
+
+heroRight :: Hero -> Hero
+heroRight h@Hero { heroRun = r } = case r of
+	ForwardDash -> h { heroRun = ForwardDash }
+	Forward -> h { heroRun = ForwardDash }
+	_ -> h { heroRun = Forward }
 
 heroJump :: Hero -> Hero
 heroJump h@Hero { heroJumping = j } = h { heroJumping = case j of
