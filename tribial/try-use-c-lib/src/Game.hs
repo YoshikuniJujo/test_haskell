@@ -19,35 +19,73 @@ landY = c_hm_y_from_bottom $ fieldHeight - 2
 
 data GameState = GameState {
 	gameStateHero :: Hero,
-	gameStateEnemies :: [Enemy] } deriving Show
+	gameStateEnemies :: [Enemy],
+	gameStateFailure :: Bool } deriving Show
 
 initGameState :: GameState
 initGameState = GameState {
 	gameStateHero = Hero {
 		heroX = 0, heroXMilli = 0,
 		heroRun = Stand, heroJumping = NotJump },
-	gameStateEnemies = [] }
+	gameStateEnemies = [],
+	gameStateFailure = False }
 
 dummyGameState :: GameState
 dummyGameState = GameState {
 	gameStateHero = Hero {
 		heroX = 0, heroXMilli = 0,
-		heroRun = Forward, heroJumping = NotJump },
-	gameStateEnemies = [] }
+		heroRun = Stand, heroJumping = NotJump },
+	gameStateEnemies = [Enemy 50 0, Enemy 30 0, Enemy 65 0],
+	gameStateFailure = False }
+
+doesGameFailure :: GameState -> Bool
+doesGameFailure = gameStateFailure
 
 gameDraw :: Field RealWorld -> GameState -> IO ()
-gameDraw f GameState { gameStateHero = h, gameStateEnemies = _e } = do
+gameDraw f GameState { gameStateHero = h, gameStateEnemies = es } = do
 	fieldClear f
+	putEnemy f `mapM_` es
 	fieldPutHero f h
 	fieldDraw f
 
+putEnemy :: Field RealWorld -> Enemy -> IO ()
+putEnemy f (Enemy x _) = fieldPutVariousHuman f enemy x landY
+
+enemy :: Human
+enemy = Human {
+	humanHeadSize = LargeHead,
+	humanLeftArm = UpArm,
+	humanRightArm = UpArm }
+
 gameEvent :: GameState -> Event -> GameState
 gameEvent g@GameState { gameStateHero = h, gameStateEnemies = es } = \case
-	Tick -> GameState { gameStateHero = heroStep h, gameStateEnemies = es }
+	Tick -> let h' = heroStep h; es' = filter (not . checkBeat h') es in
+		g {	gameStateHero = h', gameStateEnemies = map (`enemyLeft` 10) es',
+			gameStateFailure = checkOverlap h' `any` es' }
 	Left -> g { gameStateHero = heroLeft h }
+	Stop -> g { gameStateHero = h { heroRun = Stand } }
 	Right -> g { gameStateHero = heroRight h }
 	Jump -> g { gameStateHero = heroJump h }
-	_ -> g
+
+checkBeat :: Hero -> Enemy -> Bool
+checkBeat h e@(Enemy ex _) = checkOverlap h e && hb == et
+	where
+	hx = heroX h
+	hy = getHeroY h
+	hb = c_hm_bottom hx hy
+	ey = landY
+	et = c_hm_top ex ey
+
+checkOverlap :: Hero -> Enemy -> Bool
+checkOverlap h (Enemy ex _) = (el <= hr && hl <= er) && (et <= hb && ht <= eb)
+	where
+	hx = heroX h
+	hy = getHeroY h
+	[hl, hr, ht, hb] = map (\f -> f hx hy)
+		[c_hm_left, c_hm_right, c_hm_top, c_hm_bottom]
+	ey = landY
+	[el, er, et, eb] = map (\f -> f ex ey)
+		[c_hm_left, c_hm_right, c_hm_top, c_hm_bottom]
 
 data Hero = Hero {
 	heroX :: CInt, heroXMilli :: CInt,
@@ -70,9 +108,11 @@ getHeroY Hero { heroJumping = j } = case j of
 heroStep :: Hero -> Hero
 heroStep h@Hero { heroRun = r, heroJumping = j } = let
 	h' = case r of
+		BackDash -> heroBackward h 20
 		Backward -> heroBackward h 10
+		Stand -> h
 		Forward -> heroForward h 10
-		_ -> h in
+		ForwardDash -> heroForward h 20 in
 	h' { heroJumping = case j of
 		NotJump -> NotJump
 		Jumping t
@@ -103,4 +143,8 @@ heroJump h@Hero { heroJumping = j } = h { heroJumping = case j of
 	NotJump -> Jumping 0
 	_ -> j }
 
-data Enemy = Enemy CInt deriving Show
+data Enemy = Enemy { enemyX :: CInt, enemyXMilli :: CInt } deriving Show
+
+enemyLeft :: Enemy -> CInt -> Enemy
+enemyLeft Enemy { enemyX = x, enemyXMilli = xm } dxm = Enemy {
+	enemyX = x + (xm - dxm) `div` 100, enemyXMilli = (xm - dxm) `mod` 100 }
