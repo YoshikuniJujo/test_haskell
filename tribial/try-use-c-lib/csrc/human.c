@@ -7,6 +7,8 @@
 #include <human.h>
 #include <mem_alloc.h>
 
+// SHAPE OF HUMAN
+
 int hm_left(int x, int y) { return x; }
 int hm_right(int x, int y) { return x + 2; }
 int hm_top(int x, int y) { return y; }
@@ -16,57 +18,59 @@ int hm_x_from_right(int r) { return r - 2; }
 int hm_y_from_top(int t) { return t; }
 int hm_y_from_bottom(int b) { return b - 2; }
 
+// FIELD 0
+
 HmFieldArray hm_field0;
 
 void
-hm_field0_init(void) {
+hm_field0_init(void)
+{
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
-		for (j = 0; j < FIELD_WIDTH; j++) {
-			hm_field0[i][j] = '.';
-		}
-		hm_field0[i][j] = '\0';
-	}
+		for (j = 0; j < FIELD_WIDTH; j++) hm_field0[i][j] = '.';
+		hm_field0[i][j] = '\0'; }
 }
 
 void
-hm_field0_draw(void) {
-	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", hm_field0[i]);
-	}
-}
-
-HmPutHumanResult
-hm_check_inside(int x, int y) {
-	if (	0 <= hm_left(x, y) && hm_right(x, y) < FIELD_WIDTH &&
-		0 <= hm_top(x, y) && hm_bottom(x, y) < FIELD_HEIGHT ) {
-		return HM_PUT_HUMAN_SUCCESS; }
-	else if (	(0 <= hm_right(x, y) && hm_left(x, y) < FIELD_WIDTH) &&
-			(0 <= hm_bottom(x, y) && hm_top(x, y) < FIELD_HEIGHT) ) {
-		return HM_PUT_HUMAN_PARTIAL; }
-	else {	return HM_PUT_HUMAN_OFFSCREEN; }
-}
-
-void
-hm_field0_set_char(int x, int y, char c)
+hm_field0_draw(void)
 {
-	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
+	for (int i = 0; i < FIELD_HEIGHT; i++) printf("%s\n", hm_field0[i]);
+}
+
+void
+hm_field0_put_char(int x, int y, char c)
+{
+	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT)
 		hm_field0[y][x] = c;
-	}
 }
 
 HmPutHumanResult
-hm_field0_put_human(int x, int y) {
-	hm_field0_set_char(x, y, '\\');
-	hm_field0_set_char(x + 1, y, 'o');
-	hm_field0_set_char(x + 1, y + 1, 'A');
-	hm_field0_set_char(x + 2, y + 1, '\\');
-	hm_field0_set_char(x, y + 2, '/');
-	hm_field0_set_char(x + 2, y + 2, '\\');
+hm_check_inside(int x, int y)
+{
+	if (	0 <= hm_left(x, y) && hm_right(x, y) < FIELD_WIDTH &&
+		0 <= hm_top(x, y) && hm_bottom(x, y) < FIELD_HEIGHT )
+		return HM_PUT_HUMAN_SUCCESS;
+	else if (	(0 <= hm_right(x, y) && hm_left(x, y) < FIELD_WIDTH) &&
+			(0 <= hm_bottom(x, y) && hm_top(x, y) < FIELD_HEIGHT) )
+		return HM_PUT_HUMAN_PARTIAL;
+	else	return HM_PUT_HUMAN_OFFSCREEN;
+}
+
+HmPutHumanResult
+hm_field0_put_human(int x, int y)
+{
+	hm_field0_put_char(x, y, '\\');
+	hm_field0_put_char(x + 1, y, 'o');
+	hm_field0_put_char(x + 1, y + 1, 'A');
+	hm_field0_put_char(x + 2, y + 1, '\\');
+	hm_field0_put_char(x, y + 2, '/');
+	hm_field0_put_char(x + 2, y + 2, '\\');
 	hm_field0_draw();
 
 	return hm_check_inside(x, y);
 }
+
+// MULTIPLE FIELDS
 
 HmField
 hm_field_new(void)
@@ -106,7 +110,7 @@ hm_field_destroy(HmField f)
 }
 
 void
-hm_field_set_char(HmField f, int x, int y, char c)
+hm_field_put_char(HmField f, int x, int y, char c)
 {
 	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
 		f[y][x] = c;
@@ -116,15 +120,17 @@ hm_field_set_char(HmField f, int x, int y, char c)
 HmPutHumanResult
 hm_field_put_human(HmField f, int x, int y)
 {
-	hm_field_set_char(f, x, y, '\\');
-	hm_field_set_char(f, x + 1, y, 'o');
-	hm_field_set_char(f, x + 1, y + 1, 'A');
-	hm_field_set_char(f, x + 2, y + 1, '\\');
-	hm_field_set_char(f, x, y + 2, '/');
-	hm_field_set_char(f, x + 2, y + 2, '\\');
+	hm_field_put_char(f, x, y, '\\');
+	hm_field_put_char(f, x + 1, y, 'o');
+	hm_field_put_char(f, x + 1, y + 1, 'A');
+	hm_field_put_char(f, x + 2, y + 1, '\\');
+	hm_field_put_char(f, x, y + 2, '/');
+	hm_field_put_char(f, x + 2, y + 2, '\\');
 
 	return hm_check_inside(x, y);
 }
+
+// IMAGE
 
 HmImage
 hm_field_get_image(HmField f)
@@ -151,6 +157,8 @@ hm_image_destroy(HmImage img)
 	free(img);
 }
 
+// VARIOUS HUMANS
+
 char
 select_head(HmHuman *hm)
 {
@@ -163,8 +171,8 @@ void
 put_left_arm(HmField f, HmHuman *hm, int x, int y)
 {
 	switch (hm->left_arm) {
-		case HM_DOWN_ARM: hm_field_set_char(f, x, y + 1, '/'); return;
-		case HM_UP_ARM: hm_field_set_char(f, x, y, '\\'); return; }
+		case HM_DOWN_ARM: hm_field_put_char(f, x, y + 1, '/'); return;
+		case HM_UP_ARM: hm_field_put_char(f, x, y, '\\'); return; }
 }
 
 void
@@ -172,20 +180,20 @@ put_right_arm(HmField f, HmHuman *hm, int x, int y)
 {
 	switch (hm->right_arm) {
 		case HM_DOWN_ARM:
-			hm_field_set_char(f, x + 2, y + 1, '\\'); return;
-		case HM_UP_ARM: hm_field_set_char(f, x + 2, y, '/'); return;
+			hm_field_put_char(f, x + 2, y + 1, '\\'); return;
+		case HM_UP_ARM: hm_field_put_char(f, x + 2, y, '/'); return;
 	}
 }
 
 HmPutHumanResult
 hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y)
 {
-	hm_field_set_char(f, x + 1, y, select_head(hm));
+	hm_field_put_char(f, x + 1, y, select_head(hm));
 	put_left_arm(f, hm, x, y);
 	put_right_arm(f, hm, x, y);
-	hm_field_set_char(f, x + 1, y + 1, 'A');
-	hm_field_set_char(f, x, y + 2, '/');
-	hm_field_set_char(f, x + 2, y + 2, '\\');
+	hm_field_put_char(f, x + 1, y + 1, 'A');
+	hm_field_put_char(f, x, y + 2, '/');
+	hm_field_put_char(f, x + 2, y + 2, '\\');
 
 	return hm_check_inside(x, y);
 }
@@ -230,6 +238,7 @@ hm_human_flip_right_arm(HmHuman *hm)
 		hm->right_arm == HM_DOWN_ARM ? HM_UP_ARM : HM_DOWN_ARM;
 }
 
+// EVENT
 
 int
 hm_tick(void)
@@ -304,6 +313,8 @@ hm_field_new_bg_space(void)
 	return f;
 }
 
+// BACKGROUND
+
 HmField
 (*hm_field_new_background(bool b)) ()
 {
@@ -318,6 +329,8 @@ void
 	else return hm_field_clear_bg_space;
 }
 
+// MESSAGE
+
 void
 hm_field_put_message(HmField f, HmMessage *msg)
 {
@@ -326,6 +339,6 @@ hm_field_put_message(HmField f, HmMessage *msg)
 	char *m = msg->message;
 
 	for (; *m; x++, m++) {
-		hm_field_set_char(f, x, y, *m);
+		hm_field_put_char(f, x, y, *m);
 	}
 }
