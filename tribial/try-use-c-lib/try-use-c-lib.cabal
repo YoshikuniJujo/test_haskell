@@ -31,7 +31,6 @@ library
       Human.EventOld
       Human.Exception
       Human.MainLoop
-      Queue
   other-modules:
       Paths_try_use_c_lib
   hs-source-dirs:
@@ -40,9 +39,6 @@ library
       include
   c-sources:
       csrc/human.c
-      csrc/queue.c
-      csrc/petit_mem_alloc.c
-      csrc/linked_list.c
       csrc/mem_alloc.c
   build-depends:
       base >=4.7 && <5
