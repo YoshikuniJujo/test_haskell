@@ -35,8 +35,3 @@ main = do
 				_ -> pure ()
 			pure $ eventCharToCharacter evc /= 113
 		_ -> pure True
-	s <- atomically $ readTVar gs
-	if gameStateFailure s
-		then putStrLn "Y O U   L O S E !"
-		else putStrLn "B Y E !"
-	print $ gameStatePoint s

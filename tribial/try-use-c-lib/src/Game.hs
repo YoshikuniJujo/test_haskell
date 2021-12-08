@@ -9,6 +9,7 @@ import Prelude hiding (Either(..))
 
 import Foreign.C.Types
 import Control.Arrow
+import Control.Monad
 import Control.Monad.ST
 import Data.List
 import System.Random
@@ -54,10 +55,15 @@ doesGameFailure :: GameState -> Bool
 doesGameFailure = gameStateFailure
 
 gameDraw :: Field RealWorld -> GameState -> IO ()
-gameDraw f GameState { gameStateHero = h, gameStateEnemies = es } = do
+gameDraw f GameState {
+	gameStateHero = h, gameStateEnemies = es,
+	gameStateFailure = flr, gameStatePoint = pnt } = do
 	fieldClearBackgroundRaw False f
 	putEnemy f `mapM_` es
 	fieldPutHero f h
+	fieldPutMessageRaw f . Message (Position 60 3) $ show pnt
+	when flr . fieldPutMessageRaw f
+		$ Message (Position 20 10) "G A M E   O V E R"
 	fieldDraw f
 
 putEnemy :: Field RealWorld -> Enemy -> IO ()

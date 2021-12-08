@@ -81,5 +81,9 @@ typedef union {
 HmField (*hm_field_new_background(bool b)) ();
 void (*hm_field_clear_background(bool b)) (HmField);
 
+typedef struct { int x; int y; } HmPosition;
+typedef struct { HmPosition *position; char *message; } HmMessage;
+
+void hm_field_put_message(HmField f, HmMessage *msg);
 
 #endif
