@@ -15,7 +15,7 @@ import Game
 main :: IO ()
 main = do
 	gs <- atomically $ newTVar initGameState
-	f <- fieldNew
+	f <- fieldNewBackgroundRaw False
 	mainLoop \case
 		EventEventTick _evt -> do
 			gameDraw f =<< atomically do

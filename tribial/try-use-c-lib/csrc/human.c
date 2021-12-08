@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/select.h>
 #include <human.h>
@@ -278,3 +279,40 @@ hm_get_event(char (*get_char)())
 
 void
 hm_event_destroy(HmEvent *ev) { free_memory(ev); }
+
+void
+hm_field_clear_bg_space(HmField f)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
+		int j;
+		for (j = 0; j < FIELD_WIDTH; j++) {
+			f[i][j] = ' ';
+		}
+		f[i][j] = '\0';
+	}
+}
+
+HmField
+hm_field_new_bg_space(void)
+{
+	HmField f;
+	f = (HmField)malloc(sizeof(HmFieldArray));
+
+	hm_field_clear_bg_space(f);
+
+	return f;
+}
+
+HmField
+(*hm_field_new_background(bool b)) ()
+{
+	if (b) return hm_field_new;
+	else return hm_field_new_bg_space;
+}
+
+void
+(*hm_field_clear_background(bool b)) (HmField)
+{
+	if (b) return hm_field_clear;
+	else return hm_field_clear_bg_space;
+}

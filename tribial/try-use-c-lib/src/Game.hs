@@ -55,7 +55,7 @@ doesGameFailure = gameStateFailure
 
 gameDraw :: Field RealWorld -> GameState -> IO ()
 gameDraw f GameState { gameStateHero = h, gameStateEnemies = es } = do
-	fieldClear f
+	fieldClearBackgroundRaw False f
 	putEnemy f `mapM_` es
 	fieldPutHero f h
 	fieldDraw f

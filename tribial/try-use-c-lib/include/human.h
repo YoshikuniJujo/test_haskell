@@ -1,6 +1,8 @@
 #ifndef _HUMAN_H
 #define _HUMAN_H
 
+#include <stdbool.h>
+
 int hm_left(int x, int y);
 int hm_right(int x, int y);
 int hm_top(int x, int y);
@@ -75,5 +77,9 @@ typedef union {
 	HmEventTick event_tick;
 	HmEventChar event_char;
 	} HmEvent;
+
+HmField (*hm_field_new_background(bool b)) ();
+void (*hm_field_clear_background(bool b)) (HmField);
+
 
 #endif

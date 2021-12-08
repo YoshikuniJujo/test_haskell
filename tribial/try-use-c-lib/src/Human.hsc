@@ -186,3 +186,26 @@ foreign import ccall "hm_human_flip_left_arm"
 	c_hm_human_flip_left_arm :: Ptr Human -> IO ()
 foreign import ccall "hm_human_flip_right_arm"
 	c_hm_human_flip_right_arm :: Ptr Human -> IO ()
+
+fieldNewBackgroundRaw :: Bool -> IO (Field s)
+fieldNewBackgroundRaw (boolToCBool -> b) = Field <$> do
+	pf <- mkFieldNewBg (c_hm_field_new_background b)
+	newForeignPtr pf $ c_hm_field_destroy pf
+
+fieldClearBackgroundRaw :: Bool -> Field s -> IO ()
+fieldClearBackgroundRaw (boolToCBool -> b) (Field ff) = withForeignPtr ff \pf ->
+	mkFieldClearBg (c_hm_field_clear_background b) pf
+
+boolToCBool :: Bool -> #{type bool}
+boolToCBool False = #{const false}
+boolToCBool True = #{const true}
+
+foreign import ccall "hm_field_new_background"
+	c_hm_field_new_background :: #{type bool} -> FunPtr (IO (Ptr (Field s)))
+foreign import ccall "hm_field_clear_background"
+	c_hm_field_clear_background :: #{type bool} -> FunPtr (Ptr (Field s) -> IO ())
+
+foreign import ccall "dynamic"
+	mkFieldNewBg :: FunPtr (IO (Ptr (Field s))) -> IO (Ptr (Field s))
+foreign import ccall "dynamic"
+	mkFieldClearBg :: FunPtr (Ptr (Field s) -> IO ()) -> Ptr (Field s) -> IO ()
