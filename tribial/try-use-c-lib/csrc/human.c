@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/select.h>
+
 #include <human.h>
 #include <mem_alloc.h>
 
@@ -55,7 +56,7 @@ hm_field0_set_char(int x, int y, char c)
 }
 
 HmPutHumanResult
-hm_field0_draw_human(int x, int y) {
+hm_field0_put_human(int x, int y) {
 	hm_field0_set_char(x, y, '\\');
 	hm_field0_set_char(x + 1, y, 'o');
 	hm_field0_set_char(x + 1, y + 1, 'A');

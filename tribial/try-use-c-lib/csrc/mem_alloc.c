@@ -1,10 +1,8 @@
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <mem_alloc.h>
 #include <mem_alloc_local.h>
-
-typedef struct { bool allocated; int used; } AllocInfo;
 
 AllocInfo alloc_info[TREE_SIZE(8)];
 uint64_t memory[1 << 7];
@@ -18,25 +16,25 @@ allocate_memory(int sz)
 }
 
 int
-get_index(int sz, int dp, int i, int ret)
+get_index(int sz, int dp, int ii, int mi)
 {
-	AllocInfo *inf = &(alloc_info[i]);
-	AllocInfo *l = &(alloc_info[LEFT_CHILD(i)]);
-	AllocInfo *r = &(alloc_info[RIGHT_CHILD(i)]);
+	AllocInfo *inf = &(alloc_info[ii]);
+	AllocInfo *l = &(alloc_info[LEFT_CHILD(ii)]);
+	AllocInfo *r = &(alloc_info[RIGHT_CHILD(ii)]);
 
 	if (inf->used + sz > (1024 >> dp)) {
-		while (i) {
-			i = PARENT(i);
-			alloc_info[i].used -= sz; }
+		while (ii) {
+			ii = PARENT(ii);
+			alloc_info[ii].used -= sz; }
 		return -1;
 	}
 
 	inf->used += sz;
 	if (sz << dp == 1024) {
-		inf->allocated = true; return ret; }
+		inf->allocated = true; return mi; }
 	else if (l->used <= r->used) {
-		get_index(sz, dp + 1, LEFT_CHILD(i), ret); }
-	else {	get_index(sz, dp + 1, RIGHT_CHILD(i), ret + (64 >> dp)); }
+		get_index(sz, dp + 1, LEFT_CHILD(ii), mi); }
+	else {	get_index(sz, dp + 1, RIGHT_CHILD(ii), mi + (64 >> dp)); }
 }
 
 int
@@ -62,30 +60,4 @@ free_memory(void *addr)
 			flag = true; sz = 8 << h; }
 		if (flag) alloc_info[j].used -= sz; }
 	if (flag) alloc_info[j].used -= sz;
-}
-
-void
-draw_memory()
-{
-	char buf[(1 << 7) + 1];
-
-	int i;
-	for (i = 0; i < (1 << 7); i++) buf[i] = '.';
-	buf[i] = '\0';
-
-	put_used(0, 128, buf);
-
-	printf("%s\n", buf);
-}
-
-void
-put_used(int i, int sz, char *buf)
-{
-	if (sz == 0) return;
-
-	if (alloc_info[i].allocated) {
-		for (int j; j < sz; j++) buf[j] = '*'; }
-	else {	int hf = sz >> 1;
-		put_used(LEFT_CHILD(i), hf, buf);
-		put_used(RIGHT_CHILD(i), hf, buf + hf); }
 }

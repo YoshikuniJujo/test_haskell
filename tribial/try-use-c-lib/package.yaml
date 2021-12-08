@@ -34,6 +34,7 @@ library:
   c-sources:
   - csrc/human.c
   - csrc/mem_alloc.c
+  - csrc/mem_alloc_draw.c
 
 executables:
   try-use-c-lib-exe:
