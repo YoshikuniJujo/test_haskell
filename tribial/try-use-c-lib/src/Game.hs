@@ -80,7 +80,7 @@ gameEvent g@GameState {
 	gameStateRandomGen = rg, gameStatePoint = p } = \case
 	Tick -> let
 		h' = heroStep h
-		(me, ee') = enemyEnergyAdd ee 6
+		(me, ee') = enemyEnergyAdd ee 11
 		(es', bs) = partition (not . checkBeat h') es
 		es'' = maybe es' (: es') me
 		(es''', g') = enemyMove rg es'' in
@@ -96,10 +96,10 @@ gameEvent g@GameState {
 enemyMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
 enemyMove g [] = ([], g)
 enemyMove g (e : es) = let
-	(dex, g') = randomR (- 40, 80) g in first (enemyLeft e dex :) $ enemyMove g' es
+	(dex, g') = randomR (- 10, 65) g in first (enemyLeft e dex :) $ enemyMove g' es
 
 checkBeat :: Hero -> Enemy -> Bool
-checkBeat h e@(Enemy ex _) = checkOverlap h e && hb == et
+checkBeat h e@(Enemy ex _) = checkOverlap h e && hy < ey -- && hb == et
 	where
 	hx = heroX h
 	hy = getHeroY h
@@ -133,8 +133,8 @@ fieldPutHero f h@Hero { heroX = x } = fieldPutHuman f x $ getHeroY h
 getHeroY :: Hero -> CInt
 getHeroY Hero { heroJumping = j } = case j of
 	NotJump -> landY
-	Jumping (fromIntegral @_ @Double . (`mod` 80) -> t) ->
-		landY - round (t * (80 - t) / 700)
+	Jumping (fromIntegral @_ @Double . (`mod` 65) -> t) ->
+		landY - round (t * (65 - t) / 200)
 
 heroStep :: Hero -> Hero
 heroStep h@Hero { heroRun = r, heroJumping = j } = let
@@ -147,7 +147,7 @@ heroStep h@Hero { heroRun = r, heroJumping = j } = let
 	h' { heroJumping = case j of
 		NotJump -> NotJump
 		Jumping t
-			| t >= 99 -> NotJump
+			| t >= 64 -> NotJump
 			| otherwise -> Jumping $ t + 1 }
 
 heroForward :: Hero -> CInt -> Hero
