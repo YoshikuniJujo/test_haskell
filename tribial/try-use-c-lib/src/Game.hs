@@ -87,7 +87,7 @@ gameEvent g@GameState {
 	Tick -> let
 		h' = heroStep h
 --		(me, ee') = enemyEnergyAdd ee 11
-		(eng, rg') = randomR (0, 15 + p `div` 20) rg
+		(eng, rg') = randomR (0, calcEnemyEnergy p) rg
 		(me, ee') = enemyEnergyAdd ee eng
 		(es', bs) = partition (not . checkBeat h') es
 		es'' = maybe es' (: es') me
@@ -101,6 +101,11 @@ gameEvent g@GameState {
 	Stop -> g { gameStateHero = h { heroRun = Stand } }
 	Right -> g { gameStateHero = heroRight h }
 	Jump -> g { gameStateHero = heroJump h }
+
+calcEnemyEnergy :: Int -> Int
+calcEnemyEnergy p
+	| p < 200 = 20 + p `div` 20
+	| otherwise = 25 + p `div` 40
 
 enemyMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
 enemyMove g [] = ([], g)
