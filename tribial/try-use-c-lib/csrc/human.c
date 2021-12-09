@@ -290,6 +290,8 @@ hm_get_event(char (*get_char)())
 void
 hm_event_destroy(HmEvent *ev) { free_memory(ev); }
 
+// BACKGROUND
+
 void
 hm_field_clear_bg_space(HmField f)
 {
@@ -312,8 +314,6 @@ hm_field_new_bg_space(void)
 
 	return f;
 }
-
-// BACKGROUND
 
 HmField
 (*hm_field_new_background(bool b)) ()

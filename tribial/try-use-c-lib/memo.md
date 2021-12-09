@@ -17,6 +17,6 @@ memo
 * [x] make new Event structure
 	+ use `Foo s` pattern
 * [x] define `pattern EventTick`
-* [ ] add functions to `include/human.h`
+* [x] add functions to `include/human.h`
 * [ ] refactoring `include`
 * [ ] refactoring `csrc`
