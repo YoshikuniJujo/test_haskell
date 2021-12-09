@@ -104,8 +104,9 @@ gameEvent g@GameState {
 
 calcEnemyEnergy :: Int -> Int
 calcEnemyEnergy p
-	| p < 200 = 20 + p `div` 20
-	| otherwise = 25 + p `div` 40
+	| p < 60 = 20 + p `div` 10
+	| p < 120 = 23 + p `div` 20
+	| otherwise = 26 + p `div` 40
 
 enemyMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
 enemyMove g [] = ([], g)
