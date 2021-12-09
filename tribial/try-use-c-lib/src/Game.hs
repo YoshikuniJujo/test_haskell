@@ -86,14 +86,17 @@ gameEvent g@GameState {
 	gameStateRandomGen = rg, gameStatePoint = p } = \case
 	Tick -> let
 		h' = heroStep h
-		(me, ee') = enemyEnergyAdd ee 11
+--		(me, ee') = enemyEnergyAdd ee 11
+		(eng, rg') = randomR (0, 15 + p `div` 20) rg
+		(me, ee') = enemyEnergyAdd ee eng
 		(es', bs) = partition (not . checkBeat h') es
 		es'' = maybe es' (: es') me
-		(es''', g') = enemyMove rg es'' in
+		(es''', g') = enemyMove rg' es'' in
 --		(dex, g') = randomR (- 60, 100) rg in
 		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) es''', -- $ map (`enemyLeft` dex) es'',
 			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
-			gameStateRandomGen = g', gameStatePoint = p + 10 * length bs }
+			gameStateRandomGen = g',
+			gameStatePoint = p + 10 * length bs + maybe 0 (const 1) me }
 	Left -> g { gameStateHero = heroLeft h }
 	Stop -> g { gameStateHero = h { heroRun = Stand } }
 	Right -> g { gameStateHero = heroRight h }
