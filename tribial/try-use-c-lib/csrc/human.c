@@ -66,7 +66,6 @@ hm_field0_draw_human(int x, int y)
 	hm_field0_put_char(x, y + 2, '/');
 	hm_field0_put_char(x + 2, y + 2, '\\');
 	hm_field0_draw();
-
 	return hm_check_inside(x, y);
 }
 
@@ -77,9 +76,7 @@ hm_field_new(void)
 {
 	HmField f;
 	f = (HmField)malloc(sizeof(HmFieldArray));
-
 	hm_field_clear(f);
-
 	return f;
 }
 
@@ -88,33 +85,23 @@ hm_field_clear(HmField f)
 {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
-		for (j = 0; j < FIELD_WIDTH; j++) {
-			f[i][j] = '.';
-		}
-		f[i][j] = '\0';
-	}
+		for (j = 0; j < FIELD_WIDTH; j++) f[i][j] = '.';
+		f[i][j] = '\0'; }
 }
 
 void
 hm_field_draw(HmField f)
 {
-	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", f[i]);
-	}
+	for (int i = 0; i < FIELD_HEIGHT; i++) printf("%s\n", f[i]);
 }
 
-void
-hm_field_destroy(HmField f)
-{
-	free(f);
-}
+void hm_field_destroy(HmField f) { free(f); }
 
 void
 hm_field_put_char(HmField f, int x, int y, char c)
 {
-	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT) {
+	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT)
 		f[y][x] = c;
-	}
 }
 
 HmPutHumanResult
@@ -126,7 +113,6 @@ hm_field_put_human(HmField f, int x, int y)
 	hm_field_put_char(f, x + 2, y + 1, '\\');
 	hm_field_put_char(f, x, y + 2, '/');
 	hm_field_put_char(f, x + 2, y + 2, '\\');
-
 	return hm_check_inside(x, y);
 }
 
@@ -135,27 +121,18 @@ hm_field_put_human(HmField f, int x, int y)
 HmImage
 hm_field_get_image(HmField f)
 {
-	HmImage img;
-
-	img = (HmImage)malloc(sizeof(HmImageArray));
+	HmImage img = (HmImage)malloc(sizeof(HmImageArray));
 	memcpy(img, f, (FIELD_WIDTH + 1) * FIELD_HEIGHT);
-
 	return img;
 }
 
 void
 hm_image_draw(HmImage img)
 {
-	for (int i = 0; i < FIELD_HEIGHT; i++) {
-		printf("%s\n", img[i]);
-	}
+	for (int i = 0; i < FIELD_HEIGHT; i++) printf("%s\n", img[i]);
 }
 
-void
-hm_image_destroy(HmImage img)
-{
-	free(img);
-}
+void hm_image_destroy(HmImage img) { free(img); }
 
 // VARIOUS HUMANS
 
@@ -181,8 +158,7 @@ put_right_arm(HmField f, HmHuman *hm, int x, int y)
 	switch (hm->right_arm) {
 		case HM_DOWN_ARM:
 			hm_field_put_char(f, x + 2, y + 1, '\\'); return;
-		case HM_UP_ARM: hm_field_put_char(f, x + 2, y, '/'); return;
-	}
+		case HM_UP_ARM: hm_field_put_char(f, x + 2, y, '/'); return; }
 }
 
 HmPutHumanResult
@@ -194,28 +170,20 @@ hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y)
 	hm_field_put_char(f, x + 1, y + 1, 'A');
 	hm_field_put_char(f, x, y + 2, '/');
 	hm_field_put_char(f, x + 2, y + 2, '\\');
-
 	return hm_check_inside(x, y);
 }
 
 HmHuman*
 hm_human_copy(HmHuman *hm)
 {
-	HmHuman *dst;
-
-	dst = (HmHuman *)malloc(sizeof(HmHuman));
+	HmHuman *dst = (HmHuman *)malloc(sizeof(HmHuman));
 	dst->head_size = hm->head_size;
 	dst->left_arm = hm->left_arm;
 	dst->right_arm = hm->right_arm;
-
 	return dst;
 }
 
-void
-hm_human_destroy(HmHuman *hm)
-{
-	free(hm);
-}
+void hm_human_destroy(HmHuman *hm) { free(hm); }
 
 void
 hm_human_flip_head(HmHuman *hm)
@@ -244,8 +212,7 @@ int
 hm_tick(void)
 {
 	static int tms = 0;
-	tms++;
-	return tms;
+	return tms++;
 }
 
 HmEvent *
@@ -253,11 +220,9 @@ hm_make_event_tick(void)
 {
 	int t = hm_tick();
 	HmEvent *ev = allocate_memory(sizeof(HmEvent));
-
 	if (ev != NULL) {
 		ev->event_tick.event_type = HM_EVENT_TYPE_TICK;
 		ev->event_tick.times = t; }
-
 	return ev;
 }
 
@@ -265,11 +230,9 @@ HmEvent *
 hm_make_event_char(char c)
 {
 	HmEvent *ev = allocate_memory(sizeof(HmEvent));
-
 	if (ev != NULL) {
 		ev->event_char.event_type = HM_EVENT_TYPE_CHAR;
 		ev->event_char.character = c; }
-
 	return ev;
 }
 
@@ -280,15 +243,12 @@ hm_get_event(char (*get_char)())
 	if (c != '\0') return hm_make_event_char(c);
 
 	struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 10000;
+	tv.tv_sec = 0; tv.tv_usec = 10000;
 	select(0, NULL, NULL, NULL, &tv);
-
 	return hm_make_event_tick();
 }
 
-void
-hm_event_destroy(HmEvent *ev) { free_memory(ev); }
+void hm_event_destroy(HmEvent *ev) { free_memory(ev); }
 
 // BACKGROUND
 
@@ -297,36 +257,28 @@ hm_field_clear_bg_space(HmField f)
 {
 	for (int i = 0; i < FIELD_HEIGHT; i++) {
 		int j;
-		for (j = 0; j < FIELD_WIDTH; j++) {
-			f[i][j] = ' ';
-		}
-		f[i][j] = '\0';
-	}
+		for (j = 0; j < FIELD_WIDTH; j++) f[i][j] = ' ';
+		f[i][j] = '\0'; }
 }
 
 HmField
 hm_field_new_bg_space(void)
 {
-	HmField f;
-	f = (HmField)malloc(sizeof(HmFieldArray));
-
+	HmField f = (HmField)malloc(sizeof(HmFieldArray));
 	hm_field_clear_bg_space(f);
-
 	return f;
 }
 
 HmField
 (*hm_field_new_background(bool b)) ()
 {
-	if (b) return hm_field_new;
-	else return hm_field_new_bg_space;
+	if (b) return hm_field_new; else return hm_field_new_bg_space;
 }
 
 void
 (*hm_field_clear_background(bool b)) (HmField)
 {
-	if (b) return hm_field_clear;
-	else return hm_field_clear_bg_space;
+	if (b) return hm_field_clear; else return hm_field_clear_bg_space;
 }
 
 // MESSAGE
@@ -337,8 +289,5 @@ hm_field_put_message(HmField f, HmMessage *msg)
 	int x = msg->position->x;
 	int y = msg->position->y;
 	char *m = msg->message;
-
-	for (; *m; x++, m++) {
-		hm_field_put_char(f, x, y, *m);
-	}
+	for (; *m; x++, m++) hm_field_put_char(f, x, y, *m);
 }

@@ -23,16 +23,16 @@ memo
 	+ [x] `mem_alloc.h`
 	+ [x] `mem_alloc_local.h`
 * [ ] refactoring `csrc`
-	+ [ ] `human.c`
+	+ [x] `human.c`
 		- [x] header
 		- [x] SHAPE OF HUMAN
 		- [x] FIELD 0
-		- [ ] MULTIPLE FIELDS
-		- [ ] IMAGE
-		- [ ] VARIOUS HUMANS
-		- [ ] EVENT
-		- [ ] BACKGROUND
-		- [ ] MESSAGE
+		- [x] MULTIPLE FIELDS
+		- [x] IMAGE
+		- [x] VARIOUS HUMANS
+		- [x] EVENT
+		- [x] BACKGROUND
+		- [x] MESSAGE
 	+ [ ] `mem_alloc.c`
 	+ [ ] `mem_alloc_draw.c`
 * [ ] refactoring Haskell library sources
