@@ -48,8 +48,8 @@ memo
 			* [x] VARIOUS HUMANS
 			* [x] BACKGROUND
 			* [x] MESSAGE
-	+ [ ] `Human.Exception`
-	+ [ ] `Human.EventOld`
+	+ [x] `Human.Exception`
+	+ [x] `Human.EventOld`
 	+ [ ] `Human.Event`
 	+ [ ] `MainLoop`
 	+ [ ] `Game`
