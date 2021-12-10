@@ -22,7 +22,7 @@ memo
 	+ [x] `human.h`
 	+ [x] `mem_alloc.h`
 	+ [x] `mem_alloc_local.h`
-* [ ] refactoring `csrc`
+* [x] refactoring `csrc`
 	+ [x] `human.c`
 		- [x] header
 		- [x] SHAPE OF HUMAN
@@ -34,7 +34,7 @@ memo
 		- [x] BACKGROUND
 		- [x] MESSAGE
 	+ [x] `mem_alloc.c`
-	+ [ ] `mem_alloc_draw.c`
+	+ [x] `mem_alloc_draw.c`
 * [ ] refactoring Haskell library sources
 	+ [ ] `Human`
 	+ [ ] `Human.Exception`
