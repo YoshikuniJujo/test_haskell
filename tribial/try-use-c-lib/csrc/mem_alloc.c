@@ -7,6 +7,9 @@
 AllocInfo alloc_info[TREE_SIZE(8)];
 uint64_t memory[1 << 7];
 
+int normalize(int sz);
+int get_index(int sz, int dp, int ii, int mi);
+
 void*
 allocate_memory(int sz)
 {

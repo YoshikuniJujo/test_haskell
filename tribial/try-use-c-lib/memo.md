@@ -18,10 +18,10 @@ memo
 	+ use `Foo s` pattern
 * [x] define `pattern EventTick`
 * [x] add functions to `include/human.h`
-* [ ] refactoring `include`
+* [x] refactoring `include`
 	+ [x] `human.h`
-	+ [ ] `mem_alloc.h`
-	+ [ ] `mem_alloc_local.h`
+	+ [x] `mem_alloc.h`
+	+ [x] `mem_alloc_local.h`
 * [ ] refactoring `csrc`
 	+ [ ] `human.c`
 	+ [ ] `mem_alloc.c`

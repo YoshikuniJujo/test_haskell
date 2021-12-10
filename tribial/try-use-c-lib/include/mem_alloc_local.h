@@ -12,7 +12,4 @@
 typedef struct { bool allocated; int used; } AllocInfo;
 extern AllocInfo alloc_info[];
 
-int normalize(int sz);
-int get_index(int sz, int dp, int ii, int mi);
-
 #endif
