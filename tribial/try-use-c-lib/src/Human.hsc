@@ -24,9 +24,13 @@ import Human.Exception
 
 #include <human.h>
 
+-- FIELD
+
 fieldWidth, fieldHeight :: CInt
 fieldWidth = #{const FIELD_WIDTH}
 fieldHeight = #{const FIELD_HEIGHT}
+
+-- SHAPE OF HUMAN
 
 foreign import ccall "hm_left" c_hm_left :: CInt -> CInt -> CInt
 foreign import ccall "hm_right" c_hm_right :: CInt -> CInt -> CInt
@@ -40,6 +44,8 @@ foreign import ccall "hm_y_from_bottom" c_hm_y_from_bottom :: CInt -> CInt
 
 foreign import ccall "hm_field0_init" c_hm_field0_init :: IO ()
 foreign import ccall "hm_field0_draw" c_hm_field0_draw :: IO ()
+
+-- FIELD 0
 
 enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
 	("PutHumanResultSuccess", #{const HM_PUT_HUMAN_SUCCESS}),
@@ -57,6 +63,8 @@ field0DrawHuman x y = do
 
 foreign import ccall "hm_field0_draw_human"
 	c_hm_field0_draw_human :: CInt -> CInt -> IO PutHumanResult
+
+-- MULTIPLE FIELDS
 
 newtype Field s = Field (ForeignPtr (Field s)) deriving Show
 
@@ -101,6 +109,8 @@ fieldPutHuman f x y = unsafeIOToPrim $ fieldPutHumanRaw f x y
 foreign import ccall "hm_field_put_human"
 	c_hm_field_put_human :: Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
 
+-- IMAGE
+
 newtype Image = Image (ForeignPtr Image) deriving Show
 
 fieldGetImageRaw :: Field s -> IO Image
@@ -123,6 +133,8 @@ imageDraw :: Image -> IO ()
 imageDraw (Image fimg) = withForeignPtr fimg c_hm_image_draw
 
 foreign import ccall "hm_image_draw" c_hm_image_draw :: Ptr Image -> IO ()
+
+-- VARIOUS HUMANS
 
 enum "Head" ''#{type HmHead} [''Show, ''Read, ''Storable] [
 	("SmallHead", #{const HM_SMALL_HEAD}),
@@ -188,6 +200,8 @@ foreign import ccall "hm_human_flip_left_arm"
 foreign import ccall "hm_human_flip_right_arm"
 	c_hm_human_flip_right_arm :: Ptr Human -> IO ()
 
+-- BACKGROUND
+
 fieldNewBackgroundRaw :: Bool -> IO (Field s)
 fieldNewBackgroundRaw (boolToCBool -> b) = Field <$> do
 	pf <- mkFieldNewBg (c_hm_field_new_background b)
@@ -210,6 +224,8 @@ foreign import ccall "dynamic"
 	mkFieldNewBg :: FunPtr (IO (Ptr (Field s))) -> IO (Ptr (Field s))
 foreign import ccall "dynamic"
 	mkFieldClearBg :: FunPtr (Ptr (Field s) -> IO ()) -> Ptr (Field s) -> IO ()
+
+-- MESSAGE
 
 struct "Position" #{size HmPosition}
 	[	("x", ''CInt, [| #{peek HmPosition, x} |],

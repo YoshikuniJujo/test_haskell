@@ -37,6 +37,17 @@ memo
 	+ [x] `mem_alloc_draw.c`
 * [ ] refactoring Haskell library sources
 	+ [ ] `Human`
+		- [x] import list
+		- [x] structure
+		- [ ] source code
+			* [ ] FIELD
+			* [ ] SHAPE OF HUMAN
+			* [ ] FIELD 0
+			* [ ] MULTIPLE FIELDS
+			* [ ] IMAGE
+			* [ ] VARIOUS HUMANS
+			* [ ] BACKGROUND
+			* [ ] MESSAGE
 	+ [ ] `Human.Exception`
 	+ [ ] `Human.EventOld`
 	+ [ ] `Human.Event`
