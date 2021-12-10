@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -32,20 +32,20 @@ fieldHeight = #{const FIELD_HEIGHT}
 
 -- SHAPE OF HUMAN
 
-foreign import ccall "hm_left" c_hm_left :: CInt -> CInt -> CInt
-foreign import ccall "hm_right" c_hm_right :: CInt -> CInt -> CInt
-foreign import ccall "hm_top" c_hm_top :: CInt -> CInt -> CInt
-foreign import ccall "hm_bottom" c_hm_bottom :: CInt -> CInt -> CInt
+foreign import ccall "hm_left" left :: CInt -> CInt -> CInt
+foreign import ccall "hm_right" right :: CInt -> CInt -> CInt
+foreign import ccall "hm_top" top :: CInt -> CInt -> CInt
+foreign import ccall "hm_bottom" bottom :: CInt -> CInt -> CInt
 
-foreign import ccall "hm_x_from_left" c_hm_x_from_left :: CInt -> CInt
-foreign import ccall "hm_x_from_right" c_hm_x_from_right :: CInt -> CInt
-foreign import ccall "hm_y_from_top" c_hm_y_from_top :: CInt -> CInt
-foreign import ccall "hm_y_from_bottom" c_hm_y_from_bottom :: CInt -> CInt
-
-foreign import ccall "hm_field0_init" c_hm_field0_init :: IO ()
-foreign import ccall "hm_field0_draw" c_hm_field0_draw :: IO ()
+foreign import ccall "hm_x_from_left" xFromLeft :: CInt -> CInt
+foreign import ccall "hm_x_from_right" xFromRight :: CInt -> CInt
+foreign import ccall "hm_y_from_top" yFromTop :: CInt -> CInt
+foreign import ccall "hm_y_from_bottom" yFromBottom :: CInt -> CInt
 
 -- FIELD 0
+
+foreign import ccall "hm_field0_init" field0Init :: IO ()
+foreign import ccall "hm_field0_draw" field0Draw :: IO ()
 
 enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
 	("PutHumanResultSuccess", #{const HM_PUT_HUMAN_SUCCESS}),
@@ -53,13 +53,11 @@ enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
 	("PutHumanResultOffscreen", #{const HM_PUT_HUMAN_OFFSCREEN}) ]
 
 field0DrawHuman :: CInt -> CInt -> IO ()
-field0DrawHuman x y = do
-	r <- c_hm_field0_draw_human x y
-	case r of
-		PutHumanResultSuccess -> pure ()
-		PutHumanResultPartial -> throw PutHumanPartialError
-		PutHumanResultOffscreen -> throw PutHumanOffscreenError
-		PutHumanResult n -> throw $ PutHumanUnknownError n
+field0DrawHuman x y = c_hm_field0_draw_human x y >>= \case
+	PutHumanResultSuccess -> pure ()
+	PutHumanResultPartial -> throw PutHumanPartialError
+	PutHumanResultOffscreen -> throw PutHumanOffscreenError
+	PutHumanResult n -> throw $ PutHumanUnknownError n
 
 foreign import ccall "hm_field0_draw_human"
 	c_hm_field0_draw_human :: CInt -> CInt -> IO PutHumanResult
@@ -80,21 +78,19 @@ fieldNew :: PrimMonad m => m (Field (PrimState m))
 fieldNew = unsafeIOToPrim fieldNewRaw
 
 fieldClear :: PrimMonad m => Field (PrimState m) -> m ()
-fieldClear (Field ff) = unsafeIOToPrim
-	$ withForeignPtr ff c_hm_field_clear
+fieldClear (Field ff) = unsafeIOToPrim $ withForeignPtr ff c_hm_field_clear
 
 fieldDraw :: Field RealWorld -> IO ()
 fieldDraw (Field ff) = withForeignPtr ff c_hm_field_draw
 
 foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr (Field s))
 foreign import ccall "hm_field_clear" c_hm_field_clear :: Ptr (Field s) -> IO ()
-foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr (Field s) -> IO ()
 foreign import ccall "hm_field_destroy" c_hm_field_destroy :: Ptr (Field s) -> IO ()
+foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr (Field s) -> IO ()
 
 fieldPutHumanRaw :: Field s -> CInt -> CInt -> IO ()
-fieldPutHumanRaw (Field ff) x y = withForeignPtr ff \pf -> do
-	r <- c_hm_field_put_human pf x y
-	case r of
+fieldPutHumanRaw (Field ff) x y = withForeignPtr ff \pf ->
+	c_hm_field_put_human pf x y >>= \case
 		PutHumanResultSuccess -> pure ()
 		PutHumanResultPartial -> throw PutHumanPartialError
 		PutHumanResultOffscreen -> throw PutHumanOffscreenError
@@ -106,8 +102,8 @@ fieldPutHumanSt f x y = unsafeIOToST $ fieldPutHumanRaw f x y
 fieldPutHuman :: PrimMonad m => Field (PrimState m) -> CInt -> CInt -> m ()
 fieldPutHuman f x y = unsafeIOToPrim $ fieldPutHumanRaw f x y
 
-foreign import ccall "hm_field_put_human"
-	c_hm_field_put_human :: Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
+foreign import ccall "hm_field_put_human" c_hm_field_put_human ::
+	Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
 
 -- IMAGE
 
@@ -115,8 +111,8 @@ newtype Image = Image (ForeignPtr Image) deriving Show
 
 fieldGetImageRaw :: Field s -> IO Image
 fieldGetImageRaw (Field ff) = Image <$> withForeignPtr ff \pf -> do
-	pimg <- c_hm_field_get_image pf
-	newForeignPtr pimg $ c_hm_image_destroy pimg
+	p <- c_hm_field_get_image pf
+	newForeignPtr p $ c_hm_image_destroy p
 
 fieldGetImageSt :: Field s -> ST s Image
 fieldGetImageSt f = unsafeIOToST $ fieldGetImageRaw f
@@ -130,7 +126,7 @@ foreign import ccall "hm_field_get_image"
 foreign import ccall "hm_image_destroy" c_hm_image_destroy :: Ptr Image -> IO ()
 
 imageDraw :: Image -> IO ()
-imageDraw (Image fimg) = withForeignPtr fimg c_hm_image_draw
+imageDraw (Image fi) = withForeignPtr fi c_hm_image_draw
 
 foreign import ccall "hm_image_draw" c_hm_image_draw :: Ptr Image -> IO ()
 
@@ -141,26 +137,21 @@ enum "Head" ''#{type HmHead} [''Show, ''Read, ''Storable] [
 	("LargeHead", #{const HM_LARGE_HEAD}) ]
 
 enum "Arm" ''#{type HmArm} [''Show, ''Read, ''Storable] [
-	("DownArm", #{const HM_DOWN_ARM}),
-	("UpArm", #{const HM_UP_ARM}) ]
+	("DownArm", #{const HM_DOWN_ARM}), ("UpArm", #{const HM_UP_ARM}) ]
 
 struct "Human" #{size HmHuman}
-	[	("headSize", ''Head,
-			[| #{peek HmHuman, head_size} |],
+	[	("headSize", ''Head, [| #{peek HmHuman, head_size} |],
 			[| #{poke HmHuman, head_size} |]),
-		("leftArm", ''Arm,
-			[| #{peek HmHuman, left_arm} |],
+		("leftArm", ''Arm, [| #{peek HmHuman, left_arm} |],
 			[| #{poke HmHuman, left_arm} |]),
-		("rightArm", ''Arm,
-			[| #{peek HmHuman, right_arm} |],
+		("rightArm", ''Arm, [| #{peek HmHuman, right_arm} |],
 			[| #{poke HmHuman, right_arm} |]) ]
 	[''Show, ''Read]
 
 fieldPutVariousHumanRaw :: Field s -> Human -> CInt -> CInt -> IO ()
 fieldPutVariousHumanRaw (Field ff) (Human_ fhm) x y =
-	withForeignPtr ff \pf -> withForeignPtr fhm \phm -> do
-		r <- c_hm_field_put_various_human pf phm x y
-		case r of
+	withForeignPtr ff \pf -> withForeignPtr fhm \phm ->
+		c_hm_field_put_various_human pf phm x y >>= \case
 			PutHumanResultSuccess -> pure ()
 			PutHumanResultPartial -> throw PutHumanPartialError
 			PutHumanResultOffscreen -> throw PutHumanOffscreenError
@@ -204,26 +195,25 @@ foreign import ccall "hm_human_flip_right_arm"
 
 fieldNewBackgroundRaw :: Bool -> IO (Field s)
 fieldNewBackgroundRaw (boolToCBool -> b) = Field <$> do
-	pf <- mkFieldNewBg (c_hm_field_new_background b)
+	pf <- mkFieldNewBg $ c_hm_field_new_background b
 	newForeignPtr pf $ c_hm_field_destroy pf
 
 fieldClearBackgroundRaw :: Bool -> Field s -> IO ()
-fieldClearBackgroundRaw (boolToCBool -> b) (Field ff) = withForeignPtr ff \pf ->
-	mkFieldClearBg (c_hm_field_clear_background b) pf
+fieldClearBackgroundRaw (boolToCBool -> b) (Field ff) =
+	withForeignPtr ff $ mkFieldClearBg (c_hm_field_clear_background b)
 
 boolToCBool :: Bool -> #{type bool}
-boolToCBool False = #{const false}
-boolToCBool True = #{const true}
+boolToCBool = \case False -> #{const false}; True -> #{const true}
 
 foreign import ccall "hm_field_new_background"
 	c_hm_field_new_background :: #{type bool} -> FunPtr (IO (Ptr (Field s)))
-foreign import ccall "hm_field_clear_background"
-	c_hm_field_clear_background :: #{type bool} -> FunPtr (Ptr (Field s) -> IO ())
+foreign import ccall "hm_field_clear_background" c_hm_field_clear_background ::
+	#{type bool} -> FunPtr (Ptr (Field s) -> IO ())
 
 foreign import ccall "dynamic"
 	mkFieldNewBg :: FunPtr (IO (Ptr (Field s))) -> IO (Ptr (Field s))
-foreign import ccall "dynamic"
-	mkFieldClearBg :: FunPtr (Ptr (Field s) -> IO ()) -> Ptr (Field s) -> IO ()
+foreign import ccall "dynamic" mkFieldClearBg ::
+	FunPtr (Ptr (Field s) -> IO ()) -> Ptr (Field s) -> IO ()
 
 -- MESSAGE
 
@@ -253,8 +243,7 @@ fieldPutMessageRaw (Field ff)
 		let	CMessage_ fmsg = CMessage {
 				cMessagePosition = pp,
 				cMessageMessage = cmsg }
-		withForeignPtr ff \pf ->
-			withForeignPtr fmsg $ c_hm_field_put_message pf
+		withForeignPtr ff $ withForeignPtr fmsg . c_hm_field_put_message
 
 foreign import ccall "hm_field_put_message"
 	c_hm_field_put_message :: Ptr (Field s) -> Ptr CMessage -> IO ()

@@ -8,7 +8,7 @@ module Game where
 import Prelude hiding (Either(..))
 
 import Foreign.C.Types
-import Control.Arrow
+import Control.Arrow (first)
 import Control.Monad
 import Control.Monad.ST
 import Data.List
@@ -19,7 +19,7 @@ import Human
 data Event = Tick | Left | Stop | Right | Jump deriving Show
 
 landY :: CInt
-landY = c_hm_y_from_bottom $ fieldHeight - 2
+landY = yFromBottom $ fieldHeight - 2
 
 data GameState = GameState {
 	gameStateHero :: Hero,
@@ -118,20 +118,18 @@ checkBeat h e@(Enemy ex _) = checkOverlap h e && hy < ey -- && hb == et
 	where
 	hx = heroX h
 	hy = getHeroY h
-	hb = c_hm_bottom hx hy
+	hb = bottom hx hy
 	ey = landY
-	et = c_hm_top ex ey
+	et = top ex ey
 
 checkOverlap :: Hero -> Enemy -> Bool
 checkOverlap h (Enemy ex _) = (el <= hr && hl <= er) && (et <= hb && ht <= eb)
 	where
 	hx = heroX h
 	hy = getHeroY h
-	[hl, hr, ht, hb] = map (\f -> f hx hy)
-		[c_hm_left, c_hm_right, c_hm_top, c_hm_bottom]
+	[hl, hr, ht, hb] = map (\f -> f hx hy) [left, right, top, bottom]
 	ey = landY
-	[el, er, et, eb] = map (\f -> f ex ey)
-		[c_hm_left, c_hm_right, c_hm_top, c_hm_bottom]
+	[el, er, et, eb] = map (\f -> f ex ey) [left, right, top, bottom]
 
 data Hero = Hero {
 	heroX :: CInt, heroXMilli :: CInt,

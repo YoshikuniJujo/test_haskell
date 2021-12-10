@@ -36,18 +36,18 @@ memo
 	+ [x] `mem_alloc.c`
 	+ [x] `mem_alloc_draw.c`
 * [ ] refactoring Haskell library sources
-	+ [ ] `Human`
+	+ [x] `Human`
 		- [x] import list
 		- [x] structure
-		- [ ] source code
-			* [ ] FIELD
-			* [ ] SHAPE OF HUMAN
-			* [ ] FIELD 0
-			* [ ] MULTIPLE FIELDS
-			* [ ] IMAGE
-			* [ ] VARIOUS HUMANS
-			* [ ] BACKGROUND
-			* [ ] MESSAGE
+		- [x] source code
+			* [x] FIELD
+			* [x] SHAPE OF HUMAN
+			* [x] FIELD 0
+			* [x] MULTIPLE FIELDS
+			* [x] IMAGE
+			* [x] VARIOUS HUMANS
+			* [x] BACKGROUND
+			* [x] MESSAGE
 	+ [ ] `Human.Exception`
 	+ [ ] `Human.EventOld`
 	+ [ ] `Human.Event`
