@@ -46,17 +46,17 @@ enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
 	("PutHumanResultPartial", #{const HM_PUT_HUMAN_PARTIAL}),
 	("PutHumanResultOffscreen", #{const HM_PUT_HUMAN_OFFSCREEN}) ]
 
-field0PutHuman :: CInt -> CInt -> IO ()
-field0PutHuman x y = do
-	r <- c_hm_field0_put_human x y
+field0DrawHuman :: CInt -> CInt -> IO ()
+field0DrawHuman x y = do
+	r <- c_hm_field0_draw_human x y
 	case r of
 		PutHumanResultSuccess -> pure ()
 		PutHumanResultPartial -> throw PutHumanPartialError
 		PutHumanResultOffscreen -> throw PutHumanOffscreenError
 		PutHumanResult n -> throw $ PutHumanUnknownError n
 
-foreign import ccall "hm_field0_put_human"
-	c_hm_field0_put_human :: CInt -> CInt -> IO PutHumanResult
+foreign import ccall "hm_field0_draw_human"
+	c_hm_field0_draw_human :: CInt -> CInt -> IO PutHumanResult
 
 newtype Field s = Field (ForeignPtr (Field s)) deriving Show
 

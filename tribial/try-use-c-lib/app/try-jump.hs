@@ -1,12 +1,11 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeApplications, RankNTypes #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import Control.Concurrent.STM
-import Foreign.C.Types
 
 import Human
 import Human.MainLoop
@@ -74,5 +73,5 @@ main = do
 		ev -> False <$ print ev
 
 calcHeight :: Integral n => n -> n
-calcHeight ((fromIntegral . (`mod` 100)) -> t) =
+calcHeight ((fromIntegral @_ @Double . (`mod` 100)) -> t) =
 	19 - round (t * (100 - t) / 400)

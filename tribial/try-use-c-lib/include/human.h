@@ -31,7 +31,7 @@ typedef enum {
 	HM_PUT_HUMAN_SUCCESS, HM_PUT_HUMAN_PARTIAL, HM_PUT_HUMAN_OFFSCREEN }
 	HmPutHumanResult;
 
-HmPutHumanResult hm_field0_put_human(int x, int y);
+HmPutHumanResult hm_field0_draw_human(int x, int y);
 
 // MULTIPLE FIELDS
 
