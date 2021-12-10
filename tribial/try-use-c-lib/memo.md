@@ -19,4 +19,23 @@ memo
 * [x] define `pattern EventTick`
 * [x] add functions to `include/human.h`
 * [ ] refactoring `include`
+	+ [ ] `human.h`
+	+ [ ] `mem_alloc.h`
+	+ [ ] `mem_alloc_local.h`
 * [ ] refactoring `csrc`
+	+ [ ] `human.c`
+	+ [ ] `mem_alloc.c`
+	+ [ ] `mem_alloc_draw.c`
+* [ ] refactoring Haskell library sources
+	+ [ ] `Human`
+	+ [ ] `Human.Exception`
+	+ [ ] `Human.EventOld`
+	+ [ ] `Human.Event`
+	+ [ ] `MainLoop`
+	+ [ ] `Game`
+* [ ] refactoring Haskell app sources
+	+ [ ] `try-old-event.hs`
+	+ [ ] `try-event.hs`
+	+ [ ] `try-get-and-push-cchar.hs`
+	+ [ ] `try-jump.hs`
+	+ [ ] `try-game.hs`
