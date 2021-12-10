@@ -33,7 +33,7 @@ memo
 		- [x] EVENT
 		- [x] BACKGROUND
 		- [x] MESSAGE
-	+ [ ] `mem_alloc.c`
+	+ [x] `mem_alloc.c`
 	+ [ ] `mem_alloc_draw.c`
 * [ ] refactoring Haskell library sources
 	+ [ ] `Human`

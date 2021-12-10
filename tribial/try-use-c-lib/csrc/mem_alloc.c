@@ -7,17 +7,6 @@
 AllocInfo alloc_info[TREE_SIZE(8)];
 uint64_t memory[1 << 7];
 
-int normalize(int sz);
-int get_index(int sz, int dp, int ii, int mi);
-
-void*
-allocate_memory(int sz)
-{
-	int i = get_index(normalize(sz), 0, 0, 0);
-
-	if (i < 0) return NULL; else return memory + i;
-}
-
 int
 get_index(int sz, int dp, int ii, int mi)
 {
@@ -26,18 +15,13 @@ get_index(int sz, int dp, int ii, int mi)
 	AllocInfo *r = &(alloc_info[RIGHT_CHILD(ii)]);
 
 	if (inf->used + sz > (1024 >> dp)) {
-		while (ii) {
-			ii = PARENT(ii);
-			alloc_info[ii].used -= sz; }
-		return -1;
-	}
+		while (ii) { ii = PARENT(ii); alloc_info[ii].used -= sz; }
+		return -1; }
 
 	inf->used += sz;
-	if (sz << dp == 1024) {
-		inf->allocated = true; return mi; }
-	else if (l->used <= r->used) {
-		get_index(sz, dp + 1, LEFT_CHILD(ii), mi); }
-	else {	get_index(sz, dp + 1, RIGHT_CHILD(ii), mi + (64 >> dp)); }
+	if (sz << dp == 1024) { inf->allocated = true; return mi; }
+	else if (l->used <= r->used) get_index(sz, dp + 1, LEFT_CHILD(ii), mi);
+	else get_index(sz, dp + 1, RIGHT_CHILD(ii), mi + (64 >> dp));
 }
 
 int
@@ -50,17 +34,24 @@ normalize(int sz)
 	return rslt;
 }
 
+void*
+allocate_memory(int sz)
+{
+	int i = get_index(normalize(sz), 0, 0, 0);
+	if (i < 0) return NULL; else return memory + i;
+}
+
 int
 free_memory(void *addr)
 {
-	int i = (uint64_t *)addr - memory;
-	if (i < 0 || 127 < i) return -1;
+	int mi = (uint64_t *)addr - memory;
+	if (mi < 0 || 127 < mi) return -1;
 
-	int j; int h; int flag; int sz;
-	for (j = i + 127, h = 0, flag = false; j; j = PARENT(j), h++) {
-		if (alloc_info[j].allocated) { 
-			alloc_info[j].allocated = false;
-			flag = true; sz = 8 << h; }
-		if (flag) alloc_info[j].used -= sz; }
-	if (flag) alloc_info[j].used -= sz;
+	int i, sz; bool flag;
+	for (i = mi + 127, sz = 8, flag = false; i; i = PARENT(i), sz <<= 1) {
+		if (alloc_info[i].allocated) {
+			alloc_info[i].allocated = false; flag = true; }
+		if (flag) alloc_info[i].used -= sz; }
+	if (flag) alloc_info[i].used -= sz;
+	return 0;
 }
