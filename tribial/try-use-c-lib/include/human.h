@@ -47,6 +47,8 @@ typedef char HmImageArray[FIELD_HEIGHT][FIELD_WIDTH + 1];
 typedef char (*HmImage)[FIELD_WIDTH + 1];
 
 HmImage hm_field_get_image(HmField f);
+void hm_image_destroy(HmImage img);
+void hm_image_draw(HmImage img);
 
 // VARIOUS HUMANS
 
@@ -55,14 +57,14 @@ typedef enum { HM_DOWN_ARM, HM_UP_ARM } HmArm;
 typedef struct { HmHead head_size; HmArm left_arm; HmArm right_arm; } HmHuman;
 
 HmPutHumanResult
-hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y);
+	hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y);
 
 HmHuman *hm_human_copy(HmHuman *hm);
 void hm_human_free(HmHuman *hm);
 
-void flipHead(HmHuman *hm);
-void flipLeftArm(HmHuman *hm);
-void flipRightArm(HmHuman *hm);
+void hm_human_flip_head(HmHuman *hm);
+void hm_human_flip_left_arm(HmHuman *hm);
+void hm_human_flip_right_arm(HmHuman *hm);
 
 // EVENT
 
@@ -73,10 +75,8 @@ typedef struct { HmEventType event_type; int times; } HmEventTick;
 typedef struct { HmEventType event_type; char character; } HmEventChar;
 
 typedef union {
-	HmEventAny event_any;
-	HmEventTick event_tick;
-	HmEventChar event_char;
-	} HmEvent;
+	HmEventAny event_any; HmEventTick event_tick; HmEventChar event_char; }
+	HmEvent;
 
 HmEvent *hm_get_event(char (*get_char)());
 void hm_event_destroy(HmEvent *ev);
