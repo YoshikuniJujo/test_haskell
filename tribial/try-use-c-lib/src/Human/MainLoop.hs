@@ -4,6 +4,7 @@
 
 module Human.MainLoop where
 
+import Control.Monad.Fix
 import Control.Exception
 import Data.Bool
 import System.IO
@@ -11,12 +12,7 @@ import System.IO
 import Human.Event
 
 mainLoop :: (forall s . Event s -> IO Bool) -> IO ()
-mainLoop f = do
-	bfm <- hGetBuffering stdin
-	finally (hSetBuffering stdin bfm) do
-		hSetBuffering stdin NoBuffering
-		ch <- hGetAndPushCChar stdin
-		doWhile_ $ withEvent ch f
-
-doWhile_ :: Monad m => m Bool -> m ()
-doWhile_ act = bool (pure ()) (doWhile_ act) =<< act
+mainLoop f = hGetBuffering stdin >>= \bm -> finally (hSetBuffering stdin bm) do
+	hSetBuffering stdin NoBuffering
+	go . (`withEvent` f) =<< hGetAndPushCChar stdin
+	where go = fix \l act -> bool (pure ()) (l act) =<< act
