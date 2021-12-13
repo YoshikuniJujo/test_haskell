@@ -54,7 +54,7 @@ memo
 		- [x] import list
 		- [x] structure
 		- [ ] source code
-			* [ ] EVENT
+			* [x] EVENT
 			* [ ] EVENT TYPE
 			* [ ] EVENT TICK
 			* [ ] EVENT CHAR

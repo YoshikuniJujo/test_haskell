@@ -31,21 +31,19 @@ import System.IO.Unsafe
 data Event s = Event (Ptr (Event s)) deriving Show
 
 withEvent :: TChan CChar -> (forall s . Event s -> IO a) -> IO a
-withEvent ch f = bracket
-	(c_hm_get_event =<< c_wrap_get_char getCChar)
-	c_hm_event_destroy $ f . Event
+withEvent ch f = bracket (c_hm_get_event =<< wrap_getCChar getc)
+	c_hm_event_destroy (f . Event)
 	where
-	getCChar = atomically
-		$ bool (readTChan ch) (pure 0) =<< isEmptyTChan ch
+	getc = atomically $ bool (readTChan ch) (pure 0) =<< isEmptyTChan ch
 
-foreign import ccall "hm_get_event" c_hm_get_event ::
-	FunPtr (IO CChar) -> IO (Ptr (Event s))
+foreign import ccall "hm_get_event"
+	c_hm_get_event :: FunPtr (IO CChar) -> IO (Ptr (Event s))
 
 foreign import ccall "hm_event_destroy"
 	c_hm_event_destroy :: Ptr (Event s) -> IO ()
 
 foreign import ccall "wrapper"
-	c_wrap_get_char :: IO CChar -> IO (FunPtr (IO CChar))
+	wrap_getCChar :: IO CChar -> IO (FunPtr (IO CChar))
 
 -- EVENT TYPE
 
