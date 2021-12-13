@@ -62,8 +62,7 @@ noFinalizer = unsafePerformIO . (`newForeignPtr` pure ())
 -- EVENT TICK
 
 struct "EventTick" #{size HmEventTick}
-	[	("times", ''CInt,
-			[| #{peek HmEventTick, times} |],
+	[	("times", ''CInt, [| #{peek HmEventTick, times} |],
 			[| #{poke HmEventTick, times} |]) ]
 	[''Show]
 

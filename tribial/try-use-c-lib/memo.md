@@ -56,7 +56,7 @@ memo
 		- [ ] source code
 			* [x] EVENT
 			* [x] EVENT TYPE
-			* [ ] EVENT TICK
+			* [x] EVENT TICK
 			* [ ] EVENT CHAR
 			* [ ] READ HANDLE
 	+ [ ] `MainLoop`
