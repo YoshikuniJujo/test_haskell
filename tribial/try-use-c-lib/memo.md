@@ -57,7 +57,7 @@ memo
 			* [x] EVENT
 			* [x] EVENT TYPE
 			* [x] EVENT TICK
-			* [ ] EVENT CHAR
+			* [x] EVENT CHAR
 			* [ ] READ HANDLE
 	+ [ ] `MainLoop`
 	+ [ ] `Game`

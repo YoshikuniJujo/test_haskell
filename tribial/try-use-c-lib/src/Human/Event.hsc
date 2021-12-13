@@ -79,8 +79,7 @@ eventTickToTimes (Sealed evt) = eventTickTimes evt
 -- EVENT CHAR
 
 struct "EventChar" #{size HmEventChar}
-	[	("character", ''CChar,
-			[| #{peek HmEventChar, character} |],
+	[	("character", ''CChar, [| #{peek HmEventChar, character} |],
 			[| #{poke HmEventChar, character} |]) ]
 	[''Show]
 
