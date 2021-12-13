@@ -49,8 +49,7 @@ foreign import ccall "wrapper"
 
 enum "EventType" ''#{type HmEventType} [''Show, ''Storable] [
 	("EventTypeTick", #{const HM_EVENT_TYPE_TICK}),
-	("EventTypeChar", #{const HM_EVENT_TYPE_CHAR})
-	]
+	("EventTypeChar", #{const HM_EVENT_TYPE_CHAR}) ]
 
 eventType :: Event s -> EventType
 eventType (Event pev) = unsafePerformIO $ #{peek HmEventAny, event_type} pev

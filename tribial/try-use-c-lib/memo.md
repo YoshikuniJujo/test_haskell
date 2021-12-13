@@ -55,7 +55,7 @@ memo
 		- [x] structure
 		- [ ] source code
 			* [x] EVENT
-			* [ ] EVENT TYPE
+			* [x] EVENT TYPE
 			* [ ] EVENT TICK
 			* [ ] EVENT CHAR
 			* [ ] READ HANDLE
