@@ -96,13 +96,8 @@ eventCharToCharacter (Sealed evc) = eventCharCharacter evc
 -- READ HANDLE
 
 hGetAndPushCChar :: Handle -> IO (TChan CChar)
-hGetAndPushCChar h = do
-	ch <- atomically newTChan
-	_ <- forkIO $ forever do
-		cs <- getCCharList
-		(atomically . writeTChan ch) `mapM_` cs
-	pure ch
-	where
-	getCCharList = allocaBytes 64 \cstr -> do
+hGetAndPushCChar h = atomically newTChan >>= \ch ->
+	ch <$ forkIO (forever $ getcs >>= mapM_ (atomically . writeTChan ch))
+	where getcs = allocaBytes 64 \cstr -> do
 		cnt <- hGetBufSome h cstr 64
 		peekArray cnt cstr

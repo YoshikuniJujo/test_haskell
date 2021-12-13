@@ -50,15 +50,15 @@ memo
 			* [x] MESSAGE
 	+ [x] `Human.Exception`
 	+ [x] `Human.EventOld`
-	+ [ ] `Human.Event`
+	+ [x] `Human.Event`
 		- [x] import list
 		- [x] structure
-		- [ ] source code
+		- [x] source code
 			* [x] EVENT
 			* [x] EVENT TYPE
 			* [x] EVENT TICK
 			* [x] EVENT CHAR
-			* [ ] READ HANDLE
+			* [x] READ HANDLE
 	+ [ ] `MainLoop`
 	+ [ ] `Game`
 * [ ] refactoring Haskell app sources
