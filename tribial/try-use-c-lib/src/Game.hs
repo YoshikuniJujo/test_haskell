@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -28,11 +28,8 @@ pointArea = Position (fieldWidth - 20) 3
 gameOverMessage :: Message
 gameOverMessage = Message (Position 20 10) "G A M E   O V E R"
 
-jumpDuration :: Int
-jumpDuration = 65
-
-jumpHeight :: Double
-jumpHeight = 5
+jumpDuration, jumpHeight :: Double
+jumpDuration = 65; jumpHeight = 5
 
 -- GAME STATE
 
@@ -69,14 +66,13 @@ data Hero = Hero {
 	heroRun :: Run, heroJumping :: Jump } deriving Show
 
 data Run = BackDash | Backward | Stand | Forward | ForwardDash deriving Show
-data Jump = NotJump | Jumping Int deriving Show
+data Jump = NotJump | Jumping Double deriving Show
 
 heroY :: Hero -> CInt
-heroY Hero { heroJumping = j } = case j of
-	NotJump -> landY
-	Jumping (fromIntegral @_ @Double . (`mod` jumpDuration) -> t) ->
-		landY - round (t * (fromIntegral jumpDuration - t) / dv)
-	where dv = (fromIntegral jumpDuration / 2) ^ (2 :: Int) / jumpHeight
+heroY (heroJumping -> j)= landY - round case j of
+	NotJump -> 0
+	Jumping t -> jumpHeight *
+		t * (jumpDuration - t) / (jumpDuration / 2) ^ (2 :: Int)
 
 putHero :: Field RealWorld -> Hero -> IO ()
 putHero f h@Hero { heroX = x } = fieldPutHuman f x $ heroY h
@@ -110,7 +106,7 @@ heroStep hr@Hero {
 	hr' { heroJumping = case j of
 		NotJump -> NotJump
 		Jumping t
-			| t >= 64 -> NotJump
+			| t >= jumpDuration - 1 -> NotJump
 			| otherwise -> Jumping $ t + 1 }
 	where
 	forward dxm = let (d, m) = (xm + dxm) `divMod` 100 in

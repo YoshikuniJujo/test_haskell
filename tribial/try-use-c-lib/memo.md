@@ -68,7 +68,7 @@ memo
 			* [x] GAME STATE
 			* [ ] HERO
 				+ [x] data
-				+ [ ] heroY
+				+ [x] heroY
 				+ [ ] putHero
 				+ [ ] hero Left, Right and Jump
 				+ [ ] heroStep
