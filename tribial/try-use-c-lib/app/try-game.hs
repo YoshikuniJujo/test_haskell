@@ -19,19 +19,19 @@ main = do
 	mainLoop \case
 		EventEventTick _evt -> do
 			gameDraw f =<< atomically do
-				modifyTVar gs (`gameEvent` Tick)
+				modifyTVar gs (`gameInput` Tick)
 				readTVar gs
 			atomically $ not . doesGameFailure <$> readTVar gs
 		EventEventChar evc -> do
 			case eventCharToCharacter evc of
 				104 -> atomically
-					$ modifyTVar gs (`gameEvent` Left)
+					$ modifyTVar gs (`gameInput` Left)
 				106 -> atomically
-					$ modifyTVar gs (`gameEvent` Stop)
+					$ modifyTVar gs (`gameInput` Stop)
 				107 -> atomically
-					$ modifyTVar gs (`gameEvent` Jump)
+					$ modifyTVar gs (`gameInput` Jump)
 				108 -> atomically
-					$ modifyTVar gs (`gameEvent` Right)
+					$ modifyTVar gs (`gameInput` Right)
 				_ -> pure ()
 			pure $ eventCharToCharacter evc /= 113
 		_ -> pure True

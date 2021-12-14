@@ -59,8 +59,11 @@ memo
 			* [x] EVENT TICK
 			* [x] EVENT CHAR
 			* [x] READ HANDLE
-	+ [ ] `MainLoop`
+	+ [x] `MainLoop`
 	+ [ ] `Game`
+		- [ ] import list
+		- [ ] structure
+		- [ ] source code
 * [ ] refactoring Haskell app sources
 	+ [ ] `try-old-event.hs`
 	+ [ ] `try-event.hs`

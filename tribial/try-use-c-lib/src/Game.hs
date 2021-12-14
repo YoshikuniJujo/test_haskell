@@ -16,7 +16,7 @@ import System.Random
 
 import Human
 
-data Event = Tick | Left | Stop | Right | Jump deriving Show
+data Input = Tick | Left | Stop | Right | Jump deriving Show
 
 landY :: CInt
 landY = yFromBottom $ fieldHeight - 2
@@ -80,8 +80,8 @@ enemyEnergyAdd eng deng
 	| eng + deng > 1000 = (Just $ Enemy 70 0, (eng + deng) `mod` 1000)
 	| otherwise = (Nothing, eng + deng)
 
-gameEvent :: GameState -> Event -> GameState
-gameEvent g@GameState {
+gameInput :: GameState -> Input -> GameState
+gameInput g@GameState {
 	gameStateHero = h, gameStateEnemies = es, gameStateEnemyEnergy = ee,
 	gameStateRandomGen = rg, gameStatePoint = p } = \case
 	Tick -> let
