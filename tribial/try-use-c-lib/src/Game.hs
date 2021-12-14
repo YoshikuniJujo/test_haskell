@@ -12,6 +12,8 @@ import Foreign.C.Types
 import Control.Arrow (first, (&&&))
 import Control.Monad
 import Control.Monad.ST
+import Data.Bool
+import Data.Maybe
 import Data.List
 import System.Random
 
@@ -19,17 +21,20 @@ import Human
 
 -- PARAMETERS
 
-landY :: CInt
-landY = yFromBottom $ fieldHeight - 2
-
 pointArea :: Position
 pointArea = Position (fieldWidth - 20) 3
 
 gameOverMessage :: Message
 gameOverMessage = Message (Position 20 10) "G A M E   O V E R"
 
+landY :: CInt
+landY = yFromBottom $ fieldHeight - 2
+
 jumpDuration, jumpHeight :: Double
 jumpDuration = 65; jumpHeight = 5
+
+enemyInitX :: CInt
+enemyInitX = xFromRight $ fieldWidth - 1
 
 -- GAME STATE
 
@@ -130,50 +135,62 @@ enemyForward (enemyX &&& enemyXCenti -> (x, xc)) dxc =
 	Enemy { enemyX = x + d, enemyXCenti = m }
 	where (d, m) = (xc - dxc) `divMod` 100
 
+enemiesStep :: Int -> [Enemy] -> Int -> StdGen -> (([Enemy], Int, Bool), StdGen)
+enemiesStep pnt es ee g = let
+	(eng, g') = randomR (0, calcEnemyEnergy pnt) g
+	(me, ee') = enemyEnergyAdd ee eng
+	(es', g'') = enemiesMove g' es
+	es'' = maybe es' (: es') me in ((es'', ee', isJust me), g'')
+
+enemyEnergyAdd :: Int -> Int -> (Maybe Enemy, Int)
+enemyEnergyAdd eng deng
+	| eng + deng > 1000 = (Just $ Enemy enemyInitX 0, eng + deng - 1000)
+	| otherwise = (Nothing, eng + deng)
+
+calcEnemyEnergy :: Int -> Int
+calcEnemyEnergy p
+	| p < 60 = 20 + p `div` 10
+	| p < 120 = 23 + p `div` 20
+	| otherwise = 26 + p `div` 40
+
+enemiesMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
+enemiesMove g = \case
+	[] -> ([], g)
+	e : es -> (enemyForward e dex :) `first` enemiesMove g' es
+	where (dex, g') = randomR (- 10, 65) g
+
 -- INPUT
 
 data Input = Tick | Left | Stop | Right | Jump deriving Show
 
 gameInput :: GameState -> Input -> GameState
-gameInput g@GameState {
-	gameStateHero = h, gameStateEnemies = es, gameStateEnemyEnergy = ee,
-	gameStateRandomGen = rg, gameStatePoint = p } = \case
-	Tick -> let
-		h' = heroStep h
-		(eng, rg') = randomR (0, calcEnemyEnergy) rg
-		(me, ee') = enemyEnergyAdd ee eng
-		(es', bs) = partition (not . checkBeat h') es
-		es'' = maybe es' (: es') me
-		(es''', g') = enemyMove rg' es'' in
-		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyOut) es''',
-			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
-			gameStateRandomGen = g',
-			gameStatePoint = p + 10 * length bs + maybe 0 (const 1) me }
-	Left -> g { gameStateHero = heroLeft h }
-	Stop -> g { gameStateHero = h { heroRun = Stand } }
-	Right -> g { gameStateHero = heroRight h }
-	Jump -> g { gameStateHero = heroJump h }
+gameInput g@GameState { gameStateHero = hr } = \case
+	Tick -> gameTick g
+	Left -> g { gameStateHero = heroLeft hr }
+	Stop -> g { gameStateHero = hr { heroRun = Stand } }
+	Right -> g { gameStateHero = heroRight hr }
+	Jump -> g { gameStateHero = heroJump hr }
+
+gameTick :: GameState -> GameState
+gameTick gs@GameState {
+	gameStateHero = (heroStep -> hr),
+	gameStateEnemies = es, gameStateEnemyEnergy = ee,
+	gameStateRandomGen = g, gameStatePoint = p } = gs {
+	gameStateHero = hr,
+	gameStateEnemies = filter (not . enemyOut) es'',
+	gameStateEnemyEnergy = ee',
+	gameStateRandomGen = g',
+	gameStatePoint = p + 10 * length bs + bool 0 1 ne,
+	gameStateFailure = checkOverlap hr `any` es'' }
 	where
-	enemyEnergyAdd eng deng
-		| eng + deng > 1000 =
-			(Just $ Enemy 70 0, (eng + deng) `mod` 1000)
-		| otherwise = (Nothing, eng + deng)
+	((es', ee', ne), g') = enemiesStep p es ee g
+	(es'', bs) = partition (not . checkBeat hr) es'
 
-	calcEnemyEnergy
-		| p < 60 = 20 + p `div` 10
-		| p < 120 = 23 + p `div` 20
-		| otherwise = 26 + p `div` 40
+checkBeat, checkOverlap :: Hero -> Enemy -> Bool
+checkBeat hr e = checkOverlap hr e && heroY hr < landY
 
-	enemyMove g_ [] = ([], g_)
-	enemyMove g_ (e : es_) = let
-		(dex, g') = randomR (- 10, 65) g_ in first (enemyForward e dex :) $ enemyMove g' es_
-
-	checkBeat h_ e@(Enemy _ _) = checkOverlap h_ e && heroY h_ < landY
-
-	checkOverlap h_ (Enemy ex _) = (el <= hr && hl <= er) && (et <= hb && ht <= eb)
-		where
-		hx = heroX h_
-		hy = heroY h_
-		[hl, hr, ht, hb] = map (\f -> f hx hy) [left, right, top, bottom]
-		ey = landY
-		[el, er, et, eb] = map (\f -> f ex ey) [left, right, top, bottom]
+checkOverlap (heroX &&& heroY -> (hx, hy)) (Enemy ex _) =
+	el <= hrr && hrl <= er && et <= hrb && hrt <= eb
+	where
+	[hrl, hrr, hrt, hrb] = (\f -> f hx hy) <$> [left, right, top, bottom]
+	[el, er, et, eb] = (\f -> f ex landY) <$> [left, right, top, bottom]
