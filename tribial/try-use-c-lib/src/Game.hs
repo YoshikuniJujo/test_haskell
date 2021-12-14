@@ -9,7 +9,7 @@ module Game where
 import Prelude hiding (Either(..))
 
 import Foreign.C.Types
-import Control.Arrow (first)
+import Control.Arrow (first, (&&&))
 import Control.Monad
 import Control.Monad.ST
 import Data.List
@@ -75,7 +75,7 @@ heroY (heroJumping -> j)= landY - round case j of
 		t * (jumpDuration - t) / (jumpDuration / 2) ^ (2 :: Int)
 
 putHero :: Field RealWorld -> Hero -> IO ()
-putHero f h@Hero { heroX = x } = fieldPutHuman f x $ heroY h
+putHero f = uncurry (fieldPutHuman f) . (heroX &&& heroY)
 
 heroLeft :: Hero -> Hero
 heroLeft h@Hero { heroRun = r } = case r of
