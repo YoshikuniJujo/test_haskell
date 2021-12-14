@@ -77,22 +77,19 @@ heroY (heroJumping -> j)= landY - round case j of
 putHero :: Field RealWorld -> Hero -> IO ()
 putHero f = uncurry (fieldPutHuman f) . (heroX &&& heroY)
 
-heroLeft :: Hero -> Hero
+heroLeft, heroRight, heroJump :: Hero -> Hero
 heroLeft h@Hero { heroRun = r } = case r of
 	BackDash -> h { heroRun = BackDash }
 	Backward -> h { heroRun = BackDash }
 	_ -> h { heroRun = Backward }
 
-heroRight :: Hero -> Hero
 heroRight h@Hero { heroRun = r } = case r of
 	ForwardDash -> h { heroRun = ForwardDash }
 	Forward -> h { heroRun = ForwardDash }
 	_ -> h { heroRun = Forward }
 
-heroJump :: Hero -> Hero
-heroJump h@Hero { heroJumping = j } = h { heroJumping = case j of
-	NotJump -> Jumping 0
-	_ -> j }
+heroJump h@Hero { heroJumping = j } =
+	h { heroJumping = case j of NotJump -> Jumping 0; _ -> j }
 
 heroStep :: Hero -> Hero
 heroStep hr@Hero {

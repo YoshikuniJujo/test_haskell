@@ -70,7 +70,7 @@ memo
 				+ [x] data
 				+ [x] heroY
 				+ [x] putHero
-				+ [ ] hero Left, Right and Jump
+				+ [x] hero Left, Right and Jump
 				+ [ ] heroStep
 			* [ ] ENEMY
 			* [ ] INPUT
