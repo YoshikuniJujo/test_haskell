@@ -66,12 +66,12 @@ memo
 		- [ ] source code
 			* [x] PARAMETERS
 			* [x] GAME STATE
-			* [ ] HERO
+			* [x] HERO
 				+ [x] data
 				+ [x] heroY
 				+ [x] putHero
 				+ [x] hero Left, Right and Jump
-				+ [ ] heroStep
+				+ [x] heroStep
 			* [ ] ENEMY
 			* [ ] INPUT
 * [ ] refactoring Haskell app sources

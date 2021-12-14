@@ -74,41 +74,44 @@ heroY (heroJumping -> j)= landY - round case j of
 	Jumping t -> jumpHeight *
 		t * (jumpDuration - t) / (jumpDuration / 2) ^ (2 :: Int)
 
+heroForward, heroBackward :: Hero -> CInt -> Hero
+heroForward hr@Hero { heroX = x, heroXCenti = xc } dxc =
+	hr { heroX = x + d, heroXCenti = m }
+	where (d, m) = (xc + dxc) `divMod` 100
+
+heroBackward hr = heroForward hr . negate
+
 putHero :: Field RealWorld -> Hero -> IO ()
 putHero f = uncurry (fieldPutHuman f) . (heroX &&& heroY)
 
 heroLeft, heroRight, heroJump :: Hero -> Hero
-heroLeft h@Hero { heroRun = r } = case r of
-	BackDash -> h { heroRun = BackDash }
-	Backward -> h { heroRun = BackDash }
-	_ -> h { heroRun = Backward }
+heroLeft hr@Hero { heroRun = r } = case r of
+	BackDash -> hr { heroRun = BackDash }
+	Backward -> hr { heroRun = BackDash }
+	_ -> hr { heroRun = Backward }
 
-heroRight h@Hero { heroRun = r } = case r of
-	ForwardDash -> h { heroRun = ForwardDash }
-	Forward -> h { heroRun = ForwardDash }
-	_ -> h { heroRun = Forward }
+heroRight hr@Hero { heroRun = r } = case r of
+	ForwardDash -> hr { heroRun = ForwardDash }
+	Forward -> hr { heroRun = ForwardDash }
+	_ -> hr { heroRun = Forward }
 
-heroJump h@Hero { heroJumping = j } =
-	h { heroJumping = case j of NotJump -> Jumping 0; _ -> j }
+heroJump hr@Hero { heroJumping = j } =
+	hr { heroJumping = case j of NotJump -> Jumping 0; _ -> j }
 
 heroStep :: Hero -> Hero
 heroStep hr@Hero {
-	heroX = x, heroXCenti = xm, heroRun = r, heroJumping = j } = let
+	heroX = x, heroXCenti = xc, heroRun = r, heroJumping = j } = let
 	hr' = case r of
-		BackDash -> backward 20
-		Backward -> backward 10
+		BackDash -> heroBackward hr 20
+		Backward -> heroBackward hr 10
 		Stand -> hr
-		Forward -> forward 10
-		ForwardDash -> forward 20 in
+		Forward -> heroForward hr 10
+		ForwardDash -> heroForward hr 20 in
 	hr' { heroJumping = case j of
 		NotJump -> NotJump
 		Jumping t
 			| t >= jumpDuration - 1 -> NotJump
 			| otherwise -> Jumping $ t + 1 }
-	where
-	forward dxm = let (d, m) = (xm + dxm) `divMod` 100 in
-		hr { heroX = x + d, heroXCenti = m }
-	backward = forward . negate
 
 -- ENEMY
 
