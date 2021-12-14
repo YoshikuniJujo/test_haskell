@@ -77,11 +77,11 @@ memo
 				+ [x] enemyOut
 				+ [x] putEnemy
 				+ [x] enemyForward
-			* [ ] ENEMIES
-				+ [ ] enemiesStep
-				+ [ ] enemyEnergyAdd
-				+ [ ] calcEnemyEnergy
-				+ [ ] enemiesMove
+			* [x] ENEMIES
+				+ [x] enemiesStep
+				+ [x] enemyEnergyAdd
+				+ [x] calcEnemyEnergy
+				+ [x] enemiesMove
 			* [ ] INPUT
 * [ ] refactoring Haskell app sources
 	+ [ ] `try-old-event.hs`

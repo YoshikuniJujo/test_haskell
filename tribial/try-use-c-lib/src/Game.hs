@@ -40,7 +40,7 @@ enemyInitX = xFromRight $ fieldWidth - 1
 
 data GameState = GameState {
 	gameStateHero :: Hero,
-	gameStateEnemies :: [Enemy], gameStateEnemyEnergy :: EnemyEnergy,
+	gameStateEnemies :: Enemies, gameStateEnemyEnergy :: EnemyEnergy,
 	gameStateRandomGen :: StdGen,
 	gameStatePoint :: Point, gameStateFailure :: Bool } deriving Show
 
@@ -139,26 +139,27 @@ enemyForward (enemyX &&& enemyXCenti -> (x, xc)) dxc =
 
 -- ENEMIES
 
-enemiesStep :: Point -> [Enemy] -> EnemyEnergy -> StdGen ->
-	(([Enemy], EnemyEnergy, Bool), StdGen)
-enemiesStep pnt es ee g = let
-	(eng, g') = randomR (0, calcEnemyEnergy pnt) g
-	(me, ee') = enemyEnergyAdd ee eng
+type Enemies = [Enemy]
+
+enemiesStep :: Point -> Enemies -> EnemyEnergy -> StdGen ->
+	((Enemies, EnemyEnergy, Bool), StdGen)
+enemiesStep p es ee g = ((maybe es' (: es') me, ee', isJust me), g'')
+	where
+	((me, ee'), g') = enemyEnergyAdd ee `first` randomR (0, enemyEnergy p) g
 	(es', g'') = enemiesMove g' es
-	es'' = maybe es' (: es') me in ((es'', ee', isJust me), g'')
 
 enemyEnergyAdd :: Int -> Int -> (Maybe Enemy, Int)
-enemyEnergyAdd eng deng
-	| eng + deng > 1000 = (Just $ Enemy enemyInitX 0, eng + deng - 1000)
-	| otherwise = (Nothing, eng + deng)
+enemyEnergyAdd ee dee
+	| ee + dee > 1000 = (Just $ Enemy enemyInitX 0, ee + dee - 1000)
+	| otherwise = (Nothing, ee + dee)
 
-calcEnemyEnergy :: Int -> Int
-calcEnemyEnergy p
+enemyEnergy :: Int -> Int
+enemyEnergy p
 	| p < 60 = 20 + p `div` 10
 	| p < 120 = 23 + p `div` 20
 	| otherwise = 26 + p `div` 40
 
-enemiesMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
+enemiesMove :: StdGen -> Enemies -> (Enemies, StdGen)
 enemiesMove g = \case
 	[] -> ([], g)
 	e : es -> (enemyForward e dex :) `first` enemiesMove g' es
