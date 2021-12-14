@@ -72,11 +72,12 @@ memo
 				+ [x] putHero
 				+ [x] hero Left, Right and Jump
 				+ [x] heroStep
-			* [ ] ENEMY
+			* [x] ENEMY
 				+ [x] data
-				+ [ ] enemyOut
-				+ [ ] putEnemy
-				+ [ ] enemyForward
+				+ [x] enemyOut
+				+ [x] putEnemy
+				+ [x] enemyForward
+			* [ ] ENEMIES
 				+ [ ] enemiesStep
 				+ [ ] enemyEnergyAdd
 				+ [ ] calcEnemyEnergy

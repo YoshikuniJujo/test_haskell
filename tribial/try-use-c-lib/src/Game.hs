@@ -125,18 +125,19 @@ data Enemy = Enemy { enemyX :: CInt, enemyXCenti :: CInt } deriving Show
 type EnemyEnergy = Int
 
 enemyOut :: Enemy -> Bool
-enemyOut (Enemy x _) = left x landY < 0 || right x landY >= fieldWidth
+enemyOut (Enemy x _) = left x landY < 0 || fieldWidth <= right x landY
 
 putEnemy :: Field RealWorld -> Enemy -> IO ()
-putEnemy f (enemyX -> x) = fieldPutVariousHuman f enemyLooks x landY
-	where enemyLooks = Human {
-		humanHeadSize = LargeHead,
+putEnemy f (enemyX -> x) = fieldPutVariousHuman f looks x landY
+	where looks = Human { humanHeadSize = LargeHead,
 		humanLeftArm = UpArm, humanRightArm = UpArm }
 
 enemyForward :: Enemy -> CInt -> Enemy
 enemyForward (enemyX &&& enemyXCenti -> (x, xc)) dxc =
 	Enemy { enemyX = x + d, enemyXCenti = m }
 	where (d, m) = (xc - dxc) `divMod` 100
+
+-- ENEMIES
 
 enemiesStep :: Point -> [Enemy] -> EnemyEnergy -> StdGen ->
 	(([Enemy], EnemyEnergy, Bool), StdGen)
