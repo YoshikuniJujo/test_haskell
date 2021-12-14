@@ -17,42 +17,43 @@ import System.Random
 
 import Human
 
--- LANDING Y
+-- PARAMETERS
 
 landY :: CInt
 landY = yFromBottom $ fieldHeight - 2
+
+pointArea :: Position
+pointArea = Position (fieldWidth - 20) 3
+
+gameOverMessage :: Message
+gameOverMessage = Message (Position 20 10) "G A M E   O V E R"
 
 -- GAME STATE
 
 data GameState = GameState {
 	gameStateHero :: Hero,
-	gameStateEnemies :: [Enemy],
-	gameStateEnemyEnergy :: Int,
-	gameStateFailure :: Bool,
+	gameStateEnemies :: [Enemy], gameStateEnemyEnergy :: Int,
 	gameStateRandomGen :: StdGen,
-	gameStatePoint :: Int } deriving Show
+	gameStatePoint :: Int, gameStateFailure :: Bool } deriving Show
 
 initGameState :: GameState
 initGameState = GameState {
 	gameStateHero = Hero {
 		heroX = 0, heroXMilli = 0,
 		heroRun = Stand, heroJumping = NotJump },
-	gameStateEnemies = [],
-	gameStateEnemyEnergy = 0,
-	gameStateFailure = False,
+	gameStateEnemies = [], gameStateEnemyEnergy = 0,
 	gameStateRandomGen = mkStdGen 8,
-	gameStatePoint = 0 }
+	gameStatePoint = 0, gameStateFailure = False }
 
 gameDraw :: Field RealWorld -> GameState -> IO ()
 gameDraw f GameState {
 	gameStateHero = h, gameStateEnemies = es,
-	gameStateFailure = flr, gameStatePoint = pnt } = do
+	gameStatePoint = pnt, gameStateFailure = flr } = do
 	fieldClearBackgroundRaw False f
 	putEnemy f `mapM_` es
 	fieldPutHero f h
-	fieldPutMessageRaw f . Message (Position 60 3) $ show pnt
-	when flr . fieldPutMessageRaw f
-		$ Message (Position 20 10) "G A M E   O V E R"
+	fieldPutMessageRaw f . Message pointArea $ show pnt
+	when flr $ fieldPutMessageRaw f gameOverMessage
 	fieldDraw f
 
 -- HERO

@@ -64,8 +64,8 @@ memo
 		- [x] import list
 		- [x] structure
 		- [ ] source code
-			* [x] LANDING Y
-			* [ ] GAME STATE
+			* [ ] PARAMETERS
+			* [x] GAME STATE
 			* [ ] HERO
 			* [ ] ENEMY
 			* [ ] INPUT
