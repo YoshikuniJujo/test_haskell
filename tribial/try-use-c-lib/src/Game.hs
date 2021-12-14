@@ -28,6 +28,12 @@ pointArea = Position (fieldWidth - 20) 3
 gameOverMessage :: Message
 gameOverMessage = Message (Position 20 10) "G A M E   O V E R"
 
+jumpDuration :: Int
+jumpDuration = 65
+
+jumpHeight :: Double
+jumpHeight = 5
+
 -- GAME STATE
 
 data GameState = GameState {
@@ -39,7 +45,7 @@ data GameState = GameState {
 initGameState :: GameState
 initGameState = GameState {
 	gameStateHero = Hero {
-		heroX = 0, heroXMilli = 0,
+		heroX = 0, heroXCenti = 0,
 		heroRun = Stand, heroJumping = NotJump },
 	gameStateEnemies = [], gameStateEnemyEnergy = 0,
 	gameStateRandomGen = mkStdGen 8,
@@ -51,7 +57,7 @@ gameDraw f GameState {
 	gameStatePoint = pnt, gameStateFailure = flr } = do
 	fieldClearBackgroundRaw False f
 	putEnemy f `mapM_` es
-	fieldPutHero f h
+	putHero f h
 	fieldPutMessageRaw f . Message pointArea $ show pnt
 	when flr $ fieldPutMessageRaw f gameOverMessage
 	fieldDraw f
@@ -59,43 +65,21 @@ gameDraw f GameState {
 -- HERO
 
 data Hero = Hero {
-	heroX :: CInt, heroXMilli :: CInt,
-	heroRun :: Run,
-	heroJumping :: Jump } deriving Show
+	heroX :: CInt, heroXCenti :: CInt,
+	heroRun :: Run, heroJumping :: Jump } deriving Show
 
 data Run = BackDash | Backward | Stand | Forward | ForwardDash deriving Show
-
 data Jump = NotJump | Jumping Int deriving Show
 
-fieldPutHero :: Field RealWorld -> Hero -> IO ()
-fieldPutHero f h@Hero { heroX = x } = fieldPutHuman f x $ getHeroY h
-
-getHeroY :: Hero -> CInt
-getHeroY Hero { heroJumping = j } = case j of
+heroY :: Hero -> CInt
+heroY Hero { heroJumping = j } = case j of
 	NotJump -> landY
-	Jumping (fromIntegral @_ @Double . (`mod` 65) -> t) ->
-		landY - round (t * (65 - t) / 200)
+	Jumping (fromIntegral @_ @Double . (`mod` jumpDuration) -> t) ->
+		landY - round (t * (fromIntegral jumpDuration - t) / dv)
+	where dv = (fromIntegral jumpDuration / 2) ^ (2 :: Int) / jumpHeight
 
-heroStep :: Hero -> Hero
-heroStep h@Hero { heroRun = r, heroJumping = j } = let
-	h' = case r of
-		BackDash -> heroBackward h 20
-		Backward -> heroBackward h 10
-		Stand -> h
-		Forward -> heroForward h 10
-		ForwardDash -> heroForward h 20 in
-	h' { heroJumping = case j of
-		NotJump -> NotJump
-		Jumping t
-			| t >= 64 -> NotJump
-			| otherwise -> Jumping $ t + 1 }
-
-heroForward :: Hero -> CInt -> Hero
-heroForward h@Hero { heroX = x, heroXMilli = xm } dxm = h {
-	heroX = x + (xm + dxm) `div` 100, heroXMilli = (xm + dxm) `mod` 100 }
-
-heroBackward :: Hero -> CInt -> Hero
-heroBackward h = heroForward h . negate
+putHero :: Field RealWorld -> Hero -> IO ()
+putHero f h@Hero { heroX = x } = fieldPutHuman f x $ heroY h
 
 heroLeft :: Hero -> Hero
 heroLeft h@Hero { heroRun = r } = case r of
@@ -114,16 +98,35 @@ heroJump h@Hero { heroJumping = j } = h { heroJumping = case j of
 	NotJump -> Jumping 0
 	_ -> j }
 
+heroStep :: Hero -> Hero
+heroStep hr@Hero {
+	heroX = x, heroXCenti = xm, heroRun = r, heroJumping = j } = let
+	hr' = case r of
+		BackDash -> backward 20
+		Backward -> backward 10
+		Stand -> hr
+		Forward -> forward 10
+		ForwardDash -> forward 20 in
+	hr' { heroJumping = case j of
+		NotJump -> NotJump
+		Jumping t
+			| t >= 64 -> NotJump
+			| otherwise -> Jumping $ t + 1 }
+	where
+	forward dxm = let (d, m) = (xm + dxm) `divMod` 100 in
+		hr { heroX = x + d, heroXCenti = m }
+	backward = forward . negate
+
 -- ENEMY
 
-data Enemy = Enemy { enemyX :: CInt, enemyXMilli :: CInt } deriving Show
+data Enemy = Enemy { enemyX :: CInt, enemyXCenti :: CInt } deriving Show
 
 enemyLeftOver :: Enemy -> Bool
 enemyLeftOver (Enemy x _) = x < 0 || x > 75
 
 enemyLeft :: Enemy -> CInt -> Enemy
-enemyLeft Enemy { enemyX = x, enemyXMilli = xm } dxm = Enemy {
-	enemyX = x + (xm - dxm) `div` 100, enemyXMilli = (xm - dxm) `mod` 100 }
+enemyLeft Enemy { enemyX = x, enemyXCenti = xm } dxm = Enemy {
+	enemyX = x + (xm - dxm) `div` 100, enemyXCenti = (xm - dxm) `mod` 100 }
 
 putEnemy :: Field RealWorld -> Enemy -> IO ()
 putEnemy f (Enemy x _) = fieldPutVariousHuman f enemyLooks x landY
@@ -170,12 +173,12 @@ gameInput g@GameState {
 	enemyMove g_ (e : es_) = let
 		(dex, g') = randomR (- 10, 65) g_ in first (enemyLeft e dex :) $ enemyMove g' es_
 
-	checkBeat h_ e@(Enemy _ _) = checkOverlap h_ e && getHeroY h_ < landY
+	checkBeat h_ e@(Enemy _ _) = checkOverlap h_ e && heroY h_ < landY
 
 	checkOverlap h_ (Enemy ex _) = (el <= hr && hl <= er) && (et <= hb && ht <= eb)
 		where
 		hx = heroX h_
-		hy = getHeroY h_
+		hy = heroY h_
 		[hl, hr, ht, hb] = map (\f -> f hx hy) [left, right, top, bottom]
 		ey = landY
 		[el, er, et, eb] = map (\f -> f ex ey) [left, right, top, bottom]

@@ -64,9 +64,14 @@ memo
 		- [x] import list
 		- [x] structure
 		- [ ] source code
-			* [ ] PARAMETERS
+			* [x] PARAMETERS
 			* [x] GAME STATE
 			* [ ] HERO
+				+ [x] data
+				+ [ ] heroY
+				+ [ ] putHero
+				+ [ ] hero Left, Right and Jump
+				+ [ ] heroStep
 			* [ ] ENEMY
 			* [ ] INPUT
 * [ ] refactoring Haskell app sources
