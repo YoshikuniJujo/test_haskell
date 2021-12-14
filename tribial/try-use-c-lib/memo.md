@@ -61,9 +61,14 @@ memo
 			* [x] READ HANDLE
 	+ [x] `MainLoop`
 	+ [ ] `Game`
-		- [ ] import list
-		- [ ] structure
+		- [x] import list
+		- [x] structure
 		- [ ] source code
+			* [x] LANDING Y
+			* [ ] GAME STATE
+			* [ ] HERO
+			* [ ] ENEMY
+			* [ ] INPUT
 * [ ] refactoring Haskell app sources
 	+ [ ] `try-old-event.hs`
 	+ [ ] `try-event.hs`

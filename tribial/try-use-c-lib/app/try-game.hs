@@ -21,7 +21,7 @@ main = do
 			gameDraw f =<< atomically do
 				modifyTVar gs (`gameInput` Tick)
 				readTVar gs
-			atomically $ not . doesGameFailure <$> readTVar gs
+			atomically $ not . gameStateFailure <$> readTVar gs
 		EventEventChar evc -> do
 			case eventCharToCharacter evc of
 				104 -> atomically

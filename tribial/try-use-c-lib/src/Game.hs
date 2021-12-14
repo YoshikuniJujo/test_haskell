@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -16,10 +17,12 @@ import System.Random
 
 import Human
 
-data Input = Tick | Left | Stop | Right | Jump deriving Show
+-- LANDING Y
 
 landY :: CInt
 landY = yFromBottom $ fieldHeight - 2
+
+-- GAME STATE
 
 data GameState = GameState {
 	gameStateHero :: Hero,
@@ -40,20 +43,6 @@ initGameState = GameState {
 	gameStateRandomGen = mkStdGen 8,
 	gameStatePoint = 0 }
 
-dummyGameState :: GameState
-dummyGameState = GameState {
-	gameStateHero = Hero {
-		heroX = 0, heroXMilli = 0,
-		heroRun = Stand, heroJumping = NotJump },
-	gameStateEnemies = [Enemy 50 0, Enemy 30 0, Enemy 65 0],
-	gameStateEnemyEnergy = 0,
-	gameStateFailure = False,
-	gameStateRandomGen = mkStdGen 8,
-	gameStatePoint = 0 }
-
-doesGameFailure :: GameState -> Bool
-doesGameFailure = gameStateFailure
-
 gameDraw :: Field RealWorld -> GameState -> IO ()
 gameDraw f GameState {
 	gameStateHero = h, gameStateEnemies = es,
@@ -66,70 +55,7 @@ gameDraw f GameState {
 		$ Message (Position 20 10) "G A M E   O V E R"
 	fieldDraw f
 
-putEnemy :: Field RealWorld -> Enemy -> IO ()
-putEnemy f (Enemy x _) = fieldPutVariousHuman f enemy x landY
-
-enemy :: Human
-enemy = Human {
-	humanHeadSize = LargeHead,
-	humanLeftArm = UpArm,
-	humanRightArm = UpArm }
-
-enemyEnergyAdd :: Int -> Int -> (Maybe Enemy, Int)
-enemyEnergyAdd eng deng
-	| eng + deng > 1000 = (Just $ Enemy 70 0, (eng + deng) `mod` 1000)
-	| otherwise = (Nothing, eng + deng)
-
-gameInput :: GameState -> Input -> GameState
-gameInput g@GameState {
-	gameStateHero = h, gameStateEnemies = es, gameStateEnemyEnergy = ee,
-	gameStateRandomGen = rg, gameStatePoint = p } = \case
-	Tick -> let
-		h' = heroStep h
---		(me, ee') = enemyEnergyAdd ee 11
-		(eng, rg') = randomR (0, calcEnemyEnergy p) rg
-		(me, ee') = enemyEnergyAdd ee eng
-		(es', bs) = partition (not . checkBeat h') es
-		es'' = maybe es' (: es') me
-		(es''', g') = enemyMove rg' es'' in
---		(dex, g') = randomR (- 60, 100) rg in
-		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) es''', -- $ map (`enemyLeft` dex) es'',
-			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
-			gameStateRandomGen = g',
-			gameStatePoint = p + 10 * length bs + maybe 0 (const 1) me }
-	Left -> g { gameStateHero = heroLeft h }
-	Stop -> g { gameStateHero = h { heroRun = Stand } }
-	Right -> g { gameStateHero = heroRight h }
-	Jump -> g { gameStateHero = heroJump h }
-
-calcEnemyEnergy :: Int -> Int
-calcEnemyEnergy p
-	| p < 60 = 20 + p `div` 10
-	| p < 120 = 23 + p `div` 20
-	| otherwise = 26 + p `div` 40
-
-enemyMove :: StdGen -> [Enemy] -> ([Enemy], StdGen)
-enemyMove g [] = ([], g)
-enemyMove g (e : es) = let
-	(dex, g') = randomR (- 10, 65) g in first (enemyLeft e dex :) $ enemyMove g' es
-
-checkBeat :: Hero -> Enemy -> Bool
-checkBeat h e@(Enemy ex _) = checkOverlap h e && hy < ey -- && hb == et
-	where
-	hx = heroX h
-	hy = getHeroY h
-	hb = bottom hx hy
-	ey = landY
-	et = top ex ey
-
-checkOverlap :: Hero -> Enemy -> Bool
-checkOverlap h (Enemy ex _) = (el <= hr && hl <= er) && (et <= hb && ht <= eb)
-	where
-	hx = heroX h
-	hy = getHeroY h
-	[hl, hr, ht, hb] = map (\f -> f hx hy) [left, right, top, bottom]
-	ey = landY
-	[el, er, et, eb] = map (\f -> f ex ey) [left, right, top, bottom]
+-- HERO
 
 data Hero = Hero {
 	heroX :: CInt, heroXMilli :: CInt,
@@ -187,12 +113,68 @@ heroJump h@Hero { heroJumping = j } = h { heroJumping = case j of
 	NotJump -> Jumping 0
 	_ -> j }
 
+-- ENEMY
+
 data Enemy = Enemy { enemyX :: CInt, enemyXMilli :: CInt } deriving Show
+
+enemyLeftOver :: Enemy -> Bool
+enemyLeftOver (Enemy x _) = x < 0 || x > 75
 
 enemyLeft :: Enemy -> CInt -> Enemy
 enemyLeft Enemy { enemyX = x, enemyXMilli = xm } dxm = Enemy {
 	enemyX = x + (xm - dxm) `div` 100, enemyXMilli = (xm - dxm) `mod` 100 }
 
-enemyLeftOver :: Enemy -> Bool
-enemyLeftOver (Enemy x _) =
-	x < 0 || x > 75
+putEnemy :: Field RealWorld -> Enemy -> IO ()
+putEnemy f (Enemy x _) = fieldPutVariousHuman f enemyLooks x landY
+
+enemyLooks :: Human
+enemyLooks = Human {
+	humanHeadSize = LargeHead, humanLeftArm = UpArm, humanRightArm = UpArm }
+
+-- INPUT
+
+data Input = Tick | Left | Stop | Right | Jump deriving Show
+
+gameInput :: GameState -> Input -> GameState
+gameInput g@GameState {
+	gameStateHero = h, gameStateEnemies = es, gameStateEnemyEnergy = ee,
+	gameStateRandomGen = rg, gameStatePoint = p } = \case
+	Tick -> let
+		h' = heroStep h
+		(eng, rg') = randomR (0, calcEnemyEnergy) rg
+		(me, ee') = enemyEnergyAdd ee eng
+		(es', bs) = partition (not . checkBeat h') es
+		es'' = maybe es' (: es') me
+		(es''', g') = enemyMove rg' es'' in
+		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) es''',
+			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
+			gameStateRandomGen = g',
+			gameStatePoint = p + 10 * length bs + maybe 0 (const 1) me }
+	Left -> g { gameStateHero = heroLeft h }
+	Stop -> g { gameStateHero = h { heroRun = Stand } }
+	Right -> g { gameStateHero = heroRight h }
+	Jump -> g { gameStateHero = heroJump h }
+	where
+	enemyEnergyAdd eng deng
+		| eng + deng > 1000 =
+			(Just $ Enemy 70 0, (eng + deng) `mod` 1000)
+		| otherwise = (Nothing, eng + deng)
+
+	calcEnemyEnergy
+		| p < 60 = 20 + p `div` 10
+		| p < 120 = 23 + p `div` 20
+		| otherwise = 26 + p `div` 40
+
+	enemyMove g_ [] = ([], g_)
+	enemyMove g_ (e : es_) = let
+		(dex, g') = randomR (- 10, 65) g_ in first (enemyLeft e dex :) $ enemyMove g' es_
+
+	checkBeat h_ e@(Enemy _ _) = checkOverlap h_ e && getHeroY h_ < landY
+
+	checkOverlap h_ (Enemy ex _) = (el <= hr && hl <= er) && (et <= hb && ht <= eb)
+		where
+		hx = heroX h_
+		hy = getHeroY h_
+		[hl, hr, ht, hb] = map (\f -> f hx hy) [left, right, top, bottom]
+		ey = landY
+		[el, er, et, eb] = map (\f -> f ex ey) [left, right, top, bottom]
