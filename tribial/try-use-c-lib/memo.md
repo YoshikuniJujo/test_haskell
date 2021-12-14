@@ -73,7 +73,7 @@ memo
 				+ [x] hero Left, Right and Jump
 				+ [x] heroStep
 			* [ ] ENEMY
-				+ [ ] data
+				+ [x] data
 				+ [ ] enemyOut
 				+ [ ] putEnemy
 				+ [ ] enemyForward

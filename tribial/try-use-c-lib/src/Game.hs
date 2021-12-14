@@ -40,9 +40,11 @@ enemyInitX = xFromRight $ fieldWidth - 1
 
 data GameState = GameState {
 	gameStateHero :: Hero,
-	gameStateEnemies :: [Enemy], gameStateEnemyEnergy :: Int,
+	gameStateEnemies :: [Enemy], gameStateEnemyEnergy :: EnemyEnergy,
 	gameStateRandomGen :: StdGen,
-	gameStatePoint :: Int, gameStateFailure :: Bool } deriving Show
+	gameStatePoint :: Point, gameStateFailure :: Bool } deriving Show
+
+type Point = Int
 
 initGameState :: GameState
 initGameState = GameState {
@@ -120,6 +122,7 @@ heroStep hr@Hero { heroRun = r, heroJumping = j } = let
 -- ENEMY
 
 data Enemy = Enemy { enemyX :: CInt, enemyXCenti :: CInt } deriving Show
+type EnemyEnergy = Int
 
 enemyOut :: Enemy -> Bool
 enemyOut (Enemy x _) = left x landY < 0 || right x landY >= fieldWidth
@@ -135,7 +138,8 @@ enemyForward (enemyX &&& enemyXCenti -> (x, xc)) dxc =
 	Enemy { enemyX = x + d, enemyXCenti = m }
 	where (d, m) = (xc - dxc) `divMod` 100
 
-enemiesStep :: Int -> [Enemy] -> Int -> StdGen -> (([Enemy], Int, Bool), StdGen)
+enemiesStep :: Point -> [Enemy] -> EnemyEnergy -> StdGen ->
+	(([Enemy], EnemyEnergy, Bool), StdGen)
 enemiesStep pnt es ee g = let
 	(eng, g') = randomR (0, calcEnemyEnergy pnt) g
 	(me, ee') = enemyEnergyAdd ee eng
