@@ -99,8 +99,7 @@ heroJump hr@Hero { heroJumping = j } =
 	hr { heroJumping = case j of NotJump -> Jumping 0; _ -> j }
 
 heroStep :: Hero -> Hero
-heroStep hr@Hero {
-	heroX = x, heroXCenti = xc, heroRun = r, heroJumping = j } = let
+heroStep hr@Hero { heroRun = r, heroJumping = j } = let
 	hr' = case r of
 		BackDash -> heroBackward hr 20
 		Backward -> heroBackward hr 10
@@ -117,19 +116,19 @@ heroStep hr@Hero {
 
 data Enemy = Enemy { enemyX :: CInt, enemyXCenti :: CInt } deriving Show
 
-enemyLeftOver :: Enemy -> Bool
-enemyLeftOver (Enemy x _) = x < 0 || x > 75
-
-enemyLeft :: Enemy -> CInt -> Enemy
-enemyLeft Enemy { enemyX = x, enemyXCenti = xm } dxm = Enemy {
-	enemyX = x + (xm - dxm) `div` 100, enemyXCenti = (xm - dxm) `mod` 100 }
+enemyOut :: Enemy -> Bool
+enemyOut (Enemy x _) = left x landY < 0 || right x landY >= fieldWidth
 
 putEnemy :: Field RealWorld -> Enemy -> IO ()
-putEnemy f (Enemy x _) = fieldPutVariousHuman f enemyLooks x landY
+putEnemy f (enemyX -> x) = fieldPutVariousHuman f enemyLooks x landY
+	where enemyLooks = Human {
+		humanHeadSize = LargeHead,
+		humanLeftArm = UpArm, humanRightArm = UpArm }
 
-enemyLooks :: Human
-enemyLooks = Human {
-	humanHeadSize = LargeHead, humanLeftArm = UpArm, humanRightArm = UpArm }
+enemyForward :: Enemy -> CInt -> Enemy
+enemyForward (enemyX &&& enemyXCenti -> (x, xc)) dxc =
+	Enemy { enemyX = x + d, enemyXCenti = m }
+	where (d, m) = (xc - dxc) `divMod` 100
 
 -- INPUT
 
@@ -146,7 +145,7 @@ gameInput g@GameState {
 		(es', bs) = partition (not . checkBeat h') es
 		es'' = maybe es' (: es') me
 		(es''', g') = enemyMove rg' es'' in
-		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyLeftOver) es''',
+		g {	gameStateHero = h', gameStateEnemies = filter (not . enemyOut) es''',
 			gameStateFailure = checkOverlap h' `any` es'', gameStateEnemyEnergy = ee',
 			gameStateRandomGen = g',
 			gameStatePoint = p + 10 * length bs + maybe 0 (const 1) me }
@@ -167,7 +166,7 @@ gameInput g@GameState {
 
 	enemyMove g_ [] = ([], g_)
 	enemyMove g_ (e : es_) = let
-		(dex, g') = randomR (- 10, 65) g_ in first (enemyLeft e dex :) $ enemyMove g' es_
+		(dex, g') = randomR (- 10, 65) g_ in first (enemyForward e dex :) $ enemyMove g' es_
 
 	checkBeat h_ e@(Enemy _ _) = checkOverlap h_ e && heroY h_ < landY
 

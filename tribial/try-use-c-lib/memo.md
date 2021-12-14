@@ -72,7 +72,7 @@ memo
 				+ [x] putHero
 				+ [x] hero Left, Right and Jump
 				+ [x] heroStep
-			* [ ] ENEMY
+			* [x] ENEMY
 			* [ ] INPUT
 * [ ] refactoring Haskell app sources
 	+ [ ] `try-old-event.hs`
