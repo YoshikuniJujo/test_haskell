@@ -2,7 +2,8 @@
 
 module Main where
 
+import System.IO
 import System.Process
 
 main :: IO ()
-main = callCommand =<< getLine
+main = putStr "Shell> " >> hFlush stdout >> getLine >>= callCommand >> main
