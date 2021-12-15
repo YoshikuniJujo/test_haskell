@@ -8,6 +8,4 @@ import Control.Monad
 import Human.EventOld
 
 main :: IO ()
-main = replicateM_ 10 do
-	replicateM_ 10 getEvent
-	print =<< replicateM 10 getEvent
+main = replicateM_ 20 $ print =<< replicateM 10 getEvent
