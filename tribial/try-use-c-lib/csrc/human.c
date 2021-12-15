@@ -240,7 +240,7 @@ HmEvent *
 hm_get_event_old(void)
 {
 	struct timeval tv;
-	tv.tv_sec = 0; tv.tv_usec = 1000;
+	tv.tv_sec = 0; tv.tv_usec = 10000;
 	select(0, NULL, NULL, NULL, &tv);
 	return hm_make_event_tick();
 }
