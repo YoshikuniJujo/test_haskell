@@ -237,6 +237,15 @@ hm_make_event_char(char c)
 }
 
 HmEvent *
+hm_get_event_old(void)
+{
+	struct timeval tv;
+	tv.tv_sec = 0; tv.tv_usec = 1000;
+	select(0, NULL, NULL, NULL, &tv);
+	return hm_make_event_tick();
+}
+
+HmEvent *
 hm_get_event(char (*get_char)())
 {
 	char c = get_char();
