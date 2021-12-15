@@ -1,8 +1,12 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Human where
 
 import Foreign.C.Types
+import Foreign.C.Enum
+import Data.Word
 
 #include <human.h>
 
@@ -22,3 +26,8 @@ fieldHeight = #{const FIELD_HEIGHT}
 
 foreign import ccall "hm_field0_init" field0Init :: IO ()
 foreign import ccall "hm_field0_draw" field0Draw :: IO ()
+
+enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
+	("PutHumanResultSuccess", #{const HM_PUT_HUMAN_SUCCESS}),
+	("PutHumanResultPartial", #{const HM_PUT_HUMAN_PARTIAL}),
+	("PutHumanResultOffscreen", #{const HM_PUT_HUMAN_OFFSCREEN}) ]
