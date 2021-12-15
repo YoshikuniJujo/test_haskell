@@ -90,6 +90,6 @@ memo
 * [ ] refactoring Haskell app sources
 	+ [x] `try-old-event.hs`
 	+ [x] `try-event.hs`
-	+ [ ] `try-get-and-push-cchar.hs`
+	+ [x] `try-get-and-push-cchar.hs`
 	+ [ ] `try-jump.hs`
 	+ [ ] `try-game.hs`
