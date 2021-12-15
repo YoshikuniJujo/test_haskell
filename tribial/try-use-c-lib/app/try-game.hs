@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -14,24 +15,18 @@ import Game
 
 main :: IO ()
 main = do
-	gs <- atomically $ newTVar initGameState
+	gsv <- atomically $ newTVar initGameState
 	f <- fieldNewBackgroundRaw False
 	mainLoop \case
 		EventEventTick _evt -> do
-			gameDraw f =<< atomically do
-				modifyTVar gs (`gameInput` Tick)
-				readTVar gs
-			atomically $ not . gameStateFailure <$> readTVar gs
-		EventEventChar evc -> do
-			case eventCharToCharacter evc of
-				104 -> atomically
-					$ modifyTVar gs (`gameInput` Left)
-				106 -> atomically
-					$ modifyTVar gs (`gameInput` Stop)
-				107 -> atomically
-					$ modifyTVar gs (`gameInput` Jump)
-				108 -> atomically
-					$ modifyTVar gs (`gameInput` Right)
+			gs <- atomically do
+				modifyTVar gsv (`gameInput` Tick); readTVar gsv
+			not (gameStateFailure gs) <$ gameDraw f gs
+		EventEventChar (eventCharToCharacter -> c) ->
+			(c /= 113) <$ atomically case c of
+				104 -> modifyTVar gsv (`gameInput` Left)
+				106 -> modifyTVar gsv (`gameInput` Stop)
+				107 -> modifyTVar gsv (`gameInput` Jump)
+				108 -> modifyTVar gsv (`gameInput` Right)
 				_ -> pure ()
-			pure $ eventCharToCharacter evc /= 113
-		_ -> pure True
+		_ -> pure False

@@ -87,9 +87,9 @@ memo
 				+ [x] gameInput
 				+ [x] gameTick
 				+ [x] checkBeat and checkOverlap
-* [ ] refactoring Haskell app sources
+* [x] refactoring Haskell app sources
 	+ [x] `try-old-event.hs`
 	+ [x] `try-event.hs`
 	+ [x] `try-get-and-push-cchar.hs`
 	+ [x] `try-jump.hs`
-	+ [ ] `try-game.hs`
+	+ [x] `try-game.hs`
