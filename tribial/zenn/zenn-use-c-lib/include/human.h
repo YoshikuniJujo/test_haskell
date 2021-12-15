@@ -7,4 +7,8 @@
 typedef char HmFieldArray[FIELD_HEIGHT][FIELD_WIDTH + 1];
 typedef char (*HmField)[FIELD_WIDTH + 1];
 
+typedef enum {
+	HM_PUT_HUMAN_SUCCESS, HM_PUT_HUMAN_PARTIAL, HM_PUT_HUMAN_OFFSCREEN }
+	HmPutHumanResult;
+
 #endif
