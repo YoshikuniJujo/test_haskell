@@ -11,67 +11,52 @@ import Human
 import Human.MainLoop
 import Human.Event
 
-data Jumping = NotJump | Jumping Int deriving Show
+data Jumping = Land | Jumping Int deriving Show
 data Run = BackDash | Backward | Stop | Forward | ForwardDash deriving Show
 
 main :: IO ()
 main = do
 	xv <- atomically $ newTVar 0
-	jv <- atomically $ newTVar NotJump
+	jv <- atomically $ newTVar Land
 	rv <- atomically $ newTVar Stop
 	f <- fieldNew
 	mainLoop \case
-		EventEventTick evt -> True <$ do
-			fieldClear f
---			fieldPutHuman f (eventTickToTimes evt `div` 10 `mod` 70) 15
---			fieldPutHuman f ((- eventTickToTimes evt) `div` 10 `mod` 70) 15
-			x <- atomically $ readTVar xv
-			j <- atomically $ readTVar jv
-			let	h = case j of
-					NotJump -> 19
-					Jumping t -> calcHeight t
+		EventEventTick _ -> True <$ do
 			atomically $ modifyTVar jv \case
-				NotJump -> NotJump
+				Land -> Land
 				Jumping t
-					| t > 99 -> NotJump
+					| t > 99 -> Land
 					| otherwise -> Jumping $ t + 1
-			atomically do
-				r <- readTVar rv
-				case r of
-					BackDash -> modifyTVar xv (subtract 2)
-					Backward -> modifyTVar xv (subtract 1)
-					Stop -> pure ()
-					Forward -> modifyTVar xv (+ 1)
-					ForwardDash -> modifyTVar xv (+ 2)
-			fieldPutHuman f (x `div` 10) $ fromIntegral h -- . calcHeight $ eventTickToTimes evt
-			fieldPutHuman f (eventTickToTimes evt `div` 10 `mod` 70) -- $ fromIntegral h
-				. calcHeight $ eventTickToTimes evt
+			atomically $ readTVar rv >>= \case
+				BackDash -> modifyTVar xv (subtract 2)
+				Backward -> modifyTVar xv (subtract 1)
+				Stop -> pure ()
+				Forward -> modifyTVar xv (+ 1)
+				ForwardDash -> modifyTVar xv (+ 2)
+			x <- atomically $ readTVar xv
+			fieldClear f
+			fieldPutHuman f (x `div` 10) =<< atomically
+				((<$> readTVar jv)
+					\case Land -> 19; Jumping t -> height t)
 			fieldDraw f
-		EventEventChar evc -> do
---			print evc
-			case eventCharToCharacter evc of
-				104 -> atomically do
-					r <- readTVar rv
-					writeTVar rv case r of
-						BackDash -> BackDash
-						Backward -> BackDash
-						_ -> Backward
-				108 -> atomically do
-					r <- readTVar rv
+		EventEventChar (eventCharToCharacter -> c) ->
+			(c /= 113) <$ atomically case c of
+				104 -> modifyTVar rv \case
+					BackDash -> BackDash
+					Backward -> BackDash
+					_ -> Backward
+				106 -> writeTVar rv Stop
+				107 -> readTVar jv >>= \case
+					Land -> writeTVar jv $ Jumping 0
+					_ -> pure ()
+				108 -> readTVar rv >>= \r ->
 					writeTVar rv case r of
 						ForwardDash -> ForwardDash
 						Forward -> ForwardDash
 						_ -> Forward
-				106 -> atomically $ writeTVar rv Stop
-				107 -> atomically do
-					j <- readTVar jv
-					case j of
-						NotJump -> writeTVar jv $ Jumping 0
-						_ -> pure ()
 				_ -> pure ()
-			pure (eventCharToCharacter evc /= 113)
-		ev -> False <$ print ev
+		_ -> pure False
 
-calcHeight :: Integral n => n -> n
-calcHeight ((fromIntegral @_ @Double . (`mod` 100)) -> t) =
+height :: (Integral m, Integral n) => m -> n
+height ((fromIntegral @_ @Double . (`mod` 100)) -> t) =
 	19 - round (t * (100 - t) / 400)

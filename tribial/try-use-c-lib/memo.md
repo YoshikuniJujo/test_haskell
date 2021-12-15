@@ -91,5 +91,5 @@ memo
 	+ [x] `try-old-event.hs`
 	+ [x] `try-event.hs`
 	+ [x] `try-get-and-push-cchar.hs`
-	+ [ ] `try-jump.hs`
+	+ [x] `try-jump.hs`
 	+ [ ] `try-game.hs`
