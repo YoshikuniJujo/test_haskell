@@ -60,10 +60,10 @@ memo
 			* [x] EVENT CHAR
 			* [x] READ HANDLE
 	+ [x] `MainLoop`
-	+ [ ] `Game`
+	+ [x] `Game`
 		- [x] import list
 		- [x] structure
-		- [ ] source code
+		- [x] source code
 			* [x] PARAMETERS
 			* [x] GAME STATE
 			* [x] HERO
@@ -82,7 +82,11 @@ memo
 				+ [x] enemyEnergyAdd
 				+ [x] calcEnemyEnergy
 				+ [x] enemiesMove
-			* [ ] INPUT
+			* [x] INPUT
+				+ [x] data
+				+ [x] gameInput
+				+ [x] gameTick
+				+ [x] checkBeat and checkOverlap
 * [ ] refactoring Haskell app sources
 	+ [ ] `try-old-event.hs`
 	+ [ ] `try-event.hs`

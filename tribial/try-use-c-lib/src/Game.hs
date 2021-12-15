@@ -195,8 +195,8 @@ gameTick gs@GameState {
 checkBeat, checkOverlap :: Hero -> Enemy -> Bool
 checkBeat hr e = checkOverlap hr e && heroY hr < landY
 
-checkOverlap (heroX &&& heroY -> (hx, hy)) (Enemy ex _) =
+checkOverlap (heroX &&& heroY -> (hrx, hry)) (Enemy ex _) =
 	el <= hrr && hrl <= er && et <= hrb && hrt <= eb
 	where
-	[hrl, hrr, hrt, hrb] = (\f -> f hx hy) <$> [left, right, top, bottom]
+	[hrl, hrr, hrt, hrb] = (\f -> f hrx hry) <$> [left, right, top, bottom]
 	[el, er, et, eb] = (\f -> f ex landY) <$> [left, right, top, bottom]
