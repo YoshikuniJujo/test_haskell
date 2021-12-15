@@ -10,7 +10,5 @@ import Human.Event
 main :: IO ()
 main = mainLoop \case
 	EventEventTick evt -> True <$ print evt
-	EventEventChar evc -> do
-		print evc
-		pure (eventCharToCharacter evc /= 113)
+	EventEventChar evc -> (eventCharToCharacter evc /= 113) <$ print evc
 	ev -> False <$ print ev
