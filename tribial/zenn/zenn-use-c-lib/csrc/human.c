@@ -66,3 +66,48 @@ hm_field0_draw_human(int x, int y)
 	hm_field0_draw();
 	return hm_check_inside(x, y);
 }
+
+void
+hm_field_clear(HmField f)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
+		int j;
+		for (j = 0; j < FIELD_WIDTH; j++) f[i][j] = '.';
+		f[i][j] = '\0'; }
+}
+
+HmField
+hm_field_new(void)
+{
+	HmField f;
+	f = (HmField)malloc(sizeof(HmFieldArray));
+	hm_field_clear(f);
+	return f;
+}
+
+void hm_field_destroy(HmField f) { free(f); }
+
+void
+hm_field_draw(HmField f)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) printf("%s\n", f[i]);
+}
+
+void
+hm_field_put_char(HmField f, int x, int y, char c)
+{
+	if (0 <= x && x < FIELD_WIDTH && 0 <= y && y < FIELD_HEIGHT)
+		f[y][x] = c;
+}
+
+HmPutHumanResult
+hm_field_put_human(HmField f, int x, int y)
+{
+	hm_field_put_char(f, x, y, '\\');
+	hm_field_put_char(f, x + 1, y, 'o');
+	hm_field_put_char(f, x + 1, y + 1, 'A');
+	hm_field_put_char(f, x + 2, y + 1, '\\');
+	hm_field_put_char(f, x, y + 2, '/');
+	hm_field_put_char(f, x + 2, y + 2, '\\');
+	return hm_check_inside(x, y);
+}

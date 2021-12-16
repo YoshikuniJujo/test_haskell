@@ -1,10 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Human where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.C.Types
 import Foreign.C.Enum
 import Control.Exception
@@ -45,3 +48,35 @@ field0DrawHuman x y = c_hm_field0_draw_human x y >>= \case
 	PutHumanResultPartial -> throw PutHumanPartialError
 	PutHumanResultOffscreen -> throw PutHumanOffscreenError
 	PutHumanResult n -> throw $ PutHumanUnknownError n
+
+newtype Field s = Field (ForeignPtr (Field s)) deriving Show
+
+foreign import ccall "hm_field_new" c_hm_field_new :: IO (Ptr (Field s))
+
+foreign import ccall "hm_field_destroy"
+	c_hm_field_destroy :: Ptr (Field s) -> IO ()
+
+fieldNewRaw :: IO (Field s)
+fieldNewRaw = Field <$> do
+	p <- c_hm_field_new
+	newForeignPtr p $ c_hm_field_destroy p
+
+foreign import ccall "hm_field_clear" c_hm_field_clear :: Ptr (Field s) -> IO ()
+foreign import ccall "hm_field_draw" c_hm_field_draw :: Ptr (Field s) -> IO ()
+
+foreign import ccall "hm_field_put_human" c_hm_field_put_human ::
+	Ptr (Field s) -> CInt -> CInt -> IO PutHumanResult
+
+fieldClearRaw :: Field s -> IO ()
+fieldClearRaw (Field ff) = withForeignPtr ff c_hm_field_clear
+
+fieldDrawRaw :: Field s -> IO ()
+fieldDrawRaw (Field ff) = withForeignPtr ff c_hm_field_draw
+
+fieldPutHumanRaw :: Field s -> CInt -> CInt -> IO ()
+fieldPutHumanRaw (Field ff) x y = withForeignPtr ff \pf ->
+	c_hm_field_put_human pf x y >>= \case
+		PutHumanResultSuccess -> pure ()
+		PutHumanResultPartial -> throw PutHumanPartialError
+		PutHumanResultOffscreen -> throw PutHumanOffscreenError
+		PutHumanResult n -> throw $ PutHumanUnknownError n
