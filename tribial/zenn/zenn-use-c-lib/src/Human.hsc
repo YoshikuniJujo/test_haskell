@@ -80,3 +80,20 @@ fieldPutHumanRaw (Field ff) x y = withForeignPtr ff \pf ->
 		PutHumanResultPartial -> throw PutHumanPartialError
 		PutHumanResultOffscreen -> throw PutHumanOffscreenError
 		PutHumanResult n -> throw $ PutHumanUnknownError n
+
+newtype Image = Image (ForeignPtr Image) deriving Show
+
+foreign import ccall "hm_field_get_image"
+	c_hm_field_get_image :: Ptr (Field s) -> IO (Ptr Image)
+
+foreign import ccall "hm_image_destroy" c_hm_image_destroy :: Ptr Image -> IO ()
+
+fieldGetImageRaw :: Field s -> IO Image
+fieldGetImageRaw (Field ff) = Image <$> withForeignPtr ff \pf -> do
+	p <- c_hm_field_get_image pf
+	newForeignPtr p $ c_hm_image_destroy p
+
+foreign import ccall "hm_image_draw" c_hm_image_draw :: Ptr Image -> IO ()
+
+imageDraw :: Image -> IO ()
+imageDraw (Image fi) = withForeignPtr fi c_hm_image_draw

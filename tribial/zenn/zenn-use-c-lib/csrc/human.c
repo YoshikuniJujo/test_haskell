@@ -111,3 +111,22 @@ hm_field_put_human(HmField f, int x, int y)
 	hm_field_put_char(f, x + 2, y + 2, '\\');
 	return hm_check_inside(x, y);
 }
+
+typedef char HmImageArray[FIELD_HEIGHT][FIELD_WIDTH + 1];
+typedef char (*HmImage)[FIELD_WIDTH + 1];
+
+HmImage
+hm_field_get_image(HmField f)
+{
+	HmImage img = (HmImage)malloc(sizeof(HmImageArray));
+	memcpy(img, f, (FIELD_WIDTH + 1) * FIELD_HEIGHT);
+	return img;
+}
+
+void hm_image_destroy(HmImage img) { free(img); }
+
+void
+hm_image_draw(HmImage img)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) printf("%s\n", img[i]);
+}
