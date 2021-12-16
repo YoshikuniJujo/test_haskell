@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,7 +7,10 @@ module Human where
 
 import Foreign.C.Types
 import Foreign.C.Enum
+import Control.Exception
 import Data.Word
+
+import Human.Exception
 
 #include <human.h>
 
@@ -31,3 +35,13 @@ enum "PutHumanResult" ''#{type HmPutHumanResult} [''Show, ''Read] [
 	("PutHumanResultSuccess", #{const HM_PUT_HUMAN_SUCCESS}),
 	("PutHumanResultPartial", #{const HM_PUT_HUMAN_PARTIAL}),
 	("PutHumanResultOffscreen", #{const HM_PUT_HUMAN_OFFSCREEN}) ]
+
+foreign import ccall "hm_field0_draw_human"
+	c_hm_field0_draw_human :: CInt -> CInt -> IO PutHumanResult
+
+field0DrawHuman :: CInt -> CInt -> IO ()
+field0DrawHuman x y = c_hm_field0_draw_human x y >>= \case
+	PutHumanResultSuccess -> pure ()
+	PutHumanResultPartial -> throw PutHumanPartialError
+	PutHumanResultOffscreen -> throw PutHumanOffscreenError
+	PutHumanResult n -> throw $ PutHumanUnknownError n
