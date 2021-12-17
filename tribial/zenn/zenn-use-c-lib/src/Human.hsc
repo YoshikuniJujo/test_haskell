@@ -161,3 +161,30 @@ fieldPutVariousHuman ::
 	PrimMonad m => Field (PrimState m) -> Human -> CInt -> CInt -> m ()
 fieldPutVariousHuman f hm x y =
 	unsafeIOToPrim $ fieldPutVariousHumanRaw f hm x y
+
+foreign import ccall "hm_human_copy"
+	c_hm_human_copy :: Ptr Human -> IO (Ptr Human)
+
+foreign import ccall "hm_human_destroy" c_hm_human_destroy :: Ptr Human -> IO ()
+
+structPrim "Human" 'c_hm_human_copy 'c_hm_human_destroy [''Show]
+
+foreign import ccall "hm_human_flip_head"
+	c_hm_human_flip_head :: Ptr Human -> IO ()
+
+foreign import ccall "hm_human_flip_left_arm"
+	c_hm_human_flip_left_arm :: Ptr Human -> IO ()
+
+foreign import ccall "hm_human_flip_right_arm"
+	c_hm_human_flip_right_arm :: Ptr Human -> IO ()
+
+humanFlipHead, humanFlipLeftArm, humanFlipRightArm ::
+	PrimMonad m => HumanPrim (PrimState m) -> m ()
+humanFlipHead (HumanPrim fhm) =
+	unsafeIOToPrim $ withForeignPtr fhm c_hm_human_flip_head
+
+humanFlipLeftArm (HumanPrim fhm) =
+	unsafeIOToPrim $ withForeignPtr fhm c_hm_human_flip_left_arm
+
+humanFlipRightArm (HumanPrim fhm) =
+	unsafeIOToPrim $ withForeignPtr fhm c_hm_human_flip_right_arm

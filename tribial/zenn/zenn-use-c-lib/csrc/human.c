@@ -168,3 +168,36 @@ hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y)
 	hm_field_put_char(f, x + 2, y + 2, '\\');
 	return hm_check_inside(x, y);
 }
+
+HmHuman *
+hm_human_copy(HmHuman *hm)
+{
+	HmHuman *dst = (HmHuman *)malloc(sizeof(HmHuman));
+	dst->head_size = hm->head_size;
+	dst->left_arm = hm->left_arm;
+	dst->right_arm = hm->right_arm;
+	return dst;
+}
+
+void hm_human_destroy(HmHuman *hm) { free(hm); }
+
+void
+hm_human_flip_head(HmHuman *hm)
+{
+	hm->head_size =
+		hm->head_size == HM_SMALL_HEAD ? HM_LARGE_HEAD : HM_SMALL_HEAD;
+}
+
+void
+hm_human_flip_left_arm(HmHuman *hm)
+{
+	hm->left_arm =
+		hm->left_arm == HM_DOWN_ARM ? HM_UP_ARM : HM_DOWN_ARM;
+}
+
+void
+hm_human_flip_right_arm(HmHuman *hm)
+{
+	hm->right_arm =
+		hm->right_arm == HM_DOWN_ARM ? HM_UP_ARM : HM_DOWN_ARM;
+}
