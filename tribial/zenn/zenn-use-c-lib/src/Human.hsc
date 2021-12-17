@@ -10,6 +10,8 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C.Types
 import Foreign.C.Enum
+import Control.Monad.ST
+import Control.Monad.ST.Unsafe
 import Control.Exception
 import Data.Word
 
@@ -97,3 +99,12 @@ foreign import ccall "hm_image_draw" c_hm_image_draw :: Ptr Image -> IO ()
 
 imageDraw :: Image -> IO ()
 imageDraw (Image fi) = withForeignPtr fi c_hm_image_draw
+
+fieldNewSt :: ST s (Field s)
+fieldNewSt = unsafeIOToST fieldNewRaw
+
+fieldPutHumanSt :: Field s -> CInt -> CInt -> ST s ()
+fieldPutHumanSt f x y = unsafeIOToST $ fieldPutHumanRaw f x y
+
+fieldGetImageSt :: Field s -> ST s Image
+fieldGetImageSt f = unsafeIOToST $ fieldGetImageRaw f
