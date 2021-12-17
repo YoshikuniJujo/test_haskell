@@ -10,6 +10,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.C.Types
 import Foreign.C.Enum
+import Control.Monad.Primitive
 import Control.Monad.ST
 import Control.Monad.ST.Unsafe
 import Control.Exception
@@ -108,3 +109,18 @@ fieldPutHumanSt f x y = unsafeIOToST $ fieldPutHumanRaw f x y
 
 fieldGetImageSt :: Field s -> ST s Image
 fieldGetImageSt f = unsafeIOToST $ fieldGetImageRaw f
+
+fieldNew :: PrimMonad m => m (Field (PrimState m))
+fieldNew = unsafeIOToPrim fieldNewRaw
+
+fieldClear :: PrimMonad m => Field (PrimState m) -> m ()
+fieldClear = unsafeIOToPrim . fieldClearRaw
+
+fieldPutHuman :: PrimMonad m => Field (PrimState m) -> CInt -> CInt -> m ()
+fieldPutHuman f x y = unsafeIOToPrim $ fieldPutHumanRaw f x y
+
+fieldGetImage :: PrimMonad m => Field (PrimState m) -> m Image
+fieldGetImage = unsafeIOToPrim . fieldGetImageRaw
+
+fieldDraw :: Field RealWorld -> IO ()
+fieldDraw = fieldDrawRaw
