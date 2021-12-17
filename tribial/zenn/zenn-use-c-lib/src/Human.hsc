@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Human where
@@ -8,8 +9,10 @@ module Human where
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.Enum
+import Foreign.C.Struct
 import Control.Monad.Primitive
 import Control.Monad.ST
 import Control.Monad.ST.Unsafe
@@ -124,3 +127,19 @@ fieldGetImage = unsafeIOToPrim . fieldGetImageRaw
 
 fieldDraw :: Field RealWorld -> IO ()
 fieldDraw = fieldDrawRaw
+
+enum "Head" ''#{type HmHead} [''Show, ''Read, ''Storable] [
+	("SmallHead", #{const HM_SMALL_HEAD}),
+	("LargeHead", #{const HM_LARGE_HEAD}) ]
+
+enum "Arm" ''#{type HmArm} [''Show, ''Read, ''Storable] [
+	("DownArm", #{const HM_DOWN_ARM}), ("UpArm", #{const HM_UP_ARM}) ]
+
+struct "Human" #{size HmHuman}
+	[	("headSize", ''Head, [| #{peek HmHuman, head_size} |],
+			[| #{poke HmHuman, head_size} |]),
+		("leftArm", ''Arm, [| #{peek HmHuman, left_arm} |],
+			[| #{poke HmHuman, left_arm} |]),
+		("rightArm", ''Arm, [| #{peek HmHuman, right_arm} |],
+			[| #{poke HmHuman, right_arm} |]) ]
+	[''Show, ''Read]

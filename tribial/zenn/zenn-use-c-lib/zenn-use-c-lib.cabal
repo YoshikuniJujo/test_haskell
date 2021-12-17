@@ -40,6 +40,7 @@ library
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , primitive
   default-language: Haskell2010
@@ -54,6 +55,7 @@ executable zenn-use-c-lib-exe
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , primitive
     , zenn-use-c-lib
@@ -70,6 +72,7 @@ test-suite zenn-use-c-lib-test
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , c-struct
     , exception-hierarchy
     , primitive
     , zenn-use-c-lib

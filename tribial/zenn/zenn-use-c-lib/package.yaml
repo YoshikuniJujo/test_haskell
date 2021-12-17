@@ -24,6 +24,7 @@ dependencies:
 - primitive
 - exception-hierarchy
 - c-enum
+- c-struct
 
 library:
   source-dirs: src

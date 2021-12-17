@@ -130,3 +130,41 @@ hm_image_draw(HmImage img)
 {
 	for (int i = 0; i < FIELD_HEIGHT; i++) printf("%s\n", img[i]);
 }
+
+char
+select_head(HmHuman *hm)
+{
+	switch (hm->head_size) {
+		case HM_SMALL_HEAD: return 'o';
+		case HM_LARGE_HEAD: return 'O';
+		default: return '.'; }
+}
+
+void
+put_left_arm(HmField f, HmHuman *hm, int x, int y)
+{
+	switch (hm->left_arm) {
+		case HM_DOWN_ARM: hm_field_put_char(f, x, y + 1, '/'); return;
+		case HM_UP_ARM: hm_field_put_char(f, x, y, '\\'); return; }
+}
+
+void
+put_right_arm(HmField f, HmHuman *hm, int x, int y)
+{
+	switch (hm->right_arm) {
+		case HM_DOWN_ARM:
+			hm_field_put_char(f, x + 2, y + 1, '\\'); return;
+		case HM_UP_ARM: hm_field_put_char(f, x + 2, y, '/'); return; }
+}
+
+HmPutHumanResult
+hm_field_put_various_human(HmField f, HmHuman *hm, int x, int y)
+{
+	hm_field_put_char(f, x + 1, y, select_head(hm));
+	put_left_arm(f, hm, x, y);
+	put_right_arm(f, hm, x, y);
+	hm_field_put_char(f, x + 1, y + 1, 'A');
+	hm_field_put_char(f, x, y + 2, '/');
+	hm_field_put_char(f, x + 2, y + 2, '\\');
+	return hm_check_inside(x, y);
+}
