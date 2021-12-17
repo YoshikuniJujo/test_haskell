@@ -143,3 +143,21 @@ struct "Human" #{size HmHuman}
 		("rightArm", ''Arm, [| #{peek HmHuman, right_arm} |],
 			[| #{poke HmHuman, right_arm} |]) ]
 	[''Show, ''Read]
+
+foreign import ccall "hm_field_put_various_human"
+	c_hm_field_put_various_human ::
+	Ptr (Field s) -> Ptr Human -> CInt -> CInt -> IO PutHumanResult
+
+fieldPutVariousHumanRaw :: Field s -> Human -> CInt -> CInt -> IO ()
+fieldPutVariousHumanRaw (Field ff) (Human_ fhm) x y =
+	withForeignPtr ff \pf -> withForeignPtr fhm \phm ->
+		c_hm_field_put_various_human pf phm x y >>= \case
+			PutHumanResultSuccess -> pure ()
+			PutHumanResultPartial -> throw PutHumanPartialError
+			PutHumanResultOffscreen -> throw PutHumanOffscreenError
+			PutHumanResult n -> throw $ PutHumanUnknownError n
+
+fieldPutVariousHuman ::
+	PrimMonad m => Field (PrimState m) -> Human -> CInt -> CInt -> m ()
+fieldPutVariousHuman f hm x y =
+	unsafeIOToPrim $ fieldPutVariousHumanRaw f hm x y
