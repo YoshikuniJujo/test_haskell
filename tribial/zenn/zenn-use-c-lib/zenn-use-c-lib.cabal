@@ -29,6 +29,7 @@ library
       Human.Exception
       Lib
       TryHuman
+      TryMemory
   other-modules:
       Paths_zenn_use_c_lib
   hs-source-dirs:
@@ -37,6 +38,8 @@ library
       include
   c-sources:
       csrc/human.c
+      csrc/mem_alloc.c
+      csrc/mem_alloc_draw.c
   build-depends:
       base >=4.7 && <5
     , c-enum

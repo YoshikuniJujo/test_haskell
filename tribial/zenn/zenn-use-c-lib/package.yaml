@@ -31,6 +31,8 @@ library:
   include-dirs: include
   c-sources:
   - csrc/human.c
+  - csrc/mem_alloc.c
+  - csrc/mem_alloc_draw.c
 
 executables:
   zenn-use-c-lib-exe:
