@@ -47,11 +47,11 @@ free_memory(void *addr)
 	int mi = (uint64_t *)addr - memory;
 	if (mi < 0 || 127 < mi) return -1;
 
-	int i, sz; bool flag;
+	int i, sz, size; bool flag;
 	for (i = mi + 127, sz = 8, flag = false; i; i = PARENT(i), sz <<= 1) {
 		if (alloc_info[i].allocated) {
-			alloc_info[i].allocated = false; flag = true; }
-		if (flag) alloc_info[i].used -= sz; }
-	if (flag) alloc_info[i].used -= sz;
+			alloc_info[i].allocated = false; flag = true; size = sz; }
+		if (flag) alloc_info[i].used -= size; }
+	if (flag) alloc_info[i].used -= size;
 	return 0;
 }
