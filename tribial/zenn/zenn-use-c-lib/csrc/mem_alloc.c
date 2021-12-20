@@ -38,3 +38,19 @@ allocate_memory(int sz)
 	int i = get_index(normalize(sz), 0, 0, 0);
 	if (i < 0) return NULL; else return memory + i;
 }
+
+int
+free_memory(void *addr)
+{
+	int mi = (uint64_t *)addr - memory;
+	if (mi < 0 || 127 < mi) return -1;
+
+	int i, sz, size; bool flag;
+	for (i = mi + 127, sz = 8, flag = false; i; i = PARENT(i), sz <<= 1) {
+		if (alloc_info[i].allocated) {
+			alloc_info[i].allocated = false;
+			flag = true; size = sz; }
+		if (flag) alloc_info[i].used -= size; }
+	if (flag) alloc_info[i].used -= size;
+	return 0;
+}
