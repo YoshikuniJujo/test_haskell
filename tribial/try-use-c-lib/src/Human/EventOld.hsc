@@ -30,7 +30,10 @@ struct "EventAny" #{size HmEventAny}
 	[''Show]
 
 struct "EventTick" #{size HmEventTick}
-	[	("times", ''CInt, [| #{peek HmEventTick, times} |],
+	[	("eventType", ''(), [| const $ pure () |],
+			[| \p _ -> #{poke HmEventTick, event_type}
+				p EventTypeTick |]),
+		("times", ''CInt, [| #{peek HmEventTick, times} |],
 			[| #{poke HmEventTick, times} |]) ]
 	[''Show]
 
