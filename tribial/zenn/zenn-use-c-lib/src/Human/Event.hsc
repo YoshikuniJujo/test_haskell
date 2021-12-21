@@ -37,3 +37,10 @@ foreign import ccall "hm_event_destroy"
 withEventOnlyTick :: (forall s . Event s -> IO a) -> IO a
 withEventOnlyTick f =
 	bracket c_hm_get_event_only_tick c_hm_event_destroy (f . Event)
+
+enum "EventType" ''#{type HmEventType} [''Show, ''Storable] [
+	("EventTypeTick", #{const HM_EVENT_TYPE_TICK}),
+	("EventTypeChar", #{const HM_EVENT_TYPE_CHAR}) ]
+
+eventType :: Event s -> EventType
+eventType (Event pev) = unsafePerformIO $ #{peek HmEventAny, event_type} pev
