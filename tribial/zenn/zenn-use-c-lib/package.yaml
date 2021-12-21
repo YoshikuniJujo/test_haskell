@@ -44,6 +44,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - zenn-use-c-lib
+  try-event-gc:
+    main:                try-event-gc.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - zenn-use-c-lib
 
 tests:
   zenn-use-c-lib-test:
