@@ -30,6 +30,13 @@ import System.IO.Unsafe
 
 data Event s = Event (Ptr (Event s)) deriving Show
 
+withEventOnlyTick :: (forall s . Event s -> IO a) -> IO a
+withEventOnlyTick f =
+	bracket c_hm_get_event_only_tick c_hm_event_destroy (f . Event)
+
+foreign import ccall "hm_get_event_old"
+	c_hm_get_event_only_tick :: IO (Ptr (Event s))
+
 withEvent :: TChan CChar -> (forall s . Event s -> IO a) -> IO a
 withEvent ch f = bracket (c_hm_get_event =<< wrap_getCChar getc)
 	c_hm_event_destroy (f . Event)
