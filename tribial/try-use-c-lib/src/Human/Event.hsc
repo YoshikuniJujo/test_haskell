@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -69,7 +69,10 @@ noFinalizer = unsafePerformIO . (`newForeignPtr` pure ())
 -- EVENT TICK
 
 struct "EventTick" #{size HmEventTick}
-	[	("times", ''CInt, [| #{peek HmEventTick, times} |],
+	[	("eventType", ''(), [| const $ pure () |],
+			[| \p _ -> #{poke HmEventTick, event_type}
+				p EventTypeTick |]),
+		("times", ''CInt, [| #{peek HmEventTick, times} |],
 			[| #{poke HmEventTick, times} |]) ]
 	[''Show]
 
