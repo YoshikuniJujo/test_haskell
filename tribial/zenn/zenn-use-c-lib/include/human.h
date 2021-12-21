@@ -15,4 +15,14 @@ typedef enum { HM_SMALL_HEAD, HM_LARGE_HEAD } HmHead;
 typedef enum { HM_DOWN_ARM, HM_UP_ARM } HmArm;
 typedef struct { HmHead head_size; HmArm left_arm; HmArm right_arm; } HmHuman;
 
+typedef enum { HM_EVENT_TYPE_TICK, HM_EVENT_TYPE_CHAR } HmEventType;
+
+typedef struct { HmEventType event_type; } HmEventAny;
+typedef struct { HmEventType event_type; int times; } HmEventTick;
+typedef struct { HmEventType event_type; char character; } HmEventChar;
+
+typedef union {
+	HmEventAny event_any; HmEventTick event_tick; HmEventChar event_char; }
+	HmEvent;
+
 #endif

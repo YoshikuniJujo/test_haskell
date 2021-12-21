@@ -5,6 +5,7 @@
 #include <sys/select.h>
 
 #include <human.h>
+#include <mem_alloc.h>
 
 int hm_left(int x, int y) { return x; }
 int hm_right(int x, int y) { return x + 2; }
@@ -201,3 +202,32 @@ hm_human_flip_right_arm(HmHuman *hm)
 	hm->right_arm =
 		hm->right_arm == HM_DOWN_ARM ? HM_UP_ARM : HM_DOWN_ARM;
 }
+
+int
+hm_tick(void)
+{
+	static int tms = 0;
+	return tms++;
+}
+
+HmEvent *
+hm_make_event_tick(void)
+{
+	int t = hm_tick();
+	HmEvent *ev = allocate_memory(sizeof(HmEvent));
+	if (ev != NULL) {
+		ev->event_tick.event_type = HM_EVENT_TYPE_TICK;
+		ev->event_tick.times = t; }
+	return ev;
+}
+
+HmEvent *
+hm_get_event_only_tick(void)
+{
+	struct timeval tv;
+	tv.tv_sec = 0; tv.tv_usec = 10000;
+	select(0, NULL, NULL, NULL, &tv);
+	return hm_make_event_tick();
+}
+
+void hm_event_destroy(HmEvent *ev) { free_memory(ev); }
