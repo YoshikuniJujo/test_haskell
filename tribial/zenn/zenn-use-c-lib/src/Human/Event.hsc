@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -44,3 +44,26 @@ enum "EventType" ''#{type HmEventType} [''Show, ''Storable] [
 
 eventType :: Event s -> EventType
 eventType (Event pev) = unsafePerformIO $ #{peek HmEventAny, event_type} pev
+
+struct "EventTick" #{size HmEventTick}
+	[	("eventType", ''(), [| const $ pure () |],
+			[| \p _ -> #{poke HmEventTick, event_type}
+				p EventTypeTick |]),
+		("times", ''CInt, [| #{peek HmEventTick, times} |],
+			[| #{poke HmEventTick, times} |]) ]
+	[''Show]
+
+newtype Sealed s a = Sealed a deriving Show
+
+getEventTick :: Event s -> (EventType, Sealed s EventTick)
+getEventTick ev@(Event pev) =
+	(eventType ev, Sealed . EventTick_ . noFinalizer $ castPtr pev)
+
+noFinalizer :: Ptr a -> ForeignPtr a
+noFinalizer = unsafePerformIO . (`newForeignPtr` pure ())
+
+pattern EventEventTick :: Sealed s EventTick -> Event s
+pattern EventEventTick evt <- (getEventTick -> (EventTypeTick, evt))
+
+eventTickToTimes :: Sealed s EventTick -> CInt
+eventTickToTimes (Sealed evt) = eventTickTimes evt
