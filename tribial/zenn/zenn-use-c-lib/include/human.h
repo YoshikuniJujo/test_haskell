@@ -25,4 +25,7 @@ typedef union {
 	HmEventAny event_any; HmEventTick event_tick; HmEventChar event_char; }
 	HmEvent;
 
+typedef struct { int x; int y; } HmPosition;
+typedef struct { HmPosition *position; char *message; } HmMessage;
+
 #endif

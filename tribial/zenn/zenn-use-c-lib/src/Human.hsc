@@ -11,6 +11,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.Types
+import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Control.Monad.Primitive
@@ -219,3 +220,37 @@ fieldNewBackground = unsafeIOToPrim . fieldNewBackgroundRaw
 
 fieldClearBackground :: PrimMonad m => Bool -> Field (PrimState m) -> m ()
 fieldClearBackground b = unsafeIOToPrim . fieldClearBackgroundRaw b
+
+struct "Position" #{size HmPosition}
+	[	("x", ''CInt, [| #{peek HmPosition, x} |],
+			[| #{poke HmPosition, x} |]),
+		("y", ''CInt, [| #{peek HmPosition, y} |],
+			[| #{poke HmPosition, y} |]) ]
+	[''Show]
+
+type PtrPosition = Ptr Position
+
+struct "CMessage" #{size HmMessage}
+	[	("position", ''PtrPosition, [| #{peek HmMessage, position} |],
+			[| #{poke HmMessage, position} |]),
+		("message", ''CString, [| #{peek HmMessage, message} |],
+			[| #{poke HmMessage, message} |]) ]
+	[''Show]
+
+data Message = Message { messagePosition :: Position, messageMessage :: String }
+	deriving Show
+
+foreign import ccall "hm_field_put_message"
+	c_hm_field_put_message :: Ptr (Field s) -> Ptr CMessage -> IO ()
+
+fieldPutMessageRaw :: Field s -> Message -> IO ()
+fieldPutMessageRaw (Field ff)
+	Message { messagePosition = Position_ fp, messageMessage = msg } =
+	withForeignPtr fp \pp -> withCString msg \cmsg -> do
+		let	CMessage_ fmsg = CMessage {
+				cMessagePosition = pp,
+				cMessageMessage = cmsg }
+		withForeignPtr ff $ withForeignPtr fmsg . c_hm_field_put_message
+
+fieldPutMessage :: PrimMonad m => Field (PrimState m) -> Message -> m ()
+fieldPutMessage f = unsafeIOToPrim . fieldPutMessageRaw f

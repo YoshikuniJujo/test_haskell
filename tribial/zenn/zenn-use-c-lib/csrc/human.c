@@ -282,3 +282,12 @@ HmField
 {
 	return b ? hm_field_new : hm_field_new_bg_space;
 }
+
+void
+hm_field_put_message(HmField f, HmMessage *msg)
+{
+	int x = msg->position->x;
+	int y = msg->position->y;
+	char *m = msg->message;
+	for (; *m; x++, m++) hm_field_put_char(f, x, y, *m);
+}
