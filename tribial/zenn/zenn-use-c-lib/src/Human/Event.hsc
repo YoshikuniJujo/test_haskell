@@ -87,3 +87,21 @@ hGetAndPushCChar h = atomically newTChan >>= \ch ->
 		cnt <- hGetBufSome h cstr 64
 		when (cnt == 0) $ error "EOF"
 		peekArray cnt cstr
+
+struct "EventChar" #{size HmEventChar}
+	[	("eventType", ''(), [| const $ pure () |],
+			[| \p _ -> #{poke HmEventChar, event_type}
+				p EventTypeChar |]),
+		("character", ''CChar, [| #{peek HmEventChar, character} |],
+			[| #{poke HmEventChar, character} |]) ]
+	[''Show]
+
+getEventChar :: Event s -> (EventType, Sealed s EventChar)
+getEventChar ev@(Event pev) =
+	(eventType ev, Sealed . EventChar_ . noFinalizer $ castPtr pev)
+
+pattern EventEventChar :: Sealed s EventChar -> Event s
+pattern EventEventChar evc <- (getEventChar -> (EventTypeChar, evc))
+
+eventCharToCharacter :: Sealed s EventChar -> CChar
+eventCharToCharacter (Sealed evc) = eventCharCharacter evc
