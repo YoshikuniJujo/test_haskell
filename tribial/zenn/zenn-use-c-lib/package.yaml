@@ -54,6 +54,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - zenn-use-c-lib
+  try-main-loop:
+    main:                try-main-loop.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - zenn-use-c-lib
 
 tests:
   zenn-use-c-lib-test:
