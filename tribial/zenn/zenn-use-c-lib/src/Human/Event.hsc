@@ -67,3 +67,23 @@ pattern EventEventTick evt <- (getEventTick -> (EventTypeTick, evt))
 
 eventTickToTimes :: Sealed s EventTick -> CInt
 eventTickToTimes (Sealed evt) = eventTickTimes evt
+
+foreign import ccall "hm_get_event"
+	c_hm_get_event :: FunPtr (IO CChar) -> IO (Ptr (Event s))
+
+foreign import ccall "wrapper"
+	wrap_getCChar :: IO CChar -> IO (FunPtr (IO CChar))
+
+withEvent :: TChan CChar -> (forall s . Event s -> IO a) -> IO a
+withEvent ch f = bracket (c_hm_get_event =<< wrap_getCChar getc)
+	c_hm_event_destroy (f . Event)
+	where
+	getc = atomically $ bool (readTChan ch) (pure 0) =<< isEmptyTChan ch
+
+hGetAndPushCChar :: Handle -> IO (TChan CChar)
+hGetAndPushCChar h = atomically newTChan >>= \ch ->
+	ch <$ forkIO (forever $ getcs >>= mapM_ (atomically . writeTChan ch))
+	where getcs = allocaBytes 64 \cstr -> do
+		cnt <- hGetBufSome h cstr 64
+		when (cnt == 0) $ error "EOF"
+		peekArray cnt cstr

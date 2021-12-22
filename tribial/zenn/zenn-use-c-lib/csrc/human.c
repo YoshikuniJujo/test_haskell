@@ -231,3 +231,25 @@ hm_get_event_only_tick(void)
 }
 
 void hm_event_destroy(HmEvent *ev) { free_memory(ev); }
+
+HmEvent *
+hm_make_event_char(char c)
+{
+	HmEvent *ev = allocate_memory(sizeof(HmEvent));
+	if (ev != NULL) {
+		ev->event_char.event_type = HM_EVENT_TYPE_CHAR;
+		ev->event_char.character = c; }
+	return ev;
+}
+
+HmEvent *
+hm_get_event(char (*get_char)())
+{
+	char c = get_char();
+	if (c != '\0') return hm_make_event_char(c);
+
+	struct timeval tv;
+	tv.tv_sec = 0; tv.tv_usec = 10000;
+	select(0, NULL, NULL, NULL, &tv);
+	return hm_make_event_tick();
+}
