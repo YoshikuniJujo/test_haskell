@@ -22,6 +22,7 @@ import Data.Word
 import Human.Exception
 
 #include <human.h>
+#include <stdbool.h>
 
 foreign import ccall "hm_left" left :: CInt -> CInt -> CInt
 foreign import ccall "hm_right" right :: CInt -> CInt -> CInt
@@ -188,3 +189,33 @@ humanFlipLeftArm (HumanPrim fhm) =
 
 humanFlipRightArm (HumanPrim fhm) =
 	unsafeIOToPrim $ withForeignPtr fhm c_hm_human_flip_right_arm
+
+foreign import ccall "hm_field_new_background"
+	c_hm_field_new_background :: #{type bool} -> FunPtr (IO (Ptr (Field s)))
+
+foreign import ccall "hm_field_clear_background"
+	c_hm_field_clear_background :: #{type bool} -> FunPtr (Ptr (Field s) -> IO ())
+
+foreign import ccall "dynamic"
+	mkFieldNewBg :: FunPtr (IO (Ptr (Field s))) -> IO (Ptr (Field s))
+
+foreign import ccall "dynamic" mkFieldClearBg ::
+	FunPtr (Ptr (Field s) -> IO ()) -> Ptr (Field s) -> IO ()
+
+fieldNewBackgroundRaw :: Bool -> IO (Field s)
+fieldNewBackgroundRaw (boolToCBool -> b) = Field <$> do
+	pf <- mkFieldNewBg $ c_hm_field_new_background b
+	newForeignPtr pf $ c_hm_field_destroy pf
+
+fieldClearBackgroundRaw :: Bool -> Field s -> IO ()
+fieldClearBackgroundRaw (boolToCBool -> b) (Field ff) =
+	withForeignPtr ff $ mkFieldClearBg (c_hm_field_clear_background b)
+
+boolToCBool :: Bool -> #{type bool}
+boolToCBool = \case False -> #{const false}; True -> #{const true}
+
+fieldNewBackground :: PrimMonad m => Bool -> m (Field (PrimState m))
+fieldNewBackground = unsafeIOToPrim . fieldNewBackgroundRaw
+
+fieldClearBackground :: PrimMonad m => Bool -> Field (PrimState m) -> m ()
+fieldClearBackground b = unsafeIOToPrim . fieldClearBackgroundRaw b

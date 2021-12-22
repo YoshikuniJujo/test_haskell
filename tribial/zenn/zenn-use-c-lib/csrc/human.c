@@ -253,3 +253,32 @@ hm_get_event(char (*get_char)())
 	select(0, NULL, NULL, NULL, &tv);
 	return hm_make_event_tick();
 }
+
+void
+hm_field_clear_bg_space(HmField f)
+{
+	for (int i = 0; i < FIELD_HEIGHT; i++) {
+		int j;
+		for (j = 0; j < FIELD_WIDTH; j++) f[i][j] = ' ';
+		f[i][j] = '\0'; }
+}
+
+HmField
+hm_field_new_bg_space(void)
+{
+	HmField f = (HmField)malloc(sizeof(HmFieldArray));
+	hm_field_clear_bg_space(f);
+	return f;
+}
+
+void
+(*hm_field_clear_background(bool b)) (HmField)
+{
+	return b ? hm_field_clear : hm_field_clear_bg_space;
+}
+
+HmField
+(*hm_field_new_background(bool b)) (void)
+{
+	return b ? hm_field_new : hm_field_new_bg_space;
+}
