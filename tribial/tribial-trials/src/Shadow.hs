@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -Wname-shadowing -fwarn-unused-matches -fwarn-unused-bind #-}
+{-# OPTIONS_GHC -Wname-shadowing -fwarn-unused-matches -fwarn-unused-binds #-}
 
 module Shadow where
 
