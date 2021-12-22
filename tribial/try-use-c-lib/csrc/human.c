@@ -279,15 +279,15 @@ hm_field_new_bg_space(void)
 }
 
 HmField
-(*hm_field_new_background(bool b)) ()
+(*hm_field_new_background(bool b)) (void)
 {
-	if (b) return hm_field_new; else return hm_field_new_bg_space;
+	return b ? hm_field_new : hm_field_new_bg_space;
 }
 
 void
 (*hm_field_clear_background(bool b)) (HmField)
 {
-	if (b) return hm_field_clear; else return hm_field_clear_bg_space;
+	return b ? hm_field_clear : hm_field_clear_bg_space;
 }
 
 // MESSAGE
