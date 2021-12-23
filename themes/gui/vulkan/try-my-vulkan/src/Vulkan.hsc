@@ -186,3 +186,13 @@ withMaybeCString mstr f = case mstr of
 foreign import ccall "vkEnumerateInstanceExtensionProperties"
 	c_vkEnumerateInstanceExtensionProperties ::
 	CString -> Ptr #{type uint32_t} -> Ptr ExtensionProperties -> IO Result
+
+destroyInstance ::
+	Pointable a => Instance -> Maybe (AllocationCallbacks a) -> IO ()
+destroyInstance (Instance pist) mac = case mac of
+	Nothing -> c_vkDestroyInstance pist nullPtr
+	Just ac -> withAllocationCallbacksPtr ac \pac ->
+		c_vkDestroyInstance pist pac
+
+foreign import ccall "vkDestroyInstance" c_vkDestroyInstance ::
+	Ptr Instance -> Ptr I.AllocationCallbacks -> IO ()

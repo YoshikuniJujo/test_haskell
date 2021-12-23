@@ -18,9 +18,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	initVulkan
+	i <- initVulkan
 	mainLoop w
-	cleanup w
+	cleanup w i
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -30,12 +30,14 @@ initWindow = do
 	Just w <- Glfw.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO ()
+initVulkan :: IO Vk.Instance
 initVulkan = do
 	createInstance
 
-createInstance :: IO ()
+createInstance :: IO Vk.Instance
 createInstance = do
+	mapM_ (putStrLn . showExtensionProperties)
+		=<< Vk.enumerateInstanceExtensionProperties Nothing
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing :: Maybe Bool,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -52,6 +54,7 @@ createInstance = do
 			Vk.instanceCreateInfoExtensions = [] }
 	i <- Vk.createInstance createInfo (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	print i
+	pure i
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
@@ -59,7 +62,13 @@ mainLoop w = do
 		Glfw.pollEvents
 		not <$> Glfw.windowShouldClose w
 
-cleanup :: Glfw.Window  ->IO ()
-cleanup w = do
+cleanup :: Glfw.Window -> Vk.Instance ->IO ()
+cleanup w i = do
+	Vk.destroyInstance i (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	Glfw.destroyWindow w
 	Glfw.terminate
+
+showExtensionProperties :: Vk.ExtensionProperties -> String
+showExtensionProperties ep =
+	Vk.extensionPropertiesExtensionName ep ++
+	" (" ++ show (Vk.extensionPropertiesSpecVersion ep) ++ ")"
