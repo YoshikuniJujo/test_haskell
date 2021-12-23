@@ -36,7 +36,8 @@ initVulkan = do
 
 createInstance :: IO Vk.Instance
 createInstance = do
-	mapM_ (putStrLn . showExtensionProperties)
+	putStrLn "available extensions:"
+	mapM_ (putStrLn . ('\t' :) . showExtensionProperties)
 		=<< Vk.enumerateInstanceExtensionProperties Nothing
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing :: Maybe Bool,
