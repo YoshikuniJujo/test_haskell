@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Cglm
+      ThEnv
       Vulkan
       Vulkan.Exception
       Vulkan.Internal
@@ -43,6 +44,7 @@ library
     , c-struct
     , exception-hierarchy
     , ranged-list
+    , template-haskell
   default-language: Haskell2010
 
 executable try-allocation
@@ -60,6 +62,7 @@ executable try-allocation
     , c-struct
     , exception-hierarchy
     , ranged-list
+    , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
 
@@ -78,6 +81,7 @@ executable try-draw-triangle
     , c-struct
     , exception-hierarchy
     , ranged-list
+    , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
 
@@ -96,6 +100,7 @@ executable try-glm
     , c-struct
     , exception-hierarchy
     , ranged-list
+    , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
 
@@ -113,6 +118,7 @@ executable try-my-vulkan-exe
     , c-struct
     , exception-hierarchy
     , ranged-list
+    , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
 
@@ -131,5 +137,6 @@ test-suite try-my-vulkan-test
     , c-struct
     , exception-hierarchy
     , ranged-list
+    , template-haskell
     , try-my-vulkan
   default-language: Haskell2010

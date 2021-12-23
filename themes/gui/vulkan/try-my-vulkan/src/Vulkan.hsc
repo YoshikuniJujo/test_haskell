@@ -196,3 +196,45 @@ destroyInstance (Instance pist) mac = case mac of
 
 foreign import ccall "vkDestroyInstance" c_vkDestroyInstance ::
 	Ptr Instance -> Ptr I.AllocationCallbacks -> IO ()
+
+struct "LayerProperties" #{size VkLayerProperties} [
+	("layerName", ''String,
+		[| peekCString . #{ptr VkLayerProperties, layerName} |],
+		[| \p s -> pokeCString
+			#{const VK_MAX_EXTENSION_NAME_SIZE}
+			(#{ptr VkLayerProperties, layerName} p) s |]),
+	("specVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, specVersion} |],
+		[| #{poke VkLayerProperties, specVersion} |]),
+	("implementationVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, implementationVersion} |],
+		[| #{poke VkLayerProperties, implementationVersion} |]),
+	("description", ''String,
+		[| peekCString . #{ptr VkLayerProperties, description} |],
+		[| \p s -> pokeCString
+			#{const VK_MAX_DESCRIPTION_SIZE}
+			(#{ptr VkLayerProperties, description} p) s |]) ]
+	[''Show]
+
+instance Storable LayerProperties where
+	sizeOf _ = #{size VkLayerProperties}
+	alignment _ = #{alignment VkLayerProperties}
+	peek ps = do
+		pd <- malloc
+		copyBytes pd ps #{size VkLayerProperties}
+		LayerProperties_ <$> newForeignPtr pd (free pd)
+	poke pd (LayerProperties_ fps) = withForeignPtr fps \ps -> copyBytes pd ps #{size VkLayerProperties}
+
+enumerateInstanceLayerProperties :: IO [LayerProperties]
+enumerateInstanceLayerProperties = alloca \pn -> do
+	r <- c_vkEnumerateInstanceLayerProperties pn nullPtr
+	throwUnlessSuccess r
+	n <- peek pn
+	allocaArray (fromIntegral n) \pProps -> do
+		r' <- c_vkEnumerateInstanceLayerProperties pn pProps
+		throwUnlessSuccess r'
+		peekArray (fromIntegral n) pProps
+
+foreign import ccall "vkEnumerateInstanceLayerProperties"
+	c_vkEnumerateInstanceLayerProperties ::
+	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO Result

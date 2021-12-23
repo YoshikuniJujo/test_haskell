@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -9,8 +10,19 @@ import Data.Bool
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
 
+import ThEnv
+
 width, height :: Int
 width = 800; height = 600
+
+validationLayers :: [String]
+validationLayers = [
+	"VK_LAYER_KHRONOS_validation"
+	]
+
+enableValidationLayers :: Bool
+enableValidationLayers =
+	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
 main :: IO ()
 main = run
@@ -36,6 +48,7 @@ initVulkan = do
 
 createInstance :: IO Vk.Instance
 createInstance = do
+	print =<< Vk.enumerateInstanceLayerProperties
 	putStrLn "available extensions:"
 	mapM_ (putStrLn . ('\t' :) . showExtensionProperties)
 		=<< Vk.enumerateInstanceExtensionProperties Nothing
