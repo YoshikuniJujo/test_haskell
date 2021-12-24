@@ -6,15 +6,15 @@
 packages:
 - completed:
     name: c-struct
-    version: 0.1.0.0
+    version: 0.1.1.0
     git: https://github.com/YoshikuniJujo/c-struct
     pantry-tree:
-      size: 690
-      sha256: 66287e18da9772598d2609d3d03a73c18bf21729b29fde1ec72fd47e466e455f
-    commit: fb648ce6923c7054f45157183d583ab28ffbf65f
+      size: 692
+      sha256: 75b0dd5d9b5b2a24c3505c7d1e00bc6c5b80c75cc5137bb5936f787f58d7e81c
+    commit: 971b63a3268664dfaf8e6c5744b178041990bb3d
   original:
     git: https://github.com/YoshikuniJujo/c-struct
-    commit: fb648ce6923c7054f45157183d583ab28ffbf65f
+    commit: 971b63a3268664dfaf8e6c5744b178041990bb3d
 snapshots:
 - completed:
     size: 567669

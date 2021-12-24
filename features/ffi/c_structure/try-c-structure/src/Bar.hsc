@@ -12,6 +12,6 @@ import Foreign.C.Struct
 
 #include "bar.h"
 
-struct "Bar" #{size Bar}
+struct "Bar" #{size Bar} #{alignment Bar}
 	[("x", ''CInt, [| #{peek Bar, x} |], [| #{poke Bar, x} |])]
-	[''Show, ''Read, ''Eq, ''Ord, ''Bounded]
+	[''Show, ''Read, ''Eq, ''Ord, ''Bounded, ''Storable]

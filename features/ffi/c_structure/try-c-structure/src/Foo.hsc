@@ -23,7 +23,7 @@ import Control.Monad.Primitive (PrimMonad(..), unsafeIOToPrim)
 -- DEFINITION
 ---------------------------------------------------------------------------
 
-struct "Foo" #{size Foo}
+struct "Foo" #{size Foo} #{alignment Foo}
 	[	("x", ''CInt, [| #{peek Foo, x} |], [| #{poke Foo, x} |]),
 		("y", ''CInt, [| #{peek Foo, y} |], [| #{poke Foo, y} |]) ]
 	[''Show, ''Read, ''Eq, ''Ord, ''Bounded]

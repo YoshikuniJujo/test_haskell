@@ -13,7 +13,7 @@ import Foreign.C.Struct (struct)
 
 #include "foo.h"
 
-struct "Foo0" #{size Foo}
+struct "Foo0" #{size Foo} #{alignment Foo}
 	[	("x", ''CInt, [| #{peek Foo, x} |], [| #{poke Foo, x} |]),
 		("y", ''CInt, [| #{peek Foo, y} |], [| #{poke Foo, y} |]) ]
 	[''Show, ''Read, ''Eq, ''Ord, ''Bounded]
