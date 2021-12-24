@@ -4,6 +4,7 @@
 
 module Main where
 
+import Foreign.C.String
 import Control.Monad
 import Control.Monad.Fix
 import Data.Bool
@@ -46,7 +47,9 @@ initWindow = do
 
 initVulkan :: IO Vk.Instance
 initVulkan = do
-	createInstance
+	ist <- createInstance
+	when enableValidationLayers setupDebugMessenger
+	pure ist
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -56,6 +59,8 @@ createInstance = do
 	putStrLn "available extensions:"
 	mapM_ (putStrLn . ('\t' :) . showExtensionProperties)
 		=<< Vk.enumerateInstanceExtensionProperties Nothing
+	extensions <- getRequiredExtensions
+	print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing :: Maybe Bool,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -80,6 +85,15 @@ checkValidationLayerSupport = do
 	availableLayers <- Vk.enumerateInstanceLayerProperties
 	pure . null $ validationLayers \\
 		(Vk.layerPropertiesLayerName <$> availableLayers)
+
+getRequiredExtensions :: IO [String]
+getRequiredExtensions = do
+	glfwExtensions <- Glfw.getRequiredInstanceExtensions
+	peekCString `mapM` glfwExtensions
+	-- HERE check #const_str of hsc2hs
+
+setupDebugMessenger :: IO ()
+setupDebugMessenger = pure ()
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
