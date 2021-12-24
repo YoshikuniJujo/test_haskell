@@ -4,8 +4,10 @@
 
 module Main where
 
+import Control.Monad
 import Control.Monad.Fix
 import Data.Bool
+import Data.List
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
@@ -48,7 +50,9 @@ initVulkan = do
 
 createInstance :: IO Vk.Instance
 createInstance = do
-	print =<< Vk.enumerateInstanceLayerProperties
+	cvls <- checkValidationLayerSupport
+	when (enableValidationLayers && not cvls)
+		$ error "validation layers requested, but not available!"
 	putStrLn "available extensions:"
 	mapM_ (putStrLn . ('\t' :) . showExtensionProperties)
 		=<< Vk.enumerateInstanceExtensionProperties Nothing
@@ -64,11 +68,18 @@ createInstance = do
 			Vk.instanceCreateInfoNext = Nothing :: Maybe Bool,
 			Vk.instanceCreateInfoApplicationInfo = appInfo,
 			Vk.instanceCreateInfoFlags = Vk.InstanceCreateFlagsZero,
-			Vk.instanceCreateInfoEnabledLayers = [],
+			Vk.instanceCreateInfoEnabledLayers =
+				if enableValidationLayers then validationLayers else [],
 			Vk.instanceCreateInfoExtensions = [] }
 	i <- Vk.createInstance createInfo (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	print i
 	pure i
+
+checkValidationLayerSupport :: IO Bool
+checkValidationLayerSupport = do
+	availableLayers <- Vk.enumerateInstanceLayerProperties
+	pure . null $ validationLayers \\
+		(Vk.layerPropertiesLayerName <$> availableLayers)
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
