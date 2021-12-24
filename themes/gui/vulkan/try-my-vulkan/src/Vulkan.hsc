@@ -16,7 +16,6 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
-import Foreign.Concurrent
 import Foreign.C.String
 import Foreign.C.Struct
 import Data.Word
@@ -147,7 +146,8 @@ foreign import ccall "vkCreateInstance" c_vkCreateInstance ::
 pokeCString :: Int -> CString -> String -> IO ()
 pokeCString n cs str = withCString str \cs_ -> copyBytes cs cs_ n
 
-struct "ExtensionProperties" #{size VkExtensionProperties} [
+struct "ExtensionProperties" #{size VkExtensionProperties}
+		#{alignment VkExtensionProperties} [
 	("extensionName", ''String,
 		[| peekCString . #{ptr VkExtensionProperties, extensionName} |],
 		[| \p s -> pokeCString
@@ -156,16 +156,7 @@ struct "ExtensionProperties" #{size VkExtensionProperties} [
 	("specVersion", ''#{type uint32_t}, [| #{peek VkExtensionProperties, specVersion} |],
 		[| #{poke VkExtensionProperties, specVersion} |])
 	]
-	[''Show, ''Read, ''Eq]
-
-instance Storable ExtensionProperties where
-	sizeOf _ = #{size VkExtensionProperties}
-	alignment _ = #{alignment VkExtensionProperties}
-	peek ps = do
-		pd <- malloc
-		copyBytes pd ps #{size VkExtensionProperties}
-		ExtensionProperties_ <$> newForeignPtr pd (free pd)
-	poke pd (ExtensionProperties_ fps) = withForeignPtr fps \ps -> copyBytes pd ps #{size VkExtensionProperties}
+	[''Show, ''Read, ''Eq, ''Storable]
 
 enumerateInstanceExtensionProperties :: Maybe String -> IO [ExtensionProperties]
 enumerateInstanceExtensionProperties =
@@ -197,7 +188,8 @@ destroyInstance (Instance pist) mac = case mac of
 foreign import ccall "vkDestroyInstance" c_vkDestroyInstance ::
 	Ptr Instance -> Ptr I.AllocationCallbacks -> IO ()
 
-struct "LayerProperties" #{size VkLayerProperties} [
+struct "LayerProperties" #{size VkLayerProperties}
+		#{alignment VkLayerProperties} [
 	("layerName", ''String,
 		[| peekCString . #{ptr VkLayerProperties, layerName} |],
 		[| \p s -> pokeCString
@@ -214,16 +206,7 @@ struct "LayerProperties" #{size VkLayerProperties} [
 		[| \p s -> pokeCString
 			#{const VK_MAX_DESCRIPTION_SIZE}
 			(#{ptr VkLayerProperties, description} p) s |]) ]
-	[''Show]
-
-instance Storable LayerProperties where
-	sizeOf _ = #{size VkLayerProperties}
-	alignment _ = #{alignment VkLayerProperties}
-	peek ps = do
-		pd <- malloc
-		copyBytes pd ps #{size VkLayerProperties}
-		LayerProperties_ <$> newForeignPtr pd (free pd)
-	poke pd (LayerProperties_ fps) = withForeignPtr fps \ps -> copyBytes pd ps #{size VkLayerProperties}
+	[''Show, ''Storable]
 
 enumerateInstanceLayerProperties :: IO [LayerProperties]
 enumerateInstanceLayerProperties = alloca \pn -> do

@@ -3,11 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    name: c-struct
+    version: 0.1.1.0
+    git: https://github.com/YoshikuniJujo/c-struct
+    pantry-tree:
+      size: 692
+      sha256: cdadd070f121600b11667eeb4614224e0ae086ee20d0503f2c729eb8c96528b3
+    commit: c3df02a5af40a7fc81b59d57836bed9e25f0b41e
+  original:
+    git: https://github.com/YoshikuniJujo/c-struct
+    commit: c3df02a5af40a7fc81b59d57836bed9e25f0b41e
 snapshots:
 - completed:
-    size: 586292
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/17.yaml
-    sha256: e66e70a7f998036025e8f40abc89b8eeb79c88f57727020cba1b54f375aa7ca0
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/17.yaml
+    size: 586103
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/19.yaml
+    sha256: 32716534fff554b7f90762130fdb985cabf29f157758934dd1c8f3892a646430
+  original: lts-18.19

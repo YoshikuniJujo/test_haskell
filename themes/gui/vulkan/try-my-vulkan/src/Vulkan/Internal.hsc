@@ -99,7 +99,8 @@ foreign import ccall "wrapper" wrapInternalFreeNotificationGen ::
 
 type PtrVoid = Ptr ()
 
-struct "AllocationCallbacks" #{size VkAllocationCallbacks} [
+struct "AllocationCallbacks" #{size VkAllocationCallbacks}
+		#{alignment VkAllocationCallbacks} [
 	("pUserData", ''PtrVoid,
 		[| #{peek VkAllocationCallbacks, pUserData} |],
 		[| #{poke VkAllocationCallbacks, pUserData} |]),
@@ -123,7 +124,8 @@ struct "AllocationCallbacks" #{size VkAllocationCallbacks} [
 newtype ApiVersion = ApiVersion #{type uint32_t}
 	deriving (Show, Eq, Ord, Storable)
 
-struct "ApplicationInfo" #{size VkApplicationInfo} [
+struct "ApplicationInfo" #{size VkApplicationInfo}
+		#{alignment VkApplicationInfo} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkApplicationInfo, sType} p
 			(#{const VK_STRUCTURE_TYPE_APPLICATION_INFO} ::
@@ -160,7 +162,8 @@ enum "InstanceCreateFlags" ''#{type VkInstanceCreateFlags}
 type PtrApplicationInfo = Ptr ApplicationInfo
 type PtrCString = Ptr CString
 
-struct "InstanceCreateInfo" #{size VkInstanceCreateInfo} [
+struct "InstanceCreateInfo" #{size VkInstanceCreateInfo}
+		#{alignment VkInstanceCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkInstanceCreateInfo, sType} p
 			(#{const VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO} ::
