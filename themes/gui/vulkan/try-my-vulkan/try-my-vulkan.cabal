@@ -29,6 +29,7 @@ library
       ThEnv
       Vulkan
       Vulkan.Exception
+      Vulkan.Ext
       Vulkan.Internal
   other-modules:
       Paths_try_my_vulkan

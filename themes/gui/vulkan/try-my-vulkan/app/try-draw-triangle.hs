@@ -12,6 +12,7 @@ import Data.List
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
+import qualified Vulkan.Ext as Vk.Ext
 
 import ThEnv
 
@@ -89,8 +90,8 @@ checkValidationLayerSupport = do
 getRequiredExtensions :: IO [String]
 getRequiredExtensions = do
 	glfwExtensions <- Glfw.getRequiredInstanceExtensions
-	peekCString `mapM` glfwExtensions
-	-- HERE check #const_str of hsc2hs
+	bool id (Vk.Ext.debugUtilsExtensionName :) enableValidationLayers
+		<$> peekCString `mapM` glfwExtensions
 
 setupDebugMessenger :: IO ()
 setupDebugMessenger = pure ()
