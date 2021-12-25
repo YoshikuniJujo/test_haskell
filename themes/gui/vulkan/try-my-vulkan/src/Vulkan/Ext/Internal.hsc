@@ -32,6 +32,18 @@ enum "DebugUtilsMessageSeverityFlagBits"
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT})
 	]
 
+enum "DebugUtilsMessageTypeFlagBits"
+		''#{type VkDebugUtilsMessageTypeFlagBitsEXT}
+		[''Show, ''Eq, ''Bits] [
+	("DebugUtilsMessageTypeGeneralBit",
+		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT}),
+	("DebugUtilsMessageTypeValidationBit",
+		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT}),
+	("DebugUtilsMessageTypePerformanceBit",
+		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT}),
+	("DebugUtilsMessageTypeFlagBitsMaxEnum",
+		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT}) ]
+
 {-
 type FN_DebugUtilsMessengerCallback a =
 	#{type VkDebugUtilsMessageSeverityFlagBitsEXT} ->
