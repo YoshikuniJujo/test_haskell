@@ -76,7 +76,7 @@ createInstance = do
 			Vk.instanceCreateInfoFlags = Vk.InstanceCreateFlagsZero,
 			Vk.instanceCreateInfoEnabledLayers =
 				if enableValidationLayers then validationLayers else [],
-			Vk.instanceCreateInfoExtensions = [] }
+			Vk.instanceCreateInfoEnabledExtensions = extensions }
 	i <- Vk.createInstance createInfo (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	print i
 	pure i

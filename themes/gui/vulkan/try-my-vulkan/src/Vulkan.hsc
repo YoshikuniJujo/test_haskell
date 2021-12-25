@@ -107,7 +107,7 @@ data InstanceCreateInfo a b = InstanceCreateInfo {
 	instanceCreateInfoFlags :: I.InstanceCreateFlags,
 	instanceCreateInfoApplicationInfo :: ApplicationInfo b,
 	instanceCreateInfoEnabledLayers :: [String],
-	instanceCreateInfoExtensions :: [String] }
+	instanceCreateInfoEnabledExtensions :: [String] }
 	deriving Show
 
 withInstanceCreateInfoPtr :: (Pointable a, Pointable b) =>
@@ -121,7 +121,7 @@ withInstanceCreateInfo :: (Pointable a, Pointable b) =>
 withInstanceCreateInfo ic f = withMaybePointer (instanceCreateInfoNext ic) \pnxt ->
 	withApplicationInfo (instanceCreateInfoApplicationInfo ic) \(I.ApplicationInfo_ fai) ->
 		I.withCStrings (instanceCreateInfoEnabledLayers ic) \eln els ->
-			I.withCStrings (instanceCreateInfoExtensions ic) \en es ->
+			I.withCStrings (instanceCreateInfoEnabledExtensions ic) \en es ->
 				withForeignPtr fai \pai ->
 					f $ I.InstanceCreateInfo () (castPtr pnxt)
 						(instanceCreateInfoFlags ic) pai
