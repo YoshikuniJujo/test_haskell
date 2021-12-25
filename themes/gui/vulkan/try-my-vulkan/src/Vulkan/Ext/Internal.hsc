@@ -6,11 +6,15 @@
 
 module Vulkan.Ext.Internal where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Bits
 import Data.Word
+import Data.Int
 
 import Vulkan
 import Vulkan.Internal
@@ -43,6 +47,65 @@ enum "DebugUtilsMessageTypeFlagBits"
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT}),
 	("DebugUtilsMessageTypeFlagBitsMaxEnum",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT}) ]
+
+structureTypeDebugUtilsMessengerCallbackData :: #{type VkStructureType}
+structureTypeDebugUtilsMessengerCallbackData =
+	#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT}
+
+enum "DebugUtilsMessengerCallbackDataFlags"
+	''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
+	[''Show, ''Storable] []
+
+type ListFloat = [Float]
+
+struct "DebugUtilsLabelRaw"
+		#{size VkDebugUtilsLabelEXT} #{alignment VkDebugUtilsLabelEXT} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkDebugUtilsLabelEXT, sType} p
+			(#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT} ::
+				#{type VkStructureType}) |]),
+	("pNext", ''PtrVoid, [| #{peek VkDebugUtilsLabelEXT, pNext} |],
+		[| #{poke VkDebugUtilsLabelEXT, pNext} |]),
+	("pLabelName", ''CString,
+		[| #{peek VkDebugUtilsLabelEXT, pLabelName} |],
+		[| #{poke VkDebugUtilsLabelEXT, pLabelName} |]),
+	("color", ''ListFloat,
+		[| peekArray 4 . #{ptr VkDebugUtilsLabelEXT, color} |],
+		[| pokeArray . #{ptr VkDebugUtilsLabelEXT, color} |]) ]
+	[''Show]
+
+struct "DebugUtilsMessengerCallbackDataRaw"
+		#{size VkDebugUtilsMessengerCallbackDataEXT}
+		#{alignment VkDebugUtilsMessengerCallbackDataEXT} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkDebugUtilsMessengerCallbackDataEXT, sType}
+			p structureTypeDebugUtilsMessengerCallbackData |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pNext} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pNext} |]),
+	("flags", ''DebugUtilsMessengerCallbackDataFlags,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, flags} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, flags} |]),
+	("pMessageIdName", ''CString,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			pMessageIdName} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			pMessageIdName} |]),
+	("messageIdNumber", ''#{type int32_t},
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			messageIdNumber} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			messageIdNumber} |]),
+	("pMessage", ''CString,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pMessage} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pMessage} |]),
+	("queueLabelCount", ''#{type uint32_t},
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			queueLabelCount} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			queueLabelCount} |])
+	]
+	[''Show]
 
 {-
 type FN_DebugUtilsMessengerCallback a =
