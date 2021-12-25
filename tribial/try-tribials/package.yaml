@@ -27,6 +27,7 @@ dependencies:
 
 library:
   source-dirs: src
+  include-dirs: include
 
 executables:
   try-tribials-exe:
