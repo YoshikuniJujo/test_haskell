@@ -30,6 +30,7 @@ library
       Vulkan
       Vulkan.Exception
       Vulkan.Ext
+      Vulkan.Ext.Internal
       Vulkan.Internal
   other-modules:
       Paths_try_my_vulkan
