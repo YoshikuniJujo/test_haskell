@@ -76,6 +76,27 @@ struct "DebugUtilsLabelRaw"
 
 type PtrDebugUtilsLabelRaw = Ptr DebugUtilsLabelRaw
 
+structureTypeDebugUtilsObjectNameInfo :: #{type VkStructureType}
+structureTypeDebugUtilsObjectNameInfo =
+	#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT}
+
+enum "ObjectType" ''#{type VkObjectType} [''Show] [
+	-- MORE
+	]
+
+struct "DebugUtilsObjectNameInfo"
+		#{size VkDebugUtilsObjectNameInfoEXT}
+		#{alignment VkDebugUtilsObjectNameInfoEXT} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkDebugUtilsObjectNameInfoEXT, sType} p
+			structureTypeDebugUtilsObjectNameInfo |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, pNext} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, pNext} |])
+	-- MORE
+	]
+	[''Show]
+
 struct "DebugUtilsMessengerCallbackDataRaw"
 		#{size VkDebugUtilsMessengerCallbackDataEXT}
 		#{alignment VkDebugUtilsMessengerCallbackDataEXT} [
