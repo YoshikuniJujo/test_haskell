@@ -74,6 +74,8 @@ struct "DebugUtilsLabelRaw"
 		[| pokeArray . #{ptr VkDebugUtilsLabelEXT, color} |]) ]
 	[''Show]
 
+type PtrDebugUtilsLabelRaw = Ptr DebugUtilsLabelRaw
+
 struct "DebugUtilsMessengerCallbackDataRaw"
 		#{size VkDebugUtilsMessengerCallbackDataEXT}
 		#{alignment VkDebugUtilsMessengerCallbackDataEXT} [
@@ -103,7 +105,12 @@ struct "DebugUtilsMessengerCallbackDataRaw"
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			queueLabelCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
-			queueLabelCount} |])
+			queueLabelCount} |]),
+	("pQueueLabels", ''PtrDebugUtilsLabelRaw,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			pQueueLabels} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			pQueueLabels} |])
 	]
 	[''Show]
 
