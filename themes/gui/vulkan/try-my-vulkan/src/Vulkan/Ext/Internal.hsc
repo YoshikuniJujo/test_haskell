@@ -110,7 +110,22 @@ struct "DebugUtilsMessengerCallbackDataRaw"
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			pQueueLabels} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
-			pQueueLabels} |])
+			pQueueLabels} |]),
+	("cmdBufLabelCount", ''#{type uint32_t},
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			cmdBufLabelCount} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			cmdBufLabelCount} |]),
+	("pCmdBufLabels", ''PtrDebugUtilsLabelRaw,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			pCmdBufLabels} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			pCmdBufLabels} |]),
+	("objectCount", ''#{type uint32_t},
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
+			objectCount} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
+			objectCount} |])
 	]
 	[''Show]
 
