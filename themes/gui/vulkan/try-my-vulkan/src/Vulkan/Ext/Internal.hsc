@@ -9,6 +9,7 @@ module Vulkan.Ext.Internal where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -53,10 +54,10 @@ structureTypeDebugUtilsMessengerCallbackData =
 	#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT}
 
 enum "DebugUtilsMessengerCallbackDataFlags"
-	''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
-	[''Show, ''Storable] []
+	''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT} [''Show, ''Storable] [
+	("DebugUtilsMessengerCallbackDataFlagsZero", 0) ]
 
-type ListFloat = [Float]
+type ListCFloat = [CFloat]
 
 struct "DebugUtilsLabel"
 		#{size VkDebugUtilsLabelEXT} #{alignment VkDebugUtilsLabelEXT} [
@@ -69,7 +70,7 @@ struct "DebugUtilsLabel"
 	("pLabelName", ''CString,
 		[| #{peek VkDebugUtilsLabelEXT, pLabelName} |],
 		[| #{poke VkDebugUtilsLabelEXT, pLabelName} |]),
-	("color", ''ListFloat,
+	("color", ''ListCFloat,
 		[| peekArray 4 . #{ptr VkDebugUtilsLabelEXT, color} |],
 		[| pokeArray . #{ptr VkDebugUtilsLabelEXT, color} |]) ]
 	[''Show]
