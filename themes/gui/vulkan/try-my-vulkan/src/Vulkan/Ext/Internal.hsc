@@ -80,10 +80,6 @@ structureTypeDebugUtilsObjectNameInfo :: #{type VkStructureType}
 structureTypeDebugUtilsObjectNameInfo =
 	#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT}
 
-enum "ObjectType" ''#{type VkObjectType} [''Show] [
-	-- MORE
-	]
-
 struct "DebugUtilsObjectNameInfo"
 		#{size VkDebugUtilsObjectNameInfoEXT}
 		#{alignment VkDebugUtilsObjectNameInfoEXT} [

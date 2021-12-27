@@ -17,6 +17,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.ForeignPtr hiding (newForeignPtr, addForeignPtrFinalizer)
 import Foreign.C.String
+import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Word
 
@@ -209,6 +210,7 @@ struct "LayerProperties" #{size VkLayerProperties}
 	[''Show, ''Storable]
 
 enumerateInstanceLayerProperties :: IO [LayerProperties]
+
 enumerateInstanceLayerProperties = alloca \pn -> do
 	r <- c_vkEnumerateInstanceLayerProperties pn nullPtr
 	throwUnlessSuccess r
@@ -221,3 +223,19 @@ enumerateInstanceLayerProperties = alloca \pn -> do
 foreign import ccall "vkEnumerateInstanceLayerProperties"
 	c_vkEnumerateInstanceLayerProperties ::
 	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO Result
+
+enum "ObjectType" ''#{type VkObjectType} [''Show] [
+	("ObjectTypeUnknown", #{const VK_OBJECT_TYPE_UNKNOWN}),
+	("ObjectTypeInstance", #{const VK_OBJECT_TYPE_INSTANCE}),
+	("ObjectTypePhysicalDevice", #{const VK_OBJECT_TYPE_PHYSICAL_DEVICE}),
+	("ObjectTypeDevice", #{const VK_OBJECT_TYPE_DEVICE}),
+	("ObjectTypeQueue", #{const VK_OBJECT_TYPE_QUEUE}),
+	("ObjectTypeSemaphore", #{const VK_OBJECT_TYPE_SEMAPHORE}),
+	("ObjectTypeCommandBuffer", #{const VK_OBJECT_TYPE_COMMAND_BUFFER}),
+	("ObjectTypeFence", #{const VK_OBJECT_TYPE_FENCE}),
+	("ObjectTypeDeviceMemory", #{const VK_OBJECT_TYPE_DEVICE_MEMORY}),
+	("ObjectTypeBuffer", #{const VK_OBJECT_TYPE_BUFFER}),
+	("ObjectTypeImage", #{const VK_OBJECT_TYPE_IMAGE}),
+	("ObjectTypeEvent", #{const VK_OBJECT_TYPE_EVENT}),
+	("ObjectTypeQueryPool", #{const VK_OBJECT_TYPE_QUERY_POOL})
+	]
