@@ -3,7 +3,10 @@
 module Vulkan.Ext where
 
 import Foreign.C.Types
+import Data.Word
 import Data.Int
+
+import Vulkan
 
 import qualified Vulkan.Ext.Internal as I
 
@@ -18,19 +21,26 @@ data DebugUtilsLabel n = DebugUtilsLabel {
 	debugUtilsLabelColor :: (CFloat, CFloat, CFloat, CFloat) }
 	deriving Show
 
-data DebugUtilsObjectNameInfo = DebugUtilsObjectNameInfo {
-	}
+data DebugUtilsObjectNameInfo n = DebugUtilsObjectNameInfo {
+	debugUtilsObjectNameInfoNext :: Maybe n,
+	debugUtilsObjectNemeInfoObjectType :: ObjectType,
+	debugUtilsObjectNameInfoObjectHandle :: #{type uint64_t},
+	debugUtilsObjectNameInfoObjectName :: String }
 	deriving Show
 
-data DebugUtilsMessengerCallbackData n n' n'' ud = DebugUtilsMessengerCallbackData {
-	debugUtilsMessengerCallbackDataNext :: Maybe n,
-	debugUtilsMessengerCallbackDataFlags ::
-		I.DebugUtilsMessengerCallbackDataFlags,
-	debugUtilsMessengerCallbackDataMessageIdName :: String,
-	debugUtilsMessengerCallbackDataMessageIdNumber :: #{type int32_t},
-	debugUtilsMessengerCallbackDataMessage :: String,
-	debugUtilsMessengerCallbackDataQueueLabels :: [DebugUtilsLabel n'],
-	debugUtilsMessengerCallbackDataCmdBufferLabels :: [DebugUtilsLabel n'']
---	debugUtilsMessengerCallbackDataObjects :: [I.DebugUtilsObjectNameInfo]
-	}
+data DebugUtilsMessengerCallbackData n n1 n2 n3 =
+	DebugUtilsMessengerCallbackData {
+		debugUtilsMessengerCallbackDataNext :: Maybe n,
+		debugUtilsMessengerCallbackDataFlags ::
+			I.DebugUtilsMessengerCallbackDataFlags,
+		debugUtilsMessengerCallbackDataMessageIdName :: String,
+		debugUtilsMessengerCallbackDataMessageIdNumber ::
+			#{type int32_t},
+		debugUtilsMessengerCallbackDataMessage :: String,
+		debugUtilsMessengerCallbackDataQueueLabels ::
+			[DebugUtilsLabel n1],
+		debugUtilsMessengerCallbackDataCmdBufferLabels ::
+			[DebugUtilsLabel n2],
+		debugUtilsMessengerCallbackDataObjects ::
+			[DebugUtilsObjectNameInfo n3] }
 	deriving Show
