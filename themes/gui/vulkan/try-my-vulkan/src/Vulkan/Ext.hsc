@@ -44,3 +44,13 @@ data DebugUtilsMessengerCallbackData n n1 n2 n3 =
 		debugUtilsMessengerCallbackDataObjects ::
 			[DebugUtilsObjectNameInfo n3] }
 	deriving Show
+
+type FnDebugUtilsMessengerCallback n n1 n2 n3 ud =
+	I.DebugUtilsMessageSeverityFlagBits ->
+	I.DebugUtilsMessageTypeFlagBits ->
+	DebugUtilsMessengerCallbackData n n1 n2 n3 -> Maybe ud -> IO ()
+
+fnDebugUtilsMessengerCallbackToC ::
+	FnDebugUtilsMessengerCallback n n1 n2 n3 ud ->
+	I.FnDebugUtilsMessengerCallback
+fnDebugUtilsMessengerCallbackToC f s t dt ud = #{const VK_FALSE} <$ f s t undefined undefined

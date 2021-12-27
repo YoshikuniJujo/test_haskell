@@ -158,11 +158,13 @@ struct "DebugUtilsMessengerCallbackData"
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |]) ]
 	[''Show]
 
-type C_FN_DebugUtilsMessengerCallback =
+-- enum "Bool32" <- to module Vulkan
+
+type FnDebugUtilsMessengerCallback =
 	DebugUtilsMessageSeverityFlagBits -> DebugUtilsMessageTypeFlagBits ->
 	Ptr DebugUtilsMessengerCallbackData -> Ptr () -> IO #{type VkBool32}
 
-type FunPtrC_FN_DebugUtilsMessengerCallback = FunPtr C_FN_DebugUtilsMessengerCallback
+type FunPtrFnDebugUtilsMessengerCallback = FunPtr FnDebugUtilsMessengerCallback
 
 enum "DebugUtilsMessengerCreateFlags"
 	''#{type VkDebugUtilsMessengerCreateFlagsEXT} [''Show, ''Storable] [
@@ -189,7 +191,7 @@ struct "DebugUtilsMessengerCreateInfo"
 	("messageType", ''DebugUtilsMessageTypeFlagBits,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, messageType} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, messageType} |]),
-	("pfnUserCallback", ''FunPtrC_FN_DebugUtilsMessengerCallback,
+	("pfnUserCallback", ''FunPtrFnDebugUtilsMessengerCallback,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |]),
 	("pUserData", ''PtrVoid,
