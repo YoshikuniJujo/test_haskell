@@ -23,7 +23,7 @@ import Vulkan.Internal
 
 enum "DebugUtilsMessageSeverityFlagBits"
 		''#{type VkDebugUtilsMessageSeverityFlagBitsEXT}
-		[''Show, ''Eq, ''Bits] [
+		[''Show, ''Eq, ''Bits, ''Storable] [
 	("DebugUtilsMessageSeverityVerboseBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT}),
 	("DebugUtilsMessageSeverityInfoBit",
@@ -38,7 +38,7 @@ enum "DebugUtilsMessageSeverityFlagBits"
 
 enum "DebugUtilsMessageTypeFlagBits"
 		''#{type VkDebugUtilsMessageTypeFlagBitsEXT}
-		[''Show, ''Eq, ''Bits] [
+		[''Show, ''Eq, ''Bits, ''Storable] [
 	("DebugUtilsMessageTypeGeneralBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT}),
 	("DebugUtilsMessageTypeValidationBit",
@@ -58,7 +58,7 @@ enum "DebugUtilsMessengerCallbackDataFlags"
 
 type ListFloat = [Float]
 
-struct "DebugUtilsLabelRaw"
+struct "DebugUtilsLabel"
 		#{size VkDebugUtilsLabelEXT} #{alignment VkDebugUtilsLabelEXT} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkDebugUtilsLabelEXT, sType} p
@@ -74,7 +74,7 @@ struct "DebugUtilsLabelRaw"
 		[| pokeArray . #{ptr VkDebugUtilsLabelEXT, color} |]) ]
 	[''Show]
 
-type PtrDebugUtilsLabelRaw = Ptr DebugUtilsLabelRaw
+type PtrDebugUtilsLabel = Ptr DebugUtilsLabel
 
 structureTypeDebugUtilsObjectNameInfo :: #{type VkStructureType}
 structureTypeDebugUtilsObjectNameInfo =
@@ -102,7 +102,7 @@ struct "DebugUtilsObjectNameInfo"
 
 type PtrDebugUtilsObjectNameInfo = Ptr DebugUtilsObjectNameInfo
 
-struct "DebugUtilsMessengerCallbackDataRaw"
+struct "DebugUtilsMessengerCallbackData"
 		#{size VkDebugUtilsMessengerCallbackDataEXT}
 		#{alignment VkDebugUtilsMessengerCallbackDataEXT} [
 	("sType", ''(), [| const $ pure () |],
@@ -132,7 +132,7 @@ struct "DebugUtilsMessengerCallbackDataRaw"
 			queueLabelCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
 			queueLabelCount} |]),
-	("pQueueLabels", ''PtrDebugUtilsLabelRaw,
+	("pQueueLabels", ''PtrDebugUtilsLabel,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			pQueueLabels} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
@@ -142,7 +142,7 @@ struct "DebugUtilsMessengerCallbackDataRaw"
 			cmdBufLabelCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
 			cmdBufLabelCount} |]),
-	("pCmdBufLabels", ''PtrDebugUtilsLabelRaw,
+	("pCmdBufLabels", ''PtrDebugUtilsLabel,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			pCmdBufLabels} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
@@ -154,15 +154,18 @@ struct "DebugUtilsMessengerCallbackDataRaw"
 			objectCount} |]),
 	("pObjects", ''PtrDebugUtilsObjectNameInfo,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pObjects} |],
-		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |])
-	]
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |]) ]
 	[''Show]
 
 type C_FN_DebugUtilsMessengerCallback =
 	DebugUtilsMessageSeverityFlagBits -> DebugUtilsMessageTypeFlagBits ->
-	Ptr DebugUtilsMessengerCallbackDataRaw -> Ptr () -> IO #{type VkBool32}
+	Ptr DebugUtilsMessengerCallbackData -> Ptr () -> IO #{type VkBool32}
 
 type FunPtrC_FN_DebugUtilsMessengerCallback = FunPtr C_FN_DebugUtilsMessengerCallback
+
+enum "DebugUtilsMessengerCreateFlags"
+	''#{type VkDebugUtilsMessengerCreateFlagsEXT} [''Show, ''Storable] [
+	("DebugUtilsMessengerCreateFlagsZero", 0) ]
 
 struct "DebugUtilsMessengerCreateInfo"
 		#{size VkDebugUtilsMessengerCreateInfoEXT}
@@ -174,15 +177,15 @@ struct "DebugUtilsMessengerCreateInfo"
 	("pNext", ''PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pNext} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pNext} |]),
-	("flags", ''#{type VkDebugUtilsMessengerCreateFlagsEXT},
+	("flags", ''DebugUtilsMessengerCreateFlags,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, flags} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, flags} |]),
-	("messageSeverity", ''#{type VkDebugUtilsMessageSeverityFlagsEXT},
+	("messageSeverity", ''DebugUtilsMessageSeverityFlagBits,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT,
 			messageSeverity} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT,
 			messageSeverity} |]),
-	("messageType", ''#{type VkDebugUtilsMessageTypeFlagsEXT},
+	("messageType", ''DebugUtilsMessageTypeFlagBits,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, messageType} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, messageType} |]),
 	("pfnUserCallback", ''FunPtrC_FN_DebugUtilsMessengerCallback,
