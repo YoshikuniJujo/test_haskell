@@ -224,7 +224,7 @@ foreign import ccall "vkEnumerateInstanceLayerProperties"
 	c_vkEnumerateInstanceLayerProperties ::
 	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO Result
 
-enum "ObjectType" ''#{type VkObjectType} [''Show] [
+enum "ObjectType" ''#{type VkObjectType} [''Show, ''Storable] [
 	("ObjectTypeUnknown", #{const VK_OBJECT_TYPE_UNKNOWN}),
 	("ObjectTypeInstance", #{const VK_OBJECT_TYPE_INSTANCE}),
 	("ObjectTypePhysicalDevice", #{const VK_OBJECT_TYPE_PHYSICAL_DEVICE}),

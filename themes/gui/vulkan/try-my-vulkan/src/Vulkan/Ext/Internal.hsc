@@ -88,10 +88,19 @@ struct "DebugUtilsObjectNameInfo"
 			structureTypeDebugUtilsObjectNameInfo |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkDebugUtilsObjectNameInfoEXT, pNext} |],
-		[| #{poke VkDebugUtilsObjectNameInfoEXT, pNext} |])
-	-- MORE
-	]
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, pNext} |]),
+	("objectType", ''ObjectType,
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, objectType} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, objectType} |]),
+	("objectHandle", ''#{type uint64_t},
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, objectHandle} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, objectHandle} |]),
+	("pObjectName", ''CString,
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, pObjectName} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, pObjectName} |]) ]
 	[''Show]
+
+type PtrDebugUtilsObjectNameInfo = Ptr DebugUtilsObjectNameInfo
 
 struct "DebugUtilsMessengerCallbackDataRaw"
 		#{size VkDebugUtilsMessengerCallbackDataEXT}
@@ -142,17 +151,18 @@ struct "DebugUtilsMessengerCallbackDataRaw"
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			objectCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
-			objectCount} |])
+			objectCount} |]),
+	("pObjects", ''PtrDebugUtilsObjectNameInfo,
+		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pObjects} |],
+		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |])
 	]
 	[''Show]
 
-{-
-type FN_DebugUtilsMessengerCallback a =
-	#{type VkDebugUtilsMessageSeverityFlagBitsEXT} ->
-	#{type VkDebugUtilsMessageTypeFlagsEXT} ->
-	Ptr #{type VkDebugUtilsMessengerCallbackDataEXT} ->
-	Ptr a -> IO #{type VkBool32}
-	-}
+type C_FN_DebugUtilsMessengerCallback =
+	DebugUtilsMessageSeverityFlagBits -> DebugUtilsMessageTypeFlagBits ->
+	Ptr DebugUtilsMessengerCallbackDataRaw -> Ptr () -> IO #{type VkBool32}
+
+type FunPtrC_FN_DebugUtilsMessengerCallback = FunPtr C_FN_DebugUtilsMessengerCallback
 
 struct "DebugUtilsMessengerCreateInfo"
 		#{size VkDebugUtilsMessengerCreateInfoEXT}
@@ -174,6 +184,11 @@ struct "DebugUtilsMessengerCreateInfo"
 			messageSeverity} |]),
 	("messageType", ''#{type VkDebugUtilsMessageTypeFlagsEXT},
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, messageType} |],
-		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, messageType} |])
-	]
+		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, messageType} |]),
+	("pfnUserCallback", ''FunPtrC_FN_DebugUtilsMessengerCallback,
+		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |],
+		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |]),
+	("pUserData", ''PtrVoid,
+		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pUserData} |],
+		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pUserData} |]) ]
 	[''Show]
