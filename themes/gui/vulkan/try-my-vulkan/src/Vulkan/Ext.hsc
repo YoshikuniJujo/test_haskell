@@ -44,6 +44,22 @@ data DebugUtilsObjectNameInfo = DebugUtilsObjectNameInfo {
 	debugUtilsObjectNameInfoObjectName :: Maybe String }
 	deriving Show
 
+debugUtilsObjectNameInfoFromC ::
+	I.DebugUtilsObjectNameInfo -> IO DebugUtilsObjectNameInfo
+debugUtilsObjectNameInfoFromC I.DebugUtilsObjectNameInfo {
+	I.debugUtilsObjectNameInfoPNext = pnxt,
+	I.debugUtilsObjectNameInfoObjectType = ot,
+	I.debugUtilsObjectNameInfoObjectHandle = oh,
+	I.debugUtilsObjectNameInfoPObjectName = cnm } = do
+	case pnxt of
+		NullPtr -> pure ()
+		_ -> error "VkDebugUtilsObjectNameInfoEXT: pNext must be NULL"
+	nm <- peekCStringMaybe cnm
+	pure $ DebugUtilsObjectNameInfo ot oh nm
+
+peekCStringMaybe :: CString -> IO (Maybe String)
+peekCStringMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peekCString p
+
 data DebugUtilsMessengerCallbackData n =
 	DebugUtilsMessengerCallbackData {
 		debugUtilsMessengerCallbackDataNext :: Maybe n,
