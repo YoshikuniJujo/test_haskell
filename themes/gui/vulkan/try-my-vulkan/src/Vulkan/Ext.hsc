@@ -18,6 +18,7 @@ import Data.Int
 import Vulkan
 import Vulkan.Exception
 
+import qualified Vulkan.Internal as I
 import qualified Vulkan.Ext.Internal as I
 
 #include <vulkan/vulkan.h>
@@ -158,22 +159,30 @@ withPointerMaybe mx f = maybe (f NullPtr) (`withPointer` f) mx
 
 type FnCreateDebugUtilsMessenger n ud a =
 	Instance -> DebugUtilsMessengerCreateInfo n ud ->
-	AllocationCallbacks a -> IO I.DebugUtilsMessenger
+	Maybe (AllocationCallbacks a) -> IO I.DebugUtilsMessenger
 
 fnCreateDebugUtilsMessengerFromC :: (Pointable n, Pointable ud, Pointable a) =>
 	I.FnCreateDebugUtilsMessenger -> FnCreateDebugUtilsMessenger n ud a
-fnCreateDebugUtilsMessengerFromC f (Instance pist) ci ac = I.DebugUtilsMessenger
-	<$> debugUtilsMessengerCreateInfoToC ci
+fnCreateDebugUtilsMessengerFromC f (Instance pist) ci mac =
+	I.DebugUtilsMessenger <$> debugUtilsMessengerCreateInfoToC ci
 			\(I.DebugUtilsMessengerCreateInfo_ fci) ->
-		withForeignPtr fci \pci -> withAllocationCallbacksPtr ac \pac ->
-			do	pdum <- mallocBytes #{size VkDebugUtilsMessengerEXT}
+		withForeignPtr fci \pci ->
+			withAllocationCallbacksPtrMaybe mac \pac -> do
+				pdum <- mallocBytes
+					#{size VkDebugUtilsMessengerEXT}
 				r <- f pist pci pac pdum
 				throwUnlessSuccess r
 				newForeignPtr pdum $ free pdum
 
+withAllocationCallbacksPtrMaybe :: Pointable a =>
+	Maybe (AllocationCallbacks a) ->
+	(Ptr I.AllocationCallbacks -> IO b) -> IO b
+withAllocationCallbacksPtrMaybe mac f = case mac of
+	Nothing -> f NullPtr; Just ac -> withAllocationCallbacksPtr ac f
+
 createDebugUtilsMessenger :: (Pointable n, Pointable ud, Pointable a) =>
 	Instance -> DebugUtilsMessengerCreateInfo n ud ->
-	AllocationCallbacks a -> IO I.DebugUtilsMessenger
+	Maybe (AllocationCallbacks a) -> IO I.DebugUtilsMessenger
 createDebugUtilsMessenger ist@(Instance pist) ci ac =
 	withCString "vkCreateDebugUtilsMessengerEXT" \cfnnm ->
 		I.c_vkGetInstanceProcAddr pist cfnnm >>= \case

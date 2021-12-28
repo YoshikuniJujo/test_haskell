@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -7,12 +8,14 @@ module Main where
 import Foreign.C.String
 import Control.Monad
 import Control.Monad.Fix
+import Data.Bits
 import Data.Bool
 import Data.List
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
 import qualified Vulkan.Ext as Vk.Ext
+import qualified Vulkan.Ext.Internal as Vk.Ext.I
 
 import ThEnv
 
@@ -34,9 +37,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	i <- initVulkan
+	(ist, dbgMssngr) <- initVulkan
 	mainLoop w
-	cleanup w i
+	cleanup w ist dbgMssngr
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -46,11 +49,13 @@ initWindow = do
 	Just w <- Glfw.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO Vk.Instance
+initVulkan :: IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger)
 initVulkan = do
 	ist <- createInstance
-	when enableValidationLayers setupDebugMessenger
-	pure ist
+	dbgMssngr <- if enableValidationLayers
+		then Just <$> setupDebugMessenger ist
+		else pure Nothing
+	pure (ist, dbgMssngr)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -93,8 +98,24 @@ getRequiredExtensions = do
 	bool id (Vk.Ext.debugUtilsExtensionName :) enableValidationLayers
 		<$> peekCString `mapM` glfwExtensions
 
-setupDebugMessenger :: IO ()
-setupDebugMessenger = pure ()
+setupDebugMessenger :: Vk.Instance -> IO Vk.Ext.I.DebugUtilsMessenger
+setupDebugMessenger ist = do
+	let	createInfo = Vk.Ext.DebugUtilsMessengerCreateInfo {
+			Vk.Ext.debugUtilsMessengerCreateInfoNext = Nothing,
+			Vk.Ext.debugUtilsMessengerCreateInfoFlags =
+				Vk.Ext.I.DebugUtilsMessengerCreateFlagsZero,
+			Vk.Ext.debugUtilsMessengerCreateInfoMessageSeverity =
+				Vk.Ext.I.DebugUtilsMessageSeverityVerboseBit .|.
+				Vk.Ext.I.DebugUtilsMessageSeverityWarningBit .|.
+				Vk.Ext.I.DebugUtilsMessageSeverityErrorBit,
+			Vk.Ext.debugUtilsMessengerCreateInfoMessageType =
+				Vk.Ext.I.DebugUtilsMessageTypeGeneralBit .|.
+				Vk.Ext.I.DebugUtilsMessageTypeValidationBit .|.
+				Vk.Ext.I.DebugUtilsMessageTypePerformanceBit,
+			Vk.Ext.debugUtilsMessengerCreateInfoFnUserCallback =
+				debugCallback,
+			Vk.Ext.debugUtilsMessengerCreateInfoUserData = Nothing }
+	Vk.Ext.createDebugUtilsMessenger @() @() @() ist createInfo Nothing
 
 debugCallback :: Vk.Ext.FnDebugUtilsMessengerCallback ()
 debugCallback _messageSeverity _messageType callbackData _userData =
@@ -107,9 +128,11 @@ mainLoop w = do
 		Glfw.pollEvents
 		not <$> Glfw.windowShouldClose w
 
-cleanup :: Glfw.Window -> Vk.Instance ->IO ()
-cleanup w i = do
-	Vk.destroyInstance i (Nothing :: Maybe (Vk.AllocationCallbacks ()))
+cleanup :: Glfw.Window -> Vk.Instance ->
+	Maybe Vk.Ext.I.DebugUtilsMessenger -> IO ()
+cleanup w ist mdbgMssngr = do
+--	maybe (pure ()) (Vk.Ext.destroyDebugUtilsMessenger ist dbgMssngr Nothing)
+	Vk.destroyInstance ist (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	Glfw.destroyWindow w
 	Glfw.terminate
 
