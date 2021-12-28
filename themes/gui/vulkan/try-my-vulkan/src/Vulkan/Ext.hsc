@@ -60,9 +60,8 @@ debugUtilsObjectNameInfoFromC I.DebugUtilsObjectNameInfo {
 peekCStringMaybe :: CString -> IO (Maybe String)
 peekCStringMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peekCString p
 
-data DebugUtilsMessengerCallbackData n =
+data DebugUtilsMessengerCallbackData =
 	DebugUtilsMessengerCallbackData {
-		debugUtilsMessengerCallbackDataNext :: Maybe n,
 		debugUtilsMessengerCallbackDataFlags ::
 			I.DebugUtilsMessengerCallbackDataFlags,
 		debugUtilsMessengerCallbackDataMessageIdName :: String,
@@ -77,13 +76,13 @@ data DebugUtilsMessengerCallbackData n =
 			[DebugUtilsObjectNameInfo] }
 	deriving Show
 
-type FnDebugUtilsMessengerCallback n ud =
+type FnDebugUtilsMessengerCallback ud =
 	I.DebugUtilsMessageSeverityFlagBits ->
 	I.DebugUtilsMessageTypeFlagBits ->
-	DebugUtilsMessengerCallbackData n -> Maybe ud -> IO ()
+	DebugUtilsMessengerCallbackData -> Maybe ud -> IO ()
 
 fnDebugUtilsMessengerCallbackToC ::
-	Pointable ud => FnDebugUtilsMessengerCallback n ud ->
+	Pointable ud => FnDebugUtilsMessengerCallback ud ->
 	I.FnDebugUtilsMessengerCallback
 fnDebugUtilsMessengerCallbackToC f s t dt pud =
 	VkFalse <$ (f s t undefined =<< fromPointerMaybe (castPtr pud))
