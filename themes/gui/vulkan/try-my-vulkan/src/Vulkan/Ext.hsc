@@ -38,14 +38,13 @@ debugUtilsLabelFromC I.DebugUtilsLabel {
 			_ -> error "never occur"
 	pure $ DebugUtilsLabel nm mclr
 
-data DebugUtilsObjectNameInfo n = DebugUtilsObjectNameInfo {
-	debugUtilsObjectNameInfoNext :: Maybe n,
+data DebugUtilsObjectNameInfo = DebugUtilsObjectNameInfo {
 	debugUtilsObjectNemeInfoObjectType :: ObjectType,
 	debugUtilsObjectNameInfoObjectHandle :: #{type uint64_t},
 	debugUtilsObjectNameInfoObjectName :: Maybe String }
 	deriving Show
 
-data DebugUtilsMessengerCallbackData n n' =
+data DebugUtilsMessengerCallbackData n =
 	DebugUtilsMessengerCallbackData {
 		debugUtilsMessengerCallbackDataNext :: Maybe n,
 		debugUtilsMessengerCallbackDataFlags ::
@@ -59,16 +58,16 @@ data DebugUtilsMessengerCallbackData n n' =
 		debugUtilsMessengerCallbackDataCmdBufferLabels ::
 			[DebugUtilsLabel],
 		debugUtilsMessengerCallbackDataObjects ::
-			[DebugUtilsObjectNameInfo n'] }
+			[DebugUtilsObjectNameInfo] }
 	deriving Show
 
-type FnDebugUtilsMessengerCallback n n' ud =
+type FnDebugUtilsMessengerCallback n ud =
 	I.DebugUtilsMessageSeverityFlagBits ->
 	I.DebugUtilsMessageTypeFlagBits ->
-	DebugUtilsMessengerCallbackData n n' -> Maybe ud -> IO ()
+	DebugUtilsMessengerCallbackData n -> Maybe ud -> IO ()
 
 fnDebugUtilsMessengerCallbackToC ::
-	Pointable ud => FnDebugUtilsMessengerCallback n n' ud ->
+	Pointable ud => FnDebugUtilsMessengerCallback n ud ->
 	I.FnDebugUtilsMessengerCallback
 fnDebugUtilsMessengerCallbackToC f s t dt pud =
 	VkFalse <$ (f s t undefined =<< fromPointerMaybe (castPtr pud))
