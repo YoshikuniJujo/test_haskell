@@ -18,7 +18,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan
-import Vulkan.Internal
+import Vulkan.Exception
+import qualified Vulkan.Internal as I
 
 #include <vulkan/vulkan.h>
 
@@ -65,7 +66,7 @@ struct "DebugUtilsLabel"
 		[| \p _ -> #{poke VkDebugUtilsLabelEXT, sType} p
 			(#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT} ::
 				#{type VkStructureType}) |]),
-	("pNext", ''PtrVoid, [| #{peek VkDebugUtilsLabelEXT, pNext} |],
+	("pNext", ''I.PtrVoid, [| #{peek VkDebugUtilsLabelEXT, pNext} |],
 		[| #{poke VkDebugUtilsLabelEXT, pNext} |]),
 	("pLabelName", ''CString,
 		[| #{peek VkDebugUtilsLabelEXT, pLabelName} |],
@@ -87,7 +88,7 @@ struct "DebugUtilsObjectNameInfo"
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkDebugUtilsObjectNameInfoEXT, sType} p
 			structureTypeDebugUtilsObjectNameInfo |]),
-	("pNext", ''PtrVoid,
+	("pNext", ''I.PtrVoid,
 		[| #{peek VkDebugUtilsObjectNameInfoEXT, pNext} |],
 		[| #{poke VkDebugUtilsObjectNameInfoEXT, pNext} |]),
 	("objectType", ''ObjectType,
@@ -109,7 +110,7 @@ struct "DebugUtilsMessengerCallbackData"
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkDebugUtilsMessengerCallbackDataEXT, sType}
 			p structureTypeDebugUtilsMessengerCallbackData |]),
-	("pNext", ''PtrVoid,
+	("pNext", ''I.PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pNext} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pNext} |]),
 	("flags", ''DebugUtilsMessengerCallbackDataFlags,
@@ -175,7 +176,7 @@ struct "DebugUtilsMessengerCreateInfo"
 		[| \p _ -> #{poke VkDebugUtilsMessengerCreateInfoEXT, sType} p
 			(#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT} ::
 				#{type VkStructureType}) |]),
-	("pNext", ''PtrVoid,
+	("pNext", ''I.PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pNext} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pNext} |]),
 	("flags", ''DebugUtilsMessengerCreateFlags,
@@ -192,10 +193,23 @@ struct "DebugUtilsMessengerCreateInfo"
 	("pfnUserCallback", ''FunPtrFnDebugUtilsMessengerCallback,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |]),
-	("pUserData", ''PtrVoid,
+	("pUserData", ''I.PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pUserData} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pUserData} |]) ]
 	[''Show]
 
 foreign import ccall "wrapper" wrapFnDebugUtilsMessengerCallback ::
 	FnDebugUtilsMessengerCallback -> IO FunPtrFnDebugUtilsMessengerCallback
+
+newtype DebugUtilsMessenger = DebugUtilsMessenger (Ptr DebugUtilsMessenger)
+	deriving Show
+
+type FnCreateDebugUtilsMessenger =
+	Ptr Instance -> Ptr DebugUtilsMessengerCreateInfo ->
+	Ptr I.AllocationCallbacks -> Ptr DebugUtilsMessenger -> IO Result
+
+foreign import ccall "vkGetInstanceProcAddr" c_vkGetInstanceProcAddr ::
+	Ptr Instance -> CString -> IO (FunPtr ())
+
+foreign import ccall "dynamic" mkFnCreateDebugUtilsMessenger ::
+	FunPtr FnCreateDebugUtilsMessenger -> FnCreateDebugUtilsMessenger
