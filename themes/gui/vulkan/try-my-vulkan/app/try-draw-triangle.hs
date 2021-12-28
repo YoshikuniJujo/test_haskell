@@ -55,6 +55,7 @@ initVulkan = do
 	dbgMssngr <- if enableValidationLayers
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
+	pickPhysicalDevice ist
 	pure (ist, dbgMssngr)
 
 createInstance :: IO Vk.Instance
@@ -123,6 +124,20 @@ debugCallback :: Vk.Ext.FnDebugUtilsMessengerCallback ()
 debugCallback _messageSeverity _messageType callbackData _userData =
 	putStrLn $ "validation layer: " ++
 		Vk.Ext.debugUtilsMessengerCallbackDataMessage callbackData
+
+pickPhysicalDevice :: Vk.Instance -> IO Vk.PhysicalDevice
+pickPhysicalDevice ist = do
+	devices <- Vk.enumeratePhysicalDevices ist
+	when (null devices) $ error "failed to find GPUs with Vulkan support!"
+	physicalDevice <- head . (++ [Vk.PhysicalDeviceNullHandle])
+		<$> filterM isDeviceSuitable devices
+	case physicalDevice of
+		Vk.PhysicalDeviceNullHandle ->
+			error "failed to find a suitable GPU!"
+		_ -> pure physicalDevice
+
+isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
+isDeviceSuitable device = pure True
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do

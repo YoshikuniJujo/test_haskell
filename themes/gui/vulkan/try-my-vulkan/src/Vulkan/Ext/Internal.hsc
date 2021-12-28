@@ -7,7 +7,6 @@
 module Vulkan.Ext.Internal where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Types

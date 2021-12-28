@@ -302,3 +302,47 @@ enum "ObjectType" ''#{type VkObjectType} [''Show, ''Storable] [
 
 enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
 	("VkFalse", #{const VK_FALSE}), ("VkTrue", #{const VK_TRUE}) ]
+
+newtype PhysicalDevice = PhysicalDevice (Ptr PhysicalDevice)
+	deriving (Show, Storable)
+
+pattern PhysicalDeviceNullHandle :: PhysicalDevice
+pattern PhysicalDeviceNullHandle <- PhysicalDevice NullHandle where
+	PhysicalDeviceNullHandle = PhysicalDevice NullHandle
+
+pattern NullHandle :: Ptr a
+pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
+	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+
+enumeratePhysicalDevices :: Instance -> IO [PhysicalDevice]
+enumeratePhysicalDevices (Instance pist) = alloca \pn -> do
+	r <- c_vkEnumeratePhysicalDevices pist pn NullPtr
+	throwUnlessSuccess r
+	n <- peek pn
+	allocaArray (fromIntegral n) \ppd -> do
+		r' <- c_vkEnumeratePhysicalDevices pist pn ppd
+		throwUnlessSuccess r'
+--		(PhysicalDevice <$>) <$> peekArray (fromIntegral n) ppd
+		peekArray (fromIntegral n) ppd
+
+foreign import ccall "vkEnumeratePhysicalDevices"
+	c_vkEnumeratePhysicalDevices ::
+	Ptr Instance -> Ptr #{type uint32_t} -> Ptr PhysicalDevice -> IO Result
+
+enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show] [
+	("PhysicalDeviceTypeOther", #{const VK_PHYSICAL_DEVICE_TYPE_OTHER}),
+	("PhysicalDeviceTypeIntegratedGpu",
+		#{const VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU}),
+	("PhysicalDeviceTypeDiscreteGpu",
+		#{const VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU}),
+	("PhysicalDeviceTypeVirtualGpu",
+		#{const VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU}),
+	("PhysicalDeviceTypeCpu", #{const VK_PHYSICAL_DEVICE_TYPE_CPU}),
+	("PhysicalDeviceTypeMaxEnum",
+		#{const VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM}) ]
+
+-- VkPhysicalDeviceLimits
+
+-- VkPhysicalDeviceSparseProperties
+
+-- VkPhysicalDeviceProperties
