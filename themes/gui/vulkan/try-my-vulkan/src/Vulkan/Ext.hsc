@@ -5,7 +5,6 @@
 module Vulkan.Ext where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal.Array
 import Foreign.C.Types
@@ -123,3 +122,32 @@ fnDebugUtilsMessengerCallbackToC f s t pdt pud = do
 
 fromPointerMaybe :: Pointable a => Ptr a -> IO (Maybe a)
 fromPointerMaybe = \case NullPtr -> pure Nothing; p -> Just <$> fromPointer p
+
+data DebugUtilsMessengerCreateInfo n ud = DebugUtilsMessengerCreateInfo {
+	debugUtilsMessengerCreateInfoNext :: Maybe n,
+	debugUtilsMessengerCreateInfoFlags :: I.DebugUtilsMessengerCreateFlags,
+	debugUtilsMessengerCreateInfoMessageSeverity ::
+		I.DebugUtilsMessageSeverityFlagBits,
+	debugUtilsMessengerCreateInfoMessageType ::
+		I.DebugUtilsMessageTypeFlagBits,
+	debugUtilsMessengerCreateInfoFnUserCallback ::
+		FnDebugUtilsMessengerCallback ud,
+	debugUtilsMessengerCreateInfoUserData :: Maybe ud }
+
+debugUtilsMessengerCreateInfoToC :: (Pointable n, Pointable ud) =>
+	DebugUtilsMessengerCreateInfo n ud ->
+	(I.DebugUtilsMessengerCreateInfo -> IO a) -> IO a
+debugUtilsMessengerCreateInfoToC DebugUtilsMessengerCreateInfo {
+	debugUtilsMessengerCreateInfoNext = mnxt,
+	debugUtilsMessengerCreateInfoFlags = flgs,
+	debugUtilsMessengerCreateInfoMessageSeverity = ms,
+	debugUtilsMessengerCreateInfoMessageType = mt,
+	debugUtilsMessengerCreateInfoFnUserCallback = cucbk,
+	debugUtilsMessengerCreateInfoUserData = mud } f =
+	withPointerMaybe mnxt \pnxt -> withPointerMaybe mud \pud -> do
+		fpucbk <- I.wrapFnDebugUtilsMessengerCallback
+			$ fnDebugUtilsMessengerCallbackToC cucbk
+		f $ I.DebugUtilsMessengerCreateInfo () (castPtr pnxt) flgs ms mt fpucbk (castPtr pud)
+
+withPointerMaybe :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
+withPointerMaybe mx f = maybe (f NullPtr) (`withPointer` f) mx
