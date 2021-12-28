@@ -43,6 +43,9 @@ class Pointable a where
 pattern NullPtr :: Ptr a
 pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 
+pattern NullFunPtr :: FunPtr a
+pattern NullFunPtr <- ((== nullFunPtr) -> True) where NullFunPtr = nullFunPtr
+
 instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
 	withPointer x f = alloca \p -> poke p x >> f p
 	fromPointer = peek

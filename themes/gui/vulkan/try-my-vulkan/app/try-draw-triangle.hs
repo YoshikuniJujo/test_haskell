@@ -96,6 +96,11 @@ getRequiredExtensions = do
 setupDebugMessenger :: IO ()
 setupDebugMessenger = pure ()
 
+debugCallback :: Vk.Ext.FnDebugUtilsMessengerCallback ()
+debugCallback _messageSeverity _messageType callbackData _userData =
+	putStrLn $ "validation layer: " ++
+		Vk.Ext.debugUtilsMessengerCallbackDataMessage callbackData
+
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
 	fix \loop -> bool (pure ()) loop =<< do

@@ -5,14 +5,18 @@
 module Vulkan.Ext where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Marshal.Array
+import Foreign.Marshal
+-- import Foreign.Marshal.Array
 import Foreign.C.Types
 import Foreign.C.String
+import Control.Exception
 import Data.Word
 import Data.Int
 
 import Vulkan
+import Vulkan.Exception
 
 import qualified Vulkan.Ext.Internal as I
 
@@ -151,3 +155,28 @@ debugUtilsMessengerCreateInfoToC DebugUtilsMessengerCreateInfo {
 
 withPointerMaybe :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
 withPointerMaybe mx f = maybe (f NullPtr) (`withPointer` f) mx
+
+type FnCreateDebugUtilsMessenger n ud a =
+	Instance -> DebugUtilsMessengerCreateInfo n ud ->
+	AllocationCallbacks a -> IO I.DebugUtilsMessenger
+
+fnCreateDebugUtilsMessengerFromC :: (Pointable n, Pointable ud, Pointable a) =>
+	I.FnCreateDebugUtilsMessenger -> FnCreateDebugUtilsMessenger n ud a
+fnCreateDebugUtilsMessengerFromC f (Instance pist) ci ac = I.DebugUtilsMessenger
+	<$> debugUtilsMessengerCreateInfoToC ci
+			\(I.DebugUtilsMessengerCreateInfo_ fci) ->
+		withForeignPtr fci \pci -> withAllocationCallbacksPtr ac \pac ->
+			do	pdum <- mallocBytes #{size VkDebugUtilsMessengerEXT}
+				r <- f pist pci pac pdum
+				throwUnlessSuccess r
+				newForeignPtr pdum $ free pdum
+
+createDebugUtilsMessenger :: (Pointable n, Pointable ud, Pointable a) =>
+	Instance -> DebugUtilsMessengerCreateInfo n ud ->
+	AllocationCallbacks a -> IO I.DebugUtilsMessenger
+createDebugUtilsMessenger ist@(Instance pist) ci ac =
+	withCString "vkCreateDebugUtilsMessengerEXT" \cfnnm ->
+		I.c_vkGetInstanceProcAddr pist cfnnm >>= \case
+			NullFunPtr -> throw ErrorExtensionNotPresent
+			pf -> fnCreateDebugUtilsMessengerFromC
+				(I.mkFnCreateDebugUtilsMessenger pf) ist ci ac

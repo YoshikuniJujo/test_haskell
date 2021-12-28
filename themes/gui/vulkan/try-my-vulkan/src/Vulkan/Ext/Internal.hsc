@@ -7,6 +7,7 @@
 module Vulkan.Ext.Internal where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Types
@@ -201,7 +202,8 @@ struct "DebugUtilsMessengerCreateInfo"
 foreign import ccall "wrapper" wrapFnDebugUtilsMessengerCallback ::
 	FnDebugUtilsMessengerCallback -> IO FunPtrFnDebugUtilsMessengerCallback
 
-newtype DebugUtilsMessenger = DebugUtilsMessenger (Ptr DebugUtilsMessenger)
+newtype DebugUtilsMessenger =
+	DebugUtilsMessenger (ForeignPtr DebugUtilsMessenger)
 	deriving Show
 
 type FnCreateDebugUtilsMessenger =
@@ -209,7 +211,7 @@ type FnCreateDebugUtilsMessenger =
 	Ptr I.AllocationCallbacks -> Ptr DebugUtilsMessenger -> IO Result
 
 foreign import ccall "vkGetInstanceProcAddr" c_vkGetInstanceProcAddr ::
-	Ptr Instance -> CString -> IO (FunPtr ())
+	Ptr Instance -> CString -> IO (FunPtr a)
 
 foreign import ccall "dynamic" mkFnCreateDebugUtilsMessenger ::
 	FunPtr FnCreateDebugUtilsMessenger -> FnCreateDebugUtilsMessenger
