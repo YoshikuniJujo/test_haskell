@@ -19,32 +19,33 @@ import qualified Vulkan.Ext.Internal as I
 debugUtilsExtensionName :: String
 debugUtilsExtensionName = #{const_str VK_EXT_DEBUG_UTILS_EXTENSION_NAME}
 
-data DebugUtilsLabel n = DebugUtilsLabel {
-	debugUtilsLabelNext :: Maybe n,
+data DebugUtilsLabel = DebugUtilsLabel {
 	debugUtilsLabelName :: String,
 	debugUtilsLabelColor :: Maybe (CFloat, CFloat, CFloat, CFloat) }
 	deriving Show
 
-debugUtilsLabelFromC :: Pointable n => I.DebugUtilsLabel -> IO (DebugUtilsLabel n)
+debugUtilsLabelFromC :: I.DebugUtilsLabel -> IO DebugUtilsLabel
 debugUtilsLabelFromC I.DebugUtilsLabel {
 	I.debugUtilsLabelPNext = pnxt, I.debugUtilsLabelPLabelName = cnm,
 	I.debugUtilsLabelColor = clr } = do
-	mnxt <- fromPointerMaybe $ castPtr pnxt
+	case pnxt of
+		NullPtr -> pure ()
+		_ -> error "VkDebugUtilsLabelEXT: pNext must be NULL"
 	nm <- peekCString cnm
 	let	mclr = case clr of
 			[0, 0, 0, 0] -> Nothing
 			[r, g, b, a] -> Just (r, g, b, a)
 			_ -> error "never occur"
-	pure $ DebugUtilsLabel mnxt nm mclr
+	pure $ DebugUtilsLabel nm mclr
 
 data DebugUtilsObjectNameInfo n = DebugUtilsObjectNameInfo {
 	debugUtilsObjectNameInfoNext :: Maybe n,
 	debugUtilsObjectNemeInfoObjectType :: ObjectType,
 	debugUtilsObjectNameInfoObjectHandle :: #{type uint64_t},
-	debugUtilsObjectNameInfoObjectName :: String }
+	debugUtilsObjectNameInfoObjectName :: Maybe String }
 	deriving Show
 
-data DebugUtilsMessengerCallbackData n n1 n2 n3 =
+data DebugUtilsMessengerCallbackData n n' =
 	DebugUtilsMessengerCallbackData {
 		debugUtilsMessengerCallbackDataNext :: Maybe n,
 		debugUtilsMessengerCallbackDataFlags ::
@@ -54,20 +55,20 @@ data DebugUtilsMessengerCallbackData n n1 n2 n3 =
 			#{type int32_t},
 		debugUtilsMessengerCallbackDataMessage :: String,
 		debugUtilsMessengerCallbackDataQueueLabels ::
-			[DebugUtilsLabel n1],
+			[DebugUtilsLabel],
 		debugUtilsMessengerCallbackDataCmdBufferLabels ::
-			[DebugUtilsLabel n2],
+			[DebugUtilsLabel],
 		debugUtilsMessengerCallbackDataObjects ::
-			[DebugUtilsObjectNameInfo n3] }
+			[DebugUtilsObjectNameInfo n'] }
 	deriving Show
 
-type FnDebugUtilsMessengerCallback n n1 n2 n3 ud =
+type FnDebugUtilsMessengerCallback n n' ud =
 	I.DebugUtilsMessageSeverityFlagBits ->
 	I.DebugUtilsMessageTypeFlagBits ->
-	DebugUtilsMessengerCallbackData n n1 n2 n3 -> Maybe ud -> IO ()
+	DebugUtilsMessengerCallbackData n n' -> Maybe ud -> IO ()
 
 fnDebugUtilsMessengerCallbackToC ::
-	Pointable ud => FnDebugUtilsMessengerCallback n n1 n2 n3 ud ->
+	Pointable ud => FnDebugUtilsMessengerCallback n n' ud ->
 	I.FnDebugUtilsMessengerCallback
 fnDebugUtilsMessengerCallbackToC f s t dt pud =
 	VkFalse <$ (f s t undefined =<< fromPointerMaybe (castPtr pud))

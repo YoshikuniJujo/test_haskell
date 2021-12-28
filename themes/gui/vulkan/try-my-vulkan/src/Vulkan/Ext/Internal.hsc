@@ -73,7 +73,7 @@ struct "DebugUtilsLabel"
 	("color", ''ListCFloat,
 		[| peekArray 4 . #{ptr VkDebugUtilsLabelEXT, color} |],
 		[| pokeArray . #{ptr VkDebugUtilsLabelEXT, color} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 type PtrDebugUtilsLabel = Ptr DebugUtilsLabel
 
@@ -99,7 +99,7 @@ struct "DebugUtilsObjectNameInfo"
 	("pObjectName", ''CString,
 		[| #{peek VkDebugUtilsObjectNameInfoEXT, pObjectName} |],
 		[| #{poke VkDebugUtilsObjectNameInfoEXT, pObjectName} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 type PtrDebugUtilsObjectNameInfo = Ptr DebugUtilsObjectNameInfo
 
