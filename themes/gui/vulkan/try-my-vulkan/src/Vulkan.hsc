@@ -343,6 +343,68 @@ enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show] [
 
 -- VkPhysicalDeviceLimits
 
+type ListUint32T = [#{type uint32_t}]
+
+struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
+		#{alignment VkPhysicalDeviceLimits} [
+	("maxImageDimension1D", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimension1D} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimension1D} |]),
+	("maxImageDimension2D", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimension2D} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimension2D} |]),
+	("maxImageDimension3D", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimension3D} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimension3D} |]),
+	{- maxImageDimensionCube, maxImageArrayLayers, maxTexelBufferElements,
+	 - maxUniformBufferRange, maxStorageBufferRange, maxPushConstantsSize,
+	 - maxMemoryAllocationCount, maxSamplerAllocationCount -}
+
+	 ("bufferImageGrannularity", ''#{type VkDeviceSize},
+		[| #{peek VkPhysicalDeviceLimits, bufferImageGranularity} |],
+		[| #{poke VkPhysicalDeviceLimits, bufferImageGranularity} |]),
+	 ("sparseAddressSpaceSize", ''#{type VkDeviceSize},
+		[| #{peek VkPhysicalDeviceLimits, sparseAddressSpaceSize} |],
+		[| #{poke VkPhysicalDeviceLimits, sparseAddressSpaceSize} |]),
+	
+	{- maxBoundDescriptorSets, maxPerStageDescriptorSamplers,
+	 - maxPerStageDescriptorUniformBuffers,
+	 - maxPerStageDescriptorStorageBuffers,
+	 - maxPerStageDescriptorSampledImages,
+	 - maxPerStageDescriptorStorageImages, ... -}
+
+	 {- ..., maxFragmentDualSrcAttachments,
+	  - maxFragmentCombinedOutputResources, maxComputeSharedMemorySize -}
+
+	 ("maxComputeWorkGroupCount", ''ListUint32T,
+		[| peekArray 3 . #{ptr VkPhysicalDeviceLimits,
+			maxComputeWorkGroupCount} |],
+		[| pokeArray . #{ptr VkPhysicalDeviceLimits,
+			maxComputeWorkGroupCount} |]),
+
+	{- maxComputeWorkGroupInvocations, maxComputeWorkGroupSize[3],
+	 - subPixelPrecisionBits, subTexelPrecisionBits ... -}
+
+	 {- ..., maxDrawIndexedIndexValue, maxDrawIndirectCount -}
+
+	 ("maxSamplerLodBias", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, maxSamplerLodBias} |],
+		[| #{poke VkPhysicalDeviceLimits, maxSamplerLodBias} |]),
+	("maxSamplerAnisotropy", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, maxSamplerAnisotropy} |],
+		[| #{poke VkPhysicalDeviceLimits, maxSamplerAnisotropy} |])
+
+	{- maxViewports, maxViewportDimensions[2], viewportBoundsRange[2],
+	 - viewPortSubPIxelBits, ... -}
+
+	{- ..., maxFramebufferLayers, frameBufferColorSampleCounts,
+	 - frameBufferDepthSampleCounts, frameBufferStencilSampleCounts, ... -}
+
+	{- ..., optimalBufferCopyOffsetAlignment,
+	 - optimalBufferCopyRowPitchAlignment, nonCoherentAtomSize -}
+	]
+	[''Show]
+
 -- VkPhysicalDeviceSparseProperties
 
 -- VkPhysicalDeviceProperties
