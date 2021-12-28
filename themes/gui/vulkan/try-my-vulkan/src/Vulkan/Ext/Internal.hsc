@@ -197,7 +197,7 @@ struct "DebugUtilsMessengerCreateInfo"
 	("pUserData", ''I.PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pUserData} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pUserData} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 foreign import ccall "wrapper" wrapFnDebugUtilsMessengerCallback ::
 	FnDebugUtilsMessengerCallback -> IO FunPtrFnDebugUtilsMessengerCallback

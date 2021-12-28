@@ -76,7 +76,8 @@ createInstance = do
 			Vk.applicationInfoEngineVersion = Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion1_0 }
 		createInfo = Vk.InstanceCreateInfo {
-			Vk.instanceCreateInfoNext = Nothing :: Maybe Bool,
+			Vk.instanceCreateInfoNext = if enableValidationLayers
+				then Just populateDebugMessengerCreateInfo else Nothing,
 			Vk.instanceCreateInfoApplicationInfo = appInfo,
 			Vk.instanceCreateInfoFlags = Vk.InstanceCreateFlagsZero,
 			Vk.instanceCreateInfoEnabledLayers =
@@ -99,23 +100,24 @@ getRequiredExtensions = do
 		<$> peekCString `mapM` glfwExtensions
 
 setupDebugMessenger :: Vk.Instance -> IO Vk.Ext.I.DebugUtilsMessenger
-setupDebugMessenger ist = do
-	let	createInfo = Vk.Ext.DebugUtilsMessengerCreateInfo {
-			Vk.Ext.debugUtilsMessengerCreateInfoNext = Nothing,
-			Vk.Ext.debugUtilsMessengerCreateInfoFlags =
-				Vk.Ext.I.DebugUtilsMessengerCreateFlagsZero,
-			Vk.Ext.debugUtilsMessengerCreateInfoMessageSeverity =
-				Vk.Ext.I.DebugUtilsMessageSeverityVerboseBit .|.
-				Vk.Ext.I.DebugUtilsMessageSeverityWarningBit .|.
-				Vk.Ext.I.DebugUtilsMessageSeverityErrorBit,
-			Vk.Ext.debugUtilsMessengerCreateInfoMessageType =
-				Vk.Ext.I.DebugUtilsMessageTypeGeneralBit .|.
-				Vk.Ext.I.DebugUtilsMessageTypeValidationBit .|.
-				Vk.Ext.I.DebugUtilsMessageTypePerformanceBit,
-			Vk.Ext.debugUtilsMessengerCreateInfoFnUserCallback =
-				debugCallback,
-			Vk.Ext.debugUtilsMessengerCreateInfoUserData = Nothing }
-	Vk.Ext.createDebugUtilsMessenger @() @() @() ist createInfo Nothing
+setupDebugMessenger ist = Vk.Ext.createDebugUtilsMessenger
+	@() @() @() ist populateDebugMessengerCreateInfo Nothing
+
+populateDebugMessengerCreateInfo :: Vk.Ext.DebugUtilsMessengerCreateInfo () ()
+populateDebugMessengerCreateInfo = Vk.Ext.DebugUtilsMessengerCreateInfo {
+	Vk.Ext.debugUtilsMessengerCreateInfoNext = Nothing,
+	Vk.Ext.debugUtilsMessengerCreateInfoFlags =
+		Vk.Ext.I.DebugUtilsMessengerCreateFlagsZero,
+	Vk.Ext.debugUtilsMessengerCreateInfoMessageSeverity =
+		Vk.Ext.I.DebugUtilsMessageSeverityVerboseBit .|.
+		Vk.Ext.I.DebugUtilsMessageSeverityWarningBit .|.
+		Vk.Ext.I.DebugUtilsMessageSeverityErrorBit,
+	Vk.Ext.debugUtilsMessengerCreateInfoMessageType =
+		Vk.Ext.I.DebugUtilsMessageTypeGeneralBit .|.
+		Vk.Ext.I.DebugUtilsMessageTypeValidationBit .|.
+		Vk.Ext.I.DebugUtilsMessageTypePerformanceBit,
+	Vk.Ext.debugUtilsMessengerCreateInfoFnUserCallback = debugCallback,
+	Vk.Ext.debugUtilsMessengerCreateInfoUserData = Nothing }
 
 debugCallback :: Vk.Ext.FnDebugUtilsMessengerCallback ()
 debugCallback _messageSeverity _messageType callbackData _userData =

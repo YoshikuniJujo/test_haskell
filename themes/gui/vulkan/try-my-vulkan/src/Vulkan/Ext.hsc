@@ -158,6 +158,13 @@ debugUtilsMessengerCreateInfoToC DebugUtilsMessengerCreateInfo {
 withPointerMaybe :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
 withPointerMaybe mx f = maybe (f NullPtr) (`withPointer` f) mx
 
+instance (Pointable n, Pointable ud) => Pointable (DebugUtilsMessengerCreateInfo n ud) where
+	withPointer ci f =
+		debugUtilsMessengerCreateInfoToC ci \cci -> alloca \pcci -> do
+			poke pcci cci
+			f $ castPtr pcci
+	fromPointer _ = error "yet"
+
 type FnCreateDebugUtilsMessenger n ud a =
 	Instance -> DebugUtilsMessengerCreateInfo n ud ->
 	Maybe (AllocationCallbacks a) -> IO I.DebugUtilsMessenger
