@@ -5,6 +5,9 @@
 module Vulkan.Ext where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
+import Foreign.Marshal.Array
 import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
@@ -76,6 +79,34 @@ data DebugUtilsMessengerCallbackData =
 			[DebugUtilsObjectNameInfo] }
 	deriving Show
 
+debugUtilsMessengerCallbackDataFromC ::
+	I.DebugUtilsMessengerCallbackData -> IO DebugUtilsMessengerCallbackData
+debugUtilsMessengerCallbackDataFromC I.DebugUtilsMessengerCallbackData {
+	I.debugUtilsMessengerCallbackDataPNext = pnxt,
+	I.debugUtilsMessengerCallbackDataFlags = flgs,
+	I.debugUtilsMessengerCallbackDataPMessageIdName = cnm,
+	I.debugUtilsMessengerCallbackDataMessageIdNumber = num,
+	I.debugUtilsMessengerCallbackDataPMessage = cmsg,
+	I.debugUtilsMessengerCallbackDataQueueLabelCount = qlcnt,
+	I.debugUtilsMessengerCallbackDataPQueueLabels = pqls,
+	I.debugUtilsMessengerCallbackDataCmdBufLabelCount = cblcnt,
+	I.debugUtilsMessengerCallbackDataPCmdBufLabels = pcbls,
+	I.debugUtilsMessengerCallbackDataObjectCount = objcnt,
+	I.debugUtilsMessengerCallbackDataPObjects = pobjs } = do
+	case pnxt of
+		NullPtr -> pure ()
+		_ -> error $ "VkDebugUtilsMessengerCallbackDataEXT:" ++
+			" pNext must be NULL"
+	nm <- peekCString cnm
+	msg <- peekCString cmsg
+	qls <- (debugUtilsLabelFromC `mapM`)
+		=<< peekArray (fromIntegral qlcnt) pqls
+	bls <- (debugUtilsLabelFromC `mapM`)
+		=<< peekArray (fromIntegral cblcnt) pcbls
+	objs <- (debugUtilsObjectNameInfoFromC `mapM`)
+		=<< peekArray (fromIntegral objcnt) pobjs
+	pure $ DebugUtilsMessengerCallbackData flgs nm num msg qls bls objs
+
 type FnDebugUtilsMessengerCallback ud =
 	I.DebugUtilsMessageSeverityFlagBits ->
 	I.DebugUtilsMessageTypeFlagBits ->
@@ -84,8 +115,11 @@ type FnDebugUtilsMessengerCallback ud =
 fnDebugUtilsMessengerCallbackToC ::
 	Pointable ud => FnDebugUtilsMessengerCallback ud ->
 	I.FnDebugUtilsMessengerCallback
-fnDebugUtilsMessengerCallbackToC f s t dt pud =
-	VkFalse <$ (f s t undefined =<< fromPointerMaybe (castPtr pud))
+fnDebugUtilsMessengerCallbackToC f s t pdt pud = do
+	cdt <- I.DebugUtilsMessengerCallbackData_
+		<$> newForeignPtr pdt (pure ())
+	dt <- debugUtilsMessengerCallbackDataFromC cdt
+	VkFalse <$ (f s t dt =<< fromPointerMaybe (castPtr pud))
 
 fromPointerMaybe :: Pointable a => Ptr a -> IO (Maybe a)
 fromPointerMaybe = \case NullPtr -> pure Nothing; p -> Just <$> fromPointer p
