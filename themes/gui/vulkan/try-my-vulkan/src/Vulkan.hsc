@@ -40,6 +40,9 @@ class Pointable a where
 	withPointer :: a -> (Ptr a -> IO b) -> IO b
 	fromPointer :: Ptr a -> IO a
 
+pattern NullPtr :: Ptr a
+pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
+
 instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
 	withPointer x f = alloca \p -> poke p x >> f p
 	fromPointer = peek
@@ -293,3 +296,6 @@ enum "ObjectType" ''#{type VkObjectType} [''Show, ''Storable] [
 		#{const VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR}),
 	("ObjectTypeMaxEnum", #{const VK_OBJECT_TYPE_MAX_ENUM})
 	]
+
+enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
+	("VkFalse", #{const VK_FALSE}), ("VkTrue", #{const VK_TRUE}) ]

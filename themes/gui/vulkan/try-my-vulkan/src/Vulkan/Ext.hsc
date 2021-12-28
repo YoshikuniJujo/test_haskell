@@ -1,8 +1,12 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Ext where
 
+import Foreign.Ptr
 import Foreign.C.Types
+import Foreign.C.String
 import Data.Word
 import Data.Int
 
@@ -18,8 +22,20 @@ debugUtilsExtensionName = #{const_str VK_EXT_DEBUG_UTILS_EXTENSION_NAME}
 data DebugUtilsLabel n = DebugUtilsLabel {
 	debugUtilsLabelNext :: Maybe n,
 	debugUtilsLabelName :: String,
-	debugUtilsLabelColor :: (CFloat, CFloat, CFloat, CFloat) }
+	debugUtilsLabelColor :: Maybe (CFloat, CFloat, CFloat, CFloat) }
 	deriving Show
+
+debugUtilsLabelFromC :: Pointable n => I.DebugUtilsLabel -> IO (DebugUtilsLabel n)
+debugUtilsLabelFromC I.DebugUtilsLabel {
+	I.debugUtilsLabelPNext = pnxt, I.debugUtilsLabelPLabelName = cnm,
+	I.debugUtilsLabelColor = clr } = do
+	mnxt <- fromPointerMaybe $ castPtr pnxt
+	nm <- peekCString cnm
+	let	mclr = case clr of
+			[0, 0, 0, 0] -> Nothing
+			[r, g, b, a] -> Just (r, g, b, a)
+			_ -> error "never occur"
+	pure $ DebugUtilsLabel mnxt nm mclr
 
 data DebugUtilsObjectNameInfo n = DebugUtilsObjectNameInfo {
 	debugUtilsObjectNameInfoNext :: Maybe n,
@@ -51,6 +67,10 @@ type FnDebugUtilsMessengerCallback n n1 n2 n3 ud =
 	DebugUtilsMessengerCallbackData n n1 n2 n3 -> Maybe ud -> IO ()
 
 fnDebugUtilsMessengerCallbackToC ::
-	FnDebugUtilsMessengerCallback n n1 n2 n3 ud ->
+	Pointable ud => FnDebugUtilsMessengerCallback n n1 n2 n3 ud ->
 	I.FnDebugUtilsMessengerCallback
-fnDebugUtilsMessengerCallbackToC f s t dt ud = #{const VK_FALSE} <$ f s t undefined undefined
+fnDebugUtilsMessengerCallbackToC f s t dt pud =
+	VkFalse <$ (f s t undefined =<< fromPointerMaybe (castPtr pud))
+
+fromPointerMaybe :: Pointable a => Ptr a -> IO (Maybe a)
+fromPointerMaybe = \case NullPtr -> pure Nothing; p -> Just <$> fromPointer p

@@ -158,11 +158,9 @@ struct "DebugUtilsMessengerCallbackData"
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |]) ]
 	[''Show]
 
--- enum "Bool32" <- to module Vulkan
-
 type FnDebugUtilsMessengerCallback =
 	DebugUtilsMessageSeverityFlagBits -> DebugUtilsMessageTypeFlagBits ->
-	Ptr DebugUtilsMessengerCallbackData -> Ptr () -> IO #{type VkBool32}
+	Ptr DebugUtilsMessengerCallbackData -> Ptr () -> IO Bool32
 
 type FunPtrFnDebugUtilsMessengerCallback = FunPtr FnDebugUtilsMessengerCallback
 
