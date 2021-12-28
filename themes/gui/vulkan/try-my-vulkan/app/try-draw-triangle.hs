@@ -131,7 +131,9 @@ mainLoop w = do
 cleanup :: Glfw.Window -> Vk.Instance ->
 	Maybe Vk.Ext.I.DebugUtilsMessenger -> IO ()
 cleanup w ist mdbgMssngr = do
---	maybe (pure ()) (Vk.Ext.destroyDebugUtilsMessenger ist dbgMssngr Nothing)
+	maybe (pure ())
+		(\dm -> Vk.Ext.destroyDebugUtilsMessenger @() ist dm Nothing)
+		mdbgMssngr
 	Vk.destroyInstance ist (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	Glfw.destroyWindow w
 	Glfw.terminate

@@ -9,6 +9,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 -- import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Control.Exception
@@ -172,7 +173,7 @@ fnCreateDebugUtilsMessengerFromC f (Instance pist) ci mac =
 					#{size VkDebugUtilsMessengerEXT}
 				r <- f pist pci pac pdum
 				throwUnlessSuccess r
-				newForeignPtr pdum $ free pdum
+				peek pdum
 
 withAllocationCallbacksPtrMaybe :: Pointable a =>
 	Maybe (AllocationCallbacks a) ->
@@ -189,3 +190,22 @@ createDebugUtilsMessenger ist@(Instance pist) ci ac =
 			NullFunPtr -> throw ErrorExtensionNotPresent
 			pf -> fnCreateDebugUtilsMessengerFromC
 				(I.mkFnCreateDebugUtilsMessenger pf) ist ci ac
+
+type FnDestroyDebugUtilsMessenger a = Instance ->
+	I.DebugUtilsMessenger -> Maybe (AllocationCallbacks a) -> IO ()
+
+fnDestroyDebugUtilsMessengerFromC :: Pointable a =>
+	I.FnDestroyDebugUtilsMessenger -> FnDestroyDebugUtilsMessenger a
+fnDestroyDebugUtilsMessengerFromC
+	f (Instance pist) (I.DebugUtilsMessenger pdum) mac =
+	withAllocationCallbacksPtrMaybe mac \pac -> f pist pdum pac
+
+destroyDebugUtilsMessenger :: Pointable a => Instance ->
+	I.DebugUtilsMessenger -> Maybe (AllocationCallbacks a) -> IO ()
+destroyDebugUtilsMessenger ist@(Instance pist) dum mac =
+	withCString "vkDestroyDebugUtilsMessengerEXT" \cfnnm ->
+		I.c_vkGetInstanceProcAddr pist cfnnm >>= \case
+			NullFunPtr -> throw ErrorExtensionNotPresent
+			pf -> fnDestroyDebugUtilsMessengerFromC
+				(I.mkFnDestroyDebugUtilsMessenger pf)
+				ist dum mac

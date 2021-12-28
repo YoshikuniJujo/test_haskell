@@ -202,16 +202,21 @@ struct "DebugUtilsMessengerCreateInfo"
 foreign import ccall "wrapper" wrapFnDebugUtilsMessengerCallback ::
 	FnDebugUtilsMessengerCallback -> IO FunPtrFnDebugUtilsMessengerCallback
 
-newtype DebugUtilsMessenger =
-	DebugUtilsMessenger (ForeignPtr DebugUtilsMessenger)
+newtype DebugUtilsMessenger = DebugUtilsMessenger (Ptr DebugUtilsMessenger)
 	deriving Show
 
 type FnCreateDebugUtilsMessenger =
 	Ptr Instance -> Ptr DebugUtilsMessengerCreateInfo ->
-	Ptr I.AllocationCallbacks -> Ptr DebugUtilsMessenger -> IO Result
+	Ptr I.AllocationCallbacks -> Ptr (Ptr DebugUtilsMessenger) -> IO Result
 
 foreign import ccall "vkGetInstanceProcAddr" c_vkGetInstanceProcAddr ::
 	Ptr Instance -> CString -> IO (FunPtr a)
 
 foreign import ccall "dynamic" mkFnCreateDebugUtilsMessenger ::
 	FunPtr FnCreateDebugUtilsMessenger -> FnCreateDebugUtilsMessenger
+
+type FnDestroyDebugUtilsMessenger = Ptr Instance ->
+	Ptr DebugUtilsMessenger -> Ptr I.AllocationCallbacks -> IO ()
+
+foreign import ccall "dynamic" mkFnDestroyDebugUtilsMessenger ::
+	FunPtr FnDestroyDebugUtilsMessenger -> FnDestroyDebugUtilsMessenger
