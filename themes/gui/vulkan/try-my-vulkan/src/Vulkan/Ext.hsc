@@ -168,9 +168,7 @@ fnCreateDebugUtilsMessengerFromC f (Instance pist) ci mac =
 	I.DebugUtilsMessenger <$> debugUtilsMessengerCreateInfoToC ci
 			\(I.DebugUtilsMessengerCreateInfo_ fci) ->
 		withForeignPtr fci \pci ->
-			withAllocationCallbacksPtrMaybe mac \pac -> do
-				pdum <- mallocBytes
-					#{size VkDebugUtilsMessengerEXT}
+			withAllocationCallbacksPtrMaybe mac \pac -> alloca \pdum -> do
 				r <- f pist pci pac pdum
 				throwUnlessSuccess r
 				peek pdum
