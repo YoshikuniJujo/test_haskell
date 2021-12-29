@@ -407,4 +407,33 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 
 -- VkPhysicalDeviceSparseProperties
 
+struct "PhysicalDeviceSparseProperties" #{size VkPhysicalDeviceSparseProperties}
+		#{alignment VkPhysicalDeviceSparseProperties} [
+	("residencyStandard2DBlockShape", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyStandard2DBlockShape} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyStandard2DBlockShape} |]),
+	("residencyStandard2DMultisampleBlockShape", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyStandard2DMultisampleBlockShape} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyStandard2DMultisampleBlockShape} |]),
+	("residensyStandard3DBlockShape", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyStandard3DBlockShape} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyStandard3DBlockShape} |]),
+	("residencyAlienedMipSize", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyAlignedMipSize} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyAlignedMipSize} |]),
+	("residencyNonResidentStrict", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyNonResidentStrict} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyNonResidentStrict} |]) ]
+	[''Show]
+
 -- VkPhysicalDeviceProperties
