@@ -145,6 +145,11 @@ isDeviceSuitable device = do
 	deviceProperties <- Vk.getPhysicalDeviceProperties device
 	print deviceProperties
 	(putStrLn `mapM_`) . (convertHead ' ' '\t' <$>) . devideWithComma . show $ Vk.physicalDevicePropertiesLimits deviceProperties
+	deviceFeatures <- Vk.getPhysicalDeviceFeatures device
+	print deviceFeatures
+
+	print $ Vk.physicalDevicePropertiesDeviceType deviceProperties
+	print $ Vk.physicalDeviceFeaturesGeometryShader deviceFeatures
 	pure True
 
 devideWithComma :: String -> [String]

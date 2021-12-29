@@ -1,6 +1,8 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Base where
@@ -10,8 +12,12 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
+import Foreign.C.Enum
+import Data.Word
 
 import qualified Vulkan.Internal as I
+
+#include <vulkan/vulkan.h>
 
 type ListCFloat = [#{type float}]
 
@@ -67,3 +73,6 @@ pokeCString :: CString -> String -> IO ()
 pokeCString cs str = withCStringLen str \(cs_, ln) -> do
 	copyBytes cs cs_ ln
 	poke (cs `plusPtr` ln :: CString) 0
+
+enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
+	("VkFalse", #{const VK_FALSE}), ("VkTrue", #{const VK_TRUE}) ]

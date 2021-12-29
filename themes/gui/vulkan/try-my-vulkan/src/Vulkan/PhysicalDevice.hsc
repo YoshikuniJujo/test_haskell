@@ -394,3 +394,44 @@ getPhysicalDeviceProperties (PhysicalDevice ppd) = alloca \ppdp -> do
 foreign import ccall "vkGetPhysicalDeviceProperties"
 	c_vkGetPhysicalDeviceProperties ::
 	Ptr PhysicalDevice -> Ptr PhysicalDeviceProperties -> IO ()
+
+struct "PhysicalDeviceFeatures" #{size VkPhysicalDeviceFeatures}
+		#{alignment VkPhysicalDeviceFeatures} [
+	("robutBufferAccess", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, robustBufferAccess} |],
+		[| #{poke VkPhysicalDeviceFeatures, robustBufferAccess} |]),
+	("fullDrawIndexUint32", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, fullDrawIndexUint32} |],
+		[| #{poke VkPhysicalDeviceFeatures, fullDrawIndexUint32} |]),
+	("imageCubeArray", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, imageCubeArray} |],
+		[| #{poke VkPhysicalDeviceFeatures, imageCubeArray} |]),
+	("independentBlend", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, independentBlend} |],
+		[| #{poke VkPhysicalDeviceFeatures, independentBlend} |]),
+	("geometryShader", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, geometryShader} |],
+		[| #{poke VkPhysicalDeviceFeatures, geometryShader} |]),
+
+	{- tessellationShader, sampleRateShading, ... -}
+
+	{- ..., sparseResidency4Samples, sparseResidency8Samples,
+	 - sparseResidency16Samples, sparceResiidencyAliased -}
+
+	("variableMultisampleRate", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, variableMultisampleRate} |],
+		[| #{poke VkPhysicalDeviceFeatures,
+			variableMultisampleRate} |]),
+	("inheritedQueries", ''Bool32,
+		[| #{peek VkPhysicalDeviceFeatures, inheritedQueries} |],
+		[| #{poke VkPhysicalDeviceFeatures, inheritedQueries} |]) ]
+	[''Show, ''Storable]
+
+getPhysicalDeviceFeatures :: PhysicalDevice -> IO PhysicalDeviceFeatures
+getPhysicalDeviceFeatures (PhysicalDevice ppd) = alloca \ppdf -> do
+	c_vkGetPhysicalDeviceFeatures ppd ppdf
+	peek ppdf
+
+foreign import ccall "vkGetPhysicalDeviceFeatures"
+	c_vkGetPhysicalDeviceFeatures ::
+	Ptr PhysicalDevice -> Ptr PhysicalDeviceFeatures -> IO ()

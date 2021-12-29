@@ -174,6 +174,3 @@ enum "ObjectType" ''#{type VkObjectType} [''Show, ''Storable] [
 		#{const VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR}),
 	("ObjectTypeMaxEnum", #{const VK_OBJECT_TYPE_MAX_ENUM})
 	]
-
-enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
-	("VkFalse", #{const VK_FALSE}), ("VkTrue", #{const VK_TRUE}) ]
