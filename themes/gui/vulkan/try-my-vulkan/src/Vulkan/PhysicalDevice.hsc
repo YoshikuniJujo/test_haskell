@@ -12,6 +12,7 @@ import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
+import Data.Bits
 import Data.Word
 import Data.Int
 
@@ -436,7 +437,8 @@ foreign import ccall "vkGetPhysicalDeviceFeatures"
 	c_vkGetPhysicalDeviceFeatures ::
 	Ptr PhysicalDevice -> Ptr PhysicalDeviceFeatures -> IO ()
 
-enum "QueueFlagBits" ''#{type VkQueueFlagBits} [''Show, ''Storable] [
+enum "QueueFlagBits" ''#{type VkQueueFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
 	("QueueGraphicsBit", #{const VK_QUEUE_GRAPHICS_BIT}),
 	("QueueComputeBit", #{const VK_QUEUE_COMPUTE_BIT}),
 	("QueueTransferBit", #{const VK_QUEUE_TRANSFER_BIT}),

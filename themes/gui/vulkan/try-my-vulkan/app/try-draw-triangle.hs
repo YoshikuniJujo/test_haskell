@@ -10,6 +10,7 @@ import Control.Monad
 import Control.Monad.Fix
 import Data.Bits
 import Data.Bool
+import Data.Maybe
 import Data.List
 import Data.Word
 
@@ -152,18 +153,28 @@ isDeviceSuitable device = do
 	print $ Vk.physicalDevicePropertiesDeviceType deviceProperties
 	print $ Vk.physicalDeviceFeaturesGeometryShader deviceFeatures
 
-	print =<< Vk.getPhysicalDeviceQueueFamilyProperties device
+	indices <- findQueueFamilies device
 
-	pure True
+	pure $ queueFamilyIndicesIsComplete indices
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Maybe Word32 }
+	queueFamilyIndicesGraphicsFamily :: Maybe Int
+	}
 	deriving Show
 
+queueFamilyIndicesIsComplete :: QueueFamilyIndices -> Bool
+queueFamilyIndicesIsComplete is =
+	isJust (queueFamilyIndicesGraphicsFamily is)
+
 findQueueFamilies :: Vk.PhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies _ = do
+findQueueFamilies device = do
+	queueFamilies <- Vk.getPhysicalDeviceQueueFamilyProperties device
 	pure QueueFamilyIndices {
-		graphicsFamily = Nothing
+		queueFamilyIndicesGraphicsFamily = findIndex
+			((/= zeroBits)
+				. (.&. Vk.QueueGraphicsBit)
+				. Vk.queueFamilyPropertiesQueueFlags)
+			queueFamilies
 		}
 
 devideWithComma :: String -> [String]
