@@ -7,7 +7,7 @@ import Foreign.Marshal
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk
-import qualified Vulkan.Base as Vk
+import qualified Vulkan.AllocationCallbacks as Vk
 
 main :: IO ()
 main = do

@@ -23,8 +23,10 @@ import Data.Word
 import Vulkan.Exception
 import Vulkan.Instance
 import Vulkan.Base
+import Vulkan.AllocationCallbacks
 
 import qualified Vulkan.Internal as I
+import qualified Vulkan.AllocationCallbacks.Internal as I
 
 #include <vulkan/vulkan.h>
 

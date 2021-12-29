@@ -21,6 +21,7 @@ import Vulkan.Instance
 import Vulkan.Base
 import Vulkan.Exception
 import qualified Vulkan.Internal as I
+import qualified Vulkan.AllocationCallbacks.Internal as I
 
 #include <vulkan/vulkan.h>
 
@@ -65,7 +66,7 @@ struct "DebugUtilsLabel"
 		[| \p _ -> #{poke VkDebugUtilsLabelEXT, sType} p
 			(#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT} ::
 				#{type VkStructureType}) |]),
-	("pNext", ''I.PtrVoid, [| #{peek VkDebugUtilsLabelEXT, pNext} |],
+	("pNext", ''PtrVoid, [| #{peek VkDebugUtilsLabelEXT, pNext} |],
 		[| #{poke VkDebugUtilsLabelEXT, pNext} |]),
 	("pLabelName", ''CString,
 		[| #{peek VkDebugUtilsLabelEXT, pLabelName} |],
@@ -87,7 +88,7 @@ struct "DebugUtilsObjectNameInfo"
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkDebugUtilsObjectNameInfoEXT, sType} p
 			structureTypeDebugUtilsObjectNameInfo |]),
-	("pNext", ''I.PtrVoid,
+	("pNext", ''PtrVoid,
 		[| #{peek VkDebugUtilsObjectNameInfoEXT, pNext} |],
 		[| #{poke VkDebugUtilsObjectNameInfoEXT, pNext} |]),
 	("objectType", ''ObjectType,
@@ -109,7 +110,7 @@ struct "DebugUtilsMessengerCallbackData"
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkDebugUtilsMessengerCallbackDataEXT, sType}
 			p structureTypeDebugUtilsMessengerCallbackData |]),
-	("pNext", ''I.PtrVoid,
+	("pNext", ''PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pNext} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pNext} |]),
 	("flags", ''DebugUtilsMessengerCallbackDataFlags,
@@ -175,7 +176,7 @@ struct "DebugUtilsMessengerCreateInfo"
 		[| \p _ -> #{poke VkDebugUtilsMessengerCreateInfoEXT, sType} p
 			(#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT} ::
 				#{type VkStructureType}) |]),
-	("pNext", ''I.PtrVoid,
+	("pNext", ''PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pNext} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pNext} |]),
 	("flags", ''DebugUtilsMessengerCreateFlags,
@@ -192,7 +193,7 @@ struct "DebugUtilsMessengerCreateInfo"
 	("pfnUserCallback", ''FunPtrFnDebugUtilsMessengerCallback,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pfnUserCallback} |]),
-	("pUserData", ''I.PtrVoid,
+	("pUserData", ''PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCreateInfoEXT, pUserData} |],
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pUserData} |]) ]
 	[''Show, ''Storable]

@@ -12,7 +12,6 @@ import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
-import Data.Word
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
@@ -21,7 +20,7 @@ import qualified Vulkan.Ext.Internal as Vk.Ext.I
 
 import qualified Vulkan.Instance as Vk
 import qualified Vulkan.PhysicalDevice as Vk
-import qualified Vulkan.Base as Vk
+import qualified Vulkan.AllocationCallbacks as Vk
 
 import ThEnv
 
@@ -62,6 +61,7 @@ initVulkan = do
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
 	pickPhysicalDevice ist
+	createLogicalDevice
 	pure (ist, dbgMssngr)
 
 createInstance :: IO Vk.Instance
@@ -191,6 +191,9 @@ convertHead s d = \case
 	[] -> []
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
+
+createLogicalDevice :: IO ()
+createLogicalDevice = pure ()
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do

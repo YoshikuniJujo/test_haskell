@@ -15,8 +15,10 @@ import Foreign.C.String
 
 import Vulkan.Base
 import Vulkan.Exception
+import Vulkan.AllocationCallbacks
 
 import qualified Vulkan.Internal as I
+import qualified Vulkan.AllocationCallbacks.Internal as I
 
 data InstanceCreateInfo a b = InstanceCreateInfo {
 	instanceCreateInfoNext :: Maybe a,

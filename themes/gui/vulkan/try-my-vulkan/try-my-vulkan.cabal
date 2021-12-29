@@ -28,7 +28,10 @@ library
       Cglm
       ThEnv
       Vulkan
+      Vulkan.AllocationCallbacks
+      Vulkan.AllocationCallbacks.Internal
       Vulkan.Base
+      Vulkan.Device.Internal
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
