@@ -6,6 +6,8 @@ import Foreign.Ptr
 import Foreign.Marshal
 
 import qualified Vulkan as Vk
+import qualified Vulkan.Instance as Vk
+import qualified Vulkan.Base as Vk
 
 main :: IO ()
 main = do

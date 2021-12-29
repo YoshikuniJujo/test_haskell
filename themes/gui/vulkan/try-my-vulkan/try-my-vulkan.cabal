@@ -28,10 +28,13 @@ library
       Cglm
       ThEnv
       Vulkan
+      Vulkan.Base
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
+      Vulkan.Instance
       Vulkan.Internal
+      Vulkan.PhysicalDevice
   other-modules:
       Paths_try_my_vulkan
   hs-source-dirs:

@@ -1,0 +1,396 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Vulkan.PhysicalDevice where
+
+import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
+import Foreign.C.String
+import Foreign.C.Enum
+import Foreign.C.Struct
+import Data.Word
+import Data.Int
+
+import Vulkan.Instance
+import Vulkan.Exception
+import Vulkan.Base
+
+#include <vulkan/vulkan.h>
+
+newtype PhysicalDevice = PhysicalDevice (Ptr PhysicalDevice)
+	deriving (Show, Storable)
+
+pattern PhysicalDeviceNullHandle :: PhysicalDevice
+pattern PhysicalDeviceNullHandle <- PhysicalDevice NullHandle where
+	PhysicalDeviceNullHandle = PhysicalDevice NullHandle
+
+pattern NullHandle :: Ptr a
+pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
+	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+
+enumeratePhysicalDevices :: Instance -> IO [PhysicalDevice]
+enumeratePhysicalDevices (Instance pist) = alloca \pn -> do
+	r <- c_vkEnumeratePhysicalDevices pist pn NullPtr
+	throwUnlessSuccess r
+	n <- peek pn
+	allocaArray (fromIntegral n) \ppd -> do
+		r' <- c_vkEnumeratePhysicalDevices pist pn ppd
+		throwUnlessSuccess r'
+--		(PhysicalDevice <$>) <$> peekArray (fromIntegral n) ppd
+		peekArray (fromIntegral n) ppd
+
+foreign import ccall "vkEnumeratePhysicalDevices"
+	c_vkEnumeratePhysicalDevices ::
+	Ptr Instance -> Ptr #{type uint32_t} -> Ptr PhysicalDevice -> IO Result
+
+enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show, ''Storable] [
+	("PhysicalDeviceTypeOther", #{const VK_PHYSICAL_DEVICE_TYPE_OTHER}),
+	("PhysicalDeviceTypeIntegratedGpu",
+		#{const VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU}),
+	("PhysicalDeviceTypeDiscreteGpu",
+		#{const VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU}),
+	("PhysicalDeviceTypeVirtualGpu",
+		#{const VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU}),
+	("PhysicalDeviceTypeCpu", #{const VK_PHYSICAL_DEVICE_TYPE_CPU}),
+	("PhysicalDeviceTypeMaxEnum",
+		#{const VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM}) ]
+
+-- VkPhysicalDeviceLimits
+
+type ListUint32T = [#{type uint32_t}]
+
+enum "SampleCountFlagBits" ''#{type VkSampleCountFlagBits}
+		[''Show, ''Storable] [
+	("SampleCountFlagsZero", 0),
+	("SampleCount1Bit", #{const VK_SAMPLE_COUNT_1_BIT}),
+	("SampleCount2Bit", #{const VK_SAMPLE_COUNT_2_BIT}),
+	("SampleCount4Bit", #{const VK_SAMPLE_COUNT_4_BIT}),
+	("SampleCount8Bit", #{const VK_SAMPLE_COUNT_8_BIT}),
+	("SampleCount16Bit", #{const VK_SAMPLE_COUNT_16_BIT}),
+	("SampleCount32Bit", #{const VK_SAMPLE_COUNT_32_BIT}),
+	("SampleCount64Bit", #{const VK_SAMPLE_COUNT_64_BIT}),
+	("SampleCountFlagBitsMaxEnum",
+		#{const VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM}) ]
+
+type SampleCountFlags = SampleCountFlagBits
+
+struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
+		#{alignment VkPhysicalDeviceLimits} [
+	("maxImageDimension1D", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimension1D} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimension1D} |]),
+	("maxImageDimension2D", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimension2D} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimension2D} |]),
+	("maxImageDimension3D", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimension3D} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimension3D} |]),
+	("maxImageDimensionCube", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimensionCube} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimensionCube} |]),
+	("maxImageArrayLayers", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageArrayLayers} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageArrayLayers} |]),
+	("maxTexelBufferElements", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxTexelBufferElements} |],
+		[| #{poke VkPhysicalDeviceLimits, maxTexelBufferElements} |]),
+	("maxUniformBufferRange", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxUniformBufferRange} |],
+		[| #{poke VkPhysicalDeviceLimits, maxUniformBufferRange} |]),
+	("maxStorageBufferRange", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxStorageBufferRange} |],
+		[| #{poke VkPhysicalDeviceLimits, maxStorageBufferRange} |]),
+	("maxPushConstantsSize", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxPushConstantsSize} |],
+		[| #{poke VkPhysicalDeviceLimits, maxPushConstantsSize} |]),
+	("maxMemoryAllocationCount", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxMemoryAllocationCount} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxMemoryAllocationCount} |]),
+	("maxSamplerAllocationCount", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxSamplerAllocationCount} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxSamplerAllocationCount} |]),
+	 ("bufferImageGrannularity", ''#{type VkDeviceSize},
+		[| #{peek VkPhysicalDeviceLimits, bufferImageGranularity} |],
+		[| #{poke VkPhysicalDeviceLimits, bufferImageGranularity} |]),
+	 ("sparseAddressSpaceSize", ''#{type VkDeviceSize},
+		[| #{peek VkPhysicalDeviceLimits, sparseAddressSpaceSize} |],
+		[| #{poke VkPhysicalDeviceLimits, sparseAddressSpaceSize} |]),
+	
+	{- maxBoundDescriptorSets, maxPerStageDescriptorSamplers,
+	 - maxPerStageDescriptorUniformBuffers,
+	 - maxPerStageDescriptorStorageBuffers,
+	 - maxPerStageDescriptorSampledImages,
+	 - maxPerStageDescriptorStorageImages,
+	 - maxPerStageDescriptorInputAttachments, maxPerStageResources,
+	 - maxDescriptorSetSamplers -}
+
+	("maxDescriptorSetUniformBuffers", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxDescriptorSetUniformBuffers} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxDescriptorSetUniformBuffers} |]),
+
+	{- maxDescriptorSetUniformBuffersDynamic,
+	 - maxDescriptorSetStorageBuffers,
+	 - maxDescriptorSetStorageBuffersDynamic,
+	 - maxDescriptorSetSampledImages, maxDescriptorSetStorageImages,
+	 - maxDescriptorSetInputAttachments -}
+
+	 ("maxVertexInputAttributes", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxVertexInputAttributes} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexInputAttributes} |]),
+	("maxVertexInputBindings", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxVertexInputBindings} |],
+		[| #{poke VkPhysicalDeviceLimits, maxVertexInputBindings} |]),
+	("maxVertexInputAttributeOffset", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxVertexInputAttributeOffset} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexInputAttributeOffset} |]),
+	("maxVertexInputBindingStride", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxVertexInputBindingStride} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexInputBindingStride} |]),
+	("maxVertexOutputComponents", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxVertexOutputComponents} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexOutputComponents} |]),
+
+	{- maxTessellationGenerationLevel, maxTessellationPatchSize,
+	 - maxTessellationControlPerVertexInputComponents -}
+	
+	("maxTessellationControlPerVertexOutputComponents", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxTessellationControlPerVertexOutputComponents} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxTessellationControlPerVertexOutputComponents} |]),
+
+	{- maxTessellationControlPerPatchOutputCompoonents,
+	 - maxTessellationControlTotalOutputComponents,
+	 - maxTessellationEvaluationInputComponents,
+	 - maxTessellationEvaluationOutputComponents,
+	 - maxGeometryShaderInvocations -}
+
+	("maxGeometryInputComponents", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxGeometryInputComponents} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxGeometryInputComponents} |]),
+
+	{- maxGeometryOutputComponents, maxGeometryOutputVertices,
+	 - maxGeometryTotalOutputComponents, maxFragmentInputComponents,
+	 - maxFragmentOutputAttachments, maxFragmentDualSrcAttachments,
+	 - maxFragmentCombinedOutputResources, maxComputeSharedMemorySize -}
+
+	 ("maxComputeWorkGroupCount", ''ListUint32T,
+		[| peekArray 3 . #{ptr VkPhysicalDeviceLimits,
+			maxComputeWorkGroupCount} |],
+		[| pokeArray . #{ptr VkPhysicalDeviceLimits,
+			maxComputeWorkGroupCount} |]),
+
+	{- maxComputeWorkGroupInvocations, maxComputeWorkGroupSize[3],
+	 - subPixelPrecisionBits, subTexelPrecisionBits, mipmapPrecisionBits,
+	 - maxDrawIndexedIndexValue, maxDrawIndirectCount -}
+
+	("maxSamplerLodBias", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, maxSamplerLodBias} |],
+		[| #{poke VkPhysicalDeviceLimits, maxSamplerLodBias} |]),
+	("maxSamplerAnisotropy", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, maxSamplerAnisotropy} |],
+		[| #{poke VkPhysicalDeviceLimits, maxSamplerAnisotropy} |]),
+
+	{- maxViewports, maxViewportDimensions[2], viewportBoundsRange[2],
+	 - viewPortSubPixelBits, minMemoryMapAlignment,
+	 - minTexelBufferOffsetAlignment, minUniformBufferOffsetAlignment,
+	 - minStorageBufferOffsetAlignment -}
+
+	("minTexelOffset", ''#{type int32_t},
+		[| #{peek VkPhysicalDeviceLimits, minTexelOffset} |],
+		[| #{poke VkPhysicalDeviceLimits, minTexelOffset} |]),
+	("maxTexelOffset", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxTexelOffset} |],
+		[| #{poke VkPhysicalDeviceLimits, maxTexelOffset} |]),
+
+	{- minTexelGatherOffset, maxTexelGatherOffset, minInterpolationOffset,
+	 - maxInterpolationOffset -}
+
+	("subPixelInterpolationOffsetBits", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			subPixelInterpolationOffsetBits} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			subPixelInterpolationOffsetBits} |]),
+
+	{- maxFramebufferWidth, maxFramebufferHeight, maxFramebufferLayers -}
+
+	("frameBufferColorSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferColorSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferColorSampleCounts} |]),
+	("frameBufferDepthSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferDepthSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferDepthSampleCounts} |]),
+	("framebufferStencilSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferStencilSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferStencilSampleCounts} |]),
+	("framebufferNoAttachmentsSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferNoAttachmentsSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferNoAttachmentsSampleCounts} |]),
+	("maxColorAttachments", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxColorAttachments} |],
+		[| #{poke VkPhysicalDeviceLimits, maxColorAttachments} |]),
+	("sampledImageColorSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageColorSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageColorSampleCounts} |]),
+	("sampledImageIntegerSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageIntegerSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageIntegerSampleCounts} |]),
+	("sampledImageDepthSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageDepthSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageDepthSampleCounts} |]),
+	("sampledImageStencilSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageStencilSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageStencilSampleCounts} |]),
+
+	{- storageImageSampleCounts,
+	 - maxSampleMaskWords, timestampComputeAndGraphics,
+	 - timestampPeriod, maxClipDistances, maxCullDistances,
+	 - maxCombinedClipAndCullDistances -}
+
+	("discreteQueuePriorities", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, discreteQueuePriorities} |],
+		[| #{poke VkPhysicalDeviceLimits, discreteQueuePriorities} |]),
+	("pointSizeRange", ''ListCFloat,
+		[| peekArray 2
+			. #{ptr VkPhysicalDeviceLimits, pointSizeRange} |],
+		[| \p -> pokeArray
+				(#{ptr VkPhysicalDeviceLimits, pointSizeRange}
+				p)
+			. take 2 |]),
+	("lineWidthRange", ''ListCFloat,
+		[| peekArray 2
+			. #{ptr VkPhysicalDeviceLimits, lineWidthRange} |],
+		[| \p -> pokeArray
+				(#{ptr VkPhysicalDeviceLimits, lineWidthRange}
+				p)
+			. take 2 |]),
+	("pointSizeGranularity", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, pointSizeGranularity} |],
+		[| #{poke VkPhysicalDeviceLimits, pointSizeGranularity} |]),
+	("lineWidthGranularity", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, lineWidthGranularity} |],
+		[| #{poke VkPhysicalDeviceLimits, lineWidthGranularity} |])
+
+	{- strictLines, standardSampleLocations,
+	 - optimalBufferCopyOffsetAlignment, optimalBufferCopyRowPitchAlignment,
+	 - nonCoherentAtomSize -}
+	]
+	[''Show, ''Storable]
+
+-- VkPhysicalDeviceSparseProperties
+
+struct "PhysicalDeviceSparseProperties" #{size VkPhysicalDeviceSparseProperties}
+		#{alignment VkPhysicalDeviceSparseProperties} [
+	("residencyStandard2DBlockShape", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyStandard2DBlockShape} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyStandard2DBlockShape} |]),
+	("residencyStandard2DMultisampleBlockShape", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyStandard2DMultisampleBlockShape} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyStandard2DMultisampleBlockShape} |]),
+	("residensyStandard3DBlockShape", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyStandard3DBlockShape} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyStandard3DBlockShape} |]),
+	("residencyAlienedMipSize", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyAlignedMipSize} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyAlignedMipSize} |]),
+	("residencyNonResidentStrict", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceSparseProperties,
+			residencyNonResidentStrict} |],
+		[| #{poke VkPhysicalDeviceSparseProperties,
+			residencyNonResidentStrict} |]) ]
+	[''Show, ''Storable]
+
+-- VkPhysicalDeviceProperties
+
+type ListUint8T = [#{type uint8_t}]
+
+struct "PhysicalDeviceProperties" #{size VkPhysicalDeviceProperties}
+		#{alignment VkPhysicalDeviceProperties} [
+	("apiVersion", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, apiVersion} |],
+		[| #{poke VkPhysicalDeviceProperties, apiVersion} |]),
+	("driverVersion", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, driverVersion} |],
+		[| #{poke VkPhysicalDeviceProperties, driverVersion} |]),
+	("vendorId", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, vendorID} |],
+		[| #{poke VkPhysicalDeviceProperties, vendorID} |]),
+	("deviceId", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, deviceID} |],
+		[| #{poke VkPhysicalDeviceProperties, deviceID} |]),
+	("deviceType", ''PhysicalDeviceType,
+		[| #{peek VkPhysicalDeviceProperties, deviceType} |],
+		[| #{poke VkPhysicalDeviceProperties, deviceType} |]),
+	("deviceName", ''String,
+		[| peekCString
+			. #{ptr VkPhysicalDeviceProperties, deviceName} |],
+		[| \p -> pokeCString
+			(#{ptr VkPhysicalDeviceProperties, deviceName} p)
+				. take (vkMaxPhysicalDeviceNameSize - 1) |]),
+	("pipelineCacheUuid", ''ListUint8T,
+		[| peekArray #{const VK_UUID_SIZE}
+			. #{ptr VkPhysicalDeviceProperties, pipelineCacheUUID}
+			|],
+		[| \p -> pokeArray
+			(#{ptr VkPhysicalDeviceProperties, pipelineCacheUUID} p)
+				. take #{const VK_UUID_SIZE} |]),
+	("limits", ''PhysicalDeviceLimits,
+		[| #{peek VkPhysicalDeviceProperties, limits} |],
+		[| #{poke VkPhysicalDeviceProperties, limits} |]),
+	("sparseProperties", ''PhysicalDeviceSparseProperties,
+		[| #{peek VkPhysicalDeviceProperties, sparseProperties} |],
+		[| #{poke VkPhysicalDeviceProperties, sparseProperties} |]) ]
+	[''Show, ''Storable]
+
+vkMaxPhysicalDeviceNameSize :: Integral n => n
+vkMaxPhysicalDeviceNameSize = #{const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE}
+
+getPhysicalDeviceProperties :: PhysicalDevice -> IO PhysicalDeviceProperties
+getPhysicalDeviceProperties (PhysicalDevice ppd) = alloca \ppdp -> do
+	c_vkGetPhysicalDeviceProperties ppd ppdp
+	peek ppdp
+
+foreign import ccall "vkGetPhysicalDeviceProperties"
+	c_vkGetPhysicalDeviceProperties ::
+	Ptr PhysicalDevice -> Ptr PhysicalDeviceProperties -> IO ()

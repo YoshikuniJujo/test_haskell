@@ -16,6 +16,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan
+import Vulkan.Instance
+import Vulkan.Base
 import Vulkan.Exception
 
 import qualified Vulkan.Internal as I

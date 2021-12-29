@@ -17,6 +17,10 @@ import qualified Vulkan as Vk
 import qualified Vulkan.Ext as Vk.Ext
 import qualified Vulkan.Ext.Internal as Vk.Ext.I
 
+import qualified Vulkan.Instance as Vk
+import qualified Vulkan.PhysicalDevice as Vk
+import qualified Vulkan.Base as Vk
+
 import ThEnv
 
 width, height :: Int
