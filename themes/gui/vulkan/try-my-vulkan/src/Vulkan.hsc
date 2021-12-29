@@ -350,6 +350,21 @@ enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show, ''Storable] [
 
 type ListUint32T = [#{type uint32_t}]
 
+enum "SampleCountFlagBits" ''#{type VkSampleCountFlagBits}
+		[''Show, ''Storable] [
+	("SampleCountFlagsZero", 0),
+	("SampleCount1Bit", #{const VK_SAMPLE_COUNT_1_BIT}),
+	("SampleCount2Bit", #{const VK_SAMPLE_COUNT_2_BIT}),
+	("SampleCount4Bit", #{const VK_SAMPLE_COUNT_4_BIT}),
+	("SampleCount8Bit", #{const VK_SAMPLE_COUNT_8_BIT}),
+	("SampleCount16Bit", #{const VK_SAMPLE_COUNT_16_BIT}),
+	("SampleCount32Bit", #{const VK_SAMPLE_COUNT_32_BIT}),
+	("SampleCount64Bit", #{const VK_SAMPLE_COUNT_64_BIT}),
+	("SampleCountFlagBitsMaxEnum",
+		#{const VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM}) ]
+
+type SampleCountFlags = SampleCountFlagBits
+
 struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 		#{alignment VkPhysicalDeviceLimits} [
 	("maxImageDimension1D", ''#{type uint32_t},
@@ -361,10 +376,33 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 	("maxImageDimension3D", ''#{type uint32_t},
 		[| #{peek VkPhysicalDeviceLimits, maxImageDimension3D} |],
 		[| #{poke VkPhysicalDeviceLimits, maxImageDimension3D} |]),
-	{- maxImageDimensionCube, maxImageArrayLayers, maxTexelBufferElements,
-	 - maxUniformBufferRange, maxStorageBufferRange, maxPushConstantsSize,
-	 - maxMemoryAllocationCount, maxSamplerAllocationCount -}
-
+	("maxImageDimensionCube", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageDimensionCube} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageDimensionCube} |]),
+	("maxImageArrayLayers", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxImageArrayLayers} |],
+		[| #{poke VkPhysicalDeviceLimits, maxImageArrayLayers} |]),
+	("maxTexelBufferElements", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxTexelBufferElements} |],
+		[| #{poke VkPhysicalDeviceLimits, maxTexelBufferElements} |]),
+	("maxUniformBufferRange", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxUniformBufferRange} |],
+		[| #{poke VkPhysicalDeviceLimits, maxUniformBufferRange} |]),
+	("maxStorageBufferRange", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxStorageBufferRange} |],
+		[| #{poke VkPhysicalDeviceLimits, maxStorageBufferRange} |]),
+	("maxPushConstantsSize", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxPushConstantsSize} |],
+		[| #{poke VkPhysicalDeviceLimits, maxPushConstantsSize} |]),
+	("maxMemoryAllocationCount", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxMemoryAllocationCount} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxMemoryAllocationCount} |]),
+	("maxSamplerAllocationCount", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxSamplerAllocationCount} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxSamplerAllocationCount} |]),
 	 ("bufferImageGrannularity", ''#{type VkDeviceSize},
 		[| #{peek VkPhysicalDeviceLimits, bufferImageGranularity} |],
 		[| #{poke VkPhysicalDeviceLimits, bufferImageGranularity} |]),
@@ -397,13 +435,25 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 		[| #{poke VkPhysicalDeviceLimits, maxSamplerLodBias} |]),
 	("maxSamplerAnisotropy", ''#{type float},
 		[| #{peek VkPhysicalDeviceLimits, maxSamplerAnisotropy} |],
-		[| #{poke VkPhysicalDeviceLimits, maxSamplerAnisotropy} |])
+		[| #{poke VkPhysicalDeviceLimits, maxSamplerAnisotropy} |]),
 
 	{- maxViewports, maxViewportDimensions[2], viewportBoundsRange[2],
 	 - viewPortSubPIxelBits, ... -}
 
-	{- ..., maxFramebufferLayers, frameBufferColorSampleCounts,
-	 - frameBufferDepthSampleCounts, frameBufferStencilSampleCounts, ... -}
+	{- ..., maxFramebufferLayers -}
+
+	("frameBufferColorSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferColorSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferColorSampleCounts} |]),
+	("frameBufferDepthSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferDepthSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferDepthSampleCounts} |])
+
+	{- frameBufferStencilSampleCounts, ... -}
 
 	{- ..., optimalBufferCopyOffsetAlignment,
 	 - optimalBufferCopyRowPitchAlignment, nonCoherentAtomSize -}
