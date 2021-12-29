@@ -20,6 +20,7 @@ import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Exception
 
@@ -365,6 +366,8 @@ enum "SampleCountFlagBits" ''#{type VkSampleCountFlagBits}
 
 type SampleCountFlags = SampleCountFlagBits
 
+type ListCFloat = [#{type float}]
+
 struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 		#{alignment VkPhysicalDeviceLimits} [
 	("maxImageDimension1D", ''#{type uint32_t},
@@ -414,10 +417,69 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 	 - maxPerStageDescriptorUniformBuffers,
 	 - maxPerStageDescriptorStorageBuffers,
 	 - maxPerStageDescriptorSampledImages,
-	 - maxPerStageDescriptorStorageImages, ... -}
+	 - maxPerStageDescriptorStorageImages,
+	 - maxPerStageDescriptorInputAttachments, maxPerStageResources,
+	 - maxDescriptorSetSamplers -}
 
-	 {- ..., maxFragmentDualSrcAttachments,
-	  - maxFragmentCombinedOutputResources, maxComputeSharedMemorySize -}
+	("maxDescriptorSetUniformBuffers", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxDescriptorSetUniformBuffers} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxDescriptorSetUniformBuffers} |]),
+
+	{- maxDescriptorSetUniformBuffersDynamic,
+	 - maxDescriptorSetStorageBuffers,
+	 - maxDescriptorSetStorageBuffersDynamic,
+	 - maxDescriptorSetSampledImages, maxDescriptorSetStorageImages,
+	 - maxDescriptorSetInputAttachments -}
+
+	 ("maxVertexInputAttributes", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxVertexInputAttributes} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexInputAttributes} |]),
+	("maxVertexInputBindings", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxVertexInputBindings} |],
+		[| #{poke VkPhysicalDeviceLimits, maxVertexInputBindings} |]),
+	("maxVertexInputAttributeOffset", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxVertexInputAttributeOffset} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexInputAttributeOffset} |]),
+	("maxVertexInputBindingStride", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxVertexInputBindingStride} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexInputBindingStride} |]),
+	("maxVertexOutputComponents", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxVertexOutputComponents} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxVertexOutputComponents} |]),
+
+	{- maxTessellationGenerationLevel, maxTessellationPatchSize,
+	 - maxTessellationControlPerVertexInputComponents -}
+	
+	("maxTessellationControlPerVertexOutputComponents", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxTessellationControlPerVertexOutputComponents} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxTessellationControlPerVertexOutputComponents} |]),
+
+	{- maxTessellationControlPerPatchOutputCompoonents,
+	 - maxTessellationControlTotalOutputComponents,
+	 - maxTessellationEvaluationInputComponents,
+	 - maxTessellationEvaluationOutputComponents,
+	 - maxGeometryShaderInvocations -}
+
+	("maxGeometryInputComponents", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			maxGeometryInputComponents} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			maxGeometryInputComponents} |]),
+
+	{- maxGeometryOutputComponents, maxGeometryOutputVertices,
+	 - maxGeometryTotalOutputComponents, maxFragmentInputComponents,
+	 - maxFragmentOutputAttachments, maxFragmentDualSrcAttachments,
+	 - maxFragmentCombinedOutputResources, maxComputeSharedMemorySize -}
 
 	 ("maxComputeWorkGroupCount", ''ListUint32T,
 		[| peekArray 3 . #{ptr VkPhysicalDeviceLimits,
@@ -426,11 +488,10 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 			maxComputeWorkGroupCount} |]),
 
 	{- maxComputeWorkGroupInvocations, maxComputeWorkGroupSize[3],
-	 - subPixelPrecisionBits, subTexelPrecisionBits ... -}
+	 - subPixelPrecisionBits, subTexelPrecisionBits, mipmapPrecisionBits,
+	 - maxDrawIndexedIndexValue, maxDrawIndirectCount -}
 
-	 {- ..., maxDrawIndexedIndexValue, maxDrawIndirectCount -}
-
-	 ("maxSamplerLodBias", ''#{type float},
+	("maxSamplerLodBias", ''#{type float},
 		[| #{peek VkPhysicalDeviceLimits, maxSamplerLodBias} |],
 		[| #{poke VkPhysicalDeviceLimits, maxSamplerLodBias} |]),
 	("maxSamplerAnisotropy", ''#{type float},
@@ -438,9 +499,27 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 		[| #{poke VkPhysicalDeviceLimits, maxSamplerAnisotropy} |]),
 
 	{- maxViewports, maxViewportDimensions[2], viewportBoundsRange[2],
-	 - viewPortSubPIxelBits, ... -}
+	 - viewPortSubPixelBits, minMemoryMapAlignment,
+	 - minTexelBufferOffsetAlignment, minUniformBufferOffsetAlignment,
+	 - minStorageBufferOffsetAlignment -}
 
-	{- ..., maxFramebufferLayers -}
+	("minTexelOffset", ''#{type int32_t},
+		[| #{peek VkPhysicalDeviceLimits, minTexelOffset} |],
+		[| #{poke VkPhysicalDeviceLimits, minTexelOffset} |]),
+	("maxTexelOffset", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxTexelOffset} |],
+		[| #{poke VkPhysicalDeviceLimits, maxTexelOffset} |]),
+
+	{- minTexelGatherOffset, maxTexelGatherOffset, minInterpolationOffset,
+	 - maxInterpolationOffset -}
+
+	("subPixelInterpolationOffsetBits", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits,
+			subPixelInterpolationOffsetBits} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			subPixelInterpolationOffsetBits} |]),
+
+	{- maxFramebufferWidth, maxFramebufferHeight, maxFramebufferLayers -}
 
 	("frameBufferColorSampleCounts", ''SampleCountFlags,
 		[| #{peek VkPhysicalDeviceLimits,
@@ -451,12 +530,73 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 		[| #{peek VkPhysicalDeviceLimits,
 			framebufferDepthSampleCounts} |],
 		[| #{poke VkPhysicalDeviceLimits,
-			framebufferDepthSampleCounts} |])
+			framebufferDepthSampleCounts} |]),
+	("framebufferStencilSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferStencilSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferStencilSampleCounts} |]),
+	("framebufferNoAttachmentsSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			framebufferNoAttachmentsSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			framebufferNoAttachmentsSampleCounts} |]),
+	("maxColorAttachments", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, maxColorAttachments} |],
+		[| #{poke VkPhysicalDeviceLimits, maxColorAttachments} |]),
+	("sampledImageColorSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageColorSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageColorSampleCounts} |]),
+	("sampledImageIntegerSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageIntegerSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageIntegerSampleCounts} |]),
+	("sampledImageDepthSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageDepthSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageDepthSampleCounts} |]),
+	("sampledImageStencilSampleCounts", ''SampleCountFlags,
+		[| #{peek VkPhysicalDeviceLimits,
+			sampledImageStencilSampleCounts} |],
+		[| #{poke VkPhysicalDeviceLimits,
+			sampledImageStencilSampleCounts} |]),
 
-	{- frameBufferStencilSampleCounts, ... -}
+	{- storageImageSampleCounts,
+	 - maxSampleMaskWords, timestampComputeAndGraphics,
+	 - timestampPeriod, maxClipDistances, maxCullDistances,
+	 - maxCombinedClipAndCullDistances -}
 
-	{- ..., optimalBufferCopyOffsetAlignment,
-	 - optimalBufferCopyRowPitchAlignment, nonCoherentAtomSize -}
+	("discreteQueuePriorities", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceLimits, discreteQueuePriorities} |],
+		[| #{poke VkPhysicalDeviceLimits, discreteQueuePriorities} |]),
+	("pointSizeRange", ''ListCFloat,
+		[| peekArray 2
+			. #{ptr VkPhysicalDeviceLimits, pointSizeRange} |],
+		[| \p -> pokeArray
+				(#{ptr VkPhysicalDeviceLimits, pointSizeRange}
+				p)
+			. take 2 |]),
+	("lineWidthRange", ''ListCFloat,
+		[| peekArray 2
+			. #{ptr VkPhysicalDeviceLimits, lineWidthRange} |],
+		[| \p -> pokeArray
+				(#{ptr VkPhysicalDeviceLimits, lineWidthRange}
+				p)
+			. take 2 |]),
+	("pointSizeGranularity", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, pointSizeGranularity} |],
+		[| #{poke VkPhysicalDeviceLimits, pointSizeGranularity} |]),
+	("lineWidthGranularity", ''#{type float},
+		[| #{peek VkPhysicalDeviceLimits, lineWidthGranularity} |],
+		[| #{poke VkPhysicalDeviceLimits, lineWidthGranularity} |])
+
+	{- strictLines, standardSampleLocations,
+	 - optimalBufferCopyOffsetAlignment, optimalBufferCopyRowPitchAlignment,
+	 - nonCoherentAtomSize -}
 	]
 	[''Show, ''Storable]
 

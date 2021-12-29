@@ -10,7 +10,6 @@ import Foreign.Concurrent
 import Foreign.Marshal
 -- import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.C.Types
 import Foreign.C.String
 import Control.Exception
 import Data.Word
@@ -29,7 +28,8 @@ debugUtilsExtensionName = #{const_str VK_EXT_DEBUG_UTILS_EXTENSION_NAME}
 
 data DebugUtilsLabel = DebugUtilsLabel {
 	debugUtilsLabelName :: String,
-	debugUtilsLabelColor :: Maybe (CFloat, CFloat, CFloat, CFloat) }
+	debugUtilsLabelColor :: Maybe (#{type float},
+		#{type float}, #{type float}, #{type float}) }
 	deriving Show
 
 debugUtilsLabelFromC :: I.DebugUtilsLabel -> IO DebugUtilsLabel
