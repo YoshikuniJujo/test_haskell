@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -137,7 +137,26 @@ pickPhysicalDevice ist = do
 		_ -> pure physicalDevice
 
 isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
-isDeviceSuitable device = pure True
+isDeviceSuitable device = do
+	deviceProperties <- Vk.getPhysicalDeviceProperties device
+	print deviceProperties
+	(putStrLn `mapM_`) . (convertHead ' ' '\t' <$>) . devideWithComma . show $ Vk.physicalDevicePropertiesLimits deviceProperties
+	pure True
+
+devideWithComma :: String -> [String]
+devideWithComma = \case
+	"" -> [""]
+	'[' : cs -> let
+		(bd, ']' : rst) = span (/= ']') cs
+		str : strs = devideWithComma rst in ('[' : bd ++ "]" ++ str) : strs
+	',' : cs -> "" : devideWithComma cs
+	c : cs -> let str : strs = devideWithComma cs in (c : str) : strs
+
+convertHead :: Eq a => a -> a -> [a] -> [a]
+convertHead s d = \case
+	[] -> []
+	c : cs	| c == s -> d : cs
+		| otherwise -> c : cs
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do

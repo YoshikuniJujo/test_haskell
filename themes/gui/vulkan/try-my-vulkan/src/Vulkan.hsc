@@ -150,14 +150,19 @@ foreign import ccall "vkCreateInstance" c_vkCreateInstance ::
 	Ptr I.InstanceCreateInfo -> Ptr I.AllocationCallbacks -> Ptr Instance ->
 	IO Result
 
-pokeCString :: Int -> CString -> String -> IO ()
-pokeCString n cs str = withCString str \cs_ -> copyBytes cs cs_ n
+pokeCStringLen :: Int -> CString -> String -> IO ()
+pokeCStringLen n cs str = withCString str \cs_ -> copyBytes cs cs_ n
+
+pokeCString :: CString -> String -> IO ()
+pokeCString cs str = withCStringLen str \(cs_, ln) -> do
+	copyBytes cs cs_ ln
+	poke (cs `plusPtr` ln :: CString) 0
 
 struct "ExtensionProperties" #{size VkExtensionProperties}
 		#{alignment VkExtensionProperties} [
 	("extensionName", ''String,
 		[| peekCString . #{ptr VkExtensionProperties, extensionName} |],
-		[| \p s -> pokeCString
+		[| \p s -> pokeCStringLen
 			#{const VK_MAX_EXTENSION_NAME_SIZE}
 			(#{ptr VkExtensionProperties, extensionName} p) s |]),
 	("specVersion", ''#{type uint32_t}, [| #{peek VkExtensionProperties, specVersion} |],
@@ -199,7 +204,7 @@ struct "LayerProperties" #{size VkLayerProperties}
 		#{alignment VkLayerProperties} [
 	("layerName", ''String,
 		[| peekCString . #{ptr VkLayerProperties, layerName} |],
-		[| \p s -> pokeCString
+		[| \p s -> pokeCStringLen
 			#{const VK_MAX_EXTENSION_NAME_SIZE}
 			(#{ptr VkLayerProperties, layerName} p) s |]),
 	("specVersion", ''#{type uint32_t},
@@ -210,7 +215,7 @@ struct "LayerProperties" #{size VkLayerProperties}
 		[| #{poke VkLayerProperties, implementationVersion} |]),
 	("description", ''String,
 		[| peekCString . #{ptr VkLayerProperties, description} |],
-		[| \p s -> pokeCString
+		[| \p s -> pokeCStringLen
 			#{const VK_MAX_DESCRIPTION_SIZE}
 			(#{ptr VkLayerProperties, description} p) s |]) ]
 	[''Show, ''Storable]
@@ -329,7 +334,7 @@ foreign import ccall "vkEnumeratePhysicalDevices"
 	c_vkEnumeratePhysicalDevices ::
 	Ptr Instance -> Ptr #{type uint32_t} -> Ptr PhysicalDevice -> IO Result
 
-enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show] [
+enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show, ''Storable] [
 	("PhysicalDeviceTypeOther", #{const VK_PHYSICAL_DEVICE_TYPE_OTHER}),
 	("PhysicalDeviceTypeIntegratedGpu",
 		#{const VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU}),
@@ -403,7 +408,7 @@ struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 	{- ..., optimalBufferCopyOffsetAlignment,
 	 - optimalBufferCopyRowPitchAlignment, nonCoherentAtomSize -}
 	]
-	[''Show]
+	[''Show, ''Storable]
 
 -- VkPhysicalDeviceSparseProperties
 
@@ -434,6 +439,58 @@ struct "PhysicalDeviceSparseProperties" #{size VkPhysicalDeviceSparseProperties}
 			residencyNonResidentStrict} |],
 		[| #{poke VkPhysicalDeviceSparseProperties,
 			residencyNonResidentStrict} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 -- VkPhysicalDeviceProperties
+
+type ListUint8T = [#{type uint8_t}]
+
+struct "PhysicalDeviceProperties" #{size VkPhysicalDeviceProperties}
+		#{alignment VkPhysicalDeviceProperties} [
+	("apiVersion", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, apiVersion} |],
+		[| #{poke VkPhysicalDeviceProperties, apiVersion} |]),
+	("driverVersion", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, driverVersion} |],
+		[| #{poke VkPhysicalDeviceProperties, driverVersion} |]),
+	("vendorId", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, vendorID} |],
+		[| #{poke VkPhysicalDeviceProperties, vendorID} |]),
+	("deviceId", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceProperties, deviceID} |],
+		[| #{poke VkPhysicalDeviceProperties, deviceID} |]),
+	("deviceType", ''PhysicalDeviceType,
+		[| #{peek VkPhysicalDeviceProperties, deviceType} |],
+		[| #{poke VkPhysicalDeviceProperties, deviceType} |]),
+	("deviceName", ''String,
+		[| peekCString
+			. #{ptr VkPhysicalDeviceProperties, deviceName} |],
+		[| \p -> pokeCString
+			(#{ptr VkPhysicalDeviceProperties, deviceName} p)
+				. take (vkMaxPhysicalDeviceNameSize - 1) |]),
+	("pipelineCacheUuid", ''ListUint8T,
+		[| peekArray #{const VK_UUID_SIZE}
+			. #{ptr VkPhysicalDeviceProperties, pipelineCacheUUID}
+			|],
+		[| \p -> pokeArray
+			(#{ptr VkPhysicalDeviceProperties, pipelineCacheUUID} p)
+				. take #{const VK_UUID_SIZE} |]),
+	("limits", ''PhysicalDeviceLimits,
+		[| #{peek VkPhysicalDeviceProperties, limits} |],
+		[| #{poke VkPhysicalDeviceProperties, limits} |]),
+	("sparseProperties", ''PhysicalDeviceSparseProperties,
+		[| #{peek VkPhysicalDeviceProperties, sparseProperties} |],
+		[| #{poke VkPhysicalDeviceProperties, sparseProperties} |]) ]
+	[''Show, ''Storable]
+
+vkMaxPhysicalDeviceNameSize :: Integral n => n
+vkMaxPhysicalDeviceNameSize = #{const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE}
+
+getPhysicalDeviceProperties :: PhysicalDevice -> IO PhysicalDeviceProperties
+getPhysicalDeviceProperties (PhysicalDevice ppd) = alloca \ppdp -> do
+	c_vkGetPhysicalDeviceProperties ppd ppdp
+	peek ppdp
+
+foreign import ccall "vkGetPhysicalDeviceProperties"
+	c_vkGetPhysicalDeviceProperties ::
+	Ptr PhysicalDevice -> Ptr PhysicalDeviceProperties -> IO ()
