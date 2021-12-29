@@ -435,3 +435,58 @@ getPhysicalDeviceFeatures (PhysicalDevice ppd) = alloca \ppdf -> do
 foreign import ccall "vkGetPhysicalDeviceFeatures"
 	c_vkGetPhysicalDeviceFeatures ::
 	Ptr PhysicalDevice -> Ptr PhysicalDeviceFeatures -> IO ()
+
+enum "QueueFlagBits" ''#{type VkQueueFlagBits} [''Show, ''Storable] [
+	("QueueGraphicsBit", #{const VK_QUEUE_GRAPHICS_BIT}),
+	("QueueComputeBit", #{const VK_QUEUE_COMPUTE_BIT}),
+	("QueueTransferBit", #{const VK_QUEUE_TRANSFER_BIT}),
+	("QueueSparseBindingBit", #{const VK_QUEUE_SPARSE_BINDING_BIT}),
+	("QueueProtectedBit", #{const VK_QUEUE_PROTECTED_BIT}),
+	#ifdef VK_ENABLE_BETA_EXTENSIONS
+	("QueueVideoDecodeBitKhr", #{const VK_QUEUE_VIDEO_DECODE_BIT_KHR}),
+	("QueueVideoEncodeBitKhr", #{const VK_QUEUE_VIDEO_ENCODE_BIT_KHR}),
+	#endif
+	("QueueFlagBitsMaxEnum", #{const VK_QUEUE_FLAG_BITS_MAX_ENUM}) ]
+
+struct "Extent3D" #{size VkExtent3D} #{alignment VkExtent3D} [
+	("width", ''#{type uint32_t}, [| #{peek VkExtent3D, width} |],
+		[| #{poke VkExtent3D, width} |]),
+	("height", ''#{type uint32_t}, [| #{peek VkExtent3D, height} |],
+		[| #{poke VkExtent3D, height} |]),
+	("depth", ''#{type uint32_t}, [| #{peek VkExtent3D, depth} |],
+		[| #{poke VkExtent3D, depth} |]) ]
+	[''Show, ''Storable]
+
+type QueueFlags = QueueFlagBits
+
+struct "QueueFamilyProperties" #{size VkQueueFamilyProperties}
+		#{alignment VkQueueFamilyProperties} [
+	("queueFlags", ''QueueFlags,
+		[| #{peek VkQueueFamilyProperties, queueFlags} |],
+		[| #{poke VkQueueFamilyProperties, queueFlags} |]),
+	("queueCount", ''#{type uint32_t},
+		[| #{peek VkQueueFamilyProperties, queueCount} |],
+		[| #{poke VkQueueFamilyProperties, queueCount} |]),
+	("timestampValidBits", ''#{type uint32_t},
+		[| #{peek VkQueueFamilyProperties, timestampValidBits} |],
+		[| #{poke VkQueueFamilyProperties, timestampValidBits} |]),
+	("minImageTransferGranularity", ''Extent3D,
+		[| #{peek VkQueueFamilyProperties,
+			minImageTransferGranularity} |],
+		[| #{poke VkQueueFamilyProperties,
+			minImageTransferGranularity} |]) ]
+	[''Show, ''Storable]
+
+getPhysicalDeviceQueueFamilyProperties ::
+	PhysicalDevice -> IO [QueueFamilyProperties]
+getPhysicalDeviceQueueFamilyProperties pd = alloca \pn -> do
+	c_vkGetPhysicalDeviceQueueFamilyProperties pd pn nullPtr
+	n <- peek pn
+	allocaArray (fromIntegral n) \pProps -> do
+		c_vkGetPhysicalDeviceQueueFamilyProperties pd pn pProps
+		peekArray (fromIntegral n) pProps
+
+foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
+	c_vkGetPhysicalDeviceQueueFamilyProperties ::
+	PhysicalDevice -> Ptr #{type uint32_t} -> Ptr QueueFamilyProperties ->
+	IO ()

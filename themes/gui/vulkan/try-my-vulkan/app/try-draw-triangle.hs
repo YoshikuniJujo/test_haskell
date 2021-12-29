@@ -11,6 +11,7 @@ import Control.Monad.Fix
 import Data.Bits
 import Data.Bool
 import Data.List
+import Data.Word
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
@@ -150,7 +151,20 @@ isDeviceSuitable device = do
 
 	print $ Vk.physicalDevicePropertiesDeviceType deviceProperties
 	print $ Vk.physicalDeviceFeaturesGeometryShader deviceFeatures
+
+	print =<< Vk.getPhysicalDeviceQueueFamilyProperties device
+
 	pure True
+
+data QueueFamilyIndices = QueueFamilyIndices {
+	graphicsFamily :: Maybe Word32 }
+	deriving Show
+
+findQueueFamilies :: Vk.PhysicalDevice -> IO QueueFamilyIndices
+findQueueFamilies _ = do
+	pure QueueFamilyIndices {
+		graphicsFamily = Nothing
+		}
 
 devideWithComma :: String -> [String]
 devideWithComma = \case
