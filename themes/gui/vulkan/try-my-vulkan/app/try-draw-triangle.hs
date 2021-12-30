@@ -60,8 +60,8 @@ initVulkan = do
 	dbgMssngr <- if enableValidationLayers
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
-	pickPhysicalDevice ist
-	createLogicalDevice
+	pd <- pickPhysicalDevice ist
+	createLogicalDevice pd
 	pure (ist, dbgMssngr)
 
 createInstance :: IO Vk.Instance
@@ -192,8 +192,10 @@ convertHead s d = \case
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
 
-createLogicalDevice :: IO ()
-createLogicalDevice = pure ()
+createLogicalDevice :: Vk.PhysicalDevice -> IO ()
+createLogicalDevice pd = do
+	indices <- findQueueFamilies pd
+	pure ()
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do

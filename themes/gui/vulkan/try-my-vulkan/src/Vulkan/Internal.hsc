@@ -59,7 +59,6 @@ enum "InstanceCreateFlags" ''#{type VkInstanceCreateFlags}
 	[''Show, ''Read, ''Eq, ''Storable] [("InstanceCreateFlagsZero", 0)]
 
 type PtrApplicationInfo = Ptr ApplicationInfo
-type PtrCString = Ptr CString
 
 struct "InstanceCreateInfo" #{size VkInstanceCreateInfo}
 		#{alignment VkInstanceCreateInfo} [

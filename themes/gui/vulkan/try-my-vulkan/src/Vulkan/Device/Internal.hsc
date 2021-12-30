@@ -6,6 +6,7 @@
 
 module Vulkan.Device.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -13,6 +14,8 @@ import Data.Bits
 import Data.Word
 
 import Vulkan.Base
+
+import Vulkan.PhysicalDevice
 
 #include <vulkan/vulkan.h>
 
@@ -43,12 +46,15 @@ struct "DeviceQueueCreateInfo" #{size VkDeviceQueueCreateInfo}
 	("pQueuePriorities", ''PtrCFloat,
 		[| #{peek VkDeviceQueueCreateInfo, pQueuePriorities} |],
 		[| #{poke VkDeviceQueueCreateInfo, pQueuePriorities} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 enum "DeviceCreateFlagBits" ''#{type VkDeviceCreateFlags} [''Show, ''Storable] [
 	("DeviceCreateFlagBitsZero", 0) ]
 
 type DeviceCreateFlags = DeviceCreateFlagBits
+
+type PtrDeviceQueueCreateInfo = Ptr DeviceQueueCreateInfo
+type PtrPhysicalDeviceFeatures = Ptr PhysicalDeviceFeatures
 
 struct "DeviceCreateInfo" #{size VkDeviceCreateInfo}
 		#{alignment VkDeviceCreateInfo} [
@@ -59,6 +65,27 @@ struct "DeviceCreateInfo" #{size VkDeviceCreateInfo}
 	("pNext", ''PtrVoid, [| #{peek VkDeviceCreateInfo, pNext} |],
 		[| #{poke VkDeviceCreateInfo, pNext} |]),
 	("flags", ''DeviceCreateFlags, [| #{peek VkDeviceCreateInfo, flags} |],
-		[| #{poke VkDeviceCreateInfo, flags} |])
+		[| #{poke VkDeviceCreateInfo, flags} |]),
+	("queueCreateInfoCount", ''#{type uint32_t},
+		[| #{peek VkDeviceCreateInfo, queueCreateInfoCount} |],
+		[| #{poke VkDeviceCreateInfo, queueCreateInfoCount} |]),
+	("pQueueCreateInfos", ''PtrDeviceQueueCreateInfo,
+		[| #{peek VkDeviceCreateInfo, pQueueCreateInfos} |],
+		[| #{poke VkDeviceCreateInfo, pQueueCreateInfos} |]),
+	("enabledLayerCount", ''#{type uint32_t},
+		[| #{peek VkDeviceCreateInfo, enabledLayerCount} |],
+		[| #{poke VkDeviceCreateInfo, enabledLayerCount} |]),
+	("ppEnabledLayerNames", ''PtrCString,
+		[| #{peek VkDeviceCreateInfo, ppEnabledLayerNames} |],
+		[| #{poke VkDeviceCreateInfo, ppEnabledLayerNames} |]),
+	("enabledExtensionCount", ''#{type uint32_t},
+		[| #{peek VkDeviceCreateInfo, enabledExtensionCount} |],
+		[| #{poke VkDeviceCreateInfo, enabledExtensionCount} |]),
+	("ppEnabledExtensionNames", ''PtrCString,
+		[| #{peek VkDeviceCreateInfo, ppEnabledExtensionNames} |],
+		[| #{poke VkDeviceCreateInfo, ppEnabledExtensionNames} |]),
+	("pEnabledFeatures", ''PtrPhysicalDeviceFeatures,
+		[| #{peek VkDeviceCreateInfo, pEnabledFeatures} |],
+		[| #{poke VkDeviceCreateInfo, pEnabledFeatures} |])
 	]
 	[''Show]

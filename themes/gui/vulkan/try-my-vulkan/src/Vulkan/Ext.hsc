@@ -21,7 +21,6 @@ import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.AllocationCallbacks
 
-import qualified Vulkan.Internal as I
 import qualified Vulkan.Ext.Internal as I
 import qualified Vulkan.AllocationCallbacks.Internal as I
 

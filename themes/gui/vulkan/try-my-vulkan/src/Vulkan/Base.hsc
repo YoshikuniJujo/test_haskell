@@ -22,6 +22,8 @@ type PtrCFloat = Ptr #{type float}
 
 type ListCFloat = [#{type float}]
 
+type PtrCString = Ptr CString
+
 pattern NullPtr :: Ptr a
 pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 
