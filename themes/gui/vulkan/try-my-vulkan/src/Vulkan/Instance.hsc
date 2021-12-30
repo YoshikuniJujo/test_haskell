@@ -70,17 +70,6 @@ data ApplicationInfo a = ApplicationInfo {
 	applicationInfoApiVersion :: I.ApiVersion }
 	deriving Show
 
-pattern NullPtr :: Ptr a
-pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
-
-pattern NullFunPtr :: FunPtr a
-pattern NullFunPtr <- ((== nullFunPtr) -> True) where NullFunPtr = nullFunPtr
-
-withMaybePointer :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
-withMaybePointer mx f = case mx of
-	Nothing -> f nullPtr
-	Just x -> withPointer x f
-
 withApplicationInfo :: Pointable a =>
 	ApplicationInfo a -> (I.ApplicationInfo -> IO b) -> IO b
 withApplicationInfo ai f = withMaybePointer (applicationInfoNext ai) \pnxt ->

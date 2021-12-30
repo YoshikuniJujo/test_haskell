@@ -20,7 +20,6 @@ import Vulkan
 import Vulkan.Instance
 import Vulkan.Base
 import Vulkan.Exception
-import qualified Vulkan.Internal as I
 import qualified Vulkan.AllocationCallbacks.Internal as I
 
 #include <vulkan/vulkan.h>

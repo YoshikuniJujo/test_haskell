@@ -159,9 +159,6 @@ debugUtilsMessengerCreateInfoToC DebugUtilsMessengerCreateInfo {
 			$ fnDebugUtilsMessengerCallbackToC cucbk
 		f $ I.DebugUtilsMessengerCreateInfo () (castPtr pnxt) flgs ms mt fpucbk (castPtr pud)
 
-withPointerMaybe :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
-withPointerMaybe mx f = maybe (f NullPtr) (`withPointer` f) mx
-
 instance (Pointable n, Pointable ud) => Pointable (DebugUtilsMessengerCreateInfo n ud) where
 	withPointer ci f =
 		debugUtilsMessengerCreateInfoToC ci \cci -> alloca \pcci -> do

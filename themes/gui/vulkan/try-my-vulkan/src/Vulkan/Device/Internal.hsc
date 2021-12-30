@@ -30,6 +30,17 @@ struct "DeviceQueueCreateInfo" #{size VkDeviceQueueCreateInfo}
 			(#{const VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO} ::
 				#{type VkStructureType}) |]),
 	("pNext", ''PtrVoid, [| #{peek VkDeviceQueueCreateInfo, pNext} |],
-		[| #{poke VkDeviceQueueCreateInfo, pNext} |])
-	]
+		[| #{poke VkDeviceQueueCreateInfo, pNext} |]),
+	("flags", ''DeviceQueueCreateFlags,
+		[| #{peek VkDeviceQueueCreateInfo, flags} |],
+		[| #{poke VkDeviceQueueCreateInfo, flags} |]),
+	("queueFamilyIndex", ''#{type uint32_t},
+		[| #{peek VkDeviceQueueCreateInfo, queueFamilyIndex} |],
+		[| #{poke VkDeviceQueueCreateInfo, queueFamilyIndex} |]),
+	("queueCount", ''#{type uint32_t},
+		[| #{peek VkDeviceQueueCreateInfo, queueCount} |],
+		[| #{poke VkDeviceQueueCreateInfo, queueCount} |]),
+	("pQueuePriorities", ''PtrCFloat,
+		[| #{peek VkDeviceQueueCreateInfo, pQueuePriorities} |],
+		[| #{poke VkDeviceQueueCreateInfo, pQueuePriorities} |]) ]
 	[''Show]
