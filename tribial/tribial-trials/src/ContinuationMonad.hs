@@ -35,3 +35,16 @@ bar = runContT ((,,)
 		print =<< peek p
 		print =<< peek q
 		print =<< peek r
+
+baz :: IO ()
+baz = ($ pure) $ runContT do
+	p <- ContT alloca
+	q <- ContT alloca
+	r <- ContT alloca
+	lift $ do
+		poke p 'c'
+		poke q False
+		poke r ()
+		print =<< peek p
+		print =<< peek q
+		print =<< peek r
