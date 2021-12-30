@@ -44,3 +44,21 @@ struct "DeviceQueueCreateInfo" #{size VkDeviceQueueCreateInfo}
 		[| #{peek VkDeviceQueueCreateInfo, pQueuePriorities} |],
 		[| #{poke VkDeviceQueueCreateInfo, pQueuePriorities} |]) ]
 	[''Show]
+
+enum "DeviceCreateFlagBits" ''#{type VkDeviceCreateFlags} [''Show, ''Storable] [
+	("DeviceCreateFlagBitsZero", 0) ]
+
+type DeviceCreateFlags = DeviceCreateFlagBits
+
+struct "DeviceCreateInfo" #{size VkDeviceCreateInfo}
+		#{alignment VkDeviceCreateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkDeviceCreateInfo, sType} p
+			(#{const VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO} ::
+				#{type VkStructureType}) |]),
+	("pNext", ''PtrVoid, [| #{peek VkDeviceCreateInfo, pNext} |],
+		[| #{poke VkDeviceCreateInfo, pNext} |]),
+	("flags", ''DeviceCreateFlags, [| #{peek VkDeviceCreateInfo, flags} |],
+		[| #{poke VkDeviceCreateInfo, flags} |])
+	]
+	[''Show]

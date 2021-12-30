@@ -10,6 +10,9 @@ import Foreign.Marshal.Array
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.AllocationCallbacks
+import Vulkan.PhysicalDevice
 
 import qualified Vulkan.Device.Internal as I
 
@@ -31,3 +34,9 @@ deviceQueueCreateInfoToC DeviceQueueCreateInfo {
 	deviceQueueCreateInfoQueuePriorities = prs } f =
 	withPointerMaybe mnxt \(castPtr -> pnxt) -> withArrayLen prs \cnt pprs -> f
 		$ I.DeviceQueueCreateInfo () pnxt flgs fi (fromIntegral cnt) pprs
+
+{-
+foreign import ccall "VkCreateDevice" c_VkCreateDevice ::
+	PhysicalDevice -> Ptr I.DeviceCreateInfo -> Ptr I.AllocationCallbacks ->
+	Ptr VkDevice -> IO Result
+	-}
