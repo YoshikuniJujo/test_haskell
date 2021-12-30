@@ -27,6 +27,7 @@ dependencies:
 - c-struct
 - exception-hierarchy
 - ranged-list
+- monads-tf
 
 library:
   source-dirs: src

@@ -11,6 +11,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
+import Control.Monad.Cont
 import Data.Foldable
 import Data.Word
 
@@ -74,9 +75,7 @@ withCStringArray strs f =
 		f (fromIntegral $ length strs) pcstr
 
 withCStrings :: [String] -> ([CString] -> IO a) -> IO a
-withCStrings [] f = f []
-withCStrings (s : ss) f =
-	withCString s \cs -> withCStrings ss \css -> f $ cs : css
+withCStrings = runContT . ((ContT . withCString) `mapM`)
 
 deviceCreateInfoToC :: (Pointable n, Pointable n') =>
 	DeviceCreateInfo n n' -> (I.DeviceCreateInfo -> IO b) -> IO b
