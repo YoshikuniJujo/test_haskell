@@ -120,11 +120,22 @@ foreign import ccall "vkCreateDevice" c_vkCreateDevice ::
 	Ptr Device -> IO Result
 
 destroyDevice :: Pointable n => Device -> Maybe (AllocationCallbacks n) -> IO ()
-destroyDevice (Device pdv) mac = ($ pure) $ runContT do
+destroyDevice dv mac = ($ pure) $ runContT do
 	piac <- case mac of
 		Nothing -> pure NullPtr
 		Just ac -> ContT $ withAllocationCallbacksPtr ac
-	lift $ c_vkDestroyDevice pdv piac
+	lift $ c_vkDestroyDevice dv piac
 
 foreign import ccall "vkDestroyDevice" c_vkDestroyDevice ::
-	Ptr Device -> Ptr I.AllocationCallbacks -> IO ()
+	Device -> Ptr I.AllocationCallbacks -> IO ()
+
+newtype Queue = Queue (Ptr Queue) deriving (Show, Storable)
+
+getDeviceQueue :: Device -> #{type uint32_t} -> #{type uint32_t} -> IO Queue
+getDeviceQueue dv fi qi = ($ pure) $ runContT do
+	pq <- ContT alloca
+	lift do	c_vkGetDeviceQueue dv fi qi pq
+		peek pq
+
+foreign import ccall "vkGetDeviceQueue" c_vkGetDeviceQueue ::
+	Device -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue -> IO ()

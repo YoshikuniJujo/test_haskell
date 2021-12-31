@@ -46,7 +46,7 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv) <- initVulkan
+	(ist, dbgMssngr, dv, gq) <- initVulkan
 	mainLoop w
 	cleanup w ist dbgMssngr dv
 
@@ -58,15 +58,15 @@ initWindow = do
 	Just w <- Glfw.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device)
+initVulkan :: IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue)
 initVulkan = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
 	pd <- pickPhysicalDevice ist
-	dv <- createLogicalDevice pd
-	pure (ist, dbgMssngr, dv)
+	(dv, gq) <- createLogicalDevice pd
+	pure (ist, dbgMssngr, dv, gq)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -196,7 +196,7 @@ convertHead s d = \case
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
 
-createLogicalDevice :: Vk.PhysicalDevice -> IO Vk.Device
+createLogicalDevice :: Vk.PhysicalDevice -> IO (Vk.Device, Vk.Queue)
 createLogicalDevice pd = do
 	indices <- findQueueFamilies pd
 	let	queueCreateInfo = Vk.DeviceQueueCreateInfo {
@@ -297,7 +297,10 @@ createLogicalDevice pd = do
 					then validationLayers else [],
 			Vk.deviceCreateInfoEnabledExtensionNames = [],
 			Vk.deviceCreateInfoEnabledFeatures = deviceFeatures }
-	Vk.createDevice @() @() @() pd createInfo Nothing
+	dv <- Vk.createDevice @() @() @() pd createInfo Nothing
+	gq <- Vk.getDeviceQueue
+		dv (fromJust $ queueFamilyIndicesGraphicsFamily indices) 0
+	pure (dv, gq)
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
