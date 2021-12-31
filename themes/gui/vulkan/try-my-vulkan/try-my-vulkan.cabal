@@ -39,6 +39,7 @@ library
       Vulkan.Ext.Internal
       Vulkan.Instance
       Vulkan.Internal
+      Vulkan.Khr.Surface
       Vulkan.PhysicalDevice
   other-modules:
       Paths_try_my_vulkan

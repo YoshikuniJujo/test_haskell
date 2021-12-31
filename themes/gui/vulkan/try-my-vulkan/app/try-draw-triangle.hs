@@ -25,6 +25,7 @@ import qualified Vulkan.AllocationCallbacks as Vk
 import qualified Vulkan.PhysicalDevice as Vk
 import qualified Vulkan.Device as Vk
 import qualified Vulkan.Device.Internal as Vk.I
+import qualified Vulkan.Khr.Surface as Vk.Khr
 
 import qualified Glfw as Glfw
 
@@ -48,9 +49,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv
+	cleanup w ist dbgMssngr dv sfc
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -60,16 +61,18 @@ initWindow = do
 	Just w <- GlfwB.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: GlfwB.Window -> IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue)
+initVulkan :: GlfwB.Window -> IO (
+	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
+	Vk.Khr.Surface )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
-	createSurface ist w
+	sfc <- createSurface ist w
 	pd <- pickPhysicalDevice ist
 	(dv, gq) <- createLogicalDevice pd
-	pure (ist, dbgMssngr, dv, gq)
+	pure (ist, dbgMssngr, dv, gq, sfc)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -138,10 +141,8 @@ debugCallback _messageSeverity _messageType callbackData _userData =
 	putStrLn $ "validation layer: " ++
 		Vk.Ext.debugUtilsMessengerCallbackDataMessage callbackData
 
-createSurface :: Vk.Instance -> GlfwB.Window -> IO ()
-createSurface ist w = do
-	sfc <- Glfw.createWindowSurface @() ist w Nothing
-	pure ()
+createSurface :: Vk.Instance -> GlfwB.Window -> IO Vk.Khr.Surface
+createSurface ist w = Glfw.createWindowSurface @() ist w Nothing
 
 pickPhysicalDevice :: Vk.Instance -> IO Vk.PhysicalDevice
 pickPhysicalDevice ist = do
@@ -316,13 +317,14 @@ mainLoop w = do
 		GlfwB.pollEvents
 		not <$> GlfwB.windowShouldClose w
 
-cleanup :: GlfwB.Window -> Vk.Instance ->
-	Maybe Vk.Ext.I.DebugUtilsMessenger -> Vk.Device -> IO ()
-cleanup w ist mdbgMssngr dv = do
+cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
+	Vk.Device -> Vk.Khr.Surface -> IO ()
+cleanup w ist mdbgMssngr dv sfc = do
 	Vk.destroyDevice @() dv Nothing
 	maybe (pure ())
 		(\dm -> Vk.Ext.destroyDebugUtilsMessenger @() ist dm Nothing)
 		mdbgMssngr
+	Vk.Khr.destroySurface @() ist sfc Nothing
 	Vk.destroyInstance ist (Nothing :: Maybe (Vk.AllocationCallbacks ()))
 	GlfwB.destroyWindow w
 	GlfwB.terminate

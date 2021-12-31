@@ -5,7 +5,6 @@
 
 module Glfw where
 
-import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Control.Monad.Cont
@@ -16,11 +15,11 @@ import Vulkan.Base
 import Vulkan.Exception
 import qualified Vulkan.Instance as Vk
 import qualified Vulkan.AllocationCallbacks as Vk
-
-newtype Surface = Surface (Ptr Surface) deriving (Show, Storable)
+import qualified Vulkan.Khr.Surface as Vk.Khr
 
 createWindowSurface :: Pointable n =>
-	Vk.Instance -> GlfwB.Window -> Maybe (Vk.AllocationCallbacks n) -> IO Surface
+	Vk.Instance -> GlfwB.Window -> Maybe (Vk.AllocationCallbacks n) ->
+	IO Vk.Khr.Surface
 createWindowSurface (Vk.Instance pist) w mac = ($ pure) $ runContT do
 	piac <- case mac of
 		Nothing -> pure NullPtr
