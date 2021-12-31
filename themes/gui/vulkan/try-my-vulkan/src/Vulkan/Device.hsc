@@ -103,16 +103,28 @@ deviceCreateInfoToC DeviceCreateInfo {
 newtype Device = Device (Ptr Device) deriving (Show, Storable)
 
 createDevice :: (Pointable n, Pointable n', Pointable n'') => PhysicalDevice ->
-	DeviceCreateInfo n n' -> AllocationCallbacks n'' -> IO Device
-createDevice phd dci ac = ($ pure) $ runContT do
+	DeviceCreateInfo n n' -> Maybe (AllocationCallbacks n'') -> IO Device
+createDevice phd dci mac = ($ pure) $ runContT do
 	pd <- ContT alloca
 	I.DeviceCreateInfo_ fidci <- ContT $ deviceCreateInfoToC dci
 	pidci <- ContT $ withForeignPtr fidci
-	piac <- ContT $ withAllocationCallbacksPtr ac
-	lift do	r <- c_VkCreateDevice phd pidci piac pd
+	piac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	lift do	r <- c_vkCreateDevice phd pidci piac pd
 		throwUnlessSuccess r
 		peek pd
 
-foreign import ccall "VkCreateDevice" c_VkCreateDevice ::
+foreign import ccall "vkCreateDevice" c_vkCreateDevice ::
 	PhysicalDevice -> Ptr I.DeviceCreateInfo -> Ptr I.AllocationCallbacks ->
 	Ptr Device -> IO Result
+
+destroyDevice :: Pointable n => Device -> Maybe (AllocationCallbacks n) -> IO ()
+destroyDevice (Device pdv) mac = ($ pure) $ runContT do
+	piac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	lift $ c_vkDestroyDevice pdv piac
+
+foreign import ccall "vkDestroyDevice" c_vkDestroyDevice ::
+	Ptr Device -> Ptr I.AllocationCallbacks -> IO ()

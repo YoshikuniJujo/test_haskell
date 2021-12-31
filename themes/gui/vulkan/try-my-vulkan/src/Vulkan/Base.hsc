@@ -7,6 +7,9 @@
 
 module Vulkan.Base where
 
+import Prelude hiding (Bool(..))
+import qualified Prelude as P
+
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
@@ -25,10 +28,10 @@ type ListCFloat = [#{type float}]
 type PtrCString = Ptr CString
 
 pattern NullPtr :: Ptr a
-pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
+pattern NullPtr <- ((== nullPtr) -> P.True) where NullPtr = nullPtr
 
 pattern NullFunPtr :: FunPtr a
-pattern NullFunPtr <- ((== nullFunPtr) -> True) where NullFunPtr = nullFunPtr
+pattern NullFunPtr <- ((== nullFunPtr) -> P.True) where NullFunPtr = nullFunPtr
 
 withMaybePointer :: Pointable a => Maybe a -> (Ptr a -> IO b) -> IO b
 withMaybePointer mx f = case mx of
@@ -55,4 +58,4 @@ pokeCString cs str = withCStringLen str \(cs_, ln) -> do
 	poke (cs `plusPtr` ln :: CString) 0
 
 enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
-	("VkFalse", #{const VK_FALSE}), ("VkTrue", #{const VK_TRUE}) ]
+	("False", #{const VK_FALSE}), ("True", #{const VK_TRUE}) ]

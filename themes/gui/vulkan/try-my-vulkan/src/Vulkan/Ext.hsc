@@ -4,6 +4,8 @@
 
 module Vulkan.Ext where
 
+import Prelude hiding (Bool(..))
+
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
@@ -127,7 +129,7 @@ fnDebugUtilsMessengerCallbackToC f s t pdt pud = do
 	cdt <- I.DebugUtilsMessengerCallbackData_
 		<$> newForeignPtr pdt (pure ())
 	dt <- debugUtilsMessengerCallbackDataFromC cdt
-	VkFalse <$ (f s t dt =<< fromPointerMaybe (castPtr pud))
+	False <$ (f s t dt =<< fromPointerMaybe (castPtr pud))
 
 fromPointerMaybe :: Pointable a => Ptr a -> IO (Maybe a)
 fromPointerMaybe = \case NullPtr -> pure Nothing; p -> Just <$> fromPointer p

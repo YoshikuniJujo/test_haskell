@@ -21,6 +21,7 @@ import Vulkan.PhysicalDevice
 
 enum "DeviceQueueCreateFlagBits" ''#{type VkDeviceQueueCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("DeviceQueueCreateFlagBitsZero", 0),
 	("DeviceQueueCreateProtectedBit",
 		#{const VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT}) ]
 

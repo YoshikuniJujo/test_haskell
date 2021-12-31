@@ -12,15 +12,19 @@ import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
+import Data.Word
 
 import qualified Graphics.UI.GLFW as Glfw
 import qualified Vulkan as Vk
+import qualified Vulkan.Base as Vk
 import qualified Vulkan.Ext as Vk.Ext
 import qualified Vulkan.Ext.Internal as Vk.Ext.I
 
 import qualified Vulkan.Instance as Vk
-import qualified Vulkan.PhysicalDevice as Vk
 import qualified Vulkan.AllocationCallbacks as Vk
+import qualified Vulkan.PhysicalDevice as Vk
+import qualified Vulkan.Device as Vk
+import qualified Vulkan.Device.Internal as Vk.I
 
 import ThEnv
 
@@ -42,9 +46,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr) <- initVulkan
+	(ist, dbgMssngr, dv) <- initVulkan
 	mainLoop w
-	cleanup w ist dbgMssngr
+	cleanup w ist dbgMssngr dv
 
 initWindow :: IO Glfw.Window
 initWindow = do
@@ -54,15 +58,15 @@ initWindow = do
 	Just w <- Glfw.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger)
+initVulkan :: IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device)
 initVulkan = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
 	pd <- pickPhysicalDevice ist
-	createLogicalDevice pd
-	pure (ist, dbgMssngr)
+	dv <- createLogicalDevice pd
+	pure (ist, dbgMssngr, dv)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -158,7 +162,7 @@ isDeviceSuitable device = do
 	pure $ queueFamilyIndicesIsComplete indices
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	queueFamilyIndicesGraphicsFamily :: Maybe Int
+	queueFamilyIndicesGraphicsFamily :: Maybe Word32
 	}
 	deriving Show
 
@@ -170,7 +174,7 @@ findQueueFamilies :: Vk.PhysicalDevice -> IO QueueFamilyIndices
 findQueueFamilies device = do
 	queueFamilies <- Vk.getPhysicalDeviceQueueFamilyProperties device
 	pure QueueFamilyIndices {
-		queueFamilyIndicesGraphicsFamily = findIndex
+		queueFamilyIndicesGraphicsFamily = fromIntegral <$> findIndex
 			((/= zeroBits)
 				. (.&. Vk.QueueGraphicsBit)
 				. Vk.queueFamilyPropertiesQueueFlags)
@@ -192,10 +196,108 @@ convertHead s d = \case
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
 
-createLogicalDevice :: Vk.PhysicalDevice -> IO ()
+createLogicalDevice :: Vk.PhysicalDevice -> IO Vk.Device
 createLogicalDevice pd = do
 	indices <- findQueueFamilies pd
-	pure ()
+	let	queueCreateInfo = Vk.DeviceQueueCreateInfo {
+			Vk.deviceQueueCreateInfoQueueFamilyIndex = fromJust
+				$ queueFamilyIndicesGraphicsFamily indices,
+			Vk.deviceQueueCreateInfoNext = Nothing,
+			Vk.deviceQueueCreateInfoFlags =
+				Vk.I.DeviceQueueCreateFlagBitsZero,
+			Vk.deviceQueueCreateInfoQueuePriorities = [1.0] }
+		deviceFeatures = Vk.PhysicalDeviceFeatures {
+			Vk.physicalDeviceFeaturesRobutBufferAccess = Vk.False,
+			Vk.physicalDeviceFeaturesFullDrawIndexUint32 = Vk.False,
+			Vk.physicalDeviceFeaturesImageCubeArray = Vk.False,
+			Vk.physicalDeviceFeaturesIndependentBlend = Vk.False,
+			Vk.physicalDeviceFeaturesGeometryShader = Vk.False,
+			Vk.physicalDeviceFeaturesTessellationShader = Vk.False,
+			Vk.physicalDeviceFeaturesSampleRateShading = Vk.False,
+			Vk.physicalDeviceFeaturesDualSrcBlend = Vk.False,
+			Vk.physicalDeviceFeaturesLogicOp = Vk.False,
+			Vk.physicalDeviceFeaturesMultiDrawIndirect = Vk.False,
+			Vk.physicalDeviceFeaturesDrawIndirectFirstInstance = Vk.False,
+			Vk.physicalDeviceFeaturesDepthClamp = Vk.False,
+			Vk.physicalDeviceFeaturesDepthBiasClamp = Vk.False,
+			Vk.physicalDeviceFeaturesFillModeNonSolid = Vk.False,
+			Vk.physicalDeviceFeaturesDepthBounds = Vk.False,
+			Vk.physicalDeviceFeaturesWideLines = Vk.False,
+			Vk.physicalDeviceFeaturesLargePoints = Vk.False,
+			Vk.physicalDeviceFeaturesAlphaToOne = Vk.False,
+			Vk.physicalDeviceFeaturesMultiViewport = Vk.False,
+			Vk.physicalDeviceFeaturesSamplerAnisotropy = Vk.False,
+			Vk.physicalDeviceFeaturesTextureCompressionEtc2 =
+				Vk.False,
+			Vk.physicalDeviceFeaturesTextureCompressionAstcLdr =
+				Vk.False,
+			Vk.physicalDeviceFeaturesTextureCompressionBc = Vk.False,
+			Vk.physicalDeviceFeaturesOcclusionQueryPrecise = Vk.False,
+			Vk.physicalDeviceFeaturesPipelineStatisticsQuery =
+				Vk.False,
+			Vk.physicalDeviceFeaturesVertexPipelineStoresAndAtomics
+				= Vk.False,
+			Vk.physicalDeviceFeaturesFragmentStoresAndAtomics =
+				Vk.False,
+			Vk.physicalDeviceFeaturesShaderTessellationAndGeometryPointSize
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderImageGatherExtended = Vk.False,
+			Vk.physicalDeviceFeaturesShaderStorageImageExtendedFormats
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderStorageImageMultisample =
+				Vk.False,
+			Vk.physicalDeviceFeaturesShaderStorageImageReadWithoutFormat
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderStorageImageWriteWithoutFormat
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderUniformBufferArrayDynamicIndexing
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderSampledImageArrayDynamicIndexing
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderStorageBufferArrayDynamicIndexing
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderStorageImageArrayDynamicIndexing
+				= Vk.False,
+			Vk.physicalDeviceFeaturesShaderClipDistance = Vk.False,
+			Vk.physicalDeviceFeaturesShaderCullDistance = Vk.False,
+			Vk.physicalDeviceFeaturesShaderFloat64 = Vk.False,
+			Vk.physicalDeviceFeaturesShaderInt64 = Vk.False,
+			Vk.physicalDeviceFeaturesShaderInt16 = Vk.False,
+			Vk.physicalDeviceFeaturesShaderResourceResidency =
+				Vk.False,
+			Vk.physicalDeviceFeaturesShaderResourceMinLod =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseBinding = Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidencyBuffer =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidencyImage2D =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidencyImage3D =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidency2Samples =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidency4Samples =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidency8Samples =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidency16Samples =
+				Vk.False,
+			Vk.physicalDeviceFeaturesSparseResidencyAliased =
+				Vk.False,
+			Vk.physicalDeviceFeaturesVariableMultisampleRate =
+				Vk.False,
+			Vk.physicalDeviceFeaturesInheritedQueries = Vk.False }
+		createInfo = Vk.DeviceCreateInfo {
+			Vk.deviceCreateInfoNext = Nothing,
+			Vk.deviceCreateInfoFlags =
+				Vk.I.DeviceCreateFlagBitsZero,
+			Vk.deviceCreateInfoQueueCreateInfos = [queueCreateInfo],
+			Vk.deviceCreateInfoEnabledLayerNames =
+				if enableValidationLayers
+					then validationLayers else [],
+			Vk.deviceCreateInfoEnabledExtensionNames = [],
+			Vk.deviceCreateInfoEnabledFeatures = deviceFeatures }
+	Vk.createDevice @() @() @() pd createInfo Nothing
 
 mainLoop :: Glfw.Window -> IO ()
 mainLoop w = do
@@ -204,8 +306,9 @@ mainLoop w = do
 		not <$> Glfw.windowShouldClose w
 
 cleanup :: Glfw.Window -> Vk.Instance ->
-	Maybe Vk.Ext.I.DebugUtilsMessenger -> IO ()
-cleanup w ist mdbgMssngr = do
+	Maybe Vk.Ext.I.DebugUtilsMessenger -> Vk.Device -> IO ()
+cleanup w ist mdbgMssngr dv = do
+	Vk.destroyDevice @() dv Nothing
 	maybe (pure ())
 		(\dm -> Vk.Ext.destroyDebugUtilsMessenger @() ist dm Nothing)
 		mdbgMssngr
