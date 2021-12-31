@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.C.String
 import Control.Monad.Cont
 import Data.Foldable
+import Data.List
 import Data.Word
 
 import Vulkan.Base
@@ -38,9 +39,10 @@ deviceQueueCreateInfoToC DeviceQueueCreateInfo {
 	deviceQueueCreateInfoNext = mnxt,
 	deviceQueueCreateInfoFlags = flgs,
 	deviceQueueCreateInfoQueueFamilyIndex = fi,
-	deviceQueueCreateInfoQueuePriorities = prs } f =
-	withPointerMaybe mnxt \(castPtr -> pnxt) -> withArrayLen prs \cnt pprs -> f
-		$ I.DeviceQueueCreateInfo () pnxt flgs fi (fromIntegral cnt) pprs
+	deviceQueueCreateInfoQueuePriorities = prs } f = ($ pure) $ runContT do
+	(castPtr -> pnxt) <- ContT $ withPointerMaybe mnxt
+	(fromIntegral -> cnt, pprs) <- ContT $ withArrayLen prs . curry
+	lift . f $ I.DeviceQueueCreateInfo () pnxt flgs fi cnt pprs
 
 data DeviceCreateInfo n n' = DeviceCreateInfo {
 	deviceCreateInfoNext :: Maybe n,
@@ -54,11 +56,12 @@ data DeviceCreateInfo n n' = DeviceCreateInfo {
 withIDeviceQueueCreateInfoArray ::
 	(Pointable n, Integral c) => [DeviceQueueCreateInfo n] ->
 		(c -> Ptr I.DeviceQueueCreateInfo -> IO a) -> IO a
-withIDeviceQueueCreateInfoArray dqcis f = allocaArray (length dqcis) \pidqcis ->
-	withIDeviceQueueCreateInfos dqcis \idqis -> do
-		for_ (zip [0 ..] idqis) \(i, idqi) ->
+withIDeviceQueueCreateInfoArray dqcis f = ($ pure) $ runContT do
+	pidqcis <- ContT . allocaArray $ length dqcis
+	idqis <- ContT $ withIDeviceQueueCreateInfos dqcis
+	lift do	for_ (zip [0 ..] idqis) \(i, idqi) ->
 			poke (pidqcis `advancePtr` i) idqi
-		f (fromIntegral $ length idqis) pidqcis
+		f (genericLength idqis) pidqcis
 
 withIDeviceQueueCreateInfos :: Pointable n => [DeviceQueueCreateInfo n] ->
 	([I.DeviceQueueCreateInfo] -> IO a) -> IO a
@@ -68,11 +71,12 @@ withIDeviceQueueCreateInfos (dqci : dqcis) f =
 		withIDeviceQueueCreateInfos dqcis \idqcis -> f $ idqci : idqcis
 
 withCStringArray :: Integral c => [String] -> (c -> Ptr CString -> IO a) -> IO a
-withCStringArray strs f =
-	allocaArray (length strs) \pcstr -> withCStrings strs \cstrs -> do
-		for_ (zip [0 ..] cstrs) \(i, cstr) ->
+withCStringArray strs f = ($ pure) $ runContT do
+	pcstr <- ContT . allocaArray $ length strs
+	cstrs <- ContT $ withCStrings strs
+	lift do	for_ (zip [0 ..] cstrs) \(i, cstr) ->
 			poke (pcstr `advancePtr` i) cstr
-		f (fromIntegral $ length strs) pcstr
+		f (genericLength cstrs) pcstr
 
 withCStrings :: [String] -> ([CString] -> IO a) -> IO a
 withCStrings = runContT . ((ContT . withCString) `mapM`)
@@ -86,28 +90,28 @@ deviceCreateInfoToC DeviceCreateInfo {
 	deviceCreateInfoEnabledLayerNames = elnms,
 	deviceCreateInfoEnabledExtensionNames = eenms,
 	deviceCreateInfoEnabledFeatures = efs
-	} f = withPointerMaybe mnxt \(castPtr -> pnxt) ->
-		withIDeviceQueueCreateInfoArray qcis \qcic pqcis ->
-			withCStringArray elnms \elnmc pelnms ->
-				withCStringArray eenms \eenmc peenms ->
-					alloca \pefs -> do
-						poke pefs efs
-						f $ I.DeviceCreateInfo () pnxt
-							flgs qcic pqcis
-							elnmc pelnms
-							eenmc peenms pefs
+	} f = ($ pure) $ runContT do
+	(castPtr -> pnxt) <- ContT $ withPointerMaybe mnxt
+	(qcic, pqcis) <- ContT $ withIDeviceQueueCreateInfoArray qcis . curry
+	(elnmc, pelnms) <- ContT $ withCStringArray elnms . curry
+	(eenmc, peenms) <- ContT $ withCStringArray eenms . curry
+	pefs <- ContT alloca
+	lift do	poke pefs efs
+		f $ I.DeviceCreateInfo
+			() pnxt flgs qcic pqcis elnmc pelnms eenmc peenms pefs
 
 newtype Device = Device (Ptr Device) deriving (Show, Storable)
 
 createDevice :: (Pointable n, Pointable n', Pointable n'') => PhysicalDevice ->
 	DeviceCreateInfo n n' -> AllocationCallbacks n'' -> IO Device
-createDevice phd dci ac = alloca \pd -> do
-	deviceCreateInfoToC dci \(I.DeviceCreateInfo_ fidci) ->
-		withForeignPtr fidci \pidci ->
-			withAllocationCallbacksPtr ac \piac -> do
-				r <- c_VkCreateDevice phd pidci piac pd
-				throwUnlessSuccess r
-				peek pd
+createDevice phd dci ac = ($ pure) $ runContT do
+	pd <- ContT alloca
+	I.DeviceCreateInfo_ fidci <- ContT $ deviceCreateInfoToC dci
+	pidci <- ContT $ withForeignPtr fidci
+	piac <- ContT $ withAllocationCallbacksPtr ac
+	lift do	r <- c_VkCreateDevice phd pidci piac pd
+		throwUnlessSuccess r
+		peek pd
 
 foreign import ccall "VkCreateDevice" c_VkCreateDevice ::
 	PhysicalDevice -> Ptr I.DeviceCreateInfo -> Ptr I.AllocationCallbacks ->
