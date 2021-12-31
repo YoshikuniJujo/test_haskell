@@ -70,8 +70,8 @@ initVulkan w = do
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
 	sfc <- createSurface ist w
-	pd <- pickPhysicalDevice ist
-	(dv, gq) <- createLogicalDevice pd
+	pd <- pickPhysicalDevice ist sfc
+	(dv, gq) <- createLogicalDevice pd sfc
 	pure (ist, dbgMssngr, dv, gq, sfc)
 
 createInstance :: IO Vk.Instance
@@ -144,19 +144,19 @@ debugCallback _messageSeverity _messageType callbackData _userData =
 createSurface :: Vk.Instance -> GlfwB.Window -> IO Vk.Khr.Surface
 createSurface ist w = Glfw.createWindowSurface @() ist w Nothing
 
-pickPhysicalDevice :: Vk.Instance -> IO Vk.PhysicalDevice
-pickPhysicalDevice ist = do
+pickPhysicalDevice :: Vk.Instance -> Vk.Khr.Surface -> IO Vk.PhysicalDevice
+pickPhysicalDevice ist sfc = do
 	devices <- Vk.enumeratePhysicalDevices ist
 	when (null devices) $ error "failed to find GPUs with Vulkan support!"
 	physicalDevice <- head . (++ [Vk.PhysicalDeviceNullHandle])
-		<$> filterM isDeviceSuitable devices
+		<$> filterM (`isDeviceSuitable` sfc) devices
 	case physicalDevice of
 		Vk.PhysicalDeviceNullHandle ->
 			error "failed to find a suitable GPU!"
 		_ -> pure physicalDevice
 
-isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
-isDeviceSuitable device = do
+isDeviceSuitable :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO Bool
+isDeviceSuitable device sfc = do
 	deviceProperties <- Vk.getPhysicalDeviceProperties device
 	print deviceProperties
 	(putStrLn `mapM_`) . (convertHead ' ' '\t' <$>) . devideWithComma . show $ Vk.physicalDevicePropertiesLimits deviceProperties
@@ -166,29 +166,44 @@ isDeviceSuitable device = do
 	print $ Vk.physicalDevicePropertiesDeviceType deviceProperties
 	print $ Vk.physicalDeviceFeaturesGeometryShader deviceFeatures
 
-	indices <- findQueueFamilies device
+	indices <- findQueueFamilies device sfc
 
 	pure $ queueFamilyIndicesIsComplete indices
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	queueFamilyIndicesGraphicsFamily :: Maybe Word32
-	}
+	queueFamilyIndicesGraphicsFamily :: Maybe Word32,
+	queueFamilyIndicesPresentFamily :: Maybe Word32 }
 	deriving Show
 
 queueFamilyIndicesIsComplete :: QueueFamilyIndices -> Bool
 queueFamilyIndicesIsComplete is =
-	isJust (queueFamilyIndicesGraphicsFamily is)
+	isJust (queueFamilyIndicesGraphicsFamily is) &&
+	isJust (queueFamilyIndicesPresentFamily is)
 
-findQueueFamilies :: Vk.PhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies device = do
+bool32ToBool :: Vk.Bool32 -> Bool
+bool32ToBool = \case Vk.False -> False; _ -> True
+
+findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
+findM f xs = listToMaybe <$> filterM f xs
+
+findMBool32 :: Monad m => (a -> m Vk.Bool32) -> [a] -> m (Maybe a)
+findMBool32 f = findM $ (bool32ToBool <$>) . f
+
+findQueueFamilies :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO QueueFamilyIndices
+findQueueFamilies device sfc = do
 	queueFamilies <- Vk.getPhysicalDeviceQueueFamilyProperties device
-	pure QueueFamilyIndices {
-		queueFamilyIndicesGraphicsFamily = fromIntegral <$> findIndex
-			((/= zeroBits)
-				. (.&. Vk.QueueGraphicsBit)
-				. Vk.queueFamilyPropertiesQueueFlags)
-			queueFamilies
-		}
+	pfi <- findMBool32 (\i -> Vk.Khr.getPhysicalDeviceSurfaceSupport device i sfc)
+		[0 .. genericLength queueFamilies - 1]
+	let	qfi = QueueFamilyIndices {
+			queueFamilyIndicesGraphicsFamily = fromIntegral <$> findIndex
+				((/= zeroBits)
+					. (.&. Vk.QueueGraphicsBit)
+					. Vk.queueFamilyPropertiesQueueFlags)
+				queueFamilies,
+			queueFamilyIndicesPresentFamily = pfi
+			}
+	print qfi
+	pure qfi
 
 devideWithComma :: String -> [String]
 devideWithComma = \case
@@ -205,9 +220,9 @@ convertHead s d = \case
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
 
-createLogicalDevice :: Vk.PhysicalDevice -> IO (Vk.Device, Vk.Queue)
-createLogicalDevice pd = do
-	indices <- findQueueFamilies pd
+createLogicalDevice :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO (Vk.Device, Vk.Queue)
+createLogicalDevice pd sfc = do
+	indices <- findQueueFamilies pd sfc
 	let	queueCreateInfo = Vk.DeviceQueueCreateInfo {
 			Vk.deviceQueueCreateInfoQueueFamilyIndex = fromJust
 				$ queueFamilyIndicesGraphicsFamily indices,
