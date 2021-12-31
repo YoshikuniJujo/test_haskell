@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Exception where
@@ -12,7 +13,7 @@ import Data.Int
 
 #include <vulkan/vulkan.h>
 
-enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq] [
+enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq, ''Enum] [
 	("Success", #{const VK_SUCCESS}),
 	("NotReady", #{const VK_NOT_READY}),
 	("Timeout", #{const VK_TIMEOUT}),

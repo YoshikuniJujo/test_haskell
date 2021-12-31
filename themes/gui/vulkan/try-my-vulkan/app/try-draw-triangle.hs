@@ -14,7 +14,7 @@ import Data.Maybe
 import Data.List
 import Data.Word
 
-import qualified Graphics.UI.GLFW as Glfw
+import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan as Vk
 import qualified Vulkan.Base as Vk
 import qualified Vulkan.Ext as Vk.Ext
@@ -25,6 +25,8 @@ import qualified Vulkan.AllocationCallbacks as Vk
 import qualified Vulkan.PhysicalDevice as Vk
 import qualified Vulkan.Device as Vk
 import qualified Vulkan.Device.Internal as Vk.I
+
+import qualified Glfw as Glfw
 
 import ThEnv
 
@@ -46,24 +48,25 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq) <- initVulkan
+	(ist, dbgMssngr, dv, gq) <- initVulkan w
 	mainLoop w
 	cleanup w ist dbgMssngr dv
 
-initWindow :: IO Glfw.Window
+initWindow :: IO GlfwB.Window
 initWindow = do
-	True <- Glfw.init
-	Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-	Glfw.windowHint $ Glfw.WindowHint'Resizable False
-	Just w <- Glfw.createWindow width height "Vulkan" Nothing Nothing
+	True <- GlfwB.init
+	GlfwB.windowHint $ GlfwB.WindowHint'ClientAPI GlfwB.ClientAPI'NoAPI
+	GlfwB.windowHint $ GlfwB.WindowHint'Resizable False
+	Just w <- GlfwB.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue)
-initVulkan = do
+initVulkan :: GlfwB.Window -> IO (Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue)
+initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
 		then Just <$> setupDebugMessenger ist
 		else pure Nothing
+	createSurface ist w
 	pd <- pickPhysicalDevice ist
 	(dv, gq) <- createLogicalDevice pd
 	pure (ist, dbgMssngr, dv, gq)
@@ -106,7 +109,7 @@ checkValidationLayerSupport = do
 
 getRequiredExtensions :: IO [String]
 getRequiredExtensions = do
-	glfwExtensions <- Glfw.getRequiredInstanceExtensions
+	glfwExtensions <- GlfwB.getRequiredInstanceExtensions
 	bool id (Vk.Ext.debugUtilsExtensionName :) enableValidationLayers
 		<$> peekCString `mapM` glfwExtensions
 
@@ -134,6 +137,11 @@ debugCallback :: Vk.Ext.FnDebugUtilsMessengerCallback ()
 debugCallback _messageSeverity _messageType callbackData _userData =
 	putStrLn $ "validation layer: " ++
 		Vk.Ext.debugUtilsMessengerCallbackDataMessage callbackData
+
+createSurface :: Vk.Instance -> GlfwB.Window -> IO ()
+createSurface ist w = do
+	sfc <- Glfw.createWindowSurface @() ist w Nothing
+	pure ()
 
 pickPhysicalDevice :: Vk.Instance -> IO Vk.PhysicalDevice
 pickPhysicalDevice ist = do
@@ -302,13 +310,13 @@ createLogicalDevice pd = do
 		dv (fromJust $ queueFamilyIndicesGraphicsFamily indices) 0
 	pure (dv, gq)
 
-mainLoop :: Glfw.Window -> IO ()
+mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
 	fix \loop -> bool (pure ()) loop =<< do
-		Glfw.pollEvents
-		not <$> Glfw.windowShouldClose w
+		GlfwB.pollEvents
+		not <$> GlfwB.windowShouldClose w
 
-cleanup :: Glfw.Window -> Vk.Instance ->
+cleanup :: GlfwB.Window -> Vk.Instance ->
 	Maybe Vk.Ext.I.DebugUtilsMessenger -> Vk.Device -> IO ()
 cleanup w ist mdbgMssngr dv = do
 	Vk.destroyDevice @() dv Nothing
@@ -316,8 +324,8 @@ cleanup w ist mdbgMssngr dv = do
 		(\dm -> Vk.Ext.destroyDebugUtilsMessenger @() ist dm Nothing)
 		mdbgMssngr
 	Vk.destroyInstance ist (Nothing :: Maybe (Vk.AllocationCallbacks ()))
-	Glfw.destroyWindow w
-	Glfw.terminate
+	GlfwB.destroyWindow w
+	GlfwB.terminate
 
 showExtensionProperties :: Vk.ExtensionProperties -> String
 showExtensionProperties ep =
