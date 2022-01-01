@@ -179,10 +179,17 @@ isDeviceSuitable device sfc = do
 
 	extensionSupported <- checkDeviceExtensionSupport device
 
-	pure $ queueFamilyIndicesIsComplete indices
+	pure $ queueFamilyIndicesIsComplete indices && extensionSupported
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
-checkDeviceExtensionSupport device = pure True
+checkDeviceExtensionSupport device = do
+	putStr "ENUMERATE DEVICE EXTENSION PROPERTIES: "
+	availableExtensions <- Vk.enumerateDeviceExtensionProperties device Nothing
+	(\x -> putStrLn "PhysicalDeviceProperties: " >> mapM_ (mapM_ putStrLn . devideWithComma . show) x)
+		availableExtensions
+	putStrLn "ENUMERATE DEVICE EXTENSION PROPERTIES END"
+	pure . null $ deviceExtensions \\
+		(Vk.extensionPropertiesExtensionName <$> availableExtensions)
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	queueFamilyIndicesGraphicsFamily :: Maybe Word32,
@@ -225,6 +232,9 @@ devideWithComma = \case
 	'[' : cs -> let
 		(bd, ']' : rst) = span (/= ']') cs
 		str : strs = devideWithComma rst in ('[' : bd ++ "]" ++ str) : strs
+	'{' : cs -> let
+		(bd, '}' : rst) = span (/= '}') cs
+		str : strs = devideWithComma rst in ('{' : bd ++ "}" ++ str) : strs
 	',' : cs -> "" : devideWithComma cs
 	c : cs -> let str : strs = devideWithComma cs in (c : str) : strs
 
@@ -335,7 +345,7 @@ createLogicalDevice pd sfc = do
 			Vk.deviceCreateInfoEnabledLayerNames =
 				if enableValidationLayers
 					then validationLayers else [],
-			Vk.deviceCreateInfoEnabledExtensionNames = [],
+			Vk.deviceCreateInfoEnabledExtensionNames = deviceExtensions,
 			Vk.deviceCreateInfoEnabledFeatures = deviceFeatures }
 	dv <- Vk.createDevice @() @() @() pd createInfo Nothing
 	gq <- Vk.getDeviceQueue

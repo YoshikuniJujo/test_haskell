@@ -12,6 +12,7 @@ import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
+import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 import Data.Int
@@ -665,3 +666,24 @@ foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
 	c_vkGetPhysicalDeviceQueueFamilyProperties ::
 	PhysicalDevice -> Ptr #{type uint32_t} -> Ptr QueueFamilyProperties ->
 	IO ()
+
+enumerateDeviceExtensionProperties ::
+	PhysicalDevice -> Maybe String -> IO [ExtensionProperties]
+enumerateDeviceExtensionProperties phdv mln = ($ pure) $ runContT do
+	cln <- case mln of
+		Nothing -> pure NullPtr
+		Just ln -> ContT $ withCString ln
+	pn <- ContT alloca
+	n <- lift do
+		r <- c_vkEnumerateDeviceExtensionProperties phdv cln pn NullPtr
+		throwUnlessSuccess r
+		peek pn
+	pprps <- ContT . allocaArray $ fromIntegral n
+	lift do	r <- c_vkEnumerateDeviceExtensionProperties phdv cln pn pprps
+		throwUnlessSuccess r
+		peekArray (fromIntegral n) pprps
+
+foreign import ccall "vkEnumerateDeviceExtensionProperties"
+	c_vkEnumerateDeviceExtensionProperties ::
+	PhysicalDevice -> CString ->
+	Ptr #{type uint32_t} -> Ptr ExtensionProperties -> IO Result
