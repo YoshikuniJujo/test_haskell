@@ -45,3 +45,5 @@ getPhysicalDeviceSurfaceSupport phdv qfi sfc = ($ pure) $ runContT do
 foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR"
 	c_vkGetPhysicalDeviceSurfaceSupportKHR ::
 	PhysicalDevice -> #{type uint32_t} -> Surface -> Ptr Bool32 -> IO Result
+
+-- VkSurfaceCapabilitiesKHR

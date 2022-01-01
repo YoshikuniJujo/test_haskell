@@ -77,3 +77,19 @@ struct "ExtensionProperties" #{size VkExtensionProperties}
 		[| #{poke VkExtensionProperties, specVersion} |])
 	]
 	[''Show, ''Read, ''Eq, ''Storable]
+
+struct "Extent2D" #{size VkExtent2D} #{alignment VkExtent2D} [
+	("width", ''#{type uint32_t}, [| #{peek VkExtent2D, width} |],
+		[| #{poke VkExtent2D, width} |]),
+	("height", ''#{type uint32_t}, [| #{peek VkExtent2D, height} |],
+		[| #{poke VkExtent2D, height} |]) ]
+	[''Show, ''Storable]
+
+struct "Extent3D" #{size VkExtent3D} #{alignment VkExtent3D} [
+	("width", ''#{type uint32_t}, [| #{peek VkExtent3D, width} |],
+		[| #{poke VkExtent3D, width} |]),
+	("height", ''#{type uint32_t}, [| #{peek VkExtent3D, height} |],
+		[| #{poke VkExtent3D, height} |]),
+	("depth", ''#{type uint32_t}, [| #{peek VkExtent3D, depth} |],
+		[| #{poke VkExtent3D, depth} |]) ]
+	[''Show, ''Storable]

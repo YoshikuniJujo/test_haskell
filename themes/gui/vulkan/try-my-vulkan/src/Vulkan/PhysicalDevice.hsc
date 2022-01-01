@@ -624,15 +624,6 @@ enum "QueueFlagBits" ''#{type VkQueueFlagBits}
 	#endif
 	("QueueFlagBitsMaxEnum", #{const VK_QUEUE_FLAG_BITS_MAX_ENUM}) ]
 
-struct "Extent3D" #{size VkExtent3D} #{alignment VkExtent3D} [
-	("width", ''#{type uint32_t}, [| #{peek VkExtent3D, width} |],
-		[| #{poke VkExtent3D, width} |]),
-	("height", ''#{type uint32_t}, [| #{peek VkExtent3D, height} |],
-		[| #{poke VkExtent3D, height} |]),
-	("depth", ''#{type uint32_t}, [| #{peek VkExtent3D, depth} |],
-		[| #{poke VkExtent3D, depth} |]) ]
-	[''Show, ''Storable]
-
 type QueueFlags = QueueFlagBits
 
 struct "QueueFamilyProperties" #{size VkQueueFamilyProperties}
