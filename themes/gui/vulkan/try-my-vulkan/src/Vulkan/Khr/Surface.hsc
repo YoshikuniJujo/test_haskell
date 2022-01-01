@@ -75,4 +75,17 @@ enum "SurfaceTransformFlagBits" ''#{type VkSurfaceTransformFlagBitsKHR}
 
 type SurfaceTransformFlags = SurfaceTransformFlagBits
 
+-- VkCompositeAlphaFlagsKHR
+
+enum "CompositeAlphaFlagBits" ''#{type VkCompositeAlphaFlagBitsKHR}
+		[''Show, ''Eq, ''Bits, ''Storable] [
+	-- VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
+	-- VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR
+	-- VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR
+	-- VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
+	-- FOO
+	]
+
+-- VkImageUsageFlags
+
 -- VkSurfaceCapabilitiesKHR
