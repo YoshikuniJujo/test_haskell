@@ -22,12 +22,13 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - template-haskell
+- containers
+- monads-tf
 - GLFW-b
 - c-enum
 - c-struct
 - exception-hierarchy
 - ranged-list
-- monads-tf
 
 library:
   source-dirs: src

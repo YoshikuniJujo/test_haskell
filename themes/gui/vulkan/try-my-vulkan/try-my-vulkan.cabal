@@ -53,6 +53,7 @@ library
     , base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , ranged-list
@@ -72,6 +73,7 @@ executable try-allocation
     , base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , ranged-list
@@ -92,6 +94,7 @@ executable try-draw-triangle
     , base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , ranged-list
@@ -112,6 +115,7 @@ executable try-glm
     , base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , ranged-list
@@ -131,6 +135,7 @@ executable try-my-vulkan-exe
     , base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , ranged-list
@@ -151,6 +156,7 @@ test-suite try-my-vulkan-test
     , base >=4.7 && <5
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , ranged-list

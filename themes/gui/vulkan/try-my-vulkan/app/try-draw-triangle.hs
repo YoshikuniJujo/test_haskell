@@ -8,11 +8,14 @@ module Main where
 import Foreign.C.String
 import Control.Monad
 import Control.Monad.Fix
+import Data.Foldable
 import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
 import Data.Word
+
+import qualified Data.Set as Set
 
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan as Vk
@@ -71,7 +74,7 @@ initVulkan w = do
 		else pure Nothing
 	sfc <- createSurface ist w
 	pd <- pickPhysicalDevice ist sfc
-	(dv, gq) <- createLogicalDevice pd sfc
+	(dv, gq, pq) <- createLogicalDevice pd sfc
 	pure (ist, dbgMssngr, dv, gq, sfc)
 
 createInstance :: IO Vk.Instance
@@ -220,12 +223,14 @@ convertHead s d = \case
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
 
-createLogicalDevice :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO (Vk.Device, Vk.Queue)
+createLogicalDevice :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO (Vk.Device, Vk.Queue, Vk.Queue)
 createLogicalDevice pd sfc = do
 	indices <- findQueueFamilies pd sfc
-	let	queueCreateInfo = Vk.DeviceQueueCreateInfo {
-			Vk.deviceQueueCreateInfoQueueFamilyIndex = fromJust
-				$ queueFamilyIndicesGraphicsFamily indices,
+	let	uniqueQueueFamilies = Set.fromList [
+			queueFamilyIndicesGraphicsFamily indices,
+			queueFamilyIndicesPresentFamily indices ]
+		queueCreateInfos = (<$> toList uniqueQueueFamilies) \i -> Vk.DeviceQueueCreateInfo {
+			Vk.deviceQueueCreateInfoQueueFamilyIndex = fromJust i,
 			Vk.deviceQueueCreateInfoNext = Nothing,
 			Vk.deviceQueueCreateInfoFlags =
 				Vk.I.DeviceQueueCreateFlagBitsZero,
@@ -315,7 +320,7 @@ createLogicalDevice pd sfc = do
 			Vk.deviceCreateInfoNext = Nothing,
 			Vk.deviceCreateInfoFlags =
 				Vk.I.DeviceCreateFlagBitsZero,
-			Vk.deviceCreateInfoQueueCreateInfos = [queueCreateInfo],
+			Vk.deviceCreateInfoQueueCreateInfos = queueCreateInfos,
 			Vk.deviceCreateInfoEnabledLayerNames =
 				if enableValidationLayers
 					then validationLayers else [],
@@ -324,7 +329,9 @@ createLogicalDevice pd sfc = do
 	dv <- Vk.createDevice @() @() @() pd createInfo Nothing
 	gq <- Vk.getDeviceQueue
 		dv (fromJust $ queueFamilyIndicesGraphicsFamily indices) 0
-	pure (dv, gq)
+	pq <- Vk.getDeviceQueue
+		dv (fromJust $ queueFamilyIndicesPresentFamily indices) 0
+	pure (dv, gq, pq)
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
