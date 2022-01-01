@@ -1,5 +1,7 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -8,7 +10,9 @@ module Vulkan.Khr.Surface where
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Enum
 import Control.Monad.Cont
+import Data.Bits
 import Data.Word
 
 import Vulkan.Base
@@ -45,5 +49,30 @@ getPhysicalDeviceSurfaceSupport phdv qfi sfc = ($ pure) $ runContT do
 foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR"
 	c_vkGetPhysicalDeviceSurfaceSupportKHR ::
 	PhysicalDevice -> #{type uint32_t} -> Surface -> Ptr Bool32 -> IO Result
+
+enum "SurfaceTransformFlagBits" ''#{type VkSurfaceTransformFlagBitsKHR}
+		[''Show, ''Eq, ''Bits, ''Storable] [
+	("SurfaceTransformIdentityBit",
+		#{const VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR}),
+	("SurfaceTransformRotate90Bit",
+		#{const VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR}),
+	("SurfaceTransformRotate180Bit",
+		#{const VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR}),
+	("SurfaceTransformRotate270Bit",
+		#{const VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR}),
+	("SurfaceTransformHorizontalMirrorBit",
+		#{const VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR}),
+	("SurfaceTransformHorizontalMirrorRotate90Bit", #{const
+		VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR}),
+	("SurfaceTransformHorizontalMirrorRotate180Bit", #{const
+		VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR}),
+	("SurfaceTransformHorizontalMirrorRotate270Bit", #{const
+		VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR}),
+	("SurfaceTransformInheritBit",
+		#{const VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR}),
+	("SurfaceTransformFlagBitsMaxEnum",
+		#{const VK_SURFACE_TRANSFORM_FLAG_BITS_MAX_ENUM_KHR}) ]
+
+type SurfaceTransformFlags = SurfaceTransformFlagBits
 
 -- VkSurfaceCapabilitiesKHR
