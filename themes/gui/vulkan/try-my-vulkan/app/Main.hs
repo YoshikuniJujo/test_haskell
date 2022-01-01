@@ -9,7 +9,7 @@ import Data.List.Length
 
 import qualified Graphics.UI.GLFW as Glfw
 
-import qualified Vulkan as Vk
+import qualified Vulkan.Instance as Vk
 import qualified Cglm as Glm
 
 main :: IO ()

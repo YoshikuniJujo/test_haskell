@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -15,6 +15,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Enum
+import Foreign.C.Struct
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -57,5 +58,22 @@ pokeCString cs str = withCStringLen str \(cs_, ln) -> do
 	copyBytes cs cs_ ln
 	poke (cs `plusPtr` ln :: CString) 0
 
+withMaybeCString :: Maybe String -> (CString -> IO a) -> IO a
+withMaybeCString mstr f = case mstr of
+	Nothing -> f nullPtr
+	Just str -> withCString str f
+
 enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
 	("False", #{const VK_FALSE}), ("True", #{const VK_TRUE}) ]
+
+struct "ExtensionProperties" #{size VkExtensionProperties}
+		#{alignment VkExtensionProperties} [
+	("extensionName", ''String,
+		[| peekCString . #{ptr VkExtensionProperties, extensionName} |],
+		[| \p s -> pokeCStringLen
+			#{const VK_MAX_EXTENSION_NAME_SIZE}
+			(#{ptr VkExtensionProperties, extensionName} p) s |]),
+	("specVersion", ''#{type uint32_t}, [| #{peek VkExtensionProperties, specVersion} |],
+		[| #{poke VkExtensionProperties, specVersion} |])
+	]
+	[''Show, ''Read, ''Eq, ''Storable]

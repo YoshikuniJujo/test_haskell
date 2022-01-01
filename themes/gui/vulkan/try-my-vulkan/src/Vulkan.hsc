@@ -12,100 +12,14 @@ module Vulkan (
 	I.FnAllocationFunction, I.FnReallocationFunction, I.FnFreeFunction,
 	I.FnInternalAllocationNotification, I.FnInternalFreeNotification ) where
 
-import Foreign.Ptr
-import Foreign.Marshal
 import Foreign.Storable
-import Foreign.C.String
 import Foreign.C.Enum
-import Foreign.C.Struct
 import Data.Word
-
-import Vulkan.Exception
-import Vulkan.Instance
-import Vulkan.Base
-import Vulkan.AllocationCallbacks
 
 import qualified Vulkan.Internal as I
 import qualified Vulkan.AllocationCallbacks.Internal as I
 
 #include <vulkan/vulkan.h>
-
-struct "ExtensionProperties" #{size VkExtensionProperties}
-		#{alignment VkExtensionProperties} [
-	("extensionName", ''String,
-		[| peekCString . #{ptr VkExtensionProperties, extensionName} |],
-		[| \p s -> pokeCStringLen
-			#{const VK_MAX_EXTENSION_NAME_SIZE}
-			(#{ptr VkExtensionProperties, extensionName} p) s |]),
-	("specVersion", ''#{type uint32_t}, [| #{peek VkExtensionProperties, specVersion} |],
-		[| #{poke VkExtensionProperties, specVersion} |])
-	]
-	[''Show, ''Read, ''Eq, ''Storable]
-
-enumerateInstanceExtensionProperties :: Maybe String -> IO [ExtensionProperties]
-enumerateInstanceExtensionProperties =
-	flip withMaybeCString \cs -> alloca \pn -> do
-		r <- c_vkEnumerateInstanceExtensionProperties cs pn nullPtr
-		throwUnlessSuccess r
-		n <- peek pn
-		allocaArray (fromIntegral n) \pProps -> do
-			r' <- c_vkEnumerateInstanceExtensionProperties cs pn pProps
-			throwUnlessSuccess r'
-			peekArray (fromIntegral n) pProps
-
-withMaybeCString :: Maybe String -> (CString -> IO a) -> IO a
-withMaybeCString mstr f = case mstr of
-	Nothing -> f nullPtr
-	Just str -> withCString str f
-
-foreign import ccall "vkEnumerateInstanceExtensionProperties"
-	c_vkEnumerateInstanceExtensionProperties ::
-	CString -> Ptr #{type uint32_t} -> Ptr ExtensionProperties -> IO Result
-
-destroyInstance ::
-	Pointable a => Instance -> Maybe (AllocationCallbacks a) -> IO ()
-destroyInstance (Instance pist) mac = case mac of
-	Nothing -> c_vkDestroyInstance pist nullPtr
-	Just ac -> withAllocationCallbacksPtr ac \pac ->
-		c_vkDestroyInstance pist pac
-
-foreign import ccall "vkDestroyInstance" c_vkDestroyInstance ::
-	Ptr Instance -> Ptr I.AllocationCallbacks -> IO ()
-
-struct "LayerProperties" #{size VkLayerProperties}
-		#{alignment VkLayerProperties} [
-	("layerName", ''String,
-		[| peekCString . #{ptr VkLayerProperties, layerName} |],
-		[| \p s -> pokeCStringLen
-			#{const VK_MAX_EXTENSION_NAME_SIZE}
-			(#{ptr VkLayerProperties, layerName} p) s |]),
-	("specVersion", ''#{type uint32_t},
-		[| #{peek VkLayerProperties, specVersion} |],
-		[| #{poke VkLayerProperties, specVersion} |]),
-	("implementationVersion", ''#{type uint32_t},
-		[| #{peek VkLayerProperties, implementationVersion} |],
-		[| #{poke VkLayerProperties, implementationVersion} |]),
-	("description", ''String,
-		[| peekCString . #{ptr VkLayerProperties, description} |],
-		[| \p s -> pokeCStringLen
-			#{const VK_MAX_DESCRIPTION_SIZE}
-			(#{ptr VkLayerProperties, description} p) s |]) ]
-	[''Show, ''Storable]
-
-enumerateInstanceLayerProperties :: IO [LayerProperties]
-
-enumerateInstanceLayerProperties = alloca \pn -> do
-	r <- c_vkEnumerateInstanceLayerProperties pn nullPtr
-	throwUnlessSuccess r
-	n <- peek pn
-	allocaArray (fromIntegral n) \pProps -> do
-		r' <- c_vkEnumerateInstanceLayerProperties pn pProps
-		throwUnlessSuccess r'
-		peekArray (fromIntegral n) pProps
-
-foreign import ccall "vkEnumerateInstanceLayerProperties"
-	c_vkEnumerateInstanceLayerProperties ::
-	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO Result
 
 enum "ObjectType" ''#{type VkObjectType} [''Show, ''Storable] [
 	("ObjectTypeUnknown", #{const VK_OBJECT_TYPE_UNKNOWN}),

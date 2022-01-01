@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -12,6 +13,8 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
+import Foreign.C.Struct
+import Data.Word
 
 import Vulkan.Base
 import Vulkan.Exception
@@ -19,6 +22,8 @@ import Vulkan.AllocationCallbacks
 
 import qualified Vulkan.Internal as I
 import qualified Vulkan.AllocationCallbacks.Internal as I
+
+#include <vulkan/vulkan.h>
 
 data InstanceCreateInfo a b = InstanceCreateInfo {
 	instanceCreateInfoNext :: Maybe a,
@@ -86,3 +91,63 @@ withApplicationInfo ai f = withMaybePointer (applicationInfoNext ai) \pnxt ->
 					applicationInfoEngineVersion ai,
 				I.applicationInfoApiVersion =
 					applicationInfoApiVersion ai }
+
+enumerateInstanceExtensionProperties :: Maybe String -> IO [ExtensionProperties]
+enumerateInstanceExtensionProperties =
+	flip withMaybeCString \cs -> alloca \pn -> do
+		r <- c_vkEnumerateInstanceExtensionProperties cs pn nullPtr
+		throwUnlessSuccess r
+		n <- peek pn
+		allocaArray (fromIntegral n) \pProps -> do
+			r' <- c_vkEnumerateInstanceExtensionProperties cs pn pProps
+			throwUnlessSuccess r'
+			peekArray (fromIntegral n) pProps
+
+foreign import ccall "vkEnumerateInstanceExtensionProperties"
+	c_vkEnumerateInstanceExtensionProperties ::
+	CString -> Ptr #{type uint32_t} -> Ptr ExtensionProperties -> IO Result
+
+destroyInstance ::
+	Pointable a => Instance -> Maybe (AllocationCallbacks a) -> IO ()
+destroyInstance (Instance pist) mac = case mac of
+	Nothing -> c_vkDestroyInstance pist nullPtr
+	Just ac -> withAllocationCallbacksPtr ac \pac ->
+		c_vkDestroyInstance pist pac
+
+foreign import ccall "vkDestroyInstance" c_vkDestroyInstance ::
+	Ptr Instance -> Ptr I.AllocationCallbacks -> IO ()
+
+struct "LayerProperties" #{size VkLayerProperties}
+		#{alignment VkLayerProperties} [
+	("layerName", ''String,
+		[| peekCString . #{ptr VkLayerProperties, layerName} |],
+		[| \p s -> pokeCStringLen
+			#{const VK_MAX_EXTENSION_NAME_SIZE}
+			(#{ptr VkLayerProperties, layerName} p) s |]),
+	("specVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, specVersion} |],
+		[| #{poke VkLayerProperties, specVersion} |]),
+	("implementationVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, implementationVersion} |],
+		[| #{poke VkLayerProperties, implementationVersion} |]),
+	("description", ''String,
+		[| peekCString . #{ptr VkLayerProperties, description} |],
+		[| \p s -> pokeCStringLen
+			#{const VK_MAX_DESCRIPTION_SIZE}
+			(#{ptr VkLayerProperties, description} p) s |]) ]
+	[''Show, ''Storable]
+
+enumerateInstanceLayerProperties :: IO [LayerProperties]
+
+enumerateInstanceLayerProperties = alloca \pn -> do
+	r <- c_vkEnumerateInstanceLayerProperties pn nullPtr
+	throwUnlessSuccess r
+	n <- peek pn
+	allocaArray (fromIntegral n) \pProps -> do
+		r' <- c_vkEnumerateInstanceLayerProperties pn pProps
+		throwUnlessSuccess r'
+		peekArray (fromIntegral n) pProps
+
+foreign import ccall "vkEnumerateInstanceLayerProperties"
+	c_vkEnumerateInstanceLayerProperties ::
+	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO Result

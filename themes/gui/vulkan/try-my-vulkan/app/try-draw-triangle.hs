@@ -29,6 +29,7 @@ import qualified Vulkan.PhysicalDevice as Vk
 import qualified Vulkan.Device as Vk
 import qualified Vulkan.Device.Internal as Vk.I
 import qualified Vulkan.Khr.Surface as Vk.Khr
+import qualified Vulkan.Khr.Swapchain as Vk.Khr
 
 import qualified Glfw as Glfw
 
@@ -40,6 +41,11 @@ width = 800; height = 600
 validationLayers :: [String]
 validationLayers = [
 	"VK_LAYER_KHRONOS_validation"
+	]
+
+deviceExtensions :: [String]
+deviceExtensions = [
+	Vk.Khr.swapchainExtensionName
 	]
 
 enableValidationLayers :: Bool
@@ -171,7 +177,12 @@ isDeviceSuitable device sfc = do
 
 	indices <- findQueueFamilies device sfc
 
+	extensionSupported <- checkDeviceExtensionSupport device
+
 	pure $ queueFamilyIndicesIsComplete indices
+
+checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
+checkDeviceExtensionSupport device = pure True
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	queueFamilyIndicesGraphicsFamily :: Maybe Word32,
