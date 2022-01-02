@@ -382,8 +382,15 @@ createSwapChain win device surface = do
 			$ swapChainSupportDetailsFormats swapChainSupport
 		presentMode = chooseSwapPresentMode
 			$ swapChainSupportDetailsPresentModes swapChainSupport
-	extent <- chooseSwapExtent win
-		$ swapChainSupportDetailsCapabilities swapChainSupport
+		capabilities =
+			swapChainSupportDetailsCapabilities swapChainSupport
+		minImageCountPlus1 =
+			Vk.Khr.surfaceCapabilitiesMinImageCount capabilities + 1
+		maxImageCount =
+			Vk.Khr.surfaceCapabilitiesMaxImageCount capabilities
+		imageCount = bool minImageCountPlus1 maxImageCount $
+			0 < maxImageCount && maxImageCount < minImageCountPlus1
+	extent <- chooseSwapExtent win capabilities
 	putStrLn "createSwapChain: surfaceFormat"
 	print surfaceFormat
 	print $ swapChainSupportDetailsPresentModes swapChainSupport
@@ -403,9 +410,19 @@ chooseSwapPresentMode availablePresentModes =
 		$ elem Vk.Khr.PresentModeMailbox availablePresentModes
 
 chooseSwapExtent :: GlfwB.Window -> Vk.Khr.SurfaceCapabilities -> IO Vk.Extent2D
-chooseSwapExtent win capabilities = do
-	print =<< GlfwB.getFramebufferSize win
-	pure undefined
+chooseSwapExtent win capabilities = if cw < Vk.uint32Max then pure ce else do
+	(gw, gh) <- GlfwB.getFramebufferSize win
+	pure $ Vk.Extent2D (clamp mnw mxw cw) (clamp mnh mxh ch)
+	where
+	ce@(Vk.Extent2D cw ch) =
+		Vk.Khr.surfaceCapabilitiesCurrentExtent capabilities
+	Vk.Extent2D mnw mnh =
+		Vk.Khr.surfaceCapabilitiesMinImageExtent capabilities
+	Vk.Extent2D mxw mxh =
+		Vk.Khr.surfaceCapabilitiesMaxImageExtent capabilities
+
+clamp :: Ord a => a -> a -> a -> a
+clamp mn mx x | x <= mn = mn | mx <= x = mx | otherwise = x
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

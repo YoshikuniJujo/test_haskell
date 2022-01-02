@@ -120,3 +120,6 @@ enum "Format" ''#{type VkFormat} [''Show, ''Eq, ''Storable] [
 	("FormatG16B16R163Plane444Unorm",
 		#{const VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM})
 	]
+
+uint32Max :: Integral n => n
+uint32Max = #{const UINT32_MAX}
