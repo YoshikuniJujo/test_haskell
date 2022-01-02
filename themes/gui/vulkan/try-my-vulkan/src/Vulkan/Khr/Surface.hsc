@@ -137,3 +137,37 @@ getPhysicalDeviceSurfaceCapabilities phdv sfc = ($ pure) $ runContT do
 foreign import ccall "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"
 	c_vkGetPhysicalDeviceSurfaceCapabilitiesKHR ::
 	PhysicalDevice -> Surface -> Ptr SurfaceCapabilities -> IO Result
+
+enum "ColorSpace" ''#{type VkColorSpaceKHR} [''Show, ''Storable] [
+	("ColorSpaceSrgbNonlinear", #{const VK_COLOR_SPACE_SRGB_NONLINEAR_KHR})
+	-- VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT
+	-- ...
+	-- VK_COLOR_SPACE_DCI_P3_LINEAR_EXT
+	]
+
+struct "SurfaceFormat" #{size VkSurfaceFormatKHR}
+		#{alignment VkSurfaceFormatKHR} [
+	("format", ''Format, [| #{peek VkSurfaceFormatKHR, format} |],
+		[| #{poke VkSurfaceFormatKHR, format} |]),
+	("colorSpace", ''ColorSpace,
+		[| #{peek VkSurfaceFormatKHR, colorSpace} |],
+		[| #{poke VkSurfaceFormatKHR, colorSpace} |]) ]
+	[''Show, ''Storable]
+
+getPhysicalDeviceSurfaceFormats ::
+	PhysicalDevice -> Surface -> IO [SurfaceFormat]
+getPhysicalDeviceSurfaceFormats phdv sfc = ($ pure) $ runContT do
+	pn <- ContT alloca
+	n <- lift do
+		r <- c_vkGetPhysicalDeviceSurfaceFormatsKHR phdv sfc pn NullPtr
+		throwUnlessSuccess r
+		fromIntegral <$> peek pn
+	psf <- ContT $ allocaArray n
+	lift do	r <- c_vkGetPhysicalDeviceSurfaceFormatsKHR phdv sfc pn psf
+		throwUnlessSuccess r
+		peekArray n psf
+
+foreign import ccall "vkGetPhysicalDeviceSurfaceFormatsKHR"
+	c_vkGetPhysicalDeviceSurfaceFormatsKHR ::
+	PhysicalDevice -> Surface -> Ptr #{type uint32_t} ->
+	Ptr SurfaceFormat -> IO Result
