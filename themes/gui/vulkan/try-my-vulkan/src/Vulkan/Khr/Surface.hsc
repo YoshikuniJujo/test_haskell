@@ -171,3 +171,33 @@ foreign import ccall "vkGetPhysicalDeviceSurfaceFormatsKHR"
 	c_vkGetPhysicalDeviceSurfaceFormatsKHR ::
 	PhysicalDevice -> Surface -> Ptr #{type uint32_t} ->
 	Ptr SurfaceFormat -> IO Result
+
+enum "PresentMode" ''#{type VkPresentModeKHR} [''Show, ''Storable] [
+	("PresentModeImmediate", #{const VK_PRESENT_MODE_IMMEDIATE_KHR}),
+	("PresentModeMailbox", #{const VK_PRESENT_MODE_MAILBOX_KHR}),
+	("PresentModeFifo", #{const VK_PRESENT_MODE_FIFO_KHR}),
+	("PresentModeFifoRelaxed", #{const VK_PRESENT_MODE_FIFO_RELAXED_KHR}),
+	("PresentModeSharedDemandRefresh",
+		#{const VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR}),
+	("PresentModeSharedContinuousRefresh",
+		#{const VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR})
+	]
+
+getPhysicalDeviceSurfacePresentModes ::
+	PhysicalDevice -> Surface -> IO [PresentMode]
+getPhysicalDeviceSurfacePresentModes phdv sfc = ($ pure) $ runContT do
+	pn <- ContT alloca
+	n <- lift do
+		r <- c_vkGetPhysicalDeviceSurfacePresentModesKHR
+			phdv sfc pn NullPtr
+		throwUnlessSuccess r
+		fromIntegral <$> peek pn
+	ppm <- ContT $ allocaArray n
+	lift do	r <- c_vkGetPhysicalDeviceSurfacePresentModesKHR phdv sfc pn ppm
+		throwUnlessSuccess r
+		peekArray n ppm
+
+foreign import ccall "vkGetPhysicalDeviceSurfacePresentModesKHR"
+	c_vkGetPhysicalDeviceSurfacePresentModesKHR ::
+	PhysicalDevice -> Surface -> Ptr #{type uint32_t} ->
+	Ptr PresentMode -> IO Result

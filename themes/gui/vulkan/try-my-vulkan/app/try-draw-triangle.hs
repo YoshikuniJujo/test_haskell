@@ -252,6 +252,7 @@ querySwapChainSupport device surface = do
 	putStrLn "GET PHYSICAL DEVICE SURFACE CAPABILITIES:"
 	print =<< Vk.Khr.getPhysicalDeviceSurfaceCapabilities device surface
 	print =<< Vk.Khr.getPhysicalDeviceSurfaceFormats device surface
+	print =<< Vk.Khr.getPhysicalDeviceSurfacePresentModes device surface
 
 createLogicalDevice :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO (Vk.Device, Vk.Queue, Vk.Queue)
 createLogicalDevice pd sfc = do
