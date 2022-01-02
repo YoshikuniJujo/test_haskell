@@ -81,7 +81,7 @@ initVulkan w = do
 	sfc <- createSurface ist w
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
-	createSwapChain pd sfc
+	createSwapChain w pd sfc
 	pure (ist, dbgMssngr, dv, gq, sfc)
 
 createInstance :: IO Vk.Instance
@@ -375,13 +375,15 @@ createLogicalDevice pd sfc = do
 		dv (fromJust $ queueFamilyIndicesPresentFamily indices) 0
 	pure (dv, gq, pq)
 
-createSwapChain :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
-createSwapChain device surface = do
+createSwapChain :: GlfwB.Window -> Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
+createSwapChain win device surface = do
 	swapChainSupport <- querySwapChainSupport device surface
 	let	surfaceFormat = chooseSwapSurfaceFormat
 			$ swapChainSupportDetailsFormats swapChainSupport
 		presentMode = chooseSwapPresentMode
 			$ swapChainSupportDetailsPresentModes swapChainSupport
+	extent <- chooseSwapExtent win
+		$ swapChainSupportDetailsCapabilities swapChainSupport
 	putStrLn "createSwapChain: surfaceFormat"
 	print surfaceFormat
 	print $ swapChainSupportDetailsPresentModes swapChainSupport
@@ -399,6 +401,11 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode availablePresentModes =
 	bool Vk.Khr.PresentModeFifo Vk.Khr.PresentModeMailbox
 		$ elem Vk.Khr.PresentModeMailbox availablePresentModes
+
+chooseSwapExtent :: GlfwB.Window -> Vk.Khr.SurfaceCapabilities -> IO Vk.Extent2D
+chooseSwapExtent win capabilities = do
+	print =<< GlfwB.getFramebufferSize win
+	pure undefined
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
