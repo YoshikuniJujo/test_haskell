@@ -173,7 +173,7 @@ foreign import ccall "vkGetPhysicalDeviceSurfaceFormatsKHR"
 	PhysicalDevice -> Surface -> Ptr #{type uint32_t} ->
 	Ptr SurfaceFormat -> IO Result
 
-enum "PresentMode" ''#{type VkPresentModeKHR} [''Show, ''Storable] [
+enum "PresentMode" ''#{type VkPresentModeKHR} [''Show, ''Eq, ''Storable] [
 	("PresentModeImmediate", #{const VK_PRESENT_MODE_IMMEDIATE_KHR}),
 	("PresentModeMailbox", #{const VK_PRESENT_MODE_MAILBOX_KHR}),
 	("PresentModeFifo", #{const VK_PRESENT_MODE_FIFO_KHR}),

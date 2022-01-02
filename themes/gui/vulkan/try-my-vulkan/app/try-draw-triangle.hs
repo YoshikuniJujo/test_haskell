@@ -380,8 +380,12 @@ createSwapChain device surface = do
 	swapChainSupport <- querySwapChainSupport device surface
 	let	surfaceFormat = chooseSwapSurfaceFormat
 			$ swapChainSupportDetailsFormats swapChainSupport
+		presentMode = chooseSwapPresentMode
+			$ swapChainSupportDetailsPresentModes swapChainSupport
 	putStrLn "createSwapChain: surfaceFormat"
 	print surfaceFormat
+	print $ swapChainSupportDetailsPresentModes swapChainSupport
+	print presentMode
 	pure ()
 
 chooseSwapSurfaceFormat :: [Vk.Khr.SurfaceFormat] -> Vk.Khr.SurfaceFormat
@@ -390,6 +394,11 @@ chooseSwapSurfaceFormat availableFormats@(af0 : _)  =
 	bool af0  af1 $ elem af1 availableFormats
 	where af1 = Vk.Khr.SurfaceFormat
 		Vk.FormatB8g8r8a8Srgb Vk.Khr.ColorSpaceSrgbNonlinear
+
+chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
+chooseSwapPresentMode availablePresentModes =
+	bool Vk.Khr.PresentModeFifo Vk.Khr.PresentModeMailbox
+		$ elem Vk.Khr.PresentModeMailbox availablePresentModes
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
