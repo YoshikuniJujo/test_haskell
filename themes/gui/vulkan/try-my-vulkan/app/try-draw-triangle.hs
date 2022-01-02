@@ -81,6 +81,7 @@ initVulkan w = do
 	sfc <- createSurface ist w
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
+	createSwapChain pd sfc
 	pure (ist, dbgMssngr, dv, gq, sfc)
 
 createInstance :: IO Vk.Instance
@@ -373,6 +374,22 @@ createLogicalDevice pd sfc = do
 	pq <- Vk.getDeviceQueue
 		dv (fromJust $ queueFamilyIndicesPresentFamily indices) 0
 	pure (dv, gq, pq)
+
+createSwapChain :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
+createSwapChain device surface = do
+	swapChainSupport <- querySwapChainSupport device surface
+	let	surfaceFormat = chooseSwapSurfaceFormat
+			$ swapChainSupportDetailsFormats swapChainSupport
+	putStrLn "createSwapChain: surfaceFormat"
+	print surfaceFormat
+	pure ()
+
+chooseSwapSurfaceFormat :: [Vk.Khr.SurfaceFormat] -> Vk.Khr.SurfaceFormat
+chooseSwapSurfaceFormat [] = error "no swap surface format"
+chooseSwapSurfaceFormat availableFormats@(af0 : _)  =
+	bool af0  af1 $ elem af1 availableFormats
+	where af1 = Vk.Khr.SurfaceFormat
+		Vk.FormatB8g8r8a8Srgb Vk.Khr.ColorSpaceSrgbNonlinear
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

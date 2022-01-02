@@ -94,7 +94,7 @@ struct "Extent3D" #{size VkExtent3D} #{alignment VkExtent3D} [
 		[| #{poke VkExtent3D, depth} |]) ]
 	[''Show, ''Storable]
 
-enum "Format" ''#{type VkFormat} [''Show, ''Storable] [
+enum "Format" ''#{type VkFormat} [''Show, ''Eq, ''Storable] [
 	("FormatUndefined", #{const VK_FORMAT_UNDEFINED}),
 	("FormatR4g4UnormPack8", #{const VK_FORMAT_R4G4_UNORM_PACK8}),
 	("FormatR4g4b4a4UnormPack16", #{const VK_FORMAT_R4G4B4A4_UNORM_PACK16}),

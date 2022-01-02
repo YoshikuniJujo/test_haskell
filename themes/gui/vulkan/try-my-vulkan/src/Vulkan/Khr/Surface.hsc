@@ -138,7 +138,7 @@ foreign import ccall "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"
 	c_vkGetPhysicalDeviceSurfaceCapabilitiesKHR ::
 	PhysicalDevice -> Surface -> Ptr SurfaceCapabilities -> IO Result
 
-enum "ColorSpace" ''#{type VkColorSpaceKHR} [''Show, ''Storable] [
+enum "ColorSpace" ''#{type VkColorSpaceKHR} [''Show, ''Eq, ''Storable] [
 	("ColorSpaceSrgbNonlinear", #{const VK_COLOR_SPACE_SRGB_NONLINEAR_KHR})
 	-- VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT
 	-- ...
@@ -152,7 +152,7 @@ struct "SurfaceFormat" #{size VkSurfaceFormatKHR}
 	("colorSpace", ''ColorSpace,
 		[| #{peek VkSurfaceFormatKHR, colorSpace} |],
 		[| #{poke VkSurfaceFormatKHR, colorSpace} |]) ]
-	[''Show, ''Storable]
+	[''Show, ''Eq, ''Storable]
 
 getPhysicalDeviceSurfaceFormats ::
 	PhysicalDevice -> Surface -> IO [SurfaceFormat]
