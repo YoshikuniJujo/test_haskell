@@ -20,6 +20,7 @@ import Vulkan.Exception
 import Vulkan.Instance
 import Vulkan.AllocationCallbacks
 import Vulkan.PhysicalDevice
+import Vulkan.Image
 
 #include <vulkan/vulkan.h>
 
@@ -75,17 +76,18 @@ enum "SurfaceTransformFlagBits" ''#{type VkSurfaceTransformFlagBitsKHR}
 
 type SurfaceTransformFlags = SurfaceTransformFlagBits
 
--- VkCompositeAlphaFlagsKHR
-
 enum "CompositeAlphaFlagBits" ''#{type VkCompositeAlphaFlagBitsKHR}
 		[''Show, ''Eq, ''Bits, ''Storable] [
-	-- VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
-	-- VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR
-	-- VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR
-	-- VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR
-	-- FOO
-	]
+	("CompositeAlphaOpaqueBit", #{const VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR}),
+	("CompositeAlphaPreMultipleBit",
+		#{const VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR}),
+	("CompositeAlphaPostMultipliedBit",
+		#{const VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR}),
+	("CompositeAlphaInheritBit",
+		#{const VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR}),
+	("CompositeAlphaFlagBitsMaxEnum",
+		#{const VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR}) ]
 
--- VkImageUsageFlags
+type CompositeAlphaFlags = CompositeAlphaFlagBits
 
 -- VkSurfaceCapabilitiesKHR

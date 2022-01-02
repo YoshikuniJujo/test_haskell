@@ -37,6 +37,9 @@ library
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
+      Vulkan.Image
+      Vulkan.Image.EnableBetaExtensions
+      Vulkan.Image.Internal
       Vulkan.Instance
       Vulkan.Internal
       Vulkan.Khr.Surface
