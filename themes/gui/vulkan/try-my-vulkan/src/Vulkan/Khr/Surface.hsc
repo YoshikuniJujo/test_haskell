@@ -1,7 +1,7 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, TupleSections #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,6 +11,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Enum
+import Foreign.C.Struct
 import Control.Monad.Cont
 import Data.Bits
 import Data.Word
@@ -90,4 +91,49 @@ enum "CompositeAlphaFlagBits" ''#{type VkCompositeAlphaFlagBitsKHR}
 
 type CompositeAlphaFlags = CompositeAlphaFlagBits
 
--- VkSurfaceCapabilitiesKHR
+struct "SurfaceCapabilities" #{size VkSurfaceCapabilitiesKHR}
+		#{alignment VkSurfaceCapabilitiesKHR} [
+	("minImageCount", ''#{type uint32_t},
+		[| #{peek VkSurfaceCapabilitiesKHR, minImageCount} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, minImageCount} |]),
+	("maxImageCount", ''#{type uint32_t},
+		[| #{peek VkSurfaceCapabilitiesKHR, maxImageCount} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, maxImageCount} |]),
+	("currentExtent", ''Extent2D,
+		[| #{peek VkSurfaceCapabilitiesKHR, currentExtent} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, currentExtent} |]),
+	("minImageExtent", ''Extent2D,
+		[| #{peek VkSurfaceCapabilitiesKHR, minImageExtent} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, minImageExtent} |]),
+	("maxImageExtent", ''Extent2D,
+		[| #{peek VkSurfaceCapabilitiesKHR, maxImageExtent} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, maxImageExtent} |]),
+	("maxImageArrayLayers", ''#{type uint32_t},
+		[| #{peek VkSurfaceCapabilitiesKHR, maxImageArrayLayers} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, maxImageArrayLayers} |]),
+	("supportedTransforms", ''SurfaceTransformFlags,
+		[| #{peek VkSurfaceCapabilitiesKHR, supportedTransforms} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, supportedTransforms} |]),
+	("currentTransform", ''SurfaceTransformFlagBits,
+		[| #{peek VkSurfaceCapabilitiesKHR, currentTransform} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, currentTransform} |]),
+	("supportedCompositeAlpha", ''CompositeAlphaFlags,
+		[| #{peek VkSurfaceCapabilitiesKHR, supportedCompositeAlpha} |],
+		[| #{poke VkSurfaceCapabilitiesKHR,
+			supportedCompositeAlpha} |]),
+	("supportedUsageFlags", ''ImageUsageFlags,
+		[| #{peek VkSurfaceCapabilitiesKHR, supportedUsageFlags} |],
+		[| #{poke VkSurfaceCapabilitiesKHR, supportedUsageFlags} |]) ]
+	[''Show, ''Storable]
+
+getPhysicalDeviceSurfaceCapabilities ::
+	PhysicalDevice -> Surface -> IO SurfaceCapabilities
+getPhysicalDeviceSurfaceCapabilities phdv sfc = ($ pure) $ runContT do
+	psc <- ContT alloca
+	lift do	r <- c_vkGetPhysicalDeviceSurfaceCapabilitiesKHR phdv sfc psc
+		throwUnlessSuccess r
+		peek psc
+
+foreign import ccall "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"
+	c_vkGetPhysicalDeviceSurfaceCapabilitiesKHR ::
+	PhysicalDevice -> Surface -> Ptr SurfaceCapabilities -> IO Result

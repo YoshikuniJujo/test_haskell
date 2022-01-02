@@ -47,3 +47,5 @@ enum "ImageUsageFlagBits" ''#{type VkImageUsageFlags}
 		#{const VK_IMAGE_USAGE_INVOCATION_MASK_BIT_HUAWEI}),
 	("ImageUsageShadingRateImageBitNv",
 		#{const VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV}) ]
+
+type ImageUsageFlags = ImageUsageFlagBits

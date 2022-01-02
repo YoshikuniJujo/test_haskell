@@ -179,6 +179,9 @@ isDeviceSuitable device sfc = do
 
 	extensionSupported <- checkDeviceExtensionSupport device
 
+	when extensionSupported do
+		querySwapChainSupport device sfc
+
 	pure $ queueFamilyIndicesIsComplete indices && extensionSupported
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
@@ -243,6 +246,11 @@ convertHead s d = \case
 	[] -> []
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
+
+querySwapChainSupport :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
+querySwapChainSupport device surface = do
+	putStrLn "GET PHYSICAL DEVICE SURFACE CAPABILITIES:"
+	print =<< Vk.Khr.getPhysicalDeviceSurfaceCapabilities device surface
 
 createLogicalDevice :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO (Vk.Device, Vk.Queue, Vk.Queue)
 createLogicalDevice pd sfc = do
