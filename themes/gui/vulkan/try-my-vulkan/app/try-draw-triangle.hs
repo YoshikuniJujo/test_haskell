@@ -179,10 +179,15 @@ isDeviceSuitable device sfc = do
 
 	extensionSupported <- checkDeviceExtensionSupport device
 
-	when extensionSupported do
-		querySwapChainSupport device sfc
-
-	pure $ queueFamilyIndicesIsComplete indices && extensionSupported
+	if extensionSupported
+		then do	swapChainSupport <- querySwapChainSupport device sfc
+			let	swapChainAdequate =
+					not (null $ swapChainSupportDetailsFormats
+						swapChainSupport) &&
+					not (null $ swapChainSupportDetailsPresentModes
+						swapChainSupport)
+			pure $ queueFamilyIndicesIsComplete indices && swapChainAdequate
+		else pure False
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
 checkDeviceExtensionSupport device = do
@@ -247,12 +252,17 @@ convertHead s d = \case
 	c : cs	| c == s -> d : cs
 		| otherwise -> c : cs
 
-querySwapChainSupport :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
-querySwapChainSupport device surface = do
-	putStrLn "GET PHYSICAL DEVICE SURFACE CAPABILITIES:"
-	print =<< Vk.Khr.getPhysicalDeviceSurfaceCapabilities device surface
-	print =<< Vk.Khr.getPhysicalDeviceSurfaceFormats device surface
-	print =<< Vk.Khr.getPhysicalDeviceSurfacePresentModes device surface
+data SwapChainSupportDetails = SwapChainSupportDetails {
+	swapChainSupportDetailsCapabilities :: Vk.Khr.SurfaceCapabilities,
+	swapChainSupportDetailsFormats :: [Vk.Khr.SurfaceFormat],
+	swapChainSupportDetailsPresentModes :: [Vk.Khr.PresentMode] }
+	deriving Show
+
+querySwapChainSupport :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO SwapChainSupportDetails
+querySwapChainSupport device surface = SwapChainSupportDetails
+	<$> Vk.Khr.getPhysicalDeviceSurfaceCapabilities device surface
+	<*> Vk.Khr.getPhysicalDeviceSurfaceFormats device surface
+	<*> Vk.Khr.getPhysicalDeviceSurfacePresentModes device surface
 
 createLogicalDevice :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO (Vk.Device, Vk.Queue, Vk.Queue)
 createLogicalDevice pd sfc = do

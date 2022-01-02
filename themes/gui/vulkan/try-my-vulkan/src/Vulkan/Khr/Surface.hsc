@@ -162,10 +162,11 @@ getPhysicalDeviceSurfaceFormats phdv sfc = ($ pure) $ runContT do
 		r <- c_vkGetPhysicalDeviceSurfaceFormatsKHR phdv sfc pn NullPtr
 		throwUnlessSuccess r
 		fromIntegral <$> peek pn
-	psf <- ContT $ allocaArray n
-	lift do	r <- c_vkGetPhysicalDeviceSurfaceFormatsKHR phdv sfc pn psf
-		throwUnlessSuccess r
-		peekArray n psf
+	if n == 0 then pure [] else do
+		psf <- ContT $ allocaArray n
+		lift do	r <- c_vkGetPhysicalDeviceSurfaceFormatsKHR phdv sfc pn psf
+			throwUnlessSuccess r
+			peekArray n psf
 
 foreign import ccall "vkGetPhysicalDeviceSurfaceFormatsKHR"
 	c_vkGetPhysicalDeviceSurfaceFormatsKHR ::
@@ -192,10 +193,11 @@ getPhysicalDeviceSurfacePresentModes phdv sfc = ($ pure) $ runContT do
 			phdv sfc pn NullPtr
 		throwUnlessSuccess r
 		fromIntegral <$> peek pn
-	ppm <- ContT $ allocaArray n
-	lift do	r <- c_vkGetPhysicalDeviceSurfacePresentModesKHR phdv sfc pn ppm
-		throwUnlessSuccess r
-		peekArray n ppm
+	if n == 0 then pure [] else do
+		ppm <- ContT $ allocaArray n
+		lift do	r <- c_vkGetPhysicalDeviceSurfacePresentModesKHR phdv sfc pn ppm
+			throwUnlessSuccess r
+			peekArray n ppm
 
 foreign import ccall "vkGetPhysicalDeviceSurfacePresentModesKHR"
 	c_vkGetPhysicalDeviceSurfacePresentModesKHR ::
