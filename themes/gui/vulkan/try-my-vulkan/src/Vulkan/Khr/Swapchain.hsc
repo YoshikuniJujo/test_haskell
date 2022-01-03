@@ -9,7 +9,10 @@ import Prelude
 import qualified Prelude as P
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Control.Monad.Cont
 import Data.Maybe
 import Data.List
@@ -17,9 +20,13 @@ import Data.Word
 
 import Vulkan.Base
 import Vulkan.Image
+import Vulkan.Exception
+import Vulkan.AllocationCallbacks
+import Vulkan.Device
 import Vulkan.Khr.Surface
 
 import qualified Vulkan.Base as Vk
+import qualified Vulkan.AllocationCallbacks.Internal as I
 import qualified Vulkan.Khr.Swapchain.Internal as I
 
 #include <vulkan/vulkan.h>
@@ -74,3 +81,18 @@ swapchainCreateInfoToC SwapchainCreateInfo {
 
 boolToVkBool32 :: Bool -> Bool32
 boolToVkBool32 = \case P.False -> Vk.False; P.True -> Vk.True
+
+createSwapchain :: (Pointable n, Pointable n') =>
+	Device -> SwapchainCreateInfo n -> Maybe (AllocationCallbacks n') -> IO I.Swapchain
+createSwapchain dvc sci mac = ($ pure) $ runContT do
+	I.SwapchainCreateInfo_ fiscci <- ContT $ swapchainCreateInfoToC sci
+	piscci <- ContT $ withForeignPtr fiscci
+	piac <- maybe (pure NullPtr) (ContT . withAllocationCallbacksPtr) mac
+	psc <- ContT alloca
+	lift do	r <- c_vkCreateSwapchainKHR dvc piscci piac psc
+		throwUnlessSuccess r
+		peek psc
+
+foreign import ccall "vkCreateSwapchainKHR" c_vkCreateSwapchainKHR ::
+	Device -> Ptr I.SwapchainCreateInfo -> Ptr I.AllocationCallbacks ->
+	Ptr I.Swapchain -> IO Result
