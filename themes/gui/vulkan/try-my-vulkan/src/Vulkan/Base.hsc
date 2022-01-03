@@ -123,3 +123,7 @@ enum "Format" ''#{type VkFormat} [''Show, ''Eq, ''Storable] [
 
 uint32Max :: Integral n => n
 uint32Max = #{const UINT32_MAX}
+
+enum "SharingMode" ''#{type VkSharingMode} [''Show, ''Storable] [
+	("SharingModeExclusive", #{const VK_SHARING_MODE_EXCLUSIVE}),
+	("SharingModeConcurrent", #{const VK_SHARING_MODE_CONCURRENT}) ]

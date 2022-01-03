@@ -2,6 +2,8 @@
 
 module Vulkan.Khr.Swapchain where
 
+import qualified Vulkan.Khr.Swapchain.Internal as I
+
 #include <vulkan/vulkan.h>
 
 swapchainExtensionName :: String
