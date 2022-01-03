@@ -1,10 +1,76 @@
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Khr.Swapchain where
 
+import Prelude
+import qualified Prelude as P
+
+import Foreign.Ptr
+import Foreign.Marshal.Array
+import Control.Monad.Cont
+import Data.Maybe
+import Data.List
+import Data.Word
+
+import Vulkan.Base
+import Vulkan.Image
+import Vulkan.Khr.Surface
+
+import qualified Vulkan.Base as Vk
 import qualified Vulkan.Khr.Swapchain.Internal as I
 
 #include <vulkan/vulkan.h>
 
 swapchainExtensionName :: String
 swapchainExtensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
+
+data SwapchainCreateInfo n = SwapchainCreateInfo {
+	swapchainCreateInfoNext :: Maybe n,
+	swapchainCreateInfoFlags :: I.SwapchainCreateFlags,
+	swapchainCreateInfoSurface :: Surface,
+	swapchainCreateInfoMinImageCount :: #{type uint32_t},
+	swapchainCreateInfoImageFormat :: Format,
+	swapchainCreateInfoImageColorSpace :: ColorSpace,
+	swapchainCreateInfoImageExtent :: Extent2D,
+	swapchainCreateInfoImageArrayLayers :: #{type uint32_t},
+	swapchainCreateInfoImageUsage :: ImageUsageFlags,
+	swapchainCreateInfoSharingMode :: SharingMode,
+	swapchainCreateInfoQueueFamilyIndices :: [#{type uint32_t}],
+	swapchainCreateInfoPreTransform :: SurfaceTransformFlagBits,
+	swapchainCreateInfoCompositeAlpha :: CompositeAlphaFlagBits,
+	swapchainCreateInfoPresentMode :: PresentMode,
+	swapchainCreateInfoClipped :: Bool,
+	swapchainCreateInfoOldSwapchain :: Maybe I.Swapchain }
+	deriving Show
+
+swapchainCreateInfoToC :: Pointable n => SwapchainCreateInfo n ->
+	(I.SwapchainCreateInfo -> IO a) -> IO a
+swapchainCreateInfoToC SwapchainCreateInfo {
+	swapchainCreateInfoNext = mnxt,
+	swapchainCreateInfoFlags = sccfs,
+	swapchainCreateInfoSurface = sfc,
+	swapchainCreateInfoMinImageCount = mic,
+	swapchainCreateInfoImageFormat = fmt,
+	swapchainCreateInfoImageColorSpace = cs,
+	swapchainCreateInfoImageExtent = ie,
+	swapchainCreateInfoImageArrayLayers = ials,
+	swapchainCreateInfoImageUsage = iu,
+	swapchainCreateInfoSharingMode = sm,
+	swapchainCreateInfoQueueFamilyIndices = qfis,
+	swapchainCreateInfoPreTransform = stfbs,
+	swapchainCreateInfoCompositeAlpha = cafbs,
+	swapchainCreateInfoPresentMode = pm,
+	swapchainCreateInfoClipped = clp,
+	swapchainCreateInfoOldSwapchain = mosc } = runContT do
+	(castPtr -> pnxt) <- maybe (pure NullPtr) (ContT . withPointer) mnxt
+	let	qfic = genericLength qfis
+	pqfis <- ContT $ withArray qfis
+	pure $ I.SwapchainCreateInfo () pnxt
+		sccfs sfc mic fmt cs ie ials iu sm qfic pqfis stfbs cafbs pm
+		(boolToVkBool32 clp) (fromMaybe I.SwapchainNull mosc)
+
+boolToVkBool32 :: Bool -> Bool32
+boolToVkBool32 = \case P.False -> Vk.False; P.True -> Vk.True

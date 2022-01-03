@@ -6,6 +6,9 @@
 
 module Vulkan.Khr.Swapchain.Internal where
 
+import Prelude
+import qualified Prelude as P
+
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
@@ -33,7 +36,11 @@ type SwapchainCreateFlags = SwapchainCreateFlagBits
 
 type PtrUint32T = Ptr #{type uint32_t}
 
-newtype Swapchain = Ptr Swapchain deriving (Show, Storable)
+newtype Swapchain = Swapchain (Ptr Swapchain) deriving (Show, Storable)
+
+pattern SwapchainNull :: Swapchain
+pattern SwapchainNull <- Swapchain ((== (wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE})) -> P.True) where
+	SwapchainNull = Swapchain . wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
 
 struct "SwapchainCreateInfo" #{size VkSwapchainCreateInfoKHR}
 		#{alignment VkSwapchainCreateInfoKHR} [
