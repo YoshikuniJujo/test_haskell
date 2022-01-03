@@ -31,6 +31,7 @@ import qualified Vulkan.Device as Vk
 import qualified Vulkan.Device.Internal as Vk.I
 import qualified Vulkan.Khr.Surface as Vk.Khr
 import qualified Vulkan.Khr.Swapchain as Vk.Khr
+import qualified Vulkan.Khr.Swapchain.Internal as Vk.Khr.I
 
 import qualified Glfw as Glfw
 
@@ -59,9 +60,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc
+	cleanup w ist dbgMssngr dv sfc sc
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -73,7 +74,7 @@ initWindow = do
 
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
-	Vk.Khr.Surface )
+	Vk.Khr.Surface, Vk.Khr.I.Swapchain )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -82,8 +83,8 @@ initVulkan w = do
 	sfc <- createSurface ist w
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
-	createSwapChain w pd sfc
-	pure (ist, dbgMssngr, dv, gq, sfc)
+	sc <- createSwapChain w pd dv sfc
+	pure (ist, dbgMssngr, dv, gq, sfc, sc)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -376,9 +377,11 @@ createLogicalDevice pd sfc = do
 		dv (fromJust $ queueFamilyIndicesPresentFamily indices) 0
 	pure (dv, gq, pq)
 
-createSwapChain :: GlfwB.Window -> Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
-createSwapChain win device surface = do
-	swapChainSupport <- querySwapChainSupport device surface
+createSwapChain ::
+	GlfwB.Window -> Vk.PhysicalDevice -> Vk.Device -> Vk.Khr.Surface ->
+	IO Vk.Khr.I.Swapchain
+createSwapChain win pDevice device surface = do
+	swapChainSupport <- querySwapChainSupport pDevice surface
 	let	surfaceFormat = chooseSwapSurfaceFormat
 			$ swapChainSupportDetailsFormats swapChainSupport
 		presentMode = chooseSwapPresentMode
@@ -396,7 +399,7 @@ createSwapChain win device surface = do
 	print surfaceFormat
 	print $ swapChainSupportDetailsPresentModes swapChainSupport
 	print presentMode
-	indices <- findQueueFamilies device surface
+	indices <- findQueueFamilies pDevice surface
 	let	graphicsFamily = fromJust $ queueFamilyIndicesGraphicsFamily indices
 		presentFamily = fromJust $ queueFamilyIndicesPresentFamily indices
 		queueFamilyIndices = [graphicsFamily, presentFamily]
@@ -404,6 +407,9 @@ createSwapChain win device surface = do
 			then (Vk.SharingModeConcurrent, queueFamilyIndices)
 			else (Vk.SharingModeExclusive, [])
 		createInfo = Vk.Khr.SwapchainCreateInfo {
+			Vk.Khr.swapchainCreateInfoNext = Nothing,
+			Vk.Khr.swapchainCreateInfoFlags =
+				Vk.Khr.I.SwapchainCreateFlagBitsZero,
 			Vk.Khr.swapchainCreateInfoSurface = surface,
 			Vk.Khr.swapchainCreateInfoMinImageCount = imageCount,
 			Vk.Khr.swapchainCreateInfoImageFormat =
@@ -411,13 +417,21 @@ createSwapChain win device surface = do
 			Vk.Khr.swapchainCreateInfoImageColorSpace =
 				Vk.Khr.surfaceFormatColorSpace surfaceFormat,
 			Vk.Khr.swapchainCreateInfoImageExtent = extent,
+--			Vk.Khr.swapchainCreateInfoImageExtent = Vk.Extent2D 0 0,
 			Vk.Khr.swapchainCreateInfoImageArrayLayers = 1,
 			Vk.Khr.swapchainCreateInfoImageUsage =
 				Vk.ImageUsageColorAttachmentBit,
 			Vk.Khr.swapchainCreateInfoImageSharingMode = ism,
-			Vk.Khr.swapchainCreateInfoQueueFamilyIndices = qfis
-			}
-	pure ()
+			Vk.Khr.swapchainCreateInfoQueueFamilyIndices = qfis,
+			Vk.Khr.swapchainCreateInfoPreTransform =
+				Vk.Khr.surfaceCapabilitiesCurrentTransform
+					capabilities,
+			Vk.Khr.swapchainCreateInfoCompositeAlpha =
+				Vk.Khr.CompositeAlphaOpaqueBit,
+			Vk.Khr.swapchainCreateInfoPresentMode = presentMode,
+			Vk.Khr.swapchainCreateInfoClipped = True,
+			Vk.Khr.swapchainCreateInfoOldSwapchain = Nothing }
+	Vk.Khr.createSwapchain @() @() device createInfo Nothing
 
 chooseSwapSurfaceFormat :: [Vk.Khr.SurfaceFormat] -> Vk.Khr.SurfaceFormat
 chooseSwapSurfaceFormat [] = error "no swap surface format"
@@ -453,8 +467,9 @@ mainLoop w = do
 		not <$> GlfwB.windowShouldClose w
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
-	Vk.Device -> Vk.Khr.Surface -> IO ()
-cleanup w ist mdbgMssngr dv sfc = do
+	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> IO ()
+cleanup w ist mdbgMssngr dv sfc sc = do
+	Vk.Khr.destroySwapchain @() dv sc Nothing
 	Vk.destroyDevice @() dv Nothing
 	maybe (pure ())
 		(\dm -> Vk.Ext.destroyDebugUtilsMessenger @() ist dm Nothing)

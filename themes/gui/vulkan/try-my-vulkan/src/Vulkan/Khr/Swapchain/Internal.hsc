@@ -24,12 +24,15 @@ import Vulkan.Khr.Surface
 
 enum "SwapchainCreateFlagBits" ''#{type VkSwapchainCreateFlagBitsKHR}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("SwapchainCreateFlagBitsZero", 0),
 	("SwapchainCreateSplitInstanceBindRegionsBit", #{const
 		VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR}),
 	("SwapchainCreateProtectedBit",
 		#{const VK_SWAPCHAIN_CREATE_PROTECTED_BIT_KHR}),
 	("SwapchainCreateMutableFormatBit",
-		#{const VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR})
+		#{const VK_SWAPCHAIN_CREATE_MUTABLE_FORMAT_BIT_KHR}),
+	("SwapchainCreateFlagBitsMaxEnum",
+		#{const VK_SWAPCHAIN_CREATE_FLAG_BITS_MAX_ENUM_KHR})
 	]
 
 type SwapchainCreateFlags = SwapchainCreateFlagBits

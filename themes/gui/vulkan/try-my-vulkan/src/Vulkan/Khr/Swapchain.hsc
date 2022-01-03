@@ -96,3 +96,12 @@ createSwapchain dvc sci mac = ($ pure) $ runContT do
 foreign import ccall "vkCreateSwapchainKHR" c_vkCreateSwapchainKHR ::
 	Device -> Ptr I.SwapchainCreateInfo -> Ptr I.AllocationCallbacks ->
 	Ptr I.Swapchain -> IO Result
+
+destroySwapchain :: Storable n =>
+	Device -> I.Swapchain -> Maybe (AllocationCallbacks n) -> IO ()
+destroySwapchain dv sc mac = ($ pure) $ runContT do
+	piac <- maybe (pure NullPtr) (ContT . withAllocationCallbacksPtr) mac
+	lift $ c_vkDestroySwapchainKHR dv sc piac
+
+foreign import ccall "vkDestroySwapchainKHR" c_vkDestroySwapchainKHR ::
+	Device -> I.Swapchain -> Ptr I.AllocationCallbacks -> IO ()
