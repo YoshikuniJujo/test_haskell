@@ -20,6 +20,7 @@ import qualified Data.Set as Set
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan as Vk
 import qualified Vulkan.Base as Vk
+import qualified Vulkan.Image as Vk
 import qualified Vulkan.Ext as Vk.Ext
 import qualified Vulkan.Ext.Internal as Vk.Ext.I
 
@@ -395,6 +396,27 @@ createSwapChain win device surface = do
 	print surfaceFormat
 	print $ swapChainSupportDetailsPresentModes swapChainSupport
 	print presentMode
+	indices <- findQueueFamilies device surface
+	let	graphicsFamily = fromJust $ queueFamilyIndicesGraphicsFamily indices
+		presentFamily = fromJust $ queueFamilyIndicesPresentFamily indices
+		queueFamilyIndices = [graphicsFamily, presentFamily]
+		(ism, qfis) = if graphicsFamily /= presentFamily
+			then (Vk.SharingModeConcurrent, queueFamilyIndices)
+			else (Vk.SharingModeExclusive, [])
+		createInfo = Vk.Khr.SwapchainCreateInfo {
+			Vk.Khr.swapchainCreateInfoSurface = surface,
+			Vk.Khr.swapchainCreateInfoMinImageCount = imageCount,
+			Vk.Khr.swapchainCreateInfoImageFormat =
+				Vk.Khr.surfaceFormatFormat surfaceFormat,
+			Vk.Khr.swapchainCreateInfoImageColorSpace =
+				Vk.Khr.surfaceFormatColorSpace surfaceFormat,
+			Vk.Khr.swapchainCreateInfoImageExtent = extent,
+			Vk.Khr.swapchainCreateInfoImageArrayLayers = 1,
+			Vk.Khr.swapchainCreateInfoImageUsage =
+				Vk.ImageUsageColorAttachmentBit,
+			Vk.Khr.swapchainCreateInfoImageSharingMode = ism,
+			Vk.Khr.swapchainCreateInfoQueueFamilyIndices = qfis
+			}
 	pure ()
 
 chooseSwapSurfaceFormat :: [Vk.Khr.SurfaceFormat] -> Vk.Khr.SurfaceFormat
