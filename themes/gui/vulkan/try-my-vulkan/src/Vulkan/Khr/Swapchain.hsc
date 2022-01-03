@@ -26,6 +26,7 @@ import Vulkan.Device
 import Vulkan.Khr.Surface
 
 import qualified Vulkan.Base as Vk
+import qualified Vulkan.Image as I
 import qualified Vulkan.AllocationCallbacks.Internal as I
 import qualified Vulkan.Khr.Swapchain.Internal as I
 
@@ -105,3 +106,18 @@ destroySwapchain dv sc mac = ($ pure) $ runContT do
 
 foreign import ccall "vkDestroySwapchainKHR" c_vkDestroySwapchainKHR ::
 	Device -> I.Swapchain -> Ptr I.AllocationCallbacks -> IO ()
+
+getSwapchainImages :: Device -> I.Swapchain -> IO [Image]
+getSwapchainImages dv sc = ($ pure) $ runContT do
+	pn <- ContT alloca
+	n <- lift do
+		r <- c_vkGetSwapchainImagesKHR dv sc pn NullPtr
+		throwUnlessSuccess r
+		fromIntegral <$> peek pn
+	pis <- ContT $ allocaArray n
+	lift do	r <- c_vkGetSwapchainImagesKHR dv sc pn pis
+		throwUnlessSuccess r
+		peekArray n pis
+
+foreign import ccall "vkGetSwapchainImagesKHR" c_vkGetSwapchainImagesKHR ::
+	Device -> I.Swapchain -> Ptr #{type uint32_t} -> Ptr Image -> IO Result

@@ -83,7 +83,7 @@ initVulkan w = do
 	sfc <- createSurface ist w
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
-	sc <- createSwapChain w pd dv sfc
+	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	pure (ist, dbgMssngr, dv, gq, sfc, sc)
 
 createInstance :: IO Vk.Instance
@@ -379,7 +379,7 @@ createLogicalDevice pd sfc = do
 
 createSwapChain ::
 	GlfwB.Window -> Vk.PhysicalDevice -> Vk.Device -> Vk.Khr.Surface ->
-	IO Vk.Khr.I.Swapchain
+	IO (Vk.Khr.I.Swapchain, [Vk.Image], Vk.Format, Vk.Extent2D)
 createSwapChain win pDevice device surface = do
 	swapChainSupport <- querySwapChainSupport pDevice surface
 	let	surfaceFormat = chooseSwapSurfaceFormat
@@ -431,7 +431,10 @@ createSwapChain win pDevice device surface = do
 			Vk.Khr.swapchainCreateInfoPresentMode = presentMode,
 			Vk.Khr.swapchainCreateInfoClipped = True,
 			Vk.Khr.swapchainCreateInfoOldSwapchain = Nothing }
-	Vk.Khr.createSwapchain @() @() device createInfo Nothing
+	swapChain <- Vk.Khr.createSwapchain @() @() device createInfo Nothing
+	swapChainImages <- Vk.Khr.getSwapchainImages device swapChain
+	pure (swapChain, swapChainImages,
+		Vk.Khr.surfaceFormatFormat surfaceFormat, extent)
 
 chooseSwapSurfaceFormat :: [Vk.Khr.SurfaceFormat] -> Vk.Khr.SurfaceFormat
 chooseSwapSurfaceFormat [] = error "no swap surface format"

@@ -5,6 +5,7 @@
 
 module Vulkan.Image.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Data.Bits
@@ -49,3 +50,5 @@ enum "ImageUsageFlagBits" ''#{type VkImageUsageFlags}
 		#{const VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV}) ]
 
 type ImageUsageFlags = ImageUsageFlagBits
+
+newtype Image = Image (Ptr Image) deriving (Show, Storable)
