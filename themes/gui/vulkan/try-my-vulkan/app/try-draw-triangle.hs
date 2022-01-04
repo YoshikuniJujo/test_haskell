@@ -195,11 +195,9 @@ isDeviceSuitable device sfc = do
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
 checkDeviceExtensionSupport device = do
-	putStr "ENUMERATE DEVICE EXTENSION PROPERTIES: "
 	availableExtensions <- Vk.enumerateDeviceExtensionProperties device Nothing
-	(\x -> putStrLn "PhysicalDeviceProperties: " >> mapM_ (mapM_ putStrLn . devideWithComma . show) x)
+	(\x -> putStrLn "PHYSICAL DEVICE PROPERTIES: " >> mapM_ (mapM_ putStrLn . devideWithComma . show) x)
 		availableExtensions
-	putStrLn "ENUMERATE DEVICE EXTENSION PROPERTIES END"
 	pure . null $ deviceExtensions \\
 		(Vk.extensionPropertiesExtensionName <$> availableExtensions)
 
