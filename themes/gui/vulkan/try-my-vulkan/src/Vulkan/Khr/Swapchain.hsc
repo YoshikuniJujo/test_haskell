@@ -11,7 +11,6 @@ import qualified Prelude as P
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
-import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Monad.Cont
 import Data.Maybe
@@ -19,6 +18,7 @@ import Data.List
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Format
 import Vulkan.Image
 import Vulkan.Exception
 import Vulkan.AllocationCallbacks
@@ -26,7 +26,6 @@ import Vulkan.Device
 import Vulkan.Khr.Surface
 
 import qualified Vulkan.Base as Vk
-import qualified Vulkan.Image as I
 import qualified Vulkan.AllocationCallbacks.Internal as I
 import qualified Vulkan.Khr.Swapchain.Internal as I
 

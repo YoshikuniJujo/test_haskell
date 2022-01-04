@@ -94,33 +94,6 @@ struct "Extent3D" #{size VkExtent3D} #{alignment VkExtent3D} [
 		[| #{poke VkExtent3D, depth} |]) ]
 	[''Show, ''Storable]
 
-enum "Format" ''#{type VkFormat} [''Show, ''Eq, ''Storable] [
-	("FormatUndefined", #{const VK_FORMAT_UNDEFINED}),
-	("FormatR4g4UnormPack8", #{const VK_FORMAT_R4G4_UNORM_PACK8}),
-	("FormatR4g4b4a4UnormPack16", #{const VK_FORMAT_R4G4B4A4_UNORM_PACK16}),
-	("FormatB4g4r4a4UnormPack16", #{const VK_FORMAT_B4G4R4A4_UNORM_PACK16}),
-	-- VK_FORMAT_R5G6B5_UNORM_PACK16
-	-- VK_FORMAT_B5G6R5_UNORM_PACK16
-	-- VK_FORMAT_R5G5B5A1_UNORM_PACK16
-	-- VK_FORMAT_B5G5R5A1_UNORM_PACK16
-	-- VK_FORMAT_A1R5G5B5_UNORM_PACK16
-	-- ...
-	-- VK_FORMAT_R8G8B8A8_SSCALED
-	-- VK_FORMAT_R8G8B8A8_UINT
-	-- VK_FORMAT_R8G8B8A8_SINT
-	-- VK_FORMAT_R8G8B8A8_SRGB
-	("FormatB8g8r8a8Unorm", #{const VK_FORMAT_B8G8R8A8_UNORM}),
-	-- VK_FORMAT_B8G8R8A8_SNORM
-	-- ...
-	-- VK_FORMAT_B8G8R8A8_SINT
-	("FormatB8g8r8a8Srgb", #{const VK_FORMAT_B8G8R8A8_SRGB}),
-	-- VK_FORMAT_A8B8G8R8_UNORM_PACK32
-	-- ...
-	-- VK_FORMAT_G16_B16R16_2PLANE_422_UNORM_KHR
-	("FormatG16B16R163Plane444Unorm",
-		#{const VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM})
-	]
-
 uint32Max :: Integral n => n
 uint32Max = #{const UINT32_MAX}
 

@@ -20,6 +20,7 @@ import qualified Data.Set as Set
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan as Vk
 import qualified Vulkan.Base as Vk
+import qualified Vulkan.Format as Vk
 import qualified Vulkan.Image as Vk
 import qualified Vulkan.Ext as Vk.Ext
 import qualified Vulkan.Ext.Internal as Vk.Ext.I

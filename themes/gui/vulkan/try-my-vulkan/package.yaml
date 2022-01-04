@@ -29,6 +29,7 @@ dependencies:
 - c-struct
 - exception-hierarchy
 - ranged-list
+- nowdoc
 
 library:
   source-dirs: src

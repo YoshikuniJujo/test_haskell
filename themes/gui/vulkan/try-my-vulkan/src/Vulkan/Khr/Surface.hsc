@@ -17,6 +17,7 @@ import Data.Bits
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Format
 import Vulkan.Exception
 import Vulkan.Instance
 import Vulkan.AllocationCallbacks
