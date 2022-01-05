@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -449,8 +450,9 @@ chooseSwapPresentMode availablePresentModes =
 
 chooseSwapExtent :: GlfwB.Window -> Vk.Khr.SurfaceCapabilities -> IO Vk.Extent2D
 chooseSwapExtent win capabilities = if cw < Vk.uint32Max then pure ce else do
-	(gw, gh) <- GlfwB.getFramebufferSize win
-	pure $ Vk.Extent2D (clamp mnw mxw cw) (clamp mnh mxh ch)
+	((fromIntegral -> gw), (fromIntegral -> gh)) <-
+		GlfwB.getFramebufferSize win
+	pure $ Vk.Extent2D (clamp mnw mxw gw) (clamp mnh mxh gh)
 	where
 	ce@(Vk.Extent2D cw ch) =
 		Vk.Khr.surfaceCapabilitiesCurrentExtent capabilities
