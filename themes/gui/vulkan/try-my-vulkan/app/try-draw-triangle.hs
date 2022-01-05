@@ -86,6 +86,7 @@ initVulkan w = do
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
+	createImageViews
 	pure (ist, dbgMssngr, dv, gq, sfc, sc)
 
 createInstance :: IO Vk.Instance
@@ -422,6 +423,7 @@ createSwapChain win pDevice device surface = do
 			Vk.Khr.swapchainCreateInfoImageUsage =
 				Vk.ImageUsageColorAttachmentBit,
 			Vk.Khr.swapchainCreateInfoImageSharingMode = ism,
+--			Vk.Khr.swapchainCreateInfoImageSharingMode = Vk.SharingModeConcurrent,
 			Vk.Khr.swapchainCreateInfoQueueFamilyIndices = qfis,
 			Vk.Khr.swapchainCreateInfoPreTransform =
 				Vk.Khr.surfaceCapabilitiesCurrentTransform
@@ -463,6 +465,9 @@ chooseSwapExtent win capabilities = if cw < Vk.uint32Max then pure ce else do
 
 clamp :: Ord a => a -> a -> a -> a
 clamp mn mx x | x <= mn = mn | mx <= x = mx | otherwise = x
+
+createImageViews :: IO ()
+createImageViews = pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
