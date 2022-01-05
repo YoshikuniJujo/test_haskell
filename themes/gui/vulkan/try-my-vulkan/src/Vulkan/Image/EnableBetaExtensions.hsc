@@ -8,5 +8,5 @@ import Vulkan.Image.Internal hiding (
 	ImageViewCreateInfo,
 	pattern ImageViewCreateInfo,
 	imageViewCreateInfoFlags, imageViewCreateInfoFormat,
-	imageViewCreateInfoImage, imageViewCreateInfoComponents,
-	imageViewCreateInfoSubresourceRange )
+	imageViewCreateInfoImage, imageViewCreateInfoViewType,
+	imageViewCreateInfoComponents, imageViewCreateInfoSubresourceRange )

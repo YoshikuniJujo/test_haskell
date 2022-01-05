@@ -36,7 +36,7 @@ data ImageViewCreateInfo n = ImageViewCreateInfo {
 	imageViewCreateInfoNext :: Maybe n,
 	imageViewCreateInfoFlags :: I.ImageViewCreateFlags,
 	imageViewCreateInfoImage :: I.Image,
-	imageViewCreateInfoImageViewType :: I.ImageViewType,
+	imageViewCreateInfoViewType :: I.ImageViewType,
 	imageViewCreateInfoFormat :: Format,
 	imageViewCreateInfoComponents :: I.ComponentMapping,
 	imageViewCreateInfoSubresourceRange :: I.ImageSubresourceRange }
@@ -48,7 +48,7 @@ imageViewCreateInfoToC ImageViewCreateInfo {
 	imageViewCreateInfoNext = mnxt,
 	imageViewCreateInfoFlags = flgs,
 	imageViewCreateInfoImage = img,
-	imageViewCreateInfoImageViewType = ivt,
+	imageViewCreateInfoViewType = ivt,
 	imageViewCreateInfoFormat = fmt,
 	imageViewCreateInfoComponents = cmp,
 	imageViewCreateInfoSubresourceRange = srr } = runContT do

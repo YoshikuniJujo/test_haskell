@@ -86,7 +86,7 @@ initVulkan w = do
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
-	createImageViews
+	createImageViews scif scis
 	pure (ist, dbgMssngr, dv, gq, sfc, sc)
 
 createInstance :: IO Vk.Instance
@@ -466,8 +466,26 @@ chooseSwapExtent win capabilities = if cw < Vk.uint32Max then pure ce else do
 clamp :: Ord a => a -> a -> a -> a
 clamp mn mx x | x <= mn = mn | mx <= x = mx | otherwise = x
 
-createImageViews :: IO ()
-createImageViews = pure ()
+createImageViews :: Vk.Format -> [Vk.Image] -> IO ()
+createImageViews scif imgs = pure ()
+
+createImageView1 :: Vk.Format -> Vk.Image -> IO Vk.ImageView
+createImageView1 scif img = do
+	let	createInfo = Vk.ImageViewCreateInfo {
+			Vk.imageViewCreateInfoNext = Nothing,
+			Vk.imageViewCreateInfoFlags =
+				Vk.ImageViewCreateFlagsZero,
+			Vk.imageViewCreateInfoImage = img,
+			Vk.imageViewCreateInfoViewType = Vk.ImageViewType2d,
+			Vk.imageViewCreateInfoFormat = scif,
+			Vk.imageViewCreateInfoComponents = Vk.ComponentMapping {
+				Vk.componentMappingR = Vk.ComponentSwizzleIdentity,
+				Vk.componentMappingG = Vk.ComponentSwizzleIdentity,
+				Vk.componentMappingB = Vk.ComponentSwizzleIdentity,
+				Vk.componentMappingA = Vk.ComponentSwizzleIdentity }
+			-- HERE
+			}
+	undefined
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

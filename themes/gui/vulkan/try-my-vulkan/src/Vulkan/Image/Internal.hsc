@@ -61,6 +61,7 @@ newtype Image = Image (Ptr Image) deriving (Show, Storable)
 
 enum "ImageViewCreateFlagBits" ''#{type VkImageViewCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("ImageViewCreateFlagsZero", 0),
 	("ImageViewCreateFragmentDensityMapDynamicBitExt", #{const
 		VK_IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT}),
 	("ImageViewCreateFragmentDensityMapDeferredBitExt", #{const
