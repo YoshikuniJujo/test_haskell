@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -29,3 +30,14 @@ allPairs y = pairFromDay <$> [newYear y .. newYearsEve y]
 doubleMeanings :: Year -> [Pair]
 doubleMeanings y =
 	filter (uncurry (==) . (fromDate y &&& fromRatio y)) $ allPairs y
+
+doubleMeanings' :: Year -> [Pair]
+doubleMeanings' y =
+	filterEdge (uncurry (>=) . (fromDate y &&& fromRatio y)) $ allPairs y
+
+filterEdge :: (a -> Bool) -> [a] -> [a]
+filterEdge p = go False
+	where go b = \case
+		[] -> []
+		x : xs	| not b && p x -> x : go True xs
+			| otherwise -> go (p x) xs
