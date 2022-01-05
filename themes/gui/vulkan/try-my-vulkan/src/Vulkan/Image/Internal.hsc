@@ -15,6 +15,7 @@ import Data.Word
 
 import Vulkan.Base
 import Vulkan.Format
+import Vulkan.ImageAspectFlagBits
 
 #define VK_ENABLE_BETA_EXTENSIONS
 #include <vulkan/vulkan.h>
@@ -97,11 +98,24 @@ struct "ComponentMapping" #{size VkComponentMapping}
 		[| #{poke VkComponentMapping, a} |]) ]
 	[''Show, ''Storable]
 
-enum "ImageAspectFlagBits" ''#{type VkImageAspectFlagBits}
-		[''Show, ''Eq, ''Storable, ''Bits] [
-	]
-
-type ImageAspectFlags = ImageAspectFlagBits
+struct "ImageSubresourceRange" #{size VkImageSubresourceRange}
+		#{alignment VkImageSubresourceRange} [
+	("aspectMask", ''ImageAspectFlags,
+		[| #{peek VkImageSubresourceRange, aspectMask} |],
+		[| #{poke VkImageSubresourceRange, aspectMask} |]),
+	("baseMipLevel", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceRange, baseMipLevel} |],
+		[| #{poke VkImageSubresourceRange, baseMipLevel} |]),
+	("levelCount", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceRange, levelCount} |],
+		[| #{poke VkImageSubresourceRange, levelCount} |]),
+	("baseArrayLayer", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceRange, baseArrayLayer} |],
+		[| #{poke VkImageSubresourceRange, baseArrayLayer} |]),
+	("layerCount", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceRange, layerCount} |],
+		[| #{poke VkImageSubresourceRange, layerCount} |]) ]
+	[''Show, ''Storable]
 
 struct "ImageViewCreateInfo" #{size VkImageViewCreateInfo}
 		#{alignment VkImageViewCreateInfo} [
@@ -125,6 +139,8 @@ struct "ImageViewCreateInfo" #{size VkImageViewCreateInfo}
 		[| #{poke VkImageViewCreateInfo, format} |]),
 	("components", ''ComponentMapping,
 		[| #{peek VkImageViewCreateInfo, components} |],
-		[| #{poke VkImageViewCreateInfo, components} |])
-	]
+		[| #{poke VkImageViewCreateInfo, components} |]),
+	("subresourceRange", ''ImageSubresourceRange,
+		[| #{peek VkImageViewCreateInfo, subresourceRange} |],
+		[| #{poke VkImageViewCreateInfo, subresourceRange} |]) ]
 	[''Show]
