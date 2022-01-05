@@ -41,3 +41,8 @@ filterEdge p = go False
 		[] -> []
 		x : xs	| not b && p x -> x : go True xs
 			| otherwise -> go (p x) xs
+
+filterEdge' :: (a -> Bool) -> [a] -> [a]
+filterEdge' p xs = map snd . filter fst
+	$ zipWith (\b0 -> (not b0 &&)) (False : bs) bs `zip` xs
+	where bs = map p xs
