@@ -24,6 +24,7 @@ dependencies:
 - template-haskell
 - random
 - monads-tf
+- time
 
 library:
   source-dirs: src
