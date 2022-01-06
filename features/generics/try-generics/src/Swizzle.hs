@@ -21,16 +21,26 @@ class Swizzle2 a where
 
 	default x :: (Generic a, GSwizzle2 (Rep a), X a ~ GX (Rep a)) => a -> X a
 	x = gx . from
+	default y :: (Generic a, GSwizzle2 (Rep a), Y a ~ GY (Rep a)) => a -> Y a
+	y = gy . from
+	default xx :: (Generic a, GSwizzle2 (Rep a), X a ~ GX (Rep a)) => a -> (X a, X a)
+	xx = gxx . from
+	default xy :: (
+		Generic a, GSwizzle2 (Rep a), X a ~ GX (Rep a), Y a ~ GY (Rep a)
+		) => a -> (X a, Y a)
+	xy = gxy . from
+	default yx :: (
+		Generic a, GSwizzle2 (Rep a), X a ~ GX (Rep a), Y a ~ GY (Rep a)
+		) => a -> (Y a, X a)
+	yx = gyx . from
+	default yy :: (Generic a, GSwizzle2 (Rep a), Y a ~ GY (Rep a)) => a -> (Y a, Y a)
+	yy = gyy . from
 
-instance Swizzle2 (x, y) where
-	type X (x, y) = x
-	type Y (x, y) = y
-	x (x_, _y) = x_
-	y (_x, y_) = y_
-	xx (x_, _y) = (x_, x_)
-	xy (x_, y_) = (x_, y_)
-	yx (x_, y_) = (y_, x_)
-	yy (_x, y_) = (y_, y_)
+{-
+instance Swizzle2 (x, y, z) where
+	type X (x, y, z) = x
+	type Y (x, y, z) = y
+	-}
 
 class GSwizzle2 f where
 	type GX f
@@ -42,22 +52,82 @@ class GSwizzle2 f where
 	gyx :: f a -> (GY f, GX f)
 	gyy :: f a -> (GY f, GY f)
 
+instance {-# OVERLAPPABLE #-} (One x, Rest y) => GSwizzle2 (x :*: y) where
+	type GX (x :*: _) = OneType x
+	type GY (_ :*: y) = HeadType y
+	gx (x_ :*: _) = one x_
+	gy (_ :*: y_) = hd y_
+	gxx (x_ :*: _) = (one x_, one x_)
+	gxy (x_ :*: y_) = (one x_, hd y_)
+	gyx (x_ :*: y_) = (hd y_, one x_)
+	gyy (_ :*: y_) = (hd y_, hd y_)
+
 {-
-instance {-# OVERLAPPABLE #-} GSwizzle2 (x :*: y) where
---	type GX (Rep x _ :*: Rep y _) = x
---	type GY (Rep x _ :*: Rep y _) = y
-	gx (K1 x_ :*: _) = x_
-	gy (_ :*: K1 y_) = y_
-	gxx (K1 x_ :*: _) = (x_, x_)
-	gxy (K1 x_ :*: K1 y_) = (x_, y_)
-	gyx (K1 x_ :*: K1 y_) = (y_, x_)
-	gyy (_ :*: K1 y_) = (y_, y_)
+instance (One x, One y) => GSwizzle2 (x :*: y :*: z) where
+	type GX (x :*: _ :*: _) = OneType x
+	type GY (_ :*: y :*: _) = OneType y
+	gx (x_ :*: _ :*: _) = one x_
+	gy (_ :*: y_ :*: _) = one y_
+	gxx (x_ :*: _ :*: _) = (one x_, one x_)
+	gxy (x_ :*: y_ :*: _) = (one x_, one y_)
+	gyx (x_ :*: y_ :*: _) = (one y_, one x_)
+	gyy (_ :*: y_ :*: _) = (one y_, one y_)
+	-}
 
 instance GSwizzle2 a => GSwizzle2 (M1 i c a) where
 	type GX (M1 i c a) = GX a
+	type GY (M1 i c a) = GY a
 	gx (M1 a) = gx a
-	-}
+	gy (M1 a) = gy a
+	gxx (M1 a) = gxx a
+	gxy (M1 a) = gxy a
+	gyx (M1 a) = gyx a
+	gyy (M1 a) = gyy a
+
+class One f where
+	type OneType f
+	one :: f a -> OneType f
+
+instance One a => One (M1 i c a) where
+	type OneType (M1 i c a) = OneType a
+	one (M1 a) = one a
+
+instance One (K1 i a) where
+	type OneType (K1 i a) = a
+	one (K1 a) = a
+
+class Rest f where
+	type HeadType f
+	hd :: f a -> HeadType f
+
+instance Rest a => Rest (M1 i c a) where
+	type HeadType (M1 i c a) = HeadType a
+	hd (M1 a) = hd a
+
+instance Rest (K1 i a) where
+	type HeadType (K1 i a) = a
+	hd (K1 a) = a
+
+instance One x => Rest (x :*: y) where
+	type HeadType (x :*: y) = OneType x
+	hd (x_ :*: _y) = one x_
+
+instance Swizzle2 (x, y) where
+	type X (x, y) = x
+	type Y (x, y) = y
 
 data Point = Point Double Double deriving (Show, Generic)
 
--- instance Swizzle2 Point
+instance Swizzle2 Point where
+	type X Point = Double
+	type Y Point = Double
+
+instance Swizzle2 (x, y, z) where
+	type X (x, y, z) = x
+	type Y (x, y, z) = y
+
+data Foo = Foo (Double, Double) (Double, Double) deriving (Show, Generic)
+
+instance Swizzle2 Foo where
+	type X Foo = (Double, Double)
+	type Y Foo = (Double, Double)
