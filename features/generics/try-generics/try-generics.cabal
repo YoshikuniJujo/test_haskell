@@ -28,6 +28,7 @@ library
       Lib
       Some
       Swizzle
+      SwizzleOld
       TryGenerics
   other-modules:
       Paths_try_generics
