@@ -4,6 +4,12 @@
 
 module CheckSwizzleGen where
 
+import GHC.Generics
+
 import SwizzleGen
 
 classSwizzle1
+
+classGSwizzle1
+
+instanceGswizzle1M1
