@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Swizzle
       TryGenerics
   other-modules:
       Paths_try_generics
