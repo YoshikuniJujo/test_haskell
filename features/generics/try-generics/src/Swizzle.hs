@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DefaultSignatures, InstanceSigs #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Swizzle where
@@ -69,9 +69,9 @@ instance GSwizzle1 b => GSwizzle2 (M1 i c a :*: b) where
 	type GY (M1 i c a :*: b) = GX b
 	gy (_a :*: b) = gx b :: GX b
 
-instance GSwizzle2 (a :*: b) => GSwizzle2 ((a :*: b) :*: c) where
-	type GY ((a :*: b) :*: c) = GY (a :*: b)
-	gy ((a :*: b) :*: _) = gy (a :*: b)
+instance GSwizzle2 (a :*: b:*: c) => GSwizzle2 ((a :*: b) :*: c) where
+	type GY ((a :*: b) :*: c) = GY (a :*: b :*: c)
+	gy ((a :*: b) :*: c) = gy $ a :*: b :*: c
 
 class Swizzle2 a => Swizzle3 a where
 	type Z a
@@ -89,16 +89,9 @@ instance GSwizzle3 a => GSwizzle3 (M1 i c a) where
 instance GSwizzle2 b => GSwizzle3 (M1 i c a :*: b) where
 	type GZ (M1 i c a :*: b) = GY b; gz (_a :*: b) = gy b
 
-instance GSwizzle1 c' => GSwizzle3 ((M1 i c a :*: M1 i c b) :*: c') where
-	type GZ ((M1 i c a :*: M1 i c b) :*: c') = GX c'; gz (_ :*: c) = gx c
-
-instance GSwizzle3 (a :*: (b :*: c)) => GSwizzle3 ((a :*: (b :*: c)) :*: d) where
-	type GZ ((a :*: b :*: c) :*: d) = GZ (a :*: b :*: c)
-	gz (a :*: _) = gz a
-
-instance GSwizzle3 ((a :*: b) :*: c) => GSwizzle3 (((a :*: b) :*: c) :*: d) where
-	type GZ (((a :*: b) :*: c) :*: d) = GZ ((a :*: b) :*: c)
-	gz (a :*: _) = gz a
+instance GSwizzle3 (a :*: b :*: c) => GSwizzle3 ((a :*: b) :*: c) where
+	type GZ ((a :*: b) :*: c) = GZ (a :*: b :*: c)
+	gz ((a :*: b) :*: c) = gz $ a :*: b :*: c
 
 instance Swizzle1 (x, y) where type X (x, y) = x
 instance Swizzle2 (x, y) where type Y (x, y) = y
