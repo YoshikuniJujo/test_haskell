@@ -27,6 +27,20 @@ instance GSwizzle1 a => GSwizzle1 (M1 i c a) where
 instance GSwizzle1 a => GSwizzle1 (a :*: _b) where
 	type GX (a :*: _b) = GX a; gx (x_ :*: _) = gx x_
 
+{-
+
+instance $(GS') $(aorb) => $(GS) (a :*: b) where
+	type $(GX) (a :*: b) = $(GX') $(aorb)
+	$(gx) (a_ :*: b_) = $(gx') (a_orb_)
+
+i = 1: GS' = GSwizzle1, aorb = a, GS = GSwizzle1, GX = GX, GX' = GX, aorb = a,
+	gx = gx, gx' = gx, a_or_b_ = a_
+i = 2: GS' = GSwizzle1, aorb = b, GS = GSwizzle2, GX = GY, GX' = GX, aorb = b,
+	gx = gy, gx' = gx, a_or_b_ = b_
+i = 3: GS' = GSwizzle2, aorb = b, GS = GSwizzle3, GX = GZ, GX' = GY, aorb = b,
+	gx = gz, gx' = gy, a_or_b_ = b_
+-}
+
 class Swizzle1 a => Swizzle2 a where
 	type Y a
 
@@ -47,8 +61,8 @@ class GSwizzle2 f where type GY f; gy :: f a -> GY f
 instance GSwizzle2 a => GSwizzle2 (M1 i c a) where
 	type GY (M1 i c a) = GY a; gy (M1 a) = gy a
 
-instance GSwizzle1 b => GSwizzle2 (a :*: b) where
-	type GY (a :*: b) = GX b; gy (_a :*: b) = gx b
+instance GSwizzle1 b => GSwizzle2 (_a :*: b) where
+	type GY (_a :*: b) = GX b; gy (_a :*: b) = gx b
 
 class Swizzle2 a => Swizzle3 a where
 	type Z a
