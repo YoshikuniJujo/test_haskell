@@ -5,6 +5,7 @@ module SwizzleGen where
 
 import GHC.Generics
 import Language.Haskell.TH
+import Data.Char
 
 classSwizzle1 :: DecsQ
 classSwizzle1 = (: []) <$> classD (cxt []) (mkName "Swizzle1") [plainTV $ mkName "a"] [] [
@@ -41,18 +42,32 @@ t1 `arrT` t2 = arrowT `appT` t1 `appT` t2
 eqT :: TypeQ -> TypeQ -> TypeQ
 t1 `eqT` t2 = equalityT `appT` t1 `appT` t2
 
-classGSwizzle1 :: DecsQ
-classGSwizzle1 = (: []) <$> classD (cxt []) (mkName "GSwizzle1") [plainTV $ mkName "f"] [] [
-	typeGx,
-	sigGx
-	]
+classGswizzle :: Int -> DecsQ
+classGswizzle i = (: []) <$> classD (classGswizzleContext i)
+	(mkName $ "GSwizzle" ++ show i)
+	[plainTV $ mkName "f"] [] [typeGx i, sigGx i]
 
-typeGx :: Q Dec
-typeGx = openTypeFamilyD (mkName "GX") [plainTV $ mkName "f"] noSig Nothing
+classGswizzleContext :: Int -> CxtQ
+classGswizzleContext i
+	| i < 2 = cxt []
+	| otherwise = cxt [ conT (mkName $ "GSwizzle" ++ show (i - 1)) `appT`
+		varT (mkName "f") ]
 
-sigGx :: Q Dec
-sigGx = sigD (mkName "gx") $ (varT (mkName "f") `appT` varT (mkName "a")) `arrT`
-	(conT (mkName "GX") `appT` varT (mkName "f"))
+alphabet :: Int -> Char
+alphabet = (("xyz" ++ reverse ['a' .. 'w']) !!) . subtract 1
+
+typeGx :: Int -> Q Dec
+typeGx i = openTypeFamilyD (nameGxU i) [plainTV $ mkName "f"] noSig Nothing
+
+sigGx :: Int -> Q Dec
+sigGx i = sigD (nameGxL i) $ (varT (mkName "f") `appT` varT (mkName "a")) `arrT`
+	(conT (nameGxU i) `appT` varT (mkName "f"))
+
+nameGxU :: Int -> Name
+nameGxU i = mkName $ "G" ++ [toUpper $ alphabet i]
+
+nameGxL :: Int -> Name
+nameGxL i = mkName $ "g" ++ [alphabet i]
 
 instanceGswizzle1M1 :: DecsQ
 instanceGswizzle1M1 = (: []) <$> instanceD cxtGswizzle1M1 (conT (mkName "GSwizzle1") `appT` m1ica) [
