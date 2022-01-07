@@ -11,10 +11,8 @@ import GHC.Generics
 import SwizzleGen
 
 classGswizzle 1
-
-instanceGswizzle1M1
-
 instanceGswizzle1K1
+instanceGswizzleM1 1
 
 instanceGswizzle1Prod
 
@@ -24,3 +22,4 @@ instance Swizzle1 (x, y) where type X (x, y) = x
 instance Swizzle1 (x, y, z) where type X (x, y, z) = x
 
 classGswizzle 2
+instanceGswizzleM1 2

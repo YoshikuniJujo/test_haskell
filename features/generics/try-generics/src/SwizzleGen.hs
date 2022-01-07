@@ -44,8 +44,7 @@ t1 `eqT` t2 = equalityT `appT` t1 `appT` t2
 
 classGswizzle :: Int -> DecsQ
 classGswizzle i = (: []) <$> classD (classGswizzleContext i)
-	(mkName $ "GSwizzle" ++ show i)
-	[plainTV $ mkName "f"] [] [typeGx i, sigGx i]
+	(nameGswizzle i) [plainTV $ mkName "f"] [] [typeGx i, sigGx i]
 
 classGswizzleContext :: Int -> CxtQ
 classGswizzleContext i
@@ -53,43 +52,12 @@ classGswizzleContext i
 	| otherwise = cxt [ conT (mkName $ "GSwizzle" ++ show (i - 1)) `appT`
 		varT (mkName "f") ]
 
-alphabet :: Int -> Char
-alphabet = (("xyz" ++ reverse ['a' .. 'w']) !!) . subtract 1
-
 typeGx :: Int -> Q Dec
 typeGx i = openTypeFamilyD (nameGxU i) [plainTV $ mkName "f"] noSig Nothing
 
 sigGx :: Int -> Q Dec
 sigGx i = sigD (nameGxL i) $ (varT (mkName "f") `appT` varT (mkName "a")) `arrT`
 	(conT (nameGxU i) `appT` varT (mkName "f"))
-
-nameGxU :: Int -> Name
-nameGxU i = mkName $ "G" ++ [toUpper $ alphabet i]
-
-nameGxL :: Int -> Name
-nameGxL i = mkName $ "g" ++ [alphabet i]
-
-instanceGswizzle1M1 :: DecsQ
-instanceGswizzle1M1 = (: []) <$> instanceD cxtGswizzle1M1 (conT (mkName "GSwizzle1") `appT` m1ica) [
-	typeGxM1,
-	funGxM1
-	]
-
-cxtGswizzle1M1 :: CxtQ
-cxtGswizzle1M1 = cxt [conT (mkName "GSwizzle1") `appT` varT (mkName "a")]
-
-m1ica :: TypeQ
-m1ica = conT (mkName "M1") `appT`
-	varT (mkName "i") `appT` varT (mkName "c") `appT` varT (mkName "a")
-
-typeGxM1 :: Q Dec
-typeGxM1 = tySynInstD $ tySynEqn Nothing
-	(conT (mkName "GX") `appT` m1ica)
-	(conT (mkName "GX") `appT` varT (mkName "a"))
-
-funGxM1 :: Q Dec
-funGxM1 = funD (mkName "gx") [clause [conP (mkName "M1") [varP $ mkName "a"]] (
-	normalB $ varE (mkName "gx") `appE` varE (mkName "a") ) []]
 
 instanceGswizzle1K1 :: DecsQ
 instanceGswizzle1K1 = (: []) <$> instanceD (cxt []) (conT (mkName "GSwizzle1") `appT` k1ia) [
@@ -109,8 +77,30 @@ funGxK1 = funD (mkName "gx") [
 	clause [conP (mkName "K1") [varP $ mkName "a"]]
 		(normalB . varE $ mkName "a") [] ]
 
+instanceGswizzleM1 :: Int -> DecsQ
+instanceGswizzleM1 i = (: []) <$> instanceD (cxtGswizzleM1 i) (conT (nameGswizzle i) `appT` m1ica) [
+	typeGxM1 i,
+	funGxM1 i
+	]
+
+cxtGswizzleM1 :: Int -> CxtQ
+cxtGswizzleM1 i = cxt [conT (nameGswizzle i) `appT` varT (mkName "a")]
+
+m1ica :: TypeQ
+m1ica = conT (mkName "M1") `appT`
+	varT (mkName "i") `appT` varT (mkName "c") `appT` varT (mkName "a")
+
+typeGxM1 :: Int -> Q Dec
+typeGxM1 i = tySynInstD $ tySynEqn Nothing
+	(conT (nameGxU i) `appT` m1ica)
+	(conT (nameGxU i) `appT` varT (mkName "a"))
+
+funGxM1 :: Int -> Q Dec
+funGxM1 i = funD (nameGxL i) [clause [conP (mkName "M1") [varP $ mkName "a"]] (
+	normalB $ varE (nameGxL i) `appE` varE (mkName "a") ) []]
+
 instanceGswizzle1Prod :: DecsQ
-instanceGswizzle1Prod = (: []) <$> instanceD cxtGswizzle1M1 (conT (mkName "GSwizzle1") `appT` aProdB) [
+instanceGswizzle1Prod = (: []) <$> instanceD (cxtGswizzleM1 1) (conT (mkName "GSwizzle1") `appT` aProdB) [
 	typeGxProd,
 	funGxProd
 	]
@@ -126,3 +116,15 @@ funGxProd :: Q Dec
 funGxProd = funD (mkName "gx") [
 	clause [infixP (varP $ mkName "x_") (mkName ":*:") wildP]
 		(normalB $ varE (mkName "gx") `appE` varE (mkName "x_")) [] ]
+
+nameGswizzle :: Int -> Name
+nameGswizzle = mkName . ("GSwizzle" ++) . show
+
+nameGxU :: Int -> Name
+nameGxU i = mkName $ "G" ++ [toUpper $ alphabet i]
+
+nameGxL :: Int -> Name
+nameGxL i = mkName $ "g" ++ [alphabet i]
+
+alphabet :: Int -> Char
+alphabet = (("xyz" ++ reverse ['a' .. 'w']) !!) . subtract 1
