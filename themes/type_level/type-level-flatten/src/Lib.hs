@@ -8,6 +8,10 @@ module Lib where
 
 data a :+: b = a :+: b deriving Show
 
+data N a = I a deriving Show
+
+class Index xs i where
+
 class Flatten src dst where
 	flatten :: src -> dst
 
