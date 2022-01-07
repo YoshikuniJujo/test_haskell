@@ -15,8 +15,8 @@ class Swizzle1 a where
 	default x :: (Generic a, GSwizzle1 (Rep a), X a ~ GX (Rep a)) => a -> X a
 	x = gx . from
 
-	xx :: a -> (X a, X a)
-	xx a = (x a, x a)
+xx :: Swizzle1 a => a -> (X a, X a)
+xx a = (x a, x a)
 
 class GSwizzle1 f where type GX f; gx :: f a -> GX f
 instance GSwizzle1 (K1 i a) where type GX (K1 i a) = a; gx (K1 a) = a
@@ -35,12 +35,12 @@ class Swizzle1 a => Swizzle2 a where
 		(Generic a, GSwizzle2 (Rep a), Y a ~ GY (Rep a)) => a -> Y a
 	y = gy . from
 
-	xy :: a -> (X a, Y a)
-	xy a = (x a, y a)
-	yx :: a -> (Y a, X a)
-	yx a = (y a, x a)
-	yy :: a -> (Y a, Y a)
-	yy a = (y a, y a)
+xy :: Swizzle2 a => a -> (X a, Y a)
+xy a = (x a, y a)
+yx :: Swizzle2 a => a -> (Y a, X a)
+yx a = (y a, x a)
+yy :: Swizzle2 a => a -> (Y a, Y a)
+yy a = (y a, y a)
 
 class GSwizzle1 f => GSwizzle2 f where type GY f; gy :: f a -> GY f
 
