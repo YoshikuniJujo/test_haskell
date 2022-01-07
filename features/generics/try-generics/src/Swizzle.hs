@@ -1,7 +1,8 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE DefaultSignatures, InstanceSigs #-}
 {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Swizzle where
@@ -56,13 +57,21 @@ yx a = (y a, x a)
 yy :: Swizzle2 a => a -> (Y a, Y a)
 yy a = (y a, y a)
 
-class GSwizzle2 f where type GY f; gy :: f a -> GY f
+class GSwizzle2 f where
+	type GY f
+	gy :: f a -> GY f
 
 instance GSwizzle2 a => GSwizzle2 (M1 i c a) where
-	type GY (M1 i c a) = GY a; gy (M1 a) = gy a
+	type GY (M1 i c a) = GY a
+	gy (M1 a) = gy a :: GY a
 
-instance GSwizzle1 b => GSwizzle2 (_a :*: b) where
-	type GY (_a :*: b) = GX b; gy (_a :*: b) = gx b
+instance GSwizzle1 b => GSwizzle2 (M1 i c a :*: b) where
+	type GY (M1 i c a :*: b) = GX b
+	gy (_a :*: b) = gx b :: GX b
+
+instance GSwizzle2 (a :*: b) => GSwizzle2 ((a :*: b) :*: c) where
+	type GY ((a :*: b) :*: c) = GY (a :*: b)
+	gy ((a :*: b) :*: _) = gy (a :*: b)
 
 class Swizzle2 a => Swizzle3 a where
 	type Z a
@@ -77,8 +86,19 @@ class GSwizzle3 f where type GZ f; gz :: f a -> GZ f
 instance GSwizzle3 a => GSwizzle3 (M1 i c a) where
 	type GZ (M1 i c a) = GZ a; gz (M1 a) = gz a
 
-instance GSwizzle2 b => GSwizzle3 (a :*: b) where
-	type GZ (a :*: b) = GY b; gz (_a :*: b) = gy b
+instance GSwizzle2 b => GSwizzle3 (M1 i c a :*: b) where
+	type GZ (M1 i c a :*: b) = GY b; gz (_a :*: b) = gy b
+
+instance GSwizzle1 c' => GSwizzle3 ((M1 i c a :*: M1 i c b) :*: c') where
+	type GZ ((M1 i c a :*: M1 i c b) :*: c') = GX c'; gz (_ :*: c) = gx c
+
+instance GSwizzle3 (a :*: (b :*: c)) => GSwizzle3 ((a :*: (b :*: c)) :*: d) where
+	type GZ ((a :*: b :*: c) :*: d) = GZ (a :*: b :*: c)
+	gz (a :*: _) = gz a
+
+instance GSwizzle3 ((a :*: b) :*: c) => GSwizzle3 (((a :*: b) :*: c) :*: d) where
+	type GZ (((a :*: b) :*: c) :*: d) = GZ ((a :*: b) :*: c)
+	gz (a :*: _) = gz a
 
 instance Swizzle1 (x, y) where type X (x, y) = x
 instance Swizzle2 (x, y) where type Y (x, y) = y
@@ -86,3 +106,11 @@ instance Swizzle2 (x, y) where type Y (x, y) = y
 instance Swizzle1 (x, y, z) where type X (x, y, z) = x
 instance Swizzle2 (x, y, z) where type Y (x, y, z) = y
 instance Swizzle3 (x, y, z) where type Z (x, y, z) = z
+
+instance Swizzle1 (x, y, z, w) where type X (x, y, z, w) = x
+instance Swizzle2 (x, y, z, w) where type Y (x, y, z, w) = y
+instance Swizzle3 (x, y, z, w) where type Z (x, y, z, w) = z
+
+instance Swizzle1 (x, y, z, w, u) where type X (x, y, z, w, u) = x
+instance Swizzle2 (x, y, z, w, u) where type Y (x, y, z, w, u) = y
+instance Swizzle3 (x, y, z, w, u) where type Z (x, y, z, w, u) = z
