@@ -42,12 +42,12 @@ yx a = (y a, x a)
 yy :: Swizzle2 a => a -> (Y a, Y a)
 yy a = (y a, y a)
 
-class GSwizzle1 f => GSwizzle2 f where type GY f; gy :: f a -> GY f
+class GSwizzle2 f where type GY f; gy :: f a -> GY f
 
 instance GSwizzle2 a => GSwizzle2 (M1 i c a) where
 	type GY (M1 i c a) = GY a; gy (M1 a) = gy a
 
-instance (GSwizzle1 a, GSwizzle1 b) => GSwizzle2 (a :*: b) where
+instance GSwizzle1 b => GSwizzle2 (a :*: b) where
 	type GY (a :*: b) = GX b; gy (_a :*: b) = gx b
 
 class Swizzle2 a => Swizzle3 a where
@@ -58,12 +58,12 @@ class Swizzle2 a => Swizzle3 a where
 		(Generic a, GSwizzle3 (Rep a), Z a ~ GZ (Rep a)) => a -> Z a
 	z = gz . from
 
-class GSwizzle2 f => GSwizzle3 f where type GZ f; gz :: f a -> GZ f
+class GSwizzle3 f where type GZ f; gz :: f a -> GZ f
 
 instance GSwizzle3 a => GSwizzle3 (M1 i c a) where
 	type GZ (M1 i c a) = GZ a; gz (M1 a) = gz a
 
-instance (GSwizzle1 a, GSwizzle2 b) => GSwizzle3 (a :*: b) where
+instance GSwizzle2 b => GSwizzle3 (a :*: b) where
 	type GZ (a :*: b) = GY b; gz (_a :*: b) = gy b
 
 instance Swizzle1 (x, y) where type X (x, y) = x

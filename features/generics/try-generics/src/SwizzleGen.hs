@@ -43,14 +43,8 @@ eqT :: TypeQ -> TypeQ -> TypeQ
 t1 `eqT` t2 = equalityT `appT` t1 `appT` t2
 
 classGswizzle :: Int -> DecsQ
-classGswizzle i = (: []) <$> classD (classGswizzleContext i)
+classGswizzle i = (: []) <$> classD (cxt [])
 	(nameGswizzle i) [plainTV $ mkName "f"] [] [typeGx i, sigGx i]
-
-classGswizzleContext :: Int -> CxtQ
-classGswizzleContext i
-	| i < 2 = cxt []
-	| otherwise = cxt [ conT (mkName $ "GSwizzle" ++ show (i - 1)) `appT`
-		varT (mkName "f") ]
 
 typeGx :: Int -> Q Dec
 typeGx i = openTypeFamilyD (nameGxU i) [plainTV $ mkName "f"] noSig Nothing
