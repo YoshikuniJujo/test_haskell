@@ -6,12 +6,11 @@ module SwizzleGen where
 
 import GHC.Generics
 import Language.Haskell.TH
-import Control.Monad
 import Data.Bool
 import Data.Char
 
 classSwizzle :: Int -> DecsQ
-classSwizzle i = (++)
+classSwizzle i = (\a b c -> a ++ b ++ c)
 	<$> sequence ((bool id (instanceGswizzle1K1 :) $ i == 1) [
 		classGswizzle i,
 		instanceGswizzleM1 i,
@@ -19,6 +18,7 @@ classSwizzle i = (++)
 		instanceGswizzleProdProd i,
 		classSwizzleClass i ])
 	<*> instanceSwizzleTuples i
+	<*> deriveGeneric i
 
 classSwizzleClass :: Int -> Q Dec
 classSwizzleClass i = newName "a" >>= \a ->
@@ -222,3 +222,14 @@ tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
 
 typeXFromTuple :: Int -> [Name] -> Q Dec
 typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
+
+deriveGeneric :: Int -> DecsQ
+deriveGeneric i = do
+	t <- tupT =<< newNameAbc i
+	isInstance ''Generic [t] >>= bool
+		((: []) <$> standaloneDerivD (cxt [])
+			(conT ''Generic `appT` pure t))
+		(pure [])
+
+newNameAbc :: Int -> Q [Name]
+newNameAbc i = (newName . (: [])) `mapM` take i ['a' .. 'z']
