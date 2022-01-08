@@ -36,6 +36,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-generics
+  try-reify:
+    main:                try-reify.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-generics
 
 tests:
   try-generics-test:
