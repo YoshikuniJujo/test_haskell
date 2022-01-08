@@ -6,17 +6,19 @@ module SwizzleGen where
 
 import GHC.Generics
 import Language.Haskell.TH
+import Control.Monad
 import Data.Bool
 import Data.Char
 
 classSwizzle :: Int -> DecsQ
-classSwizzle i = sequence
-	$ (bool id (instanceGswizzle1K1 :) $ i == 1) [
+classSwizzle i = (++)
+	<$> sequence ((bool id (instanceGswizzle1K1 :) $ i == 1) [
 		classGswizzle i,
 		instanceGswizzleM1 i,
 		instanceGswizzleProd i,
 		instanceGswizzleProdProd i,
-		classSwizzleClass i ]
+		classSwizzleClass i ])
+	<*> instanceSwizzleTuples i
 
 classSwizzleClass :: Int -> Q Dec
 classSwizzleClass i = newName "a" >>= \a ->
@@ -206,3 +208,17 @@ nameGxL i = mkName $ "g" ++ [alphabet i]
 
 alphabet :: Int -> Char
 alphabet = (("xyz" ++ reverse ['a' .. 'w']) !!) . subtract 1
+
+instanceSwizzleTuples :: Int -> DecsQ
+instanceSwizzleTuples i = mapM (`instanceSwizzleTuple` i) [2 .. i]
+
+instanceSwizzleTuple :: Int -> Int -> Q Dec
+instanceSwizzleTuple i n = mapM (newName . (: "") . alphabet) [1 .. n] >>= \ns ->
+	instanceD (cxt []) (conT (nameSwizzle i) `appT` tupT ns) [typeXFromTuple i ns]
+
+tupT :: [Name] -> TypeQ
+tupT [n] = varT n
+tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
+
+typeXFromTuple :: Int -> [Name] -> Q Dec
+typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
