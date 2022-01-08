@@ -6,8 +6,6 @@
 
 module CheckSwizzleGen where
 
-import GHC.Generics
-
 import SwizzleGen
 
 classSwizzle 1

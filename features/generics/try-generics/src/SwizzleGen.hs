@@ -81,7 +81,7 @@ instanceGswizzle1K1 = instanceD (cxt []) (conT (mkName "GSwizzle1") `appT` k1ia)
 	]
 
 k1ia :: TypeQ
-k1ia = conT (mkName "K1") `appT` varT (mkName "i") `appT` varT (mkName "a")
+k1ia = conT ''K1 `appT` varT (mkName "i") `appT` varT (mkName "a")
 
 typeGxK1 :: Q Dec
 typeGxK1 = tySynInstD
@@ -89,7 +89,7 @@ typeGxK1 = tySynInstD
 
 funGxK1 :: Q Dec
 funGxK1 = funD (mkName "gx") [
-	clause [conP (mkName "K1") [varP $ mkName "a"]]
+	clause [conP 'K1 [varP $ mkName "a"]]
 		(normalB . varE $ mkName "a") [] ]
 
 instanceGswizzleM1 :: Int -> Q Dec
@@ -102,7 +102,7 @@ cxtGswizzleM1 :: Int -> CxtQ
 cxtGswizzleM1 i = cxt [conT (nameGswizzle i) `appT` varT (mkName "a")]
 
 m1ica :: TypeQ
-m1ica = conT (mkName "M1") `appT`
+m1ica = conT ''M1 `appT`
 	varT (mkName "i") `appT` varT (mkName "c") `appT` varT (mkName "a")
 
 typeGxM1 :: Int -> Q Dec
@@ -111,7 +111,7 @@ typeGxM1 i = tySynInstD $ tySynEqn Nothing
 	(conT (nameGxU i) `appT` varT (mkName "a"))
 
 funGxM1 :: Int -> Q Dec
-funGxM1 i = funD (nameGxL i) [clause [conP (mkName "M1") [varP $ mkName "a"]] (
+funGxM1 i = funD (nameGxL i) [clause [conP 'M1 [varP $ mkName "a"]] (
 	normalB $ varE (nameGxL i) `appE` varE (mkName "a") ) []]
 
 instanceGswizzleProd :: Int -> Q Dec
@@ -126,20 +126,20 @@ cxtGswizzleProd = \case
 	i -> cxt [conT (nameGswizzle $ i - 1) `appT` varT (mkName "b")]
 
 aProdB :: TypeQ
-aProdB = (conT (mkName "M1") `appT` varT (mkName "i") `appT`
+aProdB = (conT ''M1 `appT` varT (mkName "i") `appT`
 		varT (mkName "c") `appT` varT (mkName "a")) `prodT`
 	varT (mkName "b")
 
 infixr 9 `prodT`, `prodE`, `prodP`
 
 prodT :: TypeQ -> TypeQ -> TypeQ
-t1 `prodT` t2 = conT (mkName ":*:") `appT` t1 `appT` t2
+t1 `prodT` t2 = conT ''(:*:) `appT` t1 `appT` t2
 
 prodE :: ExpQ -> ExpQ -> ExpQ
-e1 `prodE` e2 = conE (mkName ":*:") `appE` e1 `appE` e2
+e1 `prodE` e2 = conE '(:*:) `appE` e1 `appE` e2
 
 prodP :: PatQ -> PatQ -> PatQ
-p1 `prodP` p2 = infixP p1 (mkName ":*:") p2
+p1 `prodP` p2 = infixP p1 '(:*:) p2
 
 typeGxProd :: Int -> Q Dec
 typeGxProd i = tySynInstD
@@ -181,7 +181,7 @@ nameAOrB = \case 1 -> mkName "a"; _ -> mkName "b"
 
 funGxProd :: Int -> Q Dec
 funGxProd i = funD (nameGxL i) [
-	clause [infixP (aOrWildP i) (mkName ":*:") (bOrWildP i)]
+	clause [infixP (aOrWildP i) '(:*:) (bOrWildP i)]
 		(normalB $ varE (nameGxxyL i) `appE` varE (nameAOrB i)) [] ]
 
 aOrWildP :: Int -> PatQ

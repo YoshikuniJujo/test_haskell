@@ -31,6 +31,7 @@ library
       Swizzle
       SwizzleGen
       SwizzleOld
+      TryClassSwizzle
       TryGenerics
   other-modules:
       Paths_try_generics
