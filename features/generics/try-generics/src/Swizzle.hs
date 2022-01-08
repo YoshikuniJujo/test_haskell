@@ -25,8 +25,12 @@ instance GSwizzle1 (K1 i a) where type GX (K1 i a) = a; gx (K1 a) = a
 instance GSwizzle1 a => GSwizzle1 (M1 i c a) where
 	type GX (M1 i c a) = GX a; gx (M1 a) = gx a
 
-instance GSwizzle1 a => GSwizzle1 (a :*: _b) where
-	type GX (a :*: _b) = GX a; gx (x_ :*: _) = gx x_
+instance GSwizzle1 a => GSwizzle1 (M1 i c a :*: b) where
+	type GX (M1 i c a :*: b) = GX a; gx (a :*: _) = gx a
+
+instance GSwizzle1 (a :*: b :*: c) => GSwizzle1 ((a :*: b) :*: c) where
+	type GX ((a :*: b) :*: c) = GX (a :*: b :*: c)
+	gx ((a :*: b) :*: c) = gx $ a :*: b :*: c
 
 {-
 

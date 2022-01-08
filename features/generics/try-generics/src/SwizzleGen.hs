@@ -15,6 +15,7 @@ classSwizzle i = sequence
 		classGswizzle i,
 		instanceGswizzleM1 i,
 		instanceGswizzleProd i,
+		instanceGswizzleProdProd i,
 		classSwizzleClass i ]
 
 classSwizzleClass :: Int -> Q Dec
@@ -125,11 +126,52 @@ cxtGswizzleProd = \case
 	i -> cxt [conT (nameGswizzle $ i - 1) `appT` varT (mkName "b")]
 
 aProdB :: TypeQ
-aProdB = conT (mkName ":*:") `appT` varT (mkName "a") `appT` varT (mkName "b")
+aProdB = (conT (mkName "M1") `appT` varT (mkName "i") `appT`
+		varT (mkName "c") `appT` varT (mkName "a")) `prodT`
+	varT (mkName "b")
+
+infixr 9 `prodT`, `prodE`, `prodP`
+
+prodT :: TypeQ -> TypeQ -> TypeQ
+t1 `prodT` t2 = conT (mkName ":*:") `appT` t1 `appT` t2
+
+prodE :: ExpQ -> ExpQ -> ExpQ
+e1 `prodE` e2 = conE (mkName ":*:") `appE` e1 `appE` e2
+
+prodP :: PatQ -> PatQ -> PatQ
+p1 `prodP` p2 = infixP p1 (mkName ":*:") p2
 
 typeGxProd :: Int -> Q Dec
 typeGxProd i = tySynInstD
 	$ tySynEqn Nothing (conT (nameGxU i) `appT` aProdB) (conT (nameGxxyU i) `appT` varT (nameAOrB i))
+
+instanceGswizzleProdProd :: Int -> Q Dec
+instanceGswizzleProdProd i = instanceD (cxtGswizzleProdProd i) (conT (nameGswizzle i) `appT` aProdBProdCT') [
+	typeGxProdProd i,
+	funGxProdProd i
+	]
+
+cxtGswizzleProdProd :: Int -> CxtQ
+cxtGswizzleProdProd i = cxt [conT (nameGswizzle i) `appT` aProdBProdCT]
+
+typeGxProdProd :: Int -> Q Dec
+typeGxProdProd i = tySynInstD $ tySynEqn Nothing
+	(conT (nameGxU i) `appT` aProdBProdCT')
+	(conT (nameGxU i) `appT` aProdBProdCT)
+
+funGxProdProd :: Int -> Q Dec
+funGxProdProd i = funD (nameGxL i) [clause [aProdBProdCP'] (normalB $ varE (nameGxL i) `appE` aProdBProdCE) []]
+
+aProdBProdCT, aProdBProdCT' :: TypeQ
+aProdBProdCT = varT (mkName "a") `prodT` varT (mkName "b") `prodT` varT (mkName "c")
+aProdBProdCT' = (varT (mkName "a") `prodT` varT (mkName "b")) `prodT` varT (mkName "c")
+
+aProdBProdCE, aProdBProdCE' :: ExpQ
+aProdBProdCE = varE (mkName "a") `prodE` varE (mkName "b") `prodE` varE (mkName "c")
+aProdBProdCE' = (varE (mkName "a") `prodE` varE (mkName "b")) `prodE` varE (mkName "c")
+
+aProdBProdCP' :: PatQ
+aProdBProdCP' = (varP (mkName "a") `prodP` varP (mkName "b")) `prodP` varP (mkName "c")
 
 nameGxxyU :: Int -> Name
 nameGxxyU = \case 1 -> nameGxU 1; i -> nameGxU $ i - 1
