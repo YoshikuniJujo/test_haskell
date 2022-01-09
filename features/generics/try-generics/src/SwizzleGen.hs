@@ -223,12 +223,12 @@ instanceSwizzleTuple :: Int -> Int -> Q Dec
 instanceSwizzleTuple i n = mapM (newName . (: "") . alphabet) [1 .. n] >>= \ns ->
 	instanceD (cxt []) (conT (nameSwizzle i) `appT` tupT ns) [typeXFromTuple i ns]
 
+typeXFromTuple :: Int -> [Name] -> Q Dec
+typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
+
 tupT :: [Name] -> TypeQ
 tupT [n] = varT n
 tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
-
-typeXFromTuple :: Int -> [Name] -> Q Dec
-typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
 
 deriveGeneric :: Int -> DecsQ
 deriveGeneric i = do
@@ -240,3 +240,17 @@ deriveGeneric i = do
 
 newNameAbc :: Int -> Q [Name]
 newNameAbc i = (newName . (: [])) `mapM` take i ['a' .. 'z']
+
+tupT' :: [TypeQ] -> TypeQ
+tupT' [t] = t
+tupT' ts = foldl appT (tupleT $ length ts) ts
+
+mkSwizzleSig :: Q Dec
+mkSwizzleSig = sigD (mkName "yps") . forallT [] mkSwizzleSigContext
+	$ varT (mkName "a_") `arrT` tupT' [
+		conT (mkName "Y") `appT` varT (mkName "a_"),
+		conT (mkName "P") `appT` varT (mkName "a_"),
+		conT (mkName "S") `appT` varT (mkName "a_") ]
+
+mkSwizzleSigContext :: CxtQ
+mkSwizzleSigContext = cxt [conT (mkName "Swizzle11") `appT` varT (mkName "a_")]
