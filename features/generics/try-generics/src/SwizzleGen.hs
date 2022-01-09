@@ -22,11 +22,16 @@ classSwizzle i = (\a b c -> a ++ b ++ c)
 
 classSwizzleClass :: Int -> Q Dec
 classSwizzleClass i = newName "a" >>= \a ->
-	classD (cxt []) (nameSwizzle i) [plainTV a] [] [
+	classD (classSwizzleContext i a) (nameSwizzle i) [plainTV a] [] [
 		typeX i a,
 		sigX i a,
 		defaultX i a,
 		defaultFunX i ]
+
+classSwizzleContext :: Int -> Name -> CxtQ
+classSwizzleContext i a = case i of
+	1 -> cxt []
+	_ -> cxt [conT (nameSwizzle $ i - 1) `appT` varT a]
 
 nameSwizzle :: Int -> Name
 nameSwizzle = mkName . ("Swizzle" ++) . show
@@ -210,7 +215,9 @@ alphabet :: Int -> Char
 alphabet = (("xyz" ++ reverse ['a' .. 'w']) !!) . subtract 1
 
 instanceSwizzleTuples :: Int -> DecsQ
-instanceSwizzleTuples i = mapM (`instanceSwizzleTuple` i) [2 .. i]
+instanceSwizzleTuples = \case
+	1 -> pure []
+	i -> mapM (`instanceSwizzleTuple` i) [1 .. i]
 
 instanceSwizzleTuple :: Int -> Int -> Q Dec
 instanceSwizzleTuple i n = mapM (newName . (: "") . alphabet) [1 .. n] >>= \ns ->
