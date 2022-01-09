@@ -22,9 +22,10 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - template-haskell
-- random
 - monads-tf
 - time
+- random
+- containers
 
 library:
   source-dirs: src
