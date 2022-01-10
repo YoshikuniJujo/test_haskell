@@ -7,6 +7,8 @@ module SwizzleGen where
 import GHC.Generics
 import Language.Haskell.TH
 import Data.Bool
+import Data.Maybe
+import Data.List
 import Data.Char
 
 classSwizzle :: Int -> DecsQ
@@ -214,6 +216,9 @@ nameGxL i = mkName $ "g" ++ [alphabet i]
 alphabet :: Int -> Char
 alphabet = (("xyz" ++ reverse ['a' .. 'w']) !!) . subtract 1
 
+unalphabet :: Char -> Int
+unalphabet c = fromJust (elemIndex c $ ("xyz" ++ reverse ['a' .. 'w'])) + 1
+
 instanceSwizzleTuples :: Int -> DecsQ
 instanceSwizzleTuples = \case
 	1 -> pure []
@@ -244,6 +249,14 @@ newNameAbc i = (newName . (: [])) `mapM` take i ['a' .. 'z']
 tupT' :: [TypeQ] -> TypeQ
 tupT' [t] = t
 tupT' ts = foldl appT (tupleT $ length ts) ts
+
+swizzle :: String -> DecsQ
+swizzle nm = sequence [
+	mkSwizzleSig i nm,
+	mkSwizzleFun nm
+	]
+	where
+	i = maximum $ unalphabet <$> nm
 
 mkSwizzleSig :: Int -> String -> Q Dec
 mkSwizzleSig i nm = sigD (mkName nm) . forallT [] (mkSwizzleSigContext i)

@@ -7,6 +7,9 @@
 
 module TryClassSwizzle where
 
+import qualified GHC.Generics as G
+import Data.List
+
 import SwizzleGen
 
 concat <$> classSwizzle `mapM` [1 .. 19]
@@ -25,3 +28,17 @@ yx a_ = (y a_, x a_)
 
 ypq :: Swizzle11 a => a -> (Y a, P a, Q a)
 ypq a_ = (y a_, p a_, q a_)
+
+swizzle "yps"
+
+concat <$> swizzle `mapM` permutations "xyzw"
+
+swizzle "zzxw"
+
+data Point3d = Point3d Double Double Double deriving (Show, G.Generic)
+
+concat <$> swizzle `mapM` permutations "xyz"
+
+instance Swizzle1 Point3d where type X Point3d = Double
+instance Swizzle2 Point3d where type Y Point3d = Double
+instance Swizzle3 Point3d where type Z Point3d = Double
