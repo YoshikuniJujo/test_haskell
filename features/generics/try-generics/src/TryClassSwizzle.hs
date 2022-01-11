@@ -11,6 +11,7 @@ import qualified GHC.Generics as G
 import Data.List
 
 import SwizzleGen
+import SwizzleFun
 
 concat <$> classSwizzle `mapM` [1 .. 19]
 

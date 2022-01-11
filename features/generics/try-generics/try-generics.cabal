@@ -29,6 +29,8 @@ library
       Lib
       Some
       Swizzle
+      SwizzleClass
+      SwizzleFun
       SwizzleGen
       SwizzleOld
       TryClassSwizzle
