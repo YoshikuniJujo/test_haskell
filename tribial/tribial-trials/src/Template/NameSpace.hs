@@ -16,7 +16,7 @@ import Paths_tribial_trials
 -- foo :: Int
 -- foo = 321
 
-fooTh, fooTh', fooTh'', fooTh''', fooTh4 :: ExpQ
+fooTh, fooTh', fooTh'', fooTh''', fooTh4, fooTh5 :: ExpQ
 fooTh = varE $ mkName "foo"
 fooTh' = varE $ mkName "Template.Foo.foo"
 fooTh'' = varE 'foo
@@ -25,4 +25,16 @@ fooTh''' = varE . fromJust =<<  lookupValueName "foo"
 
 
 -- fooTh4 = varE $ mkNameG_v ("tribial-trials-" ++ showVersion version) "Template.Foo" "foo"
-fooTh4 = varE $ mkNameG_v ("tribial-trials") "Template.Foo" "foo"
+fooTh4 = do
+	runIO . print . (ppr <$>) . (\(ModuleInfo ms) -> ms) =<< reifyModule =<< thisModule
+	PkgName pn <- (\(Module pn _) -> pn) . head
+		. filter (\(Module _ mn) -> mn == ModName "Template.Foo")
+		. (\(ModuleInfo ms) -> ms) <$> (reifyModule =<< thisModule)
+	runIO $ print pn
+	varE $ mkNameG_v pn "Template.Foo" "foo"
+
+fooTh5 = do
+	PkgName pn <- (\(Module pn _) -> pn) . head
+		. filter (\(Module _ mn) -> mn == ModName "Template.Foo")
+		. (\(ModuleInfo ms) -> ms) <$> (reifyModule =<< thisModule)
+	varE $ mkNameG_v pn "Template.Foo" "foo"

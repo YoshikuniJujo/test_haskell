@@ -22,5 +22,5 @@ bar'' = $(Ns.fooTh'')
 bar''' :: Int
 bar''' = $(Ns.fooTh''')
 
--- bar4 :: Int
--- bar4 = $(Ns.fooTh4)
+bar4 :: Int
+bar4 = $(Ns.fooTh4)
