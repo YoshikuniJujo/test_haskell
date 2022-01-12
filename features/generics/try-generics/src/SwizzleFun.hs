@@ -20,13 +20,16 @@ mkSwizzleSig i nm = sigD (mkName nm) . forallT [] (mkSwizzleSigContext i)
 	$ varT (mkName "a") `arrT` mkSwizzleSigTup nm (mkName "a")
 
 mkSwizzleSigContext :: Int -> CxtQ
-mkSwizzleSigContext i = cxt [conT (nameSwizzle i) `appT` varT (mkName "a")]
+mkSwizzleSigContext i = cxt [clsSwizzle i `appT` varT (mkName "a")]
 
 mkSwizzleSigTup :: String -> Name -> TypeQ
 mkSwizzleSigTup cs a = tupT $ (<$> cs) \c -> typX c `appT` varT a
 
 funY :: ExpQ
 funY = funX 'y'
+
+clsSwizzle :: Int -> TypeQ
+clsSwizzle = conT . mkNameG_tc swizzleClassPkg "SwizzleClass" . ("Swizzle" ++) . show
 
 funX :: Char -> ExpQ
 funX = varE . mkNameG_v swizzleClassPkg "SwizzleClass" . (: "")

@@ -5,7 +5,6 @@ module TrySwizzleFun where
 
 import Data.List
 
-import SwizzleClass
 import SwizzleFun
 
 swizzle "zyx"
