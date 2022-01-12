@@ -221,7 +221,6 @@ unalphabet c = fromJust (elemIndex c $ ("xyz" ++ reverse ['a' .. 'w'])) + 1
 
 instanceSwizzleTuples :: Int -> DecsQ
 instanceSwizzleTuples = \case
-	1 -> pure []
 	i -> mapM (`instanceSwizzleTuple` i) [1 .. i]
 
 instanceSwizzleTuple :: Int -> Int -> Q Dec
@@ -232,7 +231,6 @@ typeXFromTuple :: Int -> [Name] -> Q Dec
 typeXFromTuple i ns = tySynInstD $ tySynEqn Nothing (conT (nameXU i) `appT` tupT ns) (varT $ ns !! (i - 1))
 
 tupT :: [Name] -> TypeQ
-tupT [n] = varT n
 tupT ns = foldl appT (tupleT $ length ns) $ varT <$> ns
 
 deriveGeneric :: Int -> DecsQ
