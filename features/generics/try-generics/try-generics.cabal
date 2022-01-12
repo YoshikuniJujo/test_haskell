@@ -37,6 +37,7 @@ library
       SwizzleOld
       TryClassSwizzle
       TryGenerics
+      TrySwizzleClass
       TrySwizzleFun
       TryTh
   other-modules:
