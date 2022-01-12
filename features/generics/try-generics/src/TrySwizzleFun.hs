@@ -1,16 +1,13 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TrySwizzleFun where
 
-import Language.Haskell.TH
+import Data.List
 
+import SwizzleClass
 import SwizzleFun
 
-{-
-do	runIO . print =<< swizzleClassPkg
-	pure []
-	-}
+swizzle "zyx"
 
-foo = $(funY) @(_, _, _)
+concat <$> swizzle `mapM` permutations "xyzwv"
