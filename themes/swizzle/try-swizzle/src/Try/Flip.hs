@@ -5,8 +5,8 @@ module Try.Flip where
 
 import Data.List
 
-import Curry
-import SwizzleFun
+import Data.Curry
+import Data.Swizzle.TH
 
 concat <$> swizzle `mapM` permutations "xyz"
 

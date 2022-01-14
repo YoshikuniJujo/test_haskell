@@ -25,12 +25,12 @@ source-repository head
 
 library
   exposed-modules:
-      Curry
-      Curry.TH
-      SwizzleClass
-      SwizzleClassPkg
-      SwizzleFun
-      SwizzleGen
+      Data.Curry
+      Data.Curry.TH
+      Data.Swizzle.Class
+      Data.Swizzle.Class.Pkg
+      Data.Swizzle.Class.TH
+      Data.Swizzle.TH
       Try.Color
       Try.Flip
       Try.SwizzleFun

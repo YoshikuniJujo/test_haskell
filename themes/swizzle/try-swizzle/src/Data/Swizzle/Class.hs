@@ -5,8 +5,8 @@
 {-# LANGUAGE StandaloneDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module SwizzleClass where
+module Data.Swizzle.Class where
 
-import SwizzleGen
+import Data.Swizzle.Class.TH
 
 concat <$> classSwizzle `mapM` [1 .. 26]

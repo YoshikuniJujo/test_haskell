@@ -3,6 +3,6 @@
 
 module Try.SwizzleFun where
 
-import SwizzleFun
+import Data.Swizzle.TH
 
 swizzle "x"

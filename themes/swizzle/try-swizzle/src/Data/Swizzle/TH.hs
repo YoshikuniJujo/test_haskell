@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module SwizzleFun where
+module Data.Swizzle.TH where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
@@ -9,7 +9,7 @@ import Data.Maybe
 import Data.List
 import Data.Char
 
-import SwizzleClassPkg
+import Data.Swizzle.Class.Pkg
 
 swizzle :: String -> DecsQ
 swizzle nm = sequence [mkSwizzleSig i nm, mkSwizzleFun nm]
@@ -29,13 +29,13 @@ funY :: ExpQ
 funY = funX 'y'
 
 clsSwizzle :: Int -> TypeQ
-clsSwizzle = conT . mkNameG_tc swizzleClassPkg "SwizzleClass" . ("Swizzle" ++) . show
+clsSwizzle = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class" . ("Swizzle" ++) . show
 
 funX :: Char -> ExpQ
-funX = varE . mkNameG_v swizzleClassPkg "SwizzleClass" . (: "")
+funX = varE . mkNameG_v swizzleClassPkg "Data.Swizzle.Class" . (: "")
 
 typX :: Char -> TypeQ
-typX = conT . mkNameG_tc swizzleClassPkg "SwizzleClass" . (: "") . toUpper
+typX = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class" . (: "") . toUpper
 
 tupT :: [TypeQ] -> TypeQ
 tupT ts = foldl appT (tupleT $ length ts) ts

@@ -7,9 +7,9 @@ module Try.Color where
 
 import GHC.Generics
 
-import qualified SwizzleClass as S
-import SwizzleFun
-import Curry
+import qualified Data.Swizzle.Class as S
+import Data.Swizzle.TH
+import Data.Curry
 
 swizzle "yzwx"
 
