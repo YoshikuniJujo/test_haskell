@@ -7,6 +7,6 @@
 
 module Data.Swizzle.Class where
 
-import Data.Swizzle.Class.TH
+import Data.Swizzle.Class.TH.Internal
 
 concat <$> classSwizzle `mapM` [1 .. 26]

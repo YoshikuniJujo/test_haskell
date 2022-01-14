@@ -27,14 +27,17 @@ library
   exposed-modules:
       Data.Curry
       Data.Curry.TH
-      Data.Swizzle.Class
-      Data.Swizzle.Class.Pkg
-      Data.Swizzle.Class.TH
+      Data.Swizzle
       Data.Swizzle.TH
+      Data.Swizzle.Class
+      Data.Swizzle.Class.TH
+  other-modules:
+      Data.Swizzle.Class.Pkg
+      Data.Swizzle.Class.TH.Internal
       Try.Color
       Try.Flip
+      Try.InstanceSwizzleTuple
       Try.SwizzleFun
-  other-modules:
       Paths_try_swizzle
   hs-source-dirs:
       src

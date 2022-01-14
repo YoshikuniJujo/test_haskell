@@ -5,5 +5,5 @@ module Data.Curry where
 
 import Data.Curry.TH
 
-concat <$> crr `mapM` [0 .. 26]
-concat <$> unc `mapM` [0 .. 26]
+concat <$> crr `mapM` reverse [0 .. 26]
+concat <$> unc `mapM` reverse [0 .. 26]

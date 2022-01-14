@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Curry.TH where
+module Data.Curry.TH (crr, unc) where
 
 import Language.Haskell.TH
 

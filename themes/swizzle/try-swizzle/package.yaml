@@ -25,6 +25,13 @@ dependencies:
 
 library:
   source-dirs: src
+  exposed-modules:
+  - Data.Curry
+  - Data.Curry.TH
+  - Data.Swizzle
+  - Data.Swizzle.TH
+  - Data.Swizzle.Class
+  - Data.Swizzle.Class.TH
 
 executables:
   try-swizzle-exe:

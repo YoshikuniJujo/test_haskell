@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Swizzle.TH where
+module Data.Swizzle.TH (swizzle) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
