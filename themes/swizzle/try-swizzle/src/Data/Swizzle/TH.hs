@@ -25,9 +25,6 @@ mkSwizzleSigContext i = cxt [clsSwizzle i `appT` varT (mkName "a")]
 mkSwizzleSigTup :: String -> Name -> TypeQ
 mkSwizzleSigTup cs a = tupT $ (<$> cs) \c -> typX c `appT` varT a
 
-funY :: ExpQ
-funY = funX 'y'
-
 clsSwizzle :: Int -> TypeQ
 clsSwizzle = conT . mkNameG_tc swizzleClassPkg "Data.Swizzle.Class" . ("Swizzle" ++) . show
 
@@ -42,9 +39,6 @@ tupT ts = foldl appT (tupleT $ length ts) ts
 
 unalphabet :: Char -> Int
 unalphabet c = fromJust (elemIndex c $ ("xyz" ++ reverse ['a' .. 'w'])) + 1
-
-nameSwizzle :: Int -> Name
-nameSwizzle = mkName . ("Swizzle" ++) . show
 
 arrT :: TypeQ -> TypeQ -> TypeQ
 t1 `arrT` t2 = arrowT `appT` t1 `appT` t2
