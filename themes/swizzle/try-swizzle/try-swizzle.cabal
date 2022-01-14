@@ -31,6 +31,8 @@ library
       SwizzleClassPkg
       SwizzleFun
       SwizzleGen
+      Try.Color
+      Try.Flip
       Try.SwizzleFun
   other-modules:
       Paths_try_swizzle
