@@ -75,3 +75,14 @@ createImageView dvc ivci mac = ($ pure) $ runContT do
 foreign import ccall "vkCreateImageView" c_vkCreateImageView ::
 	Device -> Ptr I.ImageViewCreateInfo -> Ptr I.AllocationCallbacks ->
 	Ptr ImageView -> IO Result
+
+destroyImageView :: Pointable n =>
+	Device -> ImageView -> Maybe (AllocationCallbacks n) -> IO ()
+destroyImageView dvc iv mac = ($ pure) $ runContT do
+	pac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	lift $ c_vkDestroyImageView dvc iv pac
+
+foreign import ccall "vkDestroyImageView" c_vkDestroyImageView ::
+	Device -> ImageView -> Ptr I.AllocationCallbacks -> IO ()

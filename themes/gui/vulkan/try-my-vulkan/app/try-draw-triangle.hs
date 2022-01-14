@@ -23,6 +23,7 @@ import qualified Vulkan as Vk
 import qualified Vulkan.Base as Vk
 import qualified Vulkan.Format as Vk
 import qualified Vulkan.Image as Vk
+import qualified Vulkan.ImageAspectFlagBits as Vk
 import qualified Vulkan.Ext as Vk.Ext
 import qualified Vulkan.Ext.Internal as Vk.Ext.I
 
@@ -62,9 +63,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc
+	cleanup w ist dbgMssngr dv sfc sc ivs
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -76,7 +77,7 @@ initWindow = do
 
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
-	Vk.Khr.Surface, Vk.Khr.I.Swapchain )
+	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView] )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -86,8 +87,8 @@ initVulkan w = do
 	pd <- pickPhysicalDevice ist sfc
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
-	createImageViews scif scis
-	pure (ist, dbgMssngr, dv, gq, sfc, sc)
+	ivs <- createImageViews dv scif scis
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -466,11 +467,11 @@ chooseSwapExtent win capabilities = if cw < Vk.uint32Max then pure ce else do
 clamp :: Ord a => a -> a -> a -> a
 clamp mn mx x | x <= mn = mn | mx <= x = mx | otherwise = x
 
-createImageViews :: Vk.Format -> [Vk.Image] -> IO ()
-createImageViews scif imgs = pure ()
+createImageViews :: Vk.Device -> Vk.Format -> [Vk.Image] -> IO [Vk.ImageView]
+createImageViews dvc scif imgs = createImageView1 dvc scif `mapM` imgs
 
-createImageView1 :: Vk.Format -> Vk.Image -> IO Vk.ImageView
-createImageView1 scif img = do
+createImageView1 :: Vk.Device -> Vk.Format -> Vk.Image -> IO Vk.ImageView
+createImageView1 dvc scif img = do
 	let	createInfo = Vk.ImageViewCreateInfo {
 			Vk.imageViewCreateInfoNext = Nothing,
 			Vk.imageViewCreateInfoFlags =
@@ -482,10 +483,16 @@ createImageView1 scif img = do
 				Vk.componentMappingR = Vk.ComponentSwizzleIdentity,
 				Vk.componentMappingG = Vk.ComponentSwizzleIdentity,
 				Vk.componentMappingB = Vk.ComponentSwizzleIdentity,
-				Vk.componentMappingA = Vk.ComponentSwizzleIdentity }
-			-- HERE
+				Vk.componentMappingA = Vk.ComponentSwizzleIdentity },
+			Vk.imageViewCreateInfoSubresourceRange = Vk.ImageSubresourceRange {
+				Vk.imageSubresourceRangeAspectMask = Vk.ImageAspectColorBit,
+				Vk.imageSubresourceRangeBaseMipLevel = 0,
+				Vk.imageSubresourceRangeLevelCount = 1,
+				Vk.imageSubresourceRangeBaseArrayLayer = 0,
+				Vk.imageSubresourceRangeLayerCount = 1
+				}
 			}
-	undefined
+	Vk.createImageView @() @() dvc createInfo Nothing
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
@@ -494,8 +501,9 @@ mainLoop w = do
 		not <$> GlfwB.windowShouldClose w
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
-	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> IO ()
-cleanup w ist mdbgMssngr dv sfc sc = do
+	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] -> IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs = do
+	flip (Vk.destroyImageView @() dv) Nothing `mapM_` ivs
 	Vk.Khr.destroySwapchain @() dv sc Nothing
 	Vk.destroyDevice @() dv Nothing
 	maybe (pure ())
