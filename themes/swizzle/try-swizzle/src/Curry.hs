@@ -1,12 +1,9 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Curry where
 
-import Language.Haskell.TH
+import Curry.TH
 
-crr2Fun :: Q Dec
-crr2Fun = newName "f" >>= \f -> newName "x" >>= \x -> newName "y" >>= \y ->
-	funD (mkName "crr2") [
-		clause [varP f, varP x, varP y]
-			(normalB $ varE f `appE` tupE [	varE x, varE y])
-			[] ]
+concat <$> crr `mapM` [0 .. 26]
+concat <$> unc `mapM` [0 .. 26]
