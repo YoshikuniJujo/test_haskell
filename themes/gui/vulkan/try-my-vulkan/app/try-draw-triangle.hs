@@ -88,6 +88,7 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
+	createGraphicsPipeline
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs)
 
 createInstance :: IO Vk.Instance
@@ -489,10 +490,11 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeBaseMipLevel = 0,
 				Vk.imageSubresourceRangeLevelCount = 1,
 				Vk.imageSubresourceRangeBaseArrayLayer = 0,
-				Vk.imageSubresourceRangeLayerCount = 1
-				}
-			}
+				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
+
+createGraphicsPipeline :: IO ()
+createGraphicsPipeline = pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
