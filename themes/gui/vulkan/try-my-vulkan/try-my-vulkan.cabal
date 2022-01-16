@@ -58,6 +58,7 @@ library
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , containers
@@ -79,6 +80,7 @@ executable try-allocation
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , containers
@@ -101,6 +103,7 @@ executable try-draw-triangle
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , containers
@@ -123,6 +126,7 @@ executable try-glm
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , containers
@@ -144,6 +148,7 @@ executable try-my-vulkan-exe
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , containers
@@ -166,6 +171,7 @@ test-suite try-my-vulkan-test
   build-depends:
       GLFW-b
     , base >=4.7 && <5
+    , bytestring
     , c-enum
     , c-struct
     , containers

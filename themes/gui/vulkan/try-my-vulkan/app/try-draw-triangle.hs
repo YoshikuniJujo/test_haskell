@@ -16,6 +16,7 @@ import Data.Maybe
 import Data.List
 import Data.Word
 
+import qualified Data.ByteString as BS
 import qualified Data.Set as Set
 
 import qualified Graphics.UI.GLFW as GlfwB
@@ -494,7 +495,10 @@ createImageView1 dvc scif img = do
 	Vk.createImageView @() @() dvc createInfo Nothing
 
 createGraphicsPipeline :: IO ()
-createGraphicsPipeline = pure ()
+createGraphicsPipeline = do
+	vertShaderCode <- BS.readFile "shaders/vert.spv"
+	fragShaderCode <- BS.readFile "shaders/frag.spv"
+	pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
