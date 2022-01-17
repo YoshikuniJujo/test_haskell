@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Cglm
+      Data.ByteString.AsUint32T
       Glfw
       ThEnv
       Vulkan
@@ -48,6 +49,8 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal
       Vulkan.PhysicalDevice
+      Vulkan.Shader
+      Vulkan.Shader.Internal
   other-modules:
       Paths_try_my_vulkan
   hs-source-dirs:

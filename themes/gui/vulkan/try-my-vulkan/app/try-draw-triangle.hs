@@ -37,6 +37,9 @@ import qualified Vulkan.Khr.Surface as Vk.Khr
 import qualified Vulkan.Khr.Swapchain as Vk.Khr
 import qualified Vulkan.Khr.Swapchain.Internal as Vk.Khr.I
 
+import qualified Vulkan.Shader as Vk
+import qualified Vulkan.Shader.Internal as Vk.I
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -89,7 +92,7 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
-	createGraphicsPipeline
+	createGraphicsPipeline dv
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs)
 
 createInstance :: IO Vk.Instance
@@ -494,11 +497,24 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
 
-createGraphicsPipeline :: IO ()
-createGraphicsPipeline = do
+createGraphicsPipeline :: Vk.Device -> IO ()
+createGraphicsPipeline dvc = do
 	vertShaderCode <- BS.readFile "shaders/vert.spv"
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
-	pure ()
+	vertShaderModule <- createShaderModule dvc vertShaderCode
+	fragShaderModule <- createShaderModule dvc fragShaderCode
+
+	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
+	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
+
+createShaderModule :: Vk.Device -> BS.ByteString -> IO Vk.ShaderModule
+createShaderModule dvc code = do
+	let	createInfo = Vk.ShaderModuleCreateInfo {
+			Vk.shaderModuleCreateInfoNext = Nothing,
+			Vk.shaderModuleCreateInfoFlags =
+				Vk.I.ShaderModuleCreateFlagsZero,
+			Vk.shaderModuleCreateInfoCode = code }
+	Vk.createShaderModule @() @() dvc createInfo Nothing
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
