@@ -6,11 +6,14 @@
 module Vulkan.Pipeline.ShaderStage.Internal where
 
 import Foreign.Storable
+import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Shader
+import Vulkan.ShaderStageFlagBits
 import Vulkan.Pipeline.ShaderStage.Variables
 
 #include <vulkan/vulkan.h>
@@ -39,6 +42,15 @@ struct "PipelineShaderStageCreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		[| #{poke VkPipelineShaderStageCreateInfo, pNext} |]),
 	("flags", ''PipelineShaderStageCreateFlags,
 		[| #{peek VkPipelineShaderStageCreateInfo, flags} |],
-		[| #{poke VkPipelineShaderStageCreateInfo, flags} |])
+		[| #{poke VkPipelineShaderStageCreateInfo, flags} |]),
+	("stage", ''ShaderStageFlags,
+		[| #{peek VkPipelineShaderStageCreateInfo, stage} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, stage} |]),
+	("module", ''ShaderModule,
+		[| #{peek VkPipelineShaderStageCreateInfo, module} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, module} |]),
+	("pName", ''CString,
+		[| #{peek VkPipelineShaderStageCreateInfo, pName} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, pName} |])
 	]
 	[''Show]

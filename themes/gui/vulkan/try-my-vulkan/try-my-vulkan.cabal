@@ -53,6 +53,7 @@ library
       Vulkan.Pipeline.ShaderStage.Variables
       Vulkan.Shader
       Vulkan.Shader.Internal
+      Vulkan.ShaderStageFlagBits
   other-modules:
       Paths_try_my_vulkan
   hs-source-dirs:
