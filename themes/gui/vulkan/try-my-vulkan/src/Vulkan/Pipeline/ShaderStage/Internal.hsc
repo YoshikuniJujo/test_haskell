@@ -59,6 +59,5 @@ struct "PipelineShaderStageCreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		[| #{peek VkPipelineShaderStageCreateInfo,
 			pSpecializationInfo} |],
 		[| #{poke VkPipelineShaderStageCreateInfo,
-			pSpecializationInfo} |])
-	]
+			pSpecializationInfo} |]) ]
 	[''Show]

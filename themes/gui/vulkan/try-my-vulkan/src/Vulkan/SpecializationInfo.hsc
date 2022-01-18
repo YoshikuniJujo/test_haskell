@@ -20,6 +20,7 @@ data SpecializationInfo = SpecializationInfo {
 	specializationInfoMapEntries :: [I.SpecializationMapEntry],
 	specializationInfoDataSize :: #{type size_t},
 	specializationInfoPData :: ForeignPtr () }
+	deriving Show
 
 specializationInfoToC ::
 	SpecializationInfo -> (I.SpecializationInfo -> IO a) -> IO a

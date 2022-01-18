@@ -49,6 +49,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Internal
       Vulkan.Pipeline.ShaderStage.Variables
       Vulkan.Shader
