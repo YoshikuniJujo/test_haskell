@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.ShaderStage.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Enum
@@ -14,6 +15,7 @@ import Data.Word
 import Vulkan.Base
 import Vulkan.Shader
 import Vulkan.ShaderStageFlagBits
+import Vulkan.SpecializationInfo.Internal
 import Vulkan.Pipeline.ShaderStage.Variables
 
 #include <vulkan/vulkan.h>
@@ -29,6 +31,7 @@ enum "PipelineShaderStageCreateFlagBits"
 	]
 
 type PipelineShaderStageCreateFlags = PipelineShaderStageCreateFlagBits
+type PtrSpecializationInfo = Ptr SpecializationInfo
 
 struct "PipelineShaderStageCreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		#{alignment VkPipelineShaderStageCreateInfo} [
@@ -51,6 +54,11 @@ struct "PipelineShaderStageCreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		[| #{poke VkPipelineShaderStageCreateInfo, module} |]),
 	("pName", ''CString,
 		[| #{peek VkPipelineShaderStageCreateInfo, pName} |],
-		[| #{poke VkPipelineShaderStageCreateInfo, pName} |])
+		[| #{poke VkPipelineShaderStageCreateInfo, pName} |]),
+	("pSpecializationInfo", ''PtrSpecializationInfo,
+		[| #{peek VkPipelineShaderStageCreateInfo,
+			pSpecializationInfo} |],
+		[| #{poke VkPipelineShaderStageCreateInfo,
+			pSpecializationInfo} |])
 	]
 	[''Show]

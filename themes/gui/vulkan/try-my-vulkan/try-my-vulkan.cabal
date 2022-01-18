@@ -54,6 +54,8 @@ library
       Vulkan.Shader
       Vulkan.Shader.Internal
       Vulkan.ShaderStageFlagBits
+      Vulkan.SpecializationInfo
+      Vulkan.SpecializationInfo.Internal
   other-modules:
       Paths_try_my_vulkan
   hs-source-dirs:
