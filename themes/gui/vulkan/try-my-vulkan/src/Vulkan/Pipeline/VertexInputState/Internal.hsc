@@ -5,14 +5,41 @@
 
 module Vulkan.Pipeline.VertexInputState.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
+import Foreign.C.Enum
 import Foreign.C.Struct
+import Data.Word
 
 import Vulkan.Base
 
 import qualified Vulkan.StructureType as SType
 
 #include <vulkan/vulkan.h>
+
+enum "PipelineVertexInputStateCreateFlags"
+		''#{type VkPipelineVertexInputStateCreateFlags}
+		[''Show, ''Storable] [
+	("PipelineVertexInputStateCreateFlagsZero", 0) ]
+
+enum "VertexInputRate" ''#{type VkVertexInputRate} [''Show, ''Storable] [
+	("VertexInputRateVertex", #{const VK_VERTEX_INPUT_RATE_VERTEX}),
+	("VertexInputRateInatance", #{const VK_VERTEX_INPUT_RATE_INSTANCE}) ]
+
+struct "VertexInputBindingDescription" #{size VkVertexInputBindingDescription}
+		#{alignment VkVertexInputBindingDescription} [
+	("binding", ''#{type uint32_t},
+		[| #{peek VkVertexInputBindingDescription, binding} |],
+		[| #{poke VkVertexInputBindingDescription, binding} |]),
+	("stride", ''#{type uint32_t},
+		[| #{peek VkVertexInputBindingDescription, stride} |],
+		[| #{poke VkVertexInputBindingDescription, stride} |]),
+	("inputRate", ''VertexInputRate,
+		[| #{peek VkVertexInputBindingDescription, inputRate} |],
+		[| #{poke VkVertexInputBindingDescription, inputRate} |]) ]
+	[''Show, ''Storable]
+
+type PtrVertexInputBindingDescription = Ptr VertexInputBindingDescription
 
 struct "PipelineVertexInputStateCreateInfo"
 		#{size VkPipelineVertexInputStateCreateInfo}
@@ -22,6 +49,19 @@ struct "PipelineVertexInputStateCreateInfo"
 			p SType.pipelineVertexInputStateCreateInfo |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkPipelineVertexInputStateCreateInfo, pNext} |],
-		[| #{poke VkPipelineVertexInputStateCreateInfo, pNext} |])
+		[| #{poke VkPipelineVertexInputStateCreateInfo, pNext} |]),
+	("flags", ''PipelineVertexInputStateCreateFlags,
+		[| #{peek VkPipelineVertexInputStateCreateInfo, flags} |],
+		[| #{poke VkPipelineVertexInputStateCreateInfo, flags} |]),
+	("vertexBindingDescriptionCount", ''#{type uint32_t},
+		[| #{peek VkPipelineVertexInputStateCreateInfo,
+			vertexBindingDescriptionCount} |],
+		[| #{poke VkPipelineVertexInputStateCreateInfo,
+			vertexBindingDescriptionCount} |]),
+	("pVertexBindingDescriptions", ''PtrVertexInputBindingDescription,
+		[| #{peek VkPipelineVertexInputStateCreateInfo,
+			pVertexBindingDescriptions} |],
+		[| #{poke VkPipelineVertexInputStateCreateInfo,
+			pVertexBindingDescriptions} |])
 	]
 	[''Show]
