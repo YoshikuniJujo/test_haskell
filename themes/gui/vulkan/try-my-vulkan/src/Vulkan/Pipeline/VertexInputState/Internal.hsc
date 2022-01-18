@@ -12,6 +12,7 @@ import Foreign.C.Struct
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Format
 
 import qualified Vulkan.StructureType as SType
 
@@ -41,6 +42,25 @@ struct "VertexInputBindingDescription" #{size VkVertexInputBindingDescription}
 
 type PtrVertexInputBindingDescription = Ptr VertexInputBindingDescription
 
+struct "VertexInputAttributeDescription"
+		#{size VkVertexInputAttributeDescription}
+		#{alignment VkVertexInputAttributeDescription} [
+	("location", ''#{type uint32_t},
+		[| #{peek VkVertexInputAttributeDescription, location} |],
+		[| #{poke VkVertexInputAttributeDescription, location} |]),
+	("binding", ''#{type uint32_t},
+		[| #{peek VkVertexInputAttributeDescription, binding} |],
+		[| #{poke VkVertexInputAttributeDescription, binding} |]),
+	("format", ''Format,
+		[| #{peek VkVertexInputAttributeDescription, format} |],
+		[| #{poke VkVertexInputAttributeDescription, format} |]),
+	("offset", ''#{type uint32_t},
+		[| #{peek VkVertexInputAttributeDescription, offset} |],
+		[| #{poke VkVertexInputAttributeDescription, offset} |]) ]
+	[''Show, ''Storable]
+
+type PtrVertexInputAttributeDescription = Ptr VertexInputAttributeDescription
+
 struct "PipelineVertexInputStateCreateInfo"
 		#{size VkPipelineVertexInputStateCreateInfo}
 		#{alignment VkPipelineVertexInputStateCreateInfo} [
@@ -62,6 +82,15 @@ struct "PipelineVertexInputStateCreateInfo"
 		[| #{peek VkPipelineVertexInputStateCreateInfo,
 			pVertexBindingDescriptions} |],
 		[| #{poke VkPipelineVertexInputStateCreateInfo,
-			pVertexBindingDescriptions} |])
-	]
-	[''Show]
+			pVertexBindingDescriptions} |]),
+	("vertexAttributeDescriptionCount", ''#{type uint32_t},
+		[| #{peek VkPipelineVertexInputStateCreateInfo,
+			vertexAttributeDescriptionCount} |],
+		[| #{poke VkPipelineVertexInputStateCreateInfo,
+			vertexAttributeDescriptionCount} |]),
+	("pVertexAttributeDescriptions", ''PtrVertexInputAttributeDescription,
+		[| #{peek VkPipelineVertexInputStateCreateInfo,
+			pVertexAttributeDescriptions} |],
+		[| #{poke VkPipelineVertexInputStateCreateInfo,
+			pVertexAttributeDescriptions} |]) ]
+	[''Show, ''Storable]
