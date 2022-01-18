@@ -25,7 +25,8 @@ data PipelineShaderStageCreateInfo n = PipelineShaderStageCreateInfo {
 	pipelineShaderStageCreateInfoStage :: ShaderStageFlagBits,
 	pipelineShaderStageCreateInfoModule :: ShaderModule,
 	pipelineShaderStageCreateInfoName :: String,
-	pipelineShaderStageCreateInfoSpecializationInfo :: SpecializationInfo }
+	pipelineShaderStageCreateInfoSpecializationInfo ::
+		Maybe SpecializationInfo }
 	deriving Show
 
 pipelineShaderStageCreateInfoToC :: Pointable n =>
@@ -37,11 +38,15 @@ pipelineShaderStageCreateInfoToC PipelineShaderStageCreateInfo {
 	pipelineShaderStageCreateInfoStage = stg,
 	pipelineShaderStageCreateInfoModule = mdl,
 	pipelineShaderStageCreateInfoName = nm,
-	pipelineShaderStageCreateInfoSpecializationInfo = si } = runContT do
+	pipelineShaderStageCreateInfoSpecializationInfo = msi } = runContT do
 	(castPtr -> pnxt) <- ContT $ withPointerMaybe mnxt
 	cnm <- ContT $ withCString utf8 nm
-	I.SpecializationInfo_ fsi <- ContT $ specializationInfoToC si
-	psi <- ContT $ withForeignPtr fsi
+	psi <- case msi of
+		Nothing -> pure NullPtr
+		Just si -> do
+			I.SpecializationInfo_ fsi <-
+				ContT $ specializationInfoToC si
+			ContT $ withForeignPtr fsi
 	pure I.PipelineShaderStageCreateInfo {
 		I.pipelineShaderStageCreateInfoSType = (),
 		I.pipelineShaderStageCreateInfoPNext = pnxt,

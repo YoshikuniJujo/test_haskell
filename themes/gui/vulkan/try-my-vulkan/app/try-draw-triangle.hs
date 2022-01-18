@@ -39,6 +39,9 @@ import qualified Vulkan.Khr.Swapchain.Internal as Vk.Khr.I
 
 import qualified Vulkan.Shader as Vk
 import qualified Vulkan.Shader.Internal as Vk.I
+import qualified Vulkan.Pipeline.ShaderStage as Vk
+import qualified Vulkan.Pipeline.ShaderStage.Internal as Vk.I
+import qualified Vulkan.ShaderStageFlagBits as Vk
 
 import qualified Glfw as Glfw
 
@@ -503,7 +506,29 @@ createGraphicsPipeline dvc = do
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
 	vertShaderModule <- createShaderModule dvc vertShaderCode
 	fragShaderModule <- createShaderModule dvc fragShaderCode
-
+	let	vertShaderStageInfo = Vk.PipelineShaderStageCreateInfo {
+			Vk.pipelineShaderStageCreateInfoNext = Nothing,
+			Vk.pipelineShaderStageCreateInfoFlags =
+				Vk.I.PipelineShaderStageCreateFlagBitsZero,
+			Vk.pipelineShaderStageCreateInfoStage =
+				Vk.ShaderStageVertexBit,
+			Vk.pipelineShaderStageCreateInfoModule =
+				vertShaderModule,
+			Vk.pipelineShaderStageCreateInfoName = "main",
+			Vk.pipelineShaderStageCreateInfoSpecializationInfo =
+				Nothing }
+		fragShaderStageInfo = Vk.PipelineShaderStageCreateInfo {
+			Vk.pipelineShaderStageCreateInfoNext = Nothing,
+			Vk.pipelineShaderStageCreateInfoFlags =
+				Vk.I.PipelineShaderStageCreateFlagBitsZero,
+			Vk.pipelineShaderStageCreateInfoStage =
+				Vk.ShaderStageFragmentBit,
+			Vk.pipelineShaderStageCreateInfoModule =
+				fragShaderModule,
+			Vk.pipelineShaderStageCreateInfoName = "main",
+			Vk.pipelineShaderStageCreateInfoSpecializationInfo =
+				Nothing }
+		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 
