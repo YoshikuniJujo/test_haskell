@@ -1,5 +1,7 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-} -- , MonoLocalBinds #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module CheckOverlappable where
@@ -18,3 +20,12 @@ class Bar a b where
 
 instance Bar a b where
 	bar = foo
+
+baz :: Foo a b => a -> b -> Int
+baz = foo
+
+class Qux a b where
+	qux :: a -> b -> Int
+
+instance Foo a b => Qux a b where
+	qux = foo

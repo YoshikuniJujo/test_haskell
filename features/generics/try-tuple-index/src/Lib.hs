@@ -37,9 +37,5 @@ instance GFindIndex (a :*: b :*: c) t => GFindIndex ((a :*: b) :*: c) t where
 instance FindIndex (a, b) t where
 	findIndex = gFindIndex @(Rep (a, b)) @t
 
-instance FindIndex (t, b, c) t
-instance FindIndex (a, t, c) t
-instance FindIndex (a, b, t) t
-
-instance FindIndex (Double, Int, (), Bool) Int
-
+instance GFindIndex (Rep (a, b, c)) t => FindIndex (a, b, c) t
+instance GFindIndex (Rep (a, b, c, d)) t => FindIndex (a, b, c, d) t
