@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      CheckOverlappable
       Lib
   other-modules:
       Paths_try_tuple_index
