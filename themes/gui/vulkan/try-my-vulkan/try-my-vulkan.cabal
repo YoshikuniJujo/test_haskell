@@ -52,6 +52,10 @@ library
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Internal
       Vulkan.Pipeline.ShaderStage.Variables
+      Vulkan.Pipeline.VertexInputState
+      Vulkan.Pipeline.VertexInputState.GetBind
+      Vulkan.Pipeline.VertexInputState.GetOffset
+      Vulkan.Pipeline.VertexInputState.Intermediate
       Vulkan.Pipeline.VertexInputState.Internal
       Vulkan.Shader
       Vulkan.Shader.Internal
