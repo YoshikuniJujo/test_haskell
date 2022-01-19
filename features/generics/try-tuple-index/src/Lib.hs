@@ -3,6 +3,7 @@
 {-# LANGUAGE KindSignatures, TypeOperators #-} -- , DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes, DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
@@ -39,3 +40,11 @@ instance FindIndex (a, b) t where
 
 instance GFindIndex (Rep (a, b, c)) t => FindIndex (a, b, c) t
 instance GFindIndex (Rep (a, b, c, d)) t => FindIndex (a, b, c, d) t
+
+data Foo = Foo {
+	fooInt :: Int,
+	fooDouble :: Double,
+	fooBool :: Bool }
+	deriving (Show, Generic)
+
+instance GFindIndex (Rep Foo) t => FindIndex Foo t
