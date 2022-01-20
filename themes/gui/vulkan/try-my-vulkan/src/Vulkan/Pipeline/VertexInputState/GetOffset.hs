@@ -47,3 +47,8 @@ instance GFindOffset (Rep (a, b, c, d)) t => FindOffset (a, b, c, d) t
 sampleFun :: forall a b c .
 	(Storable a, FindOffset (a, b, c) b) => (a, b, c) -> b -> Maybe Int
 sampleFun _ _ = findOffset @(a, b, c) @b
+
+{-
+offset :: Int -> Int -> Int -> Int
+offset sz algn os =
+-}
