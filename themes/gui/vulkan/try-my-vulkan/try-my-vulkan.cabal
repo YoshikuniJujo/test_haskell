@@ -29,6 +29,7 @@ library
       Data.ByteString.AsUint32T
       Glfw
       ThEnv
+      Try.GetSizeAlignment
       Vulkan
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Internal
