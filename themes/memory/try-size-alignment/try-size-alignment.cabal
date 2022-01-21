@@ -27,14 +27,15 @@ library
   exposed-modules:
       Data.Type.TypeFam
       Data.Type.TypeValMap
-      Foreign.Storable.SizeAlignment
       GHC.Generics.TypeFam
+      Try.SizeAlignment
   other-modules:
       Paths_try_size_alignment
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , size-alignment-list
   default-language: Haskell2010
 
 executable try-size-alignment-exe
@@ -46,6 +47,7 @@ executable try-size-alignment-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , size-alignment-list
     , try-size-alignment
   default-language: Haskell2010
 
@@ -59,5 +61,6 @@ test-suite try-size-alignment-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , size-alignment-list
     , try-size-alignment
   default-language: Haskell2010

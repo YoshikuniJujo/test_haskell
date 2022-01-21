@@ -3,7 +3,18 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    name: size-alignment-list
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/size-alignment-list.git
+    pantry-tree:
+      size: 963
+      sha256: 582f1ffd57713bf4e9221f3b9a3e79abfcc7394df4eca056d62d31bd29526722
+    commit: 5e4434493101055206ebb59d62f3d870ce5a0214
+  original:
+    git: https://github.com/YoshikuniJujo/size-alignment-list.git
+    commit: 5e4434493101055206ebb59d62f3d870ce5a0214
 snapshots:
 - completed:
     size: 586120
