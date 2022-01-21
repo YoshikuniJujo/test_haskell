@@ -42,7 +42,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
-  commit: 5e4434493101055206ebb59d62f3d870ce5a0214
+  commit: d910c73a45bead3bad9821a86381f294fdce2a6a
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

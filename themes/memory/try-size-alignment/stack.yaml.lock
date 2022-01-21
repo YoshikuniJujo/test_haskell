@@ -9,12 +9,12 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
     pantry-tree:
-      size: 963
-      sha256: 582f1ffd57713bf4e9221f3b9a3e79abfcc7394df4eca056d62d31bd29526722
-    commit: 5e4434493101055206ebb59d62f3d870ce5a0214
+      size: 964
+      sha256: 47cc9fe3913d9a45222a613ec6730cf8e6d68745e8c1ea6392f2aeedb819fea7
+    commit: d910c73a45bead3bad9821a86381f294fdce2a6a
   original:
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
-    commit: 5e4434493101055206ebb59d62f3d870ce5a0214
+    commit: d910c73a45bead3bad9821a86381f294fdce2a6a
 snapshots:
 - completed:
     size: 586120
