@@ -3,12 +3,13 @@
 
 module Try.GetSizeAlignment where
 
-import Vulkan.Pipeline.VertexInputState.GetSizeAlignment
+import Foreign.Storable.SizeAlignment
+-- import Vulkan.Pipeline.VertexInputState.GetSizeAlignment
 
 sampleSizeAlignmentList1, sampleSizeAlignmentList2 :: Maybe [(Size, Alignment)]
-sampleSizeAlignmentList1 = findSizeAlignmentList @(Int, Float, Bool, Char) @Bool
-sampleSizeAlignmentList2 = findSizeAlignmentList @(Int, (), Float, Word, Bool, Char) @Bool
+sampleSizeAlignmentList1 = sizeAlignmentListUntil @Bool @(Int, Float, Bool, Char)
+sampleSizeAlignmentList2 = sizeAlignmentListUntil @Bool @(Int, (), Float, Word, Bool, Char)
 
 sampleFindOffset1, sampleFindOffset2 :: Maybe Offset
-sampleFindOffset1 = findOffset @(Int, Float, Bool, Char) @Bool
-sampleFindOffset2 = findOffset @(Int, (), Float, Word, Bool, Char) @Bool
+sampleFindOffset1 = offsetOf @Bool @(Int, Float, Bool, Char)
+sampleFindOffset2 = offsetOf @Bool @(Int, (), Float, Word, Bool, Char)

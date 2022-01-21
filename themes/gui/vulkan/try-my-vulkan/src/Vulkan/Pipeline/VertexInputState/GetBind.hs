@@ -9,8 +9,7 @@
 module Vulkan.Pipeline.VertexInputState.GetBind where
 
 import GHC.Generics
-
-import Vulkan.Pipeline.VertexInputState.GetOffset
+import Foreign.Storable.SizeAlignment
 
 class FindBind a t where
 	findBind :: Maybe (Int, Int)
@@ -20,16 +19,16 @@ class FindBind a t where
 
 class GFoundBind (f :: * -> *) t where gFoundBind :: Maybe Int
 
-instance FindOffset a t => GFoundBind (K1 i [a]) t where
-	gFoundBind = findOffset @a @t
+instance SizeAlignmentListUntil t a => GFoundBind (K1 i [a]) t where
+	gFoundBind = offsetOf @t @a
 
 instance GFoundBind a t => GFoundBind (M1 i c a) t where
 	gFoundBind = gFoundBind @a @t
 
 class GFindBind (f :: * -> *) t where gFindBind :: Maybe (Int, Int)
 
-instance FindOffset a t => GFindBind (K1 i [a]) t where
-	gFindBind = (0 ,) <$> findOffset @a @t
+instance SizeAlignmentListUntil t a => GFindBind (K1 i [a]) t where
+	gFindBind = (0 ,) <$> offsetOf @t @a
 
 instance GFindBind a t => GFindBind (M1 i c a) t where
 	gFindBind = gFindBind @a @t
@@ -45,5 +44,7 @@ instance (GFoundBind a t, GFindBind b t) =>
 instance GFindBind (a :*: b :*: c) t => GFindBind ((a :*: b) :*: c) t where
 	gFindBind = gFindBind @(a :*: b :*: c) @t
 
-instance (FindOffset a t, FindOffset b t, FindOffset c t) =>
+instance (
+	SizeAlignmentListUntil t a,
+	SizeAlignmentListUntil t b, SizeAlignmentListUntil t c) =>
 	FindBind ([a], [b], [c]) t
