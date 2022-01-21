@@ -1,0 +1,63 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-size-alignment
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-size-alignment#readme>
+homepage:       https://github.com/githubuser/try-size-alignment#readme
+bug-reports:    https://github.com/githubuser/try-size-alignment/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2022 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-size-alignment
+
+library
+  exposed-modules:
+      Data.Type.TypeFam
+      Data.Type.TypeValMap
+      Foreign.Storable.SizeAlignment
+      GHC.Generics.TypeFam
+  other-modules:
+      Paths_try_size_alignment
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable try-size-alignment-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_size_alignment
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-size-alignment
+  default-language: Haskell2010
+
+test-suite try-size-alignment-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_size_alignment
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , try-size-alignment
+  default-language: Haskell2010
