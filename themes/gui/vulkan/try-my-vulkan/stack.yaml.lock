@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    name: c-struct
-    version: 0.1.1.0
-    git: https://github.com/YoshikuniJujo/c-struct
+    name: size-alignment-list
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/size-alignment-list.git
     pantry-tree:
-      size: 692
-      sha256: cdadd070f121600b11667eeb4614224e0ae086ee20d0503f2c729eb8c96528b3
-    commit: c3df02a5af40a7fc81b59d57836bed9e25f0b41e
+      size: 964
+      sha256: 47cc9fe3913d9a45222a613ec6730cf8e6d68745e8c1ea6392f2aeedb819fea7
+    commit: d910c73a45bead3bad9821a86381f294fdce2a6a
   original:
-    git: https://github.com/YoshikuniJujo/c-struct
-    commit: c3df02a5af40a7fc81b59d57836bed9e25f0b41e
+    git: https://github.com/YoshikuniJujo/size-alignment-list.git
+    commit: d910c73a45bead3bad9821a86381f294fdce2a6a
 snapshots:
 - completed:
-    size: 586106
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/20.yaml
-    sha256: 8699812d2b2c1f83d6ad1261de9cf628ed36a1cfc14f19d67188e005e7a3a39d
-  original: lts-18.20
+    size: 586120
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/22.yaml
+    sha256: f9970d6f25c63e3e4265aa8e9c69a047ba8919d1107e4996bdd7555b75aad0eb
+  original: lts-18.22

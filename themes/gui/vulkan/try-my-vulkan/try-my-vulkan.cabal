@@ -57,7 +57,6 @@ library
       Vulkan.Pipeline.VertexInputState.GetBind
       Vulkan.Pipeline.VertexInputState.GetOffset
       Vulkan.Pipeline.VertexInputState.GetSizeAlignment
-      Vulkan.Pipeline.VertexInputState.GetSizeAlignmentAll
       Vulkan.Pipeline.VertexInputState.Intermediate
       Vulkan.Pipeline.VertexInputState.Internal
       Vulkan.Shader
@@ -84,6 +83,7 @@ library
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
   default-language: Haskell2010
 
@@ -106,6 +106,7 @@ executable try-allocation
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
@@ -129,6 +130,7 @@ executable try-draw-triangle
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
@@ -152,6 +154,7 @@ executable try-glm
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
@@ -174,6 +177,7 @@ executable try-my-vulkan-exe
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , try-my-vulkan
   default-language: Haskell2010
@@ -197,6 +201,7 @@ test-suite try-my-vulkan-test
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , try-my-vulkan
   default-language: Haskell2010

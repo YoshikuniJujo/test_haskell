@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-18.20
+resolver: lts-18.22
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,8 +40,8 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- git: https://github.com/YoshikuniJujo/c-struct
-  commit: c3df02a5af40a7fc81b59d57836bed9e25f0b41e
+- git: https://github.com/YoshikuniJujo/size-alignment-list.git
+  commit: d910c73a45bead3bad9821a86381f294fdce2a6a
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
