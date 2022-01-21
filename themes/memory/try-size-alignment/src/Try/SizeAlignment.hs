@@ -11,4 +11,4 @@ import Foreign.Storable.SizeAlignment
 
 data Foo = Foo Bool Int Double deriving (Show, Generic)
 instance SizeAlignmentList Foo
-instance MapStorableUntil t '[Bool, Int, Double] => SizeAlignmentListUntil t Foo
+instance MapStorableUntil t Foo => SizeAlignmentListUntil t Foo
