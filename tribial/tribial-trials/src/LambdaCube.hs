@@ -1,7 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE KindSignatures, DataKinds, ConstraintKinds, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes, InstanceSigs #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module LambdaCube where
@@ -53,3 +53,9 @@ sampleTypeNames = mapTypeVal2 @TypeName @[Int, Double, Bool] typeName'
 
 sampleTypeSizes :: [Int]
 sampleTypeSizes = mapTypeVal2 @Storable @[Int, Double, Bool, ()] sizeOf
+
+typeSizes :: forall (as :: [Type]) . MapTypeVal2 Storable as => [Int]
+typeSizes = mapTypeVal2 @Storable @as sizeOf
+
+typeSizeAlignments :: forall (as :: [Type]) . MapTypeVal2 Storable as => [(Int, Int)]
+typeSizeAlignments = mapTypeVal2 @Storable @as (\x -> (sizeOf x, alignment x))
