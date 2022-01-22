@@ -25,7 +25,7 @@ enum "PipelineVertexInputStateCreateFlags"
 
 enum "VertexInputRate" ''#{type VkVertexInputRate} [''Show, ''Storable] [
 	("VertexInputRateVertex", #{const VK_VERTEX_INPUT_RATE_VERTEX}),
-	("VertexInputRateInatance", #{const VK_VERTEX_INPUT_RATE_INSTANCE}) ]
+	("VertexInputRateInstance", #{const VK_VERTEX_INPUT_RATE_INSTANCE}) ]
 
 struct "VertexInputBindingDescription" #{size VkVertexInputBindingDescription}
 		#{alignment VkVertexInputBindingDescription} [

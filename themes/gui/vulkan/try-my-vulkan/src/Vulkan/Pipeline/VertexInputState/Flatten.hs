@@ -14,6 +14,7 @@ type family GetType (x :: Type -> Type) :: Type where
 	GetType (M1 m i a) = GetType a
 
 type family Flatten (x :: Type -> Type) :: [Type] where
+	Flatten U1 = '[]
 	Flatten (K1 i a) = '[a]
 	Flatten (M1 m i a) = Flatten a
 	Flatten (M1 m i a :*: ts) = GetType a ': Flatten ts
