@@ -2,8 +2,9 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE DefaultSignatures #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PolyKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.VertexInputState.BindingStrideList where
@@ -14,21 +15,28 @@ import Data.Kind
 
 import Vulkan.Pipeline.VertexInputState.Flatten
 
-class BindingStrideList a where
-	bindingStrideList :: [SizeAlignment]
+class BindingStrideList a k v where
+	bindingStrideList :: [(SizeAlignment, v)]
 
 	default bindingStrideList ::
-		BindingStrideListList (Flatten (Rep a)) => [SizeAlignment]
-	bindingStrideList = bindingStrideListList @(Flatten (Rep a))
+		BindingStrideListList (Flatten (Rep a)) k v => [(SizeAlignment, v)]
+	bindingStrideList = bindingStrideListList @(Flatten (Rep a)) @k @v
 
-instance (BindingStrideListList (Flatten (Rep a))) => BindingStrideList a
+instance (BindingStrideListList (Flatten (Rep a)) k v) => BindingStrideList a k v
 
-class BindingStrideListList (ts :: [Type]) where
-	bindingStrideListList :: [SizeAlignment]
+class BindingStrideListList (ts :: [Type]) k v where
+	bindingStrideListList :: [(SizeAlignment, v)]
 
-instance BindingStrideListList '[] where bindingStrideListList = []
+instance BindingStrideListList '[] k v where bindingStrideListList = []
 
-instance (SizeAlignmentList t, BindingStrideListList ts) =>
-	BindingStrideListList (t ': ts) where
+instance (SizeAlignmentList t, BindingStrideListList ts k v, TypeVal a v) =>
+	BindingStrideListList (AddType [t] (a :: k) ': ts) k v where
 	bindingStrideListList =
-		wholeSizeAlignment @t : bindingStrideListList @ts
+		(wholeSizeAlignment @t, typeVal @k @a @v) : bindingStrideListList @ts @k @v
+
+newtype AddType v t = AT v deriving Show
+
+class TypeVal (t :: k) v where typeVal :: v
+
+instance TypeVal 'False Int where typeVal = 123
+instance TypeVal 'True Int where typeVal = 321
