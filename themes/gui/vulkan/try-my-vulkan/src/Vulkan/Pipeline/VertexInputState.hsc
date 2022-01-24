@@ -30,6 +30,10 @@ samplePipelineVertexInputStateCreateInfo0 ::
 	PipelineVertexInputStateCreateInfo () () '[]
 samplePipelineVertexInputStateCreateInfo0 = undefined
 
+type SamplePipelineVertexInputStateCreateInfoType = (
+		(AddType [(Int, Double)] 'VertexInputRateVertex),
+		(AddType [(Bool, Float)] 'VertexInputRateVertex) )
+
 samplePipelineVertexInputStateCreateInfo ::
 	PipelineVertexInputStateCreateInfo () (
 		(AddType [(Int, Double)] 'VertexInputRateVertex),
@@ -60,10 +64,12 @@ pipelineVertexInputStateCreateInfoToBindingDescriptionRaw :: forall n vs ts .
 pipelineVertexInputStateCreateInfoToBindingDescriptionRaw _ =
 	bindingStrideList @vs @VertexInputRate @In.VertexInputRate
 
+{-
 class PipelineVertexInputStateCreateInfoAttributeDescription (ts :: [*]) where
 	pipelineVertexInputStateCreateInfoToAttributeDescription ::
 		PipelineVertexInputStateCreateInfo n vs ts ->
 		[In.VertexInputAttributeDescription]
+		-}
 
 data VertexInputRate = VertexInputRateVertex | VertexInputRateInstance
 	deriving Show
