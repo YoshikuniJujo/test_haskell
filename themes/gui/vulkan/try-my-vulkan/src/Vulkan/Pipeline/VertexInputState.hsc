@@ -1,8 +1,11 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE KindSignatures, DataKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -13,7 +16,9 @@ module Vulkan.Pipeline.VertexInputState where
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
 
+import Vulkan.Format
 import Vulkan.Pipeline.VertexInputState.BindingStrideList
+import Vulkan.Pipeline.VertexInputState.GetBindingOffset
 import Vulkan.Pipeline.VertexInputState.Flatten
 
 import qualified Vulkan.Pipeline.VertexInputState.Intermediate as Im
@@ -37,7 +42,7 @@ type SamplePipelineVertexInputStateCreateInfoType = (
 samplePipelineVertexInputStateCreateInfo ::
 	PipelineVertexInputStateCreateInfo () (
 		(AddType [(Int, Double)] 'VertexInputRateVertex),
-		(AddType [(Bool, Float)] 'VertexInputRateVertex)) '[]
+		(AddType [(Bool, Float)] 'VertexInputRateVertex)) '[Double, Float, Bool, Int]
 samplePipelineVertexInputStateCreateInfo = undefined
 
 pipelineVertexInputStateCreateInfoToBindingDescription ::
@@ -64,12 +69,33 @@ pipelineVertexInputStateCreateInfoToBindingDescriptionRaw :: forall n vs ts .
 pipelineVertexInputStateCreateInfoToBindingDescriptionRaw _ =
 	bindingStrideList @vs @VertexInputRate @In.VertexInputRate
 
-{-
-class PipelineVertexInputStateCreateInfoAttributeDescription (ts :: [*]) where
+class PipelineVertexInputStateCreateInfoAttributeDescription vs (ts :: [*]) where
 	pipelineVertexInputStateCreateInfoToAttributeDescription ::
 		PipelineVertexInputStateCreateInfo n vs ts ->
 		[In.VertexInputAttributeDescription]
-		-}
+
+instance PipelineVertexInputStateCreateInfoAttributeDescription vs '[] where
+	pipelineVertexInputStateCreateInfoToAttributeDescription _ = []
+
+instance (
+	BindingOffset vs t, Formattable t,
+	PipelineVertexInputStateCreateInfoAttributeDescription vs ts) =>
+	PipelineVertexInputStateCreateInfoAttributeDescription vs (t ': ts) where
+	pipelineVertexInputStateCreateInfoToAttributeDescription :: forall n .
+		PipelineVertexInputStateCreateInfo n vs (t ': ts) ->
+		[In.VertexInputAttributeDescription]
+	pipelineVertexInputStateCreateInfoToAttributeDescription _ = In.VertexInputAttributeDescription {
+		In.vertexInputAttributeDescriptionLocation = 0,
+		In.vertexInputAttributeDescriptionBinding = bd,
+		In.vertexInputAttributeDescriptionFormat = formatOf @t,
+		In.vertexInputAttributeDescriptionOffset = os } : (succLocation <$> ads)
+		where
+		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @vs @t
+		ads = pipelineVertexInputStateCreateInfoToAttributeDescription @vs @ts undefined
+
+succLocation :: In.VertexInputAttributeDescription -> In.VertexInputAttributeDescription
+succLocation ad@In.VertexInputAttributeDescription { In.vertexInputAttributeDescriptionLocation = l } =
+	ad { In.vertexInputAttributeDescriptionLocation = l + 1 }
 
 data VertexInputRate = VertexInputRateVertex | VertexInputRateInstance
 	deriving Show
@@ -79,3 +105,10 @@ instance TypeVal 'VertexInputRateVertex In.VertexInputRate where
 
 instance TypeVal 'VertexInputRateInstance In.VertexInputRate where
 	typeVal = In.VertexInputRateInstance
+
+class Formattable a where formatOf :: Format
+
+instance Formattable Double where formatOf = FormatUndefined
+instance Formattable Int where formatOf = FormatUndefined
+instance Formattable Bool where formatOf = FormatUndefined
+instance Formattable Float where formatOf = FormatUndefined
