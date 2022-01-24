@@ -13,16 +13,34 @@ module Vulkan.Pipeline.VertexInputState where
 
 #include <vulkan/vulkan.h>
 
-import GHC.Generics
 import Foreign.Storable.SizeAlignment
 
 import Vulkan.Format
 import Vulkan.Pipeline.VertexInputState.BindingStrideList
 import Vulkan.Pipeline.VertexInputState.GetBindingOffset
-import Vulkan.Pipeline.VertexInputState.Flatten
 
 import qualified Vulkan.Pipeline.VertexInputState.Intermediate as Im
 import qualified Vulkan.Pipeline.VertexInputState.Internal as In
+
+pipelineVertexInputStateCreateInfoToIntermediate :: (
+	BindingStrideList vs VertexInputRate In.VertexInputRate,
+	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
+	PipelineVertexInputStateCreateInfo n vs ts ->
+	Im.PipelineVertexInputStateCreateInfo n
+pipelineVertexInputStateCreateInfoToIntermediate
+	ci@PipelineVertexInputStateCreateInfo {
+		pipelineVertexInputStateCreateInfoNext = mnxt,
+		pipelineVertexInputStateCreateInfoFlags = flgs } =
+	Im.PipelineVertexInputStateCreateInfo {
+		Im.pipelineVertexInputStateCreateInfoNext = mnxt,
+		Im.pipelineVertexInputStateCreateInfoFlags = flgs,
+		Im.pipelineVertexInputStateCreateInfoVertexBindingDescriptions =
+			pipelineVertexInputStateCreateInfoToBindingDescription
+				ci,
+		Im.pipelineVertexInputStateCreateInfoVertexAttributeDescriptions
+			=
+			pipelineVertexInputStateCreateInfoToAttributeDescription
+				ci }
 
 data PipelineVertexInputStateCreateInfo n vs (ts :: [*]) =
 	PipelineVertexInputStateCreateInfo {
@@ -43,10 +61,12 @@ samplePipelineVertexInputStateCreateInfo ::
 	PipelineVertexInputStateCreateInfo () (
 		(AddType [(Int, Double)] 'VertexInputRateVertex),
 		(AddType [(Bool, Float)] 'VertexInputRateVertex)) '[Double, Float, Bool, Int]
-samplePipelineVertexInputStateCreateInfo = undefined
+samplePipelineVertexInputStateCreateInfo = PipelineVertexInputStateCreateInfo {
+	pipelineVertexInputStateCreateInfoNext = Nothing,
+	pipelineVertexInputStateCreateInfoFlags = In.PipelineVertexInputStateCreateFlagsZero }
 
 pipelineVertexInputStateCreateInfoToBindingDescription ::
-	BindingStrideListList (Flatten (Rep vs))
+	BindingStrideList vs
 		VertexInputRate In.VertexInputRate =>
 	PipelineVertexInputStateCreateInfo n vs ts ->
 	[In.VertexInputBindingDescription]
@@ -62,7 +82,7 @@ bindingDescriptionFromRaw sars = (<$> zip [0 ..] sars)
 		In.VertexInputBindingDescription b sz r
 
 pipelineVertexInputStateCreateInfoToBindingDescriptionRaw :: forall n vs ts .
-	BindingStrideListList (Flatten (Rep vs))
+	BindingStrideList vs
 		VertexInputRate In.VertexInputRate =>
 	PipelineVertexInputStateCreateInfo n vs ts ->
 	[(SizeAlignment, In.VertexInputRate)]
