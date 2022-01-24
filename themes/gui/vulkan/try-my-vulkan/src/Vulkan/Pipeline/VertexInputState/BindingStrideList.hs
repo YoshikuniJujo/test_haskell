@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE DefaultSignatures #-}
@@ -35,6 +36,12 @@ instance (SizeAlignmentList t, BindingStrideListList ts k v, TypeVal a v) =>
 		(wholeSizeAlignment @t, typeVal @k @a @v) : bindingStrideListList @ts @k @v
 
 newtype AddType v t = AT v deriving Show
+
+type family SubType t where SubType (AddType v t) = v
+
+type family MapSubType t where
+	MapSubType '[] = '[]
+	MapSubType (AddType v t ': ats) = v ': MapSubType ats
 
 class TypeVal (t :: k) v where typeVal :: v
 

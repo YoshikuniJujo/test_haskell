@@ -57,6 +57,7 @@ library
       Vulkan.Pipeline.VertexInputState.BindingStrideList
       Vulkan.Pipeline.VertexInputState.Flatten
       Vulkan.Pipeline.VertexInputState.GetBind
+      Vulkan.Pipeline.VertexInputState.GetBindingOffset
       Vulkan.Pipeline.VertexInputState.Intermediate
       Vulkan.Pipeline.VertexInputState.Internal
       Vulkan.Shader

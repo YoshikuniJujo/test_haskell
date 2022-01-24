@@ -19,3 +19,7 @@ type family Flatten (x :: Type -> Type) :: [Type] where
 	Flatten (M1 m i a) = Flatten a
 	Flatten (M1 m i a :*: ts) = GetType a ': Flatten ts
 	Flatten ((t1 :*: t2) :*: t3) = Flatten (t1 :*: t2 :*: t3)
+
+type family MapType (f :: Type -> Type) (xs :: [Type]) :: [Type] where
+	MapType _ '[] = '[]
+	MapType f (x ': xs) = f x ': MapType f xs

@@ -11,11 +11,24 @@ module Vulkan.Pipeline.VertexInputState.GetBind where
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
 
+import Vulkan.Pipeline.VertexInputState.Flatten
+import Vulkan.Pipeline.VertexInputState.BindingStrideList
+
+{-
+class FindBindAddType a t where
+	findBindAddType :: Maybe (int, Int)
+
+instance FindBind (MapSubType (Flatten (Rep a))) t => FindBindAddType a t where
+	findBindAddType = findBind @(MapSubType (Flatten (Rep a))) @t
+	-}
+
 class FindBind a t where
 	findBind :: Maybe (Int, Int)
 
 	default findBind :: (Generic a, GFindBind (Rep a) t) => Maybe (Int, Int)
 	findBind = gFindBind @(Rep a) @t
+
+instance (Generic a, GFindBind (Rep a) t) => FindBind a t
 
 class GFoundBind (f :: * -> *) t where gFoundBind :: Maybe Int
 
@@ -44,7 +57,9 @@ instance (GFoundBind a t, GFindBind b t) =>
 instance GFindBind (a :*: b :*: c) t => GFindBind ((a :*: b) :*: c) t where
 	gFindBind = gFindBind @(a :*: b :*: c) @t
 
+{-
 instance (
 	SizeAlignmentListUntil t a,
 	SizeAlignmentListUntil t b, SizeAlignmentListUntil t c) =>
 	FindBind ([a], [b], [c]) t
+	-}
