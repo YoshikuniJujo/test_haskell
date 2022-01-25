@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -42,6 +43,9 @@ import qualified Vulkan.Shader.Internal as Vk.I
 import qualified Vulkan.Pipeline.ShaderStage as Vk
 import qualified Vulkan.Pipeline.ShaderStage.Internal as Vk.I
 import qualified Vulkan.ShaderStageFlagBits as Vk
+
+import qualified Vulkan.Pipeline.VertexInputState as Vk
+import qualified Vulkan.Pipeline.VertexInputState.Internal as Vk.I
 
 import qualified Glfw as Glfw
 
@@ -529,6 +533,11 @@ createGraphicsPipeline dvc = do
 			Vk.pipelineShaderStageCreateInfoSpecializationInfo =
 				Nothing }
 		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
+		vertexInputInfo :: Vk.PipelineVertexInputStateCreateInfo () () '[]
+		vertexInputInfo = Vk.PipelineVertexInputStateCreateInfo {
+			Vk.pipelineVertexInputStateCreateInfoNext = Nothing,
+			Vk.pipelineVertexInputStateCreateInfoFlags =
+				Vk.I.PipelineVertexInputStateCreateFlagsZero }
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 
