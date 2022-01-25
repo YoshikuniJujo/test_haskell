@@ -15,12 +15,22 @@ module Vulkan.Pipeline.VertexInputState where
 
 import Foreign.Storable.SizeAlignment
 
+import Vulkan.Base
 import Vulkan.Format
 import Vulkan.Pipeline.VertexInputState.BindingStrideList
 import Vulkan.Pipeline.VertexInputState.GetBindingOffset
 
 import qualified Vulkan.Pipeline.VertexInputState.Intermediate as Im
 import qualified Vulkan.Pipeline.VertexInputState.Internal as In
+
+pipelineVertexInputStateCreateInfoToC :: (
+	Pointable n,
+	BindingStrideList vs VertexInputRate In.VertexInputRate,
+	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
+	PipelineVertexInputStateCreateInfo n vs ts ->
+	(In.PipelineVertexInputStateCreateInfo -> IO a) -> IO a
+pipelineVertexInputStateCreateInfoToC = Im.pipelineVertexInputStateCreateInfoToC
+	. pipelineVertexInputStateCreateInfoToIntermediate
 
 pipelineVertexInputStateCreateInfoToIntermediate :: (
 	BindingStrideList vs VertexInputRate In.VertexInputRate,
@@ -51,7 +61,10 @@ data PipelineVertexInputStateCreateInfo n vs (ts :: [*]) =
 
 samplePipelineVertexInputStateCreateInfo0 ::
 	PipelineVertexInputStateCreateInfo () () '[]
-samplePipelineVertexInputStateCreateInfo0 = undefined
+samplePipelineVertexInputStateCreateInfo0 = PipelineVertexInputStateCreateInfo {
+	pipelineVertexInputStateCreateInfoNext = Nothing,
+	pipelineVertexInputStateCreateInfoFlags =
+		In.PipelineVertexInputStateCreateFlagsZero }
 
 type SamplePipelineVertexInputStateCreateInfoType = (
 		(AddType [(Int, Double)] 'VertexInputRateVertex),
