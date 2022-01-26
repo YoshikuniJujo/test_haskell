@@ -125,3 +125,7 @@ struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
 	[''Show, ''Storable]
 
 type PtrRect2d = Ptr Rect2d
+
+newtype SampleMask = SampleMask #{type VkSampleMask} deriving Show
+
+type PtrSampleMask = Ptr SampleMask

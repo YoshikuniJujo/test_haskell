@@ -54,6 +54,7 @@ library
       Vulkan.PhysicalDevice
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
+      Vulkan.Pipeline.MultisampleState.Internal
       Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.RasterizationState.Internal
       Vulkan.Pipeline.ShaderStage
@@ -70,6 +71,7 @@ library
       Vulkan.Pipeline.ViewportState.Internal
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
+      Vulkan.SampleCountFlagBits
       Vulkan.Shader
       Vulkan.Shader.Internal
       Vulkan.ShaderStageFlagBits

@@ -21,3 +21,7 @@ pipelineViewportStateCreateInfo =
 pipelineRasterizationStateCreateInfo :: #{type VkStructureType}
 pipelineRasterizationStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO}
+
+pipelineMultisampleStateCreateInfo :: #{type VkStructureType}
+pipelineMultisampleStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO}
