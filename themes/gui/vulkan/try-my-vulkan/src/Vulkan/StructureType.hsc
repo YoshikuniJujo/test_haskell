@@ -13,3 +13,7 @@ pipelineVertexInputStateCreateInfo =
 pipelineInputAssemblyStateCreateInfo :: #{type VkStructureType}
 pipelineInputAssemblyStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO}
+
+pipelineViewportStateCreateInfo :: #{type VkStructureType}
+pipelineViewportStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO}

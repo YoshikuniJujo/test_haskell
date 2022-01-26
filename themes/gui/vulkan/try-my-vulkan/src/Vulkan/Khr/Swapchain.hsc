@@ -41,7 +41,7 @@ data SwapchainCreateInfo n = SwapchainCreateInfo {
 	swapchainCreateInfoMinImageCount :: #{type uint32_t},
 	swapchainCreateInfoImageFormat :: Format,
 	swapchainCreateInfoImageColorSpace :: ColorSpace,
-	swapchainCreateInfoImageExtent :: Extent2D,
+	swapchainCreateInfoImageExtent :: Extent2d,
 	swapchainCreateInfoImageArrayLayers :: #{type uint32_t},
 	swapchainCreateInfoImageUsage :: ImageUsageFlags,
 	swapchainCreateInfoImageSharingMode :: SharingMode,

@@ -17,6 +17,7 @@ import Foreign.C.String
 import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import qualified Data.Bool as B
 
@@ -83,13 +84,6 @@ struct "ExtensionProperties" #{size VkExtensionProperties}
 	]
 	[''Show, ''Read, ''Eq, ''Storable]
 
-struct "Extent2D" #{size VkExtent2D} #{alignment VkExtent2D} [
-	("width", ''#{type uint32_t}, [| #{peek VkExtent2D, width} |],
-		[| #{poke VkExtent2D, width} |]),
-	("height", ''#{type uint32_t}, [| #{peek VkExtent2D, height} |],
-		[| #{poke VkExtent2D, height} |]) ]
-	[''Show, ''Storable]
-
 struct "Extent3D" #{size VkExtent3D} #{alignment VkExtent3D} [
 	("width", ''#{type uint32_t}, [| #{peek VkExtent3D, width} |],
 		[| #{poke VkExtent3D, width} |]),
@@ -105,3 +99,29 @@ uint32Max = #{const UINT32_MAX}
 enum "SharingMode" ''#{type VkSharingMode} [''Show, ''Storable] [
 	("SharingModeExclusive", #{const VK_SHARING_MODE_EXCLUSIVE}),
 	("SharingModeConcurrent", #{const VK_SHARING_MODE_CONCURRENT}) ]
+
+struct "Offset2d" #{size VkOffset2D} #{alignment VkOffset2D} [
+	("x", ''#{type int32_t},
+		[| #{peek VkOffset2D, x} |], [| #{poke VkOffset2D, x} |]),
+	("y", ''#{type int32_t},
+		[| #{peek VkOffset2D, y} |], [| #{poke VkOffset2D, y} |]) ]
+	[''Show, ''Storable]
+
+struct "Extent2d" #{size VkExtent2D} #{alignment VkExtent2D} [
+	("width", ''#{type int32_t},
+		[| #{peek VkExtent2D, width} |],
+		[| #{poke VkExtent2D, width} |]),
+	("height", ''#{type int32_t},
+		[| #{peek VkExtent2D, height} |],
+		[| #{poke VkExtent2D, height} |]) ]
+	[''Show, ''Storable]
+
+struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
+	("offset", ''Offset2d,
+		[| #{peek VkRect2D, offset} |], [| #{poke VkRect2D, offset} |]),
+	("extent", ''Extent2d,
+		[| #{peek VkRect2D, extent} |], [| #{poke VkRect2D, extent} |])
+	]
+	[''Show, ''Storable]
+
+type PtrRect2d = Ptr Rect2d

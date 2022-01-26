@@ -68,7 +68,7 @@ struct "SwapchainCreateInfo" #{size VkSwapchainCreateInfoKHR}
 	("imageColorSpace", ''ColorSpace,
 		[| #{peek VkSwapchainCreateInfoKHR, imageColorSpace} |],
 		[| #{poke VkSwapchainCreateInfoKHR, imageColorSpace} |]),
-	("imageExtent", ''Extent2D,
+	("imageExtent", ''Extent2d,
 		[| #{peek VkSwapchainCreateInfoKHR, imageExtent} |],
 		[| #{poke VkSwapchainCreateInfoKHR, imageExtent} |]),
 	("imageArrayLayers", ''#{type uint32_t},

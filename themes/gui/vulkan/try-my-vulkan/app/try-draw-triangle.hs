@@ -53,6 +53,11 @@ import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
 	Vk.Pipeline.InputAssemblyState.I
 import qualified Vulkan.PrimitiveTopology as Vk
 
+import qualified Vulkan.Viewport as Vk
+import qualified Vulkan.Pipeline.ViewportState as Vk.Pipeline.ViewportState
+import qualified Vulkan.Pipeline.ViewportState.Internal as
+	Vk.Pipeline.ViewportState.I
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -105,7 +110,7 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
-	createGraphicsPipeline dv
+	createGraphicsPipeline dv sce
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs)
 
 createInstance :: IO Vk.Instance
@@ -399,7 +404,7 @@ createLogicalDevice pd sfc = do
 
 createSwapChain ::
 	GlfwB.Window -> Vk.PhysicalDevice -> Vk.Device -> Vk.Khr.Surface ->
-	IO (Vk.Khr.I.Swapchain, [Vk.Image], Vk.Format, Vk.Extent2D)
+	IO (Vk.Khr.I.Swapchain, [Vk.Image], Vk.Format, Vk.Extent2d)
 createSwapChain win pDevice device surface = do
 	swapChainSupport <- querySwapChainSupport pDevice surface
 	let	surfaceFormat = chooseSwapSurfaceFormat
@@ -437,7 +442,7 @@ createSwapChain win pDevice device surface = do
 			Vk.Khr.swapchainCreateInfoImageColorSpace =
 				Vk.Khr.surfaceFormatColorSpace surfaceFormat,
 			Vk.Khr.swapchainCreateInfoImageExtent = extent,
---			Vk.Khr.swapchainCreateInfoImageExtent = Vk.Extent2D 0 0,
+--			Vk.Khr.swapchainCreateInfoImageExtent = Vk.Extent2d 0 0,
 			Vk.Khr.swapchainCreateInfoImageArrayLayers = 1,
 			Vk.Khr.swapchainCreateInfoImageUsage =
 				Vk.ImageUsageColorAttachmentBit,
@@ -469,17 +474,17 @@ chooseSwapPresentMode availablePresentModes =
 	bool Vk.Khr.PresentModeFifo Vk.Khr.PresentModeMailbox
 		$ elem Vk.Khr.PresentModeMailbox availablePresentModes
 
-chooseSwapExtent :: GlfwB.Window -> Vk.Khr.SurfaceCapabilities -> IO Vk.Extent2D
+chooseSwapExtent :: GlfwB.Window -> Vk.Khr.SurfaceCapabilities -> IO Vk.Extent2d
 chooseSwapExtent win capabilities = if cw < Vk.uint32Max then pure ce else do
 	((fromIntegral -> gw), (fromIntegral -> gh)) <-
 		GlfwB.getFramebufferSize win
-	pure $ Vk.Extent2D (clamp mnw mxw gw) (clamp mnh mxh gh)
+	pure $ Vk.Extent2d (clamp mnw mxw gw) (clamp mnh mxh gh)
 	where
-	ce@(Vk.Extent2D cw ch) =
+	ce@(Vk.Extent2d cw ch) =
 		Vk.Khr.surfaceCapabilitiesCurrentExtent capabilities
-	Vk.Extent2D mnw mnh =
+	Vk.Extent2d mnw mnh =
 		Vk.Khr.surfaceCapabilitiesMinImageExtent capabilities
-	Vk.Extent2D mxw mxh =
+	Vk.Extent2d mxw mxh =
 		Vk.Khr.surfaceCapabilitiesMaxImageExtent capabilities
 
 clamp :: Ord a => a -> a -> a -> a
@@ -510,8 +515,8 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
 
-createGraphicsPipeline :: Vk.Device -> IO ()
-createGraphicsPipeline dvc = do
+createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO ()
+createGraphicsPipeline dvc sce = do
 	vertShaderCode <- BS.readFile "shaders/vert.spv"
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
 	vertShaderModule <- createShaderModule dvc vertShaderCode
@@ -552,6 +557,23 @@ createGraphicsPipeline dvc = do
 				Vk.PrimitiveTopologyTriangleList,
 			Vk.Pipeline.InputAssemblyState.createInfoPrimitiveRestartEnable =
 				False }
+		viewport = Vk.Viewport {
+			Vk.viewportX = 0, Vk.viewportY = 0,
+			Vk.viewportWidth = fromIntegral $ Vk.extent2dWidth sce,
+			Vk.viewportHeight =
+				fromIntegral $ Vk.extent2dHeight sce,
+			Vk.viewportMinDepth = 0, Vk.viewportMaxDepth = 1 }
+		scissor = Vk.Rect2d {
+			Vk.rect2dOffset = Vk.Offset2d 0 0,
+			Vk.rect2dExtent = sce }
+		viewportState = Vk.Pipeline.ViewportState.CreateInfo {
+			Vk.Pipeline.ViewportState.createInfoNext = Nothing,
+			Vk.Pipeline.ViewportState.createInfoFlags =
+				Vk.Pipeline.ViewportState.I.CreateFlagsZero,
+			Vk.Pipeline.ViewportState.createInfoViewports =
+				[viewport],
+			Vk.Pipeline.ViewportState.createInfoScissors =
+				[scissor] }
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 
