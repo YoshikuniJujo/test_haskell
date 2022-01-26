@@ -35,7 +35,7 @@ struct "CreateInfo" #{size VkPipelineRasterizationStateCreateInfo}
 	("flags", ''PtrCreateFlags,
 		[| #{peek VkPipelineRasterizationStateCreateInfo, flags} |],
 		[| #{poke VkPipelineRasterizationStateCreateInfo, flags} |]),
-	("depathClampEnable", ''Bool32,
+	("depthClampEnable", ''Bool32,
 		[| #{peek VkPipelineRasterizationStateCreateInfo,
 			depthClampEnable} |],
 		[| #{poke VkPipelineRasterizationStateCreateInfo,

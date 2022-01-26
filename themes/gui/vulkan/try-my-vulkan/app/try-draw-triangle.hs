@@ -57,6 +57,12 @@ import qualified Vulkan.Viewport as Vk
 import qualified Vulkan.Pipeline.ViewportState as Vk.Pipeline.ViewportState
 import qualified Vulkan.Pipeline.ViewportState.Internal as
 	Vk.Pipeline.ViewportState.I
+import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RasterizSt
+import qualified Vulkan.Pipeline.RasterizationState.Internal as
+	Vk.Ppl.RasterizSt.I
+import qualified Vulkan.PolygonMode as Vk
+import qualified Vulkan.CullModeFlagBits as Vk
+import qualified Vulkan.FrontFace as Vk
 
 import qualified Glfw as Glfw
 
@@ -574,6 +580,24 @@ createGraphicsPipeline dvc sce = do
 				[viewport],
 			Vk.Pipeline.ViewportState.createInfoScissors =
 				[scissor] }
+		rasterizer = Vk.Ppl.RasterizSt.CreateInfo {
+			Vk.Ppl.RasterizSt.createInfoNext = Nothing,
+			Vk.Ppl.RasterizSt.createInfoFlags =
+				Vk.Ppl.RasterizSt.I.CreateFlagsZero,
+			Vk.Ppl.RasterizSt.createInfoDepthClampEnable = False,
+			Vk.Ppl.RasterizSt.createInfoRasterizerDiscardEnable =
+				False,
+			Vk.Ppl.RasterizSt.createInfoPolygonMode =
+				Vk.PolygonModeFill,
+			Vk.Ppl.RasterizSt.createInfoLineWidth = 1.0,
+			Vk.Ppl.RasterizSt.createInfoCullMode =
+				Vk.CullModeBackBit,
+			Vk.Ppl.RasterizSt.createInfoFrontFace =
+				Vk.FrontFaceClockwise,
+			Vk.Ppl.RasterizSt.createInfoDepthBiasEnable = False,
+			Vk.Ppl.RasterizSt.createInfoDepthBiasConstantFactor = 0,
+			Vk.Ppl.RasterizSt.createInfoDepthBiasClamp = 0,
+			Vk.Ppl.RasterizSt.createInfoDepthBiasSlopeFactor = 0 }
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 
