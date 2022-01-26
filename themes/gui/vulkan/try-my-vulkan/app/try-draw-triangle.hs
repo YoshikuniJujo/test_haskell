@@ -47,6 +47,12 @@ import qualified Vulkan.ShaderStageFlagBits as Vk
 import qualified Vulkan.Pipeline.VertexInputState as Vk
 import qualified Vulkan.Pipeline.VertexInputState.Internal as Vk.I
 
+import qualified Vulkan.Pipeline.InputAssemblyState as
+	Vk.Pipeline.InputAssemblyState
+import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
+	Vk.Pipeline.InputAssemblyState.I
+import qualified Vulkan.PrimitiveTopology as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -538,6 +544,14 @@ createGraphicsPipeline dvc = do
 			Vk.pipelineVertexInputStateCreateInfoNext = Nothing,
 			Vk.pipelineVertexInputStateCreateInfoFlags =
 				Vk.I.PipelineVertexInputStateCreateFlagsZero }
+		inputAssembly = Vk.Pipeline.InputAssemblyState.CreateInfo {
+			Vk.Pipeline.InputAssemblyState.createInfoNext = Nothing,
+			Vk.Pipeline.InputAssemblyState.createInfoFlags =
+				Vk.Pipeline.InputAssemblyState.I.CreateFlagsZero,
+			Vk.Pipeline.InputAssemblyState.createInfoTopology =
+				Vk.PrimitiveTopologyTriangleList,
+			Vk.Pipeline.InputAssemblyState.createInfoPrimitiveRestartEnable =
+				False }
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 

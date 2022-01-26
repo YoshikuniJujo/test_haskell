@@ -50,6 +50,8 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline.InputAssemblyState
+      Vulkan.Pipeline.InputAssemblyState.Internal
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Internal
       Vulkan.Pipeline.ShaderStage.Variables
@@ -60,6 +62,7 @@ library
       Vulkan.Pipeline.VertexInputState.GetBindingOffset
       Vulkan.Pipeline.VertexInputState.Intermediate
       Vulkan.Pipeline.VertexInputState.Internal
+      Vulkan.PrimitiveTopology
       Vulkan.Shader
       Vulkan.Shader.Internal
       Vulkan.ShaderStageFlagBits

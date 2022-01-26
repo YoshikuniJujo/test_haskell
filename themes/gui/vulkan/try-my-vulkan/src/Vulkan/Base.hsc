@@ -18,6 +18,8 @@ import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Word
 
+import qualified Data.Bool as B
+
 #include <vulkan/vulkan.h>
 
 type PtrVoid = Ptr ()
@@ -65,6 +67,9 @@ withMaybeCString mstr f = case mstr of
 
 enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
 	("False", #{const VK_FALSE}), ("True", #{const VK_TRUE}) ]
+
+boolToBool32 :: B.Bool -> Bool32
+boolToBool32 = B.bool False True
 
 struct "ExtensionProperties" #{size VkExtensionProperties}
 		#{alignment VkExtensionProperties} [
