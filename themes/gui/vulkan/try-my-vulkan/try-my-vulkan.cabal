@@ -54,6 +54,7 @@ library
       Vulkan.PhysicalDevice
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
+      Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.MultisampleState.Internal
       Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.RasterizationState.Internal

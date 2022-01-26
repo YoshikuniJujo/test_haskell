@@ -3,6 +3,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Base where
@@ -126,6 +127,6 @@ struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
 
 type PtrRect2d = Ptr Rect2d
 
-newtype SampleMask = SampleMask #{type VkSampleMask} deriving Show
+newtype SampleMask = SampleMask #{type VkSampleMask} deriving (Show, Storable)
 
 type PtrSampleMask = Ptr SampleMask
