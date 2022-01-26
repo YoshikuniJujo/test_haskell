@@ -16,7 +16,7 @@ makeEnum hf hsnm cnm ext = do
 	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
 		header prg hsnm cnm ++
 			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
-		ext
+		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
 takeDefinition :: String -> [String] -> [String]
 takeDefinition nm =

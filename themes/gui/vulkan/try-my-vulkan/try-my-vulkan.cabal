@@ -34,12 +34,14 @@ library
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Internal
       Vulkan.Base
+      Vulkan.CullModeFlagBits
       Vulkan.Device
       Vulkan.Device.Internal
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
       Vulkan.Format
+      Vulkan.FrontFace
       Vulkan.Image
       Vulkan.Image.EnableBetaExtensions
       Vulkan.Image.Internal
@@ -52,6 +54,7 @@ library
       Vulkan.PhysicalDevice
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
+      Vulkan.Pipeline.RasterizationState.Internal
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Internal
       Vulkan.Pipeline.ShaderStage.Variables
@@ -64,6 +67,7 @@ library
       Vulkan.Pipeline.VertexInputState.Internal
       Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Internal
+      Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
       Vulkan.Shader
       Vulkan.Shader.Internal

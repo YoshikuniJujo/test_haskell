@@ -17,3 +17,7 @@ pipelineInputAssemblyStateCreateInfo =
 pipelineViewportStateCreateInfo :: #{type VkStructureType}
 pipelineViewportStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO}
+
+pipelineRasterizationStateCreateInfo :: #{type VkStructureType}
+pipelineRasterizationStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO}
