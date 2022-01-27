@@ -53,6 +53,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Internal
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
