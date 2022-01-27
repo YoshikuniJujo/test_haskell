@@ -34,6 +34,7 @@ library
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Internal
       Vulkan.Base
+      Vulkan.CompareOp
       Vulkan.CullModeFlagBits
       Vulkan.Device
       Vulkan.Device.Internal
@@ -52,6 +53,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline.DepthStencilState.Internal
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
       Vulkan.Pipeline.MultisampleState
@@ -78,6 +80,7 @@ library
       Vulkan.ShaderStageFlagBits
       Vulkan.SpecializationInfo
       Vulkan.SpecializationInfo.Internal
+      Vulkan.StencilOp
       Vulkan.StructureType
       Vulkan.Viewport
   other-modules:

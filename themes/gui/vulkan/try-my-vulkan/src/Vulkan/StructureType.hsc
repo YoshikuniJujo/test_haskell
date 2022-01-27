@@ -25,3 +25,7 @@ pipelineRasterizationStateCreateInfo =
 pipelineMultisampleStateCreateInfo :: #{type VkStructureType}
 pipelineMultisampleStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO}
+
+pipelineDepthStencilStateCreateInfo :: #{type VkStructureType}
+pipelineDepthStencilStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO}
