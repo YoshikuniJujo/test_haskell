@@ -69,6 +69,12 @@ import qualified Vulkan.Pipeline.MultisampleState.Internal as
 	Vk.Ppl.MultisampleSt.I
 import qualified Vulkan.SampleCountFlagBits as Vk
 
+import qualified Vulkan.Pipeline.ColorBlendState.Internal as
+	Vk.Ppl.ClrBlendSt.I
+import qualified Vulkan.ColorComponentFlagBits as Vk
+import qualified Vulkan.BlendFactor as Vk
+import qualified Vulkan.BlendOp as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -617,6 +623,26 @@ createGraphicsPipeline dvc sce = do
 				False,
 			Vk.Ppl.MultisampleSt.createInfoAlphaToOneEnable = False
 			}
+		colorBlendAttachment = Vk.Ppl.ClrBlendSt.I.AttachmentState {
+			Vk.Ppl.ClrBlendSt.I.attachmentStateColorWriteMask =
+				Vk.ColorComponentRBit .|.
+				Vk.ColorComponentGBit .|.
+				Vk.ColorComponentBBit .|.
+				Vk.ColorComponentABit,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateBlendEnable =
+				False,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateSrcColorBlendFactor =
+				Vk.BlendFactorOne,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateDstColorBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateColorBlendOp =
+				Vk.BlendOpAdd,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateSrcAlphaBlendFactor =
+				Vk.BlendFactorOne,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateDstAlphaBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlendSt.I.attachmentStateAlphaBlendOp =
+				Vk.BlendOpAdd }
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 

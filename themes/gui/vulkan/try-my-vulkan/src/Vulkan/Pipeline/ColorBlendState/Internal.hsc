@@ -17,9 +17,12 @@ import Vulkan.ColorComponentFlagBits
 
 struct "AttachmentState" #{size VkPipelineColorBlendAttachmentState}
 		#{alignment VkPipelineColorBlendAttachmentState} [
-	("blendEnable", ''Bool32,
-		[| #{peek VkPipelineColorBlendAttachmentState, blendEnable} |],
-		[| #{poke VkPipelineColorBlendAttachmentState, blendEnable} |]),
+	("blendEnable", ''Bool,
+		[| (bool32ToBool <$>) .
+			#{peek VkPipelineColorBlendAttachmentState,
+				blendEnable} |],
+		[| \p -> #{poke VkPipelineColorBlendAttachmentState,
+			blendEnable} p . boolToBool32 |]),
 	("srcColorBlendFactor", ''BlendFactor,
 		[| #{peek VkPipelineColorBlendAttachmentState,
 			srcColorBlendFactor} |],

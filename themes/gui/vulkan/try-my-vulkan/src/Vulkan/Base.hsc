@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -72,6 +72,9 @@ enum "Bool32" ''#{type VkBool32} [''Show, ''Storable] [
 
 boolToBool32 :: B.Bool -> Bool32
 boolToBool32 = B.bool False True
+
+bool32ToBool :: Bool32 -> B.Bool
+bool32ToBool = \case False -> B.False; _ -> B.True
 
 struct "ExtensionProperties" #{size VkExtensionProperties}
 		#{alignment VkExtensionProperties} [

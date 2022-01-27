@@ -3,6 +3,7 @@
 
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.ColorComponentFlagBits where
@@ -10,10 +11,12 @@ module Vulkan.ColorComponentFlagBits where
 import Foreign.Storable
 import Foreign.C.Enum
 import Data.Word
+import Data.Bits
 
 #include <vulkan/vulkan.h>
 
-enum "ColorComponentFlagBits" ''#{type VkColorComponentFlagBits} [''Show, ''Eq, ''Storable] [
+enum "ColorComponentFlagBits" ''#{type VkColorComponentFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
 	("ColorComponentRBit", #{const VK_COLOR_COMPONENT_R_BIT}),
 	("ColorComponentGBit", #{const VK_COLOR_COMPONENT_G_BIT}),
 	("ColorComponentBBit", #{const VK_COLOR_COMPONENT_B_BIT}),
