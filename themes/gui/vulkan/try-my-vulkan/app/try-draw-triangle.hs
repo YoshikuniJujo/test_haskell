@@ -15,6 +15,7 @@ import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
+import Data.List.Length
 import Data.Word
 
 import qualified Data.ByteString as BS
@@ -69,11 +70,12 @@ import qualified Vulkan.Pipeline.MultisampleState.Internal as
 	Vk.Ppl.MultisampleSt.I
 import qualified Vulkan.SampleCountFlagBits as Vk
 
-import qualified Vulkan.Pipeline.ColorBlendState.Internal as
-	Vk.Ppl.ClrBlendSt.I
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlendSt
+import qualified Vulkan.Pipeline.ColorBlendState.Internal as Vk.Ppl.ClrBlendSt.I
 import qualified Vulkan.ColorComponentFlagBits as Vk
 import qualified Vulkan.BlendFactor as Vk
 import qualified Vulkan.BlendOp as Vk
+import qualified Vulkan.LogicOp as Vk
 
 import qualified Glfw as Glfw
 
@@ -643,6 +645,17 @@ createGraphicsPipeline dvc sce = do
 				Vk.BlendFactorZero,
 			Vk.Ppl.ClrBlendSt.I.attachmentStateAlphaBlendOp =
 				Vk.BlendOpAdd }
+		colorBlending = Vk.Ppl.ClrBlendSt.CreateInfo {
+			Vk.Ppl.ClrBlendSt.createInfoNext = Nothing,
+			Vk.Ppl.ClrBlendSt.createInfoFlags =
+				Vk.Ppl.ClrBlendSt.I.CreateFlagBitsZero,
+			Vk.Ppl.ClrBlendSt.createInfoLogicOpEnable = False,
+			Vk.Ppl.ClrBlendSt.createInfoLogicOp = Vk.LogicOpCopy,
+			Vk.Ppl.ClrBlendSt.createInfoAttachments =
+				[colorBlendAttachment],
+			Vk.Ppl.ClrBlendSt.createInfoBlendConstants =
+				0 :. 0 :. 0 :. 0 :. NilL
+			}
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 

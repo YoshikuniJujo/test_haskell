@@ -29,3 +29,7 @@ pipelineMultisampleStateCreateInfo =
 pipelineDepthStencilStateCreateInfo :: #{type VkStructureType}
 pipelineDepthStencilStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO}
+
+pipelineColorBlendStateCreateInfo :: #{type VkStructureType}
+pipelineColorBlendStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO}
