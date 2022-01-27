@@ -17,9 +17,10 @@ import Data.Bits
 import Data.Word
 import Data.Int
 
+import Vulkan.Base
 import Vulkan.Instance
 import Vulkan.Exception
-import Vulkan.Base
+import Vulkan.SampleCountFlagBits
 
 #include <vulkan/vulkan.h>
 
@@ -64,21 +65,6 @@ enum "PhysicalDeviceType" ''#{type VkPhysicalDeviceType} [''Show, ''Storable] [
 -- VkPhysicalDeviceLimits
 
 type ListUint32T = [#{type uint32_t}]
-
-enum "SampleCountFlagBits" ''#{type VkSampleCountFlagBits}
-		[''Show, ''Storable] [
-	("SampleCountFlagsZero", 0),
-	("SampleCount1Bit", #{const VK_SAMPLE_COUNT_1_BIT}),
-	("SampleCount2Bit", #{const VK_SAMPLE_COUNT_2_BIT}),
-	("SampleCount4Bit", #{const VK_SAMPLE_COUNT_4_BIT}),
-	("SampleCount8Bit", #{const VK_SAMPLE_COUNT_8_BIT}),
-	("SampleCount16Bit", #{const VK_SAMPLE_COUNT_16_BIT}),
-	("SampleCount32Bit", #{const VK_SAMPLE_COUNT_32_BIT}),
-	("SampleCount64Bit", #{const VK_SAMPLE_COUNT_64_BIT}),
-	("SampleCountFlagBitsMaxEnum",
-		#{const VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM}) ]
-
-type SampleCountFlags = SampleCountFlagBits
 
 struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}
 		#{alignment VkPhysicalDeviceLimits} [

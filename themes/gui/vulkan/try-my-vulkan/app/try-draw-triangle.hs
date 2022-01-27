@@ -64,6 +64,11 @@ import qualified Vulkan.PolygonMode as Vk
 import qualified Vulkan.CullModeFlagBits as Vk
 import qualified Vulkan.FrontFace as Vk
 
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MultisampleSt
+import qualified Vulkan.Pipeline.MultisampleState.Internal as
+	Vk.Ppl.MultisampleSt.I
+import qualified Vulkan.SampleCountFlagBits as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -598,6 +603,20 @@ createGraphicsPipeline dvc sce = do
 			Vk.Ppl.RasterizSt.createInfoDepthBiasConstantFactor = 0,
 			Vk.Ppl.RasterizSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RasterizSt.createInfoDepthBiasSlopeFactor = 0 }
+		multisampling = Vk.Ppl.MultisampleSt.CreateInfo {
+			Vk.Ppl.MultisampleSt.createInfoNext = Nothing,
+			Vk.Ppl.MultisampleSt.createInfoFlags =
+				Vk.Ppl.MultisampleSt.I.CreateFlagsZero,
+			Vk.Ppl.MultisampleSt.createInfoSampleShadingEnable =
+				False,
+			Vk.Ppl.MultisampleSt.createInfoRasterizationSamples =
+				Vk.SampleCount1Bit,
+			Vk.Ppl.MultisampleSt.createInfoMinSampleShading = 1,
+			Vk.Ppl.MultisampleSt.createInfoSampleMasks = [],
+			Vk.Ppl.MultisampleSt.createInfoAlphaToCoverageEnable =
+				False,
+			Vk.Ppl.MultisampleSt.createInfoAlphaToOneEnable = False
+			}
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 
