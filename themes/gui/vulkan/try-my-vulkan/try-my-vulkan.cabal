@@ -41,6 +41,7 @@ library
       Vulkan.CullModeFlagBits
       Vulkan.Device
       Vulkan.Device.Internal
+      Vulkan.DynamicState
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
