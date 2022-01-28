@@ -40,6 +40,7 @@ library
       Vulkan.ColorComponentFlagBits
       Vulkan.CompareOp
       Vulkan.CullModeFlagBits
+      Vulkan.Descriptor.SetLayout
       Vulkan.Descriptor.SetLayout.Internal
       Vulkan.DescriptorSetLayoutCreateFlagBits
       Vulkan.DescriptorType
