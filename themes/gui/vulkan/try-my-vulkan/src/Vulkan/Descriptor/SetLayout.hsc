@@ -1,9 +1,11 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Descriptor.SetLayout where
 
+import Foreign.Ptr
 import Foreign.Marshal.Array
 import Control.Monad.Cont
 import Data.Word
@@ -11,7 +13,7 @@ import Data.Word
 import Vulkan.Base
 import Vulkan.DescriptorType
 import Vulkan.ShaderStageFlagBits
-import Vulkan.Sampler
+import Vulkan.Sampler (Sampler)
 import Vulkan.DescriptorSetLayoutCreateFlagBits
 
 import qualified Vulkan.Descriptor.SetLayout.Internal as I
@@ -63,8 +65,17 @@ bindingToC b@Binding {
 bindingsToC :: [Binding] -> ([I.Binding] -> IO a) -> IO a
 bindingsToC = runContT . ((ContT . bindingToC) `mapM`)
 
-data CrateInfo n = CreateInfo {
+data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: DescriptorSetLayoutCreateFlags,
 	createInfoBindings :: [Binding] }
 	deriving Show
+
+createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
+createInfoToC CreateInfo {
+	createInfoNext = mnxt, createInfoFlags = flgs,
+	createInfoBindings = bds } = runContT do
+	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
+	ibds <- ContT $ bindingsToC bds
+	let	fbds = (\(I.Binding_ fbd) -> fbd) <$> ibds
+	undefined
