@@ -134,6 +134,7 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
+	createRenderPass
 	ppl <- createGraphicsPipeline dv sce
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, ppl)
 
@@ -538,6 +539,9 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeBaseArrayLayer = 0,
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
+
+createRenderPass :: IO ()
+createRenderPass = pure ()
 
 createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
 createGraphicsPipeline dvc sce = do

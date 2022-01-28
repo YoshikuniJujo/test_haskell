@@ -33,6 +33,8 @@ library
       Vulkan
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Internal
+      Vulkan.AttachmentDescriptionFlagBits
+      Vulkan.AttachmentLoadOp
       Vulkan.Base
       Vulkan.BlendFactor
       Vulkan.BlendOp
@@ -92,6 +94,7 @@ library
       Vulkan.Pipeline.ViewportState.Internal
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
+      Vulkan.RenderPass.Internal
       Vulkan.SampleCountFlagBits
       Vulkan.Sampler
       Vulkan.Sampler.Internal
