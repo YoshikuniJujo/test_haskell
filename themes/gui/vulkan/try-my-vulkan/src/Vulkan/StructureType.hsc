@@ -45,3 +45,6 @@ pipelineLayoutCreateInfo =
 descriptorSetLayoutCreateInfo :: #{type VkStructureType}
 descriptorSetLayoutCreateInfo =
 	#{const VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO}
+
+samplerCreateInfo :: #{type VkStructureType}
+samplerCreateInfo = #{const VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO}

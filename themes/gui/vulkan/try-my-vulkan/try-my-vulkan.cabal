@@ -88,6 +88,10 @@ library
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
       Vulkan.SampleCountFlagBits
+      Vulkan.Sampler.Internal
+      Vulkan.SamplerAddressMode
+      Vulkan.SamplerCreateFlagBits
+      Vulkan.SamplerMipmapMode
       Vulkan.Shader
       Vulkan.Shader.Internal
       Vulkan.ShaderStageFlagBits
