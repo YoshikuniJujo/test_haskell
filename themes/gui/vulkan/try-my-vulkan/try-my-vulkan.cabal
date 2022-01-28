@@ -36,6 +36,7 @@ library
       Vulkan.Base
       Vulkan.BlendFactor
       Vulkan.BlendOp
+      Vulkan.BorderColor
       Vulkan.ColorComponentFlagBits
       Vulkan.CompareOp
       Vulkan.CullModeFlagBits
@@ -47,6 +48,7 @@ library
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
+      Vulkan.Filter
       Vulkan.Format
       Vulkan.FrontFace
       Vulkan.Image
