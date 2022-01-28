@@ -91,6 +91,7 @@ createInfoToC CreateInfo {
 
 data SamplerTag
 newtype Sampler = Sampler (Ptr SamplerTag) deriving (Show, Storable)
+type PtrSampler = Ptr Sampler
 
 createSampler :: (Pointable n, Pointable n') =>
 	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Sampler

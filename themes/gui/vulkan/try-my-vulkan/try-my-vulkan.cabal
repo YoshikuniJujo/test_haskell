@@ -42,6 +42,7 @@ library
       Vulkan.CullModeFlagBits
       Vulkan.Descriptor.SetLayout.Internal
       Vulkan.DescriptorSetLayoutCreateFlagBits
+      Vulkan.DescriptorType
       Vulkan.Device
       Vulkan.Device.Internal
       Vulkan.DynamicState
