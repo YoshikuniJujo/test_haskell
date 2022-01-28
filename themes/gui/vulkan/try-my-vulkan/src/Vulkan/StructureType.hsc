@@ -37,3 +37,11 @@ pipelineColorBlendStateCreateInfo =
 pipelineDynamicStateCreateInfo :: #{type VkStructureType}
 pipelineDynamicStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO}
+
+pipelineLayoutCreateInfo :: #{type VkStructureType}
+pipelineLayoutCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO}
+
+descriptorSetLayoutCreateInfo :: #{type VkStructureType}
+descriptorSetLayoutCreateInfo =
+	#{const VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO}
