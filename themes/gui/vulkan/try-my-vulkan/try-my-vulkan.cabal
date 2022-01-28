@@ -72,6 +72,7 @@ library
       Vulkan.Pipeline.DynamicState.Internal
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
+      Vulkan.Pipeline.Layout
       Vulkan.Pipeline.Layout.Internal
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.MultisampleState.Internal
