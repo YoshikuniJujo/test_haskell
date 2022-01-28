@@ -109,11 +109,11 @@ createDescriptorSetLayout dvc ci mac = ($ pure) $ runContT do
 		Nothing -> pure NullPtr
 		Just ac -> ContT $ withAllocationCallbacksPtr ac
 	pdsl <- ContT alloca
-	lift do	r <- c_VkCreateDescriptorSetLayout dvc pci pac pdsl
+	lift do	r <- c_vkCreateDescriptorSetLayout dvc pci pac pdsl
 		throwUnlessSuccess r
 		peek pdsl
 
-foreign import ccall "VkCreateDescriptorSetLayout"
-	c_VkCreateDescriptorSetLayout ::
+foreign import ccall "vkCreateDescriptorSetLayout"
+	c_vkCreateDescriptorSetLayout ::
 	Device -> Ptr I.CreateInfo -> Ptr I.AllocationCallbacks ->
 	Ptr DescriptorSetLayout -> IO Result

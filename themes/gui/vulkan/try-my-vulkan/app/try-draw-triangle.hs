@@ -77,6 +77,11 @@ import qualified Vulkan.BlendFactor as Vk
 import qualified Vulkan.BlendOp as Vk
 import qualified Vulkan.LogicOp as Vk
 
+import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Layout
+import qualified Vulkan.Pipeline.Layout.Internal as Vk.Ppl.Layout.I
+import qualified Vulkan.Pipeline.Layout as Vk (
+	PipelineLayout, createPipelineLayout, destroyPipelineLayout )
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -104,9 +109,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, ppl) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc ivs
+	cleanup w ist dbgMssngr dv sfc sc ivs ppl
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -118,7 +123,7 @@ initWindow = do
 
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
-	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView] )
+	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView], Vk.PipelineLayout )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -129,8 +134,8 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
-	createGraphicsPipeline dv sce
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs)
+	ppl <- createGraphicsPipeline dv sce
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, ppl)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -534,7 +539,7 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
 
-createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO ()
+createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
 createGraphicsPipeline dvc sce = do
 	vertShaderCode <- BS.readFile "shaders/vert.spv"
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
@@ -654,10 +659,17 @@ createGraphicsPipeline dvc sce = do
 			Vk.Ppl.ClrBlendSt.createInfoAttachments =
 				[colorBlendAttachment],
 			Vk.Ppl.ClrBlendSt.createInfoBlendConstants =
-				0 :. 0 :. 0 :. 0 :. NilL
-			}
+				0 :. 0 :. 0 :. 0 :. NilL }
+		pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = Nothing,
+			Vk.Ppl.Layout.createInfoFlags =
+				Vk.Ppl.Layout.I.CreateFlagBitsZero,
+			Vk.Ppl.Layout.createInfoSetLayouts = [],
+			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
+	pll <- Vk.createPipelineLayout @() @() dvc pipelineLayoutInfo Nothing
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
+	pure pll
 
 createShaderModule :: Vk.Device -> BS.ByteString -> IO Vk.ShaderModule
 createShaderModule dvc code = do
@@ -675,8 +687,10 @@ mainLoop w = do
 		not <$> GlfwB.windowShouldClose w
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
-	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] -> IO ()
-cleanup w ist mdbgMssngr dv sfc sc ivs = do
+	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
+	Vk.PipelineLayout -> IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs ppl = do
+	Vk.destroyPipelineLayout @() dv ppl Nothing
 	flip (Vk.destroyImageView @() dv) Nothing `mapM_` ivs
 	Vk.Khr.destroySwapchain @() dv sc Nothing
 	Vk.destroyDevice @() dv Nothing
