@@ -52,7 +52,7 @@ struct "CreateInfo" #{size VkSamplerCreateInfo}
 	("anisotropyEnable", ''Bool32,
 		[| #{peek VkSamplerCreateInfo, anisotropyEnable} |],
 		[| #{poke VkSamplerCreateInfo, anisotropyEnable} |]),
-	("maxAnisotopy", ''#{type float},
+	("maxAnisotropy", ''#{type float},
 		[| #{peek VkSamplerCreateInfo, maxAnisotropy} |],
 		[| #{poke VkSamplerCreateInfo, maxAnisotropy} |]),
 	("compareEnable", ''Bool32,

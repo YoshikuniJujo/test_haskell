@@ -90,6 +90,7 @@ library
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
       Vulkan.SampleCountFlagBits
+      Vulkan.Sampler
       Vulkan.Sampler.Internal
       Vulkan.SamplerAddressMode
       Vulkan.SamplerCreateFlagBits
