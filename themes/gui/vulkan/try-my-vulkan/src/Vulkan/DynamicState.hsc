@@ -11,6 +11,7 @@ module Vulkan.DynamicState where
 import Foreign.Storable
 import Foreign.C.Enum
 import Data.Word
+import Foreign.Ptr
 
 #include <vulkan/vulkan.h>
 
@@ -82,3 +83,5 @@ enum "DynamicState" ''#{type VkDynamicState}
 	("DynamicStateColorWriteEnableExt",
 		#{const VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT}),
 	("DynamicStateMaxEnum", #{const VK_DYNAMIC_STATE_MAX_ENUM}) ]
+
+type PtrDynamicState = Ptr DynamicState

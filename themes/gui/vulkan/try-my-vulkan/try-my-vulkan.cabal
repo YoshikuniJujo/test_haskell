@@ -62,6 +62,8 @@ library
       Vulkan.Pipeline.ColorBlendState.Internal
       Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Internal
+      Vulkan.Pipeline.DynamicState
+      Vulkan.Pipeline.DynamicState.Internal
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Internal
       Vulkan.Pipeline.MultisampleState

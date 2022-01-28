@@ -33,3 +33,7 @@ pipelineDepthStencilStateCreateInfo =
 pipelineColorBlendStateCreateInfo :: #{type VkStructureType}
 pipelineColorBlendStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO}
+
+pipelineDynamicStateCreateInfo :: #{type VkStructureType}
+pipelineDynamicStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO}

@@ -5,5 +5,8 @@ module Main where
 import MakeEnum
 
 main :: IO ()
-main = makeEnum
-	"/usr/include/vulkan/vulkan_core.h" "DynamicState" "VkDynamicState" ""
+main = makeEnum'
+	"/usr/include/vulkan/vulkan_core.h" ["Foreign.Ptr"]
+	"DynamicState" "VkDynamicState"
+	["Show", "Eq", "Storable"]
+	"type PtrDynamicState = Ptr DynamicState"
