@@ -32,6 +32,8 @@ type ListCFloat = [#{type float}]
 
 type PtrCString = Ptr CString
 
+type PtrUint32T = Ptr #{type uint32_t}
+
 pattern NullPtr :: Ptr a
 pattern NullPtr <- ((== nullPtr) -> P.True) where NullPtr = nullPtr
 

@@ -38,8 +38,6 @@ enum "SwapchainCreateFlagBits" ''#{type VkSwapchainCreateFlagBitsKHR}
 
 type SwapchainCreateFlags = SwapchainCreateFlagBits
 
-type PtrUint32T = Ptr #{type uint32_t}
-
 newtype Swapchain = Swapchain (Ptr Swapchain) deriving (Show, Storable)
 
 pattern SwapchainNull :: Swapchain

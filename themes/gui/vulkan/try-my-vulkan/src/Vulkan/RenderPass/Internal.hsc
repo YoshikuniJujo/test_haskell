@@ -5,10 +5,12 @@
 
 module Vulkan.RenderPass.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
+import Vulkan.Base
 import Vulkan.AttachmentDescriptionFlagBits
 import Vulkan.Format
 import Vulkan.SampleCountFlagBits
@@ -60,6 +62,8 @@ struct "AttachmentReference" #{size VkAttachmentReference}
 		[| #{poke VkAttachmentReference, layout} |]) ]
 	[''Show, ''Storable]
 
+type PtrAttachmentReference = Ptr AttachmentReference
+
 struct "SubpassDescription" #{size VkSubpassDescription}
 		#{alignment VkSubpassDescription} [
 	("flags", ''SubpassDescriptionFlags,
@@ -67,6 +71,29 @@ struct "SubpassDescription" #{size VkSubpassDescription}
 		[| #{poke VkSubpassDescription, flags} |]),
 	("pipelineBindPoint", ''PipelineBindPoint,
 		[| #{peek VkSubpassDescription, pipelineBindPoint} |],
-		[| #{poke VkSubpassDescription, pipelineBindPoint} |])
-	]
+		[| #{poke VkSubpassDescription, pipelineBindPoint} |]),
+	("inputAttachmentCount", ''#{type uint32_t},
+		[| #{peek VkSubpassDescription, inputAttachmentCount} |],
+		[| #{poke VkSubpassDescription, inputAttachmentCount} |]),
+	("pInputAttachments", ''PtrAttachmentReference,
+		[| #{peek VkSubpassDescription, pInputAttachments} |],
+		[| #{poke VkSubpassDescription, pInputAttachments} |]),
+	("colorAttachmentCount", ''#{type uint32_t},
+		[| #{peek VkSubpassDescription, colorAttachmentCount} |],
+		[| #{poke VkSubpassDescription, colorAttachmentCount} |]),
+	("pColorAttachments", ''PtrAttachmentReference,
+		[| #{peek VkSubpassDescription, pColorAttachments} |],
+		[| #{poke VkSubpassDescription, pColorAttachments} |]),
+	("pResolveAttachments", ''PtrAttachmentReference,
+		[| #{peek VkSubpassDescription, pResolveAttachments} |],
+		[| #{poke VkSubpassDescription, pResolveAttachments} |]),
+	("pDepthStencilAttachment", ''PtrAttachmentReference,
+		[| #{peek VkSubpassDescription, pDepthStencilAttachment} |],
+		[| #{poke VkSubpassDescription, pDepthStencilAttachment} |]),
+	("preserveAttachmentCount", ''#{type uint32_t},
+		[| #{peek VkSubpassDescription, preserveAttachmentCount} |],
+		[| #{poke VkSubpassDescription, preserveAttachmentCount} |]),
+	("pPreserveAttachments", ''PtrUint32T,
+		[| #{peek VkSubpassDescription, pPreserveAttachments} |],
+		[| #{poke VkSubpassDescription, pPreserveAttachments} |]) ]
 	[''Show, ''Storable]

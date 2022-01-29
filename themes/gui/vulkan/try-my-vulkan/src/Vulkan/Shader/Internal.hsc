@@ -19,8 +19,6 @@ enum "ShaderModuleCreateFlags" ''#{type VkShaderModuleCreateFlags}
 		[''Show, ''Storable] [
 	("ShaderModuleCreateFlagsZero", 0) ]
 
-type PtrUint32T = Ptr #{type uint32_t}
-
 struct "ShaderModuleCreateInfo" #{size VkShaderModuleCreateInfo}
 		#{alignment VkShaderModuleCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
