@@ -94,6 +94,7 @@ library
       Vulkan.Pipeline.VertexInputState.Internal
       Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Internal
+      Vulkan.PipelineBindPoint
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
       Vulkan.RenderPass.Internal

@@ -15,6 +15,8 @@ import Vulkan.SampleCountFlagBits
 import Vulkan.AttachmentLoadOp
 import Vulkan.AttachmentStoreOp
 import Vulkan.ImageLayout
+import Vulkan.SubpassDescriptionFlagBits
+import Vulkan.PipelineBindPoint
 
 #include <vulkan/vulkan.h>
 
@@ -56,4 +58,15 @@ struct "AttachmentReference" #{size VkAttachmentReference}
 	("layout", ''ImageLayout,
 		[| #{peek VkAttachmentReference, layout} |],
 		[| #{poke VkAttachmentReference, layout} |]) ]
+	[''Show, ''Storable]
+
+struct "SubpassDescription" #{size VkSubpassDescription}
+		#{alignment VkSubpassDescription} [
+	("flags", ''SubpassDescriptionFlags,
+		[| #{peek VkSubpassDescription, flags} |],
+		[| #{poke VkSubpassDescription, flags} |]),
+	("pipelineBindPoint", ''PipelineBindPoint,
+		[| #{peek VkSubpassDescription, pipelineBindPoint} |],
+		[| #{poke VkSubpassDescription, pipelineBindPoint} |])
+	]
 	[''Show, ''Storable]
