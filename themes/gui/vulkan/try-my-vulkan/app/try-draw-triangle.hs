@@ -82,6 +82,11 @@ import qualified Vulkan.Pipeline.Layout.Internal as Vk.Ppl.Layout.I
 import qualified Vulkan.Pipeline.Layout as Vk (
 	PipelineLayout, createPipelineLayout, destroyPipelineLayout )
 
+import qualified Vulkan.RenderPass.Internal as Vk.I
+import qualified Vulkan.AttachmentLoadOp as Vk
+import qualified Vulkan.AttachmentStoreOp as Vk
+import qualified Vulkan.ImageLayout as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -134,7 +139,7 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
-	createRenderPass
+	createRenderPass scif
 	ppl <- createGraphicsPipeline dv sce
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, ppl)
 
@@ -540,8 +545,25 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
 
-createRenderPass :: IO ()
-createRenderPass = pure ()
+createRenderPass :: Vk.Format -> IO ()
+createRenderPass scif = do
+	let	colorAttachment = Vk.I.AttachmentDescription {
+			Vk.I.attachmentDescriptionFormat = scif,
+			Vk.I.attachmentDescriptionSamples = Vk.SampleCount1Bit,
+			Vk.I.attachmentDescriptionLoadOp =
+				Vk.AttachmentLoadOpClear,
+			Vk.I.attachmentDescriptionStoreOp =
+				Vk.AttachmentStoreOpStore,
+			Vk.I.attachmentDescriptionStencilLoadOp =
+				Vk.AttachmentLoadOpDontCare,
+			Vk.I.attachmentDescriptionStencilStoreOp =
+				Vk.AttachmentStoreOpDontCare,
+			Vk.I.attachmentDescriptionInitialLayout =
+				Vk.ImageLayoutUndefined,
+			Vk.I.attachmentDescriptionFinalLayout =
+				Vk.ImageLayoutPresentSrcKhr
+			}
+	pure ()
 
 createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
 createGraphicsPipeline dvc sce = do

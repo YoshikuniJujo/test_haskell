@@ -15,8 +15,16 @@ makeEnum hf hsnm cnm ext = do
 	src <- readFile hf
 	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
 		header prg [] hsnm cnm ["Show", "Eq", "Storable"] ++
-			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
+			intercalate ",\n" (map makeItem . takeDefinition cnm . removeBetaExtensions $ lines src) ++ " ]\n" ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+
+removeBetaExtensions :: [String] -> [String]
+removeBetaExtensions [] = []
+removeBetaExtensions ("#ifdef VK_ENABLE_BETA_EXTENSIONS" : ls) =
+	case dropWhile (/= "#endif") ls of
+		[] -> error "no #endif"
+		(_ : ls') -> removeBetaExtensions ls'
+removeBetaExtensions (l : ls) = l : removeBetaExtensions ls
 
 makeEnum' :: String -> [String] -> String -> String -> [String] -> String -> IO ()
 makeEnum' hf icds hsnm cnm drvs ext = do

@@ -13,6 +13,7 @@ import Vulkan.Format
 import Vulkan.SampleCountFlagBits
 import Vulkan.AttachmentLoadOp
 import Vulkan.AttachmentStoreOp
+import Vulkan.ImageLayout
 
 #include <vulkan/vulkan.h>
 
@@ -31,6 +32,18 @@ struct "AttachmentDescription" #{size VkAttachmentDescription}
 		[| #{poke VkAttachmentDescription, loadOp} |]),
 	("storeOp", ''AttachmentStoreOp,
 		[| #{peek VkAttachmentDescription, storeOp} |],
-		[| #{poke VkAttachmentDescription, storeOp} |])
+		[| #{poke VkAttachmentDescription, storeOp} |]),
+	("stencilLoadOp", ''AttachmentLoadOp,
+		[| #{peek VkAttachmentDescription, stencilLoadOp} |],
+		[| #{poke VkAttachmentDescription, stencilLoadOp} |]),
+	("stencilStoreOp", ''AttachmentStoreOp,
+		[| #{peek VkAttachmentDescription, stencilStoreOp} |],
+		[| #{poke VkAttachmentDescription, stencilStoreOp} |]),
+	("initialLayout", ''ImageLayout,
+		[| #{peek VkAttachmentDescription, initialLayout} |],
+		[| #{poke VkAttachmentDescription, initialLayout} |]),
+	("finalLayout", ''ImageLayout,
+		[| #{peek VkAttachmentDescription, finalLayout} |],
+		[| #{poke VkAttachmentDescription, finalLayout} |])
 	]
 	[''Show, ''Storable]

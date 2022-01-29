@@ -60,6 +60,7 @@ library
       Vulkan.Image.EnableBetaExtensions
       Vulkan.Image.Internal
       Vulkan.ImageAspectFlagBits
+      Vulkan.ImageLayout
       Vulkan.Instance
       Vulkan.Internal
       Vulkan.Khr.Surface
