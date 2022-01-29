@@ -110,6 +110,7 @@ library
       Vulkan.SpecializationInfo.Internal
       Vulkan.StencilOp
       Vulkan.StructureType
+      Vulkan.SubpassDescriptionFlagBits
       Vulkan.Viewport
   other-modules:
       Paths_try_my_vulkan
