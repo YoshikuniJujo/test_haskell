@@ -7,4 +7,4 @@ import MakeEnum
 main :: IO ()
 main = makeEnum
 	"/usr/include/vulkan/vulkan_core.h"
-	"AttachmentLoadOp" "VkAttachmentLoadOp" ""
+	"AttachmentStoreOp" "VkAttachmentStoreOp" ""

@@ -35,6 +35,7 @@ library
       Vulkan.AllocationCallbacks.Internal
       Vulkan.AttachmentDescriptionFlagBits
       Vulkan.AttachmentLoadOp
+      Vulkan.AttachmentStoreOp
       Vulkan.Base
       Vulkan.BlendFactor
       Vulkan.BlendOp
