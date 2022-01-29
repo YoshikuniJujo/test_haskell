@@ -7,6 +7,7 @@ module Vulkan.RenderPass.Internal where
 
 import Foreign.Storable
 import Foreign.C.Struct
+import Data.Word
 
 import Vulkan.AttachmentDescriptionFlagBits
 import Vulkan.Format
@@ -44,6 +45,15 @@ struct "AttachmentDescription" #{size VkAttachmentDescription}
 		[| #{poke VkAttachmentDescription, initialLayout} |]),
 	("finalLayout", ''ImageLayout,
 		[| #{peek VkAttachmentDescription, finalLayout} |],
-		[| #{poke VkAttachmentDescription, finalLayout} |])
-	]
+		[| #{poke VkAttachmentDescription, finalLayout} |]) ]
+	[''Show, ''Storable]
+
+struct "AttachmentReference" #{size VkAttachmentReference}
+		#{alignment VkAttachmentReference} [
+	("attachment", ''#{type uint32_t},
+		[| #{peek VkAttachmentReference, attachment} |],
+		[| #{poke VkAttachmentReference, attachment} |]),
+	("layout", ''ImageLayout,
+		[| #{peek VkAttachmentReference, layout} |],
+		[| #{poke VkAttachmentReference, layout} |]) ]
 	[''Show, ''Storable]

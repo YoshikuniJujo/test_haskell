@@ -561,8 +561,11 @@ createRenderPass scif = do
 			Vk.I.attachmentDescriptionInitialLayout =
 				Vk.ImageLayoutUndefined,
 			Vk.I.attachmentDescriptionFinalLayout =
-				Vk.ImageLayoutPresentSrcKhr
-			}
+				Vk.ImageLayoutPresentSrcKhr }
+		colorAttachmentRef = Vk.I.AttachmentReference {
+			Vk.I.attachmentReferenceAttachment = 0,
+			Vk.I.attachmentReferenceLayout =
+				Vk.ImageLayoutColorAttachmentOptimal }
 	pure ()
 
 createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
