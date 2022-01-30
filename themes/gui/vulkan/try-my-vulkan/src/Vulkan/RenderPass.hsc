@@ -23,8 +23,8 @@ data SubpassDescription = SubpassDescription {
 	subpassDescriptionColorAndResolveAttachments :: Either
 		[I.AttachmentReference]
 		[(I.AttachmentReference, I.AttachmentReference)],
-	depthStencilAttachment :: Maybe I.AttachmentReference,
-	preserveAttachments :: [#{type uint32_t}] }
+	subpassDescriptionDepthStencilAttachment :: Maybe I.AttachmentReference,
+	subpassDescriptionPreserveAttachments :: [#{type uint32_t}] }
 	deriving Show
 
 subpassDescriptionToC ::
@@ -34,8 +34,8 @@ subpassDescriptionToC SubpassDescription {
 	subpassDescriptionPipelineBindPoint = pbp,
 	subpassDescriptionInputAttachments = ias,
 	subpassDescriptionColorAndResolveAttachments = ecras,
-	depthStencilAttachment = msa,
-	preserveAttachments = pas } = runContT do
+	subpassDescriptionDepthStencilAttachment = msa,
+	subpassDescriptionPreserveAttachments = pas } = runContT do
 	let	iac = length ias
 	pias <- ContT $ allocaArray iac
 	lift $ pokeArray pias ias

@@ -35,13 +35,18 @@ makeEnum' hf icds hsnm cnm drvs ext = do
 			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
-makeEnum'' :: String -> [String] -> String -> String -> [String] -> [String] -> String -> IO ()
+makeEnum'' :: String -> [String] -> String -> String -> [(String, Const)] -> [String] -> String -> IO ()
 makeEnum'' hf icds hsnm cnm elms drvs ext = do
 	prg <- getProgName
 	src <- readFile hf
 	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
 		header prg icds hsnm cnm drvs ++
-			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
+			intercalate ",\n" (
+				map (uncurry makeItemFromConst)
+					. (elms ++)
+					. map makeVarConstPair
+					. takeDefinition cnm $ lines src
+				) ++ " ]\n" ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
 takeDefinition :: String -> [String] -> [String]
@@ -49,12 +54,31 @@ takeDefinition nm =
 	map (head . words) . takeWhile (not . (== "} " ++ nm ++ ";")) . tail
 		. dropWhile (not . (("typedef enum " ++ nm ++ " {") `isPrefixOf`))
 
+data Const = Int Int | Const String deriving Show
+
+makeVarConstPair :: String -> (String, Const)
+makeVarConstPair cnst = (nm, Const cnst)
+	where nm = concat . map capitalize . tail $ sep '_' cnst
+
+showConst :: Const -> String
+showConst (Int n) = show n
+showConst (Const cnst) = "#{const " ++ cnst ++ "}"
+
+makeItemFromConst :: String -> Const -> String
+makeItemFromConst nm cnst = "\t(\"" ++ nm ++ "\"," ++ sp ++ cst ++ ")"
+	where
+	cst = showConst cnst
+	sp = if 8 + length nm + 5 + length cst + 2 > 80 then "\n\t\t" else " "
+
 makeItem :: String -> String
+makeItem = uncurry makeItemFromConst . makeVarConstPair
+{-
 makeItem cnst = '\t' : nm ++ sp ++ cst
 	where
 	nm = "(\"" ++ concat (map capitalize . tail $ sep '_' cnst) ++ "\","
 	cst = "#{const " ++ cnst ++ "})"
 	sp = if 8 + length nm + 1 + length cst + 1 > 80 then "\n\t\t" else " "
+	-}
 
 sep :: Eq a => a -> [a] -> [[a]]
 sep s xs = case d of [] -> [t]; _ : r -> t : sep s r

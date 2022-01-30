@@ -17,6 +17,7 @@ import Data.Bits
 
 enum "SubpassDescriptionFlagBits" ''#{type VkSubpassDescriptionFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("SubpassDescriptionFlagsZero", 0),
 	("SubpassDescriptionPerViewAttributesBitNvx",
 		#{const VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX}),
 	("SubpassDescriptionPerViewPositionXOnlyBitNvx",
