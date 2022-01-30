@@ -99,6 +99,7 @@ library
       Vulkan.PrimitiveTopology
       Vulkan.RenderPass
       Vulkan.RenderPass.Internal
+      Vulkan.RenderPassCreateFlagBits
       Vulkan.SampleCountFlagBits
       Vulkan.Sampler
       Vulkan.Sampler.Internal

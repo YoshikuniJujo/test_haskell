@@ -19,6 +19,7 @@ import Vulkan.AttachmentStoreOp
 import Vulkan.ImageLayout
 import Vulkan.SubpassDescriptionFlagBits
 import Vulkan.PipelineBindPoint
+import Vulkan.RenderPassCreateFlagBits
 
 import qualified Vulkan.StructureType as ST
 
@@ -106,6 +107,9 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		[| \p _ -> #{poke VkRenderPassCreateInfo, sType} p
 			ST.renderPassCreateInfo |]),
 	("pNext", ''PtrVoid, [| #{peek VkRenderPassCreateInfo, pNext} |],
-		[| #{poke VkRenderPassCreateInfo, pNext} |])
+		[| #{poke VkRenderPassCreateInfo, pNext} |]),
+	("flags", ''RenderPassCreateFlags,
+		[| #{peek VkRenderPassCreateInfo, flags} |],
+		[| #{poke VkRenderPassCreateInfo, flags} |])
 	]
 	[''Show, ''Storable]
