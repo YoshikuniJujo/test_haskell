@@ -5,7 +5,8 @@ module Main where
 import MakeEnum
 
 main :: IO ()
-main = makeEnum
-	"/usr/include/vulkan/vulkan_core.h"
+main = makeEnum'
+	"/usr/include/vulkan/vulkan_core.h" ["Data.Bits"]
 	"SubpassDescriptionFlagBits" "VkSubpassDescriptionFlagBits"
+	["Show", "Eq", "Storable", "Bits"]
 	"type SubpassDescriptionFlags = SubpassDescriptionFlagBits"

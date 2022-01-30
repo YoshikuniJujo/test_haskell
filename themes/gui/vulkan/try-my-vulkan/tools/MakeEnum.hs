@@ -35,6 +35,15 @@ makeEnum' hf icds hsnm cnm drvs ext = do
 			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
+makeEnum'' :: String -> [String] -> String -> String -> [String] -> [String] -> String -> IO ()
+makeEnum'' hf icds hsnm cnm elms drvs ext = do
+	prg <- getProgName
+	src <- readFile hf
+	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
+		header prg icds hsnm cnm drvs ++
+			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
+		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+
 takeDefinition :: String -> [String] -> [String]
 takeDefinition nm =
 	map (head . words) . takeWhile (not . (== "} " ++ nm ++ ";")) . tail

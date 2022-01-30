@@ -97,6 +97,7 @@ library
       Vulkan.PipelineBindPoint
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
+      Vulkan.RenderPass
       Vulkan.RenderPass.Internal
       Vulkan.SampleCountFlagBits
       Vulkan.Sampler

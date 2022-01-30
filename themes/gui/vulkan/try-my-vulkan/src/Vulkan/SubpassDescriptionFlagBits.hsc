@@ -11,11 +11,12 @@ module Vulkan.SubpassDescriptionFlagBits where
 import Foreign.Storable
 import Foreign.C.Enum
 import Data.Word
+import Data.Bits
 
 #include <vulkan/vulkan.h>
 
 enum "SubpassDescriptionFlagBits" ''#{type VkSubpassDescriptionFlagBits}
-		[''Show, ''Eq, ''Storable] [
+		[''Show, ''Eq, ''Storable, ''Bits] [
 	("SubpassDescriptionPerViewAttributesBitNvx",
 		#{const VK_SUBPASS_DESCRIPTION_PER_VIEW_ATTRIBUTES_BIT_NVX}),
 	("SubpassDescriptionPerViewPositionXOnlyBitNvx",

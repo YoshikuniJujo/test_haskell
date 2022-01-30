@@ -82,10 +82,13 @@ import qualified Vulkan.Pipeline.Layout.Internal as Vk.Ppl.Layout.I
 import qualified Vulkan.Pipeline.Layout as Vk (
 	PipelineLayout, createPipelineLayout, destroyPipelineLayout )
 
+import qualified Vulkan.RenderPass as Vk (SubpassDescription(..))
 import qualified Vulkan.RenderPass.Internal as Vk.I
 import qualified Vulkan.AttachmentLoadOp as Vk
 import qualified Vulkan.AttachmentStoreOp as Vk
 import qualified Vulkan.ImageLayout as Vk
+
+import qualified Vulkan.PipelineBindPoint as Vk
 
 import qualified Glfw as Glfw
 
@@ -566,6 +569,13 @@ createRenderPass scif = do
 			Vk.I.attachmentReferenceAttachment = 0,
 			Vk.I.attachmentReferenceLayout =
 				Vk.ImageLayoutColorAttachmentOptimal }
+		subpass = Vk.SubpassDescription {
+--			Vk.subpassDescriptionFlags =
+			Vk.subpassDescriptionPipelineBindPoint =
+				Vk.PipelineBindPointGraphics,
+			Vk.subpassDescriptionColorAndResolveAttachments =
+				Left [colorAttachmentRef]
+			}
 	pure ()
 
 createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
