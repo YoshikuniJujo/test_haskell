@@ -21,6 +21,10 @@ import Vulkan.SubpassDescriptionFlagBits
 import Vulkan.PipelineBindPoint
 import Vulkan.RenderPassCreateFlagBits
 
+import Vulkan.PipelineStageFlagBits
+import Vulkan.AccessFlagBits
+import Vulkan.DependencyFlagBits
+
 import qualified Vulkan.StructureType as ST
 
 #include <vulkan/vulkan.h>
@@ -105,6 +109,34 @@ struct "SubpassDescription" #{size VkSubpassDescription}
 
 type PtrSubpassDescription = Ptr SubpassDescription
 
+struct "SubpassDependency" #{size VkSubpassDependency}
+		#{alignment VkSubpassDependency} [
+	("srcSubpass", ''#{type uint32_t},
+		[| #{peek VkSubpassDependency, srcSubpass} |],
+		[| #{poke VkSubpassDependency, srcSubpass} |]),
+	("dstSubpass", ''#{type uint32_t},
+		[| #{peek VkSubpassDependency, dstSubpass} |],
+		[| #{poke VkSubpassDependency, dstSubpass} |]),
+	("srcStageMask", ''PipelineStageFlags,
+		[| #{peek VkSubpassDependency, srcStageMask} |],
+		[| #{poke VkSubpassDependency, srcStageMask} |]),
+	("dstStageMask", ''PipelineStageFlags,
+		[| #{peek VkSubpassDependency, dstStageMask} |],
+		[| #{poke VkSubpassDependency, dstStageMask} |]),
+	("srcAccessMask", ''AccessFlags,
+		[| #{peek VkSubpassDependency, srcAccessMask} |],
+		[| #{poke VkSubpassDependency, srcAccessMask} |]),
+	("dstAccessMask", ''AccessFlags,
+		[| #{peek VkSubpassDependency, dstAccessMask} |],
+		[| #{poke VkSubpassDependency, dstAccessMask} |]),
+	("dependencyFlags", ''DependencyFlags,
+		[| #{peek VkSubpassDependency, dependencyFlags} |],
+		[| #{poke VkSubpassDependency, dependencyFlags} |])
+	]
+	[''Show, ''Storable]
+
+type PtrSubpassDependency = Ptr SubpassDependency
+
 struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		#{alignment VkRenderPassCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
@@ -125,8 +157,13 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		[| #{peek VkRenderPassCreateInfo, subpassCount} |],
 		[| #{poke VkRenderPassCreateInfo, subpassCount} |]),
 	("pSubpasses", ''PtrSubpassDescription,
-		[| #{peek VkRenderPassCreateInfo, pSubpasses } |],
-		[| #{poke VkRenderPassCreateInfo, pSubpasses } |])
---	("dependencyCount"
+		[| #{peek VkRenderPassCreateInfo, pSubpasses} |],
+		[| #{poke VkRenderPassCreateInfo, pSubpasses} |]),
+	("dependencyCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassCreateInfo, dependencyCount} |],
+		[| #{poke VkRenderPassCreateInfo, dependencyCount} |]),
+	("pDependencies", ''PtrSubpassDependency,
+		[| #{peek VkRenderPassCreateInfo, pDependencies} |],
+		[| #{poke VkRenderPassCreateInfo, pDependencies} |])
 	]
 	[''Show, ''Storable]

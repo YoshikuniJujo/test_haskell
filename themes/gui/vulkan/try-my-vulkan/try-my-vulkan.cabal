@@ -31,6 +31,7 @@ library
       ThEnv
       Try.GetSizeAlignment
       Vulkan
+      Vulkan.AccessFlagBits
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Internal
       Vulkan.AttachmentDescriptionFlagBits
@@ -43,6 +44,7 @@ library
       Vulkan.ColorComponentFlagBits
       Vulkan.CompareOp
       Vulkan.CullModeFlagBits
+      Vulkan.DependencyFlagBits
       Vulkan.Descriptor.SetLayout
       Vulkan.Descriptor.SetLayout.Internal
       Vulkan.DescriptorSetLayoutCreateFlagBits
@@ -95,6 +97,7 @@ library
       Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Internal
       Vulkan.PipelineBindPoint
+      Vulkan.PipelineStageFlagBits
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
       Vulkan.RenderPass
