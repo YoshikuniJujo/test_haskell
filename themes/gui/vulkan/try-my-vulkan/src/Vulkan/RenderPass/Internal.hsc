@@ -110,6 +110,9 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		[| #{poke VkRenderPassCreateInfo, pNext} |]),
 	("flags", ''RenderPassCreateFlags,
 		[| #{peek VkRenderPassCreateInfo, flags} |],
-		[| #{poke VkRenderPassCreateInfo, flags} |])
+		[| #{poke VkRenderPassCreateInfo, flags} |]),
+	("attachmentCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassCreateInfo, attachmentCount} |],
+		[| #{poke VkRenderPassCreateInfo, attachmentCount} |])
 	]
 	[''Show, ''Storable]
