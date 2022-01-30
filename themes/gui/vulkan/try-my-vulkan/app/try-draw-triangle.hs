@@ -91,6 +91,8 @@ import qualified Vulkan.ImageLayout as Vk
 import qualified Vulkan.PipelineBindPoint as Vk
 import qualified Vulkan.SubpassDescriptionFlagBits as Vk
 
+import qualified Vulkan.AttachmentDescriptionFlagBits as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -552,6 +554,8 @@ createImageView1 dvc scif img = do
 createRenderPass :: Vk.Format -> IO ()
 createRenderPass scif = do
 	let	colorAttachment = Vk.I.AttachmentDescription {
+			Vk.I.attachmentDescriptionFlags =
+				Vk.AttachmentDescriptionFlagsZero,
 			Vk.I.attachmentDescriptionFormat = scif,
 			Vk.I.attachmentDescriptionSamples = Vk.SampleCount1Bit,
 			Vk.I.attachmentDescriptionLoadOp =

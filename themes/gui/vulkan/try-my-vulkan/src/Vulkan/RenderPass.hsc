@@ -12,6 +12,8 @@ import Vulkan.Base
 import Vulkan.SubpassDescriptionFlagBits
 import Vulkan.PipelineBindPoint
 
+import Vulkan.RenderPassCreateFlagBits
+
 import qualified Vulkan.RenderPass.Internal as I
 
 #include <vulkan/vulkan.h>
@@ -74,3 +76,16 @@ subpassDescriptionToC SubpassDescription {
 		I.subpassDescriptionPreserveAttachmentCount = fromIntegral pac,
 		I.subpassDescriptionPPreserveAttachments = ppas
 		}
+
+data CreateInfo n = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: RenderPassCreateFlags,
+	createInfoAttachments :: [I.AttachmentDescription],
+	createInfoSubpasses :: [I.SubpassDescription],
+	createInfoDependencies :: [I.SubpassDependency] }
+	deriving Show
+
+createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
+createInfoToC CreateInfo {
+	} = runContT do
+	undefined

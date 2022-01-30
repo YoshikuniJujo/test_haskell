@@ -17,6 +17,7 @@ import Data.Bits
 
 enum "AttachmentDescriptionFlagBits" ''#{type VkAttachmentDescriptionFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("AttachmentDescriptionFlagsZero", 0),
 	("AttachmentDescriptionMayAliasBit",
 		#{const VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT}),
 	("AttachmentDescriptionFlagBitsMaxEnum",
