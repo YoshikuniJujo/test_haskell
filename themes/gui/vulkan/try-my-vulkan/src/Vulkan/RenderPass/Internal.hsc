@@ -55,6 +55,8 @@ struct "AttachmentDescription" #{size VkAttachmentDescription}
 		[| #{poke VkAttachmentDescription, finalLayout} |]) ]
 	[''Show, ''Storable]
 
+type PtrAttachmentDescription = Ptr AttachmentDescription
+
 struct "AttachmentReference" #{size VkAttachmentReference}
 		#{alignment VkAttachmentReference} [
 	("attachment", ''#{type uint32_t},
@@ -101,6 +103,8 @@ struct "SubpassDescription" #{size VkSubpassDescription}
 		[| #{poke VkSubpassDescription, pPreserveAttachments} |]) ]
 	[''Show, ''Storable]
 
+type PtrSubpassDescription = Ptr SubpassDescription
+
 struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		#{alignment VkRenderPassCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
@@ -113,6 +117,16 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		[| #{poke VkRenderPassCreateInfo, flags} |]),
 	("attachmentCount", ''#{type uint32_t},
 		[| #{peek VkRenderPassCreateInfo, attachmentCount} |],
-		[| #{poke VkRenderPassCreateInfo, attachmentCount} |])
+		[| #{poke VkRenderPassCreateInfo, attachmentCount} |]),
+	("pAttachments", ''PtrAttachmentDescription,
+		[| #{peek VkRenderPassCreateInfo, pAttachments} |],
+		[| #{poke VkRenderPassCreateInfo, pAttachments} |]),
+	("subpassCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassCreateInfo, subpassCount} |],
+		[| #{poke VkRenderPassCreateInfo, subpassCount} |]),
+	("pSubpasses", ''PtrSubpassDescription,
+		[| #{peek VkRenderPassCreateInfo, pSubpasses } |],
+		[| #{poke VkRenderPassCreateInfo, pSubpasses } |])
+--	("dependencyCount"
 	]
 	[''Show, ''Storable]
