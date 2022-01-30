@@ -48,3 +48,6 @@ descriptorSetLayoutCreateInfo =
 
 samplerCreateInfo :: #{type VkStructureType}
 samplerCreateInfo = #{const VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO}
+
+renderPassCreateInfo :: #{type VkStructureType}
+renderPassCreateInfo = #{const VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}

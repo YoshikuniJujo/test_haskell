@@ -20,6 +20,8 @@ import Vulkan.ImageLayout
 import Vulkan.SubpassDescriptionFlagBits
 import Vulkan.PipelineBindPoint
 
+import qualified Vulkan.StructureType as ST
+
 #include <vulkan/vulkan.h>
 
 struct "AttachmentDescription" #{size VkAttachmentDescription}
@@ -96,4 +98,14 @@ struct "SubpassDescription" #{size VkSubpassDescription}
 	("pPreserveAttachments", ''PtrUint32T,
 		[| #{peek VkSubpassDescription, pPreserveAttachments} |],
 		[| #{poke VkSubpassDescription, pPreserveAttachments} |]) ]
+	[''Show, ''Storable]
+
+struct "CreateInfo" #{size VkRenderPassCreateInfo}
+		#{alignment VkRenderPassCreateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkRenderPassCreateInfo, sType} p
+			ST.renderPassCreateInfo |]),
+	("pNext", ''PtrVoid, [| #{peek VkRenderPassCreateInfo, pNext} |],
+		[| #{poke VkRenderPassCreateInfo, pNext} |])
+	]
 	[''Show, ''Storable]
