@@ -82,6 +82,7 @@ import qualified Vulkan.Pipeline.Layout.Internal as Vk.Ppl.Layout.I
 import qualified Vulkan.Pipeline.Layout as Vk (
 	PipelineLayout, createPipelineLayout, destroyPipelineLayout )
 
+import qualified Vulkan.RenderPass as Vk.RenderPass
 import qualified Vulkan.RenderPass as Vk (SubpassDescription(..))
 import qualified Vulkan.RenderPass.Internal as Vk.I
 import qualified Vulkan.AttachmentLoadOp as Vk
@@ -90,8 +91,8 @@ import qualified Vulkan.ImageLayout as Vk
 
 import qualified Vulkan.PipelineBindPoint as Vk
 import qualified Vulkan.SubpassDescriptionFlagBits as Vk
-
 import qualified Vulkan.AttachmentDescriptionFlagBits as Vk
+import qualified Vulkan.RenderPassCreateFlagBits as Vk
 
 import qualified Glfw as Glfw
 
@@ -120,9 +121,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, ppl) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc ivs ppl
+	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -134,7 +135,8 @@ initWindow = do
 
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
-	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView], Vk.PipelineLayout )
+	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
+	Vk.RenderPass.RenderPass, Vk.PipelineLayout )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -145,9 +147,9 @@ initVulkan w = do
 	(dv, gq, pq) <- createLogicalDevice pd sfc
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
-	createRenderPass scif
+	rp <- createRenderPass dv scif
 	ppl <- createGraphicsPipeline dv sce
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, ppl)
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -551,8 +553,8 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
 
-createRenderPass :: Vk.Format -> IO ()
-createRenderPass scif = do
+createRenderPass :: Vk.Device -> Vk.Format -> IO Vk.RenderPass.RenderPass
+createRenderPass dvc scif = do
 	let	colorAttachment = Vk.I.AttachmentDescription {
 			Vk.I.attachmentDescriptionFlags =
 				Vk.AttachmentDescriptionFlagsZero,
@@ -584,7 +586,14 @@ createRenderPass scif = do
 			Vk.subpassDescriptionInputAttachments = [],
 			Vk.subpassDescriptionDepthStencilAttachment = Nothing,
 			Vk.subpassDescriptionPreserveAttachments = [] }
-	pure ()
+		renderPassInfo = Vk.RenderPass.CreateInfo {
+			Vk.RenderPass.createInfoNext = Nothing,
+			Vk.RenderPass.createInfoFlags =
+				Vk.RenderPassCreateFlagsZero,
+			Vk.RenderPass.createInfoAttachments = [colorAttachment],
+			Vk.RenderPass.createInfoSubpasses = [subpass],
+			Vk.RenderPass.createInfoDependencies = [] }
+	Vk.RenderPass.create @() @() dvc renderPassInfo Nothing
 
 createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
 createGraphicsPipeline dvc sce = do
@@ -735,9 +744,10 @@ mainLoop w = do
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
-	Vk.PipelineLayout -> IO ()
-cleanup w ist mdbgMssngr dv sfc sc ivs ppl = do
+	Vk.RenderPass.RenderPass -> Vk.PipelineLayout -> IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl = do
 	Vk.destroyPipelineLayout @() dv ppl Nothing
+	Vk.RenderPass.destroy @() dv rp Nothing
 	flip (Vk.destroyImageView @() dv) Nothing `mapM_` ivs
 	Vk.Khr.destroySwapchain @() dv sc Nothing
 	Vk.destroyDevice @() dv Nothing

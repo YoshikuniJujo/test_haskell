@@ -1,19 +1,28 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.RenderPass where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.AllocationCallbacks
+import Vulkan.Device
 import Vulkan.SubpassDescriptionFlagBits
 import Vulkan.PipelineBindPoint
 
 import Vulkan.RenderPassCreateFlagBits
 
+import qualified Vulkan.AllocationCallbacks.Internal as I
 import qualified Vulkan.RenderPass.Internal as I
 
 #include <vulkan/vulkan.h>
@@ -81,11 +90,66 @@ data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: RenderPassCreateFlags,
 	createInfoAttachments :: [I.AttachmentDescription],
-	createInfoSubpasses :: [I.SubpassDescription],
+	createInfoSubpasses :: [SubpassDescription],
 	createInfoDependencies :: [I.SubpassDependency] }
 	deriving Show
 
 createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
 createInfoToC CreateInfo {
-	} = runContT do
-	undefined
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoAttachments = as,
+	createInfoSubpasses = ss,
+	createInfoDependencies = ds } = runContT do
+	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
+	let	ac = length as
+	pas <- ContT $ allocaArray ac
+	lift $ pokeArray pas as
+	let	sc = length ss
+	pss <- ContT $ allocaArray sc
+	iss <- (ContT . subpassDescriptionToC) `mapM` ss
+	lift $ pokeArray pss iss
+	let	dc = length ds
+	pds <- ContT $ allocaArray dc
+	lift $ pokeArray pds ds
+	pure I.CreateInfo {
+		I.createInfoSType = (),
+		I.createInfoPNext = pnxt,
+		I.createInfoFlags = flgs,
+		I.createInfoAttachmentCount = fromIntegral ac,
+		I.createInfoPAttachments = pas,
+		I.createInfoSubpassCount = fromIntegral sc,
+		I.createInfoPSubpasses = pss,
+		I.createInfoDependencyCount = fromIntegral dc,
+		I.createInfoPDependencies = pds }
+
+data RenderPassTag
+newtype RenderPass = RenderPass (Ptr RenderPassTag) deriving (Show, Storable)
+
+create :: (Pointable n, Pointable n') => Device ->
+	CreateInfo n -> Maybe (AllocationCallbacks n') -> IO RenderPass
+create dvc ci mac = ($ pure) $ runContT do
+	I.CreateInfo_ fci <- ContT $ createInfoToC ci
+	pci <- ContT $ withForeignPtr fci
+	pac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	prp <- ContT alloca
+	lift do	r <- c_vkCreateRenderPass dvc pci pac prp
+		throwUnlessSuccess r
+		peek prp
+
+foreign import ccall "vkCreateRenderPass" c_vkCreateRenderPass ::
+	Device -> Ptr I.CreateInfo -> Ptr I.AllocationCallbacks ->
+	Ptr RenderPass -> IO Result
+
+destroy :: Pointable n =>
+	Device -> RenderPass -> Maybe (AllocationCallbacks n) -> IO ()
+destroy dvc rp mac = ($ pure) $ runContT do
+	pac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	lift $ c_vkDestroyRenderPass dvc rp pac
+
+foreign import ccall "vkDestroyRenderPass" c_vkDestroyRenderPass ::
+	Device -> RenderPass -> Ptr I.AllocationCallbacks -> IO ()
