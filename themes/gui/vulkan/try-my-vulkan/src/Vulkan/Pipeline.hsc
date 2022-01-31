@@ -41,6 +41,10 @@ import qualified Vulkan.Pipeline.ViewportState.Internal as ViewportState.I
 import qualified Vulkan.Pipeline.RasterizationState.Internal as
 	RasterizationState.I
 import qualified Vulkan.Pipeline.MultisampleState.Internal as MultisampleState.I
+import qualified Vulkan.Pipeline.DepthStencilState.Internal as
+	DepthStencilState.I
+import qualified Vulkan.Pipeline.ColorBlendState.Internal as ColorBlendState.I
+import qualified Vulkan.Pipeline.DynamicState.Internal as DynamicState.I
 
 #include <vulkan/vulkan.h>
 
@@ -91,7 +95,10 @@ createInfoToC CreateInfo {
 	createInfoTessellationState = mts,
 	createInfoViewportState = mvs,
 	createInfoRasterizationState = rs,
-	createInfoMultisampleState = mms
+	createInfoMultisampleState = mms,
+	createInfoDepthStencilState = mdss,
+	createInfoColorBlendState = mcbs,
+	createInfoDynamicState = mds
 	} = runContT do
 	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
 	let	sc = length ss
@@ -132,6 +139,24 @@ createInfoToC CreateInfo {
 			MultisampleState.I.CreateInfo_ fms <-
 				ContT $ MultisampleState.createInfoToC ms
 			ContT $ withForeignPtr fms
+	pdss <- case mdss of
+		Nothing -> pure NullPtr
+		Just dss -> do
+			DepthStencilState.I.CreateInfo_ fdss <-
+				ContT $ DepthStencilState.createInfoToC dss
+			ContT $ withForeignPtr fdss
+	pcbs <- case mcbs of
+		Nothing -> pure NullPtr
+		Just cbs -> do
+			ColorBlendState.I.CreateInfo_ fcbs <-
+				ContT $ ColorBlendState.createInfoToC cbs
+			ContT $ withForeignPtr fcbs
+	pds <- case mds of
+		Nothing -> pure NullPtr
+		Just ds -> do
+			DynamicState.I.CreateInfo_ fds <-
+				ContT $ DynamicState.createInfoToC ds
+			ContT $ withForeignPtr fds
 	pure I.CreateInfo {
 		I.createInfoSType = (),
 		I.createInfoPNext = pnxt,
@@ -143,5 +168,8 @@ createInfoToC CreateInfo {
 		I.createInfoPTessellationState = pts,
 		I.createInfoPViewportState = pvs,
 		I.createInfoPRasterizationState = prs,
-		I.createInfoPMultisampleState = pms
+		I.createInfoPMultisampleState = pms,
+		I.createInfoPDepthStencilState = pdss,
+		I.createInfoPColorBlendState = pcbs,
+		I.createInfoPDynamicState = pds
 		}
