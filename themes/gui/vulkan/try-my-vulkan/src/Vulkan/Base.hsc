@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -137,12 +139,16 @@ newtype SampleMask = SampleMask #{type VkSampleMask} deriving (Show, Storable)
 type PtrSampleMask = Ptr SampleMask
 
 data PipelineTag
-newtype Pipeline = Pipeline (Ptr PipelineTag) deriving (Show, Storable)
+newtype Pipeline vs (ts :: [*]) = Pipeline (Ptr PipelineTag) deriving (Show, Storable)
+newtype PipelineC = PipelineC (Ptr PipelineTag) deriving (Show, Storable)
+
+pipelineToC :: Pipeline vs ts -> PipelineC
+pipelineToC (Pipeline p) = PipelineC p
 
 pattern NullHandle :: Ptr a
 pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
 	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
 
-pattern PipelineNullHandle :: Pipeline
+pattern PipelineNullHandle :: Pipeline vs ts
 pattern PipelineNullHandle <- Pipeline NullHandle where
 	PipelineNullHandle = Pipeline NullHandle

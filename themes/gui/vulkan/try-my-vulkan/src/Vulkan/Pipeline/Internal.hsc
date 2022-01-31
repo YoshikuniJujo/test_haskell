@@ -88,7 +88,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("subpass", ''#{type uint32_t},
 		[| #{peek VkGraphicsPipelineCreateInfo, subpass} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, subpass} |]),
-	("basePipelineHandle", ''Pipeline,
+	("basePipelineHandle", ''PipelineC,
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineHandle} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineHandle} |]),
 	("basePipelineIndex", ''#{type int32_t},

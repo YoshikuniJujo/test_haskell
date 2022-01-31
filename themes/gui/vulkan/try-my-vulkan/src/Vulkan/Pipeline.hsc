@@ -14,6 +14,10 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.AllocationCallbacks
+import Vulkan.Device
+import Vulkan.Pipeline.Cache (PipelineCache(..))
 import Vulkan.PipelineCreateFlagBits
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList
@@ -46,6 +50,8 @@ import qualified Vulkan.Pipeline.DepthStencilState.Internal as
 import qualified Vulkan.Pipeline.ColorBlendState.Internal as ColorBlendState.I
 import qualified Vulkan.Pipeline.DynamicState.Internal as DynamicState.I
 
+import qualified Vulkan.AllocationCallbacks.Internal as I
+
 #include <vulkan/vulkan.h>
 
 data CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
@@ -66,7 +72,7 @@ data CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoLayout :: Layout.PipelineLayout,
 	createInfoRenderPass :: RenderPass.RenderPass,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: Pipeline,
+	createInfoBasePipelineHandle :: Pipeline vs ts,
 	createInfoBasePipelineIndex :: Int32 }
 	deriving Show
 
@@ -102,7 +108,7 @@ createInfoToC CreateInfo {
 	createInfoLayout = lyt,
 	createInfoRenderPass = rp,
 	createInfoSubpass = word32ToUint32T -> sp,
-	createInfoBasePipelineHandle = bph,
+	createInfoBasePipelineHandle = pipelineToC -> bph,
 	createInfoBasePipelineIndex = int32ToInt32T -> bpi
 	} = runContT do
 	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
@@ -182,3 +188,23 @@ createInfoToC CreateInfo {
 		I.createInfoSubpass = sp,
 		I.createInfoBasePipelineHandle = bph,
 		I.createInfoBasePipelineIndex = bpi }
+
+create:: (
+	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n10, Pointable n11,
+	BindingStrideList vs
+		VertexInputState.VertexInputRate
+		VertexInputState.I.VertexInputRate,
+	VertexInputState.PipelineVertexInputStateCreateInfoAttributeDescription
+		vs ts ) =>
+	Device -> PipelineCache ->
+	[CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10] ->
+	Maybe (AllocationCallbacks n11) -> IO [Pipeline vs ts]
+create dvc pc cis mac = ($ pure) $ runContT do
+	let	cic = length cis
+	undefined
+
+foreign import ccall "vkCreateGraphicsPipelines" c_vkCreateGraphicsPipelines ::
+	Device -> PipelineCache -> #{type uint32_t} -> Ptr I.CreateInfo ->
+	Ptr I.AllocationCallbacks -> Ptr (Pipeline vs ts) -> IO Result
