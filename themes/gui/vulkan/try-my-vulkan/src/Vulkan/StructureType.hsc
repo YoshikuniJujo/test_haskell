@@ -51,3 +51,6 @@ samplerCreateInfo = #{const VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO}
 
 renderPassCreateInfo :: #{type VkStructureType}
 renderPassCreateInfo = #{const VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}
+
+pipelineCreateInfo :: #{type VkStructureType}
+pipelineCreateInfo = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
