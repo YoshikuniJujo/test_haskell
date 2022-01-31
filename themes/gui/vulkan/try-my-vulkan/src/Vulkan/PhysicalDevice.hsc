@@ -31,10 +31,6 @@ pattern PhysicalDeviceNullHandle :: PhysicalDevice
 pattern PhysicalDeviceNullHandle <- PhysicalDevice NullHandle where
 	PhysicalDeviceNullHandle = PhysicalDevice NullHandle
 
-pattern NullHandle :: Ptr a
-pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
-	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
-
 enumeratePhysicalDevices :: Instance -> IO [PhysicalDevice]
 enumeratePhysicalDevices (Instance pist) = alloca \pn -> do
 	r <- c_vkEnumeratePhysicalDevices pist pn NullPtr

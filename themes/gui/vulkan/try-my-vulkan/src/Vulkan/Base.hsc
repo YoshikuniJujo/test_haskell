@@ -138,3 +138,11 @@ type PtrSampleMask = Ptr SampleMask
 
 data PipelineTag
 newtype Pipeline = Pipeline (Ptr PipelineTag) deriving (Show, Storable)
+
+pattern NullHandle :: Ptr a
+pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
+	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+
+pattern PipelineNullHandle :: Pipeline
+pattern PipelineNullHandle <- Pipeline NullHandle where
+	PipelineNullHandle = Pipeline NullHandle
