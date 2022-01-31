@@ -33,6 +33,10 @@ import qualified Vulkan.Pipeline.Layout as Layout
 import qualified Vulkan.RenderPass as RenderPass
 
 import qualified Vulkan.Pipeline.VertexInputState.Internal as VertexInputState.I
+import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
+	InputAssemblyState.I
+import qualified Vulkan.Pipeline.TessellationState.Internal as
+	TessellationState.I
 
 #include <vulkan/vulkan.h>
 
@@ -78,7 +82,9 @@ createInfoToC :: (
 createInfoToC CreateInfo {
 	createInfoNext = mnxt, createInfoFlags = flgs,
 	createInfoStages = ss,
-	createInfoVertexInputState = mvis
+	createInfoVertexInputState = mvis,
+	createInfoInputAssemblyState = mias,
+	createInfoTessellationState = mts
 	} = runContT do
 	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
 	let	sc = length ss
@@ -91,10 +97,25 @@ createInfoToC CreateInfo {
 			VertexInputState.I.CreateInfo_ fvis <-
 				ContT $ VertexInputState.createInfoToC vis
 			ContT $ withForeignPtr fvis
+	pias <- case mias of
+		Nothing -> pure NullPtr
+		Just ias -> do
+			InputAssemblyState.I.CreateInfo_ fias <-
+				ContT $ InputAssemblyState.createInfoToC ias
+			ContT $ withForeignPtr fias
+	pts <- case mts of
+		Nothing -> pure NullPtr
+		Just ts -> do
+			TessellationState.I.CreateInfo_ fts <-
+				ContT $ TessellationState.createInfoToC ts
+			ContT $ withForeignPtr fts
 	pure I.CreateInfo {
 		I.createInfoSType = (),
 		I.createInfoPNext = pnxt,
 		I.createInfoFlags = flgs,
 		I.createInfoStageCount = fromIntegral sc,
-		I.createInfoPStages = pss
+		I.createInfoPStages = pss,
+		I.createInfoPVertexInputState = pvis,
+		I.createInfoPInputAssemblyState = pias,
+		I.createInfoPTessellationState = pts
 		}
