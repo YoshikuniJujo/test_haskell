@@ -43,4 +43,4 @@ struct "CreateInfo" #{size VkPipelineViewportStateCreateInfo}
 	("pScissors", ''PtrRect2d,
 		[| #{peek VkPipelineViewportStateCreateInfo, pScissors} |],
 		[| #{poke VkPipelineViewportStateCreateInfo, pScissors} |]) ]
-	[''Show]
+	[''Show, ''Storable]
