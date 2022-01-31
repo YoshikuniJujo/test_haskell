@@ -94,3 +94,5 @@ struct "CreateInfo"
 		[| #{poke VkPipelineVertexInputStateCreateInfo,
 			pVertexAttributeDescriptions} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

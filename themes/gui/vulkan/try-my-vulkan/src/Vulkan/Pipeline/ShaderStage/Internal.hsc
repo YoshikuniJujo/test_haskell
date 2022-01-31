@@ -61,3 +61,5 @@ struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		[| #{poke VkPipelineShaderStageCreateInfo,
 			pSpecializationInfo} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

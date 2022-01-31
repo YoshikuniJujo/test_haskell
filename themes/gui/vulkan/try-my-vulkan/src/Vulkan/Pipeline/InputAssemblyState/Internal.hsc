@@ -7,6 +7,7 @@ module Vulkan.Pipeline.InputAssemblyState.Internal where
 
 import Prelude hiding (Bool(..))
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -43,3 +44,5 @@ struct "CreateInfo" #{size VkPipelineInputAssemblyStateCreateInfo}
 			primitiveRestartEnable} |])
 	]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

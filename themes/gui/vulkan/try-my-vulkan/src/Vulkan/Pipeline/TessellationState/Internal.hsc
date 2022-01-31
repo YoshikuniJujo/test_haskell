@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.TessellationState.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -38,3 +39,5 @@ struct "CreateInfo" #{size VkPipelineTessellationStateCreateInfo}
 		[| #{poke VkPipelineTessellationStateCreateInfo,
 			patchControlPoints} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo
