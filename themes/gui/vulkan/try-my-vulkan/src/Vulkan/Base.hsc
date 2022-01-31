@@ -135,3 +135,6 @@ type PtrRect2d = Ptr Rect2d
 newtype SampleMask = SampleMask #{type VkSampleMask} deriving (Show, Storable)
 
 type PtrSampleMask = Ptr SampleMask
+
+data PipelineTag
+newtype Pipeline = Pipeline (Ptr PipelineTag) deriving (Show, Storable)
