@@ -15,6 +15,8 @@ import Vulkan.PipelineCreateFlagBits
 import qualified Vulkan.StructureType as ST
 import qualified Vulkan.Pipeline.ShaderStage.Internal as ShaderStage.I
 import qualified Vulkan.Pipeline.VertexInputState.Internal as VertexInputState.I
+import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
+	InputAssemblyState.I
 
 #include <vulkan/vulkan.h>
 
@@ -37,6 +39,13 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		[| #{poke VkGraphicsPipelineCreateInfo, pStages} |]),
 	("pVertexInputState", ''VertexInputState.I.CreateInfo,
 		[| #{peek VkGraphicsPipelineCreateInfo, pVertexInputState} |],
-		[| #{poke VkGraphicsPipelineCreateInfo, pVertexInputState} |])
+		[| #{poke VkGraphicsPipelineCreateInfo, pVertexInputState} |]),
+	("pInputAssemblyState", ''InputAssemblyState.I.CreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pInputAssemblyState} |],
+		[| #{poke VkGraphicsPipelineCreateInfo,
+			pInputAssemblyState} |])
+--	("pTessellationState", ''TessellationState.I.CreateInfo,
+--		[| #{peek VkGraphicsPipelineCreateInfo, pTessellationState} |],
+--		[| #{poke VkGraphicsPipelineCreateInfo, pTessellationState} |])
 	]
 	[''Show, ''Storable]

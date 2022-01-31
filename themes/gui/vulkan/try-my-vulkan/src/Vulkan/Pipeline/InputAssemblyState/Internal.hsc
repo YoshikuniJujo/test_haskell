@@ -42,4 +42,4 @@ struct "CreateInfo" #{size VkPipelineInputAssemblyStateCreateInfo}
 		[| #{poke VkPipelineInputAssemblyStateCreateInfo,
 			primitiveRestartEnable} |])
 	]
-	[''Show]
+	[''Show, ''Storable]
