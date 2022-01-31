@@ -20,6 +20,8 @@ import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
 import qualified Vulkan.Pipeline.TessellationState.Internal as
 	TessellationState.I
 import qualified Vulkan.Pipeline.ViewportState.Internal as ViewportState.I
+import qualified Vulkan.Pipeline.RasterizationState.Internal as
+	RasterizationState.I
 
 #include <vulkan/vulkan.h>
 
@@ -52,6 +54,10 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		[| #{poke VkGraphicsPipelineCreateInfo, pTessellationState} |]),
 	("pViewportState", ''ViewportState.I.PtrCreateInfo,
 		[| #{peek VkGraphicsPipelineCreateInfo, pViewportState} |],
-		[| #{poke VkGraphicsPipelineCreateInfo, pViewportState} |])
+		[| #{poke VkGraphicsPipelineCreateInfo, pViewportState} |]),
+	("pRasterizationState", ''RasterizationState.I.PtrCreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pRasterizationState} |],
+		[| #{poke VkGraphicsPipelineCreateInfo,
+			pRasterizationState} |])
 	]
 	[''Show, ''Storable]
