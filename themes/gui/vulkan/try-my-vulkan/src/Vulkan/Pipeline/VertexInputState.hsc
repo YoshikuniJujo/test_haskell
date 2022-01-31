@@ -23,12 +23,12 @@ import Vulkan.Pipeline.VertexInputState.GetBindingOffset
 import qualified Vulkan.Pipeline.VertexInputState.Intermediate as Im
 import qualified Vulkan.Pipeline.VertexInputState.Internal as In
 
-pipelineVertexInputStateCreateInfoToC :: (
+createInfoToC :: (
 	Pointable n,
 	BindingStrideList vs VertexInputRate In.VertexInputRate,
 	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n vs ts -> (In.CreateInfo -> IO a) -> IO a
-pipelineVertexInputStateCreateInfoToC = Im.pipelineVertexInputStateCreateInfoToC
+createInfoToC = Im.pipelineVertexInputStateCreateInfoToC
 	. pipelineVertexInputStateCreateInfoToIntermediate
 
 pipelineVertexInputStateCreateInfoToIntermediate :: (

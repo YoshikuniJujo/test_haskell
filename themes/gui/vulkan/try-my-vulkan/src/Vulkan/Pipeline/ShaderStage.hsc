@@ -28,9 +28,8 @@ data CreateInfo n = CreateInfo {
 	createInfoSpecializationInfo :: Maybe SpecializationInfo }
 	deriving Show
 
-pipelineShaderStageCreateInfoToC ::
-	Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
-pipelineShaderStageCreateInfoToC CreateInfo {
+createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
+createInfoToC CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoStage = stg,
