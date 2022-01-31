@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.RasterizationState.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -82,3 +83,5 @@ struct "CreateInfo" #{size VkPipelineRasterizationStateCreateInfo}
 		[| #{poke VkPipelineRasterizationStateCreateInfo, lineWidth} |])
 	]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

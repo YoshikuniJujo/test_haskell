@@ -110,3 +110,5 @@ struct "CreateInfo" #{size VkPipelineColorBlendStateCreateInfo}
 			$ #{ptr VkPipelineColorBlendStateCreateInfo,
 				blendConstants} p |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

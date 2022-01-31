@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.MultisampleState.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -61,3 +62,5 @@ struct "CreateInfo" #{size VkPipelineMultisampleStateCreateInfo}
 		[| #{poke VkPipelineMultisampleStateCreateInfo,
 			alphaToOneEnable} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

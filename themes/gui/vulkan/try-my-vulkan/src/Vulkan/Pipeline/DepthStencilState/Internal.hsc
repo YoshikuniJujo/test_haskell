@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.DepthStencilState.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -99,3 +100,5 @@ struct "CreateInfo" #{size VkPipelineDepthStencilStateCreateInfo}
 			maxDepthBounds} |])
 	]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

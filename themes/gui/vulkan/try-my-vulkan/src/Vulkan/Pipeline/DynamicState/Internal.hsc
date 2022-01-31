@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.DynamicState.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.C.Struct
@@ -43,3 +44,5 @@ struct "CreateInfo" #{size VkPipelineDynamicStateCreateInfo}
 		[| #{poke VkPipelineDynamicStateCreateInfo, pDynamicStates} |])
 	]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo
