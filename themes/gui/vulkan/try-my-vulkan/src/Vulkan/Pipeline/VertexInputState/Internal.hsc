@@ -61,7 +61,7 @@ struct "VertexInputAttributeDescription"
 
 type PtrVertexInputAttributeDescription = Ptr VertexInputAttributeDescription
 
-struct "PipelineVertexInputStateCreateInfo"
+struct "CreateInfo"
 		#{size VkPipelineVertexInputStateCreateInfo}
 		#{alignment VkPipelineVertexInputStateCreateInfo} [
 	("sType", ''(), [| const $ pure () |],

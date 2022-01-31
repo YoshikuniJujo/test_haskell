@@ -28,7 +28,7 @@ pipelineVertexInputStateCreateInfoToC :: (
 	BindingStrideList vs VertexInputRate In.VertexInputRate,
 	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
 	PipelineVertexInputStateCreateInfo n vs ts ->
-	(In.PipelineVertexInputStateCreateInfo -> IO a) -> IO a
+	(In.CreateInfo -> IO a) -> IO a
 pipelineVertexInputStateCreateInfoToC = Im.pipelineVertexInputStateCreateInfoToC
 	. pipelineVertexInputStateCreateInfoToIntermediate
 

@@ -24,8 +24,7 @@ data PipelineVertexInputStateCreateInfo n = PipelineVertexInputStateCreateInfo {
 	deriving Show
 
 pipelineVertexInputStateCreateInfoToC :: Pointable n =>
-	PipelineVertexInputStateCreateInfo n ->
-	(I.PipelineVertexInputStateCreateInfo -> IO a) -> IO a
+	PipelineVertexInputStateCreateInfo n -> (I.CreateInfo -> IO a) -> IO a
 pipelineVertexInputStateCreateInfoToC PipelineVertexInputStateCreateInfo {
 	pipelineVertexInputStateCreateInfoNext = mnxt,
 	pipelineVertexInputStateCreateInfoFlags = flgs,
@@ -39,16 +38,13 @@ pipelineVertexInputStateCreateInfoToC PipelineVertexInputStateCreateInfo {
 		let	vadc = length vads
 		pvads <- ContT $ allocaArray vadc
 		lift $ pokeArray pvads vads
-		pure I.PipelineVertexInputStateCreateInfo {
-			I.pipelineVertexInputStateCreateInfoSType = (),
-			I.pipelineVertexInputStateCreateInfoPNext = pnxt,
-			I.pipelineVertexInputStateCreateInfoFlags = flgs,
-			I.pipelineVertexInputStateCreateInfoVertexBindingDescriptionCount
+		pure I.CreateInfo {
+			I.createInfoSType = (),
+			I.createInfoPNext = pnxt,
+			I.createInfoFlags = flgs,
+			I.createInfoVertexBindingDescriptionCount
 				= fromIntegral vbdc,
-			I.pipelineVertexInputStateCreateInfoPVertexBindingDescriptions
-				= pvbds,
-			I.pipelineVertexInputStateCreateInfoVertexAttributeDescriptionCount
+			I.createInfoPVertexBindingDescriptions = pvbds,
+			I.createInfoVertexAttributeDescriptionCount
 				= fromIntegral vadc,
-			I.pipelineVertexInputStateCreateInfoPVertexAttributeDescriptions
-				= pvads
-			}
+			I.createInfoPVertexAttributeDescriptions = pvads }
