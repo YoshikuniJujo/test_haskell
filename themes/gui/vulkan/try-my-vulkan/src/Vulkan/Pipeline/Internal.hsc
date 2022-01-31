@@ -8,6 +8,7 @@ module Vulkan.Pipeline.Internal where
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 import Vulkan.PipelineCreateFlagBits
@@ -90,7 +91,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("basePipelineHandle", ''Pipeline,
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineHandle} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineHandle} |]),
-	("basePipelineIndex", ''#{type uint32_t},
+	("basePipelineIndex", ''#{type int32_t},
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineIndex} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineIndex} |]) ]
 	[''Show, ''Storable]

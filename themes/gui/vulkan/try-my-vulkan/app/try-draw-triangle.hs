@@ -94,6 +94,9 @@ import qualified Vulkan.SubpassDescriptionFlagBits as Vk
 import qualified Vulkan.AttachmentDescriptionFlagBits as Vk
 import qualified Vulkan.RenderPassCreateFlagBits as Vk
 
+import qualified Vulkan.Pipeline as Vk.Ppl
+import qualified Vulkan.PipelineCreateFlagBits as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -148,7 +151,7 @@ initVulkan w = do
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
 	rp <- createRenderPass dv scif
-	ppl <- createGraphicsPipeline dv sce
+	ppl <- createGraphicsPipeline dv sce rp
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl)
 
 createInstance :: IO Vk.Instance
@@ -595,8 +598,8 @@ createRenderPass dvc scif = do
 			Vk.RenderPass.createInfoDependencies = [] }
 	Vk.RenderPass.create @() @() dvc renderPassInfo Nothing
 
-createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> IO Vk.PipelineLayout
-createGraphicsPipeline dvc sce = do
+createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> Vk.RenderPass.RenderPass -> IO Vk.PipelineLayout
+createGraphicsPipeline dvc sce rp = do
 	vertShaderCode <- BS.readFile "shaders/vert.spv"
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
 	vertShaderModule <- createShaderModule dvc vertShaderCode
@@ -721,6 +724,28 @@ createGraphicsPipeline dvc sce = do
 			Vk.Ppl.Layout.createInfoSetLayouts = [],
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
 	pll <- Vk.createPipelineLayout @() @() dvc pipelineLayoutInfo Nothing
+	let	pipelineInfo = Vk.Ppl.CreateInfo {
+			Vk.Ppl.createInfoNext = Nothing,
+			Vk.Ppl.createInfoFlags = Vk.PipelineCreateFlagsZero,
+			Vk.Ppl.createInfoStages = shaderStages,
+			Vk.Ppl.createInfoVertexInputState =
+				Just vertexInputInfo,
+			Vk.Ppl.createInfoInputAssemblyState =
+				Just inputAssembly,
+			Vk.Ppl.createInfoTessellationState = Nothing,
+			Vk.Ppl.createInfoViewportState = Just viewportState,
+			Vk.Ppl.createInfoRasterizationState = rasterizer,
+			Vk.Ppl.createInfoMultisampleState = Just multisampling,
+			Vk.Ppl.createInfoDepthStencilState = Nothing,
+			Vk.Ppl.createInfoColorBlendState = Just colorBlending,
+			Vk.Ppl.createInfoDynamicState = Nothing,
+			Vk.Ppl.createInfoLayout = pll,
+			Vk.Ppl.createInfoRenderPass = rp,
+			Vk.Ppl.createInfoSubpass = 0,
+			Vk.Ppl.createInfoBasePipelineHandle =
+				Vk.PipelineNullHandle,
+			Vk.Ppl.createInfoBasePipelineIndex = - 1
+			}
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
 	pure pll

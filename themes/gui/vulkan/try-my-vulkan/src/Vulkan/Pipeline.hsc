@@ -98,7 +98,12 @@ createInfoToC CreateInfo {
 	createInfoMultisampleState = mms,
 	createInfoDepthStencilState = mdss,
 	createInfoColorBlendState = mcbs,
-	createInfoDynamicState = mds
+	createInfoDynamicState = mds,
+	createInfoLayout = lyt,
+	createInfoRenderPass = rp,
+	createInfoSubpass = word32ToUint32T -> sp,
+	createInfoBasePipelineHandle = bph,
+	createInfoBasePipelineIndex = int32ToInt32T -> bpi
 	} = runContT do
 	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
 	let	sc = length ss
@@ -171,5 +176,9 @@ createInfoToC CreateInfo {
 		I.createInfoPMultisampleState = pms,
 		I.createInfoPDepthStencilState = pdss,
 		I.createInfoPColorBlendState = pcbs,
-		I.createInfoPDynamicState = pds
-		}
+		I.createInfoPDynamicState = pds,
+		I.createInfoLayout = lyt,
+		I.createInfoRenderPass = rp,
+		I.createInfoSubpass = sp,
+		I.createInfoBasePipelineHandle = bph,
+		I.createInfoBasePipelineIndex = bpi }
