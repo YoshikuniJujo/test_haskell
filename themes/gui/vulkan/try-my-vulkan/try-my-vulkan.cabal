@@ -70,6 +70,7 @@ library
       Vulkan.Khr.Swapchain.Internal
       Vulkan.LogicOp
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.ColorBlendState.Internal
       Vulkan.Pipeline.DepthStencilState

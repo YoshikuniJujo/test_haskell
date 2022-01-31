@@ -41,7 +41,7 @@ import qualified Vulkan.Khr.Swapchain.Internal as Vk.Khr.I
 
 import qualified Vulkan.Shader as Vk
 import qualified Vulkan.Shader.Internal as Vk.I
-import qualified Vulkan.Pipeline.ShaderStage as Vk
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Internal as Vk.I
 import qualified Vulkan.ShaderStageFlagBits as Vk
 
@@ -601,27 +601,25 @@ createGraphicsPipeline dvc sce = do
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
 	vertShaderModule <- createShaderModule dvc vertShaderCode
 	fragShaderModule <- createShaderModule dvc fragShaderCode
-	let	vertShaderStageInfo = Vk.PipelineShaderStageCreateInfo {
-			Vk.pipelineShaderStageCreateInfoNext = Nothing,
-			Vk.pipelineShaderStageCreateInfoFlags =
+	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
 				Vk.I.PipelineShaderStageCreateFlagBitsZero,
-			Vk.pipelineShaderStageCreateInfoStage =
+			Vk.Ppl.ShaderStage.createInfoStage =
 				Vk.ShaderStageVertexBit,
-			Vk.pipelineShaderStageCreateInfoModule =
-				vertShaderModule,
-			Vk.pipelineShaderStageCreateInfoName = "main",
-			Vk.pipelineShaderStageCreateInfoSpecializationInfo =
+			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
-		fragShaderStageInfo = Vk.PipelineShaderStageCreateInfo {
-			Vk.pipelineShaderStageCreateInfoNext = Nothing,
-			Vk.pipelineShaderStageCreateInfoFlags =
+		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
 				Vk.I.PipelineShaderStageCreateFlagBitsZero,
-			Vk.pipelineShaderStageCreateInfoStage =
+			Vk.Ppl.ShaderStage.createInfoStage =
 				Vk.ShaderStageFragmentBit,
-			Vk.pipelineShaderStageCreateInfoModule =
-				fragShaderModule,
-			Vk.pipelineShaderStageCreateInfoName = "main",
-			Vk.pipelineShaderStageCreateInfoSpecializationInfo =
+			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
 		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
 		vertexInputInfo :: Vk.PipelineVertexInputStateCreateInfo () () '[]

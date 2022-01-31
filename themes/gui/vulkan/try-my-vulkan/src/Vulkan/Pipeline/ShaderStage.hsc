@@ -19,25 +19,24 @@ import Vulkan.Shader
 import qualified Vulkan.SpecializationInfo.Internal as I
 import qualified Vulkan.Pipeline.ShaderStage.Internal as I
 
-data PipelineShaderStageCreateInfo n = PipelineShaderStageCreateInfo {
-	pipelineShaderStageCreateInfoNext :: Maybe n,
-	pipelineShaderStageCreateInfoFlags :: I.PipelineShaderStageCreateFlags,
-	pipelineShaderStageCreateInfoStage :: ShaderStageFlagBits,
-	pipelineShaderStageCreateInfoModule :: ShaderModule,
-	pipelineShaderStageCreateInfoName :: String,
-	pipelineShaderStageCreateInfoSpecializationInfo ::
-		Maybe SpecializationInfo }
+data CreateInfo n = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: I.PipelineShaderStageCreateFlags,
+	createInfoStage :: ShaderStageFlagBits,
+	createInfoModule :: ShaderModule,
+	createInfoName :: String,
+	createInfoSpecializationInfo :: Maybe SpecializationInfo }
 	deriving Show
 
-pipelineShaderStageCreateInfoToC :: Pointable n =>
-	PipelineShaderStageCreateInfo n -> (I.CreateInfo -> IO a) -> IO a
-pipelineShaderStageCreateInfoToC PipelineShaderStageCreateInfo {
-	pipelineShaderStageCreateInfoNext = mnxt,
-	pipelineShaderStageCreateInfoFlags = flgs,
-	pipelineShaderStageCreateInfoStage = stg,
-	pipelineShaderStageCreateInfoModule = mdl,
-	pipelineShaderStageCreateInfoName = nm,
-	pipelineShaderStageCreateInfoSpecializationInfo = msi } = runContT do
+pipelineShaderStageCreateInfoToC ::
+	Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
+pipelineShaderStageCreateInfoToC CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoStage = stg,
+	createInfoModule = mdl,
+	createInfoName = nm,
+	createInfoSpecializationInfo = msi } = runContT do
 	(castPtr -> pnxt) <- ContT $ withPointerMaybe mnxt
 	cnm <- ContT $ withCString utf8 nm
 	psi <- case msi of
