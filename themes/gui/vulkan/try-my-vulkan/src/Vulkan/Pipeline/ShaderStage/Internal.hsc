@@ -33,7 +33,7 @@ enum "PipelineShaderStageCreateFlagBits"
 type PipelineShaderStageCreateFlags = PipelineShaderStageCreateFlagBits
 type PtrSpecializationInfo = Ptr SpecializationInfo
 
-struct "PipelineShaderStageCreateInfo" #{size VkPipelineShaderStageCreateInfo}
+struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		#{alignment VkPipelineShaderStageCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkPipelineShaderStageCreateInfo, sType} p
@@ -60,4 +60,4 @@ struct "PipelineShaderStageCreateInfo" #{size VkPipelineShaderStageCreateInfo}
 			pSpecializationInfo} |],
 		[| #{poke VkPipelineShaderStageCreateInfo,
 			pSpecializationInfo} |]) ]
-	[''Show]
+	[''Show, ''Storable]

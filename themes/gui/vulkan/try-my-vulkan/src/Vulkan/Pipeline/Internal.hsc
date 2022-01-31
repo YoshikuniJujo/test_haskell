@@ -7,11 +7,13 @@ module Vulkan.Pipeline.Internal where
 
 import Foreign.Storable
 import Foreign.C.Struct
+import Data.Word
 
 import Vulkan.Base
 import Vulkan.PipelineCreateFlagBits
 
 import qualified Vulkan.StructureType as ST
+import qualified Vulkan.Pipeline.ShaderStage.Internal as ShaderStage.I
 
 #include <vulkan/vulkan.h>
 
@@ -25,6 +27,12 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		[| #{poke VkGraphicsPipelineCreateInfo, pNext} |]),
 	("flags", ''PipelineCreateFlags,
 		[| #{peek VkGraphicsPipelineCreateInfo, flags} |],
-		[| #{poke VkGraphicsPipelineCreateInfo, flags} |])
+		[| #{poke VkGraphicsPipelineCreateInfo, flags} |]),
+	("stageCount", ''#{type uint32_t},
+		[| #{peek VkGraphicsPipelineCreateInfo, stageCount} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, stageCount} |]),
+	("pStages", ''ShaderStage.I.CreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pStages} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, pStages} |])
 	]
 	[''Show, ''Storable]
