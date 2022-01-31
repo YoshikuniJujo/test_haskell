@@ -37,6 +37,10 @@ import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
 	InputAssemblyState.I
 import qualified Vulkan.Pipeline.TessellationState.Internal as
 	TessellationState.I
+import qualified Vulkan.Pipeline.ViewportState.Internal as ViewportState.I
+import qualified Vulkan.Pipeline.RasterizationState.Internal as
+	RasterizationState.I
+import qualified Vulkan.Pipeline.MultisampleState.Internal as MultisampleState.I
 
 #include <vulkan/vulkan.h>
 
@@ -84,7 +88,10 @@ createInfoToC CreateInfo {
 	createInfoStages = ss,
 	createInfoVertexInputState = mvis,
 	createInfoInputAssemblyState = mias,
-	createInfoTessellationState = mts
+	createInfoTessellationState = mts,
+	createInfoViewportState = mvs,
+	createInfoRasterizationState = rs,
+	createInfoMultisampleState = mms
 	} = runContT do
 	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
 	let	sc = length ss
@@ -109,6 +116,22 @@ createInfoToC CreateInfo {
 			TessellationState.I.CreateInfo_ fts <-
 				ContT $ TessellationState.createInfoToC ts
 			ContT $ withForeignPtr fts
+	pvs <- case mvs of
+		Nothing -> pure NullPtr
+		Just vs -> do
+			ViewportState.I.CreateInfo_ fvs <-
+				ContT $ ViewportState.createInfoToC vs
+			ContT $ withForeignPtr fvs
+	prs <- do
+		RasterizationState.I.CreateInfo_ frs <-
+			ContT $ RasterizationState.createInfoToC rs
+		ContT $ withForeignPtr frs
+	pms <- case mms of
+		Nothing -> pure NullPtr
+		Just ms -> do
+			MultisampleState.I.CreateInfo_ fms <-
+				ContT $ MultisampleState.createInfoToC ms
+			ContT $ withForeignPtr fms
 	pure I.CreateInfo {
 		I.createInfoSType = (),
 		I.createInfoPNext = pnxt,
@@ -117,5 +140,8 @@ createInfoToC CreateInfo {
 		I.createInfoPStages = pss,
 		I.createInfoPVertexInputState = pvis,
 		I.createInfoPInputAssemblyState = pias,
-		I.createInfoPTessellationState = pts
+		I.createInfoPTessellationState = pts,
+		I.createInfoPViewportState = pvs,
+		I.createInfoPRasterizationState = prs,
+		I.createInfoPMultisampleState = pms
 		}
