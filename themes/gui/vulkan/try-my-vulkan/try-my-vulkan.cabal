@@ -71,6 +71,7 @@ library
       Vulkan.LogicOp
       Vulkan.PhysicalDevice
       Vulkan.Pipeline
+      Vulkan.Pipeline.Cache
       Vulkan.Pipeline.Cache.Internal
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.ColorBlendState.Internal
