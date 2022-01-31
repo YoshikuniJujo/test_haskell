@@ -27,20 +27,18 @@ pipelineVertexInputStateCreateInfoToC :: (
 	Pointable n,
 	BindingStrideList vs VertexInputRate In.VertexInputRate,
 	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
-	PipelineVertexInputStateCreateInfo n vs ts ->
-	(In.CreateInfo -> IO a) -> IO a
+	CreateInfo n vs ts -> (In.CreateInfo -> IO a) -> IO a
 pipelineVertexInputStateCreateInfoToC = Im.pipelineVertexInputStateCreateInfoToC
 	. pipelineVertexInputStateCreateInfoToIntermediate
 
 pipelineVertexInputStateCreateInfoToIntermediate :: (
 	BindingStrideList vs VertexInputRate In.VertexInputRate,
 	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
-	PipelineVertexInputStateCreateInfo n vs ts ->
-	Im.PipelineVertexInputStateCreateInfo n
+	CreateInfo n vs ts -> Im.PipelineVertexInputStateCreateInfo n
 pipelineVertexInputStateCreateInfoToIntermediate
-	ci@PipelineVertexInputStateCreateInfo {
-		pipelineVertexInputStateCreateInfoNext = mnxt,
-		pipelineVertexInputStateCreateInfoFlags = flgs } =
+	ci@CreateInfo {
+		createInfoNext = mnxt,
+		createInfoFlags = flgs } =
 	Im.PipelineVertexInputStateCreateInfo {
 		Im.pipelineVertexInputStateCreateInfoNext = mnxt,
 		Im.pipelineVertexInputStateCreateInfoFlags = flgs,
@@ -52,37 +50,32 @@ pipelineVertexInputStateCreateInfoToIntermediate
 			pipelineVertexInputStateCreateInfoToAttributeDescription
 				ci }
 
-data PipelineVertexInputStateCreateInfo n vs (ts :: [*]) =
-	PipelineVertexInputStateCreateInfo {
-		pipelineVertexInputStateCreateInfoNext :: Maybe n,
-		pipelineVertexInputStateCreateInfoFlags ::
-			In.PipelineVertexInputStateCreateFlags }
+data CreateInfo n vs (ts :: [*]) = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: In.PipelineVertexInputStateCreateFlags }
 	deriving Show
 
-samplePipelineVertexInputStateCreateInfo0 ::
-	PipelineVertexInputStateCreateInfo () () '[]
-samplePipelineVertexInputStateCreateInfo0 = PipelineVertexInputStateCreateInfo {
-	pipelineVertexInputStateCreateInfoNext = Nothing,
-	pipelineVertexInputStateCreateInfoFlags =
-		In.PipelineVertexInputStateCreateFlagsZero }
+samplePipelineVertexInputStateCreateInfo0 :: CreateInfo () () '[]
+samplePipelineVertexInputStateCreateInfo0 = CreateInfo {
+	createInfoNext = Nothing,
+	createInfoFlags = In.PipelineVertexInputStateCreateFlagsZero }
 
 type SamplePipelineVertexInputStateCreateInfoType = (
 		(AddType [(Int, Double)] 'VertexInputRateVertex),
 		(AddType [(Bool, Float)] 'VertexInputRateVertex) )
 
 samplePipelineVertexInputStateCreateInfo ::
-	PipelineVertexInputStateCreateInfo () (
+	CreateInfo () (
 		(AddType [(Int, Double)] 'VertexInputRateVertex),
 		(AddType [(Bool, Float)] 'VertexInputRateVertex)) '[Double, Float, Bool, Int]
-samplePipelineVertexInputStateCreateInfo = PipelineVertexInputStateCreateInfo {
-	pipelineVertexInputStateCreateInfoNext = Nothing,
-	pipelineVertexInputStateCreateInfoFlags = In.PipelineVertexInputStateCreateFlagsZero }
+samplePipelineVertexInputStateCreateInfo = CreateInfo {
+	createInfoNext = Nothing,
+	createInfoFlags = In.PipelineVertexInputStateCreateFlagsZero }
 
 pipelineVertexInputStateCreateInfoToBindingDescription ::
 	BindingStrideList vs
 		VertexInputRate In.VertexInputRate =>
-	PipelineVertexInputStateCreateInfo n vs ts ->
-	[In.VertexInputBindingDescription]
+	CreateInfo n vs ts -> [In.VertexInputBindingDescription]
 pipelineVertexInputStateCreateInfoToBindingDescription =
 	bindingDescriptionFromRaw
 		. pipelineVertexInputStateCreateInfoToBindingDescriptionRaw
@@ -97,15 +90,13 @@ bindingDescriptionFromRaw sars = (<$> zip [0 ..] sars)
 pipelineVertexInputStateCreateInfoToBindingDescriptionRaw :: forall n vs ts .
 	BindingStrideList vs
 		VertexInputRate In.VertexInputRate =>
-	PipelineVertexInputStateCreateInfo n vs ts ->
-	[(SizeAlignment, In.VertexInputRate)]
+	CreateInfo n vs ts -> [(SizeAlignment, In.VertexInputRate)]
 pipelineVertexInputStateCreateInfoToBindingDescriptionRaw _ =
 	bindingStrideList @vs @VertexInputRate @In.VertexInputRate
 
 class PipelineVertexInputStateCreateInfoAttributeDescription vs (ts :: [*]) where
 	pipelineVertexInputStateCreateInfoToAttributeDescription ::
-		PipelineVertexInputStateCreateInfo n vs ts ->
-		[In.VertexInputAttributeDescription]
+		CreateInfo n vs ts -> [In.VertexInputAttributeDescription]
 
 instance PipelineVertexInputStateCreateInfoAttributeDescription vs '[] where
 	pipelineVertexInputStateCreateInfoToAttributeDescription _ = []
@@ -115,8 +106,7 @@ instance (
 	PipelineVertexInputStateCreateInfoAttributeDescription vs ts) =>
 	PipelineVertexInputStateCreateInfoAttributeDescription vs (t ': ts) where
 	pipelineVertexInputStateCreateInfoToAttributeDescription :: forall n .
-		PipelineVertexInputStateCreateInfo n vs (t ': ts) ->
-		[In.VertexInputAttributeDescription]
+		CreateInfo n vs (t ': ts) -> [In.VertexInputAttributeDescription]
 	pipelineVertexInputStateCreateInfoToAttributeDescription _ = In.VertexInputAttributeDescription {
 		In.vertexInputAttributeDescriptionLocation = 0,
 		In.vertexInputAttributeDescriptionBinding = bd,

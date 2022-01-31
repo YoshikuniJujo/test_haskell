@@ -45,7 +45,7 @@ import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Internal as Vk.I
 import qualified Vulkan.ShaderStageFlagBits as Vk
 
-import qualified Vulkan.Pipeline.VertexInputState as Vk
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputState
 import qualified Vulkan.Pipeline.VertexInputState.Internal as Vk.I
 
 import qualified Vulkan.Pipeline.InputAssemblyState as
@@ -622,10 +622,10 @@ createGraphicsPipeline dvc sce = do
 			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
 		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
-		vertexInputInfo :: Vk.PipelineVertexInputStateCreateInfo () () '[]
-		vertexInputInfo = Vk.PipelineVertexInputStateCreateInfo {
-			Vk.pipelineVertexInputStateCreateInfoNext = Nothing,
-			Vk.pipelineVertexInputStateCreateInfoFlags =
+		vertexInputInfo :: Vk.Ppl.VertexInputState.CreateInfo () () '[]
+		vertexInputInfo = Vk.Ppl.VertexInputState.CreateInfo {
+			Vk.Ppl.VertexInputState.createInfoNext = Nothing,
+			Vk.Ppl.VertexInputState.createInfoFlags =
 				Vk.I.PipelineVertexInputStateCreateFlagsZero }
 		inputAssembly = Vk.Pipeline.InputAssemblyState.CreateInfo {
 			Vk.Pipeline.InputAssemblyState.createInfoNext = Nothing,
