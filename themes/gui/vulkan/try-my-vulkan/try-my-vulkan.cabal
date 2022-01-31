@@ -71,6 +71,7 @@ library
       Vulkan.LogicOp
       Vulkan.PhysicalDevice
       Vulkan.Pipeline
+      Vulkan.Pipeline.Cache.Internal
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.ColorBlendState.Internal
       Vulkan.Pipeline.DepthStencilState
@@ -101,6 +102,7 @@ library
       Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Internal
       Vulkan.PipelineBindPoint
+      Vulkan.PipelineCacheCreateFlagBits
       Vulkan.PipelineCreateFlagBits
       Vulkan.PipelineStageFlagBits
       Vulkan.PolygonMode

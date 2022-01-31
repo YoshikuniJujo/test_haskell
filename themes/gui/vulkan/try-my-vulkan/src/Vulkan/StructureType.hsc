@@ -58,3 +58,6 @@ pipelineCreateInfo = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
 pipelineTessellationStateCreateInfo :: #{type VkStructureType}
 pipelineTessellationStateCreateInfo =
 	#{const VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO}
+
+pipelineCacheCreateInfo :: #{type VkStructureType}
+pipelineCacheCreateInfo = #{const VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO}
