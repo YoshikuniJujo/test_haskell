@@ -88,6 +88,7 @@ library
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Internal
       Vulkan.Pipeline.ShaderStage.Variables
+      Vulkan.Pipeline.TessellationState.Internal
       Vulkan.Pipeline.VertexInputState
       Vulkan.Pipeline.VertexInputState.BindingStrideList
       Vulkan.Pipeline.VertexInputState.Flatten

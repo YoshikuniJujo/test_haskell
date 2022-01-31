@@ -54,3 +54,7 @@ renderPassCreateInfo = #{const VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}
 
 pipelineCreateInfo :: #{type VkStructureType}
 pipelineCreateInfo = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
+
+pipelineTessellationStateCreateInfo :: #{type VkStructureType}
+pipelineTessellationStateCreateInfo =
+	#{const VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO}
