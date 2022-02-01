@@ -57,6 +57,7 @@ library
       Vulkan.Ext.Internal
       Vulkan.Filter
       Vulkan.Format
+      Vulkan.Framebuffer.Internal
       Vulkan.FrontFace
       Vulkan.Image
       Vulkan.Image.EnableBetaExtensions

@@ -153,6 +153,7 @@ initVulkan w = do
 	ivs <- createImageViews dv scif scis
 	rp <- createRenderPass dv scif
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
+	createFramebuffers ivs
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl)
 
 createInstance :: IO Vk.Instance
@@ -763,6 +764,11 @@ createShaderModule dvc code = do
 				Vk.I.ShaderModuleCreateFlagsZero,
 			Vk.shaderModuleCreateInfoCode = code }
 	Vk.createShaderModule @() @() dvc createInfo Nothing
+
+createFramebuffers :: [Vk.ImageView] -> IO ()
+createFramebuffers ivs = do
+	print ivs
+	pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

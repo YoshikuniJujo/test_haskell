@@ -61,3 +61,6 @@ pipelineTessellationStateCreateInfo =
 
 pipelineCacheCreateInfo :: #{type VkStructureType}
 pipelineCacheCreateInfo = #{const VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO}
+
+framebufferCreateInfo :: #{type VkStructureType}
+framebufferCreateInfo = #{const VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO}
