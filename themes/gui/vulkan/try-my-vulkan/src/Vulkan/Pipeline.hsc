@@ -1,6 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -9,7 +11,9 @@ module Vulkan.Pipeline where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Control.Monad.Cont
+import Data.Kind
 import Data.Word
 import Data.Int
 
@@ -189,22 +193,48 @@ createInfoToC CreateInfo {
 		I.createInfoBasePipelineHandle = bph,
 		I.createInfoBasePipelineIndex = bpi }
 
-create:: (
-	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
-	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
-	Pointable n10, Pointable n11,
-	BindingStrideList vs
-		VertexInputState.VertexInputRate
-		VertexInputState.I.VertexInputRate,
-	VertexInputState.PipelineVertexInputStateCreateInfoAttributeDescription
-		vs ts ) =>
-	Device -> PipelineCache ->
-	[CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10] ->
-	Maybe (AllocationCallbacks n11) -> IO [Pipeline vs ts]
-create dvc pc cis mac = ($ pure) $ runContT do
+createGen :: Device -> PipelineCache ->
+	[I.CreateInfo] -> Maybe (AllocationCallbacks n11) -> IO [PipelineC]
+createGen dvc pc cis mac = ($ pure) $ runContT do
 	let	cic = length cis
 	undefined
 
 foreign import ccall "vkCreateGraphicsPipelines" c_vkCreateGraphicsPipelines ::
 	Device -> PipelineCache -> #{type uint32_t} -> Ptr I.CreateInfo ->
 	Ptr I.AllocationCallbacks -> Ptr (Pipeline vs ts) -> IO Result
+
+infixr 5 :.:
+
+type Ns = (Type, Type, Type, Type, Type, Type, Type, Type, Type, Type, Type)
+
+data CreateInfoList (as :: ([Ns], [(Type, [Type])])) where
+	CINil :: CreateInfoList '( '[], '[])
+	(:.:) :: CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 ->
+		CreateInfoList '(nss, vtss) ->
+		CreateInfoList '(
+			'(n, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10) ': nss,
+			'(vs, ts) ': vtss )
+
+class CreateInfoListToICreateInfoList (as :: ([Ns], [(Type, [Type])])) where
+	createInfoListToICreateInfoList ::
+		CreateInfoList as -> ContT r IO [I.CreateInfo]
+
+instance CreateInfoListToICreateInfoList '( '[], '[]) where
+	createInfoListToICreateInfoList _ = pure []
+
+instance (
+	Storable n, Storable n1, Storable n2, Storable n3, Storable n4,
+	Storable n5, Storable n6, Storable n7, Storable n8, Storable n9,
+	Storable n10,
+	BindingStrideList vs
+		VertexInputState.VertexInputRate
+		VertexInputState.I.VertexInputRate,
+	VertexInputState.PipelineVertexInputStateCreateInfoAttributeDescription
+		vs ts,
+	CreateInfoListToICreateInfoList '(nss, vtss)) =>
+	CreateInfoListToICreateInfoList '(
+	'(n, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10) ': nss,
+	'(vs, ts) ': vtss ) where
+	createInfoListToICreateInfoList (ci :.: cis) = (:)
+		<$> ContT (createInfoToC ci)
+		<*> createInfoListToICreateInfoList cis
