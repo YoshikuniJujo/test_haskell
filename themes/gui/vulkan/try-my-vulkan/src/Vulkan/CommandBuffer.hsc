@@ -19,6 +19,11 @@ import Vulkan.Device
 import Vulkan.CommandPool
 import Vulkan.CommandBufferLevel
 
+import Vulkan.RenderPass (RenderPass)
+import Vulkan.Framebuffer (Framebuffer)
+import Vulkan.QueryControlFlagBits
+import Vulkan.QueryPipelineStatisticFlagBits
+
 import qualified Vulkan.CommandBuffer.Internal as I
 
 data AllocateInfo n = AllocateInfo {
@@ -58,3 +63,34 @@ allocate dvc ai = ($ pure) $ runContT do
 
 foreign import ccall "vkAllocateCommandBuffers" c_vkAllocateCommandBuffers ::
 	Device -> Ptr I.AllocateInfo -> Ptr CommandBuffer -> IO Result
+
+data InheritanceInfo n = InheritanceInfo {
+	inheritanceInfoNext :: Maybe n,
+	inheritanceInfoRenderPass :: RenderPass,
+	inheritanceInfoSubpass :: Word32,
+	inheritanceInfoFramebuffer :: Framebuffer,
+	inheritanceInfoOcclusionQueryEnable :: Bool,
+	inheritanceInfoQueryFlags :: QueryControlFlags,
+	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
+	deriving Show
+
+inheritanceInfoToC :: Pointable n =>
+	InheritanceInfo n -> ContT r IO I.InheritanceInfo
+inheritanceInfoToC InheritanceInfo {
+	inheritanceInfoNext = mnxt,
+	inheritanceInfoRenderPass = rp,
+	inheritanceInfoSubpass = word32ToUint32T -> sp,
+	inheritanceInfoFramebuffer = fb,
+	inheritanceInfoOcclusionQueryEnable = boolToBool32 -> oqe,
+	inheritanceInfoQueryFlags = qf,
+	inheritanceInfoPipelineStatistics = ps } = do
+	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
+	pure I.InheritanceInfo {
+		I.inheritanceInfoSType = (),
+		I.inheritanceInfoPNext = pnxt,
+		I.inheritanceInfoRenderPass = rp,
+		I.inheritanceInfoSubpass = sp,
+		I.inheritanceInfoFramebuffer = fb,
+		I.inheritanceInfoOcclusionQueryEnable = oqe,
+		I.inheritanceInfoQueryFlags = qf,
+		I.inheritanceInfoPipelineStatistics = ps }

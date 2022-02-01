@@ -12,6 +12,10 @@ import Data.Word
 import Vulkan.Base
 import Vulkan.CommandPool
 import Vulkan.CommandBufferLevel
+import Vulkan.RenderPass (RenderPass)
+import Vulkan.Framebuffer (Framebuffer)
+import Vulkan.QueryControlFlagBits
+import Vulkan.QueryPipelineStatisticFlagBits
 
 import qualified Vulkan.StructureType as ST
 
@@ -33,4 +37,36 @@ struct "AllocateInfo" #{size VkCommandBufferAllocateInfo}
 	("commandBufferCount", ''#{type uint32_t},
 		[| #{peek VkCommandBufferAllocateInfo, commandBufferCount} |],
 		[| #{poke VkCommandBufferAllocateInfo, commandBufferCount} |]) ]
+	[''Show, ''Storable]
+
+struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
+		#{alignment VkCommandBufferInheritanceInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkCommandBufferInheritanceInfo, sType}
+			p ST.commandBufferInheritanceInfo |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkCommandBufferInheritanceInfo, pNext} |],
+		[| #{poke VkCommandBufferInheritanceInfo, pNext} |]),
+	("renderPass", ''RenderPass,
+		[| #{peek VkCommandBufferInheritanceInfo, renderPass} |],
+		[| #{poke VkCommandBufferInheritanceInfo, renderPass} |]),
+	("subpass", ''#{type uint32_t},
+		[| #{peek VkCommandBufferInheritanceInfo, subpass} |],
+		[| #{poke VkCommandBufferInheritanceInfo, subpass} |]),
+	("framebuffer", ''Framebuffer,
+		[| #{peek VkCommandBufferInheritanceInfo, framebuffer} |],
+		[| #{poke VkCommandBufferInheritanceInfo, framebuffer} |]),
+	("occlusionQueryEnable", ''Bool32,
+		[| #{peek VkCommandBufferInheritanceInfo,
+			occlusionQueryEnable} |],
+		[| #{poke VkCommandBufferInheritanceInfo,
+			occlusionQueryEnable} |]),
+	("queryFlags", ''QueryControlFlags,
+		[| #{peek VkCommandBufferInheritanceInfo, queryFlags} |],
+		[| #{poke VkCommandBufferInheritanceInfo, queryFlags} |]),
+	("pipelineStatistics", ''QueryPipelineStatisticFlags,
+		[| #{peek VkCommandBufferInheritanceInfo,
+			pipelineStatistics} |],
+		[| #{poke VkCommandBufferInheritanceInfo,
+			pipelineStatistics} |]) ]
 	[''Show, ''Storable]

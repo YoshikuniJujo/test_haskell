@@ -117,6 +117,8 @@ library
       Vulkan.PipelineStageFlagBits
       Vulkan.PolygonMode
       Vulkan.PrimitiveTopology
+      Vulkan.QueryControlFlagBits
+      Vulkan.QueryPipelineStatisticFlagBits
       Vulkan.RenderPass
       Vulkan.RenderPass.Internal
       Vulkan.RenderPassCreateFlagBits

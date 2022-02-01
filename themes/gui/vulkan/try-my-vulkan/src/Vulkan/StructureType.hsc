@@ -70,3 +70,7 @@ commandPoolCreateInfo = #{const VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}
 
 commandBufferAllocateInfo :: #{type VkStructureType}
 commandBufferAllocateInfo = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}
+
+commandBufferInheritanceInfo :: #{type VkStructureType}
+commandBufferInheritanceInfo =
+	#{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO}
