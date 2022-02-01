@@ -128,9 +128,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl
+	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -143,7 +143,8 @@ initWindow = do
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
 	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
-	Vk.RenderPass.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[])
+	Vk.RenderPass.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
+	[Vk.Framebuffer.Framebuffer])
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -156,8 +157,8 @@ initVulkan w = do
 	ivs <- createImageViews dv scif scis
 	rp <- createRenderPass dv scif
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
-	createFramebuffers ivs
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl)
+	scfbs <- createFramebuffers dv rp sce ivs
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -768,13 +769,15 @@ createShaderModule dvc code = do
 			Vk.shaderModuleCreateInfoCode = code }
 	Vk.createShaderModule @() @() dvc createInfo Nothing
 
-createFramebuffers :: [Vk.ImageView] -> IO ()
-createFramebuffers ivs = do
-	print ivs
-	pure ()
+createFramebuffers ::
+	Vk.Device -> Vk.RenderPass.RenderPass -> Vk.Extent2d ->
+	[Vk.ImageView] -> IO [Vk.Framebuffer.Framebuffer]
+createFramebuffers dvc rp sce = mapM $ createFramebuffer1 dvc rp sce
 
-createFramebuffer1 :: Vk.RenderPass.RenderPass -> Vk.Extent2d -> Vk.ImageView -> IO ()
-createFramebuffer1 rp sce iv = do
+createFramebuffer1 ::
+	Vk.Device -> Vk.RenderPass.RenderPass -> Vk.Extent2d ->
+	Vk.ImageView -> IO Vk.Framebuffer.Framebuffer
+createFramebuffer1 dvc rp sce iv = do
 	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
 			Vk.Framebuffer.createInfoNext = Nothing,
 			Vk.Framebuffer.createInfoFlags =
@@ -784,7 +787,7 @@ createFramebuffer1 rp sce iv = do
 			Vk.Framebuffer.createInfoWidth = Vk.extent2dWidth sce,
 			Vk.Framebuffer.createInfoHeight = Vk.extent2dHeight sce,
 			Vk.Framebuffer.createInfoLayers = 1 }
-	pure ()
+	Vk.Framebuffer.create @() @() dvc framebufferInfo Nothing
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
@@ -795,8 +798,9 @@ mainLoop w = do
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
 	Vk.RenderPass.RenderPass -> Vk.PipelineLayout -> Vk.Pipeline () '[] ->
-	IO ()
-cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl = do
+	[Vk.Framebuffer.Framebuffer] -> IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl scfbs = do
+	flip (Vk.Framebuffer.destroy @() dv) Nothing `mapM_` scfbs
 	Vk.Ppl.destroy @() dv gpl Nothing
 	Vk.destroyPipelineLayout @() dv ppl Nothing
 	Vk.RenderPass.destroy @() dv rp Nothing
