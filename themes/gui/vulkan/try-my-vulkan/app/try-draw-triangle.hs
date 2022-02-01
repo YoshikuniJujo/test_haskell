@@ -101,6 +101,9 @@ import qualified Vulkan.Pipeline.Cache as Vk (pattern PipelineCacheNullHandle)
 import qualified Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Vulkan.FramebufferCreateFlagBits as Vk
 
+import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPoolCreateFlagBits as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -158,7 +161,7 @@ initVulkan w = do
 	rp <- createRenderPass dv scif
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
-	createCommandPool
+	createCommandPool pd sfc
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs)
 
 createInstance :: IO Vk.Instance
@@ -790,8 +793,17 @@ createFramebuffer1 dvc rp sce iv = do
 			Vk.Framebuffer.createInfoLayers = 1 }
 	Vk.Framebuffer.create @() @() dvc framebufferInfo Nothing
 
-createCommandPool :: IO ()
-createCommandPool = pure ()
+createCommandPool :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
+createCommandPool pd sfc = do
+	queueFamilyIndices <- findQueueFamilies pd sfc
+	let	poolInfo = Vk.CommandPool.CreateInfo {
+			Vk.CommandPool.createInfoNext = Nothing,
+			Vk.CommandPool.createInfoFlags =
+				Vk.CommandPoolCreateFlagsZero,
+			Vk.CommandPool.createInfoQueueFamilyIndex = fromJust
+				$ queueFamilyIndicesGraphicsFamily
+					queueFamilyIndices }
+	pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
