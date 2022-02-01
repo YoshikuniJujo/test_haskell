@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -96,6 +96,7 @@ import qualified Vulkan.RenderPassCreateFlagBits as Vk
 
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.PipelineCreateFlagBits as Vk
+import qualified Vulkan.Pipeline.Cache as Vk (pattern PipelineCacheNullHandle)
 
 import qualified Glfw as Glfw
 
@@ -124,9 +125,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl
+	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -139,7 +140,7 @@ initWindow = do
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
 	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
-	Vk.RenderPass.RenderPass, Vk.PipelineLayout )
+	Vk.RenderPass.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[])
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -151,8 +152,8 @@ initVulkan w = do
 	(sc, scis, scif, sce) <- createSwapChain w pd dv sfc
 	ivs <- createImageViews dv scif scis
 	rp <- createRenderPass dv scif
-	ppl <- createGraphicsPipeline dv sce rp
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl)
+	(ppl, gpl) <- createGraphicsPipeline dv sce rp
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -598,7 +599,9 @@ createRenderPass dvc scif = do
 			Vk.RenderPass.createInfoDependencies = [] }
 	Vk.RenderPass.create @() @() dvc renderPassInfo Nothing
 
-createGraphicsPipeline :: Vk.Device -> Vk.Extent2d -> Vk.RenderPass.RenderPass -> IO Vk.PipelineLayout
+createGraphicsPipeline ::
+	Vk.Device -> Vk.Extent2d -> Vk.RenderPass.RenderPass ->
+	IO (Vk.PipelineLayout, Vk.Pipeline () '[])
 createGraphicsPipeline dvc sce rp = do
 	vertShaderCode <- BS.readFile "shaders/vert.spv"
 	fragShaderCode <- BS.readFile "shaders/frag.spv"
@@ -746,9 +749,11 @@ createGraphicsPipeline dvc sce rp = do
 				Vk.PipelineNullHandle,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1
 			}
+	gpl <- Vk.Ppl.createSingle @() @() @() @() @() @() @() @() @() @() @() @()
+		dvc Vk.PipelineCacheNullHandle pipelineInfo Nothing
 	Vk.destroyShaderModule @() dvc fragShaderModule Nothing
 	Vk.destroyShaderModule @() dvc vertShaderModule Nothing
-	pure pll
+	pure (pll, gpl)
 
 createShaderModule :: Vk.Device -> BS.ByteString -> IO Vk.ShaderModule
 createShaderModule dvc code = do
@@ -767,8 +772,10 @@ mainLoop w = do
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
-	Vk.RenderPass.RenderPass -> Vk.PipelineLayout -> IO ()
-cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl = do
+	Vk.RenderPass.RenderPass -> Vk.PipelineLayout -> Vk.Pipeline () '[] ->
+	IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl = do
+	Vk.Ppl.destroy @() dv gpl Nothing
 	Vk.destroyPipelineLayout @() dv ppl Nothing
 	Vk.RenderPass.destroy @() dv rp Nothing
 	flip (Vk.destroyImageView @() dv) Nothing `mapM_` ivs

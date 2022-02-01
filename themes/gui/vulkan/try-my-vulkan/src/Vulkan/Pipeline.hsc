@@ -10,8 +10,7 @@ module Vulkan.Pipeline where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
-import Foreign.Marshal.Array
-import Foreign.Storable
+import Foreign.Marshal
 import Control.Monad.Cont
 import Data.Kind
 import Data.Word
@@ -193,15 +192,57 @@ createInfoToC CreateInfo {
 		I.createInfoBasePipelineHandle = bph,
 		I.createInfoBasePipelineIndex = bpi }
 
-createGen :: Device -> PipelineCache ->
-	[I.CreateInfo] -> Maybe (AllocationCallbacks n11) -> IO [PipelineC]
-createGen dvc pc cis mac = ($ pure) $ runContT do
+createSingle :: (
+	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n10, Pointable n11,
+	BindingStrideList vs
+		VertexInputState.VertexInputRate
+		VertexInputState.I.VertexInputRate,
+	VertexInputState.PipelineVertexInputStateCreateInfoAttributeDescription
+		vs ts ) =>
+	Device -> PipelineCache ->
+	CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 ->
+	Maybe (AllocationCallbacks n11) -> IO (Pipeline vs ts)
+createSingle dvc pc ci mac = do
+	pl :-: PLNil <- create dvc pc (ci :.: CINil) mac
+	pure pl
+
+create :: (
+	CreateInfoListToICreateInfoList '(nss, vtss),
+	PipelineCListToPipelineList vtss, Pointable n11 ) =>
+	Device -> PipelineCache -> CreateInfoList '(nss, vtss) ->
+	Maybe (AllocationCallbacks n11) -> IO (PipelineList vtss)
+create dvc pc cis mac = ($ pure) . runContT $ createContT dvc pc cis mac
+
+createContT :: (
+	CreateInfoListToICreateInfoList '(nss, vtss),
+	PipelineCListToPipelineList vtss, Pointable n11 ) =>
+	Device -> PipelineCache -> CreateInfoList '(nss, vtss) ->
+	Maybe (AllocationCallbacks n11) -> ContT r IO (PipelineList vtss)
+createContT dvc pc cis mac = do
+	cis' <- createInfoListToICreateInfoList cis
+	plcs <- createGen dvc pc cis' mac
+	pure $ pipelineCListToPipelineList plcs
+
+createGen :: Pointable n11 => Device -> PipelineCache -> [I.CreateInfo] ->
+	Maybe (AllocationCallbacks n11) -> ContT r IO [PipelineC]
+createGen dvc pc cis mac = do
 	let	cic = length cis
-	undefined
+	pcis <- ContT $ allocaArray cic
+	lift $ pokeArray pcis cis
+	pac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	ppl <- ContT alloca
+	lift do	r <- c_vkCreateGraphicsPipelines
+			dvc pc (fromIntegral cic) pcis pac ppl
+		throwUnlessSuccess r
+		peekArray cic ppl
 
 foreign import ccall "vkCreateGraphicsPipelines" c_vkCreateGraphicsPipelines ::
 	Device -> PipelineCache -> #{type uint32_t} -> Ptr I.CreateInfo ->
-	Ptr I.AllocationCallbacks -> Ptr (Pipeline vs ts) -> IO Result
+	Ptr I.AllocationCallbacks -> Ptr PipelineC -> IO Result
 
 infixr 5 :.:
 
@@ -223,18 +264,47 @@ instance CreateInfoListToICreateInfoList '( '[], '[]) where
 	createInfoListToICreateInfoList _ = pure []
 
 instance (
-	Storable n, Storable n1, Storable n2, Storable n3, Storable n4,
-	Storable n5, Storable n6, Storable n7, Storable n8, Storable n9,
-	Storable n10,
+	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n10,
 	BindingStrideList vs
 		VertexInputState.VertexInputRate
 		VertexInputState.I.VertexInputRate,
 	VertexInputState.PipelineVertexInputStateCreateInfoAttributeDescription
 		vs ts,
-	CreateInfoListToICreateInfoList '(nss, vtss)) =>
+	CreateInfoListToICreateInfoList '(nss, vtss) ) =>
 	CreateInfoListToICreateInfoList '(
 	'(n, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10) ': nss,
 	'(vs, ts) ': vtss ) where
 	createInfoListToICreateInfoList (ci :.: cis) = (:)
 		<$> ContT (createInfoToC ci)
 		<*> createInfoListToICreateInfoList cis
+
+data PipelineList (vtss :: [(Type, [Type])]) where
+	PLNil :: PipelineList '[]
+	(:-:) :: Pipeline vs ts -> PipelineList vtss ->
+		PipelineList ('(vs, ts) ': vtss)
+
+class PipelineCListToPipelineList (vtss :: [(Type, [Type])]) where
+	pipelineCListToPipelineList :: [PipelineC] -> PipelineList vtss
+
+instance PipelineCListToPipelineList '[] where
+	pipelineCListToPipelineList [] = PLNil
+	pipelineCListToPipelineList _ = error "extra PipelineCs"
+
+instance PipelineCListToPipelineList vtss =>
+	PipelineCListToPipelineList ('(vs, ts) ': vtss) where
+	pipelineCListToPipelineList [] = error "PipelineCs is not enough"
+	pipelineCListToPipelineList (PipelineC p : plcs) =
+		Pipeline p :-: pipelineCListToPipelineList plcs
+
+destroy :: Pointable n =>
+	Device -> Pipeline vs ts -> Maybe (AllocationCallbacks n) -> IO ()
+destroy dvc pl mac = ($ pure) $ runContT do
+	pac <- case mac of
+		Nothing -> pure NullPtr
+		Just ac -> ContT $ withAllocationCallbacksPtr ac
+	lift $ c_vkDestroyPipeline dvc pl pac
+
+foreign import ccall "vkDestroyPipeline" c_vkDestroyPipeline ::
+	Device -> Pipeline vs ts -> Ptr I.AllocationCallbacks -> IO ()
