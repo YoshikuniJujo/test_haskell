@@ -42,6 +42,8 @@ library
       Vulkan.BlendOp
       Vulkan.BorderColor
       Vulkan.ColorComponentFlagBits
+      Vulkan.CommandPool.Internal
+      Vulkan.CommandPoolCreateFlagBits
       Vulkan.CompareOp
       Vulkan.CullModeFlagBits
       Vulkan.DependencyFlagBits

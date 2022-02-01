@@ -158,6 +158,7 @@ initVulkan w = do
 	rp <- createRenderPass dv scif
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
+	createCommandPool
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs)
 
 createInstance :: IO Vk.Instance
@@ -788,6 +789,9 @@ createFramebuffer1 dvc rp sce iv = do
 			Vk.Framebuffer.createInfoHeight = Vk.extent2dHeight sce,
 			Vk.Framebuffer.createInfoLayers = 1 }
 	Vk.Framebuffer.create @() @() dvc framebufferInfo Nothing
+
+createCommandPool :: IO ()
+createCommandPool = pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
