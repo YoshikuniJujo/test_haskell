@@ -98,6 +98,9 @@ import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.PipelineCreateFlagBits as Vk
 import qualified Vulkan.Pipeline.Cache as Vk (pattern PipelineCacheNullHandle)
 
+import qualified Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Vulkan.FramebufferCreateFlagBits as Vk
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -768,6 +771,19 @@ createShaderModule dvc code = do
 createFramebuffers :: [Vk.ImageView] -> IO ()
 createFramebuffers ivs = do
 	print ivs
+	pure ()
+
+createFramebuffer1 :: Vk.RenderPass.RenderPass -> Vk.Extent2d -> Vk.ImageView -> IO ()
+createFramebuffer1 rp sce iv = do
+	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
+			Vk.Framebuffer.createInfoNext = Nothing,
+			Vk.Framebuffer.createInfoFlags =
+				Vk.FramebufferCreateFlagsZero,
+			Vk.Framebuffer.createInfoRenderPass = rp,
+			Vk.Framebuffer.createInfoAttachments = [iv],
+			Vk.Framebuffer.createInfoWidth = Vk.extent2dWidth sce,
+			Vk.Framebuffer.createInfoHeight = Vk.extent2dHeight sce,
+			Vk.Framebuffer.createInfoLayers = 1 }
 	pure ()
 
 mainLoop :: GlfwB.Window -> IO ()

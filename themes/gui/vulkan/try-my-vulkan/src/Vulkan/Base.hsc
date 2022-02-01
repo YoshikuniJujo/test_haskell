@@ -116,10 +116,10 @@ struct "Offset2d" #{size VkOffset2D} #{alignment VkOffset2D} [
 	[''Show, ''Storable]
 
 struct "Extent2d" #{size VkExtent2D} #{alignment VkExtent2D} [
-	("width", ''#{type int32_t},
+	("width", ''#{type uint32_t},
 		[| #{peek VkExtent2D, width} |],
 		[| #{poke VkExtent2D, width} |]),
-	("height", ''#{type int32_t},
+	("height", ''#{type uint32_t},
 		[| #{peek VkExtent2D, height} |],
 		[| #{poke VkExtent2D, height} |]) ]
 	[''Show, ''Storable]
