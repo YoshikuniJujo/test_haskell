@@ -833,7 +833,7 @@ beginCommandBuffer1 cb = do
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBufferUsageFlagsZero,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	pure ()
+	Vk.CommandBuffer.begin @() @() cb beginInfo
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

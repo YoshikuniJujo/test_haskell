@@ -120,3 +120,13 @@ beginInfoToC BeginInfo {
 		I.beginInfoPNext = pnxt,
 		I.beginInfoFlags = flgs,
 		I.beginInfoPInheritanceInfo = pii }
+
+begin :: (Pointable n, Pointable n') => CommandBuffer -> BeginInfo n n' -> IO ()
+begin cb bi = ($ pure) $ runContT do
+	I.BeginInfo_ fbi <- beginInfoToC bi
+	pbi <- ContT $ withForeignPtr fbi
+	lift do	r <- c_vkBeginCommandBuffer cb pbi
+		throwUnlessSuccess r
+
+foreign import ccall "vkBeginCommandBuffer" c_vkBeginCommandBuffer ::
+	CommandBuffer -> Ptr I.BeginInfo -> IO Result
