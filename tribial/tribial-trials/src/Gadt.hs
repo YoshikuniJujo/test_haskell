@@ -37,8 +37,24 @@ instance (Show a, Show b, Show c, Show d, Show (ComplexHetero '(as, cs))) =>
 	Show (ComplexHetero '( '(a, b) ': as, '(c, d) ': cs)) where
 	show (p :::: ps) = show p ++ " :::: " ++ show ps
 
-sumComplexHetero :: ComplexHetero as -> [Int]
-sumComplexHetero CNil = []
-sumComplexHetero (Pair _ _ _ _ a :::: ps) = a : sumComplexHetero ps
+complexHeteroNums :: ComplexHetero as -> [Int]
+complexHeteroNums CNil = []
+complexHeteroNums (Pair _ _ _ _ a :::: ps) = a : complexHeteroNums ps
 
--- newtype IntAndTypes 
+newtype IntAndTypes c d = IntAndTypes Int deriving Show
+
+data IntAndTypesList (as :: [(Type, Type)]) where
+	INil :: IntAndTypesList '[]
+	(:-:) :: IntAndTypes c d -> IntAndTypesList cs ->
+		IntAndTypesList ('(c, d) ': cs)
+
+instance Show (IntAndTypesList '[]) where
+	show _ = "INil"
+
+instance Show (IntAndTypesList as) => Show (IntAndTypesList (a ': as)) where
+	show (x :-: xs) = show x ++ " :-: " ++ show xs
+
+complexHeteroNumsToIntAndTypesList :: ComplexHetero '(as, cs) -> IntAndTypesList cs
+complexHeteroNumsToIntAndTypesList CNil = INil
+complexHeteroNumsToIntAndTypesList (Pair _ _ _ _ x :::: ps) =
+	IntAndTypes x :-: complexHeteroNumsToIntAndTypesList ps
