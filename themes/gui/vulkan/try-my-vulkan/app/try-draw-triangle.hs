@@ -163,6 +163,7 @@ initVulkan w = do
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
 	cp <- createCommandPool pd dv sfc
+	createCommandBuffers
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp)
 
 createInstance :: IO Vk.Instance
@@ -807,6 +808,9 @@ createCommandPool pd dvc sfc = do
 				$ queueFamilyIndicesGraphicsFamily
 					queueFamilyIndices }
 	Vk.CommandPool.create @() @() dvc poolInfo Nothing
+
+createCommandBuffers :: IO ()
+createCommandBuffers = pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

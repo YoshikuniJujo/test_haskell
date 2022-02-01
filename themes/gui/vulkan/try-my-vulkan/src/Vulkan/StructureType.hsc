@@ -67,3 +67,6 @@ framebufferCreateInfo = #{const VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO}
 
 commandPoolCreateInfo :: #{type VkStructureType}
 commandPoolCreateInfo = #{const VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO}
+
+commandBufferAllocateInfo :: #{type VkStructureType}
+commandBufferAllocateInfo = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}
