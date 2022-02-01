@@ -58,3 +58,19 @@ complexHeteroNumsToIntAndTypesList :: ComplexHetero '(as, cs) -> IntAndTypesList
 complexHeteroNumsToIntAndTypesList CNil = INil
 complexHeteroNumsToIntAndTypesList (Pair _ _ _ _ x :::: ps) =
 	IntAndTypes x :-: complexHeteroNumsToIntAndTypesList ps
+
+class ListAddTypes (as :: [(Type, Type)]) where
+	listAddTypes :: [Int] -> IntAndTypesList as
+
+instance ListAddTypes '[] where
+	listAddTypes [] = INil
+	listAddTypes _ = error "extra ints"
+
+instance ListAddTypes as => ListAddTypes ('(c, d) ': as) where
+-- instance ListAddTypes as => ListAddTypes ((a :: (Type, Type)) ': as) where
+	listAddTypes [] = error "ints is not enough"
+	listAddTypes (i : is) = IntAndTypes i :-: listAddTypes is
+
+complexHeteroNumsToIntAndTypeList' :: ListAddTypes cs =>
+	ComplexHetero '(as, cs) -> IntAndTypesList cs
+complexHeteroNumsToIntAndTypeList' = listAddTypes . complexHeteroNums
