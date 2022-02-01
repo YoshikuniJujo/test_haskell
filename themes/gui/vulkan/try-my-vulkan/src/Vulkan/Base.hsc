@@ -152,3 +152,6 @@ pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
 pattern PipelineNullHandle :: Pipeline vs ts
 pattern PipelineNullHandle <- Pipeline NullHandle where
 	PipelineNullHandle = Pipeline NullHandle
+
+word32ToUint32T :: Word32 -> #{type uint32_t}
+word32ToUint32T = fromIntegral

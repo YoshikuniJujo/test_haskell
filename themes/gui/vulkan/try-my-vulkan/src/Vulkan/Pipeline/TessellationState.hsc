@@ -21,9 +21,6 @@ data CreateInfo n = CreateInfo {
 	createInfoPatchControlPoints :: Word32 }
 	deriving Show
 
-word32ToUint32T :: Word32 -> #{type uint32_t}
-word32ToUint32T = fromIntegral
-
 createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
 createInfoToC CreateInfo {
 	createInfoNext = mnxt,

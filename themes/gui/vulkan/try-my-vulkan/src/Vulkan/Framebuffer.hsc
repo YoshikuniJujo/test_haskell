@@ -34,9 +34,6 @@ data CreateInfo n = CreateInfo {
 	createInfoLayers :: Word32 }
 	deriving Show
 
-word32ToUint32T :: Word32 -> #{type uint32_t}
-word32ToUint32T = fromIntegral
-
 createInfoToC :: Pointable n => CreateInfo n -> ContT r IO I.CreateInfo
 createInfoToC CreateInfo {
 	createInfoNext = mnxt, createInfoFlags = flgs,

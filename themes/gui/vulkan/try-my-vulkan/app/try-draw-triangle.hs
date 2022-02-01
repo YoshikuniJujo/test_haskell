@@ -103,6 +103,8 @@ import qualified Vulkan.FramebufferCreateFlagBits as Vk
 
 import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPoolCreateFlagBits as Vk
+import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Vulkan.CommandBufferLevel as Vk
 
 import qualified Glfw as Glfw
 
@@ -163,7 +165,7 @@ initVulkan w = do
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
 	cp <- createCommandPool pd dv sfc
-	createCommandBuffers
+	createCommandBuffers scfbs cp
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp)
 
 createInstance :: IO Vk.Instance
@@ -809,8 +811,17 @@ createCommandPool pd dvc sfc = do
 					queueFamilyIndices }
 	Vk.CommandPool.create @() @() dvc poolInfo Nothing
 
-createCommandBuffers :: IO ()
-createCommandBuffers = pure ()
+createCommandBuffers ::
+	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool -> IO ()
+createCommandBuffers scfbs cp = do
+	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoCommandPool = cp,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBufferLevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount =
+				fromIntegral $ length scfbs }
+	pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

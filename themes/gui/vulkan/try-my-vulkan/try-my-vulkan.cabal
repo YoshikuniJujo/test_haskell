@@ -42,7 +42,9 @@ library
       Vulkan.BlendOp
       Vulkan.BorderColor
       Vulkan.ColorComponentFlagBits
+      Vulkan.CommandBuffer
       Vulkan.CommandBuffer.Internal
+      Vulkan.CommandBufferLevel
       Vulkan.CommandPool
       Vulkan.CommandPool.Internal
       Vulkan.CommandPoolCreateFlagBits

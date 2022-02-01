@@ -79,9 +79,6 @@ data CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 	deriving Show
 
-word32ToUint32T :: Word32 -> #{type uint32_t}
-word32ToUint32T = fromIntegral
-
 int32ToInt32T :: Int32 -> #{type int32_t}
 int32ToInt32T = fromIntegral
 
