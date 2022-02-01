@@ -131,9 +131,10 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs) <- initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp) <-
+		initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs
+	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -147,7 +148,7 @@ initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
 	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
 	Vk.RenderPass.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
-	[Vk.Framebuffer.Framebuffer])
+	[Vk.Framebuffer.Framebuffer], Vk.CommandPool.CommandPool )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -161,8 +162,8 @@ initVulkan w = do
 	rp <- createRenderPass dv scif
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
-	createCommandPool pd sfc
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs)
+	cp <- createCommandPool pd dv sfc
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -793,8 +794,10 @@ createFramebuffer1 dvc rp sce iv = do
 			Vk.Framebuffer.createInfoLayers = 1 }
 	Vk.Framebuffer.create @() @() dvc framebufferInfo Nothing
 
-createCommandPool :: Vk.PhysicalDevice -> Vk.Khr.Surface -> IO ()
-createCommandPool pd sfc = do
+createCommandPool ::
+	Vk.PhysicalDevice -> Vk.Device -> Vk.Khr.Surface ->
+	IO Vk.CommandPool.CommandPool
+createCommandPool pd dvc sfc = do
 	queueFamilyIndices <- findQueueFamilies pd sfc
 	let	poolInfo = Vk.CommandPool.CreateInfo {
 			Vk.CommandPool.createInfoNext = Nothing,
@@ -803,7 +806,7 @@ createCommandPool pd sfc = do
 			Vk.CommandPool.createInfoQueueFamilyIndex = fromJust
 				$ queueFamilyIndicesGraphicsFamily
 					queueFamilyIndices }
-	pure ()
+	Vk.CommandPool.create @() @() dvc poolInfo Nothing
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
@@ -814,8 +817,9 @@ mainLoop w = do
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
 	Vk.RenderPass.RenderPass -> Vk.PipelineLayout -> Vk.Pipeline () '[] ->
-	[Vk.Framebuffer.Framebuffer] -> IO ()
-cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl scfbs = do
+	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool -> IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp = do
+	Vk.CommandPool.destroy @() dv cp Nothing
 	flip (Vk.Framebuffer.destroy @() dv) Nothing `mapM_` scfbs
 	Vk.Ppl.destroy @() dv gpl Nothing
 	Vk.destroyPipelineLayout @() dv ppl Nothing
