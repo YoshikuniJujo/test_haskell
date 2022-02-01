@@ -57,6 +57,7 @@ library
       Vulkan.Ext.Internal
       Vulkan.Filter
       Vulkan.Format
+      Vulkan.Framebuffer
       Vulkan.Framebuffer.Internal
       Vulkan.FramebufferCreateFlagBits
       Vulkan.FrontFace
