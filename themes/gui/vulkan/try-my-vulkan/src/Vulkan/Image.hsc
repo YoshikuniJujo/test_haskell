@@ -58,6 +58,7 @@ imageViewCreateInfoToC ImageViewCreateInfo {
 	pure $ I.ImageViewCreateInfo () pnxt flgs img ivt fmt cmp srr
 
 newtype ImageView = ImageVew (Ptr ImageView) deriving (Show, Storable)
+type PtrImageView = Ptr ImageView
 
 createImageView :: (Pointable n, Pointable n') => Device ->
 	ImageViewCreateInfo n -> Maybe (AllocationCallbacks n') -> IO ImageView
