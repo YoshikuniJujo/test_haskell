@@ -24,6 +24,8 @@ import Vulkan.Framebuffer (Framebuffer)
 import Vulkan.QueryControlFlagBits
 import Vulkan.QueryPipelineStatisticFlagBits
 
+import Vulkan.CommandBufferUsageFlagBits
+
 import qualified Vulkan.CommandBuffer.Internal as I
 
 data AllocateInfo n = AllocateInfo {
@@ -94,3 +96,27 @@ inheritanceInfoToC InheritanceInfo {
 		I.inheritanceInfoOcclusionQueryEnable = oqe,
 		I.inheritanceInfoQueryFlags = qf,
 		I.inheritanceInfoPipelineStatistics = ps }
+
+data BeginInfo n n' = BeginInfo {
+	beginInfoNext :: Maybe n,
+	beginInfoFlags :: CommandBufferUsageFlags,
+	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
+	deriving Show
+
+beginInfoToC ::
+	(Pointable n, Pointable n') => BeginInfo n n' -> ContT r IO I.BeginInfo
+beginInfoToC BeginInfo {
+	beginInfoNext = mnxt,
+	beginInfoFlags = flgs,
+	beginInfoInheritanceInfo = mii } = do
+	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
+	pii <- case mii of
+		Nothing -> pure NullPtr
+		Just ii -> do
+			I.InheritanceInfo_ fii <- inheritanceInfoToC ii
+			ContT $ withForeignPtr fii
+	pure I.BeginInfo {
+		I.beginInfoSType = (),
+		I.beginInfoPNext = pnxt,
+		I.beginInfoFlags = flgs,
+		I.beginInfoPInheritanceInfo = pii }

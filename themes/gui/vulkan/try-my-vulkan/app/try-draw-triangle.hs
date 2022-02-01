@@ -105,6 +105,7 @@ import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPoolCreateFlagBits as Vk
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBufferLevel as Vk
+import qualified Vulkan.CommandBufferUsageFlagBits as Vk
 
 import qualified Glfw as Glfw
 
@@ -813,7 +814,7 @@ createCommandPool pd dvc sfc = do
 
 createCommandBuffers ::
 	Vk.Device -> [Vk.Framebuffer.Framebuffer] ->
-	Vk.CommandPool.CommandPool -> IO [Vk.CommandBuffer.CommandBuffer]
+	Vk.CommandPool.CommandPool -> IO ()
 createCommandBuffers dvc scfbs cp = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
@@ -822,7 +823,17 @@ createCommandBuffers dvc scfbs cp = do
 				Vk.CommandBufferLevelPrimary,
 			Vk.CommandBuffer.allocateInfoCommandBufferCount =
 				fromIntegral $ length scfbs }
-	Vk.CommandBuffer.allocate @() dvc allocInfo
+	commandBuffers <- Vk.CommandBuffer.allocate @() dvc allocInfo
+	beginCommandBuffer1 `mapM_` commandBuffers
+
+beginCommandBuffer1 :: Vk.CommandBuffer.CommandBuffer -> IO ()
+beginCommandBuffer1 cb = do
+	let	beginInfo = Vk.CommandBuffer.BeginInfo {
+			Vk.CommandBuffer.beginInfoNext = Nothing,
+			Vk.CommandBuffer.beginInfoFlags =
+				Vk.CommandBufferUsageFlagsZero,
+			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
+	pure ()
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

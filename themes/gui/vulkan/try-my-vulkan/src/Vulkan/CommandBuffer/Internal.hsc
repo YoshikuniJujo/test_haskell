@@ -5,6 +5,7 @@
 
 module Vulkan.CommandBuffer.Internal where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -16,6 +17,7 @@ import Vulkan.RenderPass (RenderPass)
 import Vulkan.Framebuffer (Framebuffer)
 import Vulkan.QueryControlFlagBits
 import Vulkan.QueryPipelineStatisticFlagBits
+import Vulkan.CommandBufferUsageFlagBits
 
 import qualified Vulkan.StructureType as ST
 
@@ -69,4 +71,21 @@ struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
 			pipelineStatistics} |],
 		[| #{poke VkCommandBufferInheritanceInfo,
 			pipelineStatistics} |]) ]
+	[''Show, ''Storable]
+
+type PtrInheritanceInfo = Ptr InheritanceInfo
+
+struct "BeginInfo" #{size VkCommandBufferBeginInfo}
+		#{alignment VkCommandBufferBeginInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkCommandBufferBeginInfo, sType}
+			p ST.commandBufferBeginInfo |]),
+	("pNext", ''PtrVoid, [| #{peek VkCommandBufferBeginInfo, pNext} |],
+		[| #{poke VkCommandBufferBeginInfo, pNext} |]),
+	("flags", ''CommandBufferUsageFlags,
+		[| #{peek VkCommandBufferBeginInfo, flags} |],
+		[| #{poke VkCommandBufferBeginInfo, flags} |]),
+	("pInheritanceInfo", ''PtrInheritanceInfo,
+		[| #{peek VkCommandBufferBeginInfo, pInheritanceInfo} |],
+		[| #{poke VkCommandBufferBeginInfo, pInheritanceInfo} |]) ]
 	[''Show, ''Storable]

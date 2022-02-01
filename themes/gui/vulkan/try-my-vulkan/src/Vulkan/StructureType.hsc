@@ -74,3 +74,6 @@ commandBufferAllocateInfo = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_IN
 commandBufferInheritanceInfo :: #{type VkStructureType}
 commandBufferInheritanceInfo =
 	#{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO}
+
+commandBufferBeginInfo :: #{type VkStructureType}
+commandBufferBeginInfo = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}
