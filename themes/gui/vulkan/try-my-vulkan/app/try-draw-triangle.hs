@@ -850,6 +850,7 @@ beginCommandBuffer1 sce rp gpl fb cb = do
 	Vk.Cmd.beginRenderPass @() cb renderPassInfo Vk.SubpassContentsInline
 	Vk.Cmd.bindPipeline cb Vk.PipelineBindPointGraphics gpl
 	Vk.Cmd.draw cb 3 1 0 0
+	Vk.Cmd.endRenderPass cb
 
 clearColorValueFloatWhite :: Vk.Clear.Value
 clearColorValueFloatWhite = Vk.Clear.fromColorValue

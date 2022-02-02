@@ -44,3 +44,9 @@ draw cb (word32ToUint32T -> vc) (word32ToUint32T -> ic)
 foreign import ccall "vkCmdDraw" c_vkCmdDraw ::
 	CommandBuffer vs ts -> #{type uint32_t} -> #{type uint32_t} ->
 	#{type uint32_t} -> #{type uint32_t} -> IO ()
+
+endRenderPass :: CommandBuffer vs ts -> IO ()
+endRenderPass = c_vkCmdEndRenderPass
+
+foreign import ccall "vkCmdEndRenderPass" c_vkCmdEndRenderPass ::
+	CommandBuffer vs ts -> IO ()
