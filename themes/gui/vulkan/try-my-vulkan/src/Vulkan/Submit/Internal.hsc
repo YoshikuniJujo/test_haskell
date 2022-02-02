@@ -41,7 +41,7 @@ struct "Info" #{size VkSubmitInfo} #{alignment VkSubmitInfo} [
 	("signalSemaphoreCount", ''#{type uint32_t},
 		[| #{peek VkSubmitInfo, signalSemaphoreCount} |],
 		[| #{poke VkSubmitInfo, signalSemaphoreCount} |]),
-	("pSignalSemephores", ''PtrSemaphore,
+	("pSignalSemaphores", ''PtrSemaphore,
 		[| #{peek VkSubmitInfo, pSignalSemaphores} |],
 		[| #{poke VkSubmitInfo, pSignalSemaphores} |]) ]
 	[''Show, ''Storable]

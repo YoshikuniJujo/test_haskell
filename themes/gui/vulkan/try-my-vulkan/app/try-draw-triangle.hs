@@ -114,6 +114,10 @@ import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Semaphore.Internal as Vk.Semaphore.I
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Submit as Vk.Submit
+import qualified Vulkan.PipelineStageFlagBits as Vk
+
+import Vulkan.Submit (CommandBufferList(..))
 
 import qualified Glfw as Glfw
 
@@ -143,8 +147,8 @@ run :: IO ()
 run = do
 	w <- initWindow
 	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
-		ias, rfs) <- initVulkan w
-	mainLoop w dv sc ias
+		cbs, ias, rfs) <- initVulkan w
+	mainLoop w dv sc cbs ias rfs
 	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp ias rfs
 
 initWindow :: IO GlfwB.Window
@@ -160,6 +164,7 @@ initVulkan :: GlfwB.Window -> IO (
 	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
 	Vk.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
 	[Vk.Framebuffer.Framebuffer], Vk.CommandPool.CommandPool,
+	[Vk.CommandBuffer.CommandBuffer () '[]],
 	Vk.Semaphore.Semaphore, Vk.Semaphore.Semaphore )
 initVulkan w = do
 	ist <- createInstance
@@ -175,10 +180,10 @@ initVulkan w = do
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
 	cp <- createCommandPool pd dv sfc
-	createCommandBuffers dv sce rp gpl scfbs cp
+	cbs <- createCommandBuffers dv sce rp gpl scfbs cp
 	(ias, rfs) <- createSemaphores dv
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
-		ias, rfs)
+		cbs, ias, rfs)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -825,7 +830,8 @@ createCommandPool pd dvc sfc = do
 
 createCommandBuffers ::
 	Vk.Device -> Vk.Extent2d -> Vk.RenderPass -> Vk.Pipeline vs ts ->
-	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool -> IO ()
+	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool ->
+	IO [Vk.CommandBuffer.CommandBuffer vs ts]
 createCommandBuffers dvc sce rp gpl scfbs cp = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
@@ -836,6 +842,7 @@ createCommandBuffers dvc sce rp gpl scfbs cp = do
 				fromIntegral $ length scfbs }
 	commandBuffers <- Vk.CommandBuffer.allocate @() dvc allocInfo
 	uncurry (beginCommandBuffer1 sce rp gpl) `mapM_` zip scfbs commandBuffers
+	pure commandBuffers
 
 beginCommandBuffer1 :: Vk.Extent2d -> Vk.RenderPass -> Vk.Pipeline vs ts ->
 	Vk.Framebuffer.Framebuffer -> Vk.CommandBuffer.CommandBuffer vs ts -> IO ()
@@ -878,17 +885,29 @@ createSemaphores dvc = do
 
 mainLoop ::
 	GlfwB.Window -> Vk.Device -> Vk.Khr.I.Swapchain ->
-	Vk.Semaphore.Semaphore -> IO ()
-mainLoop w dvc sc ias = do
+	[Vk.CommandBuffer.CommandBuffer () '[]] ->
+	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore -> IO ()
+mainLoop w dvc sc cbs ias rfs = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
-		drawFrame dvc sc ias
+		drawFrame dvc sc cbs ias rfs
 		not <$> GlfwB.windowShouldClose w
 
-drawFrame :: Vk.Device -> Vk.Khr.I.Swapchain -> Vk.Semaphore.Semaphore -> IO ()
-drawFrame dvc sc ias = do
+drawFrame :: Vk.Device -> Vk.Khr.I.Swapchain ->
+	[Vk.CommandBuffer.CommandBuffer () '[]] ->
+	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore ->
+	IO ()
+drawFrame dvc sc cbs ias rfs = do
 	imageIndex <- Vk.Khr.acquireNextImage
 		dvc sc Vk.uint64Max ias Vk.Fence.FenceNullHandle
+	let	submitInfo = Vk.Submit.Info {
+			Vk.Submit.infoNext = Nothing,
+			Vk.Submit.infoWaitSemaphoreAndDstStageMasks = [
+				(ias, Vk.PipelineStageColorAttachmentOutputBit)
+				],
+			Vk.Submit.infoCommandBuffers =
+				(cbs !! fromIntegral imageIndex) :+: CBNil,
+			Vk.Submit.infoSignalSemaphores = [rfs] }
 	pure ()
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
