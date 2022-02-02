@@ -106,6 +106,7 @@ import qualified Vulkan.CommandPoolCreateFlagBits as Vk
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBufferLevel as Vk
 import qualified Vulkan.CommandBufferUsageFlagBits as Vk
+import qualified Vulkan.Clear as Vk.Clear
 
 import qualified Glfw as Glfw
 
@@ -166,7 +167,7 @@ initVulkan w = do
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
 	cp <- createCommandPool pd dv sfc
-	createCommandBuffers dv scfbs cp
+	createCommandBuffers dv sce rp scfbs cp
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp)
 
 createInstance :: IO Vk.Instance
@@ -813,9 +814,9 @@ createCommandPool pd dvc sfc = do
 	Vk.CommandPool.create @() @() dvc poolInfo Nothing
 
 createCommandBuffers ::
-	Vk.Device -> [Vk.Framebuffer.Framebuffer] ->
+	Vk.Device -> Vk.Extent2d -> Vk.RenderPass -> [Vk.Framebuffer.Framebuffer] ->
 	Vk.CommandPool.CommandPool -> IO ()
-createCommandBuffers dvc scfbs cp = do
+createCommandBuffers dvc sce rp scfbs cp = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
 			Vk.CommandBuffer.allocateInfoCommandPool = cp,
@@ -824,16 +825,32 @@ createCommandBuffers dvc scfbs cp = do
 			Vk.CommandBuffer.allocateInfoCommandBufferCount =
 				fromIntegral $ length scfbs }
 	commandBuffers <- Vk.CommandBuffer.allocate @() dvc allocInfo
-	beginCommandBuffer1 `mapM_` commandBuffers
+	uncurry (beginCommandBuffer1 sce rp) `mapM_` zip scfbs commandBuffers
 
-beginCommandBuffer1 :: Vk.CommandBuffer.CommandBuffer -> IO ()
-beginCommandBuffer1 cb = do
+beginCommandBuffer1 :: Vk.Extent2d -> Vk.RenderPass ->
+	Vk.Framebuffer.Framebuffer -> Vk.CommandBuffer.CommandBuffer -> IO ()
+beginCommandBuffer1 sce rp fb cb = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBufferUsageFlagsZero,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 	Vk.CommandBuffer.begin @() @() cb beginInfo
+	let	renderPassInfo = Vk.RenderPass.BeginInfo {
+			Vk.RenderPass.beginInfoNext = Nothing,
+			Vk.RenderPass.beginInfoRenderPass =  rp,
+			Vk.RenderPass.beginInfoFramebuffer = fb,
+			Vk.RenderPass.beginInfoRenderArea = Vk.Rect2d {
+				Vk.rect2dOffset = Vk.Offset2d 0 0,
+				Vk.rect2dExtent = sce },
+			Vk.RenderPass.beginInfoClearValues =
+				[clearColorValueFloatWhite] }
+	pure ()
+
+clearColorValueFloatWhite :: Vk.Clear.Value
+clearColorValueFloatWhite = Vk.Clear.fromColorValue
+	$ Vk.Clear.fromColorValueFloat Vk.Clear.ColorValueFloat {
+		Vk.Clear.colorValueFloatRgba = 0 :. 0 :. 0 :. 1 :. NilL }
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do

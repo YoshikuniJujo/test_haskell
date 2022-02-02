@@ -25,6 +25,9 @@ import Vulkan.RenderPassCreateFlagBits
 import qualified Vulkan.AllocationCallbacks.Internal as I
 import qualified Vulkan.RenderPass.Internal as I
 
+import Vulkan.Framebuffer (Framebuffer)
+import Vulkan.Clear as Clear
+
 #include <vulkan/vulkan.h>
 
 data SubpassDescription = SubpassDescription {
@@ -150,3 +153,32 @@ destroy dvc rp mac = ($ pure) $ runContT do
 
 foreign import ccall "vkDestroyRenderPass" c_vkDestroyRenderPass ::
 	Device -> RenderPass -> Ptr I.AllocationCallbacks -> IO ()
+
+data BeginInfo n = BeginInfo {
+	beginInfoNext :: Maybe n,
+	beginInfoRenderPass :: RenderPass,
+	beginInfoFramebuffer :: Framebuffer,
+	beginInfoRenderArea :: Rect2d,
+	beginInfoClearValues :: [Clear.Value] }
+	deriving Show
+
+beginInfoToC :: Pointable n => BeginInfo n -> ContT r IO I.BeginInfo
+beginInfoToC BeginInfo {
+	beginInfoNext = mnxt,
+	beginInfoRenderPass = rp,
+	beginInfoFramebuffer = fb,
+	beginInfoRenderArea = ra,
+	beginInfoClearValues = cvs } = do
+	(castPtr -> pnxt) <- ContT $ withMaybePointer mnxt
+	let	cvc = length cvs
+	cvps <- valueToPtr `mapM` cvs
+	pcvps <- ContT $ allocaArray cvc
+	lift $ pokeArray pcvps cvps
+	pure I.BeginInfo {
+		I.beginInfoSType = (),
+		I.beginInfoPNext = pnxt,
+		I.beginInfoRenderPass = rp,
+		I.beginInfoFramebuffer = fb,
+		I.beginInfoRenderArea = ra,
+		I.beginInfoClearValueCount = fromIntegral cvc,
+		I.beginInfoPClearValues = pcvps }

@@ -74,7 +74,9 @@ fromColorValue (I.ColorValue f) = Value $ castForeignPtr f
 fromDepthStencilValue :: DepthStencilValue -> Value
 fromDepthStencilValue (DepthStencilValue_ f) = Value $ castForeignPtr f
 
-type PtrValue = Ptr ValueTag
+type ValuePtr = Ptr ValueTag
 
-valueToPtr :: Value -> ContT r IO PtrValue
+valueToPtr :: Value -> ContT r IO ValuePtr
 valueToPtr (Value f) = ContT $ withForeignPtr f
+
+type PtrValue = Ptr ValuePtr
