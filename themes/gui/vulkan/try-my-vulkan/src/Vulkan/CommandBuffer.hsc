@@ -1,5 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -11,6 +13,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Monad.Cont
+import Data.Kind
 import Data.Word
 
 import Vulkan.Base
@@ -49,10 +52,10 @@ allocateInfoToC AllocateInfo {
 		I.allocateInfoCommandBufferCount = cbc }
 
 data CommandBufferTag
-newtype CommandBuffer = CommandBuffer (Ptr CommandBufferTag)
+newtype CommandBuffer vs (ts :: [Type]) = CommandBuffer (Ptr CommandBufferTag)
 	deriving (Show, Storable)
 
-allocate :: Storable n => Device -> AllocateInfo n -> IO [CommandBuffer]
+allocate :: Storable n => Device -> AllocateInfo n -> IO [CommandBuffer vs ts]
 allocate dvc ai = ($ pure) $ runContT do
 	I.AllocateInfo_ fai <- allocateInfoToC ai
 	pai <- ContT $ withForeignPtr fai
@@ -63,7 +66,7 @@ allocate dvc ai = ($ pure) $ runContT do
 	where n = fromIntegral $ allocateInfoCommandBufferCount ai
 
 foreign import ccall "vkAllocateCommandBuffers" c_vkAllocateCommandBuffers ::
-	Device -> Ptr I.AllocateInfo -> Ptr CommandBuffer -> IO Result
+	Device -> Ptr I.AllocateInfo -> Ptr (CommandBuffer vs ts) -> IO Result
 
 data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoNext :: Maybe n,
@@ -120,7 +123,7 @@ beginInfoToC BeginInfo {
 		I.beginInfoFlags = flgs,
 		I.beginInfoPInheritanceInfo = pii }
 
-begin :: (Pointable n, Pointable n') => CommandBuffer -> BeginInfo n n' -> IO ()
+begin :: (Pointable n, Pointable n') => CommandBuffer vs ts -> BeginInfo n n' -> IO ()
 begin cb bi = ($ pure) $ runContT do
 	I.BeginInfo_ fbi <- beginInfoToC bi
 	pbi <- ContT $ withForeignPtr fbi
@@ -128,4 +131,4 @@ begin cb bi = ($ pure) $ runContT do
 		throwUnlessSuccess r
 
 foreign import ccall "vkBeginCommandBuffer" c_vkBeginCommandBuffer ::
-	CommandBuffer -> Ptr I.BeginInfo -> IO Result
+	CommandBuffer vs ts -> Ptr I.BeginInfo -> IO Result

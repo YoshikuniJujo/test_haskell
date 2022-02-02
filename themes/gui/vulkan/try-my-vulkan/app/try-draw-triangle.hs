@@ -169,7 +169,7 @@ initVulkan w = do
 	(ppl, gpl) <- createGraphicsPipeline dv sce rp
 	scfbs <- createFramebuffers dv rp sce ivs
 	cp <- createCommandPool pd dv sfc
-	createCommandBuffers dv sce rp scfbs cp
+	createCommandBuffers dv sce rp gpl scfbs cp
 	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp)
 
 createInstance :: IO Vk.Instance
@@ -816,9 +816,9 @@ createCommandPool pd dvc sfc = do
 	Vk.CommandPool.create @() @() dvc poolInfo Nothing
 
 createCommandBuffers ::
-	Vk.Device -> Vk.Extent2d -> Vk.RenderPass -> [Vk.Framebuffer.Framebuffer] ->
-	Vk.CommandPool.CommandPool -> IO ()
-createCommandBuffers dvc sce rp scfbs cp = do
+	Vk.Device -> Vk.Extent2d -> Vk.RenderPass -> Vk.Pipeline vs ts ->
+	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool -> IO ()
+createCommandBuffers dvc sce rp gpl scfbs cp = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
 			Vk.CommandBuffer.allocateInfoCommandPool = cp,
@@ -827,11 +827,11 @@ createCommandBuffers dvc sce rp scfbs cp = do
 			Vk.CommandBuffer.allocateInfoCommandBufferCount =
 				fromIntegral $ length scfbs }
 	commandBuffers <- Vk.CommandBuffer.allocate @() dvc allocInfo
-	uncurry (beginCommandBuffer1 sce rp) `mapM_` zip scfbs commandBuffers
+	uncurry (beginCommandBuffer1 sce rp gpl) `mapM_` zip scfbs commandBuffers
 
-beginCommandBuffer1 :: Vk.Extent2d -> Vk.RenderPass ->
-	Vk.Framebuffer.Framebuffer -> Vk.CommandBuffer.CommandBuffer -> IO ()
-beginCommandBuffer1 sce rp fb cb = do
+beginCommandBuffer1 :: Vk.Extent2d -> Vk.RenderPass -> Vk.Pipeline vs ts ->
+	Vk.Framebuffer.Framebuffer -> Vk.CommandBuffer.CommandBuffer vs ts -> IO ()
+beginCommandBuffer1 sce rp gpl fb cb = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
 			Vk.CommandBuffer.beginInfoFlags =
@@ -848,6 +848,7 @@ beginCommandBuffer1 sce rp fb cb = do
 			Vk.RenderPass.beginInfoClearValues =
 				[clearColorValueFloatWhite] }
 	Vk.Cmd.beginRenderPass @() cb renderPassInfo Vk.SubpassContentsInline
+	Vk.Cmd.bindPipeline cb Vk.PipelineBindPointGraphics gpl
 
 clearColorValueFloatWhite :: Vk.Clear.Value
 clearColorValueFloatWhite = Vk.Clear.fromColorValue
