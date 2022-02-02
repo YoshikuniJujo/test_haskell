@@ -80,3 +80,6 @@ commandBufferBeginInfo = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}
 
 renderPassBeginInfo :: #{type VkStructureType}
 renderPassBeginInfo = #{const VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}
+
+semaphoreCreateInfo :: #{type VkStructureType}
+semaphoreCreateInfo = #{const VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO}

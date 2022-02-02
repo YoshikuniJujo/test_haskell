@@ -132,6 +132,8 @@ library
       Vulkan.SamplerAddressMode
       Vulkan.SamplerCreateFlagBits
       Vulkan.SamplerMipmapMode
+      Vulkan.Semaphore
+      Vulkan.Semaphore.Internal
       Vulkan.Shader
       Vulkan.Shader.Internal
       Vulkan.ShaderStageFlagBits

@@ -110,6 +110,9 @@ import qualified Vulkan.Clear as Vk.Clear
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.SubpassContents as Vk
 
+import qualified Vulkan.Semaphore as Vk.Semaphore
+import qualified Vulkan.Semaphore.Internal as Vk.Semaphore.I
+
 import qualified Glfw as Glfw
 
 import ThEnv
@@ -137,10 +140,10 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp) <-
-		initVulkan w
+	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
+		ias, rfs) <- initVulkan w
 	mainLoop w
-	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp
+	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp ias rfs
 
 initWindow :: IO GlfwB.Window
 initWindow = do
@@ -154,7 +157,8 @@ initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
 	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
 	Vk.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
-	[Vk.Framebuffer.Framebuffer], Vk.CommandPool.CommandPool )
+	[Vk.Framebuffer.Framebuffer], Vk.CommandPool.CommandPool,
+	Vk.Semaphore.Semaphore, Vk.Semaphore.Semaphore )
 initVulkan w = do
 	ist <- createInstance
 	dbgMssngr <- if enableValidationLayers
@@ -170,7 +174,9 @@ initVulkan w = do
 	scfbs <- createFramebuffers dv rp sce ivs
 	cp <- createCommandPool pd dv sfc
 	createCommandBuffers dv sce rp gpl scfbs cp
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp)
+	(ias, rfs) <- createSemaphores dv
+	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
+		ias, rfs)
 
 createInstance :: IO Vk.Instance
 createInstance = do
@@ -858,17 +864,35 @@ clearColorValueFloatWhite = Vk.Clear.fromColorValue
 	$ Vk.Clear.fromColorValueFloat Vk.Clear.ColorValueFloat {
 		Vk.Clear.colorValueFloatRgba = 0 :. 0 :. 0 :. 1 :. NilL }
 
+createSemaphores :: Vk.Device -> IO (Vk.Semaphore.Semaphore, Vk.Semaphore.Semaphore)
+createSemaphores dvc = do
+	let	semaphoreInfo = Vk.Semaphore.CreateInfo {
+			Vk.Semaphore.createInfoNext = Nothing,
+			Vk.Semaphore.createInfoFlags =
+				Vk.Semaphore.I.CreateFlagsZero }
+	ias <- Vk.Semaphore.create @() @() dvc semaphoreInfo Nothing
+	rfs <- Vk.Semaphore.create @() @() dvc semaphoreInfo Nothing
+	pure (ias, rfs)
+
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop w = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
+		drawFrame
 		not <$> GlfwB.windowShouldClose w
+
+drawFrame :: IO ()
+drawFrame = pure ()
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
 	Vk.RenderPass -> Vk.PipelineLayout -> Vk.Pipeline () '[] ->
-	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool -> IO ()
-cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp = do
+	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool ->
+	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore ->
+	IO ()
+cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp ias rfs = do
+	Vk.Semaphore.destroy @() dv ias Nothing
+	Vk.Semaphore.destroy @() dv rfs Nothing
 	Vk.CommandPool.destroy @() dv cp Nothing
 	flip (Vk.Framebuffer.destroy @() dv) Nothing `mapM_` scfbs
 	Vk.Ppl.destroy @() dv gpl Nothing
