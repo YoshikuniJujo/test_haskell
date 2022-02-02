@@ -88,6 +88,8 @@ import qualified Vulkan.RenderPass.Internal as Vk.I
 import qualified Vulkan.AttachmentLoadOp as Vk
 import qualified Vulkan.AttachmentStoreOp as Vk
 import qualified Vulkan.ImageLayout as Vk
+import qualified Vulkan.AccessFlagBits as Vk
+import qualified Vulkan.DependencyFlagBits as Vk
 
 import qualified Vulkan.PipelineBindPoint as Vk
 import qualified Vulkan.SubpassDescriptionFlagBits as Vk
@@ -620,13 +622,26 @@ createRenderPass dvc scif = do
 			Vk.subpassDescriptionInputAttachments = [],
 			Vk.subpassDescriptionDepthStencilAttachment = Nothing,
 			Vk.subpassDescriptionPreserveAttachments = [] }
+		dependency = Vk.I.SubpassDependency {
+			Vk.I.subpassDependencySrcSubpass = Vk.subpassExternal,
+			Vk.I.subpassDependencyDstSubpass = 0,
+			Vk.I.subpassDependencySrcStageMask =
+				Vk.PipelineStageColorAttachmentOutputBit,
+			Vk.I.subpassDependencySrcAccessMask =
+				Vk.AccessFlagsZero,
+			Vk.I.subpassDependencyDstStageMask =
+				Vk.PipelineStageColorAttachmentOutputBit,
+			Vk.I.subpassDependencyDstAccessMask =
+				Vk.AccessColorAttachmentWriteBit,
+			Vk.I.subpassDependencyDependencyFlags =
+				Vk.DependencyFlagsZero }
 		renderPassInfo = Vk.RenderPass.CreateInfo {
 			Vk.RenderPass.createInfoNext = Nothing,
 			Vk.RenderPass.createInfoFlags =
 				Vk.RenderPassCreateFlagsZero,
 			Vk.RenderPass.createInfoAttachments = [colorAttachment],
 			Vk.RenderPass.createInfoSubpasses = [subpass],
-			Vk.RenderPass.createInfoDependencies = [] }
+			Vk.RenderPass.createInfoDependencies = [dependency] }
 	Vk.RenderPass.create @() @() dvc renderPassInfo Nothing
 
 createGraphicsPipeline ::
