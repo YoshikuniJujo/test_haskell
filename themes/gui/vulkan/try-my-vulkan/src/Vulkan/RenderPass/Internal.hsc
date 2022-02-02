@@ -25,7 +25,10 @@ import Vulkan.PipelineStageFlagBits
 import Vulkan.AccessFlagBits
 import Vulkan.DependencyFlagBits
 
+import Vulkan.Framebuffer (Framebuffer)
+
 import qualified Vulkan.StructureType as ST
+import qualified Vulkan.Clear as Clear
 
 #include <vulkan/vulkan.h>
 
@@ -169,5 +172,25 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 
 struct "BeginInfo" #{size VkRenderPassBeginInfo}
 		#{alignment VkRenderPassBeginInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkRenderPassBeginInfo, sType}
+			p ST.renderPassBeginInfo |]),
+	("pNext", ''PtrVoid, [| #{peek VkRenderPassBeginInfo, pNext} |],
+		[| #{poke VkRenderPassBeginInfo, pNext} |]),
+	("renderPass", ''RenderPass,
+		[| #{peek VkRenderPassBeginInfo, renderPass} |],
+		[| #{poke VkRenderPassBeginInfo, renderPass} |]),
+	("framebuffer", ''Framebuffer,
+		[| #{peek VkRenderPassBeginInfo, framebuffer} |],
+		[| #{poke VkRenderPassBeginInfo, framebuffer} |]),
+	("renderArea", ''Rect2d,
+		[| #{peek VkRenderPassBeginInfo, renderArea} |],
+		[| #{poke VkRenderPassBeginInfo, renderArea} |]),
+	("clearValueCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassBeginInfo, clearValueCount} |],
+		[| #{poke VkRenderPassBeginInfo, clearValueCount} |]),
+	("pClearValues", ''Clear.PtrValue,
+		[| #{peek VkRenderPassBeginInfo, pClearValues} |],
+		[| #{poke VkRenderPassBeginInfo, pClearValues} |])
 	]
 	[''Show, ''Storable]

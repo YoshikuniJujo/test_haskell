@@ -29,7 +29,6 @@ import qualified Vulkan.Pipeline.DepthStencilState.Internal as
 import qualified Vulkan.Pipeline.ColorBlendState.Internal as ColorBlendState.I
 import qualified Vulkan.Pipeline.DynamicState.Internal as DynamicState.I
 import qualified Vulkan.Pipeline.Layout as Layout
-import qualified Vulkan.RenderPass as RenderPass
 
 #include <vulkan/vulkan.h>
 
@@ -82,7 +81,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("layout", ''Layout.PipelineLayout,
 		[| #{peek VkGraphicsPipelineCreateInfo, layout} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, layout} |]),
-	("renderPass", ''RenderPass.RenderPass,
+	("renderPass", ''RenderPass,
 		[| #{peek VkGraphicsPipelineCreateInfo, renderPass} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, renderPass} |]),
 	("subpass", ''#{type uint32_t},

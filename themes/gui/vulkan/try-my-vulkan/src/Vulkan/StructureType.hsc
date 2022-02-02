@@ -77,3 +77,6 @@ commandBufferInheritanceInfo =
 
 commandBufferBeginInfo :: #{type VkStructureType}
 commandBufferBeginInfo = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}
+
+renderPassBeginInfo :: #{type VkStructureType}
+renderPassBeginInfo = #{const VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}

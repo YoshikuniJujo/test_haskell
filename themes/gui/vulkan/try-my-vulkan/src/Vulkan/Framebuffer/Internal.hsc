@@ -11,7 +11,6 @@ import Data.Word
 
 import Vulkan.Base
 import Vulkan.FramebufferCreateFlagBits
-import Vulkan.RenderPass (RenderPass)
 import Vulkan.Image (PtrImageView)
 
 import qualified Vulkan.StructureType as ST

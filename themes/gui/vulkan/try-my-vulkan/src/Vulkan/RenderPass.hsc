@@ -123,9 +123,6 @@ createInfoToC CreateInfo {
 		I.createInfoDependencyCount = fromIntegral dc,
 		I.createInfoPDependencies = pds }
 
-data RenderPassTag
-newtype RenderPass = RenderPass (Ptr RenderPassTag) deriving (Show, Storable)
-
 create :: (Pointable n, Pointable n') => Device ->
 	CreateInfo n -> Maybe (AllocationCallbacks n') -> IO RenderPass
 create dvc ci mac = ($ pure) $ runContT do

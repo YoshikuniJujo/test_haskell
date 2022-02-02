@@ -13,7 +13,6 @@ import Data.Word
 import Vulkan.Base
 import Vulkan.CommandPool
 import Vulkan.CommandBufferLevel
-import Vulkan.RenderPass (RenderPass)
 import Vulkan.Framebuffer (Framebuffer)
 import Vulkan.QueryControlFlagBits
 import Vulkan.QueryPipelineStatisticFlagBits

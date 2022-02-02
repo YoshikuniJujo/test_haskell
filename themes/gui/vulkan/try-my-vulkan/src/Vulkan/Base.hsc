@@ -161,3 +161,6 @@ int32ToInt32T = fromIntegral
 
 floatToFloat :: Float -> #{type float}
 floatToFloat = realToFrac
+
+data RenderPassTag
+newtype RenderPass = RenderPass (Ptr RenderPassTag) deriving (Show, Storable)

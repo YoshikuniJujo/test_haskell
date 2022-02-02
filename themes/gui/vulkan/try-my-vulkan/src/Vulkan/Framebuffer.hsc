@@ -18,7 +18,6 @@ import Vulkan.Exception
 import Vulkan.AllocationCallbacks
 import Vulkan.Device
 import Vulkan.FramebufferCreateFlagBits
-import Vulkan.RenderPass (RenderPass)
 import Vulkan.Image (ImageView)
 
 import qualified Vulkan.AllocationCallbacks.Internal as I

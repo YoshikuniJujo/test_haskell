@@ -37,7 +37,6 @@ import qualified Vulkan.Pipeline.DepthStencilState as DepthStencilState
 import qualified Vulkan.Pipeline.ColorBlendState as ColorBlendState
 import qualified Vulkan.Pipeline.DynamicState as DynamicState
 import qualified Vulkan.Pipeline.Layout as Layout
-import qualified Vulkan.RenderPass as RenderPass
 
 import qualified Vulkan.Pipeline.VertexInputState.Internal as VertexInputState.I
 import qualified Vulkan.Pipeline.InputAssemblyState.Internal as
@@ -73,7 +72,7 @@ data CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo n9),
 	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
 	createInfoLayout :: Layout.PipelineLayout,
-	createInfoRenderPass :: RenderPass.RenderPass,
+	createInfoRenderPass :: RenderPass,
 	createInfoSubpass :: Word32,
 	createInfoBasePipelineHandle :: Pipeline vs ts,
 	createInfoBasePipelineIndex :: Int32 }

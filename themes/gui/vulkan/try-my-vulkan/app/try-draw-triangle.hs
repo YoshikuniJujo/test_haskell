@@ -150,7 +150,7 @@ initWindow = do
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
 	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
-	Vk.RenderPass.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
+	Vk.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
 	[Vk.Framebuffer.Framebuffer], Vk.CommandPool.CommandPool )
 initVulkan w = do
 	ist <- createInstance
@@ -571,7 +571,7 @@ createImageView1 dvc scif img = do
 				Vk.imageSubresourceRangeLayerCount = 1 } }
 	Vk.createImageView @() @() dvc createInfo Nothing
 
-createRenderPass :: Vk.Device -> Vk.Format -> IO Vk.RenderPass.RenderPass
+createRenderPass :: Vk.Device -> Vk.Format -> IO Vk.RenderPass
 createRenderPass dvc scif = do
 	let	colorAttachment = Vk.I.AttachmentDescription {
 			Vk.I.attachmentDescriptionFlags =
@@ -614,7 +614,7 @@ createRenderPass dvc scif = do
 	Vk.RenderPass.create @() @() dvc renderPassInfo Nothing
 
 createGraphicsPipeline ::
-	Vk.Device -> Vk.Extent2d -> Vk.RenderPass.RenderPass ->
+	Vk.Device -> Vk.Extent2d -> Vk.RenderPass ->
 	IO (Vk.PipelineLayout, Vk.Pipeline () '[])
 createGraphicsPipeline dvc sce rp = do
 	vertShaderCode <- BS.readFile "shaders/vert.spv"
@@ -779,12 +779,12 @@ createShaderModule dvc code = do
 	Vk.createShaderModule @() @() dvc createInfo Nothing
 
 createFramebuffers ::
-	Vk.Device -> Vk.RenderPass.RenderPass -> Vk.Extent2d ->
+	Vk.Device -> Vk.RenderPass -> Vk.Extent2d ->
 	[Vk.ImageView] -> IO [Vk.Framebuffer.Framebuffer]
 createFramebuffers dvc rp sce = mapM $ createFramebuffer1 dvc rp sce
 
 createFramebuffer1 ::
-	Vk.Device -> Vk.RenderPass.RenderPass -> Vk.Extent2d ->
+	Vk.Device -> Vk.RenderPass -> Vk.Extent2d ->
 	Vk.ImageView -> IO Vk.Framebuffer.Framebuffer
 createFramebuffer1 dvc rp sce iv = do
 	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
@@ -843,7 +843,7 @@ mainLoop w = do
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
-	Vk.RenderPass.RenderPass -> Vk.PipelineLayout -> Vk.Pipeline () '[] ->
+	Vk.RenderPass -> Vk.PipelineLayout -> Vk.Pipeline () '[] ->
 	[Vk.Framebuffer.Framebuffer] -> Vk.CommandPool.CommandPool -> IO ()
 cleanup w ist mdbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp = do
 	Vk.CommandPool.destroy @() dv cp Nothing
