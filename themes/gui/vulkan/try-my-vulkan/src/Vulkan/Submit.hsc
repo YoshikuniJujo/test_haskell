@@ -8,7 +8,6 @@
 module Vulkan.Submit where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Control.Monad.Cont
 import Data.Kind

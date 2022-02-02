@@ -89,3 +89,6 @@ fenceCreateInfo = #{const VK_STRUCTURE_TYPE_FENCE_CREATE_INFO}
 
 submitInfo :: #{type VkStructureType}
 submitInfo = #{const VK_STRUCTURE_TYPE_SUBMIT_INFO}
+
+presentInfoKhr :: #{type VkStructureType}
+presentInfoKhr = #{const VK_STRUCTURE_TYPE_PRESENT_INFO_KHR}

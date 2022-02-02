@@ -38,7 +38,9 @@ enum "SwapchainCreateFlagBits" ''#{type VkSwapchainCreateFlagBitsKHR}
 
 type SwapchainCreateFlags = SwapchainCreateFlagBits
 
-newtype Swapchain = Swapchain (Ptr Swapchain) deriving (Show, Storable)
+data SwapchainTag
+newtype Swapchain = Swapchain (Ptr SwapchainTag) deriving (Show, Storable)
+type PtrSwapchain = Ptr Swapchain
 
 pattern SwapchainNull :: Swapchain
 pattern SwapchainNull <- Swapchain ((== (wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE})) -> P.True) where

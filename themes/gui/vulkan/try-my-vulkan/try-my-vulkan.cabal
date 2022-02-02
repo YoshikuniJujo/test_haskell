@@ -82,6 +82,7 @@ library
       Vulkan.Instance
       Vulkan.Internal
       Vulkan.Khr
+      Vulkan.Khr.Present.Internal
       Vulkan.Khr.Surface
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal

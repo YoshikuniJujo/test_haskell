@@ -6,6 +6,7 @@
 
 module Vulkan.Exception where
 
+import Foreign.Ptr
 import Foreign.C.Enum
 import Control.Exception
 import Control.Exception.Hierarchy
@@ -24,8 +25,9 @@ enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq, ''Enum] [
 	("ErrorOutOfHostMemory", #{const VK_ERROR_OUT_OF_HOST_MEMORY}),
 	("ErrorOutOfDeviceMemory", #{const VK_ERROR_OUT_OF_DEVICE_MEMORY}),
 
-	("ErrorExtensionNotPresent", #{const VK_ERROR_EXTENSION_NOT_PRESENT})
-	]
+	("ErrorExtensionNotPresent", #{const VK_ERROR_EXTENSION_NOT_PRESENT}) ]
+
+type PtrResult = Ptr Result
 
 exceptionHierarchy Nothing (ExType ''Result)
 
