@@ -132,3 +132,11 @@ begin cb bi = ($ pure) $ runContT do
 
 foreign import ccall "vkBeginCommandBuffer" c_vkBeginCommandBuffer ::
 	CommandBuffer vs ts -> Ptr I.BeginInfo -> IO Result
+
+end :: CommandBuffer vs ts -> IO ()
+end cb = do
+	r <- c_vkEndCommandBuffer cb
+	throwUnlessSuccess r
+
+foreign import ccall "vkEndCommandBuffer" c_vkEndCommandBuffer ::
+	CommandBuffer vs ts -> IO Result
