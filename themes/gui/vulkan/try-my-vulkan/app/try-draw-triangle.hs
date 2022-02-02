@@ -148,7 +148,7 @@ run = do
 	w <- initWindow
 	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
 		cbs, ias, rfs) <- initVulkan w
-	mainLoop w dv sc cbs ias rfs
+	mainLoop w dv gq sc cbs ias rfs
 	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp ias rfs
 
 initWindow :: IO GlfwB.Window
@@ -884,20 +884,20 @@ createSemaphores dvc = do
 	pure (ias, rfs)
 
 mainLoop ::
-	GlfwB.Window -> Vk.Device -> Vk.Khr.I.Swapchain ->
+	GlfwB.Window -> Vk.Device -> Vk.Queue -> Vk.Khr.I.Swapchain ->
 	[Vk.CommandBuffer.CommandBuffer () '[]] ->
 	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore -> IO ()
-mainLoop w dvc sc cbs ias rfs = do
+mainLoop w dvc gq sc cbs ias rfs = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
-		drawFrame dvc sc cbs ias rfs
+		drawFrame dvc gq sc cbs ias rfs
 		not <$> GlfwB.windowShouldClose w
 
-drawFrame :: Vk.Device -> Vk.Khr.I.Swapchain ->
+drawFrame :: Vk.Device -> Vk.Queue -> Vk.Khr.I.Swapchain ->
 	[Vk.CommandBuffer.CommandBuffer () '[]] ->
 	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore ->
 	IO ()
-drawFrame dvc sc cbs ias rfs = do
+drawFrame dvc gq sc cbs ias rfs = do
 	imageIndex <- Vk.Khr.acquireNextImage
 		dvc sc Vk.uint64Max ias Vk.Fence.FenceNullHandle
 	let	submitInfo = Vk.Submit.Info {
@@ -908,7 +908,7 @@ drawFrame dvc sc cbs ias rfs = do
 			Vk.Submit.infoCommandBuffers =
 				(cbs !! fromIntegral imageIndex) :+: CBNil,
 			Vk.Submit.infoSignalSemaphores = [rfs] }
-	pure ()
+	Vk.Submit.queue @() gq [submitInfo] Vk.Fence.FenceNullHandle
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->

@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -7,16 +8,23 @@
 module Vulkan.Submit where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Control.Monad.Cont
 import Data.Kind
+import Data.Word
 
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.Device
 import Vulkan.Semaphore
+import Vulkan.Fence
 import Vulkan.PipelineStageFlagBits
 import Vulkan.CommandBuffer
 
 import qualified Vulkan.Submit.Internal as I
+
+#include <vulkan/vulkan.h>
 
 data Info n vtss = Info {
 	infoNext :: Maybe n,
@@ -63,3 +71,15 @@ infoToC Info {
 		I.infoPCommandBuffers = pcbs,
 		I.infoSignalSemaphoreCount = fromIntegral ssmpc,
 		I.infoPSignalSemaphores = pssmps }
+
+queue :: Pointable n => Queue -> [Info n vtss] -> Fence -> IO ()
+queue q is f = ($ pure) $ runContT do
+	let	ic = length is
+	iis <- infoToC `mapM` is
+	piis <- ContT $ allocaArray ic
+	lift $ pokeArray piis iis
+	lift do	r <- c_vkQueueSubmit q (fromIntegral ic) piis f
+		throwUnlessSuccess r
+
+foreign import ccall "vkQueueSubmit" c_vkQueueSubmit ::
+	Queue -> #{type uint32_t} -> Ptr I.Info -> Fence -> IO Result
