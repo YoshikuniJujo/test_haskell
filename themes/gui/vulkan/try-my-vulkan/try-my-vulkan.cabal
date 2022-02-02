@@ -44,6 +44,7 @@ library
       Vulkan.Clear
       Vulkan.Clear.Internal
       Vulkan.ColorComponentFlagBits
+      Vulkan.Command
       Vulkan.CommandBuffer
       Vulkan.CommandBuffer.Internal
       Vulkan.CommandBufferLevel
@@ -138,6 +139,7 @@ library
       Vulkan.SpecializationInfo.Internal
       Vulkan.StencilOp
       Vulkan.StructureType
+      Vulkan.SubpassContents
       Vulkan.SubpassDescriptionFlagBits
       Vulkan.Viewport
   other-modules:

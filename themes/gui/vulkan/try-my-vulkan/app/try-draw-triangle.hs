@@ -107,6 +107,8 @@ import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBufferLevel as Vk
 import qualified Vulkan.CommandBufferUsageFlagBits as Vk
 import qualified Vulkan.Clear as Vk.Clear
+import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.SubpassContents as Vk
 
 import qualified Glfw as Glfw
 
@@ -845,7 +847,7 @@ beginCommandBuffer1 sce rp fb cb = do
 				Vk.rect2dExtent = sce },
 			Vk.RenderPass.beginInfoClearValues =
 				[clearColorValueFloatWhite] }
-	pure ()
+	Vk.Cmd.beginRenderPass @() cb renderPassInfo Vk.SubpassContentsInline
 
 clearColorValueFloatWhite :: Vk.Clear.Value
 clearColorValueFloatWhite = Vk.Clear.fromColorValue
