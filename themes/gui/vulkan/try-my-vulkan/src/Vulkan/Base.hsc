@@ -164,3 +164,6 @@ floatToFloat = realToFrac
 
 data RenderPassTag
 newtype RenderPass = RenderPass (Ptr RenderPassTag) deriving (Show, Storable)
+
+uint64Max :: #{type uint64_t}
+uint64Max = #{const UINT64_MAX}

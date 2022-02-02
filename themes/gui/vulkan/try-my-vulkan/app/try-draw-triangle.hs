@@ -112,6 +112,8 @@ import qualified Vulkan.SubpassContents as Vk
 
 import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Semaphore.Internal as Vk.Semaphore.I
+import qualified Vulkan.Fence as Vk.Fence
+import qualified Vulkan.Khr as Vk.Khr
 
 import qualified Glfw as Glfw
 
@@ -142,7 +144,7 @@ run = do
 	w <- initWindow
 	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
 		ias, rfs) <- initVulkan w
-	mainLoop w
+	mainLoop w dv sc ias
 	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp ias rfs
 
 initWindow :: IO GlfwB.Window
@@ -874,15 +876,20 @@ createSemaphores dvc = do
 	rfs <- Vk.Semaphore.create @() @() dvc semaphoreInfo Nothing
 	pure (ias, rfs)
 
-mainLoop :: GlfwB.Window -> IO ()
-mainLoop w = do
+mainLoop ::
+	GlfwB.Window -> Vk.Device -> Vk.Khr.I.Swapchain ->
+	Vk.Semaphore.Semaphore -> IO ()
+mainLoop w dvc sc ias = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
-		drawFrame
+		drawFrame dvc sc ias
 		not <$> GlfwB.windowShouldClose w
 
-drawFrame :: IO ()
-drawFrame = pure ()
+drawFrame :: Vk.Device -> Vk.Khr.I.Swapchain -> Vk.Semaphore.Semaphore -> IO ()
+drawFrame dvc sc ias = do
+	imageIndex <- Vk.Khr.acquireNextImage
+		dvc sc Vk.uint64Max ias Vk.Fence.FenceNullHandle
+	pure ()
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->

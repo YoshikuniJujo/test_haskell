@@ -81,6 +81,7 @@ library
       Vulkan.ImageLayout
       Vulkan.Instance
       Vulkan.Internal
+      Vulkan.Khr
       Vulkan.Khr.Surface
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Internal

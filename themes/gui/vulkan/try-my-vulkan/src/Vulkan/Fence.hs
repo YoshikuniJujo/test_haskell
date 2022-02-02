@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -39,8 +39,9 @@ createInfoToC CreateInfo {
 data FenceTag
 newtype Fence = Fence (Ptr FenceTag) deriving (Show, Storable)
 
-fenceNullHandle :: Fence
-fenceNullHandle = Fence NullHandle
+pattern FenceNullHandle :: Fence
+pattern FenceNullHandle <- Fence NullHandle where
+	FenceNullHandle = Fence NullHandle
 
 create :: (Storable n, Storable n') =>
 	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Fence
