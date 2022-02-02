@@ -54,6 +54,7 @@ allocateInfoToC AllocateInfo {
 data CommandBufferTag
 newtype CommandBuffer vs (ts :: [Type]) = CommandBuffer (Ptr CommandBufferTag)
 	deriving (Show, Storable)
+type PtrCommandBuffer = Ptr (Ptr CommandBufferTag)
 
 allocate :: Storable n => Device -> AllocateInfo n -> IO [CommandBuffer vs ts]
 allocate dvc ai = ($ pure) $ runContT do

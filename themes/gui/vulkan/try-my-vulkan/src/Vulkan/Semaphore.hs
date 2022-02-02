@@ -37,6 +37,7 @@ createInfoToC CreateInfo {
 
 data SemaphoreTag
 newtype Semaphore = Semaphore (Ptr SemaphoreTag) deriving (Show, Storable)
+type PtrSemaphore = Ptr Semaphore
 
 create :: (Pointable n, Pointable n') =>
 	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Semaphore

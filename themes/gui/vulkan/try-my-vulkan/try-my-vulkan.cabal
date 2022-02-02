@@ -145,6 +145,7 @@ library
       Vulkan.SpecializationInfo.Internal
       Vulkan.StencilOp
       Vulkan.StructureType
+      Vulkan.Submit.Internal
       Vulkan.SubpassContents
       Vulkan.SubpassDescriptionFlagBits
       Vulkan.Viewport

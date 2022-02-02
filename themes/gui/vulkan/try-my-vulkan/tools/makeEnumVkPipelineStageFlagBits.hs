@@ -6,8 +6,9 @@ import MakeEnum
 
 main :: IO ()
 main = makeEnum''
-	"/usr/include/vulkan/vulkan_core.h" ["Data.Bits"]
+	"/usr/include/vulkan/vulkan_core.h" ["Data.Bits", "Foreign.Ptr"]
 	"PipelineStageFlagBits" "VkPipelineStageFlagBits"
 	[("PipelineStageFlagsZero", Int 0)]
 	["Show", "Eq", "Storable", "Bits"]
-	"type PipelineStageFlags = PipelineStageFlagBits"
+	$	"type PipelineStageFlags = PipelineStageFlagBits\n" ++
+		"type PtrPipelineStageFlags = Ptr PipelineStageFlags"

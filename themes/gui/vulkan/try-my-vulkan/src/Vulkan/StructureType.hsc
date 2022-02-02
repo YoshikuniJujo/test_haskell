@@ -86,3 +86,6 @@ semaphoreCreateInfo = #{const VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO}
 
 fenceCreateInfo :: #{type VkStructureType}
 fenceCreateInfo = #{const VK_STRUCTURE_TYPE_FENCE_CREATE_INFO}
+
+submitInfo :: #{type VkStructureType}
+submitInfo = #{const VK_STRUCTURE_TYPE_SUBMIT_INFO}
