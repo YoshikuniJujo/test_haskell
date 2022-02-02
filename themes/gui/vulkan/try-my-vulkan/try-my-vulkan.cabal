@@ -65,6 +65,8 @@ library
       Vulkan.Exception
       Vulkan.Ext
       Vulkan.Ext.Internal
+      Vulkan.Fence.Internal
+      Vulkan.FenceCreateFlagBits
       Vulkan.Filter
       Vulkan.Format
       Vulkan.Framebuffer

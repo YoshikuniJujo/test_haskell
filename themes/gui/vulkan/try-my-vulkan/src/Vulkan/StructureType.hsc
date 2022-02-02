@@ -83,3 +83,6 @@ renderPassBeginInfo = #{const VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}
 
 semaphoreCreateInfo :: #{type VkStructureType}
 semaphoreCreateInfo = #{const VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO}
+
+fenceCreateInfo :: #{type VkStructureType}
+fenceCreateInfo = #{const VK_STRUCTURE_TYPE_FENCE_CREATE_INFO}
