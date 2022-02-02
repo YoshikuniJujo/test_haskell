@@ -155,3 +155,9 @@ pattern PipelineNullHandle <- Pipeline NullHandle where
 
 word32ToUint32T :: Word32 -> #{type uint32_t}
 word32ToUint32T = fromIntegral
+
+int32ToInt32T :: Int32 -> #{type int32_t}
+int32ToInt32T = fromIntegral
+
+floatToFloat :: Float -> #{type float}
+floatToFloat = realToFrac

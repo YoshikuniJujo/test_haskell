@@ -27,9 +27,6 @@ data CreateInfo n = CreateInfo {
 	createInfoMaxDepthBounds :: Float }
 	deriving Show
 
-floatToFloat :: Float -> #{type float}
-floatToFloat = realToFrac
-
 createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
 createInfoToC CreateInfo {
 	createInfoNext = mnxt, createInfoFlags = flgs,

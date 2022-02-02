@@ -45,9 +45,6 @@ data CreateInfo n = CreateInfo {
 	createInfoUnnormalizedCoordinates :: Bool }
 	deriving Show
 
-floatToFloat :: Float -> #{type float}
-floatToFloat = realToFrac
-
 createInfoToC :: Pointable n => CreateInfo n -> (I.CreateInfo -> IO a) -> IO a
 createInfoToC CreateInfo {
 	createInfoNext = mnxt,

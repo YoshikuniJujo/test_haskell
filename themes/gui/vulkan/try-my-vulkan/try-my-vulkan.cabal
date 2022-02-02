@@ -41,6 +41,8 @@ library
       Vulkan.BlendFactor
       Vulkan.BlendOp
       Vulkan.BorderColor
+      Vulkan.Clear
+      Vulkan.Clear.Internal
       Vulkan.ColorComponentFlagBits
       Vulkan.CommandBuffer
       Vulkan.CommandBuffer.Internal

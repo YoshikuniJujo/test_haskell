@@ -164,6 +164,10 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		[| #{poke VkRenderPassCreateInfo, dependencyCount} |]),
 	("pDependencies", ''PtrSubpassDependency,
 		[| #{peek VkRenderPassCreateInfo, pDependencies} |],
-		[| #{poke VkRenderPassCreateInfo, pDependencies} |])
+		[| #{poke VkRenderPassCreateInfo, pDependencies} |]) ]
+	[''Show, ''Storable]
+
+struct "BeginInfo" #{size VkRenderPassBeginInfo}
+		#{alignment VkRenderPassBeginInfo} [
 	]
 	[''Show, ''Storable]

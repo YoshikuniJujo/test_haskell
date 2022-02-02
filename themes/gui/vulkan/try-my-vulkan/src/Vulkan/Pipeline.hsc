@@ -79,9 +79,6 @@ data CreateInfo n n1 n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 	deriving Show
 
-int32ToInt32T :: Int32 -> #{type int32_t}
-int32ToInt32T = fromIntegral
-
 createInfoToC :: (
 	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
 	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
