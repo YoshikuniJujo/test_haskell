@@ -1,15 +1,19 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Khr.Present where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.Device
 import Vulkan.Semaphore
 
 import qualified Vulkan.Khr.Present.Internal as I
@@ -47,3 +51,16 @@ infoToC Info {
 		I.infoPSwapchains = pscs,
 		I.infoPImageIndices = piis,
 		I.infoPResults = prslts }
+
+queuePresent :: Pointable n => Queue -> Info n -> IO ()
+queuePresent q i = ($ pure) $ runContT do
+	ii@(I.Info_ fi) <- infoToC i
+	pii <- ContT $ withForeignPtr fi
+	lift do	r <- c_vkQueuePresentKHR q pii
+		let	prslts = I.infoPResults ii
+		rs <- peekArray c prslts
+		throwUnlessSuccess `mapM_` (rs ++ [r])
+	where c = length $ infoSwapchainImageIndices i
+
+foreign import ccall "vkQueuePresentKHR"
+	c_vkQueuePresentKHR :: Queue -> Ptr I.Info -> IO Result

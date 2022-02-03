@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -38,6 +38,10 @@ createInfoToC CreateInfo {
 data SemaphoreTag
 newtype Semaphore = Semaphore (Ptr SemaphoreTag) deriving (Show, Storable)
 type PtrSemaphore = Ptr Semaphore
+
+pattern SemaphoreNullHandle :: Semaphore
+pattern SemaphoreNullHandle <- Semaphore NullHandle where
+	SemaphoreNullHandle = Semaphore NullHandle
 
 create :: (Pointable n, Pointable n') =>
 	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Semaphore

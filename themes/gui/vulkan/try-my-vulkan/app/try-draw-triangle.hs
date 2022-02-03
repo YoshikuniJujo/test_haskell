@@ -7,6 +7,8 @@
 
 module Main where
 
+import Control.Concurrent
+
 import Foreign.C.String
 import Control.Monad
 import Control.Monad.Fix
@@ -149,9 +151,9 @@ main = run
 run :: IO ()
 run = do
 	w <- initWindow
-	(ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
+	(ist, dbgMssngr, dv, gq, pq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
 		cbs, ias, rfs) <- initVulkan w
-	mainLoop w dv gq sc cbs ias rfs
+	mainLoop w dv gq pq sc cbs ias rfs
 	cleanup w ist dbgMssngr dv sfc sc ivs rp ppl gpl scfbs cp ias rfs
 
 initWindow :: IO GlfwB.Window
@@ -164,7 +166,7 @@ initWindow = do
 
 initVulkan :: GlfwB.Window -> IO (
 	Vk.Instance, Maybe Vk.Ext.I.DebugUtilsMessenger, Vk.Device, Vk.Queue,
-	Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
+	Vk.Queue, Vk.Khr.Surface, Vk.Khr.I.Swapchain, [Vk.ImageView],
 	Vk.RenderPass, Vk.PipelineLayout, Vk.Pipeline () '[],
 	[Vk.Framebuffer.Framebuffer], Vk.CommandPool.CommandPool,
 	[Vk.CommandBuffer.CommandBuffer () '[]],
@@ -185,7 +187,7 @@ initVulkan w = do
 	cp <- createCommandPool pd dv sfc
 	cbs <- createCommandBuffers dv sce rp gpl scfbs cp
 	(ias, rfs) <- createSemaphores dv
-	pure (ist, dbgMssngr, dv, gq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
+	pure (ist, dbgMssngr, dv, gq, pq, sfc, sc, ivs, rp, ppl, gpl, scfbs, cp,
 		cbs, ias, rfs)
 
 createInstance :: IO Vk.Instance
@@ -887,7 +889,7 @@ beginCommandBuffer1 sce rp gpl fb cb = do
 clearColorValueFloatWhite :: Vk.Clear.Value
 clearColorValueFloatWhite = Vk.Clear.fromColorValue
 	$ Vk.Clear.fromColorValueFloat Vk.Clear.ColorValueFloat {
-		Vk.Clear.colorValueFloatRgba = 0 :. 0 :. 0 :. 1 :. NilL }
+		Vk.Clear.colorValueFloatRgba = 1 :. 1 :. 0 :. 1 :. NilL }
 
 createSemaphores :: Vk.Device -> IO (Vk.Semaphore.Semaphore, Vk.Semaphore.Semaphore)
 createSemaphores dvc = do
@@ -900,22 +902,24 @@ createSemaphores dvc = do
 	pure (ias, rfs)
 
 mainLoop ::
-	GlfwB.Window -> Vk.Device -> Vk.Queue -> Vk.Khr.I.Swapchain ->
-	[Vk.CommandBuffer.CommandBuffer () '[]] ->
+	GlfwB.Window -> Vk.Device -> Vk.Queue -> Vk.Queue ->
+	Vk.Khr.I.Swapchain -> [Vk.CommandBuffer.CommandBuffer () '[]] ->
 	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore -> IO ()
-mainLoop w dvc gq sc cbs ias rfs = do
+mainLoop w dvc gq pq sc cbs ias rfs = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
-		drawFrame dvc gq sc cbs ias rfs
+		drawFrame dvc gq pq sc cbs ias rfs
+		threadDelay 1000000
 		not <$> GlfwB.windowShouldClose w
 
-drawFrame :: Vk.Device -> Vk.Queue -> Vk.Khr.I.Swapchain ->
+drawFrame :: Vk.Device -> Vk.Queue -> Vk.Queue -> Vk.Khr.I.Swapchain ->
 	[Vk.CommandBuffer.CommandBuffer () '[]] ->
 	Vk.Semaphore.Semaphore -> Vk.Semaphore.Semaphore ->
 	IO ()
-drawFrame dvc gq sc cbs ias rfs = do
+drawFrame dvc gq pq sc cbs ias rfs = do
 	imageIndex <- Vk.Khr.acquireNextImage
 		dvc sc Vk.uint64Max ias Vk.Fence.FenceNullHandle
+	print imageIndex
 	let	submitInfo = Vk.Submit.Info {
 			Vk.Submit.infoNext = Nothing,
 			Vk.Submit.infoWaitSemaphoreAndDstStageMasks = [
@@ -930,7 +934,7 @@ drawFrame dvc gq sc cbs ias rfs = do
 			Vk.Khr.Present.infoWaitSemaphores = [rfs],
 			Vk.Khr.Present.infoSwapchainImageIndices =
 				[(sc, imageIndex)] }
-	pure ()
+	Vk.Khr.Present.queuePresent @() pq presentInfo
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
