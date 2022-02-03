@@ -7,6 +7,7 @@
 module Vulkan.Exception where
 
 import Foreign.Ptr
+import Foreign.Storable
 import Foreign.C.Enum
 import Control.Exception
 import Control.Exception.Hierarchy
@@ -14,7 +15,7 @@ import Data.Int
 
 #include <vulkan/vulkan.h>
 
-enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq, ''Enum] [
+enum "Result" ''#{type VkResult} [''Show, ''Read, ''Eq, ''Enum, ''Storable] [
 	("Success", #{const VK_SUCCESS}),
 	("NotReady", #{const VK_NOT_READY}),
 	("Timeout", #{const VK_TIMEOUT}),

@@ -120,6 +120,7 @@ import qualified Vulkan.Submit as Vk.Submit
 import qualified Vulkan.PipelineStageFlagBits as Vk
 
 import Vulkan.Submit (CommandBufferList(..))
+import qualified Vulkan.Khr.Present as Vk.Khr.Present
 
 import qualified Glfw as Glfw
 
@@ -924,6 +925,12 @@ drawFrame dvc gq sc cbs ias rfs = do
 				(cbs !! fromIntegral imageIndex) :+: CBNil,
 			Vk.Submit.infoSignalSemaphores = [rfs] }
 	Vk.Submit.queue @() gq [submitInfo] Vk.Fence.FenceNullHandle
+	let	presentInfo = Vk.Khr.Present.Info {
+			Vk.Khr.Present.infoNext = Nothing,
+			Vk.Khr.Present.infoWaitSemaphores = [rfs],
+			Vk.Khr.Present.infoSwapchainImageIndices =
+				[(sc, imageIndex)] }
+	pure ()
 
 cleanup :: GlfwB.Window -> Vk.Instance -> Maybe Vk.Ext.I.DebugUtilsMessenger ->
 	Vk.Device -> Vk.Khr.Surface -> Vk.Khr.I.Swapchain -> [Vk.ImageView] ->
