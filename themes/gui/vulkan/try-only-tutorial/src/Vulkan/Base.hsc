@@ -25,3 +25,7 @@ success = #{const VK_SUCCESS}
 
 vkFalse :: #{type VkBool32}
 vkFalse = #{const VK_FALSE}
+
+pattern NullHandle :: Ptr a
+pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
+	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}

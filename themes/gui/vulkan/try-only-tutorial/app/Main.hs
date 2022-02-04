@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -27,6 +27,7 @@ import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
+import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 
 main :: IO ()
 main = run
@@ -36,6 +37,9 @@ instance_ = unsafePerformIO $ newIORef NullPtr
 
 debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
 debugMessenger = unsafePerformIO $ newIORef NullPtr
+
+physicalDevice :: IORef Vk.PhysicalDevice.PhysicalDevice
+physicalDevice = unsafePerformIO $ newIORef NullHandle
 
 run :: IO ()
 run = do
@@ -59,6 +63,7 @@ initVulkan :: IO ()
 initVulkan = do
 	createInstance
 	setupDebugMessenger
+	pickPhysicalDevice
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -177,6 +182,34 @@ debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 		$ Vk.Ext.DU.Msngr.callbackDataPMessage callbackData
 	putStrLn $ "validation layer: " ++ message
 	pure vkFalse
+
+pickPhysicalDevice :: IO ()
+pickPhysicalDevice = ($ pure) $ runContT do
+	ist <- lift $ readIORef instance_
+	pDeviceCount <- ContT alloca
+	(fromIntegral -> deviceCount) <- lift do
+		_ <- Vk.PhysicalDevice.enumerate ist pDeviceCount NullPtr
+		peek pDeviceCount
+	pDevices <- ContT $ allocaArray deviceCount
+	lift do	_ <- Vk.PhysicalDevice.enumerate ist pDeviceCount pDevices
+		devices <- peekArray deviceCount pDevices
+		findM isDeviceSuitable devices >>= \case
+			Just pd -> writeIORef physicalDevice pd
+			Nothing -> error "no matched physical devices"
+
+findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
+findM _ [] = pure Nothing
+findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
+
+isDeviceSuitable :: Vk.PhysicalDevice.PhysicalDevice -> IO Bool
+isDeviceSuitable device = ($ pure) $ runContT do
+	pDeviceProperties <- ContT alloca
+	lift do	Vk.PhysicalDevice.getProperties device pDeviceProperties
+		print =<< peek pDeviceProperties
+	pDeviceFeatures <- ContT alloca
+	lift do	Vk.PhysicalDevice.getFeatures device pDeviceFeatures
+		print =<< peek pDeviceFeatures
+	pure True
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do

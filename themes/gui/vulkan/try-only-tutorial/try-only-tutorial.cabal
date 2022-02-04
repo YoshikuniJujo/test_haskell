@@ -32,6 +32,7 @@ library
       Vulkan.Enumerate
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Instance
+      Vulkan.PhysicalDevice
   other-modules:
       Paths_try_only_tutorial
   hs-source-dirs:
