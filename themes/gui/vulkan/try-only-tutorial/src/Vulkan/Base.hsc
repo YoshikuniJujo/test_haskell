@@ -5,6 +5,7 @@ module Vulkan.Base where
 
 import Foreign.Ptr
 import Foreign.C.String
+import Data.Word
 import Data.Int
 
 #include <vulkan/vulkan.h>
@@ -14,7 +15,13 @@ type PtrVoid = Ptr ()
 pattern NullPtr :: Ptr a
 pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 
+pattern NullFunPtr :: FunPtr a
+pattern NullFunPtr <- ((== nullFunPtr) -> True) where NullFunPtr = nullFunPtr
+
 type PtrCString = Ptr CString
 
 success :: #{type VkResult}
 success = #{const VK_SUCCESS}
+
+vkFalse :: #{type VkBool32}
+vkFalse = #{const VK_FALSE}

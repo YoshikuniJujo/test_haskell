@@ -4,14 +4,17 @@
 
 module Main where
 
+import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.ForeignPtr
 import Foreign.Storable
 import Foreign.C.String
 import Control.Monad.Fix
 import Control.Monad.Cont
-import Data.Bool
 import Data.IORef
+import Data.Bits
+import Data.Bool
+import Data.Word
 import System.IO.Unsafe
 
 import Tools
@@ -23,12 +26,16 @@ import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Enumerate as Vk.Enumerate
+import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 
 main :: IO ()
 main = run
 
 instance_ :: IORef Vk.Instance.Instance
 instance_ = unsafePerformIO $ newIORef NullPtr
+
+debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
+debugMessenger = unsafePerformIO $ newIORef NullPtr
 
 run :: IO ()
 run = do
@@ -51,6 +58,7 @@ initWindow = do
 initVulkan :: IO ()
 initVulkan = do
 	createInstance
+	setupDebugMessenger
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -84,13 +92,11 @@ createInstance = ($ pure) $ runContT do
 			Vk.applicationInfoApiVersion =
 				Vk.makeApiVersion 0 1 0 0 }
 	pAppInfo <- ContT $ withForeignPtr fAppInfo
-	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
-	pGlfwExtensions <- cStringListToCStringArray glfwExtensions
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
-	let	glfwExtensionCount = fromIntegral $ length glfwExtensions
-		Vk.Instance.CreateInfo_ fCreateInfo = Vk.Instance.CreateInfo {
+	(glfwExtensionCount, pGlfwExtensions) <- getRequiredExtensions
+	let	Vk.Instance.CreateInfo_ fCreateInfo = Vk.Instance.CreateInfo {
 			Vk.Instance.createInfoSType = (),
 			Vk.Instance.createInfoPNext = NullPtr,
 			Vk.Instance.createInfoFlags = 0,
@@ -121,6 +127,51 @@ checkValidationLayerSupport = ($ pure) $ runContT do
 		print layerNames
 		pure $ "VK_LAYER_KHRONOS_validation" `elem` layerNames
 
+getRequiredExtensions :: ContT r IO (Word32, Ptr CString)
+getRequiredExtensions = do
+	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
+	extDebugUtilsExtensionName <- ContT $ withCString "VK_EXT_debug_utils"
+	let	extensions = extDebugUtilsExtensionName : glfwExtensions
+	pExtensions <- cStringListToCStringArray extensions
+	let	extensionCount = fromIntegral $ length extensions
+	pure (extensionCount, pExtensions)
+
+setupDebugMessenger :: IO ()
+setupDebugMessenger = ($ pure) $ runContT do
+	pDebugCallback <-
+		lift $ Vk.Ext.DU.Msngr.wrapCallback debugCallback
+	let	Vk.Ext.DU.Msngr.CreateInfo_ fCreateInfo =
+			Vk.Ext.DU.Msngr.CreateInfo {
+				Vk.Ext.DU.Msngr.createInfoSType = (),
+				Vk.Ext.DU.Msngr.createInfoPNext = NullPtr,
+				Vk.Ext.DU.Msngr.createInfoFlags = 0,
+				Vk.Ext.DU.Msngr.createInfoMessageSeverity =
+					Vk.Ext.DU.Msngr.severityVerboseBit .|.
+					Vk.Ext.DU.Msngr.severityWarningBit .|.
+					Vk.Ext.DU.Msngr.severityErrorBit,
+				Vk.Ext.DU.Msngr.createInfoMessageType =
+					Vk.Ext.DU.Msngr.typeGeneralBit .|.
+					Vk.Ext.DU.Msngr.typeValidationBit .|.
+					Vk.Ext.DU.Msngr.typePerformanceBit,
+				Vk.Ext.DU.Msngr.createInfoPfnUserCallback =
+					pDebugCallback,
+				Vk.Ext.DU.Msngr.createInfoPUserData = NullPtr }
+	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pMessenger <- ContT alloca
+	lift do	ist <- readIORef instance_
+		r <- Vk.Ext.DU.Msngr.create ist pCreateInfo NullPtr pMessenger
+		when (r /= success) $ error "failed to set up debug messenger!"
+		writeIORef debugMessenger =<< peek pMessenger
+
+debugCallback :: Vk.Ext.DU.Msngr.FnCallback
+debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
+	callbackData <-
+		Vk.Ext.DU.Msngr.copyCallbackData pCallbackData
+	message <- peekCString
+		$ Vk.Ext.DU.Msngr.callbackDataPMessage callbackData
+	putStrLn $ "validation layer: " ++ message
+	pure vkFalse
+
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
 	fix \loop -> bool (pure ()) loop =<< do
@@ -129,6 +180,9 @@ mainLoop win = do
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
-	(`Vk.Instance.destroy` NullPtr) =<< readIORef instance_
+	ist <- readIORef instance_
+	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
+		=<< readIORef debugMessenger
+	Vk.Instance.destroy ist NullPtr
 	GlfwB.destroyWindow win
 	GlfwB.terminate

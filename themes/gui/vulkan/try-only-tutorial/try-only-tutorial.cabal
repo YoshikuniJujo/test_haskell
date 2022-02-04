@@ -30,6 +30,7 @@ library
       Vulkan
       Vulkan.Base
       Vulkan.Enumerate
+      Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Instance
   other-modules:
       Paths_try_only_tutorial
