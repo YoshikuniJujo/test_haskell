@@ -32,3 +32,5 @@ pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
 
 queueGraphicsBit :: #{type VkQueueFlags}
 queueGraphicsBit = #{const VK_QUEUE_GRAPHICS_BIT}
+
+type PtrFloat = Ptr #{type float}

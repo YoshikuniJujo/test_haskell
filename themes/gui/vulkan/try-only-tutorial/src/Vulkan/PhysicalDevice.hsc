@@ -6,7 +6,8 @@
 module Vulkan.PhysicalDevice where
 
 import Foreign.Ptr
-import Foreign.Marshal.Array
+import Foreign.Concurrent
+import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
@@ -541,6 +542,13 @@ struct "Features" #{size VkPhysicalDeviceFeatures}
 		[| #{peek VkPhysicalDeviceFeatures, inheritedQueries} |],
 		[| #{poke VkPhysicalDeviceFeatures, inheritedQueries} |]) ]
 	[''Show, ''Storable]
+
+type PtrFeatures = Ptr Features
+
+getCleardFeatures :: IO Features
+getCleardFeatures = do
+	pf <- calloc
+	Features_ <$> newForeignPtr pf (free pf)
 
 foreign import ccall "vkGetPhysicalDeviceFeatures" getFeatures ::
 	PhysicalDevice -> Ptr Features -> IO ()

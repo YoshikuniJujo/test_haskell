@@ -29,6 +29,8 @@ library
       Tools
       Vulkan
       Vulkan.Base
+      Vulkan.Device
+      Vulkan.Device.Queue
       Vulkan.Enumerate
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Instance

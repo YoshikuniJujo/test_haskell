@@ -32,6 +32,9 @@ import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
 
+import qualified Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Vulkan.Device as Vk.Device
+
 main :: IO ()
 main = run
 
@@ -43,6 +46,12 @@ debugMessenger = unsafePerformIO $ newIORef NullPtr
 
 physicalDevice :: IORef Vk.PhysicalDevice.PhysicalDevice
 physicalDevice = unsafePerformIO $ newIORef NullHandle
+
+device :: IORef Vk.Device.Device
+device = unsafePerformIO $ newIORef NullPtr
+
+graphicsQueue :: IORef Vk.Device.Queue
+graphicsQueue = unsafePerformIO $ newIORef NullPtr
 
 run :: IO ()
 run = do
@@ -67,6 +76,7 @@ initVulkan = do
 	createInstance
 	setupDebugMessenger
 	pickPhysicalDevice
+	createLogicalDevice
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -205,14 +215,14 @@ findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
 isDeviceSuitable :: Vk.PhysicalDevice.PhysicalDevice -> IO Bool
-isDeviceSuitable device = ($ pure) $ runContT do
+isDeviceSuitable dvc = ($ pure) $ runContT do
 	pDeviceProperties <- ContT alloca
-	lift do	Vk.PhysicalDevice.getProperties device pDeviceProperties
+	lift do	Vk.PhysicalDevice.getProperties dvc pDeviceProperties
 		print =<< peek pDeviceProperties
 	pDeviceFeatures <- ContT alloca
-	lift do	Vk.PhysicalDevice.getFeatures device pDeviceFeatures
+	lift do	Vk.PhysicalDevice.getFeatures dvc pDeviceFeatures
 		print =<< peek pDeviceFeatures
-	indices <- lift $ findQueueFamilies device
+	indices <- lift $ findQueueFamilies dvc
 	pure $ isComplete indices
 
 data QueueFamilyIndices = QueueFamilyIndices {
@@ -224,17 +234,17 @@ isComplete QueueFamilyIndices {
 	graphicsFamily = gf } = isJust gf
 
 findQueueFamilies :: Vk.PhysicalDevice.PhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies device = ($ pure) $ runContT do
+findQueueFamilies dvc = ($ pure) $ runContT do
 	let	indices = QueueFamilyIndices {
 			graphicsFamily = Nothing }
 	pQueueFamilyCount <- ContT alloca
 	(fromIntegral -> queueFamilyCount) <- lift do
 		Vk.PhysicalDevice.getQueueFamilyProperties
-			device pQueueFamilyCount NullPtr
+			dvc pQueueFamilyCount NullPtr
 		peek pQueueFamilyCount
 	pQueueFamilies <- ContT $ allocaArray queueFamilyCount
 	lift do	Vk.PhysicalDevice.getQueueFamilyProperties
-			device pQueueFamilyCount pQueueFamilies
+			dvc pQueueFamilyCount pQueueFamilies
 		props <- peekArray queueFamilyCount pQueueFamilies
 		pure indices {
 			graphicsFamily = fromIntegral
@@ -245,6 +255,55 @@ checkGraphicsBit :: Vk.Queue.Family.Properties -> Bool
 checkGraphicsBit prop =
 	Vk.Queue.Family.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
+createLogicalDevice :: IO ()
+createLogicalDevice = ($ pure) $ runContT do
+	pd <- lift $ readIORef physicalDevice
+	indices <- lift $ findQueueFamilies pd
+	pQueuePriority <- ContT alloca
+	lift $ poke pQueuePriority 1
+	let	Vk.Device.Queue.CreateInfo_ fQueueCreateInfo =
+			Vk.Device.Queue.CreateInfo {
+				Vk.Device.Queue.createInfoSType = (),
+				Vk.Device.Queue.createInfoPNext = NullPtr,
+				Vk.Device.Queue.createInfoFlags = 0,
+				Vk.Device.Queue.createInfoQueueFamilyIndex =
+					fromJust $ graphicsFamily indices,
+				Vk.Device.Queue.createInfoQueueCount = 1,
+				Vk.Device.Queue.createInfoPQueuePriorities =
+					pQueuePriority }
+	pQueueCreateInfo <- ContT $ withForeignPtr fQueueCreateInfo
+	Vk.PhysicalDevice.Features_ fDeviceFeatures <-
+		lift $ Vk.PhysicalDevice.getCleardFeatures
+	pDeviceFeatures <- ContT $ withForeignPtr fDeviceFeatures
+	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
+	pValidationLayers <- ContT $ allocaArray 1
+	lift $ pokeArray pValidationLayers [pValidationLayer]
+	let	Vk.Device.CreateInfo_ fCreateInfo = Vk.Device.CreateInfo {
+			Vk.Device.createInfoSType = (),
+			Vk.Device.createInfoPNext = NullPtr,
+			Vk.Device.createInfoFlags = 0,
+			Vk.Device.createInfoQueueCreateInfoCount = 1,
+			Vk.Device.createInfoPQueueCreateInfos =
+				pQueueCreateInfo,
+			Vk.Device.createInfoPEnabledFeatures = pDeviceFeatures,
+			Vk.Device.createInfoEnabledExtensionCount = 0,
+			Vk.Device.createInfoPpEnabledExtensionNames = NullPtr,
+			Vk.Device.createInfoEnabledLayerCount = 1,
+			Vk.Device.createInfoPpEnabledLayerNames =
+				pValidationLayers }
+	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pDevice <- ContT alloca
+	dvc <- lift do
+		r <- Vk.Device.create pd pCreateInfo NullPtr pDevice
+		when (r /= success) $ error "failed to create logical device!"
+		dvc' <- peek pDevice
+		writeIORef device dvc'
+		pure dvc'
+	pGraphicsQueue <- ContT alloca
+	lift do	Vk.Device.getQueue
+			dvc (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
+		writeIORef graphicsQueue =<< peek pGraphicsQueue
+
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
 	fix \loop -> bool (pure ()) loop =<< do
@@ -253,6 +312,7 @@ mainLoop win = do
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
+	(`Vk.Device.destroy` NullPtr) =<< readIORef device
 	ist <- readIORef instance_
 	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
 		=<< readIORef debugMessenger
