@@ -80,6 +80,9 @@ createInstance = ($ pure) $ runContT do
 			<$> extensions
 	hello <- lift $ newCString "Hello Triangle"
 	noEngine <- lift $ newCString "No Engine"
+	Vk.Ext.DU.Msngr.CreateInfo_ fDebugCreateInfo <-
+		lift populateDebugMessengerCreateInfo
+	pDebugCreateInfo <- ContT $ withForeignPtr fDebugCreateInfo
 	let	Vk.ApplicationInfo_ fAppInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoSType = (),
 			Vk.applicationInfoPNext = NullPtr,
@@ -98,7 +101,7 @@ createInstance = ($ pure) $ runContT do
 	(glfwExtensionCount, pGlfwExtensions) <- getRequiredExtensions
 	let	Vk.Instance.CreateInfo_ fCreateInfo = Vk.Instance.CreateInfo {
 			Vk.Instance.createInfoSType = (),
-			Vk.Instance.createInfoPNext = NullPtr,
+			Vk.Instance.createInfoPNext = castPtr pDebugCreateInfo,
 			Vk.Instance.createInfoFlags = 0,
 			Vk.Instance.createInfoPApplicationInfo = pAppInfo,
 			Vk.Instance.createInfoEnabledLayerCount = 1,
@@ -138,30 +141,33 @@ getRequiredExtensions = do
 
 setupDebugMessenger :: IO ()
 setupDebugMessenger = ($ pure) $ runContT do
-	pDebugCallback <-
-		lift $ Vk.Ext.DU.Msngr.wrapCallback debugCallback
-	let	Vk.Ext.DU.Msngr.CreateInfo_ fCreateInfo =
-			Vk.Ext.DU.Msngr.CreateInfo {
-				Vk.Ext.DU.Msngr.createInfoSType = (),
-				Vk.Ext.DU.Msngr.createInfoPNext = NullPtr,
-				Vk.Ext.DU.Msngr.createInfoFlags = 0,
-				Vk.Ext.DU.Msngr.createInfoMessageSeverity =
-					Vk.Ext.DU.Msngr.severityVerboseBit .|.
-					Vk.Ext.DU.Msngr.severityWarningBit .|.
-					Vk.Ext.DU.Msngr.severityErrorBit,
-				Vk.Ext.DU.Msngr.createInfoMessageType =
-					Vk.Ext.DU.Msngr.typeGeneralBit .|.
-					Vk.Ext.DU.Msngr.typeValidationBit .|.
-					Vk.Ext.DU.Msngr.typePerformanceBit,
-				Vk.Ext.DU.Msngr.createInfoPfnUserCallback =
-					pDebugCallback,
-				Vk.Ext.DU.Msngr.createInfoPUserData = NullPtr }
+	Vk.Ext.DU.Msngr.CreateInfo_ fCreateInfo <-
+		lift populateDebugMessengerCreateInfo
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pMessenger <- ContT alloca
 	lift do	ist <- readIORef instance_
 		r <- Vk.Ext.DU.Msngr.create ist pCreateInfo NullPtr pMessenger
 		when (r /= success) $ error "failed to set up debug messenger!"
 		writeIORef debugMessenger =<< peek pMessenger
+
+populateDebugMessengerCreateInfo :: IO Vk.Ext.DU.Msngr.CreateInfo
+populateDebugMessengerCreateInfo = do
+	pDebugCallback <- Vk.Ext.DU.Msngr.wrapCallback debugCallback
+	pure Vk.Ext.DU.Msngr.CreateInfo {
+		Vk.Ext.DU.Msngr.createInfoSType = (),
+		Vk.Ext.DU.Msngr.createInfoPNext = NullPtr,
+		Vk.Ext.DU.Msngr.createInfoFlags = 0,
+		Vk.Ext.DU.Msngr.createInfoMessageSeverity =
+			Vk.Ext.DU.Msngr.severityVerboseBit .|.
+			Vk.Ext.DU.Msngr.severityWarningBit .|.
+			Vk.Ext.DU.Msngr.severityErrorBit,
+		Vk.Ext.DU.Msngr.createInfoMessageType =
+			Vk.Ext.DU.Msngr.typeGeneralBit .|.
+			Vk.Ext.DU.Msngr.typeValidationBit .|.
+			Vk.Ext.DU.Msngr.typePerformanceBit,
+		Vk.Ext.DU.Msngr.createInfoPfnUserCallback =
+			pDebugCallback,
+		Vk.Ext.DU.Msngr.createInfoPUserData = NullPtr }
 
 debugCallback :: Vk.Ext.DU.Msngr.FnCallback
 debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
