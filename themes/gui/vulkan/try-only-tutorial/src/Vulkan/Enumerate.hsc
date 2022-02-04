@@ -23,9 +23,9 @@ struct "ExtensionProperties" #{size VkExtensionProperties}
 		[| \p -> BS.packCStringLen
 			(#{ptr VkExtensionProperties, extensionName} p,
 				#{const VK_MAX_EXTENSION_NAME_SIZE}) |],
-		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes (
-			#{ptr VkExtensionProperties, extensionName} p) cs ln |]
-			),
+		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
+			(#{ptr VkExtensionProperties, extensionName} p) cs ln |]
+		),
 	("specVersion", ''#{type uint32_t},
 		[| #{peek VkExtensionProperties, specVersion} |],
 		[| #{poke VkExtensionProperties, specVersion} |]) ]
@@ -35,3 +35,29 @@ foreign import ccall "vkEnumerateInstanceExtensionProperties"
 	instanceExtensionProperties ::
 	CString -> Ptr #{type uint32_t} -> Ptr ExtensionProperties ->
 	IO #{type VkResult}
+
+struct "LayerProperties" #{size VkLayerProperties}
+		#{alignment VkLayerProperties} [
+	("layerName", ''BS.ByteString,
+		[| \p -> BS.packCStringLen
+			(#{ptr VkLayerProperties, layerName} p,
+				#{const VK_MAX_EXTENSION_NAME_SIZE}) |],
+		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
+			(#{ptr VkLayerProperties, layerName} p) cs ln |]),
+	("specVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, specVersion} |],
+		[| #{poke VkLayerProperties, specVersion} |]),
+	("implementationVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, implementationVersion} |],
+		[| #{poke VkLayerProperties, implementationVersion} |]),
+	("description", ''BS.ByteString,
+		[| \p -> BS.packCStringLen
+			(#{ptr VkLayerProperties, description} p,
+				#{const VK_MAX_DESCRIPTION_SIZE}) |],
+		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
+			(#{ptr VkLayerProperties, description} p) cs ln |]) ]
+	[''Show, ''Storable]
+
+foreign import ccall "vkEnumerateInstanceLayerProperties"
+	instanceLayerProperties ::
+	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO #{type VkResult}

@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Tools
       Vulkan
       Vulkan.Base
       Vulkan.Enumerate

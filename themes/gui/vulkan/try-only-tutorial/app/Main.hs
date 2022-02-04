@@ -4,7 +4,6 @@
 
 module Main where
 
-import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.ForeignPtr
 import Foreign.Storable
@@ -15,6 +14,7 @@ import Data.Bool
 import Data.IORef
 import System.IO.Unsafe
 
+import Tools
 import Vulkan.Base
 
 import qualified Data.ByteString.Char8 as BSC
@@ -54,6 +54,9 @@ initVulkan = do
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
+	lift do	b <- checkValidationLayerSupport
+		when (not b)
+			$ error "validation layers requested, but no available!"
 	pExtensionCount <- ContT $ alloca
 	(fromIntegral -> extensionCount) <- lift do
 		_ <- Vk.Enumerate.instanceExtensionProperties
@@ -83,14 +86,17 @@ createInstance = ($ pure) $ runContT do
 	pAppInfo <- ContT $ withForeignPtr fAppInfo
 	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
 	pGlfwExtensions <- cStringListToCStringArray glfwExtensions
+	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
+	pValidationLayers <- ContT $ allocaArray 1
+	lift $ pokeArray pValidationLayers [pValidationLayer]
 	let	glfwExtensionCount = fromIntegral $ length glfwExtensions
 		Vk.Instance.CreateInfo_ fCreateInfo = Vk.Instance.CreateInfo {
 			Vk.Instance.createInfoSType = (),
 			Vk.Instance.createInfoPNext = NullPtr,
 			Vk.Instance.createInfoFlags = 0,
 			Vk.Instance.createInfoPApplicationInfo = pAppInfo,
-			Vk.Instance.createInfoEnabledLayerCount = 0,
-			Vk.Instance.createInfoPpEnabledLayerNames = NullPtr,
+			Vk.Instance.createInfoEnabledLayerCount = 1,
+			Vk.Instance.createInfoPpEnabledLayerNames = pValidationLayers,
 			Vk.Instance.createInfoEnabledExtensionCount =
 				glfwExtensionCount,
 			Vk.Instance.createInfoPpEnabledExtensionNames =
@@ -101,20 +107,19 @@ createInstance = ($ pure) $ runContT do
 		when (result /= success) $ error "failed to create instance!"
 		writeIORef instance_ =<< peek pInstance
 
-cStringListToCStringArray :: [CString] -> ContT r IO (Ptr CString)
-cStringListToCStringArray cstrs = do
-	pcstrs <- ContT $ allocaArray cstrc
-	lift $ pokeArray pcstrs cstrs
-	pure pcstrs
-	where cstrc = length cstrs
-
-stringsToCStrings :: [String] -> ContT r IO (Ptr CString)
-stringsToCStrings strs = do
-	pcstrs <- ContT $ allocaArray strc
-	cstrs <- (ContT . withCString) `mapM` strs
-	lift $ pokeArray pcstrs cstrs
-	pure pcstrs
-	where strc = length strs
+checkValidationLayerSupport :: IO Bool
+checkValidationLayerSupport = ($ pure) $ runContT do
+	pLayerCount <- ContT alloca
+	(fromIntegral -> layerCount) <- lift do
+		_ <- Vk.Enumerate.instanceLayerProperties pLayerCount NullPtr
+		peek pLayerCount
+	pAvailableLayers <- ContT $ allocaArray layerCount
+	lift do	_ <- Vk.Enumerate.instanceLayerProperties pLayerCount pAvailableLayers
+		layerNames <- (BSC.takeWhile (/= '\NUL')
+				. Vk.Enumerate.layerPropertiesLayerName <$>)
+			<$> peekArray layerCount pAvailableLayers
+		print layerNames
+		pure $ "VK_LAYER_KHRONOS_validation" `elem` layerNames
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
