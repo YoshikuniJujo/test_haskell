@@ -13,8 +13,6 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Instance (Instance)
-
 import qualified Data.ByteString as BS
 
 #include <vulkan/vulkan.h>

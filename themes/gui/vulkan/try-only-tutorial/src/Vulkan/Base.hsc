@@ -29,3 +29,6 @@ vkFalse = #{const VK_FALSE}
 pattern NullHandle :: Ptr a
 pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
 	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+
+queueGraphicsBit :: #{type VkQueueFlags}
+queueGraphicsBit = #{const VK_QUEUE_GRAPHICS_BIT}

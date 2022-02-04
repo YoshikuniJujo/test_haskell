@@ -11,6 +11,8 @@ import Foreign.Storable
 import Foreign.C.String
 import Control.Monad.Fix
 import Control.Monad.Cont
+import Data.Maybe
+import Data.List
 import Data.IORef
 import Data.Bits
 import Data.Bool
@@ -28,6 +30,7 @@ import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.Queue.Family as Vk.Queue.Family
 
 main :: IO ()
 main = run
@@ -209,7 +212,38 @@ isDeviceSuitable device = ($ pure) $ runContT do
 	pDeviceFeatures <- ContT alloca
 	lift do	Vk.PhysicalDevice.getFeatures device pDeviceFeatures
 		print =<< peek pDeviceFeatures
-	pure True
+	indices <- lift $ findQueueFamilies device
+	pure $ isComplete indices
+
+data QueueFamilyIndices = QueueFamilyIndices {
+	graphicsFamily :: Maybe Word32
+	}
+
+isComplete :: QueueFamilyIndices -> Bool
+isComplete QueueFamilyIndices {
+	graphicsFamily = gf } = isJust gf
+
+findQueueFamilies :: Vk.PhysicalDevice.PhysicalDevice -> IO QueueFamilyIndices
+findQueueFamilies device = ($ pure) $ runContT do
+	let	indices = QueueFamilyIndices {
+			graphicsFamily = Nothing }
+	pQueueFamilyCount <- ContT alloca
+	(fromIntegral -> queueFamilyCount) <- lift do
+		Vk.PhysicalDevice.getQueueFamilyProperties
+			device pQueueFamilyCount NullPtr
+		peek pQueueFamilyCount
+	pQueueFamilies <- ContT $ allocaArray queueFamilyCount
+	lift do	Vk.PhysicalDevice.getQueueFamilyProperties
+			device pQueueFamilyCount pQueueFamilies
+		props <- peekArray queueFamilyCount pQueueFamilies
+		pure indices {
+			graphicsFamily = fromIntegral
+				<$> findIndex checkGraphicsBit props
+			}
+
+checkGraphicsBit :: Vk.Queue.Family.Properties -> Bool
+checkGraphicsBit prop =
+	Vk.Queue.Family.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do

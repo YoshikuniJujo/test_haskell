@@ -50,3 +50,12 @@ foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
 	Word8 -> Word8 -> Word8 -> Word16 -> ApiVersion
 
 type PtrApplicationInfo = Ptr ApplicationInfo
+
+struct "Extent3d" #{size VkExtent3D} #{alignment VkExtent3D} [
+	("width", ''#{type uint32_t}, [| #{peek VkExtent3D, width} |],
+		[| #{poke VkExtent3D, width} |]),
+	("height", ''#{type uint32_t}, [| #{peek VkExtent3D, height} |],
+		[| #{poke VkExtent3D, height} |]),
+	("depth", ''#{type uint32_t}, [| #{peek VkExtent3D, depth} |],
+		[| #{poke VkExtent3D, depth} |]) ]
+	[''Show, ''Storable]

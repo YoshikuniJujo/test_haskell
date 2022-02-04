@@ -16,6 +16,8 @@ import Data.Int
 import Tools
 import Vulkan.Instance (Instance)
 
+import qualified Vulkan.Queue.Family as Queue.Family
+
 #include <vulkan/vulkan.h>
 
 data PhysicalDeviceTag
@@ -542,3 +544,8 @@ struct "Features" #{size VkPhysicalDeviceFeatures}
 
 foreign import ccall "vkGetPhysicalDeviceFeatures" getFeatures ::
 	PhysicalDevice -> Ptr Features -> IO ()
+
+foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
+	getQueueFamilyProperties ::
+	PhysicalDevice -> Ptr #{type uint32_t} -> Ptr Queue.Family.Properties ->
+	IO ()
