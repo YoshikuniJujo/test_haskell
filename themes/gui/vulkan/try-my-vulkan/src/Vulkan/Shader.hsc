@@ -41,7 +41,7 @@ shaderModuleCreateInfoToC ShaderModuleCreateInfo {
 	shaderModuleCreateInfoFlags = flgs,
 	shaderModuleCreateInfoCode = cd } = runContT do
 	(castPtr -> pnxt) <- ContT $ withPointerMaybe mnxt
-	(pcd, sz) <- ContT $ useAsUint32TLen cd
+	(pcd, sz) <- ContT $ useAsUint32TLen' cd
 	pure $ I.ShaderModuleCreateInfo {
 		I.shaderModuleCreateInfoSType = (),
 		I.shaderModuleCreateInfoPNext = pnxt,
