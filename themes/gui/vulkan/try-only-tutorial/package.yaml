@@ -21,11 +21,15 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- c-struct
+- bytestring
+- monads-tf
 - GLFW-b
+- c-struct
 
 library:
   source-dirs: src
+  pkg-config-dependencies:
+  - vulkan
 
 executables:
   try-only-tutorial-exe:

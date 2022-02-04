@@ -7,6 +7,7 @@
 
 module Vulkan where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
@@ -47,3 +48,5 @@ struct "ApplicationInfo" #{size VkApplicationInfo}
 
 foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
 	Word8 -> Word8 -> Word8 -> Word16 -> ApiVersion
+
+type PtrApplicationInfo = Ptr ApplicationInfo
