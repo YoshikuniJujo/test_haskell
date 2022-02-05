@@ -51,6 +51,13 @@ foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
 
 type PtrApplicationInfo = Ptr ApplicationInfo
 
+struct "Extent2d" #{size VkExtent2D} #{alignment VkExtent2D} [
+	("width", ''#{type uint32_t}, [| #{peek VkExtent2D, width} |],
+		[| #{poke VkExtent2D, width} |]),
+	("height", ''#{type uint32_t}, [| #{peek VkExtent2D, height} |],
+		[| #{poke VkExtent2D, height} |]) ]
+	[''Show, ''Storable]
+
 struct "Extent3d" #{size VkExtent3D} #{alignment VkExtent3D} [
 	("width", ''#{type uint32_t}, [| #{peek VkExtent3D, width} |],
 		[| #{poke VkExtent3D, width} |]),

@@ -36,6 +36,9 @@ import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 
 import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Vulkan.Khr.Present as Vk.Khr.Present
+import qualified Vulkan.Khr.Surface.PhysicalDevice as
+	Vk.Khr.Surface.PhysicalDevice
 
 main :: IO ()
 main = run
@@ -240,7 +243,30 @@ isDeviceSuitable dvc = ($ pure) $ runContT do
 	lift do	Vk.PhysicalDevice.getFeatures dvc pDeviceFeatures
 		print =<< peek pDeviceFeatures
 	indices <- lift $ findQueueFamilies dvc
-	pure $ isComplete indices
+	extensionSupported <- lift $ checkDeviceExtensionSupport dvc
+	swapChainAdequate <- lift $ if extensionSupported
+		then do	swapChainSupport <- querySwapChainSupport dvc
+			pure $ not (null $ swapChainSupportDetailsFormats
+					swapChainSupport) &&
+				not (null $ swapChainSupportDetailsPresentModes
+					swapChainSupport)
+		else pure False
+	pure $ isComplete indices && extensionSupported && swapChainAdequate
+
+checkDeviceExtensionSupport :: Vk.PhysicalDevice.PhysicalDevice -> IO Bool
+checkDeviceExtensionSupport dvc = ($ pure) $ runContT do
+	pExtensionCount <- ContT alloca
+	(fromIntegral -> extensionCount) <- lift do
+		_ <- Vk.PhysicalDevice.enumerateExtensionProperties
+			dvc NullPtr pExtensionCount NullPtr
+		peek pExtensionCount
+	pAvailableExtensions <- ContT $ allocaArray extensionCount
+	lift do	_ <- Vk.PhysicalDevice.enumerateExtensionProperties
+			dvc NullPtr pExtensionCount pAvailableExtensions
+		es <- map (BSC.takeWhile (/= '\NUL') . Vk.Enumerate.extensionPropertiesExtensionName)
+			<$> peekArray extensionCount pAvailableExtensions
+		print es
+		pure $ elem "VK_KHR_swapchain" es
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Maybe Word32,
@@ -269,8 +295,7 @@ findQueueFamilies dvc = ($ pure) $ runContT do
 		pure indices {
 			graphicsFamily = fromIntegral
 				<$> findIndex checkGraphicsBit props,
-			presentFamily = pfi
-			}
+			presentFamily = pfi }
 
 getPresentFamilyIndex :: Vk.PhysicalDevice.PhysicalDevice ->
 	Word32 -> Word32 -> IO (Maybe Word32)
@@ -288,6 +313,48 @@ getPresentFamilyIndex pd n i
 checkGraphicsBit :: Vk.Queue.Family.Properties -> Bool
 checkGraphicsBit prop =
 	Vk.Queue.Family.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
+
+data SwapChainSupportDetails = SwapChainSupportDetails {
+	swapChainSupportDetailsCapabilities :: Vk.Khr.Surface.Capabilities,
+	swapChainSupportDetailsFormats :: [Vk.Khr.Surface.Format],
+	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
+	deriving Show
+
+querySwapChainSupport ::
+	Vk.PhysicalDevice.PhysicalDevice -> IO SwapChainSupportDetails
+querySwapChainSupport dvc = ($ pure) $ runContT do
+	sfc <- lift $ readIORef surface
+	pCapabilities <- ContT alloca
+	cps <- lift do
+		_ <- Vk.Khr.Surface.PhysicalDevice.getCapabilities
+			dvc sfc pCapabilities
+		peek pCapabilities
+	pFormatCount <- ContT alloca
+	(fromIntegral -> formatCount) <- lift do
+		_ <- Vk.Khr.Surface.PhysicalDevice.getFormats
+			dvc sfc pFormatCount NullPtr
+		peek pFormatCount
+	pFormats <- ContT $ allocaArray formatCount
+	fmts <- lift do
+		_ <- Vk.Khr.Surface.PhysicalDevice.getFormats
+			dvc sfc pFormatCount pFormats
+		peekArray formatCount pFormats
+	pPresentModeCount <- ContT alloca
+	(fromIntegral -> presentModeCount) <- lift do
+		_ <- Vk.Khr.Surface.PhysicalDevice.getPresentModes
+			dvc sfc pPresentModeCount NullPtr
+		peek pPresentModeCount
+	pPresentModes <- ContT $ allocaArray presentModeCount
+	presentModes <- lift do
+		_ <- Vk.Khr.Surface.PhysicalDevice.getPresentModes
+			dvc sfc pPresentModeCount pPresentModes
+		peekArray presentModeCount pPresentModes
+	lift $ print presentModeCount
+	pure SwapChainSupportDetails {
+		swapChainSupportDetailsCapabilities = cps,
+		swapChainSupportDetailsFormats = fmts,
+		swapChainSupportDetailsPresentModes = presentModes
+		}
 
 createLogicalDevice :: IO ()
 createLogicalDevice = ($ pure) $ runContT do
@@ -313,6 +380,9 @@ createLogicalDevice = ($ pure) $ runContT do
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
+	pSwapchainExtention <- lift $ newCString "VK_KHR_swapchain"
+	pSwapchainExtentions <- ContT $ allocaArray 1
+	lift $ pokeArray pSwapchainExtentions [pSwapchainExtention]
 	let	Vk.Device.CreateInfo_ fCreateInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoSType = (),
 			Vk.Device.createInfoPNext = NullPtr,
@@ -321,8 +391,9 @@ createLogicalDevice = ($ pure) $ runContT do
 			Vk.Device.createInfoPQueueCreateInfos =
 				pQueueCreateInfo,
 			Vk.Device.createInfoPEnabledFeatures = pDeviceFeatures,
-			Vk.Device.createInfoEnabledExtensionCount = 0,
-			Vk.Device.createInfoPpEnabledExtensionNames = NullPtr,
+			Vk.Device.createInfoEnabledExtensionCount = 1,
+			Vk.Device.createInfoPpEnabledExtensionNames =
+				pSwapchainExtentions,
 			Vk.Device.createInfoEnabledLayerCount = 1,
 			Vk.Device.createInfoPpEnabledLayerNames =
 				pValidationLayers }
