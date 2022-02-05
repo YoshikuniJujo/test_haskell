@@ -35,6 +35,8 @@ import qualified Vulkan.Queue.Family as Vk.Queue.Family
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 
+import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
+
 main :: IO ()
 main = run
 
@@ -53,10 +55,13 @@ device = unsafePerformIO $ newIORef NullPtr
 graphicsQueue :: IORef Vk.Device.Queue
 graphicsQueue = unsafePerformIO $ newIORef NullPtr
 
+surface :: IORef Vk.Khr.Surface.Surface
+surface = unsafePerformIO $ newIORef NullPtr
+
 run :: IO ()
 run = do
 	win <- initWindow
-	initVulkan
+	initVulkan win
 	mainLoop win
 	cleanup win
 
@@ -71,10 +76,11 @@ initWindow = do
 	Just w <- GlfwB.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: IO ()
-initVulkan = do
+initVulkan :: GlfwB.Window -> IO ()
+initVulkan win = do
 	createInstance
 	setupDebugMessenger
+	createSurface win
 	pickPhysicalDevice
 	createLogicalDevice
 
@@ -196,6 +202,14 @@ debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 	putStrLn $ "validation layer: " ++ message
 	pure vkFalse
 
+createSurface :: GlfwB.Window -> IO ()
+createSurface win = ($ pure) $ runContT do
+	ist <- lift $ readIORef instance_
+	psrfc <- ContT alloca
+	lift do	r <- GlfwB.createWindowSurface ist win NullPtr psrfc
+		when (r /= success) $ error "failed to create window surface!"
+		writeIORef surface =<< peek psrfc
+
 pickPhysicalDevice :: IO ()
 pickPhysicalDevice = ($ pure) $ runContT do
 	ist <- lift $ readIORef instance_
@@ -314,6 +328,8 @@ cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	(`Vk.Device.destroy` NullPtr) =<< readIORef device
 	ist <- readIORef instance_
+	(\sfc -> Vk.Khr.Surface.destroy ist sfc NullPtr)
+		=<< readIORef surface
 	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
 		=<< readIORef debugMessenger
 	Vk.Instance.destroy ist NullPtr

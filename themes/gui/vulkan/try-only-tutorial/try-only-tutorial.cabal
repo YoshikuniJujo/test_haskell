@@ -34,6 +34,7 @@ library
       Vulkan.Enumerate
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Instance
+      Vulkan.Khr.Surface
       Vulkan.PhysicalDevice
       Vulkan.Queue.Family
   other-modules:
