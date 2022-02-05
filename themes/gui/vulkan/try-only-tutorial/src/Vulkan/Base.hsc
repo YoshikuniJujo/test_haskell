@@ -23,8 +23,9 @@ type PtrCString = Ptr CString
 success :: #{type VkResult}
 success = #{const VK_SUCCESS}
 
-vkFalse :: #{type VkBool32}
+vkFalse, vkTrue :: #{type VkBool32}
 vkFalse = #{const VK_FALSE}
+vkTrue = #{const VK_TRUE}
 
 pattern NullHandle :: Ptr a
 pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where

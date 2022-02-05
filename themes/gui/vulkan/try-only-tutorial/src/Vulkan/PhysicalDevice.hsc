@@ -16,6 +16,7 @@ import Data.Int
 
 import Tools
 import Vulkan.Instance (Instance)
+import Vulkan.Khr.Surface (Surface)
 
 import qualified Vulkan.Queue.Family as Queue.Family
 
@@ -557,3 +558,7 @@ foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
 	getQueueFamilyProperties ::
 	PhysicalDevice -> Ptr #{type uint32_t} -> Ptr Queue.Family.Properties ->
 	IO ()
+
+foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR" getSurfaceSupport ::
+	PhysicalDevice -> #{type uint32_t} -> Surface -> Ptr #{type VkBool32} ->
+	IO #{type VkResult}

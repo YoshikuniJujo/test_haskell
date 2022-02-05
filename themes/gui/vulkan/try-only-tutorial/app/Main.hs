@@ -58,6 +58,9 @@ graphicsQueue = unsafePerformIO $ newIORef NullPtr
 surface :: IORef Vk.Khr.Surface.Surface
 surface = unsafePerformIO $ newIORef NullPtr
 
+presentQueue :: IORef Vk.Device.Queue
+presentQueue = unsafePerformIO $ newIORef NullPtr
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -240,17 +243,19 @@ isDeviceSuitable dvc = ($ pure) $ runContT do
 	pure $ isComplete indices
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Maybe Word32
-	}
+	graphicsFamily :: Maybe Word32,
+	presentFamily :: Maybe Word32 }
+	deriving Show
 
 isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
-	graphicsFamily = gf } = isJust gf
+	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
 findQueueFamilies :: Vk.PhysicalDevice.PhysicalDevice -> IO QueueFamilyIndices
 findQueueFamilies dvc = ($ pure) $ runContT do
 	let	indices = QueueFamilyIndices {
-			graphicsFamily = Nothing }
+			graphicsFamily = Nothing,
+			presentFamily = Nothing }
 	pQueueFamilyCount <- ContT alloca
 	(fromIntegral -> queueFamilyCount) <- lift do
 		Vk.PhysicalDevice.getQueueFamilyProperties
@@ -260,10 +265,25 @@ findQueueFamilies dvc = ($ pure) $ runContT do
 	lift do	Vk.PhysicalDevice.getQueueFamilyProperties
 			dvc pQueueFamilyCount pQueueFamilies
 		props <- peekArray queueFamilyCount pQueueFamilies
+		pfi <- getPresentFamilyIndex dvc (fromIntegral $ length props) 0
 		pure indices {
 			graphicsFamily = fromIntegral
-				<$> findIndex checkGraphicsBit props
+				<$> findIndex checkGraphicsBit props,
+			presentFamily = pfi
 			}
+
+getPresentFamilyIndex :: Vk.PhysicalDevice.PhysicalDevice ->
+	Word32 -> Word32 -> IO (Maybe Word32)
+getPresentFamilyIndex pd n i
+	| i >= n = pure Nothing
+	| otherwise = ($ pure) $ runContT do
+		pPresentSupport <- ContT alloca
+		lift do	sfc <- readIORef surface
+			_ <- Vk.PhysicalDevice.getSurfaceSupport pd i sfc pPresentSupport
+			presentSupport <- peek pPresentSupport
+			if presentSupport == vkTrue
+			then pure $ Just i
+			else getPresentFamilyIndex pd n (i + 1)
 
 checkGraphicsBit :: Vk.Queue.Family.Properties -> Bool
 checkGraphicsBit prop =
@@ -273,6 +293,7 @@ createLogicalDevice :: IO ()
 createLogicalDevice = ($ pure) $ runContT do
 	pd <- lift $ readIORef physicalDevice
 	indices <- lift $ findQueueFamilies pd
+	lift $ print indices
 	pQueuePriority <- ContT alloca
 	lift $ poke pQueuePriority 1
 	let	Vk.Device.Queue.CreateInfo_ fQueueCreateInfo =
@@ -314,9 +335,13 @@ createLogicalDevice = ($ pure) $ runContT do
 		writeIORef device dvc'
 		pure dvc'
 	pGraphicsQueue <- ContT alloca
+	pPresentQueue <- ContT alloca
 	lift do	Vk.Device.getQueue
 			dvc (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
+		Vk.Device.getQueue
+			dvc (fromJust $ graphicsFamily indices) 0 pPresentQueue
 		writeIORef graphicsQueue =<< peek pGraphicsQueue
+		writeIORef presentQueue =<< peek pPresentQueue
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
