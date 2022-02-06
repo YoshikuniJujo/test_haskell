@@ -75,3 +75,5 @@ sharingModeExclusive = #{const VK_SHARING_MODE_EXCLUSIVE}
 
 data ImageTag
 type Image = Ptr ImageTag
+
+type Format = #{type VkFormat}

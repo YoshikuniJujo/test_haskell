@@ -75,8 +75,11 @@ swapChain = unsafePerformIO $ newIORef NullHandle
 swapChainImages :: IORef [Vk.Image]
 swapChainImages = unsafePerformIO $ newIORef []
 
--- swapChainImageFormat :: IORef ...
--- swapChainExtent :: IORef ...
+swapChainImageFormat :: IORef Vk.Format
+swapChainImageFormat = unsafePerformIO $ newIORef 0
+
+swapChainExtent :: IORef Vk.Extent2d
+swapChainExtent = unsafePerformIO $ newIORef $ Vk.Extent2d 0 0
 
 run :: IO ()
 run = do
@@ -488,6 +491,9 @@ createSwapChain = ($ pure) $ runContT do
 		print extent
 		print imageCount
 		print maxImageCount
+		writeIORef swapChainImageFormat
+			$ Vk.Khr.Sfc.formatFormat surfaceFormat
+		writeIORef swapChainExtent extent
 		pure createInfo'
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pSwapChain <- ContT alloca
