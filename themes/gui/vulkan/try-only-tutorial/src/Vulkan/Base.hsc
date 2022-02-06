@@ -35,3 +35,8 @@ queueGraphicsBit :: #{type VkQueueFlags}
 queueGraphicsBit = #{const VK_QUEUE_GRAPHICS_BIT}
 
 type PtrFloat = Ptr #{type float}
+
+uint32Max :: #{type uint32_t}
+uint32Max = #{const UINT32_MAX}
+
+type PtrUint32T = Ptr #{type uint32_t}

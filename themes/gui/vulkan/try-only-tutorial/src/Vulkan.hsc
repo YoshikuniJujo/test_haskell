@@ -66,3 +66,9 @@ struct "Extent3d" #{size VkExtent3D} #{alignment VkExtent3D} [
 	("depth", ''#{type uint32_t}, [| #{peek VkExtent3D, depth} |],
 		[| #{poke VkExtent3D, depth} |]) ]
 	[''Show, ''Storable]
+
+imageUsageColorAttachmentBit :: #{type VkImageUsageFlagBits}
+imageUsageColorAttachmentBit = #{const VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT}
+
+sharingModeExclusive :: #{type VkSharingMode}
+sharingModeExclusive = #{const VK_SHARING_MODE_EXCLUSIVE}

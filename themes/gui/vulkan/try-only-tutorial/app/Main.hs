@@ -35,13 +35,15 @@ import qualified Vulkan.Queue.Family as Vk.Queue.Family
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 
-import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
 import qualified Vulkan.Khr.Surface.PhysicalDevice as
-	Vk.Khr.Surface.PhysicalDevice
+	Vk.Khr.Sfc.PhysicalDevice
 
 import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
+import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
+import qualified Vulkan.Khr as Vk.Khr
 
 main :: IO ()
 main = run
@@ -61,11 +63,14 @@ device = unsafePerformIO $ newIORef NullPtr
 graphicsQueue :: IORef Vk.Device.Queue
 graphicsQueue = unsafePerformIO $ newIORef NullPtr
 
-surface :: IORef Vk.Khr.Surface.Surface
+surface :: IORef Vk.Khr.Sfc.Surface
 surface = unsafePerformIO $ newIORef NullPtr
 
 presentQueue :: IORef Vk.Device.Queue
 presentQueue = unsafePerformIO $ newIORef NullPtr
+
+swapChain :: IORef Vk.Khr.Sc.Swapchain
+swapChain = unsafePerformIO $ newIORef NullHandle
 
 run :: IO ()
 run = do
@@ -319,8 +324,8 @@ checkGraphicsBit prop =
 	Vk.Queue.Family.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	swapChainSupportDetailsCapabilities :: Vk.Khr.Surface.Capabilities,
-	swapChainSupportDetailsFormats :: [Vk.Khr.Surface.Format],
+	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
+	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.Format],
 	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
 	deriving Show
 
@@ -330,27 +335,27 @@ querySwapChainSupport dvc = ($ pure) $ runContT do
 	sfc <- lift $ readIORef surface
 	pCapabilities <- ContT alloca
 	cps <- lift do
-		_ <- Vk.Khr.Surface.PhysicalDevice.getCapabilities
+		_ <- Vk.Khr.Sfc.PhysicalDevice.getCapabilities
 			dvc sfc pCapabilities
 		peek pCapabilities
 	pFormatCount <- ContT alloca
 	(fromIntegral -> formatCount) <- lift do
-		_ <- Vk.Khr.Surface.PhysicalDevice.getFormats
+		_ <- Vk.Khr.Sfc.PhysicalDevice.getFormats
 			dvc sfc pFormatCount NullPtr
 		peek pFormatCount
 	pFormats <- ContT $ allocaArray formatCount
 	fmts <- lift do
-		_ <- Vk.Khr.Surface.PhysicalDevice.getFormats
+		_ <- Vk.Khr.Sfc.PhysicalDevice.getFormats
 			dvc sfc pFormatCount pFormats
 		peekArray formatCount pFormats
 	pPresentModeCount <- ContT alloca
 	(fromIntegral -> presentModeCount) <- lift do
-		_ <- Vk.Khr.Surface.PhysicalDevice.getPresentModes
+		_ <- Vk.Khr.Sfc.PhysicalDevice.getPresentModes
 			dvc sfc pPresentModeCount NullPtr
 		peek pPresentModeCount
 	pPresentModes <- ContT $ allocaArray presentModeCount
 	presentModes <- lift do
-		_ <- Vk.Khr.Surface.PhysicalDevice.getPresentModes
+		_ <- Vk.Khr.Sfc.PhysicalDevice.getPresentModes
 			dvc sfc pPresentModeCount pPresentModes
 		peekArray presentModeCount pPresentModes
 	lift $ print presentModeCount
@@ -419,21 +424,90 @@ createLogicalDevice = ($ pure) $ runContT do
 		writeIORef presentQueue =<< peek pPresentQueue
 
 createSwapChain :: IO ()
-createSwapChain = do
-	pd <- readIORef physicalDevice
-	swapChainSupport <- querySwapChainSupport pd
-	let surfaceFormat = chooseSwapSurfaceFormat
-		$ swapChainSupportDetailsFormats swapChainSupport
-	print surfaceFormat
-	print (Vk.Format.b8g8r8a8Srgb, Vk.Khr.ColorSpace.srgbNonlinear)
-	pure ()
+createSwapChain = ($ pure) $ runContT do
+	dvc <- lift $ readIORef device
+	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
+		pd <- readIORef physicalDevice
+		swapChainSupport <- querySwapChainSupport pd
+		sfc <- readIORef surface
+		phd <- readIORef physicalDevice
+		indices <- findQueueFamilies phd
+		print indices
+		let	cap = swapChainSupportDetailsCapabilities
+				swapChainSupport
+			surfaceFormat = chooseSwapSurfaceFormat
+				$ swapChainSupportDetailsFormats
+					swapChainSupport
+			presentMode = chooseSwapPresentMode
+				$ swapChainSupportDetailsPresentModes
+					swapChainSupport
+			extent = chooseSwapExtent cap
+			minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
+			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
+			imageCount = if maxImageCount > 0
+				then min (minImageCount + 1) maxImageCount
+				else minImageCount + 1
+			createInfo' = Vk.Khr.Sc.CreateInfo {
+				Vk.Khr.Sc.createInfoSType = (),
+				Vk.Khr.Sc.createInfoPNext = NullPtr,
+				Vk.Khr.Sc.createInfoFlags = 0,
+				Vk.Khr.Sc.createInfoSurface = sfc,
+				Vk.Khr.Sc.createInfoMinImageCount = imageCount,
+				Vk.Khr.Sc.createInfoImageFormat =
+					Vk.Khr.Sfc.formatFormat surfaceFormat,
+				Vk.Khr.Sc.createInfoImageColorSpace =
+					Vk.Khr.Sfc.formatColorSpace
+						surfaceFormat,
+				Vk.Khr.Sc.createInfoImageExtent = extent,
+				Vk.Khr.Sc.createInfoImageArrayLayers = 1,
+				Vk.Khr.Sc.createInfoImageUsage =
+					Vk.imageUsageColorAttachmentBit,
+				Vk.Khr.Sc.createInfoImageSharingMode =
+					Vk.sharingModeExclusive,
+				Vk.Khr.Sc.createInfoQueueFamilyIndexCount = 0,
+				Vk.Khr.Sc.createInfoPQueueFamilyIndices =
+					NullPtr,
+				Vk.Khr.Sc.createInfoPreTransform =
+					Vk.Khr.Sfc.capabilitiesCurrentTransform
+						cap,
+				Vk.Khr.Sc.createInfoCompositeAlpha =
+					Vk.Khr.compositeAlphaOpaqueBit,
+				Vk.Khr.Sc.createInfoPresentMode = presentMode,
+				Vk.Khr.Sc.createInfoClipped = vkTrue,
+				Vk.Khr.Sc.createInfoOldSwapchain = NullHandle }
+		print surfaceFormat
+		print presentMode
+		print (Vk.Format.b8g8r8a8Srgb, Vk.Khr.ColorSpace.srgbNonlinear)
+		print Vk.Khr.Present.modeMailbox
+		print extent
+		print imageCount
+		print maxImageCount
+		pure createInfo'
+	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pSwapChain <- ContT alloca
+	lift do	r <- Vk.Khr.Sc.create dvc pCreateInfo NullPtr pSwapChain
+		when (r /= success) $ error "failed to create swap chain!"
+		writeIORef swapChain =<< peek pSwapChain
 
-chooseSwapSurfaceFormat :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
+chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = fromMaybe (head availableFormats)
 	$ find (\f ->
-		Vk.Khr.Surface.formatFormat f == Vk.Format.b8g8r8a8Srgb &&
-		Vk.Khr.Surface.formatColorSpace f ==
+		Vk.Khr.Sfc.formatFormat f == Vk.Format.b8g8r8a8Srgb &&
+		Vk.Khr.Sfc.formatColorSpace f ==
 			Vk.Khr.ColorSpace.srgbNonlinear) availableFormats
+
+chooseSwapPresentMode :: [Vk.Khr.Present.Mode] -> Vk.Khr.Present.Mode
+chooseSwapPresentMode availablePresentModes =
+	if Vk.Khr.Present.modeMailbox `elem` availablePresentModes
+		then Vk.Khr.Present.modeMailbox
+		else Vk.Khr.Present.modeFifo
+
+chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.Extent2d
+chooseSwapExtent capabilities =
+	if Vk.extent2dWidth ce /= uint32Max
+		then ce
+		else error "Ah!"
+	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
@@ -443,10 +517,11 @@ mainLoop win = do
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
-	(`Vk.Device.destroy` NullPtr) =<< readIORef device
+	dvc <- readIORef device
+	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
+	Vk.Device.destroy dvc NullPtr
 	ist <- readIORef instance_
-	(\sfc -> Vk.Khr.Surface.destroy ist sfc NullPtr)
-		=<< readIORef surface
+	(\sfc -> Vk.Khr.Sfc.destroy ist sfc NullPtr) =<< readIORef surface
 	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
 		=<< readIORef debugMessenger
 	Vk.Instance.destroy ist NullPtr
