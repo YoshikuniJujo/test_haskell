@@ -40,6 +40,9 @@ import qualified Vulkan.Khr.Present as Vk.Khr.Present
 import qualified Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 
+import qualified Vulkan.Format as Vk.Format
+import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
+
 main :: IO ()
 main = run
 
@@ -89,6 +92,7 @@ initVulkan win = do
 	createSurface win
 	pickPhysicalDevice
 	createLogicalDevice
+	createSwapChain
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -413,6 +417,23 @@ createLogicalDevice = ($ pure) $ runContT do
 			dvc (fromJust $ graphicsFamily indices) 0 pPresentQueue
 		writeIORef graphicsQueue =<< peek pGraphicsQueue
 		writeIORef presentQueue =<< peek pPresentQueue
+
+createSwapChain :: IO ()
+createSwapChain = do
+	pd <- readIORef physicalDevice
+	swapChainSupport <- querySwapChainSupport pd
+	let surfaceFormat = chooseSwapSurfaceFormat
+		$ swapChainSupportDetailsFormats swapChainSupport
+	print surfaceFormat
+	print (Vk.Format.b8g8r8a8Srgb, Vk.Khr.ColorSpace.srgbNonlinear)
+	pure ()
+
+chooseSwapSurfaceFormat :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
+chooseSwapSurfaceFormat availableFormats = fromMaybe (head availableFormats)
+	$ find (\f ->
+		Vk.Khr.Surface.formatFormat f == Vk.Format.b8g8r8a8Srgb &&
+		Vk.Khr.Surface.formatColorSpace f ==
+			Vk.Khr.ColorSpace.srgbNonlinear) availableFormats
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
