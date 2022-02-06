@@ -87,3 +87,7 @@ foreign import ccall "vkCreateSwapchainKHR" create ::
 
 foreign import ccall "vkDestroySwapchainKHR" destroy ::
 	Device -> Swapchain -> Ptr () -> IO ()
+
+foreign import ccall "vkGetSwapchainImagesKHR" getImages ::
+	Device -> Swapchain -> Ptr #{type uint32_t} -> Ptr Image ->
+	IO #{type VkResult}

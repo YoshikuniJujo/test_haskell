@@ -72,6 +72,12 @@ presentQueue = unsafePerformIO $ newIORef NullPtr
 swapChain :: IORef Vk.Khr.Sc.Swapchain
 swapChain = unsafePerformIO $ newIORef NullHandle
 
+swapChainImages :: IORef [Vk.Image]
+swapChainImages = unsafePerformIO $ newIORef []
+
+-- swapChainImageFormat :: IORef ...
+-- swapChainExtent :: IORef ...
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -485,9 +491,19 @@ createSwapChain = ($ pure) $ runContT do
 		pure createInfo'
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pSwapChain <- ContT alloca
-	lift do	r <- Vk.Khr.Sc.create dvc pCreateInfo NullPtr pSwapChain
+	sc <- lift do
+		r <- Vk.Khr.Sc.create dvc pCreateInfo NullPtr pSwapChain
 		when (r /= success) $ error "failed to create swap chain!"
-		writeIORef swapChain =<< peek pSwapChain
+		sc <- peek pSwapChain
+		sc <$ writeIORef swapChain sc
+	pImageCount <- ContT alloca
+	(fromIntegral -> imageCount) <- lift do
+		_ <- Vk.Khr.Sc.getImages dvc sc pImageCount NullPtr
+		peek pImageCount
+	pSwapChainImages <- ContT $ allocaArray imageCount
+	lift do	_ <- Vk.Khr.Sc.getImages dvc sc pImageCount pSwapChainImages
+		writeIORef swapChainImages
+			=<< peekArray imageCount pSwapChainImages
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = fromMaybe (head availableFormats)

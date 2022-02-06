@@ -72,3 +72,6 @@ imageUsageColorAttachmentBit = #{const VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT}
 
 sharingModeExclusive :: #{type VkSharingMode}
 sharingModeExclusive = #{const VK_SHARING_MODE_EXCLUSIVE}
+
+data ImageTag
+type Image = Ptr ImageTag
