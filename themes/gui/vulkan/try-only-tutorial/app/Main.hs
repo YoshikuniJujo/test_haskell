@@ -46,7 +46,7 @@ import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr as Vk.Khr
 
 import qualified Vulkan.ImageView as Vk.ImageView
-import qualified Vulkan.Image as Vk.Image
+import qualified Vulkan.Image as Vk.Img
 import qualified Vulkan.Component as Vk.Component
 
 main :: IO ()
@@ -76,7 +76,7 @@ presentQueue = unsafePerformIO $ newIORef NullPtr
 swapChain :: IORef Vk.Khr.Sc.Swapchain
 swapChain = unsafePerformIO $ newIORef NullHandle
 
-swapChainImages :: IORef [Vk.Image.Image]
+swapChainImages :: IORef [Vk.Img.Image]
 swapChainImages = unsafePerformIO $ newIORef []
 
 swapChainImageFormat :: IORef Vk.Format
@@ -540,12 +540,15 @@ chooseSwapExtent capabilities =
 	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
 
 createImageViews :: IO ()
-createImageViews = pure ()
+createImageViews = do
+	scis <- readIORef swapChainImages
+	ivs <- createImageView1 `mapM` scis
+	writeIORef swapChainImageViews ivs
 
-createImageView1 :: Vk.Image.Image -> IO Vk.ImageView.ImageView
-createImageView1 img = do
-	fmt <- readIORef swapChainImageFormat
-	let	createInfo = Vk.ImageView.CreateInfo {
+createImageView1 :: Vk.Img.Image -> IO Vk.ImageView.ImageView
+createImageView1 img = ($ pure) $ runContT do
+	fmt <- lift $ readIORef swapChainImageFormat
+	let	Vk.ImageView.CreateInfo_ fCreateInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoSType = (),
 			Vk.ImageView.createInfoPNext = NullPtr,
 			Vk.ImageView.createInfoFlags = 0,
@@ -563,12 +566,20 @@ createImageView1 img = do
 					Vk.Component.mappingA =
 						Vk.Component.swizzleIdentity },
 			Vk.ImageView.createInfoSubresourceRange =
-				Vk.Image.SubresourceRange {
-					Vk.Image.subresourceRangeAspectMask =
-						Vk.Image.aspectColorBit
-					}
-			}
-	pure undefined
+				Vk.Img.SubresourceRange {
+					Vk.Img.subresourceRangeAspectMask =
+						Vk.Img.aspectColorBit,
+					Vk.Img.subresourceRangeBaseMipLevel = 0,
+					Vk.Img.subresourceRangeLevelCount = 1,
+					Vk.Img.subresourceRangeBaseArrayLayer =
+						0,
+					Vk.Img.subresourceRangeLayerCount = 1 } }
+	dvc <- lift $ readIORef device
+	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pView <- ContT alloca
+	lift do	r <- Vk.ImageView.create dvc pCreateInfo NullPtr pView
+		when (r /= success) $ error "failed to create image views!"
+		peek pView
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
@@ -579,6 +590,8 @@ mainLoop win = do
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	dvc <- readIORef device
+	ivs <- readIORef swapChainImageViews
+	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy dvc NullPtr
 	ist <- readIORef instance_

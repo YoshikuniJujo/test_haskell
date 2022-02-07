@@ -9,8 +9,10 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+import Vulkan.Device (Device)
 
 import qualified Vulkan.Image as Image
 import qualified Vulkan.Component as Component
@@ -52,3 +54,10 @@ struct "CreateInfo" #{size VkImageViewCreateInfo}
 
 type2d :: #{type VkImageViewType}
 type2d = #{const VK_IMAGE_VIEW_TYPE_2D}
+
+foreign import ccall "vkCreateImageView" create ::
+	Device -> Ptr CreateInfo -> Ptr () -> Ptr ImageView ->
+	IO #{type VkResult}
+
+foreign import ccall "vkDestroyImageView" destroy ::
+	Device -> ImageView -> Ptr () -> IO ()
