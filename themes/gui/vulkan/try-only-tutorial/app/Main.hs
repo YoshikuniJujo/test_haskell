@@ -45,6 +45,10 @@ import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr as Vk.Khr
 
+import qualified Vulkan.ImageView as Vk.ImageView
+import qualified Vulkan.Image as Vk.Image
+import qualified Vulkan.Component as Vk.Component
+
 main :: IO ()
 main = run
 
@@ -72,7 +76,7 @@ presentQueue = unsafePerformIO $ newIORef NullPtr
 swapChain :: IORef Vk.Khr.Sc.Swapchain
 swapChain = unsafePerformIO $ newIORef NullHandle
 
-swapChainImages :: IORef [Vk.Image]
+swapChainImages :: IORef [Vk.Image.Image]
 swapChainImages = unsafePerformIO $ newIORef []
 
 swapChainImageFormat :: IORef Vk.Format
@@ -80,6 +84,9 @@ swapChainImageFormat = unsafePerformIO $ newIORef 0
 
 swapChainExtent :: IORef Vk.Extent2d
 swapChainExtent = unsafePerformIO $ newIORef $ Vk.Extent2d 0 0
+
+swapChainImageViews :: IORef [Vk.ImageView.ImageView]
+swapChainImageViews = unsafePerformIO $ newIORef []
 
 run :: IO ()
 run = do
@@ -107,6 +114,7 @@ initVulkan win = do
 	pickPhysicalDevice
 	createLogicalDevice
 	createSwapChain
+	createImageViews
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -530,6 +538,37 @@ chooseSwapExtent capabilities =
 		then ce
 		else error "Ah!"
 	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
+
+createImageViews :: IO ()
+createImageViews = pure ()
+
+createImageView1 :: Vk.Image.Image -> IO Vk.ImageView.ImageView
+createImageView1 img = do
+	fmt <- readIORef swapChainImageFormat
+	let	createInfo = Vk.ImageView.CreateInfo {
+			Vk.ImageView.createInfoSType = (),
+			Vk.ImageView.createInfoPNext = NullPtr,
+			Vk.ImageView.createInfoFlags = 0,
+			Vk.ImageView.createInfoImage = img,
+			Vk.ImageView.createInfoViewType = Vk.ImageView.type2d,
+			Vk.ImageView.createInfoFormat = fmt,
+			Vk.ImageView.createInfoComponents =
+				Vk.Component.Mapping {
+					Vk.Component.mappingR =
+						Vk.Component.swizzleIdentity,
+					Vk.Component.mappingG =
+						Vk.Component.swizzleIdentity,
+					Vk.Component.mappingB =
+						Vk.Component.swizzleIdentity,
+					Vk.Component.mappingA =
+						Vk.Component.swizzleIdentity },
+			Vk.ImageView.createInfoSubresourceRange =
+				Vk.Image.SubresourceRange {
+					Vk.Image.subresourceRangeAspectMask =
+						Vk.Image.aspectColorBit
+					}
+			}
+	pure undefined
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do

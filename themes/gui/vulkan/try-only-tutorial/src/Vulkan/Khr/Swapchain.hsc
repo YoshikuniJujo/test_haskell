@@ -16,6 +16,7 @@ import Vulkan.Base
 import Vulkan.Device (Device)
 
 import qualified Vulkan.Khr.Surface as Surface
+import qualified Vulkan.Image as Image
 
 #include <vulkan/vulkan.h>
 
@@ -89,5 +90,5 @@ foreign import ccall "vkDestroySwapchainKHR" destroy ::
 	Device -> Swapchain -> Ptr () -> IO ()
 
 foreign import ccall "vkGetSwapchainImagesKHR" getImages ::
-	Device -> Swapchain -> Ptr #{type uint32_t} -> Ptr Image ->
+	Device -> Swapchain -> Ptr #{type uint32_t} -> Ptr Image.Image ->
 	IO #{type VkResult}
