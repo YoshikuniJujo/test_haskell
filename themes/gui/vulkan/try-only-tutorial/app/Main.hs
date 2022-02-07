@@ -4,6 +4,8 @@
 
 module Main where
 
+import Prelude hiding (readFile)
+
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.ForeignPtr
@@ -17,6 +19,7 @@ import Data.IORef
 import Data.Bits
 import Data.Bool
 import Data.Word
+import System.IO hiding (readFile)
 import System.IO.Unsafe
 
 import Tools
@@ -115,6 +118,7 @@ initVulkan win = do
 	createLogicalDevice
 	createSwapChain
 	createImageViews
+	createGraphicsPipeline
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -580,6 +584,23 @@ createImageView1 img = ($ pure) $ runContT do
 	lift do	r <- Vk.ImageView.create dvc pCreateInfo NullPtr pView
 		when (r /= success) $ error "failed to create image views!"
 		peek pView
+
+createGraphicsPipeline :: IO ()
+createGraphicsPipeline = do
+	vertShaderCode <- readFile "shaders/vert.spv"
+	fragShaderCode <- readFile "shaders/frag.spv"
+	pure ()
+
+readFile :: FilePath -> IO (Ptr Word32)
+readFile fp = do
+	h <- openFile fp ReadMode
+	hSeek h SeekFromEnd 0
+	fileSize <- hTell h
+	putStrLn $ fp ++ ": " ++ show fileSize
+	pbuff <- mallocArray ((fromIntegral fileSize - 1) `div` 4 + 1)
+	hSeek h AbsoluteSeek 0
+	print =<< hGetBuf h pbuff (fromIntegral fileSize)
+	pure pbuff
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
