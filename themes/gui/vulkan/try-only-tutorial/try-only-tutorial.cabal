@@ -45,8 +45,10 @@ library
       Vulkan.Khr.Surface.PhysicalDevice
       Vulkan.Khr.Swapchain
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.VertexInputState
+      Vulkan.PrimitiveTopology
       Vulkan.Queue.Family
       Vulkan.Shader.Module
       Vulkan.Specialization

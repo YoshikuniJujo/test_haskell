@@ -56,6 +56,8 @@ import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VISt
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IASt
+import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
 
 main :: IO ()
 main = run
@@ -631,6 +633,12 @@ createGraphicsPipeline = do
 				0,
 			Vk.Ppl.VISt.createInfoPVertexAttributeDescriptions =
 				NullPtr }
+		inputAssembly = Vk.Ppl.IASt.CreateInfo {
+			Vk.Ppl.IASt.createInfoSType = (),
+			Vk.Ppl.IASt.createInfoPNext = NullPtr,
+			Vk.Ppl.IASt.createInfoFlags = 0,
+			Vk.Ppl.IASt.createInfoTopology = Vk.PrmTplgy.triangleList,
+			Vk.Ppl.IASt.createInfoPrimitiveRestartEnable = vkFalse }
 
 	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 	Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
