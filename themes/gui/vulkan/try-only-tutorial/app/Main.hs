@@ -53,6 +53,7 @@ import qualified Vulkan.Image as Vk.Img
 import qualified Vulkan.Component as Vk.Component
 
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 
 main :: IO ()
 main = run
@@ -594,6 +595,28 @@ createGraphicsPipeline = do
 	fragShaderCode <- readFile "shaders/frag.spv"
 	vertShaderModule <- createShaderModule vertShaderCode
 	fragShaderModule <- createShaderModule fragShaderCode
+	cnm <- newCString "main"
+	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoSType = (),
+			Vk.Ppl.ShaderStage.createInfoPNext = NullPtr,
+			Vk.Ppl.ShaderStage.createInfoFlags = 0,
+			Vk.Ppl.ShaderStage.createInfoStage =
+				Vk.Ppl.ShaderStage.vertexBit,
+			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShaderStage.createInfoPName = cnm,
+			Vk.Ppl.ShaderStage.createInfoPSpecializationInfo =
+				NullPtr }
+		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoSType = (),
+			Vk.Ppl.ShaderStage.createInfoPNext = NullPtr,
+			Vk.Ppl.ShaderStage.createInfoFlags = 0,
+			Vk.Ppl.ShaderStage.createInfoStage =
+				Vk.Ppl.ShaderStage.fragmentBit,
+			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShaderStage.createInfoPName = cnm,
+			Vk.Ppl.ShaderStage.createInfoPSpecializationInfo =
+				NullPtr }
+		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
 
 	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 	Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
