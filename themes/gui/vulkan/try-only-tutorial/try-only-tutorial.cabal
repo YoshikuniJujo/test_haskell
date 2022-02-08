@@ -46,6 +46,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.PhysicalDevice
       Vulkan.Queue.Family
+      Vulkan.Shader.Module
   other-modules:
       Paths_try_only_tutorial
   hs-source-dirs:

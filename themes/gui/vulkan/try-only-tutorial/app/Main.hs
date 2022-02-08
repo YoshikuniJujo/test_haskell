@@ -52,6 +52,8 @@ import qualified Vulkan.ImageView as Vk.ImageView
 import qualified Vulkan.Image as Vk.Img
 import qualified Vulkan.Component as Vk.Component
 
+import qualified Vulkan.Shader.Module as Vk.Shader.Module
+
 main :: IO ()
 main = run
 
@@ -589,9 +591,21 @@ createGraphicsPipeline :: IO ()
 createGraphicsPipeline = do
 	vertShaderCode <- readFile "shaders/vert.spv"
 	fragShaderCode <- readFile "shaders/frag.spv"
+	createShaderModule vertShaderCode
+	createShaderModule fragShaderCode
 	pure ()
 
-readFile :: FilePath -> IO (Ptr Word32)
+createShaderModule :: (Ptr Word32, Integer) -> IO ()
+createShaderModule (p, n) = do
+	let	createInfo = Vk.Shader.Module.CreateInfo {
+			Vk.Shader.Module.createInfoSType = (),
+			Vk.Shader.Module.createInfoPNext = NullPtr,
+			Vk.Shader.Module.createInfoFlags = 0,
+			Vk.Shader.Module.createInfoCodeSize = fromIntegral n,
+			Vk.Shader.Module.createInfoPCode = p }
+	pure ()
+
+readFile :: FilePath -> IO (Ptr Word32, Integer)
 readFile fp = do
 	h <- openFile fp ReadMode
 	hSeek h SeekFromEnd 0
@@ -600,7 +614,7 @@ readFile fp = do
 	pbuff <- mallocArray ((fromIntegral fileSize - 1) `div` 4 + 1)
 	hSeek h AbsoluteSeek 0
 	print =<< hGetBuf h pbuff (fromIntegral fileSize)
-	pure pbuff
+	pure (pbuff, fileSize)
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
