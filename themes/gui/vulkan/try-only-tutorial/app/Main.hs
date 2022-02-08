@@ -589,21 +589,31 @@ createImageView1 img = ($ pure) $ runContT do
 
 createGraphicsPipeline :: IO ()
 createGraphicsPipeline = do
+	dvc <- readIORef device
 	vertShaderCode <- readFile "shaders/vert.spv"
 	fragShaderCode <- readFile "shaders/frag.spv"
-	createShaderModule vertShaderCode
-	createShaderModule fragShaderCode
-	pure ()
+	vertShaderModule <- createShaderModule vertShaderCode
+	fragShaderModule <- createShaderModule fragShaderCode
 
-createShaderModule :: (Ptr Word32, Integer) -> IO ()
-createShaderModule (p, n) = do
-	let	createInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoSType = (),
-			Vk.Shader.Module.createInfoPNext = NullPtr,
-			Vk.Shader.Module.createInfoFlags = 0,
-			Vk.Shader.Module.createInfoCodeSize = fromIntegral n,
-			Vk.Shader.Module.createInfoPCode = p }
-	pure ()
+	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
+	Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
+
+createShaderModule :: (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
+createShaderModule (p, n) = ($ pure) $ runContT do
+	dvc <- lift $ readIORef device
+	let	Vk.Shader.Module.CreateInfo_ fCreateInfo =
+			Vk.Shader.Module.CreateInfo {
+				Vk.Shader.Module.createInfoSType = (),
+				Vk.Shader.Module.createInfoPNext = NullPtr,
+				Vk.Shader.Module.createInfoFlags = 0,
+				Vk.Shader.Module.createInfoCodeSize =
+					fromIntegral n,
+				Vk.Shader.Module.createInfoPCode = p }
+	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pShaderModule <- ContT alloca
+	lift do	r <- Vk.Shader.Module.create dvc pCreateInfo NullPtr pShaderModule
+		when (r /= success) $ error "failed to create shader module!"
+		peek pShaderModule
 
 readFile :: FilePath -> IO (Ptr Word32, Integer)
 readFile fp = do

@@ -5,11 +5,14 @@
 
 module Vulkan.Shader.Module where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+import Vulkan.Device (Device)
 
 #include <vulkan/vulkan.h>
 
@@ -32,3 +35,12 @@ struct "CreateInfo" #{size VkShaderModuleCreateInfo}
 		[| #{peek VkShaderModuleCreateInfo, pCode} |],
 		[| #{poke VkShaderModuleCreateInfo, pCode} |]) ]
 	[''Show, ''Storable]
+
+data ModuleTag
+type Module = Ptr ModuleTag
+
+foreign import ccall "vkCreateShaderModule" create ::
+	Device -> Ptr CreateInfo -> Ptr () -> Ptr Module -> IO #{type VkResult}
+
+foreign import ccall "vkDestroyShaderModule" destroy ::
+	Device -> Module -> Ptr () -> IO ()
