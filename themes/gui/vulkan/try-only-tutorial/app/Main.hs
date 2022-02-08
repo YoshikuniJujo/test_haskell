@@ -55,6 +55,8 @@ import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VISt
+
 main :: IO ()
 main = run
 
@@ -617,6 +619,18 @@ createGraphicsPipeline = do
 			Vk.Ppl.ShaderStage.createInfoPSpecializationInfo =
 				NullPtr }
 		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
+		vertexInputInfo = Vk.Ppl.VISt.CreateInfo {
+			Vk.Ppl.VISt.createInfoSType = (),
+			Vk.Ppl.VISt.createInfoPNext = NullPtr,
+			Vk.Ppl.VISt.createInfoFlags = 0,
+			Vk.Ppl.VISt.createInfoVertexBindingDescriptionCount =
+				0,
+			Vk.Ppl.VISt.createInfoPVertexBindingDescriptions =
+				NullPtr,
+			Vk.Ppl.VISt.createInfoVertexAttributeDescriptionCount =
+				0,
+			Vk.Ppl.VISt.createInfoPVertexAttributeDescriptions =
+				NullPtr }
 
 	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 	Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
