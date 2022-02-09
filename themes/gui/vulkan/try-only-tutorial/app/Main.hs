@@ -58,6 +58,7 @@ import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VISt
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IASt
 import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
+import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VPSt
 
 main :: IO ()
 main = run
@@ -593,13 +594,14 @@ createImageView1 img = ($ pure) $ runContT do
 		peek pView
 
 createGraphicsPipeline :: IO ()
-createGraphicsPipeline = do
-	dvc <- readIORef device
-	vertShaderCode <- readFile "shaders/vert.spv"
-	fragShaderCode <- readFile "shaders/frag.spv"
-	vertShaderModule <- createShaderModule vertShaderCode
-	fragShaderModule <- createShaderModule fragShaderCode
-	cnm <- newCString "main"
+createGraphicsPipeline = ($ pure) $ runContT do
+	dvc <- lift $ readIORef device
+	vertShaderCode <- lift $ readFile "shaders/vert.spv"
+	fragShaderCode <- lift $ readFile "shaders/frag.spv"
+	vertShaderModule <- lift $ createShaderModule vertShaderCode
+	fragShaderModule <- lift $ createShaderModule fragShaderCode
+	cnm <- lift $ newCString "main"
+	sce <- lift $ readIORef swapChainExtent
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
 			Vk.Ppl.ShaderStage.createInfoSType = (),
 			Vk.Ppl.ShaderStage.createInfoPNext = NullPtr,
@@ -639,9 +641,28 @@ createGraphicsPipeline = do
 			Vk.Ppl.IASt.createInfoFlags = 0,
 			Vk.Ppl.IASt.createInfoTopology = Vk.PrmTplgy.triangleList,
 			Vk.Ppl.IASt.createInfoPrimitiveRestartEnable = vkFalse }
+		Vk.Viewport_ fViewport = Vk.Viewport {
+			Vk.viewportX = 0, Vk.viewportY = 0,
+			Vk.viewportWidth = fromIntegral $ Vk.extent2dWidth sce,
+			Vk.viewportHeight = fromIntegral $ Vk.extent2dHeight sce,
+			Vk.viewportMinDepth = 0, Vk.viewportMaxDepth = 1 }
+		Vk.Rect2d_ fScissor = Vk.Rect2d {
+			Vk.rect2dOffset = Vk.Offset2d {
+				Vk.offset2dX = 0, Vk.offset2dY = 0 },
+			Vk.rect2dExtent = sce }
+	pViewport <- ContT $ withForeignPtr fViewport
+	pScissor <- ContT $ withForeignPtr fScissor
+	let	viewportState = Vk.Ppl.VPSt.CreateInfo {
+			Vk.Ppl.VPSt.createInfoSType = (),
+			Vk.Ppl.VPSt.createInfoPNext = NullPtr,
+			Vk.Ppl.VPSt.createInfoFlags = 0,
+			Vk.Ppl.VPSt.createInfoViewportCount = 1,
+			Vk.Ppl.VPSt.createInfoPViewports = pViewport,
+			Vk.Ppl.VPSt.createInfoScissorCount = 1,
+			Vk.Ppl.VPSt.createInfoPScissors = pScissor }
 
-	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
-	Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
+	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
+		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
 
 createShaderModule :: (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
 createShaderModule (p, n) = ($ pure) $ runContT do

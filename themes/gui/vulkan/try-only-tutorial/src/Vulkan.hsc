@@ -12,6 +12,7 @@ import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 
@@ -74,3 +75,36 @@ sharingModeExclusive :: #{type VkSharingMode}
 sharingModeExclusive = #{const VK_SHARING_MODE_EXCLUSIVE}
 
 type Format = #{type VkFormat}
+
+struct "Viewport" #{size VkViewport} #{alignment VkViewport} [
+	("x", ''#{type float}, [| #{peek VkViewport, x} |],
+		[| #{poke VkViewport, x} |]),
+	("y", ''#{type float}, [| #{peek VkViewport, y} |],
+		[| #{poke VkViewport, y} |]),
+	("width", ''#{type float}, [| #{peek VkViewport, width} |],
+		[| #{poke VkViewport, width} |]),
+	("height", ''#{type float}, [| #{peek VkViewport, height} |],
+		[| #{poke VkViewport, height} |]),
+	("minDepth", ''#{type float}, [| #{peek VkViewport, minDepth} |],
+		[| #{poke VkViewport, minDepth} |]),
+	("maxDepth", ''#{type float}, [| #{peek VkViewport, maxDepth} |],
+		[| #{poke VkViewport, maxDepth} |]) ]
+	[''Show, ''Storable]
+
+type PtrViewport = Ptr Viewport
+
+struct "Offset2d" #{size VkOffset2D} #{alignment VkOffset2D} [
+	("x", ''#{type int32_t}, [| #{peek VkOffset2D, x} |],
+		[| #{poke VkOffset2D, y} |]),
+	("y", ''#{type int32_t}, [| #{peek VkOffset2D, y} |],
+		[| #{poke VkOffset2D, y} |]) ]
+	[''Show, ''Storable]
+
+struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
+	("offset", ''Offset2d, [| #{peek VkRect2D, offset} |],
+		[| #{poke VkRect2D, offset} |]),
+	("extent", ''Extent2d, [| #{peek VkRect2D, extent} |],
+		[| #{poke VkRect2D, extent} |]) ]
+	[''Show, ''Storable]
+
+type PtrRect2d = Ptr Rect2d

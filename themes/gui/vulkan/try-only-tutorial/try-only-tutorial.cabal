@@ -48,6 +48,7 @@ library
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.VertexInputState
+      Vulkan.Pipeline.ViewportState
       Vulkan.PrimitiveTopology
       Vulkan.Queue.Family
       Vulkan.Shader.Module
