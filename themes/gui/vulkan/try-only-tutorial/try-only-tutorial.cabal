@@ -48,6 +48,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.PhysicalDevice
       Vulkan.Pipeline.InputAssemblyState
+      Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.VertexInputState
@@ -55,6 +56,7 @@ library
       Vulkan.Polygon
       Vulkan.PrimitiveTopology
       Vulkan.Queue.Family
+      Vulkan.Sample
       Vulkan.Shader.Module
       Vulkan.Specialization
       Vulkan.VertexInput

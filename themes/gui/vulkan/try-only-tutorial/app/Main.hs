@@ -63,6 +63,8 @@ import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.Polygon as Vk.Polygon
 import qualified Vulkan.Cull as Vk.Cull
 import qualified Vulkan.FrontFace as Vk.FrontFace
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MSSt
+import qualified Vulkan.Sample as Vk.Sample
 
 main :: IO ()
 main = run
@@ -681,6 +683,17 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0,
 			Vk.Ppl.RstSt.createInfoLineWidth = 1 }
+		multisampling = Vk.Ppl.MSSt.CreateInfo {
+			Vk.Ppl.MSSt.createInfoSType = (),
+			Vk.Ppl.MSSt.createInfoPNext = NullPtr,
+			Vk.Ppl.MSSt.createInfoFlags = 0,
+			Vk.Ppl.MSSt.createInfoRasterizationSamples =
+				Vk.Sample.count1Bit,
+			Vk.Ppl.MSSt.createInfoSampleShadingEnable = vkFalse,
+			Vk.Ppl.MSSt.createInfoMinSampleShading = 1,
+			Vk.Ppl.MSSt.createInfoPSampleMask = NullPtr,
+			Vk.Ppl.MSSt.createInfoAlphaToCoverageEnable = vkFalse,
+			Vk.Ppl.MSSt.createInfoAlphaToOneEnable = vkFalse }
 
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
