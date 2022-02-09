@@ -29,6 +29,8 @@ library
       Tools
       Vulkan
       Vulkan.Base
+      Vulkan.Blend
+      Vulkan.ColorComponent
       Vulkan.Component
       Vulkan.Cull
       Vulkan.Device
@@ -46,7 +48,10 @@ library
       Vulkan.Khr.Surface
       Vulkan.Khr.Surface.PhysicalDevice
       Vulkan.Khr.Swapchain
+      Vulkan.Logic
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline.ColorBlendAttachmentState
+      Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.RasterizationState

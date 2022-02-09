@@ -65,6 +65,11 @@ import qualified Vulkan.Cull as Vk.Cull
 import qualified Vulkan.FrontFace as Vk.FrontFace
 import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MSSt
 import qualified Vulkan.Sample as Vk.Sample
+import qualified Vulkan.Pipeline.ColorBlendAttachmentState as Vk.Ppl.CBASt
+import qualified Vulkan.Blend as Vk.Blend
+import qualified Vulkan.ColorComponent as Vk.CC
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CBSt
+import qualified Vulkan.Logic as Vk.Logic
 
 main :: IO ()
 main = run
@@ -694,6 +699,32 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.MSSt.createInfoPSampleMask = NullPtr,
 			Vk.Ppl.MSSt.createInfoAlphaToCoverageEnable = vkFalse,
 			Vk.Ppl.MSSt.createInfoAlphaToOneEnable = vkFalse }
+		Vk.Ppl.CBASt.State_ fColorBlendAttachment = Vk.Ppl.CBASt.State {
+			Vk.Ppl.CBASt.stateBlendEnable = vkFalse,
+			Vk.Ppl.CBASt.stateSrcColorBlendFactor =
+				Vk.Blend.factorOne,
+			Vk.Ppl.CBASt.stateDstColorBlendFactor =
+				Vk.Blend.factorZero,
+			Vk.Ppl.CBASt.stateColorBlendOp = Vk.Blend.opAdd,
+			Vk.Ppl.CBASt.stateSrcAlphaBlendFactor =
+				Vk.Blend.factorOne,
+			Vk.Ppl.CBASt.stateDstAlphaBlendFactor =
+				Vk.Blend.factorZero,
+			Vk.Ppl.CBASt.stateAlphaBlendOp = Vk.Blend.opAdd,
+			Vk.Ppl.CBASt.stateColorWriteMask =
+				Vk.CC.rBit .|. Vk.CC.gBit .|. Vk.CC.bBit .|.
+				Vk.CC.aBit }
+	pColorBlendAttachment <- ContT $ withForeignPtr fColorBlendAttachment
+	let	colorBlending = Vk.Ppl.CBSt.CreateInfo {
+			Vk.Ppl.CBSt.createInfoSType = (),
+			Vk.Ppl.CBSt.createInfoPNext = NullPtr,
+			Vk.Ppl.CBSt.createInfoFlags = 0,
+			Vk.Ppl.CBSt.createInfoLogicOpEnable = vkFalse,
+			Vk.Ppl.CBSt.createInfoLogicOp = Vk.Logic.opCopy,
+			Vk.Ppl.CBSt.createInfoAttachmentCount = 1,
+			Vk.Ppl.CBSt.createInfoPAttachments =
+				pColorBlendAttachment,
+			Vk.Ppl.CBSt.createInfoBlendConstants = [0, 0, 0, 0] }
 
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
