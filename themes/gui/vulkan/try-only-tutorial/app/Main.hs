@@ -70,6 +70,7 @@ import qualified Vulkan.Blend as Vk.Blend
 import qualified Vulkan.ColorComponent as Vk.CC
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CBSt
 import qualified Vulkan.Logic as Vk.Logic
+import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
 main :: IO ()
 main = run
@@ -109,6 +110,9 @@ swapChainExtent = unsafePerformIO $ newIORef $ Vk.Extent2d 0 0
 
 swapChainImageViews :: IORef [Vk.ImageView.ImageView]
 swapChainImageViews = unsafePerformIO $ newIORef []
+
+pipelineLayout :: IORef Vk.Ppl.Lyt.Layout
+pipelineLayout = unsafePerformIO $ newIORef NullPtr
 
 run :: IO ()
 run = do
@@ -725,8 +729,23 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.CBSt.createInfoPAttachments =
 				pColorBlendAttachment,
 			Vk.Ppl.CBSt.createInfoBlendConstants = [0, 0, 0, 0] }
-
-	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
+		Vk.Ppl.Lyt.CreateInfo_ fPipelineLayoutInfo =
+			Vk.Ppl.Lyt.CreateInfo {
+				Vk.Ppl.Lyt.createInfoSType = (),
+				Vk.Ppl.Lyt.createInfoPNext = NullPtr,
+				Vk.Ppl.Lyt.createInfoFlags = 0,
+				Vk.Ppl.Lyt.createInfoSetLayoutCount = 0,
+				Vk.Ppl.Lyt.createInfoPSetLayouts = NullPtr,
+				Vk.Ppl.Lyt.createInfoPushConstantRangeCount = 0,
+				Vk.Ppl.Lyt.createInfoPPushConstantRanges =
+					NullPtr }
+	pPipelineLayoutInfo <- ContT $ withForeignPtr fPipelineLayoutInfo
+	pPipelineLayout <- ContT alloca
+	lift do r <- Vk.Ppl.Lyt.create
+			dvc pPipelineLayoutInfo NullPtr pPipelineLayout
+		when (r /= success) $ error "failed to creaet pipeline layout!"
+		writeIORef pipelineLayout =<< peek pPipelineLayout
+		Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
 
 createShaderModule :: (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
@@ -766,6 +785,8 @@ mainLoop win = do
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	dvc <- readIORef device
+	pl <- readIORef pipelineLayout
+	Vk.Ppl.Lyt.destroy dvc pl NullPtr
 	ivs <- readIORef swapChainImageViews
 	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain

@@ -33,6 +33,7 @@ library
       Vulkan.ColorComponent
       Vulkan.Component
       Vulkan.Cull
+      Vulkan.Descriptor.SetLayout
       Vulkan.Device
       Vulkan.Device.Queue
       Vulkan.Enumerate
@@ -53,6 +54,7 @@ library
       Vulkan.Pipeline.ColorBlendAttachmentState
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.InputAssemblyState
+      Vulkan.Pipeline.Layout
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.ShaderStage
@@ -60,6 +62,7 @@ library
       Vulkan.Pipeline.ViewportState
       Vulkan.Polygon
       Vulkan.PrimitiveTopology
+      Vulkan.PushConstant
       Vulkan.Queue.Family
       Vulkan.Sample
       Vulkan.Shader.Module
