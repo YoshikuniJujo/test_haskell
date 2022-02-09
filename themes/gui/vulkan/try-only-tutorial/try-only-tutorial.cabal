@@ -30,11 +30,13 @@ library
       Vulkan
       Vulkan.Base
       Vulkan.Component
+      Vulkan.Cull
       Vulkan.Device
       Vulkan.Device.Queue
       Vulkan.Enumerate
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Format
+      Vulkan.FrontFace
       Vulkan.Image
       Vulkan.ImageView
       Vulkan.Instance
@@ -46,9 +48,11 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.PhysicalDevice
       Vulkan.Pipeline.InputAssemblyState
+      Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.VertexInputState
       Vulkan.Pipeline.ViewportState
+      Vulkan.Polygon
       Vulkan.PrimitiveTopology
       Vulkan.Queue.Family
       Vulkan.Shader.Module
