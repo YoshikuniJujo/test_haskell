@@ -73,6 +73,8 @@ import qualified Vulkan.Logic as Vk.Logic
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
 import qualified Vulkan.Attachment as Vk.Attachment
+import qualified Vulkan.Subpass as Vk.Subpass
+import qualified Vulkan.Pipeline as Vk.Ppl
 
 main :: IO ()
 main = run
@@ -612,8 +614,8 @@ createImageView1 img = ($ pure) $ runContT do
 		peek pView
 
 createRenderPass :: IO ()
-createRenderPass = do
-	scif <- readIORef swapChainImageFormat
+createRenderPass = ($ pure) $ runContT do
+	scif <- lift $ readIORef swapChainImageFormat
 	let	colorAttachment = Vk.Attachment.Description {
 			Vk.Attachment.descriptionFlags = 0,
 			Vk.Attachment.descriptionFormat = scif,
@@ -630,10 +632,25 @@ createRenderPass = do
 				Vk.Img.layoutUndefined,
 			Vk.Attachment.descriptionFinalLayout =
 				Vk.Img.layoutPresentSrcKhr }
-		colorAttachmentRef = Vk.Attachment.Reference {
-			Vk.Attachment.referenceAttachment = 0,
-			Vk.Attachment.referenceLayout =
-				Vk.Img.layoutColorAttachmentOptimal }
+		Vk.Attachment.Reference_ fColorAttachmentRef =
+			Vk.Attachment.Reference {
+				Vk.Attachment.referenceAttachment = 0,
+				Vk.Attachment.referenceLayout =
+					Vk.Img.layoutColorAttachmentOptimal }
+	pColorAttachmentRef <- ContT $ withForeignPtr fColorAttachmentRef
+	let	subpass = Vk.Subpass.Description {
+			Vk.Subpass.descriptionFlags = 0,
+			Vk.Subpass.descriptionPipelineBindPoint =
+				Vk.Ppl.bindPointGraphics,
+			Vk.Subpass.descriptionInputAttachmentCount = 0,
+			Vk.Subpass.descriptionPInputAttachments = NullPtr,
+			Vk.Subpass.descriptionColorAttachmentCount = 1,
+			Vk.Subpass.descriptionPColorAttachments =
+				pColorAttachmentRef,
+			Vk.Subpass.descriptionPResolveAttachments = NullPtr,
+			Vk.Subpass.descriptionPDepthStencilAttachment = NullPtr,
+			Vk.Subpass.descriptionPreserveAttachmentCount = 0,
+			Vk.Subpass.descriptionPPreserveAttachments = NullPtr }
 	pure ()
 
 createGraphicsPipeline :: IO ()

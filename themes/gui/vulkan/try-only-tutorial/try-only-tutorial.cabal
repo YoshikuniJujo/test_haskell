@@ -52,6 +52,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Logic
       Vulkan.PhysicalDevice
+      Vulkan.Pipeline
       Vulkan.Pipeline.ColorBlendAttachmentState
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.InputAssemblyState

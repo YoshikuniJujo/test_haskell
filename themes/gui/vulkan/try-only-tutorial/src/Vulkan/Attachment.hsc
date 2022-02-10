@@ -5,6 +5,7 @@
 
 module Vulkan.Attachment where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -59,3 +60,5 @@ struct "Reference" #{size VkAttachmentReference}
 		[| #{peek VkAttachmentReference, layout} |],
 		[| #{poke VkAttachmentReference, layout} |]) ]
 	[''Show, ''Storable]
+
+type PtrReference = Ptr Reference
