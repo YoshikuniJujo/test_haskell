@@ -68,6 +68,7 @@ library
       Vulkan.Sample
       Vulkan.Shader.Module
       Vulkan.Specialization
+      Vulkan.Subpass
       Vulkan.VertexInput
   other-modules:
       Paths_try_only_tutorial

@@ -630,6 +630,10 @@ createRenderPass = do
 				Vk.Img.layoutUndefined,
 			Vk.Attachment.descriptionFinalLayout =
 				Vk.Img.layoutPresentSrcKhr }
+		colorAttachmentRef = Vk.Attachment.Reference {
+			Vk.Attachment.referenceAttachment = 0,
+			Vk.Attachment.referenceLayout =
+				Vk.Img.layoutColorAttachmentOptimal }
 	pure ()
 
 createGraphicsPipeline :: IO ()
