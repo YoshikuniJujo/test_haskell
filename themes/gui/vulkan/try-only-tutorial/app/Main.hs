@@ -72,6 +72,8 @@ import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CBSt
 import qualified Vulkan.Logic as Vk.Logic
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
+import qualified Vulkan.Attachment as Vk.Attachment
+
 main :: IO ()
 main = run
 
@@ -141,6 +143,7 @@ initVulkan win = do
 	createLogicalDevice
 	createSwapChain
 	createImageViews
+	createRenderPass
 	createGraphicsPipeline
 
 createInstance :: IO ()
@@ -607,6 +610,27 @@ createImageView1 img = ($ pure) $ runContT do
 	lift do	r <- Vk.ImageView.create dvc pCreateInfo NullPtr pView
 		when (r /= success) $ error "failed to create image views!"
 		peek pView
+
+createRenderPass :: IO ()
+createRenderPass = do
+	scif <- readIORef swapChainImageFormat
+	let	colorAttachment = Vk.Attachment.Description {
+			Vk.Attachment.descriptionFlags = 0,
+			Vk.Attachment.descriptionFormat = scif,
+			Vk.Attachment.descriptionSamples = Vk.Sample.count1Bit,
+			Vk.Attachment.descriptionLoadOp =
+				Vk.Attachment.loadOpClear,
+			Vk.Attachment.descriptionStoreOp =
+				Vk.Attachment.storeOpStore,
+			Vk.Attachment.descriptionStencilLoadOp =
+				Vk.Attachment.loadOpDontCare,
+			Vk.Attachment.descriptionStencilStoreOp =
+				Vk.Attachment.storeOpDontCare,
+			Vk.Attachment.descriptionInitialLayout =
+				Vk.Img.layoutUndefined,
+			Vk.Attachment.descriptionFinalLayout =
+				Vk.Img.layoutPresentSrcKhr }
+	pure ()
 
 createGraphicsPipeline :: IO ()
 createGraphicsPipeline = ($ pure) $ runContT do

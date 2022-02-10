@@ -28,6 +28,7 @@ library
       Lib
       Tools
       Vulkan
+      Vulkan.Attachment
       Vulkan.Base
       Vulkan.Blend
       Vulkan.ColorComponent
