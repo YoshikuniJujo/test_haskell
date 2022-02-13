@@ -66,6 +66,7 @@ library
       Vulkan.PrimitiveTopology
       Vulkan.PushConstant
       Vulkan.Queue.Family
+      Vulkan.RenderPass
       Vulkan.Sample
       Vulkan.Shader.Module
       Vulkan.Specialization
