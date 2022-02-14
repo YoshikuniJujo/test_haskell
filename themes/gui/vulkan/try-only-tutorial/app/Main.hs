@@ -808,7 +808,7 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			dvc pPipelineLayoutInfo NullPtr pPipelineLayout
 		when (r /= success) $ error "failed to creaet pipeline layout!"
 		writeIORef pipelineLayout =<< peek pPipelineLayout
-		Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
+	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
 
 createShaderModule :: (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
