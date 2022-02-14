@@ -5,9 +5,15 @@
 
 module Vulkan.RenderPass where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+
+import Vulkan.Base
+
+import qualified Vulkan.Attachment as Attachment
+import qualified Vulkan.Subpass as Subpass
 
 #include <vulkan/vulkan.h>
 
@@ -17,6 +23,32 @@ sType = #{const VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}
 struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		#{alignment VkRenderPassCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
-		[| \p _ -> #{poke VkRenderPassCreateInfo, sType} p sType |])
-	]
+		[| \p _ -> #{poke VkRenderPassCreateInfo, sType} p sType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkRenderPassCreateInfo, pNext} |],
+		[| #{poke VkRenderPassCreateInfo, pNext} |]),
+	("flags", ''#{type VkRenderPassCreateFlags},
+		[| #{peek VkRenderPassCreateInfo, flags} |],
+		[| #{poke VkRenderPassCreateInfo, flags} |]),
+	("attachmentCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassCreateInfo, attachmentCount} |],
+		[| #{poke VkRenderPassCreateInfo, attachmentCount} |]),
+	("pAttachments", ''Attachment.PtrDescription,
+		[| #{peek VkRenderPassCreateInfo, pAttachments} |],
+		[| #{poke VkRenderPassCreateInfo, pAttachments} |]),
+	("subpassCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassCreateInfo, subpassCount} |],
+		[| #{poke VkRenderPassCreateInfo, subpassCount} |]),
+	("pSubpasses", ''Subpass.PtrDescription,
+		[| #{peek VkRenderPassCreateInfo, pSubpasses} |],
+		[| #{poke VkRenderPassCreateInfo, pSubpasses} |]),
+	("dependencyCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassCreateInfo, dependencyCount} |],
+		[| #{poke VkRenderPassCreateInfo, dependencyCount} |]),
+	("pDependencies", ''Subpass.PtrDependency,
+		[| #{peek VkRenderPassCreateInfo, pDependencies} |],
+		[| #{poke VkRenderPassCreateInfo, pDependencies} |]) ]
 	[''Show, ''Storable]
+
+data RenderPassTag
+type RenderPass = Ptr RenderPassTag

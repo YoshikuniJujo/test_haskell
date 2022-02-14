@@ -43,6 +43,8 @@ struct "Description" #{size VkAttachmentDescription}
 		[| #{poke VkAttachmentDescription, finalLayout} |]) ]
 	[''Show, ''Storable]
 
+type PtrDescription = Ptr Description
+
 loadOpClear, loadOpDontCare :: #{type VkAttachmentLoadOp}
 loadOpClear = #{const VK_ATTACHMENT_LOAD_OP_CLEAR}
 loadOpDontCare = #{const VK_ATTACHMENT_LOAD_OP_DONT_CARE}

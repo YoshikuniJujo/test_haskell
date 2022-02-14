@@ -5,6 +5,7 @@
 
 module Vulkan.Subpass where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -48,3 +49,32 @@ struct "Description" #{size VkSubpassDescription}
 		[| #{peek VkSubpassDescription, pPreserveAttachments} |],
 		[| #{poke VkSubpassDescription, pPreserveAttachments} |]) ]
 	[''Show, ''Storable]
+
+type PtrDescription = Ptr Description
+
+struct "Dependency" #{size VkSubpassDependency}
+		#{alignment VkSubpassDependency} [
+	("srcSubpass", ''#{type uint32_t},
+		[| #{peek VkSubpassDependency, srcSubpass} |],
+		[| #{poke VkSubpassDependency, srcSubpass} |]),
+	("dstSubpass", ''#{type uint32_t},
+		[| #{peek VkSubpassDependency, dstSubpass} |],
+		[| #{poke VkSubpassDependency, dstSubpass} |]),
+	("srcStageMask", ''#{type VkPipelineStageFlags},
+		[| #{peek VkSubpassDependency, srcStageMask} |],
+		[| #{poke VkSubpassDependency, srcStageMask} |]),
+	("dstStageMask", ''#{type VkPipelineStageFlags},
+		[| #{peek VkSubpassDependency, dstStageMask} |],
+		[| #{poke VkSubpassDependency, dstStageMask} |]),
+	("srcAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkSubpassDependency, srcAccessMask} |],
+		[| #{poke VkSubpassDependency, srcAccessMask} |]),
+	("dstAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkSubpassDependency, dstAccessMask} |],
+		[| #{poke VkSubpassDependency, dstAccessMask} |]),
+	("dependencyFlags", ''#{type VkDependencyFlags},
+		[| #{peek VkSubpassDependency, dependencyFlags} |],
+		[| #{poke VkSubpassDependency, dependencyFlags} |]) ]
+	[''Show, ''Storable]
+
+type PtrDependency = Ptr Dependency
