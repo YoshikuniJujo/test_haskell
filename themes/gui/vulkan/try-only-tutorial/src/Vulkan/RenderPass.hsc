@@ -9,8 +9,10 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+import Vulkan.Device (Device)
 
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass
@@ -52,3 +54,10 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 
 data RenderPassTag
 type RenderPass = Ptr RenderPassTag
+
+foreign import ccall "vkCreateRenderPass" create ::
+	Device -> Ptr CreateInfo -> Ptr () -> Ptr RenderPass ->
+	IO #{type VkResult}
+
+foreign import ccall "vkDestroyRenderPass" destroy ::
+	Device -> RenderPass -> Ptr () -> IO ()

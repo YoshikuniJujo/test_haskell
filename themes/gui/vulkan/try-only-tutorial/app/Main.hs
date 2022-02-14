@@ -75,7 +75,7 @@ import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Vulkan.Attachment as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Pipeline as Vk.Ppl
-import qualified Vulkan.RenderPass as Vk.RenderPass
+import qualified Vulkan.RenderPass as Vk.RndrPss
 
 main :: IO ()
 main = run
@@ -116,7 +116,7 @@ swapChainExtent = unsafePerformIO $ newIORef $ Vk.Extent2d 0 0
 swapChainImageViews :: IORef [Vk.ImageView.ImageView]
 swapChainImageViews = unsafePerformIO $ newIORef []
 
-renderPass :: IORef Vk.RenderPass.RenderPass
+renderPass :: IORef Vk.RndrPss.RenderPass
 renderPass = unsafePerformIO $ newIORef NullPtr
 
 pipelineLayout :: IORef Vk.Ppl.Lyt.Layout
@@ -654,17 +654,22 @@ createRenderPass = ($ pure) $ runContT do
 			Vk.Subpass.descriptionPreserveAttachmentCount = 0,
 			Vk.Subpass.descriptionPPreserveAttachments = NullPtr }
 	pSubpass <- ContT $ withForeignPtr fSubpass
-	let	renderPassInfo = Vk.RenderPass.CreateInfo {
-			Vk.RenderPass.createInfoSType = (),
-			Vk.RenderPass.createInfoPNext = NullPtr,
-			Vk.RenderPass.createInfoFlags = 0,
-			Vk.RenderPass.createInfoAttachmentCount = 1,
-			Vk.RenderPass.createInfoPAttachments = pColorAttachment,
-			Vk.RenderPass.createInfoSubpassCount = 1,
-			Vk.RenderPass.createInfoPSubpasses = pSubpass,
-			Vk.RenderPass.createInfoDependencyCount = 0,
-			Vk.RenderPass.createInfoPDependencies = NullPtr }
-	pure ()
+	let	Vk.RndrPss.CreateInfo_ fRenderPassInfo = Vk.RndrPss.CreateInfo {
+			Vk.RndrPss.createInfoSType = (),
+			Vk.RndrPss.createInfoPNext = NullPtr,
+			Vk.RndrPss.createInfoFlags = 0,
+			Vk.RndrPss.createInfoAttachmentCount = 1,
+			Vk.RndrPss.createInfoPAttachments = pColorAttachment,
+			Vk.RndrPss.createInfoSubpassCount = 1,
+			Vk.RndrPss.createInfoPSubpasses = pSubpass,
+			Vk.RndrPss.createInfoDependencyCount = 0,
+			Vk.RndrPss.createInfoPDependencies = NullPtr }
+	dvc <- lift $ readIORef device
+	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
+	pRenderPass <- ContT alloca
+	lift do	r <- Vk.RndrPss.create dvc pRenderPassInfo NullPtr pRenderPass
+		when (r /= success) $ error "failed to create render pass!"
+		writeIORef renderPass =<< peek pRenderPass
 
 createGraphicsPipeline :: IO ()
 createGraphicsPipeline = ($ pure) $ runContT do
@@ -845,6 +850,8 @@ cleanup win = do
 	dvc <- readIORef device
 	pl <- readIORef pipelineLayout
 	Vk.Ppl.Lyt.destroy dvc pl NullPtr
+	rp <- readIORef renderPass
+	Vk.RndrPss.destroy dvc rp NullPtr
 	ivs <- readIORef swapChainImageViews
 	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
