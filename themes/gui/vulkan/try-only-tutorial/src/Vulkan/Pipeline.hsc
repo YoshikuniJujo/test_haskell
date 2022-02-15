@@ -5,9 +5,11 @@
 
 module Vulkan.Pipeline where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 
@@ -19,6 +21,10 @@ import qualified Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Vulkan.Pipeline.RasterizationState as RasterizationState
 import qualified Vulkan.Pipeline.MultisampleState as MultisampleState
 import qualified Vulkan.Pipeline.DepthStencilState as DepthStencilState
+import qualified Vulkan.Pipeline.ColorBlendState as ColorBlendState
+import qualified Vulkan.Pipeline.DynamicState as DynamicState
+import qualified Vulkan.Pipeline.Layout as Layout
+import qualified Vulkan.RenderPass as RenderPass
 
 #include <vulkan/vulkan.h>
 
@@ -27,6 +33,9 @@ bindPointGraphics = #{const VK_PIPELINE_BIND_POINT_GRAPHICS}
 
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
+
+data PipelineTag
+type Pipeline = Ptr PipelineTag
 
 struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		#{alignment VkGraphicsPipelineCreateInfo} [
@@ -67,6 +76,26 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		[| #{poke VkGraphicsPipelineCreateInfo, pMultisampleState} |]),
 	("pDepthStencilState", ''DepthStencilState.PtrCreateInfo,
 		[| #{peek VkGraphicsPipelineCreateInfo, pDepthStencilState} |],
-		[| #{poke VkGraphicsPipelineCreateInfo, pDepthStencilState} |])
-	]
+		[| #{poke VkGraphicsPipelineCreateInfo, pDepthStencilState} |]),
+	("pColorBlendState", ''ColorBlendState.PtrCreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pColorBlendState} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, pColorBlendState} |]),
+	("pDynamicState", ''DynamicState.PtrCreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pDynamicState} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, pDynamicState} |]),
+	("layout", ''Layout.Layout,
+		[| #{peek VkGraphicsPipelineCreateInfo, layout} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, layout} |]),
+	("renderPass", ''RenderPass.RenderPass,
+		[| #{peek VkGraphicsPipelineCreateInfo, renderPass} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, renderPass} |]),
+	("subpass", ''#{type uint32_t},
+		[| #{peek VkGraphicsPipelineCreateInfo, subpass} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, subpass} |]),
+	("basePipelineHandle", ''Pipeline,
+		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineHandle} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineHandle} |]),
+	("basePipelineIndex", ''#{type int32_t},
+		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineIndex} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineIndex} |]) ]
 	[''Show, ''Storable]

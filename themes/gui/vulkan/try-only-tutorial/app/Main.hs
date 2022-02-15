@@ -55,20 +55,20 @@ import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 
-import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VISt
-import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IASt
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
-import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VPSt
+import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.Polygon as Vk.Polygon
 import qualified Vulkan.Cull as Vk.Cull
 import qualified Vulkan.FrontFace as Vk.FrontFace
-import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MSSt
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachmentState as Vk.Ppl.CBASt
 import qualified Vulkan.Blend as Vk.Blend
 import qualified Vulkan.ColorComponent as Vk.CC
-import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CBSt
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
 import qualified Vulkan.Logic as Vk.Logic
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
@@ -700,25 +700,25 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.ShaderStage.createInfoPName = cnm,
 			Vk.Ppl.ShaderStage.createInfoPSpecializationInfo =
 				NullPtr }
-		shaderStages = [vertShaderStageInfo, fragShaderStageInfo]
-		vertexInputInfo = Vk.Ppl.VISt.CreateInfo {
-			Vk.Ppl.VISt.createInfoSType = (),
-			Vk.Ppl.VISt.createInfoPNext = NullPtr,
-			Vk.Ppl.VISt.createInfoFlags = 0,
-			Vk.Ppl.VISt.createInfoVertexBindingDescriptionCount =
+		shaderStageList = [vertShaderStageInfo, fragShaderStageInfo]
+		Vk.Ppl.VI.CreateInfo_ fVertexInputInfo = Vk.Ppl.VI.CreateInfo {
+			Vk.Ppl.VI.createInfoSType = (),
+			Vk.Ppl.VI.createInfoPNext = NullPtr,
+			Vk.Ppl.VI.createInfoFlags = 0,
+			Vk.Ppl.VI.createInfoVertexBindingDescriptionCount =
 				0,
-			Vk.Ppl.VISt.createInfoPVertexBindingDescriptions =
+			Vk.Ppl.VI.createInfoPVertexBindingDescriptions =
 				NullPtr,
-			Vk.Ppl.VISt.createInfoVertexAttributeDescriptionCount =
+			Vk.Ppl.VI.createInfoVertexAttributeDescriptionCount =
 				0,
-			Vk.Ppl.VISt.createInfoPVertexAttributeDescriptions =
+			Vk.Ppl.VI.createInfoPVertexAttributeDescriptions =
 				NullPtr }
-		inputAssembly = Vk.Ppl.IASt.CreateInfo {
-			Vk.Ppl.IASt.createInfoSType = (),
-			Vk.Ppl.IASt.createInfoPNext = NullPtr,
-			Vk.Ppl.IASt.createInfoFlags = 0,
-			Vk.Ppl.IASt.createInfoTopology = Vk.PrmTplgy.triangleList,
-			Vk.Ppl.IASt.createInfoPrimitiveRestartEnable = vkFalse }
+		Vk.Ppl.IA.CreateInfo_ fInputAssembly = Vk.Ppl.IA.CreateInfo {
+			Vk.Ppl.IA.createInfoSType = (),
+			Vk.Ppl.IA.createInfoPNext = NullPtr,
+			Vk.Ppl.IA.createInfoFlags = 0,
+			Vk.Ppl.IA.createInfoTopology = Vk.PrmTplgy.triangleList,
+			Vk.Ppl.IA.createInfoPrimitiveRestartEnable = vkFalse }
 		Vk.Viewport_ fViewport = Vk.Viewport {
 			Vk.viewportX = 0, Vk.viewportY = 0,
 			Vk.viewportWidth = fromIntegral $ Vk.extent2dWidth sce,
@@ -730,15 +730,15 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.rect2dExtent = sce }
 	pViewport <- ContT $ withForeignPtr fViewport
 	pScissor <- ContT $ withForeignPtr fScissor
-	let	viewportState = Vk.Ppl.VPSt.CreateInfo {
-			Vk.Ppl.VPSt.createInfoSType = (),
-			Vk.Ppl.VPSt.createInfoPNext = NullPtr,
-			Vk.Ppl.VPSt.createInfoFlags = 0,
-			Vk.Ppl.VPSt.createInfoViewportCount = 1,
-			Vk.Ppl.VPSt.createInfoPViewports = pViewport,
-			Vk.Ppl.VPSt.createInfoScissorCount = 1,
-			Vk.Ppl.VPSt.createInfoPScissors = pScissor }
-		rasterizer = Vk.Ppl.RstSt.CreateInfo {
+	let	Vk.Ppl.VP.CreateInfo_ fViewportState = Vk.Ppl.VP.CreateInfo {
+			Vk.Ppl.VP.createInfoSType = (),
+			Vk.Ppl.VP.createInfoPNext = NullPtr,
+			Vk.Ppl.VP.createInfoFlags = 0,
+			Vk.Ppl.VP.createInfoViewportCount = 1,
+			Vk.Ppl.VP.createInfoPViewports = pViewport,
+			Vk.Ppl.VP.createInfoScissorCount = 1,
+			Vk.Ppl.VP.createInfoPScissors = pScissor }
+		Vk.Ppl.RstSt.CreateInfo_ fRasterizer = Vk.Ppl.RstSt.CreateInfo {
 			Vk.Ppl.RstSt.createInfoSType = (),
 			Vk.Ppl.RstSt.createInfoPNext = NullPtr,
 			Vk.Ppl.RstSt.createInfoFlags = 0,
@@ -755,17 +755,17 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0,
 			Vk.Ppl.RstSt.createInfoLineWidth = 1 }
-		multisampling = Vk.Ppl.MSSt.CreateInfo {
-			Vk.Ppl.MSSt.createInfoSType = (),
-			Vk.Ppl.MSSt.createInfoPNext = NullPtr,
-			Vk.Ppl.MSSt.createInfoFlags = 0,
-			Vk.Ppl.MSSt.createInfoRasterizationSamples =
+		Vk.Ppl.MS.CreateInfo_ fMultisampling = Vk.Ppl.MS.CreateInfo {
+			Vk.Ppl.MS.createInfoSType = (),
+			Vk.Ppl.MS.createInfoPNext = NullPtr,
+			Vk.Ppl.MS.createInfoFlags = 0,
+			Vk.Ppl.MS.createInfoRasterizationSamples =
 				Vk.Sample.count1Bit,
-			Vk.Ppl.MSSt.createInfoSampleShadingEnable = vkFalse,
-			Vk.Ppl.MSSt.createInfoMinSampleShading = 1,
-			Vk.Ppl.MSSt.createInfoPSampleMask = NullPtr,
-			Vk.Ppl.MSSt.createInfoAlphaToCoverageEnable = vkFalse,
-			Vk.Ppl.MSSt.createInfoAlphaToOneEnable = vkFalse }
+			Vk.Ppl.MS.createInfoSampleShadingEnable = vkFalse,
+			Vk.Ppl.MS.createInfoMinSampleShading = 1,
+			Vk.Ppl.MS.createInfoPSampleMask = NullPtr,
+			Vk.Ppl.MS.createInfoAlphaToCoverageEnable = vkFalse,
+			Vk.Ppl.MS.createInfoAlphaToOneEnable = vkFalse }
 		Vk.Ppl.CBASt.State_ fColorBlendAttachment = Vk.Ppl.CBASt.State {
 			Vk.Ppl.CBASt.stateBlendEnable = vkFalse,
 			Vk.Ppl.CBASt.stateSrcColorBlendFactor =
@@ -782,16 +782,16 @@ createGraphicsPipeline = ($ pure) $ runContT do
 				Vk.CC.rBit .|. Vk.CC.gBit .|. Vk.CC.bBit .|.
 				Vk.CC.aBit }
 	pColorBlendAttachment <- ContT $ withForeignPtr fColorBlendAttachment
-	let	colorBlending = Vk.Ppl.CBSt.CreateInfo {
-			Vk.Ppl.CBSt.createInfoSType = (),
-			Vk.Ppl.CBSt.createInfoPNext = NullPtr,
-			Vk.Ppl.CBSt.createInfoFlags = 0,
-			Vk.Ppl.CBSt.createInfoLogicOpEnable = vkFalse,
-			Vk.Ppl.CBSt.createInfoLogicOp = Vk.Logic.opCopy,
-			Vk.Ppl.CBSt.createInfoAttachmentCount = 1,
-			Vk.Ppl.CBSt.createInfoPAttachments =
+	let	Vk.Ppl.CB.CreateInfo_ fColorBlending = Vk.Ppl.CB.CreateInfo {
+			Vk.Ppl.CB.createInfoSType = (),
+			Vk.Ppl.CB.createInfoPNext = NullPtr,
+			Vk.Ppl.CB.createInfoFlags = 0,
+			Vk.Ppl.CB.createInfoLogicOpEnable = vkFalse,
+			Vk.Ppl.CB.createInfoLogicOp = Vk.Logic.opCopy,
+			Vk.Ppl.CB.createInfoAttachmentCount = 1,
+			Vk.Ppl.CB.createInfoPAttachments =
 				pColorBlendAttachment,
-			Vk.Ppl.CBSt.createInfoBlendConstants = [0, 0, 0, 0] }
+			Vk.Ppl.CB.createInfoBlendConstants = [0, 0, 0, 0] }
 		Vk.Ppl.Lyt.CreateInfo_ fPipelineLayoutInfo =
 			Vk.Ppl.Lyt.CreateInfo {
 				Vk.Ppl.Lyt.createInfoSType = (),
@@ -808,6 +808,36 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			dvc pPipelineLayoutInfo NullPtr pPipelineLayout
 		when (r /= success) $ error "failed to creaet pipeline layout!"
 		writeIORef pipelineLayout =<< peek pPipelineLayout
+	shaderStages <- ContT $ allocaArray 2
+	lift $ pokeArray shaderStages shaderStageList
+	pVertexInputInfo <- ContT $ withForeignPtr fVertexInputInfo
+	pInputAssembly <- ContT $ withForeignPtr fInputAssembly
+	pViewportState <- ContT $ withForeignPtr fViewportState
+	pRasterizer <- ContT $ withForeignPtr fRasterizer
+	pMultisampling <- ContT $ withForeignPtr fMultisampling
+	pColorBlending <- ContT $ withForeignPtr fColorBlending
+	pplLyt <- lift $ readIORef pipelineLayout
+	rp <- lift $ readIORef renderPass
+	let	pipelineInfo = Vk.Ppl.CreateInfo {
+			Vk.Ppl.createInfoSType = (),
+			Vk.Ppl.createInfoPNext = NullPtr,
+			Vk.Ppl.createInfoFlags = 0,
+			Vk.Ppl.createInfoStageCount = 2,
+			Vk.Ppl.createInfoPStages = shaderStages,
+			Vk.Ppl.createInfoPVertexInputState = pVertexInputInfo,
+			Vk.Ppl.createInfoPInputAssemblyState = pInputAssembly,
+			Vk.Ppl.createInfoPTessellationState = NullPtr,
+			Vk.Ppl.createInfoPViewportState = pViewportState,
+			Vk.Ppl.createInfoPRasterizationState = pRasterizer,
+			Vk.Ppl.createInfoPMultisampleState = pMultisampling,
+			Vk.Ppl.createInfoPDepthStencilState = NullPtr,
+			Vk.Ppl.createInfoPColorBlendState = pColorBlending,
+			Vk.Ppl.createInfoPDynamicState = NullPtr,
+			Vk.Ppl.createInfoLayout = pplLyt,
+			Vk.Ppl.createInfoRenderPass = rp,
+			Vk.Ppl.createInfoSubpass = 0,
+			Vk.Ppl.createInfoBasePipelineHandle = NullHandle,
+			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
 

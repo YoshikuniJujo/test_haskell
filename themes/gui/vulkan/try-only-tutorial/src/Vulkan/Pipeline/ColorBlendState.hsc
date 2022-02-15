@@ -57,3 +57,5 @@ struct "CreateInfo" #{size VkPipelineColorBlendStateCreateInfo}
 		[| \p bcs -> pokeArray (#{ptr VkPipelineColorBlendStateCreateInfo,
 			blendConstants} p) $ take 4 bcs |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

@@ -56,6 +56,7 @@ library
       Vulkan.Pipeline.ColorBlendAttachmentState
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.DepthStencilState
+      Vulkan.Pipeline.DynamicState
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.Layout
       Vulkan.Pipeline.MultisampleState
