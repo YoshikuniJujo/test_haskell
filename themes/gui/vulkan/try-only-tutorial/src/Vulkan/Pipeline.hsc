@@ -12,6 +12,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
+import Vulkan.Device (Device)
 
 import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
@@ -99,3 +100,10 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineIndex} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineIndex} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkCreateGraphicsPipelines" create ::
+	Device -> Ptr () -> #{type uint32_t} -> Ptr CreateInfo -> Ptr () ->
+	Ptr Pipeline -> IO #{type VkResult}
+
+foreign import ccall "vkDestroyPipeline" destroy ::
+	Device -> Pipeline -> Ptr () -> IO ()

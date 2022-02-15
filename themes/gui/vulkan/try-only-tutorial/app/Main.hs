@@ -122,6 +122,9 @@ renderPass = unsafePerformIO $ newIORef NullPtr
 pipelineLayout :: IORef Vk.Ppl.Lyt.Layout
 pipelineLayout = unsafePerformIO $ newIORef NullPtr
 
+graphicsPipeline :: IORef Vk.Ppl.Pipeline
+graphicsPipeline = unsafePerformIO $ newIORef NullPtr
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -818,7 +821,7 @@ createGraphicsPipeline = ($ pure) $ runContT do
 	pColorBlending <- ContT $ withForeignPtr fColorBlending
 	pplLyt <- lift $ readIORef pipelineLayout
 	rp <- lift $ readIORef renderPass
-	let	pipelineInfo = Vk.Ppl.CreateInfo {
+	let	Vk.Ppl.CreateInfo_ fPipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoSType = (),
 			Vk.Ppl.createInfoPNext = NullPtr,
 			Vk.Ppl.createInfoFlags = 0,
@@ -838,7 +841,13 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.createInfoSubpass = 0,
 			Vk.Ppl.createInfoBasePipelineHandle = NullHandle,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
-	lift do	Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
+	pPipelineInfo <- ContT $ withForeignPtr fPipelineInfo
+	pGraphicsPipeline <- ContT alloca
+	lift do	r <- Vk.Ppl.create
+			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
+		when (r /= success) $ error "failed to create graphics pipeline!"
+		writeIORef graphicsPipeline =<< peek pGraphicsPipeline
+		Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
 
 createShaderModule :: (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
@@ -878,6 +887,8 @@ mainLoop win = do
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	dvc <- readIORef device
+	gppl <- readIORef graphicsPipeline
+	Vk.Ppl.destroy dvc gppl NullPtr
 	pl <- readIORef pipelineLayout
 	Vk.Ppl.Lyt.destroy dvc pl NullPtr
 	rp <- readIORef renderPass
