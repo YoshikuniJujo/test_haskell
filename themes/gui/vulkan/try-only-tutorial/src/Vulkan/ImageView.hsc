@@ -21,6 +21,7 @@ import qualified Vulkan.Component as Component
 
 data ImageViewTag
 type ImageView = Ptr ImageViewTag
+type PtrImageView = Ptr ImageView
 
 strType :: #{type VkStructureType}
 strType = #{const VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO}

@@ -40,6 +40,7 @@ library
       Vulkan.Enumerate
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Format
+      Vulkan.Framebuffer
       Vulkan.FrontFace
       Vulkan.Image
       Vulkan.ImageView

@@ -77,6 +77,8 @@ import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 
+import qualified Vulkan.Framebuffer as Vk.Framebuffer
+
 main :: IO ()
 main = run
 
@@ -125,6 +127,9 @@ pipelineLayout = unsafePerformIO $ newIORef NullPtr
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 
+swapChainFramebuffers :: IORef [Vk.Framebuffer.Framebuffer]
+swapChainFramebuffers = unsafePerformIO $ newIORef []
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -154,6 +159,7 @@ initVulkan win = do
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
+	createFramebuffers
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -877,6 +883,27 @@ readFile fp = do
 	hSeek h AbsoluteSeek 0
 	print =<< hGetBuf h pbuff (fromIntegral fileSize)
 	pure (pbuff, fileSize)
+
+createFramebuffers :: IO ()
+createFramebuffers = pure ()
+
+createFramebuffer1 :: Vk.ImageView.ImageView -> IO Vk.Framebuffer.Framebuffer
+createFramebuffer1 attachment = ($ pure) $ runContT do
+	rndrPss <- lift $ readIORef renderPass
+	attachments <- ContT $ allocaArray 1
+	lift $ pokeArray attachments [attachment]
+	sce <- lift $ readIORef swapChainExtent
+	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
+			Vk.Framebuffer.createInfoSType = (),
+			Vk.Framebuffer.createInfoPNext = NullPtr,
+			Vk.Framebuffer.createInfoFlags = 0,
+			Vk.Framebuffer.createInfoRenderPass = rndrPss,
+			Vk.Framebuffer.createInfoAttachmentCount = 1,
+			Vk.Framebuffer.createInfoPAttachments = attachments,
+			Vk.Framebuffer.createInfoWidth = Vk.extent2dWidth sce,
+			Vk.Framebuffer.createInfoHeight = Vk.extent2dHeight sce,
+			Vk.Framebuffer.createInfoLayers = 1 }
+	undefined
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
