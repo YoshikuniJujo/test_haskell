@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.ViewportState where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -41,3 +42,5 @@ struct "CreateInfo" #{size VkPipelineViewportStateCreateInfo}
 		[| #{peek VkPipelineViewportStateCreateInfo, pScissors} |],
 		[| #{poke VkPipelineViewportStateCreateInfo, pScissors} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

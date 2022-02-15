@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.RasterizationState where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -74,3 +75,5 @@ struct "CreateInfo" #{size VkPipelineRasterizationStateCreateInfo}
 		[| #{poke VkPipelineRasterizationStateCreateInfo, lineWidth} |])
 	]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

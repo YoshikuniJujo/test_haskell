@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.InputAssemblyState where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -36,3 +37,5 @@ struct "CreateInfo" #{size VkPipelineInputAssemblyStateCreateInfo}
 		[| #{poke VkPipelineInputAssemblyStateCreateInfo,
 			primitiveRestartEnable} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

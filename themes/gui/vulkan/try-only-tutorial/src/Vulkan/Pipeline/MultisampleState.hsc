@@ -60,3 +60,5 @@ struct "CreateInfo" #{size VkPipelineMultisampleStateCreateInfo}
 		[| #{poke VkPipelineMultisampleStateCreateInfo,
 			alphaToOneEnable} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo
