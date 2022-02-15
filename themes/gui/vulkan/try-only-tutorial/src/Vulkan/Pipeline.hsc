@@ -11,6 +11,9 @@ import Data.Word
 
 import Vulkan.Base
 
+import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
+import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
+
 #include <vulkan/vulkan.h>
 
 bindPointGraphics :: #{type VkPipelineBindPoint}
@@ -32,6 +35,12 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		[| #{poke VkGraphicsPipelineCreateInfo, flags} |]),
 	("stageCount", ''#{type uint32_t},
 		[| #{peek VkGraphicsPipelineCreateInfo, stageCount} |],
-		[| #{poke VkGraphicsPipelineCreateInfo, stageCount} |])
+		[| #{poke VkGraphicsPipelineCreateInfo, stageCount} |]),
+	("pStages", ''ShaderStage.PtrCreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pStages} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, pStages} |]),
+	("pVertexInputState", ''VertexInputState.PtrCreateInfo,
+		[| #{peek VkGraphicsPipelineCreateInfo, pVertexInputState} |],
+		[| #{poke VkGraphicsPipelineCreateInfo, pVertexInputState} |])
 	]
 	[''Show, ''Storable]

@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.VertexInputState where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct	
 import Data.Word
@@ -50,3 +51,5 @@ struct "CreateInfo" #{size VkPipelineVertexInputStateCreateInfo}
 		[| #{poke VkPipelineVertexInputStateCreateInfo,
 			pVertexAttributeDescriptions} |]) ]
 	[''Show, ''Storable]
+
+type PtrCreateInfo = Ptr CreateInfo

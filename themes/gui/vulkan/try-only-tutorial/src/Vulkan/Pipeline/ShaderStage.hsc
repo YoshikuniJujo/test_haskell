@@ -5,6 +5,7 @@
 
 module Vulkan.Pipeline.ShaderStage where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
@@ -50,3 +51,5 @@ struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
 vertexBit, fragmentBit :: #{type VkShaderStageFlagBits}
 vertexBit = #{const VK_SHADER_STAGE_VERTEX_BIT}
 fragmentBit = #{const VK_SHADER_STAGE_FRAGMENT_BIT}
+
+type PtrCreateInfo = Ptr CreateInfo
