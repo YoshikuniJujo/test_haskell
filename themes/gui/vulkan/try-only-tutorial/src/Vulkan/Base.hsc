@@ -23,6 +23,8 @@ type PtrCString = Ptr CString
 success :: #{type VkResult}
 success = #{const VK_SUCCESS}
 
+type PtrResult = Ptr #{type VkResult}
+
 vkFalse, vkTrue :: #{type VkBool32}
 vkFalse = #{const VK_FALSE}
 vkTrue = #{const VK_TRUE}

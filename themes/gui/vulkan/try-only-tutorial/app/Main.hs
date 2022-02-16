@@ -1088,8 +1088,22 @@ drawFrame = ($ pure) $ runContT do
 	pSubmitInfo <- ContT $ withForeignPtr fSubmitInfo
 	lift do	r <- Vk.queueSubmit gq 1 pSubmitInfo NullHandle
 		when (r /= success) $ error "failed to submit draw command buffer!"
+	pSwapchains <- ContT $ allocaArray 1
+	lift $ pokeArray pSwapchains . (: []) =<< readIORef swapChain
+	let	Vk.Khr.PresentInfo_ fPresentInfo = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoSType = (),
+			Vk.Khr.presentInfoPNext = NullPtr,
+			Vk.Khr.presentInfoWaitSemaphoreCount = 1,
+			Vk.Khr.presentInfoPWaitSemaphores = pSignalSemaphores,
+			Vk.Khr.presentInfoSwapchainCount = 1,
+			Vk.Khr.presentInfoPSwapchains = pSwapchains,
+			Vk.Khr.presentInfoPImageIndices = pImageIndex,
+			Vk.Khr.presentInfoPResults = NullPtr }
+	pq <- lift $ readIORef presentQueue
+	pPresentInfo <- ContT $ withForeignPtr fPresentInfo
+	lift do	r <- Vk.Khr.queuePresent pq pPresentInfo
+		when (r /= success) $ error "bad"
 	lift $ putStrLn "=== END ==="
-	pure ()
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do

@@ -22,6 +22,7 @@ import qualified Vulkan.Image as Image
 
 data SwapchainTag
 type Swapchain = Ptr SwapchainTag
+type PtrSwapchain = Ptr Swapchain
 
 strType :: #{type VkStructureType}
 strType = #{const VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR}
