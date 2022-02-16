@@ -142,8 +142,12 @@ commandBuffers :: IORef [Vk.CommandBuffer]
 commandBuffers = unsafePerformIO $ newIORef []
 
 imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Semaphore
+(imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
+	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
+{-
 imageAvailableSemaphore = unsafePerformIO $ newIORef NullPtr
 renderFinishedSemaphore = unsafePerformIO $ newIORef NullPtr
+-}
 
 run :: IO ()
 run = do
@@ -1043,6 +1047,12 @@ createSemaphores = ($ pure) $ runContT do
 			=<< peek pImageAvailableSemaphore
 		writeIORef renderFinishedSemaphore
 			=<< peek pRenderFinishedSemaphore
+		putStr "imageAvailableSemaphore: "
+		print =<< peek pImageAvailableSemaphore
+		print =<< readIORef imageAvailableSemaphore
+		putStr "renderFinishedSemaphore: "
+		print =<< peek pRenderFinishedSemaphore
+		print =<< readIORef renderFinishedSemaphore
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
@@ -1050,6 +1060,8 @@ mainLoop win = do
 		GlfwB.pollEvents
 		drawFrame
 		not <$> GlfwB.windowShouldClose win
+	r <- Vk.Device.waitIdle =<< readIORef device
+	when (r /= success) $ error "wait idle failure"
 
 drawFrame :: IO ()
 drawFrame = ($ pure) $ runContT do
@@ -1103,6 +1115,8 @@ drawFrame = ($ pure) $ runContT do
 	pPresentInfo <- ContT $ withForeignPtr fPresentInfo
 	lift do	r <- Vk.Khr.queuePresent pq pPresentInfo
 		when (r /= success) $ error "bad"
+		r' <- Vk.queueWaitIdle =<< readIORef presentQueue
+		when (r' /= success) $ error "bad"
 	lift $ putStrLn "=== END ==="
 
 cleanup :: GlfwB.Window -> IO ()
@@ -1110,7 +1124,11 @@ cleanup win = do
 	dvc <- readIORef device
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
+	putStr "renderFinishedSemaphore: "
+	print rfs
 	Vk.Smp.destroy dvc rfs NullPtr
+	putStr "imageAvailableSemaphore: "
+	print ias
 	Vk.Smp.destroy dvc ias NullPtr
 	cp <- readIORef commandPool
 	Vk.CP.destroy dvc cp NullPtr

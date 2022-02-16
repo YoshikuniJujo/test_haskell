@@ -158,3 +158,6 @@ type Queue = Ptr QueueTag
 foreign import ccall "vkQueueSubmit" queueSubmit ::
 	Queue -> #{type uint32_t} -> Ptr SubmitInfo -> Fence ->
 	IO #{type VkResult}
+
+foreign import ccall "vkQueueWaitIdle" queueWaitIdle ::
+	Queue -> IO #{type VkResult}
