@@ -9,8 +9,10 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+import Vulkan.Device (Device)
 
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.ImageView as ImageView
@@ -52,3 +54,10 @@ struct "CreateInfo" #{size VkFramebufferCreateInfo}
 		[| #{peek VkFramebufferCreateInfo, layers} |],
 		[| #{poke VkFramebufferCreateInfo, layers} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkCreateFramebuffer" create ::
+	Device -> Ptr CreateInfo -> Ptr () -> Ptr Framebuffer ->
+	IO #{type VkResult}
+
+foreign import ccall "vkDestroyFramebuffer" destroy ::
+	Device -> Framebuffer -> Ptr () -> IO ()

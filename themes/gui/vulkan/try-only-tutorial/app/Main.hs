@@ -77,7 +77,7 @@ import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 
-import qualified Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Vulkan.Framebuffer as Vk.Fb
 
 main :: IO ()
 main = run
@@ -127,7 +127,7 @@ pipelineLayout = unsafePerformIO $ newIORef NullPtr
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 
-swapChainFramebuffers :: IORef [Vk.Framebuffer.Framebuffer]
+swapChainFramebuffers :: IORef [Vk.Fb.Framebuffer]
 swapChainFramebuffers = unsafePerformIO $ newIORef []
 
 run :: IO ()
@@ -885,25 +885,33 @@ readFile fp = do
 	pure (pbuff, fileSize)
 
 createFramebuffers :: IO ()
-createFramebuffers = pure ()
+createFramebuffers = do
+	scivs <- readIORef swapChainImageViews
+	fbs <- createFramebuffer1 `mapM` scivs
+	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Vk.ImageView.ImageView -> IO Vk.Framebuffer.Framebuffer
+createFramebuffer1 :: Vk.ImageView.ImageView -> IO Vk.Fb.Framebuffer
 createFramebuffer1 attachment = ($ pure) $ runContT do
 	rndrPss <- lift $ readIORef renderPass
 	attachments <- ContT $ allocaArray 1
 	lift $ pokeArray attachments [attachment]
 	sce <- lift $ readIORef swapChainExtent
-	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
-			Vk.Framebuffer.createInfoSType = (),
-			Vk.Framebuffer.createInfoPNext = NullPtr,
-			Vk.Framebuffer.createInfoFlags = 0,
-			Vk.Framebuffer.createInfoRenderPass = rndrPss,
-			Vk.Framebuffer.createInfoAttachmentCount = 1,
-			Vk.Framebuffer.createInfoPAttachments = attachments,
-			Vk.Framebuffer.createInfoWidth = Vk.extent2dWidth sce,
-			Vk.Framebuffer.createInfoHeight = Vk.extent2dHeight sce,
-			Vk.Framebuffer.createInfoLayers = 1 }
-	undefined
+	let	Vk.Fb.CreateInfo_ fFramebufferInfo = Vk.Fb.CreateInfo {
+			Vk.Fb.createInfoSType = (),
+			Vk.Fb.createInfoPNext = NullPtr,
+			Vk.Fb.createInfoFlags = 0,
+			Vk.Fb.createInfoRenderPass = rndrPss,
+			Vk.Fb.createInfoAttachmentCount = 1,
+			Vk.Fb.createInfoPAttachments = attachments,
+			Vk.Fb.createInfoWidth = Vk.extent2dWidth sce,
+			Vk.Fb.createInfoHeight = Vk.extent2dHeight sce,
+			Vk.Fb.createInfoLayers = 1 }
+	dvc <- lift $ readIORef device
+	pFramebufferInfo <- ContT $ withForeignPtr fFramebufferInfo
+	pfb <- ContT alloca
+	lift do	r <- Vk.Fb.create dvc pFramebufferInfo NullPtr pfb
+		when (r /= success) $ error "failed to create framebuffer!"
+		peek pfb
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
@@ -914,6 +922,8 @@ mainLoop win = do
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	dvc <- readIORef device
+	fbs <- readIORef swapChainFramebuffers
+	(\fb -> Vk.Fb.destroy dvc fb NullPtr) `mapM_` fbs
 	gppl <- readIORef graphicsPipeline
 	Vk.Ppl.destroy dvc gppl NullPtr
 	pl <- readIORef pipelineLayout
