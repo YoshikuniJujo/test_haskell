@@ -32,6 +32,7 @@ library
       Vulkan.Base
       Vulkan.Blend
       Vulkan.ColorComponent
+      Vulkan.CommandBuffer
       Vulkan.CommandPool
       Vulkan.Component
       Vulkan.Cull

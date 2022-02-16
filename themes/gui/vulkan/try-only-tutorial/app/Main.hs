@@ -79,6 +79,7 @@ import qualified Vulkan.RenderPass as Vk.RndrPss
 
 import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.CommandPool as Vk.CP
+import qualified Vulkan.CommandBuffer as Vk.CB
 
 main :: IO ()
 main = run
@@ -134,6 +135,9 @@ swapChainFramebuffers = unsafePerformIO $ newIORef []
 commandPool :: IORef Vk.CP.CommandPool
 commandPool = unsafePerformIO $ newIORef NullPtr
 
+commandBuffers :: IORef [Vk.CB.CommandBuffer]
+commandBuffers = unsafePerformIO $ newIORef []
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -165,6 +169,7 @@ initVulkan win = do
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
+	createCommandBuffers
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -938,6 +943,27 @@ createCommandPool = ($ pure) $ runContT do
 		when (r /= success) $ error "failed to create command pool!"
 		writeIORef commandPool =<< peek pCommandPool
 		putStrLn "=== END ==="
+
+createCommandBuffers :: IO ()
+createCommandBuffers = do
+	scfbs <- readIORef swapChainFramebuffers
+	writeIORef commandBuffers =<< createCommandBuffersGen (length scfbs)
+
+createCommandBuffersGen :: Int -> IO [Vk.CB.CommandBuffer]
+createCommandBuffersGen cbc = ($ pure) $ runContT do
+	cp <- lift $ readIORef commandPool
+	let	Vk.CB.AllocateInfo_ fAllocInfo = Vk.CB.AllocateInfo {
+			Vk.CB.allocateInfoSType = (),
+			Vk.CB.allocateInfoPNext = NullPtr,
+			Vk.CB.allocateInfoCommandPool = cp,
+			Vk.CB.allocateInfoLevel = Vk.CB.levelPrimary,
+			Vk.CB.allocateInfoCommandBufferCount = fromIntegral cbc }
+	dvc <- lift $ readIORef device
+	pAllocInfo <- ContT $ withForeignPtr fAllocInfo
+	pCommandBuffers <- ContT $ allocaArray cbc
+	lift do	r <- Vk.CB.allocate dvc pAllocInfo pCommandBuffers
+		when (r /= success) $ error "faied to allocate command buffers!"
+		peekArray cbc pCommandBuffers
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
