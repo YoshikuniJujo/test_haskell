@@ -78,6 +78,7 @@ import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 
 import qualified Vulkan.Framebuffer as Vk.Fb
+import qualified Vulkan.CommandPool as Vk.CP
 
 main :: IO ()
 main = run
@@ -130,6 +131,9 @@ graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 swapChainFramebuffers :: IORef [Vk.Fb.Framebuffer]
 swapChainFramebuffers = unsafePerformIO $ newIORef []
 
+commandPool :: IORef Vk.CP.CommandPool
+commandPool = unsafePerformIO $ newIORef NullPtr
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -160,6 +164,7 @@ initVulkan win = do
 	createRenderPass
 	createGraphicsPipeline
 	createFramebuffers
+	createCommandPool
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -913,6 +918,27 @@ createFramebuffer1 attachment = ($ pure) $ runContT do
 		when (r /= success) $ error "failed to create framebuffer!"
 		peek pfb
 
+createCommandPool :: IO ()
+createCommandPool = ($ pure) $ runContT do
+	lift $ putStrLn "=== CREATE COMMAND POOL ==="
+	queueFamilyIndices <- lift do
+		pd <- readIORef physicalDevice
+		findQueueFamilies pd
+	lift $ print queueFamilyIndices
+	let	Vk.CP.CreateInfo_ fPoolInfo = Vk.CP.CreateInfo {
+			Vk.CP.createInfoSType = (),
+			Vk.CP.createInfoPNext = NullPtr,
+			Vk.CP.createInfoFlags = 0,
+			Vk.CP.createInfoQueueFamilyIndex =
+				fromJust $ graphicsFamily queueFamilyIndices }
+	dvc <- lift $ readIORef device
+	pPoolInfo <- ContT $ withForeignPtr fPoolInfo
+	pCommandPool <- ContT alloca
+	lift do	r <- Vk.CP.create dvc pPoolInfo NullPtr pCommandPool
+		when (r /= success) $ error "failed to create command pool!"
+		writeIORef commandPool =<< peek pCommandPool
+		putStrLn "=== END ==="
+
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
 	fix \loop -> bool (pure ()) loop =<< do
@@ -922,6 +948,8 @@ mainLoop win = do
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	dvc <- readIORef device
+	cp <- readIORef commandPool
+	Vk.CP.destroy dvc cp NullPtr
 	fbs <- readIORef swapChainFramebuffers
 	(\fb -> Vk.Fb.destroy dvc fb NullPtr) `mapM_` fbs
 	gppl <- readIORef graphicsPipeline
