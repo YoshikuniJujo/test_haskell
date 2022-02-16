@@ -18,14 +18,15 @@ import qualified Vulkan.CommandPool as CommandPool
 
 #include <vulkan/vulkan.h>
 
-sType :: #{type VkStructureType}
-sType = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}
+sTypeA, sTypeB :: #{type VkStructureType}
+sTypeA = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}
+sTypeB = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}
 
 struct "AllocateInfo" #{size VkCommandBufferAllocateInfo}
 		#{alignment VkCommandBufferAllocateInfo} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkCommandBufferAllocateInfo, sType}
-			p sType |]),
+			p sTypeA |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkCommandBufferAllocateInfo, pNext} |],
 		[| #{poke VkCommandBufferAllocateInfo, pNext} |]),
@@ -48,3 +49,29 @@ levelPrimary = #{const VK_COMMAND_BUFFER_LEVEL_PRIMARY}
 
 foreign import ccall "vkAllocateCommandBuffers" allocate ::
 	Device -> Ptr AllocateInfo -> Ptr CommandBuffer -> IO #{type VkResult}
+
+struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
+		#{alignment VkCommandBufferInheritanceInfo} [
+	]
+	[''Show, ''Storable]
+
+type PtrInheritanceInfo = Ptr InheritanceInfo
+
+struct "BeginInfo" #{size VkCommandBufferBeginInfo}
+		#{alignment VkCommandBufferBeginInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkCommandBufferBeginInfo, sType}
+			p sTypeB |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkCommandBufferBeginInfo, pNext} |],
+		[| #{poke VkCommandBufferBeginInfo, pNext} |]),
+	("flags", ''#{type VkCommandBufferUsageFlags},
+		[| #{peek VkCommandBufferBeginInfo, flags} |],
+		[| #{poke VkCommandBufferBeginInfo, flags} |]),
+	("pInheritanceInfo", ''PtrInheritanceInfo,
+		[| #{peek VkCommandBufferBeginInfo, pInheritanceInfo} |],
+		[| #{poke VkCommandBufferBeginInfo, pInheritanceInfo} |]) ]
+	[''Show, ''Storable]
+
+foreign import ccall "vkBeginCommandBuffer" begin ::
+	CommandBuffer -> Ptr BeginInfo -> IO #{type VkResult}

@@ -947,7 +947,9 @@ createCommandPool = ($ pure) $ runContT do
 createCommandBuffers :: IO ()
 createCommandBuffers = do
 	scfbs <- readIORef swapChainFramebuffers
-	writeIORef commandBuffers =<< createCommandBuffersGen (length scfbs)
+	cbs <- createCommandBuffersGen (length scfbs)
+	writeIORef commandBuffers cbs
+	beginCommandBuffer1 `mapM_` cbs
 
 createCommandBuffersGen :: Int -> IO [Vk.CB.CommandBuffer]
 createCommandBuffersGen cbc = ($ pure) $ runContT do
@@ -964,6 +966,18 @@ createCommandBuffersGen cbc = ($ pure) $ runContT do
 	lift do	r <- Vk.CB.allocate dvc pAllocInfo pCommandBuffers
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
+
+beginCommandBuffer1 :: Vk.CB.CommandBuffer -> IO ()
+beginCommandBuffer1 cb = ($ pure) $ runContT do
+	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
+			Vk.CB.beginInfoSType = (),
+			Vk.CB.beginInfoPNext = NullPtr,
+			Vk.CB.beginInfoFlags = 0,
+			Vk.CB.beginInfoPInheritanceInfo = NullPtr }
+	pBeginInfo <- ContT $ withForeignPtr fBeginInfo
+	lift do	r <- Vk.CB.begin cb pBeginInfo
+		when (r /= success)
+			$ error "failed to begin recording command buffer!"
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
