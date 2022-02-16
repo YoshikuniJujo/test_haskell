@@ -43,3 +43,6 @@ type PtrUint32T = Ptr #{type uint32_t}
 
 data FramebufferTag
 type Framebuffer = Ptr FramebufferTag
+
+uint64Max :: #{type uint64_t}
+uint64Max = #{const UINT64_MAX}

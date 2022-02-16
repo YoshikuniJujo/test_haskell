@@ -42,6 +42,7 @@ library
       Vulkan.Device.Queue
       Vulkan.Enumerate
       Vulkan.Ext.DebugUtils.Messenger
+      Vulkan.Fence
       Vulkan.Format
       Vulkan.Framebuffer
       Vulkan.FrontFace

@@ -1039,7 +1039,14 @@ mainLoop win = do
 		not <$> GlfwB.windowShouldClose win
 
 drawFrame :: IO ()
-drawFrame = pure ()
+drawFrame = ($ pure) $ runContT do
+	pImageIndex <- ContT alloca
+	dvc <- lift $ readIORef device
+	sc <- lift $ readIORef swapChain
+	ias <- lift $ readIORef imageAvailableSemaphore
+	lift do	r <- Vk.Khr.acquireNextImage
+			dvc sc uint64Max ias NullHandle pImageIndex
+		when (r /= success) $ error "bad"
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
