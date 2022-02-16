@@ -995,8 +995,14 @@ beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 			Vk.RndrPss.beginInfoPClearColorValueFloats =
 				pClearColor }
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
-	lift $ Vk.Cmd.beginRenderPass
-		cb pRenderPassInfo Vk.Subpass.contentsInline
+	lift do	Vk.Cmd.beginRenderPass
+			cb pRenderPassInfo Vk.Subpass.contentsInline
+		gppl <- readIORef graphicsPipeline
+		Vk.Cmd.bindPipeline cb Vk.Ppl.bindPointGraphics gppl
+		Vk.Cmd.draw cb 3 1 0 0
+		Vk.Cmd.endRenderPass cb
+		r <- Vk.CB.end cb
+		when (r /= success) $ error "failed to record command buffer!"
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do

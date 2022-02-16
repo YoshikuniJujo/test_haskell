@@ -75,3 +75,6 @@ struct "BeginInfo" #{size VkCommandBufferBeginInfo}
 
 foreign import ccall "vkBeginCommandBuffer" begin ::
 	CommandBuffer -> Ptr BeginInfo -> IO #{type VkResult}
+
+foreign import ccall "vkEndCommandBuffer" end ::
+	CommandBuffer -> IO #{type VkResult}
