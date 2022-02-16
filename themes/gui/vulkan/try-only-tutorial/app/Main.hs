@@ -81,6 +81,7 @@ import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.Semaphore as Vk.Smp
 
 main :: IO ()
 main = run
@@ -139,6 +140,10 @@ commandPool = unsafePerformIO $ newIORef NullPtr
 commandBuffers :: IORef [Vk.CB.CommandBuffer]
 commandBuffers = unsafePerformIO $ newIORef []
 
+imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Smp.Semaphore
+imageAvailableSemaphore = unsafePerformIO $ newIORef NullPtr
+renderFinishedSemaphore = unsafePerformIO $ newIORef NullPtr
+
 run :: IO ()
 run = do
 	win <- initWindow
@@ -171,6 +176,7 @@ initVulkan win = do
 	createFramebuffers
 	createCommandPool
 	createCommandBuffers
+	createSemaphores
 
 createInstance :: IO ()
 createInstance = ($ pure) $ runContT do
@@ -1004,15 +1010,44 @@ beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 		r <- Vk.CB.end cb
 		when (r /= success) $ error "failed to record command buffer!"
 
+createSemaphores :: IO ()
+createSemaphores = ($ pure) $ runContT do
+	let	Vk.Smp.CreateInfo_ fSemaphoreInfo = Vk.Smp.CreateInfo {
+			Vk.Smp.createInfoSType = (),
+			Vk.Smp.createInfoPNext = NullPtr,
+			Vk.Smp.createInfoFlags = 0 }
+	dvc <- lift $ readIORef device
+	pSemaphoreInfo <- ContT $ withForeignPtr fSemaphoreInfo
+	pImageAvailableSemaphore <- ContT alloca
+	pRenderFinishedSemaphore <- ContT alloca
+	lift do r <- Vk.Smp.create
+			dvc pSemaphoreInfo NullPtr pImageAvailableSemaphore
+		r' <- Vk.Smp.create
+			dvc pSemaphoreInfo NullPtr pRenderFinishedSemaphore
+		when (r /= success || r' /= success)
+			$ error "failed to create semaphores!"
+		writeIORef imageAvailableSemaphore
+			=<< peek pImageAvailableSemaphore
+		writeIORef renderFinishedSemaphore
+			=<< peek pRenderFinishedSemaphore
+
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
+		drawFrame
 		not <$> GlfwB.windowShouldClose win
+
+drawFrame :: IO ()
+drawFrame = pure ()
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do
 	dvc <- readIORef device
+	rfs <- readIORef renderFinishedSemaphore
+	ias <- readIORef imageAvailableSemaphore
+	Vk.Smp.destroy dvc rfs NullPtr
+	Vk.Smp.destroy dvc ias NullPtr
 	cp <- readIORef commandPool
 	Vk.CP.destroy dvc cp NullPtr
 	fbs <- readIORef swapChainFramebuffers

@@ -75,6 +75,7 @@ library
       Vulkan.Queue.Family
       Vulkan.RenderPass
       Vulkan.Sample
+      Vulkan.Semaphore
       Vulkan.Shader.Module
       Vulkan.Specialization
       Vulkan.Subpass
