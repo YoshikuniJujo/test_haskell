@@ -11,6 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Vulkan (Semaphore)
 import Vulkan.Base
 import Vulkan.Device (Device)
 
@@ -30,9 +31,6 @@ struct "CreateInfo" #{size VkSemaphoreCreateInfo}
 		[| #{peek VkSemaphoreCreateInfo, flags} |],
 		[| #{poke VkSemaphoreCreateInfo, flags} |]) ]
 	[''Show, ''Storable]
-
-data SemaphoreTag
-type Semaphore = Ptr SemaphoreTag
 
 foreign import ccall "vkCreateSemaphore" create ::
 	Device -> Ptr CreateInfo -> Ptr () -> Ptr Semaphore ->

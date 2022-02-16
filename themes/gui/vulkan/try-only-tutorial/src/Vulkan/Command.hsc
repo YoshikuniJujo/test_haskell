@@ -5,7 +5,7 @@ module Vulkan.Command where
 import Foreign.Ptr
 import Data.Word
 
-import Vulkan.CommandBuffer (CommandBuffer)
+import Vulkan (CommandBuffer)
 
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Pipeline as Pipeline

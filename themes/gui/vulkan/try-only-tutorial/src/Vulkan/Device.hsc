@@ -11,6 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Vulkan (Queue)
 import Vulkan.Base
 import Vulkan.PhysicalDevice (PhysicalDevice)
 
@@ -62,9 +63,6 @@ foreign import ccall "vkCreateDevice" create ::
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyDevice" destroy :: Device -> Ptr () -> IO ()
-
-data QueueTag
-type Queue = Ptr QueueTag
 
 foreign import ccall "vkGetDeviceQueue" getQueue ::
 	Device -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue -> IO ()

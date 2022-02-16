@@ -6,8 +6,8 @@ import Foreign.Ptr
 import Data.Word
 import Data.Int
 
+import Vulkan (Semaphore)
 import Vulkan.Device (Device)
-import Vulkan.Semaphore (Semaphore)
 import Vulkan.Fence (Fence)
 import Vulkan.Khr.Swapchain (Swapchain)
 

@@ -15,6 +15,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
+import Vulkan.Fence
 
 #include <vulkan/vulkan.h>
 
@@ -108,3 +109,52 @@ struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
 	[''Show, ''Storable]
 
 type PtrRect2d = Ptr Rect2d
+
+data SemaphoreTag
+type Semaphore = Ptr SemaphoreTag
+type PtrSemaphore = Ptr Semaphore
+
+type PtrPipelineStageFlags = Ptr #{type VkPipelineStageFlags}
+
+data CommandBufferTag
+type CommandBuffer = Ptr CommandBufferTag
+type PtrCommandBuffer = Ptr CommandBuffer
+
+sTypeS :: #{type VkStructureType}
+sTypeS = #{const VK_STRUCTURE_TYPE_SUBMIT_INFO}
+
+struct "SubmitInfo" #{size VkSubmitInfo} #{alignment VkSubmitInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkSubmitInfo, sType} p sTypeS |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkSubmitInfo, pNext} |],
+		[| #{poke VkSubmitInfo, pNext} |]),
+	("waitSemaphoreCount", ''#{type uint32_t},
+		[| #{peek VkSubmitInfo, waitSemaphoreCount} |],
+		[| #{poke VkSubmitInfo, waitSemaphoreCount} |]),
+	("pWaitSemaphores", ''PtrSemaphore,
+		[| #{peek VkSubmitInfo, pWaitSemaphores} |],
+		[| #{poke VkSubmitInfo, pWaitSemaphores} |]),
+	("pWaitDstStageMask", ''PtrPipelineStageFlags,
+		[| #{peek VkSubmitInfo, pWaitDstStageMask} |],
+		[| #{poke VkSubmitInfo, pWaitDstStageMask} |]),
+	("commandBufferCount", ''#{type uint32_t},
+		[| #{peek VkSubmitInfo, commandBufferCount} |],
+		[| #{poke VkSubmitInfo, commandBufferCount} |]),
+	("pCommandBuffers", ''PtrCommandBuffer,
+		[| #{peek VkSubmitInfo, pCommandBuffers} |],
+		[| #{poke VkSubmitInfo, pCommandBuffers} |]),
+	("signalSemaphoreCount", ''#{type int32_t},
+		[| #{peek VkSubmitInfo, signalSemaphoreCount} |],
+		[| #{poke VkSubmitInfo, signalSemaphoreCount} |]),
+	("pSignalSemaphores", ''PtrSemaphore,
+		[| #{peek VkSubmitInfo, pSignalSemaphores} |],
+		[| #{poke VkSubmitInfo, pSignalSemaphores} |]) ]
+	[''Show, ''Storable]
+
+data QueueTag
+type Queue = Ptr QueueTag
+
+foreign import ccall "vkQueueSubmit" queueSubmit ::
+	Queue -> #{type uint32_t} -> Ptr SubmitInfo -> Fence ->
+	IO #{type VkResult}

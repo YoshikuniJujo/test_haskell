@@ -28,6 +28,7 @@ library
       Lib
       Tools
       Vulkan
+      Vulkan.Access
       Vulkan.Attachment
       Vulkan.Base
       Vulkan.Blend

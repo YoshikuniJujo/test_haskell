@@ -11,6 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Vulkan (CommandBuffer)
 import Vulkan.Base
 import Vulkan.Device (Device)
 
@@ -40,9 +41,6 @@ struct "AllocateInfo" #{size VkCommandBufferAllocateInfo}
 		[| #{peek VkCommandBufferAllocateInfo, commandBufferCount} |],
 		[| #{poke VkCommandBufferAllocateInfo, commandBufferCount} |]) ]
 	[''Show, ''Storable]
-
-data CommandBufferTag
-type CommandBuffer = Ptr CommandBufferTag
 
 levelPrimary :: #{type VkCommandBufferLevel}
 levelPrimary = #{const VK_COMMAND_BUFFER_LEVEL_PRIMARY}

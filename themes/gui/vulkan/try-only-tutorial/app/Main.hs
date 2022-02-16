@@ -82,6 +82,7 @@ import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp
+import qualified Vulkan.Access as Vk.Access
 
 main :: IO ()
 main = run
@@ -98,13 +99,13 @@ physicalDevice = unsafePerformIO $ newIORef NullHandle
 device :: IORef Vk.Device.Device
 device = unsafePerformIO $ newIORef NullPtr
 
-graphicsQueue :: IORef Vk.Device.Queue
+graphicsQueue :: IORef Vk.Queue
 graphicsQueue = unsafePerformIO $ newIORef NullPtr
 
 surface :: IORef Vk.Khr.Sfc.Surface
 surface = unsafePerformIO $ newIORef NullPtr
 
-presentQueue :: IORef Vk.Device.Queue
+presentQueue :: IORef Vk.Queue
 presentQueue = unsafePerformIO $ newIORef NullPtr
 
 swapChain :: IORef Vk.Khr.Sc.Swapchain
@@ -137,10 +138,10 @@ swapChainFramebuffers = unsafePerformIO $ newIORef []
 commandPool :: IORef Vk.CP.CommandPool
 commandPool = unsafePerformIO $ newIORef NullPtr
 
-commandBuffers :: IORef [Vk.CB.CommandBuffer]
+commandBuffers :: IORef [Vk.CommandBuffer]
 commandBuffers = unsafePerformIO $ newIORef []
 
-imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Smp.Semaphore
+imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Semaphore
 imageAvailableSemaphore = unsafePerformIO $ newIORef NullPtr
 renderFinishedSemaphore = unsafePerformIO $ newIORef NullPtr
 
@@ -680,6 +681,18 @@ createRenderPass = ($ pure) $ runContT do
 			Vk.Subpass.descriptionPreserveAttachmentCount = 0,
 			Vk.Subpass.descriptionPPreserveAttachments = NullPtr }
 	pSubpass <- ContT $ withForeignPtr fSubpass
+	let	Vk.Subpass.Dependency_ fDependency = Vk.Subpass.Dependency {
+			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.external,
+			Vk.Subpass.dependencyDstSubpass = 0,
+			Vk.Subpass.dependencySrcStageMask =
+				Vk.Ppl.stageColorAttachmentOutputBit,
+			Vk.Subpass.dependencySrcAccessMask = 0,
+			Vk.Subpass.dependencyDstStageMask =
+				Vk.Ppl.stageColorAttachmentOutputBit,
+			Vk.Subpass.dependencyDstAccessMask =
+				Vk.Access.colorAttachmentWriteBit,
+			Vk.Subpass.dependencyDependencyFlags = 0 }
+	pDependency <- ContT $ withForeignPtr fDependency
 	let	Vk.RndrPss.CreateInfo_ fRenderPassInfo = Vk.RndrPss.CreateInfo {
 			Vk.RndrPss.createInfoSType = (),
 			Vk.RndrPss.createInfoPNext = NullPtr,
@@ -688,8 +701,8 @@ createRenderPass = ($ pure) $ runContT do
 			Vk.RndrPss.createInfoPAttachments = pColorAttachment,
 			Vk.RndrPss.createInfoSubpassCount = 1,
 			Vk.RndrPss.createInfoPSubpasses = pSubpass,
-			Vk.RndrPss.createInfoDependencyCount = 0,
-			Vk.RndrPss.createInfoPDependencies = NullPtr }
+			Vk.RndrPss.createInfoDependencyCount = 1,
+			Vk.RndrPss.createInfoPDependencies = pDependency }
 	dvc <- lift $ readIORef device
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	pRenderPass <- ContT alloca
@@ -958,7 +971,7 @@ createCommandBuffers = do
 	writeIORef commandBuffers cbs
 	uncurry beginCommandBuffer1 `mapM_` zip cbs scfbs
 
-createCommandBuffersGen :: Int -> IO [Vk.CB.CommandBuffer]
+createCommandBuffersGen :: Int -> IO [Vk.CommandBuffer]
 createCommandBuffersGen cbc = ($ pure) $ runContT do
 	cp <- lift $ readIORef commandPool
 	let	Vk.CB.AllocateInfo_ fAllocInfo = Vk.CB.AllocateInfo {
@@ -974,7 +987,7 @@ createCommandBuffersGen cbc = ($ pure) $ runContT do
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
-beginCommandBuffer1 :: Vk.CB.CommandBuffer -> Framebuffer -> IO ()
+beginCommandBuffer1 :: Vk.CommandBuffer -> Framebuffer -> IO ()
 beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
 			Vk.CB.beginInfoSType = (),
@@ -1040,6 +1053,7 @@ mainLoop win = do
 
 drawFrame :: IO ()
 drawFrame = ($ pure) $ runContT do
+	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
 	dvc <- lift $ readIORef device
 	sc <- lift $ readIORef swapChain
@@ -1047,6 +1061,35 @@ drawFrame = ($ pure) $ runContT do
 	lift do	r <- Vk.Khr.acquireNextImage
 			dvc sc uint64Max ias NullHandle pImageIndex
 		when (r /= success) $ error "bad"
+	(fromIntegral -> imageIndex) <- lift $ peek pImageIndex
+	lift $ print imageIndex
+	pWaitSemaphores <- ContT $ allocaArray 1
+	lift $ pokeArray pWaitSemaphores . (: [])
+		=<< readIORef imageAvailableSemaphore
+	pWaitStages <- ContT $ allocaArray 1
+	lift $ pokeArray pWaitStages [Vk.Ppl.stageColorAttachmentOutputBit]
+	cbs <- lift $ readIORef commandBuffers
+	pcb1 <- ContT $ allocaArray 1
+	lift $ pokeArray pcb1 [cbs !! imageIndex]
+	pSignalSemaphores <- ContT $ allocaArray 1
+	lift $ pokeArray pSignalSemaphores . (: [])
+		=<< readIORef renderFinishedSemaphore
+	let	Vk.SubmitInfo_ fSubmitInfo = Vk.SubmitInfo {
+			Vk.submitInfoSType = (),
+			Vk.submitInfoPNext = NullPtr,
+			Vk.submitInfoWaitSemaphoreCount = 1,
+			Vk.submitInfoPWaitSemaphores = pWaitSemaphores,
+			Vk.submitInfoPWaitDstStageMask = pWaitStages,
+			Vk.submitInfoCommandBufferCount = 1,
+			Vk.submitInfoPCommandBuffers = pcb1,
+			Vk.submitInfoSignalSemaphoreCount = 1,
+			Vk.submitInfoPSignalSemaphores = pSignalSemaphores }
+	gq <- lift $ readIORef graphicsQueue
+	pSubmitInfo <- ContT $ withForeignPtr fSubmitInfo
+	lift do	r <- Vk.queueSubmit gq 1 pSubmitInfo NullHandle
+		when (r /= success) $ error "failed to submit draw command buffer!"
+	lift $ putStrLn "=== END ==="
+	pure ()
 
 cleanup :: GlfwB.Window -> IO ()
 cleanup win = do

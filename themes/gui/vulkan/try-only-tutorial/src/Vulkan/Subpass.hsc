@@ -81,3 +81,6 @@ type PtrDependency = Ptr Dependency
 
 contentsInline :: #{type VkSubpassContents}
 contentsInline = #{const VK_SUBPASS_CONTENTS_INLINE}
+
+external :: #{type uint32_t}
+external = #{const VK_SUBPASS_EXTERNAL}
