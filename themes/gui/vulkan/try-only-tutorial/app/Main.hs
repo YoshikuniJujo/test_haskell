@@ -80,6 +80,7 @@ import qualified Vulkan.RenderPass as Vk.RndrPss
 import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
+import qualified Vulkan.Command as Vk.Cmd
 
 main :: IO ()
 main = run
@@ -129,7 +130,7 @@ pipelineLayout = unsafePerformIO $ newIORef NullPtr
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 
-swapChainFramebuffers :: IORef [Vk.Fb.Framebuffer]
+swapChainFramebuffers :: IORef [Framebuffer]
 swapChainFramebuffers = unsafePerformIO $ newIORef []
 
 commandPool :: IORef Vk.CP.CommandPool
@@ -900,7 +901,7 @@ createFramebuffers = do
 	fbs <- createFramebuffer1 `mapM` scivs
 	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Vk.ImageView.ImageView -> IO Vk.Fb.Framebuffer
+createFramebuffer1 :: Vk.ImageView.ImageView -> IO Framebuffer
 createFramebuffer1 attachment = ($ pure) $ runContT do
 	rndrPss <- lift $ readIORef renderPass
 	attachments <- ContT $ allocaArray 1
@@ -949,7 +950,7 @@ createCommandBuffers = do
 	scfbs <- readIORef swapChainFramebuffers
 	cbs <- createCommandBuffersGen (length scfbs)
 	writeIORef commandBuffers cbs
-	beginCommandBuffer1 `mapM_` cbs
+	uncurry beginCommandBuffer1 `mapM_` zip cbs scfbs
 
 createCommandBuffersGen :: Int -> IO [Vk.CB.CommandBuffer]
 createCommandBuffersGen cbc = ($ pure) $ runContT do
@@ -967,8 +968,8 @@ createCommandBuffersGen cbc = ($ pure) $ runContT do
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
-beginCommandBuffer1 :: Vk.CB.CommandBuffer -> IO ()
-beginCommandBuffer1 cb = ($ pure) $ runContT do
+beginCommandBuffer1 :: Vk.CB.CommandBuffer -> Framebuffer -> IO ()
+beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
 			Vk.CB.beginInfoSType = (),
 			Vk.CB.beginInfoPNext = NullPtr,
@@ -978,6 +979,24 @@ beginCommandBuffer1 cb = ($ pure) $ runContT do
 	lift do	r <- Vk.CB.begin cb pBeginInfo
 		when (r /= success)
 			$ error "failed to begin recording command buffer!"
+	rp <- lift $ readIORef renderPass
+	sce <- lift $ readIORef swapChainExtent
+	pClearColor <- ContT $ allocaArray 4
+	lift $ pokeArray pClearColor [0, 0, 0, 1]
+	let	Vk.RndrPss.BeginInfo_ fRenderPassInfo = Vk.RndrPss.BeginInfo {
+			Vk.RndrPss.beginInfoSType = (),
+			Vk.RndrPss.beginInfoPNext = NullPtr,
+			Vk.RndrPss.beginInfoRenderPass = rp,
+			Vk.RndrPss.beginInfoFramebuffer = fb,
+			Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
+				Vk.rect2dOffset = Vk.Offset2d 0 0,
+				Vk.rect2dExtent = sce },
+			Vk.RndrPss.beginInfoClearValueCount = 1,
+			Vk.RndrPss.beginInfoPClearColorValueFloats =
+				pClearColor }
+	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
+	lift $ Vk.Cmd.beginRenderPass
+		cb pRenderPassInfo Vk.Subpass.contentsInline
 
 mainLoop :: GlfwB.Window -> IO ()
 mainLoop win = do

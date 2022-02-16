@@ -78,3 +78,6 @@ struct "Dependency" #{size VkSubpassDependency}
 	[''Show, ''Storable]
 
 type PtrDependency = Ptr Dependency
+
+contentsInline :: #{type VkSubpassContents}
+contentsInline = #{const VK_SUBPASS_CONTENTS_INLINE}

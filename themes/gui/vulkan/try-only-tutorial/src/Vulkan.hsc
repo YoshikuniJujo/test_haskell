@@ -95,7 +95,7 @@ type PtrViewport = Ptr Viewport
 
 struct "Offset2d" #{size VkOffset2D} #{alignment VkOffset2D} [
 	("x", ''#{type int32_t}, [| #{peek VkOffset2D, x} |],
-		[| #{poke VkOffset2D, y} |]),
+		[| #{poke VkOffset2D, x} |]),
 	("y", ''#{type int32_t}, [| #{peek VkOffset2D, y} |],
 		[| #{poke VkOffset2D, y} |]) ]
 	[''Show, ''Storable]

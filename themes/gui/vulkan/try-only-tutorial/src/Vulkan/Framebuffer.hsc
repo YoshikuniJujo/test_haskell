@@ -19,9 +19,6 @@ import qualified Vulkan.ImageView as ImageView
 
 #include <vulkan/vulkan.h>
 
-data FramebufferTag
-type Framebuffer = Ptr FramebufferTag
-
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO}
 

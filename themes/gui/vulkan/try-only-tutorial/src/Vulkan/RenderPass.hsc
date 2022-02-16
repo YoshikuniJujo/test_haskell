@@ -11,6 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Vulkan
 import Vulkan.Base
 import Vulkan.Device (Device)
 
@@ -19,13 +20,14 @@ import qualified Vulkan.Subpass as Subpass
 
 #include <vulkan/vulkan.h>
 
-sType :: #{type VkStructureType}
-sType = #{const VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}
+sTypeC, sTypeB :: #{type VkStructureType}
+sTypeC = #{const VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO}
+sTypeB = #{const VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO}
 
 struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		#{alignment VkRenderPassCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
-		[| \p _ -> #{poke VkRenderPassCreateInfo, sType} p sType |]),
+		[| \p _ -> #{poke VkRenderPassCreateInfo, sType} p sTypeC |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkRenderPassCreateInfo, pNext} |],
 		[| #{poke VkRenderPassCreateInfo, pNext} |]),
@@ -61,3 +63,27 @@ foreign import ccall "vkCreateRenderPass" create ::
 
 foreign import ccall "vkDestroyRenderPass" destroy ::
 	Device -> RenderPass -> Ptr () -> IO ()
+
+struct "BeginInfo" #{size VkRenderPassBeginInfo}
+		#{alignment VkRenderPassBeginInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkRenderPassBeginInfo, sType} p sTypeB |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkRenderPassBeginInfo, pNext} |],
+		[| #{poke VkRenderPassBeginInfo, pNext} |]),
+	("renderPass", ''RenderPass,
+		[| #{peek VkRenderPassBeginInfo, renderPass } |],
+		[| #{poke VkRenderPassBeginInfo, renderPass } |]),
+	("framebuffer", ''Framebuffer,
+		[| #{peek VkRenderPassBeginInfo, framebuffer} |],
+		[| #{poke VkRenderPassBeginInfo, framebuffer} |]),
+	("renderArea", ''Rect2d,
+		[| #{peek VkRenderPassBeginInfo, renderArea} |],
+		[| #{poke VkRenderPassBeginInfo, renderArea} |]),
+	("clearValueCount", ''#{type uint32_t},
+		[| #{peek VkRenderPassBeginInfo, clearValueCount} |],
+		[| #{poke VkRenderPassBeginInfo, clearValueCount} |]),
+	("pClearColorValueFloats", ''PtrFloat,
+		[| #{peek VkRenderPassBeginInfo, pClearValues} |],
+		[| #{poke VkRenderPassBeginInfo, pClearValues} |]) ]
+	[''Show, ''Storable]
