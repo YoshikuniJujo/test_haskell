@@ -1,0 +1,129 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-my-vulkan-snd
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-my-vulkan-snd#readme>
+homepage:       https://github.com/githubuser/try-my-vulkan-snd#readme
+bug-reports:    https://github.com/githubuser/try-my-vulkan-snd/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2022 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-my-vulkan-snd
+
+library
+  exposed-modules:
+      Tools
+      Vulkan
+      Vulkan.Access
+      Vulkan.Attachment
+      Vulkan.Base
+      Vulkan.Blend
+      Vulkan.ColorComponent
+      Vulkan.Command
+      Vulkan.CommandBuffer
+      Vulkan.CommandPool
+      Vulkan.Component
+      Vulkan.Cull
+      Vulkan.Descriptor.SetLayout
+      Vulkan.Device
+      Vulkan.Device.Queue
+      Vulkan.Enumerate
+      Vulkan.Ext.DebugUtils.Messenger
+      Vulkan.Fence
+      Vulkan.Format
+      Vulkan.Framebuffer
+      Vulkan.FrontFace
+      Vulkan.Image
+      Vulkan.ImageView
+      Vulkan.Instance
+      Vulkan.Khr
+      Vulkan.Khr.ColorSpace
+      Vulkan.Khr.Present
+      Vulkan.Khr.Surface
+      Vulkan.Khr.Surface.PhysicalDevice
+      Vulkan.Khr.Swapchain
+      Vulkan.Logic
+      Vulkan.PhysicalDevice
+      Vulkan.Pipeline
+      Vulkan.Pipeline.ColorBlendAttachmentState
+      Vulkan.Pipeline.ColorBlendState
+      Vulkan.Pipeline.DepthStencilState
+      Vulkan.Pipeline.DynamicState
+      Vulkan.Pipeline.InputAssemblyState
+      Vulkan.Pipeline.Layout
+      Vulkan.Pipeline.MultisampleState
+      Vulkan.Pipeline.RasterizationState
+      Vulkan.Pipeline.ShaderStage
+      Vulkan.Pipeline.TessellationState
+      Vulkan.Pipeline.VertexInputState
+      Vulkan.Pipeline.ViewportState
+      Vulkan.Polygon
+      Vulkan.PrimitiveTopology
+      Vulkan.PushConstant
+      Vulkan.Queue.Family
+      Vulkan.RenderPass
+      Vulkan.Sample
+      Vulkan.Semaphore
+      Vulkan.Shader.Module
+      Vulkan.Specialization
+      Vulkan.Subpass
+      Vulkan.VertexInput
+  other-modules:
+      Paths_try_my_vulkan_snd
+  hs-source-dirs:
+      src
+  pkgconfig-depends:
+      vulkan
+  build-depends:
+      GLFW-b
+    , base >=4.7 && <5
+    , bytestring
+    , c-struct
+    , monads-tf
+  default-language: Haskell2010
+
+executable try-my-vulkan-snd-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_my_vulkan_snd
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , base >=4.7 && <5
+    , bytestring
+    , c-struct
+    , monads-tf
+    , try-my-vulkan-snd
+  default-language: Haskell2010
+
+test-suite try-my-vulkan-snd-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_my_vulkan_snd
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , base >=4.7 && <5
+    , bytestring
+    , c-struct
+    , monads-tf
+    , try-my-vulkan-snd
+  default-language: Haskell2010
