@@ -144,17 +144,20 @@ commandBuffers = unsafePerformIO $ newIORef []
 imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Semaphore
 (imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
 	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
-{-
-imageAvailableSemaphore = unsafePerformIO $ newIORef NullPtr
-renderFinishedSemaphore = unsafePerformIO $ newIORef NullPtr
--}
+
+data Global = Global {
+	globalWindow :: GlfwB.Window
+	}
+	deriving Show
 
 run :: IO ()
 run = do
-	win <- initWindow
-	initVulkan win
-	mainLoop win
-	cleanup win
+	w <- initWindow
+	let	g = Global {
+			globalWindow = w }
+	initVulkan g
+	mainLoop g
+	cleanup g
 
 width, height :: Int
 width = 800; height = 600
@@ -167,7 +170,7 @@ initWindow = do
 	Just w <- GlfwB.createWindow width height "Vulkan" Nothing Nothing
 	pure w
 
-initVulkan :: GlfwB.Window -> IO ()
+initVulkan :: Global -> IO ()
 initVulkan win = do
 	createInstance
 	setupDebugMessenger
@@ -301,8 +304,8 @@ debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 	putStrLn $ "validation layer: " ++ message
 	pure vkFalse
 
-createSurface :: GlfwB.Window -> IO ()
-createSurface win = ($ pure) $ runContT do
+createSurface :: Global -> IO ()
+createSurface Global { globalWindow = win } = ($ pure) $ runContT do
 	ist <- lift $ readIORef instance_
 	psrfc <- ContT alloca
 	lift do	r <- GlfwB.createWindowSurface ist win NullPtr psrfc
@@ -1054,8 +1057,8 @@ createSemaphores = ($ pure) $ runContT do
 		print =<< peek pRenderFinishedSemaphore
 		print =<< readIORef renderFinishedSemaphore
 
-mainLoop :: GlfwB.Window -> IO ()
-mainLoop win = do
+mainLoop :: Global -> IO ()
+mainLoop Global { globalWindow = win } = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
 		drawFrame
@@ -1119,8 +1122,8 @@ drawFrame = ($ pure) $ runContT do
 		when (r' /= success) $ error "bad"
 	lift $ putStrLn "=== END ==="
 
-cleanup :: GlfwB.Window -> IO ()
-cleanup win = do
+cleanup :: Global -> IO ()
+cleanup Global { globalWindow = win } = do
 	dvc <- readIORef device
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
