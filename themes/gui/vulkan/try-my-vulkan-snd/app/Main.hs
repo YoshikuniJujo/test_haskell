@@ -29,7 +29,7 @@ import qualified Data.ByteString.Char8 as BSC
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Vulkan as Vk
-import qualified Vulkan.Instance as Vk.Instance
+import qualified Vulkan.Instance.Internal as Vk.Instance.I
 import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
@@ -87,7 +87,7 @@ import qualified Vulkan.Access as Vk.Access
 main :: IO ()
 main = run
 
-instance_ :: IORef Vk.Instance.Instance
+instance_ :: IORef Vk.Instance.I.Instance
 instance_ = unsafePerformIO $ newIORef NullPtr
 
 debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
@@ -171,10 +171,10 @@ initWindow = do
 	pure w
 
 initVulkan :: Global -> IO ()
-initVulkan win = do
+initVulkan g = do
 	createInstance
 	setupDebugMessenger
-	createSurface win
+	createSurface g
 	pickPhysicalDevice
 	createLogicalDevice
 	createSwapChain
@@ -225,20 +225,20 @@ createInstance = ($ pure) $ runContT do
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
 	(glfwExtensionCount, pGlfwExtensions) <- getRequiredExtensions
-	let	Vk.Instance.CreateInfo_ fCreateInfo = Vk.Instance.CreateInfo {
-			Vk.Instance.createInfoSType = (),
-			Vk.Instance.createInfoPNext = castPtr pDebugCreateInfo,
-			Vk.Instance.createInfoFlags = 0,
-			Vk.Instance.createInfoPApplicationInfo = pAppInfo,
-			Vk.Instance.createInfoEnabledLayerCount = 1,
-			Vk.Instance.createInfoPpEnabledLayerNames = pValidationLayers,
-			Vk.Instance.createInfoEnabledExtensionCount =
+	let	Vk.Instance.I.CreateInfo_ fCreateInfo = Vk.Instance.I.CreateInfo {
+			Vk.Instance.I.createInfoSType = (),
+			Vk.Instance.I.createInfoPNext = castPtr pDebugCreateInfo,
+			Vk.Instance.I.createInfoFlags = 0,
+			Vk.Instance.I.createInfoPApplicationInfo = pAppInfo,
+			Vk.Instance.I.createInfoEnabledLayerCount = 1,
+			Vk.Instance.I.createInfoPpEnabledLayerNames = pValidationLayers,
+			Vk.Instance.I.createInfoEnabledExtensionCount =
 				glfwExtensionCount,
-			Vk.Instance.createInfoPpEnabledExtensionNames =
+			Vk.Instance.I.createInfoPpEnabledExtensionNames =
 				pGlfwExtensions }
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pInstance <- ContT alloca
-	lift do	result <- Vk.Instance.create pCreateInfo NullPtr pInstance
+	lift do	result <- Vk.Instance.I.create pCreateInfo NullPtr pInstance
 		when (result /= success) $ error "failed to create instance!"
 		writeIORef instance_ =<< peek pInstance
 
@@ -1151,6 +1151,6 @@ cleanup Global { globalWindow = win } = do
 	(\sfc -> Vk.Khr.Sfc.destroy ist sfc NullPtr) =<< readIORef surface
 	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
 		=<< readIORef debugMessenger
-	Vk.Instance.destroy ist NullPtr
+	Vk.Instance.I.destroy ist NullPtr
 	GlfwB.destroyWindow win
 	GlfwB.terminate

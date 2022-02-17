@@ -11,7 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 
 import Vulkan (Extent2d)
-import Vulkan.Instance (Instance)
+import Vulkan.Instance.Internal (Instance)
 
 #include <vulkan/vulkan.h>
 

@@ -16,7 +16,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.Instance (Instance)
+import Vulkan.Instance.Internal (Instance)
 
 #include <vulkan/vulkan.h>
 

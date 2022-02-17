@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Instance where
+module Vulkan.Instance.Internal where
 
 import Foreign.Ptr
 import Foreign.C.Struct

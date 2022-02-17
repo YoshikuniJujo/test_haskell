@@ -15,7 +15,7 @@ import Data.Word
 import Data.Int
 
 import Tools
-import Vulkan.Instance (Instance)
+import Vulkan.Instance.Internal (Instance)
 import Vulkan.Khr.Surface (Surface)
 
 import Vulkan.Enumerate (ExtensionProperties(..))

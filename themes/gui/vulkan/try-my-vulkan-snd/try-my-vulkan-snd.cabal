@@ -49,6 +49,7 @@ library
       Vulkan.Image
       Vulkan.ImageView
       Vulkan.Instance
+      Vulkan.Instance.Internal
       Vulkan.Khr
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Present
