@@ -1,14 +1,26 @@
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Base where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.String
 import Data.Word
 import Data.Int
 
 #include <vulkan/vulkan.h>
+
+class Pointable a where
+	withPointer :: a -> (Ptr a -> IO b) -> IO b
+	fromPointer :: Ptr a -> IO a
+
+instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
+	withPointer x f = alloca \p -> poke p x >> f p
+	fromPointer = peek
 
 type PtrVoid = Ptr ()
 

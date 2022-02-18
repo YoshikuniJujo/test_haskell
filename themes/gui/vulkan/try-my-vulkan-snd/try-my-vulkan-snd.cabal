@@ -28,6 +28,7 @@ library
       Tools
       Vulkan
       Vulkan.Access
+      Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment
       Vulkan.Base
