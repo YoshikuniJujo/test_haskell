@@ -11,7 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan (Queue)
+import Vulkan.Core (Queue)
 import Vulkan.Base
 import Vulkan.PhysicalDevice (PhysicalDevice)
 

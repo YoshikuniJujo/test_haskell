@@ -11,7 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 
 import Vulkan.Base
-import Vulkan
+import Vulkan.Core
 
 #include <vulkan/vulkan.h>
 

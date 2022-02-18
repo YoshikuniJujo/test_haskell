@@ -28,7 +28,7 @@ import Vulkan.Base
 import qualified Data.ByteString.Char8 as BSC
 import qualified Graphics.UI.GLFW as GlfwB
 
-import qualified Vulkan as Vk
+import qualified Vulkan.Core as Vk
 import qualified Vulkan.Instance.Core as Vk.Instance.I
 import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr

@@ -10,7 +10,7 @@ import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
-import Vulkan (Extent2d)
+import Vulkan.Core (Extent2d)
 import Vulkan.Instance.Core (Instance)
 
 #include <vulkan/vulkan.h>

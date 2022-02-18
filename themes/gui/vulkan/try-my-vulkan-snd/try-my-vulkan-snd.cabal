@@ -26,7 +26,6 @@ source-repository head
 library
   exposed-modules:
       Tools
-      Vulkan
       Vulkan.Access
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
@@ -38,6 +37,7 @@ library
       Vulkan.CommandBuffer
       Vulkan.CommandPool
       Vulkan.Component
+      Vulkan.Core
       Vulkan.Cull
       Vulkan.Descriptor.SetLayout
       Vulkan.Device

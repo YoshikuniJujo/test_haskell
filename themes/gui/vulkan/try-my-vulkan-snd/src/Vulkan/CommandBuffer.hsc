@@ -11,7 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan (CommandBuffer)
+import Vulkan.Core (CommandBuffer)
 import Vulkan.Base
 import Vulkan.Device (Device)
 

@@ -11,7 +11,7 @@ import Foreign.Storable
 import Data.Word
 import Data.Int
 
-import Vulkan
+import Vulkan.Core
 import Vulkan.Base
 import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 

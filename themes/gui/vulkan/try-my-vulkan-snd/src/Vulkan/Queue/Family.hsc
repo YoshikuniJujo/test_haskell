@@ -11,7 +11,7 @@ import Data.Word
 
 #include <vulkan/vulkan.h>
 
-import Vulkan
+import Vulkan.Core
 
 struct "Properties" #{size VkQueueFamilyProperties}
 		#{alignment VkQueueFamilyProperties} [
