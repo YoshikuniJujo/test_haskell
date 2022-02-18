@@ -23,6 +23,8 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - monads-tf
+- nowdoc
+- c-enum
 - c-struct
 - GLFW-b
 
