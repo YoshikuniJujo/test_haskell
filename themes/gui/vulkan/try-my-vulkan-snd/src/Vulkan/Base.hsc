@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -9,6 +10,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
+import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
@@ -21,6 +23,12 @@ class Pointable a where
 instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
 	withPointer x f = alloca \p -> poke p x >> f p
 	fromPointer = peek
+
+maybeToPointer :: Pointable a => Maybe a -> ContT r IO (Ptr a)
+maybeToPointer = \case Nothing -> pure NullPtr; Just x -> ContT $ withPointer x
+
+stringToCString :: String -> ContT r IO CString
+stringToCString = ContT . withCString
 
 type PtrVoid = Ptr ()
 

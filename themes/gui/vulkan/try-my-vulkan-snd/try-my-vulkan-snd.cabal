@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Tools
+      Vulkan
       Vulkan.Access
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core

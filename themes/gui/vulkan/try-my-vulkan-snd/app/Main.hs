@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -28,7 +29,9 @@ import Vulkan.Base
 import qualified Data.ByteString.Char8 as BSC
 import qualified Graphics.UI.GLFW as GlfwB
 
-import qualified Vulkan.Core as Vk
+import qualified Vulkan as Vk
+
+import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Instance.Core as Vk.Instance.I
 import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
@@ -99,13 +102,13 @@ physicalDevice = unsafePerformIO $ newIORef NullHandle
 device :: IORef Vk.Device.Device
 device = unsafePerformIO $ newIORef NullPtr
 
-graphicsQueue :: IORef Vk.Queue
+graphicsQueue :: IORef Vk.C.Queue
 graphicsQueue = unsafePerformIO $ newIORef NullPtr
 
 surface :: IORef Vk.Khr.Sfc.Surface
 surface = unsafePerformIO $ newIORef NullPtr
 
-presentQueue :: IORef Vk.Queue
+presentQueue :: IORef Vk.C.Queue
 presentQueue = unsafePerformIO $ newIORef NullPtr
 
 swapChain :: IORef Vk.Khr.Sc.Swapchain
@@ -114,11 +117,11 @@ swapChain = unsafePerformIO $ newIORef NullHandle
 swapChainImages :: IORef [Vk.Img.Image]
 swapChainImages = unsafePerformIO $ newIORef []
 
-swapChainImageFormat :: IORef Vk.Format
+swapChainImageFormat :: IORef Vk.C.Format
 swapChainImageFormat = unsafePerformIO $ newIORef 0
 
-swapChainExtent :: IORef Vk.Extent2d
-swapChainExtent = unsafePerformIO $ newIORef $ Vk.Extent2d 0 0
+swapChainExtent :: IORef Vk.C.Extent2d
+swapChainExtent = unsafePerformIO $ newIORef $ Vk.C.Extent2d 0 0
 
 swapChainImageViews :: IORef [Vk.ImageView.ImageView]
 swapChainImageViews = unsafePerformIO $ newIORef []
@@ -138,10 +141,10 @@ swapChainFramebuffers = unsafePerformIO $ newIORef []
 commandPool :: IORef Vk.CP.CommandPool
 commandPool = unsafePerformIO $ newIORef NullPtr
 
-commandBuffers :: IORef [Vk.CommandBuffer]
+commandBuffers :: IORef [Vk.C.CommandBuffer]
 commandBuffers = unsafePerformIO $ newIORef []
 
-imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Semaphore
+imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
 (imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
 	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
 
@@ -204,23 +207,19 @@ createInstance = ($ pure) $ runContT do
 		mapM_ BSC.putStrLn $ ("\t" <>) . BSC.takeWhile (/= '\NUL')
 				. Vk.Enumerate.extensionPropertiesExtensionName
 			<$> extensions
-	hello <- lift $ newCString "Hello Triangle"
-	noEngine <- lift $ newCString "No Engine"
 	Vk.Ext.DU.Msngr.CreateInfo_ fDebugCreateInfo <-
 		lift populateDebugMessengerCreateInfo
 	pDebugCreateInfo <- ContT $ withForeignPtr fDebugCreateInfo
-	let	Vk.ApplicationInfo_ fAppInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoSType = (),
-			Vk.applicationInfoPNext = NullPtr,
-			Vk.applicationInfoPApplicationName = hello,
+	let	appInfo = Vk.ApplicationInfo {
+			Vk.applicationInfoNext = Nothing,
+			Vk.applicationInfoApplicationName = "Hello Triangle",
 			Vk.applicationInfoApplicationVersion =
 				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoPEngineName = noEngine,
+			Vk.applicationInfoEngineName = "No Engine",
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion =
-				Vk.makeApiVersion 0 1 0 0 }
-	pAppInfo <- ContT $ withForeignPtr fAppInfo
+			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+	pAppInfo <- Vk.applicationInfoToCore @() appInfo
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
@@ -548,9 +547,9 @@ createSwapChain = ($ pure) $ runContT do
 				Vk.Khr.Sc.createInfoImageExtent = extent,
 				Vk.Khr.Sc.createInfoImageArrayLayers = 1,
 				Vk.Khr.Sc.createInfoImageUsage =
-					Vk.imageUsageColorAttachmentBit,
+					Vk.C.imageUsageColorAttachmentBit,
 				Vk.Khr.Sc.createInfoImageSharingMode =
-					Vk.sharingModeExclusive,
+					Vk.C.sharingModeExclusive,
 				Vk.Khr.Sc.createInfoQueueFamilyIndexCount = 0,
 				Vk.Khr.Sc.createInfoPQueueFamilyIndices =
 					NullPtr,
@@ -602,9 +601,9 @@ chooseSwapPresentMode availablePresentModes =
 		then Vk.Khr.Present.modeMailbox
 		else Vk.Khr.Present.modeFifo
 
-chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.Extent2d
+chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.C.Extent2d
 chooseSwapExtent capabilities =
-	if Vk.extent2dWidth ce /= uint32Max
+	if Vk.C.extent2dWidth ce /= uint32Max
 		then ce
 		else error "Ah!"
 	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
@@ -765,15 +764,15 @@ createGraphicsPipeline = ($ pure) $ runContT do
 			Vk.Ppl.IA.createInfoFlags = 0,
 			Vk.Ppl.IA.createInfoTopology = Vk.PrmTplgy.triangleList,
 			Vk.Ppl.IA.createInfoPrimitiveRestartEnable = vkFalse }
-		Vk.Viewport_ fViewport = Vk.Viewport {
-			Vk.viewportX = 0, Vk.viewportY = 0,
-			Vk.viewportWidth = fromIntegral $ Vk.extent2dWidth sce,
-			Vk.viewportHeight = fromIntegral $ Vk.extent2dHeight sce,
-			Vk.viewportMinDepth = 0, Vk.viewportMaxDepth = 1 }
-		Vk.Rect2d_ fScissor = Vk.Rect2d {
-			Vk.rect2dOffset = Vk.Offset2d {
-				Vk.offset2dX = 0, Vk.offset2dY = 0 },
-			Vk.rect2dExtent = sce }
+		Vk.C.Viewport_ fViewport = Vk.C.Viewport {
+			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
+			Vk.C.viewportWidth = fromIntegral $ Vk.C.extent2dWidth sce,
+			Vk.C.viewportHeight = fromIntegral $ Vk.C.extent2dHeight sce,
+			Vk.C.viewportMinDepth = 0, Vk.C.viewportMaxDepth = 1 }
+		Vk.C.Rect2d_ fScissor = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d {
+				Vk.C.offset2dX = 0, Vk.C.offset2dY = 0 },
+			Vk.C.rect2dExtent = sce }
 	pViewport <- ContT $ withForeignPtr fViewport
 	pScissor <- ContT $ withForeignPtr fScissor
 	let	Vk.Ppl.VP.CreateInfo_ fViewportState = Vk.Ppl.VP.CreateInfo {
@@ -940,8 +939,8 @@ createFramebuffer1 attachment = ($ pure) $ runContT do
 			Vk.Fb.createInfoRenderPass = rndrPss,
 			Vk.Fb.createInfoAttachmentCount = 1,
 			Vk.Fb.createInfoPAttachments = attachments,
-			Vk.Fb.createInfoWidth = Vk.extent2dWidth sce,
-			Vk.Fb.createInfoHeight = Vk.extent2dHeight sce,
+			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
+			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
 			Vk.Fb.createInfoLayers = 1 }
 	dvc <- lift $ readIORef device
 	pFramebufferInfo <- ContT $ withForeignPtr fFramebufferInfo
@@ -978,7 +977,7 @@ createCommandBuffers = do
 	writeIORef commandBuffers cbs
 	uncurry beginCommandBuffer1 `mapM_` zip cbs scfbs
 
-createCommandBuffersGen :: Int -> IO [Vk.CommandBuffer]
+createCommandBuffersGen :: Int -> IO [Vk.C.CommandBuffer]
 createCommandBuffersGen cbc = ($ pure) $ runContT do
 	cp <- lift $ readIORef commandPool
 	let	Vk.CB.AllocateInfo_ fAllocInfo = Vk.CB.AllocateInfo {
@@ -994,7 +993,7 @@ createCommandBuffersGen cbc = ($ pure) $ runContT do
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
-beginCommandBuffer1 :: Vk.CommandBuffer -> Framebuffer -> IO ()
+beginCommandBuffer1 :: Vk.C.CommandBuffer -> Framebuffer -> IO ()
 beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
 			Vk.CB.beginInfoSType = (),
@@ -1014,9 +1013,9 @@ beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 			Vk.RndrPss.beginInfoPNext = NullPtr,
 			Vk.RndrPss.beginInfoRenderPass = rp,
 			Vk.RndrPss.beginInfoFramebuffer = fb,
-			Vk.RndrPss.beginInfoRenderArea = Vk.Rect2d {
-				Vk.rect2dOffset = Vk.Offset2d 0 0,
-				Vk.rect2dExtent = sce },
+			Vk.RndrPss.beginInfoRenderArea = Vk.C.Rect2d {
+				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+				Vk.C.rect2dExtent = sce },
 			Vk.RndrPss.beginInfoClearValueCount = 1,
 			Vk.RndrPss.beginInfoPClearColorValueFloats =
 				pClearColor }
@@ -1089,19 +1088,19 @@ drawFrame = ($ pure) $ runContT do
 	pSignalSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pSignalSemaphores . (: [])
 		=<< readIORef renderFinishedSemaphore
-	let	Vk.SubmitInfo_ fSubmitInfo = Vk.SubmitInfo {
-			Vk.submitInfoSType = (),
-			Vk.submitInfoPNext = NullPtr,
-			Vk.submitInfoWaitSemaphoreCount = 1,
-			Vk.submitInfoPWaitSemaphores = pWaitSemaphores,
-			Vk.submitInfoPWaitDstStageMask = pWaitStages,
-			Vk.submitInfoCommandBufferCount = 1,
-			Vk.submitInfoPCommandBuffers = pcb1,
-			Vk.submitInfoSignalSemaphoreCount = 1,
-			Vk.submitInfoPSignalSemaphores = pSignalSemaphores }
+	let	Vk.C.SubmitInfo_ fSubmitInfo = Vk.C.SubmitInfo {
+			Vk.C.submitInfoSType = (),
+			Vk.C.submitInfoPNext = NullPtr,
+			Vk.C.submitInfoWaitSemaphoreCount = 1,
+			Vk.C.submitInfoPWaitSemaphores = pWaitSemaphores,
+			Vk.C.submitInfoPWaitDstStageMask = pWaitStages,
+			Vk.C.submitInfoCommandBufferCount = 1,
+			Vk.C.submitInfoPCommandBuffers = pcb1,
+			Vk.C.submitInfoSignalSemaphoreCount = 1,
+			Vk.C.submitInfoPSignalSemaphores = pSignalSemaphores }
 	gq <- lift $ readIORef graphicsQueue
 	pSubmitInfo <- ContT $ withForeignPtr fSubmitInfo
-	lift do	r <- Vk.queueSubmit gq 1 pSubmitInfo NullHandle
+	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo NullHandle
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchains . (: []) =<< readIORef swapChain
@@ -1118,7 +1117,7 @@ drawFrame = ($ pure) $ runContT do
 	pPresentInfo <- ContT $ withForeignPtr fPresentInfo
 	lift do	r <- Vk.Khr.queuePresent pq pPresentInfo
 		when (r /= success) $ error "bad"
-		r' <- Vk.queueWaitIdle =<< readIORef presentQueue
+		r' <- Vk.C.queueWaitIdle =<< readIORef presentQueue
 		when (r' /= success) $ error "bad"
 	lift $ putStrLn "=== END ==="
 

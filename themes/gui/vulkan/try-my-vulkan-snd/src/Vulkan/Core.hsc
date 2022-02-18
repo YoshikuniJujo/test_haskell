@@ -19,8 +19,7 @@ import Vulkan.Fence
 
 #include <vulkan/vulkan.h>
 
-newtype ApiVersion = ApiVersion #{type uint32_t}
-	deriving (Show, Eq, Ord, Storable)
+type ApiVersion = #{type uint32_t}
 
 struct "ApplicationInfo" #{size VkApplicationInfo}
 		#{alignment VkApplicationInfo} [
@@ -44,12 +43,14 @@ struct "ApplicationInfo" #{size VkApplicationInfo}
 		[| #{poke VkApplicationInfo, engineVersion} |]),
 	("apiVersion", ''ApiVersion,
 		[| #{peek VkApplicationInfo, apiVersion} |],
-		[| #{poke VkApplicationInfo, apiVersion} |])
-	]
+		[| #{poke VkApplicationInfo, apiVersion} |]) ]
 	[''Show]
 
 foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
-	Word8 -> Word8 -> Word8 -> Word16 -> ApiVersion
+	Word8 -> Word8 -> Word16 -> Word16 -> ApiVersion
+
+foreign import capi "vulkan/vulkan.h value VK_API_VERSION_1_0" apiVersion_1_0 ::
+	ApiVersion
 
 type PtrApplicationInfo = Ptr ApplicationInfo
 
