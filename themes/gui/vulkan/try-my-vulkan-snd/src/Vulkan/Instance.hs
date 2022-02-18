@@ -2,4 +2,4 @@
 
 module Vulkan.Instance where
 
-import qualified Vulkan.Instance.Internal as I
+import qualified Vulkan.Instance.Core as C

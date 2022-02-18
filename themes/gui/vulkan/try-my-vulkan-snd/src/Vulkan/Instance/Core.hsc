@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Instance.Internal where
+module Vulkan.Instance.Core where
 
 import Foreign.Ptr
 import Foreign.C.Struct
@@ -13,6 +13,7 @@ import Data.Int
 
 import Vulkan
 import Vulkan.Base
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 
 #include <vulkan/vulkan.h>
 
@@ -48,6 +49,6 @@ data InstanceTag
 type Instance = Ptr InstanceTag
 
 foreign import ccall "vkCreateInstance" create ::
-	Ptr CreateInfo -> Ptr () -> Ptr Instance -> IO #{type VkResult}
+	Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr Instance -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyInstance" destroy :: Instance -> Ptr () -> IO ()

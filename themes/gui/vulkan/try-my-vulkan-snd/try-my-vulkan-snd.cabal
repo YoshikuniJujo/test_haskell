@@ -28,6 +28,7 @@ library
       Tools
       Vulkan
       Vulkan.Access
+      Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment
       Vulkan.Base
       Vulkan.Blend
@@ -50,7 +51,7 @@ library
       Vulkan.Image
       Vulkan.ImageView
       Vulkan.Instance
-      Vulkan.Instance.Internal
+      Vulkan.Instance.Core
       Vulkan.Khr
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Present
