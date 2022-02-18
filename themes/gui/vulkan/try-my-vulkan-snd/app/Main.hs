@@ -23,13 +23,14 @@ import Data.Word
 import System.IO hiding (readFile)
 import System.IO.Unsafe
 
-import Tools
 import Vulkan.Base
 
 import qualified Data.ByteString.Char8 as BSC
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Vulkan as Vk
+import qualified Vulkan.Instance as Vk.Instance
+import qualified Vulkan.Instance.Enum as Vk.Instance
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Instance.Core as Vk.Instance.I
@@ -207,9 +208,7 @@ createInstance = ($ pure) $ runContT do
 		mapM_ BSC.putStrLn $ ("\t" <>) . BSC.takeWhile (/= '\NUL')
 				. Vk.Enumerate.extensionPropertiesExtensionName
 			<$> extensions
-	Vk.Ext.DU.Msngr.CreateInfo_ fDebugCreateInfo <-
-		lift populateDebugMessengerCreateInfo
-	pDebugCreateInfo <- ContT $ withForeignPtr fDebugCreateInfo
+	cDebugCreateInfo <- lift populateDebugMessengerCreateInfo
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -219,23 +218,20 @@ createInstance = ($ pure) $ runContT do
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-	pAppInfo <- Vk.applicationInfoToCore @() appInfo
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
-	(glfwExtensionCount, pGlfwExtensions) <- getRequiredExtensions
-	let	Vk.Instance.I.CreateInfo_ fCreateInfo = Vk.Instance.I.CreateInfo {
-			Vk.Instance.I.createInfoSType = (),
-			Vk.Instance.I.createInfoPNext = castPtr pDebugCreateInfo,
-			Vk.Instance.I.createInfoFlags = 0,
-			Vk.Instance.I.createInfoPApplicationInfo = pAppInfo,
-			Vk.Instance.I.createInfoEnabledLayerCount = 1,
-			Vk.Instance.I.createInfoPpEnabledLayerNames = pValidationLayers,
-			Vk.Instance.I.createInfoEnabledExtensionCount =
-				glfwExtensionCount,
-			Vk.Instance.I.createInfoPpEnabledExtensionNames =
-				pGlfwExtensions }
-	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	requiredExtensions <- getRequiredExtensionList
+	let	createInfo = Vk.Instance.CreateInfo {
+			Vk.Instance.createInfoNext = Just cDebugCreateInfo,
+			Vk.Instance.createInfoFlags =
+				Vk.Instance.CreateFlagsZero,
+			Vk.Instance.createInfoApplicationInfo = appInfo,
+			Vk.Instance.createInfoEnabledLayerNames = [
+				"VK_LAYER_KHRONOS_validation" ],
+			Vk.Instance.createInfoEnabledExtensionNames =
+				requiredExtensions }
+	pCreateInfo <- Vk.Instance.createInfoToCore @_ @() createInfo
 	pInstance <- ContT alloca
 	lift do	result <- Vk.Instance.I.create pCreateInfo NullPtr pInstance
 		when (result /= success) $ error "failed to create instance!"
@@ -255,14 +251,12 @@ checkValidationLayerSupport = ($ pure) $ runContT do
 		print layerNames
 		pure $ "VK_LAYER_KHRONOS_validation" `elem` layerNames
 
-getRequiredExtensions :: ContT r IO (Word32, Ptr CString)
-getRequiredExtensions = do
+getRequiredExtensionList :: ContT r IO [String]
+getRequiredExtensionList = do
 	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
 	extDebugUtilsExtensionName <- ContT $ withCString "VK_EXT_debug_utils"
 	let	extensions = extDebugUtilsExtensionName : glfwExtensions
-	pExtensions <- cStringListToCStringArray extensions
-	let	extensionCount = fromIntegral $ length extensions
-	pure (extensionCount, pExtensions)
+	lift $ peekCString `mapM` extensions
 
 setupDebugMessenger :: IO ()
 setupDebugMessenger = ($ pure) $ runContT do
@@ -1067,7 +1061,7 @@ mainLoop Global { globalWindow = win } = do
 
 drawFrame :: IO ()
 drawFrame = ($ pure) $ runContT do
-	lift $ putStrLn "=== DRAW FRAME ==="
+--	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
 	dvc <- lift $ readIORef device
 	sc <- lift $ readIORef swapChain
@@ -1076,7 +1070,7 @@ drawFrame = ($ pure) $ runContT do
 			dvc sc uint64Max ias NullHandle pImageIndex
 		when (r /= success) $ error "bad"
 	(fromIntegral -> imageIndex) <- lift $ peek pImageIndex
-	lift $ print imageIndex
+--	lift $ print imageIndex
 	pWaitSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitSemaphores . (: [])
 		=<< readIORef imageAvailableSemaphore
@@ -1119,7 +1113,7 @@ drawFrame = ($ pure) $ runContT do
 		when (r /= success) $ error "bad"
 		r' <- Vk.C.queueWaitIdle =<< readIORef presentQueue
 		when (r' /= success) $ error "bad"
-	lift $ putStrLn "=== END ==="
+--	lift $ putStrLn "=== END ==="
 
 cleanup :: Global -> IO ()
 cleanup Global { globalWindow = win } = do

@@ -30,6 +30,12 @@ maybeToPointer = \case Nothing -> pure NullPtr; Just x -> ContT $ withPointer x
 stringToCString :: String -> ContT r IO CString
 stringToCString = ContT . withCString
 
+stringListToCStringArray :: [String] -> ContT r IO (Ptr CString)
+stringListToCStringArray strs = do
+	cstrl <- stringToCString `mapM` strs
+	pcstra <- ContT . allocaArray $ length strs
+	pcstra <$ lift (pokeArray pcstra cstrl)
+
 type PtrVoid = Ptr ()
 
 pattern NullPtr :: Ptr a

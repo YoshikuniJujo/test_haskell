@@ -127,7 +127,6 @@ header tnm icds hsnm =
 
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module |] ++ "Vulkan." ++ hsnm ++ [nowdoc| where

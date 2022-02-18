@@ -4,18 +4,9 @@
 module Tools where
 
 import Foreign.Ptr
-import Foreign.Marshal.Array
 import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.String
-import Control.Monad.Cont
-
-cStringListToCStringArray :: [CString] -> ContT r IO (Ptr CString)
-cStringListToCStringArray cstrs = do
-	pcstrs <- ContT $ allocaArray cstrc
-	lift $ pokeArray pcstrs cstrs
-	pure pcstrs
-	where cstrc = length cstrs
 
 pokeCString :: CString -> String -> IO ()
 pokeCString cs str = withCStringLen str \(cs_, ln) -> do
