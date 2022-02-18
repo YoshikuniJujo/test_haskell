@@ -45,6 +45,8 @@ library
       Vulkan.Device.Queue
       Vulkan.Enum
       Vulkan.Enumerate
+      Vulkan.Exception
+      Vulkan.Exception.Enum
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Fence
       Vulkan.Format
@@ -73,6 +75,7 @@ library
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.ShaderStage
+      Vulkan.Pipeline.ShaderStage.Enum
       Vulkan.Pipeline.TessellationState
       Vulkan.Pipeline.VertexInputState
       Vulkan.Pipeline.ViewportState
@@ -99,6 +102,7 @@ library
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , monads-tf
     , nowdoc
   default-language: Haskell2010
@@ -116,6 +120,7 @@ executable try-my-vulkan-snd-exe
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , monads-tf
     , nowdoc
     , try-my-vulkan-snd
@@ -135,6 +140,7 @@ test-suite try-my-vulkan-snd-test
     , bytestring
     , c-enum
     , c-struct
+    , exception-hierarchy
     , monads-tf
     , nowdoc
     , try-my-vulkan-snd

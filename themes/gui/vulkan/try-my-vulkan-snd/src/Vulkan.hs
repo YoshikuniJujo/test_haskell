@@ -14,6 +14,9 @@ import Data.Word
 import Vulkan.Base
 
 import qualified Vulkan.Core as C
+import qualified Vulkan.Instance.Core as Instance.C
+
+newtype Instance = Instance Instance.C.Instance deriving Show
 
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,

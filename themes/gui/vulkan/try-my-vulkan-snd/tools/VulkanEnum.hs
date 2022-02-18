@@ -5,7 +5,9 @@ module VulkanEnum where
 import MakeEnum
 
 make :: IO ()
-make = createFile "/usr/include/vulkan/vulkan_core.h" "Enum" [
-	("SystemAllocationScope","VkSystemAllocationScope"),
-	("InternalAllocationType", "VkInternalAllocationType")
-	]
+make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum" ["Data.Word"] [
+	("SystemAllocationScope","VkSystemAllocationScope",
+		["Show", "Eq", "Storable"]),
+	("InternalAllocationType", "VkInternalAllocationType",
+		["Show", "Eq", "Storable"])
+	] []

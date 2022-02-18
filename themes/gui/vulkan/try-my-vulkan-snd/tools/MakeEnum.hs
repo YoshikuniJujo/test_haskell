@@ -8,9 +8,12 @@ import Data.List
 import Data.Char
 import Text.Nowdoc
 import System.Environment
+import System.Directory
+import System.FilePath
 
 type HeaderFile = FilePath
 type ModuleName = String
+type IncludeModule = String
 type HaskellName = String
 type CName = String
 type ExtraCode = String
@@ -24,18 +27,32 @@ createSingleFile :: HeaderFile -> ModuleName -> HaskellName -> CName -> ExtraCod
 createSingleFile hf mnm hsnm snm ext = do
 	prg <- getProgName
 	src <- readFile hf
-	writeFile ("../src/Vulkan/" ++ mnm ++ ".hsc") $
+	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
 		header prg [] mnm ++
 		makeEnum src (hsnm, snm, ["Show", "Eq", "Storable"]) ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+
+substitute :: Char -> Char -> String -> String
+substitute x y = map (\c -> if c == x then y else c)
 
 createFile :: HeaderFile -> ModuleName -> [(HaskellName, CName)] -> IO ()
 createFile hf mnm hscnms = do
 	prg <- getProgName
 	src <- readFile hf
-	writeFile ("../src/Vulkan/" ++ mnm ++ ".hsc") $
-		header prg [] mnm ++ intercalate "\n" (map (makeEnum src) hscnmdrvs)
+	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
+		header prg [] mnm ++ intercalate "\n" (map (makeEnum' src mnm) hscnmdrvs)
 	where hscnmdrvs = (`snocTuple2` ["Show", "Eq", "Storable"]) <$> hscnms
+
+createFile' ::
+	HeaderFile -> ModuleName -> [IncludeModule] ->
+	[(HaskellName, CName, [DerivName])] -> ExtraCode -> IO ()
+createFile' hf mnm icms hscnmdrvs ext = do
+	prg <- getProgName
+	src <- readFile hf
+	createDirectoryIfMissing True . takeDirectory $ "../src/Vulkan/" ++ substitute '.' '/' mnm
+	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
+		header prg icms mnm ++ intercalate "\n" (map (makeEnum' src mnm) hscnmdrvs) ++
+		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
 snocTuple2 :: (a, b) -> c -> (a, b, c)
 snocTuple2 (x, y) z = (x, y, z)
@@ -47,6 +64,28 @@ makeEnum src (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 			. removeBetaExtensions $ lines src ) ++
 		" ]\n"
 
+makeEnum' :: HeaderCode -> ModuleName -> (HaskellName, CName, [DerivName]) -> HaskellCode
+makeEnum' src mnm (hsnm, cnm, drvs) = body hsnm cnm drvs ++
+	intercalate ",\n"
+		(map (makeItem' mnm) . takeDefinition cnm
+			. removeBetaExtensions $ lines src ) ++
+		" ]\n"
+
+modNameToRemStr :: ModuleName -> String
+modNameToRemStr = filter (/= '.') . removeTail ".Enum"
+
+removeTail :: String -> String -> String
+removeTail rm str
+	| rm `isSuffixOf` str = take ln str
+	| otherwise = str
+	where ln = length str - length rm
+
+removeInit :: String -> String -> String
+removeInit rm str
+	| rm `isPrefixOf` str = drop ln str
+	| otherwise = str
+	where ln = length rm
+
 removeBetaExtensions :: [String] -> [String]
 removeBetaExtensions [] = []
 removeBetaExtensions ("#ifdef VK_ENABLE_BETA_EXTENSIONS" : ls) =
@@ -55,6 +94,7 @@ removeBetaExtensions ("#ifdef VK_ENABLE_BETA_EXTENSIONS" : ls) =
 		(_ : ls') -> removeBetaExtensions ls'
 removeBetaExtensions (l : ls) = l : removeBetaExtensions ls
 
+{-
 makeEnum' :: String -> [String] -> String -> String -> [String] -> String -> IO ()
 makeEnum' hf icds hsnm cnm drvs ext = do
 	prg <- getProgName
@@ -63,6 +103,7 @@ makeEnum' hf icds hsnm cnm drvs ext = do
 		header prg icds hsnm ++ body hsnm cnm drvs ++
 			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+-}
 
 makeEnum'' :: String -> [String] -> String -> String -> [(String, Const)] -> [String] -> String -> IO ()
 makeEnum'' hf icds hsnm cnm elms drvs ext = do
@@ -71,7 +112,7 @@ makeEnum'' hf icds hsnm cnm elms drvs ext = do
 	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
 		header prg icds hsnm ++ body hsnm cnm drvs ++
 			intercalate ",\n" (
-				map (uncurry makeItemFromConst)
+				map (uncurry $ makeItemFromConst "")
 					. (elms ++)
 					. map makeVarConstPair
 					. takeDefinition cnm $ lines src
@@ -80,7 +121,7 @@ makeEnum'' hf icds hsnm cnm elms drvs ext = do
 
 takeDefinition :: String -> [String] -> [String]
 takeDefinition nm =
-	map (head . words) . takeWhile (not . (== "} " ++ nm ++ ";")) . tail
+	map (head . words) . takeWhile (not . (== "} " ++ nm ++ ";")) . tail'
 		. dropWhile (not . (("typedef enum " ++ nm ++ " {") `isPrefixOf`))
 
 data Const = Int Int | Const String deriving Show
@@ -89,18 +130,27 @@ makeVarConstPair :: String -> (String, Const)
 makeVarConstPair cnst = (nm, Const cnst)
 	where nm = concat . map capitalize . tail $ sep '_' cnst
 
+tail' :: [a] -> [a]
+tail' [] = error "bad"
+tail' xs = tail xs
+
 showConst :: Const -> String
 showConst (Int n) = show n
 showConst (Const cnst) = "#{const " ++ cnst ++ "}"
 
-makeItemFromConst :: String -> Const -> String
-makeItemFromConst nm cnst = "\t(\"" ++ nm ++ "\"," ++ sp ++ cst ++ ")"
+makeItemFromConst :: String -> String -> Const -> String
+makeItemFromConst rm nm cnst = "\t(\"" ++ removeInit rm nm ++ "\"," ++ sp ++ cst ++ ")"
 	where
 	cst = showConst cnst
 	sp = if 8 + length nm + 5 + length cst + 2 > 80 then "\n\t\t" else " "
 
 makeItem :: String -> String
-makeItem = uncurry makeItemFromConst . makeVarConstPair
+makeItem = uncurry (makeItemFromConst "") . makeVarConstPair
+
+makeItem' :: ModuleName -> String -> String
+makeItem' mnm =
+	uncurry (makeItemFromConst $ modNameToRemStr mnm) . makeVarConstPair
+
 {-
 makeItem cnst = '\t' : nm ++ sp ++ cst
 	where
@@ -119,7 +169,7 @@ capitalize = \case
 	c : cs -> toUpper c : map toLower cs
 
 header :: String -> [String] -> String -> String
-header tnm icds hsnm =
+header tnm icds mnm =
 	"-- This file is automatically generated by the tools/" ++ tnm ++
 	".hs" ++ "\n--\t% stack runghc --cwd tools/ " ++ tnm ++
 	[nowdoc|
@@ -127,13 +177,13 @@ header tnm icds hsnm =
 
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module |] ++ "Vulkan." ++ hsnm ++ [nowdoc| where
+module |] ++ "Vulkan." ++ mnm ++ [nowdoc| where
 
 import Foreign.Storable
 import Foreign.C.Enum
-import Data.Word
 |] ++ unlines (("import " ++) <$> icds) ++ [nowdoc|
 
 #include <vulkan/vulkan.h>
