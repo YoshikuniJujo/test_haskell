@@ -23,3 +23,5 @@ enum "CreateFlagBits" ''#{type VkPipelineShaderStageCreateFlagBits}
 		#{const VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_PIPELINE_SHADER_STAGE_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
+type CreateFlags = CreateFlagBits

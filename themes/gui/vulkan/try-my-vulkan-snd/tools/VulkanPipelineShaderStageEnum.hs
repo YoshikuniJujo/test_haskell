@@ -9,4 +9,4 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Pipeline.ShaderStage.Enu
 	["Data.Word", "Data.Bits"]
 	[("CreateFlagBits", "VkPipelineShaderStageCreateFlagBits",
 		["Show", "Eq", "Storable", "Bits"])]
-	""
+	"type CreateFlags = CreateFlagBits"
