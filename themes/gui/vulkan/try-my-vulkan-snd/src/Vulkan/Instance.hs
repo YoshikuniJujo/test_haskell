@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,14 +7,20 @@ module Vulkan.Instance where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
 
 import Vulkan
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.Exception.Enum
+import Vulkan.AllocationCallbacks (AllocationCallbacks)
 import Vulkan.Instance.Enum
 
 import qualified Vulkan.Instance.Core as C
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 
 data CreateInfo n n' = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -47,3 +54,13 @@ createInfoToCore CreateInfo {
 			C.createInfoEnabledExtensionCount = eenc,
 			C.createInfoPpEnabledExtensionNames = peena }
 	ContT $ withForeignPtr fCreateInfo
+
+create :: (Pointable n, Pointable n2, Pointable n3) =>
+	CreateInfo n n2 -> Maybe (AllocationCallbacks n3) -> IO Instance
+create ci mac = (Instance <$>) . ($ pure) $ runContT do
+	pcci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pist <- ContT alloca
+	lift do r <- C.create pcci pac pist
+		throwUnlessSuccess $ Result r
+		peek pist

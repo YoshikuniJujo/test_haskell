@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -6,6 +6,7 @@ module Vulkan.AllocationCallbacks where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Control.Monad.Cont
 
 import Vulkan.Base
 
@@ -20,10 +21,14 @@ data AllocationCallbacks a = AllocationCallbacks {
 		I.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: I.FnInternalFreeNotification a }
 
-withAllocationCallbacksPtr :: Pointable a =>
-	AllocationCallbacks a -> (Ptr I.AllocationCallbacks -> IO b) -> IO b
-withAllocationCallbacksPtr ac f =
-	withAllocationCallbacks ac \(I.AllocationCallbacks_ fac) ->
+maybeToCore :: Pointable n =>
+	Maybe (AllocationCallbacks n) -> ContT r IO (Ptr I.AllocationCallbacks)
+maybeToCore = \case Nothing -> pure NullPtr; Just ac -> toCore ac
+
+toCore :: Pointable n =>
+	AllocationCallbacks n -> ContT r IO (Ptr I.AllocationCallbacks)
+toCore ac = ContT
+	$ \f -> withAllocationCallbacks ac \(I.AllocationCallbacks_ fac) ->
 		withForeignPtr fac f
 
 withAllocationCallbacks :: Pointable a =>

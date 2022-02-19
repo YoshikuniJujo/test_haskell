@@ -209,6 +209,10 @@ createInstance = ($ pure) $ runContT do
 				. Vk.Enumerate.extensionPropertiesExtensionName
 			<$> extensions
 	cDebugCreateInfo <- lift populateDebugMessengerCreateInfo
+	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
+	pValidationLayers <- ContT $ allocaArray 1
+	lift $ pokeArray pValidationLayers [pValidationLayer]
+	requiredExtensions <- getRequiredExtensionList
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -218,11 +222,7 @@ createInstance = ($ pure) $ runContT do
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
-	pValidationLayers <- ContT $ allocaArray 1
-	lift $ pokeArray pValidationLayers [pValidationLayer]
-	requiredExtensions <- getRequiredExtensionList
-	let	createInfo = Vk.Instance.CreateInfo {
+		createInfo = Vk.Instance.CreateInfo {
 			Vk.Instance.createInfoNext = Just cDebugCreateInfo,
 			Vk.Instance.createInfoFlags =
 				Vk.Instance.CreateFlagsZero,
@@ -231,11 +231,8 @@ createInstance = ($ pure) $ runContT do
 				"VK_LAYER_KHRONOS_validation" ],
 			Vk.Instance.createInfoEnabledExtensionNames =
 				requiredExtensions }
-	pCreateInfo <- Vk.Instance.createInfoToCore @_ @() createInfo
-	pInstance <- ContT alloca
-	lift do	result <- Vk.Instance.I.create pCreateInfo NullPtr pInstance
-		when (result /= success) $ error "failed to create instance!"
-		writeIORef instance_ =<< peek pInstance
+	lift do	Vk.Instance cist <- Vk.Instance.create @_ @() @() createInfo Nothing
+		writeIORef instance_ cist
 
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport = ($ pure) $ runContT do
