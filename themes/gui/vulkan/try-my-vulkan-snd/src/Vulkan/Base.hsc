@@ -14,6 +14,10 @@ import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString.Builder as BSB
+
 #include <vulkan/vulkan.h>
 
 class Pointable a where
@@ -74,3 +78,6 @@ type Framebuffer = Ptr FramebufferTag
 
 uint64Max :: #{type uint64_t}
 uint64Max = #{const UINT64_MAX}
+
+stringToByteString :: String -> BS.ByteString
+stringToByteString = LBS.toStrict . BSB.toLazyByteString . BSB.stringUtf8

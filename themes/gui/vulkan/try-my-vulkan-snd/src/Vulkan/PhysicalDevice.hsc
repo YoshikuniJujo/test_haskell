@@ -18,7 +18,7 @@ import Tools
 import Vulkan.Instance.Core (Instance)
 import Vulkan.Khr.Surface (Surface)
 
-import Vulkan.Enumerate (ExtensionProperties(..))
+import Vulkan.Enumerate.Core (ExtensionProperties(..))
 
 import qualified Vulkan.Queue.Family as Queue.Family
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Enumerate where
+module Vulkan.Enumerate.Core where
 
 import Foreign.Ptr
 import Foreign.Marshal.Utils

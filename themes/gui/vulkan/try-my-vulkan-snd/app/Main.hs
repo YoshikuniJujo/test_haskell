@@ -34,7 +34,7 @@ import qualified Vulkan.Instance.Enum as Vk.Instance
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Instance.Core as Vk.Instance.I
-import qualified Vulkan.Enumerate as Vk.Enumerate
+import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
@@ -201,16 +201,16 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 			$ error "validation layers requested, but no available!"
 	pExtensionCount <- ContT $ alloca
 	(fromIntegral -> extensionCount) <- lift do
-		_ <- Vk.Enumerate.instanceExtensionProperties
+		_ <- Vk.Enumerate.C.instanceExtensionProperties
 			NullPtr pExtensionCount NullPtr
 		peek pExtensionCount
 	pExtensions <- ContT $ allocaArray extensionCount
-	lift do	_ <- Vk.Enumerate.instanceExtensionProperties
+	lift do	_ <- Vk.Enumerate.C.instanceExtensionProperties
 			NullPtr pExtensionCount pExtensions
 		extensions <- peekArray extensionCount pExtensions
 		putStrLn "availbale extensions:"
 		mapM_ BSC.putStrLn $ ("\t" <>) . BSC.takeWhile (/= '\NUL')
-				. Vk.Enumerate.extensionPropertiesExtensionName
+				. Vk.Enumerate.C.extensionPropertiesExtensionName
 			<$> extensions
 	cDebugCreateInfo <- lift populateDebugMessengerCreateInfo
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
@@ -242,12 +242,12 @@ checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport = ($ pure) $ runContT do
 	pLayerCount <- ContT alloca
 	(fromIntegral -> layerCount) <- lift do
-		_ <- Vk.Enumerate.instanceLayerProperties pLayerCount NullPtr
+		_ <- Vk.Enumerate.C.instanceLayerProperties pLayerCount NullPtr
 		peek pLayerCount
 	pAvailableLayers <- ContT $ allocaArray layerCount
-	lift do	_ <- Vk.Enumerate.instanceLayerProperties pLayerCount pAvailableLayers
+	lift do	_ <- Vk.Enumerate.C.instanceLayerProperties pLayerCount pAvailableLayers
 		layerNames <- (BSC.takeWhile (/= '\NUL')
-				. Vk.Enumerate.layerPropertiesLayerName <$>)
+				. Vk.Enumerate.C.layerPropertiesLayerName <$>)
 			<$> peekArray layerCount pAvailableLayers
 		print layerNames
 		pure $ "VK_LAYER_KHRONOS_validation" `elem` layerNames
@@ -354,7 +354,7 @@ checkDeviceExtensionSupport dvc = ($ pure) $ runContT do
 	pAvailableExtensions <- ContT $ allocaArray extensionCount
 	lift do	_ <- Vk.PhysicalDevice.enumerateExtensionProperties
 			dvc NullPtr pExtensionCount pAvailableExtensions
-		es <- map (BSC.takeWhile (/= '\NUL') . Vk.Enumerate.extensionPropertiesExtensionName)
+		es <- map (BSC.takeWhile (/= '\NUL') . Vk.Enumerate.C.extensionPropertiesExtensionName)
 			<$> peekArray extensionCount pAvailableExtensions
 		print es
 		pure $ elem "VK_KHR_swapchain" es
