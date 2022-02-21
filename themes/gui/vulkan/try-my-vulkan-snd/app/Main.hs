@@ -35,7 +35,6 @@ import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Enumerate as Vk.Enumerate
 
 import qualified Vulkan.Core as Vk.C
-import qualified Vulkan.Instance.Core as Vk.Instance.I
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
@@ -1127,10 +1126,10 @@ cleanup Global { globalWindow = win, globalInstance = rist } = do
 	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy dvc NullPtr
-	Vk.Instance ist <- readIORef rist
-	(\sfc -> Vk.Khr.Sfc.destroy ist sfc NullPtr) =<< readIORef surface
-	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
+	ist@(Vk.Instance cist) <- readIORef rist
+	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
+	(\dm -> Vk.Ext.DU.Msngr.destroy cist dm NullPtr)
 		=<< readIORef debugMessenger
-	Vk.Instance.I.destroy ist NullPtr
+	Vk.Instance.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate

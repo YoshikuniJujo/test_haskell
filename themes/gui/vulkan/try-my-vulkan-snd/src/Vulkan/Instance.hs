@@ -64,3 +64,8 @@ create ci mac = (Instance <$>) . ($ pure) $ runContT do
 	lift do r <- C.create pcci pac pist
 		throwUnlessSuccess $ Result r
 		peek pist
+
+destroy :: (Pointable n) => Instance -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Instance cist) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.destroy cist pac

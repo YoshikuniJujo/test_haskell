@@ -51,4 +51,5 @@ type Instance = Ptr InstanceTag
 foreign import ccall "vkCreateInstance" create ::
 	Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr Instance -> IO #{type VkResult}
 
-foreign import ccall "vkDestroyInstance" destroy :: Instance -> Ptr () -> IO ()
+foreign import ccall "vkDestroyInstance" destroy ::
+	Instance -> Ptr AllocationCallbacks -> IO ()
