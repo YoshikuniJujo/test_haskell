@@ -50,3 +50,32 @@ instanceLayerProperties = ($ pure) . runContT
 		lift do	r <- C.instanceLayerProperties pLayerCount pLayerProps
 			throwUnlessSuccess $ Result r
 			peekArray layerCount pLayerProps
+
+data ExtensionProperties = ExtensionProperties {
+	extensionPropertiesExtensionName :: T.Text,
+	extensionPropertiesSpecVersion :: ApiVersion }
+	deriving Show
+
+extensionPropertiesFromCore :: C.ExtensionProperties -> ExtensionProperties
+extensionPropertiesFromCore C.ExtensionProperties {
+	C.extensionPropertiesExtensionName = en,
+	C.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
+		extensionPropertiesExtensionName =
+			T.decodeUtf8 $ BSC.takeWhile (/= '\NUL') en,
+		extensionPropertiesSpecVersion = ApiVersion sv }
+
+instanceExtensionProperties :: Maybe T.Text -> IO [ExtensionProperties]
+instanceExtensionProperties mln = ($ pure) . runContT
+	$ map extensionPropertiesFromCore <$> do
+		cln <- case mln of
+			Nothing -> pure NullPtr
+			Just ln -> textToCString ln
+		pExtCount <- ContT alloca
+		(fromIntegral -> extCount) <- lift do
+			r <- C.instanceExtensionProperties cln pExtCount NullPtr
+			throwUnlessSuccess $ Result r
+			peek pExtCount
+		pExts <- ContT $ allocaArray extCount
+		lift do	r <- C.instanceExtensionProperties cln pExtCount pExts
+			throwUnlessSuccess $ Result r
+			peekArray extCount pExts

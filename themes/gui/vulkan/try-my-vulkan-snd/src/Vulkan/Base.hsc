@@ -9,10 +9,14 @@ module Vulkan.Base where
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.String
 import Control.Monad.Cont
 import Data.Word
 import Data.Int
+
+import qualified Data.Text as Txt
+import qualified Data.Text.Foreign as Txt
 
 #include <vulkan/vulkan.h>
 
@@ -74,3 +78,11 @@ type Framebuffer = Ptr FramebufferTag
 
 uint64Max :: #{type uint64_t}
 uint64Max = #{const UINT64_MAX}
+
+textToCString :: Txt.Text -> ContT r IO CString
+textToCString t = do
+	(cs, ln) <- ContT $ Txt.withCStringLen t
+	cs' <- ContT . allocaArray $ ln + 1
+	cs' <$ lift do
+		copyBytes cs' cs ln
+		poke (cs' `plusPtr` ln :: Ptr CChar) 0

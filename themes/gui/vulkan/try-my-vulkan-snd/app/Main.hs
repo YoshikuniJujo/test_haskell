@@ -26,6 +26,7 @@ import System.IO.Unsafe
 import Vulkan.Base
 
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Vulkan as Vk
@@ -200,19 +201,10 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 	lift do	b <- checkValidationLayerSupport
 		when (not b)
 			$ error "validation layers requested, but no available!"
-	pExtensionCount <- ContT $ alloca
-	(fromIntegral -> extensionCount) <- lift do
-		_ <- Vk.Enumerate.C.instanceExtensionProperties
-			NullPtr pExtensionCount NullPtr
-		peek pExtensionCount
-	pExtensions <- ContT $ allocaArray extensionCount
-	lift do	_ <- Vk.Enumerate.C.instanceExtensionProperties
-			NullPtr pExtensionCount pExtensions
-		extensions <- peekArray extensionCount pExtensions
-		putStrLn "availbale extensions:"
-		mapM_ BSC.putStrLn $ ("\t" <>) . BSC.takeWhile (/= '\NUL')
-				. Vk.Enumerate.C.extensionPropertiesExtensionName
-			<$> extensions
+	lift do	putStrLn "available extensions:"
+		mapM_ (Txt.putStrLn . ("\t" <>)
+				. Vk.Enumerate.extensionPropertiesExtensionName)
+			=<< Vk.Enumerate.instanceExtensionProperties Nothing
 	cDebugCreateInfo <- lift populateDebugMessengerCreateInfo
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
