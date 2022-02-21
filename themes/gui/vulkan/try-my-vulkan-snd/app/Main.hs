@@ -227,8 +227,8 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 				"VK_LAYER_KHRONOS_validation" ],
 			Vk.Instance.createInfoEnabledExtensionNames =
 				requiredExtensions }
-	lift do	ist <- Vk.Instance.create @_ @() @() createInfo Nothing
-		writeIORef rist ist
+	lift $ writeIORef rist
+		=<< Vk.Instance.create @_ @() @() createInfo Nothing
 
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
