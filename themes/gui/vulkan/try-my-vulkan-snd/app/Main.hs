@@ -91,9 +91,6 @@ import qualified Vulkan.Access as Vk.Access
 main :: IO ()
 main = run
 
-instance_ :: IORef Vk.Instance.I.Instance
-instance_ = unsafePerformIO $ newIORef NullPtr
-
 debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
 debugMessenger = unsafePerformIO $ newIORef NullPtr
 
@@ -150,15 +147,22 @@ imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
 	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
 
 data Global = Global {
-	globalWindow :: GlfwB.Window
+	globalWindow :: GlfwB.Window,
+	globalInstance :: IORef Vk.Instance
 	}
-	deriving Show
+
+newGlobal :: GlfwB.Window -> IO Global
+newGlobal w = do
+	ist <- newIORef $ Vk.Instance NullPtr
+	pure Global {
+		globalWindow = w,
+		globalInstance = ist
+		}
 
 run :: IO ()
 run = do
 	w <- initWindow
-	let	g = Global {
-			globalWindow = w }
+	g <- newGlobal w
 	initVulkan g
 	mainLoop g
 	cleanup g
@@ -176,10 +180,10 @@ initWindow = do
 
 initVulkan :: Global -> IO ()
 initVulkan g = do
-	createInstance
-	setupDebugMessenger
+	createInstance g
+	setupDebugMessenger g
 	createSurface g
-	pickPhysicalDevice
+	pickPhysicalDevice g
 	createLogicalDevice
 	createSwapChain
 	createImageViews
@@ -190,8 +194,8 @@ initVulkan g = do
 	createCommandBuffers
 	createSemaphores
 
-createInstance :: IO ()
-createInstance = ($ pure) $ runContT do
+createInstance :: Global -> IO ()
+createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 	lift do	b <- checkValidationLayerSupport
 		when (not b)
 			$ error "validation layers requested, but no available!"
@@ -231,8 +235,8 @@ createInstance = ($ pure) $ runContT do
 				"VK_LAYER_KHRONOS_validation" ],
 			Vk.Instance.createInfoEnabledExtensionNames =
 				requiredExtensions }
-	lift do	Vk.Instance cist <- Vk.Instance.create @_ @() @() createInfo Nothing
-		writeIORef instance_ cist
+	lift do	ist <- Vk.Instance.create @_ @() @() createInfo Nothing
+		writeIORef rist ist
 
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport = ($ pure) $ runContT do
@@ -255,13 +259,13 @@ getRequiredExtensionList = do
 	let	extensions = extDebugUtilsExtensionName : glfwExtensions
 	lift $ peekCString `mapM` extensions
 
-setupDebugMessenger :: IO ()
-setupDebugMessenger = ($ pure) $ runContT do
+setupDebugMessenger :: Global -> IO ()
+setupDebugMessenger Global { globalInstance = rist } = ($ pure) $ runContT do
 	Vk.Ext.DU.Msngr.CreateInfo_ fCreateInfo <-
 		lift populateDebugMessengerCreateInfo
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pMessenger <- ContT alloca
-	lift do	ist <- readIORef instance_
+	lift do	Vk.Instance ist <- readIORef rist
 		r <- Vk.Ext.DU.Msngr.create ist pCreateInfo NullPtr pMessenger
 		when (r /= success) $ error "failed to set up debug messenger!"
 		writeIORef debugMessenger =<< peek pMessenger
@@ -295,16 +299,17 @@ debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 	pure vkFalse
 
 createSurface :: Global -> IO ()
-createSurface Global { globalWindow = win } = ($ pure) $ runContT do
-	ist <- lift $ readIORef instance_
+createSurface Global {
+	globalWindow = win, globalInstance = rist } = ($ pure) $ runContT do
+	Vk.Instance ist <- lift $ readIORef rist
 	psrfc <- ContT alloca
 	lift do	r <- GlfwB.createWindowSurface ist win NullPtr psrfc
 		when (r /= success) $ error "failed to create window surface!"
 		writeIORef surface =<< peek psrfc
 
-pickPhysicalDevice :: IO ()
-pickPhysicalDevice = ($ pure) $ runContT do
-	ist <- lift $ readIORef instance_
+pickPhysicalDevice :: Global -> IO ()
+pickPhysicalDevice Global { globalInstance = rist } = ($ pure) $ runContT do
+	Vk.Instance ist <- lift $ readIORef rist
 	pDeviceCount <- ContT alloca
 	(fromIntegral -> deviceCount) <- lift do
 		_ <- Vk.PhysicalDevice.enumerate ist pDeviceCount NullPtr
@@ -1113,7 +1118,7 @@ drawFrame = ($ pure) $ runContT do
 --	lift $ putStrLn "=== END ==="
 
 cleanup :: Global -> IO ()
-cleanup Global { globalWindow = win } = do
+cleanup Global { globalWindow = win, globalInstance = rist } = do
 	dvc <- readIORef device
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1137,7 +1142,7 @@ cleanup Global { globalWindow = win } = do
 	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy dvc NullPtr
-	ist <- readIORef instance_
+	Vk.Instance ist <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy ist sfc NullPtr) =<< readIORef surface
 	(\dm -> Vk.Ext.DU.Msngr.destroy ist dm NullPtr)
 		=<< readIORef debugMessenger
