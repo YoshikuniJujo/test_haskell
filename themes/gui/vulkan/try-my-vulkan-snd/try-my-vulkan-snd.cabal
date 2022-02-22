@@ -49,6 +49,7 @@ library
       Vulkan.Enumerate.Core
       Vulkan.Exception
       Vulkan.Exception.Enum
+      Vulkan.Ext.DebugUtils
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Fence
       Vulkan.Format

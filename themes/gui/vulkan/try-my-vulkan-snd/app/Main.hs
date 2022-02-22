@@ -39,6 +39,7 @@ import qualified Vulkan.Enumerate as Vk.Enumerate
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
+import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
@@ -218,7 +219,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
-	requiredExtensions <- getRequiredExtensions
+	requiredExtensions <- lift getRequiredExtensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -246,12 +247,9 @@ checkValidationLayerSupport =
 			. map Vk.Enumerate.layerPropertiesLayerName
 		<$> Vk.Enumerate.instanceLayerProperties
 
-getRequiredExtensions :: ContT r IO [Txt.Text]
-getRequiredExtensions = do
-	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
-	extDebugUtilsExtensionName <- ContT $ withCString "VK_EXT_debug_utils"
-	let	extensions = extDebugUtilsExtensionName : glfwExtensions
-	lift $ ((Txt.pack <$>) . peekCString) `mapM` extensions
+getRequiredExtensions :: IO [Txt.Text]
+getRequiredExtensions = (Vk.Ext.DU.extensionName :) <$>
+	((cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions)
 
 setupDebugMessenger :: Global -> IO ()
 setupDebugMessenger Global { globalInstance = rist } = ($ pure) $ runContT do

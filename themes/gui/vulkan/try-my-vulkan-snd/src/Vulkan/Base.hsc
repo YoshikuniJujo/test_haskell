@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -92,3 +92,16 @@ textToCString t = do
 	cs' <$ lift do
 		copyBytes cs' cs ln
 		poke (cs' `plusPtr` ln :: Ptr CChar) 0
+
+cstringToText :: CString -> IO Txt.Text
+cstringToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
+
+cstringLength :: CString -> IO Int
+cstringLength pc = do
+	c <- peek pc
+	case c of
+		0 -> pure 0
+		_ -> (+ 1) <$> cstringLength (pc `plusPtr` 1)
+
+cstringToCStringLen :: CString -> IO CStringLen
+cstringToCStringLen cs = (cs ,) <$> cstringLength cs
