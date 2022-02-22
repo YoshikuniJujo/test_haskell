@@ -18,6 +18,8 @@ import Vulkan.Base
 import qualified Vulkan.Core as C
 import qualified Vulkan.Instance.Core as Instance.C
 
+#include <vulkan/vulkan.h>
+
 newtype Instance = Instance Instance.C.Instance deriving Show
 
 data ApplicationInfo a = ApplicationInfo {
@@ -64,3 +66,5 @@ applicationInfoToCore ApplicationInfo {
 			C.applicationInfoEngineVersion = engv,
 			C.applicationInfoApiVersion = apiv }
 	ContT $ withForeignPtr fApplicationInfo
+
+newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show

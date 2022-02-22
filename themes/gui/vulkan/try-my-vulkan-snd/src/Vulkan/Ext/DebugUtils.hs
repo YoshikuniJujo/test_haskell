@@ -15,6 +15,9 @@ import System.IO.Unsafe
 import qualified Data.Text as T
 
 import Data.Color
+
+import Vulkan
+import Vulkan.Enum
 import Vulkan.Base
 
 import qualified Vulkan.Ext.DebugUtils.Core as C
@@ -43,3 +46,10 @@ labelToCore Label {
 		C.labelPNext = pnxt,
 		C.labelPLabelName = cln,
 		C.labelColor = [r, g, b, a] }
+
+data ObjectNameInfo n = ObjectNameInfo {
+	objectNameInfoNext :: Maybe n,
+	objectNameInfoObjectType :: ObjectType,
+	objectNameInfoObjectHandle :: ObjectHandle,
+	objectNameInfoObjectName :: T.Text }
+	deriving Show
