@@ -99,6 +99,9 @@ enableValidationLayers :: Bool
 enableValidationLayers =
 	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
+validationLayers :: [Txt.Text]
+validationLayers = ["VK_LAYER_KHRONOS_validation"]
+
 debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
 debugMessenger = unsafePerformIO $ newIORef NullPtr
 
@@ -215,7 +218,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
-	requiredExtensions <- getRequiredExtensionList
+	requiredExtensions <- getRequiredExtensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -230,24 +233,21 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 			Vk.Instance.createInfoFlags =
 				Vk.Instance.CreateFlagsZero,
 			Vk.Instance.createInfoApplicationInfo = appInfo,
-			Vk.Instance.createInfoEnabledLayerNames = [
-				"VK_LAYER_KHRONOS_validation" ],
+			Vk.Instance.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
 			Vk.Instance.createInfoEnabledExtensionNames =
 				requiredExtensions }
 	lift $ writeIORef rist
 		=<< Vk.Instance.create @_ @() @() createInfo Nothing
 
--- validationLayers :: [
-validationLayers = ["VK_LAYER_KHRONOS_validation"]
-
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
-	("VK_LAYER_KHRONOS_validation" `elem`)
+	(\lns -> all (`elem` lns) validationLayers)
 			. map Vk.Enumerate.layerPropertiesLayerName
 		<$> Vk.Enumerate.instanceLayerProperties
 
-getRequiredExtensionList :: ContT r IO [Txt.Text]
-getRequiredExtensionList = do
+getRequiredExtensions :: ContT r IO [Txt.Text]
+getRequiredExtensions = do
 	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
 	extDebugUtilsExtensionName <- ContT $ withCString "VK_EXT_debug_utils"
 	let	extensions = extDebugUtilsExtensionName : glfwExtensions
