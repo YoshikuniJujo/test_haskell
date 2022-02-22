@@ -81,7 +81,7 @@ struct "CallbackData"
 			objectCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
 			objectCount} |]),
-	("pObjects", ''PtrDebugUtilsObjectNameInfo,
+	("pObjects", ''DU.PtrObjectNameInfo,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pObjects} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |]) ]
 	[''Show, ''Storable]

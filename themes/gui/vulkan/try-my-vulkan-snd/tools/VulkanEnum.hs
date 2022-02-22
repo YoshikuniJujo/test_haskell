@@ -9,5 +9,6 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum" ["Data.Word"] [
 	("SystemAllocationScope","VkSystemAllocationScope",
 		["Show", "Eq", "Storable"]),
 	("InternalAllocationType", "VkInternalAllocationType",
-		["Show", "Eq", "Storable"])
+		["Show", "Eq", "Storable"]),
+	("ObjectType", "VkObjectType", ["Show", "Eq", "Storable"])
 	] []

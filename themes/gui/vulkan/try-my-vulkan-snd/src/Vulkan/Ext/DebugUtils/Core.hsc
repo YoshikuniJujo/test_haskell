@@ -16,8 +16,9 @@ import Vulkan.Base
 
 #include <vulkan/vulkan.h>
 
-sTypeL :: #{type VkStructureType}
+sTypeL, sTypeO :: #{type VkStructureType}
 sTypeL = #{const VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT}
+sTypeO = #{const VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT}
 
 struct "Label" #{size VkDebugUtilsLabelEXT} #{alignment VkDebugUtilsLabelEXT} [
 	("sType", ''(), [| sTypeCheck sTypeL |],
@@ -35,3 +36,24 @@ struct "Label" #{size VkDebugUtilsLabelEXT} #{alignment VkDebugUtilsLabelEXT} [
 	[''Show, ''Storable]
 
 type PtrLabel = Ptr Label
+
+struct "ObjectNameInfo" #{size VkDebugUtilsObjectNameInfoEXT}
+		#{alignment VkDebugUtilsObjectNameInfoEXT} [
+	("sType", ''(), [| sTypeCheck sTypeO |],
+		[| \p _ -> #{poke VkDebugUtilsObjectNameInfoEXT, sType}
+			p sTypeO |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, pNext} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, pNext} |]),
+	("objectType", ''#{type VkObjectType},
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, objectType} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, objectType} |]),
+	("objectHandle", ''#{type uint64_t},
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, objectHandle} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, objectHandle} |]),
+	("pObjectName", ''CString,
+		[| #{peek VkDebugUtilsObjectNameInfoEXT, pObjectName} |],
+		[| #{poke VkDebugUtilsObjectNameInfoEXT, pObjectName} |]) ]
+	[''Show, ''Storable]
+
+type PtrObjectNameInfo = Ptr ObjectNameInfo
