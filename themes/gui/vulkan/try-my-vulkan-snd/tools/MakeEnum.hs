@@ -71,8 +71,10 @@ makeEnum' src mnm (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 			. removeBetaExtensions $ lines src ) ++
 		" ]\n"
 
-modNameToRemStr :: ModuleName -> String
-modNameToRemStr = filter (/= '.') . removeTail ".Enum"
+modNameToRemStr :: ModuleName -> (String, String)
+modNameToRemStr mnm = (filter (/= '.') $ removeTail ".Enum" mnm', rmt)
+	where (mnm', rmt) = if "Ext." `isPrefixOf` mnm
+		then (drop 4 mnm, "Ext") else (mnm, "")
 
 removeTail :: String -> String -> String
 removeTail rm str
@@ -112,7 +114,7 @@ makeEnum'' hf icds hsnm cnm elms drvs ext = do
 	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
 		header prg icds hsnm ++ body hsnm cnm drvs ++
 			intercalate ",\n" (
-				map (uncurry $ makeItemFromConst "")
+				map (uncurry $ makeItemFromConst ("", ""))
 					. (elms ++)
 					. map makeVarConstPair
 					. takeDefinition cnm $ lines src
@@ -138,14 +140,14 @@ showConst :: Const -> String
 showConst (Int n) = show n
 showConst (Const cnst) = "#{const " ++ cnst ++ "}"
 
-makeItemFromConst :: String -> String -> Const -> String
-makeItemFromConst rm nm cnst = "\t(\"" ++ removeInit rm nm ++ "\"," ++ sp ++ cst ++ ")"
+makeItemFromConst :: (String, String) -> String -> Const -> String
+makeItemFromConst (rm, rmt) nm cnst = "\t(\"" ++ removeInit rm (removeTail rmt nm) ++ "\"," ++ sp ++ cst ++ ")"
 	where
 	cst = showConst cnst
 	sp = if 8 + length nm + 5 + length cst + 2 > 80 then "\n\t\t" else " "
 
 makeItem :: String -> String
-makeItem = uncurry (makeItemFromConst "") . makeVarConstPair
+makeItem = uncurry (makeItemFromConst ("", "")) . makeVarConstPair
 
 makeItem' :: ModuleName -> String -> String
 makeItem' mnm =

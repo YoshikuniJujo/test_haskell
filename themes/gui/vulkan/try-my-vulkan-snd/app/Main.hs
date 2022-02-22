@@ -40,7 +40,7 @@ import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
-import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
+import qualified Vulkan.Ext.DebugUtils.Messenger.Core as Vk.Ext.DU.Msngr.C
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
 
@@ -103,7 +103,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
-debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
+debugMessenger :: IORef Vk.Ext.DU.Msngr.C.Messenger
 debugMessenger = unsafePerformIO $ newIORef NullPtr
 
 physicalDevice :: IORef Vk.PhysicalDevice.PhysicalDevice
@@ -253,40 +253,40 @@ getRequiredExtensions =
 
 setupDebugMessenger :: Global -> IO ()
 setupDebugMessenger Global { globalInstance = rist } = ($ pure) $ runContT do
-	Vk.Ext.DU.Msngr.CreateInfo_ fCreateInfo <-
+	Vk.Ext.DU.Msngr.C.CreateInfo_ fCreateInfo <-
 		lift populateDebugMessengerCreateInfo
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pMessenger <- ContT alloca
 	lift do	Vk.Instance ist <- readIORef rist
-		r <- Vk.Ext.DU.Msngr.create ist pCreateInfo NullPtr pMessenger
+		r <- Vk.Ext.DU.Msngr.C.create ist pCreateInfo NullPtr pMessenger
 		when (r /= success) $ error "failed to set up debug messenger!"
 		writeIORef debugMessenger =<< peek pMessenger
 
-populateDebugMessengerCreateInfo :: IO Vk.Ext.DU.Msngr.CreateInfo
+populateDebugMessengerCreateInfo :: IO Vk.Ext.DU.Msngr.C.CreateInfo
 populateDebugMessengerCreateInfo = do
-	pDebugCallback <- Vk.Ext.DU.Msngr.wrapCallback debugCallback
-	pure Vk.Ext.DU.Msngr.CreateInfo {
-		Vk.Ext.DU.Msngr.createInfoSType = (),
-		Vk.Ext.DU.Msngr.createInfoPNext = NullPtr,
-		Vk.Ext.DU.Msngr.createInfoFlags = 0,
-		Vk.Ext.DU.Msngr.createInfoMessageSeverity =
-			Vk.Ext.DU.Msngr.severityVerboseBit .|.
-			Vk.Ext.DU.Msngr.severityWarningBit .|.
-			Vk.Ext.DU.Msngr.severityErrorBit,
-		Vk.Ext.DU.Msngr.createInfoMessageType =
-			Vk.Ext.DU.Msngr.typeGeneralBit .|.
-			Vk.Ext.DU.Msngr.typeValidationBit .|.
-			Vk.Ext.DU.Msngr.typePerformanceBit,
-		Vk.Ext.DU.Msngr.createInfoPfnUserCallback =
+	pDebugCallback <- Vk.Ext.DU.Msngr.C.wrapCallback debugCallback
+	pure Vk.Ext.DU.Msngr.C.CreateInfo {
+		Vk.Ext.DU.Msngr.C.createInfoSType = (),
+		Vk.Ext.DU.Msngr.C.createInfoPNext = NullPtr,
+		Vk.Ext.DU.Msngr.C.createInfoFlags = 0,
+		Vk.Ext.DU.Msngr.C.createInfoMessageSeverity =
+			Vk.Ext.DU.Msngr.C.severityVerboseBit .|.
+			Vk.Ext.DU.Msngr.C.severityWarningBit .|.
+			Vk.Ext.DU.Msngr.C.severityErrorBit,
+		Vk.Ext.DU.Msngr.C.createInfoMessageType =
+			Vk.Ext.DU.Msngr.C.typeGeneralBit .|.
+			Vk.Ext.DU.Msngr.C.typeValidationBit .|.
+			Vk.Ext.DU.Msngr.C.typePerformanceBit,
+		Vk.Ext.DU.Msngr.C.createInfoPfnUserCallback =
 			pDebugCallback,
-		Vk.Ext.DU.Msngr.createInfoPUserData = NullPtr }
+		Vk.Ext.DU.Msngr.C.createInfoPUserData = NullPtr }
 
-debugCallback :: Vk.Ext.DU.Msngr.FnCallback
+debugCallback :: Vk.Ext.DU.Msngr.C.FnCallback
 debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
 	callbackData <-
-		Vk.Ext.DU.Msngr.copyCallbackData pCallbackData
+		Vk.Ext.DU.Msngr.C.copyCallbackData pCallbackData
 	message <- peekCString
-		$ Vk.Ext.DU.Msngr.callbackDataPMessage callbackData
+		$ Vk.Ext.DU.Msngr.C.callbackDataPMessage callbackData
 	putStrLn $ "validation layer: " ++ message
 	pure vkFalse
 
@@ -1136,7 +1136,7 @@ cleanup Global { globalWindow = win, globalInstance = rist } = do
 	Vk.Device.destroy dvc NullPtr
 	ist@(Vk.Instance cist) <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
-	(\dm -> Vk.Ext.DU.Msngr.destroy cist dm NullPtr)
+	(\dm -> Vk.Ext.DU.Msngr.C.destroy cist dm NullPtr)
 		=<< readIORef debugMessenger
 	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win

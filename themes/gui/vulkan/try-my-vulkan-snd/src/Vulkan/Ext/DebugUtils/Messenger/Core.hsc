@@ -4,7 +4,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Ext.DebugUtils.Messenger where
+module Vulkan.Ext.DebugUtils.Messenger.Core where
 
 import Foreign.Ptr
 import Foreign.Concurrent
