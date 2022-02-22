@@ -28,6 +28,7 @@ import ThEnv
 import Vulkan.Base
 
 import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
@@ -245,12 +246,12 @@ checkValidationLayerSupport =
 			. map Vk.Enumerate.layerPropertiesLayerName
 		<$> Vk.Enumerate.instanceLayerProperties
 
-getRequiredExtensionList :: ContT r IO [String]
+getRequiredExtensionList :: ContT r IO [Txt.Text]
 getRequiredExtensionList = do
 	glfwExtensions <- lift $ GlfwB.getRequiredInstanceExtensions
 	extDebugUtilsExtensionName <- ContT $ withCString "VK_EXT_debug_utils"
 	let	extensions = extDebugUtilsExtensionName : glfwExtensions
-	lift $ peekCString `mapM` extensions
+	lift $ ((Txt.pack <$>) . peekCString) `mapM` extensions
 
 setupDebugMessenger :: Global -> IO ()
 setupDebugMessenger Global { globalInstance = rist } = ($ pure) $ runContT do

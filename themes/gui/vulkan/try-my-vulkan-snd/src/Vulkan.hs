@@ -11,6 +11,8 @@ import Foreign.Storable
 import Control.Monad.Cont
 import Data.Word
 
+import qualified Data.Text as T
+
 import Vulkan.Base
 
 import qualified Vulkan.Core as C
@@ -20,9 +22,9 @@ newtype Instance = Instance Instance.C.Instance deriving Show
 
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,
-	applicationInfoApplicationName :: String,
+	applicationInfoApplicationName :: T.Text,
 	applicationInfoApplicationVersion :: ApiVersion,
-	applicationInfoEngineName :: String,
+	applicationInfoEngineName :: T.Text,
 	applicationInfoEngineVersion :: ApiVersion,
 	applicationInfoApiVersion :: ApiVersion }
 	deriving Show
@@ -51,8 +53,8 @@ applicationInfoToCore ApplicationInfo {
 	applicationInfoApiVersion = (\(ApiVersion v) -> v) -> apiv
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	canm <- stringToCString anm
-	cenm <- stringToCString enm
+	canm <- textToCString anm
+	cenm <- textToCString enm
 	let	C.ApplicationInfo_ fApplicationInfo = C.ApplicationInfo {
 			C.applicationInfoSType = (),
 			C.applicationInfoPNext = pnxt,

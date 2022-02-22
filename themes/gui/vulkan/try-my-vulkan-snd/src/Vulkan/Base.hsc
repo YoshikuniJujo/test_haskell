@@ -40,6 +40,12 @@ stringListToCStringArray strs = do
 	pcstra <- ContT . allocaArray $ length strs
 	pcstra <$ lift (pokeArray pcstra cstrl)
 
+textListToCStringArray :: [Txt.Text] -> ContT r IO (Ptr CString)
+textListToCStringArray txts = do
+	cstrl <- textToCString `mapM` txts
+	pcstra <- ContT . allocaArray $ length txts
+	pcstra <$ lift (pokeArray pcstra cstrl)
+
 type PtrVoid = Ptr ()
 
 pattern NullPtr :: Ptr a

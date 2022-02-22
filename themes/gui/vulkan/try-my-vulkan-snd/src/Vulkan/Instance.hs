@@ -12,6 +12,8 @@ import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
 
+import qualified Data.Text as T
+
 import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
@@ -26,8 +28,8 @@ data CreateInfo n n' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoApplicationInfo :: ApplicationInfo n',
-	createInfoEnabledLayerNames :: [String],
-	createInfoEnabledExtensionNames :: [String] }
+	createInfoEnabledLayerNames :: [T.Text],
+	createInfoEnabledExtensionNames :: [T.Text] }
 	deriving Show
 
 createInfoToCore :: (Pointable n, Pointable n') =>
@@ -42,8 +44,8 @@ createInfoToCore CreateInfo {
 		(fromIntegral . length &&& id) -> (eenc, eens) } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pai <- applicationInfoToCore ai
-	pelna <- stringListToCStringArray elns
-	peena <- stringListToCStringArray eens
+	pelna <- textListToCStringArray elns
+	peena <- textListToCStringArray eens
 	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
