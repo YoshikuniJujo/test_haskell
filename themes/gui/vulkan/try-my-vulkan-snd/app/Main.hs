@@ -33,8 +33,8 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Vulkan as Vk
-import qualified Vulkan.Instance as Vk.Instance
-import qualified Vulkan.Instance.Enum as Vk.Instance
+import qualified Vulkan.Instance as Vk.Ist
+import qualified Vulkan.Instance.Enum as Vk.Ist
 import qualified Vulkan.Enumerate as Vk.Enumerate
 
 import qualified Vulkan.Core as Vk.C
@@ -219,7 +219,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
-	requiredExtensions <- lift getRequiredExtensions
+	extensions <- lift getRequiredExtensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -229,17 +229,15 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-		createInfo = Vk.Instance.CreateInfo {
-			Vk.Instance.createInfoNext = Just cDebugCreateInfo,
-			Vk.Instance.createInfoFlags =
-				Vk.Instance.CreateFlagsZero,
-			Vk.Instance.createInfoApplicationInfo = appInfo,
-			Vk.Instance.createInfoEnabledLayerNames =
+		createInfo = Vk.Ist.CreateInfo {
+			Vk.Ist.createInfoNext = Just cDebugCreateInfo,
+			Vk.Ist.createInfoFlags = Vk.Ist.CreateFlagsZero,
+			Vk.Ist.createInfoApplicationInfo = appInfo,
+			Vk.Ist.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Instance.createInfoEnabledExtensionNames =
-				requiredExtensions }
+			Vk.Ist.createInfoEnabledExtensionNames = extensions }
 	lift $ writeIORef rist
-		=<< Vk.Instance.create @_ @() @() createInfo Nothing
+		=<< Vk.Ist.create @_ @() @() createInfo Nothing
 
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
@@ -248,8 +246,10 @@ checkValidationLayerSupport =
 		<$> Vk.Enumerate.instanceLayerProperties
 
 getRequiredExtensions :: IO [Txt.Text]
-getRequiredExtensions = (Vk.Ext.DU.extensionName :) <$>
-	((cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions)
+getRequiredExtensions =
+	bool id (Vk.Ext.DU.extensionName :) enableValidationLayers
+		<$> ((cstringToText `mapM`)
+			=<< GlfwB.getRequiredInstanceExtensions)
 
 setupDebugMessenger :: Global -> IO ()
 setupDebugMessenger Global { globalInstance = rist } = ($ pure) $ runContT do
@@ -1138,6 +1138,6 @@ cleanup Global { globalWindow = win, globalInstance = rist } = do
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
 	(\dm -> Vk.Ext.DU.Msngr.destroy cist dm NullPtr)
 		=<< readIORef debugMessenger
-	Vk.Instance.destroy @() ist Nothing
+	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate
