@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -23,6 +24,7 @@ import Data.Word
 import System.IO hiding (readFile)
 import System.IO.Unsafe
 
+import ThEnv
 import Vulkan.Base
 
 import qualified Data.ByteString.Char8 as BSC
@@ -91,6 +93,10 @@ import qualified Vulkan.Access as Vk.Access
 
 main :: IO ()
 main = run
+
+enableValidationLayers :: Bool
+enableValidationLayers =
+	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
 debugMessenger :: IORef Vk.Ext.DU.Msngr.Messenger
 debugMessenger = unsafePerformIO $ newIORef NullPtr
@@ -198,9 +204,9 @@ initVulkan g = do
 createInstance :: Global -> IO ()
 createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 	lift do	b <- checkValidationLayerSupport
-		when (not b)
+		when (enableValidationLayers && not b)
 			$ error "validation layers requested, but no available!"
-	lift do	putStrLn "available extensions:"
+		putStrLn "available extensions:"
 		mapM_ (Txt.putStrLn . ("\t" <>)
 				. Vk.Enumerate.extensionPropertiesExtensionName)
 			=<< Vk.Enumerate.instanceExtensionProperties Nothing
@@ -229,6 +235,9 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 				requiredExtensions }
 	lift $ writeIORef rist
 		=<< Vk.Instance.create @_ @() @() createInfo Nothing
+
+-- validationLayers :: [
+validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
