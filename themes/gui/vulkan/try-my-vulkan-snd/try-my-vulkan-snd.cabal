@@ -50,6 +50,7 @@ library
       Vulkan.Exception
       Vulkan.Exception.Enum
       Vulkan.Ext.DebugUtils
+      Vulkan.Ext.DebugUtils.Core
       Vulkan.Ext.DebugUtils.Message.Enum
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Ext.DebugUtils.Messenger.Core

@@ -105,3 +105,10 @@ cstringLength pc = do
 
 cstringToCStringLen :: CString -> IO CStringLen
 cstringToCStringLen cs = (cs ,) <$> cstringLength cs
+
+sTypeCheck :: #{type VkStructureType} -> Ptr a -> IO ()
+sTypeCheck st p = do
+	st' <- peek $ castPtr p
+	when (st /= st') $ error "Vulkan Structure Type not match"
+
+type ListFloat = [#{type float}]

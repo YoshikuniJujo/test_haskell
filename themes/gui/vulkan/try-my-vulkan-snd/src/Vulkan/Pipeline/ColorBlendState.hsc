@@ -21,8 +21,6 @@ import qualified Vulkan.Pipeline.ColorBlendAttachmentState as
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO}
 
-type ListFloat = [#{type float}]
-
 struct "CreateInfo" #{size VkPipelineColorBlendStateCreateInfo}
 		#{alignment VkPipelineColorBlendStateCreateInfo} [
 	("sType", ''(), [| const $ pure () |],

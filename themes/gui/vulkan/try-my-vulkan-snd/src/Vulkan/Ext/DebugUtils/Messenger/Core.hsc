@@ -18,12 +18,13 @@ import Data.Int
 import Vulkan.Base
 import Vulkan.Instance.Core (Instance)
 
+import qualified Vulkan.Ext.DebugUtils.Core as DU
+
 #include <vulkan/vulkan.h>
 
 data MessengerTag
 type Messenger = Ptr MessengerTag
 
-type PtrDebugUtilsLabel = Ptr ()
 type PtrDebugUtilsObjectNameInfo = Ptr ()
 
 structureTypeDebugUtilsMessengerCallbackData :: #{type VkStructureType}
@@ -60,7 +61,7 @@ struct "CallbackData"
 			queueLabelCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
 			queueLabelCount} |]),
-	("pQueueLabels", ''PtrDebugUtilsLabel,
+	("pQueueLabels", ''DU.PtrLabel,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			pQueueLabels} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
@@ -70,7 +71,7 @@ struct "CallbackData"
 			cmdBufLabelCount} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
 			cmdBufLabelCount} |]),
-	("pCmdBufLabels", ''PtrDebugUtilsLabel,
+	("pCmdBufLabels", ''DU.PtrLabel,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT,
 			pCmdBufLabels} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT,
