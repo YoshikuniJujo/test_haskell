@@ -53,3 +53,19 @@ data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoObjectHandle :: ObjectHandle,
 	objectNameInfoObjectName :: T.Text }
 	deriving Show
+
+objectNameInfoToCore :: Pointable n => ObjectNameInfo n -> ContT r IO C.ObjectNameInfo
+objectNameInfoToCore ObjectNameInfo {
+	objectNameInfoNext = mnxt,
+	objectNameInfoObjectType = ObjectType ot,
+	objectNameInfoObjectHandle = ObjectHandle oh,
+	objectNameInfoObjectName = on
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	con <- textToCString on
+	pure C.ObjectNameInfo {
+		C.objectNameInfoSType = (),
+		C.objectNameInfoPNext = pnxt,
+		C.objectNameInfoObjectType = ot,
+		C.objectNameInfoObjectHandle = oh,
+		C.objectNameInfoPObjectName = con }
