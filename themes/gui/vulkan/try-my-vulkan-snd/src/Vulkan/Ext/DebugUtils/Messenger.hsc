@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,8 +7,9 @@
 module Vulkan.Ext.DebugUtils.Messenger where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
-import Foreign.Marshal.Array
+import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Enum
 import Control.Monad.Cont
@@ -16,10 +18,15 @@ import Data.Int
 
 import qualified Data.Text as T
 
+import Vulkan
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.Exception.Enum
+import Vulkan.AllocationCallbacks (AllocationCallbacks)
 import Vulkan.Ext.DebugUtils
 import Vulkan.Ext.DebugUtils.Message.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Ext.DebugUtils.Messenger.Core as C
 
 #include <vulkan/vulkan.h>
@@ -98,7 +105,7 @@ data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
 createInfoToCore ::
 	(Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
 		Pointable ud) =>
-	CreateInfo n n2 n3 n4 n5 ud -> ContT r IO C.CreateInfo
+	CreateInfo n n2 n3 n4 n5 ud -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -110,11 +117,25 @@ createInfoToCore CreateInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pccb <- lift . C.wrapCallback $ fnCallbackToCore cb
 	(castPtr -> pud) <- maybeToPointer mud
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoMessageSeverity = ms,
-		C.createInfoMessageType = mt,
-		C.createInfoPfnUserCallback = pccb,
-		C.createInfoPUserData = pud }
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoMessageSeverity = ms,
+			C.createInfoMessageType = mt,
+			C.createInfoPfnUserCallback = pccb,
+			C.createInfoPUserData = pud }
+	ContT $ withForeignPtr fCreateInfo
+
+create ::
+	(Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
+		Pointable n6, Pointable ud) =>
+	Instance -> CreateInfo n n2 n3 n4 n5 ud ->
+	Maybe (AllocationCallbacks n6) -> IO Messenger
+create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do
+	cci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pmsngr <- ContT alloca
+	lift do	r <- C.create ist cci pac pmsngr
+		throwUnlessSuccess $ Result r
+		peek pmsngr
