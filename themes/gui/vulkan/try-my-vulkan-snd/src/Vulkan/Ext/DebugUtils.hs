@@ -47,6 +47,19 @@ labelToCore Label {
 		C.labelPLabelName = cln,
 		C.labelColor = [r, g, b, a] }
 
+labelFromCore :: Pointable n => C.Label -> IO (Label n)
+labelFromCore C.Label {
+	C.labelPNext = pnxt,
+	C.labelPLabelName = cln,
+	C.labelColor = [r, g, b, a] } = do
+	mnxt <- pointerToMaybe $ castPtr pnxt
+	ln <- cstringToText cln
+	pure Label {
+		labelNext = mnxt,
+		labelLabelName = ln,
+		labelColor = RgbaFloat r g b a }
+labelFromCore _ = error "C.labelColor should be [r, g, b, a]"
+
 data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoNext :: Maybe n,
 	objectNameInfoObjectType :: ObjectType,
@@ -69,3 +82,19 @@ objectNameInfoToCore ObjectNameInfo {
 		C.objectNameInfoObjectType = ot,
 		C.objectNameInfoObjectHandle = oh,
 		C.objectNameInfoPObjectName = con }
+
+objectNameInfoFromCore ::
+	Pointable n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
+objectNameInfoFromCore C.ObjectNameInfo {
+	C.objectNameInfoPNext = pnxt,
+	C.objectNameInfoObjectType = ot,
+	C.objectNameInfoObjectHandle = oh,
+	C.objectNameInfoPObjectName = con
+	} = do
+	mnxt <- pointerToMaybe $ castPtr pnxt
+	on <- cstringToText con
+	pure ObjectNameInfo {
+		objectNameInfoNext = mnxt,
+		objectNameInfoObjectType = ObjectType ot,
+		objectNameInfoObjectHandle = ObjectHandle oh,
+		objectNameInfoObjectName = on }

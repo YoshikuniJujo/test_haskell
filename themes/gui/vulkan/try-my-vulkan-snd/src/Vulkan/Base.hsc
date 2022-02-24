@@ -31,6 +31,9 @@ instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
 maybeToPointer :: Pointable a => Maybe a -> ContT r IO (Ptr a)
 maybeToPointer = \case Nothing -> pure NullPtr; Just x -> ContT $ withPointer x
 
+pointerToMaybe :: Pointable a => Ptr a -> IO (Maybe a)
+pointerToMaybe = \case NullPtr -> pure Nothing; p -> Just <$> fromPointer p
+
 stringToCString :: String -> ContT r IO CString
 stringToCString = ContT . withCString
 
