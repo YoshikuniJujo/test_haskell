@@ -10,6 +10,7 @@ import Foreign.Concurrent
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Enum
+import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
@@ -82,3 +83,38 @@ fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- pointerToMaybe $ castPtr pud
 	boolToBool32 <$> f (SeverityFlagBits sfb) (TypeFlagBits tf) cbd mud
+
+enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
+		[''Show, ''Storable] [("CreateFlagsZero", 0)]
+
+data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoMessageSeverity :: SeverityFlags,
+	createInfoMessageType :: TypeFlags,
+	createInfoFnUserCallback :: FnCallback n2 n3 n4 n5 ud,
+	createInfoUserData :: Maybe ud }
+
+createInfoToCore ::
+	(Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
+		Pointable ud) =>
+	CreateInfo n n2 n3 n4 n5 ud -> ContT r IO C.CreateInfo
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlags flgs,
+	createInfoMessageSeverity = SeverityFlagBits ms,
+	createInfoMessageType = TypeFlagBits mt,
+	createInfoFnUserCallback = cb,
+	createInfoUserData = mud
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pccb <- lift . C.wrapCallback $ fnCallbackToCore cb
+	(castPtr -> pud) <- maybeToPointer mud
+	pure C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoMessageSeverity = ms,
+		C.createInfoMessageType = mt,
+		C.createInfoPfnUserCallback = pccb,
+		C.createInfoPUserData = pud }
