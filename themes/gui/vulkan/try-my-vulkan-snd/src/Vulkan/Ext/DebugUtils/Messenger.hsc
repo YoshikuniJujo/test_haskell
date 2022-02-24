@@ -11,6 +11,8 @@ import Data.Int
 
 import qualified Data.Text as T
 
+import Vulkan.Ext.DebugUtils
+
 import qualified Vulkan.Ext.DebugUtils.Messenger.Core as C
 
 #include <vulkan/vulkan.h>
@@ -18,14 +20,21 @@ import qualified Vulkan.Ext.DebugUtils.Messenger.Core as C
 enum "CallbackDataFlags" ''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
 		[''Show, ''Storable] [("CallbackDataFlagsZero", 0)]
 
-data CallbackData n = CallbackData {
+data CallbackData n n2 n3 n4 = CallbackData {
 	callbackDataNext :: Maybe n,
 	callbackDataFlags :: CallbackDataFlags,
 	callbackDataMessageIdName :: T.Text,
 	callbackDataMessageIdNumber :: Int32,
-	callbackDataMessage :: T.Text
---	callbackDataQueueLabels ::
+	callbackDataMessage :: T.Text,
+	callbackDataQueueLabels :: [Label n2],
+	callbackDataCmdBufLabels :: [Label n3],
+	callbackDataObjects :: [ObjectNameInfo n4]
 	}
 	deriving Show
+
+callbackDataFromCore :: C.CallbackData -> IO (CallbackData n n2 n3 n4)
+callbackDataFromCore C.CallbackData {
+	} = do
+	undefined
 
 -- type FnCallback =
