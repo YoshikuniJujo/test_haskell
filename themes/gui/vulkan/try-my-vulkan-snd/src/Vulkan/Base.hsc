@@ -115,3 +115,7 @@ sTypeCheck st p = do
 	when (st /= st') $ error "Vulkan Structure Type not match"
 
 type ListFloat = [#{type float}]
+
+boolToBool32 :: Bool -> #{type VkBool32}
+boolToBool32 False = #{const VK_FALSE}
+boolToBool32 True = #{const VK_TRUE}

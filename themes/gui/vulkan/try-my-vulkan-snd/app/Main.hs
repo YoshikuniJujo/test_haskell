@@ -193,7 +193,7 @@ initWindow = do
 initVulkan :: Global -> IO ()
 initVulkan g = do
 	createInstance g
-	setupDebugMessenger g
+	when enableValidationLayers $ setupDebugMessenger g
 	createSurface g
 	pickPhysicalDevice g
 	createLogicalDevice
@@ -1136,8 +1136,9 @@ cleanup Global { globalWindow = win, globalInstance = rist } = do
 	Vk.Device.destroy dvc NullPtr
 	ist@(Vk.Instance cist) <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
-	(\dm -> Vk.Ext.DU.Msngr.C.destroy cist dm NullPtr)
-		=<< readIORef debugMessenger
+	when enableValidationLayers $
+		(\dm -> Vk.Ext.DU.Msngr.C.destroy cist dm NullPtr)
+			=<< readIORef debugMessenger
 	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate
