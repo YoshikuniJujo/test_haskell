@@ -94,6 +94,13 @@ textToCString t = do
 		copyBytes cs' cs ln
 		poke (cs' `plusPtr` ln :: Ptr CChar) 0
 
+pokeText :: Int -> CString -> Txt.Text -> IO ()
+pokeText mx dst t = ($ pure) $ runContT do
+	(src, ln) <- ContT $ Txt.withCStringLen t
+	let	ln' = min ln (mx - 1)
+	lift do	copyBytes dst src ln'
+		poke (dst `plusPtr` ln' :: Ptr CChar) 0
+
 cstringToText :: CString -> IO Txt.Text
 cstringToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
 

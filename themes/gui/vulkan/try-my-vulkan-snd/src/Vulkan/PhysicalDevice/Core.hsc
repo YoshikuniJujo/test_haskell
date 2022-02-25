@@ -14,7 +14,9 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Tools
+import qualified Data.Text as T
+
+import Vulkan.Base
 import Vulkan.Instance.Core (Instance)
 import Vulkan.Khr.Surface (Surface)
 
@@ -314,12 +316,11 @@ struct "Properties" #{size VkPhysicalDeviceProperties}
 	("deviceType", ''#{type VkPhysicalDeviceType},
 		[| #{peek VkPhysicalDeviceProperties, deviceType} |],
 		[| #{poke VkPhysicalDeviceProperties, deviceType} |]),
-	("deviceName", ''String,
-		[| peekCString
+	("deviceName", ''T.Text,
+		[| cstringToText
 			. #{ptr VkPhysicalDeviceProperties, deviceName} |],
-		[| \p -> pokeCString
-			(#{ptr VkPhysicalDeviceProperties, deviceName} p)
-				. take (vkMaxPhysicalDeviceNameSize - 1) |]),
+		[| \p -> pokeText vkMaxPhysicalDeviceNameSize
+			(#{ptr VkPhysicalDeviceProperties, deviceName} p) |]),
 	("pipelineCacheUuid", ''ListUint8T,
 		[| peekArray #{const VK_UUID_SIZE}
 			. #{ptr VkPhysicalDeviceProperties, pipelineCacheUUID}

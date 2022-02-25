@@ -27,7 +27,6 @@ library
   exposed-modules:
       Data.Color
       ThEnv
-      Tools
       Vulkan
       Vulkan.Access
       Vulkan.AllocationCallbacks
