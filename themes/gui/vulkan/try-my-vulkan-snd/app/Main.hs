@@ -43,7 +43,6 @@ import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
-import qualified Vulkan.Ext.DebugUtils.Messenger.Core as Vk.Ext.DU.Msngr.C
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
 
@@ -1131,9 +1130,8 @@ cleanup Global {
 	Vk.Device.destroy dvc NullPtr
 	ist@(Vk.Instance cist) <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
-	when enableValidationLayers $
-		(\(Vk.Ext.DU.Messenger dm) -> Vk.Ext.DU.Msngr.C.destroy cist dm NullPtr)
-			=<< readIORef rdmsgr
+	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->
+		Vk.Ext.DU.Msngr.destroy ist dm Vk.AC.nil
 	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate

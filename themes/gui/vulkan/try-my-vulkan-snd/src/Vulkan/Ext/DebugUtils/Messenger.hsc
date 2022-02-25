@@ -146,3 +146,8 @@ create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do
 	lift do	r <- C.create ist cci pac pmsngr
 		throwUnlessSuccess $ Result r
 		peek pmsngr
+
+destroy :: Pointable n =>
+	Instance -> Messenger -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Instance ist) (Messenger msgr) mac = ($ pure) . runContT
+	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac
