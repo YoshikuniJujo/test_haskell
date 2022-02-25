@@ -10,7 +10,8 @@ import Prelude hiding (readFile)
 
 import Foreign.Ptr
 import Foreign.Marshal
-import Foreign.ForeignPtr
+import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.String
 import Control.Monad.Fix
@@ -36,6 +37,8 @@ import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
 import qualified Vulkan.Enumerate as Vk.Enumerate
+import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
+import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
@@ -160,15 +163,18 @@ imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
 
 data Global = Global {
 	globalWindow :: GlfwB.Window,
-	globalInstance :: IORef Vk.Instance
+	globalInstance :: IORef Vk.Instance,
+	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
 	ist <- newIORef $ Vk.Instance NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pure Global {
 		globalWindow = w,
-		globalInstance = ist
+		globalInstance = ist,
+		globalDebugMessenger = dmsgr
 		}
 
 run :: IO ()
@@ -215,7 +221,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 		mapM_ (Txt.putStrLn . ("\t" <>)
 				. Vk.Enumerate.extensionPropertiesExtensionName)
 			=<< Vk.Enumerate.instanceExtensionProperties Nothing
-	cDebugCreateInfo <- lift populateDebugMessengerCreateInfo
+	cDebugCreateInfo <- Vk.Ext.DU.Msngr.C.CreateInfo_ <$>  ((\p -> lift . newForeignPtr p $ pure ()) =<< populateDebugMessengerCreateInfoOld)
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
@@ -252,43 +258,40 @@ getRequiredExtensions =
 			=<< GlfwB.getRequiredInstanceExtensions)
 
 setupDebugMessenger :: Global -> IO ()
-setupDebugMessenger Global { globalInstance = rist } = ($ pure) $ runContT do
-	Vk.Ext.DU.Msngr.C.CreateInfo_ fCreateInfo <-
-		lift populateDebugMessengerCreateInfo
-	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+setupDebugMessenger Global {
+	globalInstance = rist,
+	globalDebugMessenger = rdmsgr } = ($ pure) $ runContT do
+	pCreateInfo <- populateDebugMessengerCreateInfoOld
 	pMessenger <- ContT alloca
 	lift do	Vk.Instance ist <- readIORef rist
 		r <- Vk.Ext.DU.Msngr.C.create ist pCreateInfo NullPtr pMessenger
 		when (r /= success) $ error "failed to set up debug messenger!"
 		writeIORef debugMessenger =<< peek pMessenger
 
-populateDebugMessengerCreateInfo :: IO Vk.Ext.DU.Msngr.C.CreateInfo
-populateDebugMessengerCreateInfo = do
-	pDebugCallback <- Vk.Ext.DU.Msngr.C.wrapCallback debugCallback
-	pure Vk.Ext.DU.Msngr.C.CreateInfo {
-		Vk.Ext.DU.Msngr.C.createInfoSType = (),
-		Vk.Ext.DU.Msngr.C.createInfoPNext = NullPtr,
-		Vk.Ext.DU.Msngr.C.createInfoFlags = 0,
-		Vk.Ext.DU.Msngr.C.createInfoMessageSeverity =
-			Vk.Ext.DU.Msngr.C.severityVerboseBit .|.
-			Vk.Ext.DU.Msngr.C.severityWarningBit .|.
-			Vk.Ext.DU.Msngr.C.severityErrorBit,
-		Vk.Ext.DU.Msngr.C.createInfoMessageType =
-			Vk.Ext.DU.Msngr.C.typeGeneralBit .|.
-			Vk.Ext.DU.Msngr.C.typeValidationBit .|.
-			Vk.Ext.DU.Msngr.C.typePerformanceBit,
-		Vk.Ext.DU.Msngr.C.createInfoPfnUserCallback =
-			pDebugCallback,
-		Vk.Ext.DU.Msngr.C.createInfoPUserData = NullPtr }
+populateDebugMessengerCreateInfoOld :: ContT r IO (Ptr Vk.Ext.DU.Msngr.C.CreateInfo)
+populateDebugMessengerCreateInfoOld =
+	Vk.Ext.DU.Msngr.createInfoToCore populateDebugMessengerCreateInfo
 
-debugCallback :: Vk.Ext.DU.Msngr.C.FnCallback
-debugCallback _messageSeverity _messageType pCallbackData _pUserData = do
-	callbackData <-
-		Vk.Ext.DU.Msngr.C.copyCallbackData pCallbackData
-	message <- peekCString
-		$ Vk.Ext.DU.Msngr.C.callbackDataPMessage callbackData
-	putStrLn $ "validation layer: " ++ message
-	pure vkFalse
+populateDebugMessengerCreateInfo :: Vk.Ext.DU.Msngr.CreateInfo () () () () () ()
+populateDebugMessengerCreateInfo = Vk.Ext.DU.Msngr.CreateInfo {
+	Vk.Ext.DU.Msngr.createInfoNext = Nothing,
+	Vk.Ext.DU.Msngr.createInfoFlags = Vk.Ext.DU.Msngr.CreateFlagsZero,
+	Vk.Ext.DU.Msngr.createInfoMessageSeverity =
+		Vk.Ext.DU.Msg.SeverityVerboseBit .|.
+		Vk.Ext.DU.Msg.SeverityWarningBit .|.
+		Vk.Ext.DU.Msg.SeverityErrorBit,
+	Vk.Ext.DU.Msngr.createInfoMessageType =
+		Vk.Ext.DU.Msg.TypeGeneralBit .|.
+		Vk.Ext.DU.Msg.TypeValidationBit .|.
+		Vk.Ext.DU.Msg.TypePerformanceBit,
+	Vk.Ext.DU.Msngr.createInfoFnUserCallback = debugCallback,
+	Vk.Ext.DU.Msngr.createInfoUserData = Nothing }
+
+debugCallback :: Vk.Ext.DU.Msngr.FnCallback () () () () ()
+debugCallback _messageSeverity _messageType callbackData _userData = do
+	let	message = Vk.Ext.DU.Msngr.callbackDataMessage callbackData
+	Txt.putStrLn $ "validation layer: " <> message
+	pure False
 
 createSurface :: Global -> IO ()
 createSurface Global {

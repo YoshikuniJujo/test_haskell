@@ -67,7 +67,7 @@ data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoNext :: Maybe n,
 	objectNameInfoObjectType :: ObjectType,
 	objectNameInfoObjectHandle :: ObjectHandle,
-	objectNameInfoObjectName :: T.Text }
+	objectNameInfoObjectName :: Maybe T.Text }
 	deriving Show
 
 objectNameInfoToCore :: Pointable n => ObjectNameInfo n -> ContT r IO C.ObjectNameInfo
@@ -75,10 +75,10 @@ objectNameInfoToCore ObjectNameInfo {
 	objectNameInfoNext = mnxt,
 	objectNameInfoObjectType = ObjectType ot,
 	objectNameInfoObjectHandle = ObjectHandle oh,
-	objectNameInfoObjectName = on
+	objectNameInfoObjectName = mon
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	con <- textToCString on
+	con <- maybe (pure NullPtr) textToCString mon
 	pure C.ObjectNameInfo {
 		C.objectNameInfoSType = (),
 		C.objectNameInfoPNext = pnxt,
@@ -95,9 +95,11 @@ objectNameInfoFromCore C.ObjectNameInfo {
 	C.objectNameInfoPObjectName = con
 	} = do
 	mnxt <- pointerToMaybe $ castPtr pnxt
-	on <- cstringToText con
+	mon <- case con of
+		NullPtr -> pure Nothing
+		p -> Just <$> cstringToText p
 	pure ObjectNameInfo {
 		objectNameInfoNext = mnxt,
 		objectNameInfoObjectType = ObjectType ot,
 		objectNameInfoObjectHandle = ObjectHandle oh,
-		objectNameInfoObjectName = on }
+		objectNameInfoObjectName = mon }
