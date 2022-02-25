@@ -13,6 +13,7 @@ import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
+import Vulkan.PhysicalDevice.Enum
 
 import qualified Vulkan.PhysicalDevice.Core as C
 
@@ -32,6 +33,7 @@ data Properties = Properties {
 	propertiesApiVersion :: ApiVersion,
 	propertiesDriverVersion :: Word32,
 	propertiesVendorId :: Word32,
-	propertiesDeviceId :: Word32
+	propertiesDeviceId :: Word32,
+	propertiesDeviceType :: Type
 	}
 	deriving Show

@@ -73,6 +73,7 @@ library
       Vulkan.Logic
       Vulkan.PhysicalDevice
       Vulkan.PhysicalDevice.Core
+      Vulkan.PhysicalDevice.Enum
       Vulkan.Pipeline
       Vulkan.Pipeline.ColorBlendAttachmentState
       Vulkan.Pipeline.ColorBlendState
