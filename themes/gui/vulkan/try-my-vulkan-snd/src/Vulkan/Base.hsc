@@ -22,17 +22,15 @@ import qualified Data.Text.Foreign as Txt
 
 class Pointable a where
 	withPointer :: a -> (Ptr a -> IO b) -> IO b
-	fromPointer :: Ptr a -> IO a
 
 instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
 	withPointer x f = alloca \p -> poke p x >> f p
-	fromPointer = peek
 
 maybeToPointer :: Pointable a => Maybe a -> ContT r IO (Ptr a)
 maybeToPointer = \case Nothing -> pure NullPtr; Just x -> ContT $ withPointer x
 
-pointerToMaybe :: Pointable a => Ptr a -> IO (Maybe a)
-pointerToMaybe = \case NullPtr -> pure Nothing; p -> Just <$> fromPointer p
+pointerToMaybe :: Storable a => Ptr a -> IO (Maybe a)
+pointerToMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peek p
 
 stringToCString :: String -> ContT r IO CString
 stringToCString = ContT . withCString

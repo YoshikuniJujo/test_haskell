@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -46,7 +47,7 @@ data CallbackData n n2 n3 n4 = CallbackData {
 	deriving Show
 
 callbackDataFromCore ::
-	(Pointable n, Pointable n2, Pointable n3, Pointable n4) =>
+	(Storable n, Storable n2, Storable n3, Storable n4) =>
 	C.CallbackData -> IO (CallbackData n n2 n3 n4)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
@@ -84,7 +85,7 @@ type FnCallback n n2 n3 n4 ud =
 	IO Bool
 
 fnCallbackToCore ::
-	(Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable ud) =>
+	(Storable n, Storable n2, Storable n3, Storable n4, Storable ud) =>
 	FnCallback n n2 n3 n4 ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
@@ -102,9 +103,15 @@ data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
 	createInfoFnUserCallback :: FnCallback n2 n3 n4 n5 ud,
 	createInfoUserData :: Maybe ud }
 
+instance
+	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
+		Pointable ud, Storable ud) =>
+	Pointable (CreateInfo n n2 n3 n4 n5 ud) where
+	withPointer = runContT . (castPtr <$>) . createInfoToCore
+
 createInfoToCore ::
-	(Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
-		Pointable ud) =>
+	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
+		Pointable ud, Storable ud) =>
 	CreateInfo n n2 n3 n4 n5 ud -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -128,8 +135,8 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 
 create ::
-	(Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
-		Pointable n6, Pointable ud) =>
+	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
+		Storable n6, Pointable n6, Storable ud, Pointable ud) =>
 	Instance -> CreateInfo n n2 n3 n4 n5 ud ->
 	Maybe (AllocationCallbacks n6) -> IO Messenger
 create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do

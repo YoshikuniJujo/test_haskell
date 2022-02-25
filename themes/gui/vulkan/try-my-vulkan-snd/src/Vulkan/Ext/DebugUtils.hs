@@ -7,6 +7,7 @@
 module Vulkan.Ext.DebugUtils where
 
 import Foreign.Ptr
+import Foreign.Storable
 import Foreign.C.String
 import Control.Monad.Cont
 import Data.String
@@ -50,7 +51,7 @@ labelToCore Label {
 		C.labelPLabelName = cln,
 		C.labelColor = [r, g, b, a] }
 
-labelFromCore :: Pointable n => C.Label -> IO (Label n)
+labelFromCore :: Storable n => C.Label -> IO (Label n)
 labelFromCore C.Label {
 	C.labelPNext = pnxt,
 	C.labelPLabelName = cln,
@@ -87,7 +88,7 @@ objectNameInfoToCore ObjectNameInfo {
 		C.objectNameInfoPObjectName = con }
 
 objectNameInfoFromCore ::
-	Pointable n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
+	Storable n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
 objectNameInfoFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = pnxt,
 	C.objectNameInfoObjectType = ot,

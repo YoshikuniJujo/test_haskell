@@ -11,7 +11,6 @@ import Prelude hiding (readFile)
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.String
 import Control.Monad.Fix
@@ -221,7 +220,6 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 		mapM_ (Txt.putStrLn . ("\t" <>)
 				. Vk.Enumerate.extensionPropertiesExtensionName)
 			=<< Vk.Enumerate.instanceExtensionProperties Nothing
-	cDebugCreateInfo <- Vk.Ext.DU.Msngr.C.CreateInfo_ <$>  ((\p -> lift . newForeignPtr p $ pure ()) =<< populateDebugMessengerCreateInfoOld)
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
@@ -236,7 +234,8 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo = Vk.Ist.CreateInfo {
-			Vk.Ist.createInfoNext = Just cDebugCreateInfo,
+			Vk.Ist.createInfoNext =
+				Just populateDebugMessengerCreateInfo,
 			Vk.Ist.createInfoFlags = Vk.Ist.CreateFlagsZero,
 			Vk.Ist.createInfoApplicationInfo = appInfo,
 			Vk.Ist.createInfoEnabledLayerNames =
