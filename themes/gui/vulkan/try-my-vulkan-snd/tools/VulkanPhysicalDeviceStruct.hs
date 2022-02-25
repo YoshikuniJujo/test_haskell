@@ -15,7 +15,10 @@ make :: IO ()
 make = do
 	vch <- readFile vulkanCoreH
 	let	ds = takeDefinition "VkPhysicalDeviceLimits" $ lines vch
-	putStr . intercalate ",\n" $ uncurry (field1 "VkPhysicalDeviceLimits") <$> ds
+	putStr $
+		intercalate ",\n" (uncurry (field1 "VkPhysicalDeviceLimits") <$> ds) ++
+		" ]\n" ++
+		"\t[''Show, ''Storable]\n"
 
 field1 :: String -> String -> Name -> String
 field1 csn t (Atom n) = "\t(\"" ++ n ++ "\", ''#{type " ++ t ++ "},\n\t\t[| #{peek " ++
