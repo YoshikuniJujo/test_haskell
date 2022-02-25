@@ -21,6 +21,9 @@ data AllocationCallbacks a = AllocationCallbacks {
 		I.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: I.FnInternalFreeNotification a }
 
+nil :: Maybe (AllocationCallbacks ())
+nil = Nothing
+
 maybeToCore :: Pointable n =>
 	Maybe (AllocationCallbacks n) -> ContT r IO (Ptr I.AllocationCallbacks)
 maybeToCore = \case Nothing -> pure NullPtr; Just ac -> toCore ac

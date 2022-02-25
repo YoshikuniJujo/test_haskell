@@ -33,6 +33,7 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Vulkan as Vk
+import qualified Vulkan.AllocationCallbacks as Vk.AC
 import qualified Vulkan.Instance as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
 import qualified Vulkan.Enumerate as Vk.Enumerate
@@ -104,9 +105,6 @@ enableValidationLayers =
 
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
-
-debugMessenger :: IORef Vk.Ext.DU.Msngr.C.Messenger
-debugMessenger = unsafePerformIO $ newIORef NullPtr
 
 physicalDevice :: IORef Vk.PhysicalDevice.PhysicalDevice
 physicalDevice = unsafePerformIO $ newIORef NullHandle
@@ -234,8 +232,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo = Vk.Ist.CreateInfo {
-			Vk.Ist.createInfoNext =
-				Just populateDebugMessengerCreateInfo,
+			Vk.Ist.createInfoNext = Just debugMessengerCreateInfo,
 			Vk.Ist.createInfoFlags = Vk.Ist.CreateFlagsZero,
 			Vk.Ist.createInfoApplicationInfo = appInfo,
 			Vk.Ist.createInfoEnabledLayerNames =
@@ -259,20 +256,13 @@ getRequiredExtensions =
 setupDebugMessenger :: Global -> IO ()
 setupDebugMessenger Global {
 	globalInstance = rist,
-	globalDebugMessenger = rdmsgr } = ($ pure) $ runContT do
-	pCreateInfo <- populateDebugMessengerCreateInfoOld
-	pMessenger <- ContT alloca
-	lift do	Vk.Instance ist <- readIORef rist
-		r <- Vk.Ext.DU.Msngr.C.create ist pCreateInfo NullPtr pMessenger
-		when (r /= success) $ error "failed to set up debug messenger!"
-		writeIORef debugMessenger =<< peek pMessenger
+	globalDebugMessenger = rdmsgr } = do
+	ist <- readIORef rist
+	msgr <- Vk.Ext.DU.Msngr.create ist debugMessengerCreateInfo Vk.AC.nil
+	writeIORef rdmsgr msgr
 
-populateDebugMessengerCreateInfoOld :: ContT r IO (Ptr Vk.Ext.DU.Msngr.C.CreateInfo)
-populateDebugMessengerCreateInfoOld =
-	Vk.Ext.DU.Msngr.createInfoToCore populateDebugMessengerCreateInfo
-
-populateDebugMessengerCreateInfo :: Vk.Ext.DU.Msngr.CreateInfo () () () () () ()
-populateDebugMessengerCreateInfo = Vk.Ext.DU.Msngr.CreateInfo {
+debugMessengerCreateInfo :: Vk.Ext.DU.Msngr.CreateInfo () () () () () ()
+debugMessengerCreateInfo = Vk.Ext.DU.Msngr.CreateInfo {
 	Vk.Ext.DU.Msngr.createInfoNext = Nothing,
 	Vk.Ext.DU.Msngr.createInfoFlags = Vk.Ext.DU.Msngr.CreateFlagsZero,
 	Vk.Ext.DU.Msngr.createInfoMessageSeverity =
@@ -1112,7 +1102,10 @@ drawFrame = ($ pure) $ runContT do
 --	lift $ putStrLn "=== END ==="
 
 cleanup :: Global -> IO ()
-cleanup Global { globalWindow = win, globalInstance = rist } = do
+cleanup Global {
+	globalWindow = win,
+	globalInstance = rist,
+	globalDebugMessenger = rdmsgr } = do
 	dvc <- readIORef device
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1139,8 +1132,8 @@ cleanup Global { globalWindow = win, globalInstance = rist } = do
 	ist@(Vk.Instance cist) <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
 	when enableValidationLayers $
-		(\dm -> Vk.Ext.DU.Msngr.C.destroy cist dm NullPtr)
-			=<< readIORef debugMessenger
+		(\(Vk.Ext.DU.Messenger dm) -> Vk.Ext.DU.Msngr.C.destroy cist dm NullPtr)
+			=<< readIORef rdmsgr
 	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate
