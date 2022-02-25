@@ -107,9 +107,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
-physicalDevice :: IORef Vk.PhysicalDevice.C.PhysicalDevice
-physicalDevice = unsafePerformIO $ newIORef NullHandle
-
 device :: IORef Vk.Device.Device
 device = unsafePerformIO $ newIORef NullPtr
 
@@ -203,13 +200,13 @@ initVulkan g = do
 	when enableValidationLayers $ setupDebugMessenger g
 	createSurface g
 	pickPhysicalDevice g
-	createLogicalDevice
-	createSwapChain
+	createLogicalDevice g
+	createSwapChain g
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
 	createFramebuffers
-	createCommandPool
+	createCommandPool g
 	createCommandBuffers
 	createSemaphores
 
@@ -296,11 +293,12 @@ createSurface Global {
 		writeIORef surface =<< peek psrfc
 
 pickPhysicalDevice :: Global -> IO ()
-pickPhysicalDevice Global { globalInstance = rist } = do
+pickPhysicalDevice Global {
+	globalInstance = rist, globalPhysicalDevice = rpdvc } = do
 	devices <- Vk.PhysicalDevice.enumerate =<< readIORef rist
 	let	cdevices = (\(Vk.PhysicalDevice cpdvc) -> cpdvc) <$> devices
 	findM isDeviceSuitable cdevices >>= \case
-		Just pd -> writeIORef physicalDevice pd
+		Just pd -> writeIORef rpdvc $ Vk.PhysicalDevice pd
 		Nothing -> error "no matched physical devices"
 
 findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
@@ -429,9 +427,10 @@ querySwapChainSupport dvc = ($ pure) $ runContT do
 		swapChainSupportDetailsPresentModes = presentModes
 		}
 
-createLogicalDevice :: IO ()
-createLogicalDevice = ($ pure) $ runContT do
-	pd <- lift $ readIORef physicalDevice
+createLogicalDevice :: Global -> IO ()
+createLogicalDevice Global {
+	globalPhysicalDevice = rpdvc } = ($ pure) $ runContT do
+	Vk.PhysicalDevice pd <- lift $ readIORef rpdvc
 	indices <- lift $ findQueueFamilies pd
 	lift $ print indices
 	pQueuePriority <- ContT alloca
@@ -487,15 +486,16 @@ createLogicalDevice = ($ pure) $ runContT do
 		writeIORef graphicsQueue =<< peek pGraphicsQueue
 		writeIORef presentQueue =<< peek pPresentQueue
 
-createSwapChain :: IO ()
-createSwapChain = ($ pure) $ runContT do
+createSwapChain :: Global -> IO ()
+createSwapChain Global {
+	globalPhysicalDevice = pdvc
+	} = ($ pure) $ runContT do
 	dvc <- lift $ readIORef device
 	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
-		pd <- readIORef physicalDevice
+		Vk.PhysicalDevice pd <- readIORef pdvc
 		swapChainSupport <- querySwapChainSupport pd
 		sfc <- readIORef surface
-		phd <- readIORef physicalDevice
-		indices <- findQueueFamilies phd
+		indices <- findQueueFamilies pd
 		print indices
 		let	cap = swapChainSupportDetailsCapabilities
 				swapChainSupport
@@ -927,11 +927,12 @@ createFramebuffer1 attachment = ($ pure) $ runContT do
 		when (r /= success) $ error "failed to create framebuffer!"
 		peek pfb
 
-createCommandPool :: IO ()
-createCommandPool = ($ pure) $ runContT do
+createCommandPool :: Global -> IO ()
+createCommandPool Global {
+	globalPhysicalDevice = rpdvc } = ($ pure) $ runContT do
 	lift $ putStrLn "=== CREATE COMMAND POOL ==="
 	queueFamilyIndices <- lift do
-		pd <- readIORef physicalDevice
+		Vk.PhysicalDevice pd <- readIORef rpdvc
 		findQueueFamilies pd
 	lift $ print queueFamilyIndices
 	let	Vk.CP.CreateInfo_ fPoolInfo = Vk.CP.CreateInfo {
