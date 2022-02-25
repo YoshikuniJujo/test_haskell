@@ -40,10 +40,12 @@ import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
+import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
-import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
 
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
@@ -105,7 +107,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
-physicalDevice :: IORef Vk.PhysicalDevice.PhysicalDevice
+physicalDevice :: IORef Vk.PhysicalDevice.C.PhysicalDevice
 physicalDevice = unsafePerformIO $ newIORef NullHandle
 
 device :: IORef Vk.Device.Device
@@ -160,17 +162,20 @@ imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
 data Global = Global {
 	globalWindow :: GlfwB.Window,
 	globalInstance :: IORef Vk.Instance,
-	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger
+	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
+	globalPhysicalDevice :: IORef Vk.PhysicalDevice
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
 	ist <- newIORef $ Vk.Instance NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
+	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
-		globalDebugMessenger = dmsgr
+		globalDebugMessenger = dmsgr,
+		globalPhysicalDevice = pdvc
 		}
 
 run :: IO ()
@@ -291,30 +296,24 @@ createSurface Global {
 		writeIORef surface =<< peek psrfc
 
 pickPhysicalDevice :: Global -> IO ()
-pickPhysicalDevice Global { globalInstance = rist } = ($ pure) $ runContT do
-	Vk.Instance ist <- lift $ readIORef rist
-	pDeviceCount <- ContT alloca
-	(fromIntegral -> deviceCount) <- lift do
-		_ <- Vk.PhysicalDevice.enumerate ist pDeviceCount NullPtr
-		peek pDeviceCount
-	pDevices <- ContT $ allocaArray deviceCount
-	lift do	_ <- Vk.PhysicalDevice.enumerate ist pDeviceCount pDevices
-		devices <- peekArray deviceCount pDevices
-		findM isDeviceSuitable devices >>= \case
-			Just pd -> writeIORef physicalDevice pd
-			Nothing -> error "no matched physical devices"
+pickPhysicalDevice Global { globalInstance = rist } = do
+	devices <- Vk.PhysicalDevice.enumerate =<< readIORef rist
+	let	cdevices = (\(Vk.PhysicalDevice cpdvc) -> cpdvc) <$> devices
+	findM isDeviceSuitable cdevices >>= \case
+		Just pd -> writeIORef physicalDevice pd
+		Nothing -> error "no matched physical devices"
 
 findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
-isDeviceSuitable :: Vk.PhysicalDevice.PhysicalDevice -> IO Bool
+isDeviceSuitable :: Vk.PhysicalDevice.C.PhysicalDevice -> IO Bool
 isDeviceSuitable dvc = ($ pure) $ runContT do
 	pDeviceProperties <- ContT alloca
-	lift do	Vk.PhysicalDevice.getProperties dvc pDeviceProperties
+	lift do	Vk.PhysicalDevice.C.getProperties dvc pDeviceProperties
 		print =<< peek pDeviceProperties
 	pDeviceFeatures <- ContT alloca
-	lift do	Vk.PhysicalDevice.getFeatures dvc pDeviceFeatures
+	lift do	Vk.PhysicalDevice.C.getFeatures dvc pDeviceFeatures
 		print =<< peek pDeviceFeatures
 	indices <- lift $ findQueueFamilies dvc
 	extensionSupported <- lift $ checkDeviceExtensionSupport dvc
@@ -327,15 +326,15 @@ isDeviceSuitable dvc = ($ pure) $ runContT do
 		else pure False
 	pure $ isComplete indices && extensionSupported && swapChainAdequate
 
-checkDeviceExtensionSupport :: Vk.PhysicalDevice.PhysicalDevice -> IO Bool
+checkDeviceExtensionSupport :: Vk.PhysicalDevice.C.PhysicalDevice -> IO Bool
 checkDeviceExtensionSupport dvc = ($ pure) $ runContT do
 	pExtensionCount <- ContT alloca
 	(fromIntegral -> extensionCount) <- lift do
-		_ <- Vk.PhysicalDevice.enumerateExtensionProperties
+		_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
 			dvc NullPtr pExtensionCount NullPtr
 		peek pExtensionCount
 	pAvailableExtensions <- ContT $ allocaArray extensionCount
-	lift do	_ <- Vk.PhysicalDevice.enumerateExtensionProperties
+	lift do	_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
 			dvc NullPtr pExtensionCount pAvailableExtensions
 		es <- map (BSC.takeWhile (/= '\NUL') . Vk.Enumerate.C.extensionPropertiesExtensionName)
 			<$> peekArray extensionCount pAvailableExtensions
@@ -351,18 +350,18 @@ isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
 	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
-findQueueFamilies :: Vk.PhysicalDevice.PhysicalDevice -> IO QueueFamilyIndices
+findQueueFamilies :: Vk.PhysicalDevice.C.PhysicalDevice -> IO QueueFamilyIndices
 findQueueFamilies dvc = ($ pure) $ runContT do
 	let	indices = QueueFamilyIndices {
 			graphicsFamily = Nothing,
 			presentFamily = Nothing }
 	pQueueFamilyCount <- ContT alloca
 	(fromIntegral -> queueFamilyCount) <- lift do
-		Vk.PhysicalDevice.getQueueFamilyProperties
+		Vk.PhysicalDevice.C.getQueueFamilyProperties
 			dvc pQueueFamilyCount NullPtr
 		peek pQueueFamilyCount
 	pQueueFamilies <- ContT $ allocaArray queueFamilyCount
-	lift do	Vk.PhysicalDevice.getQueueFamilyProperties
+	lift do	Vk.PhysicalDevice.C.getQueueFamilyProperties
 			dvc pQueueFamilyCount pQueueFamilies
 		props <- peekArray queueFamilyCount pQueueFamilies
 		pfi <- getPresentFamilyIndex dvc (fromIntegral $ length props) 0
@@ -371,14 +370,14 @@ findQueueFamilies dvc = ($ pure) $ runContT do
 				<$> findIndex checkGraphicsBit props,
 			presentFamily = pfi }
 
-getPresentFamilyIndex :: Vk.PhysicalDevice.PhysicalDevice ->
+getPresentFamilyIndex :: Vk.PhysicalDevice.C.PhysicalDevice ->
 	Word32 -> Word32 -> IO (Maybe Word32)
 getPresentFamilyIndex pd n i
 	| i >= n = pure Nothing
 	| otherwise = ($ pure) $ runContT do
 		pPresentSupport <- ContT alloca
 		lift do	sfc <- readIORef surface
-			_ <- Vk.PhysicalDevice.getSurfaceSupport pd i sfc pPresentSupport
+			_ <- Vk.PhysicalDevice.C.getSurfaceSupport pd i sfc pPresentSupport
 			presentSupport <- peek pPresentSupport
 			if presentSupport == vkTrue
 			then pure $ Just i
@@ -395,7 +394,7 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	deriving Show
 
 querySwapChainSupport ::
-	Vk.PhysicalDevice.PhysicalDevice -> IO SwapChainSupportDetails
+	Vk.PhysicalDevice.C.PhysicalDevice -> IO SwapChainSupportDetails
 querySwapChainSupport dvc = ($ pure) $ runContT do
 	sfc <- lift $ readIORef surface
 	pCapabilities <- ContT alloca
@@ -448,8 +447,8 @@ createLogicalDevice = ($ pure) $ runContT do
 				Vk.Device.Queue.createInfoPQueuePriorities =
 					pQueuePriority }
 	pQueueCreateInfo <- ContT $ withForeignPtr fQueueCreateInfo
-	Vk.PhysicalDevice.Features_ fDeviceFeatures <-
-		lift $ Vk.PhysicalDevice.getCleardFeatures
+	Vk.PhysicalDevice.C.Features_ fDeviceFeatures <-
+		lift $ Vk.PhysicalDevice.C.getCleardFeatures
 	pDeviceFeatures <- ContT $ withForeignPtr fDeviceFeatures
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1

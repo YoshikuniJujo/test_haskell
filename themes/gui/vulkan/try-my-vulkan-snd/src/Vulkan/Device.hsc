@@ -13,10 +13,10 @@ import Data.Int
 
 import Vulkan.Core (Queue)
 import Vulkan.Base
-import Vulkan.PhysicalDevice (PhysicalDevice)
+import Vulkan.PhysicalDevice.Core (PhysicalDevice)
 
 import qualified Vulkan.Device.Queue as Device.Queue
-import qualified Vulkan.PhysicalDevice as PhysicalDevice
+import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
 
 #include <vulkan/vulkan.h>
 

@@ -8,7 +8,7 @@ import Data.Int
 
 import Vulkan.Khr.Surface
 
-import qualified Vulkan.PhysicalDevice as PhysicalDevice
+import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
 import qualified Vulkan.Khr.Present as Present
 
 #include <vulkan/vulkan.h>

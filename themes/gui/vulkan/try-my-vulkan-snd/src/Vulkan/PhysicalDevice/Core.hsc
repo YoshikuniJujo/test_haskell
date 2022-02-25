@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.PhysicalDevice where
+module Vulkan.PhysicalDevice.Core where
 
 import Foreign.Ptr
 import Foreign.Concurrent

@@ -17,10 +17,13 @@ import Vulkan.Base
 
 import qualified Vulkan.Core as C
 import qualified Vulkan.Instance.Core as Instance.C
+import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice.C
 
 #include <vulkan/vulkan.h>
 
 newtype Instance = Instance Instance.C.Instance deriving Show
+
+newtype PhysicalDevice = PhysicalDevice PhysicalDevice.C.PhysicalDevice deriving Show
 
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,
