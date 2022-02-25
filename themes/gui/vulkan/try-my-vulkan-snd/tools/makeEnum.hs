@@ -7,6 +7,7 @@ import qualified VulkanExceptionEnum
 
 import qualified VulkanExtDebugUtilsMessageEnum
 import qualified VulkanPhysicalDeviceEnum
+import qualified VulkanSampleEnum
 
 import qualified VulkanPipelineShaderStageEnum
 
@@ -17,5 +18,6 @@ main = do
 
 	VulkanExtDebugUtilsMessageEnum.make
 	VulkanPhysicalDeviceEnum.make
+	VulkanSampleEnum.make
 
 	VulkanPipelineShaderStageEnum.make

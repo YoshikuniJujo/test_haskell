@@ -93,6 +93,7 @@ library
       Vulkan.Queue.Family
       Vulkan.RenderPass
       Vulkan.Sample
+      Vulkan.Sample.Enum
       Vulkan.Semaphore
       Vulkan.Shader.Module
       Vulkan.Specialization
