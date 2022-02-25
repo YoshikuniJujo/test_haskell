@@ -296,27 +296,26 @@ pickPhysicalDevice :: Global -> IO ()
 pickPhysicalDevice Global {
 	globalInstance = rist, globalPhysicalDevice = rpdvc } = do
 	devices <- Vk.PhysicalDevice.enumerate =<< readIORef rist
-	let	cdevices = (\(Vk.PhysicalDevice cpdvc) -> cpdvc) <$> devices
-	findM isDeviceSuitable cdevices >>= \case
-		Just pd -> writeIORef rpdvc $ Vk.PhysicalDevice pd
+	findM isDeviceSuitable devices >>= \case
+		Just pd -> writeIORef rpdvc pd
 		Nothing -> error "no matched physical devices"
 
 findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
-isDeviceSuitable :: Vk.PhysicalDevice.C.PhysicalDevice -> IO Bool
-isDeviceSuitable dvc = ($ pure) $ runContT do
+isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
+isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
 	pDeviceProperties <- ContT alloca
-	lift do	Vk.PhysicalDevice.C.getProperties dvc pDeviceProperties
+	lift do	Vk.PhysicalDevice.C.getProperties cdvc pDeviceProperties
 		print =<< peek pDeviceProperties
 	pDeviceFeatures <- ContT alloca
-	lift do	Vk.PhysicalDevice.C.getFeatures dvc pDeviceFeatures
+	lift do	Vk.PhysicalDevice.C.getFeatures cdvc pDeviceFeatures
 		print =<< peek pDeviceFeatures
-	indices <- lift $ findQueueFamilies dvc
-	extensionSupported <- lift $ checkDeviceExtensionSupport dvc
+	indices <- lift $ findQueueFamilies cdvc
+	extensionSupported <- lift $ checkDeviceExtensionSupport cdvc
 	swapChainAdequate <- lift $ if extensionSupported
-		then do	swapChainSupport <- querySwapChainSupport dvc
+		then do	swapChainSupport <- querySwapChainSupport cdvc
 			pure $ not (null $ swapChainSupportDetailsFormats
 					swapChainSupport) &&
 				not (null $ swapChainSupportDetailsPresentModes

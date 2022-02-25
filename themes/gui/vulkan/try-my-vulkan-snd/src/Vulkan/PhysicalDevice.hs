@@ -7,6 +7,7 @@ module Vulkan.PhysicalDevice where
 import Foreign.Marshal
 import Foreign.Storable
 import Control.Monad.Cont
+import Data.Word
 
 import Vulkan
 import Vulkan.Base
@@ -26,3 +27,11 @@ enumerate (Instance ist) = ($ pure) . runContT $ map PhysicalDevice <$> do
 	lift do	r <- C.enumerate ist pdvcc pdvcs
 		throwUnlessSuccess $ Result r
 		peekArray dvcc pdvcs
+
+data Properties = Properties {
+	propertiesApiVersion :: ApiVersion,
+	propertiesDriverVersion :: Word32,
+	propertiesVendorId :: Word32,
+	propertiesDeviceId :: Word32
+	}
+	deriving Show
