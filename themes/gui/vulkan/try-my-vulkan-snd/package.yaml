@@ -29,6 +29,7 @@ dependencies:
 - exception-hierarchy
 - c-enum
 - c-struct
+- uuid
 - GLFW-b
 
 library:

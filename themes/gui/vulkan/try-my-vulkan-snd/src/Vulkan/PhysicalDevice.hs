@@ -8,6 +8,9 @@ import Foreign.Marshal
 import Foreign.Storable
 import Control.Monad.Cont
 import Data.Word
+import Data.UUID
+
+import qualified Data.Text as T
 
 import Vulkan
 import Vulkan.Base
@@ -34,6 +37,8 @@ data Properties = Properties {
 	propertiesDriverVersion :: Word32,
 	propertiesVendorId :: Word32,
 	propertiesDeviceId :: Word32,
-	propertiesDeviceType :: Type
+	propertiesDeviceType :: Type,
+	propertiesDeviceName :: T.Text,
+	propertiesPipelineCacheUuid :: UUID
 	}
 	deriving Show
