@@ -79,6 +79,7 @@ uint32Max :: #{type uint32_t}
 uint32Max = #{const UINT32_MAX}
 
 type PtrUint32T = Ptr #{type uint32_t}
+type ListUint32T = [#{type uint32_t}]
 
 data FramebufferTag
 type Framebuffer = Ptr FramebufferTag

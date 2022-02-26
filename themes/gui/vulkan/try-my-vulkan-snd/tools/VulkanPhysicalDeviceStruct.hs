@@ -7,6 +7,7 @@ module VulkanPhysicalDeviceStruct where
 import Data.List
 import Data.Char
 import Text.Nowdoc
+import System.Directory
 
 vulkanCoreH :: FilePath
 vulkanCoreH = "/usr/include/vulkan/vulkan_core.h"
@@ -31,12 +32,20 @@ data Name = Atom String | List String Int deriving Show
 header :: String -> String
 header mn = [nowdoc|
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module |] ++ mn ++ [nowdoc| where
 
 import Foreign.Storable
-import Foreicn.C.Struct
+import Foreign.C.Struct
+import Data.Word
+import Data.Int
+
+import Vulkan.Base
+
+#include <vulkan/vulkan.h>
 
 |]
 
@@ -44,10 +53,8 @@ make :: IO ()
 make = do
 	vch <- readFile vulkanCoreH
 	let	ds = takeDefinition "VkPhysicalDeviceLimits" $ lines vch
-	putStrLn $ directory moduleName
-	putStrLn $ sourceFile moduleName
-	putStr $ header moduleName
-	putStr $
+	createDirectoryIfMissing True $ directory moduleName
+	writeFile (sourceFile moduleName) $ header moduleName ++
 		"struct \"" ++ hsName ++ "\" #{size " ++ cName moduleName hsName ++
 		"}\n\t\t#{alignment " ++ cName moduleName hsName ++ "} [\n" ++
 		intercalate ",\n" (uncurry (field1 "VkPhysicalDeviceLimits") <$> ds) ++
@@ -57,7 +64,7 @@ field1 :: String -> String -> Name -> String
 field1 csn t (Atom n) = "\t(\"" ++ n ++ "\", ''#{type " ++ t ++ "},\n\t\t[| #{peek " ++
 	csn ++ ", " ++ n ++ "} |],\n\t\t[| #{poke " ++
 	csn ++ ", " ++ n ++ "} |])"
-field1 csn t (List nm nb) = "\t(\"" ++ nm ++ "\", ''#{type " ++ listOf t ++ "},\n\t\t[| peekArray " ++
+field1 csn t (List nm nb) = "\t(\"" ++ nm ++ "\", ''" ++ listOf t ++ ",\n\t\t[| peekArray " ++
 	show nb ++ " . #{ptr " ++ csn ++ ", " ++ nm ++ "}" ++ "|],\n\t\t[| pokeArray . #{ptr " ++
 	csn ++ ", " ++ nm ++ "} |])"
 
