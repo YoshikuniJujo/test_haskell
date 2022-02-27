@@ -33,7 +33,6 @@ foreign import ccall "vkEnumeratePhysicalDevices" enumerate ::
 	Instance -> Ptr #{type uint32_t} -> Ptr PhysicalDevice ->
 	IO #{type VkResult}
 
-type ListUint32T = [#{type uint32_t}]
 type ListCFloat = [#{type float}]
 
 struct "PhysicalDeviceLimits" #{size VkPhysicalDeviceLimits}

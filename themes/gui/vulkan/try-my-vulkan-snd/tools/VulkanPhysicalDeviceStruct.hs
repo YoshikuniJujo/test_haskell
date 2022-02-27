@@ -38,6 +38,8 @@ header mn = [nowdoc|
 
 module |] ++ mn ++ [nowdoc| where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
