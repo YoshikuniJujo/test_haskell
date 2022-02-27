@@ -21,10 +21,22 @@ import Foreign.Storable
 import Foreign.C.Struct
 
 struct "Big" 100 8 [
-|] ++ intercalate ",\n" (map member [0 .. 99]) ++ [nowdoc|
+|] ++ intercalate ",\n" (map (member "some") [0 .. 99]) ++ [nowdoc|
+	]
+	[]
+|] ++ [nowdoc|
+
+struct "Big2" 100 8 [
+|] ++ intercalate ",\n" (map (member "some") [0 .. 75]) ++ [nowdoc|
+	]
+	[]
+|] ++ [nowdoc|
+
+struct "Big3" 100 8 [
+|] ++ intercalate ",\n" (map (member "some") [0 .. 99]) ++ [nowdoc|
 	]
 	[]
 |]
 
-member :: Int -> String
-member i = "\t(\"some" ++ show i ++ "\", ''Int, [| peek . castPtr |], [| poke . castPtr |])"
+member :: String -> Int -> String
+member nm i = "\t(\"" ++ nm ++ show i ++ "\", ''Int, [| peek . castPtr |], [| poke . castPtr |])"
