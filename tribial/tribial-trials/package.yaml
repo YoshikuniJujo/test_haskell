@@ -30,6 +30,9 @@ dependencies:
 library:
   source-dirs: src
 
+data-files:
+- th/some.txt
+
 executables:
   tribial-trials-exe:
     main:                Main.hs
