@@ -20,23 +20,13 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 
-struct "Big" 100 8 [
-|] ++ intercalate ",\n" (map (member "some") [0 .. 99]) ++ [nowdoc|
-	]
-	[]
-|] ++ [nowdoc|
+|] ++ intercalate "\n" (uncurry mkBig <$> [
+		(1, 100), (2, 76), (3, 100), (4, 61), (5, 62), (6, 63)
+		])
 
-struct "Big2" 100 8 [
-|] ++ intercalate ",\n" (map (member "some") [0 .. 75]) ++ [nowdoc|
-	]
-	[]
-|] ++ [nowdoc|
-
-struct "Big3" 100 8 [
-|] ++ intercalate ",\n" (map (member "some") [0 .. 99]) ++ [nowdoc|
-	]
-	[]
-|]
+mkBig :: Int -> Int -> String
+mkBig i n = "struct \"Big" ++ show i ++ "\" 100 8 [\n" ++
+	intercalate ",\n" (map (member "some") [0 .. n - 1]) ++ "\n\t] []\n"
 
 member :: String -> Int -> String
 member nm i = "\t(\"" ++ nm ++ show i ++ "\", ''Int, [| peek . castPtr |], [| poke . castPtr |])"
