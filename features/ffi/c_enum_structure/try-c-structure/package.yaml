@@ -25,6 +25,7 @@ dependencies:
 - primitive
 - array
 - c-struct
+- nowdoc
 
 library:
   source-dirs: src

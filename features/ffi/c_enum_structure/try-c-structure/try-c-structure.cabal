@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Bar
+      Big
+      BigQ
       Foo
       Foo0
       FooIx
@@ -41,6 +43,7 @@ library
       array
     , base >=4.7 && <5
     , c-struct
+    , nowdoc
     , primitive
     , template-haskell
   default-language: Haskell2010
@@ -56,6 +59,7 @@ executable try-c-structure-exe
       array
     , base >=4.7 && <5
     , c-struct
+    , nowdoc
     , primitive
     , template-haskell
     , try-c-structure
@@ -73,6 +77,7 @@ test-suite try-c-structure-test
       array
     , base >=4.7 && <5
     , c-struct
+    , nowdoc
     , primitive
     , template-haskell
     , try-c-structure
