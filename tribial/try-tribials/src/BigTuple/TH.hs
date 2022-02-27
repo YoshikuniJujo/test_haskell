@@ -5,24 +5,24 @@ module BigTuple.TH where
 
 import Language.Haskell.TH
 
-tuple3Data :: Q Dec
-tuple3Data = dataD (cxt []) (mkName "Tuple3")
-	[plainTV $ mkName "a", plainTV $ mkName "b", plainTV $ mkName "c"]
+tuple3Data :: Int -> Q Dec
+tuple3Data n = dataD (cxt []) (mkName "Tuple3")
+	(plainTV . mkName <$> as)
 	Nothing
-	[normalC (mkName "Tuple3") [
-		bangType (bang noSourceUnpackedness noSourceStrictness) (varT $ mkName "a"),
-		bangType (bang noSourceUnpackedness noSourceStrictness) (varT $ mkName "b"),
-		bangType (bang noSourceUnpackedness noSourceStrictness) (varT $ mkName "c") ]]
+	[normalC (mkName "Tuple3")
+		$ bangType (bang noSourceUnpackedness noSourceStrictness)
+			. varT . mkName <$> as]
 	[]
+	where as = take n abc
 
-tuple3Type :: TypeQ
-tuple3Type = conT (mkName "Tuple3")
-	`appT` conT ''Int `appT` conT ''Char `appT` conT ''()
+abc :: [String]
+abc = ((: []) <$> ['a' .. 'z']) ++ [ as ++ [a] | as <- abc, a <- ['a' .. 'z'] ]
 
-tuple3Pat :: PatQ
-tuple3Pat = conP (mkName "Tuple3") [
-	varP $ mkName "x", varP $ mkName "y", varP $ mkName "z" ]
+tuple3Type :: [TypeQ] -> TypeQ
+tuple3Type = foldl appT (conT $ mkName "Tuple3")
+
+tuple3Pat :: [PatQ] -> PatQ
+tuple3Pat = conP (mkName "Tuple3")
 
 tuple3Exp :: ExpQ
 tuple3Exp = conE (mkName "Tuple3")
-	`appE` litE (integerL 1) `appE` litE (charL 'c') `appE` tupE []
