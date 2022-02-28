@@ -44,7 +44,7 @@ member tp_ fn = varBangType (mkName nm) $ bangType noBang tp
 getNameType :: String -> FieldName -> (String, TypeQ)
 getNameType tp (Atom fn) = ("limits" ++ capitalize fn, fst . fromJust $ lookup tp dict)
 getNameType tp (List fn nb) = ("limits" ++ capitalize fn,
-	conT ''LengthR `appT` litT (numTyLit nb) `appT` fst (fromJust $ lookup tp dict))
+	conT ''LengthL `appT` litT (numTyLit nb) `appT` fst (fromJust $ lookup tp dict))
 
 capitalize :: String -> String
 capitalize "" = ""
