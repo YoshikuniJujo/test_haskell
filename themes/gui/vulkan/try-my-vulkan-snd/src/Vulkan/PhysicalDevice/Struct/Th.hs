@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.PhysicalDevice.Struct.Th (vkPhysicalDeviceLimits) where
+module Vulkan.PhysicalDevice.Struct.Th (vkPhysicalDeviceLimits, DeviceSize(..)) where
 
 import Language.Haskell.TH
 import Control.Arrow
@@ -10,11 +10,10 @@ import Data.Maybe
 import Data.Word
 import Data.Char
 
--- import Paths_try_my_vulkan_snd
-
-import Vulkan
-
 import qualified Vulkan.PhysicalDevice.Struct.Core as C
+
+newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
+	deriving Show
 
 vkPhysicalDeviceLimits :: DecsQ
 vkPhysicalDeviceLimits = (\dt sg bd -> [dt, sg, bd])
