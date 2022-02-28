@@ -13,13 +13,13 @@ vulkanCoreH :: FilePath
 vulkanCoreH = "/usr/include/vulkan/vulkan_core.h"
 
 moduleName :: String
-moduleName = "Vulkan.PhysicalDevice.Struct"
+moduleName = "Vulkan.PhysicalDevice.Struct.Core"
 
 directory :: String -> FilePath
 directory mn = "../src/" ++ intercalate "/" (init $ sep '.' mn)
 
 sourceFile :: String -> FilePath
-sourceFile mn = directory mn ++ "/Struct.hsc"
+sourceFile mn = directory mn ++ "/Core.hsc"
 
 hsName :: String
 hsName = "Limits"
@@ -55,10 +55,11 @@ make :: IO ()
 make = do
 	vch <- readFile vulkanCoreH
 	let	ds = takeDefinition "VkPhysicalDeviceLimits" $ lines vch
+		moduleName' = intercalate "." . init $ sep '.' moduleName
 	createDirectoryIfMissing True $ directory moduleName
 	writeFile (sourceFile moduleName) $ header moduleName ++
-		"struct \"" ++ hsName ++ "\" #{size " ++ cName moduleName hsName ++
-		"}\n\t\t#{alignment " ++ cName moduleName hsName ++ "} [\n" ++
+		"struct \"" ++ hsName ++ "\" #{size " ++ cName moduleName' hsName ++
+		"}\n\t\t#{alignment " ++ cName moduleName' hsName ++ "} [\n" ++
 		intercalate ",\n" (uncurry (field1 "VkPhysicalDeviceLimits") <$> ds) ++
 		" ]\n\t[''Show, ''Storable]\n"
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.PhysicalDevice.Struct where
+module Vulkan.PhysicalDevice.Struct.Core where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
