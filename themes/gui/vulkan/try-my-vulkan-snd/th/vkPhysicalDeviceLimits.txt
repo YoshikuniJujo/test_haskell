@@ -1,0 +1,11 @@
+uint32_t|A maxImageDimension1D
+uint32_t|A maxImageDimension2D
+uint32_t|A maxImageDimension3D
+uint32_t|A maxImageDimensionCube
+uint32_t|A maxImageArrayLayers
+uint32_t|A maxTexelBufferElements
+uint32_t|A maxUniformBufferRange
+uint32_t|A maxStorageBufferRange
+uint32_t|A maxPushConstantsSize
+uint32_t|A maxMemoryAllocationCount
+uint32_t|A maxSamplerAllocationCount

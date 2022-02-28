@@ -29,6 +29,11 @@ cName mn hsn = "Vk" ++ concat (tail . init $ sep '.' mn) ++ hsn
 
 data Name = Atom String | List String Int deriving Show
 
+showName :: Name -> String
+showName = \case
+	Atom nm -> "A " ++ nm
+	List nm nb -> "L " ++ nm ++ " " ++ show nb
+
 header :: String -> String
 header mn = [nowdoc|
 {-# LANGUAGE TemplateHaskell #-}
@@ -56,12 +61,17 @@ make = do
 	vch <- readFile vulkanCoreH
 	let	ds = takeDefinition "VkPhysicalDeviceLimits" $ lines vch
 		moduleName' = intercalate "." . init $ sep '.' moduleName
+	writeFile "../th/vkPhysicalDeviceLimits.txt"
+		. unlines $ map (showWithBar id showName) ds
 	createDirectoryIfMissing True $ directory moduleName
 	writeFile (sourceFile moduleName) $ header moduleName ++
 		"struct \"" ++ hsName ++ "\" #{size " ++ cName moduleName' hsName ++
 		"}\n\t\t#{alignment " ++ cName moduleName' hsName ++ "} [\n" ++
 		intercalate ",\n" (uncurry (field1 "VkPhysicalDeviceLimits") <$> ds) ++
 		" ]\n\t[''Show, ''Storable]\n"
+
+showWithBar :: (a -> String) -> (b -> String) -> (a, b) -> String
+showWithBar sa sb (x, y) = sa x ++ "|" ++ sb y
 
 field1 :: String -> String -> Name -> String
 field1 csn t (Atom n) = "\t(\"" ++ n ++ "\", ''#{type " ++ t ++ "},\n\t\t[| #{peek " ++
