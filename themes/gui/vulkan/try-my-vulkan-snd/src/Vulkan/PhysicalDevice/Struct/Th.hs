@@ -5,14 +5,23 @@ module Vulkan.PhysicalDevice.Struct.Th where
 
 import Language.Haskell.TH
 import Control.Arrow
+import Control.Monad
 import Data.Maybe
 import Data.Word
 import Data.Char
 
 import Paths_try_my_vulkan_snd
 
+import qualified Vulkan.PhysicalDevice.Struct.Core as C
+
 vkPhysicalDeviceLimits :: DecsQ
-vkPhysicalDeviceLimits = (: []) <$> do
+vkPhysicalDeviceLimits = (\dt sg bd -> [dt, sg, bd])
+	<$> vkPhysicalDeviceLimitsData
+	<*> vkPhysicalDeviceLimitsFunSig
+	<*> vkPhysicalDeviceLimitsFunBody
+
+vkPhysicalDeviceLimitsData :: DecQ
+vkPhysicalDeviceLimitsData = do
 	ds <- runIO readStructData
 	dataD (cxt []) (mkName "Limits") [] Nothing [recC (mkName "Limits")
 		(uncurry member <$> ds)] []
@@ -51,3 +60,34 @@ separate :: Eq a => a -> [a] -> ([a], [a])
 separate c str = case span (/= c) str of
 	(pre, _ : pst) -> (pre, pst)
 	_ -> error "no separater"
+
+vkPhysicalDeviceLimitsFunSig :: DecQ
+vkPhysicalDeviceLimitsFunSig = sigD (mkName "limitsFromCore")
+	$ conT (mkName "Limits") `arrT` conT ''C.Limits
+
+arrT :: TypeQ -> TypeQ -> TypeQ
+arrT t1 t2 = arrowT `appT` t1 `appT` t2
+
+vkPhysicalDeviceLimitsFunBody :: DecQ
+vkPhysicalDeviceLimitsFunBody = do
+	ds <- runIO readStructData
+	xs <- replicateM (length ds) $ newName "x"
+	let	nvs = zip (map ((\(Atom nm) -> "limits" ++ capitalize nm) . snd) ds) xs
+	funD (mkName "limitsFromCore") [
+		clause [recP (mkName "Limits") (exFieldPats nvs)]
+			(normalB $ recConE 'C.Limits (exFieldExps nvs)) []
+		]
+
+exFieldPats :: [(String, Name)] -> [Q FieldPat]
+exFieldPats = map $ uncurry exFieldPat1
+
+exFieldPat1 :: String -> Name -> Q FieldPat
+exFieldPat1 nm x = fieldPat (mkName nm) (varP x)
+
+exFieldExps :: [(String, Name)] -> [Q (Name, Exp)]
+exFieldExps = map $ uncurry exFieldExp1
+
+exFieldExp1 :: String -> Name -> Q (Name, Exp)
+exFieldExp1 nm x = do
+	n <- fromJust <$> lookupValueName ("C." ++ nm)
+	fieldExp n (varE x)
