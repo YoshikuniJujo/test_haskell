@@ -7,6 +7,7 @@ import Language.Haskell.TH
 import Control.Arrow
 import Control.Monad
 import Data.Maybe
+import Data.List.Length
 import Data.Word
 import Data.Char
 
@@ -42,7 +43,8 @@ member tp_ fn = varBangType (mkName nm) $ bangType noBang tp
 
 getNameType :: String -> FieldName -> (String, TypeQ)
 getNameType tp (Atom fn) = ("limits" ++ capitalize fn, fst . fromJust $ lookup tp dict)
-getNameType _ _ = error "bad"
+getNameType tp (List fn nb) = ("limits" ++ capitalize fn,
+	conT ''LengthR `appT` litT (numTyLit nb) `appT` fst (fromJust $ lookup tp dict))
 
 capitalize :: String -> String
 capitalize "" = ""
@@ -50,13 +52,13 @@ capitalize (c : cs) = toUpper c : cs
 
 readStructData :: IO [(String, FieldName)]
 readStructData = map ((id *** readName) . (separate '|')) . lines <$>
---	(readFile =<< getDataFileName "th/vkPhysicalDeviceLimits.txt")
 	(readFile "th/vkPhysicalDeviceLimits.txt")
 
-data FieldName = Atom String | List String Int deriving Show
+data FieldName = Atom String | List String Integer deriving Show
 
 readName :: String -> FieldName
 readName ('A' : ' ' : nm) = Atom nm
+readName ('L' : ' ' : nmnb) = let [nm, nb] = words nmnb in List nm (read nb)
 readName _ = error "bad"
 
 separate :: Eq a => a -> [a] -> ([a], [a])

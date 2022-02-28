@@ -31,6 +31,7 @@ dependencies:
 - c-struct
 - uuid
 - GLFW-b
+- ranged-list
 
 library:
   source-dirs: src

@@ -119,6 +119,7 @@ library
     , exception-hierarchy
     , monads-tf
     , nowdoc
+    , ranged-list
     , template-haskell
     , text
     , uuid
@@ -140,6 +141,7 @@ executable try-my-vulkan-snd-exe
     , exception-hierarchy
     , monads-tf
     , nowdoc
+    , ranged-list
     , template-haskell
     , text
     , try-my-vulkan-snd
@@ -163,6 +165,7 @@ test-suite try-my-vulkan-snd-test
     , exception-hierarchy
     , monads-tf
     , nowdoc
+    , ranged-list
     , template-haskell
     , text
     , try-my-vulkan-snd
