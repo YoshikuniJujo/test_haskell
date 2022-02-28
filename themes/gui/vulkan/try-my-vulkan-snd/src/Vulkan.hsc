@@ -71,3 +71,6 @@ applicationInfoToCore ApplicationInfo {
 	ContT $ withForeignPtr fApplicationInfo
 
 newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show
+
+newtype DeviceSize = DeviceSize { unDeviceSize :: #{type uint64_t} }
+	deriving Show
