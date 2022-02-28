@@ -37,6 +37,9 @@ library:
   pkg-config-dependencies:
   - vulkan
 
+data-files:
+  - th/vkPhysicalDeviceLimits.txt
+
 executables:
   try-my-vulkan-snd-exe:
     main:                Main.hs
