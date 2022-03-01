@@ -47,7 +47,7 @@ import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.PhysicalDevice.Struct.Core as Vk.PhysicalDevice.C
-import qualified Vulkan.Queue.Family as Vk.Queue.Family
+import qualified Vulkan.Queue.Family.Core as Vk.Queue.Family.C
 
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
@@ -379,9 +379,9 @@ getPresentFamilyIndex pd n i
 			then pure $ Just i
 			else getPresentFamilyIndex pd n (i + 1)
 
-checkGraphicsBit :: Vk.Queue.Family.Properties -> Bool
+checkGraphicsBit :: Vk.Queue.Family.C.Properties -> Bool
 checkGraphicsBit prop =
-	Vk.Queue.Family.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
+	Vk.Queue.Family.C.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
