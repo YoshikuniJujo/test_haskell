@@ -97,8 +97,15 @@ sparsePropertiesFromCore C.SparseProperties {
 		[crs2bs, crs2mbs, crs3bs, crams, cnrs]
 
 getProperties :: PhysicalDevice -> IO Properties
-getProperties (PhysicalDevice pdvc) = ($ pure) $ runContT do
-	pppts <- ContT alloca
-	propertiesFromCore <$> lift do
-		C.getProperties pdvc pppts
-		peek pppts
+getProperties (PhysicalDevice pdvc) =
+	($ pure) . runContT $ propertiesFromCore <$> do
+		pppts <- ContT alloca
+		lift do	C.getProperties pdvc pppts
+			peek pppts
+
+getFeatures :: PhysicalDevice -> IO Features
+getFeatures (PhysicalDevice pdvc) =
+	($ pure) . runContT $ featuresFromCore <$> do
+		pfts <- ContT alloca
+		lift do	C.getFeatures pdvc pfts
+			peek pfts

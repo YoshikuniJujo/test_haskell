@@ -306,16 +306,14 @@ findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
 isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
-isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
-	lift $ putStrLn "*** IS DEVICE SUITABLE ***"
-	lift $ print =<< Vk.PhysicalDevice.getProperties dvc
+isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = do
+	putStrLn "*** IS DEVICE SUITABLE ***"
+	print =<< Vk.PhysicalDevice.getProperties dvc
+	print =<< Vk.PhysicalDevice.getFeatures dvc
 
-	pDeviceFeatures <- ContT alloca
-	lift do	Vk.PhysicalDevice.C.getFeatures cdvc pDeviceFeatures
-		print =<< peek pDeviceFeatures
-	indices <- lift $ findQueueFamilies cdvc
-	extensionSupported <- lift $ checkDeviceExtensionSupport cdvc
-	swapChainAdequate <- lift $ if extensionSupported
+	indices <- findQueueFamilies cdvc
+	extensionSupported <- checkDeviceExtensionSupport cdvc
+	swapChainAdequate <- if extensionSupported
 		then do	swapChainSupport <- querySwapChainSupport cdvc
 			pure $ not (null $ swapChainSupportDetailsFormats
 					swapChainSupport) &&
