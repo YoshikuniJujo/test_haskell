@@ -95,3 +95,10 @@ sparsePropertiesFromCore C.SparseProperties {
 		sparsePropertiesResidencyNonResidentStrict = nrs }
 	where [rs2bs, rs2mbs, rs3bs, rams, nrs] = bool32ToBool <$>
 		[crs2bs, crs2mbs, crs3bs, crams, cnrs]
+
+getProperties :: PhysicalDevice -> IO Properties
+getProperties (PhysicalDevice pdvc) = ($ pure) $ runContT do
+	pppts <- ContT alloca
+	propertiesFromCore <$> lift do
+		C.getProperties pdvc pppts
+		peek pppts

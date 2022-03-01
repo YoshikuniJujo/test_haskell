@@ -306,6 +306,8 @@ findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
 isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
 isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
+	lift $ putStrLn "*** IS DEVICE SUITABLE ***"
+	lift $ print =<< Vk.PhysicalDevice.getProperties dvc
 	pDeviceProperties <- ContT alloca
 	lift do	Vk.PhysicalDevice.C.getProperties cdvc pDeviceProperties
 		print =<< peek pDeviceProperties
