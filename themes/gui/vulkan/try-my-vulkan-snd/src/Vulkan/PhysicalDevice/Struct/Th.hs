@@ -13,6 +13,9 @@ import Data.Word
 import Data.Int
 import Data.Char
 
+import Vulkan.Base
+
+import qualified Vulkan.Sample.Enum as Sample
 import qualified Vulkan.PhysicalDevice.Struct.Core as C
 
 newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
@@ -37,9 +40,12 @@ dict = [
 	("uint32_t", (conT ''Word32, varE)),
 	("int32_t", (conT ''Int32, varE)),
 	("float", (conT ''Float, varE)),
+	("VkBool32", (conT ''Bool, appE (varE 'bool32ToBool) . varE)),
 	("size_t", (conT ''Size, appE (conE 'Size) . varE)),
-	("VkDeviceSize", (conT ''DeviceSize, appE (conE 'DeviceSize) . varE))
-	]
+	("VkDeviceSize", (conT ''DeviceSize, appE (conE 'DeviceSize) . varE)),
+	("VkSampleCountFlags", (
+		conT ''Sample.CountFlags,
+		appE (conE 'Sample.CountFlagBits) . varE) ) ]
 
 noBang :: BangQ
 noBang = bang noSourceUnpackedness noSourceStrictness

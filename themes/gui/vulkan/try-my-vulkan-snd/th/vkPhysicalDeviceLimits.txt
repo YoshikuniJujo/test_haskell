@@ -78,3 +78,29 @@ uint32_t|A subPixelInterpolationOffsetBits
 uint32_t|A maxFramebufferWidth
 uint32_t|A maxFramebufferHeight
 uint32_t|A maxFramebufferLayers
+VkSampleCountFlags|A framebufferColorSampleCounts
+VkSampleCountFlags|A framebufferDepthSampleCounts
+VkSampleCountFlags|A framebufferStencilSampleCounts
+VkSampleCountFlags|A framebufferNoAttachmentsSampleCounts
+uint32_t|A maxColorAttachments
+VkSampleCountFlags|A sampledImageColorSampleCounts
+VkSampleCountFlags|A sampledImageIntegerSampleCounts
+VkSampleCountFlags|A sampledImageDepthSampleCounts
+VkSampleCountFlags|A sampledImageStencilSampleCounts
+VkSampleCountFlags|A storageImageSampleCounts
+uint32_t|A maxSampleMaskWords
+VkBool32|A timestampComputeAndGraphics
+float|A timestampPeriod
+uint32_t|A maxClipDistances
+uint32_t|A maxCullDistances
+uint32_t|A maxCombinedClipAndCullDistances
+uint32_t|A discreteQueuePriorities
+float|L pointSizeRange 2
+float|L lineWidthRange 2
+float|A pointSizeGranularity
+float|A lineWidthGranularity
+VkBool32|A strictLines
+VkBool32|A standardSampleLocations
+VkDeviceSize|A optimalBufferCopyOffsetAlignment
+VkDeviceSize|A optimalBufferCopyRowPitchAlignment
+VkDeviceSize|A nonCoherentAtomSize

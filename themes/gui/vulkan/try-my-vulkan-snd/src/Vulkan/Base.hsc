@@ -125,3 +125,11 @@ type ListFloat = [#{type float}]
 boolToBool32 :: Bool -> #{type VkBool32}
 boolToBool32 False = #{const VK_FALSE}
 boolToBool32 True = #{const VK_TRUE}
+
+bool32ToBool :: #{type VkBool32} -> Bool
+bool32ToBool #{const VK_FALSE} = False
+bool32ToBool #{const VK_TRUE} = True
+bool32ToBool _ = error $
+	"Application must not pass any other values than " ++
+	"VK_TRUE or VK_FALSE into a Vulkan implementation " ++
+	"where a VkBool32 is expected"
