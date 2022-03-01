@@ -10,6 +10,7 @@ module Vulkan.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Bits
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -100,3 +101,14 @@ enum "ObjectType" ''#{type VkObjectType}
 	("ObjectTypeSamplerYcbcrConversionKhr",
 		#{const VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION_KHR}),
 	("ObjectTypeMaxEnum", #{const VK_OBJECT_TYPE_MAX_ENUM}) ]
+
+enum "QueueFlagBits" ''#{type VkQueueFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("QueueGraphicsBit", #{const VK_QUEUE_GRAPHICS_BIT}),
+	("QueueComputeBit", #{const VK_QUEUE_COMPUTE_BIT}),
+	("QueueTransferBit", #{const VK_QUEUE_TRANSFER_BIT}),
+	("QueueSparseBindingBit", #{const VK_QUEUE_SPARSE_BINDING_BIT}),
+	("QueueProtectedBit", #{const VK_QUEUE_PROTECTED_BIT}),
+	("QueueFlagBitsMaxEnum", #{const VK_QUEUE_FLAG_BITS_MAX_ENUM}) ]
+
+type QueueFlags = QueueFlagBits
