@@ -2,7 +2,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.PhysicalDevice.Struct.Th (
-	vkPhysicalDeviceLimits, DeviceSize(..), Size(..) ) where
+	vkPhysicalDeviceLimits, vkPhysicalDeviceFeatures,
+	DeviceSize(..), Size(..) ) where
 
 import Language.Haskell.TH
 import Control.Arrow
@@ -16,7 +17,6 @@ import Data.Char
 import Vulkan.Base
 
 import qualified Vulkan.Sample.Enum as Sample
-import qualified Vulkan.PhysicalDevice.Struct.Core as C
 
 newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
 	deriving Show
@@ -24,16 +24,22 @@ newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
 newtype Size = Size Word64 deriving Show
 
 vkPhysicalDeviceLimits :: DecsQ
-vkPhysicalDeviceLimits = (\dt sg bd -> [dt, sg, bd])
-	<$> vkPhysicalDeviceLimitsData
-	<*> vkPhysicalDeviceLimitsFunSig
-	<*> vkPhysicalDeviceLimitsFunBody
+vkPhysicalDeviceLimits = makeData "Limits"
 
-vkPhysicalDeviceLimitsData :: DecQ
-vkPhysicalDeviceLimitsData = do
-	ds <- runIO readStructData
-	dataD (cxt []) (mkName "Limits") [] Nothing [recC (mkName "Limits")
-		(uncurry member <$> ds)] [derivClause Nothing [conT ''Show]]
+vkPhysicalDeviceFeatures :: DecsQ
+vkPhysicalDeviceFeatures = makeData "Features"
+
+makeData :: String -> DecsQ
+makeData dtnm = (\dt sg bd -> [dt, sg, bd])
+	<$> vkPhysicalDeviceData dtnm
+	<*> vkPhysicalDeviceFunSig dtnm
+	<*> vkPhysicalDeviceFunBody dtnm
+
+vkPhysicalDeviceData :: String -> DecQ
+vkPhysicalDeviceData dtnm = do
+	ds <- runIO $ readStructData dtnm
+	dataD (cxt []) (mkName dtnm) [] Nothing [recC (mkName dtnm)
+		(uncurry (member dtnm) <$> ds)] [derivClause Nothing [conT ''Show]]
 
 dict :: [(String, (TypeQ, Name -> ExpQ))]
 dict = [
@@ -50,13 +56,15 @@ dict = [
 noBang :: BangQ
 noBang = bang noSourceUnpackedness noSourceStrictness
 
-member :: String -> FieldName -> VarBangTypeQ
-member tp_ fn = varBangType (mkName nm) $ bangType noBang tp
-	where (nm, tp) = getNameType tp_ fn
+member :: String -> String -> FieldName -> VarBangTypeQ
+member dtnm tp_ fn = varBangType (mkName nm) $ bangType noBang tp
+	where
+	pfx = map toLower dtnm
+	(nm, tp) = getNameType pfx tp_ fn
 
-getNameType :: String -> FieldName -> (String, TypeQ)
-getNameType tp (Atom fn) = ("limits" ++ capitalize fn, fst $ lookup' tp dict)
-getNameType tp (List fn nb) = ("limits" ++ capitalize fn,
+getNameType :: String -> String -> FieldName -> (String, TypeQ)
+getNameType pfx tp (Atom fn) = (pfx ++ capitalize fn, fst $ lookup' tp dict)
+getNameType pfx tp (List fn nb) = (pfx ++ capitalize fn,
 	conT ''LengthL `appT` litT (numTyLit nb) `appT` fst (lookup' tp dict))
 
 lookup' :: (Show a, Eq a) => a -> [(a, b)] -> b
@@ -68,9 +76,9 @@ capitalize :: String -> String
 capitalize "" = ""
 capitalize (c : cs) = toUpper c : cs
 
-readStructData :: IO [(String, FieldName)]
-readStructData = map ((id *** readName) . (separate '|')) . lines <$>
-	(readFile "th/vkPhysicalDeviceLimits.txt")
+readStructData :: String -> IO [(String, FieldName)]
+readStructData dtnm = map ((id *** readName) . (separate '|')) . lines <$>
+	(readFile $ "th/vkPhysicalDevice" ++ dtnm ++ ".txt")
 
 data FieldName = Atom String | List String Integer deriving Show
 
@@ -84,52 +92,52 @@ separate c str = case span (/= c) str of
 	(pre, _ : pst) -> (pre, pst)
 	_ -> error "no separater"
 
-vkPhysicalDeviceLimitsFunSig :: DecQ
-vkPhysicalDeviceLimitsFunSig = sigD (mkName "limitsFromCore")
-	$ conT ''C.Limits `arrT` conT (mkName "Limits")
+vkPhysicalDeviceFunSig :: String -> DecQ
+vkPhysicalDeviceFunSig dtnm = sigD (mkName $ map toLower dtnm ++ "FromCore")
+	$ (conT =<< (fromJust <$> lookupTypeName ("C." ++ dtnm))) `arrT` conT (mkName dtnm)
 
 arrT :: TypeQ -> TypeQ -> TypeQ
 arrT t1 t2 = arrowT `appT` t1 `appT` t2
 
-vkPhysicalDeviceLimitsFunBody :: DecQ
-vkPhysicalDeviceLimitsFunBody = do
-	ds <- runIO readStructData
+vkPhysicalDeviceFunBody :: String -> DecQ
+vkPhysicalDeviceFunBody dtnm = do
+	ds <- runIO $ readStructData dtnm
 	xs <- replicateM (length ds) $ newName "x"
 	let	fs = (\(tp, _) -> typeToFun tp) <$> ds
 		nvs = zip (map snd ds) xs
 		nws = zip (zip (map snd ds) xs) fs
-	funD (mkName "limitsFromCore") [
-		clause [recP 'C.Limits (exFieldPats nvs)]
-			(normalB $ recConE (mkName "Limits") (exFieldExps nws)) []
+	funD (mkName $ map toLower dtnm ++ "FromCore") [
+		clause [(`recP` exFieldPats dtnm nvs) =<< fromJust <$> lookupValueName ("C." ++ dtnm)]
+			(normalB $ recConE (mkName dtnm) (exFieldExps dtnm nws)) []
 		]
 
 typeToFun :: String -> (Name -> ExpQ)
 typeToFun nm = let Just (_, f) = lookup nm dict in f
 
-exFieldPats :: [(FieldName, Name)] -> [Q FieldPat]
-exFieldPats = map $ uncurry exFieldPat1
+exFieldPats :: String -> [(FieldName, Name)] -> [Q FieldPat]
+exFieldPats dtnm = map $ uncurry (exFieldPat1 $ map toLower dtnm)
 
-exFieldPat1 :: FieldName -> Name -> Q FieldPat
-exFieldPat1 fn x = do
+exFieldPat1 :: String -> FieldName -> Name -> Q FieldPat
+exFieldPat1 pfx fn x = do
 	let	nm = case fn of
 			Atom n -> n
 			List n _ -> n
-	n <- fromJust <$> lookupValueName ("C.limits" ++ capitalize nm)
+	n <- fromJust <$> lookupValueName ("C." ++ pfx ++ capitalize nm)
 	fieldPat n (varP x)
 
-exFieldExps :: [((FieldName, Name), Name -> ExpQ)] -> [Q (Name, Exp)]
-exFieldExps = map . uncurry $ uncurry exFieldExp1
+exFieldExps :: String -> [((FieldName, Name), Name -> ExpQ)] -> [Q (Name, Exp)]
+exFieldExps dtnm = map . uncurry $ uncurry (exFieldExp1 $ map toLower dtnm)
 
 listToLengthL :: ListToLengthL n => [a] -> LengthL n a
 listToLengthL xs = case splitL xs of
 	Right (ln, []) -> ln
 	_ -> error "bad"
 
-exFieldExp1 :: FieldName -> Name -> (Name -> ExpQ) -> Q (Name, Exp)
-exFieldExp1 (Atom nm) x f = fieldExp (mkName $ "limits" ++ capitalize nm) (f x)
-exFieldExp1 (List nm _) x f = do
+exFieldExp1 :: String -> FieldName -> Name -> (Name -> ExpQ) -> Q (Name, Exp)
+exFieldExp1 pfx (Atom nm) x f = fieldExp (mkName $ pfx ++ capitalize nm) (f x)
+exFieldExp1 pfx (List nm _) x f = do
 	y <- newName "y"
-	fieldExp (mkName $ "limits" ++ capitalize nm)
+	fieldExp (mkName $ pfx ++ capitalize nm)
 		. appE (varE 'listToLengthL) $ lam1E (varP y) (f y) .<$> varE x
 
 (.<$>) :: ExpQ -> ExpQ -> ExpQ
