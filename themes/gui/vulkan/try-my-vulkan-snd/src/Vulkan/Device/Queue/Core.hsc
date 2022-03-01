@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Device.Queue where
+module Vulkan.Device.Queue.Core where
 
 import Foreign.Ptr
 import Foreign.Storable

@@ -1,0 +1,11 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module VulkanDeviceQueueEnum where
+
+import MakeEnum
+
+make :: IO ()
+make = createFile' "/usr/include/vulkan/vulkan_core.h"
+	"Device.Queue.Enum" ["Data.Bits", "Data.Word"]
+	[("CreateFlagBits", "VkDeviceQueueCreateFlagBits", ["Show", "Eq", "Storable", "Bits"])]
+	"type CreateFlags = CreateFlagBits"

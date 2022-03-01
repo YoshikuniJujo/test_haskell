@@ -51,7 +51,7 @@ import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.PhysicalDevice.Struct.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
-import qualified Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Vulkan.Device.Queue.Core as Vk.Device.Queue.C
 import qualified Vulkan.Device.Core as Vk.Device.C
 
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
@@ -163,7 +163,8 @@ data Global = Global {
 	globalWindow :: GlfwB.Window,
 	globalInstance :: IORef Vk.Instance,
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
-	globalPhysicalDevice :: IORef Vk.PhysicalDevice
+	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
+	globalDevice :: IORef Vk.Device
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -171,11 +172,13 @@ newGlobal w = do
 	ist <- newIORef $ Vk.Instance NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
+	dvc <- newIORef $ Vk.Device NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
 		globalDebugMessenger = dmsgr,
-		globalPhysicalDevice = pdvc
+		globalPhysicalDevice = pdvc,
+		globalDevice = dvc
 		}
 
 run :: IO ()
@@ -431,15 +434,15 @@ createLogicalDevice Global {
 	lift $ print indices
 	pQueuePriority <- ContT alloca
 	lift $ poke pQueuePriority 1
-	let	Vk.Device.Queue.CreateInfo_ fQueueCreateInfo =
-			Vk.Device.Queue.CreateInfo {
-				Vk.Device.Queue.createInfoSType = (),
-				Vk.Device.Queue.createInfoPNext = NullPtr,
-				Vk.Device.Queue.createInfoFlags = 0,
-				Vk.Device.Queue.createInfoQueueFamilyIndex =
+	let	Vk.Device.Queue.C.CreateInfo_ fQueueCreateInfo =
+			Vk.Device.Queue.C.CreateInfo {
+				Vk.Device.Queue.C.createInfoSType = (),
+				Vk.Device.Queue.C.createInfoPNext = NullPtr,
+				Vk.Device.Queue.C.createInfoFlags = 0,
+				Vk.Device.Queue.C.createInfoQueueFamilyIndex =
 					fromJust $ graphicsFamily indices,
-				Vk.Device.Queue.createInfoQueueCount = 1,
-				Vk.Device.Queue.createInfoPQueuePriorities =
+				Vk.Device.Queue.C.createInfoQueueCount = 1,
+				Vk.Device.Queue.C.createInfoPQueuePriorities =
 					pQueuePriority }
 	pQueueCreateInfo <- ContT $ withForeignPtr fQueueCreateInfo
 	Vk.PhysicalDevice.C.Features_ fDeviceFeatures <-
