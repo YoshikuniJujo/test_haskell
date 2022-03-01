@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.PhysicalDevice.Struct.Th (vkPhysicalDeviceLimits, DeviceSize(..)) where
+module Vulkan.PhysicalDevice.Struct.Th (
+	vkPhysicalDeviceLimits, DeviceSize(..), Size(..) ) where
 
 import Language.Haskell.TH
 import Control.Arrow
@@ -9,12 +10,15 @@ import Control.Monad
 import Data.Maybe
 import Data.List.Length
 import Data.Word
+import Data.Int
 import Data.Char
 
 import qualified Vulkan.PhysicalDevice.Struct.Core as C
 
 newtype DeviceSize = DeviceSize { unDeviceSize :: Word64 }
 	deriving Show
+
+newtype Size = Size Word64 deriving Show
 
 vkPhysicalDeviceLimits :: DecsQ
 vkPhysicalDeviceLimits = (\dt sg bd -> [dt, sg, bd])
@@ -31,6 +35,9 @@ vkPhysicalDeviceLimitsData = do
 dict :: [(String, (TypeQ, Name -> ExpQ))]
 dict = [
 	("uint32_t", (conT ''Word32, varE)),
+	("int32_t", (conT ''Int32, varE)),
+	("float", (conT ''Float, varE)),
+	("size_t", (conT ''Size, appE (conE 'Size) . varE)),
 	("VkDeviceSize", (conT ''DeviceSize, appE (conE 'DeviceSize) . varE))
 	]
 
@@ -42,9 +49,14 @@ member tp_ fn = varBangType (mkName nm) $ bangType noBang tp
 	where (nm, tp) = getNameType tp_ fn
 
 getNameType :: String -> FieldName -> (String, TypeQ)
-getNameType tp (Atom fn) = ("limits" ++ capitalize fn, fst . fromJust $ lookup tp dict)
+getNameType tp (Atom fn) = ("limits" ++ capitalize fn, fst $ lookup' tp dict)
 getNameType tp (List fn nb) = ("limits" ++ capitalize fn,
-	conT ''LengthL `appT` litT (numTyLit nb) `appT` fst (fromJust $ lookup tp dict))
+	conT ''LengthL `appT` litT (numTyLit nb) `appT` fst (lookup' tp dict))
+
+lookup' :: (Show a, Eq a) => a -> [(a, b)] -> b
+lookup' x d = case lookup x d of
+	Nothing -> error $ "no such key: " ++ show x
+	Just y -> y
 
 capitalize :: String -> String
 capitalize "" = ""
@@ -78,8 +90,8 @@ vkPhysicalDeviceLimitsFunBody = do
 	ds <- runIO readStructData
 	xs <- replicateM (length ds) $ newName "x"
 	let	fs = (\(tp, _) -> typeToFun tp) <$> ds
-		nvs = zip (map ((\(Atom nm) -> "limits" ++ capitalize nm) . snd) ds) xs
-		nws = zip (map ((\(Atom nm) -> "limits" ++ capitalize nm) . snd) ds) $ zipWith ($) fs xs
+		nvs = zip (map snd ds) xs
+		nws = zip (zip (map snd ds) xs) fs
 	funD (mkName "limitsFromCore") [
 		clause [recP 'C.Limits (exFieldPats nvs)]
 			(normalB $ recConE (mkName "Limits") (exFieldExps nws)) []
@@ -88,16 +100,31 @@ vkPhysicalDeviceLimitsFunBody = do
 typeToFun :: String -> (Name -> ExpQ)
 typeToFun nm = let Just (_, f) = lookup nm dict in f
 
-exFieldPats :: [(String, Name)] -> [Q FieldPat]
+exFieldPats :: [(FieldName, Name)] -> [Q FieldPat]
 exFieldPats = map $ uncurry exFieldPat1
 
-exFieldPat1 :: String -> Name -> Q FieldPat
-exFieldPat1 nm x = do
-	n <- fromJust <$> lookupValueName ("C." ++ nm)
+exFieldPat1 :: FieldName -> Name -> Q FieldPat
+exFieldPat1 fn x = do
+	let	nm = case fn of
+			Atom n -> n
+			List n _ -> n
+	n <- fromJust <$> lookupValueName ("C.limits" ++ capitalize nm)
 	fieldPat n (varP x)
 
-exFieldExps :: [(String, ExpQ)] -> [Q (Name, Exp)]
-exFieldExps = map $ uncurry exFieldExp1
+exFieldExps :: [((FieldName, Name), Name -> ExpQ)] -> [Q (Name, Exp)]
+exFieldExps = map . uncurry $ uncurry exFieldExp1
 
-exFieldExp1 :: String -> ExpQ -> Q (Name, Exp)
-exFieldExp1 nm x = fieldExp (mkName nm) x
+listToLengthL :: ListToLengthL n => [a] -> LengthL n a
+listToLengthL xs = case splitL xs of
+	Right (ln, []) -> ln
+	_ -> error "bad"
+
+exFieldExp1 :: FieldName -> Name -> (Name -> ExpQ) -> Q (Name, Exp)
+exFieldExp1 (Atom nm) x f = fieldExp (mkName $ "limits" ++ capitalize nm) (f x)
+exFieldExp1 (List nm _) x f = do
+	y <- newName "y"
+	fieldExp (mkName $ "limits" ++ capitalize nm)
+		. appE (varE 'listToLengthL) $ lam1E (varP y) (f y) .<$> varE x
+
+(.<$>) :: ExpQ -> ExpQ -> ExpQ
+f .<$> x = infixApp f (varE '(<$>)) x

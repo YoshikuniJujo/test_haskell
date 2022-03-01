@@ -50,3 +50,31 @@ uint32_t|A maxFragmentOutputAttachments
 uint32_t|A maxFragmentDualSrcAttachments
 uint32_t|A maxFragmentCombinedOutputResources
 uint32_t|A maxComputeSharedMemorySize
+uint32_t|L maxComputeWorkGroupCount 3
+uint32_t|A maxComputeWorkGroupInvocations
+uint32_t|L maxComputeWorkGroupSize 3
+uint32_t|A subPixelPrecisionBits
+uint32_t|A subTexelPrecisionBits
+uint32_t|A mipmapPrecisionBits
+uint32_t|A maxDrawIndexedIndexValue
+uint32_t|A maxDrawIndirectCount
+float|A maxSamplerLodBias
+float|A maxSamplerAnisotropy
+uint32_t|A maxViewports
+uint32_t|L maxViewportDimensions 2
+float|L viewportBoundsRange 2
+uint32_t|A viewportSubPixelBits
+size_t|A minMemoryMapAlignment
+VkDeviceSize|A minTexelBufferOffsetAlignment
+VkDeviceSize|A minUniformBufferOffsetAlignment
+VkDeviceSize|A minStorageBufferOffsetAlignment
+int32_t|A minTexelOffset
+uint32_t|A maxTexelOffset
+int32_t|A minTexelGatherOffset
+uint32_t|A maxTexelGatherOffset
+float|A minInterpolationOffset
+float|A maxInterpolationOffset
+uint32_t|A subPixelInterpolationOffsetBits
+uint32_t|A maxFramebufferWidth
+uint32_t|A maxFramebufferHeight
+uint32_t|A maxFramebufferLayers
