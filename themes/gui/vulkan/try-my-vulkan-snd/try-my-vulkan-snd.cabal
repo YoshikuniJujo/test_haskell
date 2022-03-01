@@ -95,7 +95,8 @@ library
       Vulkan.Polygon
       Vulkan.PrimitiveTopology
       Vulkan.PushConstant
-      Vulkan.Queue.Family.Core
+      Vulkan.QueueFamily
+      Vulkan.QueueFamily.Core
       Vulkan.RenderPass
       Vulkan.Sample
       Vulkan.Sample.Enum

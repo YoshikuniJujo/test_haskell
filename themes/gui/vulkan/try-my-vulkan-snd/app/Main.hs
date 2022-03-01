@@ -33,6 +33,7 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Vulkan as Vk
+import qualified Vulkan.Enum as Vk
 import qualified Vulkan.AllocationCallbacks as Vk.AC
 import qualified Vulkan.Instance as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
@@ -41,13 +42,14 @@ import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.QueueFamily as Vk.QueueFamily
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.PhysicalDevice.Struct.Core as Vk.PhysicalDevice.C
-import qualified Vulkan.Queue.Family.Core as Vk.Queue.Family.C
+import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
@@ -311,7 +313,7 @@ isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = do
 	print =<< Vk.PhysicalDevice.getProperties dvc
 	print =<< Vk.PhysicalDevice.getFeatures dvc
 
-	indices <- findQueueFamilies cdvc
+	indices <- findQueueFamilies dvc
 	extensionSupported <- checkDeviceExtensionSupport cdvc
 	swapChainAdequate <- if extensionSupported
 		then do	swapChainSupport <- querySwapChainSupport cdvc
@@ -346,25 +348,16 @@ isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
 	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
-findQueueFamilies :: Vk.PhysicalDevice.C.PhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies dvc = ($ pure) $ runContT do
-	let	indices = QueueFamilyIndices {
-			graphicsFamily = Nothing,
-			presentFamily = Nothing }
-	pQueueFamilyCount <- ContT alloca
-	(fromIntegral -> queueFamilyCount) <- lift do
-		Vk.PhysicalDevice.C.getQueueFamilyProperties
-			dvc pQueueFamilyCount NullPtr
-		peek pQueueFamilyCount
-	pQueueFamilies <- ContT $ allocaArray queueFamilyCount
-	lift do	Vk.PhysicalDevice.C.getQueueFamilyProperties
-			dvc pQueueFamilyCount pQueueFamilies
-		props <- peekArray queueFamilyCount pQueueFamilies
-		pfi <- getPresentFamilyIndex dvc (fromIntegral $ length props) 0
-		pure indices {
-			graphicsFamily = fromIntegral
-				<$> findIndex checkGraphicsBit props,
-			presentFamily = pfi }
+findQueueFamilies :: Vk.PhysicalDevice -> IO QueueFamilyIndices
+findQueueFamilies dvc@(Vk.PhysicalDevice cdvc) = do
+	putStrLn "*** FIND QUEUE FAMILIES ***"
+	props <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
+	print props
+	pfi <- getPresentFamilyIndex cdvc (fromIntegral $ length props) 0
+	pure QueueFamilyIndices {
+		graphicsFamily = fromIntegral
+			<$> findIndex checkGraphicsBit props,
+		presentFamily = pfi }
 
 getPresentFamilyIndex :: Vk.PhysicalDevice.C.PhysicalDevice ->
 	Word32 -> Word32 -> IO (Maybe Word32)
@@ -379,9 +372,14 @@ getPresentFamilyIndex pd n i
 			then pure $ Just i
 			else getPresentFamilyIndex pd n (i + 1)
 
-checkGraphicsBit :: Vk.Queue.Family.C.Properties -> Bool
-checkGraphicsBit prop =
-	Vk.Queue.Family.C.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
+checkGraphicsBit :: Vk.QueueFamily.Properties -> Bool
+checkGraphicsBit prop = let
+	Vk.QueueFlagBits b = Vk.QueueFamily.propertiesQueueFlags prop in
+	b .&. queueGraphicsBit /= 0
+
+checkGraphicsBitCore :: Vk.QueueFamily.C.Properties -> Bool
+checkGraphicsBitCore prop =
+	Vk.QueueFamily.C.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
@@ -428,8 +426,8 @@ querySwapChainSupport dvc = ($ pure) $ runContT do
 createLogicalDevice :: Global -> IO ()
 createLogicalDevice Global {
 	globalPhysicalDevice = rpdvc } = ($ pure) $ runContT do
-	Vk.PhysicalDevice pd <- lift $ readIORef rpdvc
-	indices <- lift $ findQueueFamilies pd
+	pdvc@(Vk.PhysicalDevice pd) <- lift $ readIORef rpdvc
+	indices <- lift $ findQueueFamilies pdvc
 	lift $ print indices
 	pQueuePriority <- ContT alloca
 	lift $ poke pQueuePriority 1
@@ -490,10 +488,10 @@ createSwapChain Global {
 	} = ($ pure) $ runContT do
 	dvc <- lift $ readIORef device
 	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
-		Vk.PhysicalDevice pd <- readIORef pdvc
+		pdvc@(Vk.PhysicalDevice pd) <- readIORef pdvc
 		swapChainSupport <- querySwapChainSupport pd
 		sfc <- readIORef surface
-		indices <- findQueueFamilies pd
+		indices <- findQueueFamilies pdvc
 		print indices
 		let	cap = swapChainSupportDetailsCapabilities
 				swapChainSupport
@@ -930,8 +928,8 @@ createCommandPool Global {
 	globalPhysicalDevice = rpdvc } = ($ pure) $ runContT do
 	lift $ putStrLn "=== CREATE COMMAND POOL ==="
 	queueFamilyIndices <- lift do
-		Vk.PhysicalDevice pd <- readIORef rpdvc
-		findQueueFamilies pd
+		pdvc <- readIORef rpdvc
+		findQueueFamilies pdvc
 	lift $ print queueFamilyIndices
 	let	Vk.CP.CreateInfo_ fPoolInfo = Vk.CP.CreateInfo {
 			Vk.CP.createInfoSType = (),

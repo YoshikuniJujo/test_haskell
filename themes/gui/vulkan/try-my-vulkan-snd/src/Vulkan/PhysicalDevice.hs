@@ -22,6 +22,7 @@ import Vulkan.PhysicalDevice.Enum
 import Vulkan.PhysicalDevice.Struct
 
 import qualified Vulkan.PhysicalDevice.Core as C
+import qualified Vulkan.QueueFamily as QueueFamily
 
 enumerate :: Instance -> IO [PhysicalDevice]
 enumerate (Instance ist) = ($ pure) . runContT $ map PhysicalDevice <$> do
@@ -109,3 +110,14 @@ getFeatures (PhysicalDevice pdvc) =
 		pfts <- ContT alloca
 		lift do	C.getFeatures pdvc pfts
 			peek pfts
+
+getQueueFamilyProperties :: PhysicalDevice -> IO [QueueFamily.Properties]
+getQueueFamilyProperties (PhysicalDevice pdvc) =
+	($ pure) . runContT $ map QueueFamily.propertiesFromCore <$> do
+		ppptc <- ContT alloca
+		(fromIntegral -> pptc) <- lift do
+			C.getQueueFamilyProperties pdvc ppptc NullPtr
+			peek ppptc
+		pppts <- ContT $ allocaArray pptc
+		lift do	C.getQueueFamilyProperties pdvc ppptc pppts
+			peekArray pptc pppts

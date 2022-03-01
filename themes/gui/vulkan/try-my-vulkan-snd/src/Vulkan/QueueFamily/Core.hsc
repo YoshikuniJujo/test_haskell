@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Queue.Family.Core where
+module Vulkan.QueueFamily.Core where
 
 import Foreign.Storable
 import Foreign.C.Struct
