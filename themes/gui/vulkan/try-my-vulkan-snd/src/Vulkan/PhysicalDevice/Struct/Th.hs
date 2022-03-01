@@ -33,7 +33,7 @@ vkPhysicalDeviceLimitsData :: DecQ
 vkPhysicalDeviceLimitsData = do
 	ds <- runIO readStructData
 	dataD (cxt []) (mkName "Limits") [] Nothing [recC (mkName "Limits")
-		(uncurry member <$> ds)] []
+		(uncurry member <$> ds)] [derivClause Nothing [conT ''Show]]
 
 dict :: [(String, (TypeQ, Name -> ExpQ))]
 dict = [
