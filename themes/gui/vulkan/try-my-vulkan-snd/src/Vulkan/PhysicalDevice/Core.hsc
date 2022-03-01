@@ -110,8 +110,8 @@ vkMaxPhysicalDeviceNameSize = #{const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE}
 foreign import ccall "vkGetPhysicalDeviceProperties" getProperties ::
 	PhysicalDevice -> Ptr Properties -> IO ()
 
-getCleardFeatures :: IO Features
-getCleardFeatures = do
+getClearedFeatures :: IO Features
+getClearedFeatures = do
 	pf <- calloc
 	Features_ <$> newForeignPtr pf (free pf)
 

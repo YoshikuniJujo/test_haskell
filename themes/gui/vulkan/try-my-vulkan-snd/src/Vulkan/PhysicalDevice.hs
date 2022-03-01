@@ -10,6 +10,7 @@ import Control.Monad.Cont
 import Data.Maybe
 import Data.Word
 import Data.UUID
+import System.IO.Unsafe
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
@@ -110,6 +111,9 @@ getFeatures (PhysicalDevice pdvc) =
 		pfts <- ContT alloca
 		lift do	C.getFeatures pdvc pfts
 			peek pfts
+
+featuresZero :: Features
+featuresZero = unsafePerformIO $ featuresFromCore <$> C.getClearedFeatures
 
 getQueueFamilyProperties :: PhysicalDevice -> IO [QueueFamily.Properties]
 getQueueFamilyProperties (PhysicalDevice pdvc) =

@@ -442,6 +442,7 @@ createLogicalDevice Global {
 			Vk.Device.Queue.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily indices,
 			Vk.Device.Queue.createInfoQueuePriorities = [1.0] }
+		deviceFeatures = Vk.PhysicalDevice.featuresZero
 
 	pQueuePriority <- ContT alloca
 	lift $ poke pQueuePriority 1
@@ -457,7 +458,7 @@ createLogicalDevice Global {
 					pQueuePriority }
 	pQueueCreateInfo <- ContT $ withForeignPtr fQueueCreateInfo
 	Vk.PhysicalDevice.C.Features_ fDeviceFeatures <-
-		lift $ Vk.PhysicalDevice.C.getCleardFeatures
+		lift $ Vk.PhysicalDevice.C.getClearedFeatures
 	pDeviceFeatures <- ContT $ withForeignPtr fDeviceFeatures
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
