@@ -43,6 +43,7 @@ import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.Device.Queue as Vk.Device.Queue
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
@@ -432,6 +433,12 @@ createLogicalDevice Global {
 	pdvc@(Vk.PhysicalDevice pd) <- lift $ readIORef rpdvc
 	indices <- lift $ findQueueFamilies pdvc
 	lift $ print indices
+
+	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
+			Vk.Device.Queue.createInfoNext = Nothing
+--			Vk.Device.Queue.createInfoFlags
+			}
+
 	pQueuePriority <- ContT alloca
 	lift $ poke pQueuePriority 1
 	let	Vk.Device.Queue.C.CreateInfo_ fQueueCreateInfo =
