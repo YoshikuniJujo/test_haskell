@@ -16,7 +16,7 @@ import Vulkan.Base
 import Vulkan.PhysicalDevice.Core (PhysicalDevice)
 
 import qualified Vulkan.Device.Queue as Device.Queue
-import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
+import qualified Vulkan.PhysicalDevice.Struct.Core as PhysicalDevice
 
 #include <vulkan/vulkan.h>
 

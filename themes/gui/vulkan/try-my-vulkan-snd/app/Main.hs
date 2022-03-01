@@ -46,6 +46,7 @@ import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
+import qualified Vulkan.PhysicalDevice.Struct.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.Queue.Family as Vk.Queue.Family
 
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
@@ -308,9 +309,7 @@ isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
 isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
 	lift $ putStrLn "*** IS DEVICE SUITABLE ***"
 	lift $ print =<< Vk.PhysicalDevice.getProperties dvc
-	pDeviceProperties <- ContT alloca
-	lift do	Vk.PhysicalDevice.C.getProperties cdvc pDeviceProperties
-		print =<< peek pDeviceProperties
+
 	pDeviceFeatures <- ContT alloca
 	lift do	Vk.PhysicalDevice.C.getFeatures cdvc pDeviceFeatures
 		print =<< peek pDeviceFeatures
