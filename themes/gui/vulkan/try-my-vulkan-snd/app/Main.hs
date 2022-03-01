@@ -52,7 +52,7 @@ import qualified Vulkan.PhysicalDevice.Struct.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
-import qualified Vulkan.Device as Vk.Device
+import qualified Vulkan.Device.Core as Vk.Device.C
 
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
@@ -110,7 +110,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
-device :: IORef Vk.Device.Device
+device :: IORef Vk.Device.C.Device
 device = unsafePerformIO $ newIORef NullPtr
 
 graphicsQueue :: IORef Vk.C.Queue
@@ -451,33 +451,33 @@ createLogicalDevice Global {
 	pSwapchainExtention <- lift $ newCString "VK_KHR_swapchain"
 	pSwapchainExtentions <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchainExtentions [pSwapchainExtention]
-	let	Vk.Device.CreateInfo_ fCreateInfo = Vk.Device.CreateInfo {
-			Vk.Device.createInfoSType = (),
-			Vk.Device.createInfoPNext = NullPtr,
-			Vk.Device.createInfoFlags = 0,
-			Vk.Device.createInfoQueueCreateInfoCount = 1,
-			Vk.Device.createInfoPQueueCreateInfos =
+	let	Vk.Device.C.CreateInfo_ fCreateInfo = Vk.Device.C.CreateInfo {
+			Vk.Device.C.createInfoSType = (),
+			Vk.Device.C.createInfoPNext = NullPtr,
+			Vk.Device.C.createInfoFlags = 0,
+			Vk.Device.C.createInfoQueueCreateInfoCount = 1,
+			Vk.Device.C.createInfoPQueueCreateInfos =
 				pQueueCreateInfo,
-			Vk.Device.createInfoPEnabledFeatures = pDeviceFeatures,
-			Vk.Device.createInfoEnabledExtensionCount = 1,
-			Vk.Device.createInfoPpEnabledExtensionNames =
+			Vk.Device.C.createInfoPEnabledFeatures = pDeviceFeatures,
+			Vk.Device.C.createInfoEnabledExtensionCount = 1,
+			Vk.Device.C.createInfoPpEnabledExtensionNames =
 				pSwapchainExtentions,
-			Vk.Device.createInfoEnabledLayerCount = 1,
-			Vk.Device.createInfoPpEnabledLayerNames =
+			Vk.Device.C.createInfoEnabledLayerCount = 1,
+			Vk.Device.C.createInfoPpEnabledLayerNames =
 				pValidationLayers }
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pDevice <- ContT alloca
 	dvc <- lift do
-		r <- Vk.Device.create pd pCreateInfo NullPtr pDevice
+		r <- Vk.Device.C.create pd pCreateInfo NullPtr pDevice
 		when (r /= success) $ error "failed to create logical device!"
 		dvc' <- peek pDevice
 		writeIORef device dvc'
 		pure dvc'
 	pGraphicsQueue <- ContT alloca
 	pPresentQueue <- ContT alloca
-	lift do	Vk.Device.getQueue
+	lift do	Vk.Device.C.getQueue
 			dvc (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
-		Vk.Device.getQueue
+		Vk.Device.C.getQueue
 			dvc (fromJust $ graphicsFamily indices) 0 pPresentQueue
 		writeIORef graphicsQueue =<< peek pGraphicsQueue
 		writeIORef presentQueue =<< peek pPresentQueue
@@ -1037,7 +1037,7 @@ mainLoop Global { globalWindow = win } = do
 		GlfwB.pollEvents
 		drawFrame
 		not <$> GlfwB.windowShouldClose win
-	r <- Vk.Device.waitIdle =<< readIORef device
+	r <- Vk.Device.C.waitIdle =<< readIORef device
 	when (r /= success) $ error "wait idle failure"
 
 drawFrame :: IO ()
@@ -1123,7 +1123,7 @@ cleanup Global {
 	ivs <- readIORef swapChainImageViews
 	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
-	Vk.Device.destroy dvc NullPtr
+	Vk.Device.C.destroy dvc NullPtr
 	ist@(Vk.Instance cist) <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
 	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->

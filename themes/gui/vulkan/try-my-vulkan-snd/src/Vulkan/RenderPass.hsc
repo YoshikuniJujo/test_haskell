@@ -13,7 +13,7 @@ import Data.Int
 
 import Vulkan.Core
 import Vulkan.Base
-import Vulkan.Device (Device)
+import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass

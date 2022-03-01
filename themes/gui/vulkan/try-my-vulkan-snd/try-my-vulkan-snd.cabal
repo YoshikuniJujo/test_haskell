@@ -44,7 +44,7 @@ library
       Vulkan.Core
       Vulkan.Cull
       Vulkan.Descriptor.SetLayout
-      Vulkan.Device
+      Vulkan.Device.Core
       Vulkan.Device.Queue
       Vulkan.Enum
       Vulkan.Enumerate

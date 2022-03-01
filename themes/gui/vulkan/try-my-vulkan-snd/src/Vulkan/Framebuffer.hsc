@@ -12,7 +12,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.Device (Device)
+import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.ImageView as ImageView

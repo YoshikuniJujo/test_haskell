@@ -13,7 +13,7 @@ import Data.Int
 
 import Vulkan.Core (Semaphore)
 import Vulkan.Base
-import Vulkan.Device (Device)
+import Vulkan.Device.Core (Device)
 
 #include <vulkan/vulkan.h>
 

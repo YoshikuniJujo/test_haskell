@@ -13,7 +13,7 @@ import Data.Int
 
 import Vulkan.Core
 import Vulkan.Base
-import Vulkan.Device (Device)
+import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Khr.Surface as Surface
 import qualified Vulkan.Image as Image

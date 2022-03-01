@@ -13,7 +13,7 @@ import Data.Int
 
 import Vulkan.Core (Semaphore, PtrSemaphore, Queue)
 import Vulkan.Base
-import Vulkan.Device (Device)
+import Vulkan.Device.Core (Device)
 import Vulkan.Fence (Fence)
 import Vulkan.Khr.Swapchain (Swapchain, PtrSwapchain)
 
