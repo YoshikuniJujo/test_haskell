@@ -17,6 +17,7 @@ import Data.Word
 
 enum "CreateFlagBits" ''#{type VkDeviceQueueCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("CreateFlagsZero", 0),
 	("CreateProtectedBit",
 		#{const VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT}),
 	("CreateFlagBitsMaxEnum",

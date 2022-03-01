@@ -40,7 +40,7 @@ createFile hf mnm hscnms = do
 	prg <- getProgName
 	src <- readFile hf
 	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
-		header prg [] mnm ++ intercalate "\n" (map (makeEnum' src mnm) hscnmdrvs)
+		header prg [] mnm ++ intercalate "\n" (map (makeEnum' src mnm []) hscnmdrvs)
 	where hscnmdrvs = (`snocTuple2` ["Show", "Eq", "Storable"]) <$> hscnms
 
 createFile' ::
@@ -51,7 +51,18 @@ createFile' hf mnm icms hscnmdrvs ext = do
 	src <- readFile hf
 	createDirectoryIfMissing True . takeDirectory $ "../src/Vulkan/" ++ substitute '.' '/' mnm
 	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
-		header prg icms mnm ++ intercalate "\n" (map (makeEnum' src mnm) hscnmdrvs) ++
+		header prg icms mnm ++ intercalate "\n" (map (makeEnum' src mnm []) hscnmdrvs) ++
+		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+
+createFile'' ::
+	HeaderFile -> ModuleName -> [IncludeModule] ->
+	[([(String, Const)], (HaskellName, CName, [DerivName]))] -> ExtraCode -> IO ()
+createFile'' hf mnm icms hscnmdrvs ext = do
+	prg <- getProgName
+	src <- readFile hf
+	createDirectoryIfMissing True . takeDirectory $ "../src/Vulkan/" ++ substitute '.' '/' mnm
+	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
+		header prg icms mnm ++ intercalate "\n" (map (uncurry $ makeEnum' src mnm) hscnmdrvs) ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
 snocTuple2 :: (a, b) -> c -> (a, b, c)
@@ -64,10 +75,10 @@ makeEnum src (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 			. removeBetaExtensions $ lines src ) ++
 		" ]\n"
 
-makeEnum' :: HeaderCode -> ModuleName -> (HaskellName, CName, [DerivName]) -> HaskellCode
-makeEnum' src mnm (hsnm, cnm, drvs) = body hsnm cnm drvs ++
+makeEnum' :: HeaderCode -> ModuleName -> [(String, Const)] -> (HaskellName, CName, [DerivName]) -> HaskellCode
+makeEnum' src mnm elms (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 	intercalate ",\n"
-		(map (makeItem' mnm) . takeDefinition cnm
+		(map (makeItem' mnm) . (elms ++) . map makeVarConstPair . takeDefinition cnm
 			. removeBetaExtensions $ lines src ) ++
 		" ]\n"
 
@@ -149,9 +160,9 @@ makeItemFromConst (rm, rmt) nm cnst = "\t(\"" ++ removeInit rm (removeTail rmt n
 makeItem :: String -> String
 makeItem = uncurry (makeItemFromConst ("", "")) . makeVarConstPair
 
-makeItem' :: ModuleName -> String -> String
+makeItem' :: ModuleName -> (String, Const) -> String
 makeItem' mnm =
-	uncurry (makeItemFromConst $ modNameToRemStr mnm) . makeVarConstPair
+	uncurry (makeItemFromConst $ modNameToRemStr mnm)
 
 {-
 makeItem cnst = '\t' : nm ++ sp ++ cst
