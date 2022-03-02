@@ -13,6 +13,7 @@ import Data.Int
 
 import Vulkan.Core (Queue)
 import Vulkan.Base
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 import Vulkan.PhysicalDevice.Core (PhysicalDevice)
 
 import qualified Vulkan.Device.Queue.Core as Device.Queue
@@ -59,8 +60,8 @@ data DeviceTag
 type Device = Ptr DeviceTag
 
 foreign import ccall "vkCreateDevice" create ::
-	PhysicalDevice -> Ptr CreateInfo -> Ptr () -> Ptr Device ->
-	IO #{type VkResult}
+	PhysicalDevice -> Ptr CreateInfo -> Ptr AllocationCallbacks ->
+	Ptr Device -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyDevice" destroy :: Device -> Ptr () -> IO ()
 

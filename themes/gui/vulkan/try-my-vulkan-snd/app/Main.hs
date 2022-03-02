@@ -45,15 +45,14 @@ import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Vulkan.Device as Vk.Device
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
-import qualified Vulkan.PhysicalDevice.Struct.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
-import qualified Vulkan.Device.Queue.Core as Vk.Device.Queue.C
 import qualified Vulkan.Device.Core as Vk.Device.C
 
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
@@ -430,10 +429,10 @@ querySwapChainSupport dvc = ($ pure) $ runContT do
 
 createLogicalDevice :: Global -> IO ()
 createLogicalDevice Global {
-	globalPhysicalDevice = rpdvc } = ($ pure) $ runContT do
-	pdvc@(Vk.PhysicalDevice pd) <- lift $ readIORef rpdvc
+	globalPhysicalDevice = rphdvc,
+	globalDevice = rdvc } = ($ pure) $ runContT do
+	pdvc <- lift $ readIORef rphdvc
 	indices <- lift $ findQueueFamilies pdvc
-	lift $ print indices
 
 	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
@@ -443,67 +442,40 @@ createLogicalDevice Global {
 				fromJust $ graphicsFamily indices,
 			Vk.Device.Queue.createInfoQueuePriorities = [1.0] }
 		deviceFeatures = Vk.PhysicalDevice.featuresZero
+		createInfo = Vk.Device.CreateInfo {
+			Vk.Device.createInfoNext = Nothing,
+			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
+			Vk.Device.createInfoQueueCreateInfos =
+				[queueCreateInfo],
+			Vk.Device.createInfoEnabledLayerNames =
+				if enableValidationLayers
+					then validationLayers else [],
+			Vk.Device.createInfoEnabledExtensionNames =
+				["VK_KHR_swapchain"],
+			Vk.Device.createInfoEnabledFeatures = deviceFeatures }
 
-	pQueuePriority <- ContT alloca
-	lift $ poke pQueuePriority 1
-	let	Vk.Device.Queue.C.CreateInfo_ fQueueCreateInfo =
-			Vk.Device.Queue.C.CreateInfo {
-				Vk.Device.Queue.C.createInfoSType = (),
-				Vk.Device.Queue.C.createInfoPNext = NullPtr,
-				Vk.Device.Queue.C.createInfoFlags = 0,
-				Vk.Device.Queue.C.createInfoQueueFamilyIndex =
-					fromJust $ graphicsFamily indices,
-				Vk.Device.Queue.C.createInfoQueueCount = 1,
-				Vk.Device.Queue.C.createInfoPQueuePriorities =
-					pQueuePriority }
-	pQueueCreateInfo <- ContT $ withForeignPtr fQueueCreateInfo
-	Vk.PhysicalDevice.C.Features_ fDeviceFeatures <-
-		lift $ Vk.PhysicalDevice.C.getClearedFeatures
-	pDeviceFeatures <- ContT $ withForeignPtr fDeviceFeatures
-	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
-	pValidationLayers <- ContT $ allocaArray 1
-	lift $ pokeArray pValidationLayers [pValidationLayer]
-	pSwapchainExtention <- lift $ newCString "VK_KHR_swapchain"
-	pSwapchainExtentions <- ContT $ allocaArray 1
-	lift $ pokeArray pSwapchainExtentions [pSwapchainExtention]
-	let	Vk.Device.C.CreateInfo_ fCreateInfo = Vk.Device.C.CreateInfo {
-			Vk.Device.C.createInfoSType = (),
-			Vk.Device.C.createInfoPNext = NullPtr,
-			Vk.Device.C.createInfoFlags = 0,
-			Vk.Device.C.createInfoQueueCreateInfoCount = 1,
-			Vk.Device.C.createInfoPQueueCreateInfos =
-				pQueueCreateInfo,
-			Vk.Device.C.createInfoPEnabledFeatures = pDeviceFeatures,
-			Vk.Device.C.createInfoEnabledExtensionCount = 1,
-			Vk.Device.C.createInfoPpEnabledExtensionNames =
-				pSwapchainExtentions,
-			Vk.Device.C.createInfoEnabledLayerCount = 1,
-			Vk.Device.C.createInfoPpEnabledLayerNames =
-				pValidationLayers }
-	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
-	pDevice <- ContT alloca
-	dvc <- lift do
-		r <- Vk.Device.C.create pd pCreateInfo NullPtr pDevice
-		when (r /= success) $ error "failed to create logical device!"
-		dvc' <- peek pDevice
-		writeIORef device dvc'
-		pure dvc'
+	cdvc <- lift do
+		dvc@(Vk.Device cdvc) <- Vk.Device.create @() @() @() pdvc createInfo Nothing
+		writeIORef rdvc dvc
+		writeIORef device cdvc
+		pure cdvc
+
 	pGraphicsQueue <- ContT alloca
 	pPresentQueue <- ContT alloca
 	lift do	Vk.Device.C.getQueue
-			dvc (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
+			cdvc (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
 		Vk.Device.C.getQueue
-			dvc (fromJust $ graphicsFamily indices) 0 pPresentQueue
+			cdvc (fromJust $ graphicsFamily indices) 0 pPresentQueue
 		writeIORef graphicsQueue =<< peek pGraphicsQueue
 		writeIORef presentQueue =<< peek pPresentQueue
 
 createSwapChain :: Global -> IO ()
 createSwapChain Global {
-	globalPhysicalDevice = pdvc
+	globalPhysicalDevice = rpdvc
 	} = ($ pure) $ runContT do
 	dvc <- lift $ readIORef device
 	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
-		pdvc@(Vk.PhysicalDevice pd) <- readIORef pdvc
+		pdvc@(Vk.PhysicalDevice pd) <- readIORef rpdvc
 		swapChainSupport <- querySwapChainSupport pd
 		sfc <- readIORef surface
 		indices <- findQueueFamilies pdvc
