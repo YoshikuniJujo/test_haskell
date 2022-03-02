@@ -115,12 +115,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
-graphicsQueue :: IORef Vk.C.Queue
-graphicsQueue = unsafePerformIO $ newIORef NullPtr
-
-presentQueue :: IORef Vk.C.Queue
-presentQueue = unsafePerformIO $ newIORef NullPtr
-
 swapChain :: IORef Vk.Khr.Sc.Swapchain
 swapChain = unsafePerformIO $ newIORef NullHandle
 
@@ -164,6 +158,8 @@ data Global = Global {
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
 	globalDevice :: IORef Vk.Device,
+	globalGraphicsQueue :: IORef Vk.Queue,
+	globalPresentQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface
 	}
 
@@ -173,6 +169,8 @@ newGlobal w = do
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
 	dvc <- newIORef $ Vk.Device NullPtr
+	gq <- newIORef $ Vk.Queue NullPtr
+	pq <- newIORef $ Vk.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface NullPtr
 	pure Global {
 		globalWindow = w,
@@ -180,6 +178,8 @@ newGlobal w = do
 		globalDebugMessenger = dmsgr,
 		globalPhysicalDevice = pdvc,
 		globalDevice = dvc,
+		globalGraphicsQueue = gq,
+		globalPresentQueue = pq,
 		globalSurface = sfc
 		}
 
@@ -428,7 +428,10 @@ querySwapChainSupport Global {
 
 createLogicalDevice :: Global -> IO ()
 createLogicalDevice g@Global {
-	globalPhysicalDevice = rphdvc, globalDevice = rdvc } = do
+	globalPhysicalDevice = rphdvc,
+	globalDevice = rdvc,
+	globalGraphicsQueue = rgq,
+	globalPresentQueue = rpq } = do
 	phdvc <- readIORef rphdvc
 	indices <- findQueueFamilies g phdvc
 	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
@@ -452,10 +455,10 @@ createLogicalDevice g@Global {
 			Vk.Device.createInfoEnabledFeatures = deviceFeatures }
 	dvc <- Vk.Device.create @() @() @() phdvc createInfo Nothing
 	writeIORef rdvc dvc
-	writeIORef graphicsQueue . (\(Vk.Queue q) -> q)
-		=<< Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0
-	writeIORef presentQueue . (\(Vk.Queue q) -> q)
-		=<< Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0
+	gq <- Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0
+	pq <- Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0
+	writeIORef rgq gq
+	writeIORef rpq pq
 
 createSwapChain :: Global -> IO ()
 createSwapChain g@Global {
@@ -1024,7 +1027,10 @@ mainLoop g@Global {
 	when (r /= success) $ error "wait idle failure"
 
 drawFrame :: Global -> IO ()
-drawFrame Global { globalDevice = rdvc } = ($ pure) $ runContT do
+drawFrame Global {
+	globalDevice = rdvc,
+	globalGraphicsQueue = rgq,
+	globalPresentQueue = rpq } = ($ pure) $ runContT do
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
 	Vk.Device dvc <- lift $ readIORef rdvc
@@ -1056,7 +1062,7 @@ drawFrame Global { globalDevice = rdvc } = ($ pure) $ runContT do
 			Vk.C.submitInfoPCommandBuffers = pcb1,
 			Vk.C.submitInfoSignalSemaphoreCount = 1,
 			Vk.C.submitInfoPSignalSemaphores = pSignalSemaphores }
-	gq <- lift $ readIORef graphicsQueue
+	Vk.Queue gq <- lift $ readIORef rgq
 	pSubmitInfo <- ContT $ withForeignPtr fSubmitInfo
 	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo NullHandle
 		when (r /= success) $ error "failed to submit draw command buffer!"
@@ -1071,11 +1077,11 @@ drawFrame Global { globalDevice = rdvc } = ($ pure) $ runContT do
 			Vk.Khr.C.presentInfoPSwapchains = pSwapchains,
 			Vk.Khr.C.presentInfoPImageIndices = pImageIndex,
 			Vk.Khr.C.presentInfoPResults = NullPtr }
-	pq <- lift $ readIORef presentQueue
+	Vk.Queue pq <- lift $ readIORef rpq
 	pPresentInfo <- ContT $ withForeignPtr fPresentInfo
 	lift do	r <- Vk.Khr.C.queuePresent pq pPresentInfo
 		when (r /= success) $ error "bad"
-		r' <- Vk.C.queueWaitIdle =<< readIORef presentQueue
+		r' <- Vk.C.queueWaitIdle . (\(Vk.Queue q) -> q) =<< readIORef rpq
 		when (r' /= success) $ error "bad"
 --	lift $ putStrLn "=== END ==="
 
