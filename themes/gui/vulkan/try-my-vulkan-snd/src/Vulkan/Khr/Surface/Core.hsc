@@ -11,6 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 
 import Vulkan.Core (Extent2d)
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 import Vulkan.Instance.Core (Instance)
 
 #include <vulkan/vulkan.h>
@@ -19,7 +20,7 @@ data SurfaceTag
 type Surface = Ptr SurfaceTag
 
 foreign import ccall "vkDestroySurfaceKHR" destroy ::
-	Instance -> Surface -> Ptr () -> IO ()
+	Instance -> Surface -> Ptr AllocationCallbacks -> IO ()
 
 struct "Capabilities" #{size VkSurfaceCapabilitiesKHR}
 		#{alignment VkSurfaceCapabilitiesKHR} [

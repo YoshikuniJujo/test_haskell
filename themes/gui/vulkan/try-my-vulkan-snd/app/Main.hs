@@ -50,6 +50,7 @@ import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 
 import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
@@ -1115,8 +1116,8 @@ cleanup Global {
 	(\iv -> Vk.ImageView.destroy cdvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy cdvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy @() dvc Nothing
-	ist@(Vk.Instance cist) <- readIORef rist
-	(\sfc -> Vk.Khr.Sfc.C.destroy cist sfc NullPtr) . (\(Vk.Khr.Surface s) -> s) =<< readIORef rsfc
+	ist <- readIORef rist
+	(\sfc -> Vk.Khr.Sfc.destroy @() ist sfc Nothing) =<< readIORef rsfc
 	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->
 		Vk.Ext.DU.Msngr.destroy ist dm Vk.AC.nil
 	Vk.Ist.destroy @() ist Nothing
