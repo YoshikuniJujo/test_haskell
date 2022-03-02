@@ -22,6 +22,8 @@ import Vulkan.Exception.Enum
 import Vulkan.PhysicalDevice.Enum
 import Vulkan.PhysicalDevice.Struct
 
+import Vulkan.Khr
+
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
 
@@ -125,3 +127,11 @@ getQueueFamilyProperties (PhysicalDevice pdvc) =
 		pppts <- ContT $ allocaArray pptc
 		lift do	C.getQueueFamilyProperties pdvc ppptc pppts
 			peekArray pptc pppts
+
+getSurfaceSupport :: PhysicalDevice -> Word32 -> Surface -> IO Bool
+getSurfaceSupport (PhysicalDevice phdvc) qfi (Surface sfc) =
+	($ pure) . runContT $ bool32ToBool <$> do
+		pSupported <- ContT alloca
+		lift do	r <- C.getSurfaceSupport phdvc qfi sfc pSupported
+			throwUnlessSuccess $ Result r
+			peek pSupported

@@ -352,28 +352,26 @@ isComplete QueueFamilyIndices {
 	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
 findQueueFamilies :: Global -> Vk.PhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies g dvc@(Vk.PhysicalDevice cdvc) = do
+findQueueFamilies Global { globalSurface = rsfc } dvc = do
 	putStrLn "*** FIND QUEUE FAMILIES ***"
 	props <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
 	print props
-	pfi <- getPresentFamilyIndex g cdvc (fromIntegral $ length props) 0
+	sfc <- readIORef rsfc
+	pfi <- getPresentFamilyIndex sfc dvc (fromIntegral $ length props) 0
 	pure QueueFamilyIndices {
 		graphicsFamily = fromIntegral
 			<$> findIndex checkGraphicsBit props,
 		presentFamily = pfi }
 
-getPresentFamilyIndex :: Global -> Vk.PhysicalDevice.C.PhysicalDevice ->
-	Word32 -> Word32 -> IO (Maybe Word32)
-getPresentFamilyIndex g@Global { globalSurface = rsfc } pd n i
+getPresentFamilyIndex ::
+	Vk.Khr.Surface -> Vk.PhysicalDevice -> Word32 -> Word32 -> IO (Maybe Word32)
+getPresentFamilyIndex sfc pd n i
 	| i >= n = pure Nothing
-	| otherwise = ($ pure) $ runContT do
-		pPresentSupport <- ContT alloca
-		lift do	Vk.Khr.Surface sfc <- readIORef rsfc
-			_ <- Vk.PhysicalDevice.C.getSurfaceSupport pd i sfc pPresentSupport
-			presentSupport <- peek pPresentSupport
-			if presentSupport == vkTrue
+	| otherwise = do
+		presentSupport <- Vk.PhysicalDevice.getSurfaceSupport pd i sfc
+		if presentSupport
 			then pure $ Just i
-			else getPresentFamilyIndex g pd n (i + 1)
+			else getPresentFamilyIndex sfc pd n (i + 1)
 
 checkGraphicsBit :: Vk.QueueFamily.Properties -> Bool
 checkGraphicsBit prop = let
