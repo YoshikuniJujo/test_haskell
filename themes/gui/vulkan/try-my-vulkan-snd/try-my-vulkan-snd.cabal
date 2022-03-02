@@ -68,6 +68,7 @@ library
       Vulkan.Instance
       Vulkan.Instance.Core
       Vulkan.Instance.Enum
+      Vulkan.Khr
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Core
       Vulkan.Khr.Present

@@ -47,6 +47,8 @@ import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 
+import qualified Vulkan.Khr as Vk.Khr
+
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
@@ -165,8 +167,8 @@ data Global = Global {
 	globalInstance :: IORef Vk.Instance,
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
-	globalDevice :: IORef Vk.Device
---	globalSurface :: IORef Vk.Khr.Surface
+	globalDevice :: IORef Vk.Device,
+	globalSurface :: IORef Vk.Khr.Surface
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -175,12 +177,14 @@ newGlobal w = do
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
 	dvc <- newIORef $ Vk.Device NullPtr
+	sfc <- newIORef $ Vk.Khr.Surface NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
 		globalDebugMessenger = dmsgr,
 		globalPhysicalDevice = pdvc,
-		globalDevice = dvc
+		globalDevice = dvc,
+		globalSurface = sfc
 		}
 
 run :: IO ()
