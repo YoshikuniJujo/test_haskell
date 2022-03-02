@@ -111,8 +111,8 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
-device :: IORef Vk.Device.C.Device
-device = unsafePerformIO $ newIORef NullPtr
+-- device :: IORef Vk.Device.C.Device
+-- device = unsafePerformIO $ newIORef NullPtr
 
 graphicsQueue :: IORef Vk.C.Queue
 graphicsQueue = unsafePerformIO $ newIORef NullPtr
@@ -209,13 +209,13 @@ initVulkan g = do
 	pickPhysicalDevice g
 	createLogicalDevice g
 	createSwapChain g
-	createImageViews
-	createRenderPass
-	createGraphicsPipeline
-	createFramebuffers
+	createImageViews g
+	createRenderPass g
+	createGraphicsPipeline g
+	createFramebuffers g
 	createCommandPool g
-	createCommandBuffers
-	createSemaphores
+	createCommandBuffers g
+	createSemaphores g
 
 createInstance :: Global -> IO ()
 createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
@@ -457,7 +457,6 @@ createLogicalDevice Global {
 	cdvc <- lift do
 		dvc@(Vk.Device cdvc) <- Vk.Device.create @() @() @() pdvc createInfo Nothing
 		writeIORef rdvc dvc
-		writeIORef device cdvc
 		pure cdvc
 
 	pGraphicsQueue <- ContT alloca
@@ -471,9 +470,10 @@ createLogicalDevice Global {
 
 createSwapChain :: Global -> IO ()
 createSwapChain Global {
-	globalPhysicalDevice = rpdvc
+	globalPhysicalDevice = rpdvc,
+	globalDevice = rdvc
 	} = ($ pure) $ runContT do
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
 		pdvc@(Vk.PhysicalDevice pd) <- readIORef rpdvc
 		swapChainSupport <- querySwapChainSupport pd
@@ -569,14 +569,14 @@ chooseSwapExtent capabilities =
 		else error "Ah!"
 	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
 
-createImageViews :: IO ()
-createImageViews = do
+createImageViews :: Global -> IO ()
+createImageViews g = do
 	scis <- readIORef swapChainImages
-	ivs <- createImageView1 `mapM` scis
+	ivs <- createImageView1 g `mapM` scis
 	writeIORef swapChainImageViews ivs
 
-createImageView1 :: Vk.Img.Image -> IO Vk.ImageView.ImageView
-createImageView1 img = ($ pure) $ runContT do
+createImageView1 :: Global -> Vk.Img.Image -> IO Vk.ImageView.ImageView
+createImageView1 Global { globalDevice = rdvc } img = ($ pure) $ runContT do
 	fmt <- lift $ readIORef swapChainImageFormat
 	let	Vk.ImageView.CreateInfo_ fCreateInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoSType = (),
@@ -604,15 +604,15 @@ createImageView1 img = ($ pure) $ runContT do
 					Vk.Img.subresourceRangeBaseArrayLayer =
 						0,
 					Vk.Img.subresourceRangeLayerCount = 1 } }
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pView <- ContT alloca
 	lift do	r <- Vk.ImageView.create dvc pCreateInfo NullPtr pView
 		when (r /= success) $ error "failed to create image views!"
 		peek pView
 
-createRenderPass :: IO ()
-createRenderPass = ($ pure) $ runContT do
+createRenderPass :: Global -> IO ()
+createRenderPass Global { globalDevice = rdvc } = ($ pure) $ runContT do
 	scif <- lift $ readIORef swapChainImageFormat
 	let	Vk.Att.Description_ fColorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = 0,
@@ -670,20 +670,20 @@ createRenderPass = ($ pure) $ runContT do
 			Vk.RndrPss.createInfoPSubpasses = pSubpass,
 			Vk.RndrPss.createInfoDependencyCount = 1,
 			Vk.RndrPss.createInfoPDependencies = pDependency }
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	pRenderPass <- ContT alloca
 	lift do	r <- Vk.RndrPss.create dvc pRenderPassInfo NullPtr pRenderPass
 		when (r /= success) $ error "failed to create render pass!"
 		writeIORef renderPass =<< peek pRenderPass
 
-createGraphicsPipeline :: IO ()
-createGraphicsPipeline = ($ pure) $ runContT do
-	dvc <- lift $ readIORef device
+createGraphicsPipeline :: Global -> IO ()
+createGraphicsPipeline g@Global { globalDevice = rdvc } = ($ pure) $ runContT do
+	Vk.Device dvc <- lift $ readIORef rdvc
 	vertShaderCode <- lift $ readFile "shaders/vert.spv"
 	fragShaderCode <- lift $ readFile "shaders/frag.spv"
-	vertShaderModule <- lift $ createShaderModule vertShaderCode
-	fragShaderModule <- lift $ createShaderModule fragShaderCode
+	vertShaderModule <- lift $ createShaderModule g vertShaderCode
+	fragShaderModule <- lift $ createShaderModule g fragShaderCode
 	cnm <- lift $ newCString "main"
 	sce <- lift $ readIORef swapChainExtent
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
@@ -853,22 +853,23 @@ createGraphicsPipeline = ($ pure) $ runContT do
 		Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
 
-createShaderModule :: (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
-createShaderModule (p, n) = ($ pure) $ runContT do
-	dvc <- lift $ readIORef device
-	let	Vk.Shader.Module.CreateInfo_ fCreateInfo =
-			Vk.Shader.Module.CreateInfo {
-				Vk.Shader.Module.createInfoSType = (),
-				Vk.Shader.Module.createInfoPNext = NullPtr,
-				Vk.Shader.Module.createInfoFlags = 0,
-				Vk.Shader.Module.createInfoCodeSize =
-					fromIntegral n,
-				Vk.Shader.Module.createInfoPCode = p }
-	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
-	pShaderModule <- ContT alloca
-	lift do	r <- Vk.Shader.Module.create dvc pCreateInfo NullPtr pShaderModule
-		when (r /= success) $ error "failed to create shader module!"
-		peek pShaderModule
+createShaderModule :: Global -> (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
+createShaderModule Global { globalDevice = rdvc } (p, n) =
+	($ pure) $ runContT do
+		Vk.Device dvc <- lift $ readIORef rdvc
+		let	Vk.Shader.Module.CreateInfo_ fCreateInfo =
+				Vk.Shader.Module.CreateInfo {
+					Vk.Shader.Module.createInfoSType = (),
+					Vk.Shader.Module.createInfoPNext = NullPtr,
+					Vk.Shader.Module.createInfoFlags = 0,
+					Vk.Shader.Module.createInfoCodeSize =
+						fromIntegral n,
+					Vk.Shader.Module.createInfoPCode = p }
+		pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+		pShaderModule <- ContT alloca
+		lift do	r <- Vk.Shader.Module.create dvc pCreateInfo NullPtr pShaderModule
+			when (r /= success) $ error "failed to create shader module!"
+			peek pShaderModule
 
 readFile :: FilePath -> IO (Ptr Word32, Integer)
 readFile fp = do
@@ -881,14 +882,15 @@ readFile fp = do
 	print =<< hGetBuf h pbuff (fromIntegral fileSize)
 	pure (pbuff, fileSize)
 
-createFramebuffers :: IO ()
-createFramebuffers = do
+createFramebuffers :: Global -> IO ()
+createFramebuffers g = do
 	scivs <- readIORef swapChainImageViews
-	fbs <- createFramebuffer1 `mapM` scivs
+	fbs <- createFramebuffer1 g `mapM` scivs
 	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Vk.ImageView.ImageView -> IO Framebuffer
-createFramebuffer1 attachment = ($ pure) $ runContT do
+createFramebuffer1 :: Global -> Vk.ImageView.ImageView -> IO Framebuffer
+createFramebuffer1 Global {
+	globalDevice = rdvc } attachment = ($ pure) $ runContT do
 	rndrPss <- lift $ readIORef renderPass
 	attachments <- ContT $ allocaArray 1
 	lift $ pokeArray attachments [attachment]
@@ -903,7 +905,7 @@ createFramebuffer1 attachment = ($ pure) $ runContT do
 			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
 			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
 			Vk.Fb.createInfoLayers = 1 }
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	pFramebufferInfo <- ContT $ withForeignPtr fFramebufferInfo
 	pfb <- ContT alloca
 	lift do	r <- Vk.Fb.create dvc pFramebufferInfo NullPtr pfb
@@ -912,7 +914,8 @@ createFramebuffer1 attachment = ($ pure) $ runContT do
 
 createCommandPool :: Global -> IO ()
 createCommandPool Global {
-	globalPhysicalDevice = rpdvc } = ($ pure) $ runContT do
+	globalPhysicalDevice = rpdvc,
+	globalDevice = rdvc } = ($ pure) $ runContT do
 	lift $ putStrLn "=== CREATE COMMAND POOL ==="
 	queueFamilyIndices <- lift do
 		pdvc <- readIORef rpdvc
@@ -924,7 +927,7 @@ createCommandPool Global {
 			Vk.CP.createInfoFlags = 0,
 			Vk.CP.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	pPoolInfo <- ContT $ withForeignPtr fPoolInfo
 	pCommandPool <- ContT alloca
 	lift do	r <- Vk.CP.create dvc pPoolInfo NullPtr pCommandPool
@@ -932,15 +935,16 @@ createCommandPool Global {
 		writeIORef commandPool =<< peek pCommandPool
 		putStrLn "=== END ==="
 
-createCommandBuffers :: IO ()
-createCommandBuffers = do
+createCommandBuffers :: Global -> IO ()
+createCommandBuffers g = do
 	scfbs <- readIORef swapChainFramebuffers
-	cbs <- createCommandBuffersGen (length scfbs)
+	cbs <- createCommandBuffersGen g (length scfbs)
 	writeIORef commandBuffers cbs
 	uncurry beginCommandBuffer1 `mapM_` zip cbs scfbs
 
-createCommandBuffersGen :: Int -> IO [Vk.C.CommandBuffer]
-createCommandBuffersGen cbc = ($ pure) $ runContT do
+createCommandBuffersGen :: Global -> Int -> IO [Vk.C.CommandBuffer]
+createCommandBuffersGen Global {
+	globalDevice = rdvc } cbc = ($ pure) $ runContT do
 	cp <- lift $ readIORef commandPool
 	let	Vk.CB.AllocateInfo_ fAllocInfo = Vk.CB.AllocateInfo {
 			Vk.CB.allocateInfoSType = (),
@@ -948,7 +952,7 @@ createCommandBuffersGen cbc = ($ pure) $ runContT do
 			Vk.CB.allocateInfoCommandPool = cp,
 			Vk.CB.allocateInfoLevel = Vk.CB.levelPrimary,
 			Vk.CB.allocateInfoCommandBufferCount = fromIntegral cbc }
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	pAllocInfo <- ContT $ withForeignPtr fAllocInfo
 	pCommandBuffers <- ContT $ allocaArray cbc
 	lift do	r <- Vk.CB.allocate dvc pAllocInfo pCommandBuffers
@@ -991,13 +995,13 @@ beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 		r <- Vk.CB.end cb
 		when (r /= success) $ error "failed to record command buffer!"
 
-createSemaphores :: IO ()
-createSemaphores = ($ pure) $ runContT do
+createSemaphores :: Global -> IO ()
+createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do
 	let	Vk.Smp.CreateInfo_ fSemaphoreInfo = Vk.Smp.CreateInfo {
 			Vk.Smp.createInfoSType = (),
 			Vk.Smp.createInfoPNext = NullPtr,
 			Vk.Smp.createInfoFlags = 0 }
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	pSemaphoreInfo <- ContT $ withForeignPtr fSemaphoreInfo
 	pImageAvailableSemaphore <- ContT alloca
 	pRenderFinishedSemaphore <- ContT alloca
@@ -1019,19 +1023,21 @@ createSemaphores = ($ pure) $ runContT do
 		print =<< readIORef renderFinishedSemaphore
 
 mainLoop :: Global -> IO ()
-mainLoop Global { globalWindow = win } = do
+mainLoop g@Global {
+	globalWindow = win,
+	globalDevice = rdvc } = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
-		drawFrame
+		drawFrame g
 		not <$> GlfwB.windowShouldClose win
-	r <- Vk.Device.C.waitIdle =<< readIORef device
+	r <- Vk.Device.C.waitIdle . (\(Vk.Device d) -> d) =<< readIORef rdvc
 	when (r /= success) $ error "wait idle failure"
 
-drawFrame :: IO ()
-drawFrame = ($ pure) $ runContT do
+drawFrame :: Global -> IO ()
+drawFrame Global { globalDevice = rdvc } = ($ pure) $ runContT do
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
-	dvc <- lift $ readIORef device
+	Vk.Device dvc <- lift $ readIORef rdvc
 	sc <- lift $ readIORef swapChain
 	ias <- lift $ readIORef imageAvailableSemaphore
 	lift do	r <- Vk.Khr.acquireNextImage
