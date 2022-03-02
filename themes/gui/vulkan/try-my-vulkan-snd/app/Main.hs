@@ -63,7 +63,7 @@ import qualified Vulkan.Khr.Surface.PhysicalDevice as
 import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
-import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView as Vk.ImageView
 import qualified Vulkan.Image as Vk.Img
@@ -166,6 +166,7 @@ data Global = Global {
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
 	globalDevice :: IORef Vk.Device
+--	globalSurface :: IORef Vk.Khr.Surface
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -508,7 +509,7 @@ createSwapChain Global {
 					Vk.Khr.Sfc.capabilitiesCurrentTransform
 						cap,
 				Vk.Khr.Sc.createInfoCompositeAlpha =
-					Vk.Khr.compositeAlphaOpaqueBit,
+					Vk.Khr.C.compositeAlphaOpaqueBit,
 				Vk.Khr.Sc.createInfoPresentMode = presentMode,
 				Vk.Khr.Sc.createInfoClipped = vkTrue,
 				Vk.Khr.Sc.createInfoOldSwapchain = NullHandle }
@@ -1030,7 +1031,7 @@ drawFrame Global { globalDevice = rdvc } = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
 	sc <- lift $ readIORef swapChain
 	ias <- lift $ readIORef imageAvailableSemaphore
-	lift do	r <- Vk.Khr.acquireNextImage
+	lift do	r <- Vk.Khr.C.acquireNextImage
 			dvc sc uint64Max ias NullHandle pImageIndex
 		when (r /= success) $ error "bad"
 	(fromIntegral -> imageIndex) <- lift $ peek pImageIndex
@@ -1062,18 +1063,18 @@ drawFrame Global { globalDevice = rdvc } = ($ pure) $ runContT do
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchains . (: []) =<< readIORef swapChain
-	let	Vk.Khr.PresentInfo_ fPresentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoSType = (),
-			Vk.Khr.presentInfoPNext = NullPtr,
-			Vk.Khr.presentInfoWaitSemaphoreCount = 1,
-			Vk.Khr.presentInfoPWaitSemaphores = pSignalSemaphores,
-			Vk.Khr.presentInfoSwapchainCount = 1,
-			Vk.Khr.presentInfoPSwapchains = pSwapchains,
-			Vk.Khr.presentInfoPImageIndices = pImageIndex,
-			Vk.Khr.presentInfoPResults = NullPtr }
+	let	Vk.Khr.C.PresentInfo_ fPresentInfo = Vk.Khr.C.PresentInfo {
+			Vk.Khr.C.presentInfoSType = (),
+			Vk.Khr.C.presentInfoPNext = NullPtr,
+			Vk.Khr.C.presentInfoWaitSemaphoreCount = 1,
+			Vk.Khr.C.presentInfoPWaitSemaphores = pSignalSemaphores,
+			Vk.Khr.C.presentInfoSwapchainCount = 1,
+			Vk.Khr.C.presentInfoPSwapchains = pSwapchains,
+			Vk.Khr.C.presentInfoPImageIndices = pImageIndex,
+			Vk.Khr.C.presentInfoPResults = NullPtr }
 	pq <- lift $ readIORef presentQueue
 	pPresentInfo <- ContT $ withForeignPtr fPresentInfo
-	lift do	r <- Vk.Khr.queuePresent pq pPresentInfo
+	lift do	r <- Vk.Khr.C.queuePresent pq pPresentInfo
 		when (r /= success) $ error "bad"
 		r' <- Vk.C.queueWaitIdle =<< readIORef presentQueue
 		when (r' /= success) $ error "bad"
