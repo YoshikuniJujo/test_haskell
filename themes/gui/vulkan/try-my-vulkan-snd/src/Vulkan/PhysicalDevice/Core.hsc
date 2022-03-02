@@ -18,7 +18,7 @@ import qualified Data.Text as T
 
 import Vulkan.Base
 import Vulkan.Instance.Core (Instance)
-import Vulkan.Khr.Surface (Surface)
+import Vulkan.Khr.Surface.Core (Surface)
 
 import Vulkan.Enumerate.Core (ExtensionProperties(..))
 import Vulkan.PhysicalDevice.Struct.Core

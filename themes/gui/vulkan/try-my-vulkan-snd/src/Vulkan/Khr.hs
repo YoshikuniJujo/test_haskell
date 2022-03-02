@@ -2,6 +2,6 @@
 
 module Vulkan.Khr where
 
-import qualified Vulkan.Khr.Surface as Surface
+import qualified Vulkan.Khr.Surface.Core as Surface.C
 
-newtype Surface = Surface Surface.Surface deriving Show
+newtype Surface = Surface Surface.C.Surface deriving Show

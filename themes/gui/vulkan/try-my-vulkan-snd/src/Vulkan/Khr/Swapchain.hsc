@@ -15,7 +15,7 @@ import Vulkan.Core
 import Vulkan.Base
 import Vulkan.Device.Core (Device)
 
-import qualified Vulkan.Khr.Surface as Surface
+import qualified Vulkan.Khr.Surface.Core as Surface
 import qualified Vulkan.Image as Image
 
 #include <vulkan/vulkan.h>

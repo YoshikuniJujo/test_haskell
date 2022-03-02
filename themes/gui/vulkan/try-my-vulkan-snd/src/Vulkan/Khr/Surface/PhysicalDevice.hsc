@@ -6,7 +6,7 @@ import Foreign.Ptr
 import Data.Word
 import Data.Int
 
-import Vulkan.Khr.Surface
+import Vulkan.Khr.Surface.Core
 
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
 import qualified Vulkan.Khr.Present as Present

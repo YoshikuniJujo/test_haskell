@@ -59,7 +59,7 @@ import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Device.Core as Vk.Device.C
 
-import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
+import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
 import qualified Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Sfc.PhysicalDevice
@@ -384,8 +384,8 @@ checkGraphicsBitCore prop =
 	Vk.QueueFamily.C.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
-	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.Format],
+	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.C.Capabilities,
+	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.C.Format],
 	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
 	deriving Show
 
@@ -482,8 +482,8 @@ createSwapChain g@Global {
 				$ swapChainSupportDetailsPresentModes
 					swapChainSupport
 			extent = chooseSwapExtent cap
-			minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
-			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
+			minImageCount = Vk.Khr.Sfc.C.capabilitiesMinImageCount cap
+			maxImageCount = Vk.Khr.Sfc.C.capabilitiesMaxImageCount cap
 			imageCount = if maxImageCount > 0
 				then min (minImageCount + 1) maxImageCount
 				else minImageCount + 1
@@ -494,9 +494,9 @@ createSwapChain g@Global {
 				Vk.Khr.Sc.createInfoSurface = sfc,
 				Vk.Khr.Sc.createInfoMinImageCount = imageCount,
 				Vk.Khr.Sc.createInfoImageFormat =
-					Vk.Khr.Sfc.formatFormat surfaceFormat,
+					Vk.Khr.Sfc.C.formatFormat surfaceFormat,
 				Vk.Khr.Sc.createInfoImageColorSpace =
-					Vk.Khr.Sfc.formatColorSpace
+					Vk.Khr.Sfc.C.formatColorSpace
 						surfaceFormat,
 				Vk.Khr.Sc.createInfoImageExtent = extent,
 				Vk.Khr.Sc.createInfoImageArrayLayers = 1,
@@ -508,7 +508,7 @@ createSwapChain g@Global {
 				Vk.Khr.Sc.createInfoPQueueFamilyIndices =
 					NullPtr,
 				Vk.Khr.Sc.createInfoPreTransform =
-					Vk.Khr.Sfc.capabilitiesCurrentTransform
+					Vk.Khr.Sfc.C.capabilitiesCurrentTransform
 						cap,
 				Vk.Khr.Sc.createInfoCompositeAlpha =
 					Vk.Khr.C.compositeAlphaOpaqueBit,
@@ -523,7 +523,7 @@ createSwapChain g@Global {
 		print imageCount
 		print maxImageCount
 		writeIORef swapChainImageFormat
-			$ Vk.Khr.Sfc.formatFormat surfaceFormat
+			$ Vk.Khr.Sfc.C.formatFormat surfaceFormat
 		writeIORef swapChainExtent extent
 		pure createInfo'
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
@@ -542,11 +542,11 @@ createSwapChain g@Global {
 		writeIORef swapChainImages
 			=<< peekArray imageCount pSwapChainImages
 
-chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
+chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.C.Format] -> Vk.Khr.Sfc.C.Format
 chooseSwapSurfaceFormat availableFormats = fromMaybe (head availableFormats)
 	$ find (\f ->
-		Vk.Khr.Sfc.formatFormat f == Vk.Format.b8g8r8a8Srgb &&
-		Vk.Khr.Sfc.formatColorSpace f ==
+		Vk.Khr.Sfc.C.formatFormat f == Vk.Format.b8g8r8a8Srgb &&
+		Vk.Khr.Sfc.C.formatColorSpace f ==
 			Vk.Khr.ColorSpace.srgbNonlinear) availableFormats
 
 chooseSwapPresentMode :: [Vk.Khr.Present.Mode] -> Vk.Khr.Present.Mode
@@ -555,12 +555,12 @@ chooseSwapPresentMode availablePresentModes =
 		then Vk.Khr.Present.modeMailbox
 		else Vk.Khr.Present.modeFifo
 
-chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.C.Extent2d
+chooseSwapExtent :: Vk.Khr.Sfc.C.Capabilities -> Vk.C.Extent2d
 chooseSwapExtent capabilities =
 	if Vk.C.extent2dWidth ce /= uint32Max
 		then ce
 		else error "Ah!"
-	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
+	where ce = Vk.Khr.Sfc.C.capabilitiesCurrentExtent capabilities
 
 createImageViews :: Global -> IO ()
 createImageViews g = do
@@ -1116,7 +1116,7 @@ cleanup Global {
 	(\sc -> Vk.Khr.Sc.destroy cdvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy @() dvc Nothing
 	ist@(Vk.Instance cist) <- readIORef rist
-	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) . (\(Vk.Khr.Surface s) -> s) =<< readIORef rsfc
+	(\sfc -> Vk.Khr.Sfc.C.destroy cist sfc NullPtr) . (\(Vk.Khr.Surface s) -> s) =<< readIORef rsfc
 	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->
 		Vk.Ext.DU.Msngr.destroy ist dm Vk.AC.nil
 	Vk.Ist.destroy @() ist Nothing
