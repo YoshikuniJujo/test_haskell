@@ -115,14 +115,8 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = ["VK_LAYER_KHRONOS_validation"]
 
--- device :: IORef Vk.Device.C.Device
--- device = unsafePerformIO $ newIORef NullPtr
-
 graphicsQueue :: IORef Vk.C.Queue
 graphicsQueue = unsafePerformIO $ newIORef NullPtr
-
-surface :: IORef Vk.Khr.Sfc.Surface
-surface = unsafePerformIO $ newIORef NullPtr
 
 presentQueue :: IORef Vk.C.Queue
 presentQueue = unsafePerformIO $ newIORef NullPtr
@@ -301,16 +295,13 @@ createSurface :: Global -> IO ()
 createSurface Global {
 	globalWindow = win, globalInstance = rist, globalSurface = rsfc } = do
 	ist <- readIORef rist
-	sfc@(Vk.Khr.Surface csfc) <-
-		Glfw.createWindowSurface @() ist win Nothing
-	writeIORef rsfc sfc
-	writeIORef surface csfc
+	writeIORef rsfc =<< Glfw.createWindowSurface @() ist win Nothing
 
 pickPhysicalDevice :: Global -> IO ()
-pickPhysicalDevice Global {
+pickPhysicalDevice g@Global {
 	globalInstance = rist, globalPhysicalDevice = rpdvc } = do
 	devices <- Vk.PhysicalDevice.enumerate =<< readIORef rist
-	findM isDeviceSuitable devices >>= \case
+	findM (isDeviceSuitable g) devices >>= \case
 		Just pd -> writeIORef rpdvc pd
 		Nothing -> error "no matched physical devices"
 
@@ -318,16 +309,16 @@ findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
-isDeviceSuitable :: Vk.PhysicalDevice -> IO Bool
-isDeviceSuitable dvc@(Vk.PhysicalDevice cdvc) = do
+isDeviceSuitable :: Global -> Vk.PhysicalDevice -> IO Bool
+isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
 	putStrLn "*** IS DEVICE SUITABLE ***"
 	print =<< Vk.PhysicalDevice.getProperties dvc
 	print =<< Vk.PhysicalDevice.getFeatures dvc
 
-	indices <- findQueueFamilies dvc
+	indices <- findQueueFamilies g dvc
 	extensionSupported <- checkDeviceExtensionSupport cdvc
 	swapChainAdequate <- if extensionSupported
-		then do	swapChainSupport <- querySwapChainSupport cdvc
+		then do	swapChainSupport <- querySwapChainSupport g cdvc
 			pure $ not (null $ swapChainSupportDetailsFormats
 					swapChainSupport) &&
 				not (null $ swapChainSupportDetailsPresentModes
@@ -359,29 +350,29 @@ isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
 	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
-findQueueFamilies :: Vk.PhysicalDevice -> IO QueueFamilyIndices
-findQueueFamilies dvc@(Vk.PhysicalDevice cdvc) = do
+findQueueFamilies :: Global -> Vk.PhysicalDevice -> IO QueueFamilyIndices
+findQueueFamilies g dvc@(Vk.PhysicalDevice cdvc) = do
 	putStrLn "*** FIND QUEUE FAMILIES ***"
 	props <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
 	print props
-	pfi <- getPresentFamilyIndex cdvc (fromIntegral $ length props) 0
+	pfi <- getPresentFamilyIndex g cdvc (fromIntegral $ length props) 0
 	pure QueueFamilyIndices {
 		graphicsFamily = fromIntegral
 			<$> findIndex checkGraphicsBit props,
 		presentFamily = pfi }
 
-getPresentFamilyIndex :: Vk.PhysicalDevice.C.PhysicalDevice ->
+getPresentFamilyIndex :: Global -> Vk.PhysicalDevice.C.PhysicalDevice ->
 	Word32 -> Word32 -> IO (Maybe Word32)
-getPresentFamilyIndex pd n i
+getPresentFamilyIndex g@Global { globalSurface = rsfc } pd n i
 	| i >= n = pure Nothing
 	| otherwise = ($ pure) $ runContT do
 		pPresentSupport <- ContT alloca
-		lift do	sfc <- readIORef surface
+		lift do	Vk.Khr.Surface sfc <- readIORef rsfc
 			_ <- Vk.PhysicalDevice.C.getSurfaceSupport pd i sfc pPresentSupport
 			presentSupport <- peek pPresentSupport
 			if presentSupport == vkTrue
 			then pure $ Just i
-			else getPresentFamilyIndex pd n (i + 1)
+			else getPresentFamilyIndex g pd n (i + 1)
 
 checkGraphicsBit :: Vk.QueueFamily.Properties -> Bool
 checkGraphicsBit prop = let
@@ -398,10 +389,11 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
 	deriving Show
 
-querySwapChainSupport ::
+querySwapChainSupport :: Global ->
 	Vk.PhysicalDevice.C.PhysicalDevice -> IO SwapChainSupportDetails
-querySwapChainSupport dvc = ($ pure) $ runContT do
-	sfc <- lift $ readIORef surface
+querySwapChainSupport Global {
+	globalSurface = rsfc } dvc = ($ pure) $ runContT do
+	Vk.Khr.Surface sfc <- lift $ readIORef rsfc
 	pCapabilities <- ContT alloca
 	cps <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.getCapabilities
@@ -435,10 +427,10 @@ querySwapChainSupport dvc = ($ pure) $ runContT do
 		}
 
 createLogicalDevice :: Global -> IO ()
-createLogicalDevice Global {
+createLogicalDevice g@Global {
 	globalPhysicalDevice = rphdvc, globalDevice = rdvc } = do
 	phdvc <- readIORef rphdvc
-	indices <- findQueueFamilies phdvc
+	indices <- findQueueFamilies g phdvc
 	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
 			Vk.Device.Queue.createInfoFlags =
@@ -466,16 +458,17 @@ createLogicalDevice Global {
 		=<< Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0
 
 createSwapChain :: Global -> IO ()
-createSwapChain Global {
+createSwapChain g@Global {
 	globalPhysicalDevice = rpdvc,
-	globalDevice = rdvc
+	globalDevice = rdvc,
+	globalSurface = rsfc
 	} = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
 	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
 		pdvc@(Vk.PhysicalDevice pd) <- readIORef rpdvc
-		swapChainSupport <- querySwapChainSupport pd
-		sfc <- readIORef surface
-		indices <- findQueueFamilies pdvc
+		swapChainSupport <- querySwapChainSupport g pd
+		Vk.Khr.Surface sfc <- readIORef rsfc
+		indices <- findQueueFamilies g pdvc
 		print indices
 		let	cap = swapChainSupportDetailsCapabilities
 				swapChainSupport
@@ -910,13 +903,13 @@ createFramebuffer1 Global {
 		peek pfb
 
 createCommandPool :: Global -> IO ()
-createCommandPool Global {
+createCommandPool g@Global {
 	globalPhysicalDevice = rpdvc,
 	globalDevice = rdvc } = ($ pure) $ runContT do
 	lift $ putStrLn "=== CREATE COMMAND POOL ==="
 	queueFamilyIndices <- lift do
 		pdvc <- readIORef rpdvc
-		findQueueFamilies pdvc
+		findQueueFamilies g pdvc
 	lift $ print queueFamilyIndices
 	let	Vk.CP.CreateInfo_ fPoolInfo = Vk.CP.CreateInfo {
 			Vk.CP.createInfoSType = (),
@@ -1091,7 +1084,8 @@ cleanup Global {
 	globalWindow = win,
 	globalInstance = rist,
 	globalDebugMessenger = rdmsgr,
-	globalDevice = rdvc } = do
+	globalDevice = rdvc,
+	globalSurface = rsfc } = do
 	dvc@(Vk.Device cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1116,7 +1110,7 @@ cleanup Global {
 	(\sc -> Vk.Khr.Sc.destroy cdvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy @() dvc Nothing
 	ist@(Vk.Instance cist) <- readIORef rist
-	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
+	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) . (\(Vk.Khr.Surface s) -> s) =<< readIORef rsfc
 	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->
 		Vk.Ext.DU.Msngr.destroy ist dm Vk.AC.nil
 	Vk.Ist.destroy @() ist Nothing
