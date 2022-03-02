@@ -63,7 +63,8 @@ foreign import ccall "vkCreateDevice" create ::
 	PhysicalDevice -> Ptr CreateInfo -> Ptr AllocationCallbacks ->
 	Ptr Device -> IO #{type VkResult}
 
-foreign import ccall "vkDestroyDevice" destroy :: Device -> Ptr () -> IO ()
+foreign import ccall "vkDestroyDevice"
+	destroy :: Device -> Ptr AllocationCallbacks -> IO ()
 
 foreign import ccall "vkGetDeviceQueue" getQueue ::
 	Device -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue -> IO ()

@@ -1087,30 +1087,31 @@ cleanup :: Global -> IO ()
 cleanup Global {
 	globalWindow = win,
 	globalInstance = rist,
-	globalDebugMessenger = rdmsgr } = do
-	dvc <- readIORef device
+	globalDebugMessenger = rdmsgr,
+	globalDevice = rdvc } = do
+	dvc@(Vk.Device cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
 	putStr "renderFinishedSemaphore: "
 	print rfs
-	Vk.Smp.destroy dvc rfs NullPtr
+	Vk.Smp.destroy cdvc rfs NullPtr
 	putStr "imageAvailableSemaphore: "
 	print ias
-	Vk.Smp.destroy dvc ias NullPtr
+	Vk.Smp.destroy cdvc ias NullPtr
 	cp <- readIORef commandPool
-	Vk.CP.destroy dvc cp NullPtr
+	Vk.CP.destroy cdvc cp NullPtr
 	fbs <- readIORef swapChainFramebuffers
-	(\fb -> Vk.Fb.destroy dvc fb NullPtr) `mapM_` fbs
+	(\fb -> Vk.Fb.destroy cdvc fb NullPtr) `mapM_` fbs
 	gppl <- readIORef graphicsPipeline
-	Vk.Ppl.destroy dvc gppl NullPtr
+	Vk.Ppl.destroy cdvc gppl NullPtr
 	pl <- readIORef pipelineLayout
-	Vk.Ppl.Lyt.destroy dvc pl NullPtr
+	Vk.Ppl.Lyt.destroy cdvc pl NullPtr
 	rp <- readIORef renderPass
-	Vk.RndrPss.destroy dvc rp NullPtr
+	Vk.RndrPss.destroy cdvc rp NullPtr
 	ivs <- readIORef swapChainImageViews
-	(\iv -> Vk.ImageView.destroy dvc iv NullPtr) `mapM_` ivs
-	(\sc -> Vk.Khr.Sc.destroy dvc sc NullPtr) =<< readIORef swapChain
-	Vk.Device.C.destroy dvc NullPtr
+	(\iv -> Vk.ImageView.destroy cdvc iv NullPtr) `mapM_` ivs
+	(\sc -> Vk.Khr.Sc.destroy cdvc sc NullPtr) =<< readIORef swapChain
+	Vk.Device.destroy @() dvc Nothing
 	ist@(Vk.Instance cist) <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy cist sfc NullPtr) =<< readIORef surface
 	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->
