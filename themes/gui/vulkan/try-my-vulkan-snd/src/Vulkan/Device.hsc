@@ -91,3 +91,9 @@ destroy :: Pointable n => Device -> Maybe (AllocationCallbacks n) -> IO ()
 destroy (Device cdvc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cdvc pac
+
+getQueue :: Device -> Word32 -> Word32 -> IO Queue
+getQueue (Device cdvc) qfi qi = ($ pure) . runContT $ Queue <$> do
+	pQueue <- ContT alloca
+	lift do	C.getQueue cdvc qfi qi pQueue
+		peek pQueue

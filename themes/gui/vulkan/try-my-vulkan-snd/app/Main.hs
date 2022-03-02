@@ -429,11 +429,9 @@ querySwapChainSupport dvc = ($ pure) $ runContT do
 
 createLogicalDevice :: Global -> IO ()
 createLogicalDevice Global {
-	globalPhysicalDevice = rphdvc,
-	globalDevice = rdvc } = ($ pure) $ runContT do
-	pdvc <- lift $ readIORef rphdvc
-	indices <- lift $ findQueueFamilies pdvc
-
+	globalPhysicalDevice = rphdvc, globalDevice = rdvc } = do
+	phdvc <- readIORef rphdvc
+	indices <- findQueueFamilies phdvc
 	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
 			Vk.Device.Queue.createInfoFlags =
@@ -453,20 +451,12 @@ createLogicalDevice Global {
 			Vk.Device.createInfoEnabledExtensionNames =
 				["VK_KHR_swapchain"],
 			Vk.Device.createInfoEnabledFeatures = deviceFeatures }
-
-	cdvc <- lift do
-		dvc@(Vk.Device cdvc) <- Vk.Device.create @() @() @() pdvc createInfo Nothing
-		writeIORef rdvc dvc
-		pure cdvc
-
-	pGraphicsQueue <- ContT alloca
-	pPresentQueue <- ContT alloca
-	lift do	Vk.Device.C.getQueue
-			cdvc (fromJust $ graphicsFamily indices) 0 pGraphicsQueue
-		Vk.Device.C.getQueue
-			cdvc (fromJust $ graphicsFamily indices) 0 pPresentQueue
-		writeIORef graphicsQueue =<< peek pGraphicsQueue
-		writeIORef presentQueue =<< peek pPresentQueue
+	dvc <- Vk.Device.create @() @() @() phdvc createInfo Nothing
+	writeIORef rdvc dvc
+	writeIORef graphicsQueue . (\(Vk.Queue q) -> q)
+		=<< Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0
+	writeIORef presentQueue . (\(Vk.Queue q) -> q)
+		=<< Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0
 
 createSwapChain :: Global -> IO ()
 createSwapChain Global {

@@ -28,6 +28,8 @@ newtype PhysicalDevice = PhysicalDevice PhysicalDevice.C.PhysicalDevice deriving
 
 newtype Device = Device Device.C.Device deriving Show
 
+newtype Queue = Queue C.Queue deriving Show
+
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,
 	applicationInfoApplicationName :: T.Text,
