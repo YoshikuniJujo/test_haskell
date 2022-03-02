@@ -32,6 +32,8 @@ import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
+import qualified Glfw
+
 import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.AllocationCallbacks as Vk.AC
@@ -297,12 +299,12 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 
 createSurface :: Global -> IO ()
 createSurface Global {
-	globalWindow = win, globalInstance = rist } = ($ pure) $ runContT do
-	Vk.Instance ist <- lift $ readIORef rist
-	psrfc <- ContT alloca
-	lift do	r <- GlfwB.createWindowSurface ist win NullPtr psrfc
-		when (r /= success) $ error "failed to create window surface!"
-		writeIORef surface =<< peek psrfc
+	globalWindow = win, globalInstance = rist, globalSurface = rsfc } = do
+	ist <- readIORef rist
+	sfc@(Vk.Khr.Surface csfc) <-
+		Glfw.createWindowSurface @() ist win Nothing
+	writeIORef rsfc sfc
+	writeIORef surface csfc
 
 pickPhysicalDevice :: Global -> IO ()
 pickPhysicalDevice Global {
