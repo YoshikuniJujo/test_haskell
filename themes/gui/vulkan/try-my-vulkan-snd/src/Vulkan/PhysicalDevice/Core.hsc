@@ -20,7 +20,7 @@ import Vulkan.Base
 import Vulkan.Instance.Core (Instance)
 import Vulkan.Khr.Surface.Core (Surface)
 
-import Vulkan.Enumerate.Core (ExtensionProperties(..))
+import Vulkan.Core (ExtensionProperties(..))
 import Vulkan.PhysicalDevice.Struct.Core
 
 import qualified Vulkan.QueueFamily.Core as QueueFamily

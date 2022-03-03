@@ -15,21 +15,9 @@ import Data.Int
 
 import qualified Data.ByteString as BS
 
-#include <vulkan/vulkan.h>
+import Vulkan.Core
 
-struct "ExtensionProperties" #{size VkExtensionProperties}
-		#{alignment VkExtensionProperties} [
-	("extensionName", ''BS.ByteString,
-		[| \p -> BS.packCStringLen
-			(#{ptr VkExtensionProperties, extensionName} p,
-				#{const VK_MAX_EXTENSION_NAME_SIZE}) |],
-		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
-			(#{ptr VkExtensionProperties, extensionName} p) cs ln |]
-		),
-	("specVersion", ''#{type uint32_t},
-		[| #{peek VkExtensionProperties, specVersion} |],
-		[| #{poke VkExtensionProperties, specVersion} |]) ]
-	[''Show, ''Storable]
+#include <vulkan/vulkan.h>
 
 foreign import ccall "vkEnumerateInstanceExtensionProperties"
 	instanceExtensionProperties ::

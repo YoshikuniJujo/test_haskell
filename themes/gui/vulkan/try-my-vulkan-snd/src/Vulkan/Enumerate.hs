@@ -17,6 +17,7 @@ import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 
+import qualified Vulkan.Core as C
 import qualified Vulkan.Enumerate.Core as C
 
 data LayerProperties = LayerProperties {

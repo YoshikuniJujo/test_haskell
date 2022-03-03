@@ -54,7 +54,6 @@ import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 
 import qualified Vulkan.Core as Vk.C
-import qualified Vulkan.Enumerate.Core as Vk.Enumerate.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
@@ -329,16 +328,16 @@ isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
 	pure $ isComplete indices && extensionSupported && swapChainAdequate
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.C.PhysicalDevice -> IO Bool
-checkDeviceExtensionSupport dvc = ($ pure) $ runContT do
+checkDeviceExtensionSupport cdvc = ($ pure) $ runContT do
 	pExtensionCount <- ContT alloca
 	(fromIntegral -> extensionCount) <- lift do
 		_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
-			dvc NullPtr pExtensionCount NullPtr
+			cdvc NullPtr pExtensionCount NullPtr
 		peek pExtensionCount
 	pAvailableExtensions <- ContT $ allocaArray extensionCount
 	lift do	_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
-			dvc NullPtr pExtensionCount pAvailableExtensions
-		es <- map (BSC.takeWhile (/= '\NUL') . Vk.Enumerate.C.extensionPropertiesExtensionName)
+			cdvc NullPtr pExtensionCount pAvailableExtensions
+		es <- map (BSC.takeWhile (/= '\NUL') . Vk.C.extensionPropertiesExtensionName)
 			<$> peekArray extensionCount pAvailableExtensions
 		print es
 		pure $ elem "VK_KHR_swapchain" es
