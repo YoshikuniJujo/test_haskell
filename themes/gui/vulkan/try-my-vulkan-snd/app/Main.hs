@@ -27,6 +27,7 @@ import System.IO.Unsafe
 import ThEnv
 import Vulkan.Base
 
+import qualified Data.Set as Set
 import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
@@ -433,19 +434,22 @@ createLogicalDevice g@Global {
 	globalPresentQueue = rpq } = do
 	phdvc <- readIORef rphdvc
 	indices <- findQueueFamilies g phdvc
-	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
+	let	uniqueQueueFamilies = Set.fromList [
+			fromJust $ graphicsFamily indices,
+			fromJust $ presentFamily indices ]
+		queueCreateInfo qf = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
 			Vk.Device.Queue.createInfoFlags =
 				Vk.Device.Queue.CreateFlagsZero,
-			Vk.Device.Queue.createInfoQueueFamilyIndex =
-				fromJust $ graphicsFamily indices,
+			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
 			Vk.Device.Queue.createInfoQueuePriorities = [1.0] }
 		deviceFeatures = Vk.PhysicalDevice.featuresZero
 		createInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
 			Vk.Device.createInfoQueueCreateInfos =
-				[queueCreateInfo],
+				((: []) . queueCreateInfo) `foldMap`
+					uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				if enableValidationLayers
 					then validationLayers else [],

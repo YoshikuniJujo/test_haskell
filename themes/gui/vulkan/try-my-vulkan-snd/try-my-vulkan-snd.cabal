@@ -123,6 +123,7 @@ library
     , bytestring
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , nowdoc
@@ -145,6 +146,7 @@ executable try-my-vulkan-snd-exe
     , bytestring
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , nowdoc
@@ -169,6 +171,7 @@ test-suite try-my-vulkan-snd-test
     , bytestring
     , c-enum
     , c-struct
+    , containers
     , exception-hierarchy
     , monads-tf
     , nowdoc
