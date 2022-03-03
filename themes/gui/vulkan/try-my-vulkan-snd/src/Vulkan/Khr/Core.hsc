@@ -15,7 +15,7 @@ import Vulkan.Core (Semaphore, PtrSemaphore, Queue)
 import Vulkan.Base
 import Vulkan.Device.Core (Device)
 import Vulkan.Fence (Fence)
-import Vulkan.Khr.Swapchain (Swapchain, PtrSwapchain)
+import Vulkan.Khr.Swapchain.Core (Swapchain, PtrSwapchain)
 
 #include <vulkan/vulkan.h>
 

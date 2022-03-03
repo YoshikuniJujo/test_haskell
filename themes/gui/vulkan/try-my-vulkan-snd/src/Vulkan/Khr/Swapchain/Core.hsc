@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Khr.Swapchain where
+module Vulkan.Khr.Swapchain.Core where
 
 import Foreign.Ptr
 import Foreign.Storable

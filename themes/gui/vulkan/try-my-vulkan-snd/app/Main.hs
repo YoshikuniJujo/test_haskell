@@ -68,7 +68,7 @@ import qualified Vulkan.Khr.Surface.PhysicalDevice as
 
 import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
-import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
+import qualified Vulkan.Khr.Swapchain.Core as Vk.Khr.Sc.C
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView as Vk.ImageView
@@ -117,7 +117,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChain :: IORef Vk.Khr.Sc.Swapchain
+swapChain :: IORef Vk.Khr.Sc.C.Swapchain
 swapChain = unsafePerformIO $ newIORef NullHandle
 
 swapChainImages :: IORef [Vk.Img.Image]
@@ -470,7 +470,7 @@ createSwapChain g@Global {
 	globalSurface = rsfc
 	} = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
-	Vk.Khr.Sc.CreateInfo_ fCreateInfo <- lift do
+	Vk.Khr.Sc.C.CreateInfo_ fCreateInfo <- lift do
 		pdvc@(Vk.PhysicalDevice pd) <- readIORef rpdvc
 		swapChainSupport <- querySwapChainSupport g pd
 		Vk.Khr.Surface sfc <- readIORef rsfc
@@ -490,34 +490,34 @@ createSwapChain g@Global {
 			imageCount = if maxImageCount > 0
 				then min (minImageCount + 1) maxImageCount
 				else minImageCount + 1
-			createInfo' = Vk.Khr.Sc.CreateInfo {
-				Vk.Khr.Sc.createInfoSType = (),
-				Vk.Khr.Sc.createInfoPNext = NullPtr,
-				Vk.Khr.Sc.createInfoFlags = 0,
-				Vk.Khr.Sc.createInfoSurface = sfc,
-				Vk.Khr.Sc.createInfoMinImageCount = imageCount,
-				Vk.Khr.Sc.createInfoImageFormat =
+			createInfo' = Vk.Khr.Sc.C.CreateInfo {
+				Vk.Khr.Sc.C.createInfoSType = (),
+				Vk.Khr.Sc.C.createInfoPNext = NullPtr,
+				Vk.Khr.Sc.C.createInfoFlags = 0,
+				Vk.Khr.Sc.C.createInfoSurface = sfc,
+				Vk.Khr.Sc.C.createInfoMinImageCount = imageCount,
+				Vk.Khr.Sc.C.createInfoImageFormat =
 					Vk.Khr.Sfc.C.formatFormat surfaceFormat,
-				Vk.Khr.Sc.createInfoImageColorSpace =
+				Vk.Khr.Sc.C.createInfoImageColorSpace =
 					Vk.Khr.Sfc.C.formatColorSpace
 						surfaceFormat,
-				Vk.Khr.Sc.createInfoImageExtent = extent,
-				Vk.Khr.Sc.createInfoImageArrayLayers = 1,
-				Vk.Khr.Sc.createInfoImageUsage =
+				Vk.Khr.Sc.C.createInfoImageExtent = extent,
+				Vk.Khr.Sc.C.createInfoImageArrayLayers = 1,
+				Vk.Khr.Sc.C.createInfoImageUsage =
 					Vk.C.imageUsageColorAttachmentBit,
-				Vk.Khr.Sc.createInfoImageSharingMode =
+				Vk.Khr.Sc.C.createInfoImageSharingMode =
 					Vk.C.sharingModeExclusive,
-				Vk.Khr.Sc.createInfoQueueFamilyIndexCount = 0,
-				Vk.Khr.Sc.createInfoPQueueFamilyIndices =
+				Vk.Khr.Sc.C.createInfoQueueFamilyIndexCount = 0,
+				Vk.Khr.Sc.C.createInfoPQueueFamilyIndices =
 					NullPtr,
-				Vk.Khr.Sc.createInfoPreTransform =
+				Vk.Khr.Sc.C.createInfoPreTransform =
 					Vk.Khr.Sfc.C.capabilitiesCurrentTransform
 						cap,
-				Vk.Khr.Sc.createInfoCompositeAlpha =
+				Vk.Khr.Sc.C.createInfoCompositeAlpha =
 					Vk.Khr.C.compositeAlphaOpaqueBit,
-				Vk.Khr.Sc.createInfoPresentMode = presentMode,
-				Vk.Khr.Sc.createInfoClipped = vkTrue,
-				Vk.Khr.Sc.createInfoOldSwapchain = NullHandle }
+				Vk.Khr.Sc.C.createInfoPresentMode = presentMode,
+				Vk.Khr.Sc.C.createInfoClipped = vkTrue,
+				Vk.Khr.Sc.C.createInfoOldSwapchain = NullHandle }
 		print surfaceFormat
 		print presentMode
 		print (Vk.Format.b8g8r8a8Srgb, Vk.Khr.ColorSpace.srgbNonlinear)
@@ -532,16 +532,16 @@ createSwapChain g@Global {
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pSwapChain <- ContT alloca
 	sc <- lift do
-		r <- Vk.Khr.Sc.create dvc pCreateInfo NullPtr pSwapChain
+		r <- Vk.Khr.Sc.C.create dvc pCreateInfo NullPtr pSwapChain
 		when (r /= success) $ error "failed to create swap chain!"
 		sc <- peek pSwapChain
 		sc <$ writeIORef swapChain sc
 	pImageCount <- ContT alloca
 	(fromIntegral -> imageCount) <- lift do
-		_ <- Vk.Khr.Sc.getImages dvc sc pImageCount NullPtr
+		_ <- Vk.Khr.Sc.C.getImages dvc sc pImageCount NullPtr
 		peek pImageCount
 	pSwapChainImages <- ContT $ allocaArray imageCount
-	lift do	_ <- Vk.Khr.Sc.getImages dvc sc pImageCount pSwapChainImages
+	lift do	_ <- Vk.Khr.Sc.C.getImages dvc sc pImageCount pSwapChainImages
 		writeIORef swapChainImages
 			=<< peekArray imageCount pSwapChainImages
 
@@ -1116,7 +1116,7 @@ cleanup Global {
 	Vk.RndrPss.destroy cdvc rp NullPtr
 	ivs <- readIORef swapChainImageViews
 	(\iv -> Vk.ImageView.destroy cdvc iv NullPtr) `mapM_` ivs
-	(\sc -> Vk.Khr.Sc.destroy cdvc sc NullPtr) =<< readIORef swapChain
+	(\sc -> Vk.Khr.Sc.C.destroy cdvc sc NullPtr) =<< readIORef swapChain
 	Vk.Device.destroy @() dvc Nothing
 	ist <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy @() ist sfc Nothing) =<< readIORef rsfc
