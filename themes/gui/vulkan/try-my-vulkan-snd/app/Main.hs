@@ -115,7 +115,7 @@ enableValidationLayers =
 	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
 validationLayers :: [Txt.Text]
-validationLayers = ["VK_LAYER_KHRONOS_validation"]
+validationLayers = [Vk.Khr.validationLayerName]
 
 swapChain :: IORef Vk.Khr.Sc.Swapchain
 swapChain = unsafePerformIO $ newIORef NullHandle
