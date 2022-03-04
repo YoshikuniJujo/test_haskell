@@ -225,7 +225,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 			$ error "validation layers requested, but no available!"
 		putStrLn "available extensions:"
 		mapM_ (Txt.putStrLn . ("\t" <>)
-				. Vk.Enumerate.extensionPropertiesExtensionName)
+				. Vk.extensionPropertiesExtensionName)
 			=<< Vk.Enumerate.instanceExtensionProperties Nothing
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
@@ -253,7 +253,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
 	(\lns -> all (`elem` lns) validationLayers)
-			. map Vk.Enumerate.layerPropertiesLayerName
+			. map Vk.layerPropertiesLayerName
 		<$> Vk.Enumerate.instanceLayerProperties
 
 getRequiredExtensions :: IO [Txt.Text]

@@ -76,3 +76,33 @@ applicationInfoToCore ApplicationInfo {
 	ContT $ withForeignPtr fApplicationInfo
 
 newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show
+
+data ExtensionProperties = ExtensionProperties {
+	extensionPropertiesExtensionName :: T.Text,
+	extensionPropertiesSpecVersion :: ApiVersion }
+	deriving Show
+
+extensionPropertiesFromCore :: C.ExtensionProperties -> ExtensionProperties
+extensionPropertiesFromCore C.ExtensionProperties {
+	C.extensionPropertiesExtensionName = en,
+	C.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
+		extensionPropertiesExtensionName = en,
+		extensionPropertiesSpecVersion = ApiVersion sv }
+
+data LayerProperties = LayerProperties {
+	layerPropertiesLayerName :: T.Text,
+	layerPropertiesSpecVersion :: ApiVersion,
+	layerPropertiesImplementationVersion :: ApiVersion,
+	layerPropertiesDescription :: T.Text }
+	deriving Show
+
+layerPropertiesFromCore :: C.LayerProperties -> LayerProperties
+layerPropertiesFromCore C.LayerProperties {
+	C.layerPropertiesLayerName = ln,
+	C.layerPropertiesSpecVersion = sv,
+	C.layerPropertiesImplementationVersion = iv,
+	C.layerPropertiesDescription = dsc } = LayerProperties {
+	layerPropertiesLayerName = ln,
+	layerPropertiesSpecVersion = ApiVersion sv,
+	layerPropertiesImplementationVersion = ApiVersion iv,
+	layerPropertiesDescription = dsc }

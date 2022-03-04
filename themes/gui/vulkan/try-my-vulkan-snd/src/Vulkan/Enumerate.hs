@@ -15,26 +15,7 @@ import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 
-import qualified Vulkan.Core as C
 import qualified Vulkan.Enumerate.Core as C
-
-data LayerProperties = LayerProperties {
-	layerPropertiesLayerName :: T.Text,
-	layerPropertiesSpecVersion :: ApiVersion,
-	layerPropertiesImplementationVersion :: ApiVersion,
-	layerPropertiesDescription :: T.Text }
-	deriving Show
-
-layerPropertiesFromCore :: C.LayerProperties -> LayerProperties
-layerPropertiesFromCore C.LayerProperties {
-	C.layerPropertiesLayerName = ln,
-	C.layerPropertiesSpecVersion = sv,
-	C.layerPropertiesImplementationVersion = iv,
-	C.layerPropertiesDescription = dsc } = LayerProperties {
-	layerPropertiesLayerName = ln,
-	layerPropertiesSpecVersion = ApiVersion sv,
-	layerPropertiesImplementationVersion = ApiVersion iv,
-	layerPropertiesDescription = dsc }
 
 instanceLayerProperties :: IO [LayerProperties]
 instanceLayerProperties = ($ pure) . runContT
@@ -48,18 +29,6 @@ instanceLayerProperties = ($ pure) . runContT
 		lift do	r <- C.instanceLayerProperties pLayerCount pLayerProps
 			throwUnlessSuccess $ Result r
 			peekArray layerCount pLayerProps
-
-data ExtensionProperties = ExtensionProperties {
-	extensionPropertiesExtensionName :: T.Text,
-	extensionPropertiesSpecVersion :: ApiVersion }
-	deriving Show
-
-extensionPropertiesFromCore :: C.ExtensionProperties -> ExtensionProperties
-extensionPropertiesFromCore C.ExtensionProperties {
-	C.extensionPropertiesExtensionName = en,
-	C.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
-		extensionPropertiesExtensionName = en,
-		extensionPropertiesSpecVersion = ApiVersion sv }
 
 instanceExtensionProperties :: Maybe T.Text -> IO [ExtensionProperties]
 instanceExtensionProperties mln = ($ pure) . runContT
