@@ -24,6 +24,8 @@ import Vulkan.Fence
 
 #include <vulkan/vulkan.h>
 
+import qualified Data.ByteString as BS
+
 type ApiVersion = #{type uint32_t}
 
 struct "ApplicationInfo" #{size VkApplicationInfo}
@@ -182,4 +184,26 @@ struct "ExtensionProperties" #{size VkExtensionProperties}
 	("specVersion", ''#{type uint32_t},
 		[| #{peek VkExtensionProperties, specVersion} |],
 		[| #{poke VkExtensionProperties, specVersion} |]) ]
+	[''Show, ''Storable]
+
+struct "LayerProperties" #{size VkLayerProperties}
+		#{alignment VkLayerProperties} [
+	("layerName", ''BS.ByteString,
+		[| \p -> BS.packCStringLen
+			(#{ptr VkLayerProperties, layerName} p,
+				#{const VK_MAX_EXTENSION_NAME_SIZE}) |],
+		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
+			(#{ptr VkLayerProperties, layerName} p) cs ln |]),
+	("specVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, specVersion} |],
+		[| #{poke VkLayerProperties, specVersion} |]),
+	("implementationVersion", ''#{type uint32_t},
+		[| #{peek VkLayerProperties, implementationVersion} |],
+		[| #{poke VkLayerProperties, implementationVersion} |]),
+	("description", ''BS.ByteString,
+		[| \p -> BS.packCStringLen
+			(#{ptr VkLayerProperties, description} p,
+				#{const VK_MAX_DESCRIPTION_SIZE}) |],
+		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
+			(#{ptr VkLayerProperties, description} p) cs ln |]) ]
 	[''Show, ''Storable]
