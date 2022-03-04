@@ -1,0 +1,53 @@
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>RSA</title>
+</head>
+
+<body>
+
+<h1>SELECT FILE</h1>
+
+<input id='inputFile' type='file' />
+<div>
+<textarea id='input' rows='16' cols='64'>foo bar</textarea>
+</div>
+<a id='btn' class='btn' download='sample.txt'>入力した内容を保存</a>
+
+
+<script>
+
+window.onload = function() {
+	btn.onclick = () => {
+		var content = input.value;
+		var blob = new Blob([content], { type: 'text/plain' });
+
+		btn.href = window.URL.createObjectURL(blob);
+	};
+
+	inputFile.onchange = async (e) => {
+		var file = e.currentTarget.files[0];
+		if (!file) return;
+
+		var text = await fetchAsText(file);
+
+		input.value = text;
+	};
+};
+
+var fetchAsText = (file) => {
+	return new Promise((resolve) => {
+		var fr = new FileReader();
+		fr.onload = (e) => {
+			resolve(e.currentTarget.result);
+		};
+
+		fr.readAsText(file);
+	});
+};
+
+</script>
+</body>
+
+</html>
