@@ -8,9 +8,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Control.Monad.Cont
 
-import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as T
-import qualified Data.Text.Encoding as T
 
 import Vulkan
 import Vulkan.Base
@@ -36,8 +34,7 @@ layerPropertiesFromCore C.LayerProperties {
 	layerPropertiesLayerName = ln,
 	layerPropertiesSpecVersion = ApiVersion sv,
 	layerPropertiesImplementationVersion = ApiVersion iv,
-	layerPropertiesDescription =
-		T.decodeUtf8 $ BSC.takeWhile (/= '\NUL') dsc }
+	layerPropertiesDescription = dsc }
 
 instanceLayerProperties :: IO [LayerProperties]
 instanceLayerProperties = ($ pure) . runContT

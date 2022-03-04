@@ -24,8 +24,6 @@ import Vulkan.Fence
 
 #include <vulkan/vulkan.h>
 
-import qualified Data.ByteString as BS
-
 type ApiVersion = #{type uint32_t}
 
 struct "ApplicationInfo" #{size VkApplicationInfo}
@@ -202,10 +200,12 @@ struct "LayerProperties" #{size VkLayerProperties}
 	("implementationVersion", ''#{type uint32_t},
 		[| #{peek VkLayerProperties, implementationVersion} |],
 		[| #{poke VkLayerProperties, implementationVersion} |]),
-	("description", ''BS.ByteString,
-		[| \p -> BS.packCStringLen
+	("description", ''Txt.Text,
+		[| \p -> Txt.takeWhile (/= '\NUL') <$> Txt.peekCStringLen
 			(#{ptr VkLayerProperties, description} p,
 				#{const VK_MAX_DESCRIPTION_SIZE}) |],
-		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
-			(#{ptr VkLayerProperties, description} p) cs ln |]) ]
+		[| \p bs -> Txt.withCStringLen bs \(cs, ln) -> do
+			copyBytes (#{ptr VkLayerProperties, description} p) cs ln
+			poke (#{ptr VkLayerProperties, description} p `plusPtr` ln :: Ptr CChar) 0
+			|]) ]
 	[''Show, ''Storable]
