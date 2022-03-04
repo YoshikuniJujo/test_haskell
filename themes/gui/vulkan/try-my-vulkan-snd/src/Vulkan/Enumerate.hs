@@ -33,7 +33,7 @@ layerPropertiesFromCore C.LayerProperties {
 	C.layerPropertiesSpecVersion = sv,
 	C.layerPropertiesImplementationVersion = iv,
 	C.layerPropertiesDescription = dsc } = LayerProperties {
-	layerPropertiesLayerName = T.decodeUtf8 $ BSC.takeWhile (/= '\NUL') ln,
+	layerPropertiesLayerName = ln,
 	layerPropertiesSpecVersion = ApiVersion sv,
 	layerPropertiesImplementationVersion = ApiVersion iv,
 	layerPropertiesDescription =

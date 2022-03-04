@@ -188,12 +188,14 @@ struct "ExtensionProperties" #{size VkExtensionProperties}
 
 struct "LayerProperties" #{size VkLayerProperties}
 		#{alignment VkLayerProperties} [
-	("layerName", ''BS.ByteString,
-		[| \p -> BS.packCStringLen
+	("layerName", ''Txt.Text,
+		[| \p -> Txt.takeWhile (/= '\NUL') <$> Txt.peekCStringLen
 			(#{ptr VkLayerProperties, layerName} p,
 				#{const VK_MAX_EXTENSION_NAME_SIZE}) |],
-		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
-			(#{ptr VkLayerProperties, layerName} p) cs ln |]),
+		[| \p bs -> Txt.withCStringLen bs \(cs, ln) -> do
+			copyBytes (#{ptr VkLayerProperties, layerName} p) cs ln
+			poke (#{ptr VkLayerProperties, layerName} p `plusPtr` ln :: Ptr CChar) 0
+			|]),
 	("specVersion", ''#{type uint32_t},
 		[| #{peek VkLayerProperties, specVersion} |],
 		[| #{poke VkLayerProperties, specVersion} |]),

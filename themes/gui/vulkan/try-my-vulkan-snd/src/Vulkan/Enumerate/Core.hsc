@@ -6,14 +6,9 @@
 module Vulkan.Enumerate.Core where
 
 import Foreign.Ptr
-import Foreign.Marshal.Utils
-import Foreign.Storable
 import Foreign.C.String
-import Foreign.C.Struct
 import Data.Word
 import Data.Int
-
-import qualified Data.ByteString as BS
 
 import Vulkan.Core
 
