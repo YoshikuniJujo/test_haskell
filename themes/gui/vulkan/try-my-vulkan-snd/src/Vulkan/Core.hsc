@@ -10,12 +10,14 @@ module Vulkan.Core where
 import Foreign.Ptr
 import Foreign.Marshal.Utils
 import Foreign.Storable
+import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import qualified Data.ByteString as BS
+import qualified Data.Text as Txt
+import qualified Data.Text.Foreign as Txt
 
 import Vulkan.Base
 import Vulkan.Fence
@@ -168,12 +170,14 @@ foreign import ccall "vkQueueWaitIdle" queueWaitIdle ::
 
 struct "ExtensionProperties" #{size VkExtensionProperties}
 		#{alignment VkExtensionProperties} [
-	("extensionName", ''BS.ByteString,
-		[| \p -> BS.packCStringLen
+	("extensionName", ''Txt.Text,
+		[| \p -> Txt.takeWhile (/= '\NUL') <$> Txt.peekCStringLen
 			(#{ptr VkExtensionProperties, extensionName} p,
 				#{const VK_MAX_EXTENSION_NAME_SIZE}) |],
-		[| \p bs -> BS.useAsCStringLen bs \(cs, ln) -> copyBytes
-			(#{ptr VkExtensionProperties, extensionName} p) cs ln |]
+		[| \p bs -> Txt.withCStringLen bs \(cs, ln) -> do
+			copyBytes (#{ptr VkExtensionProperties, extensionName} p) cs ln
+			poke (#{ptr VkExtensionProperties, extensionName} p `plusPtr` ln :: Ptr CChar) 0
+			|]
 		),
 	("specVersion", ''#{type uint32_t},
 		[| #{peek VkExtensionProperties, specVersion} |],

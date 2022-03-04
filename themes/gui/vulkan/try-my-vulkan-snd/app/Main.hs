@@ -28,7 +28,6 @@ import ThEnv
 import Vulkan.Base
 
 import qualified Data.Set as Set
-import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
@@ -337,7 +336,7 @@ checkDeviceExtensionSupport cdvc = ($ pure) $ runContT do
 	pAvailableExtensions <- ContT $ allocaArray extensionCount
 	lift do	_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
 			cdvc NullPtr pExtensionCount pAvailableExtensions
-		es <- map (BSC.takeWhile (/= '\NUL') . Vk.C.extensionPropertiesExtensionName)
+		es <- map Vk.C.extensionPropertiesExtensionName
 			<$> peekArray extensionCount pAvailableExtensions
 		print es
 		pure $ elem "VK_KHR_swapchain" es

@@ -61,8 +61,7 @@ extensionPropertiesFromCore :: C.ExtensionProperties -> ExtensionProperties
 extensionPropertiesFromCore C.ExtensionProperties {
 	C.extensionPropertiesExtensionName = en,
 	C.extensionPropertiesSpecVersion = sv } = ExtensionProperties {
-		extensionPropertiesExtensionName =
-			T.decodeUtf8 $ BSC.takeWhile (/= '\NUL') en,
+		extensionPropertiesExtensionName = en,
 		extensionPropertiesSpecVersion = ApiVersion sv }
 
 instanceExtensionProperties :: Maybe T.Text -> IO [ExtensionProperties]
