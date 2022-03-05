@@ -7,3 +7,4 @@ memo
 * [x] move struct LayerProperties of Vulkan.Enemerate.Core
 * [x] use Text instead of ByteString in LayerProperties
 * [x] move struct ExtensionProperties and LayerProperties from Vulkan.Enumerate
+* [ ] repair ExtensionProperties specVersion is not ApiVersion

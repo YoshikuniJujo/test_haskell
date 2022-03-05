@@ -316,7 +316,7 @@ isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
 	print =<< Vk.PhysicalDevice.getFeatures dvc
 
 	indices <- findQueueFamilies g dvc
-	extensionSupported <- checkDeviceExtensionSupport cdvc
+	extensionSupported <- checkDeviceExtensionSupport dvc
 	swapChainAdequate <- if extensionSupported
 		then do	swapChainSupport <- querySwapChainSupport g cdvc
 			pure $ not (null $ swapChainSupportDetailsFormats
@@ -326,8 +326,13 @@ isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
 		else pure False
 	pure $ isComplete indices && extensionSupported && swapChainAdequate
 
-checkDeviceExtensionSupport :: Vk.PhysicalDevice.C.PhysicalDevice -> IO Bool
-checkDeviceExtensionSupport cdvc = ($ pure) $ runContT do
+checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
+checkDeviceExtensionSupport dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
+	lift $ putStrLn "CHECK DEVICE EXTENSION SUPPORT"
+	lift $ putStrLn "foo"
+	lift $ print =<<
+		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
+	lift $ putStrLn "barbarbar"
 	pExtensionCount <- ContT alloca
 	(fromIntegral -> extensionCount) <- lift do
 		_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties

@@ -135,3 +135,22 @@ getSurfaceSupport (PhysicalDevice phdvc) qfi (Surface sfc) =
 		lift do	r <- C.getSurfaceSupport phdvc qfi sfc pSupported
 			throwUnlessSuccess $ Result r
 			peek pSupported
+
+enumerateExtensionProperties ::
+	PhysicalDevice -> Maybe T.Text -> IO [ExtensionProperties]
+enumerateExtensionProperties (PhysicalDevice pdvc) mlnm = ($ pure) $ runContT do
+	pExtensionCount <- ContT alloca
+	cmlnm <- case mlnm of
+		Nothing -> pure NullPtr
+		Just lnm -> textToCString lnm
+	(fromIntegral -> extensionCount) <- lift do
+		r <- C.enumerateExtensionProperties
+			pdvc cmlnm pExtensionCount NullPtr
+		throwUnlessSuccess $ Result r
+		peek pExtensionCount
+	pAvailableExtensions <- ContT $ allocaArray extensionCount
+	map extensionPropertiesFromCore <$> lift do
+		r <- C.enumerateExtensionProperties
+			pdvc cmlnm pExtensionCount pAvailableExtensions
+		throwUnlessSuccess $ Result r
+		peekArray extensionCount pAvailableExtensions
