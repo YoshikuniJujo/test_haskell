@@ -449,7 +449,7 @@ createLogicalDevice g@Global {
 				if enableValidationLayers
 					then validationLayers else [],
 			Vk.Device.createInfoEnabledExtensionNames =
-				["VK_KHR_swapchain"],
+				deviceExtensions,
 			Vk.Device.createInfoEnabledFeatures = deviceFeatures }
 	dvc <- Vk.Device.create @() @() @() phdvc createInfo Nothing
 	writeIORef rdvc dvc
