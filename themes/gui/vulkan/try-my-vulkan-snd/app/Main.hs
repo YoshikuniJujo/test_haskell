@@ -331,25 +331,16 @@ deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Sc.extensionName]
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
-checkDeviceExtensionSupport dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
+checkDeviceExtensionSupport dvc = ($ pure) $ runContT do
 	lift $ putStrLn "*** CHECK DEVICE EXTENSION SUPPORT ***"
 	availableExtensions <- lift
 		$ Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
 	lift $ putStrLn "SHOW EXTENSION PROPERTIES BEGIN"
 	lift $ print availableExtensions
 	lift $ putStrLn "SHOW EXTENSION PROPERTIES END"
-	pExtensionCount <- ContT alloca
-	(fromIntegral -> extensionCount) <- lift do
-		_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
-			cdvc NullPtr pExtensionCount NullPtr
-		peek pExtensionCount
-	pAvailableExtensions <- ContT $ allocaArray extensionCount
-	lift do	_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
-			cdvc NullPtr pExtensionCount pAvailableExtensions
-		es <- map Vk.C.extensionPropertiesExtensionName
-			<$> peekArray extensionCount pAvailableExtensions
-		print es
-		pure $ elem "VK_KHR_swapchain" es
+	let	requiredExtensions = Set.fromList deviceExtensions
+	pure . Set.null . foldr Set.delete requiredExtensions
+		$ Vk.extensionPropertiesExtensionName <$> availableExtensions
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Maybe Word32,
