@@ -65,6 +65,7 @@ library
       Vulkan.Framebuffer
       Vulkan.FrontFace
       Vulkan.Image
+      Vulkan.Image.Enum
       Vulkan.ImageView
       Vulkan.Instance
       Vulkan.Instance.Core
@@ -72,6 +73,7 @@ library
       Vulkan.Khr
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Core
+      Vulkan.Khr.Enum
       Vulkan.Khr.Present
       Vulkan.Khr.Surface
       Vulkan.Khr.Surface.Core

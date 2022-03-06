@@ -10,6 +10,8 @@ import qualified VulkanPhysicalDeviceEnum
 import qualified VulkanSampleEnum
 import qualified VulkanDeviceQueueEnum
 import qualified VulkanKhrSurfaceEnum
+import qualified VulkanKhrEnum
+import qualified VulkanImageEnum
 
 import qualified VulkanPipelineShaderStageEnum
 
@@ -23,5 +25,7 @@ main = do
 	VulkanSampleEnum.make
 	VulkanDeviceQueueEnum.make
 	VulkanKhrSurfaceEnum.make
+	VulkanKhrEnum.make
+	VulkanImageEnum.make
 
 	VulkanPipelineShaderStageEnum.make
