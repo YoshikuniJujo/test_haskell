@@ -58,6 +58,7 @@ import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Device.Core as Vk.Device.C
+import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 
 import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
@@ -325,6 +326,9 @@ isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
 					swapChainSupport)
 		else pure False
 	pure $ isComplete indices && extensionSupported && swapChainAdequate
+
+deviceExtensions :: [Txt.Text]
+deviceExtensions = [Vk.Khr.Sc.extensionName]
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
 checkDeviceExtensionSupport dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do

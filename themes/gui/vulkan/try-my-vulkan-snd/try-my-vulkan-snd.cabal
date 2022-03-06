@@ -76,6 +76,7 @@ library
       Vulkan.Khr.Surface
       Vulkan.Khr.Surface.Core
       Vulkan.Khr.Surface.PhysicalDevice
+      Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Core
       Vulkan.Logic
       Vulkan.PhysicalDevice
