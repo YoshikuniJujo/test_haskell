@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Khr.Surface.PhysicalDevice where
+module Vulkan.Khr.Surface.PhysicalDevice.Core where
 
 import Foreign.Ptr
 import Data.Word

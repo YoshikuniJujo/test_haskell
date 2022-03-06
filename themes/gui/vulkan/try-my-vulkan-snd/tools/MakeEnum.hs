@@ -84,8 +84,15 @@ makeEnum' src mnm elms (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 
 modNameToRemStr :: ModuleName -> (String, String)
 modNameToRemStr mnm = (filter (/= '.') $ removeTail ".Enum" mnm', rmt)
-	where (mnm', rmt) = if "Ext." `isPrefixOf` mnm
-		then (drop 4 mnm, "Ext") else (mnm, "")
+	where (mnm', rmt) = case spanWith '.' mnm of
+		Right ("Ext", rst) -> (rst, "Ext")
+		Right ("Khr", rst) -> (rst, "Khr")
+		_ -> (mnm, "")
+
+spanWith :: Eq a => a -> [a] -> Either [a] ([a], [a])
+spanWith x xs = case span (/= x) xs of
+	(pre, _ : pst) -> Right (pre, pst)
+	_ -> Left xs
 
 removeTail :: String -> String -> String
 removeTail rm str

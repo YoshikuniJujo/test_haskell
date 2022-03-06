@@ -62,8 +62,8 @@ import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 
 import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
-import qualified Vulkan.Khr.Surface.PhysicalDevice as
-	Vk.Khr.Sfc.PhysicalDevice
+import qualified Vulkan.Khr.Surface.PhysicalDevice.Core as
+	Vk.Khr.Sfc.PhysicalDevice.C
 
 import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
@@ -391,27 +391,27 @@ querySwapChainSupport Global {
 	Vk.Khr.Surface sfc <- lift $ readIORef rsfc
 	pCapabilities <- ContT alloca
 	cps <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.getCapabilities
+		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getCapabilities
 			dvc sfc pCapabilities
 		peek pCapabilities
 	pFormatCount <- ContT alloca
 	(fromIntegral -> formatCount) <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.getFormats
+		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats
 			dvc sfc pFormatCount NullPtr
 		peek pFormatCount
 	pFormats <- ContT $ allocaArray formatCount
 	fmts <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.getFormats
+		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats
 			dvc sfc pFormatCount pFormats
 		peekArray formatCount pFormats
 	pPresentModeCount <- ContT alloca
 	(fromIntegral -> presentModeCount) <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.getPresentModes
+		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
 			dvc sfc pPresentModeCount NullPtr
 		peek pPresentModeCount
 	pPresentModes <- ContT $ allocaArray presentModeCount
 	presentModes <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.getPresentModes
+		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
 			dvc sfc pPresentModeCount pPresentModes
 		peekArray presentModeCount pPresentModes
 	lift $ print presentModeCount
