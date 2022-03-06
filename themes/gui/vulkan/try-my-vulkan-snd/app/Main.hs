@@ -331,13 +331,9 @@ deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Sc.extensionName]
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
-checkDeviceExtensionSupport dvc = ($ pure) $ runContT do
-	lift $ putStrLn "*** CHECK DEVICE EXTENSION SUPPORT ***"
-	availableExtensions <- lift
-		$ Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
-	lift $ putStrLn "SHOW EXTENSION PROPERTIES BEGIN"
-	lift $ print availableExtensions
-	lift $ putStrLn "SHOW EXTENSION PROPERTIES END"
+checkDeviceExtensionSupport dvc = do
+	availableExtensions <-
+		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
 	let	requiredExtensions = Set.fromList deviceExtensions
 	pure . Set.null . foldr Set.delete requiredExtensions
 		$ Vk.extensionPropertiesExtensionName <$> availableExtensions
