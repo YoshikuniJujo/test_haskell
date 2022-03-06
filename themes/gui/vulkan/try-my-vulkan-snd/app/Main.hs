@@ -332,11 +332,12 @@ deviceExtensions = [Vk.Khr.Sc.extensionName]
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
 checkDeviceExtensionSupport dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
-	lift $ putStrLn "CHECK DEVICE EXTENSION SUPPORT"
-	lift $ putStrLn "foo"
-	lift $ print =<<
-		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
-	lift $ putStrLn "barbarbar"
+	lift $ putStrLn "*** CHECK DEVICE EXTENSION SUPPORT ***"
+	availableExtensions <- lift
+		$ Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
+	lift $ putStrLn "SHOW EXTENSION PROPERTIES BEGIN"
+	lift $ print availableExtensions
+	lift $ putStrLn "SHOW EXTENSION PROPERTIES END"
 	pExtensionCount <- ContT alloca
 	(fromIntegral -> extensionCount) <- lift do
 		_ <- Vk.PhysicalDevice.C.enumerateExtensionProperties
