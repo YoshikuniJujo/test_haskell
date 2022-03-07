@@ -28,4 +28,38 @@ enum "CompositeAlphaFlagBits" ''#{type VkCompositeAlphaFlagBitsKHR}
 	("CompositeAlphaFlagBitsMaxEnum",
 		#{const VK_COMPOSITE_ALPHA_FLAG_BITS_MAX_ENUM_KHR}) ]
 
+enum "ColorSpace" ''#{type VkColorSpaceKHR}
+		[''Show, ''Eq, ''Storable] [
+	("ColorSpaceSrgbNonlinear",
+		#{const VK_COLOR_SPACE_SRGB_NONLINEAR_KHR}),
+	("ColorSpaceDisplayP3NonlinearExt",
+		#{const VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT}),
+	("ColorSpaceExtendedSrgbLinearExt",
+		#{const VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT}),
+	("ColorSpaceDisplayP3LinearExt",
+		#{const VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT}),
+	("ColorSpaceDciP3NonlinearExt",
+		#{const VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT}),
+	("ColorSpaceBt709LinearExt", #{const VK_COLOR_SPACE_BT709_LINEAR_EXT}),
+	("ColorSpaceBt709NonlinearExt",
+		#{const VK_COLOR_SPACE_BT709_NONLINEAR_EXT}),
+	("ColorSpaceBt2020LinearExt",
+		#{const VK_COLOR_SPACE_BT2020_LINEAR_EXT}),
+	("ColorSpaceHdr10St2084Ext", #{const VK_COLOR_SPACE_HDR10_ST2084_EXT}),
+	("ColorSpaceDolbyvisionExt", #{const VK_COLOR_SPACE_DOLBYVISION_EXT}),
+	("ColorSpaceHdr10HlgExt", #{const VK_COLOR_SPACE_HDR10_HLG_EXT}),
+	("ColorSpaceAdobergbLinearExt",
+		#{const VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT}),
+	("ColorSpaceAdobergbNonlinearExt",
+		#{const VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT}),
+	("ColorSpacePassThroughExt", #{const VK_COLOR_SPACE_PASS_THROUGH_EXT}),
+	("ColorSpaceExtendedSrgbNonlinearExt",
+		#{const VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT}),
+	("ColorSpaceDisplayNativeAmd",
+		#{const VK_COLOR_SPACE_DISPLAY_NATIVE_AMD}),
+	("ColorspaceSrgbNonlinear",
+		#{const VK_COLORSPACE_SRGB_NONLINEAR_KHR}),
+	("ColorSpaceDciP3LinearExt", #{const VK_COLOR_SPACE_DCI_P3_LINEAR_EXT}),
+	("ColorSpaceMaxEnum", #{const VK_COLOR_SPACE_MAX_ENUM_KHR}) ]
+
 type CompositeAlphaFlags = CompositeAlphaFlagBits
