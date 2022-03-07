@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Khr.Surface.PhysicalDevice where
@@ -8,6 +9,7 @@ import Foreign.Storable
 import Control.Monad.Cont
 
 import Vulkan
+import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Khr
@@ -22,3 +24,16 @@ getCapabilities (PhysicalDevice pdvc) (Surface sfc) =
 		lift do	r <- C.getCapabilities pdvc sfc pCapabilities
 			throwUnlessSuccess $ Result r
 			peek pCapabilities
+
+getFormats :: PhysicalDevice -> Surface -> IO [Format]
+getFormats (PhysicalDevice pdvc) (Surface sfc) =
+	($ pure) . runContT $ map formatFromCore <$> do
+		pFormatCount <- ContT alloca
+		(fromIntegral -> formatCount) <- lift do
+			r <- C.getFormats pdvc sfc pFormatCount NullPtr
+			throwUnlessSuccess $ Result r
+			peek pFormatCount
+		pFormats <- ContT $ allocaArray formatCount
+		lift do	r <- C.getFormats pdvc sfc pFormatCount pFormats
+			throwUnlessSuccess $ Result r
+			peekArray formatCount pFormats

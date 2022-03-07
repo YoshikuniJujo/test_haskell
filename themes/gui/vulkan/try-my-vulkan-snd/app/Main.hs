@@ -392,6 +392,7 @@ querySwapChainSupport Global {
 	lift $ putStrLn "*** QUERY SWAP CHAIN SUPPORT ***"
 	sfc@(Vk.Khr.Surface csfc) <- lift $ readIORef rsfc
 	cps <- lift $ Vk.Khr.Sfc.PhysicalDevice.getCapabilities dvc sfc
+	lift $ print =<< Vk.Khr.Sfc.PhysicalDevice.getFormats dvc sfc
 	pFormatCount <- ContT alloca
 	(fromIntegral -> formatCount) <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats

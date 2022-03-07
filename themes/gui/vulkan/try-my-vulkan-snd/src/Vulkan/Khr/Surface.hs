@@ -15,14 +15,15 @@ import Vulkan.Khr.Enum
 import Vulkan.Khr.Surface.Enum
 
 import qualified Vulkan.Core as C
-import qualified Vulkan.Khr.Surface.Core as C
+import qualified Vulkan.Enum as E
+import qualified Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Vulkan.Image.Enum as Image
 
 destroy :: Pointable n =>
 	Instance -> Surface -> Maybe (AllocationCallbacks n) -> IO ()
 destroy (Instance ist) (Surface sfc) mac = ($ pure) $ runContT do
 	pac <- maybeToCore mac
-	lift $ C.destroy ist sfc pac
+	lift $ Sfc.C.destroy ist sfc pac
 
 data Capabilities = Capabilities {
 	capabilitiesMinImageCount :: Word32,
@@ -37,18 +38,18 @@ data Capabilities = Capabilities {
 	capabilitiesSupportedUsageFlags :: Image.UsageFlags }
 	deriving Show
 
-capabilitiesFromCore :: C.Capabilities -> Capabilities
-capabilitiesFromCore C.Capabilities {
-	C.capabilitiesMinImageCount = mnic,
-	C.capabilitiesMaxImageCount = mxic,
-	C.capabilitiesCurrentExtent = ce,
-	C.capabilitiesMinImageExtent = mnie,
-	C.capabilitiesMaxImageExtent = mxie,
-	C.capabilitiesMaxImageArrayLayers = mials,
-	C.capabilitiesSupportedTransforms = st,
-	C.capabilitiesCurrentTransform = ct,
-	C.capabilitiesSupportedCompositeAlpha = sca,
-	C.capabilitiesSupportedUsageFlags = suf
+capabilitiesFromCore :: Sfc.C.Capabilities -> Capabilities
+capabilitiesFromCore Sfc.C.Capabilities {
+	Sfc.C.capabilitiesMinImageCount = mnic,
+	Sfc.C.capabilitiesMaxImageCount = mxic,
+	Sfc.C.capabilitiesCurrentExtent = ce,
+	Sfc.C.capabilitiesMinImageExtent = mnie,
+	Sfc.C.capabilitiesMaxImageExtent = mxie,
+	Sfc.C.capabilitiesMaxImageArrayLayers = mials,
+	Sfc.C.capabilitiesSupportedTransforms = st,
+	Sfc.C.capabilitiesCurrentTransform = ct,
+	Sfc.C.capabilitiesSupportedCompositeAlpha = sca,
+	Sfc.C.capabilitiesSupportedUsageFlags = suf
 	} = Capabilities {
 		capabilitiesMinImageCount = mnic,
 		capabilitiesMaxImageCount = mxic,
@@ -61,3 +62,16 @@ capabilitiesFromCore C.Capabilities {
 		capabilitiesSupportedCompositeAlpha =
 			CompositeAlphaFlagBits sca,
 		capabilitiesSupportedUsageFlags = Image.UsageFlagBits suf }
+
+data Format = Format {
+	formatFormat :: E.Format,
+	formatColorSpace :: ColorSpace }
+	deriving Show
+
+formatFromCore :: Sfc.C.Format -> Format
+formatFromCore Sfc.C.Format {
+	Sfc.C.formatFormat = fmt,
+	Sfc.C.formatColorSpace = cs
+	} = Format {
+		formatFormat = E.Format fmt,
+		formatColorSpace = ColorSpace cs }
