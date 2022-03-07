@@ -36,3 +36,28 @@ data Capabilities = Capabilities {
 	capabilitiesSupportedCompositeAlpha :: CompositeAlphaFlags,
 	capabilitiesSupportedUsageFlags :: Image.UsageFlags }
 	deriving Show
+
+capabilitiesFromCore :: C.Capabilities -> Capabilities
+capabilitiesFromCore C.Capabilities {
+	C.capabilitiesMinImageCount = mnic,
+	C.capabilitiesMaxImageCount = mxic,
+	C.capabilitiesCurrentExtent = ce,
+	C.capabilitiesMinImageExtent = mnie,
+	C.capabilitiesMaxImageExtent = mxie,
+	C.capabilitiesMaxImageArrayLayers = mials,
+	C.capabilitiesSupportedTransforms = st,
+	C.capabilitiesCurrentTransform = ct,
+	C.capabilitiesSupportedCompositeAlpha = sca,
+	C.capabilitiesSupportedUsageFlags = suf
+	} = Capabilities {
+		capabilitiesMinImageCount = mnic,
+		capabilitiesMaxImageCount = mxic,
+		capabilitiesCurrentExtent = ce,
+		capabilitiesMinImageExtent = mnie,
+		capabilitiesMaxImageExtent = mxie,
+		capabilitiesMaxImageArrayLayers = mials,
+		capabilitiesSupportedTransforms = TransformFlagBits st,
+		capabilitiesCurrentTransform = TransformFlagBits ct,
+		capabilitiesSupportedCompositeAlpha =
+			CompositeAlphaFlagBits sca,
+		capabilitiesSupportedUsageFlags = Image.UsageFlagBits suf }

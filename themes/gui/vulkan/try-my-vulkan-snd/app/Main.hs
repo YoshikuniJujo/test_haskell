@@ -51,10 +51,11 @@ import qualified Vulkan.Device as Vk.Device
 
 import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
+import qualified Vulkan.Khr.Surface.Enum as Vk.Khr.Sfc
+import qualified Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
-import qualified Vulkan.PhysicalDevice.Core as Vk.PhysicalDevice.C
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Device.Core as Vk.Device.C
@@ -311,7 +312,7 @@ findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
 isDeviceSuitable :: Global -> Vk.PhysicalDevice -> IO Bool
-isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
+isDeviceSuitable g dvc = do
 	putStrLn "*** IS DEVICE SUITABLE ***"
 	print =<< Vk.PhysicalDevice.getProperties dvc
 	print =<< Vk.PhysicalDevice.getFeatures dvc
@@ -319,7 +320,7 @@ isDeviceSuitable g dvc@(Vk.PhysicalDevice cdvc) = do
 	indices <- findQueueFamilies g dvc
 	extensionSupported <- checkDeviceExtensionSupport dvc
 	swapChainAdequate <- if extensionSupported
-		then do	swapChainSupport <- querySwapChainSupport g cdvc
+		then do	swapChainSupport <- querySwapChainSupport g dvc
 			pure $ not (null $ swapChainSupportDetailsFormats
 					swapChainSupport) &&
 				not (null $ swapChainSupportDetailsPresentModes
@@ -379,40 +380,37 @@ checkGraphicsBitCore prop =
 	Vk.QueueFamily.C.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.C.Capabilities,
+	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
 	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.C.Format],
 	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
 	deriving Show
 
-querySwapChainSupport :: Global ->
-	Vk.PhysicalDevice.C.PhysicalDevice -> IO SwapChainSupportDetails
+querySwapChainSupport ::
+	Global -> Vk.PhysicalDevice -> IO SwapChainSupportDetails
 querySwapChainSupport Global {
-	globalSurface = rsfc } dvc = ($ pure) $ runContT do
-	Vk.Khr.Surface sfc <- lift $ readIORef rsfc
-	pCapabilities <- ContT alloca
-	cps <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getCapabilities
-			dvc sfc pCapabilities
-		peek pCapabilities
+	globalSurface = rsfc } dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
+	lift $ putStrLn "*** QUERY SWAP CHAIN SUPPORT ***"
+	sfc@(Vk.Khr.Surface csfc) <- lift $ readIORef rsfc
+	cps <- lift $ Vk.Khr.Sfc.PhysicalDevice.getCapabilities dvc sfc
 	pFormatCount <- ContT alloca
 	(fromIntegral -> formatCount) <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats
-			dvc sfc pFormatCount NullPtr
+			cdvc csfc pFormatCount NullPtr
 		peek pFormatCount
 	pFormats <- ContT $ allocaArray formatCount
 	fmts <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats
-			dvc sfc pFormatCount pFormats
+			cdvc csfc pFormatCount pFormats
 		peekArray formatCount pFormats
 	pPresentModeCount <- ContT alloca
 	(fromIntegral -> presentModeCount) <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
-			dvc sfc pPresentModeCount NullPtr
+			cdvc csfc pPresentModeCount NullPtr
 		peek pPresentModeCount
 	pPresentModes <- ContT $ allocaArray presentModeCount
 	presentModes <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
-			dvc sfc pPresentModeCount pPresentModes
+			cdvc csfc pPresentModeCount pPresentModes
 		peekArray presentModeCount pPresentModes
 	lift $ print presentModeCount
 	pure SwapChainSupportDetails {
@@ -466,8 +464,8 @@ createSwapChain g@Global {
 	} = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
 	Vk.Khr.Sc.C.CreateInfo_ fCreateInfo <- lift do
-		pdvc@(Vk.PhysicalDevice pd) <- readIORef rpdvc
-		swapChainSupport <- querySwapChainSupport g pd
+		pdvc <- readIORef rpdvc
+		swapChainSupport <- querySwapChainSupport g pdvc
 		Vk.Khr.Surface sfc <- readIORef rsfc
 		indices <- findQueueFamilies g pdvc
 		print indices
@@ -480,8 +478,8 @@ createSwapChain g@Global {
 				$ swapChainSupportDetailsPresentModes
 					swapChainSupport
 			extent = chooseSwapExtent cap
-			minImageCount = Vk.Khr.Sfc.C.capabilitiesMinImageCount cap
-			maxImageCount = Vk.Khr.Sfc.C.capabilitiesMaxImageCount cap
+			minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
+			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
 			imageCount = if maxImageCount > 0
 				then min (minImageCount + 1) maxImageCount
 				else minImageCount + 1
@@ -506,7 +504,8 @@ createSwapChain g@Global {
 				Vk.Khr.Sc.C.createInfoPQueueFamilyIndices =
 					NullPtr,
 				Vk.Khr.Sc.C.createInfoPreTransform =
-					Vk.Khr.Sfc.C.capabilitiesCurrentTransform
+					(\(Vk.Khr.Sfc.TransformFlagBits fb) -> fb)
+					$ Vk.Khr.Sfc.capabilitiesCurrentTransform
 						cap,
 				Vk.Khr.Sc.C.createInfoCompositeAlpha =
 					Vk.Khr.C.compositeAlphaOpaqueBit,
@@ -553,12 +552,12 @@ chooseSwapPresentMode availablePresentModes =
 		then Vk.Khr.Present.modeMailbox
 		else Vk.Khr.Present.modeFifo
 
-chooseSwapExtent :: Vk.Khr.Sfc.C.Capabilities -> Vk.C.Extent2d
+chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.C.Extent2d
 chooseSwapExtent capabilities =
 	if Vk.C.extent2dWidth ce /= uint32Max
 		then ce
 		else error "Ah!"
-	where ce = Vk.Khr.Sfc.C.capabilitiesCurrentExtent capabilities
+	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
 
 createImageViews :: Global -> IO ()
 createImageViews g = do
