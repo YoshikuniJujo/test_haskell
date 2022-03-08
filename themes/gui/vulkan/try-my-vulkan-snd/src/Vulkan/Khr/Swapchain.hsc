@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -7,7 +7,8 @@ module Vulkan.Khr.Swapchain where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
-import Foreign.Marshal.Array
+import Foreign.Marshal
+import Foreign.Storable
 import Control.Monad.Cont
 import Data.Word
 
@@ -16,6 +17,9 @@ import qualified Data.Text as T
 import Vulkan
 import Vulkan.Enum
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.Exception.Enum
+import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)
 import Vulkan.Image.Enum
 import Vulkan.Khr
 import Vulkan.Khr.Enum
@@ -95,3 +99,13 @@ createInfoToCore CreateInfo {
 			C.createInfoOldSwapchain = os }
 	ContT $ withForeignPtr fCreateInfo
 	where qfic = length qfis
+
+create :: (Pointable n, Pointable n') =>
+	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Swapchain
+create (Device dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
+	pci <- createInfoToCore ci
+	pac <- maybeToCore mac
+	psc <- ContT alloca
+	lift do	r <- C.create dvc pci pac psc
+		throwUnlessSuccess $ Result r
+		peek psc

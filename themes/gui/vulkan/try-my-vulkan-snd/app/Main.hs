@@ -432,20 +432,20 @@ createLogicalDevice g@Global {
 
 createSwapChain :: Global -> IO ()
 createSwapChain g@Global {
-	globalPhysicalDevice = rpdvc, globalDevice = rdvc, globalSurface = rsfc
+	globalPhysicalDevice = rphdvc, globalDevice = rdvc, globalSurface = rsfc
 	} = ($ pure) $ runContT do
 	lift $ putStrLn "*** CREATE SWAP CHAIN ***"
-	Vk.Device dvc <- lift $ readIORef rdvc
-	pdvc <- lift $ readIORef rpdvc
+	dvc@(Vk.Device pdvc) <- lift $ readIORef rdvc
+	phdvc <- lift $ readIORef rphdvc
 	sfc <- lift $ readIORef rsfc
-	scs <- lift $ querySwapChainSupport g pdvc
+	scs <- lift $ querySwapChainSupport g phdvc
 	let	surfaceFormat = chooseSwapSurfaceFormat
 			$ swapChainSupportDetailsFormats scs
 		presentMode = chooseSwapPresentMode
 			$ swapChainSupportDetailsPresentModes scs
 		cap = swapChainSupportDetailsCapabilities scs
 	extent <- lift $ chooseSwapExtent g cap
-	indices <- lift $ findQueueFamilies g pdvc
+	indices <- lift $ findQueueFamilies g phdvc
 	let	minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
 		maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
 		imageCount = if maxImageCount > 0
@@ -489,19 +489,15 @@ createSwapChain g@Global {
 		writeIORef swapChainImageFormat
 			. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
 		writeIORef swapChainExtent extent
-	pCreateInfo <- Vk.Khr.Sc.createInfoToCore @() createInfo
-	pSwapChain <- ContT alloca
 	sc <- lift do
-		r <- Vk.Khr.Sc.C.create dvc pCreateInfo NullPtr pSwapChain
-		when (r /= success) $ error "failed to create swap chain!"
-		sc <- peek pSwapChain
+		Vk.Khr.Swapchain sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
 		sc <$ writeIORef swapChain sc
 	pImageCount <- ContT alloca
 	(fromIntegral -> imageCount') <- lift do
-		_ <- Vk.Khr.Sc.C.getImages dvc sc pImageCount NullPtr
+		_ <- Vk.Khr.Sc.C.getImages pdvc sc pImageCount NullPtr
 		peek pImageCount
 	pSwapChainImages <- ContT $ allocaArray imageCount'
-	lift do	_ <- Vk.Khr.Sc.C.getImages dvc sc pImageCount pSwapChainImages
+	lift do	_ <- Vk.Khr.Sc.C.getImages pdvc sc pImageCount pSwapChainImages
 		writeIORef swapChainImages
 			=<< peekArray imageCount' pSwapChainImages
 
