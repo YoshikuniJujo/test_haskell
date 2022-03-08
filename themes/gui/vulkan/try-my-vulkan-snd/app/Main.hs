@@ -347,14 +347,16 @@ isComplete QueueFamilyIndices {
 
 findQueueFamilies :: Global -> Vk.PhysicalDevice -> IO QueueFamilyIndices
 findQueueFamilies Global { globalSurface = rsfc } dvc = do
-	putStrLn "*** FIND QUEUE FAMILIES ***"
+	putStrLn "*** FIND QUEUE FAMILIES BEGIN ***"
 	props <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
 	print props
 	sfc <- readIORef rsfc
 	pfi <- getPresentFamilyIndex sfc dvc (fromIntegral $ length props) 0
+	putStrLn "*** FIND QUEUE FAMILIES END ***"
+	props' <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
 	pure QueueFamilyIndices {
 		graphicsFamily = fromIntegral
-			<$> findIndex checkGraphicsBit props,
+			<$> findIndex checkGraphicsBit props',
 		presentFamily = pfi }
 
 getPresentFamilyIndex ::
@@ -429,24 +431,21 @@ createLogicalDevice g@Global {
 
 createSwapChain :: Global -> IO ()
 createSwapChain g@Global {
-	globalPhysicalDevice = rpdvc,
-	globalDevice = rdvc,
-	globalSurface = rsfc
+	globalPhysicalDevice = rpdvc, globalDevice = rdvc, globalSurface = rsfc
 	} = ($ pure) $ runContT do
+	lift $ putStrLn "*** CREATE SWAP CHAIN ***"
 	Vk.Device dvc <- lift $ readIORef rdvc
 	Vk.Khr.Sc.C.CreateInfo_ fCreateInfo <- lift do
 		pdvc <- readIORef rpdvc
-		swapChainSupport <- querySwapChainSupport g pdvc
 		Vk.Khr.Surface sfc <- readIORef rsfc
+		scs <- querySwapChainSupport g pdvc
 		indices <- findQueueFamilies g pdvc
 		print indices
-		let	cap = swapChainSupportDetailsCapabilities
-				swapChainSupport
-			surfaceFormat = chooseSwapSurfaceFormat
-				$ swapChainSupportDetailsFormats
-					swapChainSupport
+		let	surfaceFormat = chooseSwapSurfaceFormat
+				$ swapChainSupportDetailsFormats scs
 			Vk.Khr.PresentMode presentMode = chooseSwapPresentMode
-				$ swapChainSupportDetailsPresentModes swapChainSupport
+				$ swapChainSupportDetailsPresentModes scs
+			cap = swapChainSupportDetailsCapabilities scs
 		extent <- chooseSwapExtent g cap
 		let	minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
 			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
