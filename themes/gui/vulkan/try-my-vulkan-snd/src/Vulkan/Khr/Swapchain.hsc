@@ -109,3 +109,8 @@ create (Device dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
 	lift do	r <- C.create dvc pci pac psc
 		throwUnlessSuccess $ Result r
 		peek psc
+
+destroy :: Pointable n =>
+	Device -> Swapchain -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device dvc) (Swapchain sc) mac = ($ pure) . runContT
+	$ lift . C.destroy dvc sc =<< maybeToCore mac

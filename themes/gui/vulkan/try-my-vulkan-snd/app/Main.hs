@@ -117,9 +117,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChain :: IORef Vk.Khr.Sc.C.Swapchain
-swapChain = unsafePerformIO $ newIORef NullHandle
-
 swapChainImages :: IORef [Vk.Img.Image]
 swapChainImages = unsafePerformIO $ newIORef []
 
@@ -162,7 +159,8 @@ data Global = Global {
 	globalDevice :: IORef Vk.Device,
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalPresentQueue :: IORef Vk.Queue,
-	globalSurface :: IORef Vk.Khr.Surface
+	globalSurface :: IORef Vk.Khr.Surface,
+	globalSwapChain :: IORef Vk.Khr.Swapchain
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -174,6 +172,7 @@ newGlobal w = do
 	gq <- newIORef $ Vk.Queue NullPtr
 	pq <- newIORef $ Vk.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface NullPtr
+	sc <- newIORef $ Vk.Khr.Swapchain NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -182,7 +181,8 @@ newGlobal w = do
 		globalDevice = dvc,
 		globalGraphicsQueue = gq,
 		globalPresentQueue = pq,
-		globalSurface = sfc
+		globalSurface = sfc,
+		globalSwapChain = sc
 		}
 
 run :: IO ()
@@ -432,8 +432,10 @@ createLogicalDevice g@Global {
 
 createSwapChain :: Global -> IO ()
 createSwapChain g@Global {
-	globalPhysicalDevice = rphdvc, globalDevice = rdvc, globalSurface = rsfc
-	} = ($ pure) $ runContT do
+	globalPhysicalDevice = rphdvc,
+	globalDevice = rdvc,
+	globalSurface = rsfc,
+	globalSwapChain = rsc } = ($ pure) $ runContT do
 	lift $ putStrLn "*** CREATE SWAP CHAIN ***"
 	dvc@(Vk.Device pdvc) <- lift $ readIORef rdvc
 	phdvc <- lift $ readIORef rphdvc
@@ -489,15 +491,15 @@ createSwapChain g@Global {
 		writeIORef swapChainImageFormat
 			. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
 		writeIORef swapChainExtent extent
-	sc <- lift do
-		Vk.Khr.Swapchain sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
-		sc <$ writeIORef swapChain sc
+	Vk.Khr.Swapchain csc <- lift do
+		sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
+		sc <$ writeIORef rsc sc
 	pImageCount <- ContT alloca
 	(fromIntegral -> imageCount') <- lift do
-		_ <- Vk.Khr.Sc.C.getImages pdvc sc pImageCount NullPtr
+		_ <- Vk.Khr.Sc.C.getImages pdvc csc pImageCount NullPtr
 		peek pImageCount
 	pSwapChainImages <- ContT $ allocaArray imageCount'
-	lift do	_ <- Vk.Khr.Sc.C.getImages pdvc sc pImageCount pSwapChainImages
+	lift do	_ <- Vk.Khr.Sc.C.getImages pdvc csc pImageCount pSwapChainImages
 		writeIORef swapChainImages
 			=<< peekArray imageCount' pSwapChainImages
 
@@ -995,11 +997,12 @@ drawFrame :: Global -> IO ()
 drawFrame Global {
 	globalDevice = rdvc,
 	globalGraphicsQueue = rgq,
-	globalPresentQueue = rpq } = ($ pure) $ runContT do
+	globalPresentQueue = rpq,
+	globalSwapChain = rsc } = ($ pure) $ runContT do
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
 	Vk.Device dvc <- lift $ readIORef rdvc
-	sc <- lift $ readIORef swapChain
+	Vk.Khr.Swapchain sc <- lift $ readIORef rsc
 	ias <- lift $ readIORef imageAvailableSemaphore
 	lift do	r <- Vk.Khr.C.acquireNextImage
 			dvc sc uint64Max ias NullHandle pImageIndex
@@ -1032,7 +1035,7 @@ drawFrame Global {
 	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo NullHandle
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
-	lift $ pokeArray pSwapchains . (: []) =<< readIORef swapChain
+	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Swapchain s) -> s) =<< readIORef rsc
 	let	Vk.Khr.C.PresentInfo_ fPresentInfo = Vk.Khr.C.PresentInfo {
 			Vk.Khr.C.presentInfoSType = (),
 			Vk.Khr.C.presentInfoPNext = NullPtr,
@@ -1056,7 +1059,8 @@ cleanup Global {
 	globalInstance = rist,
 	globalDebugMessenger = rdmsgr,
 	globalDevice = rdvc,
-	globalSurface = rsfc } = do
+	globalSurface = rsfc,
+	globalSwapChain = rsc } = do
 	dvc@(Vk.Device cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1078,7 +1082,7 @@ cleanup Global {
 	Vk.RndrPss.destroy cdvc rp NullPtr
 	ivs <- readIORef swapChainImageViews
 	(\iv -> Vk.ImageView.destroy cdvc iv NullPtr) `mapM_` ivs
-	(\sc -> Vk.Khr.Sc.C.destroy cdvc sc NullPtr) =<< readIORef swapChain
+	(\sc -> Vk.Khr.Sc.destroy @() dvc sc Nothing) =<< readIORef rsc
 	Vk.Device.destroy @() dvc Nothing
 	ist <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy @() ist sfc Nothing) =<< readIORef rsfc
