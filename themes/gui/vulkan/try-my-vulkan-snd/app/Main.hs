@@ -447,8 +447,8 @@ createSwapChain g@Global {
 					swapChainSupport
 			Vk.Khr.PresentMode presentMode = chooseSwapPresentMode
 				$ swapChainSupportDetailsPresentModes swapChainSupport
-			extent = chooseSwapExtent cap
-			minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
+		extent <- chooseSwapExtent g cap
+		let	minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
 			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
 			imageCount = if maxImageCount > 0
 				then min (minImageCount + 1) maxImageCount
@@ -520,12 +520,21 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.C.Extent2d
-chooseSwapExtent capabilities =
-	if Vk.C.extent2dWidth ce /= uint32Max
-		then ce
-		else error "Ah!"
-	where ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
+chooseSwapExtent :: Global -> Vk.Khr.Sfc.Capabilities -> IO Vk.C.Extent2d
+chooseSwapExtent Global { globalWindow = win } capabilities =
+	if Vk.C.extent2dWidth ce /= uint32Max then pure ce else do
+		(fromIntegral -> w, fromIntegral -> h) <-
+			GlfwB.getFramebufferSize win
+		pure $ Vk.C.Extent2d
+			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
+			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
+	where
+	ce = Vk.Khr.Sfc.capabilitiesCurrentExtent capabilities
+	n = Vk.Khr.Sfc.capabilitiesMinImageExtent capabilities
+	x = Vk.Khr.Sfc.capabilitiesMaxImageExtent capabilities
+
+clamp :: Ord a => a -> a -> a -> a
+clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 createImageViews :: Global -> IO ()
 createImageViews g = do
