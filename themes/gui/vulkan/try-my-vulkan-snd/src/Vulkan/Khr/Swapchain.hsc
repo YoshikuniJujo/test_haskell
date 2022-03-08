@@ -114,3 +114,15 @@ destroy :: Pointable n =>
 	Device -> Swapchain -> Maybe (AllocationCallbacks n) -> IO ()
 destroy (Device dvc) (Swapchain sc) mac = ($ pure) . runContT
 	$ lift . C.destroy dvc sc =<< maybeToCore mac
+
+getImages :: Device -> Swapchain -> IO [Image]
+getImages (Device dvc) (Swapchain sc) = ($ pure) . runContT $ (Image <$>) <$> do
+	pSwapchainImageCount <- ContT alloca
+	(fromIntegral -> swapchainImageCount) <- lift do
+		r <- C.getImages dvc sc pSwapchainImageCount NullPtr
+		throwUnlessSuccess $ Result r
+		peek pSwapchainImageCount
+	pSwapchainImages <- ContT $ allocaArray swapchainImageCount
+	lift do	r <- C.getImages dvc sc pSwapchainImageCount pSwapchainImages
+		throwUnlessSuccess $ Result r
+		peekArray swapchainImageCount pSwapchainImages

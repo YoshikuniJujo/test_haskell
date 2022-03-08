@@ -64,11 +64,7 @@ import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 
 import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
-import qualified Vulkan.Khr.Present as Vk.Khr.Present
 
-import qualified Vulkan.Format as Vk.Format
-import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
-import qualified Vulkan.Khr.Swapchain.Core as Vk.Khr.Sc.C
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView as Vk.ImageView
@@ -117,9 +113,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainImages :: IORef [Vk.Img.Image]
-swapChainImages = unsafePerformIO $ newIORef []
-
 swapChainImageFormat :: IORef Vk.C.Format
 swapChainImageFormat = unsafePerformIO $ newIORef 0
 
@@ -160,7 +153,8 @@ data Global = Global {
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalPresentQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface,
-	globalSwapChain :: IORef Vk.Khr.Swapchain
+	globalSwapChain :: IORef Vk.Khr.Swapchain,
+	globalSwapChainImages :: IORef [Vk.Image]
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -173,6 +167,7 @@ newGlobal w = do
 	pq <- newIORef $ Vk.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface NullPtr
 	sc <- newIORef $ Vk.Khr.Swapchain NullPtr
+	scimgs <- newIORef []
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -182,7 +177,8 @@ newGlobal w = do
 		globalGraphicsQueue = gq,
 		globalPresentQueue = pq,
 		globalSurface = sfc,
-		globalSwapChain = sc
+		globalSwapChain = sc,
+		globalSwapChainImages = scimgs
 		}
 
 run :: IO ()
@@ -435,19 +431,20 @@ createSwapChain g@Global {
 	globalPhysicalDevice = rphdvc,
 	globalDevice = rdvc,
 	globalSurface = rsfc,
-	globalSwapChain = rsc } = ($ pure) $ runContT do
-	lift $ putStrLn "*** CREATE SWAP CHAIN ***"
-	dvc@(Vk.Device pdvc) <- lift $ readIORef rdvc
-	phdvc <- lift $ readIORef rphdvc
-	sfc <- lift $ readIORef rsfc
-	scs <- lift $ querySwapChainSupport g phdvc
+	globalSwapChain = rsc,
+	globalSwapChainImages = rscimgs } = do
+	putStrLn "*** CREATE SWAP CHAIN ***"
+	dvc <- readIORef rdvc
+	sfc <- readIORef rsfc
+	(indices, scs) <- readIORef rphdvc >>= \phdvc -> (,)
+		<$> findQueueFamilies g phdvc
+		<*> querySwapChainSupport g phdvc
 	let	surfaceFormat = chooseSwapSurfaceFormat
 			$ swapChainSupportDetailsFormats scs
 		presentMode = chooseSwapPresentMode
 			$ swapChainSupportDetailsPresentModes scs
 		cap = swapChainSupportDetailsCapabilities scs
-	extent <- lift $ chooseSwapExtent g cap
-	indices <- lift $ findQueueFamilies g phdvc
+	extent <- chooseSwapExtent g cap
 	let	minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
 		maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
 		imageCount = if maxImageCount > 0
@@ -481,27 +478,13 @@ createSwapChain g@Global {
 			Vk.Khr.Sc.createInfoPresentMode = presentMode,
 			Vk.Khr.Sc.createInfoClipped = True,
 			Vk.Khr.Sc.createInfoOldSwapchain = Nothing }
-	lift do	print surfaceFormat
-		print presentMode
-		print (Vk.Format.b8g8r8a8Srgb, Vk.Khr.ColorSpace.srgbNonlinear)
-		print Vk.Khr.Present.modeMailbox
-		print extent
-		print imageCount
-		print maxImageCount
-		writeIORef swapChainImageFormat
-			. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
-		writeIORef swapChainExtent extent
-	Vk.Khr.Swapchain csc <- lift do
-		sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
-		sc <$ writeIORef rsc sc
-	pImageCount <- ContT alloca
-	(fromIntegral -> imageCount') <- lift do
-		_ <- Vk.Khr.Sc.C.getImages pdvc csc pImageCount NullPtr
-		peek pImageCount
-	pSwapChainImages <- ContT $ allocaArray imageCount'
-	lift do	_ <- Vk.Khr.Sc.C.getImages pdvc csc pImageCount pSwapChainImages
-		writeIORef swapChainImages
-			=<< peekArray imageCount' pSwapChainImages
+	writeIORef swapChainImageFormat
+		. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
+	writeIORef swapChainExtent extent
+	sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
+	writeIORef rsc sc
+	imgs <- Vk.Khr.Sc.getImages dvc sc
+	writeIORef rscimgs imgs
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`
@@ -530,8 +513,8 @@ clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 createImageViews :: Global -> IO ()
-createImageViews g = do
-	scis <- readIORef swapChainImages
+createImageViews g@Global { globalSwapChainImages = rscimgs } = do
+	scis <- ((\(Vk.Image i) -> i) <$>) <$>  readIORef rscimgs
 	ivs <- createImageView1 g `mapM` scis
 	writeIORef swapChainImageViews ivs
 

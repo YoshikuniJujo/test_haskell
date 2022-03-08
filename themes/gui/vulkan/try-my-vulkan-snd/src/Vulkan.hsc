@@ -19,6 +19,7 @@ import qualified Vulkan.Core as C
 import qualified Vulkan.Instance.Core as Instance.C
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice.C
 import qualified Vulkan.Device.Core as Device.C
+import qualified Vulkan.Image as Image.C
 
 #include <vulkan/vulkan.h>
 
@@ -29,6 +30,8 @@ newtype PhysicalDevice = PhysicalDevice PhysicalDevice.C.PhysicalDevice deriving
 newtype Device = Device Device.C.Device deriving Show
 
 newtype Queue = Queue C.Queue deriving Show
+
+newtype Image = Image Image.C.Image deriving Show
 
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,
