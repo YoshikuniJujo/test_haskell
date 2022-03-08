@@ -515,4 +515,10 @@ enum "Format" ''#{type VkFormat}
 		#{const VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM_KHR}),
 	("FormatMaxEnum", #{const VK_FORMAT_MAX_ENUM}) ]
 
+enum "SharingMode" ''#{type VkSharingMode}
+		[''Show, ''Eq, ''Storable] [
+	("SharingModeExclusive", #{const VK_SHARING_MODE_EXCLUSIVE}),
+	("SharingModeConcurrent", #{const VK_SHARING_MODE_CONCURRENT}),
+	("SharingModeMaxEnum", #{const VK_SHARING_MODE_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits
