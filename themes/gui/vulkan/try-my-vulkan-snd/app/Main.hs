@@ -478,13 +478,12 @@ createSwapChain g@Global {
 			Vk.Khr.Sc.createInfoPresentMode = presentMode,
 			Vk.Khr.Sc.createInfoClipped = True,
 			Vk.Khr.Sc.createInfoOldSwapchain = Nothing }
+	sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
+	writeIORef rsc sc
+	writeIORef rscimgs =<< Vk.Khr.Sc.getImages dvc sc
 	writeIORef swapChainImageFormat
 		. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
 	writeIORef swapChainExtent extent
-	sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
-	writeIORef rsc sc
-	imgs <- Vk.Khr.Sc.getImages dvc sc
-	writeIORef rscimgs imgs
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`
