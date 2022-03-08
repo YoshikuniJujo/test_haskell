@@ -17,6 +17,7 @@ import Data.Word
 
 enum "CreateFlagBits" ''#{type VkSwapchainCreateFlagBitsKHR}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("CreateFlagsZero", 0),
 	("CreateSplitInstanceBindRegionsBit",
 		#{const VK_SWAPCHAIN_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR}),
 	("CreateProtectedBit",

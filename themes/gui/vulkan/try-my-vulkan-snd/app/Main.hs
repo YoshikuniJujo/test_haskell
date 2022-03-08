@@ -52,8 +52,8 @@ import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Khr.Enum as Vk.Khr
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
-import qualified Vulkan.Khr.Surface.Enum as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
+import qualified Vulkan.Image.Enum as Vk.Img
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
@@ -61,6 +61,7 @@ import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Device.Core as Vk.Device.C
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
+import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 
 import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
@@ -435,54 +436,50 @@ createSwapChain g@Global {
 	} = ($ pure) $ runContT do
 	lift $ putStrLn "*** CREATE SWAP CHAIN ***"
 	Vk.Device dvc <- lift $ readIORef rdvc
-	Vk.Khr.Sc.C.CreateInfo_ fCreateInfo <- lift do
-		pdvc <- readIORef rpdvc
-		Vk.Khr.Surface sfc <- readIORef rsfc
-		scs <- querySwapChainSupport g pdvc
-		indices <- findQueueFamilies g pdvc
-		print indices
-		let	surfaceFormat = chooseSwapSurfaceFormat
-				$ swapChainSupportDetailsFormats scs
-			Vk.Khr.PresentMode presentMode = chooseSwapPresentMode
-				$ swapChainSupportDetailsPresentModes scs
-			cap = swapChainSupportDetailsCapabilities scs
-		extent <- chooseSwapExtent g cap
-		let	minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
-			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
-			imageCount = if maxImageCount > 0
-				then min (minImageCount + 1) maxImageCount
-				else minImageCount + 1
-			createInfo' = Vk.Khr.Sc.C.CreateInfo {
-				Vk.Khr.Sc.C.createInfoSType = (),
-				Vk.Khr.Sc.C.createInfoPNext = NullPtr,
-				Vk.Khr.Sc.C.createInfoFlags = 0,
-				Vk.Khr.Sc.C.createInfoSurface = sfc,
-				Vk.Khr.Sc.C.createInfoMinImageCount = imageCount,
-				Vk.Khr.Sc.C.createInfoImageFormat =
-					Vk.Khr.Sfc.C.formatFormat
-						$ Vk.Khr.Sfc.formatToCore surfaceFormat,
-				Vk.Khr.Sc.C.createInfoImageColorSpace =
-					Vk.Khr.Sfc.C.formatColorSpace
-						$ Vk.Khr.Sfc.formatToCore surfaceFormat,
-				Vk.Khr.Sc.C.createInfoImageExtent = extent,
-				Vk.Khr.Sc.C.createInfoImageArrayLayers = 1,
-				Vk.Khr.Sc.C.createInfoImageUsage =
-					Vk.C.imageUsageColorAttachmentBit,
-				Vk.Khr.Sc.C.createInfoImageSharingMode =
-					Vk.C.sharingModeExclusive,
-				Vk.Khr.Sc.C.createInfoQueueFamilyIndexCount = 0,
-				Vk.Khr.Sc.C.createInfoPQueueFamilyIndices =
-					NullPtr,
-				Vk.Khr.Sc.C.createInfoPreTransform =
-					(\(Vk.Khr.Sfc.TransformFlagBits fb) -> fb)
-					$ Vk.Khr.Sfc.capabilitiesCurrentTransform
-						cap,
-				Vk.Khr.Sc.C.createInfoCompositeAlpha =
-					Vk.Khr.C.compositeAlphaOpaqueBit,
-				Vk.Khr.Sc.C.createInfoPresentMode = presentMode,
-				Vk.Khr.Sc.C.createInfoClipped = vkTrue,
-				Vk.Khr.Sc.C.createInfoOldSwapchain = NullHandle }
-		print surfaceFormat
+	pdvc <- lift $ readIORef rpdvc
+	sfc <- lift $ readIORef rsfc
+	scs <- lift $ querySwapChainSupport g pdvc
+	let	surfaceFormat = chooseSwapSurfaceFormat
+			$ swapChainSupportDetailsFormats scs
+		presentMode = chooseSwapPresentMode
+			$ swapChainSupportDetailsPresentModes scs
+		cap = swapChainSupportDetailsCapabilities scs
+	extent <- lift $ chooseSwapExtent g cap
+	indices <- lift $ findQueueFamilies g pdvc
+	let	minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
+		maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
+		imageCount = if maxImageCount > 0
+			then min (minImageCount + 1) maxImageCount
+			else minImageCount + 1
+		(smode, fis) = if graphicsFamily indices /= presentFamily indices
+			then (Vk.SharingModeConcurrent, [
+				fromJust $ graphicsFamily indices,
+				fromJust $ presentFamily indices ])
+			else (Vk.SharingModeExclusive, [])
+		createInfo = Vk.Khr.Sc.CreateInfo {
+			Vk.Khr.Sc.createInfoNext = Nothing,
+			Vk.Khr.Sc.createInfoFlags = Vk.Khr.Sc.CreateFlagsZero,
+			Vk.Khr.Sc.createInfoSurface = sfc,
+			Vk.Khr.Sc.createInfoMinImageCount = imageCount,
+			Vk.Khr.Sc.createInfoImageFormat =
+				Vk.Khr.Sfc.formatFormat surfaceFormat,
+			Vk.Khr.Sc.createInfoImageColorSpace =
+				Vk.Khr.Sfc.formatColorSpace surfaceFormat,
+			Vk.Khr.Sc.createInfoImageExtent = extent,
+			Vk.Khr.Sc.createInfoImageArrayLayers = 1,
+			Vk.Khr.Sc.createInfoImageUsage =
+				Vk.Img.UsageColorAttachmentBit,
+			Vk.Khr.Sc.createInfoImageSharingMode = smode,
+			Vk.Khr.Sc.createInfoQueueFamilyIndices = fis,
+			Vk.Khr.Sc.createInfoPreTransform =
+				Vk.Khr.Sfc.capabilitiesCurrentTransform
+					$ swapChainSupportDetailsCapabilities scs,
+			Vk.Khr.Sc.createInfoCompositeAlpha =
+				Vk.Khr.CompositeAlphaOpaqueBit,
+			Vk.Khr.Sc.createInfoPresentMode = presentMode,
+			Vk.Khr.Sc.createInfoClipped = True,
+			Vk.Khr.Sc.createInfoOldSwapchain = Nothing }
+	lift do	print surfaceFormat
 		print presentMode
 		print (Vk.Format.b8g8r8a8Srgb, Vk.Khr.ColorSpace.srgbNonlinear)
 		print Vk.Khr.Present.modeMailbox
@@ -492,8 +489,7 @@ createSwapChain g@Global {
 		writeIORef swapChainImageFormat
 			. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
 		writeIORef swapChainExtent extent
-		pure createInfo'
-	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pCreateInfo <- Vk.Khr.Sc.createInfoToCore @() createInfo
 	pSwapChain <- ContT alloca
 	sc <- lift do
 		r <- Vk.Khr.Sc.C.create dvc pCreateInfo NullPtr pSwapChain
@@ -501,13 +497,13 @@ createSwapChain g@Global {
 		sc <- peek pSwapChain
 		sc <$ writeIORef swapChain sc
 	pImageCount <- ContT alloca
-	(fromIntegral -> imageCount) <- lift do
+	(fromIntegral -> imageCount') <- lift do
 		_ <- Vk.Khr.Sc.C.getImages dvc sc pImageCount NullPtr
 		peek pImageCount
-	pSwapChainImages <- ContT $ allocaArray imageCount
+	pSwapChainImages <- ContT $ allocaArray imageCount'
 	lift do	_ <- Vk.Khr.Sc.C.getImages dvc sc pImageCount pSwapChainImages
 		writeIORef swapChainImages
-			=<< peekArray imageCount pSwapChainImages
+			=<< peekArray imageCount' pSwapChainImages
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`

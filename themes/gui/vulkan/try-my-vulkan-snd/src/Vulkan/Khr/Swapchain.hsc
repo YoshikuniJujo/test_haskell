@@ -46,7 +46,7 @@ data CreateInfo n = CreateInfo {
 	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
 	createInfoPresentMode :: PresentMode,
 	createInfoClipped :: Bool,
-	createInfoOldSwapchain :: Swapchain }
+	createInfoOldSwapchain :: Maybe Swapchain }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
@@ -66,12 +66,15 @@ createInfoToCore CreateInfo {
 	createInfoCompositeAlpha = CompositeAlphaFlagBits caf,
 	createInfoPresentMode = PresentMode pm,
 	createInfoClipped = clpd,
-	createInfoOldSwapchain = Swapchain os
+	createInfoOldSwapchain = mos
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	let	os = case mos of
+			Nothing -> wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+			Just (Swapchain s) -> s
+		C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,

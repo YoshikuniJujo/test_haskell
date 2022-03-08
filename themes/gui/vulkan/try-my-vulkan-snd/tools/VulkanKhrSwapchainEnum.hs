@@ -8,9 +8,10 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile' "/usr/include/vulkan/vulkan_core.h"
+make = createFile'' "/usr/include/vulkan/vulkan_core.h"
 		"Khr.Swapchain.Enum" ["Data.Bits", "Data.Word"] [
-	("CreateFlagBits", "VkSwapchainCreateFlagBitsKHR",
-		["Show", "Eq", "Storable", "Bits"]) ]
+	(	[("CreateFlagsZero", Int 0)],
+		("CreateFlagBits", "VkSwapchainCreateFlagBitsKHR",
+			["Show", "Eq", "Storable", "Bits"]) ) ]
 	[nowdoc|
 type CreateFlags = CreateFlagBits|]
