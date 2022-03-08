@@ -1,14 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Khr.Swapchain where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal.Array
+import Control.Monad.Cont
 import Data.Word
 
 import qualified Data.Text as T
 
 import Vulkan
 import Vulkan.Enum
+import Vulkan.Base
 import Vulkan.Image.Enum
 import Vulkan.Khr
 import Vulkan.Khr.Enum
@@ -26,7 +33,7 @@ extensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoFlagsSurface :: Surface,
+	createInfoSurface :: Surface,
 	createInfoMinImageCount :: Word32,
 	createInfoImageFormat :: Format,
 	createInfoImageColorSpace :: ColorSpace,
@@ -41,3 +48,47 @@ data CreateInfo n = CreateInfo {
 	createInfoClipped :: Bool,
 	createInfoOldSwapchain :: Swapchain }
 	deriving Show
+
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoSurface = Surface sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = Format ifmt,
+	createInfoImageColorSpace = ColorSpace ics,
+	createInfoImageExtent = iex,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = UsageFlagBits iusg,
+	createInfoImageSharingMode = SharingMode ism,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoPreTransform = TransformFlagBits pt,
+	createInfoCompositeAlpha = CompositeAlphaFlagBits caf,
+	createInfoPresentMode = PresentMode pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = Swapchain os
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pqfis <- ContT $ allocaArray qfic
+	lift $ pokeArray pqfis qfis
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoSurface = sfc,
+			C.createInfoMinImageCount = mic,
+			C.createInfoImageFormat = ifmt,
+			C.createInfoImageColorSpace = ics,
+			C.createInfoImageExtent = iex,
+			C.createInfoImageArrayLayers = ials,
+			C.createInfoImageUsage = iusg,
+			C.createInfoImageSharingMode = ism,
+			C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
+			C.createInfoPQueueFamilyIndices = pqfis,
+			C.createInfoPreTransform = pt,
+			C.createInfoCompositeAlpha = caf,
+			C.createInfoPresentMode = pm,
+			C.createInfoClipped = boolToBool32 clpd,
+			C.createInfoOldSwapchain = os }
+	ContT $ withForeignPtr fCreateInfo
+	where qfic = length qfis
