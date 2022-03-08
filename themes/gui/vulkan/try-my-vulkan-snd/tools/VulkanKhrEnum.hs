@@ -12,8 +12,7 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h"
 		"Khr.Enum" ["Data.Bits", "Data.Word"] [
 	("CompositeAlphaFlagBits", "VkCompositeAlphaFlagBitsKHR",
 		["Show", "Eq", "Storable", "Bits"]),
-	("ColorSpace", "VkColorSpaceKHR",
-		["Show", "Eq", "Storable"])
-	]
+	("ColorSpace", "VkColorSpaceKHR", ["Show", "Eq", "Storable"]),
+	("PresentMode", "VkPresentModeKHR", ["Show", "Eq", "Storable"]) ]
 	[nowdoc|
 type CompositeAlphaFlags = CompositeAlphaFlagBits|]

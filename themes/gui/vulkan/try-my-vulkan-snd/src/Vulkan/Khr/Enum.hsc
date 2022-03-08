@@ -62,4 +62,17 @@ enum "ColorSpace" ''#{type VkColorSpaceKHR}
 	("ColorSpaceDciP3LinearExt", #{const VK_COLOR_SPACE_DCI_P3_LINEAR_EXT}),
 	("ColorSpaceMaxEnum", #{const VK_COLOR_SPACE_MAX_ENUM_KHR}) ]
 
+enum "PresentMode" ''#{type VkPresentModeKHR}
+		[''Show, ''Eq, ''Storable] [
+	("PresentModeImmediate", #{const VK_PRESENT_MODE_IMMEDIATE_KHR}),
+	("PresentModeMailbox", #{const VK_PRESENT_MODE_MAILBOX_KHR}),
+	("PresentModeFifo", #{const VK_PRESENT_MODE_FIFO_KHR}),
+	("PresentModeFifoRelaxed",
+		#{const VK_PRESENT_MODE_FIFO_RELAXED_KHR}),
+	("PresentModeSharedDemandRefresh",
+		#{const VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR}),
+	("PresentModeSharedContinuousRefresh",
+		#{const VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR}),
+	("PresentModeMaxEnum", #{const VK_PRESENT_MODE_MAX_ENUM_KHR}) ]
+
 type CompositeAlphaFlags = CompositeAlphaFlagBits

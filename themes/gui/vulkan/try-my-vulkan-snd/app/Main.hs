@@ -64,8 +64,6 @@ import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 
 import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
 import qualified Vulkan.Khr.Present as Vk.Khr.Present
-import qualified Vulkan.Khr.Surface.PhysicalDevice.Core as
-	Vk.Khr.Sfc.PhysicalDevice.C
 
 import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Khr.ColorSpace as Vk.Khr.ColorSpace
@@ -383,33 +381,16 @@ checkGraphicsBitCore prop =
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
 	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.Format],
-	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
+	swapChainSupportDetailsPresentModes :: [Vk.Khr.PresentMode] }
 	deriving Show
 
 querySwapChainSupport ::
 	Global -> Vk.PhysicalDevice -> IO SwapChainSupportDetails
-querySwapChainSupport Global {
-	globalSurface = rsfc } dvc@(Vk.PhysicalDevice cdvc) = ($ pure) $ runContT do
-	lift $ putStrLn "*** QUERY SWAP CHAIN SUPPORT ***"
-	sfc@(Vk.Khr.Surface csfc) <- lift $ readIORef rsfc
-	cps <- lift $ Vk.Khr.Sfc.PhysicalDevice.getCapabilities dvc sfc
-	fmts <- lift $ Vk.Khr.Sfc.PhysicalDevice.getFormats dvc sfc
-	pPresentModeCount <- ContT alloca
-	(fromIntegral -> presentModeCount) <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
-			cdvc csfc pPresentModeCount NullPtr
-		peek pPresentModeCount
-	pPresentModes <- ContT $ allocaArray presentModeCount
-	presentModes <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
-			cdvc csfc pPresentModeCount pPresentModes
-		peekArray presentModeCount pPresentModes
-	lift $ print presentModeCount
-	pure SwapChainSupportDetails {
-		swapChainSupportDetailsCapabilities = cps,
-		swapChainSupportDetailsFormats = fmts,
-		swapChainSupportDetailsPresentModes = presentModes
-		}
+querySwapChainSupport Global { globalSurface = rsfc } dvc =
+	readIORef rsfc >>= \sfc -> SwapChainSupportDetails
+		<$> Vk.Khr.Sfc.PhysicalDevice.getCapabilities dvc sfc
+		<*> Vk.Khr.Sfc.PhysicalDevice.getFormats dvc sfc
+		<*> Vk.Khr.Sfc.PhysicalDevice.getPresentModes dvc sfc
 
 createLogicalDevice :: Global -> IO ()
 createLogicalDevice g@Global {
@@ -467,7 +448,7 @@ createSwapChain g@Global {
 				$ swapChainSupportDetailsFormats
 					swapChainSupport
 			presentMode = chooseSwapPresentMode
-				$ swapChainSupportDetailsPresentModes
+				. ((\(Vk.Khr.PresentMode pm) -> pm) <$>) $ swapChainSupportDetailsPresentModes
 					swapChainSupport
 			extent = chooseSwapExtent cap
 			minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
