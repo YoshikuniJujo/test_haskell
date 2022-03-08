@@ -445,9 +445,8 @@ createSwapChain g@Global {
 			surfaceFormat = chooseSwapSurfaceFormat
 				$ swapChainSupportDetailsFormats
 					swapChainSupport
-			presentMode = chooseSwapPresentMode
-				. ((\(Vk.Khr.PresentMode pm) -> pm) <$>) $ swapChainSupportDetailsPresentModes
-					swapChainSupport
+			Vk.Khr.PresentMode presentMode = chooseSwapPresentMode
+				$ swapChainSupportDetailsPresentModes swapChainSupport
 			extent = chooseSwapExtent cap
 			minImageCount = Vk.Khr.Sfc.capabilitiesMinImageCount cap
 			maxImageCount = Vk.Khr.Sfc.capabilitiesMaxImageCount cap
@@ -517,11 +516,9 @@ chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`
 		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
 		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
-chooseSwapPresentMode :: [Vk.Khr.Present.Mode] -> Vk.Khr.Present.Mode
-chooseSwapPresentMode availablePresentModes =
-	if Vk.Khr.Present.modeMailbox `elem` availablePresentModes
-		then Vk.Khr.Present.modeMailbox
-		else Vk.Khr.Present.modeFifo
+chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
+chooseSwapPresentMode =
+	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
 chooseSwapExtent :: Vk.Khr.Sfc.Capabilities -> Vk.C.Extent2d
 chooseSwapExtent capabilities =
