@@ -316,16 +316,14 @@ isDeviceSuitable g dvc = do
 	print =<< Vk.PhysicalDevice.getProperties dvc
 	print =<< Vk.PhysicalDevice.getFeatures dvc
 
-	indices <- findQueueFamilies g dvc
-	extensionSupported <- checkDeviceExtensionSupport dvc
-	swapChainAdequate <- if extensionSupported
-		then do	swapChainSupport <- querySwapChainSupport g dvc
-			pure $ not (null $ swapChainSupportDetailsFormats
-					swapChainSupport) &&
-				not (null $ swapChainSupportDetailsPresentModes
-					swapChainSupport)
-		else pure False
-	pure $ isComplete indices && extensionSupported && swapChainAdequate
+	(&&) <$> (isComplete <$> findQueueFamilies g dvc) <*> (
+		checkDeviceExtensionSupport dvc >>= bool (pure False)
+			((<$> querySwapChainSupport g dvc) \scs ->
+				nn (swapChainSupportDetailsFormats scs) &&
+				nn (swapChainSupportDetailsPresentModes scs)) )
+
+nn :: [a] -> Bool
+nn = not . null
 
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Sc.extensionName]
