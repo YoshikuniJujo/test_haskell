@@ -512,11 +512,10 @@ createSwapChain g@Global {
 			=<< peekArray imageCount pSwapChainImages
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
-chooseSwapSurfaceFormat availableFormats = fromMaybe (head availableFormats)
-	$ find (\f ->
+chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`
+	(`find` availableFormats) \f ->
 		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-		Vk.Khr.Sfc.formatColorSpace f ==
-			Vk.Khr.ColorSpaceSrgbNonlinear) availableFormats
+		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.Present.Mode] -> Vk.Khr.Present.Mode
 chooseSwapPresentMode availablePresentModes =
