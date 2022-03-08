@@ -75,3 +75,10 @@ formatFromCore Sfc.C.Format {
 	} = Format {
 		formatFormat = E.Format fmt,
 		formatColorSpace = ColorSpace cs }
+
+formatToCore :: Format -> Sfc.C.Format
+formatToCore Format {
+	formatFormat = E.Format fmt,
+	formatColorSpace = ColorSpace cs } = Sfc.C.Format {
+		Sfc.C.formatFormat = fmt,
+		Sfc.C.formatColorSpace = cs }

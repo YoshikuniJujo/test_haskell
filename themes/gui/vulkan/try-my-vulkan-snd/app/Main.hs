@@ -50,6 +50,7 @@ import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 
 import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Khr.Enum as Vk.Khr
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Surface.Enum as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
@@ -381,7 +382,7 @@ checkGraphicsBitCore prop =
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
-	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.C.Format],
+	swapChainSupportDetailsFormats :: [Vk.Khr.Sfc.Format],
 	swapChainSupportDetailsPresentModes :: [Vk.Khr.Present.Mode] }
 	deriving Show
 
@@ -392,17 +393,7 @@ querySwapChainSupport Global {
 	lift $ putStrLn "*** QUERY SWAP CHAIN SUPPORT ***"
 	sfc@(Vk.Khr.Surface csfc) <- lift $ readIORef rsfc
 	cps <- lift $ Vk.Khr.Sfc.PhysicalDevice.getCapabilities dvc sfc
-	lift $ print =<< Vk.Khr.Sfc.PhysicalDevice.getFormats dvc sfc
-	pFormatCount <- ContT alloca
-	(fromIntegral -> formatCount) <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats
-			cdvc csfc pFormatCount NullPtr
-		peek pFormatCount
-	pFormats <- ContT $ allocaArray formatCount
-	fmts <- lift do
-		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getFormats
-			cdvc csfc pFormatCount pFormats
-		peekArray formatCount pFormats
+	fmts <- lift $ Vk.Khr.Sfc.PhysicalDevice.getFormats dvc sfc
 	pPresentModeCount <- ContT alloca
 	(fromIntegral -> presentModeCount) <- lift do
 		_ <- Vk.Khr.Sfc.PhysicalDevice.C.getPresentModes
@@ -491,10 +482,11 @@ createSwapChain g@Global {
 				Vk.Khr.Sc.C.createInfoSurface = sfc,
 				Vk.Khr.Sc.C.createInfoMinImageCount = imageCount,
 				Vk.Khr.Sc.C.createInfoImageFormat =
-					Vk.Khr.Sfc.C.formatFormat surfaceFormat,
+					Vk.Khr.Sfc.C.formatFormat
+						$ Vk.Khr.Sfc.formatToCore surfaceFormat,
 				Vk.Khr.Sc.C.createInfoImageColorSpace =
 					Vk.Khr.Sfc.C.formatColorSpace
-						surfaceFormat,
+						$ Vk.Khr.Sfc.formatToCore surfaceFormat,
 				Vk.Khr.Sc.C.createInfoImageExtent = extent,
 				Vk.Khr.Sc.C.createInfoImageArrayLayers = 1,
 				Vk.Khr.Sc.C.createInfoImageUsage =
@@ -521,7 +513,7 @@ createSwapChain g@Global {
 		print imageCount
 		print maxImageCount
 		writeIORef swapChainImageFormat
-			$ Vk.Khr.Sfc.C.formatFormat surfaceFormat
+			. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
 		writeIORef swapChainExtent extent
 		pure createInfo'
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
@@ -540,12 +532,12 @@ createSwapChain g@Global {
 		writeIORef swapChainImages
 			=<< peekArray imageCount pSwapChainImages
 
-chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.C.Format] -> Vk.Khr.Sfc.C.Format
+chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = fromMaybe (head availableFormats)
 	$ find (\f ->
-		Vk.Khr.Sfc.C.formatFormat f == Vk.Format.b8g8r8a8Srgb &&
-		Vk.Khr.Sfc.C.formatColorSpace f ==
-			Vk.Khr.ColorSpace.srgbNonlinear) availableFormats
+		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+		Vk.Khr.Sfc.formatColorSpace f ==
+			Vk.Khr.ColorSpaceSrgbNonlinear) availableFormats
 
 chooseSwapPresentMode :: [Vk.Khr.Present.Mode] -> Vk.Khr.Present.Mode
 chooseSwapPresentMode availablePresentModes =
