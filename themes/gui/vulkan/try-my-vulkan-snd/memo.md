@@ -9,4 +9,4 @@ memo
 * [x] move struct ExtensionProperties and LayerProperties from Vulkan.Enumerate
 * [x] repair ExtensionProperties specVersion is not ApiVersion
 * [x] globalSwapChainImageFormat
-* [ ] globalSwapChainExtent
+* [x] globalSwapChainExtent

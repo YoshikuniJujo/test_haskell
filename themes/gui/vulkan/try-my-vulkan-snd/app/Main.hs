@@ -111,9 +111,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainExtent :: IORef Vk.C.Extent2d
-swapChainExtent = unsafePerformIO $ newIORef $ Vk.C.Extent2d 0 0
-
 swapChainImageViews :: IORef [Vk.ImageView.ImageView]
 swapChainImageViews = unsafePerformIO $ newIORef []
 
@@ -150,7 +147,8 @@ data Global = Global {
 	globalSurface :: IORef Vk.Khr.Surface,
 	globalSwapChain :: IORef Vk.Khr.Swapchain,
 	globalSwapChainImages :: IORef [Vk.Image],
-	globalSwapChainImageFormat :: IORef Vk.Format
+	globalSwapChainImageFormat :: IORef Vk.Format,
+	globalSwapChainExtent :: IORef Vk.C.Extent2d
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -165,6 +163,7 @@ newGlobal w = do
 	sc <- newIORef $ Vk.Khr.Swapchain NullPtr
 	scimgs <- newIORef []
 	scimgfmt <- newIORef $ Vk.FormatUndefined
+	scex <- newIORef $ Vk.C.Extent2d 0 0
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -176,7 +175,8 @@ newGlobal w = do
 		globalSurface = sfc,
 		globalSwapChain = sc,
 		globalSwapChainImages = scimgs,
-		globalSwapChainImageFormat = scimgfmt
+		globalSwapChainImageFormat = scimgfmt,
+		globalSwapChainExtent = scex
 		}
 
 run :: IO ()
@@ -431,7 +431,8 @@ createSwapChain g@Global {
 	globalSurface = rsfc,
 	globalSwapChain = rsc,
 	globalSwapChainImages = rscimgs,
-	globalSwapChainImageFormat = rscimgfmt } = do
+	globalSwapChainImageFormat = rscimgfmt,
+	globalSwapChainExtent = rscex } = do
 	putStrLn "*** CREATE SWAP CHAIN ***"
 	dvc <- readIORef rdvc
 	sfc <- readIORef rsfc
@@ -481,7 +482,7 @@ createSwapChain g@Global {
 	writeIORef rsc sc
 	writeIORef rscimgs =<< Vk.Khr.Sc.getImages dvc sc
 	writeIORef rscimgfmt $ Vk.Khr.Sfc.formatFormat surfaceFormat
-	writeIORef swapChainExtent extent
+	writeIORef rscex extent
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`
@@ -622,14 +623,16 @@ createRenderPass Global {
 		writeIORef renderPass =<< peek pRenderPass
 
 createGraphicsPipeline :: Global -> IO ()
-createGraphicsPipeline g@Global { globalDevice = rdvc } = ($ pure) $ runContT do
+createGraphicsPipeline g@Global {
+	globalDevice = rdvc,
+	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
 	vertShaderCode <- lift $ readFile "shaders/vert.spv"
 	fragShaderCode <- lift $ readFile "shaders/frag.spv"
 	vertShaderModule <- lift $ createShaderModule g vertShaderCode
 	fragShaderModule <- lift $ createShaderModule g fragShaderCode
 	cnm <- lift $ newCString "main"
-	sce <- lift $ readIORef swapChainExtent
+	sce <- lift $ readIORef rscex
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
 			Vk.Ppl.ShaderStage.createInfoSType = (),
 			Vk.Ppl.ShaderStage.createInfoPNext = NullPtr,
@@ -834,11 +837,12 @@ createFramebuffers g = do
 
 createFramebuffer1 :: Global -> Vk.ImageView.ImageView -> IO Framebuffer
 createFramebuffer1 Global {
-	globalDevice = rdvc } attachment = ($ pure) $ runContT do
+	globalDevice = rdvc,
+	globalSwapChainExtent = rscex } attachment = ($ pure) $ runContT do
 	rndrPss <- lift $ readIORef renderPass
 	attachments <- ContT $ allocaArray 1
 	lift $ pokeArray attachments [attachment]
-	sce <- lift $ readIORef swapChainExtent
+	sce <- lift $ readIORef rscex
 	let	Vk.Fb.CreateInfo_ fFramebufferInfo = Vk.Fb.CreateInfo {
 			Vk.Fb.createInfoSType = (),
 			Vk.Fb.createInfoPNext = NullPtr,
@@ -884,7 +888,7 @@ createCommandBuffers g = do
 	scfbs <- readIORef swapChainFramebuffers
 	cbs <- createCommandBuffersGen g (length scfbs)
 	writeIORef commandBuffers cbs
-	uncurry beginCommandBuffer1 `mapM_` zip cbs scfbs
+	uncurry (beginCommandBuffer1 g) `mapM_` zip cbs scfbs
 
 createCommandBuffersGen :: Global -> Int -> IO [Vk.C.CommandBuffer]
 createCommandBuffersGen Global {
@@ -903,8 +907,8 @@ createCommandBuffersGen Global {
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
-beginCommandBuffer1 :: Vk.C.CommandBuffer -> Framebuffer -> IO ()
-beginCommandBuffer1 cb fb = ($ pure) $ runContT do
+beginCommandBuffer1 :: Global -> Vk.C.CommandBuffer -> Framebuffer -> IO ()
+beginCommandBuffer1 Global { globalSwapChainExtent = rscex } cb fb = ($ pure) $ runContT do
 	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
 			Vk.CB.beginInfoSType = (),
 			Vk.CB.beginInfoPNext = NullPtr,
@@ -915,7 +919,7 @@ beginCommandBuffer1 cb fb = ($ pure) $ runContT do
 		when (r /= success)
 			$ error "failed to begin recording command buffer!"
 	rp <- lift $ readIORef renderPass
-	sce <- lift $ readIORef swapChainExtent
+	sce <- lift $ readIORef rscex
 	pClearColor <- ContT $ allocaArray 4
 	lift $ pokeArray pClearColor [0, 0, 0, 1]
 	let	Vk.RndrPss.BeginInfo_ fRenderPassInfo = Vk.RndrPss.BeginInfo {
