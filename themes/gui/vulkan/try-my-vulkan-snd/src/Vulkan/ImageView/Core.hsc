@@ -15,7 +15,7 @@ import Vulkan.Base
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Image as Image
-import qualified Vulkan.Component as Component
+import qualified Vulkan.Component.Core as Component
 
 #include <vulkan/vulkan.h>
 

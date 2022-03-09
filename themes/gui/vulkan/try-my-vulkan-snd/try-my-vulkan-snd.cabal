@@ -42,6 +42,8 @@ library
       Vulkan.CommandBuffer
       Vulkan.CommandPool
       Vulkan.Component
+      Vulkan.Component.Core
+      Vulkan.Component.Enum
       Vulkan.Core
       Vulkan.Cull
       Vulkan.Descriptor.SetLayout

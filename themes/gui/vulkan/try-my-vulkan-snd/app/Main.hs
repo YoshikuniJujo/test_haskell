@@ -67,7 +67,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image as Vk.Img
-import qualified Vulkan.Component as Vk.Component
+import qualified Vulkan.Component.Core as Vk.Component.C
 
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
@@ -528,15 +528,15 @@ createImageView1 Global {
 			Vk.ImageView.C.createInfoViewType = Vk.ImageView.C.type2d,
 			Vk.ImageView.C.createInfoFormat = fmt,
 			Vk.ImageView.C.createInfoComponents =
-				Vk.Component.Mapping {
-					Vk.Component.mappingR =
-						Vk.Component.swizzleIdentity,
-					Vk.Component.mappingG =
-						Vk.Component.swizzleIdentity,
-					Vk.Component.mappingB =
-						Vk.Component.swizzleIdentity,
-					Vk.Component.mappingA =
-						Vk.Component.swizzleIdentity },
+				Vk.Component.C.Mapping {
+					Vk.Component.C.mappingR =
+						Vk.Component.C.swizzleIdentity,
+					Vk.Component.C.mappingG =
+						Vk.Component.C.swizzleIdentity,
+					Vk.Component.C.mappingB =
+						Vk.Component.C.swizzleIdentity,
+					Vk.Component.C.mappingA =
+						Vk.Component.C.swizzleIdentity },
 			Vk.ImageView.C.createInfoSubresourceRange =
 				Vk.Img.SubresourceRange {
 					Vk.Img.subresourceRangeAspectMask =
