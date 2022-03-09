@@ -511,15 +511,14 @@ clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 createImageViews :: Global -> IO ()
-createImageViews g@Global { globalSwapChainImages = rscimgs } = do
-	scis <- ((\(Vk.Image i) -> i) <$>) <$>  readIORef rscimgs
-	ivs <- createImageView1 g `mapM` scis
-	writeIORef swapChainImageViews ivs
+createImageViews g@Global { globalSwapChainImages = rscimgs } =
+	writeIORef swapChainImageViews
+		=<< (createImageView1 g `mapM`) =<< readIORef rscimgs
 
-createImageView1 :: Global -> Vk.Img.Image -> IO Vk.ImageView.ImageView
+createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.ImageView
 createImageView1 Global {
 	globalDevice = rdvc,
-	globalSwapChainImageFormat = rscimgfmt } img = ($ pure) $ runContT do
+	globalSwapChainImageFormat = rscimgfmt } (Vk.Image img) = ($ pure) $ runContT do
 	Vk.Format fmt <- lift $ readIORef rscimgfmt
 	let	Vk.ImageView.CreateInfo_ fCreateInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoSType = (),
