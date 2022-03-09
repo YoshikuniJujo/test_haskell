@@ -63,8 +63,6 @@ import qualified Vulkan.Device.Core as Vk.Device.C
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 
-import qualified Vulkan.Khr.Surface.Core as Vk.Khr.Sfc.C
-
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView as Vk.ImageView
@@ -113,9 +111,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainImageFormat :: IORef Vk.C.Format
-swapChainImageFormat = unsafePerformIO $ newIORef 0
-
 swapChainExtent :: IORef Vk.C.Extent2d
 swapChainExtent = unsafePerformIO $ newIORef $ Vk.C.Extent2d 0 0
 
@@ -154,7 +149,8 @@ data Global = Global {
 	globalPresentQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface,
 	globalSwapChain :: IORef Vk.Khr.Swapchain,
-	globalSwapChainImages :: IORef [Vk.Image]
+	globalSwapChainImages :: IORef [Vk.Image],
+	globalSwapChainImageFormat :: IORef Vk.Format
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -168,6 +164,7 @@ newGlobal w = do
 	sfc <- newIORef $ Vk.Khr.Surface NullPtr
 	sc <- newIORef $ Vk.Khr.Swapchain NullPtr
 	scimgs <- newIORef []
+	scimgfmt <- newIORef $ Vk.FormatUndefined
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -178,7 +175,8 @@ newGlobal w = do
 		globalPresentQueue = pq,
 		globalSurface = sfc,
 		globalSwapChain = sc,
-		globalSwapChainImages = scimgs
+		globalSwapChainImages = scimgs,
+		globalSwapChainImageFormat = scimgfmt
 		}
 
 run :: IO ()
@@ -432,7 +430,8 @@ createSwapChain g@Global {
 	globalDevice = rdvc,
 	globalSurface = rsfc,
 	globalSwapChain = rsc,
-	globalSwapChainImages = rscimgs } = do
+	globalSwapChainImages = rscimgs,
+	globalSwapChainImageFormat = rscimgfmt } = do
 	putStrLn "*** CREATE SWAP CHAIN ***"
 	dvc <- readIORef rdvc
 	sfc <- readIORef rsfc
@@ -481,8 +480,7 @@ createSwapChain g@Global {
 	sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
 	writeIORef rsc sc
 	writeIORef rscimgs =<< Vk.Khr.Sc.getImages dvc sc
-	writeIORef swapChainImageFormat
-		. Vk.Khr.Sfc.C.formatFormat $ Vk.Khr.Sfc.formatToCore surfaceFormat
+	writeIORef rscimgfmt $ Vk.Khr.Sfc.formatFormat surfaceFormat
 	writeIORef swapChainExtent extent
 
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
@@ -518,8 +516,10 @@ createImageViews g@Global { globalSwapChainImages = rscimgs } = do
 	writeIORef swapChainImageViews ivs
 
 createImageView1 :: Global -> Vk.Img.Image -> IO Vk.ImageView.ImageView
-createImageView1 Global { globalDevice = rdvc } img = ($ pure) $ runContT do
-	fmt <- lift $ readIORef swapChainImageFormat
+createImageView1 Global {
+	globalDevice = rdvc,
+	globalSwapChainImageFormat = rscimgfmt } img = ($ pure) $ runContT do
+	Vk.Format fmt <- lift $ readIORef rscimgfmt
 	let	Vk.ImageView.CreateInfo_ fCreateInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoSType = (),
 			Vk.ImageView.createInfoPNext = NullPtr,
@@ -554,8 +554,10 @@ createImageView1 Global { globalDevice = rdvc } img = ($ pure) $ runContT do
 		peek pView
 
 createRenderPass :: Global -> IO ()
-createRenderPass Global { globalDevice = rdvc } = ($ pure) $ runContT do
-	scif <- lift $ readIORef swapChainImageFormat
+createRenderPass Global {
+	globalDevice = rdvc,
+	globalSwapChainImageFormat = rscimgfmt } = ($ pure) $ runContT do
+	Vk.Format scif <- lift $ readIORef rscimgfmt
 	let	Vk.Att.Description_ fColorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = 0,
 			Vk.Att.descriptionFormat = scif,

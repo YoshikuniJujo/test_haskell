@@ -8,5 +8,5 @@ memo
 * [x] use Text instead of ByteString in LayerProperties
 * [x] move struct ExtensionProperties and LayerProperties from Vulkan.Enumerate
 * [x] repair ExtensionProperties specVersion is not ApiVersion
-* [ ] globalSwapChainImageFormat
+* [x] globalSwapChainImageFormat
 * [ ] globalSwapChainExtent
