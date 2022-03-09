@@ -8,9 +8,15 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile' "/usr/include/vulkan/vulkan_core.h"
+make = createFile'' "/usr/include/vulkan/vulkan_core.h"
 		"Image.Enum" ["Data.Bits", "Data.Word"] [
-	("UsageFlagBits", "VkImageUsageFlagBits",
-		["Show", "Eq", "Storable", "Bits"]) ]
+	(	[("UsageFlagsZero", Int 0)],
+		("UsageFlagBits", "VkImageUsageFlagBits",
+			["Show", "Eq", "Storable", "Bits"])),
+	(	[("AspectFlagsZero", Int 0)],
+		("AspectFlagBits", "VkImageAspectFlagBits",
+			["Show", "Eq", "Storable", "Bits"]))
+	]
 	[nowdoc|
-type UsageFlags = UsageFlagBits|]
+type UsageFlags = UsageFlagBits
+type AspectFlags = AspectFlagBits|]

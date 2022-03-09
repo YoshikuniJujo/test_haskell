@@ -17,6 +17,7 @@ import Data.Word
 
 enum "UsageFlagBits" ''#{type VkImageUsageFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("UsageFlagsZero", 0),
 	("UsageTransferSrcBit", #{const VK_IMAGE_USAGE_TRANSFER_SRC_BIT}),
 	("UsageTransferDstBit", #{const VK_IMAGE_USAGE_TRANSFER_DST_BIT}),
 	("UsageSampledBit", #{const VK_IMAGE_USAGE_SAMPLED_BIT}),
@@ -40,4 +41,29 @@ enum "UsageFlagBits" ''#{type VkImageUsageFlagBits}
 	("UsageFlagBitsMaxEnum",
 		#{const VK_IMAGE_USAGE_FLAG_BITS_MAX_ENUM}) ]
 
+enum "AspectFlagBits" ''#{type VkImageAspectFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("AspectFlagsZero", 0),
+	("AspectColorBit", #{const VK_IMAGE_ASPECT_COLOR_BIT}),
+	("AspectDepthBit", #{const VK_IMAGE_ASPECT_DEPTH_BIT}),
+	("AspectStencilBit", #{const VK_IMAGE_ASPECT_STENCIL_BIT}),
+	("AspectMetadataBit", #{const VK_IMAGE_ASPECT_METADATA_BIT}),
+	("AspectPlane0Bit", #{const VK_IMAGE_ASPECT_PLANE_0_BIT}),
+	("AspectPlane1Bit", #{const VK_IMAGE_ASPECT_PLANE_1_BIT}),
+	("AspectPlane2Bit", #{const VK_IMAGE_ASPECT_PLANE_2_BIT}),
+	("AspectMemoryPlane0BitExt",
+		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT}),
+	("AspectMemoryPlane1BitExt",
+		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT}),
+	("AspectMemoryPlane2BitExt",
+		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT}),
+	("AspectMemoryPlane3BitExt",
+		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT}),
+	("AspectPlane0BitKhr", #{const VK_IMAGE_ASPECT_PLANE_0_BIT_KHR}),
+	("AspectPlane1BitKhr", #{const VK_IMAGE_ASPECT_PLANE_1_BIT_KHR}),
+	("AspectPlane2BitKhr", #{const VK_IMAGE_ASPECT_PLANE_2_BIT_KHR}),
+	("AspectFlagBitsMaxEnum",
+		#{const VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM}) ]
+
 type UsageFlags = UsageFlagBits
+type AspectFlags = AspectFlagBits
