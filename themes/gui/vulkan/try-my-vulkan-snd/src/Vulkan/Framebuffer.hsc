@@ -15,7 +15,7 @@ import Vulkan.Base
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.RenderPass as RenderPass
-import qualified Vulkan.ImageView as ImageView
+import qualified Vulkan.ImageView.Core as ImageView
 
 #include <vulkan/vulkan.h>
 

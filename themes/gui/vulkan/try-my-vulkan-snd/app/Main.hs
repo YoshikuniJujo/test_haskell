@@ -65,7 +65,7 @@ import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
-import qualified Vulkan.ImageView as Vk.ImageView
+import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image as Vk.Img
 import qualified Vulkan.Component as Vk.Component
 
@@ -111,7 +111,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainImageViews :: IORef [Vk.ImageView.ImageView]
+swapChainImageViews :: IORef [Vk.ImageView.C.ImageView]
 swapChainImageViews = unsafePerformIO $ newIORef []
 
 renderPass :: IORef Vk.RndrPss.RenderPass
@@ -515,19 +515,19 @@ createImageViews g@Global { globalSwapChainImages = rscimgs } =
 	writeIORef swapChainImageViews
 		=<< (createImageView1 g `mapM`) =<< readIORef rscimgs
 
-createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.ImageView
+createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.C.ImageView
 createImageView1 Global {
 	globalDevice = rdvc,
 	globalSwapChainImageFormat = rscimgfmt } (Vk.Image img) = ($ pure) $ runContT do
 	Vk.Format fmt <- lift $ readIORef rscimgfmt
-	let	Vk.ImageView.CreateInfo_ fCreateInfo = Vk.ImageView.CreateInfo {
-			Vk.ImageView.createInfoSType = (),
-			Vk.ImageView.createInfoPNext = NullPtr,
-			Vk.ImageView.createInfoFlags = 0,
-			Vk.ImageView.createInfoImage = img,
-			Vk.ImageView.createInfoViewType = Vk.ImageView.type2d,
-			Vk.ImageView.createInfoFormat = fmt,
-			Vk.ImageView.createInfoComponents =
+	let	Vk.ImageView.C.CreateInfo_ fCreateInfo = Vk.ImageView.C.CreateInfo {
+			Vk.ImageView.C.createInfoSType = (),
+			Vk.ImageView.C.createInfoPNext = NullPtr,
+			Vk.ImageView.C.createInfoFlags = 0,
+			Vk.ImageView.C.createInfoImage = img,
+			Vk.ImageView.C.createInfoViewType = Vk.ImageView.C.type2d,
+			Vk.ImageView.C.createInfoFormat = fmt,
+			Vk.ImageView.C.createInfoComponents =
 				Vk.Component.Mapping {
 					Vk.Component.mappingR =
 						Vk.Component.swizzleIdentity,
@@ -537,7 +537,7 @@ createImageView1 Global {
 						Vk.Component.swizzleIdentity,
 					Vk.Component.mappingA =
 						Vk.Component.swizzleIdentity },
-			Vk.ImageView.createInfoSubresourceRange =
+			Vk.ImageView.C.createInfoSubresourceRange =
 				Vk.Img.SubresourceRange {
 					Vk.Img.subresourceRangeAspectMask =
 						Vk.Img.aspectColorBit,
@@ -549,7 +549,7 @@ createImageView1 Global {
 	Vk.Device dvc <- lift $ readIORef rdvc
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pView <- ContT alloca
-	lift do	r <- Vk.ImageView.create dvc pCreateInfo NullPtr pView
+	lift do	r <- Vk.ImageView.C.create dvc pCreateInfo NullPtr pView
 		when (r /= success) $ error "failed to create image views!"
 		peek pView
 
@@ -834,7 +834,7 @@ createFramebuffers g = do
 	fbs <- createFramebuffer1 g `mapM` scivs
 	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Global -> Vk.ImageView.ImageView -> IO Framebuffer
+createFramebuffer1 :: Global -> Vk.ImageView.C.ImageView -> IO Framebuffer
 createFramebuffer1 Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } attachment = ($ pure) $ runContT do
@@ -1068,7 +1068,7 @@ cleanup Global {
 	rp <- readIORef renderPass
 	Vk.RndrPss.destroy cdvc rp NullPtr
 	ivs <- readIORef swapChainImageViews
-	(\iv -> Vk.ImageView.destroy cdvc iv NullPtr) `mapM_` ivs
+	(\iv -> Vk.ImageView.C.destroy cdvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy @() dvc sc Nothing) =<< readIORef rsc
 	Vk.Device.destroy @() dvc Nothing
 	ist <- readIORef rist
