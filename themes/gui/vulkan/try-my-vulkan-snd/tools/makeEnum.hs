@@ -13,6 +13,7 @@ import qualified VulkanKhrSurfaceEnum
 import qualified VulkanKhrEnum
 import qualified VulkanImageEnum
 import qualified VulkanKhrSwapchainEnum
+import qualified VulkanImageViewEnum
 
 import qualified VulkanPipelineShaderStageEnum
 
@@ -29,5 +30,6 @@ main = do
 	VulkanKhrEnum.make
 	VulkanImageEnum.make
 	VulkanKhrSwapchainEnum.make
+	VulkanImageViewEnum.make
 
 	VulkanPipelineShaderStageEnum.make
