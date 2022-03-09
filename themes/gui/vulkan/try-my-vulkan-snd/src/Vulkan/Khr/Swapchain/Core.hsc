@@ -17,7 +17,7 @@ import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Khr.Surface.Core as Surface
-import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Core as Image
 
 #include <vulkan/vulkan.h>
 

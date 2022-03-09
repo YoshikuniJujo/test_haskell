@@ -66,7 +66,7 @@ import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
-import qualified Vulkan.Image as Vk.Img
+import qualified Vulkan.Image.Core as Vk.Img.C
 import qualified Vulkan.Component.Core as Vk.Component.C
 
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
@@ -538,14 +538,14 @@ createImageView1 Global {
 					Vk.Component.C.mappingA =
 						Vk.Component.C.swizzleIdentity },
 			Vk.ImageView.C.createInfoSubresourceRange =
-				Vk.Img.SubresourceRange {
-					Vk.Img.subresourceRangeAspectMask =
-						Vk.Img.aspectColorBit,
-					Vk.Img.subresourceRangeBaseMipLevel = 0,
-					Vk.Img.subresourceRangeLevelCount = 1,
-					Vk.Img.subresourceRangeBaseArrayLayer =
+				Vk.Img.C.SubresourceRange {
+					Vk.Img.C.subresourceRangeAspectMask =
+						Vk.Img.C.aspectColorBit,
+					Vk.Img.C.subresourceRangeBaseMipLevel = 0,
+					Vk.Img.C.subresourceRangeLevelCount = 1,
+					Vk.Img.C.subresourceRangeBaseArrayLayer =
 						0,
-					Vk.Img.subresourceRangeLayerCount = 1 } }
+					Vk.Img.C.subresourceRangeLayerCount = 1 } }
 	Vk.Device dvc <- lift $ readIORef rdvc
 	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 	pView <- ContT alloca
@@ -568,14 +568,14 @@ createRenderPass Global {
 			Vk.Att.descriptionStencilStoreOp =
 				Vk.Att.storeOpDontCare,
 			Vk.Att.descriptionInitialLayout =
-				Vk.Img.layoutUndefined,
+				Vk.Img.C.layoutUndefined,
 			Vk.Att.descriptionFinalLayout =
-				Vk.Img.layoutPresentSrcKhr }
+				Vk.Img.C.layoutPresentSrcKhr }
 		Vk.Att.Reference_ fColorAttachmentRef =
 			Vk.Att.Reference {
 				Vk.Att.referenceAttachment = 0,
 				Vk.Att.referenceLayout =
-					Vk.Img.layoutColorAttachmentOptimal }
+					Vk.Img.C.layoutColorAttachmentOptimal }
 	pColorAttachment <- ContT $ withForeignPtr fColorAttachment
 	pColorAttachmentRef <- ContT $ withForeignPtr fColorAttachmentRef
 	let	Vk.Subpass.Description_ fSubpass = Vk.Subpass.Description {

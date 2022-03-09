@@ -19,7 +19,7 @@ import qualified Vulkan.Core as C
 import qualified Vulkan.Instance.Core as Instance.C
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice.C
 import qualified Vulkan.Device.Core as Device.C
-import qualified Vulkan.Image as Image.C
+import qualified Vulkan.Image.Core as Image.C
 
 #include <vulkan/vulkan.h>
 

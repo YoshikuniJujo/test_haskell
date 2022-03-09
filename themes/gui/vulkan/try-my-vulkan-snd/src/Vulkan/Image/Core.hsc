@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Image where
+module Vulkan.Image.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
