@@ -115,9 +115,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainImageViews :: IORef [Vk.ImageView.C.ImageView]
-swapChainImageViews = unsafePerformIO $ newIORef []
-
 renderPass :: IORef Vk.RndrPss.RenderPass
 renderPass = unsafePerformIO $ newIORef NullPtr
 
@@ -152,7 +149,8 @@ data Global = Global {
 	globalSwapChain :: IORef Vk.Khr.Swapchain,
 	globalSwapChainImages :: IORef [Vk.Image],
 	globalSwapChainImageFormat :: IORef Vk.Format,
-	globalSwapChainExtent :: IORef Vk.C.Extent2d
+	globalSwapChainExtent :: IORef Vk.C.Extent2d,
+	globalSwapChainImageViews :: IORef [Vk.ImageView]
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -168,6 +166,7 @@ newGlobal w = do
 	scimgs <- newIORef []
 	scimgfmt <- newIORef $ Vk.FormatUndefined
 	scex <- newIORef $ Vk.C.Extent2d 0 0
+	scivs <- newIORef []
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -180,7 +179,8 @@ newGlobal w = do
 		globalSwapChain = sc,
 		globalSwapChainImages = scimgs,
 		globalSwapChainImageFormat = scimgfmt,
-		globalSwapChainExtent = scex
+		globalSwapChainExtent = scex,
+		globalSwapChainImageViews = scivs
 		}
 
 run :: IO ()
@@ -515,9 +515,9 @@ clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 createImageViews :: Global -> IO ()
-createImageViews g@Global { globalSwapChainImages = rscimgs } =
-	writeIORef swapChainImageViews . ((\(Vk.ImageView iv) -> iv) <$>)
-		=<< (createImageView1 g `mapM`) =<< readIORef rscimgs
+createImageViews g@Global {
+	globalSwapChainImages = rscimgs, globalSwapChainImageViews = rscivs } =
+	writeIORef rscivs =<< (createImageView1 g `mapM`) =<< readIORef rscimgs
 
 createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView
 createImageView1 Global {
@@ -822,8 +822,8 @@ readFile fp = do
 	pure (pbuff, fileSize)
 
 createFramebuffers :: Global -> IO ()
-createFramebuffers g = do
-	scivs <- readIORef swapChainImageViews
+createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
+	scivs <- ((\(Vk.ImageView iv) -> iv) <$>) <$> readIORef rscivs
 	fbs <- createFramebuffer1 g `mapM` scivs
 	writeIORef swapChainFramebuffers fbs
 
@@ -1040,7 +1040,8 @@ cleanup Global {
 	globalDebugMessenger = rdmsgr,
 	globalDevice = rdvc,
 	globalSurface = rsfc,
-	globalSwapChain = rsc } = do
+	globalSwapChain = rsc,
+	globalSwapChainImageViews = rscivs } = do
 	dvc@(Vk.Device cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1060,7 +1061,7 @@ cleanup Global {
 	Vk.Ppl.Lyt.destroy cdvc pl NullPtr
 	rp <- readIORef renderPass
 	Vk.RndrPss.destroy cdvc rp NullPtr
-	ivs <- readIORef swapChainImageViews
+	ivs <- ((\(Vk.ImageView iv) -> iv) <$>) <$> readIORef rscivs
 	(\iv -> Vk.ImageView.C.destroy cdvc iv NullPtr) `mapM_` ivs
 	(\sc -> Vk.Khr.Sc.destroy @() dvc sc Nothing) =<< readIORef rsc
 	Vk.Device.destroy @() dvc Nothing
