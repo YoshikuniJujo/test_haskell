@@ -53,6 +53,7 @@ import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Khr.Enum as Vk.Khr
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
+import qualified Vulkan.Image as Vk.Img
 import qualified Vulkan.Image.Enum as Vk.Img
 
 import qualified Vulkan.Core as Vk.C
@@ -62,12 +63,15 @@ import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 import qualified Vulkan.Device.Core as Vk.Device.C
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
+import qualified Vulkan.ImageView as Vk.ImageView
+import qualified Vulkan.ImageView.Enum as Vk.ImageView
+import qualified Vulkan.Component as Vk.Component
+import qualified Vulkan.Component.Enum as Vk.Component
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
-import qualified Vulkan.Component.Core as Vk.Component.C
 
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
@@ -518,36 +522,37 @@ createImageViews g@Global { globalSwapChainImages = rscimgs } =
 createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.C.ImageView
 createImageView1 Global {
 	globalDevice = rdvc,
-	globalSwapChainImageFormat = rscimgfmt } (Vk.Image img) = ($ pure) $ runContT do
-	Vk.Format fmt <- lift $ readIORef rscimgfmt
-	let	Vk.ImageView.C.CreateInfo_ fCreateInfo = Vk.ImageView.C.CreateInfo {
-			Vk.ImageView.C.createInfoSType = (),
-			Vk.ImageView.C.createInfoPNext = NullPtr,
-			Vk.ImageView.C.createInfoFlags = 0,
-			Vk.ImageView.C.createInfoImage = img,
-			Vk.ImageView.C.createInfoViewType = Vk.ImageView.C.type2d,
-			Vk.ImageView.C.createInfoFormat = fmt,
-			Vk.ImageView.C.createInfoComponents =
-				Vk.Component.C.Mapping {
-					Vk.Component.C.mappingR =
-						Vk.Component.C.swizzleIdentity,
-					Vk.Component.C.mappingG =
-						Vk.Component.C.swizzleIdentity,
-					Vk.Component.C.mappingB =
-						Vk.Component.C.swizzleIdentity,
-					Vk.Component.C.mappingA =
-						Vk.Component.C.swizzleIdentity },
-			Vk.ImageView.C.createInfoSubresourceRange =
-				Vk.Img.C.SubresourceRange {
-					Vk.Img.C.subresourceRangeAspectMask =
-						Vk.Img.C.aspectColorBit,
-					Vk.Img.C.subresourceRangeBaseMipLevel = 0,
-					Vk.Img.C.subresourceRangeLevelCount = 1,
-					Vk.Img.C.subresourceRangeBaseArrayLayer =
+	globalSwapChainImageFormat = rscimgfmt } img = ($ pure) $ runContT do
+	fmt <- lift $ readIORef rscimgfmt
+	let	createInfo = Vk.ImageView.CreateInfo {
+			Vk.ImageView.createInfoNext = Nothing,
+			Vk.ImageView.createInfoFlags =
+				Vk.ImageView.CreateFlagsZero,
+			Vk.ImageView.createInfoImage = img,
+			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
+			Vk.ImageView.createInfoFormat = fmt,
+			Vk.ImageView.createInfoComponents =
+				Vk.Component.Mapping {
+					Vk.Component.mappingR =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingG =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingB =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingA =
+						Vk.Component.SwizzleIdentity },
+			Vk.ImageView.createInfoSubresourceRange =
+				Vk.Img.SubresourceRange {
+					Vk.Img.subresourceRangeAspectMask =
+						Vk.Img.AspectColorBit,
+					Vk.Img.subresourceRangeBaseMipLevel = 0,
+					Vk.Img.subresourceRangeLevelCount = 1,
+					Vk.Img.subresourceRangeBaseArrayLayer =
 						0,
-					Vk.Img.C.subresourceRangeLayerCount = 1 } }
+					Vk.Img.subresourceRangeLayerCount = 1 }
+			}
 	Vk.Device dvc <- lift $ readIORef rdvc
-	pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+	pCreateInfo <- Vk.ImageView.createInfoToCore @() createInfo
 	pView <- ContT alloca
 	lift do	r <- Vk.ImageView.C.create dvc pCreateInfo NullPtr pView
 		when (r /= success) $ error "failed to create image views!"

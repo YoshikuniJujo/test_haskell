@@ -27,8 +27,8 @@ data CreateInfo n = CreateInfo {
 	createInfoSubresourceRange :: SubresourceRange }
 	deriving Show
 
-createInfoToC :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
-createInfoToC CreateInfo {
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoImage = Image img,
