@@ -1061,8 +1061,8 @@ cleanup Global {
 	Vk.Ppl.Lyt.destroy cdvc pl NullPtr
 	rp <- readIORef renderPass
 	Vk.RndrPss.destroy cdvc rp NullPtr
-	ivs <- ((\(Vk.ImageView iv) -> iv) <$>) <$> readIORef rscivs
-	(\iv -> Vk.ImageView.C.destroy cdvc iv NullPtr) `mapM_` ivs
+	((\iv -> Vk.ImageView.destroy @() dvc iv Nothing) `mapM_`)
+		=<< readIORef rscivs
 	(\sc -> Vk.Khr.Sc.destroy @() dvc sc Nothing) =<< readIORef rsc
 	Vk.Device.destroy @() dvc Nothing
 	ist <- readIORef rist

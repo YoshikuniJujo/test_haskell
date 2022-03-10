@@ -62,4 +62,4 @@ foreign import ccall "vkCreateImageView" create ::
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyImageView" destroy ::
-	Device -> ImageView -> Ptr () -> IO ()
+	Device -> ImageView -> Ptr AllocationCallbacks -> IO ()

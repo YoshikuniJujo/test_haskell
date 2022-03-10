@@ -64,3 +64,8 @@ create (Device dvc) ci mac = ($ pure) . runContT $ ImageView <$> do
 	lift do	r <- C.create dvc pci pac pView
 		throwUnlessSuccess $ Result r
 		peek pView
+
+destroy :: Pointable n =>
+	Device -> ImageView -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device dvc) (ImageView iv) mac =
+	($ pure) . runContT $ lift . C.destroy dvc iv =<< maybeToCore mac
