@@ -516,14 +516,13 @@ clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 createImageViews :: Global -> IO ()
 createImageViews g@Global { globalSwapChainImages = rscimgs } =
-	writeIORef swapChainImageViews
+	writeIORef swapChainImageViews . ((\(Vk.ImageView iv) -> iv) <$>)
 		=<< (createImageView1 g `mapM`) =<< readIORef rscimgs
 
-createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.C.ImageView
+createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView
 createImageView1 Global {
-	globalDevice = rdvc,
-	globalSwapChainImageFormat = rscimgfmt } img = ($ pure) $ runContT do
-	fmt <- lift $ readIORef rscimgfmt
+	globalDevice = rdvc, globalSwapChainImageFormat = rscimgfmt } img = do
+	(dvc, fmt) <- (,) <$> readIORef rdvc <*> readIORef rscimgfmt
 	let	createInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoNext = Nothing,
 			Vk.ImageView.createInfoFlags =
@@ -531,32 +530,21 @@ createImageView1 Global {
 			Vk.ImageView.createInfoImage = img,
 			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
 			Vk.ImageView.createInfoFormat = fmt,
-			Vk.ImageView.createInfoComponents =
-				Vk.Component.Mapping {
-					Vk.Component.mappingR =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingG =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingB =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingA =
-						Vk.Component.SwizzleIdentity },
-			Vk.ImageView.createInfoSubresourceRange =
-				Vk.Img.SubresourceRange {
-					Vk.Img.subresourceRangeAspectMask =
-						Vk.Img.AspectColorBit,
-					Vk.Img.subresourceRangeBaseMipLevel = 0,
-					Vk.Img.subresourceRangeLevelCount = 1,
-					Vk.Img.subresourceRangeBaseArrayLayer =
-						0,
-					Vk.Img.subresourceRangeLayerCount = 1 }
-			}
-	Vk.Device dvc <- lift $ readIORef rdvc
-	pCreateInfo <- Vk.ImageView.createInfoToCore @() createInfo
-	pView <- ContT alloca
-	lift do	r <- Vk.ImageView.C.create dvc pCreateInfo NullPtr pView
-		when (r /= success) $ error "failed to create image views!"
-		peek pView
+			Vk.ImageView.createInfoComponents = cmp,
+			Vk.ImageView.createInfoSubresourceRange = srr }
+		cmp = Vk.Component.Mapping {
+			Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
+		srr = Vk.Img.SubresourceRange {
+			Vk.Img.subresourceRangeAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.subresourceRangeBaseMipLevel = 0,
+			Vk.Img.subresourceRangeLevelCount = 1,
+			Vk.Img.subresourceRangeBaseArrayLayer = 0,
+			Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.ImageView.create @() @() dvc createInfo Nothing
 
 createRenderPass :: Global -> IO ()
 createRenderPass Global {

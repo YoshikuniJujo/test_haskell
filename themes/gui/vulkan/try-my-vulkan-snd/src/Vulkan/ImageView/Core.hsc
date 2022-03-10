@@ -12,6 +12,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Image.Core as Image
@@ -57,7 +58,7 @@ type2d :: #{type VkImageViewType}
 type2d = #{const VK_IMAGE_VIEW_TYPE_2D}
 
 foreign import ccall "vkCreateImageView" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr ImageView ->
+	Device -> Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr ImageView ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyImageView" destroy ::
