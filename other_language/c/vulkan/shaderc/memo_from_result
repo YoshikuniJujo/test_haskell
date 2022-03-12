@@ -1,0 +1,35 @@
+// The following functions, operating on shaderc_compilation_result_t objects,
+// offer only the basic thread-safety guarantee.
+
+// Releases the resources held by the result object. It is invalid to use the
+// result object for any further operations.
+SHADERC_EXPORT void shaderc_result_release(shaderc_compilation_result_t result);
+
+// Returns the number of bytes of the compilation output data in a result
+// object.
+SHADERC_EXPORT size_t shaderc_result_get_length(const shaderc_compilation_result_t result);
+
+// Returns the number of warnings generated during the compilation.
+SHADERC_EXPORT size_t shaderc_result_get_num_warnings(
+    const shaderc_compilation_result_t result);
+
+// Returns the number of errors generated during the compilation.
+SHADERC_EXPORT size_t shaderc_result_get_num_errors(const shaderc_compilation_result_t result);
+
+// Returns the compilation status, indicating whether the compilation succeeded,
+// or failed due to some reasons, like invalid shader stage or compilation
+// errors.
+SHADERC_EXPORT shaderc_compilation_status shaderc_result_get_compilation_status(
+    const shaderc_compilation_result_t);
+
+// Returns a pointer to the start of the compilation output data bytes, either
+// SPIR-V binary or char string. When the source string is compiled into SPIR-V
+// binary, this is guaranteed to be castable to a uint32_t*. If the result
+// contains assembly text or preprocessed source text, the pointer will point to
+// the resulting array of characters.
+SHADERC_EXPORT const char* shaderc_result_get_bytes(const shaderc_compilation_result_t result);
+
+// Returns a null-terminated string that contains any error messages generated
+// during the compilation.
+SHADERC_EXPORT const char* shaderc_result_get_error_message(
+    const shaderc_compilation_result_t result);
