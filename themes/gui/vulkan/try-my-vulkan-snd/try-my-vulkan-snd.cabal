@@ -29,6 +29,7 @@ library
   exposed-modules:
       Data.Color
       Glfw
+      Shaderc.Core
       ThEnv
       Vulkan
       Vulkan.Access
@@ -128,6 +129,7 @@ library
       src
   pkgconfig-depends:
       vulkan
+    , shaderc
   build-depends:
       GLFW-b
     , base >=4.7 && <5
