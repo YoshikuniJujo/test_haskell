@@ -83,3 +83,9 @@ foreign import ccall "shaderc_result_get_error_message"
 
 shadercGlslVertexShader :: #{type shaderc_shader_kind}
 shadercGlslVertexShader = #{const shaderc_glsl_vertex_shader}
+
+shadercVertexShader :: #{type shaderc_shader_kind}
+shadercVertexShader = #{const shaderc_vertex_shader}
+
+shadercSourceLanguageHlsl :: #{type shaderc_source_language}
+shadercSourceLanguageHlsl = #{const shaderc_source_language_hlsl}

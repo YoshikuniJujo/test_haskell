@@ -19,10 +19,11 @@ import Shaderc.Core
 
 main :: IO ()
 main = do
-	(ops, as, es) <- getOpt Permute [assembly] <$> getArgs
+	(ops, as, es) <- getOpt Permute [assembly, hlsl] <$> getArgs
 	when (not $ null es) do
 		putStr `mapM_` es
 		exitFailure
+	print $ onlyLanguage ops
 	print as
 	let	(into, out) = getPair $ onlyInto ops
 
@@ -42,6 +43,9 @@ main = do
 	foo <- newCString "FOO"
 	bar <- newCString "BAR"
 	c_shaderc_compile_options_add_macro_definition opts foo 3 bar 3
+	when (elem Hlsl $ onlyLanguage ops)
+		$ c_shaderc_compile_options_set_source_language
+			opts shadercSourceLanguageHlsl
 
 	result <- into
 		compiler sourceText srcln shadercGlslVertexShader
@@ -70,13 +74,23 @@ pairs = [
 	(Assembly, (c_shaderc_compile_into_spv_assembly, "tmp.s")),
 	(Machine, (c_shaderc_compile_into_spv, "tmp.spv")) ]
 
-data Opt = Into Into deriving Show
+data Opt
+	= Into Into
+	| Language Language
+	deriving Show
 
 data Into = Assembly | Machine deriving (Show, Eq)
+data Language = Glsl | Hlsl deriving (Show, Eq)
 
 onlyInto :: [Opt] -> [Into]
 onlyInto [] = []
 onlyInto (Into t : os) = t : onlyInto os
+onlyInto (_ : os) = onlyInto os
+
+onlyLanguage :: [Opt] -> [Language]
+onlyLanguage [] = []
+onlyLanguage (Language l : os) = l : onlyLanguage os
+onlyLanguage (_ : os) = onlyLanguage os
 
 getPair :: [Into] -> (Run, FilePath)
 getPair [] = (c_shaderc_compile_into_spv, "tmp.spv")
@@ -84,3 +98,6 @@ getPair (t : ts) = fromMaybe (getPair ts) $ lookup t pairs
 
 assembly :: OptDescr Opt
 assembly = Option ['S'] [] (NoArg $ Into Assembly) "Compile only; do not assembler or link."
+
+hlsl :: OptDescr Opt
+hlsl = Option [] ["hlsl"] (NoArg $ Language Hlsl) "HLSL"
