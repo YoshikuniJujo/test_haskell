@@ -5,6 +5,7 @@ module Shaderc.Core where
 import Foreign.Ptr
 import Foreign.C.Types
 import Data.Word
+import Data.Int
 
 #include <shaderc/shaderc.h>
 
@@ -43,6 +44,14 @@ foreign import ccall "shaderc_compile_options_set_source_language"
 foreign import ccall "shaderc_compile_options_set_generate_debug_info"
 	c_shaderc_compile_options_set_generate_debug_info ::
 	ShadercCompileOptionsT -> IO ()
+
+foreign import ccall "shaderc_compile_options_set_optimization_level"
+	c_shaderc_compile_options_set_optimization_level ::
+	ShadercCompileOptionsT -> #{type shaderc_optimization_level} -> IO ()
+
+foreign import ccall "shaderc_compile_options_set_forced_version_profile"
+	c_shaderc_compile_options_set_forced_version_profile ::
+	ShadercCompileOptionsT -> #{type int} -> #{type shaderc_profile} -> IO()
 
 data ShadercCompilationResultTag
 type ShadercCompilationResultT = Ptr ShadercCompilationResultTag
