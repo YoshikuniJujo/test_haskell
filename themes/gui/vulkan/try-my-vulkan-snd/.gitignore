@@ -1,3 +1,4 @@
 .stack-work/
 *~
 /shaders/*.spv
+/tmp.spv
