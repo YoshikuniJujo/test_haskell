@@ -8,6 +8,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Control.Monad
 import Data.Maybe
+import Data.List
 import Data.Word
 import System.IO
 import System.Environment
@@ -22,27 +23,42 @@ main = do
 	when (not $ null es) do
 		putStr `mapM_` es
 		exitFailure
+	print as
 	let	(into, out) = getPair $ onlyInto ops
 
 	compiler <- c_shaderc_compiler_initialize
 
-	sourceText <- newCString "#version 450\nvoid main() {}"
+	src <- case as of
+		[] -> pure "#version 450\nvoid main() {}"
+		f : _ -> readFile f
+
+	let srcln = genericLength src
+
+	sourceText <- newCString src
 	inputFileName <- newCString "main.vert"
 	entryPointName <- newCString "main"
 
+	opts <- c_shaderc_compile_options_initialize
+	foo <- newCString "FOO"
+	bar <- newCString "BAR"
+	c_shaderc_compile_options_add_macro_definition opts foo 3 bar 3
+
 	result <- into
-		compiler sourceText 27 shadercGlslVertexShader
-		inputFileName entryPointName nullPtr
+		compiler sourceText srcln shadercGlslVertexShader
+		inputFileName entryPointName opts
 
 	ln <- c_shaderc_result_get_length result
 	bt <- c_shaderc_result_get_bytes result
 	print ln
+
+	putStr =<< peekCString =<< c_shaderc_result_get_error_message result
 
 	h <- openBinaryFile out WriteMode
 	hPutBuf h bt $ fromIntegral ln
 	hClose h
 
 	c_shaderc_result_release(result)
+	c_shaderc_compile_options_release opts
 	c_shaderc_compiler_release(compiler)
 
 type Run = ShadercCompilerT ->

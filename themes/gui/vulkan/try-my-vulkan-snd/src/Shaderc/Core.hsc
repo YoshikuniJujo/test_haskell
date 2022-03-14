@@ -27,11 +27,11 @@ foreign import ccall "shaderc_compile_options_initialize"
 
 foreign import ccall "shaderc_compile_options_clone"
 	c_shaderc_compile_options_clone ::
-	ShadercCompilationResultT -> IO ShadercCompileOptionsT
+	ShadercCompileOptionsT -> IO ShadercCompileOptionsT
 
 foreign import ccall "shaderc_compile_options_release"
 	c_shaderc_compile_options_release ::
-	ShadercCompilationResultT -> IO ()
+	ShadercCompileOptionsT -> IO ()
 
 foreign import ccall "shaderc_compile_options_add_macro_definition"
 	c_shaderc_compile_options_add_macro_definition ::
@@ -76,6 +76,10 @@ foreign import ccall "shaderc_result_get_length" c_shaderc_result_get_length ::
 
 foreign import ccall "shaderc_result_get_bytes" c_shaderc_result_get_bytes ::
 	ShadercCompilationResultT -> IO (Ptr CChar)
+
+foreign import ccall "shaderc_result_get_error_message"
+	c_shaderc_result_get_error_message ::
+	ShadercCompilationResultT -> IO CString
 
 shadercGlslVertexShader :: #{type shaderc_shader_kind}
 shadercGlslVertexShader = #{const shaderc_glsl_vertex_shader}
