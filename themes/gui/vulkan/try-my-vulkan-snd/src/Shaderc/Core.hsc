@@ -22,7 +22,7 @@ foreign import ccall "shaderc_compiler_release"
 data ShadercCompileOptionsTag
 type ShadercCompileOptionsT = Ptr ShadercCompileOptionsTag
 
-foreign import ccall "shaderc_coimpile_options_initialize"
+foreign import ccall "shaderc_compile_options_initialize"
 	c_shaderc_compile_options_initialize :: IO ShadercCompileOptionsT
 
 foreign import ccall "shaderc_compile_options_clone"
@@ -58,6 +58,12 @@ data ShadercCompilationResultTag
 type ShadercCompilationResultT = Ptr ShadercCompilationResultTag
 
 foreign import ccall "shaderc_compile_into_spv" c_shaderc_compile_into_spv ::
+	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
+	#{type shaderc_shader_kind} -> CString -> CString ->
+	ShadercCompileOptionsT -> IO ShadercCompilationResultT
+
+foreign import ccall "shaderc_compile_into_spv_assembly"
+	c_shaderc_compile_into_spv_assembly ::
 	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
 	ShadercCompileOptionsT -> IO ShadercCompilationResultT
