@@ -19,7 +19,9 @@ import Shaderc.Core
 
 main :: IO ()
 main = do
-	(ops, as, es) <- getOpt Permute [assembly, hlsl, debugInfo, optimizationLevel] <$> getArgs
+	(ops, as, es) <- getOpt Permute [
+		assembly, hlsl, debugInfo, optimizationLevel, preprocessedText
+		] <$> getArgs
 	when (not $ null es) do
 		putStr `mapM_` es
 		exitFailure
@@ -86,7 +88,8 @@ type Run = ShadercCompilerT ->
 pairs :: [(Into, (Run, FilePath))]
 pairs = [
 	(Assembly, (c_shaderc_compile_into_spv_assembly, "tmp.s")),
-	(Machine, (c_shaderc_compile_into_spv, "tmp.spv")) ]
+	(Machine, (c_shaderc_compile_into_spv, "tmp.spv")),
+	(PreprocessedText, (c_shaderc_compile_into_preprocessed_text, "tmp.txt"))]
 
 data Opt
 	= Into Into
@@ -95,7 +98,7 @@ data Opt
 	| OptimizationLevel OptimizationLevel
 	deriving (Show, Eq)
 
-data Into = Assembly | Machine deriving (Show, Eq)
+data Into = Assembly | Machine | PreprocessedText deriving (Show, Eq)
 data Language = Glsl | Hlsl deriving (Show, Eq)
 
 data OptimizationLevel
@@ -132,6 +135,9 @@ getPair (t : ts) = fromMaybe (getPair ts) $ lookup t pairs
 
 assembly :: OptDescr Opt
 assembly = Option ['S'] [] (NoArg $ Into Assembly) "Compile only; do not assembler or link."
+
+preprocessedText :: OptDescr Opt
+preprocessedText = Option ['E'] [] (NoArg $ Into PreprocessedText) "Only preprocess"
 
 hlsl :: OptDescr Opt
 hlsl = Option [] ["hlsl"] (NoArg $ Language Hlsl) "HLSL"

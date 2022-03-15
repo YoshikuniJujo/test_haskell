@@ -68,6 +68,12 @@ foreign import ccall "shaderc_compile_into_spv_assembly"
 	#{type shaderc_shader_kind} -> CString -> CString ->
 	ShadercCompileOptionsT -> IO ShadercCompilationResultT
 
+foreign import ccall "shaderc_compile_into_preprocessed_text"
+	c_shaderc_compile_into_preprocessed_text ::
+	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
+	#{type shaderc_shader_kind} -> CString -> CString ->
+	ShadercCompileOptionsT -> IO ShadercCompilationResultT
+
 foreign import ccall "shaderc_result_release" c_shaderc_result_release ::
 	ShadercCompilationResultT -> IO ()
 
