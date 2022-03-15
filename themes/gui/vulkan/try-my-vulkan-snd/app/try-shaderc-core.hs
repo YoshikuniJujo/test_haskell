@@ -18,10 +18,9 @@ import System.Exit
 import System.Console.GetOpt
 
 import Shaderc.Core
-import Shaderc.Result.Core
-import Shaderc.CompileOptions.Core
 import Shaderc.Include.Core
 
+import qualified Shaderc.Result.Core as Result
 import qualified Shaderc.CompileOptions.Core as CompileOptions
 
 main :: IO ()
@@ -67,23 +66,24 @@ main = do
 				OptimizationLevelSize -> optimizationLevelSize
 				OptimizationLevelPerformance ->
 					optimizationLevelPerformance
-	setIncludeCallbacks opts resolveFun resultReleaseFun nullPtr
+	CompileOptions.setIncludeCallbacks
+		opts resolveFun resultReleaseFun nullPtr
 
-	result <- into
+	rslt <- into
 		compiler sourceText srcln glslVertexShader
 		inputFileName entryPointName opts
 
-	ln <- resultGetLength result
-	bt <- resultGetBytes result
+	ln <- Result.getLength rslt
+	bt <- Result.getBytes rslt
 	print ln
 
-	putStr =<< peekCString =<< resultGetErrorMessage result
+	putStr =<< peekCString =<< Result.getErrorMessage rslt
 
 	h <- openBinaryFile out WriteMode
 	hPutBuf h bt $ fromIntegral ln
 	hClose h
 
-	resultRelease result
+	Result.release rslt
 	CompileOptions.release opts
 	compilerRelease compiler
 
