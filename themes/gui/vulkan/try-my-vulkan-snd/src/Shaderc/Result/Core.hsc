@@ -17,6 +17,15 @@ foreign import ccall "shaderc_result_release"
 foreign import ccall "shaderc_result_get_length"
 	getLength :: CompilationResultT -> IO #{type size_t}
 
+foreign import ccall "shaderc_result_get_num_warnings"
+	getNumWarnings :: CompilationResultT -> IO #{type size_t}
+
+foreign import ccall "shaderc_result_get_num_errors"
+	getNumErrors :: CompilationResultT -> IO #{type size_t}
+
+foreign import ccall "shaderc_result_get_compilation_status"
+	getCompilationStatus :: CompilationResultT -> IO CompilationStatus
+
 foreign import ccall "shaderc_result_get_bytes"
 	getBytes :: CompilationResultT -> IO (Ptr CChar)
 
