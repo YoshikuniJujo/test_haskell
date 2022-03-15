@@ -89,3 +89,13 @@ shadercVertexShader = #{const shaderc_vertex_shader}
 
 shadercSourceLanguageHlsl :: #{type shaderc_source_language}
 shadercSourceLanguageHlsl = #{const shaderc_source_language_hlsl}
+
+shadercOptimizationLevelZero :: #{type shaderc_optimization_level}
+shadercOptimizationLevelZero = #{const shaderc_optimization_level_zero}
+
+shadercOptimizationLevelSize :: #{type shaderc_optimization_level}
+shadercOptimizationLevelSize = #{const shaderc_optimization_level_size}
+
+shadercOptimizationLevelPerformance :: #{type shaderc_optimization_level}
+shadercOptimizationLevelPerformance =
+	#{const shaderc_optimization_level_performance}

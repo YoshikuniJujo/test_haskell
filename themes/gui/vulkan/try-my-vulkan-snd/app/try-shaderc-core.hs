@@ -19,11 +19,13 @@ import Shaderc.Core
 
 main :: IO ()
 main = do
-	(ops, as, es) <- getOpt Permute [assembly, hlsl] <$> getArgs
+	(ops, as, es) <- getOpt Permute [assembly, hlsl, debugInfo, optimizationLevel] <$> getArgs
 	when (not $ null es) do
 		putStr `mapM_` es
 		exitFailure
+	print ops
 	print $ onlyLanguage ops
+	print $ onlyOptimizationLevel ops
 	print as
 	let	(into, out) = getPair $ onlyInto ops
 
@@ -46,6 +48,18 @@ main = do
 	when (elem Hlsl $ onlyLanguage ops)
 		$ c_shaderc_compile_options_set_source_language
 			opts shadercSourceLanguageHlsl
+	when (elem DebugInfo ops)
+		$ c_shaderc_compile_options_set_generate_debug_info opts
+	case onlyOptimizationLevel ops of
+		[] -> pure ()
+		ols -> c_shaderc_compile_options_set_optimization_level opts
+			case last ols of
+				OptimizationLevelZero ->
+					shadercOptimizationLevelZero
+				OptimizationLevelSize ->
+					shadercOptimizationLevelSize
+				OptimizationLevelPerformance ->
+					shadercOptimizationLevelPerformance
 
 	result <- into
 		compiler sourceText srcln shadercGlslVertexShader
@@ -77,10 +91,24 @@ pairs = [
 data Opt
 	= Into Into
 	| Language Language
-	deriving Show
+	| DebugInfo
+	| OptimizationLevel OptimizationLevel
+	deriving (Show, Eq)
 
 data Into = Assembly | Machine deriving (Show, Eq)
 data Language = Glsl | Hlsl deriving (Show, Eq)
+
+data OptimizationLevel
+	= OptimizationLevelZero
+	| OptimizationLevelSize
+	| OptimizationLevelPerformance
+	deriving (Show, Eq)
+
+optimizationLevelFromStr :: String -> OptimizationLevel
+optimizationLevelFromStr "zero" = OptimizationLevelZero
+optimizationLevelFromStr "size" = OptimizationLevelSize
+optimizationLevelFromStr "performance" = OptimizationLevelPerformance
+optimizationLevelFromStr _ = OptimizationLevelZero
 
 onlyInto :: [Opt] -> [Into]
 onlyInto [] = []
@@ -92,6 +120,12 @@ onlyLanguage [] = []
 onlyLanguage (Language l : os) = l : onlyLanguage os
 onlyLanguage (_ : os) = onlyLanguage os
 
+onlyOptimizationLevel :: [Opt] -> [OptimizationLevel]
+onlyOptimizationLevel [] = []
+onlyOptimizationLevel (OptimizationLevel ol : os) =
+	ol : onlyOptimizationLevel os
+onlyOptimizationLevel (_ : os) = onlyOptimizationLevel os
+
 getPair :: [Into] -> (Run, FilePath)
 getPair [] = (c_shaderc_compile_into_spv, "tmp.spv")
 getPair (t : ts) = fromMaybe (getPair ts) $ lookup t pairs
@@ -101,3 +135,12 @@ assembly = Option ['S'] [] (NoArg $ Into Assembly) "Compile only; do not assembl
 
 hlsl :: OptDescr Opt
 hlsl = Option [] ["hlsl"] (NoArg $ Language Hlsl) "HLSL"
+
+debugInfo :: OptDescr Opt
+debugInfo = Option [] ["debug"] (NoArg DebugInfo) "Debug info"
+
+optimizationLevel :: OptDescr Opt
+optimizationLevel = Option [] ["opt"]
+	(ReqArg (OptimizationLevel . optimizationLevelFromStr)
+		"Optimization level")
+	"Optimization"
