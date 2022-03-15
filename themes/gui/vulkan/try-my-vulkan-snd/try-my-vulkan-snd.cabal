@@ -30,6 +30,7 @@ library
       Data.Color
       Glfw
       Shaderc.Core
+      Shaderc.Include.Core
       Shaderc.Options.Core
       ThEnv
       Vulkan

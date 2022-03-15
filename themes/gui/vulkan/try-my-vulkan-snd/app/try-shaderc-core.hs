@@ -4,6 +4,8 @@
 module Main where
 
 import Foreign.Ptr
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Control.Monad
@@ -17,6 +19,7 @@ import System.Console.GetOpt
 
 import Shaderc.Core
 import Shaderc.Options.Core
+import Shaderc.Include.Core
 
 main :: IO ()
 main = do
@@ -63,6 +66,7 @@ main = do
 					shadercOptimizationLevelSize
 				OptimizationLevelPerformance ->
 					shadercOptimizationLevelPerformance
+	setIncludeCallbacks opts resolveFun resultReleaseFun nullPtr
 
 	result <- into
 		compiler sourceText srcln shadercGlslVertexShader
@@ -151,3 +155,19 @@ optimizationLevel = Option [] ["opt"]
 	(ReqArg (OptimizationLevel . optimizationLevelFromStr)
 		"Optimization level")
 	"Optimization"
+
+resolveFun :: ResolveFn
+resolveFun ud cs1 tp cs2 nm = do
+	print ud
+	putStrLn =<< peekCString cs1
+	print tp
+	putStrLn =<< peekCString cs2
+	print nm
+	p <- malloc
+	poke p $ Result nullPtr 0 nullPtr 0 nullPtr
+	pure p
+
+resultReleaseFun :: ResultReleaseFn
+resultReleaseFun ud rslt = do
+	print ud
+	free rslt

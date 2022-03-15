@@ -7,6 +7,8 @@ import Foreign.C.Types
 import Data.Word
 import Data.Int
 
+import Shaderc.Include.Core
+
 #include <shaderc/shaderc.h>
 
 data ShadercCompileOptionsTag
@@ -62,3 +64,16 @@ shadercOptimizationLevelSize = #{const shaderc_optimization_level_size}
 shadercOptimizationLevelPerformance :: #{type shaderc_optimization_level}
 shadercOptimizationLevelPerformance =
 	#{const shaderc_optimization_level_performance}
+
+setIncludeCallbacks ::
+	ShadercCompileOptionsT -> ResolveFn -> ResultReleaseFn -> PtrVoid ->
+	IO ()
+setIncludeCallbacks opts rfn rrfn ud = do
+	prfn <- wrap_resolveFn rfn
+	prrfn <- wrap_resultReleaseFn rrfn
+	c_shaderc_compile_options_set_include_callbacks opts prfn prrfn ud
+
+foreign import ccall "shaderc_compile_options_set_include_callbacks"
+	c_shaderc_compile_options_set_include_callbacks ::
+	ShadercCompileOptionsT -> FunPtr ResolveFn -> FunPtr ResultReleaseFn ->
+	PtrVoid -> IO ()
