@@ -29,9 +29,9 @@ library
   exposed-modules:
       Data.Color
       Glfw
+      Shaderc.CompileOptions.Core
       Shaderc.Core
       Shaderc.Include.Core
-      Shaderc.Options.Core
       ThEnv
       Vulkan
       Vulkan.Access

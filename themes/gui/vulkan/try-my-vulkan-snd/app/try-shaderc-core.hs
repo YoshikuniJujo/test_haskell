@@ -18,7 +18,7 @@ import System.Exit
 import System.Console.GetOpt
 
 import Shaderc.Core
-import Shaderc.Options.Core
+import Shaderc.CompileOptions.Core
 import Shaderc.Include.Core
 
 main :: IO ()
@@ -86,9 +86,9 @@ main = do
 	c_shaderc_compile_options_release opts
 	compilerRelease(compiler)
 
-type Run = ShadercCompilerT ->
+type Run = CompilerT ->
 	Ptr CChar -> Word64 -> Word32 -> CString -> CString ->
-	ShadercCompileOptionsT -> IO ShadercCompilationResultT
+	CompileOptionsT -> IO CompilationResultT
 
 pairs :: [(Into, (Run, FilePath))]
 pairs = [

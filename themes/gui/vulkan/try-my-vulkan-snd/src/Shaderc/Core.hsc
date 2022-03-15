@@ -7,48 +7,49 @@ import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
 
-import Shaderc.Options.Core
-
 #include <shaderc/shaderc.h>
 
-data ShadercCompilerTag
-type ShadercCompilerT = Ptr ShadercCompilerTag
+data CompilerTag
+type CompilerT = Ptr CompilerTag
+
+data CompilationResultTag
+type CompilationResultT = Ptr CompilationResultTag
+
+data CompileOptionsTag
+type CompileOptionsT = Ptr CompileOptionsTag
 
 foreign import ccall "shaderc_compiler_initialize"
-	compilerInitialize :: IO ShadercCompilerT
+	compilerInitialize :: IO CompilerT
 
 foreign import ccall "shaderc_compiler_release"
-	compilerRelease :: ShadercCompilerT -> IO ()
-
-data ShadercCompilationResultTag
-type ShadercCompilationResultT = Ptr ShadercCompilationResultTag
+	compilerRelease :: CompilerT -> IO ()
 
 foreign import ccall "shaderc_compile_into_spv" compileIntoSpv ::
-	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
+	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	ShadercCompileOptionsT -> IO ShadercCompilationResultT
+	CompileOptionsT -> IO CompilationResultT
 
 foreign import ccall "shaderc_compile_into_spv_assembly"
 	compileIntoSpvAssembly ::
-	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
+	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	ShadercCompileOptionsT -> IO ShadercCompilationResultT
+	CompileOptionsT -> IO CompilationResultT
 
 foreign import ccall "shaderc_compile_into_preprocessed_text"
 	compileIntoPreprocessedText ::
-	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
+	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	ShadercCompileOptionsT -> IO ShadercCompilationResultT
+	CompileOptionsT -> IO CompilationResultT
 
 foreign import ccall "shaderc_result_release" resultRelease ::
-	ShadercCompilationResultT -> IO ()
+	CompilationResultT -> IO ()
 
 foreign import ccall "shaderc_result_get_length" resultGetLength ::
-	ShadercCompilationResultT -> IO #{type size_t}
+	CompilationResultT -> IO #{type size_t}
 
 foreign import ccall "shaderc_result_get_bytes" resultGetBytes ::
-	ShadercCompilationResultT -> IO (Ptr CChar)
+	CompilationResultT -> IO (Ptr CChar)
 
 foreign import ccall "shaderc_result_get_error_message"
 	resultGetErrorMessage ::
-	ShadercCompilationResultT -> IO CString
+	CompilationResultT -> IO CString
