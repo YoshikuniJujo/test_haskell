@@ -16,6 +16,7 @@ import System.Exit
 import System.Console.GetOpt
 
 import Shaderc.Core
+import Shaderc.Options.Core
 
 main :: IO ()
 main = do
