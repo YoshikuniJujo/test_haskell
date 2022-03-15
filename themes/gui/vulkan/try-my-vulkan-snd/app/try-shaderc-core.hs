@@ -18,6 +18,7 @@ import System.Exit
 import System.Console.GetOpt
 
 import Shaderc.Core
+import Shaderc.Result.Core
 import Shaderc.CompileOptions.Core
 import Shaderc.Include.Core
 

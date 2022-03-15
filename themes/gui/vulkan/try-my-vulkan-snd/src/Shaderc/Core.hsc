@@ -41,19 +41,6 @@ foreign import ccall "shaderc_compile_into_preprocessed_text"
 	#{type shaderc_shader_kind} -> CString -> CString ->
 	CompileOptionsT -> IO CompilationResultT
 
-foreign import ccall "shaderc_result_release" resultRelease ::
-	CompilationResultT -> IO ()
-
-foreign import ccall "shaderc_result_get_length" resultGetLength ::
-	CompilationResultT -> IO #{type size_t}
-
-foreign import ccall "shaderc_result_get_bytes" resultGetBytes ::
-	CompilationResultT -> IO (Ptr CChar)
-
-foreign import ccall "shaderc_result_get_error_message"
-	resultGetErrorMessage ::
-	CompilationResultT -> IO CString
-
 glslVertexShader :: #{type shaderc_shader_kind}
 glslVertexShader = #{const shaderc_glsl_vertex_shader}
 

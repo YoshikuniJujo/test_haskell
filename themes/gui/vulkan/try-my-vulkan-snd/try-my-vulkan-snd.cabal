@@ -32,6 +32,7 @@ library
       Shaderc.CompileOptions.Core
       Shaderc.Core
       Shaderc.Include.Core
+      Shaderc.Result.Core
       ThEnv
       Vulkan
       Vulkan.Access
