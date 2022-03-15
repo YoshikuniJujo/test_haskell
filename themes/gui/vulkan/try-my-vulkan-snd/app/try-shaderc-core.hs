@@ -55,23 +55,21 @@ main = do
 	CompileOptions.addMacroDefinition opts foo 3 bar 3
 	when (elem Hlsl $ onlyLanguage ops)
 		$ CompileOptions.setSourceLanguage
-			opts shadercSourceLanguageHlsl
+			opts sourceLanguageHlsl
 	when (elem DebugInfo ops)
 		$ CompileOptions.setGenerateDebugInfo opts
 	case onlyOptimizationLevel ops of
 		[] -> pure ()
 		ols -> CompileOptions.setOptimizationLevel opts
 			case last ols of
-				OptimizationLevelZero ->
-					shadercOptimizationLevelZero
-				OptimizationLevelSize ->
-					shadercOptimizationLevelSize
+				OptimizationLevelZero -> optimizationLevelZero
+				OptimizationLevelSize -> optimizationLevelSize
 				OptimizationLevelPerformance ->
-					shadercOptimizationLevelPerformance
+					optimizationLevelPerformance
 	setIncludeCallbacks opts resolveFun resultReleaseFun nullPtr
 
 	result <- into
-		compiler sourceText srcln shadercGlslVertexShader
+		compiler sourceText srcln glslVertexShader
 		inputFileName entryPointName opts
 
 	ln <- resultGetLength result

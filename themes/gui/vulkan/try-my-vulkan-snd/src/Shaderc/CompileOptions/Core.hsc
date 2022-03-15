@@ -41,25 +41,6 @@ foreign import ccall "shaderc_compile_options_set_forced_version_profile"
 	setForcedVersionProfile ::
 	CompileOptionsT -> #{type int} -> #{type shaderc_profile} -> IO()
 
-shadercGlslVertexShader :: #{type shaderc_shader_kind}
-shadercGlslVertexShader = #{const shaderc_glsl_vertex_shader}
-
-shadercVertexShader :: #{type shaderc_shader_kind}
-shadercVertexShader = #{const shaderc_vertex_shader}
-
-shadercSourceLanguageHlsl :: #{type shaderc_source_language}
-shadercSourceLanguageHlsl = #{const shaderc_source_language_hlsl}
-
-shadercOptimizationLevelZero :: #{type shaderc_optimization_level}
-shadercOptimizationLevelZero = #{const shaderc_optimization_level_zero}
-
-shadercOptimizationLevelSize :: #{type shaderc_optimization_level}
-shadercOptimizationLevelSize = #{const shaderc_optimization_level_size}
-
-shadercOptimizationLevelPerformance :: #{type shaderc_optimization_level}
-shadercOptimizationLevelPerformance =
-	#{const shaderc_optimization_level_performance}
-
 setIncludeCallbacks ::
 	CompileOptionsT -> ResolveFn -> ResultReleaseFn -> PtrVoid ->
 	IO ()

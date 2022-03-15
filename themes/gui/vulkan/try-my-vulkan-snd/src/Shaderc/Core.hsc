@@ -53,3 +53,22 @@ foreign import ccall "shaderc_result_get_bytes" resultGetBytes ::
 foreign import ccall "shaderc_result_get_error_message"
 	resultGetErrorMessage ::
 	CompilationResultT -> IO CString
+
+glslVertexShader :: #{type shaderc_shader_kind}
+glslVertexShader = #{const shaderc_glsl_vertex_shader}
+
+vertexShader :: #{type shaderc_shader_kind}
+vertexShader = #{const shaderc_vertex_shader}
+
+sourceLanguageHlsl :: #{type shaderc_source_language}
+sourceLanguageHlsl = #{const shaderc_source_language_hlsl}
+
+optimizationLevelZero :: #{type shaderc_optimization_level}
+optimizationLevelZero = #{const shaderc_optimization_level_zero}
+
+optimizationLevelSize :: #{type shaderc_optimization_level}
+optimizationLevelSize = #{const shaderc_optimization_level_size}
+
+optimizationLevelPerformance :: #{type shaderc_optimization_level}
+optimizationLevelPerformance =
+	#{const shaderc_optimization_level_performance}
