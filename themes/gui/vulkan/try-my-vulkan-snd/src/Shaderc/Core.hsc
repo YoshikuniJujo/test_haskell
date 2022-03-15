@@ -43,6 +43,18 @@ enum "CompilationStatus" ''#{type shaderc_compilation_status}
 data CompileOptionsTag
 type CompileOptionsT = Ptr CompileOptionsTag
 
+enum "SourceLanguage" ''#{type shaderc_source_language}
+		[''Show, ''Storable] [
+	("SourceLanguageGlsl", #{const shaderc_source_language_glsl}),
+	("SourceLanguageHlsl", #{const shaderc_source_language_hlsl}) ]
+
+enum "OptimizationLevel" ''#{type shaderc_optimization_level}
+		[''Show, ''Eq, ''Storable] [
+	("OptimizationLevelZero", #{const shaderc_optimization_level_zero}),
+	("OptimizationLevelSize", #{const shaderc_optimization_level_size}),
+	("OptimizationLevelPerformance",
+		#{const shaderc_optimization_level_performance}) ]
+
 foreign import ccall "shaderc_compiler_initialize"
 	compilerInitialize :: IO CompilerT
 

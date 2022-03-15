@@ -55,17 +55,12 @@ main = do
 	CompileOptions.addMacroDefinition opts foo 3 bar 3
 	when (elem Hlsl $ onlyLanguage ops)
 		$ CompileOptions.setSourceLanguage
-			opts sourceLanguageHlsl
+			opts SourceLanguageHlsl
 	when (elem DebugInfo ops)
 		$ CompileOptions.setGenerateDebugInfo opts
 	case onlyOptimizationLevel ops of
 		[] -> pure ()
-		ols -> CompileOptions.setOptimizationLevel opts
-			case last ols of
-				OptimizationLevelZero -> optimizationLevelZero
-				OptimizationLevelSize -> optimizationLevelSize
-				OptimizationLevelPerformance ->
-					optimizationLevelPerformance
+		ols -> CompileOptions.setOptimizationLevel opts $ last ols
 	CompileOptions.setIncludeCallbacks
 		opts resolveFun resultReleaseFun nullPtr
 
@@ -101,17 +96,11 @@ data Opt
 	= Into Into
 	| Language Language
 	| DebugInfo
-	| OptimizationLevel OptimizationLevel
+	| OptimizationLevelOpt OptimizationLevel
 	deriving (Show, Eq)
 
 data Into = Assembly | Machine | PreprocessedText deriving (Show, Eq)
 data Language = Glsl | Hlsl deriving (Show, Eq)
-
-data OptimizationLevel
-	= OptimizationLevelZero
-	| OptimizationLevelSize
-	| OptimizationLevelPerformance
-	deriving (Show, Eq)
 
 optimizationLevelFromStr :: String -> OptimizationLevel
 optimizationLevelFromStr "zero" = OptimizationLevelZero
@@ -131,7 +120,7 @@ onlyLanguage (_ : os) = onlyLanguage os
 
 onlyOptimizationLevel :: [Opt] -> [OptimizationLevel]
 onlyOptimizationLevel [] = []
-onlyOptimizationLevel (OptimizationLevel ol : os) =
+onlyOptimizationLevel (OptimizationLevelOpt ol : os) =
 	ol : onlyOptimizationLevel os
 onlyOptimizationLevel (_ : os) = onlyOptimizationLevel os
 
@@ -153,7 +142,7 @@ debugInfo = Option [] ["debug"] (NoArg DebugInfo) "Debug info"
 
 optimizationLevel :: OptDescr Opt
 optimizationLevel = Option [] ["opt"]
-	(ReqArg (OptimizationLevel . optimizationLevelFromStr)
+	(ReqArg (OptimizationLevelOpt . optimizationLevelFromStr)
 		"Optimization level")
 	"Optimization"
 

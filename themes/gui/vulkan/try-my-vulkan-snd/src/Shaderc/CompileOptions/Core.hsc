@@ -27,15 +27,14 @@ foreign import ccall "shaderc_compile_options_add_macro_definition"
 	Ptr CChar -> #{type size_t} -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_source_language"
-	setSourceLanguage ::
-	CompileOptionsT -> #{type shaderc_source_language} -> IO ()
+	setSourceLanguage :: CompileOptionsT -> SourceLanguage -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_generate_debug_info"
 	setGenerateDebugInfo :: CompileOptionsT -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_optimization_level"
 	setOptimizationLevel ::
-	CompileOptionsT -> #{type shaderc_optimization_level} -> IO ()
+	CompileOptionsT -> OptimizationLevel -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_forced_version_profile"
 	setForcedVersionProfile ::

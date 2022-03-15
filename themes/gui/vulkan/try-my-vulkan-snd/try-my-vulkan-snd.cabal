@@ -29,6 +29,8 @@ library
   exposed-modules:
       Data.Color
       Glfw
+      Shaderc
+      Shaderc.CompileOptions
       Shaderc.CompileOptions.Core
       Shaderc.Core
       Shaderc.Include.Core
