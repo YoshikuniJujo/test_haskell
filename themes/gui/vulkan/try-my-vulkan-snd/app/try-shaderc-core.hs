@@ -35,7 +35,7 @@ main = do
 	print as
 	let	(into, out) = getPair $ onlyInto ops
 
-	compiler <- c_shaderc_compiler_initialize
+	compiler <- compilerInitialize
 
 	src <- case as of
 		[] -> pure "#version 450\nvoid main() {}"
@@ -72,19 +72,19 @@ main = do
 		compiler sourceText srcln shadercGlslVertexShader
 		inputFileName entryPointName opts
 
-	ln <- c_shaderc_result_get_length result
-	bt <- c_shaderc_result_get_bytes result
+	ln <- resultGetLength result
+	bt <- resultGetBytes result
 	print ln
 
-	putStr =<< peekCString =<< c_shaderc_result_get_error_message result
+	putStr =<< peekCString =<< resultGetErrorMessage result
 
 	h <- openBinaryFile out WriteMode
 	hPutBuf h bt $ fromIntegral ln
 	hClose h
 
-	c_shaderc_result_release(result)
+	resultRelease(result)
 	c_shaderc_compile_options_release opts
-	c_shaderc_compiler_release(compiler)
+	compilerRelease(compiler)
 
 type Run = ShadercCompilerT ->
 	Ptr CChar -> Word64 -> Word32 -> CString -> CString ->
@@ -92,9 +92,9 @@ type Run = ShadercCompilerT ->
 
 pairs :: [(Into, (Run, FilePath))]
 pairs = [
-	(Assembly, (c_shaderc_compile_into_spv_assembly, "tmp.s")),
-	(Machine, (c_shaderc_compile_into_spv, "tmp.spv")),
-	(PreprocessedText, (c_shaderc_compile_into_preprocessed_text, "tmp.txt"))]
+	(Assembly, (compileIntoSpvAssembly, "tmp.s")),
+	(Machine, (compileIntoSpv, "tmp.spv")),
+	(PreprocessedText, (compileIntoPreprocessedText, "tmp.txt")) ]
 
 data Opt
 	= Into Into
@@ -135,7 +135,7 @@ onlyOptimizationLevel (OptimizationLevel ol : os) =
 onlyOptimizationLevel (_ : os) = onlyOptimizationLevel os
 
 getPair :: [Into] -> (Run, FilePath)
-getPair [] = (c_shaderc_compile_into_spv, "tmp.spv")
+getPair [] = (compileIntoSpv, "tmp.spv")
 getPair (t : ts) = fromMaybe (getPair ts) $ lookup t pairs
 
 assembly :: OptDescr Opt

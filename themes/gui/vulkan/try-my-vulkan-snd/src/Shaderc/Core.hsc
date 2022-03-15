@@ -15,40 +15,40 @@ data ShadercCompilerTag
 type ShadercCompilerT = Ptr ShadercCompilerTag
 
 foreign import ccall "shaderc_compiler_initialize"
-	c_shaderc_compiler_initialize :: IO ShadercCompilerT
+	compilerInitialize :: IO ShadercCompilerT
 
 foreign import ccall "shaderc_compiler_release"
-	c_shaderc_compiler_release :: ShadercCompilerT -> IO ()
+	compilerRelease :: ShadercCompilerT -> IO ()
 
 data ShadercCompilationResultTag
 type ShadercCompilationResultT = Ptr ShadercCompilationResultTag
 
-foreign import ccall "shaderc_compile_into_spv" c_shaderc_compile_into_spv ::
+foreign import ccall "shaderc_compile_into_spv" compileIntoSpv ::
 	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
 	ShadercCompileOptionsT -> IO ShadercCompilationResultT
 
 foreign import ccall "shaderc_compile_into_spv_assembly"
-	c_shaderc_compile_into_spv_assembly ::
+	compileIntoSpvAssembly ::
 	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
 	ShadercCompileOptionsT -> IO ShadercCompilationResultT
 
 foreign import ccall "shaderc_compile_into_preprocessed_text"
-	c_shaderc_compile_into_preprocessed_text ::
+	compileIntoPreprocessedText ::
 	ShadercCompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
 	ShadercCompileOptionsT -> IO ShadercCompilationResultT
 
-foreign import ccall "shaderc_result_release" c_shaderc_result_release ::
+foreign import ccall "shaderc_result_release" resultRelease ::
 	ShadercCompilationResultT -> IO ()
 
-foreign import ccall "shaderc_result_get_length" c_shaderc_result_get_length ::
+foreign import ccall "shaderc_result_get_length" resultGetLength ::
 	ShadercCompilationResultT -> IO #{type size_t}
 
-foreign import ccall "shaderc_result_get_bytes" c_shaderc_result_get_bytes ::
+foreign import ccall "shaderc_result_get_bytes" resultGetBytes ::
 	ShadercCompilationResultT -> IO (Ptr CChar)
 
 foreign import ccall "shaderc_result_get_error_message"
-	c_shaderc_result_get_error_message ::
+	resultGetErrorMessage ::
 	ShadercCompilationResultT -> IO CString

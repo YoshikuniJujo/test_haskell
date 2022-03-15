@@ -62,6 +62,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
+  my-glslc:
+    main:                my-glslc.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan-snd
 
 tests:
   try-my-vulkan-snd-test:
