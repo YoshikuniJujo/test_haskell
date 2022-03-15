@@ -13,35 +13,32 @@ import Shaderc.Include.Core
 #include <shaderc/shaderc.h>
 
 foreign import ccall "shaderc_compile_options_initialize"
-	c_shaderc_compile_options_initialize :: IO CompileOptionsT
+	initialize :: IO CompileOptionsT
 
 foreign import ccall "shaderc_compile_options_clone"
-	c_shaderc_compile_options_clone ::
-	CompileOptionsT -> IO CompileOptionsT
+	clone :: CompileOptionsT -> IO CompileOptionsT
 
 foreign import ccall "shaderc_compile_options_release"
-	c_shaderc_compile_options_release ::
-	CompileOptionsT -> IO ()
+	release :: CompileOptionsT -> IO ()
 
 foreign import ccall "shaderc_compile_options_add_macro_definition"
-	c_shaderc_compile_options_add_macro_definition ::
+	addMacroDefinition ::
 	CompileOptionsT -> Ptr CChar -> #{type size_t} ->
 	Ptr CChar -> #{type size_t} -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_source_language"
-	c_shaderc_compile_options_set_source_language ::
+	setSourceLanguage ::
 	CompileOptionsT -> #{type shaderc_source_language} -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_generate_debug_info"
-	c_shaderc_compile_options_set_generate_debug_info ::
-	CompileOptionsT -> IO ()
+	setGenerateDebugInfo :: CompileOptionsT -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_optimization_level"
-	c_shaderc_compile_options_set_optimization_level ::
+	setOptimizationLevel ::
 	CompileOptionsT -> #{type shaderc_optimization_level} -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_forced_version_profile"
-	c_shaderc_compile_options_set_forced_version_profile ::
+	setForcedVersionProfile ::
 	CompileOptionsT -> #{type int} -> #{type shaderc_profile} -> IO()
 
 shadercGlslVertexShader :: #{type shaderc_shader_kind}

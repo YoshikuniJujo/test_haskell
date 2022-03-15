@@ -21,6 +21,8 @@ import Shaderc.Core
 import Shaderc.CompileOptions.Core
 import Shaderc.Include.Core
 
+import qualified Shaderc.CompileOptions.Core as CompileOptions
+
 main :: IO ()
 main = do
 	(ops, as, es) <- getOpt Permute [
@@ -47,18 +49,18 @@ main = do
 	inputFileName <- newCString "main.vert"
 	entryPointName <- newCString "main"
 
-	opts <- c_shaderc_compile_options_initialize
+	opts <- CompileOptions.initialize
 	foo <- newCString "FOO"
 	bar <- newCString "BAR"
-	c_shaderc_compile_options_add_macro_definition opts foo 3 bar 3
+	CompileOptions.addMacroDefinition opts foo 3 bar 3
 	when (elem Hlsl $ onlyLanguage ops)
-		$ c_shaderc_compile_options_set_source_language
+		$ CompileOptions.setSourceLanguage
 			opts shadercSourceLanguageHlsl
 	when (elem DebugInfo ops)
-		$ c_shaderc_compile_options_set_generate_debug_info opts
+		$ CompileOptions.setGenerateDebugInfo opts
 	case onlyOptimizationLevel ops of
 		[] -> pure ()
-		ols -> c_shaderc_compile_options_set_optimization_level opts
+		ols -> CompileOptions.setOptimizationLevel opts
 			case last ols of
 				OptimizationLevelZero ->
 					shadercOptimizationLevelZero
@@ -82,9 +84,9 @@ main = do
 	hPutBuf h bt $ fromIntegral ln
 	hClose h
 
-	resultRelease(result)
-	c_shaderc_compile_options_release opts
-	compilerRelease(compiler)
+	resultRelease result
+	CompileOptions.release opts
+	compilerRelease compiler
 
 type Run = CompilerT ->
 	Ptr CChar -> Word64 -> Word32 -> CString -> CString ->
