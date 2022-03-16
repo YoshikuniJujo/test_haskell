@@ -8,6 +8,7 @@ import Foreign.C.String
 import Data.Word
 
 import Shaderc.Core
+import Shaderc.Exception.Enum
 
 #include <shaderc/shaderc.h>
 

@@ -5,11 +5,11 @@
 module Shaderc.Core where
 
 import Foreign.Ptr
-import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
-import Foreign.C.Enum
 import Data.Word
+
+import Shaderc.Exception.Enum
 
 import qualified Shaderc.CompileOptions.Core as CompileOptions
 
@@ -20,27 +20,6 @@ type CompilerT = Ptr CompilerTag
 
 data CompilationResultTag
 type CompilationResultT = Ptr CompilationResultTag
-
-enum "CompilationStatus" ''#{type shaderc_compilation_status}
-		[''Show, ''Storable] [
-	("CompilationStatusSuccess",
-		#{const shaderc_compilation_status_success}),
-	("CompilationStatusInvalidStage",
-		#{const shaderc_compilation_status_invalid_stage}),
-	("CompilationStatusError",
-		#{const shaderc_compilation_status_compilation_error}),
-	("CompilationStatusInternalError",
-		#{const shaderc_compilation_status_internal_error}),
-	("CompilationStatusNullResultObject",
-		#{const shaderc_compilation_status_null_result_object}),
-	("CompilationStatusInvalidAssembly",
-		#{const shaderc_compilation_status_invalid_assembly}),
-	("CompilationStatusValidationError",
-		#{const shaderc_compilation_status_validation_error}),
-	("CompilationStatusTransformationError",
-		#{const shaderc_compilation_status_transformation_error}),
-	("CompilationStatusConfigurationError",
-		#{const shaderc_compilation_status_configuration_error}) ]
 
 foreign import ccall "shaderc_compiler_initialize"
 	compilerInitialize :: IO CompilerT
