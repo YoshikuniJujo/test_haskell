@@ -33,6 +33,7 @@ library
       Shaderc.CompileOptions
       Shaderc.CompileOptions.Core
       Shaderc.Core
+      Shaderc.Include
       Shaderc.Include.Core
       Shaderc.Result.Core
       ThEnv

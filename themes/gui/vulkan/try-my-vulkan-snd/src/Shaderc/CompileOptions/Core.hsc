@@ -38,7 +38,7 @@ foreign import ccall "shaderc_compile_options_set_optimization_level"
 
 foreign import ccall "shaderc_compile_options_set_forced_version_profile"
 	setForcedVersionProfile ::
-	CompileOptionsT -> #{type int} -> #{type shaderc_profile} -> IO()
+	CompileOptionsT -> Version -> Profile -> IO()
 
 setIncludeCallbacks ::
 	CompileOptionsT -> ResolveFn -> ResultReleaseFn -> PtrVoid ->

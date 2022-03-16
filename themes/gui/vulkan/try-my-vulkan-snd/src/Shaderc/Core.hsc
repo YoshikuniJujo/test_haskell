@@ -10,6 +10,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
 import Data.Word
+import Data.Int
 
 #include <shaderc/shaderc.h>
 
@@ -54,6 +55,17 @@ enum "OptimizationLevel" ''#{type shaderc_optimization_level}
 	("OptimizationLevelSize", #{const shaderc_optimization_level_size}),
 	("OptimizationLevelPerformance",
 		#{const shaderc_optimization_level_performance}) ]
+
+enum "Profile" ''#{type shaderc_profile} [''Show, ''Eq, ''Storable] [
+	("ProfileNone", #{const shaderc_profile_none}),
+	("ProfileCore", #{const shaderc_profile_core}),
+	("ProfileCompatibility", #{const shaderc_profile_compatibility}),
+	("ProfileEs", #{const shaderc_profile_es}) ]
+
+version :: Int -> Version
+version = Version . fromIntegral
+
+newtype Version = Version #{type int} deriving Show
 
 foreign import ccall "shaderc_compiler_initialize"
 	compilerInitialize :: IO CompilerT
