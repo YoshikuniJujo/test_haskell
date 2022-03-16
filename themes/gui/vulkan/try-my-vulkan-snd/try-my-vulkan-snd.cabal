@@ -31,14 +31,15 @@ library
       Foreign.Pointable
       Glfw
       Shaderc
+      Shaderc.CompilationResult.Core
       Shaderc.CompileOptions
       Shaderc.CompileOptions.Core
       Shaderc.Core
       Shaderc.Enum
+      Shaderc.Exception
       Shaderc.Exception.Enum
       Shaderc.Include
       Shaderc.Include.Core
-      Shaderc.Result.Core
       ThEnv
       Vulkan
       Vulkan.Access

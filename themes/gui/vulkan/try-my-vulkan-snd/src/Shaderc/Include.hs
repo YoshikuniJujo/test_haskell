@@ -11,7 +11,6 @@ import Foreign.Pointable
 import Control.Monad.Cont
 
 import qualified Data.ByteString as BS
-import qualified Data.ByteString as BS
 
 import qualified Shaderc.Include.Core as C
 

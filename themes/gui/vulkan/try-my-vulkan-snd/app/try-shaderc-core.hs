@@ -21,8 +21,8 @@ import Shaderc.Core
 import Shaderc.Enum
 import Shaderc.Include.Core
 
-import qualified Shaderc.Result.Core as Result
 import qualified Shaderc.CompileOptions.Core as CompileOptions
+import qualified Shaderc.CompilationResult.Core as CompilationResult
 
 main :: IO ()
 main = do
@@ -69,23 +69,23 @@ main = do
 		compiler sourceText srcln glslVertexShader
 		inputFileName entryPointName opts
 
-	ln <- Result.getLength rslt
-	bt <- Result.getBytes rslt
+	ln <- CompilationResult.getLength rslt
+	bt <- CompilationResult.getBytes rslt
 	print ln
 
-	putStr =<< peekCString =<< Result.getErrorMessage rslt
+	putStr =<< peekCString =<< CompilationResult.getErrorMessage rslt
 
 	h <- openBinaryFile out WriteMode
 	hPutBuf h bt $ fromIntegral ln
 	hClose h
 
-	Result.release rslt
+	CompilationResult.release rslt
 	CompileOptions.release opts
 	compilerRelease compiler
 
 type Run = CompilerT ->
 	Ptr CChar -> Word64 -> Word32 -> CString -> CString ->
-	CompileOptions.T -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResult.T
 
 pairs :: [(Into, (Run, FilePath))]
 pairs = [

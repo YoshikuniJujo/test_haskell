@@ -9,17 +9,13 @@ import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
 
-import Shaderc.Exception.Enum
-
 import qualified Shaderc.CompileOptions.Core as CompileOptions
+import qualified Shaderc.CompilationResult.Core as CompilationResult
 
 #include <shaderc/shaderc.h>
 
 data CompilerTag
 type CompilerT = Ptr CompilerTag
-
-data CompilationResultTag
-type CompilationResultT = Ptr CompilationResultTag
 
 foreign import ccall "shaderc_compiler_initialize"
 	compilerInitialize :: IO CompilerT
@@ -30,19 +26,19 @@ foreign import ccall "shaderc_compiler_release"
 foreign import ccall "shaderc_compile_into_spv" compileIntoSpv ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	CompileOptions.T -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResult.T
 
 foreign import ccall "shaderc_compile_into_spv_assembly"
 	compileIntoSpvAssembly ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	CompileOptions.T -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResult.T
 
 foreign import ccall "shaderc_compile_into_preprocessed_text"
 	compileIntoPreprocessedText ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	CompileOptions.T -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResult.T
 
 glslVertexShader :: #{type shaderc_shader_kind}
 glslVertexShader = #{const shaderc_glsl_vertex_shader}
