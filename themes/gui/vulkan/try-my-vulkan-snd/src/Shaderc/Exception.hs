@@ -3,13 +3,24 @@
 
 module Shaderc.Exception where
 
+import Control.Exception
 import Control.Exception.Hierarchy
 
 import qualified Data.ByteString as BS
 
 import Shaderc.Exception.Enum
-import Shaderc.CompilationResult.Core
+
+import qualified Shaderc.CompilationResult.Core as CompilationResult
 
 data E = E CompilationStatus BS.ByteString deriving Show
 
 exceptionHierarchy Nothing (ExType ''E)
+
+throwUnlessSuccess :: CompilationResult.T -> IO ()
+throwUnlessSuccess rslt = do
+	stt <- CompilationResult.getCompilationStatus rslt
+	case stt of
+		CompilationStatusSuccess -> pure ()
+		_ -> do	cmsg <- CompilationResult.getErrorMessage rslt
+			msg <- BS.packCString cmsg
+			throw $ E stt msg
