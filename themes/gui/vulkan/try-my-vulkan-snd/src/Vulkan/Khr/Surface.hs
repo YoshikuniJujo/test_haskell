@@ -4,11 +4,11 @@
 
 module Vulkan.Khr.Surface where
 
+import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 
 import Vulkan
-import Vulkan.Base
 import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)
 import Vulkan.Khr
 import Vulkan.Khr.Enum

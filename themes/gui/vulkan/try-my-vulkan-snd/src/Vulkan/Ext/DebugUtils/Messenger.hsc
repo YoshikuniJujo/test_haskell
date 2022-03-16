@@ -13,6 +13,7 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Enum
+import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 import Data.Int

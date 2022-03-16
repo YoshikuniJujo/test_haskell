@@ -6,6 +6,7 @@ module Vulkan.Enumerate where
 
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Monad.Cont
 
 import qualified Data.Text as T

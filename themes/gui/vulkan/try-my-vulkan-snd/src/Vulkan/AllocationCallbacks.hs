@@ -6,9 +6,8 @@ module Vulkan.AllocationCallbacks where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Pointable
 import Control.Monad.Cont
-
-import Vulkan.Base
 
 import qualified Vulkan.AllocationCallbacks.Core as I
 

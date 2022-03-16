@@ -9,6 +9,7 @@ module Vulkan.Ext.DebugUtils where
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.String
+import Foreign.Pointable
 import Control.Monad.Cont
 import Data.String
 import System.IO.Unsafe

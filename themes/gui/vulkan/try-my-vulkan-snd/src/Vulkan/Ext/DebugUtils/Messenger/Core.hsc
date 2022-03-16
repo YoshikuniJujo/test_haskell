@@ -12,6 +12,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
+import Foreign.Pointable
 import Data.Word
 import Data.Int
 

@@ -9,11 +9,11 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Monad.Cont
 
 import Vulkan
 import Vulkan.Enum
-import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)

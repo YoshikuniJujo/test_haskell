@@ -9,6 +9,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 

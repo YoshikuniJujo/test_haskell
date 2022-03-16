@@ -6,11 +6,11 @@ module Vulkan.Device.Queue where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
+import Foreign.Pointable
 import Control.Monad.Cont
 import Data.List
 import Data.Word
 
-import Vulkan.Base
 import Vulkan.Device.Queue.Enum
 
 import qualified Vulkan.Device.Queue.Core as C

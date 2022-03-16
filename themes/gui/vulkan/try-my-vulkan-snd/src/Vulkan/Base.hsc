@@ -20,18 +20,6 @@ import qualified Data.Text.Foreign as Txt
 
 #include <vulkan/vulkan.h>
 
-class Pointable a where
-	withPointer :: a -> (Ptr a -> IO b) -> IO b
-
-instance {-# OVERLAPPABLE #-} Storable a => Pointable a where
-	withPointer x f = alloca \p -> poke p x >> f p
-
-maybeToPointer :: Pointable a => Maybe a -> ContT r IO (Ptr a)
-maybeToPointer = \case Nothing -> pure NullPtr; Just x -> ContT $ withPointer x
-
-pointerToMaybe :: Storable a => Ptr a -> IO (Maybe a)
-pointerToMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peek p
-
 stringToCString :: String -> ContT r IO CString
 stringToCString = ContT . withCString
 
@@ -48,12 +36,6 @@ textListToCStringArray txts = do
 	pcstra <$ lift (pokeArray pcstra cstrl)
 
 type PtrVoid = Ptr ()
-
-pattern NullPtr :: Ptr a
-pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
-
-pattern NullFunPtr :: FunPtr a
-pattern NullFunPtr <- ((== nullFunPtr) -> True) where NullFunPtr = nullFunPtr
 
 type PtrCString = Ptr CString
 

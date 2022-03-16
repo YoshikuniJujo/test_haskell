@@ -8,6 +8,7 @@ module Vulkan where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 

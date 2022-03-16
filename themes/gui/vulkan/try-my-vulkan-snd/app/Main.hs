@@ -13,6 +13,7 @@ import Foreign.Marshal
 import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Storable
 import Foreign.C.String
+import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Cont
 import Data.Maybe
