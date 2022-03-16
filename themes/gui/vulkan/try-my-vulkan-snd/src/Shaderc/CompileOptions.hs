@@ -3,14 +3,14 @@
 module Shaderc.CompileOptions where
 
 import Shaderc.Core
+import Shaderc.Include
 
 import qualified Shaderc.CompileOptions.Core as C
 
-data C = C {
+data C ud = C {
 	cMacroDefinition :: [(String, String)],
 	cSourceLanguage :: SourceLanguage,
 	cGenerateDebugInfo :: Bool,
 	cOptimizationLevel :: OptimizationLevel,
-	cForcedVersionProfile :: (Version, Profile)
-	}
-	deriving Show
+	cForcedVersionProfile :: (Version, Profile),
+	cIncludeCallbacks :: (ResolveFn ud, Maybe ud) }
