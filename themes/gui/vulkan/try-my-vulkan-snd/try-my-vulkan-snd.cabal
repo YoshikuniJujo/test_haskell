@@ -34,6 +34,7 @@ library
       Shaderc.CompileOptions
       Shaderc.CompileOptions.Core
       Shaderc.Core
+      Shaderc.Enum
       Shaderc.Include
       Shaderc.Include.Core
       Shaderc.Result.Core

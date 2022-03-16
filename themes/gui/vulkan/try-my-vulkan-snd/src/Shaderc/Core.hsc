@@ -10,7 +10,8 @@ import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Enum
 import Data.Word
-import Data.Int
+
+import qualified Shaderc.CompileOptions.Core as CompileOptions
 
 #include <shaderc/shaderc.h>
 
@@ -41,32 +42,6 @@ enum "CompilationStatus" ''#{type shaderc_compilation_status}
 	("CompilationStatusConfigurationError",
 		#{const shaderc_compilation_status_configuration_error}) ]
 
-data CompileOptionsTag
-type CompileOptionsT = Ptr CompileOptionsTag
-
-enum "SourceLanguage" ''#{type shaderc_source_language}
-		[''Show, ''Storable] [
-	("SourceLanguageGlsl", #{const shaderc_source_language_glsl}),
-	("SourceLanguageHlsl", #{const shaderc_source_language_hlsl}) ]
-
-enum "OptimizationLevel" ''#{type shaderc_optimization_level}
-		[''Show, ''Eq, ''Storable] [
-	("OptimizationLevelZero", #{const shaderc_optimization_level_zero}),
-	("OptimizationLevelSize", #{const shaderc_optimization_level_size}),
-	("OptimizationLevelPerformance",
-		#{const shaderc_optimization_level_performance}) ]
-
-enum "Profile" ''#{type shaderc_profile} [''Show, ''Eq, ''Storable] [
-	("ProfileNone", #{const shaderc_profile_none}),
-	("ProfileCore", #{const shaderc_profile_core}),
-	("ProfileCompatibility", #{const shaderc_profile_compatibility}),
-	("ProfileEs", #{const shaderc_profile_es}) ]
-
-version :: Int -> Version
-version = Version . fromIntegral
-
-newtype Version = Version #{type int} deriving Show
-
 foreign import ccall "shaderc_compiler_initialize"
 	compilerInitialize :: IO CompilerT
 
@@ -76,19 +51,19 @@ foreign import ccall "shaderc_compiler_release"
 foreign import ccall "shaderc_compile_into_spv" compileIntoSpv ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	CompileOptionsT -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResultT
 
 foreign import ccall "shaderc_compile_into_spv_assembly"
 	compileIntoSpvAssembly ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	CompileOptionsT -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResultT
 
 foreign import ccall "shaderc_compile_into_preprocessed_text"
 	compileIntoPreprocessedText ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
 	#{type shaderc_shader_kind} -> CString -> CString ->
-	CompileOptionsT -> IO CompilationResultT
+	CompileOptions.T -> IO CompilationResultT
 
 glslVertexShader :: #{type shaderc_shader_kind}
 glslVertexShader = #{const shaderc_glsl_vertex_shader}

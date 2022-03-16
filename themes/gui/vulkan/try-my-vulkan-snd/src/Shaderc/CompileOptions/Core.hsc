@@ -5,44 +5,36 @@ module Shaderc.CompileOptions.Core where
 import Foreign.Ptr
 import Foreign.C.Types
 import Data.Word
-import Data.Int
 
-import Shaderc.Core
+import Shaderc.Enum
 import Shaderc.Include.Core
 
 #include <shaderc/shaderc.h>
 
-foreign import ccall "shaderc_compile_options_initialize"
-	initialize :: IO CompileOptionsT
+data Tag
+type T = Ptr Tag
 
-foreign import ccall "shaderc_compile_options_clone"
-	clone :: CompileOptionsT -> IO CompileOptionsT
-
-foreign import ccall "shaderc_compile_options_release"
-	release :: CompileOptionsT -> IO ()
+foreign import ccall "shaderc_compile_options_initialize" initialize :: IO T
+foreign import ccall "shaderc_compile_options_clone" clone :: T -> IO T
+foreign import ccall "shaderc_compile_options_release" release :: T -> IO ()
 
 foreign import ccall "shaderc_compile_options_add_macro_definition"
 	addMacroDefinition ::
-	CompileOptionsT -> Ptr CChar -> #{type size_t} ->
-	Ptr CChar -> #{type size_t} -> IO ()
+	T -> Ptr CChar -> #{type size_t} -> Ptr CChar -> #{type size_t} -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_source_language"
-	setSourceLanguage :: CompileOptionsT -> SourceLanguage -> IO ()
+	setSourceLanguage :: T -> SourceLanguage -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_generate_debug_info"
-	setGenerateDebugInfo :: CompileOptionsT -> IO ()
+	setGenerateDebugInfo :: T -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_optimization_level"
-	setOptimizationLevel ::
-	CompileOptionsT -> OptimizationLevel -> IO ()
+	setOptimizationLevel :: T -> OptimizationLevel -> IO ()
 
 foreign import ccall "shaderc_compile_options_set_forced_version_profile"
-	setForcedVersionProfile ::
-	CompileOptionsT -> Version -> Profile -> IO()
+	setForcedVersionProfile :: T -> Version -> Profile -> IO()
 
-setIncludeCallbacks ::
-	CompileOptionsT -> ResolveFn -> ResultReleaseFn -> PtrVoid ->
-	IO ()
+setIncludeCallbacks :: T -> ResolveFn -> ResultReleaseFn -> PtrVoid -> IO ()
 setIncludeCallbacks opts rfn rrfn ud = do
 	prfn <- wrap_resolveFn rfn
 	prrfn <- wrap_resultReleaseFn rrfn
@@ -50,5 +42,4 @@ setIncludeCallbacks opts rfn rrfn ud = do
 
 foreign import ccall "shaderc_compile_options_set_include_callbacks"
 	c_shaderc_compile_options_set_include_callbacks ::
-	CompileOptionsT -> FunPtr ResolveFn -> FunPtr ResultReleaseFn ->
-	PtrVoid -> IO ()
+	T -> FunPtr ResolveFn -> FunPtr ResultReleaseFn -> PtrVoid -> IO ()

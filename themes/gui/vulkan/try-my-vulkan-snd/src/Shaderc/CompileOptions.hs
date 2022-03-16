@@ -2,7 +2,7 @@
 
 module Shaderc.CompileOptions where
 
-import Shaderc.Core
+import Shaderc.Enum
 import Shaderc.Include
 
 import qualified Shaderc.CompileOptions.Core as C
