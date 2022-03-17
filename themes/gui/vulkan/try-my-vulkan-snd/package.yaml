@@ -26,6 +26,7 @@ dependencies:
 - bytestring
 - text
 - monads-tf
+- filepath
 - nowdoc
 - exception-hierarchy
 - c-enum

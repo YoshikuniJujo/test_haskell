@@ -150,6 +150,7 @@ library
     , c-struct
     , containers
     , exception-hierarchy
+    , filepath
     , monads-tf
     , nowdoc
     , ranged-list
@@ -174,6 +175,7 @@ executable my-glslc
     , c-struct
     , containers
     , exception-hierarchy
+    , filepath
     , monads-tf
     , nowdoc
     , ranged-list
@@ -198,6 +200,7 @@ executable try-my-vulkan-snd-exe
     , c-struct
     , containers
     , exception-hierarchy
+    , filepath
     , monads-tf
     , nowdoc
     , ranged-list
@@ -223,6 +226,7 @@ executable try-shaderc
     , c-struct
     , containers
     , exception-hierarchy
+    , filepath
     , monads-tf
     , nowdoc
     , ranged-list
@@ -248,6 +252,7 @@ executable try-shaderc-core
     , c-struct
     , containers
     , exception-hierarchy
+    , filepath
     , monads-tf
     , nowdoc
     , ranged-list
@@ -273,6 +278,7 @@ test-suite try-my-vulkan-snd-test
     , c-struct
     , containers
     , exception-hierarchy
+    , filepath
     , monads-tf
     , nowdoc
     , ranged-list

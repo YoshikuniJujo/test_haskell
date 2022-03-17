@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -6,7 +7,16 @@ module Main where
 import Control.Monad
 import System.Environment
 import System.Exit
+import System.FilePath
 import System.Console.GetOpt
+
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+
+import Shaderc
+import Shaderc.EnumAuto
+
+import qualified Shaderc.CompileOptions as CompileOptions
 
 main :: IO ()
 main = do
@@ -14,8 +24,8 @@ main = do
 	when (not $ null es) do
 		putStr `mapM_` es
 		exitFailure
-	case ops of
-		[Outfile o] -> putStrLn o
+	case (as, ops) of
+		([sf], [Outfile o]) -> compile sf o
 		_ -> putStrLn "USAGE: my-glslc shader.vert -o vert.spv"
 
 data Option = Outfile FilePath deriving Show
@@ -23,3 +33,21 @@ data Option = Outfile FilePath deriving Show
 outfile :: OptDescr Option
 outfile = Option ['o'] [] (ReqArg Outfile "<file>")
 	"Place the output into <file>."
+
+compile :: FilePath -> FilePath -> IO ()
+compile sf df = do
+	src <- BS.readFile sf
+	BS.writeFile df =<< compileIntoSpv @()
+		src (specifyKind sf) (BSC.pack sf) "main" CompileOptions.T {
+			CompileOptions.tMacroDefinitions = [],
+			CompileOptions.tSourceLanguage = Nothing,
+			CompileOptions.tGenerateDebugInfo = False,
+			CompileOptions.tOptimizationLevel = Nothing,
+			CompileOptions.tForcedVersionProfile = Nothing,
+			CompileOptions.tIncludeCallbacks = Nothing }
+
+specifyKind :: FilePath -> ShaderKind
+specifyKind fp = case takeExtension fp of
+	".vert" -> GlslVertexShader
+	".frag" -> GlslFragmentShader
+	_ -> error "I don't know such extension"
