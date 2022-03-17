@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -41,7 +42,7 @@ tToCore T {
 	setOptimizationLevel ct optLvl
 	setForcedVersionProfile ct fvp
 	maybe (pure ()) (uncurry $ setIncludeCallbacks ct) mcb
-	pure ct
+	ContT \f -> f ct <* C.release ct
 
 addMacroDefinitions :: C.T -> [(BS.ByteString, BS.ByteString)] -> ContT r IO ()
 addMacroDefinitions opts = mapM_ . uncurry $ addMacroDefinition opts
