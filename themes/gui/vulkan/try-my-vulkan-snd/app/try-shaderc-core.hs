@@ -19,6 +19,7 @@ import System.Console.GetOpt
 
 import Shaderc.Core
 import Shaderc.Enum
+import Shaderc.EnumAuto
 import Shaderc.Include.Core
 
 import qualified Shaderc.CompileOptions.Core as CompileOptions
@@ -66,7 +67,7 @@ main = do
 		opts resolveFun resultReleaseFun nullPtr
 
 	rslt <- into
-		compiler sourceText srcln glslVertexShader
+		compiler sourceText srcln GlslVertexShader
 		inputFileName entryPointName opts
 
 	ln <- CompilationResult.getLength rslt
@@ -84,7 +85,7 @@ main = do
 	compilerRelease compiler
 
 type Run = CompilerT ->
-	Ptr CChar -> Word64 -> Word32 -> CString -> CString ->
+	Ptr CChar -> Word64 -> ShaderKind -> CString -> CString ->
 	CompileOptions.T -> IO CompilationResult.T
 
 pairs :: [(Into, (Run, FilePath))]

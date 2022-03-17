@@ -9,6 +9,8 @@ import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
 
+import Shaderc.EnumAuto
+
 import qualified Shaderc.CompileOptions.Core as CompileOptions
 import qualified Shaderc.CompilationResult.Core as CompilationResult
 
@@ -25,19 +27,19 @@ foreign import ccall "shaderc_compiler_release"
 
 foreign import ccall "shaderc_compile_into_spv" compileIntoSpv ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
-	#{type shaderc_shader_kind} -> CString -> CString ->
+	ShaderKind -> CString -> CString ->
 	CompileOptions.T -> IO CompilationResult.T
 
 foreign import ccall "shaderc_compile_into_spv_assembly"
 	compileIntoSpvAssembly ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
-	#{type shaderc_shader_kind} -> CString -> CString ->
+	ShaderKind -> CString -> CString ->
 	CompileOptions.T -> IO CompilationResult.T
 
 foreign import ccall "shaderc_compile_into_preprocessed_text"
 	compileIntoPreprocessedText ::
 	CompilerT -> Ptr CChar -> #{type size_t} ->
-	#{type shaderc_shader_kind} -> CString -> CString ->
+	ShaderKind -> CString -> CString ->
 	CompileOptions.T -> IO CompilationResult.T
 
 glslVertexShader :: #{type shaderc_shader_kind}
