@@ -41,6 +41,7 @@ library
       Shaderc.Exception.Enum
       Shaderc.Include
       Shaderc.Include.Core
+      Shaderc.Middle
       ThEnv
       Vulkan
       Vulkan.Access
