@@ -3,7 +3,20 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    subdir: features/ffi/try-pointable
+    name: try-pointable
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    pantry-tree:
+      size: 629
+      sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
+    commit: 619ee79a72408e6635fb249196782ac9a69d597c
+  original:
+    subdir: features/ffi/try-pointable
+    git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 619ee79a72408e6635fb249196782ac9a69d597c
 snapshots:
 - completed:
     size: 590100
