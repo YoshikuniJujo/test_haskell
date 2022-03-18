@@ -1,12 +1,10 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
-
-import Prelude hiding (readFile)
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -35,6 +33,8 @@ import qualified Data.ByteString.Internal as BS
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Glfw
+
+import Shaderc.TH
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
@@ -621,8 +621,8 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
-	vertShaderCode <- lift $ readFile' "shaders/vert.spv"
-	fragShaderCode <- lift $ readFile' "shaders/frag.spv"
+	vertShaderCode <- lift $ readFromByteString glslVertexShaderMain
+	fragShaderCode <- lift $ readFromByteString glslFragmentShaderMain
 	vertShaderModule <- lift $ createShaderModule g vertShaderCode
 	fragShaderModule <- lift $ createShaderModule g fragShaderCode
 	cnm <- lift $ newCString "main"
@@ -811,9 +811,6 @@ createShaderModule Global { globalDevice = rdvc } (p, n) =
 		lift do	r <- Vk.Shader.Module.create dvc pCreateInfo NullPtr pShaderModule
 			when (r /= success) $ error "failed to create shader module!"
 			peek pShaderModule
-
-readFile' :: FilePath -> IO (Ptr Word32, Integer)
-readFile' fp = readFromByteString =<< BS.readFile fp
 
 readFromByteString :: BS.ByteString -> IO (Ptr Word32, Integer)
 readFromByteString (BS.PS f o l) = do
@@ -1072,3 +1069,44 @@ cleanup Global {
 	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate
+
+[glslVertexShader|
+
+#version 450
+
+layout(location = 0) out vec3 fragColor;
+
+vec2 positions[3] = vec2[](
+	vec2(0.0, -0.5),
+	vec2(0.5, 0.5),
+	vec2(-0.5, 0.5) );
+
+vec3 colors[3] = vec3[](
+	vec3(1.0, 0.0, 0.0),
+	vec3(0.0, 1.0, 0.0),
+	vec3(0.0, 0.0, 1.0) );
+
+void
+main()
+{
+	gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+	fragColor = colors[gl_VertexIndex];
+}
+
+|]
+
+[glslFragmentShader|
+
+#version 450
+
+layout(location = 0) in vec3 fragColor;
+
+layout(location = 0) out vec4 outColor;
+
+void
+main()
+{
+	outColor = vec4(fragColor, 1.0);
+}
+
+|]

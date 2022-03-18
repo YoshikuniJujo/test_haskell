@@ -29,7 +29,6 @@ library
   exposed-modules:
       Data.Color
       Glfw
-      Shaderc.TH.Sample
       ThEnv
       Vulkan
       Vulkan.Access
