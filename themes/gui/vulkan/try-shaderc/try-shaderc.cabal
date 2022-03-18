@@ -38,7 +38,6 @@ library
       Shaderc.Include.Core
       Shaderc.Middle
       Shaderc.TH
-      Shaderc.TH.Sample
   other-modules:
       Paths_try_shaderc
   hs-source-dirs:
