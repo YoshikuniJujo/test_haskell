@@ -22,7 +22,6 @@ import Data.IORef
 import Data.Bits
 import Data.Bool
 import Data.Word
-import System.IO hiding (readFile)
 import System.IO.Unsafe
 
 import ThEnv
@@ -31,6 +30,8 @@ import Vulkan.Base
 import qualified Data.Set as Set
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Internal as BS
 import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Glfw
@@ -620,8 +621,8 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
-	vertShaderCode <- lift $ readFile "shaders/vert.spv"
-	fragShaderCode <- lift $ readFile "shaders/frag.spv"
+	vertShaderCode <- lift $ readFile' "shaders/vert.spv"
+	fragShaderCode <- lift $ readFile' "shaders/frag.spv"
 	vertShaderModule <- lift $ createShaderModule g vertShaderCode
 	fragShaderModule <- lift $ createShaderModule g fragShaderCode
 	cnm <- lift $ newCString "main"
@@ -811,16 +812,14 @@ createShaderModule Global { globalDevice = rdvc } (p, n) =
 			when (r /= success) $ error "failed to create shader module!"
 			peek pShaderModule
 
-readFile :: FilePath -> IO (Ptr Word32, Integer)
-readFile fp = do
-	h <- openFile fp ReadMode
-	hSeek h SeekFromEnd 0
-	fileSize <- hTell h
-	putStrLn $ fp ++ ": " ++ show fileSize
-	pbuff <- mallocArray ((fromIntegral fileSize - 1) `div` 4 + 1)
-	hSeek h AbsoluteSeek 0
-	print =<< hGetBuf h pbuff (fromIntegral fileSize)
-	pure (pbuff, fileSize)
+readFile' :: FilePath -> IO (Ptr Word32, Integer)
+readFile' fp = readFromByteString =<< BS.readFile fp
+
+readFromByteString :: BS.ByteString -> IO (Ptr Word32, Integer)
+readFromByteString (BS.PS f o l) = do
+	p' <- mallocBytes l
+	withForeignPtr f \p -> copyBytes p' (p `plusPtr` o) l
+	pure (p', fromIntegral l)
 
 createFramebuffers :: Global -> IO ()
 createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
