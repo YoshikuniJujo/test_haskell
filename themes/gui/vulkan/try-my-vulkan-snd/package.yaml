@@ -35,12 +35,12 @@ dependencies:
 - GLFW-b
 - ranged-list
 - try-shaderc
+- try-pointable
 
 library:
   source-dirs: src
   pkg-config-dependencies:
   - vulkan
-  - shaderc
 
 data-files:
   - th/vkPhysicalDeviceLimits.txt

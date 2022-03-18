@@ -41,9 +41,10 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7cce27f8c4636f0ebe5ab41329ad574a9aee35bf
+  commit: bbf46e6f3d3a67eeacd86bc2f5c84fde489500d2
   subdirs:
   - themes/gui/vulkan/try-shaderc
+  - features/ffi/try-pointable
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
