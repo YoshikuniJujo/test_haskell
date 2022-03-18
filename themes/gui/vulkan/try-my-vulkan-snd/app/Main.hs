@@ -75,7 +75,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Shader.Module.Core as Vk.Shader.Module.C
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
@@ -791,24 +791,24 @@ createGraphicsPipeline g@Global {
 			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
 		when (r /= success) $ error "failed to create graphics pipeline!"
 		writeIORef graphicsPipeline =<< peek pGraphicsPipeline
-		Vk.Shader.Module.destroy dvc fragShaderModule NullPtr
-		Vk.Shader.Module.destroy dvc vertShaderModule NullPtr
+		Vk.Shader.Module.C.destroy dvc fragShaderModule NullPtr
+		Vk.Shader.Module.C.destroy dvc vertShaderModule NullPtr
 
-createShaderModule :: Global -> (Ptr Word32, Integer) -> IO Vk.Shader.Module.Module
+createShaderModule :: Global -> (Ptr Word32, Integer) -> IO Vk.Shader.Module.C.Module
 createShaderModule Global { globalDevice = rdvc } (p, n) =
 	($ pure) $ runContT do
 		Vk.Device dvc <- lift $ readIORef rdvc
-		let	Vk.Shader.Module.CreateInfo_ fCreateInfo =
-				Vk.Shader.Module.CreateInfo {
-					Vk.Shader.Module.createInfoSType = (),
-					Vk.Shader.Module.createInfoPNext = NullPtr,
-					Vk.Shader.Module.createInfoFlags = 0,
-					Vk.Shader.Module.createInfoCodeSize =
+		let	Vk.Shader.Module.C.CreateInfo_ fCreateInfo =
+				Vk.Shader.Module.C.CreateInfo {
+					Vk.Shader.Module.C.createInfoSType = (),
+					Vk.Shader.Module.C.createInfoPNext = NullPtr,
+					Vk.Shader.Module.C.createInfoFlags = 0,
+					Vk.Shader.Module.C.createInfoCodeSize =
 						fromIntegral n,
-					Vk.Shader.Module.createInfoPCode = p }
+					Vk.Shader.Module.C.createInfoPCode = p }
 		pCreateInfo <- ContT $ withForeignPtr fCreateInfo
 		pShaderModule <- ContT alloca
-		lift do	r <- Vk.Shader.Module.create dvc pCreateInfo NullPtr pShaderModule
+		lift do	r <- Vk.Shader.Module.C.create dvc pCreateInfo NullPtr pShaderModule
 			when (r /= success) $ error "failed to create shader module!"
 			peek pShaderModule
 

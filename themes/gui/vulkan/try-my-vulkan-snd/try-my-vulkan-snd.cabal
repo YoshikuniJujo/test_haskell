@@ -118,7 +118,7 @@ library
       Vulkan.Sample
       Vulkan.Sample.Enum
       Vulkan.Semaphore
-      Vulkan.Shader.Module
+      Vulkan.Shader.Module.Core
       Vulkan.Specialization
       Vulkan.Subpass
       Vulkan.VertexInput
