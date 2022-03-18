@@ -31,6 +31,8 @@ dependencies:
 
 library:
   source-dirs: src
+  pkg-config-dependencies:
+  - shaderc
 
 executables:
   try-shaderc-exe:

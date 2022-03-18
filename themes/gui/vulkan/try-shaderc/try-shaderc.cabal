@@ -43,6 +43,8 @@ library
       Paths_try_shaderc
   hs-source-dirs:
       src
+  pkgconfig-depends:
+      shaderc
   build-depends:
       base >=4.7 && <5
     , bytestring

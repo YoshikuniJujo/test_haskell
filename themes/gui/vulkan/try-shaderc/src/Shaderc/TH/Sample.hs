@@ -10,15 +10,3 @@ import Shaderc.TH
 
 foo :: BS.ByteString
 foo = [test| abc |]
-
-{-
-sampleVertex :: BS.ByteString
-sampleVertex = [glslVertexShader|
-#version 450
-
-void
-main()
-{
-}
-	|]
-	-}
