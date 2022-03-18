@@ -34,6 +34,7 @@ dependencies:
 - uuid
 - GLFW-b
 - ranged-list
+- try-shaderc
 
 library:
   source-dirs: src

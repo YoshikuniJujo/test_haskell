@@ -158,6 +158,7 @@ library
     , ranged-list
     , template-haskell
     , text
+    , try-shaderc
     , uuid
   default-language: Haskell2010
 
@@ -184,6 +185,7 @@ executable my-glslc
     , template-haskell
     , text
     , try-my-vulkan-snd
+    , try-shaderc
     , uuid
   default-language: Haskell2010
 
@@ -209,6 +211,7 @@ executable try-my-vulkan-snd-exe
     , template-haskell
     , text
     , try-my-vulkan-snd
+    , try-shaderc
     , uuid
   default-language: Haskell2010
 
@@ -235,6 +238,7 @@ executable try-shaderc
     , template-haskell
     , text
     , try-my-vulkan-snd
+    , try-shaderc
     , uuid
   default-language: Haskell2010
 
@@ -261,6 +265,7 @@ executable try-shaderc-core
     , template-haskell
     , text
     , try-my-vulkan-snd
+    , try-shaderc
     , uuid
   default-language: Haskell2010
 
@@ -287,5 +292,6 @@ test-suite try-my-vulkan-snd-test
     , template-haskell
     , text
     , try-my-vulkan-snd
+    , try-shaderc
     , uuid
   default-language: Haskell2010

@@ -5,19 +5,21 @@
 
 packages:
 - completed:
-    name: c-struct
-    version: 0.1.1.1
-    git: https://github.com/YoshikuniJujo/c-struct
+    subdir: themes/gui/vulkan/try-shaderc
+    name: try-shaderc
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
-      size: 692
-      sha256: 630a73594bb61b7e24aad5c985a6b45c9746597b338eb9b5e4faa6869d9274d6
-    commit: 20a12061931b11c9c2d50417fac59c391ccd5351
+      size: 611
+      sha256: 593eba409246dbc37f4ce8cb6c5affbf2c39384ef69e5c93be860071279a7ee8
+    commit: 7cce27f8c4636f0ebe5ab41329ad574a9aee35bf
   original:
-    git: https://github.com/YoshikuniJujo/c-struct
-    commit: 20a12061931b11c9c2d50417fac59c391ccd5351
+    subdir: themes/gui/vulkan/try-shaderc
+    git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 7cce27f8c4636f0ebe5ab41329ad574a9aee35bf
 snapshots:
 - completed:
-    size: 590102
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/27.yaml
-    sha256: 79a786674930a89301b0e908fad2822a48882f3d01486117693c377b8edffdbe
-  original: lts-18.27
+    size: 590100
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/28.yaml
+    sha256: 428ec8d5ce932190d3cbe266b9eb3c175cd81e984babf876b64019e2cbe4ea68
+  original: lts-18.28

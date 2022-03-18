@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-18.27
+resolver: lts-18.28
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -40,8 +40,10 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 extra-deps:
-- git: https://github.com/YoshikuniJujo/c-struct
-  commit: 20a12061931b11c9c2d50417fac59c391ccd5351
+- git: https://github.com/YoshikuniJujo/test_haskell
+  commit: 7cce27f8c4636f0ebe5ab41329ad574a9aee35bf
+  subdirs:
+  - themes/gui/vulkan/try-shaderc
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
