@@ -30,3 +30,12 @@ compileIntoSpv src knd ifnm epnm opts = ($ pure) $ runContT do
 		CompilationResult.release rslt
 		C.compilerRelease cmp
 		pure spv
+
+defaultCompileOptions :: CompileOptions.T ()
+defaultCompileOptions = CompileOptions.T {
+	CompileOptions.tMacroDefinitions = [],
+	CompileOptions.tSourceLanguage = Nothing,
+	CompileOptions.tGenerateDebugInfo = False,
+	CompileOptions.tOptimizationLevel = Nothing,
+	CompileOptions.tForcedVersionProfile = Nothing,
+	CompileOptions.tIncludeCallbacks = Nothing }

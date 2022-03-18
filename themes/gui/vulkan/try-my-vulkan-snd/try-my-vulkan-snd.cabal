@@ -42,6 +42,8 @@ library
       Shaderc.Include
       Shaderc.Include.Core
       Shaderc.Middle
+      Shaderc.TH
+      Shaderc.TH.Sample
       ThEnv
       Vulkan
       Vulkan.Access
