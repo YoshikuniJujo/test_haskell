@@ -24,6 +24,7 @@ dependencies:
 - template-haskell
 - bytestring
 - monads-tf
+- nowdoc
 - exception-hierarchy
 - c-enum
 - c-struct
