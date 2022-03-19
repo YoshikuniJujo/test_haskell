@@ -33,7 +33,7 @@ library
       Shaderc.CompileOptions.Core
       Shaderc.Core
       Shaderc.Enum
-      Shaderc.EnumAuto
+      Shaderc.EnumAuto.Core
       Shaderc.Exception
       Shaderc.Exception.Enum
       Shaderc.Include

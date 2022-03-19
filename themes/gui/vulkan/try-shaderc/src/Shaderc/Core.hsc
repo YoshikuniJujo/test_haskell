@@ -9,7 +9,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Data.Word
 
-import Shaderc.EnumAuto
+import Shaderc.EnumAuto.Core
 
 import qualified Shaderc.CompileOptions.Core as CompileOptions
 import qualified Shaderc.CompilationResult.Core as CompilationResult
