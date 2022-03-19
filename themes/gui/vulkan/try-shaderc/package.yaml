@@ -35,6 +35,9 @@ library:
   pkg-config-dependencies:
   - shaderc
 
+data-files:
+- data/ShaderKind.txt
+
 executables:
   try-shaderc-exe:
     main:                Main.hs

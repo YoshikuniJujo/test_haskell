@@ -18,6 +18,8 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+data-files:
+    data/ShaderKind.txt
 
 source-repository head
   type: git

@@ -4,7 +4,6 @@
 
 module Main where
 
-import Control.Arrow
 import Data.List
 import Data.Maybe
 import Data.Char
@@ -13,10 +12,13 @@ import Text.Nowdoc
 main :: IO ()
 main = do
 	lns <- lines <$> readFile "/usr/include/shaderc/shaderc.h"
-	writeFile "../src/Shaderc/EnumAuto.hsc" . (header ++) . (++ " ]\n") $ intercalate ",\n"
-		. map (uncurry mkElem . (concatMap cap . tail . sep '_' &&& id) . dropEqual . dropComma)
-		. filter (not . null) . filter (not . isComment)
-		. fromJust . lookup "shaderc_shader_kind" $ typedefEnums lns
+	let	celems = map (dropEqual . dropComma) . filter (not . null)
+			. filter (not . isComment) . fromJust
+			. lookup "shaderc_shader_kind" $ typedefEnums lns
+		hselems = map (concatMap cap . tail . sep '_') celems
+	writeFile "../data/ShaderKind.txt" $ unlines hselems
+	writeFile "../src/Shaderc/EnumAuto.hsc" . (header ++) . (++ " ]\n")
+		. intercalate ",\n" $ zipWith mkElem hselems celems
 
 typedefEnums, typedefEnumsTail :: [String] -> [(String, [String])]
 typedefEnums [] = []
