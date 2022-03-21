@@ -13,6 +13,7 @@ import Data.Int
 
 import Vulkan.Base
 import Vulkan.Device.Core (Device)
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 
 #include <vulkan/vulkan.h>
 
@@ -40,7 +41,7 @@ data ModuleTag
 type Module = Ptr ModuleTag
 
 foreign import ccall "vkCreateShaderModule" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr Module -> IO #{type VkResult}
+	Device -> Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr Module -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyShaderModule" destroy ::
-	Device -> Module -> Ptr () -> IO ()
+	Device -> Module -> Ptr AllocationCallbacks -> IO ()

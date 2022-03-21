@@ -79,7 +79,6 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Shader.Module.Core as Vk.Shader.Module.C
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
@@ -624,9 +623,9 @@ createGraphicsPipeline :: Global -> IO ()
 createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
-	Vk.Device dvc <- lift $ readIORef rdvc
-	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
-	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
+	dvcdvc@(Vk.Device dvc) <- lift $ readIORef rdvc
+	vsm@(Vk.Shader.Module.M vertShaderModule) <- lift $ createShaderModule g glslVertexShaderMain
+	fsm@(Vk.Shader.Module.M fragShaderModule) <- lift $ createShaderModule g glslFragmentShaderMain
 	cnm <- lift $ newCString "main"
 	sce <- lift $ readIORef rscex
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
@@ -793,23 +792,18 @@ createGraphicsPipeline g@Global {
 			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
 		when (r /= success) $ error "failed to create graphics pipeline!"
 		writeIORef graphicsPipeline =<< peek pGraphicsPipeline
-		Vk.Shader.Module.C.destroy dvc fragShaderModule NullPtr
-		Vk.Shader.Module.C.destroy dvc vertShaderModule NullPtr
+		Vk.Shader.Module.destroy @() dvcdvc fsm Nothing
+		Vk.Shader.Module.destroy @() dvcdvc vsm Nothing
 
-createShaderModule :: Global -> Spv sknd -> IO Vk.Shader.Module.C.Module
+createShaderModule :: Global -> Spv sknd -> IO Vk.Shader.Module.M
 createShaderModule Global { globalDevice = rdvc } cd = do
-	Vk.Device dvc <- readIORef rdvc
+	dvc <- readIORef rdvc
 	let	createInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
 				Vk.Shader.Module.createFlagsZero,
 			Vk.Shader.Module.createInfoCode = cd }
-	($ pure) $ runContT do
-		pCreateInfo <- Vk.Shader.Module.createInfoToCore @() createInfo
-		pShaderModule <- ContT alloca
-		lift do	r <- Vk.Shader.Module.C.create dvc pCreateInfo NullPtr pShaderModule
-			when (r /= success) $ error "failed to create shader module!"
-			peek pShaderModule
+	Vk.Shader.Module.create @() @() dvc createInfo Nothing
 
 readFromByteString :: BS.ByteString -> IO (Ptr Word32, Integer)
 readFromByteString (BS.PS f o l) = do
