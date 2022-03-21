@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -34,6 +35,7 @@ import qualified Graphics.UI.GLFW as GlfwB
 
 import qualified Glfw
 
+import Shaderc
 import Shaderc.TH
 
 import qualified Vulkan as Vk
@@ -621,8 +623,8 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
-	vertShaderCode <- lift $ readFromByteString glslVertexShaderMain
-	fragShaderCode <- lift $ readFromByteString glslFragmentShaderMain
+	vertShaderCode <- lift $ readFromByteString $ (\(Spv spv) -> spv) glslVertexShaderMain
+	fragShaderCode <- lift $ readFromByteString $ (\(Spv spv) -> spv) glslFragmentShaderMain
 	vertShaderModule <- lift $ createShaderModule g vertShaderCode
 	fragShaderModule <- lift $ createShaderModule g fragShaderCode
 	cnm <- lift $ newCString "main"
