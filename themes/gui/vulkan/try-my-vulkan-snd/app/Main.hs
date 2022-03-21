@@ -623,10 +623,8 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
 	Vk.Device dvc <- lift $ readIORef rdvc
-	vertShaderCode <- lift $ readFromByteString $ (\(Spv spv) -> spv) glslVertexShaderMain
-	fragShaderCode <- lift $ readFromByteString $ (\(Spv spv) -> spv) glslFragmentShaderMain
-	vertShaderModule <- lift $ createShaderModule g vertShaderCode
-	fragShaderModule <- lift $ createShaderModule g fragShaderCode
+	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
+	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
 	cnm <- lift $ newCString "main"
 	sce <- lift $ readIORef rscex
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
@@ -796,10 +794,11 @@ createGraphicsPipeline g@Global {
 		Vk.Shader.Module.C.destroy dvc fragShaderModule NullPtr
 		Vk.Shader.Module.C.destroy dvc vertShaderModule NullPtr
 
-createShaderModule :: Global -> (Ptr Word32, Integer) -> IO Vk.Shader.Module.C.Module
-createShaderModule Global { globalDevice = rdvc } (p, n) =
+createShaderModule :: Global -> Spv sknd -> IO Vk.Shader.Module.C.Module
+createShaderModule Global { globalDevice = rdvc } cd = do
+	Vk.Device dvc <- readIORef rdvc
+	(p, n) <- readFromByteString $ (\(Spv spv) -> spv) cd
 	($ pure) $ runContT do
-		Vk.Device dvc <- lift $ readIORef rdvc
 		let	Vk.Shader.Module.C.CreateInfo_ fCreateInfo =
 				Vk.Shader.Module.C.CreateInfo {
 					Vk.Shader.Module.C.createInfoSType = (),
