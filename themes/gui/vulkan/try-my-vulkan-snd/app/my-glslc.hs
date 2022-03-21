@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications, RankNTypes #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -37,14 +38,20 @@ outfile = Option ['o'] [] (ReqArg Outfile "<file>")
 compile :: FilePath -> FilePath -> IO ()
 compile sf df = do
 	src <- BS.readFile sf
-	BS.writeFile df =<< compileIntoSpv @()
-		src (specifyKind sf) (BSC.pack sf) "main" CompileOptions.T {
+	writeFile' df $ compileIntoSpv @()
+		src (BSC.pack sf) "main" CompileOptions.T {
 			CompileOptions.tMacroDefinitions = [],
 			CompileOptions.tSourceLanguage = Nothing,
 			CompileOptions.tGenerateDebugInfo = False,
 			CompileOptions.tOptimizationLevel = Nothing,
 			CompileOptions.tForcedVersionProfile = Nothing,
 			CompileOptions.tIncludeCallbacks = Nothing }
+
+writeFile' :: FilePath -> (forall sknd . SpvShaderKind sknd => IO (Spv sknd)) -> IO ()
+writeFile' fp act = case takeExtension fp of
+	".vert" -> BS.writeFile fp . (\(Spv spv) -> spv) =<< act @'GlslVertexShader
+	".frag" -> BS.writeFile fp . (\(Spv spv) -> spv) =<< act @'GlslFragmentShader
+	_ -> error "I don't know such extension"
 
 specifyKind :: FilePath -> ShaderKind
 specifyKind fp = case takeExtension fp of

@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -12,8 +13,8 @@ import Shaderc.EnumAuto
 import qualified Shaderc.CompileOptions as CompileOptions
 
 main :: IO ()
-main = BS.writeFile "tmp.spv" =<< compileIntoSpv @()
-	"#version 450\nvoid main() {}" GlslVertexShader
+main = BS.writeFile "tmp.spv" . (\(Spv spv) -> spv) =<< compileIntoSpv @() @'GlslVertexShader
+	"#version 450\nvoid main() {}"
 	"main.vert" "main" CompileOptions.T {
 		CompileOptions.tMacroDefinitions = [],
 		CompileOptions.tSourceLanguage = Nothing,

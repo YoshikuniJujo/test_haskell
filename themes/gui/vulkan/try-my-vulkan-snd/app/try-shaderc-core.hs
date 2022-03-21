@@ -19,7 +19,7 @@ import System.Console.GetOpt
 
 import Shaderc.Core
 import Shaderc.Enum
-import Shaderc.EnumAuto
+import Shaderc.EnumAuto.Core
 import Shaderc.Include.Core
 
 import qualified Shaderc.CompileOptions.Core as CompileOptions
