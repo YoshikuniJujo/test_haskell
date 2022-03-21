@@ -72,6 +72,8 @@ import qualified Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
 
+import qualified Vulkan.Shader.Module as Vk.Shader.Module
+
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
@@ -797,17 +799,13 @@ createGraphicsPipeline g@Global {
 createShaderModule :: Global -> Spv sknd -> IO Vk.Shader.Module.C.Module
 createShaderModule Global { globalDevice = rdvc } cd = do
 	Vk.Device dvc <- readIORef rdvc
-	(p, n) <- readFromByteString $ (\(Spv spv) -> spv) cd
+	let	createInfo = Vk.Shader.Module.CreateInfo {
+			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoFlags =
+				Vk.Shader.Module.createFlagsZero,
+			Vk.Shader.Module.createInfoCode = cd }
 	($ pure) $ runContT do
-		let	Vk.Shader.Module.C.CreateInfo_ fCreateInfo =
-				Vk.Shader.Module.C.CreateInfo {
-					Vk.Shader.Module.C.createInfoSType = (),
-					Vk.Shader.Module.C.createInfoPNext = NullPtr,
-					Vk.Shader.Module.C.createInfoFlags = 0,
-					Vk.Shader.Module.C.createInfoCodeSize =
-						fromIntegral n,
-					Vk.Shader.Module.C.createInfoPCode = p }
-		pCreateInfo <- ContT $ withForeignPtr fCreateInfo
+		pCreateInfo <- Vk.Shader.Module.createInfoToCore @() createInfo
 		pShaderModule <- ContT alloca
 		lift do	r <- Vk.Shader.Module.C.create dvc pCreateInfo NullPtr pShaderModule
 			when (r /= success) $ error "failed to create shader module!"
