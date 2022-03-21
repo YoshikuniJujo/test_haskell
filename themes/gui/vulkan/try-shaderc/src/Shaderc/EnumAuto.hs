@@ -19,8 +19,6 @@ import qualified Shaderc.EnumAuto.Core as C
 		((\enm -> normalC (mkName enm) []) <$> enms)
 		[derivClause Nothing [conT ''Show]]
 
-data Spv (sknd :: ShaderKind) = Spv BS.ByteString
-
 class SpvShaderKind (sknd :: ShaderKind) where
 	shaderKind :: C.ShaderKind
 

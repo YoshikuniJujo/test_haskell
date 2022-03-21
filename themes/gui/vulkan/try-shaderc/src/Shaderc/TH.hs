@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,7 +13,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
 
 import Shaderc
-import Shaderc.EnumAuto.Core
+import Shaderc.EnumAuto
 
 glslVertexShader :: QuasiQuoter
 glslVertexShader = QuasiQuoter {
@@ -31,8 +33,8 @@ glslVertexShaderDec =
 	makeShaderDec "glslVertexShaderMain" $ compileGlslVertShader vertSrc
 
 compileGlslVertShader :: BS.ByteString -> BS.ByteString -> IO BS.ByteString
-compileGlslVertShader nm src =
-	compileIntoSpv src GlslVertexShader nm "main" defaultCompileOptions
+compileGlslVertShader nm src = (\(Spv spv :: Spv 'GlslVertexShader) -> spv)
+	<$> compileIntoSpv src nm "main" defaultCompileOptions
 
 glslFragmentShader :: QuasiQuoter
 glslFragmentShader = QuasiQuoter {
@@ -52,8 +54,8 @@ glslFragmentShaderDec =
 	makeShaderDec "glslFragmentShaderMain" $ compileGlslFragShader fragSrc
 
 compileGlslFragShader :: BS.ByteString -> BS.ByteString -> IO BS.ByteString
-compileGlslFragShader nm src =
-	compileIntoSpv src GlslFragmentShader nm "main" defaultCompileOptions
+compileGlslFragShader nm src = (\(Spv spv :: Spv 'GlslFragmentShader) -> spv)
+	<$> compileIntoSpv src nm "main" defaultCompileOptions
 
 makeShaderExp :: (BS.ByteString -> IO BS.ByteString) -> String -> ExpQ
 makeShaderExp cmp src =
