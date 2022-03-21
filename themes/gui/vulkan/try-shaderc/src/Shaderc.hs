@@ -2,12 +2,14 @@
 {-# LANGUAGE TypeApplications, ScopedTypeVariables #-}
 {-# LANGUAGE DataKinds, KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Shaderc where
 
 import Foreign.Storable
 import Control.Monad.Cont
+import Data.String
 
 import qualified Data.ByteString as BS
 
@@ -19,7 +21,8 @@ import qualified Shaderc.Middle as M
 import qualified Shaderc.CompileOptions as CompileOptions
 import qualified Shaderc.CompilationResult.Core as CompilationResult
 
-data Spv (sknd :: ShaderKind) = Spv BS.ByteString
+newtype Spv (sknd :: ShaderKind) = Spv BS.ByteString
+	deriving (Show, IsString)
 
 compileIntoSpv :: forall ud sknd . (Storable ud, SpvShaderKind sknd) =>
 	BS.ByteString -> BS.ByteString -> BS.ByteString ->
