@@ -79,7 +79,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Core as Vk.Ppl.ShaderStage.C
 
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
@@ -628,25 +628,25 @@ createGraphicsPipeline g@Global {
 	fsm@(Vk.Shader.Module.M fragShaderModule) <- lift $ createShaderModule g glslFragmentShaderMain
 	cnm <- lift $ newCString "main"
 	sce <- lift $ readIORef rscex
-	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
-			Vk.Ppl.ShaderStage.createInfoSType = (),
-			Vk.Ppl.ShaderStage.createInfoPNext = NullPtr,
-			Vk.Ppl.ShaderStage.createInfoFlags = 0,
-			Vk.Ppl.ShaderStage.createInfoStage =
-				Vk.Ppl.ShaderStage.vertexBit,
-			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
-			Vk.Ppl.ShaderStage.createInfoPName = cnm,
-			Vk.Ppl.ShaderStage.createInfoPSpecializationInfo =
+	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.C.CreateInfo {
+			Vk.Ppl.ShaderStage.C.createInfoSType = (),
+			Vk.Ppl.ShaderStage.C.createInfoPNext = NullPtr,
+			Vk.Ppl.ShaderStage.C.createInfoFlags = 0,
+			Vk.Ppl.ShaderStage.C.createInfoStage =
+				Vk.Ppl.ShaderStage.C.vertexBit,
+			Vk.Ppl.ShaderStage.C.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShaderStage.C.createInfoPName = cnm,
+			Vk.Ppl.ShaderStage.C.createInfoPSpecializationInfo =
 				NullPtr }
-		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
-			Vk.Ppl.ShaderStage.createInfoSType = (),
-			Vk.Ppl.ShaderStage.createInfoPNext = NullPtr,
-			Vk.Ppl.ShaderStage.createInfoFlags = 0,
-			Vk.Ppl.ShaderStage.createInfoStage =
-				Vk.Ppl.ShaderStage.fragmentBit,
-			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
-			Vk.Ppl.ShaderStage.createInfoPName = cnm,
-			Vk.Ppl.ShaderStage.createInfoPSpecializationInfo =
+		fragShaderStageInfo = Vk.Ppl.ShaderStage.C.CreateInfo {
+			Vk.Ppl.ShaderStage.C.createInfoSType = (),
+			Vk.Ppl.ShaderStage.C.createInfoPNext = NullPtr,
+			Vk.Ppl.ShaderStage.C.createInfoFlags = 0,
+			Vk.Ppl.ShaderStage.C.createInfoStage =
+				Vk.Ppl.ShaderStage.C.fragmentBit,
+			Vk.Ppl.ShaderStage.C.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShaderStage.C.createInfoPName = cnm,
+			Vk.Ppl.ShaderStage.C.createInfoPSpecializationInfo =
 				NullPtr }
 		shaderStageList = [vertShaderStageInfo, fragShaderStageInfo]
 		Vk.Ppl.VI.CreateInfo_ fVertexInputInfo = Vk.Ppl.VI.CreateInfo {
