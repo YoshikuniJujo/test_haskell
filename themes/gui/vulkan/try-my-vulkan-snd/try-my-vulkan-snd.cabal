@@ -122,7 +122,7 @@ library
       Vulkan.Shader.Module
       Vulkan.Shader.Module.Core
       Vulkan.Shader.Stage.Enum
-      Vulkan.Specialization
+      Vulkan.Specialization.Core
       Vulkan.Subpass
       Vulkan.VertexInput
   other-modules:
