@@ -17,6 +17,7 @@ import qualified VulkanImageViewEnum
 import qualified VulkanComponentEnum
 
 import qualified VulkanPipelineShaderStageEnum
+import qualified VulkanShaderStageEnum
 
 main :: IO ()
 main = do
@@ -35,3 +36,4 @@ main = do
 	VulkanComponentEnum.make
 
 	VulkanPipelineShaderStageEnum.make
+	VulkanShaderStageEnum.make

@@ -104,6 +104,7 @@ library
       Vulkan.Pipeline.Layout
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.RasterizationState
+      Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum
       Vulkan.Pipeline.TessellationState
@@ -120,6 +121,7 @@ library
       Vulkan.Semaphore
       Vulkan.Shader.Module
       Vulkan.Shader.Module.Core
+      Vulkan.Shader.Stage.Enum
       Vulkan.Specialization
       Vulkan.Subpass
       Vulkan.VertexInput
