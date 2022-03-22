@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.VertexInputState where
+module Vulkan.Pipeline.VertexInputState.Core where
 
 import Foreign.Ptr
 import Foreign.Storable

@@ -82,7 +82,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
+import qualified Vulkan.Pipeline.VertexInputState.Core as Vk.Ppl.VI.C
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
@@ -653,17 +653,17 @@ createGraphicsPipeline g@Global {
 	fragShaderStageInfoCore <-
 		Vk.Ppl.ShaderStage.createInfoToCore @() @_ @() fragShaderStageInfo
 	let	shaderStageList = [vertShaderStageInfoCore, fragShaderStageInfoCore]
-		Vk.Ppl.VI.CreateInfo_ fVertexInputInfo = Vk.Ppl.VI.CreateInfo {
-			Vk.Ppl.VI.createInfoSType = (),
-			Vk.Ppl.VI.createInfoPNext = NullPtr,
-			Vk.Ppl.VI.createInfoFlags = 0,
-			Vk.Ppl.VI.createInfoVertexBindingDescriptionCount =
+		Vk.Ppl.VI.C.CreateInfo_ fVertexInputInfo = Vk.Ppl.VI.C.CreateInfo {
+			Vk.Ppl.VI.C.createInfoSType = (),
+			Vk.Ppl.VI.C.createInfoPNext = NullPtr,
+			Vk.Ppl.VI.C.createInfoFlags = 0,
+			Vk.Ppl.VI.C.createInfoVertexBindingDescriptionCount =
 				0,
-			Vk.Ppl.VI.createInfoPVertexBindingDescriptions =
+			Vk.Ppl.VI.C.createInfoPVertexBindingDescriptions =
 				NullPtr,
-			Vk.Ppl.VI.createInfoVertexAttributeDescriptionCount =
+			Vk.Ppl.VI.C.createInfoVertexAttributeDescriptionCount =
 				0,
-			Vk.Ppl.VI.createInfoPVertexAttributeDescriptions =
+			Vk.Ppl.VI.C.createInfoPVertexAttributeDescriptions =
 				NullPtr }
 		Vk.Ppl.IA.CreateInfo_ fInputAssembly = Vk.Ppl.IA.CreateInfo {
 			Vk.Ppl.IA.createInfoSType = (),
