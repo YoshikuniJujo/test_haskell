@@ -17,6 +17,7 @@ import Data.Bits
 
 enum "CreateFlagBits" ''#{type VkPipelineShaderStageCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
+	("CreateFlagsZero", 0),
 	("CreateAllowVaryingSubgroupSizeBitExt",
 		#{const VK_PIPELINE_SHADER_STAGE_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT_EXT}),
 	("CreateRequireFullSubgroupsBitExt",

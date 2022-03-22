@@ -73,13 +73,14 @@ import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
 
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
+import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
-
-import qualified Vulkan.Pipeline.ShaderStage.Core as Vk.Ppl.ShaderStage.C
 
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
@@ -624,31 +625,34 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
 	dvcdvc@(Vk.Device dvc) <- lift $ readIORef rdvc
-	vsm@(Vk.Shader.Module.M vertShaderModule) <- lift $ createShaderModule g glslVertexShaderMain
-	fsm@(Vk.Shader.Module.M fragShaderModule) <- lift $ createShaderModule g glslFragmentShaderMain
-	cnm <- lift $ newCString "main"
+	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
+	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
 	sce <- lift $ readIORef rscex
-	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.C.CreateInfo {
-			Vk.Ppl.ShaderStage.C.createInfoSType = (),
-			Vk.Ppl.ShaderStage.C.createInfoPNext = NullPtr,
-			Vk.Ppl.ShaderStage.C.createInfoFlags = 0,
-			Vk.Ppl.ShaderStage.C.createInfoStage =
-				Vk.Ppl.ShaderStage.C.vertexBit,
-			Vk.Ppl.ShaderStage.C.createInfoModule = vertShaderModule,
-			Vk.Ppl.ShaderStage.C.createInfoPName = cnm,
-			Vk.Ppl.ShaderStage.C.createInfoPSpecializationInfo =
-				NullPtr }
-		fragShaderStageInfo = Vk.Ppl.ShaderStage.C.CreateInfo {
-			Vk.Ppl.ShaderStage.C.createInfoSType = (),
-			Vk.Ppl.ShaderStage.C.createInfoPNext = NullPtr,
-			Vk.Ppl.ShaderStage.C.createInfoFlags = 0,
-			Vk.Ppl.ShaderStage.C.createInfoStage =
-				Vk.Ppl.ShaderStage.C.fragmentBit,
-			Vk.Ppl.ShaderStage.C.createInfoModule = fragShaderModule,
-			Vk.Ppl.ShaderStage.C.createInfoPName = cnm,
-			Vk.Ppl.ShaderStage.C.createInfoPSpecializationInfo =
-				NullPtr }
-		shaderStageList = [vertShaderStageInfo, fragShaderStageInfo]
+	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
+				Vk.Ppl.ShaderStage.CreateFlagsZero,
+			Vk.Ppl.ShaderStage.createInfoStage =
+				Vk.Shader.Stage.VertexBit,
+			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
+				Nothing }
+		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
+				Vk.Ppl.ShaderStage.CreateFlagsZero,
+			Vk.Ppl.ShaderStage.createInfoStage =
+				Vk.Shader.Stage.FragmentBit,
+			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
+				Nothing }
+	vertShaderStageInfoCore <-
+		Vk.Ppl.ShaderStage.createInfoToCore @() @_ @() vertShaderStageInfo
+	fragShaderStageInfoCore <-
+		Vk.Ppl.ShaderStage.createInfoToCore @() @_ @() fragShaderStageInfo
+	let	shaderStageList = [vertShaderStageInfoCore, fragShaderStageInfoCore]
 		Vk.Ppl.VI.CreateInfo_ fVertexInputInfo = Vk.Ppl.VI.CreateInfo {
 			Vk.Ppl.VI.createInfoSType = (),
 			Vk.Ppl.VI.createInfoPNext = NullPtr,
@@ -792,10 +796,10 @@ createGraphicsPipeline g@Global {
 			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
 		when (r /= success) $ error "failed to create graphics pipeline!"
 		writeIORef graphicsPipeline =<< peek pGraphicsPipeline
-		Vk.Shader.Module.destroy @() dvcdvc fsm Nothing
-		Vk.Shader.Module.destroy @() dvcdvc vsm Nothing
+		Vk.Shader.Module.destroy @() dvcdvc fragShaderModule Nothing
+		Vk.Shader.Module.destroy @() dvcdvc vertShaderModule Nothing
 
-createShaderModule :: Global -> Spv sknd -> IO Vk.Shader.Module.M
+createShaderModule :: Global -> Spv sknd -> IO (Vk.Shader.Module.M sknd)
 createShaderModule Global { globalDevice = rdvc } cd = do
 	dvc <- readIORef rdvc
 	let	createInfo = Vk.Shader.Module.CreateInfo {

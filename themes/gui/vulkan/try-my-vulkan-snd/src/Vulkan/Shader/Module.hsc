@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DataKinds, KindSignatures #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Shader.Module where
@@ -17,6 +18,7 @@ import qualified Data.ByteString.Internal as BS
 
 import Foreign.Pointable
 import Shaderc
+import Shaderc.EnumAuto
 
 import Vulkan.Exception
 import Vulkan.Exception.Enum
@@ -27,7 +29,7 @@ import qualified Vulkan.Shader.Module.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype M = M C.Module deriving Show
+newtype M (sknd :: ShaderKind) = M C.Module deriving Show
 
 newtype CreateFlags =
 	CreateFlags #{type VkShaderModuleCreateFlags} deriving Show
@@ -64,7 +66,7 @@ readFromByteString (BS.PS f o l) = do
 	pure (p', fromIntegral l)
 
 create :: (Pointable n, Pointable n') =>
-	Device -> CreateInfo n sknd -> Maybe (AllocationCallbacks n') -> IO M
+	Device -> CreateInfo n sknd -> Maybe (AllocationCallbacks n') -> IO (M sknd)
 create (Device dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
 	pac <- maybeToCore mac
@@ -73,7 +75,7 @@ create (Device dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pm
 
-destroy :: Pointable n => Device -> M -> Maybe (AllocationCallbacks n) -> IO ()
+destroy :: Pointable n => Device -> M sknd -> Maybe (AllocationCallbacks n) -> IO ()
 destroy (Device dvc) (M m) mac = ($ pure) $ runContT do
 	pac <- maybeToCore mac
 	lift $ C.destroy dvc m pac
