@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Data.Color
+      Data.Generics.Flatten
       Data.HeteroList
       Glfw
       ThEnv
@@ -109,6 +110,7 @@ library
       Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum
       Vulkan.Pipeline.TessellationState
+      Vulkan.Pipeline.VertexInputState.BindingStrideList
       Vulkan.Pipeline.VertexInputState.Core
       Vulkan.Pipeline.VertexInputState.Middle
       Vulkan.Pipeline.ViewportState
@@ -146,6 +148,7 @@ library
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , text
     , try-pointable
@@ -173,6 +176,7 @@ executable my-glslc
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , text
     , try-my-vulkan-snd
@@ -200,6 +204,7 @@ executable try-my-vulkan-snd-exe
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , text
     , try-my-vulkan-snd
@@ -228,6 +233,7 @@ executable try-shaderc
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , text
     , try-my-vulkan-snd
@@ -256,6 +262,7 @@ executable try-shaderc-core
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , text
     , try-my-vulkan-snd
@@ -284,6 +291,7 @@ test-suite try-my-vulkan-snd-test
     , monads-tf
     , nowdoc
     , ranged-list
+    , size-alignment-list
     , template-haskell
     , text
     , try-my-vulkan-snd

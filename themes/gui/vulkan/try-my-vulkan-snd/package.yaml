@@ -36,6 +36,7 @@ dependencies:
 - ranged-list
 - try-shaderc
 - try-pointable
+- size-alignment-list
 
 library:
   source-dirs: src
