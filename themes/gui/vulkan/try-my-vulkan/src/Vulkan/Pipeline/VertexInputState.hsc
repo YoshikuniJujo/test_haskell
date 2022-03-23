@@ -28,17 +28,6 @@ createInfoToC :: (
 	BindingStrideList vs VertexInputRate In.VertexInputRate,
 	PipelineVertexInputStateCreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n vs ts -> (In.CreateInfo -> IO a) -> IO a
-	{-
-createInfoToC _ f = f In.CreateInfo {
-	In.createInfoSType = (),
-	In.createInfoPNext = NullPtr,
-	In.createInfoFlags = In.PipelineVertexInputStateCreateFlagsZero,
-	In.createInfoVertexBindingDescriptionCount = 0,
-	In.createInfoPVertexBindingDescriptions = NullPtr,
-	In.createInfoVertexAttributeDescriptionCount = 0,
-	In.createInfoPVertexAttributeDescriptions = NullPtr
-	}
-	-}
 createInfoToC = Im.pipelineVertexInputStateCreateInfoToC
 	. pipelineVertexInputStateCreateInfoToIntermediate
 
