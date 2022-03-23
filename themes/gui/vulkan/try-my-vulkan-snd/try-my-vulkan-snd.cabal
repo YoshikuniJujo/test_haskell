@@ -130,6 +130,7 @@ library
       Vulkan.Specialization
       Vulkan.Specialization.Core
       Vulkan.Subpass
+      Vulkan.VertexInput
       Vulkan.VertexInput.Core
   other-modules:
       Paths_try_my_vulkan_snd

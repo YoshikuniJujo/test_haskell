@@ -10,3 +10,5 @@ memo
 * [x] repair ExtensionProperties specVersion is not ApiVersion
 * [x] globalSwapChainImageFormat
 * [x] globalSwapChainExtent
+* [ ] Vulkan.VertexInput.Enum
+* [ ] Vulkan.VertexInput
