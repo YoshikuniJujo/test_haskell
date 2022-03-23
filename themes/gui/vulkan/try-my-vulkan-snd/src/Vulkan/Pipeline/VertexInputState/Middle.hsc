@@ -14,7 +14,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
-import qualified Vulkan.VertexInput as VertexInput
+import qualified Vulkan.VertexInput.Core as VertexInput.C
 import qualified Vulkan.Pipeline.VertexInputState.Core as C
 
 #include <vulkan/vulkan.h>
@@ -26,9 +26,9 @@ data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoVertexBindingDescriptions ::
-		[VertexInput.BindingDescription],
+		[VertexInput.C.BindingDescription],
 	createInfoVertexAttributeDescriptions ::
-		[VertexInput.AttributeDescription] }
+		[VertexInput.C.AttributeDescription] }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo

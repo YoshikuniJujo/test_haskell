@@ -12,7 +12,7 @@ import Data.Word
 
 import Vulkan.Base
 
-import qualified Vulkan.VertexInput as VertexInput
+import qualified Vulkan.VertexInput.Core as VertexInput
 
 #include <vulkan/vulkan.h>
 
