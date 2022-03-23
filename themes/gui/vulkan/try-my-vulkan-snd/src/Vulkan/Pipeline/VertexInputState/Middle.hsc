@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,6 +7,8 @@ module Vulkan.Pipeline.VertexInputState.Middle where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
+import Foreign.Storable
+import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -16,12 +19,8 @@ import qualified Vulkan.Pipeline.VertexInputState.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype CreateFlags = CreateFlags #{type VkPipelineVertexInputStateCreateFlags}
-	deriving Show
-
-pattern CreateFlagsZero :: CreateFlags
-pattern CreateFlagsZero <- CreateFlags 0 where
-	CreateFlagsZero = CreateFlags 0
+enum "CreateFlags" ''#{type VkPipelineVertexInputStateCreateFlags}
+		[''Show, ''Storable] [("CreateFlagsZero", 0)]
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,

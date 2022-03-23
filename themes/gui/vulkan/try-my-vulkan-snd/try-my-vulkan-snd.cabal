@@ -110,6 +110,7 @@ library
       Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum
       Vulkan.Pipeline.TessellationState
+      Vulkan.Pipeline.VertexInputState
       Vulkan.Pipeline.VertexInputState.BindingStrideList
       Vulkan.Pipeline.VertexInputState.Core
       Vulkan.Pipeline.VertexInputState.Middle
