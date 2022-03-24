@@ -76,13 +76,14 @@ import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
+import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.VertexInputState.Core as Vk.Ppl.VI.C
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
@@ -653,18 +654,11 @@ createGraphicsPipeline g@Global {
 	fragShaderStageInfoCore <-
 		Vk.Ppl.ShaderStage.createInfoToCore @() @_ @() fragShaderStageInfo
 	let	shaderStageList = [vertShaderStageInfoCore, fragShaderStageInfoCore]
-		Vk.Ppl.VI.C.CreateInfo_ fVertexInputInfo = Vk.Ppl.VI.C.CreateInfo {
-			Vk.Ppl.VI.C.createInfoSType = (),
-			Vk.Ppl.VI.C.createInfoPNext = NullPtr,
-			Vk.Ppl.VI.C.createInfoFlags = 0,
-			Vk.Ppl.VI.C.createInfoVertexBindingDescriptionCount =
-				0,
-			Vk.Ppl.VI.C.createInfoPVertexBindingDescriptions =
-				NullPtr,
-			Vk.Ppl.VI.C.createInfoVertexAttributeDescriptionCount =
-				0,
-			Vk.Ppl.VI.C.createInfoPVertexAttributeDescriptions =
-				NullPtr }
+		vertexInputInfo :: Vk.Ppl.VI.CreateInfo () () '[]
+		vertexInputInfo = Vk.Ppl.VI.CreateInfo {
+			Vk.Ppl.VI.createInfoNext = Nothing,
+			Vk.Ppl.VI.createInfoFlags =
+				Vk.Ppl.VI.M.CreateFlagsZero }
 		Vk.Ppl.IA.CreateInfo_ fInputAssembly = Vk.Ppl.IA.CreateInfo {
 			Vk.Ppl.IA.createInfoSType = (),
 			Vk.Ppl.IA.createInfoPNext = NullPtr,
@@ -762,7 +756,7 @@ createGraphicsPipeline g@Global {
 		writeIORef pipelineLayout =<< peek pPipelineLayout
 	shaderStages <- ContT $ allocaArray 2
 	lift $ pokeArray shaderStages shaderStageList
-	pVertexInputInfo <- ContT $ withForeignPtr fVertexInputInfo
+	pVertexInputInfo <- Vk.Ppl.VI.createInfoToCore vertexInputInfo
 	pInputAssembly <- ContT $ withForeignPtr fInputAssembly
 	pViewportState <- ContT $ withForeignPtr fViewportState
 	pRasterizer <- ContT $ withForeignPtr fRasterizer
