@@ -132,6 +132,7 @@ library
       Vulkan.Subpass
       Vulkan.VertexInput
       Vulkan.VertexInput.Core
+      Vulkan.VertexInput.Enum
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:
