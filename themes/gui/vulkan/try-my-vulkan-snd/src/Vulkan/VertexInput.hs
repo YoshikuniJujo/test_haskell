@@ -55,3 +55,8 @@ attributeDescriptionToCore AttributeDescription {
 		C.attributeDescriptionBinding = bnd,
 		C.attributeDescriptionFormat = fmt,
 		C.attributeDescriptionOffset = oft }
+
+succAttributeDescriptionLocation :: AttributeDescription -> AttributeDescription
+succAttributeDescriptionLocation
+	ad@AttributeDescription { attributeDescriptionLocation = loc } =
+	ad { attributeDescriptionLocation = loc + 1 }

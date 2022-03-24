@@ -14,7 +14,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
-import qualified Vulkan.VertexInput.Core as VertexInput.C
+import qualified Vulkan.VertexInput as VertexInput
 import qualified Vulkan.Pipeline.VertexInputState.Core as C
 
 #include <vulkan/vulkan.h>
@@ -26,18 +26,21 @@ data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoVertexBindingDescriptions ::
-		[VertexInput.C.BindingDescription],
+		[VertexInput.BindingDescription],
 	createInfoVertexAttributeDescriptions ::
-		[VertexInput.C.AttributeDescription] }
+		[VertexInput.AttributeDescription] }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
-	createInfoVertexBindingDescriptions = length &&& id -> (vbdc, vbds),
-	createInfoVertexAttributeDescriptions = length &&& id -> (vadc, vads)
-	} = do
+	createInfoVertexBindingDescriptions =
+		((length &&& id) . (VertexInput.bindingDescriptionToCore <$>))
+			-> (vbdc, vbds),
+	createInfoVertexAttributeDescriptions =
+		((length &&& id) . (VertexInput.attributeDescriptionToCore <$>))
+			-> (vadc, vads) } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pvbds <- ContT $ allocaArray vbdc
 	lift $ pokeArray pvbds vbds
