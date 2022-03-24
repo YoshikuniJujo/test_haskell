@@ -2,7 +2,8 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.VertexInputState where
@@ -26,5 +27,9 @@ createInfoToBindingDescriptions :: forall n vs ts .
 createInfoToBindingDescriptions _ = VertexInput.bindingDescriptionFromRaw
 	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
 
--- class CreateInfoAttributeDescription vs (ts :: [*]) where	
---	createInfoAttributeDescription :: CreateInfo n vs ts -> [
+class CreateInfoAttributeDescription vs (ts :: [*]) where	
+	createInfoAttributeDescription ::
+		CreateInfo n vs ts -> [VertexInput.AttributeDescription]
+
+instance CreateInfoAttributeDescription vs '[] where
+	createInfoAttributeDescription _ = []
