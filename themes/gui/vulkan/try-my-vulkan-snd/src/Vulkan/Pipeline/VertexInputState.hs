@@ -10,6 +10,8 @@
 
 module Vulkan.Pipeline.VertexInputState where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Kind
@@ -31,8 +33,10 @@ createInfoToCore :: (
 	Pointable n,
 	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	CreateInfoAttributeDescription vs ts ) =>
-	CreateInfo n vs ts -> ContT r IO C.CreateInfo
-createInfoToCore = M.createInfoToCore . createInfoToMiddle
+	CreateInfo n vs ts -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore ci = do
+	C.CreateInfo_ fCreateInfo <- M.createInfoToCore $ createInfoToMiddle ci
+	ContT $ withForeignPtr fCreateInfo
 
 createInfoToMiddle :: (
 	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
