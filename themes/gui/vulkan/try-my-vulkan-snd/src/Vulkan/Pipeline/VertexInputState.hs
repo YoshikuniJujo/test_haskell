@@ -25,3 +25,6 @@ createInfoToBindingDescriptions :: forall n vs ts .
 	CreateInfo n vs ts -> [VertexInput.BindingDescription]
 createInfoToBindingDescriptions _ = VertexInput.bindingDescriptionFromRaw
 	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
+
+-- class CreateInfoAttributeDescription vs (ts :: [*]) where	
+--	createInfoAttributeDescription :: CreateInfo n vs ts -> [

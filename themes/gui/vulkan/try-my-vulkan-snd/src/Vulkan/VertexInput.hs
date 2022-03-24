@@ -7,6 +7,8 @@ module Vulkan.VertexInput where
 import Foreign.Storable.SizeAlignment
 import Data.Word
 
+import Vulkan.Enum
+
 import qualified Vulkan.VertexInput.Enum as E
 import qualified Vulkan.VertexInput.Core as C
 
@@ -35,3 +37,21 @@ bindingDescriptionToCore BindingDescription {
 		C.bindingDescriptionBinding = bd,
 		C.bindingDescriptionStride = st,
 		C.bindingDescriptionInputRate = ir }
+
+data AttributeDescription = AttributeDescription {
+	attributeDescriptionLocation :: Word32,
+	attributeDescriptionBinding :: Word32,
+	attributeDescriptionFormat :: Format,
+	attributeDescriptionOffset :: Word32 }
+	deriving Show
+
+attributeDescriptionToCore :: AttributeDescription -> C.AttributeDescription
+attributeDescriptionToCore AttributeDescription {
+	attributeDescriptionLocation = loc,
+	attributeDescriptionBinding = bnd,
+	attributeDescriptionFormat = Format fmt,
+	attributeDescriptionOffset = oft } = C.AttributeDescription {
+		C.attributeDescriptionLocation = loc,
+		C.attributeDescriptionBinding = bnd,
+		C.attributeDescriptionFormat = fmt,
+		C.attributeDescriptionOffset = oft }
