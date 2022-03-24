@@ -1,8 +1,10 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.VertexInput where
 
+import Foreign.Storable.SizeAlignment
 import Data.Word
 
 import qualified Vulkan.VertexInput.Enum as E
@@ -19,6 +21,10 @@ data BindingDescription = BindingDescription {
 	bindingDescriptionStride :: Word32,
 	bindingDescriptionInputRate :: Rate }
 	deriving Show
+
+bindingDescriptionFromRaw :: [(SizeAlignment, Rate)] -> [BindingDescription]
+bindingDescriptionFromRaw sars = (<$> zip [0 ..] sars)
+	\(b, ((fromIntegral -> sz, _algn), r)) -> BindingDescription b sz r
 
 bindingDescriptionToCore :: BindingDescription -> C.BindingDescription
 bindingDescriptionToCore BindingDescription {

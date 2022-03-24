@@ -7,7 +7,6 @@
 
 module Vulkan.Pipeline.VertexInputState where
 
-import Foreign.Storable.SizeAlignment
 import Data.Kind
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList
@@ -20,9 +19,9 @@ data CreateInfo n vs (ts :: [Type]) = CreateInfo {
 	createInfoFlags :: M.CreateFlags }
 	deriving Show
 
-createInfoToBindingDescriptionRaw :: forall n vs ts .
+createInfoToBindingDescriptions :: forall n vs ts .
 	BindingStrideList vs
 		VertexInput.Rate VertexInput.Rate =>
-	CreateInfo n vs ts -> [(SizeAlignment, VertexInput.Rate)]
-createInfoToBindingDescriptionRaw _ =
-	bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
+	CreateInfo n vs ts -> [VertexInput.BindingDescription]
+createInfoToBindingDescriptions _ = VertexInput.bindingDescriptionFromRaw
+	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
