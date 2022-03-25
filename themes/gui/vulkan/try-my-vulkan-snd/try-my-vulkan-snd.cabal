@@ -106,7 +106,7 @@ library
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout
       Vulkan.Pipeline.MultisampleState
-      Vulkan.Pipeline.RasterizationState
+      Vulkan.Pipeline.RasterizationState.Core
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum

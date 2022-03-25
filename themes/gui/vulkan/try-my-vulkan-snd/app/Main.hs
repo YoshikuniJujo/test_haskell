@@ -87,7 +87,7 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.Pipeline.ViewportState.Core as Vk.Ppl.VP.C
-import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
+import qualified Vulkan.Pipeline.RasterizationState.Core as Vk.Ppl.RstSt.C
 import qualified Vulkan.Polygon as Vk.Polygon
 import qualified Vulkan.Cull as Vk.Cull
 import qualified Vulkan.FrontFace as Vk.FrontFace
@@ -679,23 +679,23 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.VP.createInfoFlags = Vk.Ppl.VP.CreateFlagsZero,
 			Vk.Ppl.VP.createInfoViewports = [viewport],
 			Vk.Ppl.VP.createInfoScissors = [scissor] }
-		Vk.Ppl.RstSt.CreateInfo_ fRasterizer = Vk.Ppl.RstSt.CreateInfo {
-			Vk.Ppl.RstSt.createInfoSType = (),
-			Vk.Ppl.RstSt.createInfoPNext = NullPtr,
-			Vk.Ppl.RstSt.createInfoFlags = 0,
-			Vk.Ppl.RstSt.createInfoDepthClampEnable = vkFalse,
-			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable =
+		Vk.Ppl.RstSt.C.CreateInfo_ fRasterizer = Vk.Ppl.RstSt.C.CreateInfo {
+			Vk.Ppl.RstSt.C.createInfoSType = (),
+			Vk.Ppl.RstSt.C.createInfoPNext = NullPtr,
+			Vk.Ppl.RstSt.C.createInfoFlags = 0,
+			Vk.Ppl.RstSt.C.createInfoDepthClampEnable = vkFalse,
+			Vk.Ppl.RstSt.C.createInfoRasterizerDiscardEnable =
 				vkFalse,
-			Vk.Ppl.RstSt.createInfoPolygonMode =
+			Vk.Ppl.RstSt.C.createInfoPolygonMode =
 				Vk.Polygon.modeFill,
-			Vk.Ppl.RstSt.createInfoCullMode = Vk.Cull.modeBackBit,
-			Vk.Ppl.RstSt.createInfoFrontFace =
+			Vk.Ppl.RstSt.C.createInfoCullMode = Vk.Cull.modeBackBit,
+			Vk.Ppl.RstSt.C.createInfoFrontFace =
 				Vk.FrontFace.clockwise,
-			Vk.Ppl.RstSt.createInfoDepthBiasEnable = vkFalse,
-			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
-			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
-			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0,
-			Vk.Ppl.RstSt.createInfoLineWidth = 1 }
+			Vk.Ppl.RstSt.C.createInfoDepthBiasEnable = vkFalse,
+			Vk.Ppl.RstSt.C.createInfoDepthBiasConstantFactor = 0,
+			Vk.Ppl.RstSt.C.createInfoDepthBiasClamp = 0,
+			Vk.Ppl.RstSt.C.createInfoDepthBiasSlopeFactor = 0,
+			Vk.Ppl.RstSt.C.createInfoLineWidth = 1 }
 		Vk.Ppl.MS.CreateInfo_ fMultisampling = Vk.Ppl.MS.CreateInfo {
 			Vk.Ppl.MS.createInfoSType = (),
 			Vk.Ppl.MS.createInfoPNext = NullPtr,

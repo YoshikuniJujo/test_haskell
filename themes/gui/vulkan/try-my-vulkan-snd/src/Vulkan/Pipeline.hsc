@@ -19,7 +19,7 @@ import qualified Vulkan.Pipeline.VertexInputState.Core as VertexInputState
 import qualified Vulkan.Pipeline.InputAssemblyState.Core as InputAssemblyState
 import qualified Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Vulkan.Pipeline.ViewportState.Core as ViewportState
-import qualified Vulkan.Pipeline.RasterizationState as RasterizationState
+import qualified Vulkan.Pipeline.RasterizationState.Core as RasterizationState
 import qualified Vulkan.Pipeline.MultisampleState as MultisampleState
 import qualified Vulkan.Pipeline.DepthStencilState as DepthStencilState
 import qualified Vulkan.Pipeline.ColorBlendState as ColorBlendState
