@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.MultisampleState where
+module Vulkan.Pipeline.MultisampleState.Core where
 
 import Foreign.Ptr
 import Foreign.Storable

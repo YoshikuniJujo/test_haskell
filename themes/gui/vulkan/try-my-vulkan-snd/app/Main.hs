@@ -88,7 +88,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
+import qualified Vulkan.Pipeline.MultisampleState.Core as Vk.Ppl.MS.C
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachmentState as Vk.Ppl.CBASt
 import qualified Vulkan.Blend as Vk.Blend
@@ -691,17 +691,17 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0,
 			Vk.Ppl.RstSt.createInfoLineWidth = 1 }
-		Vk.Ppl.MS.CreateInfo_ fMultisampling = Vk.Ppl.MS.CreateInfo {
-			Vk.Ppl.MS.createInfoSType = (),
-			Vk.Ppl.MS.createInfoPNext = NullPtr,
-			Vk.Ppl.MS.createInfoFlags = 0,
-			Vk.Ppl.MS.createInfoRasterizationSamples =
+		Vk.Ppl.MS.C.CreateInfo_ fMultisampling = Vk.Ppl.MS.C.CreateInfo {
+			Vk.Ppl.MS.C.createInfoSType = (),
+			Vk.Ppl.MS.C.createInfoPNext = NullPtr,
+			Vk.Ppl.MS.C.createInfoFlags = 0,
+			Vk.Ppl.MS.C.createInfoRasterizationSamples =
 				Vk.Sample.count1Bit,
-			Vk.Ppl.MS.createInfoSampleShadingEnable = vkFalse,
-			Vk.Ppl.MS.createInfoMinSampleShading = 1,
-			Vk.Ppl.MS.createInfoPSampleMask = NullPtr,
-			Vk.Ppl.MS.createInfoAlphaToCoverageEnable = vkFalse,
-			Vk.Ppl.MS.createInfoAlphaToOneEnable = vkFalse }
+			Vk.Ppl.MS.C.createInfoSampleShadingEnable = vkFalse,
+			Vk.Ppl.MS.C.createInfoMinSampleShading = 1,
+			Vk.Ppl.MS.C.createInfoPSampleMask = NullPtr,
+			Vk.Ppl.MS.C.createInfoAlphaToCoverageEnable = vkFalse,
+			Vk.Ppl.MS.C.createInfoAlphaToOneEnable = vkFalse }
 		Vk.Ppl.CBASt.State_ fColorBlendAttachment = Vk.Ppl.CBASt.State {
 			Vk.Ppl.CBASt.stateBlendEnable = vkFalse,
 			Vk.Ppl.CBASt.stateSrcColorBlendFactor =
