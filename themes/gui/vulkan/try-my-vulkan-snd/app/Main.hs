@@ -79,6 +79,7 @@ import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
 import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
+import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -664,25 +665,20 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.IA.createInfoTopology =
 				Vk.PrimitiveTopologyTriangleList,
 			Vk.Ppl.IA.createInfoPrimitiveRestartEnable = False }
-		Vk.C.Viewport_ fViewport = Vk.C.Viewport {
+		viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
 			Vk.C.viewportWidth = fromIntegral $ Vk.C.extent2dWidth sce,
 			Vk.C.viewportHeight = fromIntegral $ Vk.C.extent2dHeight sce,
 			Vk.C.viewportMinDepth = 0, Vk.C.viewportMaxDepth = 1 }
-		Vk.C.Rect2d_ fScissor = Vk.C.Rect2d {
+		scissor = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d {
 				Vk.C.offset2dX = 0, Vk.C.offset2dY = 0 },
 			Vk.C.rect2dExtent = sce }
-	pViewport <- ContT $ withForeignPtr fViewport
-	pScissor <- ContT $ withForeignPtr fScissor
-	let	Vk.Ppl.VP.C.CreateInfo_ fViewportState = Vk.Ppl.VP.C.CreateInfo {
-			Vk.Ppl.VP.C.createInfoSType = (),
-			Vk.Ppl.VP.C.createInfoPNext = NullPtr,
-			Vk.Ppl.VP.C.createInfoFlags = 0,
-			Vk.Ppl.VP.C.createInfoViewportCount = 1,
-			Vk.Ppl.VP.C.createInfoPViewports = pViewport,
-			Vk.Ppl.VP.C.createInfoScissorCount = 1,
-			Vk.Ppl.VP.C.createInfoPScissors = pScissor }
+	let	viewportState = Vk.Ppl.VP.CreateInfo {
+			Vk.Ppl.VP.createInfoNext = Nothing,
+			Vk.Ppl.VP.createInfoFlags = Vk.Ppl.VP.CreateFlagsZero,
+			Vk.Ppl.VP.createInfoViewports = [viewport],
+			Vk.Ppl.VP.createInfoScissors = [scissor] }
 		Vk.Ppl.RstSt.CreateInfo_ fRasterizer = Vk.Ppl.RstSt.CreateInfo {
 			Vk.Ppl.RstSt.createInfoSType = (),
 			Vk.Ppl.RstSt.createInfoPNext = NullPtr,
@@ -757,7 +753,7 @@ createGraphicsPipeline g@Global {
 	lift $ pokeArray shaderStages shaderStageList
 	pVertexInputInfo <- Vk.Ppl.VI.createInfoToCore vertexInputInfo
 	pInputAssembly <- Vk.Ppl.IA.createInfoToCore @() inputAssembly
-	pViewportState <- ContT $ withForeignPtr fViewportState
+	pViewportState <- Vk.Ppl.VP.createInfoToCore @() viewportState
 	pRasterizer <- ContT $ withForeignPtr fRasterizer
 	pMultisampling <- ContT $ withForeignPtr fMultisampling
 	pColorBlending <- ContT $ withForeignPtr fColorBlending

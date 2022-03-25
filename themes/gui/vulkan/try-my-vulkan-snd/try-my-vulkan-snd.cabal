@@ -116,6 +116,7 @@ library
       Vulkan.Pipeline.VertexInputState.BindingStrideList
       Vulkan.Pipeline.VertexInputState.Core
       Vulkan.Pipeline.VertexInputState.Middle
+      Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Core
       Vulkan.Polygon
       Vulkan.PushConstant
