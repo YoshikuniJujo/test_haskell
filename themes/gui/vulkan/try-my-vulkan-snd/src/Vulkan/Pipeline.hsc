@@ -16,7 +16,7 @@ import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Pipeline.ShaderStage.Core as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState.Core as VertexInputState
-import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
+import qualified Vulkan.Pipeline.InputAssemblyState.Core as InputAssemblyState
 import qualified Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Vulkan.Pipeline.RasterizationState as RasterizationState

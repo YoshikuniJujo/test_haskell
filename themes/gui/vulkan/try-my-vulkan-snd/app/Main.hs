@@ -84,7 +84,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
+import qualified Vulkan.Pipeline.InputAssemblyState.Core as Vk.Ppl.IA.C
 import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
@@ -659,12 +659,12 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.VI.createInfoNext = Nothing,
 			Vk.Ppl.VI.createInfoFlags =
 				Vk.Ppl.VI.M.CreateFlagsZero }
-		Vk.Ppl.IA.CreateInfo_ fInputAssembly = Vk.Ppl.IA.CreateInfo {
-			Vk.Ppl.IA.createInfoSType = (),
-			Vk.Ppl.IA.createInfoPNext = NullPtr,
-			Vk.Ppl.IA.createInfoFlags = 0,
-			Vk.Ppl.IA.createInfoTopology = Vk.PrmTplgy.triangleList,
-			Vk.Ppl.IA.createInfoPrimitiveRestartEnable = vkFalse }
+		Vk.Ppl.IA.C.CreateInfo_ fInputAssembly = Vk.Ppl.IA.C.CreateInfo {
+			Vk.Ppl.IA.C.createInfoSType = (),
+			Vk.Ppl.IA.C.createInfoPNext = NullPtr,
+			Vk.Ppl.IA.C.createInfoFlags = 0,
+			Vk.Ppl.IA.C.createInfoTopology = Vk.PrmTplgy.triangleList,
+			Vk.Ppl.IA.C.createInfoPrimitiveRestartEnable = vkFalse }
 		Vk.C.Viewport_ fViewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
 			Vk.C.viewportWidth = fromIntegral $ Vk.C.extent2dWidth sce,
