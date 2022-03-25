@@ -85,7 +85,7 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
+import qualified Vulkan.Pipeline.ViewportState.Core as Vk.Ppl.VP.C
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.Polygon as Vk.Polygon
 import qualified Vulkan.Cull as Vk.Cull
@@ -675,14 +675,14 @@ createGraphicsPipeline g@Global {
 			Vk.C.rect2dExtent = sce }
 	pViewport <- ContT $ withForeignPtr fViewport
 	pScissor <- ContT $ withForeignPtr fScissor
-	let	Vk.Ppl.VP.CreateInfo_ fViewportState = Vk.Ppl.VP.CreateInfo {
-			Vk.Ppl.VP.createInfoSType = (),
-			Vk.Ppl.VP.createInfoPNext = NullPtr,
-			Vk.Ppl.VP.createInfoFlags = 0,
-			Vk.Ppl.VP.createInfoViewportCount = 1,
-			Vk.Ppl.VP.createInfoPViewports = pViewport,
-			Vk.Ppl.VP.createInfoScissorCount = 1,
-			Vk.Ppl.VP.createInfoPScissors = pScissor }
+	let	Vk.Ppl.VP.C.CreateInfo_ fViewportState = Vk.Ppl.VP.C.CreateInfo {
+			Vk.Ppl.VP.C.createInfoSType = (),
+			Vk.Ppl.VP.C.createInfoPNext = NullPtr,
+			Vk.Ppl.VP.C.createInfoFlags = 0,
+			Vk.Ppl.VP.C.createInfoViewportCount = 1,
+			Vk.Ppl.VP.C.createInfoPViewports = pViewport,
+			Vk.Ppl.VP.C.createInfoScissorCount = 1,
+			Vk.Ppl.VP.C.createInfoPScissors = pScissor }
 		Vk.Ppl.RstSt.CreateInfo_ fRasterizer = Vk.Ppl.RstSt.CreateInfo {
 			Vk.Ppl.RstSt.createInfoSType = (),
 			Vk.Ppl.RstSt.createInfoPNext = NullPtr,
