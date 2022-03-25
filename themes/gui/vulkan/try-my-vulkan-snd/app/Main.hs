@@ -78,14 +78,13 @@ import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
 import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.InputAssemblyState.Core as Vk.Ppl.IA.C
-import qualified Vulkan.PrimitiveTopology as Vk.PrmTplgy
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.Polygon as Vk.Polygon
@@ -659,12 +658,12 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.VI.createInfoNext = Nothing,
 			Vk.Ppl.VI.createInfoFlags =
 				Vk.Ppl.VI.M.CreateFlagsZero }
-		Vk.Ppl.IA.C.CreateInfo_ fInputAssembly = Vk.Ppl.IA.C.CreateInfo {
-			Vk.Ppl.IA.C.createInfoSType = (),
-			Vk.Ppl.IA.C.createInfoPNext = NullPtr,
-			Vk.Ppl.IA.C.createInfoFlags = 0,
-			Vk.Ppl.IA.C.createInfoTopology = Vk.PrmTplgy.triangleList,
-			Vk.Ppl.IA.C.createInfoPrimitiveRestartEnable = vkFalse }
+		inputAssembly = Vk.Ppl.IA.CreateInfo {
+			Vk.Ppl.IA.createInfoNext = Nothing,
+			Vk.Ppl.IA.createInfoFlags = Vk.Ppl.IA.CreateFlagsZero,
+			Vk.Ppl.IA.createInfoTopology =
+				Vk.PrimitiveTopologyTriangleList,
+			Vk.Ppl.IA.createInfoPrimitiveRestartEnable = False }
 		Vk.C.Viewport_ fViewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
 			Vk.C.viewportWidth = fromIntegral $ Vk.C.extent2dWidth sce,
@@ -757,7 +756,7 @@ createGraphicsPipeline g@Global {
 	shaderStages <- ContT $ allocaArray 2
 	lift $ pokeArray shaderStages shaderStageList
 	pVertexInputInfo <- Vk.Ppl.VI.createInfoToCore vertexInputInfo
-	pInputAssembly <- ContT $ withForeignPtr fInputAssembly
+	pInputAssembly <- Vk.Ppl.IA.createInfoToCore @() inputAssembly
 	pViewportState <- ContT $ withForeignPtr fViewportState
 	pRasterizer <- ContT $ withForeignPtr fRasterizer
 	pMultisampling <- ContT $ withForeignPtr fMultisampling

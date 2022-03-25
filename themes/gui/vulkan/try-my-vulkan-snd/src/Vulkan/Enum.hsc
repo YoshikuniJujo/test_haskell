@@ -521,4 +521,29 @@ enum "SharingMode" ''#{type VkSharingMode}
 	("SharingModeConcurrent", #{const VK_SHARING_MODE_CONCURRENT}),
 	("SharingModeMaxEnum", #{const VK_SHARING_MODE_MAX_ENUM}) ]
 
+enum "PrimitiveTopology" ''#{type VkPrimitiveTopology}
+		[''Show, ''Eq, ''Storable] [
+	("PrimitiveTopologyPointList",
+		#{const VK_PRIMITIVE_TOPOLOGY_POINT_LIST}),
+	("PrimitiveTopologyLineList", #{const VK_PRIMITIVE_TOPOLOGY_LINE_LIST}),
+	("PrimitiveTopologyLineStrip",
+		#{const VK_PRIMITIVE_TOPOLOGY_LINE_STRIP}),
+	("PrimitiveTopologyTriangleList",
+		#{const VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST}),
+	("PrimitiveTopologyTriangleStrip",
+		#{const VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP}),
+	("PrimitiveTopologyTriangleFan",
+		#{const VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN}),
+	("PrimitiveTopologyLineListWithAdjacency",
+		#{const VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY}),
+	("PrimitiveTopologyLineStripWithAdjacency",
+		#{const VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY}),
+	("PrimitiveTopologyTriangleListWithAdjacency",
+		#{const VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY}),
+	("PrimitiveTopologyTriangleStripWithAdjacency",
+		#{const VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY}),
+	("PrimitiveTopologyPatchList",
+		#{const VK_PRIMITIVE_TOPOLOGY_PATCH_LIST}),
+	("PrimitiveTopologyMaxEnum", #{const VK_PRIMITIVE_TOPOLOGY_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits

@@ -102,6 +102,7 @@ library
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DynamicState
+      Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout
       Vulkan.Pipeline.MultisampleState
@@ -117,7 +118,6 @@ library
       Vulkan.Pipeline.VertexInputState.Middle
       Vulkan.Pipeline.ViewportState
       Vulkan.Polygon
-      Vulkan.PrimitiveTopology
       Vulkan.PushConstant
       Vulkan.QueueFamily
       Vulkan.QueueFamily.Core
