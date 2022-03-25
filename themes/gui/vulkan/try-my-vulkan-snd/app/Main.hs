@@ -80,17 +80,14 @@ import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
 import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
+import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
+import qualified Vulkan.CullMode.Enum as Vk.CullMode
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.ViewportState.Core as Vk.Ppl.VP.C
-import qualified Vulkan.Pipeline.RasterizationState.Core as Vk.Ppl.RstSt.C
-import qualified Vulkan.Polygon as Vk.Polygon
-import qualified Vulkan.Cull as Vk.Cull
-import qualified Vulkan.FrontFace as Vk.FrontFace
 import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachmentState as Vk.Ppl.CBASt
@@ -679,23 +676,21 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.VP.createInfoFlags = Vk.Ppl.VP.CreateFlagsZero,
 			Vk.Ppl.VP.createInfoViewports = [viewport],
 			Vk.Ppl.VP.createInfoScissors = [scissor] }
-		Vk.Ppl.RstSt.C.CreateInfo_ fRasterizer = Vk.Ppl.RstSt.C.CreateInfo {
-			Vk.Ppl.RstSt.C.createInfoSType = (),
-			Vk.Ppl.RstSt.C.createInfoPNext = NullPtr,
-			Vk.Ppl.RstSt.C.createInfoFlags = 0,
-			Vk.Ppl.RstSt.C.createInfoDepthClampEnable = vkFalse,
-			Vk.Ppl.RstSt.C.createInfoRasterizerDiscardEnable =
-				vkFalse,
-			Vk.Ppl.RstSt.C.createInfoPolygonMode =
-				Vk.Polygon.modeFill,
-			Vk.Ppl.RstSt.C.createInfoCullMode = Vk.Cull.modeBackBit,
-			Vk.Ppl.RstSt.C.createInfoFrontFace =
-				Vk.FrontFace.clockwise,
-			Vk.Ppl.RstSt.C.createInfoDepthBiasEnable = vkFalse,
-			Vk.Ppl.RstSt.C.createInfoDepthBiasConstantFactor = 0,
-			Vk.Ppl.RstSt.C.createInfoDepthBiasClamp = 0,
-			Vk.Ppl.RstSt.C.createInfoDepthBiasSlopeFactor = 0,
-			Vk.Ppl.RstSt.C.createInfoLineWidth = 1 }
+		rasterizer = Vk.Ppl.RstSt.CreateInfo {
+			Vk.Ppl.RstSt.createInfoNext = Nothing,
+			Vk.Ppl.RstSt.createInfoFlags =
+				Vk.Ppl.RstSt.CreateFlagsZero,
+			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
+			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
+			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
+			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullMode.BackBit,
+			Vk.Ppl.RstSt.createInfoFrontFace =
+				Vk.FrontFaceClockwise,
+			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
+			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0,
+			Vk.Ppl.RstSt.createInfoLineWidth = 1 }
 		Vk.Ppl.MS.CreateInfo_ fMultisampling = Vk.Ppl.MS.CreateInfo {
 			Vk.Ppl.MS.createInfoSType = (),
 			Vk.Ppl.MS.createInfoPNext = NullPtr,
@@ -754,7 +749,7 @@ createGraphicsPipeline g@Global {
 	pVertexInputInfo <- Vk.Ppl.VI.createInfoToCore vertexInputInfo
 	pInputAssembly <- Vk.Ppl.IA.createInfoToCore @() inputAssembly
 	pViewportState <- Vk.Ppl.VP.createInfoToCore @() viewportState
-	pRasterizer <- ContT $ withForeignPtr fRasterizer
+	pRasterizer <- Vk.Ppl.RstSt.createInfoToCore @() rasterizer
 	pMultisampling <- ContT $ withForeignPtr fMultisampling
 	pColorBlending <- ContT $ withForeignPtr fColorBlending
 	pplLyt <- lift $ readIORef pipelineLayout

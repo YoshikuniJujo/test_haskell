@@ -19,6 +19,7 @@ import qualified VulkanComponentEnum
 import qualified VulkanPipelineShaderStageEnum
 import qualified VulkanShaderStageEnum
 import qualified VulkanVertexInputEnum
+import qualified VulkanCullModeEnum
 
 main :: IO ()
 main = do
@@ -39,3 +40,4 @@ main = do
 	VulkanPipelineShaderStageEnum.make
 	VulkanShaderStageEnum.make
 	VulkanVertexInputEnum.make
+	VulkanCullModeEnum.make

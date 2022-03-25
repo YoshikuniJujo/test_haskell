@@ -546,4 +546,19 @@ enum "PrimitiveTopology" ''#{type VkPrimitiveTopology}
 		#{const VK_PRIMITIVE_TOPOLOGY_PATCH_LIST}),
 	("PrimitiveTopologyMaxEnum", #{const VK_PRIMITIVE_TOPOLOGY_MAX_ENUM}) ]
 
+enum "PolygonMode" ''#{type VkPolygonMode}
+		[''Show, ''Eq, ''Storable] [
+	("PolygonModeFill", #{const VK_POLYGON_MODE_FILL}),
+	("PolygonModeLine", #{const VK_POLYGON_MODE_LINE}),
+	("PolygonModePoint", #{const VK_POLYGON_MODE_POINT}),
+	("PolygonModeFillRectangleNv",
+		#{const VK_POLYGON_MODE_FILL_RECTANGLE_NV}),
+	("PolygonModeMaxEnum", #{const VK_POLYGON_MODE_MAX_ENUM}) ]
+
+enum "FrontFace" ''#{type VkFrontFace}
+		[''Show, ''Eq, ''Storable] [
+	("FrontFaceCounterClockwise", #{const VK_FRONT_FACE_COUNTER_CLOCKWISE}),
+	("FrontFaceClockwise", #{const VK_FRONT_FACE_CLOCKWISE}),
+	("FrontFaceMaxEnum", #{const VK_FRONT_FACE_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits

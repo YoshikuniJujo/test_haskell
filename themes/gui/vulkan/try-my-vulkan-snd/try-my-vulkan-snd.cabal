@@ -47,7 +47,7 @@ library
       Vulkan.Component.Core
       Vulkan.Component.Enum
       Vulkan.Core
-      Vulkan.Cull
+      Vulkan.CullMode.Enum
       Vulkan.Descriptor.SetLayout
       Vulkan.Device
       Vulkan.Device.Core
@@ -67,7 +67,6 @@ library
       Vulkan.Fence
       Vulkan.Format
       Vulkan.Framebuffer
-      Vulkan.FrontFace
       Vulkan.Image
       Vulkan.Image.Core
       Vulkan.Image.Enum
@@ -106,6 +105,7 @@ library
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout
       Vulkan.Pipeline.MultisampleState
+      Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.RasterizationState.Core
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Core
@@ -118,7 +118,6 @@ library
       Vulkan.Pipeline.VertexInputState.Middle
       Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Core
-      Vulkan.Polygon
       Vulkan.PushConstant
       Vulkan.QueueFamily
       Vulkan.QueueFamily.Core
