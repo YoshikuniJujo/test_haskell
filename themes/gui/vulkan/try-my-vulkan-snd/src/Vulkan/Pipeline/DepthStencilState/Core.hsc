@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.DepthStencilState where
+module Vulkan.Pipeline.DepthStencilState.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
