@@ -561,4 +561,16 @@ enum "FrontFace" ''#{type VkFrontFace}
 	("FrontFaceClockwise", #{const VK_FRONT_FACE_CLOCKWISE}),
 	("FrontFaceMaxEnum", #{const VK_FRONT_FACE_MAX_ENUM}) ]
 
+enum "CompareOp" ''#{type VkCompareOp}
+		[''Show, ''Eq, ''Storable] [
+	("CompareOpNever", #{const VK_COMPARE_OP_NEVER}),
+	("CompareOpLess", #{const VK_COMPARE_OP_LESS}),
+	("CompareOpEqual", #{const VK_COMPARE_OP_EQUAL}),
+	("CompareOpLessOrEqual", #{const VK_COMPARE_OP_LESS_OR_EQUAL}),
+	("CompareOpGreater", #{const VK_COMPARE_OP_GREATER}),
+	("CompareOpNotEqual", #{const VK_COMPARE_OP_NOT_EQUAL}),
+	("CompareOpGreaterOrEqual", #{const VK_COMPARE_OP_GREATER_OR_EQUAL}),
+	("CompareOpAlways", #{const VK_COMPARE_OP_ALWAYS}),
+	("CompareOpMaxEnum", #{const VK_COMPARE_OP_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits
