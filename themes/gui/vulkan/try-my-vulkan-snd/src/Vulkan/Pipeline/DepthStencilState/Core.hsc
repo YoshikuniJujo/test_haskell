@@ -42,7 +42,17 @@ struct "CreateInfo" #{size VkPipelineDepthStencilStateCreateInfo}
 		[| #{peek VkPipelineDepthStencilStateCreateInfo,
 			depthCompareOp} |],
 		[| #{poke VkPipelineDepthStencilStateCreateInfo,
-			depthCompareOp} |])
+			depthCompareOp} |]),
+	("depthBoundsTestEnable", ''#{type VkBool32},
+		[| #{peek VkPipelineDepthStencilStateCreateInfo,
+			depthBoundsTestEnable} |],
+		[| #{poke VkPipelineDepthStencilStateCreateInfo,
+			depthBoundsTestEnable} |]),
+	("stencilTestEnable", ''#{type VkBool32},
+		[| #{peek VkPipelineDepthStencilStateCreateInfo,
+			stencilTestEnable} |],
+		[| #{poke VkPipelineDepthStencilStateCreateInfo,
+			stencilTestEnable} |])
 	-- TODO
 	]
 	[''Show, ''Storable]

@@ -19,6 +19,7 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
 	("PrimitiveTopology", "VkPrimitiveTopology", ["Show", "Eq", "Storable"]),
 	("PolygonMode", "VkPolygonMode", ["Show", "Eq", "Storable"]),
 	("FrontFace", "VkFrontFace", ["Show", "Eq", "Storable"]),
-	("CompareOp", "VkCompareOp", ["Show", "Eq", "Storable"])
+	("CompareOp", "VkCompareOp", ["Show", "Eq", "Storable"]),
+	("StencilOp", "VkStencilOp", ["Show", "Eq", "Storable"])
 	]
 	"type QueueFlags = QueueFlagBits"

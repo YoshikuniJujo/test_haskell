@@ -573,4 +573,20 @@ enum "CompareOp" ''#{type VkCompareOp}
 	("CompareOpAlways", #{const VK_COMPARE_OP_ALWAYS}),
 	("CompareOpMaxEnum", #{const VK_COMPARE_OP_MAX_ENUM}) ]
 
+enum "StencilOp" ''#{type VkStencilOp}
+		[''Show, ''Eq, ''Storable] [
+	("StencilOpKeep", #{const VK_STENCIL_OP_KEEP}),
+	("StencilOpZero", #{const VK_STENCIL_OP_ZERO}),
+	("StencilOpReplace", #{const VK_STENCIL_OP_REPLACE}),
+	("StencilOpIncrementAndClamp",
+		#{const VK_STENCIL_OP_INCREMENT_AND_CLAMP}),
+	("StencilOpDecrementAndClamp",
+		#{const VK_STENCIL_OP_DECREMENT_AND_CLAMP}),
+	("StencilOpInvert", #{const VK_STENCIL_OP_INVERT}),
+	("StencilOpIncrementAndWrap",
+		#{const VK_STENCIL_OP_INCREMENT_AND_WRAP}),
+	("StencilOpDecrementAndWrap",
+		#{const VK_STENCIL_OP_DECREMENT_AND_WRAP}),
+	("StencilOpMaxEnum", #{const VK_STENCIL_OP_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits
