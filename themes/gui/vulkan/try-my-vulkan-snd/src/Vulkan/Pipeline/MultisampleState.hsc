@@ -1,16 +1,26 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.MultisampleState where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Storable
 import Foreign.C.Enum
+import Foreign.Pointable
+import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
+import Vulkan.Base
+
+import Vulkan.Sample as Sample
 import Vulkan.Sample.Enum as Sample
+
+import qualified Vulkan.Pipeline.MultisampleState.Core as C
 
 #include <vulkan/vulkan.h>
 
@@ -20,9 +30,33 @@ enum "CreateFlags" ''#{type VkPipelineMultisampleStateCreateFlags}
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoRasterizationSamples :: Sample.CountFlagBits,
+	createInfoRasterizationSamplesAndMask :: Sample.CountAndMask,
 	createInfoSampleShadingEnable :: Bool,
-	createInfoMinSampleShading :: Float
---	createInfo
-	}
+	createInfoMinSampleShading :: Float,
+	createInfoAlphaToCoverageEnable :: Bool,
+	createInfoAlphaToOneEnable :: Bool }
 	deriving Show
+
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlags flgs,
+	createInfoRasterizationSamplesAndMask = cm,
+	createInfoSampleShadingEnable = boolToBool32 -> sse,
+	createInfoMinSampleShading = mss,
+	createInfoAlphaToCoverageEnable = boolToBool32 -> ace,
+	createInfoAlphaToOneEnable = boolToBool32 -> aoe
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(Sample.CountFlagBits c, m) <- countAndMaskToCore cm
+	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoRasterizationSamples = c,
+			C.createInfoSampleShadingEnable = sse,
+			C.createInfoMinSampleShading = mss,
+			C.createInfoPSampleMask = m,
+			C.createInfoAlphaToCoverageEnable = ace,
+			C.createInfoAlphaToOneEnable = aoe }
+	ContT $ withForeignPtr fCreateInfo

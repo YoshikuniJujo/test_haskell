@@ -82,14 +82,15 @@ import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.CullMode.Enum as Vk.CullMode
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
+import qualified Vulkan.Sample as Vk.Sample
+import qualified Vulkan.Sample.Enum as Vk.Sample
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.MultisampleState.Core as Vk.Ppl.MS.C
-import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachmentState as Vk.Ppl.CBASt
 import qualified Vulkan.Blend as Vk.Blend
 import qualified Vulkan.ColorComponent as Vk.CC
@@ -691,17 +692,16 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0,
 			Vk.Ppl.RstSt.createInfoLineWidth = 1 }
-		Vk.Ppl.MS.C.CreateInfo_ fMultisampling = Vk.Ppl.MS.C.CreateInfo {
-			Vk.Ppl.MS.C.createInfoSType = (),
-			Vk.Ppl.MS.C.createInfoPNext = NullPtr,
-			Vk.Ppl.MS.C.createInfoFlags = 0,
-			Vk.Ppl.MS.C.createInfoRasterizationSamples =
-				Vk.Sample.count1Bit,
-			Vk.Ppl.MS.C.createInfoSampleShadingEnable = vkFalse,
-			Vk.Ppl.MS.C.createInfoMinSampleShading = 1,
-			Vk.Ppl.MS.C.createInfoPSampleMask = NullPtr,
-			Vk.Ppl.MS.C.createInfoAlphaToCoverageEnable = vkFalse,
-			Vk.Ppl.MS.C.createInfoAlphaToOneEnable = vkFalse }
+		multisampling = Vk.Ppl.MS.CreateInfo {
+			Vk.Ppl.MS.createInfoNext = Nothing,
+			Vk.Ppl.MS.createInfoFlags = Vk.Ppl.MS.CreateFlagsZero,
+			Vk.Ppl.MS.createInfoRasterizationSamplesAndMask =
+				Vk.Sample.CountAndMask
+					Vk.Sample.Count1Bit Nothing,
+			Vk.Ppl.MS.createInfoSampleShadingEnable = False,
+			Vk.Ppl.MS.createInfoMinSampleShading = 1,
+			Vk.Ppl.MS.createInfoAlphaToCoverageEnable = False,
+			Vk.Ppl.MS.createInfoAlphaToOneEnable = False }
 		Vk.Ppl.CBASt.State_ fColorBlendAttachment = Vk.Ppl.CBASt.State {
 			Vk.Ppl.CBASt.stateBlendEnable = vkFalse,
 			Vk.Ppl.CBASt.stateSrcColorBlendFactor =
@@ -750,7 +750,7 @@ createGraphicsPipeline g@Global {
 	pInputAssembly <- Vk.Ppl.IA.createInfoToCore @() inputAssembly
 	pViewportState <- Vk.Ppl.VP.createInfoToCore @() viewportState
 	pRasterizer <- Vk.Ppl.RstSt.createInfoToCore @() rasterizer
-	pMultisampling <- ContT $ withForeignPtr fMultisampling
+	pMultisampling <- Vk.Ppl.MS.createInfoToCore @() multisampling
 	pColorBlending <- ContT $ withForeignPtr fColorBlending
 	pplLyt <- lift $ readIORef pipelineLayout
 	rp <- lift $ readIORef renderPass
