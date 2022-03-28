@@ -23,7 +23,7 @@ import qualified Vulkan.Pipeline.RasterizationState.Core as RasterizationState
 import qualified Vulkan.Pipeline.MultisampleState.Core as MultisampleState
 import qualified Vulkan.Pipeline.DepthStencilState.Core as DepthStencilState
 import qualified Vulkan.Pipeline.ColorBlendState.Core as ColorBlendState
-import qualified Vulkan.Pipeline.DynamicState as DynamicState
+import qualified Vulkan.Pipeline.DynamicState.Core as DynamicState
 import qualified Vulkan.Pipeline.Layout as Layout
 import qualified Vulkan.RenderPass as RenderPass
 

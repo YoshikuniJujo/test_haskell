@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.DynamicState where
+module Vulkan.Pipeline.DynamicState.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
