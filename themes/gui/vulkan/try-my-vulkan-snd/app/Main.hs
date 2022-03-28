@@ -94,7 +94,7 @@ import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.Pipeline.ColorBlendAttachment.Core as Vk.Ppl.CBA.C
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
-import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
+import qualified Vulkan.Pipeline.ColorBlendState.Core as Vk.Ppl.CB.C
 import qualified Vulkan.Logic as Vk.Logic
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
@@ -718,16 +718,16 @@ createGraphicsPipeline g@Global {
 		Vk.Ppl.CBA.C.State_ fColorBlendAttachment =
 			Vk.Ppl.CBA.stateToCore colorBlendAttachment
 	pColorBlendAttachment <- ContT $ withForeignPtr fColorBlendAttachment
-	let	Vk.Ppl.CB.CreateInfo_ fColorBlending = Vk.Ppl.CB.CreateInfo {
-			Vk.Ppl.CB.createInfoSType = (),
-			Vk.Ppl.CB.createInfoPNext = NullPtr,
-			Vk.Ppl.CB.createInfoFlags = 0,
-			Vk.Ppl.CB.createInfoLogicOpEnable = vkFalse,
-			Vk.Ppl.CB.createInfoLogicOp = Vk.Logic.opCopy,
-			Vk.Ppl.CB.createInfoAttachmentCount = 1,
-			Vk.Ppl.CB.createInfoPAttachments =
+	let	Vk.Ppl.CB.C.CreateInfo_ fColorBlending = Vk.Ppl.CB.C.CreateInfo {
+			Vk.Ppl.CB.C.createInfoSType = (),
+			Vk.Ppl.CB.C.createInfoPNext = NullPtr,
+			Vk.Ppl.CB.C.createInfoFlags = 0,
+			Vk.Ppl.CB.C.createInfoLogicOpEnable = vkFalse,
+			Vk.Ppl.CB.C.createInfoLogicOp = Vk.Logic.opCopy,
+			Vk.Ppl.CB.C.createInfoAttachmentCount = 1,
+			Vk.Ppl.CB.C.createInfoPAttachments =
 				pColorBlendAttachment,
-			Vk.Ppl.CB.createInfoBlendConstants = [0, 0, 0, 0] }
+			Vk.Ppl.CB.C.createInfoBlendConstants = [0, 0, 0, 0] }
 		Vk.Ppl.Lyt.CreateInfo_ fPipelineLayoutInfo =
 			Vk.Ppl.Lyt.CreateInfo {
 				Vk.Ppl.Lyt.createInfoSType = (),

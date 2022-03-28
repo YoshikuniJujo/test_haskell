@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.ColorBlendState where
+module Vulkan.Pipeline.ColorBlendState.Core where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
