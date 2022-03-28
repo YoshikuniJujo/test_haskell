@@ -99,6 +99,7 @@ library
       Vulkan.Pipeline
       Vulkan.Pipeline.ColorBlendAttachmentState
       Vulkan.Pipeline.ColorBlendState
+      Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Core
       Vulkan.Pipeline.DynamicState
       Vulkan.Pipeline.InputAssemblyState
