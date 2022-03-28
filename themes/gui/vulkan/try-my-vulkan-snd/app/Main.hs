@@ -85,6 +85,7 @@ import qualified Vulkan.CullMode.Enum as Vk.CullMode
 import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
+import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -92,8 +93,7 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.Pipeline.ColorBlendAttachment.Core as Vk.Ppl.CBA.C
-import qualified Vulkan.Blend as Vk.Blend
-import qualified Vulkan.ColorComponent as Vk.CC
+import qualified Vulkan.ColorComponent.Enum as Vk.CC
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
 import qualified Vulkan.Logic as Vk.Logic
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
@@ -702,21 +702,21 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.MS.createInfoMinSampleShading = 1,
 			Vk.Ppl.MS.createInfoAlphaToCoverageEnable = False,
 			Vk.Ppl.MS.createInfoAlphaToOneEnable = False }
-		Vk.Ppl.CBA.C.State_ fColorBlendAttachment = Vk.Ppl.CBA.C.State {
-			Vk.Ppl.CBA.C.stateBlendEnable = vkFalse,
-			Vk.Ppl.CBA.C.stateSrcColorBlendFactor =
-				Vk.Blend.factorOne,
-			Vk.Ppl.CBA.C.stateDstColorBlendFactor =
-				Vk.Blend.factorZero,
-			Vk.Ppl.CBA.C.stateColorBlendOp = Vk.Blend.opAdd,
-			Vk.Ppl.CBA.C.stateSrcAlphaBlendFactor =
-				Vk.Blend.factorOne,
-			Vk.Ppl.CBA.C.stateDstAlphaBlendFactor =
-				Vk.Blend.factorZero,
-			Vk.Ppl.CBA.C.stateAlphaBlendOp = Vk.Blend.opAdd,
-			Vk.Ppl.CBA.C.stateColorWriteMask =
-				Vk.CC.rBit .|. Vk.CC.gBit .|. Vk.CC.bBit .|.
-				Vk.CC.aBit }
+		colorBlendAttachment = Vk.Ppl.CBA.State {
+			Vk.Ppl.CBA.stateBlendEnable = False,
+			Vk.Ppl.CBA.stateSrcColorBlendFactor = Vk.BlendFactorOne,
+			Vk.Ppl.CBA.stateDstColorBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.CBA.stateColorBlendOp = Vk.BlendOpAdd,
+			Vk.Ppl.CBA.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
+			Vk.Ppl.CBA.stateDstAlphaBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.CBA.stateAlphaBlendOp = Vk.BlendOpAdd,
+			Vk.Ppl.CBA.stateColorWriteMask =
+				Vk.CC.RBit .|. Vk.CC.GBit .|. Vk.CC.BBit .|.
+				Vk.CC.ABit }
+		Vk.Ppl.CBA.C.State_ fColorBlendAttachment =
+			Vk.Ppl.CBA.stateToCore colorBlendAttachment
 	pColorBlendAttachment <- ContT $ withForeignPtr fColorBlendAttachment
 	let	Vk.Ppl.CB.CreateInfo_ fColorBlending = Vk.Ppl.CB.CreateInfo {
 			Vk.Ppl.CB.createInfoSType = (),

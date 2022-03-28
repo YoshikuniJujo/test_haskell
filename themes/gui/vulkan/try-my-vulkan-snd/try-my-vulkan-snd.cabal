@@ -38,8 +38,6 @@ library
       Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment
       Vulkan.Base
-      Vulkan.Blend
-      Vulkan.ColorComponent
       Vulkan.ColorComponent.Enum
       Vulkan.Command
       Vulkan.CommandBuffer
