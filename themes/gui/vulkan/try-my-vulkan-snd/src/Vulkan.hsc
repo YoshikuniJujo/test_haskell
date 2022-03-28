@@ -15,6 +15,7 @@ import Data.Word
 import qualified Data.Text as T
 
 import Vulkan.Base
+import Vulkan.Enum
 
 import qualified Vulkan.Core as C
 import qualified Vulkan.Instance.Core as Instance.C
@@ -113,3 +114,30 @@ layerPropertiesFromCore C.LayerProperties {
 	layerPropertiesSpecVersion = ApiVersion sv,
 	layerPropertiesImplementationVersion = ApiVersion iv,
 	layerPropertiesDescription = dsc }
+
+data StencilOpState = StencilOpState {
+	stencilOpStateFailOp :: StencilOp,
+	stencilOpStatePassOp :: StencilOp,
+	stencilOpStateDepthFailOp :: StencilOp,
+	stencilOpStateCompareOp :: CompareOp,
+	stencilOpStateCompareMask :: Word32,
+	stencilOpStateWriteMask :: Word32,
+	stencilOpStateReference :: Word32 }
+	deriving Show
+
+stencilOpStateToCore :: StencilOpState -> C.StencilOpState
+stencilOpStateToCore StencilOpState {
+	stencilOpStateFailOp = StencilOp fo,
+	stencilOpStatePassOp = StencilOp po,
+	stencilOpStateDepthFailOp = StencilOp dfo,
+	stencilOpStateCompareOp = CompareOp co,
+	stencilOpStateCompareMask = cm,
+	stencilOpStateWriteMask = wm,
+	stencilOpStateReference = rf } = C.StencilOpState {
+		C.stencilOpStateFailOp = fo,
+		C.stencilOpStatePassOp = po,
+		C.stencilOpStateDepthFailOp = dfo,
+		C.stencilOpStateCompareOp = co,
+		C.stencilOpStateCompareMask = cm,
+		C.stencilOpStateWriteMask = wm,
+		C.stencilOpStateReference = rf }

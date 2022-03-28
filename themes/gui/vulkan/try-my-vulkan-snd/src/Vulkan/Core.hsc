@@ -209,3 +209,27 @@ struct "LayerProperties" #{size VkLayerProperties}
 			poke (#{ptr VkLayerProperties, description} p `plusPtr` ln :: Ptr CChar) 0
 			|]) ]
 	[''Show, ''Storable]
+
+struct "StencilOpState" #{size VkStencilOpState} #{alignment VkStencilOpState} [
+	("failOp", ''#{type VkStencilOp},
+		[| #{peek VkStencilOpState, failOp} |],
+		[| #{poke VkStencilOpState, failOp} |]),
+	("passOp", ''#{type VkStencilOp},
+		[| #{peek VkStencilOpState, passOp} |],
+		[| #{poke VkStencilOpState, passOp} |]),
+	("depthFailOp", ''#{type VkStencilOp},
+		[| #{peek VkStencilOpState, depthFailOp} |],
+		[| #{poke VkStencilOpState, depthFailOp} |]),
+	("compareOp", ''#{type VkCompareOp},
+		[| #{peek VkStencilOpState, compareOp} |],
+		[| #{poke VkStencilOpState, compareOp} |]),
+	("compareMask", ''#{type uint32_t},
+		[| #{peek VkStencilOpState, compareMask} |],
+		[| #{poke VkStencilOpState, compareMask} |]),
+	("writeMask", ''#{type uint32_t},
+		[| #{peek VkStencilOpState, writeMask} |],
+		[| #{poke VkStencilOpState, writeMask} |]),
+	("reference", ''#{type uint32_t},
+		[| #{peek VkStencilOpState, reference} |],
+		[| #{poke VkStencilOpState, reference} |]) ]
+	[''Show, ''Storable]

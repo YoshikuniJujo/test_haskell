@@ -10,6 +10,7 @@ import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
+import Vulkan.Core
 import Vulkan.Base
 
 #include <vulkan/vulkan.h>
@@ -52,9 +53,23 @@ struct "CreateInfo" #{size VkPipelineDepthStencilStateCreateInfo}
 		[| #{peek VkPipelineDepthStencilStateCreateInfo,
 			stencilTestEnable} |],
 		[| #{poke VkPipelineDepthStencilStateCreateInfo,
-			stencilTestEnable} |])
-	-- TODO
-	]
+			stencilTestEnable} |]),
+	("front", ''StencilOpState,
+		[| #{peek VkPipelineDepthStencilStateCreateInfo, front} |],
+		[| #{poke VkPipelineDepthStencilStateCreateInfo, front} |]),
+	("back", ''StencilOpState,
+		[| #{peek VkPipelineDepthStencilStateCreateInfo, back} |],
+		[| #{poke VkPipelineDepthStencilStateCreateInfo, back} |]),
+	("minDepthBounds", ''#{type float},
+		[| #{peek VkPipelineDepthStencilStateCreateInfo,
+			minDepthBounds} |],
+		[| #{poke VkPipelineDepthStencilStateCreateInfo,
+			minDepthBounds} |]),
+	("maxDepthBounds", ''#{type float},
+		[| #{peek VkPipelineDepthStencilStateCreateInfo,
+			maxDepthBounds} |],
+		[| #{poke VkPipelineDepthStencilStateCreateInfo,
+			maxDepthBounds} |]) ]
 	[''Show, ''Storable]
 
 type PtrCreateInfo = Ptr CreateInfo
