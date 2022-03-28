@@ -88,7 +88,6 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Core
       Vulkan.Khr.Swapchain.Enum
-      Vulkan.Logic
       Vulkan.PhysicalDevice
       Vulkan.PhysicalDevice.Core
       Vulkan.PhysicalDevice.Enum
@@ -98,6 +97,7 @@ library
       Vulkan.Pipeline
       Vulkan.Pipeline.ColorBlendAttachment
       Vulkan.Pipeline.ColorBlendAttachment.Core
+      Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.ColorBlendState.Core
       Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Core

@@ -21,6 +21,7 @@ import Data.IORef
 import Data.Bits
 import Data.Bool
 import Data.Word
+import Data.Color
 import System.IO.Unsafe
 
 import ThEnv
@@ -86,16 +87,14 @@ import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
-import qualified Vulkan.Pipeline.ColorBlendAttachment.Core as Vk.Ppl.CBA.C
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
-import qualified Vulkan.Pipeline.ColorBlendState.Core as Vk.Ppl.CB.C
-import qualified Vulkan.Logic as Vk.Logic
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
 import qualified Vulkan.Attachment as Vk.Att
@@ -715,19 +714,14 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.CBA.stateColorWriteMask =
 				Vk.CC.RBit .|. Vk.CC.GBit .|. Vk.CC.BBit .|.
 				Vk.CC.ABit }
-		Vk.Ppl.CBA.C.State_ fColorBlendAttachment =
-			Vk.Ppl.CBA.stateToCore colorBlendAttachment
-	pColorBlendAttachment <- ContT $ withForeignPtr fColorBlendAttachment
-	let	Vk.Ppl.CB.C.CreateInfo_ fColorBlending = Vk.Ppl.CB.C.CreateInfo {
-			Vk.Ppl.CB.C.createInfoSType = (),
-			Vk.Ppl.CB.C.createInfoPNext = NullPtr,
-			Vk.Ppl.CB.C.createInfoFlags = 0,
-			Vk.Ppl.CB.C.createInfoLogicOpEnable = vkFalse,
-			Vk.Ppl.CB.C.createInfoLogicOp = Vk.Logic.opCopy,
-			Vk.Ppl.CB.C.createInfoAttachmentCount = 1,
-			Vk.Ppl.CB.C.createInfoPAttachments =
-				pColorBlendAttachment,
-			Vk.Ppl.CB.C.createInfoBlendConstants = [0, 0, 0, 0] }
+	let	colorBlending = Vk.Ppl.CB.CreateInfo {
+			Vk.Ppl.CB.createInfoNext = Nothing,
+			Vk.Ppl.CB.createInfoFlags = Vk.Ppl.CB.CreateFlagsZero,
+			Vk.Ppl.CB.createInfoLogicOpEnable = False,
+			Vk.Ppl.CB.createInfoLogicOp = Vk.LogicOpCopy,
+			Vk.Ppl.CB.createInfoAttachments =
+				[colorBlendAttachment],
+			Vk.Ppl.CB.createInfoBlendConstants = RgbaFloat 0 0 0 0 }
 		Vk.Ppl.Lyt.CreateInfo_ fPipelineLayoutInfo =
 			Vk.Ppl.Lyt.CreateInfo {
 				Vk.Ppl.Lyt.createInfoSType = (),
@@ -751,7 +745,7 @@ createGraphicsPipeline g@Global {
 	pViewportState <- Vk.Ppl.VP.createInfoToCore @() viewportState
 	pRasterizer <- Vk.Ppl.RstSt.createInfoToCore @() rasterizer
 	pMultisampling <- Vk.Ppl.MS.createInfoToCore @() multisampling
-	pColorBlending <- ContT $ withForeignPtr fColorBlending
+	pColorBlending <- Vk.Ppl.CB.createInfoToCore @() colorBlending
 	pplLyt <- lift $ readIORef pipelineLayout
 	rp <- lift $ readIORef renderPass
 	let	Vk.Ppl.CreateInfo_ fPipelineInfo = Vk.Ppl.CreateInfo {

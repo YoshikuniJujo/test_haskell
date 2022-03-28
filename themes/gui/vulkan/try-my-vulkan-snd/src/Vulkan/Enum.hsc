@@ -677,4 +677,24 @@ enum "BlendOp" ''#{type VkBlendOp}
 	("BlendOpBlueExt", #{const VK_BLEND_OP_BLUE_EXT}),
 	("BlendOpMaxEnum", #{const VK_BLEND_OP_MAX_ENUM}) ]
 
+enum "LogicOp" ''#{type VkLogicOp}
+		[''Show, ''Eq, ''Storable] [
+	("LogicOpClear", #{const VK_LOGIC_OP_CLEAR}),
+	("LogicOpAnd", #{const VK_LOGIC_OP_AND}),
+	("LogicOpAndReverse", #{const VK_LOGIC_OP_AND_REVERSE}),
+	("LogicOpCopy", #{const VK_LOGIC_OP_COPY}),
+	("LogicOpAndInverted", #{const VK_LOGIC_OP_AND_INVERTED}),
+	("LogicOpNoOp", #{const VK_LOGIC_OP_NO_OP}),
+	("LogicOpXor", #{const VK_LOGIC_OP_XOR}),
+	("LogicOpOr", #{const VK_LOGIC_OP_OR}),
+	("LogicOpNor", #{const VK_LOGIC_OP_NOR}),
+	("LogicOpEquivalent", #{const VK_LOGIC_OP_EQUIVALENT}),
+	("LogicOpInvert", #{const VK_LOGIC_OP_INVERT}),
+	("LogicOpOrReverse", #{const VK_LOGIC_OP_OR_REVERSE}),
+	("LogicOpCopyInverted", #{const VK_LOGIC_OP_COPY_INVERTED}),
+	("LogicOpOrInverted", #{const VK_LOGIC_OP_OR_INVERTED}),
+	("LogicOpNand", #{const VK_LOGIC_OP_NAND}),
+	("LogicOpSet", #{const VK_LOGIC_OP_SET}),
+	("LogicOpMaxEnum", #{const VK_LOGIC_OP_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits
