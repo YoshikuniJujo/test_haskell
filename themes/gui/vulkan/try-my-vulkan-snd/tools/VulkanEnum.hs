@@ -1,12 +1,15 @@
+{-# LANGUAGE QuasiQuotes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module VulkanEnum where
+
+import Text.Nowdoc
 
 import MakeEnum
 
 make :: IO ()
 make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
-		["Data.Bits", "Data.Word"] [
+		["Foreign.Ptr", "Data.Bits", "Data.Word"] [
 	("SystemAllocationScope","VkSystemAllocationScope",
 		["Show", "Eq", "Storable"]),
 	("InternalAllocationType", "VkInternalAllocationType",
@@ -25,5 +28,6 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
 	("BlendOp", "VkBlendOp", ["Show", "Eq", "Storable"]),
 	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"]),
 	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"])
-	]
-	"type QueueFlags = QueueFlagBits"
+	] [nowdoc|
+type QueueFlags = QueueFlagBits
+type PtrDynamicState = Ptr DynamicState|]

@@ -10,6 +10,7 @@ module Vulkan.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Foreign.Ptr
 import Data.Bits
 import Data.Word
 
@@ -767,3 +768,4 @@ enum "DynamicState" ''#{type VkDynamicState}
 	("DynamicStateMaxEnum", #{const VK_DYNAMIC_STATE_MAX_ENUM}) ]
 
 type QueueFlags = QueueFlagBits
+type PtrDynamicState = Ptr DynamicState
