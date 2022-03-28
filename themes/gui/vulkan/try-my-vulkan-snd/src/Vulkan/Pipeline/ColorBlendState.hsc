@@ -1,5 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TemplateHaskell #-} {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -13,8 +12,7 @@ import Data.Word
 
 import Vulkan.Base
 
-import qualified Vulkan.Pipeline.ColorBlendAttachmentState as
-	ColorBlendAttachmentState
+import qualified Vulkan.Pipeline.ColorBlendAttachment as ColorBlendAttachment
 
 #include <vulkan/vulkan.h>
 
@@ -45,7 +43,7 @@ struct "CreateInfo" #{size VkPipelineColorBlendStateCreateInfo}
 			attachmentCount} |],
 		[| #{poke VkPipelineColorBlendStateCreateInfo,
 			attachmentCount} |]),
-	("pAttachments", ''ColorBlendAttachmentState.PtrState,
+	("pAttachments", ''ColorBlendAttachment.PtrState,
 		[| #{peek VkPipelineColorBlendStateCreateInfo, pAttachments} |],
 		[| #{poke VkPipelineColorBlendStateCreateInfo,
 			pAttachments} |]),

@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.ColorBlendAttachmentState where
+module Vulkan.Pipeline.ColorBlendAttachment where
 
 import Foreign.Ptr
 import Foreign.Storable

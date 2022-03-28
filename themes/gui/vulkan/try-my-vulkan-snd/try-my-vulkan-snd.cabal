@@ -97,7 +97,7 @@ library
       Vulkan.PhysicalDevice.Struct.Core
       Vulkan.PhysicalDevice.Struct.Th
       Vulkan.Pipeline
-      Vulkan.Pipeline.ColorBlendAttachmentState
+      Vulkan.Pipeline.ColorBlendAttachment
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Core
