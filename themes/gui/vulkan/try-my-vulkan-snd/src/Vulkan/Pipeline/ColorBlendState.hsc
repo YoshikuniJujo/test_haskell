@@ -12,7 +12,7 @@ import Data.Word
 
 import Vulkan.Base
 
-import qualified Vulkan.Pipeline.ColorBlendAttachment as ColorBlendAttachment
+import qualified Vulkan.Pipeline.ColorBlendAttachment.Core as ColorBlendAttachment
 
 #include <vulkan/vulkan.h>
 
