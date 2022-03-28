@@ -23,6 +23,7 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
 	("StencilOp", "VkStencilOp", ["Show", "Eq", "Storable"]),
 	("BlendFactor", "VkBlendFactor", ["Show", "Eq", "Storable"]),
 	("BlendOp", "VkBlendOp", ["Show", "Eq", "Storable"]),
-	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"])
+	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"]),
+	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"])
 	]
 	"type QueueFlags = QueueFlagBits"
