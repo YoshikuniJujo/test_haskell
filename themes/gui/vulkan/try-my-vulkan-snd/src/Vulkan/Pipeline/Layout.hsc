@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,6 +7,7 @@
 module Vulkan.Pipeline.Layout where
 
 import Foreign.Ptr
+import Foreign.Marshal.Alloc
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
@@ -15,6 +17,12 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan
+import Vulkan.Exception
+import Vulkan.Exception.Enum
+import Vulkan.AllocationCallbacks (AllocationCallbacks)
+
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.DescriptorSet.Layout as DescriptorSet.Layout
 import qualified Vulkan.PushConstant as PushConstant
 import qualified Vulkan.Pipeline.Layout.Core as C
@@ -53,3 +61,21 @@ createInfoToCore CreateInfo {
 			C.createInfoPushConstantRangeCount = fromIntegral pcrc,
 			C.createInfoPPushConstantRanges = ppcrs }
 	ContT $ withForeignPtr fCreateInfo
+
+newtype L = L C.L deriving Show
+
+create :: (Pointable n, Pointable n') =>
+	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO L
+create (Device dvc) ci mac = (L <$>) . ($ pure) $ runContT do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pl <- ContT alloca
+	lift do	r <- C.create dvc pci pac pl
+		throwUnlessSuccess $ Result r
+		peek pl
+
+destroy :: Pointable n =>
+	Device -> L -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device dvc) (L lyt) mac =
+	($ pure) . runContT $ lift . C.destroy dvc lyt
+		=<< AllocationCallbacks.maybeToCore mac

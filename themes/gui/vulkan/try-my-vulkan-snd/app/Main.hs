@@ -96,7 +96,6 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
-import qualified Vulkan.Pipeline.Layout.Core as Vk.Ppl.Lyt.C
 
 import qualified Vulkan.Attachment as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass
@@ -123,8 +122,8 @@ validationLayers = [Vk.Khr.validationLayerName]
 renderPass :: IORef Vk.RndrPss.RenderPass
 renderPass = unsafePerformIO $ newIORef NullPtr
 
-pipelineLayout :: IORef Vk.Ppl.Lyt.C.Layout
-pipelineLayout = unsafePerformIO $ newIORef NullPtr
+-- pipelineLayout :: IORef Vk.Ppl.Lyt.C.L
+-- pipelineLayout = unsafePerformIO $ newIORef NullPtr
 
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
@@ -155,7 +154,8 @@ data Global = Global {
 	globalSwapChainImages :: IORef [Vk.Image],
 	globalSwapChainImageFormat :: IORef Vk.Format,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
-	globalSwapChainImageViews :: IORef [Vk.ImageView]
+	globalSwapChainImageViews :: IORef [Vk.ImageView],
+	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -172,6 +172,7 @@ newGlobal w = do
 	scimgfmt <- newIORef $ Vk.FormatUndefined
 	scex <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
+	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -185,7 +186,8 @@ newGlobal w = do
 		globalSwapChainImages = scimgs,
 		globalSwapChainImageFormat = scimgfmt,
 		globalSwapChainExtent = scex,
-		globalSwapChainImageViews = scivs
+		globalSwapChainImageViews = scivs,
+		globalPipelineLayout = lyt
 		}
 
 run :: IO ()
@@ -622,7 +624,8 @@ createRenderPass Global {
 createGraphicsPipeline :: Global -> IO ()
 createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
-	globalSwapChainExtent = rscex } = ($ pure) $ runContT do
+	globalSwapChainExtent = rscex,
+	globalPipelineLayout = rPplLyt } = ($ pure) $ runContT do
 	dvcdvc@(Vk.Device dvc) <- lift $ readIORef rdvc
 	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
 	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
@@ -728,12 +731,9 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
 			Vk.Ppl.Lyt.createInfoSetLayouts = [],
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
-	pPipelineLayoutInfo <- Vk.Ppl.Lyt.createInfoToCore @() pipelineLayoutInfo
-	pPipelineLayout <- ContT alloca
-	lift do r <- Vk.Ppl.Lyt.C.create
-			dvc pPipelineLayoutInfo NullPtr pPipelineLayout
-		when (r /= success) $ error "failed to creaet pipeline layout!"
-		writeIORef pipelineLayout =<< peek pPipelineLayout
+	lift do	pipelineLayoutBody <- Vk.Ppl.Lyt.create
+			@() @() dvcdvc pipelineLayoutInfo Nothing
+		writeIORef rPplLyt pipelineLayoutBody
 	shaderStages <- ContT $ allocaArray 2
 	lift $ pokeArray shaderStages shaderStageList
 	pVertexInputInfo <- Vk.Ppl.VI.createInfoToCore vertexInputInfo
@@ -742,7 +742,7 @@ createGraphicsPipeline g@Global {
 	pRasterizer <- Vk.Ppl.RstSt.createInfoToCore @() rasterizer
 	pMultisampling <- Vk.Ppl.MS.createInfoToCore @() multisampling
 	pColorBlending <- Vk.Ppl.CB.createInfoToCore @() colorBlending
-	pplLyt <- lift $ readIORef pipelineLayout
+	Vk.Ppl.Lyt.L pplLyt <- lift $ readIORef rPplLyt
 	rp <- lift $ readIORef renderPass
 	let	Vk.Ppl.CreateInfo_ fPipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoSType = (),
@@ -1009,7 +1009,8 @@ cleanup Global {
 	globalDevice = rdvc,
 	globalSurface = rsfc,
 	globalSwapChain = rsc,
-	globalSwapChainImageViews = rscivs } = do
+	globalSwapChainImageViews = rscivs,
+	globalPipelineLayout = rPplLyt } = do
 	dvc@(Vk.Device cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1025,8 +1026,8 @@ cleanup Global {
 	(\fb -> Vk.Fb.destroy cdvc fb NullPtr) `mapM_` fbs
 	gppl <- readIORef graphicsPipeline
 	Vk.Ppl.destroy cdvc gppl NullPtr
-	pl <- readIORef pipelineLayout
-	Vk.Ppl.Lyt.C.destroy cdvc pl NullPtr
+	pl <- readIORef rPplLyt
+	Vk.Ppl.Lyt.destroy @() dvc pl Nothing
 	rp <- readIORef renderPass
 	Vk.RndrPss.destroy cdvc rp NullPtr
 	((\iv -> Vk.ImageView.destroy @() dvc iv Nothing) `mapM_`)

@@ -84,7 +84,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("pDynamicState", ''DynamicState.PtrCreateInfo,
 		[| #{peek VkGraphicsPipelineCreateInfo, pDynamicState} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, pDynamicState} |]),
-	("layout", ''Layout.Layout,
+	("layout", ''Layout.L,
 		[| #{peek VkGraphicsPipelineCreateInfo, layout} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, layout} |]),
 	("renderPass", ''RenderPass.RenderPass,

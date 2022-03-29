@@ -12,6 +12,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.DescriptorSet.Layout.Core as DescriptorSet.Layout
@@ -49,11 +50,11 @@ struct "CreateInfo" #{size VkPipelineLayoutCreateInfo}
 		[| #{poke VkPipelineLayoutCreateInfo, pPushConstantRanges} |]) ]
 	[''Show, ''Storable]
 
-data LayoutTag
-type Layout = Ptr LayoutTag
+data LTag
+type L = Ptr LTag
 
 foreign import ccall "vkCreatePipelineLayout" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr Layout -> IO #{type VkResult}
+	Device -> Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr L -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipelineLayout" destroy ::
-	Device -> Layout -> Ptr () -> IO ()
+	Device -> L -> Ptr AllocationCallbacks -> IO ()
