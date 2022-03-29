@@ -88,6 +88,7 @@ import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
+import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -722,17 +723,12 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.CB.createInfoAttachments =
 				[colorBlendAttachment],
 			Vk.Ppl.CB.createInfoBlendConstants = RgbaFloat 0 0 0 0 }
-		Vk.Ppl.Lyt.C.CreateInfo_ fPipelineLayoutInfo =
-			Vk.Ppl.Lyt.C.CreateInfo {
-				Vk.Ppl.Lyt.C.createInfoSType = (),
-				Vk.Ppl.Lyt.C.createInfoPNext = NullPtr,
-				Vk.Ppl.Lyt.C.createInfoFlags = 0,
-				Vk.Ppl.Lyt.C.createInfoSetLayoutCount = 0,
-				Vk.Ppl.Lyt.C.createInfoPSetLayouts = NullPtr,
-				Vk.Ppl.Lyt.C.createInfoPushConstantRangeCount = 0,
-				Vk.Ppl.Lyt.C.createInfoPPushConstantRanges =
-					NullPtr }
-	pPipelineLayoutInfo <- ContT $ withForeignPtr fPipelineLayoutInfo
+		pipelineLayoutInfo = Vk.Ppl.Lyt.CreateInfo {
+			Vk.Ppl.Lyt.createInfoNext = Nothing,
+			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoSetLayouts = [],
+			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+	pPipelineLayoutInfo <- Vk.Ppl.Lyt.createInfoToCore @() pipelineLayoutInfo
 	pPipelineLayout <- ContT alloca
 	lift do r <- Vk.Ppl.Lyt.C.create
 			dvc pPipelineLayoutInfo NullPtr pPipelineLayout
