@@ -19,6 +19,14 @@ type L = Ptr LTag
 
 type PtrL = Ptr L
 
+struct "Binding" #{size VkDescriptorSetLayoutBinding}
+		#{alignment VkDescriptorSetLayoutBinding} [
+	("binding", ''#{type uint32_t},
+		[| #{peek VkDescriptorSetLayoutBinding, binding} |],
+		[| #{poke VkDescriptorSetLayoutBinding, binding} |])
+	]
+	[''Show, ''Storable]
+
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO}
 

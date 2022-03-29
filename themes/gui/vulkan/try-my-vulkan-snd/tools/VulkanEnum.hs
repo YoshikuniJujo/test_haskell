@@ -27,7 +27,8 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
 	("BlendFactor", "VkBlendFactor", ["Show", "Eq", "Storable"]),
 	("BlendOp", "VkBlendOp", ["Show", "Eq", "Storable"]),
 	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"]),
-	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"])
+	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"]),
+	("DescriptorType", "VkDescriptorType", ["Show", "Eq", "Storable"])
 	] [nowdoc|
 type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState|]
