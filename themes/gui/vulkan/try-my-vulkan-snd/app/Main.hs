@@ -89,6 +89,8 @@ import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Vulkan.Attachment as Vk.Att
+import qualified Vulkan.Attachment.Enum as Vk.Att
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -557,20 +559,22 @@ createRenderPass :: Global -> IO ()
 createRenderPass Global {
 	globalDevice = rdvc,
 	globalSwapChainImageFormat = rscimgfmt } = ($ pure) $ runContT do
-	Vk.Format scif <- lift $ readIORef rscimgfmt
-	let	Vk.Att.C.Description_ fColorAttachment = Vk.Att.C.Description {
-			Vk.Att.C.descriptionFlags = 0,
-			Vk.Att.C.descriptionFormat = scif,
-			Vk.Att.C.descriptionSamples = Vk.Sample.count1Bit,
-			Vk.Att.C.descriptionLoadOp = Vk.Att.C.loadOpClear,
-			Vk.Att.C.descriptionStoreOp = Vk.Att.C.storeOpStore,
-			Vk.Att.C.descriptionStencilLoadOp = Vk.Att.C.loadOpDontCare,
-			Vk.Att.C.descriptionStencilStoreOp =
-				Vk.Att.C.storeOpDontCare,
-			Vk.Att.C.descriptionInitialLayout =
-				Vk.Img.C.layoutUndefined,
-			Vk.Att.C.descriptionFinalLayout =
-				Vk.Img.C.layoutPresentSrcKhr }
+	scifscif <- lift $ readIORef rscimgfmt
+	let	colorAttachment = Vk.Att.Description {
+			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionFormat = scifscif,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp =
+				Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout =
+				Vk.Img.LayoutUndefined,
+			Vk.Att.descriptionFinalLayout =
+				Vk.Img.LayoutPresentSrcKhr }
+		Vk.Att.C.Description_ fColorAttachment =
+			Vk.Att.descriptionToCore colorAttachment
 		Vk.Att.C.Reference_ fColorAttachmentRef =
 			Vk.Att.C.Reference {
 				Vk.Att.C.referenceAttachment = 0,

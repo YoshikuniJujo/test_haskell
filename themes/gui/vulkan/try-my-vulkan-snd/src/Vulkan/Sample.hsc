@@ -14,9 +14,6 @@ import Vulkan.Sample.Enum
 
 #include <vulkan/vulkan.h>
 
-count1Bit :: #{type VkSampleCountFlagBits}
-count1Bit = #{const VK_SAMPLE_COUNT_1_BIT}
-
 data CountAndMask = CountAndMask CountFlagBits (Maybe Mask) deriving Show
 
 newtype Mask = Mask Integer deriving Show

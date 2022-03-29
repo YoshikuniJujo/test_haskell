@@ -45,14 +45,6 @@ struct "Description" #{size VkAttachmentDescription}
 
 type PtrDescription = Ptr Description
 
-loadOpClear, loadOpDontCare :: #{type VkAttachmentLoadOp}
-loadOpClear = #{const VK_ATTACHMENT_LOAD_OP_CLEAR}
-loadOpDontCare = #{const VK_ATTACHMENT_LOAD_OP_DONT_CARE}
-
-storeOpStore, storeOpDontCare :: #{type VkAttachmentStoreOp}
-storeOpStore = #{const VK_ATTACHMENT_STORE_OP_STORE}
-storeOpDontCare = #{const VK_ATTACHMENT_STORE_OP_DONT_CARE}
-
 struct "Reference" #{size VkAttachmentReference}
 		#{alignment VkAttachmentReference} [
 	("attachment", ''#{type uint32_t},

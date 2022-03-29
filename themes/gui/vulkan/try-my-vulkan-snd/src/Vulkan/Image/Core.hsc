@@ -34,11 +34,5 @@ struct "SubresourceRange" #{size VkImageSubresourceRange}
 		[| #{poke VkImageSubresourceRange, layerCount} |]) ]
 	[''Show, ''Storable]
 
-aspectColorBit :: #{type VkImageAspectFlags}
-aspectColorBit = #{const VK_IMAGE_ASPECT_COLOR_BIT}
-
-layoutUndefined, layoutPresentSrcKhr, layoutColorAttachmentOptimal ::
-	#{type VkImageLayout}
-layoutUndefined = #{const VK_IMAGE_LAYOUT_UNDEFINED}
-layoutPresentSrcKhr = #{const VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}
+layoutColorAttachmentOptimal :: #{type VkImageLayout}
 layoutColorAttachmentOptimal = #{const VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}
