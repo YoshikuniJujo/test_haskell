@@ -106,7 +106,7 @@ library
       Vulkan.Pipeline.DynamicState.Core
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
-      Vulkan.Pipeline.Layout
+      Vulkan.Pipeline.Layout.Core
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.MultisampleState.Core
       Vulkan.Pipeline.RasterizationState

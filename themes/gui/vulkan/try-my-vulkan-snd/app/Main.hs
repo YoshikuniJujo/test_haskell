@@ -95,7 +95,7 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
-import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Vulkan.Pipeline.Layout.Core as Vk.Ppl.Lyt.C
 
 import qualified Vulkan.Attachment as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass
@@ -122,7 +122,7 @@ validationLayers = [Vk.Khr.validationLayerName]
 renderPass :: IORef Vk.RndrPss.RenderPass
 renderPass = unsafePerformIO $ newIORef NullPtr
 
-pipelineLayout :: IORef Vk.Ppl.Lyt.Layout
+pipelineLayout :: IORef Vk.Ppl.Lyt.C.Layout
 pipelineLayout = unsafePerformIO $ newIORef NullPtr
 
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
@@ -722,19 +722,19 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.CB.createInfoAttachments =
 				[colorBlendAttachment],
 			Vk.Ppl.CB.createInfoBlendConstants = RgbaFloat 0 0 0 0 }
-		Vk.Ppl.Lyt.CreateInfo_ fPipelineLayoutInfo =
-			Vk.Ppl.Lyt.CreateInfo {
-				Vk.Ppl.Lyt.createInfoSType = (),
-				Vk.Ppl.Lyt.createInfoPNext = NullPtr,
-				Vk.Ppl.Lyt.createInfoFlags = 0,
-				Vk.Ppl.Lyt.createInfoSetLayoutCount = 0,
-				Vk.Ppl.Lyt.createInfoPSetLayouts = NullPtr,
-				Vk.Ppl.Lyt.createInfoPushConstantRangeCount = 0,
-				Vk.Ppl.Lyt.createInfoPPushConstantRanges =
+		Vk.Ppl.Lyt.C.CreateInfo_ fPipelineLayoutInfo =
+			Vk.Ppl.Lyt.C.CreateInfo {
+				Vk.Ppl.Lyt.C.createInfoSType = (),
+				Vk.Ppl.Lyt.C.createInfoPNext = NullPtr,
+				Vk.Ppl.Lyt.C.createInfoFlags = 0,
+				Vk.Ppl.Lyt.C.createInfoSetLayoutCount = 0,
+				Vk.Ppl.Lyt.C.createInfoPSetLayouts = NullPtr,
+				Vk.Ppl.Lyt.C.createInfoPushConstantRangeCount = 0,
+				Vk.Ppl.Lyt.C.createInfoPPushConstantRanges =
 					NullPtr }
 	pPipelineLayoutInfo <- ContT $ withForeignPtr fPipelineLayoutInfo
 	pPipelineLayout <- ContT alloca
-	lift do r <- Vk.Ppl.Lyt.create
+	lift do r <- Vk.Ppl.Lyt.C.create
 			dvc pPipelineLayoutInfo NullPtr pPipelineLayout
 		when (r /= success) $ error "failed to creaet pipeline layout!"
 		writeIORef pipelineLayout =<< peek pPipelineLayout
@@ -1030,7 +1030,7 @@ cleanup Global {
 	gppl <- readIORef graphicsPipeline
 	Vk.Ppl.destroy cdvc gppl NullPtr
 	pl <- readIORef pipelineLayout
-	Vk.Ppl.Lyt.destroy cdvc pl NullPtr
+	Vk.Ppl.Lyt.C.destroy cdvc pl NullPtr
 	rp <- readIORef renderPass
 	Vk.RndrPss.destroy cdvc rp NullPtr
 	((\iv -> Vk.ImageView.destroy @() dvc iv Nothing) `mapM_`)
