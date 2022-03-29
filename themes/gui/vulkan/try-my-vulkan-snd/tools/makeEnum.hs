@@ -21,6 +21,7 @@ import qualified VulkanShaderStageEnum
 import qualified VulkanVertexInputEnum
 import qualified VulkanCullModeEnum
 import qualified VulkanColorComponentEnum
+import qualified VulkanDescriptorSetLayoutEnum
 
 main :: IO ()
 main = do
@@ -43,3 +44,4 @@ main = do
 	VulkanVertexInputEnum.make
 	VulkanCullModeEnum.make
 	VulkanColorComponentEnum.make
+	VulkanDescriptorSetLayoutEnum.make
