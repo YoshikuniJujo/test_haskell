@@ -23,7 +23,16 @@ struct "Binding" #{size VkDescriptorSetLayoutBinding}
 		#{alignment VkDescriptorSetLayoutBinding} [
 	("binding", ''#{type uint32_t},
 		[| #{peek VkDescriptorSetLayoutBinding, binding} |],
-		[| #{poke VkDescriptorSetLayoutBinding, binding} |])
+		[| #{poke VkDescriptorSetLayoutBinding, binding} |]),
+	("descriptorType", ''#{type VkDescriptorType},
+		[| #{peek VkDescriptorSetLayoutBinding, descriptorType} |],
+		[| #{poke VkDescriptorSetLayoutBinding, descriptorType} |]),
+	("descriptorCount", ''#{type uint32_t},
+		[| #{peek VkDescriptorSetLayoutBinding, descriptorCount} |],
+		[| #{poke VkDescriptorSetLayoutBinding, descriptorCount} |]),
+	("stageFlags", ''#{type VkShaderStageFlags},
+		[| #{peek VkDescriptorSetLayoutBinding, stageFlags} |],
+		[| #{poke VkDescriptorSetLayoutBinding, stageFlags} |])
 	]
 	[''Show, ''Storable]
 
