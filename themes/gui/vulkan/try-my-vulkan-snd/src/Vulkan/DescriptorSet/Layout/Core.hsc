@@ -12,6 +12,8 @@ import Data.Word
 
 import Vulkan.Base
 
+import qualified Vulkan.Sampler.Core as Sampler
+
 #include <vulkan/vulkan.h>
 
 data LTag
@@ -32,7 +34,10 @@ struct "Binding" #{size VkDescriptorSetLayoutBinding}
 		[| #{poke VkDescriptorSetLayoutBinding, descriptorCount} |]),
 	("stageFlags", ''#{type VkShaderStageFlags},
 		[| #{peek VkDescriptorSetLayoutBinding, stageFlags} |],
-		[| #{poke VkDescriptorSetLayoutBinding, stageFlags} |])
+		[| #{poke VkDescriptorSetLayoutBinding, stageFlags} |]),
+	("pImmutableSamplers", ''Sampler.PtrS,
+		[| #{peek VkDescriptorSetLayoutBinding, pImmutableSamplers} |],
+		[| #{poke VkDescriptorSetLayoutBinding, pImmutableSamplers} |])
 	]
 	[''Show, ''Storable]
 
