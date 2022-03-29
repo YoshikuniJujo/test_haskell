@@ -12,7 +12,7 @@ import Data.Word
 
 import Vulkan.Base
 
-import qualified Vulkan.Attachment as Attachment
+import qualified Vulkan.Attachment.Core as Attachment
 
 #include <vulkan/vulkan.h>
 

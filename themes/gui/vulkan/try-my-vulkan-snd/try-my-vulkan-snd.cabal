@@ -36,7 +36,7 @@ library
       Vulkan.Access
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
-      Vulkan.Attachment
+      Vulkan.Attachment.Core
       Vulkan.Base
       Vulkan.ColorComponent.Enum
       Vulkan.Command

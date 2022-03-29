@@ -97,7 +97,7 @@ import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
-import qualified Vulkan.Attachment as Vk.Att
+import qualified Vulkan.Attachment.Core as Vk.Att.C
 import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
@@ -558,23 +558,23 @@ createRenderPass Global {
 	globalDevice = rdvc,
 	globalSwapChainImageFormat = rscimgfmt } = ($ pure) $ runContT do
 	Vk.Format scif <- lift $ readIORef rscimgfmt
-	let	Vk.Att.Description_ fColorAttachment = Vk.Att.Description {
-			Vk.Att.descriptionFlags = 0,
-			Vk.Att.descriptionFormat = scif,
-			Vk.Att.descriptionSamples = Vk.Sample.count1Bit,
-			Vk.Att.descriptionLoadOp = Vk.Att.loadOpClear,
-			Vk.Att.descriptionStoreOp = Vk.Att.storeOpStore,
-			Vk.Att.descriptionStencilLoadOp = Vk.Att.loadOpDontCare,
-			Vk.Att.descriptionStencilStoreOp =
-				Vk.Att.storeOpDontCare,
-			Vk.Att.descriptionInitialLayout =
+	let	Vk.Att.C.Description_ fColorAttachment = Vk.Att.C.Description {
+			Vk.Att.C.descriptionFlags = 0,
+			Vk.Att.C.descriptionFormat = scif,
+			Vk.Att.C.descriptionSamples = Vk.Sample.count1Bit,
+			Vk.Att.C.descriptionLoadOp = Vk.Att.C.loadOpClear,
+			Vk.Att.C.descriptionStoreOp = Vk.Att.C.storeOpStore,
+			Vk.Att.C.descriptionStencilLoadOp = Vk.Att.C.loadOpDontCare,
+			Vk.Att.C.descriptionStencilStoreOp =
+				Vk.Att.C.storeOpDontCare,
+			Vk.Att.C.descriptionInitialLayout =
 				Vk.Img.C.layoutUndefined,
-			Vk.Att.descriptionFinalLayout =
+			Vk.Att.C.descriptionFinalLayout =
 				Vk.Img.C.layoutPresentSrcKhr }
-		Vk.Att.Reference_ fColorAttachmentRef =
-			Vk.Att.Reference {
-				Vk.Att.referenceAttachment = 0,
-				Vk.Att.referenceLayout =
+		Vk.Att.C.Reference_ fColorAttachmentRef =
+			Vk.Att.C.Reference {
+				Vk.Att.C.referenceAttachment = 0,
+				Vk.Att.C.referenceLayout =
 					Vk.Img.C.layoutColorAttachmentOptimal }
 	pColorAttachment <- ContT $ withForeignPtr fColorAttachment
 	pColorAttachmentRef <- ContT $ withForeignPtr fColorAttachmentRef
