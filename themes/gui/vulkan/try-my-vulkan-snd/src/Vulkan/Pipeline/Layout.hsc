@@ -14,7 +14,7 @@ import Data.Int
 import Vulkan.Base
 import Vulkan.Device.Core (Device)
 
-import qualified Vulkan.Descriptor.SetLayout as Descriptor.SetLayout
+import qualified Vulkan.DescriptorSet.Layout.Core as DescriptorSet.Layout
 import qualified Vulkan.PushConstant as PushConstant
 
 #include <vulkan/vulkan.h>
@@ -36,7 +36,7 @@ struct "CreateInfo" #{size VkPipelineLayoutCreateInfo}
 	("setLayoutCount", ''#{type uint32_t},
 		[| #{peek VkPipelineLayoutCreateInfo, setLayoutCount} |],
 		[| #{poke VkPipelineLayoutCreateInfo, setLayoutCount} |]),
-	("pSetLayouts", ''Descriptor.SetLayout.PtrSetLayout,
+	("pSetLayouts", ''DescriptorSet.Layout.PtrL,
 		[| #{peek VkPipelineLayoutCreateInfo, pSetLayouts} |],
 		[| #{poke VkPipelineLayoutCreateInfo, pSetLayouts} |]),
 	("pushConstantRangeCount", ''#{type uint32_t},

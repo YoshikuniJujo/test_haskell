@@ -47,7 +47,7 @@ library
       Vulkan.Component.Enum
       Vulkan.Core
       Vulkan.CullMode.Enum
-      Vulkan.Descriptor.SetLayout
+      Vulkan.DescriptorSet.Layout.Core
       Vulkan.Device
       Vulkan.Device.Core
       Vulkan.Device.Queue
