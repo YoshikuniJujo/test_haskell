@@ -41,6 +41,8 @@ struct "Binding" #{size VkDescriptorSetLayoutBinding}
 	]
 	[''Show, ''Storable]
 
+type PtrBinding = Ptr Binding
+
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO}
 
@@ -51,6 +53,14 @@ struct "CreateInfo" #{size VkDescriptorSetLayoutCreateInfo}
 			p sType |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkDescriptorSetLayoutCreateInfo, pNext} |],
-		[| #{poke VkDescriptorSetLayoutCreateInfo, pNext} |])
-	]
+		[| #{poke VkDescriptorSetLayoutCreateInfo, pNext} |]),
+	("flags", ''#{type VkDescriptorSetLayoutCreateFlags},
+		[| #{peek VkDescriptorSetLayoutCreateInfo, flags} |],
+		[| #{poke VkDescriptorSetLayoutCreateInfo, flags} |]),
+	("bindingCount", ''#{type uint32_t},
+		[| #{peek VkDescriptorSetLayoutCreateInfo, bindingCount} |],
+		[| #{poke VkDescriptorSetLayoutCreateInfo, bindingCount} |]),
+	("pBindings", ''PtrBinding,
+		[| #{peek VkDescriptorSetLayoutCreateInfo, pBindings} |],
+		[| #{poke VkDescriptorSetLayoutCreateInfo, pBindings} |]) ]
 	[''Show, ''Storable]
