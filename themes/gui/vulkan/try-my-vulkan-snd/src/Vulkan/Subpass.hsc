@@ -5,8 +5,6 @@
 
 module Vulkan.Subpass where
 
-import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
@@ -36,7 +34,7 @@ data Description = Description {
 	descriptionPreserveAttachments :: [Word32] }
 	deriving Show
 
-descriptionToCore :: Description -> ContT r IO (Ptr C.Description)
+descriptionToCore :: Description -> ContT r IO C.Description
 descriptionToCore Description {
 	descriptionFlags = DescriptionFlagBits flgs,
 	descriptionPipelineBindPoint = Pipeline.BindPoint bp,
@@ -63,18 +61,17 @@ descriptionToCore Description {
 		Just dsa -> ContT alloca >>= \p -> p <$ lift (poke p dsa)
 	ppas <- ContT $ allocaArray pac
 	lift $ pokeArray ppas pas
-	let	C.Description_ fDescription = C.Description {
-			C.descriptionFlags = flgs,
-			C.descriptionPipelineBindPoint = bp,
-			C.descriptionInputAttachmentCount = fromIntegral iac,
-			C.descriptionPInputAttachments = pias,
-			C.descriptionColorAttachmentCount = fromIntegral cac,
-			C.descriptionPColorAttachments = pcas,
-			C.descriptionPResolveAttachments = pras,
-			C.descriptionPDepthStencilAttachment = pdsa,
-			C.descriptionPreserveAttachmentCount = fromIntegral pac,
-			C.descriptionPPreserveAttachments = ppas }
-	ContT $ withForeignPtr fDescription
+	pure C.Description {
+		C.descriptionFlags = flgs,
+		C.descriptionPipelineBindPoint = bp,
+		C.descriptionInputAttachmentCount = fromIntegral iac,
+		C.descriptionPInputAttachments = pias,
+		C.descriptionColorAttachmentCount = fromIntegral cac,
+		C.descriptionPColorAttachments = pcas,
+		C.descriptionPResolveAttachments = pras,
+		C.descriptionPDepthStencilAttachment = pdsa,
+		C.descriptionPreserveAttachmentCount = fromIntegral pac,
+		C.descriptionPPreserveAttachments = ppas }
 
 enum "S" ''#{type uint32_t} [''Show, ''Storable]
 	[("SExternal", #{const VK_SUBPASS_EXTERNAL})]

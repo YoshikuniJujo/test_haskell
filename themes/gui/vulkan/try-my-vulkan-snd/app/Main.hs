@@ -94,6 +94,8 @@ import qualified Vulkan.Attachment.Enum as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified Vulkan.RenderPass as Vk.RndrPss
+import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -101,7 +103,6 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
-import qualified Vulkan.Attachment.Core as Vk.Att.C
 import qualified Vulkan.Subpass.Core as Vk.Subpass.C
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
@@ -571,14 +572,11 @@ createRenderPass Global {
 				Vk.Img.LayoutUndefined,
 			Vk.Att.descriptionFinalLayout =
 				Vk.Img.LayoutPresentSrcKhr }
-		Vk.Att.C.Description_ fColorAttachment =
-			Vk.Att.descriptionToCore colorAttachment
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
 				Vk.Img.LayoutColorAttachmentOptimal }
-	pColorAttachment <- ContT $ withForeignPtr fColorAttachment
-	let	subpass = Vk.Subpass.Description {
+		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags =
 				Vk.Subpass.DescriptionFlagsZero,
 			Vk.Subpass.descriptionPipelineBindPoint =
@@ -588,8 +586,7 @@ createRenderPass Global {
 				Left [colorAttachmentRef],
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
-	pSubpass <- Vk.Subpass.descriptionToCore subpass
-	let	dependency = Vk.Subpass.Dependency {
+		dependency = Vk.Subpass.Dependency {
 			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
 			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
 			Vk.Subpass.dependencySrcStageMask =
@@ -601,21 +598,14 @@ createRenderPass Global {
 				Vk.AccessColorAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags =
 				Vk.DependencyFlagsZero }
-		Vk.Subpass.C.Dependency_ fDependency =
-			Vk.Subpass.dependencyToCore dependency
-	pDependency <- ContT $ withForeignPtr fDependency
-	let	Vk.RndrPss.C.CreateInfo_ fRenderPassInfo = Vk.RndrPss.C.CreateInfo {
-			Vk.RndrPss.C.createInfoSType = (),
-			Vk.RndrPss.C.createInfoPNext = NullPtr,
-			Vk.RndrPss.C.createInfoFlags = 0,
-			Vk.RndrPss.C.createInfoAttachmentCount = 1,
-			Vk.RndrPss.C.createInfoPAttachments = pColorAttachment,
-			Vk.RndrPss.C.createInfoSubpassCount = 1,
-			Vk.RndrPss.C.createInfoPSubpasses = pSubpass,
-			Vk.RndrPss.C.createInfoDependencyCount = 1,
-			Vk.RndrPss.C.createInfoPDependencies = pDependency }
+		renderPassInfo = Vk.RndrPss.CreateInfo {
+			Vk.RndrPss.createInfoNext = Nothing,
+			Vk.RndrPss.createInfoFlags = Vk.RndrPss.CreateFlagsZero,
+			Vk.RndrPss.createInfoAttachments = [colorAttachment],
+			Vk.RndrPss.createInfoSubpasses = [subpass],
+			Vk.RndrPss.createInfoDependencies = [dependency] }
 	Vk.Device dvc <- lift $ readIORef rdvc
-	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
+	pRenderPassInfo <- Vk.RndrPss.createInfoToCore @() renderPassInfo
 	pRenderPass <- ContT alloca
 	lift do	r <- Vk.RndrPss.C.create dvc pRenderPassInfo NullPtr pRenderPass
 		when (r /= success) $ error "failed to create render pass!"
