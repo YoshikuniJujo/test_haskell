@@ -13,6 +13,7 @@ import Data.Int
 
 import Vulkan.Core
 import Vulkan.Base
+import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Attachment.Core as Attachment
@@ -58,10 +59,11 @@ data RTag
 type R = Ptr RTag
 
 foreign import ccall "vkCreateRenderPass" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr R -> IO #{type VkResult}
+	Device -> Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr R ->
+	IO #{type VkResult}
 
 foreign import ccall "vkDestroyRenderPass" destroy ::
-	Device -> R -> Ptr () -> IO ()
+	Device -> R -> Ptr AllocationCallbacks -> IO ()
 
 struct "BeginInfo" #{size VkRenderPassBeginInfo}
 		#{alignment VkRenderPassBeginInfo} [

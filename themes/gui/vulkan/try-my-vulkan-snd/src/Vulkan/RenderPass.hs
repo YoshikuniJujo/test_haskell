@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,12 +7,18 @@ module Vulkan.RenderPass where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 
+import Vulkan
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.RenderPass.Enum
+import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)
 
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass
@@ -53,3 +60,20 @@ createInfoToCore CreateInfo {
 			C.createInfoDependencyCount = fromIntegral dc,
 			C.createInfoPDependencies = pds }
 	ContT $ withForeignPtr fCreateInfo
+
+newtype R = R C.R deriving Show
+
+create :: (Pointable n, Pointable n') =>
+	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO R
+create (Device dvc) ci mac = ($ pure) . runContT $ R <$> do
+	pci <- createInfoToCore ci
+	pac <- maybeToCore mac
+	pr <- ContT alloca
+	lift do	r <- C.create dvc pci pac pr
+		throwUnlessSuccess $ Result r
+		peek pr
+
+destroy :: Pointable n => Device -> R -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device dvc) (R r) mac = ($ pure) $ runContT do
+	pac <- maybeToCore mac
+	lift $ C.destroy dvc r pac

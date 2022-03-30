@@ -123,9 +123,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-renderPass :: IORef Vk.RndrPss.C.R
-renderPass = unsafePerformIO $ newIORef NullPtr
-
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 
@@ -156,7 +153,8 @@ data Global = Global {
 	globalSwapChainImageFormat :: IORef Vk.Format,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView],
-	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L
+	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
+	globalRenderPass :: IORef Vk.RndrPss.R
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -174,6 +172,7 @@ newGlobal w = do
 	scex <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
 	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
+	rp <- newIORef $ Vk.RndrPss.R NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -188,7 +187,8 @@ newGlobal w = do
 		globalSwapChainImageFormat = scimgfmt,
 		globalSwapChainExtent = scex,
 		globalSwapChainImageViews = scivs,
-		globalPipelineLayout = lyt
+		globalPipelineLayout = lyt,
+		globalRenderPass = rp
 		}
 
 run :: IO ()
@@ -557,8 +557,9 @@ createImageView1 Global {
 createRenderPass :: Global -> IO ()
 createRenderPass Global {
 	globalDevice = rdvc,
-	globalSwapChainImageFormat = rscimgfmt } = ($ pure) $ runContT do
-	scifscif <- lift $ readIORef rscimgfmt
+	globalSwapChainImageFormat = rscimgfmt,
+	globalRenderPass = rrp } = do
+	scifscif <- readIORef rscimgfmt
 	let	colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
 			Vk.Att.descriptionFormat = scifscif,
@@ -604,18 +605,16 @@ createRenderPass Global {
 			Vk.RndrPss.createInfoAttachments = [colorAttachment],
 			Vk.RndrPss.createInfoSubpasses = [subpass],
 			Vk.RndrPss.createInfoDependencies = [dependency] }
-	Vk.Device dvc <- lift $ readIORef rdvc
-	pRenderPassInfo <- Vk.RndrPss.createInfoToCore @() renderPassInfo
-	pRenderPass <- ContT alloca
-	lift do	r <- Vk.RndrPss.C.create dvc pRenderPassInfo NullPtr pRenderPass
-		when (r /= success) $ error "failed to create render pass!"
-		writeIORef renderPass =<< peek pRenderPass
+	dvc <- readIORef rdvc
+	rp <- Vk.RndrPss.create @() @() dvc renderPassInfo Nothing
+	writeIORef rrp rp
 
 createGraphicsPipeline :: Global -> IO ()
 createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
-	globalPipelineLayout = rPplLyt } = ($ pure) $ runContT do
+	globalPipelineLayout = rPplLyt,
+	globalRenderPass = rrp } = ($ pure) $ runContT do
 	dvcdvc@(Vk.Device dvc) <- lift $ readIORef rdvc
 	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
 	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
@@ -733,7 +732,7 @@ createGraphicsPipeline g@Global {
 	pMultisampling <- Vk.Ppl.MS.createInfoToCore @() multisampling
 	pColorBlending <- Vk.Ppl.CB.createInfoToCore @() colorBlending
 	Vk.Ppl.Lyt.L pplLyt <- lift $ readIORef rPplLyt
-	rp <- lift $ readIORef renderPass
+	Vk.RndrPss.R rp <- lift $ readIORef rrp
 	let	Vk.Ppl.CreateInfo_ fPipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoSType = (),
 			Vk.Ppl.createInfoPNext = NullPtr,
@@ -788,8 +787,9 @@ createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
 createFramebuffer1 :: Global -> Vk.ImageView.C.ImageView -> IO Framebuffer
 createFramebuffer1 Global {
 	globalDevice = rdvc,
-	globalSwapChainExtent = rscex } attachment = ($ pure) $ runContT do
-	rndrPss <- lift $ readIORef renderPass
+	globalSwapChainExtent = rscex,
+	globalRenderPass = rrp } attachment = ($ pure) $ runContT do
+	Vk.RndrPss.R rndrPss <- lift $ readIORef rrp
 	attachments <- ContT $ allocaArray 1
 	lift $ pokeArray attachments [attachment]
 	sce <- lift $ readIORef rscex
@@ -858,7 +858,9 @@ createCommandBuffersGen Global {
 		peekArray cbc pCommandBuffers
 
 beginCommandBuffer1 :: Global -> Vk.C.CommandBuffer -> Framebuffer -> IO ()
-beginCommandBuffer1 Global { globalSwapChainExtent = rscex } cb fb = ($ pure) $ runContT do
+beginCommandBuffer1 Global {
+	globalSwapChainExtent = rscex,
+	globalRenderPass = rrp } cb fb = ($ pure) $ runContT do
 	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
 			Vk.CB.beginInfoSType = (),
 			Vk.CB.beginInfoPNext = NullPtr,
@@ -868,7 +870,7 @@ beginCommandBuffer1 Global { globalSwapChainExtent = rscex } cb fb = ($ pure) $ 
 	lift do	r <- Vk.CB.begin cb pBeginInfo
 		when (r /= success)
 			$ error "failed to begin recording command buffer!"
-	rp <- lift $ readIORef renderPass
+	Vk.RndrPss.R rp <- lift $ readIORef rrp
 	sce <- lift $ readIORef rscex
 	pClearColor <- ContT $ allocaArray 4
 	lift $ pokeArray pClearColor [0, 0, 0, 1]
@@ -1000,7 +1002,8 @@ cleanup Global {
 	globalSurface = rsfc,
 	globalSwapChain = rsc,
 	globalSwapChainImageViews = rscivs,
-	globalPipelineLayout = rPplLyt } = do
+	globalPipelineLayout = rPplLyt,
+	globalRenderPass = rrp } = do
 	dvc@(Vk.Device cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1018,8 +1021,8 @@ cleanup Global {
 	Vk.Ppl.destroy cdvc gppl NullPtr
 	pl <- readIORef rPplLyt
 	Vk.Ppl.Lyt.destroy @() dvc pl Nothing
-	rp <- readIORef renderPass
-	Vk.RndrPss.C.destroy cdvc rp NullPtr
+	rp <- readIORef rrp
+	Vk.RndrPss.destroy @() dvc rp Nothing
 	((\iv -> Vk.ImageView.destroy @() dvc iv Nothing) `mapM_`)
 		=<< readIORef rscivs
 	(\sc -> Vk.Khr.Sc.destroy @() dvc sc Nothing) =<< readIORef rsc
