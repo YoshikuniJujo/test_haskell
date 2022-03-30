@@ -104,7 +104,7 @@ import qualified Vulkan.ColorComponent.Enum as Vk.CC
 import qualified Vulkan.Attachment.Core as Vk.Att.C
 import qualified Vulkan.Subpass.Core as Vk.Subpass.C
 import qualified Vulkan.Pipeline as Vk.Ppl
-import qualified Vulkan.RenderPass as Vk.RndrPss
+import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
 
 import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.CommandPool as Vk.CP
@@ -123,7 +123,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-renderPass :: IORef Vk.RndrPss.R
+renderPass :: IORef Vk.RndrPss.C.R
 renderPass = unsafePerformIO $ newIORef NullPtr
 
 -- pipelineLayout :: IORef Vk.Ppl.Lyt.C.L
@@ -605,20 +605,20 @@ createRenderPass Global {
 				Vk.Access.colorAttachmentWriteBit,
 			Vk.Subpass.C.dependencyDependencyFlags = 0 }
 	pDependency <- ContT $ withForeignPtr fDependency
-	let	Vk.RndrPss.CreateInfo_ fRenderPassInfo = Vk.RndrPss.CreateInfo {
-			Vk.RndrPss.createInfoSType = (),
-			Vk.RndrPss.createInfoPNext = NullPtr,
-			Vk.RndrPss.createInfoFlags = 0,
-			Vk.RndrPss.createInfoAttachmentCount = 1,
-			Vk.RndrPss.createInfoPAttachments = pColorAttachment,
-			Vk.RndrPss.createInfoSubpassCount = 1,
-			Vk.RndrPss.createInfoPSubpasses = pSubpass,
-			Vk.RndrPss.createInfoDependencyCount = 1,
-			Vk.RndrPss.createInfoPDependencies = pDependency }
+	let	Vk.RndrPss.C.CreateInfo_ fRenderPassInfo = Vk.RndrPss.C.CreateInfo {
+			Vk.RndrPss.C.createInfoSType = (),
+			Vk.RndrPss.C.createInfoPNext = NullPtr,
+			Vk.RndrPss.C.createInfoFlags = 0,
+			Vk.RndrPss.C.createInfoAttachmentCount = 1,
+			Vk.RndrPss.C.createInfoPAttachments = pColorAttachment,
+			Vk.RndrPss.C.createInfoSubpassCount = 1,
+			Vk.RndrPss.C.createInfoPSubpasses = pSubpass,
+			Vk.RndrPss.C.createInfoDependencyCount = 1,
+			Vk.RndrPss.C.createInfoPDependencies = pDependency }
 	Vk.Device dvc <- lift $ readIORef rdvc
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	pRenderPass <- ContT alloca
-	lift do	r <- Vk.RndrPss.create dvc pRenderPassInfo NullPtr pRenderPass
+	lift do	r <- Vk.RndrPss.C.create dvc pRenderPassInfo NullPtr pRenderPass
 		when (r /= success) $ error "failed to create render pass!"
 		writeIORef renderPass =<< peek pRenderPass
 
@@ -883,16 +883,16 @@ beginCommandBuffer1 Global { globalSwapChainExtent = rscex } cb fb = ($ pure) $ 
 	sce <- lift $ readIORef rscex
 	pClearColor <- ContT $ allocaArray 4
 	lift $ pokeArray pClearColor [0, 0, 0, 1]
-	let	Vk.RndrPss.BeginInfo_ fRenderPassInfo = Vk.RndrPss.BeginInfo {
-			Vk.RndrPss.beginInfoSType = (),
-			Vk.RndrPss.beginInfoPNext = NullPtr,
-			Vk.RndrPss.beginInfoRenderPass = rp,
-			Vk.RndrPss.beginInfoFramebuffer = fb,
-			Vk.RndrPss.beginInfoRenderArea = Vk.C.Rect2d {
+	let	Vk.RndrPss.C.BeginInfo_ fRenderPassInfo = Vk.RndrPss.C.BeginInfo {
+			Vk.RndrPss.C.beginInfoSType = (),
+			Vk.RndrPss.C.beginInfoPNext = NullPtr,
+			Vk.RndrPss.C.beginInfoRenderPass = rp,
+			Vk.RndrPss.C.beginInfoFramebuffer = fb,
+			Vk.RndrPss.C.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
-			Vk.RndrPss.beginInfoClearValueCount = 1,
-			Vk.RndrPss.beginInfoPClearColorValueFloats =
+			Vk.RndrPss.C.beginInfoClearValueCount = 1,
+			Vk.RndrPss.C.beginInfoPClearColorValueFloats =
 				pClearColor }
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	lift do	Vk.Cmd.beginRenderPass
@@ -1030,7 +1030,7 @@ cleanup Global {
 	pl <- readIORef rPplLyt
 	Vk.Ppl.Lyt.destroy @() dvc pl Nothing
 	rp <- readIORef renderPass
-	Vk.RndrPss.destroy cdvc rp NullPtr
+	Vk.RndrPss.C.destroy cdvc rp NullPtr
 	((\iv -> Vk.ImageView.destroy @() dvc iv Nothing) `mapM_`)
 		=<< readIORef rscivs
 	(\sc -> Vk.Khr.Sc.destroy @() dvc sc Nothing) =<< readIORef rsc

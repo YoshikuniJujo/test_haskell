@@ -7,7 +7,7 @@ import Data.Word
 
 import Vulkan.Core (CommandBuffer)
 
-import qualified Vulkan.RenderPass as RenderPass
+import qualified Vulkan.RenderPass.Core as RenderPass
 import qualified Vulkan.Pipeline as Pipeline
 
 #include <vulkan/vulkan.h>

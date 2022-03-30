@@ -130,7 +130,7 @@ library
       Vulkan.PushConstant
       Vulkan.QueueFamily
       Vulkan.QueueFamily.Core
-      Vulkan.RenderPass
+      Vulkan.RenderPass.Core
       Vulkan.Sample
       Vulkan.Sample.Enum
       Vulkan.Sampler.Core

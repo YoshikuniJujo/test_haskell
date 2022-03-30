@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.RenderPass where
+module Vulkan.RenderPass.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
