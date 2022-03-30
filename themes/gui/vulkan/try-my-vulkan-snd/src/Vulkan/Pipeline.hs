@@ -7,7 +7,7 @@ import Vulkan.Pipeline.Enum
 import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
-import qualified Vulkan.Pipeline.TessellationState as TessellationState
+-- import qualified Vulkan.Pipeline.TessellationState as TessellationState
 
 data CreateInfo n n1 n2 n3 n4 vs ts n5 n6 = CreateInfo {
 	createInfoNext :: Maybe n,

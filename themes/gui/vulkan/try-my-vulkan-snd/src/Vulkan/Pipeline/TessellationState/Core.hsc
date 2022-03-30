@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.TessellationState where
+module Vulkan.Pipeline.TessellationState.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
