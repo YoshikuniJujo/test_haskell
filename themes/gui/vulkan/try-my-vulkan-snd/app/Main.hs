@@ -91,6 +91,9 @@ import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Vulkan.Attachment as Vk.Att
 import qualified Vulkan.Attachment.Enum as Vk.Att
+import qualified Vulkan.Subpass as Vk.Subpass
+import qualified Vulkan.Subpass.Enum as Vk.Subpass
+import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -578,24 +581,18 @@ createRenderPass Global {
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
 				Vk.Img.LayoutColorAttachmentOptimal }
-		Vk.Att.C.Reference_ fColorAttachmentRef =
-			Vk.Att.referenceToCore colorAttachmentRef
 	pColorAttachment <- ContT $ withForeignPtr fColorAttachment
-	pColorAttachmentRef <- ContT $ withForeignPtr fColorAttachmentRef
-	let	Vk.Subpass.C.Description_ fSubpass = Vk.Subpass.C.Description {
-			Vk.Subpass.C.descriptionFlags = 0,
-			Vk.Subpass.C.descriptionPipelineBindPoint =
-				Vk.Ppl.bindPointGraphics,
-			Vk.Subpass.C.descriptionInputAttachmentCount = 0,
-			Vk.Subpass.C.descriptionPInputAttachments = NullPtr,
-			Vk.Subpass.C.descriptionColorAttachmentCount = 1,
-			Vk.Subpass.C.descriptionPColorAttachments =
-				pColorAttachmentRef,
-			Vk.Subpass.C.descriptionPResolveAttachments = NullPtr,
-			Vk.Subpass.C.descriptionPDepthStencilAttachment = NullPtr,
-			Vk.Subpass.C.descriptionPreserveAttachmentCount = 0,
-			Vk.Subpass.C.descriptionPPreserveAttachments = NullPtr }
-	pSubpass <- ContT $ withForeignPtr fSubpass
+	let	subpass = Vk.Subpass.Description {
+			Vk.Subpass.descriptionFlags =
+				Vk.Subpass.DescriptionFlagsZero,
+			Vk.Subpass.descriptionPipelineBindPoint =
+				Vk.Ppl.BindPointGraphics,
+			Vk.Subpass.descriptionInputAttachments = [],
+			Vk.Subpass.descriptionColorAndResolveAttachments =
+				Left [colorAttachmentRef],
+			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+			Vk.Subpass.descriptionPreserveAttachments = [] }
+	pSubpass <- Vk.Subpass.descriptionToCore subpass
 	let	Vk.Subpass.C.Dependency_ fDependency = Vk.Subpass.C.Dependency {
 			Vk.Subpass.C.dependencySrcSubpass = Vk.Subpass.C.external,
 			Vk.Subpass.C.dependencyDstSubpass = 0,
