@@ -23,6 +23,9 @@ type HaskellCode = String
 
 type DerivName = String
 
+vulkanCore :: HeaderFile
+vulkanCore = "/usr/include/vulkan/vulkan_core.h"
+
 createSingleFile :: HeaderFile -> ModuleName -> HaskellName -> CName -> ExtraCode -> IO ()
 createSingleFile hf mnm hsnm snm ext = do
 	prg <- getProgName
