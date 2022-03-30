@@ -104,7 +104,7 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 import qualified Vulkan.Subpass.Core as Vk.Subpass.C
-import qualified Vulkan.Pipeline as Vk.Ppl
+import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
 
 import qualified Vulkan.Framebuffer as Vk.Fb
@@ -123,7 +123,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-graphicsPipeline :: IORef Vk.Ppl.Pipeline
+graphicsPipeline :: IORef Vk.Ppl.C.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 
 swapChainFramebuffers :: IORef [Framebuffer]
@@ -733,29 +733,29 @@ createGraphicsPipeline g@Global {
 	pColorBlending <- Vk.Ppl.CB.createInfoToCore @() colorBlending
 	Vk.Ppl.Lyt.L pplLyt <- lift $ readIORef rPplLyt
 	Vk.RndrPss.R rp <- lift $ readIORef rrp
-	let	Vk.Ppl.CreateInfo_ fPipelineInfo = Vk.Ppl.CreateInfo {
-			Vk.Ppl.createInfoSType = (),
-			Vk.Ppl.createInfoPNext = NullPtr,
-			Vk.Ppl.createInfoFlags = 0,
-			Vk.Ppl.createInfoStageCount = 2,
-			Vk.Ppl.createInfoPStages = shaderStages,
-			Vk.Ppl.createInfoPVertexInputState = pVertexInputInfo,
-			Vk.Ppl.createInfoPInputAssemblyState = pInputAssembly,
-			Vk.Ppl.createInfoPTessellationState = NullPtr,
-			Vk.Ppl.createInfoPViewportState = pViewportState,
-			Vk.Ppl.createInfoPRasterizationState = pRasterizer,
-			Vk.Ppl.createInfoPMultisampleState = pMultisampling,
-			Vk.Ppl.createInfoPDepthStencilState = NullPtr,
-			Vk.Ppl.createInfoPColorBlendState = pColorBlending,
-			Vk.Ppl.createInfoPDynamicState = NullPtr,
-			Vk.Ppl.createInfoLayout = pplLyt,
-			Vk.Ppl.createInfoRenderPass = rp,
-			Vk.Ppl.createInfoSubpass = 0,
-			Vk.Ppl.createInfoBasePipelineHandle = NullHandle,
-			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
+	let	Vk.Ppl.C.CreateInfo_ fPipelineInfo = Vk.Ppl.C.CreateInfo {
+			Vk.Ppl.C.createInfoSType = (),
+			Vk.Ppl.C.createInfoPNext = NullPtr,
+			Vk.Ppl.C.createInfoFlags = 0,
+			Vk.Ppl.C.createInfoStageCount = 2,
+			Vk.Ppl.C.createInfoPStages = shaderStages,
+			Vk.Ppl.C.createInfoPVertexInputState = pVertexInputInfo,
+			Vk.Ppl.C.createInfoPInputAssemblyState = pInputAssembly,
+			Vk.Ppl.C.createInfoPTessellationState = NullPtr,
+			Vk.Ppl.C.createInfoPViewportState = pViewportState,
+			Vk.Ppl.C.createInfoPRasterizationState = pRasterizer,
+			Vk.Ppl.C.createInfoPMultisampleState = pMultisampling,
+			Vk.Ppl.C.createInfoPDepthStencilState = NullPtr,
+			Vk.Ppl.C.createInfoPColorBlendState = pColorBlending,
+			Vk.Ppl.C.createInfoPDynamicState = NullPtr,
+			Vk.Ppl.C.createInfoLayout = pplLyt,
+			Vk.Ppl.C.createInfoRenderPass = rp,
+			Vk.Ppl.C.createInfoSubpass = 0,
+			Vk.Ppl.C.createInfoBasePipelineHandle = NullHandle,
+			Vk.Ppl.C.createInfoBasePipelineIndex = - 1 }
 	pPipelineInfo <- ContT $ withForeignPtr fPipelineInfo
 	pGraphicsPipeline <- ContT alloca
-	lift do	r <- Vk.Ppl.create
+	lift do	r <- Vk.Ppl.C.create
 			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
 		when (r /= success) $ error "failed to create graphics pipeline!"
 		writeIORef graphicsPipeline =<< peek pGraphicsPipeline
@@ -889,7 +889,7 @@ beginCommandBuffer1 Global {
 	lift do	Vk.Cmd.beginRenderPass
 			cb pRenderPassInfo Vk.Subpass.C.contentsInline
 		gppl <- readIORef graphicsPipeline
-		Vk.Cmd.bindPipeline cb Vk.Ppl.bindPointGraphics gppl
+		Vk.Cmd.bindPipeline cb Vk.Ppl.C.bindPointGraphics gppl
 		Vk.Cmd.draw cb 3 1 0 0
 		Vk.Cmd.endRenderPass cb
 		r <- Vk.CB.end cb
@@ -953,7 +953,7 @@ drawFrame Global {
 	lift $ pokeArray pWaitSemaphores . (: [])
 		=<< readIORef imageAvailableSemaphore
 	pWaitStages <- ContT $ allocaArray 1
-	lift $ pokeArray pWaitStages [Vk.Ppl.stageColorAttachmentOutputBit]
+	lift $ pokeArray pWaitStages [Vk.Ppl.C.stageColorAttachmentOutputBit]
 	cbs <- lift $ readIORef commandBuffers
 	pcb1 <- ContT $ allocaArray 1
 	lift $ pokeArray pcb1 [cbs !! imageIndex]
@@ -1018,7 +1018,7 @@ cleanup Global {
 	fbs <- readIORef swapChainFramebuffers
 	(\fb -> Vk.Fb.destroy cdvc fb NullPtr) `mapM_` fbs
 	gppl <- readIORef graphicsPipeline
-	Vk.Ppl.destroy cdvc gppl NullPtr
+	Vk.Ppl.C.destroy cdvc gppl NullPtr
 	pl <- readIORef rPplLyt
 	Vk.Ppl.Lyt.destroy @() dvc pl Nothing
 	rp <- readIORef rrp
