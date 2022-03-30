@@ -1,6 +1,12 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Attachment where
+
+import Foreign.Storable
+import Foreign.C.Enum
+import Data.Word
 
 import Vulkan.Enum
 import Vulkan.Attachment.Enum
@@ -8,6 +14,8 @@ import Vulkan.Attachment.Enum
 import qualified Vulkan.Sample.Enum as Sample
 import qualified Vulkan.Image.Enum as Image
 import qualified Vulkan.Attachment.Core as C
+
+#include <vulkan/vulkan.h>
 
 data Description = Description {
 	descriptionFlags :: DescriptionFlags,
@@ -42,3 +50,18 @@ descriptionToCore Description {
 		C.descriptionStencilStoreOp = sso,
 		C.descriptionInitialLayout = il,
 		C.descriptionFinalLayout = fl }
+
+enum "A" ''#{type uint32_t} [''Show, ''Storable]
+	[("AUnused", #{const VK_ATTACHMENT_UNUSED})]
+
+data Reference = Reference {
+	referenceAttachment :: A,
+	referenceLayout :: Image.Layout }
+	deriving Show
+
+referenceToCore :: Reference -> C.Reference
+referenceToCore Reference {
+	referenceAttachment = A a,
+	referenceLayout = Image.Layout lyt } = C.Reference {
+		C.referenceAttachment = a,
+		C.referenceLayout = lyt }

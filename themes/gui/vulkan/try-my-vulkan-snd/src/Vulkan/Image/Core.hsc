@@ -33,6 +33,3 @@ struct "SubresourceRange" #{size VkImageSubresourceRange}
 		[| #{peek VkImageSubresourceRange, layerCount} |],
 		[| #{poke VkImageSubresourceRange, layerCount} |]) ]
 	[''Show, ''Storable]
-
-layoutColorAttachmentOptimal :: #{type VkImageLayout}
-layoutColorAttachmentOptimal = #{const VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}

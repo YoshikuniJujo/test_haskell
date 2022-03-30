@@ -95,7 +95,6 @@ import qualified Vulkan.Attachment.Enum as Vk.Att
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ImageView.Core as Vk.ImageView.C
-import qualified Vulkan.Image.Core as Vk.Img.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
@@ -575,11 +574,12 @@ createRenderPass Global {
 				Vk.Img.LayoutPresentSrcKhr }
 		Vk.Att.C.Description_ fColorAttachment =
 			Vk.Att.descriptionToCore colorAttachment
+		colorAttachmentRef = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = Vk.Att.A 0,
+			Vk.Att.referenceLayout =
+				Vk.Img.LayoutColorAttachmentOptimal }
 		Vk.Att.C.Reference_ fColorAttachmentRef =
-			Vk.Att.C.Reference {
-				Vk.Att.C.referenceAttachment = 0,
-				Vk.Att.C.referenceLayout =
-					Vk.Img.C.layoutColorAttachmentOptimal }
+			Vk.Att.referenceToCore colorAttachmentRef
 	pColorAttachment <- ContT $ withForeignPtr fColorAttachment
 	pColorAttachmentRef <- ContT $ withForeignPtr fColorAttachmentRef
 	let	Vk.Subpass.Description_ fSubpass = Vk.Subpass.Description {
