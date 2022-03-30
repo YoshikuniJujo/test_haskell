@@ -24,6 +24,7 @@ import qualified VulkanColorComponentEnum
 import qualified VulkanDescriptorSetLayoutEnum
 import qualified VulkanAttachmentEnum
 import qualified VulkanSubpassEnum
+import qualified VulkanPipelineEnum
 
 main :: IO ()
 main = do
@@ -49,3 +50,4 @@ main = do
 	VulkanDescriptorSetLayoutEnum.make
 	VulkanAttachmentEnum.make
 	VulkanSubpassEnum.make
+	VulkanPipelineEnum.make

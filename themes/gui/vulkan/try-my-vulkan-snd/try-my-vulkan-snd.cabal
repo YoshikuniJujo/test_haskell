@@ -107,6 +107,7 @@ library
       Vulkan.Pipeline.DepthStencilState.Core
       Vulkan.Pipeline.DynamicState
       Vulkan.Pipeline.DynamicState.Core
+      Vulkan.Pipeline.Enum
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout
