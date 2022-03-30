@@ -35,8 +35,8 @@ bindPointGraphics = #{const VK_PIPELINE_BIND_POINT_GRAPHICS}
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
 
-data PipelineTag
-type Pipeline = Ptr PipelineTag
+data PTag
+type P = Ptr PTag
 
 struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		#{alignment VkGraphicsPipelineCreateInfo} [
@@ -93,7 +93,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("subpass", ''#{type uint32_t},
 		[| #{peek VkGraphicsPipelineCreateInfo, subpass} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, subpass} |]),
-	("basePipelineHandle", ''Pipeline,
+	("basePipelineHandle", ''P,
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineHandle} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineHandle} |]),
 	("basePipelineIndex", ''#{type int32_t},
@@ -103,10 +103,10 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 
 foreign import ccall "vkCreateGraphicsPipelines" create ::
 	Device -> Ptr () -> #{type uint32_t} -> Ptr CreateInfo -> Ptr () ->
-	Ptr Pipeline -> IO #{type VkResult}
+	Ptr P -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipeline" destroy ::
-	Device -> Pipeline -> Ptr () -> IO ()
+	Device -> P -> Ptr () -> IO ()
 
 stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
 stageColorAttachmentOutputBit =

@@ -17,8 +17,7 @@ foreign import ccall "vkCmdBeginRenderPass" beginRenderPass ::
 	#{type VkSubpassContents} -> IO ()
 
 foreign import ccall "vkCmdBindPipeline" bindPipeline ::
-	CommandBuffer -> #{type VkPipelineBindPoint} -> Pipeline.Pipeline ->
-	IO ()
+	CommandBuffer -> #{type VkPipelineBindPoint} -> Pipeline.P -> IO ()
 
 foreign import ccall "vkCmdDraw" draw ::
 	CommandBuffer -> #{type uint32_t} -> #{type uint32_t} ->

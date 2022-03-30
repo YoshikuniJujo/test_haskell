@@ -123,7 +123,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-graphicsPipeline :: IORef Vk.Ppl.C.Pipeline
+graphicsPipeline :: IORef Vk.Ppl.C.P
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
 
 swapChainFramebuffers :: IORef [Framebuffer]
