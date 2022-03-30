@@ -10,6 +10,7 @@ module Vulkan.Pipeline.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Bits
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -27,7 +28,7 @@ enum "BindPoint" ''#{type VkPipelineBindPoint}
 	("BindPointMaxEnum", #{const VK_PIPELINE_BIND_POINT_MAX_ENUM}) ]
 
 enum "StageFlagBits" ''#{type VkPipelineStageFlagBits}
-		[''Show, ''Storable] [
+		[''Show, ''Eq, ''Storable, ''Bits] [
 	("StageFlagsZero", 0),
 	("StageTopOfPipeBit",
 		#{const VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT}),
@@ -89,4 +90,61 @@ enum "StageFlagBits" ''#{type VkPipelineStageFlagBits}
 	("StageFlagBitsMaxEnum",
 		#{const VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM}) ]
 
+enum "CreateFlagBits" ''#{type VkPipelineCreateFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("CreateFlagsZero", 0),
+	("CreateDisableOptimizationBit",
+		#{const VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT}),
+	("CreateAllowDerivativesBit",
+		#{const VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT}),
+	("CreateDerivativeBit",
+		#{const VK_PIPELINE_CREATE_DERIVATIVE_BIT}),
+	("CreateViewIndexFromDeviceIndexBit",
+		#{const VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT}),
+	("CreateDispatchBaseBit",
+		#{const VK_PIPELINE_CREATE_DISPATCH_BASE_BIT}),
+	("RasterizationStateCreateFragmentShadingRateAttachmentBitKhr",
+		#{const VK_PIPELINE_RASTERIZATION_STATE_CREATE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR}),
+	("RasterizationStateCreateFragmentDensityMapAttachmentBitExt",
+		#{const VK_PIPELINE_RASTERIZATION_STATE_CREATE_FRAGMENT_DENSITY_MAP_ATTACHMENT_BIT_EXT}),
+	("CreateRayTracingNoNullAnyHitShadersBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_ANY_HIT_SHADERS_BIT_KHR}),
+	("CreateRayTracingNoNullClosestHitShadersBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_CLOSEST_HIT_SHADERS_BIT_KHR}),
+	("CreateRayTracingNoNullMissShadersBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_MISS_SHADERS_BIT_KHR}),
+	("CreateRayTracingNoNullIntersectionShadersBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_NO_NULL_INTERSECTION_SHADERS_BIT_KHR}),
+	("CreateRayTracingSkipTrianglesBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR}),
+	("CreateRayTracingSkipAabbsBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR}),
+	("CreateRayTracingShaderGroupHandleCaptureReplayBitKhr",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR}),
+	("CreateDeferCompileBitNv",
+		#{const VK_PIPELINE_CREATE_DEFER_COMPILE_BIT_NV}),
+	("CreateCaptureStatisticsBitKhr",
+		#{const VK_PIPELINE_CREATE_CAPTURE_STATISTICS_BIT_KHR}),
+	("CreateCaptureInternalRepresentationsBitKhr",
+		#{const VK_PIPELINE_CREATE_CAPTURE_INTERNAL_REPRESENTATIONS_BIT_KHR}),
+	("CreateIndirectBindableBitNv",
+		#{const VK_PIPELINE_CREATE_INDIRECT_BINDABLE_BIT_NV}),
+	("CreateLibraryBitKhr",
+		#{const VK_PIPELINE_CREATE_LIBRARY_BIT_KHR}),
+	("CreateFailOnPipelineCompileRequiredBitExt",
+		#{const VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT_EXT}),
+	("CreateEarlyReturnOnFailureBitExt",
+		#{const VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT_EXT}),
+	("CreateRayTracingAllowMotionBitNv",
+		#{const VK_PIPELINE_CREATE_RAY_TRACING_ALLOW_MOTION_BIT_NV}),
+	("CreateDispatchBase",
+		#{const VK_PIPELINE_CREATE_DISPATCH_BASE}),
+	("CreateViewIndexFromDeviceIndexBitKhr",
+		#{const VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT_KHR}),
+	("CreateDispatchBaseKhr",
+		#{const VK_PIPELINE_CREATE_DISPATCH_BASE_KHR}),
+	("CreateFlagBitsMaxEnum",
+		#{const VK_PIPELINE_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
 type StageFlags = StageFlagBits
+type CreateFlags = CreateFlagBits
