@@ -16,7 +16,7 @@ import Vulkan.Base
 import Vulkan.Device.Core (Device)
 
 import qualified Vulkan.Attachment.Core as Attachment
-import qualified Vulkan.Subpass as Subpass
+import qualified Vulkan.Subpass.Core as Subpass
 
 #include <vulkan/vulkan.h>
 

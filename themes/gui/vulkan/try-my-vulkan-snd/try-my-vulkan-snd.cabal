@@ -139,7 +139,7 @@ library
       Vulkan.Shader.Stage.Enum
       Vulkan.Specialization
       Vulkan.Specialization.Core
-      Vulkan.Subpass
+      Vulkan.Subpass.Core
       Vulkan.VertexInput
       Vulkan.VertexInput.Core
       Vulkan.VertexInput.Enum

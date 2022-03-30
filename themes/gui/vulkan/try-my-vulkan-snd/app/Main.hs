@@ -99,7 +99,7 @@ import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 import qualified Vulkan.Attachment.Core as Vk.Att.C
-import qualified Vulkan.Subpass as Vk.Subpass
+import qualified Vulkan.Subpass.Core as Vk.Subpass.C
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 
@@ -582,31 +582,31 @@ createRenderPass Global {
 			Vk.Att.referenceToCore colorAttachmentRef
 	pColorAttachment <- ContT $ withForeignPtr fColorAttachment
 	pColorAttachmentRef <- ContT $ withForeignPtr fColorAttachmentRef
-	let	Vk.Subpass.Description_ fSubpass = Vk.Subpass.Description {
-			Vk.Subpass.descriptionFlags = 0,
-			Vk.Subpass.descriptionPipelineBindPoint =
+	let	Vk.Subpass.C.Description_ fSubpass = Vk.Subpass.C.Description {
+			Vk.Subpass.C.descriptionFlags = 0,
+			Vk.Subpass.C.descriptionPipelineBindPoint =
 				Vk.Ppl.bindPointGraphics,
-			Vk.Subpass.descriptionInputAttachmentCount = 0,
-			Vk.Subpass.descriptionPInputAttachments = NullPtr,
-			Vk.Subpass.descriptionColorAttachmentCount = 1,
-			Vk.Subpass.descriptionPColorAttachments =
+			Vk.Subpass.C.descriptionInputAttachmentCount = 0,
+			Vk.Subpass.C.descriptionPInputAttachments = NullPtr,
+			Vk.Subpass.C.descriptionColorAttachmentCount = 1,
+			Vk.Subpass.C.descriptionPColorAttachments =
 				pColorAttachmentRef,
-			Vk.Subpass.descriptionPResolveAttachments = NullPtr,
-			Vk.Subpass.descriptionPDepthStencilAttachment = NullPtr,
-			Vk.Subpass.descriptionPreserveAttachmentCount = 0,
-			Vk.Subpass.descriptionPPreserveAttachments = NullPtr }
+			Vk.Subpass.C.descriptionPResolveAttachments = NullPtr,
+			Vk.Subpass.C.descriptionPDepthStencilAttachment = NullPtr,
+			Vk.Subpass.C.descriptionPreserveAttachmentCount = 0,
+			Vk.Subpass.C.descriptionPPreserveAttachments = NullPtr }
 	pSubpass <- ContT $ withForeignPtr fSubpass
-	let	Vk.Subpass.Dependency_ fDependency = Vk.Subpass.Dependency {
-			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.external,
-			Vk.Subpass.dependencyDstSubpass = 0,
-			Vk.Subpass.dependencySrcStageMask =
+	let	Vk.Subpass.C.Dependency_ fDependency = Vk.Subpass.C.Dependency {
+			Vk.Subpass.C.dependencySrcSubpass = Vk.Subpass.C.external,
+			Vk.Subpass.C.dependencyDstSubpass = 0,
+			Vk.Subpass.C.dependencySrcStageMask =
 				Vk.Ppl.stageColorAttachmentOutputBit,
-			Vk.Subpass.dependencySrcAccessMask = 0,
-			Vk.Subpass.dependencyDstStageMask =
+			Vk.Subpass.C.dependencySrcAccessMask = 0,
+			Vk.Subpass.C.dependencyDstStageMask =
 				Vk.Ppl.stageColorAttachmentOutputBit,
-			Vk.Subpass.dependencyDstAccessMask =
+			Vk.Subpass.C.dependencyDstAccessMask =
 				Vk.Access.colorAttachmentWriteBit,
-			Vk.Subpass.dependencyDependencyFlags = 0 }
+			Vk.Subpass.C.dependencyDependencyFlags = 0 }
 	pDependency <- ContT $ withForeignPtr fDependency
 	let	Vk.RndrPss.CreateInfo_ fRenderPassInfo = Vk.RndrPss.CreateInfo {
 			Vk.RndrPss.createInfoSType = (),
@@ -899,7 +899,7 @@ beginCommandBuffer1 Global { globalSwapChainExtent = rscex } cb fb = ($ pure) $ 
 				pClearColor }
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	lift do	Vk.Cmd.beginRenderPass
-			cb pRenderPassInfo Vk.Subpass.contentsInline
+			cb pRenderPassInfo Vk.Subpass.C.contentsInline
 		gppl <- readIORef graphicsPipeline
 		Vk.Cmd.bindPipeline cb Vk.Ppl.bindPointGraphics gppl
 		Vk.Cmd.draw cb 3 1 0 0
