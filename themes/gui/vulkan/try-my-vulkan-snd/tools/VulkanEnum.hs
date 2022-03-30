@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module VulkanEnum where
@@ -8,8 +9,16 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
-		["Foreign.Ptr", "Data.Bits", "Data.Word"] [
+make = createFile'' "/usr/include/vulkan/vulkan_core.h" "Enum"
+	["Foreign.Ptr", "Data.Bits", "Data.Word"] ((([] ,) <$> noZeros) ++ zeros)
+	[nowdoc|
+type QueueFlags = QueueFlagBits
+type PtrDynamicState = Ptr DynamicState
+type AccessFlags = AccessFlagBits
+type DependencyFlags = DependencyFlagBits|]
+
+noZeros :: [(HaskellName, CName, [DerivName])]
+noZeros = [
 	("SystemAllocationScope","VkSystemAllocationScope",
 		["Show", "Eq", "Storable"]),
 	("InternalAllocationType", "VkInternalAllocationType",
@@ -29,6 +38,14 @@ make = createFile' "/usr/include/vulkan/vulkan_core.h" "Enum"
 	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"]),
 	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"]),
 	("DescriptorType", "VkDescriptorType", ["Show", "Eq", "Storable"])
-	] [nowdoc|
-type QueueFlags = QueueFlagBits
-type PtrDynamicState = Ptr DynamicState|]
+	]
+
+zeros :: [([(String, Const)], (HaskellName, CName, [DerivName]))]
+zeros = [
+	(	[("AccessFlagsZero", Int 0)],
+		(	"AccessFlagBits", "VkAccessFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[("DependencyFlagsZero", Int 0)],
+		(	"DependencyFlagBits", "VkDependencyFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) )
+	]

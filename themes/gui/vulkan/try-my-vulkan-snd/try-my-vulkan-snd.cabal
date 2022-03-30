@@ -33,7 +33,6 @@ library
       Glfw
       ThEnv
       Vulkan
-      Vulkan.Access
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment

@@ -1,5 +1,6 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Subpass where
@@ -9,16 +10,20 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Enum
 import Vulkan.Subpass.Enum
 
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass.Core as C
+
+#include <vulkan/vulkan.h>
 
 data Description = Description {
 	descriptionFlags :: DescriptionFlags,
@@ -70,3 +75,33 @@ descriptionToCore Description {
 			C.descriptionPreserveAttachmentCount = fromIntegral pac,
 			C.descriptionPPreserveAttachments = ppas }
 	ContT $ withForeignPtr fDescription
+
+enum "S" ''#{type uint32_t} [''Show, ''Storable]
+	[("SExternal", #{const VK_SUBPASS_EXTERNAL})]
+
+data Dependency = Dependency {
+	dependencySrcSubpass :: S,
+	dependencyDstSubpass :: S,
+	dependencySrcStageMask :: Pipeline.StageFlags,
+	dependencyDstStageMask :: Pipeline.StageFlags,
+	dependencySrcAccessMask :: AccessFlags,
+	dependencyDstAccessMask :: AccessFlags,
+	dependencyDependencyFlags :: DependencyFlags }
+	deriving Show
+
+dependencyToCore :: Dependency -> C.Dependency
+dependencyToCore Dependency {
+	dependencySrcSubpass = S ss,
+	dependencyDstSubpass = S ds,
+	dependencySrcStageMask = Pipeline.StageFlagBits ssm,
+	dependencyDstStageMask = Pipeline.StageFlagBits dsm,
+	dependencySrcAccessMask = AccessFlagBits sam,
+	dependencyDstAccessMask = AccessFlagBits dam,
+	dependencyDependencyFlags = DependencyFlagBits flgs } = C.Dependency {
+		C.dependencySrcSubpass = ss,
+		C.dependencyDstSubpass = ds,
+		C.dependencySrcStageMask = ssm,
+		C.dependencyDstStageMask = dsm,
+		C.dependencySrcAccessMask = sam,
+		C.dependencyDstAccessMask = dam,
+		C.dependencyDependencyFlags = flgs }

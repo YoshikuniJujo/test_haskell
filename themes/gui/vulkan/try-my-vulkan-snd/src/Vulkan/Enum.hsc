@@ -800,5 +800,78 @@ enum "DescriptorType" ''#{type VkDescriptorType}
 		#{const VK_DESCRIPTOR_TYPE_MUTABLE_VALVE}),
 	("DescriptorTypeMaxEnum", #{const VK_DESCRIPTOR_TYPE_MAX_ENUM}) ]
 
+enum "AccessFlagBits" ''#{type VkAccessFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("AccessFlagsZero", 0),
+	("AccessIndirectCommandReadBit",
+		#{const VK_ACCESS_INDIRECT_COMMAND_READ_BIT}),
+	("AccessIndexReadBit", #{const VK_ACCESS_INDEX_READ_BIT}),
+	("AccessVertexAttributeReadBit",
+		#{const VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT}),
+	("AccessUniformReadBit", #{const VK_ACCESS_UNIFORM_READ_BIT}),
+	("AccessInputAttachmentReadBit",
+		#{const VK_ACCESS_INPUT_ATTACHMENT_READ_BIT}),
+	("AccessShaderReadBit", #{const VK_ACCESS_SHADER_READ_BIT}),
+	("AccessShaderWriteBit", #{const VK_ACCESS_SHADER_WRITE_BIT}),
+	("AccessColorAttachmentReadBit",
+		#{const VK_ACCESS_COLOR_ATTACHMENT_READ_BIT}),
+	("AccessColorAttachmentWriteBit",
+		#{const VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT}),
+	("AccessDepthStencilAttachmentReadBit",
+		#{const VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT}),
+	("AccessDepthStencilAttachmentWriteBit",
+		#{const VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT}),
+	("AccessTransferReadBit", #{const VK_ACCESS_TRANSFER_READ_BIT}),
+	("AccessTransferWriteBit", #{const VK_ACCESS_TRANSFER_WRITE_BIT}),
+	("AccessHostReadBit", #{const VK_ACCESS_HOST_READ_BIT}),
+	("AccessHostWriteBit", #{const VK_ACCESS_HOST_WRITE_BIT}),
+	("AccessMemoryReadBit", #{const VK_ACCESS_MEMORY_READ_BIT}),
+	("AccessMemoryWriteBit", #{const VK_ACCESS_MEMORY_WRITE_BIT}),
+	("AccessTransformFeedbackWriteBitExt",
+		#{const VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT}),
+	("AccessTransformFeedbackCounterReadBitExt",
+		#{const VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT}),
+	("AccessTransformFeedbackCounterWriteBitExt",
+		#{const VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT}),
+	("AccessConditionalRenderingReadBitExt",
+		#{const VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT}),
+	("AccessColorAttachmentReadNoncoherentBitExt",
+		#{const VK_ACCESS_COLOR_ATTACHMENT_READ_NONCOHERENT_BIT_EXT}),
+	("AccessAccelerationStructureReadBitKhr",
+		#{const VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR}),
+	("AccessAccelerationStructureWriteBitKhr",
+		#{const VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR}),
+	("AccessFragmentDensityMapReadBitExt",
+		#{const VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT}),
+	("AccessFragmentShadingRateAttachmentReadBitKhr",
+		#{const VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR}),
+	("AccessCommandPreprocessReadBitNv",
+		#{const VK_ACCESS_COMMAND_PREPROCESS_READ_BIT_NV}),
+	("AccessCommandPreprocessWriteBitNv",
+		#{const VK_ACCESS_COMMAND_PREPROCESS_WRITE_BIT_NV}),
+	("AccessNoneKhr", #{const VK_ACCESS_NONE_KHR}),
+	("AccessShadingRateImageReadBitNv",
+		#{const VK_ACCESS_SHADING_RATE_IMAGE_READ_BIT_NV}),
+	("AccessAccelerationStructureReadBitNv",
+		#{const VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_NV}),
+	("AccessAccelerationStructureWriteBitNv",
+		#{const VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_NV}),
+	("AccessFlagBitsMaxEnum", #{const VK_ACCESS_FLAG_BITS_MAX_ENUM}) ]
+
+enum "DependencyFlagBits" ''#{type VkDependencyFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("DependencyFlagsZero", 0),
+	("DependencyByRegionBit", #{const VK_DEPENDENCY_BY_REGION_BIT}),
+	("DependencyDeviceGroupBit", #{const VK_DEPENDENCY_DEVICE_GROUP_BIT}),
+	("DependencyViewLocalBit", #{const VK_DEPENDENCY_VIEW_LOCAL_BIT}),
+	("DependencyViewLocalBitKhr",
+		#{const VK_DEPENDENCY_VIEW_LOCAL_BIT_KHR}),
+	("DependencyDeviceGroupBitKhr",
+		#{const VK_DEPENDENCY_DEVICE_GROUP_BIT_KHR}),
+	("DependencyFlagBitsMaxEnum",
+		#{const VK_DEPENDENCY_FLAG_BITS_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState
+type AccessFlags = AccessFlagBits
+type DependencyFlags = DependencyFlagBits

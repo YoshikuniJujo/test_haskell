@@ -111,7 +111,6 @@ import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp
-import qualified Vulkan.Access as Vk.Access
 
 main :: IO ()
 main = run
@@ -125,9 +124,6 @@ validationLayers = [Vk.Khr.validationLayerName]
 
 renderPass :: IORef Vk.RndrPss.C.R
 renderPass = unsafePerformIO $ newIORef NullPtr
-
--- pipelineLayout :: IORef Vk.Ppl.Lyt.C.L
--- pipelineLayout = unsafePerformIO $ newIORef NullPtr
 
 graphicsPipeline :: IORef Vk.Ppl.Pipeline
 graphicsPipeline = unsafePerformIO $ newIORef NullPtr
@@ -593,17 +589,20 @@ createRenderPass Global {
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
 	pSubpass <- Vk.Subpass.descriptionToCore subpass
-	let	Vk.Subpass.C.Dependency_ fDependency = Vk.Subpass.C.Dependency {
-			Vk.Subpass.C.dependencySrcSubpass = Vk.Subpass.C.external,
-			Vk.Subpass.C.dependencyDstSubpass = 0,
-			Vk.Subpass.C.dependencySrcStageMask =
-				Vk.Ppl.stageColorAttachmentOutputBit,
-			Vk.Subpass.C.dependencySrcAccessMask = 0,
-			Vk.Subpass.C.dependencyDstStageMask =
-				Vk.Ppl.stageColorAttachmentOutputBit,
-			Vk.Subpass.C.dependencyDstAccessMask =
-				Vk.Access.colorAttachmentWriteBit,
-			Vk.Subpass.C.dependencyDependencyFlags = 0 }
+	let	dependency = Vk.Subpass.Dependency {
+			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
+			Vk.Subpass.dependencySrcStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Subpass.dependencySrcAccessMask = Vk.AccessFlagsZero,
+			Vk.Subpass.dependencyDstStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Subpass.dependencyDstAccessMask =
+				Vk.AccessColorAttachmentWriteBit,
+			Vk.Subpass.dependencyDependencyFlags =
+				Vk.DependencyFlagsZero }
+		Vk.Subpass.C.Dependency_ fDependency =
+			Vk.Subpass.dependencyToCore dependency
 	pDependency <- ContT $ withForeignPtr fDependency
 	let	Vk.RndrPss.C.CreateInfo_ fRenderPassInfo = Vk.RndrPss.C.CreateInfo {
 			Vk.RndrPss.C.createInfoSType = (),
