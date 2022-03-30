@@ -87,7 +87,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("layout", ''Layout.L,
 		[| #{peek VkGraphicsPipelineCreateInfo, layout} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, layout} |]),
-	("renderPass", ''RenderPass.RenderPass,
+	("renderPass", ''RenderPass.R,
 		[| #{peek VkGraphicsPipelineCreateInfo, renderPass} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, renderPass} |]),
 	("subpass", ''#{type uint32_t},

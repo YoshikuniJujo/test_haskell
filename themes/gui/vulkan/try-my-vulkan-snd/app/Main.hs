@@ -123,7 +123,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-renderPass :: IORef Vk.RndrPss.RenderPass
+renderPass :: IORef Vk.RndrPss.R
 renderPass = unsafePerformIO $ newIORef NullPtr
 
 -- pipelineLayout :: IORef Vk.Ppl.Lyt.C.L

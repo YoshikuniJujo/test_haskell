@@ -54,15 +54,14 @@ struct "CreateInfo" #{size VkRenderPassCreateInfo}
 		[| #{poke VkRenderPassCreateInfo, pDependencies} |]) ]
 	[''Show, ''Storable]
 
-data RenderPassTag
-type RenderPass = Ptr RenderPassTag
+data RTag
+type R = Ptr RTag
 
 foreign import ccall "vkCreateRenderPass" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr RenderPass ->
-	IO #{type VkResult}
+	Device -> Ptr CreateInfo -> Ptr () -> Ptr R -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyRenderPass" destroy ::
-	Device -> RenderPass -> Ptr () -> IO ()
+	Device -> R -> Ptr () -> IO ()
 
 struct "BeginInfo" #{size VkRenderPassBeginInfo}
 		#{alignment VkRenderPassBeginInfo} [
@@ -71,7 +70,7 @@ struct "BeginInfo" #{size VkRenderPassBeginInfo}
 	("pNext", ''PtrVoid,
 		[| #{peek VkRenderPassBeginInfo, pNext} |],
 		[| #{poke VkRenderPassBeginInfo, pNext} |]),
-	("renderPass", ''RenderPass,
+	("renderPass", ''R,
 		[| #{peek VkRenderPassBeginInfo, renderPass } |],
 		[| #{poke VkRenderPassBeginInfo, renderPass } |]),
 	("framebuffer", ''Framebuffer,

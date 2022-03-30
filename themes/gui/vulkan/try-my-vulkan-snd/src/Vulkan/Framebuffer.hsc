@@ -32,7 +32,7 @@ struct "CreateInfo" #{size VkFramebufferCreateInfo}
 	("flags", ''#{type VkFramebufferCreateFlags},
 		[| #{peek VkFramebufferCreateInfo, flags} |],
 		[| #{poke VkFramebufferCreateInfo, flags} |]),
-	("renderPass", ''RenderPass.RenderPass,
+	("renderPass", ''RenderPass.R,
 		[| #{peek VkFramebufferCreateInfo, renderPass} |],
 		[| #{poke VkFramebufferCreateInfo, renderPass} |]),
 	("attachmentCount", ''#{type uint32_t},
