@@ -119,6 +119,7 @@ library
       Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum
+      Vulkan.Pipeline.TessellationState
       Vulkan.Pipeline.TessellationState.Core
       Vulkan.Pipeline.VertexInputState
       Vulkan.Pipeline.VertexInputState.BindingOffset
