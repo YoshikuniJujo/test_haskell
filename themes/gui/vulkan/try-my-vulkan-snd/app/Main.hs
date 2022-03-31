@@ -96,6 +96,7 @@ import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
+import qualified Vulkan.Pipeline as Vk.Ppl
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -733,7 +734,13 @@ createGraphicsPipeline g@Global {
 	pColorBlending <- Vk.Ppl.CB.createInfoToCore @() colorBlending
 	Vk.Ppl.Lyt.L pplLyt <- lift $ readIORef rPplLyt
 	Vk.RndrPss.R rp <- lift $ readIORef rrp
-	let	Vk.Ppl.C.CreateInfo_ fPipelineInfo = Vk.Ppl.C.CreateInfo {
+	let	pipelineInfo = Vk.Ppl.CreateInfo {
+			Vk.Ppl.createInfoNext = Nothing,
+			Vk.Ppl.createInfoFlags = Vk.Ppl.CreateFlagsZero
+--			Vk.Ppl.createInfoStages = [
+--				vertShaderStageInfo, fragShaderStageInfo ]
+			}
+		Vk.Ppl.C.CreateInfo_ fPipelineInfo = Vk.Ppl.C.CreateInfo {
 			Vk.Ppl.C.createInfoSType = (),
 			Vk.Ppl.C.createInfoPNext = NullPtr,
 			Vk.Ppl.C.createInfoFlags = 0,

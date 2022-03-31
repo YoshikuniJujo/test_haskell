@@ -81,7 +81,12 @@ createInfoToCore CreateInfo {
 	createInfoMultisampleState = mmst,
 	createInfoDepthStencilState = mdsst,
 	createInfoColorBlendState = mcbst,
-	createInfoDynamicState = mdst
+	createInfoDynamicState = mdst,
+	createInfoLayout = Layout.L lyt,
+	createInfoRenderPass = RenderPass.R rp,
+	createInfoSubpass = sp,
+	createInfoBasePipelineHandle = P bph,
+	createInfoBasePipelineIndex = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	css <- ShaderStage.createInfoToCore `mapM` ss
@@ -110,7 +115,11 @@ createInfoToCore CreateInfo {
 		C.createInfoPMultisampleState = pmst,
 		C.createInfoPDepthStencilState = pdsst,
 		C.createInfoPColorBlendState = pcbst,
-		C.createInfoPDynamicState = pdst
-		}
+		C.createInfoPDynamicState = pdst,
+		C.createInfoLayout = lyt,
+		C.createInfoRenderPass = rp,
+		C.createInfoSubpass = sp,
+		C.createInfoBasePipelineHandle = bph,
+		C.createInfoBasePipelineIndex = bpi }
 
 newtype P = P C.P deriving Show
