@@ -46,7 +46,7 @@ data CreateInfo n n1 sknd vs n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoRasterizationState ::
 		Maybe (RasterizationState.CreateInfo n6),
 	createInfoMultisampleState :: Maybe (MultisampleState.CreateInfo n7),
-	creaetInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo n8),
+	createInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo n8),
 	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo n9),
 	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
 	createInfoLayout :: Layout.L,
@@ -73,20 +73,44 @@ createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoStages = length &&& id -> (sc, ss),
-	createInfoVertexInputState = mvist
+	createInfoVertexInputState = mvist,
+	createInfoInputAssemblyState = miast,
+	createInfoTessellationState = mtst,
+	createInfoViewportState = mvst,
+	createInfoRasterizationState = mrst,
+	createInfoMultisampleState = mmst,
+	createInfoDepthStencilState = mdsst,
+	createInfoColorBlendState = mcbst,
+	createInfoDynamicState = mdst
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	css <- ShaderStage.createInfoToCore `mapM` ss
 	pss <- ContT $ allocaArray sc
-	pvist <- maybeToCore VertexInputState.createInfoToCore mvist
 	lift $ pokeArray pss css
+	pvist <- maybeToCore VertexInputState.createInfoToCore mvist
+	piast <- maybeToCore InputAssemblyState.createInfoToCore miast
+	ptst <- maybeToCore TessellationState.createInfoToCore mtst
+	pvst <- maybeToCore ViewportState.createInfoToCore mvst
+	prst <- maybeToCore RasterizationState.createInfoToCore mrst
+	pmst <- maybeToCore MultisampleState.createInfoToCore mmst
+	pdsst <- maybeToCore DepthStencilState.createInfoToCore mdsst
+	pcbst <- maybeToCore ColorBlendState.createInfoToCore mcbst
+	pdst <- maybeToCore DynamicState.createInfoToCore mdst
 	pure C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
 		C.createInfoFlags = flgs,
 		C.createInfoStageCount = fromIntegral sc,
 		C.createInfoPStages = pss,
-		C.createInfoPVertexInputState = pvist
+		C.createInfoPVertexInputState = pvist,
+		C.createInfoPInputAssemblyState = piast,
+		C.createInfoPTessellationState = ptst,
+		C.createInfoPViewportState = pvst,
+		C.createInfoPRasterizationState = prst,
+		C.createInfoPMultisampleState = pmst,
+		C.createInfoPDepthStencilState = pdsst,
+		C.createInfoPColorBlendState = pcbst,
+		C.createInfoPDynamicState = pdst
 		}
 
 newtype P = P C.P deriving Show

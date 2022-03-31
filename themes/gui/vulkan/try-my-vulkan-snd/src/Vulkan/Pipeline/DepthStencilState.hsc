@@ -6,6 +6,7 @@
 module Vulkan.Pipeline.DepthStencilState where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
@@ -37,7 +38,7 @@ data CreateInfo n = CreateInfo {
 	createInfoMaxDepthBounds :: Float }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -52,16 +53,17 @@ createInfoToCore CreateInfo {
 	createInfoMaxDepthBounds = mxdb
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoDepthTestEnable = dte,
-		C.createInfoDepthWriteEnable = dwe,
-		C.createInfoDepthCompareOp = dco,
-		C.createInfoDepthBoundsTestEnable = bte,
-		C.createInfoStencilTestEnable = ste,
-		C.createInfoFront = fr,
-		C.createInfoBack = bk,
-		C.createInfoMinDepthBounds = mndb,
-		C.createInfoMaxDepthBounds = mxdb }
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoDepthTestEnable = dte,
+			C.createInfoDepthWriteEnable = dwe,
+			C.createInfoDepthCompareOp = dco,
+			C.createInfoDepthBoundsTestEnable = bte,
+			C.createInfoStencilTestEnable = ste,
+			C.createInfoFront = fr,
+			C.createInfoBack = bk,
+			C.createInfoMinDepthBounds = mndb,
+			C.createInfoMaxDepthBounds = mxdb }
+	ContT $ withForeignPtr fCreateInfo

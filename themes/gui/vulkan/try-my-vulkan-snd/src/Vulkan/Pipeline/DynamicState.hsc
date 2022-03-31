@@ -6,6 +6,7 @@
 module Vulkan.Pipeline.DynamicState where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Enum
@@ -29,7 +30,7 @@ data CreateInfo n = CreateInfo {
 	createInfoDynamicStates :: [DynamicState] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -38,9 +39,10 @@ createInfoToCore CreateInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pdss <- ContT $ allocaArray dsc
 	lift $ pokeArray pdss dss
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoDynamicStateCount = fromIntegral dsc,
-		C.createInfoPDynamicStates = pdss }
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoDynamicStateCount = fromIntegral dsc,
+			C.createInfoPDynamicStates = pdss }
+	ContT $ withForeignPtr fCreateInfo
