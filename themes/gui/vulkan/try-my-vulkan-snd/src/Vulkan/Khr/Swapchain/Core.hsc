@@ -13,8 +13,8 @@ import Data.Int
 
 import Vulkan.Core
 import Vulkan.Base
-import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Khr.Surface.Core as Surface
 import qualified Vulkan.Image.Core as Image
@@ -85,11 +85,11 @@ struct "CreateInfo" #{size VkSwapchainCreateInfoKHR}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateSwapchainKHR" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr Swapchain ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr Swapchain ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroySwapchainKHR" destroy ::
-	Device.D -> Swapchain -> Ptr AllocationCallbacks -> IO ()
+	Device.D -> Swapchain -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "vkGetSwapchainImagesKHR" getImages ::
 	Device.D -> Swapchain -> Ptr #{type uint32_t} -> Ptr Image.Image ->

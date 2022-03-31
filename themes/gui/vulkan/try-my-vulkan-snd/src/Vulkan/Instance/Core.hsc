@@ -13,7 +13,8 @@ import Data.Int
 
 import Vulkan.Core
 import Vulkan.Base
-import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
+
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 
 #include <vulkan/vulkan.h>
 
@@ -49,7 +50,7 @@ data InstanceTag
 type Instance = Ptr InstanceTag
 
 foreign import ccall "vkCreateInstance" create ::
-	Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr Instance -> IO #{type VkResult}
+	Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr Instance -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyInstance" destroy ::
-	Instance -> Ptr AllocationCallbacks -> IO ()
+	Instance -> Ptr AllocationCallbacks.A -> IO ()

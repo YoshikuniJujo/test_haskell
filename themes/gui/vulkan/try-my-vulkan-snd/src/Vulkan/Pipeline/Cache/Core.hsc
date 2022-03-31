@@ -11,6 +11,8 @@ import Data.Word
 
 import Vulkan.Base
 
+import qualified Vulkan.Device.Core as Device
+
 #include <vulkan/vulkan.h>
 
 sType :: #{type VkStructureType}

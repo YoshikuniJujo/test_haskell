@@ -12,8 +12,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.AllocationCallbacks.Core (AllocationCallbacks)
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.DescriptorSet.Layout.Core as DescriptorSet.Layout
 import qualified Vulkan.PushConstant as PushConstant
@@ -54,7 +54,7 @@ data LTag
 type L = Ptr LTag
 
 foreign import ccall "vkCreatePipelineLayout" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks -> Ptr L -> IO #{type VkResult}
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr L -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipelineLayout" destroy ::
-	Device.D -> L -> Ptr AllocationCallbacks -> IO ()
+	Device.D -> L -> Ptr AllocationCallbacks.A -> IO ()

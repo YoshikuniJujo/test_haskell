@@ -97,7 +97,7 @@ foreign import ccall "wrapper" wrapInternalFreeNotificationGen ::
 
 -- ALLOCATION CALLBACKS
 
-struct "AllocationCallbacks" #{size VkAllocationCallbacks}
+struct "A" #{size VkAllocationCallbacks}
 		#{alignment VkAllocationCallbacks} [
 	("pUserData", ''PtrVoid,
 		[| #{peek VkAllocationCallbacks, pUserData} |],
