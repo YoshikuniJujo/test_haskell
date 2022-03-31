@@ -26,6 +26,7 @@ import qualified VulkanAttachmentEnum
 import qualified VulkanSubpassEnum
 import qualified VulkanPipelineEnum
 import qualified VulkanRenderPassEnum
+import qualified VulkanPipelineCacheEnum
 
 main :: IO ()
 main = do
@@ -53,3 +54,4 @@ main = do
 	VulkanSubpassEnum.make
 	VulkanPipelineEnum.make
 	VulkanRenderPassEnum.make
+	VulkanPipelineCacheEnum.make

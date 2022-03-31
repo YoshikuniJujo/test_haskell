@@ -98,6 +98,8 @@ library
       Vulkan.PhysicalDevice.Struct.Core
       Vulkan.PhysicalDevice.Struct.Th
       Vulkan.Pipeline
+      Vulkan.Pipeline.Cache.Core
+      Vulkan.Pipeline.Cache.Enum
       Vulkan.Pipeline.ColorBlendAttachment
       Vulkan.Pipeline.ColorBlendAttachment.Core
       Vulkan.Pipeline.ColorBlendState
