@@ -1,7 +1,14 @@
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
+import Foreign.Pointable
+import Control.Arrow
+import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
@@ -20,28 +27,52 @@ import qualified Vulkan.Pipeline.DynamicState as DynamicState
 import qualified Vulkan.Pipeline.Layout as Layout
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Pipeline.Core as C
+import qualified Vulkan.Specialization as Specialization
 
-data CreateInfo n n1 n2 n3 n4 vs ts n5 n6 n7 n8 n9 n10 n11 n12 = CreateInfo {
+data CreateInfo n n1 sknd vs n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: [ShaderStage.CreateInfo n1 n2 n3],
+	createInfoStages :: [ShaderStage.CreateInfo n1 sknd vs],
 	createInfoVertexInputState ::
-		Maybe (VertexInputState.CreateInfo n4 vs ts),
+		Maybe (VertexInputState.CreateInfo n2 vs' ts),
 	createInfoInputAssemblyState ::
-		Maybe (InputAssemblyState.CreateInfo n5),
-	createInfoTessellationState :: Maybe (TessellationState.CreateInfo n6),
-	createInfoViewportState :: Maybe (ViewportState.CreateInfo n7),
+		Maybe (InputAssemblyState.CreateInfo n3),
+	createInfoTessellationState :: Maybe (TessellationState.CreateInfo n4),
+	createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
 	createInfoRasterizationState ::
-		Maybe (RasterizationState.CreateInfo n8),
-	createInfoMultisampleState :: Maybe (MultisampleState.CreateInfo n9),
-	creaetInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo n10),
-	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo n11),
-	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n12),
+		Maybe (RasterizationState.CreateInfo n6),
+	createInfoMultisampleState :: Maybe (MultisampleState.CreateInfo n7),
+	creaetInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo n8),
+	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo n9),
+	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
 	createInfoBasePipelineHandle :: P,
 	createInfoBasePipelineIndex :: Int32 }
 	deriving Show
+
+createInfoToCore :: (
+	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n10, Specialization.StoreValues vs ) =>
+	CreateInfo n n1 sknd vs n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 ->
+	ContT r IO C.CreateInfo
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoStages = length &&& id -> (sc, ss)
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	css <- ShaderStage.createInfoToCore `mapM` ss
+	pss <- ContT $ allocaArray sc
+	lift $ pokeArray pss css
+	pure C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoStageCount = fromIntegral sc,
+		C.createInfoPStages = pss
+		}
 
 newtype P = P C.P deriving Show
