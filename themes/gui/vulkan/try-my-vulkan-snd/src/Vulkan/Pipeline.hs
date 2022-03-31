@@ -1,5 +1,8 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -8,7 +11,6 @@
 module Vulkan.Pipeline where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
@@ -16,6 +18,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Pipeline.Enum
 
 import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
@@ -33,6 +37,10 @@ import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Pipeline.Core as C
 import qualified Vulkan.Pipeline.VertexInputState.BindingStrideList as BindingStrideList
 import qualified Vulkan.VertexInput as VertexInput
+
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device as Device
+import qualified Vulkan.Pipeline.Cache as Cache
 
 data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -75,7 +83,7 @@ createInfoToCore :: (
 		vs' VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs' ts ) =>
 	CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 ->
-	ContT r IO (Ptr C.CreateInfo)
+	ContT r IO C.CreateInfo
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -111,30 +119,93 @@ createInfoToCore CreateInfo {
 	pdsst <- maybeToCore DepthStencilState.createInfoToCore mdsst
 	pcbst <- maybeToCore ColorBlendState.createInfoToCore mcbst
 	pdst <- maybeToCore DynamicState.createInfoToCore mdst
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoStageCount = fromIntegral sc,
-			C.createInfoPStages = pss,
-			C.createInfoPVertexInputState = pvist,
-			C.createInfoPInputAssemblyState = piast,
-			C.createInfoPTessellationState = ptst,
-			C.createInfoPViewportState = pvst,
-			C.createInfoPRasterizationState = prst,
-			C.createInfoPMultisampleState = pmst,
-			C.createInfoPDepthStencilState = pdsst,
-			C.createInfoPColorBlendState = pcbst,
-			C.createInfoPDynamicState = pdst,
-			C.createInfoLayout = lyt,
-			C.createInfoRenderPass = rp,
-			C.createInfoSubpass = sp,
-			C.createInfoBasePipelineHandle = bph,
-			C.createInfoBasePipelineIndex = bpi }
-	ContT $ withForeignPtr fCreateInfo
+	pure C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoStageCount = fromIntegral sc,
+		C.createInfoPStages = pss,
+		C.createInfoPVertexInputState = pvist,
+		C.createInfoPInputAssemblyState = piast,
+		C.createInfoPTessellationState = ptst,
+		C.createInfoPViewportState = pvst,
+		C.createInfoPRasterizationState = prst,
+		C.createInfoPMultisampleState = pmst,
+		C.createInfoPDepthStencilState = pdsst,
+		C.createInfoPColorBlendState = pcbst,
+		C.createInfoPDynamicState = pdst,
+		C.createInfoLayout = lyt,
+		C.createInfoRenderPass = rp,
+		C.createInfoSubpass = sp,
+		C.createInfoBasePipelineHandle = bph,
+		C.createInfoBasePipelineIndex = bpi }
+
+data CreateInfoList
+	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s where
+	CreateInfoNil :: CreateInfoList
+		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
+	CreateInfoCons ::
+		CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 ->
+		CreateInfoList ns n1s skndss vsss
+			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ->
+		CreateInfoList (n ': ns)
+			(n1 ': n1s) (sknds ': skndss) (vss ': vsss)
+			(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s)
+			(n4 ': n4s) (n5 ': n5s) (n6 ': n6s) (n7 ': n7s)
+			(n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
+
+class CreateInfoListToCore
+	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s where
+	createInfoListToCore ::
+		CreateInfoList ns n1s skndss vsss
+			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ->
+		ContT r IO [C.CreateInfo]
+
+instance CreateInfoListToCore
+	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] where
+	createInfoListToCore _ = pure []
+
+instance (
+	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n10,
+	ShaderStage.CreateInfoListToCore n1 sknds vss,
+	BindingStrideList.BindingStrideList
+		vs' VertexInput.Rate VertexInput.Rate,
+	VertexInputState.CreateInfoAttributeDescription vs' ts,
+	CreateInfoListToCore ns n1s skndss vsss
+		n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ) =>
+	CreateInfoListToCore
+		(n ': ns) (n1 ': n1s) (sknds ': skndss) (vss ': vsss)
+		(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s) (n4 ': n4s)
+		(n5 ': n5s) (n6 ': n6s) (n7 ': n7s) (n8 ': n8s) (n9 ': n9s)
+		(n10 ': n10s) where
+	createInfoListToCore (ci `CreateInfoCons` cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfoListToCore cis
 
 newtype P = P C.P deriving Show
 
 pattern PNull :: P
 pattern PNull <- P NullHandle where
 	PNull = P NullHandle
+
+create :: (
+	CreateInfoListToCore ns
+		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s,
+	Pointable n' ) =>
+	Device.D -> Maybe Cache.C ->
+	CreateInfoList ns
+		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ->
+	Maybe (AllocationCallbacks.A n') -> IO [P]
+create (Device.D dvc) mc cis mac = ($ pure) . runContT $ (P <$>) <$> do
+	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
+	ccis <- createInfoListToCore cis
+	let	cic = length ccis
+	pcis <- ContT $ allocaArray cic
+	lift $ pokeArray pcis ccis
+	pac <- AllocationCallbacks.maybeToCore mac
+	pps <- ContT $ allocaArray cic
+	lift do	r <- C.create dvc cc (fromIntegral cic) pcis pac pps
+		throwUnlessSuccess $ Result r
+		peekArray cic pps

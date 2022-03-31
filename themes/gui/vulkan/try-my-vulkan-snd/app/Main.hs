@@ -3,6 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -728,7 +729,9 @@ createGraphicsPipeline g@Global {
 	lift $ pokeArray shaderStages shaderStageList
 	pplLyt <- lift $ readIORef rPplLyt
 	rp <- lift $ readIORef rrp
-	let	pipelineInfo = Vk.Ppl.CreateInfo {
+	let	pipelineInfo :: Vk.Ppl.CreateInfo
+			() () _ _ () () _ () () () () () () () ()
+		pipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoNext = Nothing,
 			Vk.Ppl.createInfoFlags = Vk.Ppl.CreateFlagsZero,
 			Vk.Ppl.createInfoStages =
@@ -749,14 +752,27 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.createInfoSubpass = 0,
 			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.PNull,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
-	pPipelineInfo <- Vk.Ppl.createInfoToCore
+	Vk.Ppl.C.CreateInfo_ fPipelineInfo <- Vk.Ppl.createInfoToCore
 		@() @() @() @() @() @() @() @() @() @() @() @_ @'[(), ()]
 		pipelineInfo
+
+	pPipelineInfo <- ContT $ withForeignPtr fPipelineInfo
 	pGraphicsPipeline <- ContT alloca
-	lift do	r <- Vk.Ppl.C.create
+	Vk.Ppl.P graphicsPipelineBody <- lift do
+		r <- Vk.Ppl.C.create
 			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
 		when (r /= success) $ error "failed to create graphics pipeline!"
-		writeIORef graphicsPipeline =<< peek pGraphicsPipeline
+		Vk.Ppl.P <$> peek pGraphicsPipeline
+
+		{-
+	[Vk.Ppl.P graphicsPipelineBody] <- lift
+		$ Vk.Ppl.create @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @()
+			dvcdvc Nothing
+			(pipelineInfo `Vk.Ppl.CreateInfoCons` Vk.Ppl.CreateInfoNil)
+			Nothing
+			-}
+
+	lift do	writeIORef graphicsPipeline graphicsPipelineBody
 		Vk.Shader.Module.destroy @() dvcdvc fragShaderModule Nothing
 		Vk.Shader.Module.destroy @() dvcdvc vertShaderModule Nothing
 
