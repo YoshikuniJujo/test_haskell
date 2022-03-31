@@ -1,6 +1,11 @@
 {-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.ShaderStage where
@@ -54,3 +59,27 @@ createInfoToCore CreateInfo {
 		C.createInfoModule = mdl,
 		C.createInfoPName = cnm,
 		C.createInfoPSpecializationInfo = pcsi }
+
+infixr 5 `CreateInfoCons`
+
+data CreateInfoList n sknds vss where
+	CreateInfoNil :: CreateInfoList n '[] '[]
+	CreateInfoCons :: CreateInfo n sknd vs -> CreateInfoList n sknds vss ->
+		CreateInfoList n (sknd ': sknds) (vs ': vss)
+
+class CreateInfoListToCore n sknds vss where
+	createInfoListToCore :: CreateInfoList n sknds vss ->
+		ContT r IO [C.CreateInfo]
+
+deriving instance (Show n, Show vs, Show (CreateInfoList n sknds vss)) =>
+	Show (CreateInfoList n (sknd ': sknds) (vs ': vss))
+
+instance CreateInfoListToCore n '[] '[] where createInfoListToCore _ = pure []
+
+instance (
+	Pointable n, Specialization.StoreValues vs,
+	CreateInfoListToCore n sknds vss ) =>
+	CreateInfoListToCore n (sknd ': sknds) (vs ': vss) where
+	createInfoListToCore (ci `CreateInfoCons` cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfoListToCore cis

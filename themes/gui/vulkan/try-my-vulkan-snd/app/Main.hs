@@ -726,41 +726,32 @@ createGraphicsPipeline g@Global {
 		writeIORef rPplLyt pipelineLayoutBody
 	shaderStages <- ContT $ allocaArray 2
 	lift $ pokeArray shaderStages shaderStageList
-	pVertexInputInfo <- Vk.Ppl.VI.createInfoToCore vertexInputInfo
-	pInputAssembly <- Vk.Ppl.IA.createInfoToCore @() inputAssembly
-	pViewportState <- Vk.Ppl.VP.createInfoToCore @() viewportState
-	pRasterizer <- Vk.Ppl.RstSt.createInfoToCore @() rasterizer
-	pMultisampling <- Vk.Ppl.MS.createInfoToCore @() multisampling
-	pColorBlending <- Vk.Ppl.CB.createInfoToCore @() colorBlending
-	Vk.Ppl.Lyt.L pplLyt <- lift $ readIORef rPplLyt
-	Vk.RndrPss.R rp <- lift $ readIORef rrp
+	pplLyt <- lift $ readIORef rPplLyt
+	rp <- lift $ readIORef rrp
 	let	pipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoNext = Nothing,
-			Vk.Ppl.createInfoFlags = Vk.Ppl.CreateFlagsZero
---			Vk.Ppl.createInfoStages = [
---				vertShaderStageInfo, fragShaderStageInfo ]
-			}
-		Vk.Ppl.C.CreateInfo_ fPipelineInfo = Vk.Ppl.C.CreateInfo {
-			Vk.Ppl.C.createInfoSType = (),
-			Vk.Ppl.C.createInfoPNext = NullPtr,
-			Vk.Ppl.C.createInfoFlags = 0,
-			Vk.Ppl.C.createInfoStageCount = 2,
-			Vk.Ppl.C.createInfoPStages = shaderStages,
-			Vk.Ppl.C.createInfoPVertexInputState = pVertexInputInfo,
-			Vk.Ppl.C.createInfoPInputAssemblyState = pInputAssembly,
-			Vk.Ppl.C.createInfoPTessellationState = NullPtr,
-			Vk.Ppl.C.createInfoPViewportState = pViewportState,
-			Vk.Ppl.C.createInfoPRasterizationState = pRasterizer,
-			Vk.Ppl.C.createInfoPMultisampleState = pMultisampling,
-			Vk.Ppl.C.createInfoPDepthStencilState = NullPtr,
-			Vk.Ppl.C.createInfoPColorBlendState = pColorBlending,
-			Vk.Ppl.C.createInfoPDynamicState = NullPtr,
-			Vk.Ppl.C.createInfoLayout = pplLyt,
-			Vk.Ppl.C.createInfoRenderPass = rp,
-			Vk.Ppl.C.createInfoSubpass = 0,
-			Vk.Ppl.C.createInfoBasePipelineHandle = NullHandle,
-			Vk.Ppl.C.createInfoBasePipelineIndex = - 1 }
-	pPipelineInfo <- ContT $ withForeignPtr fPipelineInfo
+			Vk.Ppl.createInfoFlags = Vk.Ppl.CreateFlagsZero,
+			Vk.Ppl.createInfoStages =
+				vertShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
+				fragShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
+				Vk.Ppl.ShaderStage.CreateInfoNil,
+			Vk.Ppl.createInfoVertexInputState = Just vertexInputInfo,
+			Vk.Ppl.createInfoInputAssemblyState = Just inputAssembly,
+			Vk.Ppl.createInfoTessellationState = Nothing,
+			Vk.Ppl.createInfoViewportState = Just viewportState,
+			Vk.Ppl.createInfoRasterizationState = Just rasterizer,
+			Vk.Ppl.createInfoMultisampleState = Just multisampling,
+			Vk.Ppl.createInfoDepthStencilState = Nothing,
+			Vk.Ppl.createInfoColorBlendState = Just colorBlending,
+			Vk.Ppl.createInfoDynamicState = Nothing,	
+			Vk.Ppl.createInfoLayout = pplLyt,
+			Vk.Ppl.createInfoRenderPass = rp,
+			Vk.Ppl.createInfoSubpass = 0,
+			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.PNull,
+			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
+	pPipelineInfo <- Vk.Ppl.createInfoToCore
+		@() @() @() @() @() @() @() @() @() @() @() @_ @'[(), ()]
+		pipelineInfo
 	pGraphicsPipeline <- ContT alloca
 	lift do	r <- Vk.Ppl.C.create
 			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
