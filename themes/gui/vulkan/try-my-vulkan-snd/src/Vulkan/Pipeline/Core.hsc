@@ -27,6 +27,9 @@ import qualified Vulkan.Pipeline.DynamicState.Core as DynamicState
 import qualified Vulkan.Pipeline.Layout.Core as Layout
 import qualified Vulkan.RenderPass.Core as RenderPass
 
+import qualified Vulkan.Pipeline.Cache.Core as Cache
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+
 #include <vulkan/vulkan.h>
 
 bindPointGraphics :: #{type VkPipelineBindPoint}
@@ -102,11 +105,11 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateGraphicsPipelines" create ::
-	Device.D -> Ptr () -> #{type uint32_t} -> Ptr CreateInfo -> Ptr () ->
-	Ptr P -> IO #{type VkResult}
+	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
+	Ptr AllocationCallbacks.A -> Ptr P -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipeline" destroy ::
-	Device.D -> P -> Ptr () -> IO ()
+	Device.D -> P -> Ptr AllocationCallbacks.A -> IO ()
 
 stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
 stageColorAttachmentOutputBit =
