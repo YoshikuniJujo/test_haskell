@@ -19,7 +19,6 @@ import Data.Word
 
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.AllocationCallbacks (AllocationCallbacks)
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
@@ -65,7 +64,7 @@ createInfoToCore CreateInfo {
 newtype L = L C.L deriving Show
 
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO L
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO L
 create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -75,7 +74,7 @@ create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 		peek pl
 
 destroy :: Pointable n =>
-	Device.D -> L -> Maybe (AllocationCallbacks n) -> IO ()
+	Device.D -> L -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) (L lyt) mac =
 	($ pure) . runContT $ lift . C.destroy dvc lyt
 		=<< AllocationCallbacks.maybeToCore mac

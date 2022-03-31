@@ -16,11 +16,11 @@ import Vulkan
 import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)
 import Vulkan.Image
 import Vulkan.Component
 import Vulkan.ImageView.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.ImageView.Core as C
 
@@ -57,16 +57,16 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO ImageView
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO ImageView
 create (Device.D dvc) ci mac = ($ pure) . runContT $ ImageView <$> do
 	pci <- createInfoToCore ci
-	pac <- maybeToCore mac
+	pac <- AllocationCallbacks.maybeToCore mac
 	pView <- ContT alloca
 	lift do	r <- C.create dvc pci pac pView
 		throwUnlessSuccess $ Result r
 		peek pView
 
 destroy :: Pointable n =>
-	Device.D -> ImageView -> Maybe (AllocationCallbacks n) -> IO ()
+	Device.D -> ImageView -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) (ImageView iv) mac =
-	($ pure) . runContT $ lift . C.destroy dvc iv =<< maybeToCore mac
+	($ pure) . runContT $ lift . C.destroy dvc iv =<< AllocationCallbacks.maybeToCore mac

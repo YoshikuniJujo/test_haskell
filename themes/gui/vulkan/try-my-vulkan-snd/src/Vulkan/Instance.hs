@@ -19,7 +19,6 @@ import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.AllocationCallbacks (AllocationCallbacks)
 import Vulkan.Instance.Enum
 
 import qualified Vulkan.Instance.Core as C
@@ -59,7 +58,7 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
-	CreateInfo n n2 -> Maybe (AllocationCallbacks n3) -> IO Instance
+	CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) -> IO Instance
 create ci mac = (Instance <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -68,7 +67,7 @@ create ci mac = (Instance <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pist
 
-destroy :: (Pointable n) => Instance -> Maybe (AllocationCallbacks n) -> IO ()
+destroy :: (Pointable n) => Instance -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Instance cist) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cist pac

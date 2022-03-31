@@ -24,7 +24,6 @@ import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.AllocationCallbacks (AllocationCallbacks)
 import Vulkan.Ext.DebugUtils
 import Vulkan.Ext.DebugUtils.Message.Enum
 
@@ -139,7 +138,7 @@ create ::
 	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
 		Storable n6, Pointable n6, Storable ud, Pointable ud) =>
 	Instance -> CreateInfo n n2 n3 n4 n5 ud ->
-	Maybe (AllocationCallbacks n6) -> IO Messenger
+	Maybe (AllocationCallbacks.A n6) -> IO Messenger
 create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do
 	cci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -149,6 +148,6 @@ create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do
 		peek pmsngr
 
 destroy :: Pointable n =>
-	Instance -> Messenger -> Maybe (AllocationCallbacks n) -> IO ()
+	Instance -> Messenger -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Instance ist) (Messenger msgr) mac = ($ pure) . runContT
 	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac

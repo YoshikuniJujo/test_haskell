@@ -11,7 +11,7 @@ import Control.Monad.Cont
 
 import qualified Vulkan.AllocationCallbacks.Core as C
 
-data AllocationCallbacks a = AllocationCallbacks {
+data A a = A {
 	allocationCallbacksUserData :: a,
 	allocationCallbacksFnAllocation :: C.FnAllocationFunction a,
 	allocationCallbacksFnReallocation :: C.FnReallocationFunction a,
@@ -20,22 +20,22 @@ data AllocationCallbacks a = AllocationCallbacks {
 		C.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: C.FnInternalFreeNotification a }
 
-nil :: Maybe (AllocationCallbacks ())
+nil :: Maybe (A ())
 nil = Nothing
 
 maybeToCore :: Pointable n =>
-	Maybe (AllocationCallbacks n) -> ContT r IO (Ptr C.A)
+	Maybe (A n) -> ContT r IO (Ptr C.A)
 maybeToCore = \case Nothing -> pure NullPtr; Just ac -> toCore ac
 
 toCore :: Pointable n =>
-	AllocationCallbacks n -> ContT r IO (Ptr C.A)
+	A n -> ContT r IO (Ptr C.A)
 toCore ac = ContT
-	$ \f -> withAllocationCallbacks ac \(C.A_ fac) ->
+	$ \f -> withA ac \(C.A_ fac) ->
 		withForeignPtr fac f
 
-withAllocationCallbacks :: Pointable a =>
-	AllocationCallbacks a -> (C.A -> IO b) -> IO b
-withAllocationCallbacks ac f = withPointer ud \pud -> do
+withA :: Pointable a =>
+	A a -> (C.A -> IO b) -> IO b
+withA ac f = withPointer ud \pud -> do
 	pal <- C.wrapAllocationFunction al
 	pral <- C.wrapReallocationFunction ral
 	pfr <- C.wrapFreeFunction fr
