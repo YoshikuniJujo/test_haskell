@@ -1,5 +1,7 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline where
@@ -28,6 +30,8 @@ import qualified Vulkan.Pipeline.Layout as Layout
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Pipeline.Core as C
 import qualified Vulkan.Specialization as Specialization
+import qualified Vulkan.Pipeline.VertexInputState.BindingStrideList as BindingStrideList
+import qualified Vulkan.VertexInput as VertexInput
 
 data CreateInfo n n1 sknd vs n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -52,27 +56,37 @@ data CreateInfo n n1 sknd vs n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 	deriving Show
 
+maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
+maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
+
 createInfoToCore :: (
 	Pointable n, Pointable n1, Pointable n2, Pointable n3, Pointable n4,
 	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
-	Pointable n10, Specialization.StoreValues vs ) =>
+	Pointable n10,
+	Specialization.StoreValues vs,
+	BindingStrideList.BindingStrideList
+		vs' VertexInput.Rate VertexInput.Rate,
+	VertexInputState.CreateInfoAttributeDescription vs' ts ) =>
 	CreateInfo n n1 sknd vs n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 ->
 	ContT r IO C.CreateInfo
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoStages = length &&& id -> (sc, ss)
+	createInfoStages = length &&& id -> (sc, ss),
+	createInfoVertexInputState = mvist
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	css <- ShaderStage.createInfoToCore `mapM` ss
 	pss <- ContT $ allocaArray sc
+	pvist <- maybeToCore VertexInputState.createInfoToCore mvist
 	lift $ pokeArray pss css
 	pure C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
 		C.createInfoFlags = flgs,
 		C.createInfoStageCount = fromIntegral sc,
-		C.createInfoPStages = pss
+		C.createInfoPStages = pss,
+		C.createInfoPVertexInputState = pvist
 		}
 
 newtype P = P C.P deriving Show
