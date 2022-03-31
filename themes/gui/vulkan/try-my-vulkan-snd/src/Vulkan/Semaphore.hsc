@@ -13,7 +13,8 @@ import Data.Int
 
 import Vulkan.Core (Semaphore)
 import Vulkan.Base
-import Vulkan.Device.Core (Device)
+
+import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
@@ -33,8 +34,8 @@ struct "CreateInfo" #{size VkSemaphoreCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateSemaphore" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr Semaphore ->
+	Device.D -> Ptr CreateInfo -> Ptr () -> Ptr Semaphore ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroySemaphore" destroy ::
-	Device -> Semaphore -> Ptr () -> IO ()
+	Device.D -> Semaphore -> Ptr () -> IO ()

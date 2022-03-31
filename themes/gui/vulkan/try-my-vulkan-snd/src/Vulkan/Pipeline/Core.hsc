@@ -12,8 +12,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.Device.Core (Device)
 
+import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Pipeline.ShaderStage.Core as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState.Core as VertexInputState
 import qualified Vulkan.Pipeline.InputAssemblyState.Core as InputAssemblyState
@@ -102,11 +102,11 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateGraphicsPipelines" create ::
-	Device -> Ptr () -> #{type uint32_t} -> Ptr CreateInfo -> Ptr () ->
+	Device.D -> Ptr () -> #{type uint32_t} -> Ptr CreateInfo -> Ptr () ->
 	Ptr P -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipeline" destroy ::
-	Device -> P -> Ptr () -> IO ()
+	Device.D -> P -> Ptr () -> IO ()
 
 stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
 stageColorAttachmentOutputBit =

@@ -23,8 +23,8 @@ import Shaderc.EnumAuto
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)
-import Vulkan (Device(..))
 
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Shader.Module.Core as C
 
 #include <vulkan/vulkan.h>
@@ -66,8 +66,8 @@ readFromByteString (BS.PS f o l) = do
 	pure (p', fromIntegral l)
 
 create :: (Pointable n, Pointable n') =>
-	Device -> CreateInfo n sknd -> Maybe (AllocationCallbacks n') -> IO (M sknd)
-create (Device dvc) ci mac = (M <$>) . ($ pure) $ runContT do
+	Device.D -> CreateInfo n sknd -> Maybe (AllocationCallbacks n') -> IO (M sknd)
+create (Device.D dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
 	pac <- maybeToCore mac
 	pm <- ContT alloca
@@ -75,7 +75,7 @@ create (Device dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pm
 
-destroy :: Pointable n => Device -> M sknd -> Maybe (AllocationCallbacks n) -> IO ()
-destroy (Device dvc) (M m) mac = ($ pure) $ runContT do
+destroy :: Pointable n => Device.D -> M sknd -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device.D dvc) (M m) mac = ($ pure) $ runContT do
 	pac <- maybeToCore mac
 	lift $ C.destroy dvc m pac

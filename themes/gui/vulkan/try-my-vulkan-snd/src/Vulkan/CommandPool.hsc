@@ -12,7 +12,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.Device.Core (Device)
+
+import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
@@ -38,8 +39,8 @@ data CommandPoolTag
 type CommandPool = Ptr CommandPoolTag
 
 foreign import ccall "vkCreateCommandPool" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr CommandPool ->
+	Device.D -> Ptr CreateInfo -> Ptr () -> Ptr CommandPool ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyCommandPool" destroy ::
-	Device -> CommandPool -> Ptr () -> IO ()
+	Device.D -> CommandPool -> Ptr () -> IO ()

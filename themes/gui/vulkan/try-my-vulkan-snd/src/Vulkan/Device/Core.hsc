@@ -56,18 +56,18 @@ struct "CreateInfo" #{size VkDeviceCreateInfo}
 	]
 	[''Show]
 
-data DeviceTag
-type Device = Ptr DeviceTag
+data DTag
+type D = Ptr DTag
 
 foreign import ccall "vkCreateDevice" create ::
 	PhysicalDevice -> Ptr CreateInfo -> Ptr AllocationCallbacks ->
-	Ptr Device -> IO #{type VkResult}
+	Ptr D -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyDevice"
-	destroy :: Device -> Ptr AllocationCallbacks -> IO ()
+	destroy :: D -> Ptr AllocationCallbacks -> IO ()
 
 foreign import ccall "vkGetDeviceQueue" getQueue ::
-	Device -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue -> IO ()
+	D -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue -> IO ()
 
 foreign import ccall "vkDeviceWaitIdle" waitIdle ::
-	Device -> IO #{type VkResult}
+	D -> IO #{type VkResult}

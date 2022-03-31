@@ -145,7 +145,7 @@ data Global = Global {
 	globalInstance :: IORef Vk.Instance,
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
-	globalDevice :: IORef Vk.Device,
+	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalPresentQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface,
@@ -163,7 +163,7 @@ newGlobal w = do
 	ist <- newIORef $ Vk.Instance NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
-	dvc <- newIORef $ Vk.Device NullPtr
+	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue NullPtr
 	pq <- newIORef $ Vk.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface NullPtr
@@ -616,7 +616,7 @@ createGraphicsPipeline g@Global {
 	globalSwapChainExtent = rscex,
 	globalPipelineLayout = rPplLyt,
 	globalRenderPass = rrp } = ($ pure) $ runContT do
-	dvcdvc@(Vk.Device dvc) <- lift $ readIORef rdvc
+	dvcdvc@(Vk.Device.D dvc) <- lift $ readIORef rdvc
 	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
 	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
 	sce <- lift $ readIORef rscex
@@ -801,7 +801,7 @@ createFramebuffer1 Global {
 			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
 			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
 			Vk.Fb.createInfoLayers = 1 }
-	Vk.Device dvc <- lift $ readIORef rdvc
+	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pFramebufferInfo <- ContT $ withForeignPtr fFramebufferInfo
 	pfb <- ContT alloca
 	lift do	r <- Vk.Fb.create dvc pFramebufferInfo NullPtr pfb
@@ -823,7 +823,7 @@ createCommandPool g@Global {
 			Vk.CP.createInfoFlags = 0,
 			Vk.CP.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
-	Vk.Device dvc <- lift $ readIORef rdvc
+	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pPoolInfo <- ContT $ withForeignPtr fPoolInfo
 	pCommandPool <- ContT alloca
 	lift do	r <- Vk.CP.create dvc pPoolInfo NullPtr pCommandPool
@@ -848,7 +848,7 @@ createCommandBuffersGen Global {
 			Vk.CB.allocateInfoCommandPool = cp,
 			Vk.CB.allocateInfoLevel = Vk.CB.levelPrimary,
 			Vk.CB.allocateInfoCommandBufferCount = fromIntegral cbc }
-	Vk.Device dvc <- lift $ readIORef rdvc
+	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pAllocInfo <- ContT $ withForeignPtr fAllocInfo
 	pCommandBuffers <- ContT $ allocaArray cbc
 	lift do	r <- Vk.CB.allocate dvc pAllocInfo pCommandBuffers
@@ -899,7 +899,7 @@ createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do
 			Vk.Smp.createInfoSType = (),
 			Vk.Smp.createInfoPNext = NullPtr,
 			Vk.Smp.createInfoFlags = 0 }
-	Vk.Device dvc <- lift $ readIORef rdvc
+	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pSemaphoreInfo <- ContT $ withForeignPtr fSemaphoreInfo
 	pImageAvailableSemaphore <- ContT alloca
 	pRenderFinishedSemaphore <- ContT alloca
@@ -928,7 +928,7 @@ mainLoop g@Global {
 		GlfwB.pollEvents
 		drawFrame g
 		not <$> GlfwB.windowShouldClose win
-	r <- Vk.Device.C.waitIdle . (\(Vk.Device d) -> d) =<< readIORef rdvc
+	r <- Vk.Device.C.waitIdle . (\(Vk.Device.D d) -> d) =<< readIORef rdvc
 	when (r /= success) $ error "wait idle failure"
 
 drawFrame :: Global -> IO ()
@@ -939,7 +939,7 @@ drawFrame Global {
 	globalSwapChain = rsc } = ($ pure) $ runContT do
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
-	Vk.Device dvc <- lift $ readIORef rdvc
+	Vk.Device.D dvc <- lift $ readIORef rdvc
 	Vk.Khr.Swapchain sc <- lift $ readIORef rsc
 	ias <- lift $ readIORef imageAvailableSemaphore
 	lift do	r <- Vk.Khr.C.acquireNextImage
@@ -1002,7 +1002,7 @@ cleanup Global {
 	globalSwapChainImageViews = rscivs,
 	globalPipelineLayout = rPplLyt,
 	globalRenderPass = rrp } = do
-	dvc@(Vk.Device cdvc) <- readIORef rdvc
+	dvc@(Vk.Device.D cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
 	putStr "renderFinishedSemaphore: "

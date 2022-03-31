@@ -27,6 +27,7 @@ import Vulkan.Khr.Enum
 import Vulkan.Khr.Swapchain.Enum
 import Vulkan.Khr.Surface.Enum
 
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Core as C
 import qualified Vulkan.Khr.Swapchain.Core as C
 
@@ -102,8 +103,8 @@ createInfoToCore CreateInfo {
 	where qfic = length qfis
 
 create :: (Pointable n, Pointable n') =>
-	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Swapchain
-create (Device dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO Swapchain
+create (Device.D dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
 	pci <- createInfoToCore ci
 	pac <- maybeToCore mac
 	psc <- ContT alloca
@@ -112,12 +113,12 @@ create (Device dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
 		peek psc
 
 destroy :: Pointable n =>
-	Device -> Swapchain -> Maybe (AllocationCallbacks n) -> IO ()
-destroy (Device dvc) (Swapchain sc) mac = ($ pure) . runContT
+	Device.D -> Swapchain -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device.D dvc) (Swapchain sc) mac = ($ pure) . runContT
 	$ lift . C.destroy dvc sc =<< maybeToCore mac
 
-getImages :: Device -> Swapchain -> IO [Image]
-getImages (Device dvc) (Swapchain sc) = ($ pure) . runContT $ (Image <$>) <$> do
+getImages :: Device.D -> Swapchain -> IO [Image]
+getImages (Device.D dvc) (Swapchain sc) = ($ pure) . runContT $ (Image <$>) <$> do
 	pSwapchainImageCount <- ContT alloca
 	(fromIntegral -> swapchainImageCount) <- lift do
 		r <- C.getImages dvc sc pSwapchainImageCount NullPtr

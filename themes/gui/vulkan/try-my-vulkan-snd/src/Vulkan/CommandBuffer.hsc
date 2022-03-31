@@ -13,8 +13,8 @@ import Data.Int
 
 import Vulkan.Core (CommandBuffer)
 import Vulkan.Base
-import Vulkan.Device.Core (Device)
 
+import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.CommandPool as CommandPool
 
 #include <vulkan/vulkan.h>
@@ -46,7 +46,7 @@ levelPrimary :: #{type VkCommandBufferLevel}
 levelPrimary = #{const VK_COMMAND_BUFFER_LEVEL_PRIMARY}
 
 foreign import ccall "vkAllocateCommandBuffers" allocate ::
-	Device -> Ptr AllocateInfo -> Ptr CommandBuffer -> IO #{type VkResult}
+	Device.D -> Ptr AllocateInfo -> Ptr CommandBuffer -> IO #{type VkResult}
 
 struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
 		#{alignment VkCommandBufferInheritanceInfo} [

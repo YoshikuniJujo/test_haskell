@@ -12,8 +12,8 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.Device.Core (Device)
 
+import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.RenderPass.Core as RenderPass
 import qualified Vulkan.ImageView.Core as ImageView
 
@@ -53,8 +53,8 @@ struct "CreateInfo" #{size VkFramebufferCreateInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateFramebuffer" create ::
-	Device -> Ptr CreateInfo -> Ptr () -> Ptr Framebuffer ->
+	Device.D -> Ptr CreateInfo -> Ptr () -> Ptr Framebuffer ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyFramebuffer" destroy ::
-	Device -> Framebuffer -> Ptr () -> IO ()
+	Device.D -> Framebuffer -> Ptr () -> IO ()

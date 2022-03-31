@@ -20,7 +20,6 @@ import Vulkan.Enum
 import qualified Vulkan.Core as C
 import qualified Vulkan.Instance.Core as Instance.C
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice.C
-import qualified Vulkan.Device.Core as Device.C
 import qualified Vulkan.Image.Core as Image.C
 import qualified Vulkan.ImageView.Core as ImageView.C
 
@@ -29,8 +28,6 @@ import qualified Vulkan.ImageView.Core as ImageView.C
 newtype Instance = Instance Instance.C.Instance deriving Show
 
 newtype PhysicalDevice = PhysicalDevice PhysicalDevice.C.PhysicalDevice deriving Show
-
-newtype Device = Device Device.C.Device deriving Show
 
 newtype Queue = Queue C.Queue deriving Show
 

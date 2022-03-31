@@ -33,6 +33,8 @@ import qualified Vulkan.Device.Core as C
 
 #include <vulkan/vulkan.h>
 
+newtype D = D C.D deriving Show
+
 enum "CreateFlagBits" ''#{type VkDeviceCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
 
@@ -79,8 +81,8 @@ createInfoToCore CreateInfo {
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	PhysicalDevice -> CreateInfo n n2 -> Maybe (AllocationCallbacks n3) ->
-	IO Device
-create (PhysicalDevice phdvc) ci mac = ($ pure) . runContT $ Device <$> do
+	IO D
+create (PhysicalDevice phdvc) ci mac = ($ pure) . runContT $ D <$> do
 	pcci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pdvc <- ContT alloca
@@ -88,13 +90,13 @@ create (PhysicalDevice phdvc) ci mac = ($ pure) . runContT $ Device <$> do
 		throwUnlessSuccess $ Result r
 		peek pdvc
 
-destroy :: Pointable n => Device -> Maybe (AllocationCallbacks n) -> IO ()
-destroy (Device cdvc) mac = ($ pure) $ runContT do
+destroy :: Pointable n => D -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (D cdvc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cdvc pac
 
-getQueue :: Device -> Word32 -> Word32 -> IO Queue
-getQueue (Device cdvc) qfi qi = ($ pure) . runContT $ Queue <$> do
+getQueue :: D -> Word32 -> Word32 -> IO Queue
+getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue <$> do
 	pQueue <- ContT alloca
 	lift do	C.getQueue cdvc qfi qi pQueue
 		peek pQueue

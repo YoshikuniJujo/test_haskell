@@ -14,12 +14,12 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 
-import Vulkan
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.RenderPass.Enum
 import Vulkan.AllocationCallbacks (AllocationCallbacks, maybeToCore)
 
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass
 import qualified Vulkan.RenderPass.Core as C
@@ -64,8 +64,8 @@ createInfoToCore CreateInfo {
 newtype R = R C.R deriving Show
 
 create :: (Pointable n, Pointable n') =>
-	Device -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO R
-create (Device dvc) ci mac = ($ pure) . runContT $ R <$> do
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO R
+create (Device.D dvc) ci mac = ($ pure) . runContT $ R <$> do
 	pci <- createInfoToCore ci
 	pac <- maybeToCore mac
 	pr <- ContT alloca
@@ -73,7 +73,7 @@ create (Device dvc) ci mac = ($ pure) . runContT $ R <$> do
 		throwUnlessSuccess $ Result r
 		peek pr
 
-destroy :: Pointable n => Device -> R -> Maybe (AllocationCallbacks n) -> IO ()
-destroy (Device dvc) (R r) mac = ($ pure) $ runContT do
+destroy :: Pointable n => Device.D -> R -> Maybe (AllocationCallbacks n) -> IO ()
+destroy (Device.D dvc) (R r) mac = ($ pure) $ runContT do
 	pac <- maybeToCore mac
 	lift $ C.destroy dvc r pac

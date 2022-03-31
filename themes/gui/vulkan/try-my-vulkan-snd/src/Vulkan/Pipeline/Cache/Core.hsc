@@ -33,3 +33,6 @@ struct "CreateInfo" #{size VkPipelineCacheCreateInfo}
 		[| #{peek VkPipelineCacheCreateInfo, pInitialData} |],
 		[| #{poke VkPipelineCacheCreateInfo, pInitialData} |]) ]
 	[''Show, ''Storable]
+
+-- foreign import ccall "VkCreatePipelineCache" create ::
+	
