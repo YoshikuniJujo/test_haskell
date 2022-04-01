@@ -100,10 +100,10 @@ import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
 import qualified Vulkan.Pipeline as Vk.Ppl
+import qualified Vulkan.Framebuffer as Vk.Fb
+import qualified Vulkan.Framebuffer.Enum as Vk.Fb
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
-
-import qualified Vulkan.ImageView.Core as Vk.ImageView.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
@@ -774,30 +774,28 @@ readFromByteString (BS.PS f o l) = do
 createFramebuffers :: Global -> IO ()
 createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
 	scivs <- ((\(Vk.ImageView.I iv) -> iv) <$>) <$> readIORef rscivs
-	fbs <- createFramebuffer1 g `mapM` scivs
+	fbs <- createFramebuffer1 g `mapM` (Vk.ImageView.I <$> scivs)
 	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Global -> Vk.ImageView.C.I -> IO Framebuffer
+createFramebuffer1 :: Global -> Vk.ImageView.I -> IO Framebuffer
 createFramebuffer1 Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
-	globalRenderPass = rrp } attachment = ($ pure) $ runContT do
-	Vk.RndrPss.R rndrPss <- lift $ readIORef rrp
+	globalRenderPass = rrp } attachment@(Vk.ImageView.I cattachment)  = ($ pure) $ runContT do
+	rndrPss@(Vk.RndrPss.R crndrPss) <- lift $ readIORef rrp
 	attachments <- ContT $ allocaArray 1
-	lift $ pokeArray attachments [attachment]
+	lift $ pokeArray attachments [cattachment]
 	sce <- lift $ readIORef rscex
-	let	Vk.Fb.C.CreateInfo_ fFramebufferInfo = Vk.Fb.C.CreateInfo {
-			Vk.Fb.C.createInfoSType = (),
-			Vk.Fb.C.createInfoPNext = NullPtr,
-			Vk.Fb.C.createInfoFlags = 0,
-			Vk.Fb.C.createInfoRenderPass = rndrPss,
-			Vk.Fb.C.createInfoAttachmentCount = 1,
-			Vk.Fb.C.createInfoPAttachments = attachments,
-			Vk.Fb.C.createInfoWidth = Vk.C.extent2dWidth sce,
-			Vk.Fb.C.createInfoHeight = Vk.C.extent2dHeight sce,
-			Vk.Fb.C.createInfoLayers = 1 }
+	let	framebufferInfo = Vk.Fb.CreateInfo {
+			Vk.Fb.createInfoNext = Nothing,
+			Vk.Fb.createInfoFlags = Vk.Fb.CreateFlagsZero,
+			Vk.Fb.createInfoRenderPass = rndrPss,
+			Vk.Fb.createInfoAttachments = [attachment],
+			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
+			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
+			Vk.Fb.createInfoLayers = 1 }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pFramebufferInfo <- ContT $ withForeignPtr fFramebufferInfo
+	pFramebufferInfo <- Vk.Fb.createInfoToCore @() framebufferInfo
 	pfb <- ContT alloca
 	lift do	r <- Vk.Fb.C.create dvc pFramebufferInfo NullPtr pfb
 		when (r /= success) $ error "failed to create framebuffer!"

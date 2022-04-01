@@ -1,15 +1,54 @@
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Framebuffer where
 
+import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal.Array
+import Foreign.Pointable
+import Control.Arrow
+import Control.Monad.Cont
+import Data.Word
+
 import Vulkan.Framebuffer.Enum
 
 import qualified Vulkan.RenderPass as RenderPass
+import qualified Vulkan.ImageView as ImageView
+import qualified Vulkan.Framebuffer.Core as C
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoRenderPass :: RenderPass.R
---	createInfoAttachments :: [ImageView.I]
-	}
+	createInfoRenderPass :: RenderPass.R,
+	createInfoAttachments :: [ImageView.I],
+	createInfoWidth :: Word32,
+	createInfoHeight :: Word32,
+	createInfoLayers :: Word32 }
 	deriving Show
+
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoRenderPass = RenderPass.R rp,
+	createInfoAttachments =
+		length &&& ((\(ImageView.I i) -> i) <$>) -> (ac, as),
+	createInfoWidth = w,
+	createInfoHeight = h,
+	createInfoLayers = l } = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pas <- ContT $ allocaArray ac
+	lift $ pokeArray pas as
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoRenderPass = rp,
+			C.createInfoAttachmentCount = fromIntegral ac,
+			C.createInfoPAttachments = pas,
+			C.createInfoWidth = w,
+			C.createInfoHeight = h,
+			C.createInfoLayers = l }
+	ContT $ withForeignPtr fCreateInfo
