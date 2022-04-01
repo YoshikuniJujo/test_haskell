@@ -111,7 +111,7 @@ import qualified Vulkan.Subpass.Core as Vk.Subpass.C
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
 
-import qualified Vulkan.Framebuffer as Vk.Fb
+import qualified Vulkan.Framebuffer.Core as Vk.Fb.C
 import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
@@ -786,20 +786,20 @@ createFramebuffer1 Global {
 	attachments <- ContT $ allocaArray 1
 	lift $ pokeArray attachments [attachment]
 	sce <- lift $ readIORef rscex
-	let	Vk.Fb.CreateInfo_ fFramebufferInfo = Vk.Fb.CreateInfo {
-			Vk.Fb.createInfoSType = (),
-			Vk.Fb.createInfoPNext = NullPtr,
-			Vk.Fb.createInfoFlags = 0,
-			Vk.Fb.createInfoRenderPass = rndrPss,
-			Vk.Fb.createInfoAttachmentCount = 1,
-			Vk.Fb.createInfoPAttachments = attachments,
-			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
-			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
-			Vk.Fb.createInfoLayers = 1 }
+	let	Vk.Fb.C.CreateInfo_ fFramebufferInfo = Vk.Fb.C.CreateInfo {
+			Vk.Fb.C.createInfoSType = (),
+			Vk.Fb.C.createInfoPNext = NullPtr,
+			Vk.Fb.C.createInfoFlags = 0,
+			Vk.Fb.C.createInfoRenderPass = rndrPss,
+			Vk.Fb.C.createInfoAttachmentCount = 1,
+			Vk.Fb.C.createInfoPAttachments = attachments,
+			Vk.Fb.C.createInfoWidth = Vk.C.extent2dWidth sce,
+			Vk.Fb.C.createInfoHeight = Vk.C.extent2dHeight sce,
+			Vk.Fb.C.createInfoLayers = 1 }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pFramebufferInfo <- ContT $ withForeignPtr fFramebufferInfo
 	pfb <- ContT alloca
-	lift do	r <- Vk.Fb.create dvc pFramebufferInfo NullPtr pfb
+	lift do	r <- Vk.Fb.C.create dvc pFramebufferInfo NullPtr pfb
 		when (r /= success) $ error "failed to create framebuffer!"
 		peek pfb
 
@@ -1011,7 +1011,7 @@ cleanup Global {
 	cp <- readIORef commandPool
 	Vk.CP.destroy cdvc cp NullPtr
 	fbs <- readIORef swapChainFramebuffers
-	(\fb -> Vk.Fb.destroy cdvc fb NullPtr) `mapM_` fbs
+	(\fb -> Vk.Fb.C.destroy cdvc fb NullPtr) `mapM_` fbs
 	gppl <- readIORef rgpl
 	Vk.Ppl.destroy @() dvc gppl Nothing
 	pl <- readIORef rPplLyt
