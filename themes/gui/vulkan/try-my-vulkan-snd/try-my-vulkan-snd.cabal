@@ -43,6 +43,7 @@ library
       Vulkan.Command
       Vulkan.CommandBuffer
       Vulkan.CommandPool.Core
+      Vulkan.CommandPool.Enum
       Vulkan.Component
       Vulkan.Component.Core
       Vulkan.Component.Enum
