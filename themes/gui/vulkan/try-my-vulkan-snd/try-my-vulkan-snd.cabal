@@ -42,6 +42,7 @@ library
       Vulkan.ColorComponent.Enum
       Vulkan.Command
       Vulkan.CommandBuffer
+      Vulkan.CommandPool
       Vulkan.CommandPool.Core
       Vulkan.CommandPool.Enum
       Vulkan.Component
