@@ -13,8 +13,9 @@ import Data.Int
 
 import Vulkan.Base
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
-import qualified Vulkan.RenderPass.Core as RenderPass
+import {-# SOURCE #-} qualified Vulkan.RenderPass.Core as RenderPass
 import qualified Vulkan.ImageView.Core as ImageView
 
 #include <vulkan/vulkan.h>
@@ -52,9 +53,12 @@ struct "CreateInfo" #{size VkFramebufferCreateInfo}
 		[| #{poke VkFramebufferCreateInfo, layers} |]) ]
 	[''Show, ''Storable]
 
+data FTag
+type F = Ptr FTag
+
 foreign import ccall "vkCreateFramebuffer" create ::
-	Device.D -> Ptr CreateInfo -> Ptr () -> Ptr Framebuffer ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr F ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyFramebuffer" destroy ::
-	Device.D -> Framebuffer -> Ptr () -> IO ()
+	Device.D -> F -> Ptr AllocationCallbacks.A -> IO ()

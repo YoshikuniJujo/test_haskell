@@ -52,3 +52,7 @@ createInfoToCore CreateInfo {
 			C.createInfoHeight = h,
 			C.createInfoLayers = l }
 	ContT $ withForeignPtr fCreateInfo
+
+newtype F = F C.F deriving Show
+
+-- create ::

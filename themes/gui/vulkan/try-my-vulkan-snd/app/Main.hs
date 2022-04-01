@@ -127,7 +127,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainFramebuffers :: IORef [Framebuffer]
+swapChainFramebuffers :: IORef [Vk.Fb.C.F]
 swapChainFramebuffers = unsafePerformIO $ newIORef []
 
 commandPool :: IORef Vk.CP.CommandPool
@@ -777,12 +777,12 @@ createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
 	fbs <- createFramebuffer1 g `mapM` (Vk.ImageView.I <$> scivs)
 	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Global -> Vk.ImageView.I -> IO Framebuffer
+createFramebuffer1 :: Global -> Vk.ImageView.I -> IO Vk.Fb.C.F
 createFramebuffer1 Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
 	globalRenderPass = rrp } attachment@(Vk.ImageView.I cattachment)  = ($ pure) $ runContT do
-	rndrPss@(Vk.RndrPss.R crndrPss) <- lift $ readIORef rrp
+	rndrPss <- lift $ readIORef rrp
 	attachments <- ContT $ allocaArray 1
 	lift $ pokeArray attachments [cattachment]
 	sce <- lift $ readIORef rscex
@@ -848,7 +848,7 @@ createCommandBuffersGen Global {
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
-beginCommandBuffer1 :: Global -> Vk.C.CommandBuffer -> Framebuffer -> IO ()
+beginCommandBuffer1 :: Global -> Vk.C.CommandBuffer -> Vk.Fb.C.F -> IO ()
 beginCommandBuffer1 Global {
 	globalSwapChainExtent = rscex,
 	globalRenderPass = rrp,

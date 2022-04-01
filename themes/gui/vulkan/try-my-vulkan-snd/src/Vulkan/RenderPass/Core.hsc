@@ -18,6 +18,7 @@ import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Attachment.Core as Attachment
 import qualified Vulkan.Subpass.Core as Subpass
+import qualified Vulkan.Framebuffer.Core as Framebuffer
 
 #include <vulkan/vulkan.h>
 
@@ -75,7 +76,7 @@ struct "BeginInfo" #{size VkRenderPassBeginInfo}
 	("renderPass", ''R,
 		[| #{peek VkRenderPassBeginInfo, renderPass } |],
 		[| #{poke VkRenderPassBeginInfo, renderPass } |]),
-	("framebuffer", ''Framebuffer,
+	("framebuffer", ''Framebuffer.F,
 		[| #{peek VkRenderPassBeginInfo, framebuffer} |],
 		[| #{poke VkRenderPassBeginInfo, framebuffer} |]),
 	("renderArea", ''Rect2d,
