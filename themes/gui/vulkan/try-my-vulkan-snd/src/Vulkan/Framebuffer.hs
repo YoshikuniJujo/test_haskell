@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,14 +7,20 @@ module Vulkan.Framebuffer where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Framebuffer.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device as Device
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.ImageView as ImageView
 import qualified Vulkan.Framebuffer.Core as C
@@ -55,4 +62,12 @@ createInfoToCore CreateInfo {
 
 newtype F = F C.F deriving Show
 
--- create ::
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO F
+create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pf <- ContT alloca
+	lift do	r <- C.create dvc pci pac pf
+		throwUnlessSuccess $ Result r
+		peek pf

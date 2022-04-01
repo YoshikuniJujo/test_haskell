@@ -775,17 +775,15 @@ createFramebuffers :: Global -> IO ()
 createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
 	scivs <- ((\(Vk.ImageView.I iv) -> iv) <$>) <$> readIORef rscivs
 	fbs <- createFramebuffer1 g `mapM` (Vk.ImageView.I <$> scivs)
-	writeIORef swapChainFramebuffers fbs
+	writeIORef swapChainFramebuffers $ (\(Vk.Fb.F f) -> f) <$> fbs
 
-createFramebuffer1 :: Global -> Vk.ImageView.I -> IO Vk.Fb.C.F
+createFramebuffer1 :: Global -> Vk.ImageView.I -> IO Vk.Fb.F
 createFramebuffer1 Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
-	globalRenderPass = rrp } attachment@(Vk.ImageView.I cattachment)  = ($ pure) $ runContT do
-	rndrPss <- lift $ readIORef rrp
-	attachments <- ContT $ allocaArray 1
-	lift $ pokeArray attachments [cattachment]
-	sce <- lift $ readIORef rscex
+	globalRenderPass = rrp } attachment = do
+	rndrPss <- readIORef rrp
+	sce <- readIORef rscex
 	let	framebufferInfo = Vk.Fb.CreateInfo {
 			Vk.Fb.createInfoNext = Nothing,
 			Vk.Fb.createInfoFlags = Vk.Fb.CreateFlagsZero,
@@ -794,12 +792,8 @@ createFramebuffer1 Global {
 			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
 			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
 			Vk.Fb.createInfoLayers = 1 }
-	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pFramebufferInfo <- Vk.Fb.createInfoToCore @() framebufferInfo
-	pfb <- ContT alloca
-	lift do	r <- Vk.Fb.C.create dvc pFramebufferInfo NullPtr pfb
-		when (r /= success) $ error "failed to create framebuffer!"
-		peek pfb
+	dvc <- readIORef rdvc
+	Vk.Fb.create @() @() dvc framebufferInfo Nothing
 
 createCommandPool :: Global -> IO ()
 createCommandPool g@Global {
