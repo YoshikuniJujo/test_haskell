@@ -68,7 +68,9 @@ library
       Vulkan.Ext.DebugUtils.Messenger.Core
       Vulkan.Fence
       Vulkan.Format
+      Vulkan.Framebuffer
       Vulkan.Framebuffer.Core
+      Vulkan.Framebuffer.Enum
       Vulkan.Image
       Vulkan.Image.Core
       Vulkan.Image.Enum
