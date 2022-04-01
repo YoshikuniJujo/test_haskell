@@ -56,9 +56,11 @@ createInfoToCore CreateInfo {
 		C.createInfoSubresourceRange = subresourceRangeToCore srr }
 	ContT $ withForeignPtr fCreateInfo
 
+newtype I = I C.I deriving Show
+
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO ImageView
-create (Device.D dvc) ci mac = ($ pure) . runContT $ ImageView <$> do
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
+create (Device.D dvc) ci mac = ($ pure) . runContT $ I <$> do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pView <- ContT alloca
@@ -67,6 +69,6 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ ImageView <$> do
 		peek pView
 
 destroy :: Pointable n =>
-	Device.D -> ImageView -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (ImageView iv) mac =
+	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (I iv) mac =
 	($ pure) . runContT $ lift . C.destroy dvc iv =<< AllocationCallbacks.maybeToCore mac

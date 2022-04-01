@@ -20,9 +20,9 @@ import qualified Vulkan.Component.Core as Component
 
 #include <vulkan/vulkan.h>
 
-data ImageViewTag
-type ImageView = Ptr ImageViewTag
-type PtrImageView = Ptr ImageView
+data ITag
+type I = Ptr ITag
+type PtrI = Ptr I
 
 strType :: #{type VkStructureType}
 strType = #{const VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO}
@@ -58,8 +58,8 @@ type2d :: #{type VkImageViewType}
 type2d = #{const VK_IMAGE_VIEW_TYPE_2D}
 
 foreign import ccall "vkCreateImageView" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr ImageView ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr I ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyImageView" destroy ::
-	Device.D -> ImageView -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> I -> Ptr AllocationCallbacks.A -> IO ()

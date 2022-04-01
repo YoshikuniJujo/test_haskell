@@ -153,7 +153,7 @@ data Global = Global {
 	globalSwapChainImages :: IORef [Vk.Image],
 	globalSwapChainImageFormat :: IORef Vk.Format,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
-	globalSwapChainImageViews :: IORef [Vk.ImageView],
+	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[])
@@ -531,7 +531,7 @@ createImageViews g@Global {
 	globalSwapChainImages = rscimgs, globalSwapChainImageViews = rscivs } =
 	writeIORef rscivs =<< (createImageView1 g `mapM`) =<< readIORef rscimgs
 
-createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView
+createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.I
 createImageView1 Global {
 	globalDevice = rdvc, globalSwapChainImageFormat = rscimgfmt } img = do
 	(dvc, fmt) <- (,) <$> readIORef rdvc <*> readIORef rscimgfmt
@@ -773,11 +773,11 @@ readFromByteString (BS.PS f o l) = do
 
 createFramebuffers :: Global -> IO ()
 createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
-	scivs <- ((\(Vk.ImageView iv) -> iv) <$>) <$> readIORef rscivs
+	scivs <- ((\(Vk.ImageView.I iv) -> iv) <$>) <$> readIORef rscivs
 	fbs <- createFramebuffer1 g `mapM` scivs
 	writeIORef swapChainFramebuffers fbs
 
-createFramebuffer1 :: Global -> Vk.ImageView.C.ImageView -> IO Framebuffer
+createFramebuffer1 :: Global -> Vk.ImageView.C.I -> IO Framebuffer
 createFramebuffer1 Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,

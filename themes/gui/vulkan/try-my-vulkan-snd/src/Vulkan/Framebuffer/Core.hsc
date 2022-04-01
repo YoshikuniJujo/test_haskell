@@ -38,7 +38,7 @@ struct "CreateInfo" #{size VkFramebufferCreateInfo}
 	("attachmentCount", ''#{type uint32_t},
 		[| #{peek VkFramebufferCreateInfo, attachmentCount} |],
 		[| #{poke VkFramebufferCreateInfo, attachmentCount} |]),
-	("pAttachments", ''ImageView.PtrImageView,
+	("pAttachments", ''ImageView.PtrI,
 		[| #{peek VkFramebufferCreateInfo, pAttachments} |],
 		[| #{poke VkFramebufferCreateInfo, pAttachments} |]),
 	("width", ''#{type uint32_t},
