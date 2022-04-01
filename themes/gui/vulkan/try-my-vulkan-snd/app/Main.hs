@@ -112,7 +112,7 @@ import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
 
 import qualified Vulkan.Framebuffer.Core as Vk.Fb.C
-import qualified Vulkan.CommandPool as Vk.CP
+import qualified Vulkan.CommandPool.Core as Vk.CP.C
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp
@@ -127,7 +127,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-commandPool :: IORef Vk.CP.CommandPool
+commandPool :: IORef Vk.CP.C.CommandPool
 commandPool = unsafePerformIO $ newIORef NullPtr
 
 commandBuffers :: IORef [Vk.C.CommandBuffer]
@@ -804,16 +804,16 @@ createCommandPool g@Global {
 		pdvc <- readIORef rpdvc
 		findQueueFamilies g pdvc
 	lift $ print queueFamilyIndices
-	let	Vk.CP.CreateInfo_ fPoolInfo = Vk.CP.CreateInfo {
-			Vk.CP.createInfoSType = (),
-			Vk.CP.createInfoPNext = NullPtr,
-			Vk.CP.createInfoFlags = 0,
-			Vk.CP.createInfoQueueFamilyIndex =
+	let	Vk.CP.C.CreateInfo_ fPoolInfo = Vk.CP.C.CreateInfo {
+			Vk.CP.C.createInfoSType = (),
+			Vk.CP.C.createInfoPNext = NullPtr,
+			Vk.CP.C.createInfoFlags = 0,
+			Vk.CP.C.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pPoolInfo <- ContT $ withForeignPtr fPoolInfo
 	pCommandPool <- ContT alloca
-	lift do	r <- Vk.CP.create dvc pPoolInfo NullPtr pCommandPool
+	lift do	r <- Vk.CP.C.create dvc pPoolInfo NullPtr pCommandPool
 		when (r /= success) $ error "failed to create command pool!"
 		writeIORef commandPool =<< peek pCommandPool
 		putStrLn "=== END ==="
@@ -1004,7 +1004,7 @@ cleanup Global {
 	print ias
 	Vk.Smp.destroy cdvc ias NullPtr
 	cp <- readIORef commandPool
-	Vk.CP.destroy cdvc cp NullPtr
+	Vk.CP.C.destroy cdvc cp NullPtr
 	fbs <- readIORef rscfbs
 	(\fb -> Vk.Fb.destroy @() dvc fb Nothing) `mapM_` fbs
 	gppl <- readIORef rgpl

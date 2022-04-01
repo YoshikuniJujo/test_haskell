@@ -15,7 +15,7 @@ import Vulkan.Core (CommandBuffer)
 import Vulkan.Base
 
 import qualified Vulkan.Device.Core as Device
-import qualified Vulkan.CommandPool as CommandPool
+import qualified Vulkan.CommandPool.Core as CommandPool
 
 #include <vulkan/vulkan.h>
 
