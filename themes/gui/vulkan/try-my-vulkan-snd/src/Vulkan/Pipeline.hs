@@ -237,3 +237,9 @@ createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	lift do	r <- C.create dvc cc (fromIntegral cic) pcis pac pps
 		throwUnlessSuccess $ Result r
 		peekArray cic pps
+
+destroy :: Pointable n =>
+	Device.D -> P vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (P p) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.destroy dvc p pac

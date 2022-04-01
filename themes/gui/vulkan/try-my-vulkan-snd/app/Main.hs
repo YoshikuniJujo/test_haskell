@@ -127,9 +127,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-graphicsPipeline :: IORef Vk.Ppl.C.P
-graphicsPipeline = unsafePerformIO $ newIORef NullPtr
-
 swapChainFramebuffers :: IORef [Framebuffer]
 swapChainFramebuffers = unsafePerformIO $ newIORef []
 
@@ -158,7 +155,8 @@ data Global = Global {
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
-	globalRenderPass :: IORef Vk.RndrPss.R
+	globalRenderPass :: IORef Vk.RndrPss.R,
+	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[])
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -177,6 +175,7 @@ newGlobal w = do
 	scivs <- newIORef []
 	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
 	rp <- newIORef $ Vk.RndrPss.R NullPtr
+	gpl <- newIORef Vk.Ppl.PNull
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -192,7 +191,8 @@ newGlobal w = do
 		globalSwapChainExtent = scex,
 		globalSwapChainImageViews = scivs,
 		globalPipelineLayout = lyt,
-		globalRenderPass = rp
+		globalRenderPass = rp,
+		globalGraphicsPipeline = gpl
 		}
 
 run :: IO ()
@@ -618,7 +618,8 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
 	globalPipelineLayout = rPplLyt,
-	globalRenderPass = rrp } = do
+	globalRenderPass = rrp,
+	globalGraphicsPipeline = rgpl } = do
 	dvc <- readIORef rdvc
 	vertShaderModule <- createShaderModule g glslVertexShaderMain
 	fragShaderModule <- createShaderModule g glslFragmentShaderMain
@@ -745,12 +746,12 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.createInfoSubpass = 0,
 			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.PNull,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
-	(Vk.Ppl.P graphicsPipelineBody `Vk.Ppl.PCons` Vk.Ppl.PNil) <-
+	gpl `Vk.Ppl.PCons` Vk.Ppl.PNil <-
 		Vk.Ppl.create @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @()
 			dvc Nothing
 			(pipelineInfo `Vk.Ppl.CreateInfoCons` Vk.Ppl.CreateInfoNil)
 			Nothing
-	writeIORef graphicsPipeline graphicsPipelineBody
+	writeIORef rgpl gpl
 	Vk.Shader.Module.destroy @() dvc fragShaderModule Nothing
 	Vk.Shader.Module.destroy @() dvc vertShaderModule Nothing
 
@@ -852,7 +853,8 @@ createCommandBuffersGen Global {
 beginCommandBuffer1 :: Global -> Vk.C.CommandBuffer -> Framebuffer -> IO ()
 beginCommandBuffer1 Global {
 	globalSwapChainExtent = rscex,
-	globalRenderPass = rrp } cb fb = ($ pure) $ runContT do
+	globalRenderPass = rrp,
+	globalGraphicsPipeline = rgpl } cb fb = ($ pure) $ runContT do
 	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
 			Vk.CB.beginInfoSType = (),
 			Vk.CB.beginInfoPNext = NullPtr,
@@ -880,7 +882,7 @@ beginCommandBuffer1 Global {
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	lift do	Vk.Cmd.beginRenderPass
 			cb pRenderPassInfo Vk.Subpass.C.contentsInline
-		gppl <- readIORef graphicsPipeline
+		Vk.Ppl.P gppl <- readIORef rgpl
 		Vk.Cmd.bindPipeline cb Vk.Ppl.C.bindPointGraphics gppl
 		Vk.Cmd.draw cb 3 1 0 0
 		Vk.Cmd.endRenderPass cb
@@ -995,7 +997,8 @@ cleanup Global {
 	globalSwapChain = rsc,
 	globalSwapChainImageViews = rscivs,
 	globalPipelineLayout = rPplLyt,
-	globalRenderPass = rrp } = do
+	globalRenderPass = rrp,
+	globalGraphicsPipeline = rgpl } = do
 	dvc@(Vk.Device.D cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1009,8 +1012,8 @@ cleanup Global {
 	Vk.CP.destroy cdvc cp NullPtr
 	fbs <- readIORef swapChainFramebuffers
 	(\fb -> Vk.Fb.destroy cdvc fb NullPtr) `mapM_` fbs
-	gppl <- readIORef graphicsPipeline
-	Vk.Ppl.C.destroy cdvc gppl NullPtr
+	gppl <- readIORef rgpl
+	Vk.Ppl.destroy @() dvc gppl Nothing
 	pl <- readIORef rPplLyt
 	Vk.Ppl.Lyt.destroy @() dvc pl Nothing
 	rp <- readIORef rrp
