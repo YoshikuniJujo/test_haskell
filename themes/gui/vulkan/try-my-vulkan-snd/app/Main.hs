@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -38,6 +39,7 @@ import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
 
 import Shaderc
+import Shaderc.EnumAuto
 import Shaderc.TH
 
 import qualified Vulkan as Vk
@@ -616,11 +618,11 @@ createGraphicsPipeline g@Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
 	globalPipelineLayout = rPplLyt,
-	globalRenderPass = rrp } = ($ pure) $ runContT do
-	dvcdvc@(Vk.Device.D dvc) <- lift $ readIORef rdvc
-	vertShaderModule <- lift $ createShaderModule g glslVertexShaderMain
-	fragShaderModule <- lift $ createShaderModule g glslFragmentShaderMain
-	sce <- lift $ readIORef rscex
+	globalRenderPass = rrp } = do
+	dvc <- readIORef rdvc
+	vertShaderModule <- createShaderModule g glslVertexShaderMain
+	fragShaderModule <- createShaderModule g glslFragmentShaderMain
+	sce <- readIORef rscex
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
 			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
 			Vk.Ppl.ShaderStage.createInfoFlags =
@@ -641,11 +643,6 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.ShaderStage.createInfoName = "main",
 			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
-	vertShaderStageInfoCore <-
-		Vk.Ppl.ShaderStage.createInfoToCore @() @_ @() vertShaderStageInfo
-	fragShaderStageInfoCore <-
-		Vk.Ppl.ShaderStage.createInfoToCore @() @_ @() fragShaderStageInfo
-	let	shaderStageList = [vertShaderStageInfoCore, fragShaderStageInfoCore]
 		vertexInputInfo :: Vk.Ppl.VI.CreateInfo () () '[]
 		vertexInputInfo = Vk.Ppl.VI.CreateInfo {
 			Vk.Ppl.VI.createInfoNext = Nothing,
@@ -666,7 +663,7 @@ createGraphicsPipeline g@Global {
 			Vk.C.rect2dOffset = Vk.C.Offset2d {
 				Vk.C.offset2dX = 0, Vk.C.offset2dY = 0 },
 			Vk.C.rect2dExtent = sce }
-	let	viewportState = Vk.Ppl.VP.CreateInfo {
+		viewportState = Vk.Ppl.VP.CreateInfo {
 			Vk.Ppl.VP.createInfoNext = Nothing,
 			Vk.Ppl.VP.createInfoFlags = Vk.Ppl.VP.CreateFlagsZero,
 			Vk.Ppl.VP.createInfoViewports = [viewport],
@@ -709,7 +706,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.CBA.stateColorWriteMask =
 				Vk.CC.RBit .|. Vk.CC.GBit .|. Vk.CC.BBit .|.
 				Vk.CC.ABit }
-	let	colorBlending = Vk.Ppl.CB.CreateInfo {
+		colorBlending = Vk.Ppl.CB.CreateInfo {
 			Vk.Ppl.CB.createInfoNext = Nothing,
 			Vk.Ppl.CB.createInfoFlags = Vk.Ppl.CB.CreateFlagsZero,
 			Vk.Ppl.CB.createInfoLogicOpEnable = False,
@@ -722,15 +719,11 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
 			Vk.Ppl.Lyt.createInfoSetLayouts = [],
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
-	lift do	pipelineLayoutBody <- Vk.Ppl.Lyt.create
-			@() @() dvcdvc pipelineLayoutInfo Nothing
-		writeIORef rPplLyt pipelineLayoutBody
-	shaderStages <- ContT $ allocaArray 2
-	lift $ pokeArray shaderStages shaderStageList
-	pplLyt <- lift $ readIORef rPplLyt
-	rp <- lift $ readIORef rrp
+	pipelineLayoutBody <- Vk.Ppl.Lyt.create @() @() dvc pipelineLayoutInfo Nothing
+	writeIORef rPplLyt pipelineLayoutBody
+	rp <- readIORef rrp
 	let	pipelineInfo :: Vk.Ppl.CreateInfo
-			() () _ _ () () _ () () () () () () () ()
+			() () '[ 'GlslVertexShader, 'GlslFragmentShader] '[(), ()] () () '[] () () () () () () () () () '[]
 		pipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoNext = Nothing,
 			Vk.Ppl.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -747,34 +740,19 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.createInfoDepthStencilState = Nothing,
 			Vk.Ppl.createInfoColorBlendState = Just colorBlending,
 			Vk.Ppl.createInfoDynamicState = Nothing,	
-			Vk.Ppl.createInfoLayout = pplLyt,
+			Vk.Ppl.createInfoLayout = pipelineLayoutBody,
 			Vk.Ppl.createInfoRenderPass = rp,
 			Vk.Ppl.createInfoSubpass = 0,
 			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.PNull,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
-	Vk.Ppl.C.CreateInfo_ fPipelineInfo <- Vk.Ppl.createInfoToCore
-		@() @() @() @() @() @() @() @() @() @() @() @_ @'[(), ()]
-		pipelineInfo
-
-	pPipelineInfo <- ContT $ withForeignPtr fPipelineInfo
-	pGraphicsPipeline <- ContT alloca
-	Vk.Ppl.P graphicsPipelineBody <- lift do
-		r <- Vk.Ppl.C.create
-			dvc NullPtr 1 pPipelineInfo NullPtr pGraphicsPipeline
-		when (r /= success) $ error "failed to create graphics pipeline!"
-		Vk.Ppl.P <$> peek pGraphicsPipeline
-
-		{-
-	[Vk.Ppl.P graphicsPipelineBody] <- lift
-		$ Vk.Ppl.create @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @()
-			dvcdvc Nothing
+	(Vk.Ppl.P graphicsPipelineBody `Vk.Ppl.PCons` Vk.Ppl.PNil) <-
+		Vk.Ppl.create @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @()
+			dvc Nothing
 			(pipelineInfo `Vk.Ppl.CreateInfoCons` Vk.Ppl.CreateInfoNil)
 			Nothing
-			-}
-
-	lift do	writeIORef graphicsPipeline graphicsPipelineBody
-		Vk.Shader.Module.destroy @() dvcdvc fragShaderModule Nothing
-		Vk.Shader.Module.destroy @() dvcdvc vertShaderModule Nothing
+	writeIORef graphicsPipeline graphicsPipelineBody
+	Vk.Shader.Module.destroy @() dvc fragShaderModule Nothing
+	Vk.Shader.Module.destroy @() dvc vertShaderModule Nothing
 
 createShaderModule :: Global -> Spv sknd -> IO (Vk.Shader.Module.M sknd)
 createShaderModule Global { globalDevice = rdvc } cd = do

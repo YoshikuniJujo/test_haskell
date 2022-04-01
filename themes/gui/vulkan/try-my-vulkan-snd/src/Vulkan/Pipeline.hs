@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -14,6 +14,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Kind
 import Data.Word
 import Data.Int
 
@@ -42,7 +43,7 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Pipeline.Cache as Cache
 
-data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
+data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoStages :: ShaderStage.CreateInfoList n1 sknds vss,
@@ -61,7 +62,7 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: P,
+	createInfoBasePipelineHandle :: P vs'' ts',
 	createInfoBasePipelineIndex :: Int32 }
 
 deriving instance (
@@ -69,7 +70,7 @@ deriving instance (
 	Show n8, Show n9, Show n10,
 	Show (ShaderStage.CreateInfoList n1 sknds vss)
 	) =>
-	Show (CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10)
+	Show (CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts')
 
 maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
 maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
@@ -82,7 +83,7 @@ createInfoToCore :: (
 	BindingStrideList.BindingStrideList
 		vs' VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs' ts ) =>
-	CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 ->
+	CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' ->
 	ContT r IO C.CreateInfo
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -141,28 +142,28 @@ createInfoToCore CreateInfo {
 		C.createInfoBasePipelineIndex = bpi }
 
 data CreateInfoList
-	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s where
+	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's where
 	CreateInfoNil :: CreateInfoList
-		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
+		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
 	CreateInfoCons ::
-		CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 ->
+		CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' ->
 		CreateInfoList ns n1s skndss vsss
-			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ->
+			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
 		CreateInfoList (n ': ns)
 			(n1 ': n1s) (sknds ': skndss) (vss ': vsss)
 			(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s)
 			(n4 ': n4s) (n5 ': n5s) (n6 ': n6s) (n7 ': n7s)
-			(n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
+			(n8 ': n8s) (n9 ': n9s) (n10 ': n10s) (vs'' ': vs''s) (ts' ': ts's)
 
 class CreateInfoListToCore
-	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s where
+	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's where
 	createInfoListToCore ::
 		CreateInfoList ns n1s skndss vsss
-			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ->
+			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
 		ContT r IO [C.CreateInfo]
 
 instance CreateInfoListToCore
-	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] where
+	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] where
 	createInfoListToCore _ = pure []
 
 instance (
@@ -174,31 +175,58 @@ instance (
 		vs' VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs' ts,
 	CreateInfoListToCore ns n1s skndss vsss
-		n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ) =>
+		n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ) =>
 	CreateInfoListToCore
 		(n ': ns) (n1 ': n1s) (sknds ': skndss) (vss ': vsss)
 		(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s) (n4 ': n4s)
 		(n5 ': n5s) (n6 ': n6s) (n7 ': n7s) (n8 ': n8s) (n9 ': n9s)
-		(n10 ': n10s) where
+		(n10 ': n10s) (vs'' ': vs''s) (ts' ': ts's) where
 	createInfoListToCore (ci `CreateInfoCons` cis) = (:)
 		<$> createInfoToCore ci
 		<*> createInfoListToCore cis
 
-newtype P = P C.P deriving Show
-
-pattern PNull :: P
+pattern PNull :: P vs ts
 pattern PNull <- P NullHandle where
 	PNull = P NullHandle
 
+newtype P vs (ts :: [Type]) = P C.P deriving Show
+
+data PList vss tss where
+	PNil :: PList '[] '[]
+	PCons :: P vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
+
+class PListFromCore vss tss where pListFromCore :: [C.P] -> PList vss tss
+
+instance PListFromCore '[] '[] where
+	pListFromCore [] = PNil
+	pListFromCore _ = error "bad"
+
+instance
+	PListFromCore vss tss =>
+	PListFromCore (vs ': vss) (ts ': tss) where
+	pListFromCore [] = error "bad"
+	pListFromCore (cp : cps) = P cp `PCons` pListFromCore cps
+
 create :: (
 	CreateInfoListToCore ns
-		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s,
+		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's,
+	PListFromCore vs's tss,
 	Pointable n' ) =>
 	Device.D -> Maybe Cache.C ->
 	CreateInfoList ns
-		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s ->
-	Maybe (AllocationCallbacks.A n') -> IO [P]
-create (Device.D dvc) mc cis mac = ($ pure) . runContT $ (P <$>) <$> do
+		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
+	Maybe (AllocationCallbacks.A n') -> IO (PList vs's tss)
+create dvc mc cis mac = pListFromCore <$> createRaw dvc mc cis mac
+
+createRaw :: (
+	CreateInfoListToCore ns
+		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's,
+	Pointable n' ) =>
+	Device.D -> Maybe Cache.C ->
+	CreateInfoList ns
+		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
+	Maybe (AllocationCallbacks.A n') -> IO [C.P]
+createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
 	ccis <- createInfoListToCore cis
 	let	cic = length ccis
