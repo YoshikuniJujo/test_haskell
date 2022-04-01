@@ -720,8 +720,8 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
 			Vk.Ppl.Lyt.createInfoSetLayouts = [],
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
-	pipelineLayoutBody <- Vk.Ppl.Lyt.create @() @() dvc pipelineLayoutInfo Nothing
-	writeIORef rPplLyt pipelineLayoutBody
+	pipelineLayout <- Vk.Ppl.Lyt.create @() @() dvc pipelineLayoutInfo Nothing
+	writeIORef rPplLyt pipelineLayout
 	rp <- readIORef rrp
 	let	pipelineInfo :: Vk.Ppl.CreateInfo
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader] '[(), ()] () () '[] () () () () () () () () () '[]
@@ -741,7 +741,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.createInfoDepthStencilState = Nothing,
 			Vk.Ppl.createInfoColorBlendState = Just colorBlending,
 			Vk.Ppl.createInfoDynamicState = Nothing,	
-			Vk.Ppl.createInfoLayout = pipelineLayoutBody,
+			Vk.Ppl.createInfoLayout = pipelineLayout,
 			Vk.Ppl.createInfoRenderPass = rp,
 			Vk.Ppl.createInfoSubpass = 0,
 			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.PNull,
