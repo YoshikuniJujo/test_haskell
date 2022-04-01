@@ -127,9 +127,6 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-swapChainFramebuffers :: IORef [Vk.Fb.C.F]
-swapChainFramebuffers = unsafePerformIO $ newIORef []
-
 commandPool :: IORef Vk.CP.CommandPool
 commandPool = unsafePerformIO $ newIORef NullPtr
 
@@ -156,7 +153,8 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[])
+	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
+	globalSwapChainFramebuffers :: IORef [Vk.Fb.F]
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -176,6 +174,7 @@ newGlobal w = do
 	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
 	rp <- newIORef $ Vk.RndrPss.R NullPtr
 	gpl <- newIORef Vk.Ppl.PNull
+	scfbs <- newIORef []
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -192,7 +191,8 @@ newGlobal w = do
 		globalSwapChainImageViews = scivs,
 		globalPipelineLayout = lyt,
 		globalRenderPass = rp,
-		globalGraphicsPipeline = gpl
+		globalGraphicsPipeline = gpl,
+		globalSwapChainFramebuffers = scfbs
 		}
 
 run :: IO ()
@@ -772,16 +772,17 @@ readFromByteString (BS.PS f o l) = do
 	pure (p', fromIntegral l)
 
 createFramebuffers :: Global -> IO ()
-createFramebuffers g@Global { globalSwapChainImageViews = rscivs } = do
-	scivs <- ((\(Vk.ImageView.I iv) -> iv) <$>) <$> readIORef rscivs
-	fbs <- createFramebuffer1 g `mapM` (Vk.ImageView.I <$> scivs)
-	writeIORef swapChainFramebuffers $ (\(Vk.Fb.F f) -> f) <$> fbs
+createFramebuffers g@Global {
+	globalSwapChainImageViews = rscivs,
+	globalSwapChainFramebuffers = rscfbs } =
+	writeIORef rscfbs =<< (createFramebuffer1 g `mapM`) =<< readIORef rscivs
 
 createFramebuffer1 :: Global -> Vk.ImageView.I -> IO Vk.Fb.F
 createFramebuffer1 Global {
 	globalDevice = rdvc,
 	globalSwapChainExtent = rscex,
 	globalRenderPass = rrp } attachment = do
+	dvc <- readIORef rdvc
 	rndrPss <- readIORef rrp
 	sce <- readIORef rscex
 	let	framebufferInfo = Vk.Fb.CreateInfo {
@@ -792,7 +793,6 @@ createFramebuffer1 Global {
 			Vk.Fb.createInfoWidth = Vk.C.extent2dWidth sce,
 			Vk.Fb.createInfoHeight = Vk.C.extent2dHeight sce,
 			Vk.Fb.createInfoLayers = 1 }
-	dvc <- readIORef rdvc
 	Vk.Fb.create @() @() dvc framebufferInfo Nothing
 
 createCommandPool :: Global -> IO ()
@@ -819,8 +819,10 @@ createCommandPool g@Global {
 		putStrLn "=== END ==="
 
 createCommandBuffers :: Global -> IO ()
-createCommandBuffers g = do
-	scfbs <- readIORef swapChainFramebuffers
+createCommandBuffers g@Global {
+	globalSwapChainFramebuffers = rscfbs
+	} = do
+	scfbs <- ((\(Vk.Fb.F f) -> f) <$>) <$> readIORef rscfbs
 	cbs <- createCommandBuffersGen g (length scfbs)
 	writeIORef commandBuffers cbs
 	uncurry (beginCommandBuffer1 g) `mapM_` zip cbs scfbs
@@ -990,7 +992,8 @@ cleanup Global {
 	globalSwapChainImageViews = rscivs,
 	globalPipelineLayout = rPplLyt,
 	globalRenderPass = rrp,
-	globalGraphicsPipeline = rgpl } = do
+	globalGraphicsPipeline = rgpl,
+	globalSwapChainFramebuffers = rscfbs } = do
 	dvc@(Vk.Device.D cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1002,8 +1005,8 @@ cleanup Global {
 	Vk.Smp.destroy cdvc ias NullPtr
 	cp <- readIORef commandPool
 	Vk.CP.destroy cdvc cp NullPtr
-	fbs <- readIORef swapChainFramebuffers
-	(\fb -> Vk.Fb.C.destroy cdvc fb NullPtr) `mapM_` fbs
+	fbs <- readIORef rscfbs
+	(\fb -> Vk.Fb.destroy @() dvc fb Nothing) `mapM_` fbs
 	gppl <- readIORef rgpl
 	Vk.Ppl.destroy @() dvc gppl Nothing
 	pl <- readIORef rPplLyt
