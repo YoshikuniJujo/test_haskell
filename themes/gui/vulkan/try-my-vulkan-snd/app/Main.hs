@@ -129,7 +129,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-commandPool :: IORef Vk.CP.C.CommandPool
+commandPool :: IORef Vk.CP.C.C
 commandPool = unsafePerformIO $ newIORef NullPtr
 
 commandBuffers :: IORef [Vk.C.CommandBuffer]
@@ -156,7 +156,8 @@ data Global = Global {
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
-	globalSwapChainFramebuffers :: IORef [Vk.Fb.F]
+	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
+	globalCommandPool :: IORef Vk.CP.C
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -177,6 +178,7 @@ newGlobal w = do
 	rp <- newIORef $ Vk.RndrPss.R NullPtr
 	gpl <- newIORef Vk.Ppl.PNull
 	scfbs <- newIORef []
+	cp <- newIORef $ Vk.CP.C NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -194,7 +196,8 @@ newGlobal w = do
 		globalPipelineLayout = lyt,
 		globalRenderPass = rp,
 		globalGraphicsPipeline = gpl,
-		globalSwapChainFramebuffers = scfbs
+		globalSwapChainFramebuffers = scfbs,
+		globalCommandPool = cp
 		}
 
 run :: IO ()
@@ -800,24 +803,18 @@ createFramebuffer1 Global {
 createCommandPool :: Global -> IO ()
 createCommandPool g@Global {
 	globalPhysicalDevice = rpdvc,
-	globalDevice = rdvc } = ($ pure) $ runContT do
-	lift $ putStrLn "=== CREATE COMMAND POOL ==="
-	queueFamilyIndices <- lift do
+	globalDevice = rdvc, globalCommandPool = rcp } = do
+	queueFamilyIndices <- do
 		pdvc <- readIORef rpdvc
 		findQueueFamilies g pdvc
-	lift $ print queueFamilyIndices
+	print queueFamilyIndices
 	let	poolInfo = Vk.CP.CreateInfo {
 			Vk.CP.createInfoNext = Nothing,
 			Vk.CP.createInfoFlags = Vk.CP.CreateFlagsZero,
 			Vk.CP.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
-	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pPoolInfo <- Vk.CP.createInfoToCore @() poolInfo
-	pCommandPool <- ContT alloca
-	lift do	r <- Vk.CP.C.create dvc pPoolInfo NullPtr pCommandPool
-		when (r /= success) $ error "failed to create command pool!"
-		writeIORef commandPool =<< peek pCommandPool
-		putStrLn "=== END ==="
+	dvc <- readIORef rdvc
+	writeIORef rcp =<< Vk.CP.create @() @() dvc poolInfo Nothing
 
 createCommandBuffers :: Global -> IO ()
 createCommandBuffers g@Global {
@@ -830,8 +827,9 @@ createCommandBuffers g@Global {
 
 createCommandBuffersGen :: Global -> Int -> IO [Vk.C.CommandBuffer]
 createCommandBuffersGen Global {
-	globalDevice = rdvc } cbc = ($ pure) $ runContT do
-	cp <- lift $ readIORef commandPool
+	globalDevice = rdvc,
+	globalCommandPool = rcp } cbc = ($ pure) $ runContT do
+	Vk.CP.C cp <- lift $ readIORef rcp
 	let	Vk.CB.AllocateInfo_ fAllocInfo = Vk.CB.AllocateInfo {
 			Vk.CB.allocateInfoSType = (),
 			Vk.CB.allocateInfoPNext = NullPtr,
@@ -994,7 +992,8 @@ cleanup Global {
 	globalPipelineLayout = rPplLyt,
 	globalRenderPass = rrp,
 	globalGraphicsPipeline = rgpl,
-	globalSwapChainFramebuffers = rscfbs } = do
+	globalSwapChainFramebuffers = rscfbs,
+	globalCommandPool = rcp } = do
 	dvc@(Vk.Device.D cdvc) <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
@@ -1004,8 +1003,8 @@ cleanup Global {
 	putStr "imageAvailableSemaphore: "
 	print ias
 	Vk.Smp.destroy cdvc ias NullPtr
-	cp <- readIORef commandPool
-	Vk.CP.C.destroy cdvc cp NullPtr
+	cp <- readIORef rcp
+	Vk.CP.destroy @() dvc cp Nothing
 	fbs <- readIORef rscfbs
 	(\fb -> Vk.Fb.destroy @() dvc fb Nothing) `mapM_` fbs
 	gppl <- readIORef rgpl

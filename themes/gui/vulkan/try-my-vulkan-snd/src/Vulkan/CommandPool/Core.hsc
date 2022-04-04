@@ -13,6 +13,7 @@ import Data.Int
 
 import Vulkan.Base
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
@@ -35,12 +36,12 @@ struct "CreateInfo" #{size VkCommandPoolCreateInfo}
 		[| #{poke VkCommandPoolCreateInfo, queueFamilyIndex} |]) ]
 	[''Show, ''Storable]
 
-data CommandPoolTag
-type CommandPool = Ptr CommandPoolTag
+data CTag
+type C = Ptr CTag
 
 foreign import ccall "vkCreateCommandPool" create ::
-	Device.D -> Ptr CreateInfo -> Ptr () -> Ptr CommandPool ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr C ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroyCommandPool" destroy ::
-	Device.D -> CommandPool -> Ptr () -> IO ()
+	Device.D -> C -> Ptr AllocationCallbacks.A -> IO ()

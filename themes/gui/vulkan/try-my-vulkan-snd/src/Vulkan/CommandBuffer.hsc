@@ -31,7 +31,7 @@ struct "AllocateInfo" #{size VkCommandBufferAllocateInfo}
 	("pNext", ''PtrVoid,
 		[| #{peek VkCommandBufferAllocateInfo, pNext} |],
 		[| #{poke VkCommandBufferAllocateInfo, pNext} |]),
-	("commandPool", ''CommandPool.CommandPool,
+	("commandPool", ''CommandPool.C,
 		[| #{peek VkCommandBufferAllocateInfo, commandPool} |],
 		[| #{poke VkCommandBufferAllocateInfo, commandPool} |]),
 	("level", ''#{type VkCommandBufferLevel},
