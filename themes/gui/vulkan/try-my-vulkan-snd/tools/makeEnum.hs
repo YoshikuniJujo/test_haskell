@@ -29,6 +29,7 @@ import qualified VulkanRenderPassEnum
 import qualified VulkanPipelineCacheEnum
 import qualified VulkanFramebufferEnum
 import qualified VulkanCommandPoolEnum
+import qualified VulkanCommandBufferEnum
 
 main :: IO ()
 main = do
@@ -59,3 +60,4 @@ main = do
 	VulkanPipelineCacheEnum.make
 	VulkanFramebufferEnum.make
 	VulkanCommandPoolEnum.make
+	VulkanCommandBufferEnum.make
