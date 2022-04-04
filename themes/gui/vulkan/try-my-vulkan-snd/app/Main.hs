@@ -115,7 +115,7 @@ import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
 
 import qualified Vulkan.Framebuffer.Core as Vk.Fb.C
 import qualified Vulkan.CommandPool.Core as Vk.CP.C
-import qualified Vulkan.CommandBuffer as Vk.CB
+import qualified Vulkan.CommandBuffer.Core as Vk.CB.C
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp
 
@@ -830,16 +830,16 @@ createCommandBuffersGen Global {
 	globalDevice = rdvc,
 	globalCommandPool = rcp } cbc = ($ pure) $ runContT do
 	Vk.CP.C cp <- lift $ readIORef rcp
-	let	Vk.CB.AllocateInfo_ fAllocInfo = Vk.CB.AllocateInfo {
-			Vk.CB.allocateInfoSType = (),
-			Vk.CB.allocateInfoPNext = NullPtr,
-			Vk.CB.allocateInfoCommandPool = cp,
-			Vk.CB.allocateInfoLevel = Vk.CB.levelPrimary,
-			Vk.CB.allocateInfoCommandBufferCount = fromIntegral cbc }
+	let	Vk.CB.C.AllocateInfo_ fAllocInfo = Vk.CB.C.AllocateInfo {
+			Vk.CB.C.allocateInfoSType = (),
+			Vk.CB.C.allocateInfoPNext = NullPtr,
+			Vk.CB.C.allocateInfoCommandPool = cp,
+			Vk.CB.C.allocateInfoLevel = Vk.CB.C.levelPrimary,
+			Vk.CB.C.allocateInfoCommandBufferCount = fromIntegral cbc }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pAllocInfo <- ContT $ withForeignPtr fAllocInfo
 	pCommandBuffers <- ContT $ allocaArray cbc
-	lift do	r <- Vk.CB.allocate dvc pAllocInfo pCommandBuffers
+	lift do	r <- Vk.CB.C.allocate dvc pAllocInfo pCommandBuffers
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
@@ -848,13 +848,13 @@ beginCommandBuffer1 Global {
 	globalSwapChainExtent = rscex,
 	globalRenderPass = rrp,
 	globalGraphicsPipeline = rgpl } cb fb = ($ pure) $ runContT do
-	let	Vk.CB.BeginInfo_ fBeginInfo = Vk.CB.BeginInfo {
-			Vk.CB.beginInfoSType = (),
-			Vk.CB.beginInfoPNext = NullPtr,
-			Vk.CB.beginInfoFlags = 0,
-			Vk.CB.beginInfoPInheritanceInfo = NullPtr }
+	let	Vk.CB.C.BeginInfo_ fBeginInfo = Vk.CB.C.BeginInfo {
+			Vk.CB.C.beginInfoSType = (),
+			Vk.CB.C.beginInfoPNext = NullPtr,
+			Vk.CB.C.beginInfoFlags = 0,
+			Vk.CB.C.beginInfoPInheritanceInfo = NullPtr }
 	pBeginInfo <- ContT $ withForeignPtr fBeginInfo
-	lift do	r <- Vk.CB.begin cb pBeginInfo
+	lift do	r <- Vk.CB.C.begin cb pBeginInfo
 		when (r /= success)
 			$ error "failed to begin recording command buffer!"
 	Vk.RndrPss.R rp <- lift $ readIORef rrp
@@ -879,7 +879,7 @@ beginCommandBuffer1 Global {
 		Vk.Cmd.bindPipeline cb Vk.Ppl.C.bindPointGraphics gppl
 		Vk.Cmd.draw cb 3 1 0 0
 		Vk.Cmd.endRenderPass cb
-		r <- Vk.CB.end cb
+		r <- Vk.CB.C.end cb
 		when (r /= success) $ error "failed to record command buffer!"
 
 createSemaphores :: Global -> IO ()

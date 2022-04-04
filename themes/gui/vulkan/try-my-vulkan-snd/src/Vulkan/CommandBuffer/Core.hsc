@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.CommandBuffer where
+module Vulkan.CommandBuffer.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
