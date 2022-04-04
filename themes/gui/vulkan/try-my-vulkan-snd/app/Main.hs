@@ -102,6 +102,8 @@ import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
 import qualified Vulkan.Pipeline as Vk.Ppl
 import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.Framebuffer.Enum as Vk.Fb
+import qualified Vulkan.CommandPool as Vk.CP
+import qualified Vulkan.CommandPool.Enum as Vk.CP
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -804,14 +806,13 @@ createCommandPool g@Global {
 		pdvc <- readIORef rpdvc
 		findQueueFamilies g pdvc
 	lift $ print queueFamilyIndices
-	let	Vk.CP.C.CreateInfo_ fPoolInfo = Vk.CP.C.CreateInfo {
-			Vk.CP.C.createInfoSType = (),
-			Vk.CP.C.createInfoPNext = NullPtr,
-			Vk.CP.C.createInfoFlags = 0,
-			Vk.CP.C.createInfoQueueFamilyIndex =
+	let	poolInfo = Vk.CP.CreateInfo {
+			Vk.CP.createInfoNext = Nothing,
+			Vk.CP.createInfoFlags = Vk.CP.CreateFlagsZero,
+			Vk.CP.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pPoolInfo <- ContT $ withForeignPtr fPoolInfo
+	pPoolInfo <- Vk.CP.createInfoToCore @() poolInfo
 	pCommandPool <- ContT alloca
 	lift do	r <- Vk.CP.C.create dvc pPoolInfo NullPtr pCommandPool
 		when (r /= success) $ error "failed to create command pool!"

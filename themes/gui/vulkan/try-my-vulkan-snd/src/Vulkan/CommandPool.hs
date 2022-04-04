@@ -5,6 +5,7 @@
 module Vulkan.CommandPool where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
@@ -19,16 +20,16 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndex :: Word32 }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoQueueFamilyIndex = qfi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoQueueFamilyIndex = qfi
-		}
+	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoQueueFamilyIndex = qfi }
+	ContT $ withForeignPtr fCreateInfo
