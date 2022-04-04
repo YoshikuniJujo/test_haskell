@@ -104,6 +104,8 @@ import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.Framebuffer.Enum as Vk.Fb
 import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandPool.Enum as Vk.CP
+import qualified Vulkan.CommandBuffer as Vk.CB
+import qualified Vulkan.CommandBuffer.Enum as Vk.CB
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -829,15 +831,15 @@ createCommandBuffersGen :: Global -> Int -> IO [Vk.C.CommandBuffer]
 createCommandBuffersGen Global {
 	globalDevice = rdvc,
 	globalCommandPool = rcp } cbc = ($ pure) $ runContT do
-	Vk.CP.C cp <- lift $ readIORef rcp
-	let	Vk.CB.C.AllocateInfo_ fAllocInfo = Vk.CB.C.AllocateInfo {
-			Vk.CB.C.allocateInfoSType = (),
-			Vk.CB.C.allocateInfoPNext = NullPtr,
-			Vk.CB.C.allocateInfoCommandPool = cp,
-			Vk.CB.C.allocateInfoLevel = Vk.CB.C.levelPrimary,
-			Vk.CB.C.allocateInfoCommandBufferCount = fromIntegral cbc }
+	cp <- lift $ readIORef rcp
+	let	allocInfo = Vk.CB.AllocateInfo {
+			Vk.CB.allocateInfoNext = Nothing,
+			Vk.CB.allocateInfoCommandPool = cp,
+			Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
+			Vk.CB.allocateInfoCommandBufferCount =
+				fromIntegral cbc }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pAllocInfo <- ContT $ withForeignPtr fAllocInfo
+	pAllocInfo <- Vk.CB.allocateInfoToCore @() allocInfo
 	pCommandBuffers <- ContT $ allocaArray cbc
 	lift do	r <- Vk.CB.C.allocate dvc pAllocInfo pCommandBuffers
 		when (r /= success) $ error "faied to allocate command buffers!"
