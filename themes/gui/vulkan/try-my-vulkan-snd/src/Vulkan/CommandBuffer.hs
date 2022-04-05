@@ -38,3 +38,5 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoLevel = lvl,
 			C.allocateInfoCommandBufferCount = cbc }
 	ContT $ withForeignPtr fAllocateInfo
+
+-- allocate :: Pintable n => Device.D -> AllocateInfo n -> IO C

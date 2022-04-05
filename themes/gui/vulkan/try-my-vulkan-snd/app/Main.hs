@@ -134,7 +134,7 @@ validationLayers = [Vk.Khr.validationLayerName]
 commandPool :: IORef Vk.CP.C.C
 commandPool = unsafePerformIO $ newIORef NullPtr
 
-commandBuffers :: IORef [Vk.C.CommandBuffer]
+commandBuffers :: IORef [Vk.CB.C.C]
 commandBuffers = unsafePerformIO $ newIORef []
 
 imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
@@ -827,7 +827,7 @@ createCommandBuffers g@Global {
 	writeIORef commandBuffers cbs
 	uncurry (beginCommandBuffer1 g) `mapM_` zip cbs scfbs
 
-createCommandBuffersGen :: Global -> Int -> IO [Vk.C.CommandBuffer]
+createCommandBuffersGen :: Global -> Int -> IO [Vk.CB.C.C]
 createCommandBuffersGen Global {
 	globalDevice = rdvc,
 	globalCommandPool = rcp } cbc = ($ pure) $ runContT do
@@ -845,7 +845,7 @@ createCommandBuffersGen Global {
 		when (r /= success) $ error "faied to allocate command buffers!"
 		peekArray cbc pCommandBuffers
 
-beginCommandBuffer1 :: Global -> Vk.C.CommandBuffer -> Vk.Fb.C.F -> IO ()
+beginCommandBuffer1 :: Global -> Vk.CB.C.C -> Vk.Fb.C.F -> IO ()
 beginCommandBuffer1 Global {
 	globalSwapChainExtent = rscex,
 	globalRenderPass = rrp,

@@ -22,6 +22,8 @@ import qualified Data.Text.Foreign as Txt
 import Vulkan.Base
 import Vulkan.Fence
 
+import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Core as CommandBuffer
+
 #include <vulkan/vulkan.h>
 
 type ApiVersion = #{type uint32_t}
@@ -122,10 +124,6 @@ type PtrSemaphore = Ptr Semaphore
 
 type PtrPipelineStageFlags = Ptr #{type VkPipelineStageFlags}
 
-data CommandBufferTag
-type CommandBuffer = Ptr CommandBufferTag
-type PtrCommandBuffer = Ptr CommandBuffer
-
 sTypeS :: #{type VkStructureType}
 sTypeS = #{const VK_STRUCTURE_TYPE_SUBMIT_INFO}
 
@@ -147,7 +145,7 @@ struct "SubmitInfo" #{size VkSubmitInfo} #{alignment VkSubmitInfo} [
 	("commandBufferCount", ''#{type uint32_t},
 		[| #{peek VkSubmitInfo, commandBufferCount} |],
 		[| #{poke VkSubmitInfo, commandBufferCount} |]),
-	("pCommandBuffers", ''PtrCommandBuffer,
+	("pCommandBuffers", ''CommandBuffer.PtrC,
 		[| #{peek VkSubmitInfo, pCommandBuffers} |],
 		[| #{poke VkSubmitInfo, pCommandBuffers} |]),
 	("signalSemaphoreCount", ''#{type int32_t},

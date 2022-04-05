@@ -11,7 +11,6 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Core (CommandBuffer)
 import Vulkan.Base
 
 import qualified Vulkan.Device.Core as Device
@@ -45,8 +44,12 @@ struct "AllocateInfo" #{size VkCommandBufferAllocateInfo}
 levelPrimary :: #{type VkCommandBufferLevel}
 levelPrimary = #{const VK_COMMAND_BUFFER_LEVEL_PRIMARY}
 
+data CTag
+type C = Ptr CTag
+type PtrC = Ptr C
+
 foreign import ccall "vkAllocateCommandBuffers" allocate ::
-	Device.D -> Ptr AllocateInfo -> Ptr CommandBuffer -> IO #{type VkResult}
+	Device.D -> Ptr AllocateInfo -> Ptr C -> IO #{type VkResult}
 
 struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
 		#{alignment VkCommandBufferInheritanceInfo} [
@@ -72,7 +75,6 @@ struct "BeginInfo" #{size VkCommandBufferBeginInfo}
 	[''Show, ''Storable]
 
 foreign import ccall "vkBeginCommandBuffer" begin ::
-	CommandBuffer -> Ptr BeginInfo -> IO #{type VkResult}
+	C -> Ptr BeginInfo -> IO #{type VkResult}
 
-foreign import ccall "vkEndCommandBuffer" end ::
-	CommandBuffer -> IO #{type VkResult}
+foreign import ccall "vkEndCommandBuffer" end :: C -> IO #{type VkResult}

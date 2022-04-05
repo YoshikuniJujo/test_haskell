@@ -5,23 +5,22 @@ module Vulkan.Command where
 import Foreign.Ptr
 import Data.Word
 
-import Vulkan.Core (CommandBuffer)
-
 import qualified Vulkan.RenderPass.Core as RenderPass
 import qualified Vulkan.Pipeline.Core as Pipeline
+import qualified Vulkan.CommandBuffer.Core as CommandBuffer
 
 #include <vulkan/vulkan.h>
 
 foreign import ccall "vkCmdBeginRenderPass" beginRenderPass ::
-	CommandBuffer -> Ptr RenderPass.BeginInfo ->
+	CommandBuffer.C -> Ptr RenderPass.BeginInfo ->
 	#{type VkSubpassContents} -> IO ()
 
 foreign import ccall "vkCmdBindPipeline" bindPipeline ::
-	CommandBuffer -> #{type VkPipelineBindPoint} -> Pipeline.P -> IO ()
+	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.P -> IO ()
 
 foreign import ccall "vkCmdDraw" draw ::
-	CommandBuffer -> #{type uint32_t} -> #{type uint32_t} ->
+	CommandBuffer.C -> #{type uint32_t} -> #{type uint32_t} ->
 	#{type uint32_t} -> #{type uint32_t} -> IO ()
 
 foreign import ccall "vkCmdEndRenderPass" endRenderPass ::
-	CommandBuffer -> IO ()
+	CommandBuffer.C -> IO ()
