@@ -134,9 +134,6 @@ validationLayers = [Vk.Khr.validationLayerName]
 commandPool :: IORef Vk.CP.C.C
 commandPool = unsafePerformIO $ newIORef NullPtr
 
-commandBuffers :: IORef [Vk.CB.C.C]
-commandBuffers = unsafePerformIO $ newIORef []
-
 imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
 (imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
 	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
@@ -159,7 +156,8 @@ data Global = Global {
 	globalRenderPass :: IORef Vk.RndrPss.R,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
-	globalCommandPool :: IORef Vk.CP.C
+	globalCommandPool :: IORef Vk.CP.C,
+	globalCommandBuffers :: IORef [Vk.CB.C]
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -181,6 +179,7 @@ newGlobal w = do
 	gpl <- newIORef Vk.Ppl.PNull
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CP.C NullPtr
+	cbs <- newIORef []
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -199,7 +198,8 @@ newGlobal w = do
 		globalRenderPass = rp,
 		globalGraphicsPipeline = gpl,
 		globalSwapChainFramebuffers = scfbs,
-		globalCommandPool = cp
+		globalCommandPool = cp,
+		globalCommandBuffers = cbs
 		}
 
 run :: IO ()
@@ -820,24 +820,18 @@ createCommandPool g@Global {
 
 createCommandBuffers :: Global -> IO ()
 createCommandBuffers g@Global {
-	globalSwapChainFramebuffers = rscfbs
-	} = do
-	scfbs <- ((\(Vk.Fb.F f) -> f) <$>) <$> readIORef rscfbs
-	cbs <- createCommandBuffersGen g (length scfbs)
-	writeIORef commandBuffers $ (\(Vk.CB.C c) -> c) <$> cbs
-	uncurry (beginCommandBuffer1 g) `mapM_` zip ((\(Vk.CB.C c) -> c) <$> cbs) scfbs
-
-createCommandBuffersGen :: Global -> Int -> IO [Vk.CB.C]
-createCommandBuffersGen Global {
-	globalDevice = rdvc,
-	globalCommandPool = rcp } cbc = do
+	globalDevice = rdvc, globalSwapChainFramebuffers = rscfbs,
+	globalCommandPool = rcp, globalCommandBuffers = rcbs } = do
 	dvc <- readIORef rdvc
+	scfbs <- ((\(Vk.Fb.F f) -> f) <$>) <$> readIORef rscfbs
 	cp <- readIORef rcp
-	Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
+	cbs <- Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
 		Vk.CB.allocateInfoNext = Nothing,
 		Vk.CB.allocateInfoCommandPool = cp,
 		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
-		Vk.CB.allocateInfoCommandBufferCount = fromIntegral cbc }
+		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
+	writeIORef rcbs cbs
+	uncurry (beginCommandBuffer1 g) `mapM_` zip ((\(Vk.CB.C c) -> c) <$> cbs) scfbs
 
 beginCommandBuffer1 :: Global -> Vk.CB.C.C -> Vk.Fb.C.F -> IO ()
 beginCommandBuffer1 Global {
@@ -921,7 +915,8 @@ drawFrame Global {
 	globalDevice = rdvc,
 	globalGraphicsQueue = rgq,
 	globalPresentQueue = rpq,
-	globalSwapChain = rsc } = ($ pure) $ runContT do
+	globalSwapChain = rsc,
+	globalCommandBuffers = rcbs } = ($ pure) $ runContT do
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
 	Vk.Device.D dvc <- lift $ readIORef rdvc
@@ -937,7 +932,7 @@ drawFrame Global {
 		=<< readIORef imageAvailableSemaphore
 	pWaitStages <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitStages [Vk.Ppl.C.stageColorAttachmentOutputBit]
-	cbs <- lift $ readIORef commandBuffers
+	cbs <- lift $ ((\(Vk.CB.C c) -> c) <$>) <$> readIORef rcbs
 	pcb1 <- ContT $ allocaArray 1
 	lift $ pokeArray pcb1 [cbs !! imageIndex]
 	pSignalSemaphores <- ContT $ allocaArray 1
