@@ -51,5 +51,9 @@ zeros = [
 			["Show", "Eq", "Storable", "Bits"] ) ),
 	(	[("QueryControlFlagsZero", Int 0)],
 		(	"QueryControlFlagBits", "VkQueryControlFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[("QueryPipelineStatisticFlagsZero", Int 0)],
+		(	"QueryPipelineStatisticFlagBits",
+			"VkQueryPipelineStatisticFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]

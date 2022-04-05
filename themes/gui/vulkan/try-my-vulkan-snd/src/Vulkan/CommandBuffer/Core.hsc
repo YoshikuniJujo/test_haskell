@@ -78,9 +78,12 @@ struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
 			occlusionQueryEnable} |]),
 	("queryFlags", ''#{type VkQueryControlFlags},
 		[| #{peek VkCommandBufferInheritanceInfo, queryFlags} |],
-		[| #{poke VkCommandBufferInheritanceInfo, queryFlags} |])
-	-- TODO
-	]
+		[| #{poke VkCommandBufferInheritanceInfo, queryFlags} |]),
+	("pipelineStatistics", ''#{type VkQueryPipelineStatisticFlags},
+		[| #{peek VkCommandBufferInheritanceInfo,
+			pipelineStatistics} |],
+		[| #{poke VkCommandBufferInheritanceInfo,
+			pipelineStatistics} |]) ]
 	[''Show, ''Storable]
 
 type PtrInheritanceInfo = Ptr InheritanceInfo
