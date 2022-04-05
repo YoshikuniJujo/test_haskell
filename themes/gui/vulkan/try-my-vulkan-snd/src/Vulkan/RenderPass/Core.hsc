@@ -85,7 +85,7 @@ struct "BeginInfo" #{size VkRenderPassBeginInfo}
 	("clearValueCount", ''#{type uint32_t},
 		[| #{peek VkRenderPassBeginInfo, clearValueCount} |],
 		[| #{poke VkRenderPassBeginInfo, clearValueCount} |]),
-	("pClearColorValueFloats", ''PtrFloat,
+	("pClearValue", ''ClearValue,
 		[| #{peek VkRenderPassBeginInfo, pClearValues} |],
 		[| #{poke VkRenderPassBeginInfo, pClearValues} |]) ]
 	[''Show, ''Storable]

@@ -855,8 +855,10 @@ recordCommandBuffer Global {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
 			Vk.RndrPss.C.beginInfoClearValueCount = 1,
-			Vk.RndrPss.C.beginInfoPClearColorValueFloats =
-				pClearColor }
+			Vk.RndrPss.C.beginInfoPClearValue =
+				Vk.C.clearValueFromClearColorValue
+					$ Vk.C.clearColorValueFromFloats
+						pClearColor }
 	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
 	lift do	Vk.Cmd.beginRenderPass
 			cb pRenderPassInfo Vk.Subpass.C.contentsInline

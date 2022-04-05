@@ -8,11 +8,13 @@
 module Vulkan.Core where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Struct
+import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
@@ -231,3 +233,35 @@ struct "StencilOpState" #{size VkStencilOpState} #{alignment VkStencilOpState} [
 		[| #{peek VkStencilOpState, reference} |],
 		[| #{poke VkStencilOpState, reference} |]) ]
 	[''Show, ''Storable]
+
+data ClearValueTag
+type ClearValue = Ptr ClearValueTag
+
+data ClearColorValueTag
+type ClearColorValue = Ptr ClearColorValueTag
+
+clearColorValueFromFloats :: Ptr #{type float} -> ClearColorValue
+clearColorValueFromFloats = castPtr
+
+clearColorValueFromInts :: Ptr #{type int32_t} -> ClearColorValue
+clearColorValueFromInts = castPtr
+
+clearColorValueFromUints :: Ptr #{type uint32_t} -> ClearColorValue
+clearColorValueFromUints = castPtr
+
+struct "ClearDepthStencilValue" #{size VkClearDepthStencilValue}
+		#{alignment VkClearDepthStencilValue} [
+	("depth", ''#{type float},
+		[| #{peek VkClearDepthStencilValue, depth} |],
+		[| #{poke VkClearDepthStencilValue, depth} |]),
+	("stencil", ''#{type uint32_t},
+		[| #{peek VkClearDepthStencilValue, stencil} |],
+		[| #{poke VkClearDepthStencilValue, stencil} |]) ]
+	[''Show, ''Storable]
+
+clearValueFromClearColorValue :: ClearColorValue -> ClearValue
+clearValueFromClearColorValue = castPtr
+
+clearValueFromClearDepthStencilValue :: ClearDepthStencilValue -> ContT r IO ClearValue
+clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) =
+	castPtr <$> ContT (withForeignPtr fp)
