@@ -835,15 +835,13 @@ createCommandBuffers g@Global {
 
 beginCommandBuffer1 :: Global -> Vk.CB.C.C -> Vk.Fb.C.F -> IO ()
 beginCommandBuffer1 Global {
-	globalSwapChainExtent = rscex,
-	globalRenderPass = rrp,
+	globalSwapChainExtent = rscex, globalRenderPass = rrp,
 	globalGraphicsPipeline = rgpl } cb fb = ($ pure) $ runContT do
-	let	Vk.CB.C.BeginInfo_ fBeginInfo = Vk.CB.C.BeginInfo {
-			Vk.CB.C.beginInfoSType = (),
-			Vk.CB.C.beginInfoPNext = NullPtr,
-			Vk.CB.C.beginInfoFlags = 0,
-			Vk.CB.C.beginInfoPInheritanceInfo = NullPtr }
-	pBeginInfo <- ContT $ withForeignPtr fBeginInfo
+	let	beginInfo = Vk.CB.BeginInfo {
+			Vk.CB.beginInfoNext = Nothing,
+			Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
+			Vk.CB.beginInfoInheritanceInfo = Nothing }
+	pBeginInfo <- Vk.CB.beginInfoToCore @() @() beginInfo
 	lift do	r <- Vk.CB.C.begin cb pBeginInfo
 		when (r /= success)
 			$ error "failed to begin recording command buffer!"

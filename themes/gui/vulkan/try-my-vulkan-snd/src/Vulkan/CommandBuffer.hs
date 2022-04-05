@@ -65,6 +65,22 @@ data BeginInfo n n' = BeginInfo {
 	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
 	deriving Show
 
+beginInfoToCore :: (Pointable n, Pointable n') =>
+	BeginInfo n n' -> ContT r IO (Ptr C.BeginInfo)
+beginInfoToCore BeginInfo {
+	beginInfoNext = mnxt,
+	beginInfoFlags = UsageFlagBits flgs,
+	beginInfoInheritanceInfo = mii
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pii <- maybe (pure NullPtr) inheritanceInfoToCore mii
+	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
+			C.beginInfoSType = (),
+			C.beginInfoPNext = pnxt,
+			C.beginInfoFlags = flgs,
+			C.beginInfoPInheritanceInfo = pii }
+	ContT $ withForeignPtr fBeginInfo
+
 data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoNext :: Maybe n,
 	inheritanceInfoRenderPass :: RenderPass.R,
@@ -76,7 +92,7 @@ data InheritanceInfo n = InheritanceInfo {
 	deriving Show
 
 inheritanceInfoToCore :: Pointable n =>
-	InheritanceInfo n -> ContT r IO C.InheritanceInfo
+	InheritanceInfo n -> ContT r IO (Ptr C.InheritanceInfo)
 inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoNext = mnxt,
 	inheritanceInfoRenderPass = RenderPass.R rp,
@@ -87,12 +103,13 @@ inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pure C.InheritanceInfo {
-		C.inheritanceInfoSType = (),
-		C.inheritanceInfoPNext = pnxt,
-		C.inheritanceInfoRenderPass = rp,
-		C.inheritanceInfoSubpass = sp,
-		C.inheritanceInfoFramebuffer = fb,
-		C.inheritanceInfoOcclusionQueryEnable = boolToBool32 oqe,
-		C.inheritanceInfoQueryFlags = qf,
-		C.inheritanceInfoPipelineStatistics = ps }
+	let	C.InheritanceInfo_ fInheritanceInfo =  C.InheritanceInfo {
+			C.inheritanceInfoSType = (),
+			C.inheritanceInfoPNext = pnxt,
+			C.inheritanceInfoRenderPass = rp,
+			C.inheritanceInfoSubpass = sp,
+			C.inheritanceInfoFramebuffer = fb,
+			C.inheritanceInfoOcclusionQueryEnable = boolToBool32 oqe,
+			C.inheritanceInfoQueryFlags = qf,
+			C.inheritanceInfoPipelineStatistics = ps }
+	ContT $ withForeignPtr fInheritanceInfo
