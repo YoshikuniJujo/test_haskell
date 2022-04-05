@@ -54,3 +54,10 @@ allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
 		throwUnlessSuccess $ Result r
 		peekArray cbc pc
 	where cbc = fromIntegral $ allocateInfoCommandBufferCount ai
+
+data BeginInfo n = BeginInfo {
+	beginInfoNext :: Maybe n,
+	beginInfoFlags :: UsageFlags
+--	beginInfoInheritanceInfo :: Maybe InheritanceInfo	-- TODO
+	}
+	deriving Show

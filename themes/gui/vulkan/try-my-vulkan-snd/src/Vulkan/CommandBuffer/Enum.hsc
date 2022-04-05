@@ -10,6 +10,7 @@ module Vulkan.CommandBuffer.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Bits
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -21,3 +22,17 @@ enum "Level" ''#{type VkCommandBufferLevel}
 		#{const VK_COMMAND_BUFFER_LEVEL_SECONDARY}),
 	("LevelMaxEnum",
 		#{const VK_COMMAND_BUFFER_LEVEL_MAX_ENUM}) ]
+
+enum "UsageFlagBits" ''#{type VkCommandBufferUsageFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("UsageFlagsZero", 0),
+	("UsageOneTimeSubmitBit",
+		#{const VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT}),
+	("UsageRenderPassContinueBit",
+		#{const VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT}),
+	("UsageSimultaneousUseBit",
+		#{const VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT}),
+	("UsageFlagBitsMaxEnum",
+		#{const VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM}) ]
+
+type UsageFlags = UsageFlagBits
