@@ -113,3 +113,9 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoQueryFlags = qf,
 			C.inheritanceInfoPipelineStatistics = ps }
 	ContT $ withForeignPtr fInheritanceInfo
+
+begin :: (Pointable n, Pointable n') => C -> BeginInfo n n' -> IO ()
+begin (C c) bi = ($ pure) $ runContT do
+	pbi <- beginInfoToCore bi
+	lift do	r <- C.begin c pbi
+		throwUnlessSuccess $ Result r

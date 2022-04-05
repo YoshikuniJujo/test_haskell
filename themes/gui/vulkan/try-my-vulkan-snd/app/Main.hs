@@ -831,20 +831,17 @@ createCommandBuffers g@Global {
 		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
 		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
 	writeIORef rcbs cbs
-	uncurry (beginCommandBuffer1 g) `mapM_` zip ((\(Vk.CB.C c) -> c) <$> cbs) scfbs
+	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 
-beginCommandBuffer1 :: Global -> Vk.CB.C.C -> Vk.Fb.C.F -> IO ()
-beginCommandBuffer1 Global {
+recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.C.F -> IO ()
+recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
-	globalGraphicsPipeline = rgpl } cb fb = ($ pure) $ runContT do
-	let	beginInfo = Vk.CB.BeginInfo {
-			Vk.CB.beginInfoNext = Nothing,
-			Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
-			Vk.CB.beginInfoInheritanceInfo = Nothing }
-	pBeginInfo <- Vk.CB.beginInfoToCore @() @() beginInfo
-	lift do	r <- Vk.CB.C.begin cb pBeginInfo
-		when (r /= success)
-			$ error "failed to begin recording command buffer!"
+	globalGraphicsPipeline = rgpl }
+	cbcb@(Vk.CB.C cb) fb = ($ pure) $ runContT do
+	lift $ Vk.CB.begin @() @() cbcb Vk.CB.BeginInfo {
+		Vk.CB.beginInfoNext = Nothing,
+		Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
+		Vk.CB.beginInfoInheritanceInfo = Nothing }
 	Vk.RndrPss.R rp <- lift $ readIORef rrp
 	sce <- lift $ readIORef rscex
 	pClearColor <- ContT $ allocaArray 4
