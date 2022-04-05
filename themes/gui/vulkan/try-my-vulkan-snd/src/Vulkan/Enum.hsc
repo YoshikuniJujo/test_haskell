@@ -871,7 +871,15 @@ enum "DependencyFlagBits" ''#{type VkDependencyFlagBits}
 	("DependencyFlagBitsMaxEnum",
 		#{const VK_DEPENDENCY_FLAG_BITS_MAX_ENUM}) ]
 
+enum "QueryControlFlagBits" ''#{type VkQueryControlFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("QueryControlFlagsZero", 0),
+	("QueryControlPreciseBit", #{const VK_QUERY_CONTROL_PRECISE_BIT}),
+	("QueryControlFlagBitsMaxEnum",
+		#{const VK_QUERY_CONTROL_FLAG_BITS_MAX_ENUM}) ]
+
 type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
+type QueryControlFlags = QueryControlFlagBits

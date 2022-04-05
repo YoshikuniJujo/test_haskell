@@ -15,7 +15,8 @@ make = createFile'' "/usr/include/vulkan/vulkan_core.h" "Enum"
 type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
-type DependencyFlags = DependencyFlagBits|]
+type DependencyFlags = DependencyFlagBits
+type QueryControlFlags = QueryControlFlagBits|]
 
 noZeros :: [(HaskellName, CName, [DerivName])]
 noZeros = [
@@ -47,5 +48,8 @@ zeros = [
 			["Show", "Eq", "Storable", "Bits"] ) ),
 	(	[("DependencyFlagsZero", Int 0)],
 		(	"DependencyFlagBits", "VkDependencyFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[("QueryControlFlagsZero", Int 0)],
+		(	"QueryControlFlagBits", "VkQueryControlFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]

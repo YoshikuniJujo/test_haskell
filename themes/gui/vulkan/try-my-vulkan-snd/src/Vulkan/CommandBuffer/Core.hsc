@@ -75,7 +75,10 @@ struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
 		[| #{peek VkCommandBufferInheritanceInfo,
 			occlusionQueryEnable} |],
 		[| #{poke VkCommandBufferInheritanceInfo,
-			occlusionQueryEnable} |])
+			occlusionQueryEnable} |]),
+	("queryFlags", ''#{type VkQueryControlFlags},
+		[| #{peek VkCommandBufferInheritanceInfo, queryFlags} |],
+		[| #{poke VkCommandBufferInheritanceInfo, queryFlags} |])
 	-- TODO
 	]
 	[''Show, ''Storable]
