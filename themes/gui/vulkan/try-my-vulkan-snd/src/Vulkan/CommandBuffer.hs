@@ -12,11 +12,14 @@ import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.CommandBuffer.Enum
 
 import qualified Vulkan.Device as Device
+import qualified Vulkan.RenderPass as RenderPass
+import qualified Vulkan.Framebuffer as Framebuffer
 import qualified Vulkan.CommandPool as CommandPool
 import qualified Vulkan.CommandBuffer.Core as C
 
@@ -60,4 +63,14 @@ data BeginInfo n = BeginInfo {
 	beginInfoFlags :: UsageFlags
 --	beginInfoInheritanceInfo :: Maybe InheritanceInfo	-- TODO
 	}
+	deriving Show
+
+data InheritanceInfo n = InheritanceInfo {
+	inheritanceInfoNext :: Maybe n,
+	inheritanceInfoRenderPass :: RenderPass.R,
+	inheritanceInfoSubpass :: Word32,
+	inheritanceInfoFramebuffer :: Framebuffer.F,
+	inheritanceInfoOcclusionQueryEnable :: Bool,
+	inheritanceInfoQueryFlags :: QueryControlFlags,
+	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
 	deriving Show

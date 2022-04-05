@@ -16,7 +16,8 @@ type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
-type QueryControlFlags = QueryControlFlagBits|]
+type QueryControlFlags = QueryControlFlagBits
+type QueryPipelineStatisticFlags = QueryPipelineStatisticFlagBits|]
 
 noZeros :: [(HaskellName, CName, [DerivName])]
 noZeros = [

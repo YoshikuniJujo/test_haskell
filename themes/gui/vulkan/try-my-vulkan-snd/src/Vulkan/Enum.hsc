@@ -911,3 +911,4 @@ type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
 type QueryControlFlags = QueryControlFlagBits
+type QueryPipelineStatisticFlags = QueryPipelineStatisticFlagBits
