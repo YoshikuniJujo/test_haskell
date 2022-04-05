@@ -14,13 +14,16 @@ import Data.Int
 import Vulkan.Base
 
 import qualified Vulkan.Device.Core as Device
+import qualified Vulkan.RenderPass.Core as RenderPass
+import qualified Vulkan.Framebuffer.Core as Framebuffer
 import qualified Vulkan.CommandPool.Core as CommandPool
 
 #include <vulkan/vulkan.h>
 
-sTypeA, sTypeB :: #{type VkStructureType}
+sTypeA, sTypeB, sTypeI :: #{type VkStructureType}
 sTypeA = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO}
 sTypeB = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO}
+sTypeI = #{const VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO}
 
 struct "AllocateInfo" #{size VkCommandBufferAllocateInfo}
 		#{alignment VkCommandBufferAllocateInfo} [
@@ -53,6 +56,27 @@ foreign import ccall "vkAllocateCommandBuffers" allocate ::
 
 struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
 		#{alignment VkCommandBufferInheritanceInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkCommandBufferInheritanceInfo, sType}
+			p sTypeI |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkCommandBufferInheritanceInfo, pNext} |],
+		[| #{poke VkCommandBufferInheritanceInfo, pNext} |]),
+	("renderPass", ''RenderPass.R,
+		[| #{peek VkCommandBufferInheritanceInfo, renderPass} |],
+		[| #{poke VkCommandBufferInheritanceInfo, renderPass} |]),
+	("subpass", ''#{type uint32_t},
+		[| #{peek VkCommandBufferInheritanceInfo, subpass} |],
+		[| #{poke VkCommandBufferInheritanceInfo, subpass} |]),
+	("framebuffer", ''Framebuffer.F,
+		[| #{peek VkCommandBufferInheritanceInfo, framebuffer} |],
+		[| #{poke VkCommandBufferInheritanceInfo, framebuffer} |]),
+	("occlusionQueryEnable", ''#{type VkBool32},
+		[| #{peek VkCommandBufferInheritanceInfo,
+			occlusionQueryEnable} |],
+		[| #{poke VkCommandBufferInheritanceInfo,
+			occlusionQueryEnable} |])
+	-- TODO
 	]
 	[''Show, ''Storable]
 
