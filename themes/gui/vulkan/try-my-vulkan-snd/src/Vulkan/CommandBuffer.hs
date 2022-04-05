@@ -13,6 +13,7 @@ import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Enum
+import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.CommandBuffer.Enum
@@ -58,11 +59,10 @@ allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
 		peekArray cbc pc
 	where cbc = fromIntegral $ allocateInfoCommandBufferCount ai
 
-data BeginInfo n = BeginInfo {
+data BeginInfo n n' = BeginInfo {
 	beginInfoNext :: Maybe n,
-	beginInfoFlags :: UsageFlags
---	beginInfoInheritanceInfo :: Maybe InheritanceInfo	-- TODO
-	}
+	beginInfoFlags :: UsageFlags,
+	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
 	deriving Show
 
 data InheritanceInfo n = InheritanceInfo {
@@ -74,3 +74,25 @@ data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoQueryFlags :: QueryControlFlags,
 	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
 	deriving Show
+
+inheritanceInfoToCore :: Pointable n =>
+	InheritanceInfo n -> ContT r IO C.InheritanceInfo
+inheritanceInfoToCore InheritanceInfo {
+	inheritanceInfoNext = mnxt,
+	inheritanceInfoRenderPass = RenderPass.R rp,
+	inheritanceInfoSubpass = sp,
+	inheritanceInfoFramebuffer = Framebuffer.F fb,
+	inheritanceInfoOcclusionQueryEnable = oqe,
+	inheritanceInfoQueryFlags = QueryControlFlagBits qf,
+	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pure C.InheritanceInfo {
+		C.inheritanceInfoSType = (),
+		C.inheritanceInfoPNext = pnxt,
+		C.inheritanceInfoRenderPass = rp,
+		C.inheritanceInfoSubpass = sp,
+		C.inheritanceInfoFramebuffer = fb,
+		C.inheritanceInfoOcclusionQueryEnable = boolToBool32 oqe,
+		C.inheritanceInfoQueryFlags = qf,
+		C.inheritanceInfoPipelineStatistics = ps }
