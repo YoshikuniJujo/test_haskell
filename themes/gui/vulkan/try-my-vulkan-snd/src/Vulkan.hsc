@@ -11,7 +11,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
--- import Data.Color.Internal
+import Data.Color.Internal
 
 import qualified Data.Text as T
 
@@ -136,3 +136,14 @@ stencilOpStateToCore StencilOpState {
 		C.stencilOpStateCompareMask = cm,
 		C.stencilOpStateWriteMask = wm,
 		C.stencilOpStateReference = rf }
+
+data ClearValue
+	= ClearValueColor (Rgba Float)
+	| ClearValueDepthStencil C.ClearDepthStencilValue
+	deriving Show
+
+{-
+clearValueToCore :: ClearValue -> ContT r IO C.ClearValue
+clearValueToCore = \case
+	ClearValueColor Rgba ->
+	-}
