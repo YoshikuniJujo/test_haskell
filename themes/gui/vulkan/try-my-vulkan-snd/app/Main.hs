@@ -824,26 +824,20 @@ createCommandBuffers g@Global {
 	} = do
 	scfbs <- ((\(Vk.Fb.F f) -> f) <$>) <$> readIORef rscfbs
 	cbs <- createCommandBuffersGen g (length scfbs)
-	writeIORef commandBuffers cbs
-	uncurry (beginCommandBuffer1 g) `mapM_` zip cbs scfbs
+	writeIORef commandBuffers $ (\(Vk.CB.C c) -> c) <$> cbs
+	uncurry (beginCommandBuffer1 g) `mapM_` zip ((\(Vk.CB.C c) -> c) <$> cbs) scfbs
 
-createCommandBuffersGen :: Global -> Int -> IO [Vk.CB.C.C]
+createCommandBuffersGen :: Global -> Int -> IO [Vk.CB.C]
 createCommandBuffersGen Global {
 	globalDevice = rdvc,
-	globalCommandPool = rcp } cbc = ($ pure) $ runContT do
-	cp <- lift $ readIORef rcp
-	let	allocInfo = Vk.CB.AllocateInfo {
-			Vk.CB.allocateInfoNext = Nothing,
-			Vk.CB.allocateInfoCommandPool = cp,
-			Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
-			Vk.CB.allocateInfoCommandBufferCount =
-				fromIntegral cbc }
-	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pAllocInfo <- Vk.CB.allocateInfoToCore @() allocInfo
-	pCommandBuffers <- ContT $ allocaArray cbc
-	lift do	r <- Vk.CB.C.allocate dvc pAllocInfo pCommandBuffers
-		when (r /= success) $ error "faied to allocate command buffers!"
-		peekArray cbc pCommandBuffers
+	globalCommandPool = rcp } cbc = do
+	dvc <- readIORef rdvc
+	cp <- readIORef rcp
+	Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
+		Vk.CB.allocateInfoNext = Nothing,
+		Vk.CB.allocateInfoCommandPool = cp,
+		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
+		Vk.CB.allocateInfoCommandBufferCount = fromIntegral cbc }
 
 beginCommandBuffer1 :: Global -> Vk.CB.C.C -> Vk.Fb.C.F -> IO ()
 beginCommandBuffer1 Global {
