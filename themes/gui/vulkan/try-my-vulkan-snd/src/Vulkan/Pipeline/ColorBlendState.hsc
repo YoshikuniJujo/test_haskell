@@ -33,7 +33,7 @@ data CreateInfo n = CreateInfo {
 	createInfoLogicOpEnable :: Bool,
 	createInfoLogicOp :: LogicOp,
 	createInfoAttachments :: [ColorBlendAttachment.State],
-	createInfoBlendConstants :: Rgba }
+	createInfoBlendConstants :: Rgba Float }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
@@ -44,7 +44,7 @@ createInfoToCore CreateInfo {
 	createInfoLogicOp = LogicOp lo,
 	createInfoAttachments =
 		length &&& (ColorBlendAttachment.stateToCore <$>) -> (ac, as),
-	createInfoBlendConstants = RgbaFloat r g b a
+	createInfoBlendConstants = RgbaDouble r g b a
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pas <- ContT $ allocaArray ac

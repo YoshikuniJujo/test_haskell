@@ -11,6 +11,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
+-- import Data.Color.Internal
 
 import qualified Data.Text as T
 

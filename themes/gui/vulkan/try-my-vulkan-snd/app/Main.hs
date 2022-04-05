@@ -721,7 +721,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.CB.createInfoLogicOp = Vk.LogicOpCopy,
 			Vk.Ppl.CB.createInfoAttachments =
 				[colorBlendAttachment],
-			Vk.Ppl.CB.createInfoBlendConstants = RgbaFloat 0 0 0 0 }
+			Vk.Ppl.CB.createInfoBlendConstants = fromJust $ rgbaDouble 0 0 0 0 }
 		pipelineLayoutInfo = Vk.Ppl.Lyt.CreateInfo {
 			Vk.Ppl.Lyt.createInfoNext = Nothing,
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,

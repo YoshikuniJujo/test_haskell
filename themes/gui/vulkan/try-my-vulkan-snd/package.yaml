@@ -37,6 +37,7 @@ dependencies:
 - try-shaderc
 - try-pointable
 - size-alignment-list
+- union-color
 
 library:
   source-dirs: src

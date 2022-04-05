@@ -11,6 +11,7 @@ import Foreign.Storable
 import Foreign.C.String
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Maybe
 import Data.String
 import System.IO.Unsafe
 
@@ -36,14 +37,14 @@ extensionName = unsafePerformIO $ fromString <$> peekCString c_extensionName
 data Label n = Label {
 	labelNext :: Maybe n,
 	labelLabelName :: T.Text,
-	labelColor :: Rgba }
+	labelColor :: Rgba Float }
 	deriving Show
 
 labelToCore :: Pointable n => Label n -> ContT r IO C.Label
 labelToCore Label {
 	labelNext = mnxt,
 	labelLabelName = ln,
-	labelColor = RgbaFloat r g b a } = do
+	labelColor = RgbaDouble r g b a } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	cln <- textToCString ln
 	pure C.Label {
@@ -62,7 +63,7 @@ labelFromCore C.Label {
 	pure Label {
 		labelNext = mnxt,
 		labelLabelName = ln,
-		labelColor = RgbaFloat r g b a }
+		labelColor = fromJust $ rgbaDouble r g b a }
 labelFromCore _ = error "C.labelColor should be [r, g, b, a]"
 
 data ObjectNameInfo n = ObjectNameInfo {
