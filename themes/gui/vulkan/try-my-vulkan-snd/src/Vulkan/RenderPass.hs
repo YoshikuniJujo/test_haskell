@@ -14,6 +14,7 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 
+import Vulkan.Core
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.RenderPass.Enum
@@ -22,6 +23,7 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass
+import qualified Vulkan.Framebuffer as Framebuffer
 import qualified Vulkan.RenderPass.Core as C
 
 data CreateInfo n = CreateInfo {
@@ -77,3 +79,12 @@ destroy :: Pointable n => Device.D -> R -> Maybe (AllocationCallbacks.A n) -> IO
 destroy (Device.D dvc) (R r) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc r pac
+
+data BeginInfo n = BeginInfo {
+	beginInfoNext :: Maybe n,
+	beginInfoRenderPass :: R,
+	beginInfoFramebuffer :: Framebuffer.F,
+	beginInfoRenderArea :: Rect2d
+--	beginInfoClearValues :: [ClearValue]
+	}
+	deriving Show

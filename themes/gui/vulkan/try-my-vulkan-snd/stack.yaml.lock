@@ -41,6 +41,13 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
     commit: 54042a99383c0b6bc690edde3cb1a2fe8b9a21eb
+- completed:
+    hackage: union-color-0.1.1.0@sha256:e2348ab27c3df93e854634dd768b557c72f7afa2193676e5e7f2b27e2fbb9c83,1235
+    pantry-tree:
+      size: 429
+      sha256: 9128f588681fb80e6d467fd30ada8324b342a4360623fdd1f0824f50d4b45aeb
+  original:
+    hackage: union-color-0.1.1.0
 snapshots:
 - completed:
     size: 590100
