@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Command where
+module Vulkan.Command.Core where
 
 import Foreign.Ptr
 import Data.Word

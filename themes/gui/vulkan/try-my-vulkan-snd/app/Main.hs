@@ -106,17 +106,17 @@ import qualified Vulkan.CommandPool as Vk.CP
 import qualified Vulkan.CommandPool.Enum as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.CommandBuffer.Enum as Vk.CB
+import qualified Vulkan.Command as Vk.Cmd
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
-import qualified Vulkan.Subpass.Core as Vk.Subpass.C
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 
 import qualified Vulkan.CommandPool.Core as Vk.CP.C
 import qualified Vulkan.CommandBuffer.Core as Vk.CB.C
-import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.Command.Core as Vk.Cmd.C
 import qualified Vulkan.Semaphore as Vk.Smp
 
 main :: IO ()
@@ -834,14 +834,13 @@ createCommandBuffers g@Global {
 recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
-	globalGraphicsPipeline = rgpl }
-	cbcb@(Vk.CB.C cb) fb = ($ pure) $ runContT do
-	lift $ Vk.CB.begin @() @() cbcb Vk.CB.BeginInfo {
+	globalGraphicsPipeline = rgpl } cb@(Vk.CB.C ccb) fb = do
+	Vk.CB.begin @() @() cb Vk.CB.BeginInfo {
 		Vk.CB.beginInfoNext = Nothing,
 		Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
 		Vk.CB.beginInfoInheritanceInfo = Nothing }
-	rp <- lift $ readIORef rrp
-	sce <- lift $ readIORef rscex
+	rp <- readIORef rrp
+	sce <- readIORef rscex
 	let	renderPassInfo = Vk.RndrPss.BeginInfo {
 			Vk.RndrPss.beginInfoNext = Nothing,
 			Vk.RndrPss.beginInfoRenderPass = rp,
@@ -852,16 +851,15 @@ recordCommandBuffer Global {
 			Vk.RndrPss.beginInfoClearValues = [
 				Vk.ClearValueColor
 					. fromJust $ rgbaDouble 0 0 0 1 ] }
-	pRenderPassInfo <- Vk.RndrPss.beginInfoToCore @()
-		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32) renderPassInfo
-	lift do	Vk.Cmd.beginRenderPass
-			cb pRenderPassInfo Vk.Subpass.C.contentsInline
-		Vk.Ppl.P gppl <- readIORef rgpl
-		Vk.Cmd.bindPipeline cb Vk.Ppl.C.bindPointGraphics gppl
-		Vk.Cmd.draw cb 3 1 0 0
-		Vk.Cmd.endRenderPass cb
-		r <- Vk.CB.C.end cb
-		when (r /= success) $ error "failed to record command buffer!"
+	Vk.Cmd.beginRenderPass @()
+		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
+		cb renderPassInfo Vk.Subpass.ContentsInline
+	Vk.Ppl.P gppl <- readIORef rgpl
+	Vk.Cmd.C.bindPipeline ccb Vk.Ppl.C.bindPointGraphics gppl
+	Vk.Cmd.C.draw ccb 3 1 0 0
+	Vk.Cmd.C.endRenderPass ccb
+	r <- Vk.CB.C.end ccb
+	when (r /= success) $ error "failed to record command buffer!"
 
 createSemaphores :: Global -> IO ()
 createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do

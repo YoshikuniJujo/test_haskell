@@ -29,4 +29,11 @@ enum "DescriptionFlagBits" ''#{type VkSubpassDescriptionFlagBits}
 	("DescriptionFlagBitsMaxEnum",
 		#{const VK_SUBPASS_DESCRIPTION_FLAG_BITS_MAX_ENUM}) ]
 
+enum "Contents" ''#{type VkSubpassContents}
+		[''Show, ''Eq, ''Storable] [
+	("ContentsInline", #{const VK_SUBPASS_CONTENTS_INLINE}),
+	("ContentsSecondaryCommandBuffers",
+		#{const VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS}),
+	("ContentsMaxEnum", #{const VK_SUBPASS_CONTENTS_MAX_ENUM}) ]
+
 type DescriptionFlags = DescriptionFlagBits

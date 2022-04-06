@@ -89,7 +89,7 @@ data BeginInfo n ct = BeginInfo {
 	beginInfoClearValues :: [ClearValue ct] }
 	deriving Show
 
-beginInfoToCore :: (Storable n, ClearValueToCore ct) =>
+beginInfoToCore :: (Pointable n, ClearValueToCore ct) =>
 	BeginInfo n ct -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
