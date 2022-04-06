@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Semaphore where
+module Vulkan.Semaphore.Core where
 
 import Foreign.Ptr
 import Foreign.Storable

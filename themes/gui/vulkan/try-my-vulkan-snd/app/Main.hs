@@ -114,7 +114,7 @@ import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 
-import qualified Vulkan.Semaphore as Vk.Smp
+import qualified Vulkan.Semaphore.Core as Vk.Smp.C
 
 main :: IO ()
 main = run
@@ -853,17 +853,17 @@ recordCommandBuffer Global {
 
 createSemaphores :: Global -> IO ()
 createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do
-	let	Vk.Smp.CreateInfo_ fSemaphoreInfo = Vk.Smp.CreateInfo {
-			Vk.Smp.createInfoSType = (),
-			Vk.Smp.createInfoPNext = NullPtr,
-			Vk.Smp.createInfoFlags = 0 }
+	let	Vk.Smp.C.CreateInfo_ fSemaphoreInfo = Vk.Smp.C.CreateInfo {
+			Vk.Smp.C.createInfoSType = (),
+			Vk.Smp.C.createInfoPNext = NullPtr,
+			Vk.Smp.C.createInfoFlags = 0 }
 	Vk.Device.D dvc <- lift $ readIORef rdvc
 	pSemaphoreInfo <- ContT $ withForeignPtr fSemaphoreInfo
 	pImageAvailableSemaphore <- ContT alloca
 	pRenderFinishedSemaphore <- ContT alloca
-	lift do r <- Vk.Smp.create
+	lift do r <- Vk.Smp.C.create
 			dvc pSemaphoreInfo NullPtr pImageAvailableSemaphore
-		r' <- Vk.Smp.create
+		r' <- Vk.Smp.C.create
 			dvc pSemaphoreInfo NullPtr pRenderFinishedSemaphore
 		when (r /= success || r' /= success)
 			$ error "failed to create semaphores!"
@@ -967,10 +967,10 @@ cleanup Global {
 	ias <- readIORef imageAvailableSemaphore
 	putStr "renderFinishedSemaphore: "
 	print rfs
-	Vk.Smp.destroy cdvc rfs NullPtr
+	Vk.Smp.C.destroy cdvc rfs NullPtr
 	putStr "imageAvailableSemaphore: "
 	print ias
-	Vk.Smp.destroy cdvc ias NullPtr
+	Vk.Smp.C.destroy cdvc ias NullPtr
 	cp <- readIORef rcp
 	Vk.CP.destroy @() dvc cp Nothing
 	fbs <- readIORef rscfbs
