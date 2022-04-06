@@ -1,5 +1,8 @@
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -7,8 +10,12 @@ module Vulkan where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
+import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.Pointable
+import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 import Data.Color.Internal
@@ -137,13 +144,75 @@ stencilOpStateToCore StencilOpState {
 		C.stencilOpStateWriteMask = wm,
 		C.stencilOpStateReference = rf }
 
-data ClearValue
-	= ClearValueColor (Rgba Float)
-	| ClearValueDepthStencil C.ClearDepthStencilValue
+data ClearValue (ct :: ClearType) where
+	ClearValueDepthStencil ::
+		C.ClearDepthStencilValue -> ClearValue 'ClearTypeDepthStencil
+	ClearValueColor :: Rgba Float -> ClearValue ('ClearTypeColor cct)
+
+class ClearColorValueToCore (cct :: ClearColorType) where
+	clearColorValueToCore ::
+		ClearValue ('ClearTypeColor cct) -> ContT r IO (Ptr C.ClearColorValueTag)
+
+instance ClearColorValueToCore 'ClearColorTypeFloat32 where
+	clearColorValueToCore (ClearValueColor (RgbaDouble r g b a)) = do
+		prgba <- ContT $ allocaArray 4
+		lift $ pokeArray prgba [r, g, b, a]
+		pure $ C.clearColorValueFromFloats prgba
+
+instance ClearColorValueToCore 'ClearColorTypeInt32 where
+	clearColorValueToCore (ClearValueColor (RgbaInt32 r g b a)) = do
+		prgba <- ContT $ allocaArray 4
+		lift $ pokeArray prgba [r, g, b, a]
+		pure $ C.clearColorValueFromInts prgba
+
+instance ClearColorValueToCore 'ClearColorTypeUint32 where
+	clearColorValueToCore (ClearValueColor (RgbaWord32 r g b a)) = do
+		prgba <- ContT $ allocaArray 4
+		lift $ pokeArray prgba [r, g, b, a]
+		pure $ C.clearColorValueFromUints prgba
+
+deriving instance Show (ClearValue ct)
+
+data ClearType = ClearTypeColor ClearColorType | ClearTypeDepthStencil
 	deriving Show
 
-{-
-clearValueToCore :: ClearValue -> ContT r IO C.ClearValue
-clearValueToCore = \case
-	ClearValueColor Rgba ->
-	-}
+data ClearColorType
+	= ClearColorTypeFloat32 | ClearColorTypeInt32 | ClearColorTypeUint32
+	deriving Show
+
+class ClearValueToCore (ct :: ClearType) where
+	clearValueToCore :: ClearValue ct -> ContT r IO (Ptr C.ClearValueTag)
+
+instance ClearValueToCore 'ClearTypeDepthStencil where
+	clearValueToCore (ClearValueDepthStencil cdsv) =
+		C.clearValueFromClearDepthStencilValue cdsv
+
+instance ClearColorValueToCore cct =>
+	ClearValueToCore ('ClearTypeColor cct) where
+	clearValueToCore cv@(ClearValueColor _) =
+		C.clearValueFromClearColorValue <$> clearColorValueToCore cv
+
+clearValueListToArray :: [Ptr C.ClearValueTag] -> ContT r IO (Ptr C.ClearValueTag)
+clearValueListToArray (length &&& id -> (pcvc, pcvl)) = do
+	pcva <- allocaClearValueArray pcvc
+	lift $ pokeClearValueArray pcva pcvl
+	pure pcva
+
+allocaClearValueArray :: Int -> ContT r IO (Ptr C.ClearValueTag)
+allocaClearValueArray n = ContT $ allocaBytesAligned
+	(alignedSize #{size VkClearValue} #{alignment VkClearValue} * n)
+	#{alignment VkClearValue}
+
+alignedSize :: Int -> Int -> Int
+alignedSize sz al = (sz - 1) `div` al * al + 1
+
+pokeClearValueArray :: Ptr C.ClearValueTag -> [Ptr C.ClearValueTag] -> IO ()
+pokeClearValueArray p lst = zipWithM_ pokeClearValue (clearValueArrayPtrs p) lst
+
+clearValueArrayPtrs :: Ptr C.ClearValueTag -> [Ptr C.ClearValueTag]
+clearValueArrayPtrs = iterate (
+	(`alignPtr` #{alignment VkClearValue})
+		. (`plusPtr` #{size VkClearValue}) )
+
+pokeClearValue :: Ptr C.ClearValueTag -> Ptr C.ClearValueTag -> IO ()
+pokeClearValue dst src = copyBytes dst src #{size VkClearValue}

@@ -235,18 +235,17 @@ struct "StencilOpState" #{size VkStencilOpState} #{alignment VkStencilOpState} [
 	[''Show, ''Storable]
 
 data ClearValueTag
-type ClearValue = Ptr ClearValueTag
+type PtrClearValue = Ptr ClearValueTag
 
 data ClearColorValueTag
-type ClearColorValue = Ptr ClearColorValueTag
 
-clearColorValueFromFloats :: Ptr #{type float} -> ClearColorValue
+clearColorValueFromFloats :: Ptr #{type float} -> Ptr ClearColorValueTag
 clearColorValueFromFloats = castPtr
 
-clearColorValueFromInts :: Ptr #{type int32_t} -> ClearColorValue
+clearColorValueFromInts :: Ptr #{type int32_t} -> Ptr ClearColorValueTag
 clearColorValueFromInts = castPtr
 
-clearColorValueFromUints :: Ptr #{type uint32_t} -> ClearColorValue
+clearColorValueFromUints :: Ptr #{type uint32_t} -> Ptr ClearColorValueTag
 clearColorValueFromUints = castPtr
 
 struct "ClearDepthStencilValue" #{size VkClearDepthStencilValue}
@@ -259,9 +258,9 @@ struct "ClearDepthStencilValue" #{size VkClearDepthStencilValue}
 		[| #{poke VkClearDepthStencilValue, stencil} |]) ]
 	[''Show, ''Storable]
 
-clearValueFromClearColorValue :: ClearColorValue -> ClearValue
+clearValueFromClearColorValue :: Ptr ClearColorValueTag -> Ptr ClearValueTag
 clearValueFromClearColorValue = castPtr
 
-clearValueFromClearDepthStencilValue :: ClearDepthStencilValue -> ContT r IO ClearValue
+clearValueFromClearDepthStencilValue :: ClearDepthStencilValue -> ContT r IO (Ptr ClearValueTag)
 clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) =
 	castPtr <$> ContT (withForeignPtr fp)

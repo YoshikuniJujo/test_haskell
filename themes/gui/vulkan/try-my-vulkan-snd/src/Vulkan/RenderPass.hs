@@ -14,7 +14,8 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 
-import Vulkan.Core
+import Vulkan
+import Vulkan.Core (Rect2d)
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.RenderPass.Enum
@@ -80,11 +81,32 @@ destroy (Device.D dvc) (R r) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc r pac
 
-data BeginInfo n = BeginInfo {
+data BeginInfo n ct = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoRenderPass :: R,
 	beginInfoFramebuffer :: Framebuffer.F,
-	beginInfoRenderArea :: Rect2d
---	beginInfoClearValues :: [ClearValue]
-	}
+	beginInfoRenderArea :: Rect2d,
+	beginInfoClearValues :: [ClearValue ct] }
 	deriving Show
+
+beginInfoToCore :: (Storable n, ClearValueToCore ct) =>
+	BeginInfo n ct -> ContT r IO (Ptr C.BeginInfo)
+beginInfoToCore BeginInfo {
+	beginInfoNext = mnxt,
+	beginInfoRenderPass = R rp,
+	beginInfoFramebuffer = Framebuffer.F fb,
+	beginInfoRenderArea = ra,
+	beginInfoClearValues = length &&& id -> (cvc, cvs)
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pcvl <- clearValueToCore `mapM` cvs
+	pcva <- clearValueListToArray pcvl
+	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
+			C.beginInfoSType = (),
+			C.beginInfoPNext = pnxt,
+			C.beginInfoRenderPass = rp,
+			C.beginInfoFramebuffer = fb,
+			C.beginInfoRenderArea = ra,
+			C.beginInfoClearValueCount = fromIntegral cvc,
+			C.beginInfoPClearValues = pcva }
+	ContT $ withForeignPtr fBeginInfo

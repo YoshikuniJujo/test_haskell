@@ -113,9 +113,7 @@ import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 import qualified Vulkan.Subpass.Core as Vk.Subpass.C
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
-import qualified Vulkan.RenderPass.Core as Vk.RndrPss.C
 
-import qualified Vulkan.Framebuffer.Core as Vk.Fb.C
 import qualified Vulkan.CommandPool.Core as Vk.CP.C
 import qualified Vulkan.CommandBuffer.Core as Vk.CB.C
 import qualified Vulkan.Command as Vk.Cmd
@@ -823,7 +821,7 @@ createCommandBuffers g@Global {
 	globalDevice = rdvc, globalSwapChainFramebuffers = rscfbs,
 	globalCommandPool = rcp, globalCommandBuffers = rcbs } = do
 	dvc <- readIORef rdvc
-	scfbs <- ((\(Vk.Fb.F f) -> f) <$>) <$> readIORef rscfbs
+	scfbs <-  readIORef rscfbs
 	cp <- readIORef rcp
 	cbs <- Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
 		Vk.CB.allocateInfoNext = Nothing,
@@ -833,7 +831,7 @@ createCommandBuffers g@Global {
 	writeIORef rcbs cbs
 	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 
-recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.C.F -> IO ()
+recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
 	globalGraphicsPipeline = rgpl }
@@ -842,24 +840,20 @@ recordCommandBuffer Global {
 		Vk.CB.beginInfoNext = Nothing,
 		Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
 		Vk.CB.beginInfoInheritanceInfo = Nothing }
-	Vk.RndrPss.R rp <- lift $ readIORef rrp
+	rp <- lift $ readIORef rrp
 	sce <- lift $ readIORef rscex
-	pClearColor <- ContT $ allocaArray 4
-	lift $ pokeArray pClearColor [0, 0, 0, 1]
-	let	Vk.RndrPss.C.BeginInfo_ fRenderPassInfo = Vk.RndrPss.C.BeginInfo {
-			Vk.RndrPss.C.beginInfoSType = (),
-			Vk.RndrPss.C.beginInfoPNext = NullPtr,
-			Vk.RndrPss.C.beginInfoRenderPass = rp,
-			Vk.RndrPss.C.beginInfoFramebuffer = fb,
-			Vk.RndrPss.C.beginInfoRenderArea = Vk.C.Rect2d {
+	let	renderPassInfo = Vk.RndrPss.BeginInfo {
+			Vk.RndrPss.beginInfoNext = Nothing,
+			Vk.RndrPss.beginInfoRenderPass = rp,
+			Vk.RndrPss.beginInfoFramebuffer = fb,
+			Vk.RndrPss.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
-			Vk.RndrPss.C.beginInfoClearValueCount = 1,
-			Vk.RndrPss.C.beginInfoPClearValue =
-				Vk.C.clearValueFromClearColorValue
-					$ Vk.C.clearColorValueFromFloats
-						pClearColor }
-	pRenderPassInfo <- ContT $ withForeignPtr fRenderPassInfo
+			Vk.RndrPss.beginInfoClearValues = [
+				Vk.ClearValueColor
+					. fromJust $ rgbaDouble 0 0 0 1 ] }
+	pRenderPassInfo <- Vk.RndrPss.beginInfoToCore @()
+		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32) renderPassInfo
 	lift do	Vk.Cmd.beginRenderPass
 			cb pRenderPassInfo Vk.Subpass.C.contentsInline
 		Vk.Ppl.P gppl <- readIORef rgpl
