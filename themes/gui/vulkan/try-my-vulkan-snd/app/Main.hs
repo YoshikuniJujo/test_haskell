@@ -114,7 +114,6 @@ import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 
-import qualified Vulkan.CommandPool.Core as Vk.CP.C
 import qualified Vulkan.Semaphore as Vk.Smp
 
 main :: IO ()
@@ -126,9 +125,6 @@ enableValidationLayers =
 
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
-
-commandPool :: IORef Vk.CP.C.C
-commandPool = unsafePerformIO $ newIORef NullPtr
 
 imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
 (imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
@@ -883,9 +879,7 @@ createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do
 		print =<< readIORef renderFinishedSemaphore
 
 mainLoop :: Global -> IO ()
-mainLoop g@Global {
-	globalWindow = win,
-	globalDevice = rdvc } = do
+mainLoop g@Global { globalWindow = win, globalDevice = rdvc } = do
 	fix \loop -> bool (pure ()) loop =<< do
 		GlfwB.pollEvents
 		drawFrame g
