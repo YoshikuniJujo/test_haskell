@@ -802,13 +802,11 @@ createCommandPool :: Global -> IO ()
 createCommandPool g@Global {
 	globalPhysicalDevice = rpdvc,
 	globalDevice = rdvc, globalCommandPool = rcp } = do
-	queueFamilyIndices <- do
-		pdvc <- readIORef rpdvc
-		findQueueFamilies g pdvc
-	print queueFamilyIndices
+	queueFamilyIndices <- findQueueFamilies g =<< readIORef rpdvc
 	let	poolInfo = Vk.CP.CreateInfo {
 			Vk.CP.createInfoNext = Nothing,
-			Vk.CP.createInfoFlags = Vk.CP.CreateFlagsZero,
+			Vk.CP.createInfoFlags =
+				Vk.CP.CreateResetCommandBufferBit,
 			Vk.CP.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
 	dvc <- readIORef rdvc
