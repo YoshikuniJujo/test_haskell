@@ -854,8 +854,8 @@ recordCommandBuffer Global {
 	Vk.Cmd.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
-	Vk.Ppl.P gppl <- readIORef rgpl
-	Vk.Cmd.C.bindPipeline ccb Vk.Ppl.C.bindPointGraphics gppl
+	ppl <- readIORef rgpl
+	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
 	Vk.Cmd.C.draw ccb 3 1 0 0
 	Vk.Cmd.C.endRenderPass ccb
 	r <- Vk.CB.C.end ccb
