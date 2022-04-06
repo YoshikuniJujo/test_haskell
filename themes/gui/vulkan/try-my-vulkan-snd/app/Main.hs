@@ -107,6 +107,7 @@ import qualified Vulkan.CommandPool.Enum as Vk.CP
 import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.CommandBuffer.Enum as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.Semaphore as Vk.Smp
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
@@ -853,18 +854,17 @@ recordCommandBuffer Global {
 
 createSemaphores :: Global -> IO ()
 createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do
-	let	Vk.Smp.C.CreateInfo_ fSemaphoreInfo = Vk.Smp.C.CreateInfo {
-			Vk.Smp.C.createInfoSType = (),
-			Vk.Smp.C.createInfoPNext = NullPtr,
-			Vk.Smp.C.createInfoFlags = 0 }
-	Vk.Device.D dvc <- lift $ readIORef rdvc
-	pSemaphoreInfo <- ContT $ withForeignPtr fSemaphoreInfo
+	let	semaphoreInfo = Vk.Smp.CreateInfo {
+			Vk.Smp.createInfoNext = Nothing,
+			Vk.Smp.createInfoFlags = Vk.Smp.CreateFlagsZero }
+	Vk.Device.D cdvc <- lift $ readIORef rdvc
+	pSemaphoreInfo <- Vk.Smp.createInfoToCore @() semaphoreInfo
 	pImageAvailableSemaphore <- ContT alloca
 	pRenderFinishedSemaphore <- ContT alloca
 	lift do r <- Vk.Smp.C.create
-			dvc pSemaphoreInfo NullPtr pImageAvailableSemaphore
+			cdvc pSemaphoreInfo NullPtr pImageAvailableSemaphore
 		r' <- Vk.Smp.C.create
-			dvc pSemaphoreInfo NullPtr pRenderFinishedSemaphore
+			cdvc pSemaphoreInfo NullPtr pRenderFinishedSemaphore
 		when (r /= success || r' /= success)
 			$ error "failed to create semaphores!"
 		writeIORef imageAvailableSemaphore
