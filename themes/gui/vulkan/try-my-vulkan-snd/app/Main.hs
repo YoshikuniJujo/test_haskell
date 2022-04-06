@@ -115,8 +115,6 @@ import qualified Vulkan.ColorComponent.Enum as Vk.CC
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
 
 import qualified Vulkan.CommandPool.Core as Vk.CP.C
-import qualified Vulkan.CommandBuffer.Core as Vk.CB.C
-import qualified Vulkan.Command.Core as Vk.Cmd.C
 import qualified Vulkan.Semaphore as Vk.Smp
 
 main :: IO ()
@@ -834,7 +832,7 @@ createCommandBuffers g@Global {
 recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
-	globalGraphicsPipeline = rgpl } cb@(Vk.CB.C ccb) fb = do
+	globalGraphicsPipeline = rppl } cb fb = do
 	Vk.CB.begin @() @() cb Vk.CB.BeginInfo {
 		Vk.CB.beginInfoNext = Nothing,
 		Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
@@ -854,12 +852,10 @@ recordCommandBuffer Global {
 	Vk.Cmd.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
-	ppl <- readIORef rgpl
-	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
-	Vk.Cmd.C.draw ccb 3 1 0 0
-	Vk.Cmd.C.endRenderPass ccb
-	r <- Vk.CB.C.end ccb
-	when (r /= success) $ error "failed to record command buffer!"
+	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics =<< readIORef rppl
+	Vk.Cmd.draw cb 3 1 0 0
+	Vk.Cmd.endRenderPass cb
+	Vk.CB.end cb
 
 createSemaphores :: Global -> IO ()
 createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do

@@ -119,3 +119,8 @@ begin (C c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi
 		throwUnlessSuccess $ Result r
+
+end :: C -> IO ()
+end (C c) = do
+	r <- C.end c
+	throwUnlessSuccess $ Result r
