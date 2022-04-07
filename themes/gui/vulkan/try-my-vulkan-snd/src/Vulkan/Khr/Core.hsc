@@ -13,11 +13,11 @@ import Data.Int
 
 import Vulkan.Core (Queue)
 import Vulkan.Base
-import Vulkan.Fence (Fence)
 import Vulkan.Khr.Swapchain.Core (Swapchain, PtrSwapchain)
 
 import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Semaphore.Core as Semaphore
+import qualified Vulkan.Fence.Core as Fence
 
 #include <vulkan/vulkan.h>
 
@@ -25,7 +25,7 @@ compositeAlphaOpaqueBit :: #{type VkCompositeAlphaFlagBitsKHR}
 compositeAlphaOpaqueBit = #{const VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR}
 
 foreign import ccall "vkAcquireNextImageKHR" acquireNextImage ::
-	Device.D -> Swapchain -> #{type uint64_t} -> Semaphore.S -> Fence ->
+	Device.D -> Swapchain -> #{type uint64_t} -> Semaphore.S -> Fence.F ->
 	Ptr #{type uint32_t} -> IO #{type VkResult}
 
 sTypeP :: #{type VkStructureType}

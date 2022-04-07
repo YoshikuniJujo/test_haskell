@@ -70,7 +70,8 @@ library
       Vulkan.Ext.DebugUtils.Message.Enum
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Ext.DebugUtils.Messenger.Core
-      Vulkan.Fence
+      Vulkan.Fence.Core
+      Vulkan.Fence.Enum
       Vulkan.Format
       Vulkan.Framebuffer
       Vulkan.Framebuffer.Core

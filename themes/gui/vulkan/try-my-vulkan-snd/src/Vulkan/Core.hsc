@@ -22,10 +22,10 @@ import qualified Data.Text as Txt
 import qualified Data.Text.Foreign as Txt
 
 import Vulkan.Base
-import Vulkan.Fence
 
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import {-# SOURCE #-} qualified Vulkan.Semaphore.Core as Semaphore
+import qualified Vulkan.Fence.Core as Fence
 
 #include <vulkan/vulkan.h>
 
@@ -159,7 +159,7 @@ data QueueTag
 type Queue = Ptr QueueTag
 
 foreign import ccall "vkQueueSubmit" queueSubmit ::
-	Queue -> #{type uint32_t} -> Ptr SubmitInfo -> Fence ->
+	Queue -> #{type uint32_t} -> Ptr SubmitInfo -> Fence.F ->
 	IO #{type VkResult}
 
 foreign import ccall "vkQueueWaitIdle" queueWaitIdle ::
