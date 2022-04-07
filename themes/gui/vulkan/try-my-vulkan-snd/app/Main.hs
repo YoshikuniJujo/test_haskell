@@ -947,15 +947,15 @@ cleanup Global {
 	globalGraphicsPipeline = rgpl,
 	globalSwapChainFramebuffers = rscfbs,
 	globalCommandPool = rcp } = do
-	dvc@(Vk.Device.D cdvc) <- readIORef rdvc
+	dvc <- readIORef rdvc
 	rfs <- readIORef renderFinishedSemaphore
 	ias <- readIORef imageAvailableSemaphore
 	putStr "renderFinishedSemaphore: "
 	print rfs
-	Vk.Smp.C.destroy cdvc rfs NullPtr
+	Vk.Smp.destroy @() dvc (Vk.Smp.S rfs) Nothing
 	putStr "imageAvailableSemaphore: "
 	print ias
-	Vk.Smp.C.destroy cdvc ias NullPtr
+	Vk.Smp.destroy @() dvc (Vk.Smp.S ias) Nothing
 	cp <- readIORef rcp
 	Vk.CP.destroy @() dvc cp Nothing
 	fbs <- readIORef rscfbs
