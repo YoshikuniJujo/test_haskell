@@ -127,9 +127,8 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Smp.C.S
-(imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
-	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
+renderFinishedSemaphore :: IORef Vk.Smp.C.S
+renderFinishedSemaphore = unsafePerformIO $ newIORef NullPtr
 
 data Global = Global {
 	globalWindow :: GlfwB.Window,
@@ -150,7 +149,9 @@ data Global = Global {
 	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
-	globalCommandBuffers :: IORef [Vk.CB.C]
+	globalCommandBuffers :: IORef [Vk.CB.C],
+	globalImageAvailableSemaphore :: IORef Vk.Smp.S,
+	globalRenderFinishedSemaphore :: IORef Vk.Smp.S
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -173,6 +174,8 @@ newGlobal w = do
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CP.C NullPtr
 	cbs <- newIORef []
+	ias <- newIORef $ Vk.Smp.S NullPtr
+	rfs <- newIORef $ Vk.Smp.S NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -192,7 +195,9 @@ newGlobal w = do
 		globalGraphicsPipeline = gpl,
 		globalSwapChainFramebuffers = scfbs,
 		globalCommandPool = cp,
-		globalCommandBuffers = cbs
+		globalCommandBuffers = cbs,
+		globalImageAvailableSemaphore = ias,
+		globalRenderFinishedSemaphore = rfs
 		}
 
 run :: IO ()
@@ -853,15 +858,19 @@ recordCommandBuffer Global {
 	Vk.CB.end cb
 
 createSemaphores :: Global -> IO ()
-createSemaphores Global { globalDevice = rdvc } = do
+createSemaphores Global {
+	globalDevice = rdvc,
+	globalImageAvailableSemaphore = rias,
+	globalRenderFinishedSemaphore = rrfs } = do
 	let	semaphoreInfo = Vk.Smp.CreateInfo {
 			Vk.Smp.createInfoNext = Nothing,
 			Vk.Smp.createInfoFlags = Vk.Smp.CreateFlagsZero }
 	dvc <- readIORef rdvc
-	Vk.Smp.S ias <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
-	Vk.Smp.S rfs <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
-	writeIORef imageAvailableSemaphore ias
-	writeIORef renderFinishedSemaphore rfs
+	ias <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
+	rfs@(Vk.Smp.S crfs) <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
+	writeIORef rias ias
+	writeIORef rrfs rfs
+	writeIORef renderFinishedSemaphore crfs
 
 mainLoop :: Global -> IO ()
 mainLoop g@Global { globalWindow = win, globalDevice = rdvc } = do
@@ -878,12 +887,14 @@ drawFrame Global {
 	globalGraphicsQueue = rgq,
 	globalPresentQueue = rpq,
 	globalSwapChain = rsc,
-	globalCommandBuffers = rcbs } = ($ pure) $ runContT do
+	globalCommandBuffers = rcbs,
+	globalImageAvailableSemaphore = rias,
+	globalRenderFinishedSemaphore = rrfs } = ($ pure) $ runContT do
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
 	Vk.Device.D dvc <- lift $ readIORef rdvc
 	Vk.Khr.Swapchain sc <- lift $ readIORef rsc
-	ias <- lift $ readIORef imageAvailableSemaphore
+	Vk.Smp.S ias <- lift $ readIORef rias
 	lift do	r <- Vk.Khr.C.acquireNextImage
 			dvc sc uint64Max ias NullHandle pImageIndex
 		when (r /= success) $ error "bad"
@@ -891,7 +902,7 @@ drawFrame Global {
 --	lift $ print imageIndex
 	pWaitSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitSemaphores . (: [])
-		=<< readIORef imageAvailableSemaphore
+		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rias
 	pWaitStages <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitStages [Vk.Ppl.C.stageColorAttachmentOutputBit]
 	cbs <- lift $ ((\(Vk.CB.C c) -> c) <$>) <$> readIORef rcbs
@@ -899,7 +910,7 @@ drawFrame Global {
 	lift $ pokeArray pcb1 [cbs !! imageIndex]
 	pSignalSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pSignalSemaphores . (: [])
-		=<< readIORef renderFinishedSemaphore
+		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rrfs
 	let	Vk.C.SubmitInfo_ fSubmitInfo = Vk.C.SubmitInfo {
 			Vk.C.submitInfoSType = (),
 			Vk.C.submitInfoPNext = NullPtr,
@@ -946,16 +957,18 @@ cleanup Global {
 	globalRenderPass = rrp,
 	globalGraphicsPipeline = rgpl,
 	globalSwapChainFramebuffers = rscfbs,
-	globalCommandPool = rcp } = do
+	globalCommandPool = rcp,
+	globalImageAvailableSemaphore = rias,
+	globalRenderFinishedSemaphore = rrfs } = do
 	dvc <- readIORef rdvc
-	rfs <- readIORef renderFinishedSemaphore
-	ias <- readIORef imageAvailableSemaphore
+	rfs <- readIORef rrfs
+	ias <- readIORef rias
 	putStr "renderFinishedSemaphore: "
 	print rfs
-	Vk.Smp.destroy @() dvc (Vk.Smp.S rfs) Nothing
+	Vk.Smp.destroy @() dvc rfs Nothing
 	putStr "imageAvailableSemaphore: "
 	print ias
-	Vk.Smp.destroy @() dvc (Vk.Smp.S ias) Nothing
+	Vk.Smp.destroy @() dvc ias Nothing
 	cp <- readIORef rcp
 	Vk.CP.destroy @() dvc cp Nothing
 	fbs <- readIORef rscfbs
