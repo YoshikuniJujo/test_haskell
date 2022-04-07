@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -8,12 +9,16 @@ module Vulkan.Semaphore where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Bits
 import Data.Word
+
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
@@ -39,11 +44,14 @@ createInfoToCore CreateInfo {
 			C.createInfoFlags = flgs }
 	ContT $ withForeignPtr fCreateInfo
 
-{-
 newtype S = S C.S deriving Show
 
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO S
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
 create (Device.D dvc) ci mac = ($ pure) . runContT $ S <$> do
-	undefined
-	-}
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	ps <- ContT alloca
+	lift do	r <- C.create dvc pci pac ps
+		throwUnlessSuccess $ Result r
+		peek ps

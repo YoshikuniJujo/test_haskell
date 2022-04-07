@@ -853,30 +853,15 @@ recordCommandBuffer Global {
 	Vk.CB.end cb
 
 createSemaphores :: Global -> IO ()
-createSemaphores Global { globalDevice = rdvc } = ($ pure) $ runContT do
+createSemaphores Global { globalDevice = rdvc } = do
 	let	semaphoreInfo = Vk.Smp.CreateInfo {
 			Vk.Smp.createInfoNext = Nothing,
 			Vk.Smp.createInfoFlags = Vk.Smp.CreateFlagsZero }
-	Vk.Device.D cdvc <- lift $ readIORef rdvc
-	pSemaphoreInfo <- Vk.Smp.createInfoToCore @() semaphoreInfo
-	pImageAvailableSemaphore <- ContT alloca
-	pRenderFinishedSemaphore <- ContT alloca
-	lift do r <- Vk.Smp.C.create
-			cdvc pSemaphoreInfo NullPtr pImageAvailableSemaphore
-		r' <- Vk.Smp.C.create
-			cdvc pSemaphoreInfo NullPtr pRenderFinishedSemaphore
-		when (r /= success || r' /= success)
-			$ error "failed to create semaphores!"
-		writeIORef imageAvailableSemaphore
-			=<< peek pImageAvailableSemaphore
-		writeIORef renderFinishedSemaphore
-			=<< peek pRenderFinishedSemaphore
-		putStr "imageAvailableSemaphore: "
-		print =<< peek pImageAvailableSemaphore
-		print =<< readIORef imageAvailableSemaphore
-		putStr "renderFinishedSemaphore: "
-		print =<< peek pRenderFinishedSemaphore
-		print =<< readIORef renderFinishedSemaphore
+	dvc <- readIORef rdvc
+	Vk.Smp.S ias <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
+	Vk.Smp.S rfs <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
+	writeIORef imageAvailableSemaphore ias
+	writeIORef renderFinishedSemaphore rfs
 
 mainLoop :: Global -> IO ()
 mainLoop g@Global { globalWindow = win, globalDevice = rdvc } = do
