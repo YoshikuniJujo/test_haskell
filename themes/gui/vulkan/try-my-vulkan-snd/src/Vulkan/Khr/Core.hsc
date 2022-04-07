@@ -11,12 +11,13 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Core (Semaphore, PtrSemaphore, Queue)
+import Vulkan.Core (Queue)
 import Vulkan.Base
 import Vulkan.Fence (Fence)
 import Vulkan.Khr.Swapchain.Core (Swapchain, PtrSwapchain)
 
 import qualified Vulkan.Device.Core as Device
+import qualified Vulkan.Semaphore.Core as Semaphore
 
 #include <vulkan/vulkan.h>
 
@@ -24,7 +25,7 @@ compositeAlphaOpaqueBit :: #{type VkCompositeAlphaFlagBitsKHR}
 compositeAlphaOpaqueBit = #{const VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR}
 
 foreign import ccall "vkAcquireNextImageKHR" acquireNextImage ::
-	Device.D -> Swapchain -> #{type uint64_t} -> Semaphore -> Fence ->
+	Device.D -> Swapchain -> #{type uint64_t} -> Semaphore.S -> Fence ->
 	Ptr #{type uint32_t} -> IO #{type VkResult}
 
 sTypeP :: #{type VkStructureType}
@@ -39,7 +40,7 @@ struct "PresentInfo" #{size VkPresentInfoKHR} #{alignment VkPresentInfoKHR} [
 	("waitSemaphoreCount", ''#{type uint32_t},
 		[| #{peek VkPresentInfoKHR, waitSemaphoreCount} |],
 		[| #{poke VkPresentInfoKHR, waitSemaphoreCount} |]),
-	("pWaitSemaphores", ''PtrSemaphore,
+	("pWaitSemaphores", ''Semaphore.PtrS,
 		[| #{peek VkPresentInfoKHR, pWaitSemaphores} |],
 		[| #{poke VkPresentInfoKHR, pWaitSemaphores} |]),
 	("swapchainCount", ''#{type uint32_t},

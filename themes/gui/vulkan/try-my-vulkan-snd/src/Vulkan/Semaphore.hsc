@@ -15,6 +15,8 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Semaphore.Core as C
 
 #include <vulkan/vulkan.h>
@@ -36,3 +38,12 @@ createInfoToCore CreateInfo {
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs }
 	ContT $ withForeignPtr fCreateInfo
+
+{-
+newtype S = S C.S deriving Show
+
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks n') -> IO S
+create (Device.D dvc) ci mac = ($ pure) . runContT $ S <$> do
+	undefined
+	-}

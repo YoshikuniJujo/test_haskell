@@ -11,9 +11,9 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Core (Semaphore)
 import Vulkan.Base
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
@@ -33,9 +33,13 @@ struct "CreateInfo" #{size VkSemaphoreCreateInfo}
 		[| #{poke VkSemaphoreCreateInfo, flags} |]) ]
 	[''Show, ''Storable]
 
+data STag
+type S = Ptr STag
+type PtrS = Ptr S
+
 foreign import ccall "vkCreateSemaphore" create ::
-	Device.D -> Ptr CreateInfo -> Ptr () -> Ptr Semaphore ->
-	IO #{type VkResult}
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
+	Ptr S -> IO #{type VkResult}
 
 foreign import ccall "vkDestroySemaphore" destroy ::
-	Device.D -> Semaphore -> Ptr () -> IO ()
+	Device.D -> S -> Ptr AllocationCallbacks.A -> IO ()

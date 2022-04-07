@@ -25,6 +25,7 @@ import Vulkan.Base
 import Vulkan.Fence
 
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Core as CommandBuffer
+import {-# SOURCE #-} qualified Vulkan.Semaphore.Core as Semaphore
 
 #include <vulkan/vulkan.h>
 
@@ -120,10 +121,6 @@ struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
 
 type PtrRect2d = Ptr Rect2d
 
-data SemaphoreTag
-type Semaphore = Ptr SemaphoreTag
-type PtrSemaphore = Ptr Semaphore
-
 type PtrPipelineStageFlags = Ptr #{type VkPipelineStageFlags}
 
 sTypeS :: #{type VkStructureType}
@@ -138,7 +135,7 @@ struct "SubmitInfo" #{size VkSubmitInfo} #{alignment VkSubmitInfo} [
 	("waitSemaphoreCount", ''#{type uint32_t},
 		[| #{peek VkSubmitInfo, waitSemaphoreCount} |],
 		[| #{poke VkSubmitInfo, waitSemaphoreCount} |]),
-	("pWaitSemaphores", ''PtrSemaphore,
+	("pWaitSemaphores", ''Semaphore.PtrS,
 		[| #{peek VkSubmitInfo, pWaitSemaphores} |],
 		[| #{poke VkSubmitInfo, pWaitSemaphores} |]),
 	("pWaitDstStageMask", ''PtrPipelineStageFlags,
@@ -153,7 +150,7 @@ struct "SubmitInfo" #{size VkSubmitInfo} #{alignment VkSubmitInfo} [
 	("signalSemaphoreCount", ''#{type int32_t},
 		[| #{peek VkSubmitInfo, signalSemaphoreCount} |],
 		[| #{poke VkSubmitInfo, signalSemaphoreCount} |]),
-	("pSignalSemaphores", ''PtrSemaphore,
+	("pSignalSemaphores", ''Semaphore.PtrS,
 		[| #{peek VkSubmitInfo, pSignalSemaphores} |],
 		[| #{poke VkSubmitInfo, pSignalSemaphores} |]) ]
 	[''Show, ''Storable]

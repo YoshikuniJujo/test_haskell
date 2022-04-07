@@ -127,7 +127,7 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.C.Semaphore
+imageAvailableSemaphore, renderFinishedSemaphore :: IORef Vk.Smp.C.S
 (imageAvailableSemaphore, renderFinishedSemaphore) = unsafePerformIO
 	$ (,) <$> newIORef NullPtr <*> newIORef NullPtr
 
