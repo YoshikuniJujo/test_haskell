@@ -108,3 +108,6 @@ foreign import ccall "vkBeginCommandBuffer" begin ::
 	C -> Ptr BeginInfo -> IO #{type VkResult}
 
 foreign import ccall "vkEndCommandBuffer" end :: C -> IO #{type VkResult}
+
+foreign import ccall "vkResetCommandBuffer" reset ::
+	C -> #{type VkCommandBufferResetFlags} -> IO #{type VkResult}

@@ -35,4 +35,13 @@ enum "UsageFlagBits" ''#{type VkCommandBufferUsageFlagBits}
 	("UsageFlagBitsMaxEnum",
 		#{const VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM}) ]
 
+enum "ResetFlagBits" ''#{type VkCommandBufferResetFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("ResetFlagsZero", 0),
+	("ResetReleaseResourcesBit",
+		#{const VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT}),
+	("ResetFlagBitsMaxEnum",
+		#{const VK_COMMAND_BUFFER_RESET_FLAG_BITS_MAX_ENUM}) ]
+
 type UsageFlags = UsageFlagBits
+type ResetFlags = ResetFlagBits

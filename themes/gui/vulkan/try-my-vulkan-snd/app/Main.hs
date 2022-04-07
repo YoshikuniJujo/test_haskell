@@ -814,7 +814,7 @@ createCommandPool g@Global {
 	writeIORef rcp =<< Vk.CP.create @() @() dvc poolInfo Nothing
 
 createCommandBuffers :: Global -> IO ()
-createCommandBuffers g@Global {
+createCommandBuffers Global {
 	globalDevice = rdvc, globalSwapChainFramebuffers = rscfbs,
 	globalCommandPool = rcp, globalCommandBuffers = rcbs } = do
 	dvc <- readIORef rdvc
@@ -826,7 +826,6 @@ createCommandBuffers g@Global {
 		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
 		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
 	writeIORef rcbs cbs
-	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 
 recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
@@ -883,8 +882,9 @@ mainLoop g@Global { globalWindow = win, globalDevice = rdvc } = do
 	when (r /= success) $ error "wait idle failure"
 
 drawFrame :: Global -> IO ()
-drawFrame Global {
+drawFrame g@Global {
 	globalDevice = rdvc,
+	globalSwapChainFramebuffers = rscfbs,
 	globalGraphicsQueue = rgq,
 	globalPresentQueue = rpq,
 	globalSwapChain = rsc,
@@ -902,14 +902,18 @@ drawFrame Global {
 		ias <- readIORef rias
 		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
 
+	cbs <- lift $ readIORef rcbs
+	scfbs <- lift $ readIORef rscfbs
+	lift $ uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
+
 	pWaitSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitSemaphores . (: [])
 		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rias
 	pWaitStages <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitStages [Vk.Ppl.C.stageColorAttachmentOutputBit]
-	cbs <- lift $ ((\(Vk.CB.C c) -> c) <$>) <$> readIORef rcbs
 	pcb1 <- ContT $ allocaArray 1
-	lift $ pokeArray pcb1 [cbs !! imageIndex]
+	let	ccbs = (\(Vk.CB.C c) -> c) <$> cbs
+	lift $ pokeArray pcb1 [ccbs !! imageIndex]
 	pSignalSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pSignalSemaphores . (: [])
 		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rrfs
@@ -946,7 +950,6 @@ drawFrame Global {
 		when (r /= success) $ error "bad"
 		r' <- Vk.C.queueWaitIdle . (\(Vk.Queue q) -> q) =<< readIORef rpq
 		when (r' /= success) $ error "bad"
---	lift $ putStrLn "=== END ==="
 
 cleanup :: Global -> IO ()
 cleanup Global {
