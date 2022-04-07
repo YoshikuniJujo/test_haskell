@@ -25,7 +25,7 @@ import Vulkan.Base
 
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import {-# SOURCE #-} qualified Vulkan.Semaphore.Core as Semaphore
-import qualified Vulkan.Fence.Core as Fence
+import {-# SOURCE #-} qualified Vulkan.Fence.Core as Fence
 
 #include <vulkan/vulkan.h>
 

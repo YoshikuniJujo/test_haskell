@@ -9,13 +9,14 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 
-#include <vulkan/vulkan.h>
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Device.Core as Device
 
-data FTag
-type F = Ptr FTag
+#include <vulkan/vulkan.h>
 
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_FENCE_CREATE_INFO}
@@ -30,3 +31,13 @@ struct "CreateInfo" #{size VkFenceCreateInfo} #{alignment VkFenceCreateInfo} [
 		[| #{peek VkFenceCreateInfo, flags} |],
 		[| #{poke VkFenceCreateInfo, flags} |]) ]
 	[''Show, ''Storable]
+
+data FTag
+type F = Ptr FTag
+
+foreign import ccall "vkCreateFence" create ::
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr F ->
+	IO #{type VkResult}
+
+foreign import ccall "vkDestroyFence" destroy ::
+	Device.D -> F -> Ptr AllocationCallbacks.A -> IO ()

@@ -24,7 +24,6 @@ import Data.Bits
 import Data.Bool
 import Data.Word
 import Data.Color
-import System.IO.Unsafe
 
 import ThEnv
 import Vulkan.Base
@@ -108,14 +107,14 @@ import qualified Vulkan.CommandBuffer as Vk.CB
 import qualified Vulkan.CommandBuffer.Enum as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp
+import qualified Vulkan.Fence as Vk.Fnc
+import qualified Vulkan.Fence.Enum as Vk.Fnc
 
 import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
-
-import qualified Vulkan.Semaphore.Core as Vk.Smp.C
 
 main :: IO ()
 main = run
@@ -126,9 +125,6 @@ enableValidationLayers =
 
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
-
-renderFinishedSemaphore :: IORef Vk.Smp.C.S
-renderFinishedSemaphore = unsafePerformIO $ newIORef NullPtr
 
 data Global = Global {
 	globalWindow :: GlfwB.Window,
@@ -151,7 +147,8 @@ data Global = Global {
 	globalCommandPool :: IORef Vk.CP.C,
 	globalCommandBuffers :: IORef [Vk.CB.C],
 	globalImageAvailableSemaphore :: IORef Vk.Smp.S,
-	globalRenderFinishedSemaphore :: IORef Vk.Smp.S
+	globalRenderFinishedSemaphore :: IORef Vk.Smp.S,
+	globalInFlightFence :: IORef Vk.Fnc.F
 	}
 
 newGlobal :: GlfwB.Window -> IO Global
@@ -176,6 +173,7 @@ newGlobal w = do
 	cbs <- newIORef []
 	ias <- newIORef $ Vk.Smp.S NullPtr
 	rfs <- newIORef $ Vk.Smp.S NullPtr
+	iff <- newIORef $ Vk.Fnc.F NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,
@@ -197,7 +195,8 @@ newGlobal w = do
 		globalCommandPool = cp,
 		globalCommandBuffers = cbs,
 		globalImageAvailableSemaphore = ias,
-		globalRenderFinishedSemaphore = rfs
+		globalRenderFinishedSemaphore = rfs,
+		globalInFlightFence = iff
 		}
 
 run :: IO ()
@@ -233,7 +232,7 @@ initVulkan g = do
 	createFramebuffers g
 	createCommandPool g
 	createCommandBuffers g
-	createSemaphores g
+	createSyncObjects g
 
 createInstance :: Global -> IO ()
 createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
@@ -857,20 +856,22 @@ recordCommandBuffer Global {
 	Vk.Cmd.endRenderPass cb
 	Vk.CB.end cb
 
-createSemaphores :: Global -> IO ()
-createSemaphores Global {
+createSyncObjects :: Global -> IO ()
+createSyncObjects Global {
 	globalDevice = rdvc,
 	globalImageAvailableSemaphore = rias,
-	globalRenderFinishedSemaphore = rrfs } = do
+	globalRenderFinishedSemaphore = rrfs,
+	globalInFlightFence = riff } = do
 	let	semaphoreInfo = Vk.Smp.CreateInfo {
 			Vk.Smp.createInfoNext = Nothing,
 			Vk.Smp.createInfoFlags = Vk.Smp.CreateFlagsZero }
+		fenceInfo = Vk.Fnc.CreateInfo {
+			Vk.Fnc.createInfoNext = Nothing,
+			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateFlagsZero }
 	dvc <- readIORef rdvc
-	ias <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
-	rfs@(Vk.Smp.S crfs) <- Vk.Smp.create @() @() dvc semaphoreInfo Nothing
-	writeIORef rias ias
-	writeIORef rrfs rfs
-	writeIORef renderFinishedSemaphore crfs
+	writeIORef rias =<< Vk.Smp.create @() @() dvc semaphoreInfo Nothing
+	writeIORef rrfs =<< Vk.Smp.create @() @() dvc semaphoreInfo Nothing
+	writeIORef riff =<< Vk.Fnc.create @() @() dvc fenceInfo Nothing
 
 mainLoop :: Global -> IO ()
 mainLoop g@Global { globalWindow = win, globalDevice = rdvc } = do
@@ -959,16 +960,15 @@ cleanup Global {
 	globalSwapChainFramebuffers = rscfbs,
 	globalCommandPool = rcp,
 	globalImageAvailableSemaphore = rias,
-	globalRenderFinishedSemaphore = rrfs } = do
+	globalRenderFinishedSemaphore = rrfs,
+	globalInFlightFence = riff } = do
 	dvc <- readIORef rdvc
-	rfs <- readIORef rrfs
 	ias <- readIORef rias
-	putStr "renderFinishedSemaphore: "
-	print rfs
-	Vk.Smp.destroy @() dvc rfs Nothing
-	putStr "imageAvailableSemaphore: "
-	print ias
+	rfs <- readIORef rrfs
+	iff <- readIORef riff
 	Vk.Smp.destroy @() dvc ias Nothing
+	Vk.Smp.destroy @() dvc rfs Nothing
+	Vk.Fnc.destroy @() dvc iff Nothing
 	cp <- readIORef rcp
 	Vk.CP.destroy @() dvc cp Nothing
 	fbs <- readIORef rscfbs
