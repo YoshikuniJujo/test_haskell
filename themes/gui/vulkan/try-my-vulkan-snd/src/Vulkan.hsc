@@ -30,6 +30,10 @@ import qualified Vulkan.Instance.Core as Instance.C
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice.C
 import qualified Vulkan.Image.Core as Image.C
 
+import qualified Vulkan.Pipeline.Enum as Pipeline
+import {-# SOURCE #-} qualified Vulkan.Semaphore as Semaphore
+import {-# SOURCE #-} qualified Vulkan.CommandBuffer as CommandBuffer
+
 #include <vulkan/vulkan.h>
 
 newtype Instance = Instance Instance.C.Instance deriving Show
@@ -216,3 +220,11 @@ clearValueArrayPtrs = iterate (
 
 pokeClearValue :: Ptr C.ClearValueTag -> Ptr C.ClearValueTag -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
+
+data SubmitInfo n = SubmitInfo {
+	submitInfoNext :: Maybe n,
+	submitInfoWaitSemaphoreDstStageMasks ::
+		[(Semaphore.S, Pipeline.StageFlags)],
+	submitInfoCommandBuffers :: [CommandBuffer.C],
+	submitInfoSignalSemaphores :: [Semaphore.S] }
+	deriving Show
