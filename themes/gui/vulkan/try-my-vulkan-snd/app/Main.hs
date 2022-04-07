@@ -867,7 +867,7 @@ createSyncObjects Global {
 			Vk.Smp.createInfoFlags = Vk.Smp.CreateFlagsZero }
 		fenceInfo = Vk.Fnc.CreateInfo {
 			Vk.Fnc.createInfoNext = Nothing,
-			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateFlagsZero }
+			Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 	dvc <- readIORef rdvc
 	writeIORef rias =<< Vk.Smp.create @() @() dvc semaphoreInfo Nothing
 	writeIORef rrfs =<< Vk.Smp.create @() @() dvc semaphoreInfo Nothing
@@ -890,10 +890,14 @@ drawFrame Global {
 	globalSwapChain = rsc,
 	globalCommandBuffers = rcbs,
 	globalImageAvailableSemaphore = rias,
-	globalRenderFinishedSemaphore = rrfs } = ($ pure) $ runContT do
+	globalRenderFinishedSemaphore = rrfs,
+	globalInFlightFence = riff } = ($ pure) $ runContT do
+	dvcdvc@(Vk.Device.D dvc) <- lift $ readIORef rdvc
+	iff@(Vk.Fnc.F ciff) <- lift $ readIORef riff
+	lift $ Vk.Fnc.waitForFs dvcdvc [iff] True maxBound
+	lift $ Vk.Fnc.resetFs dvcdvc [iff]
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
-	Vk.Device.D dvc <- lift $ readIORef rdvc
 	Vk.Khr.Swapchain sc <- lift $ readIORef rsc
 	Vk.Smp.S ias <- lift $ readIORef rias
 	lift do	r <- Vk.Khr.C.acquireNextImage
@@ -924,7 +928,7 @@ drawFrame Global {
 			Vk.C.submitInfoPSignalSemaphores = pSignalSemaphores }
 	Vk.Queue gq <- lift $ readIORef rgq
 	pSubmitInfo <- ContT $ withForeignPtr fSubmitInfo
-	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo NullHandle
+	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo ciff
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Swapchain s) -> s) =<< readIORef rsc

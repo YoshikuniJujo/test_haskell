@@ -41,3 +41,10 @@ foreign import ccall "vkCreateFence" create ::
 
 foreign import ccall "vkDestroyFence" destroy ::
 	Device.D -> F -> Ptr AllocationCallbacks.A -> IO ()
+
+foreign import ccall "vkWaitForFences" waitForFs ::
+	Device.D -> #{type uint32_t} -> Ptr F -> #{type VkBool32} ->
+	#{type uint64_t} -> IO #{type VkResult}
+
+foreign import ccall "vkResetFences" resetFs ::
+	Device.D -> #{type uint32_t} -> Ptr F -> IO #{type VkResult}

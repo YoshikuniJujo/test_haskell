@@ -8,10 +8,14 @@ module Vulkan.Fence where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Pointable
+import Control.Arrow
 import Control.Monad.Cont
+import Data.Word
 
+import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Fence.Enum
@@ -54,3 +58,19 @@ destroy :: Pointable n =>
 destroy (Device.D dvc) (F f) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc f pac
+
+waitForFs :: Device.D -> [F] -> Bool -> Word64 -> IO ()
+waitForFs (Device.D dvc) (length &&& ((\(F f) -> f) <$>) -> (fc, fs))
+	(boolToBool32 -> wa) to = ($ pure) $ runContT do
+	pfs <- ContT $ allocaArray fc
+	lift do	pokeArray pfs fs
+		r <- C.waitForFs dvc (fromIntegral fc) pfs wa to
+		throwUnlessSuccess $ Result r
+
+resetFs :: Device.D -> [F] -> IO ()
+resetFs (Device.D dvc)
+	(length &&& ((\(F f) -> f) <$>) -> (fc, fs)) = ($ pure) $ runContT do
+	pfs <- ContT $ allocaArray fc
+	lift do	pokeArray pfs fs
+		r <- C.resetFs dvc (fromIntegral fc) pfs
+		throwUnlessSuccess $ Result r
