@@ -892,19 +892,16 @@ drawFrame Global {
 	globalImageAvailableSemaphore = rias,
 	globalRenderFinishedSemaphore = rrfs,
 	globalInFlightFence = riff } = ($ pure) $ runContT do
-	dvcdvc@(Vk.Device.D dvc) <- lift $ readIORef rdvc
+
 	iff@(Vk.Fnc.F ciff) <- lift $ readIORef riff
-	lift $ Vk.Fnc.waitForFs dvcdvc [iff] True maxBound
-	lift $ Vk.Fnc.resetFs dvcdvc [iff]
---	lift $ putStrLn "=== DRAW FRAME ==="
-	pImageIndex <- ContT alloca
-	Vk.Khr.Sc.S sc <- lift $ readIORef rsc
-	Vk.Smp.S ias <- lift $ readIORef rias
-	lift do	r <- Vk.Khr.C.acquireNextImage
-			dvc sc uint64Max ias NullHandle pImageIndex
-		when (r /= success) $ error "bad"
-	(fromIntegral -> imageIndex) <- lift $ peek pImageIndex
---	lift $ print imageIndex
+	(fromIntegral -> imageIndex) <- lift do
+		dvc <- readIORef rdvc
+		Vk.Fnc.waitForFs dvc [iff] True maxBound
+		Vk.Fnc.resetFs dvc [iff]
+		sc <- readIORef rsc
+		ias <- readIORef rias
+		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
+
 	pWaitSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitSemaphores . (: [])
 		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rias
@@ -932,6 +929,8 @@ drawFrame Global {
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Sc.S s) -> s) =<< readIORef rsc
+	pImageIndex <- ContT alloca
+	lift $ poke pImageIndex $ fromIntegral imageIndex
 	let	Vk.Khr.C.PresentInfo_ fPresentInfo = Vk.Khr.C.PresentInfo {
 			Vk.Khr.C.presentInfoSType = (),
 			Vk.Khr.C.presentInfoPNext = NullPtr,
