@@ -121,6 +121,7 @@ begin (C c) bi = ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 
 end :: C -> IO ()
-end (C c) = do
-	r <- C.end c
-	throwUnlessSuccess $ Result r
+end (C c) = throwUnlessSuccess . Result =<< C.end c
+
+reset :: C -> ResetFlags -> IO ()
+reset (C c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs

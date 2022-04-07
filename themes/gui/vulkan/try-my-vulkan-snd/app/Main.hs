@@ -903,8 +903,9 @@ drawFrame g@Global {
 		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
 
 	cbs <- lift $ readIORef rcbs
-	scfbs <- lift $ readIORef rscfbs
-	lift $ uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
+	lift do	(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
+		scfbs <- readIORef rscfbs
+		uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 
 	pWaitSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pWaitSemaphores . (: [])
