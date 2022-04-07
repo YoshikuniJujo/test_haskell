@@ -12,22 +12,21 @@ import Control.Monad.Cont
 import Vulkan
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.Khr
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Surface
 
 import qualified Vulkan.Khr.Surface.PhysicalDevice.Core as C
 
-getCapabilities :: PhysicalDevice -> Surface -> IO Capabilities
-getCapabilities (PhysicalDevice pdvc) (Surface sfc) =
+getCapabilities :: PhysicalDevice -> S -> IO Capabilities
+getCapabilities (PhysicalDevice pdvc) (S sfc) =
 	($ pure) . runContT $ capabilitiesFromCore <$> do
 		pCapabilities <- ContT alloca
 		lift do	r <- C.getCapabilities pdvc sfc pCapabilities
 			throwUnlessSuccess $ Result r
 			peek pCapabilities
 
-getFormats :: PhysicalDevice -> Surface -> IO [Format]
-getFormats (PhysicalDevice pdvc) (Surface sfc) =
+getFormats :: PhysicalDevice -> S -> IO [Format]
+getFormats (PhysicalDevice pdvc) (S sfc) =
 	($ pure) . runContT $ (formatFromCore <$>) <$> do
 		pFormatCount <- ContT alloca
 		(fromIntegral -> formatCount) <- lift do
@@ -39,8 +38,8 @@ getFormats (PhysicalDevice pdvc) (Surface sfc) =
 			throwUnlessSuccess $ Result r
 			peekArray formatCount pFormats
 
-getPresentModes :: PhysicalDevice -> Surface -> IO [PresentMode]
-getPresentModes (PhysicalDevice pdvc) (Surface sfc) =
+getPresentModes :: PhysicalDevice -> S -> IO [PresentMode]
+getPresentModes (PhysicalDevice pdvc) (S sfc) =
 	($ pure) . runContT $ (PresentMode <$>) <$> do
 		pPresentModeCount <- ContT alloca
 		(fromIntegral -> presentModeCount) <- lift do

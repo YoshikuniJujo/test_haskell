@@ -21,13 +21,13 @@ import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Image.Enum
-import Vulkan.Khr
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Swapchain.Enum
 import Vulkan.Khr.Surface.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
+import qualified Vulkan.Khr.Surface as Surface
 import qualified Vulkan.Core as C
 import qualified Vulkan.Khr.Swapchain.Core as C
 
@@ -39,7 +39,7 @@ extensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoSurface :: Surface,
+	createInfoSurface :: Surface.S,
 	createInfoMinImageCount :: Word32,
 	createInfoImageFormat :: Format,
 	createInfoImageColorSpace :: ColorSpace,
@@ -52,14 +52,14 @@ data CreateInfo n = CreateInfo {
 	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
 	createInfoPresentMode :: PresentMode,
 	createInfoClipped :: Bool,
-	createInfoOldSwapchain :: Maybe Swapchain }
+	createInfoOldSwapchain :: Maybe S }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoSurface = Surface sfc,
+	createInfoSurface = Surface.S sfc,
 	createInfoMinImageCount = mic,
 	createInfoImageFormat = Format ifmt,
 	createInfoImageColorSpace = ColorSpace ics,
@@ -79,7 +79,7 @@ createInfoToCore CreateInfo {
 	lift $ pokeArray pqfis qfis
 	let	os = case mos of
 			Nothing -> wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
-			Just (Swapchain s) -> s
+			Just (S s) -> s
 		C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
@@ -102,9 +102,11 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 	where qfic = length qfis
 
+newtype S = S C.S deriving Show
+
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO Swapchain
-create (Device.D dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
+create (Device.D dvc) ci mac = ($ pure) . runContT $ S <$> do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	psc <- ContT alloca
@@ -113,12 +115,12 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ Swapchain <$> do
 		peek psc
 
 destroy :: Pointable n =>
-	Device.D -> Swapchain -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (Swapchain sc) mac = ($ pure) . runContT
+	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (S sc) mac = ($ pure) . runContT
 	$ lift . C.destroy dvc sc =<< AllocationCallbacks.maybeToCore mac
 
-getImages :: Device.D -> Swapchain -> IO [Image]
-getImages (Device.D dvc) (Swapchain sc) = ($ pure) . runContT $ (Image <$>) <$> do
+getImages :: Device.D -> S -> IO [Image]
+getImages (Device.D dvc) (S sc) = ($ pure) . runContT $ (Image <$>) <$> do
 	pSwapchainImageCount <- ContT alloca
 	(fromIntegral -> swapchainImageCount) <- lift do
 		r <- C.getImages dvc sc pSwapchainImageCount NullPtr

@@ -17,11 +17,11 @@ import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 
 #include <vulkan/vulkan.h>
 
-data SurfaceTag
-type Surface = Ptr SurfaceTag
+data STag
+type S = Ptr STag
 
 foreign import ccall "vkDestroySurfaceKHR" destroy ::
-	Instance -> Surface -> Ptr AllocationCallbacks.A -> IO ()
+	Instance -> S -> Ptr AllocationCallbacks.A -> IO ()
 
 struct "Capabilities" #{size VkSurfaceCapabilitiesKHR}
 		#{alignment VkSurfaceCapabilitiesKHR} [

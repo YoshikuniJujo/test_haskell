@@ -21,9 +21,9 @@ import qualified Vulkan.Image.Core as Image
 
 #include <vulkan/vulkan.h>
 
-data SwapchainTag
-type Swapchain = Ptr SwapchainTag
-type PtrSwapchain = Ptr Swapchain
+data STag
+type S = Ptr STag
+type PtrS = Ptr S
 
 strType :: #{type VkStructureType}
 strType = #{const VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR}
@@ -37,7 +37,7 @@ struct "CreateInfo" #{size VkSwapchainCreateInfoKHR}
 	("flags", ''#{type VkSwapchainCreateFlagsKHR},
 		[| #{peek VkSwapchainCreateInfoKHR, flags} |],
 		[| #{poke VkSwapchainCreateInfoKHR, flags} |]),
-	("surface", ''Surface.Surface,
+	("surface", ''Surface.S,
 		[| #{peek VkSwapchainCreateInfoKHR, surface} |],
 		[| #{poke VkSwapchainCreateInfoKHR, surface} |]),
 	("minImageCount", ''#{type uint32_t},
@@ -79,18 +79,18 @@ struct "CreateInfo" #{size VkSwapchainCreateInfoKHR}
 	("clipped", ''#{type VkBool32},
 		[| #{peek VkSwapchainCreateInfoKHR, clipped} |],
 		[| #{poke VkSwapchainCreateInfoKHR, clipped} |]),
-	("oldSwapchain", ''Swapchain,
+	("oldSwapchain", ''S,
 		[| #{peek VkSwapchainCreateInfoKHR, oldSwapchain} |],
 		[| #{poke VkSwapchainCreateInfoKHR, oldSwapchain} |]) ]
 	[''Show, ''Storable]
 
 foreign import ccall "vkCreateSwapchainKHR" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr Swapchain ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr S ->
 	IO #{type VkResult}
 
 foreign import ccall "vkDestroySwapchainKHR" destroy ::
-	Device.D -> Swapchain -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> S -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "vkGetSwapchainImagesKHR" getImages ::
-	Device.D -> Swapchain -> Ptr #{type uint32_t} -> Ptr Image.Image ->
+	Device.D -> S -> Ptr #{type uint32_t} -> Ptr Image.Image ->
 	IO #{type VkResult}

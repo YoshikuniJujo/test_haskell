@@ -134,8 +134,8 @@ data Global = Global {
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalPresentQueue :: IORef Vk.Queue,
-	globalSurface :: IORef Vk.Khr.Surface,
-	globalSwapChain :: IORef Vk.Khr.Swapchain,
+	globalSurface :: IORef Vk.Khr.Sfc.S,
+	globalSwapChain :: IORef Vk.Khr.Sc.S,
 	globalSwapChainImages :: IORef [Vk.Image],
 	globalSwapChainImageFormat :: IORef Vk.Format,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
@@ -159,8 +159,8 @@ newGlobal w = do
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue NullPtr
 	pq <- newIORef $ Vk.Queue NullPtr
-	sfc <- newIORef $ Vk.Khr.Surface NullPtr
-	sc <- newIORef $ Vk.Khr.Swapchain NullPtr
+	sfc <- newIORef $ Vk.Khr.Sfc.S NullPtr
+	sc <- newIORef $ Vk.Khr.Sc.S NullPtr
 	scimgs <- newIORef []
 	scimgfmt <- newIORef $ Vk.FormatUndefined
 	scex <- newIORef $ Vk.C.Extent2d 0 0
@@ -375,7 +375,7 @@ findQueueFamilies Global { globalSurface = rsfc } dvc = do
 		presentFamily = pfi }
 
 getPresentFamilyIndex ::
-	Vk.Khr.Surface -> Vk.PhysicalDevice -> Word32 -> Word32 -> IO (Maybe Word32)
+	Vk.Khr.Sfc.S -> Vk.PhysicalDevice -> Word32 -> Word32 -> IO (Maybe Word32)
 getPresentFamilyIndex sfc pd n i
 	| i >= n = pure Nothing
 	| otherwise = do
@@ -898,7 +898,7 @@ drawFrame Global {
 	lift $ Vk.Fnc.resetFs dvcdvc [iff]
 --	lift $ putStrLn "=== DRAW FRAME ==="
 	pImageIndex <- ContT alloca
-	Vk.Khr.Swapchain sc <- lift $ readIORef rsc
+	Vk.Khr.Sc.S sc <- lift $ readIORef rsc
 	Vk.Smp.S ias <- lift $ readIORef rias
 	lift do	r <- Vk.Khr.C.acquireNextImage
 			dvc sc uint64Max ias NullHandle pImageIndex
@@ -931,7 +931,7 @@ drawFrame Global {
 	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo ciff
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
-	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Swapchain s) -> s) =<< readIORef rsc
+	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Sc.S s) -> s) =<< readIORef rsc
 	let	Vk.Khr.C.PresentInfo_ fPresentInfo = Vk.Khr.C.PresentInfo {
 			Vk.Khr.C.presentInfoSType = (),
 			Vk.Khr.C.presentInfoPNext = NullPtr,

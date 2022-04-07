@@ -9,7 +9,6 @@ import Control.Monad.Cont
 import Data.Word
 
 import Vulkan
-import Vulkan.Khr
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Surface.Enum
 
@@ -19,9 +18,11 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Vulkan.Image.Enum as Image
 
+newtype S = S Sfc.C.S deriving Show
+
 destroy :: Pointable n =>
-	Instance -> Surface -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Instance ist) (Surface sfc) mac = ($ pure) $ runContT do
+	Instance -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Instance ist) (S sfc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ Sfc.C.destroy ist sfc pac
 
