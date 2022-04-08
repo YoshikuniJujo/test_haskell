@@ -17,6 +17,7 @@ import Data.Word
 
 import qualified Data.Text as T
 
+import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
@@ -47,8 +48,7 @@ data PresentInfo n = PresentInfo {
 	presentInfoSwapchainImageIndices :: [(Swapchain.S, Word32)] }
 	deriving Show
 
-presentInfoToCore ::
-	Pointable n => PresentInfo n -> ContT r IO (Ptr C.PresentInfo)
+presentInfoToCore :: Pointable n => PresentInfo n -> ContT r IO C.PresentInfo
 presentInfoToCore PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
@@ -65,13 +65,22 @@ presentInfoToCore PresentInfo {
 	piis <- ContT $ allocaArray scc
 	lift $ pokeArray piis iis
 	prs <- ContT $ allocaArray scc
-	let	C.PresentInfo_ fPresentInfo =  C.PresentInfo {
-			C.presentInfoSType = (),
-			C.presentInfoPNext = pnxt,
-			C.presentInfoWaitSemaphoreCount = fromIntegral wsc,
-			C.presentInfoPWaitSemaphores = pwss,
-			C.presentInfoSwapchainCount = fromIntegral scc,
-			C.presentInfoPSwapchains = pscs,
-			C.presentInfoPImageIndices = piis,
-			C.presentInfoPResults = prs }
-	ContT $ withForeignPtr fPresentInfo
+	pure C.PresentInfo {
+		C.presentInfoSType = (),
+		C.presentInfoPNext = pnxt,
+		C.presentInfoWaitSemaphoreCount = fromIntegral wsc,
+		C.presentInfoPWaitSemaphores = pwss,
+		C.presentInfoSwapchainCount = fromIntegral scc,
+		C.presentInfoPSwapchains = pscs,
+		C.presentInfoPImageIndices = piis,
+		C.presentInfoPResults = prs }
+
+queuePresent :: Pointable n => Queue -> PresentInfo n -> IO ()
+queuePresent (Queue q) pi_ = ($ pure) $ runContT do
+	cpi@(C.PresentInfo_ fpi) <- presentInfoToCore pi_
+	ppi <- ContT $ withForeignPtr fpi
+	lift do r <- C.queuePresent q ppi
+		let	(fromIntegral -> rc) = C.presentInfoSwapchainCount cpi
+		rs <- peekArray rc $ C.presentInfoPResults cpi
+		throwUnlessSuccesses $ Result <$> rs
+		throwUnlessSuccess $ Result r

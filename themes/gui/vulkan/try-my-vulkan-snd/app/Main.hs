@@ -109,8 +109,6 @@ import qualified Vulkan.Semaphore as Vk.Smp
 import qualified Vulkan.Fence as Vk.Fnc
 import qualified Vulkan.Fence.Enum as Vk.Fnc
 
-import qualified Vulkan.Khr.Core as Vk.Khr.C
-
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
 main :: IO ()
@@ -888,47 +886,36 @@ drawFrame g@Global {
 	globalCommandBuffers = rcbs,
 	globalImageAvailableSemaphore = rias,
 	globalRenderFinishedSemaphore = rrfs,
-	globalInFlightFence = riff } = ($ pure) $ runContT do
-
-	iff <- lift $ readIORef riff
-	(fromIntegral -> imageIndex) <- lift do
-		dvc <- readIORef rdvc
-		Vk.Fnc.waitForFs dvc [iff] True maxBound
-		Vk.Fnc.resetFs dvc [iff]
-		sc <- readIORef rsc
-		ias <- readIORef rias
+	globalInFlightFence = riff } = do
+	iff <- readIORef riff
+	dvc <- readIORef rdvc
+	sc <- readIORef rsc
+	scfbs <- readIORef rscfbs
+	cbs <- readIORef rcbs
+	rfs <- readIORef rrfs
+	gq <- readIORef rgq
+	pq <- readIORef rpq
+	Vk.Fnc.waitForFs dvc [iff] True maxBound
+	Vk.Fnc.resetFs dvc [iff]
+	ias <- readIORef rias
+	(fromIntegral -> imageIndex) <-
 		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
-
-	lift do cbs <- readIORef rcbs
-		(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
-		scfbs <- readIORef rscfbs
-		uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
-		ias <- readIORef rias
-		rfs <- readIORef rrfs
-		let	waitStage = Vk.Ppl.StageColorAttachmentOutputBit
-			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks =
-					[(ias, waitStage)],
-				Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
-				Vk.submitInfoSignalSemaphores = [rfs] }
-		gq <- readIORef rgq
-		Vk.queueSubmit @() gq [submitInfo] iff
-
-	rfs <- lift $ readIORef rrfs
-	sc <- lift $ readIORef rsc
+	(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
+	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks =
+				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
+			Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
+			Vk.submitInfoSignalSemaphores = [rfs] }
+	Vk.queueSubmit @() gq [submitInfo] iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],
 			Vk.Khr.presentInfoSwapchainImageIndices =
-				[(sc, fromIntegral imageIndex)]
-			}
-	Vk.Queue pq <- lift $ readIORef rpq
-	pPresentInfo <- Vk.Khr.presentInfoToCore @() presentInfo
-	lift do	r <- Vk.Khr.C.queuePresent pq pPresentInfo
-		when (r /= success) $ error "bad"
-		r' <- Vk.C.queueWaitIdle . (\(Vk.Queue q) -> q) =<< readIORef rpq
-		when (r' /= success) $ error "bad"
+				[(sc, fromIntegral imageIndex)] }
+	Vk.Khr.queuePresent @() pq presentInfo
+	Vk.queueWaitIdle pq
 
 cleanup :: Global -> IO ()
 cleanup Global {

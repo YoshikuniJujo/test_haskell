@@ -274,3 +274,6 @@ queueSubmit (Queue q)
 	lift do	pokeArray psis csis
 		r <- C.queueSubmit q (fromIntegral sic) psis f
 		throwUnlessSuccess $ Result r
+
+queueWaitIdle :: Queue -> IO ()
+queueWaitIdle (Queue q) = throwUnlessSuccess . Result =<< C.queueWaitIdle q
