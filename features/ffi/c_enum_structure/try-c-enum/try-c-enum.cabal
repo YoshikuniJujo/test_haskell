@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      TryUnFoo
   other-modules:
       Paths_try_c_enum
   hs-source-dirs:
@@ -33,6 +34,7 @@ library
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , template-haskell
   default-language: Haskell2010
 
 executable try-c-enum-exe
@@ -45,6 +47,7 @@ executable try-c-enum-exe
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , template-haskell
     , try-c-enum
   default-language: Haskell2010
 
@@ -59,5 +62,6 @@ test-suite try-c-enum-test
   build-depends:
       base >=4.7 && <5
     , c-enum
+    , template-haskell
     , try-c-enum
   default-language: Haskell2010

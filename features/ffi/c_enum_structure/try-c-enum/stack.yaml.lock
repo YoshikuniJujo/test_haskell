@@ -6,15 +6,15 @@
 packages:
 - completed:
     name: c-enum
-    version: 0.1.1.0
+    version: 0.1.1.2
     git: https://github.com/YoshikuniJujo/c-enum.git
     pantry-tree:
       size: 616
-      sha256: e8f37a19bbaf15502291daa67defe7375411f115611fe036d89144e0b25780fa
-    commit: 89f9f83f2b5cad42a07be0431ac4ad71e02da207
+      sha256: f67b75cca67a45fb3987fcf92a14e15e48d2026bc282701f1ec3210565e0efdf
+    commit: 7c07f14bb25dc95d2a3ba39cbd9cc2ace52f932f
   original:
     git: https://github.com/YoshikuniJujo/c-enum.git
-    commit: 89f9f83f2b5cad42a07be0431ac4ad71e02da207
+    commit: 7c07f14bb25dc95d2a3ba39cbd9cc2ace52f932f
 snapshots:
 - completed:
     size: 586103
