@@ -114,8 +114,6 @@ import qualified Vulkan.Khr.Core as Vk.Khr.C
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
-import qualified Vulkan.Pipeline.Core as Vk.Ppl.C
-
 main :: IO ()
 main = run
 
@@ -907,35 +905,26 @@ drawFrame g@Global {
 		scfbs <- readIORef rscfbs
 		uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 
-	pWaitSemaphores <- ContT $ allocaArray 1
-	lift $ pokeArray pWaitSemaphores . (: [])
-		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rias
-	pWaitStages <- ContT $ allocaArray 1
-	lift $ pokeArray pWaitStages [Vk.Ppl.C.stageColorAttachmentOutputBit]
-	pcb1 <- ContT $ allocaArray 1
-	let	ccbs = (\(Vk.CB.C c) -> c) <$> cbs
-	lift $ pokeArray pcb1 [ccbs !! imageIndex]
-	pSignalSemaphores <- ContT $ allocaArray 1
-	lift $ pokeArray pSignalSemaphores . (: [])
-		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rrfs
-	let	Vk.C.SubmitInfo_ fSubmitInfo = Vk.C.SubmitInfo {
-			Vk.C.submitInfoSType = (),
-			Vk.C.submitInfoPNext = NullPtr,
-			Vk.C.submitInfoWaitSemaphoreCount = 1,
-			Vk.C.submitInfoPWaitSemaphores = pWaitSemaphores,
-			Vk.C.submitInfoPWaitDstStageMask = pWaitStages,
-			Vk.C.submitInfoCommandBufferCount = 1,
-			Vk.C.submitInfoPCommandBuffers = pcb1,
-			Vk.C.submitInfoSignalSemaphoreCount = 1,
-			Vk.C.submitInfoPSignalSemaphores = pSignalSemaphores }
+	ias <- lift $ readIORef rias
+	rfs <- lift $ readIORef rrfs
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks =
+				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
+			Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
+			Vk.submitInfoSignalSemaphores = [rfs] }
 	Vk.Queue gq <- lift $ readIORef rgq
-	pSubmitInfo <- ContT $ withForeignPtr fSubmitInfo
+	pSubmitInfo <- Vk.submitInfoToCore @() submitInfo
 	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo ciff
 		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Sc.S s) -> s) =<< readIORef rsc
 	pImageIndex <- ContT alloca
 	lift $ poke pImageIndex $ fromIntegral imageIndex
+
+	pSignalSemaphores <- ContT $ allocaArray 1
+	lift $ pokeArray pSignalSemaphores . (: [])
+		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rrfs
 	let	Vk.Khr.C.PresentInfo_ fPresentInfo = Vk.Khr.C.PresentInfo {
 			Vk.Khr.C.presentInfoSType = (),
 			Vk.Khr.C.presentInfoPNext = NullPtr,

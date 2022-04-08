@@ -4,6 +4,6 @@ module Vulkan.Semaphore where
 
 import qualified Vulkan.Semaphore.Core as C
 
-newtype S = S C.S
+newtype S = S { unS :: C.S }
 
 instance Show S

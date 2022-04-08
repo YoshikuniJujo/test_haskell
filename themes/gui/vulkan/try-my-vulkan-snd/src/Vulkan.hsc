@@ -228,3 +228,37 @@ data SubmitInfo n = SubmitInfo {
 	submitInfoCommandBuffers :: [CommandBuffer.C],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 	deriving Show
+
+submitInfoToCore :: Pointable n => SubmitInfo n -> ContT r IO (Ptr C.SubmitInfo)
+submitInfoToCore SubmitInfo {
+	submitInfoNext = mnxt,
+	submitInfoWaitSemaphoreDstStageMasks =
+		length &&&
+		(	(Semaphore.unS <$>) ***
+			(Pipeline.unStageFlagBits <$>)) . unzip ->
+		(wsc, (wss, wdsms)),
+	submitInfoCommandBuffers =
+		length &&& (CommandBuffer.unC <$>) -> (cbc, cbs),
+	submitInfoSignalSemaphores =
+		length &&& (Semaphore.unS <$>) -> (ssc, sss)
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pwss <- ContT $ allocaArray wsc
+	lift $ pokeArray pwss wss
+	pwdsms <- ContT $ allocaArray wsc
+	lift $ pokeArray pwdsms wdsms
+	pcbs <- ContT $ allocaArray cbc
+	lift $ pokeArray pcbs cbs
+	psss <- ContT $ allocaArray ssc
+	lift $ pokeArray psss sss
+	let	C.SubmitInfo_ fSubmitInfo =  C.SubmitInfo {
+			C.submitInfoSType = (),
+			C.submitInfoPNext = pnxt,
+			C.submitInfoWaitSemaphoreCount = fromIntegral wsc,
+			C.submitInfoPWaitSemaphores = pwss,
+			C.submitInfoPWaitDstStageMask = pwdsms,
+			C.submitInfoCommandBufferCount = fromIntegral cbc,
+			C.submitInfoPCommandBuffers = pcbs,
+			C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
+			C.submitInfoPSignalSemaphores = psss }
+	ContT $ withForeignPtr fSubmitInfo

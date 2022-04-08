@@ -48,6 +48,13 @@ packages:
       sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
   original:
     hackage: union-color-0.1.2.0
+- completed:
+    hackage: c-enum-0.1.1.3@sha256:ca6a53d5b003051d0d6fb0b69d46b730cacbb03d80166cab7664085306d72aa3,1324
+    pantry-tree:
+      size: 362
+      sha256: c6e9277c529ed2908c3f01905d92b6578d0ed59644431c9abd57994ffc5a6329
+  original:
+    hackage: c-enum-0.1.1.3
 snapshots:
 - completed:
     size: 590100

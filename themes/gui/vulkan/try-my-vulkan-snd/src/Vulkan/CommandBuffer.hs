@@ -48,7 +48,7 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoCommandBufferCount = cbc }
 	ContT $ withForeignPtr fAllocateInfo
 
-newtype C = C C.C deriving Show
+newtype C = C { unC :: C.C } deriving Show
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
