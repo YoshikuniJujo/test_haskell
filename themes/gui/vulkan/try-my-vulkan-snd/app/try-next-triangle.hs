@@ -103,5 +103,7 @@ mainLoop = do
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
+	lift . (flip (Vk.Instance.destroy @()) Nothing)
+		=<< readGlobal globalInstance
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift $ GlfwB.terminate
