@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -22,6 +23,8 @@ import Data.Color.Internal
 
 import qualified Data.Text as T
 
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Base
 import Vulkan.Enum
 
@@ -33,6 +36,7 @@ import qualified Vulkan.Image.Core as Image.C
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Vulkan.Semaphore as Semaphore
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer as CommandBuffer
+import {-# SOURCE #-} qualified Vulkan.Fence as Fence
 
 #include <vulkan/vulkan.h>
 
@@ -229,7 +233,7 @@ data SubmitInfo n = SubmitInfo {
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 	deriving Show
 
-submitInfoToCore :: Pointable n => SubmitInfo n -> ContT r IO (Ptr C.SubmitInfo)
+submitInfoToCore :: Pointable n => SubmitInfo n -> ContT r IO C.SubmitInfo
 submitInfoToCore SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
@@ -251,14 +255,22 @@ submitInfoToCore SubmitInfo {
 	lift $ pokeArray pcbs cbs
 	psss <- ContT $ allocaArray ssc
 	lift $ pokeArray psss sss
-	let	C.SubmitInfo_ fSubmitInfo =  C.SubmitInfo {
-			C.submitInfoSType = (),
-			C.submitInfoPNext = pnxt,
-			C.submitInfoWaitSemaphoreCount = fromIntegral wsc,
-			C.submitInfoPWaitSemaphores = pwss,
-			C.submitInfoPWaitDstStageMask = pwdsms,
-			C.submitInfoCommandBufferCount = fromIntegral cbc,
-			C.submitInfoPCommandBuffers = pcbs,
-			C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
-			C.submitInfoPSignalSemaphores = psss }
-	ContT $ withForeignPtr fSubmitInfo
+	pure C.SubmitInfo {
+		C.submitInfoSType = (),
+		C.submitInfoPNext = pnxt,
+		C.submitInfoWaitSemaphoreCount = fromIntegral wsc,
+		C.submitInfoPWaitSemaphores = pwss,
+		C.submitInfoPWaitDstStageMask = pwdsms,
+		C.submitInfoCommandBufferCount = fromIntegral cbc,
+		C.submitInfoPCommandBuffers = pcbs,
+		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
+		C.submitInfoPSignalSemaphores = psss }
+
+queueSubmit :: Pointable n => Queue -> [SubmitInfo n] -> Fence.F -> IO ()
+queueSubmit (Queue q)
+	(length &&& id -> (sic, sis)) (Fence.F f) = ($ pure) $ runContT do
+	csis <- submitInfoToCore `mapM` sis
+	psis <- ContT $ allocaArray sic
+	lift do	pokeArray psis csis
+		r <- C.queueSubmit q (fromIntegral sic) psis f
+		throwUnlessSuccess $ Result r

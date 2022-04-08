@@ -891,7 +891,7 @@ drawFrame g@Global {
 	globalRenderFinishedSemaphore = rrfs,
 	globalInFlightFence = riff } = ($ pure) $ runContT do
 
-	iff@(Vk.Fnc.F ciff) <- lift $ readIORef riff
+	iff <- lift $ readIORef riff
 	(fromIntegral -> imageIndex) <- lift do
 		dvc <- readIORef rdvc
 		Vk.Fnc.waitForFs dvc [iff] True maxBound
@@ -900,28 +900,26 @@ drawFrame g@Global {
 		ias <- readIORef rias
 		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
 
-	cbs <- lift $ readIORef rcbs
-	lift do	(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
+	lift do cbs <- readIORef rcbs
+		(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
 		scfbs <- readIORef rscfbs
 		uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
+		ias <- readIORef rias
+		rfs <- readIORef rrfs
+		let	waitStage = Vk.Ppl.StageColorAttachmentOutputBit
+			submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasks =
+					[(ias, waitStage)],
+				Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
+				Vk.submitInfoSignalSemaphores = [rfs] }
+		gq <- readIORef rgq
+		Vk.queueSubmit @() gq [submitInfo] iff
 
-	ias <- lift $ readIORef rias
-	rfs <- lift $ readIORef rrfs
-	let	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks =
-				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
-			Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
-			Vk.submitInfoSignalSemaphores = [rfs] }
-	Vk.Queue gq <- lift $ readIORef rgq
-	pSubmitInfo <- Vk.submitInfoToCore @() submitInfo
-	lift do	r <- Vk.C.queueSubmit gq 1 pSubmitInfo ciff
-		when (r /= success) $ error "failed to submit draw command buffer!"
 	pSwapchains <- ContT $ allocaArray 1
 	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Sc.S s) -> s) =<< readIORef rsc
 	pImageIndex <- ContT alloca
 	lift $ poke pImageIndex $ fromIntegral imageIndex
-
 	pSignalSemaphores <- ContT $ allocaArray 1
 	lift $ pokeArray pSignalSemaphores . (: [])
 		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rrfs
