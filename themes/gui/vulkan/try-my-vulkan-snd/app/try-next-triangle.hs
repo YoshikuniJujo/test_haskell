@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -12,7 +13,11 @@ import Data.IORef
 
 import qualified Graphics.UI.GLFW as GlfwB
 
+import Vulkan.Base
+
+import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Instance
+import qualified Vulkan.Instance.Enum as Vk.Instance
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -62,7 +67,28 @@ initVulkan = do
 	createInstance
 
 createInstance :: ReaderT Global IO ()
-createInstance = pure ()
+createInstance = do
+	let	appInfo = Vk.ApplicationInfo {
+			Vk.applicationInfoNext = Nothing,
+			Vk.applicationInfoApplicationName = "Hello Triangle",
+			Vk.applicationInfoApplicationVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoEngineName = "No Engine",
+			Vk.applicationInfoEngineVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+	glfwExtensions <- lift . (cstringToText `mapM`)
+		=<< lift GlfwB.getRequiredInstanceExtensions
+	let	createInfo = Vk.Instance.CreateInfo {
+			Vk.Instance.createInfoNext = Nothing,
+			Vk.Instance.createInfoFlags =
+				Vk.Instance.CreateFlagsZero,
+			Vk.Instance.createInfoApplicationInfo = appInfo,
+			Vk.Instance.createInfoEnabledLayerNames = [],
+			Vk.Instance.createInfoEnabledExtensionNames =
+				glfwExtensions }
+	writeGlobal globalInstance
+		=<< lift (Vk.Instance.create @() @() @() createInfo Nothing)
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
