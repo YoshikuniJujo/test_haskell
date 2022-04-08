@@ -9,16 +9,16 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Vulkan
 import Vulkan.Exception
 
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Instance as Instance
 import qualified Vulkan.Khr.Surface as Surface
 
 createWindowSurface :: Pointable n =>
-	Instance -> GlfwB.Window -> Maybe (AllocationCallbacks.A n) -> IO Surface.S
-createWindowSurface (Instance ist) win mac =
+	Instance.I -> GlfwB.Window -> Maybe (AllocationCallbacks.A n) -> IO Surface.S
+createWindowSurface (Instance.I ist) win mac =
 	($ pure) . runContT $ Surface.S <$> do
 		pac <- AllocationCallbacks.maybeToCore mac
 		psfc <- ContT alloca

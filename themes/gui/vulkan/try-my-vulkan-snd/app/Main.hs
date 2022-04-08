@@ -121,7 +121,7 @@ validationLayers = [Vk.Khr.validationLayerName]
 
 data Global = Global {
 	globalWindow :: GlfwB.Window,
-	globalInstance :: IORef Vk.Instance,
+	globalInstance :: IORef Vk.Ist.I,
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
 	globalDevice :: IORef Vk.Device.D,
@@ -146,7 +146,7 @@ data Global = Global {
 
 newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
-	ist <- newIORef $ Vk.Instance NullPtr
+	ist <- newIORef $ Vk.Ist.I NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr

@@ -23,12 +23,13 @@ import Vulkan.Exception.Enum
 import Vulkan.PhysicalDevice.Enum
 import Vulkan.PhysicalDevice.Struct
 
+import qualified Vulkan.Instance as Instance
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.Khr.Surface as Surface
 
-enumerate :: Instance -> IO [PhysicalDevice]
-enumerate (Instance ist) = ($ pure) . runContT $ map PhysicalDevice <$> do
+enumerate :: Instance.I -> IO [PhysicalDevice]
+enumerate (Instance.I ist) = ($ pure) . runContT $ map PhysicalDevice <$> do
 	pdvcc <- ContT alloca
 	(fromIntegral -> dvcc) <- lift do
 		r <- C.enumerate ist pdvcc NullPtr

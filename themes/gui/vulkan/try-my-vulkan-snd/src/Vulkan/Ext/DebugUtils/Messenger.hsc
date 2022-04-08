@@ -20,7 +20,6 @@ import Data.Int
 
 import qualified Data.Text as T
 
-import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
@@ -28,6 +27,7 @@ import Vulkan.Ext.DebugUtils
 import Vulkan.Ext.DebugUtils.Message.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Instance as Instance
 import qualified Vulkan.Ext.DebugUtils.Messenger.Core as C
 
 #include <vulkan/vulkan.h>
@@ -137,9 +137,9 @@ createInfoToCore CreateInfo {
 create ::
 	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
 		Storable n6, Pointable n6, Storable ud, Pointable ud) =>
-	Instance -> CreateInfo n n2 n3 n4 n5 ud ->
+	Instance.I -> CreateInfo n n2 n3 n4 n5 ud ->
 	Maybe (AllocationCallbacks.A n6) -> IO Messenger
-create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do
+create (Instance.I ist) ci mac = ($ pure) . runContT $ Messenger <$> do
 	cci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pmsngr <- ContT alloca
@@ -148,6 +148,6 @@ create (Instance ist) ci mac = ($ pure) . runContT $ Messenger <$> do
 		peek pmsngr
 
 destroy :: Pointable n =>
-	Instance -> Messenger -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Instance ist) (Messenger msgr) mac = ($ pure) . runContT
+	Instance.I -> Messenger -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Instance.I ist) (Messenger msgr) mac = ($ pure) . runContT
 	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac

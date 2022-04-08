@@ -46,11 +46,11 @@ struct "CreateInfo" #{size VkInstanceCreateInfo}
 		[| #{poke VkInstanceCreateInfo, ppEnabledExtensionNames} |]) ]
 	[''Show]
 
-data InstanceTag
-type Instance = Ptr InstanceTag
+data ITag
+type I = Ptr ITag
 
 foreign import ccall "vkCreateInstance" create ::
-	Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr Instance -> IO #{type VkResult}
+	Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr I -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyInstance" destroy ::
-	Instance -> Ptr AllocationCallbacks.A -> IO ()
+	I -> Ptr AllocationCallbacks.A -> IO ()

@@ -17,9 +17,9 @@ import Data.Word
 import Data.Int
 
 import Vulkan.Base
-import Vulkan.Instance.Core (Instance)
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Instance.Core as Instance
 import qualified Vulkan.Ext.DebugUtils.Core as DU
 
 #include <vulkan/vulkan.h>
@@ -145,7 +145,7 @@ typeValidationBit = #{const VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT}
 typePerformanceBit = #{const VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT}
 
 create ::
-	Instance -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
+	Instance.I -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
 	Ptr Messenger -> IO #{type VkResult}
 create ist ci ac pm = withCString "vkCreateDebugUtilsMessengerEXT" \nm ->
 	c_vkGetInstanceProcAddr ist nm >>= \case
@@ -153,20 +153,20 @@ create ist ci ac pm = withCString "vkCreateDebugUtilsMessengerEXT" \nm ->
 		pf -> mkFnCreate pf ist ci ac pm
 
 type FnCreate =
-	Instance -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
+	Instance.I -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
 	Ptr Messenger -> IO #{type VkResult}
 
 foreign import ccall "dynamic" mkFnCreate :: FunPtr FnCreate -> FnCreate
 
-destroy :: Instance -> Messenger -> Ptr AllocationCallbacks.A -> IO ()
+destroy :: Instance.I -> Messenger -> Ptr AllocationCallbacks.A -> IO ()
 destroy ist msgr ac = withCString "vkDestroyDebugUtilsMessengerEXT" \nm ->
 	c_vkGetInstanceProcAddr ist nm >>= \case
 		NullFunPtr -> error "error: extension not present"
 		pf -> mkFnDestroy pf ist msgr ac
 
-type FnDestroy = Instance -> Messenger -> Ptr AllocationCallbacks.A -> IO ()
+type FnDestroy = Instance.I -> Messenger -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "dynamic" mkFnDestroy :: FunPtr FnDestroy -> FnDestroy
 
 foreign import ccall "vkGetInstanceProcAddr" c_vkGetInstanceProcAddr ::
-	Instance -> CString -> IO (FunPtr a)
+	Instance.I -> CString -> IO (FunPtr a)

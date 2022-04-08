@@ -3,6 +3,7 @@
 
 module Main where
 
+import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
 import Data.Bool
@@ -11,6 +12,8 @@ import Data.IORef
 
 import qualified Graphics.UI.GLFW as GlfwB
 
+import qualified Vulkan.Instance as Vk.Instance
+
 main :: IO ()
 main = runReaderT run =<< newGlobal
 
@@ -18,7 +21,8 @@ width, height :: Int
 width = 800; height = 600
 
 data Global = Global {
-	globalWindow :: IORef (Maybe GlfwB.Window)
+	globalWindow :: IORef (Maybe GlfwB.Window),
+	globalInstance :: IORef Vk.Instance.I
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -29,9 +33,11 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	w <- newIORef Nothing
+	win <- newIORef Nothing
+	ist <- newIORef $ Vk.Instance.I NullPtr
 	pure Global {
-		globalWindow = w
+		globalWindow = win,
+		globalInstance = ist
 		}
 
 run :: ReaderT Global IO ()
@@ -52,7 +58,11 @@ initWindow = do
 	writeGlobal globalWindow $ Just w
 
 initVulkan :: ReaderT Global IO ()
-initVulkan = pure ()
+initVulkan = do
+	createInstance
+
+createInstance :: ReaderT Global IO ()
+createInstance = pure ()
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do

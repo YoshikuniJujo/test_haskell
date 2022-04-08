@@ -57,9 +57,11 @@ createInfoToCore CreateInfo {
 			C.createInfoPpEnabledExtensionNames = peena }
 	ContT $ withForeignPtr fCreateInfo
 
+newtype I = I C.I deriving Show
+
 create :: (Pointable n, Pointable n2, Pointable n3) =>
-	CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) -> IO Instance
-create ci mac = (Instance <$>) . ($ pure) $ runContT do
+	CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) -> IO I
+create ci mac = (I <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pist <- ContT alloca
@@ -67,7 +69,7 @@ create ci mac = (Instance <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pist
 
-destroy :: (Pointable n) => Instance -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Instance cist) mac = ($ pure) $ runContT do
+destroy :: (Pointable n) => I -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (I cist) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cist pac

@@ -8,7 +8,6 @@ import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 
-import Vulkan
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Surface.Enum
 
@@ -17,12 +16,13 @@ import qualified Vulkan.Enum as E
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Vulkan.Image.Enum as Image
+import qualified Vulkan.Instance as Instance
 
 newtype S = S Sfc.C.S deriving Show
 
 destroy :: Pointable n =>
-	Instance -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Instance ist) (S sfc) mac = ($ pure) $ runContT do
+	Instance.I -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Instance.I ist) (S sfc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ Sfc.C.destroy ist sfc pac
 

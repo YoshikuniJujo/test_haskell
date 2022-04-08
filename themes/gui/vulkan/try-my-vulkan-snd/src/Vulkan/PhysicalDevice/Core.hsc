@@ -17,11 +17,11 @@ import Data.Int
 import qualified Data.Text as T
 
 import Vulkan.Base
-import Vulkan.Instance.Core (Instance)
 
 import Vulkan.Core (ExtensionProperties(..))
 import Vulkan.PhysicalDevice.Struct.Core
 
+import qualified Vulkan.Instance.Core as Instance
 import qualified Vulkan.QueueFamily.Core as QueueFamily
 import qualified Vulkan.Khr.Surface.Core as Surface
 
@@ -31,7 +31,7 @@ data PhysicalDeviceTag
 type PhysicalDevice = Ptr PhysicalDeviceTag
 
 foreign import ccall "vkEnumeratePhysicalDevices" enumerate ::
-	Instance -> Ptr #{type uint32_t} -> Ptr PhysicalDevice ->
+	Instance.I -> Ptr #{type uint32_t} -> Ptr PhysicalDevice ->
 	IO #{type VkResult}
 
 type ListCFloat = [#{type float}]
