@@ -99,3 +99,6 @@ getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue <$> do
 	pQueue <- ContT alloca
 	lift do	C.getQueue cdvc qfi qi pQueue
 		peek pQueue
+
+waitIdle :: D -> IO ()
+waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d

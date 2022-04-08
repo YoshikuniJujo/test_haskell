@@ -66,7 +66,6 @@ import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
 import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
-import qualified Vulkan.Device.Core as Vk.Device.C
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 import qualified Vulkan.ImageView as Vk.ImageView
@@ -873,8 +872,7 @@ mainLoop g@Global { globalWindow = win, globalDevice = rdvc } = do
 		GlfwB.pollEvents
 		drawFrame g
 		not <$> GlfwB.windowShouldClose win
-	r <- Vk.Device.C.waitIdle . (\(Vk.Device.D d) -> d) =<< readIORef rdvc
-	when (r /= success) $ error "wait idle failure"
+	Vk.Device.waitIdle =<< readIORef rdvc
 
 drawFrame :: Global -> IO ()
 drawFrame g@Global {
