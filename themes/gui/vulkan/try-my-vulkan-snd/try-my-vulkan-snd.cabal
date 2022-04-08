@@ -61,8 +61,6 @@ library
       Vulkan.Device.Queue.Core
       Vulkan.Device.Queue.Enum
       Vulkan.Enum
-      Vulkan.Enumerate
-      Vulkan.Enumerate.Core
       Vulkan.Exception
       Vulkan.Exception.Enum
       Vulkan.Ext.DebugUtils

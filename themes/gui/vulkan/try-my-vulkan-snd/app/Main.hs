@@ -45,7 +45,6 @@ import qualified Vulkan.Enum as Vk
 import qualified Vulkan.AllocationCallbacks as Vk.AC
 import qualified Vulkan.Instance as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
-import qualified Vulkan.Enumerate as Vk.Enumerate
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
@@ -235,7 +234,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 		putStrLn "available extensions:"
 		mapM_ (Txt.putStrLn . ("\t" <>)
 				. Vk.extensionPropertiesExtensionName)
-			=<< Vk.Enumerate.instanceExtensionProperties Nothing
+			=<< Vk.Ist.enumerateExtensionProperties Nothing
 	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
 	pValidationLayers <- ContT $ allocaArray 1
 	lift $ pokeArray pValidationLayers [pValidationLayer]
@@ -263,7 +262,7 @@ checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
 	(\lns -> all (`elem` lns) validationLayers)
 			. map Vk.layerPropertiesLayerName
-		<$> Vk.Enumerate.instanceLayerProperties
+		<$> Vk.Ist.enumerateLayerProperties
 
 getRequiredExtensions :: IO [Txt.Text]
 getRequiredExtensions =

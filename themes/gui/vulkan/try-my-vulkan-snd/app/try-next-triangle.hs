@@ -11,6 +11,7 @@ import Data.Bool
 import Data.Maybe
 import Data.IORef
 
+import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 
 import Vulkan.Base
@@ -68,6 +69,9 @@ initVulkan = do
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
+	lift . mapM_
+		(Txt.putStrLn . ("\t" <>) . Vk.extensionPropertiesExtensionName)
+		=<< lift (Vk.Instance.enumerateExtensionProperties Nothing)
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
