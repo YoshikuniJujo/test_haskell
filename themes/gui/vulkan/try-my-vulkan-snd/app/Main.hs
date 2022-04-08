@@ -64,7 +64,6 @@ import qualified Vulkan.Image.Enum as Vk.Img
 
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
-import qualified Vulkan.QueueFamily.Core as Vk.QueueFamily.C
 
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
@@ -382,10 +381,6 @@ checkGraphicsBit :: Vk.QueueFamily.Properties -> Bool
 checkGraphicsBit prop = let
 	Vk.QueueFlagBits b = Vk.QueueFamily.propertiesQueueFlags prop in
 	b .&. queueGraphicsBit /= 0
-
-checkGraphicsBitCore :: Vk.QueueFamily.C.Properties -> Bool
-checkGraphicsBitCore prop =
-	Vk.QueueFamily.C.propertiesQueueFlags prop .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	swapChainSupportDetailsCapabilities :: Vk.Khr.Sfc.Capabilities,
@@ -885,8 +880,9 @@ drawFrame g@Global {
 	globalImageAvailableSemaphore = rias,
 	globalRenderFinishedSemaphore = rrfs,
 	globalInFlightFence = riff } = do
-	iff <- readIORef riff
 	dvc <- readIORef rdvc
+	iff <- readIORef riff
+	ias <- readIORef rias
 	sc <- readIORef rsc
 	scfbs <- readIORef rscfbs
 	cbs <- readIORef rcbs
@@ -895,7 +891,6 @@ drawFrame g@Global {
 	pq <- readIORef rpq
 	Vk.Fnc.waitForFs dvc [iff] True maxBound
 	Vk.Fnc.resetFs dvc [iff]
-	ias <- readIORef rias
 	(fromIntegral -> imageIndex) <-
 		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
 	(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
