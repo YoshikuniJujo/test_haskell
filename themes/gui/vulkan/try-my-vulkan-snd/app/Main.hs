@@ -807,7 +807,7 @@ createCommandBuffers Global {
 	globalDevice = rdvc, globalSwapChainFramebuffers = rscfbs,
 	globalCommandPool = rcp, globalCommandBuffers = rcbs } = do
 	dvc <- readIORef rdvc
-	scfbs <-  readIORef rscfbs
+	scfbs <- readIORef rscfbs
 	cp <- readIORef rcp
 	cbs <- Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
 		Vk.CB.allocateInfoNext = Nothing,
