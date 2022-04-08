@@ -12,7 +12,6 @@ module Main where
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.Storable
 import Foreign.C.String
 import Foreign.Pointable
 import Control.Monad.Fix
@@ -916,24 +915,16 @@ drawFrame g@Global {
 		gq <- readIORef rgq
 		Vk.queueSubmit @() gq [submitInfo] iff
 
-	pSwapchains <- ContT $ allocaArray 1
-	lift $ pokeArray pSwapchains . (: []) . (\(Vk.Khr.Sc.S s) -> s) =<< readIORef rsc
-	pImageIndex <- ContT alloca
-	lift $ poke pImageIndex $ fromIntegral imageIndex
-	pSignalSemaphores <- ContT $ allocaArray 1
-	lift $ pokeArray pSignalSemaphores . (: [])
-		=<< (\(Vk.Smp.S s) -> s) <$> readIORef rrfs
-	let	Vk.Khr.C.PresentInfo_ fPresentInfo = Vk.Khr.C.PresentInfo {
-			Vk.Khr.C.presentInfoSType = (),
-			Vk.Khr.C.presentInfoPNext = NullPtr,
-			Vk.Khr.C.presentInfoWaitSemaphoreCount = 1,
-			Vk.Khr.C.presentInfoPWaitSemaphores = pSignalSemaphores,
-			Vk.Khr.C.presentInfoSwapchainCount = 1,
-			Vk.Khr.C.presentInfoPSwapchains = pSwapchains,
-			Vk.Khr.C.presentInfoPImageIndices = pImageIndex,
-			Vk.Khr.C.presentInfoPResults = NullPtr }
+	rfs <- lift $ readIORef rrfs
+	sc <- lift $ readIORef rsc
+	let	presentInfo = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoNext = Nothing,
+			Vk.Khr.presentInfoWaitSemaphores = [rfs],
+			Vk.Khr.presentInfoSwapchainImageIndices =
+				[(sc, fromIntegral imageIndex)]
+			}
 	Vk.Queue pq <- lift $ readIORef rpq
-	pPresentInfo <- ContT $ withForeignPtr fPresentInfo
+	pPresentInfo <- Vk.Khr.presentInfoToCore @() presentInfo
 	lift do	r <- Vk.Khr.C.queuePresent pq pPresentInfo
 		when (r /= success) $ error "bad"
 		r' <- Vk.C.queueWaitIdle . (\(Vk.Queue q) -> q) =<< readIORef rpq

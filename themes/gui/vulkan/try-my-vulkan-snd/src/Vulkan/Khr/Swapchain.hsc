@@ -102,7 +102,7 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 	where qfic = length qfis
 
-newtype S = S C.S deriving Show
+newtype S = S { unS :: C.S } deriving Show
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
