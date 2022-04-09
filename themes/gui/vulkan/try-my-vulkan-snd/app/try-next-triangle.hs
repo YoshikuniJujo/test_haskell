@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -11,20 +12,31 @@ import Data.Bool
 import Data.Maybe
 import Data.IORef
 
+import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
+
+import ThEnv
 
 import Vulkan.Base
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
+import qualified Vulkan.Khr as Vk.Khr
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
 
 width, height :: Int
 width = 800; height = 600
+
+enableValidationLayer :: Bool
+enableValidationLayer =
+	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
+
+validationLayers :: [Txt.Text]
+validationLayers = [Vk.Khr.validationLayerName]
 
 data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
