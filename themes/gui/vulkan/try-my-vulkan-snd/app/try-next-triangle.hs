@@ -25,6 +25,7 @@ import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -98,8 +99,7 @@ createInstance = do
 			Vk.applicationInfoEngineVersion =
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-	glfwExtensions <- lift . (cstringToText `mapM`)
-		=<< lift GlfwB.getRequiredInstanceExtensions
+	extensions <- getRequiredExtensions
 	let	createInfo = Vk.Instance.CreateInfo {
 			Vk.Instance.createInfoNext = Nothing,
 			Vk.Instance.createInfoFlags =
@@ -107,8 +107,8 @@ createInstance = do
 			Vk.Instance.createInfoApplicationInfo = appInfo,
 			Vk.Instance.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Instance.createInfoEnabledExtensionNames =
-				glfwExtensions }
+			Vk.Instance.createInfoEnabledExtensionNames = extensions
+			}
 	writeGlobal globalInstance
 		=<< lift (Vk.Instance.create @() @() @() createInfo Nothing)
 
@@ -119,6 +119,13 @@ checkValidationLayerSupport = lift do
 	print availableLayers
 	pure . null $ validationLayers \\
 		(Vk.layerPropertiesLayerName <$> availableLayers)
+
+getRequiredExtensions :: ReaderT Global IO [Txt.Text]
+getRequiredExtensions = lift do
+	glfwExtensions <-
+		(cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
+	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
+		enableValidationLayers glfwExtensions
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
