@@ -10,6 +10,7 @@ import Control.Monad.Fix
 import Control.Monad.Reader
 import Data.Bool
 import Data.Maybe
+import Data.List
 import Data.IORef
 
 import qualified Data.Text as Txt
@@ -31,8 +32,8 @@ main = runReaderT run =<< newGlobal
 width, height :: Int
 width = 800; height = 600
 
-enableValidationLayer :: Bool
-enableValidationLayer =
+enableValidationLayers :: Bool
+enableValidationLayers =
 	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
 
 validationLayers :: [Txt.Text]
@@ -84,6 +85,10 @@ createInstance = do
 	lift . mapM_
 		(Txt.putStrLn . ("\t" <>) . Vk.extensionPropertiesExtensionName)
 		=<< lift (Vk.Instance.enumerateExtensionProperties Nothing)
+	when enableValidationLayers $ bool
+		(lift $ error "validation layers requested, but not available!")
+		(pure ())
+			=<< checkValidationLayerSupport
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -100,11 +105,20 @@ createInstance = do
 			Vk.Instance.createInfoFlags =
 				Vk.Instance.CreateFlagsZero,
 			Vk.Instance.createInfoApplicationInfo = appInfo,
-			Vk.Instance.createInfoEnabledLayerNames = [],
+			Vk.Instance.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
 			Vk.Instance.createInfoEnabledExtensionNames =
 				glfwExtensions }
 	writeGlobal globalInstance
 		=<< lift (Vk.Instance.create @() @() @() createInfo Nothing)
+
+checkValidationLayerSupport :: ReaderT Global IO Bool
+checkValidationLayerSupport = lift do
+	availableLayers <- Vk.Instance.enumerateLayerProperties
+	print validationLayers
+	print availableLayers
+	pure . null $ validationLayers \\
+		(Vk.layerPropertiesLayerName <$> availableLayers)
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
