@@ -12,7 +12,6 @@ module Main where
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.ForeignPtr hiding (newForeignPtr)
-import Foreign.C.String
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Cont
@@ -235,9 +234,6 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 		mapM_ (Txt.putStrLn . ("\t" <>)
 				. Vk.extensionPropertiesExtensionName)
 			=<< Vk.Ist.enumerateExtensionProperties Nothing
-	pValidationLayer <- lift $ newCString "VK_LAYER_KHRONOS_validation"
-	pValidationLayers <- ContT $ allocaArray 1
-	lift $ pokeArray pValidationLayers [pValidationLayer]
 	extensions <- lift getRequiredExtensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
