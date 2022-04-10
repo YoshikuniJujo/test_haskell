@@ -8,6 +8,7 @@ module Main where
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
+import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
@@ -26,6 +27,10 @@ import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
+import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
+import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
+
+import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -42,7 +47,8 @@ validationLayers = [Vk.Khr.validationLayerName]
 
 data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
-	globalInstance :: IORef Vk.Instance.I
+	globalInstance :: IORef Vk.Instance.I,
+	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -55,9 +61,11 @@ newGlobal :: IO Global
 newGlobal = do
 	win <- newIORef Nothing
 	ist <- newIORef $ Vk.Instance.I NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
 	pure Global {
 		globalWindow = win,
-		globalInstance = ist
+		globalInstance = ist,
+		globalDebugMessenger = dmsgr
 		}
 
 run :: ReaderT Global IO ()
@@ -80,6 +88,7 @@ initWindow = do
 initVulkan :: ReaderT Global IO ()
 initVulkan = do
 	createInstance
+	when enableValidationLayers setupDebugMessenger
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -126,6 +135,35 @@ getRequiredExtensions = lift do
 		(cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
 	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
 		enableValidationLayers glfwExtensions
+
+setupDebugMessenger :: ReaderT Global IO ()
+setupDebugMessenger = do
+	let	createInfo = Vk.Ext.DebugUtils.Messenger.CreateInfo {
+			Vk.Ext.DebugUtils.Messenger.createInfoNext = Nothing,
+			Vk.Ext.DebugUtils.Messenger.createInfoFlags =
+				Vk.Ext.DebugUtils.Messenger.CreateFlagsZero,
+			Vk.Ext.DebugUtils.Messenger.createInfoMessageSeverity =
+				Vk.Ext.DebugUtils.Message.SeverityVerboseBit .|.
+				Vk.Ext.DebugUtils.Message.SeverityWarningBit .|.
+				Vk.Ext.DebugUtils.Message.SeverityErrorBit,
+			Vk.Ext.DebugUtils.Messenger.createInfoMessageType =
+				Vk.Ext.DebugUtils.Message.TypeGeneralBit .|.
+				Vk.Ext.DebugUtils.Message.TypeValidationBit .|.
+				Vk.Ext.DebugUtils.Message.TypePerformanceBit,
+			Vk.Ext.DebugUtils.Messenger.createInfoFnUserCallback =
+				debugCallback,
+			Vk.Ext.DebugUtils.Messenger.createInfoUserData =
+				Nothing }
+	ist <- readGlobal globalInstance
+	writeGlobal globalDebugMessenger
+		=<< lift (Vk.Ext.DebugUtils.Messenger.create @() @() ist createInfo Vk.AllocationCallbacks.nil)
+
+debugCallback :: Vk.Ext.DebugUtils.Messenger.FnCallback () () () () ()
+debugCallback _messageSeverity _messageType callbackData _userData = do
+	let	message = Vk.Ext.DebugUtils.Messenger.callbackDataMessage
+			callbackData
+	Txt.putStrLn $ "validation layer: " <> message
+	pure False
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
