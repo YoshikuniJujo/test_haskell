@@ -110,7 +110,8 @@ createInstance = do
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 	extensions <- getRequiredExtensions
 	let	createInfo = Vk.Instance.CreateInfo {
-			Vk.Instance.createInfoNext = Nothing,
+			Vk.Instance.createInfoNext =
+				Just populateDebugMessengerCreateInfo,
 			Vk.Instance.createInfoFlags =
 				Vk.Instance.CreateFlagsZero,
 			Vk.Instance.createInfoApplicationInfo = appInfo,
@@ -119,7 +120,7 @@ createInstance = do
 			Vk.Instance.createInfoEnabledExtensionNames = extensions
 			}
 	writeGlobal globalInstance
-		=<< lift (Vk.Instance.create @() @() @() createInfo Nothing)
+		=<< lift (Vk.Instance.create @_ @() @() createInfo Nothing)
 
 checkValidationLayerSupport :: ReaderT Global IO Bool
 checkValidationLayerSupport = lift do
@@ -138,26 +139,28 @@ getRequiredExtensions = lift do
 
 setupDebugMessenger :: ReaderT Global IO ()
 setupDebugMessenger = do
-	let	createInfo = Vk.Ext.DebugUtils.Messenger.CreateInfo {
-			Vk.Ext.DebugUtils.Messenger.createInfoNext = Nothing,
-			Vk.Ext.DebugUtils.Messenger.createInfoFlags =
-				Vk.Ext.DebugUtils.Messenger.CreateFlagsZero,
-			Vk.Ext.DebugUtils.Messenger.createInfoMessageSeverity =
-				Vk.Ext.DebugUtils.Message.SeverityVerboseBit .|.
-				Vk.Ext.DebugUtils.Message.SeverityWarningBit .|.
-				Vk.Ext.DebugUtils.Message.SeverityErrorBit,
-			Vk.Ext.DebugUtils.Messenger.createInfoMessageType =
-				Vk.Ext.DebugUtils.Message.TypeGeneralBit .|.
-				Vk.Ext.DebugUtils.Message.TypeValidationBit .|.
-				Vk.Ext.DebugUtils.Message.TypePerformanceBit,
-			Vk.Ext.DebugUtils.Messenger.createInfoFnUserCallback =
-				debugCallback,
-			Vk.Ext.DebugUtils.Messenger.createInfoUserData =
-				Nothing }
 	ist <- readGlobal globalInstance
 	writeGlobal globalDebugMessenger =<< lift (
-		Vk.Ext.DebugUtils.Messenger.create
-			@() ist createInfo Vk.AllocationCallbacks.nil )
+		Vk.Ext.DebugUtils.Messenger.create ist
+			populateDebugMessengerCreateInfo
+			Vk.AllocationCallbacks.nil )
+
+populateDebugMessengerCreateInfo ::
+	Vk.Ext.DebugUtils.Messenger.CreateInfo () () () () () ()
+populateDebugMessengerCreateInfo = Vk.Ext.DebugUtils.Messenger.CreateInfo {
+	Vk.Ext.DebugUtils.Messenger.createInfoNext = Nothing,
+	Vk.Ext.DebugUtils.Messenger.createInfoFlags =
+		Vk.Ext.DebugUtils.Messenger.CreateFlagsZero,
+	Vk.Ext.DebugUtils.Messenger.createInfoMessageSeverity =
+		Vk.Ext.DebugUtils.Message.SeverityVerboseBit .|.
+		Vk.Ext.DebugUtils.Message.SeverityWarningBit .|.
+		Vk.Ext.DebugUtils.Message.SeverityErrorBit,
+	Vk.Ext.DebugUtils.Messenger.createInfoMessageType =
+		Vk.Ext.DebugUtils.Message.TypeGeneralBit .|.
+		Vk.Ext.DebugUtils.Message.TypeValidationBit .|.
+		Vk.Ext.DebugUtils.Message.TypePerformanceBit,
+	Vk.Ext.DebugUtils.Messenger.createInfoFnUserCallback = debugCallback,
+	Vk.Ext.DebugUtils.Messenger.createInfoUserData = Nothing }
 
 debugCallback :: Vk.Ext.DebugUtils.Messenger.FnCallback () () () () ()
 debugCallback _messageSeverity _messageType callbackData _userData = do
