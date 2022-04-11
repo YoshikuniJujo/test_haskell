@@ -34,6 +34,9 @@ import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.Device as Vk.Device
+import qualified Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -52,7 +55,9 @@ data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
 	globalInstance :: IORef Vk.Instance.I,
 	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
-	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P
+	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
+	globalDevice :: IORef Vk.Device.D,
+	globalGraphicsQueue :: IORef Vk.Queue
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -67,11 +72,15 @@ newGlobal = do
 	ist <- newIORef $ Vk.Instance.I NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
+	dvc <- newIORef $ Vk.Device.D NullPtr
+	gq <- newIORef $ Vk.Queue NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
 		globalDebugMessenger = dmsgr,
-		globalPhysicalDevice = pdvc
+		globalPhysicalDevice = pdvc,
+		globalDevice = dvc,
+		globalGraphicsQueue = gq
 		}
 
 run :: ReaderT Global IO ()
@@ -96,6 +105,7 @@ initVulkan = do
 	createInstance
 	when enableValidationLayers setupDebugMessenger
 	pickPhysicalDevice
+	createLogicalDevice
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -213,6 +223,35 @@ isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
 	graphicsFamily = gf } = isJust gf
 
+createLogicalDevice :: ReaderT Global IO ()
+createLogicalDevice = do
+	indices <- lift . findQueueFamilies =<< readGlobal globalPhysicalDevice
+	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
+			Vk.Device.Queue.createInfoNext = Nothing,
+			Vk.Device.Queue.createInfoFlags =
+				Vk.Device.Queue.CreateFlagsZero,
+			Vk.Device.Queue.createInfoQueueFamilyIndex =
+				fromJust $ graphicsFamily indices,
+			Vk.Device.Queue.createInfoQueuePriorities = [1] }
+		deviceFeatures = Vk.PhysicalDevice.featuresZero
+		createInfo = Vk.Device.CreateInfo {
+			Vk.Device.createInfoNext = Nothing,
+			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
+			Vk.Device.createInfoQueueCreateInfos =
+				[queueCreateInfo],
+			Vk.Device.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
+			Vk.Device.createInfoEnabledExtensionNames = [],
+			Vk.Device.createInfoEnabledFeatures =
+				Just deviceFeatures }
+	pdvc <- readGlobal globalPhysicalDevice
+	dvc <- lift (
+		Vk.Device.create @() @()
+			pdvc createInfo Vk.AllocationCallbacks.nil )
+	writeGlobal globalDevice dvc
+	writeGlobal globalGraphicsQueue =<< lift (
+		Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0 )
+
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
@@ -222,6 +261,8 @@ mainLoop = do
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
+	lift . (`Vk.Device.destroy` Vk.AllocationCallbacks.nil)
+		=<< readGlobal globalDevice
 	ist <- readGlobal globalInstance
 	dmsgr <- readGlobal globalDebugMessenger
 	when enableValidationLayers . lift

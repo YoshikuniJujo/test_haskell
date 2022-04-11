@@ -420,7 +420,8 @@ createLogicalDevice g@Global {
 					then validationLayers else [],
 			Vk.Device.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Device.createInfoEnabledFeatures = deviceFeatures }
+			Vk.Device.createInfoEnabledFeatures =
+				Just deviceFeatures }
 	dvc <- Vk.Device.create @() @() @() phdvc createInfo Nothing
 	writeIORef rdvc dvc
 	gq <- Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0

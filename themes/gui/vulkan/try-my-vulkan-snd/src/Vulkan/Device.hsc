@@ -46,7 +46,7 @@ data CreateInfo n n' = CreateInfo {
 	createInfoQueueCreateInfos :: [Queue.CreateInfo n'],
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
-	createInfoEnabledFeatures :: PhysicalDevice.Features }
+	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 	deriving Show
 
 createInfoToCore :: (Pointable n, Pointable n') =>
@@ -57,15 +57,18 @@ createInfoToCore CreateInfo {
 	createInfoQueueCreateInfos = (id &&& length) -> (qcis, qcic),
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
-	createInfoEnabledFeatures = ef } = do
+	createInfoEnabledFeatures = mef } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	cqcis <- Queue.createInfoToCore `mapM` qcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
 	pcelns <- textListToCStringArray elns
 	pceens <- textListToCStringArray eens
-	pef <- ContT alloca
-	lift . poke pef $ PhysicalDevice.featuresToCore ef
+	pef <- case mef of
+		Nothing -> pure NullPtr
+		Just ef -> do
+			p <- ContT alloca
+			p <$ lift (poke p $ PhysicalDevice.featuresToCore ef)
 	let	 C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
