@@ -12,6 +12,7 @@ import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
+import Data.Word
 import Data.IORef
 
 import qualified Data.Text as Txt
@@ -23,6 +24,7 @@ import ThEnv
 import Vulkan.Base
 
 import qualified Vulkan as Vk
+import qualified Vulkan.Enum as Vk
 import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
@@ -31,6 +33,7 @@ import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.QueueFamily as Vk.QueueFamily
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -175,7 +178,40 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 
 pickPhysicalDevice :: ReaderT Global IO ()
 pickPhysicalDevice = do
-	pure ()
+	ist <- readGlobal globalInstance
+	devices <- lift $ Vk.PhysicalDevice.enumerate ist
+	when (null devices) $ error "failed to find GPUs with Vulkan support!"
+	suitableDevices <- filterM isDeviceSuitable devices
+	case suitableDevices of
+		[] -> error "failed to find a suitable GPU!"
+		(pdvc : _) -> writeGlobal globalPhysicalDevice pdvc
+
+isDeviceSuitable :: Vk.PhysicalDevice.P -> ReaderT Global IO Bool
+isDeviceSuitable pdvc = lift do
+	_deviceProperties <- Vk.PhysicalDevice.getProperties pdvc
+	_deviceFeatures <- Vk.PhysicalDevice.getFeatures pdvc
+	indices <- findQueueFamilies pdvc
+	pure $ isComplete indices
+
+findQueueFamilies :: Vk.PhysicalDevice.P -> IO QueueFamilyIndices
+findQueueFamilies device = do
+	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
+	print queueFamilies
+	pure QueueFamilyIndices {
+		graphicsFamily = fst <$> find
+			((/= zeroBits)
+				. (.&. Vk.QueueGraphicsBit)
+				. Vk.QueueFamily.propertiesQueueFlags
+				. snd )
+			(zip [0 ..] queueFamilies)
+		}
+
+data QueueFamilyIndices = QueueFamilyIndices {
+	graphicsFamily :: Maybe Word32 }
+
+isComplete :: QueueFamilyIndices -> Bool
+isComplete QueueFamilyIndices {
+	graphicsFamily = gf } = isJust gf
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
