@@ -23,14 +23,14 @@ import ThEnv
 import Vulkan.Base
 
 import qualified Vulkan as Vk
+import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
-
-import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
+import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -49,6 +49,7 @@ data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
 	globalInstance :: IORef Vk.Instance.I,
 	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger
+--	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -89,6 +90,7 @@ initVulkan :: ReaderT Global IO ()
 initVulkan = do
 	createInstance
 	when enableValidationLayers setupDebugMessenger
+	pickPhysicalDevice
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -168,6 +170,10 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 			callbackData
 	Txt.putStrLn $ "validation layer: " <> message
 	pure False
+
+pickPhysicalDevice :: ReaderT Global IO ()
+pickPhysicalDevice = do
+	pure ()
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
