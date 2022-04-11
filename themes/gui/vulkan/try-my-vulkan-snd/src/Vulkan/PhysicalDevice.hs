@@ -28,8 +28,10 @@ import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.Khr.Surface as Surface
 
-enumerate :: Instance.I -> IO [PhysicalDevice]
-enumerate (Instance.I ist) = ($ pure) . runContT $ map PhysicalDevice <$> do
+newtype P = P C.P deriving Show
+
+enumerate :: Instance.I -> IO [P]
+enumerate (Instance.I ist) = ($ pure) . runContT $ map P <$> do
 	pdvcc <- ContT alloca
 	(fromIntegral -> dvcc) <- lift do
 		r <- C.enumerate ist pdvcc NullPtr
@@ -101,15 +103,15 @@ sparsePropertiesFromCore C.SparseProperties {
 	where [rs2bs, rs2mbs, rs3bs, rams, nrs] = bool32ToBool <$>
 		[crs2bs, crs2mbs, crs3bs, crams, cnrs]
 
-getProperties :: PhysicalDevice -> IO Properties
-getProperties (PhysicalDevice pdvc) =
+getProperties :: P -> IO Properties
+getProperties (P pdvc) =
 	($ pure) . runContT $ propertiesFromCore <$> do
 		pppts <- ContT alloca
 		lift do	C.getProperties pdvc pppts
 			peek pppts
 
-getFeatures :: PhysicalDevice -> IO Features
-getFeatures (PhysicalDevice pdvc) =
+getFeatures :: P -> IO Features
+getFeatures (P pdvc) =
 	($ pure) . runContT $ featuresFromCore <$> do
 		pfts <- ContT alloca
 		lift do	C.getFeatures pdvc pfts
@@ -118,8 +120,8 @@ getFeatures (PhysicalDevice pdvc) =
 featuresZero :: Features
 featuresZero = unsafePerformIO $ featuresFromCore <$> C.getClearedFeatures
 
-getQueueFamilyProperties :: PhysicalDevice -> IO [QueueFamily.Properties]
-getQueueFamilyProperties (PhysicalDevice pdvc) =
+getQueueFamilyProperties :: P -> IO [QueueFamily.Properties]
+getQueueFamilyProperties (P pdvc) =
 	($ pure) . runContT $ map QueueFamily.propertiesFromCore <$> do
 		ppptc <- ContT alloca
 		(fromIntegral -> pptc) <- lift do
@@ -129,8 +131,8 @@ getQueueFamilyProperties (PhysicalDevice pdvc) =
 		lift do	C.getQueueFamilyProperties pdvc ppptc pppts
 			peekArray pptc pppts
 
-getSurfaceSupport :: PhysicalDevice -> Word32 -> Surface.S -> IO Bool
-getSurfaceSupport (PhysicalDevice phdvc) qfi (Surface.S sfc) =
+getSurfaceSupport :: P -> Word32 -> Surface.S -> IO Bool
+getSurfaceSupport (P phdvc) qfi (Surface.S sfc) =
 	($ pure) . runContT $ bool32ToBool <$> do
 		pSupported <- ContT alloca
 		lift do	r <- C.getSurfaceSupport phdvc qfi sfc pSupported
@@ -138,8 +140,8 @@ getSurfaceSupport (PhysicalDevice phdvc) qfi (Surface.S sfc) =
 			peek pSupported
 
 enumerateExtensionProperties ::
-	PhysicalDevice -> Maybe T.Text -> IO [ExtensionProperties]
-enumerateExtensionProperties (PhysicalDevice pdvc) mlnm = ($ pure) $ runContT do
+	P -> Maybe T.Text -> IO [ExtensionProperties]
+enumerateExtensionProperties (P pdvc) mlnm = ($ pure) $ runContT do
 	pExtensionCount <- ContT alloca
 	cmlnm <- case mlnm of
 		Nothing -> pure NullPtr

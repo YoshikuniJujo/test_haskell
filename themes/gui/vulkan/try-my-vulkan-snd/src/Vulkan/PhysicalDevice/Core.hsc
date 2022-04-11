@@ -27,11 +27,11 @@ import qualified Vulkan.Khr.Surface.Core as Surface
 
 #include <vulkan/vulkan.h>
 
-data PhysicalDeviceTag
-type PhysicalDevice = Ptr PhysicalDeviceTag
+data PTag
+type P = Ptr PTag
 
 foreign import ccall "vkEnumeratePhysicalDevices" enumerate ::
-	Instance.I -> Ptr #{type uint32_t} -> Ptr PhysicalDevice ->
+	Instance.I -> Ptr #{type uint32_t} -> Ptr P ->
 	IO #{type VkResult}
 
 type ListCFloat = [#{type float}]
@@ -108,7 +108,7 @@ vkMaxPhysicalDeviceNameSize :: Integral n => n
 vkMaxPhysicalDeviceNameSize = #{const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE}
 
 foreign import ccall "vkGetPhysicalDeviceProperties" getProperties ::
-	PhysicalDevice -> Ptr Properties -> IO ()
+	P -> Ptr Properties -> IO ()
 
 getClearedFeatures :: IO Features
 getClearedFeatures = do
@@ -116,18 +116,18 @@ getClearedFeatures = do
 	Features_ <$> newForeignPtr pf (free pf)
 
 foreign import ccall "vkGetPhysicalDeviceFeatures" getFeatures ::
-	PhysicalDevice -> Ptr Features -> IO ()
+	P -> Ptr Features -> IO ()
 
 foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
 	getQueueFamilyProperties ::
-	PhysicalDevice -> Ptr #{type uint32_t} -> Ptr QueueFamily.Properties ->
+	P -> Ptr #{type uint32_t} -> Ptr QueueFamily.Properties ->
 	IO ()
 
 foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR" getSurfaceSupport ::
-	PhysicalDevice -> #{type uint32_t} -> Surface.S ->
+	P -> #{type uint32_t} -> Surface.S ->
 	Ptr #{type VkBool32} -> IO #{type VkResult}
 
 foreign import ccall "vkEnumerateDeviceExtensionProperties"
 	enumerateExtensionProperties ::
-	PhysicalDevice -> CString -> Ptr #{type uint32_t} ->
+	P -> CString -> Ptr #{type uint32_t} ->
 	Ptr ExtensionProperties -> IO #{type VkResult}

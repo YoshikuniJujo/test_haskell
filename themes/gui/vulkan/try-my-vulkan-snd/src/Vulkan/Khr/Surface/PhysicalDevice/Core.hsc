@@ -14,14 +14,14 @@ import qualified Vulkan.Khr.Surface.Core as Surface
 
 foreign import ccall "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"
 	getCapabilities ::
-	PhysicalDevice.PhysicalDevice -> Surface.S -> Ptr Surface.Capabilities ->
+	PhysicalDevice.P -> Surface.S -> Ptr Surface.Capabilities ->
 	IO #{type VkResult}
 
 foreign import ccall "vkGetPhysicalDeviceSurfaceFormatsKHR" getFormats ::
-	PhysicalDevice.PhysicalDevice -> Surface.S ->
+	PhysicalDevice.P -> Surface.S ->
 	Ptr #{type uint32_t} -> Ptr Surface.Format -> IO #{type VkResult}
 
 foreign import ccall "vkGetPhysicalDeviceSurfacePresentModesKHR"
 	getPresentModes ::
-	PhysicalDevice.PhysicalDevice -> Surface.S ->
+	PhysicalDevice.P -> Surface.S ->
 	Ptr #{type uint32_t} -> Ptr Present.Mode -> IO #{type VkResult}

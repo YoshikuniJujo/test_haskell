@@ -121,7 +121,7 @@ data Global = Global {
 	globalWindow :: GlfwB.Window,
 	globalInstance :: IORef Vk.Ist.I,
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
-	globalPhysicalDevice :: IORef Vk.PhysicalDevice,
+	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalPresentQueue :: IORef Vk.Queue,
@@ -146,7 +146,7 @@ newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
 	ist <- newIORef $ Vk.Ist.I NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
-	pdvc <- newIORef $ Vk.PhysicalDevice NullPtr
+	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue NullPtr
 	pq <- newIORef $ Vk.Queue NullPtr
@@ -313,7 +313,7 @@ findM :: Monad m => (a -> m Bool) -> [a] -> m (Maybe a)
 findM _ [] = pure Nothing
 findM p (x : xs) = bool (findM p xs) (pure $ Just x) =<< p x
 
-isDeviceSuitable :: Global -> Vk.PhysicalDevice -> IO Bool
+isDeviceSuitable :: Global -> Vk.PhysicalDevice.P -> IO Bool
 isDeviceSuitable g dvc = do
 	putStrLn "*** IS DEVICE SUITABLE ***"
 	print =<< Vk.PhysicalDevice.getProperties dvc
@@ -331,7 +331,7 @@ nn = not . null
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Sc.extensionName]
 
-checkDeviceExtensionSupport :: Vk.PhysicalDevice -> IO Bool
+checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
 checkDeviceExtensionSupport dvc = do
 	availableExtensions <-
 		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
@@ -348,7 +348,7 @@ isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
 	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
-findQueueFamilies :: Global -> Vk.PhysicalDevice -> IO QueueFamilyIndices
+findQueueFamilies :: Global -> Vk.PhysicalDevice.P -> IO QueueFamilyIndices
 findQueueFamilies Global { globalSurface = rsfc } dvc = do
 	putStrLn "*** FIND QUEUE FAMILIES BEGIN ***"
 	props <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
@@ -363,7 +363,7 @@ findQueueFamilies Global { globalSurface = rsfc } dvc = do
 		presentFamily = pfi }
 
 getPresentFamilyIndex ::
-	Vk.Khr.Sfc.S -> Vk.PhysicalDevice -> Word32 -> Word32 -> IO (Maybe Word32)
+	Vk.Khr.Sfc.S -> Vk.PhysicalDevice.P -> Word32 -> Word32 -> IO (Maybe Word32)
 getPresentFamilyIndex sfc pd n i
 	| i >= n = pure Nothing
 	| otherwise = do
@@ -384,7 +384,7 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	deriving Show
 
 querySwapChainSupport ::
-	Global -> Vk.PhysicalDevice -> IO SwapChainSupportDetails
+	Global -> Vk.PhysicalDevice.P -> IO SwapChainSupportDetails
 querySwapChainSupport Global { globalSurface = rsfc } dvc =
 	readIORef rsfc >>= \sfc -> SwapChainSupportDetails
 		<$> Vk.Khr.Sfc.PhysicalDevice.getCapabilities dvc sfc

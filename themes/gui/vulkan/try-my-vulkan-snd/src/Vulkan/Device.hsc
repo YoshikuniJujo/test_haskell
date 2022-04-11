@@ -27,6 +27,7 @@ import Vulkan.Exception.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Queue as Queue
+import qualified Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Vulkan.Device.Core as C
 
@@ -79,9 +80,9 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
-	PhysicalDevice -> CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) ->
+	PhysicalDevice.P -> CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) ->
 	IO D
-create (PhysicalDevice phdvc) ci mac = ($ pure) . runContT $ D <$> do
+create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
 	pcci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pdvc <- ContT alloca

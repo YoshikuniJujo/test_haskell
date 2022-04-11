@@ -48,8 +48,8 @@ validationLayers = [Vk.Khr.validationLayerName]
 data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
 	globalInstance :: IORef Vk.Instance.I,
-	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger
---	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P
+	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
+	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -63,10 +63,12 @@ newGlobal = do
 	win <- newIORef Nothing
 	ist <- newIORef $ Vk.Instance.I NullPtr
 	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
+	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
-		globalDebugMessenger = dmsgr
+		globalDebugMessenger = dmsgr,
+		globalPhysicalDevice = pdvc
 		}
 
 run :: ReaderT Global IO ()
