@@ -155,8 +155,9 @@ setupDebugMessenger = do
 			Vk.Ext.DebugUtils.Messenger.createInfoUserData =
 				Nothing }
 	ist <- readGlobal globalInstance
-	writeGlobal globalDebugMessenger
-		=<< lift (Vk.Ext.DebugUtils.Messenger.create @() @() ist createInfo Vk.AllocationCallbacks.nil)
+	writeGlobal globalDebugMessenger =<< lift (
+		Vk.Ext.DebugUtils.Messenger.create
+			@() ist createInfo Vk.AllocationCallbacks.nil )
 
 debugCallback :: Vk.Ext.DebugUtils.Messenger.FnCallback () () () () ()
 debugCallback _messageSeverity _messageType callbackData _userData = do
@@ -174,7 +175,11 @@ mainLoop = do
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
-	lift . (flip (Vk.Instance.destroy @()) Nothing)
-		=<< readGlobal globalInstance
+	ist <- readGlobal globalInstance
+	dmsgr <- readGlobal globalDebugMessenger
+	when enableValidationLayers . lift
+		$ Vk.Ext.DebugUtils.Messenger.destroy
+			ist dmsgr Vk.AllocationCallbacks.nil
+	lift $ Vk.Instance.destroy @() ist Nothing
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift $ GlfwB.terminate
