@@ -26,7 +26,6 @@ import Vulkan.PhysicalDevice.Struct
 import qualified Vulkan.Instance as Instance
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
-import qualified Vulkan.Khr.Surface as Surface
 
 newtype P = P C.P deriving Show
 
@@ -130,14 +129,6 @@ getQueueFamilyProperties (P pdvc) =
 		pppts <- ContT $ allocaArray pptc
 		lift do	C.getQueueFamilyProperties pdvc ppptc pppts
 			peekArray pptc pppts
-
-getSurfaceSupport :: P -> Word32 -> Surface.S -> IO Bool
-getSurfaceSupport (P phdvc) qfi (Surface.S sfc) =
-	($ pure) . runContT $ bool32ToBool <$> do
-		pSupported <- ContT alloca
-		lift do	r <- C.getSurfaceSupport phdvc qfi sfc pSupported
-			throwUnlessSuccess $ Result r
-			peek pSupported
 
 enumerateExtensionProperties ::
 	P -> Maybe T.Text -> IO [ExtensionProperties]

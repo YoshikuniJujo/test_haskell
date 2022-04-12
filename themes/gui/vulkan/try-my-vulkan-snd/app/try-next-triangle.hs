@@ -18,6 +18,7 @@ import Data.IORef
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
+import qualified Glfw
 
 import ThEnv
 
@@ -37,6 +38,7 @@ import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -57,7 +59,8 @@ data Global = Global {
 	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
-	globalGraphicsQueue :: IORef Vk.Queue
+	globalGraphicsQueue :: IORef Vk.Queue,
+	globalSurface :: IORef Vk.Khr.Surface.S
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -74,13 +77,15 @@ newGlobal = do
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue NullPtr
+	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
 		globalDebugMessenger = dmsgr,
 		globalPhysicalDevice = pdvc,
 		globalDevice = dvc,
-		globalGraphicsQueue = gq
+		globalGraphicsQueue = gq,
+		globalSurface = sfc
 		}
 
 run :: ReaderT Global IO ()
@@ -104,6 +109,7 @@ initVulkan :: ReaderT Global IO ()
 initVulkan = do
 	createInstance
 	when enableValidationLayers setupDebugMessenger
+	createSurface
 	pickPhysicalDevice
 	createLogicalDevice
 
@@ -186,6 +192,13 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 	Txt.putStrLn $ "validation layer: " <> message
 	pure False
 
+createSurface :: ReaderT Global IO ()
+createSurface = do
+	win <- fromJust <$> readGlobal globalWindow
+	ist <- readGlobal globalInstance
+	writeGlobal globalSurface =<< lift (
+		Glfw.createWindowSurface ist win Vk.AllocationCallbacks.nil )
+
 pickPhysicalDevice :: ReaderT Global IO ()
 pickPhysicalDevice = do
 	ist <- readGlobal globalInstance
@@ -197,35 +210,44 @@ pickPhysicalDevice = do
 		(pdvc : _) -> writeGlobal globalPhysicalDevice pdvc
 
 isDeviceSuitable :: Vk.PhysicalDevice.P -> ReaderT Global IO Bool
-isDeviceSuitable pdvc = lift do
-	_deviceProperties <- Vk.PhysicalDevice.getProperties pdvc
-	_deviceFeatures <- Vk.PhysicalDevice.getFeatures pdvc
+isDeviceSuitable pdvc = do
+	_deviceProperties <- lift $ Vk.PhysicalDevice.getProperties pdvc
+	_deviceFeatures <- lift $ Vk.PhysicalDevice.getFeatures pdvc
 	indices <- findQueueFamilies pdvc
 	pure $ isComplete indices
 
-findQueueFamilies :: Vk.PhysicalDevice.P -> IO QueueFamilyIndices
+findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
 findQueueFamilies device = do
-	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
-	print queueFamilies
+	queueFamilies <- lift
+		$ Vk.PhysicalDevice.getQueueFamilyProperties device
+	lift $ print queueFamilies
+	sfc <- readGlobal globalSurface
+	psi <- listToMaybe <$> lift (
+		filterM (\i -> isPresentSupport device i sfc)
+			[0 .. fromIntegral $ length queueFamilies - 1] )
 	pure QueueFamilyIndices {
 		graphicsFamily = fst <$> find
 			((/= zeroBits)
 				. (.&. Vk.QueueGraphicsBit)
 				. Vk.QueueFamily.propertiesQueueFlags
 				. snd )
-			(zip [0 ..] queueFamilies)
-		}
+			(zip [0 ..] queueFamilies),
+		presentFamily = psi }
+
+isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
+isPresentSupport dvc i sfc = Vk.Khr.Surface.getPhysicalDeviceSSupport dvc i sfc
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Maybe Word32 }
+	graphicsFamily :: Maybe Word32,
+	presentFamily :: Maybe Word32 }
 
 isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
-	graphicsFamily = gf } = isJust gf
+	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
 
 createLogicalDevice :: ReaderT Global IO ()
 createLogicalDevice = do
-	indices <- lift . findQueueFamilies =<< readGlobal globalPhysicalDevice
+	indices <- findQueueFamilies =<< readGlobal globalPhysicalDevice
 	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
 			Vk.Device.Queue.createInfoFlags =
@@ -268,6 +290,8 @@ cleanup = do
 	when enableValidationLayers . lift
 		$ Vk.Ext.DebugUtils.Messenger.destroy
 			ist dmsgr Vk.AllocationCallbacks.nil
+	sfc <- readGlobal globalSurface
+	lift $ Vk.Khr.Surface.destroy ist sfc Vk.AllocationCallbacks.nil
 	lift $ Vk.Instance.destroy @() ist Nothing
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift $ GlfwB.terminate

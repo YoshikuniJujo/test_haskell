@@ -23,7 +23,6 @@ import Vulkan.PhysicalDevice.Struct.Core
 
 import qualified Vulkan.Instance.Core as Instance
 import qualified Vulkan.QueueFamily.Core as QueueFamily
-import qualified Vulkan.Khr.Surface.Core as Surface
 
 #include <vulkan/vulkan.h>
 
@@ -122,10 +121,6 @@ foreign import ccall "vkGetPhysicalDeviceQueueFamilyProperties"
 	getQueueFamilyProperties ::
 	P -> Ptr #{type uint32_t} -> Ptr QueueFamily.Properties ->
 	IO ()
-
-foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR" getSurfaceSupport ::
-	P -> #{type uint32_t} -> Surface.S ->
-	Ptr #{type VkBool32} -> IO #{type VkResult}
 
 foreign import ccall "vkEnumerateDeviceExtensionProperties"
 	enumerateExtensionProperties ::
