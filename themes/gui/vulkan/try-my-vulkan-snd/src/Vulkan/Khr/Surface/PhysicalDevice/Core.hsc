@@ -7,7 +7,6 @@ import Data.Word
 import Data.Int
 
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
-import qualified Vulkan.Khr.Present as Present
 import qualified Vulkan.Khr.Surface.Core as Surface
 
 #include <vulkan/vulkan.h>
@@ -24,4 +23,4 @@ foreign import ccall "vkGetPhysicalDeviceSurfaceFormatsKHR" getFormats ::
 foreign import ccall "vkGetPhysicalDeviceSurfacePresentModesKHR"
 	getPresentModes ::
 	PhysicalDevice.P -> Surface.S ->
-	Ptr #{type uint32_t} -> Ptr Present.Mode -> IO #{type VkResult}
+	Ptr #{type uint32_t} -> Ptr #{type VkPresentModeKHR} -> IO #{type VkResult}

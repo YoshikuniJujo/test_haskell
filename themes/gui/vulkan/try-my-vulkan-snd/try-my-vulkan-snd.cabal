@@ -88,7 +88,6 @@ library
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Core
       Vulkan.Khr.Enum
-      Vulkan.Khr.Present
       Vulkan.Khr.Surface
       Vulkan.Khr.Surface.Core
       Vulkan.Khr.Surface.Enum

@@ -30,6 +30,7 @@ import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Khr.Enum as Vk.Khr
 import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
@@ -259,6 +260,15 @@ data QueueFamilyIndices = QueueFamilyIndices {
 isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
 	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
+
+data SwapChainSupportDetails = SwapChainSupportDetails {
+	capabilities :: Vk.Khr.Surface.Capabilities,
+	formats :: [Vk.Khr.Surface.Format],
+	presentModes :: [Vk.Khr.PresentMode] }
+
+querySwapChainSupport :: Vk.PhysicalDevice.P -> IO SwapChainSupportDetails
+querySwapChainSupport dvc = do
+	pure undefined
 
 createLogicalDevice :: ReaderT Global IO ()
 createLogicalDevice = do
