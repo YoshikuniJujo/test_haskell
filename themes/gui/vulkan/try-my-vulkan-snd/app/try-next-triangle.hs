@@ -60,7 +60,8 @@ data Global = Global {
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue,
-	globalSurface :: IORef Vk.Khr.Surface.S
+	globalSurface :: IORef Vk.Khr.Surface.S,
+	globalPresentQueue :: IORef Vk.Queue
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -78,6 +79,7 @@ newGlobal = do
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
+	pq <- newIORef $ Vk.Queue NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -85,7 +87,8 @@ newGlobal = do
 		globalPhysicalDevice = pdvc,
 		globalDevice = dvc,
 		globalGraphicsQueue = gq,
-		globalSurface = sfc
+		globalSurface = sfc,
+		globalPresentQueue = pq
 		}
 
 run :: ReaderT Global IO ()
@@ -248,19 +251,21 @@ isComplete QueueFamilyIndices {
 createLogicalDevice :: ReaderT Global IO ()
 createLogicalDevice = do
 	indices <- findQueueFamilies =<< readGlobal globalPhysicalDevice
-	let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
+	let	uniqueQueueFamilies = nub [
+			fromJust $ graphicsFamily indices,
+			fromJust $ presentFamily indices ]
+		queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
 			Vk.Device.Queue.createInfoFlags =
 				Vk.Device.Queue.CreateFlagsZero,
-			Vk.Device.Queue.createInfoQueueFamilyIndex =
-				fromJust $ graphicsFamily indices,
+			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
 			Vk.Device.Queue.createInfoQueuePriorities = [1] }
 		deviceFeatures = Vk.PhysicalDevice.featuresZero
 		createInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
 			Vk.Device.createInfoQueueCreateInfos =
-				[queueCreateInfo],
+				queueCreateInfos <$> uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Device.createInfoEnabledExtensionNames = [],
