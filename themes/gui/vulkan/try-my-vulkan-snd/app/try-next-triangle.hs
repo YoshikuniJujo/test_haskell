@@ -39,6 +39,7 @@ import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -217,7 +218,18 @@ isDeviceSuitable pdvc = do
 	_deviceProperties <- lift $ Vk.PhysicalDevice.getProperties pdvc
 	_deviceFeatures <- lift $ Vk.PhysicalDevice.getFeatures pdvc
 	indices <- findQueueFamilies pdvc
-	pure $ isComplete indices
+	extensionSupported <- lift $ checkDeviceExtensionSupport pdvc
+	pure $ isComplete indices && extensionSupported
+
+deviceExtensions :: [Txt.Text]
+deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+
+checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
+checkDeviceExtensionSupport dvc = do
+	availableExtensions <-
+		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
+	pure . null $ deviceExtensions \\
+		(Vk.extensionPropertiesExtensionName <$> availableExtensions)
 
 findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
 findQueueFamilies device = do
