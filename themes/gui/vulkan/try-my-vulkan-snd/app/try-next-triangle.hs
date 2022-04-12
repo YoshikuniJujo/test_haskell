@@ -222,7 +222,11 @@ isDeviceSuitable pdvc = do
 	_deviceFeatures <- lift $ Vk.PhysicalDevice.getFeatures pdvc
 	indices <- findQueueFamilies pdvc
 	extensionSupported <- lift $ checkDeviceExtensionSupport pdvc
-	pure $ isComplete indices && extensionSupported
+	swapChainSupport <- querySwapChainSupport pdvc
+	let	swapChainAdequate =
+			not (null $ formats swapChainSupport) &&
+			not (null $ presentModes swapChainSupport)
+	pure $ isComplete indices && extensionSupported && swapChainAdequate
 
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
@@ -268,9 +272,13 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	formats :: [Vk.Khr.Surface.Format],
 	presentModes :: [Vk.Khr.PresentMode] }
 
-querySwapChainSupport :: Vk.PhysicalDevice.P -> IO SwapChainSupportDetails
-querySwapChainSupport dvc = do
-	pure undefined
+querySwapChainSupport ::
+	Vk.PhysicalDevice.P -> ReaderT Global IO SwapChainSupportDetails
+querySwapChainSupport dvc = readGlobal globalSurface >>= \sfc ->
+	lift $ SwapChainSupportDetails
+		<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
+		<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
+		<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
 createLogicalDevice :: ReaderT Global IO ()
 createLogicalDevice = do
