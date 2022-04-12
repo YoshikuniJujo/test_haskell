@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -25,6 +26,7 @@ import ThEnv
 import Vulkan.Base
 
 import qualified Vulkan as Vk
+import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
 import qualified Vulkan.Instance as Vk.Instance
@@ -119,6 +121,7 @@ initVulkan = do
 	createSurface
 	pickPhysicalDevice
 	createLogicalDevice
+	createSwapChain
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -311,6 +314,53 @@ createLogicalDevice = do
 	writeGlobal globalDevice dvc
 	writeGlobal globalGraphicsQueue =<< lift (
 		Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0 )
+
+createSwapChain :: ReaderT Global IO ()
+createSwapChain = do
+	swapChainSupport <- querySwapChainSupport
+		=<< readGlobal globalPhysicalDevice
+	let	surfaceFormat =
+			chooseSwapSurfaceFormat $ formats swapChainSupport
+		presentMode =
+			chooseSwapPresentMode $ presentModes swapChainSupport
+	extent <- chooseSwapExtent $ capabilities swapChainSupport
+	lift do	putStrLn "*** CREATE SWAP CHAIN ***"
+		print surfaceFormat
+		print presentMode
+		print extent
+
+chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
+chooseSwapSurfaceFormat = \case
+	availableFormats@(af0 : _) -> fromMaybe af0
+		$ find preferredSwapSurfaceFormat availableFormats
+	_ -> error "no available swap surface formats"
+
+preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
+preferredSwapSurfaceFormat f =
+	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+
+chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
+chooseSwapPresentMode =
+	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
+
+chooseSwapExtent :: Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
+chooseSwapExtent caps
+	| Vk.C.extent2dWidth curExt /= maxBound = pure curExt
+	| otherwise = do
+		(fromIntegral -> w, fromIntegral -> h) <-
+			lift . GlfwB.getFramebufferSize
+				=<< fromJust <$> readGlobal globalWindow
+		pure $ Vk.C.Extent2d
+			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
+			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
+	where
+	curExt = Vk.Khr.Surface.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
+
+clamp :: Ord a => a -> a -> a -> a
+clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
