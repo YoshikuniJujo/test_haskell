@@ -11,6 +11,10 @@ import qualified Vulkan.Khr.Surface.Core as Surface
 
 #include <vulkan/vulkan.h>
 
+foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR" getSupport ::
+	PhysicalDevice.P -> #{type uint32_t} -> Surface.S ->
+	Ptr #{type VkBool32} -> IO #{type VkResult}
+
 foreign import ccall "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"
 	getCapabilities ::
 	PhysicalDevice.P -> Surface.S -> Ptr Surface.Capabilities ->

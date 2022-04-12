@@ -9,13 +9,11 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
-import Data.Int
 
 import Vulkan.Core (Extent2d)
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Instance.Core as Instance
-import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
 
 #include <vulkan/vulkan.h>
 
@@ -67,7 +65,3 @@ struct "Format" #{size VkSurfaceFormatKHR} #{alignment VkSurfaceFormatKHR} [
 		[| #{peek VkSurfaceFormatKHR, colorSpace} |],
 		[| #{poke VkSurfaceFormatKHR, colorSpace} |]) ]
 	[''Show, ''Storable]
-
-foreign import ccall "vkGetPhysicalDeviceSurfaceSupportKHR" getPhysicalDeviceSSupport ::
-	PhysicalDevice.P -> #{type uint32_t} -> S ->
-	Ptr #{type VkBool32} -> IO #{type VkResult}

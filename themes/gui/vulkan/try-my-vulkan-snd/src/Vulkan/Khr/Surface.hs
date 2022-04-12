@@ -4,15 +4,10 @@
 
 module Vulkan.Khr.Surface where
 
-import Foreign.Marshal.Alloc
-import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 
-import Vulkan.Base
-import Vulkan.Exception
-import Vulkan.Exception.Enum
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Surface.Enum
 
@@ -22,7 +17,6 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Vulkan.Image.Enum as Image
 import qualified Vulkan.Instance as Instance
-import qualified Vulkan.PhysicalDevice as PhysicalDevice
 
 newtype S = S Sfc.C.S deriving Show
 
@@ -89,11 +83,3 @@ formatToCore Format {
 	formatColorSpace = ColorSpace cs } = Sfc.C.Format {
 		Sfc.C.formatFormat = fmt,
 		Sfc.C.formatColorSpace = cs }
-
-getPhysicalDeviceSSupport :: PhysicalDevice.P -> Word32 -> S -> IO Bool
-getPhysicalDeviceSSupport (PhysicalDevice.P phdvc) qfi (S sfc) =
-	($ pure) . runContT $ bool32ToBool <$> do
-		pSupported <- ContT alloca
-		lift do	r <- Sfc.C.getPhysicalDeviceSSupport phdvc qfi sfc pSupported
-			throwUnlessSuccess $ Result r
-			peek pSupported

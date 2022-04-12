@@ -367,7 +367,7 @@ getPresentFamilyIndex ::
 getPresentFamilyIndex sfc pd n i
 	| i >= n = pure Nothing
 	| otherwise = do
-		presentSupport <- Vk.Khr.Sfc.getPhysicalDeviceSSupport pd i sfc
+		presentSupport <- Vk.Khr.Sfc.PhysicalDevice.getSupport pd i sfc
 		if presentSupport
 			then pure $ Just i
 			else getPresentFamilyIndex sfc pd n (i + 1)

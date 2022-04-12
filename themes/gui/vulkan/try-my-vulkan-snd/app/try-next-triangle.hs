@@ -40,6 +40,8 @@ import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Vulkan.Khr.Surface.PhysicalDevice as
+	Vk.Khr.Surface.PhysicalDevice
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 
 main :: IO ()
@@ -251,7 +253,7 @@ findQueueFamilies device = do
 		presentFamily = psi }
 
 isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
-isPresentSupport dvc i sfc = Vk.Khr.Surface.getPhysicalDeviceSSupport dvc i sfc
+isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Maybe Word32,

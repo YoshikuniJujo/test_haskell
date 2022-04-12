@@ -8,7 +8,9 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Word
 
+import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Khr.Enum
@@ -16,6 +18,14 @@ import Vulkan.Khr.Surface
 
 import qualified Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Vulkan.Khr.Surface.PhysicalDevice.Core as C
+
+getSupport :: PhysicalDevice.P -> Word32 -> S -> IO Bool
+getSupport (PhysicalDevice.P phdvc) qfi (S sfc) = ($ pure) . runContT
+	$ bool32ToBool <$> do
+		pSupported <- ContT alloca
+		lift do	r <- C.getSupport phdvc qfi sfc pSupported
+			throwUnlessSuccess $ Result r
+			peek pSupported
 
 getCapabilities :: PhysicalDevice.P -> S -> IO Capabilities
 getCapabilities (PhysicalDevice.P pdvc) (S sfc) =
