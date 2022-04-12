@@ -280,7 +280,8 @@ createLogicalDevice = do
 				queueCreateInfos <$> uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Device.createInfoEnabledExtensionNames = [],
+			Vk.Device.createInfoEnabledExtensionNames =
+				deviceExtensions,
 			Vk.Device.createInfoEnabledFeatures =
 				Just deviceFeatures }
 	pdvc <- readGlobal globalPhysicalDevice
