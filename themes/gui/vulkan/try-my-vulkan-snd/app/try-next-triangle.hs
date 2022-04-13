@@ -45,6 +45,8 @@ import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
 import qualified Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
+import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
+import qualified Vulkan.Image.Enum as Vk.Image
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -67,7 +69,8 @@ data Global = Global {
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface.S,
-	globalPresentQueue :: IORef Vk.Queue
+	globalPresentQueue :: IORef Vk.Queue,
+	globalSwapchain :: IORef Vk.Khr.Swapchain.S
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -86,6 +89,7 @@ newGlobal = do
 	gq <- newIORef $ Vk.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
 	pq <- newIORef $ Vk.Queue NullPtr
+	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -94,7 +98,8 @@ newGlobal = do
 		globalDevice = dvc,
 		globalGraphicsQueue = gq,
 		globalSurface = sfc,
-		globalPresentQueue = pq
+		globalPresentQueue = pq,
+		globalSwapchain = sc
 		}
 
 run :: ReaderT Global IO ()
@@ -324,10 +329,54 @@ createSwapChain = do
 		presentMode =
 			chooseSwapPresentMode $ presentModes swapChainSupport
 	extent <- chooseSwapExtent $ capabilities swapChainSupport
+	sfc <- readGlobal globalSurface
+	indices <- findQueueFamilies =<< readGlobal globalPhysicalDevice
+	let	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
+			. Vk.Khr.Surface.capabilitiesMaxImageCount
+			$ capabilities swapChainSupport
+		imageCount = clamp
+			(Vk.Khr.Surface.capabilitiesMinImageCount
+				(capabilities swapChainSupport) + 1)
+			0 maxImageCount
+		(ism, qfis) = if graphicsFamily indices /= presentFamily indices
+			then (Vk.SharingModeConcurrent, fromJust <$> [
+				graphicsFamily indices, presentFamily indices ])
+			else (Vk.SharingModeExclusive, [])
+		createInfo = Vk.Khr.Swapchain.CreateInfo {
+			Vk.Khr.Swapchain.createInfoNext = Nothing,
+			Vk.Khr.Swapchain.createInfoFlags =
+				Vk.Khr.Swapchain.CreateFlagsZero,
+			Vk.Khr.Swapchain.createInfoSurface = sfc,
+			Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
+			Vk.Khr.Swapchain.createInfoImageFormat =
+				Vk.Khr.Surface.formatFormat surfaceFormat,
+			Vk.Khr.Swapchain.createInfoImageColorSpace =
+				Vk.Khr.Surface.formatColorSpace surfaceFormat,
+			Vk.Khr.Swapchain.createInfoImageExtent = extent,
+			Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
+			Vk.Khr.Swapchain.createInfoImageUsage =
+				Vk.Image.UsageColorAttachmentBit,
+			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
+			Vk.Khr.Swapchain.createInfoPreTransform =
+				Vk.Khr.Surface.capabilitiesCurrentTransform
+					$ capabilities swapChainSupport,
+			Vk.Khr.Swapchain.createInfoCompositeAlpha =
+				Vk.Khr.CompositeAlphaOpaqueBit,
+			Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
+			Vk.Khr.Swapchain.createInfoClipped = True,
+			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalSwapchain =<< lift (
+		Vk.Khr.Swapchain.create @() dvc createInfo
+			Vk.AllocationCallbacks.nil )
 	lift do	putStrLn "*** CREATE SWAP CHAIN ***"
 		print surfaceFormat
 		print presentMode
 		print extent
+
+onlyIf :: (a -> Bool) -> a -> Maybe a
+onlyIf p x | p x = Just x | otherwise = Nothing
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
 chooseSwapSurfaceFormat = \case
@@ -371,8 +420,11 @@ mainLoop = do
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
-	lift . (`Vk.Device.destroy` Vk.AllocationCallbacks.nil)
-		=<< readGlobal globalDevice
+	dvc <- readGlobal globalDevice
+	lift . (\sc -> Vk.Khr.Swapchain.destroy
+			dvc sc Vk.AllocationCallbacks.nil)
+		=<< readGlobal globalSwapchain
+	lift $ Vk.Device.destroy dvc Vk.AllocationCallbacks.nil
 	ist <- readGlobal globalInstance
 	dmsgr <- readGlobal globalDebugMessenger
 	when enableValidationLayers . lift
