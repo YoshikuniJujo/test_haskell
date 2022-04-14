@@ -46,6 +46,7 @@ import qualified Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
+import qualified Vulkan.Image as Vk.Image
 import qualified Vulkan.Image.Enum as Vk.Image
 
 main :: IO ()
@@ -70,7 +71,10 @@ data Global = Global {
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface.S,
 	globalPresentQueue :: IORef Vk.Queue,
-	globalSwapchain :: IORef Vk.Khr.Swapchain.S
+	globalSwapchain :: IORef Vk.Khr.Swapchain.S,
+	globalSwapChainImages :: IORef [Vk.Image.I],
+	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
+	globalSwapChainExtent :: IORef Vk.C.Extent2d
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -90,6 +94,9 @@ newGlobal = do
 	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
 	pq <- newIORef $ Vk.Queue NullPtr
 	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
+	scis <- newIORef []
+	scif <- newIORef Nothing
+	sce <- newIORef $ Vk.C.Extent2d 0 0
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -99,8 +106,10 @@ newGlobal = do
 		globalGraphicsQueue = gq,
 		globalSurface = sfc,
 		globalPresentQueue = pq,
-		globalSwapchain = sc
-		}
+		globalSwapchain = sc,
+		globalSwapChainImages = scis,
+		globalSwapChainImageFormat = scif,
+		globalSwapChainExtent = sce }
 
 run :: ReaderT Global IO ()
 run = do
@@ -367,9 +376,14 @@ createSwapChain = do
 			Vk.Khr.Swapchain.createInfoClipped = True,
 			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	dvc <- readGlobal globalDevice
-	writeGlobal globalSwapchain =<< lift (
-		Vk.Khr.Swapchain.create @() dvc createInfo
-			Vk.AllocationCallbacks.nil )
+	sc <- lift $ Vk.Khr.Swapchain.create @()
+		dvc createInfo Vk.AllocationCallbacks.nil
+	writeGlobal globalSwapchain sc
+	writeGlobal globalSwapChainImages
+		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
+	writeGlobal globalSwapChainImageFormat
+		. Just $ Vk.Khr.Surface.formatFormat surfaceFormat
+	writeGlobal globalSwapChainExtent extent
 	lift do	putStrLn "*** CREATE SWAP CHAIN ***"
 		print surfaceFormat
 		print presentMode
