@@ -37,7 +37,7 @@ struct "CreateInfo" #{size VkImageViewCreateInfo}
 	("flags", ''#{type VkImageViewCreateFlags},
 		[| #{peek VkImageViewCreateInfo, flags} |],
 		[| #{poke VkImageViewCreateInfo, flags} |]),
-	("image", ''Image.Image,
+	("image", ''Image.I,
 		[| #{peek VkImageViewCreateInfo, image} |],
 		[| #{poke VkImageViewCreateInfo, image} |]),
 	("viewType", ''#{type VkImageViewType},

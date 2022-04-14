@@ -12,33 +12,32 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Vulkan
 import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.Image
 import Vulkan.Component
 import Vulkan.ImageView.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
+import qualified Vulkan.Image as Image
 import qualified Vulkan.ImageView.Core as C
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoImage :: Image,
+	createInfoImage :: Image.I,
 	createInfoViewType :: Type,
 	createInfoFormat :: Format,
 	createInfoComponents :: Mapping,
-	createInfoSubresourceRange :: SubresourceRange }
+	createInfoSubresourceRange :: Image.SubresourceRange }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoImage = Image img,
+	createInfoImage = Image.I img,
 	createInfoViewType = Type tp,
 	createInfoFormat = Format fmt,
 	createInfoComponents = cpns,
@@ -53,7 +52,8 @@ createInfoToCore CreateInfo {
 		C.createInfoViewType = tp,
 		C.createInfoFormat = fmt,
 		C.createInfoComponents = mappingToCore cpns,
-		C.createInfoSubresourceRange = subresourceRangeToCore srr }
+		C.createInfoSubresourceRange =
+			Image.subresourceRangeToCore srr }
 	ContT $ withForeignPtr fCreateInfo
 
 newtype I = I C.I deriving Show

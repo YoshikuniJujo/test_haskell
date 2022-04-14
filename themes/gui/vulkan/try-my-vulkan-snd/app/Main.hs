@@ -127,7 +127,7 @@ data Global = Global {
 	globalPresentQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Sfc.S,
 	globalSwapChain :: IORef Vk.Khr.Sc.S,
-	globalSwapChainImages :: IORef [Vk.Image],
+	globalSwapChainImages :: IORef [Vk.Img.I],
 	globalSwapChainImageFormat :: IORef Vk.Format,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
@@ -520,7 +520,7 @@ createImageViews g@Global {
 	globalSwapChainImages = rscimgs, globalSwapChainImageViews = rscivs } =
 	writeIORef rscivs =<< (createImageView1 g `mapM`) =<< readIORef rscimgs
 
-createImageView1 :: Global -> Vk.Image -> IO Vk.ImageView.I
+createImageView1 :: Global -> Vk.Img.I -> IO Vk.ImageView.I
 createImageView1 Global {
 	globalDevice = rdvc, globalSwapChainImageFormat = rscimgfmt } img = do
 	(dvc, fmt) <- (,) <$> readIORef rdvc <*> readIORef rscimgfmt

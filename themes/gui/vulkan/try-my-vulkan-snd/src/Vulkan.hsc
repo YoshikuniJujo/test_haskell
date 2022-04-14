@@ -29,7 +29,6 @@ import Vulkan.Base
 import Vulkan.Enum
 
 import qualified Vulkan.Core as C
-import qualified Vulkan.Image.Core as Image.C
 
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Vulkan.Semaphore as Semaphore
@@ -39,8 +38,6 @@ import {-# SOURCE #-} qualified Vulkan.Fence as Fence
 #include <vulkan/vulkan.h>
 
 newtype Queue = Queue C.Queue deriving Show
-
-newtype Image = Image Image.C.Image deriving Show
 
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,

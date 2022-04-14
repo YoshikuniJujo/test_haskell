@@ -12,9 +12,6 @@ import Data.Word
 
 #include <vulkan/vulkan.h>
 
-data ImageTag
-type Image = Ptr ImageTag
-
 struct "SubresourceRange" #{size VkImageSubresourceRange}
 		#{alignment VkImageSubresourceRange} [
 	("aspectMask", ''#{type VkImageAspectFlags},
@@ -33,3 +30,6 @@ struct "SubresourceRange" #{size VkImageSubresourceRange}
 		[| #{peek VkImageSubresourceRange, layerCount} |],
 		[| #{poke VkImageSubresourceRange, layerCount} |]) ]
 	[''Show, ''Storable]
+
+data ITag
+type I = Ptr ITag

@@ -28,3 +28,5 @@ subresourceRangeToCore SubresourceRange {
 		C.subresourceRangeLevelCount = lvc,
 		C.subresourceRangeBaseArrayLayer = baly,
 		C.subresourceRangeLayerCount = lyc }
+
+newtype I = I C.I deriving Show

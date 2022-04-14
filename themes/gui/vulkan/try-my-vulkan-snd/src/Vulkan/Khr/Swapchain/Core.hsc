@@ -92,5 +92,5 @@ foreign import ccall "vkDestroySwapchainKHR" destroy ::
 	Device.D -> S -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "vkGetSwapchainImagesKHR" getImages ::
-	Device.D -> S -> Ptr #{type uint32_t} -> Ptr Image.Image ->
+	Device.D -> S -> Ptr #{type uint32_t} -> Ptr Image.I ->
 	IO #{type VkResult}

@@ -15,7 +15,6 @@ import Data.Word
 
 import qualified Data.Text as T
 
-import Vulkan
 import Vulkan.Enum
 import Vulkan.Base
 import Vulkan.Exception
@@ -27,6 +26,7 @@ import Vulkan.Khr.Surface.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
+import qualified Vulkan.Image as Image
 import qualified Vulkan.Khr.Surface as Surface
 import qualified Vulkan.Core as C
 import qualified Vulkan.Khr.Swapchain.Core as C
@@ -119,8 +119,8 @@ destroy :: Pointable n =>
 destroy (Device.D dvc) (S sc) mac = ($ pure) . runContT
 	$ lift . C.destroy dvc sc =<< AllocationCallbacks.maybeToCore mac
 
-getImages :: Device.D -> S -> IO [Image]
-getImages (Device.D dvc) (S sc) = ($ pure) . runContT $ (Image <$>) <$> do
+getImages :: Device.D -> S -> IO [Image.I]
+getImages (Device.D dvc) (S sc) = ($ pure) . runContT $ (Image.I <$>) <$> do
 	pSwapchainImageCount <- ContT alloca
 	(fromIntegral -> swapchainImageCount) <- lift do
 		r <- C.getImages dvc sc pSwapchainImageCount NullPtr
