@@ -48,6 +48,10 @@ import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
 import qualified Vulkan.Image as Vk.Image
 import qualified Vulkan.Image.Enum as Vk.Image
+import qualified Vulkan.ImageView as Vk.ImageView
+import qualified Vulkan.ImageView.Enum as Vk.ImageView
+import qualified Vulkan.Component as Vk.Component
+import qualified Vulkan.Component.Enum as Vk.Component
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -74,7 +78,8 @@ data Global = Global {
 	globalSwapchain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
 	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
-	globalSwapChainExtent :: IORef Vk.C.Extent2d
+	globalSwapChainExtent :: IORef Vk.C.Extent2d,
+	globalSwapChainImageViews :: IORef [Vk.ImageView.I]
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -97,6 +102,7 @@ newGlobal = do
 	scis <- newIORef []
 	scif <- newIORef Nothing
 	sce <- newIORef $ Vk.C.Extent2d 0 0
+	scivs <- newIORef []
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -109,7 +115,8 @@ newGlobal = do
 		globalSwapchain = sc,
 		globalSwapChainImages = scis,
 		globalSwapChainImageFormat = scif,
-		globalSwapChainExtent = sce }
+		globalSwapChainExtent = sce,
+		globalSwapChainImageViews = scivs }
 
 run :: ReaderT Global IO ()
 run = do
@@ -136,6 +143,7 @@ initVulkan = do
 	pickPhysicalDevice
 	createLogicalDevice
 	createSwapChain
+	createImageViews
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -425,6 +433,37 @@ chooseSwapExtent caps
 clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
+createImageViews :: ReaderT Global IO ()
+createImageViews = writeGlobal globalSwapChainImageViews =<<
+	(createImageView1 `mapM`) =<< readGlobal globalSwapChainImages
+
+createImageView1 :: Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
+createImageView1 sci = do
+	scif <- fromJust <$> readGlobal globalSwapChainImageFormat
+	let	createInfo = Vk.ImageView.CreateInfo {
+			Vk.ImageView.createInfoNext = Nothing,
+			Vk.ImageView.createInfoFlags =
+				Vk.ImageView.CreateFlagsZero,
+			Vk.ImageView.createInfoImage = sci,
+			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
+			Vk.ImageView.createInfoFormat = scif,
+			Vk.ImageView.createInfoComponents = components,
+			Vk.ImageView.createInfoSubresourceRange =
+				subresourceRange }
+		components = Vk.Component.Mapping {
+			Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
+		subresourceRange = Vk.Image.SubresourceRange {
+			Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
+			Vk.Image.subresourceRangeBaseMipLevel = 0,
+			Vk.Image.subresourceRangeLevelCount = 1,
+			Vk.Image.subresourceRangeBaseArrayLayer = 0,
+			Vk.Image.subresourceRangeLayerCount = 1 }
+	dvc <- readGlobal globalDevice
+	lift $ Vk.ImageView.create @() dvc createInfo Vk.AllocationCallbacks.nil
+
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
@@ -435,6 +474,9 @@ mainLoop = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
+	scivs <- readGlobal globalSwapChainImageViews
+	lift $ flip (Vk.ImageView.destroy dvc)
+		Vk.AllocationCallbacks.nil `mapM_` scivs
 	lift . (\sc -> Vk.Khr.Swapchain.destroy
 			dvc sc Vk.AllocationCallbacks.nil)
 		=<< readGlobal globalSwapchain
