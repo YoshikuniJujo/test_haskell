@@ -41,7 +41,6 @@ import Shaderc.TH
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
-import qualified Vulkan.AllocationCallbacks as Vk.AC
 import qualified Vulkan.Instance as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
@@ -271,7 +270,7 @@ setupDebugMessenger Global {
 	globalInstance = rist,
 	globalDebugMessenger = rdmsgr } = do
 	ist <- readIORef rist
-	msgr <- Vk.Ext.DU.Msngr.create ist debugMessengerCreateInfo Vk.AC.nil
+	msgr <- Vk.Ext.DU.Msngr.create ist debugMessengerCreateInfo nil
 	writeIORef rdmsgr msgr
 
 debugMessengerCreateInfo :: Vk.Ext.DU.Msngr.CreateInfo () () () () () ()
@@ -947,7 +946,7 @@ cleanup Global {
 	ist <- readIORef rist
 	(\sfc -> Vk.Khr.Sfc.destroy @() ist sfc Nothing) =<< readIORef rsfc
 	when enableValidationLayers $ readIORef rdmsgr >>= \dm ->
-		Vk.Ext.DU.Msngr.destroy ist dm Vk.AC.nil
+		Vk.Ext.DU.Msngr.destroy ist dm nil
 	Vk.Ist.destroy @() ist Nothing
 	GlfwB.destroyWindow win
 	GlfwB.terminate

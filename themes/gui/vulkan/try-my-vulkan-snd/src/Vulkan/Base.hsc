@@ -112,3 +112,6 @@ bool32ToBool _ = error $
 	"Application must not pass any other values than " ++
 	"VK_TRUE or VK_FALSE into a Vulkan implementation " ++
 	"where a VkBool32 is expected"
+
+nil :: Maybe (t ())
+nil = Nothing

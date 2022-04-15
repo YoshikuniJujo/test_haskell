@@ -28,7 +28,6 @@ import Vulkan.Base
 import qualified Vulkan as Vk
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
-import qualified Vulkan.AllocationCallbacks as Vk.AllocationCallbacks
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
@@ -197,8 +196,7 @@ setupDebugMessenger = do
 	ist <- readGlobal globalInstance
 	writeGlobal globalDebugMessenger =<< lift (
 		Vk.Ext.DebugUtils.Messenger.create ist
-			populateDebugMessengerCreateInfo
-			Vk.AllocationCallbacks.nil )
+			populateDebugMessengerCreateInfo nil )
 
 populateDebugMessengerCreateInfo ::
 	Vk.Ext.DebugUtils.Messenger.CreateInfo () () () () () ()
@@ -228,8 +226,8 @@ createSurface :: ReaderT Global IO ()
 createSurface = do
 	win <- fromJust <$> readGlobal globalWindow
 	ist <- readGlobal globalInstance
-	writeGlobal globalSurface =<< lift (
-		Glfw.createWindowSurface ist win Vk.AllocationCallbacks.nil )
+	writeGlobal globalSurface
+		=<< lift (Glfw.createWindowSurface ist win nil)
 
 pickPhysicalDevice :: ReaderT Global IO ()
 pickPhysicalDevice = do
@@ -330,9 +328,7 @@ createLogicalDevice = do
 			Vk.Device.createInfoEnabledFeatures =
 				Just deviceFeatures }
 	pdvc <- readGlobal globalPhysicalDevice
-	dvc <- lift (
-		Vk.Device.create @() @()
-			pdvc createInfo Vk.AllocationCallbacks.nil )
+	dvc <- lift (Vk.Device.create @() @() pdvc createInfo nil)
 	writeGlobal globalDevice dvc
 	writeGlobal globalGraphicsQueue =<< lift (
 		Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0 )
@@ -384,8 +380,7 @@ createSwapChain = do
 			Vk.Khr.Swapchain.createInfoClipped = True,
 			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	dvc <- readGlobal globalDevice
-	sc <- lift $ Vk.Khr.Swapchain.create @()
-		dvc createInfo Vk.AllocationCallbacks.nil
+	sc <- lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil
 	writeGlobal globalSwapchain sc
 	writeGlobal globalSwapChainImages
 		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
@@ -462,7 +457,7 @@ createImageView1 sci = do
 			Vk.Image.subresourceRangeBaseArrayLayer = 0,
 			Vk.Image.subresourceRangeLayerCount = 1 }
 	dvc <- readGlobal globalDevice
-	lift $ Vk.ImageView.create @() dvc createInfo Vk.AllocationCallbacks.nil
+	lift $ Vk.ImageView.create @() dvc createInfo nil
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
@@ -475,19 +470,16 @@ cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
 	scivs <- readGlobal globalSwapChainImageViews
-	lift $ flip (Vk.ImageView.destroy dvc)
-		Vk.AllocationCallbacks.nil `mapM_` scivs
-	lift . (\sc -> Vk.Khr.Swapchain.destroy
-			dvc sc Vk.AllocationCallbacks.nil)
+	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
+	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
 		=<< readGlobal globalSwapchain
-	lift $ Vk.Device.destroy dvc Vk.AllocationCallbacks.nil
+	lift $ Vk.Device.destroy dvc nil
 	ist <- readGlobal globalInstance
 	dmsgr <- readGlobal globalDebugMessenger
-	when enableValidationLayers . lift
-		$ Vk.Ext.DebugUtils.Messenger.destroy
-			ist dmsgr Vk.AllocationCallbacks.nil
+	when enableValidationLayers
+		. lift $ Vk.Ext.DebugUtils.Messenger.destroy ist dmsgr nil
 	sfc <- readGlobal globalSurface
-	lift $ Vk.Khr.Surface.destroy ist sfc Vk.AllocationCallbacks.nil
+	lift $ Vk.Khr.Surface.destroy ist sfc nil
 	lift $ Vk.Instance.destroy @() ist Nothing
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift $ GlfwB.terminate

@@ -20,9 +20,6 @@ data A a = A {
 		C.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: C.FnInternalFreeNotification a }
 
-nil :: Maybe (A ())
-nil = Nothing
-
 maybeToCore :: Pointable n =>
 	Maybe (A n) -> ContT r IO (Ptr C.A)
 maybeToCore = \case Nothing -> pure NullPtr; Just ac -> toCore ac
