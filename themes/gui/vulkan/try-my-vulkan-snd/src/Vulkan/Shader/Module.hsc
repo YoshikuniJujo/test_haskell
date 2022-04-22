@@ -1,7 +1,9 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds, KindSignatures #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Shader.Module where
@@ -10,7 +12,9 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.C.Enum
 import Control.Monad.Cont
+import Data.Bits
 import Data.Word
 
 import qualified Data.ByteString as BS
@@ -31,11 +35,10 @@ import qualified Vulkan.Shader.Module.Core as C
 
 newtype M (sknd :: ShaderKind) = M C.Module deriving Show
 
-newtype CreateFlags =
-	CreateFlags #{type VkShaderModuleCreateFlags} deriving Show
+enum "CreateFlagBits" ''#{type VkShaderModuleCreateFlags}
+	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
 
-createFlagsZero :: CreateFlags
-createFlagsZero = CreateFlags 0
+type CreateFlags = CreateFlagBits
 
 data CreateInfo n sknd = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -47,7 +50,7 @@ createInfoToCore :: Pointable n =>
 	CreateInfo n sknd -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
-	createInfoFlags = CreateFlags flgs,
+	createInfoFlags = CreateFlagBits flgs,
 	createInfoCode = cd } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	(p, n) <- lift . readFromByteString $ (\(Spv spv) -> spv) cd

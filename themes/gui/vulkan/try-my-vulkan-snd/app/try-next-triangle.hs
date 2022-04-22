@@ -23,6 +23,7 @@ import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
 
 import ThEnv
+import Shaderc
 import Shaderc.TH
 
 import Vulkan.Base
@@ -53,6 +54,7 @@ import qualified Vulkan.ImageView as Vk.ImageView
 import qualified Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
+import qualified Vulkan.Shader.Module as Vk.Shader.Module
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -463,7 +465,23 @@ createImageView1 sci = do
 	lift $ Vk.ImageView.create @() dvc createInfo nil
 
 createGraphicsPipeline :: ReaderT Global IO ()
-createGraphicsPipeline = pure ()
+createGraphicsPipeline = do
+	vertShaderModule <- createShaderModule glslVertexShaderMain
+	fragShaderModule <- createShaderModule glslFragmentShaderMain
+
+	dvc <- readGlobal globalDevice
+	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
+		Vk.Shader.Module.destroy dvc vertShaderModule nil
+
+createShaderModule :: Spv sknd -> ReaderT Global IO (Vk.Shader.Module.M sknd)
+createShaderModule cd = do
+	let	createInfo = Vk.Shader.Module.CreateInfo {
+			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoFlags =
+				Vk.Shader.Module.CreateFlagsZero,
+			Vk.Shader.Module.createInfoCode = cd }
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Shader.Module.create @() dvc createInfo nil
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
@@ -494,15 +512,23 @@ cleanup = do
 
 #version 450
 
+layout(location = 0) out vec3 fragColor;
+
 vec2 positions[3] = vec2[](
 	vec2(0.0, - 0.5),
 	vec2(0.5, 0.5),
 	vec2(- 0.5, 0.5) );
 
+vec3 colors[3] = vec3[](
+	vec3(1.0, 0.0, 0.0),
+	vec3(0.0, 1.0, 0.0),
+	vec3(0.0, 0.0, 1.0) );
+
 void
 main()
 {
 	gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+	fragColor = colors[gl_VertexIndex];
 }
 
 |]
@@ -511,12 +537,14 @@ main()
 
 #version 450
 
+layout(location = 0) in vec3 fragColor;
+
 layout(location = 0) out vec4 outColor;
 
 void
 main()
 {
-	outColor = vec4(1.0, 0.0, 0.0, 1.0);
+	outColor = vec4(fragColor, 1.0);
 }
 
 |]

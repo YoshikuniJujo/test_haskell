@@ -749,7 +749,7 @@ createShaderModule Global { globalDevice = rdvc } cd = do
 	let	createInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
-				Vk.Shader.Module.createFlagsZero,
+				Vk.Shader.Module.CreateFlagsZero,
 			Vk.Shader.Module.createInfoCode = cd }
 	Vk.Shader.Module.create @() @() dvc createInfo Nothing
 
