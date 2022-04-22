@@ -55,6 +55,9 @@ import qualified Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
+import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -468,6 +471,33 @@ createGraphicsPipeline :: ReaderT Global IO ()
 createGraphicsPipeline = do
 	vertShaderModule <- createShaderModule glslVertexShaderMain
 	fragShaderModule <- createShaderModule glslFragmentShaderMain
+
+	let	vertShaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
+			Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
+			Vk.Pipeline.ShaderStage.createInfoFlags =
+				Vk.Pipeline.ShaderStage.CreateFlagsZero,
+			Vk.Pipeline.ShaderStage.createInfoStage =
+				Vk.Shader.Stage.VertexBit,
+			Vk.Pipeline.ShaderStage.createInfoModule =
+				vertShaderModule,
+			Vk.Pipeline.ShaderStage.createInfoName = "main",
+			Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
+				Nothing }
+		fragShaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
+			Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
+			Vk.Pipeline.ShaderStage.createInfoFlags =
+				Vk.Pipeline.ShaderStage.CreateFlagsZero,
+			Vk.Pipeline.ShaderStage.createInfoStage =
+				Vk.Shader.Stage.FragmentBit,
+			Vk.Pipeline.ShaderStage.createInfoModule =
+				fragShaderModule,
+			Vk.Pipeline.ShaderStage.createInfoName = "main",
+			Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
+				Nothing }
+		shaderStages =
+			vertShaderStageInfo `Vk.Pipeline.ShaderStage.CreateInfoCons`
+			fragShaderStageInfo `Vk.Pipeline.ShaderStage.CreateInfoCons`
+			Vk.Pipeline.ShaderStage.CreateInfoNil
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
