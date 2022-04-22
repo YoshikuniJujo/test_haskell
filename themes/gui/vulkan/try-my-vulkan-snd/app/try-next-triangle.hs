@@ -1,6 +1,7 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -22,6 +23,7 @@ import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
 
 import ThEnv
+import Shaderc.TH
 
 import Vulkan.Base
 
@@ -143,6 +145,7 @@ initVulkan = do
 	createLogicalDevice
 	createSwapChain
 	createImageViews
+	createGraphicsPipeline
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -459,6 +462,9 @@ createImageView1 sci = do
 	dvc <- readGlobal globalDevice
 	lift $ Vk.ImageView.create @() dvc createInfo nil
 
+createGraphicsPipeline :: ReaderT Global IO ()
+createGraphicsPipeline = pure ()
+
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
@@ -483,3 +489,34 @@ cleanup = do
 	lift $ Vk.Instance.destroy @() ist Nothing
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift $ GlfwB.terminate
+
+[glslVertexShader|
+
+#version 450
+
+vec2 positions[3] = vec2[](
+	vec2(0.0, - 0.5),
+	vec2(0.5, 0.5),
+	vec2(- 0.5, 0.5) );
+
+void
+main()
+{
+	gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+}
+
+|]
+
+[glslFragmentShader|
+
+#version 450
+
+layout(location = 0) out vec4 outColor;
+
+void
+main()
+{
+	outColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+|]
