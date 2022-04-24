@@ -58,12 +58,11 @@ import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
-import qualified Vulkan.Pipeline.VertexInputState as
-	Vk.Pipeline.VertexInputSt
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Pipeline.VertexInputSt
 import qualified Vulkan.Pipeline.VertexInputState.Middle as
 	Vk.Pipeline.VertexInputSt.M
-import qualified Vulkan.Pipeline.InputAssemblyState as
-	Vk.Pipeline.InpAsmbSt
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Pipeline.InpAsmbSt
+import qualified Vulkan.Pipeline.ViewportState as Vk.Pipeline.ViewportSt
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -520,6 +519,24 @@ createGraphicsPipeline = do
 				Vk.PrimitiveTopologyTriangleList,
 			Vk.Pipeline.InpAsmbSt.createInfoPrimitiveRestartEnable =
 				False }
+
+	sce <- readGlobal globalSwapChainExtent
+	let	viewport = Vk.C.Viewport {
+			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
+			Vk.C.viewportWidth =
+				fromIntegral $ Vk.C.extent2dWidth sce,
+			Vk.C.viewportHeight =
+				fromIntegral $ Vk.C.extent2dHeight sce,
+			Vk.C.viewportMinDepth = 0, Vk.C.viewportMaxDepth = 1 }
+		scissor = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+			Vk.C.rect2dExtent = sce }
+		viewportState = Vk.Pipeline.ViewportSt.CreateInfo {
+			Vk.Pipeline.ViewportSt.createInfoNext = Nothing,
+			Vk.Pipeline.ViewportSt.createInfoFlags =
+				Vk.Pipeline.ViewportSt.CreateFlagsZero,
+			Vk.Pipeline.ViewportSt.createInfoViewports = [viewport],
+			Vk.Pipeline.ViewportSt.createInfoScissors = [scissor] }
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
