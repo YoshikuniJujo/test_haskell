@@ -58,6 +58,12 @@ import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
+import qualified Vulkan.Pipeline.VertexInputState as
+	Vk.Pipeline.VertexInputSt
+import qualified Vulkan.Pipeline.VertexInputState.Middle as
+	Vk.Pipeline.VertexInputSt.M
+import qualified Vulkan.Pipeline.InputAssemblyState as
+	Vk.Pipeline.InpAsmbSt
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -495,9 +501,25 @@ createGraphicsPipeline = do
 			Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
 		shaderStages =
-			vertShaderStageInfo `Vk.Pipeline.ShaderStage.CreateInfoCons`
-			fragShaderStageInfo `Vk.Pipeline.ShaderStage.CreateInfoCons`
+			vertShaderStageInfo
+				`Vk.Pipeline.ShaderStage.CreateInfoCons`
+			fragShaderStageInfo
+				`Vk.Pipeline.ShaderStage.CreateInfoCons`
 			Vk.Pipeline.ShaderStage.CreateInfoNil
+		vertexInputInfo ::
+			Vk.Pipeline.VertexInputSt.CreateInfo () () '[]
+		vertexInputInfo = Vk.Pipeline.VertexInputSt.CreateInfo {
+			Vk.Pipeline.VertexInputSt.createInfoNext = Nothing,
+			Vk.Pipeline.VertexInputSt.createInfoFlags =
+				Vk.Pipeline.VertexInputSt.M.CreateFlagsZero }
+		inputAssembly = Vk.Pipeline.InpAsmbSt.CreateInfo {
+			Vk.Pipeline.InpAsmbSt.createInfoNext = Nothing,
+			Vk.Pipeline.InpAsmbSt.createInfoFlags =
+				Vk.Pipeline.InpAsmbSt.CreateFlagsZero,
+			Vk.Pipeline.InpAsmbSt.createInfoTopology =
+				Vk.PrimitiveTopologyTriangleList,
+			Vk.Pipeline.InpAsmbSt.createInfoPrimitiveRestartEnable =
+				False }
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
