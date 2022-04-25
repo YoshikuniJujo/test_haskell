@@ -18,7 +18,6 @@ import Data.Word
 import Vulkan.Base
 import Vulkan.Enum
 
-import qualified Vulkan.CullMode.Enum as CullMode
 import qualified Vulkan.Pipeline.RasterizationState.Core as C
 
 #include <vulkan/vulkan.h>
@@ -32,7 +31,7 @@ data CreateInfo n = CreateInfo {
 	createInfoDepthClampEnable :: Bool,
 	createInfoRasterizerDiscardEnable :: Bool,
 	createInfoPolygonMode :: PolygonMode,
-	createInfoCullMode :: CullMode.Flags,
+	createInfoCullMode :: CullModeFlags,
 	createInfoFrontFace :: FrontFace,
 	createInfoDepthBiasEnable :: Bool,
 	createInfoDepthBiasConstantFactor :: Float,
@@ -48,7 +47,7 @@ createInfoToCore CreateInfo {
 	createInfoDepthClampEnable = boolToBool32 -> dce,
 	createInfoRasterizerDiscardEnable = boolToBool32 -> rde,
 	createInfoPolygonMode = PolygonMode pm,
-	createInfoCullMode = CullMode.FlagBits cm,
+	createInfoCullMode = CullModeFlagBits cm,
 	createInfoFrontFace = FrontFace ff,
 	createInfoDepthBiasEnable = boolToBool32 -> dbe,
 	createInfoDepthBiasConstantFactor = dbcf,

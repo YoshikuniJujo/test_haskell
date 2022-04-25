@@ -36,6 +36,7 @@ enum "StoreOp" ''#{type VkAttachmentStoreOp}
 	("StoreOpStore", #{const VK_ATTACHMENT_STORE_OP_STORE}),
 	("StoreOpDontCare",
 		#{const VK_ATTACHMENT_STORE_OP_DONT_CARE}),
+	("StoreOpNone", #{const VK_ATTACHMENT_STORE_OP_NONE}),
 	("StoreOpNoneKhr", #{const VK_ATTACHMENT_STORE_OP_NONE_KHR}),
 	("StoreOpNoneQcom",
 		#{const VK_ATTACHMENT_STORE_OP_NONE_QCOM}),

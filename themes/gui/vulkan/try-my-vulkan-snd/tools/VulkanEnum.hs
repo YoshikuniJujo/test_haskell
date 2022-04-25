@@ -17,7 +17,8 @@ type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
 type QueryControlFlags = QueryControlFlagBits
-type QueryPipelineStatisticFlags = QueryPipelineStatisticFlagBits|]
+type QueryPipelineStatisticFlags = QueryPipelineStatisticFlagBits
+type CullModeFlags = CullModeFlagBits|]
 
 noZeros :: [(HaskellName, CName, [DerivName])]
 noZeros = [
@@ -56,5 +57,8 @@ zeros = [
 	(	[("QueryPipelineStatisticFlagsZero", Int 0)],
 		(	"QueryPipelineStatisticFlagBits",
 			"VkQueryPipelineStatisticFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[("CullModeFlagsZero", Int 0)],
+		(	"CullModeFlagBits", "VkCullModeFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]

@@ -78,7 +78,6 @@ import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
 import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Vulkan.CullMode.Enum as Vk.CullMode
 import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
@@ -664,7 +663,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
 			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
-			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullMode.BackBit,
+			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
 			Vk.Ppl.RstSt.createInfoFrontFace =
 				Vk.FrontFaceClockwise,
 			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,

@@ -18,6 +18,8 @@ import Data.Word
 enum "CreateFlagBits" ''#{type VkPipelineCacheCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("CreateFlagsZero", 0),
+	("CreateExternallySynchronizedBit",
+		#{const VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT}),
 	("CreateExternallySynchronizedBitExt",
 		#{const VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT_EXT}),
 	("CreateFlagBitsMaxEnum",

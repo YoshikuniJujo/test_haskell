@@ -63,6 +63,7 @@ import qualified Vulkan.Pipeline.VertexInputState.Middle as
 	Vk.Pipeline.VertexInputSt.M
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Pipeline.InpAsmbSt
 import qualified Vulkan.Pipeline.ViewportState as Vk.Pipeline.ViewportSt
+import qualified Vulkan.Pipeline.RasterizationState as Vk.Pipeline.RstSt
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -519,7 +520,6 @@ createGraphicsPipeline = do
 				Vk.PrimitiveTopologyTriangleList,
 			Vk.Pipeline.InpAsmbSt.createInfoPrimitiveRestartEnable =
 				False }
-
 	sce <- readGlobal globalSwapChainExtent
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
@@ -537,6 +537,19 @@ createGraphicsPipeline = do
 				Vk.Pipeline.ViewportSt.CreateFlagsZero,
 			Vk.Pipeline.ViewportSt.createInfoViewports = [viewport],
 			Vk.Pipeline.ViewportSt.createInfoScissors = [scissor] }
+		rasterizer = Vk.Pipeline.RstSt.CreateInfo {
+			Vk.Pipeline.RstSt.createInfoNext = Nothing,
+			Vk.Pipeline.RstSt.createInfoFlags =
+				Vk.Pipeline.RstSt.CreateFlagsZero,
+			Vk.Pipeline.RstSt.createInfoDepthClampEnable = False,
+			Vk.Pipeline.RstSt.createInfoRasterizerDiscardEnable =
+				False,
+			Vk.Pipeline.RstSt.createInfoPolygonMode =
+				Vk.PolygonModeFill,
+			Vk.Pipeline.RstSt.createInfoLineWidth = 1,
+			Vk.Pipeline.RstSt.createInfoCullMode =
+				Vk.CullModeBackBit
+			}
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
