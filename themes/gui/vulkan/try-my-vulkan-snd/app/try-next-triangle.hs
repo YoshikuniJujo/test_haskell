@@ -597,7 +597,16 @@ createGraphicsPipeline = do
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
 
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = Nothing,
+			Vk.Ppl.Layout.createInfoFlags =
+				Vk.Ppl.Layout.CreateFlagsZero,
+			Vk.Ppl.Layout.createInfoSetLayouts = [],
+			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
 	dvc <- readGlobal globalDevice
+	writeGlobal globalPipelineLayout
+		=<< lift (Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil)
+
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
 		Vk.Shader.Module.destroy dvc vertShaderModule nil
 
@@ -621,6 +630,8 @@ mainLoop = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
+	ppllyt <- readGlobal globalPipelineLayout
+	lift $ Vk.Ppl.Layout.destroy dvc ppllyt nil
 	scivs <- readGlobal globalSwapChainImageViews
 	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
