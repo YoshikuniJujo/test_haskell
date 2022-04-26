@@ -74,6 +74,9 @@ import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Layout
 import qualified Vulkan.Attachment as Vk.Att
 import qualified Vulkan.Attachment.Enum as Vk.Att
+import qualified Vulkan.Subpass as Vk.Subpass
+import qualified Vulkan.Subpass.Enum as Vk.Subpass
+import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -503,6 +506,20 @@ createRenderPass = do
 				Vk.Image.LayoutUndefined,
 			Vk.Att.descriptionFinalLayout =
 				Vk.Image.LayoutPresentSrcKhr }
+		colorAttachmentRef = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = Vk.Att.A 0,
+			Vk.Att.referenceLayout =
+				Vk.Image.LayoutColorAttachmentOptimal }
+		subpass = Vk.Subpass.Description {
+			Vk.Subpass.descriptionFlags =
+				Vk.Subpass.DescriptionFlagsZero,
+			Vk.Subpass.descriptionPipelineBindPoint =
+				Vk.Ppl.BindPointGraphics,
+			Vk.Subpass.descriptionInputAttachments = [],
+			Vk.Subpass.descriptionColorAndResolveAttachments =
+				Left [colorAttachmentRef],
+			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+			Vk.Subpass.descriptionPreserveAttachments = [] }
 	pure ()
 
 createGraphicsPipeline :: ReaderT Global IO ()
