@@ -86,6 +86,8 @@ import qualified Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
+import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -118,7 +120,8 @@ data Global = Global {
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
-	globalCommandPool :: IORef Vk.CommandPool.C
+	globalCommandPool :: IORef Vk.CommandPool.C,
+	globalCommandBuffer :: IORef Vk.CommandBuffer.C
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -147,6 +150,7 @@ newGlobal = do
 	grppl <- newIORef Vk.Ppl.Graphics.GNull
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
+	cb <- newIORef $ Vk.CommandBuffer.C NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -165,7 +169,8 @@ newGlobal = do
 		globalPipelineLayout = ppllyt,
 		globalGraphicsPipeline = grppl,
 		globalSwapChainFramebuffers = scfbs,
-		globalCommandPool = cp
+		globalCommandPool = cp,
+		globalCommandBuffer = cb
 		}
 
 run :: ReaderT Global IO ()
@@ -198,6 +203,7 @@ initVulkan = do
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
+	createCommandBuffer
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -778,6 +784,19 @@ createCommandPool = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+
+createCommandBuffer :: ReaderT Global IO ()
+createCommandBuffer = do
+	cp <- readGlobal globalCommandPool
+	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoCommandPool = cp,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.LevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalCommandBuffer . head
+		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
