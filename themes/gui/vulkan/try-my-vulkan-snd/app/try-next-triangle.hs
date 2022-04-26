@@ -89,6 +89,8 @@ import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.Semaphore as Vk.Semaphore
+import qualified Vulkan.Fence as Vk.Fence
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -122,7 +124,10 @@ data Global = Global {
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
-	globalCommandBuffer :: IORef Vk.CommandBuffer.C
+	globalCommandBuffer :: IORef Vk.CommandBuffer.C,
+	globalImageAvailableSemaphore :: IORef Vk.Semaphore.S,
+	globalRenderFinishedSemaphore :: IORef Vk.Semaphore.S,
+	globalInFlightFence :: IORef Vk.Fence.F
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -152,6 +157,9 @@ newGlobal = do
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	cb <- newIORef $ Vk.CommandBuffer.C NullPtr
+	ias <- newIORef $ Vk.Semaphore.S NullPtr
+	rfs <- newIORef $ Vk.Semaphore.S NullPtr
+	iff <- newIORef $ Vk.Fence.F NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -171,7 +179,10 @@ newGlobal = do
 		globalGraphicsPipeline = grppl,
 		globalSwapChainFramebuffers = scfbs,
 		globalCommandPool = cp,
-		globalCommandBuffer = cb
+		globalCommandBuffer = cb,
+		globalImageAvailableSemaphore = ias,
+		globalRenderFinishedSemaphore = rfs,
+		globalInFlightFence = iff
 		}
 
 run :: ReaderT Global IO ()
@@ -205,6 +216,7 @@ initVulkan = do
 	createFramebuffers
 	createCommandPool
 	createCommandBuffer
+	createSyncObjects
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -799,6 +811,9 @@ createCommandBuffer = do
 	writeGlobal globalCommandBuffer . head
 		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
 
+createSyncObjects :: ReaderT Global IO ()
+createSyncObjects = pure ()
+
 recordCommandBuffer :: Int -> ReaderT Global IO ()
 recordCommandBuffer imageIndex = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
@@ -833,9 +848,14 @@ recordCommandBuffer imageIndex = do
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
-	lift $ fix \loop -> bool (pure ()) loop =<< do
-		GlfwB.pollEvents
-		not <$> GlfwB.windowShouldClose w
+	fix \loop -> bool (pure ()) loop =<< do
+		lift GlfwB.pollEvents
+		drawFrame
+		not <$> lift (GlfwB.windowShouldClose w)
+
+drawFrame :: ReaderT Global IO ()
+drawFrame = do
+	pure ()
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
