@@ -82,6 +82,8 @@ import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RenderPass
 import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
+import qualified Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -112,7 +114,8 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[])
+	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[]),
+	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F]
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -139,6 +142,7 @@ newGlobal = do
 	rp <- newIORef $ Vk.RenderPass.R NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
 	grppl <- newIORef Vk.Ppl.Graphics.GNull
+	scfbs <- newIORef []
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -155,7 +159,9 @@ newGlobal = do
 		globalSwapChainImageViews = scivs,
 		globalRenderPass = rp,
 		globalPipelineLayout = ppllyt,
-		globalGraphicsPipeline = grppl }
+		globalGraphicsPipeline = grppl,
+		globalSwapChainFramebuffers = scfbs
+		}
 
 run :: ReaderT Global IO ()
 run = do
@@ -185,6 +191,7 @@ initVulkan = do
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
+	createFramebuffers
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -730,6 +737,28 @@ createShaderModule cd = do
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Shader.Module.create @() dvc createInfo nil
 
+createFramebuffers :: ReaderT Global IO ()
+createFramebuffers = writeGlobal globalSwapChainFramebuffers
+	=<< (createFramebuffer1 `mapM`) =<< readGlobal globalSwapChainImageViews
+
+createFramebuffer1 :: Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
+createFramebuffer1 attachment = do
+	rp <- readGlobal globalRenderPass
+	Vk.C.Extent2d {
+		Vk.C.extent2dWidth = w,
+		Vk.C.extent2dHeight = h } <- readGlobal globalSwapChainExtent
+	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
+			Vk.Framebuffer.createInfoNext = Nothing,
+			Vk.Framebuffer.createInfoFlags =
+				Vk.Framebuffer.CreateFlagsZero,
+			Vk.Framebuffer.createInfoRenderPass = rp,
+			Vk.Framebuffer.createInfoAttachments = [attachment],
+			Vk.Framebuffer.createInfoWidth = w,
+			Vk.Framebuffer.createInfoHeight = h,
+			Vk.Framebuffer.createInfoLayers = 1 }
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Framebuffer.create @() dvc framebufferInfo nil
+
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
@@ -740,6 +769,8 @@ mainLoop = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
+	scfbs <- readGlobal globalSwapChainFramebuffers
+	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
 	grppl <- readGlobal globalGraphicsPipeline
 	lift $ Vk.Ppl.Graphics.destroy dvc grppl nil
 	ppllyt <- readGlobal globalPipelineLayout
