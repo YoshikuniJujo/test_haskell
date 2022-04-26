@@ -84,6 +84,8 @@ import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
+import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -115,7 +117,8 @@ data Global = Global {
 	globalRenderPass :: IORef Vk.RenderPass.R,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[]),
-	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F]
+	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
+	globalCommandPool :: IORef Vk.CommandPool.C
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -143,6 +146,7 @@ newGlobal = do
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
 	grppl <- newIORef Vk.Ppl.Graphics.GNull
 	scfbs <- newIORef []
+	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -160,7 +164,8 @@ newGlobal = do
 		globalRenderPass = rp,
 		globalPipelineLayout = ppllyt,
 		globalGraphicsPipeline = grppl,
-		globalSwapChainFramebuffers = scfbs
+		globalSwapChainFramebuffers = scfbs,
+		globalCommandPool = cp
 		}
 
 run :: ReaderT Global IO ()
@@ -192,6 +197,7 @@ initVulkan = do
 	createRenderPass
 	createGraphicsPipeline
 	createFramebuffers
+	createCommandPool
 
 createInstance :: ReaderT Global IO ()
 createInstance = do
@@ -759,6 +765,20 @@ createFramebuffer1 attachment = do
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Framebuffer.create @() dvc framebufferInfo nil
 
+createCommandPool :: ReaderT Global IO ()
+createCommandPool = do
+	pdvc <- readGlobal globalPhysicalDevice
+	queueFamilyIndices <- findQueueFamilies pdvc
+	let	poolInfo = Vk.CommandPool.CreateInfo {
+			Vk.CommandPool.createInfoNext = Nothing,
+			Vk.CommandPool.createInfoFlags =
+				Vk.CommandPool.CreateFlagsZero,
+			Vk.CommandPool.createInfoQueueFamilyIndex =
+				fromJust $ graphicsFamily queueFamilyIndices }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalCommandPool
+		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
@@ -769,6 +789,8 @@ mainLoop = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
+	cp <- readGlobal globalCommandPool
+	lift $ Vk.CommandPool.destroy dvc cp nil
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
 	grppl <- readGlobal globalGraphicsPipeline
