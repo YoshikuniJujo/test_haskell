@@ -16,6 +16,7 @@ import Data.Maybe
 import Data.List
 import Data.Word
 import Data.IORef
+import Data.Color
 
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
@@ -69,6 +70,8 @@ import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Vulkan.ColorComponent.Enum as Vk.ClrCmp
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
+import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Layout
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -96,7 +99,8 @@ data Global = Global {
 	globalSwapChainImages :: IORef [Vk.Image.I],
 	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
-	globalSwapChainImageViews :: IORef [Vk.ImageView.I]
+	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
+	globalPipelineLayout :: IORef Vk.Ppl.Layout.L
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -120,6 +124,7 @@ newGlobal = do
 	scif <- newIORef Nothing
 	sce <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
+	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -133,7 +138,8 @@ newGlobal = do
 		globalSwapChainImages = scis,
 		globalSwapChainImageFormat = scif,
 		globalSwapChainExtent = sce,
-		globalSwapChainImageViews = scivs }
+		globalSwapChainImageViews = scivs,
+		globalPipelineLayout = ppllyt }
 
 run :: ReaderT Global IO ()
 run = do
@@ -580,6 +586,16 @@ createGraphicsPipeline = do
 			Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor =
 				Vk.BlendFactorZero,
 			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
+		colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
+			Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+			Vk.Ppl.ClrBlndSt.createInfoFlags =
+				Vk.Ppl.ClrBlndSt.CreateFlagsZero,
+			Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
+			Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,
+			Vk.Ppl.ClrBlndSt.createInfoAttachments =
+				[colorBlendAttachment],
+			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
+				fromJust $ rgbaDouble 0 0 0 0 }
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
