@@ -55,15 +55,18 @@ import qualified Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
-import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
-import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
-import qualified Vulkan.Pipeline.VertexInputState as Vk.Pipeline.VertexInputSt
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Vulkan.Pipeline.VertexInputState.Middle as
-	Vk.Pipeline.VertexInputSt.M
-import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Pipeline.InpAsmbSt
-import qualified Vulkan.Pipeline.ViewportState as Vk.Pipeline.ViewportSt
-import qualified Vulkan.Pipeline.RasterizationState as Vk.Pipeline.RstSt
+	Vk.Ppl.VertexInputSt.M
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
+import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
+import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
+import qualified Vulkan.Sample as Vk.Sample
+import qualified Vulkan.Sample.Enum as Vk.Sample
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -478,47 +481,43 @@ createGraphicsPipeline = do
 	vertShaderModule <- createShaderModule glslVertexShaderMain
 	fragShaderModule <- createShaderModule glslFragmentShaderMain
 
-	let	vertShaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
-			Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
-			Vk.Pipeline.ShaderStage.createInfoFlags =
-				Vk.Pipeline.ShaderStage.CreateFlagsZero,
-			Vk.Pipeline.ShaderStage.createInfoStage =
+	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
+				Vk.Ppl.ShaderStage.CreateFlagsZero,
+			Vk.Ppl.ShaderStage.createInfoStage =
 				Vk.Shader.Stage.VertexBit,
-			Vk.Pipeline.ShaderStage.createInfoModule =
-				vertShaderModule,
-			Vk.Pipeline.ShaderStage.createInfoName = "main",
-			Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
+			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
-		fragShaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
-			Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
-			Vk.Pipeline.ShaderStage.createInfoFlags =
-				Vk.Pipeline.ShaderStage.CreateFlagsZero,
-			Vk.Pipeline.ShaderStage.createInfoStage =
+		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
+				Vk.Ppl.ShaderStage.CreateFlagsZero,
+			Vk.Ppl.ShaderStage.createInfoStage =
 				Vk.Shader.Stage.FragmentBit,
-			Vk.Pipeline.ShaderStage.createInfoModule =
-				fragShaderModule,
-			Vk.Pipeline.ShaderStage.createInfoName = "main",
-			Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
+			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
 		shaderStages =
-			vertShaderStageInfo
-				`Vk.Pipeline.ShaderStage.CreateInfoCons`
-			fragShaderStageInfo
-				`Vk.Pipeline.ShaderStage.CreateInfoCons`
-			Vk.Pipeline.ShaderStage.CreateInfoNil
+			vertShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
+			fragShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
+			Vk.Ppl.ShaderStage.CreateInfoNil
 		vertexInputInfo ::
-			Vk.Pipeline.VertexInputSt.CreateInfo () () '[]
-		vertexInputInfo = Vk.Pipeline.VertexInputSt.CreateInfo {
-			Vk.Pipeline.VertexInputSt.createInfoNext = Nothing,
-			Vk.Pipeline.VertexInputSt.createInfoFlags =
-				Vk.Pipeline.VertexInputSt.M.CreateFlagsZero }
-		inputAssembly = Vk.Pipeline.InpAsmbSt.CreateInfo {
-			Vk.Pipeline.InpAsmbSt.createInfoNext = Nothing,
-			Vk.Pipeline.InpAsmbSt.createInfoFlags =
-				Vk.Pipeline.InpAsmbSt.CreateFlagsZero,
-			Vk.Pipeline.InpAsmbSt.createInfoTopology =
+			Vk.Ppl.VertexInputSt.CreateInfo () () '[]
+		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
+			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
+			Vk.Ppl.VertexInputSt.createInfoFlags =
+				Vk.Ppl.VertexInputSt.M.CreateFlagsZero }
+		inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
+			Vk.Ppl.InpAsmbSt.createInfoNext = Nothing,
+			Vk.Ppl.InpAsmbSt.createInfoFlags =
+				Vk.Ppl.InpAsmbSt.CreateFlagsZero,
+			Vk.Ppl.InpAsmbSt.createInfoTopology =
 				Vk.PrimitiveTopologyTriangleList,
-			Vk.Pipeline.InpAsmbSt.createInfoPrimitiveRestartEnable =
+			Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable =
 				False }
 	sce <- readGlobal globalSwapChainExtent
 	let	viewport = Vk.C.Viewport {
@@ -531,30 +530,39 @@ createGraphicsPipeline = do
 		scissor = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce }
-		viewportState = Vk.Pipeline.ViewportSt.CreateInfo {
-			Vk.Pipeline.ViewportSt.createInfoNext = Nothing,
-			Vk.Pipeline.ViewportSt.createInfoFlags =
-				Vk.Pipeline.ViewportSt.CreateFlagsZero,
-			Vk.Pipeline.ViewportSt.createInfoViewports = [viewport],
-			Vk.Pipeline.ViewportSt.createInfoScissors = [scissor] }
-		rasterizer = Vk.Pipeline.RstSt.CreateInfo {
-			Vk.Pipeline.RstSt.createInfoNext = Nothing,
-			Vk.Pipeline.RstSt.createInfoFlags =
-				Vk.Pipeline.RstSt.CreateFlagsZero,
-			Vk.Pipeline.RstSt.createInfoDepthClampEnable = False,
-			Vk.Pipeline.RstSt.createInfoRasterizerDiscardEnable =
-				False,
-			Vk.Pipeline.RstSt.createInfoPolygonMode =
-				Vk.PolygonModeFill,
-			Vk.Pipeline.RstSt.createInfoLineWidth = 1,
-			Vk.Pipeline.RstSt.createInfoCullMode =
-				Vk.CullModeBackBit,
-			Vk.Pipeline.RstSt.createInfoFrontFace =
+		viewportState = Vk.Ppl.ViewportSt.CreateInfo {
+			Vk.Ppl.ViewportSt.createInfoNext = Nothing,
+			Vk.Ppl.ViewportSt.createInfoFlags =
+				Vk.Ppl.ViewportSt.CreateFlagsZero,
+			Vk.Ppl.ViewportSt.createInfoViewports = [viewport],
+			Vk.Ppl.ViewportSt.createInfoScissors = [scissor] }
+		rasterizer = Vk.Ppl.RstSt.CreateInfo {
+			Vk.Ppl.RstSt.createInfoNext = Nothing,
+			Vk.Ppl.RstSt.createInfoFlags =
+				Vk.Ppl.RstSt.CreateFlagsZero,
+			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
+			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
+			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
+			Vk.Ppl.RstSt.createInfoLineWidth = 1,
+			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+			Vk.Ppl.RstSt.createInfoFrontFace =
 				Vk.FrontFaceClockwise,
-			Vk.Pipeline.RstSt.createInfoDepthBiasEnable = False,
-			Vk.Pipeline.RstSt.createInfoDepthBiasConstantFactor = 0,
-			Vk.Pipeline.RstSt.createInfoDepthBiasClamp = 0,
-			Vk.Pipeline.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
+			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+		multisampling = Vk.Ppl.MulSmplSt.CreateInfo {
+			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
+			Vk.Ppl.MulSmplSt.createInfoFlags =
+				Vk.Ppl.MulSmplSt.CreateFlagsZero,
+			Vk.Ppl.MulSmplSt.createInfoSampleShadingEnable = False,
+			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
+				Vk.Sample.CountAndMask
+					Vk.Sample.Count1Bit Nothing,
+			Vk.Ppl.MulSmplSt.createInfoMinSampleShading = 1,
+			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
+				False,
+			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
