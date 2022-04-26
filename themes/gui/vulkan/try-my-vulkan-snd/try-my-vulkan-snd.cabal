@@ -101,7 +101,6 @@ library
       Vulkan.PhysicalDevice.Struct
       Vulkan.PhysicalDevice.Struct.Core
       Vulkan.PhysicalDevice.Struct.Th
-      Vulkan.Pipeline
       Vulkan.Pipeline.Cache
       Vulkan.Pipeline.Cache.Core
       Vulkan.Pipeline.Cache.Enum
@@ -109,12 +108,13 @@ library
       Vulkan.Pipeline.ColorBlendAttachment.Core
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.ColorBlendState.Core
-      Vulkan.Pipeline.Core
       Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Core
       Vulkan.Pipeline.DynamicState
       Vulkan.Pipeline.DynamicState.Core
       Vulkan.Pipeline.Enum
+      Vulkan.Pipeline.Graphics
+      Vulkan.Pipeline.Graphics.Core
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout

@@ -79,6 +79,7 @@ import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RenderPass
 import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
+import qualified Vulkan.Pipeline.Graphics as Vk.Ppl
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -670,6 +671,9 @@ createGraphicsPipeline = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalPipelineLayout
 		=<< lift (Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil)
+
+	let	pipelineInfo = Vk.Ppl.CreateInfo {
+			}
 
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
 		Vk.Shader.Module.destroy dvc vertShaderModule nil

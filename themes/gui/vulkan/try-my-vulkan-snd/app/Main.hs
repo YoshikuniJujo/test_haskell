@@ -91,7 +91,7 @@ import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RndrPss
 import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
-import qualified Vulkan.Pipeline as Vk.Ppl
+import qualified Vulkan.Pipeline.Graphics as Vk.Ppl
 import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.Framebuffer.Enum as Vk.Fb
 import qualified Vulkan.CommandPool as Vk.CP
@@ -131,7 +131,7 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
+	globalGraphicsPipeline :: IORef (Vk.Ppl.G () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
 	globalCommandBuffers :: IORef [Vk.CB.C],

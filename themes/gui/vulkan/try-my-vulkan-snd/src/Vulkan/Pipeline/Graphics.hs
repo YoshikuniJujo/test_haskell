@@ -8,7 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline where
+module Vulkan.Pipeline.Graphics where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -35,7 +35,7 @@ import qualified Vulkan.Pipeline.ColorBlendState as ColorBlendState
 import qualified Vulkan.Pipeline.DynamicState as DynamicState
 import qualified Vulkan.Pipeline.Layout as Layout
 import qualified Vulkan.RenderPass as RenderPass
-import qualified Vulkan.Pipeline.Core as C
+import qualified Vulkan.Pipeline.Graphics.Core as C
 import qualified Vulkan.Pipeline.VertexInputState.BindingStrideList as BindingStrideList
 import qualified Vulkan.VertexInput as VertexInput
 
@@ -62,7 +62,7 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' = Cre
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: P vs'' ts',
+	createInfoBasePipelineHandle :: G vs'' ts',
 	createInfoBasePipelineIndex :: Int32 }
 
 deriving instance (
@@ -102,7 +102,7 @@ createInfoToCore CreateInfo {
 	createInfoLayout = Layout.L lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = P bph,
+	createInfoBasePipelineHandle = G bph,
 	createInfoBasePipelineIndex = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
@@ -185,17 +185,17 @@ instance (
 		<$> createInfoToCore ci
 		<*> createInfoListToCore cis
 
-pattern PNull :: P vs ts
-pattern PNull <- P NullHandle where
-	PNull = P NullHandle
+pattern PNull :: G vs ts
+pattern PNull <- G NullHandle where
+	PNull = G NullHandle
 
-newtype P vs (ts :: [Type]) = P C.P deriving Show
+newtype G vs (ts :: [Type]) = G C.G deriving Show
 
 data PList vss tss where
 	PNil :: PList '[] '[]
-	PCons :: P vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
+	PCons :: G vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
 
-class PListFromCore vss tss where pListFromCore :: [C.P] -> PList vss tss
+class PListFromCore vss tss where pListFromCore :: [C.G] -> PList vss tss
 
 instance PListFromCore '[] '[] where
 	pListFromCore [] = PNil
@@ -205,7 +205,7 @@ instance
 	PListFromCore vss tss =>
 	PListFromCore (vs ': vss) (ts ': tss) where
 	pListFromCore [] = error "bad"
-	pListFromCore (cp : cps) = P cp `PCons` pListFromCore cps
+	pListFromCore (cp : cps) = G cp `PCons` pListFromCore cps
 
 create :: (
 	CreateInfoListToCore ns
@@ -225,7 +225,7 @@ createRaw :: (
 	Device.D -> Maybe Cache.C ->
 	CreateInfoList ns
 		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
-	Maybe (AllocationCallbacks.A n') -> IO [C.P]
+	Maybe (AllocationCallbacks.A n') -> IO [C.G]
 createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
 	ccis <- createInfoListToCore cis
@@ -239,7 +239,7 @@ createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 		peekArray cic pps
 
 destroy :: Pointable n =>
-	Device.D -> P vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (P p) mac = ($ pure) $ runContT do
+	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (G p) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc p pac

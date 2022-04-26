@@ -6,7 +6,7 @@ import Foreign.Ptr
 import Data.Word
 
 import qualified Vulkan.RenderPass.Core as RenderPass
-import qualified Vulkan.Pipeline.Core as Pipeline
+import qualified Vulkan.Pipeline.Graphics.Core as Pipeline
 import qualified Vulkan.CommandBuffer.Core as CommandBuffer
 
 #include <vulkan/vulkan.h>
@@ -16,7 +16,7 @@ foreign import ccall "vkCmdBeginRenderPass" beginRenderPass ::
 	#{type VkSubpassContents} -> IO ()
 
 foreign import ccall "vkCmdBindPipeline" bindPipeline ::
-	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.P -> IO ()
+	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.G -> IO ()
 
 foreign import ccall "vkCmdDraw" draw ::
 	CommandBuffer.C -> #{type uint32_t} -> #{type uint32_t} ->

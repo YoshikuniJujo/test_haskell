@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.Core where
+module Vulkan.Pipeline.Graphics.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -38,8 +38,8 @@ bindPointGraphics = #{const VK_PIPELINE_BIND_POINT_GRAPHICS}
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
 
-data PTag
-type P = Ptr PTag
+data GTag
+type G = Ptr GTag
 
 struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		#{alignment VkGraphicsPipelineCreateInfo} [
@@ -96,7 +96,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("subpass", ''#{type uint32_t},
 		[| #{peek VkGraphicsPipelineCreateInfo, subpass} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, subpass} |]),
-	("basePipelineHandle", ''P,
+	("basePipelineHandle", ''G,
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineHandle} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineHandle} |]),
 	("basePipelineIndex", ''#{type int32_t},
@@ -106,10 +106,10 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 
 foreign import ccall "vkCreateGraphicsPipelines" create ::
 	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
-	Ptr AllocationCallbacks.A -> Ptr P -> IO #{type VkResult}
+	Ptr AllocationCallbacks.A -> Ptr G -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipeline" destroy ::
-	Device.D -> P -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> G -> Ptr AllocationCallbacks.A -> IO ()
 
 stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
 stageColorAttachmentOutputBit =
