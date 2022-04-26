@@ -77,6 +77,8 @@ import qualified Vulkan.Attachment.Enum as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified Vulkan.RenderPass as Vk.RenderPass
+import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -105,6 +107,7 @@ data Global = Global {
 	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
+	globalRenderPass :: IORef Vk.RenderPass.R,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L
 	}
 
@@ -129,6 +132,7 @@ newGlobal = do
 	scif <- newIORef Nothing
 	sce <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
+	rp <- newIORef $ Vk.RenderPass.R NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
 	pure Global {
 		globalWindow = win,
@@ -144,6 +148,7 @@ newGlobal = do
 		globalSwapChainImageFormat = scif,
 		globalSwapChainExtent = sce,
 		globalSwapChainImageViews = scivs,
+		globalRenderPass = rp,
 		globalPipelineLayout = ppllyt }
 
 run :: ReaderT Global IO ()
@@ -520,7 +525,28 @@ createRenderPass = do
 				Left [colorAttachmentRef],
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
-	pure ()
+		dependency = Vk.Subpass.Dependency {
+			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
+			Vk.Subpass.dependencySrcStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Subpass.dependencySrcAccessMask = Vk.AccessFlagsZero,
+			Vk.Subpass.dependencyDstStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Subpass.dependencyDstAccessMask =
+				Vk.AccessColorAttachmentWriteBit,
+			Vk.Subpass.dependencyDependencyFlags =
+				Vk.DependencyFlagsZero }
+		renderPassInfo = Vk.RenderPass.CreateInfo {
+			Vk.RenderPass.createInfoNext = Nothing,
+			Vk.RenderPass.createInfoFlags =
+				Vk.RenderPass.CreateFlagsZero,
+			Vk.RenderPass.createInfoAttachments = [colorAttachment],
+			Vk.RenderPass.createInfoSubpasses = [subpass],
+			Vk.RenderPass.createInfoDependencies = [dependency] }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalRenderPass
+		=<< lift (Vk.RenderPass.create @() dvc renderPassInfo nil)
 
 createGraphicsPipeline :: ReaderT Global IO ()
 createGraphicsPipeline = do
@@ -670,6 +696,8 @@ cleanup = do
 	dvc <- readGlobal globalDevice
 	ppllyt <- readGlobal globalPipelineLayout
 	lift $ Vk.Ppl.Layout.destroy dvc ppllyt nil
+	rp <- readGlobal globalRenderPass
+	lift $ Vk.RenderPass.destroy dvc rp nil
 	scivs <- readGlobal globalSwapChainImageViews
 	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
