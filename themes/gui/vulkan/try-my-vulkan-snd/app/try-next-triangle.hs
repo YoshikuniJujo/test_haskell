@@ -72,6 +72,8 @@ import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Layout
+import qualified Vulkan.Attachment as Vk.Att
+import qualified Vulkan.Attachment.Enum as Vk.Att
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -167,6 +169,7 @@ initVulkan = do
 	createLogicalDevice
 	createSwapChain
 	createImageViews
+	createRenderPass
 	createGraphicsPipeline
 
 createInstance :: ReaderT Global IO ()
@@ -483,6 +486,24 @@ createImageView1 sci = do
 			Vk.Image.subresourceRangeLayerCount = 1 }
 	dvc <- readGlobal globalDevice
 	lift $ Vk.ImageView.create @() dvc createInfo nil
+
+createRenderPass :: ReaderT Global IO ()
+createRenderPass = do
+	Just scif <- readGlobal globalSwapChainImageFormat
+	let	colorAttachment = Vk.Att.Description {
+			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionFormat = scif,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp =
+				Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout =
+				Vk.Image.LayoutUndefined,
+			Vk.Att.descriptionFinalLayout =
+				Vk.Image.LayoutPresentSrcKhr }
+	pure ()
 
 createGraphicsPipeline :: ReaderT Global IO ()
 createGraphicsPipeline = do
