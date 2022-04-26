@@ -548,8 +548,13 @@ createGraphicsPipeline = do
 				Vk.PolygonModeFill,
 			Vk.Pipeline.RstSt.createInfoLineWidth = 1,
 			Vk.Pipeline.RstSt.createInfoCullMode =
-				Vk.CullModeBackBit
-			}
+				Vk.CullModeBackBit,
+			Vk.Pipeline.RstSt.createInfoFrontFace =
+				Vk.FrontFaceClockwise,
+			Vk.Pipeline.RstSt.createInfoDepthBiasEnable = False,
+			Vk.Pipeline.RstSt.createInfoDepthBiasConstantFactor = 0,
+			Vk.Pipeline.RstSt.createInfoDepthBiasClamp = 0,
+			Vk.Pipeline.RstSt.createInfoDepthBiasSlopeFactor = 0 }
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
