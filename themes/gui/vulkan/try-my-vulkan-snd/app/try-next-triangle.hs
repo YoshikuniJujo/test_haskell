@@ -67,6 +67,8 @@ import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
+import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
+import qualified Vulkan.ColorComponent.Enum as Vk.ClrCmp
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -563,6 +565,21 @@ createGraphicsPipeline = do
 			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
 				False,
 			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
+		colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
+			Vk.Ppl.ClrBlndAtt.stateColorWriteMask =
+				Vk.ClrCmp.RBit .|. Vk.ClrCmp.GBit .|.
+				Vk.ClrCmp.BBit .|. Vk.ClrCmp.ABit,
+			Vk.Ppl.ClrBlndAtt.stateBlendEnable = False,
+			Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor =
+				Vk.BlendFactorOne,
+			Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
+			Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor =
+				Vk.BlendFactorOne,
+			Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 	dvc <- readGlobal globalDevice
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
