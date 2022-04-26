@@ -88,6 +88,7 @@ import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Vulkan.Command as Vk.Cmd
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -797,6 +798,37 @@ createCommandBuffer = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandBuffer . head
 		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
+
+recordCommandBuffer :: Int -> ReaderT Global IO ()
+recordCommandBuffer imageIndex = do
+	let	beginInfo = Vk.CommandBuffer.BeginInfo {
+			Vk.CommandBuffer.beginInfoNext = Nothing,
+			Vk.CommandBuffer.beginInfoFlags =
+				Vk.CommandBuffer.UsageFlagsZero,
+			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
+	cb <- readGlobal globalCommandBuffer
+	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
+	rp <- readGlobal globalRenderPass
+	scfbs <- readGlobal globalSwapChainFramebuffers
+	sce <- readGlobal globalSwapChainExtent
+	let	renderPassInfo = Vk.RenderPass.BeginInfo {
+			Vk.RenderPass.beginInfoNext = Nothing,
+			Vk.RenderPass.beginInfoRenderPass = rp,
+			Vk.RenderPass.beginInfoFramebuffer = scfbs !! imageIndex,
+			Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
+				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+				Vk.C.rect2dExtent = sce },
+			Vk.RenderPass.beginInfoClearValues = [
+				Vk.ClearValueColor
+					. fromJust $ rgbaDouble 0 0 0 1 ] }
+	lift $ Vk.Cmd.beginRenderPass @()
+		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
+		cb renderPassInfo Vk.Subpass.ContentsInline
+	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
+		=<< readGlobal globalGraphicsPipeline
+	lift do	Vk.Cmd.draw cb 3 1 0 0
+		Vk.Cmd.endRenderPass cb
+		Vk.CommandBuffer.end cb
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
