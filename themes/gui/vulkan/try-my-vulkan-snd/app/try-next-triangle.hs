@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -25,6 +26,7 @@ import qualified Glfw
 
 import ThEnv
 import Shaderc
+import Shaderc.EnumAuto
 import Shaderc.TH
 
 import Vulkan.Base
@@ -79,7 +81,7 @@ import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RenderPass
 import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
-import qualified Vulkan.Pipeline.Graphics as Vk.Ppl
+import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -109,7 +111,8 @@ data Global = Global {
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
-	globalPipelineLayout :: IORef Vk.Ppl.Layout.L
+	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
+	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[])
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -135,6 +138,7 @@ newGlobal = do
 	scivs <- newIORef []
 	rp <- newIORef $ Vk.RenderPass.R NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
+	grppl <- newIORef Vk.Ppl.Graphics.GNull
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -150,7 +154,8 @@ newGlobal = do
 		globalSwapChainExtent = sce,
 		globalSwapChainImageViews = scivs,
 		globalRenderPass = rp,
-		globalPipelineLayout = ppllyt }
+		globalPipelineLayout = ppllyt,
+		globalGraphicsPipeline = grppl }
 
 run :: ReaderT Global IO ()
 run = do
@@ -672,8 +677,45 @@ createGraphicsPipeline = do
 	writeGlobal globalPipelineLayout
 		=<< lift (Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil)
 
-	let	pipelineInfo = Vk.Ppl.CreateInfo {
-			}
+	ppllyt <- readGlobal globalPipelineLayout
+	rp <- readGlobal globalRenderPass
+	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
+			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
+			'[(), ()] () () '[] () () () () () () () () () '[]
+		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
+			Vk.Ppl.Graphics.createInfoNext = Nothing,
+			Vk.Ppl.Graphics.createInfoFlags =
+				Vk.Ppl.CreateFlagsZero,
+			Vk.Ppl.Graphics.createInfoStages = shaderStages,
+			Vk.Ppl.Graphics.createInfoVertexInputState =
+				Just vertexInputInfo,
+			Vk.Ppl.Graphics.createInfoInputAssemblyState =
+				Just inputAssembly,
+			Vk.Ppl.Graphics.createInfoViewportState =
+				Just viewportState,
+			Vk.Ppl.Graphics.createInfoRasterizationState =
+				Just rasterizer,
+			Vk.Ppl.Graphics.createInfoMultisampleState =
+				Just multisampling,
+			Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
+			Vk.Ppl.Graphics.createInfoColorBlendState =
+				Just colorBlending,
+			Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
+			Vk.Ppl.Graphics.createInfoLayout = ppllyt,
+			Vk.Ppl.Graphics.createInfoRenderPass = rp,
+			Vk.Ppl.Graphics.createInfoSubpass = 0,
+			Vk.Ppl.Graphics.createInfoBasePipelineHandle =
+				Vk.Ppl.Graphics.GNull,
+			Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
+			Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+
+	gpl `Vk.Ppl.Graphics.PCons` Vk.Ppl.Graphics.PNil <- lift
+		$ Vk.Ppl.Graphics.create
+			dvc Nothing
+			(pipelineInfo `Vk.Ppl.Graphics.CreateInfoCons`
+				Vk.Ppl.Graphics.CreateInfoNil)
+			nil
+	writeGlobal globalGraphicsPipeline gpl
 
 	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
 		Vk.Shader.Module.destroy dvc vertShaderModule nil
@@ -698,6 +740,8 @@ mainLoop = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
+	grppl <- readGlobal globalGraphicsPipeline
+	lift $ Vk.Ppl.Graphics.destroy dvc grppl nil
 	ppllyt <- readGlobal globalPipelineLayout
 	lift $ Vk.Ppl.Layout.destroy dvc ppllyt nil
 	rp <- readGlobal globalRenderPass

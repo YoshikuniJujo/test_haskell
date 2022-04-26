@@ -185,9 +185,9 @@ instance (
 		<$> createInfoToCore ci
 		<*> createInfoListToCore cis
 
-pattern PNull :: G vs ts
-pattern PNull <- G NullHandle where
-	PNull = G NullHandle
+pattern GNull :: G vs ts
+pattern GNull <- G NullHandle where
+	GNull = G NullHandle
 
 newtype G vs (ts :: [Type]) = G C.G deriving Show
 
