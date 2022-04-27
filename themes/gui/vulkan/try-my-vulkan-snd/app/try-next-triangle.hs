@@ -91,6 +91,7 @@ import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
+import qualified Vulkan.Fence.Enum as Vk.Fence
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -812,7 +813,21 @@ createCommandBuffer = do
 		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
 
 createSyncObjects :: ReaderT Global IO ()
-createSyncObjects = pure ()
+createSyncObjects = do
+	let	semaphoreInfo = Vk.Semaphore.CreateInfo {
+			Vk.Semaphore.createInfoNext = Nothing,
+			Vk.Semaphore.createInfoFlags =
+				Vk.Semaphore.CreateFlagsZero }
+		fenceInfo = Vk.Fence.CreateInfo {
+			Vk.Fence.createInfoNext = Nothing,
+			Vk.Fence.createInfoFlags = Vk.Fence.CreateFlagsZero }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalImageAvailableSemaphore
+		=<< lift (Vk.Semaphore.create @() dvc semaphoreInfo nil)
+	writeGlobal globalRenderFinishedSemaphore
+		=<< lift (Vk.Semaphore.create @() dvc semaphoreInfo nil)
+	writeGlobal globalInFlightFence
+		=<< lift (Vk.Fence.create @() dvc fenceInfo nil)
 
 recordCommandBuffer :: Int -> ReaderT Global IO ()
 recordCommandBuffer imageIndex = do
@@ -860,6 +875,12 @@ drawFrame = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
+	ias <- readGlobal globalImageAvailableSemaphore
+	rfs <- readGlobal globalRenderFinishedSemaphore
+	iff <- readGlobal globalInFlightFence
+	lift do	Vk.Semaphore.destroy dvc ias nil
+		Vk.Semaphore.destroy dvc rfs nil
+		Vk.Fence.destroy dvc iff nil
 	cp <- readGlobal globalCommandPool
 	lift $ Vk.CommandPool.destroy dvc cp nil
 	scfbs <- readGlobal globalSwapChainFramebuffers
