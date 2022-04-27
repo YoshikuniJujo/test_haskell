@@ -28,6 +28,7 @@ instance Storable Vec3 where
 	alignment _ = #{alignment vec3}
 	peek p = Vec3 . fst . fromRight (error "never occur") . splitL
 		<$> peekArray 3 (castPtr p)
+	poke p (Vec3 v) = pokeArray (castPtr p) $ toList v
 
 instance Storable Vec4 where
 	sizeOf _ = #{size vec4}

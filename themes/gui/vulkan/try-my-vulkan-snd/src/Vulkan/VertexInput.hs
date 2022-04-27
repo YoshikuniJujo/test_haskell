@@ -1,4 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGe MultiParamTypeClasses #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -12,11 +14,16 @@ import Vulkan.Enum
 import qualified Vulkan.VertexInput.Enum as E
 import qualified Vulkan.VertexInput.Core as C
 
+import Vulkan.Pipeline.VertexInputState.BindingStrideList (TypeVal(..))
+
 data Rate = RateVertex | RateInstance deriving Show
 
 rateToEnum :: Rate -> E.Rate
 rateToEnum RateVertex = E.RateVertex
 rateToEnum RateInstance = E.RateInstance
+
+instance TypeVal 'RateVertex Rate where typeVal = RateVertex
+instance TypeVal 'RateInstance Rate where typeVal = RateInstance
 
 data BindingDescription = BindingDescription {
 	bindingDescriptionBinding :: Word32,
