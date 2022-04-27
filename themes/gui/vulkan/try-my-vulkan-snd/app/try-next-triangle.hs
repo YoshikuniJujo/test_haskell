@@ -106,6 +106,9 @@ enableValidationLayers =
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
+maxFramesInFlight :: Int
+maxFramesInFlight = 2
+
 data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
 	globalInstance :: IORef Vk.Instance.I,
@@ -125,10 +128,11 @@ data Global = Global {
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
-	globalCommandBuffer :: IORef Vk.CommandBuffer.C,
-	globalImageAvailableSemaphore :: IORef Vk.Semaphore.S,
-	globalRenderFinishedSemaphore :: IORef Vk.Semaphore.S,
-	globalInFlightFence :: IORef Vk.Fence.F
+	globalCommandBuffers :: IORef [Vk.CommandBuffer.C],
+	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
+	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
+	globalInFlightFences :: IORef [Vk.Fence.F],
+	globalCurrentFrame :: IORef Int
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -157,10 +161,11 @@ newGlobal = do
 	grppl <- newIORef Vk.Ppl.Graphics.GNull
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
-	cb <- newIORef $ Vk.CommandBuffer.C NullPtr
-	ias <- newIORef $ Vk.Semaphore.S NullPtr
-	rfs <- newIORef $ Vk.Semaphore.S NullPtr
-	iff <- newIORef $ Vk.Fence.F NullPtr
+	cbs <- newIORef []
+	iass <- newIORef []
+	rfss <- newIORef []
+	iffs <- newIORef []
+	cf <- newIORef 0
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -180,11 +185,11 @@ newGlobal = do
 		globalGraphicsPipeline = grppl,
 		globalSwapChainFramebuffers = scfbs,
 		globalCommandPool = cp,
-		globalCommandBuffer = cb,
-		globalImageAvailableSemaphore = ias,
-		globalRenderFinishedSemaphore = rfs,
-		globalInFlightFence = iff
-		}
+		globalCommandBuffers = cbs,
+		globalImageAvailableSemaphores = iass,
+		globalRenderFinishedSemaphores = rfss,
+		globalInFlightFences = iffs,
+		globalCurrentFrame = cf }
 
 run :: ReaderT Global IO ()
 run = do
@@ -216,7 +221,7 @@ initVulkan = do
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
-	createCommandBuffer
+	createCommandBuffers
 	createSyncObjects
 
 createInstance :: ReaderT Global IO ()
@@ -801,17 +806,18 @@ createCommandPool = do
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
 
-createCommandBuffer :: ReaderT Global IO ()
-createCommandBuffer = do
+createCommandBuffers :: ReaderT Global IO ()
+createCommandBuffers = do
 	cp <- readGlobal globalCommandPool
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
 			Vk.CommandBuffer.allocateInfoCommandPool = cp,
 			Vk.CommandBuffer.allocateInfoLevel =
 				Vk.CommandBuffer.LevelPrimary,
-			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+			Vk.CommandBuffer.allocateInfoCommandBufferCount =
+				fromIntegral maxFramesInFlight }
 	dvc <- readGlobal globalDevice
-	writeGlobal globalCommandBuffer . head
+	writeGlobal globalCommandBuffers
 		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
 
 createSyncObjects :: ReaderT Global IO ()
@@ -824,12 +830,15 @@ createSyncObjects = do
 			Vk.Fence.createInfoNext = Nothing,
 			Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 	dvc <- readGlobal globalDevice
-	writeGlobal globalImageAvailableSemaphore
-		=<< lift (Vk.Semaphore.create @() dvc semaphoreInfo nil)
-	writeGlobal globalRenderFinishedSemaphore
-		=<< lift (Vk.Semaphore.create @() dvc semaphoreInfo nil)
-	writeGlobal globalInFlightFence
-		=<< lift (Vk.Fence.create @() dvc fenceInfo nil)
+	writeGlobal globalImageAvailableSemaphores
+		=<< lift (replicateM maxFramesInFlight
+			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
+	writeGlobal globalRenderFinishedSemaphores
+		=<< lift (replicateM maxFramesInFlight
+			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
+	writeGlobal globalInFlightFences
+		=<< lift (replicateM maxFramesInFlight
+			$ Vk.Fence.create @() dvc fenceInfo nil)
 
 recordCommandBuffer :: Vk.CommandBuffer.C -> Word32 -> ReaderT Global IO ()
 recordCommandBuffer cb imageIndex = do
@@ -873,18 +882,19 @@ mainLoop = do
 
 drawFrame :: ReaderT Global IO ()
 drawFrame = do
+	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
-	iff <- readGlobal globalInFlightFence
+	iff <- (!! cf) <$> readGlobal globalInFlightFences
 	lift do	Vk.Fence.waitForFs dvc [iff] True maxBound
 		Vk.Fence.resetFs dvc [iff]
 	sc <- readGlobal globalSwapChain
-	ias <- readGlobal globalImageAvailableSemaphore
+	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
 	imageIndex <- lift
 		$ Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
-	cb <- readGlobal globalCommandBuffer
+	cb <- (!! cf) <$> readGlobal globalCommandBuffers
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
-	rfs <- readGlobal globalRenderFinishedSemaphore
+	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
@@ -901,16 +911,17 @@ drawFrame = do
 	pure ()
 	pq <- readGlobal globalPresentQueue
 	lift $ Vk.Khr.queuePresent @() pq presentInfo
+	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	dvc <- readGlobal globalDevice
-	ias <- readGlobal globalImageAvailableSemaphore
-	rfs <- readGlobal globalRenderFinishedSemaphore
-	iff <- readGlobal globalInFlightFence
-	lift do	Vk.Semaphore.destroy dvc ias nil
-		Vk.Semaphore.destroy dvc rfs nil
-		Vk.Fence.destroy dvc iff nil
+	iass <- readGlobal globalImageAvailableSemaphores
+	rfss <- readGlobal globalRenderFinishedSemaphores
+	iffs <- readGlobal globalInFlightFences
+	lift do	flip (Vk.Semaphore.destroy dvc) nil `mapM_` iass
+		flip (Vk.Semaphore.destroy dvc) nil `mapM_` rfss
+		flip (Vk.Fence.destroy dvc) nil `mapM_` iffs
 	cp <- readGlobal globalCommandPool
 	lift $ Vk.CommandPool.destroy dvc cp nil
 	scfbs <- readGlobal globalSwapChainFramebuffers
