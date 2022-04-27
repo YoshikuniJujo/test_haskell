@@ -885,12 +885,12 @@ drawFrame = do
 	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
-	lift do	Vk.Fence.waitForFs dvc [iff] True maxBound
-		Vk.Fence.resetFs dvc [iff]
+	lift $ Vk.Fence.waitForFs dvc [iff] True maxBound
 	sc <- readGlobal globalSwapChain
 	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
 	imageIndex <- lift
 		$ Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
+	lift $ Vk.Fence.resetFs dvc [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
