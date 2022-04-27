@@ -115,7 +115,7 @@ data Global = Global {
 	globalGraphicsQueue :: IORef Vk.Queue,
 	globalSurface :: IORef Vk.Khr.Surface.S,
 	globalPresentQueue :: IORef Vk.Queue,
-	globalSwapchain :: IORef Vk.Khr.Swapchain.S,
+	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
 	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
@@ -170,7 +170,7 @@ newGlobal = do
 		globalGraphicsQueue = gq,
 		globalSurface = sfc,
 		globalPresentQueue = pq,
-		globalSwapchain = sc,
+		globalSwapChain = sc,
 		globalSwapChainImages = scis,
 		globalSwapChainImageFormat = scif,
 		globalSwapChainExtent = sce,
@@ -407,6 +407,8 @@ createLogicalDevice = do
 	writeGlobal globalDevice dvc
 	writeGlobal globalGraphicsQueue =<< lift (
 		Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0 )
+	writeGlobal globalPresentQueue =<< lift (
+		Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0 )
 
 createSwapChain :: ReaderT Global IO ()
 createSwapChain = do
@@ -456,7 +458,7 @@ createSwapChain = do
 			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	dvc <- readGlobal globalDevice
 	sc <- lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil
-	writeGlobal globalSwapchain sc
+	writeGlobal globalSwapChain sc
 	writeGlobal globalSwapChainImages
 		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
 	writeGlobal globalSwapChainImageFormat
@@ -792,7 +794,7 @@ createCommandPool = do
 	let	poolInfo = Vk.CommandPool.CreateInfo {
 			Vk.CommandPool.createInfoNext = Nothing,
 			Vk.CommandPool.createInfoFlags =
-				Vk.CommandPool.CreateFlagsZero,
+				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				fromJust $ graphicsFamily queueFamilyIndices }
 	dvc <- readGlobal globalDevice
@@ -820,7 +822,7 @@ createSyncObjects = do
 				Vk.Semaphore.CreateFlagsZero }
 		fenceInfo = Vk.Fence.CreateInfo {
 			Vk.Fence.createInfoNext = Nothing,
-			Vk.Fence.createInfoFlags = Vk.Fence.CreateFlagsZero }
+			Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalImageAvailableSemaphore
 		=<< lift (Vk.Semaphore.create @() dvc semaphoreInfo nil)
@@ -829,14 +831,13 @@ createSyncObjects = do
 	writeGlobal globalInFlightFence
 		=<< lift (Vk.Fence.create @() dvc fenceInfo nil)
 
-recordCommandBuffer :: Int -> ReaderT Global IO ()
-recordCommandBuffer imageIndex = do
+recordCommandBuffer :: Vk.CommandBuffer.C -> Word32 -> ReaderT Global IO ()
+recordCommandBuffer cb imageIndex = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageFlagsZero,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	cb <- readGlobal globalCommandBuffer
 	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
 	rp <- readGlobal globalRenderPass
 	scfbs <- readGlobal globalSwapChainFramebuffers
@@ -844,7 +845,8 @@ recordCommandBuffer imageIndex = do
 	let	renderPassInfo = Vk.RenderPass.BeginInfo {
 			Vk.RenderPass.beginInfoNext = Nothing,
 			Vk.RenderPass.beginInfoRenderPass = rp,
-			Vk.RenderPass.beginInfoFramebuffer = scfbs !! imageIndex,
+			Vk.RenderPass.beginInfoFramebuffer =
+				scfbs `genericIndex` imageIndex,
 			Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
@@ -867,10 +869,38 @@ mainLoop = do
 		lift GlfwB.pollEvents
 		drawFrame
 		not <$> lift (GlfwB.windowShouldClose w)
+	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
 
 drawFrame :: ReaderT Global IO ()
 drawFrame = do
+	dvc <- readGlobal globalDevice
+	iff <- readGlobal globalInFlightFence
+	lift do	Vk.Fence.waitForFs dvc [iff] True maxBound
+		Vk.Fence.resetFs dvc [iff]
+	sc <- readGlobal globalSwapChain
+	ias <- readGlobal globalImageAvailableSemaphore
+	imageIndex <- lift
+		$ Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
+	cb <- readGlobal globalCommandBuffer
+	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
+	recordCommandBuffer cb imageIndex
+	rfs <- readGlobal globalRenderFinishedSemaphore
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks =
+				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
+			Vk.submitInfoCommandBuffers = [cb],
+			Vk.submitInfoSignalSemaphores = [rfs] }
+	gq <- readGlobal globalGraphicsQueue
+	lift $ Vk.queueSubmit @() gq [submitInfo] iff
+	let	presentInfo = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoNext = Nothing,
+			Vk.Khr.presentInfoWaitSemaphores = [rfs],
+			Vk.Khr.presentInfoSwapchainImageIndices =
+				[(sc, imageIndex)] }
 	pure ()
+	pq <- readGlobal globalPresentQueue
+	lift $ Vk.Khr.queuePresent @() pq presentInfo
 
 cleanup :: ReaderT Global IO ()
 cleanup = do
@@ -894,7 +924,7 @@ cleanup = do
 	scivs <- readGlobal globalSwapChainImageViews
 	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
-		=<< readGlobal globalSwapchain
+		=<< readGlobal globalSwapChain
 	lift $ Vk.Device.destroy dvc nil
 	ist <- readGlobal globalInstance
 	dmsgr <- readGlobal globalDebugMessenger
