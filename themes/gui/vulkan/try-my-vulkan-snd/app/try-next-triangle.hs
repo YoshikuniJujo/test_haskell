@@ -11,6 +11,7 @@ module Main where
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
+import Control.Exception
 import Data.Bits
 import Data.Bool
 import Data.Maybe
@@ -19,6 +20,7 @@ import Data.Word
 import Data.IORef
 import Data.Color
 
+import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
@@ -34,6 +36,8 @@ import Vulkan.Base
 import qualified Vulkan as Vk
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
+import qualified Vulkan.Exception as Vk
+import qualified Vulkan.Exception.Enum as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
@@ -132,7 +136,8 @@ data Global = Global {
 	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
 	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
 	globalInFlightFences :: IORef [Vk.Fence.F],
-	globalCurrentFrame :: IORef Int
+	globalCurrentFrame :: IORef Int,
+	globalFramebufferResized :: IORef Bool
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -166,6 +171,7 @@ newGlobal = do
 	rfss <- newIORef []
 	iffs <- newIORef []
 	cf <- newIORef 0
+	fbr <- newIORef False
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -189,7 +195,8 @@ newGlobal = do
 		globalImageAvailableSemaphores = iass,
 		globalRenderFinishedSemaphores = rfss,
 		globalInFlightFences = iffs,
-		globalCurrentFrame = cf }
+		globalCurrentFrame = cf,
+		globalFramebufferResized = fbr }
 
 run :: ReaderT Global IO ()
 run = do
@@ -204,9 +211,11 @@ initWindow = do
 		True <- GlfwB.init
 		GlfwB.windowHint
 			$ GlfwB.WindowHint'ClientAPI GlfwB.ClientAPI'NoAPI
-		GlfwB.windowHint $ GlfwB.WindowHint'Resizable False
 		GlfwB.createWindow width height "Vulkan" Nothing Nothing
 	writeGlobal globalWindow $ Just w
+	g <- ask
+	lift $ GlfwB.setFramebufferSizeCallback w
+		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True)
 
 initVulkan :: ReaderT Global IO ()
 initVulkan = do
@@ -876,7 +885,8 @@ mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
 	fix \loop -> bool (pure ()) loop =<< do
 		lift GlfwB.pollEvents
-		drawFrame
+		g <- ask
+		lift $ catchAndRecreateSwapChain g $ drawFrame `runReaderT` g
 		not <$> lift (GlfwB.windowShouldClose w)
 	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
 
@@ -888,8 +898,8 @@ drawFrame = do
 	lift $ Vk.Fence.waitForFs dvc [iff] True maxBound
 	sc <- readGlobal globalSwapChain
 	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
-	imageIndex <- lift
-		$ Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
+	imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+		dvc sc uint64Max (Just ias) Nothing
 	lift $ Vk.Fence.resetFs dvc [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
@@ -908,13 +918,39 @@ drawFrame = do
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, imageIndex)] }
-	pure ()
 	pq <- readGlobal globalPresentQueue
-	lift $ Vk.Khr.queuePresent @() pq presentInfo
+	g <- ask
+	lift . catchAndRecreateSwapChain g . catchAndSerialize
+		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
+
+catchAndRecreateSwapChain :: Global -> IO () -> IO ()
+catchAndRecreateSwapChain g act = catchJust
+	(\case	Vk.ErrorOutOfDateKhr -> Just ()
+		Vk.SuboptimalKhr -> Just ()
+		_ -> Nothing)
+	act
+	(\_ -> do
+		fbr <- readIORef $ globalFramebufferResized g
+		when fbr do
+			writeIORef (globalFramebufferResized g) False
+			recreateSwapChain `runReaderT` g)
+
+doWhile_ :: IO Bool -> IO ()
+doWhile_ act = (`when` doWhile_ act) =<< act
 
 recreateSwapChain :: ReaderT Global IO ()
 recreateSwapChain = do
+	w <- fromJust <$> readGlobal globalWindow
+	lift do	(wdth, hght) <- GlfwB.getFramebufferSize w
+		when (wdth == 0 || hght == 0) $ doWhile_ do
+			GlfwB.waitEvents
+			(wd, hg) <- GlfwB.getFramebufferSize w
+			pure $ wd == 0 || hg == 0
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Device.waitIdle dvc
 

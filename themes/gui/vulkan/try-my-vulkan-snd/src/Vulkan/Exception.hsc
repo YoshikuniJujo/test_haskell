@@ -18,12 +18,18 @@ exceptionHierarchy Nothing $ ExNode "E" [
 	ExType ''MultiResult ]
 
 throwUnlessSuccess :: Result -> IO ()
-throwUnlessSuccess = \case Success -> pure (); e -> throw e
+throwUnlessSuccess = throwUnless [Success]
+
+throwUnless :: [Result] -> Result -> IO ()
+throwUnless sccs r | r `elem` sccs = pure () | otherwise = throw r
 
 throwUnlessSuccesses :: [Result] -> IO ()
-throwUnlessSuccesses rs = do
+throwUnlessSuccesses = throwUnlesses [Success]
+
+throwUnlesses :: [Result] -> [Result] -> IO ()
+throwUnlesses sccs rs = do
 	let	irs = zip [0 ..] rs
-		irs' = filter ((/= Success) . snd) irs
+		irs' = filter ((`notElem` sccs) . snd) irs
 	case nonEmpty irs' of
 		Nothing -> pure ()
 		Just r -> throw $ MultiResult r

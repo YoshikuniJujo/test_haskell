@@ -33,13 +33,17 @@ validationLayerName = "VK_LAYER_KHRONOS_validation"
 
 acquireNextImage :: Device.D ->
 	Swapchain.S -> Word64 -> Maybe Semaphore.S -> Maybe Fence.F -> IO Word32
-acquireNextImage
+acquireNextImage = acquireNextImageResult [Success]
+
+acquireNextImageResult :: [Result] -> Device.D ->
+	Swapchain.S -> Word64 -> Maybe Semaphore.S -> Maybe Fence.F -> IO Word32
+acquireNextImageResult sccs
 	(Device.D dvc) (Swapchain.S sc) to msmp mfnc = ($ pure) $ runContT do
 	let	smp = maybe NullHandle (\(Semaphore.S s) -> s) msmp
 		fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
 	pii <- ContT alloca
 	lift do	r <- C.acquireNextImage dvc sc to smp fnc pii
-		throwUnlessSuccess $ Result r
+		throwUnless sccs $ Result r
 		peek pii
 
 data PresentInfo n = PresentInfo {
