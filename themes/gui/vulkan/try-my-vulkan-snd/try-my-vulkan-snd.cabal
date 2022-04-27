@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      Cglm
       Data.Generics.Flatten
       Data.HeteroList
       Glfw

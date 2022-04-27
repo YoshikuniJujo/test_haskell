@@ -18,6 +18,7 @@ import Data.Maybe
 import Data.List
 import Data.Word
 import Data.IORef
+import Data.List.Length
 import Data.Color
 
 import qualified Data.List.NonEmpty as NE
@@ -25,6 +26,7 @@ import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
+import qualified Cglm
 
 import ThEnv
 import Shaderc
@@ -1003,6 +1005,20 @@ cleanup = do
 
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift GlfwB.terminate
+
+data Vertex = Vertex {
+	vertexPos :: Cglm.Vec2,
+	vertexColor :: Cglm.Vec3 }
+	deriving Show
+
+vertices :: [Vertex]
+vertices = [
+	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
 [glslVertexShader|
 
