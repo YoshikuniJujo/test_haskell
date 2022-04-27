@@ -913,17 +913,22 @@ drawFrame = do
 	lift $ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
-cleanup :: ReaderT Global IO ()
-cleanup = do
+recreateSwapChain :: ReaderT Global IO ()
+recreateSwapChain = do
 	dvc <- readGlobal globalDevice
-	iass <- readGlobal globalImageAvailableSemaphores
-	rfss <- readGlobal globalRenderFinishedSemaphores
-	iffs <- readGlobal globalInFlightFences
-	lift do	flip (Vk.Semaphore.destroy dvc) nil `mapM_` iass
-		flip (Vk.Semaphore.destroy dvc) nil `mapM_` rfss
-		flip (Vk.Fence.destroy dvc) nil `mapM_` iffs
-	cp <- readGlobal globalCommandPool
-	lift $ Vk.CommandPool.destroy dvc cp nil
+	lift $ Vk.Device.waitIdle dvc
+
+	cleanupSwapChain
+
+	createSwapChain
+	createImageViews
+	createRenderPass
+	createGraphicsPipeline
+	createFramebuffers
+
+cleanupSwapChain :: ReaderT Global IO ()
+cleanupSwapChain = do
+	dvc <- readGlobal globalDevice
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
 	grppl <- readGlobal globalGraphicsPipeline
@@ -936,16 +941,32 @@ cleanup = do
 	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
 		=<< readGlobal globalSwapChain
+
+cleanup :: ReaderT Global IO ()
+cleanup = do
+	cleanupSwapChain
+
+	dvc <- readGlobal globalDevice
+	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+		=<< readGlobal globalImageAvailableSemaphores
+	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+		=<< readGlobal globalRenderFinishedSemaphores
+	lift . (flip (Vk.Fence.destroy dvc) nil `mapM_`)
+		=<< readGlobal globalInFlightFences
+	lift . flip (Vk.CommandPool.destroy dvc) nil
+		=<< readGlobal globalCommandPool
 	lift $ Vk.Device.destroy dvc nil
+
 	ist <- readGlobal globalInstance
-	dmsgr <- readGlobal globalDebugMessenger
 	when enableValidationLayers
-		. lift $ Vk.Ext.DebugUtils.Messenger.destroy ist dmsgr nil
-	sfc <- readGlobal globalSurface
-	lift $ Vk.Khr.Surface.destroy ist sfc nil
-	lift $ Vk.Instance.destroy @() ist Nothing
+		. lift . flip (Vk.Ext.DebugUtils.Messenger.destroy ist) nil
+		=<< readGlobal globalDebugMessenger
+	lift . flip (Vk.Khr.Surface.destroy ist) nil
+		=<< readGlobal globalSurface
+	lift $ Vk.Instance.destroy ist nil
+
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
-	lift $ GlfwB.terminate
+	lift GlfwB.terminate
 
 [glslVertexShader|
 
