@@ -41,3 +41,4 @@ main = do
 		fcore <- lift $ newForeignPtr pcore (pure ())
 		let	core = Vk.Ppl.VertexInputSt.C.CreateInfo_ fcore
 		lift $ print core
+	print $ Vk.Ppl.VertexInputSt.createInfoToMiddle vertexInputInfo
