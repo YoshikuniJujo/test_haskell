@@ -23,10 +23,11 @@ solve :: [Ct] -> [Ct] -> [Ct] -> TcPluginM TcPluginResult
 solve _ _ [] = pure $ TcPluginOk [] []
 solve gs ds ws = do
 	oc <- lookupOrdCond
+	cmp <- lookupCompare
 	tcPluginTrace "!Plugin.TypeCheck.Nat.Simple" ""
-	tcPluginTrace "Given: " . ppr $ runExcept . (uncurry (decode oc) <=< unNomEq) <$> gs
-	tcPluginTrace "Derived: " . ppr $ runExcept . (uncurry (decode oc) <=< unNomEq) <$> ds
-	tcPluginTrace "Wanted: " . ppr $ runExcept . (uncurry (decode oc) <=< unNomEq) <$> ws
+	tcPluginTrace "Given: " . ppr $ runExcept . (uncurry (decode oc cmp) <=< unNomEq) <$> gs
+	tcPluginTrace "Derived: " . ppr $ runExcept . (uncurry (decode oc cmp) <=< unNomEq) <$> ds
+	tcPluginTrace "Wanted: " . ppr $ runExcept . (uncurry (decode oc cmp) <=< unNomEq) <$> ws
 	pure $ TcPluginOk [] []
 
 unNomEq :: Ct -> Except Message (Type, Type)

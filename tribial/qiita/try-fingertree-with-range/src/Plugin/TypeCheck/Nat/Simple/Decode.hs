@@ -28,10 +28,10 @@ instance Monoid Message where mempty = Message ""
 instance IsString Message where fromString = Message . text
 instance Outputable Message where ppr (Message msg) = msg
 
-decode :: TyCon -> Type -> Type -> Except Message (Exp Var Bool)
-decode oc (TyVarTy l) r = le <$> exVar r <|> le <$> exNum r <|> le <$> exBool oc r
+decode :: TyCon -> TyCon -> Type -> Type -> Except Message (Exp Var Bool)
+decode oc cmp (TyVarTy l) r = le <$> exVar r <|> le <$> exNum r <|> le <$> exBool oc cmp r
 	where le = (Var l :==)
-decode oc l r = (:==) <$> exNum l <*> exNum r <|> (:==) <$> exBool oc l <*> exBool oc r
+decode oc cmp l r = (:==) <$> exNum l <*> exNum r <|> (:==) <$> exBool oc cmp l <*> exBool oc cmp r
 
 exVar :: Type -> Except Message (Exp Var a)
 exVar = \case TyVarTy v -> pure $ Var v; _ -> throwE "exVar: fail"
@@ -44,20 +44,32 @@ exNum (TyConApp tc [l, r])
 	| tc == typeNatSubTyCon = (:-) <$> exNum l <*> exNum r
 exNum _ = throwE "exNum: fail"
 
-exBool :: TyCon -> Type -> Except Message (Exp Var Bool)
-exBool _ (TyVarTy v) = pure $ Var v
-exBool _ (TyConApp tc [])
+exBool :: TyCon -> TyCon -> Type -> Except Message (Exp Var Bool)
+exBool _ _ (TyVarTy v) = pure $ Var v
+exBool _ _ (TyConApp tc [])
 	| tc == promotedFalseDataCon = pure $ Bool False
 	| tc == promotedTrueDataCon = pure $ Bool True
 -- exBool (TyConApp tc [l, r])
 --	| tc == typeNatLeqTyCon = (:<=) <$> exNum l <*> exNum r
-exBool oc (TyConApp tc lr) = throwE $ "exBool: fail: TyConApp" <> Message (ppr oc) <> Message (ppr tc) <> Message (ppr lr)
-exBool _ _ = throwE "exBool: fail"
+exBool oc cmp (TyConApp tc [_, TyConApp cmpNatTc [_, l, r], TyConApp tt1 [], TyConApp tt2 [], TyConApp ff1 []])
+	| tc == oc, cmpNatTc == cmp
+	, tt1 == promotedTrueDataCon, tt2 == promotedTrueDataCon
+	, ff1 == promotedFalseDataCon = (:<=) <$> exNum l <*> exNum r
+exBool _ _ _ = throwE "exBool: fail"
 
 lookupOrdCond :: TcPluginM TyCon
 lookupOrdCond = do
 	md2 <- lookupModule ordModule basePackage
 	look md2 "OrdCond"
+	where
+	ordModule = mkModuleName "Data.Type.Ord"
+	basePackage = fsLit "base"
+	look md s = tcLookupTyCon =<< lookupName md (mkTcOcc s)
+
+lookupCompare :: TcPluginM TyCon
+lookupCompare = do
+	md2 <- lookupModule ordModule basePackage
+	look md2 "Compare"
 	where
 	ordModule = mkModuleName "Data.Type.Ord"
 	basePackage = fsLit "base"
