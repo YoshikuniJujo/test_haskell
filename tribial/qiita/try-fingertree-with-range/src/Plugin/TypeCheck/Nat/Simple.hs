@@ -25,6 +25,9 @@ solve gs ds ws = do
 	oc <- lookupOrdCond
 	cmp <- lookupCompare
 	tcPluginTrace "!Plugin.TypeCheck.Nat.Simple" ""
+	tcPluginTrace "Given: " $ ppr gs
+	tcPluginTrace "Derived: " $ ppr ds
+	tcPluginTrace "Wanted: " $ ppr ws
 	tcPluginTrace "Given: " . ppr $ runExcept . (uncurry (decode oc cmp) <=< unNomEq) <$> gs
 	tcPluginTrace "Derived: " . ppr $ runExcept . (uncurry (decode oc cmp) <=< unNomEq) <$> ds
 	tcPluginTrace "Wanted: " . ppr $ runExcept . (uncurry (decode oc cmp) <=< unNomEq) <$> ws
