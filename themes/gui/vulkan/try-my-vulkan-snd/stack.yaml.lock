@@ -49,15 +49,29 @@ packages:
   original:
     hackage: union-color-0.1.2.0
 - completed:
-    hackage: c-enum-0.1.1.3@sha256:ca6a53d5b003051d0d6fb0b69d46b730cacbb03d80166cab7664085306d72aa3,1324
+    hackage: exception-hierarchy-0.1.0.7@sha256:1d171fc4e9ea0ef26e504f4c3eab485f2877006058840eb7a72e9498b5af5459,870
     pantry-tree:
-      size: 362
-      sha256: c6e9277c529ed2908c3f01905d92b6578d0ed59644431c9abd57994ffc5a6329
+      size: 299
+      sha256: b6aec9cb89f71995d397e7f910f9046a944fd881ffac86e3cb5186cda22c2148
   original:
-    hackage: c-enum-0.1.1.3
+    hackage: exception-hierarchy-0.1.0.7
+- completed:
+    hackage: ranged-list-0.1.0.1@sha256:b02c208ed458f488684a73d710095fedea72415466ad97e54417e3ab8ecf7053,2177
+    pantry-tree:
+      size: 1339
+      sha256: b4abacf4b212df5542dafb9b42a1a0a2b9c2b26254ea96a24cfbdb5ade9c40c8
+  original:
+    hackage: ranged-list-0.1.0.1
+- completed:
+    hackage: typecheck-plugin-nat-simple-0.1.0.7@sha256:68948466044fa90b6162a841d9767235331ec8f79f21c9fe30e06b7e034fe734,3054
+    pantry-tree:
+      size: 1742
+      sha256: 8c40d087813c672455bffbf7ce2b5fd0b2485dbb0d3f1d8a75b7d6e7f72777cd
+  original:
+    hackage: typecheck-plugin-nat-simple-0.1.0.7
 snapshots:
 - completed:
-    size: 590100
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/28.yaml
-    sha256: 428ec8d5ce932190d3cbe266b9eb3c175cd81e984babf876b64019e2cbe4ea68
-  original: lts-18.28
+    size: 554661
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/4/28.yaml
+    sha256: eb778a9c971802e22068265fb7b14d357c3eb7d76229402b9444a3db1a2bc153
+  original: nightly-2022-04-28
