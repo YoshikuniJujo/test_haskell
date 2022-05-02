@@ -173,6 +173,7 @@ library
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -202,6 +203,7 @@ executable my-glslc
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -231,6 +233,7 @@ executable try-my-vulkan-snd-exe
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -261,6 +264,7 @@ executable try-next-triangle
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -291,6 +295,7 @@ executable try-shaderc
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -321,6 +326,7 @@ executable try-shaderc-core
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -351,6 +357,7 @@ executable try-vertex-input-state
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list
@@ -381,6 +388,7 @@ test-suite try-my-vulkan-snd-test
     , containers
     , exception-hierarchy
     , filepath
+    , ghc-prim
     , monads-tf
     , nowdoc
     , ranged-list

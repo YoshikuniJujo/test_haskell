@@ -1,11 +1,13 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
 import GHC.Generics
+import GHC.Tuple
 import Foreign.Concurrent
 import Foreign.Storable.SizeAlignment
 import Control.Monad.Cont
@@ -17,6 +19,7 @@ import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VertexInputSt.M
 import qualified Vulkan.Pipeline.VertexInputState.Core as Vk.Ppl.VertexInputSt.C
 import qualified Vulkan.VertexInput as Vk.VertexInput
+import qualified Vulkan.Enum as Vk
 
 data Vertex = Vertex {
 	vertexPos :: Vec2,
@@ -25,12 +28,22 @@ data Vertex = Vertex {
 
 instance SizeAlignmentList Vertex
 
+instance SizeAlignmentListUntil Cglm.Vec2 Vertex
+instance SizeAlignmentListUntil Cglm.Vec3 Vertex
+
+instance Vk.Ppl.VertexInputSt.Formattable Vec2 where
+	formatOf = Vk.FormatR32g32Sfloat
+
+instance Vk.Ppl.VertexInputSt.Formattable Vec3 where
+	formatOf = Vk.FormatR32g32b32Sfloat
+
 main :: IO ()
 main = do
 	let	vertexInputInfo ::
-			Vk.Ppl.VertexInputSt.CreateInfo () (
-				(AddType [Vertex] 'Vk.VertexInput.RateVertex),
-				(AddType [Vertex] 'Vk.VertexInput.RateVertex)) '[]
+			Vk.Ppl.VertexInputSt.CreateInfo ()
+				(Solo (AddType
+					[Vertex] 'Vk.VertexInput.RateVertex))
+				'[Vec2, Vec3]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputSt.createInfoFlags =

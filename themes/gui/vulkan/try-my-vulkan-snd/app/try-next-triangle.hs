@@ -3,11 +3,14 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import GHC.Generics
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
@@ -20,6 +23,8 @@ import Data.Word
 import Data.IORef
 import Data.List.Length
 import Data.Color
+
+import Foreign.Storable.SizeAlignment
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as Txt
@@ -1009,7 +1014,18 @@ cleanup = do
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
 	vertexColor :: Cglm.Vec3 }
-	deriving Show
+	deriving (Show, Generic)
+
+instance SizeAlignmentList Vertex
+
+instance SizeAlignmentListUntil Cglm.Vec2 Vertex
+instance SizeAlignmentListUntil Cglm.Vec3 Vertex
+
+instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
+	formatOf = Vk.FormatR32g32Sfloat
+
+instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
+	formatOf = Vk.FormatR32g32b32Sfloat
 
 vertices :: [Vertex]
 vertices = [

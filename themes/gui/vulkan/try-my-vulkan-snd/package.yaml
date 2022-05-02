@@ -38,6 +38,7 @@ dependencies:
 - try-pointable
 - size-alignment-list
 - union-color
+- ghc-prim
 
 library:
   source-dirs: src
