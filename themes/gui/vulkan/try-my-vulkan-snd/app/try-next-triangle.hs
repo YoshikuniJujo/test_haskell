@@ -11,6 +11,7 @@
 module Main where
 
 import GHC.Generics
+import GHC.Tuple
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
@@ -103,6 +104,9 @@ import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
+import qualified Vulkan.VertexInput as Vk.VertexInput
+
+import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -136,7 +140,9 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G () '[]),
+	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
+		(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+		'[Cglm.Vec2, Cglm.Vec3]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C],
@@ -237,6 +243,7 @@ initVulkan = do
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
+	createVertexBuffer
 	createCommandBuffers
 	createSyncObjects
 
@@ -639,8 +646,10 @@ createGraphicsPipeline = do
 			vertShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
 			fragShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
 			Vk.Ppl.ShaderStage.CreateInfoNil
-		vertexInputInfo ::
-			Vk.Ppl.VertexInputSt.CreateInfo () () '[]
+		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
+			()
+			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+			'[Cglm.Vec2, Cglm.Vec3]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputSt.createInfoFlags =
@@ -737,7 +746,10 @@ createGraphicsPipeline = do
 	rp <- readGlobal globalRenderPass
 	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
-			'[(), ()] () () '[] () () () () () () () () () '[]
+			'[(), ()] ()
+			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+			'[Cglm.Vec2, Cglm.Vec3]
+			() () () () () () () () () '[]
 		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
 			Vk.Ppl.Graphics.createInfoNext = Nothing,
 			Vk.Ppl.Graphics.createInfoFlags =
@@ -821,6 +833,9 @@ createCommandPool = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+
+createVertexBuffer :: ReaderT Global IO ()
+createVertexBuffer = pure ()
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
@@ -1040,23 +1055,16 @@ vertices = [
 
 #version 450
 
+layout(location = 0) in vec2 inPosition;
+layout(location = 1) in vec3 inColor;
+
 layout(location = 0) out vec3 fragColor;
-
-vec2 positions[3] = vec2[](
-	vec2(0.0, - 0.5),
-	vec2(0.5, 0.5),
-	vec2(- 0.5, 0.5) );
-
-vec3 colors[3] = vec3[](
-	vec3(1.0, 0.0, 0.0),
-	vec3(0.0, 1.0, 0.0),
-	vec3(0.0, 0.0, 1.0) );
 
 void
 main()
 {
-	gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
-	fragColor = colors[gl_VertexIndex];
+	gl_Position = vec4(inPosition, 0.0, 1.0);
+	fragColor = inColor;
 }
 
 |]

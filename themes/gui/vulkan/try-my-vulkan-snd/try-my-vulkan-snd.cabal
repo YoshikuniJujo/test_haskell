@@ -39,6 +39,7 @@ library
       Vulkan.Attachment.Core
       Vulkan.Attachment.Enum
       Vulkan.Base
+      Vulkan.Buffer.Core
       Vulkan.ColorComponent.Enum
       Vulkan.Command
       Vulkan.Command.Core
