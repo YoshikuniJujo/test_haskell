@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -105,6 +105,8 @@ import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
+import qualified Vulkan.Buffer as Vk.Buffer
+import qualified Vulkan.Buffer.Enum as Vk.Buffer
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -835,7 +837,21 @@ createCommandPool = do
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
 
 createVertexBuffer :: ReaderT Global IO ()
-createVertexBuffer = pure ()
+createVertexBuffer = do
+	let	bufferInfo = Vk.Buffer.CreateInfo {
+			Vk.Buffer.createInfoNext = Nothing,
+			Vk.Buffer.createInfoFlags = Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.createInfoSize = fromIntegral
+				$ size (vertices !! 0) * length vertices,
+			Vk.Buffer.createInfoUsage =
+				Vk.Buffer.UsageVertexBufferBit,
+			Vk.Buffer.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Buffer.createInfoQueueFamilyIndices = [] }
+	pure ()
+
+size :: forall a . SizeAlignmentList a => a -> Size
+size _ = fst (wholeSizeAlignment @a)
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do

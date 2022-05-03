@@ -32,7 +32,7 @@ struct "CreateInfo" #{size VkBufferCreateInfo} #{alignment VkBufferCreateInfo} [
 	("sharingMode", ''#{type VkSharingMode},
 		[| #{peek VkBufferCreateInfo, sharingMode} |],
 		[| #{poke VkBufferCreateInfo, sharingMode} |]),
-	("queueFamilyIndecCount", ''#{type uint32_t},
+	("queueFamilyIndexCount", ''#{type uint32_t},
 		[| #{peek VkBufferCreateInfo, queueFamilyIndexCount} |],
 		[| #{poke VkBufferCreateInfo, queueFamilyIndexCount} |]),
 	("pQueueFamilyIndices", ''PtrUint32T,
