@@ -5,11 +5,16 @@
 
 module Vulkan.Buffer.Core where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
@@ -39,3 +44,10 @@ struct "CreateInfo" #{size VkBufferCreateInfo} #{alignment VkBufferCreateInfo} [
 		[| #{peek VkBufferCreateInfo, pQueueFamilyIndices} |],
 		[| #{poke VkBufferCreateInfo, pQueueFamilyIndices} |]) ]
 	[''Show, ''Storable]
+
+data BTag
+type B = Ptr BTag
+
+foreign import ccall "vkCreateBuffer" create ::
+	Device.D -> Ptr CreateInfo ->  Ptr AllocationCallbacks.A -> Ptr B ->
+	IO #{type VkResult}
