@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -5,15 +6,21 @@
 module Vulkan.Buffer where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Enum
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Buffer.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Core as C
 
@@ -28,7 +35,7 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndices :: [#{type uint32_t}] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -40,12 +47,26 @@ createInfoToCore CreateInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoSize = sz,
-		C.createInfoUsage = usg,
-		C.createInfoSharingMode = sm,
-		C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
-		C.createInfoPQueueFamilyIndices = pqfis }
+	let	C.CreateInfo_ fci = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoSize = sz,
+			C.createInfoUsage = usg,
+			C.createInfoSharingMode = sm,
+			C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
+			C.createInfoPQueueFamilyIndices = pqfis }
+	ContT $ withForeignPtr fci
+
+
+newtype B = B C.B deriving Show
+
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO B
+create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pb <- ContT alloca
+	lift do	r <- C.create dvc pci pac pb
+		throwUnlessSuccess $ Result r
+		peek pb

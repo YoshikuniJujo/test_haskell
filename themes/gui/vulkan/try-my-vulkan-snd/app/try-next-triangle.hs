@@ -152,7 +152,8 @@ data Global = Global {
 	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
 	globalInFlightFences :: IORef [Vk.Fence.F],
 	globalCurrentFrame :: IORef Int,
-	globalFramebufferResized :: IORef Bool
+	globalFramebufferResized :: IORef Bool,
+	globalVertexBuffer :: IORef Vk.Buffer.B
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -187,6 +188,7 @@ newGlobal = do
 	iffs <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
+	vb <- newIORef $ Vk.Buffer.B NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -211,7 +213,9 @@ newGlobal = do
 		globalRenderFinishedSemaphores = rfss,
 		globalInFlightFences = iffs,
 		globalCurrentFrame = cf,
-		globalFramebufferResized = fbr }
+		globalFramebufferResized = fbr,
+		globalVertexBuffer = vb
+		}
 
 run :: ReaderT Global IO ()
 run = do
@@ -848,7 +852,9 @@ createVertexBuffer = do
 			Vk.Buffer.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.createInfoQueueFamilyIndices = [] }
-	pure ()
+	dvc <- readGlobal globalDevice
+	writeGlobal globalVertexBuffer
+		=<< lift (Vk.Buffer.create @() dvc bufferInfo nil)
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
