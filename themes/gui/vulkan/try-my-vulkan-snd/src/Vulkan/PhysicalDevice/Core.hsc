@@ -155,3 +155,6 @@ struct "MemoryProperties" #{size VkPhysicalDeviceMemoryProperties}
 					memoryHeaps} p) .
 			take Memory.maxHeaps |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkGetPhysicalDeviceMemoryProperties"
+	getMemoryProperties :: P -> Ptr MemoryProperties -> IO ()

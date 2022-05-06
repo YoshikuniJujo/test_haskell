@@ -164,3 +164,10 @@ memoryPropertiesFromCore C.MemoryProperties {
 	MemoryProperties {
 		memoryPropertiesMemoryTypes = take mtc mts,
 		memoryPropertiesMemoryHeaps = take mhc mhs }
+
+getMemoryProperties :: P -> IO MemoryProperties
+getMemoryProperties (P p) =
+	(memoryPropertiesFromCore <$>) . ($ pure) $ runContT do
+		pmps <- ContT alloca
+		lift do	C.getMemoryProperties p pmps
+			peek pmps

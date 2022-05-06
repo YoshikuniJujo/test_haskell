@@ -859,12 +859,19 @@ createVertexBuffer = do
 	writeGlobal globalVertexBuffer
 		=<< lift (Vk.Buffer.create @() dvc bufferInfo nil)
 	vb <- readGlobal globalVertexBuffer
-	lift . print =<< lift (Vk.Buffer.getMemoryRequirements dvc vb)
+	memRequirements <- lift (Vk.Buffer.getMemoryRequirements dvc vb)
+	findMemoryType (Vk.Memory.requirementsMemoryTypeBits memRequirements) $
+		Vk.Memory.PropertyHostVisibleBit .|.
+		Vk.Memory.PropertyHostCoherentBit
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
-	ReaderT Global IO Vk.Memory.TypeBits
-findMemoryType = pure undefined
+	ReaderT Global IO Word32
+findMemoryType typeFilter properties = do
+	phdvc <- readGlobal globalPhysicalDevice
+	lift $ print typeFilter
+	lift $ print =<< Vk.PhysicalDevice.getMemoryProperties phdvc
+	pure $ error "BOO"
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
