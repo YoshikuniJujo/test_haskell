@@ -55,23 +55,9 @@ packages:
       sha256: b6aec9cb89f71995d397e7f910f9046a944fd881ffac86e3cb5186cda22c2148
   original:
     hackage: exception-hierarchy-0.1.0.7
-- completed:
-    hackage: ranged-list-0.1.0.1@sha256:b02c208ed458f488684a73d710095fedea72415466ad97e54417e3ab8ecf7053,2177
-    pantry-tree:
-      size: 1339
-      sha256: b4abacf4b212df5542dafb9b42a1a0a2b9c2b26254ea96a24cfbdb5ade9c40c8
-  original:
-    hackage: ranged-list-0.1.0.1
-- completed:
-    hackage: typecheck-plugin-nat-simple-0.1.0.7@sha256:68948466044fa90b6162a841d9767235331ec8f79f21c9fe30e06b7e034fe734,3054
-    pantry-tree:
-      size: 1742
-      sha256: 8c40d087813c672455bffbf7ce2b5fd0b2485dbb0d3f1d8a75b7d6e7f72777cd
-  original:
-    hackage: typecheck-plugin-nat-simple-0.1.0.7
 snapshots:
 - completed:
-    size: 554661
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/4/28.yaml
-    sha256: eb778a9c971802e22068265fb7b14d357c3eb7d76229402b9444a3db1a2bc153
-  original: nightly-2022-04-28
+    size: 572782
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/5/5.yaml
+    sha256: 42b5030fc96fe064d61c662330df4d0369c0ab48648ca2a51705cf26b32550a0
+  original: nightly-2022-05-05
