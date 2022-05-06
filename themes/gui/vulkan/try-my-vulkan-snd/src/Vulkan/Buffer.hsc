@@ -70,3 +70,9 @@ create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 	lift do	r <- C.create dvc pci pac pb
 		throwUnlessSuccess $ Result r
 		peek pb
+
+destroy :: Pointable n =>
+	Device.D -> B -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (B b) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.destroy dvc b pac

@@ -1025,8 +1025,10 @@ cleanupSwapChain = do
 cleanup :: ReaderT Global IO ()
 cleanup = do
 	cleanupSwapChain
-
 	dvc <- readGlobal globalDevice
+
+	vb <- readGlobal globalVertexBuffer
+	lift $ Vk.Buffer.destroy dvc vb nil
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)

@@ -51,3 +51,6 @@ type B = Ptr BTag
 foreign import ccall "vkCreateBuffer" create ::
 	Device.D -> Ptr CreateInfo ->  Ptr AllocationCallbacks.A -> Ptr B ->
 	IO #{type VkResult}
+
+foreign import ccall "vkDestroyBuffer" destroy ::
+	Device.D -> B -> Ptr AllocationCallbacks.A -> IO ()
