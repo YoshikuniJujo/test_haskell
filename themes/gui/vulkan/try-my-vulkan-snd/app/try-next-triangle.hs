@@ -842,6 +842,7 @@ createCommandPool = do
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
+	lift $ putStrLn "CREATE VERTEX BUFFER BEGIN"
 	let	bufferInfo = Vk.Buffer.CreateInfo {
 			Vk.Buffer.createInfoNext = Nothing,
 			Vk.Buffer.createInfoFlags = Vk.Buffer.CreateFlagsZero,
@@ -855,6 +856,9 @@ createVertexBuffer = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalVertexBuffer
 		=<< lift (Vk.Buffer.create @() dvc bufferInfo nil)
+	vb <- readGlobal globalVertexBuffer
+	lift . print =<< lift (Vk.Buffer.getMemoryRequirements dvc vb)
+	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)

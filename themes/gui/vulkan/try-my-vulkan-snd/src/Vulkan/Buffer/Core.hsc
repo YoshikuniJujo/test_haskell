@@ -15,6 +15,7 @@ import Vulkan.Base
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
+import qualified Vulkan.Memory.Core as Memory
 
 #include <vulkan/vulkan.h>
 
@@ -54,3 +55,6 @@ foreign import ccall "vkCreateBuffer" create ::
 
 foreign import ccall "vkDestroyBuffer" destroy ::
 	Device.D -> B -> Ptr AllocationCallbacks.A -> IO ()
+
+foreign import ccall "vkGetBufferMemoryRequirements" getMemoryRequirements ::
+	Device.D -> B -> Ptr Memory.Requirements -> IO ()

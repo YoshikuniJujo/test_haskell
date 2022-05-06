@@ -99,6 +99,8 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Core
       Vulkan.Khr.Swapchain.Enum
+      Vulkan.Memory
+      Vulkan.Memory.Core
       Vulkan.PhysicalDevice
       Vulkan.PhysicalDevice.Core
       Vulkan.PhysicalDevice.Enum

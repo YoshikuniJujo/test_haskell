@@ -23,6 +23,7 @@ import Vulkan.Buffer.Enum
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Core as C
+import qualified Vulkan.Memory as Memory
 
 #include <vulkan/vulkan.h>
 
@@ -76,3 +77,10 @@ destroy :: Pointable n =>
 destroy (Device.D dvc) (B b) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc b pac
+
+getMemoryRequirements :: Device.D -> B -> IO Memory.Requirements
+getMemoryRequirements (Device.D dvc) (B b) =
+	(Memory.requirementsFromCore <$>) . ($ pure) $ runContT do
+		pr <- ContT alloca
+		lift do	C.getMemoryRequirements dvc b pr
+			peek pr
