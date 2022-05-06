@@ -23,6 +23,7 @@ import Vulkan.PhysicalDevice.Struct.Core
 
 import qualified Vulkan.Instance.Core as Instance
 import qualified Vulkan.QueueFamily.Core as QueueFamily
+import qualified Vulkan.Memory.Core as Memory
 
 #include <vulkan/vulkan.h>
 
@@ -126,3 +127,31 @@ foreign import ccall "vkEnumerateDeviceExtensionProperties"
 	enumerateExtensionProperties ::
 	P -> CString -> Ptr #{type uint32_t} ->
 	Ptr ExtensionProperties -> IO #{type VkResult}
+
+struct "MemoryProperties" #{size VkPhysicalDeviceMemoryProperties}
+		#{alignment VkPhysicalDeviceMemoryProperties} [
+	("memoryTypeCount", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceMemoryProperties, memoryTypeCount} |],
+		[| #{poke
+			VkPhysicalDeviceMemoryProperties, memoryTypeCount} |]),
+	("memoryTypes", ''Memory.ListMType,
+		[| \p -> peekArray #{const VK_MAX_MEMORY_TYPES}
+			$ #{ptr VkPhysicalDeviceMemoryProperties, memoryTypes} p
+			|],
+		[| \p -> pokeArray
+				(#{ptr VkPhysicalDeviceMemoryProperties,
+					memoryTypes} p) .
+			take #{const VK_MAX_MEMORY_TYPES} |]),
+	("memoryHeapCount", ''#{type uint32_t},
+		[| #{peek VkPhysicalDeviceMemoryProperties, memoryHeapCount} |],
+		[| #{poke
+			VkPhysicalDeviceMemoryProperties, memoryHeapCount} |]),
+	("memoryHeaps", ''Memory.ListHeap,
+		[| \p -> peekArray #{const VK_MAX_MEMORY_HEAPS}
+			$ #{ptr VkPhysicalDeviceMemoryProperties, memoryHeaps} p
+			|],
+		[| \p -> pokeArray
+				(#{ptr VkPhysicalDeviceMemoryProperties,
+					memoryHeaps} p) .
+			take #{const VK_MAX_MEMORY_HEAPS} |]) ]
+	[''Show, ''Storable]

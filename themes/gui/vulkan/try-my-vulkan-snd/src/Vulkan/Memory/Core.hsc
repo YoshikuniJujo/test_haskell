@@ -23,3 +23,25 @@ struct "Requirements" #{size VkMemoryRequirements}
 		[| #{peek VkMemoryRequirements, memoryTypeBits} |],
 		[| #{poke VkMemoryRequirements, memoryTypeBits} |]) ]
 	[''Show, ''Storable]
+
+struct "MType" #{size VkMemoryType} #{alignment VkMemoryType} [
+	("propertyFlags", ''#{type VkMemoryPropertyFlags},
+		[| #{peek VkMemoryType, propertyFlags} |],
+		[| #{poke VkMemoryType, propertyFlags} |]),
+	("heapIndex", ''#{type uint32_t},
+		[| #{peek VkMemoryType, heapIndex} |],
+		[| #{poke VkMemoryType, heapIndex} |]) ]
+	[''Show, ''Storable]
+
+type ListMType = [MType]
+
+struct "Heap" #{size VkMemoryHeap} #{alignment VkMemoryHeap} [
+	("size", ''#{type VkDeviceSize},
+		[| #{peek VkMemoryHeap, size} |],
+		[| #{poke VkMemoryHeap, size} |]),
+	("flags", ''#{type VkMemoryHeapFlags},
+		[| #{peek VkMemoryHeap, flags} |],
+		[| #{poke VkMemoryHeap, flags} |]) ]
+	[''Show, ''Storable]
+
+type ListHeap = [Heap]
