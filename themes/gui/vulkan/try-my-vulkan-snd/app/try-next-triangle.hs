@@ -107,6 +107,8 @@ import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
 import qualified Vulkan.Buffer as Vk.Buffer
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
+import qualified Vulkan.Memory as Vk.Memory
+import qualified Vulkan.Memory.Enum as Vk.Memory
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -859,6 +861,10 @@ createVertexBuffer = do
 	vb <- readGlobal globalVertexBuffer
 	lift . print =<< lift (Vk.Buffer.getMemoryRequirements dvc vb)
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
+
+findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO Vk.Memory.TypeBits
+findMemoryType = pure undefined
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)

@@ -9,19 +9,19 @@ import qualified Vulkan.Memory.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype MemoryTypeBits = MemoryTypeBits #{type uint32_t} deriving Show
+newtype TypeBits = TypeBits #{type uint32_t} deriving Show
 
 data Requirements = Requirements {
 	requirementsSize :: Device.Size,
 	requirementsAlignment :: Device.Size,
-	requirementsMemoryTypeBits :: MemoryTypeBits }
+	requirementsMemoryTypeBits :: TypeBits }
 	deriving Show
 
 requirementsToCore :: Requirements -> C.Requirements
 requirementsToCore Requirements {
 	requirementsSize = Device.Size sz,
 	requirementsAlignment = Device.Size al,
-	requirementsMemoryTypeBits = MemoryTypeBits mtbs } = C.Requirements {
+	requirementsMemoryTypeBits = TypeBits mtbs } = C.Requirements {
 	C.requirementsSize = sz,
 	C.requirementsAlignment = al,
 	C.requirementsMemoryTypeBits = mtbs }
@@ -33,4 +33,4 @@ requirementsFromCore C.Requirements {
 	C.requirementsMemoryTypeBits = mtbs } = Requirements {
 	requirementsSize = Device.Size sz,
 	requirementsAlignment = Device.Size al,
-	requirementsMemoryTypeBits = MemoryTypeBits mtbs }
+	requirementsMemoryTypeBits = TypeBits mtbs }
