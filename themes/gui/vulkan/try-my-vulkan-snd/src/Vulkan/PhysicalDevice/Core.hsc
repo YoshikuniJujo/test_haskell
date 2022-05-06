@@ -135,23 +135,23 @@ struct "MemoryProperties" #{size VkPhysicalDeviceMemoryProperties}
 		[| #{poke
 			VkPhysicalDeviceMemoryProperties, memoryTypeCount} |]),
 	("memoryTypes", ''Memory.ListMType,
-		[| \p -> peekArray #{const VK_MAX_MEMORY_TYPES}
+		[| \p -> peekArray Memory.maxTypes
 			$ #{ptr VkPhysicalDeviceMemoryProperties, memoryTypes} p
 			|],
 		[| \p -> pokeArray
 				(#{ptr VkPhysicalDeviceMemoryProperties,
-					memoryTypes} p) .
-			take #{const VK_MAX_MEMORY_TYPES} |]),
+					memoryTypes} p)
+			. take Memory.maxTypes |]),
 	("memoryHeapCount", ''#{type uint32_t},
 		[| #{peek VkPhysicalDeviceMemoryProperties, memoryHeapCount} |],
 		[| #{poke
 			VkPhysicalDeviceMemoryProperties, memoryHeapCount} |]),
 	("memoryHeaps", ''Memory.ListHeap,
-		[| \p -> peekArray #{const VK_MAX_MEMORY_HEAPS}
+		[| \p -> peekArray Memory.maxHeaps
 			$ #{ptr VkPhysicalDeviceMemoryProperties, memoryHeaps} p
 			|],
 		[| \p -> pokeArray
 				(#{ptr VkPhysicalDeviceMemoryProperties,
 					memoryHeaps} p) .
-			take #{const VK_MAX_MEMORY_HEAPS} |]) ]
+			take Memory.maxHeaps |]) ]
 	[''Show, ''Storable]

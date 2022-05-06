@@ -51,3 +51,4 @@ enum "HeapFlagBits" ''#{type VkMemoryHeapFlagBits}
 		#{const VK_MEMORY_HEAP_FLAG_BITS_MAX_ENUM}) ]
 
 type PropertyFlags = PropertyFlagBits
+type HeapFlags = HeapFlagBits

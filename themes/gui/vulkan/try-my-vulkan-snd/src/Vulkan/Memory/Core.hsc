@@ -45,3 +45,7 @@ struct "Heap" #{size VkMemoryHeap} #{alignment VkMemoryHeap} [
 	[''Show, ''Storable]
 
 type ListHeap = [Heap]
+
+maxTypes, maxHeaps :: Integral n => n
+maxTypes = #{const VK_MAX_MEMORY_TYPES}
+maxHeaps = #{const VK_MAX_MEMORY_HEAPS}

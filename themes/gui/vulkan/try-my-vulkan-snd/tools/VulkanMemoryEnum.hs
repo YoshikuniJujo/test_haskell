@@ -16,4 +16,5 @@ make = createFile'' vulkanCore "Memory.Enum" ["Data.Bits", "Data.Word"] [
 		(	"HeapFlagBits", "VkMemoryHeapFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) ) ]
 	[nowdoc|
-type PropertyFlags = PropertyFlagBits|]
+type PropertyFlags = PropertyFlagBits
+type HeapFlags = HeapFlagBits|]

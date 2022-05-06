@@ -4,7 +4,9 @@ module Vulkan.Memory where
 
 import Data.Word
 
-import qualified Vulkan.Device as Device
+import Vulkan.Memory.Enum
+
+import {-# SOURCE #-} qualified Vulkan.Device as Device
 import qualified Vulkan.Memory.Core as C
 
 #include <vulkan/vulkan.h>
@@ -34,3 +36,22 @@ requirementsFromCore C.Requirements {
 	requirementsSize = Device.Size sz,
 	requirementsAlignment = Device.Size al,
 	requirementsMemoryTypeBits = TypeBits mtbs }
+
+data MType = MType {
+	mTypePropertyFlags :: PropertyFlags,
+	mTypeHeapIndex :: #{type uint32_t} }
+	deriving Show
+
+mTypeFromCore :: C.MType -> MType
+mTypeFromCore C.MType {
+	C.mTypePropertyFlags = pfs,
+	C.mTypeHeapIndex = hi } = MType {
+	mTypePropertyFlags = PropertyFlagBits pfs,
+	mTypeHeapIndex = hi }
+
+data Heap = Heap { heapSize :: Device.Size, heapFlags :: HeapFlags }
+	deriving Show
+
+heapFromCore :: C.Heap -> Heap
+heapFromCore C.Heap { C.heapSize = sz, C.heapFlags = flgs } =
+	Heap { heapSize = Device.Size sz, heapFlags = HeapFlagBits flgs }
