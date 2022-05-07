@@ -870,8 +870,23 @@ findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
 findMemoryType typeFilter properties = do
 	phdvc <- readGlobal globalPhysicalDevice
 	lift $ print typeFilter
-	lift $ print =<< Vk.PhysicalDevice.getMemoryProperties phdvc
-	pure $ error "BOO"
+	memProperties <- lift $ Vk.PhysicalDevice.getMemoryProperties phdvc
+	lift $ print memProperties
+	let	r = find (suitable typeFilter properties memProperties)
+			[0 .. length (
+				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+					memProperties) - 1]
+	lift $ print r
+	pure $ maybe
+		(error "failed to find suitable memory type!") fromIntegral r
+
+suitable :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
+	Vk.PhysicalDevice.MemoryProperties -> Int -> Bool
+suitable typeFilter properties memProperties i =
+	(typeFilter .&. Vk.Memory.TypeBits 1 `shiftL` i /= zeroBits) &&
+	(Vk.Memory.mTypePropertyFlags
+		(Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
+			i) .&. properties == properties)
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)

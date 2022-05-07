@@ -1,7 +1,9 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Memory where
 
+import Data.Bits
 import Data.Word
 
 import Vulkan.Memory.Enum
@@ -11,7 +13,7 @@ import qualified Vulkan.Memory.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype TypeBits = TypeBits #{type uint32_t} deriving Show
+newtype TypeBits = TypeBits #{type uint32_t} deriving (Show, Eq, Bits)
 
 data Requirements = Requirements {
 	requirementsSize :: Device.Size,
