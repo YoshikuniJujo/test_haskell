@@ -91,11 +91,10 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoMemoryTypeIndex = mti }
 	ContT $ withForeignPtr fai
 
-newtype M = M C.M deriving Show
-
 allocate :: (Pointable n, Pointable n') =>
-	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A n') -> IO M
-allocate (Device.D dvc) ai mac =  (M <$>) . ($ pure) $ runContT do
+	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A n') ->
+	IO Device.Memory
+allocate (Device.D dvc) ai mac =  (Device.Memory <$>) . ($ pure) $ runContT do
 	pai <- allocateInfoToCore ai
 	pac <- AllocationCallbacks.maybeToCore mac
 	pm <- ContT alloca

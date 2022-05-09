@@ -76,9 +76,6 @@ struct "AllocateInfo" #{size VkMemoryAllocateInfo}
 		[| #{poke VkMemoryAllocateInfo, memoryTypeIndex} |]) ]
 	[''Show, ''Storable]
 
-data MTag
-type M = Ptr MTag
-
 foreign import ccall "vkAllocateMemory" allocate ::
-	Device.D -> Ptr AllocateInfo -> Ptr AllocationCallbacks.A -> Ptr M ->
-	IO #{type VkResult}
+	Device.D -> Ptr AllocateInfo -> Ptr AllocationCallbacks.A ->
+	Ptr Device.Memory -> IO #{type VkResult}

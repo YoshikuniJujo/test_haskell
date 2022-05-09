@@ -108,3 +108,5 @@ waitIdle :: D -> IO ()
 waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d
 
 newtype Size = Size #{type VkDeviceSize} deriving (Show, Num)
+
+newtype Memory = Memory C.Memory deriving Show

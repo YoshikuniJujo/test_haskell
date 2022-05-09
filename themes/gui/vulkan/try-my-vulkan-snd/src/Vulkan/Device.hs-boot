@@ -13,3 +13,6 @@ instance Num Size
 
 newtype D = D C.D
 instance Show D
+
+newtype Memory = Memory C.Memory
+instance Show Memory
