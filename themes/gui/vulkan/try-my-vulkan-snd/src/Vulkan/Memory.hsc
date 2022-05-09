@@ -1,3 +1,4 @@
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -64,16 +65,18 @@ heapFromCore C.Heap { C.heapSize = sz, C.heapFlags = flgs } =
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
-	allocateInfoAllocateionSize :: Device.Size,
+	allocateInfoAllocationSize :: Device.Size,
 	allocateInfoMemoryTypeIndex :: #{type uint32_t} }
 	deriving Show
 
 allocateInfoToCore :: Pointable n => AllocateInfo n -> ContT r IO C.AllocateInfo
 allocateInfoToCore AllocateInfo {
-	allocateInfoNext = mnxt
-	} = do
+	allocateInfoNext = mnxt,
+	allocateInfoAllocationSize = Device.Size sz,
+	allocateInfoMemoryTypeIndex = mti } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pure C.AllocateInfo {
 		C.allocateInfoSType = (),
-		C.allocateInfoPNext = pnxt
-		}
+		C.allocateInfoPNext = pnxt,
+		C.allocateInfoAllocationSize = sz,
+		C.allocateInfoMemoryTypeIndex = mti }
