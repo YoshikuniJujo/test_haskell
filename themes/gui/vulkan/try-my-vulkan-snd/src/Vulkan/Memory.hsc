@@ -1,8 +1,12 @@
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Memory where
 
+import Foreign.Ptr
+import Foreign.Pointable
+import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -57,3 +61,19 @@ data Heap = Heap { heapSize :: Device.Size, heapFlags :: HeapFlags }
 heapFromCore :: C.Heap -> Heap
 heapFromCore C.Heap { C.heapSize = sz, C.heapFlags = flgs } =
 	Heap { heapSize = Device.Size sz, heapFlags = HeapFlagBits flgs }
+
+data AllocateInfo n = AllocateInfo {
+	allocateInfoNext :: Maybe n,
+	allocateInfoAllocateionSize :: Device.Size,
+	allocateInfoMemoryTypeIndex :: #{type uint32_t} }
+	deriving Show
+
+allocateInfoToCore :: Pointable n => AllocateInfo n -> ContT r IO C.AllocateInfo
+allocateInfoToCore AllocateInfo {
+	allocateInfoNext = mnxt
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pure C.AllocateInfo {
+		C.allocateInfoSType = (),
+		C.allocateInfoPNext = pnxt
+		}

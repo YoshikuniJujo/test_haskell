@@ -9,6 +9,8 @@ import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
+import Vulkan.Base
+
 #include <vulkan/vulkan.h>
 
 struct "Requirements" #{size VkMemoryRequirements}
@@ -49,3 +51,21 @@ type ListHeap = [Heap]
 maxTypes, maxHeaps :: Integral n => n
 maxTypes = #{const VK_MAX_MEMORY_TYPES}
 maxHeaps = #{const VK_MAX_MEMORY_HEAPS}
+
+sType :: #{type VkStructureType}
+sType = #{const VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO}
+
+struct "AllocateInfo" #{size VkMemoryAllocateInfo}
+		#{alignment VkMemoryAllocateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkMemoryAllocateInfo, sType} p sType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkMemoryAllocateInfo, pNext} |],
+		[| #{poke VkMemoryAllocateInfo, pNext} |]),
+	("allocationSize", ''#{type VkDeviceSize},
+		[| #{peek VkMemoryAllocateInfo, allocationSize} |],
+		[| #{poke VkMemoryAllocateInfo, allocationSize} |]),
+	("memoryTypeIndex", ''#{type uint32_t},
+		[| #{peek VkMemoryAllocateInfo, memoryTypeIndex} |],
+		[| #{poke VkMemoryAllocateInfo, memoryTypeIndex} |]) ]
+	[''Show, ''Storable]
