@@ -1,6 +1,7 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -10,6 +11,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
+import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Bits
@@ -107,3 +109,10 @@ free :: Pointable n =>
 free (Device.D dvc) (Device.Memory mem) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.free dvc mem pac
+
+enum "MapFlags" ''#{type VkMemoryMapFlags}
+	[''Eq, ''Show, ''Storable, ''Bits] [("MapFlagsZero", 0)]
+
+-- copy :: Device.D ->
+
+-- map :: Device.D -> Device.Memory -> Device.Size -> Device.Size -> MapFlags ->

@@ -107,6 +107,7 @@ getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue <$> do
 waitIdle :: D -> IO ()
 waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d
 
-newtype Size = Size #{type VkDeviceSize} deriving (Show, Num)
+enum "Size" ''#{type VkDeviceSize} [''Show, ''Num]
+	[("WholeSize", #{const VK_WHOLE_SIZE})]
 
 newtype Memory = Memory C.Memory deriving Show

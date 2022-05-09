@@ -82,3 +82,11 @@ foreign import ccall "vkAllocateMemory" allocate ::
 
 foreign import ccall "vkFreeMemory" free ::
 	Device.D -> Device.Memory -> Ptr AllocationCallbacks.A -> IO ()
+
+foreign import ccall "vkMapMemory" map ::
+	Device.D -> Device.Memory ->
+	#{type VkDeviceSize} -> #{type VkDeviceSize} ->
+	#{type VkMemoryMapFlags} -> Ptr (Ptr ()) -> IO #{type VkResult}
+
+foreign import ccall "vkUnmapMemory" unmap ::
+	Device.D -> Device.Memory -> IO ()
