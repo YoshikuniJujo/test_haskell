@@ -869,7 +869,8 @@ createVertexBuffer = do
 			Vk.Memory.allocateInfoAllocationSize =
 				Vk.Memory.requirementsSize memRequirements,
 			Vk.Memory.allocateInfoMemoryTypeIndex = mti }
-	lift $ Vk.Memory.allocate @() dvc allocInfo nil
+	lift do	vbm <- Vk.Memory.allocate @() dvc allocInfo nil
+		Vk.Buffer.bindMemory dvc vb vbm 0
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->

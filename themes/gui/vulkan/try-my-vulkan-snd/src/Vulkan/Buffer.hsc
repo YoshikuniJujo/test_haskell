@@ -84,3 +84,7 @@ getMemoryRequirements (Device.D dvc) (B b) =
 		pr <- ContT alloca
 		lift do	C.getMemoryRequirements dvc b pr
 			peek pr
+
+bindMemory :: Device.D -> B -> Device.Memory -> Device.Size -> IO ()
+bindMemory (Device.D dvc) (B b) (Device.Memory mem) (Device.Size sz) =
+	throwUnlessSuccess . Result =<< C.bindMemory dvc b mem sz

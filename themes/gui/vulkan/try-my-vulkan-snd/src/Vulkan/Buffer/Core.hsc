@@ -58,3 +58,7 @@ foreign import ccall "vkDestroyBuffer" destroy ::
 
 foreign import ccall "vkGetBufferMemoryRequirements" getMemoryRequirements ::
 	Device.D -> B -> Ptr Memory.Requirements -> IO ()
+
+foreign import ccall "vkBindBufferMemory" bindMemory ::
+	Device.D -> B -> Device.Memory -> #{type VkDeviceSize} ->
+	IO #{type VkResult}
