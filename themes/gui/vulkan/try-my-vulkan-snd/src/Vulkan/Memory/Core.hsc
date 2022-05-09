@@ -5,11 +5,17 @@
 
 module Vulkan.Memory.Core where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+
+import {-# SOURCE #-} qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
@@ -69,3 +75,10 @@ struct "AllocateInfo" #{size VkMemoryAllocateInfo}
 		[| #{peek VkMemoryAllocateInfo, memoryTypeIndex} |],
 		[| #{poke VkMemoryAllocateInfo, memoryTypeIndex} |]) ]
 	[''Show, ''Storable]
+
+data MTag
+type M = Ptr MTag
+
+foreign import ccall "vkAllocateMemory" allocate ::
+	Device.D -> Ptr AllocateInfo -> Ptr AllocationCallbacks.A -> Ptr M ->
+	IO #{type VkResult}

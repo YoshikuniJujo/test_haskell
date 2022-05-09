@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -6,14 +7,21 @@
 module Vulkan.Memory where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Memory.Enum
 
 import {-# SOURCE #-} qualified Vulkan.Device as Device
+
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Memory.Core as C
 
 #include <vulkan/vulkan.h>
@@ -69,14 +77,28 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoMemoryTypeIndex :: #{type uint32_t} }
 	deriving Show
 
-allocateInfoToCore :: Pointable n => AllocateInfo n -> ContT r IO C.AllocateInfo
+allocateInfoToCore :: Pointable n =>
+	AllocateInfo n -> ContT r IO (Ptr C.AllocateInfo)
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoAllocationSize = Device.Size sz,
 	allocateInfoMemoryTypeIndex = mti } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pure C.AllocateInfo {
-		C.allocateInfoSType = (),
-		C.allocateInfoPNext = pnxt,
-		C.allocateInfoAllocationSize = sz,
-		C.allocateInfoMemoryTypeIndex = mti }
+	let	C.AllocateInfo_ fai = C.AllocateInfo {
+			C.allocateInfoSType = (),
+			C.allocateInfoPNext = pnxt,
+			C.allocateInfoAllocationSize = sz,
+			C.allocateInfoMemoryTypeIndex = mti }
+	ContT $ withForeignPtr fai
+
+newtype M = M C.M deriving Show
+
+allocate :: (Pointable n, Pointable n') =>
+	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A n') -> IO M
+allocate (Device.D dvc) ai mac =  (M <$>) . ($ pure) $ runContT do
+	pai <- allocateInfoToCore ai
+	pac <- AllocationCallbacks.maybeToCore mac
+	pm <- ContT alloca
+	lift do	r <- C.allocate dvc pai pac pm
+		throwUnlessSuccess $ Result r
+		peek pm
