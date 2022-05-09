@@ -79,3 +79,6 @@ struct "AllocateInfo" #{size VkMemoryAllocateInfo}
 foreign import ccall "vkAllocateMemory" allocate ::
 	Device.D -> Ptr AllocateInfo -> Ptr AllocationCallbacks.A ->
 	Ptr Device.Memory -> IO #{type VkResult}
+
+foreign import ccall "vkFreeMemory" free ::
+	Device.D -> Device.Memory -> Ptr AllocationCallbacks.A -> IO ()

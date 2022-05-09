@@ -155,7 +155,8 @@ data Global = Global {
 	globalInFlightFences :: IORef [Vk.Fence.F],
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
-	globalVertexBuffer :: IORef Vk.Buffer.B
+	globalVertexBuffer :: IORef Vk.Buffer.B,
+	globalVertexBufferMemory :: IORef Vk.Device.Memory
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -191,6 +192,7 @@ newGlobal = do
 	cf <- newIORef 0
 	fbr <- newIORef False
 	vb <- newIORef $ Vk.Buffer.B NullPtr
+	vbm <- newIORef $ Vk.Device.Memory NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -216,7 +218,8 @@ newGlobal = do
 		globalInFlightFences = iffs,
 		globalCurrentFrame = cf,
 		globalFramebufferResized = fbr,
-		globalVertexBuffer = vb
+		globalVertexBuffer = vb,
+		globalVertexBufferMemory = vbm
 		}
 
 run :: ReaderT Global IO ()
@@ -869,8 +872,9 @@ createVertexBuffer = do
 			Vk.Memory.allocateInfoAllocationSize =
 				Vk.Memory.requirementsSize memRequirements,
 			Vk.Memory.allocateInfoMemoryTypeIndex = mti }
-	lift do	vbm <- Vk.Memory.allocate @() dvc allocInfo nil
-		Vk.Buffer.bindMemory dvc vb vbm 0
+	vbm <- lift $ Vk.Memory.allocate @() dvc allocInfo nil
+	writeGlobal globalVertexBufferMemory vbm
+	lift $ Vk.Buffer.bindMemory dvc vb vbm 0
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
@@ -1069,6 +1073,8 @@ cleanup = do
 
 	vb <- readGlobal globalVertexBuffer
 	lift $ Vk.Buffer.destroy dvc vb nil
+	vbm <- readGlobal globalVertexBufferMemory
+	lift $ Vk.Memory.free dvc vbm nil
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)

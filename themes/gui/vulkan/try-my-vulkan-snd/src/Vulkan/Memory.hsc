@@ -101,3 +101,9 @@ allocate (Device.D dvc) ai mac =  (Device.Memory <$>) . ($ pure) $ runContT do
 	lift do	r <- C.allocate dvc pai pac pm
 		throwUnlessSuccess $ Result r
 		peek pm
+
+free :: Pointable n =>
+	Device.D -> Device.Memory -> Maybe (AllocationCallbacks.A n) -> IO ()
+free (Device.D dvc) (Device.Memory mem) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.free dvc mem pac
