@@ -110,6 +110,7 @@ import qualified Vulkan.VertexInput as Vk.VertexInput
 import qualified Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
+import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.Middle as Vk.Cmd.M
@@ -161,7 +162,7 @@ data Global = Global {
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
 	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
-	globalVertexBufferMemory :: IORef Vk.Device.Memory
+	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex)
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -197,7 +198,7 @@ newGlobal = do
 	cf <- newIORef 0
 	fbr <- newIORef False
 	vb <- newIORef $ Vk.Buffer.List.B NullPtr
-	vbm <- newIORef $ Vk.Device.Memory NullPtr
+	vbm <- newIORef $ Vk.Device.MemoryList NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -879,15 +880,17 @@ createVertexBuffer = do
 			Vk.Memory.M.allocateInfoAllocationSize =
 				Vk.Memory.M.requirementsSize memRequirements,
 			Vk.Memory.M.allocateInfoMemoryTypeIndex = mti }
-	vbm <- lift $ Vk.Memory.M.allocate @() dvc allocInfo nil
+	vbm@(Vk.Device.MemoryList cvbm) <-
+		lift (Vk.Memory.List.allocate @() dvc allocInfo nil)
 	writeGlobal globalVertexBufferMemory vbm
-	lift $ Vk.Buffer.M.bindMemory dvc vb' vbm 0
-	lift do	dat <- Vk.Memory.M.map dvc vbm 0
+	let	vbm' = Vk.Device.Memory cvbm
+	lift $ Vk.Buffer.M.bindMemory dvc vb' vbm' 0
+	lift do	dat <- Vk.Memory.M.map dvc vbm' 0
 --			(Vk.Buffer.M.createInfoSize bufferInfo)
 			(fromIntegral $ size (vertices !! 0) * length vertices)
 			(Vk.Memory.M.MapFlagsZero)
 		pokeArray dat $ Foreign.Storable.Generic.Wrap <$> vertices
-		Vk.Memory.M.unmap dvc vbm
+		Vk.Memory.M.unmap dvc vbm'
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
@@ -1089,7 +1092,7 @@ cleanup = do
 	vb <- readGlobal globalVertexBuffer
 	lift $ Vk.Buffer.List.destroy dvc vb nil
 	vbm <- readGlobal globalVertexBufferMemory
-	lift $ Vk.Memory.M.free dvc vbm nil
+	lift $ Vk.Memory.List.free dvc vbm nil
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)

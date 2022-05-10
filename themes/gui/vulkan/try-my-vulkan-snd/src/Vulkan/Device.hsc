@@ -111,3 +111,5 @@ enum "Size" ''#{type VkDeviceSize} [''Show, ''Num]
 	[("WholeSize", #{const VK_WHOLE_SIZE})]
 
 newtype Memory = Memory C.Memory deriving Show
+
+newtype MemoryList v = MemoryList C.Memory deriving Show
