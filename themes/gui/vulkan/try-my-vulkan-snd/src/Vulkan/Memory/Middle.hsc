@@ -7,6 +7,8 @@
 
 module Vulkan.Memory.Middle where
 
+import Prelude hiding (map)
+
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
@@ -113,6 +115,16 @@ free (Device.D dvc) (Device.Memory mem) mac = ($ pure) $ runContT do
 enum "MapFlags" ''#{type VkMemoryMapFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("MapFlagsZero", 0)]
 
--- copy :: Device.D ->
+map :: Device.D -> Device.Memory -> Device.Size -> Device.Size -> MapFlags ->
+	IO (Ptr a)
+map (Device.D dvc) (Device.Memory mem)
+	(Device.Size ofst) (Device.Size sz) (MapFlags flgs) = ($ pure) $ runContT do
+	pd <- ContT alloca
+	lift do	r <- C.map dvc mem ofst sz flgs pd
+		throwUnlessSuccess $ Result r
+		peek pd
 
--- map :: Device.D -> Device.Memory -> Device.Size -> Device.Size -> MapFlags ->
+unmap :: Device.D -> Device.Memory -> IO ()
+unmap (Device.D dvc) (Device.Memory mem) = C.unmap dvc mem
+
+-- copy :: Device.D ->

@@ -12,6 +12,7 @@ module Main where
 
 import GHC.Generics
 import GHC.Tuple
+import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
@@ -33,6 +34,7 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
 import qualified Cglm
+import qualified Foreign.Storable.Generic
 
 import ThEnv
 import Shaderc
@@ -875,6 +877,11 @@ createVertexBuffer = do
 	vbm <- lift $ Vk.Memory.M.allocate @() dvc allocInfo nil
 	writeGlobal globalVertexBufferMemory vbm
 	lift $ Vk.Buffer.M.bindMemory dvc vb vbm 0
+	lift do	dat <- Vk.Memory.M.map dvc vbm 0
+			(Vk.Buffer.M.createInfoSize bufferInfo)
+			(Vk.Memory.M.MapFlagsZero)
+		pokeArray dat $ Foreign.Storable.Generic.Wrap <$> vertices
+		Vk.Memory.M.unmap dvc vbm
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
@@ -1111,6 +1118,8 @@ instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 	formatOf = Vk.FormatR32g32b32Sfloat
+
+instance Foreign.Storable.Generic.G Vertex where
 
 vertices :: [Vertex]
 vertices = [

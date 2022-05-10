@@ -8,6 +8,7 @@ import Data.Word
 import qualified Vulkan.RenderPass.Core as RenderPass
 import qualified Vulkan.Pipeline.Graphics.Core as Pipeline
 import qualified Vulkan.CommandBuffer.Core as CommandBuffer
+import qualified Vulkan.Buffer.Core as Buffer
 
 #include <vulkan/vulkan.h>
 
@@ -24,3 +25,7 @@ foreign import ccall "vkCmdDraw" draw ::
 
 foreign import ccall "vkCmdEndRenderPass" endRenderPass ::
 	CommandBuffer.C -> IO ()
+
+foreign import ccall "vkCmdBindVertexBuffers" bindVertexBuffers ::
+	CommandBuffer.C -> #{type uint32_t} -> #{type uint32_t} ->
+	Ptr Buffer.B -> Ptr #{type VkDeviceSize} -> IO ()

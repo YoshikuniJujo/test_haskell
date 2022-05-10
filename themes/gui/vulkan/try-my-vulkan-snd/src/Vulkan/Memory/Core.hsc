@@ -86,7 +86,7 @@ foreign import ccall "vkFreeMemory" free ::
 foreign import ccall "vkMapMemory" map ::
 	Device.D -> Device.Memory ->
 	#{type VkDeviceSize} -> #{type VkDeviceSize} ->
-	#{type VkMemoryMapFlags} -> Ptr (Ptr ()) -> IO #{type VkResult}
+	#{type VkMemoryMapFlags} -> Ptr (Ptr a) -> IO #{type VkResult}
 
 foreign import ccall "vkUnmapMemory" unmap ::
 	Device.D -> Device.Memory -> IO ()
