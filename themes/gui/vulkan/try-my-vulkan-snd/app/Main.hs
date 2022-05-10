@@ -134,7 +134,7 @@ data Global = Global {
 	globalGraphicsPipeline :: IORef (Vk.Ppl.G () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
-	globalCommandBuffers :: IORef [Vk.CB.C],
+	globalCommandBuffers :: IORef [Vk.CB.C ()],
 	globalImageAvailableSemaphore :: IORef Vk.Smp.S,
 	globalRenderFinishedSemaphore :: IORef Vk.Smp.S,
 	globalInFlightFence :: IORef Vk.Fnc.F
@@ -810,7 +810,7 @@ createCommandBuffers Global {
 		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
 	writeIORef rcbs cbs
 
-recordCommandBuffer :: Global -> Vk.CB.C -> Vk.Fb.F -> IO ()
+recordCommandBuffer :: Global -> Vk.CB.C () -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
 	globalGraphicsPipeline = rppl } cb fb = do

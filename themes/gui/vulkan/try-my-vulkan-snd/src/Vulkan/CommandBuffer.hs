@@ -48,9 +48,9 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoCommandBufferCount = cbc }
 	ContT $ withForeignPtr fAllocateInfo
 
-newtype C = C { unC :: C.C } deriving Show
+newtype C vs = C { unC :: C.C } deriving Show
 
-allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C]
+allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C vs]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
 	pai <- allocateInfoToCore ai
 	pc <- ContT $ allocaArray cbc
@@ -114,14 +114,14 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoPipelineStatistics = ps }
 	ContT $ withForeignPtr fInheritanceInfo
 
-begin :: (Pointable n, Pointable n') => C -> BeginInfo n n' -> IO ()
+begin :: (Pointable n, Pointable n') => C vs -> BeginInfo n n' -> IO ()
 begin (C c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi
 		throwUnlessSuccess $ Result r
 
-end :: C -> IO ()
+end :: C vs -> IO ()
 end (C c) = throwUnlessSuccess . Result =<< C.end c
 
-reset :: C -> ResetFlags -> IO ()
+reset :: C vs -> ResetFlags -> IO ()
 reset (C c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs

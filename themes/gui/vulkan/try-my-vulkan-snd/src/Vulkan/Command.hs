@@ -18,19 +18,19 @@ import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
-	CommandBuffer.C -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
+	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.C cb)
 	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do
 	prpbi <- RenderPass.beginInfoToCore rpbi
 	lift $ C.beginRenderPass cb prpbi spcnt
 
 bindPipeline ::
-	CommandBuffer.C -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
+	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
 bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
 	C.bindPipeline cb pbp ppl
 
-draw :: CommandBuffer.C -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.C cb) vc ic fv fi = C.draw cb vc ic fv fi
 
-endRenderPass :: CommandBuffer.C -> IO ()
+endRenderPass :: CommandBuffer.C vs -> IO ()
 endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb

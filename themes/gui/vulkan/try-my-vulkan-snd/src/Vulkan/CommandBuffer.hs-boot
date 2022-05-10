@@ -4,6 +4,6 @@ module Vulkan.CommandBuffer where
 
 import qualified Vulkan.CommandBuffer.Core as C
 
-newtype C = C { unC :: C.C }
+newtype C vs = C { unC :: C.C }
 
-instance Show C
+instance Show (C vs)

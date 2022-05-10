@@ -15,7 +15,7 @@ import qualified Vulkan.Device as Device
 import qualified Vulkan.Command.Core as C
 
 bindVertexBuffers ::
-	CommandBuffer.C -> Word32 -> [(Buffer.B, Device.Size)] -> IO ()
+	CommandBuffer.C vs -> Word32 -> [(Buffer.B, Device.Size)] -> IO ()
 bindVertexBuffers (CommandBuffer.C c)
 	fb ((length &&& unzip) -> (bc, (bs, os))) = ($ pure) $ runContT do
 	pb <- ContT $ allocaArray bc

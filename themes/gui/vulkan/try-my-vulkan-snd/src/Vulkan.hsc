@@ -216,15 +216,15 @@ clearValueArrayPtrs = iterate (
 pokeClearValue :: Ptr C.ClearValueTag -> Ptr C.ClearValueTag -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
 
-data SubmitInfo n = SubmitInfo {
+data SubmitInfo n vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: [CommandBuffer.C],
+	submitInfoCommandBuffers :: [CommandBuffer.C vs],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 	deriving Show
 
-submitInfoToCore :: Pointable n => SubmitInfo n -> ContT r IO C.SubmitInfo
+submitInfoToCore :: Pointable n => SubmitInfo n vs -> ContT r IO C.SubmitInfo
 submitInfoToCore SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
@@ -257,7 +257,7 @@ submitInfoToCore SubmitInfo {
 		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
 		C.submitInfoPSignalSemaphores = psss }
 
-queueSubmit :: Pointable n => Queue -> [SubmitInfo n] -> Fence.F -> IO ()
+queueSubmit :: Pointable n => Queue -> [SubmitInfo n vs] -> Fence.F -> IO ()
 queueSubmit (Queue q)
 	(length &&& id -> (sic, sis)) (Fence.F f) = ($ pure) $ runContT do
 	csis <- submitInfoToCore `mapM` sis

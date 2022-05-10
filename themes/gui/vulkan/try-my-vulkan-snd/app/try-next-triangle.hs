@@ -152,7 +152,8 @@ data Global = Global {
 		'[Cglm.Vec2, Cglm.Vec3]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
-	globalCommandBuffers :: IORef [Vk.CommandBuffer.C],
+	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
+		Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex) )],
 	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
 	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
 	globalInFlightFences :: IORef [Vk.Fence.F],
@@ -945,7 +946,7 @@ createSyncObjects = do
 		=<< lift (replicateM maxFramesInFlight
 			$ Vk.Fence.create @() dvc fenceInfo nil)
 
-recordCommandBuffer :: Vk.CommandBuffer.C -> Word32 -> ReaderT Global IO ()
+recordCommandBuffer :: Vk.CommandBuffer.C (Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex)) -> Word32 -> ReaderT Global IO ()
 recordCommandBuffer cb imageIndex = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
