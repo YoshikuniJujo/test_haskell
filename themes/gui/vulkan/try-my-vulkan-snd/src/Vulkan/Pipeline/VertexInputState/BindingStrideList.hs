@@ -39,4 +39,10 @@ type family MapSubType t where
 	MapSubType '[] = '[]
 	MapSubType (AddType v t ': ats) = v ': MapSubType ats
 
+type family MapUnList t where
+	MapUnList '[] = '[]
+	MapUnList ([a] ': ts) = a ': MapUnList ts
+
 class TypeVal (t :: k) v where typeVal :: v
+
+type Simplify a = MapUnList (MapSubType (Flatten (Rep a)))
