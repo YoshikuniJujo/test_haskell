@@ -856,7 +856,8 @@ createVertexBuffer = do
 	let	bufferInfo :: Vk.Buffer.List.CreateInfo () Vertex
 		bufferInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
-			Vk.Buffer.List.createInfoFlags = Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.List.createInfoFlags =
+				Vk.Buffer.CreateFlagsZero,
 			Vk.Buffer.List.createInfoLength = length vertices,
 			Vk.Buffer.List.createInfoUsage =
 				Vk.Buffer.UsageVertexBufferBit,
@@ -864,10 +865,11 @@ createVertexBuffer = do
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
 	dvc <- readGlobal globalDevice
-	vb@(Vk.Buffer.List.B cvb) <- lift (Vk.Buffer.List.create dvc bufferInfo nil)
+	vb@(Vk.Buffer.List.B cvb) <-
+		lift (Vk.Buffer.List.create dvc bufferInfo nil)
 	writeGlobal globalVertexBuffer vb
 	let	vb' = Vk.Buffer.M.B cvb
-	memRequirements <- lift (Vk.Buffer.M.getMemoryRequirements dvc vb')
+	memRequirements <- lift (Vk.Buffer.List.getMemoryRequirements dvc vb)
 	mti <- findMemoryType
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
 			Vk.Memory.PropertyHostVisibleBit .|.
