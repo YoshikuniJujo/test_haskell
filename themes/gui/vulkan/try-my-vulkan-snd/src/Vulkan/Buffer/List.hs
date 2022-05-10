@@ -73,3 +73,7 @@ destroy dvc (B b) = M.destroy dvc $ M.B b
 
 getMemoryRequirements :: Device.D -> B v -> IO Memory.M.Requirements
 getMemoryRequirements dvc (B b) = M.getMemoryRequirements dvc $ M.B b
+
+bindMemory :: Device.D -> B v -> Device.MemoryList v -> IO ()
+bindMemory dvc (B b) (Device.MemoryList mem) =
+	M.bindMemory dvc (M.B b) (Device.Memory mem) 0

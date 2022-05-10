@@ -866,10 +866,8 @@ createVertexBuffer = do
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
 	dvc <- readGlobal globalDevice
-	vb@(Vk.Buffer.List.B cvb) <-
-		lift (Vk.Buffer.List.create dvc bufferInfo nil)
+	vb <- lift (Vk.Buffer.List.create dvc bufferInfo nil)
 	writeGlobal globalVertexBuffer vb
-	let	vb' = Vk.Buffer.M.B cvb
 	memRequirements <- lift (Vk.Buffer.List.getMemoryRequirements dvc vb)
 	mti <- findMemoryType
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
@@ -884,7 +882,7 @@ createVertexBuffer = do
 		lift (Vk.Memory.List.allocate @() dvc allocInfo nil)
 	writeGlobal globalVertexBufferMemory vbm
 	let	vbm' = Vk.Device.Memory cvbm
-	lift $ Vk.Buffer.M.bindMemory dvc vb' vbm' 0
+	lift $ Vk.Buffer.List.bindMemory dvc vb vbm
 	lift do	dat <- Vk.Memory.M.map dvc vbm' 0
 --			(Vk.Buffer.M.createInfoSize bufferInfo)
 			(fromIntegral $ size (vertices !! 0) * length vertices)
