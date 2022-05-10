@@ -107,6 +107,7 @@ import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
+import qualified Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
@@ -852,20 +853,20 @@ createCommandPool = do
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	lift $ putStrLn "CREATE VERTEX BUFFER BEGIN"
-	let	bufferInfo = Vk.Buffer.M.CreateInfo {
-			Vk.Buffer.M.createInfoNext = Nothing,
-			Vk.Buffer.M.createInfoFlags = Vk.Buffer.CreateFlagsZero,
-			Vk.Buffer.M.createInfoSize = fromIntegral
-				$ size (vertices !! 0) * length vertices,
-			Vk.Buffer.M.createInfoUsage =
+	let	bufferInfo :: Vk.Buffer.List.CreateInfo () Vertex
+		bufferInfo = Vk.Buffer.List.CreateInfo {
+			Vk.Buffer.List.createInfoNext = Nothing,
+			Vk.Buffer.List.createInfoFlags = Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.List.createInfoLength = length vertices,
+			Vk.Buffer.List.createInfoUsage =
 				Vk.Buffer.UsageVertexBufferBit,
-			Vk.Buffer.M.createInfoSharingMode =
+			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
-			Vk.Buffer.M.createInfoQueueFamilyIndices = [] }
+			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
 	dvc <- readGlobal globalDevice
-	writeGlobal globalVertexBuffer
-		=<< lift (Vk.Buffer.M.create @() dvc bufferInfo nil)
-	vb <- readGlobal globalVertexBuffer
+	vb <- (\(Vk.Buffer.List.B b) -> Vk.Buffer.M.B b)
+		<$> lift (Vk.Buffer.List.create dvc bufferInfo nil)
+	writeGlobal globalVertexBuffer vb
 	memRequirements <- lift (Vk.Buffer.M.getMemoryRequirements dvc vb)
 	mti <- findMemoryType
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
@@ -880,7 +881,8 @@ createVertexBuffer = do
 	writeGlobal globalVertexBufferMemory vbm
 	lift $ Vk.Buffer.M.bindMemory dvc vb vbm 0
 	lift do	dat <- Vk.Memory.M.map dvc vbm 0
-			(Vk.Buffer.M.createInfoSize bufferInfo)
+--			(Vk.Buffer.M.createInfoSize bufferInfo)
+			(fromIntegral $ size (vertices !! 0) * length vertices)
 			(Vk.Memory.M.MapFlagsZero)
 		pokeArray dat $ Foreign.Storable.Generic.Wrap <$> vertices
 		Vk.Memory.M.unmap dvc vbm

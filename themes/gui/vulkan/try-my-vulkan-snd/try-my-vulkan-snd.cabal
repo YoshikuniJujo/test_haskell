@@ -42,6 +42,7 @@ library
       Vulkan.Base
       Vulkan.Buffer.Core
       Vulkan.Buffer.Enum
+      Vulkan.Buffer.List
       Vulkan.Buffer.Middle
       Vulkan.ColorComponent.Enum
       Vulkan.Command
