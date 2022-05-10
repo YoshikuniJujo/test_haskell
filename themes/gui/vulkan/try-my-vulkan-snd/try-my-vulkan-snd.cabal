@@ -30,6 +30,7 @@ library
       Cglm
       Data.Generics.Flatten
       Data.HeteroList
+      Foreign.Storable.Generic
       Glfw
       ThEnv
       Vulkan
