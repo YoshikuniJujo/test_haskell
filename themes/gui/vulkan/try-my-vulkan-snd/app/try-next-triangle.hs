@@ -105,7 +105,7 @@ import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
-import qualified Vulkan.Buffer as Vk.Buffer
+import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Memory as Vk.Memory
 import qualified Vulkan.Memory.Enum as Vk.Memory
@@ -155,7 +155,7 @@ data Global = Global {
 	globalInFlightFences :: IORef [Vk.Fence.F],
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
-	globalVertexBuffer :: IORef Vk.Buffer.B,
+	globalVertexBuffer :: IORef Vk.Buffer.M.B,
 	globalVertexBufferMemory :: IORef Vk.Device.Memory
 	}
 
@@ -191,7 +191,7 @@ newGlobal = do
 	iffs <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
-	vb <- newIORef $ Vk.Buffer.B NullPtr
+	vb <- newIORef $ Vk.Buffer.M.B NullPtr
 	vbm <- newIORef $ Vk.Device.Memory NullPtr
 	pure Global {
 		globalWindow = win,
@@ -848,21 +848,21 @@ createCommandPool = do
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	lift $ putStrLn "CREATE VERTEX BUFFER BEGIN"
-	let	bufferInfo = Vk.Buffer.CreateInfo {
-			Vk.Buffer.createInfoNext = Nothing,
-			Vk.Buffer.createInfoFlags = Vk.Buffer.CreateFlagsZero,
-			Vk.Buffer.createInfoSize = fromIntegral
+	let	bufferInfo = Vk.Buffer.M.CreateInfo {
+			Vk.Buffer.M.createInfoNext = Nothing,
+			Vk.Buffer.M.createInfoFlags = Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.M.createInfoSize = fromIntegral
 				$ size (vertices !! 0) * length vertices,
-			Vk.Buffer.createInfoUsage =
+			Vk.Buffer.M.createInfoUsage =
 				Vk.Buffer.UsageVertexBufferBit,
-			Vk.Buffer.createInfoSharingMode =
+			Vk.Buffer.M.createInfoSharingMode =
 				Vk.SharingModeExclusive,
-			Vk.Buffer.createInfoQueueFamilyIndices = [] }
+			Vk.Buffer.M.createInfoQueueFamilyIndices = [] }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalVertexBuffer
-		=<< lift (Vk.Buffer.create @() dvc bufferInfo nil)
+		=<< lift (Vk.Buffer.M.create @() dvc bufferInfo nil)
 	vb <- readGlobal globalVertexBuffer
-	memRequirements <- lift (Vk.Buffer.getMemoryRequirements dvc vb)
+	memRequirements <- lift (Vk.Buffer.M.getMemoryRequirements dvc vb)
 	mti <- findMemoryType
 		(Vk.Memory.requirementsMemoryTypeBits memRequirements) $
 			Vk.Memory.PropertyHostVisibleBit .|.
@@ -874,7 +874,7 @@ createVertexBuffer = do
 			Vk.Memory.allocateInfoMemoryTypeIndex = mti }
 	vbm <- lift $ Vk.Memory.allocate @() dvc allocInfo nil
 	writeGlobal globalVertexBufferMemory vbm
-	lift $ Vk.Buffer.bindMemory dvc vb vbm 0
+	lift $ Vk.Buffer.M.bindMemory dvc vb vbm 0
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
@@ -1072,7 +1072,7 @@ cleanup = do
 	dvc <- readGlobal globalDevice
 
 	vb <- readGlobal globalVertexBuffer
-	lift $ Vk.Buffer.destroy dvc vb nil
+	lift $ Vk.Buffer.M.destroy dvc vb nil
 	vbm <- readGlobal globalVertexBufferMemory
 	lift $ Vk.Memory.free dvc vbm nil
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)

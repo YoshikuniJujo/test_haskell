@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Buffer where
+module Vulkan.Buffer.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
