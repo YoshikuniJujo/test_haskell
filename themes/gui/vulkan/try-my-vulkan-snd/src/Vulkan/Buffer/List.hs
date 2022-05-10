@@ -65,3 +65,7 @@ create :: (
 	Device.D -> CreateInfo n v -> Maybe (AllocationCallbacks.A n') ->
 	IO (B v)
 create dvc ci = ((\(M.B b) -> B b) <$>) . M.create dvc (createInfoToMiddle ci)
+
+destroy :: Pointable n =>
+	Device.D -> B v -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy dvc (B b) = M.destroy dvc $ M.B b

@@ -160,7 +160,7 @@ data Global = Global {
 	globalInFlightFences :: IORef [Vk.Fence.F],
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
-	globalVertexBuffer :: IORef Vk.Buffer.M.B,
+	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
 	globalVertexBufferMemory :: IORef Vk.Device.Memory
 	}
 
@@ -196,7 +196,7 @@ newGlobal = do
 	iffs <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
-	vb <- newIORef $ Vk.Buffer.M.B NullPtr
+	vb <- newIORef $ Vk.Buffer.List.B NullPtr
 	vbm <- newIORef $ Vk.Device.Memory NullPtr
 	pure Global {
 		globalWindow = win,
@@ -864,10 +864,10 @@ createVertexBuffer = do
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
 	dvc <- readGlobal globalDevice
-	vb <- (\(Vk.Buffer.List.B b) -> Vk.Buffer.M.B b)
-		<$> lift (Vk.Buffer.List.create dvc bufferInfo nil)
+	vb@(Vk.Buffer.List.B cvb) <- lift (Vk.Buffer.List.create dvc bufferInfo nil)
 	writeGlobal globalVertexBuffer vb
-	memRequirements <- lift (Vk.Buffer.M.getMemoryRequirements dvc vb)
+	let	vb' = Vk.Buffer.M.B cvb
+	memRequirements <- lift (Vk.Buffer.M.getMemoryRequirements dvc vb')
 	mti <- findMemoryType
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
 			Vk.Memory.PropertyHostVisibleBit .|.
@@ -879,7 +879,7 @@ createVertexBuffer = do
 			Vk.Memory.M.allocateInfoMemoryTypeIndex = mti }
 	vbm <- lift $ Vk.Memory.M.allocate @() dvc allocInfo nil
 	writeGlobal globalVertexBufferMemory vbm
-	lift $ Vk.Buffer.M.bindMemory dvc vb vbm 0
+	lift $ Vk.Buffer.M.bindMemory dvc vb' vbm 0
 	lift do	dat <- Vk.Memory.M.map dvc vbm 0
 --			(Vk.Buffer.M.createInfoSize bufferInfo)
 			(fromIntegral $ size (vertices !! 0) * length vertices)
@@ -975,8 +975,8 @@ recordCommandBuffer cb imageIndex = do
 		cb renderPassInfo Vk.Subpass.ContentsInline
 	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
 		=<< readGlobal globalGraphicsPipeline
-	vb <- readGlobal globalVertexBuffer
-	lift $ Vk.Cmd.M.bindVertexBuffers cb 0 [(vb, 0)]
+	Vk.Buffer.List.B vb <- readGlobal globalVertexBuffer
+	lift $ Vk.Cmd.M.bindVertexBuffers cb 0 [(Vk.Buffer.M.B vb, 0)]
 	lift do	Vk.Cmd.draw cb 3 1 0 0
 		Vk.Cmd.endRenderPass cb
 		Vk.CommandBuffer.end cb
@@ -1085,7 +1085,7 @@ cleanup = do
 	dvc <- readGlobal globalDevice
 
 	vb <- readGlobal globalVertexBuffer
-	lift $ Vk.Buffer.M.destroy dvc vb nil
+	lift $ Vk.Buffer.List.destroy dvc vb nil
 	vbm <- readGlobal globalVertexBufferMemory
 	lift $ Vk.Memory.M.free dvc vbm nil
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
