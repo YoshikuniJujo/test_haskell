@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Buffer.Middle where
@@ -60,7 +61,7 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fci
 
 
-newtype B = B C.B deriving Show
+newtype B = B C.B deriving (Show, Storable)
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO B

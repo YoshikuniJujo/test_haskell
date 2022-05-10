@@ -111,6 +111,7 @@ import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
+import qualified Vulkan.Command.Middle as Vk.Cmd.M
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -971,6 +972,8 @@ recordCommandBuffer cb imageIndex = do
 		cb renderPassInfo Vk.Subpass.ContentsInline
 	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
 		=<< readGlobal globalGraphicsPipeline
+	vb <- readGlobal globalVertexBuffer
+	lift $ Vk.Cmd.M.bindVertexBuffers cb 0 [(vb, 0)]
 	lift do	Vk.Cmd.draw cb 3 1 0 0
 		Vk.Cmd.endRenderPass cb
 		Vk.CommandBuffer.end cb
@@ -1124,7 +1127,8 @@ instance Foreign.Storable.Generic.G Vertex where
 vertices :: [Vertex]
 vertices = [
 	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+--		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
