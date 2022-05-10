@@ -23,7 +23,7 @@ import Vulkan.Buffer.Enum
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Core as C
-import qualified Vulkan.Memory as Memory
+import qualified Vulkan.Memory.Middle as Memory
 
 #include <vulkan/vulkan.h>
 

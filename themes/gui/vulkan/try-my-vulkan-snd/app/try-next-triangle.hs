@@ -107,7 +107,7 @@ import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
 import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Vulkan.Memory as Vk.Memory
+import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
@@ -864,20 +864,20 @@ createVertexBuffer = do
 	vb <- readGlobal globalVertexBuffer
 	memRequirements <- lift (Vk.Buffer.M.getMemoryRequirements dvc vb)
 	mti <- findMemoryType
-		(Vk.Memory.requirementsMemoryTypeBits memRequirements) $
+		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
 			Vk.Memory.PropertyHostVisibleBit .|.
 			Vk.Memory.PropertyHostCoherentBit
-	let	allocInfo = Vk.Memory.AllocateInfo {
-			Vk.Memory.allocateInfoNext = Nothing,
-			Vk.Memory.allocateInfoAllocationSize =
-				Vk.Memory.requirementsSize memRequirements,
-			Vk.Memory.allocateInfoMemoryTypeIndex = mti }
-	vbm <- lift $ Vk.Memory.allocate @() dvc allocInfo nil
+	let	allocInfo = Vk.Memory.M.AllocateInfo {
+			Vk.Memory.M.allocateInfoNext = Nothing,
+			Vk.Memory.M.allocateInfoAllocationSize =
+				Vk.Memory.M.requirementsSize memRequirements,
+			Vk.Memory.M.allocateInfoMemoryTypeIndex = mti }
+	vbm <- lift $ Vk.Memory.M.allocate @() dvc allocInfo nil
 	writeGlobal globalVertexBufferMemory vbm
 	lift $ Vk.Buffer.M.bindMemory dvc vb vbm 0
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
-findMemoryType :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
+findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO Word32
 findMemoryType typeFilter properties = do
 	phdvc <- readGlobal globalPhysicalDevice
@@ -892,11 +892,11 @@ findMemoryType typeFilter properties = do
 	pure $ maybe
 		(error "failed to find suitable memory type!") fromIntegral r
 
-suitable :: Vk.Memory.TypeBits -> Vk.Memory.PropertyFlags ->
+suitable :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	Vk.PhysicalDevice.MemoryProperties -> Int -> Bool
 suitable typeFilter properties memProperties i =
-	(typeFilter .&. Vk.Memory.TypeBits 1 `shiftL` i /= zeroBits) &&
-	(Vk.Memory.mTypePropertyFlags
+	(typeFilter .&. Vk.Memory.M.TypeBits 1 `shiftL` i /= zeroBits) &&
+	(Vk.Memory.M.mTypePropertyFlags
 		(Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
 			i) .&. properties == properties)
 
@@ -1074,7 +1074,7 @@ cleanup = do
 	vb <- readGlobal globalVertexBuffer
 	lift $ Vk.Buffer.M.destroy dvc vb nil
 	vbm <- readGlobal globalVertexBufferMemory
-	lift $ Vk.Memory.free dvc vbm nil
+	lift $ Vk.Memory.M.free dvc vbm nil
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
 	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)

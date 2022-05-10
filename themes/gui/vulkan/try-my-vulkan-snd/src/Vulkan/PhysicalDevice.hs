@@ -26,7 +26,7 @@ import Vulkan.PhysicalDevice.Struct
 import qualified Vulkan.Instance as Instance
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
-import qualified Vulkan.Memory as Memory
+import qualified Vulkan.Memory.Middle as Memory.M
 
 newtype P = P C.P deriving Show
 
@@ -151,16 +151,16 @@ enumerateExtensionProperties (P pdvc) mlnm = ($ pure) $ runContT do
 		peekArray extensionCount pAvailableExtensions
 
 data MemoryProperties = MemoryProperties {
-	memoryPropertiesMemoryTypes :: [Memory.MType],
-	memoryPropertiesMemoryHeaps :: [Memory.Heap] }
+	memoryPropertiesMemoryTypes :: [Memory.M.MType],
+	memoryPropertiesMemoryHeaps :: [Memory.M.Heap] }
 	deriving Show
 
 memoryPropertiesFromCore :: C.MemoryProperties -> MemoryProperties
 memoryPropertiesFromCore C.MemoryProperties {
 	C.memoryPropertiesMemoryTypeCount = fromIntegral -> mtc,
-	C.memoryPropertiesMemoryTypes = (Memory.mTypeFromCore <$>) -> mts,
+	C.memoryPropertiesMemoryTypes = (Memory.M.mTypeFromCore <$>) -> mts,
 	C.memoryPropertiesMemoryHeapCount = fromIntegral -> mhc,
-	C.memoryPropertiesMemoryHeaps = (Memory.heapFromCore <$>) -> mhs } =
+	C.memoryPropertiesMemoryHeaps = (Memory.M.heapFromCore <$>) -> mhs } =
 	MemoryProperties {
 		memoryPropertiesMemoryTypes = take mtc mts,
 		memoryPropertiesMemoryHeaps = take mhc mhs }

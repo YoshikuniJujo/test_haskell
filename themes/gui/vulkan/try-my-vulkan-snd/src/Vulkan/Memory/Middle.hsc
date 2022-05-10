@@ -5,7 +5,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Memory where
+module Vulkan.Memory.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
