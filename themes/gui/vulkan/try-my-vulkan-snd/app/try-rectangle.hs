@@ -1,0 +1,1248 @@
+{-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Main where
+
+import GHC.Generics
+import GHC.Tuple
+import Foreign.Storable
+import Foreign.Pointable
+import Control.Monad.Fix
+import Control.Monad.Reader
+import Control.Exception
+import Data.Bits
+import Data.Bool
+import Data.Maybe
+import Data.List
+import Data.Word
+import Data.IORef
+import Data.List.Length
+import Data.Color
+
+import Foreign.Storable.SizeAlignment
+
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Text as Txt
+import qualified Data.Text.IO as Txt
+import qualified Graphics.UI.GLFW as GlfwB
+import qualified Glfw
+import qualified Cglm
+import qualified Foreign.Storable.Generic
+
+import ThEnv
+import Shaderc
+import Shaderc.EnumAuto
+import Shaderc.TH
+
+import Vulkan.Base
+
+import qualified Vulkan as Vk
+import qualified Vulkan.Core as Vk.C
+import qualified Vulkan.Enum as Vk
+import qualified Vulkan.Exception as Vk
+import qualified Vulkan.Exception.Enum as Vk
+import qualified Vulkan.Instance as Vk.Instance
+import qualified Vulkan.Instance.Enum as Vk.Instance
+import qualified Vulkan.Khr as Vk.Khr
+import qualified Vulkan.Khr.Enum as Vk.Khr
+import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
+import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
+import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
+import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.Device as Vk.Device
+import qualified Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Vulkan.Khr.Surface.PhysicalDevice as
+	Vk.Khr.Surface.PhysicalDevice
+import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
+import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
+import qualified Vulkan.Image as Vk.Image
+import qualified Vulkan.Image.Enum as Vk.Image
+import qualified Vulkan.ImageView as Vk.ImageView
+import qualified Vulkan.ImageView.Enum as Vk.ImageView
+import qualified Vulkan.Component as Vk.Component
+import qualified Vulkan.Component.Enum as Vk.Component
+import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
+import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
+import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
+import qualified Vulkan.Pipeline.VertexInputState.Middle as
+	Vk.Ppl.VertexInputSt.M
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
+import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
+import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
+import qualified Vulkan.Sample as Vk.Sample
+import qualified Vulkan.Sample.Enum as Vk.Sample
+import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
+import qualified Vulkan.ColorComponent.Enum as Vk.ClrCmp
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
+import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Layout
+import qualified Vulkan.Attachment as Vk.Att
+import qualified Vulkan.Attachment.Enum as Vk.Att
+import qualified Vulkan.Subpass as Vk.Subpass
+import qualified Vulkan.Subpass.Enum as Vk.Subpass
+import qualified Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified Vulkan.RenderPass as Vk.RenderPass
+import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
+import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
+import qualified Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
+import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
+import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.Semaphore as Vk.Semaphore
+import qualified Vulkan.Fence as Vk.Fence
+import qualified Vulkan.Fence.Enum as Vk.Fence
+import qualified Vulkan.VertexInput as Vk.VertexInput
+import qualified Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Vulkan.Buffer.Enum as Vk.Buffer
+import qualified Vulkan.Memory.List as Vk.Memory.List
+import qualified Vulkan.Memory.Middle as Vk.Memory.M
+import qualified Vulkan.Memory.Enum as Vk.Memory
+import qualified Vulkan.Command.List as Vk.Cmd.List
+
+import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
+import Vulkan.Buffer.List (BList(..))
+
+main :: IO ()
+main = runReaderT run =<< newGlobal
+
+width, height :: Int
+width = 800; height = 600
+
+enableValidationLayers :: Bool
+enableValidationLayers =
+	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
+
+validationLayers :: [Txt.Text]
+validationLayers = [Vk.Khr.validationLayerName]
+
+maxFramesInFlight :: Int
+maxFramesInFlight = 2
+
+data Global = Global {
+	globalWindow :: IORef (Maybe GlfwB.Window),
+	globalInstance :: IORef Vk.Instance.I,
+	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
+	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
+	globalDevice :: IORef Vk.Device.D,
+	globalGraphicsQueue :: IORef Vk.Queue,
+	globalSurface :: IORef Vk.Khr.Surface.S,
+	globalPresentQueue :: IORef Vk.Queue,
+	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
+	globalSwapChainImages :: IORef [Vk.Image.I],
+	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
+	globalSwapChainExtent :: IORef Vk.C.Extent2d,
+	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
+	globalRenderPass :: IORef Vk.RenderPass.R,
+	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
+	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
+		(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+		'[Cglm.Vec2, Cglm.Vec3]),
+	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
+	globalCommandPool :: IORef Vk.CommandPool.C,
+	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
+		Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex) )],
+	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
+	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
+	globalInFlightFences :: IORef [Vk.Fence.F],
+	globalCurrentFrame :: IORef Int,
+	globalFramebufferResized :: IORef Bool,
+	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
+	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex),
+	globalIndexBuffer :: IORef (Vk.Buffer.List.B Word16),
+	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word16)
+	}
+
+readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
+readGlobal ref = lift . readIORef =<< asks ref
+
+writeGlobal :: (Global -> IORef a) -> a -> ReaderT Global IO ()
+writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
+
+newGlobal :: IO Global
+newGlobal = do
+	win <- newIORef Nothing
+	ist <- newIORef $ Vk.Instance.I NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
+	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
+	dvc <- newIORef $ Vk.Device.D NullPtr
+	gq <- newIORef $ Vk.Queue NullPtr
+	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
+	pq <- newIORef $ Vk.Queue NullPtr
+	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
+	scis <- newIORef []
+	scif <- newIORef Nothing
+	sce <- newIORef $ Vk.C.Extent2d 0 0
+	scivs <- newIORef []
+	rp <- newIORef $ Vk.RenderPass.R NullPtr
+	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
+	grppl <- newIORef Vk.Ppl.Graphics.GNull
+	scfbs <- newIORef []
+	cp <- newIORef $ Vk.CommandPool.C NullPtr
+	cbs <- newIORef []
+	iass <- newIORef []
+	rfss <- newIORef []
+	iffs <- newIORef []
+	cf <- newIORef 0
+	fbr <- newIORef False
+	vb <- newIORef $ Vk.Buffer.List.B NullPtr
+	vbm <- newIORef $ Vk.Device.MemoryList NullPtr
+	ib <- newIORef $ Vk.Buffer.List.B NullPtr
+	ibm <- newIORef $ Vk.Device.MemoryList NullPtr
+	pure Global {
+		globalWindow = win,
+		globalInstance = ist,
+		globalDebugMessenger = dmsgr,
+		globalPhysicalDevice = pdvc,
+		globalDevice = dvc,
+		globalGraphicsQueue = gq,
+		globalSurface = sfc,
+		globalPresentQueue = pq,
+		globalSwapChain = sc,
+		globalSwapChainImages = scis,
+		globalSwapChainImageFormat = scif,
+		globalSwapChainExtent = sce,
+		globalSwapChainImageViews = scivs,
+		globalRenderPass = rp,
+		globalPipelineLayout = ppllyt,
+		globalGraphicsPipeline = grppl,
+		globalSwapChainFramebuffers = scfbs,
+		globalCommandPool = cp,
+		globalCommandBuffers = cbs,
+		globalImageAvailableSemaphores = iass,
+		globalRenderFinishedSemaphores = rfss,
+		globalInFlightFences = iffs,
+		globalCurrentFrame = cf,
+		globalFramebufferResized = fbr,
+		globalVertexBuffer = vb,
+		globalVertexBufferMemory = vbm,
+		globalIndexBuffer = ib,
+		globalIndexBufferMemory = ibm
+		}
+
+run :: ReaderT Global IO ()
+run = do
+	initWindow
+	initVulkan
+	mainLoop
+	cleanup
+
+initWindow :: ReaderT Global IO ()
+initWindow = do
+	Just w <- lift do
+		True <- GlfwB.init
+		GlfwB.windowHint
+			$ GlfwB.WindowHint'ClientAPI GlfwB.ClientAPI'NoAPI
+		GlfwB.createWindow width height "Vulkan" Nothing Nothing
+	writeGlobal globalWindow $ Just w
+	g <- ask
+	lift $ GlfwB.setFramebufferSizeCallback w
+		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True)
+
+initVulkan :: ReaderT Global IO ()
+initVulkan = do
+	createInstance
+	when enableValidationLayers setupDebugMessenger
+	createSurface
+	pickPhysicalDevice
+	createLogicalDevice
+	createSwapChain
+	createImageViews
+	createRenderPass
+	createGraphicsPipeline
+	createFramebuffers
+	createCommandPool
+	createVertexBuffer
+	createIndexBuffer
+	createCommandBuffers
+	createSyncObjects
+
+createInstance :: ReaderT Global IO ()
+createInstance = do
+	lift . mapM_
+		(Txt.putStrLn . ("\t" <>) . Vk.extensionPropertiesExtensionName)
+		=<< lift (Vk.Instance.enumerateExtensionProperties Nothing)
+	when enableValidationLayers $ bool
+		(lift $ error "validation layers requested, but not available!")
+		(pure ())
+			=<< checkValidationLayerSupport
+	let	appInfo = Vk.ApplicationInfo {
+			Vk.applicationInfoNext = Nothing,
+			Vk.applicationInfoApplicationName = "Hello Triangle",
+			Vk.applicationInfoApplicationVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoEngineName = "No Engine",
+			Vk.applicationInfoEngineVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+	extensions <- getRequiredExtensions
+	let	createInfo = Vk.Instance.CreateInfo {
+			Vk.Instance.createInfoNext =
+				Just populateDebugMessengerCreateInfo,
+			Vk.Instance.createInfoFlags =
+				Vk.Instance.CreateFlagsZero,
+			Vk.Instance.createInfoApplicationInfo = appInfo,
+			Vk.Instance.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
+			Vk.Instance.createInfoEnabledExtensionNames = extensions
+			}
+	writeGlobal globalInstance
+		=<< lift (Vk.Instance.create @_ @() @() createInfo Nothing)
+
+checkValidationLayerSupport :: ReaderT Global IO Bool
+checkValidationLayerSupport = lift do
+	availableLayers <- Vk.Instance.enumerateLayerProperties
+	print validationLayers
+	print availableLayers
+	pure . null $ validationLayers \\
+		(Vk.layerPropertiesLayerName <$> availableLayers)
+
+getRequiredExtensions :: ReaderT Global IO [Txt.Text]
+getRequiredExtensions = lift do
+	glfwExtensions <-
+		(cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
+	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
+		enableValidationLayers glfwExtensions
+
+setupDebugMessenger :: ReaderT Global IO ()
+setupDebugMessenger = do
+	ist <- readGlobal globalInstance
+	writeGlobal globalDebugMessenger =<< lift (
+		Vk.Ext.DebugUtils.Messenger.create ist
+			populateDebugMessengerCreateInfo nil )
+
+populateDebugMessengerCreateInfo ::
+	Vk.Ext.DebugUtils.Messenger.CreateInfo () () () () () ()
+populateDebugMessengerCreateInfo = Vk.Ext.DebugUtils.Messenger.CreateInfo {
+	Vk.Ext.DebugUtils.Messenger.createInfoNext = Nothing,
+	Vk.Ext.DebugUtils.Messenger.createInfoFlags =
+		Vk.Ext.DebugUtils.Messenger.CreateFlagsZero,
+	Vk.Ext.DebugUtils.Messenger.createInfoMessageSeverity =
+		Vk.Ext.DebugUtils.Message.SeverityVerboseBit .|.
+		Vk.Ext.DebugUtils.Message.SeverityWarningBit .|.
+		Vk.Ext.DebugUtils.Message.SeverityErrorBit,
+	Vk.Ext.DebugUtils.Messenger.createInfoMessageType =
+		Vk.Ext.DebugUtils.Message.TypeGeneralBit .|.
+		Vk.Ext.DebugUtils.Message.TypeValidationBit .|.
+		Vk.Ext.DebugUtils.Message.TypePerformanceBit,
+	Vk.Ext.DebugUtils.Messenger.createInfoFnUserCallback = debugCallback,
+	Vk.Ext.DebugUtils.Messenger.createInfoUserData = Nothing }
+
+debugCallback :: Vk.Ext.DebugUtils.Messenger.FnCallback () () () () ()
+debugCallback _messageSeverity _messageType callbackData _userData = do
+	let	message = Vk.Ext.DebugUtils.Messenger.callbackDataMessage
+			callbackData
+	Txt.putStrLn $ "validation layer: " <> message
+	pure False
+
+createSurface :: ReaderT Global IO ()
+createSurface = do
+	win <- fromJust <$> readGlobal globalWindow
+	ist <- readGlobal globalInstance
+	writeGlobal globalSurface
+		=<< lift (Glfw.createWindowSurface ist win nil)
+
+pickPhysicalDevice :: ReaderT Global IO ()
+pickPhysicalDevice = do
+	ist <- readGlobal globalInstance
+	devices <- lift $ Vk.PhysicalDevice.enumerate ist
+	when (null devices) $ error "failed to find GPUs with Vulkan support!"
+	suitableDevices <- filterM isDeviceSuitable devices
+	case suitableDevices of
+		[] -> error "failed to find a suitable GPU!"
+		(pdvc : _) -> writeGlobal globalPhysicalDevice pdvc
+
+isDeviceSuitable :: Vk.PhysicalDevice.P -> ReaderT Global IO Bool
+isDeviceSuitable pdvc = do
+	_deviceProperties <- lift $ Vk.PhysicalDevice.getProperties pdvc
+	_deviceFeatures <- lift $ Vk.PhysicalDevice.getFeatures pdvc
+	is <- findQueueFamilies pdvc
+	extensionSupported <- lift $ checkDeviceExtensionSupport pdvc
+	swapChainSupport <- querySwapChainSupport pdvc
+	let	swapChainAdequate =
+			not (null $ formats swapChainSupport) &&
+			not (null $ presentModes swapChainSupport)
+	pure $ isComplete is && extensionSupported && swapChainAdequate
+
+deviceExtensions :: [Txt.Text]
+deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+
+checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
+checkDeviceExtensionSupport dvc = do
+	availableExtensions <-
+		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
+	pure . null $ deviceExtensions \\
+		(Vk.extensionPropertiesExtensionName <$> availableExtensions)
+
+findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
+findQueueFamilies device = do
+	queueFamilies <- lift
+		$ Vk.PhysicalDevice.getQueueFamilyProperties device
+	lift $ print queueFamilies
+	sfc <- readGlobal globalSurface
+	psi <- listToMaybe <$> lift (
+		filterM (\i -> isPresentSupport device i sfc)
+			[0 .. fromIntegral $ length queueFamilies - 1] )
+	pure QueueFamilyIndices {
+		graphicsFamily = fst <$> find
+			((/= zeroBits)
+				. (.&. Vk.QueueGraphicsBit)
+				. Vk.QueueFamily.propertiesQueueFlags
+				. snd )
+			(zip [0 ..] queueFamilies),
+		presentFamily = psi }
+
+isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
+isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
+
+data QueueFamilyIndices = QueueFamilyIndices {
+	graphicsFamily :: Maybe Word32,
+	presentFamily :: Maybe Word32 }
+
+isComplete :: QueueFamilyIndices -> Bool
+isComplete QueueFamilyIndices {
+	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
+
+data SwapChainSupportDetails = SwapChainSupportDetails {
+	capabilities :: Vk.Khr.Surface.Capabilities,
+	formats :: [Vk.Khr.Surface.Format],
+	presentModes :: [Vk.Khr.PresentMode] }
+
+querySwapChainSupport ::
+	Vk.PhysicalDevice.P -> ReaderT Global IO SwapChainSupportDetails
+querySwapChainSupport dvc = readGlobal globalSurface >>= \sfc ->
+	lift $ SwapChainSupportDetails
+		<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
+		<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
+		<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
+
+createLogicalDevice :: ReaderT Global IO ()
+createLogicalDevice = do
+	is <- findQueueFamilies =<< readGlobal globalPhysicalDevice
+	let	uniqueQueueFamilies = nub [
+			fromJust $ graphicsFamily is,
+			fromJust $ presentFamily is ]
+		queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
+			Vk.Device.Queue.createInfoNext = Nothing,
+			Vk.Device.Queue.createInfoFlags =
+				Vk.Device.Queue.CreateFlagsZero,
+			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
+			Vk.Device.Queue.createInfoQueuePriorities = [1] }
+		deviceFeatures = Vk.PhysicalDevice.featuresZero
+		createInfo = Vk.Device.CreateInfo {
+			Vk.Device.createInfoNext = Nothing,
+			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
+			Vk.Device.createInfoQueueCreateInfos =
+				queueCreateInfos <$> uniqueQueueFamilies,
+			Vk.Device.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
+			Vk.Device.createInfoEnabledExtensionNames =
+				deviceExtensions,
+			Vk.Device.createInfoEnabledFeatures =
+				Just deviceFeatures }
+	pdvc <- readGlobal globalPhysicalDevice
+	dvc <- lift (Vk.Device.create @() @() pdvc createInfo nil)
+	writeGlobal globalDevice dvc
+	writeGlobal globalGraphicsQueue =<< lift (
+		Vk.Device.getQueue dvc (fromJust $ graphicsFamily is) 0 )
+	writeGlobal globalPresentQueue =<< lift (
+		Vk.Device.getQueue dvc (fromJust $ presentFamily is) 0 )
+
+createSwapChain :: ReaderT Global IO ()
+createSwapChain = do
+	swapChainSupport <- querySwapChainSupport
+		=<< readGlobal globalPhysicalDevice
+	let	surfaceFormat =
+			chooseSwapSurfaceFormat $ formats swapChainSupport
+		presentMode =
+			chooseSwapPresentMode $ presentModes swapChainSupport
+	extent <- chooseSwapExtent $ capabilities swapChainSupport
+	sfc <- readGlobal globalSurface
+	is <- findQueueFamilies =<< readGlobal globalPhysicalDevice
+	let	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
+			. Vk.Khr.Surface.capabilitiesMaxImageCount
+			$ capabilities swapChainSupport
+		imageCount = clamp
+			(Vk.Khr.Surface.capabilitiesMinImageCount
+				(capabilities swapChainSupport) + 1)
+			0 maxImageCount
+		(ism, qfis) = if graphicsFamily is /= presentFamily is
+			then (Vk.SharingModeConcurrent, fromJust <$> [
+				graphicsFamily is, presentFamily is ])
+			else (Vk.SharingModeExclusive, [])
+		createInfo = Vk.Khr.Swapchain.CreateInfo {
+			Vk.Khr.Swapchain.createInfoNext = Nothing,
+			Vk.Khr.Swapchain.createInfoFlags =
+				Vk.Khr.Swapchain.CreateFlagsZero,
+			Vk.Khr.Swapchain.createInfoSurface = sfc,
+			Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
+			Vk.Khr.Swapchain.createInfoImageFormat =
+				Vk.Khr.Surface.formatFormat surfaceFormat,
+			Vk.Khr.Swapchain.createInfoImageColorSpace =
+				Vk.Khr.Surface.formatColorSpace surfaceFormat,
+			Vk.Khr.Swapchain.createInfoImageExtent = extent,
+			Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
+			Vk.Khr.Swapchain.createInfoImageUsage =
+				Vk.Image.UsageColorAttachmentBit,
+			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
+			Vk.Khr.Swapchain.createInfoPreTransform =
+				Vk.Khr.Surface.capabilitiesCurrentTransform
+					$ capabilities swapChainSupport,
+			Vk.Khr.Swapchain.createInfoCompositeAlpha =
+				Vk.Khr.CompositeAlphaOpaqueBit,
+			Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
+			Vk.Khr.Swapchain.createInfoClipped = True,
+			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
+	dvc <- readGlobal globalDevice
+	sc <- lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil
+	writeGlobal globalSwapChain sc
+	writeGlobal globalSwapChainImages
+		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
+	writeGlobal globalSwapChainImageFormat
+		. Just $ Vk.Khr.Surface.formatFormat surfaceFormat
+	writeGlobal globalSwapChainExtent extent
+	lift do	putStrLn "*** CREATE SWAP CHAIN ***"
+		print surfaceFormat
+		print presentMode
+		print extent
+
+onlyIf :: (a -> Bool) -> a -> Maybe a
+onlyIf p x | p x = Just x | otherwise = Nothing
+
+chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
+chooseSwapSurfaceFormat = \case
+	availableFormats@(af0 : _) -> fromMaybe af0
+		$ find preferredSwapSurfaceFormat availableFormats
+	_ -> error "no available swap surface formats"
+
+preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
+preferredSwapSurfaceFormat f =
+	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+
+chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
+chooseSwapPresentMode =
+	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
+
+chooseSwapExtent :: Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
+chooseSwapExtent caps
+	| Vk.C.extent2dWidth curExt /= maxBound = pure curExt
+	| otherwise = do
+		(fromIntegral -> w, fromIntegral -> h) <-
+			lift . GlfwB.getFramebufferSize
+				=<< fromJust <$> readGlobal globalWindow
+		pure $ Vk.C.Extent2d
+			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
+			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
+	where
+	curExt = Vk.Khr.Surface.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
+
+clamp :: Ord a => a -> a -> a -> a
+clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
+
+createImageViews :: ReaderT Global IO ()
+createImageViews = writeGlobal globalSwapChainImageViews =<<
+	(createImageView1 `mapM`) =<< readGlobal globalSwapChainImages
+
+createImageView1 :: Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
+createImageView1 sci = do
+	scif <- fromJust <$> readGlobal globalSwapChainImageFormat
+	let	createInfo = Vk.ImageView.CreateInfo {
+			Vk.ImageView.createInfoNext = Nothing,
+			Vk.ImageView.createInfoFlags =
+				Vk.ImageView.CreateFlagsZero,
+			Vk.ImageView.createInfoImage = sci,
+			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
+			Vk.ImageView.createInfoFormat = scif,
+			Vk.ImageView.createInfoComponents = components,
+			Vk.ImageView.createInfoSubresourceRange =
+				subresourceRange }
+		components = Vk.Component.Mapping {
+			Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
+		subresourceRange = Vk.Image.SubresourceRange {
+			Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
+			Vk.Image.subresourceRangeBaseMipLevel = 0,
+			Vk.Image.subresourceRangeLevelCount = 1,
+			Vk.Image.subresourceRangeBaseArrayLayer = 0,
+			Vk.Image.subresourceRangeLayerCount = 1 }
+	dvc <- readGlobal globalDevice
+	lift $ Vk.ImageView.create @() dvc createInfo nil
+
+createRenderPass :: ReaderT Global IO ()
+createRenderPass = do
+	Just scif <- readGlobal globalSwapChainImageFormat
+	let	colorAttachment = Vk.Att.Description {
+			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionFormat = scif,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp =
+				Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout =
+				Vk.Image.LayoutUndefined,
+			Vk.Att.descriptionFinalLayout =
+				Vk.Image.LayoutPresentSrcKhr }
+		colorAttachmentRef = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = Vk.Att.A 0,
+			Vk.Att.referenceLayout =
+				Vk.Image.LayoutColorAttachmentOptimal }
+		subpass = Vk.Subpass.Description {
+			Vk.Subpass.descriptionFlags =
+				Vk.Subpass.DescriptionFlagsZero,
+			Vk.Subpass.descriptionPipelineBindPoint =
+				Vk.Ppl.BindPointGraphics,
+			Vk.Subpass.descriptionInputAttachments = [],
+			Vk.Subpass.descriptionColorAndResolveAttachments =
+				Left [colorAttachmentRef],
+			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+			Vk.Subpass.descriptionPreserveAttachments = [] }
+		dependency = Vk.Subpass.Dependency {
+			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
+			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
+			Vk.Subpass.dependencySrcStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Subpass.dependencySrcAccessMask = Vk.AccessFlagsZero,
+			Vk.Subpass.dependencyDstStageMask =
+				Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.Subpass.dependencyDstAccessMask =
+				Vk.AccessColorAttachmentWriteBit,
+			Vk.Subpass.dependencyDependencyFlags =
+				Vk.DependencyFlagsZero }
+		renderPassInfo = Vk.RenderPass.CreateInfo {
+			Vk.RenderPass.createInfoNext = Nothing,
+			Vk.RenderPass.createInfoFlags =
+				Vk.RenderPass.CreateFlagsZero,
+			Vk.RenderPass.createInfoAttachments = [colorAttachment],
+			Vk.RenderPass.createInfoSubpasses = [subpass],
+			Vk.RenderPass.createInfoDependencies = [dependency] }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalRenderPass
+		=<< lift (Vk.RenderPass.create @() dvc renderPassInfo nil)
+
+createGraphicsPipeline :: ReaderT Global IO ()
+createGraphicsPipeline = do
+	vertShaderModule <- createShaderModule glslVertexShaderMain
+	fragShaderModule <- createShaderModule glslFragmentShaderMain
+
+	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
+				Vk.Ppl.ShaderStage.CreateFlagsZero,
+			Vk.Ppl.ShaderStage.createInfoStage =
+				Vk.Shader.Stage.VertexBit,
+			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
+				Nothing }
+		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+			Vk.Ppl.ShaderStage.createInfoFlags =
+				Vk.Ppl.ShaderStage.CreateFlagsZero,
+			Vk.Ppl.ShaderStage.createInfoStage =
+				Vk.Shader.Stage.FragmentBit,
+			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShaderStage.createInfoName = "main",
+			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
+				Nothing }
+		shaderStages =
+			vertShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
+			fragShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
+			Vk.Ppl.ShaderStage.CreateInfoNil
+		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
+			()
+			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+			'[Cglm.Vec2, Cglm.Vec3]
+		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
+			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
+			Vk.Ppl.VertexInputSt.createInfoFlags =
+				Vk.Ppl.VertexInputSt.M.CreateFlagsZero }
+		inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
+			Vk.Ppl.InpAsmbSt.createInfoNext = Nothing,
+			Vk.Ppl.InpAsmbSt.createInfoFlags =
+				Vk.Ppl.InpAsmbSt.CreateFlagsZero,
+			Vk.Ppl.InpAsmbSt.createInfoTopology =
+				Vk.PrimitiveTopologyTriangleList,
+			Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable =
+				False }
+	sce <- readGlobal globalSwapChainExtent
+	let	viewport = Vk.C.Viewport {
+			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
+			Vk.C.viewportWidth =
+				fromIntegral $ Vk.C.extent2dWidth sce,
+			Vk.C.viewportHeight =
+				fromIntegral $ Vk.C.extent2dHeight sce,
+			Vk.C.viewportMinDepth = 0, Vk.C.viewportMaxDepth = 1 }
+		scissor = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+			Vk.C.rect2dExtent = sce }
+		viewportState = Vk.Ppl.ViewportSt.CreateInfo {
+			Vk.Ppl.ViewportSt.createInfoNext = Nothing,
+			Vk.Ppl.ViewportSt.createInfoFlags =
+				Vk.Ppl.ViewportSt.CreateFlagsZero,
+			Vk.Ppl.ViewportSt.createInfoViewports = [viewport],
+			Vk.Ppl.ViewportSt.createInfoScissors = [scissor] }
+		rasterizer = Vk.Ppl.RstSt.CreateInfo {
+			Vk.Ppl.RstSt.createInfoNext = Nothing,
+			Vk.Ppl.RstSt.createInfoFlags =
+				Vk.Ppl.RstSt.CreateFlagsZero,
+			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
+			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
+			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
+			Vk.Ppl.RstSt.createInfoLineWidth = 1,
+			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+			Vk.Ppl.RstSt.createInfoFrontFace =
+				Vk.FrontFaceClockwise,
+			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
+			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+		multisampling = Vk.Ppl.MulSmplSt.CreateInfo {
+			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
+			Vk.Ppl.MulSmplSt.createInfoFlags =
+				Vk.Ppl.MulSmplSt.CreateFlagsZero,
+			Vk.Ppl.MulSmplSt.createInfoSampleShadingEnable = False,
+			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
+				Vk.Sample.CountAndMask
+					Vk.Sample.Count1Bit Nothing,
+			Vk.Ppl.MulSmplSt.createInfoMinSampleShading = 1,
+			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
+				False,
+			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
+		colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
+			Vk.Ppl.ClrBlndAtt.stateColorWriteMask =
+				Vk.ClrCmp.RBit .|. Vk.ClrCmp.GBit .|.
+				Vk.ClrCmp.BBit .|. Vk.ClrCmp.ABit,
+			Vk.Ppl.ClrBlndAtt.stateBlendEnable = False,
+			Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor =
+				Vk.BlendFactorOne,
+			Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
+			Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor =
+				Vk.BlendFactorOne,
+			Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
+		colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
+			Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+			Vk.Ppl.ClrBlndSt.createInfoFlags =
+				Vk.Ppl.ClrBlndSt.CreateFlagsZero,
+			Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
+			Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,
+			Vk.Ppl.ClrBlndSt.createInfoAttachments =
+				[colorBlendAttachment],
+			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
+				fromJust $ rgbaDouble 0 0 0 0 }
+
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = Nothing,
+			Vk.Ppl.Layout.createInfoFlags =
+				Vk.Ppl.Layout.CreateFlagsZero,
+			Vk.Ppl.Layout.createInfoSetLayouts = [],
+			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalPipelineLayout
+		=<< lift (Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil)
+
+	ppllyt <- readGlobal globalPipelineLayout
+	rp <- readGlobal globalRenderPass
+	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
+			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
+			'[(), ()] ()
+			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+			'[Cglm.Vec2, Cglm.Vec3]
+			() () () () () () () () () '[]
+		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
+			Vk.Ppl.Graphics.createInfoNext = Nothing,
+			Vk.Ppl.Graphics.createInfoFlags =
+				Vk.Ppl.CreateFlagsZero,
+			Vk.Ppl.Graphics.createInfoStages = shaderStages,
+			Vk.Ppl.Graphics.createInfoVertexInputState =
+				Just vertexInputInfo,
+			Vk.Ppl.Graphics.createInfoInputAssemblyState =
+				Just inputAssembly,
+			Vk.Ppl.Graphics.createInfoViewportState =
+				Just viewportState,
+			Vk.Ppl.Graphics.createInfoRasterizationState =
+				Just rasterizer,
+			Vk.Ppl.Graphics.createInfoMultisampleState =
+				Just multisampling,
+			Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
+			Vk.Ppl.Graphics.createInfoColorBlendState =
+				Just colorBlending,
+			Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
+			Vk.Ppl.Graphics.createInfoLayout = ppllyt,
+			Vk.Ppl.Graphics.createInfoRenderPass = rp,
+			Vk.Ppl.Graphics.createInfoSubpass = 0,
+			Vk.Ppl.Graphics.createInfoBasePipelineHandle =
+				Vk.Ppl.Graphics.GNull,
+			Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
+			Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+
+	gpl `Vk.Ppl.Graphics.PCons` Vk.Ppl.Graphics.PNil <- lift
+		$ Vk.Ppl.Graphics.create
+			dvc Nothing
+			(pipelineInfo `Vk.Ppl.Graphics.CreateInfoCons`
+				Vk.Ppl.Graphics.CreateInfoNil)
+			nil
+	writeGlobal globalGraphicsPipeline gpl
+
+	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
+		Vk.Shader.Module.destroy dvc vertShaderModule nil
+
+createShaderModule :: Spv sknd -> ReaderT Global IO (Vk.Shader.Module.M sknd)
+createShaderModule cd = do
+	let	createInfo = Vk.Shader.Module.CreateInfo {
+			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoFlags =
+				Vk.Shader.Module.CreateFlagsZero,
+			Vk.Shader.Module.createInfoCode = cd }
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Shader.Module.create @() dvc createInfo nil
+
+createFramebuffers :: ReaderT Global IO ()
+createFramebuffers = writeGlobal globalSwapChainFramebuffers
+	=<< (createFramebuffer1 `mapM`) =<< readGlobal globalSwapChainImageViews
+
+createFramebuffer1 :: Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
+createFramebuffer1 attachment = do
+	rp <- readGlobal globalRenderPass
+	Vk.C.Extent2d {
+		Vk.C.extent2dWidth = w,
+		Vk.C.extent2dHeight = h } <- readGlobal globalSwapChainExtent
+	let	framebufferInfo = Vk.Framebuffer.CreateInfo {
+			Vk.Framebuffer.createInfoNext = Nothing,
+			Vk.Framebuffer.createInfoFlags =
+				Vk.Framebuffer.CreateFlagsZero,
+			Vk.Framebuffer.createInfoRenderPass = rp,
+			Vk.Framebuffer.createInfoAttachments = [attachment],
+			Vk.Framebuffer.createInfoWidth = w,
+			Vk.Framebuffer.createInfoHeight = h,
+			Vk.Framebuffer.createInfoLayers = 1 }
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Framebuffer.create @() dvc framebufferInfo nil
+
+createCommandPool :: ReaderT Global IO ()
+createCommandPool = do
+	pdvc <- readGlobal globalPhysicalDevice
+	queueFamilyIndices <- findQueueFamilies pdvc
+	let	poolInfo = Vk.CommandPool.CreateInfo {
+			Vk.CommandPool.createInfoNext = Nothing,
+			Vk.CommandPool.createInfoFlags =
+				Vk.CommandPool.CreateResetCommandBufferBit,
+			Vk.CommandPool.createInfoQueueFamilyIndex =
+				fromJust $ graphicsFamily queueFamilyIndices }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalCommandPool
+		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+
+createVertexBuffer :: ReaderT Global IO ()
+createVertexBuffer = do
+	dvc <- readGlobal globalDevice
+	(sb, sbm) <- createBuffer (length vertices)
+		Vk.Buffer.UsageTransferSrcBit $
+		Vk.Memory.PropertyHostVisibleBit .|.
+		Vk.Memory.PropertyHostCoherentBit
+	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero vertices
+	(vb, vbm) <- createBuffer (length vertices)
+		(Vk.Buffer.UsageTransferDstBit .|.
+			Vk.Buffer.UsageVertexBufferBit)
+		Vk.Memory.PropertyDeviceLocalBit
+	copyBuffer sb vb (length vertices)
+	lift do	Vk.Buffer.List.destroy dvc sb nil
+		Vk.Memory.List.free dvc sbm nil
+	writeGlobal globalVertexBuffer vb
+	writeGlobal globalVertexBufferMemory vbm
+
+createIndexBuffer :: ReaderT Global IO ()
+createIndexBuffer = do
+	dvc <- readGlobal globalDevice
+	(sb, sbm) <- createBuffer (length indices)
+		Vk.Buffer.UsageTransferSrcBit $
+		Vk.Memory.PropertyHostVisibleBit .|.
+		Vk.Memory.PropertyHostCoherentBit
+	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero indices
+	(ib, ibm) <- createBuffer (length indices)
+		(Vk.Buffer.UsageTransferDstBit .|.
+			Vk.Buffer.UsageIndexBufferBit)
+		Vk.Memory.PropertyDeviceLocalBit
+	copyBuffer sb ib (length indices)
+	lift do	Vk.Buffer.List.destroy dvc sb nil
+		Vk.Memory.List.free dvc sbm nil
+	writeGlobal globalIndexBuffer ib
+	writeGlobal globalIndexBufferMemory ibm
+
+createBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
+	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO (Vk.Buffer.List.B v, Vk.Device.MemoryList v)
+createBuffer ln usage properties = do
+	let	bufferInfo = Vk.Buffer.List.CreateInfo {
+			Vk.Buffer.List.createInfoNext = Nothing,
+			Vk.Buffer.List.createInfoFlags =
+				Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.List.createInfoLength = ln,
+			Vk.Buffer.List.createInfoUsage = usage,
+			Vk.Buffer.List.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
+	dvc <- readGlobal globalDevice
+	b <- lift $ Vk.Buffer.List.create @() dvc bufferInfo nil
+	memRequirements <- lift $ Vk.Buffer.List.getMemoryRequirements dvc b
+	mti <- findMemoryType
+		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
+		properties
+	let	allocInfo = Vk.Memory.List.AllocateInfo {
+			Vk.Memory.List.allocateInfoNext = Nothing,
+			Vk.Memory.List.allocateInfoMemoryTypeIndex = mti }
+	bm <- lift $ Vk.Memory.List.allocate @() dvc b allocInfo nil
+	lift $ Vk.Buffer.List.bindMemory dvc b bm
+	pure (b, bm)
+
+copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
+	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
+copyBuffer srcBuffer dstBuffer ln = do
+	cp <- readGlobal globalCommandPool
+	dvc <- readGlobal globalDevice
+	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.LevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandPool = cp,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+		beginInfo = Vk.CommandBuffer.BeginInfo {
+			Vk.CommandBuffer.beginInfoNext = Nothing,
+			Vk.CommandBuffer.beginInfoFlags =
+				Vk.CommandBuffer.UsageOneTimeSubmitBit,
+			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
+		copyRegion = Vk.Buffer.List.Copy {
+			Vk.Buffer.List.copyLength = ln }
+	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+			Vk.submitInfoCommandBuffers = [commandBuffer],
+			Vk.submitInfoSignalSemaphores = [] }
+	gq <- readGlobal globalGraphicsQueue
+	lift do	Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
+		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
+		Vk.CommandBuffer.end commandBuffer
+		Vk.queueSubmit @() gq [submitInfo] Nothing
+		Vk.queueWaitIdle gq
+		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
+
+findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO Word32
+findMemoryType typeFilter properties = do
+	phdvc <- readGlobal globalPhysicalDevice
+	memProperties <- lift $ Vk.PhysicalDevice.getMemoryProperties phdvc
+	let	r = find (suitable typeFilter properties memProperties)
+			[0 .. length (
+				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+					memProperties) - 1]
+	lift $ print r
+	pure $ maybe
+		(error "failed to find suitable memory type!") fromIntegral r
+
+suitable :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
+	Vk.PhysicalDevice.MemoryProperties -> Int -> Bool
+suitable typeFilter properties memProperties i =
+	(typeFilter .&. Vk.Memory.M.TypeBits 1 `shiftL` i /= zeroBits) &&
+	(Vk.Memory.M.mTypePropertyFlags
+		(Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
+			i) .&. properties == properties)
+
+size :: forall a . SizeAlignmentList a => a -> Size
+size _ = fst (wholeSizeAlignment @a)
+
+createCommandBuffers :: ReaderT Global IO ()
+createCommandBuffers = do
+	cp <- readGlobal globalCommandPool
+	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoCommandPool = cp,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.LevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount =
+				fromIntegral maxFramesInFlight }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalCommandBuffers
+		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
+
+createSyncObjects :: ReaderT Global IO ()
+createSyncObjects = do
+	let	semaphoreInfo = Vk.Semaphore.CreateInfo {
+			Vk.Semaphore.createInfoNext = Nothing,
+			Vk.Semaphore.createInfoFlags =
+				Vk.Semaphore.CreateFlagsZero }
+		fenceInfo = Vk.Fence.CreateInfo {
+			Vk.Fence.createInfoNext = Nothing,
+			Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+	dvc <- readGlobal globalDevice
+	writeGlobal globalImageAvailableSemaphores
+		=<< lift (replicateM maxFramesInFlight
+			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
+	writeGlobal globalRenderFinishedSemaphores
+		=<< lift (replicateM maxFramesInFlight
+			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
+	writeGlobal globalInFlightFences
+		=<< lift (replicateM maxFramesInFlight
+			$ Vk.Fence.create @() dvc fenceInfo nil)
+
+recordCommandBuffer :: Vk.CommandBuffer.C (Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex)) -> Word32 -> ReaderT Global IO ()
+recordCommandBuffer cb imageIndex = do
+	let	beginInfo = Vk.CommandBuffer.BeginInfo {
+			Vk.CommandBuffer.beginInfoNext = Nothing,
+			Vk.CommandBuffer.beginInfoFlags =
+				Vk.CommandBuffer.UsageFlagsZero,
+			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
+	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
+	rp <- readGlobal globalRenderPass
+	scfbs <- readGlobal globalSwapChainFramebuffers
+	sce <- readGlobal globalSwapChainExtent
+	let	renderPassInfo = Vk.RenderPass.BeginInfo {
+			Vk.RenderPass.beginInfoNext = Nothing,
+			Vk.RenderPass.beginInfoRenderPass = rp,
+			Vk.RenderPass.beginInfoFramebuffer =
+				scfbs `genericIndex` imageIndex,
+			Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
+				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+				Vk.C.rect2dExtent = sce },
+			Vk.RenderPass.beginInfoClearValues = [
+				Vk.ClearValueColor
+					. fromJust $ rgbaDouble 0 0 0 1 ] }
+	lift $ Vk.Cmd.beginRenderPass @()
+		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
+		cb renderPassInfo Vk.Subpass.ContentsInline
+	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
+		=<< readGlobal globalGraphicsPipeline
+	vb <- readGlobal globalVertexBuffer
+	ib <- readGlobal globalIndexBuffer
+	lift do	Vk.Cmd.List.bindVertexBuffers cb
+			((vb, 0) :!: BNil :: BList '[Vertex])
+		Vk.Cmd.List.bindIndexBuffer cb ib Vk.IndexTypeUint16
+
+	lift do	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
+		Vk.Cmd.endRenderPass cb
+		Vk.CommandBuffer.end cb
+
+mainLoop :: ReaderT Global IO ()
+mainLoop = do
+	w <- fromJust <$> readGlobal globalWindow
+	fix \loop -> bool (pure ()) loop =<< do
+		lift GlfwB.pollEvents
+		g <- ask
+		lift $ catchAndRecreateSwapChain g $ drawFrame `runReaderT` g
+		not <$> lift (GlfwB.windowShouldClose w)
+	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
+
+drawFrame :: ReaderT Global IO ()
+drawFrame = do
+	cf <- readGlobal globalCurrentFrame
+	dvc <- readGlobal globalDevice
+	iff <- (!! cf) <$> readGlobal globalInFlightFences
+	lift $ Vk.Fence.waitForFs dvc [iff] True maxBound
+	sc <- readGlobal globalSwapChain
+	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
+	imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+		dvc sc uint64Max (Just ias) Nothing
+	lift $ Vk.Fence.resetFs dvc [iff]
+	cb <- (!! cf) <$> readGlobal globalCommandBuffers
+	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
+	recordCommandBuffer cb imageIndex
+	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks =
+				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
+			Vk.submitInfoCommandBuffers = [cb],
+			Vk.submitInfoSignalSemaphores = [rfs] }
+	gq <- readGlobal globalGraphicsQueue
+	lift . Vk.queueSubmit @() gq [submitInfo] $ Just iff
+	let	presentInfo = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoNext = Nothing,
+			Vk.Khr.presentInfoWaitSemaphores = [rfs],
+			Vk.Khr.presentInfoSwapchainImageIndices =
+				[(sc, imageIndex)] }
+	pq <- readGlobal globalPresentQueue
+	g <- ask
+	lift . catchAndRecreateSwapChain g . catchAndSerialize
+		$ Vk.Khr.queuePresent @() pq presentInfo
+	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
+
+catchAndSerialize :: IO () -> IO ()
+catchAndSerialize =
+	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
+
+catchAndRecreateSwapChain :: Global -> IO () -> IO ()
+catchAndRecreateSwapChain g act = catchJust
+	(\case	Vk.ErrorOutOfDateKhr -> Just ()
+		Vk.SuboptimalKhr -> Just ()
+		_ -> Nothing)
+	act
+	(\_ -> do
+		fbr <- readIORef $ globalFramebufferResized g
+		when fbr do
+			writeIORef (globalFramebufferResized g) False
+			recreateSwapChain `runReaderT` g)
+
+doWhile_ :: IO Bool -> IO ()
+doWhile_ act = (`when` doWhile_ act) =<< act
+
+recreateSwapChain :: ReaderT Global IO ()
+recreateSwapChain = do
+	w <- fromJust <$> readGlobal globalWindow
+	lift do	(wdth, hght) <- GlfwB.getFramebufferSize w
+		when (wdth == 0 || hght == 0) $ doWhile_ do
+			GlfwB.waitEvents
+			(wd, hg) <- GlfwB.getFramebufferSize w
+			pure $ wd == 0 || hg == 0
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Device.waitIdle dvc
+
+	cleanupSwapChain
+
+	createSwapChain
+	createImageViews
+	createRenderPass
+	createGraphicsPipeline
+	createFramebuffers
+
+cleanupSwapChain :: ReaderT Global IO ()
+cleanupSwapChain = do
+	dvc <- readGlobal globalDevice
+	scfbs <- readGlobal globalSwapChainFramebuffers
+	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
+	grppl <- readGlobal globalGraphicsPipeline
+	lift $ Vk.Ppl.Graphics.destroy dvc grppl nil
+	ppllyt <- readGlobal globalPipelineLayout
+	lift $ Vk.Ppl.Layout.destroy dvc ppllyt nil
+	rp <- readGlobal globalRenderPass
+	lift $ Vk.RenderPass.destroy dvc rp nil
+	scivs <- readGlobal globalSwapChainImageViews
+	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
+	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
+		=<< readGlobal globalSwapChain
+
+cleanup :: ReaderT Global IO ()
+cleanup = do
+	cleanupSwapChain
+	dvc <- readGlobal globalDevice
+
+	vb <- readGlobal globalVertexBuffer
+	vbm <- readGlobal globalVertexBufferMemory
+	lift do	Vk.Buffer.List.destroy dvc vb nil
+		Vk.Memory.List.free dvc vbm nil
+	ib <- readGlobal globalIndexBuffer
+	ibm <- readGlobal globalIndexBufferMemory
+	lift do	Vk.Buffer.List.destroy dvc ib nil
+		Vk.Memory.List.free dvc ibm nil
+
+	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+		=<< readGlobal globalImageAvailableSemaphores
+	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+		=<< readGlobal globalRenderFinishedSemaphores
+	lift . (flip (Vk.Fence.destroy dvc) nil `mapM_`)
+		=<< readGlobal globalInFlightFences
+	lift . flip (Vk.CommandPool.destroy dvc) nil
+		=<< readGlobal globalCommandPool
+	lift $ Vk.Device.destroy dvc nil
+
+	ist <- readGlobal globalInstance
+	when enableValidationLayers
+		. lift . flip (Vk.Ext.DebugUtils.Messenger.destroy ist) nil
+		=<< readGlobal globalDebugMessenger
+	lift . flip (Vk.Khr.Surface.destroy ist) nil
+		=<< readGlobal globalSurface
+	lift $ Vk.Instance.destroy ist nil
+
+	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
+	lift GlfwB.terminate
+
+data Vertex = Vertex {
+	vertexPos :: Cglm.Vec2,
+	vertexColor :: Cglm.Vec3 }
+	deriving (Show, Generic)
+
+instance SizeAlignmentList Vertex
+
+instance SizeAlignmentListUntil Cglm.Vec2 Vertex
+instance SizeAlignmentListUntil Cglm.Vec3 Vertex
+
+instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
+	formatOf = Vk.FormatR32g32Sfloat
+
+instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
+	formatOf = Vk.FormatR32g32b32Sfloat
+
+instance Foreign.Storable.Generic.G Vertex where
+
+vertices :: [Vertex]
+vertices = [
+	Vertex (Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+
+indices :: [Word16]
+indices = [0, 1, 2, 2, 3, 0]
+
+[glslVertexShader|
+
+#version 450
+
+layout(location = 0) in vec2 inPosition;
+layout(location = 1) in vec3 inColor;
+
+layout(location = 0) out vec3 fragColor;
+
+void
+main()
+{
+	gl_Position = vec4(inPosition, 0.0, 1.0);
+	fragColor = inColor;
+}
+
+|]
+
+[glslFragmentShader|
+
+#version 450
+
+layout(location = 0) in vec3 fragColor;
+
+layout(location = 0) out vec4 outColor;
+
+void
+main()
+{
+	outColor = vec4(fragColor, 1.0);
+}
+
+|]

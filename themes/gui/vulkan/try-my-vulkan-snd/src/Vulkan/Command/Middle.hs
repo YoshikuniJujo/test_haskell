@@ -9,6 +9,8 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Enum
+
 import qualified Vulkan.CommandBuffer as CommandBuffer
 import qualified Vulkan.Buffer.Middle as Buffer
 import qualified Vulkan.Buffer.Core as Buffer.C
@@ -32,3 +34,9 @@ copyBuffer (CommandBuffer.C c) (Buffer.B s) (Buffer.B d)
 	prs <- ContT $ allocaArray rc
 	lift do	pokeArray prs rs
 		C.copyBuffer c s d (fromIntegral rc) prs
+
+bindIndexBuffer ::
+	CommandBuffer.C vs -> Buffer.B -> Device.Size -> IndexType -> IO ()
+bindIndexBuffer
+	(CommandBuffer.C cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
+	C.bindIndexBuffer cb ib sz it

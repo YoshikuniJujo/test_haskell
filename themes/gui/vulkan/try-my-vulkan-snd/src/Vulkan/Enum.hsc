@@ -861,6 +861,15 @@ enum "DescriptorType" ''#{type VkDescriptorType}
 		#{const VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT}),
 	("DescriptorTypeMaxEnum", #{const VK_DESCRIPTOR_TYPE_MAX_ENUM}) ]
 
+enum "IndexType" ''#{type VkIndexType}
+		[''Show, ''Eq, ''Storable] [
+	("IndexTypeUint16", #{const VK_INDEX_TYPE_UINT16}),
+	("IndexTypeUint32", #{const VK_INDEX_TYPE_UINT32}),
+	("IndexTypeNoneKhr", #{const VK_INDEX_TYPE_NONE_KHR}),
+	("IndexTypeUint8Ext", #{const VK_INDEX_TYPE_UINT8_EXT}),
+	("IndexTypeNoneNv", #{const VK_INDEX_TYPE_NONE_NV}),
+	("IndexTypeMaxEnum", #{const VK_INDEX_TYPE_MAX_ENUM}) ]
+
 enum "AccessFlagBits" ''#{type VkAccessFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("AccessFlagsZero", 0),

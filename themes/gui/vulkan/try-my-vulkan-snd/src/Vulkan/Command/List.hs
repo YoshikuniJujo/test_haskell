@@ -15,6 +15,8 @@ import qualified Foreign.Storable.Generic
 import Data.Generics.Flatten (Flatten)
 import Vulkan.Pipeline.VertexInputState.BindingStrideList (Simplify, MapUnList, MapSubType)
 
+import Vulkan.Enum
+
 import qualified Vulkan.Buffer.List as Buffer
 import qualified Vulkan.CommandBuffer as CommandBuffer
 import qualified Vulkan.Command.Middle as M
@@ -30,3 +32,6 @@ copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	CommandBuffer.C vs -> Buffer.B v -> Buffer.B v -> Buffer.Copy v -> IO ()
 copyBuffer cb s d cp = M.copyBuffer
 	cb (Buffer.bToMiddle s) (Buffer.bToMiddle d) [Buffer.copyToCore cp]
+
+bindIndexBuffer :: CommandBuffer.C vs -> Buffer.B v -> IndexType -> IO ()
+bindIndexBuffer cb ib tp = M.bindIndexBuffer cb (Buffer.bToMiddle ib) 0 tp

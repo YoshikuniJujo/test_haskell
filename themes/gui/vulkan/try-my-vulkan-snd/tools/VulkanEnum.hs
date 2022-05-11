@@ -40,7 +40,8 @@ noZeros = [
 	("BlendOp", "VkBlendOp", ["Show", "Eq", "Storable"]),
 	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"]),
 	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"]),
-	("DescriptorType", "VkDescriptorType", ["Show", "Eq", "Storable"])
+	("DescriptorType", "VkDescriptorType", ["Show", "Eq", "Storable"]),
+	("IndexType", "VkIndexType", ["Show", "Eq", "Storable"])
 	]
 
 zeros :: [([(String, Const)], (HaskellName, CName, [DerivName]))]

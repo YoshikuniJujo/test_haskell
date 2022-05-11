@@ -87,3 +87,9 @@ data SampleData = SD Word8 Int16 Char deriving (Show, Generic)
 
 instance G SampleData
 instance SizeAlignmentList SampleData
+
+instance G Word16 where
+	gSizeOf = sizeOf
+	gAlignment = alignment
+	gPeek = peek
+	gPoke = poke

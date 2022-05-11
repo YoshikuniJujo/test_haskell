@@ -7,6 +7,7 @@ module Vulkan.Command where
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
+import Data.Int
 
 import Vulkan
 
@@ -31,6 +32,11 @@ bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
 
 draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.C cb) vc ic fv fi = C.draw cb vc ic fv fi
+
+drawIndexed :: CommandBuffer.C vs ->
+	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
+drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
+	C.drawIndexed cb idxc istc fidx vo fist
 
 endRenderPass :: CommandBuffer.C vs -> IO ()
 endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
