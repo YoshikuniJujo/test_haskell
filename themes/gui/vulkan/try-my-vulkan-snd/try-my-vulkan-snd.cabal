@@ -33,6 +33,7 @@ library
       Foreign.Storable.Generic
       Glfw
       ThEnv
+      TypeLevel.List
       Vulkan
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
@@ -47,6 +48,7 @@ library
       Vulkan.ColorComponent.Enum
       Vulkan.Command
       Vulkan.Command.Core
+      Vulkan.Command.List
       Vulkan.Command.Middle
       Vulkan.CommandBuffer
       Vulkan.CommandBuffer.Core
