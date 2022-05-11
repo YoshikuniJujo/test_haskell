@@ -895,7 +895,7 @@ drawFrame g@Global {
 				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
 			Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
 			Vk.submitInfoSignalSemaphores = [rfs] }
-	Vk.queueSubmit @() gq [submitInfo] iff
+	Vk.queueSubmit @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],

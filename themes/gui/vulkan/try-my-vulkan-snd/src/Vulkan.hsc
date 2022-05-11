@@ -257,13 +257,14 @@ submitInfoToCore SubmitInfo {
 		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
 		C.submitInfoPSignalSemaphores = psss }
 
-queueSubmit :: Pointable n => Queue -> [SubmitInfo n vs] -> Fence.F -> IO ()
+queueSubmit :: Pointable n => Queue -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
 queueSubmit (Queue q)
-	(length &&& id -> (sic, sis)) (Fence.F f) = ($ pure) $ runContT do
+	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
 	csis <- submitInfoToCore `mapM` sis
 	psis <- ContT $ allocaArray sic
 	lift do	pokeArray psis csis
-		r <- C.queueSubmit q (fromIntegral sic) psis f
+		r <- C.queueSubmit q (fromIntegral sic) psis
+			$ Fence.maybeFToCore f
 		throwUnlessSuccess $ Result r
 
 queueWaitIdle :: Queue -> IO ()

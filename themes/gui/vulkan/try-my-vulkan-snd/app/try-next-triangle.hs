@@ -4,6 +4,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -12,6 +13,7 @@ module Main where
 
 import GHC.Generics
 import GHC.Tuple
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
@@ -888,6 +890,38 @@ createBuffer ln usage properties = do
 	lift $ Vk.Buffer.List.bindMemory dvc b bm
 	pure (b, bm)
 
+copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
+	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
+copyBuffer srcBuffer dstBuffer ln = do
+	cp <- readGlobal globalCommandPool
+	dvc <- readGlobal globalDevice
+	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.LevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandPool = cp,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+		beginInfo = Vk.CommandBuffer.BeginInfo {
+			Vk.CommandBuffer.beginInfoNext = Nothing,
+			Vk.CommandBuffer.beginInfoFlags =
+				Vk.CommandBuffer.UsageOneTimeSubmitBit,
+			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
+		copyRegion = Vk.Buffer.List.Copy {
+			Vk.Buffer.List.copyLength = ln }
+	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
+	let	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+			Vk.submitInfoCommandBuffers = [commandBuffer],
+			Vk.submitInfoSignalSemaphores = [] }
+	gq <- readGlobal globalGraphicsQueue
+	lift do	Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
+		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
+		Vk.CommandBuffer.end commandBuffer
+		Vk.queueSubmit @() gq [submitInfo] Nothing
+		Vk.queueWaitIdle gq
+		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
+
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO Word32
 findMemoryType typeFilter properties = do
@@ -1014,7 +1048,7 @@ drawFrame = do
 			Vk.submitInfoCommandBuffers = [cb],
 			Vk.submitInfoSignalSemaphores = [rfs] }
 	gq <- readGlobal globalGraphicsQueue
-	lift $ Vk.queueSubmit @() gq [submitInfo] iff
+	lift . Vk.queueSubmit @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],

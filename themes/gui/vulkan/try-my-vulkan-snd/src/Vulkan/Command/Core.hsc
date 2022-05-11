@@ -29,3 +29,7 @@ foreign import ccall "vkCmdEndRenderPass" endRenderPass ::
 foreign import ccall "vkCmdBindVertexBuffers" bindVertexBuffers ::
 	CommandBuffer.C -> #{type uint32_t} -> #{type uint32_t} ->
 	Ptr Buffer.B -> Ptr #{type VkDeviceSize} -> IO ()
+
+foreign import ccall "vkCmdCopyBuffer" copyBuffer ::
+	CommandBuffer.C -> Buffer.B -> Buffer.B -> #{type uint32_t} ->
+	Ptr Buffer.Copy -> IO ()

@@ -62,3 +62,15 @@ foreign import ccall "vkGetBufferMemoryRequirements" getMemoryRequirements ::
 foreign import ccall "vkBindBufferMemory" bindMemory ::
 	Device.D -> B -> Device.Memory -> #{type VkDeviceSize} ->
 	IO #{type VkResult}
+
+struct "Copy" #{size VkBufferCopy} #{alignment VkBufferCopy} [
+	("srcOffset", ''#{type VkDeviceSize},
+		[| #{peek VkBufferCopy, srcOffset} |],
+		[| #{poke VkBufferCopy, srcOffset} |]),
+	("dstOffset", ''#{type VkDeviceSize},
+		[| #{peek VkBufferCopy, dstOffset} |],
+		[| #{poke VkBufferCopy, dstOffset} |]),
+	("size", ''#{type VkDeviceSize},
+		[| #{peek VkBufferCopy, size} |],
+		[| #{poke VkBufferCopy, size} |]) ]
+	[''Show, ''Storable]

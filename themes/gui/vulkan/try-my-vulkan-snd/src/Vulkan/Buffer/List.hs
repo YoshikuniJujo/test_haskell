@@ -91,3 +91,13 @@ data BList (vs :: [Type]) where
 bListToMList :: BList vs -> [(M.B, Device.Size)]
 bListToMList BNil = []
 bListToMList ((b, sz) :!: bs) = (bToMiddle b, sz) : bListToMList bs
+
+data Copy v = Copy { copyLength :: Int } deriving Show
+
+copyToCore :: forall v .
+	Storable (Foreign.Storable.Generic.Wrap v) => Copy v -> C.Copy
+copyToCore Copy { copyLength = ln } = C.Copy {
+	C.copySrcOffset = 0,
+	C.copyDstOffset = 0,
+	C.copySize = fromIntegral
+		$ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined * ln }

@@ -43,6 +43,13 @@ createInfoToCore CreateInfo {
 
 newtype F = F C.F deriving Show
 
+fToCore :: F -> C.F
+fToCore (F f) = f
+
+maybeFToCore :: Maybe F -> C.F
+maybeFToCore Nothing = NullHandle
+maybeFToCore (Just f) = fToCore f
+
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO F
 create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do

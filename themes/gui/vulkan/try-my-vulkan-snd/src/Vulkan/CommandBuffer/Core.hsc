@@ -111,3 +111,6 @@ foreign import ccall "vkEndCommandBuffer" end :: C -> IO #{type VkResult}
 
 foreign import ccall "vkResetCommandBuffer" reset ::
 	C -> #{type VkCommandBufferResetFlags} -> IO #{type VkResult}
+
+foreign import ccall "vkFreeCommandBuffers" freeCs ::
+	Device.D -> CommandPool.C -> #{type uint32_t} -> Ptr C -> IO ()

@@ -9,6 +9,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Pointable
+import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
@@ -125,3 +126,10 @@ end (C c) = throwUnlessSuccess . Result =<< C.end c
 
 reset :: C vs -> ResetFlags -> IO ()
 reset (C c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
+
+freeCs :: Device.D -> CommandPool.C -> [C vs] -> IO ()
+freeCs (Device.D dvc) (CommandPool.C cp)
+	(length &&& ((\(C cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
+	pcs <- ContT $ allocaArray cc
+	lift do	pokeArray pcs cs
+		C.freeCs dvc cp (fromIntegral cc) pcs

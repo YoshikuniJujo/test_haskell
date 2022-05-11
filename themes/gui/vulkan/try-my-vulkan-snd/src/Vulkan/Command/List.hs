@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE MonoLocalBinds #-}
 -- {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,7 +7,10 @@
 module Vulkan.Command.List where
 
 import GHC.Generics
+import Foreign.Storable
 import TypeLevel.List
+
+import qualified Foreign.Storable.Generic
 
 import Data.Generics.Flatten (Flatten)
 import Vulkan.Pipeline.VertexInputState.BindingStrideList (Simplify, MapUnList, MapSubType)
@@ -21,3 +25,8 @@ bindVertexBuffers :: forall vs vs' .
 bindVertexBuffers cb bs =
 	M.bindVertexBuffers cb (fromIntegral fb) (Buffer.bListToMList bs)
 	where fb = infixIndex @vs' @(Simplify vs)
+
+copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
+	CommandBuffer.C vs -> Buffer.B v -> Buffer.B v -> Buffer.Copy v -> IO ()
+copyBuffer cb s d cp = M.copyBuffer
+	cb (Buffer.bToMiddle s) (Buffer.bToMiddle d) [Buffer.copyToCore cp]
