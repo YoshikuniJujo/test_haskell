@@ -854,16 +854,21 @@ createCommandPool = do
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
-	lift $ putStrLn "CREATE VERTEX BUFFER BEGIN"
-	(vb, vbm) <- createBuffer (length vertices)
-		Vk.Buffer.UsageVertexBufferBit $
+	dvc <- readGlobal globalDevice
+	(sb, sbm) <- createBuffer (length vertices)
+		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
+	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero vertices
+	(vb, vbm) <- createBuffer (length vertices)
+		(Vk.Buffer.UsageTransferDstBit .|.
+			Vk.Buffer.UsageVertexBufferBit)
+		Vk.Memory.PropertyDeviceLocalBit
+	copyBuffer sb vb (length vertices)
+	lift do	Vk.Buffer.List.destroy dvc sb nil
+		Vk.Memory.List.free dvc sbm nil
 	writeGlobal globalVertexBuffer vb
 	writeGlobal globalVertexBufferMemory vbm
-	dvc <- readGlobal globalDevice
-	lift $ Vk.Memory.List.write dvc vbm Vk.Memory.M.MapFlagsZero vertices
-	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 createBuffer :: Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO (Vk.Buffer.List.B Vertex, Vk.Device.MemoryList Vertex)
@@ -926,9 +931,7 @@ findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO Word32
 findMemoryType typeFilter properties = do
 	phdvc <- readGlobal globalPhysicalDevice
-	lift $ print typeFilter
 	memProperties <- lift $ Vk.PhysicalDevice.getMemoryProperties phdvc
-	lift $ print memProperties
 	let	r = find (suitable typeFilter properties memProperties)
 			[0 .. length (
 				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
