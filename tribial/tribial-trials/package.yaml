@@ -26,6 +26,7 @@ dependencies:
 - time
 - random
 - containers
+- deepseq
 
 library:
   source-dirs: src

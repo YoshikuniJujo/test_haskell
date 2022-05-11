@@ -3,6 +3,8 @@
 module TryList where
 
 import Prelude hiding (unzip)
+
+import Control.DeepSeq
 import Data.List hiding (unzip)
 
 infixIndex :: Eq a => [a] -> [a] -> Maybe Int
@@ -24,3 +26,8 @@ unzip ((x, y) : xys) = let (xs, ys) = unzip xys in (x : xs, y : ys)
 unzip' :: [(a, b)] -> ([a], [b])
 unzip' [] = ([], [])
 unzip' ((x, y) : xys) = (x : fst (unzip' xys), y : snd (unzip' xys))
+
+unzip'' :: (NFData a, NFData b) => [(a, b)] -> ([a], [b])
+unzip'' [] = ([], [])
+unzip'' ((x, y) : xys) =
+	(x : fst (force $ unzip'' xys), y : snd (force $ unzip'' xys))
