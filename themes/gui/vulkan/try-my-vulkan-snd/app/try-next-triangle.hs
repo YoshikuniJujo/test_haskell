@@ -873,13 +873,11 @@ createVertexBuffer = do
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
 			Vk.Memory.PropertyHostVisibleBit .|.
 			Vk.Memory.PropertyHostCoherentBit
-	let	allocInfo = Vk.Memory.M.AllocateInfo {
-			Vk.Memory.M.allocateInfoNext = Nothing,
-			Vk.Memory.M.allocateInfoAllocationSize =
-				Vk.Memory.M.requirementsSize memRequirements,
-			Vk.Memory.M.allocateInfoMemoryTypeIndex = mti }
+	let	allocInfo = Vk.Memory.List.AllocateInfo {
+			Vk.Memory.List.allocateInfoNext = Nothing,
+			Vk.Memory.List.allocateInfoMemoryTypeIndex = mti }
 	vbm@(Vk.Device.MemoryList cvbm) <-
-		lift (Vk.Memory.List.allocate @() dvc allocInfo nil)
+		lift (Vk.Memory.List.allocate @() dvc vb allocInfo nil)
 	writeGlobal globalVertexBufferMemory vbm
 	let	vbm' = Vk.Device.Memory cvbm
 	lift $ Vk.Buffer.List.bindMemory dvc vb vbm
