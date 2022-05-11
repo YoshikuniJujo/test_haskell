@@ -107,14 +107,14 @@ import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
 import qualified Vulkan.Buffer.List as Vk.Buffer.List
-import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
-import qualified Vulkan.Command.Middle as Vk.Cmd.M
+import qualified Vulkan.Command.List as Vk.Cmd.List
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
+import Vulkan.Buffer.List (BList(..))
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -968,8 +968,9 @@ recordCommandBuffer cb imageIndex = do
 		cb renderPassInfo Vk.Subpass.ContentsInline
 	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
 		=<< readGlobal globalGraphicsPipeline
-	Vk.Buffer.List.B vb <- readGlobal globalVertexBuffer
-	lift $ Vk.Cmd.M.bindVertexBuffers cb 0 [(Vk.Buffer.M.B vb, 0)]
+	vb <- readGlobal globalVertexBuffer
+	lift $ Vk.Cmd.List.bindVertexBuffers cb
+		((vb, 0) :!: BNil :: BList '[Vertex])
 	lift do	Vk.Cmd.draw cb 3 1 0 0
 		Vk.Cmd.endRenderPass cb
 		Vk.CommandBuffer.end cb

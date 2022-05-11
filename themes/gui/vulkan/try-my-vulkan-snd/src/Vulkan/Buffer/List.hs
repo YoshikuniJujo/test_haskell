@@ -1,5 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,6 +10,7 @@ module Vulkan.Buffer.List where
 
 import Foreign.Storable
 import Foreign.Pointable
+import Data.Kind
 import Data.Word
 
 import qualified Foreign.Storable.Generic
@@ -60,6 +63,9 @@ createInfoToMiddle CreateInfo {
 
 newtype B v = B C.B deriving (Show, Storable)
 
+bToMiddle :: B v -> M.B
+bToMiddle (B b) = (M.B b)
+
 create :: (
 	Pointable n, Storable (Foreign.Storable.Generic.Wrap v),
 	Pointable n' ) =>
@@ -77,3 +83,11 @@ getMemoryRequirements dvc (B b) = M.getMemoryRequirements dvc $ M.B b
 bindMemory :: Device.D -> B v -> Device.MemoryList v -> IO ()
 bindMemory dvc (B b) (Device.MemoryList mem) =
 	M.bindMemory dvc (M.B b) (Device.Memory mem) 0
+
+data BList (vs :: [Type]) where
+	BNil :: BList '[]
+	(:!:) :: (B v, Device.Size) -> BList vs -> BList (v ': vs)
+
+bListToMList :: BList vs -> [(M.B, Device.Size)]
+bListToMList BNil = []
+bListToMList ((b, sz) :!: bs) = (bToMiddle b, sz) : bListToMList bs
