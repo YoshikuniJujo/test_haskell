@@ -853,33 +853,40 @@ createCommandPool = do
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	lift $ putStrLn "CREATE VERTEX BUFFER BEGIN"
-	let	bufferInfo :: Vk.Buffer.List.CreateInfo () Vertex
-		bufferInfo = Vk.Buffer.List.CreateInfo {
+	(vb, vbm) <- createBuffer (length vertices)
+		Vk.Buffer.UsageVertexBufferBit $
+		Vk.Memory.PropertyHostVisibleBit .|.
+		Vk.Memory.PropertyHostCoherentBit
+	writeGlobal globalVertexBuffer vb
+	writeGlobal globalVertexBufferMemory vbm
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Memory.List.write dvc vbm Vk.Memory.M.MapFlagsZero vertices
+	lift $ putStrLn "CREATE VERTEX BUFFER END"
+
+createBuffer :: Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO (Vk.Buffer.List.B Vertex, Vk.Device.MemoryList Vertex)
+createBuffer ln usage properties = do
+	let	bufferInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
 				Vk.Buffer.CreateFlagsZero,
-			Vk.Buffer.List.createInfoLength = length vertices,
-			Vk.Buffer.List.createInfoUsage =
-				Vk.Buffer.UsageVertexBufferBit,
+			Vk.Buffer.List.createInfoLength = ln,
+			Vk.Buffer.List.createInfoUsage = usage,
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
 	dvc <- readGlobal globalDevice
-	vb <- lift (Vk.Buffer.List.create dvc bufferInfo nil)
-	writeGlobal globalVertexBuffer vb
-	memRequirements <- lift (Vk.Buffer.List.getMemoryRequirements dvc vb)
+	b <- lift $ Vk.Buffer.List.create @() dvc bufferInfo nil
+	memRequirements <- lift $ Vk.Buffer.List.getMemoryRequirements dvc b
 	mti <- findMemoryType
-		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements) $
-			Vk.Memory.PropertyHostVisibleBit .|.
-			Vk.Memory.PropertyHostCoherentBit
+		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
+		properties
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
 			Vk.Memory.List.allocateInfoNext = Nothing,
 			Vk.Memory.List.allocateInfoMemoryTypeIndex = mti }
-	vbm <- lift (Vk.Memory.List.allocate @() dvc vb allocInfo nil)
-	writeGlobal globalVertexBufferMemory vbm
-	lift $ Vk.Buffer.List.bindMemory dvc vb vbm
-	lift $ Vk.Memory.List.write dvc vbm Vk.Memory.M.MapFlagsZero vertices
-	lift $ putStrLn "CREATE VERTEX BUFFER END"
+	bm <- lift $ Vk.Memory.List.allocate @() dvc b allocInfo nil
+	lift $ Vk.Buffer.List.bindMemory dvc b bm
+	pure (b, bm)
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO Word32
