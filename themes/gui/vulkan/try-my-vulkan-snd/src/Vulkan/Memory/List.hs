@@ -1,10 +1,15 @@
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Memory.List where
 
+import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Data.Word
+
+import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
@@ -38,3 +43,12 @@ free :: Pointable n =>
 	Device.D -> Device.MemoryList v -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
 free dvc (Device.MemoryList m) mac = M.free dvc (Device.Memory m) mac
+
+write :: Foreign.Storable.Generic.G v =>
+	Device.D -> Device.MemoryList v -> M.MapFlags -> [v] -> IO ()
+write dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+	dat <- M.map dvc mem 0
+		(fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs
+	pokeArray dat vs'
+	M.unmap dvc mem
+	where vs' = Foreign.Storable.Generic.Wrap <$> vs

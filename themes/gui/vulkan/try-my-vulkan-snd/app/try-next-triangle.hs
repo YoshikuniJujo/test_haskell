@@ -12,7 +12,6 @@ module Main where
 
 import GHC.Generics
 import GHC.Tuple
-import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
@@ -876,17 +875,10 @@ createVertexBuffer = do
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
 			Vk.Memory.List.allocateInfoNext = Nothing,
 			Vk.Memory.List.allocateInfoMemoryTypeIndex = mti }
-	vbm@(Vk.Device.MemoryList cvbm) <-
-		lift (Vk.Memory.List.allocate @() dvc vb allocInfo nil)
+	vbm <- lift (Vk.Memory.List.allocate @() dvc vb allocInfo nil)
 	writeGlobal globalVertexBufferMemory vbm
-	let	vbm' = Vk.Device.Memory cvbm
 	lift $ Vk.Buffer.List.bindMemory dvc vb vbm
-	lift do	dat <- Vk.Memory.M.map dvc vbm' 0
---			(Vk.Buffer.M.createInfoSize bufferInfo)
-			(fromIntegral $ size (vertices !! 0) * length vertices)
-			(Vk.Memory.M.MapFlagsZero)
-		pokeArray dat $ Foreign.Storable.Generic.Wrap <$> vertices
-		Vk.Memory.M.unmap dvc vbm'
+	lift $ Vk.Memory.List.write dvc vbm Vk.Memory.M.MapFlagsZero vertices
 	lift $ putStrLn "CREATE VERTEX BUFFER END"
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
