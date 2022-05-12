@@ -114,6 +114,7 @@ import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List
+import qualified Vulkan.DescriptorSet.Layout as Vk.DescriptorSet.Layout
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -264,6 +265,7 @@ initVulkan = do
 	createSwapChain
 	createImageViews
 	createRenderPass
+	createDescriptorSetLayout
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
@@ -641,6 +643,12 @@ createRenderPass = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalRenderPass
 		=<< lift (Vk.RenderPass.create @() dvc renderPassInfo nil)
+
+createDescriptorSetLayout :: ReaderT Global IO ()
+createDescriptorSetLayout = do
+--	let	uboLayoutBinding = Vk.DescriptorSet.Layout.Binding {
+--			}
+	pure ()
 
 createGraphicsPipeline :: ReaderT Global IO ()
 createGraphicsPipeline = do
@@ -1212,6 +1220,12 @@ vertices = [
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
+
+data UniformBufferObject = UniformBufferObject {
+	uniformBufferObjectModel :: Cglm.Mat4,
+	uniformBufferObjectView :: Cglm.Mat4,
+	uniformBufferObjectProj :: Cglm.Mat4 }
+	deriving Show
 
 [glslVertexShader|
 

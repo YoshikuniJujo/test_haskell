@@ -156,6 +156,7 @@ library
       Vulkan.RenderPass.Enum
       Vulkan.Sample
       Vulkan.Sample.Enum
+      Vulkan.Sampler
       Vulkan.Sampler.Core
       Vulkan.Semaphore
       Vulkan.Semaphore.Core
