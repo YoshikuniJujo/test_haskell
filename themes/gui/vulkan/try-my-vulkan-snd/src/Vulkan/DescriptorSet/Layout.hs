@@ -1,9 +1,11 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.DescriptorSet.Layout where
 
+import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
@@ -11,6 +13,7 @@ import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Enum
+import Vulkan.DescriptorSet.Layout.Enum
 
 import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Sampler as Sampler
@@ -38,7 +41,28 @@ bindingToCore Binding {
 			C.bindingDescriptorType = dt,
 			C.bindingDescriptorCount = either id fromIntegral dc,
 			C.bindingStageFlags = sf,
-			C.bindingPImmutableSamplers = pss
-			}
+			C.bindingPImmutableSamplers = pss }
 
 newtype L = L C.L deriving Show
+
+data CreateInfo n = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoBindings :: [Binding] }
+	deriving Show
+
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoBindings = length &&& id -> (bc, bs) } = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pbs <- ContT $ allocaArray bc
+	cbs <- bindingToCore `mapM` bs
+	lift $ pokeArray pbs cbs
+	pure C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoBindingCount = fromIntegral bc,
+		C.createInfoPBindings = pbs }

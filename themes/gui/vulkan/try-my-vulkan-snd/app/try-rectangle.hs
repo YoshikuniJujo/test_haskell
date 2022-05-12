@@ -115,6 +115,7 @@ import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List
 import qualified Vulkan.DescriptorSet.Layout as Vk.DscSet.Lyt
+import qualified Vulkan.DescriptorSet.Layout.Enum as Vk.DscSet.Lyt
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -150,6 +151,7 @@ data Global = Global {
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
+	globalDescriptorSetLayout :: IORef Vk.DscSet.Lyt.L,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
 		(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
@@ -191,6 +193,7 @@ newGlobal = do
 	sce <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
 	rp <- newIORef $ Vk.RenderPass.R NullPtr
+	dscstlyt <- newIORef $ Vk.DscSet.Lyt.L NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
 	grppl <- newIORef Vk.Ppl.Graphics.GNull
 	scfbs <- newIORef []
@@ -220,6 +223,7 @@ newGlobal = do
 		globalSwapChainExtent = sce,
 		globalSwapChainImageViews = scivs,
 		globalRenderPass = rp,
+		globalDescriptorSetLayout = dscstlyt,
 		globalPipelineLayout = ppllyt,
 		globalGraphicsPipeline = grppl,
 		globalSwapChainFramebuffers = scfbs,
@@ -654,6 +658,11 @@ createDescriptorSetLayout = do
 				= Left 1,
 			Vk.DscSet.Lyt.bindingStageFlags =
 				Vk.Shader.Stage.VertexBit }
+		layoutInfo = Vk.DscSet.Lyt.CreateInfo {
+			Vk.DscSet.Lyt.createInfoNext = Nothing,
+			Vk.DscSet.Lyt.createInfoFlags =
+				Vk.DscSet.Lyt.CreateFlagsZero,
+			Vk.DscSet.Lyt.createInfoBindings = [uboLayoutBinding] }
 	pure ()
 
 createGraphicsPipeline :: ReaderT Global IO ()
