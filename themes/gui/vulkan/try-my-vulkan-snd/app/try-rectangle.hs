@@ -114,7 +114,7 @@ import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List
-import qualified Vulkan.DescriptorSet.Layout as Vk.DescriptorSet.Layout
+import qualified Vulkan.DescriptorSet.Layout as Vk.DscSet.Lyt
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -646,8 +646,14 @@ createRenderPass = do
 
 createDescriptorSetLayout :: ReaderT Global IO ()
 createDescriptorSetLayout = do
---	let	uboLayoutBinding = Vk.DescriptorSet.Layout.Binding {
---			}
+	let	uboLayoutBinding = Vk.DscSet.Lyt.Binding {
+			Vk.DscSet.Lyt.bindingBinding = 0,
+			Vk.DscSet.Lyt.bindingDescriptorType =
+				Vk.DescriptorTypeUniformBuffer,
+			Vk.DscSet.Lyt.bindingDescriptorCountOrImmutableSamplers
+				= Left 1,
+			Vk.DscSet.Lyt.bindingStageFlags =
+				Vk.Shader.Stage.VertexBit }
 	pure ()
 
 createGraphicsPipeline :: ReaderT Global IO ()
