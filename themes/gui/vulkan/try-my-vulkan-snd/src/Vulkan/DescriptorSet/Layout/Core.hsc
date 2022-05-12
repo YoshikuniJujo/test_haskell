@@ -9,9 +9,12 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Sampler.Core as Sampler
 
 #include <vulkan/vulkan.h>
@@ -64,3 +67,7 @@ struct "CreateInfo" #{size VkDescriptorSetLayoutCreateInfo}
 		[| #{peek VkDescriptorSetLayoutCreateInfo, pBindings} |],
 		[| #{poke VkDescriptorSetLayoutCreateInfo, pBindings} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkCreateDescriptorSetLayout" create ::
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr L ->
+	IO #{type VkResult}

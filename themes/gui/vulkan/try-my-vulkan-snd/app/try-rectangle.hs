@@ -663,7 +663,9 @@ createDescriptorSetLayout = do
 			Vk.DscSet.Lyt.createInfoFlags =
 				Vk.DscSet.Lyt.CreateFlagsZero,
 			Vk.DscSet.Lyt.createInfoBindings = [uboLayoutBinding] }
-	pure ()
+	dvc <- readGlobal globalDevice
+	dsl <- lift $ Vk.DscSet.Lyt.create @() dvc layoutInfo nil
+	writeGlobal globalDescriptorSetLayout dsl
 
 createGraphicsPipeline :: ReaderT Global IO ()
 createGraphicsPipeline = do

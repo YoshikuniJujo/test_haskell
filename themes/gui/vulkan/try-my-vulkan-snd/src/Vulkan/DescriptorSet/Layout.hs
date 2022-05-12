@@ -6,15 +6,22 @@
 module Vulkan.DescriptorSet.Layout where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Enum
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.DescriptorSet.Layout.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Sampler as Sampler
 import qualified Vulkan.DescriptorSet.Layout.Core as C
@@ -51,7 +58,7 @@ data CreateInfo n = CreateInfo {
 	createInfoBindings :: [Binding] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -60,9 +67,20 @@ createInfoToCore CreateInfo {
 	pbs <- ContT $ allocaArray bc
 	cbs <- bindingToCore `mapM` bs
 	lift $ pokeArray pbs cbs
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoBindingCount = fromIntegral bc,
-		C.createInfoPBindings = pbs }
+	let	C.CreateInfo_ fci = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoBindingCount = fromIntegral bc,
+			C.createInfoPBindings = pbs }
+	ContT $ withForeignPtr fci
+
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO L
+create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pl <- ContT alloca
+	lift do	r <- C.create dvc pci pac pl
+		throwUnlessSuccess $ Result r
+		peek pl
