@@ -42,3 +42,15 @@ glmLookat eye center up = unsafePerformIO . ($ pure) $ runContT do
 foreign import capi "cglm/cglm.h glm_lookat" c_glm_lookat ::
 	Ptr #{type float} -> Ptr #{type float} -> Ptr #{type float} ->
 	Ptr () -> IO ()
+
+glmPerspective ::
+	#{type float} -> #{type float} -> #{type float} -> #{type float} ->
+	[#{type float}]
+glmPerspective fovy aspect nearZ farZ = unsafePerformIO . ($ pure) $ runContT do
+	pdest <- ContT $ allocaBytesAligned (16 * #{size float}) 32
+	lift do	c_glm_perspective fovy aspect nearZ farZ $ castPtr pdest
+		peekArray 16 pdest
+
+foreign import capi "cglm/cglm.h glm_perspective" c_glm_perspective ::
+	#{type float} -> #{type float} -> #{type float} -> #{type float} ->
+	Ptr () -> IO ()

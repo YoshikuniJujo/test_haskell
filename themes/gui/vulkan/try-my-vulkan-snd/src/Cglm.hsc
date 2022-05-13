@@ -63,6 +63,11 @@ glmLookat :: Vec3 -> Vec3 -> Vec3 -> Mat4
 glmLookat (Vec3 eye) (Vec3 center) (Vec3 up) = listToMat4
 	$ C.glmLookat (toList eye) (toList center) (toList up)
 
+glmPerspective ::
+	#{type float} -> #{type float} -> #{type float} -> #{type float} -> Mat4
+glmPerspective fovy aspect nearZ farZ =
+	listToMat4 $ C.glmPerspective fovy aspect nearZ farZ
+
 mat4ToList :: Mat4 -> [#{type float}]
 mat4ToList (Mat4 m) = concat $ toList <$> toList m
 
