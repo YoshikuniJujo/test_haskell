@@ -892,12 +892,12 @@ createCommandPool = do
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBuffer (length vertices)
+	(sb, sbm) <- createBufferList (length vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
 	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero vertices
-	(vb, vbm) <- createBuffer (length vertices)
+	(vb, vbm) <- createBufferList (length vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
@@ -910,12 +910,12 @@ createVertexBuffer = do
 createIndexBuffer :: ReaderT Global IO ()
 createIndexBuffer = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBuffer (length indices)
+	(sb, sbm) <- createBufferList (length indices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
 	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero indices
-	(ib, ibm) <- createBuffer (length indices)
+	(ib, ibm) <- createBufferList (length indices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageIndexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
@@ -925,10 +925,10 @@ createIndexBuffer = do
 	writeGlobal globalIndexBuffer ib
 	writeGlobal globalIndexBufferMemory ibm
 
-createBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
+createBufferList :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO (Vk.Buffer.List.B v, Vk.Device.MemoryList v)
-createBuffer ln usage properties = do
+createBufferList ln usage properties = do
 	let	bufferInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
