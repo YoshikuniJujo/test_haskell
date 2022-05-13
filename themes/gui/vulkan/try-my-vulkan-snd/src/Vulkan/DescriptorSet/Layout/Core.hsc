@@ -71,3 +71,6 @@ struct "CreateInfo" #{size VkDescriptorSetLayoutCreateInfo}
 foreign import ccall "vkCreateDescriptorSetLayout" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr L ->
 	IO #{type VkResult}
+
+foreign import ccall "vkDestroyDescriptorSetLayout" destroy ::
+	Device.D -> L -> Ptr AllocationCallbacks.A -> IO ()

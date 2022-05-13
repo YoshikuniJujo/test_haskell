@@ -1176,6 +1176,9 @@ cleanup = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
 
+	dsl <- readGlobal globalDescriptorSetLayout
+	lift $ Vk.DscSet.Lyt.destroy dvc dsl nil
+
 	vb <- readGlobal globalVertexBuffer
 	vbm <- readGlobal globalVertexBufferMemory
 	lift do	Vk.Buffer.List.destroy dvc vb nil
