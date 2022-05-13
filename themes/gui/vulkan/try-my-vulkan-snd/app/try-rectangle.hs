@@ -1144,6 +1144,7 @@ drawFrame = do
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
+	updateUniformBuffer imageIndex
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
@@ -1162,6 +1163,10 @@ drawFrame = do
 	lift . catchAndRecreateSwapChain g . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
+
+updateUniformBuffer :: Word32 -> ReaderT Global IO ()
+updateUniformBuffer currentImage = do
+	pure ()
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
