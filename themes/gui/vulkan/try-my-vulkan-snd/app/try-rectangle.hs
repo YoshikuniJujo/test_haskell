@@ -116,6 +116,7 @@ import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List
 import qualified Vulkan.DescriptorSet.Layout as Vk.DscSet.Lyt
 import qualified Vulkan.DescriptorSet.Layout.Enum as Vk.DscSet.Lyt
+import qualified Vulkan.Buffer.Atom as Vk.Buffer.Atom
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -168,7 +169,8 @@ data Global = Global {
 	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
 	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex),
 	globalIndexBuffer :: IORef (Vk.Buffer.List.B Word16),
-	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word16)
+	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word16),
+	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject]
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -208,6 +210,7 @@ newGlobal = do
 	vbm <- newIORef $ Vk.Device.MemoryList NullPtr
 	ib <- newIORef $ Vk.Buffer.List.B NullPtr
 	ibm <- newIORef $ Vk.Device.MemoryList NullPtr
+	ubs <- newIORef []
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -237,7 +240,8 @@ newGlobal = do
 		globalVertexBuffer = vb,
 		globalVertexBufferMemory = vbm,
 		globalIndexBuffer = ib,
-		globalIndexBufferMemory = ibm
+		globalIndexBufferMemory = ibm,
+		globalUniformBuffers = ubs
 		}
 
 run :: ReaderT Global IO ()
@@ -275,6 +279,7 @@ initVulkan = do
 	createCommandPool
 	createVertexBuffer
 	createIndexBuffer
+	createUniformBuffers
 	createCommandBuffers
 	createSyncObjects
 
@@ -1001,6 +1006,10 @@ suitable typeFilter properties memProperties i =
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
+
+createUniformBuffers :: ReaderT Global IO ()
+createUniformBuffers = do
+	pure ()
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do

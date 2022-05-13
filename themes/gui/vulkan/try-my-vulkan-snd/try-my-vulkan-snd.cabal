@@ -41,6 +41,7 @@ library
       Vulkan.Attachment.Core
       Vulkan.Attachment.Enum
       Vulkan.Base
+      Vulkan.Buffer.Atom
       Vulkan.Buffer.Core
       Vulkan.Buffer.Enum
       Vulkan.Buffer.List
