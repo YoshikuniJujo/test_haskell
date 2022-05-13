@@ -57,7 +57,11 @@ instance Storable Mat4 where
 
 glmRotate :: Mat4 -> #{type float} -> Vec3 -> Mat4
 glmRotate m angle (Vec3 axis) = listToMat4
-		$ C.glmRotate (mat4ToList m) angle (toList axis)
+	$ C.glmRotate (mat4ToList m) angle (toList axis)
+
+glmLookat :: Vec3 -> Vec3 -> Vec3 -> Mat4
+glmLookat (Vec3 eye) (Vec3 center) (Vec3 up) = listToMat4
+	$ C.glmLookat (toList eye) (toList center) (toList up)
 
 mat4ToList :: Mat4 -> [#{type float}]
 mat4ToList (Mat4 m) = concat $ toList <$> toList m
