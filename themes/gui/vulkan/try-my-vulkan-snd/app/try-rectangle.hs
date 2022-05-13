@@ -117,6 +117,7 @@ import qualified Vulkan.Command.List as Vk.Cmd.List
 import qualified Vulkan.DescriptorSet.Layout as Vk.DscSet.Lyt
 import qualified Vulkan.DescriptorSet.Layout.Enum as Vk.DscSet.Lyt
 import qualified Vulkan.Buffer.Atom as Vk.Buffer.Atom
+import qualified Vulkan.Memory.Atom as Vk.Memory.Atom
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -170,7 +171,9 @@ data Global = Global {
 	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex),
 	globalIndexBuffer :: IORef (Vk.Buffer.List.B Word16),
 	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word16),
-	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject]
+	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject],
+	globalUniformBuffersMemory ::
+		IORef [Vk.Device.MemoryAtom UniformBufferObject]
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -211,6 +214,7 @@ newGlobal = do
 	ib <- newIORef $ Vk.Buffer.List.B NullPtr
 	ibm <- newIORef $ Vk.Device.MemoryList NullPtr
 	ubs <- newIORef []
+	ubms <- newIORef []
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -241,7 +245,8 @@ newGlobal = do
 		globalVertexBufferMemory = vbm,
 		globalIndexBuffer = ib,
 		globalIndexBufferMemory = ibm,
-		globalUniformBuffers = ubs
+		globalUniformBuffers = ubs,
+		globalUniformBuffersMemory = ubms
 		}
 
 run :: ReaderT Global IO ()
@@ -951,6 +956,31 @@ createBufferList ln usage properties = do
 	lift $ Vk.Buffer.List.bindMemory dvc b bm
 	pure (b, bm)
 
+createBufferAtom :: Storable (Foreign.Storable.Generic.Wrap v) =>
+	Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO (Vk.Buffer.Atom.B v, Vk.Device.MemoryAtom v)
+createBufferAtom usage properties = do
+	dvc <- readGlobal globalDevice
+	let	bufferInfo = Vk.Buffer.Atom.CreateInfo {
+			Vk.Buffer.Atom.createInfoNext = Nothing,
+			Vk.Buffer.Atom.createInfoFlags =
+				Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.Atom.createInfoUsage = usage,
+			Vk.Buffer.Atom.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Buffer.Atom.createInfoQueueFamilyIndices = [] }
+	b <- lift $ Vk.Buffer.Atom.create @() dvc bufferInfo nil
+	memRequirements <- lift $ Vk.Buffer.Atom.getMemoryRequirements dvc b
+	mti <- findMemoryType
+		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
+		properties
+	let	allocInfo = Vk.Memory.Atom.AllocateInfo {
+			Vk.Memory.Atom.allocateInfoNext = Nothing,
+			Vk.Memory.Atom.allocateInfoMemoryTypeIndex = mti }
+	bm <- lift $ Vk.Memory.Atom.allocate @() dvc b allocInfo nil
+	lift $ Vk.Buffer.Atom.bindMemory dvc b bm
+	pure (b, bm)
+
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
 copyBuffer srcBuffer dstBuffer ln = do
@@ -1009,7 +1039,14 @@ size _ = fst (wholeSizeAlignment @a)
 
 createUniformBuffers :: ReaderT Global IO ()
 createUniformBuffers = do
-	pure ()
+	(ubs, ubms) <- unzip
+		<$> maxFramesInFlight `replicateM` (createBufferAtom
+			Vk.Buffer.UsageUniformBufferBit $
+			Vk.Memory.PropertyHostVisibleBit .|.
+			Vk.Memory.PropertyHostCoherentBit)
+
+	writeGlobal globalUniformBuffers ubs
+	writeGlobal globalUniformBuffersMemory ubms
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
@@ -1234,7 +1271,7 @@ instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 	formatOf = Vk.FormatR32g32b32Sfloat
 
-instance Foreign.Storable.Generic.G Vertex where
+instance Foreign.Storable.Generic.G Vertex
 
 vertices :: [Vertex]
 vertices = [
@@ -1254,7 +1291,10 @@ data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectModel :: Cglm.Mat4,
 	uniformBufferObjectView :: Cglm.Mat4,
 	uniformBufferObjectProj :: Cglm.Mat4 }
-	deriving Show
+	deriving (Show, Generic)
+
+instance SizeAlignmentList UniformBufferObject
+instance Foreign.Storable.Generic.G UniformBufferObject
 
 [glslVertexShader|
 

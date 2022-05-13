@@ -19,6 +19,7 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Middle as M
 import qualified Vulkan.Buffer.Core as C
+import qualified Vulkan.Memory.Middle as Memory.M
 
 data CreateInfo n v = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -59,3 +60,10 @@ create dvc ci = ((\(M.B b) -> B b) <$>) . M.create dvc (createInfoToMiddle ci)
 destroy :: Pointable n =>
 	Device.D -> B v -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy dvc (B b) = M.destroy dvc $ M.B b
+
+getMemoryRequirements :: Device.D -> B v -> IO Memory.M.Requirements
+getMemoryRequirements dvc (B b) = M.getMemoryRequirements dvc $ M.B b
+
+bindMemory :: Device.D -> B v -> Device.MemoryAtom v -> IO ()
+bindMemory dvc (B b) (Device.MemoryAtom mem) =
+	M.bindMemory dvc (M.B b) (Device.Memory mem) 0

@@ -105,6 +105,7 @@ library
       Vulkan.Khr.Swapchain
       Vulkan.Khr.Swapchain.Core
       Vulkan.Khr.Swapchain.Enum
+      Vulkan.Memory.Atom
       Vulkan.Memory.Core
       Vulkan.Memory.Enum
       Vulkan.Memory.List
