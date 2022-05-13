@@ -11,6 +11,8 @@ import Data.Foldable
 import Data.Either
 import Data.List.Length
 
+import qualified Cglm.Core as C
+
 #include <cglm/cglm.h>
 
 newtype Vec2 = Vec2 (LengthL 2 #{type float}) deriving Show
@@ -52,3 +54,27 @@ instance Storable Mat4 where
 	peek p = vec4ToMat4 . fst . fromRight (error "never occur") . splitL
 		<$> peekArray 4 (castPtr p)
 	poke p (mat4ToVec4 -> vs) = pokeArray (castPtr p) $ toList vs
+
+glmRotate :: Mat4 -> #{type float} -> Vec3 -> Mat4
+glmRotate m angle (Vec3 axis) = listToMat4
+		$ C.glmRotate (mat4ToList m) angle (toList axis)
+
+mat4ToList :: Mat4 -> [#{type float}]
+mat4ToList (Mat4 m) = concat $ toList <$> toList m
+
+listToMat4 :: [#{type float}] -> Mat4
+listToMat4 = Mat4 . unsafeToLength . (unsafeToLength <$>) . separateN 4
+
+unsafeToLength :: ListToLengthL n => [a] -> LengthL n a
+unsafeToLength = fst . fromRight (error "bad") . splitL
+
+sampleMat4 :: Mat4
+sampleMat4 = Mat4 $
+	(1 :. 0 :. 0 :. 0 :. NilL) :.
+	(0 :. 1 :. 0 :. 0 :. NilL) :.
+	(0 :. 0 :. 1 :. 0 :. NilL) :.
+	(0 :. 0 :. 0 :. 1 :. NilL) :. NilL
+
+separateN :: Int -> [a] -> [[a]]
+separateN _ [] = []
+separateN n xs = take n xs : separateN n (drop n xs)

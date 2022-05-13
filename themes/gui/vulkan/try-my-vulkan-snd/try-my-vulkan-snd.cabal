@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Cglm
+      Cglm.Core
       Data.Generics.Flatten
       Data.HeteroList
       Foreign.Storable.Generic
