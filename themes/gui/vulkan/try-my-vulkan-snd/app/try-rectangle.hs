@@ -1222,6 +1222,12 @@ cleanup = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
 
+	ubs <- readGlobal globalUniformBuffers
+	lift $ flip (Vk.Buffer.Atom.destroy dvc) nil `mapM_` ubs
+
+	ubms <- readGlobal globalUniformBuffersMemory
+	lift $ flip (Vk.Memory.Atom.free dvc) nil `mapM_` ubms
+
 	dsl <- readGlobal globalDescriptorSetLayout
 	lift $ Vk.DscSet.Lyt.destroy dvc dsl nil
 
