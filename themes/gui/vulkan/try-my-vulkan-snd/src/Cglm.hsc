@@ -8,6 +8,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.Foldable
+import Data.Traversable.Utils
 import Data.Either
 import Data.List.Length
 
@@ -67,6 +68,9 @@ glmPerspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} -> Mat4
 glmPerspective fovy aspect nearZ farZ =
 	listToMat4 $ C.glmPerspective fovy aspect nearZ farZ
+
+modifyMat4 :: Int -> Int -> (#{type float} -> #{type float}) -> Mat4 -> Mat4
+modifyMat4 i j f (Mat4 m) = Mat4 $ modifyElem2 i j f m
 
 mat4ToList :: Mat4 -> [#{type float}]
 mat4ToList (Mat4 m) = concat $ toList <$> toList m
