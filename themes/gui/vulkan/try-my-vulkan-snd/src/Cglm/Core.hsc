@@ -1,5 +1,6 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Cglm.Core where
@@ -7,24 +8,37 @@ module Cglm.Core where
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Control.Monad.Cont
+import Data.Foldable
+import Data.Either
+import Data.List.Length
 import System.IO.Unsafe
 
 #include <cglm/cglm.h>
 
-glmRotate :: [#{type float}] -> #{type float} -> [#{type float}] ->
-	[#{type float}]
+newtype {-# CTYPE "cglm/cglm.h" "vec4" #-}
+	Vec4 = Vec4 (LengthL 4 #{type float}) deriving Show
+
+instance Storable Vec4 where
+	sizeOf _ = #{size vec4}
+	alignment _ = #{alignment vec4}
+	peek p = Vec4 . fst . fromRight (error "never occur") . splitL
+		<$> peekArray 4 (castPtr p)
+	poke p (Vec4 v) = pokeArray (castPtr p) $ toList v
+
+glmRotate :: [Vec4] -> #{type float} -> [#{type float}] -> [Vec4]
 glmRotate m angle axis = unsafePerformIO . ($ pure) $ runContT do
 	pm <- ContT $ allocaBytesAligned (16 * #{size float}) 32
 	paxis <- ContT $ allocaArray 3
 	lift do	pokeArray pm m
 		pokeArray paxis axis
 		print pm
-		c_glm_rotate (castPtr pm) angle paxis
-		peekArray 16 pm
+		c_glm_rotate pm angle paxis
+		peekArray 4 pm
 
 foreign import capi "cglm/cglm.h glm_rotate" c_glm_rotate ::
-	Ptr () -> #{type float} -> Ptr #{type float} -> IO ()
+	Ptr Vec4 -> #{type float} -> Ptr #{type float} -> IO ()
 
 glmLookat ::
 	[#{type float}] -> [#{type float}] -> [#{type float}] -> [#{type float}]

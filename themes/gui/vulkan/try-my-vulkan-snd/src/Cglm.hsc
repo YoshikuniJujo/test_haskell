@@ -2,7 +2,9 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Cglm where
+module Cglm (
+	module Cglm, C.Vec4
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -18,15 +20,15 @@ import qualified Cglm.Core as C
 
 newtype Vec2 = Vec2 (LengthL 2 #{type float}) deriving Show
 newtype Vec3 = Vec3 (LengthL 3 #{type float}) deriving Show
-newtype Vec4 = Vec4 (LengthL 4 #{type float}) deriving Show
 
-newtype Mat4 = Mat4 (LengthL 4 (LengthL 4 #{type float})) deriving Show
+newtype {-# CTYPE "cglm/cglm.h" "mat4" #-}
+	Mat4 = Mat4 (LengthL 4 (LengthL 4 #{type float})) deriving Show
 
-vec4ToMat4 :: LengthL 4 Vec4 -> Mat4
-vec4ToMat4 = Mat4 . ((\(Vec4 l) -> l) <$>)
+vec4ToMat4 :: LengthL 4 C.Vec4 -> Mat4
+vec4ToMat4 = Mat4 . ((\(C.Vec4 l) -> l) <$>)
 
-mat4ToVec4 :: Mat4 -> LengthL 4 Vec4
-mat4ToVec4 (Mat4 m) = Vec4 <$> m
+mat4ToVec4 :: Mat4 -> LengthL 4 C.Vec4
+mat4ToVec4 (Mat4 m) = C.Vec4 <$> m
 
 instance Storable Vec2 where
 	sizeOf _ = #{size vec2}
@@ -42,13 +44,6 @@ instance Storable Vec3 where
 		<$> peekArray 3 (castPtr p)
 	poke p (Vec3 v) = pokeArray (castPtr p) $ toList v
 
-instance Storable Vec4 where
-	sizeOf _ = #{size vec4}
-	alignment _ = #{alignment vec4}
-	peek p = Vec4 . fst . fromRight (error "never occur") . splitL
-		<$> peekArray 4 (castPtr p)
-	poke p (Vec4 v) = pokeArray (castPtr p) $ toList v
-
 instance Storable Mat4 where
 	sizeOf _ = #{size mat4}
 	alignment _ = #{alignment mat4}
@@ -57,8 +52,8 @@ instance Storable Mat4 where
 	poke p (mat4ToVec4 -> vs) = pokeArray (castPtr p) $ toList vs
 
 glmRotate :: Mat4 -> #{type float} -> Vec3 -> Mat4
-glmRotate m angle (Vec3 axis) = listToMat4
-	$ C.glmRotate (mat4ToList m) angle (toList axis)
+glmRotate m angle (Vec3 axis) = listVec4ToMat4
+	$ C.glmRotate (mat4ToListVec4 m) angle (toList axis)
 
 glmLookat :: Vec3 -> Vec3 -> Vec3 -> Mat4
 glmLookat (Vec3 eye) (Vec3 center) (Vec3 up) = listToMat4
@@ -75,8 +70,14 @@ modifyMat4 i j f (Mat4 m) = Mat4 $ modifyElem2 i j f m
 mat4ToList :: Mat4 -> [#{type float}]
 mat4ToList (Mat4 m) = concat $ toList <$> toList m
 
+mat4ToListVec4 :: Mat4 -> [C.Vec4]
+mat4ToListVec4 (Mat4 m) = C.Vec4 <$> toList m
+
 listToMat4 :: [#{type float}] -> Mat4
 listToMat4 = Mat4 . unsafeToLength . (unsafeToLength <$>) . separateN 4
+
+listVec4ToMat4 :: [C.Vec4] -> Mat4
+listVec4ToMat4 = vec4ToMat4 . unsafeToLength
 
 unsafeToLength :: ListToLengthL n => [a] -> LengthL n a
 unsafeToLength = fst . fromRight (error "bad") . splitL
