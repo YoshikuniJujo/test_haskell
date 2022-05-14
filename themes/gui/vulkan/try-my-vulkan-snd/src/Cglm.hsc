@@ -20,13 +20,13 @@ glmRotate m angle (C.Vec3 axis) = listVec4ToMat4
 	$ C.glmRotate (mat4ToListVec4 m) angle (toList axis)
 
 glmLookat :: C.Vec3 -> C.Vec3 -> C.Vec3 -> C.Mat4
-glmLookat (C.Vec3 eye) (C.Vec3 center) (C.Vec3 up) = listToMat4
+glmLookat (C.Vec3 eye) (C.Vec3 center) (C.Vec3 up) = listVec4ToMat4
 	$ C.glmLookat (toList eye) (toList center) (toList up)
 
 glmPerspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} -> C.Mat4
 glmPerspective fovy aspect nearZ farZ =
-	listToMat4 $ C.glmPerspective fovy aspect nearZ farZ
+	listVec4ToMat4 $ C.glmPerspective fovy aspect nearZ farZ
 
 modifyMat4 :: Int -> Int -> (#{type float} -> #{type float}) -> C.Mat4 -> C.Mat4
 modifyMat4 i j f (C.Mat4 m) = C.Mat4 $ modifyElem2 i j f m

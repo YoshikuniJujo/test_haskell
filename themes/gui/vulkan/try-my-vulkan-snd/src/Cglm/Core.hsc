@@ -75,7 +75,7 @@ foreign import capi "cglm/cglm.h glm_rotate" c_glm_rotate ::
 	Ptr Vec4 -> #{type float} -> Ptr #{type float} -> IO ()
 
 glmLookat ::
-	[#{type float}] -> [#{type float}] -> [#{type float}] -> [#{type float}]
+	[#{type float}] -> [#{type float}] -> [#{type float}] -> [Vec4]
 glmLookat eye center up = unsafePerformIO . ($ pure) $ runContT do
 	peye <- ContT $ allocaArray 3
 	pcenter <- ContT $ allocaArray 3
@@ -84,21 +84,21 @@ glmLookat eye center up = unsafePerformIO . ($ pure) $ runContT do
 	lift do	pokeArray peye eye
 		pokeArray pcenter center
 		pokeArray pup up
-		c_glm_lookat peye pcenter pup $ castPtr pdest
+		c_glm_lookat peye pcenter pup pdest
 		peekArray 16 pdest
 
 foreign import capi "cglm/cglm.h glm_lookat" c_glm_lookat ::
 	Ptr #{type float} -> Ptr #{type float} -> Ptr #{type float} ->
-	Ptr () -> IO ()
+	Ptr Vec4 -> IO ()
 
 glmPerspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} ->
-	[#{type float}]
+	[Vec4]
 glmPerspective fovy aspect nearZ farZ = unsafePerformIO . ($ pure) $ runContT do
 	pdest <- ContT $ allocaBytesAligned (16 * #{size float}) 32
-	lift do	c_glm_perspective fovy aspect nearZ farZ $ castPtr pdest
+	lift do	c_glm_perspective fovy aspect nearZ farZ pdest
 		peekArray 16 pdest
 
 foreign import capi "cglm/cglm.h glm_perspective" c_glm_perspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} ->
-	Ptr () -> IO ()
+	Ptr Vec4 -> IO ()
