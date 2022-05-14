@@ -39,6 +39,7 @@ dependencies:
 - size-alignment-list
 - union-color
 - ghc-prim
+- time
 
 library:
   source-dirs: src

@@ -25,6 +25,7 @@ import Data.List
 import Data.Word
 import Data.IORef
 import Data.List.Length
+import Data.Time
 import Data.Color
 
 import Foreign.Storable.SizeAlignment
@@ -1122,15 +1123,16 @@ recordCommandBuffer cb imageIndex = do
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
 	w <- fromJust <$> readGlobal globalWindow
+	st <- lift getCurrentTime
 	fix \loop -> bool (pure ()) loop =<< do
 		lift GlfwB.pollEvents
 		g <- ask
-		lift $ catchAndRecreateSwapChain g $ drawFrame `runReaderT` g
+		lift $ catchAndRecreateSwapChain g $ drawFrame st `runReaderT` g
 		not <$> lift (GlfwB.windowShouldClose w)
 	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
 
-drawFrame :: ReaderT Global IO ()
-drawFrame = do
+drawFrame :: UTCTime -> ReaderT Global IO ()
+drawFrame st = do
 	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
@@ -1144,7 +1146,7 @@ drawFrame = do
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
-	updateUniformBuffer imageIndex
+	updateUniformBuffer st imageIndex
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
@@ -1164,8 +1166,26 @@ drawFrame = do
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
-updateUniformBuffer :: Word32 -> ReaderT Global IO ()
-updateUniformBuffer currentImage = do
+updateUniformBuffer :: UTCTime -> Word32 -> ReaderT Global IO ()
+updateUniformBuffer startTime currentImage = do
+	currentTime <- lift getCurrentTime
+	sce <- readGlobal globalSwapChainExtent
+	let	time :: Float = realToFrac $ currentTime `diffUTCTime` startTime
+		ubo = UniformBufferObject {
+			uniformBufferObjectModel = Cglm.glmRotate
+				Cglm.glmMat4Identity
+				(time * Cglm.glmRad 90)
+				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			uniformBufferObjectView = Cglm.glmLookat
+				(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+				(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+				(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+			uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
+				$ Cglm.glmPerspective
+					(Cglm.glmRad 45)
+					(fromIntegral (Vk.C.extent2dWidth sce) /
+						fromIntegral (Vk.C.extent2dHeight sce))
+					0.1 10 }
 	pure ()
 
 catchAndSerialize :: IO () -> IO ()

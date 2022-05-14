@@ -197,6 +197,7 @@ library
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-pointable
     , try-shaderc
     , union-color
@@ -227,6 +228,7 @@ executable my-glslc
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -257,6 +259,7 @@ executable try-my-vulkan-snd-exe
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -288,6 +291,7 @@ executable try-next-triangle
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -319,6 +323,7 @@ executable try-rectangle
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -350,6 +355,7 @@ executable try-shaderc
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -381,6 +387,7 @@ executable try-shaderc-core
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -412,6 +419,7 @@ executable try-vertex-input-state
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
@@ -443,6 +451,7 @@ test-suite try-my-vulkan-snd-test
     , size-alignment-list
     , template-haskell
     , text
+    , time
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc

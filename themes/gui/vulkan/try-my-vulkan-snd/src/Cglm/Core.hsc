@@ -102,3 +102,15 @@ glmPerspective fovy aspect nearZ farZ = unsafePerformIO . ($ pure) $ runContT do
 foreign import capi "cglm/cglm.h glm_perspective" c_glm_perspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} ->
 	Ptr Vec4 -> IO ()
+
+glmMat4Identity :: [Vec4]
+glmMat4Identity = unsafePerformIO . ($ pure) $ runContT do
+	pm <- ContT $ allocaArray 4
+	lift do	c_glm_mat4_identity pm
+		peekArray 4 pm
+
+foreign import capi "cglm/cglm.h glm_mat4_identity" c_glm_mat4_identity ::
+	Ptr Vec4 -> IO ()
+
+foreign import capi "cglm/cglm.h glm_rad" glmRad ::
+	#{type float} -> #{type float}
