@@ -286,6 +286,7 @@ initVulkan = do
 	createVertexBuffer
 	createIndexBuffer
 	createUniformBuffers
+	createDescriptorPool
 	createCommandBuffers
 	createSyncObjects
 
@@ -1049,6 +1050,10 @@ createUniformBuffers = do
 	writeGlobal globalUniformBuffers ubs
 	writeGlobal globalUniformBuffersMemory ubms
 
+createDescriptorPool :: ReaderT Global IO ()
+createDescriptorPool = do
+	pure ()
+
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
 	cp <- readGlobal globalCommandPool
@@ -1146,7 +1151,7 @@ drawFrame st = do
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
-	updateUniformBuffer st imageIndex
+	updateUniformBuffer st $ fromIntegral cf -- imageIndex
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
@@ -1189,9 +1194,9 @@ updateUniformBuffer startTime currentImage = do
 	dvc <- readGlobal globalDevice
 	ubm <- readGlobal globalUniformBuffersMemory
 	lift $ print currentImage
-	let	currentImage' = currentImage `mod` 2
+--	let	currentImage' = currentImage `mod` 2
 	lift $ Vk.Memory.Atom.write dvc
-		(ubm !! fromIntegral currentImage') Vk.Memory.M.MapFlagsZero ubo
+		(ubm !! fromIntegral currentImage) Vk.Memory.M.MapFlagsZero ubo
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
