@@ -115,8 +115,8 @@ import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List
-import qualified Vulkan.DescriptorSet.Layout as Vk.DscSet.Lyt
-import qualified Vulkan.DescriptorSet.Layout.Enum as Vk.DscSet.Lyt
+import qualified Vulkan.Descriptor.Set.Layout as Vk.DscSet.Lyt
+import qualified Vulkan.Descriptor.Set.Layout.Enum as Vk.DscSet.Lyt
 import qualified Vulkan.Buffer.Atom as Vk.Buffer.Atom
 import qualified Vulkan.Memory.Atom as Vk.Memory.Atom
 

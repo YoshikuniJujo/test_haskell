@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.DescriptorSet.Layout.Enum where
+module Vulkan.Descriptor.Set.Layout.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
