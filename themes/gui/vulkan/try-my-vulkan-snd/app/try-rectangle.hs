@@ -1186,7 +1186,12 @@ updateUniformBuffer startTime currentImage = do
 					(fromIntegral (Vk.C.extent2dWidth sce) /
 						fromIntegral (Vk.C.extent2dHeight sce))
 					0.1 10 }
-	pure ()
+	dvc <- readGlobal globalDevice
+	ubm <- readGlobal globalUniformBuffersMemory
+	lift $ print currentImage
+	let	currentImage' = currentImage `mod` 2
+	lift $ Vk.Memory.Atom.write dvc
+		(ubm !! fromIntegral currentImage') Vk.Memory.M.MapFlagsZero ubo
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
