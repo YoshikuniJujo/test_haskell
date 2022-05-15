@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2022-05-12
+resolver: nightly-2022-05-14
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -48,7 +48,6 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 54042a99383c0b6bc690edde3cb1a2fe8b9a21eb
 - union-color-0.1.2.0
-- ranged-list-0.1.1.1
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

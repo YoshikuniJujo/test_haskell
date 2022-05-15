@@ -48,16 +48,9 @@ packages:
       sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
   original:
     hackage: union-color-0.1.2.0
-- completed:
-    hackage: ranged-list-0.1.1.1@sha256:f90f058adfc99e8c32fa5b2c242b0e3b092a046d7efdff1d390e7c18a3a86888,2177
-    pantry-tree:
-      size: 1339
-      sha256: f2b676c7ec2f17bb465aa0d67f9e664a353ea8eb0ee142961c1eaab222325642
-  original:
-    hackage: ranged-list-0.1.1.1
 snapshots:
 - completed:
-    size: 573008
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/5/12.yaml
-    sha256: 2c73222c0a3fc8fa5a9df5de04038e402351652ea28b48604e15c36b693a168d
-  original: nightly-2022-05-12
+    size: 573643
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/5/14.yaml
+    sha256: 40f6a33be1035ebe9212ddb920aa2cbe28b92dacd829cde6a3150ca2fa9cbbd1
+  original: nightly-2022-05-14
