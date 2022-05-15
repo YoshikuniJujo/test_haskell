@@ -9,7 +9,7 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile'' "/usr/include/vulkan/vulkan_core.h" "Enum"
+make = createFile'' vulkanCore "Enum"
 	["Foreign.Ptr", "Data.Bits", "Data.Word"] ((([] ,) <$> noZeros) ++ zeros)
 	[nowdoc|
 type QueueFlags = QueueFlagBits
