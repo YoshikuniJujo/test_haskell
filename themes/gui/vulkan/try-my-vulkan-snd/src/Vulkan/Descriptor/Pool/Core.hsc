@@ -5,9 +5,12 @@
 
 module Vulkan.Descriptor.Pool.Core where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+
+import Vulkan.Base
 
 #include <vulkan/vulkan.h>
 
@@ -19,4 +22,31 @@ struct "Size" #{size VkDescriptorPoolSize} #{alignment VkDescriptorPoolSize} [
 		[| #{peek VkDescriptorPoolSize, descriptorCount} |],
 		[| #{poke VkDescriptorPoolSize, descriptorCount} |])
 	]
+	[''Show, ''Storable]
+
+type PtrSize = Ptr Size
+
+sType :: #{type VkStructureType}
+sType = #{const VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO}
+
+struct "CreateInfo" #{size VkDescriptorPoolCreateInfo}
+		#{alignment VkDescriptorPoolCreateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ ->
+			#{poke VkDescriptorPoolCreateInfo, sType} p sType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkDescriptorPoolCreateInfo, pNext} |],
+		[| #{poke VkDescriptorPoolCreateInfo, pNext} |]),
+	("flags", ''#{type VkDescriptorPoolCreateFlags},
+		[| #{peek VkDescriptorPoolCreateInfo, flags} |],
+		[| #{poke VkDescriptorPoolCreateInfo, flags} |]),
+	("maxSets", ''#{type uint32_t},
+		[| #{peek VkDescriptorPoolCreateInfo, maxSets} |],
+		[| #{poke VkDescriptorPoolCreateInfo, maxSets} |]),
+	("poolSizeCount", ''#{type uint32_t},
+		[| #{peek VkDescriptorPoolCreateInfo, poolSizeCount} |],
+		[| #{poke VkDescriptorPoolCreateInfo, poolSizeCount} |]),
+	("pPoolSizes", ''PtrSize,
+		[| #{peek VkDescriptorPoolCreateInfo, pPoolSizes} |],
+		[| #{poke VkDescriptorPoolCreateInfo, pPoolSizes} |]) ]
 	[''Show, ''Storable]

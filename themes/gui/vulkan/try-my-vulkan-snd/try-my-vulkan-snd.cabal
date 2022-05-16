@@ -66,6 +66,7 @@ library
       Vulkan.Descriptor.Enum
       Vulkan.Descriptor.Pool
       Vulkan.Descriptor.Pool.Core
+      Vulkan.Descriptor.Pool.Enum
       Vulkan.Descriptor.Set.Layout
       Vulkan.Descriptor.Set.Layout.Core
       Vulkan.Descriptor.Set.Layout.Enum

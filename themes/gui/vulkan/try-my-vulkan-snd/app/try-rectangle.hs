@@ -121,6 +121,7 @@ import qualified Vulkan.Buffer.Atom as Vk.Buffer.Atom
 import qualified Vulkan.Memory.Atom as Vk.Memory.Atom
 import qualified Vulkan.Descriptor.Pool as Vk.DscPool
 import qualified Vulkan.Descriptor.Enum as Vk.Dsc
+import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -1058,6 +1059,12 @@ createDescriptorPool = do
 			Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
 			Vk.DscPool.sizeDescriptorCount =
 				fromIntegral maxFramesInFlight }
+		poolInfo = Vk.DscPool.CreateInfo {
+			Vk.DscPool.createInfoNext = Nothing,
+			Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFlagsZero,
+			Vk.DscPool.createInfoMaxSets =
+				fromIntegral maxFramesInFlight,
+			Vk.DscPool.createInfoPoolSizes = [poolSize] }
 	pure ()
 
 createCommandBuffers :: ReaderT Global IO ()
