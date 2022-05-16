@@ -177,7 +177,8 @@ data Global = Global {
 	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word16),
 	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject],
 	globalUniformBuffersMemory ::
-		IORef [Vk.Device.MemoryAtom UniformBufferObject]
+		IORef [Vk.Device.MemoryAtom UniformBufferObject],
+	globalDescriptorPool :: IORef Vk.DscPool.P
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -219,6 +220,7 @@ newGlobal = do
 	ibm <- newIORef $ Vk.Device.MemoryList NullPtr
 	ubs <- newIORef []
 	ubms <- newIORef []
+	dp <- newIORef $ Vk.DscPool.P NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -250,7 +252,8 @@ newGlobal = do
 		globalIndexBuffer = ib,
 		globalIndexBufferMemory = ibm,
 		globalUniformBuffers = ubs,
-		globalUniformBuffersMemory = ubms
+		globalUniformBuffersMemory = ubms,
+		globalDescriptorPool = dp
 		}
 
 run :: ReaderT Global IO ()
@@ -1065,7 +1068,9 @@ createDescriptorPool = do
 			Vk.DscPool.createInfoMaxSets =
 				fromIntegral maxFramesInFlight,
 			Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	pure ()
+	dvc <-readGlobal globalDevice
+	writeGlobal globalDescriptorPool
+		=<< lift (Vk.DscPool.create @() dvc poolInfo nil)
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
@@ -1275,6 +1280,9 @@ cleanup = do
 
 	ubms <- readGlobal globalUniformBuffersMemory
 	lift $ flip (Vk.Memory.Atom.free dvc) nil `mapM_` ubms
+
+	dp <- readGlobal globalDescriptorPool
+	lift $ Vk.DscPool.destroy dvc dp nil
 
 	dsl <- readGlobal globalDescriptorSetLayout
 	lift $ Vk.DscSet.Lyt.destroy dvc dsl nil
