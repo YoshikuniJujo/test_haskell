@@ -122,6 +122,7 @@ import qualified Vulkan.Memory.Atom as Vk.Memory.Atom
 import qualified Vulkan.Descriptor.Pool as Vk.DscPool
 import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
+import qualified Vulkan.Descriptor.Set as Vk.DscSet
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -293,6 +294,7 @@ initVulkan = do
 	createIndexBuffer
 	createUniformBuffers
 	createDescriptorPool
+	createDescriptorSets
 	createCommandBuffers
 	createSyncObjects
 
@@ -1071,6 +1073,18 @@ createDescriptorPool = do
 	dvc <-readGlobal globalDevice
 	writeGlobal globalDescriptorPool
 		=<< lift (Vk.DscPool.create @() dvc poolInfo nil)
+
+createDescriptorSets :: ReaderT Global IO ()
+createDescriptorSets = do
+	layouts <- replicate maxFramesInFlight
+		<$> readGlobal globalDescriptorSetLayout
+	dp <- readGlobal globalDescriptorPool
+	let	allocInfo = Vk.DscSet.AllocateInfo {
+			Vk.DscSet.allocateInfoNext = Nothing,
+			Vk.DscSet.allocateInfoDescriptorPool = dp,
+			Vk.DscSet.allocateInfoDescriptorSetCountOrSetLayouts =
+				Right layouts }
+	pure ()
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
