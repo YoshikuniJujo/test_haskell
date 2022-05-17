@@ -82,3 +82,39 @@ struct "Write" #{size VkWriteDescriptorSet} #{alignment VkWriteDescriptorSet} [
 		[| #{peek VkWriteDescriptorSet, pTexelBufferView} |],
 		[| #{poke VkWriteDescriptorSet, pTexelBufferView} |]) ]
 	[''Show, ''Storable]
+
+cType :: #{type VkStructureType}
+cType = #{const VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET}
+
+struct "Copy" #{size VkCopyDescriptorSet} #{alignment VkCopyDescriptorSet} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkCopyDescriptorSet, sType} p cType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkCopyDescriptorSet, pNext} |],
+		[| #{poke VkCopyDescriptorSet, pNext} |]),
+	("srcSet", ''S,
+		[| #{peek VkCopyDescriptorSet, srcSet} |],
+		[| #{poke VkCopyDescriptorSet, srcSet} |]),
+	("srcBinding", ''#{type uint32_t},
+		[| #{peek VkCopyDescriptorSet, srcBinding} |],
+		[| #{poke VkCopyDescriptorSet, srcBinding} |]),
+	("srcArrayElement", ''#{type uint32_t},
+		[| #{peek VkCopyDescriptorSet, srcArrayElement} |],
+		[| #{poke VkCopyDescriptorSet, srcArrayElement} |]),
+	("dstSet", ''S,
+		[| #{peek VkCopyDescriptorSet, dstSet} |],
+		[| #{poke VkCopyDescriptorSet, dstSet} |]),
+	("dstBinding", ''#{type uint32_t},
+		[| #{peek VkCopyDescriptorSet, dstBinding} |],
+		[| #{poke VkCopyDescriptorSet, dstBinding} |]),
+	("dstArrayElement", ''#{type uint32_t},
+		[| #{peek VkCopyDescriptorSet, dstArrayElement} |],
+		[| #{poke VkCopyDescriptorSet, dstArrayElement} |]),
+	("descriptorCount", ''#{type uint32_t},
+		[| #{peek VkCopyDescriptorSet, descriptorCount} |],
+		[| #{poke VkCopyDescriptorSet, descriptorCount} |]) ]
+	[''Show, ''Storable]
+
+foreign import ccall "vkUpdateDescriptorSets" updateSs ::
+	Device.D ->
+	#{type uint32_t} -> Ptr Write -> #{type uint32_t} -> Ptr Copy -> IO ()

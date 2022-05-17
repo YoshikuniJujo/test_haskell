@@ -1105,9 +1105,8 @@ createDescriptorSets = do
 				Vk.DscSet.writeDescriptorType =
 					Vk.Dsc.TypeUniformBuffer,
 				Vk.DscSet.writeImageBufferInfoTexelBufferViews =
-					Just $ Vk.DscSet.BufferInfos
-						[bufferInfo]
-				}
+					Right $ Vk.DscSet.BufferInfos
+						[bufferInfo] }
 		pure ()
 
 createCommandBuffers :: ReaderT Global IO ()

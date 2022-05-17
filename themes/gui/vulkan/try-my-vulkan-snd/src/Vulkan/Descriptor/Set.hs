@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -8,10 +9,13 @@ module Vulkan.Descriptor.Set where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
+
+import qualified Foreign.Storable.Generic
 
 import Vulkan.Exception
 import Vulkan.Exception.Enum
@@ -71,7 +75,7 @@ data Write n v = Write {
 	writeDstArrayElement :: Word32,
 	writeDescriptorType :: Dsc.Type,
 	writeImageBufferInfoTexelBufferViews ::
-		Maybe (ImageBufferInfoTexelBufferViews v) }
+		Either Word32 (ImageBufferInfoTexelBufferViews v) }
 	deriving Show
 
 data ImageBufferInfoTexelBufferViews v
@@ -79,3 +83,43 @@ data ImageBufferInfoTexelBufferViews v
 	| BufferInfos [Dsc.BufferInfo v]
 	| TexelBufferViews [Buffer.View.V]
 	deriving Show
+
+writeToCore :: (Pointable n, Storable (Foreign.Storable.Generic.Wrap v)) =>
+	Write n v -> ContT r IO C.Write
+writeToCore Write {
+	writeNext = mnxt,
+	writeDstSet = S s,
+	writeDstBinding = b,
+	writeDstArrayElement = ae,
+	writeDescriptorType = Dsc.Type tp,
+	writeImageBufferInfoTexelBufferViews = mibitbvs
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(dc, piis, pbis, ptbvs) <- case mibitbvs of
+		Left c -> pure (c, NullPtr, NullPtr, NullPtr)
+		Right (ImageInfos (length &&& id -> (iic, iis))) -> do
+			let	ciis = Dsc.imageInfoToCore <$> iis
+			p <- ContT $ allocaArray iic
+			lift $ pokeArray p ciis
+			pure (fromIntegral iic, p, NullPtr, NullPtr)
+		Right (BufferInfos (length &&& id -> (bic, bis))) -> do
+			let	cbis = Dsc.bufferInfoToCore <$> bis
+			p <- ContT $ allocaArray bic
+			lift $ pokeArray p cbis
+			pure (fromIntegral bic, NullPtr, p, NullPtr)
+		Right (TexelBufferViews (length &&& id -> (tbvc, tbvs))) -> do
+			let	ctbvs = (\(Buffer.View.V v) -> v) <$> tbvs
+			p <- ContT $ allocaArray tbvc
+			lift $ pokeArray p ctbvs
+			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
+	pure C.Write {
+		C.writeSType = (),
+		C.writePNext = pnxt,
+		C.writeDstSet = s,
+		C.writeDstBinding = b,
+		C.writeDstArrayElement = ae,
+		C.writeDescriptorCount = dc,
+		C.writeDescriptorType = tp,
+		C.writePImageInfo = piis,
+		C.writePBufferInfo = pbis,
+		C.writePTexelBufferView = ptbvs }

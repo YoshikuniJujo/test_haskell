@@ -40,7 +40,7 @@ struct "ImageInfo" #{size VkDescriptorImageInfo}
 	("imageView", ''ImageView.I,
 		[| #{peek VkDescriptorImageInfo, imageView} |],
 		[| #{poke VkDescriptorImageInfo, imageView} |]),
-	("imageLayout", ''Image.Layout,
+	("imageLayout", ''#{type VkImageLayout},
 		[| #{peek VkDescriptorImageInfo, imageLayout} |],
 		[| #{poke VkDescriptorImageInfo, imageLayout} |]) ]
 	[''Show, ''Storable]
