@@ -18,6 +18,7 @@ import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
 import Control.Exception
+import Data.Foldable
 import Data.Bits
 import Data.Bool
 import Data.Maybe
@@ -123,6 +124,7 @@ import qualified Vulkan.Descriptor.Pool as Vk.DscPool
 import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 import qualified Vulkan.Descriptor.Set as Vk.DscSet
+import qualified Vulkan.Descriptor as Vk.Dsc
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -1090,6 +1092,12 @@ createDescriptorSets = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalDescriptorSets
 		=<< lift (Vk.DscSet.allocateSs @() dvc allocInfo)
+	ubs <- readGlobal globalUniformBuffers
+	for_ [0 .. maxFramesInFlight - 1] \i -> do
+		let	bufferInfo = Vk.Dsc.BufferInfo {
+				Vk.Dsc.bufferInfoBuffer = ubs !! i,
+				Vk.Dsc.bufferInfoOffset = 0 }
+		pure ()
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
