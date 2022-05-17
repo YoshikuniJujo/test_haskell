@@ -67,7 +67,6 @@ glmRotate m angle axis = unsafePerformIO . ($ pure) $ runContT do
 	paxis <- ContT $ allocaArray 3
 	lift do	pokeArray pm m
 		pokeArray paxis axis
-		print pm
 		c_glm_rotate pm angle paxis
 		peekArray 4 pm
 

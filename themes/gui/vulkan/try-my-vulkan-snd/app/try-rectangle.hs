@@ -764,7 +764,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.RstSt.createInfoLineWidth = 1,
 			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
 			Vk.Ppl.RstSt.createInfoFrontFace =
-				Vk.FrontFaceClockwise,
+				Vk.FrontFaceCounterClockwise,
 			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
 			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
@@ -806,12 +806,12 @@ createGraphicsPipeline = do
 				[colorBlendAttachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
-
+	dsl <- readGlobal globalDescriptorSetLayout
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = Nothing,
 			Vk.Ppl.Layout.createInfoFlags =
 				Vk.Ppl.Layout.CreateFlagsZero,
-			Vk.Ppl.Layout.createInfoSetLayouts = [],
+			Vk.Ppl.Layout.createInfoSetLayouts = [dsl],
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalPipelineLayout
@@ -1037,7 +1037,6 @@ findMemoryType typeFilter properties = do
 			[0 .. length (
 				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
 					memProperties) - 1]
-	lift $ print r
 	pure $ maybe
 		(error "failed to find suitable memory type!") fromIntegral r
 
@@ -1107,7 +1106,7 @@ createDescriptorSets = do
 				Vk.DscSet.writeImageBufferInfoTexelBufferViews =
 					Right $ Vk.DscSet.BufferInfos
 						[bufferInfo] }
-		pure ()
+		lift $ Vk.DscSet.updateSs @() @() dvc [descriptorWrite] []
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do
@@ -1176,7 +1175,12 @@ recordCommandBuffer cb imageIndex = do
 			((vb, 0) :!: BNil :: BList '[Vertex])
 		Vk.Cmd.List.bindIndexBuffer cb ib Vk.IndexTypeUint16
 
-	lift do	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
+	dss <- readGlobal globalDescriptorSets
+	ppll <- readGlobal globalPipelineLayout
+	cf <- readGlobal globalCurrentFrame
+	lift do	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
+			[dss !! cf] []
+		Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 		Vk.Cmd.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
@@ -1248,8 +1252,6 @@ updateUniformBuffer startTime currentImage = do
 					0.1 10 }
 	dvc <- readGlobal globalDevice
 	ubm <- readGlobal globalUniformBuffersMemory
-	lift $ print currentImage
---	let	currentImage' = currentImage `mod` 2
 	lift $ Vk.Memory.Atom.write dvc
 		(ubm !! fromIntegral currentImage) Vk.Memory.M.MapFlagsZero ubo
 
@@ -1399,6 +1401,12 @@ instance Foreign.Storable.Generic.G UniformBufferObject
 
 #version 450
 
+layout(binding = 0) uniform UniformBufferObject {
+	mat4 model;
+	mat4 view;
+	mat4 proj;
+} ubo;
+
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
 
@@ -1407,7 +1415,7 @@ layout(location = 0) out vec3 fragColor;
 void
 main()
 {
-	gl_Position = vec4(inPosition, 0.0, 1.0);
+	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 0.0, 1.0);
 	fragColor = inColor;
 }
 

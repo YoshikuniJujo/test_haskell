@@ -10,6 +10,8 @@ import qualified Vulkan.RenderPass.Core as RenderPass
 import qualified Vulkan.Pipeline.Graphics.Core as Pipeline
 import qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import qualified Vulkan.Buffer.Core as Buffer
+import qualified Vulkan.Pipeline.Layout.Core as Pipeline.Layout
+import qualified Vulkan.Descriptor.Set.Core as DscSet
 
 #include <vulkan/vulkan.h>
 
@@ -42,3 +44,8 @@ foreign import ccall "vkCmdCopyBuffer" copyBuffer ::
 foreign import ccall "vkCmdBindIndexBuffer" bindIndexBuffer ::
 	CommandBuffer.C -> Buffer.B -> #{type VkDeviceSize} ->
 	#{type VkIndexType} -> IO ()
+
+foreign import ccall "vkCmdBindDescriptorSets" bindDescriptorSets ::
+	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.Layout.L ->
+	#{type uint32_t} -> #{type uint32_t} -> Ptr DscSet.S ->
+	#{type uint32_t} -> Ptr #{type uint32_t} -> IO ()

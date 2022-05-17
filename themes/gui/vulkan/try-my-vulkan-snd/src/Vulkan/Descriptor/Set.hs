@@ -123,3 +123,48 @@ writeToCore Write {
 		C.writePImageInfo = piis,
 		C.writePBufferInfo = pbis,
 		C.writePTexelBufferView = ptbvs }
+
+data Copy n = Copy {
+	copyNext :: Maybe n,
+	copySrcSet :: S,
+	copySrcBinding :: Word32,
+	copySrcArrayElement :: Word32,
+	copyDstSet :: S,
+	copyDstBinding :: Word32,
+	copyDstArrayElement :: Word32,
+	copyDescriptorCount :: Word32 }
+	deriving Show
+
+copyToCore :: Pointable n => Copy n -> ContT r IO C.Copy
+copyToCore Copy {
+	copyNext = mnxt,
+	copySrcSet = S ss,
+	copySrcBinding = sb,
+	copySrcArrayElement = sae,
+	copyDstSet = S ds,
+	copyDstBinding = db,
+	copyDstArrayElement = dae,
+	copyDescriptorCount = dc
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pure C.Copy {
+		C.copySType = (),
+		C.copyPNext = pnxt,
+		C.copySrcSet = ss,
+		C.copySrcBinding = sb,
+		C.copySrcArrayElement = sae,
+		C.copyDstSet = ds,
+		C.copyDstBinding = db,
+		C.copyDstArrayElement = dae,
+		C.copyDescriptorCount = dc }
+
+updateSs :: (Pointable n, Pointable n',
+		Storable (Foreign.Storable.Generic.Wrap v)) =>
+	Device.D -> [Write n v] -> [Copy n'] -> IO ()
+updateSs (Device.D dvc) (length &&& id -> (wc, ws))
+	(length &&& id -> (cc, cs)) = ($ pure) $ runContT do
+	pws <- ContT $ allocaArray wc
+	lift . pokeArray pws =<< writeToCore `mapM` ws
+	pcs <- ContT $ allocaArray cc
+	lift . pokeArray pcs =<< copyToCore `mapM` cs
+	lift $ C.updateSs dvc (fromIntegral wc) pws (fromIntegral cc) pcs
