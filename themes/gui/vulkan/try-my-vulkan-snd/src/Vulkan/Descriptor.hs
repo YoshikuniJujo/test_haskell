@@ -11,6 +11,7 @@ import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Atom as Buffer.A
+import qualified Vulkan.Sampler as Sampler
 import qualified Vulkan.Descriptor.Core as C
 
 data BufferInfo v = BufferInfo {
@@ -27,3 +28,8 @@ bufferInfoToCore BufferInfo {
 	C.bufferInfoOffset = sz,
 	C.bufferInfoRange = fromIntegral
 		$ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined }
+
+data ImageInfo = ImageInfo {
+	imageInfoSampler :: [Sampler.S]
+	}
+	deriving Show

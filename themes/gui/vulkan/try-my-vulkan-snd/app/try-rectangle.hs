@@ -1090,13 +1090,24 @@ createDescriptorSets = do
 			Vk.DscSet.allocateInfoDescriptorSetCountOrSetLayouts =
 				Right layouts }
 	dvc <- readGlobal globalDevice
-	writeGlobal globalDescriptorSets
-		=<< lift (Vk.DscSet.allocateSs @() dvc allocInfo)
+	dss <- lift $ Vk.DscSet.allocateSs @() dvc allocInfo
+	writeGlobal globalDescriptorSets dss
 	ubs <- readGlobal globalUniformBuffers
 	for_ [0 .. maxFramesInFlight - 1] \i -> do
 		let	bufferInfo = Vk.Dsc.BufferInfo {
 				Vk.Dsc.bufferInfoBuffer = ubs !! i,
 				Vk.Dsc.bufferInfoOffset = 0 }
+			descriptorWrite = Vk.DscSet.Write {
+				Vk.DscSet.writeNext = Nothing,
+				Vk.DscSet.writeDstSet = dss !! i,
+				Vk.DscSet.writeDstBinding = 0,
+				Vk.DscSet.writeDstArrayElement = 0,
+				Vk.DscSet.writeDescriptorType =
+					Vk.Dsc.TypeUniformBuffer,
+				Vk.DscSet.writeImageBufferInfoTexelBufferViews =
+					Just $ Vk.DscSet.BufferInfos
+						[bufferInfo]
+				}
 		pure ()
 
 createCommandBuffers :: ReaderT Global IO ()

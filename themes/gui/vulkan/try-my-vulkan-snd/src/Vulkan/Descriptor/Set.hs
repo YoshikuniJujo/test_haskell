@@ -17,6 +17,9 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 
 import qualified Vulkan.Device as Device
+import qualified Vulkan.Buffer.View as Buffer.View
+import qualified Vulkan.Descriptor.Enum as Dsc
+import qualified Vulkan.Descriptor as Dsc
 import qualified Vulkan.Descriptor.Pool as Pool
 import qualified Vulkan.Descriptor.Set.Layout as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
@@ -60,3 +63,19 @@ allocateSs (Device.D dvc) ai = ((S <$>) <$>) . ($ pure) $ runContT do
 	lift do	r <- C.allocateSs dvc pai pss
 		throwUnlessSuccess $ Result r
 		peekArray dsc pss
+
+data Write n v = Write {
+	writeNext :: Maybe n,
+	writeDstSet :: S,
+	writeDstBinding :: Word32,
+	writeDstArrayElement :: Word32,
+	writeDescriptorType :: Dsc.Type,
+	writeImageBufferInfoTexelBufferViews ::
+		Maybe (ImageBufferInfoTexelBufferViews v) }
+	deriving Show
+
+data ImageBufferInfoTexelBufferViews v
+	= ImageInfos [Dsc.ImageInfo]
+	| BufferInfos [Dsc.BufferInfo v]
+	| TexelBufferViews [Buffer.View.V]
+	deriving Show
