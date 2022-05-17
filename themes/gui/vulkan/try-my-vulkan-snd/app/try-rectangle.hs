@@ -179,7 +179,8 @@ data Global = Global {
 	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject],
 	globalUniformBuffersMemory ::
 		IORef [Vk.Device.MemoryAtom UniformBufferObject],
-	globalDescriptorPool :: IORef Vk.DscPool.P
+	globalDescriptorPool :: IORef Vk.DscPool.P,
+	globalDescriptorSets :: IORef [Vk.DscSet.S]
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -222,6 +223,7 @@ newGlobal = do
 	ubs <- newIORef []
 	ubms <- newIORef []
 	dp <- newIORef $ Vk.DscPool.P NullPtr
+	dss <- newIORef []
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -254,7 +256,8 @@ newGlobal = do
 		globalIndexBufferMemory = ibm,
 		globalUniformBuffers = ubs,
 		globalUniformBuffersMemory = ubms,
-		globalDescriptorPool = dp
+		globalDescriptorPool = dp,
+		globalDescriptorSets = dss
 		}
 
 run :: ReaderT Global IO ()
@@ -1084,7 +1087,9 @@ createDescriptorSets = do
 			Vk.DscSet.allocateInfoDescriptorPool = dp,
 			Vk.DscSet.allocateInfoDescriptorSetCountOrSetLayouts =
 				Right layouts }
-	pure ()
+	dvc <- readGlobal globalDevice
+	writeGlobal globalDescriptorSets
+		=<< lift (Vk.DscSet.allocateSs @() dvc allocInfo)
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do

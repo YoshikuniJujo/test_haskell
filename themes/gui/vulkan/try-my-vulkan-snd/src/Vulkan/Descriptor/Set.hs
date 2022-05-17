@@ -1,4 +1,4 @@
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -6,12 +6,17 @@
 module Vulkan.Descriptor.Set where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Exception
+import Vulkan.Exception.Enum
+
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Descriptor.Pool as Pool
 import qualified Vulkan.Descriptor.Set.Layout as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
@@ -43,3 +48,15 @@ allocateInfoToCore AllocateInfo {
 		C.allocateInfoDescriptorPool = pl,
 		C.allocateInfoDescriptorSetCount = dscw,
 		C.allocateInfoPSetLayouts = psls }
+
+newtype S = S C.S deriving Show
+
+allocateSs :: Pointable n => Device.D -> AllocateInfo n -> IO [S]
+allocateSs (Device.D dvc) ai = ((S <$>) <$>) . ($ pure) $ runContT do
+	cai@(C.AllocateInfo_ fai) <- allocateInfoToCore ai
+	pai <- ContT $ withForeignPtr fai
+	let	dsc = fromIntegral $ C.allocateInfoDescriptorSetCount cai
+	pss <- ContT $ allocaArray dsc
+	lift do	r <- C.allocateSs dvc pai pss
+		throwUnlessSuccess $ Result r
+		peekArray dsc pss

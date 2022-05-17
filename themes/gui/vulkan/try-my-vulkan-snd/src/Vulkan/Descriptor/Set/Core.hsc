@@ -5,12 +5,15 @@
 
 module Vulkan.Descriptor.Set.Core where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 
+import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Descriptor.Pool.Core as Pool
 import qualified Vulkan.Descriptor.Set.Layout.Core as Layout
 
@@ -36,3 +39,9 @@ struct "AllocateInfo" #{size VkDescriptorSetAllocateInfo}
 		[| #{peek VkDescriptorSetAllocateInfo, pSetLayouts} |],
 		[| #{poke VkDescriptorSetAllocateInfo, pSetLayouts} |]) ]
 	[''Show, ''Storable]
+
+data STag
+type S = Ptr STag
+
+foreign import ccall "vkAllocateDescriptorSets" allocateSs ::
+	Device.D -> Ptr AllocateInfo -> Ptr S -> IO #{type VkResult}
