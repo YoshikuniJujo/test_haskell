@@ -5,11 +5,15 @@
 
 module Vulkan.Descriptor.Core where
 
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
 import qualified Vulkan.Buffer.Core as Buffer
+import qualified Vulkan.Image.Enum as Image
+import qualified Vulkan.ImageView.Core as ImageView
+import qualified Vulkan.Sampler.Core as Sampler
 
 #include <vulkan/vulkan.h>
 
@@ -25,3 +29,20 @@ struct "BufferInfo" #{size VkDescriptorBufferInfo}
 		[| #{peek VkDescriptorBufferInfo, range} |],
 		[| #{poke VkDescriptorBufferInfo, range} |]) ]
 	[''Show, ''Storable]
+
+type PtrBufferInfo = Ptr BufferInfo
+
+struct "ImageInfo" #{size VkDescriptorImageInfo}
+		#{alignment VkDescriptorImageInfo} [
+	("sampler", ''Sampler.S,
+		[| #{peek VkDescriptorImageInfo, sampler} |],
+		[| #{poke VkDescriptorImageInfo, sampler} |]),
+	("imageView", ''ImageView.I,
+		[| #{peek VkDescriptorImageInfo, imageView} |],
+		[| #{poke VkDescriptorImageInfo, imageView} |]),
+	("imageLayout", ''Image.Layout,
+		[| #{peek VkDescriptorImageInfo, imageLayout} |],
+		[| #{poke VkDescriptorImageInfo, imageLayout} |]) ]
+	[''Show, ''Storable]
+
+type PtrImageInfo = Ptr ImageInfo

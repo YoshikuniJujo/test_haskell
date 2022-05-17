@@ -14,6 +14,8 @@ import Data.Int
 import Vulkan.Base
 
 import qualified Vulkan.Device.Core as Device
+import qualified Vulkan.Buffer.View.Core as Buffer.View
+import qualified Vulkan.Descriptor.Core as Dsc
 import qualified Vulkan.Descriptor.Pool.Core as Pool
 import qualified Vulkan.Descriptor.Set.Layout.Core as Layout
 
@@ -45,3 +47,38 @@ type S = Ptr STag
 
 foreign import ccall "vkAllocateDescriptorSets" allocateSs ::
 	Device.D -> Ptr AllocateInfo -> Ptr S -> IO #{type VkResult}
+
+wType :: #{type VkStructureType}
+wType = #{const VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET}
+
+struct "Write" #{size VkWriteDescriptorSet} #{alignment VkWriteDescriptorSet} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkWriteDescriptorSet, sType} p wType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkWriteDescriptorSet, pNext} |],
+		[| #{poke VkWriteDescriptorSet, pNext} |]),
+	("dstSet", ''S,
+		[| #{peek VkWriteDescriptorSet, dstSet} |],
+		[| #{poke VkWriteDescriptorSet, dstSet} |]),
+	("dstBinding", ''#{type uint32_t},
+		[| #{peek VkWriteDescriptorSet, dstBinding} |],
+		[| #{poke VkWriteDescriptorSet, dstBinding} |]),
+	("dstArrayElement", ''#{type uint32_t},
+		[| #{peek VkWriteDescriptorSet, dstArrayElement} |],
+		[| #{poke VkWriteDescriptorSet, dstArrayElement} |]),
+	("descriptorCount", ''#{type uint32_t},
+		[| #{peek VkWriteDescriptorSet, descriptorCount} |],
+		[| #{poke VkWriteDescriptorSet, descriptorCount} |]),
+	("descriptorType", ''#{type VkDescriptorType},
+		[| #{peek VkWriteDescriptorSet, descriptorType} |],
+		[| #{poke VkWriteDescriptorSet, descriptorType} |]),
+	("pImageInfo", ''Dsc.PtrImageInfo,
+		[| #{peek VkWriteDescriptorSet, pImageInfo} |],
+		[| #{poke VkWriteDescriptorSet, pImageInfo} |]),
+	("pBufferInfo", ''Dsc.PtrBufferInfo,
+		[| #{peek VkWriteDescriptorSet, pBufferInfo} |],
+		[| #{poke VkWriteDescriptorSet, pBufferInfo} |]),
+	("pTexelBufferView", ''Buffer.View.PtrV,
+		[| #{peek VkWriteDescriptorSet, pTexelBufferView} |],
+		[| #{poke VkWriteDescriptorSet, pTexelBufferView} |]) ]
+	[''Show, ''Storable]
