@@ -84,7 +84,7 @@ glmLookat eye center up = unsafePerformIO . ($ pure) $ runContT do
 		pokeArray pcenter center
 		pokeArray pup up
 		c_glm_lookat peye pcenter pup pdest
-		peekArray 16 pdest
+		peekArray 4 pdest
 
 foreign import capi "cglm/cglm.h glm_lookat" c_glm_lookat ::
 	Ptr #{type float} -> Ptr #{type float} -> Ptr #{type float} ->
@@ -96,7 +96,7 @@ glmPerspective ::
 glmPerspective fovy aspect nearZ farZ = unsafePerformIO . ($ pure) $ runContT do
 	pdest <- ContT $ allocaBytesAligned (16 * #{size float}) 32
 	lift do	c_glm_perspective fovy aspect nearZ farZ pdest
-		peekArray 16 pdest
+		peekArray 4 pdest
 
 foreign import capi "cglm/cglm.h glm_perspective" c_glm_perspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} ->
