@@ -184,7 +184,9 @@ data Global = Global {
 	globalUniformBuffersMemory ::
 		IORef [Vk.Device.MemoryAtom UniformBufferObject],
 	globalDescriptorPool :: IORef Vk.DscPool.P,
-	globalDescriptorSets :: IORef [Vk.DscSet.S]
+	globalDescriptorSets :: IORef [Vk.DscSet.S],
+	globalTextureImage :: IORef Vk.Image.I,
+	globalTextureImageMemory :: IORef (Vk.Device.MemoryList Word8)
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -228,6 +230,8 @@ newGlobal = do
 	ubms <- newIORef []
 	dp <- newIORef $ Vk.DscPool.P NullPtr
 	dss <- newIORef []
+	ti <- newIORef $ Vk.Image.I NullPtr
+	tim <- newIORef $ Vk.Device.MemoryList NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -261,7 +265,9 @@ newGlobal = do
 		globalUniformBuffers = ubs,
 		globalUniformBuffersMemory = ubms,
 		globalDescriptorPool = dp,
-		globalDescriptorSets = dss
+		globalDescriptorSets = dss,
+		globalTextureImage = ti,
+		globalTextureImageMemory = tim
 		}
 
 run :: ReaderT Global IO ()
