@@ -918,7 +918,14 @@ createTextureImage = do
 	lift do	print $ imageWidth img
 		print $ imageHeight img
 		print . V.length $ imageData img
-	pure ()
+	let	imageSize = V.length $ imageData img
+	(stagingBuffer, stagingBufferMemory) <- createBufferList @Word8 imageSize
+		Vk.Buffer.UsageTransferSrcBit $
+		Vk.Memory.PropertyHostVisibleBit .|.
+		Vk.Memory.PropertyHostCoherentBit
+	dvc <- readGlobal globalDevice
+	lift $ Vk.Memory.List.write dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
+		(V.toList $ imageData img)
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
