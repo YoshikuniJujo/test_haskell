@@ -33,3 +33,12 @@ struct "SubresourceRange" #{size VkImageSubresourceRange}
 
 data ITag
 type I = Ptr ITag
+
+sType :: #{type VkStructureType}
+sType = #{const VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO}
+
+struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkImageCreateInfo, sType} p sType |])
+	]
+	[''Show, ''Storable]
