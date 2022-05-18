@@ -28,6 +28,7 @@ import Data.IORef
 import Data.List.Length
 import Data.Time
 import Data.Color
+import Codec.Picture
 
 import Foreign.Storable.SizeAlignment
 
@@ -38,6 +39,7 @@ import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
 import qualified Cglm
 import qualified Foreign.Storable.Generic
+import qualified Data.Vector.Storable as V
 
 import ThEnv
 import Shaderc
@@ -295,6 +297,7 @@ initVulkan = do
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
+	createTextureImage
 	createVertexBuffer
 	createIndexBuffer
 	createUniformBuffers
@@ -908,6 +911,17 @@ createCommandPool = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+
+createTextureImage :: ReaderT Global IO ()
+createTextureImage = do
+	img <- lift $ readRgba8 "../../../../files/images/texture.jpg"
+	lift do	print $ imageWidth img
+		print $ imageHeight img
+		print . V.length $ imageData img
+	pure ()
+
+readRgba8 :: FilePath -> IO (Image PixelRGBA8)
+readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do

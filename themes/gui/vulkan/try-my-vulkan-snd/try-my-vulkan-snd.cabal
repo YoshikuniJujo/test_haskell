@@ -193,6 +193,7 @@ library
       vulkan
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -212,6 +213,7 @@ library
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable my-glslc
@@ -224,6 +226,7 @@ executable my-glslc
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -244,6 +247,7 @@ executable my-glslc
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-my-vulkan-snd-exe
@@ -255,6 +259,7 @@ executable try-my-vulkan-snd-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -275,6 +280,7 @@ executable try-my-vulkan-snd-exe
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-next-triangle
@@ -287,6 +293,7 @@ executable try-next-triangle
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -307,6 +314,7 @@ executable try-next-triangle
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-rectangle
@@ -319,6 +327,7 @@ executable try-rectangle
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -339,6 +348,7 @@ executable try-rectangle
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-shaderc
@@ -351,6 +361,7 @@ executable try-shaderc
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -371,6 +382,7 @@ executable try-shaderc
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-shaderc-core
@@ -383,6 +395,7 @@ executable try-shaderc-core
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -403,6 +416,7 @@ executable try-shaderc-core
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-texture
@@ -415,6 +429,7 @@ executable try-texture
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -435,6 +450,7 @@ executable try-texture
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 executable try-vertex-input-state
@@ -447,6 +463,7 @@ executable try-vertex-input-state
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -467,6 +484,7 @@ executable try-vertex-input-state
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010
 
 test-suite try-my-vulkan-snd-test
@@ -479,6 +497,7 @@ test-suite try-my-vulkan-snd-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -499,4 +518,5 @@ test-suite try-my-vulkan-snd-test
     , try-shaderc
     , union-color
     , uuid
+    , vector
   default-language: Haskell2010

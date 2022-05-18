@@ -27,6 +27,8 @@ dependencies:
 - text
 - monads-tf
 - filepath
+- JuicyPixels
+- vector
 - nowdoc
 - exception-hierarchy
 - c-enum
