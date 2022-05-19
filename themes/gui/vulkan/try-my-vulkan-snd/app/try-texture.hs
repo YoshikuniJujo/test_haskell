@@ -921,8 +921,10 @@ createCommandPool = do
 createTextureImage :: ReaderT Global IO ()
 createTextureImage = do
 	img <- lift $ readRgba8 "../../../../files/images/texture.jpg"
-	lift do	print $ imageWidth img
-		print $ imageHeight img
+	let	texWidth = imageWidth img
+		texHeight = imageHeight img
+	lift do	print texWidth
+		print texHeight
 		print . V.length $ imageData img
 	let	imageSize = V.length $ imageData img
 	(stagingBuffer, stagingBufferMemory) <- createBufferList @Word8 imageSize
@@ -932,6 +934,27 @@ createTextureImage = do
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Memory.List.write dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
 		(V.toList $ imageData img)
+	let	imageInfo = Vk.Image.CreateInfo {
+			Vk.Image.createInfoNext = Nothing,
+			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
+			Vk.Image.createInfoImageType = Vk.Image.Type2d,
+			Vk.Image.createInfoExtent = Vk.C.Extent3d {
+				Vk.C.extent3dWidth = fromIntegral texWidth,
+				Vk.C.extent3dHeight = fromIntegral texHeight,
+				Vk.C.extent3dDepth = 1 },
+			Vk.Image.createInfoMipLevels = 1,
+			Vk.Image.createInfoArrayLayers = 1,
+			Vk.Image.createInfoFormat = Vk.FormatR8g8b8a8Srgb,
+			Vk.Image.createInfoTiling = Vk.Image.TilingOptimal,
+			Vk.Image.createInfoInitialLayout =
+				Vk.Image.LayoutUndefined,
+			Vk.Image.createInfoUsage =
+				Vk.Image.UsageTransferDstBit .|.
+				Vk.Image.UsageSampledBit,
+			Vk.Image.createInfoSharingMode = Vk.SharingModeExclusive,
+			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
+			Vk.Image.createInfoQueueFamilyIndices = [] }
+	pure ()
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp

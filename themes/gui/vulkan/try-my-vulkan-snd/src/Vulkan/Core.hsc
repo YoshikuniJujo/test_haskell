@@ -83,8 +83,6 @@ struct "Extent3d" #{size VkExtent3D} #{alignment VkExtent3D} [
 sharingModeExclusive :: #{type VkSharingMode}
 sharingModeExclusive = #{const VK_SHARING_MODE_EXCLUSIVE}
 
-type Format = #{type VkFormat}
-
 struct "Viewport" #{size VkViewport} #{alignment VkViewport} [
 	("x", ''#{type float}, [| #{peek VkViewport, x} |],
 		[| #{poke VkViewport, x} |]),
