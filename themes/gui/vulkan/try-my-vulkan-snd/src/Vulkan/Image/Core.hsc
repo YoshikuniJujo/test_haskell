@@ -9,9 +9,13 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
 import Vulkan.Core
+
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
@@ -86,3 +90,7 @@ struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
 		[| #{peek VkImageCreateInfo, initialLayout} |],
 		[| #{poke VkImageCreateInfo, initialLayout} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkCreateImage" create ::
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr I ->
+	IO #{type VkResult}

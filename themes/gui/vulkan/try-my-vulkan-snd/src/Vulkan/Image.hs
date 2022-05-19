@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -5,7 +6,10 @@
 module Vulkan.Image where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -13,8 +17,12 @@ import Data.Word
 
 import Vulkan.Core
 import Vulkan.Enum
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Image.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Image.Core as C
 import qualified Vulkan.Sample.Enum as Sample
 
@@ -57,7 +65,7 @@ data CreateInfo n = CreateInfo {
 	createInfoInitialLayout :: Layout }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -76,19 +84,30 @@ createInfoToCore CreateInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoImageType = tp,
-		C.createInfoFormat = fmt,
-		C.createInfoExtent = ext,
-		C.createInfoMipLevels = mls,
-		C.createInfoArrayLayers = als,
-		C.createInfoSamples = smpls,
-		C.createInfoTiling = tlng,
-		C.createInfoUsage = usg,
-		C.createInfoSharingMode = sm,
-		C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
-		C.createInfoPQueueFamilyIndices = pqfis,
-		C.createInfoInitialLayout = lyt }
+	let	C.CreateInfo_ fci = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoImageType = tp,
+			C.createInfoFormat = fmt,
+			C.createInfoExtent = ext,
+			C.createInfoMipLevels = mls,
+			C.createInfoArrayLayers = als,
+			C.createInfoSamples = smpls,
+			C.createInfoTiling = tlng,
+			C.createInfoUsage = usg,
+			C.createInfoSharingMode = sm,
+			C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
+			C.createInfoPQueueFamilyIndices = pqfis,
+			C.createInfoInitialLayout = lyt }
+	ContT $ withForeignPtr fci
+
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
+create (Device.D dvc) ci mac = (I <$>) . ($ pure) . runContT $ do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pimg <- ContT alloca
+	lift do	r <- C.create dvc pci pac pimg
+		throwUnlessSuccess $ Result r
+		peek pimg

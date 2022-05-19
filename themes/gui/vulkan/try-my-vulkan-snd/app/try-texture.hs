@@ -954,7 +954,8 @@ createTextureImage = do
 			Vk.Image.createInfoSharingMode = Vk.SharingModeExclusive,
 			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
-	pure ()
+	ti <- lift $ Vk.Image.create @() dvc imageInfo nil
+	writeGlobal globalTextureImage ti
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
