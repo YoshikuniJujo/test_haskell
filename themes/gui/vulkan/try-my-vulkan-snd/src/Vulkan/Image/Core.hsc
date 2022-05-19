@@ -11,6 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 
 import Vulkan.Base
+import Vulkan.Core
 
 #include <vulkan/vulkan.h>
 
@@ -50,6 +51,24 @@ struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
 		[| #{poke VkImageCreateInfo, flags} |]),
 	("imageType", ''#{type VkImageType},
 		[| #{peek VkImageCreateInfo, imageType} |],
-		[| #{poke VkImageCreateInfo, imageType} |])
+		[| #{poke VkImageCreateInfo, imageType} |]),
+	("format", ''#{type VkFormat},
+		[| #{peek VkImageCreateInfo, format} |],
+		[| #{poke VkImageCreateInfo, format} |]),
+	("extent", ''Extent3d,
+		[| #{peek VkImageCreateInfo, extent} |],
+		[| #{poke VkImageCreateInfo, extent} |]),
+	("mipLevels", ''#{type uint32_t},
+		[| #{peek VkImageCreateInfo, mipLevels} |],
+		[| #{poke VkImageCreateInfo, mipLevels} |]),
+	("arrayLayers", ''#{type uint32_t},
+		[| #{peek VkImageCreateInfo, arrayLayers} |],
+		[| #{poke VkImageCreateInfo, arrayLayers} |]),
+	("samples", ''#{type VkSampleCountFlagBits},
+		[| #{peek VkImageCreateInfo, samples} |],
+		[| #{poke VkImageCreateInfo, samples} |]),
+	("tiling", ''#{type VkImageTiling},
+		[| #{peek VkImageCreateInfo, tiling} |],
+		[| #{poke VkImageCreateInfo, tiling} |])
 	]
 	[''Show, ''Storable]

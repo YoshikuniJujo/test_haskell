@@ -179,6 +179,14 @@ enum "Type" ''#{type VkImageType}
 	("Type3d", #{const VK_IMAGE_TYPE_3D}),
 	("TypeMaxEnum", #{const VK_IMAGE_TYPE_MAX_ENUM}) ]
 
+enum "Tiling" ''#{type VkImageTiling}
+		[''Show, ''Eq, ''Storable] [
+	("TilingOptimal", #{const VK_IMAGE_TILING_OPTIMAL}),
+	("TilingLinear", #{const VK_IMAGE_TILING_LINEAR}),
+	("TilingDrmFormatModifierExt",
+		#{const VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT}),
+	("TilingMaxEnum", #{const VK_IMAGE_TILING_MAX_ENUM}) ]
+
 type UsageFlags = UsageFlagBits
 type AspectFlags = AspectFlagBits
 type CreateFlags = CreateFlagBits

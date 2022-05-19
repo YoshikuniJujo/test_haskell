@@ -24,6 +24,9 @@ make = createFile'' "/usr/include/vulkan/vulkan_core.h"
 			["Show", "Eq", "Storable", "Bits"])),
 	(	[],
 		("Type", "VkImageType",
+			["Show", "Eq", "Storable"])),
+	(	[],
+		("Tiling", "VkImageTiling",
 			["Show", "Eq", "Storable"]))
 	]
 	[nowdoc|
