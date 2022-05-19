@@ -951,11 +951,14 @@ createTextureImage = do
 			Vk.Image.createInfoUsage =
 				Vk.Image.UsageTransferDstBit .|.
 				Vk.Image.UsageSampledBit,
-			Vk.Image.createInfoSharingMode = Vk.SharingModeExclusive,
+			Vk.Image.createInfoSharingMode =
+				Vk.SharingModeExclusive,
 			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
 	ti <- lift $ Vk.Image.create @() dvc imageInfo nil
 	writeGlobal globalTextureImage ti
+	memRequirements <- lift $ Vk.Image.getMemoryRequirements dvc ti
+	lift $ print memRequirements
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp

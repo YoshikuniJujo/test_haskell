@@ -11,7 +11,6 @@ import Foreign.C.Struct
 import Data.Word
 
 import qualified Vulkan.Buffer.Core as Buffer
-import qualified Vulkan.Image.Enum as Image
 import qualified Vulkan.ImageView.Core as ImageView
 import qualified Vulkan.Sampler.Core as Sampler
 

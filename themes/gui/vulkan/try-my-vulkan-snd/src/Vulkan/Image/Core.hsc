@@ -16,6 +16,7 @@ import Vulkan.Core
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
+import qualified Vulkan.Memory.Core as Memory
 
 #include <vulkan/vulkan.h>
 
@@ -94,3 +95,6 @@ struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
 foreign import ccall "vkCreateImage" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr I ->
 	IO #{type VkResult}
+
+foreign import ccall "vkGetImageMemoryRequirements" getMemoryRequirements ::
+	Device.D -> I -> Ptr Memory.Requirements -> IO ()

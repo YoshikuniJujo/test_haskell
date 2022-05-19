@@ -23,6 +23,7 @@ import Vulkan.Image.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
+import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Image.Core as C
 import qualified Vulkan.Sample.Enum as Sample
 
@@ -111,3 +112,10 @@ create (Device.D dvc) ci mac = (I <$>) . ($ pure) . runContT $ do
 	lift do	r <- C.create dvc pci pac pimg
 		throwUnlessSuccess $ Result r
 		peek pimg
+
+getMemoryRequirements :: Device.D -> I -> IO Memory.Requirements
+getMemoryRequirements (Device.D dvc)
+	(I i) = (Memory.requirementsFromCore <$>) . ($ pure) $ runContT do
+	pr <- ContT alloca
+	lift do	C.getMemoryRequirements dvc i pr
+		peek pr
