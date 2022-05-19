@@ -19,13 +19,13 @@ import Vulkan.Enum
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.Image.Enum
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Swapchain.Enum
 import Vulkan.Khr.Surface.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
+import qualified Vulkan.Image.Enum as Image
 import qualified Vulkan.Image as Image
 import qualified Vulkan.Khr.Surface as Surface
 import qualified Vulkan.Core as C
@@ -45,7 +45,7 @@ data CreateInfo n = CreateInfo {
 	createInfoImageColorSpace :: ColorSpace,
 	createInfoImageExtent :: C.Extent2d,
 	createInfoImageArrayLayers :: Word32,
-	createInfoImageUsage :: UsageFlags,
+	createInfoImageUsage :: Image.UsageFlags,
 	createInfoImageSharingMode :: SharingMode,
 	createInfoQueueFamilyIndices :: [Word32],
 	createInfoPreTransform :: TransformFlagBits,
@@ -65,7 +65,7 @@ createInfoToCore CreateInfo {
 	createInfoImageColorSpace = ColorSpace ics,
 	createInfoImageExtent = iex,
 	createInfoImageArrayLayers = ials,
-	createInfoImageUsage = UsageFlagBits iusg,
+	createInfoImageUsage = Image.UsageFlagBits iusg,
 	createInfoImageSharingMode = SharingMode ism,
 	createInfoQueueFamilyIndices = qfis,
 	createInfoPreTransform = TransformFlagBits pt,
