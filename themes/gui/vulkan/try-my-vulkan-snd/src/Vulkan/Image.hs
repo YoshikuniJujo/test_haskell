@@ -4,6 +4,7 @@ module Vulkan.Image where
 
 import Data.Word
 
+import Vulkan.Enum
 import Vulkan.Image.Enum
 
 import qualified Vulkan.Image.Core as C
@@ -30,3 +31,11 @@ subresourceRangeToCore SubresourceRange {
 		C.subresourceRangeLayerCount = lyc }
 
 newtype I = I C.I deriving Show
+
+data CreateInfo n = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoImageType :: Type,
+	cerateInfoFormat :: Format
+	}
+	deriving Show
