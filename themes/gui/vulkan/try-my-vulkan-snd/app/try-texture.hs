@@ -935,40 +935,50 @@ createTextureImage = do
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Memory.List.write dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
 		(V.toList $ imageData img)
+	(ti, tim) <- createImage
+		(fromIntegral texWidth) (fromIntegral texHeight)
+		Vk.FormatR8g8b8a8Srgb Vk.Image.TilingOptimal
+		(Vk.Image.UsageTransferDstBit .|. Vk.Image.UsageSampledBit)
+		Vk.Memory.PropertyDeviceLocalBit
+	writeGlobal globalTextureImage ti
+	writeGlobal globalTextureImageMemory tim
+
+createImage ::
+	Word32 -> Word32 -> Vk.Format -> Vk.Image.Tiling ->
+	Vk.Image.UsageFlags -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO (Vk.Image.I, Vk.Device.MemoryImage)
+createImage widt hght format tiling usage properties = do
+	dvc <- readGlobal globalDevice
 	let	imageInfo = Vk.Image.CreateInfo {
 			Vk.Image.createInfoNext = Nothing,
 			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
 			Vk.Image.createInfoImageType = Vk.Image.Type2d,
 			Vk.Image.createInfoExtent = Vk.C.Extent3d {
-				Vk.C.extent3dWidth = fromIntegral texWidth,
-				Vk.C.extent3dHeight = fromIntegral texHeight,
+				Vk.C.extent3dWidth = widt, Vk.C.extent3dHeight = hght,
 				Vk.C.extent3dDepth = 1 },
 			Vk.Image.createInfoMipLevels = 1,
 			Vk.Image.createInfoArrayLayers = 1,
-			Vk.Image.createInfoFormat = Vk.FormatR8g8b8a8Srgb,
-			Vk.Image.createInfoTiling = Vk.Image.TilingOptimal,
+			Vk.Image.createInfoFormat = format,
+			Vk.Image.createInfoTiling = tiling,
 			Vk.Image.createInfoInitialLayout =
 				Vk.Image.LayoutUndefined,
-			Vk.Image.createInfoUsage =
-				Vk.Image.UsageTransferDstBit .|.
-				Vk.Image.UsageSampledBit,
+			Vk.Image.createInfoUsage = usage,
 			Vk.Image.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
 	ti <- lift $ Vk.Image.create @() dvc imageInfo nil
-	writeGlobal globalTextureImage ti
 	memRequirements <- lift $ Vk.Image.getMemoryRequirements dvc ti
 	lift $ print memRequirements
 	mti <- findMemoryType
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
-		Vk.Memory.PropertyDeviceLocalBit
+		properties
 	let	allocInfo = Vk.Memory.Image.AllocateInfo {
 			Vk.Memory.Image.allocateInfoNext = Nothing,
 			Vk.Memory.Image.allocateInfoMemoryTypeIndex = mti }
 	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
-	writeGlobal globalTextureImageMemory tim
 	lift $ Vk.Image.bindMemory dvc ti tim
+	pure (ti, tim)
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
