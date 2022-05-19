@@ -983,6 +983,14 @@ createImage widt hght format tiling usage properties = do
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
+transitionImageLayout ::
+	Vk.Image.I -> Vk.Format -> Vk.Image.Layout -> Vk.Image.Layout ->
+	ReaderT Global IO ()
+transitionImageLayout image format oldLayout newLayout = do
+	commandBuffer <- beginSingleTimeCommands
+
+	endSingleTimeCommands commandBuffer
+
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	dvc <- readGlobal globalDevice

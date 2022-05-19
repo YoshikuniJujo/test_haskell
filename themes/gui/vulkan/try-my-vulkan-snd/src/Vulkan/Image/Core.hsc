@@ -102,3 +102,39 @@ foreign import ccall "vkGetImageMemoryRequirements" getMemoryRequirements ::
 foreign import ccall "vkBindImageMemory" bindMemory ::
 	Device.D -> I -> Device.Memory -> #{type VkDeviceSize} ->
 	IO #{type VkResult}
+
+mbType :: #{type VkStructureType}
+mbType = #{const VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER}
+
+struct "MemoryBarrier" #{size VkImageMemoryBarrier}
+		#{alignment VkImageMemoryBarrier} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkImageMemoryBarrier, sType} p mbType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkImageMemoryBarrier, pNext} |],
+		[| #{poke VkImageMemoryBarrier, pNext} |]),
+	("srcAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkImageMemoryBarrier, srcAccessMask} |],
+		[| #{poke VkImageMemoryBarrier, srcAccessMask} |]),
+	("dstAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkImageMemoryBarrier, dstAccessMask} |],
+		[| #{poke VkImageMemoryBarrier, dstAccessMask} |]),
+	("oldLayout", ''#{type VkImageLayout},
+		[| #{peek VkImageMemoryBarrier, oldLayout} |],
+		[| #{poke VkImageMemoryBarrier, oldLayout} |]),
+	("newLayout", ''#{type VkImageLayout},
+		[| #{peek VkImageMemoryBarrier, newLayout} |],
+		[| #{poke VkImageMemoryBarrier, newLayout} |]),
+	("srcQueueFamilyIndex", ''#{type uint32_t},
+		[| #{peek VkImageMemoryBarrier, srcQueueFamilyIndex} |],
+		[| #{poke VkImageMemoryBarrier, srcQueueFamilyIndex} |]),
+	("dstQueueFamilyIndex", ''#{type uint32_t},
+		[| #{peek VkImageMemoryBarrier, dstQueueFamilyIndex} |],
+		[| #{poke VkImageMemoryBarrier, dstQueueFamilyIndex} |]),
+	("image", ''I,
+		[| #{peek VkImageMemoryBarrier, image} |],
+		[| #{poke VkImageMemoryBarrier, image} |]),
+	("subresourceRange", ''SubresourceRange,
+		[| #{peek VkImageMemoryBarrier, subresourceRange} |],
+		[| #{poke VkImageMemoryBarrier, subresourceRange} |]) ]
+	[''Show, ''Storable]
