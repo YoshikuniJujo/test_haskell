@@ -17,11 +17,14 @@ make = createFile'' "/usr/include/vulkan/vulkan_core.h"
 		("AspectFlagBits", "VkImageAspectFlagBits",
 			["Show", "Eq", "Storable", "Bits"])),
 	(	[],
-		(	"Layout", "VkImageLayout",
+		("Layout", "VkImageLayout",
 			["Show", "Eq", "Storable"] ) ),
 	(	[("CreateFlagsZero", Int 0)],
 		("CreateFlagBits", "VkImageCreateFlagBits",
-			["Show", "Eq", "Storable", "Bits"]))
+			["Show", "Eq", "Storable", "Bits"])),
+	(	[],
+		("Type", "VkImageType",
+			["Show", "Eq", "Storable"]))
 	]
 	[nowdoc|
 type UsageFlags = UsageFlagBits

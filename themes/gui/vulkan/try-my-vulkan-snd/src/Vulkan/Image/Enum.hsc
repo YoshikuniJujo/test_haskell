@@ -172,6 +172,13 @@ enum "CreateFlagBits" ''#{type VkImageCreateFlagBits}
 	("CreateFlagBitsMaxEnum",
 		#{const VK_IMAGE_CREATE_FLAG_BITS_MAX_ENUM}) ]
 
+enum "Type" ''#{type VkImageType}
+		[''Show, ''Eq, ''Storable] [
+	("Type1d", #{const VK_IMAGE_TYPE_1D}),
+	("Type2d", #{const VK_IMAGE_TYPE_2D}),
+	("Type3d", #{const VK_IMAGE_TYPE_3D}),
+	("TypeMaxEnum", #{const VK_IMAGE_TYPE_MAX_ENUM}) ]
+
 type UsageFlags = UsageFlagBits
 type AspectFlags = AspectFlagBits
 type CreateFlags = CreateFlagBits

@@ -47,6 +47,9 @@ struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
 		[| #{poke VkImageCreateInfo, pNext} |]),
 	("flags", ''#{type VkImageCreateFlags},
 		[| #{peek VkImageCreateInfo, flags} |],
-		[| #{poke VkImageCreateInfo, flags} |])
+		[| #{poke VkImageCreateInfo, flags} |]),
+	("imageType", ''#{type VkImageType},
+		[| #{peek VkImageCreateInfo, imageType} |],
+		[| #{poke VkImageCreateInfo, imageType} |])
 	]
 	[''Show, ''Storable]
