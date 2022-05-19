@@ -1070,9 +1070,8 @@ createBufferAtom usage properties = do
 	lift $ Vk.Buffer.Atom.bindMemory dvc b bm
 	pure (b, bm)
 
-copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
-	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
-copyBuffer srcBuffer dstBuffer ln = do
+beginSingleTimeCommands :: ReaderT Global IO (Vk.CommandBuffer.C v)
+beginSingleTimeCommands = do
 	cp <- readGlobal globalCommandPool
 	dvc <- readGlobal globalDevice
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
@@ -1086,21 +1085,33 @@ copyBuffer srcBuffer dstBuffer ln = do
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageOneTimeSubmitBit,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-		copyRegion = Vk.Buffer.List.Copy {
-			Vk.Buffer.List.copyLength = ln }
 	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
+	lift $ Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
+	pure commandBuffer
+
+endSingleTimeCommands :: Vk.CommandBuffer.C v -> ReaderT Global IO ()
+endSingleTimeCommands commandBuffer = do
+	dvc <- readGlobal globalDevice
+	gq <- readGlobal globalGraphicsQueue
+	cp <- readGlobal globalCommandPool
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
 			Vk.submitInfoCommandBuffers = [commandBuffer],
 			Vk.submitInfoSignalSemaphores = [] }
-	gq <- readGlobal globalGraphicsQueue
-	lift do	Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
-		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
-		Vk.CommandBuffer.end commandBuffer
+	lift do	Vk.CommandBuffer.end commandBuffer
 		Vk.queueSubmit @() gq [submitInfo] Nothing
 		Vk.queueWaitIdle gq
 		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
+
+copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
+	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
+copyBuffer srcBuffer dstBuffer ln = do
+	let	copyRegion = Vk.Buffer.List.Copy {
+			Vk.Buffer.List.copyLength = ln }
+	commandBuffer <- beginSingleTimeCommands
+	lift $ Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
+	endSingleTimeCommands commandBuffer
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO Word32
