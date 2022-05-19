@@ -120,6 +120,7 @@ library
       Vulkan.Memory.Atom
       Vulkan.Memory.Core
       Vulkan.Memory.Enum
+      Vulkan.Memory.Image
       Vulkan.Memory.List
       Vulkan.Memory.Middle
       Vulkan.PhysicalDevice

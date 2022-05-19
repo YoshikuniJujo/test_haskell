@@ -127,6 +127,7 @@ import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 import qualified Vulkan.Descriptor.Set as Vk.DscSet
 import qualified Vulkan.Descriptor as Vk.Dsc
+import qualified Vulkan.Memory.Image as Vk.Memory.Image
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -186,7 +187,7 @@ data Global = Global {
 	globalDescriptorPool :: IORef Vk.DscPool.P,
 	globalDescriptorSets :: IORef [Vk.DscSet.S],
 	globalTextureImage :: IORef Vk.Image.I,
-	globalTextureImageMemory :: IORef (Vk.Device.MemoryList Word8)
+	globalTextureImageMemory :: IORef Vk.Device.MemoryImage
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -231,7 +232,7 @@ newGlobal = do
 	dp <- newIORef $ Vk.DscPool.P NullPtr
 	dss <- newIORef []
 	ti <- newIORef $ Vk.Image.I NullPtr
-	tim <- newIORef $ Vk.Device.MemoryList NullPtr
+	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -959,6 +960,14 @@ createTextureImage = do
 	writeGlobal globalTextureImage ti
 	memRequirements <- lift $ Vk.Image.getMemoryRequirements dvc ti
 	lift $ print memRequirements
+	mti <- findMemoryType
+		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
+		Vk.Memory.PropertyDeviceLocalBit
+	let	allocInfo = Vk.Memory.Image.AllocateInfo {
+			Vk.Memory.Image.allocateInfoNext = Nothing,
+			Vk.Memory.Image.allocateInfoMemoryTypeIndex = mti }
+	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
+	writeGlobal globalTextureImageMemory tim
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
