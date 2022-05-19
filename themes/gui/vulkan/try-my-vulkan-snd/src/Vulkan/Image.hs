@@ -119,3 +119,8 @@ getMemoryRequirements (Device.D dvc)
 	pr <- ContT alloca
 	lift do	C.getMemoryRequirements dvc i pr
 		peek pr
+
+bindMemory :: Device.D -> I -> Device.MemoryImage -> IO ()
+bindMemory (Device.D dvc) (I img) (Device.MemoryImage mem) = do
+	r <- C.bindMemory dvc img mem 0
+	throwUnlessSuccess $ Result r

@@ -968,6 +968,7 @@ createTextureImage = do
 			Vk.Memory.Image.allocateInfoMemoryTypeIndex = mti }
 	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
 	writeGlobal globalTextureImageMemory tim
+	lift $ Vk.Image.bindMemory dvc ti tim
 
 readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
