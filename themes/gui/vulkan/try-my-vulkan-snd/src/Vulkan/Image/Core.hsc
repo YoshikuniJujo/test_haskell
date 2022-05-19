@@ -69,6 +69,20 @@ struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
 		[| #{poke VkImageCreateInfo, samples} |]),
 	("tiling", ''#{type VkImageTiling},
 		[| #{peek VkImageCreateInfo, tiling} |],
-		[| #{poke VkImageCreateInfo, tiling} |])
-	]
+		[| #{poke VkImageCreateInfo, tiling} |]),
+	("usage", ''#{type VkImageUsageFlags},
+		[| #{peek VkImageCreateInfo, usage} |],
+		[| #{poke VkImageCreateInfo, usage} |]),
+	("sharingMode", ''#{type VkSharingMode},
+		[| #{peek VkImageCreateInfo, sharingMode} |],
+		[| #{poke VkImageCreateInfo, sharingMode} |]),
+	("queueFamilyIndexCount", ''#{type uint32_t},
+		[| #{peek VkImageCreateInfo, queueFamilyIndexCount} |],
+		[| #{poke VkImageCreateInfo, queueFamilyIndexCount} |]),
+	("pQueueFamilyIndices", ''PtrUint32T,
+		[| #{peek VkImageCreateInfo, pQueueFamilyIndices} |],
+		[| #{poke VkImageCreateInfo, pQueueFamilyIndices} |]),
+	("initialLayout", ''#{type VkImageLayout},
+		[| #{peek VkImageCreateInfo, initialLayout} |],
+		[| #{poke VkImageCreateInfo, initialLayout} |]) ]
 	[''Show, ''Storable]
