@@ -10,6 +10,8 @@ import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
+import Vulkan.Base
+
 #include <vulkan/vulkan.h>
 
 struct "SubresourceRange" #{size VkImageSubresourceRange}
@@ -39,6 +41,12 @@ sType = #{const VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO}
 
 struct "CreateInfo" #{size VkImageCreateInfo} #{alignment VkImageCreateInfo} [
 	("sType", ''(), [| const $ pure () |],
-		[| \p _ -> #{poke VkImageCreateInfo, sType} p sType |])
+		[| \p _ -> #{poke VkImageCreateInfo, sType} p sType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkImageCreateInfo, pNext} |],
+		[| #{poke VkImageCreateInfo, pNext} |]),
+	("flags", ''#{type VkImageCreateFlags},
+		[| #{peek VkImageCreateInfo, flags} |],
+		[| #{poke VkImageCreateInfo, flags} |])
 	]
 	[''Show, ''Storable]

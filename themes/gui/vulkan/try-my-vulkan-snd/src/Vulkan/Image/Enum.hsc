@@ -126,5 +126,52 @@ enum "Layout" ''#{type VkImageLayout}
 		#{const VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL_KHR}),
 	("LayoutMaxEnum", #{const VK_IMAGE_LAYOUT_MAX_ENUM}) ]
 
+enum "CreateFlagBits" ''#{type VkImageCreateFlagBits}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("CreateFlagsZero", 0),
+	("CreateSparseBindingBit",
+		#{const VK_IMAGE_CREATE_SPARSE_BINDING_BIT}),
+	("CreateSparseResidencyBit",
+		#{const VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT}),
+	("CreateSparseAliasedBit",
+		#{const VK_IMAGE_CREATE_SPARSE_ALIASED_BIT}),
+	("CreateMutableFormatBit",
+		#{const VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT}),
+	("CreateCubeCompatibleBit",
+		#{const VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT}),
+	("CreateAliasBit", #{const VK_IMAGE_CREATE_ALIAS_BIT}),
+	("CreateSplitInstanceBindRegionsBit",
+		#{const VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT}),
+	("Create2dArrayCompatibleBit",
+		#{const VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT}),
+	("CreateBlockTexelViewCompatibleBit",
+		#{const VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT}),
+	("CreateExtendedUsageBit",
+		#{const VK_IMAGE_CREATE_EXTENDED_USAGE_BIT}),
+	("CreateProtectedBit", #{const VK_IMAGE_CREATE_PROTECTED_BIT}),
+	("CreateDisjointBit", #{const VK_IMAGE_CREATE_DISJOINT_BIT}),
+	("CreateCornerSampledBitNv",
+		#{const VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV}),
+	("CreateSampleLocationsCompatibleDepthBitExt",
+		#{const VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT}),
+	("CreateSubsampledBitExt",
+		#{const VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT}),
+	("CreateFragmentDensityMapOffsetBitQcom",
+		#{const VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM}),
+	("CreateSplitInstanceBindRegionsBitKhr",
+		#{const VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR}),
+	("Create2dArrayCompatibleBitKhr",
+		#{const VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR}),
+	("CreateBlockTexelViewCompatibleBitKhr",
+		#{const VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT_KHR}),
+	("CreateExtendedUsageBitKhr",
+		#{const VK_IMAGE_CREATE_EXTENDED_USAGE_BIT_KHR}),
+	("CreateDisjointBitKhr",
+		#{const VK_IMAGE_CREATE_DISJOINT_BIT_KHR}),
+	("CreateAliasBitKhr", #{const VK_IMAGE_CREATE_ALIAS_BIT_KHR}),
+	("CreateFlagBitsMaxEnum",
+		#{const VK_IMAGE_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
 type UsageFlags = UsageFlagBits
 type AspectFlags = AspectFlagBits
+type CreateFlags = CreateFlagBits
