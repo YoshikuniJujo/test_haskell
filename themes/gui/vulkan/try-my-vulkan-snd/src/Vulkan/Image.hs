@@ -26,6 +26,7 @@ import qualified Vulkan.Device as Device
 import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Image.Core as C
 import qualified Vulkan.Sample.Enum as Sample
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data SubresourceRange = SubresourceRange {
 	subresourceRangeAspectMask :: AspectFlags,
@@ -124,3 +125,40 @@ bindMemory :: Device.D -> I -> Device.MemoryImage -> IO ()
 bindMemory (Device.D dvc) (I img) (Device.MemoryImage mem) = do
 	r <- C.bindMemory dvc img mem 0
 	throwUnlessSuccess $ Result r
+
+data MemoryBarrier n = MemoryBarrier {
+	memoryBarrierNext :: Maybe n,
+	memoryBarrierSrcAccessMask :: AccessFlags,
+	memoryBarrierDstAccessMask :: AccessFlags,
+	memoryBarrierOldLayout :: Layout,
+	memoryBarrierNewLayout :: Layout,
+	memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
+	memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
+	memoryBarrierImage :: I,
+	memoryBarrierSubresourceRange :: SubresourceRange }
+	deriving Show
+
+memoryBarrierToCore :: Pointable n =>
+	MemoryBarrier n -> ContT r IO C.MemoryBarrier
+memoryBarrierToCore MemoryBarrier {
+	memoryBarrierNext = mnxt,
+	memoryBarrierSrcAccessMask = AccessFlagBits sam,
+	memoryBarrierDstAccessMask = AccessFlagBits dam,
+	memoryBarrierOldLayout = Layout ol,
+	memoryBarrierNewLayout = Layout nl,
+	memoryBarrierSrcQueueFamilyIndex = QueueFamily.Index sqfi,
+	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
+	memoryBarrierImage = I img,
+	memoryBarrierSubresourceRange = srr } = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pure C.MemoryBarrier {
+		C.memoryBarrierSType = (),
+		C.memoryBarrierPNext = pnxt,
+		C.memoryBarrierSrcAccessMask = sam,
+		C.memoryBarrierDstAccessMask = dam,
+		C.memoryBarrierOldLayout = ol,
+		C.memoryBarrierNewLayout = nl,
+		C.memoryBarrierSrcQueueFamilyIndex = sqfi,
+		C.memoryBarrierDstQueueFamilyIndex = dqfi,
+		C.memoryBarrierImage = img,
+		C.memoryBarrierSubresourceRange = subresourceRangeToCore srr }

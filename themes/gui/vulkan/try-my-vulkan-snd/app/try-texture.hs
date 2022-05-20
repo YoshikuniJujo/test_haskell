@@ -128,6 +128,7 @@ import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 import qualified Vulkan.Descriptor.Set as Vk.DscSet
 import qualified Vulkan.Descriptor as Vk.Dsc
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
+import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -988,6 +989,30 @@ transitionImageLayout ::
 	ReaderT Global IO ()
 transitionImageLayout image format oldLayout newLayout = do
 	commandBuffer <- beginSingleTimeCommands
+
+	let	barrier = Vk.Image.MemoryBarrier {
+			Vk.Image.memoryBarrierNext = Nothing,
+			Vk.Image.memoryBarrierOldLayout = oldLayout,
+			Vk.Image.memoryBarrierNewLayout = newLayout,
+			Vk.Image.memoryBarrierSrcQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Image.memoryBarrierDstQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Image.memoryBarrierImage = image,
+			Vk.Image.memoryBarrierSubresourceRange =
+				Vk.Image.SubresourceRange {
+					Vk.Image.subresourceRangeAspectMask =
+						Vk.Image.AspectColorBit,
+					Vk.Image.subresourceRangeBaseMipLevel =
+						0,
+					Vk.Image.subresourceRangeLevelCount = 1,
+					Vk.Image.subresourceRangeBaseArrayLayer
+						= 0,
+					Vk.Image.subresourceRangeLayerCount = 1
+					},
+			Vk.Image.memoryBarrierSrcAccessMask = Vk.AccessFlagsZero,
+			Vk.Image.memoryBarrierDstAccessMask = Vk.AccessFlagsZero
+			}
 
 	endSingleTimeCommands commandBuffer
 
