@@ -1,13 +1,19 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 -- {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Command.List where
 
 import GHC.Generics
+import Foreign.Marshal.Array
 import Foreign.Storable
+import Control.Arrow
+import Control.Monad.Cont
+import Data.Word
 import TypeLevel.List
 
 import qualified Foreign.Storable.Generic
@@ -18,8 +24,13 @@ import Vulkan.Pipeline.VertexInputState.BindingStrideList (Simplify, MapUnList, 
 import Vulkan.Enum
 
 import qualified Vulkan.Buffer.List as Buffer
+import qualified Vulkan.Buffer.List as Buffer.List
+import qualified Vulkan.Buffer.Middle as Buffer.M
 import qualified Vulkan.CommandBuffer as CommandBuffer
 import qualified Vulkan.Command.Middle as M
+import qualified Vulkan.Command.Core as C
+import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Enum as Image
 
 bindVertexBuffers :: forall vs vs' .
 	InfixIndex vs' (MapUnList (MapSubType (Flatten (Rep vs)))) =>
@@ -35,3 +46,13 @@ copyBuffer cb s d cp = M.copyBuffer
 
 bindIndexBuffer :: CommandBuffer.C vs -> Buffer.B v -> IndexType -> IO ()
 bindIndexBuffer cb ib tp = M.bindIndexBuffer cb (Buffer.bToMiddle ib) 0 tp
+
+copyBufferToImage ::
+	CommandBuffer.C vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
+	[Buffer.M.ImageCopy] -> IO ()
+copyBufferToImage (CommandBuffer.C cb)
+	(Buffer.List.B sb) (Image.I di) (Image.Layout dil)
+	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
+	prs <- ContT $ allocaArray rc
+	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
+	lift $ C.copyBufferToImage cb sb di dil (fromIntegral rc) prs

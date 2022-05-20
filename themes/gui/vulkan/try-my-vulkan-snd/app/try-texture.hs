@@ -1048,6 +1048,8 @@ copyBufferToImage buffer image width height = do
 				Vk.C.extent3dWidth = width,
 				Vk.C.extent3dHeight = height,
 				Vk.C.extent3dDepth = 1 } }
+	lift $ Vk.Cmd.List.copyBufferToImage commandBuffer buffer image
+		Vk.Image.LayoutTransferDstOptimal [region]
 
 	endSingleTimeCommands commandBuffer
 

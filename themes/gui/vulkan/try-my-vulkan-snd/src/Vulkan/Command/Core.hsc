@@ -59,3 +59,7 @@ foreign import ccall "vkCmdPipelineBarrier" pipelineBarrier ::
 	#{type uint32_t} -> Ptr Memory.Barrier ->
 	#{type uint32_t} -> Ptr Buffer.MemoryBarrier ->
 	#{type uint32_t} -> Ptr Image.MemoryBarrier -> IO ()
+
+foreign import ccall "vkCmdCopyBufferToImage" copyBufferToImage ::
+	CommandBuffer.C -> Buffer.B -> Image.I -> #{type VkImageLayout} ->
+	#{type uint32_t} -> Ptr Buffer.ImageCopy -> IO ()

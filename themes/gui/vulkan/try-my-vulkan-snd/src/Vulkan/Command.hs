@@ -26,6 +26,7 @@ import qualified Vulkan.Descriptor.Set as Descriptor.Set
 import qualified Vulkan.Memory.Middle as Memory.M
 import qualified Vulkan.Buffer.Middle as Buffer.M
 import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Enum as Image
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
@@ -88,3 +89,13 @@ pipelineBarrier (CommandBuffer.C cb)
 	lift $ pokeArray pibs cibs
 	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
 		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
+
+copyBufferToImage ::
+	CommandBuffer.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
+	[Buffer.M.ImageCopy] -> IO ()
+copyBufferToImage (CommandBuffer.C cb)
+	(Buffer.M.B sb) (Image.I di) (Image.Layout dil)
+	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
+	prs <- ContT $ allocaArray rc
+	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
+	lift $ C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
