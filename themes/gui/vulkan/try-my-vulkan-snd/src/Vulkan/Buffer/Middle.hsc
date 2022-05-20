@@ -25,6 +25,7 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Core as C
 import qualified Vulkan.Memory.Middle as Memory
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 #include <vulkan/vulkan.h>
 
@@ -89,3 +90,37 @@ getMemoryRequirements (Device.D dvc) (B b) =
 bindMemory :: Device.D -> B -> Device.Memory -> Device.Size -> IO ()
 bindMemory (Device.D dvc) (B b) (Device.Memory mem) (Device.Size sz) =
 	throwUnlessSuccess . Result =<< C.bindMemory dvc b mem sz
+
+data MemoryBarrier n = MemoryBarrier {
+	memoryBarrierNext :: Maybe n,
+	memoryBarrierSrcAccessMask :: AccessFlags,
+	memoryBarrierDstAccessMask :: AccessFlags,
+	memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
+	memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
+	memoryBarrierBuffer :: B,
+	memoryBarrierOffset :: Device.Size,
+	memoryBarrierSize :: Device.Size }
+	deriving Show
+
+memoryBarrierToCore :: Pointable n =>
+	MemoryBarrier n -> ContT r IO C.MemoryBarrier
+memoryBarrierToCore MemoryBarrier {
+	memoryBarrierNext = mnxt,
+	memoryBarrierSrcAccessMask = AccessFlagBits sam,
+	memoryBarrierDstAccessMask = AccessFlagBits dam,
+	memoryBarrierSrcQueueFamilyIndex = QueueFamily.Index sqfi,
+	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
+	memoryBarrierBuffer = B b,
+	memoryBarrierOffset = Device.Size ofst,
+	memoryBarrierSize = Device.Size sz } = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pure C.MemoryBarrier {
+		C.memoryBarrierSType = (),
+		C.memoryBarrierPNext = pnxt,
+		C.memoryBarrierSrcAccessMask = sam,
+		C.memoryBarrierDstAccessMask = dam,
+		C.memoryBarrierSrcQueueFamilyIndex = sqfi,
+		C.memoryBarrierDstQueueFamilyIndex = dqfi,
+		C.memoryBarrierBuffer = b,
+		C.memoryBarrierOffset = ofst,
+		C.memoryBarrierSize = sz }

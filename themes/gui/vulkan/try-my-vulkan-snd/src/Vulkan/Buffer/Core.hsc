@@ -74,3 +74,36 @@ struct "Copy" #{size VkBufferCopy} #{alignment VkBufferCopy} [
 		[| #{peek VkBufferCopy, size} |],
 		[| #{poke VkBufferCopy, size} |]) ]
 	[''Show, ''Storable]
+
+mbType :: #{type VkStructureType}
+mbType = #{const VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER}
+
+struct "MemoryBarrier" #{size VkBufferMemoryBarrier}
+		#{alignment VkBufferMemoryBarrier} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkBufferMemoryBarrier, sType} p mbType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkBufferMemoryBarrier, pNext} |],
+		[| #{poke VkBufferMemoryBarrier, pNext} |]),
+	("srcAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkBufferMemoryBarrier, srcAccessMask} |],
+		[| #{poke VkBufferMemoryBarrier, srcAccessMask} |]),
+	("dstAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkBufferMemoryBarrier, dstAccessMask} |],
+		[| #{poke VkBufferMemoryBarrier, dstAccessMask} |]),
+	("srcQueueFamilyIndex", ''#{type uint32_t},
+		[| #{peek VkBufferMemoryBarrier, srcQueueFamilyIndex} |],
+		[| #{poke VkBufferMemoryBarrier, srcQueueFamilyIndex} |]),
+	("dstQueueFamilyIndex", ''#{type uint32_t},
+		[| #{peek VkBufferMemoryBarrier, dstQueueFamilyIndex} |],
+		[| #{poke VkBufferMemoryBarrier, dstQueueFamilyIndex} |]),
+	("buffer", ''B,
+		[| #{peek VkBufferMemoryBarrier, buffer} |],
+		[| #{poke VkBufferMemoryBarrier, buffer} |]),
+	("offset", ''#{type VkDeviceSize},
+		[| #{peek VkBufferMemoryBarrier, offset} |],
+		[| #{poke VkBufferMemoryBarrier, offset} |]),
+	("size", ''#{type VkDeviceSize},
+		[| #{peek VkBufferMemoryBarrier, size} |],
+		[| #{poke VkBufferMemoryBarrier, size} |]) ]
+	[''Show, ''Storable]
