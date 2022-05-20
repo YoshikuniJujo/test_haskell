@@ -19,6 +19,7 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
+import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Memory.Enum
@@ -127,4 +128,20 @@ map (Device.D dvc) (Device.Memory mem)
 unmap :: Device.D -> Device.Memory -> IO ()
 unmap (Device.D dvc) (Device.Memory mem) = C.unmap dvc mem
 
--- copy :: Device.D ->
+data Barrier n = Barrier {
+	barrierNext :: Maybe n,
+	barrierSrcAccessMask :: AccessFlags,
+	barrierDstAccessMask :: AccessFlags }
+	deriving Show
+
+barrierToCore :: Pointable n => Barrier n -> ContT r IO C.Barrier
+barrierToCore Barrier {
+	barrierNext = mnxt,
+	barrierSrcAccessMask = AccessFlagBits sam,
+	barrierDstAccessMask = AccessFlagBits dam } = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pure C.Barrier {
+		C.barrierSType = (),
+		C.barrierPNext = pnxt,
+		C.barrierSrcAccessMask = sam,
+		C.barrierDstAccessMask = dam }

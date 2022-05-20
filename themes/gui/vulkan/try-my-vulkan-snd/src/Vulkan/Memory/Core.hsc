@@ -90,3 +90,20 @@ foreign import ccall "vkMapMemory" map ::
 
 foreign import ccall "vkUnmapMemory" unmap ::
 	Device.D -> Device.Memory -> IO ()
+
+bType :: #{type VkStructureType}
+bType = #{const VK_STRUCTURE_TYPE_MEMORY_BARRIER}
+
+struct "Barrier" #{size VkMemoryBarrier} #{alignment VkMemoryBarrier} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkMemoryBarrier, sType} p bType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkMemoryBarrier, pNext} |],
+		[| #{poke VkMemoryBarrier, pNext} |]),
+	("srcAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkMemoryBarrier, srcAccessMask} |],
+		[| #{poke VkMemoryBarrier, srcAccessMask} |]),
+	("dstAccessMask", ''#{type VkAccessFlags},
+		[| #{peek VkMemoryBarrier, dstAccessMask} |],
+		[| #{poke VkMemoryBarrier, dstAccessMask} |]) ]
+	[''Show, ''Storable]
