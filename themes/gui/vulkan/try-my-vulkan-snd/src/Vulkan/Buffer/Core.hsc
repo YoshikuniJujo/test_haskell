@@ -125,6 +125,8 @@ struct "ImageCopy" #{size VkBufferImageCopy} #{alignment VkBufferImageCopy} [
 		[| #{poke VkBufferImageCopy, imageSubresource} |]),
 	("imageOffset", ''Offset3d,
 		[| #{peek VkBufferImageCopy, imageOffset} |],
-		[| #{poke VkBufferImageCopy, imageOffset} |])
-	]
+		[| #{poke VkBufferImageCopy, imageOffset} |]),
+	("imageExtent", ''Extent3d,
+		[| #{peek VkBufferImageCopy, imageExtent} |],
+		[| #{poke VkBufferImageCopy, imageExtent} |]) ]
 	[''Show, ''Storable]

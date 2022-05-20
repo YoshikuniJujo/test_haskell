@@ -129,6 +129,7 @@ import qualified Vulkan.Descriptor.Set as Vk.DscSet
 import qualified Vulkan.Descriptor as Vk.Dsc
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
+import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -1024,6 +1025,29 @@ copyBufferToImage ::
 	ReaderT Global IO ()
 copyBufferToImage buffer image width height = do
 	commandBuffer <- beginSingleTimeCommands
+
+	let	region = Vk.Buffer.M.ImageCopy {
+			Vk.Buffer.M.imageCopyBufferOffset = 0,
+			Vk.Buffer.M.imageCopyBufferRowLength = 0,
+			Vk.Buffer.M.imageCopyBufferImageHeight = 0,
+
+			Vk.Buffer.M.imageCopyImageSubresource =
+				Vk.Image.SubresourceLayers {
+					Vk.Image.subresourceLayersAspectMask =
+						Vk.Image.AspectColorBit,
+					Vk.Image.subresourceLayersMipLevel = 0,
+					Vk.Image.subresourceLayersBaseArrayLayer
+						= 0,
+					Vk.Image.subresourceLayersLayerCount = 1
+					},
+			Vk.Buffer.M.imageCopyImageOffset = Vk.C.Offset3d {
+				Vk.C.offset3dX = 0,
+				Vk.C.offset3dY = 0,
+				Vk.C.offset3dZ = 0 },
+			Vk.Buffer.M.imageCopyImageExtent = Vk.C.Extent3d {
+				Vk.C.extent3dWidth = width,
+				Vk.C.extent3dHeight = height,
+				Vk.C.extent3dDepth = 1 } }
 
 	endSingleTimeCommands commandBuffer
 

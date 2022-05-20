@@ -16,6 +16,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Core
 import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
@@ -26,6 +27,7 @@ import qualified Vulkan.Device as Device
 import qualified Vulkan.Buffer.Core as C
 import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Vulkan.Image as Image
 
 #include <vulkan/vulkan.h>
 
@@ -124,3 +126,27 @@ memoryBarrierToCore MemoryBarrier {
 		C.memoryBarrierBuffer = b,
 		C.memoryBarrierOffset = ofst,
 		C.memoryBarrierSize = sz }
+
+data ImageCopy = ImageCopy {
+	imageCopyBufferOffset :: Device.Size,
+	imageCopyBufferRowLength :: Word32,
+	imageCopyBufferImageHeight :: Word32,
+	imageCopyImageSubresource :: Image.SubresourceLayers,
+	imageCopyImageOffset :: Offset3d,
+	imageCopyImageExtent :: Extent3d }
+	deriving Show
+
+imageCopyToCore :: ImageCopy -> C.ImageCopy
+imageCopyToCore ImageCopy {
+	imageCopyBufferOffset = Device.Size bo,
+	imageCopyBufferRowLength = brl,
+	imageCopyBufferImageHeight = bih,
+	imageCopyImageSubresource = isr,
+	imageCopyImageOffset = io,
+	imageCopyImageExtent = ie } = C.ImageCopy {
+	C.imageCopyBufferOffset = bo,
+	C.imageCopyBufferRowLength = brl,
+	C.imageCopyBufferImageHeight = bih,
+	C.imageCopyImageSubresource = Image.subresourceLayersToCore isr,
+	C.imageCopyImageOffset = io,
+	C.imageCopyImageExtent = ie }

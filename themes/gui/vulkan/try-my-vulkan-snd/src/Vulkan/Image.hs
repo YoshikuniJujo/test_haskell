@@ -162,3 +162,21 @@ memoryBarrierToCore MemoryBarrier {
 		C.memoryBarrierDstQueueFamilyIndex = dqfi,
 		C.memoryBarrierImage = img,
 		C.memoryBarrierSubresourceRange = subresourceRangeToCore srr }
+
+data SubresourceLayers = SubresourceLayers {
+	subresourceLayersAspectMask :: AspectFlags,
+	subresourceLayersMipLevel :: Word32,
+	subresourceLayersBaseArrayLayer :: Word32,
+	subresourceLayersLayerCount :: Word32 }
+	deriving Show
+
+subresourceLayersToCore :: SubresourceLayers -> C.SubresourceLayers
+subresourceLayersToCore SubresourceLayers {
+	subresourceLayersAspectMask = AspectFlagBits am,
+	subresourceLayersMipLevel = ml,
+	subresourceLayersBaseArrayLayer = bal,
+	subresourceLayersLayerCount = lc } = C.SubresourceLayers {
+		C.subresourceLayersAspectMask = am,
+		C.subresourceLayersMipLevel = ml,
+		C.subresourceLayersBaseArrayLayer = bal,
+		C.subresourceLayersLayerCount = lc }
