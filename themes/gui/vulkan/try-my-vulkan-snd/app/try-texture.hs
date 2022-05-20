@@ -944,6 +944,13 @@ createTextureImage = do
 		Vk.Memory.PropertyDeviceLocalBit
 	writeGlobal globalTextureImage ti
 	writeGlobal globalTextureImageMemory tim
+	transitionImageLayout ti Vk.FormatR8g8b8a8Srgb Vk.Image.LayoutUndefined
+		Vk.Image.LayoutTransferDstOptimal
+	copyBufferToImage stagingBuffer ti
+		(fromIntegral texWidth) (fromIntegral texHeight)
+	transitionImageLayout ti Vk.FormatR8g8b8a8Srgb
+		Vk.Image.LayoutTransferDstOptimal
+		Vk.Image.LayoutShaderReadOnlyOptimal
 
 createImage ::
 	Word32 -> Word32 -> Vk.Format -> Vk.Image.Tiling ->
@@ -1023,7 +1030,7 @@ transitionImageLayout image format oldLayout newLayout = do
 copyBufferToImage ::
 	Vk.Buffer.List.B Word8 -> Vk.Image.I -> Word32 -> Word32 ->
 	ReaderT Global IO ()
-copyBufferToImage buffer image width height = do
+copyBufferToImage buffer image wdt hgt = do
 	commandBuffer <- beginSingleTimeCommands
 
 	let	region = Vk.Buffer.M.ImageCopy {
@@ -1045,8 +1052,8 @@ copyBufferToImage buffer image width height = do
 				Vk.C.offset3dY = 0,
 				Vk.C.offset3dZ = 0 },
 			Vk.Buffer.M.imageCopyImageExtent = Vk.C.Extent3d {
-				Vk.C.extent3dWidth = width,
-				Vk.C.extent3dHeight = height,
+				Vk.C.extent3dWidth = wdt,
+				Vk.C.extent3dHeight = hgt,
 				Vk.C.extent3dDepth = 1 } }
 	lift $ Vk.Cmd.List.copyBufferToImage commandBuffer buffer image
 		Vk.Image.LayoutTransferDstOptimal [region]
