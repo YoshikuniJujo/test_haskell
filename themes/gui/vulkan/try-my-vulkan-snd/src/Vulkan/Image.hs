@@ -180,3 +180,9 @@ subresourceLayersToCore SubresourceLayers {
 		C.subresourceLayersMipLevel = ml,
 		C.subresourceLayersBaseArrayLayer = bal,
 		C.subresourceLayersLayerCount = lc }
+
+destroy :: Pointable n =>
+	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (I img) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.destroy dvc img pac

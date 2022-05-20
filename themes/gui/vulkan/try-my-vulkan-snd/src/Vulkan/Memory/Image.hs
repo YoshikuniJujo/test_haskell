@@ -34,3 +34,8 @@ allocate :: (Pointable n, Pointable n') =>
 allocate dvc img ai mac = do
 	mai <- allocateInfoToMiddle dvc img ai
 	(\(Device.Memory m) -> Device.MemoryImage m) <$> M.allocate dvc mai mac
+
+free :: Pointable n =>
+	Device.D -> Device.MemoryImage -> Maybe (AllocationCallbacks.A n) ->
+	IO ()
+free dvc (Device.MemoryImage m) mac = M.free dvc (Device.Memory m) mac

@@ -951,6 +951,8 @@ createTextureImage = do
 	transitionImageLayout ti Vk.FormatR8g8b8a8Srgb
 		Vk.Image.LayoutTransferDstOptimal
 		Vk.Image.LayoutShaderReadOnlyOptimal
+	lift do	Vk.Buffer.List.destroy dvc stagingBuffer nil
+		Vk.Memory.List.free dvc stagingBufferMemory nil
 
 createImage ::
 	Word32 -> Word32 -> Vk.Format -> Vk.Image.Tiling ->
@@ -998,7 +1000,22 @@ transitionImageLayout ::
 transitionImageLayout image format oldLayout newLayout = do
 	commandBuffer <- beginSingleTimeCommands
 
-	let	barrier = Vk.Image.MemoryBarrier {
+	let	(bSrc, bDst, srcSt, dstSt) = case (oldLayout, newLayout) of
+			(Vk.Image.LayoutUndefined,
+				Vk.Image.LayoutTransferDstOptimal) -> (
+					Vk.AccessFlagsZero,
+					Vk.AccessTransferWriteBit,
+					Vk.Ppl.StageTopOfPipeBit,
+					Vk.Ppl.StageTransferBit )
+			(Vk.Image.LayoutTransferDstOptimal,
+				Vk.Image.LayoutShaderReadOnlyOptimal) -> (
+					Vk.AccessTransferWriteBit,
+					Vk.AccessShaderReadBit,
+					Vk.Ppl.StageTransferBit,
+					Vk.Ppl.StageFragmentShaderBit )
+			_ -> error "unsupported layout transition!"
+
+		barrier = Vk.Image.MemoryBarrier {
 			Vk.Image.memoryBarrierNext = Nothing,
 			Vk.Image.memoryBarrierOldLayout = oldLayout,
 			Vk.Image.memoryBarrierNewLayout = newLayout,
@@ -1018,12 +1035,12 @@ transitionImageLayout image format oldLayout newLayout = do
 						= 0,
 					Vk.Image.subresourceRangeLayerCount = 1
 					},
-			Vk.Image.memoryBarrierSrcAccessMask = Vk.AccessFlagsZero,
-			Vk.Image.memoryBarrierDstAccessMask = Vk.AccessFlagsZero
+			Vk.Image.memoryBarrierSrcAccessMask = bSrc,
+			Vk.Image.memoryBarrierDstAccessMask = bDst
 			}
+
 	lift $ Vk.Cmd.pipelineBarrier @() @() @() commandBuffer
-		Vk.Ppl.StageFlagsZero Vk.Ppl.StageFlagsZero
-		Vk.DependencyFlagsZero [] [] [barrier]
+		srcSt dstSt Vk.DependencyFlagsZero [] [] [barrier]
 
 	endSingleTimeCommands commandBuffer
 
@@ -1475,6 +1492,12 @@ cleanup :: ReaderT Global IO ()
 cleanup = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
+
+	ti <- readGlobal globalTextureImage
+	lift $ Vk.Image.destroy dvc ti nil
+
+	tim <- readGlobal globalTextureImageMemory
+	lift $ Vk.Memory.Image.free dvc tim nil
 
 	ubs <- readGlobal globalUniformBuffers
 	lift $ flip (Vk.Buffer.Atom.destroy dvc) nil `mapM_` ubs

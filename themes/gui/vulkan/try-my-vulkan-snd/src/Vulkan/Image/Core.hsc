@@ -154,3 +154,6 @@ struct "SubresourceLayers" #{size VkImageSubresourceLayers}
 		[| #{peek VkImageSubresourceLayers, layerCount} |],
 		[| #{poke VkImageSubresourceLayers, layerCount} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkDestroyImage" destroy ::
+	Device.D -> I -> Ptr AllocationCallbacks.A -> IO ()
