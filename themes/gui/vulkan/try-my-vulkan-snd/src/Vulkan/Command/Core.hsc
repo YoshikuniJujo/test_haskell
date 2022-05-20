@@ -12,6 +12,8 @@ import qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import qualified Vulkan.Buffer.Core as Buffer
 import qualified Vulkan.Pipeline.Layout.Core as Pipeline.Layout
 import qualified Vulkan.Descriptor.Set.Core as DscSet
+import qualified Vulkan.Memory.Core as Memory
+import qualified Vulkan.Image.Core as Image
 
 #include <vulkan/vulkan.h>
 
@@ -49,3 +51,11 @@ foreign import ccall "vkCmdBindDescriptorSets" bindDescriptorSets ::
 	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.Layout.L ->
 	#{type uint32_t} -> #{type uint32_t} -> Ptr DscSet.S ->
 	#{type uint32_t} -> Ptr #{type uint32_t} -> IO ()
+
+foreign import ccall "vkCmdPipelineBarrier" pipelineBarrier ::
+	CommandBuffer.C ->
+	#{type VkPipelineStageFlags} -> #{type VkPipelineStageFlags} ->
+	#{type VkDependencyFlags} ->
+	#{type uint32_t} -> Ptr Memory.Barrier ->
+	#{type uint32_t} -> Ptr Buffer.MemoryBarrier ->
+	#{type uint32_t} -> Ptr Image.MemoryBarrier -> IO ()

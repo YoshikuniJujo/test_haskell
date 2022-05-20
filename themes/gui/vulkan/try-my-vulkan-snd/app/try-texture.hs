@@ -1013,6 +1013,9 @@ transitionImageLayout image format oldLayout newLayout = do
 			Vk.Image.memoryBarrierSrcAccessMask = Vk.AccessFlagsZero,
 			Vk.Image.memoryBarrierDstAccessMask = Vk.AccessFlagsZero
 			}
+	lift $ Vk.Cmd.pipelineBarrier @() @() @() commandBuffer
+		Vk.Ppl.StageFlagsZero Vk.Ppl.StageFlagsZero
+		Vk.DependencyFlagsZero [] [] [barrier]
 
 	endSingleTimeCommands commandBuffer
 

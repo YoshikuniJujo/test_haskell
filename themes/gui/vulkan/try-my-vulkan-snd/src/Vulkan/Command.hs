@@ -13,6 +13,7 @@ import Data.Word
 import Data.Int
 
 import Vulkan
+import Vulkan.Enum
 
 import qualified Vulkan.CommandBuffer as CommandBuffer
 import qualified Vulkan.RenderPass as RenderPass
@@ -22,6 +23,9 @@ import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
 import qualified Vulkan.Pipeline.Layout as Pipeline.Layout
 import qualified Vulkan.Descriptor.Set as Descriptor.Set
+import qualified Vulkan.Memory.Middle as Memory.M
+import qualified Vulkan.Buffer.Middle as Buffer.M
+import qualified Vulkan.Image as Image
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
@@ -60,3 +64,27 @@ bindDescriptorSets
 	lift $ pokeArray pdos dos
 	lift $ C.bindDescriptorSets
 		cb bp lyt fs (fromIntegral dsc) pdss (fromIntegral doc) pdos
+
+pipelineBarrier ::
+	(Pointable n, Pointable n', Pointable n'') =>
+	CommandBuffer.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	DependencyFlags ->
+	[Memory.M.Barrier n] -> [Buffer.M.MemoryBarrier n'] ->
+	[Image.MemoryBarrier n''] -> IO ()
+pipelineBarrier (CommandBuffer.C cb)
+	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
+	(DependencyFlagBits dfs)
+	(length &&& id -> (mbc, mbs))
+	(length &&& id -> (bbc, bbs))
+	(length &&& id -> (ibc, ibs)) = ($ pure) $ runContT do
+	cmbs <- Memory.M.barrierToCore `mapM` mbs
+	pmbs <- ContT $ allocaArray mbc
+	lift $ pokeArray pmbs cmbs
+	cbbs <- Buffer.M.memoryBarrierToCore `mapM` bbs
+	pbbs <- ContT $ allocaArray bbc
+	lift $ pokeArray pbbs cbbs
+	cibs <- Image.memoryBarrierToCore `mapM` ibs
+	pibs <- ContT $ allocaArray ibc
+	lift $ pokeArray pibs cibs
+	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
+		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
