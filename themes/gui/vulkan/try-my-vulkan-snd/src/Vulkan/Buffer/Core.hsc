@@ -11,11 +11,13 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Vulkan.Core
 import Vulkan.Base
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Memory.Core as Memory
+import qualified Vulkan.Image.Core as Image
 
 #include <vulkan/vulkan.h>
 
@@ -106,4 +108,23 @@ struct "MemoryBarrier" #{size VkBufferMemoryBarrier}
 	("size", ''#{type VkDeviceSize},
 		[| #{peek VkBufferMemoryBarrier, size} |],
 		[| #{poke VkBufferMemoryBarrier, size} |]) ]
+	[''Show, ''Storable]
+
+struct "ImageCopy" #{size VkBufferImageCopy} #{alignment VkBufferImageCopy} [
+	("bufferOffset", ''#{type VkDeviceSize},
+		[| #{peek VkBufferImageCopy, bufferOffset} |],
+		[| #{poke VkBufferImageCopy, bufferOffset} |]),
+	("bufferRowLength", ''#{type uint32_t},
+		[| #{peek VkBufferImageCopy, bufferRowLength} |],
+		[| #{poke VkBufferImageCopy, bufferRowLength} |]),
+	("bufferImageHeight", ''#{type uint32_t},
+		[| #{peek VkBufferImageCopy, bufferImageHeight} |],
+		[| #{poke VkBufferImageCopy, bufferImageHeight} |]),
+	("imageSubresource", ''Image.SubresourceLayers,
+		[| #{peek VkBufferImageCopy, imageSubresource} |],
+		[| #{poke VkBufferImageCopy, imageSubresource} |]),
+	("imageOffset", ''Offset3d,
+		[| #{peek VkBufferImageCopy, imageOffset} |],
+		[| #{poke VkBufferImageCopy, imageOffset} |])
+	]
 	[''Show, ''Storable]

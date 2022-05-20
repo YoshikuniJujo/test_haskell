@@ -107,6 +107,15 @@ struct "Offset2d" #{size VkOffset2D} #{alignment VkOffset2D} [
 		[| #{poke VkOffset2D, y} |]) ]
 	[''Show, ''Storable]
 
+struct "Offset3d" #{size VkOffset3D} #{alignment VkOffset3D} [
+	("x", ''#{type int32_t}, [| #{peek VkOffset3D, x} |],
+		[| #{poke VkOffset3D, x} |]),
+	("y", ''#{type int32_t}, [| #{peek VkOffset3D, y} |],
+		[| #{poke VkOffset3D, y} |]),
+	("z", ''#{type int32_t}, [| #{peek VkOffset3D, z} |],
+		[| #{poke VkOffset3D, z} |]) ]
+	[''Show, ''Storable]
+
 struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
 	("offset", ''Offset2d, [| #{peek VkRect2D, offset} |],
 		[| #{poke VkRect2D, offset} |]),

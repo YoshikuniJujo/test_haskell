@@ -1019,6 +1019,14 @@ transitionImageLayout image format oldLayout newLayout = do
 
 	endSingleTimeCommands commandBuffer
 
+copyBufferToImage ::
+	Vk.Buffer.List.B Word8 -> Vk.Image.I -> Word32 -> Word32 ->
+	ReaderT Global IO ()
+copyBufferToImage buffer image width height = do
+	commandBuffer <- beginSingleTimeCommands
+
+	endSingleTimeCommands commandBuffer
+
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	dvc <- readGlobal globalDevice

@@ -138,3 +138,19 @@ struct "MemoryBarrier" #{size VkImageMemoryBarrier}
 		[| #{peek VkImageMemoryBarrier, subresourceRange} |],
 		[| #{poke VkImageMemoryBarrier, subresourceRange} |]) ]
 	[''Show, ''Storable]
+
+struct "SubresourceLayers" #{size VkImageSubresourceLayers}
+		#{alignment VkImageSubresourceLayers} [
+	("aspectMask", ''#{type VkImageAspectFlags},
+		[| #{peek VkImageSubresourceLayers, aspectMask} |],
+		[| #{poke VkImageSubresourceLayers, aspectMask} |]),
+	("mipLevel", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceLayers, mipLevel} |],
+		[| #{poke VkImageSubresourceLayers, mipLevel} |]),
+	("baseArrayLayer", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceLayers, baseArrayLayer} |],
+		[| #{poke VkImageSubresourceLayers, baseArrayLayer} |]),
+	("layerCount", ''#{type uint32_t},
+		[| #{peek VkImageSubresourceLayers, layerCount} |],
+		[| #{poke VkImageSubresourceLayers, layerCount} |]) ]
+	[''Show, ''Storable]
