@@ -189,7 +189,8 @@ data Global = Global {
 	globalDescriptorPool :: IORef Vk.DscPool.P,
 	globalDescriptorSets :: IORef [Vk.DscSet.S],
 	globalTextureImage :: IORef Vk.Image.I,
-	globalTextureImageMemory :: IORef Vk.Device.MemoryImage
+	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
+	globalTextureImageView :: IORef Vk.ImageView.I
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -235,6 +236,7 @@ newGlobal = do
 	dss <- newIORef []
 	ti <- newIORef $ Vk.Image.I NullPtr
 	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	tiv <- newIORef $ Vk.ImageView.I NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -270,7 +272,8 @@ newGlobal = do
 		globalDescriptorPool = dp,
 		globalDescriptorSets = dss,
 		globalTextureImage = ti,
-		globalTextureImageMemory = tim
+		globalTextureImageMemory = tim,
+		globalTextureImageView = tiv
 		}
 
 run :: ReaderT Global IO ()
@@ -307,6 +310,7 @@ initVulkan = do
 	createFramebuffers
 	createCommandPool
 	createTextureImage
+	createTextureImageView
 	createVertexBuffer
 	createIndexBuffer
 	createUniformBuffers
@@ -1076,6 +1080,42 @@ copyBufferToImage buffer image wdt hgt = do
 		Vk.Image.LayoutTransferDstOptimal [region]
 
 	endSingleTimeCommands commandBuffer
+
+createTextureImageView :: ReaderT Global IO ()
+createTextureImageView = do
+	ti <- readGlobal globalTextureImage
+	let	viewInfo = Vk.ImageView.CreateInfo {
+			Vk.ImageView.createInfoNext = Nothing,
+			Vk.ImageView.createInfoFlags =
+				Vk.ImageView.CreateFlagsZero,
+			Vk.ImageView.createInfoImage = ti,
+			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
+			Vk.ImageView.createInfoFormat = Vk.FormatR8g8b8a8Srgb,
+			Vk.ImageView.createInfoComponents =
+				Vk.Component.Mapping {
+					Vk.Component.mappingR =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingG =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingB =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingA =
+						Vk.Component.SwizzleIdentity },
+			Vk.ImageView.createInfoSubresourceRange =
+				Vk.Image.SubresourceRange {
+					Vk.Image.subresourceRangeAspectMask =
+						Vk.Image.AspectColorBit,
+					Vk.Image.subresourceRangeBaseMipLevel =
+						0,
+					Vk.Image.subresourceRangeLevelCount = 1,
+					Vk.Image.subresourceRangeBaseArrayLayer
+						= 0,
+					Vk.Image.subresourceRangeLayerCount = 1
+					}
+			}
+	dvc <- readGlobal globalDevice
+	tiv <- lift $ Vk.ImageView.create @() dvc viewInfo nil
+	writeGlobal globalTextureImageView tiv
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
