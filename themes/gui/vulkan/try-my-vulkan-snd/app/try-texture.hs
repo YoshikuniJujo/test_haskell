@@ -606,19 +606,21 @@ clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 createImageViews :: ReaderT Global IO ()
-createImageViews = writeGlobal globalSwapChainImageViews =<<
-	(createImageView1 `mapM`) =<< readGlobal globalSwapChainImages
-
-createImageView1 :: Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
-createImageView1 sci = do
+createImageViews = do
 	scif <- fromJust <$> readGlobal globalSwapChainImageFormat
+	writeGlobal globalSwapChainImageViews
+		=<< ((`createImageView` scif) `mapM`)
+		=<< readGlobal globalSwapChainImages
+
+createImageView :: Vk.Image.I -> Vk.Format -> ReaderT Global IO Vk.ImageView.I
+createImageView image format = do
 	let	createInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoNext = Nothing,
 			Vk.ImageView.createInfoFlags =
 				Vk.ImageView.CreateFlagsZero,
-			Vk.ImageView.createInfoImage = sci,
+			Vk.ImageView.createInfoImage = image,
 			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
-			Vk.ImageView.createInfoFormat = scif,
+			Vk.ImageView.createInfoFormat = format,
 			Vk.ImageView.createInfoComponents = components,
 			Vk.ImageView.createInfoSubresourceRange =
 				subresourceRange }
@@ -628,7 +630,8 @@ createImageView1 sci = do
 			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
 			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
 		subresourceRange = Vk.Image.SubresourceRange {
-			Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
+			Vk.Image.subresourceRangeAspectMask =
+				Vk.Image.AspectColorBit,
 			Vk.Image.subresourceRangeBaseMipLevel = 0,
 			Vk.Image.subresourceRangeLevelCount = 1,
 			Vk.Image.subresourceRangeBaseArrayLayer = 0,
@@ -1084,37 +1087,7 @@ copyBufferToImage buffer image wdt hgt = do
 createTextureImageView :: ReaderT Global IO ()
 createTextureImageView = do
 	ti <- readGlobal globalTextureImage
-	let	viewInfo = Vk.ImageView.CreateInfo {
-			Vk.ImageView.createInfoNext = Nothing,
-			Vk.ImageView.createInfoFlags =
-				Vk.ImageView.CreateFlagsZero,
-			Vk.ImageView.createInfoImage = ti,
-			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
-			Vk.ImageView.createInfoFormat = Vk.FormatR8g8b8a8Srgb,
-			Vk.ImageView.createInfoComponents =
-				Vk.Component.Mapping {
-					Vk.Component.mappingR =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingG =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingB =
-						Vk.Component.SwizzleIdentity,
-					Vk.Component.mappingA =
-						Vk.Component.SwizzleIdentity },
-			Vk.ImageView.createInfoSubresourceRange =
-				Vk.Image.SubresourceRange {
-					Vk.Image.subresourceRangeAspectMask =
-						Vk.Image.AspectColorBit,
-					Vk.Image.subresourceRangeBaseMipLevel =
-						0,
-					Vk.Image.subresourceRangeLevelCount = 1,
-					Vk.Image.subresourceRangeBaseArrayLayer
-						= 0,
-					Vk.Image.subresourceRangeLayerCount = 1
-					}
-			}
-	dvc <- readGlobal globalDevice
-	tiv <- lift $ Vk.ImageView.create @() dvc viewInfo nil
+	tiv <- createImageView ti Vk.FormatR8g8b8a8Srgb
 	writeGlobal globalTextureImageView tiv
 
 createVertexBuffer :: ReaderT Global IO ()
@@ -1532,6 +1505,9 @@ cleanup :: ReaderT Global IO ()
 cleanup = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
+
+	tiv <- readGlobal globalTextureImageView
+	lift $ Vk.ImageView.destroy dvc tiv nil
 
 	ti <- readGlobal globalTextureImage
 	lift $ Vk.Image.destroy dvc ti nil
