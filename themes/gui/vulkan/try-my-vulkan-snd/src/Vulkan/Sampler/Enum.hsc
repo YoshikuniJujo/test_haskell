@@ -31,4 +31,20 @@ enum "MipmapMode" ''#{type VkSamplerMipmapMode}
 	("MipmapModeLinear", #{const VK_SAMPLER_MIPMAP_MODE_LINEAR}),
 	("MipmapModeMaxEnum", #{const VK_SAMPLER_MIPMAP_MODE_MAX_ENUM}) ]
 
+enum "AddresesMode" ''#{type VkSamplerAddressMode}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("AddressModeRepeat", #{const VK_SAMPLER_ADDRESS_MODE_REPEAT}),
+	("AddressModeMirroredRepeat",
+		#{const VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT}),
+	("AddressModeClampToEdge",
+		#{const VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE}),
+	("AddressModeClampToBorder",
+		#{const VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER}),
+	("AddressModeMirrorClampToEdge",
+		#{const VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE}),
+	("AddressModeMirrorClampToEdgeKhr",
+		#{const VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE_KHR}),
+	("AddressModeMaxEnum",
+		#{const VK_SAMPLER_ADDRESS_MODE_MAX_ENUM}) ]
+
 type CreateFlags = CreateFlagBits

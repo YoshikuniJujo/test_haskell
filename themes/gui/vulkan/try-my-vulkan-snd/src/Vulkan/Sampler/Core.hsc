@@ -40,6 +40,15 @@ struct "CreateInfo" #{size VkSamplerCreateInfo}
 		[| #{poke VkSamplerCreateInfo, minFilter} |]),
 	("mipmapMode", ''#{type VkSamplerMipmapMode},
 		[| #{peek VkSamplerCreateInfo, mipmapMode} |],
-		[| #{poke VkSamplerCreateInfo, mipmapMode} |])
+		[| #{poke VkSamplerCreateInfo, mipmapMode} |]),
+	("addressModeU", ''#{type VkSamplerAddressMode},
+		[| #{peek VkSamplerCreateInfo, addressModeU} |],
+		[| #{poke VkSamplerCreateInfo, addressModeU} |]),
+	("addressModeV", ''#{type VkSamplerAddressMode},
+		[| #{peek VkSamplerCreateInfo, addressModeV} |],
+		[| #{poke VkSamplerCreateInfo, addressModeV} |]),
+	("addressModeW", ''#{type VkSamplerAddressMode},
+		[| #{peek VkSamplerCreateInfo, addressModeW} |],
+		[| #{poke VkSamplerCreateInfo, addressModeW} |])
 	]
 	[''Show, ''Storable]
