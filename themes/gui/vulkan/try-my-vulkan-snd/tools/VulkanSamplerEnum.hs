@@ -11,6 +11,9 @@ make :: IO ()
 make = createFile'' vulkanCore "Sampler.Enum" ["Data.Bits", "Data.Word"] [
 	(	[("CreateFlagsZero", Int 0)],
 		(	"CreateFlagBits", "VkSamplerCreateFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[],
+		(	"MipmapMode", "VkSamplerMipmapMode",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]
 	[nowdoc|

@@ -37,6 +37,9 @@ struct "CreateInfo" #{size VkSamplerCreateInfo}
 		[| #{poke VkSamplerCreateInfo, magFilter} |]),
 	("minFilter", ''#{type VkFilter},
 		[| #{peek VkSamplerCreateInfo, minFilter} |],
-		[| #{poke VkSamplerCreateInfo, minFilter} |])
+		[| #{poke VkSamplerCreateInfo, minFilter} |]),
+	("mipmapMode", ''#{type VkSamplerMipmapMode},
+		[| #{peek VkSamplerCreateInfo, mipmapMode} |],
+		[| #{poke VkSamplerCreateInfo, mipmapMode} |])
 	]
 	[''Show, ''Storable]

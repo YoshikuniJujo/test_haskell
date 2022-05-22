@@ -25,4 +25,10 @@ enum "CreateFlagBits" ''#{type VkSamplerCreateFlagBits}
 	("CreateFlagBitsMaxEnum",
 		#{const VK_SAMPLER_CREATE_FLAG_BITS_MAX_ENUM}) ]
 
+enum "MipmapMode" ''#{type VkSamplerMipmapMode}
+		[''Show, ''Eq, ''Storable, ''Bits] [
+	("MipmapModeNearest", #{const VK_SAMPLER_MIPMAP_MODE_NEAREST}),
+	("MipmapModeLinear", #{const VK_SAMPLER_MIPMAP_MODE_LINEAR}),
+	("MipmapModeMaxEnum", #{const VK_SAMPLER_MIPMAP_MODE_MAX_ENUM}) ]
+
 type CreateFlags = CreateFlagBits
