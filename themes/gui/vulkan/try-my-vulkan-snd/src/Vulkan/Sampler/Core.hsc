@@ -28,6 +28,15 @@ struct "CreateInfo" #{size VkSamplerCreateInfo}
 		[| \p _ -> #{poke VkSamplerCreateInfo, sType} p sType |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkSamplerCreateInfo, pNext} |],
-		[| #{poke VkSamplerCreateInfo, pNext} |])
+		[| #{poke VkSamplerCreateInfo, pNext} |]),
+	("flags", ''#{type VkSamplerCreateFlags},
+		[| #{peek VkSamplerCreateInfo, flags} |],
+		[| #{poke VkSamplerCreateInfo, flags} |]),
+	("magFilter", ''#{type VkFilter},
+		[| #{peek VkSamplerCreateInfo, magFilter} |],
+		[| #{poke VkSamplerCreateInfo, magFilter} |]),
+	("minFilter", ''#{type VkFilter},
+		[| #{peek VkSamplerCreateInfo, minFilter} |],
+		[| #{poke VkSamplerCreateInfo, minFilter} |])
 	]
 	[''Show, ''Storable]

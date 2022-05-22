@@ -870,6 +870,14 @@ enum "IndexType" ''#{type VkIndexType}
 	("IndexTypeNoneNv", #{const VK_INDEX_TYPE_NONE_NV}),
 	("IndexTypeMaxEnum", #{const VK_INDEX_TYPE_MAX_ENUM}) ]
 
+enum "Filter" ''#{type VkFilter}
+		[''Show, ''Eq, ''Storable] [
+	("FilterNearest", #{const VK_FILTER_NEAREST}),
+	("FilterLinear", #{const VK_FILTER_LINEAR}),
+	("FilterCubicImg", #{const VK_FILTER_CUBIC_IMG}),
+	("FilterCubicExt", #{const VK_FILTER_CUBIC_EXT}),
+	("FilterMaxEnum", #{const VK_FILTER_MAX_ENUM}) ]
+
 enum "AccessFlagBits" ''#{type VkAccessFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("AccessFlagsZero", 0),
