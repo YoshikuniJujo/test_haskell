@@ -311,6 +311,7 @@ initVulkan = do
 	createCommandPool
 	createTextureImage
 	createTextureImageView
+	createTextureSampler
 	createVertexBuffer
 	createIndexBuffer
 	createUniformBuffers
@@ -1089,6 +1090,10 @@ createTextureImageView = do
 	ti <- readGlobal globalTextureImage
 	tiv <- createImageView ti Vk.FormatR8g8b8a8Srgb
 	writeGlobal globalTextureImageView tiv
+
+createTextureSampler :: ReaderT Global IO ()
+createTextureSampler = do
+	pure ()
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
