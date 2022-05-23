@@ -42,7 +42,8 @@ noZeros = [
 	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"]),
 	("DescriptorType", "VkDescriptorType", ["Show", "Eq", "Storable"]),
 	("IndexType", "VkIndexType", ["Show", "Eq", "Storable"]),
-	("Filter", "VkFilter", ["Show", "Eq", "Storable"])
+	("Filter", "VkFilter", ["Show", "Eq", "Storable"]),
+	("BorderColor", "VkBorderColor", ["Show", "Eq", "Storable"])
 	]
 
 zeros :: [([(String, Const)], (HaskellName, CName, [DerivName]))]

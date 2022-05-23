@@ -878,6 +878,25 @@ enum "Filter" ''#{type VkFilter}
 	("FilterCubicExt", #{const VK_FILTER_CUBIC_EXT}),
 	("FilterMaxEnum", #{const VK_FILTER_MAX_ENUM}) ]
 
+enum "BorderColor" ''#{type VkBorderColor}
+		[''Show, ''Eq, ''Storable] [
+	("BorderColorFloatTransparentBlack",
+		#{const VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK}),
+	("BorderColorIntTransparentBlack",
+		#{const VK_BORDER_COLOR_INT_TRANSPARENT_BLACK}),
+	("BorderColorFloatOpaqueBlack",
+		#{const VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK}),
+	("BorderColorIntOpaqueBlack",
+		#{const VK_BORDER_COLOR_INT_OPAQUE_BLACK}),
+	("BorderColorFloatOpaqueWhite",
+		#{const VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE}),
+	("BorderColorIntOpaqueWhite",
+		#{const VK_BORDER_COLOR_INT_OPAQUE_WHITE}),
+	("BorderColorFloatCustomExt",
+		#{const VK_BORDER_COLOR_FLOAT_CUSTOM_EXT}),
+	("BorderColorIntCustomExt", #{const VK_BORDER_COLOR_INT_CUSTOM_EXT}),
+	("BorderColorMaxEnum", #{const VK_BORDER_COLOR_MAX_ENUM}) ]
+
 enum "AccessFlagBits" ''#{type VkAccessFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("AccessFlagsZero", 0),
