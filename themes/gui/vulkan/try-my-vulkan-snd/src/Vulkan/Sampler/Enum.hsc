@@ -31,7 +31,7 @@ enum "MipmapMode" ''#{type VkSamplerMipmapMode}
 	("MipmapModeLinear", #{const VK_SAMPLER_MIPMAP_MODE_LINEAR}),
 	("MipmapModeMaxEnum", #{const VK_SAMPLER_MIPMAP_MODE_MAX_ENUM}) ]
 
-enum "AddresesMode" ''#{type VkSamplerAddressMode}
+enum "AddressMode" ''#{type VkSamplerAddressMode}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("AddressModeRepeat", #{const VK_SAMPLER_ADDRESS_MODE_REPEAT}),
 	("AddressModeMirroredRepeat",

@@ -130,6 +130,9 @@ import qualified Vulkan.Descriptor as Vk.Dsc
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
+import qualified Vulkan.Sampler as Vk.Sampler
+import qualified Vulkan.Sampler.Enum as Vk.Sampler
+import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -1093,6 +1096,34 @@ createTextureImageView = do
 
 createTextureSampler :: ReaderT Global IO ()
 createTextureSampler = do
+	pdvc <- readGlobal globalPhysicalDevice
+	properties <- lift $ Vk.PhysicalDevice.getProperties pdvc
+	let	limits = Vk.PhysicalDevice.propertiesLimits properties
+		maxAnisotropy =
+			Vk.PhysicalDevice.limitsMaxSamplerAnisotropy limits
+		samplerInfo = Vk.Sampler.CreateInfo {
+			Vk.Sampler.createInfoNext = Nothing,
+			Vk.Sampler.createInfoFlags = Vk.Sampler.CreateFlagsZero,
+			Vk.Sampler.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Sampler.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Sampler.createInfoAddressModeU =
+				Vk.Sampler.AddressModeRepeat,
+			Vk.Sampler.createInfoAddressModeV =
+				Vk.Sampler.AddressModeRepeat,
+			Vk.Sampler.createInfoAddressModeW =
+				Vk.Sampler.AddressModeRepeat,
+			Vk.Sampler.createInfoAnisotropyEnable = True,
+			Vk.Sampler.createInfoMaxAnisotropy = maxAnisotropy,
+			Vk.Sampler.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Sampler.createInfoUnnormalizedCoordinates = False,
+			Vk.Sampler.createInfoCompareEnable = False,
+			Vk.Sampler.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Sampler.createInfoMipmapMode =
+				Vk.Sampler.MipmapModeLinear,
+			Vk.Sampler.createInfoMipLodBias = 0,
+			Vk.Sampler.createInfoMinLod = 0,
+			Vk.Sampler.createInfoMaxLod = 0 }
 	pure ()
 
 createVertexBuffer :: ReaderT Global IO ()

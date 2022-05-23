@@ -16,7 +16,7 @@ make = createFile'' vulkanCore "Sampler.Enum" ["Data.Bits", "Data.Word"] [
 		(	"MipmapMode", "VkSamplerMipmapMode",
 			["Show", "Eq", "Storable", "Bits"] ) ),
 	(	[],
-		(	"AddresesMode", "VkSamplerAddressMode",
+		(	"AddressMode", "VkSamplerAddressMode",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]
 	[nowdoc|
