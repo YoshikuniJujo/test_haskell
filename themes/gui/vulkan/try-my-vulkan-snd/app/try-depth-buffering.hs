@@ -194,7 +194,10 @@ data Global = Global {
 	globalTextureImage :: IORef Vk.Image.I,
 	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
 	globalTextureImageView :: IORef Vk.ImageView.I,
-	globalTextureSampler :: IORef Vk.Sampler.S
+	globalTextureSampler :: IORef Vk.Sampler.S,
+	globalDepthImage :: IORef Vk.Image.I,
+	globalDepthImageMemory :: IORef Vk.Device.MemoryImage,
+	globalDepthImageView :: IORef Vk.ImageView.I
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -242,6 +245,9 @@ newGlobal = do
 	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	tiv <- newIORef $ Vk.ImageView.I NullPtr
 	ts <- newIORef $ Vk.Sampler.S NullPtr
+	di <- newIORef $ Vk.Image.I NullPtr
+	dim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	divw <- newIORef $ Vk.ImageView.I NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -279,7 +285,10 @@ newGlobal = do
 		globalTextureImage = ti,
 		globalTextureImageMemory = tim,
 		globalTextureImageView = tiv,
-		globalTextureSampler = ts
+		globalTextureSampler = ts,
+		globalDepthImage = di,
+		globalDepthImageMemory = dim,
+		globalDepthImageView = divw
 		}
 
 run :: ReaderT Global IO ()
@@ -315,6 +324,7 @@ initVulkan = do
 	createGraphicsPipeline
 	createFramebuffers
 	createCommandPool
+	createDepthResources
 	createTextureImage
 	createTextureImageView
 	createTextureSampler
@@ -946,6 +956,21 @@ createCommandPool = do
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+
+createDepthResources :: ReaderT Global IO ()
+createDepthResources = do
+	pure ()
+
+findSupportedFormat ::
+	[Vk.Format] -> Vk.Image.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
+findSupportedFormat candidates tiling features =
+	pure undefined
+
+{-
+doesFeatureMatch ::
+	Vk.Image.Tiling -> Vk.FormatFeatureFlags -> Vk.FormatProperties -> Bool
+doesFeatureMatch tiling features props = False
+-}
 
 createTextureImage :: ReaderT Global IO ()
 createTextureImage = do
