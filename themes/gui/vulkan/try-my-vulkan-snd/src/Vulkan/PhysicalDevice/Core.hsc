@@ -24,6 +24,7 @@ import Vulkan.PhysicalDevice.Struct.Core
 import qualified Vulkan.Instance.Core as Instance
 import qualified Vulkan.QueueFamily.Core as QueueFamily
 import qualified Vulkan.Memory.Core as Memory
+import qualified Vulkan.Format.Core as Format
 
 #include <vulkan/vulkan.h>
 
@@ -158,3 +159,7 @@ struct "MemoryProperties" #{size VkPhysicalDeviceMemoryProperties}
 
 foreign import ccall "vkGetPhysicalDeviceMemoryProperties"
 	getMemoryProperties :: P -> Ptr MemoryProperties -> IO ()
+
+foreign import ccall "vkGetPhysicalDeviceFormatProperties"
+	getFormatProperties ::
+	P -> #{type VkFormat} -> Ptr Format.Properties -> IO ()

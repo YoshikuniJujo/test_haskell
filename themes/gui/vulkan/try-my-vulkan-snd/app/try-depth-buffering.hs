@@ -134,6 +134,7 @@ import qualified Vulkan.Sampler as Vk.Sampler
 import qualified Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Format as Vk.Format
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -630,11 +631,13 @@ createImageViews :: ReaderT Global IO ()
 createImageViews = do
 	scif <- fromJust <$> readGlobal globalSwapChainImageFormat
 	writeGlobal globalSwapChainImageViews
-		=<< ((`createImageView` scif) `mapM`)
+		=<< ((\img -> createImageView
+			img scif Vk.Image.AspectColorBit) `mapM`)
 		=<< readGlobal globalSwapChainImages
 
-createImageView :: Vk.Image.I -> Vk.Format.F -> ReaderT Global IO Vk.ImageView.I
-createImageView image format = do
+createImageView :: Vk.Image.I -> Vk.Format.F -> Vk.Image.AspectFlags ->
+	ReaderT Global IO Vk.ImageView.I
+createImageView image format aspectFlags = do
 	let	createInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoNext = Nothing,
 			Vk.ImageView.createInfoFlags =
@@ -651,8 +654,7 @@ createImageView image format = do
 			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
 			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
 		subresourceRange = Vk.Image.SubresourceRange {
-			Vk.Image.subresourceRangeAspectMask =
-				Vk.Image.AspectColorBit,
+			Vk.Image.subresourceRangeAspectMask = aspectFlags,
 			Vk.Image.subresourceRangeBaseMipLevel = 0,
 			Vk.Image.subresourceRangeLevelCount = 1,
 			Vk.Image.subresourceRangeBaseArrayLayer = 0,
@@ -960,19 +962,49 @@ createCommandPool = do
 
 createDepthResources :: ReaderT Global IO ()
 createDepthResources = do
-	pure ()
+	lift $ putStrLn "*** CREATE DEPTH RESOURCES ***"
+	depthFormat <- findDepthFormat
+	lift $ print depthFormat
+	sce <- readGlobal globalSwapChainExtent
+	(di, dim) <- createImage
+		(Vk.C.extent2dWidth sce) (Vk.C.extent2dHeight sce) depthFormat
+		Vk.Image.TilingOptimal
+		Vk.Image.UsageDepthStencilAttachmentBit
+		Vk.Memory.PropertyDeviceLocalBit
+	writeGlobal globalDepthImage di
+	writeGlobal globalDepthImageMemory dim
+	divw <- createImageView di depthFormat Vk.Image.AspectDepthBit
+	writeGlobal globalDepthImageView divw
+
+findDepthFormat :: ReaderT Global IO Vk.Format.F
+findDepthFormat = findSupportedFormat
+	[Vk.Format.D32Sfloat,
+		Vk.Format.D32SfloatS8Uint, Vk.Format.D24UnormS8Uint]
+	Vk.Image.TilingOptimal Vk.Format.FeatureDepthStencilAttachmentBit
 
 findSupportedFormat ::
 	[Vk.Format.F] -> Vk.Image.Tiling -> Vk.Format.FeatureFlags ->
-	IO Vk.Format.F
-findSupportedFormat candidates tiling features =
-	pure undefined
+	ReaderT Global IO Vk.Format.F
+findSupportedFormat candidates tiling features = do
+	pdvc <- readGlobal globalPhysicalDevice
+	fmts <- lift $ (`zip` candidates)
+		<$> Vk.PhysicalDevice.getFormatProperties pdvc `mapM` candidates
+	pure . maybe (error "failed to find supported format!") snd
+		$ find (doesFeatureMatch tiling features . fst) fmts
 
-{-
 doesFeatureMatch ::
-	Vk.Image.Tiling -> Vk.FormatFeatureFlags -> Vk.FormatProperties -> Bool
-doesFeatureMatch tiling features props = False
--}
+	Vk.Image.Tiling -> Vk.Format.FeatureFlags -> Vk.Format.Properties ->
+	Bool
+doesFeatureMatch Vk.Image.TilingLinear features props =
+	Vk.Format.propertiesLinearTilingFeatures props .&. features == features
+doesFeatureMatch Vk.Image.TilingOptimal features props =
+	Vk.Format.propertiesOptimalTilingFeatures props .&. features == features
+doesFeatureMatch _ _ _ = False
+
+hasStencilComponent :: Vk.Format.F -> Bool
+hasStencilComponent = \case
+	Vk.Format.D32SfloatS8Uint -> True; Vk.Format.D24UnormS8Uint -> True
+	_ -> False
 
 createTextureImage :: ReaderT Global IO ()
 createTextureImage = do
@@ -1133,7 +1165,7 @@ copyBufferToImage buffer image wdt hgt = do
 createTextureImageView :: ReaderT Global IO ()
 createTextureImageView = do
 	ti <- readGlobal globalTextureImage
-	tiv <- createImageView ti Vk.Format.R8g8b8a8Srgb
+	tiv <- createImageView ti Vk.Format.R8g8b8a8Srgb Vk.Image.AspectColorBit
 	writeGlobal globalTextureImageView tiv
 
 createTextureSampler :: ReaderT Global IO ()

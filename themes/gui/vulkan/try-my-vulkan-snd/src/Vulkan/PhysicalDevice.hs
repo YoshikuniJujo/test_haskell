@@ -27,6 +27,8 @@ import qualified Vulkan.Instance as Instance
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.Memory.Middle as Memory.M
+import qualified Vulkan.Format as Format
+import qualified Vulkan.Format.Enum as Format
 
 newtype P = P C.P deriving Show
 
@@ -171,3 +173,10 @@ getMemoryProperties (P p) =
 		pmps <- ContT alloca
 		lift do	C.getMemoryProperties p pmps
 			peek pmps
+
+getFormatProperties :: P -> Format.F -> IO Format.Properties
+getFormatProperties (P pdvc) (Format.F fmt) =
+	(Format.propertiesFromCore <$>) . ($ pure) $ runContT do
+		pp <- ContT alloca
+		lift do	C.getFormatProperties pdvc fmt pp
+			peek pp
