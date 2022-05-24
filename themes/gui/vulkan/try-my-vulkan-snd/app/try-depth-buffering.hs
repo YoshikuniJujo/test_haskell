@@ -971,7 +971,7 @@ createFramebuffers = writeGlobal globalSwapChainFramebuffers
 createFramebuffer1 :: Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
 createFramebuffer1 attachment = do
 	rp <- readGlobal globalRenderPass
-	div <- readGlobal globalDepthImageView
+	divw <- readGlobal globalDepthImageView
 	Vk.C.Extent2d {
 		Vk.C.extent2dWidth = w,
 		Vk.C.extent2dHeight = h } <- readGlobal globalSwapChainExtent
@@ -981,7 +981,7 @@ createFramebuffer1 attachment = do
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
 			Vk.Framebuffer.createInfoAttachments =
-				[attachment, div],
+				[attachment, divw],
 			Vk.Framebuffer.createInfoWidth = w,
 			Vk.Framebuffer.createInfoHeight = h,
 			Vk.Framebuffer.createInfoLayers = 1 }
@@ -1680,11 +1680,22 @@ recreateSwapChain = do
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
+	createDepthResources
 	createFramebuffers
 
 cleanupSwapChain :: ReaderT Global IO ()
 cleanupSwapChain = do
 	dvc <- readGlobal globalDevice
+
+	divw <- readGlobal globalDepthImageView
+	lift $ Vk.ImageView.destroy dvc divw nil
+
+	di <- readGlobal globalDepthImage
+	lift $ Vk.Image.destroy dvc di nil
+
+	dim <- readGlobal globalDepthImageMemory
+	lift $ Vk.Memory.Image.free dvc dim nil
+
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
 	grppl <- readGlobal globalGraphicsPipeline
