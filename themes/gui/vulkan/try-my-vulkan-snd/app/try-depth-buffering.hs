@@ -975,6 +975,8 @@ createDepthResources = do
 	writeGlobal globalDepthImageMemory dim
 	divw <- createImageView di depthFormat Vk.Image.AspectDepthBit
 	writeGlobal globalDepthImageView divw
+	transitionImageLayout di depthFormat Vk.Image.LayoutUndefined
+		Vk.Image.LayoutDepthStencilAttachmentOptimal
 
 findDepthFormat :: ReaderT Global IO Vk.Format.F
 findDepthFormat = findSupportedFormat
@@ -1098,7 +1100,24 @@ transitionImageLayout image format oldLayout newLayout = do
 					Vk.AccessShaderReadBit,
 					Vk.Ppl.StageTransferBit,
 					Vk.Ppl.StageFragmentShaderBit )
+			(Vk.Image.LayoutUndefined,
+				Vk.Image.LayoutDepthStencilAttachmentOptimal) ->
+				(	Vk.AccessFlagsZero,
+					Vk.AccessDepthStencilAttachmentReadBit
+					.|.
+					Vk.AccessDepthStencilAttachmentWriteBit,
+					Vk.Ppl.StageTopOfPipeBit,
+					Vk.Ppl.StageEarlyFragmentTestsBit )
+
 			_ -> error "unsupported layout transition!"
+
+		aspectMask = case newLayout of
+			Vk.Image.LayoutDepthStencilAttachmentOptimal ->
+				Vk.Image.AspectDepthBit .|.
+				bool	Vk.Image.AspectFlagsZero
+					Vk.Image.AspectStencilBit
+					(hasStencilComponent format)
+			_ -> Vk.Image.AspectColorBit
 
 		barrier = Vk.Image.MemoryBarrier {
 			Vk.Image.memoryBarrierNext = Nothing,
@@ -1112,7 +1131,7 @@ transitionImageLayout image format oldLayout newLayout = do
 			Vk.Image.memoryBarrierSubresourceRange =
 				Vk.Image.SubresourceRange {
 					Vk.Image.subresourceRangeAspectMask =
-						Vk.Image.AspectColorBit,
+						aspectMask,
 					Vk.Image.subresourceRangeBaseMipLevel =
 						0,
 					Vk.Image.subresourceRangeLevelCount = 1,
