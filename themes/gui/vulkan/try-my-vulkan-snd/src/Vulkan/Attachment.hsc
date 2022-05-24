@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Attachment where
@@ -51,7 +52,7 @@ descriptionToCore Description {
 		C.descriptionInitialLayout = il,
 		C.descriptionFinalLayout = fl }
 
-enum "A" ''#{type uint32_t} [''Show, ''Storable]
+enum "A" ''#{type uint32_t} [''Show, ''Storable, ''Num]
 	[("AUnused", #{const VK_ATTACHMENT_UNUSED})]
 
 data Reference = Reference {

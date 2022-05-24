@@ -135,6 +135,7 @@ import qualified Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Format as Vk.Format
+import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -324,9 +325,9 @@ initVulkan = do
 	createRenderPass
 	createDescriptorSetLayout
 	createGraphicsPipeline
-	createFramebuffers
 	createCommandPool
 	createDepthResources
+	createFramebuffers
 	createTextureImage
 	createTextureImageView
 	createTextureSampler
@@ -665,6 +666,7 @@ createImageView image format aspectFlags = do
 createRenderPass :: ReaderT Global IO ()
 createRenderPass = do
 	Just scif <- readGlobal globalSwapChainImageFormat
+	df <- findDepthFormat
 	let	colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
 			Vk.Att.descriptionFormat = scif,
@@ -682,6 +684,21 @@ createRenderPass = do
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
 				Vk.Image.LayoutColorAttachmentOptimal }
+		depthAttachment = Vk.Att.Description {
+			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionFormat = df,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp = Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout = Vk.Image.LayoutUndefined,
+			Vk.Att.descriptionFinalLayout =
+				Vk.Image.LayoutDepthStencilAttachmentOptimal }
+		depthAttachmentRef = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = 1,
+			Vk.Att.referenceLayout =
+				Vk.Image.LayoutDepthStencilAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags =
 				Vk.Subpass.DescriptionFlagsZero,
@@ -690,25 +707,30 @@ createRenderPass = do
 			Vk.Subpass.descriptionInputAttachments = [],
 			Vk.Subpass.descriptionColorAndResolveAttachments =
 				Left [colorAttachmentRef],
-			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+			Vk.Subpass.descriptionDepthStencilAttachment =
+				Just depthAttachmentRef,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
 		dependency = Vk.Subpass.Dependency {
 			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
 			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
 			Vk.Subpass.dependencySrcStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit,
+				Vk.Ppl.StageColorAttachmentOutputBit .|.
+				Vk.Ppl.StageEarlyFragmentTestsBit,
 			Vk.Subpass.dependencySrcAccessMask = Vk.AccessFlagsZero,
 			Vk.Subpass.dependencyDstStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit,
+				Vk.Ppl.StageColorAttachmentOutputBit .|.
+				Vk.Ppl.StageEarlyFragmentTestsBit,
 			Vk.Subpass.dependencyDstAccessMask =
-				Vk.AccessColorAttachmentWriteBit,
+				Vk.AccessColorAttachmentWriteBit .|.
+				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags =
 				Vk.DependencyFlagsZero }
 		renderPassInfo = Vk.RenderPass.CreateInfo {
 			Vk.RenderPass.createInfoNext = Nothing,
 			Vk.RenderPass.createInfoFlags =
 				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.createInfoAttachments = [colorAttachment],
+			Vk.RenderPass.createInfoAttachments =
+				[colorAttachment, depthAttachment],
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [dependency] }
 	dvc <- readGlobal globalDevice
@@ -870,7 +892,24 @@ createGraphicsPipeline = do
 
 	ppllyt <- readGlobal globalPipelineLayout
 	rp <- readGlobal globalRenderPass
-	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
+	let	depthStencil = Vk.Ppl.DepthStencilSt.CreateInfo {
+			Vk.Ppl.DepthStencilSt.createInfoNext = Nothing,
+			Vk.Ppl.DepthStencilSt.createInfoFlags =
+				Vk.Ppl.DepthStencilSt.CreateFlagsZero,
+			Vk.Ppl.DepthStencilSt.createInfoDepthTestEnable = True,
+			Vk.Ppl.DepthStencilSt.createInfoDepthWriteEnable = True,
+			Vk.Ppl.DepthStencilSt.createInfoDepthCompareOp =
+				Vk.CompareOpLess,
+			Vk.Ppl.DepthStencilSt.createInfoDepthBoundsTestEnable =
+				False,
+			Vk.Ppl.DepthStencilSt.createInfoMinDepthBounds = 0,
+			Vk.Ppl.DepthStencilSt.createInfoMaxDepthBounds = 1,
+			Vk.Ppl.DepthStencilSt.createInfoStencilTestEnable = False,
+			Vk.Ppl.DepthStencilSt.createInfoFront =
+				Vk.stencilOpStateZero,
+			Vk.Ppl.DepthStencilSt.createInfoBack =
+				Vk.stencilOpStateZero }
+		pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
 			'[(), ()] ()
 			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
@@ -891,7 +930,8 @@ createGraphicsPipeline = do
 				Just rasterizer,
 			Vk.Ppl.Graphics.createInfoMultisampleState =
 				Just multisampling,
-			Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
+			Vk.Ppl.Graphics.createInfoDepthStencilState =
+				Just depthStencil,
 			Vk.Ppl.Graphics.createInfoColorBlendState =
 				Just colorBlending,
 			Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
@@ -931,6 +971,7 @@ createFramebuffers = writeGlobal globalSwapChainFramebuffers
 createFramebuffer1 :: Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
 createFramebuffer1 attachment = do
 	rp <- readGlobal globalRenderPass
+	div <- readGlobal globalDepthImageView
 	Vk.C.Extent2d {
 		Vk.C.extent2dWidth = w,
 		Vk.C.extent2dHeight = h } <- readGlobal globalSwapChainExtent
@@ -939,7 +980,8 @@ createFramebuffer1 attachment = do
 			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
-			Vk.Framebuffer.createInfoAttachments = [attachment],
+			Vk.Framebuffer.createInfoAttachments =
+				[attachment, div],
 			Vk.Framebuffer.createInfoWidth = w,
 			Vk.Framebuffer.createInfoHeight = h,
 			Vk.Framebuffer.createInfoLayers = 1 }
@@ -1508,7 +1550,9 @@ recordCommandBuffer cb imageIndex = do
 				Vk.C.rect2dExtent = sce },
 			Vk.RenderPass.beginInfoClearValues = [
 				Vk.ClearValueColor
-					. fromJust $ rgbaDouble 0 0 0 1 ] }
+					. fromJust $ rgbaDouble 0 0 0 1,
+				Vk.ClearValueDepthStencil
+					$ Vk.C.ClearDepthStencilValue 1 0 ] }
 	lift $ Vk.Cmd.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline

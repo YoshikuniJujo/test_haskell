@@ -126,6 +126,15 @@ data StencilOpState = StencilOpState {
 	stencilOpStateReference :: Word32 }
 	deriving Show
 
+stencilOpStateZero = StencilOpState {
+	stencilOpStateFailOp = StencilOpKeep,
+	stencilOpStatePassOp = StencilOpKeep,
+	stencilOpStateDepthFailOp = StencilOpKeep,
+	stencilOpStateCompareOp = CompareOpNever,
+	stencilOpStateCompareMask = 0,
+	stencilOpStateWriteMask = 0,
+	stencilOpStateReference = 0 }
+
 stencilOpStateToCore :: StencilOpState -> C.StencilOpState
 stencilOpStateToCore StencilOpState {
 	stencilOpStateFailOp = StencilOp fo,
@@ -145,7 +154,8 @@ stencilOpStateToCore StencilOpState {
 
 data ClearValue (ct :: ClearType) where
 	ClearValueDepthStencil ::
-		C.ClearDepthStencilValue -> ClearValue 'ClearTypeDepthStencil
+--		C.ClearDepthStencilValue -> ClearValue 'ClearTypeDepthStencil
+		C.ClearDepthStencilValue -> ClearValue ct
 	ClearValueColor :: Rgba Float -> ClearValue ('ClearTypeColor cct)
 
 class ClearColorValueToCore (cct :: ClearColorType) where
@@ -190,6 +200,8 @@ instance ClearColorValueToCore cct =>
 	ClearValueToCore ('ClearTypeColor cct) where
 	clearValueToCore cv@(ClearValueColor _) =
 		C.clearValueFromClearColorValue <$> clearColorValueToCore cv
+	clearValueToCore (ClearValueDepthStencil cdsv) =
+		C.clearValueFromClearDepthStencilValue cdsv
 
 clearValueListToArray :: [Ptr C.ClearValueTag] -> ContT r IO (Ptr C.ClearValueTag)
 clearValueListToArray (length &&& id -> (pcvc, pcvl)) = do
