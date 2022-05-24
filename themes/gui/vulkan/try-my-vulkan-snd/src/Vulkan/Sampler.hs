@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -5,13 +6,20 @@
 module Vulkan.Sampler where
 
 import Foreign.Ptr
+import Foreign.Marshal.Alloc
+import Foreign.ForeignPtr
+import Foreign.Storable	
 import Foreign.Pointable
 import Control.Monad.Cont
 
 import Vulkan.Base
 import Vulkan.Enum
+import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Sampler.Enum
 
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device as Device
 import qualified Vulkan.Sampler.Core as C
 
 newtype S = S C.S deriving Show
@@ -36,7 +44,7 @@ data CreateInfo n = CreateInfo {
 	createInfoUnnormalizedCoordinates :: Bool }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -56,22 +64,39 @@ createInfoToCore CreateInfo {
 	createInfoBorderColor = BorderColor bc,
 	createInfoUnnormalizedCoordinates = boolToBool32 -> unc } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoMagFilter = mgf,
-		C.createInfoMinFilter = mnf,
-		C.createInfoMipmapMode = mmm,
-		C.createInfoAddressModeU = amu,
-		C.createInfoAddressModeV = amv,
-		C.createInfoAddressModeW = amw,
-		C.createInfoMipLodBias = mlb,
-		C.createInfoAnisotropyEnable = aie,
-		C.createInfoMaxAnisotropy = mai,
-		C.createInfoCompareEnable = ce,
-		C.createInfoCompareOp = cop,
-		C.createInfoMinLod = mnl,
-		C.createInfoMaxLod = mxl,
-		C.createInfoBorderColor = bc,
-		C.createInfoUnnormalizedCoordinates = unc }
+	let	C.CreateInfo_ fci = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoMagFilter = mgf,
+			C.createInfoMinFilter = mnf,
+			C.createInfoMipmapMode = mmm,
+			C.createInfoAddressModeU = amu,
+			C.createInfoAddressModeV = amv,
+			C.createInfoAddressModeW = amw,
+			C.createInfoMipLodBias = mlb,
+			C.createInfoAnisotropyEnable = aie,
+			C.createInfoMaxAnisotropy = mai,
+			C.createInfoCompareEnable = ce,
+			C.createInfoCompareOp = cop,
+			C.createInfoMinLod = mnl,
+			C.createInfoMaxLod = mxl,
+			C.createInfoBorderColor = bc,
+			C.createInfoUnnormalizedCoordinates = unc }
+	ContT $ withForeignPtr fci
+
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
+create (Device.D dvc) ci mac = (S <$>) . ($ pure) $ runContT do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	ps <- ContT alloca
+	lift do	r <- C.create dvc pci pac ps
+		throwUnlessSuccess $ Result r
+		peek ps
+
+destroy :: Pointable n =>
+	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (S s) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.destroy dvc s pac

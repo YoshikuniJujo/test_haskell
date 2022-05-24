@@ -193,7 +193,8 @@ data Global = Global {
 	globalDescriptorSets :: IORef [Vk.DscSet.S],
 	globalTextureImage :: IORef Vk.Image.I,
 	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
-	globalTextureImageView :: IORef Vk.ImageView.I
+	globalTextureImageView :: IORef Vk.ImageView.I,
+	globalTextureSampler :: IORef Vk.Sampler.S
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -240,6 +241,7 @@ newGlobal = do
 	ti <- newIORef $ Vk.Image.I NullPtr
 	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	tiv <- newIORef $ Vk.ImageView.I NullPtr
+	ts <- newIORef $ Vk.Sampler.S NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -276,7 +278,8 @@ newGlobal = do
 		globalDescriptorSets = dss,
 		globalTextureImage = ti,
 		globalTextureImageMemory = tim,
-		globalTextureImageView = tiv
+		globalTextureImageView = tiv,
+		globalTextureSampler = ts
 		}
 
 run :: ReaderT Global IO ()
@@ -1124,7 +1127,9 @@ createTextureSampler = do
 			Vk.Sampler.createInfoMipLodBias = 0,
 			Vk.Sampler.createInfoMinLod = 0,
 			Vk.Sampler.createInfoMaxLod = 0 }
-	pure ()
+	dvc <- readGlobal globalDevice
+	ts <- lift $ Vk.Sampler.create @() dvc samplerInfo nil
+	writeGlobal globalTextureSampler ts
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
@@ -1541,6 +1546,9 @@ cleanup :: ReaderT Global IO ()
 cleanup = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
+
+	ts <- readGlobal globalTextureSampler
+	lift $ Vk.Sampler.destroy dvc ts nil
 
 	tiv <- readGlobal globalTextureImageView
 	lift $ Vk.ImageView.destroy dvc tiv nil

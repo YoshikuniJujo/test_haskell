@@ -9,8 +9,12 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
+import Data.Int
 
 import Vulkan.Base
+
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
@@ -78,3 +82,10 @@ struct "CreateInfo" #{size VkSamplerCreateInfo}
 		[| #{peek VkSamplerCreateInfo, unnormalizedCoordinates} |],
 		[| #{poke VkSamplerCreateInfo, unnormalizedCoordinates} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkCreateSampler" create ::
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr S ->
+	IO #{type VkResult}
+
+foreign import ccall "vkDestroySampler" destroy ::
+	Device.D -> S -> Ptr AllocationCallbacks.A -> IO ()
