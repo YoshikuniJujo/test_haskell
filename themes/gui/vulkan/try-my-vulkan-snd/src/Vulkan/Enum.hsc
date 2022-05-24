@@ -826,41 +826,6 @@ enum "DynamicState" ''#{type VkDynamicState}
 		#{const VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT}),
 	("DynamicStateMaxEnum", #{const VK_DYNAMIC_STATE_MAX_ENUM}) ]
 
-enum "DescriptorType" ''#{type VkDescriptorType}
-		[''Show, ''Eq, ''Storable] [
-	("DescriptorTypeSampler", #{const VK_DESCRIPTOR_TYPE_SAMPLER}),
-	("DescriptorTypeCombinedImageSampler",
-		#{const VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER}),
-	("DescriptorTypeSampledImage",
-		#{const VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}),
-	("DescriptorTypeStorageImage",
-		#{const VK_DESCRIPTOR_TYPE_STORAGE_IMAGE}),
-	("DescriptorTypeUniformTexelBuffer",
-		#{const VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER}),
-	("DescriptorTypeStorageTexelBuffer",
-		#{const VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER}),
-	("DescriptorTypeUniformBuffer",
-		#{const VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}),
-	("DescriptorTypeStorageBuffer",
-		#{const VK_DESCRIPTOR_TYPE_STORAGE_BUFFER}),
-	("DescriptorTypeUniformBufferDynamic",
-		#{const VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC}),
-	("DescriptorTypeStorageBufferDynamic",
-		#{const VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC}),
-	("DescriptorTypeInputAttachment",
-		#{const VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT}),
-	("DescriptorTypeInlineUniformBlock",
-		#{const VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK}),
-	("DescriptorTypeAccelerationStructureKhr",
-		#{const VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR}),
-	("DescriptorTypeAccelerationStructureNv",
-		#{const VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV}),
-	("DescriptorTypeMutableValve",
-		#{const VK_DESCRIPTOR_TYPE_MUTABLE_VALVE}),
-	("DescriptorTypeInlineUniformBlockExt",
-		#{const VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT}),
-	("DescriptorTypeMaxEnum", #{const VK_DESCRIPTOR_TYPE_MAX_ENUM}) ]
-
 enum "IndexType" ''#{type VkIndexType}
 		[''Show, ''Eq, ''Storable] [
 	("IndexTypeUint16", #{const VK_INDEX_TYPE_UINT16}),

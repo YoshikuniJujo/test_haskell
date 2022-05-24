@@ -707,16 +707,25 @@ createDescriptorSetLayout = do
 	let	uboLayoutBinding = Vk.DscSet.Lyt.Binding {
 			Vk.DscSet.Lyt.bindingBinding = 0,
 			Vk.DscSet.Lyt.bindingDescriptorType =
-				Vk.DescriptorTypeUniformBuffer,
+				Vk.Dsc.TypeUniformBuffer,
 			Vk.DscSet.Lyt.bindingDescriptorCountOrImmutableSamplers
 				= Left 1,
 			Vk.DscSet.Lyt.bindingStageFlags =
 				Vk.Shader.Stage.VertexBit }
+		samplerLayoutBinding = Vk.DscSet.Lyt.Binding {
+			Vk.DscSet.Lyt.bindingBinding = 1,
+			Vk.DscSet.Lyt.bindingDescriptorType =
+				Vk.Dsc.TypeCombinedImageSampler,
+			Vk.DscSet.Lyt.bindingDescriptorCountOrImmutableSamplers
+				= Left 1,
+			Vk.DscSet.Lyt.bindingStageFlags =
+				Vk.Shader.Stage.FragmentBit }
 		layoutInfo = Vk.DscSet.Lyt.CreateInfo {
 			Vk.DscSet.Lyt.createInfoNext = Nothing,
 			Vk.DscSet.Lyt.createInfoFlags =
 				Vk.DscSet.Lyt.CreateFlagsZero,
-			Vk.DscSet.Lyt.createInfoBindings = [uboLayoutBinding] }
+			Vk.DscSet.Lyt.createInfoBindings =
+				[uboLayoutBinding, samplerLayoutBinding] }
 	dvc <- readGlobal globalDevice
 	dsl <- lift $ Vk.DscSet.Lyt.create @() dvc layoutInfo nil
 	writeGlobal globalDescriptorSetLayout dsl
@@ -1300,8 +1309,12 @@ createUniformBuffers = do
 
 createDescriptorPool :: ReaderT Global IO ()
 createDescriptorPool = do
-	let	poolSize = Vk.DscPool.Size {
+	let	poolSize0 = Vk.DscPool.Size {
 			Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+			Vk.DscPool.sizeDescriptorCount =
+				fromIntegral maxFramesInFlight }
+		poolSize1 = Vk.DscPool.Size {
+			Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 			Vk.DscPool.sizeDescriptorCount =
 				fromIntegral maxFramesInFlight }
 		poolInfo = Vk.DscPool.CreateInfo {
@@ -1309,7 +1322,7 @@ createDescriptorPool = do
 			Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFlagsZero,
 			Vk.DscPool.createInfoMaxSets =
 				fromIntegral maxFramesInFlight,
-			Vk.DscPool.createInfoPoolSizes = [poolSize] }
+			Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
 	dvc <-readGlobal globalDevice
 	writeGlobal globalDescriptorPool
 		=<< lift (Vk.DscPool.create @() dvc poolInfo nil)
@@ -1328,11 +1341,18 @@ createDescriptorSets = do
 	dss <- lift $ Vk.DscSet.allocateSs @() dvc allocInfo
 	writeGlobal globalDescriptorSets dss
 	ubs <- readGlobal globalUniformBuffers
+	tiv <- readGlobal globalTextureImageView
+	ts <- readGlobal globalTextureSampler
 	for_ [0 .. maxFramesInFlight - 1] \i -> do
 		let	bufferInfo = Vk.Dsc.BufferInfo {
 				Vk.Dsc.bufferInfoBuffer = ubs !! i,
 				Vk.Dsc.bufferInfoOffset = 0 }
-			descriptorWrite = Vk.DscSet.Write {
+			imageInfo = Vk.Dsc.ImageInfo {
+				Vk.Dsc.imageInfoImageLayout =
+					Vk.Image.LayoutShaderReadOnlyOptimal,
+				Vk.Dsc.imageInfoImageView = tiv,
+				Vk.Dsc.imageInfoSampler = ts }
+			descriptorWrite0 = Vk.DscSet.Write {
 				Vk.DscSet.writeNext = Nothing,
 				Vk.DscSet.writeDstSet = dss !! i,
 				Vk.DscSet.writeDstBinding = 0,
@@ -1342,7 +1362,18 @@ createDescriptorSets = do
 				Vk.DscSet.writeImageBufferInfoTexelBufferViews =
 					Right $ Vk.DscSet.BufferInfos
 						[bufferInfo] }
-		lift $ Vk.DscSet.updateSs @() @() dvc [descriptorWrite] []
+			descriptorWrite1 = Vk.DscSet.Write {
+				Vk.DscSet.writeNext = Nothing,
+				Vk.DscSet.writeDstSet = dss !! i,
+				Vk.DscSet.writeDstBinding = 1,
+				Vk.DscSet.writeDstArrayElement = 0,
+				Vk.DscSet.writeDescriptorType =
+					Vk.Dsc.TypeCombinedImageSampler,
+				Vk.DscSet.writeImageBufferInfoTexelBufferViews =
+					Right $ Vk.DscSet.ImageInfos [imageInfo]
+				}
+		lift $ Vk.DscSet.updateSs @() @() dvc
+			[descriptorWrite0, descriptorWrite1] []
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do

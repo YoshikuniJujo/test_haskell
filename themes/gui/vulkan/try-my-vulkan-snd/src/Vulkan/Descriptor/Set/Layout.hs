@@ -15,7 +15,6 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
-import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Descriptor.Set.Layout.Enum
@@ -24,11 +23,12 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Sampler as Sampler
+import qualified Vulkan.Descriptor.Enum as Descriptor
 import qualified Vulkan.Descriptor.Set.Layout.Core as C
 
 data Binding = Binding {
 	bindingBinding :: Word32,
-	bindingDescriptorType :: DescriptorType,
+	bindingDescriptorType :: Descriptor.Type,
 	bindingDescriptorCountOrImmutableSamplers :: Either Word32 [Sampler.S],
 	bindingStageFlags :: Shader.Stage.Flags }
 	deriving Show
@@ -36,7 +36,7 @@ data Binding = Binding {
 bindingToCore :: Binding -> ContT r IO C.Binding
 bindingToCore Binding {
 	bindingBinding = b,
-	bindingDescriptorType = DescriptorType dt,
+	bindingDescriptorType = Descriptor.Type dt,
 	bindingDescriptorCountOrImmutableSamplers =
 		either ((, []) . Left) (Right . length &&& id) -> (dc, ss),
 	bindingStageFlags = Shader.Stage.FlagBits sf } = do

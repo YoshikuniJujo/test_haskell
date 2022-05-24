@@ -40,7 +40,6 @@ noZeros = [
 	("BlendOp", "VkBlendOp", ["Show", "Eq", "Storable"]),
 	("LogicOp", "VkLogicOp", ["Show", "Eq", "Storable"]),
 	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"]),
-	("DescriptorType", "VkDescriptorType", ["Show", "Eq", "Storable"]),
 	("IndexType", "VkIndexType", ["Show", "Eq", "Storable"]),
 	("Filter", "VkFilter", ["Show", "Eq", "Storable"]),
 	("BorderColor", "VkBorderColor", ["Show", "Eq", "Storable"])

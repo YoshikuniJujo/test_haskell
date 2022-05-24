@@ -678,7 +678,7 @@ createDescriptorSetLayout = do
 	let	uboLayoutBinding = Vk.DscSet.Lyt.Binding {
 			Vk.DscSet.Lyt.bindingBinding = 0,
 			Vk.DscSet.Lyt.bindingDescriptorType =
-				Vk.DescriptorTypeUniformBuffer,
+				Vk.Dsc.TypeUniformBuffer,
 			Vk.DscSet.Lyt.bindingDescriptorCountOrImmutableSamplers
 				= Left 1,
 			Vk.DscSet.Lyt.bindingStageFlags =
