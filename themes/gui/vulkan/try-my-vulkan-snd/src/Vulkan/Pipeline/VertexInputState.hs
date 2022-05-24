@@ -16,13 +16,13 @@ import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Kind
 
-import Vulkan.Enum
 import Vulkan.Pipeline.VertexInputState.BindingStrideList
 import Vulkan.Pipeline.VertexInputState.BindingOffset
 
 import qualified Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Vulkan.Pipeline.VertexInputState.Core as C
 import qualified Vulkan.VertexInput as VertexInput
+import qualified Vulkan.Format.Enum as Format
 
 data CreateInfo n vs (ts :: [Type]) = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -82,6 +82,6 @@ instance (
 		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @vs @t
 		ads = createInfoAttributeDescriptions @vs @ts undefined
 
-class Formattable a where formatOf :: Format
+class Formattable a where formatOf :: Format.F
 
-instance Formattable Int where formatOf = FormatUndefined
+instance Formattable Int where formatOf = Format.Undefined

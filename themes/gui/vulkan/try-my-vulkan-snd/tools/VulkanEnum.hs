@@ -30,7 +30,6 @@ noZeros = [
 	("ObjectType", "VkObjectType", ["Show", "Eq", "Storable"]),
 	("QueueFlagBits", "VkQueueFlagBits",
 		["Show", "Eq", "Storable", "Bits"]),
-	("Format", "VkFormat", ["Show", "Eq", "Storable"]),
 	("SharingMode", "VkSharingMode", ["Show", "Eq", "Storable"]),
 	("PrimitiveTopology", "VkPrimitiveTopology", ["Show", "Eq", "Storable"]),
 	("PolygonMode", "VkPolygonMode", ["Show", "Eq", "Storable"]),

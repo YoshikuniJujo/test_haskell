@@ -12,7 +12,6 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Component
@@ -22,13 +21,14 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device as Device
 import qualified Vulkan.Image as Image
 import qualified Vulkan.ImageView.Core as C
+import qualified Vulkan.Format.Enum as Format
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoImage :: Image.I,
 	createInfoViewType :: Type,
-	createInfoFormat :: Format,
+	createInfoFormat :: Format.F,
 	createInfoComponents :: Mapping,
 	createInfoSubresourceRange :: Image.SubresourceRange }
 	deriving Show
@@ -39,7 +39,7 @@ createInfoToCore CreateInfo {
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoImage = Image.I img,
 	createInfoViewType = Type tp,
-	createInfoFormat = Format fmt,
+	createInfoFormat = Format.F fmt,
 	createInfoComponents = cpns,
 	createInfoSubresourceRange = srr
 	} = do

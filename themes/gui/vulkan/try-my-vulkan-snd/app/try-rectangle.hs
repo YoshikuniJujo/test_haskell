@@ -125,6 +125,7 @@ import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 import qualified Vulkan.Descriptor.Set as Vk.DscSet
 import qualified Vulkan.Descriptor as Vk.Dsc
+import qualified Vulkan.Format.Enum as Vk.Format
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -156,7 +157,7 @@ data Global = Global {
 	globalPresentQueue :: IORef Vk.Queue,
 	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
-	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
+	globalSwapChainImageFormat :: IORef (Maybe Vk.Format.F),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
@@ -564,7 +565,7 @@ chooseSwapSurfaceFormat = \case
 
 preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Surface.formatFormat f == Vk.Format.B8g8r8a8Srgb &&
 	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
@@ -1367,10 +1368,10 @@ instance SizeAlignmentListUntil Cglm.Vec2 Vertex
 instance SizeAlignmentListUntil Cglm.Vec3 Vertex
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.FormatR32g32Sfloat
+	formatOf = Vk.Format.R32g32Sfloat
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.FormatR32g32b32Sfloat
+	formatOf = Vk.Format.R32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex
 

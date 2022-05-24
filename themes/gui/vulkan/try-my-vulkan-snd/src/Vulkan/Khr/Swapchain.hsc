@@ -30,6 +30,7 @@ import qualified Vulkan.Image as Image
 import qualified Vulkan.Khr.Surface as Surface
 import qualified Vulkan.Core as C
 import qualified Vulkan.Khr.Swapchain.Core as C
+import qualified Vulkan.Format.Enum as Format
 
 #include <vulkan/vulkan.h>
 
@@ -41,7 +42,7 @@ data CreateInfo n = CreateInfo {
 	createInfoFlags :: CreateFlags,
 	createInfoSurface :: Surface.S,
 	createInfoMinImageCount :: Word32,
-	createInfoImageFormat :: Format,
+	createInfoImageFormat :: Format.F,
 	createInfoImageColorSpace :: ColorSpace,
 	createInfoImageExtent :: C.Extent2d,
 	createInfoImageArrayLayers :: Word32,
@@ -61,7 +62,7 @@ createInfoToCore CreateInfo {
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoSurface = Surface.S sfc,
 	createInfoMinImageCount = mic,
-	createInfoImageFormat = Format ifmt,
+	createInfoImageFormat = Format.F ifmt,
 	createInfoImageColorSpace = ColorSpace ics,
 	createInfoImageExtent = iex,
 	createInfoImageArrayLayers = ials,

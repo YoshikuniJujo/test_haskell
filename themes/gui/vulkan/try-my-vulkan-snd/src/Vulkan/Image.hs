@@ -27,6 +27,7 @@ import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Image.Core as C
 import qualified Vulkan.Sample.Enum as Sample
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Vulkan.Format.Enum as Format
 
 data SubresourceRange = SubresourceRange {
 	subresourceRangeAspectMask :: AspectFlags,
@@ -55,7 +56,7 @@ data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoImageType :: Type,
-	createInfoFormat :: Format,
+	createInfoFormat :: Format.F,
 	createInfoExtent :: Extent3d,
 	createInfoMipLevels :: Word32,
 	createInfoArrayLayers :: Word32,
@@ -72,7 +73,7 @@ createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoImageType = Type tp,
-	createInfoFormat = Format fmt,
+	createInfoFormat = Format.F fmt,
 	createInfoExtent = ext,
 	createInfoMipLevels = mls,
 	createInfoArrayLayers = als,

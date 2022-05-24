@@ -133,6 +133,7 @@ import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Sampler as Vk.Sampler
 import qualified Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
+import qualified Vulkan.Format.Enum as Vk.Format
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -164,7 +165,7 @@ data Global = Global {
 	globalPresentQueue :: IORef Vk.Queue,
 	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
-	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
+	globalSwapChainImageFormat :: IORef (Maybe Vk.Format.F),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
@@ -590,7 +591,7 @@ chooseSwapSurfaceFormat = \case
 
 preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Surface.formatFormat f == Vk.Format.B8g8r8a8Srgb &&
 	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
@@ -622,7 +623,7 @@ createImageViews = do
 		=<< ((`createImageView` scif) `mapM`)
 		=<< readGlobal globalSwapChainImages
 
-createImageView :: Vk.Image.I -> Vk.Format -> ReaderT Global IO Vk.ImageView.I
+createImageView :: Vk.Image.I -> Vk.Format.F -> ReaderT Global IO Vk.ImageView.I
 createImageView image format = do
 	let	createInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoNext = Nothing,
@@ -965,23 +966,23 @@ createTextureImage = do
 		(V.toList $ imageData img)
 	(ti, tim) <- createImage
 		(fromIntegral texWidth) (fromIntegral texHeight)
-		Vk.FormatR8g8b8a8Srgb Vk.Image.TilingOptimal
+		Vk.Format.R8g8b8a8Srgb Vk.Image.TilingOptimal
 		(Vk.Image.UsageTransferDstBit .|. Vk.Image.UsageSampledBit)
 		Vk.Memory.PropertyDeviceLocalBit
 	writeGlobal globalTextureImage ti
 	writeGlobal globalTextureImageMemory tim
-	transitionImageLayout ti Vk.FormatR8g8b8a8Srgb Vk.Image.LayoutUndefined
+	transitionImageLayout ti Vk.Format.R8g8b8a8Srgb Vk.Image.LayoutUndefined
 		Vk.Image.LayoutTransferDstOptimal
 	copyBufferToImage stagingBuffer ti
 		(fromIntegral texWidth) (fromIntegral texHeight)
-	transitionImageLayout ti Vk.FormatR8g8b8a8Srgb
+	transitionImageLayout ti Vk.Format.R8g8b8a8Srgb
 		Vk.Image.LayoutTransferDstOptimal
 		Vk.Image.LayoutShaderReadOnlyOptimal
 	lift do	Vk.Buffer.List.destroy dvc stagingBuffer nil
 		Vk.Memory.List.free dvc stagingBufferMemory nil
 
 createImage ::
-	Word32 -> Word32 -> Vk.Format -> Vk.Image.Tiling ->
+	Word32 -> Word32 -> Vk.Format.F -> Vk.Image.Tiling ->
 	Vk.Image.UsageFlags -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO (Vk.Image.I, Vk.Device.MemoryImage)
 createImage widt hght format tiling usage properties = do
@@ -1021,7 +1022,7 @@ readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 transitionImageLayout ::
-	Vk.Image.I -> Vk.Format -> Vk.Image.Layout -> Vk.Image.Layout ->
+	Vk.Image.I -> Vk.Format.F -> Vk.Image.Layout -> Vk.Image.Layout ->
 	ReaderT Global IO ()
 transitionImageLayout image format oldLayout newLayout = do
 	commandBuffer <- beginSingleTimeCommands
@@ -1106,7 +1107,7 @@ copyBufferToImage buffer image wdt hgt = do
 createTextureImageView :: ReaderT Global IO ()
 createTextureImageView = do
 	ti <- readGlobal globalTextureImage
-	tiv <- createImageView ti Vk.FormatR8g8b8a8Srgb
+	tiv <- createImageView ti Vk.Format.R8g8b8a8Srgb
 	writeGlobal globalTextureImageView tiv
 
 createTextureSampler :: ReaderT Global IO ()
@@ -1651,10 +1652,10 @@ instance SizeAlignmentListUntil Cglm.Vec3 Vertex
 instance SizeAlignmentListUntil TexCoord Vertex
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.FormatR32g32Sfloat
+	formatOf = Vk.Format.R32g32Sfloat
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.FormatR32g32b32Sfloat
+	formatOf = Vk.Format.R32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex
 
