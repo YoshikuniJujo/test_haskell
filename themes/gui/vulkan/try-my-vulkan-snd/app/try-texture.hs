@@ -431,7 +431,9 @@ isDeviceSuitable pdvc = do
 	let	swapChainAdequate =
 			not (null $ formats swapChainSupport) &&
 			not (null $ presentModes swapChainSupport)
-	pure $ isComplete is && extensionSupported && swapChainAdequate
+	supportedFeatures <- lift $ Vk.PhysicalDevice.getFeatures pdvc
+	pure $ isComplete is && extensionSupported && swapChainAdequate &&
+		Vk.PhysicalDevice.featuresSamplerAnisotropy supportedFeatures
 
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
@@ -497,7 +499,8 @@ createLogicalDevice = do
 				Vk.Device.Queue.CreateFlagsZero,
 			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
 			Vk.Device.Queue.createInfoQueuePriorities = [1] }
-		deviceFeatures = Vk.PhysicalDevice.featuresZero
+		deviceFeatures = Vk.PhysicalDevice.featuresZero {
+			Vk.PhysicalDevice.featuresSamplerAnisotropy = True }
 		createInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
