@@ -6,7 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -172,7 +172,7 @@ data Global = Global {
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
 		(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
-		'[Cglm.Vec2, Cglm.Vec3]),
+		'[Cglm.Vec2, Cglm.Vec3, TexCoord]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
@@ -762,7 +762,7 @@ createGraphicsPipeline = do
 		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			()
 			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
-			'[Cglm.Vec2, Cglm.Vec3]
+			'[Cglm.Vec2, Cglm.Vec3, TexCoord]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputSt.createInfoFlags =
@@ -861,7 +861,7 @@ createGraphicsPipeline = do
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
 			'[(), ()] ()
 			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
-			'[Cglm.Vec2, Cglm.Vec3]
+			'[Cglm.Vec2, Cglm.Vec3, TexCoord]
 			() () () () () () () () () '[]
 		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
 			Vk.Ppl.Graphics.createInfoNext = Nothing,
@@ -1637,13 +1637,18 @@ cleanup = do
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
-	vertexColor :: Cglm.Vec3 }
+	vertexColor :: Cglm.Vec3,
+	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
+
+newtype TexCoord = TexCoord Cglm.Vec2
+	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance SizeAlignmentList Vertex
 
 instance SizeAlignmentListUntil Cglm.Vec2 Vertex
 instance SizeAlignmentListUntil Cglm.Vec3 Vertex
+instance SizeAlignmentListUntil TexCoord Vertex
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
 	formatOf = Vk.FormatR32g32Sfloat
@@ -1656,13 +1661,17 @@ instance Foreign.Storable.Generic.G Vertex
 vertices :: [Vertex]
 vertices = [
 	Vertex (Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
 
 indices :: [Word16]
 indices = [0, 1, 2, 2, 3, 0]
@@ -1688,14 +1697,17 @@ layout(binding = 0) uniform UniformBufferObject {
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
+layout(location = 2) in vec2 inTexCoord;
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out vec2 fragTexCoord;
 
 void
 main()
 {
 	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 0.0, 1.0);
 	fragColor = inColor;
+	fragTexCoord = inTexCoord;
 }
 
 |]
@@ -1705,13 +1717,14 @@ main()
 #version 450
 
 layout(location = 0) in vec3 fragColor;
+layout(location = 1) in vec2 fragTexCoord;
 
 layout(location = 0) out vec4 outColor;
 
 void
 main()
 {
-	outColor = vec4(fragColor, 1.0);
+	outColor = vec4(fragTexCoord, 0.0, 1.0);
 }
 
 |]
