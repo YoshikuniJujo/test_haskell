@@ -963,7 +963,7 @@ createDepthResources = do
 	pure ()
 
 findSupportedFormat ::
-	[Vk.Format.F] -> Vk.Image.Tiling -> Vk.FormatFeatureFlags ->
+	[Vk.Format.F] -> Vk.Image.Tiling -> Vk.Format.FeatureFlags ->
 	IO Vk.Format.F
 findSupportedFormat candidates tiling features =
 	pure undefined

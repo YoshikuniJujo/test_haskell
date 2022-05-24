@@ -18,8 +18,7 @@ type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
 type QueryControlFlags = QueryControlFlagBits
 type QueryPipelineStatisticFlags = QueryPipelineStatisticFlagBits
-type CullModeFlags = CullModeFlagBits
-type FormatFeatureFlags = FormatFeatureFlagBits|]
+type CullModeFlags = CullModeFlagBits|]
 
 noZeros :: [(HaskellName, CName, [DerivName])]
 noZeros = [
@@ -62,8 +61,5 @@ zeros = [
 			["Show", "Eq", "Storable", "Bits"] ) ),
 	(	[("CullModeFlagsZero", Int 0)],
 		(	"CullModeFlagBits", "VkCullModeFlagBits",
-			["Show", "Eq", "Storable", "Bits"] ) ),
-	(	[("FormatFeatureFlagsZero", Int 0)],
-		(	"FormatFeatureFlagBits", "VkFormatFeatureFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]
