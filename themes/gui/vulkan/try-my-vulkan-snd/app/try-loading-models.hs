@@ -187,8 +187,8 @@ data Global = Global {
 	globalFramebufferResized :: IORef Bool,
 	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
 	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex),
-	globalIndexBuffer :: IORef (Vk.Buffer.List.B Word16),
-	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word16),
+	globalIndexBuffer :: IORef (Vk.Buffer.List.B Word32),
+	globalIndexBufferMemory :: IORef (Vk.Device.MemoryList Word32),
 	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject],
 	globalUniformBuffersMemory ::
 		IORef [Vk.Device.MemoryAtom UniformBufferObject],
@@ -1562,7 +1562,7 @@ recordCommandBuffer cb imageIndex = do
 	ib <- readGlobal globalIndexBuffer
 	lift do	Vk.Cmd.List.bindVertexBuffers cb
 			((vb, 0) :!: BNil :: BList '[Vertex])
-		Vk.Cmd.List.bindIndexBuffer cb ib Vk.IndexTypeUint16
+		Vk.Cmd.List.bindIndexBuffer cb ib Vk.IndexTypeUint32
 
 	dss <- readGlobal globalDescriptorSets
 	ppll <- readGlobal globalPipelineLayout
@@ -1824,7 +1824,7 @@ vertices = [
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL)
 	]
 
-indices :: [Word16]
+indices :: [Word32]
 indices = [
 	0, 1, 2, 2, 3, 0,
 	4, 5, 6, 6, 7, 4]
