@@ -1799,7 +1799,7 @@ instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 
 instance Foreign.Storable.Generic.G Vertex
 
-vertices :: V.Vector (Foreign.Storable.Generic.Wrap Vertex)
+vertices :: V.Vector WVertex
 vertices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
 	Vertex (Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
