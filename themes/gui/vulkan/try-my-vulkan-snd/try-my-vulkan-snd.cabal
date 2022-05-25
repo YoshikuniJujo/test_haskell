@@ -29,6 +29,8 @@ library
   exposed-modules:
       Cglm
       Cglm.Core
+      Codec.Wavefront.Parse
+      Codec.Wavefront.Read
       Data.Generics.Flatten
       Data.HeteroList
       Data.Traversable.Utils
@@ -36,6 +38,7 @@ library
       Glfw
       ThEnv
       TypeLevel.List
+      Vertex
       Vulkan
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core

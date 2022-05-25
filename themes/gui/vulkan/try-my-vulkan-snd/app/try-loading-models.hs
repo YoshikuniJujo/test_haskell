@@ -140,6 +140,7 @@ import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
+import Vertex
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
@@ -1768,35 +1769,6 @@ cleanup = do
 
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift GlfwB.terminate
-
-data Vertex = Vertex {
-	vertexPos :: Cglm.Vec3,
-	vertexColor :: Color,
-	vertexTexCoord :: TexCoord }
-	deriving (Show, Generic)
-
-type WVertex = Foreign.Storable.Generic.Wrap Vertex
-
-newtype Color = Color Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype TexCoord = TexCoord Cglm.Vec2
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-instance SizeAlignmentList Vertex
-
-instance SizeAlignmentListUntil Cglm.Vec2 Vertex
-instance SizeAlignmentListUntil Cglm.Vec3 Vertex
-instance SizeAlignmentListUntil Color Vertex
-instance SizeAlignmentListUntil TexCoord Vertex
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.Format.R32g32Sfloat
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.Format.R32g32b32Sfloat
-
-instance Foreign.Storable.Generic.G Vertex
 
 vertices :: V.Vector WVertex
 vertices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
