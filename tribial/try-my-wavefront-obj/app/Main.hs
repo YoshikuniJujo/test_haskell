@@ -1,6 +1,6 @@
 module Main where
 
-import ReadWavefront
+import Codec.Wavefront.Read
 
 main :: IO ()
 main = print . readVertices =<< readSample

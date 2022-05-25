@@ -27,12 +27,12 @@ library
   exposed-modules:
       Cglm
       Cglm.Core
+      Codec.Wavefront.Parse
+      Codec.Wavefront.Read
       Data.Traversable.Utils
       Foreign.Storable.Generic
-      ReadWavefront
       TryVector
       Vertex
-      Wavefront
   other-modules:
       Paths_try_my_wavefront_obj
   hs-source-dirs:

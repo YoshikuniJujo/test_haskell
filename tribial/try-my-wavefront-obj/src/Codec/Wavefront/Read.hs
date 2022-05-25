@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module ReadWavefront where
+module Codec.Wavefront.Read (readVertices, readSample) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
@@ -20,15 +20,12 @@ import qualified Data.Vector.Storable.Mutable as MV
 import qualified Data.ByteString as BS
 import qualified Foreign.Storable.Generic
 
-import qualified Wavefront as Wf
+import qualified Codec.Wavefront.Parse as Wf
 import qualified Vertex as Vtx
 import qualified Cglm
 
 readSample :: IO BS.ByteString
 readSample = BS.readFile "../../files/models/viking_room.obj"
-
-readTiny :: IO BS.ByteString
-readTiny = BS.readFile "tiny.obj"
 
 countV :: BS.ByteString -> Writer (Sum Int, Sum Int, Sum Int, Sum Int) ()
 countV = Wf.parseWavefront_ @_ @Word32 \case
