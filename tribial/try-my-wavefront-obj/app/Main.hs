@@ -1,4 +1,6 @@
 module Main where
 
+import ReadWavefront
+
 main :: IO ()
-main = putStrLn "Slozsoft"
+main = print . readVertices =<< readSample

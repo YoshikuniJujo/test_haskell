@@ -24,6 +24,12 @@ import qualified Wavefront as Wf
 import qualified Vertex as Vtx
 import qualified Cglm
 
+readSample :: IO BS.ByteString
+readSample = BS.readFile "../../files/models/viking_room.obj"
+
+readTiny :: IO BS.ByteString
+readTiny = BS.readFile "tiny.obj"
+
 countV :: BS.ByteString -> Writer (Sum Int, Sum Int, Sum Int, Sum Int) ()
 countV = Wf.parseWavefront_ @_ @Word32 \case
 	Wf.V _ _ _ -> tell (1, 0, 0, 0)

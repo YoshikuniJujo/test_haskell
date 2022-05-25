@@ -5,19 +5,12 @@
 
 module Wavefront where
 
-import Control.Monad.Writer
 import Data.Maybe
 import Data.List.NonEmpty (NonEmpty(..))
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Char8 as BSC
-
-readSample :: IO BS.ByteString
-readSample = BS.readFile "../../files/models/viking_room.obj"
-
-readTiny :: IO BS.ByteString
-readTiny = BS.readFile "tiny.obj"
 
 removeComment :: BS.ByteString -> [BS.ByteString]
 removeComment = filter (not . ("#" `BS.isPrefixOf`)) . BSC.lines
