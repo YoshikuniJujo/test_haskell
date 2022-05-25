@@ -164,12 +164,12 @@ data Global = Global {
 	globalDescriptorSetLayout :: IORef Vk.DscSet.Lyt.L,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
-		(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
-		Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex) )],
+		Solo (AddType Vertex 'Vk.VertexInput.RateVertex) )],
 	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
 	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
 	globalInFlightFences :: IORef [Vk.Fence.F],
@@ -724,7 +724,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.ShaderStage.CreateInfoNil
 		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			()
-			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 			'[Cglm.Vec2, Cglm.Vec3]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
@@ -823,7 +823,7 @@ createGraphicsPipeline = do
 	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
 			'[(), ()] ()
-			(Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex))
+			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 			'[Cglm.Vec2, Cglm.Vec3]
 			() () () () () () () () () '[]
 		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
@@ -1143,7 +1143,7 @@ createSyncObjects = do
 		=<< lift (replicateM maxFramesInFlight
 			$ Vk.Fence.create @() dvc fenceInfo nil)
 
-recordCommandBuffer :: Vk.CommandBuffer.C (Solo (AddType [Vertex] 'Vk.VertexInput.RateVertex)) -> Word32 -> ReaderT Global IO ()
+recordCommandBuffer :: Vk.CommandBuffer.C (Solo (AddType Vertex 'Vk.VertexInput.RateVertex)) -> Word32 -> ReaderT Global IO ()
 recordCommandBuffer cb imageIndex = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,

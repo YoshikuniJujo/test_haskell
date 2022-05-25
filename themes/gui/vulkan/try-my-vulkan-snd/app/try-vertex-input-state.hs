@@ -42,7 +42,7 @@ main = do
 	let	vertexInputInfo ::
 			Vk.Ppl.VertexInputSt.CreateInfo ()
 				(Solo (AddType
-					[Vertex] 'Vk.VertexInput.RateVertex))
+					Vertex 'Vk.VertexInput.RateVertex))
 				'[Vec2, Vec3]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,

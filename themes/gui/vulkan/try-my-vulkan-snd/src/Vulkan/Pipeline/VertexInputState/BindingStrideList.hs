@@ -27,7 +27,7 @@ class BindingStrideListList (ts :: [Type]) k v where
 instance BindingStrideListList '[] k v where bindingStrideListList = []
 
 instance (SizeAlignmentList t, BindingStrideListList ts k v, TypeVal a v) =>
-	BindingStrideListList (AddType [t] (a :: k) ': ts) k v where
+	BindingStrideListList (AddType t (a :: k) ': ts) k v where
 	bindingStrideListList =
 		(wholeSizeAlignment @t, typeVal @k @a @v) : bindingStrideListList @ts @k @v
 
@@ -41,7 +41,7 @@ type family MapSubType t where
 
 type family MapUnList t where
 	MapUnList '[] = '[]
-	MapUnList ([a] ': ts) = a ': MapUnList ts
+	MapUnList (a ': ts) = a ': MapUnList ts
 
 class TypeVal (t :: k) v where typeVal :: v
 

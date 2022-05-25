@@ -27,7 +27,7 @@ class BindingOffsetList (tss :: [Type]) t where
 instance BindingOffsetList '[] t where bindingOffsetList = Nothing
 
 instance (SizeAlignmentListUntil t ts, BindingOffsetList tss t) =>
-	BindingOffsetList ([ts] ': tss) t where
+	BindingOffsetList (ts ': tss) t where
 	bindingOffsetList = case offsetOf @t @ts of
 		Nothing -> ((+ 1) `first`) <$> bindingOffsetList @tss @t
 		Just os -> Just (0, os)
