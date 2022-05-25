@@ -19,6 +19,7 @@ import Control.Monad.Fix
 import Control.Monad.Reader
 import Control.Exception
 import Data.Foldable
+import Data.MonoTraversable
 import Data.Bits
 import Data.Bool
 import Data.Maybe
@@ -33,6 +34,7 @@ import Codec.Picture
 import Foreign.Storable.SizeAlignment
 
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Vector.Storable as V
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
@@ -1266,16 +1268,16 @@ createTextureSampler = do
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBufferList (length vertices)
+	(sb, sbm) <- createBufferList (olength vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero vertices
-	(vb, vbm) <- createBufferList (length vertices)
+	lift $ Vk.Memory.List.writeMonoW dvc sbm Vk.Memory.M.MapFlagsZero vertices
+	(vb, vbm) <- createBufferList (olength vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
-	copyBuffer sb vb (length vertices)
+	copyBuffer sb vb (olength vertices)
 	lift do	Vk.Buffer.List.destroy dvc sb nil
 		Vk.Memory.List.free dvc sbm nil
 	writeGlobal globalVertexBuffer vb
@@ -1774,6 +1776,8 @@ data Vertex = Vertex {
 	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
 
+type WVertex = Foreign.Storable.Generic.Wrap Vertex
+
 newtype Color = Color Cglm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
@@ -1795,8 +1799,8 @@ instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 
 instance Foreign.Storable.Generic.G Vertex
 
-vertices :: [Vertex]
-vertices = [
+vertices :: V.Vector (Foreign.Storable.Generic.Wrap Vertex)
+vertices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
 	Vertex (Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),

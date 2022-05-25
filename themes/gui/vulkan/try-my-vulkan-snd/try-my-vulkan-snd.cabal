@@ -208,6 +208,7 @@ library
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -241,6 +242,7 @@ executable my-glslc
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -275,6 +277,7 @@ executable try-depth-buffering
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -309,6 +312,7 @@ executable try-loading-models
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -342,6 +346,7 @@ executable try-my-vulkan-snd-exe
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -376,6 +381,7 @@ executable try-next-triangle
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -410,6 +416,7 @@ executable try-rectangle
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -444,6 +451,7 @@ executable try-shaderc
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -478,6 +486,7 @@ executable try-shaderc-core
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -512,6 +521,7 @@ executable try-texture
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -546,6 +556,7 @@ executable try-vertex-input-state
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list
@@ -580,6 +591,7 @@ test-suite try-my-vulkan-snd-test
     , filepath
     , ghc-prim
     , monads-tf
+    , mono-traversable
     , nowdoc
     , ranged-list
     , size-alignment-list

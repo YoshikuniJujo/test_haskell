@@ -83,6 +83,14 @@ instance G a => Storable (Wrap a) where
 	peek = (Wrap <$>) . gPeek . castPtr
 	poke p = gPoke (castPtr p) . unWrap
 
+{-
+instance {-# OVERLAPPABLE #-} G a => Storable a where
+	sizeOf = gSizeOf
+	alignment = gAlignment
+	peek = gPeek
+	poke = gPoke
+	-}
+
 data SampleData = SD Word8 Int16 Char deriving (Show, Generic)
 
 instance G SampleData

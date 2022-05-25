@@ -42,6 +42,7 @@ dependencies:
 - union-color
 - ghc-prim
 - time
+- mono-traversable
 
 library:
   source-dirs: src

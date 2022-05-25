@@ -1,4 +1,6 @@
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -7,6 +9,7 @@ module Vulkan.Memory.List where
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Pointable
+import Data.MonoTraversable
 import Data.Word
 
 import qualified Foreign.Storable.Generic
@@ -52,3 +55,20 @@ write dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
 	pokeArray dat vs'
 	M.unmap dvc mem
 	where vs' = Foreign.Storable.Generic.Wrap <$> vs
+
+writeMono :: (Foreign.Storable.Generic.G (Element vs), MonoFoldable vs) =>
+	Device.D -> Device.MemoryList (Element vs) -> M.MapFlags -> vs -> IO ()
+writeMono dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+	dat <- M.map dvc mem 0
+		(fromIntegral $ sizeOf (w $ headEx vs) * olength vs) flgs
+	pokeArray dat $ w <$> otoList vs
+	M.unmap dvc mem
+	where w = Foreign.Storable.Generic.Wrap
+
+writeMonoW :: (Foreign.Storable.Generic.G v, MonoFoldable vs, Element vs ~ Foreign.Storable.Generic.Wrap v) =>
+	Device.D -> Device.MemoryList v -> M.MapFlags -> vs -> IO ()
+writeMonoW dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+	dat <- M.map dvc mem 0
+		(fromIntegral $ sizeOf (headEx vs) * olength vs) flgs
+	pokeArray dat $ otoList vs
+	M.unmap dvc mem
