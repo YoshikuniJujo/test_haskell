@@ -27,6 +27,8 @@ dependencies:
 - random
 - containers
 - deepseq
+- bytestring
+- vector
 
 library:
   source-dirs: src
