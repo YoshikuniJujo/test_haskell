@@ -33,6 +33,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , monads-tf
     , wavefront
   default-language: Haskell2010
 
@@ -46,6 +47,7 @@ executable try-wavefront-obj-exe
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , monads-tf
     , try-wavefront-obj
     , wavefront
   default-language: Haskell2010
@@ -61,6 +63,7 @@ test-suite try-wavefront-obj-test
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , monads-tf
     , try-wavefront-obj
     , wavefront
   default-language: Haskell2010

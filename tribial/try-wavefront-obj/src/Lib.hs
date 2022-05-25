@@ -1,9 +1,10 @@
-{-# LANGUAGE LambdaCase, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Lib where
 
+import Control.Monad.Writer
 import Data.Maybe
 import Data.List.NonEmpty (NonEmpty(..))
 import Codec.Wavefront
@@ -18,6 +19,8 @@ getSample = either error pure =<< fromFile "../../files/models/viking_room.obj"
 
 getTiny :: IO WavefrontOBJ
 getTiny = either error pure =<< fromFile "tiny.obj"
+
+readSample = BS.readFile "../../files/models/viking_room.obj"
 
 readTiny :: IO BS.ByteString
 readTiny = BS.readFile "tiny.obj"
@@ -54,7 +57,7 @@ waveFrontAtom :: NonEmpty BS.ByteString -> WavefrontAtom
 waveFrontAtom = \case
 	"v" :| [x, y, z] -> V (bread x) (bread y) (bread z)
 	"vt" :| [x, y] -> Vt (bread x) (bread y)
-	"vn" :| [x, y, z] -> V (bread x) (bread y) (bread z)
+	"vn" :| [x, y, z] -> Vn (bread x) (bread y) (bread z)
 	"f" :| [a, b, c] -> F (vertex a) (vertex b) (vertex c)
 	"mtllib" :| [fp] -> Mtllib $ BSC.unpack fp
 	"usemtl" :| [nm] -> Usemtl $ BSC.unpack nm
@@ -75,3 +78,17 @@ vertex s = case BSC.split '/' s of
 
 bread :: Read a => BS.ByteString -> a
 bread = read . BSC.unpack
+
+parseWavefront :: Monad m => (WavefrontAtom -> m a) -> BS.ByteString -> m [a]
+parseWavefront f = (f `mapM`) . (waveFrontAtom <$>) . nonEmptyWords . removeComment
+
+parseWavefront_ :: Monad m => (WavefrontAtom -> m a) -> BS.ByteString -> m ()
+parseWavefront_ f = (f `mapM_`) . (waveFrontAtom <$>) . nonEmptyWords . removeComment
+
+countV :: BS.ByteString -> Writer (Sum Int, Sum Int, Sum Int, Sum Int) ()
+countV = parseWavefront_ \case
+	V _ _ _ -> tell (1, 0, 0, 0)
+	Vt _ _ -> tell (0, 1, 0, 0)
+	Vn _ _ _ -> tell (0, 0, 1, 0)
+	F _ _ _ -> tell (0, 0, 0, 1)
+	_ -> tell (0, 0, 0, 0)
