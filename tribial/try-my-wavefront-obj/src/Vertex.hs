@@ -7,6 +7,7 @@ module Vertex where
 
 import GHC.Generics
 import Foreign.Storable
+import Foreign.Storable.SizeAlignment
 import Data.Word
 
 import qualified Data.Vector.Storable as V
@@ -18,6 +19,9 @@ data Vertex = Vertex {
 	vertexColor :: Color,
 	vertexTexCoord :: TexCoord }
 	deriving (Show, Generic)
+
+instance SizeAlignmentList Vertex
+instance Foreign.Storable.Generic.G Vertex
 
 newtype Color = Color Cglm.Vec3
 	deriving (Show, Storable)

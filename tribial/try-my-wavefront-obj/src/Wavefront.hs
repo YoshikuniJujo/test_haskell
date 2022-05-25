@@ -26,9 +26,9 @@ nonEmptyWords :: [BS.ByteString] -> [NonEmpty BS.ByteString]
 nonEmptyWords = catMaybes . (NE.nonEmpty . BSC.words <$>)
 
 data WavefrontAtom i
-	= V Double Double Double
-	| Vt Double Double
-	| Vn Double Double Double
+	= V Float Float Float
+	| Vt Float Float
+	| Vn Float Float Float
 	| F (Vertex i) (Vertex i) (Vertex i)
 	| Mtllib FilePath
 	| Usemtl String
