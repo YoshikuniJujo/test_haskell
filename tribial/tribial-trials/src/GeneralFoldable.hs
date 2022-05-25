@@ -44,3 +44,5 @@ instance Foldable UV.Vector where
 	foldr :: UV.Unbox a => (a -> b -> b) -> b -> UV.Vector a -> b
 	foldr = UV.foldr
 	-}
+
+-- type Hack a a = UV.Vector a

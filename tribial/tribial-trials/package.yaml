@@ -29,6 +29,7 @@ dependencies:
 - deepseq
 - bytestring
 - vector
+- mono-traversable
 
 library:
   source-dirs: src
