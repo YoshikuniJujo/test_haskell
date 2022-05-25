@@ -41,7 +41,6 @@ import qualified Graphics.UI.GLFW as GlfwB
 import qualified Glfw
 import qualified Cglm
 import qualified Foreign.Storable.Generic
-import qualified Data.Vector.Storable as V
 
 import ThEnv
 import Shaderc
@@ -1286,16 +1285,16 @@ createVertexBuffer = do
 createIndexBuffer :: ReaderT Global IO ()
 createIndexBuffer = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBufferList (length indices)
+	(sb, sbm) <- createBufferList (olength indices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero indices
-	(ib, ibm) <- createBufferList (length indices)
+	lift $ Vk.Memory.List.writeMonoW dvc sbm Vk.Memory.M.MapFlagsZero indices
+	(ib, ibm) <- createBufferList (olength indices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageIndexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
-	copyBuffer sb ib (length indices)
+	copyBuffer sb ib (olength indices)
 	lift do	Vk.Buffer.List.destroy dvc sb nil
 		Vk.Memory.List.free dvc sbm nil
 	writeGlobal globalIndexBuffer ib
@@ -1571,7 +1570,7 @@ recordCommandBuffer cb imageIndex = do
 	cf <- readGlobal globalCurrentFrame
 	lift do	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
 			[dss !! cf] []
-		Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
+		Vk.Cmd.drawIndexed cb (fromIntegral $ olength indices) 1 0 0 0
 		Vk.Cmd.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
@@ -1828,8 +1827,10 @@ vertices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL)
 	]
 
-indices :: [Word32]
-indices = [
+type WWord32 = Foreign.Storable.Generic.Wrap Word32
+
+indices :: V.Vector WWord32
+indices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
 	0, 1, 2, 2, 3, 0,
 	4, 5, 6, 6, 7, 4]
 
