@@ -6,7 +6,8 @@
 
 module Codec.Wavefront.Read (
 	readVertices, readSample, WWord32, readVerticesIndices,
-	sampleVerticesIndices ) where
+	sampleVerticesIndices, tinyVerticesIndices,
+	verticesIndices ) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
@@ -26,11 +27,16 @@ import qualified Codec.Wavefront.Parse as Wf
 import qualified Vertex as Vtx
 import qualified Cglm
 
-sampleVerticesIndices :: IO (V.Vector Vtx.WVertex, V.Vector WWord32)
-sampleVerticesIndices = readVerticesIndices <$> readSample
+verticesIndices :: FilePath -> IO (V.Vector Vtx.WVertex, V.Vector WWord32)
+verticesIndices fp = readVerticesIndices <$> BS.readFile fp
 
-readSample :: IO BS.ByteString
+sampleVerticesIndices, tinyVerticesIndices :: IO (V.Vector Vtx.WVertex, V.Vector WWord32)
+sampleVerticesIndices = readVerticesIndices <$> readSample
+tinyVerticesIndices = readVerticesIndices <$> readTiny
+
+readSample, readTiny :: IO BS.ByteString
 readSample = BS.readFile "../../../../files/models/viking_room.obj"
+readTiny = BS.readFile "tiny.obj"
 
 countV :: BS.ByteString -> Writer (Sum Int, Sum Int, Sum Int, Sum Int) ()
 countV = Wf.parseWavefront_ @_ @Word32 \case
@@ -87,7 +93,7 @@ readV n n' n'' s = do
 			writeSTRef ri (i + 1)
 		Wf.Vt x y -> do
 			i' <- readSTRef ri'
-			MV.write t i' . w $ TexCoord x y
+			MV.write t i' . w $ TexCoord x (1 - y)
 			writeSTRef ri' (i' + 1)
 		Wf.F idx1 idx2 idx3 -> do
 			i'' <- readSTRef ri''

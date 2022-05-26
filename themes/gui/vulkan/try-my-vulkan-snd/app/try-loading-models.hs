@@ -142,11 +142,12 @@ import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
 import Vertex
+import Codec.Wavefront.Read
 
 main :: IO ()
-main = do
-	[tfp] <- getArgs
-	runReaderT (run tfp) =<< newGlobal
+main = getArgs >>= \case
+	[tfp, mfp] -> runReaderT (run tfp mfp) =<< newGlobal
+	_ -> error "bad args"
 
 width, height :: Int
 width = 800; height = 600
@@ -206,7 +207,10 @@ data Global = Global {
 	globalDepthImage :: IORef Vk.Image.I,
 	globalDepthImageMemory :: IORef Vk.Device.MemoryImage,
 	globalDepthImageView :: IORef Vk.ImageView.I,
-	globalTextureFilePath :: IORef FilePath
+	globalTextureFilePath :: IORef FilePath,
+	globalModelFilePath :: IORef FilePath,
+	globalVertices :: IORef (V.Vector WVertex),
+	globalIndices :: IORef (V.Vector WWord32)
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -258,6 +262,9 @@ newGlobal = do
 	dim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	divw <- newIORef $ Vk.ImageView.I NullPtr
 	tfp <- newIORef ""
+	mfp <- newIORef ""
+	vtcs <- newIORef V.empty
+	idcs <- newIORef V.empty
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -299,12 +306,16 @@ newGlobal = do
 		globalDepthImage = di,
 		globalDepthImageMemory = dim,
 		globalDepthImageView = divw,
-		globalTextureFilePath = tfp
+		globalTextureFilePath = tfp,
+		globalModelFilePath = mfp,
+		globalVertices = vtcs,
+		globalIndices = idcs
 		}
 
-run :: FilePath -> ReaderT Global IO ()
-run tfp = do
+run :: FilePath -> FilePath -> ReaderT Global IO ()
+run tfp mfp = do
 	writeGlobal globalTextureFilePath tfp
+	writeGlobal globalModelFilePath mfp
 	initWindow
 	initVulkan
 	mainLoop
@@ -340,6 +351,7 @@ initVulkan = do
 	createTextureImage
 	createTextureImageView
 	createTextureSampler
+	loadModel
 	createVertexBuffer
 	createIndexBuffer
 	createUniformBuffers
@@ -1273,19 +1285,27 @@ createTextureSampler = do
 	ts <- lift $ Vk.Sampler.create @() dvc samplerInfo nil
 	writeGlobal globalTextureSampler ts
 
+loadModel :: ReaderT Global IO ()
+loadModel = do
+	(vtcs, idcs) <-
+		lift . verticesIndices =<< readGlobal globalModelFilePath
+	writeGlobal globalVertices vtcs
+	writeGlobal globalIndices idcs
+
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBufferList (olength vertices)
+	vtcs <- readGlobal globalVertices
+	(sb, sbm) <- createBufferList (olength vtcs)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.writeMonoW dvc sbm Vk.Memory.M.MapFlagsZero vertices
-	(vb, vbm) <- createBufferList (olength vertices)
+	lift $ Vk.Memory.List.writeMonoW dvc sbm Vk.Memory.M.MapFlagsZero vtcs
+	(vb, vbm) <- createBufferList (olength vtcs)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
-	copyBuffer sb vb (olength vertices)
+	copyBuffer sb vb (olength vtcs)
 	lift do	Vk.Buffer.List.destroy dvc sb nil
 		Vk.Memory.List.free dvc sbm nil
 	writeGlobal globalVertexBuffer vb
@@ -1294,16 +1314,17 @@ createVertexBuffer = do
 createIndexBuffer :: ReaderT Global IO ()
 createIndexBuffer = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBufferList (olength indices)
+	idcs <- readGlobal globalIndices
+	(sb, sbm) <- createBufferList (olength idcs)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.writeMonoW dvc sbm Vk.Memory.M.MapFlagsZero indices
-	(ib, ibm) <- createBufferList (olength indices)
+	lift $ Vk.Memory.List.writeMonoW dvc sbm Vk.Memory.M.MapFlagsZero idcs
+	(ib, ibm) <- createBufferList (olength idcs)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageIndexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
-	copyBuffer sb ib (olength indices)
+	copyBuffer sb ib (olength idcs)
 	lift do	Vk.Buffer.List.destroy dvc sb nil
 		Vk.Memory.List.free dvc sbm nil
 	writeGlobal globalIndexBuffer ib
@@ -1541,6 +1562,7 @@ createSyncObjects = do
 
 recordCommandBuffer :: Vk.CommandBuffer.C (Solo (AddType Vertex 'Vk.VertexInput.RateVertex)) -> Word32 -> ReaderT Global IO ()
 recordCommandBuffer cb imageIndex = do
+	idcs <- readGlobal globalIndices
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
 			Vk.CommandBuffer.beginInfoFlags =
@@ -1579,7 +1601,7 @@ recordCommandBuffer cb imageIndex = do
 	cf <- readGlobal globalCurrentFrame
 	lift do	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
 			[dss !! cf] []
-		Vk.Cmd.drawIndexed cb (fromIntegral $ olength indices) 1 0 0 0
+		Vk.Cmd.drawIndexed cb (fromIntegral $ olength idcs) 1 0 0 0
 		Vk.Cmd.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
@@ -1609,7 +1631,7 @@ drawFrame st = do
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
-	updateUniformBuffer st $ fromIntegral cf -- imageIndex
+	updateUniformBuffer st $ fromIntegral cf
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
@@ -1777,42 +1799,6 @@ cleanup = do
 
 	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
 	lift GlfwB.terminate
-
-vertices :: V.Vector WVertex
-vertices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
-	Vertex (Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec3 $ 0.5 :. 0.5 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL),
-
-	Vertex (Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
-	Vertex (Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
-		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL)
-	]
-
-type WWord32 = Foreign.Storable.Generic.Wrap Word32
-
-indices :: V.Vector WWord32
-indices = V.fromList $ Foreign.Storable.Generic.Wrap <$> [
-	0, 1, 2, 2, 3, 0,
-	4, 5, 6, 6, 7, 4]
 
 data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectModel :: Cglm.Mat4,
