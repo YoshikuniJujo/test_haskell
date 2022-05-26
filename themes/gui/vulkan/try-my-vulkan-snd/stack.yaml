@@ -48,6 +48,7 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 54042a99383c0b6bc690edde3cb1a2fe8b9a21eb
 - union-color-0.1.2.0
+- ranged-list-0.1.2.0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

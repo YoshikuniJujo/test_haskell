@@ -24,6 +24,7 @@ import Data.Bits
 import Data.Bool
 import Data.Maybe
 import Data.List
+import Data.Vector.Storable.Indexing
 import Data.Word
 import Data.IORef
 import Data.List.Length
@@ -1289,8 +1290,13 @@ loadModel :: ReaderT Global IO ()
 loadModel = do
 	(vtcs, idcs) <-
 		lift . verticesIndices =<< readGlobal globalModelFilePath
-	writeGlobal globalVertices vtcs
-	writeGlobal globalIndices idcs
+	let	(vtcs', idcs') = indexingVector vtcs
+	lift do	putStrLn $ "vtcs : " ++ show (V.length vtcs)
+		putStrLn $ "vtcs': " ++ show (V.length vtcs')
+		putStrLn $ "idcs : " ++ show (V.length idcs)
+		putStrLn $ "idcs': " ++ show (V.length idcs')
+	writeGlobal globalVertices vtcs'
+	writeGlobal globalIndices idcs'
 
 createVertexBuffer :: ReaderT Global IO ()
 createVertexBuffer = do

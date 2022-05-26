@@ -18,8 +18,8 @@ import System.IO.Unsafe
 
 #include <cglm/cglm.h>
 
-newtype Vec2 = Vec2 (LengthL 2 #{type float}) deriving Show
-newtype Vec3 = Vec3 (LengthL 3 #{type float}) deriving Show
+newtype Vec2 = Vec2 (LengthL 2 #{type float}) deriving (Show, Eq, Ord)
+newtype Vec3 = Vec3 (LengthL 3 #{type float}) deriving (Show, Eq, Ord)
 
 instance Storable Vec2 where
 	sizeOf _ = #{size vec2}

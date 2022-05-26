@@ -18,15 +18,15 @@ data Vertex = Vertex {
 	vertexPos :: Cglm.Vec3,
 	vertexColor :: Color,
 	vertexTexCoord :: TexCoord }
-	deriving (Show, Generic)
+	deriving (Show, Eq, Ord, Generic)
 
 type WVertex = Foreign.Storable.Generic.Wrap Vertex
 
 newtype Color = Color Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 newtype TexCoord = TexCoord Cglm.Vec2
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance SizeAlignmentList Vertex
 
