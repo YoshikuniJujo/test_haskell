@@ -75,7 +75,7 @@ instance Storable a => Gg (K1 i a) where
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
-newtype Wrap a = Wrap { unWrap :: a } deriving Show
+newtype Wrap a = Wrap { unWrap :: a } deriving (Show, Eq, Ord)
 
 instance G a => Storable (Wrap a) where
 	sizeOf = gSizeOf . unWrap
