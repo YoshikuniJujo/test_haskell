@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.Storable.Generic where
@@ -75,7 +75,7 @@ instance Storable a => Gg (K1 i a) where
 	ggPeek = (K1 <$>) . peek . castPtr
 	ggPoke p (K1 x) = poke (castPtr p) x
 
-newtype Wrap a = Wrap { unWrap :: a } deriving (Show, Eq, Ord)
+newtype Wrap a = Wrap { unWrap :: a } deriving (Show, Eq, Ord, Enum)
 
 instance G a => Storable (Wrap a) where
 	sizeOf = gSizeOf . unWrap
