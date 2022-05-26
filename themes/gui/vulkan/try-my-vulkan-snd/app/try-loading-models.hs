@@ -30,6 +30,7 @@ import Data.List.Length
 import Data.Time
 import Data.Color
 import Codec.Picture
+import System.Environment
 
 import Foreign.Storable.SizeAlignment
 
@@ -143,7 +144,9 @@ import Vulkan.Buffer.List (BList(..))
 import Vertex
 
 main :: IO ()
-main = runReaderT run =<< newGlobal
+main = do
+	[tfp] <- getArgs
+	runReaderT (run tfp) =<< newGlobal
 
 width, height :: Int
 width = 800; height = 600
@@ -202,7 +205,8 @@ data Global = Global {
 	globalTextureSampler :: IORef Vk.Sampler.S,
 	globalDepthImage :: IORef Vk.Image.I,
 	globalDepthImageMemory :: IORef Vk.Device.MemoryImage,
-	globalDepthImageView :: IORef Vk.ImageView.I
+	globalDepthImageView :: IORef Vk.ImageView.I,
+	globalTextureFilePath :: IORef FilePath
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -253,6 +257,7 @@ newGlobal = do
 	di <- newIORef $ Vk.Image.I NullPtr
 	dim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	divw <- newIORef $ Vk.ImageView.I NullPtr
+	tfp <- newIORef ""
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -293,11 +298,13 @@ newGlobal = do
 		globalTextureSampler = ts,
 		globalDepthImage = di,
 		globalDepthImageMemory = dim,
-		globalDepthImageView = divw
+		globalDepthImageView = divw,
+		globalTextureFilePath = tfp
 		}
 
-run :: ReaderT Global IO ()
-run = do
+run :: FilePath -> ReaderT Global IO ()
+run tfp = do
+	writeGlobal globalTextureFilePath tfp
 	initWindow
 	initVulkan
 	mainLoop
@@ -1054,7 +1061,8 @@ hasStencilComponent = \case
 
 createTextureImage :: ReaderT Global IO ()
 createTextureImage = do
-	img <- lift $ readRgba8 "../../../../files/models/viking_room.png"
+	tfp <- readGlobal globalTextureFilePath
+	img <- lift $ readRgba8 tfp
 	let	texWidth = imageWidth img
 		texHeight = imageHeight img
 	lift do	print texWidth
