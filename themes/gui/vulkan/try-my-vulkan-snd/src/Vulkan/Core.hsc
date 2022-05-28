@@ -116,6 +116,8 @@ struct "Offset3d" #{size VkOffset3D} #{alignment VkOffset3D} [
 		[| #{poke VkOffset3D, z} |]) ]
 	[''Show, ''Storable]
 
+type ListOffset3d = [Offset3d]
+
 struct "Rect2d" #{size VkRect2D} #{alignment VkRect2D} [
 	("offset", ''Offset2d, [| #{peek VkRect2D, offset} |],
 		[| #{poke VkRect2D, offset} |]),

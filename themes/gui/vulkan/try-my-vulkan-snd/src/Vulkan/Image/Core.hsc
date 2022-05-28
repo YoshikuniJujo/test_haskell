@@ -6,6 +6,7 @@
 module Vulkan.Image.Core where
 
 import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
@@ -157,3 +158,20 @@ struct "SubresourceLayers" #{size VkImageSubresourceLayers}
 
 foreign import ccall "vkDestroyImage" destroy ::
 	Device.D -> I -> Ptr AllocationCallbacks.A -> IO ()
+
+struct "Blit" #{size VkImageBlit} #{alignment VkImageBlit} [
+	("blitSrcSubresource", ''SubresourceLayers,
+		[| #{peek VkImageBlit, srcSubresource} |],
+		[| #{poke VkImageBlit, srcSubresource} |]),
+	("blitSrcOffsets", ''ListOffset3d,
+		[| \p -> peekArray 2 (#{ptr VkImageBlit, srcOffsets} p) |],
+		[| \p os -> pokeArray
+			(#{ptr VkImageBlit, srcOffsets} p) $ take 2 os |]),
+	("blitDstSubresource", ''SubresourceLayers,
+		[| #{peek VkImageBlit, dstSubresource} |],
+		[| #{poke VkImageBlit, dstSubresource} |]),
+	("blitDstOffsets", ''ListOffset3d,
+		[| \p -> peekArray 2 (#{ptr VkImageBlit, dstOffsets} p) |],
+		[| \p os -> pokeArray
+			(#{ptr VkImageBlit, dstOffsets} p) $ take 2 os |]) ]
+	[''Show, ''Storable]
