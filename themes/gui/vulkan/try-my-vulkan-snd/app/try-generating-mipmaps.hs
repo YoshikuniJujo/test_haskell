@@ -26,6 +26,7 @@ import Data.Maybe
 import Data.List
 import Data.Vector.Storable.Indexing
 import Data.Word
+import Data.Int
 import Data.IORef
 import Data.List.Length
 import Data.Time
@@ -1079,7 +1080,6 @@ hasStencilComponent = \case
 createTextureImage :: ReaderT Global IO ()
 createTextureImage = do
 	tfp <- readGlobal globalTextureFilePath
-	ml <- readGlobal globalMipLevels
 	img <- lift $ readRgba8 tfp
 	let	texWidth = imageWidth img
 		texHeight = imageHeight img
@@ -1088,6 +1088,7 @@ createTextureImage = do
 	lift do	print texWidth
 		print texHeight
 		print . V.length $ imageData img
+		putStrLn $ "mipLevels: " ++ show ml
 	writeGlobal globalMipLevels ml
 	let	imageSize = V.length $ imageData img
 	(stagingBuffer, stagingBufferMemory) <- createBufferList @Word8 imageSize
@@ -1110,11 +1111,59 @@ createTextureImage = do
 		Vk.Image.LayoutTransferDstOptimal ml
 	copyBufferToImage stagingBuffer ti
 		(fromIntegral texWidth) (fromIntegral texHeight)
+--	{-
 	transitionImageLayout ti Vk.Format.R8g8b8a8Srgb
 		Vk.Image.LayoutTransferDstOptimal
 		Vk.Image.LayoutShaderReadOnlyOptimal ml
+--		-}
 	lift do	Vk.Buffer.List.destroy dvc stagingBuffer nil
 		Vk.Memory.List.free dvc stagingBufferMemory nil
+
+generateMipmaps :: Vk.Image.I -> Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
+generateMipmaps img tw th ml = do
+	commandBuffer <- beginSingleTimeCommands
+
+	let	barrier = Vk.Image.MemoryBarrier {
+			Vk.Image.memoryBarrierNext = Nothing,
+			Vk.Image.memoryBarrierImage = img,
+			Vk.Image.memoryBarrierSrcQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Image.memoryBarrierDstQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Image.memoryBarrierSubresourceRange =
+				Vk.Image.SubresourceRange {
+					Vk.Image.subresourceRangeAspectMask =
+						Vk.Image.AspectColorBit,
+					Vk.Image.subresourceRangeBaseArrayLayer
+						= 0,
+					Vk.Image.subresourceRangeLayerCount = 1,
+					Vk.Image.subresourceRangeLevelCount = 1,
+					Vk.Image.subresourceRangeBaseMipLevel =
+						0 },
+			Vk.Image.memoryBarrierOldLayout =
+				Vk.Image.LayoutTransferDstOptimal,
+			Vk.Image.memoryBarrierNewLayout =
+				Vk.Image.LayoutTransferSrcOptimal,
+			Vk.Image.memoryBarrierSrcAccessMask =
+				Vk.AccessTransferWriteBit,
+			Vk.Image.memoryBarrierDstAccessMask =
+				Vk.AccessTransferReadBit }
+	for_ [1 .. ml - 1] $ generateMipmaps1 @() commandBuffer barrier tw th
+
+	endSingleTimeCommands commandBuffer
+
+generateMipmaps1 :: Pointable n =>
+	Vk.CommandBuffer.C v -> Vk.Image.MemoryBarrier n ->
+	Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
+generateMipmaps1 commandBuffer barrier_ texWidth texHeight i = do
+	let	srr_ = Vk.Image.memoryBarrierSubresourceRange barrier_
+		barrier = barrier_ {
+			Vk.Image.memoryBarrierSubresourceRange = srr_ {
+					Vk.Image.subresourceRangeBaseMipLevel =
+						i - 1 } }
+	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit
+		Vk.DependencyFlagsZero [] [] [barrier]
 
 createImage ::
 	Word32 -> Word32 -> Word32 ->
