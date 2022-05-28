@@ -148,7 +148,8 @@ import Codec.Wavefront.Read
 
 main :: IO ()
 main = getArgs >>= \case
-	[tfp, mfp] -> runReaderT (run tfp mfp) =<< newGlobal
+	[tfp, mfp] -> runReaderT (run tfp mfp 0) =<< newGlobal
+	[tfp, mfp, mnld] -> runReaderT (run tfp mfp $ read mnld) =<< newGlobal
 	_ -> error "bad args"
 
 width, height :: Int
@@ -213,7 +214,8 @@ data Global = Global {
 	globalTextureFilePath :: IORef FilePath,
 	globalModelFilePath :: IORef FilePath,
 	globalVertices :: IORef (V.Vector WVertex),
-	globalIndices :: IORef (V.Vector WWord32)
+	globalIndices :: IORef (V.Vector WWord32),
+	globalMinLod :: IORef Float
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -269,6 +271,7 @@ newGlobal = do
 	mfp <- newIORef ""
 	vtcs <- newIORef V.empty
 	idcs <- newIORef V.empty
+	mnld <- newIORef 0
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -314,13 +317,15 @@ newGlobal = do
 		globalTextureFilePath = tfp,
 		globalModelFilePath = mfp,
 		globalVertices = vtcs,
-		globalIndices = idcs
+		globalIndices = idcs,
+		globalMinLod = mnld
 		}
 
-run :: FilePath -> FilePath -> ReaderT Global IO ()
-run tfp mfp = do
+run :: FilePath -> FilePath -> Float -> ReaderT Global IO ()
+run tfp mfp mnld = do
 	writeGlobal globalTextureFilePath tfp
 	writeGlobal globalModelFilePath mfp
+	writeGlobal globalMinLod mnld
 	initWindow
 	initVulkan
 	mainLoop
@@ -1111,12 +1116,26 @@ createTextureImage = do
 		Vk.Image.LayoutTransferDstOptimal ml
 	copyBufferToImage stagingBuffer ti
 		(fromIntegral texWidth) (fromIntegral texHeight)
-	generateMipmaps ti (fromIntegral texWidth) (fromIntegral texHeight) ml
+	generateMipmaps ti Vk.Format.R8g8b8a8Srgb
+		(fromIntegral texWidth) (fromIntegral texHeight) ml
 	lift do	Vk.Buffer.List.destroy dvc stagingBuffer nil
 		Vk.Memory.List.free dvc stagingBufferMemory nil
 
-generateMipmaps :: Vk.Image.I -> Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
-generateMipmaps img tw th ml = do
+generateMipmaps :: Vk.Image.I -> Vk.Format.F ->
+	Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
+generateMipmaps img imageFormat tw th ml = do
+	phdvc <- readGlobal globalPhysicalDevice
+	formatProperties <-
+		lift $ Vk.PhysicalDevice.getFormatProperties phdvc imageFormat
+	lift do	putStrLn $ "FORMAT PROPERTIES: " ++ show formatProperties
+		putStrLn $ "\t" ++ show (
+			Vk.Format.propertiesOptimalTilingFeatures
+				formatProperties .&.
+			Vk.Format.FeatureSampledImageFilterLinearBit )
+	when (Vk.Format.propertiesOptimalTilingFeatures formatProperties .&.
+		Vk.Format.FeatureSampledImageFilterLinearBit == zeroBits) $
+		error "texture image format does not support linear blitting!"
+
 	commandBuffer <- beginSingleTimeCommands
 
 	let	barrier = Vk.Image.MemoryBarrier {
@@ -1380,6 +1399,8 @@ createTextureImageView = do
 createTextureSampler :: ReaderT Global IO ()
 createTextureSampler = do
 	pdvc <- readGlobal globalPhysicalDevice
+	ml <- readGlobal globalMipLevels
+	mnld <- readGlobal globalMinLod
 	properties <- lift $ Vk.PhysicalDevice.getProperties pdvc
 	let	limits = Vk.PhysicalDevice.propertiesLimits properties
 		maxAnisotropy =
@@ -1405,8 +1426,8 @@ createTextureSampler = do
 			Vk.Sampler.createInfoMipmapMode =
 				Vk.Sampler.MipmapModeLinear,
 			Vk.Sampler.createInfoMipLodBias = 0,
-			Vk.Sampler.createInfoMinLod = 0,
-			Vk.Sampler.createInfoMaxLod = 0 }
+			Vk.Sampler.createInfoMinLod = min mnld (fromIntegral ml),
+			Vk.Sampler.createInfoMaxLod = fromIntegral ml }
 	dvc <- readGlobal globalDevice
 	ts <- lift $ Vk.Sampler.create @() dvc samplerInfo nil
 	writeGlobal globalTextureSampler ts
