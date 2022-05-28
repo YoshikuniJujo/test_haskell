@@ -160,17 +160,17 @@ foreign import ccall "vkDestroyImage" destroy ::
 	Device.D -> I -> Ptr AllocationCallbacks.A -> IO ()
 
 struct "Blit" #{size VkImageBlit} #{alignment VkImageBlit} [
-	("blitSrcSubresource", ''SubresourceLayers,
+	("srcSubresource", ''SubresourceLayers,
 		[| #{peek VkImageBlit, srcSubresource} |],
 		[| #{poke VkImageBlit, srcSubresource} |]),
-	("blitSrcOffsets", ''ListOffset3d,
+	("srcOffsets", ''ListOffset3d,
 		[| \p -> peekArray 2 (#{ptr VkImageBlit, srcOffsets} p) |],
 		[| \p os -> pokeArray
 			(#{ptr VkImageBlit, srcOffsets} p) $ take 2 os |]),
-	("blitDstSubresource", ''SubresourceLayers,
+	("dstSubresource", ''SubresourceLayers,
 		[| #{peek VkImageBlit, dstSubresource} |],
 		[| #{poke VkImageBlit, dstSubresource} |]),
-	("blitDstOffsets", ''ListOffset3d,
+	("dstOffsets", ''ListOffset3d,
 		[| \p -> peekArray 2 (#{ptr VkImageBlit, dstOffsets} p) |],
 		[| \p os -> pokeArray
 			(#{ptr VkImageBlit, dstOffsets} p) $ take 2 os |]) ]

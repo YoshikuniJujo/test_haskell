@@ -187,3 +187,25 @@ destroy :: Pointable n =>
 destroy (Device.D dvc) (I img) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc img pac
+
+data Blit = Blit {
+	blitSrcSubresource :: SubresourceLayers,
+	blitSrcOffsetFrom :: Offset3d,
+	blitSrcOffsetTo :: Offset3d,
+	blitDstSubresource :: SubresourceLayers,
+	blitDstOffsetFrom :: Offset3d,
+	blitDstOffsetTo :: Offset3d }
+	deriving Show
+
+blitToCore :: Blit -> C.Blit
+blitToCore Blit {
+	blitSrcSubresource = ssr,
+	blitSrcOffsetFrom = sof,
+	blitSrcOffsetTo = sot,
+	blitDstSubresource = dsr,
+	blitDstOffsetFrom = dof,
+	blitDstOffsetTo = dot } = C.Blit {
+	C.blitSrcSubresource = subresourceLayersToCore ssr,
+	C.blitSrcOffsets = [sof, sot],
+	C.blitDstSubresource = subresourceLayersToCore dsr,
+	C.blitDstOffsets = [dof, dot] }

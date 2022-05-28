@@ -1156,7 +1156,8 @@ generateMipmaps1 :: Pointable n =>
 	Vk.CommandBuffer.C v -> Vk.Image.MemoryBarrier n ->
 	Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
 generateMipmaps1 commandBuffer barrier_ texWidth texHeight i = do
-	let	srr_ = Vk.Image.memoryBarrierSubresourceRange barrier_
+	let	mipWidth = texWidth; mipHeight = texHeight
+		srr_ = Vk.Image.memoryBarrierSubresourceRange barrier_
 		barrier = barrier_ {
 			Vk.Image.memoryBarrierSubresourceRange = srr_ {
 					Vk.Image.subresourceRangeBaseMipLevel =
@@ -1164,6 +1165,36 @@ generateMipmaps1 commandBuffer barrier_ texWidth texHeight i = do
 	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit
 		Vk.DependencyFlagsZero [] [] [barrier]
+	let	blit = Vk.Image.Blit {
+			Vk.Image.blitSrcOffsetFrom = Vk.C.Offset3d 0 0 0,
+			Vk.Image.blitSrcOffsetTo =
+				Vk.C.Offset3d mipWidth mipHeight 1,
+			Vk.Image.blitSrcSubresource =
+				Vk.Image.SubresourceLayers {
+					Vk.Image.subresourceLayersAspectMask =
+						Vk.Image.AspectColorBit,
+					Vk.Image.subresourceLayersMipLevel =
+						i - 1,
+					Vk.Image.subresourceLayersBaseArrayLayer
+						= 0,
+					Vk.Image.subresourceLayersLayerCount =
+						1 },
+			Vk.Image.blitDstOffsetFrom = Vk.C.Offset3d 0 0 0,
+			Vk.Image.blitDstOffsetTo = Vk.C.Offset3d
+				(halfOrOne mipWidth) (halfOrOne mipHeight) 1,
+			Vk.Image.blitDstSubresource =
+				Vk.Image.SubresourceLayers {
+					Vk.Image.subresourceLayersAspectMask =
+						Vk.Image.AspectColorBit,
+					Vk.Image.subresourceLayersMipLevel = i,
+					Vk.Image.subresourceLayersBaseArrayLayer
+						= 0,
+					Vk.Image.subresourceLayersLayerCount =
+						1 } }
+	pure ()
+
+halfOrOne :: Integral n => n -> n
+halfOrOne n | n > 1 = n `div` 2 | otherwise = 1
 
 createImage ::
 	Word32 -> Word32 -> Word32 ->
