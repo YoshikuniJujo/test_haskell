@@ -1111,11 +1111,7 @@ createTextureImage = do
 		Vk.Image.LayoutTransferDstOptimal ml
 	copyBufferToImage stagingBuffer ti
 		(fromIntegral texWidth) (fromIntegral texHeight)
---	{-
-	transitionImageLayout ti Vk.Format.R8g8b8a8Srgb
-		Vk.Image.LayoutTransferDstOptimal
-		Vk.Image.LayoutShaderReadOnlyOptimal ml
---		-}
+	generateMipmaps ti (fromIntegral texWidth) (fromIntegral texHeight) ml
 	lift do	Vk.Buffer.List.destroy dvc stagingBuffer nil
 		Vk.Memory.List.free dvc stagingBufferMemory nil
 
@@ -1148,7 +1144,27 @@ generateMipmaps img tw th ml = do
 				Vk.AccessTransferWriteBit,
 			Vk.Image.memoryBarrierDstAccessMask =
 				Vk.AccessTransferReadBit }
-	for_ [1 .. ml - 1] $ generateMipmaps1 @() commandBuffer img barrier tw th
+		srr = Vk.Image.memoryBarrierSubresourceRange barrier
+	for_ (zip [1 .. ml - 1] (zip
+		(iterate halfOrOne tw)
+		(iterate halfOrOne th))) $ \(i, (w, h)) ->
+		generateMipmaps1 @() commandBuffer img barrier w h i
+
+	let	barrier' = barrier {
+			Vk.Image.memoryBarrierSubresourceRange = srr {
+				Vk.Image.subresourceRangeBaseMipLevel =
+					ml - 1 },
+			Vk.Image.memoryBarrierOldLayout =
+				Vk.Image.LayoutTransferDstOptimal,
+			Vk.Image.memoryBarrierNewLayout =
+				Vk.Image.LayoutShaderReadOnlyOptimal,
+			Vk.Image.memoryBarrierSrcAccessMask =
+				Vk.AccessTransferWriteBit,
+			Vk.Image.memoryBarrierDstAccessMask =
+				Vk.AccessShaderReadBit }
+	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit
+		Vk.DependencyFlagsZero [] [] [barrier']
 
 	endSingleTimeCommands commandBuffer
 
@@ -1195,6 +1211,18 @@ generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 		img Vk.Image.LayoutTransferSrcOptimal
 		img Vk.Image.LayoutTransferDstOptimal
 		[blit] Vk.FilterLinear
+	let	barrier' = barrier {
+			Vk.Image.memoryBarrierOldLayout =
+				Vk.Image.LayoutTransferSrcOptimal,
+			Vk.Image.memoryBarrierNewLayout =
+				Vk.Image.LayoutShaderReadOnlyOptimal,
+			Vk.Image.memoryBarrierSrcAccessMask =
+				Vk.AccessTransferReadBit,
+			Vk.Image.memoryBarrierDstAccessMask =
+				Vk.AccessShaderReadBit }
+	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit
+		Vk.DependencyFlagsZero [] [] [barrier']
 
 halfOrOne :: Integral n => n -> n
 halfOrOne n | n > 1 = n `div` 2 | otherwise = 1
