@@ -1148,14 +1148,14 @@ generateMipmaps img tw th ml = do
 				Vk.AccessTransferWriteBit,
 			Vk.Image.memoryBarrierDstAccessMask =
 				Vk.AccessTransferReadBit }
-	for_ [1 .. ml - 1] $ generateMipmaps1 @() commandBuffer barrier tw th
+	for_ [1 .. ml - 1] $ generateMipmaps1 @() commandBuffer img barrier tw th
 
 	endSingleTimeCommands commandBuffer
 
 generateMipmaps1 :: Pointable n =>
-	Vk.CommandBuffer.C v -> Vk.Image.MemoryBarrier n ->
+	Vk.CommandBuffer.C v -> Vk.Image.I -> Vk.Image.MemoryBarrier n ->
 	Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
-generateMipmaps1 commandBuffer barrier_ texWidth texHeight i = do
+generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 	let	mipWidth = texWidth; mipHeight = texHeight
 		srr_ = Vk.Image.memoryBarrierSubresourceRange barrier_
 		barrier = barrier_ {
@@ -1191,7 +1191,10 @@ generateMipmaps1 commandBuffer barrier_ texWidth texHeight i = do
 						= 0,
 					Vk.Image.subresourceLayersLayerCount =
 						1 } }
-	pure ()
+	lift $ Vk.Cmd.blitImage commandBuffer
+		img Vk.Image.LayoutTransferSrcOptimal
+		img Vk.Image.LayoutTransferDstOptimal
+		[blit] Vk.FilterLinear
 
 halfOrOne :: Integral n => n -> n
 halfOrOne n | n > 1 = n `div` 2 | otherwise = 1

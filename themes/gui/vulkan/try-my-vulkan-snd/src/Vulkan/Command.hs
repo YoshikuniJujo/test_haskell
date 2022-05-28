@@ -99,3 +99,13 @@ copyBufferToImage (CommandBuffer.C cb)
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
 	lift $ C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
+
+blitImage :: CommandBuffer.C v ->
+	Image.I -> Image.Layout -> Image.I -> Image.Layout ->
+	[Image.Blit] -> Filter -> IO ()
+blitImage (CommandBuffer.C cb)
+	(Image.I src) (Image.Layout srcLyt) (Image.I dst) (Image.Layout dstLyt)
+	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
+	pblts <- ContT $ allocaArray bltc
+	lift . pokeArray pblts $ Image.blitToCore <$> blts
+	lift $ C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
