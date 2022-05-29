@@ -16,7 +16,8 @@ import Data.Word
 #include <vulkan/vulkan.h>
 
 enum "CountFlagBits" ''#{type VkSampleCountFlagBits}
-		[''Show, ''Eq, ''Storable, ''Bits] [
+		[''Show, ''Eq, ''Storable, ''Bits, ''FiniteBits] [
+	("CountFlagsZero", 0),
 	("Count1Bit", #{const VK_SAMPLE_COUNT_1_BIT}),
 	("Count2Bit", #{const VK_SAMPLE_COUNT_2_BIT}),
 	("Count4Bit", #{const VK_SAMPLE_COUNT_4_BIT}),

@@ -42,9 +42,9 @@ struct "CreateInfo" #{size VkPipelineCacheCreateInfo}
 data CTag
 type C = Ptr CTag
 
-foreign import ccall "VkCreatePipelineCache" create ::
+foreign import ccall "vkCreatePipelineCache" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr C ->
 	IO Result
 
-foreign import ccall "VkDestroyPipelineCache" destroy ::
+foreign import ccall "vkDestroyPipelineCache" destroy ::
 	Device.D -> C -> Ptr AllocationCallbacks.A -> IO ()
