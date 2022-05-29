@@ -216,7 +216,10 @@ data Global = Global {
 	globalVertices :: IORef (V.Vector WVertex),
 	globalIndices :: IORef (V.Vector WWord32),
 	globalMinLod :: IORef Float,
-	globalMsaaSamples :: IORef Vk.Sample.CountFlagBits
+	globalMsaaSamples :: IORef Vk.Sample.CountFlagBits,
+	globalColorImage :: IORef Vk.Image.I,
+	globalColorImageMemory :: IORef Vk.Device.MemoryImage,
+	globalColorImageView :: IORef Vk.ImageView.I
 	}
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -274,6 +277,9 @@ newGlobal = do
 	idcs <- newIORef V.empty
 	mnld <- newIORef 0
 	msaaS <- newIORef Vk.Sample.CountFlagsZero
+	ci <- newIORef $ Vk.Image.I NullPtr
+	cim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	civ <- newIORef $ Vk.ImageView.I NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,
@@ -321,7 +327,10 @@ newGlobal = do
 		globalVertices = vtcs,
 		globalIndices = idcs,
 		globalMinLod = mnld,
-		globalMsaaSamples = msaaS
+		globalMsaaSamples = msaaS,
+		globalColorImage = ci,
+		globalColorImageMemory = cim,
+		globalColorImageView = civ
 		}
 
 run :: FilePath -> FilePath -> Float -> ReaderT Global IO ()
@@ -359,6 +368,7 @@ initVulkan = do
 	createDescriptorSetLayout
 	createGraphicsPipeline
 	createCommandPool
+	createColorResources
 	createDepthResources
 	createFramebuffers
 	createTextureImage
@@ -1057,6 +1067,18 @@ createCommandPool = do
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
 
+createColorResources :: ReaderT Global IO ()
+createColorResources = do
+	Just colorFormat <- readGlobal globalSwapChainImageFormat
+	sce <- readGlobal globalSwapChainExtent
+	msaaS <- readGlobal globalMsaaSamples
+	(ci, cim) <- createImage
+		(Vk.C.extent2dWidth sce) (Vk.C.extent2dHeight sce) 1
+		msaaS colorFormat Vk.Image.TilingOptimal
+			(Vk.Image.UsageTransientAttachmentBit .|. Vk.Image.UsageColorAttachmentBit)
+			Vk.Memory.PropertyDeviceLocalBit
+	pure ()
+
 createDepthResources :: ReaderT Global IO ()
 createDepthResources = do
 	lift $ putStrLn "*** CREATE DEPTH RESOURCES ***"
@@ -1064,8 +1086,8 @@ createDepthResources = do
 	lift $ print depthFormat
 	sce <- readGlobal globalSwapChainExtent
 	(di, dim) <- createImage
-		(Vk.C.extent2dWidth sce) (Vk.C.extent2dHeight sce) 1
-		depthFormat
+		(Vk.C.extent2dWidth sce) (Vk.C.extent2dHeight sce)
+		1 Vk.Sample.Count1Bit depthFormat
 		Vk.Image.TilingOptimal
 		Vk.Image.UsageDepthStencilAttachmentBit
 		Vk.Memory.PropertyDeviceLocalBit
@@ -1128,7 +1150,8 @@ createTextureImage = do
 	lift $ Vk.Memory.List.write dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
 		(V.toList $ imageData img)
 	(ti, tim) <- createImage
-		(fromIntegral texWidth) (fromIntegral texHeight) ml
+		(fromIntegral texWidth) (fromIntegral texHeight)
+		ml Vk.Sample.Count1Bit
 		Vk.Format.R8g8b8a8Srgb Vk.Image.TilingOptimal
 		(	Vk.Image.UsageTransferSrcBit .|.
 			Vk.Image.UsageTransferDstBit .|.
@@ -1271,11 +1294,11 @@ halfOrOne :: Integral n => n -> n
 halfOrOne n | n > 1 = n `div` 2 | otherwise = 1
 
 createImage ::
-	Word32 -> Word32 -> Word32 ->
+	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlagBits ->
 	Vk.Format.F -> Vk.Image.Tiling ->
 	Vk.Image.UsageFlags -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO (Vk.Image.I, Vk.Device.MemoryImage)
-createImage widt hght mipLevels format tiling usage properties = do
+createImage widt hght mipLevels numSamples format tiling usage properties = do
 	dvc <- readGlobal globalDevice
 	let	imageInfo = Vk.Image.CreateInfo {
 			Vk.Image.createInfoNext = Nothing,
@@ -1888,6 +1911,7 @@ recreateSwapChain = do
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
+	createColorResources
 	createDepthResources
 	createFramebuffers
 
