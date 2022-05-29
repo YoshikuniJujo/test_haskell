@@ -1077,7 +1077,10 @@ createColorResources = do
 		msaaS colorFormat Vk.Image.TilingOptimal
 			(Vk.Image.UsageTransientAttachmentBit .|. Vk.Image.UsageColorAttachmentBit)
 			Vk.Memory.PropertyDeviceLocalBit
-	pure ()
+	civ <- createImageView ci colorFormat Vk.Image.AspectColorBit 1
+	writeGlobal globalColorImage ci
+	writeGlobal globalColorImageMemory cim
+	writeGlobal globalColorImageView civ
 
 createDepthResources :: ReaderT Global IO ()
 createDepthResources = do
@@ -1085,9 +1088,10 @@ createDepthResources = do
 	depthFormat <- findDepthFormat
 	lift $ print depthFormat
 	sce <- readGlobal globalSwapChainExtent
+	msaaS <- readGlobal globalMsaaSamples
 	(di, dim) <- createImage
 		(Vk.C.extent2dWidth sce) (Vk.C.extent2dHeight sce)
-		1 Vk.Sample.Count1Bit depthFormat
+		1 msaaS depthFormat
 		Vk.Image.TilingOptimal
 		Vk.Image.UsageDepthStencilAttachmentBit
 		Vk.Memory.PropertyDeviceLocalBit
@@ -1316,7 +1320,7 @@ createImage widt hght mipLevels numSamples format tiling usage properties = do
 			Vk.Image.createInfoUsage = usage,
 			Vk.Image.createInfoSharingMode =
 				Vk.SharingModeExclusive,
-			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
+			Vk.Image.createInfoSamples = numSamples,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
 	ti <- lift $ Vk.Image.create @() dvc imageInfo nil
 	memRequirements <- lift $ Vk.Image.getMemoryRequirements dvc ti
@@ -1918,6 +1922,15 @@ recreateSwapChain = do
 cleanupSwapChain :: ReaderT Global IO ()
 cleanupSwapChain = do
 	dvc <- readGlobal globalDevice
+
+	civ <- readGlobal globalColorImageView
+	lift $ Vk.ImageView.destroy dvc civ nil
+
+	ci <- readGlobal globalColorImage
+	lift $ Vk.Image.destroy dvc ci nil
+
+	cim <- readGlobal globalColorImageMemory
+	lift $ Vk.Memory.Image.free dvc cim nil
 
 	divw <- readGlobal globalDepthImageView
 	lift $ Vk.ImageView.destroy dvc divw nil

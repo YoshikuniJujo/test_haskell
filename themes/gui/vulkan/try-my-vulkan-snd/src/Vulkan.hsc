@@ -126,6 +126,7 @@ data StencilOpState = StencilOpState {
 	stencilOpStateReference :: Word32 }
 	deriving Show
 
+stencilOpStateZero :: StencilOpState
 stencilOpStateZero = StencilOpState {
 	stencilOpStateFailOp = StencilOpKeep,
 	stencilOpStatePassOp = StencilOpKeep,
