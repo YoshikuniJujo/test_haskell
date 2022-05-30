@@ -32,6 +32,14 @@ data CreateInfo n n' = CreateInfo {
 	createInfoEnabledExtensionNames :: [T.Text] }
 	deriving Show
 
+createInfoNil :: CreateInfo () ()
+createInfoNil = CreateInfo {
+	createInfoNext = Nothing,
+	createInfoFlags = CreateFlagsZero,
+	createInfoApplicationInfo = Nothing,
+	createInfoEnabledLayerNames = [],
+	createInfoEnabledExtensionNames = [] }
+
 createInfoToCore :: (Pointable n, Pointable n') =>
 	CreateInfo n n' -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
