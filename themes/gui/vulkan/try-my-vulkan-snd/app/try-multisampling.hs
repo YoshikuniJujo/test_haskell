@@ -479,6 +479,7 @@ pickPhysicalDevice = do
 		(pdvc : _) -> do
 			writeGlobal globalPhysicalDevice pdvc
 			writeGlobal globalMsaaSamples =<< getMaxUsableSampleCount
+			lift . print =<< readGlobal globalMsaaSamples
 
 isDeviceSuitable :: Vk.PhysicalDevice.P -> ReaderT Global IO Bool
 isDeviceSuitable pdvc = do
@@ -578,7 +579,8 @@ createLogicalDevice = do
 			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
 			Vk.Device.Queue.createInfoQueuePriorities = [1] }
 		deviceFeatures = Vk.PhysicalDevice.featuresZero {
-			Vk.PhysicalDevice.featuresSamplerAnisotropy = True }
+			Vk.PhysicalDevice.featuresSamplerAnisotropy = True,
+			Vk.PhysicalDevice.featuresSampleRateShading = True }
 		createInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
@@ -766,7 +768,22 @@ createRenderPass = do
 			Vk.Att.referenceLayout =
 				Vk.Image.LayoutDepthStencilAttachmentOptimal }
 		colorAttachmentResolve = Vk.Att.Description {
-			}
+			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionFormat = scif,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp =
+				Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayout =
+				Vk.Image.LayoutUndefined,
+			Vk.Att.descriptionFinalLayout =
+				Vk.Image.LayoutPresentSrcKhr }
+		colorAttachmentResolveRef = Vk.Att.Reference {
+			Vk.Att.referenceAttachment = 2,
+			Vk.Att.referenceLayout =
+				Vk.Image.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags =
 				Vk.Subpass.DescriptionFlagsZero,
@@ -774,7 +791,7 @@ createRenderPass = do
 				Vk.Ppl.BindPointGraphics,
 			Vk.Subpass.descriptionInputAttachments = [],
 			Vk.Subpass.descriptionColorAndResolveAttachments =
-				Left [colorAttachmentRef],
+				Right [(colorAttachmentRef, colorAttachmentResolveRef)],
 			Vk.Subpass.descriptionDepthStencilAttachment =
 				Just depthAttachmentRef,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
@@ -797,8 +814,9 @@ createRenderPass = do
 			Vk.RenderPass.createInfoNext = Nothing,
 			Vk.RenderPass.createInfoFlags =
 				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.createInfoAttachments =
-				[colorAttachment, depthAttachment],
+			Vk.RenderPass.createInfoAttachments = [
+				colorAttachment, depthAttachment,
+				colorAttachmentResolve ],
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [dependency] }
 	dvc <- readGlobal globalDevice
@@ -879,6 +897,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable =
 				False }
 	sce <- readGlobal globalSwapChainExtent
+	msaaS <- readGlobal globalMsaaSamples
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0, Vk.C.viewportY = 0,
 			Vk.C.viewportWidth =
@@ -914,11 +933,10 @@ createGraphicsPipeline = do
 			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
 			Vk.Ppl.MulSmplSt.createInfoFlags =
 				Vk.Ppl.MulSmplSt.CreateFlagsZero,
-			Vk.Ppl.MulSmplSt.createInfoSampleShadingEnable = False,
+			Vk.Ppl.MulSmplSt.createInfoSampleShadingEnable = True,
 			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
-				Vk.Sample.CountAndMask
-					Vk.Sample.Count1Bit Nothing,
-			Vk.Ppl.MulSmplSt.createInfoMinSampleShading = 1,
+				Vk.Sample.CountAndMask msaaS Nothing,
+			Vk.Ppl.MulSmplSt.createInfoMinSampleShading = 0.2,
 			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
 				False,
 			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
@@ -1040,6 +1058,7 @@ createFramebuffer1 :: Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
 createFramebuffer1 attachment = do
 	rp <- readGlobal globalRenderPass
 	divw <- readGlobal globalDepthImageView
+	civw <- readGlobal globalColorImageView
 	Vk.C.Extent2d {
 		Vk.C.extent2dWidth = w,
 		Vk.C.extent2dHeight = h } <- readGlobal globalSwapChainExtent
@@ -1049,7 +1068,7 @@ createFramebuffer1 attachment = do
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
 			Vk.Framebuffer.createInfoAttachments =
-				[attachment, divw],
+				[civw, divw, attachment],
 			Vk.Framebuffer.createInfoWidth = w,
 			Vk.Framebuffer.createInfoHeight = h,
 			Vk.Framebuffer.createInfoLayers = 1 }
