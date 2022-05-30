@@ -47,6 +47,7 @@ dependencies:
 - simple-cairo
 - simple-gdk3
 - x-keysym
+- union-color
 
 library:
   source-dirs: src

@@ -39,6 +39,10 @@ instance Pointer SomeGObject where
 gCastObject :: (GObject o1, GObject o2) => o1 -> Maybe o2
 gCastObject = fromGObject . toGObject
 
+data GObjectCastError = GObjectCastError TypeRep TypeRep deriving Show
+
+exceptionHierarchy Nothing $ ExType ''GObjectCastError
+
 gCastObjectIo :: (GObject o1, GObject o2) => o1 -> IO o2
 gCastObjectIo o1 = maybe (throwIO $ GObjectCastError (typeOf o1) (typeRep o2)) pure o2
 	where o2 = gCastObject o1
@@ -60,7 +64,7 @@ gObjectContainer :: Name -> DecsQ
 gObjectContainer oc = sequence [
 	do	o <- newName "o"
 		dataD (cxt []) oc [] Nothing
-			[forallC [PlainTV o] (cxt [myClassP ''GObject [varT o]])
+			[forallC [PlainTV o SpecifiedSpec] (cxt [myClassP ''GObject [varT o]])
 				$ normalC oc [bangType myNotStrict (varT o)]]
 			[derivClause Nothing [conT ''Typeable]],
 	do	o <- newName "o"
@@ -86,14 +90,14 @@ gObjectContainer oc = sequence [
 					[]]
 			],
 	do	o <- newName "o"
-		sigD toGo . forallT [PlainTV o] (cxt [myClassP ''GObject [varT o]])
+		sigD toGo . forallT [PlainTV o SpecifiedSpec] (cxt [myClassP ''GObject [varT o]])
 			$ varT o `arrT` conT ''SomeGObject,
 	valD (varP toGo)
 		(normalB $ infixE
 			(Just $ varE 'toGObject) (varE '(.)) (Just $ conE oc))
 		[],
 	do	o <- newName "o"
-		sigD fromGo . forallT [PlainTV o] (cxt [myClassP ''GObject [varT o]])
+		sigD fromGo . forallT [PlainTV o SpecifiedSpec] (cxt [myClassP ''GObject [varT o]])
 			$ conT ''SomeGObject `arrT` (conT ''Maybe `appT` varT o),
 	do	o <- newName "o"
 		so <- newName "so"
@@ -143,7 +147,3 @@ instGObject (appHead toLower . nameBase -> oc) o = instanceD (cxt [])
 appHead :: (a -> a) -> [a] -> [a]
 appHead _ [] = []
 appHead f (h : t) = f h : t
-
-data GObjectCastError = GObjectCastError TypeRep TypeRep deriving Show
-
-exceptionHierarchy Nothing $ ExType ''GObjectCastError

@@ -45,6 +45,8 @@ import qualified Codec.Picture as P
 
 import Data.OneOfThem
 
+import Data.Aeson.KeyMap (toHashMap)
+
 ---------------------------------------------------------------------------
 
 -- * PARAMETER LIST
@@ -172,7 +174,7 @@ cross (l, t) = clickable (View [lwhite lt rb, lwhite lb rt]) (l', t') (r', b')
 {-# ANN getUser ("HLint: ignore Redundant <$>" :: String) #-}
 
 getUser :: LockId -> ReactF s (Png, T.Text, T.Text)
-getUser lck = ex3 <$> getObj1 lck >>= err `either` \(au, ln, u) ->
+getUser lck = ex3 . toHashMap <$> getObj1 lck >>= err `either` \(au, ln, u) ->
 	getAvatarPng au >>= either err (pure . (, ln, u))
 	where
 	ex3 o = (,,)

@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-18.9
-#resolver: nightly-2020-08-03
+resolver: nightly-2022-05-29
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -48,15 +47,17 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/type-flip
   commit: e725f7e5064c0543e024c0c29aaa91f21cc2a45f
 - git: https://github.com/YoshikuniJujo/simple-gdk3
-  commit: 763aafd42f91308ec4959df41cc2d4b6af25b4fa
+  commit: b5efabfd256a7bea9ed865b76fb83990476932f9
 - git: https://github.com/YoshikuniJujo/x-keysym
   commit: e5e069590dbea7038540b66d9545df33b185e9bf
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+  commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
 - git: https://github.com/YoshikuniJujo/cairo-image
-  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+  commit: 59dfe9365c64f03daadfe83e06af841c000ef0e6
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+- git: https://github.com/YoshikuniJujo/union-color.git
+  commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

@@ -95,7 +95,7 @@ showColor w bc = do
 		cairoSetSourceRgb cr $ bColorToRgb bc
 		cairoPaint cr
 
-bColorToRgb :: BColor -> Rgb
+bColorToRgb :: BColor -> Rgb CDouble
 bColorToRgb Red = fromJust $ rgbDouble 0.5 0 0
 bColorToRgb Green = fromJust $ rgbDouble 0 0.5 0
 bColorToRgb Blue = fromJust $ rgbDouble 0 0 0.5

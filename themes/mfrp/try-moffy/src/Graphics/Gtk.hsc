@@ -301,9 +301,25 @@ foreign import ccall "wrapper" g_callback_key ::
 	(GtkWidget -> GdkEventKey -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventKey -> Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_button ::
 	(GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventButton -> Ptr a -> IO #{type gboolean}))
+
+{-
 foreign import ccall "wrapper" g_callback_delete :: CHandler DeleteEvent a -> IO (FunPtr (CHandler DeleteEvent a))
 foreign import ccall "wrapper" g_callback_motion :: CHandler MotionNotifyEvent a -> IO (FunPtr (CHandler MotionNotifyEvent a))
 foreign import ccall "wrapper" g_callback_draw :: CHandler DrawEvent a -> IO (FunPtr (CHandler DrawEvent a))
+-}
+
+foreign import ccall "wrapper" g_callback_delete ::
+	(GtkWidget -> GdkEventDelete -> Ptr a -> IO #{type gboolean}) ->
+	IO (FunPtr (GtkWidget -> GdkEventDelete -> Ptr a -> IO #{type gboolean}))
+
+foreign import ccall "wrapper" g_callback_motion ::
+	(GtkWidget -> GdkEventMotion -> Ptr a -> IO #{type gboolean}) ->
+	IO (FunPtr (GtkWidget -> GdkEventMotion -> Ptr a -> IO #{type gboolean}))
+
+foreign import ccall "wrapper" g_callback_draw ::
+	(GtkWidget -> CairoT -> Ptr a -> IO #{type gboolean}) ->
+	IO (FunPtr (GtkWidget -> CairoT -> Ptr a -> IO #{type gboolean}))
+
 foreign import ccall "wrapper" g_callback_scroll ::
 	(GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}) -> IO (FunPtr (GtkWidget -> GdkEventScroll -> Ptr a -> IO #{type gboolean}))
 foreign import ccall "wrapper" g_callback_configure ::

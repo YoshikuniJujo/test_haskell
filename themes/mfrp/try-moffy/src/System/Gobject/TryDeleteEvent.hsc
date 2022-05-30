@@ -90,7 +90,9 @@ callbackToCCallbackDeleteEvent o c pw pe px = do
 	boolToGBoolean <$> c (modifyPointer o $ const pw) (GdkEvent pe) x
 
 foreign import ccall "wrapper" c_wrapper_delete_event ::
-	(CCallback DeleteEvent o a) -> IO (FunPtr (CCallback DeleteEvent o a))
+--	(CCallback DeleteEvent o a) -> IO (FunPtr (CCallback DeleteEvent o a))
+	(Ptr o -> Ptr GdkEvent -> Ptr a -> IO Int32) ->
+	IO (FunPtr (Ptr o -> Ptr GdkEvent -> Ptr a -> IO Int32))
 
 data DrawEvent = DrawEvent deriving Show
 
@@ -108,7 +110,9 @@ callbackToCCallbackDrawEvent o c pw pe px = do
 	boolToGBoolean <$> c (modifyPointer o $ const pw) (CairoT pe) x
 
 foreign import ccall "wrapper" c_wrapper_draw_event ::
-	(CCallback DrawEvent o a) -> IO (FunPtr (CCallback DrawEvent o a))
+--	(CCallback DrawEvent o a) -> IO (FunPtr (CCallback DrawEvent o a))
+	(Ptr o -> Ptr CairoT -> Ptr a -> IO Int32) ->
+	IO (FunPtr (Ptr o -> Ptr CairoT -> Ptr a -> IO Int32))
 
 foreign import ccall "gtk_drawing_area_new" c_gtk_drawing_area_new :: IO (Ptr GtkDrawingArea)
 

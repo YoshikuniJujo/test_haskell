@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8c5a0c4c98d72b03c87f9fdac95882198a3e525d6fa77cb4ef6436141c7e79b2
+-- hash: bed7b575841766446c60441e16fac720b3963feadc9f95fc2da86aba8612c941
 
 name:           try-moffy
 version:        0.1.0.0
@@ -171,6 +171,7 @@ library
     , time
     , transformers
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -210,6 +211,7 @@ executable draw
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -249,6 +251,7 @@ executable followbox
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -288,6 +291,7 @@ executable followboxGtk
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -327,6 +331,7 @@ executable try-gdk-boxes
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -366,6 +371,7 @@ executable try-gdk-gui
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -404,6 +410,7 @@ executable try-moffy-exe
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -443,6 +450,7 @@ executable tryCairo
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -482,6 +490,7 @@ executable tryCairoText
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -521,6 +530,7 @@ executable tryCairoTextExtents
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -560,6 +570,7 @@ executable tryConfigure
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -599,6 +610,7 @@ executable tryCount
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -638,6 +650,7 @@ executable tryDefaultWindow
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -677,6 +690,7 @@ executable tryDeleteEvent
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -716,6 +730,7 @@ executable tryFillPolygon
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -755,6 +770,7 @@ executable tryGdk
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -794,6 +810,7 @@ executable tryGtk
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -833,6 +850,7 @@ executable tryKey
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -872,6 +890,7 @@ executable tryMultiWindow
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -911,6 +930,7 @@ executable tryPango
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -950,6 +970,7 @@ executable tryPngCursor
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -989,6 +1010,7 @@ executable tryPngCursorEvent
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -1028,6 +1050,7 @@ executable tryScroll
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym
@@ -1067,6 +1090,7 @@ test-suite try-moffy-test
     , transformers
     , try-moffy
     , type-flip
+    , union-color
     , unordered-containers
     , vector
     , x-keysym

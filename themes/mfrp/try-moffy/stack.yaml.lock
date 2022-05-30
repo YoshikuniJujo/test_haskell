@@ -43,11 +43,11 @@ packages:
     git: https://github.com/YoshikuniJujo/simple-gdk3
     pantry-tree:
       size: 4020
-      sha256: 58df2a1292c7b2782b2516a6c109fa7ead4ff152c165e977f67012b67ec088bc
-    commit: 763aafd42f91308ec4959df41cc2d4b6af25b4fa
+      sha256: edebfef20cccfee49ca1baefaa9edd0d963dbe872f7efb129c4858b2589a8ee9
+    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
   original:
     git: https://github.com/YoshikuniJujo/simple-gdk3
-    commit: 763aafd42f91308ec4959df41cc2d4b6af25b4fa
+    commit: b5efabfd256a7bea9ed865b76fb83990476932f9
 - completed:
     name: x-keysym
     version: 0.1.0.0
@@ -64,23 +64,23 @@ packages:
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/simple-cairo
     pantry-tree:
-      size: 5014
-      sha256: 1f93542acd1705e91dad32435e7dcb1f7589cbec89bc84e4151bd1bb4a831c28
-    commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+      size: 4958
+      sha256: 3cefa56f71e50f710257e05aa844061ca948e5438665370978c251e4f8d7a212
+    commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
   original:
     git: https://github.com/YoshikuniJujo/simple-cairo
-    commit: b054b5cedf3f950363ea5823b6d5cf5788787c3f
+    commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
 - completed:
     name: cairo-image
     version: 0.1.0.0
     git: https://github.com/YoshikuniJujo/cairo-image
     pantry-tree:
       size: 887
-      sha256: 46d3b277fcd23a824bc7d035f7288a16db7a211cef6fa858e85c24f079d1cf8a
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+      sha256: dc856bf5e758ccec698dbb3a37c0b84108804a6eb590e6001fd5c2c4ce4154ba
+    commit: 59dfe9365c64f03daadfe83e06af841c000ef0e6
   original:
     git: https://github.com/YoshikuniJujo/cairo-image
-    commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+    commit: 59dfe9365c64f03daadfe83e06af841c000ef0e6
 - completed:
     name: glib-stopgap
     version: 0.1.0.0
@@ -92,9 +92,20 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/glib-stopgap
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+- completed:
+    name: union-color
+    version: 0.1.2.0
+    git: https://github.com/YoshikuniJujo/union-color.git
+    pantry-tree:
+      size: 637
+      sha256: b3edab388c6b1bd8298171b9d8c86da664c530ea673d7f7d69c58fb99318bbcc
+    commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
+  original:
+    git: https://github.com/YoshikuniJujo/union-color.git
+    commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
 snapshots:
 - completed:
-    size: 586923
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/9.yaml
-    sha256: 9f9fe35c949414146840a985fb228fd397c504d1781b834bfc9ab935f4d27df6
-  original: lts-18.9
+    size: 590822
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/5/29.yaml
+    sha256: a7d2c450e7578825f80601b9d244f2107d9cc708430e070d2978e15a97b5c6dc
+  original: nightly-2022-05-29
