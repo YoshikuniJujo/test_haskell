@@ -731,11 +731,12 @@ createImageView image format aspectFlags mipLevels = do
 createRenderPass :: ReaderT Global IO ()
 createRenderPass = do
 	Just scif <- readGlobal globalSwapChainImageFormat
+	msaaS <- readGlobal globalMsaaSamples
 	df <- findDepthFormat
 	let	colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
 			Vk.Att.descriptionFormat = scif,
-			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionSamples = msaaS,
 			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
 			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
 			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
@@ -744,7 +745,7 @@ createRenderPass = do
 			Vk.Att.descriptionInitialLayout =
 				Vk.Image.LayoutUndefined,
 			Vk.Att.descriptionFinalLayout =
-				Vk.Image.LayoutPresentSrcKhr }
+				Vk.Image.LayoutColorAttachmentOptimal }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
@@ -752,7 +753,7 @@ createRenderPass = do
 		depthAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
 			Vk.Att.descriptionFormat = df,
-			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionSamples = msaaS,
 			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
 			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpDontCare,
 			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
@@ -764,6 +765,8 @@ createRenderPass = do
 			Vk.Att.referenceAttachment = 1,
 			Vk.Att.referenceLayout =
 				Vk.Image.LayoutDepthStencilAttachmentOptimal }
+		colorAttachmentResolve = Vk.Att.Description {
+			}
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags =
 				Vk.Subpass.DescriptionFlagsZero,
