@@ -246,7 +246,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 		createInfo = Vk.Ist.CreateInfo {
 			Vk.Ist.createInfoNext = Just debugMessengerCreateInfo,
 			Vk.Ist.createInfoFlags = Vk.Ist.CreateFlagsZero,
-			Vk.Ist.createInfoApplicationInfo = appInfo,
+			Vk.Ist.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.createInfoEnabledExtensionNames = extensions }

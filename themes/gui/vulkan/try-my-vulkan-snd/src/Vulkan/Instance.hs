@@ -27,7 +27,7 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 data CreateInfo n n' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoApplicationInfo :: ApplicationInfo n',
+	createInfoApplicationInfo :: Maybe (ApplicationInfo n'),
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text] }
 	deriving Show
@@ -37,13 +37,13 @@ createInfoToCore :: (Pointable n, Pointable n') =>
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = (\(CreateFlags f) -> f) -> flgs,
-	createInfoApplicationInfo = ai,
+	createInfoApplicationInfo = mai,
 	createInfoEnabledLayerNames =
 		(fromIntegral . length &&& id) -> (elnc, elns),
 	createInfoEnabledExtensionNames =
 		(fromIntegral . length &&& id) -> (eenc, eens) } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pai <- applicationInfoToCore ai
+	pai <- maybe (pure NullPtr) applicationInfoToCore mai
 	pelna <- textListToCStringArray elns
 	peena <- textListToCStringArray eens
 	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {

@@ -328,7 +328,7 @@ createInstance = do
 				Just populateDebugMessengerCreateInfo,
 			Vk.Instance.createInfoFlags =
 				Vk.Instance.CreateFlagsZero,
-			Vk.Instance.createInfoApplicationInfo = appInfo,
+			Vk.Instance.createInfoApplicationInfo = Just appInfo,
 			Vk.Instance.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Instance.createInfoEnabledExtensionNames = extensions
