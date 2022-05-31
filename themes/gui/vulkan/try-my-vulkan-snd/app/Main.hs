@@ -232,7 +232,7 @@ createInstance Global { globalInstance = rist } = ($ pure) $ runContT do
 		putStrLn "available extensions:"
 		mapM_ (Txt.putStrLn . ("\t" <>)
 				. Vk.extensionPropertiesExtensionName)
-			=<< Vk.Ist.enumerateExtensionProperties Nothing
+			=<< Vk.enumerateExtensionProperties Nothing
 	extensions <- lift getRequiredExtensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
@@ -257,7 +257,7 @@ checkValidationLayerSupport :: IO Bool
 checkValidationLayerSupport =
 	(\lns -> all (`elem` lns) validationLayers)
 			. map Vk.layerPropertiesLayerName
-		<$> Vk.Ist.enumerateLayerProperties
+		<$> Vk.enumerateLayerProperties
 
 getRequiredExtensions :: IO [Txt.Text]
 getRequiredExtensions =
