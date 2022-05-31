@@ -3,12 +3,22 @@
 
 module Main where
 
+import Data.Default
+
 import Vulkan.Base
 
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.Device as Vk.Device
+
+import qualified Vulkan.Khr as Vk.Khr
 
 main :: IO ()
-main = Vk.Instance.create Vk.Instance.createInfoNil nil nil \inst -> do
-	physicalDevice <- head <$> Vk.PhysicalDevice.enumerate inst
-	pure ()
+main = do
+	let	createInfo :: Vk.Instance.CreateInfo () ()
+		createInfo = def {
+			Vk.Instance.createInfoEnabledLayerNames =
+				[Vk.Khr.validationLayerName] }
+	Vk.Instance.create createInfo nil nil \inst -> do
+		physicalDevice <- head <$> Vk.PhysicalDevice.enumerate inst
+		pure ()
