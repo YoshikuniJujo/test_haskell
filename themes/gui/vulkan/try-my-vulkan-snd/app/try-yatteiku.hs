@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -27,13 +27,12 @@ main = do
 			Vk.Instance.createInfoEnabledLayerNames =
 				[Vk.Khr.validationLayerName] }
 	Vk.Instance.create createInfo nil nil \inst -> do
-		physicalDevice <- head <$> Vk.PhysicalDevice.enumerate inst
-		queueProps <- Vk.PhysicalDevice.getQueueFamilyProperties
-			physicalDevice
-		mapM_ (printQueueProps . snd) queueProps
-		let	Just graphicsQueueFamilyIndex =
-				pickGraphicsQueueFamilyIndex queueProps
-			queueCreateInfo = Vk.Device.Queue.CreateInfo {
+		(physicalDevice, graphicsQueueFamilyIndex) <-
+			selectPhysicalDeviceAndQueueFamily
+				=<< Vk.PhysicalDevice.enumerate inst
+		print physicalDevice
+		print graphicsQueueFamilyIndex
+		let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
 				Vk.Device.Queue.createInfoNext = Nothing,
 				Vk.Device.Queue.createInfoFlags =
 					Vk.Device.Queue.CreateFlagsZero,
@@ -57,6 +56,16 @@ main = do
 			print =<< Vk.Device.getQueue
 				device graphicsQueueFamilyIndex 0
 			pure ()
+
+selectPhysicalDeviceAndQueueFamily ::
+	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
+selectPhysicalDeviceAndQueueFamily = \case
+	[] -> error "no suitable QueueFamilies"
+	phdvc : phdvcs -> do
+		queueProps <- Vk.PhysicalDevice.getQueueFamilyProperties phdvc
+		case pickGraphicsQueueFamilyIndex queueProps of
+			Nothing -> selectPhysicalDeviceAndQueueFamily phdvcs
+			Just idx -> pure (phdvc, idx)
 
 pickGraphicsQueueFamilyIndex ::
 	[(Vk.QueueFamily.Index, Vk.QueueFamily.Properties)] -> Maybe Vk.QueueFamily.Index
