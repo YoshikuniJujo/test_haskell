@@ -43,6 +43,7 @@ dependencies:
 - ghc-prim
 - time
 - mono-traversable
+- data-default
 
 library:
   source-dirs: src

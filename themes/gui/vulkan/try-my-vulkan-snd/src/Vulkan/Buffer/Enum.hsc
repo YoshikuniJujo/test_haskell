@@ -2,6 +2,7 @@
 --	% stack runghc --cwd tools/ makeEnum
 
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -10,6 +11,7 @@ module Vulkan.Buffer.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Default
 import Data.Bits
 import Data.Word
 
@@ -79,4 +81,7 @@ enum "UsageFlagBits" ''#{type VkBufferUsageFlagBits}
 		#{const VK_BUFFER_USAGE_FLAG_BITS_MAX_ENUM}) ]
 
 type CreateFlags = CreateFlagBits
+instance Default CreateFlags where def = CreateFlagsZero
+
 type UsageFlags = UsageFlagBits
+instance Default UsageFlags where def = UsageFlagsZero

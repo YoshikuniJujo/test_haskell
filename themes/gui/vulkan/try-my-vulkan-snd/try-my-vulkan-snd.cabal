@@ -108,6 +108,7 @@ library
       Vulkan.ImageView
       Vulkan.ImageView.Core
       Vulkan.ImageView.Enum
+      Vulkan.Instance
       Vulkan.Instance.Core
       Vulkan.Instance.Enum
       Vulkan.Instance.Middle
@@ -208,6 +209,7 @@ library
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -242,6 +244,7 @@ executable my-glslc
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -277,6 +280,7 @@ executable try-depth-buffering
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -312,6 +316,7 @@ executable try-generating-mipmaps
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -347,6 +352,7 @@ executable try-loading-models
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -382,6 +388,7 @@ executable try-multisampling
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -416,6 +423,7 @@ executable try-my-vulkan-snd-exe
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -451,6 +459,7 @@ executable try-next-triangle
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -486,6 +495,7 @@ executable try-rectangle
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -521,6 +531,7 @@ executable try-shaderc
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -556,6 +567,7 @@ executable try-shaderc-core
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -591,6 +603,7 @@ executable try-texture
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -626,6 +639,7 @@ executable try-vertex-input-state
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -661,6 +675,7 @@ executable try-yatteiku
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim
@@ -696,6 +711,7 @@ test-suite try-my-vulkan-snd-test
     , c-enum
     , c-struct
     , containers
+    , data-default
     , exception-hierarchy
     , filepath
     , ghc-prim

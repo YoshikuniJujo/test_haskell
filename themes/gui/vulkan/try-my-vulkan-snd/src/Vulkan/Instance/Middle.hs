@@ -12,6 +12,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
 
 import qualified Data.Text as T
 
@@ -39,6 +40,14 @@ createInfoNil = CreateInfo {
 	createInfoApplicationInfo = Nothing,
 	createInfoEnabledLayerNames = [],
 	createInfoEnabledExtensionNames = [] }
+
+instance Default (CreateInfo n n') where
+	def = CreateInfo {
+		createInfoNext = Nothing,
+		createInfoFlags = CreateFlagsZero,
+		createInfoApplicationInfo = Nothing,
+		createInfoEnabledLayerNames = [],
+		createInfoEnabledExtensionNames = [] }
 
 createInfoToCore :: (Pointable n, Pointable n') =>
 	CreateInfo n n' -> ContT r IO (Ptr C.CreateInfo)
