@@ -493,7 +493,7 @@ checkDeviceExtensionSupport dvc = do
 findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
 findQueueFamilies device = do
 	queueFamilies <- lift
-		$ Vk.PhysicalDevice.getQueueFamilyProperties device
+		$ Vk.PhysicalDevice.getQueueFamilyProperties' device
 	lift $ print queueFamilies
 	sfc <- readGlobal globalSurface
 	psi <- listToMaybe <$> lift (
@@ -550,7 +550,7 @@ createLogicalDevice = do
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
 			Vk.Device.createInfoQueueCreateInfos =
-				queueCreateInfos <$> uniqueQueueFamilies,
+				queueCreateInfos . Vk.QueueFamily.Index <$> uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Device.createInfoEnabledExtensionNames =

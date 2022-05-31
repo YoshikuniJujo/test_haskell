@@ -28,6 +28,7 @@ import qualified Vulkan.Instance.Type as Instance
 import qualified Vulkan.Instance.Middle as Instance.M
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Vulkan.Memory.Middle as Memory.M
 import qualified Vulkan.Format as Format
 import qualified Vulkan.Format.Enum as Format
@@ -124,9 +125,13 @@ getFeatures (P pdvc) =
 featuresZero :: Features
 featuresZero = unsafePerformIO $ featuresFromCore <$> C.getClearedFeatures
 
-getQueueFamilyProperties :: P -> IO [QueueFamily.Properties]
+getQueueFamilyProperties' :: P -> IO [QueueFamily.Properties]
+getQueueFamilyProperties' p = (snd <$>) <$> getQueueFamilyProperties p
+
+getQueueFamilyProperties :: P -> IO [(QueueFamily.Index, QueueFamily.Properties)]
 getQueueFamilyProperties (P pdvc) =
-	($ pure) . runContT $ map QueueFamily.propertiesFromCore <$> do
+	((QueueFamily.indices `zip`) . map QueueFamily.propertiesFromCore <$>)
+			. ($ pure) $ runContT do
 		ppptc <- ContT alloca
 		(fromIntegral -> pptc) <- lift do
 			C.getQueueFamilyProperties pdvc ppptc NullPtr

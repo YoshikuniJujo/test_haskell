@@ -61,6 +61,7 @@ import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Middle as Vk.Device
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
@@ -437,15 +438,15 @@ findQueueFamilies device = do
 				. (.&. Vk.QueueGraphicsBit)
 				. Vk.QueueFamily.propertiesQueueFlags
 				. snd )
-			(zip [0 ..] queueFamilies),
-		presentFamily = psi }
+			queueFamilies,
+		presentFamily = Vk.QueueFamily.Index <$> psi }
 
 isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
 isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Maybe Word32,
-	presentFamily :: Maybe Word32 }
+	graphicsFamily :: Maybe Vk.QueueFamily.Index,
+	presentFamily :: Maybe Vk.QueueFamily.Index }
 
 isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
@@ -492,9 +493,9 @@ createLogicalDevice = do
 	dvc <- lift (Vk.Device.create @() @() pdvc createInfo nil)
 	writeGlobal globalDevice dvc
 	writeGlobal globalGraphicsQueue =<< lift (
-		Vk.Device.getQueue dvc (fromJust $ graphicsFamily is) 0 )
+		Vk.Device.getQueue dvc (fromJust $ Vk.QueueFamily.unIndex <$> graphicsFamily is) 0 )
 	writeGlobal globalPresentQueue =<< lift (
-		Vk.Device.getQueue dvc (fromJust $ presentFamily is) 0 )
+		Vk.Device.getQueue dvc (fromJust $ Vk.QueueFamily.unIndex <$> presentFamily is) 0 )
 
 createSwapChain :: ReaderT Global IO ()
 createSwapChain = do
@@ -533,7 +534,7 @@ createSwapChain = do
 			Vk.Khr.Swapchain.createInfoImageUsage =
 				Vk.Image.UsageColorAttachmentBit,
 			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = Vk.QueueFamily.unIndex <$> qfis,
 			Vk.Khr.Swapchain.createInfoPreTransform =
 				Vk.Khr.Surface.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,
@@ -906,7 +907,7 @@ createCommandPool = do
 			Vk.CommandPool.createInfoFlags =
 				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
-				fromJust $ graphicsFamily queueFamilyIndices }
+				fromJust $ Vk.QueueFamily.unIndex <$> graphicsFamily queueFamilyIndices }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)

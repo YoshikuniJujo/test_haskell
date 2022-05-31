@@ -6,7 +6,6 @@ module Main where
 import Data.Default
 import Data.Bits
 import Data.List
-import Data.Word
 
 import Vulkan.Base
 
@@ -15,6 +14,7 @@ import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 
@@ -30,7 +30,7 @@ main = do
 		physicalDevice <- head <$> Vk.PhysicalDevice.enumerate inst
 		queueProps <- Vk.PhysicalDevice.getQueueFamilyProperties
 			physicalDevice
-		mapM_ printQueueProps queueProps
+		mapM_ (printQueueProps . snd) queueProps
 		let	Just graphicsQueueFamilyIndex =
 				pickGraphicsQueueFamilyIndex queueProps
 			queueCreateInfo = Vk.Device.Queue.CreateInfo {
@@ -58,10 +58,11 @@ main = do
 				device graphicsQueueFamilyIndex 0
 			pure ()
 
-pickGraphicsQueueFamilyIndex :: [Vk.QueueFamily.Properties] -> Maybe Word32
-pickGraphicsQueueFamilyIndex ps = fromIntegral <$> findIndex
+pickGraphicsQueueFamilyIndex ::
+	[(Vk.QueueFamily.Index, Vk.QueueFamily.Properties)] -> Maybe Vk.QueueFamily.Index
+pickGraphicsQueueFamilyIndex ps = fst <$> find
 	((/= zeroBits) . (Vk.QueueGraphicsBit .&.)
-		. Vk.QueueFamily.propertiesQueueFlags) ps
+		. Vk.QueueFamily.propertiesQueueFlags . snd) ps
 
 printQueueProps :: Vk.QueueFamily.Properties -> IO ()
 printQueueProps qps = do

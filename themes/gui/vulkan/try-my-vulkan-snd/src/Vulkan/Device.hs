@@ -17,6 +17,7 @@ import Vulkan
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Vulkan.Device.Middle as M
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 newtype D s = D M.D deriving Show
 
@@ -27,5 +28,5 @@ create :: (Pointable n, Pointable n2, Pointable n3, Pointable n4) =>
 create phdvc ci macc macd f =
 	bracket (M.create phdvc ci macc) (`M.destroy` macd) (f . D)
 
-getQueue :: D s -> Word32 -> Word32 -> IO Queue
-getQueue (D dvc) qfi qi = M.getQueue dvc qfi qi
+getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue
+getQueue (D dvc) (QueueFamily.Index qfi) qi = M.getQueue dvc qfi qi

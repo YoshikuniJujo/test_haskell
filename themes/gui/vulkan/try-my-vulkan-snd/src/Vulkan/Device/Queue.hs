@@ -14,11 +14,13 @@ import Data.Word
 import Vulkan.Device.Queue.Enum
 
 import qualified Vulkan.Device.Queue.Core as C
+import qualified Vulkan.QueueFamily as QueueFamily
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueFamilyIndex :: Word32,
+	createInfoQueueFamilyIndex :: QueueFamily.Index,
 	createInfoQueuePriorities :: [Float] }
 	deriving Show
 
@@ -26,7 +28,7 @@ createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoQueueFamilyIndex = qfi,
+	createInfoQueueFamilyIndex = QueueFamily.Index qfi,
 	createInfoQueuePriorities = qps
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt

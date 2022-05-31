@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.QueueFamily where
@@ -6,6 +7,7 @@ import Data.Word
 
 import Vulkan.Core
 import Vulkan.Enum
+import Vulkan.QueueFamily.EnumManual
 
 import qualified Vulkan.QueueFamily.Core as C
 

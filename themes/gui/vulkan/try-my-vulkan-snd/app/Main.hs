@@ -49,6 +49,7 @@ import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device.Middle as Vk.Device
@@ -351,12 +352,12 @@ isComplete QueueFamilyIndices {
 findQueueFamilies :: Global -> Vk.PhysicalDevice.P -> IO QueueFamilyIndices
 findQueueFamilies Global { globalSurface = rsfc } dvc = do
 	putStrLn "*** FIND QUEUE FAMILIES BEGIN ***"
-	props <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
+	props <- Vk.PhysicalDevice.getQueueFamilyProperties' dvc
 	print props
 	sfc <- readIORef rsfc
 	pfi <- getPresentFamilyIndex sfc dvc (fromIntegral $ length props) 0
 	putStrLn "*** FIND QUEUE FAMILIES END ***"
-	props' <- Vk.PhysicalDevice.getQueueFamilyProperties dvc
+	props' <- Vk.PhysicalDevice.getQueueFamilyProperties' dvc
 	pure QueueFamilyIndices {
 		graphicsFamily = fromIntegral
 			<$> findIndex checkGraphicsBit props',
@@ -413,7 +414,7 @@ createLogicalDevice g@Global {
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
 			Vk.Device.createInfoQueueCreateInfos =
-				((: []) . queueCreateInfo) `foldMap`
+				((: []) . queueCreateInfo . Vk.QueueFamily.Index) `foldMap`
 					uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				if enableValidationLayers

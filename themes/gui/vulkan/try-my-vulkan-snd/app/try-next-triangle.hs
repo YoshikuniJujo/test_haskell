@@ -59,6 +59,7 @@ import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Middle as Vk.Device
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
@@ -387,7 +388,7 @@ checkDeviceExtensionSupport dvc = do
 findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
 findQueueFamilies device = do
 	queueFamilies <- lift
-		$ Vk.PhysicalDevice.getQueueFamilyProperties device
+		$ Vk.PhysicalDevice.getQueueFamilyProperties' device
 	lift $ print queueFamilies
 	sfc <- readGlobal globalSurface
 	psi <- listToMaybe <$> lift (
@@ -443,7 +444,7 @@ createLogicalDevice = do
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
 			Vk.Device.createInfoQueueCreateInfos =
-				queueCreateInfos <$> uniqueQueueFamilies,
+				queueCreateInfos . Vk.QueueFamily.Index <$> uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Device.createInfoEnabledExtensionNames =
