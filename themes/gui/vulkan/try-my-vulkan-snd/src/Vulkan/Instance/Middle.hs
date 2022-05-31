@@ -34,12 +34,7 @@ data CreateInfo n n' = CreateInfo {
 	deriving Show
 
 createInfoNil :: CreateInfo () ()
-createInfoNil = CreateInfo {
-	createInfoNext = Nothing,
-	createInfoFlags = CreateFlagsZero,
-	createInfoApplicationInfo = Nothing,
-	createInfoEnabledLayerNames = [],
-	createInfoEnabledExtensionNames = [] }
+createInfoNil = def
 
 instance Default (CreateInfo n n') where
 	def = CreateInfo {
