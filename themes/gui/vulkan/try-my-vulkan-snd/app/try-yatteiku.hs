@@ -13,7 +13,7 @@ import Vulkan.Base
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
-import qualified Vulkan.Device.Middle as Vk.Device
+import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
@@ -52,8 +52,11 @@ main = do
 					[Vk.Khr.validationLayerName],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
-		device <- Vk.Device.create physicalDevice devCreateInfo nil
-		pure ()
+		Vk.Device.create
+			physicalDevice devCreateInfo nil nil \device -> do
+			print =<< Vk.Device.getQueue
+				device graphicsQueueFamilyIndex 0
+			pure ()
 
 pickGraphicsQueueFamilyIndex :: [Vk.QueueFamily.Properties] -> Maybe Word32
 pickGraphicsQueueFamilyIndex ps = fromIntegral <$> findIndex
