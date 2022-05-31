@@ -85,3 +85,32 @@ destroy :: (Pointable n) => I -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (I cist) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cist pac
+
+enumerateLayerProperties :: IO [LayerProperties]
+enumerateLayerProperties = ($ pure) . runContT
+	$ map layerPropertiesFromCore <$> do
+		pLayerCount <- ContT alloca
+		(fromIntegral -> layerCount) <- lift do
+			r <- C.enumerateLayerProperties pLayerCount NullPtr
+			throwUnlessSuccess $ Result r
+			peek pLayerCount
+		pLayerProps <- ContT $ allocaArray layerCount
+		lift do	r <- C.enumerateLayerProperties pLayerCount pLayerProps
+			throwUnlessSuccess $ Result r
+			peekArray layerCount pLayerProps
+
+enumerateExtensionProperties :: Maybe T.Text -> IO [ExtensionProperties]
+enumerateExtensionProperties mln = ($ pure) . runContT
+	$ map extensionPropertiesFromCore <$> do
+		cln <- case mln of
+			Nothing -> pure NullPtr
+			Just ln -> textToCString ln
+		pExtCount <- ContT alloca
+		(fromIntegral -> extCount) <- lift do
+			r <- C.enumerateExtensionProperties cln pExtCount NullPtr
+			throwUnlessSuccess $ Result r
+			peek pExtCount
+		pExts <- ContT $ allocaArray extCount
+		lift do	r <- C.enumerateExtensionProperties cln pExtCount pExts
+			throwUnlessSuccess $ Result r
+			peekArray extCount pExts

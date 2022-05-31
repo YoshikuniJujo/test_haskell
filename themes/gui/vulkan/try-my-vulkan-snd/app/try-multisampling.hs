@@ -387,7 +387,7 @@ createInstance :: ReaderT Global IO ()
 createInstance = do
 	lift . mapM_
 		(Txt.putStrLn . ("\t" <>) . Vk.extensionPropertiesExtensionName)
-		=<< lift (Vk.enumerateExtensionProperties Nothing)
+		=<< lift (Vk.Instance.enumerateExtensionProperties Nothing)
 	when enableValidationLayers $ bool
 		(lift $ error "validation layers requested, but not available!")
 		(pure ())
@@ -417,7 +417,7 @@ createInstance = do
 
 checkValidationLayerSupport :: ReaderT Global IO Bool
 checkValidationLayerSupport = lift do
-	availableLayers <- Vk.enumerateLayerProperties
+	availableLayers <- Vk.Instance.enumerateLayerProperties
 	print validationLayers
 	print availableLayers
 	pure . null $ validationLayers \\

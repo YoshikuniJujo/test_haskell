@@ -267,12 +267,3 @@ clearValueFromClearColorValue = castPtr
 clearValueFromClearDepthStencilValue :: ClearDepthStencilValue -> ContT r IO (Ptr ClearValueTag)
 clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) =
 	castPtr <$> ContT (withForeignPtr fp)
-
-foreign import ccall "vkEnumerateInstanceExtensionProperties"
-	enumerateExtensionProperties ::
-	CString -> Ptr #{type uint32_t} -> Ptr ExtensionProperties ->
-	IO #{type VkResult}
-
-foreign import ccall "vkEnumerateInstanceLayerProperties"
-	enumerateLayerProperties ::
-	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO #{type VkResult}

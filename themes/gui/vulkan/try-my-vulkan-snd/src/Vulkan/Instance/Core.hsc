@@ -55,3 +55,12 @@ foreign import ccall "vkCreateInstance" create ::
 
 foreign import ccall "vkDestroyInstance" destroy ::
 	I -> Ptr AllocationCallbacks.A -> IO ()
+
+foreign import ccall "vkEnumerateInstanceExtensionProperties"
+	enumerateExtensionProperties ::
+	CString -> Ptr #{type uint32_t} -> Ptr ExtensionProperties ->
+	IO #{type VkResult}
+
+foreign import ccall "vkEnumerateInstanceLayerProperties"
+	enumerateLayerProperties ::
+	Ptr #{type uint32_t} -> Ptr LayerProperties -> IO #{type VkResult}
