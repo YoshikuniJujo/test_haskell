@@ -112,6 +112,7 @@ library
       Vulkan.Instance.Core
       Vulkan.Instance.Enum
       Vulkan.Instance.Middle
+      Vulkan.Instance.Type
       Vulkan.Khr
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Core

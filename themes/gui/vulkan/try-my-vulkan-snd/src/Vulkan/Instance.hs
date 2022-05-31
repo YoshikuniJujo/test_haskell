@@ -8,10 +8,10 @@ module Vulkan.Instance (
 import Foreign.Pointable
 import Control.Exception
 
+import Vulkan.Instance.Type
+
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Instance.Middle as M
-
-newtype I s = I { unI :: M.I } deriving Show
 
 create :: (Pointable n, Pointable n2, Pointable n3, Pointable n4) =>
 	M.CreateInfo n n2 ->

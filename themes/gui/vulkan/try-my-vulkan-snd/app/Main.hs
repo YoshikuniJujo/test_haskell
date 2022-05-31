@@ -41,6 +41,7 @@ import Shaderc.TH
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
+import qualified Vulkan.Instance.Type as Vk.Ist.T
 import qualified Vulkan.Instance.Middle as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
@@ -303,7 +304,7 @@ createSurface Global {
 pickPhysicalDevice :: Global -> IO ()
 pickPhysicalDevice g@Global {
 	globalInstance = rist, globalPhysicalDevice = rpdvc } = do
-	devices <- Vk.PhysicalDevice.enumerate =<< readIORef rist
+	devices <- Vk.PhysicalDevice.enumerate . Vk.Ist.T.I =<< readIORef rist
 	findM (isDeviceSuitable g) devices >>= \case
 		Just pd -> writeIORef rpdvc pd
 		Nothing -> error "no matched physical devices"

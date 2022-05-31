@@ -57,6 +57,7 @@ import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Exception as Vk
 import qualified Vulkan.Exception.Enum as Vk
+import qualified Vulkan.Instance.Type as Vk.Instance.T
 import qualified Vulkan.Instance.Middle as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
@@ -471,7 +472,7 @@ createSurface = do
 pickPhysicalDevice :: ReaderT Global IO ()
 pickPhysicalDevice = do
 	ist <- readGlobal globalInstance
-	devices <- lift $ Vk.PhysicalDevice.enumerate ist
+	devices <- lift . Vk.PhysicalDevice.enumerate $ Vk.Instance.T.I ist
 	when (null devices) $ error "failed to find GPUs with Vulkan support!"
 	suitableDevices <- filterM isDeviceSuitable devices
 	case suitableDevices of

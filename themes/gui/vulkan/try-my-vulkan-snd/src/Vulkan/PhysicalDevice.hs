@@ -23,7 +23,9 @@ import Vulkan.Exception.Enum
 import Vulkan.PhysicalDevice.Enum
 import Vulkan.PhysicalDevice.Struct
 
-import qualified Vulkan.Instance.Middle as Instance
+import qualified Vulkan.Instance as Instance
+import qualified Vulkan.Instance.Type as Instance
+import qualified Vulkan.Instance.Middle as Instance.M
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.Memory.Middle as Memory.M
@@ -32,8 +34,8 @@ import qualified Vulkan.Format.Enum as Format
 
 newtype P = P C.P deriving Show
 
-enumerate :: Instance.I -> IO [P]
-enumerate (Instance.I ist) = ($ pure) . runContT $ map P <$> do
+enumerate :: Instance.I s -> IO [P]
+enumerate (Instance.I (Instance.M.I ist)) = ($ pure) . runContT $ map P <$> do
 	pdvcc <- ContT alloca
 	(fromIntegral -> dvcc) <- lift do
 		r <- C.enumerate ist pdvcc NullPtr
