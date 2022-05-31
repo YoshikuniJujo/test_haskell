@@ -2,8 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Instance (
-	I, create, M.CreateInfo(..), M.createInfoNil,
-	M.enumerateLayerProperties, M.enumerateExtensionProperties ) where
+	I, create, M.CreateInfo(..), M.createInfoNil ) where
 
 import Foreign.Pointable
 import Control.Exception
