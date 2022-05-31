@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Device where
+module Vulkan.Device.Middle where
 
 import Data.Word
 

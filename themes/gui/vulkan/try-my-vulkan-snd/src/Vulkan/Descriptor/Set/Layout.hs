@@ -20,7 +20,7 @@ import Vulkan.Exception.Enum
 import Vulkan.Descriptor.Set.Layout.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Sampler as Sampler
 import qualified Vulkan.Descriptor.Enum as Descriptor

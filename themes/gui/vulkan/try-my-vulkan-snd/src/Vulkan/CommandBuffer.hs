@@ -19,7 +19,7 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.CommandBuffer.Enum
 
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Framebuffer as Framebuffer
 import qualified Vulkan.CommandPool as CommandPool

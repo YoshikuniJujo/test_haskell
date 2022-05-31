@@ -11,7 +11,7 @@ import Data.Word
 import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.Atom as Buffer
 import qualified Vulkan.Memory.Middle as M
 

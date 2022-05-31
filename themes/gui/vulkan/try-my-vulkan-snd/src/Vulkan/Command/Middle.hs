@@ -14,7 +14,7 @@ import Vulkan.Enum
 import qualified Vulkan.CommandBuffer as CommandBuffer
 import qualified Vulkan.Buffer.Middle as Buffer
 import qualified Vulkan.Buffer.Core as Buffer.C
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Command.Core as C
 
 bindVertexBuffers ::

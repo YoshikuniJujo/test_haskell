@@ -23,7 +23,7 @@ import Vulkan.Exception.Enum
 import Vulkan.Buffer.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.Core as C
 import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily

@@ -17,7 +17,7 @@ import Vulkan.Exception
 import Vulkan.Pipeline.Cache.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Pipeline.Cache.Core as C
 
 #include <vulkan/vulkan.h>

@@ -22,7 +22,7 @@ import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Semaphore as Semaphore
 import qualified Vulkan.Fence as Fence
 import qualified Vulkan.Khr.Swapchain as Swapchain

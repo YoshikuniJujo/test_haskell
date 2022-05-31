@@ -40,7 +40,7 @@ import qualified Vulkan.Pipeline.VertexInputState.BindingStrideList as BindingSt
 import qualified Vulkan.VertexInput as VertexInput
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Pipeline.Cache as Cache
 
 data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' = CreateInfo {

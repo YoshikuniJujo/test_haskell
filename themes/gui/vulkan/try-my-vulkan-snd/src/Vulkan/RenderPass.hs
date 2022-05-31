@@ -21,7 +21,7 @@ import Vulkan.Exception.Enum
 import Vulkan.RenderPass.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass
 import qualified Vulkan.Framebuffer as Framebuffer

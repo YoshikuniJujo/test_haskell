@@ -18,7 +18,7 @@ import Vulkan.Component
 import Vulkan.ImageView.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Image as Image
 import qualified Vulkan.ImageView.Core as C
 import qualified Vulkan.Format.Enum as Format

@@ -19,7 +19,7 @@ import Vulkan.Exception.Enum
 import Vulkan.Sampler.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Sampler.Core as C
 
 newtype S = S C.S deriving Show

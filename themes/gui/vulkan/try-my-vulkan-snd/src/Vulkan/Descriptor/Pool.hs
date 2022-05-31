@@ -21,7 +21,7 @@ import Vulkan.Descriptor.Enum
 import Vulkan.Descriptor.Pool.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device as Device
+import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Descriptor.Pool.Core as C
 
 data Size = Size { sizeType :: Type, sizeDescriptorCount :: Word32 }

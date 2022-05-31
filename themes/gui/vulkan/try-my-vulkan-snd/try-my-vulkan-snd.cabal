@@ -80,8 +80,8 @@ library
       Vulkan.Descriptor.Set.Layout
       Vulkan.Descriptor.Set.Layout.Core
       Vulkan.Descriptor.Set.Layout.Enum
-      Vulkan.Device
       Vulkan.Device.Core
+      Vulkan.Device.Middle
       Vulkan.Device.Queue
       Vulkan.Device.Queue.Core
       Vulkan.Device.Queue.Enum

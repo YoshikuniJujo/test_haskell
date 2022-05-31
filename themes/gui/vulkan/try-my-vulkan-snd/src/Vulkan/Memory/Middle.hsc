@@ -24,7 +24,7 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Memory.Enum
 
-import {-# SOURCE #-} qualified Vulkan.Device as Device
+import {-# SOURCE #-} qualified Vulkan.Device.Middle as Device
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Memory.Core as C
