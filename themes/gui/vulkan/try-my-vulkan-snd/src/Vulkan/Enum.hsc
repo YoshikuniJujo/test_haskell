@@ -107,7 +107,7 @@ enum "ObjectType" ''#{type VkObjectType}
 	("ObjectTypeMaxEnum", #{const VK_OBJECT_TYPE_MAX_ENUM}) ]
 
 enum "QueueFlagBits" ''#{type VkQueueFlagBits}
-		[''Show, ''Eq, ''Storable, ''Bits] [
+		[''Show, ''Eq, ''Storable, ''Bits, ''FiniteBits] [
 	("QueueGraphicsBit", #{const VK_QUEUE_GRAPHICS_BIT}),
 	("QueueComputeBit", #{const VK_QUEUE_COMPUTE_BIT}),
 	("QueueTransferBit", #{const VK_QUEUE_TRANSFER_BIT}),
