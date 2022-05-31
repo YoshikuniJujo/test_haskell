@@ -4,7 +4,7 @@ module Main where
 
 import Vulkan.Base
 
-import qualified Vulkan.Instance as Vk.Instance
+import qualified Vulkan.Instance.Middle as Vk.Instance
 
 main :: IO ()
 main = do

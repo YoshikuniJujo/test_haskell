@@ -23,7 +23,7 @@ import Vulkan.Exception.Enum
 import Vulkan.PhysicalDevice.Enum
 import Vulkan.PhysicalDevice.Struct
 
-import qualified Vulkan.Instance as Instance
+import qualified Vulkan.Instance.Middle as Instance
 import qualified Vulkan.PhysicalDevice.Core as C
 import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.Memory.Middle as Memory.M

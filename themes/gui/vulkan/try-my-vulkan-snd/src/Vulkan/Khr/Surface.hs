@@ -15,7 +15,7 @@ import qualified Vulkan.Core as C
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Vulkan.Image.Enum as Image
-import qualified Vulkan.Instance as Instance
+import qualified Vulkan.Instance.Middle as Instance
 import qualified Vulkan.Format.Enum as Format
 
 newtype S = S Sfc.C.S deriving Show

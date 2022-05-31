@@ -53,7 +53,7 @@ import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Exception as Vk
 import qualified Vulkan.Exception.Enum as Vk
-import qualified Vulkan.Instance as Vk.Instance
+import qualified Vulkan.Instance.Middle as Vk.Instance
 import qualified Vulkan.Instance.Enum as Vk.Instance
 import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Khr.Enum as Vk.Khr

@@ -41,7 +41,7 @@ import Shaderc.TH
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
-import qualified Vulkan.Instance as Vk.Ist
+import qualified Vulkan.Instance.Middle as Vk.Ist
 import qualified Vulkan.Instance.Enum as Vk.Ist
 import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
 import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg

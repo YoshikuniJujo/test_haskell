@@ -27,7 +27,7 @@ import Vulkan.Ext.DebugUtils
 import Vulkan.Ext.DebugUtils.Message.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Instance as Instance
+import qualified Vulkan.Instance.Middle as Instance
 import qualified Vulkan.Ext.DebugUtils.Messenger.Core as C
 
 #include <vulkan/vulkan.h>

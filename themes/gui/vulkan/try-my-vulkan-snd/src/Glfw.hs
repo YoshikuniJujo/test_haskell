@@ -13,7 +13,7 @@ import Vulkan.Exception
 
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Instance as Instance
+import qualified Vulkan.Instance.Middle as Instance
 import qualified Vulkan.Khr.Surface as Surface
 
 createWindowSurface :: Pointable n =>

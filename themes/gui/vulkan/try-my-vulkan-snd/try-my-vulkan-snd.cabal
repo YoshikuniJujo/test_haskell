@@ -108,9 +108,9 @@ library
       Vulkan.ImageView
       Vulkan.ImageView.Core
       Vulkan.ImageView.Enum
-      Vulkan.Instance
       Vulkan.Instance.Core
       Vulkan.Instance.Enum
+      Vulkan.Instance.Middle
       Vulkan.Khr
       Vulkan.Khr.ColorSpace
       Vulkan.Khr.Core
