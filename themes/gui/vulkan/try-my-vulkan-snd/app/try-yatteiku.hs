@@ -83,8 +83,11 @@ runDevice device graphicsQueueFamilyIndex = do
 					Vk.CommandBuffer.LevelPrimary,
 				Vk.CommandBuffer.allocateInfoCommandBufferCount
 					= 1 }
-		Vk.CommandBuffer.allocate device cmdBufAllocInfo \cmdBufs ->
-			pure ()
+		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
+			[cmdBuf] -> Vk.CommandBuffer.begin
+					cmdBuf Vk.CommandBuffer.beginInfoNil do
+				pure ()
+			_ -> error "never occur"
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

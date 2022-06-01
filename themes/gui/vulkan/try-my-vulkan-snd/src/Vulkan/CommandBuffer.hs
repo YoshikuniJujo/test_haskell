@@ -3,7 +3,8 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.CommandBuffer (C, allocate, AllocateInfo(..)) where
+module Vulkan.CommandBuffer (
+	C, allocate, AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil ) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -41,3 +42,7 @@ allocate :: Pointable n =>
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (C <$>))
+
+begin :: (Pointable n, Pointable n') =>
+	C s vs -> M.BeginInfo n n' -> IO a -> IO a
+begin (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act

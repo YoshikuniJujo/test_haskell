@@ -11,6 +11,7 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
 import Data.Word
 
 import Vulkan.Enum
@@ -65,6 +66,15 @@ data BeginInfo n n' = BeginInfo {
 	beginInfoFlags :: UsageFlags,
 	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
 	deriving Show
+
+beginInfoNil :: BeginInfo () ()
+beginInfoNil = def
+
+instance Default (BeginInfo n n') where
+	def = BeginInfo {
+		beginInfoNext = Nothing,
+		beginInfoFlags = UsageFlagsZero,
+		beginInfoInheritanceInfo = Nothing }
 
 beginInfoToCore :: (Pointable n, Pointable n') =>
 	BeginInfo n n' -> ContT r IO (Ptr C.BeginInfo)
