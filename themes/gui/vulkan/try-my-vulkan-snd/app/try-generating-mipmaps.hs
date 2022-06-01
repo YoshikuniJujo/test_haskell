@@ -1567,7 +1567,7 @@ endSingleTimeCommands commandBuffer = do
 			Vk.submitInfoSignalSemaphores = [] }
 	lift do	Vk.CommandBuffer.end commandBuffer
 		Vk.Queue.submit @() gq [submitInfo] Nothing
-		Vk.Queue.queueWaitIdle gq
+		Vk.Queue.waitIdle gq
 		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>

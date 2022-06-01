@@ -929,7 +929,7 @@ copyBuffer srcBuffer dstBuffer ln = do
 		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
 		Vk.CommandBuffer.end commandBuffer
 		Vk.Queue.submit @() gq [submitInfo] Nothing
-		Vk.Queue.queueWaitIdle gq
+		Vk.Queue.waitIdle gq
 		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->

@@ -30,5 +30,5 @@ submit (Q q)
 			$ Fence.maybeFToCore f
 		throwUnlessSuccess $ Result r
 
-queueWaitIdle :: Q -> IO ()
-queueWaitIdle (Q q) = throwUnlessSuccess . Result =<< C.waitIdle q
+waitIdle :: Q -> IO ()
+waitIdle (Q q) = throwUnlessSuccess . Result =<< C.waitIdle q

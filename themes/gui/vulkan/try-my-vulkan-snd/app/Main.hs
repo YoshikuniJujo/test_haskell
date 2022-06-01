@@ -907,7 +907,7 @@ drawFrame g@Global {
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, fromIntegral imageIndex)] }
 	Vk.Khr.queuePresent @() pq presentInfo
-	Vk.Queue.queueWaitIdle pq
+	Vk.Queue.waitIdle pq
 
 cleanup :: Global -> IO ()
 cleanup Global {
