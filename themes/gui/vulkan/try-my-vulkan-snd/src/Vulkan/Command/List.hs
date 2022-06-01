@@ -26,7 +26,7 @@ import Vulkan.Enum
 import qualified Vulkan.Buffer.List as Buffer
 import qualified Vulkan.Buffer.List as Buffer.List
 import qualified Vulkan.Buffer.Middle as Buffer.M
-import qualified Vulkan.CommandBuffer as CommandBuffer
+import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import qualified Vulkan.Command.Middle as M
 import qualified Vulkan.Command.Core as C
 import qualified Vulkan.Image as Image

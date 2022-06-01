@@ -11,7 +11,7 @@ import Data.Word
 
 import Vulkan.Enum
 
-import qualified Vulkan.CommandBuffer as CommandBuffer
+import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import qualified Vulkan.Buffer.Middle as Buffer
 import qualified Vulkan.Buffer.Core as Buffer.C
 import qualified Vulkan.Device.Middle as Device

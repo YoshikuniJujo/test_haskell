@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.CommandBuffer where
+module Vulkan.CommandBuffer.Middle where
 
 import qualified Vulkan.CommandBuffer.Core as C
 

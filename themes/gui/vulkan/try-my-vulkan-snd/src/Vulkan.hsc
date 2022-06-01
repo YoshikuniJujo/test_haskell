@@ -32,7 +32,7 @@ import qualified Vulkan.Core as C
 
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Vulkan.Semaphore as Semaphore
-import {-# SOURCE #-} qualified Vulkan.CommandBuffer as CommandBuffer
+import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import {-# SOURCE #-} qualified Vulkan.Fence as Fence
 
 #include <vulkan/vulkan.h>

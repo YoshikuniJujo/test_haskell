@@ -59,9 +59,9 @@ library
       Vulkan.Command.Core
       Vulkan.Command.List
       Vulkan.Command.Middle
-      Vulkan.CommandBuffer
       Vulkan.CommandBuffer.Core
       Vulkan.CommandBuffer.Enum
+      Vulkan.CommandBuffer.Middle
       Vulkan.CommandPool
       Vulkan.CommandPool.Core
       Vulkan.CommandPool.Enum

@@ -98,7 +98,7 @@ import qualified Vulkan.Framebuffer as Vk.Fb
 import qualified Vulkan.Framebuffer.Enum as Vk.Fb
 import qualified Vulkan.CommandPool.Middle as Vk.CP
 import qualified Vulkan.CommandPool.Enum as Vk.CP
-import qualified Vulkan.CommandBuffer as Vk.CB
+import qualified Vulkan.CommandBuffer.Middle as Vk.CB
 import qualified Vulkan.CommandBuffer.Enum as Vk.CB
 import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp

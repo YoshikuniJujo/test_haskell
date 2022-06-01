@@ -15,7 +15,7 @@ import Data.Int
 import Vulkan
 import Vulkan.Enum
 
-import qualified Vulkan.CommandBuffer as CommandBuffer
+import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Subpass.Enum as Subpass
 import qualified Vulkan.Pipeline.Graphics as Pipeline
