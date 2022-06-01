@@ -22,7 +22,7 @@ import Vulkan.CommandBuffer.Enum
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.RenderPass as RenderPass
 import qualified Vulkan.Framebuffer as Framebuffer
-import qualified Vulkan.CommandPool as CommandPool
+import qualified Vulkan.CommandPool.Middle as CommandPool
 import qualified Vulkan.CommandBuffer.Core as C
 
 data AllocateInfo n = AllocateInfo {

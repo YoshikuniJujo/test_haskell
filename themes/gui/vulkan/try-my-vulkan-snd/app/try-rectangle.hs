@@ -103,7 +103,7 @@ import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
-import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPool.Middle as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer

@@ -17,7 +17,7 @@ import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
-import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPool.Middle as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 
 import qualified Vulkan.Khr as Vk.Khr
