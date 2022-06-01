@@ -26,9 +26,9 @@ queueSubmit (Q q)
 	csis <- submitInfoToCore `mapM` sis
 	psis <- ContT $ allocaArray sic
 	lift do	pokeArray psis csis
-		r <- C.queueSubmit q (fromIntegral sic) psis
+		r <- C.submit q (fromIntegral sic) psis
 			$ Fence.maybeFToCore f
 		throwUnlessSuccess $ Result r
 
 queueWaitIdle :: Q -> IO ()
-queueWaitIdle (Q q) = throwUnlessSuccess . Result =<< C.queueWaitIdle q
+queueWaitIdle (Q q) = throwUnlessSuccess . Result =<< C.waitIdle q

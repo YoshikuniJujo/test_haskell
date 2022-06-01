@@ -15,8 +15,8 @@ import {-# SOURCE #-} qualified Vulkan.Fence.Core as Fence
 data QTag
 type Q = Ptr QTag
 
-foreign import ccall "vkQueueSubmit" queueSubmit ::
+foreign import ccall "vkQueueSubmit" submit ::
 	Q -> #{type uint32_t} -> Ptr SubmitInfo -> Fence.F ->
 	IO #{type VkResult}
 
-foreign import ccall "vkQueueWaitIdle" queueWaitIdle :: Q -> IO #{type VkResult}
+foreign import ccall "vkQueueWaitIdle" waitIdle :: Q -> IO #{type VkResult}
