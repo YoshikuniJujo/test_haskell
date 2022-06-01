@@ -25,6 +25,7 @@ import Vulkan.Exception.Enum
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Semaphore as Semaphore
 import qualified Vulkan.Fence as Fence
+import qualified Vulkan.Queue as Queue
 import qualified Vulkan.Khr.Swapchain as Swapchain
 import qualified Vulkan.Khr.Core as C
 
@@ -79,8 +80,8 @@ presentInfoToCore PresentInfo {
 		C.presentInfoPImageIndices = piis,
 		C.presentInfoPResults = prs }
 
-queuePresent :: Pointable n => Queue -> PresentInfo n -> IO ()
-queuePresent (Queue q) pi_ = ($ pure) $ runContT do
+queuePresent :: Pointable n => Queue.Queue -> PresentInfo n -> IO ()
+queuePresent (Queue.Queue q) pi_ = ($ pure) $ runContT do
 	cpi@(C.PresentInfo_ fpi) <- presentInfoToCore pi_
 	ppi <- ContT $ withForeignPtr fpi
 	lift do r <- C.queuePresent q ppi

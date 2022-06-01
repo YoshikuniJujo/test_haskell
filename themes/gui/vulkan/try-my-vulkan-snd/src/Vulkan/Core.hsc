@@ -25,7 +25,6 @@ import Vulkan.Base
 
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import {-# SOURCE #-} qualified Vulkan.Semaphore.Core as Semaphore
-import {-# SOURCE #-} qualified Vulkan.Fence.Core as Fence
 
 #include <vulkan/vulkan.h>
 
@@ -160,16 +159,6 @@ struct "SubmitInfo" #{size VkSubmitInfo} #{alignment VkSubmitInfo} [
 		[| #{peek VkSubmitInfo, pSignalSemaphores} |],
 		[| #{poke VkSubmitInfo, pSignalSemaphores} |]) ]
 	[''Show, ''Storable]
-
-data QueueTag
-type Queue = Ptr QueueTag
-
-foreign import ccall "vkQueueSubmit" queueSubmit ::
-	Queue -> #{type uint32_t} -> Ptr SubmitInfo -> Fence.F ->
-	IO #{type VkResult}
-
-foreign import ccall "vkQueueWaitIdle" queueWaitIdle ::
-	Queue -> IO #{type VkResult}
 
 struct "ExtensionProperties" #{size VkExtensionProperties}
 		#{alignment VkExtensionProperties} [

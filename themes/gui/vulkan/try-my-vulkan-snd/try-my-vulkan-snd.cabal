@@ -177,6 +177,8 @@ library
       Vulkan.Pipeline.ViewportState
       Vulkan.Pipeline.ViewportState.Core
       Vulkan.PushConstant
+      Vulkan.Queue
+      Vulkan.Queue.Core
       Vulkan.Queue.Enum
       Vulkan.QueueFamily
       Vulkan.QueueFamily.Core

@@ -30,6 +30,7 @@ import qualified Vulkan.Device.Queue as Queue
 import qualified Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Vulkan.Device.Core as C
+import qualified Vulkan.Queue as Queue
 
 #include <vulkan/vulkan.h>
 
@@ -98,8 +99,8 @@ destroy (D cdvc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cdvc pac
 
-getQueue :: D -> Word32 -> Word32 -> IO Queue
-getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue <$> do
+getQueue :: D -> Word32 -> Word32 -> IO Queue.Queue
+getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue.Queue <$> do
 	pQueue <- ContT alloca
 	lift do	C.getQueue cdvc qfi qi pQueue
 		peek pQueue

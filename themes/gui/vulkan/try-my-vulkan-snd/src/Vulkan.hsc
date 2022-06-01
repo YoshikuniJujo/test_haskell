@@ -35,9 +35,9 @@ import {-# SOURCE #-} qualified Vulkan.Semaphore as Semaphore
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import {-# SOURCE #-} qualified Vulkan.Fence as Fence
 
-#include <vulkan/vulkan.h>
+import qualified Vulkan.Queue.Core as Queue.C
 
-newtype Queue = Queue C.Queue deriving Show
+#include <vulkan/vulkan.h>
 
 data ApplicationInfo a = ApplicationInfo {
 	applicationInfoNext :: Maybe a,
@@ -269,16 +269,3 @@ submitInfoToCore SubmitInfo {
 		C.submitInfoPCommandBuffers = pcbs,
 		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
 		C.submitInfoPSignalSemaphores = psss }
-
-queueSubmit :: Pointable n => Queue -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
-queueSubmit (Queue q)
-	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
-	csis <- submitInfoToCore `mapM` sis
-	psis <- ContT $ allocaArray sic
-	lift do	pokeArray psis csis
-		r <- C.queueSubmit q (fromIntegral sic) psis
-			$ Fence.maybeFToCore f
-		throwUnlessSuccess $ Result r
-
-queueWaitIdle :: Queue -> IO ()
-queueWaitIdle (Queue q) = throwUnlessSuccess . Result =<< C.queueWaitIdle q

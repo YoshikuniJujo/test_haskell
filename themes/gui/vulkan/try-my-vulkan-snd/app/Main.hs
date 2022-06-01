@@ -105,6 +105,7 @@ import qualified Vulkan.Semaphore as Vk.Smp
 import qualified Vulkan.Fence as Vk.Fnc
 import qualified Vulkan.Fence.Enum as Vk.Fnc
 import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
@@ -125,8 +126,8 @@ data Global = Global {
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
-	globalGraphicsQueue :: IORef Vk.Queue,
-	globalPresentQueue :: IORef Vk.Queue,
+	globalGraphicsQueue :: IORef Vk.Queue.Queue,
+	globalPresentQueue :: IORef Vk.Queue.Queue,
 	globalSurface :: IORef Vk.Khr.Sfc.S,
 	globalSwapChain :: IORef Vk.Khr.Sc.S,
 	globalSwapChainImages :: IORef [Vk.Img.I],
@@ -150,8 +151,8 @@ newGlobal w = do
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
-	gq <- newIORef $ Vk.Queue NullPtr
-	pq <- newIORef $ Vk.Queue NullPtr
+	gq <- newIORef $ Vk.Queue.Queue NullPtr
+	pq <- newIORef $ Vk.Queue.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Sfc.S NullPtr
 	sc <- newIORef $ Vk.Khr.Sc.S NullPtr
 	scimgs <- newIORef []
@@ -899,14 +900,14 @@ drawFrame g@Global {
 				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
 			Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
 			Vk.submitInfoSignalSemaphores = [rfs] }
-	Vk.queueSubmit @() gq [submitInfo] $ Just iff
+	Vk.Queue.queueSubmit @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, fromIntegral imageIndex)] }
 	Vk.Khr.queuePresent @() pq presentInfo
-	Vk.queueWaitIdle pq
+	Vk.Queue.queueWaitIdle pq
 
 cleanup :: Global -> IO ()
 cleanup Global {

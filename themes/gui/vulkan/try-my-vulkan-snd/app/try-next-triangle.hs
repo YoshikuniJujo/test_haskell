@@ -117,6 +117,7 @@ import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List
 import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
@@ -144,9 +145,9 @@ data Global = Global {
 	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
-	globalGraphicsQueue :: IORef Vk.Queue,
+	globalGraphicsQueue :: IORef Vk.Queue.Queue,
 	globalSurface :: IORef Vk.Khr.Surface.S,
-	globalPresentQueue :: IORef Vk.Queue,
+	globalPresentQueue :: IORef Vk.Queue.Queue,
 	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
 	globalSwapChainImageFormat :: IORef (Maybe Vk.Format.F),
@@ -183,9 +184,9 @@ newGlobal = do
 	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
-	gq <- newIORef $ Vk.Queue NullPtr
+	gq <- newIORef $ Vk.Queue.Queue NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
-	pq <- newIORef $ Vk.Queue NullPtr
+	pq <- newIORef $ Vk.Queue.Queue NullPtr
 	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
 	scis <- newIORef []
 	scif <- newIORef Nothing
@@ -927,8 +928,8 @@ copyBuffer srcBuffer dstBuffer ln = do
 	lift do	Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
 		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
 		Vk.CommandBuffer.end commandBuffer
-		Vk.queueSubmit @() gq [submitInfo] Nothing
-		Vk.queueWaitIdle gq
+		Vk.Queue.queueSubmit @() gq [submitInfo] Nothing
+		Vk.Queue.queueWaitIdle gq
 		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
 
 findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
@@ -1055,7 +1056,7 @@ drawFrame = do
 			Vk.submitInfoCommandBuffers = [cb],
 			Vk.submitInfoSignalSemaphores = [rfs] }
 	gq <- readGlobal globalGraphicsQueue
-	lift . Vk.queueSubmit @() gq [submitInfo] $ Just iff
+	lift . Vk.Queue.queueSubmit @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],

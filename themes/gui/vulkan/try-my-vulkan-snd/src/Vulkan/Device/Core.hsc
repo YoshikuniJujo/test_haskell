@@ -11,7 +11,7 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Core (Queue)
+import Vulkan.Queue.Core (Queue)
 import Vulkan.Base
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
