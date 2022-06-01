@@ -1,4 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -19,6 +21,8 @@ import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
+import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -68,8 +72,19 @@ runDevice device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	Vk.CommandPool.create device cmdPoolCreateInfo nil nil \cmdPool -> do
-		pure ()
+	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
+			\(cmdPool :: Vk.CommandPool.C s) -> do
+		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
+			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfo {
+				Vk.CommandBuffer.allocateInfoNext = Nothing,
+				Vk.CommandBuffer.allocateInfoCommandPool =
+					cmdPool,
+				Vk.CommandBuffer.allocateInfoLevel =
+					Vk.CommandBuffer.LevelPrimary,
+				Vk.CommandBuffer.allocateInfoCommandBufferCount
+					= 1 }
+		Vk.CommandBuffer.allocate device cmdBufAllocInfo \cmdBufs ->
+			pure ()
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

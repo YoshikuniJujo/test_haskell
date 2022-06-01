@@ -7,11 +7,11 @@ module Vulkan.CommandPool (C, create, M.CreateInfo(..)) where
 import Foreign.Pointable
 import Control.Exception
 
+import Vulkan.CommandPool.Type
+
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.CommandPool.Middle as M
-
-newtype C s = C M.C deriving Show
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->
