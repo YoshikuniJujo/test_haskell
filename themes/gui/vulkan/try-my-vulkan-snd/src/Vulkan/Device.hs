@@ -13,13 +13,12 @@ import Control.Exception
 import Data.Word
 
 import Vulkan
+import Vulkan.Device.Type
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Vulkan.Device.Middle as M
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
-
-newtype D s = D M.D deriving Show
 
 create :: (Pointable n, Pointable n2, Pointable n3, Pointable n4) =>
 	PhysicalDevice.P -> M.CreateInfo n n2 ->

@@ -62,6 +62,7 @@ library
       Vulkan.CommandBuffer
       Vulkan.CommandBuffer.Core
       Vulkan.CommandBuffer.Enum
+      Vulkan.CommandPool
       Vulkan.CommandPool.Core
       Vulkan.CommandPool.Enum
       Vulkan.CommandPool.Middle
@@ -86,6 +87,7 @@ library
       Vulkan.Device.Queue
       Vulkan.Device.Queue.Core
       Vulkan.Device.Queue.Enum
+      Vulkan.Device.Type
       Vulkan.Enum
       Vulkan.Exception
       Vulkan.Exception.Enum
