@@ -1420,7 +1420,7 @@ endSingleTimeCommands commandBuffer = do
 			Vk.submitInfoCommandBuffers = [commandBuffer],
 			Vk.submitInfoSignalSemaphores = [] }
 	lift do	Vk.CommandBuffer.end commandBuffer
-		Vk.Queue.queueSubmit @() gq [submitInfo] Nothing
+		Vk.Queue.submit @() gq [submitInfo] Nothing
 		Vk.Queue.queueWaitIdle gq
 		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
 
@@ -1648,7 +1648,7 @@ drawFrame st = do
 			Vk.submitInfoCommandBuffers = [cb],
 			Vk.submitInfoSignalSemaphores = [rfs] }
 	gq <- readGlobal globalGraphicsQueue
-	lift . Vk.Queue.queueSubmit @() gq [submitInfo] $ Just iff
+	lift . Vk.Queue.submit @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = [rfs],

@@ -20,8 +20,8 @@ import qualified Vulkan.Queue.Core as C
 
 newtype Q = Q C.Q deriving Show
 
-queueSubmit :: Pointable n => Q -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
-queueSubmit (Q q)
+submit :: Pointable n => Q -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
+submit (Q q)
 	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
 	csis <- submitInfoToCore `mapM` sis
 	psis <- ContT $ allocaArray sic
