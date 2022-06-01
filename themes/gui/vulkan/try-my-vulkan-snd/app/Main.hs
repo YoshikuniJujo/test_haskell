@@ -105,6 +105,7 @@ import qualified Vulkan.Semaphore as Vk.Smp
 import qualified Vulkan.Fence as Vk.Fnc
 import qualified Vulkan.Fence.Enum as Vk.Fnc
 import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import qualified Vulkan.ColorComponent.Enum as Vk.CC
 
@@ -375,7 +376,7 @@ getPresentFamilyIndex sfc pd n i
 
 checkGraphicsBit :: Vk.QueueFamily.Properties -> Bool
 checkGraphicsBit prop = let
-	Vk.QueueFlagBits b = Vk.QueueFamily.propertiesQueueFlags prop in
+	Vk.Queue.FlagBits b = Vk.QueueFamily.propertiesQueueFlags prop in
 	b .&. queueGraphicsBit /= 0
 
 data SwapChainSupportDetails = SwapChainSupportDetails {

@@ -135,6 +135,7 @@ import qualified Vulkan.Sampler as Vk.Sampler
 import qualified Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -459,7 +460,7 @@ findQueueFamilies device = do
 	pure QueueFamilyIndices {
 		graphicsFamily = fst <$> find
 			((/= zeroBits)
-				. (.&. Vk.QueueGraphicsBit)
+				. (.&. Vk.Queue.GraphicsBit)
 				. Vk.QueueFamily.propertiesQueueFlags
 				. snd )
 			(zip [0 ..] queueFamilies),

@@ -106,15 +106,6 @@ enum "ObjectType" ''#{type VkObjectType}
 		#{const VK_OBJECT_TYPE_PRIVATE_DATA_SLOT_EXT}),
 	("ObjectTypeMaxEnum", #{const VK_OBJECT_TYPE_MAX_ENUM}) ]
 
-enum "QueueFlagBits" ''#{type VkQueueFlagBits}
-		[''Show, ''Eq, ''Storable, ''Bits, ''FiniteBits] [
-	("QueueGraphicsBit", #{const VK_QUEUE_GRAPHICS_BIT}),
-	("QueueComputeBit", #{const VK_QUEUE_COMPUTE_BIT}),
-	("QueueTransferBit", #{const VK_QUEUE_TRANSFER_BIT}),
-	("QueueSparseBindingBit", #{const VK_QUEUE_SPARSE_BINDING_BIT}),
-	("QueueProtectedBit", #{const VK_QUEUE_PROTECTED_BIT}),
-	("QueueFlagBitsMaxEnum", #{const VK_QUEUE_FLAG_BITS_MAX_ENUM}) ]
-
 enum "SharingMode" ''#{type VkSharingMode}
 		[''Show, ''Eq, ''Storable] [
 	("SharingModeExclusive", #{const VK_SHARING_MODE_EXCLUSIVE}),
@@ -545,7 +536,6 @@ enum "CullModeFlagBits" ''#{type VkCullModeFlagBits}
 	("CullModeFrontAndBack", #{const VK_CULL_MODE_FRONT_AND_BACK}),
 	("CullModeFlagBitsMaxEnum", #{const VK_CULL_MODE_FLAG_BITS_MAX_ENUM}) ]
 
-type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits

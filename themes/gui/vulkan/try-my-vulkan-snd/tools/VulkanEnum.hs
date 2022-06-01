@@ -12,7 +12,6 @@ make :: IO ()
 make = createFile'' vulkanCore "Enum"
 	["Foreign.Ptr", "Data.Bits", "Data.Word"] ((([] ,) <$> noZeros) ++ zeros)
 	[nowdoc|
-type QueueFlags = QueueFlagBits
 type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
@@ -27,8 +26,6 @@ noZeros = [
 	("InternalAllocationType", "VkInternalAllocationType",
 		["Show", "Eq", "Storable"]),
 	("ObjectType", "VkObjectType", ["Show", "Eq", "Storable"]),
-	("QueueFlagBits", "VkQueueFlagBits",
-		["Show", "Eq", "Storable", "Bits", "FiniteBits"]),
 	("SharingMode", "VkSharingMode", ["Show", "Eq", "Storable"]),
 	("PrimitiveTopology", "VkPrimitiveTopology", ["Show", "Eq", "Storable"]),
 	("PolygonMode", "VkPolygonMode", ["Show", "Eq", "Storable"]),

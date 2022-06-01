@@ -9,10 +9,11 @@ import Vulkan.Core
 import Vulkan.Enum
 import Vulkan.QueueFamily.EnumManual
 
+import qualified Vulkan.Queue.Enum as Queue
 import qualified Vulkan.QueueFamily.Core as C
 
 data Properties = Properties {
-	propertiesQueueFlags :: QueueFlags,
+	propertiesQueueFlags :: Queue.Flags,
 	propertiesQueueCount :: Word32,
 	propertiesTimestampValidBits :: Word32,
 	propertiesMinImageTransferGranularity :: Extent3d }
@@ -24,7 +25,7 @@ propertiesFromCore C.Properties {
 	C.propertiesQueueCount = cnt,
 	C.propertiesTimestampValidBits = tvb,
 	C.propertiesMinImageTransferGranularity = mitg } = Properties {
-	propertiesQueueFlags = QueueFlagBits flgs,
+	propertiesQueueFlags = Queue.FlagBits flgs,
 	propertiesQueueCount = cnt,
 	propertiesTimestampValidBits = tvb,
 	propertiesMinImageTransferGranularity = mitg }

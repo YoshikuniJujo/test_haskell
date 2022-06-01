@@ -11,7 +11,6 @@ import Data.List
 
 import Vulkan.Base
 
-import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Device as Vk.Device
@@ -23,6 +22,7 @@ import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -102,7 +102,7 @@ selectPhysicalDeviceAndQueueFamily = \case
 pickGraphicsQueueFamilyIndex ::
 	[(Vk.QueueFamily.Index, Vk.QueueFamily.Properties)] -> Maybe Vk.QueueFamily.Index
 pickGraphicsQueueFamilyIndex ps = fst <$> find
-	((/= zeroBits) . (Vk.QueueGraphicsBit .&.)
+	((/= zeroBits) . (Vk.Queue.GraphicsBit .&.)
 		. Vk.QueueFamily.propertiesQueueFlags . snd) ps
 
 printQueueProps :: Vk.QueueFamily.Properties -> IO ()
