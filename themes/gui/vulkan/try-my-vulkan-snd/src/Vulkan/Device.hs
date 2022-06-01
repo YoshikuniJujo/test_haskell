@@ -12,7 +12,6 @@ import Foreign.Pointable
 import Control.Exception
 import Data.Word
 
-import Vulkan
 import Vulkan.Device.Type
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks

@@ -11,12 +11,12 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Queue.Core (Queue)
 import Vulkan.Base
 
 import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Semaphore.Core as Semaphore
 import qualified Vulkan.Fence.Core as Fence
+import qualified Vulkan.Queue.Core as Queue
 import qualified Vulkan.Khr.Swapchain.Core as Swapchain
 
 #include <vulkan/vulkan.h>
@@ -58,4 +58,4 @@ struct "PresentInfo" #{size VkPresentInfoKHR} #{alignment VkPresentInfoKHR} [
 	[''Show, ''Storable]
 
 foreign import ccall "vkQueuePresentKHR" queuePresent ::
-	Queue -> Ptr PresentInfo -> IO #{type VkResult}
+	Queue.Q -> Ptr PresentInfo -> IO #{type VkResult}

@@ -11,13 +11,13 @@ import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
-import Vulkan.Queue.Core (Queue)
 import Vulkan.Base
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Queue.Core as Device.Queue
 import qualified Vulkan.PhysicalDevice.Core as PhysicalDevice
 import qualified Vulkan.PhysicalDevice.Struct.Core as PhysicalDevice
+import qualified Vulkan.Queue.Core as Queue
 
 #include <vulkan/vulkan.h>
 
@@ -67,7 +67,7 @@ foreign import ccall "vkDestroyDevice"
 	destroy :: D -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "vkGetDeviceQueue" getQueue ::
-	D -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue -> IO ()
+	D -> #{type uint32_t} -> #{type uint32_t} -> Ptr Queue.Q -> IO ()
 
 foreign import ccall "vkDeviceWaitIdle" waitIdle ::
 	D -> IO #{type VkResult}

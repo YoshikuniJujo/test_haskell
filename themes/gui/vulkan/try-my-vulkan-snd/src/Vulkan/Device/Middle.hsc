@@ -20,7 +20,6 @@ import Data.Word
 
 import qualified Data.Text as T
 
-import Vulkan
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum

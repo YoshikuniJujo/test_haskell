@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,7 +18,7 @@ import {-# SOURCE #-} qualified Vulkan.Fence as Fence
 
 import qualified Vulkan.Queue.Core as C
 
-newtype Queue = Queue C.Queue deriving Show
+newtype Queue = Queue C.Q deriving Show
 
 queueSubmit :: Pointable n => Queue -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
 queueSubmit (Queue q)

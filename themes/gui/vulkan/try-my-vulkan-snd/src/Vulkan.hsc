@@ -23,8 +23,6 @@ import Data.Color.Internal
 
 import qualified Data.Text as T
 
-import Vulkan.Exception
-import Vulkan.Exception.Enum
 import Vulkan.Base
 import Vulkan.Enum
 
@@ -33,9 +31,6 @@ import qualified Vulkan.Core as C
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Vulkan.Semaphore as Semaphore
 import {-# SOURCE #-} qualified Vulkan.CommandBuffer.Middle as CommandBuffer
-import {-# SOURCE #-} qualified Vulkan.Fence as Fence
-
-import qualified Vulkan.Queue.Core as Queue.C
 
 #include <vulkan/vulkan.h>
 
