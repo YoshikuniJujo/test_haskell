@@ -11,7 +11,6 @@ import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
-import Data.Word
 
 import Vulkan.Exception
 import Vulkan.Exception.Enum
@@ -19,19 +18,20 @@ import Vulkan.CommandPool.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Vulkan.CommandPool.Core as C
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueFamilyIndex :: Word32 }
+	createInfoQueueFamilyIndex :: QueueFamily.Index }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoQueueFamilyIndex = qfi
+	createInfoQueueFamilyIndex = QueueFamily.Index qfi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {

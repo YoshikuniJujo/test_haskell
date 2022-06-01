@@ -17,6 +17,8 @@ import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -53,8 +55,15 @@ main = do
 				Vk.Device.createInfoEnabledFeatures = Nothing }
 		Vk.Device.create
 			physicalDevice devCreateInfo nil nil \device -> do
-			print =<< Vk.Device.getQueue
+			graphicsQueue <- Vk.Device.getQueue
 				device graphicsQueueFamilyIndex 0
+			print graphicsQueue
+			let	cmdPoolCreateInfo = Vk.CommandPool.CreateInfo {
+					Vk.CommandPool.createInfoNext = Nothing,
+					Vk.CommandPool.createInfoFlags =
+						Vk.CommandPool.CreateFlagsZero,
+					Vk.CommandPool.createInfoQueueFamilyIndex =
+						graphicsQueueFamilyIndex }
 			pure ()
 
 selectPhysicalDeviceAndQueueFamily ::

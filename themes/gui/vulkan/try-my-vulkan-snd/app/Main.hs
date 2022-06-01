@@ -795,7 +795,7 @@ createCommandPool g@Global {
 			Vk.CP.createInfoFlags =
 				Vk.CP.CreateResetCommandBufferBit,
 			Vk.CP.createInfoQueueFamilyIndex =
-				fromJust $ graphicsFamily queueFamilyIndices }
+				Vk.QueueFamily.Index . fromJust $ graphicsFamily queueFamilyIndices }
 	dvc <- readIORef rdvc
 	writeIORef rcp =<< Vk.CP.create @() @() dvc poolInfo Nothing
 

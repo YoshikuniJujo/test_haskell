@@ -528,7 +528,7 @@ checkDeviceExtensionSupport dvc = do
 findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
 findQueueFamilies device = do
 	queueFamilies <- lift
-		$ Vk.PhysicalDevice.getQueueFamilyProperties' device
+		$ Vk.PhysicalDevice.getQueueFamilyProperties device
 	lift $ print queueFamilies
 	sfc <- readGlobal globalSurface
 	psi <- listToMaybe <$> lift (
@@ -539,16 +539,15 @@ findQueueFamilies device = do
 			((/= zeroBits)
 				. (.&. Vk.QueueGraphicsBit)
 				. Vk.QueueFamily.propertiesQueueFlags
-				. snd )
-			(zip [0 ..] queueFamilies),
-		presentFamily = psi }
+				. snd ) queueFamilies,
+		presentFamily = Vk.QueueFamily.Index <$> psi }
 
 isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
 isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Maybe Word32,
-	presentFamily :: Maybe Word32 }
+	graphicsFamily :: Maybe Vk.QueueFamily.Index,
+	presentFamily :: Maybe Vk.QueueFamily.Index }
 
 isComplete :: QueueFamilyIndices -> Bool
 isComplete QueueFamilyIndices {
@@ -586,7 +585,7 @@ createLogicalDevice = do
 			Vk.Device.createInfoNext = Nothing,
 			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
 			Vk.Device.createInfoQueueCreateInfos =
-				queueCreateInfos . Vk.QueueFamily.Index <$> uniqueQueueFamilies,
+				queueCreateInfos <$> uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Device.createInfoEnabledExtensionNames =
@@ -597,9 +596,9 @@ createLogicalDevice = do
 	dvc <- lift (Vk.Device.create @() @() pdvc createInfo nil)
 	writeGlobal globalDevice dvc
 	writeGlobal globalGraphicsQueue =<< lift (
-		Vk.Device.getQueue dvc (fromJust $ graphicsFamily is) 0 )
+		Vk.Device.getQueue dvc (Vk.QueueFamily.unIndex . fromJust $ graphicsFamily is) 0 )
 	writeGlobal globalPresentQueue =<< lift (
-		Vk.Device.getQueue dvc (fromJust $ presentFamily is) 0 )
+		Vk.Device.getQueue dvc (Vk.QueueFamily.unIndex . fromJust $ presentFamily is) 0 )
 
 createSwapChain :: ReaderT Global IO ()
 createSwapChain = do
@@ -638,7 +637,7 @@ createSwapChain = do
 			Vk.Khr.Swapchain.createInfoImageUsage =
 				Vk.Image.UsageColorAttachmentBit,
 			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = Vk.QueueFamily.unIndex <$> qfis,
 			Vk.Khr.Swapchain.createInfoPreTransform =
 				Vk.Khr.Surface.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,

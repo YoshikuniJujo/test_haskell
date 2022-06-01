@@ -1029,7 +1029,7 @@ createCommandPool = do
 			Vk.CommandPool.createInfoFlags =
 				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
-				fromJust $ graphicsFamily queueFamilyIndices }
+				Vk.QueueFamily.Index . fromJust $ graphicsFamily queueFamilyIndices }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
