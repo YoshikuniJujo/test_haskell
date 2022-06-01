@@ -126,8 +126,8 @@ data Global = Global {
 	globalDebugMessenger :: IORef Vk.Ext.DU.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
-	globalGraphicsQueue :: IORef Vk.Queue.Queue,
-	globalPresentQueue :: IORef Vk.Queue.Queue,
+	globalGraphicsQueue :: IORef Vk.Queue.Q,
+	globalPresentQueue :: IORef Vk.Queue.Q,
 	globalSurface :: IORef Vk.Khr.Sfc.S,
 	globalSwapChain :: IORef Vk.Khr.Sc.S,
 	globalSwapChainImages :: IORef [Vk.Img.I],
@@ -151,8 +151,8 @@ newGlobal w = do
 	dmsgr <- newIORef $ Vk.Ext.DU.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
-	gq <- newIORef $ Vk.Queue.Queue NullPtr
-	pq <- newIORef $ Vk.Queue.Queue NullPtr
+	gq <- newIORef $ Vk.Queue.Q NullPtr
+	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sfc <- newIORef $ Vk.Khr.Sfc.S NullPtr
 	sc <- newIORef $ Vk.Khr.Sc.S NullPtr
 	scimgs <- newIORef []

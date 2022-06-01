@@ -27,5 +27,5 @@ create :: (Pointable n, Pointable n2, Pointable n3, Pointable n4) =>
 create phdvc ci macc macd f =
 	bracket (M.create phdvc ci macc) (`M.destroy` macd) (f . D)
 
-getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue.Queue
+getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue.Q
 getQueue (D dvc) (QueueFamily.Index qfi) qi = M.getQueue dvc qfi qi

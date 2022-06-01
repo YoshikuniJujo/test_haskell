@@ -18,10 +18,10 @@ import {-# SOURCE #-} qualified Vulkan.Fence as Fence
 
 import qualified Vulkan.Queue.Core as C
 
-newtype Queue = Queue C.Q deriving Show
+newtype Q = Q C.Q deriving Show
 
-queueSubmit :: Pointable n => Queue -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
-queueSubmit (Queue q)
+queueSubmit :: Pointable n => Q -> [SubmitInfo n vs] -> Maybe Fence.F -> IO ()
+queueSubmit (Q q)
 	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
 	csis <- submitInfoToCore `mapM` sis
 	psis <- ContT $ allocaArray sic
@@ -30,5 +30,5 @@ queueSubmit (Queue q)
 			$ Fence.maybeFToCore f
 		throwUnlessSuccess $ Result r
 
-queueWaitIdle :: Queue -> IO ()
-queueWaitIdle (Queue q) = throwUnlessSuccess . Result =<< C.queueWaitIdle q
+queueWaitIdle :: Q -> IO ()
+queueWaitIdle (Q q) = throwUnlessSuccess . Result =<< C.queueWaitIdle q

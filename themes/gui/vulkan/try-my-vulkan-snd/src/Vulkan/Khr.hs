@@ -79,8 +79,8 @@ presentInfoToCore PresentInfo {
 		C.presentInfoPImageIndices = piis,
 		C.presentInfoPResults = prs }
 
-queuePresent :: Pointable n => Queue.Queue -> PresentInfo n -> IO ()
-queuePresent (Queue.Queue q) pi_ = ($ pure) $ runContT do
+queuePresent :: Pointable n => Queue.Q -> PresentInfo n -> IO ()
+queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
 	cpi@(C.PresentInfo_ fpi) <- presentInfoToCore pi_
 	ppi <- ContT $ withForeignPtr fpi
 	lift do r <- C.queuePresent q ppi
