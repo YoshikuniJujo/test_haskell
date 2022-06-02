@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Image where
+module Vulkan.Image.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

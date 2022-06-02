@@ -27,7 +27,7 @@ import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.Core as C
 import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
-import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Middle as Image
 
 #include <vulkan/vulkan.h>
 

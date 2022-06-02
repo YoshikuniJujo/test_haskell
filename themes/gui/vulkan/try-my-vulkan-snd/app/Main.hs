@@ -58,7 +58,7 @@ import qualified Vulkan.Khr as Vk.Khr
 import qualified Vulkan.Khr.Enum as Vk.Khr
 import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
 import qualified Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
-import qualified Vulkan.Image as Vk.Img
+import qualified Vulkan.Image.Middle as Vk.Img
 import qualified Vulkan.Image.Enum as Vk.Img
 
 import qualified Vulkan.Core as Vk.C

@@ -29,7 +29,7 @@ import qualified Vulkan.Buffer.Middle as Buffer.M
 import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import qualified Vulkan.Command.Middle as M
 import qualified Vulkan.Command.Core as C
-import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Middle as Image
 import qualified Vulkan.Image.Enum as Image
 
 bindVertexBuffers :: forall vs vs' .

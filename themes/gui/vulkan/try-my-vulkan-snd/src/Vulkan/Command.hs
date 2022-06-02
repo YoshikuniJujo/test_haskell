@@ -25,7 +25,7 @@ import qualified Vulkan.Pipeline.Layout as Pipeline.Layout
 import qualified Vulkan.Descriptor.Set as Descriptor.Set
 import qualified Vulkan.Memory.Middle as Memory.M
 import qualified Vulkan.Buffer.Middle as Buffer.M
-import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Middle as Image
 import qualified Vulkan.Image.Enum as Image
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>

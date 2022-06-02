@@ -8,6 +8,7 @@ module Main where
 import Data.Default
 import Data.Bits
 import Data.List
+import Data.Word
 
 import Vulkan.Base
 
@@ -27,6 +28,9 @@ import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import qualified Vulkan.Khr as Vk.Khr
+
+screenWidth, screenHeight :: Word32
+(screenWidth, screenHeight) = (640, 480)
 
 main :: IO ()
 main = do

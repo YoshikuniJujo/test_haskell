@@ -9,7 +9,7 @@ import Data.Word
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Memory.Middle as M
-import qualified Vulkan.Image as Image
+import qualified Vulkan.Image.Middle as Image
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,

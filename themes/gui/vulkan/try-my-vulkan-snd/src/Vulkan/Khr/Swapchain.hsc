@@ -25,8 +25,8 @@ import Vulkan.Khr.Surface.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
+import qualified Vulkan.Image.Middle as Image
 import qualified Vulkan.Image.Enum as Image
-import qualified Vulkan.Image as Image
 import qualified Vulkan.Khr.Surface as Surface
 import qualified Vulkan.Core as C
 import qualified Vulkan.Khr.Swapchain.Core as C
