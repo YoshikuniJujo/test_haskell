@@ -21,8 +21,9 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Semaphore.Core as C
+
+import {-# SOURCE #-} qualified Vulkan.Device.Middle as Device
 
 #include <vulkan/vulkan.h>
 

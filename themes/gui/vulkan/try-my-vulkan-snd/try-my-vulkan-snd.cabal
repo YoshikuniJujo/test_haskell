@@ -40,6 +40,7 @@ library
       ThEnv
       TypeLevel.List
       Vertex
+      Vulkan
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment
@@ -62,6 +63,7 @@ library
       Vulkan.CommandBuffer.Core
       Vulkan.CommandBuffer.Enum
       Vulkan.CommandBuffer.Middle
+      Vulkan.CommandBuffer.Type
       Vulkan.CommandPool
       Vulkan.CommandPool.Core
       Vulkan.CommandPool.Enum

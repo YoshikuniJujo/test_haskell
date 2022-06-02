@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,7 +11,7 @@ import Data.List
 
 import Vulkan.Base
 
-import qualified Vulkan.Middle as Vk
+import qualified Vulkan as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Device as Vk.Device
@@ -23,6 +23,7 @@ import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 
 import qualified Vulkan.Khr as Vk.Khr
@@ -85,14 +86,17 @@ runDevice device graphicsQueueFamilyIndex = do
 				Vk.CommandBuffer.allocateInfoCommandBufferCount
 					= 1 }
 		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
-			[cmdBuf] -> Vk.CommandBuffer.begin
-					cmdBuf Vk.CommandBuffer.beginInfoNil do
+			[cmdBuf] -> do
+				Vk.CommandBuffer.begin cmdBuf
+						Vk.CommandBuffer.beginInfoNil do
+					pure ()
 				let	submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = [],
---						Vk.submitInfoCommandBuffers = [cmdBuf],
+						Vk.submitInfoCommandBuffers = [cmdBuf],
 						Vk.submitInfoSignalSemaphores = [] }
-				pure ()
+				Vk.Queue.submit @() graphicsQueue [submitInfo] Nothing
+				Vk.Queue.waitIdle graphicsQueue
 			_ -> error "never occur"
 
 selectPhysicalDeviceAndQueueFamily ::

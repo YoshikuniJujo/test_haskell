@@ -9,12 +9,10 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.List
-import Data.Word
 
 import Vulkan.Device.Queue.Enum
 
 import qualified Vulkan.Device.Queue.Core as C
-import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data CreateInfo n = CreateInfo {

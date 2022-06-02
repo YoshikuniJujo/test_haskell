@@ -10,13 +10,12 @@ import Foreign.Pointable
 import Control.Exception
 import Data.Word
 
+import Vulkan.CommandBuffer.Type
 import Vulkan.CommandBuffer.Enum
 
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.CommandPool.Type as CommandPool
 import qualified Vulkan.CommandBuffer.Middle as M
-
-newtype C s vs = C (M.C vs) deriving Show
 
 data AllocateInfo n s = AllocateInfo {
 	allocateInfoNext :: Maybe n,

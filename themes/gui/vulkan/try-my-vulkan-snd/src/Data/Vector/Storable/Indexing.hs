@@ -4,12 +4,9 @@
 module Data.Vector.Storable.Indexing where
 
 import Foreign.Storable
-import Control.Monad.ST
-import Data.STRef
 
 import qualified Data.Map as M
 import qualified Data.Vector.Storable as V
-import qualified Data.Vector.Storable.Mutable as MV
 
 indexingVector :: (Storable i, Enum i, Storable a, Ord a) =>
 	V.Vector a -> (V.Vector a, V.Vector i)
