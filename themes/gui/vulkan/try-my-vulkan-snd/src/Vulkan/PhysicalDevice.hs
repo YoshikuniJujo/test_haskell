@@ -16,7 +16,7 @@ import System.IO.Unsafe
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Vulkan
+import Vulkan.Middle
 import Vulkan.Base
 import Vulkan.Exception
 import Vulkan.Exception.Enum

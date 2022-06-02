@@ -13,7 +13,7 @@ import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
 
-import Vulkan
+import Vulkan.Middle
 import Vulkan.Enum
 import Vulkan.Base
 

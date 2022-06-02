@@ -11,6 +11,7 @@ import Data.List
 
 import Vulkan.Base
 
+import qualified Vulkan.Middle as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Device as Vk.Device
@@ -86,6 +87,11 @@ runDevice device graphicsQueueFamilyIndex = do
 		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
 			[cmdBuf] -> Vk.CommandBuffer.begin
 					cmdBuf Vk.CommandBuffer.beginInfoNil do
+				let	submitInfo = Vk.SubmitInfo {
+						Vk.submitInfoNext = Nothing,
+						Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+--						Vk.submitInfoCommandBuffers = [cmdBuf],
+						Vk.submitInfoSignalSemaphores = [] }
 				pure ()
 			_ -> error "never occur"
 

@@ -52,7 +52,7 @@ import Shaderc.TH
 
 import Vulkan.Base
 
-import qualified Vulkan as Vk
+import qualified Vulkan.Middle as Vk
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Exception as Vk

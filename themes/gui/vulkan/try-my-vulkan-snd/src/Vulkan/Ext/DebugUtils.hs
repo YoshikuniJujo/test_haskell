@@ -19,7 +19,7 @@ import qualified Data.Text as T
 
 import Data.Color
 
-import Vulkan
+import Vulkan.Middle
 import Vulkan.Enum
 import Vulkan.Base
 

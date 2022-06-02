@@ -12,7 +12,7 @@ import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
-import Vulkan
+import Vulkan.Middle
 import Vulkan.Enum
 
 import qualified Vulkan.CommandBuffer.Middle as CommandBuffer

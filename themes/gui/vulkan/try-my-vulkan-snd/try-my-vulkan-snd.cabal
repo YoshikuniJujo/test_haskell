@@ -40,7 +40,6 @@ library
       ThEnv
       TypeLevel.List
       Vertex
-      Vulkan
       Vulkan.AllocationCallbacks
       Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment
@@ -136,6 +135,7 @@ library
       Vulkan.Memory.Image
       Vulkan.Memory.List
       Vulkan.Memory.Middle
+      Vulkan.Middle
       Vulkan.PhysicalDevice
       Vulkan.PhysicalDevice.Core
       Vulkan.PhysicalDevice.Enum

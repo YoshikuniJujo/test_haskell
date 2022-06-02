@@ -10,7 +10,7 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 
-import Vulkan
+import Vulkan.Middle
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 

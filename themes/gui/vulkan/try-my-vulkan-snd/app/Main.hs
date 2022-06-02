@@ -39,7 +39,7 @@ import Shaderc
 import Shaderc.EnumAuto
 import Shaderc.TH
 
-import qualified Vulkan as Vk
+import qualified Vulkan.Middle as Vk
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Instance.Type as Vk.Ist.T
 import qualified Vulkan.Instance.Middle as Vk.Ist
