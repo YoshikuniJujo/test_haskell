@@ -13,6 +13,8 @@ import Data.Word
 import Vulkan.Base
 
 import qualified Vulkan as Vk
+import qualified Vulkan.Enum as Vk
+import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Device as Vk.Device
@@ -26,6 +28,10 @@ import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
+import qualified Vulkan.Image as Vk.Image
+import qualified Vulkan.Image.Enum as Vk.Image
+import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Sample.Enum as Vk.Sample
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -78,6 +84,7 @@ runDevice device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
+	makeTriangle device
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -102,6 +109,28 @@ runDevice device graphicsQueueFamilyIndex = do
 				Vk.Queue.submit @() graphicsQueue [submitInfo] Nothing
 				Vk.Queue.waitIdle graphicsQueue
 			_ -> error "never occur"
+
+makeTriangle :: Vk.Device.D sd -> IO ()
+makeTriangle _ = do
+	let	imgCreateInfo = Vk.Image.CreateInfo {
+			Vk.Image.createInfoNext = Nothing,
+			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
+			Vk.Image.createInfoImageType = Vk.Image.Type2d,
+			Vk.Image.createInfoExtent =
+				Vk.C.Extent3d screenWidth screenHeight 1,
+			Vk.Image.createInfoMipLevels = 1,
+			Vk.Image.createInfoArrayLayers = 1,
+			Vk.Image.createInfoFormat = Vk.Format.R8g8b8a8Unorm,
+			Vk.Image.createInfoTiling = Vk.Image.TilingLinear,
+			Vk.Image.createInfoInitialLayout =
+				Vk.Image.LayoutUndefined,
+			Vk.Image.createInfoUsage =
+				Vk.Image.UsageColorAttachmentBit,
+			Vk.Image.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
+			Vk.Image.createInfoQueueFamilyIndices = [] }
+	pure ()
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
