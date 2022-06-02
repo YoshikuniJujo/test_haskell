@@ -111,7 +111,7 @@ runDevice device graphicsQueueFamilyIndex = do
 			_ -> error "never occur"
 
 makeTriangle :: Vk.Device.D sd -> IO ()
-makeTriangle _ = do
+makeTriangle dvc = do
 	let	imgCreateInfo = Vk.Image.CreateInfo {
 			Vk.Image.createInfoNext = Nothing,
 			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
@@ -130,7 +130,8 @@ makeTriangle _ = do
 				Vk.SharingModeExclusive,
 			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
-	pure ()
+	Vk.Image.create @() dvc imgCreateInfo nil nil \image -> do
+		print image
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
