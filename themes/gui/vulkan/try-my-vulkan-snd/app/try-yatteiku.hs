@@ -34,6 +34,8 @@ import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
+import qualified Vulkan.Attachment as Vk.Attachment
+import qualified Vulkan.Attachment.Enum as Vk.Attachment
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -86,7 +88,8 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	makeTriangle phdvc device
+	makeImage phdvc device
+	makeRenderPass
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -112,8 +115,8 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				Vk.Queue.waitIdle graphicsQueue
 			_ -> error "never occur"
 
-makeTriangle :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> IO ()
-makeTriangle phdvc dvc = do
+makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> IO ()
+makeImage phdvc dvc = do
 	let	imgCreateInfo = Vk.Image.CreateInfo {
 			Vk.Image.createInfoNext = Nothing,
 			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
@@ -186,3 +189,26 @@ breakBits = bb (bit 0 `rotateR` 1)
 		| otherwise = i : bs
 		where
 		bs = bb (i `shiftR` 1) n
+
+makeRenderPass :: IO ()
+makeRenderPass = do
+	let	attachment = Vk.Attachment.Description {
+			Vk.Attachment.descriptionFlags =
+				Vk.Attachment.DescriptionFlagsZero,
+			Vk.Attachment.descriptionFormat =
+				Vk.Format.R8g8b8a8Unorm,
+			Vk.Attachment.descriptionSamples =
+				Vk.Sample.Count1Bit,
+			Vk.Attachment.descriptionLoadOp =
+				Vk.Attachment.LoadOpDontCare,
+			Vk.Attachment.descriptionStoreOp =
+				Vk.Attachment.StoreOpDontCare,
+			Vk.Attachment.descriptionStencilLoadOp =
+				Vk.Attachment.LoadOpDontCare,
+			Vk.Attachment.descriptionStencilStoreOp =
+				Vk.Attachment.StoreOpDontCare,
+			Vk.Attachment.descriptionInitialLayout =
+				Vk.Image.LayoutUndefined,
+			Vk.Attachment.descriptionFinalLayout =
+				Vk.Image.LayoutGeneral }
+	pure ()
