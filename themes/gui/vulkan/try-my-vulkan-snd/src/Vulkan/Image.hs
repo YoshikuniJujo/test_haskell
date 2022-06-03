@@ -7,12 +7,12 @@ module Vulkan.Image (I, create, M.CreateInfo(..), getMemoryRequirements) where
 import Foreign.Pointable
 import Control.Exception
 
+import Vulkan.Image.Type
+
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Image.Middle as M
-
-newtype I s = I M.I deriving Show
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->
