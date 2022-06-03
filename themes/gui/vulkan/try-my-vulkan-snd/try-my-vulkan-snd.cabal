@@ -148,9 +148,10 @@ library
       Vulkan.PhysicalDevice.Struct
       Vulkan.PhysicalDevice.Struct.Core
       Vulkan.PhysicalDevice.Struct.Th
-      Vulkan.Pipeline.Cache
       Vulkan.Pipeline.Cache.Core
       Vulkan.Pipeline.Cache.Enum
+      Vulkan.Pipeline.Cache.Middle
+      Vulkan.Pipeline.Cache.Type
       Vulkan.Pipeline.ColorBlendAttachment
       Vulkan.Pipeline.ColorBlendAttachment.Core
       Vulkan.Pipeline.ColorBlendState
@@ -160,8 +161,10 @@ library
       Vulkan.Pipeline.DynamicState
       Vulkan.Pipeline.DynamicState.Core
       Vulkan.Pipeline.Enum
+      Vulkan.Pipeline.Graphics
       Vulkan.Pipeline.Graphics.Core
       Vulkan.Pipeline.Graphics.Middle
+      Vulkan.Pipeline.Graphics.Type
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout

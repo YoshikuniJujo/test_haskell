@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.Cache where
+module Vulkan.Pipeline.Cache.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

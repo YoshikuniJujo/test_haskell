@@ -41,7 +41,7 @@ import qualified Vulkan.VertexInput as VertexInput
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Pipeline.Cache as Cache
+import qualified Vulkan.Pipeline.Cache.Middle as Cache
 
 data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -195,17 +195,23 @@ data PList vss tss where
 	PNil :: PList '[] '[]
 	PCons :: G vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
 
-class PListFromCore vss tss where pListFromCore :: [C.G] -> PList vss tss
+deriving instance Show (PList vss tss)
+
+class PListFromCore vss tss where
+	pListFromCore :: [C.G] -> PList vss tss
+	pListToCore :: PList vss tss -> [C.G]
 
 instance PListFromCore '[] '[] where
 	pListFromCore [] = PNil
 	pListFromCore _ = error "bad"
+	pListToCore _ = []
 
 instance
 	PListFromCore vss tss =>
 	PListFromCore (vs ': vss) (ts ': tss) where
 	pListFromCore [] = error "bad"
 	pListFromCore (cp : cps) = G cp `PCons` pListFromCore cps
+	pListToCore (G cp `PCons` gs) = cp : pListToCore gs
 
 create :: (
 	CreateInfoListToCore ns
@@ -243,3 +249,7 @@ destroy :: Pointable n =>
 destroy (Device.D dvc) (G p) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc p pac
+
+destroyGs :: (PListFromCore vs's tss, Pointable n) =>
+	Device.D -> PList vs's tss -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroyGs dvc gs mac = (\g -> destroy dvc (G g) mac) `mapM_` pListToCore gs
