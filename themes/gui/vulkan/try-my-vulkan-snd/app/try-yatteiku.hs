@@ -69,11 +69,11 @@ main = do
 					[Vk.Khr.validationLayerName],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
-		Vk.Device.create physicalDevice devCreateInfo nil nil
-			(`runDevice` graphicsQueueFamilyIndex)
+		Vk.Device.create physicalDevice devCreateInfo nil nil \dvc ->
+			runDevice physicalDevice dvc graphicsQueueFamilyIndex
 
-runDevice :: Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
-runDevice device graphicsQueueFamilyIndex = do
+runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
+runDevice phdvc device graphicsQueueFamilyIndex = do
 	graphicsQueue <- Vk.Device.getQueue
 		device graphicsQueueFamilyIndex 0
 	print graphicsQueue
@@ -84,7 +84,7 @@ runDevice device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	makeTriangle device
+	makeTriangle phdvc device
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -110,8 +110,8 @@ runDevice device graphicsQueueFamilyIndex = do
 				Vk.Queue.waitIdle graphicsQueue
 			_ -> error "never occur"
 
-makeTriangle :: Vk.Device.D sd -> IO ()
-makeTriangle dvc = do
+makeTriangle :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> IO ()
+makeTriangle phdvc dvc = do
 	let	imgCreateInfo = Vk.Image.CreateInfo {
 			Vk.Image.createInfoNext = Nothing,
 			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
@@ -130,8 +130,10 @@ makeTriangle dvc = do
 				Vk.SharingModeExclusive,
 			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
+	print =<< Vk.PhysicalDevice.getMemoryProperties phdvc
 	Vk.Image.create @() dvc imgCreateInfo nil nil \image -> do
 		print image
+		print =<< Vk.Image.getMemoryRequirements dvc image
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

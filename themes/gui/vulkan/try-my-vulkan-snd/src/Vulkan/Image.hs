@@ -2,13 +2,14 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Image (I, create, M.CreateInfo(..)) where
+module Vulkan.Image (I, create, M.CreateInfo(..), getMemoryRequirements) where
 
 import Foreign.Pointable
 import Control.Exception
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
+import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Image.Middle as M
 
 newtype I s = I M.I deriving Show
@@ -19,3 +20,6 @@ create :: (Pointable n, Pointable n2, Pointable n3) =>
 	(forall s . I s -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\i -> M.destroy dvc i macd) (f . I)
+
+getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
+getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
