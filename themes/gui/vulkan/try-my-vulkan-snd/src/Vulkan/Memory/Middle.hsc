@@ -32,7 +32,14 @@ import qualified Vulkan.Memory.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype TypeBits = TypeBits #{type uint32_t} deriving (Show, Eq, Bits)
+newtype TypeBits = TypeBits #{type uint32_t} deriving (Show, Eq, Bits, FiniteBits)
+
+typeBitsToTypeIndices :: TypeBits -> [TypeIndex]
+typeBitsToTypeIndices bs = (fst <$>)
+	. filter snd . zip [0 ..] $ testBit bs <$> [0 .. finiteBitSize bs - 1]
+
+elemTypeIndex :: TypeIndex -> TypeBits -> Bool
+elemTypeIndex ti tbs = testBit tbs $ fromIntegral ti
 
 data Requirements = Requirements {
 	requirementsSize :: Device.Size,

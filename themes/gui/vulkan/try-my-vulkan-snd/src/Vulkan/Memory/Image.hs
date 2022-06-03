@@ -2,7 +2,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Memory.Image (allocate, M.AllocateInfo) where
+module Vulkan.Memory.Image (allocate, M.AllocateInfo(..)) where
 
 import Foreign.Pointable
 import Control.Exception

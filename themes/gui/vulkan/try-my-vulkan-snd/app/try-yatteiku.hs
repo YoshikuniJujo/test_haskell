@@ -32,6 +32,8 @@ import qualified Vulkan.Image as Vk.Image
 import qualified Vulkan.Image.Enum as Vk.Image
 import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Sample.Enum as Vk.Sample
+import qualified Vulkan.Memory.Middle as Vk.Memory.M
+import qualified Vulkan.Memory.Image as Vk.Memory.Image
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -130,10 +132,27 @@ makeTriangle phdvc dvc = do
 				Vk.SharingModeExclusive,
 			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
 			Vk.Image.createInfoQueueFamilyIndices = [] }
-	print =<< Vk.PhysicalDevice.getMemoryProperties phdvc
+	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
+	print memProps
 	Vk.Image.create @() dvc imgCreateInfo nil nil \image -> do
 		print image
-		print =<< Vk.Image.getMemoryRequirements dvc image
+		imgMemReq <- Vk.Image.getMemoryRequirements dvc image
+		print imgMemReq
+		let	imgMemReqTypes =
+				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
+			memPropTypes = fst <$>
+				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+					memProps
+			memoryTypeIndex =
+				case filter (`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
+						$ memPropTypes of
+					[] -> error "No available memory types"
+					i : _ -> i
+			imgMemAllocInfo = Vk.Memory.Image.AllocateInfo {
+				Vk.Memory.Image.allocateInfoNext = Nothing,
+				Vk.Memory.Image.allocateInfoMemoryTypeIndex =
+					memoryTypeIndex }
+		print memoryTypeIndex
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

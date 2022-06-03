@@ -5,4 +5,5 @@ module Vulkan.Memory where
 
 import Data.Word
 
-newtype TypeIndex = TypeIndex Word32 deriving (Show, Enum, Num)
+newtype TypeIndex = TypeIndex Word32
+	deriving (Show, Eq, Ord, Enum, Num, Real, Integral)
