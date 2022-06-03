@@ -143,16 +143,19 @@ makeTriangle phdvc dvc = do
 			memPropTypes = fst <$>
 				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
 					memProps
-			memoryTypeIndex =
-				case filter (`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
-						$ memPropTypes of
-					[] -> error "No available memory types"
-					i : _ -> i
+			memoryTypeIndex = case filter
+				(`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
+				memPropTypes of
+				[] -> error "No available memory types"
+				i : _ -> i
 			imgMemAllocInfo = Vk.Memory.Image.AllocateInfo {
 				Vk.Memory.Image.allocateInfoNext = Nothing,
 				Vk.Memory.Image.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
-		print memoryTypeIndex
+		Vk.Memory.Image.allocate @()
+			dvc image imgMemAllocInfo nil nil \imgMem -> do
+			print imgMem
+			Vk.Image.bindMemory dvc image imgMem
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

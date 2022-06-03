@@ -2,7 +2,8 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Image (I, create, M.CreateInfo(..), getMemoryRequirements) where
+module Vulkan.Image (
+	I, create, M.CreateInfo(..), getMemoryRequirements, bindMemory ) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -23,3 +24,7 @@ create (Device.D dvc) ci macc macd f =
 
 getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
+
+bindMemory :: Device.D sd -> I si -> Device.MemoryImage sm -> IO ()
+bindMemory (Device.D dvc) (I img) (Device.MemoryImage mem) =
+	M.bindMemory dvc img mem
