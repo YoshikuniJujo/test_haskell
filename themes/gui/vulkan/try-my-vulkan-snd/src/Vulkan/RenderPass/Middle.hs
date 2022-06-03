@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.RenderPass where
+module Vulkan.RenderPass.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

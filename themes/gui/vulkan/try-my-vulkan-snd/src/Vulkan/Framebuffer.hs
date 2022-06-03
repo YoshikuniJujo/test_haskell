@@ -21,7 +21,7 @@ import Vulkan.Framebuffer.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
-import {-# SOURCE #-} qualified Vulkan.RenderPass as RenderPass
+import {-# SOURCE #-} qualified Vulkan.RenderPass.Middle as RenderPass
 import qualified Vulkan.ImageView as ImageView
 import qualified Vulkan.Framebuffer.Core as C
 

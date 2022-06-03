@@ -91,7 +91,7 @@ import qualified Vulkan.Attachment.Enum as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
-import qualified Vulkan.RenderPass as Vk.RndrPss
+import qualified Vulkan.RenderPass.Middle as Vk.RndrPss
 import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl
 import qualified Vulkan.Framebuffer as Vk.Fb

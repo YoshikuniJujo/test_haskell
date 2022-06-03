@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.RenderPass where
+module Vulkan.RenderPass.Middle where
 
 import qualified Vulkan.RenderPass.Core as C
 

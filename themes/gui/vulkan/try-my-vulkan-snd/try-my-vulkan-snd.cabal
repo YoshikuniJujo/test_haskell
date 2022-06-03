@@ -189,9 +189,9 @@ library
       Vulkan.QueueFamily
       Vulkan.QueueFamily.Core
       Vulkan.QueueFamily.EnumManual
-      Vulkan.RenderPass
       Vulkan.RenderPass.Core
       Vulkan.RenderPass.Enum
+      Vulkan.RenderPass.Middle
       Vulkan.Sample
       Vulkan.Sample.Enum
       Vulkan.Sampler

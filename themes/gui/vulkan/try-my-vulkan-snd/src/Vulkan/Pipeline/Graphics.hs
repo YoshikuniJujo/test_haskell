@@ -34,7 +34,7 @@ import qualified Vulkan.Pipeline.DepthStencilState as DepthStencilState
 import qualified Vulkan.Pipeline.ColorBlendState as ColorBlendState
 import qualified Vulkan.Pipeline.DynamicState as DynamicState
 import qualified Vulkan.Pipeline.Layout as Layout
-import qualified Vulkan.RenderPass as RenderPass
+import qualified Vulkan.RenderPass.Middle as RenderPass
 import qualified Vulkan.Pipeline.Graphics.Core as C
 import qualified Vulkan.Pipeline.VertexInputState.BindingStrideList as BindingStrideList
 import qualified Vulkan.VertexInput as VertexInput
