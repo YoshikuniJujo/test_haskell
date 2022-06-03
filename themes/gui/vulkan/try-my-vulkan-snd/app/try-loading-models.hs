@@ -1450,7 +1450,7 @@ suitable :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 suitable typeFilter properties memProperties i =
 	(typeFilter .&. Vk.Memory.M.TypeBits 1 `shiftL` i /= zeroBits) &&
 	(Vk.Memory.M.mTypePropertyFlags
-		(Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
+		(snd $ Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
 			i) .&. properties == properties)
 
 size :: forall a . SizeAlignmentList a => a -> Size
