@@ -1,7 +1,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Memory.Image where
+module Vulkan.Memory.Image.Middle where
 
 import Foreign.Pointable
 import Data.Word

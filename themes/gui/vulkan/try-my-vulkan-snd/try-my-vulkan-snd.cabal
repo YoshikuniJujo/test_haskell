@@ -135,7 +135,7 @@ library
       Vulkan.Memory.Atom
       Vulkan.Memory.Core
       Vulkan.Memory.Enum
-      Vulkan.Memory.Image
+      Vulkan.Memory.Image.Middle
       Vulkan.Memory.List
       Vulkan.Memory.Middle
       Vulkan.Middle
