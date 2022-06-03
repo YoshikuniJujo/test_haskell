@@ -160,8 +160,8 @@ library
       Vulkan.Pipeline.DynamicState
       Vulkan.Pipeline.DynamicState.Core
       Vulkan.Pipeline.Enum
-      Vulkan.Pipeline.Graphics
       Vulkan.Pipeline.Graphics.Core
+      Vulkan.Pipeline.Graphics.Middle
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout

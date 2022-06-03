@@ -18,7 +18,7 @@ import Vulkan.Enum
 import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
 import qualified Vulkan.RenderPass.Middle as RenderPass
 import qualified Vulkan.Subpass.Enum as Subpass
-import qualified Vulkan.Pipeline.Graphics as Pipeline
+import qualified Vulkan.Pipeline.Graphics.Middle as Pipeline
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
 import qualified Vulkan.Pipeline.Layout as Pipeline.Layout

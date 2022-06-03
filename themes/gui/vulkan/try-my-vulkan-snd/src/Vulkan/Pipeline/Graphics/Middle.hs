@@ -8,7 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.Graphics where
+module Vulkan.Pipeline.Graphics.Middle where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
