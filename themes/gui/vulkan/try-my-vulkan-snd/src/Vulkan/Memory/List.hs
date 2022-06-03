@@ -10,9 +10,10 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Pointable
 import Data.MonoTraversable
-import Data.Word
 
 import qualified Foreign.Storable.Generic
+
+import Vulkan.Memory
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
@@ -21,7 +22,7 @@ import qualified Vulkan.Memory.Middle as M
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
-	allocateInfoMemoryTypeIndex :: Word32 }
+	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
 
 allocateInfoToMiddle :: Device.D -> Buffer.B v -> AllocateInfo n -> IO (M.AllocateInfo n)

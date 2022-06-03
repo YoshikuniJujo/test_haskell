@@ -4,7 +4,8 @@
 module Vulkan.Memory.Image.Middle where
 
 import Foreign.Pointable
-import Data.Word
+
+import Vulkan.Memory
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
@@ -13,7 +14,7 @@ import qualified Vulkan.Image.Middle as Image
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
-	allocateInfoMemoryTypeIndex :: Word32 }
+	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
 
 allocateInfoToMiddle ::

@@ -130,6 +130,7 @@ import qualified Vulkan.Descriptor as Vk.Dsc
 import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
+import qualified Vulkan.Memory as Vk.Memory
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -971,7 +972,7 @@ createBufferList ln usage properties = do
 		properties
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
 			Vk.Memory.List.allocateInfoNext = Nothing,
-			Vk.Memory.List.allocateInfoMemoryTypeIndex = mti }
+			Vk.Memory.List.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
 	bm <- lift $ Vk.Memory.List.allocate @() dvc b allocInfo nil
 	lift $ Vk.Buffer.List.bindMemory dvc b bm
 	pure (b, bm)
@@ -996,7 +997,7 @@ createBufferAtom usage properties = do
 		properties
 	let	allocInfo = Vk.Memory.Atom.AllocateInfo {
 			Vk.Memory.Atom.allocateInfoNext = Nothing,
-			Vk.Memory.Atom.allocateInfoMemoryTypeIndex = mti }
+			Vk.Memory.Atom.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
 	bm <- lift $ Vk.Memory.Atom.allocate @() dvc b allocInfo nil
 	lift $ Vk.Buffer.Atom.bindMemory dvc b bm
 	pure (b, bm)

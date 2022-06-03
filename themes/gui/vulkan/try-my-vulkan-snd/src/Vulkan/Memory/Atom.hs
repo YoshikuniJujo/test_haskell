@@ -6,9 +6,10 @@ module Vulkan.Memory.Atom where
 
 import Foreign.Storable
 import Foreign.Pointable
-import Data.Word
 
 import qualified Foreign.Storable.Generic
+
+import Vulkan.Memory
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
@@ -17,7 +18,7 @@ import qualified Vulkan.Memory.Middle as M
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
-	allocateInfoMemoryTypeIndex :: Word32 }
+	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
 
 allocateInfoToMiddle ::

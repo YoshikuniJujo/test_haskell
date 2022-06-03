@@ -22,6 +22,7 @@ import Data.Word
 import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
+import Vulkan.Memory
 import Vulkan.Memory.Enum
 
 import {-# SOURCE #-} qualified Vulkan.Device.Middle as Device
@@ -79,7 +80,7 @@ heapFromCore C.Heap { C.heapSize = sz, C.heapFlags = flgs } =
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoAllocationSize :: Device.Size,
-	allocateInfoMemoryTypeIndex :: #{type uint32_t} }
+	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
 
 allocateInfoToCore :: Pointable n =>
@@ -87,7 +88,7 @@ allocateInfoToCore :: Pointable n =>
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoAllocationSize = Device.Size sz,
-	allocateInfoMemoryTypeIndex = mti } = do
+	allocateInfoMemoryTypeIndex = TypeIndex mti } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	let	C.AllocateInfo_ fai = C.AllocateInfo {
 			C.allocateInfoSType = (),

@@ -142,6 +142,7 @@ import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
+import qualified Vulkan.Memory as Vk.Memory
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -1141,7 +1142,7 @@ createImage widt hght format tiling usage properties = do
 		properties
 	let	allocInfo = Vk.Memory.Image.AllocateInfo {
 			Vk.Memory.Image.allocateInfoNext = Nothing,
-			Vk.Memory.Image.allocateInfoMemoryTypeIndex = mti }
+			Vk.Memory.Image.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
 	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
 	lift $ Vk.Image.bindMemory dvc ti tim
 	pure (ti, tim)
@@ -1360,7 +1361,7 @@ createBufferList ln usage properties = do
 		properties
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
 			Vk.Memory.List.allocateInfoNext = Nothing,
-			Vk.Memory.List.allocateInfoMemoryTypeIndex = mti }
+			Vk.Memory.List.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
 	bm <- lift $ Vk.Memory.List.allocate @() dvc b allocInfo nil
 	lift $ Vk.Buffer.List.bindMemory dvc b bm
 	pure (b, bm)
@@ -1385,7 +1386,7 @@ createBufferAtom usage properties = do
 		properties
 	let	allocInfo = Vk.Memory.Atom.AllocateInfo {
 			Vk.Memory.Atom.allocateInfoNext = Nothing,
-			Vk.Memory.Atom.allocateInfoMemoryTypeIndex = mti }
+			Vk.Memory.Atom.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
 	bm <- lift $ Vk.Memory.Atom.allocate @() dvc b allocInfo nil
 	lift $ Vk.Buffer.Atom.bindMemory dvc b bm
 	pure (b, bm)
