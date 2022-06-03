@@ -36,6 +36,11 @@ import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
 import qualified Vulkan.Attachment as Vk.Attachment
 import qualified Vulkan.Attachment.Enum as Vk.Attachment
+import qualified Vulkan.Subpass as Vk.Subpass
+import qualified Vulkan.Subpass.Enum as Vk.Subpass
+import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
+import qualified Vulkan.RenderPass as Vk.RenderPass
+import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -89,7 +94,7 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
 	makeImage phdvc device
-	makeRenderPass
+	makeRenderPass device
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -190,8 +195,8 @@ breakBits = bb (bit 0 `rotateR` 1)
 		where
 		bs = bb (i `shiftR` 1) n
 
-makeRenderPass :: IO ()
-makeRenderPass = do
+makeRenderPass :: Vk.Device.D sd -> IO ()
+makeRenderPass dvc = do
 	let	attachment = Vk.Attachment.Description {
 			Vk.Attachment.descriptionFlags =
 				Vk.Attachment.DescriptionFlagsZero,
@@ -211,4 +216,26 @@ makeRenderPass = do
 				Vk.Image.LayoutUndefined,
 			Vk.Attachment.descriptionFinalLayout =
 				Vk.Image.LayoutGeneral }
-	pure ()
+		subpass0AttachmentRef = Vk.Attachment.Reference {
+			Vk.Attachment.referenceAttachment = 0,
+			Vk.Attachment.referenceLayout =
+				Vk.Image.LayoutColorAttachmentOptimal }
+		subpass = Vk.Subpass.Description {
+			Vk.Subpass.descriptionFlags =
+				Vk.Subpass.DescriptionFlagsZero,
+			Vk.Subpass.descriptionPipelineBindPoint =
+				Vk.Pipeline.BindPointGraphics,
+			Vk.Subpass.descriptionInputAttachments = [],
+			Vk.Subpass.descriptionColorAndResolveAttachments =
+				Left [subpass0AttachmentRef],
+			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
+			Vk.Subpass.descriptionPreserveAttachments = [] }
+		renderPassCreateInfo = Vk.RenderPass.CreateInfo {
+			Vk.RenderPass.createInfoNext = Nothing,
+			Vk.RenderPass.createInfoFlags =
+				Vk.RenderPass.CreateFlagsZero,
+			Vk.RenderPass.createInfoAttachments = [attachment],
+			Vk.RenderPass.createInfoSubpasses = [subpass],
+			Vk.RenderPass.createInfoDependencies = [] }
+	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil \rp ->
+		print rp
