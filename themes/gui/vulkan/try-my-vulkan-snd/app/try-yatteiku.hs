@@ -95,6 +95,7 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				graphicsQueueFamilyIndex }
 	makeImage phdvc device
 	makeRenderPass device
+	makePipeline
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -239,3 +240,14 @@ makeRenderPass dvc = do
 			Vk.RenderPass.createInfoDependencies = [] }
 	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil \rp ->
 		print rp
+
+makePipeline :: IO ()
+makePipeline = do
+	let	viewport = Vk.C.Viewport {
+			Vk.C.viewportX = 0,
+			Vk.C.viewportY = 0,
+			Vk.C.viewportMinDepth = 0,
+			Vk.C.viewportMaxDepth = 1,
+			Vk.C.viewportWidth = fromIntegral screenWidth,
+			Vk.C.viewportHeight = fromIntegral screenHeight }
+	pure ()
