@@ -250,4 +250,8 @@ makePipeline = do
 			Vk.C.viewportMaxDepth = 1,
 			Vk.C.viewportWidth = fromIntegral screenWidth,
 			Vk.C.viewportHeight = fromIntegral screenHeight }
+		scissor = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+			Vk.C.rect2dExtend =
+				Vk.C.Extent2d screenWidth screenHeight }
 	pure ()
