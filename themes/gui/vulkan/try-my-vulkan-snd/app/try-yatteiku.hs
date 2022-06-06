@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -272,6 +273,7 @@ makePipeline dvc rp = do
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent =
 				Vk.C.Extent2d screenWidth screenHeight }
+		viewportState :: Vk.Ppl.ViewportState.CreateInfo ()
 		viewportState = Vk.Ppl.ViewportState.CreateInfo {
 			Vk.Ppl.ViewportState.createInfoNext = Nothing,
 			Vk.Ppl.ViewportState.createInfoFlags =
@@ -284,6 +286,7 @@ makePipeline dvc rp = do
 			Vk.Ppl.VertexInputState.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputState.createInfoFlags =
 				Vk.Ppl.VertexInputState.M.CreateFlagsZero }
+		inputAssembly :: Vk.Ppl.InpAssSt.CreateInfo ()
 		inputAssembly = Vk.Ppl.InpAssSt.CreateInfo {
 			Vk.Ppl.InpAssSt.createInfoNext = Nothing,
 			Vk.Ppl.InpAssSt.createInfoFlags =
@@ -352,7 +355,11 @@ makePipeline dvc rp = do
 			Vk.Ppl.Lyt.createInfoSetLayouts = [],
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 	Vk.Ppl.Lyt.create @() dvc layoutCreateInfo nil nil \pipelineLayout -> do
-		let	pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
+		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo
+				() () '[] '[] ()
+				() '[]
+				() () () () () () () () _ _ _ _ '[]
+			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
 				Vk.Ppl.Gr.createInfoNext = Nothing,
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
@@ -378,4 +385,7 @@ makePipeline dvc rp = do
 				Vk.Ppl.Gr.createInfoSubpass = 0,
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
-		pure ()
+		Vk.Ppl.Gr.createGs dvc Nothing (
+			pipelineCreateInfo `Vk.Ppl.Gr.CreateInfoCons`
+			Vk.Ppl.Gr.CreateInfoNil ) nil nil \gs -> do
+			print gs
