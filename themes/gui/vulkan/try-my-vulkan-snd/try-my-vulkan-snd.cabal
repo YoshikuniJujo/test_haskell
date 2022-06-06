@@ -167,8 +167,10 @@ library
       Vulkan.Pipeline.Graphics.Type
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
+      Vulkan.Pipeline.Layout
       Vulkan.Pipeline.Layout.Core
       Vulkan.Pipeline.Layout.Middle
+      Vulkan.Pipeline.Layout.Type
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.MultisampleState.Core
       Vulkan.Pipeline.RasterizationState
@@ -196,6 +198,7 @@ library
       Vulkan.RenderPass.Core
       Vulkan.RenderPass.Enum
       Vulkan.RenderPass.Middle
+      Vulkan.RenderPass.Type
       Vulkan.Sample
       Vulkan.Sample.Enum
       Vulkan.Sampler
