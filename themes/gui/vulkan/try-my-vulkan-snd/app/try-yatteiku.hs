@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -12,6 +13,8 @@ import Data.Maybe
 import Data.List
 import Data.Word
 import Data.Color
+
+import Shaderc.TH
 
 import Vulkan.Base
 
@@ -389,3 +392,42 @@ makePipeline dvc rp = do
 			pipelineCreateInfo `Vk.Ppl.Gr.CreateInfoCons`
 			Vk.Ppl.Gr.CreateInfoNil ) nil nil \gs -> do
 			print gs
+
+[glslVertexShader|
+
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+
+void
+main()
+{
+	if (gl_VertexIndex == 0)
+	{
+		gl_Position = vec4(0.0, -0.5, 0.0, 1.0);
+	}
+	else if (gl_VertexIndex == 1)
+	{
+		gl_Position = vec4(0.5, 0.5, 0.0, 1.0);
+	}
+	else if (gl_VertexIndex == 2)
+	{
+		gl_Position = vec4(-0.5, 0.5, 0.0, 1.0);
+	}
+}
+
+|]
+
+[glslFragmentShader|
+
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
+
+layout(location = 0) out vec4 outColor;
+
+void
+main()
+{
+	outColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+|]
