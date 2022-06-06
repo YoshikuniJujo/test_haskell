@@ -1,12 +1,15 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.Graphics (
-	createGs, M.CreateInfoList(..), CreateInfo(..),
+	createGs, CreateInfoList(..), CreateInfo(..),
 	GList, pattern GNil, pattern GCons ) where
 
 import Foreign.Pointable
@@ -114,16 +117,46 @@ createInfoToMiddle CreateInfo {
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
 
+data CreateInfoList
+	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's where
+	CreateInfoNil :: CreateInfoList
+		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
+	CreateInfoCons ::
+		CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts' ->
+		CreateInfoList ns n1s skndss vsss
+			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's ->
+		CreateInfoList (n ': ns)
+			(n1 ': n1s) (sknds ': skndss) (vss ': vsss)
+			(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s)
+			(n4 ': n4s) (n5 ': n5s) (n6 ': n6s) (n7 ': n7s)
+			(n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
+			(sl ': sls) (sr ': srs) (sb ': sbs)
+			(vs'' ': vs''s) (ts' ': ts's)
+
+createInfoListToMiddle ::
+	CreateInfoList
+		ns n1s sknds vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+		sls srs sbs vs''s ts's ->
+	M.CreateInfoList
+		ns n1s sknds vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+		vs''s ts's
+createInfoListToMiddle = \case
+	CreateInfoNil -> M.CreateInfoNil
+	ci `CreateInfoCons` cis ->
+		createInfoToMiddle ci `M.CreateInfoCons`
+		createInfoListToMiddle cis
+
 createGs :: (
 	M.CreateInfoListToCore
 		ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
 		vs''s ts's,
 	M.PListFromCore vs's tss, Pointable n', Pointable n'' ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
-	M.CreateInfoList
+	CreateInfoList
 		ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-		vs''s ts's ->
+		sls srs sbs vs''s ts's ->
 	Maybe (AllocationCallbacks.A n') -> Maybe (AllocationCallbacks.A n'') ->
 	(forall s . GList s vs's tss -> IO a) -> IO a
-createGs (Device.D dvc) ((Cache.cToMiddle <$>) -> mc) ci macc macd f = bracket
-	(M.create dvc mc ci macc) (\gs -> M.destroyGs dvc gs macd) (f . GList)
+createGs (Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
+	(M.create dvc mc (createInfoListToMiddle cis) macc)
+	(\gs -> M.destroyGs dvc gs macd) (f . GList)
