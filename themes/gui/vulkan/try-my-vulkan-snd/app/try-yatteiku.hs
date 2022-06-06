@@ -38,9 +38,16 @@ import qualified Vulkan.Attachment as Vk.Attachment
 import qualified Vulkan.Attachment.Enum as Vk.Attachment
 import qualified Vulkan.Subpass as Vk.Subpass
 import qualified Vulkan.Subpass.Enum as Vk.Subpass
-import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
+import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.RenderPass as Vk.RenderPass
 import qualified Vulkan.RenderPass.Enum as Vk.RenderPass
+import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportState
+import qualified Vulkan.Pipeline.VertexInputState as
+	Vk.Ppl.VertexInputState
+import qualified Vulkan.Pipeline.VertexInputState.Middle as
+	Vk.Ppl.VertexInputState.M
+import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAssSt
+import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -225,7 +232,7 @@ makeRenderPass dvc = do
 			Vk.Subpass.descriptionFlags =
 				Vk.Subpass.DescriptionFlagsZero,
 			Vk.Subpass.descriptionPipelineBindPoint =
-				Vk.Pipeline.BindPointGraphics,
+				Vk.Ppl.BindPointGraphics,
 			Vk.Subpass.descriptionInputAttachments = [],
 			Vk.Subpass.descriptionColorAndResolveAttachments =
 				Left [subpass0AttachmentRef],
@@ -254,4 +261,34 @@ makePipeline = do
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent =
 				Vk.C.Extent2d screenWidth screenHeight }
+		viewportState = Vk.Ppl.ViewportState.CreateInfo {
+			Vk.Ppl.ViewportState.createInfoNext = Nothing,
+			Vk.Ppl.ViewportState.createInfoFlags =
+				Vk.Ppl.ViewportState.CreateFlagsZero,
+			Vk.Ppl.ViewportState.createInfoViewports =
+				[viewport],
+			Vk.Ppl.ViewportState.createInfoScissors =
+				[scissor] }
+		vertexInputInfo = Vk.Ppl.VertexInputState.CreateInfo {
+			Vk.Ppl.VertexInputState.createInfoNext = Nothing,
+			Vk.Ppl.VertexInputState.createInfoFlags =
+				Vk.Ppl.VertexInputState.M.CreateFlagsZero }
+		inputAssembly = Vk.Ppl.InpAssSt.CreateInfo {
+			Vk.Ppl.InpAssSt.createInfoNext = Nothing,
+			Vk.Ppl.InpAssSt.createInfoFlags =
+				Vk.Ppl.InpAssSt.CreateFlagsZero,
+			Vk.Ppl.InpAssSt.createInfoTopology =
+				Vk.PrimitiveTopologyTriangleList,
+			Vk.Ppl.InpAssSt.createInfoPrimitiveRestartEnable =
+				False }
+		rasterizer = Vk.Ppl.RstSt.CreateInfo {
+			Vk.Ppl.RstSt.createInfoNext = Nothing,
+			Vk.Ppl.RstSt.createInfoFlags =
+				Vk.Ppl.RstSt.CreateFlagsZero,
+			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
+			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
+			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
+			Vk.Ppl.RstSt.createInfoLineWidth = 1,
+			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit
+			}
 	pure ()
