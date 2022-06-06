@@ -35,7 +35,7 @@ import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
 
-data CreateInfo s n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
+data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
 	vs'' ts' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
@@ -59,7 +59,7 @@ data CreateInfo s n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	createInfoLayout :: Layout.L sl,
 	createInfoRenderPass :: RenderPass.R sr,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: G s vs'' ts',
+	createInfoBasePipelineHandle :: G sb vs'' ts',
 	createInfoBasePipelineIndex :: Int32 }
 
 deriving instance (
@@ -68,8 +68,51 @@ deriving instance (
 	Show (ShaderStage.CreateInfoList n1 sknds vss)
 	) =>
 	Show (CreateInfo
-		s n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
-		sl sr vs'' ts')
+		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
+		sl sr sb vs'' ts')
+
+createInfoToMiddle ::
+	CreateInfo
+		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
+		sl sr sb vs'' ts' ->
+	M.CreateInfo
+		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts'
+createInfoToMiddle CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoStages = stgs,
+	createInfoVertexInputState = vis,
+	createInfoInputAssemblyState = ias,
+	createInfoTessellationState = ts,
+	createInfoViewportState = vs,
+	createInfoRasterizationState = rs,
+	createInfoMultisampleState = ms,
+	createInfoDepthStencilState = dss,
+	createInfoColorBlendState = cbs,
+	createInfoDynamicState = ds,
+	createInfoLayout = Layout.L lyt,
+	createInfoRenderPass = RenderPass.R rp,
+	createInfoSubpass = sp,
+	createInfoBasePipelineHandle = G bph,
+	createInfoBasePipelineIndex = bpi
+	} = M.CreateInfo {
+		M.createInfoNext = mnxt,
+		M.createInfoFlags = flgs,
+		M.createInfoStages = stgs,
+		M.createInfoVertexInputState = vis,
+		M.createInfoInputAssemblyState = ias,
+		M.createInfoTessellationState = ts,
+		M.createInfoViewportState = vs,
+		M.createInfoRasterizationState = rs,
+		M.createInfoMultisampleState = ms,
+		M.createInfoDepthStencilState = dss,
+		M.createInfoColorBlendState = cbs,
+		M.createInfoDynamicState = ds,
+		M.createInfoLayout = lyt,
+		M.createInfoRenderPass = rp,
+		M.createInfoSubpass = sp,
+		M.createInfoBasePipelineHandle = bph,
+		M.createInfoBasePipelineIndex = bpi }
 
 createGs :: (
 	M.CreateInfoListToCore
