@@ -62,7 +62,7 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
 	createInfoLayout :: Layout.L sl,
 	createInfoRenderPass :: RenderPass.R sr,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: G sb vs'' ts',
+	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
 	createInfoBasePipelineIndex :: Int32 }
 
 deriving instance (
@@ -96,7 +96,7 @@ createInfoToMiddle CreateInfo {
 	createInfoLayout = Layout.L lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = G bph,
+	createInfoBasePipelineHandle = maybe M.GNull (\(G g) -> g) ->  bph,
 	createInfoBasePipelineIndex = bpi
 	} = M.CreateInfo {
 		M.createInfoNext = mnxt,

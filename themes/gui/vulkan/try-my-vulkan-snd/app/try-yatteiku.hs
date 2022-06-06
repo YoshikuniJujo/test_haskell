@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -112,8 +112,7 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
 	makeImage phdvc device
-	makeRenderPass device
-	makePipeline device
+	makeRenderPass device makePipeline
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -214,8 +213,10 @@ breakBits = bb (bit 0 `rotateR` 1)
 		where
 		bs = bb (i `shiftR` 1) n
 
-makeRenderPass :: Vk.Device.D sd -> IO ()
-makeRenderPass dvc = do
+makeRenderPass ::
+	Vk.Device.D sd ->
+	(forall s . Vk.Device.D sd -> Vk.RenderPass.R s -> IO a) -> IO a
+makeRenderPass dvc f = do
 	let	attachment = Vk.Attachment.Description {
 			Vk.Attachment.descriptionFlags =
 				Vk.Attachment.DescriptionFlagsZero,
@@ -256,11 +257,10 @@ makeRenderPass dvc = do
 			Vk.RenderPass.createInfoAttachments = [attachment],
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [] }
-	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil \rp ->
-		print rp
+	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil (f dvc)
 
-makePipeline :: Vk.Device.D sd -> IO ()
-makePipeline dvc = do
+makePipeline :: Vk.Device.D sd -> Vk.RenderPass.R sr -> IO ()
+makePipeline dvc rp = do
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0,
 			Vk.C.viewportY = 0,
@@ -373,6 +373,9 @@ makePipeline dvc = do
 				Vk.Ppl.Gr.createInfoColorBlendState =
 					Just blend,
 				Vk.Ppl.Gr.createInfoDynamicState = Nothing,
-				Vk.Ppl.Gr.createInfoLayout = pipelineLayout
-				}
+				Vk.Ppl.Gr.createInfoLayout = pipelineLayout,
+				Vk.Ppl.Gr.createInfoRenderPass = rp,
+				Vk.Ppl.Gr.createInfoSubpass = 0,
+				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
+				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		pure ()
