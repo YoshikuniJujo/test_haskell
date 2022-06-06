@@ -55,7 +55,7 @@ import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
 import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Lyt
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt

@@ -85,7 +85,7 @@ import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
-import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Lyt
 import qualified Vulkan.Attachment as Vk.Att
 import qualified Vulkan.Attachment.Enum as Vk.Att
 import qualified Vulkan.Subpass as Vk.Subpass

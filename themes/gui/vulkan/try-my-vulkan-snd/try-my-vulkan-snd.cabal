@@ -167,8 +167,8 @@ library
       Vulkan.Pipeline.Graphics.Type
       Vulkan.Pipeline.InputAssemblyState
       Vulkan.Pipeline.InputAssemblyState.Core
-      Vulkan.Pipeline.Layout
       Vulkan.Pipeline.Layout.Core
+      Vulkan.Pipeline.Layout.Middle
       Vulkan.Pipeline.MultisampleState
       Vulkan.Pipeline.MultisampleState.Core
       Vulkan.Pipeline.RasterizationState

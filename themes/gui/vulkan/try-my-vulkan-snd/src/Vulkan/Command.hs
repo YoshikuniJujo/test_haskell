@@ -21,7 +21,7 @@ import qualified Vulkan.Subpass.Enum as Subpass
 import qualified Vulkan.Pipeline.Graphics.Middle as Pipeline
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
-import qualified Vulkan.Pipeline.Layout as Pipeline.Layout
+import qualified Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 import qualified Vulkan.Descriptor.Set as Descriptor.Set
 import qualified Vulkan.Memory.Middle as Memory.M
 import qualified Vulkan.Buffer.Middle as Buffer.M
