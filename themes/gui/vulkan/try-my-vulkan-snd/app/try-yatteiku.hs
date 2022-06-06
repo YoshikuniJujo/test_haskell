@@ -56,6 +56,9 @@ import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
+import qualified Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -304,7 +307,7 @@ makePipeline = do
 			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
-		multisamle = Vk.Ppl.MulSmplSt.CreateInfo {
+		multisample = Vk.Ppl.MulSmplSt.CreateInfo {
 			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
 			Vk.Ppl.MulSmplSt.createInfoFlags =
 				Vk.Ppl.MulSmplSt.CreateFlagsZero,
@@ -348,4 +351,22 @@ makePipeline = do
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
 			Vk.Ppl.Lyt.createInfoSetLayouts = [],
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+	let	pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
+			Vk.Ppl.Gr.createInfoNext = Nothing,
+			Vk.Ppl.Gr.createInfoFlags = Vk.Ppl.CreateFlagsZero,
+			Vk.Ppl.Gr.createInfoStages = Vk.Ppl.ShSt.CreateInfoNil,
+			Vk.Ppl.Gr.createInfoVertexInputState =
+				Just vertexInputInfo,
+			Vk.Ppl.Gr.createInfoInputAssemblyState =
+				Just inputAssembly,
+			Vk.Ppl.Gr.createInfoTessellationState = Nothing,
+			Vk.Ppl.Gr.createInfoViewportState = Just viewportState,
+			Vk.Ppl.Gr.createInfoRasterizationState =
+				Just rasterizer,
+			Vk.Ppl.Gr.createInfoMultisampleState = Just multisample,
+			Vk.Ppl.Gr.createInfoDepthStencilState = Nothing,
+			Vk.Ppl.Gr.createInfoColorBlendState = Just blend,
+			Vk.Ppl.Gr.createInfoDynamicState = Nothing
+--			Vk.Ppl.Gr.createInfoLayout = Just pipelineLayout
+			}
 	pure ()
