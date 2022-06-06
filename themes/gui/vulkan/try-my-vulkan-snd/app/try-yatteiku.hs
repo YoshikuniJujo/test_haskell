@@ -31,6 +31,7 @@ import qualified Vulkan.Queue.Enum as Vk.Queue
 import qualified Vulkan.Image as Vk.Image
 import qualified Vulkan.Image.Enum as Vk.Image
 import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
@@ -48,6 +49,7 @@ import qualified Vulkan.Pipeline.VertexInputState.Middle as
 	Vk.Ppl.VertexInputState.M
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAssSt
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
+import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -289,6 +291,23 @@ makePipeline = do
 			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
 			Vk.Ppl.RstSt.createInfoLineWidth = 1,
-			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit
-			}
+			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+			Vk.Ppl.RstSt.createInfoFrontFace =
+				Vk.FrontFaceClockwise,
+			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
+			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
+			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+		multisamle = Vk.Ppl.MulSmplSt.CreateInfo {
+			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
+			Vk.Ppl.MulSmplSt.createInfoFlags =
+				Vk.Ppl.MulSmplSt.CreateFlagsZero,
+			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
+				Vk.Sample.CountAndMask
+					Vk.Sample.Count1Bit Nothing,
+			Vk.Ppl.MulSmplSt.createInfoSampleShadingEnable = False,
+			Vk.Ppl.MulSmplSt.createInfoMinSampleShading = 0,
+			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
+				False,
+			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
 	pure ()
