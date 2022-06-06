@@ -7,8 +7,10 @@ module Main where
 
 import Data.Default
 import Data.Bits
+import Data.Maybe
 import Data.List
 import Data.Word
+import Data.Color
 
 import Vulkan.Base
 
@@ -50,6 +52,10 @@ import qualified Vulkan.Pipeline.VertexInputState.Middle as
 import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAssSt
 import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
 import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
+import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
+import qualified Vulkan.ColorComponent.Enum as Vk.ColorComponent
+import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
+import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -310,4 +316,36 @@ makePipeline = do
 			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
 				False,
 			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
+		blendattachment = Vk.Ppl.ClrBlndAtt.State {
+			Vk.Ppl.ClrBlndAtt.stateColorWriteMask =
+				Vk.ColorComponent.ABit .|.
+				Vk.ColorComponent.RBit .|.
+				Vk.ColorComponent.GBit .|.
+				Vk.ColorComponent.BBit,
+			Vk.Ppl.ClrBlndAtt.stateBlendEnable = False,
+			Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
+			Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor =
+				Vk.BlendFactorZero,
+			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
+		blend = Vk.Ppl.ClrBlndSt.CreateInfo {
+			Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+			Vk.Ppl.ClrBlndSt.createInfoFlags =
+				Vk.Ppl.ClrBlndSt.CreateFlagsZero,
+			Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
+			Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpClear,
+			Vk.Ppl.ClrBlndSt.createInfoAttachments =
+				[blendattachment],
+			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
+				fromJust $ rgbaDouble 0 0 0 0 }
+		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
+			Vk.Ppl.Lyt.createInfoNext = Nothing,
+			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoSetLayouts = [],
+			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 	pure ()
