@@ -1,5 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -60,6 +61,15 @@ data CreateInfo s n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	createInfoSubpass :: Word32,
 	createInfoBasePipelineHandle :: G s vs'' ts',
 	createInfoBasePipelineIndex :: Int32 }
+
+deriving instance (
+	Show n, Show n2, Show n3, Show n4, Show n5, Show n6, Show n7, Show n8,
+	Show n9, Show n10,
+	Show (ShaderStage.CreateInfoList n1 sknds vss)
+	) =>
+	Show (CreateInfo
+		s n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
+		sl sr vs'' ts')
 
 createGs :: (
 	M.CreateInfoListToCore
