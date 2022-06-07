@@ -113,6 +113,7 @@ library
       Vulkan.Image.Enum
       Vulkan.Image.Middle
       Vulkan.Image.Type
+      Vulkan.ImageView
       Vulkan.ImageView.Core
       Vulkan.ImageView.Enum
       Vulkan.ImageView.Middle

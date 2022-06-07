@@ -3,7 +3,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Image (
-	I, create, M.CreateInfo(..), getMemoryRequirements, bindMemory ) where
+	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
+	M.SubresourceRange(..) ) where
 
 import Foreign.Pointable
 import Control.Exception

@@ -35,8 +35,8 @@ import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
-import qualified Vulkan.Image as Vk.Image
-import qualified Vulkan.Image.Enum as Vk.Image
+import qualified Vulkan.Image as Vk.Img
+import qualified Vulkan.Image.Enum as Vk.Img
 import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
@@ -62,11 +62,14 @@ import qualified Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
-import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
+import qualified Vulkan.ImageView as Vk.ImgView
+import qualified Vulkan.ImageView.Enum as Vk.ImgView
+import qualified Vulkan.Component as Vk.Component
+import qualified Vulkan.Component.Enum as Vk.Component
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -148,29 +151,29 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 
 makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> IO ()
 makeImage phdvc dvc = do
-	let	imgCreateInfo = Vk.Image.CreateInfo {
-			Vk.Image.createInfoNext = Nothing,
-			Vk.Image.createInfoFlags = Vk.Image.CreateFlagsZero,
-			Vk.Image.createInfoImageType = Vk.Image.Type2d,
-			Vk.Image.createInfoExtent =
+	let	imgCreateInfo = Vk.Img.CreateInfo {
+			Vk.Img.createInfoNext = Nothing,
+			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
+			Vk.Img.createInfoImageType = Vk.Img.Type2d,
+			Vk.Img.createInfoExtent =
 				Vk.C.Extent3d screenWidth screenHeight 1,
-			Vk.Image.createInfoMipLevels = 1,
-			Vk.Image.createInfoArrayLayers = 1,
-			Vk.Image.createInfoFormat = Vk.Format.R8g8b8a8Unorm,
-			Vk.Image.createInfoTiling = Vk.Image.TilingLinear,
-			Vk.Image.createInfoInitialLayout =
-				Vk.Image.LayoutUndefined,
-			Vk.Image.createInfoUsage =
-				Vk.Image.UsageColorAttachmentBit,
-			Vk.Image.createInfoSharingMode =
+			Vk.Img.createInfoMipLevels = 1,
+			Vk.Img.createInfoArrayLayers = 1,
+			Vk.Img.createInfoFormat = Vk.Format.R8g8b8a8Unorm,
+			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
+			Vk.Img.createInfoInitialLayout =
+				Vk.Img.LayoutUndefined,
+			Vk.Img.createInfoUsage =
+				Vk.Img.UsageColorAttachmentBit,
+			Vk.Img.createInfoSharingMode =
 				Vk.SharingModeExclusive,
-			Vk.Image.createInfoSamples = Vk.Sample.Count1Bit,
-			Vk.Image.createInfoQueueFamilyIndices = [] }
+			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
+			Vk.Img.createInfoQueueFamilyIndices = [] }
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
-	Vk.Image.create @() dvc imgCreateInfo nil nil \image -> do
+	Vk.Img.create @() dvc imgCreateInfo nil nil \image -> do
 		print image
-		imgMemReq <- Vk.Image.getMemoryRequirements dvc image
+		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
 		print imgMemReq
 		let	imgMemReqTypes =
 				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
@@ -189,7 +192,40 @@ makeImage phdvc dvc = do
 		Vk.Memory.Image.allocate @()
 			dvc image imgMemAllocInfo nil nil \imgMem -> do
 			print imgMem
-			print =<< Vk.Image.bindMemory dvc image imgMem
+			bimg <- Vk.Img.bindMemory dvc image imgMem
+			makeImageView dvc bimg
+
+makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm -> IO ()
+makeImageView dvc bimg = do
+	let	imgViewCreateInfo = Vk.ImgView.CreateInfo {
+			Vk.ImgView.createInfoNext = Nothing,
+			Vk.ImgView.createInfoFlags =
+				Vk.ImgView.CreateFlagsZero,
+			Vk.ImgView.createInfoImage = bimg,
+			Vk.ImgView.createInfoViewType = Vk.ImgView.Type2d,
+			Vk.ImgView.createInfoFormat = Vk.Format.R8g8b8a8Unorm,
+			Vk.ImgView.createInfoComponents =
+				Vk.Component.Mapping {
+					Vk.Component.mappingR =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingG =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingB =
+						Vk.Component.SwizzleIdentity,
+					Vk.Component.mappingA =
+						Vk.Component.SwizzleIdentity },
+			Vk.ImgView.createInfoSubresourceRange =
+				Vk.Img.SubresourceRange {
+					Vk.Img.subresourceRangeAspectMask =
+						Vk.Img.AspectColorBit,
+					Vk.Img.subresourceRangeBaseMipLevel = 0,
+					Vk.Img.subresourceRangeLevelCount = 1,
+					Vk.Img.subresourceRangeBaseArrayLayer =
+						0,
+					Vk.Img.subresourceRangeLayerCount = 1 }
+			}
+	Vk.ImgView.create @() dvc imgViewCreateInfo nil nil \imgView -> do
+		putStrLn $ "imgView: " ++ show imgView
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
@@ -241,13 +277,13 @@ makeRenderPass dvc f = do
 			Vk.Attachment.descriptionStencilStoreOp =
 				Vk.Attachment.StoreOpDontCare,
 			Vk.Attachment.descriptionInitialLayout =
-				Vk.Image.LayoutUndefined,
+				Vk.Img.LayoutUndefined,
 			Vk.Attachment.descriptionFinalLayout =
-				Vk.Image.LayoutGeneral }
+				Vk.Img.LayoutGeneral }
 		subpass0AttachmentRef = Vk.Attachment.Reference {
 			Vk.Attachment.referenceAttachment = 0,
 			Vk.Attachment.referenceLayout =
-				Vk.Image.LayoutColorAttachmentOptimal }
+				Vk.Img.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags =
 				Vk.Subpass.DescriptionFlagsZero,
