@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.Graphics (
-	createGs, CreateInfoList(..), CreateInfo(..),
+	G, createGs, CreateInfoList(..), CreateInfo(..),
 	GList, pattern GNil, pattern GCons ) where
 
 import Foreign.Pointable

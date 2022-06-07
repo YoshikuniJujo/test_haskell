@@ -114,14 +114,17 @@ main = do
 
 runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
 runDevice phdvc device graphicsQueueFamilyIndex =
-	makeRenderPass device \rp -> do
-		makePipeline device rp
-		makeImage phdvc device \bimg mi -> makeImageView device bimg \iv ->
-			makeFramebuffer device rp iv
-		makeCommandBuffer device graphicsQueueFamilyIndex
+	makeRenderPass device \rp ->
+	makePipeline device rp \ppl ->
+	makeImage phdvc device \bimg mi ->
+	makeImageView device bimg \iv ->
+	makeFramebuffer device rp iv \fb ->
+	makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
+	print cb
 
-makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
-makeCommandBuffer device graphicsQueueFamilyIndex = do
+makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
+	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
+makeCommandBuffer device graphicsQueueFamilyIndex f = do
 	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
 	print graphicsQueue
 	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo ()
@@ -144,9 +147,8 @@ makeCommandBuffer device graphicsQueueFamilyIndex = do
 					= 1 }
 		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
 			[cmdBuf] -> do
-				Vk.CommandBuffer.begin cmdBuf
-						Vk.CommandBuffer.beginInfoNil do
-					pure ()
+				r <- Vk.CommandBuffer.begin cmdBuf
+						Vk.CommandBuffer.beginInfoNil $ f cmdBuf
 				let	submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = [],
@@ -154,6 +156,7 @@ makeCommandBuffer device graphicsQueueFamilyIndex = do
 						Vk.submitInfoSignalSemaphores = [] }
 				Vk.Queue.submit @() graphicsQueue [submitInfo] Nothing
 				Vk.Queue.waitIdle graphicsQueue
+				pure r
 			_ -> error "never occur"
 
 makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
@@ -238,8 +241,9 @@ makeImageView dvc bimg f = do
 		putStrLn $ "imgView: " ++ show imgView
 		f imgView
 
-makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I si -> IO ()
-makeFramebuffer dvc rp iv = do
+makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I si ->
+	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
+makeFramebuffer dvc rp iv f = do
 	let	frameBufCreateInfo = Vk.Framebuffer.CreateInfo {
 			Vk.Framebuffer.createInfoNext = Nothing,
 			Vk.Framebuffer.createInfoFlags =
@@ -249,8 +253,8 @@ makeFramebuffer dvc rp iv = do
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
-	Vk.Framebuffer.create @() dvc frameBufCreateInfo nil nil \fb -> do
-		print fb
+	Vk.Framebuffer.create @() dvc frameBufCreateInfo nil nil \fb ->
+		print fb >> f fb
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
@@ -327,8 +331,9 @@ makeRenderPass dvc f = do
 			Vk.RenderPass.createInfoDependencies = [] }
 	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil f
 
-makePipeline :: Vk.Device.D sd -> Vk.RenderPass.R sr -> IO ()
-makePipeline dvc rp = do
+makePipeline :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
+	(forall s . Vk.Ppl.Gr.G s () '[] -> IO a) -> IO a
+makePipeline dvc rp f = do
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0,
 			Vk.C.viewportY = 0,
@@ -490,8 +495,9 @@ makePipeline dvc rp = do
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
 			pipelineCreateInfo `Vk.Ppl.Gr.CreateInfoCons`
-			Vk.Ppl.Gr.CreateInfoNil ) nil nil \gs -> do
-			print gs
+			Vk.Ppl.Gr.CreateInfoNil ) nil nil \case
+				(g `Vk.Ppl.Gr.GCons` _) -> print g >> f g
+				_ -> error "never occur"
 
 [glslVertexShader|
 
