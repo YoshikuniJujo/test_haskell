@@ -189,7 +189,7 @@ makeImage phdvc dvc = do
 		Vk.Memory.Image.allocate @()
 			dvc image imgMemAllocInfo nil nil \imgMem -> do
 			print imgMem
-			Vk.Image.bindMemory dvc image imgMem
+			print =<< Vk.Image.bindMemory dvc image imgMem
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
