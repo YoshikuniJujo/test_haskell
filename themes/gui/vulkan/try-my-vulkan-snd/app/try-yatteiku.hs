@@ -113,9 +113,16 @@ main = do
 			runDevice physicalDevice dvc graphicsQueueFamilyIndex
 
 runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
-runDevice phdvc device graphicsQueueFamilyIndex = do
-	graphicsQueue <- Vk.Device.getQueue
-		device graphicsQueueFamilyIndex 0
+runDevice phdvc device graphicsQueueFamilyIndex =
+	makeRenderPass device \rp -> do
+		makePipeline device rp
+		makeImage phdvc device \bimg mi -> makeImageView device bimg \iv ->
+			makeFramebuffer device rp iv
+		makeCommandBuffer device graphicsQueueFamilyIndex
+
+makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
+makeCommandBuffer device graphicsQueueFamilyIndex = do
+	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
 	print graphicsQueue
 	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo ()
 		cmdPoolCreateInfo = Vk.CommandPool.CreateInfo {
@@ -124,10 +131,6 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	makeImage phdvc device \bimg mi -> makeImageView device bimg \iv ->
-		makeRenderPass device \rp -> do
-			makePipeline device rp
-			makeFramebuffer device rp iv
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
