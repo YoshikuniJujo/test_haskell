@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Shader.Module where
+module Vulkan.Shader.Module.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
