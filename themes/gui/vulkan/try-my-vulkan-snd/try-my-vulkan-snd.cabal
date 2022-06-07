@@ -206,6 +206,7 @@ library
       Vulkan.Sampler.Enum
       Vulkan.Semaphore
       Vulkan.Semaphore.Core
+      Vulkan.Shader.Module
       Vulkan.Shader.Module.Core
       Vulkan.Shader.Module.Middle
       Vulkan.Shader.Stage.Enum
