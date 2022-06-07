@@ -1817,7 +1817,7 @@ recordCommandBuffer cb imageIndex = do
 	lift $ Vk.Cmd.M.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
-	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
+	lift . Vk.Cmd.M.bindPipeline cb Vk.Ppl.BindPointGraphics
 		=<< readGlobal globalGraphicsPipeline
 	vb <- readGlobal globalVertexBuffer
 	ib <- readGlobal globalIndexBuffer

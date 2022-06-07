@@ -839,8 +839,8 @@ recordCommandBuffer Global {
 	Vk.Cmd.M.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
-	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics =<< readIORef rppl
-	Vk.Cmd.draw cb 3 1 0 0
+	Vk.Cmd.M.bindPipeline cb Vk.Ppl.BindPointGraphics =<< readIORef rppl
+	Vk.Cmd.M.draw cb 3 1 0 0
 	Vk.Cmd.M.endRenderPass cb
 	Vk.CB.end cb
 

@@ -21,6 +21,8 @@ import qualified Vulkan.Command.Core as C
 
 import qualified Vulkan.RenderPass.Middle as RenderPass
 import qualified Vulkan.Subpass.Enum as Subpass
+import qualified Vulkan.Pipeline.Graphics.Middle as Pipeline
+import qualified Vulkan.Pipeline.Enum as Pipeline
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
@@ -31,6 +33,14 @@ beginRenderPass (CommandBuffer.C cb)
 
 endRenderPass :: CommandBuffer.C vs -> IO ()
 endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
+
+bindPipeline ::
+	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
+bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
+	C.bindPipeline cb pbp ppl
+
+draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw (CommandBuffer.C cb) vc ic fv fi = C.draw cb vc ic fv fi
 
 bindVertexBuffers ::
 	CommandBuffer.C vs -> Word32 -> [(Buffer.B, Device.Size)] -> IO ()

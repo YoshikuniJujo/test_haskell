@@ -105,7 +105,6 @@ import qualified Vulkan.CommandPool.Middle as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
-import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
@@ -1017,12 +1016,12 @@ recordCommandBuffer cb imageIndex = do
 	lift $ Vk.Cmd.M.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
-	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
+	lift . Vk.Cmd.M.bindPipeline cb Vk.Ppl.BindPointGraphics
 		=<< readGlobal globalGraphicsPipeline
 	vb <- readGlobal globalVertexBuffer
 	lift $ Vk.Cmd.List.bindVertexBuffers cb
 		((vb, 0) :!: BNil :: BList '[Vertex])
-	lift do	Vk.Cmd.draw cb 3 1 0 0
+	lift do	Vk.Cmd.M.draw cb 3 1 0 0
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
