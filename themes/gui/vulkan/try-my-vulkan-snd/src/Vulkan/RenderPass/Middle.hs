@@ -24,7 +24,7 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Attachment as Attachment
 import qualified Vulkan.Subpass as Subpass
-import qualified Vulkan.Framebuffer as Framebuffer
+import qualified Vulkan.Framebuffer.Middle as Framebuffer
 import qualified Vulkan.RenderPass.Core as C
 
 data CreateInfo n = CreateInfo {

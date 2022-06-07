@@ -227,6 +227,10 @@ makeImageView dvc bimg = do
 	Vk.ImgView.create @() dvc imgViewCreateInfo nil nil \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
 
+makeFramebuffer :: Vk.Device.D sd -> Vk.ImgView.I si -> IO ()
+makeFramebuffer dvc iv = do
+	pure ()
+
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
 selectPhysicalDeviceAndQueueFamily = \case
