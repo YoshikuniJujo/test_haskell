@@ -21,6 +21,7 @@ import Vulkan.Base
 
 import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
+import qualified Vulkan.Middle as Vk.M
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
@@ -72,6 +73,7 @@ import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
 import qualified Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
+import qualified Vulkan.Command as Vk.Cmd
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -121,6 +123,19 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 	makeFramebuffer device rp iv \fb ->
 	makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
 	print cb
+	let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
+			Vk.RenderPass.beginInfoNext = Nothing,
+			Vk.RenderPass.beginInfoRenderPass = rp,
+			Vk.RenderPass.beginInfoFramebuffer = fb,
+			Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
+				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+				Vk.C.rect2dExtent = Vk.C.Extent2d
+					screenWidth screenHeight
+				},
+			Vk.RenderPass.beginInfoClearValues = [] }
+	Vk.Cmd.beginRenderPass @() @('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
+		cb renderpassBeginInfo Vk.Subpass.ContentsInline do
+		pure ()
 
 makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
 	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a

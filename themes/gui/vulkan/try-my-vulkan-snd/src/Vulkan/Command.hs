@@ -9,15 +9,15 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Control.Exception
 import Data.Word
 import Data.Int
 
 import Vulkan.Middle
 import Vulkan.Enum
 
-import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
-import qualified Vulkan.RenderPass.Middle as RenderPass
-import qualified Vulkan.Subpass.Enum as Subpass
+import qualified Vulkan.CommandBuffer.Type as CommandBuffer
+import qualified Vulkan.CommandBuffer.Middle as CommandBuffer.M
 import qualified Vulkan.Pipeline.Graphics.Middle as Pipeline
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
@@ -28,34 +28,35 @@ import qualified Vulkan.Buffer.Middle as Buffer.M
 import qualified Vulkan.Image.Middle as Image
 import qualified Vulkan.Image.Enum as Image
 
+import qualified Vulkan.RenderPass.Type as RenderPass
+import qualified Vulkan.Subpass.Enum as Subpass
+import qualified Vulkan.Command.Middle as M
+
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
-	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
-beginRenderPass (CommandBuffer.C cb)
-	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do
-	prpbi <- RenderPass.beginInfoToCore rpbi
-	lift $ C.beginRenderPass cb prpbi spcnt
+	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct -> Subpass.Contents ->
+	IO a -> IO a
+beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
+	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
+	(M.endRenderPass cb) f
 
 bindPipeline ::
-	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
-bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
+	CommandBuffer.M.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
+bindPipeline (CommandBuffer.M.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
 	C.bindPipeline cb pbp ppl
 
-draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
-draw (CommandBuffer.C cb) vc ic fv fi = C.draw cb vc ic fv fi
+draw :: CommandBuffer.M.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw (CommandBuffer.M.C cb) vc ic fv fi = C.draw cb vc ic fv fi
 
-drawIndexed :: CommandBuffer.C vs ->
+drawIndexed :: CommandBuffer.M.C vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
-drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
+drawIndexed (CommandBuffer.M.C cb) idxc istc fidx vo fist =
 	C.drawIndexed cb idxc istc fidx vo fist
 
-endRenderPass :: CommandBuffer.C vs -> IO ()
-endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
-
 bindDescriptorSets ::
-	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.Layout.L ->
+	CommandBuffer.M.C vs -> Pipeline.BindPoint -> Pipeline.Layout.L ->
 	Word32 -> [Descriptor.Set.S] -> [Word32] -> IO ()
 bindDescriptorSets
-	(CommandBuffer.C cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
+	(CommandBuffer.M.C cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
 	fs (length &&& id -> (dsc, dss))
 	(length &&& id -> (doc, dos)) = ($ pure) $ runContT do
 	pdss <- ContT $ allocaArray dsc
@@ -68,11 +69,11 @@ bindDescriptorSets
 
 pipelineBarrier ::
 	(Pointable n, Pointable n', Pointable n'') =>
-	CommandBuffer.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	CommandBuffer.M.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
 	[Memory.M.Barrier n] -> [Buffer.M.MemoryBarrier n'] ->
 	[Image.MemoryBarrier n''] -> IO ()
-pipelineBarrier (CommandBuffer.C cb)
+pipelineBarrier (CommandBuffer.M.C cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	(length &&& id -> (mbc, mbs))
@@ -91,19 +92,19 @@ pipelineBarrier (CommandBuffer.C cb)
 		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
 
 copyBufferToImage ::
-	CommandBuffer.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
+	CommandBuffer.M.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
-copyBufferToImage (CommandBuffer.C cb)
+copyBufferToImage (CommandBuffer.M.C cb)
 	(Buffer.M.B sb) (Image.I di) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
 	lift $ C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
 
-blitImage :: CommandBuffer.C v ->
+blitImage :: CommandBuffer.M.C v ->
 	Image.I -> Image.Layout -> Image.I -> Image.Layout ->
 	[Image.Blit] -> Filter -> IO ()
-blitImage (CommandBuffer.C cb)
+blitImage (CommandBuffer.M.C cb)
 	(Image.I src) (Image.Layout srcLyt) (Image.I dst) (Image.Layout dstLyt)
 	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
 	pblts <- ContT $ allocaArray bltc

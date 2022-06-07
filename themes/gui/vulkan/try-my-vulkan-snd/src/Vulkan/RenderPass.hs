@@ -2,7 +2,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.RenderPass (R, create, M.CreateInfo(..)) where
+module Vulkan.RenderPass (R, create, M.CreateInfo(..), BeginInfo(..)) where
 
 import Foreign.Pointable
 import Control.Exception

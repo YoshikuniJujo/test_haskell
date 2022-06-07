@@ -5,10 +5,12 @@
 module Vulkan.Command.Middle where
 
 import Foreign.Marshal.Array
+import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Middle
 import Vulkan.Enum
 
 import qualified Vulkan.CommandBuffer.Middle as CommandBuffer
@@ -16,6 +18,19 @@ import qualified Vulkan.Buffer.Middle as Buffer
 import qualified Vulkan.Buffer.Core as Buffer.C
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Command.Core as C
+
+import qualified Vulkan.RenderPass.Middle as RenderPass
+import qualified Vulkan.Subpass.Enum as Subpass
+
+beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
+	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
+beginRenderPass (CommandBuffer.C cb)
+	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do
+	prpbi <- RenderPass.beginInfoToCore rpbi
+	lift $ C.beginRenderPass cb prpbi spcnt
+
+endRenderPass :: CommandBuffer.C vs -> IO ()
+endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
 
 bindVertexBuffers ::
 	CommandBuffer.C vs -> Word32 -> [(Buffer.B, Device.Size)] -> IO ()

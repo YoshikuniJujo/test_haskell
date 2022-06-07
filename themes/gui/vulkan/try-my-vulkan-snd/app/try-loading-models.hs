@@ -143,6 +143,7 @@ import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 import qualified Vulkan.Memory as Vk.Memory
+import qualified Vulkan.Command.Middle as Vk.Cmd.M
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Vulkan.Buffer.List (BList(..))
@@ -1595,7 +1596,7 @@ recordCommandBuffer cb imageIndex = do
 					. fromJust $ rgbaDouble 0 0 0 1,
 				Vk.ClearValueDepthStencil
 					$ Vk.C.ClearDepthStencilValue 1 0 ] }
-	lift $ Vk.Cmd.beginRenderPass @()
+	lift $ Vk.Cmd.M.beginRenderPass @()
 		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
 	lift . Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics
@@ -1612,7 +1613,7 @@ recordCommandBuffer cb imageIndex = do
 	lift do	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
 			[dss !! cf] []
 		Vk.Cmd.drawIndexed cb (fromIntegral $ olength idcs) 1 0 0 0
-		Vk.Cmd.endRenderPass cb
+		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
 mainLoop :: ReaderT Global IO ()

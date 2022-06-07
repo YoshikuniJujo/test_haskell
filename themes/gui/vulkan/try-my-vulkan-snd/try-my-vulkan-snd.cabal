@@ -109,6 +109,7 @@ library
       Vulkan.Framebuffer.Core
       Vulkan.Framebuffer.Enum
       Vulkan.Framebuffer.Middle
+      Vulkan.Framebuffer.Type
       Vulkan.Image
       Vulkan.Image.Core
       Vulkan.Image.Enum

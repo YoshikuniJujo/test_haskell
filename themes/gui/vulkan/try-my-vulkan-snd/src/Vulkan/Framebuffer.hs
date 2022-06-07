@@ -10,14 +10,13 @@ import Control.Exception
 import Data.Word
 
 import Vulkan.Framebuffer.Enum
+import Vulkan.Framebuffer.Type
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.RenderPass.Type as RenderPass
 import qualified Vulkan.ImageView as ImageView
 import qualified Vulkan.Framebuffer.Middle as M
-
-newtype F s = F M.F deriving Show
 
 data CreateInfo n sr si = CreateInfo {
 	createInfoNext :: Maybe n,
