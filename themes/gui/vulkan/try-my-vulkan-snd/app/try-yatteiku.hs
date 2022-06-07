@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
 
 module Main where
 
@@ -15,6 +15,7 @@ import Data.Word
 import Data.Color
 
 import Shaderc.TH
+import Shaderc.EnumAuto
 
 import Vulkan.Base
 
@@ -63,6 +64,9 @@ import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
+import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
+import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -357,9 +361,41 @@ makePipeline dvc rp = do
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
 			Vk.Ppl.Lyt.createInfoSetLayouts = [],
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
+			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoFlags =
+				Vk.Shader.Module.CreateFlagsZero,
+			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
+		vertShaderStage = Vk.Ppl.ShSt.CreateInfo {
+			Vk.Ppl.ShSt.createInfoNext = Nothing,
+			Vk.Ppl.ShSt.createInfoFlags =
+				Vk.Ppl.ShSt.CreateFlagsZero,
+			Vk.Ppl.ShSt.createInfoStage = Vk.Shader.Stage.VertexBit,
+			Vk.Ppl.ShSt.createInfoModule =
+				Vk.Shader.Module.M vertShaderCreateInfo nil nil,
+			Vk.Ppl.ShSt.createInfoName = "main",
+			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
+		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
+			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoFlags =
+				Vk.Shader.Module.CreateFlagsZero,
+			Vk.Shader.Module.createInfoCode =
+				glslFragmentShaderMain }
+		fragShaderStage = Vk.Ppl.ShSt.CreateInfo {
+			Vk.Ppl.ShSt.createInfoNext = Nothing,
+			Vk.Ppl.ShSt.createInfoFlags =
+				Vk.Ppl.ShSt.CreateFlagsZero,
+			Vk.Ppl.ShSt.createInfoStage =
+				Vk.Shader.Stage.FragmentBit,
+			Vk.Ppl.ShSt.createInfoModule =
+				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
+			Vk.Ppl.ShSt.createInfoName = "main",
+			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
 	Vk.Ppl.Lyt.create @() dvc layoutCreateInfo nil nil \pipelineLayout -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo
-				() () () '[] () () '[] ()
+				() () ()
+				'[ 'GlslVertexShader, 'GlslFragmentShader] () ()
+				'[(), ()] ()
 				() '[]
 				() () () () () () () () _ _ _ _ '[]
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
@@ -367,6 +403,10 @@ makePipeline dvc rp = do
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
+					vertShaderStage
+					`Vk.Ppl.ShSt.CreateInfoCons`
+					fragShaderStage
+					`Vk.Ppl.ShSt.CreateInfoCons`
 					Vk.Ppl.ShSt.CreateInfoNil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just vertexInputInfo,

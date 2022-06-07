@@ -209,6 +209,7 @@ library
       Vulkan.Semaphore.Core
       Vulkan.Shader.Module
       Vulkan.Shader.Module.Core
+      Vulkan.Shader.Module.Internal
       Vulkan.Shader.Module.Middle
       Vulkan.Shader.Stage.Enum
       Vulkan.Specialization
