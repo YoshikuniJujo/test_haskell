@@ -1,3 +1,6 @@
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Pipeline.ShaderStage where
@@ -46,3 +49,29 @@ destroyCreateInfoMiddle :: Pointable a' =>
 destroyCreateInfoMiddle dvc
 	M.CreateInfo { M.createInfoModule = mmdl } 
 	CreateInfo { createInfoModule = mdl } = Shader.Module.destroy dvc mmdl mdl
+
+infixr 5 `CreateInfoCons`
+
+data CreateInfoList n n' sknds vss a a' where
+	CreateInfoNil :: CreateInfoList n n' '[] a a' '[]
+	CreateInfoCons :: CreateInfo n n' sknd a a' vs ->
+		CreateInfoList n n' sknds a a' vss ->
+		CreateInfoList n n' (sknd ': sknds) a a' (vs ': vss)
+
+createInfoListToMiddle :: (Pointable n', Pointable a) =>
+	Device.D ds ->
+	CreateInfoList n n' sknds a a' vss -> IO (M.CreateInfoList n sknds vss)
+createInfoListToMiddle _ CreateInfoNil = pure M.CreateInfoNil
+createInfoListToMiddle dvc (ci `CreateInfoCons` cis) = M.CreateInfoCons
+	<$> createInfoToMiddle dvc ci
+	<*> createInfoListToMiddle dvc cis
+
+destroyCreateInfoMiddleList :: Pointable a' =>
+	Device.D ds ->
+	M.CreateInfoList n sknds vss -> CreateInfoList n n' sknds a a' vss ->
+	IO ()
+destroyCreateInfoMiddleList _ M.CreateInfoNil CreateInfoNil = pure ()
+destroyCreateInfoMiddleList dvc
+	(mci `M.CreateInfoCons` mcis) (ci `CreateInfoCons` cis) = do
+	destroyCreateInfoMiddle dvc mci ci
+	destroyCreateInfoMiddleList dvc mcis cis

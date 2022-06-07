@@ -36,13 +36,14 @@ import qualified Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
-import qualified Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Middle as ShaderStage.M
 
 data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
 	vs'' ts' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: ShaderStage.CreateInfoList n1 sknds vss,
+	createInfoStages :: ShaderStage.M.CreateInfoList n1 sknds vss,
 	createInfoVertexInputState ::
 		Maybe (VertexInputState.CreateInfo n2 vs' ts),
 	createInfoInputAssemblyState ::
@@ -68,7 +69,7 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
 deriving instance (
 	Show n, Show n2, Show n3, Show n4, Show n5, Show n6, Show n7, Show n8,
 	Show n9, Show n10,
-	Show (ShaderStage.CreateInfoList n1 sknds vss)
+	Show (ShaderStage.M.CreateInfoList n1 sknds vss)
 	) =>
 	Show (CreateInfo
 		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
