@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -37,13 +38,12 @@ import qualified Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
-import qualified Vulkan.Pipeline.ShaderStage.Middle as ShaderStage.M
 
-data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
+data CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
 	vs'' ts' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: ShaderStage.M.CreateInfoList n1 sknds vss,
+	createInfoStages :: ShaderStage.CreateInfoList n1 n1' sknds a a' vss,
 	createInfoVertexInputState ::
 		Maybe (VertexInputState.CreateInfo n2 vs' ts),
 	createInfoInputAssemblyState ::
@@ -66,6 +66,7 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
 	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
 	createInfoBasePipelineIndex :: Int32 }
 
+{-
 deriving instance (
 	Show n, Show n2, Show n3, Show n4, Show n5, Show n6, Show n7, Show n8,
 	Show n9, Show n10,
@@ -74,14 +75,16 @@ deriving instance (
 	Show (CreateInfo
 		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
 		sl sr sb vs'' ts')
+		-}
 
-createInfoToMiddle ::
+createInfoToMiddle :: (Pointable n1', Pointable a) =>
+	Device.D sd ->
 	CreateInfo
-		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
+		n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
 		sl sr sb vs'' ts' ->
-	M.CreateInfo
-		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts'
-createInfoToMiddle CreateInfo {
+	IO (M.CreateInfo
+		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts')
+createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoStages = stgs,
@@ -98,11 +101,12 @@ createInfoToMiddle CreateInfo {
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = maybe M.GNull (\(G g) -> g) ->  bph,
-	createInfoBasePipelineIndex = bpi
-	} = M.CreateInfo {
+	createInfoBasePipelineIndex = bpi } = do
+	stgs' <- ShaderStage.createInfoListToMiddle dvc stgs
+	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
-		M.createInfoStages = stgs,
+		M.createInfoStages = stgs',
 		M.createInfoVertexInputState = vis,
 		M.createInfoInputAssemblyState = ias,
 		M.createInfoTessellationState = ts,
@@ -119,45 +123,98 @@ createInfoToMiddle CreateInfo {
 		M.createInfoBasePipelineIndex = bpi }
 
 data CreateInfoList
-	ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's where
+	ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's where
 	CreateInfoNil :: CreateInfoList
-		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
+		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
 	CreateInfoCons ::
-		CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts' ->
-		CreateInfoList ns n1s skndss vsss
+		CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts' ->
+		CreateInfoList ns n1s n1's skndss as a's vsss
 			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's ->
 		CreateInfoList (n ': ns)
-			(n1 ': n1s) (sknds ': skndss) (vss ': vsss)
+			(n1 ': n1s) (n1' ': n1's) (sknds ': skndss) (a ': as) (a' ': a's) (vss ': vsss)
 			(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s)
 			(n4 ': n4s) (n5 ': n5s) (n6 ': n6s) (n7 ': n7s)
 			(n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
 			(sl ': sls) (sr ': srs) (sb ': sbs)
 			(vs'' ': vs''s) (ts' ': ts's)
 
-createInfoListToMiddle ::
-	CreateInfoList
-		ns n1s sknds vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-		sls srs sbs vs''s ts's ->
-	M.CreateInfoList
-		ns n1s sknds vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-		vs''s ts's
-createInfoListToMiddle = \case
-	CreateInfoNil -> M.CreateInfoNil
-	ci `CreateInfoCons` cis ->
-		createInfoToMiddle ci `M.CreateInfoCons`
-		createInfoListToMiddle cis
+class CreateInfoListToMiddle
+	ns n1s n1's sknds as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s
+	n10s sls srs sbs vs''s ts's where
+	createInfoListToMiddle :: Device.D sd ->
+		CreateInfoList
+			ns n1s n1's sknds as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+			sls srs sbs vs''s ts's ->
+		IO (M.CreateInfoList
+			ns n1s sknds vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+			vs''s ts's)
+
+instance CreateInfoListToMiddle
+	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
+	'[] '[] '[] '[] '[]
+	where
+	createInfoListToMiddle _ CreateInfoNil = pure M.CreateInfoNil
+
+instance (
+	Pointable n1', Pointable a,
+	CreateInfoListToMiddle
+		ns n1s n1's sknds as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+		sls srs sbs vs''s ts's ) =>
+	CreateInfoListToMiddle
+		(n ': ns) (n1 ': n1s) (n1' ': n1's) (sknd ': sknds) (a ': as) (a' ': a's)
+		(vss ': vsss) (n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s) (n4 ': n4s)
+		(n5 ': n5s) (n6 ': n6s) (n7 ': n7s) (n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
+		(sl ': sls) (sr ': srs) (sb ': sbs) (vs'' ': vs''s) (ts' ': ts's) where
+	createInfoListToMiddle dvc (ci `CreateInfoCons` cis) = M.CreateInfoCons
+		<$> createInfoToMiddle dvc ci
+		<*> createInfoListToMiddle dvc cis
 
 createGs :: (
+	CreateInfoListToMiddle
+		ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s
+		n10s sls srs sbs vs''s ts's,
+	DestroyShaderStages
+		ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s
+		n10s sls srs sbs vs''s ts's,
 	M.CreateInfoListToCore
 		ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
 		vs''s ts's,
 	M.PListFromCore vs's tss, Pointable n', Pointable n'' ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	CreateInfoList
-		ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+		ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
 		sls srs sbs vs''s ts's ->
 	Maybe (AllocationCallbacks.A n') -> Maybe (AllocationCallbacks.A n'') ->
 	(forall s . GList s vs's tss -> IO a) -> IO a
-createGs (Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
-	(M.create dvc mc (createInfoListToMiddle cis) macc)
+createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
+	(createInfoListToMiddle d cis >>= \cis' -> M.create dvc mc cis' macc <* destroyShaderStages d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . GList)
+
+class DestroyShaderStages
+	ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+	sls srs sbs vs''s ts's where
+	destroyShaderStages :: Device.D sd ->
+		M.CreateInfoList
+			ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+			vs''s ts's ->
+		CreateInfoList
+			ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+			sls srs sbs vs''s ts's -> IO ()
+
+instance DestroyShaderStages '[] '[] '[] '[] '[] '[] '[]
+	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] where
+	destroyShaderStages _ M.CreateInfoNil CreateInfoNil = pure ()
+
+instance (
+	Pointable a',
+	DestroyShaderStages
+		ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
+		sls srs sbs vs''s ts's ) =>
+	DestroyShaderStages
+		(n ': ns) (n1 ': n1s) (n1' ': n1's) (sknds ': skndss) (a ': as) (a' ': a's)
+		(vss ': vsss) (n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s) (n4 ': n4s)
+		(n5 ': n5s) (n6 ': n6s) (n7 ': n7s) (n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
+		(sl ': sls) (sr ': srs) (sb ': sbs) (vs'' ': vs''s) (ts' ': ts's) where
+	destroyShaderStages dvc (mci `M.CreateInfoCons` mcis) (ci `CreateInfoCons` cis) = do
+		ShaderStage.destroyCreateInfoMiddleList dvc (M.createInfoStages mci) (createInfoStages ci)
+		destroyShaderStages dvc mcis cis
