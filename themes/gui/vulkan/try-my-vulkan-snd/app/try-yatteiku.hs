@@ -70,6 +70,8 @@ import qualified Vulkan.ImageView as Vk.ImgView
 import qualified Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
+import qualified Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Vulkan.Framebuffer.Enum as Vk.Framebuffer
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -122,8 +124,10 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	makeImage phdvc device
-	makeRenderPass device makePipeline
+	makeImage phdvc device \bimg -> makeImageView device bimg \iv ->
+		makeRenderPass device \rp -> do
+			makePipeline device rp
+			makeFramebuffer device rp iv
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
 			\(cmdPool :: Vk.CommandPool.C s) -> do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
@@ -149,8 +153,9 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				Vk.Queue.waitIdle graphicsQueue
 			_ -> error "never occur"
 
-makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> IO ()
-makeImage phdvc dvc = do
+makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
+	(forall si sm . Vk.Img.Binded si sm -> IO a) -> IO a
+makeImage phdvc dvc f = do
 	let	imgCreateInfo = Vk.Img.CreateInfo {
 			Vk.Img.createInfoNext = Nothing,
 			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
@@ -193,10 +198,11 @@ makeImage phdvc dvc = do
 			dvc image imgMemAllocInfo nil nil \imgMem -> do
 			print imgMem
 			bimg <- Vk.Img.bindMemory dvc image imgMem
-			makeImageView dvc bimg
+			f bimg
 
-makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm -> IO ()
-makeImageView dvc bimg = do
+makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->
+	(forall s . Vk.ImgView.I s -> IO a) -> IO a
+makeImageView dvc bimg f = do
 	let	imgViewCreateInfo = Vk.ImgView.CreateInfo {
 			Vk.ImgView.createInfoNext = Nothing,
 			Vk.ImgView.createInfoFlags =
@@ -226,10 +232,21 @@ makeImageView dvc bimg = do
 			}
 	Vk.ImgView.create @() dvc imgViewCreateInfo nil nil \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
+		f imgView
 
-makeFramebuffer :: Vk.Device.D sd -> Vk.ImgView.I si -> IO ()
-makeFramebuffer dvc iv = do
-	pure ()
+makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I si -> IO ()
+makeFramebuffer dvc rp iv = do
+	let	frameBufCreateInfo = Vk.Framebuffer.CreateInfo {
+			Vk.Framebuffer.createInfoNext = Nothing,
+			Vk.Framebuffer.createInfoFlags =
+				Vk.Framebuffer.CreateFlagsZero,
+			Vk.Framebuffer.createInfoRenderPass = rp,
+			Vk.Framebuffer.createInfoAttachments = [iv],
+			Vk.Framebuffer.createInfoWidth = screenWidth,
+			Vk.Framebuffer.createInfoHeight = screenHeight,
+			Vk.Framebuffer.createInfoLayers = 1 }
+	Vk.Framebuffer.create @() dvc frameBufCreateInfo nil nil \fb -> do
+		print fb
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
@@ -262,8 +279,7 @@ breakBits = bb (bit 0 `rotateR` 1)
 		bs = bb (i `shiftR` 1) n
 
 makeRenderPass ::
-	Vk.Device.D sd ->
-	(forall s . Vk.Device.D sd -> Vk.RenderPass.R s -> IO a) -> IO a
+	Vk.Device.D sd -> (forall s . Vk.RenderPass.R s -> IO a) -> IO a
 makeRenderPass dvc f = do
 	let	attachment = Vk.Attachment.Description {
 			Vk.Attachment.descriptionFlags =
@@ -305,7 +321,7 @@ makeRenderPass dvc f = do
 			Vk.RenderPass.createInfoAttachments = [attachment],
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [] }
-	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil (f dvc)
+	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil f
 
 makePipeline :: Vk.Device.D sd -> Vk.RenderPass.R sr -> IO ()
 makePipeline dvc rp = do

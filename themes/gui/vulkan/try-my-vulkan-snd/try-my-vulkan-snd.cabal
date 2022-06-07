@@ -105,6 +105,7 @@ library
       Vulkan.Format
       Vulkan.Format.Core
       Vulkan.Format.Enum
+      Vulkan.Framebuffer
       Vulkan.Framebuffer.Core
       Vulkan.Framebuffer.Enum
       Vulkan.Framebuffer.Middle
