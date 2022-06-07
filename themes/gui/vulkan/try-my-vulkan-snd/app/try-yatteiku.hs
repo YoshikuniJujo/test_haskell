@@ -124,7 +124,7 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 				Vk.CommandPool.CreateFlagsZero,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	makeImage phdvc device \bimg -> makeImageView device bimg \iv ->
+	makeImage phdvc device \bimg mi -> makeImageView device bimg \iv ->
 		makeRenderPass device \rp -> do
 			makePipeline device rp
 			makeFramebuffer device rp iv
@@ -154,7 +154,8 @@ runDevice phdvc device graphicsQueueFamilyIndex = do
 			_ -> error "never occur"
 
 makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
-	(forall si sm . Vk.Img.Binded si sm -> IO a) -> IO a
+	(forall si sm . Vk.Img.Binded si sm -> Vk.Device.MemoryImage sm -> IO a) ->
+	IO a
 makeImage phdvc dvc f = do
 	let	imgCreateInfo = Vk.Img.CreateInfo {
 			Vk.Img.createInfoNext = Nothing,
@@ -198,7 +199,7 @@ makeImage phdvc dvc f = do
 			dvc image imgMemAllocInfo nil nil \imgMem -> do
 			print imgMem
 			bimg <- Vk.Img.bindMemory dvc image imgMem
-			f bimg
+			f bimg imgMem
 
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->
 	(forall s . Vk.ImgView.I s -> IO a) -> IO a

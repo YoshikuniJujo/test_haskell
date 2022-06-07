@@ -5,7 +5,7 @@
 
 module Vulkan.Device (
 	D, create, M.CreateInfo(..), M.CreateFlags, pattern M.CreateFlagsZero,
-	getQueue
+	getQueue, MemoryImage
 	) where
 
 import Foreign.Pointable
