@@ -77,7 +77,7 @@ import qualified Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
 import qualified Vulkan.Image.Middle as Vk.Image
 import qualified Vulkan.Image.Enum as Vk.Image
-import qualified Vulkan.ImageView as Vk.ImageView
+import qualified Vulkan.ImageView.Middle as Vk.ImageView
 import qualified Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component

@@ -12,7 +12,7 @@ import qualified Foreign.Storable.Generic
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.Atom as Buffer.A
 import qualified Vulkan.Image.Enum as Image
-import qualified Vulkan.ImageView as ImageView
+import qualified Vulkan.ImageView.Middle as ImageView
 import qualified Vulkan.Sampler as Sampler
 import qualified Vulkan.Descriptor.Core as C
 
