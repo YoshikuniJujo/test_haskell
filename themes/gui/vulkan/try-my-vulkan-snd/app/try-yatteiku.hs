@@ -62,7 +62,7 @@ import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Vulkan.Pipeline.Enum as Vk.Ppl
-import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
+import qualified Vulkan.Pipeline.ShaderStage.Middle as Vk.Ppl.ShSt
 
 import qualified Vulkan.Khr as Vk.Khr
 

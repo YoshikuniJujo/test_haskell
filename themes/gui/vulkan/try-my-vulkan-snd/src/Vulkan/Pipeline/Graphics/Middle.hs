@@ -23,7 +23,7 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Pipeline.Enum
 
-import qualified Vulkan.Pipeline.ShaderStage as ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Vulkan.Pipeline.TessellationState as TessellationState

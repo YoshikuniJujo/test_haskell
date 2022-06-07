@@ -175,9 +175,9 @@ library
       Vulkan.Pipeline.MultisampleState.Core
       Vulkan.Pipeline.RasterizationState
       Vulkan.Pipeline.RasterizationState.Core
-      Vulkan.Pipeline.ShaderStage
       Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum
+      Vulkan.Pipeline.ShaderStage.Middle
       Vulkan.Pipeline.TessellationState
       Vulkan.Pipeline.TessellationState.Core
       Vulkan.Pipeline.VertexInputState

@@ -77,7 +77,7 @@ import qualified Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Vulkan.Component as Vk.Component
 import qualified Vulkan.Component.Enum as Vk.Component
 import qualified Vulkan.Shader.Module.Middle as Vk.Shader.Module
-import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Middle as Vk.Ppl.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt

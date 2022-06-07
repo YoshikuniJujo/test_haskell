@@ -8,7 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Pipeline.ShaderStage where
+module Vulkan.Pipeline.ShaderStage.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
