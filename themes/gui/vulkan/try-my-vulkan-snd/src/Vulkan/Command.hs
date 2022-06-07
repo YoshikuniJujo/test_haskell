@@ -39,6 +39,10 @@ beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 
+bindPipeline ::
+	CommandBuffer.C sc vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
+bindPipeline = undefined
+
 drawIndexed :: CommandBuffer.M.C vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
 drawIndexed (CommandBuffer.M.C cb) idxc istc fidx vo fist =
