@@ -5,7 +5,8 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Shaderc.TH (glslVertexShader, glslFragmentShader) where
+module Shaderc.TH (
+	glslVertexShader, glslFragmentShader, glslComputeShader ) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Quote
@@ -27,6 +28,12 @@ glslVertexShader = generalShader @'GlslVertexShader
 glslFragmentShader :: QuasiQuoter
 glslFragmentShader = generalShader @'GlslFragmentShader
 	"glslFragmentShaderMain" 'GlslFragmentShader "glslFragmentShader"
+
+-- GLSL COMPUTE SHADER
+
+glslComputeShader :: QuasiQuoter
+glslComputeShader = generalShader @'GlslComputeShader
+	"glslComputeShaderMain" 'GlslComputeShader "glslComputeShader"
 
 -- GENERAL
 
