@@ -43,6 +43,9 @@ bindPipeline ::
 	CommandBuffer.C sc vs -> Pipeline.BindPoint -> Pipeline.G sg vs ts -> IO ()
 bindPipeline (CommandBuffer.C cb) bp (Pipeline.G g) = M.bindPipeline cb bp g
 
+draw :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw (CommandBuffer.C cb) vc ic fv fi = M.draw cb vc ic fv fi
+
 drawIndexed :: CommandBuffer.M.C vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
 drawIndexed (CommandBuffer.M.C cb) idxc istc fidx vo fist =
