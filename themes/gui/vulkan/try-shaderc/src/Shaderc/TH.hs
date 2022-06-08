@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Shaderc.TH (glslVertexShader, glslFragmentShader) where
@@ -15,54 +16,47 @@ import qualified Data.ByteString.Char8 as BSC
 import Shaderc
 import Shaderc.EnumAuto
 
+-- GLSL VERTEX SHADER
+
 glslVertexShader :: QuasiQuoter
-glslVertexShader = QuasiQuoter {
-	quoteExp = glslVertexShaderExp,
-	quotePat = error "not defined",
-	quoteType = error "not defined",
-	quoteDec = glslVertexShaderDec }
+glslVertexShader = generalShader @'GlslVertexShader
+	"glslVertexShaderMain" 'GlslVertexShader "glslVertexShader"
 
-vertSrc :: BS.ByteString
-vertSrc = "glslVertexShader"
-
-glslVertexShaderExp :: String -> ExpQ
-glslVertexShaderExp = makeShaderExp (conT ''Spv `appT` conT 'GlslVertexShader) $ compileGlslVertShader vertSrc
-
-glslVertexShaderDec :: String -> DecsQ
-glslVertexShaderDec =
-	makeShaderDec "glslVertexShaderMain" (conT ''Spv `appT` conT 'GlslVertexShader) $ compileGlslVertShader vertSrc
-
-compileGlslVertShader :: BS.ByteString -> BS.ByteString -> IO BS.ByteString
-compileGlslVertShader nm src = (\(Spv spv :: Spv 'GlslVertexShader) -> spv)
-	<$> compileIntoSpv src nm "main" defaultCompileOptions
+-- GLSL FRAGMENT SHADER
 
 glslFragmentShader :: QuasiQuoter
-glslFragmentShader = QuasiQuoter {
-	quoteExp = glslFragmentShaderExp,
+glslFragmentShader = generalShader @'GlslFragmentShader
+	"glslFragmentShaderMain" 'GlslFragmentShader "glslFragmentShader"
+
+-- GENERAL
+
+generalShader :: forall shtp . SpvShaderKind shtp => String -> Name -> BS.ByteString -> QuasiQuoter
+generalShader var shtp shnm = QuasiQuoter {
+	quoteExp = generalShaderExp @shtp shtp shnm,
 	quotePat = error "not defined",
 	quoteType = error "not defined",
-	quoteDec = glslFragmentShaderDec }
+	quoteDec = generalShaderDec @shtp var shtp shnm }
 
-fragSrc :: BS.ByteString
-fragSrc = "glslFragmentShader"
+generalShaderExp :: forall shtp . SpvShaderKind shtp => Name -> BS.ByteString -> String -> ExpQ
+generalShaderExp shtp shnm =
+	mkShaderExp (conT ''Spv `appT` conT shtp) $ compileGeneralShader @shtp shnm
 
-glslFragmentShaderExp :: String -> ExpQ
-glslFragmentShaderExp = makeShaderExp (conT ''Spv `appT` conT 'GlslFragmentShader) $ compileGlslFragShader fragSrc
+generalShaderDec :: forall shtp . SpvShaderKind shtp => String -> Name -> BS.ByteString -> String -> DecsQ
+generalShaderDec var shtp shnm =
+	mkShaderDec var (conT ''Spv `appT` conT shtp) $ compileGeneralShader @shtp shnm
 
-glslFragmentShaderDec :: String -> DecsQ
-glslFragmentShaderDec =
-	makeShaderDec "glslFragmentShaderMain" (conT ''Spv `appT` conT 'GlslFragmentShader) $ compileGlslFragShader fragSrc
-
-compileGlslFragShader :: BS.ByteString -> BS.ByteString -> IO BS.ByteString
-compileGlslFragShader nm src = (\(Spv spv :: Spv 'GlslFragmentShader) -> spv)
+compileGeneralShader :: forall shtp . SpvShaderKind shtp =>  BS.ByteString -> BS.ByteString -> IO BS.ByteString
+compileGeneralShader nm src = (\(Spv spv :: Spv shtp) -> spv)
 	<$> compileIntoSpv src nm "main" defaultCompileOptions
 
-makeShaderExp :: TypeQ -> (BS.ByteString -> IO BS.ByteString) -> String -> ExpQ
-makeShaderExp typ cmp src =
+-- BASE
+
+mkShaderExp :: TypeQ -> (BS.ByteString -> IO BS.ByteString) -> String -> ExpQ
+mkShaderExp typ cmp src =
 	(`sigE` typ) . litE . stringL . BSC.unpack =<< runIO (cmp $ BSC.pack src)
 
-makeShaderDec ::
+mkShaderDec ::
 	String -> TypeQ -> (BS.ByteString -> IO BS.ByteString) -> String -> DecsQ
-makeShaderDec nm tp cmp src = sequence [
+mkShaderDec nm tp cmp src = sequence [
 	sigD (mkName nm) tp,
-	valD (varP $ mkName nm) (normalB $ makeShaderExp tp cmp src) [] ]
+	valD (varP $ mkName nm) (normalB $ mkShaderExp tp cmp src) [] ]
