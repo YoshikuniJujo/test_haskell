@@ -123,7 +123,7 @@ getMemoryRequirements (Device.D dvc)
 		peek pr
 
 bindMemory :: Device.D -> I -> Device.MemoryImage -> IO ()
-bindMemory (Device.D dvc) (I img) (Device.MemoryImage mem) = do
+bindMemory (Device.D dvc) (I img) (Device.MemoryImage _ mem) = do
 	r <- C.bindMemory dvc img mem 0
 	throwUnlessSuccess $ Result r
 

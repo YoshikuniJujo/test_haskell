@@ -116,4 +116,4 @@ newtype MemoryList v = MemoryList C.Memory deriving Show
 
 newtype MemoryAtom v = MemoryAtom C.Memory deriving Show
 
-newtype MemoryImage = MemoryImage C.Memory deriving Show
+data MemoryImage = MemoryImage Size C.Memory deriving Show

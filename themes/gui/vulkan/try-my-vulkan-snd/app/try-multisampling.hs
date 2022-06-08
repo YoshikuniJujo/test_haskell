@@ -270,11 +270,11 @@ newGlobal = do
 	dss <- newIORef []
 	ml <- newIORef 0
 	ti <- newIORef $ Vk.Image.I NullPtr
-	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	tim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
 	tiv <- newIORef $ Vk.ImageView.I NullPtr
 	ts <- newIORef $ Vk.Sampler.S NullPtr
 	di <- newIORef $ Vk.Image.I NullPtr
-	dim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	dim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
 	divw <- newIORef $ Vk.ImageView.I NullPtr
 	tfp <- newIORef ""
 	mfp <- newIORef ""
@@ -283,7 +283,7 @@ newGlobal = do
 	mnld <- newIORef 0
 	msaaS <- newIORef Vk.Sample.CountFlagsZero
 	ci <- newIORef $ Vk.Image.I NullPtr
-	cim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	cim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
 	civ <- newIORef $ Vk.ImageView.I NullPtr
 	pure Global {
 		globalWindow = win,
