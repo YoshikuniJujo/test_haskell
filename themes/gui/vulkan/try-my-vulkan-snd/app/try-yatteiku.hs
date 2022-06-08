@@ -13,9 +13,14 @@ import Data.Maybe
 import Data.List
 import Data.Word
 import Data.Color
+import Codec.Picture
 
 import Shaderc.TH
 import Shaderc.EnumAuto
+
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Internal as BS
+import qualified Data.Vector.Storable as V
 
 import Vulkan.Base
 
@@ -119,25 +124,31 @@ runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO
 runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
 	makePipeline device rp \ppl ->
-	makeImage phdvc device \bimg mi ->
-	makeImageView device bimg \iv ->
-	makeFramebuffer device rp iv \fb ->
-	makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
-	print cb
-	let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
-			Vk.RenderPass.beginInfoNext = Nothing,
-			Vk.RenderPass.beginInfoRenderPass = rp,
-			Vk.RenderPass.beginInfoFramebuffer = fb,
-			Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
-				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-				Vk.C.rect2dExtent = Vk.C.Extent2d
-					screenWidth screenHeight
-				},
-			Vk.RenderPass.beginInfoClearValues = [] }
-	Vk.Cmd.beginRenderPass @() @('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
-		cb renderpassBeginInfo Vk.Subpass.ContentsInline do
-		Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
-		Vk.Cmd.draw cb 3 1 0 0
+	makeImage phdvc device \bimg mi -> do
+		makeImageView device bimg \iv ->
+			makeFramebuffer device rp iv \fb ->
+			makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
+			print cb
+			let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
+					Vk.RenderPass.beginInfoNext = Nothing,
+					Vk.RenderPass.beginInfoRenderPass = rp,
+					Vk.RenderPass.beginInfoFramebuffer = fb,
+					Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
+						Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+						Vk.C.rect2dExtent = Vk.C.Extent2d
+							screenWidth screenHeight
+						},
+					Vk.RenderPass.beginInfoClearValues = [] }
+			Vk.Cmd.beginRenderPass @() @('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
+				cb renderpassBeginInfo Vk.Subpass.ContentsInline do
+				Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
+				Vk.Cmd.draw cb 3 1 0 0
+		bs <- Vk.Memory.Image.readByteString
+			device mi Vk.Memory.M.MapFlagsZero
+		let	v = uncurry V.unsafeFromForeignPtr0 $ BS.toForeignPtr0 bs
+			jimg = Image
+				(fromIntegral screenWidth) (fromIntegral screenHeight) v
+		writePng "yatteiku.png" (jimg :: Image PixelRGBA8)
 
 makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
 	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a

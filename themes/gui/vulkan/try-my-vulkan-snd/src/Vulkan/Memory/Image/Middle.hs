@@ -3,6 +3,7 @@
 
 module Vulkan.Memory.Image.Middle where
 
+import Foreign.Ptr
 import Foreign.Pointable
 
 import Vulkan.Memory
@@ -42,3 +43,9 @@ free :: Pointable n =>
 	Device.D -> Device.MemoryImage -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
 free dvc (Device.MemoryImage _ m) mac = M.free dvc (Device.Memory m) mac
+
+map :: Device.D -> Device.MemoryImage -> M.MapFlags -> IO (Ptr a)
+map dvc (Device.MemoryImage sz m) flgs = M.map dvc (Device.Memory m) 0 sz flgs
+
+unmap :: Device.D -> Device.MemoryImage -> IO ()
+unmap dvc (Device.MemoryImage _ m) = M.unmap dvc $ Device.Memory m
