@@ -21,6 +21,8 @@ import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
+import qualified Vulkan.CommandPool as Vk.CommandPool
+import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
@@ -59,8 +61,21 @@ main = do
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
 		Vk.Device.create @() @()
-			physicalDevice deviceInfo nil nil \device -> do
-			print device
+			physicalDevice deviceInfo nil nil $ withDevice queueFamily
+
+withDevice :: Vk.QueueFamily.Index -> Vk.Device.D sd -> IO ()
+withDevice queueFamily device = do
+	print device
+	queue <- Vk.Device.getQueue device queueFamily 0
+	print queue
+	let	commandPoolInfo = Vk.CommandPool.CreateInfo {
+			Vk.CommandPool.createInfoNext = Nothing,
+			Vk.CommandPool.createInfoFlags =
+				Vk.CommandPool.CreateResetCommandBufferBit,
+			Vk.CommandPool.createInfoQueueFamilyIndex =
+				queueFamily }
+	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool ->
+		print commandPool
 
 [glslComputeShader|
 
