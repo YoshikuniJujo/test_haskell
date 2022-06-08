@@ -11,12 +11,12 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
       size: 1613
-      sha256: fd2e8791ddac21e7d950f01ae7e00b9dd1a8203b45dce28abc7ddadfa145dae5
-    commit: 20de2cb05eff3b570b30fbdc4273cdd636f914be
+      sha256: 7b2ed57539392172fd5bb8df4e04fa03bcbc3bb7de35e753bdd29f0508310703
+    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
   original:
     subdir: themes/gui/vulkan/try-shaderc
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 20de2cb05eff3b570b30fbdc4273cdd636f914be
+    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
 - completed:
     subdir: features/ffi/try-pointable
     name: try-pointable
@@ -25,11 +25,11 @@ packages:
     pantry-tree:
       size: 629
       sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
-    commit: 20de2cb05eff3b570b30fbdc4273cdd636f914be
+    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
   original:
     subdir: features/ffi/try-pointable
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 20de2cb05eff3b570b30fbdc4273cdd636f914be
+    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
 - completed:
     name: size-alignment-list
     version: 0.1.0.0
