@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -52,3 +53,10 @@ write dvc (Device.Memory . (\(Device.MemoryAtom m) -> m) -> mem) flgs v = do
 	poke dat v'
 	M.unmap dvc mem
 	where v' = Foreign.Storable.Generic.Wrap v
+
+read :: forall v . Foreign.Storable.Generic.G v =>
+	Device.D -> Device.MemoryAtom v -> M.MapFlags -> IO v
+read dvc (Device.Memory . (\(Device.MemoryAtom m) -> m) -> mem) flgs = do
+	dat <- M.map dvc mem 0 sz flgs
+	Foreign.Storable.Generic.unWrap <$> peek dat <* M.unmap dvc mem
+	where sz = fromIntegral (sizeOf @(Foreign.Storable.Generic.Wrap v) undefined)
