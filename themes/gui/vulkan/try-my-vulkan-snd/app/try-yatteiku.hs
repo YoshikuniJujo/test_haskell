@@ -135,7 +135,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 			Vk.RenderPass.beginInfoClearValues = [] }
 	Vk.Cmd.beginRenderPass @() @('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
 		cb renderpassBeginInfo Vk.Subpass.ContentsInline do
-		pure ()
+		Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
 
 makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
 	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
