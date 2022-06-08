@@ -18,6 +18,9 @@ import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Enum as Vk.Queue
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
+import qualified Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Vulkan.Device as Vk.Device
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
@@ -38,6 +41,26 @@ main = do
 		queueFamily <-
 			findQueueFamily physicalDevice Vk.Queue.ComputeBit
 		print queueFamily
+		let	queueInfo = Vk.Device.Queue.CreateInfo {
+				Vk.Device.Queue.createInfoNext = Nothing,
+				Vk.Device.Queue.createInfoFlags =
+					Vk.Device.Queue.CreateFlagsZero,
+				Vk.Device.Queue.createInfoQueueFamilyIndex =
+					queueFamily,
+				Vk.Device.Queue.createInfoQueuePriorities =
+					[0.0] }
+			deviceInfo = Vk.Device.CreateInfo {
+				Vk.Device.createInfoNext = Nothing,
+				Vk.Device.createInfoFlags =
+					Vk.Device.CreateFlagsZero,
+				Vk.Device.createInfoQueueCreateInfos =
+					[queueInfo],
+				Vk.Device.createInfoEnabledLayerNames = [],
+				Vk.Device.createInfoEnabledExtensionNames = [],
+				Vk.Device.createInfoEnabledFeatures = Nothing }
+		Vk.Device.create @() @()
+			physicalDevice deviceInfo nil nil \device -> do
+			print device
 
 [glslComputeShader|
 
