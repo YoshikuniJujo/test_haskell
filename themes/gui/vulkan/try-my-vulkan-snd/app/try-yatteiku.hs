@@ -41,6 +41,7 @@ import qualified Vulkan.Image.Enum as Vk.Img
 import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
+import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Image as Vk.Memory.Image
 import qualified Vulkan.Attachment as Vk.Attachment
@@ -205,8 +206,12 @@ makeImage phdvc dvc f = do
 		print imgMemReq
 		let	imgMemReqTypes =
 				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
-			memPropTypes = fst <$>
-				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+			memPropTypes = (fst <$>)
+				. filter (const True
+					. (/= zeroBits)
+					. (.&. Vk.Memory.PropertyHostVisibleBit)
+					. Vk.Memory.M.mTypePropertyFlags . snd)
+				$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
 					memProps
 			memoryTypeIndex = case filter
 				(`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
