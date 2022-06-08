@@ -8,9 +8,11 @@ module Main where
 
 import Data.Default
 import Data.Bits
+import Data.Word
+
+import qualified Data.Vector.Storable as V
 
 import Shaderc.TH
-
 import Vulkan.Base
 
 import qualified Vulkan.Instance as Vk.Instance
@@ -76,6 +78,14 @@ withDevice queueFamily device = do
 				queueFamily }
 	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool ->
 		print commandPool
+
+dataSize :: Integral n => n
+dataSize = 1000000
+
+dataA, dataB, dataC :: V.Vector Word32
+dataA = V.replicate dataSize 3
+dataB = V.replicate dataSize 5
+dataC = V.replicate dataSize 0
 
 [glslComputeShader|
 
