@@ -4,7 +4,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Memory.List where
+module Vulkan.Memory.List.Middle where
 
 import Foreign.Marshal.Array
 import Foreign.Storable

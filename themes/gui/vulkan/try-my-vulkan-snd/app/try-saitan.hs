@@ -31,6 +31,7 @@ import qualified Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Vulkan.Memory as Vk.Memory
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
+import qualified Vulkan.Memory.List.Middle as Vk.Memory.List
 
 main :: IO ()
 main = do
@@ -107,6 +108,11 @@ storageBufferNew dvc phdvc xs = do
 			Vk.Memory.PropertyHostVisibleBit .|.
 			Vk.Memory.PropertyHostCoherentBit )
 		print memoryTypeIndex
+		let	memoryInfo = Vk.Memory.List.AllocateInfo {
+				Vk.Memory.List.allocateInfoNext = Nothing,
+				Vk.Memory.List.allocateInfoMemoryTypeIndex =
+					memoryTypeIndex }
+--		memory <- Vk.Memory.List.allocate dvc
 		pure ()
 
 findQueueFamily ::

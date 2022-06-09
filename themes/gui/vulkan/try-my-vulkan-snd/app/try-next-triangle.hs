@@ -111,7 +111,7 @@ import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
 import qualified Vulkan.Buffer.List.Middle as Vk.Buffer.List
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Vulkan.Memory.List as Vk.Memory.List
+import qualified Vulkan.Memory.List.Middle as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Command.List as Vk.Cmd.List

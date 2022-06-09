@@ -143,7 +143,7 @@ library
       Vulkan.Memory.Enum
       Vulkan.Memory.Image
       Vulkan.Memory.Image.Middle
-      Vulkan.Memory.List
+      Vulkan.Memory.List.Middle
       Vulkan.Memory.Middle
       Vulkan.Middle
       Vulkan.PhysicalDevice
