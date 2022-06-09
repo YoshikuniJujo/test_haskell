@@ -15,6 +15,7 @@ import qualified Data.Vector.Storable as V
 import Shaderc.TH
 import Vulkan.Base
 
+import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Vulkan.Queue.Enum as Vk.Queue
@@ -25,6 +26,8 @@ import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
+import qualified Vulkan.Buffer.Enum as Vk.Buffer
+import qualified Vulkan.Buffer.List as Vk.Buffer.List
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
@@ -62,11 +65,12 @@ main = do
 				Vk.Device.createInfoEnabledLayerNames = [],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
-		Vk.Device.create @() @()
-			physicalDevice deviceInfo nil nil $ withDevice queueFamily
+		Vk.Device.create @() @() physicalDevice deviceInfo nil nil
+			$ withDevice physicalDevice queueFamily
 
-withDevice :: Vk.QueueFamily.Index -> Vk.Device.D sd -> IO ()
-withDevice queueFamily device = do
+withDevice ::
+	Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Device.D sd -> IO ()
+withDevice phdvc queueFamily device = do
 	print device
 	queue <- Vk.Device.getQueue device queueFamily 0
 	print queue
@@ -76,8 +80,9 @@ withDevice queueFamily device = do
 				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				queueFamily }
-	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool ->
+	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool -> do
 		print commandPool
+		storageBufferNew device phdvc dataA
 
 dataSize :: Integral n => n
 dataSize = 1000000
@@ -86,6 +91,23 @@ dataA, dataB, dataC :: V.Vector Word32
 dataA = V.replicate dataSize 3
 dataB = V.replicate dataSize 5
 dataC = V.replicate dataSize 0
+
+storageBufferNew ::
+	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> IO ()
+storageBufferNew dvc phdvc xs = do
+	let	bufferInfo = Vk.Buffer.List.CreateInfo {
+			Vk.Buffer.List.createInfoNext = Nothing,
+			Vk.Buffer.List.createInfoFlags =
+				Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.List.createInfoLength = dataSize,
+			Vk.Buffer.List.createInfoUsage =
+				Vk.Buffer.UsageStorageBufferBit,
+			Vk.Buffer.List.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
+	pure ()
+--	Vk.Buffer.List.create dvc bufferInfo nil nil \buffer ->
+--		print buffer
 
 [glslComputeShader|
 
