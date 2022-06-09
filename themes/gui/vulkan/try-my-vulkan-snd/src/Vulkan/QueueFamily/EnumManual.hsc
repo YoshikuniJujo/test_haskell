@@ -12,7 +12,7 @@ import Data.Word
 
 import Foreign.C.Enum
 
-enum "Index" ''#{type uint32_t} [''Show, ''Eq, ''Storable, ''Num, ''Enum]
+enum "Index" ''#{type uint32_t} [''Show, ''Eq, ''Storable, ''Enum]
 	[("Ignored", #{const VK_QUEUE_FAMILY_IGNORED})]
 
 indices :: [Index]

@@ -37,7 +37,7 @@ data CreateInfo n = CreateInfo {
 	createInfoSize :: Device.Size,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
-	createInfoQueueFamilyIndices :: [#{type uint32_t}] }
+	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
@@ -47,8 +47,8 @@ createInfoToCore CreateInfo {
 	createInfoSize = Device.Size sz,
 	createInfoUsage = UsageFlagBits usg,
 	createInfoSharingMode = SharingMode sm,
-	createInfoQueueFamilyIndices = length &&& id -> (qfic, qfis)
-	} = do
+	createInfoQueueFamilyIndices =
+		length &&& (QueueFamily.unIndex <$>) -> (qfic, qfis) } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis

@@ -11,7 +11,6 @@ module Vulkan.Buffer.List.Middle where
 import Foreign.Storable
 import Foreign.Pointable
 import Data.Kind
-import Data.Word
 
 import qualified Foreign.Storable.Generic
 
@@ -23,6 +22,7 @@ import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.Middle as M
 import qualified Vulkan.Buffer.Core as C
 import qualified Vulkan.Memory.Middle as Memory.M
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data CreateInfo n v = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -30,7 +30,7 @@ data CreateInfo n v = CreateInfo {
 	createInfoLength :: Int,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
-	createInfoQueueFamilyIndices :: [Word32] }
+	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
 {-

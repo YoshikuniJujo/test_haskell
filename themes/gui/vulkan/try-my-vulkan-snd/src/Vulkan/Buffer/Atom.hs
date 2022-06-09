@@ -8,7 +8,6 @@ module Vulkan.Buffer.Atom where
 
 import Foreign.Storable
 import Foreign.Pointable
-import Data.Word
 
 import qualified Foreign.Storable.Generic
 
@@ -20,13 +19,14 @@ import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.Middle as M
 import qualified Vulkan.Buffer.Core as C
 import qualified Vulkan.Memory.Middle as Memory.M
+import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data CreateInfo n v = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
-	createInfoQueueFamilyIndices :: [Word32] }
+	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
 createInfoToMiddle :: forall n v . Storable (Foreign.Storable.Generic.Wrap v) =>
