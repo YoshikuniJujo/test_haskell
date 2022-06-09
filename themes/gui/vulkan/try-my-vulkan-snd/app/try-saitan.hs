@@ -99,14 +99,16 @@ storageBufferNew dvc phdvc xs = do
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
 				Vk.Buffer.CreateFlagsZero,
-			Vk.Buffer.List.createInfoLength = dataSize,
+			Vk.Buffer.List.createInfoLength = V.length xs,
 			Vk.Buffer.List.createInfoUsage =
 				Vk.Buffer.UsageStorageBufferBit,
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
-	Vk.Buffer.List.create @_ @() @Word32 dvc bufferInfo nil nil \buffer ->
+	Vk.Buffer.List.create @_ @() @Word32 dvc bufferInfo nil nil \buffer -> do
 		print buffer
+		requirements <- Vk.Buffer.List.getMemoryRequirements dvc buffer
+		print requirements
 
 [glslComputeShader|
 

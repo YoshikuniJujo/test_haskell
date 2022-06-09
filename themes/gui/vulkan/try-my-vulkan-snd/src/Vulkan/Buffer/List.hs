@@ -3,7 +3,8 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Buffer.List (L, create, M.CreateInfo(..)) where
+module Vulkan.Buffer.List (
+	L, create, M.CreateInfo(..), getMemoryRequirements ) where
 
 import Foreign.Storable
 import Foreign.Pointable
@@ -13,6 +14,7 @@ import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
+import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Buffer.List.Middle as M
 
 newtype L s v = L (M.B v) deriving Show
@@ -25,3 +27,6 @@ create :: forall ds n v c d a . (
 	(forall s . L s v -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\b -> M.destroy dvc b macd) (f . L)
+
+getMemoryRequirements :: Device.D ds -> L s v -> IO Memory.Requirements
+getMemoryRequirements (Device.D dvc) (L b) = M.getMemoryRequirements dvc b
