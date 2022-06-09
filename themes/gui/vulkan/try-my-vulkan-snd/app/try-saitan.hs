@@ -28,15 +28,9 @@ import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Buffer.List as Vk.Buffer.List
-
-findQueueFamily ::
-	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
-findQueueFamily phdvc qb = do
-	queueFamilyProperties <-
-		Vk.PhysicalDevice.getQueueFamilyProperties phdvc
-	pure . fst . head $ filter ((/= zeroBits)
-		. (.&. qb) . Vk.QueueFamily.propertiesQueueFlags
-		. snd) queueFamilyProperties
+import qualified Vulkan.Memory as Vk.Memory
+import qualified Vulkan.Memory.Enum as Vk.Memory
+import qualified Vulkan.Memory.Middle as Vk.Memory.M
 
 main :: IO ()
 main = do
@@ -109,6 +103,37 @@ storageBufferNew dvc phdvc xs = do
 		print buffer
 		requirements <- Vk.Buffer.List.getMemoryRequirements dvc buffer
 		print requirements
+		memoryTypeIndex <- findMemoryTypeIndex phdvc requirements (
+			Vk.Memory.PropertyHostVisibleBit .|.
+			Vk.Memory.PropertyHostCoherentBit )
+		print memoryTypeIndex
+		pure ()
+
+findQueueFamily ::
+	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
+findQueueFamily phdvc qb = do
+	queueFamilyProperties <-
+		Vk.PhysicalDevice.getQueueFamilyProperties phdvc
+	pure . fst . head $ filter ((/= zeroBits)
+		. (.&. qb) . Vk.QueueFamily.propertiesQueueFlags
+		. snd) queueFamilyProperties
+
+findMemoryTypeIndex :: Vk.PhysicalDevice.P ->
+	Vk.Memory.M.Requirements -> Vk.Memory.PropertyFlags ->
+	IO Vk.Memory.TypeIndex
+findMemoryTypeIndex physicalDevice requirements memoryProp = do
+	memoryProperties <- Vk.PhysicalDevice.getMemoryProperties physicalDevice
+	print memoryProperties
+	let	reqTypes = Vk.Memory.M.requirementsMemoryTypeBits requirements
+		memPropTypes = (fst <$>)
+			. filter ((== memoryProp)
+				. (.&. memoryProp)
+				. Vk.Memory.M.mTypePropertyFlags . snd)
+			$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+				memoryProperties
+	case filter (`Vk.Memory.M.elemTypeIndex` reqTypes) memPropTypes of
+		[] -> error "NO available memory types"
+		i : _ -> pure i
 
 [glslComputeShader|
 

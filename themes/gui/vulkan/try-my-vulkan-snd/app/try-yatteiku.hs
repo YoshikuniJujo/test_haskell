@@ -218,8 +218,7 @@ makeImage phdvc dvc f = do
 		let	imgMemReqTypes =
 				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
 			memPropTypes = (fst <$>)
-				. filter (const True
-					. (/= zeroBits)
+				. filter ((/= zeroBits)
 					. (.&. Vk.Memory.PropertyHostVisibleBit)
 					. Vk.Memory.M.mTypePropertyFlags . snd)
 				$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
