@@ -27,7 +27,7 @@ import qualified Vulkan.Device as Vk.Device
 import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Vulkan.Buffer.List.Middle as Vk.Buffer.List
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index

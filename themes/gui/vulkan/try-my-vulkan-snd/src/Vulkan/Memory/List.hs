@@ -17,7 +17,7 @@ import Vulkan.Memory
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Buffer.List as Buffer
+import qualified Vulkan.Buffer.List.Middle as Buffer
 import qualified Vulkan.Memory.Middle as M
 
 data AllocateInfo n = AllocateInfo {

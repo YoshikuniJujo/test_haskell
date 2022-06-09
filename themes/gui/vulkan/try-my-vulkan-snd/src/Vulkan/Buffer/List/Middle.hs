@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Buffer.List where
+module Vulkan.Buffer.List.Middle where
 
 import Foreign.Storable
 import Foreign.Pointable

@@ -113,7 +113,7 @@ import qualified Vulkan.Semaphore as Vk.Semaphore
 import qualified Vulkan.Fence as Vk.Fence
 import qualified Vulkan.Fence.Enum as Vk.Fence
 import qualified Vulkan.VertexInput as Vk.VertexInput
-import qualified Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Vulkan.Buffer.List.Middle as Vk.Buffer.List
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
@@ -143,7 +143,7 @@ import qualified Vulkan.Memory as Vk.Memory
 import qualified Vulkan.Command.Middle as Vk.Cmd.M
 
 import Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
-import Vulkan.Buffer.List (BList(..))
+import Vulkan.Buffer.List.Middle (BList(..))
 
 main :: IO ()
 main = runReaderT run =<< newGlobal
