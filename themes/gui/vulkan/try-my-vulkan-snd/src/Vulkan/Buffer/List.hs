@@ -1,5 +1,27 @@
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Buffer.List where
+module Vulkan.Buffer.List (L, create, M.CreateInfo(..)) where
 
+import Foreign.Storable
+import Foreign.Pointable
+import Control.Exception
+
+import qualified Foreign.Storable.Generic
+
+import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Buffer.List.Middle as M
+
+newtype L s v = L (M.B v) deriving Show
+
+create :: forall ds n v c d a . (
+	Storable (Foreign.Storable.Generic.Wrap v),
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D ds -> M.CreateInfo n v ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall s . L s v -> IO a) -> IO a
+create (Device.D dvc) ci macc macd f =
+	bracket (M.create dvc ci macc) (\b -> M.destroy dvc b macd) (f . L)
