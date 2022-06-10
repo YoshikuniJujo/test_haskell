@@ -78,6 +78,7 @@ library
       Vulkan.Descriptor
       Vulkan.Descriptor.Core
       Vulkan.Descriptor.Enum
+      Vulkan.Descriptor.Pool
       Vulkan.Descriptor.Pool.Core
       Vulkan.Descriptor.Pool.Enum
       Vulkan.Descriptor.Pool.Middle

@@ -32,6 +32,9 @@ import qualified Vulkan.Memory as Vk.Memory
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Vulkan.Memory.List as Vk.Memory.List
+import qualified Vulkan.Descriptor.Enum as Vk.Descriptor
+import qualified Vulkan.Descriptor.Pool as Vk.Descriptor.Pool
+import qualified Vulkan.Descriptor.Pool.Enum as Vk.Descriptor.Pool
 
 main :: IO ()
 main = do
@@ -82,6 +85,22 @@ withDevice phdvc queueFamily device = do
 			print bufA; print memA
 			print bufB; print memB
 			print bufC; print memC
+			createDescriptorPool device
+
+createDescriptorPool :: Vk.Device.D sd -> IO ()
+createDescriptorPool dvc = do
+	let	poolSize = Vk.Descriptor.Pool.Size {
+			Vk.Descriptor.Pool.sizeType =
+				Vk.Descriptor.TypeStorageBuffer,
+			Vk.Descriptor.Pool.sizeDescriptorCount = 10 }
+		descPoolInfo = Vk.Descriptor.Pool.CreateInfo {
+			Vk.Descriptor.Pool.createInfoNext = Nothing,
+			Vk.Descriptor.Pool.createInfoFlags =
+				Vk.Descriptor.Pool.CreateFreeDescriptorSetBit,
+			Vk.Descriptor.Pool.createInfoMaxSets = 1,
+			Vk.Descriptor.Pool.createInfoPoolSizes = [poolSize] }
+	Vk.Descriptor.Pool.create @() dvc descPoolInfo nil nil \descPool ->
+		print descPool
 
 dataSize :: Integral n => n
 dataSize = 1000000
