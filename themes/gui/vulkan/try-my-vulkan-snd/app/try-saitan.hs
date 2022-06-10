@@ -90,7 +90,7 @@ dataC = V.replicate dataSize 0
 storageBufferNew ::
 	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> IO ()
 storageBufferNew dvc phdvc xs = do
-	let	bufferInfo = Vk.Buffer.List.CreateInfo {
+	let	bInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
 				Vk.Buffer.CreateFlagsZero,
@@ -100,7 +100,7 @@ storageBufferNew dvc phdvc xs = do
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
-	Vk.Buffer.List.create @_ @() @Word32 dvc bufferInfo nil nil \buffer -> do
+	Vk.Buffer.List.create @_ @() @Word32 dvc bInfo nil nil \buffer -> do
 		print buffer
 		requirements <- Vk.Buffer.List.getMemoryRequirements dvc buffer
 		print requirements
@@ -112,8 +112,11 @@ storageBufferNew dvc phdvc xs = do
 				Vk.Memory.List.allocateInfoNext = Nothing,
 				Vk.Memory.List.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
-		Vk.Memory.List.allocate @() dvc buffer memoryInfo nil nil \memory ->
+		Vk.Memory.List.allocate
+			@() dvc buffer memoryInfo nil nil \memory -> do
 			print memory
+			bnd <- Vk.Buffer.List.bindMemory dvc buffer memory
+			print bnd
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
