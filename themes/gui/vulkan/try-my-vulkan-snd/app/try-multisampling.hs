@@ -1177,7 +1177,7 @@ createTextureImage = do
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
 	dvc <- readGlobal globalDevice
-	lift $ Vk.Memory.List.write dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
+	lift $ Vk.Memory.List.writeList dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
 		(V.toList $ imageData img)
 	(ti, tim) <- createImage
 		(fromIntegral texWidth) (fromIntegral texHeight)

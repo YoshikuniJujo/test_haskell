@@ -48,9 +48,9 @@ free :: Pointable n =>
 	IO ()
 free dvc (Device.MemoryList m) mac = M.free dvc (Device.Memory m) mac
 
-write :: Foreign.Storable.Generic.G v =>
+writeList :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> [v] -> IO ()
-write dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+writeList dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs
 	pokeArray dat vs'

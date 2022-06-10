@@ -1069,7 +1069,7 @@ createTextureImage = do
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
 	dvc <- readGlobal globalDevice
-	lift $ Vk.Memory.List.write dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
+	lift $ Vk.Memory.List.writeList dvc stagingBufferMemory Vk.Memory.M.MapFlagsZero
 		(V.toList $ imageData img)
 	(ti, tim) <- createImage
 		(fromIntegral texWidth) (fromIntegral texHeight)
@@ -1275,7 +1275,7 @@ createVertexBuffer = do
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero vertices
+	lift $ Vk.Memory.List.writeList dvc sbm Vk.Memory.M.MapFlagsZero vertices
 	(vb, vbm) <- createBufferList (length vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
@@ -1293,7 +1293,7 @@ createIndexBuffer = do
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero indices
+	lift $ Vk.Memory.List.writeList dvc sbm Vk.Memory.M.MapFlagsZero indices
 	(ib, ibm) <- createBufferList (length indices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageIndexBufferBit)

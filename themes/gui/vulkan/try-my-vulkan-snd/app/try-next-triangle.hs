@@ -865,7 +865,7 @@ createVertexBuffer = do
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.write dvc sbm Vk.Memory.M.MapFlagsZero vertices
+	lift $ Vk.Memory.List.writeList dvc sbm Vk.Memory.M.MapFlagsZero vertices
 	(vb, vbm) <- createBuffer (length vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
