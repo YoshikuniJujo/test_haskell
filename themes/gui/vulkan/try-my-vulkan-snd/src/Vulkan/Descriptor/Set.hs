@@ -24,7 +24,7 @@ import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.View as Buffer.View
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor as Dsc
-import qualified Vulkan.Descriptor.Pool as Pool
+import qualified Vulkan.Descriptor.Pool.Middle as Pool
 import qualified Vulkan.Descriptor.Set.Layout as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
 

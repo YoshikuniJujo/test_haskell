@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Pool where
+module Vulkan.Descriptor.Pool.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
