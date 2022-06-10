@@ -6,12 +6,15 @@
 
 module Vulkan.Memory.List.Middle where
 
+import Prelude hiding (readList)
+
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Exception
 import Data.MonoTraversable
+import qualified Data.Sequences as Seq
 
 import qualified Foreign.Storable.Generic
 
@@ -81,3 +84,8 @@ readList :: forall v . Foreign.Storable.Generic.G v =>
 readList dvc (toMemory -> (ln, mem)) flgs = (Foreign.Storable.Generic.unWrap <$>) <$> bracket
 	(M.map dvc mem 0 (fromIntegral $ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined * ln) flgs)
 	(const $ M.unmap dvc mem) (peekArray ln)
+
+readMono :: forall vs . (
+	Foreign.Storable.Generic.G (Element vs), Seq.IsSequence vs) =>
+	Device.D -> Device.MemoryList (Element vs) -> M.MapFlags -> IO vs
+readMono dvc mem flgs = Seq.fromList <$> readList dvc mem flgs
