@@ -9,6 +9,7 @@ module Vulkan.Memory.List.Middle where
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Pointable
+import Control.Arrow
 import Data.MonoTraversable
 
 import qualified Foreign.Storable.Generic
@@ -50,28 +51,28 @@ free dvc (Device.MemoryList _ m) mac = M.free dvc (Device.Memory m) mac
 
 writeList :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> [v] -> IO ()
-writeList dvc (Device.Memory . (\(Device.MemoryList _ m) -> m) -> mem) flgs vs = do
+writeList dvc (second Device.Memory . (\(Device.MemoryList l m) -> (l, m)) -> (ln, mem)) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs
-	pokeArray dat vs'
+	pokeArray dat $ take ln vs'
 	M.unmap dvc mem
 	where vs' = Foreign.Storable.Generic.Wrap <$> vs
 
 writeMono :: (Foreign.Storable.Generic.G (Element vs), MonoFoldable vs) =>
 	Device.D -> Device.MemoryList (Element vs) -> M.MapFlags -> vs -> IO ()
-writeMono dvc (Device.Memory . (\(Device.MemoryList _ m) -> m) -> mem) flgs vs = do
+writeMono dvc (second Device.Memory . (\(Device.MemoryList l m) -> (l, m)) -> (ln, mem)) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (w $ headEx vs) * olength vs) flgs
-	pokeArray dat $ w <$> otoList vs
+	pokeArray dat $ w <$> take ln (otoList vs)
 	M.unmap dvc mem
 	where w = Foreign.Storable.Generic.Wrap
 
 writeMonoW :: (Foreign.Storable.Generic.G v, MonoFoldable vs, Element vs ~ Foreign.Storable.Generic.Wrap v) =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> vs -> IO ()
-writeMonoW dvc (Device.Memory . (\(Device.MemoryList _ m) -> m) -> mem) flgs vs = do
+writeMonoW dvc (second Device.Memory . (\(Device.MemoryList l m) -> (l, m)) -> (ln, mem)) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (headEx vs) * olength vs) flgs
-	pokeArray dat $ otoList vs
+	pokeArray dat $ take ln (otoList vs)
 	M.unmap dvc mem
 
 {-
