@@ -50,7 +50,7 @@ copyBufferToImage ::
 	CommandBuffer.C vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
-	(Buffer.List.B sb) (Image.I di) (Image.Layout dil)
+	(Buffer.List.B _ sb) (Image.I di) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs

@@ -204,8 +204,8 @@ newGlobal = do
 	iffs <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
-	vb <- newIORef $ Vk.Buffer.List.B NullPtr
-	vbm <- newIORef $ Vk.Device.MemoryList NullPtr
+	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
+	vbm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,

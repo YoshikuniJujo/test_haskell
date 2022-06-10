@@ -252,10 +252,10 @@ newGlobal = do
 	iffs <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
-	vb <- newIORef $ Vk.Buffer.List.B NullPtr
-	vbm <- newIORef $ Vk.Device.MemoryList NullPtr
-	ib <- newIORef $ Vk.Buffer.List.B NullPtr
-	ibm <- newIORef $ Vk.Device.MemoryList NullPtr
+	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
+	vbm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
+	ib <- newIORef $ Vk.Buffer.List.B 0 NullPtr
+	ibm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
 	ubs <- newIORef []
 	ubms <- newIORef []
 	dp <- newIORef $ Vk.DscPool.P NullPtr

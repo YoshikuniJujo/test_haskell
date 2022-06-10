@@ -33,13 +33,6 @@ data CreateInfo n v = CreateInfo {
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
-{-
-createInfoToCore :: forall n v r . (
-	Storable (Foreign.Storable.Generic.Wrap v), Pointable n ) =>
-	CreateInfo n v -> ContT r IO (Ptr C.CreateInfo)
-createInfoToCore = M.createInfoToCore . createInfoToMiddle
--}
-
 createInfoToMiddle :: forall n v . Storable (Foreign.Storable.Generic.Wrap v) =>
 	CreateInfo n v -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
@@ -61,27 +54,28 @@ createInfoToMiddle CreateInfo {
 	sz = sizeOf @(Foreign.Storable.Generic.Wrap v) undefined
 	al = alignment @(Foreign.Storable.Generic.Wrap v) undefined
 
-newtype B v = B C.B deriving (Show, Storable)
+data B v = B Int C.B deriving Show
 
 bToMiddle :: B v -> M.B
-bToMiddle (B b) = (M.B b)
+bToMiddle (B _ b) = (M.B b)
 
 create :: (
 	Pointable n, Storable (Foreign.Storable.Generic.Wrap v),
 	Pointable n' ) =>
 	Device.D -> CreateInfo n v -> Maybe (AllocationCallbacks.A n') ->
 	IO (B v)
-create dvc ci = ((\(M.B b) -> B b) <$>) . M.create dvc (createInfoToMiddle ci)
+create dvc ci = ((\(M.B b) -> B (createInfoLength ci) b) <$>)
+	. M.create dvc (createInfoToMiddle ci)
 
 destroy :: Pointable n =>
 	Device.D -> B v -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy dvc (B b) = M.destroy dvc $ M.B b
+destroy dvc (B _ b) = M.destroy dvc $ M.B b
 
 getMemoryRequirements :: Device.D -> B v -> IO Memory.M.Requirements
-getMemoryRequirements dvc (B b) = M.getMemoryRequirements dvc $ M.B b
+getMemoryRequirements dvc (B _ b) = M.getMemoryRequirements dvc $ M.B b
 
 bindMemory :: Device.D -> B v -> Device.MemoryList v -> IO ()
-bindMemory dvc (B b) (Device.MemoryList mem) =
+bindMemory dvc (B _ b) (Device.MemoryList _ mem) =
 	M.bindMemory dvc (M.B b) (Device.Memory mem) 0
 
 data BList (vs :: [Type]) where

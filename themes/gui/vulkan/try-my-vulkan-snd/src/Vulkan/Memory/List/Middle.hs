@@ -39,18 +39,18 @@ allocateInfoToMiddle dvc b AllocateInfo {
 allocate :: (Pointable n, Pointable n') =>
 	Device.D -> Buffer.B v -> AllocateInfo n -> Maybe (AllocationCallbacks.A n') ->
 	IO (Device.MemoryList v)
-allocate dvc b ai mac = do
+allocate dvc b@(Buffer.B ln _) ai mac = do
 	mai <- allocateInfoToMiddle dvc b ai
-	(\(Device.Memory m) -> Device.MemoryList m) <$> M.allocate dvc mai mac
+	(\(Device.Memory m) -> Device.MemoryList ln m) <$> M.allocate dvc mai mac
 
 free :: Pointable n =>
 	Device.D -> Device.MemoryList v -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
-free dvc (Device.MemoryList m) mac = M.free dvc (Device.Memory m) mac
+free dvc (Device.MemoryList _ m) mac = M.free dvc (Device.Memory m) mac
 
 writeList :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> [v] -> IO ()
-writeList dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+writeList dvc (Device.Memory . (\(Device.MemoryList _ m) -> m) -> mem) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs
 	pokeArray dat vs'
@@ -59,7 +59,7 @@ writeList dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = d
 
 writeMono :: (Foreign.Storable.Generic.G (Element vs), MonoFoldable vs) =>
 	Device.D -> Device.MemoryList (Element vs) -> M.MapFlags -> vs -> IO ()
-writeMono dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+writeMono dvc (Device.Memory . (\(Device.MemoryList _ m) -> m) -> mem) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (w $ headEx vs) * olength vs) flgs
 	pokeArray dat $ w <$> otoList vs
@@ -68,8 +68,13 @@ writeMono dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = d
 
 writeMonoW :: (Foreign.Storable.Generic.G v, MonoFoldable vs, Element vs ~ Foreign.Storable.Generic.Wrap v) =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> vs -> IO ()
-writeMonoW dvc (Device.Memory . (\(Device.MemoryList m) -> m) -> mem) flgs vs = do
+writeMonoW dvc (Device.Memory . (\(Device.MemoryList _ m) -> m) -> mem) flgs vs = do
 	dat <- M.map dvc mem 0
 		(fromIntegral $ sizeOf (headEx vs) * olength vs) flgs
 	pokeArray dat $ otoList vs
 	M.unmap dvc mem
+
+{-
+readList ::
+	Device.D -> Device.MemoryList v -> M.MapFlags -> IO [v]
+	-}

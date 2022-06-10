@@ -113,7 +113,7 @@ enum "Size" ''#{type VkDeviceSize}
 
 newtype Memory = Memory C.Memory deriving Show
 
-newtype MemoryList v = MemoryList C.Memory deriving Show
+data MemoryList v = MemoryList Int C.Memory deriving Show
 
 newtype MemoryAtom v = MemoryAtom C.Memory deriving Show
 
