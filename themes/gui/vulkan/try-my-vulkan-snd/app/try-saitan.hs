@@ -117,6 +117,8 @@ storageBufferNew dvc phdvc xs = do
 			print memory
 			bnd <- Vk.Buffer.List.bindMemory dvc buffer memory
 			print bnd
+			Vk.Memory.List.writeMono
+				dvc memory Vk.Memory.M.MapFlagsZero xs
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
