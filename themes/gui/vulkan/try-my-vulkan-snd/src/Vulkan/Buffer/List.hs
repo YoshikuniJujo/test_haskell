@@ -4,7 +4,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Buffer.List (
-	L, create, M.CreateInfo(..), getMemoryRequirements, bindMemory ) where
+	L, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory
+	) where
 
 import Foreign.Storable
 import Foreign.Pointable

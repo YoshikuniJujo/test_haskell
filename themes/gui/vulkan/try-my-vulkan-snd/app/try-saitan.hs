@@ -1,6 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -77,7 +77,11 @@ withDevice phdvc queueFamily device = do
 				queueFamily }
 	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool -> do
 		print commandPool
-		storageBufferNew device phdvc dataA
+		storageBufferNew3 device phdvc dataA dataB dataC
+			\((bufA, memA), (bufB, memB), (bufC, memC)) -> do
+			print bufA; print memA
+			print bufB; print memB
+			print bufC; print memC
 
 dataSize :: Integral n => n
 dataSize = 1000000
@@ -88,8 +92,11 @@ dataB = V.replicate dataSize 5
 dataC = V.replicate dataSize 0
 
 storageBufferNew ::
-	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> IO ()
-storageBufferNew dvc phdvc xs = do
+	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> (
+		forall sb sm . 
+			Vk.Buffer.List.Binded sb sm Word32 ->
+			Vk.Device.MemoryList sm Word32 -> IO a ) -> IO a
+storageBufferNew dvc phdvc xs f = do
 	let	bInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
@@ -114,11 +121,26 @@ storageBufferNew dvc phdvc xs = do
 					memoryTypeIndex }
 		Vk.Memory.List.allocate
 			@() dvc buffer memoryInfo nil nil \memory -> do
-			print memory
 			bnd <- Vk.Buffer.List.bindMemory dvc buffer memory
-			print bnd
 			Vk.Memory.List.writeMono
 				dvc memory Vk.Memory.M.MapFlagsZero xs
+			f bnd memory
+
+type BufferMemory sb sm =
+	(Vk.Buffer.List.Binded sb sm Word32, Vk.Device.MemoryList sm Word32)
+
+storageBufferNew3 ::
+	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
+	V.Vector Word32 -> V.Vector Word32 -> V.Vector Word32 -> (
+		forall sb1 sm1 sb2 sm2 sb3 sm3 . (
+			BufferMemory sb1 sm1,
+			BufferMemory sb2 sm2,
+			BufferMemory sb3 sm3 ) -> IO a ) -> IO a
+storageBufferNew3 dvc phdvc xs1 xs2 xs3 f =
+	storageBufferNew dvc phdvc xs1 \b1 m1 ->
+	storageBufferNew dvc phdvc xs2 \b2 m2 ->
+	storageBufferNew dvc phdvc xs3 \b3 m3 ->
+	f ((b1, m1), (b2, m2), (b3, m3))
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
