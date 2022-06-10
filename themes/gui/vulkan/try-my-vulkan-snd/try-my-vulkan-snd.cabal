@@ -52,6 +52,7 @@ library
       Vulkan.Buffer.Enum
       Vulkan.Buffer.List
       Vulkan.Buffer.List.Middle
+      Vulkan.Buffer.List.Type
       Vulkan.Buffer.Middle
       Vulkan.Buffer.View
       Vulkan.Buffer.View.Core
@@ -143,6 +144,7 @@ library
       Vulkan.Memory.Enum
       Vulkan.Memory.Image
       Vulkan.Memory.Image.Middle
+      Vulkan.Memory.List
       Vulkan.Memory.List.Middle
       Vulkan.Memory.Middle
       Vulkan.Middle

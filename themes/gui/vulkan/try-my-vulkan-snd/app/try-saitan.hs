@@ -31,7 +31,7 @@ import qualified Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Vulkan.Memory as Vk.Memory
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
-import qualified Vulkan.Memory.List.Middle as Vk.Memory.List
+import qualified Vulkan.Memory.List as Vk.Memory.List
 
 main :: IO ()
 main = do
@@ -112,8 +112,8 @@ storageBufferNew dvc phdvc xs = do
 				Vk.Memory.List.allocateInfoNext = Nothing,
 				Vk.Memory.List.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
---		memory <- Vk.Memory.List.allocate dvc
-		pure ()
+		Vk.Memory.List.allocate @() dvc buffer memoryInfo nil nil \memory ->
+			print memory
 
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index

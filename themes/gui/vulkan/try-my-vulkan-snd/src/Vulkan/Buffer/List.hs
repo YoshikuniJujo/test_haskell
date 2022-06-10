@@ -12,12 +12,12 @@ import Control.Exception
 
 import qualified Foreign.Storable.Generic
 
+import Vulkan.Buffer.List.Type
+
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Memory.Middle as Memory
 import qualified Vulkan.Buffer.List.Middle as M
-
-newtype L s v = L (M.B v) deriving Show
 
 create :: forall ds n v c d a . (
 	Storable (Foreign.Storable.Generic.Wrap v),
