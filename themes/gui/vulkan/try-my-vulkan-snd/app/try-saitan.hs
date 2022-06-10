@@ -35,6 +35,7 @@ import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Vulkan.Descriptor.Pool as Vk.Descriptor.Pool
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.Descriptor.Pool
+import qualified Vulkan.Shader.Module as Vk.Shader.Module
 
 main :: IO ()
 main = do
@@ -78,17 +79,26 @@ withDevice phdvc queueFamily device = do
 				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				queueFamily }
-	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool -> do
-		print commandPool
+	Vk.CommandPool.create @() device commandPoolInfo nil nil \commandPool ->
+		print commandPool >>
 		storageBufferNew3 device phdvc dataA dataB dataC
-			\((bufA, memA), (bufB, memB), (bufC, memC)) -> do
-			print bufA; print memA
-			print bufB; print memB
-			print bufC; print memC
-			createDescriptorPool device
+			\((bufA, memA), (bufB, memB), (bufC, memC)) ->
+		print bufA >> print memA >>
+		print bufB >> print memB >>
+		print bufC >> print memC >>
+		createDescriptorPool device \descPool -> do
+		print descPool
+		let	shaderModuleInfo = Vk.Shader.Module.CreateInfo {
+				Vk.Shader.Module.createInfoNext = Nothing,
+				Vk.Shader.Module.createInfoFlags =
+					Vk.Shader.Module.CreateFlagsZero,
+				Vk.Shader.Module.createInfoCode =
+					glslComputeShaderMain }
+		pure ()
 
-createDescriptorPool :: Vk.Device.D sd -> IO ()
-createDescriptorPool dvc = do
+createDescriptorPool :: Vk.Device.D sd ->
+	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
+createDescriptorPool dvc f = do
 	let	poolSize = Vk.Descriptor.Pool.Size {
 			Vk.Descriptor.Pool.sizeType =
 				Vk.Descriptor.TypeStorageBuffer,
@@ -99,8 +109,7 @@ createDescriptorPool dvc = do
 				Vk.Descriptor.Pool.CreateFreeDescriptorSetBit,
 			Vk.Descriptor.Pool.createInfoMaxSets = 1,
 			Vk.Descriptor.Pool.createInfoPoolSizes = [poolSize] }
-	Vk.Descriptor.Pool.create @() dvc descPoolInfo nil nil \descPool ->
-		print descPool
+	Vk.Descriptor.Pool.create @() dvc descPoolInfo nil nil f
 
 dataSize :: Integral n => n
 dataSize = 1000000
