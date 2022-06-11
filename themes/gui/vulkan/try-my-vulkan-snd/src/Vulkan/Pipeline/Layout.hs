@@ -16,6 +16,8 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Pipeline.Layout.Middle as M
 
+-- data CreateInfo n s =
+
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->

@@ -39,6 +39,7 @@ import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Descriptor.Set.Layout as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Descriptor.Set.Layout.Enum as Vk.Descriptor.Set.Layout
+import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
 
 main :: IO ()
 main = do
@@ -111,7 +112,14 @@ withDevice phdvc queueFamily device = do
 					Vk.Descriptor.Set.Layout.CreateFlagsZero,
 				Vk.Descriptor.Set.Layout.createInfoBindings =
 					[binding] }
-		Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout ->
+		Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
+			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
+					Vk.Pipeline.Layout.createInfoNext = Nothing,
+					Vk.Pipeline.Layout.createInfoFlags =
+						Vk.Pipeline.Layout.CreateFlagsZero
+--					Vk.Pipeline.Layout.createInfoSetLayouts =
+--						[descSetLayout]
+					}
 			print descSetLayout
 
 createDescriptorPool :: Vk.Device.D sd ->

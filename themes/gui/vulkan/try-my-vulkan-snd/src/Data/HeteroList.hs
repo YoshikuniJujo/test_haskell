@@ -6,7 +6,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..) ) where
+	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
+	HeteroVarList(..) ) where
 
 import Prelude hiding (length)
 
@@ -45,3 +46,15 @@ instance Show (HeteroList '[]) where show HNil = "HNil"
 
 instance (Show a, Show (HeteroList as)) => Show (HeteroList (a ': as)) where
 	show (x :..: xs) = show x ++ " :..: " ++ show xs
+
+infixr 5 :...:
+
+data HeteroVarList (t :: Type -> Type) (ss :: [Type]) where
+	HVNil :: HeteroVarList t '[]
+	(:...:) :: t s -> HeteroVarList t ss -> HeteroVarList t (s ': ss)
+
+instance Show (HeteroVarList t '[]) where show HVNil = "HVNil"
+
+instance (Show (t s), Show (HeteroVarList t ss)) =>
+	Show (HeteroVarList t (s ': ss)) where
+	show (x :...: xs) = show x ++ " :...: " ++ show xs
