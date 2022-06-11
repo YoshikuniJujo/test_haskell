@@ -84,6 +84,7 @@ library
       Vulkan.Descriptor.Pool.Middle
       Vulkan.Descriptor.Set
       Vulkan.Descriptor.Set.Core
+      Vulkan.Descriptor.Set.Layout
       Vulkan.Descriptor.Set.Layout.Core
       Vulkan.Descriptor.Set.Layout.Enum
       Vulkan.Descriptor.Set.Layout.Middle

@@ -36,6 +36,9 @@ import qualified Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Vulkan.Descriptor.Pool as Vk.Descriptor.Pool
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.Descriptor.Pool
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.Descriptor.Set.Layout as Vk.Descriptor.Set.Layout
+import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
+import qualified Vulkan.Descriptor.Set.Layout.Enum as Vk.Descriptor.Set.Layout
 
 main :: IO ()
 main = do
@@ -94,8 +97,22 @@ withDevice phdvc queueFamily device = do
 					Vk.Shader.Module.CreateFlagsZero,
 				Vk.Shader.Module.createInfoCode =
 					glslComputeShaderMain }
---			binding =
-		pure ()
+			binding = Vk.Descriptor.Set.Layout.Binding {
+				Vk.Descriptor.Set.Layout.bindingBinding = 0,
+				Vk.Descriptor.Set.Layout.bindingDescriptorType =
+					Vk.Descriptor.TypeStorageBuffer,
+				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
+					Left 3,
+				Vk.Descriptor.Set.Layout.bindingStageFlags =
+					Vk.Shader.Stage.ComputeBit }
+			descSetLayoutInfo = Vk.Descriptor.Set.Layout.CreateInfo {
+				Vk.Descriptor.Set.Layout.createInfoNext = Nothing,
+				Vk.Descriptor.Set.Layout.createInfoFlags =
+					Vk.Descriptor.Set.Layout.CreateFlagsZero,
+				Vk.Descriptor.Set.Layout.createInfoBindings =
+					[binding] }
+		Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout ->
+			print descSetLayout
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
@@ -194,7 +211,7 @@ findMemoryTypeIndex physicalDevice requirements memoryProp = do
 			$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
 				memoryProperties
 	case filter (`Vk.Memory.M.elemTypeIndex` reqTypes) memPropTypes of
-		[] -> error "NO available memory types"
+		[] -> error "No available memory types"
 		i : _ -> pure i
 
 [glslComputeShader|
