@@ -25,7 +25,7 @@ import qualified Vulkan.Buffer.View as Buffer.View
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor as Dsc
 import qualified Vulkan.Descriptor.Pool.Middle as Pool
-import qualified Vulkan.Descriptor.Set.Layout as Layout
+import qualified Vulkan.Descriptor.Set.Layout.Middle as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
 
 data AllocateInfo n = AllocateInfo {

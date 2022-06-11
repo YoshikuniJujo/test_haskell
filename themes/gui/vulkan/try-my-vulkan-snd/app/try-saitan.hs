@@ -94,6 +94,7 @@ withDevice phdvc queueFamily device = do
 					Vk.Shader.Module.CreateFlagsZero,
 				Vk.Shader.Module.createInfoCode =
 					glslComputeShaderMain }
+--			binding =
 		pure ()
 
 createDescriptorPool :: Vk.Device.D sd ->

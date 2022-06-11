@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.Layout where
+module Vulkan.Descriptor.Set.Layout.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

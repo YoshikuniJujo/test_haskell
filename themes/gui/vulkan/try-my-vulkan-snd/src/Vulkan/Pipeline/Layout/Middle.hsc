@@ -22,7 +22,7 @@ import Vulkan.Exception.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Descriptor.Set.Layout as DescriptorSet.Layout
+import qualified Vulkan.Descriptor.Set.Layout.Middle as DescriptorSet.Layout
 import qualified Vulkan.PushConstant as PushConstant
 import qualified Vulkan.Pipeline.Layout.Core as C
 
