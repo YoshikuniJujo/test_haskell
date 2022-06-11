@@ -9,6 +9,7 @@ module Vulkan.Pipeline.Layout (
 
 import Foreign.Pointable
 import Control.Exception
+import Data.HeteroList
 
 import Vulkan.Pipeline.Layout.Type
 
@@ -16,7 +17,11 @@ import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Pipeline.Layout.Middle as M
 
--- data CreateInfo n s =
+data CreateInfo n ss = CreateInfo {
+	createInfoNext :: Maybe n
+	
+	}
+	deriving Show
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->

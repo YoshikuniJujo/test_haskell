@@ -45,7 +45,9 @@ createInfoToCore CreateInfo {
 	createInfoSetLayouts =
 		(length &&& ((\(DescriptorSet.Layout.L lyt) -> lyt) <$>)) ->
 			(slc, sls),
-	createInfoPushConstantRanges = (length &&& id) -> (pcrc, pcrs) } = do
+	createInfoPushConstantRanges =
+		(length &&& (PushConstant.rangeToCore <$>)) -> (pcrc, pcrs)
+	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	psls <- ContT $ allocaArray slc
 	lift $ pokeArray psls sls
