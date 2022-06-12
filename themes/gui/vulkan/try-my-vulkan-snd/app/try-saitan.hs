@@ -124,6 +124,8 @@ withDevice phdvc queueFamily device = do
 						= [] }
 			print descSetLayout
 			print @(Vk.Pipeline.Layout.CreateInfo () _)  pipelineLayoutInfo
+			Vk.Pipeline.Layout.create @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
+				print pipelineLayout
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
