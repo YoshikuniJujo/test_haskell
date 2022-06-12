@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies, DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -7,7 +8,7 @@
 
 module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
-	HeteroVarList(..) ) where
+	HeteroVarList(..), heteroVarListToList ) where
 
 import Prelude hiding (length)
 
@@ -58,3 +59,7 @@ instance Show (HeteroVarList t '[]) where show HVNil = "HVNil"
 instance (Show (t s), Show (HeteroVarList t ss)) =>
 	Show (HeteroVarList t (s ': ss)) where
 	show (x :...: xs) = show x ++ " :...: " ++ show xs
+
+heteroVarListToList :: (forall s . t s -> t') -> HeteroVarList t ss -> [t']
+heteroVarListToList _ HVNil = []
+heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs

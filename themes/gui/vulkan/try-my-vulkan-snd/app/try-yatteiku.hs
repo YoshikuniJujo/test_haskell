@@ -11,6 +11,7 @@ import Data.Default
 import Data.Bits
 import Data.Maybe
 import Data.List
+import Data.HeteroList
 import Data.Word
 import Data.Color
 import Codec.Picture
@@ -18,7 +19,6 @@ import Codec.Picture
 import Shaderc.TH
 import Shaderc.EnumAuto
 
-import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 import qualified Data.Vector.Storable as V
 
@@ -455,7 +455,7 @@ makePipeline dvc rp f = do
 		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
 			Vk.Ppl.Lyt.createInfoNext = Nothing,
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
-			Vk.Ppl.Lyt.createInfoSetLayouts = [],
+			Vk.Ppl.Lyt.createInfoSetLayouts = HVNil,
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,

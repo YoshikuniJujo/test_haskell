@@ -8,11 +8,11 @@ module Vulkan.Descriptor.Set.Layout (
 import Foreign.Pointable
 import Control.Exception
 
+import Vulkan.Descriptor.Set.Layout.Type
+
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Descriptor.Set.Layout.Middle as M
-
-newtype L s = L M.L deriving Show
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->

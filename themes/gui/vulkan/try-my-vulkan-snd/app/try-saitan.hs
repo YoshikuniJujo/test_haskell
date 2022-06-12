@@ -8,6 +8,7 @@ module Main where
 
 import Data.Default
 import Data.Bits
+import Data.HeteroList
 import Data.Word
 
 import qualified Data.Vector.Storable as V
@@ -116,11 +117,13 @@ withDevice phdvc queueFamily device = do
 			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 					Vk.Pipeline.Layout.createInfoNext = Nothing,
 					Vk.Pipeline.Layout.createInfoFlags =
-						Vk.Pipeline.Layout.CreateFlagsZero
---					Vk.Pipeline.Layout.createInfoSetLayouts =
---						[descSetLayout]
-					}
+						Vk.Pipeline.Layout.CreateFlagsZero,
+					Vk.Pipeline.Layout.createInfoSetLayouts =
+						descSetLayout :...: HVNil,
+					Vk.Pipeline.Layout.createInfoPushConstantRanges
+						= [] }
 			print descSetLayout
+			print @(Vk.Pipeline.Layout.CreateInfo () _)  pipelineLayoutInfo
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
