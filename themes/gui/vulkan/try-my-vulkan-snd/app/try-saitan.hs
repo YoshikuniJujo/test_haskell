@@ -41,6 +41,8 @@ import qualified Vulkan.Descriptor.Set.Layout as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Descriptor.Set.Layout.Enum as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
+import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
+import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 
 main :: IO ()
 main = do
@@ -126,6 +128,18 @@ withDevice phdvc queueFamily device = do
 			print @(Vk.Pipeline.Layout.CreateInfo () _)  pipelineLayoutInfo
 			Vk.Pipeline.Layout.create @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
 				print pipelineLayout
+				let	shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
+						Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
+						Vk.Pipeline.ShaderStage.createInfoFlags =
+							Vk.Pipeline.ShaderStage.CreateFlagsZero,
+						Vk.Pipeline.ShaderStage.createInfoStage =
+							Vk.Shader.Stage.ComputeBit,
+						Vk.Pipeline.ShaderStage.createInfoModule =
+							Vk.Shader.Module.M shaderModuleInfo nil nil,
+						Vk.Pipeline.ShaderStage.createInfoName = "main",
+						Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
+							Nothing }
+				pure ()
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
