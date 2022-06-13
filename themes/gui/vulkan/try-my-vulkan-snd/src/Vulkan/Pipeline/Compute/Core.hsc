@@ -13,9 +13,12 @@ import Data.Int
 
 import Vulkan.Base
 
+import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
+import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Pipeline.Core as Pipeline
 import qualified Vulkan.Pipeline.ShaderStage.Core as Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.Layout.Core as Pipeline.Layout
+import qualified Vulkan.Pipeline.Cache.Core as Cache
 
 #include <vulkan/vulkan.h>
 
@@ -49,3 +52,7 @@ struct "CreateInfo" #{size VkComputePipelineCreateInfo}
 		[| #{peek VkComputePipelineCreateInfo, basePipelineIndex} |],
 		[| #{poke VkComputePipelineCreateInfo, basePipelineIndex} |]) ]
 	[''Show, ''Storable]
+
+foreign import ccall "vkCreateComputePipelines" createCs ::
+	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
+	Ptr AllocationCallbacks.A -> Ptr Pipeline.P -> IO #{type VkResult}

@@ -106,9 +106,6 @@ foreign import ccall "vkCreateGraphicsPipelines" create ::
 	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
 	Ptr AllocationCallbacks.A -> Ptr Pipeline.P -> IO #{type VkResult}
 
-foreign import ccall "vkDestroyPipeline" destroy ::
-	Device.D -> Pipeline.P -> Ptr AllocationCallbacks.A -> IO ()
-
 stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
 stageColorAttachmentOutputBit =
 	#{const VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}

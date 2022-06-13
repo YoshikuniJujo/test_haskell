@@ -249,7 +249,7 @@ destroy :: Pointable n =>
 	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) (G p) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc p pac
+	lift $ Pipeline.C.destroy dvc p pac
 
 destroyGs :: (PListFromCore vs's tss, Pointable n) =>
 	Device.D -> PList vs's tss -> Maybe (AllocationCallbacks.A n) -> IO ()
