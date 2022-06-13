@@ -63,7 +63,7 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' = Cre
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: P vs'' ts',
+	createInfoBasePipelineHandle :: G vs'' ts',
 	createInfoBasePipelineIndex :: Int32 }
 
 deriving instance (
@@ -103,7 +103,7 @@ createInfoToCore CreateInfo {
 	createInfoLayout = Layout.L lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = P bph,
+	createInfoBasePipelineHandle = G bph,
 	createInfoBasePipelineIndex = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
@@ -186,15 +186,15 @@ instance (
 		<$> createInfoToCore ci
 		<*> createInfoListToCore cis
 
-pattern PNull :: P vs ts
-pattern PNull <- P NullHandle where
-	PNull = P NullHandle
+pattern GNull :: G vs ts
+pattern GNull <- G NullHandle where
+	GNull = G NullHandle
 
-newtype P vs (ts :: [Type]) = P Pipeline.C.P deriving Show
+newtype G vs (ts :: [Type]) = G Pipeline.C.P deriving Show
 
 data PList vss tss where
 	PNil :: PList '[] '[]
-	PCons :: P vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
+	PCons :: G vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
 
 deriving instance Show (PList vss tss)
 
@@ -211,8 +211,8 @@ instance
 	PListFromCore vss tss =>
 	PListFromCore (vs ': vss) (ts ': tss) where
 	pListFromCore [] = error "bad"
-	pListFromCore (cp : cps) = P cp `PCons` pListFromCore cps
-	pListToCore (P cp `PCons` gs) = cp : pListToCore gs
+	pListFromCore (cp : cps) = G cp `PCons` pListFromCore cps
+	pListToCore (G cp `PCons` gs) = cp : pListToCore gs
 
 create :: (
 	CreateInfoListToCore ns
@@ -246,11 +246,11 @@ createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 		peekArray cic pps
 
 destroy :: Pointable n =>
-	Device.D -> P vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (P p) mac = ($ pure) $ runContT do
+	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (G p) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ Pipeline.C.destroy dvc p pac
 
 destroyGs :: (PListFromCore vs's tss, Pointable n) =>
 	Device.D -> PList vs's tss -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroyGs dvc gs mac = (\g -> destroy dvc (P g) mac) `mapM_` pListToCore gs
+destroyGs dvc gs mac = (\g -> destroy dvc (G g) mac) `mapM_` pListToCore gs

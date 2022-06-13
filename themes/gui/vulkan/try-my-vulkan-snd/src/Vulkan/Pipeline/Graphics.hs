@@ -100,7 +100,7 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoLayout = Layout.L lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = maybe M.PNull (\(G g) -> g) ->  bph,
+	createInfoBasePipelineHandle = maybe M.GNull (\(G g) -> g) ->  bph,
 	createInfoBasePipelineIndex = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddle dvc stgs
 	pure M.CreateInfo {

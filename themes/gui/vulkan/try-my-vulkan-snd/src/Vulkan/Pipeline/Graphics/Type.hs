@@ -10,7 +10,7 @@ import qualified Vulkan.Pipeline.Graphics.Middle as M
 
 newtype GList s vs's tss = GList (M.PList vs's tss) deriving Show
 
-newtype G s vs ts = G (M.P vs ts) deriving Show
+newtype G s vs ts = G (M.G vs ts) deriving Show
 
 pattern GNil :: GList s vs's tss
 pattern GNil <- GList M.PNil

@@ -137,7 +137,7 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
+	globalGraphicsPipeline :: IORef (Vk.Ppl.G () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
 	globalCommandBuffers :: IORef [Vk.CB.C ()],
@@ -162,7 +162,7 @@ newGlobal w = do
 	scivs <- newIORef []
 	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
 	rp <- newIORef $ Vk.RndrPss.R NullPtr
-	gpl <- newIORef Vk.Ppl.PNull
+	gpl <- newIORef Vk.Ppl.GNull
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CP.C NullPtr
 	cbs <- newIORef []
@@ -737,7 +737,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.createInfoLayout = pipelineLayout,
 			Vk.Ppl.createInfoRenderPass = rp,
 			Vk.Ppl.createInfoSubpass = 0,
-			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.PNull,
+			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.GNull,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
 	gpl `Vk.Ppl.PCons` Vk.Ppl.PNil <-
 		Vk.Ppl.create @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @()
