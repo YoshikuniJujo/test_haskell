@@ -23,6 +23,7 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.Pipeline.Enum
 
+import qualified Vulkan.Pipeline.Core as Pipeline.C
 import qualified Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
@@ -189,7 +190,7 @@ pattern GNull :: G vs ts
 pattern GNull <- G NullHandle where
 	GNull = G NullHandle
 
-newtype G vs (ts :: [Type]) = G C.G deriving Show
+newtype G vs (ts :: [Type]) = G Pipeline.C.P deriving Show
 
 data PList vss tss where
 	PNil :: PList '[] '[]
@@ -198,8 +199,8 @@ data PList vss tss where
 deriving instance Show (PList vss tss)
 
 class PListFromCore vss tss where
-	pListFromCore :: [C.G] -> PList vss tss
-	pListToCore :: PList vss tss -> [C.G]
+	pListFromCore :: [Pipeline.C.P] -> PList vss tss
+	pListToCore :: PList vss tss -> [Pipeline.C.P]
 
 instance PListFromCore '[] '[] where
 	pListFromCore [] = PNil
@@ -231,7 +232,7 @@ createRaw :: (
 	Device.D -> Maybe Cache.C ->
 	CreateInfoList ns
 		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
-	Maybe (AllocationCallbacks.A n') -> IO [C.G]
+	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
 createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
 	ccis <- createInfoListToCore cis

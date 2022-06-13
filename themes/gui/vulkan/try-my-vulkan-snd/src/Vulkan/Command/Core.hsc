@@ -7,7 +7,7 @@ import Data.Word
 import Data.Int
 
 import qualified Vulkan.RenderPass.Core as RenderPass
-import qualified Vulkan.Pipeline.Graphics.Core as Pipeline
+import qualified Vulkan.Pipeline.Core as Pipeline
 import qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import qualified Vulkan.Buffer.Core as Buffer
 import qualified Vulkan.Pipeline.Layout.Core as Pipeline.Layout
@@ -22,7 +22,7 @@ foreign import ccall "vkCmdBeginRenderPass" beginRenderPass ::
 	#{type VkSubpassContents} -> IO ()
 
 foreign import ccall "vkCmdBindPipeline" bindPipeline ::
-	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.G -> IO ()
+	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.P -> IO ()
 
 foreign import ccall "vkCmdDraw" draw ::
 	CommandBuffer.C -> #{type uint32_t} -> #{type uint32_t} ->

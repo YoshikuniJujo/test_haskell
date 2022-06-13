@@ -14,6 +14,7 @@ import Data.Int
 import Vulkan.Base
 
 import qualified Vulkan.Device.Core as Device
+import qualified Vulkan.Pipeline.Core as Pipeline
 import qualified Vulkan.Pipeline.ShaderStage.Core as ShaderStage
 import qualified Vulkan.Pipeline.VertexInputState.Core as VertexInputState
 import qualified Vulkan.Pipeline.InputAssemblyState.Core as InputAssemblyState
@@ -37,9 +38,6 @@ bindPointGraphics = #{const VK_PIPELINE_BIND_POINT_GRAPHICS}
 
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
-
-data GTag
-type G = Ptr GTag
 
 struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 		#{alignment VkGraphicsPipelineCreateInfo} [
@@ -96,7 +94,7 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 	("subpass", ''#{type uint32_t},
 		[| #{peek VkGraphicsPipelineCreateInfo, subpass} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, subpass} |]),
-	("basePipelineHandle", ''G,
+	("basePipelineHandle", ''Pipeline.P,
 		[| #{peek VkGraphicsPipelineCreateInfo, basePipelineHandle} |],
 		[| #{poke VkGraphicsPipelineCreateInfo, basePipelineHandle} |]),
 	("basePipelineIndex", ''#{type int32_t},
@@ -106,10 +104,10 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 
 foreign import ccall "vkCreateGraphicsPipelines" create ::
 	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
-	Ptr AllocationCallbacks.A -> Ptr G -> IO #{type VkResult}
+	Ptr AllocationCallbacks.A -> Ptr Pipeline.P -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyPipeline" destroy ::
-	Device.D -> G -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> Pipeline.P -> Ptr AllocationCallbacks.A -> IO ()
 
 stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
 stageColorAttachmentOutputBit =
