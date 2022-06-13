@@ -166,6 +166,7 @@ library
       Vulkan.Pipeline.ColorBlendState
       Vulkan.Pipeline.ColorBlendState.Core
       Vulkan.Pipeline.Compute.Core
+      Vulkan.Pipeline.Compute.Middle
       Vulkan.Pipeline.Core
       Vulkan.Pipeline.DepthStencilState
       Vulkan.Pipeline.DepthStencilState.Core
