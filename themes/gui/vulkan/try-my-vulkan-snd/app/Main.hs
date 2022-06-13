@@ -137,7 +137,7 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.G () '[]),
+	globalGraphicsPipeline :: IORef (Vk.Ppl.P () '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
 	globalCommandBuffers :: IORef [Vk.CB.C ()],

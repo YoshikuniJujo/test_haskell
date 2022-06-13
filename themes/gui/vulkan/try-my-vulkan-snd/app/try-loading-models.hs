@@ -185,7 +185,7 @@ data Global = Global {
 	globalRenderPass :: IORef Vk.RenderPass.R,
 	globalDescriptorSetLayout :: IORef Vk.DscSet.Lyt.L,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
+	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.P
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec3, Color, TexCoord]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
@@ -243,7 +243,7 @@ newGlobal = do
 	rp <- newIORef $ Vk.RenderPass.R NullPtr
 	dscstlyt <- newIORef $ Vk.DscSet.Lyt.L NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
-	grppl <- newIORef Vk.Ppl.Graphics.GNull
+	grppl <- newIORef Vk.Ppl.Graphics.PNull
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	cbs <- newIORef []
@@ -966,7 +966,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.Graphics.createInfoRenderPass = rp,
 			Vk.Ppl.Graphics.createInfoSubpass = 0,
 			Vk.Ppl.Graphics.createInfoBasePipelineHandle =
-				Vk.Ppl.Graphics.GNull,
+				Vk.Ppl.Graphics.PNull,
 			Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 			Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 

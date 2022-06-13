@@ -36,8 +36,8 @@ endRenderPass :: CommandBuffer.C vs -> IO ()
 endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
 
 bindPipeline ::
-	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
-bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
+	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.P vs ts -> IO ()
+bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.P ppl) =
 	C.bindPipeline cb pbp ppl
 
 draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
