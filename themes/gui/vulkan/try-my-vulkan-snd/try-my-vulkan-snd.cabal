@@ -75,7 +75,7 @@ library
       Vulkan.Component.Core
       Vulkan.Component.Enum
       Vulkan.Core
-      Vulkan.Descriptor
+      Vulkan.Descriptor.Atom
       Vulkan.Descriptor.Core
       Vulkan.Descriptor.Enum
       Vulkan.Descriptor.Pool

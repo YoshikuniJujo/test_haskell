@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor where
+module Vulkan.Descriptor.Atom where
 
 import Foreign.Storable
 

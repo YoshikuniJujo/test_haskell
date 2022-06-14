@@ -126,7 +126,7 @@ import qualified Vulkan.Descriptor.Pool.Middle as Vk.DscPool
 import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 import qualified Vulkan.Descriptor.Set.Middle as Vk.DscSet
-import qualified Vulkan.Descriptor as Vk.Dsc
+import qualified Vulkan.Descriptor.Atom as Vk.Dsc
 import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
