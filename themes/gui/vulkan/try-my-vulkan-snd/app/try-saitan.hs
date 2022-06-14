@@ -45,7 +45,7 @@ import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
-import qualified Vulkan.Descriptor.Set.Middle as Vk.Descriptor.Set
+import qualified Vulkan.Descriptor.Set as Vk.Descriptor.Set
 
 main :: IO ()
 main = do
@@ -159,10 +159,12 @@ withDevice phdvc queueFamily device = do
 					nil nil \pipelines -> do
 					print pipelines
 					let	descSetInfo = Vk.Descriptor.Set.AllocateInfo {
-							Vk.Descriptor.Set.allocateInfoNext = Nothing
---							Vk.Descriptor.Set.allocateInfoDescriptorPool =
---								descPool
-							}
+							Vk.Descriptor.Set.allocateInfoNext = Nothing,
+							Vk.Descriptor.Set.allocateInfoDescriptorPool =
+								descPool,
+							Vk.Descriptor.Set.allocateInfoDescriptorSetCountOrSetLayouts =
+								Right [descSetLayout] }
+					print @(Vk.Descriptor.Set.AllocateInfo () _ _) descSetInfo
 					pure ()
 
 createDescriptorPool :: Vk.Device.D sd ->
