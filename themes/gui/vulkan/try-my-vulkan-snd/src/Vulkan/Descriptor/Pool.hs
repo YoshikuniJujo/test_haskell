@@ -7,11 +7,11 @@ module Vulkan.Descriptor.Pool (P, create, M.CreateInfo(..), M.Size(..)) where
 import Foreign.Pointable
 import Control.Exception
 
+import Vulkan.Descriptor.Pool.Type
+
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Descriptor.Pool.Middle as M
-
-newtype P s = P M.P deriving Show
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->

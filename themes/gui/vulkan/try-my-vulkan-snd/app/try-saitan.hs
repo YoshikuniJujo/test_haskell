@@ -165,7 +165,8 @@ withDevice phdvc queueFamily device = do
 							Vk.Descriptor.Set.allocateInfoDescriptorSetCountOrSetLayouts =
 								Right [descSetLayout] }
 					print @(Vk.Descriptor.Set.AllocateInfo () _ _) descSetInfo
-					pure ()
+					descSets <- Vk.Descriptor.Set.allocateSs @() device descSetInfo
+					print descSets
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a

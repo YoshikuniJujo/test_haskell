@@ -1,11 +1,15 @@
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Descriptor.Set where
 
+import Foreign.Pointable
 import Data.Word
 
-import qualified Vulkan.Descriptor.Pool as Descriptor.Pool
-import qualified Vulkan.Descriptor.Set.Layout as Layout
+import qualified Vulkan.Device.Type as Device
+import qualified Vulkan.Descriptor.Pool.Type as Descriptor.Pool
+import qualified Vulkan.Descriptor.Set.Layout.Type as Layout
 import qualified Vulkan.Descriptor.Set.Middle as M
 
 data AllocateInfo n sp sl = AllocateInfo {
@@ -13,3 +17,20 @@ data AllocateInfo n sp sl = AllocateInfo {
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
 	allocateInfoDescriptorSetCountOrSetLayouts :: Either Word32 [Layout.L sl] }
 	deriving Show
+
+allocateInfoToMiddle :: AllocateInfo n sp sl -> M.AllocateInfo n
+allocateInfoToMiddle AllocateInfo {
+	allocateInfoNext = mnxt,
+	allocateInfoDescriptorPool = Descriptor.Pool.P dp,
+	allocateInfoDescriptorSetCountOrSetLayouts =
+		((Layout.unL <$>) <$>) -> dscsls
+	} = M.AllocateInfo {
+		M.allocateInfoNext = mnxt,
+		M.allocateInfoDescriptorPool = dp,
+		M.allocateInfoDescriptorSetCountOrSetLayouts = dscsls }
+
+newtype S sd sp sl = S M.S deriving Show
+
+allocateSs :: Pointable n =>
+	Device.D sd -> AllocateInfo n sp sl -> IO [S sd sp sl]
+allocateSs (Device.D dvc) ai = (S <$>) <$> M.allocateSs dvc (allocateInfoToMiddle ai)
