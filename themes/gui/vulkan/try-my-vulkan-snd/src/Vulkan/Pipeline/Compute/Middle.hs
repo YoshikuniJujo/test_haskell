@@ -12,6 +12,7 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.HeteroList hiding (length)
+import Data.Maybe
 import Data.Int
 
 import Shaderc.EnumAuto
@@ -34,8 +35,8 @@ data CreateInfo n n1 vs = CreateInfo {
 	createInfoFlags :: Pipeline.CreateFlags,
 	createInfoStage :: ShaderStage.CreateInfo n1 'GlslComputeShader vs,
 	createInfoLayout :: Pipeline.Layout.L,
-	createInfoBasePipelineHandle :: C,
-	createInfoBasePipelineIndex :: Int32 }
+	createInfoBasePipelineHandle :: Maybe C,
+	createInfoBasePipelineIndex :: Maybe Int32 }
 	deriving Show
 
 createInfoToCore ::
@@ -46,8 +47,8 @@ createInfoToCore CreateInfo {
 	createInfoFlags = Pipeline.CreateFlagBits flgs,
 	createInfoStage = stg,
 	createInfoLayout = Pipeline.Layout.L lyt,
-	createInfoBasePipelineHandle = C bph,
-	createInfoBasePipelineIndex = idx
+	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
+	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	stg' <- ShaderStage.createInfoToCore stg
