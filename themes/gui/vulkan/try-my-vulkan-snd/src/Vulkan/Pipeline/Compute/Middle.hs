@@ -77,9 +77,9 @@ instance (Specialization.StoreValues a, CreateInfosToCore as) =>
 newtype C = C Pipeline.C.P deriving Show
 
 createCs :: (Pointable n, Pointable n1, CreateInfosToCore vss, Pointable c) =>
-	Device.D -> Cache.C -> HeteroVarList (CreateInfo n n1) vss ->
+	Device.D -> Maybe Cache.C -> HeteroVarList (CreateInfo n n1) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
-createCs (Device.D dvc) (Cache.C c) cis mac =
+createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	((C <$>) <$>) . ($ pure) $ runContT do
 		cis' <- createInfosToCore cis
 		let	ln = length cis'
@@ -87,7 +87,7 @@ createCs (Device.D dvc) (Cache.C c) cis mac =
 		lift $ pokeArray pcis cis'
 		pac <- AllocationCallbacks.maybeToCore mac
 		pps <- ContT $ allocaArray ln
-		lift do	r <- C.createCs dvc c (fromIntegral ln) pcis pac pps
+		lift do	r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
 			throwUnlessSuccess $ Result r
 			peekArray ln pps
 

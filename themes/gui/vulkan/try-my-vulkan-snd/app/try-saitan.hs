@@ -40,9 +40,11 @@ import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.Descriptor.Set.Layout as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Descriptor.Set.Layout.Enum as Vk.Descriptor.Set.Layout
+import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
 import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
+import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
 
 main :: IO ()
 main = do
@@ -139,6 +141,22 @@ withDevice phdvc queueFamily device = do
 						Vk.Pipeline.ShaderStage.createInfoName = "main",
 						Vk.Pipeline.ShaderStage.createInfoSpecializationInfo =
 							Nothing }
+					computePipelineInfo = Vk.Pipeline.Compute.CreateInfo {
+						Vk.Pipeline.Compute.createInfoNext = Nothing,
+						Vk.Pipeline.Compute.createInfoFlags =
+							Vk.Pipeline.CreateFlagsZero,
+						Vk.Pipeline.Compute.createInfoStage =
+							shaderStageInfo,
+						Vk.Pipeline.Compute.createInfoLayout =
+							pipelineLayout,
+						Vk.Pipeline.Compute.createInfoBasePipelineHandle =
+							Nothing,
+						Vk.Pipeline.Compute.createInfoBasePipelineIndex =
+							Nothing }
+				Vk.Pipeline.Compute.createCs @'[ '((), _, _)] @() @() @() @_ @_ @_ @_ @_ device Nothing
+					(Vk.Pipeline.Compute.CreateInfo_ computePipelineInfo :...: HVNil)
+					nil nil \pipelines ->
+					print pipelines
 				pure ()
 
 createDescriptorPool :: Vk.Device.D sd ->

@@ -3,12 +3,13 @@
 {-# LANGUAGE GADTs, TypeFamilies, DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
-	HeteroVarList(..), heteroVarListToList ) where
+	HeteroVarList(..), heteroVarListToList, heteroVarListMapM, HeteroVarListMapM(..) ) where
 
 import Prelude hiding (length)
 
@@ -50,7 +51,7 @@ instance (Show a, Show (HeteroList as)) => Show (HeteroList (a ': as)) where
 
 infixr 5 :...:
 
-data HeteroVarList (t :: Type -> Type) (ss :: [Type]) where
+data HeteroVarList (t :: k -> Type) (ss :: [k]) where
 	HVNil :: HeteroVarList t '[]
 	(:...:) :: t s -> HeteroVarList t ss -> HeteroVarList t (s ': ss)
 
@@ -63,3 +64,19 @@ instance (Show (t s), Show (HeteroVarList t ss)) =>
 heteroVarListToList :: (forall s . t s -> t') -> HeteroVarList t ss -> [t']
 heteroVarListToList _ HVNil = []
 heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs
+
+heteroVarListMapM :: Applicative m =>
+	(forall (s :: k) . t s -> m (t' s)) -> HeteroVarList t ss -> m (HeteroVarList t' ss)
+heteroVarListMapM _ HVNil = pure HVNil
+heteroVarListMapM f (x :...: xs) = (:...:) <$> f x <*>  heteroVarListMapM f xs
+
+class HeteroVarListMapM ss fss where
+	heteroVarListMapM' :: Applicative m =>
+		(forall a b c . t '(a, b, c) -> m (t' a)) -> HeteroVarList t ss ->
+		m (HeteroVarList t' fss)
+
+instance HeteroVarListMapM '[] '[] where heteroVarListMapM' _ HVNil = pure HVNil
+
+instance HeteroVarListMapM ss fss =>
+	HeteroVarListMapM ('(x, y, z) ': ss) (x ': fss) where
+	heteroVarListMapM' f (x :...: xs) = (:...:) <$> f x <*> heteroVarListMapM' f xs
