@@ -82,13 +82,13 @@ library
       Vulkan.Descriptor.Pool.Core
       Vulkan.Descriptor.Pool.Enum
       Vulkan.Descriptor.Pool.Middle
-      Vulkan.Descriptor.Set
       Vulkan.Descriptor.Set.Core
       Vulkan.Descriptor.Set.Layout
       Vulkan.Descriptor.Set.Layout.Core
       Vulkan.Descriptor.Set.Layout.Enum
       Vulkan.Descriptor.Set.Layout.Middle
       Vulkan.Descriptor.Set.Layout.Type
+      Vulkan.Descriptor.Set.Middle
       Vulkan.Device
       Vulkan.Device.Core
       Vulkan.Device.Middle

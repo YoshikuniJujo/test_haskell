@@ -45,6 +45,7 @@ import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
+import qualified Vulkan.Descriptor.Set.Middle as Vk.Descriptor.Set
 
 main :: IO ()
 main = do
@@ -155,9 +156,14 @@ withDevice phdvc queueFamily device = do
 							Nothing }
 				Vk.Pipeline.Compute.createCs @'[ '((), _, _)] @() @() @() @_ @_ @_ @_ @_ device Nothing
 					(Vk.Pipeline.Compute.CreateInfo_ computePipelineInfo :...: HVNil)
-					nil nil \pipelines ->
+					nil nil \pipelines -> do
 					print pipelines
-				pure ()
+					let	descSetInfo = Vk.Descriptor.Set.AllocateInfo {
+							Vk.Descriptor.Set.allocateInfoNext = Nothing
+--							Vk.Descriptor.Set.allocateInfoDescriptorPool =
+--								descPool
+							}
+					pure ()
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a

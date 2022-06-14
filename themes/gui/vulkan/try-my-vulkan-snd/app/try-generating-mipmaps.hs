@@ -130,7 +130,7 @@ import qualified Vulkan.Memory.Atom as Vk.Memory.Atom
 import qualified Vulkan.Descriptor.Pool.Middle as Vk.DscPool
 import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
-import qualified Vulkan.Descriptor.Set as Vk.DscSet
+import qualified Vulkan.Descriptor.Set.Middle as Vk.DscSet
 import qualified Vulkan.Descriptor as Vk.Dsc
 import qualified Vulkan.Memory.Image.Middle as Vk.Memory.Image
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
