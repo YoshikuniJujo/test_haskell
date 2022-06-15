@@ -15,13 +15,13 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Enum
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 import Vulkan.DescriptorSetLayout.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Sampler as Sampler
 import qualified Vulkan.Descriptor.Enum as Descriptor
 import qualified Vulkan.DescriptorSetLayout.Core as C
@@ -30,7 +30,7 @@ data Binding = Binding {
 	bindingBinding :: Word32,
 	bindingDescriptorType :: Descriptor.Type,
 	bindingDescriptorCountOrImmutableSamplers :: Either Word32 [Sampler.S],
-	bindingStageFlags :: Shader.Stage.Flags }
+	bindingStageFlags :: ShaderStageFlags }
 	deriving Show
 
 bindingToCore :: Binding -> ContT r IO C.Binding
@@ -39,7 +39,7 @@ bindingToCore Binding {
 	bindingDescriptorType = Descriptor.Type dt,
 	bindingDescriptorCountOrImmutableSamplers =
 		either ((, []) . Left) (Right . length &&& id) -> (dc, ss),
-	bindingStageFlags = Shader.Stage.FlagBits sf } = do
+	bindingStageFlags = ShaderStageFlagBits sf } = do
 		pss <- flip (either . const $ pure NullPtr) dc \c -> do
 			p <- ContT $ allocaArray c
 			p <$ lift (pokeArray p $ (\(Sampler.S s) -> s) <$> ss)

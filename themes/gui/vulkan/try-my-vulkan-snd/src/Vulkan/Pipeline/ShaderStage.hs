@@ -9,17 +9,17 @@ import Foreign.Pointable
 
 import qualified Data.ByteString as BS
 
+import Vulkan.Enum
 import Vulkan.Pipeline.ShaderStage.Enum
 
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Shader.Module.Internal as Shader.Module
-import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Pipeline.ShaderStage.Middle as M
 
 data CreateInfo n n' sknd a a' vs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStage :: Shader.Stage.FlagBits,
+	createInfoStage :: ShaderStageFlagBits,
 	createInfoModule :: Shader.Module.M n' sknd a a',
 	createInfoName :: BS.ByteString,
 	createInfoSpecializationInfo :: Maybe vs }

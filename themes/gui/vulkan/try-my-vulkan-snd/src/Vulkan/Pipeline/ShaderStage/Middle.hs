@@ -17,9 +17,9 @@ import Control.Monad.Cont
 
 import qualified Data.ByteString as BS
 
+import Vulkan.Enum
 import Vulkan.Pipeline.ShaderStage.Enum
 
-import qualified Vulkan.Shader.Stage.Enum as ShaderStage
 import qualified Vulkan.Shader.Module.Middle as ShaderModule
 import qualified Vulkan.Pipeline.ShaderStage.Core as C
 import qualified Vulkan.Specialization as Specialization
@@ -28,7 +28,7 @@ import qualified Vulkan.Specialization.Core as Specialization.C
 data CreateInfo n sknd vs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStage :: ShaderStage.FlagBits,
+	createInfoStage :: ShaderStageFlagBits,
 	createInfoModule :: ShaderModule.M sknd,
 	createInfoName :: BS.ByteString,
 	createInfoSpecializationInfo :: Maybe vs }
@@ -40,7 +40,7 @@ createInfoToCore ::
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoStage = ShaderStage.FlagBits stg,
+	createInfoStage = ShaderStageFlagBits stg,
 	createInfoModule = ShaderModule.M mdl,
 	createInfoName = nm,
 	createInfoSpecializationInfo = mxs } = do

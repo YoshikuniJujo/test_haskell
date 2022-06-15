@@ -17,7 +17,6 @@ import qualified VulkanImageViewEnum
 import qualified VulkanComponentEnum
 
 import qualified VulkanPipelineShaderStageEnum
-import qualified VulkanShaderStageEnum
 import qualified VulkanVertexInputEnum
 import qualified VulkanColorComponentEnum
 import qualified VulkanDescriptorSetLayoutEnum
@@ -56,7 +55,6 @@ main = do
 	VulkanComponentEnum.make
 
 	VulkanPipelineShaderStageEnum.make
-	VulkanShaderStageEnum.make
 	VulkanVertexInputEnum.make
 	VulkanColorComponentEnum.make
 	VulkanDescriptorSetLayoutEnum.make

@@ -72,7 +72,6 @@ import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
-import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.ImageView as Vk.ImgView
 import qualified Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Vulkan.Component as Vk.Component
@@ -466,7 +465,7 @@ makePipeline dvc rp f = do
 			Vk.Ppl.ShSt.createInfoNext = Nothing,
 			Vk.Ppl.ShSt.createInfoFlags =
 				Vk.Ppl.ShSt.CreateFlagsZero,
-			Vk.Ppl.ShSt.createInfoStage = Vk.Shader.Stage.VertexBit,
+			Vk.Ppl.ShSt.createInfoStage = Vk.ShaderStageVertexBit,
 			Vk.Ppl.ShSt.createInfoModule =
 				Vk.Shader.Module.M vertShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoName = "main",
@@ -482,7 +481,7 @@ makePipeline dvc rp f = do
 			Vk.Ppl.ShSt.createInfoFlags =
 				Vk.Ppl.ShSt.CreateFlagsZero,
 			Vk.Ppl.ShSt.createInfoStage =
-				Vk.Shader.Stage.FragmentBit,
+				Vk.ShaderStageFragmentBit,
 			Vk.Ppl.ShSt.createInfoModule =
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoName = "main",

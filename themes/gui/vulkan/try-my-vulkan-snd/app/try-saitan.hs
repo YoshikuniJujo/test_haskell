@@ -39,7 +39,6 @@ import qualified Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
 import qualified Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
-import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
 import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
@@ -124,7 +123,7 @@ withCommandPool phdvc device queue commandPool =
 			Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
 				Left 3,
 			Vk.Descriptor.Set.Layout.bindingStageFlags =
-				Vk.Shader.Stage.ComputeBit }
+				Vk.ShaderStageComputeBit }
 		descSetLayoutInfo = Vk.Descriptor.Set.Layout.CreateInfo {
 			Vk.Descriptor.Set.Layout.createInfoNext = Nothing,
 			Vk.Descriptor.Set.Layout.createInfoFlags =
@@ -149,7 +148,7 @@ withCommandPool phdvc device queue commandPool =
 					Vk.Pipeline.ShaderStage.createInfoFlags =
 						Vk.Pipeline.ShaderStage.CreateFlagsZero,
 					Vk.Pipeline.ShaderStage.createInfoStage =
-						Vk.Shader.Stage.ComputeBit,
+						Vk.ShaderStageComputeBit,
 					Vk.Pipeline.ShaderStage.createInfoModule =
 						Vk.Shader.Module.M shaderModuleInfo nil nil,
 					Vk.Pipeline.ShaderStage.createInfoName = "main",

@@ -4,18 +4,19 @@ module Vulkan.PushConstant where
 
 import Data.Word
 
-import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
+import Vulkan.Enum
+
 import qualified Vulkan.PushConstant.Core as C
 
 data Range = Range {
-	rangeStageFlags :: Shader.Stage.Flags,
+	rangeStageFlags :: ShaderStageFlags,
 	rangeOffset :: Word32,
 	rangeSize :: Word32 }
 	deriving Show
 
 rangeToCore :: Range -> C.Range
 rangeToCore Range {
-	rangeStageFlags = Shader.Stage.FlagBits sf,
+	rangeStageFlags = ShaderStageFlagBits sf,
 	rangeOffset = ost, rangeSize = sz
 	} = C.Range {
 		C.rangeStageFlags = sf,

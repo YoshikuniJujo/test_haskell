@@ -79,7 +79,6 @@ import qualified Vulkan.Component.Enum as Vk.Component
 import qualified Vulkan.Shader.Module.Middle as Vk.Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage.Middle as Vk.Ppl.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
-import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Vulkan.Pipeline.VertexInputState.Middle as
 	Vk.Ppl.VertexInputSt.M
@@ -690,7 +689,7 @@ createDescriptorSetLayout = do
 			Vk.DscSet.Lyt.bindingDescriptorCountOrImmutableSamplers
 				= Left 1,
 			Vk.DscSet.Lyt.bindingStageFlags =
-				Vk.Shader.Stage.VertexBit }
+				Vk.ShaderStageVertexBit }
 		layoutInfo = Vk.DscSet.Lyt.CreateInfo {
 			Vk.DscSet.Lyt.createInfoNext = Nothing,
 			Vk.DscSet.Lyt.createInfoFlags =
@@ -710,7 +709,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.ShaderStage.createInfoFlags =
 				Vk.Ppl.ShaderStage.CreateFlagsZero,
 			Vk.Ppl.ShaderStage.createInfoStage =
-				Vk.Shader.Stage.VertexBit,
+				Vk.ShaderStageVertexBit,
 			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
 			Vk.Ppl.ShaderStage.createInfoName = "main",
 			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
@@ -720,7 +719,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.ShaderStage.createInfoFlags =
 				Vk.Ppl.ShaderStage.CreateFlagsZero,
 			Vk.Ppl.ShaderStage.createInfoStage =
-				Vk.Shader.Stage.FragmentBit,
+				Vk.ShaderStageFragmentBit,
 			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
 			Vk.Ppl.ShaderStage.createInfoName = "main",
 			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
