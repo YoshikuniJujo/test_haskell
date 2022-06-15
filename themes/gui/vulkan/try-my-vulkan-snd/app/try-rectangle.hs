@@ -1101,8 +1101,7 @@ createDescriptorSets = do
 	ubs <- readGlobal globalUniformBuffers
 	for_ [0 .. maxFramesInFlight - 1] \i -> do
 		let	bufferInfo = Vk.Dsc.BufferInfo {
-				Vk.Dsc.bufferInfoBuffer = ubs !! i,
-				Vk.Dsc.bufferInfoOffset = 0 }
+				Vk.Dsc.bufferInfoBuffer = ubs !! i }
 			descriptorWrite = Vk.DscSet.Write {
 				Vk.DscSet.writeNext = Nothing,
 				Vk.DscSet.writeDstSet = dss !! i,

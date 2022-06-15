@@ -1508,8 +1508,7 @@ createDescriptorSets = do
 	ts <- readGlobal globalTextureSampler
 	for_ [0 .. maxFramesInFlight - 1] \i -> do
 		let	bufferInfo = Vk.Dsc.BufferInfo {
-				Vk.Dsc.bufferInfoBuffer = ubs !! i,
-				Vk.Dsc.bufferInfoOffset = 0 }
+				Vk.Dsc.bufferInfoBuffer = ubs !! i }
 			imageInfo = Vk.Dsc.M.ImageInfo {
 				Vk.Dsc.M.imageInfoImageLayout =
 					Vk.Image.LayoutShaderReadOnlyOptimal,
