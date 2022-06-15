@@ -11,6 +11,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 import Data.Int
@@ -115,3 +116,8 @@ bool32ToBool _ = error $
 
 nil :: Maybe (t ())
 nil = Nothing
+
+allocaAndPokeArray :: Storable a => [a] -> ContT r IO (Int, Ptr a)
+allocaAndPokeArray (length &&& id -> (xc, xs)) = do
+	p <- ContT $ allocaArray xc
+	(xc, p) <$ lift (pokeArray p xs)

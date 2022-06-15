@@ -14,6 +14,8 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Vulkan.Base
+
 import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.Device.Middle as Device
@@ -55,20 +57,15 @@ writeToCore Write {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	(dc, piis, pbis, ptbvs) <- case mibitbvs of
 		Left c -> pure (c, NullPtr, NullPtr, NullPtr)
-		Right (ImageInfos (length &&& id -> (iic, iis))) -> do
-			let	ciis = M.imageInfoToCore <$> iis
-			p <- ContT $ allocaArray iic
-			lift $ pokeArray p ciis
+		Right (ImageInfos ((M.imageInfoToCore <$>) -> ciis)) -> do
+			(iic, p) <- allocaAndPokeArray ciis
 			pure (fromIntegral iic, p, NullPtr, NullPtr)
-		Right (BufferInfos (length &&& id -> (bic, bis))) -> do
-			let	cbis = Dsc.bufferInfoToCore <$> bis
-			p <- ContT $ allocaArray bic
-			lift $ pokeArray p cbis
+		Right (BufferInfos ((Dsc.bufferInfoToCore <$>) -> cbis)) -> do
+			(bic, p) <- allocaAndPokeArray cbis
 			pure (fromIntegral bic, NullPtr, p, NullPtr)
-		Right (TexelBufferViews (length &&& id -> (tbvc, tbvs))) -> do
+		Right (TexelBufferViews tbvs) -> do
 			let	ctbvs = (\(Buffer.View.V v) -> v) <$> tbvs
-			p <- ContT $ allocaArray tbvc
-			lift $ pokeArray p ctbvs
+			(tbvc, p) <- allocaAndPokeArray ctbvs
 			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
 	pure C.Write {
 		C.writeSType = (),
