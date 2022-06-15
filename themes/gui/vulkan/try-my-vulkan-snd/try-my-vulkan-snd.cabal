@@ -86,6 +86,7 @@ library
       Vulkan.Descriptor.Pool.Middle
       Vulkan.Descriptor.Pool.Type
       Vulkan.Descriptor.Set
+      Vulkan.Descriptor.Set.Atom
       Vulkan.Descriptor.Set.Core
       Vulkan.Descriptor.Set.Layout
       Vulkan.Descriptor.Set.Layout.Core

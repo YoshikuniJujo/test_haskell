@@ -125,6 +125,7 @@ import qualified Vulkan.Memory.Atom as Vk.Memory.Atom
 import qualified Vulkan.Descriptor.Pool.Middle as Vk.DscPool
 import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
+import qualified Vulkan.Descriptor.Set.Atom as Vk.DscSet
 import qualified Vulkan.Descriptor.Set.Middle as Vk.DscSet
 import qualified Vulkan.Descriptor.Atom as Vk.Dsc
 import qualified Vulkan.Format.Enum as Vk.Format

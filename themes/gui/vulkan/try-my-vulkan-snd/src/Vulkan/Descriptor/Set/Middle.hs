@@ -9,26 +9,18 @@ module Vulkan.Descriptor.Set.Middle where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
-import qualified Foreign.Storable.Generic
-
 import Vulkan.Exception
 import Vulkan.Exception.Enum
 
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Buffer.View as Buffer.View
-import qualified Vulkan.Descriptor.Enum as Dsc
-import qualified Vulkan.Descriptor.Atom as Dsc
 import qualified Vulkan.Descriptor.Pool.Middle as Pool
 import qualified Vulkan.Descriptor.Set.Layout.Middle as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
-
-import qualified Vulkan.Descriptor.Middle as M
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
@@ -70,62 +62,6 @@ allocateSs (Device.D dvc) ai = ((S <$>) <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peekArray dsc pss
 
-data Write n v = Write {
-	writeNext :: Maybe n,
-	writeDstSet :: S,
-	writeDstBinding :: Word32,
-	writeDstArrayElement :: Word32,
-	writeDescriptorType :: Dsc.Type,
-	writeImageBufferInfoTexelBufferViews ::
-		Either Word32 (ImageBufferInfoTexelBufferViews v) }
-	deriving Show
-
-data ImageBufferInfoTexelBufferViews v
-	= ImageInfos [M.ImageInfo]
-	| BufferInfos [Dsc.BufferInfo v]
-	| TexelBufferViews [Buffer.View.V]
-	deriving Show
-
-writeToCore :: (Pointable n, Storable (Foreign.Storable.Generic.Wrap v)) =>
-	Write n v -> ContT r IO C.Write
-writeToCore Write {
-	writeNext = mnxt,
-	writeDstSet = S s,
-	writeDstBinding = b,
-	writeDstArrayElement = ae,
-	writeDescriptorType = Dsc.Type tp,
-	writeImageBufferInfoTexelBufferViews = mibitbvs
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	(dc, piis, pbis, ptbvs) <- case mibitbvs of
-		Left c -> pure (c, NullPtr, NullPtr, NullPtr)
-		Right (ImageInfos (length &&& id -> (iic, iis))) -> do
-			let	ciis = M.imageInfoToCore <$> iis
-			p <- ContT $ allocaArray iic
-			lift $ pokeArray p ciis
-			pure (fromIntegral iic, p, NullPtr, NullPtr)
-		Right (BufferInfos (length &&& id -> (bic, bis))) -> do
-			let	cbis = Dsc.bufferInfoToCore <$> bis
-			p <- ContT $ allocaArray bic
-			lift $ pokeArray p cbis
-			pure (fromIntegral bic, NullPtr, p, NullPtr)
-		Right (TexelBufferViews (length &&& id -> (tbvc, tbvs))) -> do
-			let	ctbvs = (\(Buffer.View.V v) -> v) <$> tbvs
-			p <- ContT $ allocaArray tbvc
-			lift $ pokeArray p ctbvs
-			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
-	pure C.Write {
-		C.writeSType = (),
-		C.writePNext = pnxt,
-		C.writeDstSet = s,
-		C.writeDstBinding = b,
-		C.writeDstArrayElement = ae,
-		C.writeDescriptorCount = dc,
-		C.writeDescriptorType = tp,
-		C.writePImageInfo = piis,
-		C.writePBufferInfo = pbis,
-		C.writePTexelBufferView = ptbvs }
-
 data Copy n = Copy {
 	copyNext :: Maybe n,
 	copySrcSet :: S,
@@ -159,14 +95,3 @@ copyToCore Copy {
 		C.copyDstBinding = db,
 		C.copyDstArrayElement = dae,
 		C.copyDescriptorCount = dc }
-
-updateSs :: (Pointable n, Pointable n',
-		Storable (Foreign.Storable.Generic.Wrap v)) =>
-	Device.D -> [Write n v] -> [Copy n'] -> IO ()
-updateSs (Device.D dvc) (length &&& id -> (wc, ws))
-	(length &&& id -> (cc, cs)) = ($ pure) $ runContT do
-	pws <- ContT $ allocaArray wc
-	lift . pokeArray pws =<< writeToCore `mapM` ws
-	pcs <- ContT $ allocaArray cc
-	lift . pokeArray pcs =<< copyToCore `mapM` cs
-	lift $ C.updateSs dvc (fromIntegral wc) pws (fromIntegral cc) pcs
