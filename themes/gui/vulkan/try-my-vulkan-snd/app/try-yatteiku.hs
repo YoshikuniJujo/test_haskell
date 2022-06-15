@@ -71,7 +71,7 @@ import qualified Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
-import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Vulkan.ImageView as Vk.ImgView
 import qualified Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Vulkan.Component as Vk.Component

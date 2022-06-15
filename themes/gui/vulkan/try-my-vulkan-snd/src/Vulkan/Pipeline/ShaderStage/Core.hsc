@@ -13,7 +13,7 @@ import Data.Word
 
 import Vulkan.Base
 
-import qualified Vulkan.Shader.Module.Core as Shader.Module
+import qualified Vulkan.ShaderModule.Core as Shader.Module
 import qualified Vulkan.Specialization.Core as Specialization
 
 #include <vulkan/vulkan.h>

@@ -1,7 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Shader.Module (
+module Vulkan.ShaderModule (
 	M(..), CreateInfo(..), CreateFlags, pattern CreateFlagsZero ) where
 
-import Vulkan.Shader.Module.Internal
+import Vulkan.ShaderModule.Internal

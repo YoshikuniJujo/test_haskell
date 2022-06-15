@@ -13,7 +13,7 @@ import Vulkan.Enum
 import Vulkan.Pipeline.ShaderStage.Enum
 
 import qualified Vulkan.Device.Type as Device
-import qualified Vulkan.Shader.Module.Internal as Shader.Module
+import qualified Vulkan.ShaderModule.Internal as Shader.Module
 import qualified Vulkan.Pipeline.ShaderStage.Middle as M
 
 data CreateInfo n n' sknd a a' vs = CreateInfo {

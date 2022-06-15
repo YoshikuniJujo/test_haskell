@@ -2,7 +2,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Shader.Module.Internal (
+module Vulkan.ShaderModule.Internal (
 	M(..), M.CreateInfo(..), M.CreateFlags, pattern M.CreateFlagsZero,
 	create, destroy ) where
 
@@ -10,7 +10,7 @@ import Foreign.Pointable
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
-import qualified Vulkan.Shader.Module.Middle as M
+import qualified Vulkan.ShaderModule.Middle as M
 
 data M n sknd a a' = M {
 	mCreateInfo :: M.CreateInfo n sknd,

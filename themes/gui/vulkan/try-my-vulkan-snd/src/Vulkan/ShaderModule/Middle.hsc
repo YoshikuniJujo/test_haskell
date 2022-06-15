@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Shader.Module.Middle where
+module Vulkan.ShaderModule.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -29,7 +29,7 @@ import Vulkan.Exception.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Shader.Module.Core as C
+import qualified Vulkan.ShaderModule.Core as C
 
 #include <vulkan/vulkan.h>
 

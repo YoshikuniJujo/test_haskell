@@ -227,10 +227,10 @@ library
       Vulkan.Sampler.Enum
       Vulkan.Semaphore
       Vulkan.Semaphore.Core
-      Vulkan.Shader.Module
-      Vulkan.Shader.Module.Core
-      Vulkan.Shader.Module.Internal
-      Vulkan.Shader.Module.Middle
+      Vulkan.ShaderModule
+      Vulkan.ShaderModule.Core
+      Vulkan.ShaderModule.Internal
+      Vulkan.ShaderModule.Middle
       Vulkan.Specialization
       Vulkan.Specialization.Core
       Vulkan.Subpass

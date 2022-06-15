@@ -37,7 +37,7 @@ import qualified Vulkan.Memory.List as Vk.Memory.List
 import qualified Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
-import qualified Vulkan.Shader.Module as Vk.Shader.Module
+import qualified Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
 import qualified Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
