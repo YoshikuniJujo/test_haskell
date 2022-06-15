@@ -38,9 +38,9 @@ import qualified Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
 import qualified Vulkan.Shader.Module as Vk.Shader.Module
-import qualified Vulkan.DescriptorSet.Layout as Vk.Descriptor.Set.Layout
+import qualified Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
-import qualified Vulkan.DescriptorSet.Layout.Enum as Vk.Descriptor.Set.Layout
+import qualified Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
 import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
 import qualified Vulkan.Pipeline.Layout.Type as Vk.Pipeline.Layout

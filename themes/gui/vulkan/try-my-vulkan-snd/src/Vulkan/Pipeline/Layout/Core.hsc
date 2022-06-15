@@ -15,7 +15,7 @@ import Vulkan.Base
 
 import qualified Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Vulkan.Device.Core as Device
-import qualified Vulkan.DescriptorSet.Layout.Core as DescriptorSet.Layout
+import qualified Vulkan.DescriptorSetLayout.Core as DescriptorSet.Layout
 import qualified Vulkan.PushConstant.Core as PushConstant
 
 #include <vulkan/vulkan.h>

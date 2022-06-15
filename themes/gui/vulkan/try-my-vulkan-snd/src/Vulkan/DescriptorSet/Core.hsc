@@ -17,7 +17,7 @@ import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Buffer.View.Core as Buffer.View
 import qualified Vulkan.Descriptor.Core as Dsc
 import qualified Vulkan.DescriptorPool.Core as Pool
-import qualified Vulkan.DescriptorSet.Layout.Core as Layout
+import qualified Vulkan.DescriptorSetLayout.Core as Layout
 
 #include <vulkan/vulkan.h>
 

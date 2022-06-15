@@ -17,7 +17,7 @@ import Vulkan.Pipeline.Layout.Type
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
-import qualified Vulkan.DescriptorSet.Layout.Type as Descriptor.Set.Layout
+import qualified Vulkan.DescriptorSetLayout.Type as Descriptor.Set.Layout
 import qualified Vulkan.PushConstant as PushConstant
 import qualified Vulkan.Pipeline.Layout.Middle as M
 

@@ -19,7 +19,7 @@ import Vulkan.Exception.Enum
 
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.DescriptorPool.Middle as Pool
-import qualified Vulkan.DescriptorSet.Layout.Middle as Layout
+import qualified Vulkan.DescriptorSetLayout.Middle as Layout
 import qualified Vulkan.DescriptorSet.Core as C
 
 data AllocateInfo n = AllocateInfo {

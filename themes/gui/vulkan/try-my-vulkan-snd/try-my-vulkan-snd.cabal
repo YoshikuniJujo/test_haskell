@@ -88,13 +88,13 @@ library
       Vulkan.DescriptorSet
       Vulkan.DescriptorSet.Atom
       Vulkan.DescriptorSet.Core
-      Vulkan.DescriptorSet.Layout
-      Vulkan.DescriptorSet.Layout.Core
-      Vulkan.DescriptorSet.Layout.Enum
-      Vulkan.DescriptorSet.Layout.Middle
-      Vulkan.DescriptorSet.Layout.Type
       Vulkan.DescriptorSet.List
       Vulkan.DescriptorSet.Middle
+      Vulkan.DescriptorSetLayout
+      Vulkan.DescriptorSetLayout.Core
+      Vulkan.DescriptorSetLayout.Enum
+      Vulkan.DescriptorSetLayout.Middle
+      Vulkan.DescriptorSetLayout.Type
       Vulkan.Device
       Vulkan.Device.Core
       Vulkan.Device.Middle

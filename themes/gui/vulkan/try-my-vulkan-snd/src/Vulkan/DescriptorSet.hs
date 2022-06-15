@@ -9,7 +9,7 @@ import Data.Word
 
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.DescriptorPool.Type as Descriptor.Pool
-import qualified Vulkan.DescriptorSet.Layout.Type as Layout
+import qualified Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Vulkan.DescriptorSet.Middle as M
 
 data AllocateInfo n sp sl = AllocateInfo {
