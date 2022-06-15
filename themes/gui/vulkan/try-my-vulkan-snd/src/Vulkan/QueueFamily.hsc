@@ -6,7 +6,6 @@ module Vulkan.QueueFamily where
 import Data.Word
 
 import Vulkan.Core
-import Vulkan.Enum
 import Vulkan.QueueFamily.EnumManual
 
 import qualified Vulkan.Queue.Enum as Queue

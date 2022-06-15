@@ -52,6 +52,7 @@ enum "AspectFlagBits" ''#{type VkImageAspectFlagBits}
 	("AspectPlane0Bit", #{const VK_IMAGE_ASPECT_PLANE_0_BIT}),
 	("AspectPlane1Bit", #{const VK_IMAGE_ASPECT_PLANE_1_BIT}),
 	("AspectPlane2Bit", #{const VK_IMAGE_ASPECT_PLANE_2_BIT}),
+	("AspectNone", #{const VK_IMAGE_ASPECT_NONE}),
 	("AspectMemoryPlane0BitExt",
 		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT}),
 	("AspectMemoryPlane1BitExt",
@@ -60,10 +61,10 @@ enum "AspectFlagBits" ''#{type VkImageAspectFlagBits}
 		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT}),
 	("AspectMemoryPlane3BitExt",
 		#{const VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT}),
-	("AspectNoneKhr", #{const VK_IMAGE_ASPECT_NONE_KHR}),
 	("AspectPlane0BitKhr", #{const VK_IMAGE_ASPECT_PLANE_0_BIT_KHR}),
 	("AspectPlane1BitKhr", #{const VK_IMAGE_ASPECT_PLANE_1_BIT_KHR}),
 	("AspectPlane2BitKhr", #{const VK_IMAGE_ASPECT_PLANE_2_BIT_KHR}),
+	("AspectNoneKhr", #{const VK_IMAGE_ASPECT_NONE_KHR}),
 	("AspectFlagBitsMaxEnum",
 		#{const VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM}) ]
 
@@ -157,6 +158,8 @@ enum "CreateFlagBits" ''#{type VkImageCreateFlagBits}
 		#{const VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT}),
 	("CreateSubsampledBitExt",
 		#{const VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT}),
+	("Create2dViewCompatibleBitExt",
+		#{const VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT}),
 	("CreateFragmentDensityMapOffsetBitQcom",
 		#{const VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM}),
 	("CreateSplitInstanceBindRegionsBitKhr",

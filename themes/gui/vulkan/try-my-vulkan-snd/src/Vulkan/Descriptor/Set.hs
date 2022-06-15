@@ -8,7 +8,7 @@ import Foreign.Pointable
 import Data.Word
 
 import qualified Vulkan.Device.Type as Device
-import qualified Vulkan.Descriptor.Pool.Type as Descriptor.Pool
+import qualified Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Vulkan.Descriptor.Set.Layout.Type as Layout
 import qualified Vulkan.Descriptor.Set.Middle as M
 

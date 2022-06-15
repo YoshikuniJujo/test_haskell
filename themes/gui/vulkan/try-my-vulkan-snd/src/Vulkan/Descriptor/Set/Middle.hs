@@ -18,7 +18,7 @@ import Vulkan.Exception
 import Vulkan.Exception.Enum
 
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Descriptor.Pool.Middle as Pool
+import qualified Vulkan.DescriptorPool.Middle as Pool
 import qualified Vulkan.Descriptor.Set.Layout.Middle as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
 

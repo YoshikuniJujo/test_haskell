@@ -80,11 +80,6 @@ library
       Vulkan.Descriptor.Enum
       Vulkan.Descriptor.List
       Vulkan.Descriptor.Middle
-      Vulkan.Descriptor.Pool
-      Vulkan.Descriptor.Pool.Core
-      Vulkan.Descriptor.Pool.Enum
-      Vulkan.Descriptor.Pool.Middle
-      Vulkan.Descriptor.Pool.Type
       Vulkan.Descriptor.Set
       Vulkan.Descriptor.Set.Atom
       Vulkan.Descriptor.Set.Core
@@ -95,6 +90,11 @@ library
       Vulkan.Descriptor.Set.Layout.Type
       Vulkan.Descriptor.Set.List
       Vulkan.Descriptor.Set.Middle
+      Vulkan.DescriptorPool
+      Vulkan.DescriptorPool.Core
+      Vulkan.DescriptorPool.Enum
+      Vulkan.DescriptorPool.Middle
+      Vulkan.DescriptorPool.Type
       Vulkan.Device
       Vulkan.Device.Core
       Vulkan.Device.Middle
