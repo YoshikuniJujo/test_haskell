@@ -1,13 +1,15 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Vulkan.Descriptor.List where
 
 import Foreign.Storable
+import Data.HeteroList
 
 import qualified Foreign.Storable.Generic
 
@@ -36,3 +38,18 @@ bufferInfoToMiddle BufferInfo {
 		M.bufferInfoOffset = 0,
 		M.bufferInfoRange = Device.Size . fromIntegral . (ln *)
 			$ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined }
+
+class BufferInfoListToMiddle slsmvs where
+	bufferInfoListToMiddle ::
+		HeteroVarList BufferInfo slsmvs -> [M.BufferInfo]
+
+instance BufferInfoListToMiddle '[] where bufferInfoListToMiddle HVNil = []
+
+instance (Foreign.Storable.Generic.G v, BufferInfoListToMiddle slsmvs) =>
+	BufferInfoListToMiddle ('(sl, sm, v) ': slsmvs) where
+	bufferInfoListToMiddle (bi :...: bis) =
+		bufferInfoToMiddle bi : bufferInfoListToMiddle bis
+
+bufferInfoListToCore :: BufferInfoListToMiddle slsmvs =>
+	HeteroVarList BufferInfo slsmvs -> [C.BufferInfo]
+bufferInfoListToCore = (M.bufferInfoToCore <$>) . bufferInfoListToMiddle

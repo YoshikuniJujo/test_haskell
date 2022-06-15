@@ -189,6 +189,9 @@ withCommandPool phdvc device commandPool =
 							Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos
 						}
 				print @(Vk.Descriptor.Set.List.Write () _ _ _ _) writeDescSet
+				Vk.Descriptor.Set.List.updateSs @() @_ @() device
+					(Vk.Descriptor.Set.List.Write_ writeDescSet :...: HVNil)
+					[]
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
