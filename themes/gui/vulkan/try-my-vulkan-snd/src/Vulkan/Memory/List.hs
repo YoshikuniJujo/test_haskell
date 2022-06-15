@@ -3,7 +3,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Memory.List (allocate, M.AllocateInfo(..), writeMono) where
+module Vulkan.Memory.List (allocate, M.AllocateInfo(..), writeMono, readList) where
+
+import Prelude hiding (readList)
 
 import Foreign.Pointable
 import Control.Exception
@@ -31,3 +33,7 @@ writeMono :: (
 	Device.MemoryList sm (Element vs) -> Memory.M.MapFlags -> vs -> IO ()
 writeMono (Device.D dvc) (Device.MemoryList mem) flgs vs =
 	M.writeMono dvc mem flgs vs
+
+readList :: Foreign.Storable.Generic.G v =>
+	Device.D sd -> Device.MemoryList sm v -> Memory.M.MapFlags -> IO [v]
+readList (Device.D dvc) (Device.MemoryList mem) flgs = M.readList dvc mem flgs

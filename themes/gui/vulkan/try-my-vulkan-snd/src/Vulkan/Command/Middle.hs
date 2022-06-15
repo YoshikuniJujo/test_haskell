@@ -72,3 +72,7 @@ bindIndexBuffer ::
 bindIndexBuffer
 	(CommandBuffer.C cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
 	C.bindIndexBuffer cb ib sz it
+
+dispatch ::
+	CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> IO ()
+dispatch (CommandBuffer.C cb) = C.dispatch cb

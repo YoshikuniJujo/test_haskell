@@ -114,3 +114,6 @@ blitImage (CommandBuffer.M.C cb)
 	pblts <- ContT $ allocaArray bltc
 	lift . pokeArray pblts $ Image.blitToCore <$> blts
 	lift $ C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
+
+dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
+dispatch (CommandBuffer.C cb) = M.dispatch cb

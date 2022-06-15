@@ -68,3 +68,7 @@ foreign import ccall "vkCmdBlitImage" blitImage ::
 	CommandBuffer.C ->
 	Image.I -> #{type VkImageLayout} -> Image.I -> #{type VkImageLayout} ->
 	#{type uint32_t} -> Ptr Image.Blit -> #{type VkFilter} -> IO ()
+
+foreign import ccall "vkCmdDispatch" dispatch ::
+	CommandBuffer.C ->
+	#{type uint32_t} -> #{type uint32_t} -> #{type uint32_t} -> IO ()

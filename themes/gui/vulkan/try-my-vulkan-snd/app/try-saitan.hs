@@ -10,15 +10,16 @@ import Data.Default
 import Data.Bits
 import Data.HeteroList
 import Data.Word
-
 import qualified Data.Vector.Storable as V
 
 import Shaderc.TH
 import Vulkan.Base
 
+import qualified Vulkan as Vk
 import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Instance as Vk.Instance
 import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 import qualified Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
@@ -42,6 +43,7 @@ import qualified Vulkan.Shader.Stage.Enum as Vk.Shader.Stage
 import qualified Vulkan.Descriptor.Set.Layout.Enum as Vk.Descriptor.Set.Layout
 import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
 import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
+import qualified Vulkan.Pipeline.Layout.Type as Vk.Pipeline.Layout
 import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
@@ -49,6 +51,7 @@ import qualified Vulkan.Descriptor.Set as Vk.Descriptor.Set
 import qualified Vulkan.Descriptor.List as Vk.Descriptor.List
 import qualified Vulkan.Descriptor.Set.List as Vk.Descriptor.Set.List
 import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Vulkan.Command as Vk.Cmd
 
@@ -95,10 +98,11 @@ withDevice phdvc queueFamily device = do
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				queueFamily }
 	Vk.CommandPool.create @() device commandPoolInfo nil nil
-		$ withCommandPool phdvc device
+		$ withCommandPool phdvc device queue
 
-withCommandPool :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.CommandPool.C sc -> IO ()
-withCommandPool phdvc device commandPool =
+withCommandPool ::
+	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
+withCommandPool phdvc device queue commandPool =
 	print commandPool >>
 	storageBufferNew3 device phdvc dataA dataB dataC
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
@@ -206,6 +210,24 @@ withCommandPool phdvc device commandPool =
 						Vk.CommandBuffer.begin @() @() commandBuffer def do
 							Vk.Cmd.bindPipelineCompute commandBuffer
 								Vk.Pipeline.BindPointCompute $ head pipelines
+							Vk.Cmd.bindDescriptorSets
+								((\(Vk.CommandBuffer.C c) -> c) commandBuffer)
+								Vk.Pipeline.BindPointCompute
+								((\(Vk.Pipeline.Layout.L l) -> l) pipelineLayout)
+								0
+								((\(Vk.Descriptor.Set.S s) -> s) <$> descSets)
+								[]
+							Vk.Cmd.dispatch commandBuffer dataSize 1 1
+						let	submitInfo = Vk.SubmitInfo {
+								Vk.submitInfoNext = Nothing,
+								Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+								Vk.submitInfoCommandBuffers = [commandBuffer],
+								Vk.submitInfoSignalSemaphores = [] }
+						Vk.Queue.submit @() queue [submitInfo] Nothing
+						Vk.Queue.waitIdle queue
+						print =<< take 10 <$> Vk.Memory.List.readList device memA Vk.Memory.M.MapFlagsZero
+						print =<< take 10 <$> Vk.Memory.List.readList device memB Vk.Memory.M.MapFlagsZero
+						print =<< take 10 <$> Vk.Memory.List.readList device memC Vk.Memory.M.MapFlagsZero
 					_ -> error "never occur"
 
 createDescriptorPool :: Vk.Device.D sd ->
