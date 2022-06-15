@@ -46,6 +46,7 @@ import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
 import qualified Vulkan.Descriptor.Set as Vk.Descriptor.Set
+import qualified Vulkan.Descriptor.List as Vk.Descriptor.List
 
 main :: IO ()
 main = do
@@ -167,6 +168,12 @@ withDevice phdvc queueFamily device = do
 					print @(Vk.Descriptor.Set.AllocateInfo () _ _) descSetInfo
 					descSets <- Vk.Descriptor.Set.allocateSs @() device descSetInfo
 					print descSets
+					let	descBufferInfos =
+							Vk.Descriptor.List.BufferInfo bufA :...:
+							Vk.Descriptor.List.BufferInfo bufB :...:
+							Vk.Descriptor.List.BufferInfo bufC :...:
+							HVNil
+					print descBufferInfos
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
