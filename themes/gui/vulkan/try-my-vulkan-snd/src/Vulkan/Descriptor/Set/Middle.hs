@@ -28,6 +28,8 @@ import qualified Vulkan.Descriptor.Pool.Middle as Pool
 import qualified Vulkan.Descriptor.Set.Layout.Middle as Layout
 import qualified Vulkan.Descriptor.Set.Core as C
 
+import qualified Vulkan.Descriptor.Middle as M
+
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoDescriptorPool :: Pool.P,
@@ -79,7 +81,7 @@ data Write n v = Write {
 	deriving Show
 
 data ImageBufferInfoTexelBufferViews v
-	= ImageInfos [Dsc.ImageInfo]
+	= ImageInfos [M.ImageInfo]
 	| BufferInfos [Dsc.BufferInfo v]
 	| TexelBufferViews [Buffer.View.V]
 	deriving Show
@@ -98,7 +100,7 @@ writeToCore Write {
 	(dc, piis, pbis, ptbvs) <- case mibitbvs of
 		Left c -> pure (c, NullPtr, NullPtr, NullPtr)
 		Right (ImageInfos (length &&& id -> (iic, iis))) -> do
-			let	ciis = Dsc.imageInfoToCore <$> iis
+			let	ciis = M.imageInfoToCore <$> iis
 			p <- ContT $ allocaArray iic
 			lift $ pokeArray p ciis
 			pure (fromIntegral iic, p, NullPtr, NullPtr)

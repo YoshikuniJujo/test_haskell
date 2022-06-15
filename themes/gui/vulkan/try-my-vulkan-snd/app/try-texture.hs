@@ -128,6 +128,7 @@ import qualified Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Vulkan.Descriptor.Pool.Enum as Vk.DscPool
 import qualified Vulkan.Descriptor.Set.Middle as Vk.DscSet
 import qualified Vulkan.Descriptor.Atom as Vk.Dsc
+import qualified Vulkan.Descriptor.Middle as Vk.Dsc.M
 import qualified Vulkan.Memory.Image.Middle as Vk.Memory.Image
 import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
@@ -1353,11 +1354,11 @@ createDescriptorSets = do
 		let	bufferInfo = Vk.Dsc.BufferInfo {
 				Vk.Dsc.bufferInfoBuffer = ubs !! i,
 				Vk.Dsc.bufferInfoOffset = 0 }
-			imageInfo = Vk.Dsc.ImageInfo {
-				Vk.Dsc.imageInfoImageLayout =
+			imageInfo = Vk.Dsc.M.ImageInfo {
+				Vk.Dsc.M.imageInfoImageLayout =
 					Vk.Image.LayoutShaderReadOnlyOptimal,
-				Vk.Dsc.imageInfoImageView = tiv,
-				Vk.Dsc.imageInfoSampler = ts }
+				Vk.Dsc.M.imageInfoImageView = tiv,
+				Vk.Dsc.M.imageInfoSampler = ts }
 			descriptorWrite0 = Vk.DscSet.Write {
 				Vk.DscSet.writeNext = Nothing,
 				Vk.DscSet.writeDstSet = dss !! i,
