@@ -48,6 +48,9 @@ import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
 import qualified Vulkan.Descriptor.Set as Vk.Descriptor.Set
 import qualified Vulkan.Descriptor.List as Vk.Descriptor.List
 import qualified Vulkan.Descriptor.Set.List as Vk.Descriptor.Set.List
+import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Vulkan.Command as Vk.Cmd
 
 main :: IO ()
 main = do
@@ -192,6 +195,18 @@ withCommandPool phdvc device commandPool =
 				Vk.Descriptor.Set.List.updateSs @() @_ @() device
 					(Vk.Descriptor.Set.List.Write_ writeDescSet :...: HVNil)
 					[]
+				let	commandBufferInfo = Vk.CommandBuffer.AllocateInfo {
+						Vk.CommandBuffer.allocateInfoNext = Nothing,
+						Vk.CommandBuffer.allocateInfoCommandPool = commandPool,
+						Vk.CommandBuffer.allocateInfoLevel = Vk.CommandBuffer.LevelPrimary,
+						Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+				Vk.CommandBuffer.allocate @() device commandBufferInfo \commandBuffers -> case commandBuffers of
+					[commandBuffer] -> do
+						print commandBuffer
+						Vk.CommandBuffer.begin @() @() commandBuffer def do
+							Vk.Cmd.bindPipelineCompute commandBuffer
+								Vk.Pipeline.BindPointCompute $ head pipelines
+					_ -> error "never occur"
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a

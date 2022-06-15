@@ -19,6 +19,7 @@ import Vulkan.Enum
 import qualified Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Vulkan.CommandBuffer.Middle as CommandBuffer.M
 import qualified Vulkan.Pipeline.Graphics.Type as Pipeline
+import qualified Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
 import qualified Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
@@ -42,6 +43,10 @@ beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 bindPipeline ::
 	CommandBuffer.C sc vs -> Pipeline.BindPoint -> Pipeline.G sg vs ts -> IO ()
 bindPipeline (CommandBuffer.C cb) bp (Pipeline.G g) = M.bindPipeline cb bp g
+
+bindPipelineCompute ::
+	CommandBuffer.C sc vs -> Pipeline.BindPoint -> Pipeline.Compute.C sg -> IO ()
+bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.C g) = M.bindPipelineCompute cb bp g
 
 draw :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.C cb) vc ic fv fi = M.draw cb vc ic fv fi

@@ -23,6 +23,7 @@ import qualified Vulkan.Command.Core as C
 import qualified Vulkan.RenderPass.Middle as RenderPass
 import qualified Vulkan.Subpass.Enum as Subpass
 import qualified Vulkan.Pipeline.Graphics.Middle as Pipeline
+import qualified Vulkan.Pipeline.Compute.Middle as Pipeline.Compute
 import qualified Vulkan.Pipeline.Enum as Pipeline
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
@@ -38,6 +39,11 @@ endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
 bindPipeline ::
 	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
 bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
+	C.bindPipeline cb pbp ppl
+
+bindPipelineCompute ::
+	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.Compute.C -> IO ()
+bindPipelineCompute (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.Compute.C ppl) =
 	C.bindPipeline cb pbp ppl
 
 draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
