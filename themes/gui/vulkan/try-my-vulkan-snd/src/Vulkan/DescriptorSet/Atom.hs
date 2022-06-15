@@ -4,7 +4,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.Atom where
+module Vulkan.DescriptorSet.Atom where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -22,11 +22,11 @@ import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Buffer.View as Buffer.View
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor.Atom as Dsc
-import qualified Vulkan.Descriptor.Set.Core as C
+import qualified Vulkan.DescriptorSet.Core as C
 
 import qualified Vulkan.Descriptor.Middle as M
 
-import qualified Vulkan.Descriptor.Set.Middle as M
+import qualified Vulkan.DescriptorSet.Middle as M
 
 data Write n v = Write {
 	writeNext :: Maybe n,

@@ -2,17 +2,17 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.Layout (
+module Vulkan.DescriptorSet.Layout (
 	L, create, M.Binding(..), M.CreateInfo(..) ) where
 
 import Foreign.Pointable
 import Control.Exception
 
-import Vulkan.Descriptor.Set.Layout.Type
+import Vulkan.DescriptorSet.Layout.Type
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
-import qualified Vulkan.Descriptor.Set.Layout.Middle as M
+import qualified Vulkan.DescriptorSet.Layout.Middle as M
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->

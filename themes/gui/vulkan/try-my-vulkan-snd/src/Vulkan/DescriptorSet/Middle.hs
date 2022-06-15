@@ -4,7 +4,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.Middle where
+module Vulkan.DescriptorSet.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -19,8 +19,8 @@ import Vulkan.Exception.Enum
 
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.DescriptorPool.Middle as Pool
-import qualified Vulkan.Descriptor.Set.Layout.Middle as Layout
-import qualified Vulkan.Descriptor.Set.Core as C
+import qualified Vulkan.DescriptorSet.Layout.Middle as Layout
+import qualified Vulkan.DescriptorSet.Core as C
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,

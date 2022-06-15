@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.Core where
+module Vulkan.DescriptorSet.Core where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -17,7 +17,7 @@ import qualified Vulkan.Device.Core as Device
 import qualified Vulkan.Buffer.View.Core as Buffer.View
 import qualified Vulkan.Descriptor.Core as Dsc
 import qualified Vulkan.DescriptorPool.Core as Pool
-import qualified Vulkan.Descriptor.Set.Layout.Core as Layout
+import qualified Vulkan.DescriptorSet.Layout.Core as Layout
 
 #include <vulkan/vulkan.h>
 

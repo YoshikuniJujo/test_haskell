@@ -23,7 +23,7 @@ import qualified Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Vulkan.Pipeline.Enum as Pipeline
 import qualified Vulkan.Command.Core as C
 import qualified Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
-import qualified Vulkan.Descriptor.Set.Middle as Descriptor.Set
+import qualified Vulkan.DescriptorSet.Middle as Descriptor.Set
 import qualified Vulkan.Memory.Middle as Memory.M
 import qualified Vulkan.Buffer.Middle as Buffer.M
 import qualified Vulkan.Image.Middle as Image

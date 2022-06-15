@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.Layout.Middle where
+module Vulkan.DescriptorSet.Layout.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -17,14 +17,14 @@ import Data.Word
 
 import Vulkan.Exception
 import Vulkan.Exception.Enum
-import Vulkan.Descriptor.Set.Layout.Enum
+import Vulkan.DescriptorSet.Layout.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Middle as Device
 import qualified Vulkan.Shader.Stage.Enum as Shader.Stage
 import qualified Vulkan.Sampler as Sampler
 import qualified Vulkan.Descriptor.Enum as Descriptor
-import qualified Vulkan.Descriptor.Set.Layout.Core as C
+import qualified Vulkan.DescriptorSet.Layout.Core as C
 
 data Binding = Binding {
 	bindingBinding :: Word32,

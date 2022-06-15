@@ -11,7 +11,7 @@ import qualified Vulkan.Pipeline.Core as Pipeline
 import qualified Vulkan.CommandBuffer.Core as CommandBuffer
 import qualified Vulkan.Buffer.Core as Buffer
 import qualified Vulkan.Pipeline.Layout.Core as Pipeline.Layout
-import qualified Vulkan.Descriptor.Set.Core as DscSet
+import qualified Vulkan.DescriptorSet.Core as DscSet
 import qualified Vulkan.Memory.Core as Memory
 import qualified Vulkan.Image.Core as Image
 

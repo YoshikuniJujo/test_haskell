@@ -8,7 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set.List where
+module Vulkan.DescriptorSet.List where
 
 import Foreign.Ptr
 import Foreign.Pointable
@@ -24,9 +24,9 @@ import qualified Vulkan.Buffer.View as Buffer.View
 import qualified Vulkan.Descriptor.List as Dsc
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor.Middle as Dsc.M
-import qualified Vulkan.Descriptor.Set as Dsc.Set
-import qualified Vulkan.Descriptor.Set.Middle as Dsc.Set.M
-import qualified Vulkan.Descriptor.Set.Core as C
+import qualified Vulkan.DescriptorSet as Dsc.Set
+import qualified Vulkan.DescriptorSet.Middle as Dsc.Set.M
+import qualified Vulkan.DescriptorSet.Core as C
 
 data Write n sd sp sl slsmvs = Write {
 	writeNext :: Maybe n,

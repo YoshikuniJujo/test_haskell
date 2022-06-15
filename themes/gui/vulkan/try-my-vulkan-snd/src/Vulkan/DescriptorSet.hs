@@ -2,15 +2,15 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Descriptor.Set where
+module Vulkan.DescriptorSet where
 
 import Foreign.Pointable
 import Data.Word
 
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.DescriptorPool.Type as Descriptor.Pool
-import qualified Vulkan.Descriptor.Set.Layout.Type as Layout
-import qualified Vulkan.Descriptor.Set.Middle as M
+import qualified Vulkan.DescriptorSet.Layout.Type as Layout
+import qualified Vulkan.DescriptorSet.Middle as M
 
 data AllocateInfo n sp sl = AllocateInfo {
 	allocateInfoNext :: Maybe n,
