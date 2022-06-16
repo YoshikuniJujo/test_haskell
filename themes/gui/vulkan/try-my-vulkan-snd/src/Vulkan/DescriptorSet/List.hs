@@ -20,7 +20,7 @@ import Vulkan.Base
 
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Device.Middle as Device.M
-import qualified Vulkan.Buffer.View as Buffer.View
+import qualified Vulkan.BufferView as Buffer.View
 import qualified Vulkan.Descriptor.List as Dsc
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor.Middle as Dsc.M

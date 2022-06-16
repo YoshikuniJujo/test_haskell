@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vulkan.Buffer.View.Core where
+module Vulkan.BufferView.Core where
 
 import Foreign.Ptr
 

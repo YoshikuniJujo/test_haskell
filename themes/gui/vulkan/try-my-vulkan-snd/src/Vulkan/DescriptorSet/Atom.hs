@@ -19,7 +19,7 @@ import Vulkan.Base
 import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.Buffer.View as Buffer.View
+import qualified Vulkan.BufferView as Buffer.View
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor.Atom as Dsc
 import qualified Vulkan.DescriptorSet.Core as C
