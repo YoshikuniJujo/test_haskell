@@ -15,3 +15,12 @@ memo
 * [ ] move Vulkan.Enumerate.instanceExtensionProperties to Vulkan.Instance.enumerateExtensionProperties
 * [ ] move Vulkan.Enumerate.instanceLayerProperties to Vulkan.Instance.enumerateLayerProperties
 * [x] move Vulkan.PushConstant to Vulkan.PushConstant.Core
+* [ ] refactor app/try-saitan.hs
+
+tmp
+---
+
+* VkBufferView
+* texel buffer
+* texelFetch
+* imageLoad, imageStore
