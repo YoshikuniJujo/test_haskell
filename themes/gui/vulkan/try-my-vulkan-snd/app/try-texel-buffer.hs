@@ -118,8 +118,9 @@ withCommandPool phdvc device queue commandPool = do
 		<$> Vk.PhysicalDevice.getProperties phdvc
 	print maxGroupCountX
 	let	(dataA, dataB, dataC) = makeDatas maxGroupCountX
-	storageBufferNew3 device phdvc dataA dataB dataC
-		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
+		dataD = V.replicate (fromIntegral maxGroupCountX) 123
+	storageBufferNew4 device phdvc dataA dataB dataC dataD
+		\((bufA, memA), (bufB, memB), (bufC, memC), (bufD, memD)) ->
 		print bufA >> print memA >>
 		print bufB >> print memB >>
 		print bufC >> print memC >>
@@ -139,12 +140,20 @@ withCommandPool phdvc device queue commandPool = do
 					Left 3,
 				Vk.Descriptor.Set.Layout.bindingStageFlags =
 					Vk.ShaderStageComputeBit }
+			binding2 = Vk.Descriptor.Set.Layout.Binding {
+				Vk.Descriptor.Set.Layout.bindingBinding = 1,
+				Vk.Descriptor.Set.Layout.bindingDescriptorType =
+					Vk.Descriptor.TypeStorageBuffer,
+				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
+					Left 1,
+				Vk.Descriptor.Set.Layout.bindingStageFlags =
+					Vk.ShaderStageComputeBit }
 			descSetLayoutInfo = Vk.Descriptor.Set.Layout.CreateInfo {
 				Vk.Descriptor.Set.Layout.createInfoNext = Nothing,
 				Vk.Descriptor.Set.Layout.createInfoFlags =
 					Vk.Descriptor.Set.Layout.CreateFlagsZero,
 				Vk.Descriptor.Set.Layout.createInfoBindings =
-					[binding] }
+					[binding, binding2] }
 		Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
 			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 					Vk.Pipeline.Layout.createInfoNext = Nothing,
@@ -209,9 +218,24 @@ withCommandPool phdvc device queue commandPool = do
 							Vk.Descriptor.Set.List.writeImageBufferInfoTexelBufferViews =
 								Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos
 							}
+						descBufferInfos2 =
+							Vk.Descriptor.List.BufferInfo bufD :...:
+							HVNil
+						writeDescSet2 = Vk.Descriptor.Set.List.Write {
+							Vk.Descriptor.Set.List.writeNext = Nothing,
+							Vk.Descriptor.Set.List.writeDstSet = descSets !! 0,
+							Vk.Descriptor.Set.List.writeDstBinding = 1,
+							Vk.Descriptor.Set.List.writeDstArrayElement = 0,
+							Vk.Descriptor.Set.List.writeDescriptorType =
+								Vk.Descriptor.TypeStorageBuffer,
+							Vk.Descriptor.Set.List.writeImageBufferInfoTexelBufferViews =
+								Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos2
+							}
 					print @(Vk.Descriptor.Set.List.Write () _ _ _ _) writeDescSet
-					Vk.Descriptor.Set.List.updateSs @() @_ @() device
-						(Vk.Descriptor.Set.List.Write_ writeDescSet :...: HVNil)
+					Vk.Descriptor.Set.List.updateSs @() @_ @() device (
+						Vk.Descriptor.Set.List.Write_ writeDescSet :...:
+						Vk.Descriptor.Set.List.Write_ writeDescSet2 :...:
+						HVNil )
 						[]
 					let	commandBufferInfo = Vk.CommandBuffer.AllocateInfo {
 							Vk.CommandBuffer.allocateInfoNext = Nothing,
@@ -242,6 +266,7 @@ withCommandPool phdvc device queue commandPool = do
 							print =<< take 10 <$> Vk.Memory.List.readList device memA Vk.Memory.M.MapFlagsZero
 							print =<< take 10 <$> Vk.Memory.List.readList device memB Vk.Memory.M.MapFlagsZero
 							print =<< take 10 <$> Vk.Memory.List.readList device memC Vk.Memory.M.MapFlagsZero
+							print =<< take 10 <$> Vk.Memory.List.readList device memD Vk.Memory.M.MapFlagsZero
 						_ -> error "never occur"
 
 createDescriptorPool :: Vk.Device.D sd ->
@@ -324,6 +349,20 @@ storageBufferNew3 dvc phdvc xs1 xs2 xs3 f =
 	storageBufferNew dvc phdvc xs3 \b3 m3 ->
 	f ((b1, m1), (b2, m2), (b3, m3))
 
+storageBufferNew4 ::
+	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
+	V.Vector Word32 -> V.Vector Word32 -> V.Vector Word32 ->
+	V.Vector Word32 -> (
+		forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 . (
+			BufferMemory sb1 sm1,
+			BufferMemory sb2 sm2,
+			BufferMemory sb3 sm3,
+			BufferMemory sb4 sm4 ) -> IO a ) -> IO a
+storageBufferNew4 dvc phdvc xs1 xs2 xs3 xs4 f =
+	storageBufferNew3 dvc phdvc xs1 xs2 xs3 \(bm1, bm2, bm3) ->
+	storageBufferNew dvc phdvc xs4 \b4 m4 ->
+	f ((bm1, bm2, bm3, (b4, m4)))
+
 findQueueFamily ::
 	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
 findQueueFamily phdvc qb = do
@@ -358,11 +397,16 @@ layout(binding = 0) buffer Data {
 	uint val[];
 } data[3];
 
+layout(binding = 1) buffer Data2 {
+	uint val2[];
+} data2[1];
+
 void
 main()
 {
 	int index = int(gl_GlobalInvocationID.x);
 	data[2].val[index] = data[0].val[index] + data[1].val[index];
+	data2[0].val2[index] = data2[0].val2[index] + 321;
 }
 
 |]
