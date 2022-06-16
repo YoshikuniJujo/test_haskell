@@ -27,6 +27,7 @@ library
   exposed-modules:
       Foreign.Ptr.Synonyms
       Vulkan.AllocationCallbacks.Core
+      Vulkan.Attachment.Core
   other-modules:
       Paths_try_vulkan_core
   hs-source-dirs:
