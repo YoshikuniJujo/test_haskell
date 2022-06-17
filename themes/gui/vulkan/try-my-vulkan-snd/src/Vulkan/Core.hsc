@@ -256,3 +256,16 @@ clearValueFromClearColorValue = castPtr
 clearValueFromClearDepthStencilValue :: ClearDepthStencilValue -> ContT r IO (Ptr ClearValueTag)
 clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) =
 	castPtr <$> ContT (withForeignPtr fp)
+
+struct "FormatProperties" #{size VkFormatProperties}
+		#{alignment VkFormatProperties} [
+	("linearTilingFeatures", ''#{type VkFormatFeatureFlags},
+		[| #{peek VkFormatProperties, linearTilingFeatures} |],
+		[| #{poke VkFormatProperties, linearTilingFeatures} |]),
+	("optimalTilingFeatures", ''#{type VkFormatFeatureFlags},
+		[| #{peek VkFormatProperties, optimalTilingFeatures} |],
+		[| #{poke VkFormatProperties, optimalTilingFeatures} |]),
+	("bufferFeatures", ''#{type VkFormatFeatureFlags},
+		[| #{peek VkFormatProperties, bufferFeatures} |],
+		[| #{poke VkFormatProperties, bufferFeatures} |]) ]
+	[''Show, ''Storable]

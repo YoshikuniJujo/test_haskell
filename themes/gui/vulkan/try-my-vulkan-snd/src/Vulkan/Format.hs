@@ -2,22 +2,24 @@
 
 module Vulkan.Format where
 
-import Vulkan.Format.Enum
+import Vulkan.Enum
 
 import qualified Vulkan.Format.Core as C
 
-data Properties = Properties {
-	propertiesLinearTilingFeatures :: FeatureFlags,
-	propertiesOptimalTilingFeatures :: FeatureFlags,
-	propertiesBufferFeatures :: FeatureFlags }
+data FormatProperties = FormatProperties {
+	formatPropertiesLinearTilingFeatures :: FormatFeatureFlags,
+	formatPropertiesOptimalTilingFeatures :: FormatFeatureFlags,
+	formatPropertiesBufferFeatures :: FormatFeatureFlags }
 	deriving Show
 
-propertiesFromCore :: C.Properties -> Properties
-propertiesFromCore C.Properties {
-	C.propertiesLinearTilingFeatures = ltfs,
-	C.propertiesOptimalTilingFeatures = otfs,
-	C.propertiesBufferFeatures = bfs
-	} = Properties {
-		propertiesLinearTilingFeatures = FeatureFlagBits ltfs,
-		propertiesOptimalTilingFeatures = FeatureFlagBits otfs,
-		propertiesBufferFeatures = FeatureFlagBits bfs }
+propertiesFromCore :: C.FormatProperties -> FormatProperties
+propertiesFromCore C.FormatProperties {
+	C.formatPropertiesLinearTilingFeatures = ltfs,
+	C.formatPropertiesOptimalTilingFeatures = otfs,
+	C.formatPropertiesBufferFeatures = bfs
+	} = FormatProperties {
+		formatPropertiesLinearTilingFeatures =
+			FormatFeatureFlagBits ltfs,
+		formatPropertiesOptimalTilingFeatures =
+			FormatFeatureFlagBits otfs,
+		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }

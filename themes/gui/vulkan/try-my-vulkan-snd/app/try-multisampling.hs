@@ -139,7 +139,6 @@ import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Sampler as Vk.Sampler
 import qualified Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
-import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 import qualified Vulkan.Queue as Vk.Queue
@@ -182,7 +181,7 @@ data Global = Global {
 	globalPresentQueue :: IORef Vk.Queue.Q,
 	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
-	globalSwapChainImageFormat :: IORef (Maybe Vk.Format.F),
+	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
@@ -675,7 +674,7 @@ chooseSwapSurfaceFormat = \case
 
 preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.formatFormat f == Vk.Format.B8g8r8a8Srgb &&
+	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
 	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
@@ -708,7 +707,7 @@ createImageViews = do
 			img scif Vk.Image.AspectColorBit 1) `mapM`)
 		=<< readGlobal globalSwapChainImages
 
-createImageView :: Vk.Image.I -> Vk.Format.F -> Vk.Image.AspectFlags ->
+createImageView :: Vk.Image.I -> Vk.Format -> Vk.Image.AspectFlags ->
 	Word32 -> ReaderT Global IO Vk.ImageView.I
 createImageView image format aspectFlags mipLevels = do
 	let	createInfo = Vk.ImageView.CreateInfo {
@@ -1129,15 +1128,15 @@ createDepthResources = do
 	transitionImageLayout di depthFormat Vk.Image.LayoutUndefined
 		Vk.Image.LayoutDepthStencilAttachmentOptimal 1
 
-findDepthFormat :: ReaderT Global IO Vk.Format.F
+findDepthFormat :: ReaderT Global IO Vk.Format
 findDepthFormat = findSupportedFormat
-	[Vk.Format.D32Sfloat,
-		Vk.Format.D32SfloatS8Uint, Vk.Format.D24UnormS8Uint]
-	Vk.Image.TilingOptimal Vk.Format.FeatureDepthStencilAttachmentBit
+	[Vk.FormatD32Sfloat,
+		Vk.FormatD32SfloatS8Uint, Vk.FormatD24UnormS8Uint]
+	Vk.Image.TilingOptimal Vk.FormatFeatureDepthStencilAttachmentBit
 
 findSupportedFormat ::
-	[Vk.Format.F] -> Vk.Image.Tiling -> Vk.Format.FeatureFlags ->
-	ReaderT Global IO Vk.Format.F
+	[Vk.Format] -> Vk.Image.Tiling -> Vk.FormatFeatureFlags ->
+	ReaderT Global IO Vk.Format
 findSupportedFormat candidates tiling features = do
 	pdvc <- readGlobal globalPhysicalDevice
 	fmts <- lift $ (`zip` candidates)
@@ -1146,17 +1145,17 @@ findSupportedFormat candidates tiling features = do
 		$ find (doesFeatureMatch tiling features . fst) fmts
 
 doesFeatureMatch ::
-	Vk.Image.Tiling -> Vk.Format.FeatureFlags -> Vk.Format.Properties ->
+	Vk.Image.Tiling -> Vk.FormatFeatureFlags -> Vk.Format.FormatProperties ->
 	Bool
 doesFeatureMatch Vk.Image.TilingLinear features props =
-	Vk.Format.propertiesLinearTilingFeatures props .&. features == features
+	Vk.Format.formatPropertiesLinearTilingFeatures props .&. features == features
 doesFeatureMatch Vk.Image.TilingOptimal features props =
-	Vk.Format.propertiesOptimalTilingFeatures props .&. features == features
+	Vk.Format.formatPropertiesOptimalTilingFeatures props .&. features == features
 doesFeatureMatch _ _ _ = False
 
-hasStencilComponent :: Vk.Format.F -> Bool
+hasStencilComponent :: Vk.Format -> Bool
 hasStencilComponent = \case
-	Vk.Format.D32SfloatS8Uint -> True; Vk.Format.D24UnormS8Uint -> True
+	Vk.FormatD32SfloatS8Uint -> True; Vk.FormatD24UnormS8Uint -> True
 	_ -> False
 
 createTextureImage :: ReaderT Global IO ()
@@ -1183,23 +1182,23 @@ createTextureImage = do
 	(ti, tim) <- createImage
 		(fromIntegral texWidth) (fromIntegral texHeight)
 		ml Vk.Sample.Count1Bit
-		Vk.Format.R8g8b8a8Srgb Vk.Image.TilingOptimal
+		Vk.FormatR8g8b8a8Srgb Vk.Image.TilingOptimal
 		(	Vk.Image.UsageTransferSrcBit .|.
 			Vk.Image.UsageTransferDstBit .|.
 			Vk.Image.UsageSampledBit )
 		Vk.Memory.PropertyDeviceLocalBit
 	writeGlobal globalTextureImage ti
 	writeGlobal globalTextureImageMemory tim
-	transitionImageLayout ti Vk.Format.R8g8b8a8Srgb Vk.Image.LayoutUndefined
+	transitionImageLayout ti Vk.FormatR8g8b8a8Srgb Vk.Image.LayoutUndefined
 		Vk.Image.LayoutTransferDstOptimal ml
 	copyBufferToImage stagingBuffer ti
 		(fromIntegral texWidth) (fromIntegral texHeight)
-	generateMipmaps ti Vk.Format.R8g8b8a8Srgb
+	generateMipmaps ti Vk.FormatR8g8b8a8Srgb
 		(fromIntegral texWidth) (fromIntegral texHeight) ml
 	lift do	Vk.Buffer.List.destroy dvc stagingBuffer nil
 		Vk.Memory.List.free dvc stagingBufferMemory nil
 
-generateMipmaps :: Vk.Image.I -> Vk.Format.F ->
+generateMipmaps :: Vk.Image.I -> Vk.Format ->
 	Int32 -> Int32 -> Word32 -> ReaderT Global IO ()
 generateMipmaps img imageFormat tw th ml = do
 	phdvc <- readGlobal globalPhysicalDevice
@@ -1207,11 +1206,11 @@ generateMipmaps img imageFormat tw th ml = do
 		lift $ Vk.PhysicalDevice.getFormatProperties phdvc imageFormat
 	lift do	putStrLn $ "FORMAT PROPERTIES: " ++ show formatProperties
 		putStrLn $ "\t" ++ show (
-			Vk.Format.propertiesOptimalTilingFeatures
+			Vk.Format.formatPropertiesOptimalTilingFeatures
 				formatProperties .&.
-			Vk.Format.FeatureSampledImageFilterLinearBit )
-	when (Vk.Format.propertiesOptimalTilingFeatures formatProperties .&.
-		Vk.Format.FeatureSampledImageFilterLinearBit == zeroBits) $
+			Vk.FormatFeatureSampledImageFilterLinearBit )
+	when (Vk.Format.formatPropertiesOptimalTilingFeatures formatProperties .&.
+		Vk.FormatFeatureSampledImageFilterLinearBit == zeroBits) $
 		error "texture image format does not support linear blitting!"
 
 	commandBuffer <- beginSingleTimeCommands
@@ -1326,7 +1325,7 @@ halfOrOne n | n > 1 = n `div` 2 | otherwise = 1
 
 createImage ::
 	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlagBits ->
-	Vk.Format.F -> Vk.Image.Tiling ->
+	Vk.Format -> Vk.Image.Tiling ->
 	Vk.Image.UsageFlags -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO (Vk.Image.I, Vk.Device.MemoryImage)
 createImage widt hght mipLevels numSamples format tiling usage properties = do
@@ -1366,7 +1365,7 @@ readRgba8 :: FilePath -> IO (Image PixelRGBA8)
 readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 transitionImageLayout ::
-	Vk.Image.I -> Vk.Format.F -> Vk.Image.Layout -> Vk.Image.Layout ->
+	Vk.Image.I -> Vk.Format -> Vk.Image.Layout -> Vk.Image.Layout ->
 	Word32 -> ReaderT Global IO ()
 transitionImageLayout image format oldLayout newLayout mipLevels = do
 	commandBuffer <- beginSingleTimeCommands
@@ -1471,7 +1470,7 @@ createTextureImageView = do
 	ti <- readGlobal globalTextureImage
 	ml <- readGlobal globalMipLevels
 	tiv <- createImageView
-		ti Vk.Format.R8g8b8a8Srgb Vk.Image.AspectColorBit ml
+		ti Vk.FormatR8g8b8a8Srgb Vk.Image.AspectColorBit ml
 	writeGlobal globalTextureImageView tiv
 
 createTextureSampler :: ReaderT Global IO ()

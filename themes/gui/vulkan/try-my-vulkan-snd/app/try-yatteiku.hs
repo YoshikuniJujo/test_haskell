@@ -43,7 +43,6 @@ import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 import qualified Vulkan.Image as Vk.Img
 import qualified Vulkan.Image.Enum as Vk.Img
-import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Sample as Vk.Sample
 import qualified Vulkan.Sample.Enum as Vk.Sample
 import qualified Vulkan.Memory.Enum as Vk.Memory
@@ -198,7 +197,7 @@ makeImage phdvc dvc f = do
 				Vk.C.Extent3d screenWidth screenHeight 1,
 			Vk.Img.createInfoMipLevels = 1,
 			Vk.Img.createInfoArrayLayers = 1,
-			Vk.Img.createInfoFormat = Vk.Format.R8g8b8a8Unorm,
+			Vk.Img.createInfoFormat = Vk.FormatR8g8b8a8Unorm,
 			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
 			Vk.Img.createInfoInitialLayout =
 				Vk.Img.LayoutUndefined,
@@ -246,7 +245,7 @@ makeImageView dvc bimg f = do
 				Vk.ImgView.CreateFlagsZero,
 			Vk.ImgView.createInfoImage = bimg,
 			Vk.ImgView.createInfoViewType = Vk.ImgView.Type2d,
-			Vk.ImgView.createInfoFormat = Vk.Format.R8g8b8a8Unorm,
+			Vk.ImgView.createInfoFormat = Vk.FormatR8g8b8a8Unorm,
 			Vk.ImgView.createInfoComponents =
 				Vk.Component.Mapping {
 					Vk.Component.mappingR =
@@ -323,7 +322,7 @@ makeRenderPass dvc f = do
 			Vk.Attachment.descriptionFlags =
 				Vk.Attachment.DescriptionFlagsZero,
 			Vk.Attachment.descriptionFormat =
-				Vk.Format.R8g8b8a8Unorm,
+				Vk.FormatR8g8b8a8Unorm,
 			Vk.Attachment.descriptionSamples =
 				Vk.Sample.Count1Bit,
 			Vk.Attachment.descriptionLoadOp =

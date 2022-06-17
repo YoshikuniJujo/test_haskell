@@ -162,4 +162,4 @@ foreign import ccall "vkGetPhysicalDeviceMemoryProperties"
 
 foreign import ccall "vkGetPhysicalDeviceFormatProperties"
 	getFormatProperties ::
-	P -> #{type VkFormat} -> Ptr Format.Properties -> IO ()
+	P -> #{type VkFormat} -> Ptr Format.FormatProperties -> IO ()

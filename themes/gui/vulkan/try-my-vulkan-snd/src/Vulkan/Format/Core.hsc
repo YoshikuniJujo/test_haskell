@@ -11,7 +11,8 @@ import Data.Word
 
 #include <vulkan/vulkan.h>
 
-struct "Properties" #{size VkFormatProperties} #{alignment VkFormatProperties} [
+struct "FormatProperties" #{size VkFormatProperties}
+		#{alignment VkFormatProperties} [
 	("linearTilingFeatures", ''#{type VkFormatFeatureFlags},
 		[| #{peek VkFormatProperties, linearTilingFeatures} |],
 		[| #{poke VkFormatProperties, linearTilingFeatures} |]),

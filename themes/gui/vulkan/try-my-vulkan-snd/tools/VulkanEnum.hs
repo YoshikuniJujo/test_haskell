@@ -18,7 +18,8 @@ type DependencyFlags = DependencyFlagBits
 type QueryControlFlags = QueryControlFlagBits
 type QueryPipelineStatisticFlags = QueryPipelineStatisticFlagBits
 type CullModeFlags = CullModeFlagBits
-type ShaderStageFlags = ShaderStageFlagBits|]
+type ShaderStageFlags = ShaderStageFlagBits
+type FormatFeatureFlags = FormatFeatureFlagBits|]
 
 noZeros :: [(HaskellName, CName, [DerivName])]
 noZeros = [
@@ -39,7 +40,8 @@ noZeros = [
 	("DynamicState", "VkDynamicState", ["Show", "Eq", "Storable"]),
 	("IndexType", "VkIndexType", ["Show", "Eq", "Storable"]),
 	("Filter", "VkFilter", ["Show", "Eq", "Storable"]),
-	("BorderColor", "VkBorderColor", ["Show", "Eq", "Storable"])
+	("BorderColor", "VkBorderColor", ["Show", "Eq", "Storable"]),
+	("Format", "VkFormat", ["Show", "Eq", "Storable"])
 	]
 
 zeros :: [([(String, Const)], (HaskellName, CName, [DerivName]))]
@@ -62,5 +64,8 @@ zeros = [
 			["Show", "Eq", "Storable", "Bits"] ) ),
 	(	[("ShaderStageFlagsZero", Int 0)],
 		(	"ShaderStageFlagBits", "VkShaderStageFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[("FormatFeatureFlagsZero", Int 0)],
+		(	"FormatFeatureFlagBits", "VkFormatFeatureFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]

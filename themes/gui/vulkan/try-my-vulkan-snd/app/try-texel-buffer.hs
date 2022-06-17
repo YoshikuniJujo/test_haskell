@@ -69,6 +69,7 @@ main = do
 	Vk.Instance.create @() @() instanceInfo nil nil \inst -> do
 		print inst
 		physicalDevice <- head <$> Vk.PhysicalDevice.enumerate inst
+--		checkFormatProperties physicalDevice Vk.
 		print physicalDevice
 		queueFamily <-
 			findQueueFamily physicalDevice Vk.Queue.ComputeBit
@@ -93,6 +94,12 @@ main = do
 				Vk.Device.createInfoEnabledFeatures = Nothing }
 		Vk.Device.create @() @() physicalDevice deviceInfo nil nil
 			$ withDevice physicalDevice queueFamily
+
+{-
+checkFormatProperties :: Vk.PhysicalDevice.P -> Vk.Format -> IO ()
+checkFormatProperties p f = do
+	print =<< Vk.PhysicalDevice.getFormatProperties p f
+	-}
 
 withDevice ::
 	Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Device.D sd -> IO ()

@@ -11,12 +11,12 @@ import Data.Word
 import Vulkan.Khr.Enum
 import Vulkan.Khr.Surface.Enum
 
+import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Core as C
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Vulkan.Image.Enum as Image
 import qualified Vulkan.Instance.Middle as Instance
-import qualified Vulkan.Format.Enum as Format
 
 newtype S = S Sfc.C.S deriving Show
 
@@ -65,7 +65,7 @@ capabilitiesFromCore Sfc.C.Capabilities {
 		capabilitiesSupportedUsageFlags = Image.UsageFlagBits suf }
 
 data Format = Format {
-	formatFormat :: Format.F,
+	formatFormat :: Vk.Format,
 	formatColorSpace :: ColorSpace }
 	deriving Show
 
@@ -74,12 +74,12 @@ formatFromCore Sfc.C.Format {
 	Sfc.C.formatFormat = fmt,
 	Sfc.C.formatColorSpace = cs
 	} = Format {
-		formatFormat = Format.F fmt,
+		formatFormat = Vk.Format fmt,
 		formatColorSpace = ColorSpace cs }
 
 formatToCore :: Format -> Sfc.C.Format
 formatToCore Format {
-	formatFormat = Format.F fmt,
+	formatFormat = Vk.Format fmt,
 	formatColorSpace = ColorSpace cs } = Sfc.C.Format {
 		Sfc.C.formatFormat = fmt,
 		Sfc.C.formatColorSpace = cs }

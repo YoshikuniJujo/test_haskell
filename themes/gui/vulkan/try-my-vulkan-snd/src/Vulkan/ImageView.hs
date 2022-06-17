@@ -7,11 +7,11 @@ module Vulkan.ImageView where
 import Foreign.Pointable
 import Control.Exception
 
+import Vulkan.Enum
 import Vulkan.ImageView.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Vulkan.Device.Type as Device
-import qualified Vulkan.Format.Enum as Format
 import qualified Vulkan.Component as Component
 import qualified Vulkan.Image.Type as Image
 import qualified Vulkan.Image.Middle as Image.M
@@ -24,7 +24,7 @@ data CreateInfo si sm n = CreateInfo {
 	createInfoFlags :: CreateFlags,
 	createInfoImage :: Image.Binded si sm,
 	createInfoViewType :: Type,
-	createInfoFormat :: Format.F,
+	createInfoFormat :: Format,
 	createInfoComponents :: Component.Mapping,
 	createInfoSubresourceRange :: Image.M.SubresourceRange }
 	deriving Show

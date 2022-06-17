@@ -9,18 +9,18 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Data.Word
 
+import Vulkan.Enum
 import Vulkan.Attachment.Enum
 
 import qualified Vulkan.Sample.Enum as Sample
 import qualified Vulkan.Image.Enum as Image
 import qualified Vulkan.Attachment.Core as C
-import qualified Vulkan.Format.Enum as Format
 
 #include <vulkan/vulkan.h>
 
 data Description = Description {
 	descriptionFlags :: DescriptionFlags,
-	descriptionFormat :: Format.F,
+	descriptionFormat :: Format,
 	descriptionSamples :: Sample.CountFlagBits,
 	descriptionLoadOp :: LoadOp,
 	descriptionStoreOp :: StoreOp,
@@ -33,7 +33,7 @@ data Description = Description {
 descriptionToCore :: Description -> C.Description
 descriptionToCore Description {
 	descriptionFlags = DescriptionFlagBits flgs,
-	descriptionFormat = Format.F fmt,
+	descriptionFormat = Format fmt,
 	descriptionSamples = Sample.CountFlagBits smps,
 	descriptionLoadOp = LoadOp lo,
 	descriptionStoreOp = StoreOp so,

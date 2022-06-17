@@ -103,7 +103,6 @@ import qualified Vulkan.Command as Vk.Cmd
 import qualified Vulkan.Semaphore as Vk.Smp
 import qualified Vulkan.Fence as Vk.Fnc
 import qualified Vulkan.Fence.Enum as Vk.Fnc
-import qualified Vulkan.Format.Enum as Vk.Format
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
 import qualified Vulkan.Command.Middle as Vk.Cmd.M
@@ -131,7 +130,7 @@ data Global = Global {
 	globalSurface :: IORef Vk.Khr.Sfc.S,
 	globalSwapChain :: IORef Vk.Khr.Sc.S,
 	globalSwapChainImages :: IORef [Vk.Img.I],
-	globalSwapChainImageFormat :: IORef Vk.Format.F,
+	globalSwapChainImageFormat :: IORef Vk.Format,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
@@ -156,7 +155,7 @@ newGlobal w = do
 	sfc <- newIORef $ Vk.Khr.Sfc.S NullPtr
 	sc <- newIORef $ Vk.Khr.Sc.S NullPtr
 	scimgs <- newIORef []
-	scimgfmt <- newIORef $ Vk.Format.Undefined
+	scimgfmt <- newIORef $ Vk.FormatUndefined
 	scex <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
 	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
@@ -495,7 +494,7 @@ createSwapChain g@Global {
 chooseSwapSurfaceFormat :: [Vk.Khr.Sfc.Format] -> Vk.Khr.Sfc.Format
 chooseSwapSurfaceFormat availableFormats = head availableFormats `fromMaybe`
 	(`find` availableFormats) \f ->
-		Vk.Khr.Sfc.formatFormat f == Vk.Format.B8g8r8a8Srgb &&
+		Vk.Khr.Sfc.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
 		Vk.Khr.Sfc.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode

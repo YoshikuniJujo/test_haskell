@@ -3,7 +3,10 @@
 
 module Vulkan where
 
+import Vulkan.Enum
+
 import qualified Vulkan.Middle as M
+import qualified Vulkan.Core as C
 import qualified Vulkan.Semaphore as Semaphore
 import qualified Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Vulkan.Pipeline.Enum as Pipeline
@@ -37,3 +40,21 @@ submitInfoFromMiddle M.SubmitInfo {
 	submitInfoWaitSemaphoreDstStageMasks = wsdsms,
 	submitInfoCommandBuffers = cbs,
 	submitInfoSignalSemaphores = ssmprs }
+
+data FormatProperties = FormatProperties {
+	formatPropertiesLinearTilingFeatures :: FormatFeatureFlags,
+	formatPropertiesOptimalTilingFeatures :: FormatFeatureFlags,
+	formatPropertiesBufferFeatures :: FormatFeatureFlags }
+	deriving Show
+
+propertiesFromCore :: C.FormatProperties -> FormatProperties
+propertiesFromCore C.FormatProperties {
+	C.formatPropertiesLinearTilingFeatures = ltfs,
+	C.formatPropertiesOptimalTilingFeatures = otfs,
+	C.formatPropertiesBufferFeatures = bfs
+	} = FormatProperties {
+		formatPropertiesLinearTilingFeatures =
+			FormatFeatureFlagBits ltfs,
+		formatPropertiesOptimalTilingFeatures =
+			FormatFeatureFlagBits otfs,
+		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }

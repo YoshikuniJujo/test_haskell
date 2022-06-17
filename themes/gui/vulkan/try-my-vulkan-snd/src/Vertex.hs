@@ -11,7 +11,7 @@ import Foreign.Storable.SizeAlignment
 import qualified Foreign.Storable.Generic
 import qualified Cglm
 
-import qualified Vulkan.Format.Enum as Vk.Format
+import qualified Vulkan.Enum as Vk
 import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 
 data Vertex = Vertex {
@@ -36,9 +36,9 @@ instance SizeAlignmentListUntil Color Vertex
 instance SizeAlignmentListUntil TexCoord Vertex
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.Format.R32g32Sfloat
+	formatOf = Vk.FormatR32g32Sfloat
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.Format.R32g32b32Sfloat
+	formatOf = Vk.FormatR32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex
