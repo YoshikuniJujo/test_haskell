@@ -60,6 +60,8 @@ import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Vulkan.Command as Vk.Cmd
+import qualified Vulkan.BufferView.Middle as Vk.BufferView.M
+import qualified Vulkan.BufferView.Core as Vk.BufferView.C
 
 import qualified Vulkan.Khr as Vk.Khr
 
@@ -230,6 +232,11 @@ withCommandPool phdvc device queue commandPool = do
 						descBufferInfos2 =
 							Vk.Descriptor.List.BufferInfo bufD :...:
 							HVNil
+						bufferViewInfo = Vk.BufferView.M.CreateInfo {
+							Vk.BufferView.M.createInfoNext = Nothing,
+							Vk.BufferView.M.createInfoFlags =
+								Vk.BufferView.C.CreateFlagsZero
+							}
 						writeDescSet2 = Vk.Descriptor.Set.List.Write {
 							Vk.Descriptor.Set.List.writeNext = Nothing,
 							Vk.Descriptor.Set.List.writeDstSet = descSets !! 0,
