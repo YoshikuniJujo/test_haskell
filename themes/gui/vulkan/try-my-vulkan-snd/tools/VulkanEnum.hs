@@ -67,5 +67,5 @@ zeros = [
 			["Show", "Eq", "Storable", "Bits"] ) ),
 	(	[("FormatFeatureFlagsZero", Int 0)],
 		(	"FormatFeatureFlagBits", "VkFormatFeatureFlagBits",
-			["Show", "Eq", "Storable", "Bits"] ) )
+			["Show", "Eq", "Storable", "Bits", "FiniteBits"] ) )
 	]

@@ -38,6 +38,7 @@ library
       Foreign.Storable.Generic
       Glfw
       ThEnv
+      Tools
       TypeLevel.List
       Vertex
       Vulkan

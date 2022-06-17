@@ -1008,7 +1008,7 @@ enum "ShaderStageFlagBits" ''#{type VkShaderStageFlagBits}
 		#{const VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM}) ]
 
 enum "FormatFeatureFlagBits" ''#{type VkFormatFeatureFlagBits}
-		[''Show, ''Eq, ''Storable, ''Bits] [
+		[''Show, ''Eq, ''Storable, ''Bits, ''FiniteBits] [
 	("FormatFeatureFlagsZero", 0),
 	("FormatFeatureSampledImageBit",
 		#{const VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT}),

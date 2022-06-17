@@ -17,6 +17,8 @@ import Data.Word
 import qualified Data.Vector.Storable as V
 
 import Shaderc.TH
+import Tools
+
 import Vulkan.Base
 
 import qualified Vulkan as Vk
@@ -69,7 +71,8 @@ main = do
 	Vk.Instance.create @() @() instanceInfo nil nil \inst -> do
 		print inst
 		physicalDevice <- head <$> Vk.PhysicalDevice.enumerate inst
---		checkFormatProperties physicalDevice Vk.
+		checkFormatProperties physicalDevice Vk.FormatR8g8b8a8Sint
+		checkFormatProperties physicalDevice Vk.FormatR32g32b32a32Sfloat
 		print physicalDevice
 		queueFamily <-
 			findQueueFamily physicalDevice Vk.Queue.ComputeBit
@@ -95,11 +98,10 @@ main = do
 		Vk.Device.create @() @() physicalDevice deviceInfo nil nil
 			$ withDevice physicalDevice queueFamily
 
-{-
 checkFormatProperties :: Vk.PhysicalDevice.P -> Vk.Format -> IO ()
 checkFormatProperties p f = do
-	print =<< Vk.PhysicalDevice.getFormatProperties p f
-	-}
+	print . toBits . Vk.formatPropertiesBufferFeatures
+		=<< Vk.PhysicalDevice.getFormatProperties p f
 
 withDevice ::
 	Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Device.D sd -> IO ()
