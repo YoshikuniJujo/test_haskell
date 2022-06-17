@@ -15,7 +15,11 @@ memo
 * [ ] move Vulkan.Enumerate.instanceExtensionProperties to Vulkan.Instance.enumerateExtensionProperties
 * [ ] move Vulkan.Enumerate.instanceLayerProperties to Vulkan.Instance.enumerateLayerProperties
 * [x] move Vulkan.PushConstant to Vulkan.PushConstant.Core
+* [x] Vulkan.BufferView.Core
+* [ ] Vulkan.BufferView.Middle
+* [ ] use Vulkan.BufferView.Middle
 * [ ] refactor app/try-saitan.hs
+* [ ] move modules Vulkan.Foo to Gpu.Vulkan.Foo
 
 tmp
 ---
@@ -24,3 +28,7 @@ tmp
 * texel buffer
 * texelFetch
 * imageLoad, imageStore
+
+```
+layout (binding = 1) uniform foo
+```
