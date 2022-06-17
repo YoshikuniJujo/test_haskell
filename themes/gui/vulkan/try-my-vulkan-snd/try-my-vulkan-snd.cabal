@@ -57,6 +57,7 @@ library
       Vulkan.Buffer.Middle
       Vulkan.BufferView
       Vulkan.BufferView.Core
+      Vulkan.BufferView.Middle
       Vulkan.ColorComponent.Enum
       Vulkan.Command
       Vulkan.Command.Core

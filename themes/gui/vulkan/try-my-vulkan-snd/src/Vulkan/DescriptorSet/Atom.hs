@@ -19,7 +19,7 @@ import Vulkan.Base
 import qualified Foreign.Storable.Generic
 
 import qualified Vulkan.Device.Middle as Device
-import qualified Vulkan.BufferView as Buffer.View
+import qualified Vulkan.BufferView.Middle as Buffer.View
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor.Atom as Dsc
 import qualified Vulkan.DescriptorSet.Core as C
@@ -41,7 +41,7 @@ data Write n v = Write {
 data ImageBufferInfoTexelBufferViews v
 	= ImageInfos [M.ImageInfo]
 	| BufferInfos [Dsc.BufferInfo v]
-	| TexelBufferViews [Buffer.View.V]
+	| TexelBufferViews [Buffer.View.B]
 	deriving Show
 
 writeToCore :: (Pointable n, Storable (Foreign.Storable.Generic.Wrap v)) =>
@@ -64,7 +64,7 @@ writeToCore Write {
 			(bic, p) <- allocaAndPokeArray cbis
 			pure (fromIntegral bic, NullPtr, p, NullPtr)
 		Right (TexelBufferViews tbvs) -> do
-			let	ctbvs = (\(Buffer.View.V v) -> v) <$> tbvs
+			let	ctbvs = (\(Buffer.View.B v) -> v) <$> tbvs
 			(tbvc, p) <- allocaAndPokeArray ctbvs
 			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
 	pure C.Write {

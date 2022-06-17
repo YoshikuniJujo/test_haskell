@@ -39,7 +39,7 @@ struct "CreateInfo" #{size VkBufferViewCreateInfo}
 	("buffer", ''Buffer.B,
 		[| #{peek VkBufferViewCreateInfo, buffer} |],
 		[| #{poke VkBufferViewCreateInfo, buffer} |]),
-	("foramt", ''#{type VkFormat},
+	("format", ''#{type VkFormat},
 		[| #{peek VkBufferViewCreateInfo, format} |],
 		[| #{poke VkBufferViewCreateInfo, format} |]),
 	("offset", ''#{type VkDeviceSize},
@@ -50,11 +50,11 @@ struct "CreateInfo" #{size VkBufferViewCreateInfo}
 		[| #{poke VkBufferViewCreateInfo, range} |]) ]
 	[''Show, ''Storable]
 
-data VTag
-type V = Ptr VTag
+data BTag
+type B = Ptr BTag
 
-type PtrV = Ptr V
+type PtrB = Ptr B
 
 foreign import ccall "vkCreateBufferView" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> PtrV ->
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> PtrB ->
 	IO #{type VkResult}

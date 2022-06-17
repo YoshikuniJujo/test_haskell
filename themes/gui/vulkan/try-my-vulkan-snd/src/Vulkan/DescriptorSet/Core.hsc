@@ -78,7 +78,7 @@ struct "Write" #{size VkWriteDescriptorSet} #{alignment VkWriteDescriptorSet} [
 	("pBufferInfo", ''Dsc.PtrBufferInfo,
 		[| #{peek VkWriteDescriptorSet, pBufferInfo} |],
 		[| #{poke VkWriteDescriptorSet, pBufferInfo} |]),
-	("pTexelBufferView", ''Buffer.View.PtrV,
+	("pTexelBufferView", ''Buffer.View.PtrB,
 		[| #{peek VkWriteDescriptorSet, pTexelBufferView} |],
 		[| #{poke VkWriteDescriptorSet, pTexelBufferView} |]) ]
 	[''Show, ''Storable]

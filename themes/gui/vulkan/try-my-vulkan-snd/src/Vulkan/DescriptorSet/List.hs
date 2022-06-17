@@ -20,7 +20,7 @@ import Vulkan.Base
 
 import qualified Vulkan.Device.Type as Device
 import qualified Vulkan.Device.Middle as Device.M
-import qualified Vulkan.BufferView as Buffer.View
+import qualified Vulkan.BufferView.Middle as Buffer.View
 import qualified Vulkan.Descriptor.List as Dsc
 import qualified Vulkan.Descriptor.Enum as Dsc
 import qualified Vulkan.Descriptor.Middle as Dsc.M
@@ -43,7 +43,7 @@ deriving instance (Show n, Show (HeteroVarList Dsc.BufferInfo slsmvs)) =>
 data ImageBufferInfoTexelBufferViews slsmvs
 	= ImageInfos [Dsc.M.ImageInfo]
 	| BufferInfos (HeteroVarList Dsc.BufferInfo slsmvs)
-	| TexelBufferViews [Buffer.View.V]
+	| TexelBufferViews [Buffer.View.B]
 
 deriving instance Show (HeteroVarList Dsc.BufferInfo slsmvs) =>
 	Show (ImageBufferInfoTexelBufferViews slsmvs)
@@ -71,7 +71,7 @@ writeToCore Write {
 			(bic, p) <- allocaAndPokeArray cbis
 			pure (fromIntegral bic, NullPtr, p, NullPtr)
 		Right (TexelBufferViews tbvs) -> do
-			let	ctbvs = (\(Buffer.View.V v) -> v) <$> tbvs
+			let	ctbvs = (\(Buffer.View.B v) -> v) <$> tbvs
 			(tbvc, p) <- allocaAndPokeArray ctbvs
 			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
 	pure C.Write {
