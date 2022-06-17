@@ -113,8 +113,6 @@ library
       Vulkan.Fence
       Vulkan.Fence.Core
       Vulkan.Fence.Enum
-      Vulkan.Format
-      Vulkan.Format.Core
       Vulkan.Framebuffer
       Vulkan.Framebuffer.Core
       Vulkan.Framebuffer.Enum

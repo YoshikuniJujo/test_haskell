@@ -52,6 +52,7 @@ import Shaderc.TH
 
 import Vulkan.Base
 
+import qualified Vulkan as Vk.N
 import qualified Vulkan.Middle as Vk
 import qualified Vulkan.Core as Vk.C
 import qualified Vulkan.Enum as Vk
@@ -139,7 +140,6 @@ import qualified Vulkan.Buffer.Middle as Vk.Buffer.M
 import qualified Vulkan.Sampler as Vk.Sampler
 import qualified Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
-import qualified Vulkan.Format as Vk.Format
 import qualified Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 import qualified Vulkan.Queue as Vk.Queue
 import qualified Vulkan.Queue.Enum as Vk.Queue
@@ -1074,12 +1074,12 @@ findSupportedFormat candidates tiling features = do
 		$ find (doesFeatureMatch tiling features . fst) fmts
 
 doesFeatureMatch ::
-	Vk.Image.Tiling -> Vk.FormatFeatureFlags -> Vk.Format.FormatProperties ->
+	Vk.Image.Tiling -> Vk.FormatFeatureFlags -> Vk.N.FormatProperties ->
 	Bool
 doesFeatureMatch Vk.Image.TilingLinear features props =
-	Vk.Format.formatPropertiesLinearTilingFeatures props .&. features == features
+	Vk.N.formatPropertiesLinearTilingFeatures props .&. features == features
 doesFeatureMatch Vk.Image.TilingOptimal features props =
-	Vk.Format.formatPropertiesOptimalTilingFeatures props .&. features == features
+	Vk.N.formatPropertiesOptimalTilingFeatures props .&. features == features
 doesFeatureMatch _ _ _ = False
 
 hasStencilComponent :: Vk.Format -> Bool
@@ -1134,10 +1134,10 @@ generateMipmaps img imageFormat tw th ml = do
 		lift $ Vk.PhysicalDevice.getFormatProperties phdvc imageFormat
 	lift do	putStrLn $ "FORMAT PROPERTIES: " ++ show formatProperties
 		putStrLn $ "\t" ++ show (
-			Vk.Format.formatPropertiesOptimalTilingFeatures
+			Vk.N.formatPropertiesOptimalTilingFeatures
 				formatProperties .&.
 			Vk.FormatFeatureSampledImageFilterLinearBit )
-	when (Vk.Format.formatPropertiesOptimalTilingFeatures formatProperties .&.
+	when (Vk.N.formatPropertiesOptimalTilingFeatures formatProperties .&.
 		Vk.FormatFeatureSampledImageFilterLinearBit == zeroBits) $
 		error "texture image format does not support linear blitting!"
 

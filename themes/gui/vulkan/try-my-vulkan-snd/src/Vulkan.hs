@@ -47,8 +47,8 @@ data FormatProperties = FormatProperties {
 	formatPropertiesBufferFeatures :: FormatFeatureFlags }
 	deriving Show
 
-propertiesFromCore :: C.FormatProperties -> FormatProperties
-propertiesFromCore C.FormatProperties {
+formatPropertiesFromCore :: C.FormatProperties -> FormatProperties
+formatPropertiesFromCore C.FormatProperties {
 	C.formatPropertiesLinearTilingFeatures = ltfs,
 	C.formatPropertiesOptimalTilingFeatures = otfs,
 	C.formatPropertiesBufferFeatures = bfs

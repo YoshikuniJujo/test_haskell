@@ -16,6 +16,7 @@ import System.IO.Unsafe
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
+import Vulkan
 import Vulkan.Enum
 import Vulkan.Middle
 import Vulkan.Base
@@ -32,7 +33,6 @@ import qualified Vulkan.QueueFamily as QueueFamily
 import qualified Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Vulkan.Memory as Memory
 import qualified Vulkan.Memory.Middle as Memory.M
-import qualified Vulkan.Format as Format
 
 newtype P = P C.P deriving Show
 
@@ -182,9 +182,9 @@ getMemoryProperties (P p) =
 		lift do	C.getMemoryProperties p pmps
 			peek pmps
 
-getFormatProperties :: P -> Format -> IO Format.FormatProperties
+getFormatProperties :: P -> Format -> IO FormatProperties
 getFormatProperties (P pdvc) (Format fmt) =
-	(Format.propertiesFromCore <$>) . ($ pure) $ runContT do
+	(formatPropertiesFromCore <$>) . ($ pure) $ runContT do
 		pp <- ContT alloca
 		lift do	C.getFormatProperties pdvc fmt pp
 			peek pp

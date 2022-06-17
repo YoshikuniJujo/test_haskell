@@ -18,13 +18,12 @@ import qualified Data.Text as T
 
 import Vulkan.Base
 
-import Vulkan.Core (ExtensionProperties(..))
+import Vulkan.Core (ExtensionProperties(..), FormatProperties)
 import Vulkan.PhysicalDevice.Struct.Core
 
 import qualified Vulkan.Instance.Core as Instance
 import qualified Vulkan.QueueFamily.Core as QueueFamily
 import qualified Vulkan.Memory.Core as Memory
-import qualified Vulkan.Format.Core as Format
 
 #include <vulkan/vulkan.h>
 
@@ -162,4 +161,4 @@ foreign import ccall "vkGetPhysicalDeviceMemoryProperties"
 
 foreign import ccall "vkGetPhysicalDeviceFormatProperties"
 	getFormatProperties ::
-	P -> #{type VkFormat} -> Ptr Format.FormatProperties -> IO ()
+	P -> #{type VkFormat} -> Ptr FormatProperties -> IO ()
