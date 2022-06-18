@@ -113,3 +113,9 @@ instance G Word8 where
 	gAlignment = alignment
 	gPeek = peek
 	gPoke = poke
+
+instance G Float where
+	gSizeOf = sizeOf
+	gAlignment = alignment
+	gPeek = peek
+	gPoke = poke
