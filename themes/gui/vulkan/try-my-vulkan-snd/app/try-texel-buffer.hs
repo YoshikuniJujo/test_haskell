@@ -139,7 +139,7 @@ withCommandPool phdvc device queue commandPool = do
 		<$> Vk.PhysicalDevice.getProperties phdvc
 	print maxGroupCountX
 	let	(dataA, dataB, dataC) = makeDatas $ maxGroupCountX * 4
-		dataD = V.replicate (fromIntegral maxGroupCountX * 4) 123
+		dataD = V.fromList . take (fromIntegral maxGroupCountX * 4) $ cycle [123, 321, 111, 333]
 	storageBufferNew4 device phdvc dataA dataB dataC dataD
 		\((bufA, memA), (bufB, memB), (bufC, memC), (bufD, memD)) ->
 		print bufA >> print memA >>
@@ -182,7 +182,7 @@ withCommandPool phdvc device queue commandPool = do
 				Vk.Descriptor.Set.Layout.createInfoFlags =
 					Vk.Descriptor.Set.Layout.CreateFlagsZero,
 				Vk.Descriptor.Set.Layout.createInfoBindings =
-					[binding, binding2] }
+					[binding, binding2'] }
 		Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
 			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 					Vk.Pipeline.Layout.createInfoNext = Nothing,
@@ -361,7 +361,8 @@ storageBufferNew dvc phdvc xs f = do
 				Vk.Buffer.CreateFlagsZero,
 			Vk.Buffer.List.createInfoLength = V.length xs,
 			Vk.Buffer.List.createInfoUsage =
-				Vk.Buffer.UsageStorageBufferBit,
+				Vk.Buffer.UsageStorageBufferBit .|.
+				Vk.Buffer.UsageStorageTexelBufferBit,
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
@@ -455,6 +456,10 @@ main()
 {
 	int index = int(gl_GlobalInvocationID.x);
 	data[2].val[index] = data[0].val[index] + data[1].val[index];
+	vec4 some = imageLoad(storageTexelBuffer, index);
+	data[0].val[index] = some.x;
+	data[1].val[index] = some.y;
+	data[2].val[index] = some.z;
 }
 
 |]
