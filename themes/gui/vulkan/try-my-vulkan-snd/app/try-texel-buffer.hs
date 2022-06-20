@@ -5,6 +5,8 @@
 {-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
+
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -35,10 +37,12 @@ import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Vulkan.Device as Vk.Device
+import qualified Vulkan.Device.Type as Vk.Device
 import qualified Vulkan.CommandPool as Vk.CommandPool
 import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Vulkan.Buffer.List.Type as Vk.Buffer.List
 import qualified Vulkan.Memory as Vk.Memory
 import qualified Vulkan.Memory.Enum as Vk.Memory
 import qualified Vulkan.Memory.Middle as Vk.Memory.M
@@ -66,6 +70,10 @@ import qualified Vulkan.BufferView.Middle as Vk.BufferView.M
 import qualified Vulkan.BufferView.Core as Vk.BufferView.C
 
 import qualified Vulkan.Khr as Vk.Khr
+
+import qualified Vulkan.Device.Middle as Vk.Device.M
+import qualified Vulkan.Buffer.List.Middle as Vk.Buffer.List.Middle
+import qualified Vulkan.Buffer.Middle as Vk.Buffer.Middle
 
 main :: IO ()
 main = do
@@ -130,8 +138,8 @@ withCommandPool phdvc device queue commandPool = do
 		. Vk.PhysicalDevice.propertiesLimits
 		<$> Vk.PhysicalDevice.getProperties phdvc
 	print maxGroupCountX
-	let	(dataA, dataB, dataC) = makeDatas maxGroupCountX
-		dataD = V.replicate (fromIntegral maxGroupCountX) 123
+	let	(dataA, dataB, dataC) = makeDatas $ maxGroupCountX * 4
+		dataD = V.replicate (fromIntegral maxGroupCountX * 4) 123
 	storageBufferNew4 device phdvc dataA dataB dataC dataD
 		\((bufA, memA), (bufB, memB), (bufC, memC), (bufD, memD)) ->
 		print bufA >> print memA >>
@@ -157,6 +165,14 @@ withCommandPool phdvc device queue commandPool = do
 				Vk.Descriptor.Set.Layout.bindingBinding = 1,
 				Vk.Descriptor.Set.Layout.bindingDescriptorType =
 					Vk.Descriptor.TypeStorageBuffer,
+				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
+					Left 1,
+				Vk.Descriptor.Set.Layout.bindingStageFlags =
+					Vk.ShaderStageComputeBit }
+			binding2' = Vk.Descriptor.Set.Layout.Binding {
+				Vk.Descriptor.Set.Layout.bindingBinding = 1,
+				Vk.Descriptor.Set.Layout.bindingDescriptorType =
+					Vk.Descriptor.TypeStorageTexelBuffer,
 				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
 					Left 1,
 				Vk.Descriptor.Set.Layout.bindingStageFlags =
@@ -234,12 +250,24 @@ withCommandPool phdvc device queue commandPool = do
 						descBufferInfos2 =
 							Vk.Descriptor.List.BufferInfo bufD :...:
 							HVNil
+						Vk.Buffer.List.Binded
+							(Vk.Buffer.List.Middle.B _ cBufD) = bufD
+						mBufD = Vk.Buffer.Middle.B cBufD
 						bufferViewInfo = Vk.BufferView.M.CreateInfo {
 							Vk.BufferView.M.createInfoNext = Nothing,
 							Vk.BufferView.M.createInfoFlags =
-								Vk.BufferView.C.CreateFlagsZero
+								Vk.BufferView.C.CreateFlagsZero,
+							Vk.BufferView.M.createInfoBuffer = mBufD,
+							Vk.BufferView.M.createInfoFormat =
+								Vk.FormatR32g32b32a32Sfloat,
+							Vk.BufferView.M.createInfoOffset = 0,
+							Vk.BufferView.M.createInfoRange =
+								Vk.Device.M.Size $ 4 * 4 *
+									fromIntegral maxGroupCountX
 							}
-						writeDescSet2 = Vk.Descriptor.Set.List.Write {
+						Vk.Device.D mDevice = device
+					bffView <- Vk.BufferView.M.create @() mDevice bufferViewInfo nil
+					let	writeDescSet2 = Vk.Descriptor.Set.List.Write {
 							Vk.Descriptor.Set.List.writeNext = Nothing,
 							Vk.Descriptor.Set.List.writeDstSet = descSets !! 0,
 							Vk.Descriptor.Set.List.writeDstBinding = 1,
@@ -249,10 +277,21 @@ withCommandPool phdvc device queue commandPool = do
 							Vk.Descriptor.Set.List.writeImageBufferInfoTexelBufferViews =
 								Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos2
 							}
+						writeDescSet2' :: Vk.Descriptor.Set.List.Write () _ _ _ '[]
+						writeDescSet2' = Vk.Descriptor.Set.List.Write {
+							Vk.Descriptor.Set.List.writeNext = Nothing,
+							Vk.Descriptor.Set.List.writeDstSet = descSets !! 0,
+							Vk.Descriptor.Set.List.writeDstBinding = 1,
+							Vk.Descriptor.Set.List.writeDstArrayElement = 0,
+							Vk.Descriptor.Set.List.writeDescriptorType =
+								Vk.Descriptor.TypeStorageTexelBuffer,
+							Vk.Descriptor.Set.List.writeImageBufferInfoTexelBufferViews =
+								Right $ Vk.Descriptor.Set.List.TexelBufferViews [bffView]
+							}
 					print @(Vk.Descriptor.Set.List.Write () _ _ _ _) writeDescSet
 					Vk.Descriptor.Set.List.updateSs @() @_ @() device (
 						Vk.Descriptor.Set.List.Write_ writeDescSet :...:
-						Vk.Descriptor.Set.List.Write_ writeDescSet2 :...:
+						Vk.Descriptor.Set.List.Write_ writeDescSet2' :...:
 						HVNil )
 						[]
 					let	commandBufferInfo = Vk.CommandBuffer.AllocateInfo {
@@ -409,16 +448,13 @@ layout(binding = 0) buffer Data {
 	float val[];
 } data[3];
 
-layout(binding = 1) buffer Data2 {
-	float val2[];
-} data2[1];
+layout(binding = 1, rgba32f) uniform imageBuffer storageTexelBuffer;
 
 void
 main()
 {
 	int index = int(gl_GlobalInvocationID.x);
 	data[2].val[index] = data[0].val[index] + data[1].val[index];
-	data2[0].val2[index] = data2[0].val2[index] + 321;
 }
 
 |]
