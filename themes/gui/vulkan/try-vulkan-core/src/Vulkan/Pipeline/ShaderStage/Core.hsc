@@ -1,0 +1,54 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Vulkan.Pipeline.ShaderStage.Core where
+
+import Foreign.Ptr
+import Foreign.Ptr.Synonyms
+import Foreign.Storable
+import Foreign.C.String
+import Foreign.C.Struct
+import Data.Word
+
+import qualified Vulkan.ShaderModule.Core as Shader.Module
+import qualified Vulkan.Specialization.Core as Specialization
+
+#include <vulkan/vulkan.h>
+
+sType :: #{type VkStructureType}
+sType = #{const VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO}
+
+struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
+		#{alignment VkPipelineShaderStageCreateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkPipelineShaderStageCreateInfo, sType}
+			p sType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkPipelineShaderStageCreateInfo, pNext} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, pNext} |]),
+	("flags", ''#{type VkPipelineShaderStageCreateFlags},
+		[| #{peek VkPipelineShaderStageCreateInfo, flags} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, flags} |]),
+	("stage", ''#{type VkShaderStageFlagBits},
+		[| #{peek VkPipelineShaderStageCreateInfo, stage} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, stage} |]),
+	("module", ''Shader.Module.Module,
+		[| #{peek VkPipelineShaderStageCreateInfo, module} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, module} |]),
+	("pName", ''CString,
+		[| #{peek VkPipelineShaderStageCreateInfo, pName} |],
+		[| #{poke VkPipelineShaderStageCreateInfo, pName} |]),
+	("pSpecializationInfo", ''Specialization.PtrInfo,
+		[| #{peek VkPipelineShaderStageCreateInfo,
+			pSpecializationInfo} |],
+		[| #{poke VkPipelineShaderStageCreateInfo,
+			pSpecializationInfo} |]) ]
+	[''Show, ''Storable]
+
+vertexBit, fragmentBit :: #{type VkShaderStageFlagBits}
+vertexBit = #{const VK_SHADER_STAGE_VERTEX_BIT}
+fragmentBit = #{const VK_SHADER_STAGE_FRAGMENT_BIT}
+
+type PtrCreateInfo = Ptr CreateInfo
