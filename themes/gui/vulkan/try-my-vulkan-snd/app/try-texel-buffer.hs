@@ -1,5 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
@@ -14,6 +15,7 @@ import Data.List.Length
 import Data.HeteroList
 import Data.Word
 
+import qualified Foreign.Storable.Generic
 import qualified Data.Vector.Storable as V
 
 import Shaderc.TH
@@ -303,22 +305,16 @@ createDescriptorPool dvc f = do
 dataSize :: Integral n => n
 dataSize = 1000000
 
-makeDatas :: Word32 -> (V.Vector Word32, V.Vector Word32, V.Vector Word32)
+makeDatas :: Word32 -> (V.Vector Float, V.Vector Float, V.Vector Float)
 makeDatas (fromIntegral -> sz) =
 	(V.replicate sz 3, V.replicate sz 5, V.replicate sz 0)
 
-{-
-dataA, dataB, dataC :: V.Vector Word32
-dataA = V.replicate dataSize 3
-dataB = V.replicate dataSize 5
-dataC = V.replicate dataSize 0
--}
-
-storageBufferNew ::
-	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> (
+storageBufferNew :: forall sd a b . (
+	V.Storable a, Foreign.Storable.Generic.G a) =>
+	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector a -> (
 		forall sb sm . 
-			Vk.Buffer.List.Binded sb sm Word32 ->
-			Vk.Device.MemoryList sm Word32 -> IO a ) -> IO a
+			Vk.Buffer.List.Binded sb sm a ->
+			Vk.Device.MemoryList sm a -> IO b ) -> IO b
 storageBufferNew dvc phdvc xs f = do
 	let	bInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
@@ -330,7 +326,7 @@ storageBufferNew dvc phdvc xs f = do
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
-	Vk.Buffer.List.create @_ @() @Word32 dvc bInfo nil nil \buffer -> do
+	Vk.Buffer.List.create @_ @() @a dvc bInfo nil nil \buffer -> do
 		print buffer
 		requirements <- Vk.Buffer.List.getMemoryRequirements dvc buffer
 		print requirements
@@ -349,31 +345,31 @@ storageBufferNew dvc phdvc xs f = do
 				dvc memory Vk.Memory.M.MapFlagsZero xs
 			f bnd memory
 
-type BufferMemory sb sm =
-	(Vk.Buffer.List.Binded sb sm Word32, Vk.Device.MemoryList sm Word32)
+type BufferMemory sb sm a =
+	(Vk.Buffer.List.Binded sb sm a, Vk.Device.MemoryList sm a)
 
-storageBufferNew3 ::
+storageBufferNew3 :: (V.Storable a, Foreign.Storable.Generic.G a) =>
 	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
-	V.Vector Word32 -> V.Vector Word32 -> V.Vector Word32 -> (
+	V.Vector a -> V.Vector a -> V.Vector a -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 . (
-			BufferMemory sb1 sm1,
-			BufferMemory sb2 sm2,
-			BufferMemory sb3 sm3 ) -> IO a ) -> IO a
+			BufferMemory sb1 sm1 a,
+			BufferMemory sb2 sm2 a,
+			BufferMemory sb3 sm3 a ) -> IO b ) -> IO b
 storageBufferNew3 dvc phdvc xs1 xs2 xs3 f =
 	storageBufferNew dvc phdvc xs1 \b1 m1 ->
 	storageBufferNew dvc phdvc xs2 \b2 m2 ->
 	storageBufferNew dvc phdvc xs3 \b3 m3 ->
 	f ((b1, m1), (b2, m2), (b3, m3))
 
-storageBufferNew4 ::
+storageBufferNew4 :: (V.Storable a, Foreign.Storable.Generic.G a) =>
 	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
-	V.Vector Word32 -> V.Vector Word32 -> V.Vector Word32 ->
-	V.Vector Word32 -> (
+	V.Vector a -> V.Vector a -> V.Vector a ->
+	V.Vector a -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 . (
-			BufferMemory sb1 sm1,
-			BufferMemory sb2 sm2,
-			BufferMemory sb3 sm3,
-			BufferMemory sb4 sm4 ) -> IO a ) -> IO a
+			BufferMemory sb1 sm1 a,
+			BufferMemory sb2 sm2 a,
+			BufferMemory sb3 sm3 a,
+			BufferMemory sb4 sm4 a ) -> IO b ) -> IO b
 storageBufferNew4 dvc phdvc xs1 xs2 xs3 xs4 f =
 	storageBufferNew3 dvc phdvc xs1 xs2 xs3 \(bm1, bm2, bm3) ->
 	storageBufferNew dvc phdvc xs4 \b4 m4 ->
@@ -410,11 +406,11 @@ findMemoryTypeIndex physicalDevice requirements memoryProp = do
 #version 460
 layout(local_size_x = 1, local_size_y = 1) in;
 layout(binding = 0) buffer Data {
-	uint val[];
+	float val[];
 } data[3];
 
 layout(binding = 1) buffer Data2 {
-	uint val2[];
+	float val2[];
 } data2[1];
 
 void
