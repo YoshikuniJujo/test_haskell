@@ -13,4 +13,4 @@ hsName :: [String]
 hsName = ["Limits", "Features"]
 
 make :: IO ()
-make = MakeStruct.make moduleName hsName "type PtrFeatures = Ptr Features"
+make = MakeStruct.make moduleName hsName

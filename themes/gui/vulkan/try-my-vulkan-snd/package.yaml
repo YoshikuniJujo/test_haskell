@@ -44,6 +44,7 @@ dependencies:
 - time
 - mono-traversable
 - data-default
+- try-vulkan-core
 
 library:
   source-dirs: src

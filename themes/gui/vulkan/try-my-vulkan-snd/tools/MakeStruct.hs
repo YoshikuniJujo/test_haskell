@@ -15,9 +15,6 @@ vulkanCoreH = "/usr/include/vulkan/vulkan_core.h"
 directory :: String -> FilePath
 directory mn = "../src/" ++ intercalate "/" (init $ sep '.' mn)
 
-sourceFile :: String -> FilePath
-sourceFile mn = directory mn ++ "/Core.hsc"
-
 cName :: String -> String -> String
 cName mn hsn = "Vk" ++ concat (tail . init $ sep '.' mn) ++ hsn
 
@@ -50,8 +47,8 @@ import Vulkan.Base
 
 |]
 
-make :: String -> [String] -> String -> IO ()
-make moduleName hsNames ext = do
+make :: String -> [String] -> IO ()
+make moduleName hsNames = do
 	vch <- readFile vulkanCoreH
 	let	moduleName' = intercalate "." . init $ sep '.' moduleName
 		dss = (\hn -> takeDefinition (cName moduleName' hn) $ lines vch) <$> hsNames
@@ -59,11 +56,6 @@ make moduleName hsNames ext = do
 	createDirectoryIfMissing True $ directory moduleName
 
 	uncurry (makeThText moduleName') `mapM_` hsNameDss
-
-	let	strs = uncurry (makeStruct moduleName') <$> hsNameDss
-
-	writeFile (sourceFile moduleName) $ header moduleName ++ intercalate "\n" strs ++
-		if null ext then "" else "\n" ++ ext ++ "\n"
 
 makeThText :: String -> String -> [(String, Name)] -> IO ()
 makeThText moduleName' hsName defs =

@@ -5,6 +5,19 @@
 
 packages:
 - completed:
+    subdir: themes/gui/vulkan/try-vulkan-core
+    name: try-vulkan-core
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    pantry-tree:
+      size: 4916
+      sha256: 3d70945bb80001ae779087e896fe98963bf1b5d59c4b14dcc012dca014adf03f
+    commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
+  original:
+    subdir: themes/gui/vulkan/try-vulkan-core
+    git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
+- completed:
     subdir: themes/gui/vulkan/try-shaderc
     name: try-shaderc
     version: 0.1.0.0
@@ -12,11 +25,11 @@ packages:
     pantry-tree:
       size: 1613
       sha256: 7b2ed57539392172fd5bb8df4e04fa03bcbc3bb7de35e753bdd29f0508310703
-    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
+    commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
   original:
     subdir: themes/gui/vulkan/try-shaderc
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
+    commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
 - completed:
     subdir: features/ffi/try-pointable
     name: try-pointable
@@ -25,11 +38,11 @@ packages:
     pantry-tree:
       size: 629
       sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
-    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
+    commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
   original:
     subdir: features/ffi/try-pointable
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 25a65aa915726ab37110b0a330ce8607da1b6ecc
+    commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
 - completed:
     name: size-alignment-list
     version: 0.1.0.0

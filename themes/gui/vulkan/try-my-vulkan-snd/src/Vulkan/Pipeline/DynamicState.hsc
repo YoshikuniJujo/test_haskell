@@ -34,7 +34,7 @@ createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
-	createInfoDynamicStates = (length &&& id) -> (dsc, dss)
+	createInfoDynamicStates = (length &&& ((\(DynamicState ds) -> ds) <$>)) -> (dsc, dss)
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pdss <- ContT $ allocaArray dsc

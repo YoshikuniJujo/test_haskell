@@ -14,6 +14,7 @@ import Control.Monad.Cont
 import Data.Word
 
 import Vulkan.Exception
+import Vulkan.Exception.Enum
 import Vulkan.Pipeline.Cache.Enum
 
 import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -53,7 +54,7 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ C <$> do
 	pac <- AllocationCallbacks.maybeToCore mac
 	pc <- ContT alloca
 	lift do	r <- C.create dvc pci pac pc
-		throwUnlessSuccess r
+		throwUnlessSuccess $ Result r
 		peek pc
 
 destroy ::

@@ -43,65 +43,50 @@ library
       Vertex
       Vulkan
       Vulkan.AllocationCallbacks
-      Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment
-      Vulkan.Attachment.Core
       Vulkan.Attachment.Enum
       Vulkan.Base
       Vulkan.Buffer.Atom
-      Vulkan.Buffer.Core
       Vulkan.Buffer.Enum
       Vulkan.Buffer.List
       Vulkan.Buffer.List.Middle
       Vulkan.Buffer.List.Type
       Vulkan.Buffer.Middle
       Vulkan.BufferView
-      Vulkan.BufferView.Core
       Vulkan.BufferView.Middle
       Vulkan.ColorComponent.Enum
       Vulkan.Command
-      Vulkan.Command.Core
       Vulkan.Command.List
       Vulkan.Command.Middle
       Vulkan.CommandBuffer
-      Vulkan.CommandBuffer.Core
       Vulkan.CommandBuffer.Enum
       Vulkan.CommandBuffer.Middle
       Vulkan.CommandBuffer.Type
       Vulkan.CommandPool
-      Vulkan.CommandPool.Core
       Vulkan.CommandPool.Enum
       Vulkan.CommandPool.Middle
       Vulkan.CommandPool.Type
       Vulkan.Component
-      Vulkan.Component.Core
       Vulkan.Component.Enum
-      Vulkan.Core
       Vulkan.Descriptor.Atom
-      Vulkan.Descriptor.Core
       Vulkan.Descriptor.Enum
       Vulkan.Descriptor.List
       Vulkan.Descriptor.Middle
       Vulkan.DescriptorPool
-      Vulkan.DescriptorPool.Core
       Vulkan.DescriptorPool.Enum
       Vulkan.DescriptorPool.Middle
       Vulkan.DescriptorPool.Type
       Vulkan.DescriptorSet
       Vulkan.DescriptorSet.Atom
-      Vulkan.DescriptorSet.Core
       Vulkan.DescriptorSet.List
       Vulkan.DescriptorSet.Middle
       Vulkan.DescriptorSetLayout
-      Vulkan.DescriptorSetLayout.Core
       Vulkan.DescriptorSetLayout.Enum
       Vulkan.DescriptorSetLayout.Middle
       Vulkan.DescriptorSetLayout.Type
       Vulkan.Device
-      Vulkan.Device.Core
       Vulkan.Device.Middle
       Vulkan.Device.Queue
-      Vulkan.Device.Queue.Core
       Vulkan.Device.Queue.Enum
       Vulkan.Device.Type
       Vulkan.Enum
@@ -113,24 +98,19 @@ library
       Vulkan.Ext.DebugUtils.Messenger
       Vulkan.Ext.DebugUtils.Messenger.Core
       Vulkan.Fence
-      Vulkan.Fence.Core
       Vulkan.Fence.Enum
       Vulkan.Framebuffer
-      Vulkan.Framebuffer.Core
       Vulkan.Framebuffer.Enum
       Vulkan.Framebuffer.Middle
       Vulkan.Framebuffer.Type
       Vulkan.Image
-      Vulkan.Image.Core
       Vulkan.Image.Enum
       Vulkan.Image.Middle
       Vulkan.Image.Type
       Vulkan.ImageView
-      Vulkan.ImageView.Core
       Vulkan.ImageView.Enum
       Vulkan.ImageView.Middle
       Vulkan.Instance
-      Vulkan.Instance.Core
       Vulkan.Instance.Enum
       Vulkan.Instance.Middle
       Vulkan.Instance.Type
@@ -148,7 +128,6 @@ library
       Vulkan.Khr.Swapchain.Enum
       Vulkan.Memory
       Vulkan.Memory.Atom
-      Vulkan.Memory.Core
       Vulkan.Memory.Enum
       Vulkan.Memory.Image
       Vulkan.Memory.Image.Middle
@@ -157,86 +136,58 @@ library
       Vulkan.Memory.Middle
       Vulkan.Middle
       Vulkan.PhysicalDevice
-      Vulkan.PhysicalDevice.Core
       Vulkan.PhysicalDevice.Enum
       Vulkan.PhysicalDevice.Struct
-      Vulkan.PhysicalDevice.Struct.Core
       Vulkan.PhysicalDevice.Struct.Th
-      Vulkan.Pipeline.Cache.Core
       Vulkan.Pipeline.Cache.Enum
       Vulkan.Pipeline.Cache.Middle
       Vulkan.Pipeline.Cache.Type
       Vulkan.Pipeline.ColorBlendAttachment
-      Vulkan.Pipeline.ColorBlendAttachment.Core
       Vulkan.Pipeline.ColorBlendState
-      Vulkan.Pipeline.ColorBlendState.Core
       Vulkan.Pipeline.Compute
-      Vulkan.Pipeline.Compute.Core
       Vulkan.Pipeline.Compute.Middle
-      Vulkan.Pipeline.Core
       Vulkan.Pipeline.DepthStencilState
-      Vulkan.Pipeline.DepthStencilState.Core
       Vulkan.Pipeline.DynamicState
-      Vulkan.Pipeline.DynamicState.Core
       Vulkan.Pipeline.Enum
       Vulkan.Pipeline.Graphics
-      Vulkan.Pipeline.Graphics.Core
       Vulkan.Pipeline.Graphics.Middle
       Vulkan.Pipeline.Graphics.Type
       Vulkan.Pipeline.InputAssemblyState
-      Vulkan.Pipeline.InputAssemblyState.Core
       Vulkan.Pipeline.Layout
-      Vulkan.Pipeline.Layout.Core
       Vulkan.Pipeline.Layout.Middle
       Vulkan.Pipeline.Layout.Type
       Vulkan.Pipeline.MultisampleState
-      Vulkan.Pipeline.MultisampleState.Core
       Vulkan.Pipeline.RasterizationState
-      Vulkan.Pipeline.RasterizationState.Core
       Vulkan.Pipeline.ShaderStage
-      Vulkan.Pipeline.ShaderStage.Core
       Vulkan.Pipeline.ShaderStage.Enum
       Vulkan.Pipeline.ShaderStage.Middle
       Vulkan.Pipeline.TessellationState
-      Vulkan.Pipeline.TessellationState.Core
       Vulkan.Pipeline.VertexInputState
       Vulkan.Pipeline.VertexInputState.BindingOffset
       Vulkan.Pipeline.VertexInputState.BindingStrideList
-      Vulkan.Pipeline.VertexInputState.Core
       Vulkan.Pipeline.VertexInputState.Middle
       Vulkan.Pipeline.ViewportState
-      Vulkan.Pipeline.ViewportState.Core
       Vulkan.PushConstant
-      Vulkan.PushConstant.Core
       Vulkan.Queue
-      Vulkan.Queue.Core
       Vulkan.Queue.Enum
       Vulkan.QueueFamily
-      Vulkan.QueueFamily.Core
       Vulkan.QueueFamily.EnumManual
       Vulkan.RenderPass
-      Vulkan.RenderPass.Core
       Vulkan.RenderPass.Enum
       Vulkan.RenderPass.Middle
       Vulkan.RenderPass.Type
       Vulkan.Sample
       Vulkan.Sample.Enum
       Vulkan.Sampler
-      Vulkan.Sampler.Core
       Vulkan.Sampler.Enum
       Vulkan.Semaphore
-      Vulkan.Semaphore.Core
       Vulkan.ShaderModule
-      Vulkan.ShaderModule.Core
       Vulkan.ShaderModule.Internal
       Vulkan.ShaderModule.Middle
       Vulkan.Specialization
-      Vulkan.Specialization.Core
       Vulkan.Subpass
-      Vulkan.Subpass.Core
       Vulkan.Subpass.Enum
       Vulkan.VertexInput
-      Vulkan.VertexInput.Core
       Vulkan.VertexInput.Enum
   other-modules:
       Paths_try_my_vulkan_snd
@@ -266,6 +217,7 @@ library
     , time
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -302,6 +254,7 @@ executable my-glslc
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -338,6 +291,7 @@ executable try-depth-buffering
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -374,6 +328,7 @@ executable try-generating-mipmaps
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -410,6 +365,7 @@ executable try-loading-models
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -446,6 +402,7 @@ executable try-multisampling
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -481,6 +438,7 @@ executable try-my-vulkan-snd-exe
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -517,6 +475,7 @@ executable try-next-triangle
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -553,6 +512,7 @@ executable try-rectangle
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -589,6 +549,7 @@ executable try-saitan
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -625,6 +586,7 @@ executable try-saitan-float
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -661,6 +623,7 @@ executable try-shaderc
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -697,6 +660,7 @@ executable try-shaderc-core
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -733,6 +697,7 @@ executable try-texel-buffer
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -769,6 +734,7 @@ executable try-texture
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -805,6 +771,7 @@ executable try-vertex-input-state
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -841,6 +808,7 @@ executable try-yatteiku
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
@@ -877,6 +845,7 @@ test-suite try-my-vulkan-snd-test
     , try-my-vulkan-snd
     , try-pointable
     , try-shaderc
+    , try-vulkan-core
     , union-color
     , uuid
     , vector
