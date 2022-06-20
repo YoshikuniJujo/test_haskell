@@ -25,9 +25,30 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Text.Tools
       Foreign.Ptr.Synonyms
       Vulkan.AllocationCallbacks.Core
       Vulkan.Attachment.Core
+      Vulkan.Buffer.Core
+      Vulkan.CommandBuffer.Core
+      Vulkan.CommandPool.Core
+      Vulkan.Component.Core
+      Vulkan.Core
+      Vulkan.Device.Core
+      Vulkan.Device.Queue.Core
+      Vulkan.Fence.Core
+      Vulkan.Framebuffer.Core
+      Vulkan.Image.Core
+      Vulkan.ImageView.Core
+      Vulkan.Instance.Core
+      Vulkan.Memory.Core
+      Vulkan.PhysicalDevice.Core
+      Vulkan.PhysicalDevice.Struct.Core
+      Vulkan.Queue.Core
+      Vulkan.QueueFamily.Core
+      Vulkan.RenderPass.Core
+      Vulkan.Semaphore.Core
+      Vulkan.Subpass.Core
   other-modules:
       Paths_try_vulkan_core
   hs-source-dirs:
@@ -37,6 +58,9 @@ library
   build-depends:
       base >=4.7 && <5
     , c-struct
+    , monads-tf
+    , nowdoc
+    , text
   default-language: Haskell2010
 
 executable try-vulkan-core-exe
@@ -49,6 +73,9 @@ executable try-vulkan-core-exe
   build-depends:
       base >=4.7 && <5
     , c-struct
+    , monads-tf
+    , nowdoc
+    , text
     , try-vulkan-core
   default-language: Haskell2010
 
@@ -63,5 +90,8 @@ test-suite try-vulkan-core-test
   build-depends:
       base >=4.7 && <5
     , c-struct
+    , monads-tf
+    , nowdoc
+    , text
     , try-vulkan-core
   default-language: Haskell2010
