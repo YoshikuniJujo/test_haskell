@@ -11,12 +11,25 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
       size: 5132
-      sha256: e1d1a7c222391a6514ed4ba8354332b4c721f8dd807539d756cace0650af62ce
-    commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
+      sha256: 3bf9bf1647601a85d9b91b140373dab4fa20fcf7a6b3e274a3687085eec981db
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
   original:
     subdir: themes/gui/vulkan/try-vulkan-core
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
+- completed:
+    subdir: themes/gui/vulkan/try-vulkan-core-khr
+    name: try-vulkan-core-khr
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    pantry-tree:
+      size: 884
+      sha256: 369ad2bf401495aeaa422e7614378bb14b720e5dfbcc1c365ee57c6e4ca2f227
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
+  original:
+    subdir: themes/gui/vulkan/try-vulkan-core-khr
+    git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
 - completed:
     subdir: themes/gui/vulkan/try-shaderc
     name: try-shaderc
@@ -25,11 +38,11 @@ packages:
     pantry-tree:
       size: 1613
       sha256: 7b2ed57539392172fd5bb8df4e04fa03bcbc3bb7de35e753bdd29f0508310703
-    commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
   original:
     subdir: themes/gui/vulkan/try-shaderc
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
 - completed:
     subdir: features/ffi/try-pointable
     name: try-pointable
@@ -38,11 +51,11 @@ packages:
     pantry-tree:
       size: 629
       sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
-    commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
   original:
     subdir: features/ffi/try-pointable
     git: https://github.com/YoshikuniJujo/test_haskell
-    commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
+    commit: 51853a00c84d2b3fc056322dcab33023c8a84f09
 - completed:
     name: size-alignment-list
     version: 0.1.0.0

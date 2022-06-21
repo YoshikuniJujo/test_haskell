@@ -45,6 +45,7 @@ dependencies:
 - mono-traversable
 - data-default
 - try-vulkan-core
+- try-vulkan-core-khr
 
 library:
   source-dirs: src

@@ -112,15 +112,11 @@ library
       Gpu.Vulkan.Instance.Type
       Gpu.Vulkan.Khr
       Gpu.Vulkan.Khr.ColorSpace
-      Gpu.Vulkan.Khr.Core
       Gpu.Vulkan.Khr.Enum
       Gpu.Vulkan.Khr.Surface
-      Gpu.Vulkan.Khr.Surface.Core
       Gpu.Vulkan.Khr.Surface.Enum
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
-      Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core
       Gpu.Vulkan.Khr.Swapchain
-      Gpu.Vulkan.Khr.Swapchain.Core
       Gpu.Vulkan.Khr.Swapchain.Enum
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.Atom
@@ -218,6 +214,7 @@ library
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -255,6 +252,7 @@ executable my-glslc
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -292,6 +290,7 @@ executable try-depth-buffering
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -329,6 +328,7 @@ executable try-generating-mipmaps
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -366,6 +366,7 @@ executable try-loading-models
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -403,6 +404,7 @@ executable try-multisampling
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -439,6 +441,7 @@ executable try-my-vulkan-snd-exe
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -476,6 +479,7 @@ executable try-next-triangle
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -513,6 +517,7 @@ executable try-rectangle
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -550,6 +555,7 @@ executable try-saitan
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -587,6 +593,7 @@ executable try-saitan-float
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -624,6 +631,7 @@ executable try-shaderc
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -661,6 +669,7 @@ executable try-shaderc-core
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -698,6 +707,7 @@ executable try-texel-buffer
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -735,6 +745,7 @@ executable try-texture
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -772,6 +783,7 @@ executable try-vertex-input-state
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -809,6 +821,7 @@ executable try-yatteiku
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector
@@ -846,6 +859,7 @@ test-suite try-my-vulkan-snd-test
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-khr
     , union-color
     , uuid
     , vector

@@ -27,6 +27,7 @@ library
   exposed-modules:
       Gpu.Vulkan.Khr.Core
       Gpu.Vulkan.Khr.Surface.Core
+      Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core
       Gpu.Vulkan.Khr.Swapchain.Core
   other-modules:
       Paths_try_vulkan_core_khr
