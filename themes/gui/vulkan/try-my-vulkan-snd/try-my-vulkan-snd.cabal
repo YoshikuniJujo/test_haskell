@@ -34,6 +34,7 @@ library
       Codec.Wavefront.Read
       Data.Generics.Flatten
       Data.HeteroList
+      Data.Kind.Object
       Data.Traversable.Utils
       Data.Vector.Storable.Indexing
       Foreign.Storable.Generic
@@ -43,6 +44,7 @@ library
       Gpu.Vulkan.Attachment
       Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Base
+      Gpu.Vulkan.Buffer
       Gpu.Vulkan.Buffer.Atom
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.Buffer.List
@@ -65,6 +67,7 @@ library
       Gpu.Vulkan.CommandPool.Type
       Gpu.Vulkan.Component
       Gpu.Vulkan.Component.Enum
+      Gpu.Vulkan.Descriptor
       Gpu.Vulkan.Descriptor.Atom
       Gpu.Vulkan.Descriptor.Enum
       Gpu.Vulkan.Descriptor.List

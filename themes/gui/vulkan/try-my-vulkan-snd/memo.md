@@ -19,7 +19,18 @@ memo
 * [ ] Vulkan.BufferView.Middle
 * [ ] use Vulkan.BufferView.Middle
 * [ ] refactor app/try-saitan.hs
-* [ ] move modules Vulkan.Foo to Gpu.Vulkan.Foo
+* [x] move modules Vulkan.Foo to Gpu.Vulkan.Foo
+* [ ] Push Constants
+* [ ] Descriptor Buffer Info
+	+ [ ] has type argument: X
+		- atom
+		- list
+* [ ] Buffer
+	+ [ ] has type argument
+		- \'[X]
+* [ ] Memory
+	+ [ ] has type argument
+		- \'[ \'[X]]
 
 tmp
 ---
