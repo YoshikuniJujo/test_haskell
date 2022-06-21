@@ -1,0 +1,20 @@
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Gpu.Vulkan.Pipeline.Graphics.Type where
+
+import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as M
+
+newtype GList s vs's tss = GList (M.PList vs's tss) deriving Show
+
+newtype G s vs ts = G (M.G vs ts) deriving Show
+
+pattern GNil :: GList s vs's tss
+pattern GNil <- GList M.PNil
+
+pattern GCons ::
+	G s vs ts -> GList s vs's tss -> GList s (vs ': vs's) (ts ': tss)
+pattern g `GCons` gs <- GList ((G -> g) `M.PCons` (GList -> gs))

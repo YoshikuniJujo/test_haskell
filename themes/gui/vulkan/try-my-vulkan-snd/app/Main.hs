@@ -24,7 +24,7 @@ import Data.Word
 import Data.Color
 
 import ThEnv
-import Vulkan.Base
+import Gpu.Vulkan.Base
 
 import qualified Data.Set as Set
 import qualified Data.Text as Txt
@@ -39,75 +39,75 @@ import Shaderc
 import Shaderc.EnumAuto
 import Shaderc.TH
 
-import qualified Vulkan.Middle as Vk
-import qualified Vulkan.Enum as Vk
-import qualified Vulkan.Instance.Type as Vk.Ist.T
-import qualified Vulkan.Instance.Middle as Vk.Ist
-import qualified Vulkan.Instance.Enum as Vk.Ist
-import qualified Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
-import qualified Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
+import qualified Gpu.Vulkan.Middle as Vk
+import qualified Gpu.Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
+import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist
+import qualified Gpu.Vulkan.Instance.Enum as Vk.Ist
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
-import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
-import qualified Vulkan.QueueFamily as Vk.QueueFamily
-import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Vulkan.Device.Queue as Vk.Device.Queue
-import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
-import qualified Vulkan.Device.Middle as Vk.Device
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
+import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Gpu.Vulkan.Device.Middle as Vk.Device
 
-import qualified Vulkan.Khr as Vk.Khr
-import qualified Vulkan.Khr.Enum as Vk.Khr
-import qualified Vulkan.Khr.Surface as Vk.Khr.Sfc
-import qualified Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
-import qualified Vulkan.Image.Middle as Vk.Img
-import qualified Vulkan.Image.Enum as Vk.Img
+import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
+import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
+import qualified Gpu.Vulkan.Image.Middle as Vk.Img
+import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 
-import qualified Vulkan.Core as Vk.C
-import qualified Vulkan.Ext.DebugUtils as Vk.Ext.DU
+import qualified Gpu.Vulkan.Core as Vk.C
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DU
 
-import qualified Vulkan.Khr.Swapchain as Vk.Khr.Sc
-import qualified Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
-import qualified Vulkan.ImageView.Middle as Vk.ImageView
-import qualified Vulkan.ImageView.Enum as Vk.ImageView
-import qualified Vulkan.Component as Vk.Component
-import qualified Vulkan.Component.Enum as Vk.Component
+import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Sc
+import qualified Gpu.Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
+import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView
+import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImageView
+import qualified Gpu.Vulkan.Component as Vk.Component
+import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 
-import qualified Vulkan.ShaderModule.Middle as Vk.Shader.Module
-import qualified Vulkan.Pipeline.ShaderStage.Middle as Vk.Ppl.ShaderStage
-import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
-import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
-import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
-import qualified Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
-import qualified Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
-import qualified Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
-import qualified Vulkan.Sample as Vk.Sample
-import qualified Vulkan.Sample.Enum as Vk.Sample
-import qualified Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
-import qualified Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
-import qualified Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Lyt
-import qualified Vulkan.Attachment as Vk.Att
-import qualified Vulkan.Attachment.Enum as Vk.Att
-import qualified Vulkan.Subpass as Vk.Subpass
-import qualified Vulkan.Subpass.Enum as Vk.Subpass
-import qualified Vulkan.Pipeline.Enum as Vk.Ppl
-import qualified Vulkan.RenderPass.Middle as Vk.RndrPss
-import qualified Vulkan.RenderPass.Enum as Vk.RndrPss
-import qualified Vulkan.Pipeline.Graphics.Middle as Vk.Ppl
-import qualified Vulkan.Framebuffer.Middle as Vk.Fb
-import qualified Vulkan.Framebuffer.Enum as Vk.Fb
-import qualified Vulkan.CommandPool.Middle as Vk.CP
-import qualified Vulkan.CommandPool.Enum as Vk.CP
-import qualified Vulkan.CommandBuffer.Middle as Vk.CB
-import qualified Vulkan.CommandBuffer.Enum as Vk.CB
-import qualified Vulkan.Command as Vk.Cmd
-import qualified Vulkan.Semaphore as Vk.Smp
-import qualified Vulkan.Fence as Vk.Fnc
-import qualified Vulkan.Fence.Enum as Vk.Fnc
-import qualified Vulkan.Queue as Vk.Queue
-import qualified Vulkan.Queue.Enum as Vk.Queue
-import qualified Vulkan.Command.Middle as Vk.Cmd.M
+import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as Vk.Ppl.ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
+import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VI
+import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VI.M
+import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.IA
+import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.VP
+import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
+import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MS
+import qualified Gpu.Vulkan.Sample as Vk.Sample
+import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
+import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.CBA
+import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.CB
+import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Lyt
+import qualified Gpu.Vulkan.Attachment as Vk.Att
+import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
+import qualified Gpu.Vulkan.Subpass as Vk.Subpass
+import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
+import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
+import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPss
+import qualified Gpu.Vulkan.RenderPass.Enum as Vk.RndrPss
+import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl
+import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Fb
+import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Fb
+import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
+import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
+import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CB
+import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
+import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Semaphore as Vk.Smp
+import qualified Gpu.Vulkan.Fence as Vk.Fnc
+import qualified Gpu.Vulkan.Fence.Enum as Vk.Fnc
+import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
+import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
-import qualified Vulkan.ColorComponent.Enum as Vk.CC
+import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.CC
 
 main :: IO ()
 main = run

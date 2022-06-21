@@ -9,12 +9,12 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Vulkan.Exception
+import Gpu.Vulkan.Exception
 
 import qualified Graphics.UI.GLFW as GlfwB
-import qualified Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Vulkan.Instance.Middle as Instance
-import qualified Vulkan.Khr.Surface as Surface
+import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.Instance.Middle as Instance
+import qualified Gpu.Vulkan.Khr.Surface as Surface
 
 createWindowSurface :: Pointable n =>
 	Instance.I -> GlfwB.Window -> Maybe (AllocationCallbacks.A n) -> IO Surface.S

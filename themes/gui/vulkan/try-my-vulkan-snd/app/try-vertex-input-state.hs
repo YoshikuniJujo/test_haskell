@@ -13,14 +13,14 @@ import Foreign.Storable.SizeAlignment
 import Control.Monad.Cont
 
 import Cglm
-import Vulkan.Pipeline.VertexInputState.BindingStrideList
+import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
 
-import qualified Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.Enum as Vk
 
-import qualified Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
-import qualified Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VertexInputSt.M
-import qualified Vulkan.Pipeline.VertexInputState.Core as Vk.Ppl.VertexInputSt.C
-import qualified Vulkan.VertexInput as Vk.VertexInput
+import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
+import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as Vk.Ppl.VertexInputSt.M
+import qualified Gpu.Vulkan.Pipeline.VertexInputState.Core as Vk.Ppl.VertexInputSt.C
+import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
 
 data Vertex = Vertex {
 	vertexPos :: Vec2,

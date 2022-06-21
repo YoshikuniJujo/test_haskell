@@ -14,46 +14,46 @@ import Data.Word
 import qualified Data.Vector.Storable as V
 
 import Shaderc.TH
-import Vulkan.Base
+import Gpu.Vulkan.Base
 
-import qualified Vulkan as Vk
-import qualified Vulkan.Enum as Vk
-import qualified Vulkan.Instance as Vk.Instance
-import qualified Vulkan.PhysicalDevice as Vk.PhysicalDevice
-import qualified Vulkan.Queue as Vk.Queue
-import qualified Vulkan.Queue.Enum as Vk.Queue
-import qualified Vulkan.QueueFamily as Vk.QueueFamily
-import qualified Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Vulkan.Device.Queue as Vk.Device.Queue
-import qualified Vulkan.Device.Queue.Enum as Vk.Device.Queue
-import qualified Vulkan.Device as Vk.Device
-import qualified Vulkan.CommandPool as Vk.CommandPool
-import qualified Vulkan.CommandPool.Enum as Vk.CommandPool
-import qualified Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Vulkan.Buffer.List as Vk.Buffer.List
-import qualified Vulkan.Memory as Vk.Memory
-import qualified Vulkan.Memory.Enum as Vk.Memory
-import qualified Vulkan.Memory.Middle as Vk.Memory.M
-import qualified Vulkan.Memory.List as Vk.Memory.List
-import qualified Vulkan.Descriptor.Enum as Vk.Descriptor
-import qualified Vulkan.DescriptorPool as Vk.Descriptor.Pool
-import qualified Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
-import qualified Vulkan.ShaderModule as Vk.Shader.Module
-import qualified Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
-import qualified Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
-import qualified Vulkan.Pipeline.Enum as Vk.Pipeline
-import qualified Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
-import qualified Vulkan.Pipeline.Layout.Type as Vk.Pipeline.Layout
-import qualified Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
-import qualified Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
-import qualified Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
-import qualified Vulkan.DescriptorSet as Vk.Descriptor.Set
-import qualified Vulkan.Descriptor.List as Vk.Descriptor.List
-import qualified Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
-import qualified Vulkan.CommandBuffer as Vk.CommandBuffer
-import qualified Vulkan.CommandBuffer.Type as Vk.CommandBuffer
-import qualified Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
-import qualified Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan as Vk
+import qualified Gpu.Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.Instance as Vk.Instance
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
+import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
+import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
+import qualified Gpu.Vulkan.Device as Vk.Device
+import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
+import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
+import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
+import qualified Gpu.Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Gpu.Vulkan.Memory as Vk.Memory
+import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
+import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
+import qualified Gpu.Vulkan.Memory.List as Vk.Memory.List
+import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Descriptor
+import qualified Gpu.Vulkan.DescriptorPool as Vk.Descriptor.Pool
+import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
+import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
+import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
+import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
+import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Pipeline
+import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
+import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Pipeline.Layout
+import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
+import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
+import qualified Gpu.Vulkan.DescriptorSet as Vk.Descriptor.Set
+import qualified Gpu.Vulkan.Descriptor.List as Vk.Descriptor.List
+import qualified Gpu.Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 main :: IO ()
 main = do

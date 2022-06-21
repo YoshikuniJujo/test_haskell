@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7e0b72414dbc808201ae73f34d6e3c41edd822da
+  commit: e880020ce5489f39c4b0683a14752eb5a1a7b08c
   subdirs:
   - themes/gui/vulkan/try-vulkan-core
   - themes/gui/vulkan/try-shaderc
