@@ -134,10 +134,11 @@ withCommandPool ::
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
 withCommandPool phdvc device queue commandPool = do
 	print commandPool
-	maxGroupCountX :. _ <- Vk.PhysicalDevice.limitsMaxComputeWorkGroupCount
-		. Vk.PhysicalDevice.propertiesLimits
+	limits <- Vk.PhysicalDevice.propertiesLimits 
 		<$> Vk.PhysicalDevice.getProperties phdvc
+	let	maxGroupCountX :. _ = Vk.PhysicalDevice.limitsMaxComputeWorkGroupCount limits
 	print maxGroupCountX
+	print $ Vk.PhysicalDevice.limitsMaxBoundDescriptorSets limits
 	let	(dataA, dataB, dataC) = makeDatas $ maxGroupCountX * 4
 		dataD = V.fromList . take (fromIntegral maxGroupCountX * 4) $ cycle [123, 321, 111, 333]
 	storageBufferNew4 device phdvc dataA dataB dataC dataD
