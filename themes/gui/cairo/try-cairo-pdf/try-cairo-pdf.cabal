@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: aa323924fddf1a3f35e24a92e057e66ab458e4bd59942bf8959947e2235c6bb2
+-- hash: 5cffa758d6279b04900dc975f06e02609e9b06d10a4951c81456e02eb1d1282d
 
 name:           try-cairo-pdf
 version:        0.1.0.0
@@ -44,6 +44,24 @@ library
 executable try-cairo-pdf-exe
   main-is: Main.hs
   other-modules:
+      Paths_try_cairo_pdf
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , directory
+    , primitive
+    , simple-cairo
+    , template-haskell
+    , try-cairo-pdf
+  default-language: Haskell2010
+
+executable try-cairo-pdf-game-6x7
+  main-is: try-cairo-pdf-game-6x7.hs
+  other-modules:
+      Main
       Paths_try_cairo_pdf
   hs-source-dirs:
       app
