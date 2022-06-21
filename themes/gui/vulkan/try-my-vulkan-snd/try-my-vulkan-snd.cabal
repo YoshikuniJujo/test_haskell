@@ -20,6 +20,7 @@ extra-source-files:
     ChangeLog.md
 data-files:
     th/vkPhysicalDeviceLimits.txt
+    th/vkPhysicalDeviceFeatures.txt
 
 source-repository head
   type: git
@@ -187,8 +188,6 @@ library
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       src
-  pkgconfig-depends:
-      vulkan
   build-depends:
       GLFW-b
     , JuicyPixels

@@ -50,11 +50,10 @@ dependencies:
 
 library:
   source-dirs: src
-  pkg-config-dependencies:
-  - vulkan
 
 data-files:
   - th/vkPhysicalDeviceLimits.txt
+  - th/vkPhysicalDeviceFeatures.txt
 
 executables:
   try-my-vulkan-snd-exe:
