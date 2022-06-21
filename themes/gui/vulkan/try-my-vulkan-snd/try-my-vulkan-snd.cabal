@@ -89,10 +89,8 @@ library
       Gpu.Vulkan.Exception
       Gpu.Vulkan.Exception.Enum
       Gpu.Vulkan.Ext.DebugUtils
-      Gpu.Vulkan.Ext.DebugUtils.Core
       Gpu.Vulkan.Ext.DebugUtils.Message.Enum
       Gpu.Vulkan.Ext.DebugUtils.Messenger
-      Gpu.Vulkan.Ext.DebugUtils.Messenger.Core
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Framebuffer
@@ -214,6 +212,7 @@ library
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -252,6 +251,7 @@ executable my-glslc
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -290,6 +290,7 @@ executable try-depth-buffering
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -328,6 +329,7 @@ executable try-generating-mipmaps
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -366,6 +368,7 @@ executable try-loading-models
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -404,6 +407,7 @@ executable try-multisampling
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -441,6 +445,7 @@ executable try-my-vulkan-snd-exe
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -479,6 +484,7 @@ executable try-next-triangle
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -517,6 +523,7 @@ executable try-rectangle
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -555,6 +562,7 @@ executable try-saitan
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -593,6 +601,7 @@ executable try-saitan-float
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -631,6 +640,7 @@ executable try-shaderc
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -669,6 +679,7 @@ executable try-shaderc-core
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -707,6 +718,7 @@ executable try-texel-buffer
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -745,6 +757,7 @@ executable try-texture
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -783,6 +796,7 @@ executable try-vertex-input-state
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -821,6 +835,7 @@ executable try-yatteiku
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid
@@ -859,6 +874,7 @@ test-suite try-my-vulkan-snd-test
     , try-pointable
     , try-shaderc
     , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , union-color
     , uuid

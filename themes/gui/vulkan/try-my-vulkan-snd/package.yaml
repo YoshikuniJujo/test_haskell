@@ -46,6 +46,7 @@ dependencies:
 - data-default
 - try-vulkan-core
 - try-vulkan-core-khr
+- try-vulkan-core-ext-debug-utils
 
 library:
   source-dirs: src
