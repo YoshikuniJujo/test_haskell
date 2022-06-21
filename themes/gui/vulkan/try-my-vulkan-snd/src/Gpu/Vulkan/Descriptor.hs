@@ -15,23 +15,23 @@ import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Descriptor.Core as C
 
-data BufferInfo objs obj where
+data BufferInfo s objs obj where
 	BufferInfoAtom ::
-		{ bufferInfoAtomBuffer :: Buffer.B objs } ->
-		BufferInfo objs ('Atom v)
+		{ bufferInfoAtomBuffer :: Buffer.B s objs } ->
+		BufferInfo s objs ('Atom v)
 	BufferInfoList ::
-		{ bufferInfoListBuffer :: Buffer.B objs } ->
-		BufferInfo objs ('List v)
+		{ bufferInfoListBuffer :: Buffer.B s objs } ->
+		BufferInfo s objs ('List v)
 
 deriving instance Show (HeteroVarList ObjectLength objs) =>
-	Show (BufferInfo objs obj)
+	Show (BufferInfo s objs obj)
 
 bufferInfoToCore :: Offset obj objs =>
-	BufferInfo objs obj -> C.BufferInfo
+	BufferInfo s objs obj -> C.BufferInfo
 bufferInfoToCore = M.bufferInfoToCore . bufferInfoToMiddle
 
-bufferInfoToMiddle :: forall objs obj . Offset obj objs =>
-	BufferInfo objs obj -> M.BufferInfo
+bufferInfoToMiddle :: forall s objs obj . Offset obj objs =>
+	BufferInfo s objs obj -> M.BufferInfo
 bufferInfoToMiddle BufferInfoAtom {
 	bufferInfoAtomBuffer = Buffer.B lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = Buffer.M.B b,
