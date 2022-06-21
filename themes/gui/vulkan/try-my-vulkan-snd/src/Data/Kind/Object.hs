@@ -41,8 +41,21 @@ instance Storable (ObjectType obj) => Offset obj (obj ': objs) where
 		where algn = alignment @(ObjectType obj) undefined
 	range (ln :...: _) = objectSize ln
 
-instance (Storable (ObjectType obj'), Offset obj objs) => Offset obj (obj' ': objs) where
-	offset ofst (ln :...: lns) =
-		offset @obj (((ofst - 1) `div` algn + 1) * algn + objectSize ln) lns
+instance (Storable (ObjectType obj'), Offset obj objs) =>
+	Offset obj (obj' ': objs) where
+	offset ofst (ln :...: lns) = offset @obj
+		(((ofst - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = alignment @(ObjectType obj') undefined
 	range (_ :...: lns) = range @obj lns
+
+class WholeSize objs where
+	wholeSize :: Int -> HeteroVarList ObjectLength objs -> Int
+
+instance WholeSize '[] where wholeSize sz _ = sz
+
+instance (Storable (ObjectType obj), WholeSize objs) =>
+	WholeSize (obj ': objs) where
+	wholeSize sz (ln :...: lns) =
+		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
+		where
+		algn = alignment @(ObjectType obj) undefined
