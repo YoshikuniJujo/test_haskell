@@ -25,13 +25,10 @@ data STag
 type S = Ptr STag
 type PtrS = Ptr S
 
-strType :: #{type VkStructureType}
-strType = #{const VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR}
-
 struct "CreateInfo" #{size VkSwapchainCreateInfoKHR}
 		#{alignment VkSwapchainCreateInfoKHR} [
 	("sType", ''(), [| const $ pure () |],
-		[| \p _ -> #{poke VkSwapchainCreateInfoKHR, sType} p strType |]),
+		[| \p _ -> #{poke VkSwapchainCreateInfoKHR, sType} p sType |]),
 	("pNext", ''PtrVoid, [| #{peek VkSwapchainCreateInfoKHR, pNext} |],
 		[| #{poke VkSwapchainCreateInfoKHR, pNext} |]),
 	("flags", ''#{type VkSwapchainCreateFlagsKHR},
@@ -83,6 +80,9 @@ struct "CreateInfo" #{size VkSwapchainCreateInfoKHR}
 		[| #{peek VkSwapchainCreateInfoKHR, oldSwapchain} |],
 		[| #{poke VkSwapchainCreateInfoKHR, oldSwapchain} |]) ]
 	[''Show, ''Storable]
+
+sType :: #{type VkStructureType}
+sType = #{const VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR}
 
 foreign import ccall "vkCreateSwapchainKHR" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr S ->
