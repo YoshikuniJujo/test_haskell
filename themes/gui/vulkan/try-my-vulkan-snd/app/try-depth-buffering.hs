@@ -1460,8 +1460,7 @@ createDescriptorSets = do
 	let	allocInfo = Vk.DscSet.AllocateInfo {
 			Vk.DscSet.allocateInfoNext = Nothing,
 			Vk.DscSet.allocateInfoDescriptorPool = dp,
-			Vk.DscSet.allocateInfoDescriptorSetCountOrSetLayouts =
-				Right layouts }
+			Vk.DscSet.allocateInfoSetLayouts = layouts }
 	dvc <- readGlobal globalDevice
 	dss <- lift $ Vk.DscSet.allocateSs @() dvc allocInfo
 	writeGlobal globalDescriptorSets dss

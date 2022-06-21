@@ -228,8 +228,8 @@ withCommandPool phdvc device queue commandPool = do
 							Vk.Descriptor.Set.allocateInfoNext = Nothing,
 							Vk.Descriptor.Set.allocateInfoDescriptorPool =
 								descPool,
-							Vk.Descriptor.Set.allocateInfoDescriptorSetCountOrSetLayouts =
-								Right [descSetLayout] }
+							Vk.Descriptor.Set.allocateInfoSetLayouts =
+								[descSetLayout] }
 					print @(Vk.Descriptor.Set.AllocateInfo () _ _) descSetInfo
 					descSets <- Vk.Descriptor.Set.allocateSs @() device descSetInfo
 					print descSets

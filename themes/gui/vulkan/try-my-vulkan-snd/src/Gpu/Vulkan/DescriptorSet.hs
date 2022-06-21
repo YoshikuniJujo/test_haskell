@@ -15,19 +15,18 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 data AllocateInfo n sp sl = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoDescriptorSetCountOrSetLayouts :: Either Word32 [Layout.L sl] }
+	allocateInfoSetLayouts :: [Layout.L sl] }
 	deriving Show
 
 allocateInfoToMiddle :: AllocateInfo n sp sl -> M.AllocateInfo n
 allocateInfoToMiddle AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoDescriptorPool = Descriptor.Pool.P dp,
-	allocateInfoDescriptorSetCountOrSetLayouts =
-		((Layout.unL <$>) <$>) -> dscsls
+	allocateInfoSetLayouts = (Layout.unL <$>) -> dscsls
 	} = M.AllocateInfo {
 		M.allocateInfoNext = mnxt,
 		M.allocateInfoDescriptorPool = dp,
-		M.allocateInfoDescriptorSetCountOrSetLayouts = dscsls }
+		M.allocateInfoSetLayouts = dscsls }
 
 newtype S sd sp sl = S M.S deriving Show
 

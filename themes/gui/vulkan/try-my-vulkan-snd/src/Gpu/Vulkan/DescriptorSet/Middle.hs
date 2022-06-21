@@ -25,24 +25,21 @@ import qualified Gpu.Vulkan.DescriptorSet.Core as C
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoDescriptorPool :: Pool.P,
-	allocateInfoDescriptorSetCountOrSetLayouts :: Either Word32 [Layout.L] }
+	allocateInfoSetLayouts :: [Layout.L] }
 	deriving Show
 
 allocateInfoToCore :: Pointable n => AllocateInfo n -> ContT r IO C.AllocateInfo
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoDescriptorPool = Pool.P pl,
-	allocateInfoDescriptorSetCountOrSetLayouts = either
-		((, Nothing) . (fromIntegral &&& id))
-		(((id &&& fromIntegral) `first`) . (length &&& Just)) ->
-		((dsci, dscw), msls)
+	allocateInfoSetLayouts =
+		(((id &&& fromIntegral) `first`) . (length &&& id)) ->
+		((dsci, dscw), sls)
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	psls <- case msls of
-		Nothing -> pure NullPtr
-		Just sls -> do
-			p <- ContT $ allocaArray dsci
-			p <$ lift (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
+	psls <- do
+		p <- ContT $ allocaArray dsci
+		p <$ lift (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
 	pure C.AllocateInfo {
 		C.allocateInfoSType = (),
 		C.allocateInfoPNext = pnxt,
