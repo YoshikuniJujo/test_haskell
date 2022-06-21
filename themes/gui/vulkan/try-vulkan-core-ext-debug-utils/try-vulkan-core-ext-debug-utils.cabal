@@ -1,0 +1,71 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-vulkan-core-ext-debug-utils
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/try-vulkan-core-ext-debug-utils#readme>
+homepage:       https://github.com/githubuser/try-vulkan-core-ext-debug-utils#readme
+bug-reports:    https://github.com/githubuser/try-vulkan-core-ext-debug-utils/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2022 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/try-vulkan-core-ext-debug-utils
+
+library
+  exposed-modules:
+      Gpu.Vulkan.Ext.DebugUtils.Core
+      Gpu.Vulkan.Ext.DebugUtils.Messenger.Core
+      Lib
+  other-modules:
+      Paths_try_vulkan_core_ext_debug_utils
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , c-struct
+    , try-pointable
+    , try-vulkan-core
+  default-language: Haskell2010
+
+executable try-vulkan-core-ext-debug-utils-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_vulkan_core_ext_debug_utils
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-struct
+    , try-pointable
+    , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
+  default-language: Haskell2010
+
+test-suite try-vulkan-core-ext-debug-utils-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_vulkan_core_ext_debug_utils
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , c-struct
+    , try-pointable
+    , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
+  default-language: Haskell2010
