@@ -9,7 +9,9 @@
 
 module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
-	HeteroVarList(..), heteroVarListToList, heteroVarListMapM, HeteroVarListMapM(..) ) where
+	HeteroVarList(..),
+	heteroVarListToList, heteroVarListToListM,
+	heteroVarListMapM, HeteroVarListMapM(..) ) where
 
 import Prelude hiding (length)
 
@@ -64,6 +66,11 @@ instance (Show (t s), Show (HeteroVarList t ss)) =>
 heteroVarListToList :: (forall s . t s -> t') -> HeteroVarList t ss -> [t']
 heteroVarListToList _ HVNil = []
 heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs
+
+heteroVarListToListM :: Applicative m =>
+	(forall s . t s -> m t') -> HeteroVarList t ss -> m [t']
+heteroVarListToListM _ HVNil = pure []
+heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
 
 heteroVarListMapM :: Applicative m =>
 	(forall (s :: k) . t s -> m (t' s)) -> HeteroVarList t ss -> m (HeteroVarList t' ss)
