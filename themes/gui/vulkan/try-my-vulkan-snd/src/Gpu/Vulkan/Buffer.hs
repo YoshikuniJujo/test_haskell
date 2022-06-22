@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -91,5 +92,44 @@ memoryRequirementsListToSize sz0 (reqs : reqss) =
 	memoryRequirementsListToSize
 		(((sz0 - 1) `div` algn + 1) * algn + sz) reqss
 	where
+	sz = Memory.M.requirementsSize reqs
+	algn = Memory.M.requirementsAlignment reqs
+
+allocate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D sd -> HeteroVarList (B sb) objss ->
+	Device.Memory.AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall s . Device.Memory.M s objss -> IO a) -> IO a
+allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
+	do	mai <- allocateInfoToMiddle dvc bs ai
+		Memory.M.allocate mdvc mai macc
+	(\mem -> Memory.M.free mdvc mem macd)
+	\(Device.M.Memory mem) -> do
+		forms <- bsToForms dvc bs
+		f $ Device.Memory.M forms mem
+
+bsToForms :: Device.D sd -> HeteroVarList (B sb) objss ->
+	IO (HeteroVarList Device.Memory.Form objss)
+bsToForms dvc bs = do
+	reqss <- heteroVarListToListM (getMemoryRequirements dvc) bs
+	pure $ zipToForms
+		(memoryRequirementsListToOffsets 0 reqss) bs
+
+zipToForms ::
+	[(Device.M.Size, Device.M.Size)] -> HeteroVarList (B sb) objss ->
+	HeteroVarList Device.Memory.Form objss
+zipToForms [] HVNil = HVNil
+zipToForms ((ost, sz) : ostszs) (B lns _ :...: bs) =
+	Device.Memory.Form ost sz lns :...: zipToForms ostszs bs
+zipToForms _ _ = error "bad"
+
+memoryRequirementsListToOffsets ::
+	Device.M.Size -> [Memory.M.Requirements] ->
+	[(Device.M.Size, Device.M.Size)]
+memoryRequirementsListToOffsets _ [] = []
+memoryRequirementsListToOffsets sz0 (reqs : reqss) =
+	(ost, sz) : memoryRequirementsListToOffsets (ost + sz) reqss
+	where
+	ost = ((sz0 - 1) `div` algn + 1) * algn
 	sz = Memory.M.requirementsSize reqs
 	algn = Memory.M.requirementsAlignment reqs
