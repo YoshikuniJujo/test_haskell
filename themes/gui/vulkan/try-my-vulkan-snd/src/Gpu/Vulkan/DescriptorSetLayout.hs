@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout (
-	L, create, M.Binding(..), M.CreateInfo(..) ) where
+	L, create, M.CreateInfo(..) ) where
 
 import Foreign.Pointable
 import Control.Exception

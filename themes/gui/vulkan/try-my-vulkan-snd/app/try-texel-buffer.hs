@@ -52,6 +52,7 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
+import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Vk.Descriptor.Set.Layout.M
 import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Pipeline
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Pipeline.Layout
@@ -154,29 +155,29 @@ withCommandPool phdvc device queue commandPool = do
 					Vk.Shader.Module.CreateFlagsZero,
 				Vk.Shader.Module.createInfoCode =
 					glslComputeShaderMain }
-			binding = Vk.Descriptor.Set.Layout.Binding {
-				Vk.Descriptor.Set.Layout.bindingBinding = 0,
-				Vk.Descriptor.Set.Layout.bindingDescriptorType =
+			binding = Vk.Descriptor.Set.Layout.M.Binding {
+				Vk.Descriptor.Set.Layout.M.bindingBinding = 0,
+				Vk.Descriptor.Set.Layout.M.bindingDescriptorType =
 					Vk.Descriptor.TypeStorageBuffer,
-				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
+				Vk.Descriptor.Set.Layout.M.bindingDescriptorCountOrImmutableSamplers =
 					Left 3,
-				Vk.Descriptor.Set.Layout.bindingStageFlags =
+				Vk.Descriptor.Set.Layout.M.bindingStageFlags =
 					Vk.ShaderStageComputeBit }
-			binding2 = Vk.Descriptor.Set.Layout.Binding {
-				Vk.Descriptor.Set.Layout.bindingBinding = 1,
-				Vk.Descriptor.Set.Layout.bindingDescriptorType =
+			binding2 = Vk.Descriptor.Set.Layout.M.Binding {
+				Vk.Descriptor.Set.Layout.M.bindingBinding = 1,
+				Vk.Descriptor.Set.Layout.M.bindingDescriptorType =
 					Vk.Descriptor.TypeStorageBuffer,
-				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
+				Vk.Descriptor.Set.Layout.M.bindingDescriptorCountOrImmutableSamplers =
 					Left 1,
-				Vk.Descriptor.Set.Layout.bindingStageFlags =
+				Vk.Descriptor.Set.Layout.M.bindingStageFlags =
 					Vk.ShaderStageComputeBit }
-			binding2' = Vk.Descriptor.Set.Layout.Binding {
-				Vk.Descriptor.Set.Layout.bindingBinding = 1,
-				Vk.Descriptor.Set.Layout.bindingDescriptorType =
+			binding2' = Vk.Descriptor.Set.Layout.M.Binding {
+				Vk.Descriptor.Set.Layout.M.bindingBinding = 1,
+				Vk.Descriptor.Set.Layout.M.bindingDescriptorType =
 					Vk.Descriptor.TypeStorageTexelBuffer,
-				Vk.Descriptor.Set.Layout.bindingDescriptorCountOrImmutableSamplers =
+				Vk.Descriptor.Set.Layout.M.bindingDescriptorCountOrImmutableSamplers =
 					Left 1,
-				Vk.Descriptor.Set.Layout.bindingStageFlags =
+				Vk.Descriptor.Set.Layout.M.bindingStageFlags =
 					Vk.ShaderStageComputeBit }
 			descSetLayoutInfo = Vk.Descriptor.Set.Layout.CreateInfo {
 				Vk.Descriptor.Set.Layout.createInfoNext = Nothing,
