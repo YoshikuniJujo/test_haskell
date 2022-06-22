@@ -11,7 +11,8 @@ module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
 	HeteroVarList(..),
 	heteroVarListToList, heteroVarListToListM,
-	heteroVarListMapM, HeteroVarListMapM(..), TLength(..) ) where
+	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
+	ListToHeteroVarList(..) ) where
 
 import Prelude hiding (length)
 
@@ -97,3 +98,14 @@ class TLength ts where tLength :: Num n => n
 instance TLength '[] where tLength = 0
 
 instance TLength ts => TLength (t ': ts) where tLength = 1 + tLength @ts
+
+class ListToHeteroVarList ss where
+	listToHeteroVarList :: (forall s . t -> t' s) -> [t] -> HeteroVarList t' ss
+
+instance ListToHeteroVarList '[] where
+	listToHeteroVarList _ [] = HVNil
+	listToHeteroVarList _ _ = error "bad"
+
+instance ListToHeteroVarList ss => ListToHeteroVarList (s ': ss) where
+	listToHeteroVarList f (x : xs) = f x :...: listToHeteroVarList f xs
+	listToHeteroVarList _ _ = error "bad"
