@@ -9,7 +9,6 @@ module Main where
 import Data.Default
 import Data.Bits
 import Data.HeteroList
-import Data.Word
 
 import qualified Foreign.Storable.Generic
 import qualified Data.Vector.Storable as V

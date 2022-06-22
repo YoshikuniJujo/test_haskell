@@ -1,17 +1,18 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout (
-	L, create ) where
+	L, create, L', create', CreateInfo(..), Binding(..) ) where
 
 import Foreign.Pointable
+import Control.Monad.Cont
 import Control.Exception
-import Data.Kind.Object
 import Data.HeteroList
 import Data.Word
 
@@ -23,6 +24,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
+import qualified Gpu.Vulkan.DescriptorSetLayout.Core as C
 import qualified Gpu.Vulkan.Sampler as Sampler
 
 create :: (Pointable n, Pointable c, Pointable d) =>
@@ -32,7 +34,12 @@ create :: (Pointable n, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L)
 
-data BindingType = Buffer [Object] | Other
+create' :: (Pointable n, BindingsToMiddle bts, Pointable c, Pointable d) =>
+	Device.D sd -> CreateInfo n bts ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall s . L' s bts -> IO a) -> IO a
+create' dvc ci macc macd f =
+	create dvc (createInfoToMiddle ci) macc macd \(L l) -> f $ L' l
 
 data Binding (bt :: BindingType) where
 	BindingBuffer :: {
@@ -46,10 +53,52 @@ data Binding (bt :: BindingType) where
 		bindingOtherStageFlags :: ShaderStageFlags
 		} -> Binding 'Other
 
+class BindingToMiddle bt where
+	bindingToMiddle :: Binding bt -> Word32 -> M.Binding
+
+instance TLength objs => BindingToMiddle ('Buffer objs) where
+	bindingToMiddle BindingBuffer {
+		bindingBufferDescriptorType = dt,
+		bindingBufferStageFlags = sfs } bb = M.Binding {
+			M.bindingBinding = bb,
+			M.bindingDescriptorType = dt,
+			M.bindingDescriptorCountOrImmutableSamplers =
+				Left (tLength @objs),
+			M.bindingStageFlags = sfs }
+
+instance BindingToMiddle 'Other where
+	bindingToMiddle BindingOther {
+		bindingOtherDescriptorType = dt,
+		bindingOtherDescriptorCountOrImmutableSamplers = cois,
+		bindingOtherStageFlags = sfs } bb = M.Binding {
+			M.bindingBinding = bb,
+			M.bindingDescriptorType = dt,
+			M.bindingDescriptorCountOrImmutableSamplers = cois,
+			M.bindingStageFlags = sfs }
+
+class BindingsToMiddle bts where
+	bindingsToMiddle :: HeteroVarList Binding bts -> Word32 -> [M.Binding]
+
+instance BindingsToMiddle '[] where bindingsToMiddle HVNil _ = []
+
+instance (BindingToMiddle bt, BindingsToMiddle bts) =>
+	BindingsToMiddle (bt ': bts) where
+	bindingsToMiddle (bd :...: bds) bb =
+		bindingToMiddle bd bb : bindingsToMiddle bds (bb + 1)
+
 data CreateInfo n bts = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoBindings :: HeteroVarList Binding bts }
+
+createInfoToMiddle :: BindingsToMiddle bts => CreateInfo n bts -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoBindings = bds } = M.CreateInfo {
+		M.createInfoNext = mnxt,
+		M.createInfoFlags = flgs,
+		M.createInfoBindings = bindingsToMiddle bds 0 }
 
 deriving instance (Show n, Show (HeteroVarList Binding bts)) =>
 	Show (CreateInfo n bts)

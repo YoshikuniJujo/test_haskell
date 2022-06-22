@@ -1,7 +1,7 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies, DataKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -11,7 +11,7 @@ module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
 	HeteroVarList(..),
 	heteroVarListToList, heteroVarListToListM,
-	heteroVarListMapM, HeteroVarListMapM(..) ) where
+	heteroVarListMapM, HeteroVarListMapM(..), TLength(..) ) where
 
 import Prelude hiding (length)
 
@@ -87,3 +87,13 @@ instance HeteroVarListMapM '[] '[] where heteroVarListMapM' _ HVNil = pure HVNil
 instance HeteroVarListMapM ss fss =>
 	HeteroVarListMapM ('(x, y, z) ': ss) (x ': fss) where
 	heteroVarListMapM' f (x :...: xs) = (:...:) <$> f x <*> heteroVarListMapM' f xs
+
+heteroVarListLength :: HeteroVarList t ss -> Int
+heteroVarListLength HVNil = 0
+heteroVarListLength (_ :...: xs) = 1 + heteroVarListLength xs
+
+class TLength ts where tLength :: Num n => n
+
+instance TLength '[] where tLength = 0
+
+instance TLength ts => TLength (t ': ts) where tLength = 1 + tLength @ts

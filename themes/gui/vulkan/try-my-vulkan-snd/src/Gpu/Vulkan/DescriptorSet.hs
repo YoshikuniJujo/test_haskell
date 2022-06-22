@@ -5,7 +5,6 @@
 module Gpu.Vulkan.DescriptorSet where
 
 import Foreign.Pointable
-import Data.Word
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
