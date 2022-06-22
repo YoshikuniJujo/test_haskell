@@ -108,6 +108,36 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		forms <- bsToForms dvc bs
 		f $ Device.Memory.M forms mem
 
+allocateBind :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D sd -> HeteroVarList (B sb) objss ->
+	Device.Memory.AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) -> (
+		forall sm . HeteroVarList (Binded sb sm) objss ->
+			Device.Memory.M sm objss -> IO a ) -> IO a
+allocateBind dvc bs ai macc macd f = allocate dvc bs ai macc macd \mem -> do
+	bs' <- bindBuffersToMemory dvc bs mem 0
+	f bs' mem
+
+bindBuffersToMemory ::
+	Device.D sd -> HeteroVarList (B sb) objss -> Device.Memory.M sm objss' ->
+	Int -> IO (HeteroVarList (Binded sb sm) objss)
+bindBuffersToMemory _ HVNil _ _ = pure HVNil
+bindBuffersToMemory dvc (b :...: bs) mem i = (:...:)
+	<$> bindMemory dvc b mem i <*> bindBuffersToMemory dvc bs mem (i + 1)
+
+bindMemory ::
+	Device.D sd -> B sb objs -> Device.Memory.M sm objss -> Int ->
+	IO (Binded sb sm objs)
+bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms mem) i = do
+	M.bindMemory dvc (M.B b) (Device.M.Memory mem) . fst $ indexForms fms i
+	pure $ Binded lns b
+
+indexForms :: HeteroVarList Device.Memory.Form objss -> Int ->
+	(Device.M.Size, Device.M.Size)
+indexForms (Device.Memory.Form ost sz _ :...: _) 0 = (ost, sz)
+indexForms (_ :...: fms) i = indexForms fms (i - 1)
+indexForms _ _ = error "bad"
+
 bsToForms :: Device.D sd -> HeteroVarList (B sb) objss ->
 	IO (HeteroVarList Device.Memory.Form objss)
 bsToForms dvc bs = do
