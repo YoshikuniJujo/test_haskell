@@ -179,11 +179,11 @@ withCommandPool phdvc device queue commandPool = do
 					Left 1,
 				Vk.Descriptor.Set.Layout.M.bindingStageFlags =
 					Vk.ShaderStageComputeBit }
-			descSetLayoutInfo = Vk.Descriptor.Set.Layout.CreateInfo {
-				Vk.Descriptor.Set.Layout.createInfoNext = Nothing,
-				Vk.Descriptor.Set.Layout.createInfoFlags =
+			descSetLayoutInfo = Vk.Descriptor.Set.Layout.M.CreateInfo {
+				Vk.Descriptor.Set.Layout.M.createInfoNext = Nothing,
+				Vk.Descriptor.Set.Layout.M.createInfoFlags =
 					Vk.Descriptor.Set.Layout.CreateFlagsZero,
-				Vk.Descriptor.Set.Layout.createInfoBindings =
+				Vk.Descriptor.Set.Layout.M.createInfoBindings =
 					[binding, binding2'] }
 		Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
 			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
