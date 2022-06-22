@@ -4,7 +4,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory where
+module Gpu.Vulkan.Device.Memory.Buffer where
 
 import Data.Kind.Object
 import Data.HeteroList

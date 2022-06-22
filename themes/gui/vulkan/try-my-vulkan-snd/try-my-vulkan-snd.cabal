@@ -85,7 +85,7 @@ library
       Gpu.Vulkan.DescriptorSetLayout.Middle
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
-      Gpu.Vulkan.Device.Memory
+      Gpu.Vulkan.Device.Memory.Buffer
       Gpu.Vulkan.Device.Middle
       Gpu.Vulkan.Device.Queue
       Gpu.Vulkan.Device.Queue.Enum
