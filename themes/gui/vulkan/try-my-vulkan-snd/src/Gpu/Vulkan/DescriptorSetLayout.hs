@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,10 +12,12 @@ module Gpu.Vulkan.DescriptorSetLayout (
 import Foreign.Pointable
 import Control.Exception
 import Data.Kind.Object
+import Data.HeteroList
 import Data.Word
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.DescriptorSetLayout.Type
+import Gpu.Vulkan.DescriptorSetLayout.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
@@ -42,5 +45,13 @@ data Binding (bt :: BindingType) where
 			Either Word32 [Sampler.S],
 		bindingOtherStageFlags :: ShaderStageFlags
 		} -> Binding 'Other
+
+data CreateInfo n bts = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoBindings :: HeteroVarList Binding bts }
+
+deriving instance (Show n, Show (HeteroVarList Binding bts)) =>
+	Show (CreateInfo n bts)
 
 deriving instance Show (Binding bt)
