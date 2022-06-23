@@ -80,6 +80,7 @@ library
       Gpu.Vulkan.DescriptorSet.Atom
       Gpu.Vulkan.DescriptorSet.List
       Gpu.Vulkan.DescriptorSet.Middle
+      Gpu.Vulkan.DescriptorSet.TypeLevel
       Gpu.Vulkan.DescriptorSetLayout
       Gpu.Vulkan.DescriptorSetLayout.Enum
       Gpu.Vulkan.DescriptorSetLayout.Middle
