@@ -1,12 +1,14 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Descriptor where
 
+import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList
 
@@ -15,13 +17,15 @@ import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Descriptor.Core as C
 
-data BufferInfo sbsmobjsobj where
+data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
 		{ bufferInfoAtomBuffer :: Buffer.Binded sb sm objs } ->
 		BufferInfo '(sb, sm, objs, 'Atom v)
 	BufferInfoList ::
 		{ bufferInfoListBuffer :: Buffer.Binded sb sm objs } ->
 		BufferInfo '(sb, sm, objs, 'List v)
+
+type BufferInfoArg = (Type, Type, [Object], Object)
 
 deriving instance Show (HeteroVarList ObjectLength objs) =>
 	Show (BufferInfo '(sb, sm, objs, obj))
