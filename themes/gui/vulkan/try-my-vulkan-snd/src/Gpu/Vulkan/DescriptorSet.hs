@@ -72,3 +72,5 @@ allocateSs' :: (Pointable n, ListToHeteroVarList slbtss) =>
 	IO (HeteroVarList (S' sd sp) slbtss)
 allocateSs' (Device.D dvc) ai =
 	listToHeteroVarList S' <$> M.allocateSs dvc (allocateInfoToMiddle' ai)
+
+-- data Write n sd sp slbts

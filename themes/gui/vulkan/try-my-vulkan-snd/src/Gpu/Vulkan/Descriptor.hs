@@ -15,30 +15,30 @@ import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Descriptor.Core as C
 
-data BufferInfo s objs obj where
+data BufferInfo sb sm objs obj where
 	BufferInfoAtom ::
-		{ bufferInfoAtomBuffer :: Buffer.B s objs } ->
-		BufferInfo s objs ('Atom v)
+		{ bufferInfoAtomBuffer :: Buffer.Binded sb sm objs } ->
+		BufferInfo sb sm objs ('Atom v)
 	BufferInfoList ::
-		{ bufferInfoListBuffer :: Buffer.B s objs } ->
-		BufferInfo s objs ('List v)
+		{ bufferInfoListBuffer :: Buffer.Binded sb sm objs } ->
+		BufferInfo sb sm objs ('List v)
 
 deriving instance Show (HeteroVarList ObjectLength objs) =>
-	Show (BufferInfo s objs obj)
+	Show (BufferInfo sb sm objs obj)
 
 bufferInfoToCore :: Offset obj objs =>
-	BufferInfo s objs obj -> C.BufferInfo
+	BufferInfo sb sm objs obj -> C.BufferInfo
 bufferInfoToCore = M.bufferInfoToCore . bufferInfoToMiddle
 
-bufferInfoToMiddle :: forall s objs obj . Offset obj objs =>
-	BufferInfo s objs obj -> M.BufferInfo
+bufferInfoToMiddle :: forall sb sm objs obj . Offset obj objs =>
+	BufferInfo sb sm objs obj -> M.BufferInfo
 bufferInfoToMiddle BufferInfoAtom {
-	bufferInfoAtomBuffer = Buffer.B lns b } = M.BufferInfo {
+	bufferInfoAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = Buffer.M.B b,
 	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ range @obj lns }
 bufferInfoToMiddle BufferInfoList {
-	bufferInfoListBuffer = Buffer.B lns b } = M.BufferInfo {
+	bufferInfoListBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = Buffer.M.B b,
 	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ range @obj lns }

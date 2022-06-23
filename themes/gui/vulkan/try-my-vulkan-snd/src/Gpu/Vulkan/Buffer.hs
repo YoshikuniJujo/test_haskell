@@ -29,9 +29,11 @@ import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data B s (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
 
+deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s objs)
+
 data Binded sb sm (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
 
-deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s objs)
+deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sb sm objs)
 
 data CreateInfo n objs = CreateInfo {
 	createInfoNext :: Maybe n,
