@@ -13,6 +13,9 @@ import Data.Kind
 import Data.HeteroList
 
 import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.BufferView.Middle as BufferView.M
+import qualified Gpu.Vulkan.Descriptor as Descriptor
+import qualified Gpu.Vulkan.Descriptor.Middle as Descriptor.M
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
@@ -73,4 +76,13 @@ allocateSs' :: (Pointable n, ListToHeteroVarList slbtss) =>
 allocateSs' (Device.D dvc) ai =
 	listToHeteroVarList S' <$> M.allocateSs dvc (allocateInfoToMiddle' ai)
 
--- data Write n sd sp slbts
+-- data Write n sd sp slbts sbsmobjsobjs
+
+data ImageBufferInfoTexelBufferViews sbsmobjsobjs
+	= ImageInfos [Descriptor.M.ImageInfo]
+	| BufferInfos (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs)
+	| TexelBufferViews [BufferView.M.B]
+
+deriving instance
+	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) =>
+	Show (ImageBufferInfoTexelBufferViews sbsmobjsobjs)
