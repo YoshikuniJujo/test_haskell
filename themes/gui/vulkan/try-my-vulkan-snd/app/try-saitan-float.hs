@@ -197,7 +197,7 @@ withCommandPool phdvc device queue commandPool =
 							Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos
 						}
 				print @(Vk.Descriptor.Set.List.Write () _ _ _ _) writeDescSet
-				Vk.Descriptor.Set.List.updateSs @() @_ @() device
+				Vk.Descriptor.Set.List.updateDs @() @_ @() device
 					(Vk.Descriptor.Set.List.Write_ writeDescSet :...: HVNil)
 					[]
 				let	commandBufferInfo = Vk.CommandBuffer.AllocateInfo {

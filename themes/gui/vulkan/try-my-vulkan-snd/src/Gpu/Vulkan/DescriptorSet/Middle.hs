@@ -14,6 +14,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
+import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
@@ -159,6 +160,11 @@ writeSourcesToCore = \case
 		lift $ pokeArray pbvs bvs
 		pure (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
-updateDs ::
+updateDs :: (Pointable n, Pointable n') =>
 	Device.D -> [Write n] -> [Copy n'] -> IO ()
-updateDs = undefined
+updateDs (Device.D dvc) ws cs = ($ pure) $ runContT do
+	ws' <- writeToCore `mapM` ws
+	cs' <- copyToCore `mapM` cs
+	(fromIntegral -> wc, pws) <- allocaAndPokeArray ws'
+	(fromIntegral -> cc, pcs) <- allocaAndPokeArray cs'
+	lift $ C.updateSs dvc wc pws cc pcs

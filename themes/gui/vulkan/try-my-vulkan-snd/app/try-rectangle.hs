@@ -1110,7 +1110,7 @@ createDescriptorSets = do
 				Vk.DscSet.writeImageBufferInfoTexelBufferViews =
 					Right $ Vk.DscSet.BufferInfos
 						[bufferInfo] }
-		lift $ Vk.DscSet.updateSs @() @() dvc [descriptorWrite] []
+		lift $ Vk.DscSet.updateDs @() @() dvc [descriptorWrite] []
 
 createCommandBuffers :: ReaderT Global IO ()
 createCommandBuffers = do

@@ -291,7 +291,7 @@ withCommandPool phdvc device queue commandPool = do
 								Right $ Vk.Descriptor.Set.List.TexelBufferViews [bffView]
 							}
 					print @(Vk.Descriptor.Set.List.Write () _ _ _ _) writeDescSet
-					Vk.Descriptor.Set.List.updateSs @() @_ @() device (
+					Vk.Descriptor.Set.List.updateDs @() @_ @() device (
 						Vk.Descriptor.Set.List.Write_ writeDescSet :...:
 						Vk.Descriptor.Set.List.Write_ writeDescSet2' :...:
 						HVNil )

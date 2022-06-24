@@ -79,10 +79,10 @@ writeToCore Write {
 		C.writePBufferInfo = pbis,
 		C.writePTexelBufferView = ptbvs }
 
-updateSs :: (Pointable n, Pointable n',
+updateDs :: (Pointable n, Pointable n',
 		Storable (Foreign.Storable.Generic.Wrap v)) =>
 	Device.D -> [Write n v] -> [M.Copy n'] -> IO ()
-updateSs (Device.D dvc) (length &&& id -> (wc, ws))
+updateDs (Device.D dvc) (length &&& id -> (wc, ws))
 	(length &&& id -> (cc, cs)) = ($ pure) $ runContT do
 	pws <- ContT $ allocaArray wc
 	lift . pokeArray pws =<< writeToCore `mapM` ws

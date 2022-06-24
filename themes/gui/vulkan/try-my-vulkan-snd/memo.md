@@ -31,9 +31,9 @@ memo
 * [x] Memory
 	+ [x] has type argument
 		- \'[ \'[X]]
-* [ ] define Gpu.Vulkan.DescriptorSet.Middle.updateSs
+* [x] define Gpu.Vulkan.DescriptorSet.Middle.updateSs
 	+ Maybe: rename updateSs to updateDs
-* [ ] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.List
+* [x] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.List
 * [ ] use Vk.DescriptorSet.M.Write in Gpu.Vulkan.DescriptorSet.Atom
 * [ ] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.Atom
 
