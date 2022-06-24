@@ -16,8 +16,11 @@ import Data.Word
 
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
+import Gpu.Vulkan.Descriptor.Enum
 
 import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.BufferView.Middle as BufferView
+import qualified Gpu.Vulkan.Descriptor.Middle as Descriptor
 import qualified Gpu.Vulkan.DescriptorPool.Middle as Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout
 import qualified Gpu.Vulkan.DescriptorSet.Core as C
@@ -92,3 +95,19 @@ copyToCore Copy {
 		C.copyDstBinding = db,
 		C.copyDstArrayElement = dae,
 		C.copyDescriptorCount = dc }
+
+data Write n = Write {
+	writeNext :: Maybe n,
+	writeDstSet :: S,
+	writeDstBinding :: Word32,
+	writeDstArrayElement :: Word32,
+	writeDescriptorType :: Type,
+	writeSources :: WriteSources }
+	deriving Show
+
+data WriteSources
+	= WriteSourcesInNext Word32
+	| WriteSourcesImageInfo [Descriptor.ImageInfo]
+	| WriteSourcesBufferInfo [Descriptor.BufferInfo]
+	| WriteSourcesBufferView [BufferView.B]
+	deriving Show

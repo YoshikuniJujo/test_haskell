@@ -131,7 +131,7 @@ import qualified Gpu.Vulkan.DescriptorPool.Middle as Vk.DscPool
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet.Atom as Vk.DscSet
-import qualified Gpu.Vulkan.DescriptorSet.Middle as Vk.DscSet
+import qualified Gpu.Vulkan.DescriptorSet.Middle as Vk.DscSet.M
 import qualified Gpu.Vulkan.Descriptor.Atom as Vk.Dsc
 import qualified Gpu.Vulkan.Descriptor.Middle as Vk.Dsc.M
 import qualified Gpu.Vulkan.Memory.Image.Middle as Vk.Memory.Image
@@ -207,7 +207,7 @@ data Global = Global {
 	globalUniformBuffersMemory ::
 		IORef [Vk.Device.MemoryAtom UniformBufferObject],
 	globalDescriptorPool :: IORef Vk.DscPool.P,
-	globalDescriptorSets :: IORef [Vk.DscSet.S],
+	globalDescriptorSets :: IORef [Vk.DscSet.M.S],
 	globalMipLevels :: IORef Word32,
 	globalTextureImage :: IORef Vk.Image.I,
 	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
@@ -1640,12 +1640,12 @@ createDescriptorSets = do
 	layouts <- replicate maxFramesInFlight
 		<$> readGlobal globalDescriptorSetLayout
 	dp <- readGlobal globalDescriptorPool
-	let	allocInfo = Vk.DscSet.AllocateInfo {
-			Vk.DscSet.allocateInfoNext = Nothing,
-			Vk.DscSet.allocateInfoDescriptorPool = dp,
-			Vk.DscSet.allocateInfoSetLayouts = layouts }
+	let	allocInfo = Vk.DscSet.M.AllocateInfo {
+			Vk.DscSet.M.allocateInfoNext = Nothing,
+			Vk.DscSet.M.allocateInfoDescriptorPool = dp,
+			Vk.DscSet.M.allocateInfoSetLayouts = layouts }
 	dvc <- readGlobal globalDevice
-	dss <- lift $ Vk.DscSet.allocateSs @() dvc allocInfo
+	dss <- lift $ Vk.DscSet.M.allocateSs @() dvc allocInfo
 	writeGlobal globalDescriptorSets dss
 	ubs <- readGlobal globalUniformBuffers
 	tiv <- readGlobal globalTextureImageView
