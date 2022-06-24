@@ -64,7 +64,7 @@ instance (Show (t s), Show (HeteroVarList t ss)) =>
 	Show (HeteroVarList t (s ': ss)) where
 	show (x :...: xs) = show x ++ " :...: " ++ show xs
 
-heteroVarListToList :: (forall s . t s -> t') -> HeteroVarList t ss -> [t']
+heteroVarListToList :: (forall (s :: k) . t s -> t') -> HeteroVarList t ss -> [t']
 heteroVarListToList _ HVNil = []
 heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs
 

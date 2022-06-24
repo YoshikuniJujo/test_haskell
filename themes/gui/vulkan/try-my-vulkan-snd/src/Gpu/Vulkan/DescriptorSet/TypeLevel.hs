@@ -11,16 +11,16 @@ module Gpu.Vulkan.DescriptorSet.TypeLevel where
 import Control.Arrow
 import Data.Kind.Object
 
-import Gpu.Vulkan.DescriptorSet
+import {-# SOURCE #-} Gpu.Vulkan.DescriptorSet
 
 import qualified Gpu.Vulkan.Descriptor as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 
 bindingAndArrayElem' ::
-	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) .
+	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) n . (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg tbts)
-		(ObjectsFromBufferInfoArgs bias) => (Int, Int)
+		(ObjectsFromBufferInfoArgs bias), Integral n ) => (n, n)
 bindingAndArrayElem' = bindingAndArrayElem
 	@(BindingTypesFromLayoutArg tbts)
 	@(ObjectsFromBufferInfoArgs bias) 0
@@ -43,7 +43,7 @@ instance IsPrefix os os' => IsPrefix (o : os) (o : os')
 
 class BindingAndArrayElem
 	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [Object]) where
-	bindingAndArrayElem :: Int -> (Int, Int)
+	bindingAndArrayElem :: Integral n => n -> (n, n)
 
 instance IsPrefix os os' =>
 	BindingAndArrayElem ('DescriptorSetLayout.Buffer (o ': os') ': bts) (o ': os) where
