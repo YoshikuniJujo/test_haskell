@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE MonoLocalBinds, GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -10,7 +10,6 @@
 
 module Gpu.Vulkan.DescriptorSet.List where
 
-import Foreign.Ptr
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.HeteroList
@@ -26,6 +25,7 @@ import qualified Gpu.Vulkan.Descriptor.Enum as Dsc
 import qualified Gpu.Vulkan.Descriptor.Middle as Dsc.M
 import qualified Gpu.Vulkan.DescriptorSet as Dsc.Set
 import qualified Gpu.Vulkan.DescriptorSet.Middle as Dsc.Set.M
+import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 import qualified Gpu.Vulkan.DescriptorSet.Core as C
 
 data Write n sd sp sl slsmvs = Write {
@@ -45,6 +45,14 @@ data ImageBufferInfoTexelBufferViews slsmvs
 	| BufferInfos (HeteroVarList Dsc.BufferInfo slsmvs)
 	| TexelBufferViews [Buffer.View.B]
 
+writeSourcesToMiddle :: Dsc.BufferInfoListToMiddle slsmvs =>
+	ImageBufferInfoTexelBufferViews slsmvs -> M.WriteSources
+writeSourcesToMiddle = \case
+	ImageInfos iis -> M.WriteSourcesImageInfo iis
+	BufferInfos (Dsc.bufferInfoListToMiddle -> bis) ->
+		M.WriteSourcesBufferInfo bis
+	TexelBufferViews tbvs -> M.WriteSourcesBufferView tbvs
+
 deriving instance Show (HeteroVarList Dsc.BufferInfo slsmvs) =>
 	Show (ImageBufferInfoTexelBufferViews slsmvs)
 
@@ -53,38 +61,24 @@ data Write_ n sdspslslsmvs where
 
 writeToCore :: (Pointable n, Dsc.BufferInfoListToMiddle slsmvs) =>
 	Write n sd sp sl slsmvs -> ContT r IO C.Write
-writeToCore Write {
+writeToCore = M.writeToCore . writeToMiddle
+
+writeToMiddle :: Dsc.BufferInfoListToMiddle slsmvs =>
+	Write n sd sp sl slsmvs -> M.Write n
+writeToMiddle Write {
 	writeNext = mnxt,
-	writeDstSet = Dsc.Set.S (Dsc.Set.M.S s),
-	writeDstBinding = b,
+	writeDstSet = Dsc.Set.S s,
+	writeDstBinding = bdg,
 	writeDstArrayElement = ae,
-	writeDescriptorType = Dsc.Type tp,
-	writeImageBufferInfoTexelBufferViews = mibitbvs
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	(dc, piis, pbis, ptbvs) <- case mibitbvs of
-		Left c -> pure (c, NullPtr, NullPtr, NullPtr)
-		Right (ImageInfos ((Dsc.M.imageInfoToCore <$>) -> ciis)) -> do
-			(iic, p) <- allocaAndPokeArray ciis
-			pure (fromIntegral iic, p, NullPtr, NullPtr)
-		Right (BufferInfos (Dsc.bufferInfoListToCore -> cbis)) -> do
-			(bic, p) <- allocaAndPokeArray cbis
-			pure (fromIntegral bic, NullPtr, p, NullPtr)
-		Right (TexelBufferViews tbvs) -> do
-			let	ctbvs = (\(Buffer.View.B v) -> v) <$> tbvs
-			(tbvc, p) <- allocaAndPokeArray ctbvs
-			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
-	pure C.Write {
-		C.writeSType = (),
-		C.writePNext = pnxt,
-		C.writeDstSet = s,
-		C.writeDstBinding = b,
-		C.writeDstArrayElement = ae,
-		C.writeDescriptorCount = dc,
-		C.writeDescriptorType = tp,
-		C.writePImageInfo = piis,
-		C.writePBufferInfo = pbis,
-		C.writePTexelBufferView = ptbvs }
+	writeDescriptorType = tp,
+	writeImageBufferInfoTexelBufferViews = either
+		M.WriteSourcesInNext writeSourcesToMiddle -> srcs } = M.Write {
+	M.writeNext = mnxt,
+	M.writeDstSet = s,
+	M.writeDstBinding = bdg,
+	M.writeDstArrayElement = ae,
+	M.writeDescriptorType = tp,
+	M.writeSources = srcs }
 
 class WriteListToCore n sdspslslsmvs where
 	writeListToCore ::

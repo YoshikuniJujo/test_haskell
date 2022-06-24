@@ -21,16 +21,21 @@ memo
 * [ ] refactor app/try-saitan.hs
 * [x] move modules Vulkan.Foo to Gpu.Vulkan.Foo
 * [ ] Push Constants
-* [ ] Descriptor Buffer Info
-	+ [ ] has type argument: X
+* [x] Descriptor Buffer Info
+	+ [x] has type argument: X
 		- atom
 		- list
-* [ ] Buffer
-	+ [ ] has type argument
+* [x] Buffer
+	+ [x] has type argument
 		- \'[X]
-* [ ] Memory
-	+ [ ] has type argument
+* [x] Memory
+	+ [x] has type argument
 		- \'[ \'[X]]
+* [ ] define Gpu.Vulkan.DescriptorSet.Middle.updateSs
+	+ Maybe: rename updateSs to updateDs
+* [ ] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.List
+* [ ] use Vk.DescriptorSet.M.Write in Gpu.Vulkan.DescriptorSet.Atom
+* [ ] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.Atom
 
 tmp
 ---

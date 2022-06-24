@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -16,14 +16,17 @@ import Data.Word
 
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Descriptor.Enum
 
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.BufferView.Middle as BufferView
+import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Middle as Descriptor
 import qualified Gpu.Vulkan.DescriptorPool.Middle as Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout
 import qualified Gpu.Vulkan.DescriptorSet.Core as C
+
+import qualified Gpu.Vulkan.Descriptor.Core as Descriptor.C
+import qualified Gpu.Vulkan.BufferView.Core as BufferView.C
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
@@ -101,7 +104,7 @@ data Write n = Write {
 	writeDstSet :: S,
 	writeDstBinding :: Word32,
 	writeDstArrayElement :: Word32,
-	writeDescriptorType :: Type,
+	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources }
 	deriving Show
 
@@ -111,3 +114,47 @@ data WriteSources
 	| WriteSourcesBufferInfo [Descriptor.BufferInfo]
 	| WriteSourcesBufferView [BufferView.B]
 	deriving Show
+
+writeToCore :: Pointable n => Write n -> ContT r IO C.Write
+writeToCore Write {
+	writeNext = mnxt,
+	writeDstSet = S s,
+	writeDstBinding = bdg,
+	writeDstArrayElement = ae,
+	writeDescriptorType = Descriptor.Type tp,
+	writeSources = srcs
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(cnt, pii, pbi, ptbv) <- writeSourcesToCore srcs
+	pure C.Write {
+		C.writeSType = (),
+		C.writePNext = pnxt,
+		C.writeDstSet = s,
+		C.writeDstBinding = bdg,
+		C.writeDstArrayElement = ae,
+		C.writeDescriptorCount = cnt,
+		C.writeDescriptorType = tp,
+		C.writePImageInfo = pii,
+		C.writePBufferInfo = pbi,
+		C.writePTexelBufferView = ptbv }
+
+writeSourcesToCore :: WriteSources -> ContT r IO (
+	Word32, Ptr Descriptor.C.ImageInfo,
+	Ptr Descriptor.C.BufferInfo, Ptr BufferView.C.B )
+writeSourcesToCore = \case
+	WriteSourcesInNext c -> pure (c, NullPtr, NullPtr, NullPtr)
+	WriteSourcesImageInfo
+		(length &&& (Descriptor.imageInfoToCore <$>) -> (ln, iis)) -> do
+		piis <- ContT $ allocaArray ln
+		lift $ pokeArray piis iis
+		pure (fromIntegral ln, piis, NullPtr, NullPtr)
+	WriteSourcesBufferInfo
+		(length &&& (Descriptor.bufferInfoToCore <$>) -> (ln, bis)) ->
+		do	pbis <- ContT $ allocaArray ln
+			lift $ pokeArray pbis bis
+			pure (fromIntegral ln, NullPtr, pbis, NullPtr)
+	WriteSourcesBufferView
+		(length &&& ((\(BufferView.B b) -> b) <$>) -> (ln, bvs)) -> do
+		pbvs <- ContT $ allocaArray ln
+		lift $ pokeArray pbvs bvs
+		pure (fromIntegral ln, NullPtr, NullPtr, pbvs)
