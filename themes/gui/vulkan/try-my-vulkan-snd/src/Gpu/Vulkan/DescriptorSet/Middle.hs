@@ -158,3 +158,7 @@ writeSourcesToCore = \case
 		pbvs <- ContT $ allocaArray ln
 		lift $ pokeArray pbvs bvs
 		pure (fromIntegral ln, NullPtr, NullPtr, pbvs)
+
+updateDs ::
+	Device.D -> [Write n] -> [Copy n'] -> IO ()
+updateDs = undefined
