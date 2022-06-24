@@ -16,6 +16,15 @@ import Gpu.Vulkan.DescriptorSet
 import qualified Gpu.Vulkan.Descriptor as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 
+bindingAndArrayElem' ::
+	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) .
+	BindingAndArrayElem
+		(BindingTypesFromLayoutArg tbts)
+		(ObjectsFromBufferInfoArgs bias) => (Int, Int)
+bindingAndArrayElem' = bindingAndArrayElem
+	@(BindingTypesFromLayoutArg tbts)
+	@(ObjectsFromBufferInfoArgs bias) 0
+
 type family BindingTypesFromLayoutArg (tbts :: LayoutArg) ::
 	[DescriptorSetLayout.BindingType] where
 	BindingTypesFromLayoutArg '(t, bts) = bts
