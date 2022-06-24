@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -6,15 +6,9 @@
 
 module Gpu.Vulkan.DescriptorSet.Atom where
 
-import Foreign.Ptr
-import Foreign.Marshal.Array
-import Foreign.Storable
 import Foreign.Pointable
-import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
-
-import Gpu.Vulkan.Base
 
 import qualified Foreign.Storable.Generic
 
@@ -44,48 +38,31 @@ data ImageBufferInfoTexelBufferViews v
 	| TexelBufferViews [Buffer.View.B]
 	deriving Show
 
-writeToCore :: (Pointable n, Storable (Foreign.Storable.Generic.Wrap v)) =>
-	Write n v -> ContT r IO C.Write
-writeToCore Write {
-	writeNext = mnxt,
-	writeDstSet = M.S s,
-	writeDstBinding = b,
-	writeDstArrayElement = ae,
-	writeDescriptorType = Dsc.Type tp,
-	writeImageBufferInfoTexelBufferViews = mibitbvs
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	(dc, piis, pbis, ptbvs) <- case mibitbvs of
-		Left c -> pure (c, NullPtr, NullPtr, NullPtr)
-		Right (ImageInfos ((M.imageInfoToCore <$>) -> ciis)) -> do
-			(iic, p) <- allocaAndPokeArray ciis
-			pure (fromIntegral iic, p, NullPtr, NullPtr)
-		Right (BufferInfos ((Dsc.bufferInfoToCore <$>) -> cbis)) -> do
-			(bic, p) <- allocaAndPokeArray cbis
-			pure (fromIntegral bic, NullPtr, p, NullPtr)
-		Right (TexelBufferViews tbvs) -> do
-			let	ctbvs = (\(Buffer.View.B v) -> v) <$> tbvs
-			(tbvc, p) <- allocaAndPokeArray ctbvs
-			pure (fromIntegral tbvc, NullPtr, NullPtr, p)
-	pure C.Write {
-		C.writeSType = (),
-		C.writePNext = pnxt,
-		C.writeDstSet = s,
-		C.writeDstBinding = b,
-		C.writeDstArrayElement = ae,
-		C.writeDescriptorCount = dc,
-		C.writeDescriptorType = tp,
-		C.writePImageInfo = piis,
-		C.writePBufferInfo = pbis,
-		C.writePTexelBufferView = ptbvs }
+writeSourcesToMiddle :: Foreign.Storable.Generic.G v =>
+	ImageBufferInfoTexelBufferViews v -> M.WriteSources
+writeSourcesToMiddle = \case
+	ImageInfos iis -> M.WriteSourcesImageInfo iis
+	BufferInfos ((Dsc.bufferInfoToMiddle <$>) -> bis) ->
+		M.WriteSourcesBufferInfo bis
+	TexelBufferViews bvs -> M.WriteSourcesBufferView bvs
 
-updateDs :: (Pointable n, Pointable n',
-		Storable (Foreign.Storable.Generic.Wrap v)) =>
+writeToMiddle :: Foreign.Storable.Generic.G v => Write n v -> M.Write n
+writeToMiddle Write {
+	writeNext = mnxt,
+	writeDstSet = s,
+	writeDstBinding = bdg,
+	writeDstArrayElement = ae,
+	writeDescriptorType = tp,
+	writeImageBufferInfoTexelBufferViews =
+		either M.WriteSourcesInNext writeSourcesToMiddle -> srcs } =
+	M.Write {
+		M.writeNext = mnxt,
+		M.writeDstSet = s,
+		M.writeDstBinding = bdg,
+		M.writeDstArrayElement = ae,
+		M.writeDescriptorType = tp,
+		M.writeSources = srcs }
+
+updateDs :: (Pointable n, Pointable n', Foreign.Storable.Generic.G v) =>
 	Device.D -> [Write n v] -> [M.Copy n'] -> IO ()
-updateDs (Device.D dvc) (length &&& id -> (wc, ws))
-	(length &&& id -> (cc, cs)) = ($ pure) $ runContT do
-	pws <- ContT $ allocaArray wc
-	lift . pokeArray pws =<< writeToCore `mapM` ws
-	pcs <- ContT $ allocaArray cc
-	lift . pokeArray pcs =<< M.copyToCore `mapM` cs
-	lift $ C.updateSs dvc (fromIntegral wc) pws (fromIntegral cc) pcs
+updateDs dvc ((writeToMiddle <$>) -> ws) cs = M.updateDs dvc ws cs

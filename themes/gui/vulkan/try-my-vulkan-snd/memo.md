@@ -34,8 +34,8 @@ memo
 * [x] define Gpu.Vulkan.DescriptorSet.Middle.updateSs
 	+ Maybe: rename updateSs to updateDs
 * [x] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.List
-* [ ] use Vk.DescriptorSet.M.Write in Gpu.Vulkan.DescriptorSet.Atom
-* [ ] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.Atom
+* [x] use Vk.DescriptorSet.M.Write in Gpu.Vulkan.DescriptorSet.Atom
+* [x] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.Atom
 
 tmp
 ---
