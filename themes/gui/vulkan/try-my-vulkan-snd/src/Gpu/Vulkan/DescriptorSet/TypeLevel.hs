@@ -60,3 +60,11 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem
 		('DescriptorSetLayout.Other ': bts) os where
 	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @os 0
+
+type SampleBts0 = '[
+	DescriptorSetLayout.Buffer '[ ],
+	DescriptorSetLayout.Buffer '[ 'Atom Double, 'List (), 'Atom Bool],
+	DescriptorSetLayout.Other,
+	DescriptorSetLayout.Buffer '[ 'Atom Bool, 'List (), 'Atom Int, 'List Double, 'Atom Double]]
+
+type SampleObjs0 = '[ 'Atom Int, 'List Double]
