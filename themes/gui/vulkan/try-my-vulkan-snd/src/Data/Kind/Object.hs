@@ -16,6 +16,8 @@ import Data.Kind
 import Data.MonoTraversable
 import Data.HeteroList
 
+import qualified Data.Sequences as Seq
+
 data Object = Atom Type | List Type
 
 type family ObjectType obj where
@@ -65,9 +67,14 @@ instance (Storable (ObjectType obj), WholeSize objs) =>
 
 class StoreObject v (obj :: Object) where
 	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
+	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
 
 instance Storable t => StoreObject t ('Atom t) where
 	storeObject p ObjectLengthAtom x = poke p x
+	loadObject p ObjectLengthAtom = peek p
 
-instance (MonoFoldable v, Storable t, Element v ~ t) => StoreObject v ('List t) where
+instance (
+	MonoFoldable v, Seq.IsSequence v,
+	Storable t, Element v ~ t ) => StoreObject v ('List t) where
 	storeObject p (ObjectLengthList n) xs = pokeArray p . take n $ otoList xs
+	loadObject p (ObjectLengthList n) = Seq.fromList <$> peekArray n p
