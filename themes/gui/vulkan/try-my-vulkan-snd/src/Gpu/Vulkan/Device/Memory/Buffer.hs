@@ -11,7 +11,6 @@ import Data.HeteroList
 
 import Gpu.Vulkan.Memory
 
-import qualified Gpu.Vulkan.Device as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Device.Core as Device.C
 

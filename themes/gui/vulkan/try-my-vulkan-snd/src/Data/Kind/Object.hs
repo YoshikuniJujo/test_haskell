@@ -9,8 +9,11 @@
 
 module Data.Kind.Object where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.Kind
+import Data.MonoTraversable
 import Data.HeteroList
 
 data Object = Atom Type | List Type
@@ -59,3 +62,12 @@ instance (Storable (ObjectType obj), WholeSize objs) =>
 		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where
 		algn = alignment @(ObjectType obj) undefined
+
+class StoreObject v (obj :: Object) where
+	storeObject :: Ptr (ObjectType obj) -> v -> IO ()
+
+instance Storable t => StoreObject t ('Atom t) where
+	storeObject p x = poke p x
+
+instance (MonoFoldable v, Storable t, Element v ~ t) => StoreObject v ('List t) where
+	storeObject p xs = pokeArray p (otoList xs)
