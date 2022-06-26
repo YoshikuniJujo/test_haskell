@@ -9,6 +9,7 @@ module Gpu.Vulkan.Device.Memory.Buffer where
 import Data.Kind.Object
 import Data.HeteroList
 
+import Gpu.Vulkan.Device.Memory.Buffer.Types
 import Gpu.Vulkan.Memory
 
 import qualified Gpu.Vulkan.Device.Middle as Device.M
@@ -18,11 +19,6 @@ data M s (objss :: [[Object]]) =
 	M (HeteroVarList Form objss) Device.C.Memory
 
 deriving instance Show (HeteroVarList Form objss) => Show (M s objss)
-
-data Form objs = Form {
-	formOffset :: Device.M.Size,
-	formRange :: Device.M.Size,
-	formObjects :: HeteroVarList ObjectLength objs }
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (Form objs)
 

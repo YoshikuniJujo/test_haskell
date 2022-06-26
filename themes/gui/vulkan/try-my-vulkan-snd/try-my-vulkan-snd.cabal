@@ -87,6 +87,8 @@ library
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Memory.Buffer
+      Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
+      Gpu.Vulkan.Device.Memory.Buffer.Types
       Gpu.Vulkan.Device.Middle
       Gpu.Vulkan.Device.Queue
       Gpu.Vulkan.Device.Queue.Enum
