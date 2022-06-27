@@ -35,6 +35,9 @@ objectSize (ObjectLengthList n) = n * ((sz - 1) `div` algn + 1) * algn
 	sz = sizeOf @(ObjectType obj) undefined
 	algn = alignment @(ObjectType obj) undefined
 
+objectAlignment :: forall obj . Storable (ObjectType obj) => Int
+objectAlignment = alignment @(ObjectType obj) undefined
+
 deriving instance Show (ObjectLength obj)
 
 class Offset (obj :: Object) objs where

@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -15,9 +16,27 @@ import Gpu.Vulkan.Device.Middle
 import Gpu.Vulkan.Device.Memory.Buffer.Types
 
 class OffsetSize (obj :: Object) (objss :: [[Object]]) where
-	offsetSize :: HeteroVarList Form objss -> (Size, Size)
+	offsetSize :: Size -> HeteroVarList Form objss -> (Size, Size)
 
 instance Storable (ObjectType obj) =>
 	OffsetSize obj ((obj ': objs) ': objss) where
-	offsetSize (Form ost _ (ln :...: _) :...: _) =
-		(ost, fromIntegral $ objectSize ln)
+	offsetSize n (Form ost _ (ln :...: _) :...: _) =
+		(ost', fromIntegral $ objectSize ln)
+		where
+		ost' = ((ost + n - 1) `div` algn + 1) * algn
+		algn = fromIntegral (objectAlignment @obj)
+
+instance {-# OVERLAPPABLE #-} (
+	Storable (ObjectType obj'),
+	OffsetSize obj (objs ': objss) ) =>
+	OffsetSize obj ((obj' ': objs) ': objss) where
+	offsetSize n (Form ost sz (ln :...: lns) :...: fs) =
+		offsetSize @obj n' (Form ost sz lns :...: fs)
+		where
+		n' = ((n - 1) `div` algn + 1) * algn + sz'
+		sz' = fromIntegral $ objectSize ln
+		algn = fromIntegral (objectAlignment @obj')
+
+instance {-# OVERLAPPABLE #-} (OffsetSize obj objss) =>
+	OffsetSize obj ('[] ': objss) where
+	offsetSize n (_ :...: fs) = offsetSize @obj 0 fs
