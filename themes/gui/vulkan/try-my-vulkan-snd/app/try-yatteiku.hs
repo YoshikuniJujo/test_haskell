@@ -450,10 +450,11 @@ makePipeline dvc rp f = do
 				[blendattachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
+		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo () _ '[]
 		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
 			Vk.Ppl.Lyt.createInfoNext = Nothing,
 			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
-			Vk.Ppl.Lyt.createInfoSetLayouts = HVNil,
+			Vk.Ppl.Lyt.createInfoSetLayouts = Left HVNil,
 			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,

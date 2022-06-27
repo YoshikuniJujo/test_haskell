@@ -4,6 +4,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -164,16 +165,17 @@ withCommandPool phdvc device queue commandPool =
 	    putStr "descSetLayoutNew: "
 	    print descSetLayoutNew
 	    Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
-		let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
+		let	pipelineLayoutInfo :: Vk.Pipeline.Layout.CreateInfo () _ '[]
+			pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 				Vk.Pipeline.Layout.createInfoNext = Nothing,
 				Vk.Pipeline.Layout.createInfoFlags =
 					Vk.Pipeline.Layout.CreateFlagsZero,
 				Vk.Pipeline.Layout.createInfoSetLayouts =
-					descSetLayout :...: HVNil,
+					Left $ descSetLayout :...: HVNil,
 				Vk.Pipeline.Layout.createInfoPushConstantRanges
 					= [] }
 		print descSetLayout
-		print @(Vk.Pipeline.Layout.CreateInfo () _)  pipelineLayoutInfo
+		print @(Vk.Pipeline.Layout.CreateInfo () _ '[])  pipelineLayoutInfo
 		Vk.Pipeline.Layout.create @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
 			print pipelineLayout
 			let	shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {

@@ -191,11 +191,11 @@ withCommandPool phdvc device queue commandPool = do
 					Vk.Pipeline.Layout.createInfoFlags =
 						Vk.Pipeline.Layout.CreateFlagsZero,
 					Vk.Pipeline.Layout.createInfoSetLayouts =
-						descSetLayout :...: HVNil,
+						Left $ descSetLayout :...: HVNil,
 					Vk.Pipeline.Layout.createInfoPushConstantRanges
 						= [] }
 			print descSetLayout
-			print @(Vk.Pipeline.Layout.CreateInfo () _)  pipelineLayoutInfo
+			print @(Vk.Pipeline.Layout.CreateInfo () _ '[])  pipelineLayoutInfo
 			Vk.Pipeline.Layout.create @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
 				print pipelineLayout
 				let	shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
