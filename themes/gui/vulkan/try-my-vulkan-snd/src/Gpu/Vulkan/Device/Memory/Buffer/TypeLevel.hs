@@ -17,6 +17,7 @@ import Gpu.Vulkan.Device.Memory.Buffer.Types
 
 class OffsetSize (obj :: Object) (objss :: [[Object]]) where
 	offsetSize :: Size -> HeteroVarList Form objss -> (Size, Size)
+	offsetSizeLength :: HeteroVarList Form objss -> ObjectLength obj
 
 instance Storable (ObjectType obj) =>
 	OffsetSize obj ((obj ': objs) ': objss) where
@@ -25,6 +26,7 @@ instance Storable (ObjectType obj) =>
 		where
 		ost' = ((ost + n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (objectAlignment @obj)
+	offsetSizeLength (Form _ _ (ln :...: _) :...: _) = ln
 
 instance {-# OVERLAPPABLE #-} (
 	Storable (ObjectType obj'),
@@ -36,7 +38,10 @@ instance {-# OVERLAPPABLE #-} (
 		n' = ((n - 1) `div` algn + 1) * algn + sz'
 		sz' = fromIntegral $ objectSize ln
 		algn = fromIntegral (objectAlignment @obj')
+	offsetSizeLength (Form ost sz (_ :...: lns) :...: fs) =
+		offsetSizeLength @obj (Form ost sz lns :...: fs)
 
 instance {-# OVERLAPPABLE #-} (OffsetSize obj objss) =>
 	OffsetSize obj ('[] ': objss) where
 	offsetSize n (_ :...: fs) = offsetSize @obj 0 fs
+	offsetSizeLength (_ :...: fs) = offsetSizeLength @obj fs

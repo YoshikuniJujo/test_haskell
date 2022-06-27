@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances, AllowAmbiguousTypes #-}
@@ -10,6 +11,7 @@ module Gpu.Vulkan.Device.Memory.Buffer where
 import Prelude hiding (map)
 
 import Foreign.Ptr
+import Control.Exception
 import Data.Kind.Object
 import Data.HeteroList
 
@@ -33,6 +35,14 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
+
+write :: forall v obj objss sd sm .
+	(StoreObject v obj, OffsetSize obj objss) =>
+	Device.D sd -> M sm objss -> Memory.M.MapFlags -> v -> IO ()
+write dvc mem@(M fs _) flgs v = bracket
+	(map @obj dvc mem flgs) (const $ unmap dvc mem)
+	(\(ptr :: Ptr (ObjectType obj)) ->
+		storeObject @_ @obj ptr (offsetSizeLength fs) v)
 
 map :: forall obj objss sd sm . OffsetSize obj objss =>
 	Device.D sd -> M sm objss -> Memory.M.MapFlags ->
