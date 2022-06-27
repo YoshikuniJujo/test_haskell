@@ -6,6 +6,7 @@
 
 module Main where
 
+import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.HeteroList
@@ -56,6 +57,9 @@ import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 
+import qualified Gpu.Vulkan.Buffer as Vk.Buffer.New
+import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Device.Memory.Buffer
+
 main :: IO ()
 main = do
 	let	instanceInfo = def
@@ -105,6 +109,7 @@ withCommandPool ::
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
 withCommandPool phdvc device queue commandPool =
 	print commandPool >>
+	storageBufferNewNew device phdvc dataA \buffA memA ->
 	storageBufferNew3 device phdvc dataA dataB dataC
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	print bufA >> print memA >>
@@ -253,6 +258,30 @@ dataA, dataB, dataC :: V.Vector Word32
 dataA = V.replicate dataSize 3
 dataB = V.replicate dataSize 5
 dataC = V.replicate dataSize 0
+
+storageBufferNewNew ::
+	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> (
+		forall sb sm .
+		Vk.Buffer.New.Binded sb sm '[ 'List Word32]  ->
+		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Word32]] -> IO a ) ->
+	IO a
+storageBufferNewNew dvc phdvc xs f = do
+	putStrLn "BEGIN STORAGE BUFFER NEW NEW"
+	let	bInfo :: Vk.Buffer.New.CreateInfo () '[ 'List Word32]
+		bInfo = Vk.Buffer.New.CreateInfo {
+			Vk.Buffer.New.createInfoNext = Nothing,
+			Vk.Buffer.New.createInfoFlags =
+				Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.New.createInfoLengths =
+				ObjectLengthList (V.length xs) :...: HVNil,
+			Vk.Buffer.New.createInfoUsage =
+				Vk.Buffer.UsageStorageBufferBit,
+			Vk.Buffer.New.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Buffer.New.createInfoQueueFamilyIndices = [] }
+	Vk.Buffer.New.create dvc bInfo nil nil \buffer -> do
+		print buffer
+		f undefined undefined
 
 storageBufferNew ::
 	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> (
