@@ -1,12 +1,14 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
-{-# LANGUAGE RankNTypes, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
 
+import Foreign.Storable
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
@@ -60,6 +62,12 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer.New
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Device.Memory.Buffer
+import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DescriptorSetLayout
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DescriptorSetLayout
+
+newtype W1 = W1 Word32 deriving (Show, Storable)
+newtype W2 = W2 Word32 deriving (Show, Storable)
+newtype W3 = W3 Word32 deriving (Show, Storable)
 
 main :: IO ()
 main = do
@@ -110,8 +118,8 @@ withCommandPool ::
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
 withCommandPool phdvc device queue commandPool =
 	print commandPool >>
-	storageBufferNewNew3 device phdvc dataA dataB dataC
-		\((buffANew, memANew), (bufBNew, memBNew), (bufCNew, memCNew)) ->
+	storageBufferNewNew3 device phdvc (W1 `V.map` dataA) (W2 `V.map` dataB) (W3 `V.map` dataC)
+		\((bufANew, memANew), (bufBNew, memBNew), (bufCNew, memCNew)) ->
 	storageBufferNew3 device phdvc dataA dataB dataC
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	print bufA >> print memA >>
@@ -133,13 +141,29 @@ withCommandPool phdvc device queue commandPool =
 				Left 3,
 			Vk.Descriptor.Set.Layout.M.bindingStageFlags =
 				Vk.ShaderStageComputeBit }
+		bindingNew :: Vk.DescriptorSetLayout.Binding
+			('Vk.DescriptorSetLayout.Buffer '[ 'List W1, 'List W2, 'List W3 ])
+		bindingNew = Vk.DescriptorSetLayout.BindingBuffer {
+			Vk.DescriptorSetLayout.bindingBufferDescriptorType =
+				Vk.Descriptor.TypeStorageBuffer,
+			Vk.DescriptorSetLayout.bindingBufferStageFlags =
+				Vk.ShaderStageComputeBit }
 		descSetLayoutInfo = Vk.Descriptor.Set.Layout.M.CreateInfo {
 			Vk.Descriptor.Set.Layout.M.createInfoNext = Nothing,
 			Vk.Descriptor.Set.Layout.M.createInfoFlags =
 				Vk.Descriptor.Set.Layout.CreateFlagsZero,
 			Vk.Descriptor.Set.Layout.M.createInfoBindings =
 				[binding] }
-	Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
+		descSetLayoutInfoNew = Vk.DescriptorSetLayout.CreateInfo {
+			Vk.DescriptorSetLayout.createInfoNext = Nothing,
+			Vk.DescriptorSetLayout.createInfoFlags =
+				Vk.Descriptor.Set.Layout.CreateFlagsZero,
+			Vk.DescriptorSetLayout.createInfoBindings =
+				bindingNew :...: HVNil }
+	Vk.DescriptorSetLayout.create' @() device descSetLayoutInfoNew nil nil \descSetLayoutNew -> do
+	    putStr "descSetLayoutNew: "
+	    print descSetLayoutNew
+	    Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
 		let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 				Vk.Pipeline.Layout.createInfoNext = Nothing,
 				Vk.Pipeline.Layout.createInfoFlags =
@@ -261,15 +285,15 @@ dataA = V.replicate dataSize 3
 dataB = V.replicate dataSize 5
 dataC = V.replicate dataSize 0
 
-storageBufferNewNew ::
-	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> (
+storageBufferNewNew :: forall sd w a . (Show w, Storable w) =>
+	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector w -> (
 		forall sb sm .
-		Vk.Buffer.New.Binded sb sm '[ 'List Word32]  ->
-		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Word32]] -> IO a ) ->
+		Vk.Buffer.New.Binded sb sm '[ 'List w]  ->
+		Vk.Device.Memory.Buffer.M sm '[ '[ 'List w]] -> IO a ) ->
 	IO a
 storageBufferNewNew dvc phdvc xs f = do
 	putStrLn "BEGIN STORAGE BUFFER NEW NEW"
-	let	bInfo :: Vk.Buffer.New.CreateInfo () '[ 'List Word32]
+	let	bInfo :: Vk.Buffer.New.CreateInfo () '[ 'List w]
 		bInfo = Vk.Buffer.New.CreateInfo {
 			Vk.Buffer.New.createInfoNext = Nothing,
 			Vk.Buffer.New.createInfoFlags =
@@ -294,10 +318,10 @@ storageBufferNewNew dvc phdvc xs f = do
 					memoryTypeIndex }
 		Vk.Buffer.New.allocateBind @() dvc (buffer :...: HVNil) memoryInfo
 			nil nil \(binded :...: HVNil) memory -> do
-			Vk.Device.Memory.Buffer.write @_ @('List Word32) dvc memory
+			Vk.Device.Memory.Buffer.write @_ @('List w) dvc memory
 				Vk.Memory.M.MapFlagsZero xs
 			print . take 10 =<< Vk.Device.Memory.Buffer.read
-				@[Word32] @('List Word32) dvc memory
+				@[w] @('List w) dvc memory
 				Vk.Memory.M.MapFlagsZero
 			f binded memory
 
@@ -339,16 +363,18 @@ storageBufferNew dvc phdvc xs f = do
 type BufferMemory sb sm =
 	(Vk.Buffer.List.Binded sb sm Word32, Vk.Device.MemoryList sm Word32)
 
-storageBufferNewNew3 ::
+storageBufferNewNew3 :: (
+	Show w1, Show w2, Show w3,
+	Storable w1, Storable w2, Storable w3 ) =>
 	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
-	V.Vector Word32 -> V.Vector Word32 -> V.Vector Word32 -> (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 . (
-			(	Vk.Buffer.New.Binded sb1 sm1 '[ 'List Word32],
-				Vk.Device.Memory.Buffer.M sm1 '[ '[ 'List Word32]] ),
-			(	Vk.Buffer.New.Binded sb2 sm2 '[ 'List Word32],
-				Vk.Device.Memory.Buffer.M sm2 '[ '[ 'List Word32]] ),
-			(	Vk.Buffer.New.Binded sb3 sm3 '[ 'List Word32],
-				Vk.Device.Memory.Buffer.M sm3 '[ '[ 'List Word32]] ) ) ->
+			(	Vk.Buffer.New.Binded sb1 sm1 '[ 'List w1],
+				Vk.Device.Memory.Buffer.M sm1 '[ '[ 'List w1]] ),
+			(	Vk.Buffer.New.Binded sb2 sm2 '[ 'List w2],
+				Vk.Device.Memory.Buffer.M sm2 '[ '[ 'List w2]] ),
+			(	Vk.Buffer.New.Binded sb3 sm3 '[ 'List w3],
+				Vk.Device.Memory.Buffer.M sm3 '[ '[ 'List w3]] ) ) ->
 		IO a ) ->
 	IO a
 storageBufferNewNew3 dvc phdvc xs1 xs2 xs3 f =
