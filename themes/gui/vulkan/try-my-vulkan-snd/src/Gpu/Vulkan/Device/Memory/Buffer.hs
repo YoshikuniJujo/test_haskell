@@ -44,6 +44,13 @@ write dvc mem@(M fs _) flgs v = bracket
 	(\(ptr :: Ptr (ObjectType obj)) ->
 		storeObject @_ @obj ptr (offsetSizeLength fs) v)
 
+read :: forall v obj objss sd sm .
+	(StoreObject v obj, OffsetSize obj objss) =>
+	Device.D sd -> M sm objss -> Memory.M.MapFlags -> IO v
+read dvc mem@(M fs _) flgs = bracket
+	(map @obj dvc mem flgs) (const $ unmap dvc mem)
+	(\ptr -> loadObject @_ @obj ptr (offsetSizeLength fs))
+
 map :: forall obj objss sd sm . OffsetSize obj objss =>
 	Device.D sd -> M sm objss -> Memory.M.MapFlags ->
 	IO (Ptr (ObjectType obj))
