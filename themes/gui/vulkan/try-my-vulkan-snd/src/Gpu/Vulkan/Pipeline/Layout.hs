@@ -9,7 +9,7 @@
 
 module Gpu.Vulkan.Pipeline.Layout (
 	L, create, CreateInfo(..),
-	M.CreateFlags, pattern M.CreateFlagsZero ) where
+	M.CreateFlags, pattern M.CreateFlagsZero, Layout(..) ) where
 
 import Foreign.Pointable
 import Control.Exception

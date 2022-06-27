@@ -49,7 +49,7 @@ instance Storable (ObjectType obj) => Offset obj (obj ': objs) where
 		where algn = alignment @(ObjectType obj) undefined
 	range (ln :...: _) = objectSize ln
 
-instance (Storable (ObjectType obj'), Offset obj objs) =>
+instance {-# OVERLAPPABLE #-} (Storable (ObjectType obj'), Offset obj objs) =>
 	Offset obj (obj' ': objs) where
 	offset ofst (ln :...: lns) = offset @obj
 		(((ofst - 1) `div` algn + 1) * algn + objectSize ln) lns
