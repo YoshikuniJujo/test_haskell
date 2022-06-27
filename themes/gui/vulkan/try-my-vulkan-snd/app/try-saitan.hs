@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE RankNTypes, TypeApplications #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -109,7 +110,7 @@ withCommandPool ::
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
 withCommandPool phdvc device queue commandPool =
 	print commandPool >>
-	storageBufferNewNew device phdvc dataA \buffA memA ->
+	storageBufferNewNew device phdvc dataA \buffANew memANew ->
 	storageBufferNew3 device phdvc dataA dataB dataC
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	print bufA >> print memA >>
@@ -281,7 +282,23 @@ storageBufferNewNew dvc phdvc xs f = do
 			Vk.Buffer.New.createInfoQueueFamilyIndices = [] }
 	Vk.Buffer.New.create dvc bInfo nil nil \buffer -> do
 		print buffer
-		f undefined undefined
+		requirements <- Vk.Buffer.New.getMemoryRequirements dvc buffer
+		print requirements
+		memoryTypeIndex <- findMemoryTypeIndex phdvc requirements (
+			Vk.Memory.PropertyHostVisibleBit .|.
+			Vk.Memory.PropertyHostCoherentBit )
+		let	memoryInfo = Vk.Device.Memory.Buffer.AllocateInfo {
+				Vk.Device.Memory.Buffer.allocateInfoNext = Nothing,
+				Vk.Device.Memory.Buffer.allocateInfoMemoryTypeIndex =
+					memoryTypeIndex }
+		Vk.Buffer.New.allocateBind @() dvc (buffer :...: HVNil) memoryInfo
+			nil nil \(binded :...: HVNil) memory -> do
+			Vk.Device.Memory.Buffer.write @_ @('List Word32) dvc memory
+				Vk.Memory.M.MapFlagsZero xs
+			print . take 10 =<< Vk.Device.Memory.Buffer.read
+				@[Word32] @('List Word32) dvc memory
+				Vk.Memory.M.MapFlagsZero
+			f binded memory
 
 storageBufferNew ::
 	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector Word32 -> (
