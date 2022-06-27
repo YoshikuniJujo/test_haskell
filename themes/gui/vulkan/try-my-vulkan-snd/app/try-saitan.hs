@@ -110,7 +110,8 @@ withCommandPool ::
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
 withCommandPool phdvc device queue commandPool =
 	print commandPool >>
-	storageBufferNewNew device phdvc dataA \buffANew memANew ->
+	storageBufferNewNew3 device phdvc dataA dataB dataC
+		\((buffANew, memANew), (bufBNew, memBNew), (bufCNew, memCNew)) ->
 	storageBufferNew3 device phdvc dataA dataB dataC
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	print bufA >> print memA >>
@@ -337,6 +338,24 @@ storageBufferNew dvc phdvc xs f = do
 
 type BufferMemory sb sm =
 	(Vk.Buffer.List.Binded sb sm Word32, Vk.Device.MemoryList sm Word32)
+
+storageBufferNewNew3 ::
+	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
+	V.Vector Word32 -> V.Vector Word32 -> V.Vector Word32 -> (
+		forall sb1 sm1 sb2 sm2 sb3 sm3 . (
+			(	Vk.Buffer.New.Binded sb1 sm1 '[ 'List Word32],
+				Vk.Device.Memory.Buffer.M sm1 '[ '[ 'List Word32]] ),
+			(	Vk.Buffer.New.Binded sb2 sm2 '[ 'List Word32],
+				Vk.Device.Memory.Buffer.M sm2 '[ '[ 'List Word32]] ),
+			(	Vk.Buffer.New.Binded sb3 sm3 '[ 'List Word32],
+				Vk.Device.Memory.Buffer.M sm3 '[ '[ 'List Word32]] ) ) ->
+		IO a ) ->
+	IO a
+storageBufferNewNew3 dvc phdvc xs1 xs2 xs3 f =
+	storageBufferNewNew dvc phdvc xs1 \b1 m1 ->
+	storageBufferNewNew dvc phdvc xs2 \b2 m2 ->
+	storageBufferNewNew dvc phdvc xs3 \b3 m3 ->
+	f ((b1, m1), (b2, m2), (b3, m3))
 
 storageBufferNew3 ::
 	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
