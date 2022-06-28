@@ -3,6 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -35,7 +36,6 @@ import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
@@ -83,55 +83,42 @@ main = Vk.Instance.create @() @() def nil nil \inst -> do
 	Vk.Device.create @() @() physicalDevice deviceInfo nil nil
 		$ withDevice physicalDevice queueFamily
 
+dscSetLayoutInfo :: Vk.DescriptorSetLayout.CreateInfo ()
+	'[ 'Vk.DescriptorSetLayout.Buffer '[ 'List W1, 'List W2, 'List W3]]
+dscSetLayoutInfo = Vk.DescriptorSetLayout.CreateInfo {
+	Vk.DescriptorSetLayout.createInfoNext = Nothing,
+	Vk.DescriptorSetLayout.createInfoFlags =
+		Vk.Descriptor.Set.Layout.CreateFlagsZero,
+	Vk.DescriptorSetLayout.createInfoBindings = binding0 :...: HVNil }
+	where
+	binding0 = Vk.DescriptorSetLayout.BindingBuffer {
+		Vk.DescriptorSetLayout.bindingBufferDescriptorType =
+			Vk.Descriptor.TypeStorageBuffer,
+		Vk.DescriptorSetLayout.bindingBufferStageFlags =
+			Vk.ShaderStageComputeBit }
+
 withDevice ::
 	Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Device.D sd -> IO ()
-withDevice phdvc queueFamily device = do
-	queue <- Vk.Device.getQueue device queueFamily 0
-	let	commandPoolInfo = Vk.CommandPool.CreateInfo {
-			Vk.CommandPool.createInfoNext = Nothing,
-			Vk.CommandPool.createInfoFlags =
-				Vk.CommandPool.CreateResetCommandBufferBit,
-			Vk.CommandPool.createInfoQueueFamilyIndex =
-				queueFamily }
-	Vk.CommandPool.create @() device commandPoolInfo nil nil
-		$ withCommandPool phdvc device queue
-
-withCommandPool ::
-	Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc -> IO ()
-withCommandPool phdvc device queue commandPool =
-	createDescriptorPool device \descPool -> do
-	let	shaderModuleInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoNext = Nothing,
-			Vk.Shader.Module.createInfoFlags =
-				Vk.Shader.Module.CreateFlagsZero,
-			Vk.Shader.Module.createInfoCode =
-				glslComputeShaderMain }
-		binding :: Vk.DescriptorSetLayout.Binding
-			('Vk.DescriptorSetLayout.Buffer '[ 'List W1, 'List W2, 'List W3 ])
-		binding = Vk.DescriptorSetLayout.BindingBuffer {
-			Vk.DescriptorSetLayout.bindingBufferDescriptorType =
-				Vk.Descriptor.TypeStorageBuffer,
-			Vk.DescriptorSetLayout.bindingBufferStageFlags =
-				Vk.ShaderStageComputeBit }
-		descSetLayoutInfo = Vk.DescriptorSetLayout.CreateInfo {
-			Vk.DescriptorSetLayout.createInfoNext = Nothing,
-			Vk.DescriptorSetLayout.createInfoFlags =
-				Vk.Descriptor.Set.Layout.CreateFlagsZero,
-			Vk.DescriptorSetLayout.createInfoBindings =
-				binding :...: HVNil }
-	Vk.DescriptorSetLayout.create' @() device descSetLayoutInfo nil nil \descSetLayout -> do
+withDevice phdvc queueFamily device = createDescriptorPool device \dscPool -> do
+	Vk.DescriptorSetLayout.create' @()
+		device dscSetLayoutInfo nil nil \dscSetLayout -> do
 		let	pipelineLayoutInfo :: Vk.Pipeline.Layout.CreateInfo () '[] _
 			pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 				Vk.Pipeline.Layout.createInfoNext = Nothing,
 				Vk.Pipeline.Layout.createInfoFlags =
 					Vk.Pipeline.Layout.CreateFlagsZero,
 				Vk.Pipeline.Layout.createInfoSetLayouts =
-					Right $ Vk.Pipeline.Layout.Layout descSetLayout :...: HVNil,
+					Right $ Vk.Pipeline.Layout.Layout dscSetLayout :...: HVNil,
 				Vk.Pipeline.Layout.createInfoPushConstantRanges
 					= [] }
 		Vk.Pipeline.Layout.create @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
-			print pipelineLayout
-			let	shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
+			let	shaderModuleInfo = Vk.Shader.Module.CreateInfo {
+					Vk.Shader.Module.createInfoNext = Nothing,
+					Vk.Shader.Module.createInfoFlags =
+						Vk.Shader.Module.CreateFlagsZero,
+					Vk.Shader.Module.createInfoCode =
+						glslComputeShaderMain }
+				shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
 					Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
 					Vk.Pipeline.ShaderStage.createInfoFlags =
 						Vk.Pipeline.ShaderStage.CreateFlagsZero,
@@ -158,13 +145,13 @@ withCommandPool phdvc device queue commandPool =
 				(Vk.Pipeline.Compute.CreateInfo_ computePipelineInfo :...: HVNil)
 				nil nil \pipelines -> do
 			    print pipelines
-			    let	descSetInfo = Vk.Descriptor.Set.AllocateInfo' {
+			    let	dscSetInfo = Vk.Descriptor.Set.AllocateInfo' {
 						Vk.Descriptor.Set.allocateInfoNext' = Nothing,
 						Vk.Descriptor.Set.allocateInfoDescriptorPool' =
-							descPool,
+							dscPool,
 						Vk.Descriptor.Set.allocateInfoSetLayouts' =
-							Vk.Descriptor.Set.Layout descSetLayout :...: HVNil }
-			    descSet :...: HVNil <- Vk.Descriptor.Set.allocateSs' @() device descSetInfo
+							Vk.Descriptor.Set.Layout dscSetLayout :...: HVNil }
+			    dscSet :...: HVNil <- Vk.Descriptor.Set.allocateSs' @() device dscSetInfo
 			    storageBufferNew3 device phdvc datA datB datC
 					\((bufA, memA), (bufB, memB), (bufC, memC)) -> do
 				let	descBufferInfos =
@@ -177,7 +164,7 @@ withCommandPool phdvc device queue commandPool =
 						HVNil
 					writeDescSet = Vk.Descriptor.Set.Write {
 						Vk.Descriptor.Set.writeNext = Nothing,
-						Vk.Descriptor.Set.writeDstSet = descSet,
+						Vk.Descriptor.Set.writeDstSet = dscSet,
 						Vk.Descriptor.Set.writeDescriptorType =
 							Vk.Descriptor.TypeStorageBuffer,
 						Vk.Descriptor.Set.writeSources =
@@ -185,42 +172,67 @@ withCommandPool phdvc device queue commandPool =
 				Vk.Descriptor.Set.updateDs @() @() device
 					(Vk.Descriptor.Set.Write_ writeDescSet :...: HVNil)
 					[]
-				let	commandBufferInfo = Vk.CommandBuffer.AllocateInfo {
-						Vk.CommandBuffer.allocateInfoNext = Nothing,
-						Vk.CommandBuffer.allocateInfoCommandPool = commandPool,
-						Vk.CommandBuffer.allocateInfoLevel = Vk.CommandBuffer.LevelPrimary,
-						Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
-				Vk.CommandBuffer.allocate @() device commandBufferInfo \commandBuffers -> case commandBuffers of
-					[commandBuffer] -> do
-						print commandBuffer
-						Vk.CommandBuffer.begin @() @() commandBuffer def do
-							Vk.Cmd.bindPipelineCompute commandBuffer
-								Vk.Pipeline.BindPointCompute $ head pipelines
-							Vk.Cmd.bindDescriptorSets
-								((\(Vk.CommandBuffer.C c) -> c) commandBuffer)
-								Vk.Pipeline.BindPointCompute
-								((\(Vk.Pipeline.Layout.L l) -> l) pipelineLayout)
-								0
-								[(\(Vk.Descriptor.Set.S' s) -> s) descSet]
-								[]
-							Vk.Cmd.dispatch commandBuffer dataSize 1 1
-						let	submitInfo = Vk.SubmitInfo {
-								Vk.submitInfoNext = Nothing,
-								Vk.submitInfoWaitSemaphoreDstStageMasks = [],
-								Vk.submitInfoCommandBuffers = [commandBuffer],
-								Vk.submitInfoSignalSemaphores = [] }
-						Vk.Queue.submit @() queue [submitInfo] Nothing
-						Vk.Queue.waitIdle queue
-						print =<< take 10 . (unW1 <$>)
-							<$> Vk.Device.Memory.Buffer.read @[W1] @('List W1)
-								device memA Vk.Memory.M.MapFlagsZero
-						print =<< take 10 . (unW2 <$>)
-							<$> Vk.Device.Memory.Buffer.read @[W2] @('List W2)
-								device memB Vk.Memory.M.MapFlagsZero
-						print =<< take 10 . (unW3 <$>)
-							<$> Vk.Device.Memory.Buffer.read @[W3] @('List W3)
-								device memC Vk.Memory.M.MapFlagsZero
-					_ -> error "never occur"
+				queue <- Vk.Device.getQueue device queueFamily 0
+				Vk.CommandPool.create device (mkCommandPoolInfo queueFamily) nil nil
+					$ withCommandPoolNew device queue dscSet (memA, memB, memC) pipelines pipelineLayout
+
+type Mems sm1 sm2 sm3 = (
+	Vk.Device.Memory.Buffer.M sm1 '[ '[ 'List W1]],
+	Vk.Device.Memory.Buffer.M sm2 '[ '[ 'List W2]],
+	Vk.Device.Memory.Buffer.M sm3 '[ '[ 'List W3]] )
+
+mkCommandPoolInfo :: Vk.QueueFamily.Index -> Vk.CommandPool.CreateInfo ()
+mkCommandPoolInfo queueFamily = Vk.CommandPool.CreateInfo {
+	Vk.CommandPool.createInfoNext = Nothing,
+	Vk.CommandPool.createInfoFlags =
+		Vk.CommandPool.CreateResetCommandBufferBit,
+	Vk.CommandPool.createInfoQueueFamilyIndex = queueFamily }
+
+withCommandPoolNew ::
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.Descriptor.Set.S' sd sp slbts ->
+	Mems sm1 sm2 sm3 ->
+	[Vk.Pipeline.Compute.C sg] -> Vk.Pipeline.Layout.L s ->
+	Vk.CommandPool.C sc -> IO ()
+withCommandPoolNew device
+	queue dscSet (memA, memB, memC) pipelines pipelineLayout commandPool = do
+	let	commandBufferInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoCommandPool = commandPool,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.LevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+	Vk.CommandBuffer.allocate @() device commandBufferInfo
+		\commandBuffers -> case commandBuffers of
+		[commandBuffer] -> do
+			print commandBuffer
+			Vk.CommandBuffer.begin @() @() commandBuffer def do
+				Vk.Cmd.bindPipelineCompute commandBuffer
+					Vk.Pipeline.BindPointCompute $ head pipelines
+				Vk.Cmd.bindDescriptorSets
+					((\(Vk.CommandBuffer.C c) -> c) commandBuffer)
+					Vk.Pipeline.BindPointCompute
+					((\(Vk.Pipeline.Layout.L l) -> l) pipelineLayout)
+					0
+					[(\(Vk.Descriptor.Set.S' s) -> s) dscSet]
+					[]
+				Vk.Cmd.dispatch commandBuffer dataSize 1 1
+			let	submitInfo = Vk.SubmitInfo {
+					Vk.submitInfoNext = Nothing,
+					Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+					Vk.submitInfoCommandBuffers = [commandBuffer],
+					Vk.submitInfoSignalSemaphores = [] }
+			Vk.Queue.submit @() queue [submitInfo] Nothing
+			Vk.Queue.waitIdle queue
+			print =<< take 20 . (unW1 <$>)
+				<$> Vk.Device.Memory.Buffer.read @[W1] @('List W1)
+					device memA Vk.Memory.M.MapFlagsZero
+			print =<< take 20 . (unW2 <$>)
+				<$> Vk.Device.Memory.Buffer.read @[W2] @('List W2)
+					device memB Vk.Memory.M.MapFlagsZero
+			print =<< take 20 . (unW3 <$>)
+				<$> Vk.Device.Memory.Buffer.read @[W3] @('List W3)
+					device memC Vk.Memory.M.MapFlagsZero
+		_ -> error "never occur"
 
 createDescriptorPool :: Vk.Device.D sd ->
 	(forall s . Vk.Descriptor.Pool.P s -> IO a) -> IO a
@@ -244,7 +256,7 @@ datA :: V.Vector W1
 datA = V.replicate dataSize $ W1 3
 
 datB :: V.Vector W2
-datB = V.replicate dataSize $ W2 5
+datB = V.fromList $ W2 <$> [1 .. dataSize]
 
 datC :: V.Vector W3
 datC = V.replicate dataSize $ W3 0
@@ -286,9 +298,6 @@ storageBufferNew dvc phdvc xs f = do
 			Vk.Device.Memory.Buffer.write @_ @('List w) dvc memory
 				Vk.Memory.M.MapFlagsZero xs
 			f binded memory
-
-type BufferMemory sb sm =
-	(Vk.Buffer.List.Binded sb sm Word32, Vk.Device.MemoryList sm Word32)
 
 storageBufferNew3 :: (
 	Show w1, Show w2, Show w3,
