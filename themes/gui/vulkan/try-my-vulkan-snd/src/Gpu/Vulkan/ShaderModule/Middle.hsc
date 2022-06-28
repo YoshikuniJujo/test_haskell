@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE DataKinds, KindSignatures #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds, KindSignatures #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -14,6 +15,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Enum
 import Control.Monad.Cont
+import Data.Default
 import Data.Bits
 import Data.Word
 
@@ -39,6 +41,8 @@ enum "CreateFlagBits" ''#{type VkShaderModuleCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
 
 type CreateFlags = CreateFlagBits
+
+instance Default CreateFlags where def = CreateFlagsZero
 
 data CreateInfo n sknd = CreateInfo {
 	createInfoNext :: Maybe n,
