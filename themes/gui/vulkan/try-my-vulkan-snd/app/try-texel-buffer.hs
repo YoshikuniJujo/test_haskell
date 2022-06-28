@@ -67,6 +67,7 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 import qualified Gpu.Vulkan.BufferView.Middle as Vk.BufferView.M
 import qualified Gpu.Vulkan.BufferView.Core as Vk.BufferView.C
 
@@ -307,7 +308,7 @@ withCommandPool phdvc device queue commandPool = do
 							Vk.CommandBuffer.begin @() @() commandBuffer def do
 								Vk.Cmd.bindPipelineCompute commandBuffer
 									Vk.Pipeline.BindPointCompute $ head pipelines
-								Vk.Cmd.bindDescriptorSets
+								Vk.Cmd.M.bindDescriptorSets
 									((\(Vk.CommandBuffer.C c) -> c) commandBuffer)
 									Vk.Pipeline.BindPointCompute
 									((\(Vk.Pipeline.Layout.L l) -> l) pipelineLayout)

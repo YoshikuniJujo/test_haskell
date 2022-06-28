@@ -56,21 +56,6 @@ drawIndexed :: CommandBuffer.M.C vs ->
 drawIndexed (CommandBuffer.M.C cb) idxc istc fidx vo fist =
 	C.drawIndexed cb idxc istc fidx vo fist
 
-bindDescriptorSets ::
-	CommandBuffer.M.C vs -> Pipeline.BindPoint -> Pipeline.Layout.L ->
-	Word32 -> [Descriptor.Set.S] -> [Word32] -> IO ()
-bindDescriptorSets
-	(CommandBuffer.M.C cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
-	fs (length &&& id -> (dsc, dss))
-	(length &&& id -> (doc, dos)) = ($ pure) $ runContT do
-	pdss <- ContT $ allocaArray dsc
-	let	cdss = (\(Descriptor.Set.S s) -> s) <$> dss
-	lift $ pokeArray pdss cdss
-	pdos <- ContT $ allocaArray doc
-	lift $ pokeArray pdos dos
-	lift $ C.bindDescriptorSets
-		cb bp lyt fs (fromIntegral dsc) pdss (fromIntegral doc) pdos
-
 pipelineBarrier ::
 	(Pointable n, Pointable n', Pointable n'') =>
 	CommandBuffer.M.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->

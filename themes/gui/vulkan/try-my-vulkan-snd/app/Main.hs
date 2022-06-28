@@ -99,7 +99,6 @@ import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CB
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
-import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Semaphore as Vk.Smp
 import qualified Gpu.Vulkan.Fence as Vk.Fnc
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fnc

@@ -56,6 +56,7 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBuf
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Memory.Buffer
@@ -163,7 +164,7 @@ run dvc qFam cmdBuf ppl pipelineLayout dscSet dsz memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @() @() cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSets
+		Vk.Cmd.M.bindDescriptorSets
 			((\(Vk.CmdBuf.C c) -> c) cmdBuf)
 			Vk.Ppl.BindPointCompute
 			((\(Vk.Ppl.Lyt.L l) -> l) pipelineLayout) 0

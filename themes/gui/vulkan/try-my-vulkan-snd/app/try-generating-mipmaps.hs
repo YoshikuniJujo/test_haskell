@@ -1754,7 +1754,7 @@ recordCommandBuffer cb imageIndex = do
 	dss <- readGlobal globalDescriptorSets
 	ppll <- readGlobal globalPipelineLayout
 	cf <- readGlobal globalCurrentFrame
-	lift do	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
+	lift do	Vk.Cmd.M.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
 			[dss !! cf] []
 		Vk.Cmd.drawIndexed cb (fromIntegral $ olength idcs) 1 0 0 0
 		Vk.Cmd.M.endRenderPass cb

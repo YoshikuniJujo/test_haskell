@@ -25,6 +25,9 @@ import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute.Middle as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
+import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
+
+import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
@@ -76,3 +79,18 @@ bindIndexBuffer
 dispatch ::
 	CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> IO ()
 dispatch (CommandBuffer.C cb) = C.dispatch cb
+
+bindDescriptorSets ::
+	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.Layout.L ->
+	Word32 -> [Descriptor.Set.S] -> [Word32] -> IO ()
+bindDescriptorSets
+	(CommandBuffer.C cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
+	fs (length &&& id -> (dsc, dss))
+	(length &&& id -> (doc, dos)) = ($ pure) $ runContT do
+	pdss <- ContT $ allocaArray dsc
+	let	cdss = (\(Descriptor.Set.S s) -> s) <$> dss
+	lift $ pokeArray pdss cdss
+	pdos <- ContT $ allocaArray doc
+	lift $ pokeArray pdos dos
+	lift $ C.bindDescriptorSets
+		cb bp lyt fs (fromIntegral dsc) pdss (fromIntegral doc) pdos
