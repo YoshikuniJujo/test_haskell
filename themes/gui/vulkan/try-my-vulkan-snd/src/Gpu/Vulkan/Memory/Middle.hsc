@@ -16,6 +16,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Default
 import Data.Bits
 import Data.Word
 
@@ -123,6 +124,8 @@ free (Device.D dvc) (Device.Memory mem) mac = ($ pure) $ runContT do
 
 enum "MapFlags" ''#{type VkMemoryMapFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("MapFlagsZero", 0)]
+
+instance Default MapFlags where def = MapFlagsZero
 
 map :: Device.D -> Device.Memory -> Device.Size -> Device.Size -> MapFlags ->
 	IO (Ptr a)

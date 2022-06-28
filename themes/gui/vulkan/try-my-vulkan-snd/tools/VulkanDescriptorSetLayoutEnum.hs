@@ -5,9 +5,9 @@ module VulkanDescriptorSetLayoutEnum where
 import MakeEnum
 
 make :: IO ()
-make = createFile'' "/usr/include/vulkan/vulkan_core.h" "DescriptorSetLayout.Enum"
+make = createFileWithDefault "/usr/include/vulkan/vulkan_core.h" "DescriptorSetLayout.Enum"
 		["Data.Word", "Data.Bits"] [
-	(	[("CreateFlagsZero", Int 0)],
+	(	Just "CreateFlagsZero", [("CreateFlagsZero", Int 0)],
 		(	"CreateFlagBits", "VkDescriptorSetLayoutCreateFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	]

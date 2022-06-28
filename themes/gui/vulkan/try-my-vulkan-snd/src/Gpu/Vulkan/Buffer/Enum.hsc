@@ -14,6 +14,7 @@ import Foreign.C.Enum
 import Data.Default
 import Data.Bits
 import Data.Word
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
@@ -35,6 +36,9 @@ enum "CreateFlagBits" ''#{type VkBufferCreateFlagBits}
 		#{const VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_KHR}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_BUFFER_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
+instance Default CreateFlagBits where
+	def = CreateFlagsZero
 
 enum "UsageFlagBits" ''#{type VkBufferUsageFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
@@ -80,8 +84,8 @@ enum "UsageFlagBits" ''#{type VkBufferUsageFlagBits}
 	("UsageFlagBitsMaxEnum",
 		#{const VK_BUFFER_USAGE_FLAG_BITS_MAX_ENUM}) ]
 
-type CreateFlags = CreateFlagBits
-instance Default CreateFlags where def = CreateFlagsZero
+instance Default UsageFlagBits where
+	def = UsageFlagsZero
 
+type CreateFlags = CreateFlagBits
 type UsageFlags = UsageFlagBits
-instance Default UsageFlags where def = UsageFlagsZero

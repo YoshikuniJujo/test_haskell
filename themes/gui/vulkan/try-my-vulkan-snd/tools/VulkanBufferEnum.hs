@@ -8,17 +8,14 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile'' vulkanCore "Buffer.Enum"
+make = createFileWithDefault vulkanCore "Buffer.Enum"
 		["Data.Default", "Data.Bits", "Data.Word"] [
-	(	[("CreateFlagsZero", Int 0)],
+	(	Just "CreateFlagsZero", [("CreateFlagsZero", Int 0)],
 		(	"CreateFlagBits", "VkBufferCreateFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) ),
-	(	[("UsageFlagsZero", Int 0)],
+	(	Just "UsageFlagsZero", [("UsageFlagsZero", Int 0)],
 		(	"UsageFlagBits", "VkBufferUsageFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) ) ]
 	[nowdoc|
 type CreateFlags = CreateFlagBits
-instance Default CreateFlags where def = CreateFlagsZero
-
-type UsageFlags = UsageFlagBits
-instance Default UsageFlags where def = UsageFlagsZero|]
+type UsageFlags = UsageFlagBits|]

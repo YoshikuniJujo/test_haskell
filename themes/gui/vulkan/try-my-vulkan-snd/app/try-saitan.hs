@@ -65,13 +65,14 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 main :: IO ()
 main = do
-	(r1, r2, r3) <- run
+	(r1, r2, r3) <- calc dataSize datA datB datC
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
 
-run :: IO ([W1], [W2], [W3])
-run = withDevice \phdvc qFam dvc -> withDescriptorPool dvc \dscPool ->
+calc :: Word32 ->
+	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
+calc dsz da db dc = withDevice \phdvc qFam dvc -> withDscPool dvc \dscPool ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil
 		\(dscSetLayout :: Vk.DscSetLyt.L sl bts) ->
 	let	pipelineLayoutInfo :: Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
@@ -98,7 +99,7 @@ run = withDevice \phdvc qFam dvc -> withDescriptorPool dvc \dscPool ->
 			Vk.DscSet.allocateInfoSetLayouts' =
 				Vk.DscSet.Layout dscSetLayout :...: HVNil } in
 	Vk.DscSet.allocateSs' @() dvc dscSetInfo >>= \(dscSet :...: HVNil) ->
-	storageBufferNew3 dvc phdvc datA datB datC
+	storageBufferNew3 dvc phdvc da db dc
 			\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	let	descBufferInfos =
 			(Vk.Dsc.BufferInfoList bufA ::
@@ -118,41 +119,61 @@ run = withDevice \phdvc qFam dvc -> withDescriptorPool dvc \dscPool ->
 	Vk.DscSet.updateDs @() @() dvc
 		(Vk.DscSet.Write_ writeDescSet :...: HVNil) [] >>
 	Vk.Dvc.getQueue dvc qFam 0 >>= \queue ->
-	Vk.CommandPool.create dvc (mkCommandPoolInfo qFam) nil nil \cmdPool ->
+	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	let	cmdBufInfo = Vk.CmdBuf.AllocateInfo {
 			Vk.CmdBuf.allocateInfoNext = Nothing,
 			Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
 			Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
 			Vk.CmdBuf.allocateInfoCommandBufferCount = 1 } in
 	Vk.CmdBuf.allocate @() dvc cmdBufInfo \cmdBufs -> case cmdBufs of
-		[cmdBuf] -> do
-			Vk.CmdBuf.begin @() @() cmdBuf def do
-				Vk.Cmd.bindPipelineCompute cmdBuf
-					Vk.Ppl.BindPointCompute $ head pipelines
-				Vk.Cmd.bindDescriptorSets
-					((\(Vk.CmdBuf.C c) -> c) cmdBuf)
-					Vk.Ppl.BindPointCompute
-					((\(Vk.Ppl.Lyt.L l) -> l)
-						pipelineLayout)
-					0
-					[(\(Vk.DscSet.S' s) -> s) dscSet]
-					[]
-				Vk.Cmd.dispatch cmdBuf dataSize 1 1
-			let	submitInfo = Vk.SubmitInfo {
-					Vk.submitInfoNext = Nothing,
-					Vk.submitInfoWaitSemaphoreDstStageMasks
-						= [],
-					Vk.submitInfoCommandBuffers = [cmdBuf],
-					Vk.submitInfoSignalSemaphores = [] }
-			Vk.Queue.submit @() queue [submitInfo] Nothing
-			Vk.Queue.waitIdle queue
-			(,,)	<$> Vk.Dvc.Memory.Buffer.read @[W1] @('List W1)
-					dvc memA Vk.Memory.M.MapFlagsZero
-				<*> Vk.Dvc.Memory.Buffer.read @[W2] @('List W2)
-					dvc memB Vk.Memory.M.MapFlagsZero
-				<*> Vk.Dvc.Memory.Buffer.read @[W3] @('List W3)
-					dvc memC Vk.Memory.M.MapFlagsZero
+		[cmdBuf] -> run
+			dvc queue cmdBuf (head pipelines)
+			pipelineLayout dscSet dsz memA memB memC
 		_ -> error "never occur"
+
+dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
+	'[ 'Vk.DscSetLyt.Buffer '[ 'List W1, 'List W2, 'List W3]]
+dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
+	Vk.DscSetLyt.createInfoNext = Nothing,
+	Vk.DscSetLyt.createInfoFlags = def,
+	Vk.DscSetLyt.createInfoBindings = binding0 :...: HVNil }
+	where binding0 = Vk.DscSetLyt.BindingBuffer {
+		Vk.DscSetLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeStorageBuffer,
+		Vk.DscSetLyt.bindingBufferStageFlags =
+			Vk.ShaderStageComputeBit }
+
+commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
+commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
+	Vk.CommandPool.createInfoNext = Nothing,
+	Vk.CommandPool.createInfoFlags =
+		Vk.CommandPool.CreateResetCommandBufferBit,
+	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
+
+run :: Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
+	Vk.Ppl.Lyt.L sl -> Vk.DscSet.S' sd sp slbts -> Word32 ->
+	Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]] ->
+	Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]] ->
+	Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W3]] -> IO ([W1], [W2], [W3])
+run dvc queue cmdBuf ppl pipelineLayout dscSet dsz memA memB memC = do
+	Vk.CmdBuf.begin @() @() cmdBuf def do
+		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
+		Vk.Cmd.bindDescriptorSets
+			((\(Vk.CmdBuf.C c) -> c) cmdBuf)
+			Vk.Ppl.BindPointCompute
+			((\(Vk.Ppl.Lyt.L l) -> l) pipelineLayout) 0
+			[(\(Vk.DscSet.S' s) -> s) dscSet] []
+		Vk.Cmd.dispatch cmdBuf dsz 1 1
+	Vk.Queue.submit @() queue [submitInfo] Nothing
+	Vk.Queue.waitIdle queue
+	(,,)	<$> Vk.Dvc.Memory.Buffer.read @[W1] @('List W1) dvc memA def
+		<*> Vk.Dvc.Memory.Buffer.read @[W2] @('List W2) dvc memB def
+		<*> Vk.Dvc.Memory.Buffer.read @[W3] @('List W3) dvc memC def
+	where	submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+			Vk.submitInfoCommandBuffers = [cmdBuf],
+			Vk.submitInfoSignalSemaphores = [] }
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> IO a) ->
@@ -175,8 +196,8 @@ withDevice f = Vk.Inst.create @() @() def nil nil \inst -> do
 		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.Queue.createInfoQueuePriorities = [0] }
 
-withDescriptorPool :: Vk.Dvc.D sd -> (forall s . Vk.DscPool.P s -> IO a) -> IO a
-withDescriptorPool dvc = Vk.DscPool.create @() dvc descPoolInfo nil nil
+withDscPool :: Vk.Dvc.D sd -> (forall s . Vk.DscPool.P s -> IO a) -> IO a
+withDscPool dvc = Vk.DscPool.create @() dvc descPoolInfo nil nil
 	where
 	descPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = Nothing,
@@ -188,38 +209,16 @@ withDescriptorPool dvc = Vk.DscPool.create @() dvc descPoolInfo nil nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
-	'[ 'Vk.DscSetLyt.Buffer '[ 'List W1, 'List W2, 'List W3]]
-dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
-	Vk.DscSetLyt.createInfoNext = Nothing,
-	Vk.DscSetLyt.createInfoFlags =
-		Vk.DscSetLyt.CreateFlagsZero,
-	Vk.DscSetLyt.createInfoBindings = binding0 :...: HVNil }
-	where binding0 = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeStorageBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags =
-			Vk.ShaderStageComputeBit }
-
-mkCommandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
-mkCommandPoolInfo qFam = Vk.CommandPool.CreateInfo {
-	Vk.CommandPool.createInfoNext = Nothing,
-	Vk.CommandPool.createInfoFlags =
-		Vk.CommandPool.CreateResetCommandBufferBit,
-	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
-
 storageBufferNew :: forall sd w a . (Show w, Storable w) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
 		forall sb sm .
 		Vk.Buffer.Binded sb sm '[ 'List w]  ->
-		Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] -> IO a ) ->
-	IO a
+		Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f = do
 	let	bInfo :: Vk.Buffer.CreateInfo () '[ 'List w]
 		bInfo = Vk.Buffer.CreateInfo {
 			Vk.Buffer.createInfoNext = Nothing,
-			Vk.Buffer.createInfoFlags =
-				Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.createInfoFlags = def,
 			Vk.Buffer.createInfoLengths =
 				ObjectLengthList (V.length xs) :...: HVNil,
 			Vk.Buffer.createInfoUsage =
