@@ -72,7 +72,7 @@ main = do
 
 calc :: Word32 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
-calc dsz da db dc = withDevice \phdvc qFam dvc -> withDscPool dvc \dscPool ->
+calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil
 		\(dscSetLayout :: Vk.DscSetLyt.L sl bts) ->
 	let	pipelineLayoutInfo :: Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
@@ -93,6 +93,8 @@ calc dsz da db dc = withDevice \phdvc qFam dvc -> withDscPool dvc \dscPool ->
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _)] @() @() @() dvc Nothing
 		(Vk.Ppl.Cmpt.CreateInfo_ computePipelineInfo :...: HVNil)
 		nil nil \pipelines ->
+
+	withDscPool dvc \dscPool ->
 	let	dscSetInfo = Vk.DscSet.AllocateInfo' {
 			Vk.DscSet.allocateInfoNext' = Nothing,
 			Vk.DscSet.allocateInfoDescriptorPool' = dscPool,
@@ -118,18 +120,13 @@ calc dsz da db dc = withDevice \phdvc qFam dvc -> withDscPool dvc \dscPool ->
 				Vk.DscSet.BufferInfos descBufferInfos } in
 	Vk.DscSet.updateDs @() @() dvc
 		(Vk.DscSet.Write_ writeDescSet :...: HVNil) [] >>
-	Vk.Dvc.getQueue dvc qFam 0 >>= \queue ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
-	let	cmdBufInfo = Vk.CmdBuf.AllocateInfo {
-			Vk.CmdBuf.allocateInfoNext = Nothing,
-			Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
-			Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
-			Vk.CmdBuf.allocateInfoCommandBufferCount = 1 } in
-	Vk.CmdBuf.allocate @() dvc cmdBufInfo \cmdBufs -> case cmdBufs of
-		[cmdBuf] -> run
-			dvc queue cmdBuf (head pipelines)
-			pipelineLayout dscSet dsz memA memB memC
-		_ -> error "never occur"
+	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \cmdBufs ->
+		case cmdBufs of
+			[cmdBuf] -> run
+				dvc qFam cmdBuf (head pipelines)
+				pipelineLayout dscSet dsz memA memB memC
+			_ -> error "never occur"
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
 	'[ 'Vk.DscSetLyt.Buffer '[ 'List W1, 'List W2, 'List W3]]
@@ -137,11 +134,11 @@ dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = def,
 	Vk.DscSetLyt.createInfoBindings = binding0 :...: HVNil }
-	where binding0 = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeStorageBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags =
-			Vk.ShaderStageComputeBit }
+
+binding0 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
+binding0 = Vk.DscSetLyt.BindingBuffer {
+	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
@@ -150,12 +147,20 @@ commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
 		Vk.CommandPool.CreateResetCommandBufferBit,
 	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
 
-run :: Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
+	Vk.CmdBuf.allocateInfoNext = Nothing,
+	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
+	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
+	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
+
+run :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.L sl -> Vk.DscSet.S' sd sp slbts -> Word32 ->
 	Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]] ->
 	Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]] ->
 	Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W3]] -> IO ([W1], [W2], [W3])
-run dvc queue cmdBuf ppl pipelineLayout dscSet dsz memA memB memC = do
+run dvc qFam cmdBuf ppl pipelineLayout dscSet dsz memA memB memC = do
+	queue <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @() @() cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSets
