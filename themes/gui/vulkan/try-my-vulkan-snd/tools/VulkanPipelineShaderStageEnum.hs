@@ -5,9 +5,9 @@ module VulkanPipelineShaderStageEnum where
 import MakeEnum
 
 make :: IO ()
-make = createFile'' "/usr/include/vulkan/vulkan_core.h" "Pipeline.ShaderStage.Enum"
+make = createFileWithDefault "/usr/include/vulkan/vulkan_core.h" "Pipeline.ShaderStage.Enum"
 		["Data.Word", "Data.Bits"] [
-	(	[("CreateFlagsZero", Int 0)],
+	(	Just "CreateFlagsZero", [("CreateFlagsZero", Int 0)],
 		("CreateFlagBits", "VkPipelineShaderStageCreateFlagBits",
 			["Show", "Eq", "Storable", "Bits"]) )
 	]

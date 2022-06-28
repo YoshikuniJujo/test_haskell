@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Data.Word
 import Data.Bits
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
@@ -29,5 +30,8 @@ enum "CreateFlagBits" ''#{type VkPipelineShaderStageCreateFlagBits}
 		#{const VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_PIPELINE_SHADER_STAGE_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
+instance Default CreateFlagBits where
+	def = CreateFlagsZero
 
 type CreateFlags = CreateFlagBits

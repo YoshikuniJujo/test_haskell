@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Data.Bits
 import Data.Word
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
@@ -92,6 +93,9 @@ enum "StageFlagBits" ''#{type VkPipelineStageFlagBits}
 	("StageFlagBitsMaxEnum",
 		#{const VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM}) ]
 
+instance Default StageFlagBits where
+	def = StageFlagsZero
+
 enum "CreateFlagBits" ''#{type VkPipelineCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("CreateFlagsZero", 0),
@@ -159,6 +163,9 @@ enum "CreateFlagBits" ''#{type VkPipelineCreateFlagBits}
 		#{const VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT_EXT}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_PIPELINE_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
+instance Default CreateFlagBits where
+	def = CreateFlagsZero
 
 type StageFlags = StageFlagBits
 type CreateFlags = CreateFlagBits

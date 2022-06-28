@@ -26,25 +26,8 @@ type DerivName = String
 vulkanCore :: HeaderFile
 vulkanCore = "/usr/include/vulkan/vulkan_core.h"
 
-createSingleFile :: HeaderFile -> ModuleName -> HaskellName -> CName -> ExtraCode -> IO ()
-createSingleFile hf mnm hsnm snm ext = do
-	prg <- getProgName
-	src <- readFile hf
-	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
-		header prg [] mnm ++
-		makeEnum src (hsnm, snm, ["Show", "Eq", "Storable"]) ++
-		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
-
 substitute :: Char -> Char -> String -> String
 substitute x y = map (\c -> if c == x then y else c)
-
-createFile :: HeaderFile -> ModuleName -> [(HaskellName, CName)] -> IO ()
-createFile hf mnm hscnms = do
-	prg <- getProgName
-	src <- readFile hf
-	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
-		header prg [] mnm ++ intercalate "\n" (map (makeEnum' src mnm []) hscnmdrvs)
-	where hscnmdrvs = (`snocTuple2` ["Show", "Eq", "Storable"]) <$> hscnms
 
 createFile' ::
 	HeaderFile -> ModuleName -> [IncludeModule] ->
@@ -52,8 +35,8 @@ createFile' ::
 createFile' hf mnm icms hscnmdrvs ext = do
 	prg <- getProgName
 	src <- readFile hf
-	createDirectoryIfMissing True . takeDirectory $ "../src/Vulkan/" ++ substitute '.' '/' mnm
-	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
+	createDirectoryIfMissing True . takeDirectory $ "../src/Gpu/Vulkan/" ++ substitute '.' '/' mnm
+	writeFile ("../src/Gpu/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
 		header prg icms mnm ++ intercalate "\n" (map (makeEnum' src mnm []) hscnmdrvs) ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
@@ -63,10 +46,27 @@ createFile'' ::
 createFile'' hf mnm icms hscnmdrvs ext = do
 	prg <- getProgName
 	src <- readFile hf
-	createDirectoryIfMissing True . takeDirectory $ "../src/Vulkan/" ++ substitute '.' '/' mnm
-	writeFile ("../src/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
+	createDirectoryIfMissing True . takeDirectory $ "../src/Gpu/Vulkan/" ++ substitute '.' '/' mnm
+	writeFile ("../src/Gpu/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
 		header prg icms mnm ++ intercalate "\n" (map (uncurry $ makeEnum' src mnm) hscnmdrvs) ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+
+createFileWithDefault ::
+	HeaderFile -> ModuleName -> [IncludeModule] ->
+	[(Maybe String, [(String, Const)], (HaskellName, CName, [DerivName]))] ->
+	ExtraCode -> IO ()
+createFileWithDefault hf mnm icms dfhscnmdrvs ext = do
+	let	(mdf, hscnmdrvs) = unzip $ popTuple <$> dfhscnmdrvs
+	prg <- getProgName
+	src <- readFile hf
+	createDirectoryIfMissing True . takeDirectory $ "../src/Gpu/Vulkan/" ++ substitute '.' '/' mnm
+	writeFile ("../src/Gpu/Vulkan/" ++ substitute '.' '/' mnm ++ ".hsc") $
+		header prg (icms ++ ["Data.Default"]) mnm ++
+		intercalate "\n" (map (\((a, b), c) -> makeEnumWithDefault src mnm a b c) (zip hscnmdrvs mdf)) ++
+		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
+
+popTuple :: (a, b, c) -> (a, (b, c))
+popTuple (x, y, z) = (x, (y, z))
 
 snocTuple2 :: (a, b) -> c -> (a, b, c)
 snocTuple2 (x, y) z = (x, y, z)
@@ -84,6 +84,16 @@ makeEnum' src mnm elms (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 		(map (makeItem' mnm) . (elms ++) . map makeVarConstPair . takeDefinition cnm
 			. removeBetaExtensions $ lines src ) ++
 		" ]\n"
+
+makeEnumWithDefault ::
+	HeaderCode -> ModuleName -> [(String, Const)] ->
+	(HaskellName, CName, [DerivName]) -> Maybe String -> HaskellCode
+makeEnumWithDefault src mnm elms hsnmcnmdrvs@(hsnm, _, _) mdf =
+	makeEnum' src mnm elms hsnmcnmdrvs ++
+	maybe "" (\df -> "\n" ++ instanceDefault hsnm df) mdf
+
+instanceDefault :: HaskellName -> String -> HaskellCode
+instanceDefault hsnm df = "instance Default " ++ hsnm ++ " where\n\tdef = " ++ df ++ "\n"
 
 modNameToRemStr :: ModuleName -> (String, String)
 modNameToRemStr mnm = (filter (/= '.') $ removeTail ".Enum" mnm', rmt)
@@ -116,17 +126,6 @@ removeBetaExtensions ("#ifdef VK_ENABLE_BETA_EXTENSIONS" : ls) =
 		[] -> error "no #endif"
 		(_ : ls') -> removeBetaExtensions ls'
 removeBetaExtensions (l : ls) = l : removeBetaExtensions ls
-
-{-
-makeEnum' :: String -> [String] -> String -> String -> [String] -> String -> IO ()
-makeEnum' hf icds hsnm cnm drvs ext = do
-	prg <- getProgName
-	src <- readFile hf
-	writeFile ("../src/Vulkan/" ++ hsnm ++ ".hsc") $
-		header prg icds hsnm ++ body hsnm cnm drvs ++
-			intercalate ",\n" (map makeItem . takeDefinition cnm $ lines src) ++ " ]\n" ++
-		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
--}
 
 makeEnum'' :: String -> [String] -> String -> String -> [(String, Const)] -> [String] -> String -> IO ()
 makeEnum'' hf icds hsnm cnm elms drvs ext = do
@@ -204,7 +203,7 @@ header tnm icds mnm =
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module |] ++ "Vulkan." ++ mnm ++ [nowdoc| where
+module |] ++ "Gpu.Vulkan." ++ mnm ++ [nowdoc| where
 
 import Foreign.Storable
 import Foreign.C.Enum

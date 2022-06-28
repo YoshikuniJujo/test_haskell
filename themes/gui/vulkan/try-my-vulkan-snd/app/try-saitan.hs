@@ -50,7 +50,6 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
-import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.Descriptor.Set
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
@@ -71,15 +70,14 @@ main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
 	let	pipelineLayoutInfo :: Vk.Ppl.Layout.CreateInfo () '[ '(sl, bts)]
 		pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = Nothing,
-			Vk.Ppl.Layout.createInfoFlags =
-				Vk.Ppl.Layout.CreateFlagsZero,
+			Vk.Ppl.Layout.createInfoFlags = def,
 			Vk.Ppl.Layout.createInfoSetLayouts =
 				Vk.Ppl.Layout.Layout dscSetLayout :...: HVNil,
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] } in
 	Vk.Ppl.Layout.create device pipelineLayoutInfo nil nil \pipelineLayout ->
 	let	computePipelineInfo = Vk.Ppl.Cmpt.CreateInfo {
 			Vk.Ppl.Cmpt.createInfoNext = Nothing,
-			Vk.Ppl.Cmpt.createInfoFlags = Vk.Ppl.CreateFlagsZero,
+			Vk.Ppl.Cmpt.createInfoFlags = def,
 			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
 			Vk.Ppl.Cmpt.createInfoLayout = pipelineLayout,
 			Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
@@ -120,8 +118,7 @@ main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
 			dscSet (memA, memB, memC) pipelines pipelineLayout
 	where shaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
 		Vk.Ppl.ShaderStage.createInfoNext = Nothing,
-		Vk.Ppl.ShaderStage.createInfoFlags =
-			Vk.Ppl.ShaderStage.CreateFlagsZero,
+		Vk.Ppl.ShaderStage.createInfoFlags = def,
 		Vk.Ppl.ShaderStage.createInfoStage = Vk.ShaderStageComputeBit,
 		Vk.Ppl.ShaderStage.createInfoModule = shaderModule,
 		Vk.Ppl.ShaderStage.createInfoName = "main",

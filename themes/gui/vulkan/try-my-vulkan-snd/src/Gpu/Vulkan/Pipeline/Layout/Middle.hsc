@@ -15,6 +15,7 @@ import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
 import Data.Word
 
 import Gpu.Vulkan.Exception
@@ -30,6 +31,8 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Core as C
 
 enum "CreateFlags" ''#{type VkPipelineLayoutCreateFlags}
 	[''Show, ''Storable] [("CreateFlagsZero", 0)]
+
+instance Default CreateFlags where def = CreateFlagsZero
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,

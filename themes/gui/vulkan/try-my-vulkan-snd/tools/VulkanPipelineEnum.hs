@@ -8,15 +8,15 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile'' "/usr/include/vulkan/vulkan_core.h" "Pipeline.Enum"
+make = createFileWithDefault "/usr/include/vulkan/vulkan_core.h" "Pipeline.Enum"
 		["Data.Bits", "Data.Word"] [
-	(	[],
+	(	Nothing, [],
 		(	"BindPoint", "VkPipelineBindPoint",
 			["Show", "Storable"] ) ),
-	(	[("StageFlagsZero", Int 0)],
+	(	Just "StageFlagsZero", [("StageFlagsZero", Int 0)],
 		(	"StageFlagBits", "VkPipelineStageFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) ),
-	(	[("CreateFlagsZero", Int 0)],
+	(	Just "CreateFlagsZero", [("CreateFlagsZero", Int 0)],
 		(	"CreateFlagBits", "VkPipelineCreateFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) )
 	] [nowdoc|
