@@ -88,7 +88,7 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 			Vk.Ppl.Cmpt.createInfoNext = Nothing,
 			Vk.Ppl.Cmpt.createInfoFlags = def,
 			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
-			Vk.Ppl.Cmpt.createInfoLayout = pipelineLayout,
+			Vk.Ppl.Cmpt.createInfoLayout = (\(Vk.Ppl.Lyt.LL l) -> Vk.Ppl.Lyt.L l) pipelineLayout,
 			Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 			Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing } in
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _)] @() @() @() dvc Nothing
@@ -156,7 +156,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
 run :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.L sl -> Vk.DscSet.S' sd sp slbts -> Word32 ->
+	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S' sd sp slbts -> Word32 ->
 	Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]] ->
 	Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]] ->
 	Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W3]] -> IO ([W1], [W2], [W3])
@@ -167,7 +167,7 @@ run dvc qFam cmdBuf ppl pipelineLayout dscSet dsz memA memB memC = do
 		Vk.Cmd.M.bindDescriptorSets
 			((\(Vk.CmdBuf.C c) -> c) cmdBuf)
 			Vk.Ppl.BindPointCompute
-			((\(Vk.Ppl.Lyt.L l) -> l) pipelineLayout) 0
+			((\(Vk.Ppl.Lyt.LL l) -> l) pipelineLayout) 0
 			[(\(Vk.DscSet.S' s) -> s) dscSet] []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
 	Vk.Queue.submit @() queue [submitInfo] Nothing

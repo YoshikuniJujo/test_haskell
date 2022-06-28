@@ -91,8 +91,9 @@ createInfoToMiddle CreateInfo'' {
 create :: (Pointable n, Pointable c, Pointable d, HeteroVarListToList' sbtss) =>
 	Device.D sd -> CreateInfo n sbtss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . L s -> IO a) -> IO a
-create dvc (createInfoToCreateInfo -> ci) = create'' dvc ci
+	(forall s . LL s sbtss -> IO a) -> IO a
+create dvc (createInfoToCreateInfo -> ci) macc macd f =
+	create'' dvc ci macc macd $ f . (\(L l) -> LL l)
 
 create'' :: (Pointable n, Pointable n2, Pointable n3, HeteroVarListToList' sbtss) =>
 	Device.D sd -> CreateInfo'' n ss sbtss ->
