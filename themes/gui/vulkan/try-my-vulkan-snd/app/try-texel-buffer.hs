@@ -186,17 +186,17 @@ withCommandPool phdvc device queue commandPool = do
 				Vk.Descriptor.Set.Layout.M.createInfoBindings =
 					[binding, binding2'] }
 		Vk.Descriptor.Set.Layout.create'' @() device descSetLayoutInfo nil nil \descSetLayout -> do
-			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
-					Vk.Pipeline.Layout.createInfoNext = Nothing,
-					Vk.Pipeline.Layout.createInfoFlags =
+			let	pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo'' {
+					Vk.Pipeline.Layout.createInfoNext'' = Nothing,
+					Vk.Pipeline.Layout.createInfoFlags'' =
 						Vk.Pipeline.Layout.CreateFlagsZero,
-					Vk.Pipeline.Layout.createInfoSetLayouts =
+					Vk.Pipeline.Layout.createInfoSetLayouts'' =
 						Left $ descSetLayout :...: HVNil,
-					Vk.Pipeline.Layout.createInfoPushConstantRanges
+					Vk.Pipeline.Layout.createInfoPushConstantRanges''
 						= [] }
 			print descSetLayout
-			print @(Vk.Pipeline.Layout.CreateInfo () _ '[])  pipelineLayoutInfo
-			Vk.Pipeline.Layout.create @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
+			print @(Vk.Pipeline.Layout.CreateInfo'' () _ '[])  pipelineLayoutInfo
+			Vk.Pipeline.Layout.create'' @() device pipelineLayoutInfo nil nil \pipelineLayout -> do
 				print pipelineLayout
 				let	shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
 						Vk.Pipeline.ShaderStage.createInfoNext = Nothing,

@@ -66,14 +66,15 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DescriptorSetLayout
 main :: IO ()
 main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
 	Vk.DescriptorSetLayout.create
-		device dscSetLayoutInfo nil nil \dscSetLayout ->
-	let	pipelineLayoutInfo :: Vk.Ppl.Layout.CreateInfo () '[] _
+		device dscSetLayoutInfo nil nil
+		\(dscSetLayout :: Vk.DescriptorSetLayout.L sl bts) ->
+	let	pipelineLayoutInfo :: Vk.Ppl.Layout.CreateInfo () '[ '(sl, bts)]
 		pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = Nothing,
 			Vk.Ppl.Layout.createInfoFlags =
 				Vk.Ppl.Layout.CreateFlagsZero,
-			Vk.Ppl.Layout.createInfoSetLayouts = Right
-				$ Vk.Ppl.Layout.Layout dscSetLayout :...: HVNil,
+			Vk.Ppl.Layout.createInfoSetLayouts =
+				Vk.Ppl.Layout.Layout dscSetLayout :...: HVNil,
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] } in
 	Vk.Ppl.Layout.create device pipelineLayoutInfo nil nil \pipelineLayout ->
 	let	shaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {

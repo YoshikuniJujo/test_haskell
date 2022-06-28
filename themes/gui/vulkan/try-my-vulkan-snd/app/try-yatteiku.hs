@@ -450,12 +450,12 @@ makePipeline dvc rp f = do
 				[blendattachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
-		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo () _ '[]
-		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
-			Vk.Ppl.Lyt.createInfoNext = Nothing,
-			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
-			Vk.Ppl.Lyt.createInfoSetLayouts = Left HVNil,
-			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo'' () _ '[]
+		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo'' {
+			Vk.Ppl.Lyt.createInfoNext'' = Nothing,
+			Vk.Ppl.Lyt.createInfoFlags'' = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoSetLayouts'' = Left HVNil,
+			Vk.Ppl.Lyt.createInfoPushConstantRanges'' = [] }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
@@ -486,7 +486,7 @@ makePipeline dvc rp f = do
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
-	Vk.Ppl.Lyt.create @() dvc layoutCreateInfo nil nil \pipelineLayout -> do
+	Vk.Ppl.Lyt.create'' @() dvc layoutCreateInfo nil nil \pipelineLayout -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo
 				() () ()
 				'[ 'GlslVertexShader, 'GlslFragmentShader] () ()
