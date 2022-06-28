@@ -77,17 +77,7 @@ main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
 				Vk.Ppl.Layout.Layout dscSetLayout :...: HVNil,
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] } in
 	Vk.Ppl.Layout.create device pipelineLayoutInfo nil nil \pipelineLayout ->
-	let	shaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
-			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
-			Vk.Ppl.ShaderStage.createInfoFlags =
-				Vk.Ppl.ShaderStage.CreateFlagsZero,
-			Vk.Ppl.ShaderStage.createInfoStage =
-				Vk.ShaderStageComputeBit,
-			Vk.Ppl.ShaderStage.createInfoModule = shaderModule,
-			Vk.Ppl.ShaderStage.createInfoName = "main",
-			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
-				Nothing }
-		computePipelineInfo = Vk.Ppl.Cmpt.CreateInfo {
+	let	computePipelineInfo = Vk.Ppl.Cmpt.CreateInfo {
 			Vk.Ppl.Cmpt.createInfoNext = Nothing,
 			Vk.Ppl.Cmpt.createInfoFlags = Vk.Ppl.CreateFlagsZero,
 			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
@@ -128,6 +118,14 @@ main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
 	Vk.CommandPool.create device (mkCommandPoolInfo qFam) nil nil
 		$ withCommandPool device queue
 			dscSet (memA, memB, memC) pipelines pipelineLayout
+	where shaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+		Vk.Ppl.ShaderStage.createInfoNext = Nothing,
+		Vk.Ppl.ShaderStage.createInfoFlags =
+			Vk.Ppl.ShaderStage.CreateFlagsZero,
+		Vk.Ppl.ShaderStage.createInfoStage = Vk.ShaderStageComputeBit,
+		Vk.Ppl.ShaderStage.createInfoModule = shaderModule,
+		Vk.Ppl.ShaderStage.createInfoName = "main",
+		Vk.Ppl.ShaderStage.createInfoSpecializationInfo = Nothing }
 
 dscSetLayoutInfo :: Vk.DescriptorSetLayout.CreateInfo ()
 	'[ 'Vk.DescriptorSetLayout.Buffer '[ 'List W1, 'List W2, 'List W3]]
