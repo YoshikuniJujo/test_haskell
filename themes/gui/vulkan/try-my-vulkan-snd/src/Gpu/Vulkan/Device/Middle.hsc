@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -15,6 +16,7 @@ import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
 import Data.Bits
 import Data.Word
 
@@ -39,6 +41,8 @@ enum "CreateFlagBits" ''#{type VkDeviceCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
 
 type CreateFlags = CreateFlagBits
+
+instance Default CreateFlags where def = CreateFlagsZero
 
 data CreateInfo n n' = CreateInfo {
 	createInfoNext :: Maybe n,

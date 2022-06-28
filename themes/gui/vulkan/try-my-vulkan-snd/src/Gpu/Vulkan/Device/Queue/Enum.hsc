@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Data.Bits
 import Data.Word
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
@@ -23,5 +24,8 @@ enum "CreateFlagBits" ''#{type VkDeviceQueueCreateFlagBits}
 		#{const VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_DEVICE_QUEUE_CREATE_FLAG_BITS_MAX_ENUM}) ]
+
+instance Default CreateFlagBits where
+	def = CreateFlagsZero
 
 type CreateFlags = CreateFlagBits

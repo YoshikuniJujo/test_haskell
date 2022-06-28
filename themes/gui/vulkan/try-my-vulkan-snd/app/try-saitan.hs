@@ -25,12 +25,12 @@ import Gpu.Vulkan.Base
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Instance
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Gpu.Vulkan.Instance as Vk.Inst
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
-import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
+import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QFam
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device as Vk.Device
@@ -64,8 +64,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 main :: IO ()
 main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
-	Vk.DscSetLyt.create
-		device dscSetLayoutInfo nil nil
+	Vk.DscSetLyt.create device dscSetLayoutInfo nil nil
 		\(dscSetLayout :: Vk.DscSetLyt.L sl bts) ->
 	let	pipelineLayoutInfo :: Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
 		pipelineLayoutInfo = Vk.Ppl.Lyt.CreateInfo {
@@ -140,7 +139,7 @@ type Mems sm1 sm2 sm3 = (
 	Vk.Device.Memory.Buffer.M sm2 '[ '[ 'List W2]],
 	Vk.Device.Memory.Buffer.M sm3 '[ '[ 'List W3]] )
 
-mkCommandPoolInfo :: Vk.QueueFamily.Index -> Vk.CommandPool.CreateInfo ()
+mkCommandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 mkCommandPoolInfo qFam = Vk.CommandPool.CreateInfo {
 	Vk.CommandPool.createInfoNext = Nothing,
 	Vk.CommandPool.createInfoFlags =
@@ -192,26 +191,24 @@ withCommandPool device
 					device memC Vk.Memory.M.MapFlagsZero
 		_ -> error "never occur"
 
-withDevice :: (forall sd .
-	Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Device.D sd ->
-	IO a) -> IO a
-withDevice f = Vk.Instance.create @() @() def nil nil \inst -> do
-	phdvc <- head <$> Vk.PhysicalDevice.enumerate inst
+withDevice ::
+	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Device.D sd -> IO a) ->
+	IO a
+withDevice f = Vk.Inst.create @() @() def nil nil \inst -> do
+	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qFam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Device.create phdvc (mkDeviceInfo qFam) nil nil $ f phdvc qFam
+	Vk.Device.create @() @() phdvc (deviceInfo qFam) nil nil $ f phdvc qFam
 	where
-	mkDeviceInfo :: Vk.QueueFamily.Index -> Vk.Device.CreateInfo () ()
-	mkDeviceInfo qFam = Vk.Device.CreateInfo {
+	deviceInfo qFam = Vk.Device.CreateInfo {
 		Vk.Device.createInfoNext = Nothing,
-		Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
+		Vk.Device.createInfoFlags = def,
 		Vk.Device.createInfoQueueCreateInfos = [queueInfo qFam],
 		Vk.Device.createInfoEnabledLayerNames = [],
 		Vk.Device.createInfoEnabledExtensionNames = [],
 		Vk.Device.createInfoEnabledFeatures = Nothing }
 	queueInfo qFam = Vk.Device.Queue.CreateInfo {
 		Vk.Device.Queue.createInfoNext = Nothing,
-		Vk.Device.Queue.createInfoFlags =
-			Vk.Device.Queue.CreateFlagsZero,
+		Vk.Device.Queue.createInfoFlags = def,
 		Vk.Device.Queue.createInfoQueueFamilyIndex = qFam,
 		Vk.Device.Queue.createInfoQueuePriorities = [0] }
 
@@ -246,7 +243,7 @@ newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 
 storageBufferNew :: forall sd w a . (Show w, Storable w) =>
-	Vk.Device.D sd -> Vk.PhysicalDevice.P -> V.Vector w -> (
+	Vk.Device.D sd -> Vk.PhDvc.P -> V.Vector w -> (
 		forall sb sm .
 		Vk.Buffer.Binded sb sm '[ 'List w]  ->
 		Vk.Device.Memory.Buffer.M sm '[ '[ 'List w]] -> IO a ) ->
@@ -282,7 +279,7 @@ storageBufferNew dvc phdvc xs f = do
 storageBufferNew3 :: (
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3 ) =>
-	Vk.Device.D sd -> Vk.PhysicalDevice.P ->
+	Vk.Device.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 . (
 			(	Vk.Buffer.Binded sb1 sm1 '[ 'List w1],
@@ -300,24 +297,24 @@ storageBufferNew3 dvc phdvc xs1 xs2 xs3 f =
 	f ((b1, m1), (b2, m2), (b3, m3))
 
 findQueueFamily ::
-	Vk.PhysicalDevice.P -> Vk.Queue.FlagBits -> IO Vk.QueueFamily.Index
+	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
 findQueueFamily phdvc qb = do
-	qFamProperties <- Vk.PhysicalDevice.getQueueFamilyProperties phdvc
+	qFamProperties <- Vk.PhDvc.getQueueFamilyProperties phdvc
 	pure . fst . head $ filter ((/= zeroBits)
-			. (.&. qb) . Vk.QueueFamily.propertiesQueueFlags . snd)
+			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
 		qFamProperties
 
-findMemoryTypeIndex :: Vk.PhysicalDevice.P ->
+findMemoryTypeIndex :: Vk.PhDvc.P ->
 	Vk.Memory.M.Requirements -> Vk.Memory.PropertyFlags ->
 	IO Vk.Memory.TypeIndex
 findMemoryTypeIndex physicalDevice requirements memoryProp = do
-	memoryProperties <- Vk.PhysicalDevice.getMemoryProperties physicalDevice
+	memoryProperties <- Vk.PhDvc.getMemoryProperties physicalDevice
 	let	reqTypes = Vk.Memory.M.requirementsMemoryTypeBits requirements
 		memPropTypes = (fst <$>)
 			. filter ((== memoryProp)
 				. (.&. memoryProp)
 				. Vk.Memory.M.mTypePropertyFlags . snd)
-			$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
+			$ Vk.PhDvc.memoryPropertiesMemoryTypes
 				memoryProperties
 	case filter (`Vk.Memory.M.elemTypeIndex` reqTypes) memPropTypes of
 		[] -> error "No available memory types"
