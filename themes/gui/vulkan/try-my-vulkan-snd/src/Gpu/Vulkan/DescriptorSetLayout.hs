@@ -8,10 +8,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout (
-	L, create, L', create', CreateInfo(..), Binding(..) ) where
+	L'', create'', L, create, CreateInfo(..), Binding(..) ) where
 
 import Foreign.Pointable
-import Control.Monad.Cont
 import Control.Exception
 import Data.HeteroList
 import Data.Word
@@ -24,22 +23,21 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
-import qualified Gpu.Vulkan.DescriptorSetLayout.Core as C
 import qualified Gpu.Vulkan.Sampler as Sampler
 
-create :: (Pointable n, Pointable c, Pointable d) =>
+create'' :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . L s -> IO a) -> IO a
-create (Device.D dvc) ci macc macd f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L)
+	(forall s . L'' s -> IO a) -> IO a
+create'' (Device.D dvc) ci macc macd f =
+	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L'')
 
-create' :: (Pointable n, BindingsToMiddle bts, Pointable c, Pointable d) =>
+create :: (Pointable n, BindingsToMiddle bts, Pointable c, Pointable d) =>
 	Device.D sd -> CreateInfo n bts ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . L' s bts -> IO a) -> IO a
-create' dvc ci macc macd f =
-	create dvc (createInfoToMiddle ci) macc macd \(L l) -> f $ L' l
+	(forall s . L s bts -> IO a) -> IO a
+create dvc ci macc macd f =
+	create'' dvc (createInfoToMiddle ci) macc macd \(L'' l) -> f $ L l
 
 data Binding (bt :: BindingType) where
 	BindingBuffer :: {

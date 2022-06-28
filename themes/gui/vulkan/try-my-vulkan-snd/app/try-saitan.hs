@@ -65,7 +65,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DescriptorSetLayout
 
 main :: IO ()
 main = withDevice \phdvc qFam device -> withDescriptorPool device \dscPool ->
-	Vk.DescriptorSetLayout.create'
+	Vk.DescriptorSetLayout.create
 		device dscSetLayoutInfo nil nil \dscSetLayout ->
 	let	pipelineLayoutInfo :: Vk.Ppl.Layout.CreateInfo () '[] _
 		pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {

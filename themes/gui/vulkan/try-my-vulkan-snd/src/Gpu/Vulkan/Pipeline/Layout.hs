@@ -28,20 +28,20 @@ data CreateInfo n ss sbtss = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags,
 	createInfoSetLayouts :: Either
-		(HeteroVarList Descriptor.Set.Layout.L ss)
+		(HeteroVarList Descriptor.Set.Layout.L'' ss)
 		(HeteroVarList Layout sbtss),
 	createInfoPushConstantRanges :: [PushConstant.Range] }
 
 deriving instance (
 	Show n,
-	Show (HeteroVarList Descriptor.Set.Layout.L ss),
+	Show (HeteroVarList Descriptor.Set.Layout.L'' ss),
 	Show (HeteroVarList Layout sbtss) ) =>
 	Show (CreateInfo n ss sbtss)
 
 data Layout sbts where
-	Layout :: Descriptor.Set.Layout.L' s bts -> Layout '(s, bts)
+	Layout :: Descriptor.Set.Layout.L s bts -> Layout '(s, bts)
 
-unLayout :: Layout '(s, bts) -> Descriptor.Set.Layout.L' s bts
+unLayout :: Layout '(s, bts) -> Descriptor.Set.Layout.L s bts
 unLayout (Layout l) = l
 
 class HeteroVarListToList' sbtss where
@@ -60,8 +60,8 @@ createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoSetLayouts = either
-		(heteroVarListToList Descriptor.Set.Layout.unL)
-		(heteroVarListToList' $ Descriptor.Set.Layout.unL' . unLayout) ->
+		(heteroVarListToList Descriptor.Set.Layout.unL'')
+		(heteroVarListToList' $ Descriptor.Set.Layout.unL . unLayout) ->
 		sls,
 	createInfoPushConstantRanges = pcrs
 	} = M.CreateInfo {

@@ -133,7 +133,7 @@ withCommandPool phdvc device queue commandPool =
 				Vk.Descriptor.Set.Layout.CreateFlagsZero,
 			Vk.Descriptor.Set.Layout.M.createInfoBindings =
 				[binding] }
-	Vk.Descriptor.Set.Layout.create @() device descSetLayoutInfo nil nil \descSetLayout -> do
+	Vk.Descriptor.Set.Layout.create'' @() device descSetLayoutInfo nil nil \descSetLayout -> do
 		let	pipelineLayoutInfo :: Vk.Pipeline.Layout.CreateInfo () _ '[]
 			pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
 				Vk.Pipeline.Layout.createInfoNext = Nothing,
