@@ -1,5 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -59,7 +59,6 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Memory.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
-
 main :: IO ()
 main = do
 	(r1, r2, r3) <- calc dataSize datA datB datC
@@ -77,17 +76,15 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 		>>= \(dscSet :...: HVNil) ->
 	storageBufferNew3 dvc phdvc da db dc
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
-	let	descBufferInfos =
-			bufferInfoList @W1 bufA :...:
-			bufferInfoList @W2 bufB :...:
-			bufferInfoList @W3 bufC :...: HVNil
-		writeDescSet = Vk.DscSet.Write {
+	let	writeDescSet = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = Nothing,
 			Vk.DscSet.writeDstSet = dscSet,
 			Vk.DscSet.writeDescriptorType =
 				Vk.Dsc.TypeStorageBuffer,
-			Vk.DscSet.writeSources =
-				Vk.DscSet.BufferInfos descBufferInfos } in
+			Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
+				bufferInfoList @W1 bufA :...:
+				bufferInfoList @W2 bufB :...:
+				bufferInfoList @W3 bufC :...: HVNil } in
 	Vk.DscSet.updateDs @() @() dvc
 		(Vk.DscSet.Write_ writeDescSet :...: HVNil) [] >>
 
@@ -98,11 +95,10 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 			(computePipelineInfo pipelineLayout) :...: HVNil)
 		nil nil \(Vk.Ppl.Cmpt.Pipeline pipeline :...: HVNil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
-	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \cmdBufs ->
-		case cmdBufs of
-			[cmdBuf] -> run dvc qFam cmdBuf pipeline
-				pipelineLayout dscSet dsz memA memB memC
-			_ -> error "never occur"
+	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
+		[cmdBuf] -> run dvc qFam cmdBuf pipeline
+			pipelineLayout dscSet dsz memA memB memC
+		_ -> error "never occur"
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
 	'[ 'Vk.DscSetLyt.Buffer '[ 'List W1, 'List W2, 'List W3]]
