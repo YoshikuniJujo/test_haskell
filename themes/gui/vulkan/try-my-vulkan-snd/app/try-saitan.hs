@@ -78,13 +78,9 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	storageBufferNew3 dvc phdvc da db dc
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	let	descBufferInfos =
-			(Vk.Dsc.BufferInfoList bufA ::
-				Vk.Dsc.BufferInfo '(_, _, _, 'List W1)) :...:
-			(Vk.Dsc.BufferInfoList bufB ::
-				Vk.Dsc.BufferInfo '(_, _, _, 'List W2)) :...:
-			(Vk.Dsc.BufferInfoList bufC ::
-				Vk.Dsc.BufferInfo '(_, _, _, 'List W3)) :...:
-			HVNil
+			bufferInfoList @W1 bufA :...:
+			bufferInfoList @W2 bufB :...:
+			bufferInfoList @W3 bufC :...: HVNil
 		writeDescSet = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = Nothing,
 			Vk.DscSet.writeDstSet = dscSet,
@@ -290,6 +286,10 @@ findMemoryTypeIndex physicalDevice requirements memoryProp = do
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
+bufferInfoList :: forall t {sb} {sm} {objs} .
+	Vk.Buffer.Binded sb sm objs ->
+	Vk.Dsc.BufferInfo '(sb, sm, objs, 'List t)
+bufferInfoList = Vk.Dsc.BufferInfoList
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () vs
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
