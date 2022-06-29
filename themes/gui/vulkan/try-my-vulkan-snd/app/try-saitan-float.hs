@@ -214,7 +214,9 @@ withCommandPool phdvc device queue commandPool =
 						print commandBuffer
 						Vk.CommandBuffer.begin @() @() commandBuffer def do
 							Vk.Cmd.bindPipelineCompute commandBuffer
-								Vk.Pipeline.BindPointCompute $ head pipelines
+								Vk.Pipeline.BindPointCompute
+									. Vk.Pipeline.Compute.unPipeline
+									$ oneOfOne pipelines
 							Vk.Cmd.M.bindDescriptorSets
 								((\(Vk.CommandBuffer.C c) -> c) commandBuffer)
 								Vk.Pipeline.BindPointCompute

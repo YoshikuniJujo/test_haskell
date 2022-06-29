@@ -32,7 +32,6 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QFam
 import qualified Gpu.Vulkan.Device.Queue as Vk.Dvc.Queue
-import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Dvc.Queue
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
@@ -45,19 +44,15 @@ import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
-import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
-import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBuf
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
-import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Memory.Buffer
@@ -78,16 +73,9 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLayout ->
 	Vk.Ppl.Lyt.create dvc
 		(pipelineLayoutInfo dscSetLayout) nil nil \pipelineLayout ->
-	let	computePipelineInfo = Vk.Ppl.Cmpt.CreateInfo {
-			Vk.Ppl.Cmpt.createInfoNext = Nothing,
-			Vk.Ppl.Cmpt.createInfoFlags = def,
-			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
-			Vk.Ppl.Cmpt.createInfoLayout = pipelineLayout,
-			Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
-			Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing } in
-	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] @() @() @() dvc Nothing
-		(Vk.Ppl.Cmpt.CreateInfo_ computePipelineInfo :...: HVNil)
-		nil nil \pipelines ->
+	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
+		(Vk.Ppl.Cmpt.CreateInfo_ (computePipelineInfo pipelineLayout) :...: HVNil)
+		nil nil \(Vk.Ppl.Cmpt.Pipeline pipeline :...: HVNil) ->
 
 	withDscPool dvc \dscPool ->
 	let	dscSetInfo = Vk.DscSet.AllocateInfo' {
@@ -118,8 +106,7 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \cmdBufs ->
 		case cmdBufs of
-			[cmdBuf] -> run
-				dvc qFam cmdBuf (head pipelines)
+			[cmdBuf] -> run dvc qFam cmdBuf pipeline
 				pipelineLayout dscSet dsz memA memB memC
 			_ -> error "never occur"
 
@@ -141,6 +128,16 @@ pipelineLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoFlags = def,
 	Vk.Ppl.Lyt.createInfoSetLayouts = Vk.Ppl.Lyt.Layout dsl :...: HVNil,
 	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+
+computePipelineInfo :: Vk.Ppl.Lyt.LL sl sbtss ->
+	Vk.Ppl.Cmpt.CreateInfo () () () () () vs sl sbtss sbph
+computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+			Vk.Ppl.Cmpt.createInfoNext = Nothing,
+			Vk.Ppl.Cmpt.createInfoFlags = def,
+			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
+			Vk.Ppl.Cmpt.createInfoLayout = pl,
+			Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
+			Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qFam = Vk.CommandPool.CreateInfo {

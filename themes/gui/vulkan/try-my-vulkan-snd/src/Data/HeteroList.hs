@@ -12,7 +12,7 @@ module Data.HeteroList (
 	HeteroVarList(..),
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
-	ListToHeteroVarList(..) ) where
+	ListToHeteroVarList(..), oneOfOne ) where
 
 import Prelude hiding (length)
 
@@ -109,3 +109,6 @@ instance ListToHeteroVarList '[] where
 instance ListToHeteroVarList ss => ListToHeteroVarList (s ': ss) where
 	listToHeteroVarList f (x : xs) = f x :...: listToHeteroVarList f xs
 	listToHeteroVarList _ _ = error "bad"
+
+oneOfOne :: HeteroVarList t '[s] -> t s
+oneOfOne (x :...: HVNil) = x

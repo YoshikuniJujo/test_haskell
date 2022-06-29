@@ -99,6 +99,7 @@ instance DestroyCreateInfoMiddleList vss vss' =>
 		destroyCreateInfoMiddleList dvc mcis cis
 
 createCs :: (
+	PipelineListToHetero (ToDummies vss),
 	DestroyCreateInfoMiddleList (FirstList vss) vss,
 	M.CreateInfosToCore (FirstList vss),
 	HeteroVarListMapM'' [(Type, [DescriptorSetLayout.BindingType])] vss (FirstList vss),
@@ -106,14 +107,30 @@ createCs :: (
 	Pointable c, Pointable d, Pointable c', Pointable d' ) =>
 	Device.D sd -> Maybe Cache.C -> HeteroVarList (CreateInfo_ n n1 n2 c d) vss ->
 	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
-	(forall s . [C s] -> IO a) -> IO a
+	(forall s . HeteroVarList (Pipeline s) (ToDummies vss) -> IO a) -> IO a
 createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
 	bracket
 		(M.createCs mdvc cch cis' macc
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
-		(f . (C <$>))
+		(f . pipelineListToHetero . (C <$>))
+
+type family ToDummies tl where
+	ToDummies '[] = '[]
+	ToDummies (t ': ts) = '() ': ToDummies ts
+
+newtype Pipeline s (d :: ()) = Pipeline { unPipeline :: C s } deriving Show
+
+class PipelineListToHetero ds where
+	pipelineListToHetero :: [C s] -> HeteroVarList (Pipeline s) ds
+
+instance PipelineListToHetero '[] where
+	pipelineListToHetero [] = HVNil
+	pipelineListToHetero _ = error "mismatch"
+
+instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
+	pipelineListToHetero (p : ps) = Pipeline p :...: pipelineListToHetero ps
 
 class HeteroVarListMapM'' k ss fss where
 	heteroVarListMapM'' :: Applicative m =>
