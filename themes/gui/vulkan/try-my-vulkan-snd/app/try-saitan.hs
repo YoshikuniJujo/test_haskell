@@ -82,10 +82,10 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 			Vk.Ppl.Cmpt.createInfoNext = Nothing,
 			Vk.Ppl.Cmpt.createInfoFlags = def,
 			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
-			Vk.Ppl.Cmpt.createInfoLayout = (\(Vk.Ppl.Lyt.LL l) -> Vk.Ppl.Lyt.L l) pipelineLayout,
+			Vk.Ppl.Cmpt.createInfoLayout = pipelineLayout,
 			Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 			Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing } in
-	Vk.Ppl.Cmpt.createCs @'[ '((), _, _)] @() @() @() dvc Nothing
+	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] @() @() @() dvc Nothing
 		(Vk.Ppl.Cmpt.CreateInfo_ computePipelineInfo :...: HVNil)
 		nil nil \pipelines ->
 

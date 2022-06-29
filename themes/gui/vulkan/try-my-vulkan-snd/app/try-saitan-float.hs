@@ -166,12 +166,13 @@ withCommandPool phdvc device queue commandPool =
 					Vk.Pipeline.Compute.createInfoStage =
 						shaderStageInfo,
 					Vk.Pipeline.Compute.createInfoLayout =
-						pipelineLayout,
+						(\(Vk.Pipeline.Layout.L l) -> Vk.Pipeline.Layout.LL l)
+							pipelineLayout,
 					Vk.Pipeline.Compute.createInfoBasePipelineHandle =
 						Nothing,
 					Vk.Pipeline.Compute.createInfoBasePipelineIndex =
 						Nothing }
-			Vk.Pipeline.Compute.createCs @'[ '((), _, _)] @() @() @() @_ @_ @_ @_ @_ device Nothing
+			Vk.Pipeline.Compute.createCs @'[ '((), _, _, _)] @() @() @() @_ @_ @_ @_ @_ device Nothing
 				(Vk.Pipeline.Compute.CreateInfo_ computePipelineInfo :...: HVNil)
 				nil nil \pipelines -> do
 				print pipelines
