@@ -71,22 +71,12 @@ calc :: Word32 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
 calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLayout ->
-	Vk.Ppl.Lyt.create dvc
-		(pipelineLayoutInfo dscSetLayout) nil nil \pipelineLayout ->
-	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
-		(Vk.Ppl.Cmpt.CreateInfo_
-			(computePipelineInfo pipelineLayout) :...: HVNil)
-		nil nil \(Vk.Ppl.Cmpt.Pipeline pipeline :...: HVNil) ->
 
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
-	let	dscSetInfo = Vk.DscSet.AllocateInfo' {
-			Vk.DscSet.allocateInfoNext' = Nothing,
-			Vk.DscSet.allocateInfoDescriptorPool' = dscPool,
-			Vk.DscSet.allocateInfoSetLayouts' =
-				Vk.DscSet.Layout dscSetLayout :...: HVNil } in
-	Vk.DscSet.allocateSs' @() dvc dscSetInfo >>= \(dscSet :...: HVNil) ->
+	Vk.DscSet.allocateSs' @() dvc (dscSetInfo dscPool dscSetLayout)
+		>>= \(dscSet :...: HVNil) ->
 	storageBufferNew3 dvc phdvc da db dc
-			\((bufA, memA), (bufB, memB), (bufC, memC)) ->
+		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
 	let	descBufferInfos =
 			(Vk.Dsc.BufferInfoList bufA ::
 				Vk.Dsc.BufferInfo '(_, _, _, 'List W1)) :...:
@@ -104,6 +94,13 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 				Vk.DscSet.BufferInfos descBufferInfos } in
 	Vk.DscSet.updateDs @() @() dvc
 		(Vk.DscSet.Write_ writeDescSet :...: HVNil) [] >>
+
+	Vk.Ppl.Lyt.create dvc
+		(pipelineLayoutInfo dscSetLayout) nil nil \pipelineLayout ->
+	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
+		(Vk.Ppl.Cmpt.CreateInfo_
+			(computePipelineInfo pipelineLayout) :...: HVNil)
+		nil nil \(Vk.Ppl.Cmpt.Pipeline pipeline :...: HVNil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \cmdBufs ->
 		case cmdBufs of
@@ -146,6 +143,13 @@ commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
 	Vk.CommandPool.createInfoFlags =
 		Vk.CommandPool.CreateResetCommandBufferBit,
 	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
+
+dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
+	Vk.DscSet.AllocateInfo' n sp '[ '(sl, bts)]
+dscSetInfo pl lyt = Vk.DscSet.AllocateInfo' {
+	Vk.DscSet.allocateInfoNext' = Nothing,
+	Vk.DscSet.allocateInfoDescriptorPool' = pl,
+	Vk.DscSet.allocateInfoSetLayouts' = Vk.DscSet.Layout lyt :...: HVNil }
 
 commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
