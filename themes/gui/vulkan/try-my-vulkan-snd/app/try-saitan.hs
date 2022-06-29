@@ -49,6 +49,7 @@ import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Command as Vk.Cmd
@@ -71,13 +72,7 @@ calc :: Word32 ->
 calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
 
-	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
-	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
-		>>= \(dscSet :...: HVNil) ->
-	storageBufferNew3 dvc phdvc da db dc
-		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
-	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet dscSet bufA bufB bufC) :...: HVNil) [] >>
+	prepareMems phdvc dvc dscSetLyt da db dc \(dscSet, ma, mb, mc) ->
 
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
@@ -86,9 +81,25 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :...: HVNil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
-		[cmdBuf] -> run dvc qFam cmdBuf ppl
-			pplLyt dscSet dsz memA memB memC
+		[cmdBuf] -> run dvc qFam cmdBuf ppl pplLyt dscSet dsz ma mb mc
 		_ -> error "never occur"
+
+prepareMems :: Vk.DscSet.BindingAndArrayElem bts '[ 'List W1, 'List W2, 'List W3] =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
+	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sm2 sm3 . (
+		Vk.DscSet.S sd s '(sl, bts),
+		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]],
+		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]],
+		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W3]] ) -> IO a) -> IO a
+prepareMems phdvc dvc dscSetLyt da db dc f =
+	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
+	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
+		>>= \(dscSet :...: HVNil) ->
+	storageBufferNew3 dvc phdvc da db dc
+		\((ba, ma), (bb, mb), (bc, mc)) ->
+	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
+		(writeDscSet dscSet ba bb bc) :...: HVNil) [] >>
+	f (dscSet, ma, mb, mc)
 
 run :: Vk.Cmd.SetPos '[slbts] sbtss =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
@@ -203,7 +214,6 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 storageBufferNew3 :: (
-	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3 ) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
@@ -222,7 +232,7 @@ type BindedMem sb sm w = (
 type BindedMem3 sb1 sm1 w1 sb2 sm2 w2 sb3 sm3 w3 =
 	(BindedMem sb1 sm1 w1, BindedMem sb2 sm2 w2, BindedMem sb3 sm3 w3)
 
-storageBufferNew :: forall sd w a . (Show w, Storable w) =>
+storageBufferNew :: forall sd w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
 		forall sb sm .
 		Vk.Buffer.Binded sb sm '[ 'List w]  ->
