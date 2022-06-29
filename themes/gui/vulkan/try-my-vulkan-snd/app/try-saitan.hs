@@ -75,16 +75,9 @@ main = do
 calc :: Word32 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
 calc dsz da db dc = withDevice \phdvc qFam dvc ->
-	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil
-		\(dscSetLayout :: Vk.DscSetLyt.L sl bts) ->
-	let	pipelineLayoutInfo :: Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
-		pipelineLayoutInfo = Vk.Ppl.Lyt.CreateInfo {
-			Vk.Ppl.Lyt.createInfoNext = Nothing,
-			Vk.Ppl.Lyt.createInfoFlags = def,
-			Vk.Ppl.Lyt.createInfoSetLayouts =
-				Vk.Ppl.Lyt.Layout dscSetLayout :...: HVNil,
-			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] } in
-	Vk.Ppl.Lyt.create dvc pipelineLayoutInfo nil nil \pipelineLayout ->
+	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLayout ->
+	Vk.Ppl.Lyt.create dvc
+		(pipelineLayoutInfo dscSetLayout) nil nil \pipelineLayout ->
 	let	computePipelineInfo = Vk.Ppl.Cmpt.CreateInfo {
 			Vk.Ppl.Cmpt.createInfoNext = Nothing,
 			Vk.Ppl.Cmpt.createInfoFlags = def,
@@ -141,6 +134,13 @@ binding0 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
 binding0 = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+
+pipelineLayoutInfo :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
+pipelineLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
+	Vk.Ppl.Lyt.createInfoNext = Nothing,
+	Vk.Ppl.Lyt.createInfoFlags = def,
+	Vk.Ppl.Lyt.createInfoSetLayouts = Vk.Ppl.Lyt.Layout dsl :...: HVNil,
+	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
