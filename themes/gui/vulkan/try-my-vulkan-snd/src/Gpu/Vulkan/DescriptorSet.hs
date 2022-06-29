@@ -29,27 +29,27 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
-data AllocateInfo n sp sl = AllocateInfo {
-	allocateInfoNext :: Maybe n,
-	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts :: [Layout.L'' sl] }
+data AllocateInfo'' n sp sl = AllocateInfo'' {
+	allocateInfoNext'' :: Maybe n,
+	allocateInfoDescriptorPool'' :: Descriptor.Pool.P sp,
+	allocateInfoSetLayouts'' :: [Layout.L'' sl] }
 	deriving Show
 
-allocateInfoToMiddle :: AllocateInfo n sp sl -> M.AllocateInfo n
-allocateInfoToMiddle AllocateInfo {
-	allocateInfoNext = mnxt,
-	allocateInfoDescriptorPool = Descriptor.Pool.P dp,
-	allocateInfoSetLayouts = (Layout.unL'' <$>) -> dscsls
+allocateInfoToMiddle'' :: AllocateInfo'' n sp sl -> M.AllocateInfo n
+allocateInfoToMiddle'' AllocateInfo'' {
+	allocateInfoNext'' = mnxt,
+	allocateInfoDescriptorPool'' = Descriptor.Pool.P dp,
+	allocateInfoSetLayouts'' = (Layout.unL'' <$>) -> dscsls
 	} = M.AllocateInfo {
 		M.allocateInfoNext = mnxt,
 		M.allocateInfoDescriptorPool = dp,
 		M.allocateInfoSetLayouts = dscsls }
 
-newtype S sd sp sl = S M.S deriving Show
+newtype S'' sd sp sl = S'' M.S deriving Show
 
-allocateSs :: Pointable n =>
-	Device.D sd -> AllocateInfo n sp sl -> IO [S sd sp sl]
-allocateSs (Device.D dvc) ai = (S <$>) <$> M.allocateSs dvc (allocateInfoToMiddle ai)
+allocateSs'' :: Pointable n =>
+	Device.D sd -> AllocateInfo'' n sp sl -> IO [S'' sd sp sl]
+allocateSs'' (Device.D dvc) ai = (S'' <$>) <$> M.allocateSs dvc (allocateInfoToMiddle'' ai)
 
 data Layout (slbts :: LayoutArg) where
 	Layout :: Layout.L sl bts -> Layout '(sl, bts)
@@ -59,42 +59,42 @@ type LayoutArg = (Type, [Layout.BindingType])
 layoutToMiddle :: Layout slbts -> Layout.M.L
 layoutToMiddle (Layout (Layout.L l)) = l
 
-data AllocateInfo' n sp slbtss = AllocateInfo' {
-	allocateInfoNext' :: Maybe n,
-	allocateInfoDescriptorPool' :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts' :: HeteroVarList Layout slbtss }
+data AllocateInfo n sp slbtss = AllocateInfo {
+	allocateInfoNext :: Maybe n,
+	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
+	allocateInfoSetLayouts :: HeteroVarList Layout slbtss }
 
 deriving instance (Show n, Show (HeteroVarList Layout slbtss)) =>
-	Show (AllocateInfo' n sp slbtss)
+	Show (AllocateInfo n sp slbtss)
 
-allocateInfoToMiddle' :: AllocateInfo' n sp slbtss -> M.AllocateInfo n
-allocateInfoToMiddle' AllocateInfo' {
-	allocateInfoNext' = mnxt,
-	allocateInfoDescriptorPool' = Descriptor.Pool.P dp,
-	allocateInfoSetLayouts' = dscsls
+allocateInfoToMiddle :: AllocateInfo n sp slbtss -> M.AllocateInfo n
+allocateInfoToMiddle AllocateInfo {
+	allocateInfoNext = mnxt,
+	allocateInfoDescriptorPool = Descriptor.Pool.P dp,
+	allocateInfoSetLayouts = dscsls
 	} = M.AllocateInfo {
 		M.allocateInfoNext = mnxt,
 		M.allocateInfoDescriptorPool = dp,
 		M.allocateInfoSetLayouts =
 			heteroVarListToList layoutToMiddle dscsls }
 
-newtype S' sd sp (slbts :: LayoutArg) = S' M.S
+newtype S sd sp (slbts :: LayoutArg) = S M.S
 
-allocateSs' :: (Pointable n, ListToHeteroVarList slbtss) =>
-	Device.D sd -> AllocateInfo' n sp slbtss ->
-	IO (HeteroVarList (S' sd sp) slbtss)
-allocateSs' (Device.D dvc) ai =
-	listToHeteroVarList S' <$> M.allocateSs dvc (allocateInfoToMiddle' ai)
+allocateSs :: (Pointable n, ListToHeteroVarList slbtss) =>
+	Device.D sd -> AllocateInfo n sp slbtss ->
+	IO (HeteroVarList (S sd sp) slbtss)
+allocateSs (Device.D dvc) ai =
+	listToHeteroVarList S <$> M.allocateSs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: [Descriptor.BufferInfoArg]) = Write {
 	writeNext :: Maybe n,
-	writeDstSet :: S' sd sp slbts,
+	writeDstSet :: S sd sp slbts,
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources sbsmobjsobjs }
 
 deriving instance (
-	Show n, Show (S' sd sp slbts),
+	Show n, Show (S sd sp slbts),
 	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts sbsmobjsobjs)
 
@@ -106,7 +106,7 @@ writeToMiddle :: forall n sd sp slbts sbsmobjsobjs . (
 	Write n sd sp slbts sbsmobjsobjs -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
-	writeDstSet = S' ds,
+	writeDstSet = S ds,
 	writeDescriptorType = dt,
 	writeSources = srcs
 	} = M.Write {
@@ -158,7 +158,7 @@ data Write_ n sdspslbtssbsmobjsobjs where
 		Write_ n '(sd, sp, slbts, sbsmobjsobjs)
 
 deriving instance (
-	Show n, Show (S' sd sp slbts),
+	Show n, Show (S sd sp slbts),
 	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) ) =>
 	Show (Write_ n '(sd, sp, slbts, sbsmobjsobjs))
 

@@ -113,9 +113,9 @@ dispatch (CommandBuffer.C cb) = M.dispatch cb
 
 data DescriptorSet sd spslbts where
 	DescriptorSet ::
-		DescriptorSet.S' sd sp slbts -> DescriptorSet sd '(sp, slbts)
+		DescriptorSet.S sd sp slbts -> DescriptorSet sd '(sp, slbts)
 
-deriving instance Show (DescriptorSet.S' sd sp slbts) =>
+deriving instance Show (DescriptorSet.S sd sp slbts) =>
 	Show (DescriptorSet sd '(sp, slbts))
 
 class HeteroVarListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
@@ -137,6 +137,6 @@ bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.LL l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(heteroVarListToList'
-			(\(DescriptorSet (DescriptorSet.S' s)) -> s)
+			(\(DescriptorSet (DescriptorSet.S s)) -> s)
 			dss)
 		dosts

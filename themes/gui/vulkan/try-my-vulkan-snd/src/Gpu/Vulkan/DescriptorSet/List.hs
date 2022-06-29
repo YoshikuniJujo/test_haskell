@@ -25,7 +25,7 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 data Write n sd sp sl slsmvs = Write {
 	writeNext :: Maybe n,
-	writeDstSet :: Dsc.Set.S sd sp sl,
+	writeDstSet :: Dsc.Set.S'' sd sp sl,
 	writeDstBinding :: Word32,
 	writeDstArrayElement :: Word32,
 	writeDescriptorType :: Dsc.Type,
@@ -58,7 +58,7 @@ writeToMiddle :: Dsc.BufferInfoListToMiddle slsmvs =>
 	Write n sd sp sl slsmvs -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
-	writeDstSet = Dsc.Set.S s,
+	writeDstSet = Dsc.Set.S'' s,
 	writeDstBinding = bdg,
 	writeDstArrayElement = ae,
 	writeDescriptorType = tp,

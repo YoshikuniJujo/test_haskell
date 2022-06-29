@@ -176,14 +176,14 @@ withCommandPool phdvc device queue commandPool =
 				(Vk.Pipeline.Compute.CreateInfo_ computePipelineInfo :...: HVNil)
 				nil nil \pipelines -> do
 				print pipelines
-				let	descSetInfo = Vk.Descriptor.Set.AllocateInfo {
-						Vk.Descriptor.Set.allocateInfoNext = Nothing,
-						Vk.Descriptor.Set.allocateInfoDescriptorPool =
+				let	descSetInfo = Vk.Descriptor.Set.AllocateInfo'' {
+						Vk.Descriptor.Set.allocateInfoNext'' = Nothing,
+						Vk.Descriptor.Set.allocateInfoDescriptorPool'' =
 							descPool,
-						Vk.Descriptor.Set.allocateInfoSetLayouts =
+						Vk.Descriptor.Set.allocateInfoSetLayouts'' =
 							[descSetLayout] }
-				print @(Vk.Descriptor.Set.AllocateInfo () _ _) descSetInfo
-				descSets <- Vk.Descriptor.Set.allocateSs @() device descSetInfo
+				print @(Vk.Descriptor.Set.AllocateInfo'' () _ _) descSetInfo
+				descSets <- Vk.Descriptor.Set.allocateSs'' @() device descSetInfo
 				print descSets
 				let	descBufferInfos =
 						Vk.Descriptor.List.BufferInfo bufA :...:
@@ -222,7 +222,7 @@ withCommandPool phdvc device queue commandPool =
 								Vk.Pipeline.BindPointCompute
 								((\(Vk.Pipeline.Layout.L l) -> l) pipelineLayout)
 								0
-								((\(Vk.Descriptor.Set.S s) -> s) <$> descSets)
+								((\(Vk.Descriptor.Set.S'' s) -> s) <$> descSets)
 								[]
 							Vk.Cmd.dispatch commandBuffer dataSize 1 1
 						let	submitInfo = Vk.SubmitInfo {

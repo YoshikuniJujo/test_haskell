@@ -72,7 +72,7 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
 
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
-	Vk.DscSet.allocateSs' dvc (dscSetInfo dscPool dscSetLyt)
+	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	storageBufferNew3 dvc phdvc da db dc
 		\((bufA, memA), (bufB, memB), (bufC, memC)) ->
@@ -92,7 +92,7 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 
 run :: Vk.Cmd.SetPos '[slbts] sbtss =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S' sd sp slbts -> Word32 ->
+	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S sd sp slbts -> Word32 ->
 	Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]] ->
 	Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]] ->
 	Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W3]] -> IO ([W1], [W2], [W3])
@@ -179,11 +179,11 @@ commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
 	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.AllocateInfo' () sp '[ '(sl, bts)]
-dscSetInfo pl lyt = Vk.DscSet.AllocateInfo' {
-	Vk.DscSet.allocateInfoNext' = Nothing,
-	Vk.DscSet.allocateInfoDescriptorPool' = pl,
-	Vk.DscSet.allocateInfoSetLayouts' = Vk.DscSet.Layout lyt :...: HVNil }
+	Vk.DscSet.AllocateInfo () sp '[ '(sl, bts)]
+dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
+	Vk.DscSet.allocateInfoNext = Nothing,
+	Vk.DscSet.allocateInfoDescriptorPool = pl,
+	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :...: HVNil }
 
 commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
@@ -273,7 +273,7 @@ findMemoryTypeIndex physicalDevice requirements memoryProp = do
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
-writeDscSet :: Vk.DscSet.S' sd sp slbts ->
+writeDscSet :: Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sb1 sm1 objs1 -> Vk.Buffer.Binded sb2 sm2 objs2 ->
 	Vk.Buffer.Binded sb3 sm3 objs3 ->
 	Vk.DscSet.Write () sd sp slbts '[
