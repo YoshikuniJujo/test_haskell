@@ -74,10 +74,11 @@ calc dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.Ppl.Lyt.create dvc
 		(pipelineLayoutInfo dscSetLayout) nil nil \pipelineLayout ->
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
-		(Vk.Ppl.Cmpt.CreateInfo_ (computePipelineInfo pipelineLayout) :...: HVNil)
+		(Vk.Ppl.Cmpt.CreateInfo_
+			(computePipelineInfo pipelineLayout) :...: HVNil)
 		nil nil \(Vk.Ppl.Cmpt.Pipeline pipeline :...: HVNil) ->
 
-	withDscPool dvc \dscPool ->
+	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	let	dscSetInfo = Vk.DscSet.AllocateInfo' {
 			Vk.DscSet.allocateInfoNext' = Nothing,
 			Vk.DscSet.allocateInfoDescriptorPool' = dscPool,
@@ -199,16 +200,13 @@ withDevice f = Vk.Inst.create @() @() def nil nil \inst -> do
 		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.Queue.createInfoQueuePriorities = [0] }
 
-withDscPool :: Vk.Dvc.D sd -> (forall s . Vk.DscPool.P s -> IO a) -> IO a
-withDscPool dvc = Vk.DscPool.create @() dvc descPoolInfo nil nil
-	where
-	descPoolInfo = Vk.DscPool.CreateInfo {
-		Vk.DscPool.createInfoNext = Nothing,
-		Vk.DscPool.createInfoFlags =
-			Vk.DscPool.CreateFreeDescriptorSetBit,
-		Vk.DscPool.createInfoMaxSets = 1,
-		Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	poolSize = Vk.DscPool.Size {
+dscPoolInfo :: Vk.DscPool.CreateInfo ()
+dscPoolInfo = Vk.DscPool.CreateInfo {
+	Vk.DscPool.createInfoNext = Nothing,
+	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
+	Vk.DscPool.createInfoMaxSets = 1,
+	Vk.DscPool.createInfoPoolSizes = [poolSize] }
+	where poolSize = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
