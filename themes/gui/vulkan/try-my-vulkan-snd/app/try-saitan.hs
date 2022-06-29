@@ -196,6 +196,14 @@ withDevice f = Vk.Inst.create @() @() def nil nil \inst -> do
 		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.Queue.createInfoQueuePriorities = [0] }
 
+findQueueFamily ::
+	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
+findQueueFamily phdvc qb = do
+	qFamProperties <- Vk.PhDvc.getQueueFamilyProperties phdvc
+	pure . fst . head $ filter ((/= zeroBits)
+			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
+		qFamProperties
+
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoNext = Nothing,
@@ -206,81 +214,76 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-storageBufferNew :: forall sd w a . (Show w, Storable w) =>
-	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
-		forall sb sm .
-		Vk.Buffer.Binded sb sm '[ 'List w]  ->
-		Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] -> IO a ) -> IO a
-storageBufferNew dvc phdvc xs f = do
-	let	bInfo :: Vk.Buffer.CreateInfo () '[ 'List w]
-		bInfo = Vk.Buffer.CreateInfo {
-			Vk.Buffer.createInfoNext = Nothing,
-			Vk.Buffer.createInfoFlags = def,
-			Vk.Buffer.createInfoLengths =
-				ObjectLengthList (V.length xs) :...: HVNil,
-			Vk.Buffer.createInfoUsage =
-				Vk.Buffer.UsageStorageBufferBit,
-			Vk.Buffer.createInfoSharingMode =
-				Vk.SharingModeExclusive,
-			Vk.Buffer.createInfoQueueFamilyIndices = [] }
-	Vk.Buffer.create dvc bInfo nil nil \buffer -> do
-		requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
-		memoryTypeIndex <- findMemoryTypeIndex phdvc requirements (
-			Vk.Memory.PropertyHostVisibleBit .|.
-			Vk.Memory.PropertyHostCoherentBit )
-		let	memoryInfo = Vk.Dvc.Memory.Buffer.AllocateInfo {
-				Vk.Dvc.Memory.Buffer.allocateInfoNext = Nothing,
-				Vk.Dvc.Memory.Buffer.allocateInfoMemoryTypeIndex =
-					memoryTypeIndex }
-		Vk.Buffer.allocateBind @() dvc (buffer :...: HVNil) memoryInfo
-			nil nil \(binded :...: HVNil) memory -> do
-			Vk.Dvc.Memory.Buffer.write @_ @('List w) dvc memory
-				Vk.Memory.M.MapFlagsZero xs
-			f binded memory
-
 storageBufferNew3 :: (
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3 ) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
-		forall sb1 sm1 sb2 sm2 sb3 sm3 . (
-			(	Vk.Buffer.Binded sb1 sm1 '[ 'List w1],
-				Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List w1]] ),
-			(	Vk.Buffer.Binded sb2 sm2 '[ 'List w2],
-				Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List w2]] ),
-			(	Vk.Buffer.Binded sb3 sm3 '[ 'List w3],
-				Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List w3]] ) ) ->
-		IO a ) ->
-	IO a
+		forall sb1 sm1 sb2 sm2 sb3 sm3 .
+		BindedMem3 sb1 sm1 w1 sb2 sm2 w2 sb3 sm3 w3 -> IO a ) -> IO a
 storageBufferNew3 dvc phdvc xs1 xs2 xs3 f =
 	storageBufferNew dvc phdvc xs1 \b1 m1 ->
 	storageBufferNew dvc phdvc xs2 \b2 m2 ->
 	storageBufferNew dvc phdvc xs3 \b3 m3 ->
 	f ((b1, m1), (b2, m2), (b3, m3))
 
-findQueueFamily ::
-	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
-findQueueFamily phdvc qb = do
-	qFamProperties <- Vk.PhDvc.getQueueFamilyProperties phdvc
-	pure . fst . head $ filter ((/= zeroBits)
-			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
-		qFamProperties
+type BindedMem sb sm w = (
+	Vk.Buffer.Binded sb sm '[ 'List w],
+	Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] )
 
-findMemoryTypeIndex :: Vk.PhDvc.P ->
-	Vk.Memory.M.Requirements -> Vk.Memory.PropertyFlags ->
+type BindedMem3 sb1 sm1 w1 sb2 sm2 w2 sb3 sm3 w3 =
+	(BindedMem sb1 sm1 w1, BindedMem sb2 sm2 w2, BindedMem sb3 sm3 w3)
+
+storageBufferNew :: forall sd w a . (Show w, Storable w) =>
+	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
+		forall sb sm .
+		Vk.Buffer.Binded sb sm '[ 'List w]  ->
+		Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] -> IO a ) -> IO a
+storageBufferNew dvc phdvc xs f =
+	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
+		memoryInfo <- getMemoryInfo phdvc dvc buffer
+		Vk.Buffer.allocateBind dvc (buffer :...: HVNil) memoryInfo
+			nil nil \(binded :...: HVNil) memory -> do
+			Vk.Dvc.Memory.Buffer.write @('List w) dvc memory def xs
+			f binded memory
+
+bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[ 'List w]
+bufferInfo xs = Vk.Buffer.CreateInfo {
+	Vk.Buffer.createInfoNext = Nothing,
+	Vk.Buffer.createInfoFlags = def,
+	Vk.Buffer.createInfoLengths =
+		ObjectLengthList (V.length xs) :...: HVNil,
+	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
+	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Buffer.createInfoQueueFamilyIndices = [] }
+
+getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B s objs ->
+	IO (Vk.Dvc.Memory.Buffer.AllocateInfo ())
+getMemoryInfo phdvc dvc buffer = do
+	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
+	memTypeIdx <- findMemoryTypeIndex phdvc requirements (
+		Vk.Memory.PropertyHostVisibleBit .|.
+		Vk.Memory.PropertyHostCoherentBit )
+	pure Vk.Dvc.Memory.Buffer.AllocateInfo {
+		Vk.Dvc.Memory.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Memory.Buffer.allocateInfoMemoryTypeIndex = memTypeIdx }
+
+findMemoryTypeIndex ::
+	Vk.PhDvc.P -> Vk.Memory.M.Requirements -> Vk.Memory.PropertyFlags ->
 	IO Vk.Memory.TypeIndex
 findMemoryTypeIndex physicalDevice requirements memoryProp = do
 	memoryProperties <- Vk.PhDvc.getMemoryProperties physicalDevice
 	let	reqTypes = Vk.Memory.M.requirementsMemoryTypeBits requirements
 		memPropTypes = (fst <$>)
-			. filter ((== memoryProp)
-				. (.&. memoryProp)
+			. filter (checkBits memoryProp
 				. Vk.Memory.M.mTypePropertyFlags . snd)
-			$ Vk.PhDvc.memoryPropertiesMemoryTypes
-				memoryProperties
+			$ Vk.PhDvc.memoryPropertiesMemoryTypes memoryProperties
 	case filter (`Vk.Memory.M.elemTypeIndex` reqTypes) memPropTypes of
 		[] -> error "No available memory types"
 		i : _ -> pure i
+
+checkBits :: Bits bs => bs -> bs -> Bool
+checkBits bs0 = (== bs0) . (.&. bs0)
 
 bufferInfoList :: forall t {sb} {sm} {objs} .
 	Vk.Buffer.Binded sb sm objs ->

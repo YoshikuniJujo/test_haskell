@@ -36,7 +36,7 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
 
-write :: forall v obj objss sd sm .
+write :: forall obj v objss sd sm .
 	(StoreObject v obj, OffsetSize obj objss) =>
 	Device.D sd -> M sm objss -> Memory.M.MapFlags -> v -> IO ()
 write dvc mem@(M fs _) flgs v = bracket
