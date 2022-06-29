@@ -56,6 +56,7 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBuf
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
@@ -155,7 +156,8 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
-run :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
+run :: Vk.Cmd.SetPos '[slbts] sbtss =>
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S' sd sp slbts -> Word32 ->
 	Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]] ->
 	Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]] ->
@@ -164,11 +166,9 @@ run dvc qFam cmdBuf ppl pipelineLayout dscSet dsz memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @() @() cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.M.bindDescriptorSets
-			((\(Vk.CmdBuf.C c) -> c) cmdBuf)
-			Vk.Ppl.BindPointCompute
-			((\(Vk.Ppl.Lyt.LL l) -> l) pipelineLayout) 0
-			[(\(Vk.DscSet.S' s) -> s) dscSet] []
+		Vk.Cmd.bindDescriptorSets
+			cmdBuf Vk.Ppl.BindPointCompute pipelineLayout
+			(Vk.Cmd.DescriptorSet dscSet :...: HVNil) []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
 	Vk.Queue.submit @() queue [submitInfo] Nothing
 	Vk.Queue.waitIdle queue

@@ -8,8 +8,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Layout (
-	L, create, CreateInfo(..),
-	create'', CreateInfo''(..),
+	LL, create, CreateInfo(..),
+	L, create'', CreateInfo''(..),
 	M.CreateFlags, pattern M.CreateFlagsZero, Layout(..) ) where
 
 import Foreign.Pointable

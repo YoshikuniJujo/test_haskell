@@ -1,6 +1,11 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGe StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Command where
@@ -10,11 +15,14 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Control.Exception
+import Data.Kind
+import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
+import Gpu.Vulkan.Command.TypeLevel
 
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer.M
@@ -22,8 +30,8 @@ import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Command.Core as C
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
-import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
+import qualified Gpu.Vulkan.Pipeline.Layout.Type as Pipeline.Layout
+import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image.Middle as Image
@@ -102,3 +110,33 @@ blitImage (CommandBuffer.M.C cb)
 
 dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
 dispatch (CommandBuffer.C cb) = M.dispatch cb
+
+data DescriptorSet sd spslbts where
+	DescriptorSet ::
+		DescriptorSet.S' sd sp slbts -> DescriptorSet sd '(sp, slbts)
+
+deriving instance Show (DescriptorSet.S' sd sp slbts) =>
+	Show (DescriptorSet sd '(sp, slbts))
+
+class HeteroVarListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
+	heteroVarListToList' :: (forall spslbts . t spslbts -> t') ->
+		HeteroVarList t spslbtss -> [t']
+
+instance HeteroVarListToList' '[] where heteroVarListToList' _ HVNil = []
+
+instance HeteroVarListToList' spslbtss =>
+	HeteroVarListToList' (spslbts ': spslbtss) where
+	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
+
+bindDescriptorSets :: forall sc vs s sbtss sd spslbtss .
+	(SetPos (MapSnd spslbtss) sbtss, HeteroVarListToList' spslbtss) =>
+	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
+	Pipeline.Layout.LL s sbtss -> HeteroVarList (DescriptorSet sd) spslbtss ->
+	[Word32] -> IO ()
+bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.LL l) dss dosts =
+	M.bindDescriptorSets c bp l
+		(firstSet' @spslbtss @sbtss)
+		(heteroVarListToList'
+			(\(DescriptorSet (DescriptorSet.S' s)) -> s)
+			dss)
+		dosts
