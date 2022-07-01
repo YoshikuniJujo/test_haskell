@@ -83,10 +83,56 @@ main = do
 			putStrLn "Unsuitable args:"
 			putStrLn `mapM_` noopts
 
-calc :: Option' -> Word32 ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
+options :: [OptDescr Option]
+options = [
+	Option ['b'] ["buffer"] (ReqArg
+			(\case "1" -> Buffer1; "3" -> Buffer3; _ -> Nonsense)
+			"Number of Buffers")
+		"Set Number of Buffers",
+	Option ['m'] ["memory"] (ReqArg
+			(\case "1" -> Memory1; "3" -> Buffer3; _ -> Nonsense)
+			"Number of Memories")
+		"Set Number of Memories" ]
+
+data Option = Buffer1 | Buffer3 | Memory1 | Memory3 | Nonsense deriving (Show, Eq, Ord)
+data Option' = Buffer1Memory1 | Buffer3Memory1 | Buffer3Memory3 deriving Show
+
+processOptions :: [Option] -> Option'
+processOptions opts = case (b1, m1) of
+	(False, False) -> Buffer3Memory3
+	(False, True) -> Buffer3Memory1
+	(True, True) -> Buffer1Memory1
+	_ -> Buffer3Memory3
+	where b1 = Buffer1 `elem` opts; m1 = Memory1 `elem` opts
+
+newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
+newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
+newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
+
+dataSize :: Integral n => n
+dataSize = 1000000
+
+datA :: V.Vector W1; datA = V.replicate dataSize $ W1 3
+datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
+datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
+
+calc :: forall w1 w2 w3 . (
+	Storable w1, Storable w2, Storable w3,
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w2) '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w3) '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
+	Offset ('List w2) '[ 'List w1, 'List w2, 'List w3],
+	Offset ('List w3) '[ 'List w1, 'List w2, 'List w3],
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w2) '[ '[ 'List w1, 'List w2, 'List w3]],
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]]
+	) =>
+	Option' -> Word32 ->
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> IO ([w1], [w2], [w3])
 calc opt dsz da db dc = withDevice \phdvc qFam dvc ->
-	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
+	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
 
 	case opt of
 		Buffer3Memory3 ->
@@ -103,16 +149,17 @@ calc opt dsz da db dc = withDevice \phdvc qFam dvc ->
 			calc' dvc qFam dscSetLyt dscSet dsz ma mb mc
 
 calc' :: (
-	Vk.Device.Memory.Buffer.OffsetSize ('List W1) objss1,
-	Vk.Device.Memory.Buffer.OffsetSize ('List W2) objss2,
-	Vk.Device.Memory.Buffer.OffsetSize ('List W3) objss3,
+	Storable w1, Storable w2, Storable w3,
+	Vk.Device.Memory.Buffer.OffsetSize ('List w1) objss1,
+	Vk.Device.Memory.Buffer.OffsetSize ('List w2) objss2,
+	Vk.Device.Memory.Buffer.OffsetSize ('List w3) objss3,
 	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.S sd sp slbts -> Word32 ->
 	Vk.Dvc.Memory.Buffer.M sm1 objss1 ->
 	Vk.Dvc.Memory.Buffer.M sm2 objss2 ->
 	Vk.Dvc.Memory.Buffer.M sm3 objss3 ->
-	IO ([W1], [W2], [W3])
+	IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
@@ -124,16 +171,18 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 		[cmdBuf] -> run dvc qFam cmdBuf ppl pplLyt dscSet dsz ma mb mc
 		_ -> error "never occur"
 
-run :: (
-	Vk.Device.Memory.Buffer.OffsetSize ('List W1) objss1,
-	Vk.Device.Memory.Buffer.OffsetSize ('List W2) objss2,
-	Vk.Device.Memory.Buffer.OffsetSize ('List W3) objss3,
+run :: forall w1 w2 w3
+	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
+	Storable w1, Storable w2, Storable w3,
+	Vk.Device.Memory.Buffer.OffsetSize ('List w1) objss1,
+	Vk.Device.Memory.Buffer.OffsetSize ('List w2) objss2,
+	Vk.Device.Memory.Buffer.OffsetSize ('List w3) objss3,
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S sd sp slbts -> Word32 ->
 	Vk.Dvc.Memory.Buffer.M sm1 objss1 ->
 	Vk.Dvc.Memory.Buffer.M sm2 objss2 ->
-	Vk.Dvc.Memory.Buffer.M sm3 objss3 -> IO ([W1], [W2], [W3])
+	Vk.Dvc.Memory.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
 run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @() @() cmdBuf def do
@@ -143,9 +192,9 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
 	Vk.Queue.submit @() queue [submitInfo] Nothing
 	Vk.Queue.waitIdle queue
-	(,,)	<$> Vk.Dvc.Memory.Buffer.read @[W1] @('List W1) dvc memA def
-		<*> Vk.Dvc.Memory.Buffer.read @[W2] @('List W2) dvc memB def
-		<*> Vk.Dvc.Memory.Buffer.read @[W3] @('List W3) dvc memC def
+	(,,)	<$> Vk.Dvc.Memory.Buffer.read @[w1] @('List w1) dvc memA def
+		<*> Vk.Dvc.Memory.Buffer.read @[w2] @('List w2) dvc memB def
+		<*> Vk.Dvc.Memory.Buffer.read @[w3] @('List w3) dvc memC def
 	where	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
@@ -181,7 +230,7 @@ findQueueFamily phdvc qb = do
 		qFamProperties
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
-	'[ 'Vk.DscSetLyt.Buffer '[ 'List W1, 'List W2, 'List W3]]
+	'[ 'Vk.DscSetLyt.Buffer '[ 'List w1, 'List w2, 'List w3]]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = def,
@@ -193,54 +242,70 @@ binding0 = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
 prepareMems ::
-	Vk.DscSet.BindingAndArrayElem bts '[ 'List W1, 'List W2, 'List W3] =>
+	forall bts w1 w2 w3 sd sl a . (
+	Storable w1, Storable w2, Storable w3
+	) =>
+	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3] =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sm2 sm3 . (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm1 sm2 sm3 . (
 		Vk.DscSet.S sd s '(sl, bts),
-		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1]],
-		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W2]],
-		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W3]] ) -> IO a) -> IO a
+		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List w1]],
+		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List w2]],
+		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List w3]] ) -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	storageBufferNew3' dvc phdvc da db dc \ba ma bb mb bc mc ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet dscSet ba bb bc) :...: HVNil) [] >>
+		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) [] >>
 	f (dscSet, ma, mb, mc)
 
 prepareMems' ::
-	Vk.DscSet.BindingAndArrayElem bts '[ 'List W1, 'List W2, 'List W3] =>
+	forall bts w1 w2 w3 sd sl a . (
+	Storable w1, Storable w2, Storable w3,
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w2) '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w3) '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
+	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sm2 sm3 . (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm1 sm2 sm3 . (
 		Vk.DscSet.S sd s '(sl, bts),
-		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1], '[ 'List W2], '[ 'List W3]],
-		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W1], '[ 'List W2], '[ 'List W3]],
-		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W1], '[ 'List W2], '[ 'List W3]] ) -> IO a) -> IO a
+		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
+		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
+		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]] ) -> IO a) -> IO a
 prepareMems' phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	storage3BufferNew dvc phdvc da db dc \ba bb bc m ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet dscSet ba bb bc) :...: HVNil) [] >>
+		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) [] >>
 	f (dscSet, m, m, m)
 
-prepareMems'' ::
-	Vk.DscSet.BindingAndArrayElem bts '[ 'List W1, 'List W2, 'List W3] =>
+prepareMems'' :: forall w1 w2 w3 sd sl bts a . (
+	Storable w1, Storable w2, Storable w3,
+	Offset ('List w2) '[ 'List w1, 'List w2, 'List w3 ],
+	Offset ('List w3) '[ 'List w1, 'List w2, 'List w3 ],
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w2) '[ '[ 'List w1, 'List w2, 'List w3]],
+	Vk.Device.Memory.Buffer.OffsetSize
+		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]],
+	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sm2 sm3 . (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm1 sm2 sm3 . (
 		Vk.DscSet.S sd s '(sl, bts),
-		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List W1, 'List W2, 'List W3]],
-		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List W1, 'List W2, 'List W3]],
-		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List W1, 'List W2, 'List W3]] ) -> IO a) -> IO a
+		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List w1, 'List w2, 'List w3]],
+		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List w1, 'List w2, 'List w3]],
+		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List w1, 'List w2, 'List w3]] ) -> IO a) -> IO a
 prepareMems'' phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	storage1BufferNew dvc phdvc da db dc \b m ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet' dscSet b) :...: HVNil) [] >>
+		(writeDscSet' @w1 @w2 @w3 dscSet b) :...: HVNil) [] >>
 	f (dscSet, m, m, m)
 
 storageBufferNew3' :: (Storable w1, Storable w2, Storable w3) =>
@@ -458,32 +523,35 @@ findMemoryTypeIndex physicalDevice requirements memoryProp = do
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
-writeDscSet :: Vk.DscSet.S sd sp slbts ->
+writeDscSet ::
+	forall w1 w2 w3 sd sp slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 .
+	Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sb1 sm1 objs1 -> Vk.Buffer.Binded sb2 sm2 objs2 ->
 	Vk.Buffer.Binded sb3 sm3 objs3 ->
 	Vk.DscSet.Write () sd sp slbts '[
-		'(sb1, sm1, objs1, 'List W1), '(sb2, sm2, objs2, 'List W2),
-		'(sb3, sm3, objs3, 'List W3) ]
+		'(sb1, sm1, objs1, 'List w1), '(sb2, sm2, objs2, 'List w2),
+		'(sb3, sm3, objs3, 'List w3) ]
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		bufferInfoList @W1 ba :...: bufferInfoList @W2 bb :...:
-		bufferInfoList @W3 bc :...: HVNil }
+		bufferInfoList @w1 ba :...: bufferInfoList @w2 bb :...:
+		bufferInfoList @w3 bc :...: HVNil }
 
-writeDscSet' :: Vk.DscSet.S sd sp slbts ->
+writeDscSet' :: forall w1 w2 w3 sd sp slbts sb sm objs .
+	Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sb sm objs ->
 	Vk.DscSet.Write () sd sp slbts '[
-		'(sb, sm, objs, 'List W1), '(sb, sm, objs, 'List W2),
-		'(sb, sm, objs, 'List W3) ]
+		'(sb, sm, objs, 'List w1), '(sb, sm, objs, 'List w2),
+		'(sb, sm, objs, 'List w3) ]
 writeDscSet' ds b = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		bufferInfoList @W1 b :...: bufferInfoList @W2 b :...:
-		bufferInfoList @W3 b :...: HVNil }
+		bufferInfoList @w1 b :...: bufferInfoList @w2 b :...:
+		bufferInfoList @w3 b :...: HVNil }
 
 bufferInfoList :: forall t {sb} {sm} {objs} .
 	Vk.Buffer.Binded sb sm objs ->
@@ -526,38 +594,3 @@ main()
 }
 
 |]
-
-newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
-newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
-newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
-
-dataSize :: Integral n => n
-dataSize = 1000000
-
-datA :: V.Vector W1; datA = V.replicate dataSize $ W1 3
-datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
-datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
-
-options :: [OptDescr Option]
-options = [
-	Option ['b'] ["buffer"] (ReqArg
-			(\case "1" -> Buffer1; "3" -> Buffer3; _ -> Nonsense)
-			"Number of Buffers")
-		"Set Number of Buffers",
-	Option ['m'] ["memory"] (ReqArg
-			(\case "1" -> Memory1; "3" -> Buffer3; _ -> Nonsense)
-			"Number of Memories")
-		"Set Number of Memories" ]
-
-data Option = Buffer1 | Buffer3 | Memory1 | Memory3 | Nonsense deriving (Show, Eq, Ord)
-data Option' = Buffer1Memory1 | Buffer3Memory1 | Buffer3Memory3 deriving Show
-
-processOptions :: [Option] -> Option'
-processOptions opts = case (b1, m1) of
-	(False, False) -> Buffer3Memory3
-	(False, True) -> Buffer3Memory1
-	(True, True) -> Buffer1Memory1
-	_ -> Buffer3Memory3
-	where
-	b1 = Buffer1 `elem` opts
-	m1 = Memory1 `elem` opts
