@@ -20,6 +20,8 @@ import Data.Default
 import Data.Bits
 import Data.HeteroList
 import Data.Word
+import System.Environment
+import System.Console.GetOpt
 
 import qualified Data.Vector.Storable as V
 
@@ -67,19 +69,48 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Device.Memory.B
 
 main :: IO ()
 main = do
-	(r1, r2, r3) <- calc dataSize datA datB datC
-	print . take 20 $ unW1 <$> r1
-	print . take 20 $ unW2 <$> r2
-	print . take 20 $ unW3 <$> r3
+	args <- getArgs
+	let	(opts, noopts, emsgs) = getOpt RequireOrder options args
+	case (emsgs, noopts) of
+		([], []) -> do
+			let	opt' = processOptions opts
+			print opt'
+			(r1, r2, r3) <- calc opt' dataSize datA datB datC
+			print . take 20 $ unW1 <$> r1
+			print . take 20 $ unW2 <$> r2
+			print . take 20 $ unW3 <$> r3
+		_ -> do	putStrLn `mapM_` emsgs
+			putStrLn "Unsuitable args:"
+			putStrLn `mapM_` noopts
 
-calc :: Word32 ->
+calc :: Option' -> Word32 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
-calc dsz da db dc = withDevice \phdvc qFam dvc ->
+calc opt dsz da db dc = withDevice \phdvc qFam dvc ->
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
 
---	prepareMems phdvc dvc dscSetLyt da db dc \(dscSet, ma, mb, mc) ->
-	prepareMems' phdvc dvc dscSetLyt da db dc \(dscSet, ma, mb, mc) ->
+	case opt of
+		Buffer3Memory3 ->
+			prepareMems phdvc dvc
+				dscSetLyt da db dc \(dscSet, ma, mb, mc) ->
+			calc' dvc qFam dscSetLyt dscSet dsz ma mb mc
+		Buffer3Memory1 ->
+			prepareMems' phdvc dvc
+				dscSetLyt da db dc \(dscSet, ma, mb, mc) ->
+			calc' dvc qFam dscSetLyt dscSet dsz ma mb mc
+		Buffer1Memory1 -> error "yet"
 
+calc' :: (
+	Vk.Device.Memory.Buffer.OffsetSize ('List W1) objss1,
+	Vk.Device.Memory.Buffer.OffsetSize ('List W2) objss2,
+	Vk.Device.Memory.Buffer.OffsetSize ('List W3) objss3,
+	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
+	Vk.DscSet.S sd sp slbts -> Word32 ->
+	Vk.Dvc.Memory.Buffer.M sm1 objss1 ->
+	Vk.Dvc.Memory.Buffer.M sm2 objss2 ->
+	Vk.Dvc.Memory.Buffer.M sm3 objss3 ->
+	IO ([W1], [W2], [W3])
+calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
 		(Vk.Ppl.Cmpt.CreateInfo_
@@ -436,3 +467,27 @@ dataSize = 1000000
 datA :: V.Vector W1; datA = V.replicate dataSize $ W1 3
 datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
+
+options :: [OptDescr Option]
+options = [
+	Option ['b'] ["buffer"] (ReqArg
+			(\case "1" -> Buffer1; "3" -> Buffer3; _ -> Nonsense)
+			"Number of Buffers")
+		"Set Number of Buffers",
+	Option ['m'] ["memory"] (ReqArg
+			(\case "1" -> Memory1; "3" -> Buffer3; _ -> Nonsense)
+			"Number of Memories")
+		"Set Number of Memories" ]
+
+data Option = Buffer1 | Buffer3 | Memory1 | Memory3 | Nonsense deriving (Show, Eq, Ord)
+data Option' = Buffer1Memory1 | Buffer3Memory1 | Buffer3Memory3 deriving Show
+
+processOptions :: [Option] -> Option'
+processOptions opts = case (b1, m1) of
+	(False, False) -> Buffer3Memory3
+	(False, True) -> Buffer3Memory1
+	(True, True) -> Buffer1Memory1
+	_ -> Buffer3Memory3
+	where
+	b1 = Buffer1 `elem` opts
+	m1 = Memory1 `elem` opts
