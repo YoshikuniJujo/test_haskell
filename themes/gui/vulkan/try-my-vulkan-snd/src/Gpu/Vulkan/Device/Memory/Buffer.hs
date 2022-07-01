@@ -34,7 +34,7 @@ deriving instance Show (HeteroVarList ObjectLength objs) => Show (Form objs)
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoMemoryTypeIndex :: TypeIndex }
-	deriving Show
+	deriving (Show, Eq)
 
 write :: forall obj v objss sd sm .
 	(StoreObject v obj, OffsetSize obj objss) =>

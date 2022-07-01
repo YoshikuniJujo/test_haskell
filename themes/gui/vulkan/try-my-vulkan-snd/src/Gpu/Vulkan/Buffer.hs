@@ -1,8 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGe FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -11,6 +11,7 @@ module Gpu.Vulkan.Buffer where
 
 import Foreign.Pointable
 import Control.Exception
+import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList
 -- import Data.Word
@@ -72,11 +73,11 @@ create (Device.D dvc) ci macc macd f = bracket
 	(\b -> M.destroy dvc b macd)
 	(f . B (createInfoLengths ci) . (\(M.B b) -> b))
 
-getMemoryRequirements :: Device.D sd -> B s objs -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc (M.B b)
+getMemoryRequirements :: Device.D sd -> BB sobjs -> IO Memory.M.Requirements
+getMemoryRequirements (Device.D dvc) (BB (B _ b)) = M.getMemoryRequirements dvc (M.B b)
 
 allocateInfoToMiddle ::
-	Device.D sd -> HeteroVarList (B sb) objss -> Device.Memory.AllocateInfo n ->
+	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.AllocateInfo n ->
 	IO (Memory.M.AllocateInfo n)
 allocateInfoToMiddle dvc bs Device.Memory.AllocateInfo {
 	Device.Memory.allocateInfoNext = mnxt,
@@ -99,10 +100,10 @@ memoryRequirementsListToSize sz0 (reqs : reqss) =
 	algn = Memory.M.requirementsAlignment reqs
 
 allocate :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D sd -> HeteroVarList (B sb) objss ->
+	Device.D sd -> HeteroVarList BB sbobjss ->
 	Device.Memory.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . Device.Memory.M s objss -> IO a) -> IO a
+	(forall s . Device.Memory.M s (SbobjssToObjss sbobjss) -> IO a) -> IO a
 allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
@@ -111,22 +112,36 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		forms <- bsToForms dvc bs
 		f $ Device.Memory.M forms mem
 
+data BB sbobjs where
+	BB :: B sb objs -> BB '(sb, objs)
+
+data Bnd sm sbobjs where
+	Bnd :: Binded sb sm objs -> Bnd sm '(sb, objs)
+
+type family SbobjssToSb (sbobjss :: [(Type, [Object])]) where
+	SbobjssToSb '[] = '[]
+	SbobjssToSb ('(sb, objs) ': sbobjss) = sb ': SbobjssToSb sbobjss
+
+type family SbobjssToObjss (sbobjss :: [(Type, [Object])]) where
+	SbobjssToObjss '[] = '[]
+	SbobjssToObjss ('(sb, objs) ': sbobjss) = objs ': SbobjssToObjss sbobjss
+
 allocateBind :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D sd -> HeteroVarList (B sb) objss ->
+	Device.D sd -> HeteroVarList BB sbobjss ->
 	Device.Memory.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) -> (
-		forall sm . HeteroVarList (Binded sb sm) objss ->
-			Device.Memory.M sm objss -> IO a ) -> IO a
+		forall sm . HeteroVarList (Bnd sm) sbobjss ->
+			Device.Memory.M sm (SbobjssToObjss sbobjss) -> IO a ) -> IO a
 allocateBind dvc bs ai macc macd f = allocate dvc bs ai macc macd \mem -> do
 	bs' <- bindBuffersToMemory dvc bs mem 0
 	f bs' mem
 
 bindBuffersToMemory ::
-	Device.D sd -> HeteroVarList (B sb) objss -> Device.Memory.M sm objss' ->
-	Int -> IO (HeteroVarList (Binded sb sm) objss)
+	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.M sm objss' ->
+	Int -> IO (HeteroVarList (Bnd sm) sbobjss)
 bindBuffersToMemory _ HVNil _ _ = pure HVNil
-bindBuffersToMemory dvc (b :...: bs) mem i = (:...:)
-	<$> bindMemory dvc b mem i <*> bindBuffersToMemory dvc bs mem (i + 1)
+bindBuffersToMemory dvc (BB b :...: bs) mem i = (:...:)
+	<$> (Bnd <$> bindMemory dvc b mem i) <*> bindBuffersToMemory dvc bs mem (i + 1)
 
 bindMemory ::
 	Device.D sd -> B sb objs -> Device.Memory.M sm objss -> Int ->
@@ -141,18 +156,18 @@ indexForms (Device.Memory.Form ost sz _ :...: _) 0 = (ost, sz)
 indexForms (_ :...: fms) i = indexForms fms (i - 1)
 indexForms _ _ = error "bad"
 
-bsToForms :: Device.D sd -> HeteroVarList (B sb) objss ->
-	IO (HeteroVarList Device.Memory.Form objss)
+bsToForms :: Device.D sd -> HeteroVarList BB sbobjss ->
+	IO (HeteroVarList Device.Memory.Form (SbobjssToObjss sbobjss))
 bsToForms dvc bs = do
 	reqss <- heteroVarListToListM (getMemoryRequirements dvc) bs
 	pure $ zipToForms
 		(memoryRequirementsListToOffsets 0 reqss) bs
 
 zipToForms ::
-	[(Device.M.Size, Device.M.Size)] -> HeteroVarList (B sb) objss ->
-	HeteroVarList Device.Memory.Form objss
+	[(Device.M.Size, Device.M.Size)] -> HeteroVarList BB sbobjss ->
+	HeteroVarList Device.Memory.Form (SbobjssToObjss sbobjss)
 zipToForms [] HVNil = HVNil
-zipToForms ((ost, sz) : ostszs) (B lns _ :...: bs) =
+zipToForms ((ost, sz) : ostszs) (BB (B lns _) :...: bs) =
 	Device.Memory.Form ost sz lns :...: zipToForms ostszs bs
 zipToForms _ _ = error "bad"
 
