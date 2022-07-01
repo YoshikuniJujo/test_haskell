@@ -47,5 +47,19 @@ instance MakeMessages f a => MakeMessages (NextFun f) a where
 	makeMessages (Str str :. strs) (NextFun f) = makeMessage str \msg ->
 		makeMessages @f @a strs (f msg)
 
-addNextFun2 :: (forall a b . (Show a, Show b) => a -> b -> c) -> NextFun (NextFun c)
+addNextFun2 :: (forall s t . Message s -> Message t -> r) -> NextFun (NextFun r)
 addNextFun2 f = NextFun \a -> NextFun \b -> f a b
+
+{-
+class AddNextFunN f where
+	type BeforeFun f
+	addNextFunN :: BeforeFun f -> f
+
+instance AddNextFunN (IO a) where
+	type BeforeFun (IO a) = IO a
+	addNextFunN = id
+
+instance AddNextFunN f => AddNextFunN (NextFun f) where
+	type BeforeFun (NextFun f) = forall (s :: Type) . Message s -> BeforeFun f
+--	addNextFunN
+-}
