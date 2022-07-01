@@ -4,6 +4,7 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -13,6 +14,7 @@
 module Main where
 
 import Foreign.Storable
+import Data.Kind
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
@@ -162,48 +164,53 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
-	storageBufferNew3 dvc phdvc da db dc
-		\((ba, ma), (bb, mb), (bc, mc)) ->
+	storageBufferNew3' dvc phdvc da db dc \ba ma bb mb bc mc ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
 		(writeDscSet dscSet ba bb bc) :...: HVNil) [] >>
 	f (dscSet, ma, mb, mc)
 
-storageBufferNew3 :: (
-	Storable w1, Storable w2, Storable w3 ) =>
+storageBufferNew3' :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 .
-		BindedMem3 sb1 sm1 w1 sb2 sm2 w2 sb3 sm3 w3 -> IO a ) -> IO a
-storageBufferNew3 dvc phdvc xs1 xs2 xs3 f =
-	storageBufferNew dvc phdvc xs1 \b1 m1 ->
-	storageBufferNew dvc phdvc xs2 \b2 m2 ->
-	storageBufferNew dvc phdvc xs3 \b3 m3 ->
-	f ((b1, m1), (b2, m2), (b3, m3))
+		Vk.Buffer.Binded sb1 sm1 '[ 'List w1] ->
+		Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List w1]] ->
+		Vk.Buffer.Binded sb2 sm2 '[ 'List w2] ->
+		Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List w2]] ->
+		Vk.Buffer.Binded sb3 sm3 '[ 'List w3] ->
+		Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List w3]] -> IO a ) -> IO a
+storageBufferNew3' dvc phdvc x y z f =
+	storageBufferNews dvc phdvc (x :...: y :...: z :...: HVNil) $ addArg3 f
 
-class StorageBufferNews ws where
-	storageBufferNews ::
-		Vk.Dvc.D sd -> Vk.PhDvc.P -> HeteroVarList V.Vector ws ->
-		(forall sbsms . HeteroVarList BuffMem (Zip sbsms ws) -> IO a) ->
-		IO a
+addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
+	Vk.Buffer.Binded sb1 sm1 '[ 'List w1] ->
+	Vk.Dvc.Memory.Buffer.M sm1 '[ '[ 'List w1]] ->
+	Vk.Buffer.Binded sb2 sm2 '[ 'List w2] ->
+	Vk.Dvc.Memory.Buffer.M sm2 '[ '[ 'List w2]] ->
+	Vk.Buffer.Binded sb3 sm3 '[ 'List w3] ->
+	Vk.Dvc.Memory.Buffer.M sm3 '[ '[ 'List w3]] -> r) ->
+	Arg w1 (Arg w2 (Arg w3 r))
+addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
 
-instance StorageBufferNews '[] where
-	storageBufferNews _ _ _ f = f HVNil
+class StorageBufferNews f a where
+	type Vectors f :: [Type]
+	storageBufferNews :: Vk.Dvc.D sd -> Vk.PhDvc.P ->
+		HeteroVarList V.Vector (Vectors f) -> f -> IO a
 
-data BuffMem sbsmw where
-	BuffMem ::
-		Vk.Buffer.Binded sb sm '[ 'List w] ->
-		Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] ->
-		BuffMem '(sb, sm, w)
+data Arg w f = Arg (forall sb sm .
+	Vk.Buffer.Binded sb sm '[ 'List w] ->
+	Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]] -> f)
 
-type family Zip sbsms ws where
-	Zip t '[] = '[]
-	Zip '[] t = '[]
-	Zip ('(sb, sm) ': sbsms) (w ': ws) = '(sb, sm, w) ': Zip sbsms ws
+instance StorageBufferNews (IO a) a where
+	type Vectors (IO a) = '[]
+	storageBufferNews _dvc _phdvc HVNil f = f
 
-deriving instance (
-	Show (Vk.Buffer.Binded sb sm '[ 'List w]),
-	Show (Vk.Dvc.Memory.Buffer.M sm '[ '[ 'List w]]) ) =>
-	Show (BuffMem '(sb, sm, w))
+instance (Storable w, StorageBufferNews f a) =>
+	StorageBufferNews (Arg w f) a where
+	type Vectors (Arg w f) = w ': Vectors f
+	storageBufferNews dvc phdvc (vs :...: vss) (Arg f) =
+		storageBufferNew dvc phdvc vs \buf mem ->
+		storageBufferNews @f @a dvc phdvc vss (f buf mem)
 
 storageBufferNew :: forall sd w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
