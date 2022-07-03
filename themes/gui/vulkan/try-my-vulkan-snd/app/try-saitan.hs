@@ -18,6 +18,7 @@ import Data.Kind
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
+import Data.List.Length
 import Data.HeteroList
 import Data.Word
 import System.Environment
@@ -33,6 +34,7 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
+import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
@@ -67,6 +69,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
 
+import qualified Gpu.Vulkan.Khr as Vk.Khr
+
 main :: IO ()
 main = do
 	args <- getArgs
@@ -75,7 +79,7 @@ main = do
 		([], []) -> do
 			let	opt' = processOptions opts
 			print opt'
-			(r1, r2, r3) <- calc opt' dataSize datA datB datC
+			(r1, r2, r3) <- calc opt' datA datB datC
 			print . take 20 $ unW1 <$> r1
 			print . take 20 $ unW2 <$> r2
 			print . take 20 $ unW3 <$> r3
@@ -124,22 +128,25 @@ calc :: forall w1 w2 w3 . (
 	Offset ('List w3) (ListBuffer1 w1 w2 w3),
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) '[ListBuffer1 w1 w2 w3],
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) '[ListBuffer1 w1 w2 w3] ) =>
-	BufMem -> Word32 -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
+	BufMem -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
-calc opt dsz da db dc = withDevice \phdvc qFam dvc ->
+calc opt da db dc = withDevice \phdvc qFam dvc maxGroupCountX ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
+
+	let	n = fromIntegral maxGroupCountX
+		da' = V.take n da; db' = V.take n db; dc' = V.take n dc in
 
 	case opt of
 		Buffer3Memory3 ->
 			prepareMems
-				phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
-			calc' dvc qFam dscSetLyt dscSet dsz ma mb mc
+				phdvc dvc dscSetLyt da' db' dc' \dscSet ma mb mc ->
+			calc' dvc qFam dscSetLyt dscSet maxGroupCountX ma mb mc
 		Buffer3Memory1 ->
-			prepareMems' phdvc dvc dscSetLyt da db dc \dscSet m ->
-			calc' dvc qFam dscSetLyt dscSet dsz m m m
+			prepareMems' phdvc dvc dscSetLyt da' db' dc' \dscSet m ->
+			calc' dvc qFam dscSetLyt dscSet maxGroupCountX m m m
 		Buffer1Memory1 ->
-			prepareMems'' phdvc dvc dscSetLyt da db dc \dscSet m ->
-			calc' dvc qFam dscSetLyt dscSet dsz m m m
+			prepareMems'' phdvc dvc dscSetLyt da' db' dc' \dscSet m ->
+			calc' dvc qFam dscSetLyt dscSet maxGroupCountX m m m
 
 calc' :: (
 	Storable w1, Storable w2, Storable w3,
@@ -149,10 +156,8 @@ calc' :: (
 	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.S sd sp slbts -> Word32 ->
-	Vk.Dvc.Mem.Buffer.M sm1 objss1 ->
-	Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
-	Vk.Dvc.Mem.Buffer.M sm3 objss3 ->
-	IO ([w1], [w2], [w3])
+	Vk.Dvc.Mem.Buffer.M sm1 objss1 -> Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
+	Vk.Dvc.Mem.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
@@ -176,8 +181,7 @@ run :: forall w1 w2 w3
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S sd sp slbts -> Word32 ->
-	Vk.Dvc.Mem.Buffer.M sm1 objss1 ->
-	Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
+	Vk.Dvc.Mem.Buffer.M sm1 objss1 -> Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
 	Vk.Dvc.Mem.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
 run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
@@ -198,17 +202,22 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 			Vk.submitInfoSignalSemaphores = [] }
 
 withDevice ::
-	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> IO a) -> IO a
-withDevice f = Vk.Inst.create @() @() def nil nil \inst -> do
+	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
+withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
+	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
+	let	maxGroupCountX :. _ =
+			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
+	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
 	qFam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Dvc.create @() @() phdvc (dvcInfo qFam) nil nil $ f phdvc qFam
+	Vk.Dvc.create @() @() phdvc (dvcInfo qFam) nil nil $ \dvc -> f phdvc qFam dvc maxGroupCountX
 	where
 	dvcInfo qFam = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = Nothing,
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = [queueInfo qFam],
-		Vk.Dvc.createInfoEnabledLayerNames = [],
+		Vk.Dvc.createInfoEnabledLayerNames =
+			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qFam = Vk.Dvc.Queue.CreateInfo {
@@ -216,6 +225,10 @@ withDevice f = Vk.Inst.create @() @() def nil nil \inst -> do
 		Vk.Dvc.Queue.createInfoFlags = def,
 		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.Queue.createInfoQueuePriorities = [0] }
+
+instInfo :: Vk.Inst.CreateInfo () ()
+instInfo = def {
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 
 findQueueFamily ::
 	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
