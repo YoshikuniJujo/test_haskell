@@ -36,6 +36,7 @@ memo
 * [x] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.List
 * [x] use Vk.DescriptorSet.M.Write in Gpu.Vulkan.DescriptorSet.Atom
 * [x] use Vk.DescriptorSet.M.updateSs in Gpu.Vulkan.DescriptorSet.Atom
+* [ ] dynamic storage buffer
 
 tmp
 ---
