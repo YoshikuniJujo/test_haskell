@@ -61,7 +61,9 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Msg
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Middle as Vk.Device
+import qualified Gpu.Vulkan.Device as Vk.Device
+import qualified Gpu.Vulkan.Device.Type as Vk.Device
+import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
@@ -145,8 +147,7 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
-	globalDevice :: IORef Vk.Device.D,
+	globalDevice :: IORef Vk.Device.M.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
 	globalSurface :: IORef Vk.Khr.Surface.S,
 	globalPresentQueue :: IORef Vk.Queue.Q,
@@ -170,7 +171,7 @@ data Global = Global {
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
 	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
-	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex) }
+	globalVertexBufferMemory :: IORef (Vk.Device.M.MemoryList Vertex) }
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
 readGlobal ref = lift . readIORef =<< asks ref
@@ -180,8 +181,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
-	dvc <- newIORef $ Vk.Device.D NullPtr
+	dvc <- newIORef $ Vk.Device.M.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
@@ -202,9 +202,8 @@ newGlobal = do
 	cf <- newIORef 0
 	fbr <- newIORef False
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
-	vbm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
+	vbm <- newIORef $ Vk.Device.M.MemoryList 0 NullPtr
 	pure Global {
-		globalPhysicalDevice = pdvc,
 		globalDevice = dvc,
 		globalGraphicsQueue = gq,
 		globalSurface = sfc,
@@ -267,8 +266,7 @@ createInstance f = do
 			(Vk.Ext.DbgUtls.Msngr.CreateInfo
 				() () () () () ()) ()
 		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext =
-				Just debugMessengerCreateInfo,
+			Vk.Ist.M.createInfoNext = Just debugMessengerCreateInfo,
 			Vk.Ist.M.createInfoFlags = def,
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
@@ -308,53 +306,97 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 
 run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
 run win inst = do
-	initVulkan win $ instanceToMiddle inst
-	mainLoop win
+	(phdvc, qfis) <- initVulkan win inst
+	mainLoop win phdvc qfis
 	cleanup $ instanceToMiddle inst
 
-initVulkan :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
+initVulkan :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
 initVulkan win inst = do
-	createSurface win inst
-	pickPhysicalDevice inst
-	createLogicalDevice
-	createSwapChain win
+	createSurface win $ instanceToMiddle inst
+	sfc <- readGlobal globalSurface
+	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
+	createLogicalDevice phdvc qfis
+	createSwapChain win phdvc qfis
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
 	createFramebuffers
-	createCommandPool
-	createVertexBuffer
+	createCommandPool qfis
+	createVertexBuffer phdvc
 	createCommandBuffers
 	createSyncObjects
+	pure (phdvc, qfis)
 
 createSurface :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
-createSurface win ist = do
+createSurface win ist =
 	writeGlobal globalSurface
 		=<< lift (Glfw.createWindowSurface ist win nil)
 
-pickPhysicalDevice :: Vk.Ist.M.I -> ReaderT Global IO ()
-pickPhysicalDevice ist = do
-	devices <- lift . Vk.PhysicalDevice.enumerate $ Vk.Ist.T.I ist
-	when (null devices) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	suitableDevices <- filterM isDeviceSuitable devices
-	case suitableDevices of
-		[] -> error "failed to find a suitable GPU!"
-		(pdvc : _) -> writeGlobal globalPhysicalDevice pdvc
+pickPhysicalDevice :: Vk.Ist.I si ->
+	Vk.Khr.Surface.S -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
+pickPhysicalDevice ist sfc = do
+	dvcs <- Vk.PhysicalDevice.enumerate ist
+	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
+	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
+		Just pdvc -> pure pdvc
+		Nothing -> error "failed to find a suitable GPU!"
 
-isDeviceSuitable :: Vk.PhysicalDevice.P -> ReaderT Global IO Bool
-isDeviceSuitable pdvc = do
-	_deviceProperties <- lift $ Vk.PhysicalDevice.getProperties pdvc
-	_deviceFeatures <- lift $ Vk.PhysicalDevice.getFeatures pdvc
-	indices <- findQueueFamilies pdvc
-	extensionSupported <- lift $ checkDeviceExtensionSupport pdvc
-	swapChainSupport <- querySwapChainSupport pdvc
+findDevice :: Monad m =>
+	(Vk.PhysicalDevice.P -> m (Maybe a)) -> [Vk.PhysicalDevice.P] ->
+	m (Maybe (Vk.PhysicalDevice.P, a))
+findDevice prd = \case
+	[] -> pure Nothing
+	p : ps -> prd p >>= \case
+		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
+
+isDeviceSuitable ::
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S -> IO (Maybe QueueFamilyIndices)
+isDeviceSuitable phdvc sfc = do
+	_deviceProperties <- Vk.PhysicalDevice.getProperties phdvc
+	_deviceFeatures <- Vk.PhysicalDevice.getFeatures phdvc
+	indices <- findQueueFamilies phdvc sfc
+	extensionSupported <- checkDeviceExtensionSupport phdvc
+	swapChainSupport <- querySwapChainSupport phdvc sfc
 	let	swapChainAdequate =
 			not (null $ formats swapChainSupport) &&
 			not (null $ presentModes swapChainSupport)
-	pure $ isComplete indices && extensionSupported && swapChainAdequate
+	pure if extensionSupported && swapChainAdequate
+		then completeQueueFamilies indices else Nothing
 
-deviceExtensions :: [Txt.Text]
-deviceExtensions = [Vk.Khr.Swapchain.extensionName]
+data QueueFamilyIndices = QueueFamilyIndices {
+	graphicsFamily :: Vk.QueueFamily.Index,
+	presentFamily :: Vk.QueueFamily.Index }
+
+data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
+	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
+	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
+
+completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
+completeQueueFamilies = \case
+	QueueFamilyIndicesMaybe {
+		graphicsFamilyMaybe = Just gf, presentFamilyMaybe = Just pf } ->
+		Just QueueFamilyIndices {
+			graphicsFamily = gf, presentFamily = pf }
+	_ -> Nothing
+
+findQueueFamilies ::
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S -> IO QueueFamilyIndicesMaybe
+findQueueFamilies device sfc = do
+	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
+	pfis <- filterM
+		(\i -> doesPresentSupport device i sfc) (fst <$> queueFamilies)
+	pure QueueFamilyIndicesMaybe {
+		graphicsFamilyMaybe = fst <$> find
+			(checkBits Vk.Queue.GraphicsBit
+				. Vk.QueueFamily.propertiesQueueFlags . snd)
+			queueFamilies,
+		presentFamilyMaybe = listToMaybe pfis }
+
+checkBits :: Bits bs => bs -> bs -> Bool
+checkBits bs = (== bs) . (.&. bs)
+
+doesPresentSupport :: Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Khr.Surface.S -> IO Bool
+doesPresentSupport dvc (Vk.QueueFamily.Index i) sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
 checkDeviceExtensionSupport dvc = do
@@ -363,34 +405,8 @@ checkDeviceExtensionSupport dvc = do
 	pure . null $ deviceExtensions \\
 		(Vk.extensionPropertiesExtensionName <$> availableExtensions)
 
-findQueueFamilies :: Vk.PhysicalDevice.P -> ReaderT Global IO QueueFamilyIndices
-findQueueFamilies device = do
-	queueFamilies <- lift
-		$ Vk.PhysicalDevice.getQueueFamilyProperties' device
-	lift $ print queueFamilies
-	sfc <- readGlobal globalSurface
-	psi <- listToMaybe <$> lift (
-		filterM (\i -> isPresentSupport device i sfc)
-			[0 .. fromIntegral $ length queueFamilies - 1] )
-	pure QueueFamilyIndices {
-		graphicsFamily = fst <$> find
-			((/= zeroBits)
-				. (.&. Vk.Queue.GraphicsBit)
-				. Vk.QueueFamily.propertiesQueueFlags
-				. snd )
-			(zip [0 ..] queueFamilies),
-		presentFamily = psi }
-
-isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
-isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
-
-data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Maybe Word32,
-	presentFamily :: Maybe Word32 }
-
-isComplete :: QueueFamilyIndices -> Bool
-isComplete QueueFamilyIndices {
-	graphicsFamily = gf, presentFamily = pf } = isJust gf && isJust pf
+deviceExtensions :: [Txt.Text]
+deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
 	capabilities :: Vk.Khr.Surface.Capabilities,
@@ -398,19 +414,16 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
-	Vk.PhysicalDevice.P -> ReaderT Global IO SwapChainSupportDetails
-querySwapChainSupport dvc = readGlobal globalSurface >>= \sfc ->
-	lift $ SwapChainSupportDetails
-		<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-		<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
-		<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S -> IO SwapChainSupportDetails
+querySwapChainSupport dvc sfc = SwapChainSupportDetails
+	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
+	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
+	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: ReaderT Global IO ()
-createLogicalDevice = do
-	indices <- findQueueFamilies =<< readGlobal globalPhysicalDevice
-	let	uniqueQueueFamilies = nub [
-			fromJust $ graphicsFamily indices,
-			fromJust $ presentFamily indices ]
+createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+createLogicalDevice phdvc qfis = do
+	let	uniqueQueueFamilies =
+			nub [graphicsFamily qfis, presentFamily qfis]
 		queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
 			Vk.Device.Queue.createInfoFlags =
@@ -418,36 +431,34 @@ createLogicalDevice = do
 			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
 			Vk.Device.Queue.createInfoQueuePriorities = [1] }
 		deviceFeatures = Vk.PhysicalDevice.featuresZero
-		createInfo = Vk.Device.CreateInfo {
-			Vk.Device.createInfoNext = Nothing,
-			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
-			Vk.Device.createInfoQueueCreateInfos =
-				queueCreateInfos . Vk.QueueFamily.Index <$> uniqueQueueFamilies,
-			Vk.Device.createInfoEnabledLayerNames =
+		createInfo = Vk.Device.M.CreateInfo {
+			Vk.Device.M.createInfoNext = Nothing,
+			Vk.Device.M.createInfoFlags = Vk.Device.M.CreateFlagsZero,
+			Vk.Device.M.createInfoQueueCreateInfos =
+				queueCreateInfos <$> uniqueQueueFamilies,
+			Vk.Device.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Device.createInfoEnabledExtensionNames =
+			Vk.Device.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Device.createInfoEnabledFeatures =
+			Vk.Device.M.createInfoEnabledFeatures =
 				Just deviceFeatures }
-	pdvc <- readGlobal globalPhysicalDevice
-	dvc <- lift (Vk.Device.create @() @() pdvc createInfo nil)
+	dvc <- lift (Vk.Device.M.create @() @() phdvc createInfo nil)
 	writeGlobal globalDevice dvc
 	writeGlobal globalGraphicsQueue =<< lift (
-		Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0 )
+		Vk.Device.getQueue (Vk.Device.D dvc) (graphicsFamily qfis) 0 )
 	writeGlobal globalPresentQueue =<< lift (
-		Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0 )
+		Vk.Device.getQueue (Vk.Device.D dvc) (presentFamily qfis) 0 )
 
-createSwapChain :: Glfw.Window -> ReaderT Global IO ()
-createSwapChain win = do
-	swapChainSupport <- querySwapChainSupport
-		=<< readGlobal globalPhysicalDevice
+createSwapChain :: Glfw.Window ->
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+createSwapChain win phdvc qfis0 = do
+	sfc <- readGlobal globalSurface
+	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
 	let	surfaceFormat =
 			chooseSwapSurfaceFormat $ formats swapChainSupport
 		presentMode =
 			chooseSwapPresentMode $ presentModes swapChainSupport
 	extent <- chooseSwapExtent win $ capabilities swapChainSupport
-	sfc <- readGlobal globalSurface
-	indices <- findQueueFamilies =<< readGlobal globalPhysicalDevice
 	let	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
 			. Vk.Khr.Surface.capabilitiesMaxImageCount
 			$ capabilities swapChainSupport
@@ -455,9 +466,9 @@ createSwapChain win = do
 			(Vk.Khr.Surface.capabilitiesMinImageCount
 				(capabilities swapChainSupport) + 1)
 			0 maxImageCount
-		(ism, qfis) = if graphicsFamily indices /= presentFamily indices
-			then (Vk.SharingModeConcurrent, fromJust <$> [
-				graphicsFamily indices, presentFamily indices ])
+		(ism, qfis) = if graphicsFamily qfis0 /= presentFamily qfis0
+			then (Vk.SharingModeConcurrent,
+				[graphicsFamily qfis0, presentFamily qfis0])
 			else (Vk.SharingModeExclusive, [])
 		createInfo = Vk.Khr.Swapchain.CreateInfo {
 			Vk.Khr.Swapchain.createInfoNext = Nothing,
@@ -474,7 +485,7 @@ createSwapChain win = do
 			Vk.Khr.Swapchain.createInfoImageUsage =
 				Vk.Image.UsageColorAttachmentBit,
 			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = (\(Vk.QueueFamily.Index i) -> i) <$> qfis,
 			Vk.Khr.Swapchain.createInfoPreTransform =
 				Vk.Khr.Surface.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,
@@ -818,29 +829,27 @@ createFramebuffer1 attachment = do
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Framebuffer.create @() dvc framebufferInfo nil
 
-createCommandPool :: ReaderT Global IO ()
-createCommandPool = do
-	pdvc <- readGlobal globalPhysicalDevice
-	queueFamilyIndices <- findQueueFamilies pdvc
+createCommandPool :: QueueFamilyIndices -> ReaderT Global IO ()
+createCommandPool qfis = do
 	let	poolInfo = Vk.CommandPool.CreateInfo {
 			Vk.CommandPool.createInfoNext = Nothing,
 			Vk.CommandPool.createInfoFlags =
 				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
-				Vk.QueueFamily.Index . fromJust $ graphicsFamily queueFamilyIndices }
+				graphicsFamily qfis }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
 
-createVertexBuffer :: ReaderT Global IO ()
-createVertexBuffer = do
+createVertexBuffer :: Vk.PhysicalDevice.P -> ReaderT Global IO ()
+createVertexBuffer phdvc = do
 	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBuffer (length vertices)
+	(sb, sbm) <- createBuffer phdvc (length vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
 	lift $ Vk.Memory.List.writeList dvc sbm Vk.Memory.M.MapFlagsZero vertices
-	(vb, vbm) <- createBuffer (length vertices)
+	(vb, vbm) <- createBuffer phdvc (length vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
@@ -850,9 +859,10 @@ createVertexBuffer = do
 	writeGlobal globalVertexBuffer vb
 	writeGlobal globalVertexBufferMemory vbm
 
-createBuffer :: Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
-	ReaderT Global IO (Vk.Buffer.List.B Vertex, Vk.Device.MemoryList Vertex)
-createBuffer ln usage properties = do
+createBuffer :: Vk.PhysicalDevice.P ->
+	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
+	ReaderT Global IO (Vk.Buffer.List.B Vertex, Vk.Device.M.MemoryList Vertex)
+createBuffer phdvc ln usage properties = do
 	let	bufferInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
@@ -865,7 +875,7 @@ createBuffer ln usage properties = do
 	dvc <- readGlobal globalDevice
 	b <- lift $ Vk.Buffer.List.create @() dvc bufferInfo nil
 	memRequirements <- lift $ Vk.Buffer.List.getMemoryRequirements dvc b
-	mti <- findMemoryType
+	mti <- findMemoryType phdvc
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
 		properties
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
@@ -907,10 +917,10 @@ copyBuffer srcBuffer dstBuffer ln = do
 		Vk.Queue.waitIdle gq
 		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
 
-findMemoryType :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
-	ReaderT Global IO Word32
-findMemoryType typeFilter properties = do
-	phdvc <- readGlobal globalPhysicalDevice
+findMemoryType ::
+	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
+	Vk.Memory.PropertyFlags -> ReaderT Global IO Word32
+findMemoryType phdvc typeFilter properties = do
 	memProperties <- lift $ Vk.PhysicalDevice.getMemoryProperties phdvc
 	let	r = find (suitable typeFilter properties memProperties)
 			[0 .. length (
@@ -999,18 +1009,18 @@ recordCommandBuffer cb imageIndex = do
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
-mainLoop :: Glfw.Window -> ReaderT Global IO ()
-mainLoop win = do
+mainLoop :: Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+mainLoop win phdvc qfis = do
 	fix \loop -> bool (pure ()) loop =<< do
 		lift Glfw.pollEvents
 		g <- ask
-		lift . catchAndRecreateSwapChain g win
-			$ drawFrame win `runReaderT` g
+		lift . catchAndRecreateSwapChain g win phdvc qfis
+			$ drawFrame win phdvc qfis `runReaderT` g
 		not <$> lift (Glfw.windowShouldClose win)
-	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
+	lift . Vk.Device.M.waitIdle =<< readGlobal globalDevice
 
-drawFrame :: Glfw.Window -> ReaderT Global IO ()
-drawFrame win = do
+drawFrame :: Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+drawFrame win phdvc qfis = do
 	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
@@ -1039,7 +1049,7 @@ drawFrame win = do
 				[(sc, imageIndex)] }
 	pq <- readGlobal globalPresentQueue
 	g <- ask
-	lift . catchAndRecreateSwapChain g win . catchAndSerialize
+	lift . catchAndRecreateSwapChain g win phdvc qfis . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
@@ -1047,8 +1057,9 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreateSwapChain :: Global -> Glfw.Window -> IO () -> IO ()
-catchAndRecreateSwapChain g win act = catchJust
+catchAndRecreateSwapChain ::
+	Global -> Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> IO () -> IO ()
+catchAndRecreateSwapChain g win phdvc qfis act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
@@ -1057,24 +1068,24 @@ catchAndRecreateSwapChain g win act = catchJust
 		fbr <- readIORef $ globalFramebufferResized g
 		when fbr do
 			writeIORef (globalFramebufferResized g) False
-			recreateSwapChain win `runReaderT` g)
+			recreateSwapChain win phdvc qfis `runReaderT` g)
 
 doWhile_ :: IO Bool -> IO ()
 doWhile_ act = (`when` doWhile_ act) =<< act
 
-recreateSwapChain :: Glfw.Window -> ReaderT Global IO ()
-recreateSwapChain win = do
+recreateSwapChain :: Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+recreateSwapChain win phdvc qfis = do
 	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			Glfw.waitEvents
 			(wd, hg) <- Glfw.getFramebufferSize win
 			pure $ wd == 0 || hg == 0
 	dvc <- readGlobal globalDevice
-	lift $ Vk.Device.waitIdle dvc
+	lift $ Vk.Device.M.waitIdle dvc
 
 	cleanupSwapChain
 
-	createSwapChain win
+	createSwapChain win phdvc qfis
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
@@ -1113,7 +1124,7 @@ cleanup ist = do
 		=<< readGlobal globalInFlightFences
 	lift . flip (Vk.CommandPool.destroy dvc) nil
 		=<< readGlobal globalCommandPool
-	lift $ Vk.Device.destroy dvc nil
+	lift $ Vk.Device.M.destroy dvc nil
 
 	lift . flip (Vk.Khr.Surface.destroy ist) nil
 		=<< readGlobal globalSurface
