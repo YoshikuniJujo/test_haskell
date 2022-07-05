@@ -18,6 +18,7 @@ import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
 import Control.Exception
+import Data.Default
 import Data.Bits
 import Data.Bool
 import Data.Maybe
@@ -49,10 +50,10 @@ import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
-import qualified Gpu.Vulkan.Instance as Vk.Instance
-import qualified Gpu.Vulkan.Instance.Type as Vk.Instance.T
-import qualified Gpu.Vulkan.Instance.Middle as Vk.Instance.M
-import qualified Gpu.Vulkan.Instance.Enum as Vk.Instance
+import qualified Gpu.Vulkan.Instance as Vk.Ist
+import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
+import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist.M
+import qualified Gpu.Vulkan.Instance.Enum as Vk.Ist
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
@@ -169,8 +170,7 @@ data Global = Global {
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
 	globalVertexBuffer :: IORef (Vk.Buffer.List.B Vertex),
-	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex)
-	}
+	globalVertexBufferMemory :: IORef (Vk.Device.MemoryList Vertex) }
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
 readGlobal ref = lift . readIORef =<< asks ref
@@ -232,11 +232,10 @@ newGlobal = do
 		}
 
 run :: ReaderT Global IO ()
-run = withWindow \w -> do
-	createInstance \inst -> do
-		initVulkan w $ instanceToMiddle inst
-		mainLoop w
-		cleanup $ instanceToMiddle inst
+run = withWindow \win -> createInstance \inst -> do
+	initVulkan win $ instanceToMiddle inst
+	mainLoop win
+	cleanup $ instanceToMiddle inst
 
 withWindow :: (Glfw.Window -> ReaderT Global IO a) -> ReaderT Global IO a
 withWindow f = initWindow >>= \w ->
@@ -252,7 +251,40 @@ initWindow = do
 	w <$ lift (Glfw.setFramebufferSizeCallback w
 		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True))
 
-initVulkan :: Glfw.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
+createInstance :: (forall si . Vk.Ist.I si -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+createInstance f = do
+	when enableValidationLayers $ bool
+		(lift $ error "validation layers requested, but not available!")
+		(pure ()) =<< checkValidationLayerSupport
+	extensions <- getRequiredExtensions
+	let	appInfo = Vk.ApplicationInfo {
+			Vk.applicationInfoNext = Nothing,
+			Vk.applicationInfoApplicationName = "Hello Triangle",
+			Vk.applicationInfoApplicationVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoEngineName = "No Engine",
+			Vk.applicationInfoEngineVersion =
+				Vk.makeApiVersion 0 1 0 0,
+			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+		createInfo :: Vk.Ist.M.CreateInfo
+			(Vk.Ext.DebugUtils.Messenger.CreateInfo
+				() () () () () ()) ()
+		createInfo = Vk.Ist.M.CreateInfo {
+			Vk.Ist.M.createInfoNext =
+				Just populateDebugMessengerCreateInfo,
+			Vk.Ist.M.createInfoFlags = def,
+			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
+			Vk.Ist.M.createInfoEnabledLayerNames =
+				bool [] validationLayers enableValidationLayers,
+			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
+	g <- ask
+	lift $ Vk.Ist.create createInfo nil nil \i -> f i `runReaderT` g
+
+instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
+instanceToMiddle (Vk.Ist.T.I inst) = inst
+
+initVulkan :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
 initVulkan win inst = do
 	when enableValidationLayers $ setupDebugMessenger inst
 	createSurface win inst
@@ -268,49 +300,9 @@ initVulkan win inst = do
 	createCommandBuffers
 	createSyncObjects
 
-createInstance :: (forall si . Vk.Instance.I si -> ReaderT Global IO a) ->
-	ReaderT Global IO a
-createInstance f = do
-	lift . mapM_
-		(Txt.putStrLn . ("\t" <>) . Vk.extensionPropertiesExtensionName)
-		=<< lift (Vk.Instance.M.enumerateExtensionProperties Nothing)
-	when enableValidationLayers $ bool
-		(lift $ error "validation layers requested, but not available!")
-		(pure ())
-			=<< checkValidationLayerSupport
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = Nothing,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
-	extensions <- getRequiredExtensions
-	let	createInfo :: Vk.Instance.M.CreateInfo
-			(Vk.Ext.DebugUtils.Messenger.CreateInfo
-				() () () () () ())
-			()
-		createInfo = Vk.Instance.M.CreateInfo {
-			Vk.Instance.M.createInfoNext =
-				Just populateDebugMessengerCreateInfo,
-			Vk.Instance.M.createInfoFlags =
-				Vk.Instance.CreateFlagsZero,
-			Vk.Instance.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Instance.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Instance.M.createInfoEnabledExtensionNames = extensions
-			}
-	env <- ask
-	lift $ Vk.Instance.create createInfo nil nil \i -> f i `runReaderT` env
-
-instanceToMiddle :: Vk.Instance.I si -> Vk.Instance.M.I
-instanceToMiddle (Vk.Instance.T.I inst) = inst
-
 checkValidationLayerSupport :: ReaderT Global IO Bool
 checkValidationLayerSupport = lift do
-	availableLayers <- Vk.Instance.M.enumerateLayerProperties
+	availableLayers <- Vk.Ist.M.enumerateLayerProperties
 	print validationLayers
 	print availableLayers
 	pure . null $ validationLayers \\
@@ -323,7 +315,7 @@ getRequiredExtensions = lift do
 	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
 		enableValidationLayers glfwExtensions
 
-setupDebugMessenger :: Vk.Instance.M.I -> ReaderT Global IO ()
+setupDebugMessenger :: Vk.Ist.M.I -> ReaderT Global IO ()
 setupDebugMessenger ist = do
 	writeGlobal globalDebugMessenger =<< lift (
 		Vk.Ext.DebugUtils.Messenger.create ist
@@ -353,14 +345,14 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 	Txt.putStrLn $ "validation layer: " <> message
 	pure False
 
-createSurface :: Glfw.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
+createSurface :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
 createSurface win ist = do
 	writeGlobal globalSurface
 		=<< lift (Glfw.createWindowSurface ist win nil)
 
-pickPhysicalDevice :: Vk.Instance.M.I -> ReaderT Global IO ()
+pickPhysicalDevice :: Vk.Ist.M.I -> ReaderT Global IO ()
 pickPhysicalDevice ist = do
-	devices <- lift . Vk.PhysicalDevice.enumerate $ Vk.Instance.T.I ist
+	devices <- lift . Vk.PhysicalDevice.enumerate $ Vk.Ist.T.I ist
 	when (null devices) $ error "failed to find GPUs with Gpu.Vulkan support!"
 	suitableDevices <- filterM isDeviceSuitable devices
 	case suitableDevices of
@@ -1122,7 +1114,7 @@ cleanupSwapChain = do
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
 		=<< readGlobal globalSwapChain
 
-cleanup :: Vk.Instance.M.I -> ReaderT Global IO ()
+cleanup :: Vk.Ist.M.I -> ReaderT Global IO ()
 cleanup ist = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
