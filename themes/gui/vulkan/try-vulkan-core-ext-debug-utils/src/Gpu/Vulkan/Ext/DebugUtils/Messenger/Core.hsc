@@ -8,8 +8,6 @@ module Gpu.Vulkan.Ext.DebugUtils.Messenger.Core where
 
 import Foreign.Ptr
 import Foreign.Ptr.Synonyms
-import Foreign.Concurrent
-import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
@@ -23,21 +21,18 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Core as DU
 
 #include <vulkan/vulkan.h>
 
-data MessengerTag
-type Messenger = Ptr MessengerTag
+data MTag
+type M = Ptr MTag
 
-type PtrDebugUtilsObjectNameInfo = Ptr ()
-
-structureTypeDebugUtilsMessengerCallbackData :: #{type VkStructureType}
-structureTypeDebugUtilsMessengerCallbackData =
-	#{const VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT}
+sType :: #{type VkStructureType}
+sType = #{const VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CALLBACK_DATA_EXT}
 
 struct "CallbackData"
 		#{size VkDebugUtilsMessengerCallbackDataEXT}
 		#{alignment VkDebugUtilsMessengerCallbackDataEXT} [
 	("sType", ''(), [| const $ pure () |],
 		[| \p _ -> #{poke VkDebugUtilsMessengerCallbackDataEXT, sType}
-			p structureTypeDebugUtilsMessengerCallbackData |]),
+			p sType |]),
 	("pNext", ''PtrVoid,
 		[| #{peek VkDebugUtilsMessengerCallbackDataEXT, pNext} |],
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pNext} |]),
@@ -87,12 +82,6 @@ struct "CallbackData"
 		[| #{poke VkDebugUtilsMessengerCallbackDataEXT, pObjects} |]) ]
 	[''Show, ''Storable]
 
-copyCallbackData :: Ptr CallbackData -> IO CallbackData
-copyCallbackData psrc = do
-	pdst <- malloc
-	copyBytes pdst psrc $ sizeOf @CallbackData undefined
-	CallbackData_ <$> newForeignPtr pdst (free pdst)
-
 type FnCallback =
 	#{type VkDebugUtilsMessageSeverityFlagBitsEXT} ->
 	#{type VkDebugUtilsMessageTypeFlagsEXT} ->
@@ -131,21 +120,9 @@ struct "CreateInfo"
 		[| #{poke VkDebugUtilsMessengerCreateInfoEXT, pUserData} |]) ]
 	[''Show, ''Storable]
 
-severityVerboseBit, severityWarningBit, severityErrorBit ::
-	#{type VkDebugUtilsMessageSeverityFlagBitsEXT}
-severityVerboseBit = #{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT}
-severityWarningBit = #{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT}
-severityErrorBit = #{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT}
-
-typeGeneralBit, typeValidationBit, typePerformanceBit ::
-	#{type VkDebugUtilsMessageTypeFlagBitsEXT}
-typeGeneralBit = #{const VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT}
-typeValidationBit = #{const VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT}
-typePerformanceBit = #{const VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT}
-
 create ::
 	Instance.I -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
-	Ptr Messenger -> IO #{type VkResult}
+	Ptr M -> IO #{type VkResult}
 create ist ci ac pm = withCString "vkCreateDebugUtilsMessengerEXT" \nm ->
 	c_vkGetInstanceProcAddr ist nm >>= \case
 		NullFunPtr -> pure $ #{const VK_ERROR_EXTENSION_NOT_PRESENT}
@@ -153,17 +130,17 @@ create ist ci ac pm = withCString "vkCreateDebugUtilsMessengerEXT" \nm ->
 
 type FnCreate =
 	Instance.I -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
-	Ptr Messenger -> IO #{type VkResult}
+	Ptr M -> IO #{type VkResult}
 
 foreign import ccall "dynamic" mkFnCreate :: FunPtr FnCreate -> FnCreate
 
-destroy :: Instance.I -> Messenger -> Ptr AllocationCallbacks.A -> IO ()
+destroy :: Instance.I -> M -> Ptr AllocationCallbacks.A -> IO ()
 destroy ist msgr ac = withCString "vkDestroyDebugUtilsMessengerEXT" \nm ->
 	c_vkGetInstanceProcAddr ist nm >>= \case
 		NullFunPtr -> error "error: extension not present"
 		pf -> mkFnDestroy pf ist msgr ac
 
-type FnDestroy = Instance.I -> Messenger -> Ptr AllocationCallbacks.A -> IO ()
+type FnDestroy = Instance.I -> M -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "dynamic" mkFnDestroy :: FunPtr FnDestroy -> FnDestroy
 
