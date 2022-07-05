@@ -15,6 +15,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Default
 import Data.Word
 import Data.Int
 
@@ -34,6 +35,8 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Core as C
 
 enum "CallbackDataFlags" ''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
 		[''Show, ''Storable] [("CallbackDataFlagsZero", 0)]
+
+instance Default CallbackDataFlags where def = CallbackDataFlagsZero
 
 data CallbackData n n2 n3 n4 = CallbackData {
 	callbackDataNext :: Maybe n,
@@ -94,6 +97,8 @@ fnCallbackToCore f sfb tf ccbd pud = do
 
 enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
 		[''Show, ''Storable] [("CreateFlagsZero", 0)]
+
+instance Default CreateFlags where def = CreateFlagsZero
 
 data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
 	createInfoNext :: Maybe n,

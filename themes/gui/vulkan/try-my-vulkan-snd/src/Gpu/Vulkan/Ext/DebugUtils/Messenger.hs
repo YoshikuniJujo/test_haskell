@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger (
-	create, M, M.CreateInfo(..), M.FnCallback ) where
+	create, M, M.CreateInfo(..), M.FnCallback, M.CallbackData(..) ) where
 
 import Foreign.Storable
 import Foreign.Pointable

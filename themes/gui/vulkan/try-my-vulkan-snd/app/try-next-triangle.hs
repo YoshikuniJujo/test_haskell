@@ -57,9 +57,7 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Type as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DbgUtls.Msngr.M
-import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Message
+import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Msg
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
@@ -182,7 +180,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	dmsgr <- newIORef $ Vk.Ext.DbgUtls.Msngr.M.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
@@ -231,12 +228,6 @@ newGlobal = do
 		globalVertexBuffer = vb,
 		globalVertexBufferMemory = vbm }
 
-run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
-run win inst = do
-	initVulkan win $ instanceToMiddle inst
-	mainLoop win
-	cleanup $ instanceToMiddle inst
-
 withWindow :: (Glfw.Window -> ReaderT Global IO a) -> ReaderT Global IO a
 withWindow f = initWindow >>= \w ->
 	f w <* lift (Glfw.destroyWindow w >> Glfw.terminate)
@@ -273,11 +264,11 @@ createInstance f = do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
-			(Vk.Ext.DbgUtls.Msngr.M.CreateInfo
+			(Vk.Ext.DbgUtls.Msngr.CreateInfo
 				() () () () () ()) ()
 		createInfo = Vk.Ist.M.CreateInfo {
 			Vk.Ist.M.createInfoNext =
-				Just populateDebugMessengerCreateInfo,
+				Just debugMessengerCreateInfo,
 			Vk.Ist.M.createInfoFlags = def,
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
@@ -286,38 +277,40 @@ createInstance f = do
 	g <- ask
 	lift $ Vk.Ist.create createInfo nil nil \i -> f i `runReaderT` g
 
+instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
+instanceToMiddle (Vk.Ist.T.I inst) = inst
+
 setupDebugMessenger ::
 	Vk.Ist.I si ->
 	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> ReaderT Global IO a) ->
 	ReaderT Global IO a
-setupDebugMessenger ist f = do
-	g <- ask
-	lift $ Vk.Ext.DbgUtls.Msngr.create ist populateDebugMessengerCreateInfo nil nil \m ->
-		f m `runReaderT` g
+setupDebugMessenger ist f = ask >>= \g -> lift $ Vk.Ext.DbgUtls.Msngr.create ist
+	debugMessengerCreateInfo nil nil \m -> f m `runReaderT` g
 
-populateDebugMessengerCreateInfo ::
-	Vk.Ext.DbgUtls.Msngr.M.CreateInfo () () () () () ()
-populateDebugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.M.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.M.createInfoNext = Nothing,
-	Vk.Ext.DbgUtls.Msngr.createInfoFlags =
-		Vk.Ext.DbgUtls.Msngr.M.CreateFlagsZero,
+debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()
+debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
+	Vk.Ext.DbgUtls.Msngr.createInfoNext = Nothing,
+	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.Message.SeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.Message.SeverityWarningBit .|.
-		Vk.Ext.DbgUtls.Message.SeverityErrorBit,
+		Vk.Ext.DbgUtls.Msg.SeverityVerboseBit .|.
+		Vk.Ext.DbgUtls.Msg.SeverityWarningBit .|.
+		Vk.Ext.DbgUtls.Msg.SeverityErrorBit,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.Message.TypeGeneralBit .|.
-		Vk.Ext.DbgUtls.Message.TypeValidationBit .|.
-		Vk.Ext.DbgUtls.Message.TypePerformanceBit,
+		Vk.Ext.DbgUtls.Msg.TypeGeneralBit .|.
+		Vk.Ext.DbgUtls.Msg.TypeValidationBit .|.
+		Vk.Ext.DbgUtls.Msg.TypePerformanceBit,
 	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.M.FnCallback () () () () ()
+debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.M.callbackDataMessage cbdt)
+	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
-instanceToMiddle (Vk.Ist.T.I inst) = inst
+run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
+run win inst = do
+	initVulkan win $ instanceToMiddle inst
+	mainLoop win
+	cleanup $ instanceToMiddle inst
 
 initVulkan :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
 initVulkan win inst = do
