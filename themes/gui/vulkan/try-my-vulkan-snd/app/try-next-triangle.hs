@@ -34,7 +34,7 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Glfw
+import qualified Glfw.Middle as Glfw
 import qualified Cglm
 import qualified Foreign.Storable.Generic
 

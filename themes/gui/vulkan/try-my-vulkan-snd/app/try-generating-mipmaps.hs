@@ -41,7 +41,7 @@ import qualified Data.Vector.Storable as V
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as GlfwB
-import qualified Glfw
+import qualified Glfw.Middle as Glfw
 import qualified Cglm
 import qualified Foreign.Storable.Generic
 

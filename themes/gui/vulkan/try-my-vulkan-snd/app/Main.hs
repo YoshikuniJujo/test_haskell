@@ -33,7 +33,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 import qualified Graphics.UI.GLFW as GlfwB
 
-import qualified Glfw
+import qualified Glfw.Middle as Glfw
 
 import Shaderc
 import Shaderc.EnumAuto

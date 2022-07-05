@@ -38,7 +38,7 @@ library
       Data.Traversable.Utils
       Data.Vector.Storable.Indexing
       Foreign.Storable.Generic
-      Glfw
+      Glfw.Middle
       Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
       Gpu.Vulkan.Attachment
