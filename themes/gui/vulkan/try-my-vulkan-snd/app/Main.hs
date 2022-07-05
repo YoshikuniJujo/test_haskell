@@ -56,7 +56,7 @@ import qualified Gpu.Vulkan.Device.Middle as Vk.Device
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
+import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Sfc
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
 import qualified Gpu.Vulkan.Image.Middle as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img

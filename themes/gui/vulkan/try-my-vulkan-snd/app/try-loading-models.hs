@@ -70,7 +70,7 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device.Middle as Vk.Device
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
-import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain

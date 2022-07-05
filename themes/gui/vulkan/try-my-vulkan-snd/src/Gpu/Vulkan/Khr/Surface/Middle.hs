@@ -2,7 +2,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Surface where
+module Gpu.Vulkan.Khr.Surface.Middle where
 
 import Foreign.Pointable
 import Control.Monad.Cont

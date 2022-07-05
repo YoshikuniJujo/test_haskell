@@ -14,7 +14,7 @@ import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
-import Gpu.Vulkan.Khr.Surface
+import Gpu.Vulkan.Khr.Surface.Middle
 
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core as C

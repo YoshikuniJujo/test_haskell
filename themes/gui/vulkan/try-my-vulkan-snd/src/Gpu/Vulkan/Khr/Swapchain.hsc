@@ -27,7 +27,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
-import qualified Gpu.Vulkan.Khr.Surface as Surface
+import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface
 import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 

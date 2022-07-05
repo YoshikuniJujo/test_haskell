@@ -122,8 +122,8 @@ library
       Gpu.Vulkan.Khr
       Gpu.Vulkan.Khr.ColorSpace
       Gpu.Vulkan.Khr.Enum
-      Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.Enum
+      Gpu.Vulkan.Khr.Surface.Middle
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
       Gpu.Vulkan.Khr.Swapchain
       Gpu.Vulkan.Khr.Swapchain.Enum
