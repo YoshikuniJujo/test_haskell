@@ -32,7 +32,7 @@ import Foreign.Storable.SizeAlignment
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
-import qualified Graphics.UI.GLFW as GlfwB
+import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Glfw
 import qualified Cglm
 import qualified Foreign.Storable.Generic
@@ -126,8 +126,11 @@ import Gpu.Vulkan.Buffer.List.Middle (BList(..))
 main :: IO ()
 main = runReaderT run =<< newGlobal
 
-width, height :: Int
-width = 800; height = 600
+windowName :: String
+windowName = "Triangle"
+
+windowSize :: (Int, Int)
+windowSize = (width, height) where width = 800; height = 600
 
 enableValidationLayers :: Bool
 enableValidationLayers =
@@ -235,22 +238,21 @@ run = withWindow \w -> do
 		mainLoop w
 		cleanup $ instanceToMiddle inst
 
-withWindow :: (GlfwB.Window -> ReaderT Global IO a) -> ReaderT Global IO a
+withWindow :: (Glfw.Window -> ReaderT Global IO a) -> ReaderT Global IO a
 withWindow f = initWindow >>= \w ->
-	f w <* lift (GlfwB.destroyWindow w >> GlfwB.terminate)
+	f w <* lift (Glfw.destroyWindow w >> Glfw.terminate)
 
-initWindow :: ReaderT Global IO GlfwB.Window
+initWindow :: ReaderT Global IO Glfw.Window
 initWindow = do
 	Just w <- lift do
-		True <- GlfwB.init
-		GlfwB.windowHint
-			$ GlfwB.WindowHint'ClientAPI GlfwB.ClientAPI'NoAPI
-		GlfwB.createWindow width height "Vulkan" Nothing Nothing
+		True <- Glfw.init
+		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
+		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
 	g <- ask
-	w <$ lift (GlfwB.setFramebufferSizeCallback w
+	w <$ lift (Glfw.setFramebufferSizeCallback w
 		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True))
 
-initVulkan :: GlfwB.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
+initVulkan :: Glfw.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
 initVulkan win inst = do
 	when enableValidationLayers $ setupDebugMessenger inst
 	createSurface win inst
@@ -317,7 +319,7 @@ checkValidationLayerSupport = lift do
 getRequiredExtensions :: ReaderT Global IO [Txt.Text]
 getRequiredExtensions = lift do
 	glfwExtensions <-
-		(cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
+		(cstringToText `mapM`) =<< Glfw.getRequiredInstanceExtensions
 	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
 		enableValidationLayers glfwExtensions
 
@@ -351,7 +353,7 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 	Txt.putStrLn $ "validation layer: " <> message
 	pure False
 
-createSurface :: GlfwB.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
+createSurface :: Glfw.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
 createSurface win ist = do
 	writeGlobal globalSurface
 		=<< lift (Glfw.createWindowSurface ist win nil)
@@ -461,7 +463,7 @@ createLogicalDevice = do
 	writeGlobal globalPresentQueue =<< lift (
 		Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0 )
 
-createSwapChain :: GlfwB.Window -> ReaderT Global IO ()
+createSwapChain :: Glfw.Window -> ReaderT Global IO ()
 createSwapChain win = do
 	swapChainSupport <- querySwapChainSupport
 		=<< readGlobal globalPhysicalDevice
@@ -538,12 +540,12 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: GlfwB.Window -> Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
+chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
 chooseSwapExtent win caps
 	| Vk.C.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
 		(fromIntegral -> w, fromIntegral -> h) <-
-			lift $ GlfwB.getFramebufferSize win
+			lift $ Glfw.getFramebufferSize win
 		pure $ Vk.C.Extent2d
 			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
 			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
@@ -1023,16 +1025,17 @@ recordCommandBuffer cb imageIndex = do
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
-mainLoop :: GlfwB.Window -> ReaderT Global IO ()
+mainLoop :: Glfw.Window -> ReaderT Global IO ()
 mainLoop win = do
 	fix \loop -> bool (pure ()) loop =<< do
-		lift GlfwB.pollEvents
+		lift Glfw.pollEvents
 		g <- ask
-		lift $ catchAndRecreateSwapChain g win $ drawFrame win `runReaderT` g
-		not <$> lift (GlfwB.windowShouldClose win)
+		lift . catchAndRecreateSwapChain g win
+			$ drawFrame win `runReaderT` g
+		not <$> lift (Glfw.windowShouldClose win)
 	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
 
-drawFrame :: GlfwB.Window -> ReaderT Global IO ()
+drawFrame :: Glfw.Window -> ReaderT Global IO ()
 drawFrame win = do
 	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
@@ -1070,7 +1073,7 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreateSwapChain :: Global -> GlfwB.Window -> IO () -> IO ()
+catchAndRecreateSwapChain :: Global -> Glfw.Window -> IO () -> IO ()
 catchAndRecreateSwapChain g win act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
@@ -1085,12 +1088,12 @@ catchAndRecreateSwapChain g win act = catchJust
 doWhile_ :: IO Bool -> IO ()
 doWhile_ act = (`when` doWhile_ act) =<< act
 
-recreateSwapChain :: GlfwB.Window -> ReaderT Global IO ()
+recreateSwapChain :: Glfw.Window -> ReaderT Global IO ()
 recreateSwapChain win = do
-	lift do	(wdth, hght) <- GlfwB.getFramebufferSize win
+	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
-			GlfwB.waitEvents
-			(wd, hg) <- GlfwB.getFramebufferSize win
+			Glfw.waitEvents
+			(wd, hg) <- Glfw.getFramebufferSize win
 			pure $ wd == 0 || hg == 0
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Device.waitIdle dvc
