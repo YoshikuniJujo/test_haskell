@@ -136,9 +136,9 @@ createInfoToCore CreateInfo {
 
 newtype M = M C.M deriving Show
 
-create ::
-	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
-		Storable n6, Pointable n6, Storable ud, Pointable ud) =>
+create :: (
+	Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
+	Pointable n6, Pointable ud, Storable ud ) =>
 	Instance.I -> CreateInfo n n2 n3 n4 n5 ud ->
 	Maybe (AllocationCallbacks.A n6) -> IO M
 create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do

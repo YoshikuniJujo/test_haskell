@@ -56,7 +56,9 @@ import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Type as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DbgUtls.Msngr.M
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Message
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
@@ -124,7 +126,10 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Gpu.Vulkan.Buffer.List.Middle (BList(..))
 
 main :: IO ()
-main = runReaderT run =<< newGlobal
+main = (=<< newGlobal) . runReaderT $ withWindow \win -> createInstance \inst ->
+	if enableValidationLayers
+		then setupDebugMessenger inst $ const $ run win inst
+		else run win inst
 
 windowName :: String
 windowName = "Triangle"
@@ -142,7 +147,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalDebugMessenger :: IORef Vk.Ext.DbgUtls.Msngr.M,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
@@ -178,7 +182,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	dmsgr <- newIORef $ Vk.Ext.DbgUtls.Msngr.M NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DbgUtls.Msngr.M.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
@@ -203,7 +207,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
 	pure Global {
-		globalDebugMessenger = dmsgr,
 		globalPhysicalDevice = pdvc,
 		globalDevice = dvc,
 		globalGraphicsQueue = gq,
@@ -228,8 +231,8 @@ newGlobal = do
 		globalVertexBuffer = vb,
 		globalVertexBufferMemory = vbm }
 
-run :: ReaderT Global IO ()
-run = withWindow \win -> createInstance \inst -> do
+run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
+run win inst = do
 	initVulkan win $ instanceToMiddle inst
 	mainLoop win
 	cleanup $ instanceToMiddle inst
@@ -270,7 +273,7 @@ createInstance f = do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
-			(Vk.Ext.DbgUtls.Msngr.CreateInfo
+			(Vk.Ext.DbgUtls.Msngr.M.CreateInfo
 				() () () () () ()) ()
 		createInfo = Vk.Ist.M.CreateInfo {
 			Vk.Ist.M.createInfoNext =
@@ -283,18 +286,21 @@ createInstance f = do
 	g <- ask
 	lift $ Vk.Ist.create createInfo nil nil \i -> f i `runReaderT` g
 
-setupDebugMessenger :: Vk.Ist.M.I -> ReaderT Global IO ()
-setupDebugMessenger ist = do
-	writeGlobal globalDebugMessenger =<< lift (
-		Vk.Ext.DbgUtls.Msngr.create ist
-			populateDebugMessengerCreateInfo nil )
+setupDebugMessenger ::
+	Vk.Ist.I si ->
+	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+setupDebugMessenger ist f = do
+	g <- ask
+	lift $ Vk.Ext.DbgUtls.Msngr.create ist populateDebugMessengerCreateInfo nil nil \m ->
+		f m `runReaderT` g
 
 populateDebugMessengerCreateInfo ::
-	Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()
-populateDebugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
-	Vk.Ext.DbgUtls.Msngr.createInfoNext = Nothing,
+	Vk.Ext.DbgUtls.Msngr.M.CreateInfo () () () () () ()
+populateDebugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.M.CreateInfo {
+	Vk.Ext.DbgUtls.Msngr.M.createInfoNext = Nothing,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags =
-		Vk.Ext.DbgUtls.Msngr.CreateFlagsZero,
+		Vk.Ext.DbgUtls.Msngr.M.CreateFlagsZero,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
 		Vk.Ext.DbgUtls.Message.SeverityVerboseBit .|.
 		Vk.Ext.DbgUtls.Message.SeverityWarningBit .|.
@@ -306,16 +312,15 @@ populateDebugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
+debugCallback :: Vk.Ext.DbgUtls.Msngr.M.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
-	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
+	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.M.callbackDataMessage cbdt)
 
 instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
 instanceToMiddle (Vk.Ist.T.I inst) = inst
 
 initVulkan :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
 initVulkan win inst = do
-	when enableValidationLayers $ setupDebugMessenger inst
 	createSurface win inst
 	pickPhysicalDevice inst
 	createLogicalDevice
@@ -1117,9 +1122,6 @@ cleanup ist = do
 		=<< readGlobal globalCommandPool
 	lift $ Vk.Device.destroy dvc nil
 
-	when enableValidationLayers
-		. lift . flip (Vk.Ext.DbgUtls.Msngr.destroy ist) nil
-		=<< readGlobal globalDebugMessenger
 	lift . flip (Vk.Khr.Surface.destroy ist) nil
 		=<< readGlobal globalSurface
 
