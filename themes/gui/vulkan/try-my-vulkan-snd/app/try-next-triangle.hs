@@ -53,7 +53,6 @@ import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
 import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist.M
-import qualified Gpu.Vulkan.Instance.Enum as Vk.Ist
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
@@ -134,8 +133,7 @@ windowSize :: (Int, Int)
 windowSize = (width, height) where width = 800; height = 600
 
 enableValidationLayers :: Bool
-enableValidationLayers =
-	maybe True (const False) $(lookupCompileEnvExp "NDEBUG")
+enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
@@ -228,8 +226,7 @@ newGlobal = do
 		globalCurrentFrame = cf,
 		globalFramebufferResized = fbr,
 		globalVertexBuffer = vb,
-		globalVertexBufferMemory = vbm
-		}
+		globalVertexBufferMemory = vbm }
 
 run :: ReaderT Global IO ()
 run = withWindow \win -> createInstance \inst -> do
@@ -254,9 +251,12 @@ initWindow = do
 createInstance :: (forall si . Vk.Ist.I si -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createInstance f = do
-	when enableValidationLayers $ bool
-		(lift $ error "validation layers requested, but not available!")
-		(pure ()) =<< checkValidationLayerSupport
+	lift . when enableValidationLayers $ bool
+		(error "validation layers requested, but not available!")
+		(pure ())
+		=<< null . (validationLayers \\)
+			. (Vk.layerPropertiesLayerName <$>)
+			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- getRequiredExtensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
@@ -299,14 +299,6 @@ initVulkan win inst = do
 	createVertexBuffer
 	createCommandBuffers
 	createSyncObjects
-
-checkValidationLayerSupport :: ReaderT Global IO Bool
-checkValidationLayerSupport = lift do
-	availableLayers <- Vk.Ist.M.enumerateLayerProperties
-	print validationLayers
-	print availableLayers
-	pure . null $ validationLayers \\
-		(Vk.layerPropertiesLayerName <$> availableLayers)
 
 getRequiredExtensions :: ReaderT Global IO [Txt.Text]
 getRequiredExtensions = lift do

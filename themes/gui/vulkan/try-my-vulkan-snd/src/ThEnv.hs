@@ -7,8 +7,11 @@ import Language.Haskell.TH.Syntax
 import Control.Monad
 import System.Environment
 
-lookupCompileEnvExp :: String -> Q Exp
-lookupCompileEnvExp = (`sigE` [t| Maybe String |]) . lift <=< lookupCompileEnv
+lookupCompileEnv, lookupCompileEnvExp :: String -> Q Exp
+lookupCompileEnv = (`sigE` [t| Maybe String |]) . lift <=< lookupCompileEnvStr
+lookupCompileEnvExp = lookupCompileEnv
 
-lookupCompileEnv :: String -> Q (Maybe String)
-lookupCompileEnv key = runIO $ lookup key <$> getEnvironment
+{-# DEPRECATED lookupCompileEnvExp "use lookupCompileEnv instead" #-}
+
+lookupCompileEnvStr :: String -> Q (Maybe String)
+lookupCompileEnvStr key = runIO $ lookup key <$> getEnvironment
