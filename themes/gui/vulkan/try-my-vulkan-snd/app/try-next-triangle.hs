@@ -140,7 +140,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalWindow :: IORef (Maybe GlfwB.Window),
 	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
@@ -178,7 +177,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	win <- newIORef Nothing
 	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
@@ -204,7 +202,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
 	pure Global {
-		globalWindow = win,
 		globalDebugMessenger = dmsgr,
 		globalPhysicalDevice = pdvc,
 		globalDevice = dvc,
@@ -232,36 +229,34 @@ newGlobal = do
 		}
 
 run :: ReaderT Global IO ()
-run = do
-	initWindow
+run = withWindow \w -> do
 	createInstance \inst -> do
-		initVulkan $ instanceToMiddle inst
-		mainLoop
+		initVulkan w $ instanceToMiddle inst
+		mainLoop w
 		cleanup $ instanceToMiddle inst
-	cleanupWindow
 
-instanceToMiddle :: Vk.Instance.I si -> Vk.Instance.M.I
-instanceToMiddle (Vk.Instance.T.I inst) = inst
+withWindow :: (GlfwB.Window -> ReaderT Global IO a) -> ReaderT Global IO a
+withWindow f = initWindow >>= \w ->
+	f w <* lift (GlfwB.destroyWindow w >> GlfwB.terminate)
 
-initWindow :: ReaderT Global IO ()
+initWindow :: ReaderT Global IO GlfwB.Window
 initWindow = do
 	Just w <- lift do
 		True <- GlfwB.init
 		GlfwB.windowHint
 			$ GlfwB.WindowHint'ClientAPI GlfwB.ClientAPI'NoAPI
 		GlfwB.createWindow width height "Vulkan" Nothing Nothing
-	writeGlobal globalWindow $ Just w
 	g <- ask
-	lift $ GlfwB.setFramebufferSizeCallback w
-		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True)
+	w <$ lift (GlfwB.setFramebufferSizeCallback w
+		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True))
 
-initVulkan :: Vk.Instance.M.I -> ReaderT Global IO ()
-initVulkan inst = do
+initVulkan :: GlfwB.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
+initVulkan win inst = do
 	when enableValidationLayers $ setupDebugMessenger inst
-	createSurface inst
+	createSurface win inst
 	pickPhysicalDevice inst
 	createLogicalDevice
-	createSwapChain
+	createSwapChain win
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
@@ -307,10 +302,9 @@ createInstance f = do
 			}
 	env <- ask
 	lift $ Vk.Instance.create createInfo nil nil \i -> f i `runReaderT` env
-	{-
-	inst <- lift (Vk.Instance.M.create @_ @() @() createInfo Nothing)
-	f inst
-	-}
+
+instanceToMiddle :: Vk.Instance.I si -> Vk.Instance.M.I
+instanceToMiddle (Vk.Instance.T.I inst) = inst
 
 checkValidationLayerSupport :: ReaderT Global IO Bool
 checkValidationLayerSupport = lift do
@@ -357,9 +351,8 @@ debugCallback _messageSeverity _messageType callbackData _userData = do
 	Txt.putStrLn $ "validation layer: " <> message
 	pure False
 
-createSurface :: Vk.Instance.M.I -> ReaderT Global IO ()
-createSurface ist = do
-	win <- fromJust <$> readGlobal globalWindow
+createSurface :: GlfwB.Window -> Vk.Instance.M.I -> ReaderT Global IO ()
+createSurface win ist = do
 	writeGlobal globalSurface
 		=<< lift (Glfw.createWindowSurface ist win nil)
 
@@ -468,15 +461,15 @@ createLogicalDevice = do
 	writeGlobal globalPresentQueue =<< lift (
 		Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0 )
 
-createSwapChain :: ReaderT Global IO ()
-createSwapChain = do
+createSwapChain :: GlfwB.Window -> ReaderT Global IO ()
+createSwapChain win = do
 	swapChainSupport <- querySwapChainSupport
 		=<< readGlobal globalPhysicalDevice
 	let	surfaceFormat =
 			chooseSwapSurfaceFormat $ formats swapChainSupport
 		presentMode =
 			chooseSwapPresentMode $ presentModes swapChainSupport
-	extent <- chooseSwapExtent $ capabilities swapChainSupport
+	extent <- chooseSwapExtent win $ capabilities swapChainSupport
 	sfc <- readGlobal globalSurface
 	indices <- findQueueFamilies =<< readGlobal globalPhysicalDevice
 	let	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
@@ -545,13 +538,12 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
-chooseSwapExtent caps
+chooseSwapExtent :: GlfwB.Window -> Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
+chooseSwapExtent win caps
 	| Vk.C.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
 		(fromIntegral -> w, fromIntegral -> h) <-
-			lift . GlfwB.getFramebufferSize
-				=<< fromJust <$> readGlobal globalWindow
+			lift $ GlfwB.getFramebufferSize win
 		pure $ Vk.C.Extent2d
 			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
 			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
@@ -1031,18 +1023,17 @@ recordCommandBuffer cb imageIndex = do
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
-mainLoop :: ReaderT Global IO ()
-mainLoop = do
-	w <- fromJust <$> readGlobal globalWindow
+mainLoop :: GlfwB.Window -> ReaderT Global IO ()
+mainLoop win = do
 	fix \loop -> bool (pure ()) loop =<< do
 		lift GlfwB.pollEvents
 		g <- ask
-		lift $ catchAndRecreateSwapChain g $ drawFrame `runReaderT` g
-		not <$> lift (GlfwB.windowShouldClose w)
+		lift $ catchAndRecreateSwapChain g win $ drawFrame win `runReaderT` g
+		not <$> lift (GlfwB.windowShouldClose win)
 	lift . Vk.Device.waitIdle =<< readGlobal globalDevice
 
-drawFrame :: ReaderT Global IO ()
-drawFrame = do
+drawFrame :: GlfwB.Window -> ReaderT Global IO ()
+drawFrame win = do
 	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
@@ -1071,7 +1062,7 @@ drawFrame = do
 				[(sc, imageIndex)] }
 	pq <- readGlobal globalPresentQueue
 	g <- ask
-	lift . catchAndRecreateSwapChain g . catchAndSerialize
+	lift . catchAndRecreateSwapChain g win . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
@@ -1079,8 +1070,8 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreateSwapChain :: Global -> IO () -> IO ()
-catchAndRecreateSwapChain g act = catchJust
+catchAndRecreateSwapChain :: Global -> GlfwB.Window -> IO () -> IO ()
+catchAndRecreateSwapChain g win act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
@@ -1089,25 +1080,24 @@ catchAndRecreateSwapChain g act = catchJust
 		fbr <- readIORef $ globalFramebufferResized g
 		when fbr do
 			writeIORef (globalFramebufferResized g) False
-			recreateSwapChain `runReaderT` g)
+			recreateSwapChain win `runReaderT` g)
 
 doWhile_ :: IO Bool -> IO ()
 doWhile_ act = (`when` doWhile_ act) =<< act
 
-recreateSwapChain :: ReaderT Global IO ()
-recreateSwapChain = do
-	w <- fromJust <$> readGlobal globalWindow
-	lift do	(wdth, hght) <- GlfwB.getFramebufferSize w
+recreateSwapChain :: GlfwB.Window -> ReaderT Global IO ()
+recreateSwapChain win = do
+	lift do	(wdth, hght) <- GlfwB.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			GlfwB.waitEvents
-			(wd, hg) <- GlfwB.getFramebufferSize w
+			(wd, hg) <- GlfwB.getFramebufferSize win
 			pure $ wd == 0 || hg == 0
 	dvc <- readGlobal globalDevice
 	lift $ Vk.Device.waitIdle dvc
 
 	cleanupSwapChain
 
-	createSwapChain
+	createSwapChain win
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
@@ -1153,11 +1143,6 @@ cleanup ist = do
 		=<< readGlobal globalDebugMessenger
 	lift . flip (Vk.Khr.Surface.destroy ist) nil
 		=<< readGlobal globalSurface
-
-cleanupWindow :: ReaderT Global IO ()
-cleanupWindow = do
-	lift . GlfwB.destroyWindow . fromJust =<< readGlobal globalWindow
-	lift GlfwB.terminate
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
