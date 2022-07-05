@@ -162,7 +162,7 @@ maxFramesInFlight = 2
 data Global = Global {
 	globalWindow :: IORef (Maybe GlfwB.Window),
 	globalInstance :: IORef Vk.Instance.I,
-	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
+	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
@@ -213,7 +213,7 @@ newGlobal :: IO Global
 newGlobal = do
 	win <- newIORef Nothing
 	ist <- newIORef $ Vk.Instance.I NullPtr
-	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr

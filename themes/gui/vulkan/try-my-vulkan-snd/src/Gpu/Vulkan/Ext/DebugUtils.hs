@@ -26,8 +26,6 @@ import Gpu.Vulkan.Base
 import qualified Gpu.Vulkan.Ext.DebugUtils.Core as C
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Core as C
 
-newtype Messenger = Messenger C.Messenger deriving Show
-
 foreign import capi "vulkan/vulkan.h value VK_EXT_DEBUG_UTILS_EXTENSION_NAME"
 	c_extensionName :: CString
 

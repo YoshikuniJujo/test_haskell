@@ -134,6 +134,8 @@ createInfoToCore CreateInfo {
 			C.createInfoPUserData = pud }
 	ContT $ withForeignPtr fCreateInfo
 
+newtype Messenger = Messenger C.M deriving Show
+
 create ::
 	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
 		Storable n6, Pointable n6, Storable ud, Pointable ud) =>

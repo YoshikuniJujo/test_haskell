@@ -99,6 +99,7 @@ library
       Gpu.Vulkan.Exception.Enum
       Gpu.Vulkan.Ext.DebugUtils
       Gpu.Vulkan.Ext.DebugUtils.Message.Enum
+      Gpu.Vulkan.Ext.DebugUtils.Messenger
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
