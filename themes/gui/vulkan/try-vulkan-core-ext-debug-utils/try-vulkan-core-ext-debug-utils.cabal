@@ -27,7 +27,6 @@ library
   exposed-modules:
       Gpu.Vulkan.Ext.DebugUtils.Core
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Core
-      Lib
   other-modules:
       Paths_try_vulkan_core_ext_debug_utils
   hs-source-dirs:
