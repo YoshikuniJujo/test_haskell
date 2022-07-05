@@ -44,7 +44,7 @@ import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist
 import qualified Gpu.Vulkan.Instance.Enum as Vk.Ist
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DU.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DU.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice

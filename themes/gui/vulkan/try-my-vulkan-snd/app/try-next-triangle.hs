@@ -55,9 +55,9 @@ import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
-import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
-import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DebugUtils.Messenger
-import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
+import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
+import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DbgUtls.Msngr
+import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Message
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
@@ -142,7 +142,7 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalDebugMessenger :: IORef Vk.Ext.DebugUtils.Messenger,
+	globalDebugMessenger :: IORef Vk.Ext.DbgUtls.Messenger,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
@@ -178,7 +178,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DbgUtls.Messenger NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
@@ -255,9 +255,11 @@ createInstance f = do
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers \\)
-			. (Vk.layerPropertiesLayerName <$>)
+				. (Vk.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- getRequiredExtensions
+	extensions <- lift $ bool id (Vk.Ext.DbgUtls.extensionName :)
+			enableValidationLayers
+		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -268,7 +270,7 @@ createInstance f = do
 				Vk.makeApiVersion 0 1 0 0,
 			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
-			(Vk.Ext.DebugUtils.Messenger.CreateInfo
+			(Vk.Ext.DbgUtls.Msngr.CreateInfo
 				() () () () () ()) ()
 		createInfo = Vk.Ist.M.CreateInfo {
 			Vk.Ist.M.createInfoNext =
@@ -280,6 +282,33 @@ createInstance f = do
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
 	g <- ask
 	lift $ Vk.Ist.create createInfo nil nil \i -> f i `runReaderT` g
+
+setupDebugMessenger :: Vk.Ist.M.I -> ReaderT Global IO ()
+setupDebugMessenger ist = do
+	writeGlobal globalDebugMessenger =<< lift (
+		Vk.Ext.DbgUtls.Msngr.create ist
+			populateDebugMessengerCreateInfo nil )
+
+populateDebugMessengerCreateInfo ::
+	Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()
+populateDebugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
+	Vk.Ext.DbgUtls.Msngr.createInfoNext = Nothing,
+	Vk.Ext.DbgUtls.Msngr.createInfoFlags =
+		Vk.Ext.DbgUtls.Msngr.CreateFlagsZero,
+	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
+		Vk.Ext.DbgUtls.Message.SeverityVerboseBit .|.
+		Vk.Ext.DbgUtls.Message.SeverityWarningBit .|.
+		Vk.Ext.DbgUtls.Message.SeverityErrorBit,
+	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
+		Vk.Ext.DbgUtls.Message.TypeGeneralBit .|.
+		Vk.Ext.DbgUtls.Message.TypeValidationBit .|.
+		Vk.Ext.DbgUtls.Message.TypePerformanceBit,
+	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
+	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
+
+debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
+debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
+	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
 instanceToMiddle (Vk.Ist.T.I inst) = inst
@@ -299,43 +328,6 @@ initVulkan win inst = do
 	createVertexBuffer
 	createCommandBuffers
 	createSyncObjects
-
-getRequiredExtensions :: ReaderT Global IO [Txt.Text]
-getRequiredExtensions = lift do
-	glfwExtensions <-
-		(cstringToText `mapM`) =<< Glfw.getRequiredInstanceExtensions
-	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
-		enableValidationLayers glfwExtensions
-
-setupDebugMessenger :: Vk.Ist.M.I -> ReaderT Global IO ()
-setupDebugMessenger ist = do
-	writeGlobal globalDebugMessenger =<< lift (
-		Vk.Ext.DebugUtils.Messenger.create ist
-			populateDebugMessengerCreateInfo nil )
-
-populateDebugMessengerCreateInfo ::
-	Vk.Ext.DebugUtils.Messenger.CreateInfo () () () () () ()
-populateDebugMessengerCreateInfo = Vk.Ext.DebugUtils.Messenger.CreateInfo {
-	Vk.Ext.DebugUtils.Messenger.createInfoNext = Nothing,
-	Vk.Ext.DebugUtils.Messenger.createInfoFlags =
-		Vk.Ext.DebugUtils.Messenger.CreateFlagsZero,
-	Vk.Ext.DebugUtils.Messenger.createInfoMessageSeverity =
-		Vk.Ext.DebugUtils.Message.SeverityVerboseBit .|.
-		Vk.Ext.DebugUtils.Message.SeverityWarningBit .|.
-		Vk.Ext.DebugUtils.Message.SeverityErrorBit,
-	Vk.Ext.DebugUtils.Messenger.createInfoMessageType =
-		Vk.Ext.DebugUtils.Message.TypeGeneralBit .|.
-		Vk.Ext.DebugUtils.Message.TypeValidationBit .|.
-		Vk.Ext.DebugUtils.Message.TypePerformanceBit,
-	Vk.Ext.DebugUtils.Messenger.createInfoFnUserCallback = debugCallback,
-	Vk.Ext.DebugUtils.Messenger.createInfoUserData = Nothing }
-
-debugCallback :: Vk.Ext.DebugUtils.Messenger.FnCallback () () () () ()
-debugCallback _messageSeverity _messageType callbackData _userData = do
-	let	message = Vk.Ext.DebugUtils.Messenger.callbackDataMessage
-			callbackData
-	Txt.putStrLn $ "validation layer: " <> message
-	pure False
 
 createSurface :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
 createSurface win ist = do
@@ -1126,7 +1118,7 @@ cleanup ist = do
 	lift $ Vk.Device.destroy dvc nil
 
 	when enableValidationLayers
-		. lift . flip (Vk.Ext.DebugUtils.Messenger.destroy ist) nil
+		. lift . flip (Vk.Ext.DbgUtls.Msngr.destroy ist) nil
 		=<< readGlobal globalDebugMessenger
 	lift . flip (Vk.Khr.Surface.destroy ist) nil
 		=<< readGlobal globalSurface

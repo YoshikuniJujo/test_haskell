@@ -5,7 +5,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Ext.DebugUtils.Messenger where
+module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)

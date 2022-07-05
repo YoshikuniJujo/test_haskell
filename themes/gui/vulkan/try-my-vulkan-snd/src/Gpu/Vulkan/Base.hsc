@@ -82,8 +82,11 @@ pokeText mx dst t = ($ pure) $ runContT do
 	lift do	copyBytes dst src ln'
 		poke (dst `plusPtr` ln' :: Ptr CChar) 0
 
-cstringToText :: CString -> IO Txt.Text
-cstringToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
+cstrToText, cstringToText :: CString -> IO Txt.Text
+cstrToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
+cstringToText = cstrToText
+
+{-# DEPRECATED cstringToText "use cstrToText instead" #-}
 
 cstringLength :: CString -> IO Int
 cstringLength pc = do
