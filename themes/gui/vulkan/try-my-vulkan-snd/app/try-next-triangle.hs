@@ -142,7 +142,7 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalDebugMessenger :: IORef Vk.Ext.DbgUtls.Msngr.Messenger,
+	globalDebugMessenger :: IORef Vk.Ext.DbgUtls.Msngr.M,
 	globalPhysicalDevice :: IORef Vk.PhysicalDevice.P,
 	globalDevice :: IORef Vk.Device.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
@@ -178,7 +178,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	dmsgr <- newIORef $ Vk.Ext.DbgUtls.Msngr.Messenger NullPtr
+	dmsgr <- newIORef $ Vk.Ext.DbgUtls.Msngr.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr

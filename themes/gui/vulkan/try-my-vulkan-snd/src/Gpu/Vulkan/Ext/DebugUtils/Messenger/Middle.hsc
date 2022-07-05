@@ -134,14 +134,14 @@ createInfoToCore CreateInfo {
 			C.createInfoPUserData = pud }
 	ContT $ withForeignPtr fCreateInfo
 
-newtype Messenger = Messenger C.M deriving Show
+newtype M = M C.M deriving Show
 
 create ::
 	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
 		Storable n6, Pointable n6, Storable ud, Pointable ud) =>
 	Instance.I -> CreateInfo n n2 n3 n4 n5 ud ->
-	Maybe (AllocationCallbacks.A n6) -> IO Messenger
-create (Instance.I ist) ci mac = ($ pure) . runContT $ Messenger <$> do
+	Maybe (AllocationCallbacks.A n6) -> IO M
+create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
 	cci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pmsngr <- ContT alloca
@@ -150,6 +150,6 @@ create (Instance.I ist) ci mac = ($ pure) . runContT $ Messenger <$> do
 		peek pmsngr
 
 destroy :: Pointable n =>
-	Instance.I -> Messenger -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Instance.I ist) (Messenger msgr) mac = ($ pure) . runContT
+	Instance.I -> M -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Instance.I ist) (M msgr) mac = ($ pure) . runContT
 	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac
