@@ -27,7 +27,8 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
-import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface
+import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
+import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface.M
 import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 
@@ -36,10 +37,10 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 extensionName :: T.Text
 extensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
 
-data CreateInfo n = CreateInfo {
+data CreateInfo n ss = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoSurface :: Surface.S,
+	createInfoSurface :: Surface.S ss,
 	createInfoMinImageCount :: Word32,
 	createInfoImageFormat :: Format,
 	createInfoImageColorSpace :: ColorSpace,
@@ -55,11 +56,65 @@ data CreateInfo n = CreateInfo {
 	createInfoOldSwapchain :: Maybe S }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+data CreateInfo' n = CreateInfo' {
+	createInfoNext' :: Maybe n,
+	createInfoFlags' :: CreateFlags,
+	createInfoSurface' :: Surface.M.S,
+	createInfoMinImageCount' :: Word32,
+	createInfoImageFormat' :: Format,
+	createInfoImageColorSpace' :: ColorSpace,
+	createInfoImageExtent' :: C.Extent2d,
+	createInfoImageArrayLayers' :: Word32,
+	createInfoImageUsage' :: Image.UsageFlags,
+	createInfoImageSharingMode' :: SharingMode,
+	createInfoQueueFamilyIndices' :: [Word32],
+	createInfoPreTransform' :: TransformFlagBits,
+	createInfoCompositeAlpha' :: CompositeAlphaFlagBits,
+	createInfoPresentMode' :: PresentMode,
+	createInfoClipped' :: Bool,
+	createInfoOldSwapchain' :: Maybe S }
+	deriving Show
+
+createInfoNew :: CreateInfo' n -> CreateInfo n ss
+createInfoNew CreateInfo' {
+	createInfoNext' = mnxt,
+	createInfoFlags' = flgs,
+	createInfoSurface' = sfc,
+	createInfoMinImageCount' = mic,
+	createInfoImageFormat' = ifmt,
+	createInfoImageColorSpace' = ics,
+	createInfoImageExtent' = iext,
+	createInfoImageArrayLayers' = ials,
+	createInfoImageUsage' = iusg,
+	createInfoImageSharingMode' = ism,
+	createInfoQueueFamilyIndices' = qfis,
+	createInfoPreTransform' = ptfm,
+	createInfoCompositeAlpha' = calp,
+	createInfoPresentMode' = pm,
+	createInfoClipped' = clpd,
+	createInfoOldSwapchain' = osc } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSurface = Surface.S sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = ifmt,
+	createInfoImageColorSpace = ics,
+	createInfoImageExtent = iext,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = iusg,
+	createInfoImageSharingMode = ism,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoPreTransform = ptfm,
+	createInfoCompositeAlpha = calp,
+	createInfoPresentMode = pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = osc }
+
+createInfoToCore :: Pointable n => CreateInfo n ss -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoSurface = Surface.S sfc,
+	createInfoSurface = Surface.S (Surface.M.S sfc),
 	createInfoMinImageCount = mic,
 	createInfoImageFormat = Format ifmt,
 	createInfoImageColorSpace = ColorSpace ics,
@@ -105,7 +160,7 @@ createInfoToCore CreateInfo {
 newtype S = S { unS :: C.S } deriving Show
 
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
+	Device.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO S
 create (Device.D dvc) ci mac = ($ pure) . runContT $ S <$> do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -113,6 +168,10 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ S <$> do
 	lift do	r <- C.create dvc pci pac psc
 		throwUnlessSuccess $ Result r
 		peek psc
+
+create' :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
+create' dvc oci mac = create dvc (createInfoNew oci) mac
 
 destroy :: Pointable n =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()

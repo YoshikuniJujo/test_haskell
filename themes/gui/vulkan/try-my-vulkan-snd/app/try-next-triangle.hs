@@ -331,9 +331,6 @@ createSurface win ist f =
 	ask >>= \g -> lift $ Glfw.createWindowSurface ist win nil nil \sfc ->
 		f sfc `runReaderT` g
 
-surfaceToMiddle :: Vk.Khr.Surface.S ss -> Vk.Khr.Surface.M.S
-surfaceToMiddle (Vk.Khr.Surface.S s) = s
-
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
 pickPhysicalDevice ist sfc = do
@@ -477,7 +474,7 @@ createSwapChain win sfc phdvc qfis0 = do
 			Vk.Khr.Swapchain.createInfoNext = Nothing,
 			Vk.Khr.Swapchain.createInfoFlags =
 				Vk.Khr.Swapchain.CreateFlagsZero,
-			Vk.Khr.Swapchain.createInfoSurface = surfaceToMiddle sfc,
+			Vk.Khr.Swapchain.createInfoSurface = sfc,
 			Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
 			Vk.Khr.Swapchain.createInfoImageFormat =
 				Vk.Khr.Surface.M.formatFormat surfaceFormat,

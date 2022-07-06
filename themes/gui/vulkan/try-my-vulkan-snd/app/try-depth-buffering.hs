@@ -560,32 +560,32 @@ createSwapChain = do
 			then (Vk.SharingModeConcurrent, fromJust <$> [
 				graphicsFamily is, presentFamily is ])
 			else (Vk.SharingModeExclusive, [])
-		createInfo = Vk.Khr.Swapchain.CreateInfo {
-			Vk.Khr.Swapchain.createInfoNext = Nothing,
-			Vk.Khr.Swapchain.createInfoFlags =
+		createInfo = Vk.Khr.Swapchain.CreateInfo' {
+			Vk.Khr.Swapchain.createInfoNext' = Nothing,
+			Vk.Khr.Swapchain.createInfoFlags' =
 				Vk.Khr.Swapchain.CreateFlagsZero,
-			Vk.Khr.Swapchain.createInfoSurface = sfc,
-			Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
-			Vk.Khr.Swapchain.createInfoImageFormat =
+			Vk.Khr.Swapchain.createInfoSurface' = sfc,
+			Vk.Khr.Swapchain.createInfoMinImageCount' = imageCount,
+			Vk.Khr.Swapchain.createInfoImageFormat' =
 				Vk.Khr.Surface.formatFormat surfaceFormat,
-			Vk.Khr.Swapchain.createInfoImageColorSpace =
+			Vk.Khr.Swapchain.createInfoImageColorSpace' =
 				Vk.Khr.Surface.formatColorSpace surfaceFormat,
-			Vk.Khr.Swapchain.createInfoImageExtent = extent,
-			Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
-			Vk.Khr.Swapchain.createInfoImageUsage =
+			Vk.Khr.Swapchain.createInfoImageExtent' = extent,
+			Vk.Khr.Swapchain.createInfoImageArrayLayers' = 1,
+			Vk.Khr.Swapchain.createInfoImageUsage' =
 				Vk.Image.UsageColorAttachmentBit,
-			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
-			Vk.Khr.Swapchain.createInfoPreTransform =
+			Vk.Khr.Swapchain.createInfoImageSharingMode' = ism,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices' = qfis,
+			Vk.Khr.Swapchain.createInfoPreTransform' =
 				Vk.Khr.Surface.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,
-			Vk.Khr.Swapchain.createInfoCompositeAlpha =
+			Vk.Khr.Swapchain.createInfoCompositeAlpha' =
 				Vk.Khr.CompositeAlphaOpaqueBit,
-			Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
-			Vk.Khr.Swapchain.createInfoClipped = True,
-			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
+			Vk.Khr.Swapchain.createInfoPresentMode' = presentMode,
+			Vk.Khr.Swapchain.createInfoClipped' = True,
+			Vk.Khr.Swapchain.createInfoOldSwapchain' = Nothing }
 	dvc <- readGlobal globalDevice
-	sc <- lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil
+	sc <- lift $ Vk.Khr.Swapchain.create' @() dvc createInfo nil
 	writeGlobal globalSwapChain sc
 	writeGlobal globalSwapChainImages
 		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
