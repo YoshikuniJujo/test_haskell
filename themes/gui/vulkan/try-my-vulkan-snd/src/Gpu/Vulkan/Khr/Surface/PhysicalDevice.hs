@@ -17,19 +17,20 @@ import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Surface.Type
 
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core as C
 import qualified Gpu.Vulkan.Khr.Surface.Middle as M
 
-getSupport :: PhysicalDevice.P -> Word32 -> S ss -> IO Bool
-getSupport (PhysicalDevice.P phdvc) qfi (S (M.S sfc)) = ($ pure) . runContT
-	$ bool32ToBool <$> do
+getSupport :: PhysicalDevice.P -> QueueFamily.Index -> S ss -> IO Bool
+getSupport (PhysicalDevice.P phdvc) (QueueFamily.Index qfi) (S (M.S sfc)) =
+	($ pure) . runContT $ bool32ToBool <$> do
 		pSupported <- ContT alloca
 		lift do	r <- C.getSupport phdvc qfi sfc pSupported
 			throwUnlessSuccess $ Result r
 			peek pSupported
 
 getSupport' :: PhysicalDevice.P -> Word32 -> M.S -> IO Bool
-getSupport' phdvc qfi sfc = getSupport phdvc qfi (S sfc)
+getSupport' phdvc qfi sfc = getSupport phdvc (QueueFamily.Index qfi) (S sfc)
 
 getCapabilities :: PhysicalDevice.P -> M.S -> IO M.Capabilities
 getCapabilities (PhysicalDevice.P pdvc) (M.S sfc) =

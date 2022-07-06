@@ -399,8 +399,8 @@ checkBits bs = (== bs) . (.&. bs)
 
 doesPresentSupport :: Vk.PhysicalDevice.P ->
 	Vk.QueueFamily.Index -> Vk.Khr.Surface.S ss -> IO Bool
-doesPresentSupport dvc (Vk.QueueFamily.Index i) sfc =
-	Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
+doesPresentSupport dvc idx sfc =
+	Vk.Khr.Surface.PhysicalDevice.getSupport dvc idx sfc
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
 checkDeviceExtensionSupport dvc = do
