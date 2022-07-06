@@ -341,12 +341,14 @@ isDeviceSuitable phdvc sfc = do
 	_deviceFeatures <- Vk.PhysicalDevice.getFeatures phdvc
 	indices <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	swapChainSupport <- querySwapChainSupport phdvc sfc
-	let	swapChainAdequate =
-			not (null $ formats swapChainSupport) &&
-			not (null $ presentModes swapChainSupport)
-	pure if extensionSupported && swapChainAdequate
-		then completeQueueFamilies indices else Nothing
+	if extensionSupported
+	then do	swapChainSupport <- querySwapChainSupport phdvc sfc
+		let	swapChainAdequate =
+				not (null $ formats swapChainSupport) &&
+				not (null $ presentModes swapChainSupport)
+		pure if swapChainAdequate
+			then completeQueueFamilies indices else Nothing
+	else pure Nothing
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Vk.QueueFamily.Index,
@@ -382,11 +384,9 @@ checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs = (== bs) . (.&. bs)
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
-checkDeviceExtensionSupport dvc = do
-	availableExtensions <-
-		Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
-	pure . null $ deviceExtensions \\
-		(Vk.extensionPropertiesExtensionName <$> availableExtensions)
+checkDeviceExtensionSupport dvc =
+	null . (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
+		<$> Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
 
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
@@ -434,15 +434,15 @@ initVulkan :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	ReaderT Global IO ()
 initVulkan win sfc phdvc qfis dvc = do
-		createSwapChain win sfc phdvc qfis dvc
-		createImageViews dvc
-		createRenderPass dvc
-		createGraphicsPipeline dvc
-		createFramebuffers dvc
-		createCommandPool qfis dvc
-		createVertexBuffer phdvc dvc
-		createCommandBuffers dvc
-		createSyncObjects dvc
+	createSwapChain win sfc phdvc qfis dvc
+	createImageViews dvc
+	createRenderPass dvc
+	createGraphicsPipeline dvc
+	createFramebuffers dvc
+	createCommandPool qfis dvc
+	createVertexBuffer phdvc dvc
+	createCommandBuffers dvc
+	createSyncObjects dvc
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
@@ -500,9 +500,6 @@ createSwapChain win sfc phdvc qfis0 (Vk.Device.D dvc) = do
 		print presentMode
 		print extent
 
-onlyIf :: (a -> Bool) -> a -> Maybe a
-onlyIf p x | p x = Just x | otherwise = Nothing
-
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
@@ -534,6 +531,9 @@ chooseSwapExtent win caps
 
 clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
+
+onlyIf :: (a -> Bool) -> a -> Maybe a
+onlyIf p x | p x = Just x | otherwise = Nothing
 
 createImageViews :: Vk.Device.D sd -> ReaderT Global IO ()
 createImageViews dvc = writeGlobal globalSwapChainImageViews =<<
