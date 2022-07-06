@@ -148,7 +148,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalDevice :: IORef Vk.Device.M.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
 	globalPresentQueue :: IORef Vk.Queue.Q,
 	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
@@ -181,7 +180,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	dvc <- newIORef $ Vk.Device.M.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
@@ -203,7 +201,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.M.MemoryList 0 NullPtr
 	pure Global {
-		globalDevice = dvc,
 		globalGraphicsQueue = gq,
 		globalPresentQueue = pq,
 		globalSwapChain = sc,
@@ -306,12 +303,11 @@ run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
 run win inst = createSurface win inst \sfc -> do
 	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
 	createLogicalDevice phdvc qfis \dvc gq pq -> do
-		writeGlobal globalDevice $ (\(Vk.Device.D d) -> d) dvc
 		writeGlobal globalGraphicsQueue gq
 		writeGlobal globalPresentQueue pq
 		initVulkan win sfc phdvc qfis dvc
-		mainLoop win sfc phdvc qfis
-		cleanup
+		mainLoop win sfc phdvc qfis dvc
+		cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -451,8 +447,8 @@ initVulkan win sfc phdvc qfis dvc = do
 		createFramebuffers dvc
 		createCommandPool qfis dvc
 		createVertexBuffer phdvc dvc
-		createCommandBuffers
-		createSyncObjects
+		createCommandBuffers dvc
+		createSyncObjects dvc
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
@@ -849,7 +845,7 @@ createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) = do
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
-	copyBuffer sb vb (length vertices)
+	copyBuffer dvc sb vb (length vertices)
 	lift do	Vk.Buffer.List.destroy dvcm sb nil
 		Vk.Memory.List.free dvcm sbm nil
 	writeGlobal globalVertexBuffer vb
@@ -881,10 +877,9 @@ createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 	pure (b, bm)
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
-	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
-copyBuffer srcBuffer dstBuffer ln = do
+	Vk.Device.D sd -> Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
+copyBuffer (Vk.Device.D dvc) srcBuffer dstBuffer ln = do
 	cp <- readGlobal globalCommandPool
-	dvc <- readGlobal globalDevice
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
 			Vk.CommandBuffer.allocateInfoLevel =
@@ -936,8 +931,8 @@ suitable typeFilter properties memProperties i =
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
 
-createCommandBuffers :: ReaderT Global IO ()
-createCommandBuffers = do
+createCommandBuffers :: Vk.Device.D sd -> ReaderT Global IO ()
+createCommandBuffers (Vk.Device.D dvc) = do
 	cp <- readGlobal globalCommandPool
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
@@ -946,12 +941,11 @@ createCommandBuffers = do
 				Vk.CommandBuffer.LevelPrimary,
 			Vk.CommandBuffer.allocateInfoCommandBufferCount =
 				fromIntegral maxFramesInFlight }
-	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandBuffers
 		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
 
-createSyncObjects :: ReaderT Global IO ()
-createSyncObjects = do
+createSyncObjects :: Vk.Device.D sd -> ReaderT Global IO ()
+createSyncObjects (Vk.Device.D dvc) = do
 	let	semaphoreInfo = Vk.Semaphore.CreateInfo {
 			Vk.Semaphore.createInfoNext = Nothing,
 			Vk.Semaphore.createInfoFlags =
@@ -959,7 +953,6 @@ createSyncObjects = do
 		fenceInfo = Vk.Fence.CreateInfo {
 			Vk.Fence.createInfoNext = Nothing,
 			Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
-	dvc <- readGlobal globalDevice
 	writeGlobal globalImageAvailableSemaphores
 		=<< lift (replicateM maxFramesInFlight
 			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
@@ -1006,29 +999,28 @@ recordCommandBuffer cb imageIndex = do
 
 mainLoop ::
 	Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-mainLoop win sfc phdvc qfis = do
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
+mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) = do
 	fix \loop -> bool (pure ()) loop =<< do
 		lift Glfw.pollEvents
 		g <- ask
-		lift . catchAndRecreateSwapChain g win sfc phdvc qfis
-			$ drawFrame win sfc phdvc qfis `runReaderT` g
+		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc
+			$ drawFrame win sfc phdvc qfis dvc `runReaderT` g
 		not <$> lift (Glfw.windowShouldClose win)
-	lift . Vk.Device.M.waitIdle =<< readGlobal globalDevice
+	lift $ Vk.Device.M.waitIdle dvcm
 
 drawFrame ::
 	Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis = do
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
+drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) = do
 	cf <- readGlobal globalCurrentFrame
-	dvc <- readGlobal globalDevice
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
-	lift $ Vk.Fence.waitForFs dvc [iff] True maxBound
+	lift $ Vk.Fence.waitForFs dvcm [iff] True maxBound
 	sc <- readGlobal globalSwapChain
 	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
 	imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvc sc uint64Max (Just ias) Nothing
-	lift $ Vk.Fence.resetFs dvc [iff]
+		dvcm sc uint64Max (Just ias) Nothing
+	lift $ Vk.Fence.resetFs dvcm [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
@@ -1048,7 +1040,7 @@ drawFrame win sfc phdvc qfis = do
 				[(sc, imageIndex)] }
 	pq <- readGlobal globalPresentQueue
 	g <- ask
-	lift . catchAndRecreateSwapChain g win sfc phdvc qfis . catchAndSerialize
+	lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
@@ -1058,8 +1050,8 @@ catchAndSerialize =
 
 catchAndRecreateSwapChain ::
 	Global -> Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> IO () -> IO ()
-catchAndRecreateSwapChain g win sfc phdvc qfis act = catchJust
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> IO () -> IO ()
+catchAndRecreateSwapChain g win sfc phdvc qfis dvc act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
@@ -1068,34 +1060,32 @@ catchAndRecreateSwapChain g win sfc phdvc qfis act = catchJust
 		fbr <- readIORef $ globalFramebufferResized g
 		when fbr do
 			writeIORef (globalFramebufferResized g) False
-			recreateSwapChain win sfc phdvc qfis `runReaderT` g)
+			recreateSwapChain win sfc phdvc qfis dvc `runReaderT` g)
 
 doWhile_ :: IO Bool -> IO ()
 doWhile_ act = (`when` doWhile_ act) =<< act
 
 recreateSwapChain ::
 	Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-recreateSwapChain win sfc phdvc qfis = do
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
+recreateSwapChain win sfc phdvc qfis dvc@(Vk.Device.D dvcm) = do
 	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			Glfw.waitEvents
 			(wd, hg) <- Glfw.getFramebufferSize win
 			pure $ wd == 0 || hg == 0
-	dvc <- readGlobal globalDevice
-	lift $ Vk.Device.M.waitIdle dvc
+	lift $ Vk.Device.M.waitIdle dvcm
 
-	cleanupSwapChain
+	cleanupSwapChain dvc
 
-	createSwapChain win sfc phdvc qfis $ Vk.Device.D dvc
-	createImageViews $ Vk.Device.D dvc
-	createRenderPass $ Vk.Device.D dvc
-	createGraphicsPipeline $ Vk.Device.D dvc
-	createFramebuffers $ Vk.Device.D dvc
+	createSwapChain win sfc phdvc qfis dvc
+	createImageViews dvc
+	createRenderPass dvc
+	createGraphicsPipeline dvc
+	createFramebuffers dvc
 
-cleanupSwapChain :: ReaderT Global IO ()
-cleanupSwapChain = do
-	dvc <- readGlobal globalDevice
+cleanupSwapChain :: Vk.Device.D sd -> ReaderT Global IO ()
+cleanupSwapChain (Vk.Device.D dvc) = do
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
 	grppl <- readGlobal globalGraphicsPipeline
@@ -1109,22 +1099,21 @@ cleanupSwapChain = do
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
 		=<< readGlobal globalSwapChain
 
-cleanup :: ReaderT Global IO ()
-cleanup = do
-	cleanupSwapChain
-	dvc <- readGlobal globalDevice
+cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
+cleanup dvc@(Vk.Device.D dvcm) = do
+	cleanupSwapChain dvc
 
 	vb <- readGlobal globalVertexBuffer
-	lift $ Vk.Buffer.List.destroy dvc vb nil
+	lift $ Vk.Buffer.List.destroy dvcm vb nil
 	vbm <- readGlobal globalVertexBufferMemory
-	lift $ Vk.Memory.List.free dvc vbm nil
-	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+	lift $ Vk.Memory.List.free dvcm vbm nil
+	lift . (flip (Vk.Semaphore.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
-	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+	lift . (flip (Vk.Semaphore.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalRenderFinishedSemaphores
-	lift . (flip (Vk.Fence.destroy dvc) nil `mapM_`)
+	lift . (flip (Vk.Fence.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalInFlightFences
-	lift . flip (Vk.CommandPool.destroy dvc) nil
+	lift . flip (Vk.CommandPool.destroy dvcm) nil
 		=<< readGlobal globalCommandPool
 
 data Vertex = Vertex {
