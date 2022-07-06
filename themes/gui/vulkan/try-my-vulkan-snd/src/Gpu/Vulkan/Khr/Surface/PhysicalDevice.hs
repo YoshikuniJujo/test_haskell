@@ -59,8 +59,8 @@ getFormats (PhysicalDevice.P pdvc) (S (M.S sfc)) =
 getFormats' :: PhysicalDevice.P -> M.S -> IO [M.Format]
 getFormats' phdvc sfc = getFormats phdvc (S sfc)
 
-getPresentModes :: PhysicalDevice.P -> M.S -> IO [PresentMode]
-getPresentModes (PhysicalDevice.P pdvc) (M.S sfc) =
+getPresentModes :: PhysicalDevice.P -> S ss -> IO [PresentMode]
+getPresentModes (PhysicalDevice.P pdvc) (S (M.S sfc)) =
 	($ pure) . runContT $ (PresentMode <$>) <$> do
 		pPresentModeCount <- ContT alloca
 		(fromIntegral -> presentModeCount) <- lift do
@@ -72,3 +72,6 @@ getPresentModes (PhysicalDevice.P pdvc) (M.S sfc) =
 				pdvc sfc pPresentModeCount pPresentModes
 			throwUnlessSuccess $ Result r
 			peekArray presentModeCount pPresentModes
+
+getPresentModes' :: PhysicalDevice.P -> M.S -> IO [PresentMode]
+getPresentModes' phdvc sfc = getPresentModes phdvc (S sfc)

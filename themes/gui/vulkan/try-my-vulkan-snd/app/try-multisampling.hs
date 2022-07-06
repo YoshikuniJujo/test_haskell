@@ -568,7 +568,7 @@ querySwapChainSupport dvc = readGlobal globalSurface >>= \sfc ->
 	lift $ SwapChainSupportDetails
 		<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities' dvc sfc
 		<*> Vk.Khr.Surface.PhysicalDevice.getFormats' dvc sfc
-		<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
+		<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes' dvc sfc
 
 createLogicalDevice :: ReaderT Global IO ()
 createLogicalDevice = do
