@@ -14,30 +14,34 @@ import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
-import Gpu.Vulkan.Khr.Surface.Middle
+import Gpu.Vulkan.Khr.Surface.Type
 
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core as C
+import qualified Gpu.Vulkan.Khr.Surface.Middle as M
 
-getSupport :: PhysicalDevice.P -> Word32 -> S -> IO Bool
-getSupport (PhysicalDevice.P phdvc) qfi (S sfc) = ($ pure) . runContT
+getSupport :: PhysicalDevice.P -> Word32 -> S ss -> IO Bool
+getSupport (PhysicalDevice.P phdvc) qfi (S (M.S sfc)) = ($ pure) . runContT
 	$ bool32ToBool <$> do
 		pSupported <- ContT alloca
 		lift do	r <- C.getSupport phdvc qfi sfc pSupported
 			throwUnlessSuccess $ Result r
 			peek pSupported
 
-getCapabilities :: PhysicalDevice.P -> S -> IO Capabilities
-getCapabilities (PhysicalDevice.P pdvc) (S sfc) =
-	($ pure) . runContT $ capabilitiesFromCore <$> do
+getSupport' :: PhysicalDevice.P -> Word32 -> M.S -> IO Bool
+getSupport' phdvc qfi sfc = getSupport phdvc qfi (S sfc)
+
+getCapabilities :: PhysicalDevice.P -> M.S -> IO M.Capabilities
+getCapabilities (PhysicalDevice.P pdvc) (M.S sfc) =
+	($ pure) . runContT $ M.capabilitiesFromCore <$> do
 		pCapabilities <- ContT alloca
 		lift do	r <- C.getCapabilities pdvc sfc pCapabilities
 			throwUnlessSuccess $ Result r
 			peek pCapabilities
 
-getFormats :: PhysicalDevice.P -> S -> IO [Format]
-getFormats (PhysicalDevice.P pdvc) (S sfc) =
-	($ pure) . runContT $ (formatFromCore <$>) <$> do
+getFormats :: PhysicalDevice.P -> M.S -> IO [M.Format]
+getFormats (PhysicalDevice.P pdvc) (M.S sfc) =
+	($ pure) . runContT $ (M.formatFromCore <$>) <$> do
 		pFormatCount <- ContT alloca
 		(fromIntegral -> formatCount) <- lift do
 			r <- C.getFormats pdvc sfc pFormatCount NullPtr
@@ -48,8 +52,8 @@ getFormats (PhysicalDevice.P pdvc) (S sfc) =
 			throwUnlessSuccess $ Result r
 			peekArray formatCount pFormats
 
-getPresentModes :: PhysicalDevice.P -> S -> IO [PresentMode]
-getPresentModes (PhysicalDevice.P pdvc) (S sfc) =
+getPresentModes :: PhysicalDevice.P -> M.S -> IO [PresentMode]
+getPresentModes (PhysicalDevice.P pdvc) (M.S sfc) =
 	($ pure) . runContT $ (PresentMode <$>) <$> do
 		pPresentModeCount <- ContT alloca
 		(fromIntegral -> presentModeCount) <- lift do

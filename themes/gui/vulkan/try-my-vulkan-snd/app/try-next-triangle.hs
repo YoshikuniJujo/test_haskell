@@ -311,7 +311,7 @@ run win inst = createSurface win inst \sfc -> do
 
 initVulkan :: Glfw.Window -> Vk.Ist.I si -> Vk.Khr.Surface.S ss -> ReaderT Global IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
 initVulkan win inst sfc = do
-	(phdvc, qfis) <- lift . pickPhysicalDevice inst $ surfaceToMiddle sfc
+	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
 	createLogicalDevice phdvc qfis
 	createSwapChain win sfc phdvc qfis
 	createImageViews
@@ -335,7 +335,7 @@ surfaceToMiddle :: Vk.Khr.Surface.S ss -> Vk.Khr.Surface.M.S
 surfaceToMiddle (Vk.Khr.Surface.S s) = s
 
 pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.M.S -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
+	Vk.Khr.Surface.S ss -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
 pickPhysicalDevice ist sfc = do
 	dvcs <- Vk.PhysicalDevice.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
@@ -352,13 +352,13 @@ findDevice prd = \case
 		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
 
 isDeviceSuitable ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.M.S -> IO (Maybe QueueFamilyIndices)
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.PhysicalDevice.getProperties phdvc
 	_deviceFeatures <- Vk.PhysicalDevice.getFeatures phdvc
 	indices <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	swapChainSupport <- querySwapChainSupport phdvc sfc
+	swapChainSupport <- querySwapChainSupport phdvc $ surfaceToMiddle sfc
 	let	swapChainAdequate =
 			not (null $ formats swapChainSupport) &&
 			not (null $ presentModes swapChainSupport)
@@ -382,7 +382,7 @@ completeQueueFamilies = \case
 	_ -> Nothing
 
 findQueueFamilies ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.M.S -> IO QueueFamilyIndicesMaybe
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO QueueFamilyIndicesMaybe
 findQueueFamilies device sfc = do
 	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
 	pfis <- filterM
@@ -397,8 +397,10 @@ findQueueFamilies device sfc = do
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs = (== bs) . (.&. bs)
 
-doesPresentSupport :: Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Khr.Surface.M.S -> IO Bool
-doesPresentSupport dvc (Vk.QueueFamily.Index i) sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
+doesPresentSupport :: Vk.PhysicalDevice.P ->
+	Vk.QueueFamily.Index -> Vk.Khr.Surface.S ss -> IO Bool
+doesPresentSupport dvc (Vk.QueueFamily.Index i) sfc =
+	Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
 checkDeviceExtensionSupport dvc = do

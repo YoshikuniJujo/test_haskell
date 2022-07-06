@@ -482,7 +482,7 @@ findQueueFamilies device = do
 		presentFamily = psi }
 
 isPresentSupport :: Vk.PhysicalDevice.P -> Word32 -> Vk.Khr.Surface.S -> IO Bool
-isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
+isPresentSupport dvc i sfc = Vk.Khr.Surface.PhysicalDevice.getSupport' dvc i sfc
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Maybe Word32,
