@@ -38,6 +38,7 @@ library
       Data.Traversable.Utils
       Data.Vector.Storable.Indexing
       Foreign.Storable.Generic
+      Glfw
       Glfw.Middle
       Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
@@ -122,9 +123,11 @@ library
       Gpu.Vulkan.Khr
       Gpu.Vulkan.Khr.ColorSpace
       Gpu.Vulkan.Khr.Enum
+      Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.Enum
       Gpu.Vulkan.Khr.Surface.Middle
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
+      Gpu.Vulkan.Khr.Surface.Type
       Gpu.Vulkan.Khr.Swapchain
       Gpu.Vulkan.Khr.Swapchain.Enum
       Gpu.Vulkan.Memory

@@ -34,7 +34,7 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
-import qualified Glfw.Middle as Glfw
+import qualified Glfw as Glfw
 import qualified Cglm
 import qualified Foreign.Storable.Generic
 
@@ -51,7 +51,7 @@ import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
-import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
+import qualified Gpu.Vulkan.Instance.Type as Vk.Ist
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist.M
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
@@ -66,7 +66,9 @@ import qualified Gpu.Vulkan.Device.Type as Vk.Device
 import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
-import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface
+import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
+import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
+import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
@@ -149,7 +151,6 @@ maxFramesInFlight = 2
 data Global = Global {
 	globalDevice :: IORef Vk.Device.M.D,
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
-	globalSurface :: IORef Vk.Khr.Surface.S,
 	globalPresentQueue :: IORef Vk.Queue.Q,
 	globalSwapChain :: IORef Vk.Khr.Swapchain.S,
 	globalSwapChainImages :: IORef [Vk.Image.I],
@@ -183,7 +184,6 @@ newGlobal :: IO Global
 newGlobal = do
 	dvc <- newIORef $ Vk.Device.M.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
-	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
 	scis <- newIORef []
@@ -206,7 +206,6 @@ newGlobal = do
 	pure Global {
 		globalDevice = dvc,
 		globalGraphicsQueue = gq,
-		globalSurface = sfc,
 		globalPresentQueue = pq,
 		globalSwapChain = sc,
 		globalSwapChainImages = scis,
@@ -276,7 +275,7 @@ createInstance f = do
 	lift $ Vk.Ist.create createInfo nil nil \i -> f i `runReaderT` g
 
 instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
-instanceToMiddle (Vk.Ist.T.I inst) = inst
+instanceToMiddle (Vk.Ist.I inst) = inst
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->
@@ -305,18 +304,16 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
-run win inst = do
-	(phdvc, qfis) <- initVulkan win inst
-	mainLoop win phdvc qfis
-	cleanup $ instanceToMiddle inst
+run win inst = createSurface win inst \sfc -> do
+	(phdvc, qfis) <- initVulkan win inst sfc
+	mainLoop win sfc phdvc qfis
+	cleanup
 
-initVulkan :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
-initVulkan win inst = do
-	createSurface win $ instanceToMiddle inst
-	sfc <- readGlobal globalSurface
-	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
+initVulkan :: Glfw.Window -> Vk.Ist.I si -> Vk.Khr.Surface.S ss -> ReaderT Global IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
+initVulkan win inst sfc = do
+	(phdvc, qfis) <- lift . pickPhysicalDevice inst $ surfaceToMiddle sfc
 	createLogicalDevice phdvc qfis
-	createSwapChain win phdvc qfis
+	createSwapChain win sfc phdvc qfis
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
@@ -327,13 +324,18 @@ initVulkan win inst = do
 	createSyncObjects
 	pure (phdvc, qfis)
 
-createSurface :: Glfw.Window -> Vk.Ist.M.I -> ReaderT Global IO ()
-createSurface win ist =
-	writeGlobal globalSurface
-		=<< lift (Glfw.createWindowSurface ist win nil)
+createSurface :: Glfw.Window -> Vk.Ist.I si ->
+	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+createSurface win ist f =
+	ask >>= \g -> lift $ Glfw.createWindowSurface ist win nil nil \sfc ->
+		f sfc `runReaderT` g
+
+surfaceToMiddle :: Vk.Khr.Surface.S ss -> Vk.Khr.Surface.M.S
+surfaceToMiddle (Vk.Khr.Surface.S s) = s
 
 pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.S -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
+	Vk.Khr.Surface.M.S -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
 pickPhysicalDevice ist sfc = do
 	dvcs <- Vk.PhysicalDevice.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
@@ -350,7 +352,7 @@ findDevice prd = \case
 		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
 
 isDeviceSuitable ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S -> IO (Maybe QueueFamilyIndices)
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.M.S -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.PhysicalDevice.getProperties phdvc
 	_deviceFeatures <- Vk.PhysicalDevice.getFeatures phdvc
@@ -380,7 +382,7 @@ completeQueueFamilies = \case
 	_ -> Nothing
 
 findQueueFamilies ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S -> IO QueueFamilyIndicesMaybe
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.M.S -> IO QueueFamilyIndicesMaybe
 findQueueFamilies device sfc = do
 	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
 	pfis <- filterM
@@ -395,7 +397,7 @@ findQueueFamilies device sfc = do
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs = (== bs) . (.&. bs)
 
-doesPresentSupport :: Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Khr.Surface.S -> IO Bool
+doesPresentSupport :: Vk.PhysicalDevice.P -> Vk.QueueFamily.Index -> Vk.Khr.Surface.M.S -> IO Bool
 doesPresentSupport dvc (Vk.QueueFamily.Index i) sfc = Vk.Khr.Surface.PhysicalDevice.getSupport dvc i sfc
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
@@ -409,12 +411,12 @@ deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swapchain.extensionName]
 
 data SwapChainSupportDetails = SwapChainSupportDetails {
-	capabilities :: Vk.Khr.Surface.Capabilities,
-	formats :: [Vk.Khr.Surface.Format],
+	capabilities :: Vk.Khr.Surface.M.Capabilities,
+	formats :: [Vk.Khr.Surface.M.Format],
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S -> IO SwapChainSupportDetails
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.M.S -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
@@ -449,21 +451,21 @@ createLogicalDevice phdvc qfis = do
 	writeGlobal globalPresentQueue =<< lift (
 		Vk.Device.getQueue (Vk.Device.D dvc) (presentFamily qfis) 0 )
 
-createSwapChain :: Glfw.Window ->
+createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-createSwapChain win phdvc qfis0 = do
-	sfc <- readGlobal globalSurface
-	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
+createSwapChain win sfc phdvc qfis0 = do
+	let	sfc' = surfaceToMiddle sfc
+	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc'
 	let	surfaceFormat =
 			chooseSwapSurfaceFormat $ formats swapChainSupport
 		presentMode =
 			chooseSwapPresentMode $ presentModes swapChainSupport
 	extent <- chooseSwapExtent win $ capabilities swapChainSupport
 	let	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
-			. Vk.Khr.Surface.capabilitiesMaxImageCount
+			. Vk.Khr.Surface.M.capabilitiesMaxImageCount
 			$ capabilities swapChainSupport
 		imageCount = clamp
-			(Vk.Khr.Surface.capabilitiesMinImageCount
+			(Vk.Khr.Surface.M.capabilitiesMinImageCount
 				(capabilities swapChainSupport) + 1)
 			0 maxImageCount
 		(ism, qfis) = if graphicsFamily qfis0 /= presentFamily qfis0
@@ -474,12 +476,12 @@ createSwapChain win phdvc qfis0 = do
 			Vk.Khr.Swapchain.createInfoNext = Nothing,
 			Vk.Khr.Swapchain.createInfoFlags =
 				Vk.Khr.Swapchain.CreateFlagsZero,
-			Vk.Khr.Swapchain.createInfoSurface = sfc,
+			Vk.Khr.Swapchain.createInfoSurface = sfc',
 			Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
 			Vk.Khr.Swapchain.createInfoImageFormat =
-				Vk.Khr.Surface.formatFormat surfaceFormat,
+				Vk.Khr.Surface.M.formatFormat surfaceFormat,
 			Vk.Khr.Swapchain.createInfoImageColorSpace =
-				Vk.Khr.Surface.formatColorSpace surfaceFormat,
+				Vk.Khr.Surface.M.formatColorSpace surfaceFormat,
 			Vk.Khr.Swapchain.createInfoImageExtent = extent,
 			Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 			Vk.Khr.Swapchain.createInfoImageUsage =
@@ -487,7 +489,7 @@ createSwapChain win phdvc qfis0 = do
 			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = (\(Vk.QueueFamily.Index i) -> i) <$> qfis,
 			Vk.Khr.Swapchain.createInfoPreTransform =
-				Vk.Khr.Surface.capabilitiesCurrentTransform
+				Vk.Khr.Surface.M.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,
 			Vk.Khr.Swapchain.createInfoCompositeAlpha =
 				Vk.Khr.CompositeAlphaOpaqueBit,
@@ -500,7 +502,7 @@ createSwapChain win phdvc qfis0 = do
 	writeGlobal globalSwapChainImages
 		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
 	writeGlobal globalSwapChainImageFormat
-		. Just $ Vk.Khr.Surface.formatFormat surfaceFormat
+		. Just $ Vk.Khr.Surface.M.formatFormat surfaceFormat
 	writeGlobal globalSwapChainExtent extent
 	lift do	putStrLn "*** CREATE SWAP CHAIN ***"
 		print surfaceFormat
@@ -510,22 +512,22 @@ createSwapChain win phdvc qfis0 = do
 onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
 
-chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.Format] -> Vk.Khr.Surface.Format
+chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
 	availableFormats@(af0 : _) -> fromMaybe af0
 		$ find preferredSwapSurfaceFormat availableFormats
 	_ -> error "no available swap surface formats"
 
-preferredSwapSurfaceFormat :: Vk.Khr.Surface.Format -> Bool
+preferredSwapSurfaceFormat :: Vk.Khr.Surface.M.Format -> Bool
 preferredSwapSurfaceFormat f =
-	Vk.Khr.Surface.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
-	Vk.Khr.Surface.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
+	Vk.Khr.Surface.M.formatFormat f == Vk.FormatB8g8r8a8Srgb &&
+	Vk.Khr.Surface.M.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.Capabilities -> ReaderT Global IO Vk.C.Extent2d
+chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> ReaderT Global IO Vk.C.Extent2d
 chooseSwapExtent win caps
 	| Vk.C.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
@@ -535,9 +537,9 @@ chooseSwapExtent win caps
 			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
 			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
 	where
-	curExt = Vk.Khr.Surface.capabilitiesCurrentExtent caps
-	n = Vk.Khr.Surface.capabilitiesMinImageExtent caps
-	x = Vk.Khr.Surface.capabilitiesMaxImageExtent caps
+	curExt = Vk.Khr.Surface.M.capabilitiesCurrentExtent caps
+	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
+	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
 clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
@@ -1009,18 +1011,22 @@ recordCommandBuffer cb imageIndex = do
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
-mainLoop :: Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-mainLoop win phdvc qfis = do
+mainLoop ::
+	Glfw.Window -> Vk.Khr.Surface.S ss ->
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+mainLoop win sfc phdvc qfis = do
 	fix \loop -> bool (pure ()) loop =<< do
 		lift Glfw.pollEvents
 		g <- ask
-		lift . catchAndRecreateSwapChain g win phdvc qfis
-			$ drawFrame win phdvc qfis `runReaderT` g
+		lift . catchAndRecreateSwapChain g win sfc phdvc qfis
+			$ drawFrame win sfc phdvc qfis `runReaderT` g
 		not <$> lift (Glfw.windowShouldClose win)
 	lift . Vk.Device.M.waitIdle =<< readGlobal globalDevice
 
-drawFrame :: Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-drawFrame win phdvc qfis = do
+drawFrame ::
+	Glfw.Window -> Vk.Khr.Surface.S ss ->
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+drawFrame win sfc phdvc qfis = do
 	cf <- readGlobal globalCurrentFrame
 	dvc <- readGlobal globalDevice
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
@@ -1049,7 +1055,7 @@ drawFrame win phdvc qfis = do
 				[(sc, imageIndex)] }
 	pq <- readGlobal globalPresentQueue
 	g <- ask
-	lift . catchAndRecreateSwapChain g win phdvc qfis . catchAndSerialize
+	lift . catchAndRecreateSwapChain g win sfc phdvc qfis . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
@@ -1058,8 +1064,9 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreateSwapChain ::
-	Global -> Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> IO () -> IO ()
-catchAndRecreateSwapChain g win phdvc qfis act = catchJust
+	Global -> Glfw.Window -> Vk.Khr.Surface.S ss ->
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> IO () -> IO ()
+catchAndRecreateSwapChain g win sfc phdvc qfis act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
@@ -1068,13 +1075,15 @@ catchAndRecreateSwapChain g win phdvc qfis act = catchJust
 		fbr <- readIORef $ globalFramebufferResized g
 		when fbr do
 			writeIORef (globalFramebufferResized g) False
-			recreateSwapChain win phdvc qfis `runReaderT` g)
+			recreateSwapChain win sfc phdvc qfis `runReaderT` g)
 
 doWhile_ :: IO Bool -> IO ()
 doWhile_ act = (`when` doWhile_ act) =<< act
 
-recreateSwapChain :: Glfw.Window -> Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-recreateSwapChain win phdvc qfis = do
+recreateSwapChain ::
+	Glfw.Window -> Vk.Khr.Surface.S ss ->
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+recreateSwapChain win sfc phdvc qfis = do
 	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			Glfw.waitEvents
@@ -1085,7 +1094,7 @@ recreateSwapChain win phdvc qfis = do
 
 	cleanupSwapChain
 
-	createSwapChain win phdvc qfis
+	createSwapChain win sfc phdvc qfis
 	createImageViews
 	createRenderPass
 	createGraphicsPipeline
@@ -1107,8 +1116,8 @@ cleanupSwapChain = do
 	lift . (\sc -> Vk.Khr.Swapchain.destroy dvc sc nil)
 		=<< readGlobal globalSwapChain
 
-cleanup :: Vk.Ist.M.I -> ReaderT Global IO ()
-cleanup ist = do
+cleanup :: ReaderT Global IO ()
+cleanup = do
 	cleanupSwapChain
 	dvc <- readGlobal globalDevice
 
@@ -1125,9 +1134,6 @@ cleanup ist = do
 	lift . flip (Vk.CommandPool.destroy dvc) nil
 		=<< readGlobal globalCommandPool
 	lift $ Vk.Device.M.destroy dvc nil
-
-	lift . flip (Vk.Khr.Surface.destroy ist) nil
-		=<< readGlobal globalSurface
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
