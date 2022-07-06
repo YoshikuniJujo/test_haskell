@@ -248,6 +248,7 @@ createInstance f = do
 	extensions <- lift $ bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
+	lift $ print extensions
 	let	appInfo = Vk.ApplicationInfo {
 			Vk.applicationInfoNext = Nothing,
 			Vk.applicationInfoApplicationName = "Hello Triangle",
@@ -368,7 +369,8 @@ findQueueFamilies ::
 findQueueFamilies device sfc = do
 	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
 	pfis <- filterM
-		(\i -> doesPresentSupport device i sfc) (fst <$> queueFamilies)
+		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
+		(fst <$> queueFamilies)
 	pure QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = fst <$> find
 			(checkBits Vk.Queue.GraphicsBit
@@ -378,11 +380,6 @@ findQueueFamilies device sfc = do
 
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs = (== bs) . (.&. bs)
-
-doesPresentSupport :: Vk.PhysicalDevice.P ->
-	Vk.QueueFamily.Index -> Vk.Khr.Surface.S ss -> IO Bool
-doesPresentSupport dvc idx sfc =
-	Vk.Khr.Surface.PhysicalDevice.getSupport dvc idx sfc
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
 checkDeviceExtensionSupport dvc = do
