@@ -67,7 +67,6 @@ import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
-import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
@@ -309,10 +308,20 @@ run win inst = createSurface win inst \sfc -> do
 	mainLoop win sfc phdvc qfis
 	cleanup
 
+createSurface :: Glfw.Window -> Vk.Ist.I si ->
+	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+createSurface win ist f =
+	ask >>= \g -> lift $ Glfw.createWindowSurface ist win nil nil \sfc ->
+		f sfc `runReaderT` g
+
 initVulkan :: Glfw.Window -> Vk.Ist.I si -> Vk.Khr.Surface.S ss -> ReaderT Global IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
 initVulkan win inst sfc = do
 	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
-	createLogicalDevice phdvc qfis
+	(dvc, gq, pq) <- createLogicalDevice phdvc qfis
+	writeGlobal globalDevice dvc
+	writeGlobal globalGraphicsQueue gq
+	writeGlobal globalPresentQueue pq
 	createSwapChain win sfc phdvc qfis
 	createImageViews
 	createRenderPass
@@ -323,13 +332,6 @@ initVulkan win inst sfc = do
 	createCommandBuffers
 	createSyncObjects
 	pure (phdvc, qfis)
-
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
-	ReaderT Global IO a
-createSurface win ist f =
-	ask >>= \g -> lift $ Glfw.createWindowSurface ist win nil nil \sfc ->
-		f sfc `runReaderT` g
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
@@ -421,7 +423,8 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
+createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices ->
+	ReaderT Global IO (Vk.Device.M.D, Vk.Queue.Q, Vk.Queue.Q)
 createLogicalDevice phdvc qfis = do
 	let	uniqueQueueFamilies =
 			nub [graphicsFamily qfis, presentFamily qfis]
@@ -444,11 +447,9 @@ createLogicalDevice phdvc qfis = do
 			Vk.Device.M.createInfoEnabledFeatures =
 				Just deviceFeatures }
 	dvc <- lift (Vk.Device.M.create @() @() phdvc createInfo nil)
-	writeGlobal globalDevice dvc
-	writeGlobal globalGraphicsQueue =<< lift (
-		Vk.Device.getQueue (Vk.Device.D dvc) (graphicsFamily qfis) 0 )
-	writeGlobal globalPresentQueue =<< lift (
-		Vk.Device.getQueue (Vk.Device.D dvc) (presentFamily qfis) 0 )
+	gq <- lift $ Vk.Device.getQueue (Vk.Device.D dvc) (graphicsFamily qfis) 0
+	pq <- lift $ Vk.Device.getQueue (Vk.Device.D dvc) (presentFamily qfis) 0
+	pure (dvc, gq, pq)
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
