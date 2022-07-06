@@ -8,6 +8,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Default
 import Data.Maybe
 import Data.Word
 import Data.UUID
@@ -125,6 +126,8 @@ getFeatures (P pdvc) =
 
 featuresZero :: Features
 featuresZero = unsafePerformIO $ featuresFromCore <$> C.getClearedFeatures
+
+instance Default Features where def = featuresZero
 
 getQueueFamilyProperties' :: P -> IO [QueueFamily.Properties]
 getQueueFamilyProperties' p = (snd <$>) <$> getQueueFamilyProperties p

@@ -406,31 +406,28 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices ->
-	(forall sd . Vk.Device.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> ReaderT Global IO a) ->
-	ReaderT Global IO a
-createLogicalDevice phdvc qfis f = do
+createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> (forall sd .
+		Vk.Device.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+			ReaderT Global IO a) -> ReaderT Global IO a
+createLogicalDevice phdvc qfis f =
 	let	uniqueQueueFamilies =
 			nub [graphicsFamily qfis, presentFamily qfis]
 		queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
 			Vk.Device.Queue.createInfoNext = Nothing,
-			Vk.Device.Queue.createInfoFlags =
-				Vk.Device.Queue.CreateFlagsZero,
+			Vk.Device.Queue.createInfoFlags = def,
 			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
 			Vk.Device.Queue.createInfoQueuePriorities = [1] }
-		deviceFeatures = Vk.PhysicalDevice.featuresZero
 		createInfo = Vk.Device.M.CreateInfo {
 			Vk.Device.M.createInfoNext = Nothing,
-			Vk.Device.M.createInfoFlags = Vk.Device.M.CreateFlagsZero,
+			Vk.Device.M.createInfoFlags = def,
 			Vk.Device.M.createInfoQueueCreateInfos =
 				queueCreateInfos <$> uniqueQueueFamilies,
 			Vk.Device.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Device.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Device.M.createInfoEnabledFeatures =
-				Just deviceFeatures }
-	g <- ask
+			Vk.Device.M.createInfoEnabledFeatures = Just def } in
+	ask >>= \g ->
 	lift $ Vk.Device.create @() @() phdvc createInfo nil nil \dvc -> do
 		gq <- Vk.Device.getQueue dvc (graphicsFamily qfis) 0
 		pq <- Vk.Device.getQueue dvc (presentFamily qfis) 0
