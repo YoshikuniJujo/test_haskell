@@ -24,6 +24,7 @@ import Gpu.Vulkan.Khr.Swapchain.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
@@ -48,7 +49,7 @@ data CreateInfo n ss = CreateInfo {
 	createInfoImageArrayLayers :: Word32,
 	createInfoImageUsage :: Image.UsageFlags,
 	createInfoImageSharingMode :: SharingMode,
-	createInfoQueueFamilyIndices :: [Word32],
+	createInfoQueueFamilyIndices :: [QueueFamily.Index],
 	createInfoPreTransform :: TransformFlagBits,
 	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
 	createInfoPresentMode :: PresentMode,
@@ -87,7 +88,7 @@ createInfoNew CreateInfo' {
 	createInfoImageArrayLayers' = ials,
 	createInfoImageUsage' = iusg,
 	createInfoImageSharingMode' = ism,
-	createInfoQueueFamilyIndices' = qfis,
+	createInfoQueueFamilyIndices' = (QueueFamily.Index  <$>) -> qfis,
 	createInfoPreTransform' = ptfm,
 	createInfoCompositeAlpha' = calp,
 	createInfoPresentMode' = pm,
@@ -122,7 +123,7 @@ createInfoToCore CreateInfo {
 	createInfoImageArrayLayers = ials,
 	createInfoImageUsage = Image.UsageFlagBits iusg,
 	createInfoImageSharingMode = SharingMode ism,
-	createInfoQueueFamilyIndices = qfis,
+	createInfoQueueFamilyIndices = ((\(QueueFamily.Index i) -> i) <$>) -> qfis,
 	createInfoPreTransform = TransformFlagBits pt,
 	createInfoCompositeAlpha = CompositeAlphaFlagBits caf,
 	createInfoPresentMode = PresentMode pm,

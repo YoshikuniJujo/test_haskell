@@ -485,7 +485,7 @@ createSwapChain win sfc phdvc qfis0 = do
 			Vk.Khr.Swapchain.createInfoImageUsage =
 				Vk.Image.UsageColorAttachmentBit,
 			Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = (\(Vk.QueueFamily.Index i) -> i) <$> qfis,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 			Vk.Khr.Swapchain.createInfoPreTransform =
 				Vk.Khr.Surface.M.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,
