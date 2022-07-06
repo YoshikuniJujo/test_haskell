@@ -43,8 +43,8 @@ getCapabilities (PhysicalDevice.P pdvc) (S (M.S sfc)) =
 getCapabilities' :: PhysicalDevice.P -> M.S -> IO M.Capabilities
 getCapabilities' phdvc sfc = getCapabilities phdvc (S sfc)
 
-getFormats :: PhysicalDevice.P -> M.S -> IO [M.Format]
-getFormats (PhysicalDevice.P pdvc) (M.S sfc) =
+getFormats :: PhysicalDevice.P -> S ss -> IO [M.Format]
+getFormats (PhysicalDevice.P pdvc) (S (M.S sfc)) =
 	($ pure) . runContT $ (M.formatFromCore <$>) <$> do
 		pFormatCount <- ContT alloca
 		(fromIntegral -> formatCount) <- lift do
@@ -55,6 +55,9 @@ getFormats (PhysicalDevice.P pdvc) (M.S sfc) =
 		lift do	r <- C.getFormats pdvc sfc pFormatCount pFormats
 			throwUnlessSuccess $ Result r
 			peekArray formatCount pFormats
+
+getFormats' :: PhysicalDevice.P -> M.S -> IO [M.Format]
+getFormats' phdvc sfc = getFormats phdvc (S sfc)
 
 getPresentModes :: PhysicalDevice.P -> M.S -> IO [PresentMode]
 getPresentModes (PhysicalDevice.P pdvc) (M.S sfc) =

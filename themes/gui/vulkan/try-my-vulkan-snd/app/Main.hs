@@ -389,7 +389,7 @@ querySwapChainSupport ::
 querySwapChainSupport Global { globalSurface = rsfc } dvc =
 	readIORef rsfc >>= \sfc -> SwapChainSupportDetails
 		<$> Vk.Khr.Sfc.PhysicalDevice.getCapabilities' dvc sfc
-		<*> Vk.Khr.Sfc.PhysicalDevice.getFormats dvc sfc
+		<*> Vk.Khr.Sfc.PhysicalDevice.getFormats' dvc sfc
 		<*> Vk.Khr.Sfc.PhysicalDevice.getPresentModes dvc sfc
 
 createLogicalDevice :: Global -> IO ()

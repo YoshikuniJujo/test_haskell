@@ -421,7 +421,7 @@ querySwapChainSupport ::
 	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc (surfaceToMiddle sfc)
+	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc (surfaceToMiddle sfc)
 
 createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
