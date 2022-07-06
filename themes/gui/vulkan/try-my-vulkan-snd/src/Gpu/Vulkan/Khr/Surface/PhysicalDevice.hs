@@ -32,13 +32,16 @@ getSupport (PhysicalDevice.P phdvc) (QueueFamily.Index qfi) (S (M.S sfc)) =
 getSupport' :: PhysicalDevice.P -> Word32 -> M.S -> IO Bool
 getSupport' phdvc qfi sfc = getSupport phdvc (QueueFamily.Index qfi) (S sfc)
 
-getCapabilities :: PhysicalDevice.P -> M.S -> IO M.Capabilities
-getCapabilities (PhysicalDevice.P pdvc) (M.S sfc) =
+getCapabilities :: PhysicalDevice.P -> S ss -> IO M.Capabilities
+getCapabilities (PhysicalDevice.P pdvc) (S (M.S sfc)) =
 	($ pure) . runContT $ M.capabilitiesFromCore <$> do
 		pCapabilities <- ContT alloca
 		lift do	r <- C.getCapabilities pdvc sfc pCapabilities
 			throwUnlessSuccess $ Result r
 			peek pCapabilities
+
+getCapabilities' :: PhysicalDevice.P -> M.S -> IO M.Capabilities
+getCapabilities' phdvc sfc = getCapabilities phdvc (S sfc)
 
 getFormats :: PhysicalDevice.P -> M.S -> IO [M.Format]
 getFormats (PhysicalDevice.P pdvc) (M.S sfc) =

@@ -358,7 +358,7 @@ isDeviceSuitable phdvc sfc = do
 	_deviceFeatures <- Vk.PhysicalDevice.getFeatures phdvc
 	indices <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	swapChainSupport <- querySwapChainSupport phdvc $ surfaceToMiddle sfc
+	swapChainSupport <- querySwapChainSupport phdvc sfc
 	let	swapChainAdequate =
 			not (null $ formats swapChainSupport) &&
 			not (null $ presentModes swapChainSupport)
@@ -418,11 +418,11 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.M.S -> IO SwapChainSupportDetails
+	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
-	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
+	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc (surfaceToMiddle sfc)
+	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc (surfaceToMiddle sfc)
 
 createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
 createLogicalDevice phdvc qfis = do
@@ -456,8 +456,7 @@ createLogicalDevice phdvc qfis = do
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
 createSwapChain win sfc phdvc qfis0 = do
-	let	sfc' = surfaceToMiddle sfc
-	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc'
+	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
 	let	surfaceFormat =
 			chooseSwapSurfaceFormat $ formats swapChainSupport
 		presentMode =
@@ -478,7 +477,7 @@ createSwapChain win sfc phdvc qfis0 = do
 			Vk.Khr.Swapchain.createInfoNext = Nothing,
 			Vk.Khr.Swapchain.createInfoFlags =
 				Vk.Khr.Swapchain.CreateFlagsZero,
-			Vk.Khr.Swapchain.createInfoSurface = sfc',
+			Vk.Khr.Swapchain.createInfoSurface = surfaceToMiddle sfc,
 			Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
 			Vk.Khr.Swapchain.createInfoImageFormat =
 				Vk.Khr.Surface.M.formatFormat surfaceFormat,
