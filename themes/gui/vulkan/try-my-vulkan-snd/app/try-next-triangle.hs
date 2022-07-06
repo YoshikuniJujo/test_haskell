@@ -305,11 +305,11 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
 run win inst = createSurface win inst \sfc -> do
 	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
-	createLogicalDevice phdvc qfis \(Vk.Device.D dvc) gq pq -> do
-		writeGlobal globalDevice dvc
+	createLogicalDevice phdvc qfis \dvc gq pq -> do
+		writeGlobal globalDevice $ (\(Vk.Device.D d) -> d) dvc
 		writeGlobal globalGraphicsQueue gq
 		writeGlobal globalPresentQueue pq
-		initVulkan win sfc phdvc qfis
+		initVulkan win sfc phdvc qfis dvc
 		mainLoop win sfc phdvc qfis
 		cleanup
 
@@ -441,21 +441,22 @@ createLogicalDevice phdvc qfis f = do
 		f dvc gq pq `runReaderT` g
 
 initVulkan :: Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-initVulkan win sfc phdvc qfis = do
-		createSwapChain win sfc phdvc qfis
-		createImageViews
-		createRenderPass
-		createGraphicsPipeline
-		createFramebuffers
-		createCommandPool qfis
-		createVertexBuffer phdvc
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	ReaderT Global IO ()
+initVulkan win sfc phdvc qfis dvc = do
+		createSwapChain win sfc phdvc qfis dvc
+		createImageViews dvc
+		createRenderPass dvc
+		createGraphicsPipeline dvc
+		createFramebuffers dvc
+		createCommandPool qfis dvc
+		createVertexBuffer phdvc dvc
 		createCommandBuffers
 		createSyncObjects
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> ReaderT Global IO ()
-createSwapChain win sfc phdvc qfis0 = do
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
+createSwapChain win sfc phdvc qfis0 (Vk.Device.D dvc) = do
 	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
 	let	surfaceFormat =
 			chooseSwapSurfaceFormat $ formats swapChainSupport
@@ -497,7 +498,6 @@ createSwapChain win sfc phdvc qfis0 = do
 			Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
 			Vk.Khr.Swapchain.createInfoClipped = True,
 			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
-	dvc <- readGlobal globalDevice
 	sc <- lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil
 	writeGlobal globalSwapChain sc
 	writeGlobal globalSwapChainImages
@@ -545,12 +545,12 @@ chooseSwapExtent win caps
 clamp :: Ord a => a -> a -> a -> a
 clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
-createImageViews :: ReaderT Global IO ()
-createImageViews = writeGlobal globalSwapChainImageViews =<<
-	(createImageView1 `mapM`) =<< readGlobal globalSwapChainImages
+createImageViews :: Vk.Device.D sd -> ReaderT Global IO ()
+createImageViews dvc = writeGlobal globalSwapChainImageViews =<<
+	(createImageView1 dvc `mapM`) =<< readGlobal globalSwapChainImages
 
-createImageView1 :: Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
-createImageView1 sci = do
+createImageView1 :: Vk.Device.D sd -> Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
+createImageView1 (Vk.Device.D dvc) sci = do
 	scif <- fromJust <$> readGlobal globalSwapChainImageFormat
 	let	createInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoNext = Nothing,
@@ -573,11 +573,10 @@ createImageView1 sci = do
 			Vk.Image.subresourceRangeLevelCount = 1,
 			Vk.Image.subresourceRangeBaseArrayLayer = 0,
 			Vk.Image.subresourceRangeLayerCount = 1 }
-	dvc <- readGlobal globalDevice
 	lift $ Vk.ImageView.create @() dvc createInfo nil
 
-createRenderPass :: ReaderT Global IO ()
-createRenderPass = do
+createRenderPass :: Vk.Device.D sd -> ReaderT Global IO ()
+createRenderPass (Vk.Device.D dvc) = do
 	Just scif <- readGlobal globalSwapChainImageFormat
 	let	colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
@@ -625,14 +624,13 @@ createRenderPass = do
 			Vk.RenderPass.createInfoAttachments = [colorAttachment],
 			Vk.RenderPass.createInfoSubpasses = [subpass],
 			Vk.RenderPass.createInfoDependencies = [dependency] }
-	dvc <- readGlobal globalDevice
 	writeGlobal globalRenderPass
 		=<< lift (Vk.RenderPass.create @() dvc renderPassInfo nil)
 
-createGraphicsPipeline :: ReaderT Global IO ()
-createGraphicsPipeline = do
-	vertShaderModule <- createShaderModule glslVertexShaderMain
-	fragShaderModule <- createShaderModule glslFragmentShaderMain
+createGraphicsPipeline :: Vk.Device.D sd -> ReaderT Global IO ()
+createGraphicsPipeline dvc@(Vk.Device.D dvcm) = do
+	vertShaderModule <- createShaderModule dvc glslVertexShaderMain
+	fragShaderModule <- createShaderModule dvc glslFragmentShaderMain
 
 	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
 			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
@@ -750,9 +748,8 @@ createGraphicsPipeline = do
 				Vk.Ppl.Layout.CreateFlagsZero,
 			Vk.Ppl.Layout.createInfoSetLayouts = [],
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
-	dvc <- readGlobal globalDevice
 	writeGlobal globalPipelineLayout
-		=<< lift (Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil)
+		=<< lift (Vk.Ppl.Layout.create @() dvcm pipelineLayoutInfo nil)
 
 	ppllyt <- readGlobal globalPipelineLayout
 	rp <- readGlobal globalRenderPass
@@ -791,31 +788,30 @@ createGraphicsPipeline = do
 
 	gpl `Vk.Ppl.Graphics.PCons` Vk.Ppl.Graphics.PNil <- lift
 		$ Vk.Ppl.Graphics.create
-			dvc Nothing
+			dvcm Nothing
 			(pipelineInfo `Vk.Ppl.Graphics.CreateInfoCons`
 				Vk.Ppl.Graphics.CreateInfoNil)
 			nil
 	writeGlobal globalGraphicsPipeline gpl
 
-	lift do	Vk.Shader.Module.destroy dvc fragShaderModule nil
-		Vk.Shader.Module.destroy dvc vertShaderModule nil
+	lift do	Vk.Shader.Module.destroy dvcm fragShaderModule nil
+		Vk.Shader.Module.destroy dvcm vertShaderModule nil
 
-createShaderModule :: Spv sknd -> ReaderT Global IO (Vk.Shader.Module.M sknd)
-createShaderModule cd = do
+createShaderModule :: Vk.Device.D sd -> Spv sknd -> ReaderT Global IO (Vk.Shader.Module.M sknd)
+createShaderModule (Vk.Device.D dvc) cd = do
 	let	createInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
 				Vk.Shader.Module.CreateFlagsZero,
 			Vk.Shader.Module.createInfoCode = cd }
-	dvc <- readGlobal globalDevice
 	lift $ Vk.Shader.Module.create @() dvc createInfo nil
 
-createFramebuffers :: ReaderT Global IO ()
-createFramebuffers = writeGlobal globalSwapChainFramebuffers
-	=<< (createFramebuffer1 `mapM`) =<< readGlobal globalSwapChainImageViews
+createFramebuffers :: Vk.Device.D sd -> ReaderT Global IO ()
+createFramebuffers dvc = writeGlobal globalSwapChainFramebuffers
+	=<< (createFramebuffer1 dvc `mapM`) =<< readGlobal globalSwapChainImageViews
 
-createFramebuffer1 :: Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
-createFramebuffer1 attachment = do
+createFramebuffer1 :: Vk.Device.D sd -> Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
+createFramebuffer1 (Vk.Device.D dvc) attachment = do
 	rp <- readGlobal globalRenderPass
 	Vk.C.Extent2d {
 		Vk.C.extent2dWidth = w,
@@ -829,43 +825,40 @@ createFramebuffer1 attachment = do
 			Vk.Framebuffer.createInfoWidth = w,
 			Vk.Framebuffer.createInfoHeight = h,
 			Vk.Framebuffer.createInfoLayers = 1 }
-	dvc <- readGlobal globalDevice
 	lift $ Vk.Framebuffer.create @() dvc framebufferInfo nil
 
-createCommandPool :: QueueFamilyIndices -> ReaderT Global IO ()
-createCommandPool qfis = do
+createCommandPool :: QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
+createCommandPool qfis (Vk.Device.D dvc) = do
 	let	poolInfo = Vk.CommandPool.CreateInfo {
 			Vk.CommandPool.createInfoNext = Nothing,
 			Vk.CommandPool.createInfoFlags =
 				Vk.CommandPool.CreateResetCommandBufferBit,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsFamily qfis }
-	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandPool
 		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
 
-createVertexBuffer :: Vk.PhysicalDevice.P -> ReaderT Global IO ()
-createVertexBuffer phdvc = do
-	dvc <- readGlobal globalDevice
-	(sb, sbm) <- createBuffer phdvc (length vertices)
+createVertexBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> ReaderT Global IO ()
+createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) = do
+	(sb, sbm) <- createBuffer phdvc dvc (length vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.writeList dvc sbm Vk.Memory.M.MapFlagsZero vertices
-	(vb, vbm) <- createBuffer phdvc (length vertices)
+	lift $ Vk.Memory.List.writeList dvcm sbm Vk.Memory.M.MapFlagsZero vertices
+	(vb, vbm) <- createBuffer phdvc dvc (length vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
 	copyBuffer sb vb (length vertices)
-	lift do	Vk.Buffer.List.destroy dvc sb nil
-		Vk.Memory.List.free dvc sbm nil
+	lift do	Vk.Buffer.List.destroy dvcm sb nil
+		Vk.Memory.List.free dvcm sbm nil
 	writeGlobal globalVertexBuffer vb
 	writeGlobal globalVertexBufferMemory vbm
 
-createBuffer :: Vk.PhysicalDevice.P ->
+createBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
 	ReaderT Global IO (Vk.Buffer.List.B Vertex, Vk.Device.M.MemoryList Vertex)
-createBuffer phdvc ln usage properties = do
+createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 	let	bufferInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
 			Vk.Buffer.List.createInfoFlags =
@@ -875,7 +868,6 @@ createBuffer phdvc ln usage properties = do
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
-	dvc <- readGlobal globalDevice
 	b <- lift $ Vk.Buffer.List.create @() dvc bufferInfo nil
 	memRequirements <- lift $ Vk.Buffer.List.getMemoryRequirements dvc b
 	mti <- findMemoryType phdvc
@@ -1095,11 +1087,11 @@ recreateSwapChain win sfc phdvc qfis = do
 
 	cleanupSwapChain
 
-	createSwapChain win sfc phdvc qfis
-	createImageViews
-	createRenderPass
-	createGraphicsPipeline
-	createFramebuffers
+	createSwapChain win sfc phdvc qfis $ Vk.Device.D dvc
+	createImageViews $ Vk.Device.D dvc
+	createRenderPass $ Vk.Device.D dvc
+	createGraphicsPipeline $ Vk.Device.D dvc
+	createFramebuffers $ Vk.Device.D dvc
 
 cleanupSwapChain :: ReaderT Global IO ()
 cleanupSwapChain = do
