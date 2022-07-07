@@ -128,8 +128,10 @@ library
       Gpu.Vulkan.Khr.Surface.Middle
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
       Gpu.Vulkan.Khr.Surface.Type
+      Gpu.Vulkan.Khr.Swapchain
       Gpu.Vulkan.Khr.Swapchain.Enum
       Gpu.Vulkan.Khr.Swapchain.Middle
+      Gpu.Vulkan.Khr.Swapchain.Type
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.Atom
       Gpu.Vulkan.Memory.Enum

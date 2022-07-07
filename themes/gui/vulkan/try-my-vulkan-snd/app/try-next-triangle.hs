@@ -65,7 +65,6 @@ import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.Device.Type as Vk.Device
 import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
-import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
@@ -433,8 +432,9 @@ createLogicalDevice phdvc qfis f =
 initVulkan :: Glfw.Window -> Vk.Khr.Surface.S ss ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	ReaderT Global IO ()
-initVulkan win sfc phdvc qfis dvc = do
-	createSwapChain win sfc phdvc qfis dvc
+initVulkan win sfc phdvc qfis dvc@(Vk.Device.D dvcm) = do
+	(sc, scfmt, ext) <- createSwapChain win sfc phdvc qfis dvc
+	writeGlobalSwapChain dvcm sc scfmt ext
 	createImageViews dvc
 	createRenderPass dvc
 	createGraphicsPipeline dvc
@@ -445,7 +445,9 @@ initVulkan win sfc phdvc qfis dvc = do
 	createSyncObjects dvc
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ss ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
+	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	ReaderT Global IO
+		(Vk.Khr.Swapchain.S, Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
 createSwapChain win sfc phdvc qfis0 (Vk.Device.D dvc) = do
 	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
 	let	surfaceFormat =
@@ -489,16 +491,18 @@ createSwapChain win sfc phdvc qfis0 (Vk.Device.D dvc) = do
 			Vk.Khr.Swapchain.createInfoClipped = True,
 			Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }
 	sc <- lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil
+	pure (sc, surfaceFormat, extent)
+
+writeGlobalSwapChain :: Vk.Device.M.D ->
+	Vk.Khr.Swapchain.S -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
+	ReaderT Global IO ()
+writeGlobalSwapChain dvc sc surfaceFormat extent = do
 	writeGlobal globalSwapChain sc
 	writeGlobal globalSwapChainImages
 		=<< lift (Vk.Khr.Swapchain.getImages dvc sc)
 	writeGlobal globalSwapChainImageFormat
 		. Just $ Vk.Khr.Surface.M.formatFormat surfaceFormat
 	writeGlobal globalSwapChainExtent extent
-	lift do	putStrLn "*** CREATE SWAP CHAIN ***"
-		print surfaceFormat
-		print presentMode
-		print extent
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
@@ -1072,7 +1076,8 @@ recreateSwapChain win sfc phdvc qfis dvc@(Vk.Device.D dvcm) = do
 
 	cleanupSwapChain dvc
 
-	createSwapChain win sfc phdvc qfis dvc
+	(sc, scfmt, ext) <- createSwapChain win sfc phdvc qfis dvc
+	writeGlobalSwapChain dvcm sc scfmt ext
 	createImageViews dvc
 	createRenderPass dvc
 	createGraphicsPipeline dvc
