@@ -181,7 +181,7 @@ newGlobal :: IO Global
 newGlobal = do
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
-	sc <- newIORef $ Vk.Khr.Swapchain.S NullPtr
+	sc <- newIORef $ Vk.Khr.Swapchain.S undefined
 	scis <- newIORef []
 	scif <- newIORef Nothing
 	sce <- newIORef $ Vk.C.Extent2d 0 0

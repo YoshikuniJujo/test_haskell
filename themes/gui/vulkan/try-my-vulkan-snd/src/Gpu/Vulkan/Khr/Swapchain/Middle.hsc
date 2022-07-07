@@ -11,6 +11,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.IORef
 import Data.Word
 
 import qualified Data.Text as T
@@ -133,10 +134,10 @@ createInfoToCore CreateInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis
-	let	os = case mos of
-			Nothing -> wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
-			Just (S s) -> s
-		C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	os <- case mos of
+		Nothing -> pure $ wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+		Just s -> lift $ sToCore s
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
@@ -158,17 +159,40 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 	where qfic = length qfis
 
-newtype S = S { unS :: C.S } deriving Show
+newtype S = S { unS :: IORef C.S }
+
+instance Show S where show s = "Gpu.Vulkan.Khr.Swapchain.Middle.S"
+
+sToCore :: S -> IO C.S
+sToCore (S s) = readIORef s
+
+sFromCore :: C.S -> IO S
+sFromCore s = S <$> newIORef s
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO S
-create (Device.D dvc) ci mac = ($ pure) . runContT $ S <$> do
+create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore =<< do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	psc <- ContT alloca
 	lift do	r <- C.create dvc pci pac psc
 		throwUnlessSuccess $ Result r
 		peek psc
+
+recreate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D -> CreateInfo n ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	S -> IO ()
+recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
+	pci <- createInfoToCore ci
+	pacc <- AllocationCallbacks.maybeToCore macc
+	pacd <- AllocationCallbacks.maybeToCore macd
+	psc <- ContT alloca
+	lift do	r <- C.create dvc pci pacc psc
+		throwUnlessSuccess $ Result r
+		sco <- readIORef rs
+		writeIORef rs =<< peek psc
+		C.destroy dvc sco pacd
 
 create' :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
@@ -178,17 +202,20 @@ create' dvc oci mac = create dvc (createInfoNew oci) mac
 
 destroy :: Pointable n =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (S sc) mac = ($ pure) . runContT
-	$ lift . C.destroy dvc sc =<< AllocationCallbacks.maybeToCore mac
+destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	sc' <- lift $ sToCore sc
+	lift $ C.destroy dvc sc' pac
 
 getImages :: Device.D -> S -> IO [Image.I]
-getImages (Device.D dvc) (S sc) = ($ pure) . runContT $ (Image.I <$>) <$> do
+getImages (Device.D dvc) sc = ($ pure) . runContT $ (Image.I <$>) <$> do
+	sc' <- lift $ sToCore sc
 	pSwapchainImageCount <- ContT alloca
 	(fromIntegral -> swapchainImageCount) <- lift do
-		r <- C.getImages dvc sc pSwapchainImageCount NullPtr
+		r <- C.getImages dvc sc' pSwapchainImageCount NullPtr
 		throwUnlessSuccess $ Result r
 		peek pSwapchainImageCount
 	pSwapchainImages <- ContT $ allocaArray swapchainImageCount
-	lift do	r <- C.getImages dvc sc pSwapchainImageCount pSwapchainImages
+	lift do	r <- C.getImages dvc sc' pSwapchainImageCount pSwapchainImages
 		throwUnlessSuccess $ Result r
 		peekArray swapchainImageCount pSwapchainImages

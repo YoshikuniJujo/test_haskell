@@ -38,11 +38,12 @@ acquireNextImage = acquireNextImageResult [Success]
 acquireNextImageResult :: [Result] -> Device.D ->
 	Swapchain.S -> Word64 -> Maybe Semaphore.S -> Maybe Fence.F -> IO Word32
 acquireNextImageResult sccs
-	(Device.D dvc) (Swapchain.S sc) to msmp mfnc = ($ pure) $ runContT do
+	(Device.D dvc) sc to msmp mfnc = ($ pure) $ runContT do
 	let	smp = maybe NullHandle (\(Semaphore.S s) -> s) msmp
 		fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
 	pii <- ContT alloca
-	lift do	r <- C.acquireNextImage dvc sc to smp fnc pii
+	sc' <- lift $ Swapchain.sToCore sc
+	lift do	r <- C.acquireNextImage dvc sc' to smp fnc pii
 		throwUnless sccs $ Result r
 		peek pii
 
@@ -58,14 +59,15 @@ presentInfoToCore PresentInfo {
 	presentInfoWaitSemaphores =
 		length &&& (Semaphore.unS <$>) -> (wsc, wss),
 	presentInfoSwapchainImageIndices =
-		length &&& ((Swapchain.unS <$>) `first`) . unzip ->
+		length &&& id . unzip ->
 		(scc, (scs, iis))
 	} = do
+	scs' <- lift $ Swapchain.sToCore `mapM` scs
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pwss <- ContT $ allocaArray wsc
 	lift $ pokeArray pwss wss
 	pscs <- ContT $ allocaArray scc
-	lift $ pokeArray pscs scs
+	lift $ pokeArray pscs scs'
 	piis <- ContT $ allocaArray scc
 	lift $ pokeArray piis iis
 	prs <- ContT $ allocaArray scc
