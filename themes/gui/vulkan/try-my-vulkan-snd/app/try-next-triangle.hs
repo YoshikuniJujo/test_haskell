@@ -428,30 +428,15 @@ createLogicalDevice phdvc qfis f =
 		pq <- Vk.Device.getQueue dvc (presentFamily qfis) 0
 		f dvc gq pq `runReaderT` g
 
-initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Khr.Swapchain.S ssc -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
-	ReaderT Global IO ()
-initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swapchain.S sc) scfmt ext = do
-		writeGlobalOthers dvcm sc scfmt ext
-		createImageViews dvc
-		createRenderPass dvc
-		createGraphicsPipeline dvc
-		createFramebuffers dvc
-
-		createCommandPool qfis dvc
-		createVertexBuffer phdvc dvc
-		createCommandBuffers dvc
-		createSyncObjects dvc
-
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> (
 		forall ss . Vk.Khr.Swapchain.S ss -> Vk.Khr.Surface.M.Format ->
 		Vk.C.Extent2d -> ReaderT Global IO a ) -> ReaderT Global IO a
-createSwapChain win sfc phdvc qfis0 dvc f = do
+createSwapChain win sfc phdvc qfis dvc f = do
 	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
 	extent <- chooseSwapExtent win $ capabilities swapChainSupport
 	let	(createInfo, surfaceFormat) =
-			mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent
+			mkSwapchainCreateInfo sfc qfis swapChainSupport extent
 	g <- ask
 	lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil nil \sc ->
 		f sc surfaceFormat extent `runReaderT` g
@@ -473,8 +458,7 @@ mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Khr.Surface.M.Format)
 mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = let
 	surfaceFormat = chooseSwapSurfaceFormat $ formats swapChainSupport
-	presentMode =
-		chooseSwapPresentMode $ presentModes swapChainSupport
+	presentMode = chooseSwapPresentMode $ presentModes swapChainSupport
 	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
 		. Vk.Khr.Surface.M.capabilitiesMaxImageCount
 		$ capabilities swapChainSupport
@@ -555,6 +539,21 @@ clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 
 onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
+
+initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.Khr.Swapchain.S ssc -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
+	ReaderT Global IO ()
+initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swapchain.S sc) scfmt ext =
+	do	writeGlobalOthers dvcm sc scfmt ext
+		createImageViews dvc
+		createRenderPass dvc
+		createGraphicsPipeline dvc
+		createFramebuffers dvc
+
+		createCommandPool qfis dvc
+		createVertexBuffer phdvc dvc
+		createCommandBuffers dvc
+		createSyncObjects dvc
 
 createImageViews :: Vk.Device.D sd -> ReaderT Global IO ()
 createImageViews dvc = writeGlobal globalSwapChainImageViews =<<
