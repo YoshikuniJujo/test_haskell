@@ -174,6 +174,8 @@ create' :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
 create' dvc oci mac = create dvc (createInfoNew oci) mac
 
+{-# DEPRECATED CreateInfo', createInfoNew, create' "Don't use these" #-}
+
 destroy :: Pointable n =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) (S sc) mac = ($ pure) . runContT
