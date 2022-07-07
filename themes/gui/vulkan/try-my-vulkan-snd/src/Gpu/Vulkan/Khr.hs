@@ -25,7 +25,7 @@ import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Fence as Fence
 import qualified Gpu.Vulkan.Queue as Queue
-import qualified Gpu.Vulkan.Khr.Swapchain as Swapchain
+import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Swapchain
 import qualified Gpu.Vulkan.Khr.Core as C
 
 validationLayerName :: T.Text

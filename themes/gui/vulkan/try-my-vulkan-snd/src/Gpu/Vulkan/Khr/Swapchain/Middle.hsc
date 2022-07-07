@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Swapchain where
+module Gpu.Vulkan.Khr.Swapchain.Middle where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

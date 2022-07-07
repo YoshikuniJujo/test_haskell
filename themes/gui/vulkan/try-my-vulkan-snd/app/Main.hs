@@ -64,7 +64,7 @@ import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DU
 
-import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Sc
+import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Sc
 import qualified Gpu.Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImageView
