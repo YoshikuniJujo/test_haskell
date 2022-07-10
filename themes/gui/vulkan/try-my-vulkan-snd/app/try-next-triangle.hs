@@ -148,7 +148,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalPresentQueue :: IORef Vk.Queue.Q,
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
@@ -176,7 +175,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sce <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
 	rp <- newIORef $ Vk.RenderPass.R NullPtr
@@ -193,7 +191,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.M.MemoryList 0 NullPtr
 	pure Global {
-		globalPresentQueue = pq,
 		globalSwapChainExtent = sce,
 		globalSwapChainImageViews = scivs,
 		globalRenderPass = rp,
@@ -292,10 +289,9 @@ run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
 run win inst = createSurface win inst \sfc -> do
 	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
 	createLogicalDevice phdvc qfis \dvc gq pq -> do
-		writeGlobal globalPresentQueue pq
 		createSwapChain win sfc phdvc qfis dvc \sc scfmt ext -> do
 			initVulkan phdvc qfis dvc gq sc scfmt ext
-			mainLoop win sfc phdvc qfis dvc gq sc
+			mainLoop win sfc phdvc qfis dvc gq pq sc
 			cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -998,23 +994,23 @@ recordCommandBuffer cb imageIndex = do
 mainLoop ::
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Queue.Q ->
+	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> ReaderT Global IO ()
-mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq sc = do
+mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc = do
 	fix \loop -> bool (pure ()) loop =<< do
 		lift Glfw.pollEvents
 		g <- ask
 		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc
-			$ drawFrame win sfc phdvc qfis dvc gq sc `runReaderT` g
+			$ drawFrame win sfc phdvc qfis dvc gq pq sc `runReaderT` g
 		not <$> lift (Glfw.windowShouldClose win)
 	lift $ Vk.Device.M.waitIdle dvcm
 
 drawFrame ::
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Queue.Q ->
+	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq (Vk.Khr.Swapchain.S sc) = do
+drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) = do
 	cf <- readGlobal globalCurrentFrame
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
 	lift $ Vk.Fence.waitForFs dvcm [iff] True maxBound
@@ -1032,7 +1028,6 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq (Vk.Khr.Swapchain.S sc) =
 				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
 			Vk.submitInfoCommandBuffers = [cb],
 			Vk.submitInfoSignalSemaphores = [rfs] }
-	pq <- readGlobal globalPresentQueue
 	lift . Vk.Queue.submit' @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
