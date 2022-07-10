@@ -150,7 +150,6 @@ maxFramesInFlight = 2
 data Global = Global {
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
 	globalPresentQueue :: IORef Vk.Queue.Q,
-	globalSwapChainImages :: IORef [Vk.Image.I],
 	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
@@ -181,7 +180,6 @@ newGlobal :: IO Global
 newGlobal = do
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
-	scis <- newIORef []
 	scif <- newIORef Nothing
 	sce <- newIORef $ Vk.C.Extent2d 0 0
 	scivs <- newIORef []
@@ -201,7 +199,6 @@ newGlobal = do
 	pure Global {
 		globalGraphicsQueue = gq,
 		globalPresentQueue = pq,
-		globalSwapChainImages = scis,
 		globalSwapChainImageFormat = scif,
 		globalSwapChainExtent = sce,
 		globalSwapChainImageViews = scivs,
@@ -456,20 +453,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
 	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Khr.Surface.M.Format)
-mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = let
-	surfaceFormat = chooseSwapSurfaceFormat $ formats swapChainSupport
-	presentMode = chooseSwapPresentMode $ presentModes swapChainSupport
-	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
-		. Vk.Khr.Surface.M.capabilitiesMaxImageCount
-		$ capabilities swapChainSupport
-	imageCount = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount
-			(capabilities swapChainSupport) + 1)
-		0 maxImageCount
-	(ism, qfis) = if graphicsFamily qfis0 /= presentFamily qfis0
-		then (Vk.SharingModeConcurrent,
-			[graphicsFamily qfis0, presentFamily qfis0])
-		else (Vk.SharingModeExclusive, []) in (
+mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = (
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = Nothing,
 		Vk.Khr.Swapchain.createInfoFlags = def,
@@ -486,21 +470,30 @@ mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = let
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Surface.M.capabilitiesCurrentTransform
-				$ capabilities swapChainSupport,
+			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
 		Vk.Khr.Swapchain.createInfoCompositeAlpha =
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
 		Vk.Khr.Swapchain.createInfoClipped = True,
 		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing },
 	surfaceFormat )
+	where
+	surfaceFormat = chooseSwapSurfaceFormat $ formats swapChainSupport
+	presentMode = chooseSwapPresentMode $ presentModes swapChainSupport
+	caps = capabilities swapChainSupport
+	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
+		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
+	imageCount = clamp
+		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0
+		maxImageCount
+	(ism, qfis) = if graphicsFamily qfis0 /= presentFamily qfis0
+		then (Vk.SharingModeConcurrent,
+			[graphicsFamily qfis0, presentFamily qfis0])
+		else (Vk.SharingModeExclusive, [])
 
-writeGlobalOthers :: Vk.Device.M.D ->
-	Vk.Khr.Swapchain.M.S -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
-	ReaderT Global IO ()
-writeGlobalOthers dvc sc surfaceFormat extent = do
-	writeGlobal globalSwapChainImages
-		=<< lift (Vk.Khr.Swapchain.M.getImages dvc sc)
+writeGlobalOthers ::
+	Vk.Khr.Surface.M.Format -> Vk.C.Extent2d -> ReaderT Global IO ()
+writeGlobalOthers surfaceFormat extent = do
 	writeGlobal globalSwapChainImageFormat
 		. Just $ Vk.Khr.Surface.M.formatFormat surfaceFormat
 	writeGlobal globalSwapChainExtent extent
@@ -543,9 +536,9 @@ onlyIf p x | p x = Just x | otherwise = Nothing
 initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Khr.Swapchain.S ssc -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
 	ReaderT Global IO ()
-initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swapchain.S sc) scfmt ext =
-	do	writeGlobalOthers dvcm sc scfmt ext
-		createImageViews dvc
+initVulkan phdvc qfis dvc (Vk.Khr.Swapchain.S sc) scfmt ext =
+	do	writeGlobalOthers scfmt ext
+		createImageViews dvc sc
 		createRenderPass dvc
 		createGraphicsPipeline dvc
 		createFramebuffers dvc
@@ -555,9 +548,11 @@ initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swapchain.S sc) scfmt ext =
 		createCommandBuffers dvc
 		createSyncObjects dvc
 
-createImageViews :: Vk.Device.D sd -> ReaderT Global IO ()
-createImageViews dvc = writeGlobal globalSwapChainImageViews =<<
-	(createImageView1 dvc `mapM`) =<< readGlobal globalSwapChainImages
+createImageViews ::
+	Vk.Device.D sd -> Vk.Khr.Swapchain.M.S -> ReaderT Global IO ()
+createImageViews dvc@(Vk.Device.D dvcm) sc = writeGlobal globalSwapChainImageViews
+	=<< (createImageView1 dvc `mapM`)
+	=<< lift (Vk.Khr.Swapchain.M.getImages dvcm sc)
 
 createImageView1 :: Vk.Device.D sd -> Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
 createImageView1 (Vk.Device.D dvc) sci = do
@@ -1097,8 +1092,8 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swa
 	cleanupSwapChain dvc
 
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc $ Vk.Khr.Swapchain.S sc
-	writeGlobalOthers dvcm sc scfmt ext
-	createImageViews dvc
+	writeGlobalOthers scfmt ext
+	createImageViews dvc sc
 	createRenderPass dvc
 	createGraphicsPipeline dvc
 	createFramebuffers dvc
