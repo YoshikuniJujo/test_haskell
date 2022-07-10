@@ -150,7 +150,6 @@ maxFramesInFlight = 2
 data Global = Global {
 	globalGraphicsQueue :: IORef Vk.Queue.Q,
 	globalPresentQueue :: IORef Vk.Queue.Q,
-	globalSwapChainImageFormat :: IORef (Maybe Vk.Format),
 	globalSwapChainExtent :: IORef Vk.C.Extent2d,
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
@@ -199,7 +198,6 @@ newGlobal = do
 	pure Global {
 		globalGraphicsQueue = gq,
 		globalPresentQueue = pq,
-		globalSwapChainImageFormat = scif,
 		globalSwapChainExtent = sce,
 		globalSwapChainImageViews = scivs,
 		globalRenderPass = rp,
@@ -494,8 +492,6 @@ mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = (
 writeGlobalOthers ::
 	Vk.Khr.Surface.M.Format -> Vk.C.Extent2d -> ReaderT Global IO ()
 writeGlobalOthers surfaceFormat extent = do
-	writeGlobal globalSwapChainImageFormat
-		. Just $ Vk.Khr.Surface.M.formatFormat surfaceFormat
 	writeGlobal globalSwapChainExtent extent
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
@@ -538,8 +534,9 @@ initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	ReaderT Global IO ()
 initVulkan phdvc qfis dvc (Vk.Khr.Swapchain.S sc) scfmt ext =
 	do	writeGlobalOthers scfmt ext
-		createImageViews dvc sc
-		createRenderPass dvc
+		let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
+		createImageViews dvc sc scifmt
+		createRenderPass dvc scifmt
 		createGraphicsPipeline dvc
 		createFramebuffers dvc
 
@@ -548,22 +545,23 @@ initVulkan phdvc qfis dvc (Vk.Khr.Swapchain.S sc) scfmt ext =
 		createCommandBuffers dvc
 		createSyncObjects dvc
 
-createImageViews ::
-	Vk.Device.D sd -> Vk.Khr.Swapchain.M.S -> ReaderT Global IO ()
-createImageViews dvc@(Vk.Device.D dvcm) sc = writeGlobal globalSwapChainImageViews
-	=<< (createImageView1 dvc `mapM`)
-	=<< lift (Vk.Khr.Swapchain.M.getImages dvcm sc)
+createImageViews :: Vk.Device.D sd ->
+	Vk.Khr.Swapchain.M.S -> Vk.Format -> ReaderT Global IO ()
+createImageViews dvc@(Vk.Device.D dvcm) sc scifmt = do
+	writeGlobal globalSwapChainImageViews
+		=<< ((\sci -> createImageView1 dvc sci scifmt) `mapM`)
+		=<< lift (Vk.Khr.Swapchain.M.getImages dvcm sc)
 
-createImageView1 :: Vk.Device.D sd -> Vk.Image.I -> ReaderT Global IO Vk.ImageView.I
-createImageView1 (Vk.Device.D dvc) sci = do
-	scif <- fromJust <$> readGlobal globalSwapChainImageFormat
+createImageView1 :: Vk.Device.D sd ->
+	Vk.Image.I -> Vk.Format -> ReaderT Global IO Vk.ImageView.I
+createImageView1 (Vk.Device.D dvc) sci scifmt = do
 	let	createInfo = Vk.ImageView.CreateInfo {
 			Vk.ImageView.createInfoNext = Nothing,
 			Vk.ImageView.createInfoFlags =
 				Vk.ImageView.CreateFlagsZero,
 			Vk.ImageView.createInfoImage = sci,
 			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
-			Vk.ImageView.createInfoFormat = scif,
+			Vk.ImageView.createInfoFormat = scifmt,
 			Vk.ImageView.createInfoComponents = components,
 			Vk.ImageView.createInfoSubresourceRange =
 				subresourceRange }
@@ -580,12 +578,11 @@ createImageView1 (Vk.Device.D dvc) sci = do
 			Vk.Image.subresourceRangeLayerCount = 1 }
 	lift $ Vk.ImageView.create @() dvc createInfo nil
 
-createRenderPass :: Vk.Device.D sd -> ReaderT Global IO ()
-createRenderPass (Vk.Device.D dvc) = do
-	Just scif <- readGlobal globalSwapChainImageFormat
+createRenderPass :: Vk.Device.D sd -> Vk.Format -> ReaderT Global IO ()
+createRenderPass (Vk.Device.D dvc) scifmt = do
 	let	colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
-			Vk.Att.descriptionFormat = scif,
+			Vk.Att.descriptionFormat = scifmt,
 			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
 			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
 			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
@@ -1093,8 +1090,9 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swa
 
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc $ Vk.Khr.Swapchain.S sc
 	writeGlobalOthers scfmt ext
-	createImageViews dvc sc
-	createRenderPass dvc
+	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
+	createImageViews dvc sc scifmt
+	createRenderPass dvc scifmt
 	createGraphicsPipeline dvc
 	createFramebuffers dvc
 
