@@ -12,7 +12,7 @@ module Data.HeteroList (
 	HeteroVarList(..),
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
-	ListToHeteroVarList(..), oneOfOne ) where
+	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex ) where
 
 import Prelude hiding (length)
 
@@ -112,3 +112,9 @@ instance ListToHeteroVarList ss => ListToHeteroVarList (s ': ss) where
 
 oneOfOne :: HeteroVarList t '[s] -> t s
 oneOfOne (x :...: HVNil) = x
+
+heteroVarListIndex :: HeteroVarList t ss -> Int -> (forall s . t s -> a) -> a
+heteroVarListIndex HVNil _ _ = error "index too large"
+heteroVarListIndex (x :...: _) 0 f = f x
+heteroVarListIndex (_ :...: xs) i f | i > 0 = heteroVarListIndex xs (i - 1) f
+heteroVarListIndex _ _ _ = error "negative index"

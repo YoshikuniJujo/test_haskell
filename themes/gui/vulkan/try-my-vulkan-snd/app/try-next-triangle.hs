@@ -20,6 +20,7 @@ import Control.Monad.Reader
 import Control.Exception
 import Data.Default
 import Data.Bits
+import Data.HeteroList hiding (length)
 import Data.Bool
 import Data.Maybe
 import Data.List
@@ -520,10 +521,11 @@ onlyIf p x | p x = Just x | otherwise = Nothing
 initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
-	Vk.Format -> [Vk.ImageView.M.I] ->
+	Vk.Format -> HeteroVarList Vk.ImageView.I ss ->
 	ReaderT Global IO ()
 initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) gq (Vk.Khr.Swapchain.S sc) scfmt ext scifmt scivs = do
-			writeGlobal globalSwapChainImageViews scivs
+			let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
+			writeGlobal globalSwapChainImageViews scivs'
 			createRenderPass dvc scifmt
 			createGraphicsPipeline dvc ext
 			createFramebuffers dvc ext
@@ -535,11 +537,12 @@ initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) gq (Vk.Khr.Swapchain.S sc) scfmt ex
 
 createImageViews :: Vk.Device.D sd ->
 	Vk.Format -> [Vk.Image.I] ->
-	([Vk.ImageView.M.I] -> ReaderT Global IO a) -> ReaderT Global IO a
-createImageViews _dvc _scifmt [] f = f []
+	(forall ss . HeteroVarList Vk.ImageView.I ss -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+createImageViews _dvc _scifmt [] f = f HVNil
 createImageViews dvc scifmt (img : imgs) f =
-	createImageView1 dvc img scifmt \(Vk.ImageView.I sciv) ->
-	createImageViews dvc scifmt imgs \scivs -> f $ sciv : scivs
+	createImageView1 dvc img scifmt \sciv ->
+	createImageViews dvc scifmt imgs \scivs -> f $ sciv :...: scivs
 
 createImageView1 :: Vk.Device.D sd ->
 	Vk.Image.I -> Vk.Format ->
