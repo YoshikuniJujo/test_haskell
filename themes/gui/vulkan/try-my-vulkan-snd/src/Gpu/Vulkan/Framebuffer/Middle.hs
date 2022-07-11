@@ -40,14 +40,13 @@ createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoRenderPass = RenderPass.R rp,
-	createInfoAttachments =
-		length &&& ((\(ImageView.I i) -> i) <$>) -> (ac, as),
+	createInfoAttachments = length &&& id -> (ac, as),
 	createInfoWidth = w,
 	createInfoHeight = h,
 	createInfoLayers = l } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pas <- ContT $ allocaArray ac
-	lift $ pokeArray pas as
+	lift $ pokeArray pas =<< ImageView.iToCore `mapM` as
 	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,

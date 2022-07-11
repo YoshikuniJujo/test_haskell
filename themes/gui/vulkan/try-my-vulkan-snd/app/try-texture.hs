@@ -246,7 +246,7 @@ newGlobal = do
 	dss <- newIORef []
 	ti <- newIORef $ Vk.Image.I NullPtr
 	tim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
-	tiv <- newIORef $ Vk.ImageView.I NullPtr
+	tiv <- newIORef $ Vk.ImageView.I undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
 	pure Global {
 		globalWindow = win,

@@ -72,9 +72,11 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
+import qualified Gpu.Vulkan.Image.Type as Vk.Image.T
 import qualified Gpu.Vulkan.Image.Middle as Vk.Image
 import qualified Gpu.Vulkan.Image.Enum as Vk.Image
-import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView
+import qualified Gpu.Vulkan.ImageView as Vk.ImageView
+import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView.M
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.Component.Enum as Vk.Component
@@ -148,7 +150,7 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
+	globalSwapChainImageViews :: IORef [Vk.ImageView.M.I],
 	globalRenderPass :: IORef Vk.RenderPass.R,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
@@ -285,11 +287,14 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
 run win inst = createSurface win inst \sfc -> do
 	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
-	createLogicalDevice phdvc qfis \dvc gq pq -> do
-		createSwapChain win sfc phdvc qfis dvc \sc scfmt ext -> do
-			initVulkan phdvc qfis dvc gq sc scfmt ext
-			mainLoop win sfc phdvc qfis dvc gq pq sc ext
-			cleanup dvc
+	createLogicalDevice phdvc qfis \dvc@(Vk.Device.D dvcm) gq pq -> do
+		createSwapChain win sfc phdvc qfis dvc \sc@(Vk.Khr.Swapchain.S scm) scfmt ext -> do
+			let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
+			imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm scm
+			createImageViews dvc scifmt imgs \scivs -> do
+				initVulkan phdvc qfis dvc gq sc scfmt ext scifmt scivs
+				mainLoop win sfc phdvc qfis dvc gq pq sc ext
+				cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -515,51 +520,70 @@ onlyIf p x | p x = Just x | otherwise = Nothing
 initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.Khr.Surface.M.Format -> Vk.C.Extent2d ->
+	Vk.Format -> [Vk.ImageView.M.I] ->
 	ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq (Vk.Khr.Swapchain.S sc) scfmt ext =
-	do	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
-		createImageViews dvc sc scifmt
-		createRenderPass dvc scifmt
-		createGraphicsPipeline dvc ext
-		createFramebuffers dvc ext
+initVulkan phdvc qfis dvc@(Vk.Device.D dvcm) gq (Vk.Khr.Swapchain.S sc) scfmt ext scifmt scivs = do
+			writeGlobal globalSwapChainImageViews scivs
+			createRenderPass dvc scifmt
+			createGraphicsPipeline dvc ext
+			createFramebuffers dvc ext
 
-		createCommandPool qfis dvc
-		createVertexBuffer phdvc dvc gq
-		createCommandBuffers dvc
-		createSyncObjects dvc
+			createCommandPool qfis dvc
+			createVertexBuffer phdvc dvc gq
+			createCommandBuffers dvc
+			createSyncObjects dvc
 
 createImageViews :: Vk.Device.D sd ->
-	Vk.Khr.Swapchain.M.S -> Vk.Format -> ReaderT Global IO ()
-createImageViews dvc@(Vk.Device.D dvcm) sc scifmt = do
-	writeGlobal globalSwapChainImageViews
-		=<< ((\sci -> createImageView1 dvc sci scifmt) `mapM`)
-		=<< lift (Vk.Khr.Swapchain.M.getImages dvcm sc)
+	Vk.Format -> [Vk.Image.I] ->
+	([Vk.ImageView.M.I] -> ReaderT Global IO a) -> ReaderT Global IO a
+createImageViews _dvc _scifmt [] f = f []
+createImageViews dvc scifmt (img : imgs) f =
+	createImageView1 dvc img scifmt \(Vk.ImageView.I sciv) ->
+	createImageViews dvc scifmt imgs \scivs -> f $ sciv : scivs
 
 createImageView1 :: Vk.Device.D sd ->
-	Vk.Image.I -> Vk.Format -> ReaderT Global IO Vk.ImageView.I
-createImageView1 (Vk.Device.D dvc) sci scifmt = do
-	let	createInfo = Vk.ImageView.CreateInfo {
-			Vk.ImageView.createInfoNext = Nothing,
-			Vk.ImageView.createInfoFlags =
-				Vk.ImageView.CreateFlagsZero,
-			Vk.ImageView.createInfoImage = sci,
-			Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
-			Vk.ImageView.createInfoFormat = scifmt,
-			Vk.ImageView.createInfoComponents = components,
-			Vk.ImageView.createInfoSubresourceRange =
-				subresourceRange }
-		components = Vk.Component.Mapping {
-			Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
-			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
-			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
-			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
-		subresourceRange = Vk.Image.SubresourceRange {
-			Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
-			Vk.Image.subresourceRangeBaseMipLevel = 0,
-			Vk.Image.subresourceRangeLevelCount = 1,
-			Vk.Image.subresourceRangeBaseArrayLayer = 0,
-			Vk.Image.subresourceRangeLayerCount = 1 }
-	lift $ Vk.ImageView.create @() dvc createInfo nil
+	Vk.Image.I -> Vk.Format ->
+	(forall siv . Vk.ImageView.I siv -> ReaderT Global IO a) -> ReaderT Global IO a
+createImageView1 dvc@(Vk.Device.D dvcm) sci scifmt f = do
+	let	createInfo = makeImageViewCreateInfo sci scifmt
+	g <- ask
+	lift $ Vk.ImageView.create @() dvc createInfo nil nil \sciv -> f sciv `runReaderT` g
+
+recreateImageViews :: Vk.Device.D sd ->
+	Vk.Format -> [Vk.Image.I] -> [Vk.ImageView.M.I] -> ReaderT Global IO ()
+recreateImageViews _dvc _scifmt [] [] = pure ()
+recreateImageViews dvc scifmt (img : imgs) (iv : ivs) =
+	recreateImageView1 dvc img scifmt (Vk.ImageView.I iv) >>
+	recreateImageViews dvc scifmt imgs ivs
+
+recreateImageView1 :: Vk.Device.D sd ->
+	Vk.Image.I -> Vk.Format -> Vk.ImageView.I siv -> ReaderT Global IO ()
+recreateImageView1 (Vk.Device.D dvcm) sci scifmt (Vk.ImageView.I iv) = do
+	let	createInfo = makeImageViewCreateInfo sci scifmt
+	lift $ Vk.ImageView.M.recreate @() dvcm (Vk.ImageView.createInfoToMiddle createInfo) nil nil iv
+
+makeImageViewCreateInfo ::
+	Vk.Image.I -> Vk.Format -> Vk.ImageView.CreateInfo si sm n
+makeImageViewCreateInfo sci scifmt = Vk.ImageView.CreateInfo {
+	Vk.ImageView.createInfoNext = Nothing,
+	Vk.ImageView.createInfoFlags = Vk.ImageView.CreateFlagsZero,
+	Vk.ImageView.createInfoImage = Vk.Image.T.Binded sci,
+	Vk.ImageView.createInfoViewType = Vk.ImageView.Type2d,
+	Vk.ImageView.createInfoFormat = scifmt,
+	Vk.ImageView.createInfoComponents = components,
+	Vk.ImageView.createInfoSubresourceRange = subresourceRange }
+	where
+	components = Vk.Component.Mapping {
+		Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
+		Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
+		Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
+		Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
+	subresourceRange = Vk.Image.SubresourceRange {
+		Vk.Image.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
+		Vk.Image.subresourceRangeBaseMipLevel = 0,
+		Vk.Image.subresourceRangeLevelCount = 1,
+		Vk.Image.subresourceRangeBaseArrayLayer = 0,
+		Vk.Image.subresourceRangeLayerCount = 1 }
 
 createRenderPass :: Vk.Device.D sd -> Vk.Format -> ReaderT Global IO ()
 createRenderPass (Vk.Device.D dvc) scifmt = do
@@ -794,7 +818,7 @@ createFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d -> ReaderT Global IO ()
 createFramebuffers dvc sce = writeGlobal globalSwapChainFramebuffers
 	=<< (createFramebuffer1 dvc sce `mapM`) =<< readGlobal globalSwapChainImageViews
 
-createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.ImageView.I -> ReaderT Global IO Vk.Framebuffer.F
+createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.ImageView.M.I -> ReaderT Global IO Vk.Framebuffer.F
 createFramebuffer1 (Vk.Device.D dvc) sce attachment = do
 	rp <- readGlobal globalRenderPass
 	let	Vk.C.Extent2d {
@@ -1083,7 +1107,9 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swa
 
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc $ Vk.Khr.Swapchain.S sc
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
-	createImageViews dvc sc scifmt
+	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm sc
+	ivs <- readGlobal globalSwapChainImageViews
+	recreateImageViews dvc scifmt imgs ivs
 	createRenderPass dvc scifmt
 	createGraphicsPipeline dvc ext
 	createFramebuffers dvc ext
@@ -1099,8 +1125,6 @@ cleanupSwapChain (Vk.Device.D dvc) = do
 	lift $ Vk.Ppl.Layout.destroy dvc ppllyt nil
 	rp <- readGlobal globalRenderPass
 	lift $ Vk.RenderPass.destroy dvc rp nil
-	scivs <- readGlobal globalSwapChainImageViews
-	lift $ flip (Vk.ImageView.destroy dvc) nil `mapM_` scivs
 
 cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
 cleanup dvc@(Vk.Device.D dvcm) = do

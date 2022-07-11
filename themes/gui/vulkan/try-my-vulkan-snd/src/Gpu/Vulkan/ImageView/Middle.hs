@@ -11,6 +11,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.IORef
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception
@@ -56,11 +57,19 @@ createInfoToCore CreateInfo {
 			Image.subresourceRangeToCore srr }
 	ContT $ withForeignPtr fCreateInfo
 
-newtype I = I C.I deriving Show
+newtype I = I (IORef C.I)
+
+instance Show I where show _ = "Vk.ImageView.I"
+
+iToCore :: I -> IO C.I
+iToCore (I i) = readIORef i
+
+iFromCore :: C.I -> IO I
+iFromCore i = I <$> newIORef i
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
-create (Device.D dvc) ci mac = ($ pure) . runContT $ I <$> do
+create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . iFromCore =<< do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pView <- ContT alloca
@@ -68,7 +77,22 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ I <$> do
 		throwUnlessSuccess $ Result r
 		peek pView
 
+recreate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D -> CreateInfo n ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	I -> IO ()
+recreate (Device.D dvc) ci macc macd (I ri) = ($ pure) $ runContT do
+	pci <- createInfoToCore ci
+	pac <- AllocationCallbacks.maybeToCore macc
+	pView <- ContT alloca
+	lift do	r <- C.create dvc pci pac pView
+		throwUnlessSuccess $ Result r
+	io <- lift $ readIORef ri
+	lift . C.destroy dvc io =<< AllocationCallbacks.maybeToCore macd
+	lift $ writeIORef ri =<< peek pView
+
 destroy :: Pointable n =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (I iv) mac =
-	($ pure) . runContT $ lift . C.destroy dvc iv =<< AllocationCallbacks.maybeToCore mac
+destroy (Device.D dvc) iv mac = do
+	iv' <- iToCore iv
+	($ pure) . runContT $ lift . C.destroy dvc iv' =<< AllocationCallbacks.maybeToCore mac

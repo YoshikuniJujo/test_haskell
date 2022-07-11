@@ -262,11 +262,11 @@ newGlobal = do
 	dss <- newIORef []
 	ti <- newIORef $ Vk.Image.I NullPtr
 	tim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
-	tiv <- newIORef $ Vk.ImageView.I NullPtr
+	tiv <- newIORef $ Vk.ImageView.I undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
 	di <- newIORef $ Vk.Image.I NullPtr
 	dim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
-	divw <- newIORef $ Vk.ImageView.I NullPtr
+	divw <- newIORef $ Vk.ImageView.I undefined
 	tfp <- newIORef ""
 	mfp <- newIORef ""
 	vtcs <- newIORef V.empty

@@ -144,10 +144,10 @@ writeSourcesToCore :: WriteSources -> ContT r IO (
 	Ptr Descriptor.C.BufferInfo, Ptr BufferView.C.B )
 writeSourcesToCore = \case
 	WriteSourcesInNext c -> pure (c, NullPtr, NullPtr, NullPtr)
-	WriteSourcesImageInfo
-		(length &&& (Descriptor.imageInfoToCore <$>) -> (ln, iis)) -> do
+	WriteSourcesImageInfo (length &&& id -> (ln, iis)) -> do
 		piis <- ContT $ allocaArray ln
-		lift $ pokeArray piis iis
+		iis' <- lift $ Descriptor.imageInfoToCore `mapM` iis
+		lift $ pokeArray piis iis'
 		pure (fromIntegral ln, piis, NullPtr, NullPtr)
 	WriteSourcesBufferInfo
 		(length &&& (Descriptor.bufferInfoToCore <$>) -> (ln, bis)) ->

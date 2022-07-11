@@ -37,11 +37,13 @@ data ImageInfo = ImageInfo {
 	imageInfoImageLayout :: Image.Layout }
 	deriving Show
 
-imageInfoToCore :: ImageInfo -> C.ImageInfo
+imageInfoToCore :: ImageInfo -> IO C.ImageInfo
 imageInfoToCore ImageInfo {
 	imageInfoSampler = Sampler.S s,
-	imageInfoImageView = ImageView.I i,
-	imageInfoImageLayout = Image.Layout l } = C.ImageInfo {
-	C.imageInfoSampler = s,
-	C.imageInfoImageView = i,
-	C.imageInfoImageLayout = l }
+	imageInfoImageView = iv,
+	imageInfoImageLayout = Image.Layout l } = do
+	iv' <- ImageView.iToCore iv
+	pure C.ImageInfo {
+		C.imageInfoSampler = s,
+		C.imageInfoImageView = iv',
+		C.imageInfoImageLayout = l }
