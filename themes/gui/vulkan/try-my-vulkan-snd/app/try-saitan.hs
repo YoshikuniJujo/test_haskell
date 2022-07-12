@@ -160,7 +160,7 @@ calc' :: (
 	Vk.Dvc.Mem.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
-	Vk.Ppl.Cmpt.createCs @'[ '((), _, _, _)] dvc Nothing
+	Vk.Ppl.Cmpt.createCs @'[ '(Word32 :.: Word32 :.: (), _, _, _)] dvc Nothing
 		(Vk.Ppl.Cmpt.CreateInfo_
 			(computePipelineInfo pplLyt) :...: HVNil)
 		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :...: HVNil) ->
@@ -460,7 +460,7 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 
 computePipelineInfo :: Vk.Ppl.Lyt.LL sl sbtss ->
-	Vk.Ppl.Cmpt.CreateInfo () () () () () vs sl sbtss sbph
+	Vk.Ppl.Cmpt.CreateInfo () () () () () (Word32 :.: Word32 :.: ()) sl sbtss sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 			Vk.Ppl.Cmpt.createInfoNext = Nothing,
 			Vk.Ppl.Cmpt.createInfoFlags = def,
@@ -570,14 +570,14 @@ type BindedMem sm sb w = (
 type BindedMem3 sb1 sm1 w1 sb2 sm2 w2 sb3 sm3 w3 =
 	(BindedMem sm1 sb1 w1, BindedMem sm2 sb2 w2, BindedMem sm3 sb3 w3)
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () vs
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () (Word32 :.: Word32 :.: ())
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
 	Vk.Ppl.ShaderSt.createInfoNext = Nothing,
 	Vk.Ppl.ShaderSt.createInfoFlags = def,
 	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
 	Vk.Ppl.ShaderSt.createInfoModule = Vk.ShaderMod.M shaderModInfo nil nil,
 	Vk.Ppl.ShaderSt.createInfoName = "main",
-	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Nothing }
+	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Just $ 3 :.: 10 :.: () }
 	where shaderModInfo = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = Nothing,
 		Vk.ShaderMod.createInfoFlags = def,
@@ -591,11 +591,14 @@ layout(binding = 0) buffer Data {
 	uint val[];
 } data[3];
 
+layout(constant_id = 0) const uint sc = 2;
+layout(constant_id = 1) const uint sc2 = 3;
+
 void
 main()
 {
 	int index = int(gl_GlobalInvocationID.x);
-	data[2].val[index] = data[0].val[index] + data[1].val[index];
+	data[2].val[index] = (data[0].val[index] + data[1].val[index]) * sc * sc2;
 }
 
 |]
