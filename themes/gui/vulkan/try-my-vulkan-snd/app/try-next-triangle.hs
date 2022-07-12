@@ -83,8 +83,8 @@ import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
-import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as
 	Vk.Ppl.VertexInputSt.M
@@ -642,29 +642,26 @@ createRenderPass (Vk.Device.D dvc) scifmt = do
 
 createGraphicsPipeline :: Vk.Device.D sd -> Vk.C.Extent2d -> ReaderT Global IO ()
 createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
-	let	vertShaderModule = makeShaderModule glslVertexShaderMain
-		fragShaderModule = makeShaderModule glslFragmentShaderMain
-
-		vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
-			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
-			Vk.Ppl.ShaderStage.createInfoFlags =
-				Vk.Ppl.ShaderStage.CreateFlagsZero,
-			Vk.Ppl.ShaderStage.createInfoStage =
-				Vk.ShaderStageVertexBit,
-			Vk.Ppl.ShaderStage.createInfoModule = vertShaderModule,
-			Vk.Ppl.ShaderStage.createInfoName = "main",
-			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
-				Nothing }
-		fragShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
-			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
-			Vk.Ppl.ShaderStage.createInfoFlags =
-				Vk.Ppl.ShaderStage.CreateFlagsZero,
-			Vk.Ppl.ShaderStage.createInfoStage =
+	let	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
+			Vk.Ppl.ShdrSt.createInfoNext = Nothing,
+			Vk.Ppl.ShdrSt.createInfoFlags = def,
+			Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
+			Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule,
+			Vk.Ppl.ShdrSt.createInfoName = "main",
+			Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
+			Vk.Ppl.ShdrSt.createInfoNext = Nothing,
+			Vk.Ppl.ShdrSt.createInfoFlags = def,
+			Vk.Ppl.ShdrSt.createInfoStage =
 				Vk.ShaderStageFragmentBit,
-			Vk.Ppl.ShaderStage.createInfoModule = fragShaderModule,
-			Vk.Ppl.ShaderStage.createInfoName = "main",
-			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
-				Nothing }
+			Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
+			Vk.Ppl.ShdrSt.createInfoName = "main",
+			Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+		shaderStages =
+			vertShaderStageInfo `Vk.Ppl.ShdrSt.CreateInfoCons`
+			fragShaderStageInfo `Vk.Ppl.ShdrSt.CreateInfoCons`
+			Vk.Ppl.ShdrSt.CreateInfoNil
+
 		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			()
 			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
@@ -769,8 +766,7 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 			'[Cglm.Vec2, Cglm.Vec3] () () () () () () () () sl sr sb vs'' ts'
 			
 		pipelineInfo = makeGraphicsPipelineCreateInfo
-			vertShaderStageInfo fragShaderStageInfo
-			vertexInputInfo inputAssembly viewportState
+			shaderStages vertexInputInfo inputAssembly viewportState
 			rasterizer multisampling colorBlending
 			(Vk.Ppl.Layout.L ppllyt) (Vk.RenderPass.R rp)
 	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle dvc pipelineInfo
@@ -784,24 +780,20 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 	writeGlobal globalGraphicsPipeline gpl
 
 makeGraphicsPipelineCreateInfo ::
-	Vk.Ppl.ShaderStage.CreateInfo n1 n1' sknd1 a a' vs1 ->
-	Vk.Ppl.ShaderStage.CreateInfo n1 n1' sknd2 a a' vs2 ->
+	Vk.Ppl.ShdrSt.CreateInfoList n1 n1' sknds a a' vss ->
 	Vk.Ppl.VertexInputSt.CreateInfo n2 vs' ts ->
 	Vk.Ppl.InpAsmbSt.CreateInfo n3 -> Vk.Ppl.ViewportSt.CreateInfo n5 ->
 	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
 	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.L sl ->
 	Vk.RenderPass.R sr -> Vk.Ppl.Graphics.CreateInfo
-		n n1 n1' '[sknd1, sknd2] a a' '[vs1, vs2] n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
+		n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
 makeGraphicsPipelineCreateInfo
-	shaderStage1 shaderStage2 vertexInputInfo inputAssembly viewportState
+	shaderStages vertexInputInfo inputAssembly viewportState
 	rasterizer multisampling colorBlending ppllyt
 	rp = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStages =
-		shaderStage1 `Vk.Ppl.ShaderStage.CreateInfoCons`
-		shaderStage2 `Vk.Ppl.ShaderStage.CreateInfoCons`
-		Vk.Ppl.ShaderStage.CreateInfoNil,
+	Vk.Ppl.Graphics.createInfoStages = shaderStages,
 	Vk.Ppl.Graphics.createInfoVertexInputState = Just vertexInputInfo,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
 	Vk.Ppl.Graphics.createInfoViewportState = Just viewportState,
@@ -816,15 +808,6 @@ makeGraphicsPipelineCreateInfo
 	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
-
-makeShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
-makeShaderModule cd = let
-	createInfo = Vk.Shader.Module.M.CreateInfo {
-		Vk.Shader.Module.M.createInfoNext = Nothing,
-		Vk.Shader.Module.M.createInfoFlags =
-				Vk.Shader.Module.M.CreateFlagsZero,
-		Vk.Shader.Module.M.createInfoCode = cd } in
-	Vk.Shader.Module.M createInfo nil nil
 
 createFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d -> [Vk.ImageView.M.I] -> ReaderT Global IO ()
 createFramebuffers dvc sce scivs = do
@@ -1186,6 +1169,19 @@ vertices = [
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
+
+vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
+vertShaderModule = makeShaderModule glslVertexShaderMain
+
+fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
+fragShaderModule = makeShaderModule glslFragmentShaderMain
+
+makeShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+makeShaderModule code = Vk.Shader.Module.M createInfo nil nil
+	where createInfo = Vk.Shader.Module.M.CreateInfo {
+		Vk.Shader.Module.M.createInfoNext = Nothing,
+		Vk.Shader.Module.M.createInfoFlags = def,
+		Vk.Shader.Module.M.createInfoCode = code }
 
 [glslVertexShader|
 
