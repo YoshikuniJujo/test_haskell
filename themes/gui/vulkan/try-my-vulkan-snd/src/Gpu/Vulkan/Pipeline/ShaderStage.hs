@@ -16,16 +16,16 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.ShaderModule.Internal as Shader.Module
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as M
 
-data CreateInfo n n' sknd a a' vs = CreateInfo {
+data CreateInfo n n' sknd c d vs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoStage :: ShaderStageFlagBits,
-	createInfoModule :: Shader.Module.M n' sknd a a',
+	createInfoModule :: Shader.Module.M n' sknd c d,
 	createInfoName :: BS.ByteString,
 	createInfoSpecializationInfo :: Maybe vs }
 
-createInfoToMiddle :: (Pointable n', Pointable a) =>
-	Device.D ds -> CreateInfo n n' sknd a a' vs -> IO (M.CreateInfo n sknd vs)
+createInfoToMiddle :: (Pointable n', Pointable c) =>
+	Device.D ds -> CreateInfo n n' sknd c d vs -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -43,9 +43,8 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoName = nm,
 		M.createInfoSpecializationInfo = spi }
 
-destroyCreateInfoMiddle :: Pointable a' =>
-	Device.D ds ->
-	M.CreateInfo n sknd vs -> CreateInfo n n' sknd a a' vs -> IO ()
+destroyCreateInfoMiddle :: Pointable d => Device.D ds ->
+	M.CreateInfo n sknd vs -> CreateInfo n n' sknd c d vs -> IO ()
 destroyCreateInfoMiddle dvc
 	M.CreateInfo { M.createInfoModule = mmdl } 
 	CreateInfo { createInfoModule = mdl } = Shader.Module.destroy dvc mmdl mdl
