@@ -1,11 +1,16 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ShaderStage where
 
 import Foreign.Pointable
+import Data.Kind
+import Data.HeteroList
+
+import Shaderc.EnumAuto
 
 import qualified Data.ByteString as BS
 
@@ -23,6 +28,8 @@ data CreateInfo n n' sknd c d vs = CreateInfo {
 	createInfoModule :: Shader.Module.M n' sknd c d,
 	createInfoName :: BS.ByteString,
 	createInfoSpecializationInfo :: Maybe vs }
+
+type CreateInfo' = V6 CreateInfo
 
 createInfoToMiddle :: (Pointable n', Pointable c) =>
 	Device.D ds -> CreateInfo n n' sknd c d vs -> IO (M.CreateInfo n sknd vs)
@@ -49,6 +56,28 @@ destroyCreateInfoMiddle dvc
 	M.CreateInfo { M.createInfoModule = mmdl } 
 	CreateInfo { createInfoModule = mdl } = Shader.Module.destroy dvc mmdl mdl
 
+class CreateInfoListToMiddle' (
+	nnskndcdvss :: [(Type, Type, ShaderKind, Type, Type, Type)]
+	) where
+	type MiddleVars nnskndcdvss :: [(Type, ShaderKind, Type)]
+	createInfoListToMiddle' :: Device.D ds ->
+		HeteroVarList CreateInfo' nnskndcdvss ->
+		IO (HeteroVarList M.CreateInfo' (MiddleVars nnskndcdvss))
+
+instance CreateInfoListToMiddle' '[] where
+	type MiddleVars '[] = '[]
+	createInfoListToMiddle' _ HVNil = pure HVNil
+
+instance (
+	Pointable n', Pointable c, CreateInfoListToMiddle' nnskndcdvss
+	) =>
+	CreateInfoListToMiddle' ('(n, n', sknd, c, d, vs) ': nnskndcdvss) where
+	type MiddleVars ('(n, n', sknd, c, d, vs) ': nnskndcdvss) =
+		'(n, sknd, vs) ': MiddleVars nnskndcdvss
+	createInfoListToMiddle' dvc (V6 ci :...: cis) = (:...:)
+		<$> (V3 <$> createInfoToMiddle dvc ci)
+		<*> createInfoListToMiddle' dvc cis
+
 infixr 5 `CreateInfoCons`
 
 data CreateInfoList n n' sknds vss a a' where
@@ -74,3 +103,15 @@ destroyCreateInfoMiddleList dvc
 	(mci `M.CreateInfoCons` mcis) (ci `CreateInfoCons` cis) = do
 	destroyCreateInfoMiddle dvc mci ci
 	destroyCreateInfoMiddleList dvc mcis cis
+
+{-
+destroyCreateInfoMiddleList' ::
+	Device.D ds ->
+	HeteroVarList M.CreateInfo' (MiddleVars nnskndscdvss) ->
+	HeteroVarList CreateInfo' nnskndscdvss ->
+	IO ()
+destroyCreateInfoMiddleList' dvc
+	(V3 mci :...: mcis) (V6 ci :...: cis) = do
+	destroyCreateInfoMiddle dvc mci ci
+	destroyCreateInfoMiddleList' dvc mcis cis
+	-}

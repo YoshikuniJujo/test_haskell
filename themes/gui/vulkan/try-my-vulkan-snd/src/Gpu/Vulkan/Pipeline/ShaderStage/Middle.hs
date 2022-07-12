@@ -14,6 +14,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.HeteroList
 
 import qualified Data.ByteString as BS
 
@@ -59,6 +60,21 @@ createInfoToCore CreateInfo {
 		C.createInfoModule = mdl,
 		C.createInfoPName = cnm,
 		C.createInfoPSpecializationInfo = pcsi }
+
+type CreateInfo' = V3 CreateInfo
+
+class CreateInfoListToCore' sss where
+	createInfoListToCore' ::
+		HeteroVarList CreateInfo' sss -> ContT r IO [C.CreateInfo]
+
+instance CreateInfoListToCore' '[] where createInfoListToCore' HVNil = pure []
+
+instance (
+	Pointable n, Specialization.StoreValues vs, CreateInfoListToCore' sss
+	) => CreateInfoListToCore' ('(n, sknd, vs) ': sss) where
+	createInfoListToCore' (V3 ci :...: cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfoListToCore' cis
 
 infixr 5 `CreateInfoCons`
 

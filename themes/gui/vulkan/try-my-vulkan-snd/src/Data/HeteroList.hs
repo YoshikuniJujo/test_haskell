@@ -5,6 +5,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
@@ -12,7 +13,8 @@ module Data.HeteroList (
 	HeteroVarList(..),
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
-	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex ) where
+	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex,
+	V2(..), V3(..), V4(..), V5(..), V6(..), V15(..) ) where
 
 import Prelude hiding (length)
 
@@ -69,7 +71,7 @@ heteroVarListToList _ HVNil = []
 heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs
 
 heteroVarListToListM :: Applicative m =>
-	(forall s . t s -> m t') -> HeteroVarList t ss -> m [t']
+	(forall (s :: k) . t s -> m t') -> HeteroVarList t ss -> m [t']
 heteroVarListToListM _ HVNil = pure []
 heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
 
@@ -118,3 +120,25 @@ heteroVarListIndex HVNil _ _ = error "index too large"
 heteroVarListIndex (x :...: _) 0 f = f x
 heteroVarListIndex (_ :...: xs) i f | i > 0 = heteroVarListIndex xs (i - 1) f
 heteroVarListIndex _ _ _ = error "negative index"
+
+data V2 t ss where V2 :: t s1 s2 -> V2 t '(s1, s2)
+data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)
+data V4 t ss where V4 :: t s1 s2 s3 s4 -> V4 t '(s1, s2, s3, s4)
+data V5 t ss where V5 :: t s1 s2 s3 s4 s5 -> V5 t '(s1, s2, s3, s4, s5)
+data V6 t ss where V6 :: t s1 s2 s3 s4 s5 s6 -> V6 t '(s1, s2, s3, s4, s5, s6)
+
+data V15 t ss where
+	V15 :: t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 -> V15 t '(
+		s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15
+		)
+
+deriving instance Show (t s1 s2) => Show (V2 t '(s1, s2))
+deriving instance Show (t s1 s2 s3) => Show (V3 t '(s1, s2, s3))
+deriving instance Show (t s1 s2 s3 s4) => Show (V4 t '(s1, s2, s3, s4))
+deriving instance Show (t s1 s2 s3 s4 s5) => Show (V5 t '(s1, s2, s3, s4, s5))
+deriving instance Show (t s1 s2 s3 s4 s5 s6) => Show (V6 t '(s1, s2, s3, s4, s5, s6))
+
+deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15) =>
+	Show (V15 t '(
+		s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15
+		))

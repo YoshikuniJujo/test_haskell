@@ -15,6 +15,7 @@ module Gpu.Vulkan.Pipeline.Graphics (
 
 import Foreign.Pointable
 import Control.Exception
+import Data.HeteroList
 import Data.Word
 import Data.Int
 
@@ -65,6 +66,33 @@ data CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	createInfoSubpass :: Word32,
 	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
 	createInfoBasePipelineIndex :: Int32 }
+
+data CreateInfo' n nnskndscdvss n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
+	vs' ts' = CreateInfo' {
+	createInfoNext' :: Maybe n,
+	createInfoFlags' :: CreateFlags,
+	createInfoStages' :: HeteroVarList ShaderStage.CreateInfo' nnskndscdvss,
+	createInfoVertexInputState' ::
+		Maybe (VertexInputState.CreateInfo n2 vs ts),
+	createInfoInputAssemblyState' ::
+		Maybe (InputAssemblyState.CreateInfo n3),
+	createInfoTessellationState' ::
+		Maybe (TessellationState.CreateInfo n4),
+	createInfoViewportState' :: Maybe (ViewportState.CreateInfo n5),
+	createInfoRasterizationState' ::
+		Maybe (RasterizationState.CreateInfo n6),
+	createInfoMultisampleState' ::
+		Maybe (MultisampleState.CreateInfo n7),
+	createInfoDepthStencilState' ::
+		Maybe (DepthStencilState.CreateInfo n8),
+	createInfoColorBlendState' ::
+		Maybe (ColorBlendState.CreateInfo n9),
+	createInfoDynamicState' :: Maybe (DynamicState.CreateInfo n10),
+	createInfoLayout' :: Layout.L sl,
+	createInfoRenderPass' :: RenderPass.R sr,
+	createInfoSubpass' :: Word32,
+	createInfoBasePipelineHandle' :: Maybe (G sb vs' ts'),
+	createInfoBasePipelineIndex' :: Int32 }
 
 {-
 deriving instance (
