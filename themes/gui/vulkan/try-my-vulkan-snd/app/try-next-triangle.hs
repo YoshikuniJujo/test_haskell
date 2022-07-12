@@ -81,8 +81,9 @@ import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView.M
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.Component.Enum as Vk.Component
-import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module
-import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as Vk.Ppl.ShaderStage
+import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
+import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
+import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as
@@ -96,15 +97,18 @@ import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Layout
+import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Layout
+import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Layout.M
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RenderPass
+import qualified Gpu.Vulkan.RenderPass.Type as Vk.RenderPass
+import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RenderPass.M
 import qualified Gpu.Vulkan.RenderPass.Enum as Vk.RenderPass
-import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl.Graphics
+import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
+import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl.Graphics.M
 import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CommandPool
@@ -151,9 +155,9 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalRenderPass :: IORef Vk.RenderPass.R,
-	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
+	globalRenderPass :: IORef Vk.RenderPass.M.R,
+	globalPipelineLayout :: IORef Vk.Ppl.Layout.M.L,
+	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.M.G
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
@@ -176,9 +180,9 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	rp <- newIORef $ Vk.RenderPass.R NullPtr
-	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
-	grppl <- newIORef Vk.Ppl.Graphics.GNull
+	rp <- newIORef $ Vk.RenderPass.M.R NullPtr
+	ppllyt <- newIORef $ Vk.Ppl.Layout.M.L NullPtr
+	grppl <- newIORef Vk.Ppl.Graphics.M.GNull
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	cbs <- newIORef []
@@ -530,8 +534,7 @@ initVulkan phdvc qfis dvc gq ext scifmt scivs = do
 	createCommandBuffers dvc
 	createSyncObjects dvc
 
-createImageViews :: Vk.Device.D sd ->
-	Vk.Format -> [Vk.Image.I] ->
+createImageViews :: Vk.Device.D sd -> Vk.Format -> [Vk.Image.I] ->
 	(forall ss . HeteroVarList Vk.ImageView.I ss -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createImageViews _dvc _scifmt [] f = f HVNil
@@ -539,9 +542,9 @@ createImageViews dvc scifmt (img : imgs) f =
 	createImageView1 dvc img scifmt \sciv ->
 	createImageViews dvc scifmt imgs \scivs -> f $ sciv :...: scivs
 
-createImageView1 :: Vk.Device.D sd ->
-	Vk.Image.I -> Vk.Format ->
-	(forall siv . Vk.ImageView.I siv -> ReaderT Global IO a) -> ReaderT Global IO a
+createImageView1 :: Vk.Device.D sd -> Vk.Image.I -> Vk.Format ->
+	(forall siv . Vk.ImageView.I siv -> ReaderT Global IO a) ->
+	ReaderT Global IO a
 createImageView1 dvc sci scifmt f = do
 	let	createInfo = makeImageViewCreateInfo sci scifmt
 	g <- ask
@@ -560,7 +563,8 @@ recreateImageView1 :: Vk.Device.D sd ->
 	Vk.Image.I -> Vk.Format -> Vk.ImageView.I siv -> ReaderT Global IO ()
 recreateImageView1 (Vk.Device.D dvcm) sci scifmt (Vk.ImageView.I iv) = do
 	let	createInfo = makeImageViewCreateInfo sci scifmt
-	lift $ Vk.ImageView.M.recreate @() dvcm (Vk.ImageView.createInfoToMiddle createInfo) nil nil iv
+	lift $ Vk.ImageView.M.recreate @() dvcm
+		(Vk.ImageView.createInfoToMiddle createInfo) nil nil iv
 
 makeImageViewCreateInfo ::
 	Vk.Image.I -> Vk.Format -> Vk.ImageView.CreateInfo si sm n
@@ -626,22 +630,22 @@ createRenderPass (Vk.Device.D dvc) scifmt = do
 				Vk.AccessColorAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags =
 				Vk.DependencyFlagsZero }
-		renderPassInfo = Vk.RenderPass.CreateInfo {
-			Vk.RenderPass.createInfoNext = Nothing,
-			Vk.RenderPass.createInfoFlags =
+		renderPassInfo = Vk.RenderPass.M.CreateInfo {
+			Vk.RenderPass.M.createInfoNext = Nothing,
+			Vk.RenderPass.M.createInfoFlags =
 				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.createInfoAttachments = [colorAttachment],
-			Vk.RenderPass.createInfoSubpasses = [subpass],
-			Vk.RenderPass.createInfoDependencies = [dependency] }
+			Vk.RenderPass.M.createInfoAttachments = [colorAttachment],
+			Vk.RenderPass.M.createInfoSubpasses = [subpass],
+			Vk.RenderPass.M.createInfoDependencies = [dependency] }
 	writeGlobal globalRenderPass
-		=<< lift (Vk.RenderPass.create @() dvc renderPassInfo nil)
+		=<< lift (Vk.RenderPass.M.create @() dvc renderPassInfo nil)
 
 createGraphicsPipeline :: Vk.Device.D sd -> Vk.C.Extent2d -> ReaderT Global IO ()
 createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
-	vertShaderModule <- createShaderModule dvc glslVertexShaderMain
-	fragShaderModule <- createShaderModule dvc glslFragmentShaderMain
+	let	vertShaderModule = makeShaderModule glslVertexShaderMain
+		fragShaderModule = makeShaderModule glslFragmentShaderMain
 
-	let	vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
+		vertShaderStageInfo = Vk.Ppl.ShaderStage.CreateInfo {
 			Vk.Ppl.ShaderStage.createInfoNext = Nothing,
 			Vk.Ppl.ShaderStage.createInfoFlags =
 				Vk.Ppl.ShaderStage.CreateFlagsZero,
@@ -661,10 +665,6 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 			Vk.Ppl.ShaderStage.createInfoName = "main",
 			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
-		shaderStages =
-			vertShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
-			fragShaderStageInfo `Vk.Ppl.ShaderStage.CreateInfoCons`
-			Vk.Ppl.ShaderStage.CreateInfoNil
 		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			()
 			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
@@ -750,69 +750,81 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
 
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
-			Vk.Ppl.Layout.createInfoNext = Nothing,
-			Vk.Ppl.Layout.createInfoFlags =
-				Vk.Ppl.Layout.CreateFlagsZero,
-			Vk.Ppl.Layout.createInfoSetLayouts = [],
-			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.M.CreateInfo {
+			Vk.Ppl.Layout.M.createInfoNext = Nothing,
+			Vk.Ppl.Layout.M.createInfoFlags =
+				Vk.Ppl.Layout.M.CreateFlagsZero,
+			Vk.Ppl.Layout.M.createInfoSetLayouts = [],
+			Vk.Ppl.Layout.M.createInfoPushConstantRanges = [] }
 	writeGlobal globalPipelineLayout
-		=<< lift (Vk.Ppl.Layout.create @() dvcm pipelineLayoutInfo nil)
+		=<< lift (Vk.Ppl.Layout.M.create @() dvcm pipelineLayoutInfo nil)
 
 	ppllyt <- readGlobal globalPipelineLayout
 	rp <- readGlobal globalRenderPass
-	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
-			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
-			'[(), ()] ()
-			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
-			'[Cglm.Vec2, Cglm.Vec3]
-			() () () () () () () () () '[]
-		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
-			Vk.Ppl.Graphics.createInfoNext = Nothing,
-			Vk.Ppl.Graphics.createInfoFlags =
-				Vk.Ppl.CreateFlagsZero,
-			Vk.Ppl.Graphics.createInfoStages = shaderStages,
-			Vk.Ppl.Graphics.createInfoVertexInputState =
-				Just vertexInputInfo,
-			Vk.Ppl.Graphics.createInfoInputAssemblyState =
-				Just inputAssembly,
-			Vk.Ppl.Graphics.createInfoViewportState =
-				Just viewportState,
-			Vk.Ppl.Graphics.createInfoRasterizationState =
-				Just rasterizer,
-			Vk.Ppl.Graphics.createInfoMultisampleState =
-				Just multisampling,
-			Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
-			Vk.Ppl.Graphics.createInfoColorBlendState =
-				Just colorBlending,
-			Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-			Vk.Ppl.Graphics.createInfoLayout = ppllyt,
-			Vk.Ppl.Graphics.createInfoRenderPass = rp,
-			Vk.Ppl.Graphics.createInfoSubpass = 0,
-			Vk.Ppl.Graphics.createInfoBasePipelineHandle =
-				Vk.Ppl.Graphics.GNull,
-			Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-			Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
-	gpl `Vk.Ppl.Graphics.PCons` Vk.Ppl.Graphics.PNil <- lift
-		$ Vk.Ppl.Graphics.create
+	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
+			() () () '[ 'GlslVertexShader, 'GlslFragmentShader]
+			() () '[(), ()] ()
+			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
+			'[Cglm.Vec2, Cglm.Vec3] () () () () () () () () sl sr sb vs'' ts'
+			
+		pipelineInfo = makeGraphicsPipelineCreateInfo
+			vertShaderStageInfo fragShaderStageInfo
+			vertexInputInfo inputAssembly viewportState
+			rasterizer multisampling colorBlending
+			(Vk.Ppl.Layout.L ppllyt) (Vk.RenderPass.R rp)
+	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle dvc pipelineInfo
+
+	gpl `Vk.Ppl.Graphics.M.PCons` Vk.Ppl.Graphics.M.PNil <- lift
+		$ Vk.Ppl.Graphics.M.create
 			dvcm Nothing
-			(pipelineInfo `Vk.Ppl.Graphics.CreateInfoCons`
-				Vk.Ppl.Graphics.CreateInfoNil)
+			(pipelineInfoMiddle `Vk.Ppl.Graphics.M.CreateInfoCons`
+				Vk.Ppl.Graphics.M.CreateInfoNil)
 			nil
 	writeGlobal globalGraphicsPipeline gpl
 
-	lift do	Vk.Shader.Module.destroy dvcm fragShaderModule nil
-		Vk.Shader.Module.destroy dvcm vertShaderModule nil
+makeGraphicsPipelineCreateInfo ::
+	Vk.Ppl.ShaderStage.CreateInfo n1 n1' sknd1 a a' vs1 ->
+	Vk.Ppl.ShaderStage.CreateInfo n1 n1' sknd2 a a' vs2 ->
+	Vk.Ppl.VertexInputSt.CreateInfo n2 vs' ts ->
+	Vk.Ppl.InpAsmbSt.CreateInfo n3 -> Vk.Ppl.ViewportSt.CreateInfo n5 ->
+	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
+	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.L sl ->
+	Vk.RenderPass.R sr -> Vk.Ppl.Graphics.CreateInfo
+		n n1 n1' '[sknd1, sknd2] a a' '[vs1, vs2] n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
+makeGraphicsPipelineCreateInfo
+	shaderStage1 shaderStage2 vertexInputInfo inputAssembly viewportState
+	rasterizer multisampling colorBlending ppllyt
+	rp = Vk.Ppl.Graphics.CreateInfo {
+	Vk.Ppl.Graphics.createInfoNext = Nothing,
+	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Graphics.createInfoStages =
+		shaderStage1 `Vk.Ppl.ShaderStage.CreateInfoCons`
+		shaderStage2 `Vk.Ppl.ShaderStage.CreateInfoCons`
+		Vk.Ppl.ShaderStage.CreateInfoNil,
+	Vk.Ppl.Graphics.createInfoVertexInputState = Just vertexInputInfo,
+	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
+	Vk.Ppl.Graphics.createInfoViewportState = Just viewportState,
+	Vk.Ppl.Graphics.createInfoRasterizationState = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoMultisampleState = Just multisampling,
+	Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
+	Vk.Ppl.Graphics.createInfoColorBlendState = Just colorBlending,
+	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
+	Vk.Ppl.Graphics.createInfoLayout = ppllyt,
+	Vk.Ppl.Graphics.createInfoRenderPass = rp,
+	Vk.Ppl.Graphics.createInfoSubpass = 0,
+	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
+	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
-createShaderModule :: Vk.Device.D sd -> Spv sknd -> ReaderT Global IO (Vk.Shader.Module.M sknd)
-createShaderModule (Vk.Device.D dvc) cd = do
-	let	createInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoNext = Nothing,
-			Vk.Shader.Module.createInfoFlags =
-				Vk.Shader.Module.CreateFlagsZero,
-			Vk.Shader.Module.createInfoCode = cd }
-	lift $ Vk.Shader.Module.create @() dvc createInfo nil
+makeShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+makeShaderModule cd = let
+	createInfo = Vk.Shader.Module.M.CreateInfo {
+		Vk.Shader.Module.M.createInfoNext = Nothing,
+		Vk.Shader.Module.M.createInfoFlags =
+				Vk.Shader.Module.M.CreateFlagsZero,
+		Vk.Shader.Module.M.createInfoCode = cd } in
+	Vk.Shader.Module.M createInfo nil nil
 
 createFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d -> [Vk.ImageView.M.I] -> ReaderT Global IO ()
 createFramebuffers dvc sce scivs = do
@@ -989,15 +1001,15 @@ recordCommandBuffer cb sce imageIndex = do
 	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
 	rp <- readGlobal globalRenderPass
 	scfbs <- readGlobal globalSwapChainFramebuffers
-	let	renderPassInfo = Vk.RenderPass.BeginInfo {
-			Vk.RenderPass.beginInfoNext = Nothing,
-			Vk.RenderPass.beginInfoRenderPass = rp,
-			Vk.RenderPass.beginInfoFramebuffer =
+	let	renderPassInfo = Vk.RenderPass.M.BeginInfo {
+			Vk.RenderPass.M.beginInfoNext = Nothing,
+			Vk.RenderPass.M.beginInfoRenderPass = rp,
+			Vk.RenderPass.M.beginInfoFramebuffer =
 				scfbs `genericIndex` imageIndex,
-			Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
+			Vk.RenderPass.M.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
-			Vk.RenderPass.beginInfoClearValues = [
+			Vk.RenderPass.M.beginInfoClearValues = [
 				Vk.ClearValueColor
 					. fromJust $ rgbaDouble 0 0 0 1 ] }
 	lift $ Vk.Cmd.M.beginRenderPass @()
@@ -1124,11 +1136,11 @@ cleanupSwapChain (Vk.Device.D dvc) = do
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
 	grppl <- readGlobal globalGraphicsPipeline
-	lift $ Vk.Ppl.Graphics.destroy dvc grppl nil
+	lift $ Vk.Ppl.Graphics.M.destroy dvc grppl nil
 	ppllyt <- readGlobal globalPipelineLayout
-	lift $ Vk.Ppl.Layout.destroy dvc ppllyt nil
+	lift $ Vk.Ppl.Layout.M.destroy dvc ppllyt nil
 	rp <- readGlobal globalRenderPass
-	lift $ Vk.RenderPass.destroy dvc rp nil
+	lift $ Vk.RenderPass.M.destroy dvc rp nil
 
 cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
 cleanup dvc@(Vk.Device.D dvcm) = do
