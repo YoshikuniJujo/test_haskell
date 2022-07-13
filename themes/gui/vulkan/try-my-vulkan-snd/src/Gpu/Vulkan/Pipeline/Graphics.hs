@@ -11,6 +11,7 @@
 
 module Gpu.Vulkan.Pipeline.Graphics (
 	G, createGs, CreateInfoList(..), CreateInfo(..), createInfoToMiddle,
+	CreateInfo'(..), createInfoToMiddle',
 	GList, pattern GNil, pattern GCons ) where
 
 import Foreign.Pointable
@@ -149,6 +150,50 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoSubpass = sp,
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
+
+createInfoToMiddle' :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
+	Device.D sd ->
+	CreateInfo' n nnskndscdvss n2 vs ts
+		n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs' ts' ->
+	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
+		n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 vs' ts')
+createInfoToMiddle' dvc CreateInfo' {
+	createInfoNext' = mnxt,
+	createInfoFlags' = flgs,
+	createInfoStages' = stgs,
+	createInfoVertexInputState' = vis,
+	createInfoInputAssemblyState' = ias,
+	createInfoTessellationState' = ts,
+	createInfoViewportState' = vs,
+	createInfoRasterizationState' = rs,
+	createInfoMultisampleState' = ms,
+	createInfoDepthStencilState' = dss,
+	createInfoColorBlendState' = cbs,
+	createInfoDynamicState' = ds,
+	createInfoLayout' = Layout.L lyt,
+	createInfoRenderPass' = RenderPass.R rp,
+	createInfoSubpass' = sp,
+	createInfoBasePipelineHandle' = maybe M.GNull (\(G g) -> g) ->  bph,
+	createInfoBasePipelineIndex' = bpi } = do
+	stgs' <- ShaderStage.createInfoListToMiddle' dvc stgs
+	pure M.CreateInfo' {
+		M.createInfoNext' = mnxt,
+		M.createInfoFlags' = flgs,
+		M.createInfoStages' = stgs',
+		M.createInfoVertexInputState' = vis,
+		M.createInfoInputAssemblyState' = ias,
+		M.createInfoTessellationState' = ts,
+		M.createInfoViewportState' = vs,
+		M.createInfoRasterizationState' = rs,
+		M.createInfoMultisampleState' = ms,
+		M.createInfoDepthStencilState' = dss,
+		M.createInfoColorBlendState' = cbs,
+		M.createInfoDynamicState' = ds,
+		M.createInfoLayout' = lyt,
+		M.createInfoRenderPass' = rp,
+		M.createInfoSubpass' = sp,
+		M.createInfoBasePipelineHandle' = bph,
+		M.createInfoBasePipelineIndex' = bpi }
 
 data CreateInfoList
 	ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's where

@@ -63,20 +63,27 @@ class CreateInfoListToMiddle' (
 	createInfoListToMiddle' :: Device.D ds ->
 		HeteroVarList CreateInfo' nnskndcdvss ->
 		IO (HeteroVarList M.CreateInfo' (MiddleVars nnskndcdvss))
+	destroyCreateInfoMiddleList' :: Device.D ds ->
+		HeteroVarList M.CreateInfo' (MiddleVars nnskndcdvss) ->
+		HeteroVarList CreateInfo' nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddle' '[] where
 	type MiddleVars '[] = '[]
 	createInfoListToMiddle' _ HVNil = pure HVNil
+	destroyCreateInfoMiddleList' _ HVNil HVNil = pure ()
 
 instance (
-	Pointable n', Pointable c, CreateInfoListToMiddle' nnskndcdvss
-	) =>
+	Pointable n', Pointable c, Pointable d,
+	CreateInfoListToMiddle' nnskndcdvss ) =>
 	CreateInfoListToMiddle' ('(n, n', sknd, c, d, vs) ': nnskndcdvss) where
 	type MiddleVars ('(n, n', sknd, c, d, vs) ': nnskndcdvss) =
 		'(n, sknd, vs) ': MiddleVars nnskndcdvss
 	createInfoListToMiddle' dvc (V6 ci :...: cis) = (:...:)
 		<$> (V3 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle' dvc cis
+	destroyCreateInfoMiddleList' dvc (V3 cim :...: cims) (V6 ci :...: cis) =
+		destroyCreateInfoMiddle dvc cim ci >>
+		destroyCreateInfoMiddleList' dvc cims cis
 
 infixr 5 `CreateInfoCons`
 
@@ -103,15 +110,3 @@ destroyCreateInfoMiddleList dvc
 	(mci `M.CreateInfoCons` mcis) (ci `CreateInfoCons` cis) = do
 	destroyCreateInfoMiddle dvc mci ci
 	destroyCreateInfoMiddleList dvc mcis cis
-
-{-
-destroyCreateInfoMiddleList' ::
-	Device.D ds ->
-	HeteroVarList M.CreateInfo' (MiddleVars nnskndscdvss) ->
-	HeteroVarList CreateInfo' nnskndscdvss ->
-	IO ()
-destroyCreateInfoMiddleList' dvc
-	(V3 mci :...: mcis) (V6 ci :...: cis) = do
-	destroyCreateInfoMiddle dvc mci ci
-	destroyCreateInfoMiddleList' dvc mcis cis
-	-}

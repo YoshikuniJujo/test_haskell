@@ -84,7 +84,6 @@ import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShdrSt
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as
 	Vk.Ppl.VertexInputSt.M
@@ -658,9 +657,8 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 			Vk.Ppl.ShdrSt.createInfoName = "main",
 			Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 		shaderStages =
-			vertShaderStageInfo `Vk.Ppl.ShdrSt.CreateInfoCons`
-			fragShaderStageInfo `Vk.Ppl.ShdrSt.CreateInfoCons`
-			Vk.Ppl.ShdrSt.CreateInfoNil
+			V6 vertShaderStageInfo :...:
+			V6 fragShaderStageInfo :...: HVNil
 
 		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			()
@@ -759,55 +757,53 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 	ppllyt <- readGlobal globalPipelineLayout
 	rp <- readGlobal globalRenderPass
 
-	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo
-			() () () '[ 'GlslVertexShader, 'GlslFragmentShader]
-			() () '[(), ()] ()
-			(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
+	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo' () '[
+				'( (), (), 'GlslVertexShader, (), (), () ),
+				'( (), (),  'GlslFragmentShader, (), (), () )
+				]
+			() (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 			'[Cglm.Vec2, Cglm.Vec3] () () () () () () () () sl sr sb vs'' ts'
 			
 		pipelineInfo = makeGraphicsPipelineCreateInfo
 			shaderStages vertexInputInfo inputAssembly viewportState
 			rasterizer multisampling colorBlending
 			(Vk.Ppl.Layout.L ppllyt) (Vk.RenderPass.R rp)
-	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle dvc pipelineInfo
+	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle' dvc pipelineInfo
 
-	gpl `Vk.Ppl.Graphics.M.PCons` Vk.Ppl.Graphics.M.PNil <- lift
-		$ Vk.Ppl.Graphics.M.create
-			dvcm Nothing
-			(pipelineInfoMiddle `Vk.Ppl.Graphics.M.CreateInfoCons`
-				Vk.Ppl.Graphics.M.CreateInfoNil)
-			nil
+	V2 gpl :...: HVNil <- lift
+		$ Vk.Ppl.Graphics.M.createGs'
+			dvcm Nothing (V15 pipelineInfoMiddle :...: HVNil) nil
 	writeGlobal globalGraphicsPipeline gpl
 
 makeGraphicsPipelineCreateInfo ::
-	Vk.Ppl.ShdrSt.CreateInfoList n1 n1' sknds a a' vss ->
+	HeteroVarList Vk.Ppl.ShdrSt.CreateInfo' nnskndcdvss ->
 	Vk.Ppl.VertexInputSt.CreateInfo n2 vs' ts ->
 	Vk.Ppl.InpAsmbSt.CreateInfo n3 -> Vk.Ppl.ViewportSt.CreateInfo n5 ->
 	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
 	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.L sl ->
-	Vk.RenderPass.R sr -> Vk.Ppl.Graphics.CreateInfo
-		n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
+	Vk.RenderPass.R sr -> Vk.Ppl.Graphics.CreateInfo'
+		n nnskndcdvss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
 makeGraphicsPipelineCreateInfo
 	shaderStages vertexInputInfo inputAssembly viewportState
 	rasterizer multisampling colorBlending ppllyt
-	rp = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = Nothing,
-	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStages = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputState = Just vertexInputInfo,
-	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportState = Just viewportState,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rasterizer,
-	Vk.Ppl.Graphics.createInfoMultisampleState = Just multisampling,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Nothing,
-	Vk.Ppl.Graphics.createInfoColorBlendState = Just colorBlending,
-	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-	Vk.Ppl.Graphics.createInfoLayout = ppllyt,
-	Vk.Ppl.Graphics.createInfoRenderPass = rp,
-	Vk.Ppl.Graphics.createInfoSubpass = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+	rp = Vk.Ppl.Graphics.CreateInfo' {
+	Vk.Ppl.Graphics.createInfoNext' = Nothing,
+	Vk.Ppl.Graphics.createInfoFlags' = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Graphics.createInfoStages' = shaderStages,
+	Vk.Ppl.Graphics.createInfoVertexInputState' = Just vertexInputInfo,
+	Vk.Ppl.Graphics.createInfoInputAssemblyState' = Just inputAssembly,
+	Vk.Ppl.Graphics.createInfoViewportState' = Just viewportState,
+	Vk.Ppl.Graphics.createInfoRasterizationState' = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoMultisampleState' = Just multisampling,
+	Vk.Ppl.Graphics.createInfoDepthStencilState' = Nothing,
+	Vk.Ppl.Graphics.createInfoColorBlendState' = Just colorBlending,
+	Vk.Ppl.Graphics.createInfoDynamicState' = Nothing,
+	Vk.Ppl.Graphics.createInfoLayout' = ppllyt,
+	Vk.Ppl.Graphics.createInfoRenderPass' = rp,
+	Vk.Ppl.Graphics.createInfoSubpass' = 0,
+	Vk.Ppl.Graphics.createInfoBasePipelineHandle' = Nothing,
+	Vk.Ppl.Graphics.createInfoBasePipelineIndex' = - 1,
+	Vk.Ppl.Graphics.createInfoTessellationState' = Nothing }
 
 createFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d -> [Vk.ImageView.M.I] -> ReaderT Global IO ()
 createFramebuffers dvc sce scivs = do
