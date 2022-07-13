@@ -105,6 +105,7 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass.Type as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
+import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl.Graphics.M
 import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer
@@ -292,9 +293,11 @@ run win inst = ask >>= \g ->
 	createImageViews dvc scifmt imgs \scivs ->
 		lift $ createRenderPass dvc scifmt \rp ->
 		createPipelineLayout dvc g \(Vk.Ppl.Layout.LL ppllyt) -> do
-		initVulkan phdvc qfis dvc gq ext scivs rp ppllyt
-		mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp
-		cleanup dvc
+		writeGlobal globalPipelineLayout ppllyt
+		createGraphicsPipeline dvc ext rp do
+			initVulkan phdvc qfis dvc gq ext scivs rp ppllyt
+			mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp
+			cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -638,8 +641,6 @@ initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 initVulkan phdvc qfis dvc gq ext scivs rp ppllyt = do
 	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
 	do
-		writeGlobal globalPipelineLayout ppllyt
-		createGraphicsPipeline dvc ext rp
 		createFramebuffers dvc ext scivs' rp
 
 		createCommandPool qfis dvc
@@ -648,8 +649,8 @@ initVulkan phdvc qfis dvc gq ext scivs rp ppllyt = do
 		createSyncObjects dvc
 
 createGraphicsPipeline :: Vk.Device.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> ReaderT Global IO ()
-createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> ReaderT Global IO () -> ReaderT Global IO ()
+createGraphicsPipeline dvc sce (Vk.RndrPass.R rp) f = do
 	let	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 			Vk.Ppl.ShdrSt.createInfoNext = Nothing,
 			Vk.Ppl.ShdrSt.createInfoFlags = def,
@@ -755,7 +756,7 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
 				]
 			'(	(), (Solo (AddType Vertex 'Vk.VertexInput.RateVertex)),
 				'[Cglm.Vec2, Cglm.Vec3] )
-			() () () () () () () () sl sr sb vs'' ts'
+			() () () () () () () () sl sr '(sb, vs'', ts')
 			
 		pipelineInfo = makeGraphicsPipelineCreateInfo
 			shaderStages vertexInputInfo inputAssembly viewportState
@@ -763,10 +764,17 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
 			(Vk.Ppl.Layout.L ppllyt) (Vk.RndrPass.R rp)
 	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle' dvc pipelineInfo
 
+	g <- ask
+	{-
 	V2 gpl :...: HVNil <- lift
 		$ Vk.Ppl.Graphics.M.createGs'
 			dvcm Nothing (V12 pipelineInfoMiddle :...: HVNil) nil
-	writeGlobal globalGraphicsPipeline gpl
+	lift $ writeIORef (globalGraphicsPipeline g) gpl
+	-}
+	lift $ Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pipelineInfo :...: HVNil)
+			nil nil \(V2 (Vk.Ppl.Graphics.G gpl) :...: HVNil) -> do
+		writeIORef (globalGraphicsPipeline g) gpl
+		f `runReaderT` g
 
 makeGraphicsPipelineCreateInfo ::
 	HeteroVarList Vk.Ppl.ShdrSt.CreateInfo' nnskndcdvss ->
@@ -775,7 +783,7 @@ makeGraphicsPipelineCreateInfo ::
 	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
 	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.L sl ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Graphics.CreateInfo'
-		n nnskndcdvss '(n2, vs', ts) n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
+		n nnskndcdvss '(n2, vs', ts) n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs'', ts')
 makeGraphicsPipelineCreateInfo
 	shaderStages vertexInputInfo inputAssembly viewportState
 	rasterizer multisampling colorBlending ppllyt
@@ -1103,7 +1111,7 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
 	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm sc
 	recreateImageViews dvc scifmt imgs scivs
-	createGraphicsPipeline dvc ext rp
+--	createGraphicsPipeline dvc ext rp
 	createFramebuffers dvc ext scivs rp
 	pure ext
 
@@ -1111,8 +1119,8 @@ cleanupSwapChain :: Vk.Device.D sd -> ReaderT Global IO ()
 cleanupSwapChain (Vk.Device.D dvc) = do
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
-	grppl <- readGlobal globalGraphicsPipeline
-	lift $ Vk.Ppl.Graphics.M.destroy dvc grppl nil
+--	grppl <- readGlobal globalGraphicsPipeline
+--	lift $ Vk.Ppl.Graphics.M.destroy dvc grppl nil
 --	ppllyt <- readGlobal globalPipelineLayout
 --	lift $ Vk.Ppl.Layout.M.destroy dvc ppllyt nil
 

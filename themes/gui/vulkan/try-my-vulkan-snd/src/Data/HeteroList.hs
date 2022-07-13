@@ -14,8 +14,8 @@ module Data.HeteroList (
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex,
-	V2(..), V3(..), V4(..), V5(..), V6(..), V12(..), V13(..), V15(..)
-	) where
+	V2(..), V3(..), V4(..), V5(..), V6(..),
+	V12(..), V13(..), V14(..), V15(..) ) where
 
 import Prelude hiding (length)
 
@@ -136,6 +136,10 @@ data V13 t ss where
 	V13 :: t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 -> V13 t
 		'(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13)
 
+data V14 t ss where
+	V14 :: t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 -> V14 t
+		'(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14)
+
 data V15 t ss where
 	V15 :: t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 -> V15 t '(
 		s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15
@@ -154,6 +158,10 @@ deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12) =>
 deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13) =>
 	Show (V13 t
 		'(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13))
+
+deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14) =>
+	Show (V14 t
+		'(s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14))
 
 deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15) =>
 	Show (V15 t '(
