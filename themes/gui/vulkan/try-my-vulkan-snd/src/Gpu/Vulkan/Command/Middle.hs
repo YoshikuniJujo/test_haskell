@@ -41,8 +41,9 @@ endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
 
 bindPipeline ::
 	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
-bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.G ppl) =
-	C.bindPipeline cb pbp ppl
+bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) ppl = do
+	ppl' <- Pipeline.gToCore ppl
+	C.bindPipeline cb pbp ppl'
 
 bindPipelineCompute ::
 	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.Compute.C -> IO ()

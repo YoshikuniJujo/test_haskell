@@ -15,6 +15,7 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Kind
+import Data.IORef
 import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
@@ -69,12 +70,14 @@ data CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' = Cre
 	createInfoBasePipelineHandle :: G vs'' ts',
 	createInfoBasePipelineIndex :: Int32 }
 
+{-
 deriving instance (
 	Show n, Show n1, Show n2, Show n3, Show n4, Show n5, Show n6, Show n7,
 	Show n8, Show n9, Show n10,
 	Show (ShaderStage.CreateInfoList n1 sknds vss)
 	) =>
 	Show (CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts')
+	-}
 
 data CreateInfo' n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo' {
 	createInfoNext' :: Maybe n,
@@ -128,7 +131,7 @@ createInfoToCore CreateInfo {
 	createInfoLayout = Layout.L lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = G bph,
+	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
@@ -146,6 +149,7 @@ createInfoToCore CreateInfo {
 	pdsst <- maybeToCore DepthStencilState.createInfoToCore mdsst
 	pcbst <- maybeToCore ColorBlendState.createInfoToCore mcbst
 	pdst <- maybeToCore DynamicState.createInfoToCore mdst
+	bph' <- lift $ gToCore bph
 	pure C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
@@ -164,7 +168,7 @@ createInfoToCore CreateInfo {
 		C.createInfoLayout = lyt,
 		C.createInfoRenderPass = rp,
 		C.createInfoSubpass = sp,
-		C.createInfoBasePipelineHandle = bph,
+		C.createInfoBasePipelineHandle = bph',
 		C.createInfoBasePipelineIndex = bpi }
 
 createInfoToCore' :: (
@@ -194,7 +198,7 @@ createInfoToCore' CreateInfo' {
 	createInfoLayout' = Layout.L lyt,
 	createInfoRenderPass' = RenderPass.R rp,
 	createInfoSubpass' = sp,
-	createInfoBasePipelineHandle' = V2 (G bph),
+	createInfoBasePipelineHandle' = V2 bph,
 	createInfoBasePipelineIndex' = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
@@ -211,6 +215,7 @@ createInfoToCore' CreateInfo' {
 	pdsst <- maybeToCore DepthStencilState.createInfoToCore mdsst
 	pcbst <- maybeToCore ColorBlendState.createInfoToCore mcbst
 	pdst <- maybeToCore DynamicState.createInfoToCore mdst
+	bph' <- lift $ gToCore bph
 	pure C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
@@ -229,7 +234,7 @@ createInfoToCore' CreateInfo' {
 		C.createInfoLayout = lyt,
 		C.createInfoRenderPass = rp,
 		C.createInfoSubpass = sp,
-		C.createInfoBasePipelineHandle = bph,
+		C.createInfoBasePipelineHandle = bph',
 		C.createInfoBasePipelineIndex = bpi }
 
 type CreateInfo'' = V12 CreateInfo'
@@ -298,11 +303,22 @@ instance (
 		<$> createInfoToCore ci
 		<*> createInfoListToCore cis
 
+gNull :: IO (G vs ts)
+gNull = G <$> newIORef NullHandle
+
+{-
 pattern GNull :: G vs ts
 pattern GNull <- G NullHandle where
 	GNull = G NullHandle
+	-}
 
-newtype G vs (ts :: [Type]) = G Pipeline.C.P deriving Show
+newtype G vs (ts :: [Type]) = G (IORef Pipeline.C.P)
+
+gToCore :: G vs ts -> IO Pipeline.C.P
+gToCore (G rp) = readIORef rp
+
+gFromCore :: Pipeline.C.P -> IO (G vs ts)
+gFromCore p = G <$> newIORef p
 
 type G' = V2 G
 
@@ -310,38 +326,36 @@ data PList vss tss where
 	PNil :: PList '[] '[]
 	PCons :: G vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
 
-deriving instance Show (PList vss tss)
-
 class PListFromCore vss tss where
-	pListFromCore :: [Pipeline.C.P] -> PList vss tss
-	pListToCore :: PList vss tss -> [Pipeline.C.P]
+	pListFromCore :: [Pipeline.C.P] -> IO (PList vss tss)
+	pListToCore :: PList vss tss -> IO [Pipeline.C.P]
 
 instance PListFromCore '[] '[] where
-	pListFromCore [] = PNil
+	pListFromCore [] = pure PNil
 	pListFromCore _ = error "bad"
-	pListToCore _ = []
+	pListToCore _ = pure []
 
 instance
 	PListFromCore vss tss =>
 	PListFromCore (vs ': vss) (ts ': tss) where
 	pListFromCore [] = error "bad"
-	pListFromCore (cp : cps) = G cp `PCons` pListFromCore cps
-	pListToCore (G cp `PCons` gs) = cp : pListToCore gs
+	pListFromCore (cp : cps) = PCons <$> gFromCore cp <*> pListFromCore cps
+	pListToCore (cp `PCons` gs) = (:) <$> gToCore cp <*> pListToCore gs
 
 class GListFromCore vstss where
-	gListFromCore :: [Pipeline.C.P] -> HeteroVarList G' vstss
-	gListToCore :: HeteroVarList G' vstss -> [Pipeline.C.P]
+	gListFromCore :: [Pipeline.C.P] -> IO (HeteroVarList G' vstss)
+	gListToCore :: HeteroVarList G' vstss -> IO [Pipeline.C.P]
 
 instance GListFromCore '[] where
-	gListFromCore [] = HVNil
+	gListFromCore [] = pure HVNil
 	gListFromCore _ = error "bad"
-	gListToCore HVNil = []
+	gListToCore HVNil = pure []
 	
 instance GListFromCore vstss =>
 	GListFromCore ('(vs, ts) ': vstss) where
 	gListFromCore [] = error "bad"
-	gListFromCore (cp : cps) = V2 (G cp) :...: gListFromCore cps
-	gListToCore (V2 (G cp) :...: cps) = cp : gListToCore cps
+	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
+	gListToCore (V2 cp :...: cps) = (:) <$> gToCore cp <*> gListToCore cps
 
 create :: (
 	CreateInfoListToCore ns
@@ -352,14 +366,14 @@ create :: (
 	CreateInfoList ns
 		n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s vs''s ts's ->
 	Maybe (AllocationCallbacks.A n') -> IO (PList vs's tss)
-create dvc mc cis mac = pListFromCore <$> createRaw dvc mc cis mac
+create dvc mc cis mac = pListFromCore =<< createRaw dvc mc cis mac
 
 createGs' :: (
 	CreateInfoListToCore' ss, Pointable n', GListFromCore (GListVars ss)
 	) => Device.D -> Maybe Cache.C ->
 	HeteroVarList CreateInfo'' ss ->
 	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList G' (GListVars ss))
-createGs' dvc mc cis mac = gListFromCore <$> createRaw' dvc mc cis mac
+createGs' dvc mc cis mac = gListFromCore =<< createRaw' dvc mc cis mac
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],
@@ -408,14 +422,15 @@ createRaw' (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 
 destroy :: Pointable n =>
 	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (G p) mac = ($ pure) $ runContT do
+destroy (Device.D dvc) g mac = ($ pure) $ runContT do
+	p <- lift $ gToCore g
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ Pipeline.C.destroy dvc p pac
 
 destroyGs :: (PListFromCore vs's tss, Pointable n) =>
 	Device.D -> PList vs's tss -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroyGs dvc gs mac = (\g -> destroy dvc (G g) mac) `mapM_` pListToCore gs
+destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< pListToCore gs
 
 destroyGs' :: (GListFromCore vstss, Pointable n) =>
 	Device.D -> HeteroVarList G' vstss -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroyGs' dvc gs mac = (\g -> destroy dvc (G g) mac) `mapM_` gListToCore gs
+destroyGs' dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs

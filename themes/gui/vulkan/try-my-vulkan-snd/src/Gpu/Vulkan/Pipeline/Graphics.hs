@@ -135,9 +135,10 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoLayout = Layout.L lyt,
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = maybe M.GNull (\(G g) -> g) ->  bph,
+	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddle dvc stgs
+	bph' <- maybe M.gNull (\(G g) -> pure g) bph
 	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
@@ -154,7 +155,7 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoLayout = lyt,
 		M.createInfoRenderPass = rp,
 		M.createInfoSubpass = sp,
-		M.createInfoBasePipelineHandle = bph,
+		M.createInfoBasePipelineHandle = bph',
 		M.createInfoBasePipelineIndex = bpi }
 
 createInfoToMiddle' :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
@@ -179,9 +180,10 @@ createInfoToMiddle' dvc CreateInfo' {
 	createInfoLayout' = Layout.L lyt,
 	createInfoRenderPass' = RenderPass.R rp,
 	createInfoSubpass' = sp,
-	createInfoBasePipelineHandle' = maybe M.GNull (\(V3 (G g)) -> g) -> bph,
+	createInfoBasePipelineHandle' = bph,
 	createInfoBasePipelineIndex' = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddle' dvc stgs
+	bph' <- maybe M.gNull (\(V3 (G g)) -> pure g) bph
 	pure M.CreateInfo' {
 		M.createInfoNext' = mnxt,
 		M.createInfoFlags' = flgs,
@@ -198,7 +200,7 @@ createInfoToMiddle' dvc CreateInfo' {
 		M.createInfoLayout' = lyt,
 		M.createInfoRenderPass' = rp,
 		M.createInfoSubpass' = sp,
-		M.createInfoBasePipelineHandle' = V2 bph,
+		M.createInfoBasePipelineHandle' = V2 bph',
 		M.createInfoBasePipelineIndex' = bpi }
 
 data CreateInfoList

@@ -8,9 +8,9 @@ module Gpu.Vulkan.Pipeline.Graphics.Type where
 
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as M
 
-newtype GList s vs's tss = GList (M.PList vs's tss) deriving Show
+newtype GList s vs's tss = GList (M.PList vs's tss)
 
-newtype G s vs ts = G (M.G vs ts) deriving Show
+newtype G s vs ts = G (M.G vs ts)
 
 pattern GNil :: GList s vs's tss
 pattern GNil <- GList M.PNil
