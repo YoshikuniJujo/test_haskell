@@ -2,6 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Layout.Middle where
@@ -16,6 +17,7 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
+import Data.Bits
 import Data.Word
 
 import Gpu.Vulkan.Exception
@@ -30,7 +32,7 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Core as C
 #include <vulkan/vulkan.h>
 
 enum "CreateFlags" ''#{type VkPipelineLayoutCreateFlags}
-	[''Show, ''Storable] [("CreateFlagsZero", 0)]
+	[''Show, ''Storable, ''Eq, ''Bits] [("CreateFlagsZero", 0)]
 
 instance Default CreateFlags where def = CreateFlagsZero
 
