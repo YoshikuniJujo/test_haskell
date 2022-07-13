@@ -76,12 +76,12 @@ deriving instance (
 	) =>
 	Show (CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts')
 
-data CreateInfo' n nskndvss n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 vs' ts' = CreateInfo' {
+data CreateInfo' n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vs' ts' = CreateInfo' {
 	createInfoNext' :: Maybe n,
 	createInfoFlags' :: CreateFlags,
 	createInfoStages' :: HeteroVarList ShaderStage.CreateInfo' nskndvss,
 	createInfoVertexInputState' ::
-		Maybe (VertexInputState.CreateInfo n2 vs ts),
+		Maybe (V3 VertexInputState.CreateInfo nvsts),
 	createInfoInputAssemblyState' ::
 		Maybe (InputAssemblyState.CreateInfo n3),
 	createInfoTessellationState' :: Maybe (TessellationState.CreateInfo n4),
@@ -176,13 +176,13 @@ createInfoToCore' :: (
 	BindingStrideList.BindingStrideList
 		vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
-	CreateInfo' n nskndvss n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 vs' ts' ->
+	CreateInfo' n nskndvss '(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vs' ts' ->
 	ContT r IO C.CreateInfo
 createInfoToCore' CreateInfo' {
 	createInfoNext' = mnxt,
 	createInfoFlags' = CreateFlagBits flgs,
 	createInfoStages' = ss,
-	createInfoVertexInputState' = mvist,
+	createInfoVertexInputState' = ((\(V3 x) -> x) <$>) -> mvist,
 	createInfoInputAssemblyState' = miast,
 	createInfoTessellationState' = mtst,
 	createInfoViewportState' = mvst,
@@ -232,7 +232,7 @@ createInfoToCore' CreateInfo' {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = bpi }
 
-type CreateInfo'' = V15 CreateInfo'
+type CreateInfo'' = V13 CreateInfo'
 
 class CreateInfoListToCore' sss where
 	createInfoListToCore' ::
@@ -249,9 +249,8 @@ instance (
 	VertexInputState.CreateInfoAttributeDescription vs ts,
 	CreateInfoListToCore' ss ) =>
 	CreateInfoListToCore' ('(
-		n, nskndvss, n2,
-		vs, ts, n3, n4, n5, n6, n7, n8, n9, n10, vs', ts' ) ': ss) where
-	createInfoListToCore' (V15 ci :...: cis) = (:)
+		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vs', ts' ) ': ss) where
+	createInfoListToCore' (V13 ci :...: cis) = (:)
 		<$> createInfoToCore' ci
 		<*> createInfoListToCore' cis
 
@@ -364,11 +363,11 @@ createGs' dvc mc cis mac = gListFromCore <$> createRaw' dvc mc cis mac
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],
-		Type, Type, [Type], Type, Type, Type, Type, Type, Type, Type,
+		(Type, Type, [Type]), Type, Type, Type, Type, Type, Type, Type,
 		Type, Type, [Type])]) :: [(Type, [Type])] where
 	GListVars '[] = '[]
 	GListVars ('(
-		n, nskndvss, n2, vs, ts,
+		n, nskndvss, '(n2, vs, ts),
 		n3, n4, n5, n6, n7, n8, n9, n10, vs', ts' ) ': ss) = '(vs, ts) ': GListVars ss
 
 createRaw :: (

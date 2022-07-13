@@ -764,7 +764,7 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
 
 	V2 gpl :...: HVNil <- lift
 		$ Vk.Ppl.Graphics.M.createGs'
-			dvcm Nothing (V15 pipelineInfoMiddle :...: HVNil) nil
+			dvcm Nothing (V13 pipelineInfoMiddle :...: HVNil) nil
 	writeGlobal globalGraphicsPipeline gpl
 
 makeGraphicsPipelineCreateInfo ::

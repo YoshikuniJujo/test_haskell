@@ -156,7 +156,7 @@ createInfoToMiddle' :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	CreateInfo' n nnskndscdvss n2 vs ts
 		n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs' ts' ->
 	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
-		n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 vs' ts')
+		'(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vs' ts')
 createInfoToMiddle' dvc CreateInfo' {
 	createInfoNext' = mnxt,
 	createInfoFlags' = flgs,
@@ -180,7 +180,7 @@ createInfoToMiddle' dvc CreateInfo' {
 		M.createInfoNext' = mnxt,
 		M.createInfoFlags' = flgs,
 		M.createInfoStages' = stgs',
-		M.createInfoVertexInputState' = vis,
+		M.createInfoVertexInputState' = V3 <$> vis,
 		M.createInfoInputAssemblyState' = ias,
 		M.createInfoTessellationState' = ts,
 		M.createInfoViewportState' = vs,
@@ -262,6 +262,12 @@ createGs :: (
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddle d cis >>= \cis' -> M.create dvc mc cis' macc <* destroyShaderStages d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . GList)
+
+{-
+createGs' dvc@(Device.D dvcm) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
+	(createInfoListToMiddle' d cis >>= \cis' -> M.createGs' dvc mc cis' macc <* destroyShaderStages' d cis' cis)
+	(\gs -> M.destroyGs' dvc gs macd) f
+	-}
 
 class DestroyShaderStages
 	ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
