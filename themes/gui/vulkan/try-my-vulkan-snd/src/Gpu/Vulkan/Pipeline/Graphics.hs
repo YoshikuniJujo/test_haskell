@@ -68,13 +68,13 @@ data CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
 	createInfoBasePipelineIndex :: Int32 }
 
-data CreateInfo' n nnskndscdvss n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
+data CreateInfo' n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	sb vs' ts' = CreateInfo' {
 	createInfoNext' :: Maybe n,
 	createInfoFlags' :: CreateFlags,
 	createInfoStages' :: HeteroVarList ShaderStage.CreateInfo' nnskndscdvss,
 	createInfoVertexInputState' ::
-		Maybe (VertexInputState.CreateInfo n2 vs ts),
+		Maybe (V3 VertexInputState.CreateInfo nvsts),
 	createInfoInputAssemblyState' ::
 		Maybe (InputAssemblyState.CreateInfo n3),
 	createInfoTessellationState' ::
@@ -153,10 +153,10 @@ createInfoToMiddle dvc CreateInfo {
 
 createInfoToMiddle' :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
-	CreateInfo' n nnskndscdvss n2 vs ts
+	CreateInfo' n nnskndscdvss nvsts
 		n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs' ts' ->
 	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
-		'(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
+		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
 createInfoToMiddle' dvc CreateInfo' {
 	createInfoNext' = mnxt,
 	createInfoFlags' = flgs,
@@ -180,7 +180,7 @@ createInfoToMiddle' dvc CreateInfo' {
 		M.createInfoNext' = mnxt,
 		M.createInfoFlags' = flgs,
 		M.createInfoStages' = stgs',
-		M.createInfoVertexInputState' = V3 <$> vis,
+		M.createInfoVertexInputState' = vis,
 		M.createInfoInputAssemblyState' = ias,
 		M.createInfoTessellationState' = ts,
 		M.createInfoViewportState' = vs,

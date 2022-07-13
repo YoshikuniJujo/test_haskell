@@ -753,8 +753,9 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
 				'( (), (), 'GlslVertexShader, (), (), () ),
 				'( (), (),  'GlslFragmentShader, (), (), () )
 				]
-			() (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
-			'[Cglm.Vec2, Cglm.Vec3] () () () () () () () () sl sr sb vs'' ts'
+			'(	(), (Solo (AddType Vertex 'Vk.VertexInput.RateVertex)),
+				'[Cglm.Vec2, Cglm.Vec3] )
+			() () () () () () () () sl sr sb vs'' ts'
 			
 		pipelineInfo = makeGraphicsPipelineCreateInfo
 			shaderStages vertexInputInfo inputAssembly viewportState
@@ -774,7 +775,7 @@ makeGraphicsPipelineCreateInfo ::
 	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
 	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.L sl ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Graphics.CreateInfo'
-		n nnskndcdvss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
+		n nnskndcdvss '(n2, vs', ts) n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
 makeGraphicsPipelineCreateInfo
 	shaderStages vertexInputInfo inputAssembly viewportState
 	rasterizer multisampling colorBlending ppllyt
@@ -782,7 +783,7 @@ makeGraphicsPipelineCreateInfo
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags' = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages' = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputState' = Just vertexInputInfo,
+	Vk.Ppl.Graphics.createInfoVertexInputState' = Just $ V3 vertexInputInfo,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState' = Just inputAssembly,
 	Vk.Ppl.Graphics.createInfoViewportState' = Just viewportState,
 	Vk.Ppl.Graphics.createInfoRasterizationState' = Just rasterizer,
