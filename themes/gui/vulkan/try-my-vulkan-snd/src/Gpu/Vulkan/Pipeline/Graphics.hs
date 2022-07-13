@@ -68,8 +68,8 @@ data CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
 	createInfoBasePipelineIndex :: Int32 }
 
-data CreateInfo' n nnskndscdvss n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
-	vs' ts' = CreateInfo' {
+data CreateInfo' n nnskndscdvss n2 vs ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
+	sb vs' ts' = CreateInfo' {
 	createInfoNext' :: Maybe n,
 	createInfoFlags' :: CreateFlags,
 	createInfoStages' :: HeteroVarList ShaderStage.CreateInfo' nnskndscdvss,
@@ -156,7 +156,7 @@ createInfoToMiddle' :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	CreateInfo' n nnskndscdvss n2 vs ts
 		n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs' ts' ->
 	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
-		'(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vs' ts')
+		'(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
 createInfoToMiddle' dvc CreateInfo' {
 	createInfoNext' = mnxt,
 	createInfoFlags' = flgs,
@@ -192,7 +192,7 @@ createInfoToMiddle' dvc CreateInfo' {
 		M.createInfoLayout' = lyt,
 		M.createInfoRenderPass' = rp,
 		M.createInfoSubpass' = sp,
-		M.createInfoBasePipelineHandle' = bph,
+		M.createInfoBasePipelineHandle' = V2 bph,
 		M.createInfoBasePipelineIndex' = bpi }
 
 data CreateInfoList
