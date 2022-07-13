@@ -94,6 +94,7 @@ import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
+import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Layout.M
 import qualified Gpu.Vulkan.Attachment as Vk.Att
@@ -281,18 +282,19 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
-run win inst = createSurface win inst \sfc -> do
-	(phdvc, qfis) <- lift $ pickPhysicalDevice inst sfc
-	createLogicalDevice phdvc qfis \dvc@(Vk.Device.D dvcm) gq pq -> do
-		createSwapChain win sfc phdvc qfis dvc \sc@(Vk.Khr.Swapchain.S scm) scfmt ext -> do
-			let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
-			imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm scm
-			createImageViews dvc scifmt imgs \scivs -> do
-				g <- ask
-				lift $ createRenderPass dvc scifmt g \rp -> do
-					initVulkan phdvc qfis dvc gq ext scivs rp
-					mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp
-					cleanup dvc
+run win inst = ask >>= \g ->
+	createSurface win inst \sfc ->
+	lift (pickPhysicalDevice inst sfc) >>= \(phdvc, qfis) ->
+	createLogicalDevice phdvc qfis \dvc@(Vk.Device.D dvcm) gq pq ->
+	createSwapChain win sfc phdvc qfis dvc \sc@(Vk.Khr.Swapchain.S scm) scfmt ext -> do
+	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
+	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm scm
+	createImageViews dvc scifmt imgs \scivs ->
+		lift $ createRenderPass dvc scifmt \rp ->
+		createPipelineLayout dvc g \(Vk.Ppl.Layout.LL ppllyt) -> do
+		initVulkan phdvc qfis dvc gq ext scivs rp ppllyt
+		mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp
+		cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -515,23 +517,6 @@ clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
 
-initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Queue.Q -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImageView.I ss -> Vk.RndrPass.R sr ->
-	ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq ext scivs rp = do
-	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-	g <- ask
-	lift $ createPipelineLayout dvc g \(Vk.Ppl.Layout.L ppllyt) -> do
-		writeGlobal globalPipelineLayout ppllyt
-		createGraphicsPipeline dvc ext rp
-		createFramebuffers dvc ext scivs' rp
-
-		createCommandPool qfis dvc
-		createVertexBuffer phdvc dvc gq
-		createCommandBuffers dvc
-		createSyncObjects dvc
-
 createImageViews :: Vk.Device.D sd -> Vk.Format -> [Vk.Image.I] ->
 	(forall ss . HeteroVarList Vk.ImageView.I ss -> ReaderT Global IO a) ->
 	ReaderT Global IO a
@@ -587,9 +572,9 @@ makeImageViewCreateInfo sci scifmt = Vk.ImageView.CreateInfo {
 		Vk.Image.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.subresourceRangeLayerCount = 1 }
 
-createRenderPass :: Vk.Device.D sd -> Vk.Format ->
-	r -> (forall sr . Vk.RndrPass.R sr -> ReaderT r IO a) -> IO a
-createRenderPass dvc scifmt g f = do
+createRenderPass :: Vk.Device.D sd ->
+	Vk.Format -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
+createRenderPass dvc scifmt f = do
 	let	colorAttachment = Vk.Att.Description {
 			Vk.Att.descriptionFlags = zeroBits,
 			Vk.Att.descriptionFormat = scifmt,
@@ -633,9 +618,34 @@ createRenderPass dvc scifmt g f = do
 			Vk.RndrPass.M.createInfoAttachments = [colorAttachment],
 			Vk.RndrPass.M.createInfoSubpasses = [subpass],
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp `runReaderT` g
---	rp <- Vk.RndrPass.M.create @() dvc renderPassInfo nil
---	f (Vk.RndrPass.R rp) `runReaderT` g
+	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
+
+createPipelineLayout :: Vk.Device.D sd ->
+	r -> (forall sl . Vk.Ppl.Layout.LL sl '[] -> ReaderT r IO b) -> IO b
+createPipelineLayout dvc g f = do
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
+			Vk.Ppl.Layout.createInfoNext = Nothing,
+			Vk.Ppl.Layout.createInfoFlags = zeroBits,
+			Vk.Ppl.Layout.createInfoSetLayouts = HVNil,
+			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
+	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt ->
+		f ppllyt `runReaderT` g
+
+initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.Queue.Q -> Vk.C.Extent2d ->
+	HeteroVarList Vk.ImageView.I ss -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.M.L ->
+	ReaderT Global IO ()
+initVulkan phdvc qfis dvc gq ext scivs rp ppllyt = do
+	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
+	do
+		writeGlobal globalPipelineLayout ppllyt
+		createGraphicsPipeline dvc ext rp
+		createFramebuffers dvc ext scivs' rp
+
+		createCommandPool qfis dvc
+		createVertexBuffer phdvc dvc gq
+		createCommandBuffers dvc
+		createSyncObjects dvc
 
 createGraphicsPipeline :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> ReaderT Global IO ()
@@ -756,17 +766,6 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
 		$ Vk.Ppl.Graphics.M.createGs'
 			dvcm Nothing (V15 pipelineInfoMiddle :...: HVNil) nil
 	writeGlobal globalGraphicsPipeline gpl
-
-createPipelineLayout ::
-	Vk.Device.D sd -> r -> (Vk.Ppl.Layout.L sl -> ReaderT r IO b) -> IO b
-createPipelineLayout (Vk.Device.D dvcm) g f = do
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.M.CreateInfo {
-			Vk.Ppl.Layout.M.createInfoNext = Nothing,
-			Vk.Ppl.Layout.M.createInfoFlags = zeroBits,
-			Vk.Ppl.Layout.M.createInfoSetLayouts = [],
-			Vk.Ppl.Layout.M.createInfoPushConstantRanges = [] }
-	ppllyt <- Vk.Ppl.Layout.M.create @() dvcm pipelineLayoutInfo nil
-	f (Vk.Ppl.Layout.L ppllyt) `runReaderT` g
 
 makeGraphicsPipelineCreateInfo ::
 	HeteroVarList Vk.Ppl.ShdrSt.CreateInfo' nnskndcdvss ->
