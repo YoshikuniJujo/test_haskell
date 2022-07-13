@@ -101,9 +101,9 @@ import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass.Type as Vk.RenderPass
-import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RenderPass.M
-import qualified Gpu.Vulkan.RenderPass.Enum as Vk.RenderPass
+import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
+import qualified Gpu.Vulkan.RenderPass.Type as Vk.RndrPass
+import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl.Graphics.M
 import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer
@@ -152,7 +152,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalRenderPass :: IORef Vk.RenderPass.M.R,
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.M.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.M.G
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
@@ -177,7 +176,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	rp <- newIORef $ Vk.RenderPass.M.R NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.M.L NullPtr
 	grppl <- newIORef Vk.Ppl.Graphics.M.GNull
 	scfbs <- newIORef []
@@ -191,7 +189,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.M.MemoryList 0 NullPtr
 	pure Global {
-		globalRenderPass = rp,
 		globalPipelineLayout = ppllyt,
 		globalGraphicsPipeline = grppl,
 		globalSwapChainFramebuffers = scfbs,
@@ -291,9 +288,11 @@ run win inst = createSurface win inst \sfc -> do
 			let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
 			imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm scm
 			createImageViews dvc scifmt imgs \scivs -> do
-				initVulkan phdvc qfis dvc gq ext scifmt scivs
-				mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs
-				cleanup dvc
+				g <- ask
+				lift $ createRenderPass dvc scifmt g \rp -> do
+					initVulkan phdvc qfis dvc gq ext scivs rp
+					mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp
+					cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -518,16 +517,15 @@ onlyIf p x | p x = Just x | otherwise = Nothing
 
 initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q -> Vk.C.Extent2d ->
-	Vk.Format -> HeteroVarList Vk.ImageView.I ss ->
+	HeteroVarList Vk.ImageView.I ss -> Vk.RndrPass.R sr ->
 	ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq ext scifmt scivs = do
+initVulkan phdvc qfis dvc gq ext scivs rp = do
 	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-	createRenderPass dvc scifmt
 	g <- ask
 	lift $ createPipelineLayout dvc g \(Vk.Ppl.Layout.L ppllyt) -> do
 		writeGlobal globalPipelineLayout ppllyt
-		createGraphicsPipeline dvc ext
-		createFramebuffers dvc ext scivs'
+		createGraphicsPipeline dvc ext rp
+		createFramebuffers dvc ext scivs' rp
 
 		createCommandPool qfis dvc
 		createVertexBuffer phdvc dvc gq
@@ -589,10 +587,11 @@ makeImageViewCreateInfo sci scifmt = Vk.ImageView.CreateInfo {
 		Vk.Image.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.subresourceRangeLayerCount = 1 }
 
-createRenderPass :: Vk.Device.D sd -> Vk.Format -> ReaderT Global IO ()
-createRenderPass (Vk.Device.D dvc) scifmt = do
+createRenderPass :: Vk.Device.D sd -> Vk.Format ->
+	r -> (forall sr . Vk.RndrPass.R sr -> ReaderT r IO a) -> IO a
+createRenderPass dvc scifmt g f = do
 	let	colorAttachment = Vk.Att.Description {
-			Vk.Att.descriptionFlags = Vk.Att.DescriptionFlagsZero,
+			Vk.Att.descriptionFlags = zeroBits,
 			Vk.Att.descriptionFormat = scifmt,
 			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
 			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
@@ -609,8 +608,7 @@ createRenderPass (Vk.Device.D dvc) scifmt = do
 			Vk.Att.referenceLayout =
 				Vk.Image.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
-			Vk.Subpass.descriptionFlags =
-				Vk.Subpass.DescriptionFlagsZero,
+			Vk.Subpass.descriptionFlags = zeroBits,
 			Vk.Subpass.descriptionPipelineBindPoint =
 				Vk.Ppl.BindPointGraphics,
 			Vk.Subpass.descriptionInputAttachments = [],
@@ -623,25 +621,25 @@ createRenderPass (Vk.Device.D dvc) scifmt = do
 			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
 			Vk.Subpass.dependencySrcStageMask =
 				Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.Subpass.dependencySrcAccessMask = Vk.AccessFlagsZero,
+			Vk.Subpass.dependencySrcAccessMask = zeroBits,
 			Vk.Subpass.dependencyDstStageMask =
 				Vk.Ppl.StageColorAttachmentOutputBit,
 			Vk.Subpass.dependencyDstAccessMask =
 				Vk.AccessColorAttachmentWriteBit,
-			Vk.Subpass.dependencyDependencyFlags =
-				Vk.DependencyFlagsZero }
-		renderPassInfo = Vk.RenderPass.M.CreateInfo {
-			Vk.RenderPass.M.createInfoNext = Nothing,
-			Vk.RenderPass.M.createInfoFlags =
-				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.M.createInfoAttachments = [colorAttachment],
-			Vk.RenderPass.M.createInfoSubpasses = [subpass],
-			Vk.RenderPass.M.createInfoDependencies = [dependency] }
-	writeGlobal globalRenderPass
-		=<< lift (Vk.RenderPass.M.create @() dvc renderPassInfo nil)
+			Vk.Subpass.dependencyDependencyFlags = zeroBits }
+		renderPassInfo = Vk.RndrPass.M.CreateInfo {
+			Vk.RndrPass.M.createInfoNext = Nothing,
+			Vk.RndrPass.M.createInfoFlags = zeroBits,
+			Vk.RndrPass.M.createInfoAttachments = [colorAttachment],
+			Vk.RndrPass.M.createInfoSubpasses = [subpass],
+			Vk.RndrPass.M.createInfoDependencies = [dependency] }
+	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp `runReaderT` g
+--	rp <- Vk.RndrPass.M.create @() dvc renderPassInfo nil
+--	f (Vk.RndrPass.R rp) `runReaderT` g
 
-createGraphicsPipeline :: Vk.Device.D sd -> Vk.C.Extent2d -> ReaderT Global IO ()
-createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
+createGraphicsPipeline :: Vk.Device.D sd ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> ReaderT Global IO ()
+createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce (Vk.RndrPass.R rp) = do
 	let	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
 			Vk.Ppl.ShdrSt.createInfoNext = Nothing,
 			Vk.Ppl.ShdrSt.createInfoFlags = def,
@@ -740,7 +738,6 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 				fromJust $ rgbaDouble 0 0 0 0 }
 
 	ppllyt <- readGlobal globalPipelineLayout
-	rp <- readGlobal globalRenderPass
 
 	let	pipelineInfo :: Vk.Ppl.Graphics.CreateInfo' () '[
 				'( (), (), 'GlslVertexShader, (), (), () ),
@@ -752,7 +749,7 @@ createGraphicsPipeline dvc@(Vk.Device.D dvcm) sce = do
 		pipelineInfo = makeGraphicsPipelineCreateInfo
 			shaderStages vertexInputInfo inputAssembly viewportState
 			rasterizer multisampling colorBlending
-			(Vk.Ppl.Layout.L ppllyt) (Vk.RenderPass.R rp)
+			(Vk.Ppl.Layout.L ppllyt) (Vk.RndrPass.R rp)
 	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle' dvc pipelineInfo
 
 	V2 gpl :...: HVNil <- lift
@@ -777,7 +774,7 @@ makeGraphicsPipelineCreateInfo ::
 	Vk.Ppl.InpAsmbSt.CreateInfo n3 -> Vk.Ppl.ViewportSt.CreateInfo n5 ->
 	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
 	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.L sl ->
-	Vk.RenderPass.R sr -> Vk.Ppl.Graphics.CreateInfo'
+	Vk.RndrPass.R sr -> Vk.Ppl.Graphics.CreateInfo'
 		n nnskndcdvss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts'
 makeGraphicsPipelineCreateInfo
 	shaderStages vertexInputInfo inputAssembly viewportState
@@ -801,14 +798,16 @@ makeGraphicsPipelineCreateInfo
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex' = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState' = Nothing }
 
-createFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d -> [Vk.ImageView.M.I] -> ReaderT Global IO ()
-createFramebuffers dvc sce scivs = do
+createFramebuffers :: Vk.Device.D sd ->
+	Vk.C.Extent2d -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> ReaderT Global IO ()
+createFramebuffers dvc sce scivs rp = do
 	writeGlobal globalSwapChainFramebuffers
-		=<< createFramebuffer1 dvc sce `mapM` scivs
+		=<< createFramebuffer1 dvc sce rp `mapM` scivs
 
-createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.ImageView.M.I -> ReaderT Global IO Vk.Framebuffer.F
-createFramebuffer1 (Vk.Device.D dvc) sce attachment = do
-	rp <- readGlobal globalRenderPass
+createFramebuffer1 :: Vk.Device.D sd ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.M.I ->
+	ReaderT Global IO Vk.Framebuffer.F
+createFramebuffer1 (Vk.Device.D dvc) sce (Vk.RndrPass.R rp) attachment = do
 	let	Vk.C.Extent2d {
 			Vk.C.extent2dWidth = w,
 			Vk.C.extent2dHeight = h } = sce
@@ -966,25 +965,24 @@ createSyncObjects (Vk.Device.D dvc) = do
 
 recordCommandBuffer ::
 	Vk.CommandBuffer.C (Solo (AddType Vertex 'Vk.VertexInput.RateVertex)) ->
-	Vk.C.Extent2d -> Word32 -> ReaderT Global IO ()
-recordCommandBuffer cb sce imageIndex = do
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Word32 -> ReaderT Global IO ()
+recordCommandBuffer cb sce (Vk.RndrPass.R rp) imageIndex = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageFlagsZero,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
-	rp <- readGlobal globalRenderPass
 	scfbs <- readGlobal globalSwapChainFramebuffers
-	let	renderPassInfo = Vk.RenderPass.M.BeginInfo {
-			Vk.RenderPass.M.beginInfoNext = Nothing,
-			Vk.RenderPass.M.beginInfoRenderPass = rp,
-			Vk.RenderPass.M.beginInfoFramebuffer =
+	let	renderPassInfo = Vk.RndrPass.M.BeginInfo {
+			Vk.RndrPass.M.beginInfoNext = Nothing,
+			Vk.RndrPass.M.beginInfoRenderPass = rp,
+			Vk.RndrPass.M.beginInfoFramebuffer =
 				scfbs `genericIndex` imageIndex,
-			Vk.RenderPass.M.beginInfoRenderArea = Vk.C.Rect2d {
+			Vk.RndrPass.M.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
-			Vk.RenderPass.M.beginInfoClearValues = [
+			Vk.RndrPass.M.beginInfoClearValues = [
 				Vk.ClearValueColor
 					. fromJust $ rgbaDouble 0 0 0 1 ] }
 	lift $ Vk.Cmd.M.beginRenderPass @()
@@ -1004,22 +1002,23 @@ mainLoop ::
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I ss ->
-	ReaderT Global IO ()
-mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs = do
+	Vk.RndrPass.R sr -> ReaderT Global IO ()
+mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs rp = do
 	($ ext0) $ fix \loop ext -> do
 		lift Glfw.pollEvents
 		g <- ask
 		let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs' (\e -> loop e `runReaderT` g)
-			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs' (\e -> loop e `runReaderT` g)
+		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs' rp (\e -> loop e `runReaderT` g)
+			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs' rp (\e -> loop e `runReaderT` g)
 	lift $ Vk.Device.M.waitIdle dvcm
 
 runLoop :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhysicalDevice.P ->
 	QueueFamilyIndices -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> Global -> Vk.C.Extent2d -> [Vk.ImageView.M.I] ->
-	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs (\e -> lift $ loop e) `runReaderT` g
+	Vk.Khr.Swapchain.S ssc -> Global -> Vk.C.Extent2d ->
+	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> (Vk.C.Extent2d -> IO ()) ->
+	IO ()
+runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp loop = do
+	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame ::
@@ -1027,8 +1026,9 @@ drawFrame ::
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> [Vk.ImageView.M.I] ->
-	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs loop = do
+	Vk.RndrPass.R sr -> (Vk.C.Extent2d -> ReaderT Global IO ()) ->
+	ReaderT Global IO ()
+drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp loop = do
 	cf <- readGlobal globalCurrentFrame
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
 	lift $ Vk.Fence.waitForFs dvcm [iff] True maxBound
@@ -1038,7 +1038,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc
 	lift $ Vk.Fence.resetFs dvcm [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
-	recordCommandBuffer cb ext imageIndex
+	recordCommandBuffer cb ext rp imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
@@ -1053,7 +1053,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, imageIndex)] }
 	g <- ask
-	lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs (\e -> loop e `runReaderT` g) . catchAndSerialize
+	lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp (\e -> loop e `runReaderT` g) . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
@@ -1064,8 +1064,9 @@ catchAndSerialize =
 catchAndRecreateSwapChain ::
 	Global -> Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> [Vk.ImageView.M.I] -> (Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs loop act = catchJust
+	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> [Vk.ImageView.M.I] ->
+	Vk.RndrPass.R sr -> (Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
+catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp loop act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
@@ -1075,7 +1076,7 @@ catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs loop act = catch
 		if fbr
 		then do
 			writeIORef (globalFramebufferResized g) False
-			e <- recreateSwapChainAndOthers win sfc phdvc qfis dvc sc scivs `runReaderT` g
+			e <- recreateSwapChainAndOthers win sfc phdvc qfis dvc sc scivs rp `runReaderT` g
 			loop e
 		else loop ext)
 
@@ -1085,9 +1086,10 @@ doWhile_ act = (`when` doWhile_ act) =<< act
 recreateSwapChainAndOthers ::
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Khr.Swapchain.S ssc -> [Vk.ImageView.M.I] ->
+	Vk.Khr.Swapchain.S ssc -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
 	ReaderT Global IO Vk.C.Extent2d
-recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swapchain.S sc) scivs = do
+recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
+	(Vk.Khr.Swapchain.S sc) scivs rp = do
 	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			Glfw.waitEvents
@@ -1101,9 +1103,8 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm) (Vk.Khr.Swa
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
 	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm sc
 	recreateImageViews dvc scifmt imgs scivs
-	createRenderPass dvc scifmt
-	createGraphicsPipeline dvc ext
-	createFramebuffers dvc ext scivs
+	createGraphicsPipeline dvc ext rp
+	createFramebuffers dvc ext scivs rp
 	pure ext
 
 cleanupSwapChain :: Vk.Device.D sd -> ReaderT Global IO ()
@@ -1114,8 +1115,6 @@ cleanupSwapChain (Vk.Device.D dvc) = do
 	lift $ Vk.Ppl.Graphics.M.destroy dvc grppl nil
 --	ppllyt <- readGlobal globalPipelineLayout
 --	lift $ Vk.Ppl.Layout.M.destroy dvc ppllyt nil
-	rp <- readGlobal globalRenderPass
-	lift $ Vk.RenderPass.M.destroy dvc rp nil
 
 cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
 cleanup dvc@(Vk.Device.D dvcm) = do
