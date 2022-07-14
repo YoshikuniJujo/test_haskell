@@ -344,18 +344,22 @@ instance
 
 class GListFromCore vstss where
 	gListFromCore :: [Pipeline.C.P] -> IO (HeteroVarList G' vstss)
-	gListToCore :: HeteroVarList G' vstss -> IO [Pipeline.C.P]
+	gListToIORefs :: HeteroVarList G' vstss -> [IORef Pipeline.C.P]
+
+gListToCore :: GListFromCore vstss =>
+	HeteroVarList G' vstss -> IO [Pipeline.C.P]
+gListToCore cps = readIORef `mapM` gListToIORefs cps
 
 instance GListFromCore '[] where
 	gListFromCore [] = pure HVNil
 	gListFromCore _ = error "bad"
-	gListToCore HVNil = pure []
+	gListToIORefs HVNil = []
 	
 instance GListFromCore vstss =>
 	GListFromCore ('(vs, ts) ': vstss) where
 	gListFromCore [] = error "bad"
 	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
-	gListToCore (V2 cp :...: cps) = (:) <$> gToCore cp <*> gListToCore cps
+	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
 
 create :: (
 	CreateInfoListToCore ns
@@ -374,6 +378,15 @@ createGs' :: (
 	HeteroVarList CreateInfo'' ss ->
 	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList G' (GListVars ss))
 createGs' dvc mc cis mac = gListFromCore =<< createRaw' dvc mc cis mac
+
+recreateGs' :: (
+	CreateInfoListToCore' ss, Pointable c, Pointable d,
+	GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
+	HeteroVarList CreateInfo'' ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	HeteroVarList G' (GListVars ss) -> IO ()
+recreateGs' dvc mc cis macc macd gs =
+	recreateRaw' dvc mc cis macc macd $ gListToIORefs gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],
@@ -419,6 +432,23 @@ createRaw' (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	lift do	r <- C.create dvc cc (fromIntegral cic) pcis pac pps
 		throwUnlessSuccess $ Result r
 		peekArray cic pps
+
+recreateRaw' :: (CreateInfoListToCore' ss, Pointable c, Pointable d) =>
+	Device.D -> Maybe Cache.C ->
+	HeteroVarList CreateInfo'' ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	[IORef Pipeline.C.P] -> IO ()
+recreateRaw' dvc mc cis macc macd rs = do
+	os <- readIORef `mapM` rs
+	ns <- createRaw' dvc mc cis macc
+	zipWithM_ writeIORef rs ns
+	(\o -> destroyRaw dvc o macd) `mapM_` os
+
+destroyRaw :: Pointable d =>
+	Device.D -> Pipeline.C.P -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroyRaw (Device.D dvc) p macd = ($ pure) $ runContT do
+	pacd <- AllocationCallbacks.maybeToCore macd
+	lift $ Pipeline.C.destroy dvc p pacd
 
 destroy :: Pointable n =>
 	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()

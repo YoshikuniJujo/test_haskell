@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics (
-	G, createGs, createGs', CreateInfoList(..), CreateInfo(..), createInfoToMiddle,
+	G, createGs, createGs', recreateGs', CreateInfoList(..), CreateInfo(..), createInfoToMiddle,
 	CreateInfo'(..), createInfoToMiddle',
 	GList, pattern GNil, pattern GCons ) where
 
@@ -323,13 +323,20 @@ createGs' d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = brack
 		M.createGs' dvc mc cis' macc <* destroyShaderStages' d cis' cis)
 	(\gs -> M.destroyGs' dvc gs macd) (f . v2g)
 
+recreateGs' d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
+	cis' <- createInfoListToMiddle' d cis
+	M.recreateGs' dvc mc cis' macc macd $ g2v gpls
+	destroyShaderStages' d cis' cis
+
 class V2g ss where
 	v2g :: HeteroVarList M.G' ss -> HeteroVarList (V2 (G sg)) ss
+	g2v :: HeteroVarList (V2 (G sg)) ss -> HeteroVarList M.G' ss
 
-instance V2g '[] where v2g HVNil = HVNil
+instance V2g '[] where v2g HVNil = HVNil; g2v HVNil = HVNil
 
 instance V2g ss => V2g (s ': ss) where
 	v2g (V2 g :...: gs) = V2 (G g) :...: v2g gs
+	g2v (V2 (G g) :...: gs) = V2 g :...: g2v gs
 
 {-
 createGs' dvc@(Device.D dvcm) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket

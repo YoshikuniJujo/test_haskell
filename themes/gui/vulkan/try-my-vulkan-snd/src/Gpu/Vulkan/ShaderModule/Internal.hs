@@ -23,6 +23,4 @@ create (Device.D dvc) m =
 	M.create dvc (mCreateInfo m) (mAllocationCallbacksCreate m)
 
 destroy :: (Pointable d) => Device.D sd -> M.M sknd -> M n sknd c d -> IO ()
-destroy (Device.D dvc) mm m = do
-	putStrLn "Vk.ShaderModule.destroy"
-	M.destroy dvc mm (mAllocationCallbacksDestroy m)
+destroy (Device.D dvc) mm m = M.destroy dvc mm (mAllocationCallbacksDestroy m)
