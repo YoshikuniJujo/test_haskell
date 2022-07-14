@@ -71,7 +71,7 @@ data CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr
 	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
 	createInfoBasePipelineIndex :: Int32 }
 
-data CreateInfo' n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sbvsts' =
+data CreateInfo' n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfo' {
 		createInfoNext' :: Maybe n,
 		createInfoFlags' :: CreateFlags,
@@ -93,7 +93,7 @@ data CreateInfo' n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sbvsts' =
 		createInfoColorBlendState' ::
 			Maybe (ColorBlendState.CreateInfo n9),
 		createInfoDynamicState' :: Maybe (DynamicState.CreateInfo n10),
-		createInfoLayout' :: Layout.L sl,
+		createInfoLayout' :: V2 Layout.LL slsbtss,
 		createInfoRenderPass' :: RenderPass.R sr,
 		createInfoSubpass' :: Word32,
 		createInfoBasePipelineHandle' :: Maybe (V3 G sbvsts'),
@@ -177,7 +177,7 @@ createInfoToMiddle' dvc CreateInfo' {
 	createInfoDepthStencilState' = dss,
 	createInfoColorBlendState' = cbs,
 	createInfoDynamicState' = ds,
-	createInfoLayout' = Layout.L lyt,
+	createInfoLayout' = V2 (Layout.LL lyt),
 	createInfoRenderPass' = RenderPass.R rp,
 	createInfoSubpass' = sp,
 	createInfoBasePipelineHandle' = bph,
