@@ -762,15 +762,8 @@ createGraphicsPipeline dvc sce (Vk.RndrPass.R rp) f = do
 			shaderStages vertexInputInfo inputAssembly viewportState
 			rasterizer multisampling colorBlending
 			(Vk.Ppl.Layout.L ppllyt) (Vk.RndrPass.R rp)
-	pipelineInfoMiddle <- lift $ Vk.Ppl.Graphics.createInfoToMiddle' dvc pipelineInfo
 
 	g <- ask
-	{-
-	V2 gpl :...: HVNil <- lift
-		$ Vk.Ppl.Graphics.M.createGs'
-			dvcm Nothing (V12 pipelineInfoMiddle :...: HVNil) nil
-	lift $ writeIORef (globalGraphicsPipeline g) gpl
-	-}
 	lift $ Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pipelineInfo :...: HVNil)
 			nil nil \(V2 (Vk.Ppl.Graphics.G gpl) :...: HVNil) -> do
 		writeIORef (globalGraphicsPipeline g) gpl
