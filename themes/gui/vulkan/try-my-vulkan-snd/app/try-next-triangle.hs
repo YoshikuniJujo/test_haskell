@@ -179,7 +179,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 newGlobal :: IO Global
 newGlobal = do
 	ppllyt <- newIORef $ Vk.Ppl.Layout.M.L NullPtr
-	grppl <- newIORef Vk.Ppl.Graphics.M.GNull
+	grppl <- newIORef undefined
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	cbs <- newIORef []

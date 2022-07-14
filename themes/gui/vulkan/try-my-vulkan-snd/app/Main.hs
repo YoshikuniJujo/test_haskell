@@ -159,7 +159,7 @@ newGlobal w = do
 	scivs <- newIORef []
 	lyt <- newIORef $ Vk.Ppl.Lyt.L NullPtr
 	rp <- newIORef $ Vk.RndrPss.R NullPtr
-	gpl <- newIORef Vk.Ppl.GNull
+	gpl <- newIORef undefined
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CP.C NullPtr
 	cbs <- newIORef []
@@ -713,6 +713,7 @@ createGraphicsPipeline g@Global {
 	pipelineLayout <- Vk.Ppl.Lyt.create @() @() dvc pipelineLayoutInfo Nothing
 	writeIORef rPplLyt pipelineLayout
 	rp <- readIORef rrp
+	gn <- Vk.Ppl.gNull
 	let	pipelineInfo :: Vk.Ppl.CreateInfo
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader] '[(), ()] () () '[] () () () () () () () () () '[]
 		pipelineInfo = Vk.Ppl.CreateInfo {
@@ -734,7 +735,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.createInfoLayout = pipelineLayout,
 			Vk.Ppl.createInfoRenderPass = rp,
 			Vk.Ppl.createInfoSubpass = 0,
-			Vk.Ppl.createInfoBasePipelineHandle = Vk.Ppl.GNull,
+			Vk.Ppl.createInfoBasePipelineHandle = gn,
 			Vk.Ppl.createInfoBasePipelineIndex = - 1 }
 	gpl `Vk.Ppl.PCons` Vk.Ppl.PNil <-
 		Vk.Ppl.create @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @_ @()

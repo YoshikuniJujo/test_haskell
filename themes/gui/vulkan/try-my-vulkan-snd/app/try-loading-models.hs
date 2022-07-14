@@ -243,7 +243,7 @@ newGlobal = do
 	rp <- newIORef $ Vk.RenderPass.R NullPtr
 	dscstlyt <- newIORef $ Vk.DscSet.Lyt.L NullPtr
 	ppllyt <- newIORef $ Vk.Ppl.Layout.L NullPtr
-	grppl <- newIORef Vk.Ppl.Graphics.GNull
+	grppl <- newIORef undefined
 	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	cbs <- newIORef []
@@ -919,6 +919,7 @@ createGraphicsPipeline = do
 
 	ppllyt <- readGlobal globalPipelineLayout
 	rp <- readGlobal globalRenderPass
+	gn <- lift Vk.Ppl.Graphics.gNull
 	let	depthStencil = Vk.Ppl.DepthStencilSt.CreateInfo {
 			Vk.Ppl.DepthStencilSt.createInfoNext = Nothing,
 			Vk.Ppl.DepthStencilSt.createInfoFlags =
@@ -965,8 +966,7 @@ createGraphicsPipeline = do
 			Vk.Ppl.Graphics.createInfoLayout = ppllyt,
 			Vk.Ppl.Graphics.createInfoRenderPass = rp,
 			Vk.Ppl.Graphics.createInfoSubpass = 0,
-			Vk.Ppl.Graphics.createInfoBasePipelineHandle =
-				Vk.Ppl.Graphics.GNull,
+			Vk.Ppl.Graphics.createInfoBasePipelineHandle = gn,
 			Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 			Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 

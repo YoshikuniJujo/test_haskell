@@ -526,7 +526,7 @@ makePipeline dvc rp f = do
 		Vk.Ppl.Gr.createGs dvc Nothing (
 			pipelineCreateInfo `Vk.Ppl.Gr.CreateInfoCons`
 			Vk.Ppl.Gr.CreateInfoNil ) nil nil \case
-				(g `Vk.Ppl.Gr.GCons` _) -> print g >> f g
+				(g `Vk.Ppl.Gr.GCons` _) -> f g
 				_ -> error "never occur"
 
 [glslVertexShader|
