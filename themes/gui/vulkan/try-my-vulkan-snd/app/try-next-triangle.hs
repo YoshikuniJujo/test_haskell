@@ -107,7 +107,6 @@ import qualified Gpu.Vulkan.RenderPass.Type as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl.Graphics.M
 import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CommandPool
@@ -625,46 +624,27 @@ createPipelineLayout dvc g f = do
 	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt ->
 		f ppllyt `runReaderT` g
 
-initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Queue.Q -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImageView.I ss -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.M.L ->
-	ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq ext scivs rp ppllyt = do
-	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-	do
-		createFramebuffers dvc ext scivs' rp
-
-		createCommandPool qfis dvc
-		createVertexBuffer phdvc dvc gq
-		createCommandBuffers dvc
-		createSyncObjects dvc
-
 createGraphicsPipeline :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] -> ReaderT Global IO ()) ->
 	ReaderT Global IO ()
-createGraphicsPipeline dvc sce rp ppllyt f = do
-
-	let	pipelineInfo = makeGraphicsPipelineCreateInfo' sce rp ppllyt
-
-	g <- ask
-	lift $ Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pipelineInfo :...: HVNil)
-			nil nil \(V2 gpl@(Vk.Ppl.Graphics.G gplm) :...: HVNil) -> do
-		f gpl `runReaderT` g
+createGraphicsPipeline dvc sce rp ppllyt f = ask >>= \g ->
+	lift $ Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pplInfo :...: HVNil)
+			nil nil \(V2 gpl :...: HVNil) -> f gpl `runReaderT` g
+	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] -> IO ()
-recreateGraphicsPipeline dvc sce rp ppllyt gpls = do
-	let	pipelineInfo = makeGraphicsPipelineCreateInfo' sce rp ppllyt
-	Vk.Ppl.Graphics.recreateGs' dvc Nothing (V14 pipelineInfo :...: HVNil)
-		nil nil (V2 gpls :...: HVNil)
+recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs'
+	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
+	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
 
-makeGraphicsPipelineCreateInfo' ::
+makeGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.CreateInfo' () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
@@ -672,28 +652,13 @@ makeGraphicsPipelineCreateInfo' ::
 		'(	(), (Solo (AddType Vertex 'Vk.VertexInput.RateVertex)),
 			'[Cglm.Vec2, Cglm.Vec3] )
 		() () () () () () () () '(sl, '[]) sr '(sb, vs', ts')
-makeGraphicsPipelineCreateInfo' sce rp ppllyt = makeGraphicsPipelineCreateInfo
-	shaderStages vertexInputInfo inputAssembly (makeViewportState sce)
-	rasterizer multisampling colorBlending ppllyt rp
-
-makeGraphicsPipelineCreateInfo ::
-	HeteroVarList Vk.Ppl.ShdrSt.CreateInfo' nnskndcdvss ->
-	Vk.Ppl.VertexInputSt.CreateInfo n2 vs' ts ->
-	Vk.Ppl.InpAsmbSt.CreateInfo n3 -> Vk.Ppl.ViewportSt.CreateInfo n5 ->
-	Vk.Ppl.RstSt.CreateInfo n6 -> Vk.Ppl.MulSmplSt.CreateInfo n7 ->
-	Vk.Ppl.ClrBlndSt.CreateInfo n9 -> Vk.Ppl.Layout.LL sl '[] ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Graphics.CreateInfo'
-		n nnskndcdvss '(n2, vs', ts) n3 n4 n5 n6 n7 n8 n9 n10 '(sl, '[]) sr '(sb, vs'', ts')
-makeGraphicsPipelineCreateInfo
-	shaderStages vertexInputInfo inputAssembly viewportState
-	rasterizer multisampling colorBlending ppllyt
-	rp = Vk.Ppl.Graphics.CreateInfo' {
+makeGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags' = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages' = shaderStages,
 	Vk.Ppl.Graphics.createInfoVertexInputState' = Just $ V3 vertexInputInfo,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState' = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportState' = Just viewportState,
+	Vk.Ppl.Graphics.createInfoViewportState' = Just $ makeViewportState sce,
 	Vk.Ppl.Graphics.createInfoRasterizationState' = Just rasterizer,
 	Vk.Ppl.Graphics.createInfoMultisampleState' = Just multisampling,
 	Vk.Ppl.Graphics.createInfoDepthStencilState' = Nothing,
@@ -705,6 +670,26 @@ makeGraphicsPipelineCreateInfo
 	Vk.Ppl.Graphics.createInfoBasePipelineHandle' = Nothing,
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex' = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState' = Nothing }
+
+shaderStages :: HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfo) '[
+	'((), (), 'GlslVertexShader, (), (), ()),
+	'((), (), 'GlslFragmentShader, (), (), ()) ]
+shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
+	where
+	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
+		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
+		Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
+		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
+		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
 makeViewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
 makeViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
@@ -721,27 +706,6 @@ makeViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
 	scissor = Vk.C.Rect2d {
 		Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 		Vk.C.rect2dExtent = sce }
-
-vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-			Vk.Ppl.ShdrSt.createInfoNext = Nothing,
-			Vk.Ppl.ShdrSt.createInfoFlags = def,
-			Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
-			Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule,
-			Vk.Ppl.ShdrSt.createInfoName = "main",
-			Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-
-fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-			Vk.Ppl.ShdrSt.createInfoNext = Nothing,
-			Vk.Ppl.ShdrSt.createInfoFlags = def,
-			Vk.Ppl.ShdrSt.createInfoStage =
-				Vk.ShaderStageFragmentBit,
-			Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
-			Vk.Ppl.ShdrSt.createInfoName = "main",
-			Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-
-shaderStages =
-			V6 vertShaderStageInfo :...:
-			V6 fragShaderStageInfo :...: HVNil
 
 vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			() (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
@@ -810,6 +774,20 @@ colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
 				[colorBlendAttachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
+
+initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.Queue.Q -> Vk.C.Extent2d ->
+	HeteroVarList Vk.ImageView.I ss -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.M.L ->
+	ReaderT Global IO ()
+initVulkan phdvc qfis dvc gq ext scivs rp ppllyt = do
+	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
+	do
+		createFramebuffers dvc ext scivs' rp
+
+		createCommandPool qfis dvc
+		createVertexBuffer phdvc dvc gq
+		createCommandBuffers dvc
+		createSyncObjects dvc
 
 createFramebuffers :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> ReaderT Global IO ()
