@@ -154,7 +154,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalCommandPool :: IORef Vk.CmdPool.M.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
 		Solo (AddType Vertex 'Vk.VertexInput.RateVertex) )],
 	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
@@ -173,7 +172,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	cp <- newIORef $ Vk.CmdPool.M.C NullPtr
 	cbs <- newIORef []
 	iass <- newIORef []
 	rfss <- newIORef []
@@ -183,7 +181,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.M.MemoryList 0 NullPtr
 	pure Global {
-		globalCommandPool = cp,
 		globalCommandBuffers = cbs,
 		globalImageAvailableSemaphores = iass,
 		globalRenderFinishedSemaphores = rfss,
@@ -284,9 +281,8 @@ run win inst = ask >>= \g ->
 		createPipelineLayout dvc g \ppllyt ->
 		createGraphicsPipeline dvc ext rp ppllyt \gpl ->
 		createFramebuffers dvc ext scivs rp \fbs ->
-		createCommandPool qfis dvc \(Vk.CmdPool.C cp) -> do
-		writeGlobal globalCommandPool cp
-		initVulkan phdvc dvc gq
+		createCommandPool qfis dvc \cp@(Vk.CmdPool.C cpm) -> do
+		initVulkan phdvc dvc gq cp
 		mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
 		cleanup dvc
 
@@ -833,15 +829,15 @@ createCommandPool qfis dvc f = ask >>= \g ->
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 initVulkan :: Vk.PhysicalDevice.P ->
-	Vk.Device.D sd -> Vk.Queue.Q -> ReaderT Global IO ()
-initVulkan phdvc dvc gq = do
-	createVertexBuffer phdvc dvc gq
-	createCommandBuffers dvc
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> ReaderT Global IO ()
+initVulkan phdvc dvc gq cp = do
+	createVertexBuffer phdvc dvc gq cp
+	createCommandBuffers dvc cp
 	createSyncObjects dvc
 
-createVertexBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q ->
-	ReaderT Global IO ()
-createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq = do
+createVertexBuffer :: Vk.PhysicalDevice.P ->
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> ReaderT Global IO ()
+createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq cp = do
 	(sb, sbm) <- createBuffer phdvc dvc (length vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
@@ -851,7 +847,7 @@ createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq = do
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
-	copyBuffer dvc gq sb vb (length vertices)
+	copyBuffer dvc gq cp sb vb (length vertices)
 	lift do	Vk.Buffer.List.destroy dvcm sb nil
 		Vk.Memory.List.free dvcm sbm nil
 	writeGlobal globalVertexBuffer vb
@@ -883,10 +879,9 @@ createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 	pure (b, bm)
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
-	Vk.Device.D sd -> Vk.Queue.Q ->
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
-copyBuffer (Vk.Device.D dvc) gq srcBuffer dstBuffer ln = do
-	cp <- readGlobal globalCommandPool
+copyBuffer (Vk.Device.D dvc) gq (Vk.CmdPool.C cp) srcBuffer dstBuffer ln = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
 			Vk.CommandBuffer.allocateInfoLevel =
@@ -937,9 +932,8 @@ suitable typeFilter properties memProperties i =
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
 
-createCommandBuffers :: Vk.Device.D sd -> ReaderT Global IO ()
-createCommandBuffers (Vk.Device.D dvc) = do
-	cp <- readGlobal globalCommandPool
+createCommandBuffers :: Vk.Device.D sd -> Vk.CmdPool.C sc -> ReaderT Global IO ()
+createCommandBuffers (Vk.Device.D dvc) (Vk.CmdPool.C cp) = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
 			Vk.CommandBuffer.allocateInfoCommandPool = cp,
