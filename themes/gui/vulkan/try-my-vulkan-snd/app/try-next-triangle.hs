@@ -784,13 +784,14 @@ createFramebuffers :: Vk.Device.D sd ->
 createFramebuffers _ _ HVNil _ f = f HVNil
 createFramebuffers dvc sce (sciv :...: scivs) rp f = ask >>= \g ->
 	lift $ createFramebuffer1 dvc sce rp sciv \fb ->
-	(createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs)) `runReaderT` g
+	(createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs))
+		`runReaderT` g
 
 createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImageView.I si -> (forall sf . Vk.Framebuffer.F sf -> IO a) -> IO a
 createFramebuffer1 dvc sce rp attachment =
 	Vk.Framebuffer.create @() dvc framebufferInfo nil nil
-	where framebufferInfo = makeFramebufferCreateInfo' sce rp attachment
+	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
@@ -800,46 +801,22 @@ class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 instance RecreateFramebuffers '[] '[] where
 	recreateFramebuffers _dvc _sce HVNil _rp HVNil = pure ()
 
-instance RecreateFramebuffers sis sfs => RecreateFramebuffers (si ': sis) (sf ': sfs) where
+instance RecreateFramebuffers sis sfs =>
+	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce (sciv :...: scivs) rp (fb :...: fbs) = do
 		recreateFramebuffer1 dvc sce rp sciv fb
 		recreateFramebuffers dvc sce scivs rp fbs
-
-{-
-recreateFramebuffers :: SameNumber sis sfs => Vk.Device.D sd -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
-	HeteroVarList Vk.Framebuffer.F sfs -> IO ()
-recreateFramebuffers _dvc _sce HVNil _rp HVNil = pure ()
-recreateFramebuffers dvc sce (sciv :...: scivs) rp (fb :...: fbs) = do
-	recreateFramebuffer1 dvc sce rp sciv fb
-	recreateFramebuffers dvc sce scivs rp fbs
-	-}
 
 recreateFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImageView.I si -> Vk.Framebuffer.F sf -> IO ()
 recreateFramebuffer1 dvc sce rp attachment fb =
 	Vk.Framebuffer.recreate @() dvc framebufferInfo nil nil fb
-	where framebufferInfo = makeFramebufferCreateInfo' sce rp attachment
+	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
 
 makeFramebufferCreateInfo ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.M.I ->
-	Vk.Framebuffer.M.CreateInfo ()
-makeFramebufferCreateInfo
-	sce (Vk.RndrPass.R rp) attachment = Vk.Framebuffer.M.CreateInfo {
-	Vk.Framebuffer.M.createInfoNext = Nothing,
-	Vk.Framebuffer.M.createInfoFlags = zeroBits,
-	Vk.Framebuffer.M.createInfoRenderPass = rp,
-	Vk.Framebuffer.M.createInfoAttachments = [attachment],
-	Vk.Framebuffer.M.createInfoWidth = w,
-	Vk.Framebuffer.M.createInfoHeight = h,
-	Vk.Framebuffer.M.createInfoLayers = 1 }
-	where
-	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
-
-makeFramebufferCreateInfo' ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.I si ->
 	Vk.Framebuffer.CreateInfo () sr '[si]
-makeFramebufferCreateInfo' sce rp attachment = Vk.Framebuffer.CreateInfo {
+makeFramebufferCreateInfo sce rp attachment = Vk.Framebuffer.CreateInfo {
 	Vk.Framebuffer.createInfoNext = Nothing,
 	Vk.Framebuffer.createInfoFlags = zeroBits,
 	Vk.Framebuffer.createInfoRenderPass = rp,
