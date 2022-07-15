@@ -106,6 +106,7 @@ import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer.M
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
@@ -151,7 +152,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.M.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
 		Solo (AddType Vertex 'Vk.VertexInput.RateVertex) )],
@@ -171,7 +171,6 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	scfbs <- newIORef []
 	cp <- newIORef $ Vk.CommandPool.C NullPtr
 	cbs <- newIORef []
 	iass <- newIORef []
@@ -182,7 +181,6 @@ newGlobal = do
 	vb <- newIORef $ Vk.Buffer.List.B 0 NullPtr
 	vbm <- newIORef $ Vk.Device.M.MemoryList 0 NullPtr
 	pure Global {
-		globalSwapChainFramebuffers = scfbs,
 		globalCommandPool = cp,
 		globalCommandBuffers = cbs,
 		globalImageAvailableSemaphores = iass,
@@ -283,9 +281,11 @@ run win inst = ask >>= \g ->
 		lift $ createRenderPass dvc scifmt \rp ->
 		createPipelineLayout dvc g \ppllyt -> do
 		createGraphicsPipeline dvc ext rp ppllyt \gpl -> do
-			initVulkan phdvc qfis dvc gq ext scivs rp
-			mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl
-			cleanup dvc
+			let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
+			createFramebuffers dvc ext scivs' rp \fbs -> do
+				initVulkan phdvc qfis dvc gq
+				mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
+				cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -767,33 +767,27 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Queue.Q -> Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I ss ->
-	Vk.RndrPass.R sr -> ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq ext scivs rp = do
-	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-	createFramebuffers dvc ext scivs' rp \fbs -> do
-		writeGlobal globalSwapChainFramebuffers fbs
-
-		createCommandPool qfis dvc
-		createVertexBuffer phdvc dvc gq
-		createCommandBuffers dvc
-		createSyncObjects dvc
+initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices ->
+	Vk.Device.D sd -> Vk.Queue.Q -> ReaderT Global IO ()
+initVulkan phdvc qfis dvc gq = do
+	createCommandPool qfis dvc
+	createVertexBuffer phdvc dvc gq
+	createCommandBuffers dvc
+	createSyncObjects dvc
 
 createFramebuffers :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
-	([Vk.Framebuffer.M.F] -> ReaderT Global IO a) -> ReaderT Global IO a
-createFramebuffers _ _ [] _ f = f []
+	(forall sfs . HeteroVarList Vk.Framebuffer.F sfs -> ReaderT Global IO a) -> ReaderT Global IO a
+createFramebuffers _ _ [] _ f = f HVNil
 createFramebuffers dvc sce (sciv : scivs) rp f = ask >>= \g ->
 	lift $ createFramebuffer1 dvc sce rp (Vk.ImageView.I sciv) \fb ->
-	(createFramebuffers dvc sce scivs rp \fbs -> f (fb : fbs)) `runReaderT` g
+	(createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs)) `runReaderT` g
 
 createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.I si -> (Vk.Framebuffer.M.F -> IO a) -> IO a
-createFramebuffer1 (Vk.Device.D dvc) sce rp attachment f =
-	f =<< Vk.Framebuffer.M.create @() dvc framebufferInfo nil
-	where framebufferInfo = Vk.Framebuffer.createInfoToMiddle
-		$ makeFramebufferCreateInfo' sce rp attachment
+	Vk.ImageView.I si -> (forall sf . Vk.Framebuffer.F sf -> IO a) -> IO a
+createFramebuffer1 dvc sce rp attachment =
+	Vk.Framebuffer.create @() dvc framebufferInfo nil nil
+	where framebufferInfo = makeFramebufferCreateInfo' sce rp attachment
 
 recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
 	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> [Vk.Framebuffer.M.F] -> IO ()
@@ -982,16 +976,17 @@ recordCommandBuffer ::
 	Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
+	HeteroVarList Vk.Framebuffer.F sfs ->
 	Word32 -> ReaderT Global IO ()
-recordCommandBuffer cb sce (Vk.RndrPass.R rp) (Vk.Ppl.Graphics.G gpl) imageIndex = do
+recordCommandBuffer cb sce (Vk.RndrPass.R rp) (Vk.Ppl.Graphics.G gpl) fbs imageIndex = do
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {
 			Vk.CommandBuffer.beginInfoNext = Nothing,
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageFlagsZero,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
-	scfbs <- readGlobal globalSwapChainFramebuffers
-	let	renderPassInfo = Vk.RndrPass.M.BeginInfo {
+	let	scfbs = heteroVarListToList (\(Vk.Framebuffer.F f) -> f) fbs
+		renderPassInfo = Vk.RndrPass.M.BeginInfo {
 			Vk.RndrPass.M.beginInfoNext = Nothing,
 			Vk.RndrPass.M.beginInfoRenderPass = rp,
 			Vk.RndrPass.M.beginInfoFramebuffer =
@@ -1021,14 +1016,15 @@ mainLoop ::
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
+	HeteroVarList Vk.Framebuffer.F sfs ->
 	ReaderT Global IO ()
-mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs rp ppllyt gpl = do
+mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs rp ppllyt gpl fbs = do
 	($ ext0) $ fix \loop ext -> do
 		lift Glfw.pollEvents
 		g <- ask
 		let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs' rp ppllyt gpl (\e -> loop e `runReaderT` g)
-			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs' rp ppllyt gpl (\e -> loop e `runReaderT` g)
+		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs' rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
+			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs' rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
 	lift $ Vk.Device.M.waitIdle dvcm
 
 runLoop :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhysicalDevice.P ->
@@ -1037,10 +1033,11 @@ runLoop :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhysicalDevice.P ->
 	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
+	HeteroVarList Vk.Framebuffer.F sfs ->
 	(Vk.C.Extent2d -> IO ()) ->
 	IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl (\e -> lift $ loop e) `runReaderT` g
+runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs loop = do
+	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame ::
@@ -1051,8 +1048,9 @@ drawFrame ::
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
+	HeteroVarList Vk.Framebuffer.F sfs ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl loop = do
+drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs loop = do
 	cf <- readGlobal globalCurrentFrame
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
 	lift $ Vk.Fence.waitForFs dvcm [iff] True maxBound
@@ -1062,7 +1060,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc
 	lift $ Vk.Fence.resetFs dvcm [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers
 	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
-	recordCommandBuffer cb ext rp gpl imageIndex
+	recordCommandBuffer cb ext rp gpl fbs imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
@@ -1077,7 +1075,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, imageIndex)] }
 	g <- ask
-	lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl (\e -> loop e `runReaderT` g) . catchAndSerialize
+	lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g) . catchAndSerialize
 		$ Vk.Khr.queuePresent @() pq presentInfo
 	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
@@ -1093,8 +1091,9 @@ catchAndRecreateSwapChain ::
 	Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
+	HeteroVarList Vk.Framebuffer.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl loop act = catchJust
+catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs loop act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
@@ -1104,7 +1103,7 @@ catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl lo
 		if fbr
 		then do
 			writeIORef (globalFramebufferResized g) False
-			e <- recreateSwapChainAndOthers win sfc phdvc qfis dvc sc scivs rp ppllyt gpl `runReaderT` g
+			e <- recreateSwapChainAndOthers win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs `runReaderT` g
 			loop e
 		else loop ext)
 
@@ -1119,9 +1118,10 @@ recreateSwapChainAndOthers ::
 	Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
+	HeteroVarList Vk.Framebuffer.F sfs ->
 	ReaderT Global IO Vk.C.Extent2d
 recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
-	(Vk.Khr.Swapchain.S sc) scivs rp ppllyt gpl = do
+	(Vk.Khr.Swapchain.S sc) scivs rp ppllyt gpl fbs = do
 	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			Glfw.waitEvents
@@ -1129,25 +1129,18 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
 			pure $ wd == 0 || hg == 0
 	lift $ Vk.Device.M.waitIdle dvcm
 
-	scfbs <- readGlobal globalSwapChainFramebuffers
+	let	scfbs' = heteroVarListToList (\(Vk.Framebuffer.F f) -> f) fbs
 
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc $ Vk.Khr.Swapchain.S sc
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
 	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm sc
 	recreateImageViews dvc scifmt imgs scivs
 	lift $ recreateGraphicsPipeline dvc ext rp ppllyt gpl
-	lift $ recreateFramebuffers dvc ext scivs rp scfbs
+	lift $ recreateFramebuffers dvc ext scivs rp scfbs'
 	pure ext
 
-cleanupSwapChain :: Vk.Device.D sd -> ReaderT Global IO ()
-cleanupSwapChain (Vk.Device.D dvc) = do
-	scfbs <- readGlobal globalSwapChainFramebuffers
-	lift $ flip (Vk.Framebuffer.M.destroy dvc) nil `mapM_` scfbs
-
 cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
-cleanup dvc@(Vk.Device.D dvcm) = do
-	cleanupSwapChain dvc
-
+cleanup _dvc@(Vk.Device.D dvcm) = do
 	vb <- readGlobal globalVertexBuffer
 	lift $ Vk.Buffer.List.destroy dvcm vb nil
 	vbm <- readGlobal globalVertexBufferMemory
