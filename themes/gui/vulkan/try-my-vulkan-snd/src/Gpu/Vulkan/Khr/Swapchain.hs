@@ -25,3 +25,5 @@ recreate :: (Pointable n, Pointable c, Pointable d) =>
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S ssc -> IO ()
 recreate (Device.D dvc) ci macc macd (S sc) = M.recreate dvc ci macc macd sc
+
+-- getImages :: Device.D sd -> S ss -> IO

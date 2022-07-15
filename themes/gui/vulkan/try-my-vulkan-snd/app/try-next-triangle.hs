@@ -281,8 +281,7 @@ run win inst = ask >>= \g ->
 		lift $ createRenderPass dvc scifmt \rp ->
 		createPipelineLayout dvc g \ppllyt -> do
 		createGraphicsPipeline dvc ext rp ppllyt \gpl -> do
-			let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-			createFramebuffers dvc ext scivs' rp \fbs -> do
+			createFramebuffers dvc ext scivs rp \fbs -> do
 				initVulkan phdvc qfis dvc gq
 				mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
 				cleanup dvc
@@ -776,11 +775,13 @@ initVulkan phdvc qfis dvc gq = do
 	createSyncObjects dvc
 
 createFramebuffers :: Vk.Device.D sd ->
-	Vk.C.Extent2d -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
-	(forall sfs . HeteroVarList Vk.Framebuffer.F sfs -> ReaderT Global IO a) -> ReaderT Global IO a
-createFramebuffers _ _ [] _ f = f HVNil
-createFramebuffers dvc sce (sciv : scivs) rp f = ask >>= \g ->
-	lift $ createFramebuffer1 dvc sce rp (Vk.ImageView.I sciv) \fb ->
+	Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
+	(forall sfs .
+		HeteroVarList Vk.Framebuffer.F sfs -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+createFramebuffers _ _ HVNil _ f = f HVNil
+createFramebuffers dvc sce (sciv :...: scivs) rp f = ask >>= \g ->
+	lift $ createFramebuffer1 dvc sce rp sciv \fb ->
 	(createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs)) `runReaderT` g
 
 createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -790,9 +791,11 @@ createFramebuffer1 dvc sce rp attachment =
 	where framebufferInfo = makeFramebufferCreateInfo' sce rp attachment
 
 recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
-	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> [Vk.Framebuffer.M.F] -> IO ()
+	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
+	HeteroVarList Vk.Framebuffer.F sfs -> IO ()
 recreateFramebuffers dvc sce scivs rp fbs =
-	zipWithM_ (recreateFramebuffer1 dvc sce rp) scivs fbs
+	zipWithM_ (recreateFramebuffer1 dvc sce rp) scivs fbs'
+	where fbs' = heteroVarListToList (\(Vk.Framebuffer.F f) -> f) fbs
 
 recreateFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImageView.M.I -> Vk.Framebuffer.M.F -> IO ()
@@ -1129,14 +1132,12 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
 			pure $ wd == 0 || hg == 0
 	lift $ Vk.Device.M.waitIdle dvcm
 
-	let	scfbs' = heteroVarListToList (\(Vk.Framebuffer.F f) -> f) fbs
-
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc $ Vk.Khr.Swapchain.S sc
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
 	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm sc
 	recreateImageViews dvc scifmt imgs scivs
 	lift $ recreateGraphicsPipeline dvc ext rp ppllyt gpl
-	lift $ recreateFramebuffers dvc ext scivs rp scfbs'
+	lift $ recreateFramebuffers dvc ext scivs rp fbs
 	pure ext
 
 cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
