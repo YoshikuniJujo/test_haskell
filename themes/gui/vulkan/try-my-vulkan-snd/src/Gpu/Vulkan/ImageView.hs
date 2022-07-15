@@ -54,3 +54,10 @@ create :: (Pointable n, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\i -> M.destroy dvc i macd) (f . I)
+
+recreate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D sd -> CreateInfo si sm n ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	I s -> IO ()
+recreate (Device.D dvc) ci macc macd (I i) =
+	M.recreate dvc (createInfoToMiddle ci) macc macd i

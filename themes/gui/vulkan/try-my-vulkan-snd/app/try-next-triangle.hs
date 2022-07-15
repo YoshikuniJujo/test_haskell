@@ -534,10 +534,9 @@ recreateImageViews _ _ _ _ =
 
 recreateImageView1 :: Vk.Device.D sd ->
 	Vk.Image.Binded ss ss -> Vk.Format -> Vk.ImageView.I siv -> ReaderT Global IO ()
-recreateImageView1 (Vk.Device.D dvcm) sci scifmt (Vk.ImageView.I iv) = do
+recreateImageView1 dvc sci scifmt iv = do
 	let	createInfo = makeImageViewCreateInfo sci scifmt
-	lift $ Vk.ImageView.M.recreate @() dvcm
-		(Vk.ImageView.createInfoToMiddle createInfo) nil nil iv
+	lift $ Vk.ImageView.recreate @() dvc createInfo nil nil iv
 
 makeImageViewCreateInfo ::
 	Vk.Image.Binded ss ss -> Vk.Format -> Vk.ImageView.CreateInfo ss ss n
