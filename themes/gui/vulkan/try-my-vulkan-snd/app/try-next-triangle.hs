@@ -88,15 +88,13 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
-import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MulSmplSt
+import qualified Gpu.Vulkan.Pipeline.MultisampleState as Vk.Ppl.MltSmplSt
 import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Layout
-import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Layout
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Vk.Ppl.Layout.M
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -283,9 +281,9 @@ run win inst = ask >>= \g ->
 	imgs <- lift $ Vk.Khr.Swapchain.M.getImages dvcm scm
 	createImageViews dvc scifmt imgs \scivs ->
 		lift $ createRenderPass dvc scifmt \rp ->
-		createPipelineLayout dvc g \ppllyt@(Vk.Ppl.Layout.LL ppllytm) -> do
+		createPipelineLayout dvc g \ppllyt -> do
 		createGraphicsPipeline dvc ext rp ppllyt \gpl -> do
-			initVulkan phdvc qfis dvc gq ext scivs rp ppllytm
+			initVulkan phdvc qfis dvc gq ext scivs rp
 			mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl
 			cleanup dvc
 
@@ -691,6 +689,20 @@ shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
+vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
+	() (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
+	'[Cglm.Vec2, Cglm.Vec3]
+vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
+	Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
+	Vk.Ppl.VertexInputSt.createInfoFlags = zeroBits }
+
+inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
+inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
+	Vk.Ppl.InpAsmbSt.createInfoNext = Nothing,
+	Vk.Ppl.InpAsmbSt.createInfoFlags = zeroBits,
+	Vk.Ppl.InpAsmbSt.createInfoTopology = Vk.PrimitiveTopologyTriangleList,
+	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
+
 makeViewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
 makeViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
 	Vk.Ppl.ViewportSt.createInfoNext = Nothing,
@@ -704,82 +716,61 @@ makeViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
 		Vk.C.viewportHeight = fromIntegral $ Vk.C.extent2dHeight sce,
 		Vk.C.viewportMinDepth = 0, Vk.C.viewportMaxDepth = 1 }
 	scissor = Vk.C.Rect2d {
-		Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-		Vk.C.rect2dExtent = sce }
+		Vk.C.rect2dOffset = Vk.C.Offset2d 0 0, Vk.C.rect2dExtent = sce }
 
-vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
-			() (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
-			'[Cglm.Vec2, Cglm.Vec3]
-vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
-			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
-			Vk.Ppl.VertexInputSt.createInfoFlags = zeroBits }
-
-inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
-			Vk.Ppl.InpAsmbSt.createInfoNext = Nothing,
-			Vk.Ppl.InpAsmbSt.createInfoFlags = zeroBits,
-			Vk.Ppl.InpAsmbSt.createInfoTopology =
-				Vk.PrimitiveTopologyTriangleList,
-			Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable =
-				False }
-
+rasterizer :: Vk.Ppl.RstSt.CreateInfo ()
 rasterizer = Vk.Ppl.RstSt.CreateInfo {
-			Vk.Ppl.RstSt.createInfoNext = Nothing,
-			Vk.Ppl.RstSt.createInfoFlags = zeroBits,
-			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
-			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
-			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
-			Vk.Ppl.RstSt.createInfoLineWidth = 1,
-			Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
-			Vk.Ppl.RstSt.createInfoFrontFace =
-				Vk.FrontFaceClockwise,
-			Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
-			Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
-			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
-			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+	Vk.Ppl.RstSt.createInfoNext = Nothing,
+	Vk.Ppl.RstSt.createInfoFlags = zeroBits,
+	Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
+	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
+	Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
+	Vk.Ppl.RstSt.createInfoLineWidth = 1,
+	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceClockwise,
+	Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
+	Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
+	Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
+	Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
 
-multisampling = Vk.Ppl.MulSmplSt.CreateInfo {
-			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
-			Vk.Ppl.MulSmplSt.createInfoFlags = zeroBits,
-			Vk.Ppl.MulSmplSt.createInfoSampleShadingEnable = False,
-			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
-				Vk.Sample.CountAndMask
-					Vk.Sample.Count1Bit Nothing,
-			Vk.Ppl.MulSmplSt.createInfoMinSampleShading = 1,
-			Vk.Ppl.MulSmplSt.createInfoAlphaToCoverageEnable =
-				False,
-			Vk.Ppl.MulSmplSt.createInfoAlphaToOneEnable = False }
+multisampling :: Vk.Ppl.MltSmplSt.CreateInfo ()
+multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
+	Vk.Ppl.MltSmplSt.createInfoNext = Nothing,
+	Vk.Ppl.MltSmplSt.createInfoFlags = zeroBits,
+	Vk.Ppl.MltSmplSt.createInfoSampleShadingEnable = False,
+	Vk.Ppl.MltSmplSt.createInfoRasterizationSamplesAndMask =
+		Vk.Sample.CountAndMask Vk.Sample.Count1Bit Nothing,
+	Vk.Ppl.MltSmplSt.createInfoMinSampleShading = 1,
+	Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
+	Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
 
-colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
-			Vk.Ppl.ClrBlndAtt.stateColorWriteMask =
-				Vk.ClrCmp.RBit .|. Vk.ClrCmp.GBit .|.
-				Vk.ClrCmp.BBit .|. Vk.ClrCmp.ABit,
-			Vk.Ppl.ClrBlndAtt.stateBlendEnable = False,
-			Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor =
-				Vk.BlendFactorOne,
-			Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor =
-				Vk.BlendFactorZero,
-			Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
-			Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor =
-				Vk.BlendFactorOne,
-			Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor =
-				Vk.BlendFactorZero,
-			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
-
+colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo ()
 colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
-			Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
-			Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
-			Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
-			Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,
-			Vk.Ppl.ClrBlndSt.createInfoAttachments =
-				[colorBlendAttachment],
-			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
-				fromJust $ rgbaDouble 0 0 0 0 }
+	Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+	Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
+	Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
+	Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,
+	Vk.Ppl.ClrBlndSt.createInfoAttachments = [colorBlendAttachment],
+	Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
+		fromJust $ rgbaDouble 0 0 0 0 }
+
+colorBlendAttachment :: Vk.Ppl.ClrBlndAtt.State
+colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
+	Vk.Ppl.ClrBlndAtt.stateColorWriteMask =
+		Vk.ClrCmp.RBit .|. Vk.ClrCmp.GBit .|.
+		Vk.ClrCmp.BBit .|. Vk.ClrCmp.ABit,
+	Vk.Ppl.ClrBlndAtt.stateBlendEnable = False,
+	Vk.Ppl.ClrBlndAtt.stateSrcColorBlendFactor = Vk.BlendFactorOne,
+	Vk.Ppl.ClrBlndAtt.stateDstColorBlendFactor = Vk.BlendFactorZero,
+	Vk.Ppl.ClrBlndAtt.stateColorBlendOp = Vk.BlendOpAdd,
+	Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
+	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
+	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Queue.Q -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImageView.I ss -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.M.L ->
-	ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq ext scivs rp ppllyt = do
+	Vk.Queue.Q -> Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I ss ->
+	Vk.RndrPass.R sr -> ReaderT Global IO ()
+initVulkan phdvc qfis dvc gq ext scivs rp = do
 	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
 	do
 		createFramebuffers dvc ext scivs' rp
