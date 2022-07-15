@@ -105,8 +105,8 @@ import qualified Gpu.Vulkan.RenderPass.Type as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer
-import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
+import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer.M
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
@@ -151,7 +151,7 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
+	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.M.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
 		Solo (AddType Vertex 'Vk.VertexInput.RateVertex) )],
@@ -787,34 +787,34 @@ createFramebuffers dvc sce scivs rp =
 		=<< (lift . createFramebuffer1 dvc sce rp) `mapM` scivs
 
 createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.M.I -> IO Vk.Framebuffer.F
+	Vk.ImageView.M.I -> IO Vk.Framebuffer.M.F
 createFramebuffer1 (Vk.Device.D dvc) sce rp attachment =
-	Vk.Framebuffer.create @() dvc framebufferInfo nil
+	Vk.Framebuffer.M.create @() dvc framebufferInfo nil
 	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
 
 recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
-	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> [Vk.Framebuffer.F] -> IO ()
+	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> [Vk.Framebuffer.M.F] -> IO ()
 recreateFramebuffers dvc sce scivs rp fbs =
 	zipWithM_ (recreateFramebuffer1 dvc sce rp) scivs fbs
 
 recreateFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.M.I -> Vk.Framebuffer.F -> IO ()
+	Vk.ImageView.M.I -> Vk.Framebuffer.M.F -> IO ()
 recreateFramebuffer1 (Vk.Device.D dvc) sce rp attachment fb =
-	Vk.Framebuffer.recreate @() dvc framebufferInfo nil nil fb
+	Vk.Framebuffer.M.recreate @() dvc framebufferInfo nil nil fb
 	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
 
 makeFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.M.I ->
-	Vk.Framebuffer.CreateInfo ()
+	Vk.Framebuffer.M.CreateInfo ()
 makeFramebufferCreateInfo
-	sce (Vk.RndrPass.R rp) attachment = Vk.Framebuffer.CreateInfo {
-	Vk.Framebuffer.createInfoNext = Nothing,
-	Vk.Framebuffer.createInfoFlags = Vk.Framebuffer.CreateFlagsZero,
-	Vk.Framebuffer.createInfoRenderPass = rp,
-	Vk.Framebuffer.createInfoAttachments = [attachment],
-	Vk.Framebuffer.createInfoWidth = w,
-	Vk.Framebuffer.createInfoHeight = h,
-	Vk.Framebuffer.createInfoLayers = 1 }
+	sce (Vk.RndrPass.R rp) attachment = Vk.Framebuffer.M.CreateInfo {
+	Vk.Framebuffer.M.createInfoNext = Nothing,
+	Vk.Framebuffer.M.createInfoFlags = zeroBits,
+	Vk.Framebuffer.M.createInfoRenderPass = rp,
+	Vk.Framebuffer.M.createInfoAttachments = [attachment],
+	Vk.Framebuffer.M.createInfoWidth = w,
+	Vk.Framebuffer.M.createInfoHeight = h,
+	Vk.Framebuffer.M.createInfoLayers = 1 }
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
@@ -1125,7 +1125,7 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
 cleanupSwapChain :: Vk.Device.D sd -> ReaderT Global IO ()
 cleanupSwapChain (Vk.Device.D dvc) = do
 	scfbs <- readGlobal globalSwapChainFramebuffers
-	lift $ flip (Vk.Framebuffer.destroy dvc) nil `mapM_` scfbs
+	lift $ flip (Vk.Framebuffer.M.destroy dvc) nil `mapM_` scfbs
 
 cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
 cleanup dvc@(Vk.Device.D dvcm) = do

@@ -3,7 +3,9 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Framebuffer (F, create, CreateInfo(..)) where
+module Gpu.Vulkan.Framebuffer (F, create, CreateInfo(..)
+	, createInfoToMiddle -- <-- temporary
+	) where
 
 import Foreign.Pointable
 import Control.Exception
