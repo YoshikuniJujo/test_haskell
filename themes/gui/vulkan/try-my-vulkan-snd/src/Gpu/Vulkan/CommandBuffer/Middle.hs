@@ -65,7 +65,6 @@ data BeginInfo n n' = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoFlags :: UsageFlags,
 	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
-	deriving Show
 
 beginInfoNil :: BeginInfo () ()
 beginInfoNil = def
@@ -100,7 +99,6 @@ data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoOcclusionQueryEnable :: Bool,
 	inheritanceInfoQueryFlags :: QueryControlFlags,
 	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
-	deriving Show
 
 inheritanceInfoToCore :: Pointable n =>
 	InheritanceInfo n -> ContT r IO (Ptr C.InheritanceInfo)
@@ -108,18 +106,19 @@ inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoNext = mnxt,
 	inheritanceInfoRenderPass = RenderPass.R rp,
 	inheritanceInfoSubpass = sp,
-	inheritanceInfoFramebuffer = Framebuffer.F fb,
+	inheritanceInfoFramebuffer = fb,
 	inheritanceInfoOcclusionQueryEnable = oqe,
 	inheritanceInfoQueryFlags = QueryControlFlagBits qf,
 	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
+	fb' <- lift $ Framebuffer.fToCore fb
 	let	C.InheritanceInfo_ fInheritanceInfo =  C.InheritanceInfo {
 			C.inheritanceInfoSType = (),
 			C.inheritanceInfoPNext = pnxt,
 			C.inheritanceInfoRenderPass = rp,
 			C.inheritanceInfoSubpass = sp,
-			C.inheritanceInfoFramebuffer = fb,
+			C.inheritanceInfoFramebuffer = fb',
 			C.inheritanceInfoOcclusionQueryEnable = boolToBool32 oqe,
 			C.inheritanceInfoQueryFlags = qf,
 			C.inheritanceInfoPipelineStatistics = ps }

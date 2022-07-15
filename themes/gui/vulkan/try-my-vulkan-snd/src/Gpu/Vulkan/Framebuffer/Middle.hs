@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Exception
@@ -59,11 +60,17 @@ createInfoToCore CreateInfo {
 			C.createInfoLayers = l }
 	ContT $ withForeignPtr fCreateInfo
 
-newtype F = F C.F deriving Show
+newtype F = F (IORef C.F)
+
+fToCore :: F -> IO C.F
+fToCore (F f) = readIORef f
+
+fFromCore :: C.F -> IO F
+fFromCore f = F <$> newIORef f
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO F
-create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
+create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . fFromCore =<< do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pf <- ContT alloca
@@ -73,6 +80,22 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
 
 destroy :: Pointable n =>
 	Device.D -> F -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (F f) mac = ($ pure) $ runContT do
+destroy (Device.D dvc) f mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc f pac
+	f' <- lift $ fToCore f
+	lift $ C.destroy dvc f' pac
+
+recreate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D -> CreateInfo n ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	F -> IO ()
+recreate (Device.D dvc) ci macc macd f@(F rf) = ($ pure) $ runContT do
+	o <- lift $ fToCore f
+	pci <- createInfoToCore ci
+	pacc <- AllocationCallbacks.maybeToCore macc
+	pacd <- AllocationCallbacks.maybeToCore macd
+	pf <- ContT alloca
+	lift do	r <- C.create dvc pci pacc pf
+		throwUnlessSuccess $ Result r
+		writeIORef rf =<< peek pf
+		C.destroy dvc o pacd

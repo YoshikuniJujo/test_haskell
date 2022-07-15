@@ -16,7 +16,6 @@ data BeginInfo n sr sf ct = BeginInfo {
 	beginInfoFramebuffer :: Framebuffer.F sf,
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: [ClearValue ct] }
-	deriving Show
 
 beginInfoToMiddle :: BeginInfo n sr sf ct -> M.BeginInfo n ct
 beginInfoToMiddle BeginInfo {

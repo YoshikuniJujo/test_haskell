@@ -87,25 +87,25 @@ data BeginInfo n ct = BeginInfo {
 	beginInfoFramebuffer :: Framebuffer.F,
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: [ClearValue ct] }
-	deriving Show
 
 beginInfoToCore :: (Pointable n, ClearValueToCore ct) =>
 	BeginInfo n ct -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoRenderPass = R rp,
-	beginInfoFramebuffer = Framebuffer.F fb,
+	beginInfoFramebuffer = fb,
 	beginInfoRenderArea = ra,
 	beginInfoClearValues = length &&& id -> (cvc, cvs)
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pcvl <- clearValueToCore `mapM` cvs
 	pcva <- clearValueListToArray pcvl
+	fb' <- lift $ Framebuffer.fToCore fb
 	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
 			C.beginInfoSType = (),
 			C.beginInfoPNext = pnxt,
 			C.beginInfoRenderPass = rp,
-			C.beginInfoFramebuffer = fb,
+			C.beginInfoFramebuffer = fb',
 			C.beginInfoRenderArea = ra,
 			C.beginInfoClearValueCount = fromIntegral cvc,
 			C.beginInfoPClearValues = pcva }

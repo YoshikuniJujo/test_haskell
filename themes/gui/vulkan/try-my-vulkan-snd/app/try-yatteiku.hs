@@ -282,8 +282,7 @@ makeFramebuffer dvc rp iv f = do
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
-	Vk.Framebuffer.create @() dvc frameBufCreateInfo nil nil \fb ->
-		print fb >> f fb
+	Vk.Framebuffer.create @() dvc frameBufCreateInfo nil nil f
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)
