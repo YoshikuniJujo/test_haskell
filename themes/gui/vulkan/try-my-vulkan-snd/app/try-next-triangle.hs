@@ -772,8 +772,8 @@ initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.RndrPass.R sr -> ReaderT Global IO ()
 initVulkan phdvc qfis dvc gq ext scivs rp = do
 	let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-	do
-		createFramebuffers dvc ext scivs' rp
+	createFramebuffers dvc ext scivs' rp \fbs -> do
+		writeGlobal globalSwapChainFramebuffers fbs
 
 		createCommandPool qfis dvc
 		createVertexBuffer phdvc dvc gq
@@ -781,16 +781,19 @@ initVulkan phdvc qfis dvc gq ext scivs rp = do
 		createSyncObjects dvc
 
 createFramebuffers :: Vk.Device.D sd ->
-	Vk.C.Extent2d -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> ReaderT Global IO ()
-createFramebuffers dvc sce scivs rp =
-	writeGlobal globalSwapChainFramebuffers
-		=<< (lift . createFramebuffer1 dvc sce rp) `mapM` scivs
+	Vk.C.Extent2d -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
+	([Vk.Framebuffer.M.F] -> ReaderT Global IO a) -> ReaderT Global IO a
+createFramebuffers _ _ [] _ f = f []
+createFramebuffers dvc sce (sciv : scivs) rp f = ask >>= \g ->
+	lift $ createFramebuffer1 dvc sce rp (Vk.ImageView.I sciv) \fb ->
+	(createFramebuffers dvc sce scivs rp \fbs -> f (fb : fbs)) `runReaderT` g
 
 createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.M.I -> IO Vk.Framebuffer.M.F
-createFramebuffer1 (Vk.Device.D dvc) sce rp attachment =
-	Vk.Framebuffer.M.create @() dvc framebufferInfo nil
-	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
+	Vk.ImageView.I si -> (Vk.Framebuffer.M.F -> IO a) -> IO a
+createFramebuffer1 (Vk.Device.D dvc) sce rp attachment f =
+	f =<< Vk.Framebuffer.M.create @() dvc framebufferInfo nil
+	where framebufferInfo = Vk.Framebuffer.createInfoToMiddle
+		$ makeFramebufferCreateInfo' sce rp attachment
 
 recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
 	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> [Vk.Framebuffer.M.F] -> IO ()
@@ -815,6 +818,20 @@ makeFramebufferCreateInfo
 	Vk.Framebuffer.M.createInfoWidth = w,
 	Vk.Framebuffer.M.createInfoHeight = h,
 	Vk.Framebuffer.M.createInfoLayers = 1 }
+	where
+	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
+
+makeFramebufferCreateInfo' ::
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.I si ->
+	Vk.Framebuffer.CreateInfo () sr si
+makeFramebufferCreateInfo' sce rp attachment = Vk.Framebuffer.CreateInfo {
+	Vk.Framebuffer.createInfoNext = Nothing,
+	Vk.Framebuffer.createInfoFlags = zeroBits,
+	Vk.Framebuffer.createInfoRenderPass = rp,
+	Vk.Framebuffer.createInfoAttachments = [attachment],
+	Vk.Framebuffer.createInfoWidth = w,
+	Vk.Framebuffer.createInfoHeight = h,
+	Vk.Framebuffer.createInfoLayers = 1 }
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
