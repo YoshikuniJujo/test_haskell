@@ -111,7 +111,6 @@ import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Framebuffer
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Type as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
-import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CmdPool.M
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
@@ -273,18 +272,18 @@ run win inst = ask >>= \g ->
 	createSurface win inst \sfc ->
 	lift (pickPhysicalDevice inst sfc) >>= \(phdvc, qfis) ->
 	createLogicalDevice phdvc qfis \dvc gq pq ->
-	createSwapChain win sfc phdvc qfis dvc \sc scfmt ext -> do
-	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
-	imgs <- lift $ Vk.Khr.Swapchain.getImages dvc sc
+	createSwapChain win sfc phdvc qfis dvc \sc scfmt ext ->
+	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt in
+	lift (Vk.Khr.Swapchain.getImages dvc sc) >>= \imgs ->
 	createImageViews dvc scifmt imgs \scivs ->
-		lift $ createRenderPass dvc scifmt \rp ->
-		createPipelineLayout dvc g \ppllyt ->
-		createGraphicsPipeline dvc ext rp ppllyt \gpl ->
-		createFramebuffers dvc ext scivs rp \fbs ->
-		createCommandPool qfis dvc \cp@(Vk.CmdPool.C cpm) -> do
-		initVulkan phdvc dvc gq cp
-		mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
-		cleanup dvc
+	lift $ createRenderPass dvc scifmt \rp ->
+	createPipelineLayout dvc g \ppllyt ->
+	createGraphicsPipeline dvc ext rp ppllyt \gpl ->
+	createFramebuffers dvc ext scivs rp \fbs ->
+	createCommandPool qfis dvc \cp -> do
+	initVulkan phdvc dvc gq cp
+	mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
+	cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -818,9 +817,10 @@ makeFramebufferCreateInfo sce rp attachment = Vk.Framebuffer.CreateInfo {
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
 createCommandPool :: QueueFamilyIndices -> Vk.Device.D sd ->
-	(forall sc . Vk.CmdPool.C sc -> ReaderT Global IO a) -> ReaderT Global IO a
-createCommandPool qfis dvc f = ask >>= \g ->
-	lift $ Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp `runReaderT` g
+	(forall sc . Vk.CmdPool.C sc -> ReaderT Global IO a) ->
+	ReaderT Global IO a
+createCommandPool qfis dvc f = ask >>= \g -> lift
+	$ Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp `runReaderT` g
 	where
 	poolInfo = Vk.CmdPool.CreateInfo {
 		Vk.CmdPool.createInfoNext = Nothing,
