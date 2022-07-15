@@ -2,7 +2,8 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Swapchain (create, recreate, S, M.CreateInfo(..)) where
+module Gpu.Vulkan.Khr.Swapchain (
+	create, recreate, S, M.CreateInfo(..), getImages) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -11,6 +12,7 @@ import Gpu.Vulkan.Khr.Swapchain.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
 create :: (Pointable n, Pointable c, Pointable d) =>
@@ -26,4 +28,5 @@ recreate :: (Pointable n, Pointable c, Pointable d) =>
 	S ssc -> IO ()
 recreate (Device.D dvc) ci macc macd (S sc) = M.recreate dvc ci macc macd sc
 
--- getImages :: Device.D sd -> S ss -> IO
+getImages :: Device.D sd -> S ss -> IO [Image.Binded ss ss]
+getImages (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc
