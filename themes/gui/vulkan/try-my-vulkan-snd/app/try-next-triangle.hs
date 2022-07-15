@@ -3,6 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -18,6 +19,7 @@ import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Reader
 import Control.Exception
+import Data.Kind
 import Data.Default
 import Data.Bits
 import Data.HeteroList hiding (length)
@@ -524,10 +526,11 @@ createImageView1 dvc sci scifmt f = do
 	lift $ Vk.ImageView.create @() dvc createInfo nil nil \sciv -> f sciv `runReaderT` g
 
 recreateImageViews :: Vk.Device.D sd ->
-	Vk.Format -> [Vk.Image.Binded ss ss] -> [Vk.ImageView.M.I] -> ReaderT Global IO ()
-recreateImageViews _dvc _scifmt [] [] = pure ()
-recreateImageViews dvc scifmt (img : imgs) (iv : ivs) =
-	recreateImageView1 dvc img scifmt (Vk.ImageView.I iv) >>
+	Vk.Format -> [Vk.Image.Binded ss ss] ->
+	HeteroVarList Vk.ImageView.I sis -> ReaderT Global IO ()
+recreateImageViews _dvc _scifmt [] HVNil = pure ()
+recreateImageViews dvc scifmt (img : imgs) (iv :...: ivs) =
+	recreateImageView1 dvc img scifmt iv >>
 	recreateImageViews dvc scifmt imgs ivs
 recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -775,7 +778,7 @@ initVulkan phdvc qfis dvc gq = do
 
 createFramebuffers :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
-	(forall sfs .
+	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Framebuffer.F sfs -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createFramebuffers _ _ HVNil _ f = f HVNil
@@ -789,18 +792,34 @@ createFramebuffer1 dvc sce rp attachment =
 	Vk.Framebuffer.create @() dvc framebufferInfo nil nil
 	where framebufferInfo = makeFramebufferCreateInfo' sce rp attachment
 
-recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
-	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
+class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
+	recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
+		HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
+		HeteroVarList Vk.Framebuffer.F sfs -> IO ()
+
+instance RecreateFramebuffers '[] '[] where
+	recreateFramebuffers _dvc _sce HVNil _rp HVNil = pure ()
+
+instance RecreateFramebuffers sis sfs => RecreateFramebuffers (si ': sis) (sf ': sfs) where
+	recreateFramebuffers dvc sce (sciv :...: scivs) rp (fb :...: fbs) = do
+		recreateFramebuffer1 dvc sce rp sciv fb
+		recreateFramebuffers dvc sce scivs rp fbs
+
+{-
+recreateFramebuffers :: SameNumber sis sfs => Vk.Device.D sd -> Vk.C.Extent2d ->
+	HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
 	HeteroVarList Vk.Framebuffer.F sfs -> IO ()
-recreateFramebuffers dvc sce scivs rp fbs =
-	zipWithM_ (recreateFramebuffer1 dvc sce rp) scivs fbs'
-	where fbs' = heteroVarListToList (\(Vk.Framebuffer.F f) -> f) fbs
+recreateFramebuffers _dvc _sce HVNil _rp HVNil = pure ()
+recreateFramebuffers dvc sce (sciv :...: scivs) rp (fb :...: fbs) = do
+	recreateFramebuffer1 dvc sce rp sciv fb
+	recreateFramebuffers dvc sce scivs rp fbs
+	-}
 
 recreateFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.M.I -> Vk.Framebuffer.M.F -> IO ()
-recreateFramebuffer1 (Vk.Device.D dvc) sce rp attachment fb =
-	Vk.Framebuffer.M.recreate @() dvc framebufferInfo nil nil fb
-	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
+	Vk.ImageView.I si -> Vk.Framebuffer.F sf -> IO ()
+recreateFramebuffer1 dvc sce rp attachment fb =
+	Vk.Framebuffer.recreate @() dvc framebufferInfo nil nil fb
+	where framebufferInfo = makeFramebufferCreateInfo' sce rp attachment
 
 makeFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.M.I ->
@@ -1010,7 +1029,7 @@ recordCommandBuffer cb sce (Vk.RndrPass.R rp) (Vk.Ppl.Graphics.G gpl) fbs imageI
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 
-mainLoop ::
+mainLoop :: RecreateFramebuffers ss sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1024,15 +1043,16 @@ mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs rp ppllyt
 	($ ext0) $ fix \loop ext -> do
 		lift Glfw.pollEvents
 		g <- ask
-		let	scivs' = heteroVarListToList (\(Vk.ImageView.I iv) -> iv) scivs
-		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs' rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
-			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs' rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
+		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
+			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
 	lift $ Vk.Device.M.waitIdle dvcm
 
-runLoop :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhysicalDevice.P ->
+runLoop :: RecreateFramebuffers sis sfs =>
+	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhysicalDevice.P ->
 	QueueFamilyIndices -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Global -> Vk.C.Extent2d ->
-	[Vk.ImageView.M.I] -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
+	HeteroVarList Vk.ImageView.I sis ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
@@ -1042,11 +1062,12 @@ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs loop = do
 	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame ::
+drawFrame :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> [Vk.ImageView.M.I] ->
+	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
+	HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg (Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
@@ -1085,10 +1106,11 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreateSwapChain ::
+catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
 	Global -> Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> [Vk.ImageView.M.I] ->
+	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
+	HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
@@ -1112,11 +1134,11 @@ catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fb
 doWhile_ :: IO Bool -> IO ()
 doWhile_ act = (`when` doWhile_ act) =<< act
 
-recreateSwapChainAndOthers ::
+recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
-	Vk.Khr.Swapchain.S ssc -> [Vk.ImageView.M.I] -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LL sl '[] ->
+	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImageView.I sis ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		(Solo (AddType Vertex 'Vk.VertexInput.RateVertex))
 		'[Cglm.Vec2, Cglm.Vec3] ->
