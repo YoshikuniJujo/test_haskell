@@ -278,7 +278,7 @@ makeFramebuffer dvc rp iv f = do
 			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
-			Vk.Framebuffer.createInfoAttachments = [iv],
+			Vk.Framebuffer.createInfoAttachments = iv :...: HVNil,
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }

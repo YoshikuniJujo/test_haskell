@@ -819,12 +819,12 @@ makeFramebufferCreateInfo
 
 makeFramebufferCreateInfo' ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.I si ->
-	Vk.Framebuffer.CreateInfo () sr si
+	Vk.Framebuffer.CreateInfo () sr '[si]
 makeFramebufferCreateInfo' sce rp attachment = Vk.Framebuffer.CreateInfo {
 	Vk.Framebuffer.createInfoNext = Nothing,
 	Vk.Framebuffer.createInfoFlags = zeroBits,
 	Vk.Framebuffer.createInfoRenderPass = rp,
-	Vk.Framebuffer.createInfoAttachments = [attachment],
+	Vk.Framebuffer.createInfoAttachments = attachment :...: HVNil,
 	Vk.Framebuffer.createInfoWidth = w,
 	Vk.Framebuffer.createInfoHeight = h,
 	Vk.Framebuffer.createInfoLayers = 1 }

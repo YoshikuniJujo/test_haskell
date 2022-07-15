@@ -1,6 +1,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer (F, create, CreateInfo(..)
@@ -9,6 +11,7 @@ module Gpu.Vulkan.Framebuffer (F, create, CreateInfo(..)
 
 import Foreign.Pointable
 import Control.Exception
+import Data.HeteroList
 import Data.Word
 
 import Gpu.Vulkan.Framebuffer.Enum
@@ -20,22 +23,24 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
-data CreateInfo n sr si = CreateInfo {
+data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R sr,
-	createInfoAttachments :: [ImageView.I si],
+	createInfoAttachments :: HeteroVarList ImageView.I sis,
 	createInfoWidth :: Word32,
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
-	deriving Show
+
+deriving instance (Show n, Show (HeteroVarList ImageView.I sis)) =>
+	Show (CreateInfo n sr sis)
 
 createInfoToMiddle :: CreateInfo n sr si -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoRenderPass = RenderPass.R rp,
-	createInfoAttachments = ((\(ImageView.I iv) -> iv) <$>) -> ivs,
+	createInfoAttachments = heteroVarListToList (\(ImageView.I iv) -> iv) -> ivs,
 	createInfoWidth = w,
 	createInfoHeight = h,
 	createInfoLayers = lyrs } = M.CreateInfo {
