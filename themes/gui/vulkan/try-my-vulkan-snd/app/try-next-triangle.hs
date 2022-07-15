@@ -79,7 +79,6 @@ import qualified Gpu.Vulkan.Image.Type as Vk.Image
 import qualified Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Image.Middle as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImageView
-import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView.M
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImageView
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.Component.Enum as Vk.Component
@@ -109,9 +108,10 @@ import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Framebuffer
-import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Framebuffer.M
-import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CommandPool
-import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
+import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
+import qualified Gpu.Vulkan.CommandPool.Type as Vk.CmdPool
+import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
+import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CmdPool.M
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
@@ -154,7 +154,7 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalCommandPool :: IORef Vk.CommandPool.C,
+	globalCommandPool :: IORef Vk.CmdPool.M.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
 		Solo (AddType Vertex 'Vk.VertexInput.RateVertex) )],
 	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
@@ -173,7 +173,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	cp <- newIORef $ Vk.CommandPool.C NullPtr
+	cp <- newIORef $ Vk.CmdPool.M.C NullPtr
 	cbs <- newIORef []
 	iass <- newIORef []
 	rfss <- newIORef []
@@ -281,12 +281,14 @@ run win inst = ask >>= \g ->
 	imgs <- lift $ Vk.Khr.Swapchain.getImages dvc sc
 	createImageViews dvc scifmt imgs \scivs ->
 		lift $ createRenderPass dvc scifmt \rp ->
-		createPipelineLayout dvc g \ppllyt -> do
-		createGraphicsPipeline dvc ext rp ppllyt \gpl -> do
-			createFramebuffers dvc ext scivs rp \fbs -> do
-				initVulkan phdvc qfis dvc gq
-				mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
-				cleanup dvc
+		createPipelineLayout dvc g \ppllyt ->
+		createGraphicsPipeline dvc ext rp ppllyt \gpl ->
+		createFramebuffers dvc ext scivs rp \fbs ->
+		createCommandPool qfis dvc \(Vk.CmdPool.C cp) -> do
+		writeGlobal globalCommandPool cp
+		initVulkan phdvc dvc gq
+		mainLoop win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs
+		cleanup dvc
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -768,14 +770,6 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-initVulkan :: Vk.PhysicalDevice.P -> QueueFamilyIndices ->
-	Vk.Device.D sd -> Vk.Queue.Q -> ReaderT Global IO ()
-initVulkan phdvc qfis dvc gq = do
-	createCommandPool qfis dvc
-	createVertexBuffer phdvc dvc gq
-	createCommandBuffers dvc
-	createSyncObjects dvc
-
 createFramebuffers :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
@@ -827,16 +821,23 @@ makeFramebufferCreateInfo sce rp attachment = Vk.Framebuffer.CreateInfo {
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
-createCommandPool :: QueueFamilyIndices -> Vk.Device.D sd -> ReaderT Global IO ()
-createCommandPool qfis (Vk.Device.D dvc) = do
-	let	poolInfo = Vk.CommandPool.CreateInfo {
-			Vk.CommandPool.createInfoNext = Nothing,
-			Vk.CommandPool.createInfoFlags =
-				Vk.CommandPool.CreateResetCommandBufferBit,
-			Vk.CommandPool.createInfoQueueFamilyIndex =
-				graphicsFamily qfis }
-	writeGlobal globalCommandPool
-		=<< lift (Vk.CommandPool.create @() dvc poolInfo nil)
+createCommandPool :: QueueFamilyIndices -> Vk.Device.D sd ->
+	(forall sc . Vk.CmdPool.C sc -> ReaderT Global IO a) -> ReaderT Global IO a
+createCommandPool qfis dvc f = ask >>= \g ->
+	lift $ Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp `runReaderT` g
+	where
+	poolInfo = Vk.CmdPool.CreateInfo {
+		Vk.CmdPool.createInfoNext = Nothing,
+		Vk.CmdPool.createInfoFlags =
+			Vk.CmdPool.CreateResetCommandBufferBit,
+		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
+
+initVulkan :: Vk.PhysicalDevice.P ->
+	Vk.Device.D sd -> Vk.Queue.Q -> ReaderT Global IO ()
+initVulkan phdvc dvc gq = do
+	createVertexBuffer phdvc dvc gq
+	createCommandBuffers dvc
+	createSyncObjects dvc
 
 createVertexBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.Queue.Q ->
 	ReaderT Global IO ()
@@ -1150,8 +1151,6 @@ cleanup _dvc@(Vk.Device.D dvcm) = do
 		=<< readGlobal globalRenderFinishedSemaphores
 	lift . (flip (Vk.Fence.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalInFlightFences
-	lift . flip (Vk.CommandPool.destroy dvcm) nil
-		=<< readGlobal globalCommandPool
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
