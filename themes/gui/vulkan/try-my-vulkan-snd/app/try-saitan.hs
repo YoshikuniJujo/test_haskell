@@ -363,8 +363,8 @@ storageBufferNew :: forall sd w a . Storable w =>
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w]] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
-		memoryInfo <- getMemoryInfo phdvc dvc (Vk.Buffer.BB buffer)
-		Vk.Buffer.allocateBind dvc (Vk.Buffer.BB buffer :...: HVNil) memoryInfo
+		memoryInfo <- getMemoryInfo phdvc dvc (V2 buffer)
+		Vk.Buffer.allocateBind dvc (V2 buffer :...: HVNil) memoryInfo
 			nil nil \(Vk.Buffer.Bnd binded :...: HVNil) memory -> do
 			Vk.Dvc.Mem.Buffer.write @('List w) dvc memory def xs
 			f binded memory
@@ -385,16 +385,15 @@ storage3BufferNew :: forall sd w1 w2 w3 a . (
 		) -> IO a
 storage3BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buf1 -> do
-		memInfo1 <- getMemoryInfo phdvc dvc $ Vk.Buffer.BB buf1
+		memInfo1 <- getMemoryInfo phdvc dvc $ V2 buf1
 		Vk.Buffer.create dvc (bufferInfo ys) nil nil \buf2 -> do
-			memInfo2 <- getMemoryInfo phdvc dvc $ Vk.Buffer.BB buf2
+			memInfo2 <- getMemoryInfo phdvc dvc $ V2 buf2
 			Vk.Buffer.create dvc (bufferInfo zs) nil nil \buf3 -> do
-				memInfo3 <- getMemoryInfo phdvc dvc $ Vk.Buffer.BB buf3
+				memInfo3 <- getMemoryInfo phdvc dvc $ V2 buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
 					Vk.Buffer.allocateBind dvc (
-						Vk.Buffer.BB buf1 :...:
-						Vk.Buffer.BB buf2 :...:
-						Vk.Buffer.BB buf3 :...: HVNil
+						V2 buf1 :...: V2 buf2 :...:
+						V2 buf3 :...: HVNil
 						) memInfo1 nil nil
 						\(	Vk.Buffer.Bnd bnd1 :...:
 							Vk.Buffer.Bnd bnd2 :...:
@@ -429,8 +428,8 @@ storage1BufferNew :: forall sd w1 w2 w3 a . (
 			'[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
 storage1BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
-		memInfo <- getMemoryInfo phdvc dvc $ Vk.Buffer.BB buf
-		Vk.Buffer.allocateBind dvc (Vk.Buffer.BB buf :...: HVNil)
+		memInfo <- getMemoryInfo phdvc dvc $ V2 buf
+		Vk.Buffer.allocateBind dvc (V2 buf :...: HVNil)
 			memInfo nil nil \(Vk.Buffer.Bnd bnd :...: HVNil) mem -> do
 			Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
 			Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys

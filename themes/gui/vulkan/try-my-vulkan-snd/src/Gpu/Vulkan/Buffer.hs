@@ -74,7 +74,7 @@ create (Device.D dvc) ci macc macd f = bracket
 	(f . B (createInfoLengths ci) . (\(M.B b) -> b))
 
 getMemoryRequirements :: Device.D sd -> BB sobjs -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (BB (B _ b)) = M.getMemoryRequirements dvc (M.B b)
+getMemoryRequirements (Device.D dvc) (V2 (B _ b)) = M.getMemoryRequirements dvc (M.B b)
 
 allocateInfoToMiddle ::
 	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.AllocateInfo n ->
@@ -112,8 +112,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		forms <- bsToForms dvc bs
 		f $ Device.Memory.M forms mem
 
-data BB sbobjs where
-	BB :: B sb objs -> BB '(sb, objs)
+type BB = V2 B
 
 data Bnd sm sbobjs where
 	Bnd :: Binded sb sm objs -> Bnd sm '(sb, objs)
@@ -140,7 +139,7 @@ bindBuffersToMemory ::
 	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.M sm objss' ->
 	Int -> IO (HeteroVarList (Bnd sm) sbobjss)
 bindBuffersToMemory _ HVNil _ _ = pure HVNil
-bindBuffersToMemory dvc (BB b :...: bs) mem i = (:...:)
+bindBuffersToMemory dvc (V2 b :...: bs) mem i = (:...:)
 	<$> (Bnd <$> bindMemory dvc b mem i) <*> bindBuffersToMemory dvc bs mem (i + 1)
 
 bindMemory ::
@@ -167,7 +166,7 @@ zipToForms ::
 	[(Device.M.Size, Device.M.Size)] -> HeteroVarList BB sbobjss ->
 	HeteroVarList Device.Memory.Form (SbobjssToObjss sbobjss)
 zipToForms [] HVNil = HVNil
-zipToForms ((ost, sz) : ostszs) (BB (B lns _) :...: bs) =
+zipToForms ((ost, sz) : ostszs) (V2 (B lns _) :...: bs) =
 	Device.Memory.Form ost sz lns :...: zipToForms ostszs bs
 zipToForms _ _ = error "bad"
 
