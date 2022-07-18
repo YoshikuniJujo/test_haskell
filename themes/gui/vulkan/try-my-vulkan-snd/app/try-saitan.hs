@@ -365,7 +365,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc (V2 buffer)
 		Vk.Buffer.allocateBind dvc (V2 buffer :...: HVNil) memoryInfo
-			nil nil \(Vk.Buffer.Bnd binded :...: HVNil) memory -> do
+			nil nil \(V2 binded :...: HVNil) memory -> do
 			Vk.Dvc.Mem.Buffer.write @('List w) dvc memory def xs
 			f binded memory
 
@@ -395,9 +395,9 @@ storage3BufferNew dvc phdvc xs ys zs f =
 						V2 buf1 :...: V2 buf2 :...:
 						V2 buf3 :...: HVNil
 						) memInfo1 nil nil
-						\(	Vk.Buffer.Bnd bnd1 :...:
-							Vk.Buffer.Bnd bnd2 :...:
-							Vk.Buffer.Bnd bnd3 :...: HVNil ) mem -> do
+						\(	V2 bnd1 :...:
+							V2 bnd2 :...:
+							V2 bnd3 :...: HVNil ) mem -> do
 						Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
 						Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys
 						Vk.Dvc.Mem.Buffer.write @('List w3) dvc mem def zs
@@ -430,7 +430,7 @@ storage1BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
 		memInfo <- getMemoryInfo phdvc dvc $ V2 buf
 		Vk.Buffer.allocateBind dvc (V2 buf :...: HVNil)
-			memInfo nil nil \(Vk.Buffer.Bnd bnd :...: HVNil) mem -> do
+			memInfo nil nil \(V2 bnd :...: HVNil) mem -> do
 			Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
 			Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys
 			Vk.Dvc.Mem.Buffer.write @('List w3) dvc mem def zs

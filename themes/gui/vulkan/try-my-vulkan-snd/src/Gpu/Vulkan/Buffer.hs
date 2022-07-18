@@ -3,7 +3,8 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGe FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -33,7 +34,9 @@ data B s (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s objs)
 
-data Binded sb sm (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
+type Binded sb sm = Binded' sm sb
+
+data Binded' sm sb (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sb sm objs)
 
@@ -113,9 +116,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		f $ Device.Memory.M forms mem
 
 type BB = V2 B
-
-data Bnd sm sbobjs where
-	Bnd :: Binded sb sm objs -> Bnd sm '(sb, objs)
+type Bnd sm = V2 (Binded' sm)
 
 type family SbobjssToSb (sbobjss :: [(Type, [Object])]) where
 	SbobjssToSb '[] = '[]
@@ -140,7 +141,7 @@ bindBuffersToMemory ::
 	Int -> IO (HeteroVarList (Bnd sm) sbobjss)
 bindBuffersToMemory _ HVNil _ _ = pure HVNil
 bindBuffersToMemory dvc (V2 b :...: bs) mem i = (:...:)
-	<$> (Bnd <$> bindMemory dvc b mem i) <*> bindBuffersToMemory dvc bs mem (i + 1)
+	<$> (V2 <$> bindMemory dvc b mem i) <*> bindBuffersToMemory dvc bs mem (i + 1)
 
 bindMemory ::
 	Device.D sd -> B sb objs -> Device.Memory.M sm objss -> Int ->
