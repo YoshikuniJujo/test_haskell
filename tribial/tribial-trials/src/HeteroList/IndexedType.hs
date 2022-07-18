@@ -30,3 +30,6 @@ indexedToRaw (Indexed (lst :: HeteroList ts)) f =
 	where
 	g :: forall ts' . Index t ts' => HeteroList ts' -> Int
 	g _ = index @t @ts
+
+getIndex :: Indexed t -> Int
+getIndex i = indexedToRaw i snd
