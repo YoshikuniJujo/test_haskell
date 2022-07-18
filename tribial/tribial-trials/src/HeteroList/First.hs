@@ -7,7 +7,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module HeteroList where
+module HeteroList.First where
 
 infixr 5 `HeteroListCons`
 
