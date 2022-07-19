@@ -7,7 +7,6 @@
 module Main where
 
 import GHC.Generics
-import GHC.Tuple
 import Foreign.Concurrent
 import Foreign.Storable.SizeAlignment
 import Control.Monad.Cont

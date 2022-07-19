@@ -8,7 +8,6 @@
 
 module Gpu.Vulkan.Command.List where
 
-import GHC.Generics
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Arrow
@@ -18,7 +17,7 @@ import TypeLevel.List
 
 import qualified Foreign.Storable.Generic
 
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (Simplify, MapUnList, MapSubType)
+import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
 import Gpu.Vulkan.Enum
 
@@ -31,11 +30,11 @@ import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
 
 bindVertexBuffers :: forall vs vs' .
-	InfixIndex vs' (MapUnList (MapSubType vs)) =>
+	InfixIndex vs' (MapSubType vs) =>
 	CommandBuffer.C vs -> Buffer.List.BList vs' -> IO ()
 bindVertexBuffers cb bs =
 	M.bindVertexBuffers cb (fromIntegral fb) (Buffer.List.bListToMList bs)
-	where fb = infixIndex @vs' @(Simplify vs)
+	where fb = infixIndex @vs' @(MapSubType vs)
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	CommandBuffer.C vs -> Buffer.List.B v -> Buffer.List.B v -> Buffer.List.Copy v -> IO ()

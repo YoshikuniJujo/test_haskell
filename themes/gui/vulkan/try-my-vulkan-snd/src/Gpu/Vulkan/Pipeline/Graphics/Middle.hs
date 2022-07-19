@@ -109,7 +109,7 @@ createInfoToCore :: (
 	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
 	Pointable n10,
 	ShaderStage.CreateInfoListToCore n1 sknds vss,
-	BindingStrideList.BindingStrideListList
+	BindingStrideList.BindingStrideList
 		vs' VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs' ts ) =>
 	CreateInfo n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts' ->
@@ -177,7 +177,7 @@ createInfoToCore' :: (
 	Pointable n2, Pointable n3, Pointable n4,
 	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
 	Pointable n10,
-	BindingStrideList.BindingStrideListList
+	BindingStrideList.BindingStrideList
 		vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo' n nskndvss '(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
@@ -249,7 +249,7 @@ instance (
 	Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
 	Pointable n6, Pointable n7, Pointable n8, Pointable n9, Pointable n10,
 	ShaderStage.CreateInfoListToCore' nskndvss,
-	BindingStrideList.BindingStrideListList
+	BindingStrideList.BindingStrideList
 		vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts,
 	CreateInfoListToCore' ss ) =>
@@ -289,7 +289,7 @@ instance (
 	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
 	Pointable n10,
 	ShaderStage.CreateInfoListToCore n1 sknds vss,
-	BindingStrideList.BindingStrideListList
+	BindingStrideList.BindingStrideList
 		vs' VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs' ts,
 	CreateInfoListToCore ns n1s skndss vsss
@@ -305,12 +305,6 @@ instance (
 
 gNull :: IO (G vs ts)
 gNull = G <$> newIORef NullHandle
-
-{-
-pattern GNull :: G vs ts
-pattern GNull <- G NullHandle where
-	GNull = G NullHandle
-	-}
 
 newtype G (vs :: [Type]) (ts :: [Type]) = G (IORef Pipeline.C.P)
 

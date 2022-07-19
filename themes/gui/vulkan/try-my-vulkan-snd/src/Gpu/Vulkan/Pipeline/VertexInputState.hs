@@ -31,7 +31,7 @@ data CreateInfo n (vs :: [Type]) (ts :: [Type]) = CreateInfo {
 
 createInfoToCore :: (
 	Pointable n,
-	BindingStrideListList vs VertexInput.Rate VertexInput.Rate,
+	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n vs ts -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore ci = do
@@ -39,7 +39,7 @@ createInfoToCore ci = do
 	ContT $ withForeignPtr fCreateInfo
 
 createInfoToMiddle :: (
-	BindingStrideListList vs VertexInput.Rate VertexInput.Rate,
+	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n vs ts -> M.CreateInfo n
 createInfoToMiddle
@@ -53,11 +53,11 @@ createInfoToMiddle
 			createInfoAttributeDescriptions ci }
 
 createInfoToBindingDescriptions :: forall n vs ts .
-	BindingStrideListList vs
+	BindingStrideList vs
 		VertexInput.Rate VertexInput.Rate =>
 	CreateInfo n vs ts -> [VertexInput.BindingDescription]
 createInfoToBindingDescriptions _ = VertexInput.bindingDescriptionFromRaw
-	$ bindingStrideListList @vs @VertexInput.Rate @VertexInput.Rate
+	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
 
 class CreateInfoAttributeDescription (vs :: [Type]) (ts :: [Type]) where	
 	createInfoAttributeDescriptions ::
