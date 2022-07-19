@@ -9,17 +9,8 @@
 
 module Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList where
 
-import GHC.Generics
 import Foreign.Storable.SizeAlignment
 import Data.Kind
-import Data.Generics.Flatten
-
-class BindingStrideList a k v where
-	bindingStrideList :: [(SizeAlignment, v)]
-
-instance (BindingStrideListList (Flatten (Rep a)) k v) =>
-	BindingStrideList a k v where
-	bindingStrideList = bindingStrideListList @(Flatten (Rep a)) @k @v
 
 class BindingStrideListList (ts :: [Type]) k v where
 	bindingStrideListList :: [(SizeAlignment, v)]

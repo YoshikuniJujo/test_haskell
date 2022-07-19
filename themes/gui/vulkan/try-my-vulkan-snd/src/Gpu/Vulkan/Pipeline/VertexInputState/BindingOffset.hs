@@ -7,19 +7,11 @@
 
 module Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset where
 
-import GHC.Generics
 import Foreign.Storable.SizeAlignment
 import Control.Arrow
 import Data.Kind
-import Data.Generics.Flatten
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
-
-class BindingOffset tss t where bindingOffset :: Maybe (Int, Offset)
-
-instance BindingOffsetList (MapSubType (Flatten (Rep tss))) t =>
-	BindingOffset tss t where
-	bindingOffset = bindingOffsetList @(MapSubType (Flatten (Rep tss))) @t
 
 class BindingOffsetList' (tss :: [Type]) t where bindingOffsetList' :: Maybe (Int, Offset)
 

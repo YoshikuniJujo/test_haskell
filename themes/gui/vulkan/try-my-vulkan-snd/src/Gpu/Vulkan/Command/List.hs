@@ -18,7 +18,6 @@ import TypeLevel.List
 
 import qualified Foreign.Storable.Generic
 
-import Data.Generics.Flatten (Flatten)
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (Simplify, MapUnList, MapSubType)
 
 import Gpu.Vulkan.Enum
