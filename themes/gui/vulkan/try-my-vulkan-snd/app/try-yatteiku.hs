@@ -360,7 +360,7 @@ makeRenderPass dvc f = do
 	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil f
 
 makePipeline :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
-	(forall s . Vk.Ppl.Gr.G s () '[] -> IO a) -> IO a
+	(forall s . Vk.Ppl.Gr.G s '[] '[] -> IO a) -> IO a
 makePipeline dvc rp f = do
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0,
@@ -490,7 +490,7 @@ makePipeline dvc rp f = do
 				() () ()
 				'[ 'GlslVertexShader, 'GlslFragmentShader] () ()
 				'[(), ()] ()
-				() '[]
+				'[] '[]
 				() () () () () () () () _ _ _ _ '[]
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
 				Vk.Ppl.Gr.createInfoNext = Nothing,

@@ -32,7 +32,7 @@ import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
 
 bindVertexBuffers :: forall vs vs' .
-	InfixIndex vs' (MapUnList (MapSubType (Flatten (Rep vs)))) =>
+	InfixIndex vs' (MapUnList (MapSubType vs)) =>
 	CommandBuffer.C vs -> Buffer.List.BList vs' -> IO ()
 bindVertexBuffers cb bs =
 	M.bindVertexBuffers cb (fromIntegral fb) (Buffer.List.bListToMList bs)

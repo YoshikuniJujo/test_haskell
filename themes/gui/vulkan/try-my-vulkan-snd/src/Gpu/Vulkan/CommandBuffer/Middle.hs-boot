@@ -1,9 +1,13 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle where
 
+import Data.Kind
+
 import qualified Gpu.Vulkan.CommandBuffer.Core as C
 
-newtype C vs = C { unC :: C.C }
+newtype C (vs :: [Type]) = C { unC :: C.C }
 
 instance Show (C vs)

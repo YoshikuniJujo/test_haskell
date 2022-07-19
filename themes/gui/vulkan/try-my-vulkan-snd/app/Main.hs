@@ -134,10 +134,10 @@ data Global = Global {
 	globalSwapChainImageViews :: IORef [Vk.ImageView.I],
 	globalPipelineLayout :: IORef Vk.Ppl.Lyt.L,
 	globalRenderPass :: IORef Vk.RndrPss.R,
-	globalGraphicsPipeline :: IORef (Vk.Ppl.G () '[]),
+	globalGraphicsPipeline :: IORef (Vk.Ppl.G '[] '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
-	globalCommandBuffers :: IORef [Vk.CB.C ()],
+	globalCommandBuffers :: IORef [Vk.CB.C '[]],
 	globalImageAvailableSemaphore :: IORef Vk.Smp.S,
 	globalRenderFinishedSemaphore :: IORef Vk.Smp.S,
 	globalInFlightFence :: IORef Vk.Fnc.F
@@ -634,7 +634,7 @@ createGraphicsPipeline g@Global {
 			Vk.Ppl.ShaderStage.createInfoName = "main",
 			Vk.Ppl.ShaderStage.createInfoSpecializationInfo =
 				Nothing }
-		vertexInputInfo :: Vk.Ppl.VI.CreateInfo () () '[]
+		vertexInputInfo :: Vk.Ppl.VI.CreateInfo () '[] '[]
 		vertexInputInfo = Vk.Ppl.VI.CreateInfo {
 			Vk.Ppl.VI.createInfoNext = Nothing,
 			Vk.Ppl.VI.createInfoFlags =
@@ -715,7 +715,7 @@ createGraphicsPipeline g@Global {
 	rp <- readIORef rrp
 	gn <- Vk.Ppl.gNull
 	let	pipelineInfo :: Vk.Ppl.CreateInfo
-			() () '[ 'GlslVertexShader, 'GlslFragmentShader] '[(), ()] () () '[] () () () () () () () () () '[]
+			() () '[ 'GlslVertexShader, 'GlslFragmentShader] '[(), ()] () '[] '[] () () () () () () () () '[] '[]
 		pipelineInfo = Vk.Ppl.CreateInfo {
 			Vk.Ppl.createInfoNext = Nothing,
 			Vk.Ppl.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -814,7 +814,7 @@ createCommandBuffers Global {
 		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
 	writeIORef rcbs cbs
 
-recordCommandBuffer :: Global -> Vk.CB.C () -> Vk.Fb.F -> IO ()
+recordCommandBuffer :: Global -> Vk.CB.C '[] -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
 	globalGraphicsPipeline = rppl } cb fb = do

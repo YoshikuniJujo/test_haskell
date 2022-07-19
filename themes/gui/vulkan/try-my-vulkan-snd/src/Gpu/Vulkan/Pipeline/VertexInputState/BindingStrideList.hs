@@ -45,4 +45,4 @@ type family MapUnList t where
 
 class TypeVal (t :: k) v where typeVal :: v
 
-type Simplify a = MapUnList (MapSubType (Flatten (Rep a)))
+type Simplify a = MapUnList (MapSubType a)

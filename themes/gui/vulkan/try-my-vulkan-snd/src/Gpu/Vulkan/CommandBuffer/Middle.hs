@@ -1,5 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,6 +13,7 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Kind
 import Data.Default
 import Data.Word
 
@@ -50,7 +53,7 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoCommandBufferCount = cbc }
 	ContT $ withForeignPtr fAllocateInfo
 
-newtype C vs = C { unC :: C.C } deriving Show
+newtype C (vs :: [Type]) = C { unC :: C.C } deriving Show
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C vs]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
