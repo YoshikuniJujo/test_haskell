@@ -204,4 +204,12 @@ sampleObjLens =
 	ObjectLengthList 5 :...:
 	ObjectLengthList 3 :...: HVNil
 
--- data IndexedList sb sm v = forall vs . Binded sb sm
+data IndexedList sm sb v =
+	forall vs . OffsetList v vs => IndexedList (Binded sm sb vs)
+
+indexedListToOffset :: forall sm sb v a . IndexedList sm sb v ->
+	(forall vs . (Binded sm sb vs, Device.M.Size) -> a) -> a
+indexedListToOffset (IndexedList b@(Binded lns _)) f = f (b, offsetList @v lns 0)
+
+indexedListToMiddle :: IndexedList sm sb v -> (M.B, Device.M.Size)
+indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (M.B b, sz)
