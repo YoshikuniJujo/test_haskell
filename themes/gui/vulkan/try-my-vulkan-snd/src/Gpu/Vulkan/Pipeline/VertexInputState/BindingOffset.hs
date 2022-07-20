@@ -13,7 +13,8 @@ import Data.Kind
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
-class BindingOffsetList' (tss :: [Type]) t where bindingOffsetList' :: Maybe (Int, Offset)
+class BindingOffsetList' (tss :: [Type]) t where
+	bindingOffsetList' :: Maybe (Int, Offset)
 
 instance BindingOffsetList (MapSubType tss) t =>
 	BindingOffsetList' tss t where

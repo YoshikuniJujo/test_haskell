@@ -14,6 +14,7 @@ module Gpu.Vulkan.Pipeline.Graphics (
 	CreateInfo'(..), createInfoToMiddle',
 	GList, pattern GNil, pattern GCons ) where
 
+import GHC.TypeNats
 import Foreign.Pointable
 import Control.Exception
 import Data.Kind
@@ -252,8 +253,8 @@ instance (
 
 class CreateInfoListToMiddle' ss where
 	type MiddleVars ss :: [
-		(Type, [(Type, ShaderKind, Type)], (Type, [Type], [Type]),
-		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [Type]))
+		(Type, [(Type, ShaderKind, Type)], (Type, [Type], [(Nat, Type)]),
+		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))
 		]
 	createInfoListToMiddle' :: Device.D sd ->
 		HeteroVarList CreateInfo'' ss ->

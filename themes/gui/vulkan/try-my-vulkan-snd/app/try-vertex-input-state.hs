@@ -43,7 +43,7 @@ main = do
 			Vk.Ppl.VertexInputSt.CreateInfo ()
 				'[AddType
 					Vertex 'Vk.VertexInput.RateVertex]
-				'[Vec2, Vec3]
+				'[ '(0, Vec2), '(1, Vec3)]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputSt.createInfoFlags =

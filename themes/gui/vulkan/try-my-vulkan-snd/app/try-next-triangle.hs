@@ -13,7 +13,6 @@
 module Main where
 
 import GHC.Generics
-import GHC.Tuple
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Fix
@@ -624,7 +623,7 @@ createGraphicsPipeline :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] -> ReaderT Global IO ()) ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> ReaderT Global IO ()) ->
 	ReaderT Global IO ()
 createGraphicsPipeline dvc sce rp ppllyt f = ask >>= \g ->
 	lift $ Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pplInfo :...: HVNil)
@@ -635,7 +634,7 @@ recreateGraphicsPipeline :: Vk.Device.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] -> IO ()
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs'
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
 	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
@@ -646,7 +645,7 @@ makeGraphicsPipelineCreateInfo ::
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
 		'(	(), '[AddType Vertex 'Vk.VertexInput.RateVertex],
-			'[Cglm.Vec2, Cglm.Vec3] )
+			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		() () () () () () () () '(sl, '[]) sr '(sb, vs', ts')
 makeGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
@@ -689,7 +688,7 @@ shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
 
 vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 	() '[AddType Vertex 'Vk.VertexInput.RateVertex]
-	'[Cglm.Vec2, Cglm.Vec3]
+	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 	Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
 	Vk.Ppl.VertexInputSt.createInfoFlags = zeroBits }
@@ -968,7 +967,7 @@ recordCommandBuffer ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	Word32 -> ReaderT Global IO ()
 recordCommandBuffer cb sce (Vk.RndrPass.R rp) (Vk.Ppl.Graphics.G gpl) fbs imageIndex = do
@@ -1008,7 +1007,7 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	ReaderT Global IO ()
 mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs rp ppllyt gpl fbs = do
@@ -1026,7 +1025,7 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	(Vk.C.Extent2d -> IO ()) ->
 	IO ()
@@ -1042,7 +1041,7 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
 drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs loop = do
@@ -1086,7 +1085,7 @@ catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs loop act = catchJust
@@ -1113,7 +1112,7 @@ recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec2, Cglm.Vec3] ->
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	ReaderT Global IO Vk.C.Extent2d
 recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)

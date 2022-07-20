@@ -189,7 +189,7 @@ data Global = Global {
 	globalPipelineLayout :: IORef Vk.Ppl.Layout.L,
 	globalGraphicsPipeline :: IORef (Vk.Ppl.Graphics.G
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
-		'[Cglm.Vec3, Color, TexCoord]),
+		'[ '(0, Cglm.Vec3), '(1, Color), '(2, TexCoord)]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
@@ -887,7 +887,7 @@ createGraphicsPipeline = do
 		vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
 			()
 			'[AddType Vertex 'Vk.VertexInput.RateVertex]
-			'[Cglm.Vec3, Color, TexCoord]
+			'[ '(0, Cglm.Vec3), '(1, Color), '(2, TexCoord)]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputSt.createInfoFlags =
@@ -1004,7 +1004,7 @@ createGraphicsPipeline = do
 			() () '[ 'GlslVertexShader, 'GlslFragmentShader]
 			'[(), ()] ()
 			'[AddType Vertex 'Vk.VertexInput.RateVertex]
-			'[Cglm.Vec3, Color, TexCoord]
+			'[ '(0, Cglm.Vec3), '(1, Color), '(2, TexCoord)]
 			() () () () () () () () '[] '[]
 		pipelineInfo = Vk.Ppl.Graphics.CreateInfo {
 			Vk.Ppl.Graphics.createInfoNext = Nothing,

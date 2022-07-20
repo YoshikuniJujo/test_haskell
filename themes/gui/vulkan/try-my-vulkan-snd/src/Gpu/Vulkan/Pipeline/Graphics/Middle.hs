@@ -10,6 +10,7 @@
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle where
 
+import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Pointable
@@ -306,7 +307,7 @@ instance (
 gNull :: IO (G vs ts)
 gNull = G <$> newIORef NullHandle
 
-newtype G (vs :: [Type]) (ts :: [Type]) = G (IORef Pipeline.C.P)
+newtype G (vs :: [Type]) (ts :: [(Nat, Type)]) = G (IORef Pipeline.C.P)
 
 gToCore :: G vs ts -> IO Pipeline.C.P
 gToCore (G rp) = readIORef rp
@@ -316,7 +317,7 @@ gFromCore p = G <$> newIORef p
 
 type G' = V2 G
 
-data PList vss tss where
+data PList vss (tss :: [[(Nat, Type)]]) where
 	PNil :: PList '[] '[]
 	PCons :: G vs ts -> PList vss tss -> PList (vs ': vss) (ts ': tss)
 
@@ -384,8 +385,8 @@ recreateGs' dvc mc cis macc macd gs =
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],
-		(Type, [Type], [Type]), Type, Type, Type, Type, Type, Type, Type,
-		Type, ([Type], [Type]))]) :: [([Type], [Type])] where
+		(Type, [Type], [(Nat, Type)]), Type, Type, Type, Type, Type, Type, Type,
+		Type, ([Type], [(Nat, Type)]))]) :: [([Type], [(Nat, Type)])] where
 	GListVars '[] = '[]
 	GListVars ('(
 		n, nskndvss, '(n2, vs, ts),

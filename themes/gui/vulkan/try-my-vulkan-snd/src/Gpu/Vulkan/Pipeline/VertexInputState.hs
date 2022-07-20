@@ -10,6 +10,7 @@
 
 module Gpu.Vulkan.Pipeline.VertexInputState where
 
+import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Pointable
@@ -24,7 +25,7 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Core as C
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 
-data CreateInfo n (vs :: [Type]) (ts :: [Type]) = CreateInfo {
+data CreateInfo n (vs :: [Type]) (ts :: [(Nat, Type)]) = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags }
 	deriving Show
@@ -59,7 +60,7 @@ createInfoToBindingDescriptions :: forall n vs ts .
 createInfoToBindingDescriptions _ = VertexInput.bindingDescriptionFromRaw
 	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
 
-class CreateInfoAttributeDescription (vs :: [Type]) (ts :: [Type]) where	
+class CreateInfoAttributeDescription (vs :: [Type]) (ts :: [(Nat, Type)]) where	
 	createInfoAttributeDescriptions ::
 		CreateInfo n vs ts -> [VertexInput.AttributeDescription]
 
@@ -68,16 +69,15 @@ instance CreateInfoAttributeDescription vs '[] where
 
 instance (
 	BindingOffsetList' vs t, Formattable t,
-	CreateInfoAttributeDescription vs ts) =>
-	CreateInfoAttributeDescription vs (t ': ts) where
+	CreateInfoAttributeDescription vs ts, KnownNat i) =>
+	CreateInfoAttributeDescription vs ('(i, t) ': ts) where
 	createInfoAttributeDescriptions :: forall n .
-		CreateInfo n vs (t ': ts) -> [VertexInput.AttributeDescription]
+		CreateInfo n vs ('(i, t) ': ts) -> [VertexInput.AttributeDescription]
 	createInfoAttributeDescriptions _ = VertexInput.AttributeDescription {
-		VertexInput.attributeDescriptionLocation = 0,
+		VertexInput.attributeDescriptionLocation = fromIntegral $ natVal @i undefined,
 		VertexInput.attributeDescriptionBinding = bd,
 		VertexInput.attributeDescriptionFormat = formatOf @t,
-		VertexInput.attributeDescriptionOffset = os } :
-		(VertexInput.succAttributeDescriptionLocation <$> ads)
+		VertexInput.attributeDescriptionOffset = os } : ads
 		where
 		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffsetList' @vs @t
 		ads = createInfoAttributeDescriptions @vs @ts undefined
