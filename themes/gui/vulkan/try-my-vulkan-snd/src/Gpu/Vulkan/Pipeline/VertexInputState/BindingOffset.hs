@@ -13,20 +13,18 @@ import Data.Kind
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
-class BindingOffsetList' (tss :: [Type]) t where
-	bindingOffsetList' :: Maybe (Int, Offset)
+class BindingOffset (tss :: [Type]) t where bindingOffset :: Maybe (Int, Offset)
 
-instance BindingOffsetList (MapSubType tss) t =>
-	BindingOffsetList' tss t where
-	bindingOffsetList' = bindingOffsetList @(MapSubType tss) @t
+instance BindingOffsetNoType (MapSubType tss) t => BindingOffset tss t where
+	bindingOffset = bindingOffsetNoType @(MapSubType tss) @t
 
-class BindingOffsetList (tss :: [Type]) t where
-	bindingOffsetList :: Maybe (Int, Offset)
+class BindingOffsetNoType (tss :: [Type]) t where
+	bindingOffsetNoType :: Maybe (Int, Offset)
 
-instance BindingOffsetList '[] t where bindingOffsetList = Nothing
+instance BindingOffsetNoType '[] t where bindingOffsetNoType = Nothing
 
-instance (SizeAlignmentListUntil t ts, BindingOffsetList tss t) =>
-	BindingOffsetList (ts ': tss) t where
-	bindingOffsetList = case offsetOf @t @ts of
-		Nothing -> ((+ 1) `first`) <$> bindingOffsetList @tss @t
+instance (SizeAlignmentListUntil t ts, BindingOffsetNoType tss t) =>
+	BindingOffsetNoType (ts ': tss) t where
+	bindingOffsetNoType = case offsetOf @t @ts of
+		Nothing -> ((+ 1) `first`) <$> bindingOffsetNoType @tss @t
 		Just os -> Just (0, os)

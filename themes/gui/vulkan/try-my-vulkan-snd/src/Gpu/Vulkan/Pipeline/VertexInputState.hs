@@ -68,7 +68,7 @@ instance CreateInfoAttributeDescription vs '[] where
 	createInfoAttributeDescriptions _ = []
 
 instance (
-	BindingOffsetList' vs t, Formattable t,
+	BindingOffset vs t, Formattable t,
 	CreateInfoAttributeDescription vs ts, KnownNat i) =>
 	CreateInfoAttributeDescription vs ('(i, t) ': ts) where
 	createInfoAttributeDescriptions :: forall n .
@@ -79,7 +79,7 @@ instance (
 		VertexInput.attributeDescriptionFormat = formatOf @t,
 		VertexInput.attributeDescriptionOffset = os } : ads
 		where
-		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffsetList' @vs @t
+		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @vs @t
 		ads = createInfoAttributeDescriptions @vs @ts undefined
 
 class Formattable a where formatOf :: Format
