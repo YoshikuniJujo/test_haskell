@@ -16,7 +16,6 @@ import Foreign.Pointable
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
-import Data.Maybe
 import Data.HeteroList
 
 import Gpu.Vulkan.Enum
@@ -36,11 +35,9 @@ data B s (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s objs)
 
-type Binded sb sm = Binded' sm sb
+data Binded sm sb (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
 
-data Binded' sm sb (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
-
-deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sb sm objs)
+deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sm sb objs)
 
 data CreateInfo n objs = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -118,7 +115,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		f $ Device.Memory.M forms mem
 
 type BB = V2 B
-type Bnd sm = V2 (Binded' sm)
+type Bnd sm = V2 (Binded sm)
 
 type family SbobjssToSb (sbobjss :: [(Type, [Object])]) where
 	SbobjssToSb '[] = '[]
@@ -147,7 +144,7 @@ bindBuffersToMemory dvc (V2 b :...: bs) mem i = (:...:)
 
 bindMemory ::
 	Device.D sd -> B sb objs -> Device.Memory.M sm objss -> Int ->
-	IO (Binded sb sm objs)
+	IO (Binded sm sb objs)
 bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms mem) i = do
 	M.bindMemory dvc (M.B b) (Device.M.Memory mem) . fst $ indexForms fms i
 	pure $ Binded lns b
@@ -184,10 +181,6 @@ memoryRequirementsListToOffsets sz0 (reqs : reqss) =
 	sz = Memory.M.requirementsSize reqs
 	algn = Memory.M.requirementsAlignment reqs
 
-calcOffset :: Int -> Maybe Int -> Int -> Int
-calcOffset prsz ln cralgn =
-	((prsz * fromMaybe 1 ln - 1) `div` cralgn + 1) * cralgn
-
 class OffsetList v (vs :: [Object]) where
 	offsetList :: HeteroVarList ObjectLength vs -> Int -> Device.M.Size
 
@@ -211,4 +204,4 @@ sampleObjLens =
 	ObjectLengthList 5 :...:
 	ObjectLengthList 3 :...: HVNil
 
--- data IndexedList v = forall vs .
+-- data IndexedList sb sm v = forall vs . Binded sb sm

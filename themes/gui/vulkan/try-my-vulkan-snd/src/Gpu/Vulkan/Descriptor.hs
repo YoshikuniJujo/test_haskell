@@ -19,10 +19,10 @@ import qualified Gpu.Vulkan.Descriptor.Core as C
 
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
-		{ bufferInfoAtomBuffer :: Buffer.Binded sb sm objs } ->
+		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb objs } ->
 		BufferInfo '(sb, sm, objs, 'Atom v)
 	BufferInfoList ::
-		{ bufferInfoListBuffer :: Buffer.Binded sb sm objs } ->
+		{ bufferInfoListBuffer :: Buffer.Binded sm sb objs } ->
 		BufferInfo '(sb, sm, objs, 'List v)
 
 type BufferInfoArg = (Type, Type, [Object], Object)
