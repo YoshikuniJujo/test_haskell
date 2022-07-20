@@ -1,21 +1,23 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Buffer where
 
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
+import Data.Maybe
 import Data.HeteroList
--- import Data.Word
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Buffer.Enum
@@ -181,3 +183,32 @@ memoryRequirementsListToOffsets sz0 (reqs : reqss) =
 	ost = ((sz0 - 1) `div` algn + 1) * algn
 	sz = Memory.M.requirementsSize reqs
 	algn = Memory.M.requirementsAlignment reqs
+
+calcOffset :: Int -> Maybe Int -> Int -> Int
+calcOffset prsz ln cralgn =
+	((prsz * fromMaybe 1 ln - 1) `div` cralgn + 1) * cralgn
+
+class OffsetList v (vs :: [Object]) where
+	offsetList :: HeteroVarList ObjectLength vs -> Int -> Device.M.Size
+
+adjust :: Int -> Int -> Int
+adjust algn ost = ((ost - 1) `div` algn + 1) * algn
+
+instance Storable v => OffsetList v ('List v ': vs) where
+	offsetList _ = fromIntegral . adjust (alignment @v undefined)
+
+instance {-# OVERLAPPABLE #-} (
+	Storable (Data.Kind.Object.ObjectType v'), OffsetList v vs ) => OffsetList v (v' ': vs) where
+	offsetList (objlen :...: objlens) ost =
+		offsetList @v @vs objlens (ost + objectSize objlen)
+
+sampleObjLens :: HeteroVarList ObjectLength
+	['List Bool, 'Atom Char, 'Atom Int, 'List Double, 'List Char]
+sampleObjLens =
+	ObjectLengthList 3 :...:
+	ObjectLengthAtom :...:
+	ObjectLengthAtom :...:
+	ObjectLengthList 5 :...:
+	ObjectLengthList 3 :...: HVNil
+
+-- data IndexedList v = forall vs .
