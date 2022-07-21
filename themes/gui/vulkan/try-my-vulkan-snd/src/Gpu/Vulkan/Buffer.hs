@@ -213,3 +213,9 @@ indexedListToOffset (IndexedList b@(Binded lns _)) f = f (b, offsetList @v lns 0
 
 indexedListToMiddle :: IndexedList sm sb v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (M.B b, sz)
+
+indexedListToMiddles ::
+	HeteroVarList (V3 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
+indexedListToMiddles HVNil = []
+indexedListToMiddles (V3 il :...: ils) =
+	indexedListToMiddle il : indexedListToMiddles ils

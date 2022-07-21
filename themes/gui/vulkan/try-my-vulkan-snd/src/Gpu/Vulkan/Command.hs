@@ -1,6 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -19,6 +19,7 @@ import Data.Kind
 import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
+import TypeLevel.List
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
@@ -33,6 +34,7 @@ import qualified Gpu.Vulkan.Command.Core as C
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
@@ -40,6 +42,8 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Command.Middle as M
+
+import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
 beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct -> Subpass.Contents ->
@@ -140,3 +144,15 @@ bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.LL l) dss dosts =
 			(\(DescriptorSet (DescriptorSet.S s)) -> s)
 			dss)
 		dosts
+
+type family MapThird tpl where
+	MapThird '[] = '[]
+	MapThird ('(x, y, z) ': xs) = z ': MapThird xs
+
+bindVertexBuffers :: forall sc vs smsbvs .
+	InfixIndex (MapThird smsbvs) (MapSubType vs) =>
+	CommandBuffer.C sc vs -> HeteroVarList (V3 Buffer.IndexedList) smsbvs ->
+	IO ()
+bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
+	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
+	where fb = infixIndex @(MapThird smsbvs) @(MapSubType vs)
