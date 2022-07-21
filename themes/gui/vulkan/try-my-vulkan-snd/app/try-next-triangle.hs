@@ -886,10 +886,11 @@ createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 	pure (b, bm)
 
 createBuffer' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
-	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags -> IO (
-		Vk.Buffer.Binded sm sb '[ 'List Vertex],
-		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex ] ] )
-createBuffer' phdvc dvc ln usage properties = do
+	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
+		Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex ] ] -> IO a) ->
+		IO a
+createBuffer' phdvc dvc ln usage properties f = do
 	let	bufferInfo :: Vk.Buffer.CreateInfo () '[ 'List Vertex]
 		bufferInfo = Vk.Buffer.CreateInfo {
 			Vk.Buffer.createInfoNext = Nothing,
@@ -908,7 +909,8 @@ createBuffer' phdvc dvc ln usage properties = do
 		let	allocateInfo = Vk.Device.Memory.Buffer.AllocateInfo {
 				Vk.Device.Memory.Buffer.allocateInfoNext = Nothing,
 				Vk.Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti }
-		undefined
+		Vk.Buffer.allocateBind @() dvc (V2 b :...: HVNil) allocateInfo nil nil
+			\(V2 bnd :...: HVNil) bm -> f bnd bm
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
