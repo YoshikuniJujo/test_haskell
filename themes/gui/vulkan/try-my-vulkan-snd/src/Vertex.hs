@@ -42,3 +42,9 @@ instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 	formatOf = Vk.FormatR32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex
+
+instance Storable Vertex where
+	sizeOf = Foreign.Storable.Generic.gSizeOf
+	alignment = Foreign.Storable.Generic.gAlignment
+	peek = Foreign.Storable.Generic.gPeek
+	poke = Foreign.Storable.Generic.gPoke

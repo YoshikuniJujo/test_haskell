@@ -19,6 +19,7 @@ import Control.Monad.Fix
 import Control.Monad.Reader
 import Control.Exception
 import Data.Kind
+import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.HeteroList hiding (length)
@@ -110,18 +111,20 @@ import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Framebuffer
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Type as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
--- import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
+import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Buffer.List.Middle as Vk.Buffer.List
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.List.Middle as Vk.Memory.List
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
+import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Device.Memory.Buffer
 import qualified Gpu.Vulkan.Command.List as Vk.Cmd.List
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
@@ -872,7 +875,7 @@ createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
 	b <- lift $ Vk.Buffer.List.create @() dvc bufferInfo nil
 	memRequirements <- lift $ Vk.Buffer.List.getMemoryRequirements dvc b
-	mti <- findMemoryType phdvc
+	mti <- lift $ findMemoryType phdvc
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
 		properties
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
@@ -882,13 +885,30 @@ createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 	lift $ Vk.Buffer.List.bindMemory dvc b bm
 	pure (b, bm)
 
-{-
 createBuffer' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags -> IO (
 		Vk.Buffer.Binded sm sb '[ 'List Vertex],
 		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex ] ] )
-createBuffer' = undefined
--}
+createBuffer' phdvc dvc ln usage properties = do
+	let	bufferInfo :: Vk.Buffer.CreateInfo () '[ 'List Vertex]
+		bufferInfo = Vk.Buffer.CreateInfo {
+			Vk.Buffer.createInfoNext = Nothing,
+			Vk.Buffer.createInfoFlags =
+				Vk.Buffer.CreateFlagsZero,
+			Vk.Buffer.createInfoLengths = ObjectLengthList ln :...: HVNil,
+			Vk.Buffer.createInfoUsage = usage,
+			Vk.Buffer.createInfoSharingMode =
+				Vk.SharingModeExclusive,
+			Vk.Buffer.createInfoQueueFamilyIndices = [] }
+	Vk.Buffer.create dvc bufferInfo nil nil \b -> do
+		memRequirements <- Vk.Buffer.getMemoryRequirements dvc (V2 b)
+		mti <- findMemoryType' phdvc
+			(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
+			properties
+		let	allocateInfo = Vk.Device.Memory.Buffer.AllocateInfo {
+				Vk.Device.Memory.Buffer.allocateInfoNext = Nothing,
+				Vk.Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti }
+		undefined
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
@@ -922,16 +942,25 @@ copyBuffer (Vk.Device.D dvc) gq (Vk.CmdPool.C cp) srcBuffer dstBuffer ln = do
 
 findMemoryType ::
 	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
-	Vk.Memory.PropertyFlags -> ReaderT Global IO Word32
+	Vk.Memory.PropertyFlags -> IO Word32
 findMemoryType phdvc typeFilter properties = do
-	memProperties <- lift $ Vk.PhysicalDevice.getMemoryProperties phdvc
+	memProperties <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	let	r = find (suitable typeFilter properties memProperties)
 			[0 .. length (
 				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
 					memProperties) - 1]
-	lift $ print r
+	print r
 	pure $ maybe
 		(error "failed to find suitable memory type!") fromIntegral r
+
+findMemoryType' ::
+	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
+	Vk.Memory.PropertyFlags -> IO Vk.Memory.TypeIndex
+findMemoryType' phdvc typeFilter properties = do
+	memProperties <- Vk.PhysicalDevice.getMemoryProperties phdvc
+	let	r = suitable' typeFilter properties memProperties
+	print r
+	pure $ fromMaybe (error "failed to find suitable memory type!") r
 
 suitable :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
 	Vk.PhysicalDevice.MemoryProperties -> Int -> Bool
@@ -940,6 +969,18 @@ suitable typeFilter properties memProperties i =
 	(Vk.Memory.M.mTypePropertyFlags
 		(snd $ Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
 			i) .&. properties == properties)
+
+suitable' :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
+	Vk.PhysicalDevice.MemoryProperties -> Maybe Vk.Memory.TypeIndex
+suitable' typeFilter properties memProperties = fst
+	<$> find ((&&)	<$> (`Vk.Memory.M.elemTypeIndex` typeFilter) . fst 
+			<*> checkMemoryProperties properties . snd) memTypes
+	where
+	memTypes = Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties
+
+checkMemoryProperties :: Vk.Memory.PropertyFlags -> Vk.Memory.M.MType -> Bool
+checkMemoryProperties properties prop =
+	Vk.Memory.M.mTypePropertyFlags prop .&. properties == properties
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
@@ -1162,6 +1203,12 @@ data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
 	vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
+
+instance Storable Vertex where
+	sizeOf = Foreign.Storable.Generic.gSizeOf
+	alignment = Foreign.Storable.Generic.gAlignment
+	peek = Foreign.Storable.Generic.gPeek
+	poke = Foreign.Storable.Generic.gPoke
 
 instance SizeAlignmentList Vertex
 

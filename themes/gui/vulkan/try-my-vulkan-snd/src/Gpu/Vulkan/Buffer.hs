@@ -66,7 +66,7 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WholeSize objs, Pointable n, Pointable c, Pointable d) =>
+create :: (Pointable n, WholeSize objs, Pointable c, Pointable d) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . B s objs -> IO a) -> IO a
