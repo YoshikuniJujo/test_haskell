@@ -285,3 +285,12 @@ instance {-# OVERLAPPABLE #-}
 		where algn = fromIntegral $ alignment @(OT s) undefined
 	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
 	copySize (_ :...: lns) = copySize @as @ss @ds lns
+
+makeCopy :: forall (as :: [Object]) ss ds . CopyInfo as ss ds =>
+	HeteroVarList ObjectLength ss -> HeteroVarList ObjectLength ds -> C.Copy
+makeCopy src dst
+	| copyCheckLength @as src dst = C.Copy {
+		C.copySrcOffset = copySrcOffset @as @ss @ds 0 src,
+		C.copyDstOffset = copyDstOffset @as @ss @ds 0 dst,
+		C.copySize = copySize @as @ss @ds src }
+	| otherwise = error "List lengths are different"
