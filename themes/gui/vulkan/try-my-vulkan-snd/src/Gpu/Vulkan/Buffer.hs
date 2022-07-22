@@ -17,6 +17,7 @@ import Control.Exception
 import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList
+import Data.Word
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Buffer.Enum
@@ -219,3 +220,68 @@ indexedListToMiddles ::
 indexedListToMiddles HVNil = []
 indexedListToMiddles (V3 il :...: ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
+
+class CopyPrefix (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
+	copyCheckLengthPrefix ::
+		HeteroVarList ObjectLength src ->
+		HeteroVarList ObjectLength dst -> Bool
+	copySizePrefix :: Word64 -> HeteroVarList ObjectLength src -> Word64
+
+instance CopyPrefix '[] src dst where
+	copyCheckLengthPrefix _ _ = True
+	copySizePrefix sz _ = sz
+
+instance (
+	Storable (Data.Kind.Object.ObjectType a),
+	CopyPrefix as ss ds ) =>
+	CopyPrefix (a ': as) (a ': ss) (a ': ds) where
+	copyCheckLengthPrefix (s :...: ss) (d :...: ds) =
+		s == d && copyCheckLengthPrefix @as ss ds
+	copySizePrefix sz (ln :...: lns) = copySizePrefix @as @ss @ds
+		(((sz - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
+		lns
+		where algn = fromIntegral
+			$ alignment @(Data.Kind.Object.ObjectType a) undefined
+
+class CopyInfo (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
+	copyCheckLength ::
+		HeteroVarList ObjectLength src ->
+		HeteroVarList ObjectLength dst -> Bool
+	copySrcOffset :: Word64 -> HeteroVarList ObjectLength src -> Word64
+	copyDstOffset :: Word64 -> HeteroVarList ObjectLength dst -> Word64
+	copySize :: HeteroVarList ObjectLength src -> Word64
+
+type OT o = Data.Kind.Object.ObjectType o
+
+instance (
+	Storable (Data.Kind.Object.ObjectType a),
+	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) (a ': ss) (a ': ds) where
+	copyCheckLength = copyCheckLengthPrefix @(a ': as) @(a ': ss) @(a ': ds)
+	copySrcOffset ost _ = ((ost - 1) `div` algn + 1) * algn
+		where algn = fromIntegral $ alignment @(OT a) undefined
+	copyDstOffset ost _ = ((ost - 1) `div` algn + 1) * algn
+		where algn = fromIntegral $ alignment @(OT a) undefined
+	copySize = copySizePrefix @(a ': as) @(a ': ss) @(a ': ds) 0
+
+instance {-# OVERLAPPABLE #-}
+	(Storable (OT d), CopyInfo (a ': as) (a ': ss) ds) =>
+	CopyInfo (a ': as) (a ': ss) (d ': ds) where
+	copyCheckLength ss (_ :...: ds) =
+		copyCheckLength @(a ': as) @(a ': ss) @ds ss ds
+	copySrcOffset ost lns = copySrcOffset @(a ': as) @(a ': ss) @ds ost lns
+	copyDstOffset ost (ln :...: lns) = copyDstOffset @(a ': as) @(a ': ss)
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
+		lns
+		where algn = fromIntegral $ alignment @(OT d) undefined
+	copySize = copySize @(a ': as) @(a ': ss) @ds
+
+instance {-# OVERLAPPABLE #-}
+	(Storable (OT s), CopyInfo as ss ds) =>
+	CopyInfo as (s ': ss) ds where
+	copyCheckLength (_ :...: ss) ds = copyCheckLength @as ss ds
+	copySrcOffset ost (ln :...: lns) = copySrcOffset @as @ss @ds
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
+		lns
+		where algn = fromIntegral $ alignment @(OT s) undefined
+	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
+	copySize (_ :...: lns) = copySize @as @ss @ds lns

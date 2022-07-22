@@ -28,6 +28,8 @@ data ObjectLength (obj :: Object) where
 	ObjectLengthAtom :: ObjectLength ('Atom t)
 	ObjectLengthList :: Int -> ObjectLength ('List t)
 
+deriving instance Eq (ObjectLength obj)
+
 objectSize :: forall obj . Storable (ObjectType obj) => ObjectLength obj -> Int
 objectSize ObjectLengthAtom = sizeOf @(ObjectType obj) undefined
 objectSize (ObjectLengthList n) = n * ((sz - 1) `div` algn + 1) * algn
