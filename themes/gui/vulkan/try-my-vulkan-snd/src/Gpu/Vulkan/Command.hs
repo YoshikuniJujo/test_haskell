@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGe StandaloneDeriving #-}
@@ -16,6 +17,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Control.Exception
 import Data.Kind
+import Data.Kind.Object
 import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
@@ -156,3 +158,10 @@ bindVertexBuffers :: forall sc vs smsbvs .
 bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(MapThird smsbvs) @(MapSubType vs)
+
+copyBuffer :: forall (ass :: [[Object]]) sos sod sc vs sms sbs smd sbd .
+	Buffer.MakeCopies ass sos sod =>
+	CommandBuffer.C sc vs ->
+	Buffer.Binded sms sbs sos -> Buffer.Binded smd sbd sod -> IO ()
+copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
+	M.copyBuffer cb (Buffer.M.B src) (Buffer.M.B dst) (Buffer.makeCopies @ass lnss lnsd)

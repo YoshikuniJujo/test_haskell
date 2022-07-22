@@ -294,3 +294,14 @@ makeCopy src dst
 		C.copyDstOffset = copyDstOffset @as @ss @ds 0 dst,
 		C.copySize = copySize @as @ss @ds src }
 	| otherwise = error "List lengths are different"
+
+class MakeCopies (ass :: [[Object]]) (ss :: [Object]) (ds :: [Object]) where
+	makeCopies ::
+		HeteroVarList ObjectLength ss ->
+		HeteroVarList ObjectLength ds -> [C.Copy]
+
+instance MakeCopies '[] ss ds where makeCopies _ _ = []
+
+instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
+	MakeCopies (as ': ass) ss ds where
+	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
