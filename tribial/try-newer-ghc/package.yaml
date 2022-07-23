@@ -35,6 +35,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-newer-ghc
+  try-local-value:
+    main:                try-local-value.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-newer-ghc
 
 tests:
   try-newer-ghc-test:
