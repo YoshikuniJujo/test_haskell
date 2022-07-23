@@ -833,8 +833,9 @@ createCommandPool qfis dvc f = ask >>= \g -> lift
 
 initVulkan :: Vk.PhysicalDevice.P ->
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> ReaderT Global IO ()
-initVulkan phdvc dvc gq cp =
-	createVertexBuffer phdvc dvc gq cp \vb vbm -> do
+initVulkan phdvc dvc gq cp = do
+	g <- ask
+	lift $ createVertexBuffer phdvc dvc gq cp \vb vbm -> (`runReaderT` g) do
 		writeGlobal globalVertexBuffer vb
 		writeGlobal globalVertexBufferMemory vbm
 		createCommandBuffers dvc cp
@@ -842,30 +843,44 @@ initVulkan phdvc dvc gq cp =
 
 createVertexBuffer :: Vk.PhysicalDevice.P ->
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-		(Vk.Buffer.List.B Vertex -> Vk.Device.M.MemoryList Vertex ->
-			ReaderT Global IO a) -> ReaderT Global IO a
+		(Vk.Buffer.List.B Vertex -> Vk.Device.M.MemoryList Vertex -> IO a) -> IO a
 createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq cp f = do
 	(sb, sbm) <- createBuffer phdvc dvc (length vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
 		Vk.Memory.PropertyHostCoherentBit
-	lift $ Vk.Memory.List.writeList dvcm sbm Vk.Memory.M.MapFlagsZero vertices
+	Vk.Memory.List.writeList dvcm sbm Vk.Memory.M.MapFlagsZero vertices
 	(vb, vbm) <- createBuffer phdvc dvc (length vertices)
 		(Vk.Buffer.UsageTransferDstBit .|.
 			Vk.Buffer.UsageVertexBufferBit)
 		Vk.Memory.PropertyDeviceLocalBit
 	copyBuffer dvc gq cp sb vb (length vertices)
-	lift do	Vk.Buffer.List.destroy dvcm sb nil
+	do	Vk.Buffer.List.destroy dvcm sb nil
 		Vk.Memory.List.free dvcm sbm nil
 	f vb vbm
 
 createVertexBuffer' :: Vk.PhysicalDevice.P ->
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> IO ()
-createVertexBuffer' = undefined
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+		Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex]] -> IO a ) ->
+	IO a
+createVertexBuffer' phdvc dvc gq cp f =
+	createBuffer' phdvc dvc (length vertices)
+		(	Vk.Buffer.UsageTransferDstBit .|.
+			Vk.Buffer.UsageVertexBufferBit)
+		Vk.Memory.PropertyDeviceLocalBit \b bm -> do
+	createBuffer' phdvc dvc (length vertices)
+		Vk.Buffer.UsageTransferSrcBit
+		(	Vk.Memory.PropertyHostVisibleBit .|.
+			Vk.Memory.PropertyHostCoherentBit ) \b' (bm' :: Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex]]) -> do
+		Vk.Device.Memory.Buffer.write @('List Vertex)
+			dvc bm' Vk.Memory.M.MapFlagsZero vertices
+		copyBuffer' dvc gq cp b' b
+	f b bm
 
 createBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags ->
-	ReaderT Global IO (Vk.Buffer.List.B Vertex, Vk.Device.M.MemoryList Vertex)
+	IO (Vk.Buffer.List.B Vertex, Vk.Device.M.MemoryList Vertex)
 createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 	let	bufferInfo = Vk.Buffer.List.CreateInfo {
 			Vk.Buffer.List.createInfoNext = Nothing,
@@ -876,16 +891,16 @@ createBuffer phdvc (Vk.Device.D dvc) ln usage properties = do
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
-	b <- lift $ Vk.Buffer.List.create @() dvc bufferInfo nil
-	memRequirements <- lift $ Vk.Buffer.List.getMemoryRequirements dvc b
-	mti <- lift $ findMemoryType phdvc
+	b <- Vk.Buffer.List.create @() dvc bufferInfo nil
+	memRequirements <- Vk.Buffer.List.getMemoryRequirements dvc b
+	mti <- findMemoryType phdvc
 		(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
 		properties
 	let	allocInfo = Vk.Memory.List.AllocateInfo {
 			Vk.Memory.List.allocateInfoNext = Nothing,
 			Vk.Memory.List.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
-	bm <- lift $ Vk.Memory.List.allocate @() dvc b allocInfo nil
-	lift $ Vk.Buffer.List.bindMemory dvc b bm
+	bm <- Vk.Memory.List.allocate @() dvc b allocInfo nil
+	Vk.Buffer.List.bindMemory dvc b bm
 	pure (b, bm)
 
 createBuffer' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
@@ -917,7 +932,7 @@ createBuffer' phdvc dvc ln usage properties f = do
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
+	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> IO ()
 copyBuffer (Vk.Device.D dvc) gq (Vk.CmdPool.C cp) srcBuffer dstBuffer ln = do
 	let	allocInfo = Vk.CommandBuffer.M.AllocateInfo {
 			Vk.CommandBuffer.M.allocateInfoNext = Nothing,
@@ -932,18 +947,24 @@ copyBuffer (Vk.Device.D dvc) gq (Vk.CmdPool.C cp) srcBuffer dstBuffer ln = do
 			Vk.CommandBuffer.M.beginInfoInheritanceInfo = Nothing }
 		copyRegion = Vk.Buffer.List.Copy {
 			Vk.Buffer.List.copyLength = ln }
-	[commandBuffer] <- lift $ Vk.CommandBuffer.M.allocate @() dvc allocInfo
+	[commandBuffer] <- Vk.CommandBuffer.M.allocate @() dvc allocInfo
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
 			Vk.submitInfoCommandBuffers = [commandBuffer],
 			Vk.submitInfoSignalSemaphores = [] }
-	lift do	Vk.CommandBuffer.M.begin @() @() commandBuffer beginInfo
+	do	Vk.CommandBuffer.M.begin @() @() commandBuffer beginInfo
 		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
 		Vk.CommandBuffer.M.end commandBuffer
 		Vk.Queue.submit' @() gq [submitInfo] Nothing
 		Vk.Queue.waitIdle gq
 		Vk.CommandBuffer.M.freeCs dvc cp [commandBuffer]
+
+copyBuffer' ::
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+	Vk.Buffer.Binded sm' sb' '[ 'List Vertex] -> IO ()
+copyBuffer' = undefined
 
 findMemoryType ::
 	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
