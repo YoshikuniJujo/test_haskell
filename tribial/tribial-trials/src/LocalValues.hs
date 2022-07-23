@@ -36,3 +36,18 @@ fooMessages (s : ss) f = createMessage s \msg -> fooMessages ss \msgs -> f $ msg
 indexMessage :: List Message ss -> Int -> (forall s . Message s -> IO a) -> IO a
 indexMessage (x :. _) 0 f = f x
 indexMessage (_ :. xs) i f | i > 0 = indexMessage xs (i - 1) f
+
+copyMessage :: Message s -> Message t -> Message t
+copyMessage (Message str) _ = Message str
+
+{-
+escape :: String -> IO ((forall s . Message s -> IO a) -> IO a)
+escape str = createMessage str \msg1 ->
+	pure (createMesage "dummy")
+
+foo :: IO (forall s . s -> a)
+foo = pure undefined
+
+bar :: IO ((forall s . Message s -> IO a) -> IO a)
+bar = pure $ createMesage "hello"
+-}
