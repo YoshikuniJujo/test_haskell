@@ -833,14 +833,18 @@ createCommandPool qfis dvc f = ask >>= \g -> lift
 
 initVulkan :: Vk.PhysicalDevice.P ->
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> ReaderT Global IO ()
-initVulkan phdvc dvc gq cp = do
-	createVertexBuffer phdvc dvc gq cp
-	createCommandBuffers dvc cp
-	createSyncObjects dvc
+initVulkan phdvc dvc gq cp =
+	createVertexBuffer phdvc dvc gq cp \vb vbm -> do
+		writeGlobal globalVertexBuffer vb
+		writeGlobal globalVertexBufferMemory vbm
+		createCommandBuffers dvc cp
+		createSyncObjects dvc
 
 createVertexBuffer :: Vk.PhysicalDevice.P ->
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> ReaderT Global IO ()
-createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq cp = do
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+		(Vk.Buffer.List.B Vertex -> Vk.Device.M.MemoryList Vertex ->
+			ReaderT Global IO a) -> ReaderT Global IO a
+createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq cp f = do
 	(sb, sbm) <- createBuffer phdvc dvc (length vertices)
 		Vk.Buffer.UsageTransferSrcBit $
 		Vk.Memory.PropertyHostVisibleBit .|.
@@ -853,8 +857,7 @@ createVertexBuffer phdvc dvc@(Vk.Device.D dvcm) gq cp = do
 	copyBuffer dvc gq cp sb vb (length vertices)
 	lift do	Vk.Buffer.List.destroy dvcm sb nil
 		Vk.Memory.List.free dvcm sbm nil
-	writeGlobal globalVertexBuffer vb
-	writeGlobal globalVertexBufferMemory vbm
+	f vb vbm
 
 createVertexBuffer' :: Vk.PhysicalDevice.P ->
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> IO ()
