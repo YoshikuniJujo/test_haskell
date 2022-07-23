@@ -48,7 +48,8 @@ import Shaderc.TH
 
 import Gpu.Vulkan.Base
 
-import qualified Gpu.Vulkan.Middle as Vk
+import qualified Gpu.Vulkan as Vk
+import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Exception as Vk
@@ -129,6 +130,7 @@ import qualified Gpu.Vulkan.Command.List as Vk.Cmd.List
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Memory
+import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
@@ -213,21 +215,21 @@ createInstance f = do
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers \\)
-				. (Vk.layerPropertiesLayerName <$>)
+				. (Vk.M.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
 	extensions <- lift $ bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	lift $ print extensions
-	let	appInfo = Vk.ApplicationInfo {
-			Vk.applicationInfoNext = Nothing,
-			Vk.applicationInfoApplicationName = "Hello Triangle",
-			Vk.applicationInfoApplicationVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoEngineName = "No Engine",
-			Vk.applicationInfoEngineVersion =
-				Vk.makeApiVersion 0 1 0 0,
-			Vk.applicationInfoApiVersion = Vk.apiVersion_1_0 }
+	let	appInfo = Vk.M.ApplicationInfo {
+			Vk.M.applicationInfoNext = Nothing,
+			Vk.M.applicationInfoApplicationName = "Hello Triangle",
+			Vk.M.applicationInfoApplicationVersion =
+				Vk.M.makeApiVersion 0 1 0 0,
+			Vk.M.applicationInfoEngineName = "No Engine",
+			Vk.M.applicationInfoEngineVersion =
+				Vk.M.makeApiVersion 0 1 0 0,
+			Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
 			(Vk.Ext.DbgUtls.Msngr.CreateInfo
 				() () () () () ()) ()
@@ -363,7 +365,7 @@ checkBits bs = (== bs) . (.&. bs)
 
 checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
 checkDeviceExtensionSupport dvc =
-	null . (deviceExtensions \\) . (Vk.extensionPropertiesExtensionName <$>)
+	null . (deviceExtensions \\) . (Vk.M.extensionPropertiesExtensionName <$>)
 		<$> Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
 
 deviceExtensions :: [Txt.Text]
@@ -835,6 +837,10 @@ initVulkan :: Vk.PhysicalDevice.P ->
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> ReaderT Global IO ()
 initVulkan phdvc dvc gq cp = do
 	g <- ask
+	lift $ createVertexBuffer' phdvc dvc gq cp \vb vbm -> do
+		putStrLn "createVertexBuffer': "
+		putStrLn $ "\t" ++ show vb
+		putStrLn $ "\t" ++ show vbm
 	lift $ createVertexBuffer phdvc dvc gq cp \vb vbm -> (`runReaderT` g) do
 		writeGlobal globalVertexBuffer vb
 		writeGlobal globalVertexBufferMemory vbm
@@ -948,11 +954,11 @@ copyBuffer (Vk.Device.D dvc) gq (Vk.CmdPool.C cp) srcBuffer dstBuffer ln = do
 		copyRegion = Vk.Buffer.List.Copy {
 			Vk.Buffer.List.copyLength = ln }
 	[commandBuffer] <- Vk.CommandBuffer.M.allocate @() dvc allocInfo
-	let	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
-			Vk.submitInfoCommandBuffers = [commandBuffer],
-			Vk.submitInfoSignalSemaphores = [] }
+	let	submitInfo = Vk.M.SubmitInfo {
+			Vk.M.submitInfoNext = Nothing,
+			Vk.M.submitInfoWaitSemaphoreDstStageMasks = [],
+			Vk.M.submitInfoCommandBuffers = [commandBuffer],
+			Vk.M.submitInfoSignalSemaphores = [] }
 	do	Vk.CommandBuffer.M.begin @() @() commandBuffer beginInfo
 		Vk.Cmd.List.copyBuffer commandBuffer srcBuffer dstBuffer copyRegion
 		Vk.CommandBuffer.M.end commandBuffer
@@ -964,7 +970,29 @@ copyBuffer' ::
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
 	Vk.Buffer.Binded sm' sb' '[ 'List Vertex] -> IO ()
-copyBuffer' = undefined
+copyBuffer' dvc gq cp srcBuffer dstBuffer = do
+	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
+			Vk.CommandBuffer.allocateInfoNext = Nothing,
+			Vk.CommandBuffer.allocateInfoCommandPool = cp,
+			Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.LevelPrimary,
+			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
+		beginInfo = Vk.CommandBuffer.M.BeginInfo {
+			Vk.CommandBuffer.beginInfoNext = Nothing,
+			Vk.CommandBuffer.beginInfoFlags =
+				Vk.CommandBuffer.UsageOneTimeSubmitBit,
+			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
+	Vk.CommandBuffer.allocate @() dvc allocInfo \[commandBuffer] -> do
+		let	submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+				Vk.submitInfoCommandBuffers = [commandBuffer],
+				Vk.submitInfoSignalSemaphores = [] }
+		Vk.CommandBuffer.begin @() @() commandBuffer beginInfo do
+			Vk.Cmd.copyBuffer @'[ '[ 'List Vertex]]
+				commandBuffer srcBuffer dstBuffer
+		Vk.Queue.submit @() gq [submitInfo] Nothing
+		Vk.Queue.waitIdle gq
 
 findMemoryType ::
 	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
@@ -1067,10 +1095,10 @@ recordCommandBuffer cb sce (Vk.RndrPass.R rp) (Vk.Ppl.Graphics.G gpl) fbs imageI
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
 			Vk.RndrPass.M.beginInfoClearValues = [
-				Vk.ClearValueColor
+				Vk.M.ClearValueColor
 					. fromJust $ rgbaDouble 0 0 0 1 ] }
 	lift $ Vk.Cmd.M.beginRenderPass @()
-		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
+		@('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
 		cb renderPassInfo Vk.Subpass.ContentsInline
 	lift $ Vk.Cmd.M.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	vb <- readGlobal globalVertexBuffer
@@ -1136,12 +1164,12 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc
 	lift $ Vk.CommandBuffer.M.reset cb Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb ext rp gpl fbs imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
-	let	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks =
+	let	submitInfo = Vk.M.SubmitInfo {
+			Vk.M.submitInfoNext = Nothing,
+			Vk.M.submitInfoWaitSemaphoreDstStageMasks =
 				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
-			Vk.submitInfoCommandBuffers = [cb],
-			Vk.submitInfoSignalSemaphores = [rfs] }
+			Vk.M.submitInfoCommandBuffers = [cb],
+			Vk.M.submitInfoSignalSemaphores = [rfs] }
 	lift . Vk.Queue.submit' @() gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
