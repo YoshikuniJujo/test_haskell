@@ -105,7 +105,7 @@ import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
+import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
@@ -759,7 +759,7 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 createFramebuffers :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroVarList Vk.Framebuffer.F sfs -> ReaderT Global IO a) ->
+		HeteroVarList Vk.Frmbffr.F sfs -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createFramebuffers _ _ HVNil _ f = f HVNil
 createFramebuffers dvc sce (sciv :...: scivs) rp f = ask >>= \g ->
@@ -768,15 +768,14 @@ createFramebuffers dvc sce (sciv :...: scivs) rp f = ask >>= \g ->
 		`runReaderT` g
 
 createFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.I si -> (forall sf . Vk.Framebuffer.F sf -> IO a) -> IO a
-createFramebuffer1 dvc sce rp attachment =
-	Vk.Framebuffer.create @() dvc framebufferInfo nil nil
-	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
+	Vk.ImageView.I si -> (forall sf . Vk.Frmbffr.F sf -> IO a) -> IO a
+createFramebuffer1 dvc sce rp attch = Vk.Frmbffr.create @() dvc fbInfo nil nil
+	where fbInfo = makeFramebufferCreateInfo sce rp attch
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
-		HeteroVarList Vk.Framebuffer.F sfs -> IO ()
+		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
 	recreateFramebuffers _dvc _sce HVNil _rp HVNil = pure ()
@@ -788,22 +787,22 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffers dvc sce scivs rp fbs
 
 recreateFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImageView.I si -> Vk.Framebuffer.F sf -> IO ()
+	Vk.ImageView.I si -> Vk.Frmbffr.F sf -> IO ()
 recreateFramebuffer1 dvc sce rp attachment fb =
-	Vk.Framebuffer.recreate @() dvc framebufferInfo nil nil fb
+	Vk.Frmbffr.recreate @() dvc framebufferInfo nil nil fb
 	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
 
 makeFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImageView.I si ->
-	Vk.Framebuffer.CreateInfo () sr '[si]
-makeFramebufferCreateInfo sce rp attachment = Vk.Framebuffer.CreateInfo {
-	Vk.Framebuffer.createInfoNext = Nothing,
-	Vk.Framebuffer.createInfoFlags = zeroBits,
-	Vk.Framebuffer.createInfoRenderPass = rp,
-	Vk.Framebuffer.createInfoAttachments = attachment :...: HVNil,
-	Vk.Framebuffer.createInfoWidth = w,
-	Vk.Framebuffer.createInfoHeight = h,
-	Vk.Framebuffer.createInfoLayers = 1 }
+	Vk.Frmbffr.CreateInfo () sr '[si]
+makeFramebufferCreateInfo sce rp attachment = Vk.Frmbffr.CreateInfo {
+	Vk.Frmbffr.createInfoNext = Nothing,
+	Vk.Frmbffr.createInfoFlags = zeroBits,
+	Vk.Frmbffr.createInfoRenderPass = rp,
+	Vk.Frmbffr.createInfoAttachments = attachment :...: HVNil,
+	Vk.Frmbffr.createInfoWidth = w,
+	Vk.Frmbffr.createInfoHeight = h,
+	Vk.Frmbffr.createInfoLayers = 1 }
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
@@ -956,7 +955,7 @@ recordCommandBuffer ::
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Framebuffer.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Word32 -> IO ()
 recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
@@ -993,7 +992,7 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Framebuffer.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
 	ReaderT Global IO ()
@@ -1013,7 +1012,7 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Framebuffer.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]]  ->
 	(Vk.C.Extent2d -> IO ()) ->
@@ -1031,7 +1030,7 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Framebuffer.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
@@ -1079,7 +1078,7 @@ catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Framebuffer.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs loop act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
@@ -1106,7 +1105,7 @@ recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Framebuffer.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	ReaderT Global IO Vk.C.Extent2d
 recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 	sc scivs rp ppllyt gpl fbs = do
