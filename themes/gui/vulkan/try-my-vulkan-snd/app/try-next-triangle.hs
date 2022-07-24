@@ -61,13 +61,13 @@ import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Msg
-import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device as Vk.Device
-import qualified Gpu.Vulkan.Device.Type as Vk.Device
-import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
-import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
+import qualified Gpu.Vulkan.Device as Vk.Dvc
+import qualified Gpu.Vulkan.Device.Type as Vk.Dvc
+import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
+import qualified Gpu.Vulkan.Device.Queue as Vk.Dvc.Queue
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
@@ -116,14 +116,14 @@ import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
-import qualified Gpu.Vulkan.Buffer as Vk.Buffer
-import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
-import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
-import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Device.Memory.Buffer
+import qualified Gpu.Vulkan.Buffer as Vk.Bffr
+import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
+import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
+import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
+import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.Memory as Vk.Memory
+import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
@@ -284,27 +284,27 @@ createSurface win ist f =
 		f sfc `runReaderT` g
 
 pickPhysicalDevice :: Vk.Ist.I si ->
-	Vk.Khr.Surface.S ss -> IO (Vk.PhysicalDevice.P, QueueFamilyIndices)
+	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
 pickPhysicalDevice ist sfc = do
-	dvcs <- Vk.PhysicalDevice.enumerate ist
+	dvcs <- Vk.PhDvc.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
 	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
 		Just pdvc -> pure pdvc
 		Nothing -> error "failed to find a suitable GPU!"
 
 findDevice :: Monad m =>
-	(Vk.PhysicalDevice.P -> m (Maybe a)) -> [Vk.PhysicalDevice.P] ->
-	m (Maybe (Vk.PhysicalDevice.P, a))
+	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] ->
+	m (Maybe (Vk.PhDvc.P, a))
 findDevice prd = \case
 	[] -> pure Nothing
 	p : ps -> prd p >>= \case
 		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
 
 isDeviceSuitable ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
+	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
-	_deviceProperties <- Vk.PhysicalDevice.getProperties phdvc
-	_deviceFeatures <- Vk.PhysicalDevice.getFeatures phdvc
+	_deviceProperties <- Vk.PhDvc.getProperties phdvc
+	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
 	indices <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
 	if extensionSupported
@@ -333,9 +333,9 @@ completeQueueFamilies = \case
 	_ -> Nothing
 
 findQueueFamilies ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO QueueFamilyIndicesMaybe
+	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO QueueFamilyIndicesMaybe
 findQueueFamilies device sfc = do
-	queueFamilies <- Vk.PhysicalDevice.getQueueFamilyProperties device
+	queueFamilies <- Vk.PhDvc.getQueueFamilyProperties device
 	pfis <- filterM
 		(\i -> Vk.Khr.Surface.PhysicalDevice.getSupport device i sfc)
 		(fst <$> queueFamilies)
@@ -349,10 +349,10 @@ findQueueFamilies device sfc = do
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs = (== bs) . (.&. bs)
 
-checkDeviceExtensionSupport :: Vk.PhysicalDevice.P -> IO Bool
+checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
 checkDeviceExtensionSupport dvc =
 	null . (deviceExtensions \\) . (Vk.M.extensionPropertiesExtensionName <$>)
-		<$> Vk.PhysicalDevice.enumerateExtensionProperties dvc Nothing
+		<$> Vk.PhDvc.enumerateExtensionProperties dvc Nothing
 
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swapchain.M.extensionName]
@@ -363,41 +363,41 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	presentModes :: [Vk.Khr.PresentMode] }
 
 querySwapChainSupport ::
-	Vk.PhysicalDevice.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
+	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
 querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhysicalDevice.P -> QueueFamilyIndices -> (forall sd .
-		Vk.Device.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
+		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 			ReaderT Global IO a) -> ReaderT Global IO a
 createLogicalDevice phdvc qfis f =
 	let	uniqueQueueFamilies =
 			nub [graphicsFamily qfis, presentFamily qfis]
-		queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
-			Vk.Device.Queue.createInfoNext = Nothing,
-			Vk.Device.Queue.createInfoFlags = def,
-			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
-			Vk.Device.Queue.createInfoQueuePriorities = [1] }
-		createInfo = Vk.Device.M.CreateInfo {
-			Vk.Device.M.createInfoNext = Nothing,
-			Vk.Device.M.createInfoFlags = def,
-			Vk.Device.M.createInfoQueueCreateInfos =
+		queueCreateInfos qf = Vk.Dvc.Queue.CreateInfo {
+			Vk.Dvc.Queue.createInfoNext = Nothing,
+			Vk.Dvc.Queue.createInfoFlags = def,
+			Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
+			Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
+		createInfo = Vk.Dvc.M.CreateInfo {
+			Vk.Dvc.M.createInfoNext = Nothing,
+			Vk.Dvc.M.createInfoFlags = def,
+			Vk.Dvc.M.createInfoQueueCreateInfos =
 				queueCreateInfos <$> uniqueQueueFamilies,
-			Vk.Device.M.createInfoEnabledLayerNames =
+			Vk.Dvc.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
-			Vk.Device.M.createInfoEnabledExtensionNames =
+			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Device.M.createInfoEnabledFeatures = Just def } in
+			Vk.Dvc.M.createInfoEnabledFeatures = Just def } in
 	ask >>= \g ->
-	lift $ Vk.Device.create @() @() phdvc createInfo nil nil \dvc -> do
-		gq <- Vk.Device.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Device.getQueue dvc (presentFamily qfis) 0
+	lift $ Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
+		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
 		f dvc gq pq `runReaderT` g
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd -> (
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> (
 		forall ss . Vk.Khr.Swapchain.S ss -> Vk.Khr.Surface.M.Format ->
 		Vk.C.Extent2d -> ReaderT Global IO a ) -> ReaderT Global IO a
 createSwapChain win sfc phdvc qfis dvc f = do
@@ -410,7 +410,7 @@ createSwapChain win sfc phdvc qfis dvc f = do
 		f sc surfaceFormat extent `runReaderT` g
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc ->
 	ReaderT Global IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
@@ -497,7 +497,7 @@ clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
 onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
 
-createImageViews :: Vk.Device.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
+createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
 	(forall si . HeteroVarList Vk.ImageView.I si -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createImageViews _dvc _scifmt [] f = f HVNil
@@ -505,7 +505,7 @@ createImageViews dvc scifmt (img : imgs) f =
 	createImageView1 dvc img scifmt \sciv ->
 	createImageViews dvc scifmt imgs \scivs -> f $ sciv :...: scivs
 
-createImageView1 :: Vk.Device.D sd -> Vk.Image.Binded ss ss -> Vk.Format ->
+createImageView1 :: Vk.Dvc.D sd -> Vk.Image.Binded ss ss -> Vk.Format ->
 	(forall siv . Vk.ImageView.I siv -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createImageView1 dvc sci scifmt f = do
@@ -513,7 +513,7 @@ createImageView1 dvc sci scifmt f = do
 	g <- ask
 	lift $ Vk.ImageView.create @() dvc createInfo nil nil \sciv -> f sciv `runReaderT` g
 
-recreateImageViews :: Vk.Device.D sd ->
+recreateImageViews :: Vk.Dvc.D sd ->
 	Vk.Format -> [Vk.Image.Binded ss ss] ->
 	HeteroVarList Vk.ImageView.I sis -> ReaderT Global IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
@@ -523,7 +523,7 @@ recreateImageViews dvc scifmt (img : imgs) (iv :...: ivs) =
 recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
-recreateImageView1 :: Vk.Device.D sd ->
+recreateImageView1 :: Vk.Dvc.D sd ->
 	Vk.Image.Binded ss ss -> Vk.Format -> Vk.ImageView.I siv -> ReaderT Global IO ()
 recreateImageView1 dvc sci scifmt iv = do
 	let	createInfo = makeImageViewCreateInfo sci scifmt
@@ -552,7 +552,7 @@ makeImageViewCreateInfo sci scifmt = Vk.ImageView.CreateInfo {
 		Vk.Image.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.M.subresourceRangeLayerCount = 1 }
 
-createRenderPass :: Vk.Device.D sd ->
+createRenderPass :: Vk.Dvc.D sd ->
 	Vk.Format -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
 createRenderPass dvc scifmt f = do
 	let	colorAttachment = Vk.Att.Description {
@@ -600,7 +600,7 @@ createRenderPass dvc scifmt f = do
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
 
-createPipelineLayout :: Vk.Device.D sd ->
+createPipelineLayout :: Vk.Dvc.D sd ->
 	r -> (forall sl . Vk.Ppl.Layout.LL sl '[] -> ReaderT r IO b) -> IO b
 createPipelineLayout dvc g f = do
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
@@ -611,7 +611,7 @@ createPipelineLayout dvc g f = do
 	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt ->
 		f ppllyt `runReaderT` g
 
-createGraphicsPipeline :: Vk.Device.D sd ->
+createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
@@ -622,7 +622,7 @@ createGraphicsPipeline dvc sce rp ppllyt f = ask >>= \g ->
 			nil nil \(V2 gpl :...: HVNil) -> f gpl `runReaderT` g
 	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
 
-recreateGraphicsPipeline :: Vk.Device.D sd ->
+recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
@@ -756,7 +756,7 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createFramebuffers :: Vk.Device.D sd ->
+createFramebuffers :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Framebuffer.F sfs -> ReaderT Global IO a) ->
@@ -767,14 +767,14 @@ createFramebuffers dvc sce (sciv :...: scivs) rp f = ask >>= \g ->
 	(createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs))
 		`runReaderT` g
 
-createFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+createFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImageView.I si -> (forall sf . Vk.Framebuffer.F sf -> IO a) -> IO a
 createFramebuffer1 dvc sce rp attachment =
 	Vk.Framebuffer.create @() dvc framebufferInfo nil nil
 	where framebufferInfo = makeFramebufferCreateInfo sce rp attachment
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
-	recreateFramebuffers :: Vk.Device.D sd -> Vk.C.Extent2d ->
+	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		HeteroVarList Vk.ImageView.I sis -> Vk.RndrPass.R sr ->
 		HeteroVarList Vk.Framebuffer.F sfs -> IO ()
 
@@ -787,7 +787,7 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffer1 dvc sce rp sciv fb
 		recreateFramebuffers dvc sce scivs rp fbs
 
-recreateFramebuffer1 :: Vk.Device.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+recreateFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImageView.I si -> Vk.Framebuffer.F sf -> IO ()
 recreateFramebuffer1 dvc sce rp attachment fb =
 	Vk.Framebuffer.recreate @() dvc framebufferInfo nil nil fb
@@ -807,7 +807,7 @@ makeFramebufferCreateInfo sce rp attachment = Vk.Framebuffer.CreateInfo {
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
-createCommandPool :: QueueFamilyIndices -> Vk.Device.D sd ->
+createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> ReaderT Global IO a) ->
 	ReaderT Global IO a
 createCommandPool qfis dvc f = ask >>= \g -> lift
@@ -818,55 +818,50 @@ createCommandPool qfis dvc f = ask >>= \g -> lift
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createVertexBuffer :: Vk.PhysicalDevice.P ->
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Buffer.Binded sm sb '[ 'List Vertex] -> IO a ) ->
-	IO a
+createVertexBuffer :: Vk.PhDvc.P ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBuffer phdvc dvc (length vertices)
-		(	Vk.Buffer.UsageTransferDstBit .|.
-			Vk.Buffer.UsageVertexBufferBit)
-		Vk.Memory.PropertyDeviceLocalBit \b _ -> do
+		(	Vk.Bffr.UsageTransferDstBit .|.
+			Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
 	createBuffer phdvc dvc (length vertices)
-		Vk.Buffer.UsageTransferSrcBit
-		(	Vk.Memory.PropertyHostVisibleBit .|.
-			Vk.Memory.PropertyHostCoherentBit ) \b' (bm' :: Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex]]) -> do
-		Vk.Device.Memory.Buffer.write @('List Vertex)
-			dvc bm' Vk.Memory.M.MapFlagsZero vertices
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
+		Vk.Dvc.Mem.Buffer.write @('List Vertex)
+			dvc bm' Vk.Mem.M.MapFlagsZero vertices
 		copyBuffer dvc gq cp b' b
 	f b
 
-createBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
-	Int -> Vk.Buffer.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
-		Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
-		Vk.Device.Memory.Buffer.M sm '[ '[ 'List Vertex ] ] -> IO a) ->
-		IO a
-createBuffer phdvc dvc ln usage properties f = do
-	let	bufferInfo :: Vk.Buffer.CreateInfo () '[ 'List Vertex]
-		bufferInfo = Vk.Buffer.CreateInfo {
-			Vk.Buffer.createInfoNext = Nothing,
-			Vk.Buffer.createInfoFlags =
-				Vk.Buffer.CreateFlagsZero,
-			Vk.Buffer.createInfoLengths = ObjectLengthList ln :...: HVNil,
-			Vk.Buffer.createInfoUsage = usage,
-			Vk.Buffer.createInfoSharingMode =
-				Vk.SharingModeExclusive,
-			Vk.Buffer.createInfoQueueFamilyIndices = [] }
-	Vk.Buffer.create dvc bufferInfo nil nil \b -> do
-		memRequirements <- Vk.Buffer.getMemoryRequirements dvc (V2 b)
-		mti <- findMemoryType' phdvc
-			(Vk.Memory.M.requirementsMemoryTypeBits memRequirements)
-			properties
-		let	allocateInfo = Vk.Device.Memory.Buffer.AllocateInfo {
-				Vk.Device.Memory.Buffer.allocateInfoNext = Nothing,
-				Vk.Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti }
-		Vk.Buffer.allocateBind @() dvc (V2 b :...: HVNil) allocateInfo nil nil
-			\(V2 bnd :...: HVNil) bm -> f bnd bm
+createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
+		forall sm sb .
+		Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List Vertex ] ] -> IO a ) -> IO a
+createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv (V2 b)
+	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
+	let	allocInfo = Vk.Dvc.Mem.Buffer.AllocateInfo {
+			Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+	Vk.Bffr.allocateBind @() dv (V2 b :...: HVNil) allocInfo nil nil
+		$ f . \(V2 bnd :...: HVNil) -> bnd
+	where
+	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List Vertex]
+	bffrInfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = ObjectLengthList ln :...: HVNil,
+		Vk.Bffr.createInfoUsage = usg,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 copyBuffer ::
-	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
-	Vk.Buffer.Binded sm' sb' '[ 'List Vertex] -> IO ()
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp srcBuffer dstBuffer = do
 	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
 			Vk.CommandBuffer.allocateInfoNext = Nothing,
@@ -892,51 +887,38 @@ copyBuffer dvc gq cp srcBuffer dstBuffer = do
 		Vk.Queue.waitIdle gq
 
 findMemoryType ::
-	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
-	Vk.Memory.PropertyFlags -> IO Word32
+	Vk.PhDvc.P -> Vk.Mem.M.TypeBits ->
+	Vk.Mem.PropertyFlags -> IO Vk.Mem.TypeIndex
 findMemoryType phdvc typeFilter properties = do
-	memProperties <- Vk.PhysicalDevice.getMemoryProperties phdvc
-	let	r = find (suitable typeFilter properties memProperties)
-			[0 .. length (
-				Vk.PhysicalDevice.memoryPropertiesMemoryTypes
-					memProperties) - 1]
-	print r
-	pure $ maybe
-		(error "failed to find suitable memory type!") fromIntegral r
-
-findMemoryType' ::
-	Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits ->
-	Vk.Memory.PropertyFlags -> IO Vk.Memory.TypeIndex
-findMemoryType' phdvc typeFilter properties = do
-	memProperties <- Vk.PhysicalDevice.getMemoryProperties phdvc
+	memProperties <- Vk.PhDvc.getMemoryProperties phdvc
 	let	r = suitable' typeFilter properties memProperties
 	print r
 	pure $ fromMaybe (error "failed to find suitable memory type!") r
 
-suitable :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
-	Vk.PhysicalDevice.MemoryProperties -> Int -> Bool
+suitable :: Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
+	Vk.PhDvc.MemoryProperties -> Int -> Bool
 suitable typeFilter properties memProperties i =
-	(typeFilter .&. Vk.Memory.M.TypeBits 1 `shiftL` i /= zeroBits) &&
-	(Vk.Memory.M.mTypePropertyFlags
-		(snd $ Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties !!
+	(typeFilter .&. Vk.Mem.M.TypeBits 1 `shiftL` i /= zeroBits) &&
+	(Vk.Mem.M.mTypePropertyFlags
+		(snd $ Vk.PhDvc.memoryPropertiesMemoryTypes memProperties !!
 			i) .&. properties == properties)
 
-suitable' :: Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
-	Vk.PhysicalDevice.MemoryProperties -> Maybe Vk.Memory.TypeIndex
+suitable' :: Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
+	Vk.PhDvc.MemoryProperties -> Maybe Vk.Mem.TypeIndex
 suitable' typeFilter properties memProperties = fst
-	<$> find ((&&)	<$> (`Vk.Memory.M.elemTypeIndex` typeFilter) . fst 
+	<$> find ((&&)	<$> (`Vk.Mem.M.elemTypeIndex` typeFilter) . fst 
 			<*> checkMemoryProperties properties . snd) memTypes
 	where
-	memTypes = Vk.PhysicalDevice.memoryPropertiesMemoryTypes memProperties
+	memTypes = Vk.PhDvc.memoryPropertiesMemoryTypes memProperties
 
-checkMemoryProperties :: Vk.Memory.PropertyFlags -> Vk.Memory.M.MType -> Bool
+checkMemoryProperties :: Vk.Mem.PropertyFlags -> Vk.Mem.M.MType -> Bool
 checkMemoryProperties properties prop =
-	Vk.Memory.M.mTypePropertyFlags prop .&. properties == properties
+	Vk.Mem.M.mTypePropertyFlags prop .&. properties == properties
 
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
 
-createCommandBuffers :: Vk.Device.D sd -> Vk.CmdPool.C scp -> (forall scb .
+createCommandBuffers :: Vk.Dvc.D sd -> Vk.CmdPool.C scp -> (forall scb .
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
 	IO a ) -> IO a
 createCommandBuffers dvc cp =
@@ -949,8 +931,8 @@ createCommandBuffers dvc cp =
 				fromIntegral maxFramesInFlight } in
 	Vk.CommandBuffer.allocate @() dvc allocInfo
 
-createSyncObjects :: Vk.Device.D sd -> ReaderT Global IO ()
-createSyncObjects (Vk.Device.D dvc) = do
+createSyncObjects :: Vk.Dvc.D sd -> ReaderT Global IO ()
+createSyncObjects (Vk.Dvc.D dvc) = do
 	let	semaphoreInfo = Vk.Semaphore.CreateInfo {
 			Vk.Semaphore.createInfoNext = Nothing,
 			Vk.Semaphore.createInfoFlags =
@@ -975,7 +957,7 @@ recordCommandBuffer ::
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
-	Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Word32 -> IO ()
 recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
 	imageIndex = heteroVarListIndex fbs (fromIntegral imageIndex) \fb -> do
@@ -1000,39 +982,39 @@ recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
 			@('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
 			cb0 renderPassInfo' Vk.Subpass.ContentsInline do
 			Vk.Cmd.bindPipeline cb0 Vk.Ppl.BindPointGraphics gpl0
-			Vk.Cmd.bindVertexBuffers cb0 (V3 (Vk.Buffer.IndexedList @_ @_ @Vertex vb') :...: HVNil)
+			Vk.Cmd.bindVertexBuffers cb0 (V3 (Vk.Bffr.IndexedList @_ @_ @Vertex vb') :...: HVNil)
 			Vk.Cmd.M.draw cb 3 1 0 0
 
 mainLoop :: RecreateFramebuffers ss sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImageView.I ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
-	 Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
 	ReaderT Global IO ()
-mainLoop win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq sc ext0 scivs rp ppllyt gpl fbs vb' cbs = do
+mainLoop win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq sc ext0 scivs rp ppllyt gpl fbs vb' cbs = do
 	($ ext0) $ fix \loop ext -> do
 		lift Glfw.pollEvents
 		g <- ask
 		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
 			$ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb' cbs (\e -> loop e `runReaderT` g)
-	lift $ Vk.Device.M.waitIdle dvcm
+	lift $ Vk.Dvc.M.waitIdle dvcm
 
 runLoop :: RecreateFramebuffers sis sfs =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhysicalDevice.P ->
-	QueueFamilyIndices -> Vk.Device.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
+	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Global -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
-	 Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]]  ->
 	(Vk.C.Extent2d -> IO ()) ->
 	IO ()
@@ -1042,7 +1024,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb' cbs lo
 
 drawFrame :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImageView.I sis ->
@@ -1050,10 +1032,10 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
-	Vk.Buffer.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Device.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb' cbs0 loop = do
+drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb' cbs0 loop = do
 	let cbs = (\(Vk.CommandBuffer.C cb) -> cb) <$> cbs0
 	cf <- readGlobal globalCurrentFrame
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
@@ -1090,7 +1072,7 @@ catchAndSerialize =
 
 catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
 	Global -> Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
@@ -1118,7 +1100,7 @@ doWhile_ act = (`when` doWhile_ act) =<< act
 
 recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhysicalDevice.P -> QueueFamilyIndices -> Vk.Device.D sd ->
+	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImageView.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1126,14 +1108,14 @@ recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Framebuffer.F sfs ->
 	ReaderT Global IO Vk.C.Extent2d
-recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
+recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 	sc scivs rp ppllyt gpl fbs = do
 	lift do	(wdth, hght) <- Glfw.getFramebufferSize win
 		when (wdth == 0 || hght == 0) $ doWhile_ do
 			Glfw.waitEvents
 			(wd, hg) <- Glfw.getFramebufferSize win
 			pure $ wd == 0 || hg == 0
-	lift $ Vk.Device.M.waitIdle dvcm
+	lift $ Vk.Dvc.M.waitIdle dvcm
 
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
@@ -1143,8 +1125,8 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Device.D dvcm)
 	lift $ recreateFramebuffers dvc ext scivs rp fbs
 	pure ext
 
-cleanup :: Vk.Device.D sd -> ReaderT Global IO ()
-cleanup _dvc@(Vk.Device.D dvcm) = do
+cleanup :: Vk.Dvc.D sd -> ReaderT Global IO ()
+cleanup _dvc@(Vk.Dvc.D dvcm) = do
 	lift . (flip (Vk.Semaphore.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
 	lift . (flip (Vk.Semaphore.destroy dvcm) nil `mapM_`)
