@@ -76,8 +76,11 @@ create (Device.D dvc) ci macc macd f = bracket
 	(\b -> M.destroy dvc b macd)
 	(f . B (createInfoLengths ci) . (\(M.B b) -> b))
 
-getMemoryRequirements :: Device.D sd -> BB sobjs -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (V2 (B _ b)) = M.getMemoryRequirements dvc (M.B b)
+getMemoryRequirements :: Device.D sd -> B sb objs -> IO Memory.M.Requirements
+getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc (M.B b)
+
+getMemoryRequirements' :: Device.D sd -> BB sbobjs -> IO Memory.M.Requirements
+getMemoryRequirements' dvc (V2 b) = getMemoryRequirements dvc b
 
 allocateInfoToMiddle ::
 	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.AllocateInfo n ->
@@ -85,7 +88,7 @@ allocateInfoToMiddle ::
 allocateInfoToMiddle dvc bs Device.Memory.AllocateInfo {
 	Device.Memory.allocateInfoNext = mnxt,
 	Device.Memory.allocateInfoMemoryTypeIndex = mti } = do
-	reqss <- heteroVarListToListM (getMemoryRequirements dvc) bs
+	reqss <- heteroVarListToListM (getMemoryRequirements' dvc) bs
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
 		Memory.M.allocateInfoAllocationSize =
@@ -159,7 +162,7 @@ indexForms _ _ = error "bad"
 bsToForms :: Device.D sd -> HeteroVarList BB sbobjss ->
 	IO (HeteroVarList Device.Memory.Form (SbobjssToObjss sbobjss))
 bsToForms dvc bs = do
-	reqss <- heteroVarListToListM (getMemoryRequirements dvc) bs
+	reqss <- heteroVarListToListM (getMemoryRequirements' dvc) bs
 	pure $ zipToForms
 		(memoryRequirementsListToOffsets 0 reqss) bs
 

@@ -363,7 +363,7 @@ storageBufferNew :: forall sd w a . Storable w =>
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w]] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
-		memoryInfo <- getMemoryInfo phdvc dvc (V2 buffer)
+		memoryInfo <- getMemoryInfo phdvc dvc buffer
 		Vk.Buffer.allocateBind dvc (V2 buffer :...: HVNil) memoryInfo
 			nil nil \(V2 binded :...: HVNil) memory -> do
 			Vk.Dvc.Mem.Buffer.write @('List w) dvc memory def xs
@@ -385,11 +385,11 @@ storage3BufferNew :: forall sd w1 w2 w3 a . (
 		) -> IO a
 storage3BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buf1 -> do
-		memInfo1 <- getMemoryInfo phdvc dvc $ V2 buf1
+		memInfo1 <- getMemoryInfo phdvc dvc buf1
 		Vk.Buffer.create dvc (bufferInfo ys) nil nil \buf2 -> do
-			memInfo2 <- getMemoryInfo phdvc dvc $ V2 buf2
+			memInfo2 <- getMemoryInfo phdvc dvc buf2
 			Vk.Buffer.create dvc (bufferInfo zs) nil nil \buf3 -> do
-				memInfo3 <- getMemoryInfo phdvc dvc $ V2 buf3
+				memInfo3 <- getMemoryInfo phdvc dvc buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
 					Vk.Buffer.allocateBind dvc (
 						V2 buf1 :...: V2 buf2 :...:
@@ -428,7 +428,7 @@ storage1BufferNew :: forall sd w1 w2 w3 a . (
 			'[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
 storage1BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
-		memInfo <- getMemoryInfo phdvc dvc $ V2 buf
+		memInfo <- getMemoryInfo phdvc dvc buf
 		Vk.Buffer.allocateBind dvc (V2 buf :...: HVNil)
 			memInfo nil nil \(V2 bnd :...: HVNil) mem -> do
 			Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
@@ -499,7 +499,7 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.BB sobjs ->
+getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb objs ->
 	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
 getMemoryInfo phdvc dvc buffer = do
 	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer

@@ -841,7 +841,7 @@ createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
 		Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List Vertex ] ] -> IO a ) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
-	reqs <- Vk.Bffr.getMemoryRequirements dv (V2 b)
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	let	allocInfo = Vk.Dvc.Mem.Buffer.AllocateInfo {
 			Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
