@@ -136,8 +136,8 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 						Vk.C.rect2dExtent = Vk.C.Extent2d
 							screenWidth screenHeight
 						},
-					Vk.RenderPass.beginInfoClearValues = [] }
-			Vk.Cmd.beginRenderPass @() @('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
+					Vk.RenderPass.beginInfoClearValues = HVNil }
+			Vk.Cmd.beginRenderPass @() @'[]
 				cb renderpassBeginInfo Vk.Subpass.ContentsInline do
 				Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
 				Vk.Cmd.draw cb 3 1 0 0

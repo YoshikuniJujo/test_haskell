@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.HeteroList hiding (length)
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Core (Rect2d)
@@ -81,24 +82,24 @@ destroy (Device.D dvc) (R r) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc r pac
 
-data BeginInfo n ct = BeginInfo {
+data BeginInfo n cts = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoRenderPass :: R,
 	beginInfoFramebuffer :: Framebuffer.F,
 	beginInfoRenderArea :: Rect2d,
-	beginInfoClearValues :: [ClearValue ct] }
+	beginInfoClearValues :: HeteroVarList ClearValue cts }
 
-beginInfoToCore :: (Pointable n, ClearValueToCore ct) =>
-	BeginInfo n ct -> ContT r IO (Ptr C.BeginInfo)
+beginInfoToCore :: (Pointable n, ClearValuesToCore cts) =>
+	BeginInfo n cts -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoRenderPass = R rp,
 	beginInfoFramebuffer = fb,
 	beginInfoRenderArea = ra,
-	beginInfoClearValues = length &&& id -> (cvc, cvs)
+	beginInfoClearValues = heteroVarListLength &&& id -> (cvc, cvs)
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pcvl <- clearValueToCore `mapM` cvs
+	pcvl <- clearValuesToCore cvs
 	pcva <- clearValueListToArray pcvl
 	fb' <- lift $ Framebuffer.fToCore fb
 	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {

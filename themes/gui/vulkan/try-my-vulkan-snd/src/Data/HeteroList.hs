@@ -13,7 +13,7 @@ module Data.HeteroList (
 	HeteroVarList(..),
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
-	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex,
+	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
 

@@ -19,6 +19,7 @@ import Data.Maybe
 import Data.List
 import Data.IORef
 import Data.Bits
+import Data.HeteroList hiding (length)
 import Data.Bool
 import Data.Word
 import Data.Color
@@ -831,11 +832,11 @@ recordCommandBuffer Global {
 			Vk.RndrPss.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
-			Vk.RndrPss.beginInfoClearValues = [
+			Vk.RndrPss.beginInfoClearValues =
 				Vk.ClearValueColor
-					. fromJust $ rgbaDouble 0 0 0 1 ] }
+					(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
 	Vk.Cmd.M.beginRenderPass @()
-		@('Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32)
+		@'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
 		cb renderPassInfo Vk.Subpass.ContentsInline
 	Vk.Cmd.M.bindPipeline cb Vk.Ppl.BindPointGraphics =<< readIORef rppl
 	Vk.Cmd.M.draw cb 3 1 0 0

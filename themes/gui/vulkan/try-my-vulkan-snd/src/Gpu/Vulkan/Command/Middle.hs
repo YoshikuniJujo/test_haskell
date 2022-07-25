@@ -29,7 +29,7 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 
 import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
 
-beginRenderPass :: (Pointable n, ClearValueToCore ct) =>
+beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.C cb)
 	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do

@@ -2,6 +2,8 @@
 
 module Gpu.Vulkan.RenderPass.Type where
 
+import Data.HeteroList
+
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Core
 
@@ -10,14 +12,14 @@ import qualified Gpu.Vulkan.RenderPass.Middle as M
 
 newtype R s = R M.R deriving Show
 
-data BeginInfo n sr sf ct = BeginInfo {
+data BeginInfo n sr sf cts = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoRenderPass :: R sr,
 	beginInfoFramebuffer :: Framebuffer.F sf,
 	beginInfoRenderArea :: Rect2d,
-	beginInfoClearValues :: [ClearValue ct] }
+	beginInfoClearValues :: HeteroVarList ClearValue cts }
 
-beginInfoToMiddle :: BeginInfo n sr sf ct -> M.BeginInfo n ct
+beginInfoToMiddle :: BeginInfo n sr sf cts -> M.BeginInfo n cts
 beginInfoToMiddle BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoRenderPass = R rp,

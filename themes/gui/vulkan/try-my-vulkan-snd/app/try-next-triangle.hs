@@ -962,12 +962,12 @@ recordCommandBuffer cb sce rp gpl fbs vb imgIdx =
 			Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 				Vk.C.rect2dExtent = sce },
-			Vk.RndrPass.beginInfoClearValues = [
+			Vk.RndrPass.beginInfoClearValues =
 				Vk.M.ClearValueColor
-					. fromJust $ rgbaDouble 0 0 0 1 ] }
+					(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
 	Vk.CmdBffr.begin @() @() cb beginInfo
 		$ Vk.Cmd.beginRenderPass @()
-			@('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
+			@'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
 			cb rpInfo Vk.Subpass.ContentsInline do
 			Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 			Vk.Cmd.bindVertexBuffers cb . (:...: HVNil) . V3

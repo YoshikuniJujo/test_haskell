@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -18,6 +18,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Color.Internal
 
@@ -150,8 +151,7 @@ stencilOpStateToCore StencilOpState {
 
 data ClearValue (ct :: ClearType) where
 	ClearValueDepthStencil ::
---		C.ClearDepthStencilValue -> ClearValue 'ClearTypeDepthStencil
-		C.ClearDepthStencilValue -> ClearValue ct
+		C.ClearDepthStencilValue -> ClearValue 'ClearTypeDepthStencil
 	ClearValueColor :: Rgba Float -> ClearValue ('ClearTypeColor cct)
 
 class ClearColorValueToCore (cct :: ClearColorType) where
@@ -196,8 +196,17 @@ instance ClearColorValueToCore cct =>
 	ClearValueToCore ('ClearTypeColor cct) where
 	clearValueToCore cv@(ClearValueColor _) =
 		C.clearValueFromClearColorValue <$> clearColorValueToCore cv
-	clearValueToCore (ClearValueDepthStencil cdsv) =
-		C.clearValueFromClearDepthStencilValue cdsv
+
+class ClearValuesToCore (cts :: [ClearType]) where
+	clearValuesToCore :: HeteroVarList ClearValue cts -> ContT r IO [Ptr C.ClearValueTag]
+
+instance ClearValuesToCore '[] where clearValuesToCore HVNil = pure []
+
+instance (ClearValueToCore ct, ClearValuesToCore cts) =>
+	ClearValuesToCore (ct ': cts) where
+	clearValuesToCore (cv :...: cvs) = (:)
+		<$> clearValueToCore cv
+		<*> clearValuesToCore cvs
 
 clearValueListToArray :: [Ptr C.ClearValueTag] -> ContT r IO (Ptr C.ClearValueTag)
 clearValueListToArray (length &&& id -> (pcvc, pcvl)) = do
