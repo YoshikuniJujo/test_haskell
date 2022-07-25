@@ -948,24 +948,16 @@ createSyncObjects (Vk.Dvc.D dvc) = do
 
 recordCommandBuffer ::
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Graphics.G sg
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	Word32 -> IO ()
-recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
-	imageIndex = heteroVarListIndex fbs (fromIntegral imageIndex) \fb -> do
-	let cb = (\(Vk.CmdBffr.C c) -> c) cb0
-	let	beginInfo = Vk.CmdBffr.M.BeginInfo {
-			Vk.CmdBffr.M.beginInfoNext = Nothing,
-			Vk.CmdBffr.M.beginInfoFlags =
-				Vk.CmdBffr.UsageFlagsZero,
-			Vk.CmdBffr.M.beginInfoInheritanceInfo = Nothing }
-	let	renderPassInfo' = Vk.RndrPass.BeginInfo {
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Word32 -> IO ()
+recordCommandBuffer cb sce rp gpl fbs vb imgIdx =
+	heteroVarListIndex fbs imgIdx \fb -> do
+	let	rpInfo = Vk.RndrPass.BeginInfo {
 			Vk.RndrPass.beginInfoNext = Nothing,
-			Vk.RndrPass.beginInfoRenderPass = rp0,
+			Vk.RndrPass.beginInfoRenderPass = rp,
 			Vk.RndrPass.beginInfoFramebuffer = fb,
 			Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
@@ -973,13 +965,18 @@ recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
 			Vk.RndrPass.beginInfoClearValues = [
 				Vk.M.ClearValueColor
 					. fromJust $ rgbaDouble 0 0 0 1 ] }
-	Vk.CmdBffr.begin @() @() cb0 beginInfo
+	Vk.CmdBffr.begin @() @() cb beginInfo
 		$ Vk.Cmd.beginRenderPass @()
 			@('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
-			cb0 renderPassInfo' Vk.Subpass.ContentsInline do
-			Vk.Cmd.bindPipeline cb0 Vk.Ppl.BindPointGraphics gpl0
-			Vk.Cmd.bindVertexBuffers cb0 (V3 (Vk.Bffr.IndexedList @_ @_ @Vertex vb') :...: HVNil)
-			Vk.Cmd.M.draw cb 3 1 0 0
+			cb rpInfo Vk.Subpass.ContentsInline do
+			Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
+			Vk.Cmd.bindVertexBuffers cb . (:...: HVNil) . V3
+				$ Vk.Bffr.IndexedList @_ @_ @Vertex vb
+			Vk.Cmd.draw cb 3 1 0 0
+	where beginInfo = Vk.CmdBffr.M.BeginInfo {
+		Vk.CmdBffr.M.beginInfoNext = Nothing,
+		Vk.CmdBffr.M.beginInfoFlags = zeroBits,
+		Vk.CmdBffr.M.beginInfoInheritanceInfo = Nothing }
 
 mainLoop :: RecreateFramebuffers ss sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->

@@ -116,7 +116,7 @@ instance ListToHeteroVarList ss => ListToHeteroVarList (s ': ss) where
 oneOfOne :: HeteroVarList t '[s] -> t s
 oneOfOne (x :...: HVNil) = x
 
-heteroVarListIndex :: HeteroVarList t ss -> Int -> (forall s . t s -> a) -> a
+heteroVarListIndex :: Integral i => HeteroVarList t ss -> i -> (forall s . t s -> a) -> a
 heteroVarListIndex HVNil _ _ = error "index too large"
 heteroVarListIndex (x :...: _) 0 f = f x
 heteroVarListIndex (_ :...: xs) i f | i > 0 = heteroVarListIndex xs (i - 1) f
