@@ -108,14 +108,14 @@ import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
-import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
-import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
+import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
+import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
-import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
+import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
@@ -256,25 +256,24 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
-run win inst = ask >>= \g ->
-	createSurface win inst \sfc ->
-	lift (pickPhysicalDevice inst sfc) >>= \(phdvc, qfis) ->
-	createLogicalDevice phdvc qfis \dvc gq pq ->
-	createSwapChain win sfc phdvc qfis dvc \sc scfmt ext ->
+run w inst = ask >>= \g ->
+	createSurface w inst \sfc ->
+	lift (pickPhysicalDevice inst sfc) >>= \(phdv, qfis) ->
+	createLogicalDevice phdv qfis \dv gq pq ->
+	createSwapChain w sfc phdv qfis dv \sc scfmt ext ->
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt in
-	lift (Vk.Khr.Swapchain.getImages dvc sc) >>= \imgs ->
-	createImageViews dvc scifmt imgs \scivs ->
-	lift $ createRenderPass dvc scifmt \rp ->
-	createPipelineLayout dvc g \ppllyt ->
-	createGraphicsPipeline dvc ext rp ppllyt \gpl ->
-	createFramebuffers dvc ext scivs rp \fbs ->
-	createCommandPool qfis dvc \cp ->
-	lift $ createVertexBuffer phdvc dvc gq cp \vb ->
-		createCommandBuffers dvc cp \cbs -> (`runReaderT` g) do
-			createSyncObjects dvc
-			mainLoop win sfc phdvc qfis dvc gq pq
-				sc ext scivs rp ppllyt gpl fbs vb cbs
-			cleanup dvc
+	lift (Vk.Khr.Swapchain.getImages dv sc) >>= \imgs ->
+	createImageViews dv scifmt imgs \scivs ->
+	lift $ createRenderPass dv scifmt \rp ->
+	createPipelineLayout dv g \ppllyt ->
+	createGraphicsPipeline dv ext rp ppllyt \gpl ->
+	createFramebuffers dv ext scivs rp \fbs ->
+	createCommandPool qfis dv \cp ->
+	lift $ createVertexBuffer phdv dv gq cp \vb ->
+	createCommandBuffers dv cp \cbs -> (`runReaderT` g) do
+	createSyncObjects dv
+	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
+	cleanup dv
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -614,7 +613,7 @@ createPipelineLayout dvc g f = do
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VertexInput.RateVertex]
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> ReaderT Global IO ()) ->
 	ReaderT Global IO ()
 createGraphicsPipeline dvc sce rp ppllyt f = ask >>= \g ->
@@ -625,7 +624,7 @@ createGraphicsPipeline dvc sce rp ppllyt f = ask >>= \g ->
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VertexInput.RateVertex]
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs'
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
@@ -636,7 +635,7 @@ makeGraphicsPipelineCreateInfo ::
 	Vk.Ppl.Graphics.CreateInfo' () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
-		'(	(), '[AddType Vertex 'Vk.VertexInput.RateVertex],
+		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		() () () () () () () () '(sl, '[]) sr '(sb, vs', ts')
 makeGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
@@ -679,7 +678,7 @@ shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
 vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
-	() '[AddType Vertex 'Vk.VertexInput.RateVertex]
+	() '[AddType Vertex 'Vk.VtxInp.RateVertex]
 	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
 vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 	Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
@@ -861,24 +860,24 @@ copyBuffer ::
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp srcBuffer dstBuffer = do
-	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
-			Vk.CommandBuffer.allocateInfoNext = Nothing,
-			Vk.CommandBuffer.allocateInfoCommandPool = cp,
-			Vk.CommandBuffer.allocateInfoLevel =
-				Vk.CommandBuffer.LevelPrimary,
-			Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
-		beginInfo = Vk.CommandBuffer.M.BeginInfo {
-			Vk.CommandBuffer.beginInfoNext = Nothing,
-			Vk.CommandBuffer.beginInfoFlags =
-				Vk.CommandBuffer.UsageOneTimeSubmitBit,
-			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	Vk.CommandBuffer.allocate @() dvc allocInfo \[commandBuffer] -> do
+	let	allocInfo = Vk.CmdBffr.AllocateInfo {
+			Vk.CmdBffr.allocateInfoNext = Nothing,
+			Vk.CmdBffr.allocateInfoCommandPool = cp,
+			Vk.CmdBffr.allocateInfoLevel =
+				Vk.CmdBffr.LevelPrimary,
+			Vk.CmdBffr.allocateInfoCommandBufferCount = 1 }
+		beginInfo = Vk.CmdBffr.M.BeginInfo {
+			Vk.CmdBffr.beginInfoNext = Nothing,
+			Vk.CmdBffr.beginInfoFlags =
+				Vk.CmdBffr.UsageOneTimeSubmitBit,
+			Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+	Vk.CmdBffr.allocate @() dvc allocInfo \[commandBuffer] -> do
 		let	submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = [],
 				Vk.submitInfoCommandBuffers = [commandBuffer],
 				Vk.submitInfoSignalSemaphores = [] }
-		Vk.CommandBuffer.begin @() @() commandBuffer beginInfo do
+		Vk.CmdBffr.begin @() @() commandBuffer beginInfo do
 			Vk.Cmd.copyBuffer @'[ '[ 'List Vertex]]
 				commandBuffer srcBuffer dstBuffer
 		Vk.Queue.submit @() gq [submitInfo] Nothing
@@ -917,17 +916,16 @@ size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
 
 createCommandBuffers :: Vk.Dvc.D sd -> Vk.CmdPool.C scp -> (forall scb .
-	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
-	IO a ) -> IO a
-createCommandBuffers dvc cp =
-	let	allocInfo = Vk.CommandBuffer.AllocateInfo {
-			Vk.CommandBuffer.allocateInfoNext = Nothing,
-			Vk.CommandBuffer.allocateInfoCommandPool = cp,
-			Vk.CommandBuffer.allocateInfoLevel =
-				Vk.CommandBuffer.LevelPrimary,
-			Vk.CommandBuffer.allocateInfoCommandBufferCount =
-				fromIntegral maxFramesInFlight } in
-	Vk.CommandBuffer.allocate @() dvc allocInfo
+	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] -> IO a) ->
+	IO a
+createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
+	where
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary,
+		Vk.CmdBffr.allocateInfoCommandBufferCount =
+			fromIntegral maxFramesInFlight }
 
 createSyncObjects :: Vk.Dvc.D sd -> ReaderT Global IO ()
 createSyncObjects (Vk.Dvc.D dvc) = do
@@ -949,22 +947,22 @@ createSyncObjects (Vk.Dvc.D dvc) = do
 			$ Vk.Fence.create @() dvc fenceInfo nil)
 
 recordCommandBuffer ::
-	Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex] ->
+	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VertexInput.RateVertex]
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Word32 -> IO ()
 recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
 	imageIndex = heteroVarListIndex fbs (fromIntegral imageIndex) \fb -> do
-	let cb = (\(Vk.CommandBuffer.C c) -> c) cb0
-	let	beginInfo = Vk.CommandBuffer.M.BeginInfo {
-			Vk.CommandBuffer.M.beginInfoNext = Nothing,
-			Vk.CommandBuffer.M.beginInfoFlags =
-				Vk.CommandBuffer.UsageFlagsZero,
-			Vk.CommandBuffer.M.beginInfoInheritanceInfo = Nothing }
+	let cb = (\(Vk.CmdBffr.C c) -> c) cb0
+	let	beginInfo = Vk.CmdBffr.M.BeginInfo {
+			Vk.CmdBffr.M.beginInfoNext = Nothing,
+			Vk.CmdBffr.M.beginInfoFlags =
+				Vk.CmdBffr.UsageFlagsZero,
+			Vk.CmdBffr.M.beginInfoInheritanceInfo = Nothing }
 	let	renderPassInfo' = Vk.RndrPass.BeginInfo {
 			Vk.RndrPass.beginInfoNext = Nothing,
 			Vk.RndrPass.beginInfoRenderPass = rp0,
@@ -975,7 +973,7 @@ recordCommandBuffer cb0 sce rp0 gpl0 fbs vb'
 			Vk.RndrPass.beginInfoClearValues = [
 				Vk.M.ClearValueColor
 					. fromJust $ rgbaDouble 0 0 0 1 ] }
-	Vk.CommandBuffer.begin @() @() cb0 beginInfo
+	Vk.CmdBffr.begin @() @() cb0 beginInfo
 		$ Vk.Cmd.beginRenderPass @()
 			@('Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32)
 			cb0 renderPassInfo' Vk.Subpass.ContentsInline do
@@ -989,11 +987,11 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VertexInput.RateVertex]
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
+	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
 	ReaderT Global IO ()
 mainLoop win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq sc ext0 scivs rp ppllyt gpl fbs vb' cbs = do
 	($ ext0) $ fix \loop ext -> do
@@ -1009,11 +1007,11 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	Vk.Khr.Swapchain.S ssc -> Global -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
-	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
+	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]]  ->
+	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]]  ->
 	(Vk.C.Extent2d -> IO ()) ->
 	IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb' cbs loop = do
@@ -1027,14 +1025,14 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
-	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VertexInput.RateVertex]
+	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CommandBuffer.C scb '[AddType Vertex 'Vk.VertexInput.RateVertex]] ->
+	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
 drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb' cbs0 loop = do
-	let cbs = (\(Vk.CommandBuffer.C cb) -> cb) <$> cbs0
+	let cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
 	cf <- readGlobal globalCurrentFrame
 	iff <- (!! cf) <$> readGlobal globalInFlightFences
 	lift $ Vk.Fence.waitForFs dvcm [iff] True maxBound
@@ -1044,7 +1042,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 	lift $ Vk.Fence.resetFs dvcm [iff]
 	let	cb0 = cbs0 !! cf
 		cb = cbs !! cf
-	lift $ Vk.CommandBuffer.M.reset cb Vk.CommandBuffer.ResetFlagsZero
+	lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
 	lift $ recordCommandBuffer cb0 ext rp gpl fbs vb' imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
 	let	submitInfo = Vk.M.SubmitInfo {
@@ -1075,7 +1073,7 @@ catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VertexInput.RateVertex]
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
@@ -1102,7 +1100,7 @@ recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VertexInput.RateVertex]
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	ReaderT Global IO Vk.C.Extent2d
