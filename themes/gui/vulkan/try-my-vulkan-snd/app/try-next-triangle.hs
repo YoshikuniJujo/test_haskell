@@ -125,7 +125,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
-import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -946,7 +945,7 @@ createSyncObjects (Vk.Dvc.D dvc) = do
 		=<< lift (replicateM maxFramesInFlight
 			$ Vk.Fence.create @() dvc fenceInfo nil)
 
-recordCommandBuffer ::
+recordCommandBuffer :: forall scb sr sg sfs sm sb .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -954,29 +953,26 @@ recordCommandBuffer ::
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Word32 -> IO ()
 recordCommandBuffer cb sce rp gpl fbs vb imgIdx =
-	heteroVarListIndex fbs imgIdx \fb -> do
-	let	rpInfo = Vk.RndrPass.BeginInfo {
-			Vk.RndrPass.beginInfoNext = Nothing,
-			Vk.RndrPass.beginInfoRenderPass = rp,
-			Vk.RndrPass.beginInfoFramebuffer = fb,
-			Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
-				Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-				Vk.C.rect2dExtent = sce },
-			Vk.RndrPass.beginInfoClearValues =
-				Vk.M.ClearValueColor
-					(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
-	Vk.CmdBffr.begin @() @() cb beginInfo
-		$ Vk.Cmd.beginRenderPass @()
-			@'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
-			cb rpInfo Vk.Subpass.ContentsInline do
-			Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
-			Vk.Cmd.bindVertexBuffers cb . (:...: HVNil) . V3
-				$ Vk.Bffr.IndexedList @_ @_ @Vertex vb
-			Vk.Cmd.draw cb 3 1 0 0
-	where beginInfo = Vk.CmdBffr.M.BeginInfo {
-		Vk.CmdBffr.M.beginInfoNext = Nothing,
-		Vk.CmdBffr.M.beginInfoFlags = zeroBits,
-		Vk.CmdBffr.M.beginInfoInheritanceInfo = Nothing }
+	heteroVarListIndex fbs imgIdx \fb ->
+	Vk.CmdBffr.begin @() @() cb def $
+	Vk.Cmd.beginRenderPass cb (rpInfo fb) Vk.Subpass.ContentsInline do
+	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
+	Vk.Cmd.bindVertexBuffers cb
+		$ V3 (Vk.Bffr.IndexedList @_ @_ @Vertex vb) :...: HVNil
+	Vk.Cmd.draw cb 3 1 0 0
+	where
+	rpInfo :: forall sf . Vk.Frmbffr.F sf ->
+		Vk.RndrPass.BeginInfo () sr sf
+			'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
+	rpInfo fb = Vk.RndrPass.BeginInfo {
+		Vk.RndrPass.beginInfoNext = Nothing,
+		Vk.RndrPass.beginInfoRenderPass = rp,
+		Vk.RndrPass.beginInfoFramebuffer = fb,
+		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+			Vk.C.rect2dExtent = sce },
+		Vk.RndrPass.beginInfoClearValues = Vk.M.ClearValueColor
+			(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
 
 mainLoop :: RecreateFramebuffers ss sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
