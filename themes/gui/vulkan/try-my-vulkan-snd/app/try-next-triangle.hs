@@ -937,11 +937,10 @@ createSyncObjects (Vk.Dvc.D dvc) = do
 	rfs <- lift (replicateM maxFramesInFlight
 		$ Vk.Semaphore.create @() dvc def nil)
 	ifs <- lift (replicateM maxFramesInFlight
-			$ Vk.Fence.create @() dvc fenceInfo nil)
+		$ Vk.Fence.create @() dvc fenceInfo nil)
 	pure (ias, rfs, ifs)
 	where
-	fenceInfo = Vk.Fence.CreateInfo {
-		Vk.Fence.createInfoNext = Nothing,
+	fenceInfo = def {
 		Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sg sfs sm sb .

@@ -13,6 +13,8 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
+import Data.Bits
 import Data.Word
 
 import Gpu.Vulkan.Base
@@ -28,6 +30,10 @@ data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags }
 	deriving Show
+
+instance Default (CreateInfo n) where
+	def = CreateInfo {
+		createInfoNext = Nothing, createInfoFlags = zeroBits }
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
