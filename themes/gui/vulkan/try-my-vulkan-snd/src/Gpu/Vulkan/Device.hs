@@ -5,7 +5,8 @@
 
 module Gpu.Vulkan.Device (
 	D, create, M.CreateInfo(..), M.CreateFlags, pattern M.CreateFlagsZero,
-	getQueue, MemoryImage, MemoryList
+	getQueue, MemoryImage, MemoryList,
+	waitIdle
 	) where
 
 import Foreign.Pointable
@@ -29,3 +30,6 @@ create phdvc ci macc macd f =
 
 getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue.Q
 getQueue (D dvc) (QueueFamily.Index qfi) qi = M.getQueue dvc qfi qi
+
+waitIdle :: D s -> IO ()
+waitIdle (D d) = M.waitIdle d
