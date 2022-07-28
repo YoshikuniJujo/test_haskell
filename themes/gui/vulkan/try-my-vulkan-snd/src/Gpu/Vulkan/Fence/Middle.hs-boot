@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Fence where
+module Gpu.Vulkan.Fence.Middle where
 
 import qualified Gpu.Vulkan.Fence.Core as C
 

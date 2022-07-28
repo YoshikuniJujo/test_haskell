@@ -112,8 +112,8 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
-import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence as Vk.Fence
+import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore
+import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
@@ -939,8 +939,7 @@ createSyncObjects (Vk.Dvc.D dvc) = do
 	ifs <- lift (replicateM maxFramesInFlight
 		$ Vk.Fence.create @() dvc fenceInfo nil)
 	pure (ias, rfs, ifs)
-	where
-	fenceInfo = def {
+	where fenceInfo = def {
 		Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sg sfs sm sb .

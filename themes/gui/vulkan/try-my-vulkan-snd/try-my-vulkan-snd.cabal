@@ -102,8 +102,8 @@ library
       Gpu.Vulkan.Ext.DebugUtils.Messenger
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
-      Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
+      Gpu.Vulkan.Fence.Middle
       Gpu.Vulkan.Framebuffer
       Gpu.Vulkan.Framebuffer.Enum
       Gpu.Vulkan.Framebuffer.Middle
@@ -185,7 +185,7 @@ library
       Gpu.Vulkan.Sample.Enum
       Gpu.Vulkan.Sampler
       Gpu.Vulkan.Sampler.Enum
-      Gpu.Vulkan.Semaphore
+      Gpu.Vulkan.Semaphore.Middle
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.ShaderModule.Middle

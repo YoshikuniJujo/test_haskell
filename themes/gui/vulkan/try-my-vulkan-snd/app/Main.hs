@@ -100,8 +100,8 @@ import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CB
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
-import qualified Gpu.Vulkan.Semaphore as Vk.Smp
-import qualified Gpu.Vulkan.Fence as Vk.Fnc
+import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Smp
+import qualified Gpu.Vulkan.Fence.Middle as Vk.Fnc
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fnc
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
