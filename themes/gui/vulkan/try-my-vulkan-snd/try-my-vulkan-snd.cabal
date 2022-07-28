@@ -185,6 +185,7 @@ library
       Gpu.Vulkan.Sample.Enum
       Gpu.Vulkan.Sampler
       Gpu.Vulkan.Sampler.Enum
+      Gpu.Vulkan.Semaphore
       Gpu.Vulkan.Semaphore.Middle
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
