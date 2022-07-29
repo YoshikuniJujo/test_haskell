@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies, DataKinds #-}
@@ -14,6 +15,7 @@ module Data.HeteroList (
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
+	heteroVarListReplicateM,
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
 
@@ -121,6 +123,13 @@ heteroVarListIndex HVNil _ _ = error "index too large"
 heteroVarListIndex (x :...: _) 0 f = f x
 heteroVarListIndex (_ :...: xs) i f | i > 0 = heteroVarListIndex xs (i - 1) f
 heteroVarListIndex _ _ _ = error "negative index"
+
+heteroVarListReplicateM :: Monad m =>
+	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
+	(forall ss . HeteroVarList t ss -> m b) -> m b
+heteroVarListReplicateM 0 _ f = f HVNil
+heteroVarListReplicateM n x f = x \v -> heteroVarListReplicateM (n - 1) x \vs ->
+	f $ v :...: vs
 
 data V2 t ss where V2 :: t s1 s2 -> V2 t '(s1, s2)
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)
