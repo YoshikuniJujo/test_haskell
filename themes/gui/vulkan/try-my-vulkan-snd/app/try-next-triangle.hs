@@ -112,9 +112,11 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
-import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
+import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore.M
+import qualified Gpu.Vulkan.Fence as Vk.Fence
+import qualified Gpu.Vulkan.Fence.Type as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
+import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence.M
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
@@ -150,9 +152,8 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
-	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
-	globalInFlightFences :: IORef [Vk.Fence.F],
+	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.M.S],
+	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.M.S],
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool }
 
@@ -166,13 +167,11 @@ newGlobal :: IO Global
 newGlobal = do
 	iass <- newIORef []
 	rfss <- newIORef []
-	iffs <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
 	pure Global {
 		globalImageAvailableSemaphores = iass,
 		globalRenderFinishedSemaphores = rfss,
-		globalInFlightFences = iffs,
 		globalCurrentFrame = cf,
 		globalFramebufferResized = fbr }
 
@@ -269,12 +268,11 @@ run w inst = ask >>= \g ->
 	createFramebuffers dv ext scivs rp \fbs ->
 	createCommandPool qfis dv \cp ->
 	lift $ createVertexBuffer phdv dv gq cp \vb ->
-	createCommandBuffers dv cp \cbs -> (`runReaderT` g) do
-	(ias, rfs, ifs) <- createSyncObjects dv
+	createCommandBuffers dv cp \cbs ->
+	createSyncObjects dv \ias rfs ifs -> (`runReaderT` g) do
 	writeGlobal globalImageAvailableSemaphores ias
 	writeGlobal globalRenderFinishedSemaphores rfs
-	writeGlobal globalInFlightFences ifs
-	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
+	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ifs
 	cleanup dv
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -929,18 +927,19 @@ createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
 		Vk.CmdBffr.allocateInfoCommandBufferCount =
 			fromIntegral maxFramesInFlight }
 
-createSyncObjects :: Vk.Dvc.D sd -> ReaderT Global IO (
-	[Vk.Semaphore.S], [Vk.Semaphore.S], [Vk.Fence.F] )
-createSyncObjects (Vk.Dvc.D dvc) = do
-	ias <- lift (replicateM maxFramesInFlight
-		$ Vk.Semaphore.create @() dvc def nil)
-	rfs <- lift (replicateM maxFramesInFlight
-		$ Vk.Semaphore.create @() dvc def nil)
-	ifs <- lift (replicateM maxFramesInFlight
-		$ Vk.Fence.create @() dvc fenceInfo nil)
-	pure (ias, rfs, ifs)
-	where fenceInfo = def {
-		Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+createSyncObjects :: Vk.Dvc.D sd -> (forall sfs .
+	[Vk.Semaphore.M.S] ->
+	[Vk.Semaphore.M.S] ->
+	HeteroVarList Vk.Fence.F sfs -> IO a ) -> IO a
+createSyncObjects dvc@(Vk.Dvc.D d) f = do
+	ias <- replicateM maxFramesInFlight $ Vk.Semaphore.M.create @() d def nil
+	rfs <- replicateM maxFramesInFlight $ Vk.Semaphore.M.create @() d def nil
+	heteroVarListReplicateM maxFramesInFlight (Vk.Fence.create dvc fenceInfo nil nil) \ifs ->
+		f ias rfs ifs
+	where
+	fenceInfo :: Vk.Fence.M.CreateInfo ()
+	fenceInfo = def {
+		Vk.Fence.M.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sg sfs sm sb .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
@@ -982,15 +981,16 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	HeteroVarList Vk.Fence.F sfs' ->
 	ReaderT Global IO ()
-mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs = do
+mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs ifs = do
 	($ ext0) $ fix \loop ext -> do
 		lift Glfw.pollEvents
 		g <- ask
 		lift . catchAndRecreateSwapChain g w sfc phdvc qfis dvc
 				sc ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
 			$ runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp ppllyt gpl fbs vb cbs (\e -> loop e `runReaderT` g)
+				sc g ext scivs rp ppllyt gpl fbs vb cbs ifs (\e -> loop e `runReaderT` g)
 	lift $ Vk.Dvc.waitIdle dvc
 
 runLoop :: RecreateFramebuffers sis sfs =>
@@ -1003,10 +1003,11 @@ runLoop :: RecreateFramebuffers sis sfs =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]]  ->
+	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	HeteroVarList Vk.Fence.F sfs' ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb' cbs loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb' cbs (\e -> lift $ loop e) `runReaderT` g
+runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ifs loop = do
+	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ifs (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame :: RecreateFramebuffers sis sfs =>
@@ -1021,37 +1022,39 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	HeteroVarList Vk.Fence.F sfs' ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb' cbs0 loop = do
-	let cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
+drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs0 ifs loop = do
 	cf <- readGlobal globalCurrentFrame
-	iff <- (!! cf) <$> readGlobal globalInFlightFences
-	lift $ Vk.Fence.waitForFs dvcm [iff] True maxBound
-	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
-	imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-		dvcm sc uint64Max (Just ias) Nothing
-	lift $ Vk.Fence.resetFs dvcm [iff]
-	let	cb0 = cbs0 !! cf
-		cb = cbs !! cf
-	lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
-	lift $ recordCommandBuffer cb0 ext rp gpl fbs vb' imageIndex
-	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
-	let	submitInfo = Vk.M.SubmitInfo {
-			Vk.M.submitInfoNext = Nothing,
-			Vk.M.submitInfoWaitSemaphoreDstStageMasks =
-				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
-			Vk.M.submitInfoCommandBuffers = [cb],
-			Vk.M.submitInfoSignalSemaphores = [rfs] }
-	lift . Vk.Queue.submit' @() gq [submitInfo] $ Just iff
-	let	presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = [rfs],
-			Vk.Khr.presentInfoSwapchainImageIndices =
-				[(sc, imageIndex)] }
-	g <- ask
-	lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g) . catchAndSerialize
-		$ Vk.Khr.queuePresent @() pq presentInfo
-	writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
+	heteroVarListIndex ifs cf \iff_ -> do
+		let	Vk.Fence.F iff = iff_
+			cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
+		lift $ Vk.Fence.M.waitForFs dvcm [iff] True maxBound
+		ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
+		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+			dvcm sc uint64Max (Just ias) Nothing
+		lift $ Vk.Fence.M.resetFs dvcm [iff]
+		let	cb0 = cbs0 !! cf
+			cb = cbs !! cf
+		lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
+		lift $ recordCommandBuffer cb0 ext rp gpl fbs vb imageIndex
+		rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
+		let	submitInfo = Vk.M.SubmitInfo {
+				Vk.M.submitInfoNext = Nothing,
+				Vk.M.submitInfoWaitSemaphoreDstStageMasks =
+					[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
+				Vk.M.submitInfoCommandBuffers = [cb],
+				Vk.M.submitInfoSignalSemaphores = [rfs] }
+		lift . Vk.Queue.submit' @() gq [submitInfo] $ Just iff
+		let	presentInfo = Vk.Khr.PresentInfo {
+				Vk.Khr.presentInfoNext = Nothing,
+				Vk.Khr.presentInfoWaitSemaphores = [rfs],
+				Vk.Khr.presentInfoSwapchainImageIndices =
+					[(sc, imageIndex)] }
+		g <- ask
+		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g) . catchAndSerialize
+			$ Vk.Khr.queuePresent @() pq presentInfo
+		writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
@@ -1114,12 +1117,10 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 
 cleanup :: Vk.Dvc.D sd -> ReaderT Global IO ()
 cleanup _dvc@(Vk.Dvc.D dvcm) = do
-	lift . (flip (Vk.Semaphore.destroy dvcm) nil `mapM_`)
+	lift . (flip (Vk.Semaphore.M.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
-	lift . (flip (Vk.Semaphore.destroy dvcm) nil `mapM_`)
+	lift . (flip (Vk.Semaphore.M.destroy dvcm) nil `mapM_`)
 		=<< readGlobal globalRenderFinishedSemaphores
-	lift . (flip (Vk.Fence.destroy dvcm) nil `mapM_`)
-		=<< readGlobal globalInFlightFences
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
