@@ -112,6 +112,7 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
+import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore.M
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Type as Vk.Fence
@@ -273,7 +274,6 @@ run w inst = ask >>= \g ->
 	writeGlobal globalImageAvailableSemaphores ias
 	writeGlobal globalRenderFinishedSemaphores rfs
 	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ifs
-	cleanup dv
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -931,9 +931,11 @@ createSyncObjects :: Vk.Dvc.D sd -> (forall sfs .
 	[Vk.Semaphore.M.S] ->
 	[Vk.Semaphore.M.S] ->
 	HeteroVarList Vk.Fence.F sfs -> IO a ) -> IO a
-createSyncObjects dvc@(Vk.Dvc.D d) f = do
-	ias <- replicateM maxFramesInFlight $ Vk.Semaphore.M.create @() d def nil
-	rfs <- replicateM maxFramesInFlight $ Vk.Semaphore.M.create @() d def nil
+createSyncObjects dvc@(Vk.Dvc.D d) f =
+	heteroVarListReplicateM maxFramesInFlight (Vk.Semaphore.create @() dvc def nil nil) \ias_ ->
+	heteroVarListReplicateM maxFramesInFlight (Vk.Semaphore.create @() dvc def nil nil) \rfs_ -> do
+	let	ias = heteroVarListToList (\(Vk.Semaphore.S s) -> s) ias_
+		rfs = heteroVarListToList (\(Vk.Semaphore.S s) -> s) rfs_
 	heteroVarListReplicateM maxFramesInFlight (Vk.Fence.create dvc fenceInfo nil nil) \ifs ->
 		f ias rfs ifs
 	where
@@ -1114,13 +1116,6 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 	lift $ recreateGraphicsPipeline dvc ext rp ppllyt gpl
 	lift $ recreateFramebuffers dvc ext scivs rp fbs
 	pure ext
-
-cleanup :: Vk.Dvc.D sd -> ReaderT Global IO ()
-cleanup _dvc@(Vk.Dvc.D dvcm) = do
-	lift . (flip (Vk.Semaphore.M.destroy dvcm) nil `mapM_`)
-		=<< readGlobal globalImageAvailableSemaphores
-	lift . (flip (Vk.Semaphore.M.destroy dvcm) nil `mapM_`)
-		=<< readGlobal globalRenderFinishedSemaphores
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
