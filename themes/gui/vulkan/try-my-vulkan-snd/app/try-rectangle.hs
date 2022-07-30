@@ -1208,7 +1208,7 @@ drawFrame st = do
 	lift $ Vk.Fence.waitForFs dvc [iff] True maxBound
 	sc <- readGlobal globalSwapChain
 	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
-	imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+	imageIndex <- lift $ Vk.Khr.acquireNextImageResultOld [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	lift $ Vk.Fence.resetFs dvc [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers

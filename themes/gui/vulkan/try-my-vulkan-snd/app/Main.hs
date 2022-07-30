@@ -891,7 +891,7 @@ drawFrame g@Global {
 	Vk.Fnc.waitForFs dvc [iff] True maxBound
 	Vk.Fnc.resetFs dvc [iff]
 	(fromIntegral -> imageIndex) <-
-		Vk.Khr.acquireNextImage dvc sc uint64Max (Just ias) Nothing
+		Vk.Khr.acquireNextImageOld dvc sc uint64Max (Just ias) Nothing
 	(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
 	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 	let	submitInfo = Vk.SubmitInfo {
