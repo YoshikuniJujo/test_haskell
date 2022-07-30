@@ -265,9 +265,8 @@ run w inst = ask >>= \g ->
 	createCommandPool qfis dv \cp ->
 	lift $ createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffers dv cp \cbs ->
-	createSyncObjects dv \ias_ rfs_ ifs -> (`runReaderT` g) do
-	let	ias = heteroVarListToList (\(Vk.Semaphore.S s) -> s) ias_
-		rfs = heteroVarListToList (\(Vk.Semaphore.S s) -> s) rfs_
+	createSyncObjects dv \ias rfs_ ifs -> (`runReaderT` g) do
+	let	rfs = heteroVarListToList (\(Vk.Semaphore.S s) -> s) rfs_
 	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
@@ -978,11 +977,13 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
-	[Vk.Semaphore.M.S] -> [Vk.Semaphore.M.S] ->
+	HeteroVarList Vk.Semaphore.S sias ->
+	[Vk.Semaphore.M.S] ->
 	HeteroVarList Vk.Fence.F sfs' ->
 	ReaderT Global IO ()
-mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iass rfss ifs = do
+mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs ias rfss ifs = do
 	($ ext0) $ fix \loop ext -> do
+		let	iass = heteroVarListToList (\(Vk.Semaphore.S s) -> s) ias
 		lift Glfw.pollEvents
 		g <- ask
 		lift . catchAndRecreateSwapChain g w sfc phdvc qfis dvc
