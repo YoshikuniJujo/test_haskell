@@ -153,8 +153,6 @@ maxFramesInFlight :: Int
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.M.S],
-	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.M.S],
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool }
 
@@ -166,13 +164,10 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	iass <- newIORef []
 	rfss <- newIORef []
 	cf <- newIORef 0
 	fbr <- newIORef False
 	pure Global {
-		globalImageAvailableSemaphores = iass,
-		globalRenderFinishedSemaphores = rfss,
 		globalCurrentFrame = cf,
 		globalFramebufferResized = fbr }
 
@@ -270,10 +265,10 @@ run w inst = ask >>= \g ->
 	createCommandPool qfis dv \cp ->
 	lift $ createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffers dv cp \cbs ->
-	createSyncObjects dv \ias rfs ifs -> (`runReaderT` g) do
-	writeGlobal globalImageAvailableSemaphores ias
-	writeGlobal globalRenderFinishedSemaphores rfs
-	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ifs
+	createSyncObjects dv \ias_ rfs_ ifs -> (`runReaderT` g) do
+	let	ias = heteroVarListToList (\(Vk.Semaphore.S s) -> s) ias_
+		rfs = heteroVarListToList (\(Vk.Semaphore.S s) -> s) rfs_
+	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
@@ -927,21 +922,21 @@ createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
 		Vk.CmdBffr.allocateInfoCommandBufferCount =
 			fromIntegral maxFramesInFlight }
 
-createSyncObjects :: Vk.Dvc.D sd -> (forall sfs .
-	[Vk.Semaphore.M.S] ->
-	[Vk.Semaphore.M.S] ->
+createSyncObjects :: Vk.Dvc.D sd -> (forall sias srfs sfs .
+	HeteroVarList Vk.Semaphore.S sias ->
+	HeteroVarList Vk.Semaphore.S srfs ->
 	HeteroVarList Vk.Fence.F sfs -> IO a ) -> IO a
-createSyncObjects dvc@(Vk.Dvc.D d) f =
-	heteroVarListReplicateM maxFramesInFlight (Vk.Semaphore.create @() dvc def nil nil) \ias_ ->
-	heteroVarListReplicateM maxFramesInFlight (Vk.Semaphore.create @() dvc def nil nil) \rfs_ -> do
-	let	ias = heteroVarListToList (\(Vk.Semaphore.S s) -> s) ias_
-		rfs = heteroVarListToList (\(Vk.Semaphore.S s) -> s) rfs_
-	heteroVarListReplicateM maxFramesInFlight (Vk.Fence.create dvc fenceInfo nil nil) \ifs ->
-		f ias rfs ifs
+createSyncObjects dvc f =
+	heteroVarListReplicateM maxFramesInFlight
+		(Vk.Semaphore.create @() dvc def nil nil) \ias ->
+	heteroVarListReplicateM maxFramesInFlight
+		(Vk.Semaphore.create @() dvc def nil nil) \rfs ->
+	heteroVarListReplicateM maxFramesInFlight
+		(Vk.Fence.create dvc fenceInfo nil nil) \ifs -> f ias rfs ifs
 	where
-	fenceInfo :: Vk.Fence.M.CreateInfo ()
+	fenceInfo :: Vk.Fence.CreateInfo ()
 	fenceInfo = def {
-		Vk.Fence.M.createInfoFlags = Vk.Fence.CreateSignaledBit }
+		Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sg sfs sm sb .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
@@ -983,16 +978,17 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	[Vk.Semaphore.M.S] -> [Vk.Semaphore.M.S] ->
 	HeteroVarList Vk.Fence.F sfs' ->
 	ReaderT Global IO ()
-mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs ifs = do
+mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iass rfss ifs = do
 	($ ext0) $ fix \loop ext -> do
 		lift Glfw.pollEvents
 		g <- ask
 		lift . catchAndRecreateSwapChain g w sfc phdvc qfis dvc
 				sc ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
 			$ runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp ppllyt gpl fbs vb cbs ifs (\e -> loop e `runReaderT` g)
+				sc g ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs (\e -> loop e `runReaderT` g)
 	lift $ Vk.Dvc.waitIdle dvc
 
 runLoop :: RecreateFramebuffers sis sfs =>
@@ -1006,10 +1002,11 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	[Vk.Semaphore.M.S] -> [Vk.Semaphore.M.S] ->
 	HeteroVarList Vk.Fence.F sfs' ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ifs loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ifs (\e -> lift $ loop e) `runReaderT` g
+runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs loop = do
+	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame :: RecreateFramebuffers sis sfs =>
@@ -1024,15 +1021,16 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	[Vk.Semaphore.M.S] -> [Vk.Semaphore.M.S] ->
 	HeteroVarList Vk.Fence.F sfs' ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs0 ifs loop = do
+drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs0 iass rfss ifs loop = do
 	cf <- readGlobal globalCurrentFrame
 	heteroVarListIndex ifs cf \iff_ -> do
 		let	Vk.Fence.F iff = iff_
 			cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
 		lift $ Vk.Fence.M.waitForFs dvcm [iff] True maxBound
-		ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
+		let	ias = iass !! cf
 		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvcm sc uint64Max (Just ias) Nothing
 		lift $ Vk.Fence.M.resetFs dvcm [iff]
@@ -1040,7 +1038,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 			cb = cbs !! cf
 		lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
 		lift $ recordCommandBuffer cb0 ext rp gpl fbs vb imageIndex
-		rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
+		let	rfs = rfss !! cf
 		let	submitInfo = Vk.M.SubmitInfo {
 				Vk.M.submitInfoNext = Nothing,
 				Vk.M.submitInfoWaitSemaphoreDstStageMasks =

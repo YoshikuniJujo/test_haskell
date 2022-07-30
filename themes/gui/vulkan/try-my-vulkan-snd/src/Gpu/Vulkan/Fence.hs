@@ -1,7 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Fence (F, create, M.CreateInfo) where
+module Gpu.Vulkan.Fence (F, create, M.CreateInfo(..)) where
 
 import Foreign.Pointable
 import Control.Exception
