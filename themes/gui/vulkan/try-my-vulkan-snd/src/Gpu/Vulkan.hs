@@ -1,4 +1,9 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan where
@@ -14,18 +19,34 @@ import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
-data SubmitInfo n s vs = SubmitInfo {
-	submitInfoNext :: Maybe n,
-	submitInfoWaitSemaphoreDstStageMasks ::
-		[(Semaphore.M.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: [CommandBuffer.C s vs],
-	submitInfoSignalSemaphores :: [Semaphore.M.S] }
+data SemaphorePipelineStageFlags ss =
+	SemaphorePipelineStageFlags (Semaphore.S ss) Pipeline.StageFlags
 	deriving Show
 
-submitInfoToMiddle :: SubmitInfo n s vs -> M.SubmitInfo n vs
+-- deriving instance Show (HeteroVarList Semaphore.S ss)
+
+semaphorePipelineStageFlagsToMiddle ::
+	HeteroVarList SemaphorePipelineStageFlags sss ->
+	[(Semaphore.M.S, Pipeline.StageFlags)]
+semaphorePipelineStageFlagsToMiddle = heteroVarListToList
+	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
+
+data SubmitInfo n s sss vs = SubmitInfo {
+	submitInfoNext :: Maybe n,
+	submitInfoWaitSemaphoreDstStageMasks ::
+		HeteroVarList SemaphorePipelineStageFlags sss,
+--		[(Semaphore.M.S, Pipeline.StageFlags)],
+	submitInfoCommandBuffers :: [CommandBuffer.C s vs],
+	submitInfoSignalSemaphores :: [Semaphore.M.S] }
+
+deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
+	Show (SubmitInfo n s sss vs)
+
+submitInfoToMiddle :: SubmitInfo n s sss vs -> M.SubmitInfo n vs
 submitInfoToMiddle SubmitInfo {
 	submitInfoNext = mnxt,
-	submitInfoWaitSemaphoreDstStageMasks = wsdsms,
+	submitInfoWaitSemaphoreDstStageMasks =
+		semaphorePipelineStageFlagsToMiddle -> wsdsms,
 	submitInfoCommandBuffers = (CommandBuffer.unC <$>) -> cbs,
 	submitInfoSignalSemaphores = ssmprs } = M.SubmitInfo {
 	M.submitInfoNext = mnxt,
@@ -33,10 +54,27 @@ submitInfoToMiddle SubmitInfo {
 	M.submitInfoCommandBuffers = cbs,
 	M.submitInfoSignalSemaphores = ssmprs }
 
-submitInfoFromMiddle :: M.SubmitInfo n vs -> SubmitInfo n s vs
+class SemaphorePipelineStageFlagsFromMiddle sss where
+	semaphorePipelineStageFlagsFromMiddle ::
+		[(Semaphore.M.S, Pipeline.StageFlags)] ->
+		HeteroVarList SemaphorePipelineStageFlags sss
+
+instance SemaphorePipelineStageFlagsFromMiddle '[] where
+	semaphorePipelineStageFlagsFromMiddle [] = HVNil
+
+instance SemaphorePipelineStageFlagsFromMiddle sss =>
+	SemaphorePipelineStageFlagsFromMiddle (ss ': sss) where
+	semaphorePipelineStageFlagsFromMiddle ((s, psfs) : spsfss) =
+		SemaphorePipelineStageFlags (Semaphore.S s) psfs :...:
+		semaphorePipelineStageFlagsFromMiddle spsfss
+
+submitInfoFromMiddle ::
+	SemaphorePipelineStageFlagsFromMiddle sss =>
+	M.SubmitInfo n vs -> SubmitInfo n s sss vs
 submitInfoFromMiddle M.SubmitInfo {
 	M.submitInfoNext = mnxt,
-	M.submitInfoWaitSemaphoreDstStageMasks = wsdsms,
+	M.submitInfoWaitSemaphoreDstStageMasks =
+		semaphorePipelineStageFlagsFromMiddle -> wsdsms,
 	M.submitInfoCommandBuffers = (CommandBuffer.C <$>) -> cbs,
 	M.submitInfoSignalSemaphores = ssmprs } = SubmitInfo {
 	submitInfoNext = mnxt,
