@@ -3,20 +3,23 @@
 
 module Gpu.Vulkan where
 
+import Data.HeteroList
+
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Middle as M
 import qualified Gpu.Vulkan.Core as C
-import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore
+import qualified Gpu.Vulkan.Semaphore as Semaphore
+import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
 data SubmitInfo n s vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
-		[(Semaphore.S, Pipeline.StageFlags)],
+		[(Semaphore.M.S, Pipeline.StageFlags)],
 	submitInfoCommandBuffers :: [CommandBuffer.C s vs],
-	submitInfoSignalSemaphores :: [Semaphore.S] }
+	submitInfoSignalSemaphores :: [Semaphore.M.S] }
 	deriving Show
 
 submitInfoToMiddle :: SubmitInfo n s vs -> M.SubmitInfo n vs

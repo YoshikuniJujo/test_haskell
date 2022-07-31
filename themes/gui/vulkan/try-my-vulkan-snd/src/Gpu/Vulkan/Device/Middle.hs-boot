@@ -1,3 +1,4 @@
+{-# LANGUAGE RoleAnnotations #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle where
@@ -16,3 +17,10 @@ instance Show D
 
 newtype Memory = Memory C.Memory
 instance Show Memory
+
+data MemoryImage
+instance Show MemoryImage
+
+type role MemoryList phantom
+data MemoryList v
+instance Show (MemoryList v)

@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Device.Type where
 
-import qualified Gpu.Vulkan.Device.Middle as M
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as M
 
 newtype D s = D M.D deriving Show
 
