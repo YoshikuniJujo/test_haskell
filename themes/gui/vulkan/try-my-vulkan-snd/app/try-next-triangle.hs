@@ -1008,7 +1008,8 @@ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias
 	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame :: RecreateFramebuffers sis sfs =>
+drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb sias srfs sfs' .
+	RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1026,11 +1027,10 @@ drawFrame :: RecreateFramebuffers sis sfs =>
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
 drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs0 iass rfss ifs loop =
 	readGlobal globalCurrentFrame >>= \cf ->
-	heteroVarListIndex iass cf \ias_ ->
+	heteroVarListIndex iass cf \(ias_ :: Vk.Semaphore.S sias') ->
 	heteroVarListIndex rfss cf \rfs_ ->
 	heteroVarListIndex ifs cf \iff_ -> do
-		let	Vk.Semaphore.S ias = ias_
-			Vk.Semaphore.S rfs = rfs_
+		let	Vk.Semaphore.S rfs = rfs_
 			Vk.Fence.F iff = iff_
 			cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
 		lift $ Vk.Fence.M.waitForFs dvcm [iff] True maxBound
@@ -1039,15 +1039,19 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 		lift $ Vk.Fence.M.resetFs dvcm [iff]
 		let	cb0 = cbs0 !! cf
 			cb = cbs !! cf
+			cb' = cbs0 !! cf
 		lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
 		lift $ recordCommandBuffer cb0 ext rp gpl fbs vb imageIndex
-		let	submitInfo = Vk.M.SubmitInfo {
-				Vk.M.submitInfoNext = Nothing,
-				Vk.M.submitInfoWaitSemaphoreDstStageMasks =
-					[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
-				Vk.M.submitInfoCommandBuffers = [cb],
-				Vk.M.submitInfoSignalSemaphores = [rfs] }
-		lift . Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
+		let	submitInfo :: Vk.SubmitInfo () '[sias'] scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
+			submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasks =
+					Vk.SemaphorePipelineStageFlags
+						ias_
+						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
+				Vk.submitInfoCommandBuffers = [cb'],
+				Vk.submitInfoSignalSemaphores = [rfs] }
+		lift . Vk.Queue.submitNew gq (V4 submitInfo :...: HVNil) $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = [rfs],

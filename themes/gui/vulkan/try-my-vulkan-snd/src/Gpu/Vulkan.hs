@@ -31,7 +31,7 @@ semaphorePipelineStageFlagsToMiddle ::
 semaphorePipelineStageFlagsToMiddle = heteroVarListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
-data SubmitInfo n s sss vs = SubmitInfo {
+data SubmitInfo n sss s vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroVarList SemaphorePipelineStageFlags sss,
@@ -40,9 +40,9 @@ data SubmitInfo n s sss vs = SubmitInfo {
 	submitInfoSignalSemaphores :: [Semaphore.M.S] }
 
 deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
-	Show (SubmitInfo n s sss vs)
+	Show (SubmitInfo n sss s vs)
 
-submitInfoToMiddle :: SubmitInfo n s sss vs -> M.SubmitInfo n vs
+submitInfoToMiddle :: SubmitInfo n sss s vs -> M.SubmitInfo n vs
 submitInfoToMiddle SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
@@ -70,7 +70,7 @@ instance SemaphorePipelineStageFlagsFromMiddle sss =>
 
 submitInfoFromMiddle ::
 	SemaphorePipelineStageFlagsFromMiddle sss =>
-	M.SubmitInfo n vs -> SubmitInfo n s sss vs
+	M.SubmitInfo n vs -> SubmitInfo n sss s vs
 submitInfoFromMiddle M.SubmitInfo {
 	M.submitInfoNext = mnxt,
 	M.submitInfoWaitSemaphoreDstStageMasks =

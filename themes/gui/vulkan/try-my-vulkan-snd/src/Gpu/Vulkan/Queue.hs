@@ -1,7 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,6 +14,8 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Kind
+import Data.HeteroList hiding (length)
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Exception
@@ -19,11 +24,36 @@ import Gpu.Vulkan.Exception.Enum
 import {-# SOURCE #-} qualified Gpu.Vulkan.Fence.Middle as Fence
 
 import qualified Gpu.Vulkan.Middle as M
+import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Queue.Core as C
 
 newtype Q = Q C.Q deriving Show
 
-submit :: Pointable n => Q -> [SubmitInfo n s sss vs] -> Maybe Fence.F -> IO ()
+submitNew :: SubmitInfoListToCore nssssvss =>
+	Q -> HeteroVarList (V4 SubmitInfo) nssssvss -> Maybe Fence.F -> IO ()
+submitNew (Q q) sis mf = ($ pure) $ runContT do
+	csis <- submitInfoListToCore sis
+	let	sic = length csis
+	psis <- ContT $ allocaArray sic
+	lift do	pokeArray psis csis
+		r <- C.submit q (fromIntegral sic) psis $ Fence.maybeFToCore mf
+		throwUnlessSuccess $ Result r
+
+class SubmitInfoListToCore (nssssvss :: [(Type, [Type], Type, [Type])]) where
+	submitInfoListToCore ::
+		HeteroVarList (V4 SubmitInfo) nssssvss ->
+		ContT r IO [C.SubmitInfo]
+
+instance SubmitInfoListToCore '[] where submitInfoListToCore HVNil = pure []
+
+instance (Pointable n, SubmitInfoListToCore nssssvss) =>
+	SubmitInfoListToCore ('(n, sss, s, vs) ': nssssvss) where
+	submitInfoListToCore (V4 si :...: sis) = do
+		csi <- M.submitInfoToCore $ submitInfoToMiddle si
+		csis <- submitInfoListToCore sis
+		pure $ csi : csis
+
+submit :: Pointable n => Q -> [SubmitInfo n sss s vs] -> Maybe Fence.F -> IO ()
 submit (Q q)
 	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
 	csis <- (M.submitInfoToCore . submitInfoToMiddle) `mapM` sis
@@ -35,7 +65,7 @@ submit (Q q)
 
 submit' :: forall n sss vs . (Pointable n, SemaphorePipelineStageFlagsFromMiddle sss) =>
 	Q -> [M.SubmitInfo n vs] -> Maybe Fence.F -> IO ()
-submit' q = submit @_ @_ @sss q . (submitInfoFromMiddle @sss <$>)
+submit' q = submit @_ @sss q . (submitInfoFromMiddle @sss <$>)
 
 waitIdle :: Q -> IO ()
 waitIdle (Q q) = throwUnlessSuccess . Result =<< C.waitIdle q
