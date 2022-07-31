@@ -197,7 +197,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		<*> Vk.Dvc.Mem.Buffer.read @[w3] @('List w3) dvc memC def
 	where	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
 			Vk.submitInfoCommandBuffers = [cmdBuf],
 			Vk.submitInfoSignalSemaphores = [] }
 

@@ -227,7 +227,7 @@ withCommandPool phdvc device queue commandPool =
 							Vk.Cmd.dispatch commandBuffer dataSize 1 1
 						let	submitInfo = Vk.SubmitInfo {
 								Vk.submitInfoNext = Nothing,
-								Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+								Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
 								Vk.submitInfoCommandBuffers = [commandBuffer],
 								Vk.submitInfoSignalSemaphores = [] }
 						Vk.Queue.submit @() queue [submitInfo] Nothing

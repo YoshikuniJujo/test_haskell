@@ -177,7 +177,7 @@ makeCommandBuffer device graphicsQueueFamilyIndex f = do
 						Vk.CommandBuffer.beginInfoNil $ f cmdBuf
 				let	submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
-						Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+						Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
 						Vk.submitInfoCommandBuffers = [cmdBuf],
 						Vk.submitInfoSignalSemaphores = [] }
 				Vk.Queue.submit @() graphicsQueue [submitInfo] Nothing

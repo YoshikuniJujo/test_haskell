@@ -866,7 +866,7 @@ copyBuffer dvc gq cp srcBuffer dstBuffer = do
 	Vk.CmdBffr.allocate @() dvc allocInfo \[commandBuffer] -> do
 		let	submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = [],
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
 				Vk.submitInfoCommandBuffers = [commandBuffer],
 				Vk.submitInfoSignalSemaphores = [] }
 		Vk.CmdBffr.begin @() @() commandBuffer beginInfo do
@@ -1047,7 +1047,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 					[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
 				Vk.M.submitInfoCommandBuffers = [cb],
 				Vk.M.submitInfoSignalSemaphores = [rfs] }
-		lift . Vk.Queue.submit' @() gq [submitInfo] $ Just iff
+		lift . Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = [rfs],
