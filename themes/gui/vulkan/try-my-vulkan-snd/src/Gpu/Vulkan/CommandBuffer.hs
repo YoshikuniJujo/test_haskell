@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil ) where
+	C, allocate, AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -45,3 +45,6 @@ allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 begin :: (Pointable n, Pointable n') =>
 	C s vs -> M.BeginInfo n n' -> IO a -> IO a
 begin (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+
+reset :: C sc vs -> ResetFlags -> IO ()
+reset (C cb) rfs = M.reset cb rfs

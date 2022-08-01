@@ -109,7 +109,6 @@ import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
@@ -1005,7 +1004,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias
 	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb sias srfs sfs' .
+drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1018,38 +1017,35 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb sias srfs sfs' .
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
-	HeteroVarList Vk.Semaphore.S sias ->
-	HeteroVarList Vk.Semaphore.S srfs ->
-	HeteroVarList Vk.Fence.F sfs' ->
+	HeteroVarList Vk.Semaphore.S siass ->
+	HeteroVarList Vk.Semaphore.S srfss ->
+	HeteroVarList Vk.Fence.F sfss ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs0 iass rfss ifs loop =
+drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs loop =
 	readGlobal globalCurrentFrame >>= \cf ->
-	heteroVarListIndex iass cf \(ias_ :: Vk.Semaphore.S sias') ->
-	heteroVarListIndex rfss cf \(rfs_ :: Vk.Semaphore.S srfs') ->
-	heteroVarListIndex ifs cf \iff_ -> do
-		let	cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
-		lift $ Vk.Fence.waitForFs dvc (iff_ :...: HVNil) True maxBound
+	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
+	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	heteroVarListIndex ifs cf \iff -> do
+		lift $ Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
 		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-			dvcm sc uint64Max (Just ias_) Nothing
-		lift $ Vk.Fence.resetFs dvc (iff_ :...: HVNil)
-		let	cb0 = cbs0 !! cf
-			cb = cbs !! cf
-			cb' = cbs0 !! cf
-		lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
-		lift $ recordCommandBuffer cb0 ext rp gpl fbs vb imageIndex
-		let	submitInfo :: Vk.SubmitInfoNew () '[sias'] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])] '[srfs']
+			dvcm sc uint64Max (Just ias) Nothing
+		lift $ Vk.Fence.resetFs dvc (iff :...: HVNil)
+		let	cb = cbs !! cf
+		lift $ Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
+		lift $ recordCommandBuffer cb ext rp gpl fbs vb imageIndex
+		let	submitInfo :: Vk.SubmitInfoNew () '[sias] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])] '[srfs]
 			submitInfo = Vk.SubmitInfoNew {
 				Vk.submitInfoNextNew = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasksNew =
 					Vk.SemaphorePipelineStageFlags
-						ias_
+						ias
 						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
-				Vk.submitInfoCommandBuffersNew = V2 cb' :...: HVNil,
-				Vk.submitInfoSignalSemaphoresNew = rfs_ :...: HVNil }
-		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff_
+				Vk.submitInfoCommandBuffersNew = V2 cb :...: HVNil,
+				Vk.submitInfoSignalSemaphoresNew = rfs :...: HVNil }
+		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
-				Vk.Khr.presentInfoWaitSemaphores = rfs_ :...: HVNil,
+				Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
 				Vk.Khr.presentInfoSwapchainImageIndices =
 					[(sc, imageIndex)] }
 		g <- ask
