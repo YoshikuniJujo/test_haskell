@@ -110,7 +110,8 @@ import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd
-import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore
+import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
+import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore.M
 import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
@@ -186,8 +187,8 @@ data Global = Global {
 	globalCommandPool :: IORef Vk.CommandPool.C,
 	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
 		'[AddType Vertex 'Vk.VertexInput.RateVertex] )],
-	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
-	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
+	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.M.S],
+	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.M.S],
 	globalInFlightFences :: IORef [Vk.Fence.F],
 	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool,
@@ -1515,20 +1516,20 @@ createCommandBuffers = do
 
 createSyncObjects :: ReaderT Global IO ()
 createSyncObjects = do
-	let	semaphoreInfo = Vk.Semaphore.CreateInfo {
-			Vk.Semaphore.createInfoNext = Nothing,
-			Vk.Semaphore.createInfoFlags =
-				Vk.Semaphore.CreateFlagsZero }
+	let	semaphoreInfo = Vk.Semaphore.M.CreateInfo {
+			Vk.Semaphore.M.createInfoNext = Nothing,
+			Vk.Semaphore.M.createInfoFlags =
+				Vk.Semaphore.M.CreateFlagsZero }
 		fenceInfo = Vk.Fence.CreateInfo {
 			Vk.Fence.createInfoNext = Nothing,
 			Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalImageAvailableSemaphores
 		=<< lift (replicateM maxFramesInFlight
-			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
+			$ Vk.Semaphore.M.create @() dvc semaphoreInfo nil)
 	writeGlobal globalRenderFinishedSemaphores
 		=<< lift (replicateM maxFramesInFlight
-			$ Vk.Semaphore.create @() dvc semaphoreInfo nil)
+			$ Vk.Semaphore.M.create @() dvc semaphoreInfo nil)
 	writeGlobal globalInFlightFences
 		=<< lift (replicateM maxFramesInFlight
 			$ Vk.Fence.create @() dvc fenceInfo nil)
@@ -1615,7 +1616,7 @@ drawFrame st = do
 	lift . Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = [rfs],
+			Vk.Khr.presentInfoWaitSemaphores = Vk.Semaphore.S rfs :...: HVNil,
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, imageIndex)] }
 	pq <- readGlobal globalPresentQueue
@@ -1752,9 +1753,9 @@ cleanup = do
 	lift do	Vk.Buffer.List.destroy dvc ib nil
 		Vk.Memory.List.free dvc ibm nil
 
-	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+	lift . (flip (Vk.Semaphore.M.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalImageAvailableSemaphores
-	lift . (flip (Vk.Semaphore.destroy dvc) nil `mapM_`)
+	lift . (flip (Vk.Semaphore.M.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalRenderFinishedSemaphores
 	lift . (flip (Vk.Fence.destroy dvc) nil `mapM_`)
 		=<< readGlobal globalInFlightFences

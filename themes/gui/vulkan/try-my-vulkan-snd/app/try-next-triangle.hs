@@ -113,7 +113,6 @@ import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore.M
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Type as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
@@ -1030,8 +1029,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 	heteroVarListIndex iass cf \(ias_ :: Vk.Semaphore.S sias') ->
 	heteroVarListIndex rfss cf \(rfs_ :: Vk.Semaphore.S srfs') ->
 	heteroVarListIndex ifs cf \iff_ -> do
-		let	Vk.Semaphore.S rfs = rfs_
-			Vk.Fence.F iff = iff_
+		let	Vk.Fence.F iff = iff_
 			cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
 		lift $ Vk.Fence.M.waitForFs dvcm [iff] True maxBound
 		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1054,7 +1052,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
-				Vk.Khr.presentInfoWaitSemaphores = [rfs],
+				Vk.Khr.presentInfoWaitSemaphores = rfs_ :...: HVNil,
 				Vk.Khr.presentInfoSwapchainImageIndices =
 					[(sc, imageIndex)] }
 		g <- ask

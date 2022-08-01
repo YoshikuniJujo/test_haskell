@@ -1,6 +1,8 @@
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr where
@@ -13,6 +15,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.HeteroList hiding (length)
 import Data.Word
 
 import qualified Data.Text as T
@@ -65,17 +68,20 @@ acquireNextImageResultOld sccs
 		throwUnless sccs $ Result r
 		peek pii
 
-data PresentInfo n = PresentInfo {
+data PresentInfo n sws = PresentInfo {
 	presentInfoNext :: Maybe n,
-	presentInfoWaitSemaphores :: [Semaphore.M.S],
+	presentInfoWaitSemaphores :: HeteroVarList Semaphore.S sws,
 	presentInfoSwapchainImageIndices :: [(Swapchain.S, Word32)] }
-	deriving Show
 
-presentInfoToCore :: Pointable n => PresentInfo n -> ContT r IO C.PresentInfo
+deriving instance (Show n, Show (HeteroVarList Semaphore.S sws)) =>
+	Show (PresentInfo n sws)
+
+presentInfoToCore :: Pointable n => PresentInfo n sws -> ContT r IO C.PresentInfo
 presentInfoToCore PresentInfo {
 	presentInfoNext = mnxt,
-	presentInfoWaitSemaphores =
-		length &&& (Semaphore.M.unS <$>) -> (wsc, wss),
+	presentInfoWaitSemaphores = (length &&& id)
+		. heteroVarListToList
+			(Semaphore.M.unS . \(Semaphore.S s) -> s) -> (wsc, wss),
 	presentInfoSwapchainImageIndices =
 		length &&& id . unzip ->
 		(scc, (scs, iis))
@@ -99,7 +105,7 @@ presentInfoToCore PresentInfo {
 		C.presentInfoPImageIndices = piis,
 		C.presentInfoPResults = prs }
 
-queuePresent :: Pointable n => Queue.Q -> PresentInfo n -> IO ()
+queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws -> IO ()
 queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
 	cpi@(C.PresentInfo_ fpi) <- presentInfoToCore pi_
 	ppi <- ContT $ withForeignPtr fpi

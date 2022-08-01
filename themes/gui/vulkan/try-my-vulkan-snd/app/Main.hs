@@ -100,6 +100,7 @@ import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CB
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
+import qualified Gpu.Vulkan.Semaphore as Vk.Smp.N
 import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Smp
 import qualified Gpu.Vulkan.Fence.Middle as Vk.Fnc
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fnc
@@ -903,7 +904,7 @@ drawFrame g@Global {
 	Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = [rfs],
+			Vk.Khr.presentInfoWaitSemaphores = Vk.Smp.N.S rfs :...: HVNil,
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, fromIntegral imageIndex)] }
 	Vk.Khr.queuePresent @() pq presentInfo

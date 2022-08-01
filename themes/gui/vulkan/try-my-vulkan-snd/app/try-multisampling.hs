@@ -114,6 +114,7 @@ import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore.N
 import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
@@ -1871,7 +1872,7 @@ drawFrame st = do
 	lift . Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = [rfs],
+			Vk.Khr.presentInfoWaitSemaphores = Vk.Semaphore.N.S rfs :...: HVNil,
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				[(sc, imageIndex)] }
 	pq <- readGlobal globalPresentQueue
