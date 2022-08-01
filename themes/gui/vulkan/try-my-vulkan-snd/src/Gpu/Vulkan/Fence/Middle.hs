@@ -23,7 +23,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Fence.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Fence.Core as C
 
 data CreateInfo n = CreateInfo {

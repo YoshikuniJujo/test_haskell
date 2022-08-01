@@ -1049,7 +1049,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
 				Vk.submitInfoCommandBuffersNew = V2 cb' :...: HVNil,
 				Vk.submitInfoSignalSemaphoresNew = rfs_ :...: HVNil }
-		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
+		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff_
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = rfs_ :...: HVNil,

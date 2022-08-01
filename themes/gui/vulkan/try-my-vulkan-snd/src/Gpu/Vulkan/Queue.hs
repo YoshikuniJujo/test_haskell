@@ -21,7 +21,8 @@ import Gpu.Vulkan
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
-import {-# SOURCE #-} qualified Gpu.Vulkan.Fence.Middle as Fence
+import qualified Gpu.Vulkan.Fence.Type as Fence
+import {-# SOURCE #-} qualified Gpu.Vulkan.Fence.Middle as Fence.M
 
 import qualified Gpu.Vulkan.Middle as M
 import qualified Gpu.Vulkan.Core as C
@@ -30,23 +31,23 @@ import qualified Gpu.Vulkan.Queue.Core as C
 newtype Q = Q C.Q deriving Show
 
 submitNewNew :: SubmitInfoListToCoreNew nssssvsss =>
-	Q -> HeteroVarList (V4 SubmitInfoNew) nssssvsss -> Maybe Fence.F -> IO ()
+	Q -> HeteroVarList (V4 SubmitInfoNew) nssssvsss -> Maybe (Fence.F sf) -> IO ()
 submitNewNew (Q q) sis mf = ($ pure) $ runContT do
 	csis <- submitInfoListToCoreNew sis
 	let	sic = length csis
 	psis <- ContT $ allocaArray sic
 	lift do	pokeArray psis csis
-		r <- C.submit q (fromIntegral sic) psis $ Fence.maybeFToCore mf
+		r <- C.submit q (fromIntegral sic) psis . Fence.M.maybeFToCore $ (\(Fence.F f) -> f) <$> mf
 		throwUnlessSuccess $ Result r
 
 submitNew :: SubmitInfoListToCore nssssvss =>
-	Q -> HeteroVarList (V4 SubmitInfo) nssssvss -> Maybe Fence.F -> IO ()
+	Q -> HeteroVarList (V4 SubmitInfo) nssssvss -> Maybe Fence.M.F -> IO ()
 submitNew (Q q) sis mf = ($ pure) $ runContT do
 	csis <- submitInfoListToCore sis
 	let	sic = length csis
 	psis <- ContT $ allocaArray sic
 	lift do	pokeArray psis csis
-		r <- C.submit q (fromIntegral sic) psis $ Fence.maybeFToCore mf
+		r <- C.submit q (fromIntegral sic) psis $ Fence.M.maybeFToCore mf
 		throwUnlessSuccess $ Result r
 
 class SubmitInfoListToCoreNew (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
@@ -80,18 +81,18 @@ instance (Pointable n, SubmitInfoListToCore nssssvss) =>
 		csis <- submitInfoListToCore sis
 		pure $ csi : csis
 
-submit :: Pointable n => Q -> [SubmitInfo n sss s vs] -> Maybe Fence.F -> IO ()
+submit :: Pointable n => Q -> [SubmitInfo n sss s vs] -> Maybe Fence.M.F -> IO ()
 submit (Q q)
 	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
 	csis <- (M.submitInfoToCore . submitInfoToMiddle) `mapM` sis
 	psis <- ContT $ allocaArray sic
 	lift do	pokeArray psis csis
 		r <- C.submit q (fromIntegral sic) psis
-			$ Fence.maybeFToCore f
+			$ Fence.M.maybeFToCore f
 		throwUnlessSuccess $ Result r
 
 submit' :: forall n sss vs . (Pointable n, SemaphorePipelineStageFlagsFromMiddle sss) =>
-	Q -> [M.SubmitInfo n vs] -> Maybe Fence.F -> IO ()
+	Q -> [M.SubmitInfo n vs] -> Maybe Fence.M.F -> IO ()
 submit' q = submit @_ @sss q . (submitInfoFromMiddle @sss <$>)
 
 waitIdle :: Q -> IO ()
