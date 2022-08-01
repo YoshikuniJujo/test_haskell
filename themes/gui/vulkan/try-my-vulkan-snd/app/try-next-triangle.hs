@@ -1042,16 +1042,16 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 			cb' = cbs0 !! cf
 		lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
 		lift $ recordCommandBuffer cb0 ext rp gpl fbs vb imageIndex
-		let	submitInfo :: Vk.SubmitInfo () '[sias'] scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
-			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks =
+		let	submitInfo :: Vk.SubmitInfoNew () '[sias'] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
+			submitInfo = Vk.SubmitInfoNew {
+				Vk.submitInfoNextNew = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasksNew =
 					Vk.SemaphorePipelineStageFlags
 						ias_
 						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
-				Vk.submitInfoCommandBuffers = [cb'],
-				Vk.submitInfoSignalSemaphores = [rfs] }
-		lift . Vk.Queue.submitNew gq (V4 submitInfo :...: HVNil) $ Just iff
+				Vk.submitInfoCommandBuffersNew = V2 cb' :...: HVNil,
+				Vk.submitInfoSignalSemaphoresNew = [rfs] }
+		lift . Vk.Queue.submitNewNew gq (V3 submitInfo :...: HVNil) $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = [rfs],
