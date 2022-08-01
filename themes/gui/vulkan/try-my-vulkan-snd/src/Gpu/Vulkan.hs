@@ -34,12 +34,13 @@ semaphorePipelineStageFlagsToMiddle ::
 semaphorePipelineStageFlagsToMiddle = heteroVarListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
-data SubmitInfoNew n sss svss = SubmitInfoNew {
+data SubmitInfoNew n sss svss ssss = SubmitInfoNew {
 	submitInfoNextNew :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasksNew ::
 		HeteroVarList SemaphorePipelineStageFlags sss,
 	submitInfoCommandBuffersNew :: HeteroVarList (V2 CommandBuffer.C) svss,
-	submitInfoSignalSemaphoresNew :: [Semaphore.M.S] }
+	submitInfoSignalSemaphoresNew ::
+		HeteroVarList Semaphore.S ssss }
 
 data SubmitInfo n sss s vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
@@ -70,14 +71,16 @@ instance CommandBufferListToMiddle svss =>
 		cb :...: commandBufferListToMiddle cbs
 
 submitInfoToMiddleNew :: CommandBufferListToMiddle svss =>
-	SubmitInfoNew n sss svss ->
+	SubmitInfoNew n sss svss ssss ->
 	M.SubmitInfoNew n (CommandBufferListToMiddleMapSnd svss)
 submitInfoToMiddleNew SubmitInfoNew {
 	submitInfoNextNew = mnxt,
 	submitInfoWaitSemaphoreDstStageMasksNew =
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
 	submitInfoCommandBuffersNew = commandBufferListToMiddle -> cbs,
-	submitInfoSignalSemaphoresNew = ssmprs } = M.SubmitInfoNew {
+	submitInfoSignalSemaphoresNew =
+		heteroVarListToList (\(Semaphore.S s) -> s) -> ssmprs
+	} = M.SubmitInfoNew {
 	M.submitInfoNextNew = mnxt,
 	M.submitInfoWaitSemaphoreDstStageMasksNew = wsdsms,
 	M.submitInfoCommandBuffersNew = cbs,

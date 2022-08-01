@@ -1028,7 +1028,7 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb sias srfs sfs' .
 drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs0 iass rfss ifs loop =
 	readGlobal globalCurrentFrame >>= \cf ->
 	heteroVarListIndex iass cf \(ias_ :: Vk.Semaphore.S sias') ->
-	heteroVarListIndex rfss cf \rfs_ ->
+	heteroVarListIndex rfss cf \(rfs_ :: Vk.Semaphore.S srfs') ->
 	heteroVarListIndex ifs cf \iff_ -> do
 		let	Vk.Semaphore.S rfs = rfs_
 			Vk.Fence.F iff = iff_
@@ -1042,7 +1042,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 			cb' = cbs0 !! cf
 		lift $ Vk.CmdBffr.M.reset cb Vk.CmdBffr.ResetFlagsZero
 		lift $ recordCommandBuffer cb0 ext rp gpl fbs vb imageIndex
-		let	submitInfo :: Vk.SubmitInfoNew () '[sias'] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
+		let	submitInfo :: Vk.SubmitInfoNew () '[sias'] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])] '[srfs']
 			submitInfo = Vk.SubmitInfoNew {
 				Vk.submitInfoNextNew = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasksNew =
@@ -1050,8 +1050,8 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 						ias_
 						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
 				Vk.submitInfoCommandBuffersNew = V2 cb' :...: HVNil,
-				Vk.submitInfoSignalSemaphoresNew = [rfs] }
-		lift . Vk.Queue.submitNewNew gq (V3 submitInfo :...: HVNil) $ Just iff
+				Vk.submitInfoSignalSemaphoresNew = rfs_ :...: HVNil }
+		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = [rfs],

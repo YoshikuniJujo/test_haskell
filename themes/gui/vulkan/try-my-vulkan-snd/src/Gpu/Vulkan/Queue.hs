@@ -30,7 +30,7 @@ import qualified Gpu.Vulkan.Queue.Core as C
 newtype Q = Q C.Q deriving Show
 
 submitNewNew :: SubmitInfoListToCoreNew nssssvsss =>
-	Q -> HeteroVarList (V3 SubmitInfoNew) nssssvsss -> Maybe Fence.F -> IO ()
+	Q -> HeteroVarList (V4 SubmitInfoNew) nssssvsss -> Maybe Fence.F -> IO ()
 submitNewNew (Q q) sis mf = ($ pure) $ runContT do
 	csis <- submitInfoListToCoreNew sis
 	let	sic = length csis
@@ -49,9 +49,9 @@ submitNew (Q q) sis mf = ($ pure) $ runContT do
 		r <- C.submit q (fromIntegral sic) psis $ Fence.maybeFToCore mf
 		throwUnlessSuccess $ Result r
 
-class SubmitInfoListToCoreNew (nssssvsss :: [(Type, [Type], [(Type, [Type])])]) where
+class SubmitInfoListToCoreNew (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
 	submitInfoListToCoreNew ::
-		HeteroVarList (V3 SubmitInfoNew) nssssvsss ->
+		HeteroVarList (V4 SubmitInfoNew) nssssvsss ->
 		ContT r IO [C.SubmitInfo]
 
 instance SubmitInfoListToCoreNew '[] where
@@ -60,8 +60,8 @@ instance SubmitInfoListToCoreNew '[] where
 instance (
 	Pointable n, CommandBufferListToMiddle svss,
 	SubmitInfoListToCoreNew nssssvsss ) =>
-	SubmitInfoListToCoreNew ('(n, sss, svss) ': nssssvsss) where
-	submitInfoListToCoreNew (V3 si :...: sis) = do
+	SubmitInfoListToCoreNew ('(n, sss, svss, ssss) ': nssssvsss) where
+	submitInfoListToCoreNew (V4 si :...: sis) = do
 		csi <- M.submitInfoToCoreNew $ submitInfoToMiddleNew si
 		csis <- submitInfoListToCoreNew sis
 		pure $ csi : csis
