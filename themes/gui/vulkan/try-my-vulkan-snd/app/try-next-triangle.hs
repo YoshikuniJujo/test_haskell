@@ -114,9 +114,7 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified Gpu.Vulkan.Fence.Type as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
-import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence.M
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
@@ -1029,9 +1027,8 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 	heteroVarListIndex iass cf \(ias_ :: Vk.Semaphore.S sias') ->
 	heteroVarListIndex rfss cf \(rfs_ :: Vk.Semaphore.S srfs') ->
 	heteroVarListIndex ifs cf \iff_ -> do
-		let	Vk.Fence.F iff = iff_
-			cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
-		lift $ Vk.Fence.M.waitForFs dvcm [iff] True maxBound
+		let	cbs = (\(Vk.CmdBffr.C cb) -> cb) <$> cbs0
+		lift $ Vk.Fence.waitForFs dvc (iff_ :...: HVNil) True maxBound
 		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvcm sc uint64Max (Just ias_) Nothing
 		lift $ Vk.Fence.resetFs dvc (iff_ :...: HVNil)
