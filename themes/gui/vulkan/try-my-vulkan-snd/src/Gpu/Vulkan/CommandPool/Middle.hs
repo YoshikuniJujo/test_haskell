@@ -17,7 +17,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandPool.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.CommandPool.Core as C
 

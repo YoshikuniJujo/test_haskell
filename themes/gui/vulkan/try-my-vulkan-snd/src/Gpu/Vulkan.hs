@@ -1,13 +1,15 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan where
 
+import Data.Kind
 import Data.HeteroList
 
 import Gpu.Vulkan.Enum
@@ -17,6 +19,7 @@ import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer.M
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
 data SemaphorePipelineStageFlags ss =
@@ -31,16 +34,54 @@ semaphorePipelineStageFlagsToMiddle ::
 semaphorePipelineStageFlagsToMiddle = heteroVarListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
+data SubmitInfoNew n sss svss = SubmitInfoNew {
+	submitInfoNextNew :: Maybe n,
+	submitInfoWaitSemaphoreDstStageMasksNew ::
+		HeteroVarList SemaphorePipelineStageFlags sss,
+	submitInfoCommandBuffersNew :: HeteroVarList (V2 CommandBuffer.C) svss,
+	submitInfoSignalSemaphoresNew :: [Semaphore.M.S] }
+
 data SubmitInfo n sss s vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroVarList SemaphorePipelineStageFlags sss,
---		[(Semaphore.M.S, Pipeline.StageFlags)],
 	submitInfoCommandBuffers :: [CommandBuffer.C s vs],
 	submitInfoSignalSemaphores :: [Semaphore.M.S] }
 
 deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
 	Show (SubmitInfo n sss s vs)
+
+class CommandBufferListToMiddle svss where
+	type CommandBufferListToMiddleMapSnd svss :: [[Type]]
+	commandBufferListToMiddle ::
+		HeteroVarList (V2 CommandBuffer.C) svss ->
+		HeteroVarList CommandBuffer.M.C
+			(CommandBufferListToMiddleMapSnd svss)
+
+instance CommandBufferListToMiddle '[] where
+	type CommandBufferListToMiddleMapSnd '[] = '[]
+	commandBufferListToMiddle HVNil = HVNil
+
+instance CommandBufferListToMiddle svss =>
+	CommandBufferListToMiddle ('(s, vs) ': svss) where
+	type CommandBufferListToMiddleMapSnd ('(s, vs) ': svss) =
+		vs ': CommandBufferListToMiddleMapSnd svss
+	commandBufferListToMiddle (V2 (CommandBuffer.C cb) :...: cbs) =
+		cb :...: commandBufferListToMiddle cbs
+
+submitInfoToMiddleNew :: CommandBufferListToMiddle svss =>
+	SubmitInfoNew n sss svss ->
+	M.SubmitInfoNew n (CommandBufferListToMiddleMapSnd svss)
+submitInfoToMiddleNew SubmitInfoNew {
+	submitInfoNextNew = mnxt,
+	submitInfoWaitSemaphoreDstStageMasksNew =
+		semaphorePipelineStageFlagsToMiddle -> wsdsms,
+	submitInfoCommandBuffersNew = commandBufferListToMiddle -> cbs,
+	submitInfoSignalSemaphoresNew = ssmprs } = M.SubmitInfoNew {
+	M.submitInfoNextNew = mnxt,
+	M.submitInfoWaitSemaphoreDstStageMasksNew = wsdsms,
+	M.submitInfoCommandBuffersNew = cbs,
+	M.submitInfoSignalSemaphoresNew = ssmprs }
 
 submitInfoToMiddle :: SubmitInfo n sss s vs -> M.SubmitInfo n vs
 submitInfoToMiddle SubmitInfo {

@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -233,6 +234,16 @@ clearValueArrayPtrs = iterate (
 pokeClearValue :: Ptr C.ClearValueTag -> Ptr C.ClearValueTag -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
 
+data SubmitInfoNew n vss = SubmitInfoNew {
+	submitInfoNextNew :: Maybe n,
+	submitInfoWaitSemaphoreDstStageMasksNew ::
+		[(Semaphore.S, Pipeline.StageFlags)],
+	submitInfoCommandBuffersNew :: HeteroVarList CommandBuffer.C vss,
+	submitInfoSignalSemaphoresNew :: [Semaphore.S] }
+
+deriving instance (Show n, Show (HeteroVarList CommandBuffer.C vss)) =>
+	Show (SubmitInfoNew n vss)
+
 data SubmitInfo n vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
@@ -240,6 +251,39 @@ data SubmitInfo n vs = SubmitInfo {
 	submitInfoCommandBuffers :: [CommandBuffer.C vs],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 	deriving Show
+
+submitInfoToCoreNew :: Pointable n => SubmitInfoNew n vs -> ContT r IO C.SubmitInfo
+submitInfoToCoreNew SubmitInfoNew {
+	submitInfoNextNew = mnxt,
+	submitInfoWaitSemaphoreDstStageMasksNew =
+		length &&&
+		(	(Semaphore.unS <$>) ***
+			(Pipeline.unStageFlagBits <$>)) . unzip ->
+		(wsc, (wss, wdsms)),
+	submitInfoCommandBuffersNew = (length &&& id)
+		. heteroVarListToList CommandBuffer.unC -> (cbc, cbs),
+	submitInfoSignalSemaphoresNew =
+		length &&& (Semaphore.unS <$>) -> (ssc, sss)
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pwss <- ContT $ allocaArray wsc
+	lift $ pokeArray pwss wss
+	pwdsms <- ContT $ allocaArray wsc
+	lift $ pokeArray pwdsms wdsms
+	pcbs <- ContT $ allocaArray cbc
+	lift $ pokeArray pcbs cbs
+	psss <- ContT $ allocaArray ssc
+	lift $ pokeArray psss sss
+	pure C.SubmitInfo {
+		C.submitInfoSType = (),
+		C.submitInfoPNext = pnxt,
+		C.submitInfoWaitSemaphoreCount = fromIntegral wsc,
+		C.submitInfoPWaitSemaphores = pwss,
+		C.submitInfoPWaitDstStageMask = pwdsms,
+		C.submitInfoCommandBufferCount = fromIntegral cbc,
+		C.submitInfoPCommandBuffers = pcbs,
+		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
+		C.submitInfoPSignalSemaphores = psss }
 
 submitInfoToCore :: Pointable n => SubmitInfo n vs -> ContT r IO C.SubmitInfo
 submitInfoToCore SubmitInfo {

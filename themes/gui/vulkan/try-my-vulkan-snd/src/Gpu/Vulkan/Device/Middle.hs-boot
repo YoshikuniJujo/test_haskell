@@ -18,7 +18,7 @@ instance Show D
 newtype Memory = Memory C.Memory
 instance Show Memory
 
-data MemoryImage
+data MemoryImage = MemoryImage Size C.Memory
 instance Show MemoryImage
 
 type role MemoryList phantom

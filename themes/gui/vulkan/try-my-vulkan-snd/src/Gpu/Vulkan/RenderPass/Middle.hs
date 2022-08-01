@@ -22,7 +22,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.RenderPass.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Attachment as Attachment
 import qualified Gpu.Vulkan.Subpass as Subpass
 import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer

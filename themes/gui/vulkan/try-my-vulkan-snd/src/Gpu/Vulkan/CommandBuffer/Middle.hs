@@ -23,7 +23,7 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum
 
-import qualified Gpu.Vulkan.Device.Middle as Device
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
 import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer
 import qualified Gpu.Vulkan.CommandPool.Middle as CommandPool

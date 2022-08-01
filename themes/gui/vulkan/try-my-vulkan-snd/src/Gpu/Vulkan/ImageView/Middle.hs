@@ -20,7 +20,7 @@ import Gpu.Vulkan.Component
 import Gpu.Vulkan.ImageView.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.ImageView.Core as C
 
