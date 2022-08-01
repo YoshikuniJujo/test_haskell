@@ -1034,7 +1034,7 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 		lift $ Vk.Fence.M.waitForFs dvcm [iff] True maxBound
 		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvcm sc uint64Max (Just ias_) Nothing
-		lift $ Vk.Fence.M.resetFs dvcm [iff]
+		lift $ Vk.Fence.resetFs dvc (iff_ :...: HVNil)
 		let	cb0 = cbs0 !! cf
 			cb = cbs !! cf
 			cb' = cbs0 !! cf
