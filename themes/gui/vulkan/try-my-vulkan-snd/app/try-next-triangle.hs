@@ -145,11 +145,10 @@ enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 validationLayers :: [Txt.Text]
 validationLayers = [Vk.Khr.validationLayerName]
 
-maxFramesInFlight :: Int
+maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
 data Global = Global {
-	globalCurrentFrame :: IORef Int,
 	globalFramebufferResized :: IORef Bool }
 
 readGlobal :: (Global -> IORef a) -> ReaderT Global IO a
@@ -160,10 +159,8 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 
 newGlobal :: IO Global
 newGlobal = do
-	cf <- newIORef 0
 	fbr <- newIORef False
 	pure Global {
-		globalCurrentFrame = cf,
 		globalFramebufferResized = fbr }
 
 withWindow :: (Glfw.Window -> ReaderT Global IO a) -> ReaderT Global IO a
@@ -912,8 +909,7 @@ createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
 		Vk.CmdBffr.allocateInfoNext = Nothing,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary,
-		Vk.CmdBffr.allocateInfoCommandBufferCount =
-			fromIntegral maxFramesInFlight }
+		Vk.CmdBffr.allocateInfoCommandBufferCount = maxFramesInFlight }
 
 createSyncObjects :: Vk.Dvc.D sd -> (forall sias srfs sfs .
 	HeteroVarList Vk.Semaphore.S sias ->
@@ -976,13 +972,13 @@ mainLoop :: RecreateFramebuffers ss sfs =>
 	HeteroVarList Vk.Fence.F sfs' ->
 	ReaderT Global IO ()
 mainLoop w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs ias rfs ifs = do
-	($ ext0) $ fix \loop ext -> do
+	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		lift Glfw.pollEvents
 		g <- ask
 		lift . catchAndRecreateSwapChain g w sfc phdvc qfis dvc
-				sc ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g)
+				sc ext scivs rp ppllyt gpl fbs (\e -> loop e cfs `runReaderT` g)
 			$ runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs (\e -> loop e `runReaderT` g)
+				sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf (\e -> loop e cfs `runReaderT` g)
 	lift $ Vk.Dvc.waitIdle dvc
 
 runLoop :: RecreateFramebuffers sis sfs =>
@@ -998,10 +994,10 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
 	HeteroVarList Vk.Semaphore.S sias ->
 	HeteroVarList Vk.Semaphore.S srfs ->
-	HeteroVarList Vk.Fence.F sfs' ->
+	HeteroVarList Vk.Fence.F sfs' -> Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs (\e -> lift $ loop e) `runReaderT` g
+runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf loop = do
+	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf (\e -> lift $ loop e) `runReaderT` g
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
@@ -1019,10 +1015,9 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
 	HeteroVarList Vk.Semaphore.S siass ->
 	HeteroVarList Vk.Semaphore.S srfss ->
-	HeteroVarList Vk.Fence.F sfss ->
+	HeteroVarList Vk.Fence.F sfss -> Int ->
 	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs loop =
-	readGlobal globalCurrentFrame >>= \cf ->
+drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
@@ -1051,7 +1046,6 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 		g <- ask
 		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g) . catchAndSerialize
 			$ Vk.Khr.queuePresent @() pq presentInfo
-		writeGlobal globalCurrentFrame $ (cf + 1) `mod` maxFramesInFlight
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
