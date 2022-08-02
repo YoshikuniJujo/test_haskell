@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -247,8 +247,8 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffers dv cp \cbs ->
-	createSyncObjects dv \ias rfs ifs ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs
+	createSyncObjects dv \iasrfsifs ->
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -887,17 +887,22 @@ createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary,
 		Vk.CmdBffr.allocateInfoCommandBufferCount = maxFramesInFlight }
 
-createSyncObjects :: Vk.Dvc.D sd -> (forall sias srfs sfs .
-	HeteroVarList Vk.Semaphore.S sias ->
-	HeteroVarList Vk.Semaphore.S srfs ->
-	HeteroVarList Vk.Fence.F sfs -> IO a ) -> IO a
+data SyncObjects (ssos :: ([Type], [Type], [Type])) where
+	SyncObjects :: {
+		imageAvailableSemaphores :: HeteroVarList Vk.Semaphore.S siass,
+		renderFinishedSemaphores :: HeteroVarList Vk.Semaphore.S srfss,
+		inFlightFences :: HeteroVarList Vk.Fence.F sfss } ->
+		SyncObjects '(siass, srfss, sfss)
+
+createSyncObjects :: Vk.Dvc.D sd ->
+	(forall siassrfssfs . SyncObjects siassrfssfs -> IO a ) -> IO a
 createSyncObjects dvc f =
 	heteroVarListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \ias ->
 	heteroVarListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfs ->
 	heteroVarListReplicateM maxFramesInFlight
-		(Vk.Fence.create dvc fenceInfo nil nil) \ifs -> f ias rfs ifs
+		(Vk.Fence.create dvc fenceInfo nil nil) \ifs -> f $ SyncObjects ias rfs ifs
 	where
 	fenceInfo :: Vk.Fence.CreateInfo ()
 	fenceInfo = def {
@@ -943,16 +948,14 @@ mainLoop :: RecreateFramebuffers ss sfs => FramebufferResized ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
-	HeteroVarList Vk.Semaphore.S sias ->
-	HeteroVarList Vk.Semaphore.S srfs ->
-	HeteroVarList Vk.Fence.F sfs' -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs ias rfs ifs = do
+	SyncObjects siassrfssfs -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
 		catchAndRecreateSwapChain g w sfc phdvc qfis dvc
 				sc ext scivs rp ppllyt gpl fbs (\e -> loop e cfs)
 			$ runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf (\e -> loop e cfs)
+				sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf (\e -> loop e cfs)
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: RecreateFramebuffers sis sfs =>
@@ -966,17 +969,17 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
-	HeteroVarList Vk.Semaphore.S sias ->
-	HeteroVarList Vk.Semaphore.S srfs ->
-	HeteroVarList Vk.Fence.F sfs' -> Int ->
+	SyncObjects siassrfssfs ->
+	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf loop = do
-	drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf (\e -> loop e)
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
+	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs frszd cf (\e -> loop e)
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
+drawFrame ::
+	forall sis sfs ssfc sd ssc sr sl sg sm sb scb siasssrfsssfss .
 	RecreateFramebuffers sis sfs =>
-	FramebufferResized -> Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
@@ -987,11 +990,10 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
-	HeteroVarList Vk.Semaphore.S siass ->
-	HeteroVarList Vk.Semaphore.S srfss -> HeteroVarList Vk.Fence.F sfss ->
+	SyncObjects siasssrfsssfss -> FramebufferResized ->
 	Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
-drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
-		iass rfss ifs cf loop =
+drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
+		(SyncObjects iass rfss ifs) frszd cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
@@ -1021,7 +1023,7 @@ drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 			Vk.Khr.presentInfoSwapchainImageIndices =
 				Vk.Khr.SwapchainImageIndex sc imageIndex :...:
 				HVNil }
-	catchAndRecreateSwapChain g win sfc phdvc qfis dvc
+	catchAndRecreateSwapChain frszd win sfc phdvc qfis dvc
 			sc ext scivs rp ppllyt gpl fbs (\e -> loop e)
 		. catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 
