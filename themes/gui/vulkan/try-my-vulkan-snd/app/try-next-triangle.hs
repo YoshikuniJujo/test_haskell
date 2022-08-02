@@ -975,8 +975,8 @@ runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
-	RecreateFramebuffers sis sfs => FramebufferResized ->
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+	RecreateFramebuffers sis sfs =>
+	FramebufferResized -> Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
@@ -988,37 +988,42 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
 	HeteroVarList Vk.Semaphore.S siass ->
-	HeteroVarList Vk.Semaphore.S srfss ->
-	HeteroVarList Vk.Fence.F sfss -> Int ->
-	(Vk.C.Extent2d -> IO ()) -> IO ()
-drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
+	HeteroVarList Vk.Semaphore.S srfss -> HeteroVarList Vk.Fence.F sfss ->
+	Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
+drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
+		iass rfss ifs cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
-		Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
-		imageIndex <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+	Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
+	imageIndex <-
+		Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvc sc uint64Max (Just ias) Nothing
-		Vk.Fence.resetFs dvc (iff :...: HVNil)
-		let	cb = cbs !! cf
-		Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
-		recordCommandBuffer cb ext rp gpl fbs vb imageIndex
-		let	submitInfo :: Vk.SubmitInfoNew () '[sias] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])] '[srfs]
-			submitInfo = Vk.SubmitInfoNew {
-				Vk.submitInfoNextNew = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasksNew =
-					Vk.SemaphorePipelineStageFlags
-						ias
-						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
-				Vk.submitInfoCommandBuffersNew = V2 cb :...: HVNil,
-				Vk.submitInfoSignalSemaphoresNew = rfs :...: HVNil }
-		Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
-		let	presentInfo = Vk.Khr.PresentInfo {
-				Vk.Khr.presentInfoNext = Nothing,
-				Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
-				Vk.Khr.presentInfoSwapchainImageIndices =
-					Vk.Khr.SwapchainImageIndex sc imageIndex :...: HVNil }
-		catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs (\e -> loop e) . catchAndSerialize
-			$ Vk.Khr.queuePresent @() pq presentInfo
+	Vk.Fence.resetFs dvc (iff :...: HVNil)
+	let	cb = cbs !! cf
+	Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
+	recordCommandBuffer cb ext rp gpl fbs vb imageIndex
+	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
+			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
+			'[srfs]
+		submitInfo = Vk.SubmitInfoNew {
+			Vk.submitInfoNextNew = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasksNew =
+				Vk.SemaphorePipelineStageFlags ias
+					Vk.Ppl.StageColorAttachmentOutputBit
+					:...: HVNil,
+			Vk.submitInfoCommandBuffersNew = V2 cb :...: HVNil,
+			Vk.submitInfoSignalSemaphoresNew = rfs :...: HVNil }
+	Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
+	let	presentInfo = Vk.Khr.PresentInfo {
+			Vk.Khr.presentInfoNext = Nothing,
+			Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
+			Vk.Khr.presentInfoSwapchainImageIndices =
+				Vk.Khr.SwapchainImageIndex sc imageIndex :...:
+				HVNil }
+	catchAndRecreateSwapChain g win sfc phdvc qfis dvc
+			sc ext scivs rp ppllyt gpl fbs (\e -> loop e)
+		. catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
