@@ -1,13 +1,15 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
+	C, allocate, allocateNew, AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
 
 import Foreign.Pointable
 import Control.Exception
+import Data.HeteroList
 import Data.Word
 
 import Gpu.Vulkan.CommandBuffer.Type
@@ -34,6 +36,16 @@ allocateInfoToMiddle AllocateInfo {
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
 	M.allocateInfoCommandBufferCount = cnt }
+
+cListFromMiddle :: HeteroVarList M.C vss -> HeteroVarList (C s) vss
+cListFromMiddle HVNil = HVNil
+cListFromMiddle (cb :...: cbs) = C cb :...: cListFromMiddle cbs
+
+allocateNew :: Pointable n =>
+	Device.D sd -> AllocateInfo n sp ->
+	(forall s vss . HeteroVarList (C s) vss -> IO a) -> IO a
+allocateNew (Device.D dvc) (allocateInfoToMiddle -> ai) f = M.allocateNew dvc ai \mcbs ->
+	f (cListFromMiddle mcbs) `finally` M.freeCsNew dvc (M.allocateInfoCommandPool ai) mcbs
 
 allocate :: Pointable n =>
 	Device.D sd -> AllocateInfo n sp ->

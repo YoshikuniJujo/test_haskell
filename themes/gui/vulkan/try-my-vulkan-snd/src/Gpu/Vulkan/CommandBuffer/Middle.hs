@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUaGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -15,6 +16,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Kind
 import Data.Default
+import Data.HeteroList hiding (length)
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -54,6 +56,17 @@ allocateInfoToCore AllocateInfo {
 	ContT $ withForeignPtr fAllocateInfo
 
 newtype C (vs :: [Type]) = C { unC :: C.C } deriving Show
+
+allocateNew :: Pointable n => Device.D -> AllocateInfo n ->
+	(forall vss . HeteroVarList C vss -> IO a) -> IO a
+allocateNew (Device.D dvc) ai f = ($ pure) . runContT $ do
+	pai <- allocateInfoToCore ai
+	pc <- ContT $ allocaArray cbc
+	lift do	r <- C.allocate dvc pai pc
+		throwUnlessSuccess $ Result r
+		ccbs <- peekArray cbc pc
+		listToHeteroVarList' C ccbs f
+	where cbc = fromIntegral $ allocateInfoCommandBufferCount ai
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C vs]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
@@ -138,6 +151,14 @@ end (C c) = throwUnlessSuccess . Result =<< C.end c
 
 reset :: C vs -> ResetFlags -> IO ()
 reset (C c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
+
+freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList C vss -> IO ()
+freeCsNew (Device.D dvc) (CommandPool.C cp)
+	((length &&& id) . heteroVarListToList (\(C cb) -> cb) -> (cc, cs)) =
+	($ pure) $ runContT do
+		pcs <- ContT $ allocaArray cc
+		lift do	pokeArray pcs cs
+			C.freeCs dvc cp (fromIntegral cc) pcs
 
 freeCs :: Device.D -> CommandPool.C -> [C vs] -> IO ()
 freeCs (Device.D dvc) (CommandPool.C cp)

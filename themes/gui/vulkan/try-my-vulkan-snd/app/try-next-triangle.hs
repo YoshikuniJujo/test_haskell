@@ -876,9 +876,17 @@ checkMemoryProperties properties prop =
 size :: forall a . SizeAlignmentList a => a -> Size
 size _ = fst (wholeSizeAlignment @a)
 
+{-
 createCommandBuffers :: Vk.Dvc.D sd -> Vk.CmdPool.C scp -> (forall scb .
-	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] -> IO a) ->
-	IO a
+	HeteroVarList (Vk.CmdBffr.C scb) '[
+			'[AddType Vertex 'Vk.VtxInp.RateVertex],
+			'[AddType Vertex 'Vk.VtxInp.RateVertex] ]
+		-> IO a) -> IO a
+createCommandBuffers dvc cp = Vk.CmdBffr.allocateNew @() dvc allocInfo
+-}
+createCommandBuffers :: Vk.Dvc.D sd -> Vk.CmdPool.C scp -> (forall scb .
+	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]]
+		-> IO a) -> IO a
 createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
 	where
 	allocInfo = Vk.CmdBffr.AllocateInfo {
@@ -976,8 +984,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs
 	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs frszd cf (\e -> loop e)
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame ::
-	forall sis sfs ssfc sd ssc sr sl sg sm sb scb siasssrfsssfss .
+drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb ssos .
 	RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -990,19 +997,19 @@ drawFrame ::
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
-	SyncObjects siasssrfsssfss -> FramebufferResized ->
+	SyncObjects ssos -> FramebufferResized ->
 	Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
 drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 		(SyncObjects iass rfss ifs) frszd cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
+	let	cb = cbs !! cf
 	Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
 	imageIndex <-
 		Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc (iff :...: HVNil)
-	let	cb = cbs !! cf
 	Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
 	recordCommandBuffer cb ext rp gpl fbs vb imageIndex
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]

@@ -15,7 +15,7 @@ module Data.HeteroList (
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
-	heteroVarListReplicateM,
+	heteroVarListReplicateM, listToHeteroVarList',
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
 
@@ -117,6 +117,11 @@ instance ListToHeteroVarList ss => ListToHeteroVarList (s ': ss) where
 
 oneOfOne :: HeteroVarList t '[s] -> t s
 oneOfOne (x :...: HVNil) = x
+
+listToHeteroVarList' :: (forall s . t -> t' s) -> [t] ->
+	(forall ss . HeteroVarList t' ss -> a) -> a
+listToHeteroVarList' _ [] g = g HVNil
+listToHeteroVarList' f (x : xs) g = listToHeteroVarList' f xs \ys -> g $ f x :...: ys
 
 heteroVarListIndex :: Integral i => HeteroVarList t ss -> i -> (forall s . t s -> a) -> a
 heteroVarListIndex HVNil _ _ = error "index too large"
