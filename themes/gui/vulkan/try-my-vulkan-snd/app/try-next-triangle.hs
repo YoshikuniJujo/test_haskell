@@ -73,7 +73,6 @@ import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
-import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
 import qualified Gpu.Vulkan.Image.Type as Vk.Image
 import qualified Gpu.Vulkan.Image.Enum as Vk.Image
@@ -992,7 +991,7 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	HeteroVarList Vk.Semaphore.S srfss ->
 	HeteroVarList Vk.Fence.F sfss -> Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-drawFrame g win sfc phdvc qfis dvc gq pq sc@(Vk.Khr.Swapchain.S scm) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
+drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
@@ -1017,7 +1016,7 @@ drawFrame g win sfc phdvc qfis dvc gq pq sc@(Vk.Khr.Swapchain.S scm) ext scivs r
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
 				Vk.Khr.presentInfoSwapchainImageIndices =
-					[(scm, imageIndex)] }
+					Vk.Khr.SwapchainImageIndex sc imageIndex :...: HVNil }
 		catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs (\e -> loop e) . catchAndSerialize
 			$ Vk.Khr.queuePresent @() pq presentInfo
 

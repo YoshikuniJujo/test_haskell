@@ -65,6 +65,7 @@ import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DU
 
+import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Sc.N
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Sc
 import qualified Gpu.Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView
@@ -906,7 +907,8 @@ drawFrame g@Global {
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = Vk.Smp.N.S rfs :...: HVNil,
 			Vk.Khr.presentInfoSwapchainImageIndices =
-				[(sc, fromIntegral imageIndex)] }
+				Vk.Khr.SwapchainImageIndex (Vk.Khr.Sc.N.S sc)
+					(fromIntegral imageIndex) :...: HVNil }
 	Vk.Khr.queuePresent @() pq presentInfo
 	Vk.Queue.waitIdle pq
 

@@ -75,6 +75,7 @@ import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
+import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain.N
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Image.Middle as Vk.Image
@@ -1874,7 +1875,8 @@ drawFrame st = do
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = Vk.Semaphore.N.S rfs :...: HVNil,
 			Vk.Khr.presentInfoSwapchainImageIndices =
-				[(sc, imageIndex)] }
+				Vk.Khr.SwapchainImageIndex (Vk.Khr.Swapchain.N.S sc)
+					imageIndex :...: HVNil }
 	pq <- readGlobal globalPresentQueue
 	g <- ask
 	lift . catchAndRecreateSwapChain g . catchAndSerialize

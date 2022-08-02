@@ -70,22 +70,33 @@ acquireNextImageResultOld sccs
 		throwUnless sccs $ Result r
 		peek pii
 
-data PresentInfo n sws = PresentInfo {
+data SwapchainImageIndex ssc =
+	SwapchainImageIndex (Swapchain.S ssc) Word32 deriving Show
+
+swapchainImageIndexToMiddle ::
+	SwapchainImageIndex ssc -> (Swapchain.M.S, Word32)
+swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
+	(sc, idx)
+
+data PresentInfo n sws sscs = PresentInfo {
 	presentInfoNext :: Maybe n,
 	presentInfoWaitSemaphores :: HeteroVarList Semaphore.S sws,
-	presentInfoSwapchainImageIndices :: [(Swapchain.M.S, Word32)] }
+	presentInfoSwapchainImageIndices ::
+		HeteroVarList SwapchainImageIndex sscs }
 
-deriving instance (Show n, Show (HeteroVarList Semaphore.S sws)) =>
-	Show (PresentInfo n sws)
+deriving instance (
+	Show n, Show (HeteroVarList Semaphore.S sws),
+	Show (HeteroVarList SwapchainImageIndex sscs)) =>
+	Show (PresentInfo n sws sscs)
 
-presentInfoToCore :: Pointable n => PresentInfo n sws -> ContT r IO C.PresentInfo
+presentInfoToCore :: Pointable n => PresentInfo n sws sscs -> ContT r IO C.PresentInfo
 presentInfoToCore PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores = (length &&& id)
 		. heteroVarListToList
 			(Semaphore.M.unS . \(Semaphore.S s) -> s) -> (wsc, wss),
-	presentInfoSwapchainImageIndices =
-		length &&& id . unzip ->
+	presentInfoSwapchainImageIndices = (length &&& id . unzip)
+		. heteroVarListToList swapchainImageIndexToMiddle ->
 		(scc, (scs, iis))
 	} = do
 	scs' <- lift $ Swapchain.M.sToCore `mapM` scs
@@ -107,7 +118,7 @@ presentInfoToCore PresentInfo {
 		C.presentInfoPImageIndices = piis,
 		C.presentInfoPResults = prs }
 
-queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws -> IO ()
+queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
 queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
 	cpi@(C.PresentInfo_ fpi) <- presentInfoToCore pi_
 	ppi <- ContT $ withForeignPtr fpi
