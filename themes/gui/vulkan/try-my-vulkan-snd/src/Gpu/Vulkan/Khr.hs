@@ -24,46 +24,48 @@ import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.Fence.Middle as Fence
 import qualified Gpu.Vulkan.Queue as Queue
-import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Swapchain
+import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
+import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Core as C
 
 validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"
 
-acquireNextImage :: Device.D ->
-	Swapchain.S -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImage :: Device.D sd ->
+	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImage = acquireNextImageResult [Success]
 
-acquireNextImageResult :: [Result] -> Device.D ->
-	Swapchain.S -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImageResult :: [Result] -> Device.D sd ->
+	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImageResult sccs
-	(Device.D dvc) sc to msmp mfnc = ($ pure) $ runContT do
+	(Device.D (Device.M.D dvc)) (Swapchain.S sc) to msmp mfnc = ($ pure) $ runContT do
 	let	smp = maybe NullHandle
 			(\(Semaphore.S (Semaphore.M.S s)) -> s) msmp
 		fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
 	pii <- ContT alloca
-	sc' <- lift $ Swapchain.sToCore sc
+	sc' <- lift $ Swapchain.M.sToCore sc
 	lift do	r <- C.acquireNextImage dvc sc' to smp fnc pii
 		throwUnless sccs $ Result r
 		peek pii
 
-acquireNextImageOld :: Device.D ->
-	Swapchain.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
+acquireNextImageOld :: Device.M.D ->
+	Swapchain.M.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
 acquireNextImageOld = acquireNextImageResultOld [Success]
 
-acquireNextImageResultOld :: [Result] -> Device.D ->
-	Swapchain.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
+acquireNextImageResultOld :: [Result] -> Device.M.D ->
+	Swapchain.M.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
 acquireNextImageResultOld sccs
-	(Device.D dvc) sc to msmp mfnc = ($ pure) $ runContT do
+	(Device.M.D dvc) sc to msmp mfnc = ($ pure) $ runContT do
 	let	smp = maybe NullHandle (\(Semaphore.M.S s) -> s) msmp
 		fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
 	pii <- ContT alloca
-	sc' <- lift $ Swapchain.sToCore sc
+	sc' <- lift $ Swapchain.M.sToCore sc
 	lift do	r <- C.acquireNextImage dvc sc' to smp fnc pii
 		throwUnless sccs $ Result r
 		peek pii
@@ -71,7 +73,7 @@ acquireNextImageResultOld sccs
 data PresentInfo n sws = PresentInfo {
 	presentInfoNext :: Maybe n,
 	presentInfoWaitSemaphores :: HeteroVarList Semaphore.S sws,
-	presentInfoSwapchainImageIndices :: [(Swapchain.S, Word32)] }
+	presentInfoSwapchainImageIndices :: [(Swapchain.M.S, Word32)] }
 
 deriving instance (Show n, Show (HeteroVarList Semaphore.S sws)) =>
 	Show (PresentInfo n sws)
@@ -86,7 +88,7 @@ presentInfoToCore PresentInfo {
 		length &&& id . unzip ->
 		(scc, (scs, iis))
 	} = do
-	scs' <- lift $ Swapchain.sToCore `mapM` scs
+	scs' <- lift $ Swapchain.M.sToCore `mapM` scs
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pwss <- ContT $ allocaArray wsc
 	lift $ pokeArray pwss wss

@@ -992,13 +992,13 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	HeteroVarList Vk.Semaphore.S srfss ->
 	HeteroVarList Vk.Fence.F sfss -> Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-drawFrame g win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
+drawFrame g win sfc phdvc qfis dvc gq pq sc@(Vk.Khr.Swapchain.S scm) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
 		Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
 		imageIndex <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-			dvcm sc uint64Max (Just ias) Nothing
+			dvc sc uint64Max (Just ias) Nothing
 		Vk.Fence.resetFs dvc (iff :...: HVNil)
 		let	cb = cbs !! cf
 		Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
@@ -1017,8 +1017,8 @@ drawFrame g win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc)
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
 				Vk.Khr.presentInfoSwapchainImageIndices =
-					[(sc, imageIndex)] }
-		catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e) . catchAndSerialize
+					[(scm, imageIndex)] }
+		catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs (\e -> loop e) . catchAndSerialize
 			$ Vk.Khr.queuePresent @() pq presentInfo
 
 catchAndSerialize :: IO () -> IO ()
