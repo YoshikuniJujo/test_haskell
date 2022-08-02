@@ -128,10 +128,12 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 main :: IO ()
-main = (=<< newGlobal) . runReaderT $ withWindow \win -> createInstance \inst ->
-	if enableValidationLayers
-		then setupDebugMessenger inst $ const $ run win inst
-		else run win inst
+main = do
+	g <- newGlobal
+	(`withWindow` g) \win -> createInstance \inst -> do
+		if enableValidationLayers
+			then setupDebugMessenger inst $ const $ run win inst g
+			else run win inst g
 
 windowName :: String
 windowName = "Triangle"
@@ -163,33 +165,31 @@ newGlobal = do
 	pure Global {
 		globalFramebufferResized = fbr }
 
-withWindow :: (Glfw.Window -> ReaderT Global IO a) -> ReaderT Global IO a
-withWindow f = initWindow >>= \w ->
-	f w <* lift (Glfw.destroyWindow w >> Glfw.terminate)
+withWindow :: (Glfw.Window -> IO a) -> Global -> IO a
+withWindow f g = initWindow g >>= \w ->
+	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
 
-initWindow :: ReaderT Global IO Glfw.Window
-initWindow = do
-	Just w <- lift do
+initWindow :: Global -> IO Glfw.Window
+initWindow g = do
+	Just w <- do
 		True <- Glfw.init
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	g <- ask
-	w <$ lift (Glfw.setFramebufferSizeCallback w
-		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True))
+	w <$ Glfw.setFramebufferSizeCallback w
+		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True)
 
-createInstance :: (forall si . Vk.Ist.I si -> ReaderT Global IO a) ->
-	ReaderT Global IO a
+createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	lift . when enableValidationLayers $ bool
+	when enableValidationLayers $ bool
 		(error "validation layers requested, but not available!")
 		(pure ())
 		=<< null . (validationLayers \\)
 				. (Vk.M.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- lift $ bool id (Vk.Ext.DbgUtls.extensionName :)
+	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
 			enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	lift $ print extensions
+	print extensions
 	let	appInfo = Vk.M.ApplicationInfo {
 			Vk.M.applicationInfoNext = Nothing,
 			Vk.M.applicationInfoApplicationName = "Hello Triangle",
@@ -209,18 +209,16 @@ createInstance f = do
 			Vk.Ist.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	g <- ask
-	lift $ Vk.Ist.create createInfo nil nil \i -> f i `runReaderT` g
+	Vk.Ist.create createInfo nil nil \i -> f i
 
 instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
 instanceToMiddle (Vk.Ist.I inst) = inst
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->
-	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> ReaderT Global IO a) ->
-	ReaderT Global IO a
-setupDebugMessenger ist f = ask >>= \g -> lift $ Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil nil \m -> f m `runReaderT` g
+	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> IO a) -> IO a
+setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
+	debugMessengerCreateInfo nil nil \m -> f m
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
@@ -241,31 +239,28 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> ReaderT Global IO ()
-run w inst = ask >>= \g ->
+run :: Glfw.Window -> Vk.Ist.I si -> Global -> IO ()
+run w inst g =
 	createSurface w inst \sfc ->
-	lift (pickPhysicalDevice inst sfc) >>= \(phdv, qfis) ->
+	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv \sc scfmt ext ->
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt in
-	lift (Vk.Khr.Swapchain.getImages dv sc) >>= \imgs ->
+	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv scifmt imgs \scivs ->
-	lift $ createRenderPass dv scifmt \rp ->
-	createPipelineLayout dv g \ppllyt ->
+	createRenderPass dv scifmt \rp ->
+	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext scivs rp \fbs ->
 	createCommandPool qfis dv \cp ->
-	lift $ createVertexBuffer phdv dv gq cp \vb ->
+	createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \ias rfs ifs -> (`runReaderT` g) do
 	mainLoop w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> ReaderT Global IO a) ->
-	ReaderT Global IO a
-createSurface win ist f =
-	ask >>= \g -> lift $ Glfw.createWindowSurface ist win nil nil \sfc ->
-		f sfc `runReaderT` g
+	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
+createSurface win ist f = Glfw.createWindowSurface ist win nil nil \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -354,8 +349,7 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
 createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
-		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
-			ReaderT Global IO a) -> ReaderT Global IO a
+		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createLogicalDevice phdvc qfis f =
 	let	uniqueQueueFamilies =
 			nub [graphicsFamily qfis, presentFamily qfis]
@@ -374,24 +368,22 @@ createLogicalDevice phdvc qfis f =
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def } in
-	ask >>= \g ->
-	lift $ Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
+	Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
 		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		f dvc gq pq `runReaderT` g
+		f dvc gq pq
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> (
 		forall ss . Vk.Khr.Swapchain.S ss -> Vk.Khr.Surface.M.Format ->
-		Vk.C.Extent2d -> ReaderT Global IO a ) -> ReaderT Global IO a
+		Vk.C.Extent2d -> IO a ) -> IO a
 createSwapChain win sfc phdvc qfis dvc f = do
-	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
+	swapChainSupport <- querySwapChainSupport phdvc sfc
 	extent <- chooseSwapExtent win $ capabilities swapChainSupport
 	let	(createInfo, surfaceFormat) =
 			mkSwapchainCreateInfo sfc qfis swapChainSupport extent
-	g <- ask
-	lift $ Vk.Khr.Swapchain.create @() dvc createInfo nil nil \sc ->
-		f sc surfaceFormat extent `runReaderT` g
+	Vk.Khr.Swapchain.create @() dvc createInfo nil nil \sc ->
+		f sc surfaceFormat extent
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -399,7 +391,7 @@ recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	ReaderT Global IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	swapChainSupport <- lift $ querySwapChainSupport phdvc sfc
-	extent <- chooseSwapExtent win $ capabilities swapChainSupport
+	extent <- lift . chooseSwapExtent win $ capabilities swapChainSupport
 	let	(createInfo, surfaceFormat) =
 			mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent
 	lift $ Vk.Khr.Swapchain.recreate @() dvc createInfo nil nil sc
@@ -461,12 +453,12 @@ chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
 chooseSwapPresentMode =
 	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
-chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> ReaderT Global IO Vk.C.Extent2d
+chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> IO Vk.C.Extent2d
 chooseSwapExtent win caps
 	| Vk.C.extent2dWidth curExt /= maxBound = pure curExt
 	| otherwise = do
 		(fromIntegral -> w, fromIntegral -> h) <-
-			lift $ Glfw.getFramebufferSize win
+			Glfw.getFramebufferSize win
 		pure $ Vk.C.Extent2d
 			(clamp w (Vk.C.extent2dWidth n) (Vk.C.extent2dHeight n))
 			(clamp h (Vk.C.extent2dWidth x) (Vk.C.extent2dHeight x))
@@ -482,20 +474,17 @@ onlyIf :: (a -> Bool) -> a -> Maybe a
 onlyIf p x | p x = Just x | otherwise = Nothing
 
 createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
-	(forall si . HeteroVarList Vk.ImgVw.I si -> ReaderT Global IO a) ->
-	ReaderT Global IO a
+	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
 createImageViews _dvc _scifmt [] f = f HVNil
 createImageViews dvc scifmt (img : imgs) f =
 	createImageView1 dvc img scifmt \sciv ->
 	createImageViews dvc scifmt imgs \scivs -> f $ sciv :...: scivs
 
 createImageView1 :: Vk.Dvc.D sd -> Vk.Image.Binded ss ss -> Vk.Format ->
-	(forall siv . Vk.ImgVw.I siv -> ReaderT Global IO a) ->
-	ReaderT Global IO a
+	(forall siv . Vk.ImgVw.I siv -> IO a) -> IO a
 createImageView1 dvc sci scifmt f = do
 	let	createInfo = makeImageViewCreateInfo sci scifmt
-	g <- ask
-	lift $ Vk.ImgVw.create @() dvc createInfo nil nil \sciv -> f sciv `runReaderT` g
+	Vk.ImgVw.create @() dvc createInfo nil nil \sciv -> f sciv
 
 recreateImageViews :: Vk.Dvc.D sd ->
 	Vk.Format -> [Vk.Image.Binded ss ss] ->
@@ -584,26 +573,24 @@ createRenderPass dvc scifmt f = do
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
 
-createPipelineLayout :: Vk.Dvc.D sd ->
-	r -> (forall sl . Vk.Ppl.Layout.LL sl '[] -> ReaderT r IO b) -> IO b
-createPipelineLayout dvc g f = do
+createPipelineLayout ::
+	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.LL sl '[] -> IO b) -> IO b
+createPipelineLayout dvc f = do
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
 			Vk.Ppl.Layout.createInfoNext = Nothing,
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts = HVNil,
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
-	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt ->
-		f ppllyt `runReaderT` g
+	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil f
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> ReaderT Global IO ()) ->
-	ReaderT Global IO ()
-createGraphicsPipeline dvc sce rp ppllyt f = ask >>= \g ->
-	lift $ Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pplInfo :...: HVNil)
-			nil nil \(V2 gpl :...: HVNil) -> f gpl `runReaderT` g
+		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO a) -> IO a
+createGraphicsPipeline dvc sce rp ppllyt f =
+	Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pplInfo :...: HVNil)
+			nil nil \(V2 gpl :...: HVNil) -> f gpl
 	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
@@ -743,13 +730,11 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 createFramebuffers :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I sis -> Vk.RndrPass.R sr ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroVarList Vk.Frmbffr.F sfs -> ReaderT Global IO a) ->
-	ReaderT Global IO a
+		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ HVNil _ f = f HVNil
-createFramebuffers dvc sce (sciv :...: scivs) rp f = ask >>= \g ->
-	lift $ createFramebuffer1 dvc sce rp sciv \fb ->
-	(createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs))
-		`runReaderT` g
+createFramebuffers dvc sce (sciv :...: scivs) rp f =
+	createFramebuffer1 dvc sce rp sciv \fb ->
+	createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs)
 
 createFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImgVw.I si -> (forall sf . Vk.Frmbffr.F sf -> IO a) -> IO a
@@ -790,10 +775,9 @@ makeFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall sc . Vk.CmdPool.C sc -> ReaderT Global IO a) ->
-	ReaderT Global IO a
-createCommandPool qfis dvc f = ask >>= \g -> lift
-	$ Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp `runReaderT` g
+	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
+createCommandPool qfis dvc f =
+	Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp
 	where poolInfo = Vk.CmdPool.CreateInfo {
 		Vk.CmdPool.createInfoNext = Nothing,
 		Vk.CmdPool.createInfoFlags =
@@ -997,11 +981,11 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.Fence.F sfs' -> Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc g ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf (\e -> lift $ loop e) `runReaderT` g
+	drawFrame g win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs ias rfs ifs cf (\e -> loop e)
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
 drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
-	RecreateFramebuffers sis sfs =>
+	RecreateFramebuffers sis sfs => Global ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1016,18 +1000,18 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb siass srfss sfss .
 	HeteroVarList Vk.Semaphore.S siass ->
 	HeteroVarList Vk.Semaphore.S srfss ->
 	HeteroVarList Vk.Fence.F sfss -> Int ->
-	(Vk.C.Extent2d -> ReaderT Global IO ()) -> ReaderT Global IO ()
-drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
+	(Vk.C.Extent2d -> IO ()) -> IO ()
+drawFrame g win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs vb cbs iass rfss ifs cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
-		lift $ Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
-		imageIndex <- lift $ Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+		Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
+		imageIndex <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvcm sc uint64Max (Just ias) Nothing
-		lift $ Vk.Fence.resetFs dvc (iff :...: HVNil)
+		Vk.Fence.resetFs dvc (iff :...: HVNil)
 		let	cb = cbs !! cf
-		lift $ Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
-		lift $ recordCommandBuffer cb ext rp gpl fbs vb imageIndex
+		Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
+		recordCommandBuffer cb ext rp gpl fbs vb imageIndex
 		let	submitInfo :: Vk.SubmitInfoNew () '[sias] '[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])] '[srfs]
 			submitInfo = Vk.SubmitInfoNew {
 				Vk.submitInfoNextNew = Nothing,
@@ -1037,14 +1021,13 @@ drawFrame win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm) gq pq (Vk.Khr.Swapchain.S sc) e
 						Vk.Ppl.StageColorAttachmentOutputBit :...: HVNil,
 				Vk.submitInfoCommandBuffersNew = V2 cb :...: HVNil,
 				Vk.submitInfoSignalSemaphoresNew = rfs :...: HVNil }
-		lift . Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
+		Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
 		let	presentInfo = Vk.Khr.PresentInfo {
 				Vk.Khr.presentInfoNext = Nothing,
 				Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
 				Vk.Khr.presentInfoSwapchainImageIndices =
 					[(sc, imageIndex)] }
-		g <- ask
-		lift . catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e `runReaderT` g) . catchAndSerialize
+		catchAndRecreateSwapChain g win sfc phdvc qfis dvc (Vk.Khr.Swapchain.S sc) ext scivs rp ppllyt gpl fbs (\e -> loop e) . catchAndSerialize
 			$ Vk.Khr.queuePresent @() pq presentInfo
 
 catchAndSerialize :: IO () -> IO ()
