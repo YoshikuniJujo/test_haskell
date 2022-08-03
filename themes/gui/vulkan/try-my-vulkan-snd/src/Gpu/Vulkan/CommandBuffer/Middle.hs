@@ -82,7 +82,8 @@ allocateInfoToCoreNew AllocateInfoNew {
 
 newtype C (vs :: [Type]) = C { unC :: C.C } deriving Show
 
-allocateNew :: (Pointable n, TpLvlLst.Length [Type] vss) =>
+allocateNew ::
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D -> AllocateInfoNew n vss -> IO (HeteroVarList C vss)
 allocateNew (Device.D dvc) ai = ($ pure) . runContT $ do
 	cai@(C.AllocateInfo_ fai) <- allocateInfoToCoreNew ai
@@ -92,7 +93,7 @@ allocateNew (Device.D dvc) ai = ($ pure) . runContT $ do
 	lift do	r <- C.allocate dvc pai pc
 		throwUnlessSuccess $ Result r
 		ccbs <- peekArray cbc pc
-		undefined
+		pure $ listToHeteroVarList C ccbs
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C vs]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
