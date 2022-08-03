@@ -21,7 +21,7 @@ import Data.Kind.Object
 import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
-import TypeLevel.List
+import TypeLevel.List hiding (length)
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum

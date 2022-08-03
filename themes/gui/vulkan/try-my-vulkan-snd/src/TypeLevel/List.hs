@@ -1,12 +1,15 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TypeLevel.List where
+
+import Prelude hiding (length)
+import qualified Prelude
 
 import Data.Kind
 
@@ -40,3 +43,10 @@ instance PrefixOf (x ': xs) (x ': ys) => InfixIndex (x ': xs) (x ': ys) where
 
 instance {-# OVERLAPPABLE #-} InfixIndex xs ys => InfixIndex xs (y ': ys) where
 	infixIndex = infixIndex @xs @ys + 1
+
+class Length k (ts :: [k]) where length :: Int
+
+instance Length k '[] where length = 0
+
+instance Length k ts => Length k (t ': ts) where
+	length = 1 + length @k @ts

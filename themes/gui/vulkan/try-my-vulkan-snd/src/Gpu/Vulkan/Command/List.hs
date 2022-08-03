@@ -13,7 +13,7 @@ import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
-import TypeLevel.List
+import TypeLevel.List hiding (length)
 
 import qualified Foreign.Storable.Generic
 
