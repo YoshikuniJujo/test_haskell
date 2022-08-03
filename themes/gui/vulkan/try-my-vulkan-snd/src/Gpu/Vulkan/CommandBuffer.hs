@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, allocateNew, AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
+	C, allocate, {- allocateNew, -} AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -41,11 +41,13 @@ cListFromMiddle :: HeteroVarList M.C vss -> HeteroVarList (C s) vss
 cListFromMiddle HVNil = HVNil
 cListFromMiddle (cb :...: cbs) = C cb :...: cListFromMiddle cbs
 
+{-
 allocateNew :: Pointable n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s vss . HeteroVarList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddle -> ai) f = M.allocateNew dvc ai \mcbs ->
 	f (cListFromMiddle mcbs) `finally` M.freeCsNew dvc (M.allocateInfoCommandPool ai) mcbs
+	-}
 
 allocate :: Pointable n =>
 	Device.D sd -> AllocateInfo n sp ->
