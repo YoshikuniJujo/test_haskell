@@ -1,16 +1,22 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, {- allocateNew, -} AllocateInfo(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
+	C, allocate, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
 
 import Foreign.Pointable
 import Control.Exception
+import Data.Kind
 import Data.HeteroList
 import Data.Word
+
+import qualified TypeLevel.List as TpLvlLst
 
 import Gpu.Vulkan.CommandBuffer.Type
 import Gpu.Vulkan.CommandBuffer.Enum
@@ -37,9 +43,32 @@ allocateInfoToMiddle AllocateInfo {
 	M.allocateInfoLevel = lvl,
 	M.allocateInfoCommandBufferCount = cnt }
 
+data AllocateInfoNew n s (vss :: [[Type]]) = AllocateInfoNew {
+	allocateInfoNextNew :: Maybe n,
+	allocateInfoCommandPoolNew :: CommandPool.C s,
+	allocateInfoLevelNew :: Level }
+	deriving Show
+
+allocateInfoToMiddleNew :: AllocateInfoNew n s vss -> M.AllocateInfoNew n vss
+allocateInfoToMiddleNew AllocateInfoNew {
+	allocateInfoNextNew = nxt,
+	allocateInfoCommandPoolNew = CommandPool.C cp,
+	allocateInfoLevelNew = lvl } = M.AllocateInfoNew {
+	M.allocateInfoNextNew = nxt,
+	M.allocateInfoCommandPoolNew = cp,
+	M.allocateInfoLevelNew = lvl }
+
 cListFromMiddle :: HeteroVarList M.C vss -> HeteroVarList (C s) vss
 cListFromMiddle HVNil = HVNil
 cListFromMiddle (cb :...: cbs) = C cb :...: cListFromMiddle cbs
+
+allocateNew ::
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	Device.D sd -> AllocateInfoNew n scp vss ->
+	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
+allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
+	(M.allocateNew dvc ai) (M.freeCsNew dvc $ M.allocateInfoCommandPoolNew ai)
+	(f . heteroVarListMap C)
 
 {-
 allocateNew :: Pointable n =>

@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE GADTs, TypeFamilies, DataKinds #-}
@@ -15,7 +15,7 @@ module Data.HeteroList (
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
-	heteroVarListReplicateM, listToHeteroVarList',
+	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
 
@@ -135,6 +135,12 @@ heteroVarListReplicateM :: Monad m =>
 heteroVarListReplicateM 0 _ f = f HVNil
 heteroVarListReplicateM n x f = x \v -> heteroVarListReplicateM (n - 1) x \vs ->
 	f $ v :...: vs
+
+heteroVarListMap ::
+	(forall s . t s -> t' s) -> HeteroVarList t ss -> HeteroVarList t' ss
+heteroVarListMap f = \case
+	HVNil -> HVNil
+	x :...: xs -> f x :...: heteroVarListMap f xs
 
 data V2 t ss where V2 :: t s1 s2 -> V2 t '(s1, s2)
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)
