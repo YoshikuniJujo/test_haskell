@@ -818,23 +818,23 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
-copyBuffer ::
+copyBuffer :: forall sd sc sm sb sm' sb' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp srcBuffer dstBuffer = do
-	let	allocInfo = Vk.CmdBffr.AllocateInfo {
-			Vk.CmdBffr.allocateInfoNext = Nothing,
-			Vk.CmdBffr.allocateInfoCommandPool = cp,
-			Vk.CmdBffr.allocateInfoLevel =
-				Vk.CmdBffr.LevelPrimary,
-			Vk.CmdBffr.allocateInfoCommandBufferCount = 1 }
+	let	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
+		allocInfo = Vk.CmdBffr.AllocateInfoNew {
+			Vk.CmdBffr.allocateInfoNextNew = Nothing,
+			Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+			Vk.CmdBffr.allocateInfoLevelNew =
+				Vk.CmdBffr.LevelPrimary }
 		beginInfo = Vk.CmdBffr.M.BeginInfo {
 			Vk.CmdBffr.beginInfoNext = Nothing,
 			Vk.CmdBffr.beginInfoFlags =
 				Vk.CmdBffr.UsageOneTimeSubmitBit,
 			Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
-	Vk.CmdBffr.allocate @() dvc allocInfo \[commandBuffer] -> do
+	Vk.CmdBffr.allocateNew @() dvc allocInfo \(commandBuffer :...: HVNil) -> do
 		let	submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
