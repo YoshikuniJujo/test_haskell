@@ -248,7 +248,7 @@ run w inst g =
 	createFramebuffers dv ext scivs rp \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
-	createCommandBuffers dv cp \cbs ->
+	createCommandBuffersNew dv cp \cbs ->
 	createSyncObjects dv \iasrfsifs ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs
 
@@ -912,17 +912,6 @@ createCommandBuffersNew dvc cp f = makeVss maxFramesInFlight \(_p :: Proxy vss1)
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
-createCommandBuffers :: Vk.Dvc.D sd -> Vk.CmdPool.C scp -> (forall scb .
-	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]]
-		-> IO a) -> IO a
-createCommandBuffers dvc cp = Vk.CmdBffr.allocate @() dvc allocInfo
-	where
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary,
-		Vk.CmdBffr.allocateInfoCommandBufferCount = maxFramesInFlight }
-
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
 		imageAvailableSemaphores :: HeteroVarList Vk.Semaphore.S siass,
@@ -973,7 +962,7 @@ recordCommandBuffer cb sce rp gpl fbs vb imgIdx =
 		Vk.RndrPass.beginInfoClearValues = Vk.M.ClearValueColor
 			(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
 
-mainLoop :: RecreateFramebuffers ss sfs => FramebufferResized ->
+mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
@@ -983,7 +972,7 @@ mainLoop :: RecreateFramebuffers ss sfs => FramebufferResized ->
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
@@ -994,7 +983,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs ias
 				sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf (\e -> loop e cfs)
 	Vk.Dvc.waitIdle dvc
 
-runLoop :: RecreateFramebuffers sis sfs =>
+runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
@@ -1004,7 +993,7 @@ runLoop :: RecreateFramebuffers sis sfs =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
@@ -1012,8 +1001,8 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs
 	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs frszd cf (\e -> loop e)
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb ssos .
-	RecreateFramebuffers sis sfs =>
+drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb ssos vss .
+	(RecreateFramebuffers sis sfs, VssList vss) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1024,7 +1013,7 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb ssos .
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	[Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]] ->
+	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects ssos -> FramebufferResized ->
 	Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
 drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
@@ -1032,7 +1021,7 @@ drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex ifs cf \iff -> do
-	let	cb = cbs !! cf
+	let	cb = cbs `vssListIndex` cf
 	Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
 	imageIndex <-
 		Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
