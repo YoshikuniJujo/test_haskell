@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -882,16 +882,28 @@ addTypeToProxy ::
 	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
 addTypeToProxy Proxy = Proxy
 
-makeVss :: Int -> (forall (vss :: [[Type]]) . (TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) => Proxy vss -> a) -> a
+makeVss :: Int -> (forall (vss :: [[Type]]) . (TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) => Proxy vss -> a) -> a
 makeVss 0 f = f (Proxy @'[])
 makeVss n f = makeVss (n - 1) \p -> f $ addTypeToProxy p
 
+class VssList (vss :: [[Type]]) where
+	vssListIndex ::
+		HeteroVarList (Vk.CmdBffr.C scb) vss -> Int ->
+		Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
+
+instance VssList '[] where
+	vssListIndex HVNil _ = error "index too large"
+
+instance VssList vss => VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
+	vssListIndex (cb :...: _) 0 = cb
+	vssListIndex (_ :...: cbs) n = vssListIndex cbs (n - 1)
+
 createCommandBuffersNew ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp -> Int ->
-	(forall scb vss .
+	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	(forall scb vss . VssList vss =>
 		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
 	IO a
-createCommandBuffersNew dvc cp cnt f = makeVss maxFramesInFlight \(p :: Proxy vss1) ->
+createCommandBuffersNew dvc cp f = makeVss maxFramesInFlight \(_p :: Proxy vss1) ->
 	Vk.CmdBffr.allocateNew @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
 	where
 	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew () scp vss
