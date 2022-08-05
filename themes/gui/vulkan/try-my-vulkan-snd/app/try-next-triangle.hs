@@ -15,7 +15,7 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
-import Control.Arrow
+import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
@@ -28,7 +28,6 @@ import Data.Proxy
 import Data.Bool
 import Data.Maybe
 import Data.List hiding (singleton)
-import Data.Word
 import Data.IORef
 import Data.List.Length
 import Data.Color
@@ -934,34 +933,32 @@ createSyncObjects dvc f =
 	fncInfo :: Vk.Fence.CreateInfo ()
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sg sfs sm sb .
+recordCommandBuffer :: forall scb sr sf sg sm sb .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
+	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Word32 -> IO ()
-recordCommandBuffer cb sce rp gpl fbs vb imgIdx =
-	heteroVarListIndex fbs imgIdx \fb ->
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO ()
+recordCommandBuffer cb rp fb sce gpl vb =
 	Vk.CmdBffr.begin @() @() cb def $
-	Vk.Cmd.beginRenderPass cb (rpInfo fb) Vk.Subpass.ContentsInline do
+	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
-		$ V3 (Vk.Bffr.IndexedList @_ @_ @Vertex vb) :...: HVNil
+		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
 	Vk.Cmd.draw cb 3 1 0 0
 	where
-	rpInfo :: forall sf . Vk.Frmbffr.F sf ->
-		Vk.RndrPass.BeginInfo () sr sf
-			'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
-	rpInfo fb = Vk.RndrPass.BeginInfo {
+	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
+		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
+	rpInfo = Vk.RndrPass.BeginInfo {
 		Vk.RndrPass.beginInfoNext = Nothing,
 		Vk.RndrPass.beginInfoRenderPass = rp,
 		Vk.RndrPass.beginInfoFramebuffer = fb,
 		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues = Vk.M.ClearValueColor
-			(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
+		Vk.RndrPass.beginInfoClearValues = singleton
+			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
@@ -1025,9 +1022,9 @@ drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 	Vk.Fence.waitForFs dvc siff True maxBound
 	Vk.Fence.resetFs dvc siff
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
-			dvc sc uint64Max (Just ias) Nothing
+		dvc sc uint64Max (Just ias) Nothing
 	Vk.CmdBffr.reset cb def
-	recordCommandBuffer cb ext rp gpl fbs vb imgIdx
+	heteroVarListIndex fbs imgIdx \fb -> recordCommandBuffer cb rp fb ext gpl vb
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
