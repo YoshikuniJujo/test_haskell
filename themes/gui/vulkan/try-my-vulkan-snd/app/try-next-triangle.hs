@@ -15,6 +15,7 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
+import Control.Arrow
 import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
@@ -26,7 +27,7 @@ import Data.HeteroList hiding (length)
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
-import Data.List
+import Data.List hiding (singleton)
 import Data.Word
 import Data.IORef
 import Data.List.Length
@@ -927,11 +928,11 @@ createSyncObjects dvc f =
 	heteroVarListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfs ->
 	heteroVarListReplicateM maxFramesInFlight
-		(Vk.Fence.create dvc fenceInfo nil nil) \ifs -> f $ SyncObjects ias rfs ifs
+		(Vk.Fence.create dvc fncInfo nil nil) \ifs ->
+	f $ SyncObjects ias rfs ifs
 	where
-	fenceInfo :: Vk.Fence.CreateInfo ()
-	fenceInfo = def {
-		Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+	fncInfo :: Vk.Fence.CreateInfo ()
+	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sg sfs sm sb .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
@@ -1017,18 +1018,16 @@ drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb ssos vss .
 	SyncObjects ssos -> FramebufferResized ->
 	Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
 drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
-		(SyncObjects iass rfss ifs) frszd cf loop =
+		(SyncObjects iass rfss iffs) frszd cf loop =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex ifs cf \iff -> do
-	let	cb = cbs `vssListIndex` cf
-	Vk.Fence.waitForFs dvc (iff :...: HVNil) True maxBound
-	imageIndex <-
-		Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
+	Vk.Fence.waitForFs dvc siff True maxBound
+	Vk.Fence.resetFs dvc siff
+	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 			dvc sc uint64Max (Just ias) Nothing
-	Vk.Fence.resetFs dvc (iff :...: HVNil)
-	Vk.CmdBffr.reset cb Vk.CmdBffr.ResetFlagsZero
-	recordCommandBuffer cb ext rp gpl fbs vb imageIndex
+	Vk.CmdBffr.reset cb def
+	recordCommandBuffer cb ext rp gpl fbs vb imgIdx
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
@@ -1045,11 +1044,12 @@ drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
 			Vk.Khr.presentInfoSwapchainImageIndices =
-				Vk.Khr.SwapchainImageIndex sc imageIndex :...:
+				Vk.Khr.SwapchainImageIndex sc imgIdx :...:
 				HVNil }
 	catchAndRecreateSwapChain frszd win sfc phdvc qfis dvc
-			sc ext scivs rp ppllyt gpl fbs (\e -> loop e)
+			sc ext scivs rp ppllyt gpl fbs loop
 		. catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+	where	cb = cbs `vssListIndex` cf
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =

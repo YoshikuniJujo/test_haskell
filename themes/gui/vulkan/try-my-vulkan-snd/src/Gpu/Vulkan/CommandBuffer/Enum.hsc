@@ -11,8 +11,10 @@ module Gpu.Vulkan.CommandBuffer.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.Default
 import Data.Bits
 import Data.Word
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
@@ -36,6 +38,9 @@ enum "UsageFlagBits" ''#{type VkCommandBufferUsageFlagBits}
 	("UsageFlagBitsMaxEnum",
 		#{const VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM}) ]
 
+instance Default UsageFlagBits where
+	def = UsageFlagsZero
+
 enum "ResetFlagBits" ''#{type VkCommandBufferResetFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
 	("ResetFlagsZero", 0),
@@ -43,6 +48,9 @@ enum "ResetFlagBits" ''#{type VkCommandBufferResetFlagBits}
 		#{const VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT}),
 	("ResetFlagBitsMaxEnum",
 		#{const VK_COMMAND_BUFFER_RESET_FLAG_BITS_MAX_ENUM}) ]
+
+instance Default ResetFlagBits where
+	def = ResetFlagsZero
 
 type UsageFlags = UsageFlagBits
 type ResetFlags = ResetFlagBits

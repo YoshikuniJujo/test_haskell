@@ -61,6 +61,8 @@ enum "Result" ''#{type VkResult}
 	("ThreadDoneKhr", #{const VK_THREAD_DONE_KHR}),
 	("OperationDeferredKhr", #{const VK_OPERATION_DEFERRED_KHR}),
 	("OperationNotDeferredKhr", #{const VK_OPERATION_NOT_DEFERRED_KHR}),
+	("ErrorCompressionExhaustedExt",
+		#{const VK_ERROR_COMPRESSION_EXHAUSTED_EXT}),
 	("ErrorOutOfPoolMemoryKhr", #{const VK_ERROR_OUT_OF_POOL_MEMORY_KHR}),
 	("ErrorInvalidExternalHandleKhr",
 		#{const VK_ERROR_INVALID_EXTERNAL_HANDLE_KHR}),
