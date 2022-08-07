@@ -30,24 +30,14 @@ import qualified Gpu.Vulkan.Queue.Core as C
 
 newtype Q = Q C.Q deriving Show
 
-submitNewNew :: SubmitInfoListToCoreNew nssssvsss =>
+submitNew :: SubmitInfoListToCoreNew nssssvsss =>
 	Q -> HeteroVarList (V4 SubmitInfoNew) nssssvsss -> Maybe (Fence.F sf) -> IO ()
-submitNewNew (Q q) sis mf = ($ pure) $ runContT do
+submitNew (Q q) sis mf = ($ pure) $ runContT do
 	csis <- submitInfoListToCoreNew sis
 	let	sic = length csis
 	psis <- ContT $ allocaArray sic
 	lift do	pokeArray psis csis
 		r <- C.submit q (fromIntegral sic) psis . Fence.M.maybeFToCore $ (\(Fence.F f) -> f) <$> mf
-		throwUnlessSuccess $ Result r
-
-submitNew :: SubmitInfoListToCore nssssvss =>
-	Q -> HeteroVarList (V4 SubmitInfo) nssssvss -> Maybe Fence.M.F -> IO ()
-submitNew (Q q) sis mf = ($ pure) $ runContT do
-	csis <- submitInfoListToCore sis
-	let	sic = length csis
-	psis <- ContT $ allocaArray sic
-	lift do	pokeArray psis csis
-		r <- C.submit q (fromIntegral sic) psis $ Fence.M.maybeFToCore mf
 		throwUnlessSuccess $ Result r
 
 class SubmitInfoListToCoreNew (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where

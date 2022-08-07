@@ -1024,25 +1024,24 @@ drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.CmdBffr.reset cb def
-	heteroVarListIndex fbs imgIdx \fb -> recordCommandBuffer cb rp fb ext gpl vb
+	heteroVarListIndex fbs imgIdx \fb ->
+		recordCommandBuffer cb rp fb ext gpl vb
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
 		submitInfo = Vk.SubmitInfoNew {
 			Vk.submitInfoNextNew = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasksNew =
-				Vk.SemaphorePipelineStageFlags ias
-					Vk.Ppl.StageColorAttachmentOutputBit
-					:...: HVNil,
-			Vk.submitInfoCommandBuffersNew = V2 cb :...: HVNil,
-			Vk.submitInfoSignalSemaphoresNew = rfs :...: HVNil }
-	Vk.Queue.submitNewNew gq (V4 submitInfo :...: HVNil) $ Just iff
-	let	presentInfo = Vk.Khr.PresentInfo {
+			Vk.submitInfoWaitSemaphoreDstStageMasksNew = singleton
+				$ Vk.SemaphorePipelineStageFlags ias
+					Vk.Ppl.StageColorAttachmentOutputBit,
+			Vk.submitInfoCommandBuffersNew = singleton $ V2 cb,
+			Vk.submitInfoSignalSemaphoresNew = singleton rfs }
+		presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = rfs :...: HVNil,
-			Vk.Khr.presentInfoSwapchainImageIndices =
-				Vk.Khr.SwapchainImageIndex sc imgIdx :...:
-				HVNil }
+			Vk.Khr.presentInfoWaitSemaphores = singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndices = singleton
+				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
+	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
 	catchAndRecreateSwapChain frszd win sfc phdvc qfis dvc
 			sc ext scivs rp ppllyt gpl fbs loop
 		. catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
@@ -1077,9 +1076,6 @@ catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fb
 			loop e
 		else loop ext)
 
-doWhile_ :: IO Bool -> IO ()
-doWhile_ act = (`when` doWhile_ act) =<< act
-
 recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1106,6 +1102,9 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 	recreateGraphicsPipeline dvc ext rp ppllyt gpl
 	recreateFramebuffers dvc ext scivs rp fbs
 	pure ext
+
+doWhile_ :: IO Bool -> IO ()
+doWhile_ act = (`when` doWhile_ act) =<< act
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
