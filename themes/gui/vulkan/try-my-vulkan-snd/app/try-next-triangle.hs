@@ -249,8 +249,8 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffers dv cp \cbs ->
-	createSyncObjects dv \iasrfsifs ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs
+	createSyncObjects dv \sos ->
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs sos
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -919,18 +919,17 @@ data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 		inFlightFences :: HeteroVarList Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
-createSyncObjects :: Vk.Dvc.D sd ->
-	(forall siassrfssfs . SyncObjects siassrfssfs -> IO a ) -> IO a
+createSyncObjects ::
+	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
 	heteroVarListReplicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dvc def nil nil) \ias ->
+		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
 	heteroVarListReplicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dvc def nil nil) \rfs ->
+		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
 	heteroVarListReplicateM maxFramesInFlight
-		(Vk.Fence.create dvc fncInfo nil nil) \ifs ->
-	f $ SyncObjects ias rfs ifs
+		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
+	f $ SyncObjects iass rfss iffs
 	where
-	fncInfo :: Vk.Fence.CreateInfo ()
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sf sg sm sb .
