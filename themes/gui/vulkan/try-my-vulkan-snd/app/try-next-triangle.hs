@@ -1083,8 +1083,7 @@ recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
-	IO Vk.C.Extent2d
+	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
 recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 	sc scivs rp ppllyt gpl fbs = do
 	do	(wdth, hght) <- Glfw.getFramebufferSize win
