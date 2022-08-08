@@ -248,7 +248,7 @@ run w inst g =
 	createFramebuffers dv ext scivs rp \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
-	createCommandBuffersNew dv cp \cbs ->
+	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \iasrfsifs ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs
 
@@ -875,16 +875,19 @@ checkMemoryProperties :: Vk.Mem.PropertyFlags -> Vk.Mem.M.MType -> Bool
 checkMemoryProperties properties prop =
 	Vk.Mem.M.mTypePropertyFlags prop .&. properties == properties
 
-size :: forall a . SizeAlignmentList a => a -> Size
-size _ = fst (wholeSizeAlignment @a)
-
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
-addTypeToProxy Proxy = Proxy
-
-makeVss :: Int -> (forall (vss :: [[Type]]) . (TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) => Proxy vss -> a) -> a
-makeVss 0 f = f (Proxy @'[])
-makeVss n f = makeVss (n - 1) \p -> f $ addTypeToProxy p
+createCommandBuffers ::
+	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	(forall scb vss . VssList vss =>
+		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
+	IO a
+createCommandBuffers dvc cp f = makeVss maxFramesInFlight \(_p :: Proxy vss1) ->
+	Vk.CmdBffr.allocateNew @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
+	where
+	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew () scp vss
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::
@@ -894,23 +897,20 @@ class VssList (vss :: [[Type]]) where
 instance VssList '[] where
 	vssListIndex HVNil _ = error "index too large"
 
-instance VssList vss => VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
+instance VssList vss =>
+	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
 	vssListIndex (cb :...: _) 0 = cb
 	vssListIndex (_ :...: cbs) n = vssListIndex cbs (n - 1)
 
-createCommandBuffersNew ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb vss . VssList vss =>
-		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
-	IO a
-createCommandBuffersNew dvc cp f = makeVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocateNew @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
-	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew () scp vss
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+makeVss :: Int -> (forall (vss :: [[Type]]) .
+	(TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) =>
+	Proxy vss -> a) -> a
+makeVss 0 f = f (Proxy @'[])
+makeVss n f = makeVss (n - 1) \p -> f $ addTypeToProxy p
+
+addTypeToProxy ::
+	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
+addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
