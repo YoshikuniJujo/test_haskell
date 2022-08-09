@@ -22,3 +22,6 @@ onlyIf p x | p x = Just x | otherwise = Nothing
 
 checkFlag :: IORef Bool -> IO Bool
 checkFlag fg = readIORef fg >>= bool (pure False) (True <$ writeIORef fg False)
+
+checkBits :: Bits bs => bs -> bs -> Bool
+checkBits wnt = (== wnt) . (.&. wnt)

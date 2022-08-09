@@ -315,9 +315,6 @@ findQueueFamilies device sfc = do
 			queueFamilies,
 		presentFamilyMaybe = listToMaybe pfis }
 
-checkBits :: Bits bs => bs -> bs -> Bool
-checkBits bs = (== bs) . (.&. bs)
-
 checkDeviceExtensionSupport :: Vk.PhDvc.P -> IO Bool
 checkDeviceExtensionSupport dvc =
 	null . (deviceExtensions \\) . (Vk.M.extensionPropertiesExtensionName <$>)
@@ -766,10 +763,21 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = ObjectLengthList ln :...: HVNil,
+		Vk.Bffr.createInfoLengths = singleton $ ObjectLengthList ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
+	IO Vk.Mem.TypeIndex
+findMemoryType phdvc flt props =
+	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
+	where
+	msg = "failed to find suitable memory type!"
+	suitable props1 = fst <$> find ((&&)
+		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
+		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
+		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
 copyBuffer :: forall sd sc sm sb sm' sb' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
@@ -798,35 +806,6 @@ copyBuffer dvc gq cp srcBuffer dstBuffer = do
 				commandBuffer srcBuffer dstBuffer
 		Vk.Queue.submit @() gq [submitInfo] Nothing
 		Vk.Queue.waitIdle gq
-
-findMemoryType ::
-	Vk.PhDvc.P -> Vk.Mem.M.TypeBits ->
-	Vk.Mem.PropertyFlags -> IO Vk.Mem.TypeIndex
-findMemoryType phdvc typeFilter properties = do
-	memProperties <- Vk.PhDvc.getMemoryProperties phdvc
-	let	r = suitable' typeFilter properties memProperties
-	print r
-	pure $ fromMaybe (error "failed to find suitable memory type!") r
-
-suitable :: Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
-	Vk.PhDvc.MemoryProperties -> Int -> Bool
-suitable typeFilter properties memProperties i =
-	(typeFilter .&. Vk.Mem.M.TypeBits 1 `shiftL` i /= zeroBits) &&
-	(Vk.Mem.M.mTypePropertyFlags
-		(snd $ Vk.PhDvc.memoryPropertiesMemoryTypes memProperties !!
-			i) .&. properties == properties)
-
-suitable' :: Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
-	Vk.PhDvc.MemoryProperties -> Maybe Vk.Mem.TypeIndex
-suitable' typeFilter properties memProperties = fst
-	<$> find ((&&)	<$> (`Vk.Mem.M.elemTypeIndex` typeFilter) . fst 
-			<*> checkMemoryProperties properties . snd) memTypes
-	where
-	memTypes = Vk.PhDvc.memoryPropertiesMemoryTypes memProperties
-
-checkMemoryProperties :: Vk.Mem.PropertyFlags -> Vk.Mem.M.MType -> Bool
-checkMemoryProperties properties prop =
-	Vk.Mem.M.mTypePropertyFlags prop .&. properties == properties
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
