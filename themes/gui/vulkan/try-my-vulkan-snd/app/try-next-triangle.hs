@@ -363,17 +363,15 @@ createLogicalDevice phdvc qfis f =
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
 		f dvc gq pq
 
-createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd -> (
-		forall ss . Vk.Khr.Swapchain.S ss -> Vk.Khr.Surface.M.Format ->
-		Vk.C.Extent2d -> IO a ) -> IO a
+createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss .
+		Vk.Khr.Swapchain.S ss -> Vk.Khr.Surface.M.Format ->
+		Vk.C.Extent2d -> IO a) -> IO a
 createSwapChain win sfc phdvc qfis dvc f = do
-	swapChainSupport <- querySwapChainSupport phdvc sfc
-	extent <- chooseSwapExtent win $ capabilities swapChainSupport
-	let	(createInfo, surfaceFormat) =
-			mkSwapchainCreateInfo sfc qfis swapChainSupport extent
-	Vk.Khr.Swapchain.create @() dvc createInfo nil nil \sc ->
-		f sc surfaceFormat extent
+	spp <- querySwapChainSupport phdvc sfc
+	ext <- chooseSwapExtent win $ capabilities spp
+	let	(crInfo, fmt) = mkSwapchainCreateInfo sfc qfis spp ext
+	Vk.Khr.Swapchain.create @() dvc crInfo nil nil \sc -> f sc fmt ext
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
