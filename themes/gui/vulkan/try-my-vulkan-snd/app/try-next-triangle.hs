@@ -934,10 +934,8 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
-		catchAndRecreateSwapChain g w sfc phdvc qfis dvc
-				sc ext scivs rp ppllyt gpl fbs (\e -> loop e cfs)
-			$ runLoop w sfc phdvc qfis dvc gq pq
-				sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf (\e -> loop e cfs)
+		runLoop w sfc phdvc qfis dvc gq pq
+			sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
@@ -955,26 +953,19 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
-	drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs frszd cf (\e -> loop e)
+	catchAndRecreate win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs frszd loop
+		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf
 	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
 
-drawFrame :: forall sis sfs ssfc sd ssc sr sl sg sm sb scb ssos vss .
-	(RecreateFramebuffers sis sfs, VssList vss) =>
-	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
+drawFrame :: forall sfs sd ssc sr sg sm sb scb ssos vss . (VssList vss) =>
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss ->
-	SyncObjects ssos -> FramebufferResized ->
-	Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
-drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
-		(SyncObjects iass rfss iffs) frszd cf loop =
+	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
+drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
@@ -1001,17 +992,15 @@ drawFrame win sfc phdvc qfis dvc gq pq sc ext scivs rp ppllyt gpl fbs vb cbs
 			Vk.Khr.presentInfoSwapchainImageIndices = singleton
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
-	catchAndRecreateSwapChain frszd win sfc phdvc qfis dvc
-			sc ext scivs rp ppllyt gpl fbs loop
-		. catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 	where	cb = cbs `vssListIndex` cf
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
-	FramebufferResized -> Glfw.Window -> Vk.Khr.Surface.S ssfc ->
+catchAndRecreate :: RecreateFramebuffers sis sfs =>
+	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
@@ -1019,21 +1008,17 @@ catchAndRecreateSwapChain :: RecreateFramebuffers sis sfs =>
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs -> FramebufferResized ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs loop act = catchJust
+catchAndRecreate win sfc phdvc qfis
+	dvc sc ext scivs rp ppllyt gpl fbs frszd loop act = catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	(\_ -> do
-		fbr <- readIORef $ globalFramebufferResized g
-		if fbr
-		then do
-			writeIORef (globalFramebufferResized g) False
-			e <- recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
-			loop e
-		else loop ext)
+	\_ -> checkFlag frszd >>= bool (loop ext)
+		(loop =<< recreateSwapChainEtc
+			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
 recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
