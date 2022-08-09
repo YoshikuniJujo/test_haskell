@@ -81,7 +81,6 @@ import qualified Gpu.Vulkan.Image.Middle as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
@@ -245,7 +244,7 @@ run w inst g =
 	createRenderPass dv scifmt \rp ->
 	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
-	createFramebuffers dv ext scivs rp \fbs ->
+	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createCommandBuffers dv cp \cbs ->
@@ -693,33 +692,28 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImgVw.I sis -> Vk.RndrPass.R sr ->
+	Vk.RndrPass.R sr -> HeteroVarList Vk.ImgVw.I sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ HVNil _ f = f HVNil
-createFramebuffers dvc sce (iv :...: ivs) rp f =
+createFramebuffers _ _ _ HVNil f = f HVNil
+createFramebuffers dvc sce rp (iv :...: ivs) f =
 	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
-	createFramebuffers dvc sce ivs rp \fbs -> f (fb :...: fbs)
+	createFramebuffers dvc sce rp ivs \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-		HeteroVarList Vk.ImgVw.I sis -> Vk.RndrPass.R sr ->
+		Vk.RndrPass.R sr -> HeteroVarList Vk.ImgVw.I sis ->
 		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce HVNil _rp HVNil = pure ()
+	recreateFramebuffers _dvc _sce _rp HVNil HVNil = pure ()
 
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce (sciv :...: scivs) rp (fb :...: fbs) = do
-		recreateFramebuffer1 dvc sce rp sciv fb
-		recreateFramebuffers dvc sce scivs rp fbs
-
-recreateFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImgVw.I si -> Vk.Frmbffr.F sf -> IO ()
-recreateFramebuffer1 dvc sce rp attch fb =
-	Vk.Frmbffr.recreate @() dvc fbInfo nil nil fb
-	where fbInfo = mkFramebufferCreateInfo sce rp attch
+	recreateFramebuffers dvc sce rp (sciv :...: scivs) (fb :...: fbs) =
+		Vk.Frmbffr.recreate dvc
+			(mkFramebufferCreateInfo sce rp sciv) nil nil fb >>
+		recreateFramebuffers dvc sce rp scivs fbs
 
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I si ->
@@ -1059,7 +1053,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 			recreateImageViews dvc scifmt imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
-		recreateFramebuffers dvc ext scivs rp fbs
+		recreateFramebuffers dvc ext rp scivs fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
 waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
