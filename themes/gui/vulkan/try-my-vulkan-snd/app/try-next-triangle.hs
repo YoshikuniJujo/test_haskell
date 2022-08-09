@@ -457,21 +457,21 @@ createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
 	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
 createImageViews _dvc _fmt [] f = f HVNil
 createImageViews dvc fmt (sci : scis) f =
-	Vk.ImgVw.create dvc (makeImageViewCreateInfo fmt sci) nil nil \sciv ->
+	Vk.ImgVw.create dvc (mkImageViewCreateInfo fmt sci) nil nil \sciv ->
 	createImageViews dvc fmt scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
 	[Vk.Image.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
 recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) =
-	Vk.ImgVw.recreate dvc (makeImageViewCreateInfo scifmt sci) nil nil iv >>
+	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo scifmt sci) nil nil iv >>
 	recreateImageViews dvc scifmt scis ivs
 recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
-makeImageViewCreateInfo ::
+mkImageViewCreateInfo ::
 	Vk.Format -> Vk.Image.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
-makeImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
+mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = Nothing,
 	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
 	Vk.ImgVw.createInfoImage = sci,
@@ -556,7 +556,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 createGraphicsPipeline dvc sce rp ppllyt f =
 	Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pplInfo :...: HVNil)
 			nil nil \(V2 gpl :...: HVNil) -> f gpl
-	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
+	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
@@ -565,9 +565,9 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs'
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
-	where pplInfo = makeGraphicsPipelineCreateInfo sce rp ppllyt
+	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
-makeGraphicsPipelineCreateInfo ::
+mkGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.CreateInfo' () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
@@ -575,13 +575,13 @@ makeGraphicsPipelineCreateInfo ::
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		() () () () () () () () '(sl, '[]) sr '(sb, vs', ts')
-makeGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
+mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags' = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages' = shaderStages,
 	Vk.Ppl.Graphics.createInfoVertexInputState' = Just $ V3 vertexInputInfo,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState' = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportState' = Just $ makeViewportState sce,
+	Vk.Ppl.Graphics.createInfoViewportState' = Just $ mkViewportState sce,
 	Vk.Ppl.Graphics.createInfoRasterizationState' = Just rasterizer,
 	Vk.Ppl.Graphics.createInfoMultisampleState' = Just multisampling,
 	Vk.Ppl.Graphics.createInfoDepthStencilState' = Nothing,
@@ -628,8 +628,8 @@ inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
 	Vk.Ppl.InpAsmbSt.createInfoTopology = Vk.PrimitiveTopologyTriangleList,
 	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
 
-makeViewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
-makeViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
+mkViewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
+mkViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
 	Vk.Ppl.ViewportSt.createInfoNext = Nothing,
 	Vk.Ppl.ViewportSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ViewportSt.createInfoViewports = [viewport],
@@ -692,19 +692,14 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-createFramebuffers :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I sis -> Vk.RndrPass.R sr ->
+createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
+	HeteroVarList Vk.ImgVw.I sis -> Vk.RndrPass.R sr ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ HVNil _ f = f HVNil
-createFramebuffers dvc sce (sciv :...: scivs) rp f =
-	createFramebuffer1 dvc sce rp sciv \fb ->
-	createFramebuffers dvc sce scivs rp \fbs -> f (fb :...: fbs)
-
-createFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.ImgVw.I si -> (forall sf . Vk.Frmbffr.F sf -> IO a) -> IO a
-createFramebuffer1 dvc sce rp attch = Vk.Frmbffr.create @() dvc fbInfo nil nil
-	where fbInfo = makeFramebufferCreateInfo sce rp attch
+createFramebuffers dvc sce (iv :...: ivs) rp f =
+	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
+	createFramebuffers dvc sce ivs rp \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
@@ -724,12 +719,12 @@ recreateFramebuffer1 :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.ImgVw.I si -> Vk.Frmbffr.F sf -> IO ()
 recreateFramebuffer1 dvc sce rp attch fb =
 	Vk.Frmbffr.recreate @() dvc fbInfo nil nil fb
-	where fbInfo = makeFramebufferCreateInfo sce rp attch
+	where fbInfo = mkFramebufferCreateInfo sce rp attch
 
-makeFramebufferCreateInfo ::
+mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I si ->
 	Vk.Frmbffr.CreateInfo () sr '[si]
-makeFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
+mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = Nothing,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
@@ -851,7 +846,7 @@ createCommandBuffers ::
 	(forall scb vss . VssList vss =>
 		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
 	IO a
-createCommandBuffers dvc cp f = makeVss maxFramesInFlight \(_p :: Proxy vss1) ->
+createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 	Vk.CmdBffr.allocateNew @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
 	where
 	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew () scp vss
@@ -873,11 +868,11 @@ instance VssList vss =>
 	vssListIndex (cb :...: _) 0 = cb
 	vssListIndex (_ :...: cbs) n = vssListIndex cbs (n - 1)
 
-makeVss :: Int -> (forall (vss :: [[Type]]) .
+mkVss :: Int -> (forall (vss :: [[Type]]) .
 	(TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) =>
 	Proxy vss -> a) -> a
-makeVss 0 f = f (Proxy @'[])
-makeVss n f = makeVss (n - 1) \p -> f $ addTypeToProxy p
+mkVss 0 f = f (Proxy @'[])
+mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
 
 addTypeToProxy ::
 	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
@@ -1107,13 +1102,13 @@ vertices = [
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
 vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
-vertShaderModule = makeShaderModule glslVertexShaderMain
+vertShaderModule = mkShaderModule glslVertexShaderMain
 
 fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
-fragShaderModule = makeShaderModule glslFragmentShaderMain
+fragShaderModule = mkShaderModule glslFragmentShaderMain
 
-makeShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
-makeShaderModule code = Vk.Shader.Module.M createInfo nil nil
+mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+mkShaderModule code = Vk.Shader.Module.M createInfo nil nil
 	where createInfo = Vk.Shader.Module.M.CreateInfo {
 		Vk.Shader.Module.M.createInfoNext = Nothing,
 		Vk.Shader.Module.M.createInfoFlags = def,
