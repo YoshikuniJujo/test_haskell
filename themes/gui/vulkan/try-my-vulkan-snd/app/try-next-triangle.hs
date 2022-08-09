@@ -127,6 +127,8 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
+import Tools
+
 main :: IO ()
 main = do
 	g <- newFramebufferResized
@@ -237,8 +239,7 @@ run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
-	createSwapChain w sfc phdv qfis dv \sc scfmt ext ->
-	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt in
+	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv scifmt imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
@@ -365,26 +366,26 @@ createLogicalDevice phdvc qfis f =
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss .
-		Vk.Khr.Swapchain.S ss -> Vk.Khr.Surface.M.Format ->
-		Vk.C.Extent2d -> IO a) -> IO a
+		Vk.Khr.Swapchain.S ss -> Vk.Format -> Vk.C.Extent2d -> IO a) ->
+	IO a
 createSwapChain win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	(crInfo, fmt) = mkSwapchainCreateInfo sfc qfis spp ext
-	Vk.Khr.Swapchain.create @() dvc crInfo nil nil \sc -> f sc fmt ext
+	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis spp ext
+	Vk.Khr.Swapchain.create @() dvc crInfo nil nil \sc -> f sc scifmt ext
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
-	IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
+	IO (Vk.Format, Vk.C.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	(crInfo, fmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
-	(fmt, ext) <$ Vk.Khr.Swapchain.recreate @() dvc crInfo nil nil sc
+	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
+	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dvc crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Khr.Surface.M.Format)
+	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Format)
 mkSwapchainCreateInfo sfc qfis0 spp ext = (
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = Nothing,
@@ -407,9 +408,10 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
 		Vk.Khr.Swapchain.createInfoClipped = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }, fmt )
+		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }, scifmt )
 	where
 	fmt = chooseSwapSurfaceFormat $ formats spp
+	scifmt = Vk.Khr.Surface.M.formatFormat fmt
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
@@ -451,28 +453,15 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
-clamp :: Ord a => a -> a -> a -> a
-clamp x mn mx | x < mn = mn | x < mx = x | otherwise = mx
-
-onlyIf :: (a -> Bool) -> a -> Maybe a
-onlyIf p x | p x = Just x | otherwise = Nothing
-
 createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
 	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
-createImageViews _dvc _scifmt [] f = f HVNil
-createImageViews dvc scifmt (img : imgs) f =
-	createImageView1 dvc img scifmt \sciv ->
-	createImageViews dvc scifmt imgs \scivs -> f $ sciv :...: scivs
+createImageViews _dvc _fmt [] f = f HVNil
+createImageViews dvc fmt (sci : scis) f =
+	Vk.ImgVw.create dvc (makeImageViewCreateInfo fmt sci) nil nil \sciv ->
+	createImageViews dvc fmt scis \scivs -> f $ sciv :...: scivs
 
-createImageView1 :: Vk.Dvc.D sd -> Vk.Image.Binded ss ss -> Vk.Format ->
-	(forall siv . Vk.ImgVw.I siv -> IO a) -> IO a
-createImageView1 dvc sci scifmt f = do
-	let	createInfo = makeImageViewCreateInfo sci scifmt
-	Vk.ImgVw.create @() dvc createInfo nil nil \sciv -> f sciv
-
-recreateImageViews :: Vk.Dvc.D sd ->
-	Vk.Format -> [Vk.Image.Binded ss ss] ->
-	HeteroVarList Vk.ImgVw.I sis -> IO ()
+recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
+	[Vk.Image.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
 recreateImageViews dvc scifmt (img : imgs) (iv :...: ivs) =
 	recreateImageView1 dvc img scifmt iv >>
@@ -483,12 +472,12 @@ recreateImageViews _ _ _ _ =
 recreateImageView1 :: Vk.Dvc.D sd ->
 	Vk.Image.Binded ss ss -> Vk.Format -> Vk.ImgVw.I siv -> IO ()
 recreateImageView1 dvc sci scifmt iv = do
-	let	createInfo = makeImageViewCreateInfo sci scifmt
+	let	createInfo = makeImageViewCreateInfo scifmt sci
 	Vk.ImgVw.recreate @() dvc createInfo nil nil iv
 
 makeImageViewCreateInfo ::
-	Vk.Image.Binded ss ss -> Vk.Format -> Vk.ImgVw.CreateInfo ss ss n
-makeImageViewCreateInfo sci scifmt = Vk.ImgVw.CreateInfo {
+	Vk.Format -> Vk.Image.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
+makeImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = Nothing,
 	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
 	Vk.ImgVw.createInfoImage = sci,
@@ -1078,13 +1067,12 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
-	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
-	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
-	imgs <- Vk.Khr.Swapchain.getImages dvc sc
-	recreateImageViews dvc scifmt imgs scivs
-	recreateGraphicsPipeline dvc ext rp ppllyt gpl
-	recreateFramebuffers dvc ext scivs rp fbs
-	pure ext
+	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
+	ext <$ do
+		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
+			recreateImageViews dvc scifmt imgs scivs
+		recreateGraphicsPipeline dvc ext rp ppllyt gpl
+		recreateFramebuffers dvc ext scivs rp fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
 waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
