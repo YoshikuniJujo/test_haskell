@@ -16,6 +16,8 @@ import Foreign.ForeignPtr
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Kind
+import Data.Bits
+import Data.Default
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
@@ -29,6 +31,10 @@ data CreateInfo n (vs :: [Type]) (ts :: [(Nat, Type)]) = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags }
 	deriving Show
+
+instance Default (CreateInfo n vs ts) where
+	def = CreateInfo {
+		createInfoNext = Nothing, createInfoFlags = zeroBits }
 
 createInfoToCore :: (
 	Pointable n,

@@ -578,7 +578,7 @@ mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags' = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages' = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputState' = Just $ V3 vertexInputInfo,
+	Vk.Ppl.Graphics.createInfoVertexInputState' = Just $ V3 def,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState' = Just inputAssembly,
 	Vk.Ppl.Graphics.createInfoViewportState' = Just $ mkViewportState sce,
 	Vk.Ppl.Graphics.createInfoRasterizationState' = Just rasterizer,
@@ -612,13 +612,6 @@ shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
 		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
 		Vk.Ppl.ShdrSt.createInfoName = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-
-vertexInputInfo :: Vk.Ppl.VertexInputSt.CreateInfo
-	() '[AddType Vertex 'Vk.VtxInp.RateVertex]
-	'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)]
-vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
-	Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
-	Vk.Ppl.VertexInputSt.createInfoFlags = zeroBits }
 
 inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
@@ -1048,9 +1041,7 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
-data Vertex = Vertex {
-	vertexPos :: Cglm.Vec2,
-	vertexColor :: Cglm.Vec3 }
+data Vertex = Vertex { vertexPos :: Cglm.Vec2, vertexColor :: Cglm.Vec3 }
 	deriving (Show, Generic)
 
 instance Storable Vertex where
@@ -1075,8 +1066,8 @@ instance Foreign.Storable.Generic.G Vertex where
 vertices :: [Vertex]
 vertices = [
 	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
---		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+--		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
