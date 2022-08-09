@@ -12,6 +12,7 @@ module Gpu.Vulkan.Component.Enum where
 import Foreign.Storable
 import Foreign.C.Enum
 import Data.Word
+import Data.Default
 
 #include <vulkan/vulkan.h>
 
@@ -25,3 +26,6 @@ enum "Swizzle" ''#{type VkComponentSwizzle}
 	("SwizzleB", #{const VK_COMPONENT_SWIZZLE_B}),
 	("SwizzleA", #{const VK_COMPONENT_SWIZZLE_A}),
 	("SwizzleMaxEnum", #{const VK_COMPONENT_SWIZZLE_MAX_ENUM}) ]
+
+instance Default Swizzle where
+	def = SwizzleIdentity

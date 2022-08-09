@@ -5,6 +5,7 @@ module VulkanComponentEnum where
 import MakeEnum
 
 make :: IO ()
-make = createFile' "/usr/include/vulkan/vulkan_core.h"
-	"Component.Enum" ["Data.Word"]
-	[("Swizzle", "VkComponentSwizzle", ["Show", "Eq", "Storable"])] []
+make = createFileWithDefault vulkanCore "Component.Enum" ["Data.Word"] [
+	(	Just "SwizzleIdentity", [],
+		("Swizzle", "VkComponentSwizzle", ["Show", "Eq", "Storable"]) )
+	] []

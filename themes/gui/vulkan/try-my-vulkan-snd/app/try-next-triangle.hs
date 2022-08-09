@@ -463,17 +463,11 @@ createImageViews dvc fmt (sci : scis) f =
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
 	[Vk.Image.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
-recreateImageViews dvc scifmt (img : imgs) (iv :...: ivs) =
-	recreateImageView1 dvc img scifmt iv >>
-	recreateImageViews dvc scifmt imgs ivs
+recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) =
+	Vk.ImgVw.recreate dvc (makeImageViewCreateInfo scifmt sci) nil nil iv >>
+	recreateImageViews dvc scifmt scis ivs
 recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
-
-recreateImageView1 :: Vk.Dvc.D sd ->
-	Vk.Image.Binded ss ss -> Vk.Format -> Vk.ImgVw.I siv -> IO ()
-recreateImageView1 dvc sci scifmt iv = do
-	let	createInfo = makeImageViewCreateInfo scifmt sci
-	Vk.ImgVw.recreate @() dvc createInfo nil nil iv
 
 makeImageViewCreateInfo ::
 	Vk.Format -> Vk.Image.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
@@ -487,10 +481,8 @@ makeImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
 	where
 	components = Vk.Component.Mapping {
-		Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
-		Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
-		Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
-		Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
+		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
+		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
 	subresourceRange = Vk.Image.M.SubresourceRange {
 		Vk.Image.M.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
 		Vk.Image.M.subresourceRangeBaseMipLevel = 0,
