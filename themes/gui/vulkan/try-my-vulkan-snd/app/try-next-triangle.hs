@@ -373,31 +373,29 @@ createSwapChain win sfc phdvc qfis dvc f = do
 	let	(crInfo, fmt) = mkSwapchainCreateInfo sfc qfis spp ext
 	Vk.Khr.Swapchain.create @() dvc crInfo nil nil \sc -> f sc fmt ext
 
-recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
-	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc -> IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
+recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
+	IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
-	swapChainSupport <- querySwapChainSupport phdvc sfc
-	extent <- chooseSwapExtent win $ capabilities swapChainSupport
-	let	(createInfo, surfaceFormat) =
-			mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent
-	Vk.Khr.Swapchain.recreate @() dvc createInfo nil nil sc
-	pure (surfaceFormat, extent)
+	spp <- querySwapChainSupport phdvc sfc
+	ext <- chooseSwapExtent win $ capabilities spp
+	let	(crInfo, fmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
+	(fmt, ext) <$ Vk.Khr.Swapchain.recreate @() dvc crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
 	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Khr.Surface.M.Format)
-mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = (
+mkSwapchainCreateInfo sfc qfis0 spp ext = (
 	Vk.Khr.Swapchain.CreateInfo {
 		Vk.Khr.Swapchain.createInfoNext = Nothing,
 		Vk.Khr.Swapchain.createInfoFlags = def,
 		Vk.Khr.Swapchain.createInfoSurface = sfc,
-		Vk.Khr.Swapchain.createInfoMinImageCount = imageCount,
+		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
 		Vk.Khr.Swapchain.createInfoImageFormat =
-			Vk.Khr.Surface.M.formatFormat surfaceFormat,
+			Vk.Khr.Surface.M.formatFormat fmt,
 		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Surface.M.formatColorSpace surfaceFormat,
-		Vk.Khr.Swapchain.createInfoImageExtent = extent,
+			Vk.Khr.Surface.M.formatColorSpace fmt,
+		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
 			Vk.Image.UsageColorAttachmentBit,
@@ -409,21 +407,20 @@ mkSwapchainCreateInfo sfc qfis0 swapChainSupport extent = (
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
 		Vk.Khr.Swapchain.createInfoClipped = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing },
-	surfaceFormat )
+		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }, fmt )
 	where
-	surfaceFormat = chooseSwapSurfaceFormat $ formats swapChainSupport
-	presentMode = chooseSwapPresentMode $ presentModes swapChainSupport
-	caps = capabilities swapChainSupport
-	maxImageCount = fromMaybe maxBound . onlyIf (> 0)
+	fmt = chooseSwapSurfaceFormat $ formats spp
+	presentMode = chooseSwapPresentMode $ presentModes spp
+	caps = capabilities spp
+	maxImgc = fromMaybe maxBound . onlyIf (> 0)
 		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
-	imageCount = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0
-		maxImageCount
-	(ism, qfis) = if graphicsFamily qfis0 /= presentFamily qfis0
-		then (Vk.SharingModeConcurrent,
+	imgc = clamp
+		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	(ism, qfis) = bool
+		(Vk.SharingModeConcurrent,
 			[graphicsFamily qfis0, presentFamily qfis0])
-		else (Vk.SharingModeExclusive, [])
+		(Vk.SharingModeExclusive, [])
+		(graphicsFamily qfis0 == presentFamily qfis0)
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
