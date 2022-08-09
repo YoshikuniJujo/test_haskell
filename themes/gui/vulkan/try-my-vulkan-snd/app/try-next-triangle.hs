@@ -67,7 +67,6 @@ import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.Device.Type as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
 import qualified Gpu.Vulkan.Device.Queue as Vk.Dvc.Queue
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
@@ -1071,11 +1070,11 @@ catchAndRecreateSwapChain g win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fb
 		if fbr
 		then do
 			writeIORef (globalFramebufferResized g) False
-			e <- recreateSwapChainAndOthers win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
+			e <- recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 			loop e
 		else loop ext)
 
-recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
+recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
@@ -1084,14 +1083,9 @@ recreateSwapChainAndOthers :: RecreateFramebuffers sis sfs =>
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
-recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
-	sc scivs rp ppllyt gpl fbs = do
-	do	(wdth, hght) <- Glfw.getFramebufferSize win
-		when (wdth == 0 || hght == 0) $ doWhile_ do
-			Glfw.waitEvents
-			(wd, hg) <- Glfw.getFramebufferSize win
-			pure $ wd == 0 || hg == 0
-	Vk.Dvc.M.waitIdle dvcm
+recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
+	waitFramebufferSize win
+	Vk.Dvc.waitIdle dvc
 
 	(scfmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
 	let	scifmt = Vk.Khr.Surface.M.formatFormat scfmt
@@ -1101,8 +1095,11 @@ recreateSwapChainAndOthers win sfc phdvc qfis dvc@(Vk.Dvc.D dvcm)
 	recreateFramebuffers dvc ext scivs rp fbs
 	pure ext
 
-doWhile_ :: IO Bool -> IO ()
-doWhile_ act = (`when` doWhile_ act) =<< act
+waitFramebufferSize :: Glfw.Window -> IO ()
+waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
+		Glfw.waitEvents *> Glfw.getFramebufferSize win
+	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Vertex = Vertex {
 	vertexPos :: Cglm.Vec2,
