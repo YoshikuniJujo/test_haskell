@@ -280,12 +280,9 @@ isDeviceSuitable phdvc sfc = do
 	indices <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
 	if extensionSupported
-	then do	swapChainSupport <- querySwapChainSupport phdvc sfc
-		let	swapChainAdequate =
-				not (null $ formats swapChainSupport) &&
-				not (null $ presentModes swapChainSupport)
-		pure if swapChainAdequate
-			then completeQueueFamilies indices else Nothing
+	then (<$> querySwapChainSupport phdvc sfc) \spp ->
+		bool (completeQueueFamilies indices) Nothing
+			$ null (formats spp) || null (presentModes spp)
 	else pure Nothing
 
 data QueueFamilyIndices = QueueFamilyIndices {
@@ -380,8 +377,7 @@ createSwapChain win sfc phdvc qfis dvc f = do
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc ->
-	IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
+	Vk.Khr.Swapchain.S ssc -> IO (Vk.Khr.Surface.M.Format, Vk.C.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	swapChainSupport <- querySwapChainSupport phdvc sfc
 	extent <- chooseSwapExtent win $ capabilities swapChainSupport
