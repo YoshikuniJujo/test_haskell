@@ -11,7 +11,7 @@
 
 module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
-	HeteroVarList(..), singleton,
+	HeteroVarList(..), pattern Singleton, singleton,
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
@@ -68,6 +68,10 @@ instance Show (HeteroVarList t '[]) where show HVNil = "HVNil"
 instance (Show (t s), Show (HeteroVarList t ss)) =>
 	Show (HeteroVarList t (s ': ss)) where
 	show (x :...: xs) = show x ++ " :...: " ++ show xs
+
+pattern Singleton :: t s -> HeteroVarList t '[s]
+pattern Singleton x <- (x :...: HVNil) where
+	Singleton x = x :...: HVNil
 
 singleton :: t s -> HeteroVarList t '[s]
 singleton = (:...: HVNil)

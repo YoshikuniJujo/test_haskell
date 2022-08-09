@@ -753,11 +753,8 @@ createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	let	allocInfo = Vk.Dvc.Mem.Buffer.AllocateInfo {
-			Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
-			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
-	Vk.Bffr.allocateBind @() dv (V2 b :...: HVNil) allocInfo nil nil
-		$ f . \(V2 bnd :...: HVNil) -> bnd
+	Vk.Bffr.allocateBind dv (Singleton $ V2 b) (allcInfo mt) nil nil
+		$ f . \(Singleton (V2 bnd)) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List Vertex]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -767,6 +764,10 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	allcInfo :: Vk.Mem.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.TypeIndex
