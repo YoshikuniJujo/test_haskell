@@ -164,13 +164,13 @@ withWindow f g = initWindow g >>= \w ->
 	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
 
 initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow g = do
+initWindow frszd = do
 	Just w <- do
 		True <- Glfw.init
 		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
 		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback w
-		(Just $ \_ _ _ -> writeIORef (globalFramebufferResized g) True)
+	w <$ Glfw.setFramebufferSizeCallback
+		w (Just $ \_ _ _ -> writeIORef frszd True)
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
@@ -953,9 +953,12 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc ext scivs rp ppllyt gpl fbs frszd loop
+	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf
-	bool (loop ext) (pure ()) =<< Glfw.windowShouldClose win
+	cls <- Glfw.windowShouldClose win
+	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
+		(loop =<< recreateSwapChainEtc
+			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
 drawFrame :: forall sfs sd ssc sr sg sm sb scb ssos vss . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
@@ -970,9 +973,9 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
-	Vk.Fence.resetFs dvc siff
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
+	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb
@@ -1002,23 +1005,22 @@ catchAndSerialize =
 catchAndRecreate :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d ->
+	Vk.Khr.Swapchain.S ssc ->
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs -> FramebufferResized ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis
-	dvc sc ext scivs rp ppllyt gpl fbs frszd loop act = catchJust
+catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
+	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
+	\_ -> loop =<< recreateSwapChainEtc
+		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
 recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
