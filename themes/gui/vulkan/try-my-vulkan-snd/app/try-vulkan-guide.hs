@@ -105,8 +105,8 @@ import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
-import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
+import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
+import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
@@ -130,16 +130,13 @@ import Tools
 
 main :: IO ()
 main = do
-	g <- newFramebufferResized
-	(`withWindow` g) \win -> createInstance \inst -> do
+	frszd <- newFramebufferResized
+	(`withWindow` frszd) \win -> createInstance \ist -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run win inst g
-			else run win inst g
+			then setupDebugMessenger ist $ const $ run win ist frszd
+			else run win ist frszd
 
 type FramebufferResized = IORef Bool
-
-globalFramebufferResized :: IORef Bool -> IORef Bool
-globalFramebufferResized = id
 
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = newIORef False
@@ -174,36 +171,32 @@ initWindow frszd = do
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
-	when enableValidationLayers $ bool
-		(error "validation layers requested, but not available!")
-		(pure ())
+	when enableValidationLayers $ bool (error msg) (pure ())
 		=<< null . (validationLayers \\)
 				. (Vk.M.layerPropertiesLayerName <$>)
 			<$> Vk.Ist.M.enumerateLayerProperties
-	extensions <- bool id (Vk.Ext.DbgUtls.extensionName :)
-			enableValidationLayers
+	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	print extensions
-	let	appInfo = Vk.M.ApplicationInfo {
-			Vk.M.applicationInfoNext = Nothing,
-			Vk.M.applicationInfoApplicationName = "Hello Triangle",
-			Vk.M.applicationInfoApplicationVersion =
-				Vk.M.makeApiVersion 0 1 0 0,
-			Vk.M.applicationInfoEngineName = "No Engine",
-			Vk.M.applicationInfoEngineVersion =
-				Vk.M.makeApiVersion 0 1 0 0,
-			Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
-		createInfo :: Vk.Ist.M.CreateInfo
-			(Vk.Ext.DbgUtls.Msngr.CreateInfo
-				() () () () () ()) ()
-		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = Just debugMessengerCreateInfo,
-			Vk.Ist.M.createInfoFlags = def,
-			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
-			Vk.Ist.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil nil \i -> f i
+	Vk.Ist.create (crInfo exts) nil nil f
+	where
+	msg = "validation layers requested, but not available!"
+	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
+		(Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()) ()
+	crInfo exts = Vk.Ist.M.CreateInfo {
+		Vk.Ist.M.createInfoNext = Just debugMessengerCreateInfo,
+		Vk.Ist.M.createInfoFlags = def,
+		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
+		Vk.Ist.M.createInfoEnabledLayerNames =
+			bool [] validationLayers enableValidationLayers,
+		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
+	appInfo = Vk.M.ApplicationInfo {
+		Vk.M.applicationInfoNext = Nothing,
+		Vk.M.applicationInfoApplicationName = "Hello Triangle",
+		Vk.M.applicationInfoApplicationVersion =
+			Vk.M.makeApiVersion 0 1 0 0,
+		Vk.M.applicationInfoEngineName = "No Engine",
+		Vk.M.applicationInfoEngineVersion = Vk.M.makeApiVersion 0 1 0 0,
+		Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
 
 instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
 instanceToMiddle (Vk.Ist.I inst) = inst
@@ -237,7 +230,7 @@ run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
-	createLogicalDevice phdv qfis \dv gq pq ->
+	createDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv scifmt imgs \scivs ->
@@ -335,49 +328,46 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
 
-createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
-		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createLogicalDevice phdvc qfis f =
-	let	uniqueQueueFamilies =
-			nub [graphicsFamily qfis, presentFamily qfis]
-		queueCreateInfos qf = Vk.Dvc.Queue.CreateInfo {
-			Vk.Dvc.Queue.createInfoNext = Nothing,
-			Vk.Dvc.Queue.createInfoFlags = def,
-			Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
-			Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
-		createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = Nothing,
-			Vk.Dvc.M.createInfoFlags = def,
-			Vk.Dvc.M.createInfoQueueCreateInfos =
-				queueCreateInfos <$> uniqueQueueFamilies,
-			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def } in
-	Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		f dvc gq pq
+createDevice :: Vk.PhDvc.P -> QueueFamilyIndices ->
+	(forall sd . Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
+createDevice ph qfis f = Vk.Dvc.create @() @() ph crInfo nil nil \dv -> do
+	gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
+	pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
+	f dv gq pq
+	where
+	qfs = nub [graphicsFamily qfis, presentFamily qfis]
+	crInfo = Vk.Dvc.M.CreateInfo {
+		Vk.Dvc.M.createInfoNext = Nothing,
+		Vk.Dvc.M.createInfoFlags = def,
+		Vk.Dvc.M.createInfoQueueCreateInfos = qcrInfo <$> qfs,
+		Vk.Dvc.M.createInfoEnabledLayerNames =
+			bool [] validationLayers enableValidationLayers,
+		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
+		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
+	qcrInfo qf = Vk.Dvc.Queue.CreateInfo {
+		Vk.Dvc.Queue.createInfoNext = Nothing,
+		Vk.Dvc.Queue.createInfoFlags = def,
+		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
+		Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss .
 		Vk.Khr.Swapchain.S ss -> Vk.Format -> Vk.C.Extent2d -> IO a) ->
 	IO a
-createSwapChain win sfc phdvc qfis dvc f = do
-	spp <- querySwapChainSupport phdvc sfc
+createSwapChain win sfc ph qfis dv f = do
+	spp <- querySwapChainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis spp ext
-	Vk.Khr.Swapchain.create @() dvc crInfo nil nil \sc -> f sc scifmt ext
+	Vk.Khr.Swapchain.create @() dv crInfo nil nil \sc -> f sc scifmt ext
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
 	IO (Vk.Format, Vk.C.Extent2d)
-recreateSwapChain win sfc phdvc qfis0 dvc sc = do
-	spp <- querySwapChainSupport phdvc sfc
+recreateSwapChain win sfc ph qfis0 dv sc = do
+	spp <- querySwapChainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dvc crInfo nil nil sc
+	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dv crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
@@ -719,17 +709,15 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
-createCommandPool qfis dvc f =
-	Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp
-	where poolInfo = Vk.CmdPool.CreateInfo {
-		Vk.CmdPool.createInfoNext = Nothing,
-		Vk.CmdPool.createInfoFlags =
-			Vk.CmdPool.CreateResetCommandBufferBit,
-		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
+	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCommandPool qfis dv = Vk.CmdPl.create @() dv crInfo nil nil
+	where crInfo = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = Nothing,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createVertexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBuffer phdvc dvc (length vertices)
@@ -779,7 +767,7 @@ findMemoryType phdvc flt props =
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
 copyBuffer :: forall sd sc sm sb sm' sb' .
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp src dst = do
@@ -807,7 +795,7 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createCommandBuffers ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb vss . VssList vss =>
 		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
 	IO a
