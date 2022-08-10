@@ -782,9 +782,9 @@ copyBuffer :: forall sd sc sm sb sm' sb' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
-copyBuffer dvc gq cp srcBuffer dstBuffer = do
+copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
-		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s '[]) :...: HVNil) -> do
+		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfoNew {
 				Vk.submitInfoNextNew = Nothing,
@@ -792,8 +792,7 @@ copyBuffer dvc gq cp srcBuffer dstBuffer = do
 				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
 				Vk.submitInfoSignalSemaphoresNew = HVNil }
 		Vk.CmdBffr.begin @() @() cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[ 'List Vertex]]
-				cb srcBuffer dstBuffer
+			Vk.Cmd.copyBuffer @'[ '[ 'List Vertex]] cb src dst
 		Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
