@@ -783,16 +783,18 @@ copyBuffer :: forall sd sc sm sb sm' sb' .
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp srcBuffer dstBuffer = do
-	Vk.CmdBffr.allocateNew @() dvc allocInfo \(commandBuffer :...: HVNil) -> do
-		let	submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
-				Vk.submitInfoCommandBuffers = [commandBuffer],
-				Vk.submitInfoSignalSemaphores = [] }
-		Vk.CmdBffr.begin @() @() commandBuffer beginInfo do
+	Vk.CmdBffr.allocateNew
+		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s '[]) :...: HVNil) -> do
+		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfoNew {
+				Vk.submitInfoNextNew = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		Vk.CmdBffr.begin @() @() cb beginInfo do
 			Vk.Cmd.copyBuffer @'[ '[ 'List Vertex]]
-				commandBuffer srcBuffer dstBuffer
-		Vk.Queue.submit @() gq [submitInfo] Nothing
+				cb srcBuffer dstBuffer
+		Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
