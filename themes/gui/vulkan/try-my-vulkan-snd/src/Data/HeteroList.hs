@@ -69,6 +69,8 @@ instance (Show (t s), Show (HeteroVarList t ss)) =>
 	Show (HeteroVarList t (s ': ss)) where
 	show (x :...: xs) = show x ++ " :...: " ++ show xs
 
+{-# COMPLETE Singleton #-}
+
 pattern Singleton :: t s -> HeteroVarList t '[s]
 pattern Singleton x <- (x :...: HVNil) where
 	Singleton x = x :...: HVNil

@@ -733,16 +733,14 @@ createVertexBuffer :: Vk.PhDvc.P ->
 		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBuffer phdvc dvc (length vertices)
-		(	Vk.Bffr.UsageTransferDstBit .|.
-			Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ -> do
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit \b _ ->
 	createBuffer phdvc dvc (length vertices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
-		Vk.Dvc.Mem.Buffer.write @('List Vertex)
-			dvc bm' Vk.Mem.M.MapFlagsZero vertices
-		copyBuffer dvc gq cp b' b
+	Vk.Dvc.Mem.Buffer.write @('List Vertex) dvc bm' zeroBits vertices
+	copyBuffer dvc gq cp b' b
 	f b
 
 createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
@@ -785,17 +783,6 @@ copyBuffer :: forall sd sc sm sb sm' sb' .
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp srcBuffer dstBuffer = do
-	let	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
-		allocInfo = Vk.CmdBffr.AllocateInfoNew {
-			Vk.CmdBffr.allocateInfoNextNew = Nothing,
-			Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-			Vk.CmdBffr.allocateInfoLevelNew =
-				Vk.CmdBffr.LevelPrimary }
-		beginInfo = Vk.CmdBffr.M.BeginInfo {
-			Vk.CmdBffr.beginInfoNext = Nothing,
-			Vk.CmdBffr.beginInfoFlags =
-				Vk.CmdBffr.UsageOneTimeSubmitBit,
-			Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 	Vk.CmdBffr.allocateNew @() dvc allocInfo \(commandBuffer :...: HVNil) -> do
 		let	submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
@@ -807,6 +794,16 @@ copyBuffer dvc gq cp srcBuffer dstBuffer = do
 				commandBuffer srcBuffer dstBuffer
 		Vk.Queue.submit @() gq [submitInfo] Nothing
 		Vk.Queue.waitIdle gq
+	where
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	beginInfo = Vk.CmdBffr.M.BeginInfo {
+		Vk.CmdBffr.beginInfoNext = Nothing,
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
+		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
@@ -1046,8 +1043,8 @@ instance Foreign.Storable.Generic.G Vertex where
 vertices :: [Vertex]
 vertices = [
 	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
---		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
+--		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
