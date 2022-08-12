@@ -530,8 +530,8 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Color)] -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.createGs' dvc Nothing (V14 pplInfo :...: HVNil)
-			nil nil \(V2 gpl :...: HVNil) -> f gpl
+	Vk.Ppl.Graphics.createGs' dvc Nothing (Singleton $ V14 pplInfo)
+			nil nil \(Singleton (V2 gpl)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
@@ -1056,11 +1056,11 @@ fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
 fragShaderModule = mkShaderModule glslFragmentShaderMain
 
 mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
-mkShaderModule code = Vk.Shader.Module.M createInfo nil nil
-	where createInfo = Vk.Shader.Module.M.CreateInfo {
+mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
+	where crInfo = Vk.Shader.Module.M.CreateInfo {
 		Vk.Shader.Module.M.createInfoNext = Nothing,
 		Vk.Shader.Module.M.createInfoFlags = def,
-		Vk.Shader.Module.M.createInfoCode = code }
+		Vk.Shader.Module.M.createInfoCode = cd }
 
 [glslVertexShader|
 
