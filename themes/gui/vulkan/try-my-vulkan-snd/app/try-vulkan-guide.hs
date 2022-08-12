@@ -191,7 +191,8 @@ createInstance f = do
 		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
 	appInfo = Vk.M.ApplicationInfo {
 		Vk.M.applicationInfoNext = Nothing,
-		Vk.M.applicationInfoApplicationName = "Hello Triangle",
+		Vk.M.applicationInfoApplicationName =
+			"Example Vulkan Application",
 		Vk.M.applicationInfoApplicationVersion =
 			Vk.M.makeApiVersion 0 1 0 0,
 		Vk.M.applicationInfoEngineName = "No Engine",
@@ -227,9 +228,9 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w inst g =
-	createSurface w inst \sfc ->
-	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
+run w ist g =
+	Glfw.createWindowSurface ist w nil nil \sfc ->
+	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
@@ -244,29 +245,25 @@ run w inst g =
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs sos
 
-createSurface :: Glfw.Window -> Vk.Ist.I si ->
-	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil nil \sfc -> f sfc
-
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
 pickPhysicalDevice ist sfc = do
 	dvcs <- Vk.PhDvc.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
+	findPhysicalDevice (`isPhysicalDeviceSuitable` sfc) dvcs >>= \case
 		Just ph -> pure ph
 		Nothing -> error "failed to find a suitable GPU!"
 
-findDevice :: Monad m =>
+findPhysicalDevice :: Monad m =>
 	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] -> m (Maybe (Vk.PhDvc.P, a))
-findDevice prd = \case
+findPhysicalDevice prd = \case
 	[] -> pure Nothing
 	p : ps -> prd p >>= \case
-		Nothing -> findDevice prd ps; Just x -> pure $ Just (p, x)
+		Nothing -> findPhysicalDevice prd ps; Just x -> pure $ Just (p, x)
 
-isDeviceSuitable ::
+isPhysicalDeviceSuitable ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
-isDeviceSuitable ph sfc = findQueueFamilies ph sfc >>= \is ->
+isPhysicalDeviceSuitable ph sfc = findQueueFamilies ph sfc >>= \is ->
 	checkDeviceExtensionSupport ph >>= bool (pure Nothing)
 		((<$> querySwapChainSupport ph sfc) \spp ->
 			bool (completeQueueFamilies is) Nothing
