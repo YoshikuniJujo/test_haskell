@@ -689,10 +689,9 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = Nothing,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = attch :...: HVNil,
+	Vk.Frmbffr.createInfoAttachments = Singleton attch,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
-	Vk.Frmbffr.createInfoLayers = 1 }
-	where
+	Vk.Frmbffr.createInfoLayers = 1 } where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -846,13 +845,16 @@ recordCommandBuffer :: forall scb sr sf sg sm sb .
 		'[ '(0, Position), '(1, Color)] ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb =
-	Vk.CmdBffr.begin @() @() cb def $
+	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
 	Vk.Cmd.draw cb 3 1 0 0
 	where
+	cbInfo :: Vk.CmdBffr.BeginInfo () ()
+	cbInfo = def {
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
 	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
 		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
 	rpInfo = Vk.RndrPass.BeginInfo {
