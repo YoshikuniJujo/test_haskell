@@ -156,6 +156,9 @@ validationLayers = [Vk.Khr.validationLayerName]
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
+frashRate :: Num n => n
+frashRate = 240
+
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
 	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
@@ -843,8 +846,8 @@ recordCommandBuffer :: forall scb sr sf sg sm sb .
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Color)] ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO ()
-recordCommandBuffer cb rp fb sce gpl vb =
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Int -> IO ()
+recordCommandBuffer cb rp fb sce gpl vb fn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
@@ -865,7 +868,9 @@ recordCommandBuffer cb rp fb sce gpl vb =
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
 		Vk.RndrPass.beginInfoClearValues = singleton
-			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
+			. Vk.M.ClearValueColor
+			. fromJust $ rgbaDouble 0 0 blue 1 }
+	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
@@ -880,10 +885,11 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
-	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
+	($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf (`loop` cfs)
+			sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf fn
+			(\ex -> loop ex cfs $ (fn + 1) `mod` (360 * frashRate))
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
@@ -898,11 +904,11 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	Int ->
+	Int -> Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf fn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf
+		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf fn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
@@ -915,8 +921,8 @@ drawFrame :: forall sfs sd ssc sr sg sm sb scb ssos vss . (VssList vss) =>
 		'[ '(0, Position), '(1, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
-drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
+	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> IO ()
+drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf fn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
@@ -926,7 +932,7 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext gpl vb
+		recordCommandBuffer cb rp fb ext gpl vb fn
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
