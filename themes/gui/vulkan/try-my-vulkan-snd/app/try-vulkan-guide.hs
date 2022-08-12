@@ -598,9 +598,7 @@ inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
 	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
 
 mkViewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
-mkViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
-	Vk.Ppl.ViewportSt.createInfoNext = Nothing,
-	Vk.Ppl.ViewportSt.createInfoFlags = zeroBits,
+mkViewportState sce = def {
 	Vk.Ppl.ViewportSt.createInfoViewports = [viewport],
 	Vk.Ppl.ViewportSt.createInfoScissors = [scissor] }
 	where

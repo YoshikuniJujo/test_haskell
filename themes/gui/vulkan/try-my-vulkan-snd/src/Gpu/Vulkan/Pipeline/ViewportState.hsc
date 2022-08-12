@@ -14,6 +14,7 @@ import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
 import Data.Bits
 import Data.Word
 
@@ -32,6 +33,11 @@ data CreateInfo n = CreateInfo {
 	createInfoViewports :: [Viewport],
 	createInfoScissors :: [Rect2d] }
 	deriving Show
+
+instance Default (CreateInfo n) where
+	def = CreateInfo {
+		createInfoNext = Nothing, createInfoFlags = zeroBits,
+		createInfoViewports = [], createInfoScissors = [] }
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
