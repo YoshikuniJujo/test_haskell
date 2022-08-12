@@ -254,12 +254,11 @@ pickPhysicalDevice ist sfc = do
 	dvcs <- Vk.PhDvc.enumerate ist
 	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
 	findDevice (`isDeviceSuitable` sfc) dvcs >>= \case
-		Just pdvc -> pure pdvc
+		Just ph -> pure ph
 		Nothing -> error "failed to find a suitable GPU!"
 
 findDevice :: Monad m =>
-	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] ->
-	m (Maybe (Vk.PhDvc.P, a))
+	(Vk.PhDvc.P -> m (Maybe a)) -> [Vk.PhDvc.P] -> m (Maybe (Vk.PhDvc.P, a))
 findDevice prd = \case
 	[] -> pure Nothing
 	p : ps -> prd p >>= \case
@@ -267,16 +266,11 @@ findDevice prd = \case
 
 isDeviceSuitable ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
-isDeviceSuitable phdvc sfc = do
-	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
-	indices <- findQueueFamilies phdvc sfc
-	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported
-	then (<$> querySwapChainSupport phdvc sfc) \spp ->
-		bool (completeQueueFamilies indices) Nothing
-			$ null (formats spp) || null (presentModes spp)
-	else pure Nothing
+isDeviceSuitable ph sfc = findQueueFamilies ph sfc >>= \is ->
+	checkDeviceExtensionSupport ph >>= bool (pure Nothing)
+		((<$> querySwapChainSupport ph sfc) \spp ->
+			bool (completeQueueFamilies is) Nothing
+				$ null (formats spp) || null (presentModes spp))
 
 data QueueFamilyIndices = QueueFamilyIndices {
 	graphicsFamily :: Vk.QueueFamily.Index,
