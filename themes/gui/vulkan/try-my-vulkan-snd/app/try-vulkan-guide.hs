@@ -516,13 +516,12 @@ createRenderPass dvc scifmt f =
 
 createPipelineLayout ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.LL sl '[] -> IO b) -> IO b
-createPipelineLayout dvc f = do
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
-			Vk.Ppl.Layout.createInfoNext = Nothing,
-			Vk.Ppl.Layout.createInfoFlags = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayouts = HVNil,
-			Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
-	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil f
+createPipelineLayout dvc f = Vk.Ppl.Layout.create @() dvc crInfo nil nil f
+	where crInfo = Vk.Ppl.Layout.CreateInfo {
+		Vk.Ppl.Layout.createInfoNext = Nothing,
+		Vk.Ppl.Layout.createInfoFlags = zeroBits,
+		Vk.Ppl.Layout.createInfoSetLayouts = HVNil,
+		Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
@@ -530,8 +529,8 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Color)] -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.createGs' dvc Nothing (Singleton $ V14 pplInfo)
-			nil nil \(Singleton (V2 gpl)) -> f gpl
+	Vk.Ppl.Graphics.createGs' dvc Nothing (Singleton $ V14 pplInfo) nil nil
+		\(Singleton (V2 gpl)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
