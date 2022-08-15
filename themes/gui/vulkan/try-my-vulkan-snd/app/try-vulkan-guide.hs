@@ -1038,13 +1038,13 @@ vertices :: [Vertex]
 vertices = [
 	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
 	Vertex (Position . Cglm.Vec3 $ (- 1.0) :. 1.0 :. 0.0 :. NilL)
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
 	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL) ]
+		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
 vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
 vertShaderModule = mkShaderModule glslVertexShaderMain
@@ -1066,13 +1066,13 @@ mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
 
-layout(location = 0) out vec3 fragColor;
+layout(location = 0) out vec3 outColor;
 
 void
 main()
 {
 	gl_Position = vec4(inPosition, 1.0);
-	fragColor = inColor;
+	outColor = inColor;
 }
 
 |]
@@ -1081,14 +1081,13 @@ main()
 
 #version 450
 
-layout(location = 0) in vec3 fragColor;
-
+layout(location = 0) in vec3 inColor;
 layout(location = 0) out vec4 outColor;
 
 void
 main()
 {
-	outColor = vec4(fragColor, 1.0);
+	outColor = vec4(inColor, 1.0);
 }
 
 |]
