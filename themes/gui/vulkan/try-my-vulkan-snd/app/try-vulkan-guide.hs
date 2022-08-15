@@ -553,7 +553,7 @@ mkGraphicsPipelineCreateInfo ::
 mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags' = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStages' = shaderStages,
+	Vk.Ppl.Graphics.createInfoStages' = uncurry shaderStages shaderPair0,
 	Vk.Ppl.Graphics.createInfoVertexInputState' = Just $ V3 def,
 	Vk.Ppl.Graphics.createInfoInputAssemblyState' = Just inputAssembly,
 	Vk.Ppl.Graphics.createInfoViewportState' = Just $ mkViewportState sce,
@@ -568,26 +568,6 @@ mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoBasePipelineHandle' = Nothing,
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex' = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState' = Nothing }
-
-shaderStages :: HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfo) '[
-	'((), (), 'GlslVertexShader, (), (), ()),
-	'((), (), 'GlslFragmentShader, (), (), ()) ]
-shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
-	where
-	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
-		Vk.Ppl.ShdrSt.createInfoFlags = def,
-		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
-		Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule,
-		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
-		Vk.Ppl.ShdrSt.createInfoFlags = def,
-		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
-		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule,
-		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
 
 inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
@@ -1049,18 +1029,74 @@ vertices = [
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
-vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
-vertShaderModule = mkShaderModule glslVertexShaderMain1
+shaderStages ::
+	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
+	HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfo) '[
+		'((), (), 'GlslVertexShader, (), (), ()),
+		'((), (), 'GlslFragmentShader, (), (), ()) ]
+shaderStages vs fs = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
+	where
+	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
+		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
+		Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule1,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
+		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
+		Vk.Ppl.ShdrSt.createInfoFlags = def,
+		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
+		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule1,
+		Vk.Ppl.ShdrSt.createInfoName = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+	vertShaderModule1 :: Vk.Shader.Module.M n 'GlslVertexShader () ()
+	vertShaderModule1 = mkShaderModule vs
+	fragShaderModule1 :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
+	fragShaderModule1 = mkShaderModule fs
+	mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+	mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
+		where crInfo = Vk.Shader.Module.M.CreateInfo {
+			Vk.Shader.Module.M.createInfoNext = Nothing,
+			Vk.Shader.Module.M.createInfoFlags = def,
+			Vk.Shader.Module.M.createInfoCode = cd }
 
-fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
-fragShaderModule = mkShaderModule glslFragmentShaderMain1
+shaderPair0 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
+shaderPair0 = (glslVertexShaderMain0, glslFragmentShaderMain0)
 
-mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
-mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
-	where crInfo = Vk.Shader.Module.M.CreateInfo {
-		Vk.Shader.Module.M.createInfoNext = Nothing,
-		Vk.Shader.Module.M.createInfoFlags = def,
-		Vk.Shader.Module.M.createInfoCode = cd }
+glslVertexShaderMain0 :: Spv 'GlslVertexShader
+glslVertexShaderMain0 = [glslVertexShader|
+
+#version 450
+
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inColor;
+
+void
+main()
+{
+	gl_Position = vec4(inPosition, 1.0);
+}
+
+|]
+
+glslFragmentShaderMain0 :: Spv 'GlslFragmentShader
+glslFragmentShaderMain0 = [glslFragmentShader|
+
+#version 450
+
+layout(location = 0) out vec4 outColor;
+
+void
+main()
+{
+	outColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+|]
+
+shaderPair1 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
+shaderPair1 = (glslVertexShaderMain1, glslFragmentShaderMain1)
 
 glslVertexShaderMain1 :: Spv 'GlslVertexShader
 glslVertexShaderMain1 = [glslVertexShader|
