@@ -884,6 +884,9 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
 	($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn -> do
 		Glfw.pollEvents
+		Glfw.getKey w Glfw.Key'Space >>= \case
+			Glfw.KeyState'Pressed -> putStrLn "Space pressed!"
+			_ -> pure ()
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf fn
 			(\ex -> loop ex cfs $ (fn + 1) `mod` (360 * frashRate))
@@ -1047,10 +1050,10 @@ vertices = [
 		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
 vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
-vertShaderModule = mkShaderModule glslVertexShaderMain
+vertShaderModule = mkShaderModule glslVertexShaderMain1
 
 fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
-fragShaderModule = mkShaderModule glslFragmentShaderMain
+fragShaderModule = mkShaderModule glslFragmentShaderMain1
 
 mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
 mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
@@ -1059,7 +1062,8 @@ mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
 		Vk.Shader.Module.M.createInfoFlags = def,
 		Vk.Shader.Module.M.createInfoCode = cd }
 
-[glslVertexShader|
+glslVertexShaderMain1 :: Spv 'GlslVertexShader
+glslVertexShaderMain1 = [glslVertexShader|
 
 #version 450
 
@@ -1077,7 +1081,8 @@ main()
 
 |]
 
-[glslFragmentShader|
+glslFragmentShaderMain1 :: Spv 'GlslFragmentShader
+glslFragmentShaderMain1 = [glslFragmentShader|
 
 #version 450
 
