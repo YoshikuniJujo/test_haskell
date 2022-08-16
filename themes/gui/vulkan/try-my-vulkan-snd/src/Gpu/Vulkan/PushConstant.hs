@@ -10,7 +10,13 @@ module Gpu.Vulkan.PushConstant where
 
 import Foreign.Storable
 import Data.Kind
+import Data.Bits
 import Data.Word
+
+import Gpu.Vulkan.Enum
+
+import qualified Gpu.Vulkan.TypeEnum as T
+import qualified Gpu.Vulkan.PushConstant.Middle as M
 
 class IsPrefixOf (part :: [Type]) (whole :: [Type])
 
@@ -42,3 +48,37 @@ instance (Storable t, OffsetSize whole part) =>
 		fromIntegral (sizeOf @t undefined)
 		where al = fromIntegral $ alignment @t undefined
 	size = size @whole @part
+
+class ShaderStageFlagBitsToMiddle (sss :: [T.ShaderStageFlagBits]) where
+	shaderStageFlagBitsToMiddle :: ShaderStageFlagBits
+
+instance ShaderStageFlagBitsToMiddle '[] where
+	shaderStageFlagBitsToMiddle = zeroBits
+
+instance (T.ShaderStageFlagBitsToValue ss, ShaderStageFlagBitsToMiddle sss) =>
+	ShaderStageFlagBitsToMiddle (ss ': sss) where
+	shaderStageFlagBitsToMiddle =
+		T.shaderStageFlagBitsToValue @ss .|.
+		shaderStageFlagBitsToMiddle @sss
+
+data Range = Range [T.ShaderStageFlagBits] [Type]
+
+class RangeToMiddle (whole :: [Type]) (range :: Range) where
+	rangeToMiddle :: M.Range
+
+instance (ShaderStageFlagBitsToMiddle sss, OffsetSize whole part) =>
+	RangeToMiddle whole ('Range sss part) where
+	rangeToMiddle = M.Range {
+		M.rangeStageFlags = shaderStageFlagBitsToMiddle @sss,
+		M.rangeOffset = offset @whole @part 0,
+		M.rangeSize = size @whole @part }
+
+class RangesToMiddle (whole :: [Type]) (ranges :: [Range]) where
+	rangesToMiddle :: [M.Range]
+
+instance RangesToMiddle whole '[] where rangesToMiddle = []
+
+instance (RangeToMiddle whole range, RangesToMiddle whole ranges) =>
+	RangesToMiddle whole (range ': ranges) where
+	rangesToMiddle =
+		rangeToMiddle @whole @range : rangesToMiddle @whole @ranges
