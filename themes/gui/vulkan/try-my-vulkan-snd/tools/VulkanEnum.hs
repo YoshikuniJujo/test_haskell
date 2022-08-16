@@ -9,9 +9,11 @@ import Text.Nowdoc
 import MakeEnum
 
 make :: IO ()
-make = createFile'' vulkanCore "Enum"
-	["Foreign.Ptr", "Data.Bits", "Data.Word"] ((([] ,) <$> noZeros) ++ zeros)
-	[nowdoc|
+make = do
+	createRaw vulkanCore "ShaderStageFlagsZero" "VkShaderStageFlagBits"
+	createFile'' vulkanCore "Enum"
+		["Foreign.Ptr", "Data.Bits", "Data.Word"] ((([] ,) <$> noZeros) ++ zeros)
+		[nowdoc|
 type PtrDynamicState = Ptr DynamicState
 type AccessFlags = AccessFlagBits
 type DependencyFlags = DependencyFlagBits
