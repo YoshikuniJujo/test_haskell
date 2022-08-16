@@ -196,6 +196,8 @@ library
       Gpu.Vulkan.Specialization
       Gpu.Vulkan.Subpass
       Gpu.Vulkan.Subpass.Enum
+      Gpu.Vulkan.TypeEnum
+      Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
       Gpu.Vulkan.VertexInput.Enum
       ThEnv
