@@ -528,7 +528,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Int ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] -> IO a) -> IO a
+		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt sdrn f =
 	Vk.Ppl.Graphics.createGs' dvc Nothing (Singleton $ V14 pplInfo) nil nil
 		\(Singleton (V2 gpl)) -> f gpl
@@ -538,7 +538,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Int ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] -> IO ()
+		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGs'
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
@@ -549,7 +549,7 @@ mkGraphicsPipelineCreateInfo ::
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
-			'[ '(0, Position), '(1, Color)] )
+			'[ '(0, Position), '(1, Normal), '(2, Color)] )
 		() () () () () () () () '(sl, '[]) sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo' {
 	Vk.Ppl.Graphics.createInfoNext' = Nothing,
@@ -827,7 +827,7 @@ recordCommandBuffer :: forall scb sr sf sg sm sb .
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Int -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb fn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
@@ -861,9 +861,9 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] -> Vk.Ppl.Graphics.G sg1
+		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
@@ -889,9 +889,9 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
@@ -910,9 +910,9 @@ drawFrame :: forall sfs sd ssc sr sg0 sg1 sm sb scb ssos vss . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int -> IO ()
@@ -960,10 +960,10 @@ catchAndRecreate :: RecreateFramebuffers sis sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop act =
@@ -982,10 +982,10 @@ recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
 recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = do
 	waitFramebufferSize win
@@ -1093,7 +1093,8 @@ glslVertexShaderMain0 = [glslVertexShader|
 #version 450
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inColor;
 
 void
 main()
@@ -1127,7 +1128,8 @@ glslVertexShaderMain1 = [glslVertexShader|
 #version 450
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inColor;
 
 layout(location = 0) out vec3 outColor;
 
