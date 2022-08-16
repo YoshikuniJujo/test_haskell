@@ -72,3 +72,7 @@ foreign import ccall "vkCmdBlitImage" blitImage ::
 foreign import ccall "vkCmdDispatch" dispatch ::
 	CommandBuffer.C ->
 	#{type uint32_t} -> #{type uint32_t} -> #{type uint32_t} -> IO ()
+
+foreign import ccall "vkCmdPushConstants" pushConstants ::
+	CommandBuffer.C -> Pipeline.Layout.L -> #{type VkShaderStageFlags} ->
+	#{type uint32_t} -> #{type uint32_t} -> Ptr () -> IO ()
