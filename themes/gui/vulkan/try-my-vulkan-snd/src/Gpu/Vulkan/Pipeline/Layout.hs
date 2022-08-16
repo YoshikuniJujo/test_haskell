@@ -22,7 +22,7 @@ import Gpu.Vulkan.Pipeline.Layout.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Descriptor.Set.Layout
-import qualified Gpu.Vulkan.PushConstant as PushConstant
+import qualified Gpu.Vulkan.PushConstant.Middle as PushConstant
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
 
 data CreateInfo n sbtss = CreateInfo {

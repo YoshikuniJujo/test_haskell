@@ -175,6 +175,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.Middle
       Gpu.Vulkan.Pipeline.ViewportState
       Gpu.Vulkan.PushConstant
+      Gpu.Vulkan.PushConstant.Middle
       Gpu.Vulkan.Queue
       Gpu.Vulkan.Queue.Enum
       Gpu.Vulkan.QueueFamily
