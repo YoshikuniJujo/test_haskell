@@ -165,3 +165,5 @@ copyBuffer :: forall (ass :: [[Object]]) sos sod sc vs sms sbs smd sbd .
 	Buffer.Binded sms sbs sos -> Buffer.Binded smd sbd sod -> IO ()
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb (Buffer.M.B src) (Buffer.M.B dst) (Buffer.makeCopies @ass lnss lnsd)
+
+-- pushConstants ::
