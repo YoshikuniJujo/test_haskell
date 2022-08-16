@@ -19,3 +19,7 @@ typeBool True f = f $ Proxy @_ @('True)
 
 boolToBool :: Bool -> Bool
 boolToBool b = typeBool b \(_ :: Proxy tb) -> bool @tb
+
+tBoolToTBool :: TypeBool b => Proxy (b :: Bool) ->
+	(forall tb . TypeBool tb => Proxy (tb :: Bool) -> a) -> a
+tBoolToTBool (_ :: Proxy tb) = typeBool (bool @tb)
