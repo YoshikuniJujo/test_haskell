@@ -1,16 +1,20 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics.Type where
+
+import Data.Kind
 
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as M
 
 newtype GList s vs's tss = GList (M.PList vs's tss)
 
 newtype G s vs ts = G (M.G vs ts)
+
+newtype GNew s vs ts (pcts :: [Type]) = GNew (M.G vs ts)
 
 pattern GNil :: GList s vs's tss
 pattern GNil <- GList M.PNil
