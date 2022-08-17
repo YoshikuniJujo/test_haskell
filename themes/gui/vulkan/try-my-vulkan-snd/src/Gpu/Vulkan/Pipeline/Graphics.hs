@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics (
-	G, createGs', recreateGs', CreateInfo'(..),
+	G, createGs, recreateGs, CreateInfo(..),
 
 	CreateInfoNew(..)
 	) where
@@ -46,62 +46,33 @@ import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as ShaderStage
 
-data CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb
-	vs'' ts' = CreateInfo {
-	createInfoNext :: Maybe n,
-	createInfoFlags :: CreateFlags,
-	createInfoStages :: ShaderStage.CreateInfoList n1 n1' sknds a a' vss,
-	createInfoVertexInputState ::
-		Maybe (VertexInputState.CreateInfo n2 vs' ts),
-	createInfoInputAssemblyState ::
-		Maybe (InputAssemblyState.CreateInfo n3),
-	createInfoTessellationState ::
-		Maybe (TessellationState.CreateInfo n4),
-	createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
-	createInfoRasterizationState ::
-		Maybe (RasterizationState.CreateInfo n6),
-	createInfoMultisampleState ::
-		Maybe (MultisampleState.CreateInfo n7),
-	createInfoDepthStencilState ::
-		Maybe (DepthStencilState.CreateInfo n8),
-	createInfoColorBlendState ::
-		Maybe (ColorBlendState.CreateInfo n9),
-	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
-	createInfoLayout :: Layout.L sl,
-	createInfoRenderPass :: RenderPass.R sr,
-	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: Maybe (G sb vs'' ts'),
-	createInfoBasePipelineIndex :: Int32 }
-
-data CreateInfo' n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
-	CreateInfo' {
-		createInfoNext' :: Maybe n,
-		createInfoFlags' :: CreateFlags,
-		createInfoStages' ::
+data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
+	CreateInfo {
+		createInfoNext :: Maybe n,
+		createInfoFlags :: CreateFlags,
+		createInfoStages ::
 			HeteroVarList ShaderStage.CreateInfo' nnskndscdvss,
-		createInfoVertexInputState' ::
+		createInfoVertexInputState ::
 			Maybe (V3 VertexInputState.CreateInfo nvsts),
-		createInfoInputAssemblyState' ::
+		createInfoInputAssemblyState ::
 			Maybe (InputAssemblyState.CreateInfo n3),
-		createInfoTessellationState' ::
+		createInfoTessellationState ::
 			Maybe (TessellationState.CreateInfo n4),
-		createInfoViewportState' :: Maybe (ViewportState.CreateInfo n5),
-		createInfoRasterizationState' ::
+		createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
+		createInfoRasterizationState ::
 			Maybe (RasterizationState.CreateInfo n6),
-		createInfoMultisampleState' ::
+		createInfoMultisampleState ::
 			Maybe (MultisampleState.CreateInfo n7),
-		createInfoDepthStencilState' ::
+		createInfoDepthStencilState ::
 			Maybe (DepthStencilState.CreateInfo n8),
-		createInfoColorBlendState' ::
+		createInfoColorBlendState ::
 			Maybe (ColorBlendState.CreateInfo n9),
-		createInfoDynamicState' :: Maybe (DynamicState.CreateInfo n10),
-		createInfoLayout' :: V2 Layout.LL slsbtss,
-		createInfoRenderPass' :: RenderPass.R sr,
-		createInfoSubpass' :: Word32,
-		createInfoBasePipelineHandle' :: Maybe (V3 G sbvsts'),
-		createInfoBasePipelineIndex' :: Int32 }
-
-type CreateInfo'' = V14 CreateInfo'
+		createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
+		createInfoLayout :: V2 Layout.LL slsbtss,
+		createInfoRenderPass :: RenderPass.R sr,
+		createInfoSubpass :: Word32,
+		createInfoBasePipelineHandle :: Maybe (V3 G sbvsts'),
+		createInfoBasePipelineIndex :: Int32 }
 
 data CreateInfoNew n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfoNew {
@@ -142,13 +113,12 @@ deriving instance (
 		sl sr sb vs'' ts')
 		-}
 
-createInfoToMiddle :: (Pointable n1', Pointable a) =>
+createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
-	CreateInfo
-		n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
-		sl sr sb vs'' ts' ->
-	IO (M.CreateInfo
-		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 vs'' ts')
+	CreateInfo n nnskndscdvss nvsts
+		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb,vs', ts') ->
+	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
+		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -162,56 +132,11 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoDepthStencilState = dss,
 	createInfoColorBlendState = cbs,
 	createInfoDynamicState = ds,
-	createInfoLayout = Layout.L lyt,
+	createInfoLayout = V2 (Layout.LL lyt),
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi } = do
-	stgs' <- ShaderStage.createInfoListToMiddle dvc stgs
-	bph' <- maybe M.gNull (\(G g) -> pure g) bph
-	pure M.CreateInfo {
-		M.createInfoNext = mnxt,
-		M.createInfoFlags = flgs,
-		M.createInfoStages = stgs',
-		M.createInfoVertexInputState = vis,
-		M.createInfoInputAssemblyState = ias,
-		M.createInfoTessellationState = ts,
-		M.createInfoViewportState = vs,
-		M.createInfoRasterizationState = rs,
-		M.createInfoMultisampleState = ms,
-		M.createInfoDepthStencilState = dss,
-		M.createInfoColorBlendState = cbs,
-		M.createInfoDynamicState = ds,
-		M.createInfoLayout = lyt,
-		M.createInfoRenderPass = rp,
-		M.createInfoSubpass = sp,
-		M.createInfoBasePipelineHandle = bph',
-		M.createInfoBasePipelineIndex = bpi }
-
-createInfoToMiddle' :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
-	Device.D sd ->
-	CreateInfo' n nnskndscdvss nvsts
-		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb,vs', ts') ->
-	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
-		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
-createInfoToMiddle' dvc CreateInfo' {
-	createInfoNext' = mnxt,
-	createInfoFlags' = flgs,
-	createInfoStages' = stgs,
-	createInfoVertexInputState' = vis,
-	createInfoInputAssemblyState' = ias,
-	createInfoTessellationState' = ts,
-	createInfoViewportState' = vs,
-	createInfoRasterizationState' = rs,
-	createInfoMultisampleState' = ms,
-	createInfoDepthStencilState' = dss,
-	createInfoColorBlendState' = cbs,
-	createInfoDynamicState' = ds,
-	createInfoLayout' = V2 (Layout.LL lyt),
-	createInfoRenderPass' = RenderPass.R rp,
-	createInfoSubpass' = sp,
-	createInfoBasePipelineHandle' = bph,
-	createInfoBasePipelineIndex' = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddle' dvc stgs
 	bph' <- maybe M.gNull (\(V3 (G g)) -> pure g) bph
 	pure M.CreateInfo' {
@@ -233,75 +158,28 @@ createInfoToMiddle' dvc CreateInfo' {
 		M.createInfoBasePipelineHandle' = V2 bph',
 		M.createInfoBasePipelineIndex' = bpi }
 
-data CreateInfoList
-	ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's where
-	CreateInfoNil :: CreateInfoList
-		'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
-	CreateInfoCons ::
-		CreateInfo n n1 n1' sknds a a' vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10 sl sr sb vs'' ts' ->
-		CreateInfoList ns n1s n1's skndss as a's vsss
-			n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s sls srs sbs vs''s ts's ->
-		CreateInfoList (n ': ns)
-			(n1 ': n1s) (n1' ': n1's) (sknds ': skndss) (a ': as) (a' ': a's) (vss ': vsss)
-			(n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s)
-			(n4 ': n4s) (n5 ': n5s) (n6 ': n6s) (n7 ': n7s)
-			(n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
-			(sl ': sls) (sr ': srs) (sb ': sbs)
-			(vs'' ': vs''s) (ts' ': ts's)
-
-class CreateInfoListToMiddle
-	ns n1s n1's sknds as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s
-	n10s sls srs sbs vs''s ts's where
-	createInfoListToMiddle :: Device.D sd ->
-		CreateInfoList
-			ns n1s n1's sknds as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-			sls srs sbs vs''s ts's ->
-		IO (M.CreateInfoList
-			ns n1s sknds vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-			vs''s ts's)
-
-instance CreateInfoListToMiddle
-	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[]
-	'[] '[] '[] '[] '[]
-	where
-	createInfoListToMiddle _ CreateInfoNil = pure M.CreateInfoNil
-
-instance (
-	Pointable n1', Pointable a,
-	CreateInfoListToMiddle
-		ns n1s n1's sknds as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-		sls srs sbs vs''s ts's ) =>
-	CreateInfoListToMiddle
-		(n ': ns) (n1 ': n1s) (n1' ': n1's) (sknd ': sknds) (a ': as) (a' ': a's)
-		(vss ': vsss) (n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s) (n4 ': n4s)
-		(n5 ': n5s) (n6 ': n6s) (n7 ': n7s) (n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
-		(sl ': sls) (sr ': srs) (sb ': sbs) (vs'' ': vs''s) (ts' ': ts's) where
-	createInfoListToMiddle dvc (ci `CreateInfoCons` cis) = M.CreateInfoCons
-		<$> createInfoToMiddle dvc ci
-		<*> createInfoListToMiddle dvc cis
-
-class CreateInfoListToMiddle' ss where
+class CreateInfoListToMiddle ss where
 	type MiddleVars ss :: [
 		(Type, [(Type, ShaderKind, Type)], (Type, [Type], [(Nat, Type)]),
 		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))
 		]
 	createInfoListToMiddle' :: Device.D sd ->
-		HeteroVarList CreateInfo'' ss ->
+		HeteroVarList (V14 CreateInfo) ss ->
 		IO (HeteroVarList M.CreateInfo'' (MiddleVars ss))
 
 	destroyShaderStages' :: Device.D sd ->
 		HeteroVarList M.CreateInfo'' (MiddleVars ss) ->
-		HeteroVarList CreateInfo'' ss -> IO ()
+		HeteroVarList (V14 CreateInfo) ss -> IO ()
 
-instance CreateInfoListToMiddle' '[] where
+instance CreateInfoListToMiddle '[] where
 	type MiddleVars '[] = '[]
 	createInfoListToMiddle' _ HVNil = pure HVNil
 	destroyShaderStages' _ HVNil HVNil = pure ()
 
 instance (
 	ShaderStage.CreateInfoListToMiddle' nnskndscdvss,
-	CreateInfoListToMiddle' ss ) =>
-	CreateInfoListToMiddle' ('(
+	CreateInfoListToMiddle ss ) =>
+	CreateInfoListToMiddle ('(
 		n, nnskndscdvss, nvsts, n3, n4, n5, n6, n7, n8, n9, n10,
 		sl, sr, '(sb, vs', ts') ) ': ss) where
 	type MiddleVars ('(
@@ -310,29 +188,29 @@ instance (
 		'(n, ShaderStage.MiddleVars nnskndscdvss, nvsts, n3, n4, n5, n6,
 			n7, n8, n9, n10, '(vs', ts')) ': MiddleVars ss
 	createInfoListToMiddle' dvc (V14 ci :...: cis) = (:...:)
-		<$> (V12 <$> createInfoToMiddle' dvc ci)
+		<$> (V12 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle' dvc cis
 	destroyShaderStages' dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
-		ShaderStage.destroyCreateInfoMiddleList' dvc (M.createInfoStages' cim) (createInfoStages' ci)
+		ShaderStage.destroyCreateInfoMiddleList' dvc (M.createInfoStages' cim) (createInfoStages ci)
 		destroyShaderStages' dvc cims cis
 
-createGs' :: (
+createGs :: (
 	Pointable c, Pointable d,
-	CreateInfoListToMiddle' ss,
+	CreateInfoListToMiddle ss,
 	M.CreateInfoListToCore' (MiddleVars ss),
 	M.GListFromCore (M.GListVars (MiddleVars ss)),
 	V2g (M.GListVars (MiddleVars ss))
 	) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
-	HeteroVarList CreateInfo'' ss ->
+	HeteroVarList (V14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall sg . HeteroVarList (V2 (G sg)) (M.GListVars (MiddleVars ss)) -> IO a) -> IO a
-createGs' d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
+createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddle' d cis >>= \cis' ->
 		M.createGs' dvc mc cis' macc <* destroyShaderStages' d cis' cis)
 	(\gs -> M.destroyGs' dvc gs macd) (f . v2g)
 
-recreateGs' d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
+recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddle' d cis
 	M.recreateGs' dvc mc cis' macc macd $ g2v gpls
 	destroyShaderStages' d cis' cis
@@ -346,32 +224,3 @@ instance V2g '[] where v2g HVNil = HVNil; g2v HVNil = HVNil
 instance V2g ss => V2g (s ': ss) where
 	v2g (V2 g :...: gs) = V2 (G g) :...: v2g gs
 	g2v (V2 (G g) :...: gs) = V2 g :...: g2v gs
-
-class DestroyShaderStages
-	ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-	sls srs sbs vs''s ts's where
-	destroyShaderStages :: Device.D sd ->
-		M.CreateInfoList
-			ns n1s skndss vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-			vs''s ts's ->
-		CreateInfoList
-			ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-			sls srs sbs vs''s ts's -> IO ()
-
-instance DestroyShaderStages '[] '[] '[] '[] '[] '[] '[]
-	'[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] '[] where
-	destroyShaderStages _ M.CreateInfoNil CreateInfoNil = pure ()
-
-instance (
-	Pointable a',
-	DestroyShaderStages
-		ns n1s n1's skndss as a's vsss n2s vs's tss n3s n4s n5s n6s n7s n8s n9s n10s
-		sls srs sbs vs''s ts's ) =>
-	DestroyShaderStages
-		(n ': ns) (n1 ': n1s) (n1' ': n1's) (sknds ': skndss) (a ': as) (a' ': a's)
-		(vss ': vsss) (n2 ': n2s) (vs' ': vs's) (ts ': tss) (n3 ': n3s) (n4 ': n4s)
-		(n5 ': n5s) (n6 ': n6s) (n7 ': n7s) (n8 ': n8s) (n9 ': n9s) (n10 ': n10s)
-		(sl ': sls) (sr ': srs) (sb ': sbs) (vs'' ': vs''s) (ts' ': ts's) where
-	destroyShaderStages dvc (mci `M.CreateInfoCons` mcis) (ci `CreateInfoCons` cis) = do
-		ShaderStage.destroyCreateInfoMiddleList dvc (M.createInfoStages mci) (createInfoStages ci)
-		destroyShaderStages dvc mcis cis
