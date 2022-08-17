@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
@@ -82,3 +82,11 @@ instance (RangeToMiddle whole range, RangesToMiddle whole ranges) =>
 	RangesToMiddle whole (range ': ranges) where
 	rangesToMiddle =
 		rangeToMiddle @whole @range : rangesToMiddle @whole @ranges
+
+data PushConstantLayout = PushConstantLayout [Type] [Range]
+
+pushConstantLayoutToRanges ::
+	forall (pcl :: PushConstantLayout) whole ranges .
+	(pcl ~ ('PushConstantLayout whole ranges), RangesToMiddle whole ranges) =>
+	[M.Range]
+pushConstantLayoutToRanges = rangesToMiddle @whole @ranges

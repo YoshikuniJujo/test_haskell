@@ -12,7 +12,10 @@
 module Gpu.Vulkan.Pipeline.Graphics (
 	G, createGs, createGs', recreateGs', CreateInfoList(..), CreateInfo(..), createInfoToMiddle,
 	CreateInfo'(..), createInfoToMiddle',
-	GList, pattern GNil, pattern GCons ) where
+	GList, pattern GNil, pattern GCons,
+
+	CreateInfoNew(..)
+	) where
 
 import GHC.TypeNats
 import Foreign.Pointable
@@ -101,6 +104,34 @@ data CreateInfo' n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 		createInfoBasePipelineIndex' :: Int32 }
 
 type CreateInfo'' = V14 CreateInfo'
+
+data CreateInfoNew n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
+	CreateInfoNew {
+		createInfoNextNew :: Maybe n,
+		createInfoFlagsNew :: CreateFlags,
+		createInfoStagesNew ::
+			HeteroVarList ShaderStage.CreateInfo' nnskndscdvss,
+		createInfoVertexInputStateNew ::
+			Maybe (V3 VertexInputState.CreateInfo nvsts),
+		createInfoInputAssemblyStateNew ::
+			Maybe (InputAssemblyState.CreateInfo n3),
+		createInfoTessellationStateNew ::
+			Maybe (TessellationState.CreateInfo n4),
+		createInfoViewportStateNew :: Maybe (ViewportState.CreateInfo n5),
+		createInfoRasterizationStateNew ::
+			Maybe (RasterizationState.CreateInfo n6),
+		createInfoMultisampleStateNew ::
+			Maybe (MultisampleState.CreateInfo n7),
+		createInfoDepthStencilStateNew ::
+			Maybe (DepthStencilState.CreateInfo n8),
+		createInfoColorBlendStateNew ::
+			Maybe (ColorBlendState.CreateInfo n9),
+		createInfoDynamicStateNew :: Maybe (DynamicState.CreateInfo n10),
+		createInfoLayoutNew :: V3 Layout.LLL slsbtss,
+		createInfoRenderPassNwe :: RenderPass.R sr,
+		createInfoSubpassNew :: Word32,
+		createInfoBasePipelineHandleNew :: Maybe (V3 G sbvsts'),
+		createInfoBasePipelineIndexNew :: Int32 }
 
 {-
 deriving instance (
