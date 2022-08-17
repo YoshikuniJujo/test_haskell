@@ -67,6 +67,7 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
@@ -449,12 +450,12 @@ makePipeline dvc rp f = do
 				[blendattachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
-		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo'' () _ '[]
-		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo'' {
-			Vk.Ppl.Lyt.createInfoNext'' = Nothing,
-			Vk.Ppl.Lyt.createInfoFlags'' = Vk.Ppl.Lyt.CreateFlagsZero,
-			Vk.Ppl.Lyt.createInfoSetLayouts'' = Left HVNil,
-			Vk.Ppl.Lyt.createInfoPushConstantRanges'' = [] }
+		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo () '[]
+		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
+			Vk.Ppl.Lyt.createInfoNext = Nothing,
+			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoSetLayouts = HVNil,
+			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
@@ -485,7 +486,7 @@ makePipeline dvc rp f = do
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
-	Vk.Ppl.Lyt.create'' @() dvc layoutCreateInfo nil nil \pipelineLayout -> do
+	Vk.Ppl.Lyt.create @() dvc layoutCreateInfo nil nil \(Vk.Ppl.Lyt.LL pipelineLayout) -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo
 				() () ()
 				'[ 'GlslVertexShader, 'GlslFragmentShader] () ()
@@ -517,7 +518,7 @@ makePipeline dvc rp f = do
 				Vk.Ppl.Gr.createInfoColorBlendState =
 					Just blend,
 				Vk.Ppl.Gr.createInfoDynamicState = Nothing,
-				Vk.Ppl.Gr.createInfoLayout = pipelineLayout,
+				Vk.Ppl.Gr.createInfoLayout = Vk.Ppl.Lyt.L pipelineLayout,
 				Vk.Ppl.Gr.createInfoRenderPass = rp,
 				Vk.Ppl.Gr.createInfoSubpass = 0,
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,

@@ -9,7 +9,7 @@
 
 module Gpu.Vulkan.Pipeline.Layout (
 	LL, create, CreateInfo(..),
-	L, create'', CreateInfo''(..),
+	L,
 	M.CreateFlags, pattern M.CreateFlagsZero, Layout(..) ) where
 
 import Foreign.Pointable
@@ -31,30 +31,10 @@ data CreateInfo n sbtss = CreateInfo {
 	createInfoSetLayouts :: HeteroVarList Layout sbtss,
 	createInfoPushConstantRanges :: [PushConstant.Range] }
 
-data CreateInfo'' n ss sbtss = CreateInfo'' {
-	createInfoNext'' :: Maybe n,
-	createInfoFlags'' :: M.CreateFlags,
-	createInfoSetLayouts'' :: Either
-		(HeteroVarList Descriptor.Set.Layout.L'' ss)
-		(HeteroVarList Layout sbtss),
-	createInfoPushConstantRanges'' :: [PushConstant.Range] }
-
-createInfoToCreateInfo :: CreateInfo n sbtss -> CreateInfo'' n '[] sbtss
-createInfoToCreateInfo CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoSetLayouts = lyts,
-	createInfoPushConstantRanges = pcrs } = CreateInfo'' {
-	createInfoNext'' = mnxt,
-	createInfoFlags'' = flgs,
-	createInfoSetLayouts'' = Right lyts,
-	createInfoPushConstantRanges'' = pcrs }
-
 deriving instance (
 	Show n,
-	Show (HeteroVarList Descriptor.Set.Layout.L'' ss),
 	Show (HeteroVarList Layout sbtss) ) =>
-	Show (CreateInfo'' n ss sbtss)
+	Show (CreateInfo n sbtss)
 
 data Layout sbts where
 	Layout :: Descriptor.Set.Layout.L s bts -> Layout '(s, bts)
@@ -72,17 +52,14 @@ instance HeteroVarListToList' '[] where heteroVarListToList' _ HVNil = []
 instance HeteroVarListToList' sbtss => HeteroVarListToList' ('(s, bts) ': sbtss) where
 	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
 
-createInfoToMiddle :: HeteroVarListToList' sbtss =>
-	CreateInfo'' n ss (sbtss :: [(Type, [Descriptor.Set.Layout.BindingType])]) -> M.CreateInfo n
-createInfoToMiddle CreateInfo'' {
-	createInfoNext'' = mnxt,
-	createInfoFlags'' = flgs,
-	createInfoSetLayouts'' = either
-		(heteroVarListToList Descriptor.Set.Layout.unL'')
-		(heteroVarListToList' $ Descriptor.Set.Layout.unL . unLayout) ->
-		sls,
-	createInfoPushConstantRanges'' = pcrs
-	} = M.CreateInfo {
+createInfoToMiddle ::
+	HeteroVarListToList' sbtss => CreateInfo n sbtss -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSetLayouts = heteroVarListToList'
+		$ Descriptor.Set.Layout.unL . unLayout -> sls,
+	createInfoPushConstantRanges = pcrs } = M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
 		M.createInfoSetLayouts = sls,
@@ -92,12 +69,5 @@ create :: (Pointable n, Pointable c, Pointable d, HeteroVarListToList' sbtss) =>
 	Device.D sd -> CreateInfo n sbtss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . LL s sbtss -> IO a) -> IO a
-create dvc (createInfoToCreateInfo -> ci) macc macd f =
-	create'' dvc ci macc macd $ f . (\(L l) -> LL l)
-
-create'' :: (Pointable n, Pointable n2, Pointable n3, HeteroVarListToList' sbtss) =>
-	Device.D sd -> CreateInfo'' n ss sbtss ->
-	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
-	(forall s . L s -> IO a) -> IO a
-create'' (Device.D dvc) (createInfoToMiddle -> ci) macc macd f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L)
+create (Device.D dvc) (createInfoToMiddle -> ci) macc macd f =
+	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . LL)

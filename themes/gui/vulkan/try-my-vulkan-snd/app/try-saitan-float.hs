@@ -40,6 +40,7 @@ import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Gpu.Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.Descriptor.Set.Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.Descriptor.Set.Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Vk.Descriptor.Set.Layout.M
 import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.Descriptor.Set.Layout
@@ -134,19 +135,18 @@ withCommandPool phdvc device queue commandPool =
 				Vk.Descriptor.Set.Layout.CreateFlagsZero,
 			Vk.Descriptor.Set.Layout.M.createInfoBindings =
 				[binding] }
-	Vk.Descriptor.Set.Layout.create'' @() device descSetLayoutInfo nil nil \descSetLayout -> do
-		let	pipelineLayoutInfo :: Vk.Pipeline.Layout.CreateInfo'' () _ '[]
-			pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo'' {
-				Vk.Pipeline.Layout.createInfoNext'' = Nothing,
-				Vk.Pipeline.Layout.createInfoFlags'' =
+	Vk.Descriptor.Set.Layout.create'' @() device descSetLayoutInfo nil nil \( Vk.Descriptor.Set.Layout.L'' descSetLayout) -> do
+		let	pipelineLayoutInfo :: Vk.Pipeline.Layout.CreateInfo () _
+			pipelineLayoutInfo = Vk.Pipeline.Layout.CreateInfo {
+				Vk.Pipeline.Layout.createInfoNext = Nothing,
+				Vk.Pipeline.Layout.createInfoFlags =
 					Vk.Pipeline.Layout.CreateFlagsZero,
-				Vk.Pipeline.Layout.createInfoSetLayouts'' =
-					Left $ descSetLayout :...: HVNil,
-				Vk.Pipeline.Layout.createInfoPushConstantRanges''
+				Vk.Pipeline.Layout.createInfoSetLayouts =
+					Vk.Pipeline.Layout.Layout (Vk.Descriptor.Set.Layout.L descSetLayout) :...: HVNil,
+				Vk.Pipeline.Layout.createInfoPushConstantRanges
 					= [] }
 		print descSetLayout
-		print @(Vk.Pipeline.Layout.CreateInfo'' () _ '[])  pipelineLayoutInfo
-		Vk.Pipeline.Layout.create'' @() @_ device pipelineLayoutInfo nil nil \pipelineLayout -> do
+		Vk.Pipeline.Layout.create @() @_ device pipelineLayoutInfo nil nil \(Vk.Pipeline.Layout.LL pipelineLayout) -> do
 			print pipelineLayout
 			let	shaderStageInfo = Vk.Pipeline.ShaderStage.CreateInfo {
 					Vk.Pipeline.ShaderStage.createInfoNext = Nothing,
@@ -167,7 +167,7 @@ withCommandPool phdvc device queue commandPool =
 						shaderStageInfo,
 					Vk.Pipeline.Compute.createInfoLayout =
 						(\(Vk.Pipeline.Layout.L l) -> Vk.Pipeline.Layout.LL l)
-							pipelineLayout,
+							$ Vk.Pipeline.Layout.L pipelineLayout,
 					Vk.Pipeline.Compute.createInfoBasePipelineHandle =
 						Nothing,
 					Vk.Pipeline.Compute.createInfoBasePipelineIndex =
@@ -181,7 +181,7 @@ withCommandPool phdvc device queue commandPool =
 						Vk.Descriptor.Set.allocateInfoDescriptorPool'' =
 							descPool,
 						Vk.Descriptor.Set.allocateInfoSetLayouts'' =
-							[descSetLayout] }
+							[Vk.Descriptor.Set.Layout.L'' descSetLayout] }
 				print @(Vk.Descriptor.Set.AllocateInfo'' () _ _) descSetInfo
 				descSets <- Vk.Descriptor.Set.allocateSs'' @() device descSetInfo
 				print descSets
@@ -220,7 +220,7 @@ withCommandPool phdvc device queue commandPool =
 							Vk.Cmd.M.bindDescriptorSets
 								((\(Vk.CommandBuffer.C c) -> c) commandBuffer)
 								Vk.Pipeline.BindPointCompute
-								((\(Vk.Pipeline.Layout.L l) -> l) pipelineLayout)
+								pipelineLayout
 								0
 								((\(Vk.Descriptor.Set.S'' s) -> s) <$> descSets)
 								[]
