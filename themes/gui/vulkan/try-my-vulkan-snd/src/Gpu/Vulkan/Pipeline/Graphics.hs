@@ -11,8 +11,7 @@
 
 module Gpu.Vulkan.Pipeline.Graphics (
 	G, createGs, recreateGs, CreateInfo(..),
-
-	createGsNew, CreateInfoNew(..)
+	createGsNew, recreateGsNew, CreateInfoNew(..)
 	) where
 
 import GHC.TypeNats
@@ -267,6 +266,9 @@ instance (
 	createInfoListToMiddleNew dvc (V14 ci :...: cis) = (:...:)
 		<$> (V12 <$> createInfoToMiddle dvc (createInfoFromNew ci))
 		<*> createInfoListToMiddleNew dvc cis
+	destroyShaderStagesNew dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
+		ShaderStage.destroyCreateInfoMiddleList' dvc (M.createInfoStages' cim) (createInfoStagesNew ci)
+		destroyShaderStagesNew dvc cims cis
 
 createGs :: (
 	Pointable c, Pointable d,
@@ -310,7 +312,12 @@ createGsNew :: (
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall sg . HeteroVarList (V2 (G sg)) (M.GListVars (MiddleVarsNew ss)) ->
 		IO a) -> IO a
-createGsNew d@(Device.D dvc) ((Cache.cToMiddle <$>) ->mc) cis macc macd f = bracket
+createGsNew d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddleNew d cis >>= \cis' ->
 		M.createGs' dvc mc cis' macc <* destroyShaderStagesNew d cis' cis)
 	(\gs -> M.destroyGs' dvc gs macd) (f . v2g)
+
+recreateGsNew d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
+	cis' <- createInfoListToMiddleNew d cis
+	M.recreateGs' dvc mc cis' macc macd $ g2v gpls
+	destroyShaderStagesNew d cis' cis

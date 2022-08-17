@@ -123,6 +123,7 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -239,9 +240,10 @@ run w ist g =
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv scifmt imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
-	createPipelineLayout dv \ppllyt ->
-	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
-	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
+--	createPipelineLayout dv \ppllyt ->
+	createPipelineLayoutNew dv \ppllyt ->
+	createGraphicsPipelineNew dv ext rp ppllyt 0 \gpl0 ->
+	createGraphicsPipelineNew dv ext rp ppllyt 1 \gpl1 ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
@@ -524,6 +526,16 @@ createPipelineLayout dvc f = Vk.Ppl.Layout.create @() dvc crInfo nil nil f
 		Vk.Ppl.Layout.createInfoSetLayouts = HVNil,
 		Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
 
+createPipelineLayoutNew ::
+	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.LLL sl '[] '[] -> IO b) -> IO b
+createPipelineLayoutNew dvc f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
+	where
+	crInfo :: Vk.Ppl.Layout.CreateInfoNew () '[] ('Vk.PushConstant.PushConstantLayout '[] '[])
+	crInfo = Vk.Ppl.Layout.CreateInfoNew {
+		Vk.Ppl.Layout.createInfoNextNew = Nothing,
+		Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
+		Vk.Ppl.Layout.createInfoSetLayoutsNew = HVNil }
+
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Int ->
 	(forall sg . Vk.Ppl.Graphics.G sg
@@ -534,6 +546,17 @@ createGraphicsPipeline dvc sce rp ppllyt sdrn f =
 		\(Singleton (V2 gpl)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
 
+createGraphicsPipelineNew :: Vk.Dvc.D sd ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[] -> Int ->
+	(forall sg . Vk.Ppl.Graphics.G sg
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
+createGraphicsPipelineNew dvc sce rp ppllyt sdrn f =
+	Vk.Ppl.Graphics.createGsNew dvc Nothing (Singleton $ V14 pplInfo) nil nil
+		\(Singleton (V2 gpl)) -> f gpl
+	where pplInfo = mkGraphicsPipelineCreateInfoNew sce rp ppllyt sdrn
+
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Int ->
 	Vk.Ppl.Graphics.G sg
@@ -542,6 +565,15 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
+
+recreateGraphicsPipelineNew :: Vk.Dvc.D sd ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Int ->
+	Vk.Ppl.Graphics.G sg
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
+recreateGraphicsPipelineNew dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGsNew
+	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
+	where pplInfo = mkGraphicsPipelineCreateInfoNew sce rp ppllyt sdrn
 
 mkGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Int ->
@@ -573,6 +605,37 @@ mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+
+mkGraphicsPipelineCreateInfoNew ::
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Int ->
+	Vk.Ppl.Graphics.CreateInfoNew () '[
+			'((), (), 'GlslVertexShader, (), (), ()),
+			'((), (), 'GlslFragmentShader, (), (), ()) ]
+		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
+			'[ '(0, Position), '(1, Normal), '(2, Color)] )
+		() () () () () () () () '(sl, '[], '[]) sr '(sb, vs', ts')
+mkGraphicsPipelineCreateInfoNew sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfoNew {
+	Vk.Ppl.Graphics.createInfoNextNew = Nothing,
+	Vk.Ppl.Graphics.createInfoFlagsNew = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Graphics.createInfoStagesNew = uncurry shaderStages
+		case sdrn `mod` 2 of
+			0 -> shaderPair0
+			1 -> shaderPair1
+			_ -> error "never occur",
+	Vk.Ppl.Graphics.createInfoVertexInputStateNew = Just $ V3 def,
+	Vk.Ppl.Graphics.createInfoInputAssemblyStateNew = Just inputAssembly,
+	Vk.Ppl.Graphics.createInfoViewportStateNew = Just $ mkViewportState sce,
+	Vk.Ppl.Graphics.createInfoRasterizationStateNew = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoMultisampleStateNew = Just multisampling,
+	Vk.Ppl.Graphics.createInfoDepthStencilStateNew = Nothing,
+	Vk.Ppl.Graphics.createInfoColorBlendStateNew = Just colorBlending,
+	Vk.Ppl.Graphics.createInfoDynamicStateNew = Nothing,
+	Vk.Ppl.Graphics.createInfoLayoutNew = V3 ppllyt,
+	Vk.Ppl.Graphics.createInfoRenderPassNew = rp,
+	Vk.Ppl.Graphics.createInfoSubpassNew = 0,
+	Vk.Ppl.Graphics.createInfoBasePipelineHandleNew = Nothing,
+	Vk.Ppl.Graphics.createInfoBasePipelineIndexNew = - 1,
+	Vk.Ppl.Graphics.createInfoTessellationStateNew = Nothing }
 
 inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
@@ -859,7 +922,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] -> Vk.Ppl.Graphics.G sg0
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -887,7 +950,7 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -957,7 +1020,7 @@ catchAndRecreate :: RecreateFramebuffers sis sfs =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -979,7 +1042,7 @@ recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -995,8 +1058,8 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = d
 	ext <$ do
 		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 			recreateImageViews dvc scifmt imgs scivs
-		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
-		recreateGraphicsPipeline dvc ext rp ppllyt 1 gpl1
+		recreateGraphicsPipelineNew dvc ext rp ppllyt 0 gpl0
+		recreateGraphicsPipelineNew dvc ext rp ppllyt 1 gpl1
 		recreateFramebuffers dvc ext rp scivs fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
