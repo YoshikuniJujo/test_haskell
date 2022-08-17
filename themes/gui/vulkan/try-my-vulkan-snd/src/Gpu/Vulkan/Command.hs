@@ -27,6 +27,7 @@ import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Command.TypeLevel
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
@@ -46,6 +47,8 @@ import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Command.Middle as M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
+
+import qualified Gpu.Vulkan.PushConstant as PushConstant
 
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct -> Subpass.Contents ->
@@ -166,4 +169,12 @@ copyBuffer :: forall (ass :: [[Object]]) sos sod sc vs sms sbs smd sbd .
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb (Buffer.M.B src) (Buffer.M.B dst) (Buffer.makeCopies @ass lnss lnsd)
 
--- pushConstants ::
+pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
+	StoreHetero ts,
+	PushConstant.ShaderStageFlagBitsToMiddle ss,
+	PushConstant.OffsetSize whole ts ) =>
+	CommandBuffer.C sc vs -> Pipeline.Layout.LLL s sbtss whole ->
+	HeteroList ts -> IO ()
+pushConstants (CommandBuffer.C cb) (Pipeline.Layout.LLL lyt) xs =
+	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
+		(PushConstant.offset @whole @ts 0) xs

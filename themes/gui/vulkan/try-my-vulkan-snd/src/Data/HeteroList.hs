@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..),
+	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..), StoreHetero(..),
 	HeteroVarList(..), pattern Singleton, singleton,
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
@@ -21,6 +21,7 @@ module Data.HeteroList (
 
 import Prelude hiding (length)
 
+import Foreign.Ptr
 import Foreign.Storable
 import Data.Kind
 
@@ -56,6 +57,25 @@ instance Show (HeteroList '[]) where show HNil = "HNil"
 
 instance (Show a, Show (HeteroList as)) => Show (HeteroList (a ': as)) where
 	show (x :..: xs) = show x ++ " :..: " ++ show xs
+
+-- class
+
+class StoreHetero (ts :: [Type]) where
+	storeHeteroSize :: Int -> Int
+	storeHetero :: Ptr () -> HeteroList ts -> IO ()
+
+instance StoreHetero '[] where
+	storeHeteroSize sz = sz
+	storeHetero _ HNil = pure ()
+
+instance (Storable t, StoreHetero ts) => StoreHetero (t ': ts) where
+	storeHeteroSize sz = storeHeteroSize @ts
+		$ ((sz - 1) `div` al + 1) * al + sizeOf @t undefined
+		where al = alignment @t undefined
+	storeHetero p (x :..: xs) = do
+		poke (castPtr p') x
+		storeHetero (p' `plusPtr` sizeOf x) xs
+		where p' = alignPtr p $ alignment x
 
 infixr 5 :...:
 

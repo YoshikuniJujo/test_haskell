@@ -1,14 +1,18 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Command.Middle where
 
+import Foreign.Ptr
+import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.HeteroList hiding (length)
 import Data.Word
 
 import Gpu.Vulkan.Middle
@@ -28,6 +32,8 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 
 import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
+
+import qualified Gpu.Vulkan.PushConstant as PushConstant
 
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
@@ -95,3 +101,15 @@ bindDescriptorSets
 	lift $ pokeArray pdos dos
 	lift $ C.bindDescriptorSets
 		cb bp lyt fs (fromIntegral dsc) pdss (fromIntegral doc) pdos
+
+pushConstants :: forall vs ts .
+	StoreHetero ts =>
+	CommandBuffer.C vs -> Pipeline.Layout.L ->
+	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
+pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt)
+	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
+	let	sz :: Integral n => n
+		sz = fromIntegral $ storeHeteroSize @ts 0
+	p <- ContT $ allocaBytes sz
+	lift do	storeHetero p xs
+		C.pushConstants cb lyt ss ost sz p
