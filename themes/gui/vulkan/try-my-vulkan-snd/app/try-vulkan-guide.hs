@@ -50,6 +50,7 @@ import Shaderc.TH
 import Gpu.Vulkan.Base
 
 import qualified Gpu.Vulkan as Vk
+import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Enum as Vk
@@ -419,8 +420,8 @@ preferredSwapSurfaceFormat f =
 	Vk.Khr.Surface.M.formatColorSpace f == Vk.Khr.ColorSpaceSrgbNonlinear
 
 chooseSwapPresentMode :: [Vk.Khr.PresentMode] -> Vk.Khr.PresentMode
-chooseSwapPresentMode =
-	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
+chooseSwapPresentMode = const Vk.Khr.PresentModeFifo
+--	fromMaybe Vk.Khr.PresentModeFifo . find (== Vk.Khr.PresentModeMailbox)
 
 chooseSwapExtent :: Glfw.Window -> Vk.Khr.Surface.M.Capabilities -> IO Vk.C.Extent2d
 chooseSwapExtent win caps
@@ -526,11 +527,17 @@ createPipelineLayout dvc f = Vk.Ppl.Layout.create @() dvc crInfo nil nil f
 		Vk.Ppl.Layout.createInfoSetLayouts = HVNil,
 		Vk.Ppl.Layout.createInfoPushConstantRanges = [] }
 
-createPipelineLayoutNew ::
-	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.LLL sl '[] '[] -> IO b) -> IO b
+createPipelineLayoutNew :: 
+	Vk.Dvc.D sd ->
+	(forall sl . Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] -> IO b) ->
+	IO b
 createPipelineLayoutNew dvc f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
 	where
-	crInfo :: Vk.Ppl.Layout.CreateInfoNew () '[] ('Vk.PushConstant.PushConstantLayout '[] '[])
+	crInfo :: Vk.Ppl.Layout.CreateInfoNew () '[] (
+		'Vk.PushConstant.PushConstantLayout
+			'[ WrapMeshPushConstants]
+			'[ 'Vk.PushConstant.Range
+				'[ 'Vk.T.ShaderStageVertexBit] '[WrapMeshPushConstants] ])
 	crInfo = Vk.Ppl.Layout.CreateInfoNew {
 		Vk.Ppl.Layout.createInfoNextNew = Nothing,
 		Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
@@ -548,7 +555,8 @@ createGraphicsPipeline dvc sce rp ppllyt sdrn f =
 
 createGraphicsPipelineNew :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl '[] '[] -> Int ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
+	Int ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
@@ -567,7 +575,8 @@ recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateG
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
 
 recreateGraphicsPipelineNew :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Int ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
@@ -607,13 +616,14 @@ mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
 mkGraphicsPipelineCreateInfoNew ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Int ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.CreateInfoNew () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
-		() () () () () () () () '(sl, '[], '[]) sr '(sb, vs', ts')
+		() () () () () () () () '(sl, '[], '[WrapMeshPushConstants]) sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfoNew sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfoNew {
 	Vk.Ppl.Graphics.createInfoNextNew = Nothing,
 	Vk.Ppl.Graphics.createInfoFlagsNew = Vk.Ppl.CreateFlagsZero,
@@ -665,7 +675,7 @@ rasterizer = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 	Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
 	Vk.Ppl.RstSt.createInfoLineWidth = 1,
-	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
+	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeNone, -- Vk.CullModeBackBit,
 	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceClockwise,
 	Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
 	Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
@@ -885,19 +895,39 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg sm sb .
+recordCommandBuffer :: forall scb sr sf sg slyt sm sb .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Int -> IO ()
-recordCommandBuffer cb rp fb sce gpl vb fn =
+recordCommandBuffer cb rp fb sce gpl lyt vb fn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
+	let	model = Cglm.glmRotate
+			Cglm.glmMat4Identity
+			(fromIntegral fn * Cglm.glmRad 1)
+			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+		view = Cglm.glmLookat
+			(Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
+		proj = Cglm.modifyMat4 1 1 negate
+			$ Cglm.glmPerspective
+				(Cglm.glmRad 70)
+				(fromIntegral (Vk.C.extent2dWidth sce) /
+					fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
+	Vk.Cmd.pushConstants @'[ 'Vk.T.ShaderStageVertexBit ] cb lyt $ Foreign.Storable.Generic.Wrap
+		MeshPushConstants {
+			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+			meshPushConstantsRenderMatrix =
+				proj `Cglm.glmMat4Mul` view `Cglm.glmMat4Mul` model
+			} :..: HNil
 	Vk.Cmd.draw cb 3 1 0 0
 	where
 	cbInfo :: Vk.CmdBffr.BeginInfo () ()
@@ -922,7 +952,9 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Vk.Ppl.Graphics.G sg0
+	Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
+	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -950,7 +982,8 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -963,23 +996,24 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn
+		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs)
 
-drawFrame :: forall sfs sd ssc sr sg0 sg1 sm sb scb ssos vss . (VssList vss) =>
+drawFrame :: forall sfs sd ssc sr sg0 sg1 slyt sm sb scb ssos vss . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int -> IO ()
-drawFrame dvc gq pq sc ext rp gpl0 gpl1 fbs vb cbs (SyncObjects iass rfss iffs) cf fn sdrn =
+drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb cbs (SyncObjects iass rfss iffs) cf fn sdrn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
@@ -989,8 +1023,8 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 fbs vb cbs (SyncObjects iass rfss iffs) 
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb -> case sdrn `mod` 2 of
-		0 -> recordCommandBuffer cb rp fb ext gpl0 vb fn
-		1 -> recordCommandBuffer cb rp fb ext gpl1 vb fn
+		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb fn
+		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb fn
 		_ -> error "never occur"
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
@@ -1020,7 +1054,8 @@ catchAndRecreate :: RecreateFramebuffers sis sfs =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -1042,7 +1077,8 @@ recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -1114,6 +1150,15 @@ vertices = [
 	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
+
+data MeshPushConstants = MeshPushConstants {
+	meshPushConstantsData :: Cglm.Vec4,
+	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
+
+type WrapMeshPushConstants = Foreign.Storable.Generic.Wrap MeshPushConstants
+
+instance SizeAlignmentList MeshPushConstants
+instance Foreign.Storable.Generic.G MeshPushConstants
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
@@ -1196,10 +1241,16 @@ layout(location = 2) in vec3 inColor;
 
 layout(location = 0) out vec3 outColor;
 
+layout(push_constant) uniform constants
+{
+	vec4 data;
+	mat4 render_matrix;
+} PushConstants;
+
 void
 main()
 {
-	gl_Position = vec4(inPosition, 1.0);
+	gl_Position = PushConstants.render_matrix * vec4(inPosition, 1.0);
 	outColor = inColor;
 }
 

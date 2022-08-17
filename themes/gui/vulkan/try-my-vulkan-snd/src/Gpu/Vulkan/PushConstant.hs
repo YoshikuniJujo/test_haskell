@@ -36,13 +36,13 @@ class OffsetSize (whole :: [Type]) (part :: [Type]) where
 	offset :: Word32 -> Word32
 	size :: Word32
 
-instance (IsPrefixOf (t ': part) whole, Size (t ': part), Storable t) =>
-	OffsetSize whole (t ': part) where
+instance (IsPrefixOf (t ': part) (t ': whole), Size (t ': part), Storable t) =>
+	OffsetSize (t ': whole) (t ': part) where
 	offset oft = ((oft - 1) `div` al + 1) * al
 		where al = fromIntegral $ alignment @t undefined
 	size = fromIntegral $ sizeSize @(t ': part) 0
 
-instance (Storable t, OffsetSize whole part) =>
+instance {-# OVERLAPPABLE #-} (Storable t, OffsetSize whole part) =>
 	OffsetSize (t ': whole) part where
 	offset oft = ((oft - 1) `div` al + 1) * al +
 		fromIntegral (sizeOf @t undefined)

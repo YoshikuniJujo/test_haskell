@@ -113,3 +113,16 @@ foreign import capi "cglm/cglm.h glm_mat4_identity" c_glm_mat4_identity ::
 
 foreign import capi "cglm/cglm.h glm_rad" glmRad ::
 	#{type float} -> #{type float}
+
+glmMat4Mul :: [Vec4] -> [Vec4] -> [Vec4]
+glmMat4Mul m1 m2 = unsafePerformIO . ($ pure) $ runContT do
+	pm1 <- ContT $ allocaArray 4
+	pm2 <- ContT $ allocaArray 4
+	pdest <- ContT $ allocaArray 4
+	lift do	pokeArray pm1 m1
+		pokeArray pm2 m2
+		c_glm_mat4_mul pm1 pm2 pdest
+		peekArray 4 pdest
+
+foreign import capi "cglm/cglm.h glm_mat4_mul" c_glm_mat4_mul ::
+	Ptr Vec4 -> Ptr Vec4 -> Ptr Vec4 -> IO ()

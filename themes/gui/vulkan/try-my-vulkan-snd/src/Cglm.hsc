@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Cglm (
-	module Cglm, C.Vec2(..), C.Vec3(..), C.Vec4, C.Mat4, C.glmRad
+	module Cglm, C.Vec2(..), C.Vec3(..), C.Vec4(..), C.Mat4, C.glmRad
 	) where
 
 import Data.Foldable
@@ -30,6 +30,10 @@ glmPerspective fovy aspect nearZ farZ =
 
 glmMat4Identity :: C.Mat4
 glmMat4Identity = listVec4ToMat4 C.glmMat4Identity
+
+glmMat4Mul :: C.Mat4 -> C.Mat4 -> C.Mat4
+glmMat4Mul m1 m2 =
+	listVec4ToMat4 $ C.glmMat4Mul (mat4ToListVec4 m1) (mat4ToListVec4 m2)
 
 modifyMat4 :: Int -> Int -> (#{type float} -> #{type float}) -> C.Mat4 -> C.Mat4
 modifyMat4 i j f (C.Mat4 m) = C.Mat4 $ modifyElem2 i j f m
