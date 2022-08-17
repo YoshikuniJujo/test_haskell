@@ -158,6 +158,7 @@ library
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
       Gpu.Vulkan.Pipeline.Graphics.Middle
+      Gpu.Vulkan.Pipeline.Graphics.Old
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.Layout
