@@ -159,7 +159,7 @@ maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
 frashRate :: Num n => n
-frashRate = 240
+frashRate = 2
 
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
