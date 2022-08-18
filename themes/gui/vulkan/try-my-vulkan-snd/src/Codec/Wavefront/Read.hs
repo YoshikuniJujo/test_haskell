@@ -7,7 +7,9 @@
 module Codec.Wavefront.Read (
 	readVertices, readSample, WWord32, readVerticesIndices,
 	sampleVerticesIndices, tinyVerticesIndices,
-	verticesIndices ) where
+	verticesIndices,
+
+	countV, countV', Count(..), readV', takePosNormalFace ) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
@@ -46,6 +48,31 @@ countV = Wf.parseWavefront_ @_ @Word32 \case
 	Wf.F _ _ _ -> tell (0, 0, 0, 1)
 	_ -> tell (0, 0, 0, 0)
 
+countV' :: BS.ByteString -> Count
+countV' = snd . runWriter . Wf.parseWavefront_ @_ @Word32 \case
+	Wf.V _ _ _ -> tell $ mempty { countVertex = 1 }
+	Wf.Vt _ _ -> tell $ mempty { countTexture = 1 }
+	Wf.Vn _ _ _ -> tell $ mempty { countNormal = 1 }
+	Wf.F _ _ _ -> tell $ mempty { countFace = 1 }
+	_ -> tell mempty
+
+data Count = Count {
+	countVertex :: Int, countTexture :: Int,
+	countNormal :: Int, countFace :: Int }
+	deriving Show
+
+instance Semigroup Count where
+	c1 <> c2 = Count {
+		countVertex = countVertex c1 + countVertex c2,
+		countTexture = countTexture c1 + countTexture c2,
+		countNormal = countNormal c1 + countNormal c2,
+		countFace = countFace c1 + countFace c2 }
+
+instance Monoid Count where
+	mempty = Count {
+		countVertex = 0, countTexture = 0,
+		countNormal = 0, countFace = 0 }
+
 data Position = Position Float Float Float deriving (Show, Generic)
 
 instance SizeAlignmentList Position
@@ -55,6 +82,11 @@ data TexCoord = TexCoord Float Float deriving (Show, Generic)
 
 instance SizeAlignmentList TexCoord
 instance Foreign.Storable.Generic.G TexCoord
+
+data Normal = Normal Float Float Float deriving (Show, Generic)
+
+instance SizeAlignmentList Normal
+instance Foreign.Storable.Generic.G Normal
 
 data Face = Face (W Indices) (W Indices) (W Indices) deriving (Show, Generic)
 
@@ -105,6 +137,39 @@ readV n n' n'' s = do
 			writeSTRef ri'' (i'' + 1)
 		_ -> pure ()
 	(,,) <$> V.freeze v <*> V.freeze t <*> V.freeze idx
+
+readV' :: Int -> Int -> Int -> BS.ByteString ->
+	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face))
+readV' nv nn nf str = runST do
+	iv <- newSTRef 0
+	inml <- newSTRef 0
+	ifc <- newSTRef 0
+	v <- MV.new nv
+	n <- MV.new nn
+	f <- MV.new nf
+	flip (Wf.parseWavefront_ @_ @Int) str \case
+		Wf.V x y z -> do
+			i <- readSTRef iv
+			MV.write v i . W $ Position x y z
+			writeSTRef iv (i + 1)
+		Wf.Vn x y z -> do
+			i <- readSTRef inml
+			MV.write n i . W $ Normal x y z
+			writeSTRef inml (i + 1)
+		Wf.F i1 i2 i3 -> do
+			i <- readSTRef ifc
+			MV.write f i . W $ Face
+				(indicesToIndices i1)
+				(indicesToIndices i2)
+				(indicesToIndices i3)
+			writeSTRef ifc (i + 1)
+		_ -> pure ()
+	(,,) <$> V.freeze v <*> V.freeze n <*> V.freeze f
+
+takePosNormalFace :: Int ->
+	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face)) ->
+	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face))
+takePosNormalFace n (vs, ns, fs) = (V.take n vs, V.take n ns, V.take n fs)
 
 readVertexPositions :: BS.ByteString -> (V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Face))
 readVertexPositions bs = let

@@ -30,11 +30,14 @@ import Data.Maybe
 import Data.List hiding (singleton)
 import Data.IORef
 import Data.List.Length
+import Data.Word
 import Data.Color
 
 import qualified TypeLevel.List as TpLvlLst
 
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Vector.Storable as V
+import qualified Data.ByteString as BS
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
@@ -128,6 +131,7 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
+import Codec.Wavefront.Read
 import Tools
 
 main :: IO ()
@@ -232,8 +236,15 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
+print3 :: (Show a, Show b, Show c) => (a, b, c) -> IO ()
+print3 (x, y, z) = print x >> print y >> print z
+
 run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run w ist g =
+	countV' <$> BS.readFile "../../../../files/models/monkey_smooth.obj" >>= \cnt ->
+	print cnt >>
+	(print3 . takePosNormalFace 10 . readV' (countVertex cnt) (countNormal cnt) (countFace cnt)
+		=<< BS.readFile "../../../../files/models/monkey_smooth.obj") >>
 	Glfw.createWindowSurface ist w nil nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createDevice phdv qfis \dv gq pq ->
@@ -246,10 +257,11 @@ run w ist g =
 	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createVertexBuffer phdv dv gq cp \vb ->
+	createVertexBuffer phdv dv gq cp vertices' \vb ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs sos
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
+		gpl0 gpl1 fbs vb cbs sos (fromIntegral $ V.length vertices')
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -701,17 +713,18 @@ createCommandPool qfis dv = Vk.CmdPl.create @() dv crInfo nil nil
 		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createVertexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> (forall sm sb .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
+	(forall sm sb .
 		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a ) -> IO a
-createVertexBuffer phdvc dvc gq cp f =
-	createBuffer phdvc dvc (length vertices)
+createVertexBuffer phdvc dvc gq cp vtcs f =
+	createBuffer phdvc dvc (V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (length vertices)
+	createBuffer phdvc dvc (V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
-	Vk.Dvc.Mem.Buffer.write @('List Vertex) dvc bm' zeroBits vertices
+	Vk.Dvc.Mem.Buffer.write @('List Vertex) dvc bm' zeroBits vtcs
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -842,8 +855,8 @@ recordCommandBuffer :: forall scb sr sf sg slyt sm sb .
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Int -> IO ()
-recordCommandBuffer cb rp fb sce gpl lyt vb fn =
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Int -> Word32 -> IO ()
+recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
@@ -868,7 +881,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb fn =
 			meshPushConstantsRenderMatrix =
 				proj `Cglm.glmMat4Mul` view `Cglm.glmMat4Mul` model
 			} :..: HNil
-	Vk.Cmd.draw cb 3 1 0 0
+	Vk.Cmd.draw cb vn 1 0 0
 	where
 	cbInfo :: Vk.CmdBffr.BeginInfo () ()
 	cbInfo = def {
@@ -902,8 +915,8 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
-	SyncObjects siassrfssfs -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs = do
+	SyncObjects siassrfssfs -> Word32 -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
 		Glfw.pollEvents
 		spst <- Glfw.getKey w Glfw.Key'Space
@@ -913,7 +926,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb c
 			sdrn' = bool id (+ 1) prsd sdrn
 		when prsd $ print sdrn'
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn'
+			sc g ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn' vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
 	Vk.Dvc.waitIdle dvc
 
@@ -932,11 +945,11 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	Int -> Int -> Int ->
+	Int -> Int -> Int -> Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn
+		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
@@ -952,8 +965,8 @@ drawFrame :: forall sfs sd ssc sr sg0 sg1 slyt sm sb scb ssos vss . (VssList vss
 	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int -> IO ()
-drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb cbs (SyncObjects iass rfss iffs) cf fn sdrn =
+	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int -> Word32 -> IO ()
+drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb cbs (SyncObjects iass rfss iffs) cf fn sdrn vn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
@@ -963,8 +976,8 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb cbs (SyncObjects iass rfss if
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb -> case sdrn `mod` 2 of
-		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb fn
-		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb fn
+		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb fn vn
+		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb fn vn
 		_ -> error "never occur"
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
@@ -1071,16 +1084,18 @@ instance SizeAlignmentListUntil Position Vertex
 instance SizeAlignmentListUntil Normal Vertex
 instance SizeAlignmentListUntil Color Vertex
 
+{-
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
 	formatOf = Vk.FormatR32g32Sfloat
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 	formatOf = Vk.FormatR32g32b32Sfloat
+	-}
 
 instance Foreign.Storable.Generic.G Vertex where
 
-vertices :: [Vertex]
-vertices = [
+vertices, vertices' :: V.Vector Vertex
+vertices = V.fromList [
 	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
@@ -1090,6 +1105,16 @@ vertices = [
 	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
 		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
 		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
+vertices' = V.fromList [
+	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
+		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Position . Cglm.Vec3 $ (- 1.0) :. 1.0 :. 0.0 :. NilL)
+		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
+		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL) ]
 
 data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
