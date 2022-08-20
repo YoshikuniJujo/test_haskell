@@ -490,6 +490,16 @@ mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 		Vk.Image.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.M.subresourceRangeLayerCount = 1 }
 
+createDepthImages :: Vk.Dvc.D sd -> [Vk.Image.Binded siis0 sims0] ->
+	(forall sis . HeteroVarList (V2 Vk.Image.Binded) sis -> IO a) -> IO a
+createDepthImages dvc [] f = f HVNil
+createDepthImages dvc (_ : is) f =
+	createDepthImages dvc is \dis -> f $ undefined :...: dis
+
+createDepthImageViews :: Vk.Dvc.D sd ->
+	(forall sivs . HeteroVarList Vk.ImgVw.I sivs -> IO a) -> IO a
+createDepthImageViews dvc f = f undefined
+
 createRenderPass :: Vk.Dvc.D sd ->
 	Vk.Format -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
 createRenderPass dvc scifmt f =
