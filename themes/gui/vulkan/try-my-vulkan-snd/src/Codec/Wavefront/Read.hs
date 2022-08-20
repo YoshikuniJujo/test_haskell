@@ -9,7 +9,11 @@ module Codec.Wavefront.Read (
 	sampleVerticesIndices, tinyVerticesIndices,
 	verticesIndices,
 
-	countV, countV', Count(..), readV', takePosNormalFace ) where
+	pattern W,
+
+	Position(..), Normal(..),
+
+	countV, countV', Count(..), readV', takePosNormalFace, facePosNormal, PositionNormal(..) ) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
@@ -165,6 +169,28 @@ readV' nv nn nf str = runST do
 			writeSTRef ifc (i + 1)
 		_ -> pure ()
 	(,,) <$> V.freeze v <*> V.freeze n <*> V.freeze f
+
+facePosNormal ::
+	V.Vector (W Position) -> V.Vector (W Normal) -> V.Vector (W Face) ->
+	V.Vector (W PositionNormal)
+facePosNormal ps ns = indexPosNormal ps ns . loosenFace
+
+indexPosNormal ::
+	V.Vector (W Position) -> V.Vector (W Normal) -> V.Vector (W Indices) ->
+	V.Vector (W PositionNormal)
+indexPosNormal ps ns is = V.generate ln \i -> let
+	W (Indices iv _ inml) = is V.! i
+	in
+	W $ PositionNormal (ps V.! (iv - 1)) (ns V.! (inml - 1))
+	where ln = V.length is
+
+data PositionNormal = PositionNormal {
+	positionNormalPosition :: W Position,
+	positionNormalNormal :: W Normal }
+	deriving (Show, Generic)
+
+instance SizeAlignmentList PositionNormal
+instance Foreign.Storable.Generic.G PositionNormal
 
 takePosNormalFace :: Int ->
 	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face)) ->

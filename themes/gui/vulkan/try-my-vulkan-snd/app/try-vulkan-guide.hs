@@ -32,6 +32,7 @@ import Data.IORef
 import Data.List.Length
 import Data.Word
 import Data.Color
+import System.Environment
 
 import qualified TypeLevel.List as TpLvlLst
 
@@ -131,16 +132,18 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
-import Codec.Wavefront.Read
+import qualified Codec.Wavefront.Read as W
 import Tools
 
 main :: IO ()
 main = do
+	[objfile] <- getArgs
+	obj <- BS.readFile objfile
 	frszd <- newFramebufferResized
 	(`withWindow` frszd) \win -> createInstance \ist -> do
 		if enableValidationLayers
-			then setupDebugMessenger ist $ const $ run win ist frszd
-			else run win ist frszd
+			then setupDebugMessenger ist $ const $ run win ist frszd obj
+			else run win ist frszd obj
 
 type FramebufferResized = IORef Bool
 
@@ -239,12 +242,14 @@ debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 print3 :: (Show a, Show b, Show c) => (a, b, c) -> IO ()
 print3 (x, y, z) = print x >> print y >> print z
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run w ist g =
-	countV' <$> BS.readFile "../../../../files/models/monkey_smooth.obj" >>= \cnt ->
+run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> BS.ByteString -> IO ()
+run w ist g obj = let
+	cnt = W.countV' obj
+	(vs, ns, fs) = W.readV' (W.countVertex cnt) (W.countNormal cnt) (W.countFace cnt) obj in
 	print cnt >>
-	(print3 . takePosNormalFace 10 . readV' (countVertex cnt) (countNormal cnt) (countFace cnt)
-		=<< BS.readFile "../../../../files/models/monkey_smooth.obj") >>
+--	print3 (takePosNormalFace 10 vnf) >>
+	let	vns = V.map positionNormalToVertex $ W.facePosNormal vs ns fs in
+	print vns >>
 	Glfw.createWindowSurface ist w nil nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createDevice phdv qfis \dv gq pq ->
@@ -257,11 +262,11 @@ run w ist g =
 	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createVertexBuffer phdv dv gq cp vertices' \vb ->
+	createVertexBuffer phdv dv gq cp vns \vb ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
-		gpl0 gpl1 fbs vb cbs sos (fromIntegral $ V.length vertices')
+		gpl0 gpl1 fbs vb cbs sos (fromIntegral $ V.length vns)
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -1056,6 +1061,14 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
+
+positionNormalToVertex :: Foreign.Storable.Generic.Wrap W.PositionNormal -> Vertex
+positionNormalToVertex
+	(W.W (W.PositionNormal (W.W (W.Position x y z)) (W.W (W.Normal v w u)))) =
+	Vertex {
+		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
+		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
+		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL }
 
 data Vertex = Vertex {
 	vertexPos :: Position,
