@@ -12,6 +12,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.IORef
 import Data.Word
 import TypeLevel.List hiding (length)
 
@@ -48,8 +49,9 @@ copyBufferToImage ::
 	CommandBuffer.C vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
-	(Buffer.List.B _ sb) (Image.I di) (Image.Layout dil)
+	(Buffer.List.B _ sb) (Image.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
-	lift $ C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
+	lift do	di <- readIORef rdi
+		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs

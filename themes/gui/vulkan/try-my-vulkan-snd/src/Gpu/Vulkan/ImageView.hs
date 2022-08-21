@@ -27,7 +27,6 @@ data CreateInfo si sm n = CreateInfo {
 	createInfoFormat :: Format,
 	createInfoComponents :: Component.Mapping,
 	createInfoSubresourceRange :: Image.M.SubresourceRange }
-	deriving Show
 
 createInfoToMiddle :: CreateInfo si sm n -> M.CreateInfo n
 createInfoToMiddle CreateInfo {

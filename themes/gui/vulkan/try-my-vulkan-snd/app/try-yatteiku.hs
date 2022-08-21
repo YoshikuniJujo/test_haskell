@@ -211,7 +211,6 @@ makeImage phdvc dvc f = do
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
 	Vk.Img.create @() dvc imgCreateInfo nil nil \image -> do
-		print image
 		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
 		print imgMemReq
 		let	imgMemReqTypes =

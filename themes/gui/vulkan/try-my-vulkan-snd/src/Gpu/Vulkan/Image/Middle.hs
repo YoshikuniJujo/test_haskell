@@ -13,6 +13,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Core
@@ -49,7 +50,7 @@ subresourceRangeToCore SubresourceRange {
 		C.subresourceRangeBaseArrayLayer = baly,
 		C.subresourceRangeLayerCount = lyc }
 
-newtype I = I C.I deriving Show
+newtype I = I (IORef C.I)
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -112,17 +113,19 @@ create (Device.D dvc) ci mac = (I <$>) . ($ pure) . runContT $ do
 	pimg <- ContT alloca
 	lift do	r <- C.create dvc pci pac pimg
 		throwUnlessSuccess $ Result r
-		peek pimg
+		newIORef =<< peek pimg
 
 getMemoryRequirements :: Device.D -> I -> IO Memory.Requirements
-getMemoryRequirements (Device.D dvc)
-	(I i) = (Memory.requirementsFromCore <$>) . ($ pure) $ runContT do
-	pr <- ContT alloca
-	lift do	C.getMemoryRequirements dvc i pr
-		peek pr
+getMemoryRequirements (Device.D dvc) (I ri) =
+	(Memory.requirementsFromCore <$>) . ($ pure) $ runContT do
+		pr <- ContT alloca
+		lift do	i <- readIORef ri
+			C.getMemoryRequirements dvc i pr
+			peek pr
 
 bindMemory :: Device.D -> I -> Device.MemoryImage -> IO ()
-bindMemory (Device.D dvc) (I img) (Device.MemoryImage _ mem) = do
+bindMemory (Device.D dvc) (I rimg) (Device.MemoryImage _ mem) = do
+	img <- readIORef rimg
 	r <- C.bindMemory dvc img mem 0
 	throwUnlessSuccess $ Result r
 
@@ -136,7 +139,6 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
 	memoryBarrierImage :: I,
 	memoryBarrierSubresourceRange :: SubresourceRange }
-	deriving Show
 
 memoryBarrierToCore :: Pointable n =>
 	MemoryBarrier n -> ContT r IO C.MemoryBarrier
@@ -148,9 +150,10 @@ memoryBarrierToCore MemoryBarrier {
 	memoryBarrierNewLayout = Layout nl,
 	memoryBarrierSrcQueueFamilyIndex = QueueFamily.Index sqfi,
 	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
-	memoryBarrierImage = I img,
+	memoryBarrierImage = I rimg,
 	memoryBarrierSubresourceRange = srr } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
+	img <- lift $ readIORef rimg
 	pure C.MemoryBarrier {
 		C.memoryBarrierSType = (),
 		C.memoryBarrierPNext = pnxt,
@@ -183,9 +186,10 @@ subresourceLayersToCore SubresourceLayers {
 
 destroy :: Pointable n =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (I img) mac = ($ pure) $ runContT do
+destroy (Device.D dvc) (I rimg) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc img pac
+	lift do	img <- readIORef rimg
+		C.destroy dvc img pac
 
 data Blit = Blit {
 	blitSrcSubresource :: SubresourceLayers,

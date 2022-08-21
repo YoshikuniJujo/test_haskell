@@ -32,19 +32,19 @@ data CreateInfo n = CreateInfo {
 	createInfoFormat :: Format,
 	createInfoComponents :: Mapping,
 	createInfoSubresourceRange :: Image.SubresourceRange }
-	deriving Show
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoImage = Image.I img,
+	createInfoImage = Image.I rimg,
 	createInfoViewType = Type tp,
 	createInfoFormat = Format fmt,
 	createInfoComponents = cpns,
 	createInfoSubresourceRange = srr
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
+	img <- lift $ readIORef rimg
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,

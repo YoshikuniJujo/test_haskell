@@ -19,6 +19,7 @@ import Control.Exception
 import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList hiding (length)
+import Data.IORef
 import Data.Word
 import Data.Int
 import TypeLevel.List hiding (length)
@@ -101,21 +102,24 @@ copyBufferToImage ::
 	CommandBuffer.M.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
 copyBufferToImage (CommandBuffer.M.C cb)
-	(Buffer.M.B sb) (Image.I di) (Image.Layout dil)
+	(Buffer.M.B sb) (Image.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
-	lift $ C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
+	lift do	di <- readIORef rdi
+		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
 
 blitImage :: CommandBuffer.M.C v ->
 	Image.I -> Image.Layout -> Image.I -> Image.Layout ->
 	[Image.Blit] -> Filter -> IO ()
 blitImage (CommandBuffer.M.C cb)
-	(Image.I src) (Image.Layout srcLyt) (Image.I dst) (Image.Layout dstLyt)
+	(Image.I rsrc) (Image.Layout srcLyt) (Image.I rdst) (Image.Layout dstLyt)
 	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
 	pblts <- ContT $ allocaArray bltc
 	lift . pokeArray pblts $ Image.blitToCore <$> blts
-	lift $ C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
+	lift do src <- readIORef rsrc
+		dst <- readIORef rdst
+		C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
 
 dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
 dispatch (CommandBuffer.C cb) = M.dispatch cb

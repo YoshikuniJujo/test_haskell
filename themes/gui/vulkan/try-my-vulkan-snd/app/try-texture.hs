@@ -247,7 +247,7 @@ newGlobal = do
 	ubms <- newIORef []
 	dp <- newIORef $ Vk.DscPool.P NullPtr
 	dss <- newIORef []
-	ti <- newIORef $ Vk.Image.I NullPtr
+	ti <- newIORef $ Vk.Image.I undefined
 	tim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
 	tiv <- newIORef $ Vk.ImageView.I undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr

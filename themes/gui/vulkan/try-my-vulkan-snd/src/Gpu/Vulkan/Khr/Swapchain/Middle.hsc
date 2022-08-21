@@ -218,4 +218,4 @@ getImages (Device.D dvc) sc = ($ pure) . runContT $ (Image.I <$>) <$> do
 	pSwapchainImages <- ContT $ allocaArray swapchainImageCount
 	lift do	r <- C.getImages dvc sc' pSwapchainImageCount pSwapchainImages
 		throwUnlessSuccess $ Result r
-		peekArray swapchainImageCount pSwapchainImages
+		mapM newIORef =<< peekArray swapchainImageCount pSwapchainImages
