@@ -251,7 +251,7 @@ run w inst g =
 	createIndexBuffer phdv dv gq cp \ib ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs sos
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib cbs sos
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -880,20 +880,23 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg sm sb .
+recordCommandBuffer :: forall scb sr sf sg sm sb sm' sb' .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO ()
-recordCommandBuffer cb rp fb sce gpl vb =
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	IO ()
+recordCommandBuffer cb rp fb sce gpl vb ib =
 	Vk.CmdBffr.begin @() @() cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
-	Vk.Cmd.draw cb 3 1 0 0
+	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @Word16 ib
+	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
 		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
@@ -917,13 +920,14 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf (`loop` cfs)
+			sc g ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs cf (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
@@ -935,28 +939,30 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cbs iasrfsifs cf loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs cf loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs iasrfsifs cf
+		$ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs iasrfsifs cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sg sm sb scb ssos vss . (VssList vss) =>
+drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' scb ssos vss . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
-drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
+drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs (SyncObjects iass rfss iffs) cf =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
@@ -966,7 +972,7 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext gpl vb
+		recordCommandBuffer cb rp fb ext gpl vb ib
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
@@ -1060,16 +1066,17 @@ instance Foreign.Storable.Generic.G Vertex where
 
 vertices :: [Vertex]
 vertices = [
-	Vertex (Cglm.Vec2 $ 0.0 :. (- 0.5) :. NilL)
---		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL),
-	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+	Vertex (Cglm.Vec2 $ (- 0.5) :. (- 0.5) :. NilL)
+		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 0.5 :. (- 0.5) :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
+	Vertex (Cglm.Vec2 $ 0.5 :. 0.5 :. NilL)
+		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL),
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
+		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL) ]
 
 indices :: [Word16]
-indices = [0, 1, 2]
+indices = [0, 1, 2, 2, 3, 0]
 
 vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
 vertShaderModule = mkShaderModule glslVertexShaderMain

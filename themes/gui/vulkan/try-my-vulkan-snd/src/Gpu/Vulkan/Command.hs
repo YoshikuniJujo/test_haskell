@@ -69,10 +69,15 @@ bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.C g) = M.bindPipel
 draw :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.C cb) vc ic fv fi = M.draw cb vc ic fv fi
 
-drawIndexed :: CommandBuffer.M.C vs ->
+drawIndexedM :: CommandBuffer.M.C vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
-drawIndexed (CommandBuffer.M.C cb) idxc istc fidx vo fist =
+drawIndexedM (CommandBuffer.M.C cb) idxc istc fidx vo fist =
 	C.drawIndexed cb idxc istc fidx vo fist
+
+drawIndexed :: CommandBuffer.C sc vs ->
+	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
+drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
+	drawIndexedM cb idxc istc fidx vo fist
 
 pipelineBarrier ::
 	(Pointable n, Pointable n', Pointable n'') =>
@@ -165,6 +170,15 @@ bindVertexBuffers :: forall sc vs smsbvs .
 bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(MapThird smsbvs) @(MapSubType vs)
+
+bindIndexBuffer :: forall sc vs sm sb v . IsIndexType v =>
+	CommandBuffer.C sc vs -> Buffer.IndexedList sm sb v -> IO ()
+bindIndexBuffer (CommandBuffer.C cb) ib =
+	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @v)
+
+class IsIndexType a where indexType :: IndexType
+
+instance IsIndexType Word16 where indexType = IndexTypeUint16
 
 copyBuffer :: forall (ass :: [[Object]]) sos sod sc vs sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
