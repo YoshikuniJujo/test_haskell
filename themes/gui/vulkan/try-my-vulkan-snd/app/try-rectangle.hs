@@ -256,7 +256,7 @@ run w inst g =
 	createUniformBuffers phdv dv maxFramesInFlight \ubs ums ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib cbs sos
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib cbs sos ubs ums
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -991,12 +991,15 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
-	SyncObjects siassrfssfs -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs = do
+	SyncObjects siassrfssfs ->
+	HeteroVarList BindedUbo smsbs ->
+	HeteroVarList MemoryUbo (MapFst smsbs) ->
+	IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs cf (`loop` cfs)
+			sc g ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums cf (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
@@ -1012,17 +1015,19 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
+	HeteroVarList BindedUbo smsbs ->
+	HeteroVarList MemoryUbo (MapFst smsbs) ->
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs cf loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums cf loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs iasrfsifs cf
+		$ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs iasrfsifs ubs ums cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' scb ssos vss . (VssList vss) =>
+drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' scb ssos vss smsbs . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1030,11 +1035,15 @@ drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' scb ssos vss . (VssList vss) 
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
-drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs (SyncObjects iass rfss iffs) cf =
+	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
+	HeteroVarList BindedUbo smsbs ->
+	HeteroVarList MemoryUbo (MapFst smsbs) ->
+	Int -> IO ()
+drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs (SyncObjects iass rfss iffs) ubs ums cf =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
+	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
+	heteroVarListIndex ubs cf \ub -> heteroVarListIndex ums cf \um -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
@@ -1042,6 +1051,7 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs (SyncObjects iass rfss iffs) cf 
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb ib
+	updateUniformBuffer dvc um
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
@@ -1060,6 +1070,14 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cbs (SyncObjects iass rfss iffs) cf 
 	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 	where	cb = cbs `vssListIndex` cf
+
+updateUniformBuffer :: Vk.Dvc.D sd -> MemoryUbo sm -> IO ()
+updateUniformBuffer dvc (MemoryUbo um) =
+	Vk.Dvc.Mem.Buffer.write @('Atom UniformBufferObject) dvc um zeroBits ubo
+	where ubo = UniformBufferObject {
+		uniformBufferObjectModel = Cglm.glmMat4Identity,
+		uniformBufferObjectView = Cglm.glmMat4Identity,
+		uniformBufferObjectProj = Cglm.glmMat4Identity }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
