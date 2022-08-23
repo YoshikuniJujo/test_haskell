@@ -15,7 +15,9 @@ module Data.HeteroList (
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
+	heteroVarListReplicate,
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
+	heteroVarListZipWithM_,
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
 
@@ -165,11 +167,23 @@ heteroVarListReplicateM 0 _ f = f HVNil
 heteroVarListReplicateM n x f = x \v -> heteroVarListReplicateM (n - 1) x \vs ->
 	f $ v :...: vs
 
+heteroVarListReplicate ::
+	Int -> t s -> (forall ss . ListToHeteroVarList ss => HeteroVarList t ss -> IO a) -> IO a
+heteroVarListReplicate 0 _ f = f HVNil
+heteroVarListReplicate n x f = heteroVarListReplicate (n - 1) x \xs -> f $ x :...: xs
+
 heteroVarListMap ::
 	(forall s . t s -> t' s) -> HeteroVarList t ss -> HeteroVarList t' ss
 heteroVarListMap f = \case
 	HVNil -> HVNil
 	x :...: xs -> f x :...: heteroVarListMap f xs
+
+heteroVarListZipWithM_ :: Monad m => (forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
+	HeteroVarList t ss -> HeteroVarList t' ss' -> m ()
+heteroVarListZipWithM_ _ HVNil _ = pure ()
+heteroVarListZipWithM_ _ _ HVNil = pure ()
+heteroVarListZipWithM_ op (x :...: xs) (y :...: ys) =
+	op x y >> heteroVarListZipWithM_ op xs ys
 
 data V2 t ss where V2 :: t s1 s2 -> V2 t '(s1, s2)
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)

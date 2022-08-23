@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -125,9 +125,14 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 
+import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
+
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -247,13 +252,17 @@ run w inst g =
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViews dv scifmt imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
-	createPipelineLayout dv \ppllyt ->
+	createPipelineLayout dv \dscslyt ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffers phdv dv maxFramesInFlight \ubs ums ->
+	createDescriptorPool dv \dscp ->
+--	heteroVarListReplicate maxFramesInFlight (Vk.DscSet.Layout dscslyt) \dscslyts ->
+--	createDescriptorSets dv dscp ubs dscslyts >>= \dscss ->
+--	createDescriptorSets dv dscp ubs (Singleton $ Vk.DscSet.Layout dscslyt) >>= \dscss ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib cbs sos ubs ums
@@ -544,7 +553,8 @@ createRenderPass dvc scifmt f = do
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]])
 
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sl sdsc .
-	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> IO b) ->
+		Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]] ->
+		Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> IO b) ->
 	IO b
 createPipelineLayout dvc f =
 	createDescriptorSetLayout dvc \descriptorSetLayout ->
@@ -553,7 +563,7 @@ createPipelineLayout dvc f =
 			Vk.Ppl.Layout.createInfoFlags = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayouts = Vk.Ppl.Layout.Layout descriptorSetLayout :...: HVNil,
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] } in
-	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil f
+	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt -> f descriptorSetLayout ppllyt
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]]
@@ -814,6 +824,71 @@ createUniformBuffer1 phdvc dvc f = createBufferAtom phdvc dvc
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \b m ->
 	f (BindedUbo b) (MemoryUbo m)
+
+createDescriptorPool ::
+	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
+createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
+	where
+	poolInfo = Vk.DscPool.CreateInfo {
+		Vk.DscPool.createInfoNext = Nothing,
+		Vk.DscPool.createInfoFlags = zeroBits,
+		Vk.DscPool.createInfoMaxSets = maxFramesInFlight,
+		Vk.DscPool.createInfoPoolSizes = [poolSize] }
+	poolSize = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
+
+createDescriptorSets :: (ListToHeteroVarList ss, Update smsbs ss) =>
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroVarList BindedUbo smsbs ->
+	HeteroVarList Vk.DscSet.Layout ss ->
+	IO (HeteroVarList (Vk.DscSet.S sd sp) ss)
+createDescriptorSets dvc dscp ubs dscslyts = do
+	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
+	update dvc ubs dscss
+	pure dscss
+	where
+	allocInfo = Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoDescriptorPool = dscp,
+		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
+
+descriptorWrite ::
+	Vk.Bffr.Binded sm sb '[ 'Atom UniformBufferObject] ->
+	Vk.DscSet.S sd sp slbts ->
+	Vk.DscSet.Write () sd sp slbts '[ '(sb, sm, '[ 'Atom UniformBufferObject], 'Atom UniformBufferObject)]
+descriptorWrite ub dscs = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
+		Singleton bufferInfo
+	}
+	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
+
+class Update smsbs slbtss where
+	update :: Vk.Dvc.D sd -> HeteroVarList BindedUbo smsbs -> HeteroVarList (Vk.DscSet.S sd sp) slbtss -> IO ()
+
+instance Update '[] '[] where update _ HVNil HVNil = pure ()
+
+instance Update '[t] '[] where update _ HVNil HVNil = pure ()
+
+instance (
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom UniformBufferObject],
+	Update ubs dscss) => Update (ub ': ubs) (dscs ': dscss) where
+	update dvc (BindedUbo ub :...: ubs) (dscs :...: dscss) = do
+		Vk.DscSet.updateDs @() @() dvc
+			(Singleton . Vk.DscSet.Write_ $ descriptorWrite ub dscs) []
+		update dvc ubs dscss
+
+{-
+	update :: Vk.DscSet.BindingAndArrayElem (Vk.DscSet.BindingTypesFromLayoutArg 
+		HeteroVarList BindedUbo smsbs -> HeteroVarList (Vk.DscSet.S sd sp) slbtss -> IO ()
+	update HVNil HVNil = pure ()
+	update (BindedUbo ub :...: ubs) (dscs :...: dscss) = do
+		Vk.DscSet.updateDs @() @() dvc
+			(Singleton . Vk.DscSet.Write_ $ descriptorWrite ub dscs) []
+		update ubs dscss
+		-}
 
 createBufferAtom :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
