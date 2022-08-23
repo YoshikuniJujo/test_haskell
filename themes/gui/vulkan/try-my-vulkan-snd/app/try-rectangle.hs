@@ -253,6 +253,7 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
+	createUniformBuffers phdv dv maxFramesInFlight \ubs ums ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib cbs sos
@@ -760,10 +761,10 @@ createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
-	createBuffer phdvc dvc (length vertices)
+	createBufferList phdvc dvc (length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (length vertices)
+	createBufferList phdvc dvc (length vertices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
@@ -775,10 +776,10 @@ createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb '[ 'List Word16] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
-	createBuffer phdvc dvc (length indices)
+	createBufferList phdvc dvc (length indices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (length indices)
+	createBufferList phdvc dvc (length indices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
@@ -786,22 +787,64 @@ createIndexBuffer phdvc dvc gq cp f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createBuffer :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
+createUniformBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> (forall smsbs .
+	HeteroVarList BindedUbo smsbs ->
+	HeteroVarList MemoryUbo (MapFst smsbs) -> IO a) -> IO a
+createUniformBuffers _ _ 0 f = f HVNil HVNil
+createUniformBuffers ph dvc n f =
+	createUniformBuffer1 ph dvc \(b :: BindedUbo smsb) m ->
+		createUniformBuffers ph dvc (n - 1) \(bs :: HeteroVarList BindedUbo smsbs) ms ->
+			f (b :...: bs :: HeteroVarList BindedUbo (smsb ': smsbs)) (m :...: ms)
+
+type family MapFst abs where
+	MapFst '[] = '[]
+	MapFst ( '(a, b) ': abs) = a ': MapFst abs
+
+data BindedUbo smsb where
+	BindedUbo :: Vk.Bffr.Binded sm sb '[ 'Atom UniformBufferObject] ->
+		BindedUbo '(sm, sb)
+
+newtype MemoryUbo sm =
+	MemoryUbo (Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom UniformBufferObject]])
+
+createUniformBuffer1 :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
+		BindedUbo '(sm, sb) -> MemoryUbo sm -> IO b) -> IO b
+createUniformBuffer1 phdvc dvc f = createBufferAtom phdvc dvc
+		Vk.Bffr.UsageUniformBufferBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit ) \b m ->
+	f (BindedUbo b) (MemoryUbo m)
+
+createBufferAtom :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
+		Vk.Bffr.Binded sm sb '[ 'Atom a] ->
+		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom a]] -> IO b) -> IO b
+createBufferAtom p dv usg props = createBuffer p dv ObjectLengthAtom usg props
+
+createBufferList :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Int -> Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
+		forall sm sb .
 		Vk.Bffr.Binded sm sb '[ 'List a] ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List a ] ] -> IO b ) -> IO b
+		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List a]] -> IO b ) -> IO b
+createBufferList p dv ln usg props = createBuffer p dv (ObjectLengthList ln) usg props
+
+createBuffer :: forall sd o a . Storable (ObjectType o) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sm sb '[o] -> Vk.Dvc.Mem.Buffer.M sm '[ '[o]] ->
+		IO a) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Bffr.allocateBind dv (Singleton $ V2 b) (allcInfo mt) nil nil
 		$ f . \(Singleton (V2 bnd)) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List a]
+	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = singleton $ ObjectLengthList ln,
+		Vk.Bffr.createInfoLengths = singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -1109,6 +1152,12 @@ data UniformBufferObject = UniformBufferObject {
 	uniformBufferObjectView :: Cglm.Mat4,
 	uniformBufferObjectProj :: Cglm.Mat4 }
 	deriving (Show, Generic)
+
+instance Storable UniformBufferObject where
+	sizeOf = Foreign.Storable.Generic.gSizeOf
+	alignment = Foreign.Storable.Generic.gAlignment
+	peek = Foreign.Storable.Generic.gPeek
+	poke = Foreign.Storable.Generic.gPoke
 
 instance SizeAlignmentList UniformBufferObject
 instance Foreign.Storable.Generic.G UniformBufferObject
