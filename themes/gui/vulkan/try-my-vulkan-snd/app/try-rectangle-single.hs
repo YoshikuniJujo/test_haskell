@@ -256,7 +256,7 @@ run w inst g =
 	createUniformBuffer phdv dv \ub ubm ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib cb sos
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm cb sos
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -543,7 +543,7 @@ createRenderPass dvc scifmt f = do
 
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.L sdsl
-			'[ Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]] ->
+			'[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]] ->
 		Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] -> IO b) -> IO b
 createPipelineLayout dvc f =
 	createDescriptorSetLayout dvc \dsl ->
@@ -969,13 +969,14 @@ mainLoop :: RecreateFramebuffers ss sfs => FramebufferResized ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'Atom UniformBufferObject]] ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib cb iasrfsifs = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm cb iasrfsifs = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib cb iasrfsifs loop
+			sc g ext scivs rp ppllyt gpl fbs vb ib ubm cb iasrfsifs loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: RecreateFramebuffers sis sfs =>
@@ -989,18 +990,19 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'Atom UniformBufferObject]] ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib cb iasrfsifs loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm cb iasrfsifs loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cb iasrfsifs
+		$ drawFrame dvc gq pq sc ext rp gpl fbs vb ib ubm cb iasrfsifs
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' scb sias srfs siff .
+drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' sm2 scb sias srfs siff .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1008,8 +1010,9 @@ drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' scb sias srfs siff .
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'Atom UniformBufferObject]] ->
 	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> IO ()
-drawFrame dvc gq pq sc ext rp gpl fbs vb ib cb (SyncObjects ias rfs iff) = do
+drawFrame dvc gq pq sc ext rp gpl fbs vb ib ubm cb (SyncObjects ias rfs iff) = do
 	let	siff = Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1018,6 +1021,7 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cb (SyncObjects ias rfs iff) = do
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb ib
+	updateUniformBuffer dvc ubm
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
@@ -1035,6 +1039,15 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb ib cb (SyncObjects ias rfs iff) = do
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
 	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+
+updateUniformBuffer :: Vk.Dvc.D sd ->
+	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom UniformBufferObject]] -> IO ()
+updateUniformBuffer dvc um =
+	Vk.Dvc.Mem.Buffer.write @('Atom UniformBufferObject) dvc um zeroBits ubo
+	where ubo = UniformBufferObject {
+		uniformBufferObjectModel = Cglm.glmMat4Identity,
+		uniformBufferObjectView = Cglm.glmMat4Identity,
+		uniformBufferObjectProj = Cglm.glmMat4Identity }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
