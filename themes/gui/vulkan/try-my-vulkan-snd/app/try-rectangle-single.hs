@@ -32,6 +32,7 @@ import Data.IORef
 import Data.List.Length
 import Data.Word
 import Data.Color
+import Data.Time
 
 import qualified TypeLevel.List as TpLvlLst
 
@@ -261,7 +262,8 @@ run w inst g =
 	createDescriptorSet dv dscp ub dscslyt >>= \ubds ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm cb sos
+	getCurrentTime >>= \tm ->
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -677,7 +679,7 @@ rasterizer = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
 	Vk.Ppl.RstSt.createInfoLineWidth = 1,
 	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeBackBit,
-	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceClockwise,
+	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceCounterClockwise,
 	Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
 	Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
@@ -975,22 +977,26 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg sm sb sm' sb' .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb sm' sb' sdsc sp sdsl .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
+	Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
 	IO ()
-recordCommandBuffer cb rp fb sce gpl vb ib =
+recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.CmdBffr.begin @() @() cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
 	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @Word16 ib
+	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppllyt
+		(Singleton $ Vk.Cmd.DescriptorSet ubds) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
@@ -1017,13 +1023,16 @@ mainLoop :: RecreateFramebuffers ss sfs => FramebufferResized ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'Atom UniformBufferObject]] ->
+	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs ->
-	SyncObjects '(sias, srfs, siff) -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm cb iasrfsifs = do
+	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
+		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib ubm cb iasrfsifs loop
+			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
+			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: RecreateFramebuffers sis sfs =>
@@ -1038,28 +1047,31 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'Atom UniformBufferObject]] ->
+	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs ->
-	SyncObjects '(sias, srfs, siff) ->
+	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm cb iasrfsifs loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl fbs vb ib ubm cb iasrfsifs
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sg sm sb sm' sb' sm2 scb sias srfs siff .
+drawFrame :: forall sfs sd ssc sr sl sg sm sb sm' sb' sm2 scb sias srfs siff sdsc sp sdsl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
 	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'Atom UniformBufferObject]] ->
-	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> IO ()
-drawFrame dvc gq pq sc ext rp gpl fbs vb ib ubm cb (SyncObjects ias rfs iff) = do
+	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
+	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
+drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
@@ -1067,8 +1079,8 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb ib ubm cb (SyncObjects ias rfs iff) = d
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext gpl vb ib
-	updateUniformBuffer dvc ubm
+		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
+	updateUniformBuffer dvc ubm ext tm
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
@@ -1088,13 +1100,24 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb ib ubm cb (SyncObjects ias rfs iff) = d
 	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 
 updateUniformBuffer :: Vk.Dvc.D sd ->
-	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom UniformBufferObject]] -> IO ()
-updateUniformBuffer dvc um =
+	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom UniformBufferObject]] -> Vk.C.Extent2d -> Float -> IO ()
+updateUniformBuffer dvc um sce tm = do
 	Vk.Dvc.Mem.Buffer.write @('Atom UniformBufferObject) dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
-		uniformBufferObjectModel = Cglm.glmMat4Identity,
-		uniformBufferObjectView = Cglm.glmMat4Identity,
-		uniformBufferObjectProj = Cglm.glmMat4Identity }
+		uniformBufferObjectModel = Cglm.glmRotate
+			Cglm.glmMat4Identity
+			(tm * Cglm.glmRad 90)
+			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+		uniformBufferObjectView = Cglm.glmLookat
+			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
+			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
+		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
+			$ Cglm.glmPerspective
+				(Cglm.glmRad 45)
+				(fromIntegral (Vk.C.extent2dWidth sce) /
+					fromIntegral (Vk.C.extent2dHeight sce))
+				0.1 10 }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
@@ -1214,6 +1237,12 @@ mkShaderModule code = Vk.Shader.Module.M createInfo nil nil
 
 #version 450
 
+layout(binding = 0) uniform UniformBufferObject {
+	mat4 model;
+	mat4 view;
+	mat4 proj;
+} ubo;
+
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
 
@@ -1222,7 +1251,7 @@ layout(location = 0) out vec3 fragColor;
 void
 main()
 {
-	gl_Position = vec4(inPosition, 0.0, 1.0);
+	gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 0.0, 1.0);
 	fragColor = inColor;
 }
 
