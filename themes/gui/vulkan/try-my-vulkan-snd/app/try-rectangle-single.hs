@@ -128,6 +128,7 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -254,6 +255,7 @@ run w inst g =
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
+	createDescriptorPool dv \dscp ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm cb sos
@@ -796,6 +798,22 @@ createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 createUniformBuffer phdvc dvc = createBufferAtom phdvc dvc
 	Vk.Bffr.UsageUniformBufferBit
 	(Vk.Mem.PropertyHostVisibleBit .|. Vk.Mem.PropertyHostCoherentBit)
+
+createDescriptorPool ::
+	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
+createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
+	where
+	poolInfo = Vk.DscPool.CreateInfo {
+		Vk.DscPool.createInfoNext = Nothing,
+		Vk.DscPool.createInfoFlags = zeroBits,
+		Vk.DscPool.createInfoMaxSets = 1,
+		Vk.DscPool.createInfoPoolSizes = [poolSize] }
+	poolSize = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPool.sizeDescriptorCount = 1 }
+
+-- createDescriptorSet ::
+--	Vk.Dvc.D sd -> Vk.DscPool.P sp ->
 
 createBufferAtom :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
