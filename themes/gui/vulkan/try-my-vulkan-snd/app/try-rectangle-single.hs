@@ -125,10 +125,12 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 
+import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -256,6 +258,7 @@ run w inst g =
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
+	createDescriptorSet dv dscp ub dscslyt >>= \ubds ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm cb sos
@@ -812,8 +815,34 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
 		Vk.DscPool.sizeDescriptorCount = 1 }
 
--- createDescriptorSet ::
---	Vk.Dvc.D sd -> Vk.DscPool.P sp ->
+createDescriptorSet ::
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb '[ 'Atom UniformBufferObject] ->
+	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]] ->
+	IO (Vk.DscSet.S sd sp '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]]))
+createDescriptorSet dvc dscp ub dscslyt = do
+	Singleton dscs <- Vk.DscSet.allocateSs @() dvc allocInfo
+	Vk.DscSet.updateDs @() @() dvc
+		(Singleton . Vk.DscSet.Write_ $ descriptorWrite ub dscs) []
+	pure dscs
+	where
+	allocInfo = Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoDescriptorPool = dscp,
+		Vk.DscSet.allocateInfoSetLayouts =
+			Singleton $ Vk.DscSet.Layout dscslyt }
+
+descriptorWrite ::
+	Vk.Bffr.Binded sm sb '[ 'Atom UniformBufferObject] ->
+	Vk.DscSet.S sd sp slbts ->
+	Vk.DscSet.Write () sd sp slbts '[ '(sb, sm, '[ 'Atom UniformBufferObject], 'Atom UniformBufferObject)]
+descriptorWrite ub dscs = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
+		Singleton bufferInfo
+	}
+	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 createBufferAtom :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
