@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -31,6 +31,8 @@ import Data.List hiding (singleton)
 import Data.IORef
 import Data.List.Length
 import Data.Color
+
+import TypeLevel.Nat
 
 import qualified TypeLevel.List as TpLvlLst
 
@@ -129,12 +131,12 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Tools
 
 main :: IO ()
-main = do
+main = valNat maxFramesInFlight \(_ :: Proxy n) -> do
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run win inst g
-			else run win inst g
+			then setupDebugMessenger inst $ const $ run @n win inst g
+			else run @n win inst g
 
 type FramebufferResized = IORef Bool
 
@@ -233,7 +235,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
+run :: forall (n :: Nat) si .
+	Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
 run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
@@ -247,7 +250,7 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp \vb ->
-	createCommandBuffers dv cp \cbs ->
+	createCommandBuffers @n dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb cbs sos
 
@@ -807,7 +810,7 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createCommandBuffers ::
-	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
+	forall (n :: Nat) sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb vss . VssList vss =>
 		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
 	IO a
@@ -832,6 +835,10 @@ instance VssList vss =>
 	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
 	vssListIndex (cb :...: _) 0 = cb
 	vssListIndex (_ :...: cbs) n = vssListIndex cbs (n - 1)
+
+type family MkVss (n :: Nat) :: [[Type]] where
+	MkVss 0 = '[]
+	MkVss n = '[AddType Vertex 'Vk.VtxInp.RateVertex] ': MkVss (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
 	(TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) =>

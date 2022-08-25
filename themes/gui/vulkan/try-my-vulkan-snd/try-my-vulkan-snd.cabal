@@ -204,6 +204,7 @@ library
       ThEnv
       Tools
       TypeLevel.List
+      TypeLevel.Nat
       Vertex
   other-modules:
       Paths_try_my_vulkan_snd
