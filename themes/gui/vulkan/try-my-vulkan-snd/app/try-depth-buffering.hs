@@ -29,7 +29,7 @@ import Data.IORef
 import Data.List.Length
 import Data.Time
 import Data.Color
-import Codec.Picture
+import Codec.Picture.Tools
 
 import Foreign.Storable.SizeAlignment
 
@@ -1127,9 +1127,6 @@ createImage widt hght format tiling usage properties = do
 	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
 	lift $ Vk.Image.bindMemory dvc ti tim
 	pure (ti, tim)
-
-readRgba8 :: FilePath -> IO (Image PixelRGBA8)
-readRgba8 fp = either error convertRGBA8 <$> readImage fp
 
 transitionImageLayout ::
 	Vk.Image.I -> Vk.Format -> Vk.Image.Layout -> Vk.Image.Layout ->
