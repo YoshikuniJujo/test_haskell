@@ -327,6 +327,7 @@ data SwapChainSupportDetails = SwapChainSupportDetails {
 	capabilities :: Vk.Khr.Surface.M.Capabilities,
 	formats :: [Vk.Khr.Surface.M.Format],
 	presentModes :: [Vk.Khr.PresentMode] }
+	deriving Show
 
 querySwapChainSupport ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
@@ -366,6 +367,7 @@ createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	IO a
 createSwapChain win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
+	print $ formats spp
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis spp ext
 	Vk.Khr.Swapchain.create @() dvc crInfo nil nil \sc -> f sc scifmt ext
