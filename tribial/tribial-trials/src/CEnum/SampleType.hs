@@ -14,11 +14,4 @@ import CEnum.SampleType.Th
 
 import qualified CEnum.Sample as E
 
-do	is <- lines <$> runIO (readFile "th/enumSample.txt")
-	(\a b c -> a ++ b ++ c)	
-		<$> ((: []) <$> mkType "EnumSample" is)
-		<*> ((:)	<$> mkClass "E" "EnumSample"
-				<*> sequence (mkInstance "E" "EnumSample" <$> is))
-		<*> sequence [
-			sigFoo "E" "EnumSample",
-			funD (mkName "enumSampleToType") (foo <$> is) ]
+typeValues "E" "EnumSample" =<< lines <$> runIO (readFile "th/enumSample.txt")

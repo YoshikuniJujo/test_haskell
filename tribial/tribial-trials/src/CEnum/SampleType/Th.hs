@@ -6,6 +6,16 @@ module CEnum.SampleType.Th where
 import Language.Haskell.TH
 import Data.Char
 
+typeValues :: String -> String -> [String] -> Q [Dec]
+typeValues mdl tp elms =
+	(\a b c -> a ++ b ++ c)	
+		<$> ((: []) <$> mkType tp elms)
+		<*> ((:)	<$> mkClass mdl tp
+				<*> sequence (mkInstance mdl tp <$> elms))
+		<*> sequence [
+			sigFoo mdl tp,
+			funD (mkName $ hd toLower tp ++ "ToType") (foo <$> elms) ]
+
 mkType :: String -> [String] -> Q Dec
 mkType tp elms = dataD (pure []) (mkName tp) [] Nothing
 	((`normalC` []) . mkName <$> elms) [derivClause Nothing [conT ''Show]]
