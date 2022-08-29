@@ -8,7 +8,6 @@
 module CEnum.SampleType where
 
 import Language.Haskell.TH
-import Data.Proxy
 
 import CEnum.SampleType.Th
 

@@ -4,6 +4,7 @@
 module CEnum.SampleType.Th where
 
 import Language.Haskell.TH
+import Data.Proxy
 import Data.Char
 
 typeValues :: String -> String -> [String] -> Q [Dec]
@@ -48,7 +49,7 @@ sigFoo mdl tp = do
 		$ conT (mkName $ mdl ++ "." ++ tp)
 			`arrT` ((forallT [tv]
 				(cxt [conT (mkName $ tp ++ "ToValue") `appT` varT t])
-				((conT (mkName "Proxy") `appT` varT t) `arrT` varT a))
+				((conT ''Proxy `appT` varT t) `arrT` varT a))
 		`arrT` varT a)
 
 foo :: String -> Q Clause
@@ -57,7 +58,7 @@ foo nm = do
 	clause
 		[conP (mkName $ "E." ++ nm) [], varP f]
 		(normalB $ varE f `appE`
-			(conE (mkName "Proxy") `appTypeE` promotedT (mkName nm)))
+			(conE 'Proxy `appTypeE` promotedT (mkName nm)))
 		[]
 
 arrT :: Q Type -> Q Type -> Q Type
