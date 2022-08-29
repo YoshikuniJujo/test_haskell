@@ -65,11 +65,11 @@ createFileWithDefault hf mnm icms dfhscnmdrvs ext = do
 		intercalate "\n" (map (\((a, b), c) -> makeEnumWithDefault src mnm a b c) (zip hscnmdrvs mdf)) ++
 		case ext of "" -> ""; _ -> "\n" ++ ext ++ "\n"
 
-createRaw :: HeaderFile -> String -> CName -> IO ()
-createRaw hf zr cn@(c : cs) = do
+createRaw :: HeaderFile -> [String] -> CName -> IO ()
+createRaw hf zrs cn@(c : cs) = do
 	src <- readFile hf
 	let	fp = "../th/" ++ toLower c : cs ++ ".txt"
-		rslt = unlines $ zr : ((fst . makeVarConstPair)
+		rslt = unlines $ zrs ++ ((fst . makeVarConstPair)
 			<$> takeDefinition cn (lines src))
 	writeFile fp rslt
 createRaw _ _ _ = error "bad"

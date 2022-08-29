@@ -10,7 +10,8 @@ import MakeEnum
 
 make :: IO ()
 make = do
-	createRaw vulkanCore "ShaderStageFlagsZero" "VkShaderStageFlagBits"
+	createRaw vulkanCore ["ShaderStageFlagsZero"] "VkShaderStageFlagBits"
+	createRaw vulkanCore [] "VkFormat"
 	createFile'' vulkanCore "Enum"
 		["Foreign.Ptr", "Data.Bits", "Data.Word"] ((([] ,) <$> noZeros) ++ zeros)
 		[nowdoc|
