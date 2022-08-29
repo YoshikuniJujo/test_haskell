@@ -22,21 +22,22 @@ hd :: (a -> a) -> [a] -> [a]
 hd _ [] = []
 hd f (x : xs) = f x : xs
 
-mkInstance :: String -> Q Dec
-mkInstance ss =
-	instanceD (pure []) (conT (mkName "EnumSampleToValue") `appT` promotedT (mkName ss)) [
-		valD (varP $ mkName "enumSampleToValue") (normalB . conE . mkName $ "E." ++ ss) []
+mkInstance :: String -> String -> String -> Q Dec
+mkInstance mdl tp ss =
+	instanceD (pure []) (conT (mkName $ tp ++ "ToValue") `appT` promotedT (mkName ss)) [
+		valD	(varP . mkName $ hd toLower tp ++ "ToValue")
+			(normalB . conE . mkName $ mdl ++ "." ++ ss) []
 		]
 
-sigFoo :: Q Dec
-sigFoo = do
+sigFoo :: String -> String -> Q Dec
+sigFoo mdl tp = do
 	t <- newName "t"
 	a <- newName "a"
-	tv <- kindedInvisTV t SpecifiedSpec (conT $ mkName "EnumSample")
-	sigD (mkName "enumSampleToType")
-		$ conT (mkName "E.EnumSample")
+	tv <- kindedInvisTV t SpecifiedSpec (conT $ mkName tp)
+	sigD (mkName $ hd toLower tp ++ "ToType")
+		$ conT (mkName $ mdl ++ "." ++ tp)
 			`arrT` ((forallT [tv]
-				(cxt [conT (mkName "EnumSampleToValue") `appT` varT t])
+				(cxt [conT (mkName $ tp ++ "ToValue") `appT` varT t])
 				((conT (mkName "Proxy") `appT` varT t) `arrT` varT a))
 		`arrT` varT a)
 

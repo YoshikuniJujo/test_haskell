@@ -15,16 +15,10 @@ import CEnum.SampleType.Th
 import qualified CEnum.Sample as E
 
 do	is <- lines <$> runIO (readFile "th/enumSample.txt")
-	(: []) <$> mkType "EnumSample" is
-
-
-(: []) <$> mkClass "E" "EnumSample"
-
-do	is <- lines <$> runIO (readFile "th/enumSample.txt")
-	sequence $ mkInstance <$> is
-
-do
-	is <- lines <$> runIO (readFile "th/enumSample.txt")
-	sequence [
-		sigFoo,
-		funD (mkName "enumSampleToType") (foo <$> is) ]
+	(\a b c -> a ++ b ++ c)	
+		<$> ((: []) <$> mkType "EnumSample" is)
+		<*> ((:)	<$> mkClass "E" "EnumSample"
+				<*> sequence (mkInstance "E" "EnumSample" <$> is))
+		<*> sequence [
+			sigFoo "E" "EnumSample",
+			funD (mkName "enumSampleToType") (foo <$> is) ]
