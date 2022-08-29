@@ -30,6 +30,7 @@ dependencies:
 - bytestring
 - vector
 - mono-traversable
+- c-enum
 
 library:
   source-dirs: src

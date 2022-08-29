@@ -1,0 +1,3 @@
+EnumSample1
+EnumSample2
+EnumSample3
