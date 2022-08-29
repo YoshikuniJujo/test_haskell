@@ -1,8 +1,26 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module CEnum.SampleType.Th where
 
 import Language.Haskell.TH
+import Data.Char
+
+mkType :: String -> [String] -> Q Dec
+mkType tp elms = dataD (pure []) (mkName tp) [] Nothing
+	((`normalC` []) . mkName <$> elms) [derivClause Nothing [conT ''Show]]
+
+mkClass :: String -> String -> Q Dec
+mkClass mdl tp = do
+	t <- newName "t"
+	classD (cxt []) (mkName $ tp ++ "ToValue")
+		[kindedTV t (ConT $ mkName tp)]
+		[]
+		[sigD (mkName $ hd toLower tp ++ "ToValue") . conT . mkName $ mdl ++ "." ++ tp]
+
+hd :: (a -> a) -> [a] -> [a]
+hd _ [] = []
+hd f (x : xs) = f x : xs
 
 mkInstance :: String -> Q Dec
 mkInstance ss =

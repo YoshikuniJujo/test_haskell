@@ -15,12 +15,10 @@ import CEnum.SampleType.Th
 import qualified CEnum.Sample as E
 
 do	is <- lines <$> runIO (readFile "th/enumSample.txt")
-	(: []) <$> dataD (pure []) (mkName "EnumSample") [] Nothing
-		((`normalC` []) . mkName <$> is)
-		[derivClause Nothing [conT ''Show]]
+	(: []) <$> mkType "EnumSample" is
 
-class EnumSampleToValue (t :: EnumSample) where
-	enumSampleToValue :: E.EnumSample
+
+(: []) <$> mkClass "E" "EnumSample"
 
 do	is <- lines <$> runIO (readFile "th/enumSample.txt")
 	sequence $ mkInstance <$> is
@@ -30,8 +28,3 @@ do
 	sequence [
 		sigFoo,
 		funD (mkName "enumSampleToType") (foo <$> is) ]
-
-enumSampleToType' :: E.EnumSample ->
-	(forall (t :: EnumSample) . EnumSampleToValue t => Proxy t -> a) -> a
-enumSampleToType' E.EnumSample1 f = f (Proxy @'EnumSample1)
-enumSampleToType' _ _ = undefined
