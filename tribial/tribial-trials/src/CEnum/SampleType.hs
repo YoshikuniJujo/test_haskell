@@ -9,7 +9,7 @@ module CEnum.SampleType where
 
 import Language.Haskell.TH
 
-import CEnum.SampleType.Th
+import TypeValues
 
 import qualified CEnum.Sample as E
 

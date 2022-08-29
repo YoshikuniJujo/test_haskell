@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module CEnum.SampleType.Th where
+module TypeValues (typeValues) where
 
 import Language.Haskell.TH
 import Data.Proxy
