@@ -43,8 +43,8 @@ recreate :: (Pointable n, Pointable c, Pointable d) =>
 	S ssc -> IO ()
 recreate (Device.D dvc) ci macc macd (S sc) = M.recreate dvc ci macc macd sc
 
-getImagesNew :: Device.D sd -> SNew ss fmt -> IO [Image.Binded ss ss]
-getImagesNew (Device.D dvc) (SNew sc) = (Image.Binded <$>) <$> M.getImages dvc sc
+getImagesNew :: Device.D sd -> SNew ss fmt -> IO [Image.BindedNew ss ss fmt]
+getImagesNew (Device.D dvc) (SNew sc) = (Image.BindedNew <$>) <$> M.getImages dvc sc
 
 getImages :: Device.D sd -> S ss -> IO [Image.Binded ss ss]
 getImages (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc

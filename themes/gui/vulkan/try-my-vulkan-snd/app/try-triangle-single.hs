@@ -241,7 +241,7 @@ run w inst g =
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
-	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
+	Vk.Khr.Swapchain.getImagesNew dv sc >>= \((Vk.Image.bindedFromNew <$>) -> imgs) ->
 	createImageViews dv scifmt imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
 	createPipelineLayout dv \ppllyt ->
@@ -1015,7 +1015,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 
 	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
 	ext <$ do
-		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
+		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \((Vk.Image.bindedFromNew <$>) -> imgs) ->
 			recreateImageViews dvc scifmt imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
