@@ -11,11 +11,16 @@ import Control.Exception
 
 import Gpu.Vulkan.Khr.Swapchain.Type
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
+createNew :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
+	Device.D sd -> M.CreateInfoNew n ssfc fmt ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall ssc . SNew ssc fmt -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f =
 	bracket (M.createNew dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
@@ -26,6 +31,10 @@ create :: (Pointable n, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
 
+recreateNew :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
+	Device.D sd -> M.CreateInfoNew n ssfc fmt ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	SNew ssc fmt -> IO ()
 recreateNew (Device.D dvc) ci macc macd (SNew sc) = M.recreateNew dvc ci macc macd sc
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>
