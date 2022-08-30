@@ -1,5 +1,8 @@
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -24,6 +27,7 @@ import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Middle as Device
@@ -38,6 +42,59 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 
 extensionName :: T.Text
 extensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
+
+data CreateInfoNew n ss (fmt :: T.Format) = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoSurfaceNew :: Surface.S ss,
+	createInfoMinImageCountNew :: Word32,
+	createInfoImageColorSpaceNew :: ColorSpace,
+	createInfoImageExtentNew :: C.Extent2d,
+	createInfoImageArrayLayersNew :: Word32,
+	createInfoImageUsageNew :: Image.UsageFlags,
+	createInfoImageSharingModeNew :: SharingMode,
+	createInfoQueueFamilyIndicesNew :: [QueueFamily.Index],
+	createInfoPreTransformNew :: TransformFlagBits,
+	createInfoCompositeAlphaNew :: CompositeAlphaFlagBits,
+	createInfoPresentModeNew :: PresentMode,
+	createInfoClippedNew :: Bool,
+	createInfoOldSwapchainNew :: Maybe S }
+	deriving Show
+
+createInfoFromNew :: forall n ss fmt . T.FormatToValue fmt =>
+	CreateInfoNew n ss fmt -> CreateInfo n ss
+createInfoFromNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoSurfaceNew = sfc,
+	createInfoMinImageCountNew = mic,
+	createInfoImageColorSpaceNew = cs,
+	createInfoImageExtentNew = ext,
+	createInfoImageArrayLayersNew = ials,
+	createInfoImageUsageNew = usg,
+	createInfoImageSharingModeNew = sm,
+	createInfoQueueFamilyIndicesNew = qfis,
+	createInfoPreTransformNew = ptfm,
+	createInfoCompositeAlphaNew = calph,
+	createInfoPresentModeNew = pm,
+	createInfoClippedNew = clpd,
+	createInfoOldSwapchainNew = osc } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSurface = sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = T.formatToValue @fmt,
+	createInfoImageColorSpace = cs,
+	createInfoImageExtent = ext,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = usg,
+	createInfoImageSharingMode = sm,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoPreTransform = ptfm,
+	createInfoCompositeAlpha = calph,
+	createInfoPresentMode = pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = osc }
 
 data CreateInfo n ss = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -107,13 +164,17 @@ createInfoToCore CreateInfo {
 
 newtype S = S { unS :: IORef C.S }
 
-instance Show S where show s = "Gpu.Vulkan.Khr.Swapchain.Middle.S"
+instance Show S where show _ = "Gpu.Vulkan.Khr.Swapchain.Middle.S"
 
 sToCore :: S -> IO C.S
 sToCore (S s) = readIORef s
 
 sFromCore :: C.S -> IO S
 sFromCore s = S <$> newIORef s
+
+createNew :: (Pointable n, Pointable n', T.FormatToValue fmt) => Device.D ->
+	CreateInfoNew n ss fmt -> Maybe (AllocationCallbacks.A n') -> IO S
+createNew dvc ci mac = create dvc (createInfoFromNew ci) mac
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO S
@@ -124,6 +185,12 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore =<< do
 	lift do	r <- C.create dvc pci pac psc
 		throwUnlessSuccess $ Result r
 		peek psc
+
+recreateNew :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
+	Device.D -> CreateInfoNew n ss fmt ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	S -> IO ()
+recreateNew dvc = recreate dvc . createInfoFromNew
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D -> CreateInfo n ss ->
