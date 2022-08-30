@@ -1,5 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGe ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -22,6 +25,7 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Image.Enum
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory
@@ -51,6 +55,50 @@ subresourceRangeToCore SubresourceRange {
 		C.subresourceRangeLayerCount = lyc }
 
 newtype I = I (IORef C.I)
+
+data CreateInfoNew n (fmt :: T.Format) = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoImageTypeNew :: Type,
+	createInfoExtentNew :: Extent3d,
+	createInfoMipLevelsNew :: Word32,
+	createInfoArrayLayersNew :: Word32,
+	createInfoSamplesNew :: Sample.CountFlagBits,
+	createInfoTilingNew :: Tiling,
+	createInfoUsageNew :: UsageFlags,
+	createInfoSharingModeNew :: SharingMode,
+	createInfoQueueFamilyIndicesNew :: [Word32],
+	createInfoInitialLayoutNew :: Layout }
+	deriving Show
+
+createInfoFromNew :: forall n fmt .
+	T.FormatToValue fmt => CreateInfoNew n fmt -> CreateInfo n
+createInfoFromNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoImageTypeNew = itp,
+	createInfoExtentNew = ext,
+	createInfoMipLevelsNew = mls,
+	createInfoArrayLayersNew = als,
+	createInfoSamplesNew = smps,
+	createInfoTilingNew = tl,
+	createInfoUsageNew = usg,
+	createInfoSharingModeNew = sm,
+	createInfoQueueFamilyIndicesNew = qfis,
+	createInfoInitialLayoutNew =ilyt } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoImageType = itp,
+	createInfoFormat = T.formatToValue @fmt,
+	createInfoExtent = ext,
+	createInfoMipLevels = mls,
+	createInfoArrayLayers = als,
+	createInfoSamples = smps,
+	createInfoTiling = tl,
+	createInfoUsage = usg,
+	createInfoSharingMode = sm,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoInitialLayout = ilyt }
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -104,6 +152,10 @@ createInfoToCore CreateInfo {
 			C.createInfoPQueueFamilyIndices = pqfis,
 			C.createInfoInitialLayout = lyt }
 	ContT $ withForeignPtr fci
+
+createNew :: (Pointable n, Pointable n', T.FormatToValue fmt) =>
+	Device.D -> CreateInfoNew n fmt -> Maybe (AllocationCallbacks.A n') -> IO I
+createNew dvc = create dvc . createInfoFromNew
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
