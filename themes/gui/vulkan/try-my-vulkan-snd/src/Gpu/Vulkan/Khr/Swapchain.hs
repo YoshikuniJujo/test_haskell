@@ -17,7 +17,7 @@ import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as M
 
 createNew (Device.D dvc) ci macc macd f =
-	bracket (M.createNew dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
+	bracket (M.createNew dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ssfc ->
@@ -26,7 +26,7 @@ create :: (Pointable n, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
 
-recreateNew (Device.D dvc) ci macc macd (S sc) = M.recreateNew dvc ci macc macd sc
+recreateNew (Device.D dvc) ci macc macd (SNew sc) = M.recreateNew dvc ci macc macd sc
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ssfc ->

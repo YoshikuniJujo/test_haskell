@@ -75,6 +75,7 @@ import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
+import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
 import qualified Gpu.Vulkan.Image.Type as Vk.Image
 import qualified Gpu.Vulkan.Image.Enum as Vk.Image
@@ -371,7 +372,7 @@ createSwapChain win sfc phdvc qfis dvc f = do
 	print $ formats spp
 	ext <- chooseSwapExtent win $ capabilities spp
 	mkSwapchainCreateInfo sfc qfis spp ext \crInfo scifmt ->
-		Vk.Khr.Swapchain.createNew dvc crInfo nil nil \sc -> f sc scifmt ext
+		Vk.Khr.Swapchain.createNew dvc crInfo nil nil \sc -> f (Vk.Khr.Swapchain.sFromNew sc) scifmt ext
 
 recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
@@ -380,7 +381,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	mkSwapchainCreateInfo sfc qfis0 spp ext \crInfo scifmt ->
-		(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew dvc crInfo nil nil sc
+		(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew dvc crInfo nil nil (Vk.Khr.Swapchain.sToNew sc)
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
