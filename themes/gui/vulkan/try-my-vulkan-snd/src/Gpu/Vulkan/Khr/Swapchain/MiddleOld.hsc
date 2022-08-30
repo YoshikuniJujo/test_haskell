@@ -1,0 +1,143 @@
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Gpu.Vulkan.Khr.Swapchain.MiddleOld where
+
+import Gpu.Vulkan.Khr.Swapchain.Middle
+
+import Foreign.Ptr
+import Foreign.ForeignPtr
+import Foreign.Marshal
+import Foreign.Pointable
+import Control.Monad.Cont
+import Data.IORef
+import Data.Word
+
+import Gpu.Vulkan.Enum
+import Gpu.Vulkan.Base
+import Gpu.Vulkan.Khr.Enum
+import Gpu.Vulkan.Khr.Swapchain.Enum
+import Gpu.Vulkan.Khr.Surface.Enum
+
+import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Image.Enum as Image
+import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
+import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface.M
+import qualified Gpu.Vulkan.Core as C
+import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
+
+#include <vulkan/vulkan.h>
+
+createInfoToCore :: Pointable n => CreateInfo n ss -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoSurface = Surface.S (Surface.M.S sfc),
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = Format ifmt,
+	createInfoImageColorSpace = ColorSpace ics,
+	createInfoImageExtent = iex,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = Image.UsageFlagBits iusg,
+	createInfoImageSharingMode = SharingMode ism,
+	createInfoQueueFamilyIndices = ((\(QueueFamily.Index i) -> i) <$>) -> qfis,
+	createInfoPreTransform = TransformFlagBits pt,
+	createInfoCompositeAlpha = CompositeAlphaFlagBits caf,
+	createInfoPresentMode = PresentMode pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = mos
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pqfis <- ContT $ allocaArray qfic
+	lift $ pokeArray pqfis qfis
+	os <- case mos of
+		Nothing -> pure $ wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
+		Just s -> lift $ sToCore s
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoSurface = sfc,
+			C.createInfoMinImageCount = mic,
+			C.createInfoImageFormat = ifmt,
+			C.createInfoImageColorSpace = ics,
+			C.createInfoImageExtent = iex,
+			C.createInfoImageArrayLayers = ials,
+			C.createInfoImageUsage = iusg,
+			C.createInfoImageSharingMode = ism,
+			C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
+			C.createInfoPQueueFamilyIndices = pqfis,
+			C.createInfoPreTransform = pt,
+			C.createInfoCompositeAlpha = caf,
+			C.createInfoPresentMode = pm,
+			C.createInfoClipped = boolToBool32 clpd,
+			C.createInfoOldSwapchain = os }
+	ContT $ withForeignPtr fCreateInfo
+	where qfic = length qfis
+
+sFromCore :: C.S -> IO S
+sFromCore s = S <$> newIORef s
+
+{-# DEPRECATED CreateInfo', createInfoNew, create' "Don't use these" #-}
+
+data CreateInfo' n = CreateInfo' {
+	createInfoNext' :: Maybe n,
+	createInfoFlags' :: CreateFlags,
+	createInfoSurface' :: Surface.M.S,
+	createInfoMinImageCount' :: Word32,
+	createInfoImageFormat' :: Format,
+	createInfoImageColorSpace' :: ColorSpace,
+	createInfoImageExtent' :: C.Extent2d,
+	createInfoImageArrayLayers' :: Word32,
+	createInfoImageUsage' :: Image.UsageFlags,
+	createInfoImageSharingMode' :: SharingMode,
+	createInfoQueueFamilyIndices' :: [Word32],
+	createInfoPreTransform' :: TransformFlagBits,
+	createInfoCompositeAlpha' :: CompositeAlphaFlagBits,
+	createInfoPresentMode' :: PresentMode,
+	createInfoClipped' :: Bool,
+	createInfoOldSwapchain' :: Maybe S }
+	deriving Show
+
+createInfoNew :: CreateInfo' n -> CreateInfo n ss
+createInfoNew CreateInfo' {
+	createInfoNext' = mnxt,
+	createInfoFlags' = flgs,
+	createInfoSurface' = sfc,
+	createInfoMinImageCount' = mic,
+	createInfoImageFormat' = ifmt,
+	createInfoImageColorSpace' = ics,
+	createInfoImageExtent' = iext,
+	createInfoImageArrayLayers' = ials,
+	createInfoImageUsage' = iusg,
+	createInfoImageSharingMode' = ism,
+	createInfoQueueFamilyIndices' = (QueueFamily.Index  <$>) -> qfis,
+	createInfoPreTransform' = ptfm,
+	createInfoCompositeAlpha' = calp,
+	createInfoPresentMode' = pm,
+	createInfoClipped' = clpd,
+	createInfoOldSwapchain' = osc } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSurface = Surface.S sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = ifmt,
+	createInfoImageColorSpace = ics,
+	createInfoImageExtent = iext,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = iusg,
+	createInfoImageSharingMode = ism,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoPreTransform = ptfm,
+	createInfoCompositeAlpha = calp,
+	createInfoPresentMode = pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = osc }
+
+create' :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
+create' dvc oci mac = create dvc (createInfoNew oci) mac

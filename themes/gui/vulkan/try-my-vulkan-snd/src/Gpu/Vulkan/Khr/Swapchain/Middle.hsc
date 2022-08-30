@@ -140,66 +140,6 @@ recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
 		writeIORef rs =<< peek psc
 		C.destroy dvc sco pacd
 
-{-# DEPRECATED CreateInfo', createInfoNew, create' "Don't use these" #-}
-
-data CreateInfo' n = CreateInfo' {
-	createInfoNext' :: Maybe n,
-	createInfoFlags' :: CreateFlags,
-	createInfoSurface' :: Surface.M.S,
-	createInfoMinImageCount' :: Word32,
-	createInfoImageFormat' :: Format,
-	createInfoImageColorSpace' :: ColorSpace,
-	createInfoImageExtent' :: C.Extent2d,
-	createInfoImageArrayLayers' :: Word32,
-	createInfoImageUsage' :: Image.UsageFlags,
-	createInfoImageSharingMode' :: SharingMode,
-	createInfoQueueFamilyIndices' :: [Word32],
-	createInfoPreTransform' :: TransformFlagBits,
-	createInfoCompositeAlpha' :: CompositeAlphaFlagBits,
-	createInfoPresentMode' :: PresentMode,
-	createInfoClipped' :: Bool,
-	createInfoOldSwapchain' :: Maybe S }
-	deriving Show
-
-createInfoNew :: CreateInfo' n -> CreateInfo n ss
-createInfoNew CreateInfo' {
-	createInfoNext' = mnxt,
-	createInfoFlags' = flgs,
-	createInfoSurface' = sfc,
-	createInfoMinImageCount' = mic,
-	createInfoImageFormat' = ifmt,
-	createInfoImageColorSpace' = ics,
-	createInfoImageExtent' = iext,
-	createInfoImageArrayLayers' = ials,
-	createInfoImageUsage' = iusg,
-	createInfoImageSharingMode' = ism,
-	createInfoQueueFamilyIndices' = (QueueFamily.Index  <$>) -> qfis,
-	createInfoPreTransform' = ptfm,
-	createInfoCompositeAlpha' = calp,
-	createInfoPresentMode' = pm,
-	createInfoClipped' = clpd,
-	createInfoOldSwapchain' = osc } = CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoSurface = Surface.S sfc,
-	createInfoMinImageCount = mic,
-	createInfoImageFormat = ifmt,
-	createInfoImageColorSpace = ics,
-	createInfoImageExtent = iext,
-	createInfoImageArrayLayers = ials,
-	createInfoImageUsage = iusg,
-	createInfoImageSharingMode = ism,
-	createInfoQueueFamilyIndices = qfis,
-	createInfoPreTransform = ptfm,
-	createInfoCompositeAlpha = calp,
-	createInfoPresentMode = pm,
-	createInfoClipped = clpd,
-	createInfoOldSwapchain = osc }
-
-create' :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
-create' dvc oci mac = create dvc (createInfoNew oci) mac
-
 destroy :: Pointable n =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
