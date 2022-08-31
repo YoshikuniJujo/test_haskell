@@ -91,6 +91,8 @@ library
       Gpu.Vulkan.Device.Memory.Buffer
       Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
       Gpu.Vulkan.Device.Memory.Buffer.Types
+      Gpu.Vulkan.Device.Memory.ImageBuffer
+      Gpu.Vulkan.Device.Memory.ImageBuffer.Kind
       Gpu.Vulkan.Device.Middle
       Gpu.Vulkan.Device.Queue
       Gpu.Vulkan.Device.Queue.Enum
