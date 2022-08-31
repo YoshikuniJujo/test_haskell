@@ -60,6 +60,7 @@ import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Exception as Vk
 import qualified Gpu.Vulkan.Exception.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Ist
@@ -82,6 +83,7 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
+import qualified Gpu.Vulkan.Image as Vk.Image
 import qualified Gpu.Vulkan.Image.Type as Vk.Image
 import qualified Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Image.Middle as Vk.Image.M
@@ -775,18 +777,45 @@ createCommandPool qfis dvc f =
 createTextureImage :: Vk.PhDvc.P -> Vk.Dvc.D sd -> IO ()
 createTextureImage phdvc dvc = do
 	img <- readRgba8 "../../../../files/images/texture.jpg"
-	print $ imageWidth img
-	print $ imageHeight img
 	print . V.length $ imageData img
-	let	imgBody = ImageRgba8 $ imageData img
-	createBufferList @_ @Rgba8 @_ phdvc dvc (olength imgBody)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \sb sbm -> do
-		Vk.Dvc.Mem.Buffer.write @('List Rgba8) dvc sbm zeroBits imgBody
-		print sb
-		print sbm
-		pure ()
+	let	wdt = fromIntegral $ imageWidth img
+		hgt = fromIntegral $ imageHeight img
+		imgBody = ImageRgba8 $ imageData img
+	createImage @Vk.T.FormatR8g8b8a8Srgb dvc wdt hgt Vk.Image.TilingOptimal
+		(Vk.Image.UsageTransferDstBit .|.  Vk.Image.UsageSampledBit)
+		Vk.Mem.PropertyDeviceLocalBit \tximg -> do
+			createBufferList @_ @Rgba8 @_ phdvc dvc (olength imgBody)
+				Vk.Bffr.UsageTransferSrcBit
+				(	Vk.Mem.PropertyHostVisibleBit .|.
+					Vk.Mem.PropertyHostCoherentBit ) \sb sbm -> do
+				Vk.Dvc.Mem.Buffer.write @('List Rgba8) dvc sbm zeroBits imgBody
+				print sb
+				print sbm
+				pure ()
+
+createImage :: forall fmt sd a . Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Image.Tiling ->
+	Vk.Image.UsageFlagBits -> Vk.Mem.PropertyFlagBits ->
+	(forall s . Vk.Image.INew s fmt -> IO a) -> IO a
+createImage dvc wdt hgt tlng usg prps f = do
+	Vk.Image.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> f img
+	where
+	imageInfo = Vk.Image.CreateInfoNew {
+		Vk.Image.createInfoNextNew = Nothing,
+		Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
+		Vk.Image.createInfoExtentNew = Vk.C.Extent3d {
+			Vk.C.extent3dWidth = wdt,
+			Vk.C.extent3dHeight = hgt,
+			Vk.C.extent3dDepth = 1 },
+		Vk.Image.createInfoMipLevelsNew = 1,
+		Vk.Image.createInfoArrayLayersNew = 1,
+		Vk.Image.createInfoTilingNew = tlng,
+		Vk.Image.createInfoInitialLayoutNew = Vk.Image.LayoutUndefined,
+		Vk.Image.createInfoUsageNew = usg,
+		Vk.Image.createInfoSharingModeNew = Vk.SharingModeExclusive,
+		Vk.Image.createInfoSamplesNew = Vk.Sample.Count1Bit,
+		Vk.Image.createInfoFlagsNew = zeroBits,
+		Vk.Image.createInfoQueueFamilyIndicesNew = [] }
 
 data Rgba8 = Rgba8 {
 	rgba8Red :: Word8,
