@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 93975174c8b6f5e90543310f1865cacd2f6dec9429c9f6b56cd5c28e09cf0765
+-- hash: 050221e74d025eac3161c87b6a2cd10a2ae700007350b044d7c4ff679f8de6f9
 
 name:           try-juicy-pixels
 version:        0.1.0.0
@@ -38,6 +38,22 @@ library
     , base >=4.7 && <5
     , bytestring
     , http-conduit
+  default-language: Haskell2010
+
+executable mkSamplePng
+  main-is: mkSamplePng.hs
+  other-modules:
+      Main
+      Paths_try_juicy_pixels
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyPixels
+    , base >=4.7 && <5
+    , bytestring
+    , http-conduit
+    , try-juicy-pixels
   default-language: Haskell2010
 
 executable try-juicy-pixels-exe
