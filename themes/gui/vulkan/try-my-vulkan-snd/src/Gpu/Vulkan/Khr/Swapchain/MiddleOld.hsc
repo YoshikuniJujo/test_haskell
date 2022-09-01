@@ -12,7 +12,6 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Pointable
 import Control.Monad.Cont
-import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -78,9 +77,6 @@ createInfoToCore CreateInfo {
 			C.createInfoOldSwapchain = os }
 	ContT $ withForeignPtr fCreateInfo
 	where qfic = length qfis
-
-sFromCore :: C.S -> IO S
-sFromCore s = S <$> newIORef s
 
 {-# DEPRECATED CreateInfo', createInfoNew, create' "Don't use these" #-}
 

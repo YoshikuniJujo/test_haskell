@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments, OverloadedStrings #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
@@ -162,15 +162,15 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 	where qfic = length qfis
 
-newtype S = S { unS :: IORef C.S }
+newtype S = S { unS :: IORef (C.Extent2d, C.S) }
 
 instance Show S where show _ = "Gpu.Vulkan.Khr.Swapchain.Middle.S"
 
 sToCore :: S -> IO C.S
-sToCore (S s) = readIORef s
+sToCore (S s) = snd <$> readIORef s
 
-sFromCore :: C.S -> IO S
-sFromCore s = S <$> newIORef s
+sFromCore :: C.Extent2d -> C.S -> IO S
+sFromCore ex s = S <$> newIORef (ex, s)
 
 createNew :: (Pointable n, Pointable n', T.FormatToValue fmt) => Device.D ->
 	CreateInfoNew n ss fmt -> Maybe (AllocationCallbacks.A n') -> IO S
@@ -178,13 +178,14 @@ createNew dvc ci mac = create dvc (createInfoFromNew ci) mac
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO S
-create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore =<< do
+create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	psc <- ContT alloca
 	lift do	r <- C.create dvc pci pac psc
 		throwUnlessSuccess $ Result r
 		peek psc
+	where ex = createInfoImageExtent ci
 
 recreateNew :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
 	Device.D -> CreateInfoNew n ss fmt ->
@@ -203,9 +204,10 @@ recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
 	psc <- ContT alloca
 	lift do	r <- C.create dvc pci pacc psc
 		throwUnlessSuccess $ Result r
-		sco <- readIORef rs
-		writeIORef rs =<< peek psc
+		(_, sco) <- readIORef rs
+		writeIORef rs . (ex ,) =<< peek psc
 		C.destroy dvc sco pacd
+	where ex = createInfoImageExtent ci
 
 destroy :: Pointable n =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
