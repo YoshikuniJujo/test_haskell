@@ -69,7 +69,7 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
-import Sample.Compute
+import Sample.GetOpt
 import Codec.Picture.Tools
 
 main :: IO ()

@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Sample.Compute where
+module Sample.GetOpt where
 
 import System.Environment
 import System.Console.GetOpt

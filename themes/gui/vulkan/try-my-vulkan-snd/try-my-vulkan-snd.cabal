@@ -205,7 +205,7 @@ library
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
       Gpu.Vulkan.VertexInput.Enum
-      Sample.Compute
+      Sample.GetOpt
       ThEnv
       Tools
       TypeLevel.List
