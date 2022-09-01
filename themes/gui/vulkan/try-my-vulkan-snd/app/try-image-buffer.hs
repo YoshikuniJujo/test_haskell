@@ -70,6 +70,7 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 import Sample.Compute
+import Codec.Picture.Tools
 
 main :: IO ()
 main = getOptions >>= maybe (pure ()) \opt -> do
@@ -269,6 +270,9 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
 prepareMems11 phdvc dvc dscSetLyt da db dc f =
+	readRgba8 "../../../../files/images/sample.png" >>= \img ->
+	print (imageWidth img) >>
+	print (imageHeight img) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
