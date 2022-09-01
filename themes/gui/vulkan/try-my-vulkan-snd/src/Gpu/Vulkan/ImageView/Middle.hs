@@ -44,7 +44,7 @@ createInfoToCore CreateInfo {
 	createInfoSubresourceRange = srr
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	img <- lift $ readIORef rimg
+	(_, img) <- lift $ readIORef rimg
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,

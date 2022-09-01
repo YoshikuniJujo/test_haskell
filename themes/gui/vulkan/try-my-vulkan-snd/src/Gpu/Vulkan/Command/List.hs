@@ -53,5 +53,5 @@ copyBufferToImage (CommandBuffer.C cb)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
-	lift do	di <- readIORef rdi
+	lift do	(_, di) <- readIORef rdi
 		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs

@@ -169,6 +169,9 @@ instance Show S where show _ = "Gpu.Vulkan.Khr.Swapchain.Middle.S"
 sToCore :: S -> IO C.S
 sToCore (S s) = snd <$> readIORef s
 
+sToExtent :: S -> IO C.Extent2d
+sToExtent (S s) = fst <$> readIORef s
+
 sFromCore :: C.Extent2d -> C.S -> IO S
 sFromCore ex s = S <$> newIORef (ex, s)
 
@@ -219,6 +222,7 @@ destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
 getImages :: Device.D -> S -> IO [Image.I]
 getImages (Device.D dvc) sc = ($ pure) . runContT $ (Image.I <$>) <$> do
 	sc' <- lift $ sToCore sc
+	ex <- lift $ sToExtent sc
 	pSwapchainImageCount <- ContT alloca
 	(fromIntegral -> swapchainImageCount) <- lift do
 		r <- C.getImages dvc sc' pSwapchainImageCount NullPtr
@@ -227,4 +231,10 @@ getImages (Device.D dvc) sc = ($ pure) . runContT $ (Image.I <$>) <$> do
 	pSwapchainImages <- ContT $ allocaArray swapchainImageCount
 	lift do	r <- C.getImages dvc sc' pSwapchainImageCount pSwapchainImages
 		throwUnlessSuccess $ Result r
-		mapM newIORef =<< peekArray swapchainImageCount pSwapchainImages
+		mapM (newIORef . (extent2dTo3d ex ,))
+			=<< peekArray swapchainImageCount pSwapchainImages
+
+extent2dTo3d :: C.Extent2d -> C.Extent3d
+extent2dTo3d C.Extent2d { C.extent2dWidth = w, C.extent2dHeight = h } =
+	C.Extent3d {
+		C.extent3dWidth = w, C.extent3dHeight = h, C.extent3dDepth = 1 }

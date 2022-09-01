@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGe ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
@@ -54,7 +54,7 @@ subresourceRangeToCore SubresourceRange {
 		C.subresourceRangeBaseArrayLayer = baly,
 		C.subresourceRangeLayerCount = lyc }
 
-newtype I = I (IORef C.I)
+newtype I = I (IORef (Extent3d, C.I))
 
 data CreateInfoNew n (fmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
@@ -165,19 +165,20 @@ create (Device.D dvc) ci mac = (I <$>) . ($ pure) . runContT $ do
 	pimg <- ContT alloca
 	lift do	r <- C.create dvc pci pac pimg
 		throwUnlessSuccess $ Result r
-		newIORef =<< peek pimg
+		newIORef . (ex ,) =<< peek pimg
+	where ex = createInfoExtent ci
 
 getMemoryRequirements :: Device.D -> I -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I ri) =
 	(Memory.requirementsFromCore <$>) . ($ pure) $ runContT do
 		pr <- ContT alloca
-		lift do	i <- readIORef ri
+		lift do	(_, i) <- readIORef ri
 			C.getMemoryRequirements dvc i pr
 			peek pr
 
 bindMemory :: Device.D -> I -> Device.MemoryImage -> IO ()
 bindMemory (Device.D dvc) (I rimg) (Device.MemoryImage _ mem) = do
-	img <- readIORef rimg
+	(_, img) <- readIORef rimg
 	r <- C.bindMemory dvc img mem 0
 	throwUnlessSuccess $ Result r
 
@@ -205,7 +206,7 @@ memoryBarrierToCore MemoryBarrier {
 	memoryBarrierImage = I rimg,
 	memoryBarrierSubresourceRange = srr } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	img <- lift $ readIORef rimg
+	(_, img) <- lift $ readIORef rimg
 	pure C.MemoryBarrier {
 		C.memoryBarrierSType = (),
 		C.memoryBarrierPNext = pnxt,
@@ -240,7 +241,7 @@ destroy :: Pointable n =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) (I rimg) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
-	lift do	img <- readIORef rimg
+	lift do	(_, img) <- readIORef rimg
 		C.destroy dvc img pac
 
 data Blit = Blit {

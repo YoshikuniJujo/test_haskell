@@ -111,7 +111,7 @@ copyBufferToImage (CommandBuffer.M.C cb)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
-	lift do	di <- readIORef rdi
+	lift do	(_, di) <- readIORef rdi
 		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
 
 blitImage :: CommandBuffer.M.C v ->
@@ -122,8 +122,8 @@ blitImage (CommandBuffer.M.C cb)
 	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
 	pblts <- ContT $ allocaArray bltc
 	lift . pokeArray pblts $ Image.blitToCore <$> blts
-	lift do src <- readIORef rsrc
-		dst <- readIORef rdst
+	lift do (_, src) <- readIORef rsrc
+		(_, dst) <- readIORef rdst
 		C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
 
 dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
