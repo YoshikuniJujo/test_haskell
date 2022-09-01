@@ -245,6 +245,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
+  try-image-buffer:
+    main:                try-image-buffer.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan-snd
 
 tests:
   try-my-vulkan-snd-test:
