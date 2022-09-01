@@ -127,12 +127,11 @@ calc' :: (
 calc' dvc qfam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
-		(Vk.Ppl.Cmpt.CreateInfo_ (cmptPipelineInfo pplLyt) :...: HVNil)
-		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :...: HVNil) ->
+		(Singleton . Vk.Ppl.Cmpt.CreateInfo_ $ cmptPipelineInfo pplLyt)
+		nil nil \(Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil nil \cmdPool ->
-	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
-		[cmdBuf] -> run dvc qfam cmdBuf ppl pplLyt dscSet dsz ma mb mc
-		_ -> error "never occur"
+	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(Singleton cmdBuf) ->
+		run dvc qfam cmdBuf ppl pplLyt dscSet dsz ma mb mc
 
 type ListBuffer1 w1 w2 w3 = '[ 'List w1, 'List w2, 'List w3]
 type ListBuffer3Memory3 w1 w2 w3 = '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]]
@@ -447,12 +446,11 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :...: HVNil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
-	Vk.CmdBuf.allocateInfoNext = Nothing,
-	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
-	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoNew () s vss
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
+	Vk.CmdBuf.allocateInfoNextNew = Nothing,
+	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {
