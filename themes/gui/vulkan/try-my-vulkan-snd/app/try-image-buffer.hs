@@ -16,6 +16,7 @@ module Main where
 import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object
+import Data.MonoTraversable
 import Data.Default
 import Data.Bits
 import Data.List.Length
@@ -30,6 +31,8 @@ import Gpu.Vulkan.Base
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.TypeEnum as Vk.T
+import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
@@ -69,7 +72,12 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
+import qualified Gpu.Vulkan.Image as Vk.Image
+import qualified Gpu.Vulkan.Image.Enum as Vk.Image
+import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
+
 import Sample.GetOpt
+import Sample.Image
 import Codec.Picture.Tools
 
 main :: IO ()
@@ -271,8 +279,13 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
 prepareMems11 phdvc dvc dscSetLyt da db dc f =
 	readRgba8 "../../../../files/images/sample.png" >>= \img ->
-	print (imageWidth img) >>
-	print (imageHeight img) >>
+	let	wdt = fromIntegral $ imageWidth img
+		hgt = fromIntegral $ imageHeight img
+		imgBody = ImageRgba8 $ imageData img
+		in
+	print wdt >> print hgt >> print (olength imgBody) >>
+	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \img ->
+	(print =<< Vk.Image.getMemoryRequirementsNew dvc img) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
@@ -280,6 +293,25 @@ prepareMems11 phdvc dvc dscSetLyt da db dc f =
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
 		(writeDscSet' @w1 @w2 @w3 dscSet b) :...: HVNil) [] >>
 	f dscSet m
+
+imageInfo ::
+	Word32 -> Word32 -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
+imageInfo wdt hgt = Vk.Image.CreateInfoNew {
+	Vk.Image.createInfoNextNew = Nothing,
+	Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
+	Vk.Image.createInfoExtentNew = Vk.C.Extent3d {
+		Vk.C.extent3dWidth = wdt,
+		Vk.C.extent3dHeight = hgt,
+		Vk.C.extent3dDepth = 1 },
+	Vk.Image.createInfoMipLevelsNew = 1,
+	Vk.Image.createInfoArrayLayersNew = 1,
+	Vk.Image.createInfoTilingNew = Vk.Image.TilingOptimal,
+	Vk.Image.createInfoInitialLayoutNew = Vk.Image.LayoutUndefined,
+	Vk.Image.createInfoUsageNew = Vk.Image.UsageSampledBit,
+	Vk.Image.createInfoSharingModeNew = Vk.SharingModeExclusive,
+	Vk.Image.createInfoSamplesNew = Vk.Sample.Count1Bit,
+	Vk.Image.createInfoFlagsNew = zeroBits,
+	Vk.Image.createInfoQueueFamilyIndicesNew = [] }
 
 storageBufferNew3' :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->

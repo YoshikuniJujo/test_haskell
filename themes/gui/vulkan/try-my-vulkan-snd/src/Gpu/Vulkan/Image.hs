@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
-	INew, BindedNew, createNew, M.CreateInfoNew(..),
+	INew, BindedNew, createNew, M.CreateInfoNew(..), getMemoryRequirementsNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
 	M.SubresourceRange(..) ) where
@@ -32,6 +32,10 @@ create :: (Pointable n, Pointable n2, Pointable n3) =>
 	(forall s . I s -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\i -> M.destroy dvc i macd) (f . I)
+
+getMemoryRequirementsNew :: Device.D sd -> INew s fmt -> IO Memory.Requirements
+getMemoryRequirementsNew (Device.D dvc) (INew img) =
+	M.getMemoryRequirements dvc img
 
 getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
