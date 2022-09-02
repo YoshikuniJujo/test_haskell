@@ -96,8 +96,14 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	(\mem -> Memory.M.free mdvc mem macd)
 	\(Device.M.Memory mem) -> f $ M bs mem
 
-bind :: Device.D sd -> ImageBuffer sib ib -> M sm sibfoss -> IO ()
-bind = undefined
+bindBuffer :: forall sd sb objs sm sibfoss . Offset sb ('K.Buffer objs) sibfoss =>
+	Device.D sd -> Buffer.B sb objs -> M sm sibfoss -> IO ()
+bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m@(M _ mm) = do
+	ost <- offset @sb @('K.Buffer objs) dvc m 0
+	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
+
+-- bindImage :: ...
+-- bindImage ... = ...
 
 class Offset
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where
