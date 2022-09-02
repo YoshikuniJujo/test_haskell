@@ -1,14 +1,24 @@
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Memory.ImageBuffer where
 
+import Foreign.Pointable
+import Control.Exception
+import Data.Kind
+import Data.Kind.Object
 import Data.HeteroList
 
+import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
+import qualified Gpu.Vulkan.Device.Core as Device.C
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer as Buffer
@@ -17,9 +27,21 @@ import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as K
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Device.Memory.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
+data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
+	M (HeteroVarList (V2 ImageBuffer) sibfoss) Device.C.Memory
+
+deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
+	Show (M s sibfoss)
+
 data ImageBuffer sib (ib :: K.ImageBuffer) where
 	Image :: Image.INew si fmt -> ImageBuffer si ('K.Image fmt)
 	Buffer :: Buffer.B sb objs -> ImageBuffer sb ('K.Buffer objs)
+
+deriving instance Show (Image.INew sib fmt) =>
+	Show (ImageBuffer sib ('K.Image fmt))
+
+deriving instance Show (HeteroVarList ObjectLength objs) =>
+	Show (ImageBuffer sib ('K.Buffer objs))
 
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
@@ -59,3 +81,16 @@ memoryRequirementsListToSize sz0 (reqs : reqss) =
 	where
 	sz = Memory.M.requirementsSize reqs
 	algn = Memory.M.requirementsAlignment reqs
+
+allocate ::  (Pointable n, Pointable c, Pointable d) =>
+	Device.D sd ->
+	HeteroVarList (V2 ImageBuffer) sibfoss ->
+	Device.Memory.Buffer.AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) ->
+	(forall s . M s sibfoss -> IO a) -> IO a
+allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
+	do	mai <- allocateInfoToMiddle dvc bs ai
+		Memory.M.allocate mdvc mai macc
+	(\mem -> Memory.M.free mdvc mem macd)
+	\(Device.M.Memory mem) -> f $ M bs mem
