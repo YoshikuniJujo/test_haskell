@@ -81,8 +81,8 @@ import Sample.Image
 import Codec.Picture.Tools
 
 main :: IO ()
-main = getOptions >>= maybe (pure ()) \opt -> do
-	(r1, r2, r3) <- calc opt datA datB datC
+main = getOptions >>= maybe (pure ()) \(Opts opt ifp) -> do
+	(r1, r2, r3) <- calc opt ifp datA datB datC
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
@@ -106,9 +106,9 @@ calc :: forall w1 w2 w3 . (
 	Offset ('List w3) (ListBuffer1 w1 w2 w3),
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) '[ListBuffer1 w1 w2 w3],
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) '[ListBuffer1 w1 w2 w3] ) =>
-	BufMem -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
+	BufMem -> FilePath -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
-calc opt da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
+calc opt ifp da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dslyt ->
 	let	n = fromIntegral maxX
 		da = V.take n da_; db = V.take n db_; dc = V.take n dc_ in
@@ -120,7 +120,7 @@ calc opt da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
 			calc' dvc qfam dslyt dsst maxX m m m
 		Buffer1Memory1 ->
-			prepareMems11 phdvc dvc dslyt da db dc \dsst m ->
+			prepareMems11 ifp phdvc dvc dslyt da db dc \dsst m ->
 			calc' dvc qfam dslyt dsst maxX m m m
 
 calc' :: (
@@ -273,12 +273,13 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 	Vk.Dvc.Mem.Buffer.OffsetSize
 		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]],
 	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3] ) =>
+	FilePath ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm .
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
-prepareMems11 phdvc dvc dscSetLyt da db dc f =
-	readRgba8 "../../../../files/images/sample.png" >>= \img ->
+prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
+	readRgba8 ifp >>= \img ->
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
 		imgBody = ImageRgba8 $ imageData img
