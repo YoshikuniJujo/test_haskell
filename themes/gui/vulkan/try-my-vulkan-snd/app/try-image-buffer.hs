@@ -288,12 +288,22 @@ prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
 	print wdt >> print hgt >> print (olength imgBody) >>
 	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \img ->
 	storage1BufferNew dvc phdvc da db dc \buf bnd m ->
-	(print =<< Vk.Dvc.Mem.ImageBuffer.getMemoryRequirementsList dvc (
-		V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
-		V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
-		HVNil )) >>
+	let	imgbuf = V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
+			V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
+			HVNil in
+	Vk.Dvc.Mem.ImageBuffer.getMemoryRequirementsList dvc imgbuf >>= \reqs ->
+	print reqs >>
 	Vk.PhDvc.getMemoryProperties phdvc >>= \mprops ->
 	print mprops >>
+	let	memTypeIdx =
+			findMemoryTypeIndex reqs memoryPropertyBits mprops
+		memInfo :: Vk.Dvc.Mem.Buffer.AllocateInfo ()
+		memInfo = Vk.Dvc.Mem.Buffer.AllocateInfo {
+			Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex =
+				memTypeIdx } in
+	print memInfo >>
+	Vk.Dvc.Mem.ImageBuffer.allocate dvc imgbuf memInfo nil nil \mib ->
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
@@ -510,7 +520,7 @@ getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb objs ->
 	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
 getMemoryInfo phdvc dvc buffer = do
 	memTypeIdx <- findMemoryTypeIndex
-		<$> Vk.Buffer.getMemoryRequirements dvc buffer
+		<$> ((: []) <$> Vk.Buffer.getMemoryRequirements dvc buffer)
 		<*> pure memoryPropertyBits
 		<*> Vk.PhDvc.getMemoryProperties phdvc
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
@@ -522,15 +532,15 @@ memoryPropertyBits =
 	Vk.Mem.PropertyHostVisibleBit .|. Vk.Mem.PropertyHostCoherentBit
 
 findMemoryTypeIndex ::
-	Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
+	[Vk.Mem.M.Requirements] -> Vk.Mem.PropertyFlags ->
 	Vk.PhDvc.MemoryProperties -> Vk.Mem.TypeIndex
-findMemoryTypeIndex requirements memoryProp memoryProperties = do
-	let	reqTypes = Vk.Mem.M.requirementsMemoryTypeBits requirements
+findMemoryTypeIndex requirementss memoryProp memoryProperties = do
+	let	reqTypess = Vk.Mem.M.requirementsMemoryTypeBits <$> requirementss
 		memPropTypes = (fst <$>)
 			. filter (checkBits memoryProp
 				. Vk.Mem.M.mTypePropertyFlags . snd)
 			$ Vk.PhDvc.memoryPropertiesMemoryTypes memoryProperties
-	case filter (`Vk.Mem.M.elemTypeIndex` reqTypes) memPropTypes of
+	case filter (\x -> all (Vk.Mem.M.elemTypeIndex x) reqTypess) memPropTypes of
 		[] -> error "No available memory types"
 		i : _ -> i
 
