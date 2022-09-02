@@ -185,7 +185,7 @@ heteroVarListZipWithM_ _ _ HVNil = pure ()
 heteroVarListZipWithM_ op (x :...: xs) (y :...: ys) =
 	op x y >> heteroVarListZipWithM_ op xs ys
 
-data V2 t ss where V2 :: t s1 s2 -> V2 t '(s1, s2)
+data V2 t ss where V2 :: { unV2 :: t s1 s2 } -> V2 t '(s1, s2)
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)
 data V4 t ss where V4 :: t s1 s2 s3 s4 -> V4 t '(s1, s2, s3, s4)
 data V5 t ss where V5 :: t s1 s2 s3 s4 s5 -> V5 t '(s1, s2, s3, s4, s5)

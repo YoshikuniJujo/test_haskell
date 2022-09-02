@@ -66,6 +66,7 @@ import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
+import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
@@ -286,7 +287,8 @@ prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
 	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \img ->
-	(print =<< Vk.Image.getMemoryRequirementsNew dvc img) >>
+	(print =<< Vk.Dvc.Mem.ImageBuffer.getMemoryRequirementsList dvc
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Image img)) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
