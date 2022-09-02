@@ -287,14 +287,16 @@ prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
 	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \img ->
-	(print =<< Vk.Dvc.Mem.ImageBuffer.getMemoryRequirementsList dvc
-		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Image img)) >>
+	storage1BufferNew dvc phdvc da db dc \buf bnd m ->
+	(print =<< Vk.Dvc.Mem.ImageBuffer.getMemoryRequirementsList dvc (
+		V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
+		V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
+		HVNil )) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
-	storage1BufferNew dvc phdvc da db dc \b m ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet' @w1 @w2 @w3 dscSet b) :...: HVNil) [] >>
+		(writeDscSet' @w1 @w2 @w3 dscSet bnd) :...: HVNil) [] >>
 	f dscSet m
 
 imageInfo ::
@@ -426,6 +428,7 @@ storage1BufferNew :: forall sd w1 w2 w3 a . (
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb sm .
+		Vk.Buffer.B sb '[ 'List w1, 'List w2, 'List w3] ->
 		Vk.Buffer.Binded sm sb '[ 'List w1, 'List w2, 'List w3] ->
 		Vk.Dvc.Mem.Buffer.M sm
 			'[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
@@ -437,7 +440,7 @@ storage1BufferNew dvc phdvc xs ys zs f =
 			Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
 			Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys
 			Vk.Dvc.Mem.Buffer.write @('List w3) dvc mem def zs
-			f bnd mem
+			f buf bnd mem
 
 bufferInfo' :: (
 	Storable w1, Storable w2, Storable w3 ) =>
