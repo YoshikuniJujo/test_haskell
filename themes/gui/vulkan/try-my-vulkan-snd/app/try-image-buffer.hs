@@ -292,6 +292,8 @@ prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
 		V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
 		V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
 		HVNil )) >>
+	Vk.PhDvc.getMemoryProperties phdvc >>= \mprops ->
+	print mprops >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
@@ -507,19 +509,22 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb objs ->
 	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
 getMemoryInfo phdvc dvc buffer = do
-	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
-	memTypeIdx <- findMemoryTypeIndex phdvc requirements (
-		Vk.Mem.PropertyHostVisibleBit .|.
-		Vk.Mem.PropertyHostCoherentBit )
+	memTypeIdx <- findMemoryTypeIndex
+		<$> Vk.Buffer.getMemoryRequirements dvc buffer
+		<*> pure memoryPropertyBits
+		<*> Vk.PhDvc.getMemoryProperties phdvc
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
 		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = memTypeIdx }
 
+memoryPropertyBits :: Vk.Mem.PropertyFlagBits
+memoryPropertyBits =
+	Vk.Mem.PropertyHostVisibleBit .|. Vk.Mem.PropertyHostCoherentBit
+
 findMemoryTypeIndex ::
-	Vk.PhDvc.P -> Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
-	IO Vk.Mem.TypeIndex
-findMemoryTypeIndex physicalDevice requirements memoryProp = do
-	memoryProperties <- Vk.PhDvc.getMemoryProperties physicalDevice
+	Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
+	Vk.PhDvc.MemoryProperties -> Vk.Mem.TypeIndex
+findMemoryTypeIndex requirements memoryProp memoryProperties = do
 	let	reqTypes = Vk.Mem.M.requirementsMemoryTypeBits requirements
 		memPropTypes = (fst <$>)
 			. filter (checkBits memoryProp
@@ -527,7 +532,7 @@ findMemoryTypeIndex physicalDevice requirements memoryProp = do
 			$ Vk.PhDvc.memoryPropertiesMemoryTypes memoryProperties
 	case filter (`Vk.Mem.M.elemTypeIndex` reqTypes) memPropTypes of
 		[] -> error "No available memory types"
-		i : _ -> pure i
+		i : _ -> i
 
 checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
