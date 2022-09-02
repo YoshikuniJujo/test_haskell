@@ -1,8 +1,9 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -12,7 +13,7 @@ module Gpu.Vulkan.Device.Memory.ImageBuffer where
 import Foreign.Pointable
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object
+import Data.Kind.Object hiding (Offset(..))
 import Data.HeteroList
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -94,3 +95,25 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		Memory.M.allocate mdvc mai macc
 	(\mem -> Memory.M.free mdvc mem macd)
 	\(Device.M.Memory mem) -> f $ M bs mem
+
+bind :: Device.D sd -> ImageBuffer sib ib -> M sm sibfoss -> IO ()
+bind = undefined
+
+class Offset
+	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where
+	offset :: Device.D sd -> M sm sibfoss -> Device.M.Size -> IO Device.M.Size
+
+instance Offset sib ib ('(sib, ib) ': sibfoss) where
+	offset dvc (M (ib :...: _ibs) _m) ost = do
+		reqs <- getMemoryRequirements' dvc ib
+		let	algn = Memory.M.requirementsAlignment reqs
+		pure $ ((ost - 1) `div` algn + 1) * algn
+
+instance {-# OVERLAPPABLE #-} Offset sib ib sibfoss =>
+	Offset sib ib ('(sib', ib') ': sibfoss) where
+	offset dvc (M (ib :...: ibs) m) ost = do
+		reqs <- getMemoryRequirements' dvc ib
+		let	sz = Memory.M.requirementsSize reqs
+			algn = Memory.M.requirementsAlignment reqs
+		offset @sib @ib dvc (M ibs m)
+			$ ((ost - 1) `div` algn + 1) * algn + sz

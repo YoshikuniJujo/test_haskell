@@ -67,6 +67,7 @@ import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
+import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as Vk.Dvc.Mem.ImageBuffer.K
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
@@ -280,14 +281,14 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
 prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
-	readRgba8 ifp >>= \img ->
-	let	wdt = fromIntegral $ imageWidth img
-		hgt = fromIntegral $ imageHeight img
-		imgBody = ImageRgba8 $ imageData img
+	readRgba8 ifp >>= \img_ ->
+	let	wdt = fromIntegral $ imageWidth img_
+		hgt = fromIntegral $ imageHeight img_
+		imgBody = ImageRgba8 $ imageData img_
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
-	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \img ->
-	storage1BufferNew dvc phdvc da db dc \buf bnd m ->
+	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \(img :: Vk.Image.INew simg fmt) ->
+	storage1BufferNew dvc phdvc da db dc \(buf :: Vk.Buffer.B sb objs) bnd m ->
 	let	imgbuf = V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
 			V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
 			HVNil in
@@ -304,6 +305,10 @@ prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
 				memTypeIdx } in
 	print memInfo >>
 	Vk.Dvc.Mem.ImageBuffer.allocate dvc imgbuf memInfo nil nil \mib ->
+	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
+		@simg @('Vk.Dvc.Mem.ImageBuffer.K.Image fmt) dvc mib 0) >>
+	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
+		@sb @('Vk.Dvc.Mem.ImageBuffer.K.Buffer objs) dvc mib 0) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
