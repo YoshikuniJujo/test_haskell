@@ -102,8 +102,13 @@ bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m@(M _ mm) = do
 	ost <- offset @sb @('K.Buffer objs) dvc m 0
 	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 
--- bindImage :: ...
--- bindImage ... = ...
+{-
+bindImage :: forall sd si fmt sm sibfoss . Offset si ('K.Image fmt) sibfoss =>
+	Device.D sd -> Image.INew si fmt -> M sm sibfoss -> IO ()
+bindImage dvc@(Device.D mdvc) (Image.INew i) m@(M _ mm) = do
+	ost <- offset @si @('K.Image fmt) dvc m 0
+	Image.M.bindMemory mdvc i (Device.M.Memory mm) ost
+	-}
 
 class Offset
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where
