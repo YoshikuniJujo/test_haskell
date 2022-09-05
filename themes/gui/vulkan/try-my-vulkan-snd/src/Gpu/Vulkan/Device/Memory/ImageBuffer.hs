@@ -10,8 +10,9 @@
 
 module Gpu.Vulkan.Device.Memory.ImageBuffer where
 
+import Foreign.Storable
 import Foreign.Pointable
-import Control.Exception
+import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object hiding (Offset(..))
 import Data.HeteroList
@@ -169,3 +170,17 @@ instance {-# OVERLAPPABLE #-} Offset sib ib sibfoss =>
 			algn = Memory.M.requirementsAlignment reqs
 		offset @sib @ib dvc (M ibs m)
 			$ ((ost - 1) `div` algn + 1) * algn + sz
+
+class Try s sibfoss where
+	try :: Device.D sd -> M sm sibfoss -> IO (Device.M.Size, Device.M.Size)
+
+instance Try sib ('(sib, ib) ': sibfoss) where
+	try dvc (M (ib :...: _) _) = do
+		reqs <- getMemoryRequirements' dvc ib
+		let	sz = Memory.M.requirementsSize reqs
+			algn = Memory.M.requirementsAlignment reqs
+		pure (sz, algn)
+
+instance {-# OVERLAPPABLE #-} Try sib sibfoss =>
+	Try sib ('(sib', ib) ': sibfoss) where
+	try dvc (M (_ :...: ibs) m) = try @sib dvc (M ibs m)
