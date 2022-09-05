@@ -36,18 +36,18 @@ deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
 	Show (M s sibfoss)
 
 data ImageBuffer sib (ib :: K.ImageBuffer) where
-	Image :: Image.INew si fmt -> ImageBuffer si ('K.Image fmt)
+	Image :: Image.INew si nm fmt -> ImageBuffer si ('K.Image nm fmt)
 	Buffer :: Buffer.B sb objs -> ImageBuffer sb ('K.Buffer objs)
 
-deriving instance Show (Image.INew sib fmt) =>
-	Show (ImageBuffer sib ('K.Image fmt))
+deriving instance Show (Image.INew sib nm fmt) =>
+	Show (ImageBuffer sib ('K.Image nm fmt))
 
 deriving instance Show (HeteroVarList ObjectLength objs) =>
 	Show (ImageBuffer sib ('K.Buffer objs))
 
 data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
-	ImageBinded :: Image.BindedNew si sm fmt ->
-		ImageBufferBinded sm si ('K.Image fmt)
+	ImageBinded :: Image.BindedNew si sm nm fmt ->
+		ImageBufferBinded sm si ('K.Image nm fmt)
 	BufferBinded :: Buffer.Binded sb sm objs ->
 		ImageBufferBinded sm sb ('K.Buffer objs)
 
@@ -124,8 +124,8 @@ class BindAll sibfoss sibfoss' where
 
 instance BindAll '[] sibfoss' where bindAll _ _ _ = pure HVNil
 
-instance (Offset si ('K.Image fmt) sibfoss', BindAll fibfoss sibfoss') =>
-	BindAll ('(si, ('K.Image fmt)) ': fibfoss) sibfoss' where
+instance (Offset si ('K.Image nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
+	BindAll ('(si, ('K.Image nm fmt)) ': fibfoss) sibfoss' where
 	bindAll dvc (V2 (Image img) :...: ibs) m = (:...:)
 		<$> (V2 . ImageBinded <$> bindImage dvc img m)
 		<*> bindAll dvc ibs m
@@ -136,11 +136,11 @@ instance (Offset sb ('K.Buffer objs) sibfoss', BindAll fibfoss sibfoss') =>
 		<$> (V2 . BufferBinded <$> bindBuffer dvc bf m)
 		<*> bindAll dvc ibs m
 
-bindImage :: forall sd si fmt sm sibfoss . Offset si ('K.Image fmt) sibfoss =>
-	Device.D sd -> Image.INew si fmt -> M sm sibfoss ->
-	IO (Image.BindedNew si sm fmt)
+bindImage :: forall sd si nm fmt sm sibfoss . Offset si ('K.Image nm fmt) sibfoss =>
+	Device.D sd -> Image.INew si nm fmt -> M sm sibfoss ->
+	IO (Image.BindedNew si sm nm fmt)
 bindImage dvc@(Device.D mdvc) (Image.INew i) m@(M _ mm) = do
-	ost <- offset @si @('K.Image fmt) dvc m 0
+	ost <- offset @si @('K.Image nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
 	pure (Image.BindedNew i)
 

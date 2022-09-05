@@ -22,7 +22,7 @@ import qualified Gpu.Vulkan.Image.Middle as M
 createNew :: (Pointable n, Pointable n2, Pointable n3, T.FormatToValue fmt) =>
 	Device.D sd -> M.CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
-	(forall s . INew s fmt -> IO a) -> IO a
+	(forall s . INew s nm fmt -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f =
 	bracket (M.createNew dvc ci macc) (\i -> M.destroy dvc i macd) (f . INew)
 
@@ -33,7 +33,7 @@ create :: (Pointable n, Pointable n2, Pointable n3) =>
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\i -> M.destroy dvc i macd) (f . I)
 
-getMemoryRequirementsNew :: Device.D sd -> INew s fmt -> IO Memory.Requirements
+getMemoryRequirementsNew :: Device.D sd -> INew s nm fmt -> IO Memory.Requirements
 getMemoryRequirementsNew (Device.D dvc) (INew img) =
 	M.getMemoryRequirements dvc img
 

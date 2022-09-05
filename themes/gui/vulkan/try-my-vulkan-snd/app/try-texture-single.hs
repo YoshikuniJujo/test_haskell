@@ -780,7 +780,7 @@ createTextureImage phdvc dvc = do
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
 		imgBody = ImageRgba8 $ imageData img
-	createImage @'Vk.T.FormatR8g8b8a8Srgb dvc wdt hgt Vk.Image.TilingOptimal
+	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb dvc wdt hgt Vk.Image.TilingOptimal
 		(Vk.Image.UsageTransferDstBit .|.  Vk.Image.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit \tximg -> do
 			createBufferList @_ @Rgba8 @_ phdvc dvc (olength imgBody)
@@ -792,10 +792,10 @@ createTextureImage phdvc dvc = do
 				print sbm
 				pure ()
 
-createImage :: forall fmt sd a . Vk.T.FormatToValue fmt =>
+createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Image.Tiling ->
 	Vk.Image.UsageFlagBits -> Vk.Mem.PropertyFlagBits ->
-	(forall s . Vk.Image.INew s fmt -> IO a) -> IO a
+	(forall s . Vk.Image.INew s nm fmt -> IO a) -> IO a
 createImage dvc wdt hgt tlng usg prps f = do
 	Vk.Image.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> f img
 	where

@@ -291,7 +291,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		imgBody = ImageRgba8 $ imageData img_
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
-	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg fmt) ->
+	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg nm fmt) ->
 	storage1BufferNewNoBind dvc da db dc \(buf :: Vk.Buffer.B sb objs) ->
 	storage1BufferNew dvc phdvc da db dc \(buf' :: Vk.Buffer.B sb' objs) bnd' m' ->
 	let	imgbuf = V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
