@@ -83,7 +83,7 @@ memoryRequirementsListToSize sz0 (reqs : reqss) =
 	sz = Memory.M.requirementsSize reqs
 	algn = Memory.M.requirementsAlignment reqs
 
-allocate ::  (Pointable n, Pointable c, Pointable d) =>
+allocate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd ->
 	HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
@@ -96,17 +96,33 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	(\mem -> Memory.M.free mdvc mem macd)
 	\(Device.M.Memory mem) -> f $ M bs mem
 
-bindBuffer :: forall sd sb objs sm sibfoss . Offset sb ('K.Buffer objs) sibfoss =>
-	Device.D sd -> Buffer.B sb objs -> M sm sibfoss -> IO ()
-bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m@(M _ mm) = do
-	ost <- offset @sb @('K.Buffer objs) dvc m 0
-	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
+class BindAll sibfoss sibfoss' where
+	bindAll :: Device.D sd -> HeteroVarList (V2 ImageBuffer) sibfoss ->
+		M sm sibfoss' -> IO ()
+
+instance BindAll '[] sibfoss' where bindAll _ _ _ = pure ()
+
+instance (Offset si ('K.Image fmt) sibfoss', BindAll fibfoss sibfoss') =>
+	BindAll ('(si, ('K.Image fmt)) ': fibfoss) sibfoss' where
+	bindAll dvc (V2 (Image img) :...: ibs) m =
+		bindImage dvc img m >> bindAll dvc ibs m
+
+instance (Offset sb ('K.Buffer objs) sibfoss', BindAll fibfoss sibfoss') =>
+	BindAll ('(sb, ('K.Buffer objs)) ': fibfoss) sibfoss' where
+	bindAll dvc (V2 (Buffer bf) :...: ibs) m =
+		bindBuffer dvc bf m >> bindAll dvc ibs m
 
 bindImage :: forall sd si fmt sm sibfoss . Offset si ('K.Image fmt) sibfoss =>
 	Device.D sd -> Image.INew si fmt -> M sm sibfoss -> IO ()
 bindImage dvc@(Device.D mdvc) (Image.INew i) m@(M _ mm) = do
 	ost <- offset @si @('K.Image fmt) dvc m 0
 	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
+
+bindBuffer :: forall sd sb objs sm sibfoss . Offset sb ('K.Buffer objs) sibfoss =>
+	Device.D sd -> Buffer.B sb objs -> M sm sibfoss -> IO ()
+bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m@(M _ mm) = do
+	ost <- offset @sb @('K.Buffer objs) dvc m 0
+	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 
 class Offset
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where

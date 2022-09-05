@@ -314,8 +314,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		@simg @('Vk.Dvc.Mem.ImageBuffer.K.Image fmt) dvc mib 0) >>
 	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
 		@sb @('Vk.Dvc.Mem.ImageBuffer.K.Buffer objs) dvc mib 0) >>
-	Vk.Dvc.Mem.ImageBuffer.bindBuffer dvc buf mib >>
-	Vk.Dvc.Mem.ImageBuffer.bindImage dvc img mib >>
+	Vk.Dvc.Mem.ImageBuffer.bindAll dvc imgbuf mib >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
@@ -474,7 +473,7 @@ storage1BufferNewNoBind :: forall sd w1 w2 w3 a . (
 		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]] ) =>
 	Vk.Dvc.D sd ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
-		forall sb sm .
+		forall sb .
 		Vk.Buffer.B sb '[ 'List w1, 'List w2, 'List w3] -> IO a) -> IO a
 storage1BufferNewNoBind dvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil f
