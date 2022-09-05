@@ -83,11 +83,15 @@ import Sample.Image
 import Codec.Picture.Tools
 
 main :: IO ()
-main = getOptions >>= maybe (pure ()) \(Opts opt ifp) -> do
-	(r1, r2, r3) <- calc opt ifp datA datB datC
+main = getOptions >>= maybe (pure ()) \(Opts opt ifp tlng_) -> do
+	(r1, r2, r3) <- calc opt ifp (tilingToTiling tlng_) datA datB datC
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
+
+tilingToTiling :: Tiling -> Vk.Image.Tiling
+tilingToTiling Optimal = Vk.Image.TilingOptimal
+tilingToTiling Linear = Vk.Image.TilingLinear
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
@@ -108,9 +112,9 @@ calc :: forall w1 w2 w3 . (
 	Offset ('List w3) (ListBuffer1 w1 w2 w3),
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) '[ListBuffer1 w1 w2 w3],
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) '[ListBuffer1 w1 w2 w3] ) =>
-	BufMem -> FilePath -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
+	BufMem -> FilePath -> Vk.Image.Tiling -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
-calc opt ifp da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
+calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dslyt ->
 	let	n = fromIntegral maxX
 		da = V.take n da_; db = V.take n db_; dc = V.take n dc_ in
@@ -122,7 +126,7 @@ calc opt ifp da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
 			calc' dvc qfam dslyt dsst maxX m m m
 		Buffer1Memory1 ->
-			prepareMems11 ifp phdvc dvc dslyt da db dc \dsst m ->
+			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m ->
 			calc' dvc qfam dslyt dsst maxX m m m
 
 calc' :: (
@@ -275,19 +279,19 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 	Vk.Dvc.Mem.Buffer.OffsetSize
 		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]],
 	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3] ) =>
-	FilePath ->
+	FilePath -> Vk.Image.Tiling ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm .
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
-prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
+prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	readRgba8 ifp >>= \img_ ->
 	let	wdt = fromIntegral $ imageWidth img_
 		hgt = fromIntegral $ imageHeight img_
 		imgBody = ImageRgba8 $ imageData img_
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
-	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt) nil nil \(img :: Vk.Image.INew simg fmt) ->
+	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg fmt) ->
 	storage1BufferNew dvc phdvc da db dc \(buf :: Vk.Buffer.B sb objs) bnd m ->
 	let	imgbuf = V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
 			V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
@@ -318,8 +322,8 @@ prepareMems11 ifp phdvc dvc dscSetLyt da db dc f =
 	f dscSet m
 
 imageInfo ::
-	Word32 -> Word32 -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
-imageInfo wdt hgt = Vk.Image.CreateInfoNew {
+	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
+imageInfo wdt hgt tlng = Vk.Image.CreateInfoNew {
 	Vk.Image.createInfoNextNew = Nothing,
 	Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
 	Vk.Image.createInfoExtentNew = Vk.C.Extent3d {
@@ -328,7 +332,7 @@ imageInfo wdt hgt = Vk.Image.CreateInfoNew {
 		Vk.C.extent3dDepth = 1 },
 	Vk.Image.createInfoMipLevelsNew = 1,
 	Vk.Image.createInfoArrayLayersNew = 1,
-	Vk.Image.createInfoTilingNew = Vk.Image.TilingOptimal,
+	Vk.Image.createInfoTilingNew = tlng,
 	Vk.Image.createInfoInitialLayoutNew = Vk.Image.LayoutUndefined,
 	Vk.Image.createInfoUsageNew = Vk.Image.UsageSampledBit,
 	Vk.Image.createInfoSharingModeNew = Vk.SharingModeExclusive,
