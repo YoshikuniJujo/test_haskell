@@ -292,7 +292,8 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
 	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg fmt) ->
-	storage1BufferNew dvc phdvc da db dc \(buf :: Vk.Buffer.B sb objs) bnd m ->
+	storage1BufferNewNoBind dvc da db dc \(buf :: Vk.Buffer.B sb objs) ->
+	storage1BufferNew dvc phdvc da db dc \(buf' :: Vk.Buffer.B sb' objs) bnd' m' ->
 	let	imgbuf = V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
 			V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
 			HVNil in
@@ -313,14 +314,14 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		@simg @('Vk.Dvc.Mem.ImageBuffer.K.Image fmt) dvc mib 0) >>
 	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
 		@sb @('Vk.Dvc.Mem.ImageBuffer.K.Buffer objs) dvc mib 0) >>
---	Vk.Dvc.Mem.ImageBuffer.bindBuffer dvc buf mib >>
+	Vk.Dvc.Mem.ImageBuffer.bindBuffer dvc buf mib >>
 	Vk.Dvc.Mem.ImageBuffer.bindImage dvc img mib >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet' @w1 @w2 @w3 dscSet bnd) :...: HVNil) [] >>
-	f dscSet m
+		(writeDscSet' @w1 @w2 @w3 dscSet bnd') :...: HVNil) [] >>
+	f dscSet m'
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
@@ -464,6 +465,19 @@ storage1BufferNew dvc phdvc xs ys zs f =
 			Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys
 			Vk.Dvc.Mem.Buffer.write @('List w3) dvc mem def zs
 			f buf bnd mem
+
+storage1BufferNewNoBind :: forall sd w1 w2 w3 a . (
+	Storable w1, Storable w2, Storable w3,
+	Vk.Dvc.Mem.Buffer.OffsetSize
+		('List w2) '[ '[ 'List w1, 'List w2, 'List w3]],
+	Vk.Dvc.Mem.Buffer.OffsetSize
+		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]] ) =>
+	Vk.Dvc.D sd ->
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
+		forall sb sm .
+		Vk.Buffer.B sb '[ 'List w1, 'List w2, 'List w3] -> IO a) -> IO a
+storage1BufferNewNoBind dvc xs ys zs f =
+	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil f
 
 bufferInfo' :: (
 	Storable w1, Storable w2, Storable w3 ) =>
