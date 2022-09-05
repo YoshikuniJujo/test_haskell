@@ -314,6 +314,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
 		@sb @('Vk.Dvc.Mem.ImageBuffer.K.Buffer objs) dvc mib 0) >>
 --	Vk.Dvc.Mem.ImageBuffer.bindBuffer dvc buf mib >>
+	Vk.Dvc.Mem.ImageBuffer.bindImage dvc img mib >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
