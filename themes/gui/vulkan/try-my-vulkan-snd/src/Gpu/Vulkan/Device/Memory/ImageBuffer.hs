@@ -102,6 +102,20 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	(\mem -> Memory.M.free mdvc mem macd)
 	\(Device.M.Memory mem) -> f $ M bs mem
 
+allocateBind :: (
+	Pointable n, Pointable c, Pointable d, BindAll sibfoss sibfoss ) =>
+	Device.D sd ->
+	HeteroVarList (V2 ImageBuffer) sibfoss ->
+	Device.Memory.Buffer.AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) ->
+	(forall s .
+		HeteroVarList (V2 (ImageBufferBinded s)) sibfoss ->
+		M s sibfoss -> IO a) -> IO a
+allocateBind dvc bs ai macc macd f = allocate dvc bs ai macc macd \m -> do
+	bnds <- bindAll dvc bs m
+	f bnds m
+
 class BindAll sibfoss sibfoss' where
 	bindAll :: Device.D sd -> HeteroVarList (V2 ImageBuffer) sibfoss ->
 		M sm sibfoss' ->

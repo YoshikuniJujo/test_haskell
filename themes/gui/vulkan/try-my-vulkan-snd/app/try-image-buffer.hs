@@ -309,12 +309,9 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex =
 				memTypeIdx } in
 	print memInfo >>
-	Vk.Dvc.Mem.ImageBuffer.allocate dvc imgbuf memInfo nil nil \mib ->
-	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
-		@simg @('Vk.Dvc.Mem.ImageBuffer.K.Image fmt) dvc mib 0) >>
-	(print =<< Vk.Dvc.Mem.ImageBuffer.offset
-		@sb @('Vk.Dvc.Mem.ImageBuffer.K.Buffer objs) dvc mib 0) >>
-	Vk.Dvc.Mem.ImageBuffer.bindAll dvc imgbuf mib >>
+	Vk.Dvc.Mem.ImageBuffer.allocateBind dvc imgbuf memInfo nil nil \(
+		V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded imgb) :...:
+		V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bufb) :...: HVNil) mib ->
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
