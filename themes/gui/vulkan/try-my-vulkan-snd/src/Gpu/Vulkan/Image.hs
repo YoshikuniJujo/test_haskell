@@ -41,6 +41,6 @@ getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
 
 bindMemory :: Device.D sd -> I si -> Device.MemoryImage sm -> IO (Binded si sm)
-bindMemory (Device.D dvc) (I img) (Device.MemoryImage mem) = do
+bindMemory (Device.D dvc) (I img) (Device.MemoryImage _ mem) = do
 	M.bindMemory dvc img mem 0
 	pure $ Binded img

@@ -19,6 +19,7 @@ import Codec.Picture
 import Shaderc.TH
 import Shaderc.EnumAuto
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 import qualified Data.Vector.Storable as V
 
@@ -144,6 +145,9 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 				Vk.Cmd.draw cb 3 1 0 0
 		bs <- Vk.Memory.Image.readByteString
 			device mi Vk.Memory.M.MapFlagsZero
+		print $ BS.length bs
+		print screenWidth
+		print screenHeight
 		let	v = uncurry V.unsafeFromForeignPtr0 $ BS.toForeignPtr0 bs
 			jimg = Image
 				(fromIntegral screenWidth) (fromIntegral screenHeight) v

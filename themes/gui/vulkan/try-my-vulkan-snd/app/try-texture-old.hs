@@ -249,7 +249,7 @@ newGlobal = do
 	dp <- newIORef $ Vk.DscPool.P NullPtr
 	dss <- newIORef []
 	ti <- newIORef $ Vk.Image.I undefined
-	tim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
+	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	tiv <- newIORef $ Vk.ImageView.I undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
 	pure Global {
@@ -1023,7 +1023,7 @@ createImage widt hght format tiling usage properties = do
 	let	allocInfo = Vk.Memory.Image.AllocateInfo {
 			Vk.Memory.Image.allocateInfoNext = Nothing,
 			Vk.Memory.Image.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
-	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
+	(_, tim) <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
 	lift $ Vk.Image.bindMemory dvc ti tim 0
 	pure (ti, tim)
 

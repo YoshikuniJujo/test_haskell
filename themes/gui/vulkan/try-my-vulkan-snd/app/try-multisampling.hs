@@ -274,11 +274,11 @@ newGlobal = do
 	dss <- newIORef []
 	ml <- newIORef 0
 	ti <- newIORef $ Vk.Image.I undefined
-	tim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
+	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	tiv <- newIORef $ Vk.ImageView.I undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
 	di <- newIORef $ Vk.Image.I undefined
-	dim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
+	dim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	divw <- newIORef $ Vk.ImageView.I undefined
 	tfp <- newIORef ""
 	mfp <- newIORef ""
@@ -287,7 +287,7 @@ newGlobal = do
 	mnld <- newIORef 0
 	msaaS <- newIORef Vk.Sample.CountFlagsZero
 	ci <- newIORef $ Vk.Image.I undefined
-	cim <- newIORef $ Vk.Device.MemoryImage 0 NullPtr
+	cim <- newIORef $ Vk.Device.MemoryImage NullPtr
 	civ <- newIORef $ Vk.ImageView.I undefined
 	pure Global {
 		globalWindow = win,
@@ -1361,7 +1361,7 @@ createImage widt hght mipLevels numSamples format tiling usage properties = do
 	let	allocInfo = Vk.Memory.Image.AllocateInfo {
 			Vk.Memory.Image.allocateInfoNext = Nothing,
 			Vk.Memory.Image.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
-	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
+	(_, tim) <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
 	lift $ Vk.Image.bindMemory dvc ti tim 0
 	pure (ti, tim)
 

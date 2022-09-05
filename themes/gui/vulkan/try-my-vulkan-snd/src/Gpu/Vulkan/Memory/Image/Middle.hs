@@ -32,20 +32,20 @@ allocateInfoToMiddle dvc img AllocateInfo {
 
 allocate :: (Pointable n, Pointable n') =>
 	Device.D -> Image.I -> AllocateInfo n ->
-	Maybe (AllocationCallbacks.A n') -> IO Device.MemoryImage
+	Maybe (AllocationCallbacks.A n') -> IO (Device.Size, Device.MemoryImage)
 allocate dvc img ai mac = do
 	mai <- allocateInfoToMiddle dvc img ai
-	(\(Device.Memory m) ->
-			Device.MemoryImage (M.allocateInfoAllocationSize mai) m)
+	(\(Device.Memory m) -> (M.allocateInfoAllocationSize mai,
+			Device.MemoryImage m))
 		<$> M.allocate dvc mai mac
 
 free :: Pointable n =>
 	Device.D -> Device.MemoryImage -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
-free dvc (Device.MemoryImage _ m) mac = M.free dvc (Device.Memory m) mac
+free dvc (Device.MemoryImage m) mac = M.free dvc (Device.Memory m) mac
 
-map :: Device.D -> Device.MemoryImage -> M.MapFlags -> IO (Ptr a)
-map dvc (Device.MemoryImage sz m) flgs = M.map dvc (Device.Memory m) 0 sz flgs
+map :: Device.D -> Device.MemoryImage -> Device.Size -> M.MapFlags -> IO (Ptr a)
+map dvc (Device.MemoryImage m) sz flgs = M.map dvc (Device.Memory m) 0 sz flgs
 
 unmap :: Device.D -> Device.MemoryImage -> IO ()
-unmap dvc (Device.MemoryImage _ m) = M.unmap dvc $ Device.Memory m
+unmap dvc (Device.MemoryImage m) = M.unmap dvc $ Device.Memory m

@@ -25,12 +25,13 @@ allocate :: (Pointable n, Pointable n2, Pointable n3) =>
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
 	(forall s . Device.MemoryImage s -> IO a) -> IO a
 allocate (Device.D dvc) (Image.I img) ai macc macd f = bracket
-	(M.allocate dvc img ai macc) (\mi -> M.free dvc mi macd)
-	(f . Device.MemoryImage)
+	(M.allocate dvc img ai macc) (\(_, mi) -> M.free dvc mi macd)
+	(\(sz, mi) -> f $ Device.MemoryImage sz mi)
 
 readByteString :: Device.D sd ->
 	Device.MemoryImage si -> Memory.M.MapFlags -> IO BS.ByteString
 readByteString (Device.D dvc)
-	(Device.MemoryImage m@(Device.M.MemoryImage (fromIntegral -> sz) _))
-	flgs = bracket (M.map dvc m flgs) (const $ M.unmap dvc m) \src ->
+	(Device.MemoryImage sz_@(fromIntegral -> sz) m)
+	flgs = bracket (M.map dvc m sz_ flgs) (const $ M.unmap dvc m) \src -> do
+	print sz
 	BS.create sz \dst -> BS.memcpy dst src sz

@@ -178,7 +178,7 @@ getMemoryRequirements (Device.D dvc) (I ri) =
 
 bindMemory :: Device.D -> I -> Device.MemoryImage -> Device.Size -> IO ()
 bindMemory (Device.D dvc)
-	(I rimg) (Device.MemoryImage _ mem) (Device.Size ost) = do
+	(I rimg) (Device.MemoryImage mem) (Device.Size ost) = do
 	(_, img) <- readIORef rimg
 	r <- C.bindMemory dvc img mem ost
 	throwUnlessSuccess $ Result r
