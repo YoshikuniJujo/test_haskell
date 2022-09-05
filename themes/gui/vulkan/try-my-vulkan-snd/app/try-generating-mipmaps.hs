@@ -1290,7 +1290,7 @@ createImage widt hght mipLevels format tiling usage properties = do
 			Vk.Memory.Image.allocateInfoNext = Nothing,
 			Vk.Memory.Image.allocateInfoMemoryTypeIndex = Vk.Memory.TypeIndex mti }
 	tim <- lift $ Vk.Memory.Image.allocate @() dvc ti allocInfo nil
-	lift $ Vk.Image.bindMemory dvc ti tim
+	lift $ Vk.Image.bindMemory dvc ti tim 0
 	pure (ti, tim)
 
 transitionImageLayout ::

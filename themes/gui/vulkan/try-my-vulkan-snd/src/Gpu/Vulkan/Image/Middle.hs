@@ -176,10 +176,11 @@ getMemoryRequirements (Device.D dvc) (I ri) =
 			C.getMemoryRequirements dvc i pr
 			peek pr
 
-bindMemory :: Device.D -> I -> Device.MemoryImage -> IO ()
-bindMemory (Device.D dvc) (I rimg) (Device.MemoryImage _ mem) = do
+bindMemory :: Device.D -> I -> Device.MemoryImage -> Device.Size -> IO ()
+bindMemory (Device.D dvc)
+	(I rimg) (Device.MemoryImage _ mem) (Device.Size ost) = do
 	(_, img) <- readIORef rimg
-	r <- C.bindMemory dvc img mem 0
+	r <- C.bindMemory dvc img mem ost
 	throwUnlessSuccess $ Result r
 
 data MemoryBarrier n = MemoryBarrier {
