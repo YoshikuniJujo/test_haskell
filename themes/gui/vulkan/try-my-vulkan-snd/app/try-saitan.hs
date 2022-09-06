@@ -317,23 +317,23 @@ storageBufferNew3' :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 .
-		Vk.Buffer.Binded sm1 sb1 '[ 'List w1] ->
+		Vk.Buffer.Binded sm1 sb1 nm1 '[ 'List w1] ->
 		Vk.Dvc.Mem.Buffer.M sm1 '[ '[ 'List w1]] ->
-		Vk.Buffer.Binded sm2 sb2 '[ 'List w2] ->
+		Vk.Buffer.Binded sm2 sb2 nm2 '[ 'List w2] ->
 		Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'List w2]] ->
-		Vk.Buffer.Binded sm3 sb3 '[ 'List w3] ->
+		Vk.Buffer.Binded sm3 sb3 nm3 '[ 'List w3] ->
 		Vk.Dvc.Mem.Buffer.M sm3 '[ '[ 'List w3]] -> IO a ) -> IO a
 storageBufferNew3' dvc phdvc x y z f =
 	storageBufferNews dvc phdvc (x :...: y :...: z :...: HVNil) $ addArg3 f
 
 addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
-	Vk.Buffer.Binded sm1 sb1 '[ 'List w1] ->
+	Vk.Buffer.Binded sm1 sb1 nm1 '[ 'List w1] ->
 	Vk.Dvc.Mem.Buffer.M sm1 '[ '[ 'List w1]] ->
-	Vk.Buffer.Binded sm2 sb2 '[ 'List w2] ->
+	Vk.Buffer.Binded sm2 sb2 nm2 '[ 'List w2] ->
 	Vk.Dvc.Mem.Buffer.M sm2 '[ '[ 'List w2]] ->
-	Vk.Buffer.Binded sm3 sb3 '[ 'List w3] ->
+	Vk.Buffer.Binded sm3 sb3 nm3 '[ 'List w3] ->
 	Vk.Dvc.Mem.Buffer.M sm3 '[ '[ 'List w3]] -> r) ->
-	Arg w1 (Arg w2 (Arg w3 r))
+	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
 addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
 
 class StorageBufferNews f a where
@@ -341,8 +341,8 @@ class StorageBufferNews f a where
 	storageBufferNews :: Vk.Dvc.D sd -> Vk.PhDvc.P ->
 		HeteroVarList V.Vector (Vectors f) -> f -> IO a
 
-data Arg w f = Arg (forall sb sm .
-	Vk.Buffer.Binded sm sb '[ 'List w] ->
+data Arg nm w f = Arg (forall sb sm .
+	Vk.Buffer.Binded sm sb nm '[ 'List w] ->
 	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w]] -> f)
 
 instance StorageBufferNews (IO a) a where
@@ -350,26 +350,26 @@ instance StorageBufferNews (IO a) a where
 	storageBufferNews _dvc _phdvc HVNil f = f
 
 instance (Storable w, StorageBufferNews f a) =>
-	StorageBufferNews (Arg w f) a where
-	type Vectors (Arg w f) = w ': Vectors f
+	StorageBufferNews (Arg nm w f) a where
+	type Vectors (Arg nm w f) = w ': Vectors f
 	storageBufferNews dvc phdvc (vs :...: vss) (Arg f) =
 		storageBufferNew dvc phdvc vs \buf mem ->
 		storageBufferNews @f @a dvc phdvc vss (f buf mem)
 
-storageBufferNew :: forall sd w a . Storable w =>
+storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
 		forall sb sm .
-		Vk.Buffer.Binded sm sb '[ 'List w]  ->
+		Vk.Buffer.Binded sm sb nm '[ 'List w]  ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w]] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
-		Vk.Buffer.allocateBind dvc (V2 buffer :...: HVNil) memoryInfo
-			nil nil \(V2 binded :...: HVNil) memory -> do
+		Vk.Buffer.allocateBind dvc (V3 buffer :...: HVNil) memoryInfo
+			nil nil \(V3 binded :...: HVNil) memory -> do
 			Vk.Dvc.Mem.Buffer.write @('List w) dvc memory def xs
 			f binded memory
 
-storage3BufferNew :: forall sd w1 w2 w3 a . (
+storage3BufferNew :: forall sd nm1 nm2 nm3 w1 w2 w3 a . (
 	Storable w1, Storable w2, Storable w3,
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]],
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]]
@@ -377,9 +377,9 @@ storage3BufferNew :: forall sd w1 w2 w3 a . (
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sb2 sb3 sm .
-		Vk.Buffer.Binded sm sb1 '[ 'List w1] ->
-		Vk.Buffer.Binded sm sb2 '[ 'List w2] ->
-		Vk.Buffer.Binded sm sb3 '[ 'List w3] ->
+		Vk.Buffer.Binded sm sb1 nm1 '[ 'List w1] ->
+		Vk.Buffer.Binded sm sb2 nm2 '[ 'List w2] ->
+		Vk.Buffer.Binded sm sb3 nm3 '[ 'List w3] ->
 		Vk.Dvc.Mem.Buffer.M sm
 			'[ '[ 'List w1], '[ 'List w2], '[ 'List w3]] -> IO a
 		) -> IO a
@@ -392,12 +392,12 @@ storage3BufferNew dvc phdvc xs ys zs f =
 				memInfo3 <- getMemoryInfo phdvc dvc buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
 					Vk.Buffer.allocateBind dvc (
-						V2 buf1 :...: V2 buf2 :...:
-						V2 buf3 :...: HVNil
+						V3 buf1 :...: V3 buf2 :...:
+						V3 buf3 :...: HVNil
 						) memInfo1 nil nil
-						\(	V2 bnd1 :...:
-							V2 bnd2 :...:
-							V2 bnd3 :...: HVNil ) mem -> do
+						\(	V3 bnd1 :...:
+							V3 bnd2 :...:
+							V3 bnd3 :...: HVNil ) mem -> do
 						Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
 						Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys
 						Vk.Dvc.Mem.Buffer.write @('List w3) dvc mem def zs
@@ -414,7 +414,7 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-storage1BufferNew :: forall sd w1 w2 w3 a . (
+storage1BufferNew :: forall sd nm w1 w2 w3 a . (
 	Storable w1, Storable w2, Storable w3,
 	Vk.Dvc.Mem.Buffer.OffsetSize
 		('List w2) '[ '[ 'List w1, 'List w2, 'List w3]],
@@ -423,14 +423,14 @@ storage1BufferNew :: forall sd w1 w2 w3 a . (
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb sm .
-		Vk.Buffer.Binded sm sb '[ 'List w1, 'List w2, 'List w3] ->
+		Vk.Buffer.Binded sm sb nm '[ 'List w1, 'List w2, 'List w3] ->
 		Vk.Dvc.Mem.Buffer.M sm
 			'[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
 storage1BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
 		memInfo <- getMemoryInfo phdvc dvc buf
-		Vk.Buffer.allocateBind dvc (V2 buf :...: HVNil)
-			memInfo nil nil \(V2 bnd :...: HVNil) mem -> do
+		Vk.Buffer.allocateBind dvc (V3 buf :...: HVNil)
+			memInfo nil nil \(V3 bnd :...: HVNil) mem -> do
 			Vk.Dvc.Mem.Buffer.write @('List w1) dvc mem def xs
 			Vk.Dvc.Mem.Buffer.write @('List w2) dvc mem def ys
 			Vk.Dvc.Mem.Buffer.write @('List w3) dvc mem def zs
@@ -499,7 +499,7 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
-getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb objs ->
+getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
 	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
 getMemoryInfo phdvc dvc buffer = do
 	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
@@ -528,13 +528,13 @@ checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
-	forall w1 w2 w3 sd sp slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 .
+	forall w1 w2 w3 sd sp slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 .
 	Vk.DscSet.S sd sp slbts ->
-	Vk.Buffer.Binded sm1 sb1 objs1 -> Vk.Buffer.Binded sm2 sb2 objs2 ->
-	Vk.Buffer.Binded sm3 sb3 objs3 ->
+	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
+	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
 	Vk.DscSet.Write () sd sp slbts '[
-		'(sb1, sm1, objs1, 'List w1), '(sb2, sm2, objs2, 'List w2),
-		'(sb3, sm3, objs3, 'List w3) ]
+		'(sb1, sm1, nm1, objs1, 'List w1), '(sb2, sm2, nm2, objs2, 'List w2),
+		'(sb3, sm3, nm3, objs3, 'List w3) ]
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
@@ -543,12 +543,12 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		bufferInfoList @w1 ba :...: bufferInfoList @w2 bb :...:
 		bufferInfoList @w3 bc :...: HVNil }
 
-writeDscSet' :: forall w1 w2 w3 sd sp slbts sb sm objs .
+writeDscSet' :: forall w1 w2 w3 sd sp slbts sb sm nm objs .
 	Vk.DscSet.S sd sp slbts ->
-	Vk.Buffer.Binded sm sb objs ->
+	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.DscSet.Write () sd sp slbts '[
-		'(sb, sm, objs, 'List w1), '(sb, sm, objs, 'List w2),
-		'(sb, sm, objs, 'List w3) ]
+		'(sb, sm, nm, objs, 'List w1), '(sb, sm, nm, objs, 'List w2),
+		'(sb, sm, nm, objs, 'List w3) ]
 writeDscSet' ds b = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
@@ -557,17 +557,17 @@ writeDscSet' ds b = Vk.DscSet.Write {
 		bufferInfoList @w1 b :...: bufferInfoList @w2 b :...:
 		bufferInfoList @w3 b :...: HVNil }
 
-bufferInfoList :: forall t {sb} {sm} {objs} .
-	Vk.Buffer.Binded sm sb objs ->
-	Vk.Dsc.BufferInfo '(sb, sm, objs, 'List t)
+bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
+	Vk.Buffer.Binded sm sb nm objs ->
+	Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List t)
 bufferInfoList = Vk.Dsc.BufferInfoList
 
-type BindedMem sm sb w = (
-	Vk.Buffer.Binded sm sb '[ 'List w],
+type BindedMem sm sb nm w = (
+	Vk.Buffer.Binded sm sb nm '[ 'List w],
 	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w]] )
 
-type BindedMem3 sb1 sm1 w1 sb2 sm2 w2 sb3 sm3 w3 =
-	(BindedMem sm1 sb1 w1, BindedMem sm2 sb2 w2, BindedMem sm3 sb3 w3)
+type BindedMem3 sb1 sm1 nm1 w1 sb2 sm2 nm2 w2 sb3 sm3 nm3 w3 =
+	(BindedMem sm1 sb1 nm1 w1, BindedMem sm2 sb2 nm2 w2, BindedMem sm3 sb3 nm3 w3)
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () (Word32 :.: Word32 :.: ())
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {

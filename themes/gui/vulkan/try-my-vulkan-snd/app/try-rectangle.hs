@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -769,7 +769,7 @@ createCommandPool qfis dvc f =
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a) -> IO a
+		Vk.Bffr.Binded sm sb nm '[ 'List Vertex] -> IO a) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -784,7 +784,7 @@ createVertexBuffer phdvc dvc gq cp f =
 
 createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb '[ 'List Word16] -> IO a) -> IO a
+		Vk.Bffr.Binded sm sb nm '[ 'List Word16] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (length indices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
@@ -817,17 +817,17 @@ createUniformBuffers ph dvc dscslyt n f =
 
 type family MapFst abs where
 	MapFst '[] = '[]
-	MapFst ( '(a, b) ': abs) = a ': MapFst abs
+	MapFst ( '(a, b, c :: k) ': abs) = a ': MapFst abs
 
 data BindedUbo smsb where
-	BindedUbo :: Vk.Bffr.Binded sm sb '[ 'Atom UniformBufferObject] ->
-		BindedUbo '(sm, sb)
+	BindedUbo :: Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject] ->
+		BindedUbo '(sm, sb, nm)
 
 newtype MemoryUbo sm =
 	MemoryUbo (Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom UniformBufferObject]])
 
 createUniformBuffer1 :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
-		BindedUbo '(sm, sb) -> MemoryUbo sm -> IO b) -> IO b
+		BindedUbo '(sm, sb, nm) -> MemoryUbo sm -> IO b) -> IO b
 createUniformBuffer1 phdvc dvc f = createBufferAtom phdvc dvc
 		Vk.Bffr.UsageUniformBufferBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
@@ -862,9 +862,9 @@ createDescriptorSets dvc dscp ubs dscslyts = do
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
 descriptorWrite ::
-	Vk.Bffr.Binded sm sb '[ 'Atom UniformBufferObject] ->
+	Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject] ->
 	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write () sd sp slbts '[ '(sb, sm, '[ 'Atom UniformBufferObject], 'Atom UniformBufferObject)]
+	Vk.DscSet.Write () sd sp slbts '[ '(sb, sm, nm, '[ 'Atom UniformBufferObject], 'Atom UniformBufferObject)]
 descriptorWrite ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
@@ -899,30 +899,30 @@ instance (
 		update ubs dscss
 		-}
 
-createBufferAtom :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sm sb '[ 'Atom a] ->
+		Vk.Bffr.Binded sm sb nm '[ 'Atom a] ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom a]] -> IO b) -> IO b
 createBufferAtom p dv usg props = createBuffer p dv ObjectLengthAtom usg props
 
-createBufferList :: forall sd a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+createBufferList :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Int -> Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sm sb '[ 'List a] ->
+		Vk.Bffr.Binded sm sb nm '[ 'List a] ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List a]] -> IO b ) -> IO b
 createBufferList p dv ln usg props = createBuffer p dv (ObjectLengthList ln) usg props
 
-createBuffer :: forall sd o a . Storable (ObjectType o) =>
+createBuffer :: forall sd nm o a . Storable (ObjectType o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sm sb '[o] -> Vk.Dvc.Mem.Buffer.M sm '[ '[o]] ->
+		Vk.Bffr.Binded sm sb nm '[o] -> Vk.Dvc.Mem.Buffer.M sm '[ '[o]] ->
 		IO a) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Bffr.allocateBind dv (Singleton $ V2 b) (allcInfo mt) nil nil
-		$ f . \(Singleton (V2 bnd)) -> bnd
+	Vk.Bffr.allocateBind dv (Singleton $ V3 b) (allcInfo mt) nil nil
+		$ f . \(Singleton (V3 bnd)) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -948,10 +948,10 @@ findMemoryType phdvc flt props =
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
-copyBuffer :: forall sd sc sm sb sm' sb' a . Storable a =>
+copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable a =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Binded sm sb '[ 'List a] ->
-	Vk.Bffr.Binded sm' sb' '[ 'List a] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[ 'List a] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List a] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
@@ -1033,15 +1033,15 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sl sdsc sf sg sm sb sm' sb' sdsc' sp .
+recordCommandBuffer :: forall scb sr sl sdsc sf sg sm sb nm sm' sb' nm' sdsc' sp .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 --	Vk.DscSet.S sdsc' sp s ->
 	Vk.DscSet.S sdsc' sp (AtomUbo sdsc) ->
 	IO ()
@@ -1050,8 +1050,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
-		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
-	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @Word16 ib
+		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
+	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @_ @Word16 ib
 	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppllyt
 		(Singleton $ Vk.Cmd.DescriptorSet dscs) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
@@ -1078,8 +1078,8 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss, DescriptorSetIndex slyts 
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HeteroVarList BindedUbo smsbs ->
@@ -1106,8 +1106,8 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss, DescriptorSetIndex slyts 
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HeteroVarList BindedUbo smsbs ->
@@ -1124,7 +1124,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib 
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sl sdsc sg sm sb sm' sb' scb ssos vss smsbs sdsc' sp slyts .
+drawFrame :: forall sfs sd ssc sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -1132,8 +1132,8 @@ drawFrame :: forall sfs sd ssc sr sl sdsc sg sm sb sm' sb' scb ssos vss smsbs sd
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	Vk.Bffr.Binded sm' sb' '[ 'List Word16] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
 	HeteroVarList BindedUbo smsbs ->
 	HeteroVarList MemoryUbo (MapFst smsbs) ->

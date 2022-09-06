@@ -8,6 +8,7 @@
 
 module Gpu.Vulkan.Descriptor where
 
+import GHC.TypeLits
 import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList
@@ -19,23 +20,23 @@ import qualified Gpu.Vulkan.Descriptor.Core as C
 
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
-		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb objs } ->
-		BufferInfo '(sb, sm, objs, 'Atom v)
+		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
+		BufferInfo '(sb, sm, nm, objs, 'Atom v)
 	BufferInfoList ::
-		{ bufferInfoListBuffer :: Buffer.Binded sm sb objs } ->
-		BufferInfo '(sb, sm, objs, 'List v)
+		{ bufferInfoListBuffer :: Buffer.Binded sm sb nm objs } ->
+		BufferInfo '(sb, sm, nm, objs, 'List v)
 
-type BufferInfoArg = (Type, Type, [Object], Object)
+type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
 
 deriving instance Show (HeteroVarList ObjectLength objs) =>
-	Show (BufferInfo '(sb, sm, objs, obj))
+	Show (BufferInfo '(sb, sm, nm, objs, obj))
 
 bufferInfoToCore :: Offset obj objs =>
-	BufferInfo '(sb, sm, objs, obj) -> C.BufferInfo
+	BufferInfo '(sb, sm, nm, objs, obj) -> C.BufferInfo
 bufferInfoToCore = M.bufferInfoToCore . bufferInfoToMiddle
 
-bufferInfoToMiddle :: forall sb sm objs obj . Offset obj objs =>
-	BufferInfo '(sb, sm, objs, obj) -> M.BufferInfo
+bufferInfoToMiddle :: forall sb sm nm objs obj . Offset obj objs =>
+	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle BufferInfoAtom {
 	bufferInfoAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = Buffer.M.B b,

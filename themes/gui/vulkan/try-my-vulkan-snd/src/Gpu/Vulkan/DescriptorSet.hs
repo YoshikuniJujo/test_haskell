@@ -149,7 +149,7 @@ class BufferInfosToMiddle sbsmobjsobjs where
 instance BufferInfosToMiddle '[] where bufferInfosToMiddle HVNil = []
 
 instance (Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
-	BufferInfosToMiddle ('(sb, sm, objs, obj) ': sbsmobjsobjs) where
+	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
 	bufferInfosToMiddle (bi :...: bis) =
 		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis
 

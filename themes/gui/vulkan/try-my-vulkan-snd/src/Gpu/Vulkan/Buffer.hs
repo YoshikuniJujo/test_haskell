@@ -11,6 +11,7 @@
 
 module Gpu.Vulkan.Buffer where
 
+import GHC.TypeLits
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Exception
@@ -32,13 +33,13 @@ import qualified Gpu.Vulkan.Buffer.Middle as M
 import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 
-data B s (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
+data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
 
-deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s objs)
+deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s nm objs)
 
-data Binded sm sb (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
+data Binded sm sb (nm :: Symbol) (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
 
-deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sm sb objs)
+deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sm sb nm objs)
 
 data CreateInfo n objs = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -70,17 +71,17 @@ createInfoToMiddle CreateInfo {
 create :: (Pointable n, WholeSize objs, Pointable c, Pointable d) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . B s objs -> IO a) -> IO a
+	(forall s . B s nm objs -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\b -> M.destroy dvc b macd)
 	(f . B (createInfoLengths ci) . (\(M.B b) -> b))
 
-getMemoryRequirements :: Device.D sd -> B sb objs -> IO Memory.M.Requirements
+getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc (M.B b)
 
 getMemoryRequirements' :: Device.D sd -> BB sbobjs -> IO Memory.M.Requirements
-getMemoryRequirements' dvc (V2 b) = getMemoryRequirements dvc b
+getMemoryRequirements' dvc (V3 b) = getMemoryRequirements dvc b
 
 allocateInfoToMiddle ::
 	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.AllocateInfo n ->
@@ -118,16 +119,16 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 		forms <- bsToForms dvc bs
 		f $ Device.Memory.M forms mem
 
-type BB = V2 B
-type Bnd sm = V2 (Binded sm)
+type BB = V3 B
+type Bnd sm = V3 (Binded sm)
 
 type family SbobjssToSb (sbobjss :: [(Type, [Object])]) where
 	SbobjssToSb '[] = '[]
 	SbobjssToSb ('(sb, objs) ': sbobjss) = sb ': SbobjssToSb sbobjss
 
-type family SbobjssToObjss (sbobjss :: [(Type, [Object])]) where
+type family SbobjssToObjss (sbobjss :: [(Type, Symbol, [Object])]) where
 	SbobjssToObjss '[] = '[]
-	SbobjssToObjss ('(sb, objs) ': sbobjss) = objs ': SbobjssToObjss sbobjss
+	SbobjssToObjss ('(sb, nm, objs) ': sbobjss) = objs ': SbobjssToObjss sbobjss
 
 allocateBind :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> HeteroVarList BB sbobjss ->
@@ -143,12 +144,12 @@ bindBuffersToMemory ::
 	Device.D sd -> HeteroVarList BB sbobjss -> Device.Memory.M sm objss' ->
 	Int -> IO (HeteroVarList (Bnd sm) sbobjss)
 bindBuffersToMemory _ HVNil _ _ = pure HVNil
-bindBuffersToMemory dvc (V2 b :...: bs) mem i = (:...:)
-	<$> (V2 <$> bindMemory dvc b mem i) <*> bindBuffersToMemory dvc bs mem (i + 1)
+bindBuffersToMemory dvc (V3 b :...: bs) mem i = (:...:)
+	<$> (V3 <$> bindMemory dvc b mem i) <*> bindBuffersToMemory dvc bs mem (i + 1)
 
 bindMemory ::
-	Device.D sd -> B sb objs -> Device.Memory.M sm objss -> Int ->
-	IO (Binded sm sb objs)
+	Device.D sd -> B sb nm objs -> Device.Memory.M sm objss -> Int ->
+	IO (Binded sm sb nm objs)
 bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms mem) i = do
 	M.bindMemory dvc (M.B b) (Device.M.Memory mem) . fst $ indexForms fms i
 	pure $ Binded lns b
@@ -170,7 +171,7 @@ zipToForms ::
 	[(Device.M.Size, Device.M.Size)] -> HeteroVarList BB sbobjss ->
 	HeteroVarList Device.Memory.Form (SbobjssToObjss sbobjss)
 zipToForms [] HVNil = HVNil
-zipToForms ((ost, sz) : ostszs) (V2 (B lns _) :...: bs) =
+zipToForms ((ost, sz) : ostszs) (V3 (B lns _) :...: bs) =
 	Device.Memory.Form ost sz lns :...: zipToForms ostszs bs
 zipToForms _ _ = error "bad"
 
@@ -208,20 +209,20 @@ sampleObjLens =
 	ObjectLengthList 5 :...:
 	ObjectLengthList 3 :...: HVNil
 
-data IndexedList sm sb v =
-	forall vs . OffsetList v vs => IndexedList (Binded sm sb vs)
+data IndexedList sm sb nm v =
+	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
 
-indexedListToOffset :: forall sm sb v a . IndexedList sm sb v ->
-	(forall vs . (Binded sm sb vs, Device.M.Size) -> a) -> a
+indexedListToOffset :: forall sm sb nm v a . IndexedList sm sb nm v ->
+	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a
 indexedListToOffset (IndexedList b@(Binded lns _)) f = f (b, offsetList @v lns 0)
 
-indexedListToMiddle :: IndexedList sm sb v -> (M.B, Device.M.Size)
+indexedListToMiddle :: IndexedList sm sb nm v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (M.B b, sz)
 
 indexedListToMiddles ::
-	HeteroVarList (V3 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
+	HeteroVarList (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
 indexedListToMiddles HVNil = []
-indexedListToMiddles (V3 il :...: ils) =
+indexedListToMiddles (V4 il :...: ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
 class CopyPrefix (area :: [Object]) (src :: [Object]) (dst :: [Object]) where

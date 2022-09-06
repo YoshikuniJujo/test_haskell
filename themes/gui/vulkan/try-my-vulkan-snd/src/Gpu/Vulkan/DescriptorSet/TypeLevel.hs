@@ -32,7 +32,7 @@ type family BindingTypesFromLayoutArg (tbts :: LayoutArg) ::
 type family ObjectsFromBufferInfoArgs (bias :: [Descriptor.BufferInfoArg]) ::
 	[Object] where
 	ObjectsFromBufferInfoArgs '[] = '[]
-	ObjectsFromBufferInfoArgs ('(sb, sm, objs, obj) ': args) =
+	ObjectsFromBufferInfoArgs ('(sb, sm, nm, objs, obj) ': args) =
 		obj ': ObjectsFromBufferInfoArgs args
 
 class IsPrefix (objs :: [Object]) (objs' :: [Object])

@@ -730,7 +730,7 @@ createCommandPool qfis dv = Vk.CmdPl.create @() dv crInfo nil nil
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb '[ 'List Vertex] -> IO a ) -> IO a
+		Vk.Bffr.Binded sm sb nm '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
 	createBuffer phdvc dvc (V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -746,13 +746,13 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+		Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List Vertex ] ] -> IO a ) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Bffr.allocateBind dv (Singleton $ V2 b) (allcInfo mt) nil nil
-		$ f . \(Singleton (V2 bnd)) -> bnd
+	Vk.Bffr.allocateBind dv (Singleton $ V3 b) (allcInfo mt) nil nil
+		$ f . \(Singleton (V3 bnd)) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List Vertex]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -778,10 +778,10 @@ findMemoryType phdvc flt props =
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
-copyBuffer :: forall sd sc sm sb sm' sb' .
+copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
-	Vk.Bffr.Binded sm' sb' '[ 'List Vertex] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Vertex] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
@@ -863,20 +863,20 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg slyt sm sb .
+recordCommandBuffer :: forall scb sr sf sg slyt sm sb nm .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] -> Int -> Word32 -> IO ()
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] -> Int -> Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
-		. singleton . V3 $ Vk.Bffr.IndexedList @_ @_ @Vertex vb
+		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 	let	model = Cglm.glmRotate
 			Cglm.glmMat4Identity
 			(fromIntegral fn * Cglm.glmRad 1)
@@ -928,7 +928,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs -> Word32 -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs vn = do
@@ -957,7 +957,7 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	 Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	 Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int -> Int -> Int -> Word32 ->
@@ -970,7 +970,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs 
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs)
 
-drawFrame :: forall sfs sd ssc sr sg0 sg1 slyt sm sb scb ssos vss . (VssList vss) =>
+drawFrame :: forall sfs sd ssc sr sg0 sg1 slyt sm sb nm scb ssos vss . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -979,7 +979,7 @@ drawFrame :: forall sfs sd ssc sr sg0 sg1 slyt sm sb scb ssos vss . (VssList vss
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int -> Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb cbs (SyncObjects iass rfss iffs) cf fn sdrn vn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->

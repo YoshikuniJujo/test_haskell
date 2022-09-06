@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -163,16 +163,20 @@ type family MapThird tpl where
 	MapThird '[] = '[]
 	MapThird ('(x, y, z) ': xs) = z ': MapThird xs
 
+type family MapForth tpl where
+	MapForth '[] = '[]
+	MapForth ('(x :: j, y :: k, z :: l, w :: m) ': xs) = w ': MapForth xs
+
 bindVertexBuffers :: forall sc vs smsbvs .
-	InfixIndex (MapThird smsbvs) (MapSubType vs) =>
-	CommandBuffer.C sc vs -> HeteroVarList (V3 Buffer.IndexedList) smsbvs ->
+	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
+	CommandBuffer.C sc vs -> HeteroVarList (V4 Buffer.IndexedList) smsbvs ->
 	IO ()
 bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
-	where fb = infixIndex @(MapThird smsbvs) @(MapSubType vs)
+	where fb = infixIndex @(MapForth smsbvs) @(MapSubType vs)
 
-bindIndexBuffer :: forall sc vs sm sb v . IsIndexType v =>
-	CommandBuffer.C sc vs -> Buffer.IndexedList sm sb v -> IO ()
+bindIndexBuffer :: forall sc vs sm sb nm v . IsIndexType v =>
+	CommandBuffer.C sc vs -> Buffer.IndexedList sm sb nm v -> IO ()
 bindIndexBuffer (CommandBuffer.C cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @v)
 
@@ -180,10 +184,10 @@ class IsIndexType a where indexType :: IndexType
 
 instance IsIndexType Word16 where indexType = IndexTypeUint16
 
-copyBuffer :: forall (ass :: [[Object]]) sos sod sc vs sms sbs smd sbd .
+copyBuffer :: forall (ass :: [[Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
 	CommandBuffer.C sc vs ->
-	Buffer.Binded sms sbs sos -> Buffer.Binded smd sbd sod -> IO ()
+	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb (Buffer.M.B src) (Buffer.M.B dst) (Buffer.makeCopies @ass lnss lnsd)
 
