@@ -292,7 +292,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
 	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg nm fmt) ->
-	storage1BufferNewNoBind dvc da db dc \(buf :: Vk.Buffer.B sb nm objs) ->
+	storage1BufferNewNoBind dvc da db dc \(buf :: Vk.Buffer.B sb "hello" objs) ->
 	storage1BufferNew dvc phdvc da db dc \(buf' :: Vk.Buffer.B sb' nm' objs) bnd' m' ->
 	let	imgbuf = V2 (Vk.Dvc.Mem.ImageBuffer.Image img) :...:
 			V2 (Vk.Dvc.Mem.ImageBuffer.Buffer buf) :...:
@@ -312,8 +312,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.Dvc.Mem.ImageBuffer.allocateBind dvc imgbuf memInfo nil nil \(
 		V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded imgb) :...:
 		V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bufb) :...: HVNil) mib ->
---	(print =<< Vk.Dvc.Mem.ImageBuffer.try @simg dvc mib) >>
---	(print =<< Vk.Dvc.Mem.ImageBuffer.try @sb dvc mib) >>
+	(print =<< Vk.Dvc.Mem.ImageBuffer.try @"hello" dvc mib) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->

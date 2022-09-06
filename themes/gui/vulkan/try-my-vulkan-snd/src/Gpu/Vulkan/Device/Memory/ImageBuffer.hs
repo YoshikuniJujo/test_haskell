@@ -10,6 +10,7 @@
 
 module Gpu.Vulkan.Device.Memory.ImageBuffer where
 
+import GHC.TypeLits
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Exception hiding (try)
@@ -171,16 +172,16 @@ instance {-# OVERLAPPABLE #-} Offset sib ib sibfoss =>
 		offset @sib @ib dvc (M ibs m)
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 
-class Try s sibfoss where
+class Try (nm :: Symbol) sibfoss where
 	try :: Device.D sd -> M sm sibfoss -> IO (Device.M.Size, Device.M.Size)
 
-instance Try sib ('(sib, ib) ': sibfoss) where
+instance Try nm ('(sib, 'K.Buffer nm objs) ': sibfoss) where
 	try dvc (M (ib :...: _) _) = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	sz = Memory.M.requirementsSize reqs
 			algn = Memory.M.requirementsAlignment reqs
 		pure (sz, algn)
 
-instance {-# OVERLAPPABLE #-} Try sib sibfoss =>
-	Try sib ('(sib', ib) ': sibfoss) where
-	try dvc (M (_ :...: ibs) m) = try @sib dvc (M ibs m)
+instance {-# OVERLAPPABLE #-} Try nm sibfoss =>
+	Try nm (_t ': sibfoss) where
+	try dvc (M (_ :...: ibs) m) = try @nm dvc (M ibs m)
