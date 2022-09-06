@@ -185,3 +185,54 @@ instance Try nm ('(sib, 'K.Buffer nm objs) ': sibfoss) where
 instance {-# OVERLAPPABLE #-} Try nm sibfoss =>
 	Try nm (_t ': sibfoss) where
 	try dvc (M (_ :...: ibs) m) = try @nm dvc (M ibs m)
+
+class OffsetSize (nm :: Symbol) (obj :: Object) sibfoss where
+	offsetSize :: Device.D sd -> M sm sibfoss ->
+		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
+	offsetSizeLength :: M sm sibfoss -> ObjectLength obj
+
+instance OffsetSizeObject obj objs =>
+	OffsetSize nm obj ('(sib, 'K.Buffer nm objs) ': sibfoss) where
+	offsetSize dvc (M (ib@(V2 (Buffer (Buffer.B lns _))) :...: _ibs) _m) ost = do
+		reqs <- getMemoryRequirements' dvc ib
+		let	algn = Memory.M.requirementsAlignment reqs
+		pure $ offsetSizeObject @obj
+			(((ost - 1) `div` algn + 1) * algn) lns
+	offsetSizeLength (M (V2 (Buffer (Buffer.B lns _)) :...: _) _) =
+		offsetSizeObjectLength @obj lns
+
+instance {-# OVERLAPPABLE #-}
+	OffsetSize nm obj sibfoss =>
+	OffsetSize nm obj ('(sib, ib) ': sibfoss) where
+	offsetSize dvc (M (ib :...: ibs) m) ost = do
+		reqs <- getMemoryRequirements' dvc ib
+		let	algn = Memory.M.requirementsAlignment reqs
+			sz = Memory.M.requirementsSize reqs
+		offsetSize @nm @obj dvc (M ibs m)
+			$ ((ost - 1) `div` algn + 1) * algn + sz
+	offsetSizeLength (M (_ :...: lns) m) =
+		offsetSizeLength @nm @obj (M lns m)
+
+class OffsetSizeObject (obj :: Object) (objs :: [Object]) where
+	offsetSizeObject :: Device.M.Size -> HeteroVarList ObjectLength objs ->
+		(Device.M.Size, Device.M.Size)
+	offsetSizeObjectLength :: HeteroVarList ObjectLength objs ->
+		ObjectLength obj
+
+instance Storable (ObjectType obj) => OffsetSizeObject obj (obj ': objs) where
+	offsetSizeObject n (ln :...: _) = (ost, fromIntegral $ objectSize ln)
+		where
+		ost = ((n - 1) `div` algn + 1) * algn
+		algn = fromIntegral (objectAlignment @obj)
+	offsetSizeObjectLength (ln :...: _) = ln
+
+instance {-# OVERLAPPABLE #-} (
+	Storable (ObjectType obj), Storable (ObjectType obj'),
+	OffsetSizeObject obj objs ) =>
+	OffsetSizeObject obj (obj' ': objs) where
+	offsetSizeObject n (ln :...: lns) =
+		offsetSizeObject @obj (ost + fromIntegral (objectSize ln)) lns
+		where
+		ost = ((n - 1) `div` algn + 1) * algn
+		algn = fromIntegral (objectAlignment @obj)
+	offsetSizeObjectLength (_ :...: lns) = offsetSizeObjectLength @obj lns

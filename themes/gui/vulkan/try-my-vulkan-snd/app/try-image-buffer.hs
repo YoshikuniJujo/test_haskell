@@ -111,7 +111,10 @@ calc :: forall w1 w2 w3 . (
 	Offset ('List w2) (ListBuffer1 w1 w2 w3),
 	Offset ('List w3) (ListBuffer1 w1 w2 w3),
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) '[ListBuffer1 w1 w2 w3],
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) '[ListBuffer1 w1 w2 w3] ) =>
+	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) '[ListBuffer1 w1 w2 w3],
+	Vk.Dvc.Mem.ImageBuffer.OffsetSizeObject ('List w2) '[ 'List w1, 'List w2, 'List w3],
+	Vk.Dvc.Mem.ImageBuffer.OffsetSizeObject ('List w3) '[ 'List w1, 'List w2, 'List w3]
+	) =>
 	BufMem -> FilePath -> Vk.Image.Tiling -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
 calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
@@ -278,7 +281,10 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 		('List w2) '[ '[ 'List w1, 'List w2, 'List w3]],
 	Vk.Dvc.Mem.Buffer.OffsetSize
 		('List w3) '[ '[ 'List w1, 'List w2, 'List w3]],
-	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3] ) =>
+	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1, 'List w2, 'List w3],
+	Vk.Dvc.Mem.ImageBuffer.OffsetSizeObject ('List w2) '[ 'List w1, 'List w2, 'List w3],
+	Vk.Dvc.Mem.ImageBuffer.OffsetSizeObject ('List w3) '[ 'List w1, 'List w2, 'List w3]
+	) =>
 	FilePath -> Vk.Image.Tiling ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm .
@@ -313,6 +319,12 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded imgb) :...:
 		V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bufb) :...: HVNil) mib ->
 	(print =<< Vk.Dvc.Mem.ImageBuffer.try @"hello" dvc mib) >>
+	(print =<< Vk.Dvc.Mem.ImageBuffer.offsetSize
+		@"hello" @('List w1) dvc mib 0) >>
+	(print =<< Vk.Dvc.Mem.ImageBuffer.offsetSize
+		@"hello" @('List w2) dvc mib 0) >>
+	(print =<< Vk.Dvc.Mem.ImageBuffer.offsetSize
+		@"hello" @('List w3) dvc mib 0) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
