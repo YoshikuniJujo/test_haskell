@@ -130,8 +130,8 @@ calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
 			calc' dvc qfam dslyt dsst maxX readMemories m m m
 		Buffer1Memory1 ->
-			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m ->
-			calc' dvc qfam dslyt dsst maxX readMemories m m m
+			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m m2 ->
+			calc' dvc qfam dslyt dsst maxX (readMemories' @"hello" @"hello" @"hello") m2 m2 m2
 
 calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
@@ -292,7 +292,7 @@ prepareMems31 phdvc dvc dscSetLyt da db dc f =
 		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) [] >>
 	f dscSet m
 
-prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
+prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
 	Offset ('List w2) '[ 'List w1, 'List w2, 'List w3 ],
@@ -307,9 +307,13 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
 	) =>
 	FilePath -> Vk.Image.Tiling ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm .
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm sm' si sb .
 		Vk.DscSet.S sd s '(sl, bts) ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] -> IO a) -> IO a
+		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1, 'List w2, 'List w3]] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm' '[
+			'(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nmi Vk.T.FormatR8g8b8a8Srgb),
+			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer "hello" '[ 'List w1, 'List w2, 'List w3]) ] ->
+		IO a) -> IO a
 prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	readRgba8 ifp >>= \img_ ->
 	let	wdt = fromIntegral $ imageWidth img_
@@ -355,8 +359,8 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet' @w1 @w2 @w3 dscSet bnd') :...: HVNil) [] >>
-	f dscSet m'
+		(writeDscSet' @w1 @w2 @w3 dscSet bufb) :...: HVNil) [] >>
+	f dscSet m' mib
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
