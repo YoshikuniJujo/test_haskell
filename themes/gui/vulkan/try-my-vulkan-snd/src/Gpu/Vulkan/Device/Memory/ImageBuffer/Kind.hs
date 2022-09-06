@@ -7,4 +7,4 @@ import Data.Kind.Object
 
 import qualified Gpu.Vulkan.TypeEnum as T
 
-data ImageBuffer = Image Symbol T.Format | Buffer [Object]
+data ImageBuffer = Image Symbol T.Format | Buffer Symbol [Object]

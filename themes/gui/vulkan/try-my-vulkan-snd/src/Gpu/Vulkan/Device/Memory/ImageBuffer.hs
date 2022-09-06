@@ -37,19 +37,19 @@ deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
 
 data ImageBuffer sib (ib :: K.ImageBuffer) where
 	Image :: Image.INew si nm fmt -> ImageBuffer si ('K.Image nm fmt)
-	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('K.Buffer objs)
+	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('K.Buffer nm objs)
 
 deriving instance Show (Image.INew sib nm fmt) =>
 	Show (ImageBuffer sib ('K.Image nm fmt))
 
 deriving instance Show (HeteroVarList ObjectLength objs) =>
-	Show (ImageBuffer sib ('K.Buffer objs))
+	Show (ImageBuffer sib ('K.Buffer nm objs))
 
 data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
 	ImageBinded :: Image.BindedNew si sm nm fmt ->
 		ImageBufferBinded sm si ('K.Image nm fmt)
 	BufferBinded :: Buffer.Binded sb sm nm objs ->
-		ImageBufferBinded sm sb ('K.Buffer objs)
+		ImageBufferBinded sm sb ('K.Buffer nm objs)
 
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
@@ -130,8 +130,8 @@ instance (Offset si ('K.Image nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
 		<$> (V2 . ImageBinded <$> bindImage dvc img m)
 		<*> bindAll dvc ibs m
 
-instance (Offset sb ('K.Buffer objs) sibfoss', BindAll fibfoss sibfoss') =>
-	BindAll ('(sb, ('K.Buffer objs)) ': fibfoss) sibfoss' where
+instance (Offset sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
+	BindAll ('(sb, ('K.Buffer nm objs)) ': fibfoss) sibfoss' where
 	bindAll dvc (V2 (Buffer bf) :...: ibs) m = (:...:)
 		<$> (V2 . BufferBinded <$> bindBuffer dvc bf m)
 		<*> bindAll dvc ibs m
@@ -144,11 +144,11 @@ bindImage dvc@(Device.D mdvc) (Image.INew i) m@(M _ mm) = do
 	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
 	pure (Image.BindedNew i)
 
-bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer objs) sibfoss =>
+bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) sibfoss =>
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
 	IO (Buffer.Binded sb sm nm objs)
 bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m@(M _ mm) = do
-	ost <- offset @sb @('K.Buffer objs) dvc m 0
+	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 	pure (Buffer.Binded lns b)
 
