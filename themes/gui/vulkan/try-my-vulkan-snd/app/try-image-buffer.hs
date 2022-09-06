@@ -4,7 +4,7 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -125,48 +125,38 @@ calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 	case opt of
 		Buffer3Memory3 ->
 			prepareMems33 phdvc dvc dslyt da db dc \dsst ma mb mc ->
-			calc' dvc qfam dslyt dsst maxX ma mb mc
+			calc' dvc qfam dslyt dsst maxX readMemories ma mb mc
 		Buffer3Memory1 ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
-			calc' dvc qfam dslyt dsst maxX m m m
+			calc' dvc qfam dslyt dsst maxX readMemories m m m
 		Buffer1Memory1 ->
 			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m ->
-			calc' dvc qfam dslyt dsst maxX m m m
+			calc' dvc qfam dslyt dsst maxX readMemories m m m
 
-calc' :: (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w1) objss1,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) objss2,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) objss3,
-	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
+calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.S sd sp slbts -> Word32 ->
-	Vk.Dvc.Mem.Buffer.M sm1 objss1 -> Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
-	Vk.Dvc.Mem.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
-calc' dvc qfam dscSetLyt dscSet dsz ma mb mc =
+	(Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])) ->
+	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
+calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(Singleton . Vk.Ppl.Cmpt.CreateInfo_ $ cmptPipelineInfo pplLyt)
 		nil nil \(Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(Singleton cmdBuf) ->
-		run dvc qfam cmdBuf ppl pplLyt dscSet dsz ma mb mc
+		run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm ma mb mc
 
 type ListBuffer1 w1 w2 w3 = '[ 'List w1, 'List w2, 'List w3]
 type ListBuffer3Memory3 w1 w2 w3 = '[ '[ 'List w1], '[ 'List w2], '[ 'List w3]]
 
-run :: forall w1 w2 w3
-	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w1) objss1,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) objss2,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) objss3,
-	Vk.Cmd.SetPos '[slbts] sbtss ) =>
+run :: forall w1 w2 w3 slbts sbtss sd sc vs sg sl sp m1 m2 m3 .
+	Vk.Cmd.SetPos '[slbts] sbtss =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S sd sp slbts -> Word32 ->
-	Vk.Dvc.Mem.Buffer.M sm1 objss1 -> Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
-	Vk.Dvc.Mem.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
-run dvc qfam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
+	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S sd sp slbts -> Word32 -> (
+		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
+	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
+run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qfam 0
 	Vk.CmdBuf.begin @() @() cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
@@ -175,14 +165,42 @@ run dvc qfam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
 	Vk.Queue.submit @() queue [submitInfo] Nothing
 	Vk.Queue.waitIdle queue
-	(,,)	<$> Vk.Dvc.Mem.Buffer.read @[w1] @('List w1) dvc memA def
-		<*> Vk.Dvc.Mem.Buffer.read @[w2] @('List w2) dvc memB def
-		<*> Vk.Dvc.Mem.Buffer.read @[w3] @('List w3) dvc memC def
+	rm dvc memA memB memC
 	where	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
 			Vk.submitInfoCommandBuffers = [cmdBuf],
 			Vk.submitInfoSignalSemaphores = [] }
+
+readMemories :: forall sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3 . (
+	Vk.Dvc.Mem.Buffer.OffsetSize ('List w1) objss1,
+	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) objss2,
+	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) objss3,
+	Storable w1, Storable w2, Storable w3
+	) =>
+	Vk.Dvc.D sd ->
+	Vk.Dvc.Mem.Buffer.M sm1 objss1 ->
+	Vk.Dvc.Mem.Buffer.M sm2 objss2 ->
+	Vk.Dvc.Mem.Buffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
+readMemories dvc memA memB memC =
+	(,,)	<$> Vk.Dvc.Mem.Buffer.read @[w1] @('List w1) dvc memA def
+		<*> Vk.Dvc.Mem.Buffer.read @[w2] @('List w2) dvc memB def
+		<*> Vk.Dvc.Mem.Buffer.read @[w3] @('List w3) dvc memC def
+
+readMemories' :: forall nm1 nm2 nm3 sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3 . (
+	Vk.Dvc.Mem.ImageBuffer.OffsetSize nm1 ('List w1) objss1,
+	Vk.Dvc.Mem.ImageBuffer.OffsetSize nm2 ('List w2) objss2,
+	Vk.Dvc.Mem.ImageBuffer.OffsetSize nm3 ('List w3) objss3,
+	Storable w1, Storable w2, Storable w3
+	) =>
+	Vk.Dvc.D sd ->
+	Vk.Dvc.Mem.ImageBuffer.M sm1 objss1 ->
+	Vk.Dvc.Mem.ImageBuffer.M sm2 objss2 ->
+	Vk.Dvc.Mem.ImageBuffer.M sm3 objss3 -> IO ([w1], [w2], [w3])
+readMemories' dvc memA memB memC =
+	(,,)	<$> Vk.Dvc.Mem.ImageBuffer.read @nm1 @('List w1) @[w1] dvc memA def
+		<*> Vk.Dvc.Mem.ImageBuffer.read @nm2 @('List w2) @[w2] dvc memB def
+		<*> Vk.Dvc.Mem.ImageBuffer.read @nm3 @('List w3) @[w3] dvc memC def
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a

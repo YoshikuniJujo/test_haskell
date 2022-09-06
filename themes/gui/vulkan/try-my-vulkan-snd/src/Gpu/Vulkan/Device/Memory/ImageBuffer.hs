@@ -247,7 +247,7 @@ write dvc mem flgs v = bracket
 	(\(ptr :: Ptr (ObjectType obj)) ->
 		storeObject @_ @obj ptr (offsetSizeLength @nm @obj mem) v)
 
-read :: forall nm obj sd sm sibfoss v .
+read :: forall nm obj v sd sm sibfoss .
 	(StoreObject v obj, OffsetSize nm obj sibfoss) =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO v
 read dvc mem flgs = bracket
