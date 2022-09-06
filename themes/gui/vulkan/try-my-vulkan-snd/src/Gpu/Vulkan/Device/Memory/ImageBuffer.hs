@@ -10,7 +10,9 @@
 
 module Gpu.Vulkan.Device.Memory.ImageBuffer where
 
+import Prelude hiding (map)
 import GHC.TypeLits
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Exception hiding (try)
@@ -236,3 +238,28 @@ instance {-# OVERLAPPABLE #-} (
 		ost = ((n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (objectAlignment @obj)
 	offsetSizeObjectLength (_ :...: lns) = offsetSizeObjectLength @obj lns
+
+write :: forall nm obj sd sm sibfoss v .
+	(StoreObject v obj, OffsetSize nm obj sibfoss) =>
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> v -> IO ()
+write dvc mem flgs v = bracket
+	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
+	(\(ptr :: Ptr (ObjectType obj)) ->
+		storeObject @_ @obj ptr (offsetSizeLength @nm @obj mem) v)
+
+read :: forall nm obj sd sm sibfoss v .
+	(StoreObject v obj, OffsetSize nm obj sibfoss) =>
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO v
+read dvc mem flgs = bracket
+	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
+	(\(ptr :: Ptr (ObjectType obj)) ->
+		loadObject @_ @obj ptr (offsetSizeLength @nm @obj mem))
+
+map :: forall nm obj sd sm sibfoss . OffsetSize nm obj sibfoss =>
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (ObjectType obj))
+map dvc@(Device.D mdvc) m@(M _ mm) flgs = do
+	(ost, sz) <- offsetSize @nm @obj dvc m 0
+	Memory.M.map mdvc (Device.M.Memory mm) ost sz flgs
+
+unmap :: Device.D sd -> M sm sibfoss -> IO ()
+unmap (Device.D mdvc) (M _ mm) = Memory.M.unmap mdvc (Device.M.Memory mm)

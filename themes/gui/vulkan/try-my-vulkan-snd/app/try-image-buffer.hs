@@ -105,6 +105,7 @@ datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 
 calc :: forall w1 w2 w3 . (
+	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w2) (ListBuffer3Memory3 w1 w2 w3),
 	Vk.Dvc.Mem.Buffer.OffsetSize ('List w3) (ListBuffer3Memory3 w1 w2 w3),
@@ -274,6 +275,7 @@ prepareMems31 phdvc dvc dscSetLyt da db dc f =
 	f dscSet m
 
 prepareMems11 :: forall w1 w2 w3 sd sl bts a . (
+	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
 	Offset ('List w2) '[ 'List w1, 'List w2, 'List w3 ],
 	Offset ('List w3) '[ 'List w1, 'List w2, 'List w3 ],
@@ -325,6 +327,12 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		@"hello" @('List w2) dvc mib 0) >>
 	(print =<< Vk.Dvc.Mem.ImageBuffer.offsetSize
 		@"hello" @('List w3) dvc mib 0) >>
+	Vk.Dvc.Mem.ImageBuffer.write @"hello" @('List w1) dvc mib def da >>
+	Vk.Dvc.Mem.ImageBuffer.write @"hello" @('List w2) dvc mib def db >>
+	Vk.Dvc.Mem.ImageBuffer.write @"hello" @('List w3) dvc mib def dc >>
+	(print @[w1] . take 10 =<< Vk.Dvc.Mem.ImageBuffer.read @"hello" @('List w1) dvc mib def) >>
+	(print @[w2] . take 10 =<< Vk.Dvc.Mem.ImageBuffer.read @"hello" @('List w2) dvc mib def) >>
+	(print @[w3] . take 10 =<< Vk.Dvc.Mem.ImageBuffer.read @"hello" @('List w3) dvc mib def) >>
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
