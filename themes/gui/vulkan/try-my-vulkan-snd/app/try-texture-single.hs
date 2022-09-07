@@ -1008,7 +1008,13 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable a =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ 'List a] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List a] -> IO ()
-copyBuffer dvc gq cp src dst = do
+copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
+	Vk.Cmd.copyBuffer @'[ '[ 'List a]] cb src dst
+
+beginSingleTimeCommands :: forall sd sc a .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	(forall s . Vk.CmdBffr.C s '[] -> IO a) -> IO a
+beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
@@ -1017,10 +1023,9 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
 				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
 				Vk.submitInfoSignalSemaphoresNew = HVNil }
-		Vk.CmdBffr.begin @() @() cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[ 'List a]] cb src dst
-		Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
-		Vk.Queue.waitIdle gq
+		Vk.CmdBffr.begin @() @() cb beginInfo (cmd cb) <* do
+			Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
