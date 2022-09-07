@@ -126,6 +126,8 @@ import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
+import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
+import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as Vk.Dvc.Mem.ImageBuffer.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
@@ -780,24 +782,39 @@ createTextureImage phdvc dvc = do
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
 		imgBody = ImageRgba8 $ imageData img
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb dvc wdt hgt Vk.Image.TilingOptimal
+	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Image.TilingOptimal
 		(Vk.Image.UsageTransferDstBit .|.  Vk.Image.UsageSampledBit)
-		Vk.Mem.PropertyDeviceLocalBit \tximg -> do
-			createBufferList @_ @_ @Rgba8 @_ phdvc dvc (olength imgBody)
-				Vk.Bffr.UsageTransferSrcBit
-				(	Vk.Mem.PropertyHostVisibleBit .|.
-					Vk.Mem.PropertyHostCoherentBit ) \sb sbm -> do
-				Vk.Dvc.Mem.Buffer.write @('List Rgba8) dvc sbm zeroBits imgBody
-				print sb
-				print sbm
-				pure ()
+		Vk.Mem.PropertyDeviceLocalBit \tximg txmem -> do
+		createBufferList' @_ @_ @Rgba8 @_ phdvc dvc (olength imgBody)
+			Vk.Bffr.UsageTransferSrcBit
+			(	Vk.Mem.PropertyHostVisibleBit .|.
+				Vk.Mem.PropertyHostCoherentBit )
+			\(sb :: Vk.Bffr.Binded
+				sm sb "texture-buffer" '[ 'List a]) sbm -> do
+			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
+				@('List Rgba8) dvc sbm zeroBits imgBody
+			print sb
+			print sbm
+			pure ()
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Image.Tiling ->
-	Vk.Image.UsageFlagBits -> Vk.Mem.PropertyFlagBits ->
-	(forall s . Vk.Image.INew s nm fmt -> IO a) -> IO a
-createImage dvc wdt hgt tlng usg prps f = do
-	Vk.Image.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> f img
+	Vk.Image.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
+		Vk.Image.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
+		IO a) -> IO a
+createImage pd dvc wdt hgt tlng usg prps f =
+	Vk.Image.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> do
+	reqs <- Vk.Image.getMemoryRequirementsNew dvc img
+	print reqs
+	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
+	print mt
+	Vk.Dvc.Mem.ImageBuffer.allocateBind @() dvc
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Image img) (memInfo mt)
+		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
+		f bnd m
 	where
 	imageInfo = Vk.Image.CreateInfoNew {
 		Vk.Image.createInfoNextNew = Nothing,
@@ -815,6 +832,9 @@ createImage dvc wdt hgt tlng usg prps f = do
 		Vk.Image.createInfoSamplesNew = Vk.Sample.Count1Bit,
 		Vk.Image.createInfoFlagsNew = zeroBits,
 		Vk.Image.createInfoQueueFamilyIndicesNew = [] }
+	memInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
@@ -920,6 +940,45 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Bffr.allocateBind dv (Singleton $ V3 b) (allcInfo mt) nil nil
 		$ f . \(Singleton (V3 bnd)) -> bnd
+	where
+	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
+	bffrInfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = singleton ln,
+		Vk.Bffr.createInfoUsage = usg,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	allcInfo :: Vk.Mem.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
+createBufferList' :: forall sd nm t a . Storable t =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
+	Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'List t] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'List t] ) ] ->
+		IO a) ->
+	IO a
+createBufferList' p dv ln usg props =
+	createBuffer' p dv (ObjectLengthList ln) usg props
+
+createBuffer' :: forall sd nm o a . Storable (ObjectType o) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[o] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(sb, Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[o])] ->
+		IO a) -> IO a
+createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
+	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
+		(allcInfo mt) nil nil
+		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
