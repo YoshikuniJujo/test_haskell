@@ -20,7 +20,7 @@ import Data.Kind.Object
 import Data.HeteroList
 import Data.Word
 
-import Gpu.Vulkan.Enum
+import Gpu.Vulkan.Enum hiding (ObjectType)
 import Gpu.Vulkan.Buffer.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -309,3 +309,51 @@ instance MakeCopies '[] ss ds where makeCopies _ _ = []
 instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 	MakeCopies (as ': ass) ss ds where
 	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
+
+class OffsetSize (v :: Object) (vs :: [Object]) where
+	offsetSize :: HeteroVarList ObjectLength vs ->
+		Device.M.Size -> (Device.M.Size, Device.M.Size)
+
+instance Storable (ObjectType v) => OffsetSize v (v ': vs) where
+	offsetSize (ln :...: _) ost = (
+		((ost - 1) `div` algn + 1) * algn,
+		fromIntegral $ objectSize ln )
+		where algn = fromIntegral $ objectAlignment @v
+
+instance {-# OVERLAPPABLE #-}
+	(Storable (ObjectType v), Storable (ObjectType v'), OffsetSize v vs ) =>
+	OffsetSize v (v' ': vs) where
+	offsetSize (ln :...: lns) ost = offsetSize @v lns
+		$ ((ost - 1) `div` algn + 1) * algn + sz
+		where
+		algn = fromIntegral $ objectAlignment @v
+		sz = fromIntegral $ objectSize ln
+
+data MemoryBarrier n sm sb nm obj = forall objs . OffsetSize obj objs =>
+	MemoryBarrier {
+		memoryBarrierNext :: Maybe n,
+		memoryBarrierSrcAccessMask :: AccessFlags,
+		memoryBarrierDstAccessMask :: AccessFlags,
+		memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
+		memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
+		memoryBarrierBuffer :: Binded sm sb nm objs }
+
+memoryBarrierToMiddle :: forall n sm sb nm obj .
+	MemoryBarrier n sm sb nm obj -> M.MemoryBarrier n
+memoryBarrierToMiddle MemoryBarrier {
+	memoryBarrierNext = mnxt,
+	memoryBarrierSrcAccessMask = sam,
+	memoryBarrierDstAccessMask = dam,
+	memoryBarrierSrcQueueFamilyIndex = sqfi,
+	memoryBarrierDstQueueFamilyIndex = dqfi,
+	memoryBarrierBuffer = Binded lns b :: Binded sm sb nm objs } =
+	M.MemoryBarrier {
+		M.memoryBarrierNext = mnxt,
+		M.memoryBarrierSrcAccessMask = sam,
+		M.memoryBarrierDstAccessMask = dam,
+		M.memoryBarrierSrcQueueFamilyIndex = sqfi,
+		M.memoryBarrierDstQueueFamilyIndex = dqfi,
+		M.memoryBarrierBuffer = M.B b,
+		M.memoryBarrierOffset = ost,
+		M.memoryBarrierSize = sz }
+	where (ost, sz) = offsetSize @obj lns 0
