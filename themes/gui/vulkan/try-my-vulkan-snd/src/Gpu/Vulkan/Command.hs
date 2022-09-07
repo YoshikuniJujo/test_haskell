@@ -39,7 +39,8 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
-import qualified Gpu.Vulkan.Image.Middle as Image
+import qualified Gpu.Vulkan.Image as Image
+import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Image.Enum as Image
 
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
@@ -49,6 +50,7 @@ import qualified Gpu.Vulkan.Command.Middle as M
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
 import qualified Gpu.Vulkan.PushConstant as PushConstant
+import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct -> Subpass.Contents ->
@@ -79,10 +81,10 @@ drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
 	drawIndexedM cb idxc istc fidx vo fist
 
 copyBufferToImage ::
-	CommandBuffer.M.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
+	CommandBuffer.M.C vs -> Buffer.M.B -> Image.M.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
 copyBufferToImage (CommandBuffer.M.C cb)
-	(Buffer.M.B sb) (Image.I rdi) (Image.Layout dil)
+	(Buffer.M.B sb) (Image.M.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
@@ -90,13 +92,13 @@ copyBufferToImage (CommandBuffer.M.C cb)
 		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
 
 blitImage :: CommandBuffer.M.C v ->
-	Image.I -> Image.Layout -> Image.I -> Image.Layout ->
-	[Image.Blit] -> Filter -> IO ()
+	Image.M.I -> Image.Layout -> Image.M.I -> Image.Layout ->
+	[Image.M.Blit] -> Filter -> IO ()
 blitImage (CommandBuffer.M.C cb)
-	(Image.I rsrc) (Image.Layout srcLyt) (Image.I rdst) (Image.Layout dstLyt)
+	(Image.M.I rsrc) (Image.Layout srcLyt) (Image.M.I rdst) (Image.Layout dstLyt)
 	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
 	pblts <- ContT $ allocaArray bltc
-	lift . pokeArray pblts $ Image.blitToCore <$> blts
+	lift . pokeArray pblts $ Image.M.blitToCore <$> blts
 	lift do (_, src) <- readIORef rsrc
 		(_, dst) <- readIORef rdst
 		C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
@@ -175,3 +177,15 @@ pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts .
 pushConstants (CommandBuffer.C cb) (Pipeline.Layout.LLL lyt) xs =
 	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
+
+{-
+pipelineBarrier ::
+	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	DependencyFlags -> HeteroVarList Memory.M.Barrier ns ->
+	HeteroVarList (V5 Buffer.MemoryBarrier) nsmsbnmobjs ->
+	HeteroVarList (V5 Image.MemoryBarrier) nsismnmfmts -> IO ()
+pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
+	M.pipelineBarrier cb ssm dsm dfs mbs
+		(heteroVarListToList Buffer.memoryBarrierToMiddle bmbs)
+		(heteroVarListToList Image.memoryBarrierToMiddle imbs)
+		-}

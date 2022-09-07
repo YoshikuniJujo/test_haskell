@@ -6,7 +6,7 @@ module Gpu.Vulkan.Image (
 	INew, BindedNew, createNew, M.CreateInfoNew(..), getMemoryRequirementsNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
-	M.SubresourceRange(..), MemoryBarrier(..) ) where
+	M.SubresourceRange(..), MemoryBarrier(..), memoryBarrierToMiddle ) where
 
 import Foreign.Pointable
 import Control.Exception

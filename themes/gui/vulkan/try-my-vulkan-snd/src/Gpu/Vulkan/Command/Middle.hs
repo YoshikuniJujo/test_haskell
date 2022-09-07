@@ -1,6 +1,8 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -119,18 +121,20 @@ pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt)
 		C.pushConstants cb lyt ss ost sz p
 
 pipelineBarrier ::
-	(Pointable n, Pointable n', Pointable n'') =>
+	(PointableHeteroMap ns, Pointable n', Pointable n'') =>
 	CommandBuffer.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
-	[Memory.M.Barrier n] -> [Buffer.M.MemoryBarrier n'] ->
+	HeteroVarList Memory.M.Barrier ns ->
+	[Buffer.M.MemoryBarrier n'] ->
 	[Image.MemoryBarrier n''] -> IO ()
 pipelineBarrier (CommandBuffer.C cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
-	(length &&& id -> (mbc, mbs))
+	mbs
 	(length &&& id -> (bbc, bbs))
 	(length &&& id -> (ibc, ibs)) = ($ pure) $ runContT do
-	cmbs <- Memory.M.barrierToCore `mapM` mbs
+	cmbs <- pointableHeteroMapM mbs Memory.M.barrierToCore
+	let	mbc = length cmbs
 	pmbs <- ContT $ allocaArray mbc
 	lift $ pokeArray pmbs cmbs
 	cbbs <- Buffer.M.memoryBarrierToCore `mapM` bbs
@@ -141,3 +145,19 @@ pipelineBarrier (CommandBuffer.C cb)
 	lift $ pokeArray pibs cibs
 	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
 		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
+
+class PointableHeteroMap ns where
+	pointableHeteroMap :: HeteroVarList t ns ->
+		(forall n . Pointable n => t n -> a) -> [a]
+	pointableHeteroMapM :: Monad m => HeteroVarList t ns ->
+		(forall n . Pointable n => t n -> m a) -> m [a]
+
+instance PointableHeteroMap '[] where
+	pointableHeteroMap HVNil _ = []
+	pointableHeteroMapM HVNil _ = pure []
+
+instance (Pointable n, PointableHeteroMap ns) =>
+	PointableHeteroMap (n ': ns) where
+	pointableHeteroMap (x :...: xs) f = f x : pointableHeteroMap xs f
+	pointableHeteroMapM (x :...: xs) f =
+		(:) <$> f x <*> pointableHeteroMapM xs f
