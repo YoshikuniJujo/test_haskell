@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -37,7 +37,7 @@ data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroVarList ObjectLength objs)
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s nm objs)
 
-data Binded sm sb (nm :: Symbol) (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
+data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sm sb nm objs)
 
@@ -357,3 +357,20 @@ memoryBarrierToMiddle MemoryBarrier {
 		M.memoryBarrierOffset = ost,
 		M.memoryBarrierSize = sz }
 	where (ost, sz) = offsetSize @obj lns 0
+
+class MemoryBarrierListToMiddle nsmsbnmobjs where
+	memoryBarrierListToMiddle ::
+		HeteroVarList (V5 MemoryBarrier) nsmsbnmobjs ->
+		HeteroVarList M.MemoryBarrier (FirstOfFives nsmsbnmobjs)
+
+type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
+	FirstOfFives '[] = '[]
+	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
+
+instance MemoryBarrierListToMiddle '[] where
+	memoryBarrierListToMiddle HVNil = HVNil
+
+instance (Pointable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
+	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
+	memoryBarrierListToMiddle (V5 mb :...: mbs) =
+		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs

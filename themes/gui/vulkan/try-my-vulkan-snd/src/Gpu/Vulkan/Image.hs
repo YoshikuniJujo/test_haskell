@@ -1,19 +1,27 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
 	INew, BindedNew, createNew, M.CreateInfoNew(..), getMemoryRequirementsNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
-	M.SubresourceRange(..), MemoryBarrier(..), memoryBarrierToMiddle ) where
+	M.SubresourceRange(..), MemoryBarrier(..),
 
+	memoryBarrierToMiddle, MemoryBarrierListToMiddle(..) ) where
+
+import GHC.TypeLits
 import Foreign.Pointable
 import Control.Exception
+import Data.Kind
+import Data.HeteroList
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Image.Type
-import Gpu.Vulkan.Image.Enum
+import Gpu.Vulkan.Image.Enum hiding (Type)
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -79,3 +87,21 @@ memoryBarrierToMiddle MemoryBarrier {
 	M.memoryBarrierDstQueueFamilyIndex = dqfi,
 	M.memoryBarrierImage = img,
 	M.memoryBarrierSubresourceRange = srr }
+
+type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
+	FirstOfFives '[] = '[]
+	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
+
+class MemoryBarrierListToMiddle
+	(nsismnmfmts :: [(Type, Type, Type, Symbol, T.Format)])  where
+	memoryBarrierListToMiddle ::
+		HeteroVarList (V5 MemoryBarrier) nsismnmfmts ->
+		HeteroVarList M.MemoryBarrier (FirstOfFives nsismnmfmts)
+
+instance MemoryBarrierListToMiddle '[] where
+	memoryBarrierListToMiddle HVNil = HVNil
+
+instance (Pointable n, MemoryBarrierListToMiddle nsismnmfmts) =>
+	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where
+	memoryBarrierListToMiddle (V5 mb :...: mbs) =
+		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
