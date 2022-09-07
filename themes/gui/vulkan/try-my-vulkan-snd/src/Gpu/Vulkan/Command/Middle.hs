@@ -35,6 +35,10 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
 
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 
+import qualified Gpu.Vulkan.Image.Middle as Image
+import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
+import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.C cb)
@@ -113,3 +117,27 @@ pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt)
 	p <- ContT $ allocaBytes sz
 	lift do	storeHetero p xs
 		C.pushConstants cb lyt ss ost sz p
+
+pipelineBarrier ::
+	(Pointable n, Pointable n', Pointable n'') =>
+	CommandBuffer.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	DependencyFlags ->
+	[Memory.M.Barrier n] -> [Buffer.M.MemoryBarrier n'] ->
+	[Image.MemoryBarrier n''] -> IO ()
+pipelineBarrier (CommandBuffer.C cb)
+	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
+	(DependencyFlagBits dfs)
+	(length &&& id -> (mbc, mbs))
+	(length &&& id -> (bbc, bbs))
+	(length &&& id -> (ibc, ibs)) = ($ pure) $ runContT do
+	cmbs <- Memory.M.barrierToCore `mapM` mbs
+	pmbs <- ContT $ allocaArray mbc
+	lift $ pokeArray pmbs cmbs
+	cbbs <- Buffer.M.memoryBarrierToCore `mapM` bbs
+	pbbs <- ContT $ allocaArray bbc
+	lift $ pokeArray pbbs cbbs
+	cibs <- Image.memoryBarrierToCore `mapM` ibs
+	pibs <- ContT $ allocaArray ibc
+	lift $ pokeArray pibs cibs
+	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
+		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs

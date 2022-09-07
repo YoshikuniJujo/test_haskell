@@ -836,6 +836,28 @@ createImage pd dvc wdt hgt tlng usg prps f =
 		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
+transitionImageLayout ::
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Image.BindedNew si sm nm fmt -> Vk.Image.Layout -> Vk.Image.Layout ->
+	IO ()
+transitionImageLayout dvc gq cp img olyt nlyt = beginSingleTimeCommands dvc gq cp \cb -> do
+	let	barrier = Vk.Image.MemoryBarrier {
+			Vk.Image.memoryBarrierNext = Nothing,
+			Vk.Image.memoryBarrierOldLayout = olyt,
+			Vk.Image.memoryBarrierNewLayout = nlyt,
+			Vk.Image.memoryBarrierSrcQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Image.memoryBarrierDstQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Image.memoryBarrierImage = img,
+			Vk.Image.memoryBarrierSubresourceRange =
+				Vk.Image.SubresourceRange {
+					Vk.Image.subresourceRangeAspectMask =
+						Vk.Image.AspectColorBit
+					}
+			}
+	pure ()
+
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ 'List Vertex] -> IO a ) -> IO a

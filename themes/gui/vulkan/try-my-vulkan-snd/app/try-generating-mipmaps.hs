@@ -1190,7 +1190,7 @@ generateMipmaps img imageFormat tw th ml = do
 				Vk.AccessTransferWriteBit,
 			Vk.Image.memoryBarrierDstAccessMask =
 				Vk.AccessShaderReadBit }
-	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @() @() commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit
 		Vk.DependencyFlagsZero [] [] [barrier']
 
@@ -1206,7 +1206,7 @@ generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 			Vk.Image.memoryBarrierSubresourceRange = srr_ {
 					Vk.Image.subresourceRangeBaseMipLevel =
 						i - 1 } }
-	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @() @() commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit
 		Vk.DependencyFlagsZero [] [] [barrier]
 	let	blit = Vk.Image.Blit {
@@ -1248,7 +1248,7 @@ generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 				Vk.AccessTransferReadBit,
 			Vk.Image.memoryBarrierDstAccessMask =
 				Vk.AccessShaderReadBit }
-	lift $ Vk.Cmd.pipelineBarrier @() @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @() @() commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit
 		Vk.DependencyFlagsZero [] [] [barrier']
 
@@ -1356,7 +1356,7 @@ transitionImageLayout image format oldLayout newLayout mipLevels = do
 			Vk.Image.memoryBarrierDstAccessMask = bDst
 			}
 
-	lift $ Vk.Cmd.pipelineBarrier @() @() @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @() @() @() commandBuffer
 		srcSt dstSt Vk.DependencyFlagsZero [] [] [barrier]
 
 	endSingleTimeCommands commandBuffer

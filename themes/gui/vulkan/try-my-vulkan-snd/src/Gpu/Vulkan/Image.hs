@@ -6,15 +6,18 @@ module Gpu.Vulkan.Image (
 	INew, BindedNew, createNew, M.CreateInfoNew(..), getMemoryRequirementsNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
-	M.SubresourceRange(..) ) where
+	M.SubresourceRange(..), MemoryBarrier(..) ) where
 
 import Foreign.Pointable
 import Control.Exception
 
+import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Image.Type
+import Gpu.Vulkan.Image.Enum
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory
 import qualified Gpu.Vulkan.Image.Middle as M
@@ -44,3 +47,35 @@ bindMemory :: Device.D sd -> I si -> Device.MemoryImage sm -> IO (Binded si sm)
 bindMemory (Device.D dvc) (I img) (Device.MemoryImage _ mem) = do
 	M.bindMemory dvc img mem 0
 	pure $ Binded img
+
+data MemoryBarrier n si sm nm fmt = MemoryBarrier {
+	memoryBarrierNext :: Maybe n,
+	memoryBarrierSrcAccessMask :: AccessFlags,
+	memoryBarrierDstAccessMask :: AccessFlags,
+	memoryBarrierOldLayout :: Layout,
+	memoryBarrierNewLayout :: Layout,
+	memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
+	memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
+	memoryBarrierImage :: BindedNew si sm nm fmt,
+	memoryBarrierSubresourceRange :: M.SubresourceRange }
+
+memoryBarrierToMiddle :: MemoryBarrier n si sm nm fmt -> M.MemoryBarrier n
+memoryBarrierToMiddle MemoryBarrier {
+	memoryBarrierNext = mnxt,
+	memoryBarrierSrcAccessMask = sam,
+	memoryBarrierDstAccessMask = dam,
+	memoryBarrierOldLayout = olyt,
+	memoryBarrierNewLayout = nlyt,
+	memoryBarrierSrcQueueFamilyIndex = sqfi,
+	memoryBarrierDstQueueFamilyIndex = dqfi,
+	memoryBarrierImage = BindedNew img,
+	memoryBarrierSubresourceRange = srr } = M.MemoryBarrier {
+	M.memoryBarrierNext = mnxt,
+	M.memoryBarrierSrcAccessMask = sam,
+	M.memoryBarrierDstAccessMask = dam,
+	M.memoryBarrierOldLayout = olyt,
+	M.memoryBarrierNewLayout = nlyt,
+	M.memoryBarrierSrcQueueFamilyIndex = sqfi,
+	M.memoryBarrierDstQueueFamilyIndex = dqfi,
+	M.memoryBarrierImage = img,
+	M.memoryBarrierSubresourceRange = srr }

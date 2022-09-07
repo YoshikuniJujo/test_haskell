@@ -37,7 +37,6 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Command.Core as C
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
-import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image.Middle as Image
@@ -78,30 +77,6 @@ drawIndexed :: CommandBuffer.C sc vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
 drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
 	drawIndexedM cb idxc istc fidx vo fist
-
-pipelineBarrier ::
-	(Pointable n, Pointable n', Pointable n'') =>
-	CommandBuffer.M.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
-	DependencyFlags ->
-	[Memory.M.Barrier n] -> [Buffer.M.MemoryBarrier n'] ->
-	[Image.MemoryBarrier n''] -> IO ()
-pipelineBarrier (CommandBuffer.M.C cb)
-	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
-	(DependencyFlagBits dfs)
-	(length &&& id -> (mbc, mbs))
-	(length &&& id -> (bbc, bbs))
-	(length &&& id -> (ibc, ibs)) = ($ pure) $ runContT do
-	cmbs <- Memory.M.barrierToCore `mapM` mbs
-	pmbs <- ContT $ allocaArray mbc
-	lift $ pokeArray pmbs cmbs
-	cbbs <- Buffer.M.memoryBarrierToCore `mapM` bbs
-	pbbs <- ContT $ allocaArray bbc
-	lift $ pokeArray pbbs cbbs
-	cibs <- Image.memoryBarrierToCore `mapM` ibs
-	pibs <- ContT $ allocaArray ibc
-	lift $ pokeArray pibs cibs
-	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
-		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
 
 copyBufferToImage ::
 	CommandBuffer.M.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
