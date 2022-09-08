@@ -82,9 +82,9 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
-import qualified Gpu.Vulkan.Image as Vk.Image
-import qualified Gpu.Vulkan.Image.Enum as Vk.Image
-import qualified Gpu.Vulkan.Image.Middle as Vk.Image.M
+import qualified Gpu.Vulkan.Image as Vk.Img
+import qualified Gpu.Vulkan.Image.Enum as Vk.Img
+import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
@@ -418,7 +418,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 		Vk.Khr.Swapchain.createInfoImageExtent = ext,
 		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
 		Vk.Khr.Swapchain.createInfoImageUsage =
-			Vk.Image.UsageColorAttachmentBit,
+			Vk.Img.UsageColorAttachmentBit,
 		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
 		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
 		Vk.Khr.Swapchain.createInfoPreTransform =
@@ -472,7 +472,7 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
-createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
+createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.Binded ss ss] ->
 	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
 createImageViews _dvc _fmt [] f = f HVNil
 createImageViews dvc fmt (sci : scis) f =
@@ -480,7 +480,7 @@ createImageViews dvc fmt (sci : scis) f =
 	createImageViews dvc fmt scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
-	[Vk.Image.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
+	[Vk.Img.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
 recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) =
 	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo scifmt sci) nil nil iv >>
@@ -489,7 +489,7 @@ recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
 mkImageViewCreateInfo ::
-	Vk.Format -> Vk.Image.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
+	Vk.Format -> Vk.Img.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
 mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 	Vk.ImgVw.createInfoNext = Nothing,
 	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
@@ -502,12 +502,12 @@ mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
 		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
-	subresourceRange = Vk.Image.M.SubresourceRange {
-		Vk.Image.M.subresourceRangeAspectMask = Vk.Image.AspectColorBit,
-		Vk.Image.M.subresourceRangeBaseMipLevel = 0,
-		Vk.Image.M.subresourceRangeLevelCount = 1,
-		Vk.Image.M.subresourceRangeBaseArrayLayer = 0,
-		Vk.Image.M.subresourceRangeLayerCount = 1 }
+	subresourceRange = Vk.Img.M.SubresourceRange {
+		Vk.Img.M.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.M.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.M.subresourceRangeLevelCount = 1,
+		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.M.subresourceRangeLayerCount = 1 }
 
 createRenderPass :: Vk.Dvc.D sd ->
 	Vk.Format -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
@@ -522,13 +522,13 @@ createRenderPass dvc scifmt f = do
 			Vk.Att.descriptionStencilStoreOp =
 				Vk.Att.StoreOpDontCare,
 			Vk.Att.descriptionInitialLayout =
-				Vk.Image.LayoutUndefined,
+				Vk.Img.LayoutUndefined,
 			Vk.Att.descriptionFinalLayout =
-				Vk.Image.LayoutPresentSrcKhr }
+				Vk.Img.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
-				Vk.Image.LayoutColorAttachmentOptimal }
+				Vk.Img.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags = zeroBits,
 			Vk.Subpass.descriptionPipelineBindPoint =
@@ -782,8 +782,8 @@ createTextureImage phdvc dvc = do
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
 		imgBody = ImageRgba8 $ imageData img
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Image.TilingOptimal
-		(Vk.Image.UsageTransferDstBit .|.  Vk.Image.UsageSampledBit)
+	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
+		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit \tximg txmem -> do
 		createBufferList' @_ @_ @Rgba8 @_ phdvc dvc (olength imgBody)
 			Vk.Bffr.UsageTransferSrcBit
@@ -799,15 +799,15 @@ createTextureImage phdvc dvc = do
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Image.Tiling ->
-	Vk.Image.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
-		Vk.Image.BindedNew si sm nm fmt ->
+	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
+		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a
 createImage pd dvc wdt hgt tlng usg prps f =
-	Vk.Image.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> do
-	reqs <- Vk.Image.getMemoryRequirementsNew dvc img
+	Vk.Img.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> do
+	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
@@ -816,47 +816,54 @@ createImage pd dvc wdt hgt tlng usg prps f =
 		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
 		f bnd m
 	where
-	imageInfo = Vk.Image.CreateInfoNew {
-		Vk.Image.createInfoNextNew = Nothing,
-		Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
-		Vk.Image.createInfoExtentNew = Vk.C.Extent3d {
+	imageInfo = Vk.Img.CreateInfoNew {
+		Vk.Img.createInfoNextNew = Nothing,
+		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
+		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
 			Vk.C.extent3dWidth = wdt,
 			Vk.C.extent3dHeight = hgt,
 			Vk.C.extent3dDepth = 1 },
-		Vk.Image.createInfoMipLevelsNew = 1,
-		Vk.Image.createInfoArrayLayersNew = 1,
-		Vk.Image.createInfoTilingNew = tlng,
-		Vk.Image.createInfoInitialLayoutNew = Vk.Image.LayoutUndefined,
-		Vk.Image.createInfoUsageNew = usg,
-		Vk.Image.createInfoSharingModeNew = Vk.SharingModeExclusive,
-		Vk.Image.createInfoSamplesNew = Vk.Sample.Count1Bit,
-		Vk.Image.createInfoFlagsNew = zeroBits,
-		Vk.Image.createInfoQueueFamilyIndicesNew = [] }
+		Vk.Img.createInfoMipLevelsNew = 1,
+		Vk.Img.createInfoArrayLayersNew = 1,
+		Vk.Img.createInfoTilingNew = tlng,
+		Vk.Img.createInfoInitialLayoutNew = Vk.Img.LayoutUndefined,
+		Vk.Img.createInfoUsageNew = usg,
+		Vk.Img.createInfoSharingModeNew = Vk.SharingModeExclusive,
+		Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoFlagsNew = zeroBits,
+		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 	memInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
 		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
-transitionImageLayout ::
+transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Image.BindedNew si sm nm fmt -> Vk.Image.Layout -> Vk.Image.Layout ->
+	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt = beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier = Vk.Image.MemoryBarrier {
-			Vk.Image.memoryBarrierNext = Nothing,
-			Vk.Image.memoryBarrierOldLayout = olyt,
-			Vk.Image.memoryBarrierNewLayout = nlyt,
-			Vk.Image.memoryBarrierSrcQueueFamilyIndex =
+transitionImageLayout dvc gq cp img olyt nlyt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+		barrier = Vk.Img.MemoryBarrier {
+			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierOldLayout = olyt,
+			Vk.Img.memoryBarrierNewLayout = nlyt,
+			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
 				Vk.QueueFamily.Ignored,
-			Vk.Image.memoryBarrierDstQueueFamilyIndex =
+			Vk.Img.memoryBarrierDstQueueFamilyIndex =
 				Vk.QueueFamily.Ignored,
-			Vk.Image.memoryBarrierImage = img,
-			Vk.Image.memoryBarrierSubresourceRange =
-				Vk.Image.SubresourceRange {
-					Vk.Image.subresourceRangeAspectMask =
-						Vk.Image.AspectColorBit
-					}
-			}
-	pure ()
+			Vk.Img.memoryBarrierImage = img,
+			Vk.Img.memoryBarrierSubresourceRange = srr,
+			Vk.Img.memoryBarrierSrcAccessMask = zeroBits,
+			Vk.Img.memoryBarrierDstAccessMask = zeroBits }
+		srr = Vk.Img.SubresourceRange {
+			Vk.Img.subresourceRangeAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.subresourceRangeBaseMipLevel = 0,
+			Vk.Img.subresourceRangeLevelCount = 1,
+			Vk.Img.subresourceRangeBaseArrayLayer = 0,
+			Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.Cmd.pipelineBarrier cb
+		zeroBits zeroBits zeroBits HVNil HVNil (Singleton $ V5 barrier)
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
@@ -993,7 +1000,7 @@ createBuffer' :: forall sd nm o a . Storable (ObjectType o) =>
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[o] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
-			'[ '(sb, Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[o])] ->
+			'[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[o])] ->
 		IO a) -> IO a
 createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
