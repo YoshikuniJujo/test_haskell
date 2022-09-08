@@ -1262,9 +1262,9 @@ generateMipmaps img imageFormat tw th ml = do
 				Vk.AccessTransferWriteBit,
 			Vk.Image.memoryBarrierDstAccessMask =
 				Vk.AccessShaderReadBit }
-	lift $ Vk.Cmd.M.pipelineBarrier @'[] @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @'[] @'[] commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit
-		Vk.DependencyFlagsZero HVNil [] [barrier']
+		Vk.DependencyFlagsZero HVNil HVNil (Singleton barrier')
 
 	endSingleTimeCommands commandBuffer
 
@@ -1278,9 +1278,9 @@ generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 			Vk.Image.memoryBarrierSubresourceRange = srr_ {
 					Vk.Image.subresourceRangeBaseMipLevel =
 						i - 1 } }
-	lift $ Vk.Cmd.M.pipelineBarrier @'[] @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @'[] @'[] commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit
-		Vk.DependencyFlagsZero HVNil [] [barrier]
+		Vk.DependencyFlagsZero HVNil HVNil (Singleton barrier)
 	let	blit = Vk.Image.Blit {
 			Vk.Image.blitSrcOffsetFrom = Vk.C.Offset3d 0 0 0,
 			Vk.Image.blitSrcOffsetTo =
@@ -1320,9 +1320,9 @@ generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 				Vk.AccessTransferReadBit,
 			Vk.Image.memoryBarrierDstAccessMask =
 				Vk.AccessShaderReadBit }
-	lift $ Vk.Cmd.M.pipelineBarrier @'[] @() commandBuffer
+	lift $ Vk.Cmd.M.pipelineBarrier @'[] @'[] commandBuffer
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit
-		Vk.DependencyFlagsZero HVNil [] [barrier']
+		Vk.DependencyFlagsZero HVNil HVNil (Singleton barrier')
 
 halfOrOne :: Integral n => n -> n
 halfOrOne n | n > 1 = n `div` 2 | otherwise = 1
@@ -1428,8 +1428,8 @@ transitionImageLayout image format oldLayout newLayout mipLevels = do
 			Vk.Image.memoryBarrierDstAccessMask = bDst
 			}
 
-	lift $ Vk.Cmd.M.pipelineBarrier @'[] @() @() commandBuffer
-		srcSt dstSt Vk.DependencyFlagsZero HVNil [] [barrier]
+	lift $ Vk.Cmd.M.pipelineBarrier @'[] @'[] @'[()] commandBuffer
+		srcSt dstSt Vk.DependencyFlagsZero HVNil HVNil (Singleton barrier)
 
 	endSingleTimeCommands commandBuffer
 

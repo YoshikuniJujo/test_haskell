@@ -1191,8 +1191,8 @@ transitionImageLayout image format oldLayout newLayout = do
 			Vk.Image.memoryBarrierDstAccessMask = bDst
 			}
 
-	lift $ Vk.Cmd.M.pipelineBarrier @'[] @() @() commandBuffer
-		srcSt dstSt Vk.DependencyFlagsZero HVNil [] [barrier]
+	lift $ Vk.Cmd.M.pipelineBarrier @'[] @'[] @'[()] commandBuffer
+		srcSt dstSt Vk.DependencyFlagsZero HVNil HVNil (Singleton barrier)
 
 	endSingleTimeCommands commandBuffer
 

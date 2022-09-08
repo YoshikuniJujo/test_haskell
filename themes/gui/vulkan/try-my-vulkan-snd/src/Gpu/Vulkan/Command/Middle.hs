@@ -120,27 +120,28 @@ pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt)
 	lift do	storeHetero p xs
 		C.pushConstants cb lyt ss ost sz p
 
-pipelineBarrier ::
-	(PointableHeteroMap ns, Pointable n', Pointable n'') =>
+pipelineBarrier :: (
+	PointableHeteroMap ns, PointableHeteroMap ns', PointableHeteroMap ns''
+	) =>
 	CommandBuffer.C vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
 	HeteroVarList Memory.M.Barrier ns ->
-	[Buffer.M.MemoryBarrier n'] ->
-	[Image.MemoryBarrier n''] -> IO ()
+	HeteroVarList Buffer.M.MemoryBarrier ns' ->
+	HeteroVarList Image.MemoryBarrier ns'' -> IO ()
 pipelineBarrier (CommandBuffer.C cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
-	mbs
-	(length &&& id -> (bbc, bbs))
-	(length &&& id -> (ibc, ibs)) = ($ pure) $ runContT do
+	mbs bbs ibs = ($ pure) $ runContT do
 	cmbs <- pointableHeteroMapM mbs Memory.M.barrierToCore
 	let	mbc = length cmbs
 	pmbs <- ContT $ allocaArray mbc
 	lift $ pokeArray pmbs cmbs
-	cbbs <- Buffer.M.memoryBarrierToCore `mapM` bbs
+	cbbs <- pointableHeteroMapM bbs Buffer.M.memoryBarrierToCore
+	let	bbc = length cbbs
 	pbbs <- ContT $ allocaArray bbc
 	lift $ pokeArray pbbs cbbs
-	cibs <- Image.memoryBarrierToCore `mapM` ibs
+	cibs <- pointableHeteroMapM ibs Image.memoryBarrierToCore
+	let	ibc = length cibs
 	pibs <- ContT $ allocaArray ibc
 	lift $ pokeArray pibs cibs
 	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
