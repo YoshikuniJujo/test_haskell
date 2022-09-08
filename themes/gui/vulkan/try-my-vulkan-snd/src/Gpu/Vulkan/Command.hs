@@ -80,17 +80,6 @@ drawIndexed :: CommandBuffer.C sc vs ->
 drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
 	drawIndexedM cb idxc istc fidx vo fist
 
-copyBufferToImage ::
-	CommandBuffer.M.C vs -> Buffer.M.B -> Image.M.I -> Image.Layout ->
-	[Buffer.M.ImageCopy] -> IO ()
-copyBufferToImage (CommandBuffer.M.C cb)
-	(Buffer.M.B sb) (Image.M.I rdi) (Image.Layout dil)
-	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
-	prs <- ContT $ allocaArray rc
-	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
-	lift do	(_, di) <- readIORef rdi
-		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
-
 blitImage :: CommandBuffer.M.C v ->
 	Image.M.I -> Image.Layout -> Image.M.I -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()

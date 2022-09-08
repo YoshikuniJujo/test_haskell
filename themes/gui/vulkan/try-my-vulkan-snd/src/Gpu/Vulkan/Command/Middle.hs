@@ -16,6 +16,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList hiding (length)
 import Data.Word
+import Data.IORef
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
@@ -37,6 +38,7 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
 
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 
+import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
@@ -162,3 +164,14 @@ instance (Pointable n, PointableHeteroMap ns) =>
 	pointableHeteroMap (x :...: xs) f = f x : pointableHeteroMap xs f
 	pointableHeteroMapM (x :...: xs) f =
 		(:) <$> f x <*> pointableHeteroMapM xs f
+
+copyBufferToImage ::
+	CommandBuffer.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
+	[Buffer.M.ImageCopy] -> IO ()
+copyBufferToImage (CommandBuffer.C cb)
+	(Buffer.M.B sb) (Image.I rdi) (Image.Layout dil)
+	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
+	prs <- ContT $ allocaArray rc
+	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
+	lift do	(_, di) <- readIORef rdi
+		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
