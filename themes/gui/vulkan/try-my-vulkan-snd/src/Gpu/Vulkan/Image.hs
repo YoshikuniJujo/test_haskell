@@ -11,7 +11,8 @@ module Gpu.Vulkan.Image (
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
 	M.SubresourceRange(..), MemoryBarrier(..),
 
-	memoryBarrierToMiddle, MemoryBarrierListToMiddle(..) ) where
+	memoryBarrierToMiddle, MemoryBarrierListToMiddle(..), FirstOfFives
+	) where
 
 import GHC.TypeLits
 import Foreign.Pointable

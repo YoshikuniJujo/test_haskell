@@ -178,14 +178,17 @@ pushConstants (CommandBuffer.C cb) (Pipeline.Layout.LLL lyt) xs =
 	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 
-{-
-pipelineBarrier ::
+pipelineBarrier :: (
+	M.PointableHeteroMap ns,
+	M.PointableHeteroMap (Buffer.FirstOfFives nsmsbnmobjs),
+	M.PointableHeteroMap (Image.FirstOfFives nsismnmfmts),
+	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
+	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags -> HeteroVarList Memory.M.Barrier ns ->
 	HeteroVarList (V5 Buffer.MemoryBarrier) nsmsbnmobjs ->
 	HeteroVarList (V5 Image.MemoryBarrier) nsismnmfmts -> IO ()
 pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
-		(heteroVarListToList Buffer.memoryBarrierToMiddle bmbs)
-		(heteroVarListToList Image.memoryBarrierToMiddle imbs)
-		-}
+		(Buffer.memoryBarrierListToMiddle bmbs)
+		(Image.memoryBarrierListToMiddle imbs)
