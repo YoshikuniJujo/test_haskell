@@ -18,15 +18,21 @@ import Data.HeteroList
 
 import qualified Data.Sequences as Seq
 
-data Object = Atom Type | List Type
+data Object = Atom Type | List Type | ObjImage Type
 
 type family ObjectType obj where
 	ObjectType ('Atom t) = t
 	ObjectType ('List t) = t
+	ObjectType ('ObjImage t) = t
 
 data ObjectLength (obj :: Object) where
 	ObjectLengthAtom :: ObjectLength ('Atom t)
 	ObjectLengthList :: Int -> ObjectLength ('List t)
+	ObjectLengthImage :: {
+		objectLengthImageRow :: Int,
+		objectLengthImageWidth :: Int,
+		objectLengthImageHeight :: Int,
+		objectLengthImageDepth :: Int } -> ObjectLength ('ObjImage t)
 
 deriving instance Eq (ObjectLength obj)
 
@@ -34,6 +40,11 @@ objectSize :: forall obj . Storable (ObjectType obj) => ObjectLength obj -> Int
 objectSize ObjectLengthAtom = sizeOf @(ObjectType obj) undefined
 objectSize (ObjectLengthList n) = n * ((sz - 1) `div` algn + 1) * algn
 	where 
+	sz = sizeOf @(ObjectType obj) undefined
+	algn = alignment @(ObjectType obj) undefined
+objectSize (ObjectLengthImage r _w h d) =
+	r * h * d * ((sz - 1) `div` algn + 1) * algn
+	where
 	sz = sizeOf @(ObjectType obj) undefined
 	algn = alignment @(ObjectType obj) undefined
 
@@ -83,3 +94,19 @@ instance (
 	Storable t, Element v ~ t ) => StoreObject v ('List t) where
 	storeObject p (ObjectLengthList n) xs = pokeArray p . take n $ otoList xs
 	loadObject p (ObjectLengthList n) = Seq.fromList <$> peekArray n p
+
+class IsImage img where
+	type IsImagePixel img
+	isImageRow :: img -> Int
+	isImageWidth :: img -> Int
+	isImageHeight :: img -> Int
+	isImageDepth :: img -> Int
+	isImageBody :: img -> [IsImagePixel img]
+	isImageMake :: Int -> Int -> Int -> Int -> [IsImagePixel img] -> img
+
+instance (IsImage img, Storable (IsImagePixel img)) =>
+	StoreObject img ('ObjImage img) where
+	storeObject p (ObjectLengthImage r _w h d) img =
+		pokeArray (castPtr p) . take (r * h * d) $ isImageBody img
+	loadObject p (ObjectLengthImage r w h d) =
+		isImageMake r w h d <$> peekArray (r * h * d) (castPtr p)
