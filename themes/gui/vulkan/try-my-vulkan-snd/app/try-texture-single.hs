@@ -795,7 +795,6 @@ createTextureImage phdvc dvc = do
 				@('List Rgba8) dvc sbm zeroBits imgBody
 			print sb
 			print sbm
-			pure ()
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
@@ -994,6 +993,18 @@ createBufferList' :: forall sd nm t a . Storable t =>
 	IO a
 createBufferList' p dv ln usg props =
 	createBuffer' p dv (ObjectLengthList ln) usg props
+
+createBufferImage' :: Storable t =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ ObjImage t] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage t])] ->
+		IO a) -> IO a
+createBufferImage' p dv (r, w, h, d) usg props =
+	createBuffer' p dv (ObjectLengthImage r w h d) usg props
 
 createBuffer' :: forall sd nm o a . Storable (ObjectType o) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
