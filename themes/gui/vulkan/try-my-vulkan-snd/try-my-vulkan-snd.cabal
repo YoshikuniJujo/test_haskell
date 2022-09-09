@@ -220,6 +220,7 @@ library
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -258,6 +259,7 @@ executable my-glslc
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -297,6 +299,7 @@ executable try-depth-buffering
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -336,6 +339,7 @@ executable try-generating-mipmaps
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -375,6 +379,7 @@ executable try-image-buffer
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -414,6 +419,7 @@ executable try-loading-models
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -453,6 +459,7 @@ executable try-multisampling
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -491,6 +498,7 @@ executable try-my-vulkan-snd-exe
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -530,6 +538,7 @@ executable try-next-triangle
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -569,6 +578,7 @@ executable try-rectangle
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -608,6 +618,7 @@ executable try-rectangle-single
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -647,6 +658,7 @@ executable try-saitan
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -686,6 +698,7 @@ executable try-saitan-float
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -725,6 +738,7 @@ executable try-shaderc
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -764,6 +778,7 @@ executable try-shaderc-core
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -803,6 +818,7 @@ executable try-texel-buffer
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -842,6 +858,7 @@ executable try-texture-old
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -881,6 +898,7 @@ executable try-texture-single
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -920,6 +938,7 @@ executable try-triangle-single
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -959,6 +978,7 @@ executable try-vertex-input-state
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -998,6 +1018,7 @@ executable try-vulkan-guide
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -1037,6 +1058,7 @@ executable try-wavefront-obj
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -1076,6 +1098,7 @@ executable try-yatteiku
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum
@@ -1115,6 +1138,7 @@ test-suite try-my-vulkan-snd-test
   build-depends:
       GLFW-b
     , JuicyPixels
+    , array
     , base >=4.7 && <5
     , bytestring
     , c-enum

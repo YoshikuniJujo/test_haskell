@@ -221,7 +221,7 @@ class OffsetSizeObject (obj :: Object) (objs :: [Object]) where
 	offsetSizeObjectLength :: HeteroVarList ObjectLength objs ->
 		ObjectLength obj
 
-instance Storable (ObjectType obj) => OffsetSizeObject obj (obj ': objs) where
+instance SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where
 	offsetSizeObject n (ln :...: _) = (ost, fromIntegral $ objectSize ln)
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
@@ -229,7 +229,7 @@ instance Storable (ObjectType obj) => OffsetSizeObject obj (obj ': objs) where
 	offsetSizeObjectLength (ln :...: _) = ln
 
 instance {-# OVERLAPPABLE #-} (
-	Storable (ObjectType obj), Storable (ObjectType obj'),
+	SizeAlignment obj, SizeAlignment obj',
 	OffsetSizeObject obj objs ) =>
 	OffsetSizeObject obj (obj' ': objs) where
 	offsetSizeObject n (ln :...: lns) =

@@ -13,8 +13,10 @@
 module Main where
 
 import GHC.Generics
+import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
+import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -24,6 +26,7 @@ import Data.Kind.Object
 import Data.MonoTraversable
 import Data.Default
 import Data.Bits
+import Data.Array hiding (indices)
 import Data.HeteroList hiding (length)
 import Data.Proxy
 import Data.Bool
@@ -34,6 +37,7 @@ import Data.List.Length
 import Data.Word
 import Data.Color
 import Data.Time
+import Codec.Picture
 import Codec.Picture.Tools
 
 
@@ -263,7 +267,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createTextureImage phdv dv >>
+	createTextureImage' phdv dv >>
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -796,6 +800,56 @@ createTextureImage phdvc dvc = do
 			print sb
 			print sbm
 
+createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> IO ()
+createTextureImage' phdvc dvc = do
+	img <- readRgba8 "../../../../files/images/texture.jpg"
+	print . V.length $ imageData img
+	let	wdt = fromIntegral $ imageWidth img
+		hgt = fromIntegral $ imageHeight img
+		imgBody = ImageRgba8 $ imageData img
+	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
+		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
+		Vk.Mem.PropertyDeviceLocalBit \tximg txmem -> do
+		createBufferImage' @MyImage @_ phdvc dvc
+			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+			Vk.Bffr.UsageTransferSrcBit
+			(	Vk.Mem.PropertyHostVisibleBit .|.
+				Vk.Mem.PropertyHostCoherentBit )
+			\(sb :: Vk.Bffr.Binded
+				sm sb "texture-buffer" '[ 'ObjImage a]) sbm -> do
+			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
+				@('ObjImage MyImage) dvc sbm zeroBits (MyImage img)
+			print sb
+			print sbm
+
+newtype MyImage = MyImage (Image PixelRGBA8)
+
+newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+
+instance Storable MyRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
+		<$> peekArray 4 (castPtr p)
+	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
+
+listToTuple4 :: [a] -> (a, a, a, a)
+listToTuple4 [r, g, b, a] = (r, g, b, a)
+listToTuple4 _ = error "The length of the list is not 4"
+
+instance IsImage MyImage where
+	type IsImagePixel MyImage = MyRgba8
+	isImageRow = isImageWidth
+	isImageWidth (MyImage img) = imageWidth img
+	isImageHeight (MyImage img) = imageHeight img
+	isImageDepth _ = 1
+	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
+	isImageMake w h _d pss = MyImage
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
@@ -958,7 +1012,7 @@ createBufferList :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List a]] -> IO b ) -> IO b
 createBufferList p dv ln usg props = createBuffer p dv (ObjectLengthList ln) usg props
 
-createBuffer :: forall sd nm o a . Storable (ObjectType o) =>
+createBuffer :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] -> Vk.Dvc.Mem.Buffer.M sm '[ '[o]] ->
@@ -994,11 +1048,11 @@ createBufferList' :: forall sd nm t a . Storable t =>
 createBufferList' p dv ln usg props =
 	createBuffer' p dv (ObjectLengthList ln) usg props
 
-createBufferImage' :: Storable t =>
+createBufferImage' :: Storable (IsImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ ObjImage t] ->
+		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
 			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage t])] ->
@@ -1006,7 +1060,7 @@ createBufferImage' :: Storable t =>
 createBufferImage' p dv (r, w, h, d) usg props =
 	createBuffer' p dv (ObjectLengthImage r w h d) usg props
 
-createBuffer' :: forall sd nm o a . Storable (ObjectType o) =>
+createBuffer' :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[o] ->

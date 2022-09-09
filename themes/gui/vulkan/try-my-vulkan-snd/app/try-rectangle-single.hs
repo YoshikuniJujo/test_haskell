@@ -860,7 +860,7 @@ createBufferList :: forall sd a b nm . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List a]] -> IO b ) -> IO b
 createBufferList p dv ln usg props = createBuffer p dv (ObjectLengthList ln) usg props
 
-createBuffer :: forall sd o a nm . Storable (ObjectType o) =>
+createBuffer :: forall sd o a nm . Data.Kind.Object.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[o] -> Vk.Dvc.Mem.Buffer.M sm '[ '[o]] ->

@@ -19,7 +19,7 @@ class OffsetSize (obj :: Object) (objss :: [[Object]]) where
 	offsetSize :: Size -> HeteroVarList Form objss -> (Size, Size)
 	offsetSizeLength :: HeteroVarList Form objss -> ObjectLength obj
 
-instance Storable (ObjectType obj) =>
+instance SizeAlignment obj =>
 	OffsetSize obj ((obj ': objs) ': objss) where
 	offsetSize n (Form ost _ (ln :...: _) :...: _) =
 		(ost', fromIntegral $ objectSize ln)
@@ -29,7 +29,7 @@ instance Storable (ObjectType obj) =>
 	offsetSizeLength (Form _ _ (ln :...: _) :...: _) = ln
 
 instance {-# OVERLAPPABLE #-} (
-	Storable (ObjectType obj'),
+	SizeAlignment obj',
 	OffsetSize obj (objs ': objss) ) =>
 	OffsetSize obj ((obj' ': objs) ': objss) where
 	offsetSize n (Form ost sz (ln :...: lns) :...: fs) =

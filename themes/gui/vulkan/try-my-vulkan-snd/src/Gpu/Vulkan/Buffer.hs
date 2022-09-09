@@ -196,7 +196,7 @@ instance Storable v => OffsetList v ('List v ': vs) where
 	offsetList _ = fromIntegral . adjust (alignment @v undefined)
 
 instance {-# OVERLAPPABLE #-} (
-	Storable (Data.Kind.Object.ObjectType v'), OffsetList v vs ) => OffsetList v (v' ': vs) where
+	SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
 	offsetList (objlen :...: objlens) ost =
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
@@ -236,7 +236,7 @@ instance CopyPrefix '[] src dst where
 	copySizePrefix sz _ = sz
 
 instance (
-	Storable (Data.Kind.Object.ObjectType a),
+	SizeAlignment a,
 	CopyPrefix as ss ds ) =>
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) where
 	copyCheckLengthPrefix (s :...: ss) (d :...: ds) =
@@ -244,8 +244,7 @@ instance (
 	copySizePrefix sz (ln :...: lns) = copySizePrefix @as @ss @ds
 		(((sz - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
 		lns
-		where algn = fromIntegral
-			$ alignment @(Data.Kind.Object.ObjectType a) undefined
+		where algn = fromIntegral $ objectAlignment @a
 
 class CopyInfo (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
 	copyCheckLength ::
@@ -268,7 +267,7 @@ instance (
 	copySize = copySizePrefix @(a ': as) @(a ': ss) @(a ': ds) 0
 
 instance {-# OVERLAPPABLE #-}
-	(Storable (OT d), CopyInfo (a ': as) (a ': ss) ds) =>
+	(SizeAlignment d, CopyInfo (a ': as) (a ': ss) ds) =>
 	CopyInfo (a ': as) (a ': ss) (d ': ds) where
 	copyCheckLength ss (_ :...: ds) =
 		copyCheckLength @(a ': as) @(a ': ss) @ds ss ds
@@ -276,17 +275,18 @@ instance {-# OVERLAPPABLE #-}
 	copyDstOffset ost (ln :...: lns) = copyDstOffset @(a ': as) @(a ': ss)
 		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
 		lns
-		where algn = fromIntegral $ alignment @(OT d) undefined
+		where algn = fromIntegral $ objectAlignment @d
 	copySize = copySize @(a ': as) @(a ': ss) @ds
 
 instance {-# OVERLAPPABLE #-}
-	(Storable (OT s), CopyInfo as ss ds) =>
+	(SizeAlignment s,
+	CopyInfo as ss ds) =>
 	CopyInfo as (s ': ss) ds where
 	copyCheckLength (_ :...: ss) ds = copyCheckLength @as ss ds
 	copySrcOffset ost (ln :...: lns) = copySrcOffset @as @ss @ds
 		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
 		lns
-		where algn = fromIntegral $ alignment @(OT s) undefined
+		where algn = fromIntegral (objectAlignment @s)
 	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
 	copySize (_ :...: lns) = copySize @as @ss @ds lns
 
@@ -314,14 +314,14 @@ class OffsetSize (v :: Object) (vs :: [Object]) where
 	offsetSize :: HeteroVarList ObjectLength vs ->
 		Device.M.Size -> (Device.M.Size, Device.M.Size)
 
-instance Storable (ObjectType v) => OffsetSize v (v ': vs) where
+instance SizeAlignment v => OffsetSize v (v ': vs) where
 	offsetSize (ln :...: _) ost = (
 		((ost - 1) `div` algn + 1) * algn,
 		fromIntegral $ objectSize ln )
 		where algn = fromIntegral $ objectAlignment @v
 
 instance {-# OVERLAPPABLE #-}
-	(Storable (ObjectType v), Storable (ObjectType v'), OffsetSize v vs ) =>
+	(SizeAlignment v, SizeAlignment v', OffsetSize v vs ) =>
 	OffsetSize v (v' ': vs) where
 	offsetSize (ln :...: lns) ost = offsetSize @v lns
 		$ ((ost - 1) `div` algn + 1) * algn + sz
