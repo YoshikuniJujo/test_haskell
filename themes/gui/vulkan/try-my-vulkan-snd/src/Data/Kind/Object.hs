@@ -1,9 +1,11 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -12,6 +14,8 @@ module Data.Kind.Object where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Data.Foldable
+import Data.Traversable
 import Data.Kind
 import Data.MonoTraversable
 import Data.HeteroList
@@ -101,12 +105,16 @@ class IsImage img where
 	isImageWidth :: img -> Int
 	isImageHeight :: img -> Int
 	isImageDepth :: img -> Int
-	isImageBody :: img -> [IsImagePixel img]
-	isImageMake :: Int -> Int -> Int -> Int -> [IsImagePixel img] -> img
+	isImageBody :: img -> [[IsImagePixel img]]
+	isImageMake :: Int -> Int -> Int -> Int -> [[IsImagePixel img]] -> img
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
 	StoreObject img ('ObjImage img) where
-	storeObject p (ObjectLengthImage r _w h d) img =
-		pokeArray (castPtr p) . take (r * h * d) $ isImageBody img
-	loadObject p (ObjectLengthImage r w h d) =
-		isImageMake r w h d <$> peekArray (r * h * d) (castPtr p)
+	storeObject p0 (ObjectLengthImage r w h d) img =
+		for_ (zip (iterate (`plusPtr` s) p0) $ isImageBody img)
+			\(p, take w -> rw) ->
+				pokeArray (castPtr p) $ take (r * h * d) rw
+		where s = r * sizeOf @(IsImagePixel img) undefined
+	loadObject p0 (ObjectLengthImage r w h d) = isImageMake r w h d
+		<$> for (iterate (`plusPtr` s) p0) \p -> peekArray (r * h * d) (castPtr p)
+		where s = r * sizeOf @(IsImagePixel img) undefined
