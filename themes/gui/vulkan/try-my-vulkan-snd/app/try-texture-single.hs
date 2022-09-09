@@ -267,7 +267,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createTextureImage' phdv dv >>
+	createTextureImage' phdv dv gq cp >>
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -800,8 +800,8 @@ createTextureImage phdvc dvc = do
 			print sb
 			print sbm
 
-createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> IO ()
-createTextureImage' phdvc dvc = do
+createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> IO ()
+createTextureImage' phdvc dvc gq cp = do
 	img <- readRgba8 "../../../../files/images/texture.jpg"
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
@@ -816,13 +816,22 @@ createTextureImage' phdvc dvc = do
 			(	Vk.Mem.PropertyHostVisibleBit .|.
 				Vk.Mem.PropertyHostCoherentBit )
 			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ 'ObjImage a]) sbm -> do
+				sm sb "texture-buffer" '[ 'ObjImage a inm]) sbm -> do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@('ObjImage MyImage) dvc sbm zeroBits (MyImage img)
+				@('ObjImage MyImage inm) dvc sbm zeroBits (MyImage img)
 			print sb
 			print sbm
+			transitionImageLayout dvc gq cp tximg
+				Vk.Img.LayoutUndefined
+				Vk.Img.LayoutTransferDstOptimal
+			copyBufferToImage dvc gq cp sb tximg wdt hgt
+			transitionImageLayout dvc gq cp tximg
+				Vk.Img.LayoutTransferDstOptimal
+				Vk.Img.LayoutShaderReadOnlyOptimal
 
 newtype MyImage = MyImage (Image PixelRGBA8)
+
+type instance Vk.Bffr.ImageFormat MyImage = Vk.T.FormatR8g8b8a8Srgb
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
@@ -917,6 +926,28 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
 		zeroBits zeroBits zeroBits HVNil HVNil (Singleton $ V5 barrier)
+
+copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
+	Storable (IsImagePixel img) =>
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Bffr.Binded sm sb nm '[ 'ObjImage img inm]  ->
+	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+	Word32 -> Word32 -> IO ()
+copyBufferToImage dvc gq cp bf img wdt hgt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	region :: Vk.Bffr.ImageCopy img inm
+		region = Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = isr,
+			Vk.Bffr.imageCopyImageOffset = Vk.C.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.C.Extent3d wdt hgt 1 }
+		isr = Vk.Img.M.SubresourceLayers {
+			Vk.Img.M.subresourceLayersAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.M.subresourceLayersMipLevel = 0,
+			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+			Vk.Img.M.subresourceLayersLayerCount = 1 }
+	Vk.Cmd.copyBufferToImage
+		cb bf img Vk.Img.LayoutTransferDstOptimal (Singleton region)
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
@@ -1052,10 +1083,10 @@ createBufferImage' :: Storable (IsImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t] ->
+		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t inm] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
-			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage t])] ->
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage t inm])] ->
 		IO a) -> IO a
 createBufferImage' p dv (r, w, h, d) usg props =
 	createBuffer' p dv (ObjectLengthImage r w h d) usg props

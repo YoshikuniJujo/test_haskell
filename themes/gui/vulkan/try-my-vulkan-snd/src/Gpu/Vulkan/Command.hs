@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGe StandaloneDeriving #-}
@@ -11,6 +11,7 @@
 
 module Gpu.Vulkan.Command where
 
+import GHC.TypeLits
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
@@ -40,6 +41,7 @@ import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image as Image
+import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Image.Enum as Image
 
@@ -181,3 +183,30 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)
+
+copyBufferToImage :: (
+	ImageCopyListToMiddle objs img inms ) =>
+	CommandBuffer.C sc vs -> Buffer.Binded sm sb nm objs ->
+	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
+	HeteroVarList (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
+copyBufferToImage (CommandBuffer.C cb)
+	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
+	M.copyBufferToImage cb (Buffer.M.B mbf) mim imlyt mics
+	where mics = imageCopyListToMiddle bf ics
+
+class ImageCopyListToMiddle objs (img :: Type) (inms :: [Symbol]) where
+	imageCopyListToMiddle ::
+		Buffer.Binded sm sb nm objs ->
+		HeteroVarList (Buffer.ImageCopy img) inms ->
+		[Buffer.M.ImageCopy]
+
+instance ImageCopyListToMiddle objs img '[] where
+	imageCopyListToMiddle _ HVNil = []
+
+instance (
+	Buffer.OffsetSize ('ObjImage img nm) objs,
+	ImageCopyListToMiddle objs img nms ) =>
+	ImageCopyListToMiddle objs img (nm ': nms) where
+	imageCopyListToMiddle bf (ic :...: ics) =
+		Buffer.imageCopyToMiddle @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
+		imageCopyListToMiddle bf ics

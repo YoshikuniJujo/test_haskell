@@ -11,6 +11,7 @@
 
 module Data.Kind.Object where
 
+import GHC.TypeLits
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
@@ -22,12 +23,12 @@ import Data.HeteroList
 
 import qualified Data.Sequences as Seq
 
-data Object = Atom Type | List Type | ObjImage Type
+data Object = Atom Type | List Type | ObjImage Type Symbol
 
 type family ObjectType obj where
 	ObjectType ('Atom t) = t
 	ObjectType ('List t) = t
-	ObjectType ('ObjImage t) = t
+	ObjectType ('ObjImage t _nm) = t
 
 data ObjectLength (obj :: Object) where
 	ObjectLengthAtom :: ObjectLength ('Atom t)
@@ -36,7 +37,7 @@ data ObjectLength (obj :: Object) where
 		objectLengthImageRow :: Int,
 		objectLengthImageWidth :: Int,
 		objectLengthImageHeight :: Int,
-		objectLengthImageDepth :: Int } -> ObjectLength ('ObjImage t)
+		objectLengthImageDepth :: Int } -> ObjectLength ('ObjImage t nm)
 
 deriving instance Eq (ObjectLength obj)
 
@@ -108,7 +109,7 @@ class IsImage img where
 	isImageMake :: Int -> Int -> Int -> [[IsImagePixel img]] -> img
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
-	StoreObject img ('ObjImage img) where
+	StoreObject img ('ObjImage img nm) where
 	storeObject p0 (ObjectLengthImage r w h d) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ isImageBody img)
 			\(p, take w -> rw) -> pokeArray (castPtr p) $ take w rw
@@ -117,7 +118,7 @@ instance (IsImage img, Storable (IsImagePixel img)) =>
 		<$> for (take (h * d) $ iterate (`plusPtr` s) p0) \p -> peekArray w (castPtr p)
 		where s = r * sizeOf @(IsImagePixel img) undefined
 
-instance Storable (IsImagePixel img) => SizeAlignment ('ObjImage img) where
+instance Storable (IsImagePixel img) => SizeAlignment ('ObjImage img nm) where
 	objectAlignment = alignment @(IsImagePixel img) undefined
 	objectSize (ObjectLengthImage r _w h d) =
 		r * h * d * ((sz - 1) `div` algn + 1) * algn

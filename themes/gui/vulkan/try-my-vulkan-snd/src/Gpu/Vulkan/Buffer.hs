@@ -24,6 +24,7 @@ import Gpu.Vulkan.Enum hiding (ObjectType)
 import Gpu.Vulkan.Buffer.Enum
 
 import qualified Gpu.Vulkan.Core as C
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
@@ -380,15 +381,15 @@ instance (Pointable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	memoryBarrierListToMiddle (V5 mb :...: mbs) =
 		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
 
-data ImageCopy img = ImageCopy {
+data ImageCopy img inm = ImageCopy {
 	imageCopyImageSubresource :: Image.M.SubresourceLayers,
 	imageCopyImageOffset :: C.Offset3d,
 	imageCopyImageExtent :: C.Extent3d }
 	deriving Show
 
-imageCopyToMiddle :: forall img sm sb nm objs .
-	OffsetSize ('ObjImage img) objs =>
-	Binded sm sb nm objs -> ImageCopy img -> M.ImageCopy
+imageCopyToMiddle :: forall img (inm :: Symbol) sm sb nm objs .
+	OffsetSize ('ObjImage img inm) objs =>
+	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
 	imageCopyImageOffset = iost,
@@ -400,5 +401,7 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageOffset = iost,
 	M.imageCopyImageExtent = iext }
 	where
-	(ost, _) = offsetSize @('ObjImage img) lns 0
-	ObjectLengthImage r _w h _d = objectLength @('ObjImage img) lns
+	(ost, _) = offsetSize @('ObjImage img inm) lns 0
+	ObjectLengthImage r _w h _d = objectLength @('ObjImage img inm) lns
+
+type family ImageFormat img :: T.Format
