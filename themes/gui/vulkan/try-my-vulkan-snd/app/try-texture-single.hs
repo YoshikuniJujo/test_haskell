@@ -915,8 +915,8 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 				Vk.QueueFamily.Ignored,
 			Vk.Img.memoryBarrierImage = img,
 			Vk.Img.memoryBarrierSubresourceRange = srr,
-			Vk.Img.memoryBarrierSrcAccessMask = zeroBits,
-			Vk.Img.memoryBarrierDstAccessMask = zeroBits }
+			Vk.Img.memoryBarrierSrcAccessMask = sam,
+			Vk.Img.memoryBarrierDstAccessMask = dam }
 		srr = Vk.Img.SubresourceRange {
 			Vk.Img.subresourceRangeAspectMask =
 				Vk.Img.AspectColorBit,
@@ -925,7 +925,16 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
-		zeroBits zeroBits zeroBits HVNil HVNil (Singleton $ V5 barrier)
+		sstg dstg zeroBits HVNil HVNil (Singleton $ V5 barrier)
+	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
+			zeroBits, Vk.AccessTransferWriteBit,
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+		(Vk.Img.LayoutTransferDstOptimal,
+			Vk.Img.LayoutShaderReadOnlyOptimal ) -> (
+			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
+		_ -> error "unsupported layout transition!"
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (IsImagePixel img) =>
