@@ -23,6 +23,7 @@ import Data.Word
 import Gpu.Vulkan.Enum hiding (ObjectType)
 import Gpu.Vulkan.Buffer.Enum
 
+import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
@@ -32,6 +33,7 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Buffer.Middle as M
 import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Gpu.Vulkan.Image.Middle as Image.M
 
 data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
 
@@ -313,12 +315,14 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 class OffsetSize (v :: Object) (vs :: [Object]) where
 	offsetSize :: HeteroVarList ObjectLength vs ->
 		Device.M.Size -> (Device.M.Size, Device.M.Size)
+	objectLength :: HeteroVarList ObjectLength vs -> ObjectLength v
 
 instance SizeAlignment v => OffsetSize v (v ': vs) where
 	offsetSize (ln :...: _) ost = (
 		((ost - 1) `div` algn + 1) * algn,
 		fromIntegral $ objectSize ln )
 		where algn = fromIntegral $ objectAlignment @v
+	objectLength (ln :...: _) = ln
 
 instance {-# OVERLAPPABLE #-}
 	(SizeAlignment v, SizeAlignment v', OffsetSize v vs ) =>
@@ -328,6 +332,7 @@ instance {-# OVERLAPPABLE #-}
 		where
 		algn = fromIntegral $ objectAlignment @v
 		sz = fromIntegral $ objectSize ln
+	objectLength (_ :...: lns) = objectLength @v lns
 
 data MemoryBarrier n sm sb nm obj = forall objs . OffsetSize obj objs =>
 	MemoryBarrier {
@@ -374,3 +379,26 @@ instance (Pointable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
 	memoryBarrierListToMiddle (V5 mb :...: mbs) =
 		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
+
+data ImageCopy img = ImageCopy {
+	imageCopyImageSubresource :: Image.M.SubresourceLayers,
+	imageCopyImageOffset :: C.Offset3d,
+	imageCopyImageExtent :: C.Extent3d }
+	deriving Show
+
+imageCopyToMiddle :: forall img sm sb nm objs .
+	OffsetSize ('ObjImage img) objs =>
+	Binded sm sb nm objs -> ImageCopy img -> M.ImageCopy
+imageCopyToMiddle (Binded lns _) ImageCopy {
+	imageCopyImageSubresource = isr,
+	imageCopyImageOffset = iost,
+	imageCopyImageExtent = iext } = M.ImageCopy {
+	M.imageCopyBufferOffset = ost,
+	M.imageCopyBufferRowLength = fromIntegral r,
+	M.imageCopyBufferImageHeight = fromIntegral h,
+	M.imageCopyImageSubresource = isr,
+	M.imageCopyImageOffset = iost,
+	M.imageCopyImageExtent = iext }
+	where
+	(ost, _) = offsetSize @('ObjImage img) lns 0
+	ObjectLengthImage r _w h _d = objectLength @('ObjImage img) lns
