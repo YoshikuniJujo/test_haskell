@@ -23,7 +23,6 @@ import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
-import Data.MonoTraversable
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
@@ -146,7 +145,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
-import Sample.Image
 import Tools
 
 main :: IO ()
@@ -267,7 +265,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createTextureImage' phdv dv gq cp >>
+	createTextureImage phdv dv gq cp \tximg ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -779,37 +777,19 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createTextureImage :: Vk.PhDvc.P -> Vk.Dvc.D sd -> IO ()
-createTextureImage phdvc dvc = do
+createTextureImage ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
+		forall si sm .
+		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
+	IO a
+createTextureImage phdvc dvc gq cp f = do
 	img <- readRgba8 "../../../../files/images/texture.jpg"
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
-		imgBody = ImageRgba8 $ imageData img
 	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
 		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
-		Vk.Mem.PropertyDeviceLocalBit \tximg txmem -> do
-		createBufferList' @_ @_ @Rgba8 @_ phdvc dvc (olength imgBody)
-			Vk.Bffr.UsageTransferSrcBit
-			(	Vk.Mem.PropertyHostVisibleBit .|.
-				Vk.Mem.PropertyHostCoherentBit )
-			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ 'List a]) sbm -> do
-			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@('List Rgba8) dvc sbm zeroBits imgBody
-			print sb
-			print sbm
-
-createTextureImage' :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> IO ()
-createTextureImage' phdvc dvc gq cp = do
-	img <- readRgba8 "../../../../files/images/texture.jpg"
-	print . V.length $ imageData img
-	let	wdt = fromIntegral $ imageWidth img
-		hgt = fromIntegral $ imageHeight img
-		imgBody = ImageRgba8 $ imageData img
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt Vk.Img.TilingOptimal
-		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
-		Vk.Mem.PropertyDeviceLocalBit \tximg txmem -> do
+		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
 		createBufferImage' @MyImage @_ phdvc dvc
 			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
@@ -828,10 +808,11 @@ createTextureImage' phdvc dvc gq cp = do
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutTransferDstOptimal
 				Vk.Img.LayoutShaderReadOnlyOptimal
+			f tximg
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
-type instance Vk.Bffr.ImageFormat MyImage = Vk.T.FormatR8g8b8a8Srgb
+type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
