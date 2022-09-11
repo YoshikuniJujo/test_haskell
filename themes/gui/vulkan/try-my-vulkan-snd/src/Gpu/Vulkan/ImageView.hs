@@ -1,5 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView where
@@ -10,6 +12,7 @@ import Control.Exception
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.ImageView.Enum
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Component as Component
@@ -17,7 +20,17 @@ import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.ImageView.Middle as M
 
+newtype INew si (fmt :: T.Format) = INew M.I deriving Show
+
 newtype I s = I M.I deriving Show
+
+data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoImageNew :: Image.BindedNew si sm nm ifmt,
+	createInfoViewTypeNew :: Type,
+	createInfoComponentsNew :: Component.Mapping,
+	createInfoSubresourceRangeNew :: Image.M.SubresourceRange }
 
 data CreateInfo si sm n = CreateInfo {
 	createInfoNext :: Maybe n,

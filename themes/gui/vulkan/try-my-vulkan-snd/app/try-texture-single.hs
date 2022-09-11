@@ -91,6 +91,7 @@ import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
+import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
@@ -266,6 +267,7 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
+	createTextureImageView tximg >>
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -938,6 +940,29 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyBufferToImage
 		cb bf img Vk.Img.LayoutTransferDstOptimal (Singleton region)
+
+createTextureImageView :: Vk.Img.BindedNew si sm nm ifmt -> IO ()
+createTextureImageView timg = do
+	let	viewInfo = Vk.ImgVw.CreateInfoNew {
+			Vk.ImgVw.createInfoNextNew = Nothing,
+			Vk.ImgVw.createInfoFlagsNew = zeroBits,
+			Vk.ImgVw.createInfoImageNew = timg,
+			Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
+			Vk.ImgVw.createInfoSubresourceRangeNew = srr,
+			Vk.ImgVw.createInfoComponentsNew = mapping }
+		srr = Vk.Img.M.SubresourceRange {
+			Vk.Img.M.subresourceRangeAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.M.subresourceRangeBaseMipLevel = 0,
+			Vk.Img.M.subresourceRangeLevelCount = 1,
+			Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
+			Vk.Img.M.subresourceRangeLayerCount = 1 }
+		mapping = Vk.Component.Mapping {
+			Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
+			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
+	pure ()
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
