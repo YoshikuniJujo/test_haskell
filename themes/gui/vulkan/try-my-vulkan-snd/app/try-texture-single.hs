@@ -267,7 +267,7 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
-	createTextureImageView tximg >>
+	createTextureImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -941,9 +941,13 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 	Vk.Cmd.copyBufferToImage
 		cb bf img Vk.Img.LayoutTransferDstOptimal (Singleton region)
 
-createTextureImageView :: Vk.Img.BindedNew si sm nm ifmt -> IO ()
-createTextureImageView timg = do
-	let	viewInfo = Vk.ImgVw.CreateInfoNew {
+createTextureImageView :: forall ivfmt sd si sm nm ifmt a .
+	Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	(forall siv . Vk.ImgVw.INew siv ivfmt -> IO a) -> IO a
+createTextureImageView dvc timg f = do
+	let	viewInfo :: Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
+		viewInfo = Vk.ImgVw.CreateInfoNew {
 			Vk.ImgVw.createInfoNextNew = Nothing,
 			Vk.ImgVw.createInfoFlagsNew = zeroBits,
 			Vk.ImgVw.createInfoImageNew = timg,
@@ -962,7 +966,7 @@ createTextureImageView timg = do
 			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
 			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
 			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
-	pure ()
+	Vk.ImgVw.createNew dvc viewInfo nil nil f
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .

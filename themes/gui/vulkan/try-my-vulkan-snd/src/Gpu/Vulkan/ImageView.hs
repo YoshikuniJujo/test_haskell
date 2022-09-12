@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -41,6 +41,24 @@ data CreateInfo si sm n = CreateInfo {
 	createInfoComponents :: Component.Mapping,
 	createInfoSubresourceRange :: Image.M.SubresourceRange }
 
+createInfoToMiddleNew :: forall n si sm nm ifmt ivfmt . T.FormatToValue ivfmt =>
+	CreateInfoNew n si sm nm ifmt ivfmt -> M.CreateInfo n
+createInfoToMiddleNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoImageNew = Image.BindedNew img,
+	createInfoViewTypeNew = tp,
+	createInfoComponentsNew = cps,
+	createInfoSubresourceRangeNew = srr } = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoImage = img,
+	M.createInfoViewType = tp,
+	M.createInfoFormat = fmt,
+	M.createInfoComponents = cps,
+	M.createInfoSubresourceRange = srr }
+	where fmt = T.formatToValue @ivfmt
+
 createInfoToMiddle :: CreateInfo si sm n -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
@@ -49,15 +67,24 @@ createInfoToMiddle CreateInfo {
 	createInfoViewType = tp,
 	createInfoFormat = fmt,
 	createInfoComponents = cps,
-	createInfoSubresourceRange = srr
-	} = M.CreateInfo {
-		M.createInfoNext = mnxt,
-		M.createInfoFlags = flgs,
-		M.createInfoImage = img,
-		M.createInfoViewType = tp,
-		M.createInfoFormat = fmt,
-		M.createInfoComponents = cps,
-		M.createInfoSubresourceRange = srr }
+	createInfoSubresourceRange = srr } = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoImage = img,
+	M.createInfoViewType = tp,
+	M.createInfoFormat = fmt,
+	M.createInfoComponents = cps,
+	M.createInfoSubresourceRange = srr }
+
+createNew :: (
+	T.FormatToValue ivfmt,
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall siv . INew siv fmt -> IO a) -> IO a
+createNew (Device.D dvc) ci macc macd f = bracket
+	(M.create dvc (createInfoToMiddleNew ci) macc)
+	(\i -> M.destroy dvc i macd) (f . INew)
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> CreateInfo si sm n ->
