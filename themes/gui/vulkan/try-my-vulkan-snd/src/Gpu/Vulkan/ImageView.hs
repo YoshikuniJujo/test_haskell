@@ -27,6 +27,9 @@ newtype I s = I M.I deriving Show
 iToOld :: INew si fmt -> I s
 iToOld (INew i) = I i
 
+iToNew :: I s -> INew si fmt
+iToNew (I i) = INew i
+
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
@@ -96,6 +99,15 @@ create :: (Pointable n, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\i -> M.destroy dvc i macd) (f . I)
+
+recreateNew :: (
+	T.FormatToValue ivfmt,
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	INew s ivfmt -> IO ()
+recreateNew (Device.D dvc) ci macc macd (INew i) =
+	M.recreate dvc (createInfoToMiddleNew ci) macc macd i
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> CreateInfo si sm n ->

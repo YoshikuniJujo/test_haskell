@@ -487,22 +487,22 @@ createImageViews dvc fmt (sci : scis) f = Vk.T.formatToType fmt \(_ :: Proxy fmt
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
 	[Vk.Img.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
-recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo scifmt sci) nil nil iv >>
+recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) = Vk.T.formatToType scifmt \(_ :: Proxy fmt) ->
+	Vk.ImgVw.recreateNew @fmt dvc (mkImageViewCreateInfo' $ Vk.Img.bindedToNew sci) nil nil (Vk.ImgVw.iToNew iv) >>
 	recreateImageViews dvc scifmt scis ivs
 recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
-mkImageViewCreateInfo ::
-	Vk.Format -> Vk.Img.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
-mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = Nothing,
-	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
-	Vk.ImgVw.createInfoImage = sci,
-	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoFormat = scifmt,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
+mkImageViewCreateInfo' ::
+	Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
+mkImageViewCreateInfo' sci = Vk.ImgVw.CreateInfoNew {
+	Vk.ImgVw.createInfoNextNew = Nothing,
+	Vk.ImgVw.createInfoFlagsNew = Vk.ImgVw.CreateFlagsZero,
+	Vk.ImgVw.createInfoImageNew = sci,
+	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponentsNew = components,
+	Vk.ImgVw.createInfoSubresourceRangeNew = subresourceRange }
 	where
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
