@@ -86,6 +86,7 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
 import qualified Gpu.Vulkan.Image as Vk.Img
+import qualified Gpu.Vulkan.Image.Type as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
@@ -267,7 +268,7 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
-	createTextureImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -479,8 +480,8 @@ chooseSwapExtent win caps
 createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.Binded ss ss] ->
 	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
 createImageViews _dvc _fmt [] f = f HVNil
-createImageViews dvc fmt (sci : scis) f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfo fmt sci) nil nil \sciv ->
+createImageViews dvc fmt (sci : scis) f = Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
+	createImageView @fmt dvc (Vk.Img.bindedToNew sci) \(Vk.ImgVw.iToOld -> sciv) ->
 	createImageViews dvc fmt scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
@@ -941,11 +942,11 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 	Vk.Cmd.copyBufferToImage
 		cb bf img Vk.Img.LayoutTransferDstOptimal (Singleton region)
 
-createTextureImageView :: forall ivfmt sd si sm nm ifmt a .
+createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
 	(forall siv . Vk.ImgVw.INew siv ivfmt -> IO a) -> IO a
-createTextureImageView dvc timg f = do
+createImageView dvc timg f = do
 	let	viewInfo :: Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
 		viewInfo = Vk.ImgVw.CreateInfoNew {
 			Vk.ImgVw.createInfoNextNew = Nothing,

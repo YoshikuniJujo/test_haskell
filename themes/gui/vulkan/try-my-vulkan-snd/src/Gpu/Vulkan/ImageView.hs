@@ -24,6 +24,9 @@ newtype INew si (fmt :: T.Format) = INew M.I deriving Show
 
 newtype I s = I M.I deriving Show
 
+iToOld :: INew si fmt -> I s
+iToOld (INew i) = I i
+
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
