@@ -37,6 +37,11 @@ import qualified Gpu.Vulkan.Khr.Core as C
 validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"
 
+acquireNextImageResultNew :: [Result] -> Device.D sd ->
+	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImageResultNew sccs dvc (Swapchain.sFromNew -> sc) to msmp mfnc =
+	acquireNextImageResult sccs dvc sc to msmp mfnc
+
 acquireNextImage :: Device.D sd ->
 	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImage = acquireNextImageResult [Success]
