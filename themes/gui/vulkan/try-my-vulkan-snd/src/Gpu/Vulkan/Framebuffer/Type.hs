@@ -1,7 +1,15 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer.Type where
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
+
+newtype FNew (fmt :: T.Format) sf = FNew M.F
+
+fFromNew :: FNew fmt sf -> F sf
+fFromNew (FNew f) = F f
 
 newtype F s = F M.F

@@ -5,7 +5,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Framebuffer (F, create, recreate, CreateInfo(..)
+module Gpu.Vulkan.Framebuffer (
+	FNew, createNew, CreateInfoNew(..),
+	F, create, recreate, CreateInfo(..)
 	, createInfoToMiddle -- <-- temporary
 	) where
 
@@ -23,6 +25,30 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
+data CreateInfoNew n sr fmt sis = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoRenderPassNew :: RenderPass.R sr,
+	createInfoAttachmentsNew :: HeteroVarList (ImageView.INew fmt) sis,
+	createInfoWidthNew :: Word32,
+	createInfoHeightNew :: Word32,
+	createInfoLayersNew :: Word32 }
+
+createInfoFromNew :: CreateInfoNew n sr fmt sis -> CreateInfo n sr sis
+createInfoFromNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoRenderPassNew = rndpss,
+	createInfoAttachmentsNew = atts,
+	createInfoWidthNew = wdt, createInfoHeightNew = hgt,
+	createInfoLayersNew = lyrs } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoRenderPass = rndpss,
+	createInfoAttachments = heteroVarListMap ImageView.iToOld atts,
+	createInfoWidth = wdt, createInfoHeight = hgt,
+	createInfoLayers = lyrs }
+
 data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
@@ -34,6 +60,9 @@ data CreateInfo n sr sis = CreateInfo {
 
 deriving instance (Show n, Show (HeteroVarList ImageView.I sis)) =>
 	Show (CreateInfo n sr sis)
+
+createInfoToMiddleNew :: CreateInfoNew n sr fmt si -> M.CreateInfo n
+createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 
 createInfoToMiddle :: CreateInfo n sr si -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
@@ -51,6 +80,14 @@ createInfoToMiddle CreateInfo {
 		M.createInfoWidth = w,
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
+
+createNew :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D sd -> CreateInfoNew n sr fmt sis ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall s . FNew fmt s -> IO a) -> IO a
+createNew (Device.D dvc) ci macc macd f = bracket
+	(M.create dvc (createInfoToMiddleNew ci) macc)
+	(\fb -> M.destroy dvc fb macd) (f . FNew)
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> CreateInfo n sr si ->

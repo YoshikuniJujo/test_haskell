@@ -118,6 +118,7 @@ import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
+import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
@@ -262,7 +263,7 @@ run w inst g =
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
-	createImageViews dv imgs \(heteroVarListMap Vk.ImgVw.iToOld -> scivs) ->
+	createImageViews dv imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
 	createPipelineLayout dv \dscslyt ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
@@ -278,7 +279,7 @@ run w inst g =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext (heteroVarListMap Vk.ImgVw.iToOld scivs) rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -740,12 +741,12 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroVarList Vk.ImgVw.I sis ->
+	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew fmt) sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil f = f HVNil
 createFramebuffers dvc sce rp (iv :...: ivs) f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo' sce rp iv) nil nil \(Vk.Frmbffr.fFromNew -> fb) ->
 	createFramebuffers dvc sce rp ivs \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -773,6 +774,19 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoAttachments = attch :...: HVNil,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
+	where
+	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
+
+mkFramebufferCreateInfo' ::
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt si ->
+	Vk.Frmbffr.CreateInfoNew () sr fmt '[si]
+mkFramebufferCreateInfo' sce rp attch = Vk.Frmbffr.CreateInfoNew {
+	Vk.Frmbffr.createInfoNextNew = Nothing,
+	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
+	Vk.Frmbffr.createInfoRenderPassNew = rp,
+	Vk.Frmbffr.createInfoAttachmentsNew = attch :...: HVNil,
+	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
+	Vk.Frmbffr.createInfoLayersNew = 1 }
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
