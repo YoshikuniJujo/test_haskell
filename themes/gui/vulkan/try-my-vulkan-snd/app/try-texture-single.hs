@@ -262,7 +262,7 @@ run w inst g =
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
-	createImageViews dv scifmt imgs \scivs ->
+	createImageViews dv scifmt imgs \(heteroVarListMap Vk.ImgVw.iToOld -> scivs) ->
 	createRenderPass dv scifmt \rp ->
 	createPipelineLayout dv \dscslyt ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
@@ -482,11 +482,12 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
-createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.BindedNew ss ss nm fmt] ->
-	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
+createImageViews :: Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.BindedNew ss ss nm fmt] ->
+	(forall si . HeteroVarList (Vk.ImgVw.INew fmt) si -> IO a) -> IO a
 createImageViews _dvc _fmt [] f = f HVNil
-createImageViews dvc fmt (sci : scis) f = Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
-	createImageView @fmt dvc sci \(Vk.ImgVw.iToOld -> sciv) ->
+createImageViews dvc fmt (sci : scis) f = -- Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
+	createImageView dvc sci \sciv ->
 	createImageViews dvc fmt scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
@@ -950,7 +951,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
-	(forall siv . Vk.ImgVw.INew siv ivfmt -> IO a) -> IO a
+	(forall siv . Vk.ImgVw.INew ivfmt siv -> IO a) -> IO a
 createImageView dvc timg f = do
 	let	viewInfo :: Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
 		viewInfo = Vk.ImgVw.CreateInfoNew {
