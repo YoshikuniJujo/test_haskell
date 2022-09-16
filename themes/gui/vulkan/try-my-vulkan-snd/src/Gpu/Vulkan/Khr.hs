@@ -75,6 +75,14 @@ acquireNextImageResultOld sccs
 		throwUnless sccs $ Result r
 		peek pii
 
+data SwapchainImageIndexNew scfmt ssc =
+	SwapchainImageIndexNew (Swapchain.SNew ssc scfmt) Word32 deriving Show
+
+swapchainImageIndexFromNew ::
+	SwapchainImageIndexNew scfmt ssc -> SwapchainImageIndex ssc
+swapchainImageIndexFromNew (SwapchainImageIndexNew sc iix) =
+	SwapchainImageIndex (Swapchain.sFromNew sc) iix
+
 data SwapchainImageIndex ssc =
 	SwapchainImageIndex (Swapchain.S ssc) Word32 deriving Show
 
@@ -82,6 +90,24 @@ swapchainImageIndexToMiddle ::
 	SwapchainImageIndex ssc -> (Swapchain.M.S, Word32)
 swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
 	(sc, idx)
+
+data PresentInfoNew n sws scfmt sscs = PresentInfoNew {
+	presentInfoNextNew :: Maybe n,
+	presentInfoWaitSemaphoresNew :: HeteroVarList Semaphore.S sws,
+	presentInfoSwapchainImageIndicesNew ::
+		HeteroVarList (SwapchainImageIndexNew scfmt) sscs }
+
+
+presentInfoFromNew ::
+	PresentInfoNew n sws scfmt sscs -> PresentInfo n sws sscs
+presentInfoFromNew PresentInfoNew {
+	presentInfoNextNew = mnxt,
+	presentInfoWaitSemaphoresNew = wsmps,
+	presentInfoSwapchainImageIndicesNew = sciis } = PresentInfo {
+	presentInfoNext = mnxt,
+	presentInfoWaitSemaphores = wsmps,
+	presentInfoSwapchainImageIndices =
+		heteroVarListMap swapchainImageIndexFromNew sciis }
 
 data PresentInfo n sws sscs = PresentInfo {
 	presentInfoNext :: Maybe n,
@@ -122,6 +148,10 @@ presentInfoToCore PresentInfo {
 		C.presentInfoPSwapchains = pscs,
 		C.presentInfoPImageIndices = piis,
 		C.presentInfoPResults = prs }
+
+queuePresentNew ::
+	Pointable n => Queue.Q -> PresentInfoNew n sws scfmt sscs -> IO ()
+queuePresentNew q = queuePresent q . presentInfoFromNew
 
 queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
 queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do

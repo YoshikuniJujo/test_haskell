@@ -1339,7 +1339,6 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 scb sias 
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
-	let	scOld = Vk.Khr.Swapchain.sFromNew sc
 	let	siff = Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
@@ -1359,13 +1358,13 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 					Vk.Ppl.StageColorAttachmentOutputBit,
 			Vk.submitInfoCommandBuffersNew = singleton $ V2 cb,
 			Vk.submitInfoSignalSemaphoresNew = singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = singleton
-				$ Vk.Khr.SwapchainImageIndex scOld imgIdx }
+		presentInfo' = Vk.Khr.PresentInfoNew {
+			Vk.Khr.presentInfoNextNew = Nothing,
+			Vk.Khr.presentInfoWaitSemaphoresNew = singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndicesNew = singleton
+				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfo'
 
 updateUniformBuffer :: Vk.Dvc.D sd ->
 	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom UniformBufferObject]] -> Vk.C.Extent2d -> Float -> IO ()
