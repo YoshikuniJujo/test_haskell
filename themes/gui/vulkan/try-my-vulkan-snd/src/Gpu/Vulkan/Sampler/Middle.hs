@@ -3,7 +3,7 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Sampler where
+module Gpu.Vulkan.Sampler.Middle where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc

@@ -23,7 +23,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
-import qualified Gpu.Vulkan.Sampler as Sampler
+import qualified Gpu.Vulkan.Sampler.Middle as Sampler
 
 create'' :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->

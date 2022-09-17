@@ -136,7 +136,7 @@ import qualified Gpu.Vulkan.Descriptor.Middle as Vk.Dsc.M
 import qualified Gpu.Vulkan.Memory.Image.Middle as Vk.Memory.Image
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Buffer.Middle as Vk.Buffer.M
-import qualified Gpu.Vulkan.Sampler as Vk.Sampler
+import qualified Gpu.Vulkan.Sampler.Middle as Vk.Sampler
 import qualified Gpu.Vulkan.Sampler.Enum as Vk.Sampler
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Queue as Vk.Queue

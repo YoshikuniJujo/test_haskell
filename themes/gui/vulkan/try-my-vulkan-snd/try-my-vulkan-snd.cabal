@@ -191,8 +191,8 @@ library
       Gpu.Vulkan.RenderPass.Type
       Gpu.Vulkan.Sample
       Gpu.Vulkan.Sample.Enum
-      Gpu.Vulkan.Sampler
       Gpu.Vulkan.Sampler.Enum
+      Gpu.Vulkan.Sampler.Middle
       Gpu.Vulkan.Semaphore
       Gpu.Vulkan.Semaphore.Middle
       Gpu.Vulkan.ShaderModule

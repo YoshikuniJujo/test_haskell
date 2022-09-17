@@ -271,6 +271,7 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
+	createTextureSampler >>
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -988,6 +989,9 @@ createImageView dvc timg f = do
 			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
 			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
 	Vk.ImgVw.createNew dvc viewInfo nil nil f
+
+createTextureSampler :: IO ()
+createTextureSampler = pure ()
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .

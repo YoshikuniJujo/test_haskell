@@ -13,7 +13,7 @@ import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView.Middle as ImageView
-import qualified Gpu.Vulkan.Sampler as Sampler
+import qualified Gpu.Vulkan.Sampler.Middle as Sampler
 import qualified Gpu.Vulkan.Descriptor.Core as C
 
 data BufferInfo = BufferInfo {
