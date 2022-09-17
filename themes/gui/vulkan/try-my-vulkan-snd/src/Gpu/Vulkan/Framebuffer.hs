@@ -6,7 +6,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer (
-	FNew, createNew, CreateInfoNew(..),
+	FNew, createNew, recreateNew, CreateInfoNew(..),
 	F, create, recreate, CreateInfo(..)
 	, createInfoToMiddle -- <-- temporary
 	) where
@@ -96,6 +96,13 @@ create :: (Pointable n, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
+
+recreateNew :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D sd -> CreateInfoNew n sr fmt si ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	FNew fmt sf -> IO ()
+recreateNew (Device.D dvc) ci macc macd (FNew fb) =
+	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> CreateInfo n sr si ->

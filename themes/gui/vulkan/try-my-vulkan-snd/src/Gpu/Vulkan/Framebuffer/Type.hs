@@ -12,4 +12,7 @@ newtype FNew (fmt :: T.Format) sf = FNew M.F
 fFromNew :: FNew fmt sf -> F sf
 fFromNew (FNew f) = F f
 
+fToNew :: F sf -> FNew fmt sf
+fToNew (F f) = FNew f
+
 newtype F s = F M.F
