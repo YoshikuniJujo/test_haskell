@@ -279,7 +279,7 @@ run w inst g =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext (heteroVarListMap Vk.ImgVw.iToOld scivs) rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -491,13 +491,13 @@ createImageViews dvc (sci : scis) f =
 	createImageView dvc sci \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :...: scivs
 
-recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
-	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
-recreateImageViews _dvc _scifmt [] HVNil = pure ()
-recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) = Vk.T.formatToType scifmt \(_ :: Proxy fmt) ->
-	Vk.ImgVw.recreateNew @fmt dvc (mkImageViewCreateInfo' sci) nil nil (Vk.ImgVw.iToNew iv) >>
-	recreateImageViews dvc scifmt scis ivs
-recreateImageViews _ _ _ _ =
+recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
+	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList (Vk.ImgVw.INew scfmt) sis -> IO ()
+recreateImageViews _dvc [] HVNil = pure ()
+recreateImageViews dvc (sci : scis) (iv :...: ivs) =
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo' sci) nil nil iv >>
+	recreateImageViews dvc scis ivs
+recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
 mkImageViewCreateInfo' ::
@@ -751,7 +751,7 @@ createFramebuffers dvc sce rp (iv :...: ivs) f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroVarList Vk.ImgVw.I sis ->
+		Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt) sis ->
 		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
@@ -761,7 +761,7 @@ instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :...: scivs) (fb :...: fbs) =
 		Vk.Frmbffr.recreateNew dvc
-			(mkFramebufferCreateInfo' sce rp $ Vk.ImgVw.iToNew sciv) nil nil (Vk.Frmbffr.fToNew fb) >>
+			(mkFramebufferCreateInfo' sce rp sciv) nil nil (Vk.Frmbffr.fToNew fb) >>
 		recreateFramebuffers dvc sce rp scivs fbs
 
 mkFramebufferCreateInfo ::
@@ -1296,7 +1296,7 @@ mainLoop ::
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d -> HeteroVarList (Vk.ImgVw.INew scfmt) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
@@ -1312,7 +1312,8 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm 
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
+			sc g ext scivs
+			rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs
 			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
@@ -1321,7 +1322,7 @@ runLoop ::
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImgVw.I sis ->
+	HeteroVarList (Vk.ImgVw.INew scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
@@ -1334,12 +1335,14 @@ runLoop ::
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
+	catchAndRecreate win sfc phdvc qfis dvc sc scivs
+		rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
+			win sfc phdvc qfis dvc sc scivs
+			rp ppllyt gpl fbs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 scb sias srfs siff sdsc sp sdsl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
@@ -1410,7 +1413,7 @@ catchAndRecreate ::
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroVarList Vk.ImgVw.I sis ->
+	HeteroVarList (Vk.ImgVw.INew scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1430,7 +1433,7 @@ recreateSwapChainEtc ::
 	(RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroVarList Vk.ImgVw.I sis ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroVarList (Vk.ImgVw.INew scfmt) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1443,7 +1446,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
 	ext <$ do
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
-			recreateImageViews dvc scifmt imgs scivs
+			recreateImageViews dvc imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
