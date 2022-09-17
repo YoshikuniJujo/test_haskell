@@ -73,6 +73,7 @@ import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Msg
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
+import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device as Vk.Dvc
@@ -274,7 +275,7 @@ run w inst g =
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
-	createTextureSampler >>
+	createTextureSampler phdv dv \txsmplr ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
@@ -993,17 +994,37 @@ createImageView dvc timg f = do
 			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
 	Vk.ImgVw.createNew dvc viewInfo nil nil f
 
-createTextureSampler :: IO ()
-createTextureSampler = do
+createTextureSampler ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTextureSampler phdv dvc f = do
+	prp <- Vk.PhDvc.getProperties phdv
+	print . Vk.PhDvc.limitsMaxSamplerAnisotropy $ Vk.PhDvc.propertiesLimits prp
 	let	samplerInfo = Vk.Smplr.M.CreateInfo {
 			Vk.Smplr.M.createInfoNext = Nothing,
 			Vk.Smplr.M.createInfoFlags = zeroBits,
 			Vk.Smplr.M.createInfoMagFilter = Vk.FilterLinear,
 			Vk.Smplr.M.createInfoMinFilter = Vk.FilterLinear,
 			Vk.Smplr.M.createInfoMipmapMode =
-				Vk.Smplr.MipmapModeLinear
-			}
-	pure ()
+				Vk.Smplr.MipmapModeLinear,
+			Vk.Smplr.M.createInfoAddressModeU =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.M.createInfoAddressModeV =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.M.createInfoAddressModeW =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.M.createInfoMipLodBias = 0,
+			Vk.Smplr.M.createInfoAnisotropyEnable = True,
+			Vk.Smplr.M.createInfoMaxAnisotropy =
+				Vk.PhDvc.limitsMaxSamplerAnisotropy
+					$ Vk.PhDvc.propertiesLimits prp,
+			Vk.Smplr.M.createInfoCompareEnable = False,
+			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Smplr.M.createInfoMinLod = 0,
+			Vk.Smplr.M.createInfoMaxLod = 0,
+			Vk.Smplr.M.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
+	Vk.Smplr.create @() dvc samplerInfo nil nil f
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
