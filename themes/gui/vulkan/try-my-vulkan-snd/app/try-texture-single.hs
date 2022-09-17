@@ -39,7 +39,6 @@ import Data.Time
 import Codec.Picture
 import Codec.Picture.Tools
 
-
 import qualified TypeLevel.List as TpLvlLst
 
 import qualified Data.List.NonEmpty as NE
@@ -146,6 +145,10 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
+
+import qualified Gpu.Vulkan.Sampler as Vk.Smplr
+import qualified Gpu.Vulkan.Sampler.Enum as Vk.Smplr
+import qualified Gpu.Vulkan.Sampler.Middle as Vk.Smplr.M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -991,7 +994,16 @@ createImageView dvc timg f = do
 	Vk.ImgVw.createNew dvc viewInfo nil nil f
 
 createTextureSampler :: IO ()
-createTextureSampler = pure ()
+createTextureSampler = do
+	let	samplerInfo = Vk.Smplr.M.CreateInfo {
+			Vk.Smplr.M.createInfoNext = Nothing,
+			Vk.Smplr.M.createInfoFlags = zeroBits,
+			Vk.Smplr.M.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Smplr.M.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Smplr.M.createInfoMipmapMode =
+				Vk.Smplr.MipmapModeLinear
+			}
+	pure ()
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
