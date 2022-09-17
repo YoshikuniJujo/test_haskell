@@ -311,10 +311,10 @@ isDeviceSuitable ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
+	deviceFeatures <- Vk.PhDvc.getFeatures phdvc
 	is <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported
+	if extensionSupported && Vk.PhDvc.featuresSamplerAnisotropy deviceFeatures
 	then (<$> querySwapChainSupport phdvc sfc) \spp ->
 		bool (completeQueueFamilies is) Nothing
 			$ null (formats spp) || null (presentModes spp)
@@ -389,7 +389,8 @@ createLogicalDevice phdvc qfis f =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def } in
+			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
+				Vk.PhDvc.featuresSamplerAnisotropy = True } } in
 	Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
 		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
