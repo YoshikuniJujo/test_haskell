@@ -13,6 +13,9 @@ import qualified Gpu.Vulkan.Sampler.Middle as M
 
 newtype S ss = S M.S deriving Show
 
+sToMiddle :: S ss -> M.S
+sToMiddle (S s) = s
+
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->

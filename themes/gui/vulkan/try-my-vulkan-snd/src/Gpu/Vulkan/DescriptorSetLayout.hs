@@ -12,6 +12,7 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 import Foreign.Pointable
 import Control.Exception
+import Data.Kind
 import Data.HeteroList
 import Data.Word
 
@@ -19,11 +20,13 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.DescriptorSetLayout.Type
 import Gpu.Vulkan.DescriptorSetLayout.Enum
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
-import qualified Gpu.Vulkan.Sampler.Middle as Sampler
+import qualified Gpu.Vulkan.Sampler as Sampler
+import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
 create'' :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->
@@ -44,10 +47,20 @@ data Binding (bt :: BindingType) where
 		bindingBufferDescriptorType :: Descriptor.Type,
 		bindingBufferStageFlags :: ShaderStageFlags
 		} -> Binding ('Buffer objs)
+	BindingImage :: {
+		bindingImageDescriptorType :: Descriptor.Type,
+		bindingImageStageFlags :: ShaderStageFlags
+		} -> Binding ('Image fmts)
+	BindingImageSampler :: {
+		bindingImageSamplerDescriptorType :: Descriptor.Type,
+		bindingImageSamplerStageFlags :: ShaderStageFlags,
+		bindingImageSamplerImmutableSamplers ::
+			HeteroVarList Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
+		} -> Binding ('ImageSampler fmtss)
 	BindingOther :: {
 		bindingOtherDescriptorType :: Descriptor.Type,
 		bindingOtherDescriptorCountOrImmutableSamplers ::
-			Either Word32 [Sampler.S],
+			Either Word32 [Sampler.M.S],
 		bindingOtherStageFlags :: ShaderStageFlags
 		} -> Binding 'Other
 
@@ -63,6 +76,28 @@ instance TLength objs => BindingToMiddle ('Buffer objs) where
 			M.bindingDescriptorCountOrImmutableSamplers =
 				Left (tLength @objs),
 			M.bindingStageFlags = sfs }
+
+instance TLength fmts => BindingToMiddle ('Image fmts) where
+	bindingToMiddle BindingImage {
+		bindingImageDescriptorType = dt,
+		bindingImageStageFlags = sfs } bb = M.Binding {
+			M.bindingBinding = bb,
+			M.bindingDescriptorType = dt,
+			M.bindingDescriptorCountOrImmutableSamplers =
+				Left (tLength @fmts),
+			M.bindingStageFlags = sfs }
+
+instance BindingToMiddle ('ImageSampler fmtss) where
+	bindingToMiddle BindingImageSampler {
+		bindingImageSamplerDescriptorType = dt,
+		bindingImageSamplerStageFlags = sfs,
+		bindingImageSamplerImmutableSamplers = iss } bb = M.Binding {
+			M.bindingBinding = bb,
+			M.bindingDescriptorType = dt,
+			M.bindingDescriptorCountOrImmutableSamplers = Right
+				$ heteroVarListToList Sampler.sToMiddle iss,
+			M.bindingStageFlags = sfs
+			}
 
 instance BindingToMiddle 'Other where
 	bindingToMiddle BindingOther {
@@ -101,4 +136,4 @@ createInfoToMiddle CreateInfo {
 deriving instance (Show n, Show (HeteroVarList Binding bts)) =>
 	Show (CreateInfo n bts)
 
-deriving instance Show (Binding bt)
+-- deriving instance Show (Binding bt)

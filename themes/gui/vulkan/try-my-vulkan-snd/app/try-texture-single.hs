@@ -601,13 +601,21 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = uboLayoutBinding :...: HVNil }
+		Vk.DscSetLyt.createInfoBindings =
+			uboLayoutBinding :...: HVNil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
 		('Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	samplerLayoutBinding :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb])
+	samplerLayoutBinding = Vk.DscSetLyt.BindingImage {
+		Vk.DscSetLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscSetLyt.bindingImageStageFlags =
+			Vk.ShaderStageFragmentBit }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->

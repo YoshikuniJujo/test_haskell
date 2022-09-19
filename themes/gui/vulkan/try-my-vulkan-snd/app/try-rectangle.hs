@@ -565,7 +565,7 @@ createPipelineLayout dvc f =
 			Vk.Ppl.Layout.createInfoPushConstantRanges = [] } in
 	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt -> f descriptorSetLayout ppllyt
 
-createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
+createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
