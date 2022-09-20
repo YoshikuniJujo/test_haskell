@@ -87,7 +87,7 @@ allocateSs (Device.D dvc) ai =
 	listToHeteroVarList S <$> M.allocateSs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
-	(sbsmobjsobjs :: [Descriptor.BufferInfoArg]) = Write {
+	(sbsmobjsobjs :: WriteSourcesArg) = Write {
 	writeNext :: Maybe n,
 	writeDstSet :: S sd sp slbts,
 	writeDescriptorType :: Descriptor.Type,
@@ -96,14 +96,14 @@ data Write n sd sp (slbts :: LayoutArg)
 deriving instance (
 	Show n, Show (S sd sp slbts),
 	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs)) =>
-	Show (Write n sd sp slbts sbsmobjsobjs)
+	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 writeToMiddle :: forall n sd sp slbts sbsmobjsobjs . (
 	BufferInfosToMiddle sbsmobjsobjs,
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
 		(ObjectsFromBufferInfoArgs sbsmobjsobjs) ) =>
-	Write n sd sp slbts sbsmobjsobjs -> M.Write n
+	Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs) -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
 	writeDstSet = S ds,
@@ -118,21 +118,32 @@ writeToMiddle Write {
 		M.writeSources = srcs' }
 	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
 
-data WriteSources sbsmobjsobjs
-	= WriteSourcesInNext Word32 Word32 Word32
-	| ImageInfos Word32 Word32 [Descriptor.M.ImageInfo]
-	| BufferInfos (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs)
-	| TexelBufferViews Word32 Word32 [BufferView.M.B]
+data WriteSourcesArg
+	= WriteSourcesArgBuffer [Descriptor.BufferInfoArg]
+	| WriteSourcesArgOther
+
+data WriteSources arg where
+	WriteSourcesInNext ::
+		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
+	ImageInfos ::
+		Word32 -> Word32 -> [Descriptor.M.ImageInfo] ->
+		WriteSources 'WriteSourcesArgOther
+	BufferInfos ::
+		HeteroVarList Descriptor.BufferInfo sbsmobjsobjs ->
+		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
+	TexelBufferViews ::
+		Word32 -> Word32 -> [BufferView.M.B] ->
+		WriteSources 'WriteSourcesArgOther
 
 deriving instance Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) =>
-	Show (WriteSources sbsmobjsobjs)
+	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 writeSourcesToMiddle :: forall (slbts :: LayoutArg) sbsmobjsobjs . (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
 		(ObjectsFromBufferInfoArgs sbsmobjsobjs),
 	BufferInfosToMiddle sbsmobjsobjs ) =>
-	WriteSources sbsmobjsobjs -> ((Word32, Word32), M.WriteSources)
+	WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs) -> ((Word32, Word32), M.WriteSources)
 writeSourcesToMiddle = \case
 	WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 	ImageInfos bdg ae iis -> ((bdg, ae), M.WriteSourcesImageInfo iis)
@@ -160,7 +171,7 @@ data Write_ n sdspslbtssbsmobjsobjs where
 deriving instance (
 	Show n, Show (S sd sp slbts),
 	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) ) =>
-	Show (Write_ n '(sd, sp, slbts, sbsmobjsobjs))
+	Show (Write_ n '(sd, sp, slbts, ('WriteSourcesArgBuffer sbsmobjsobjs)))
 
 class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 	writeListToMiddle ::
@@ -175,7 +186,7 @@ instance (
 		(ObjectsFromBufferInfoArgs sbsmobjsobjs),
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	WriteListToMiddle n
-		('(sd, sp, slbts, sbsmobjsobjs) ': sdspslbtssbsmobjsobjs) where
+		('(sd, sp, slbts, 'WriteSourcesArgBuffer sbsmobjsobjs) ': sdspslbtssbsmobjsobjs) where
 	writeListToMiddle (Write_ w :...: ws) =
 		writeToMiddle w : writeListToMiddle ws
 
