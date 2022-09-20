@@ -138,19 +138,25 @@ data WriteSources arg where
 deriving instance Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) =>
 	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
 
-writeSourcesToMiddle :: forall (slbts :: LayoutArg) sbsmobjsobjs . (
+class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
+	writeSourcesToMiddle ::
+		WriteSources wsarg -> ((Word32, Word32), M.WriteSources)
+
+instance (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
 		(ObjectsFromBufferInfoArgs sbsmobjsobjs),
 	BufferInfosToMiddle sbsmobjsobjs ) =>
-	WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs) -> ((Word32, Word32), M.WriteSources)
-writeSourcesToMiddle = \case
-	WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
-	ImageInfos bdg ae iis -> ((bdg, ae), M.WriteSourcesImageInfo iis)
-	BufferInfos bis -> (
+	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer sbsmobjsobjs) where
+	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem' @slbts @sbsmobjsobjs,
 		M.WriteSourcesBufferInfo $ bufferInfosToMiddle bis )
-	TexelBufferViews bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
+
+instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
+	writeSourcesToMiddle = \case
+		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
+		ImageInfos bdg ae iis -> ((bdg, ae), M.WriteSourcesImageInfo iis)
+		TexelBufferViews bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
 
 class BufferInfosToMiddle sbsmobjsobjs where
 	bufferInfosToMiddle ::
