@@ -6,6 +6,7 @@
 
 module Gpu.Vulkan.ImageView where
 
+import GHC.TypeLits
 import Foreign.Pointable
 import Control.Exception
 
@@ -20,14 +21,14 @@ import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.ImageView.Middle as M
 
-newtype INew (fmt :: T.Format) si = INew M.I deriving Show
+newtype INew (fmt :: T.Format) (nm :: Symbol) si = INew M.I deriving Show
 
 newtype I s = I M.I deriving Show
 
-iToOld :: INew fmt si -> I s
+iToOld :: INew fmt nm si -> I s
 iToOld (INew i) = I i
 
-iToNew :: I s -> INew fmt si
+iToNew :: I s -> INew fmt nm si
 iToNew (I i) = INew i
 
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
@@ -87,7 +88,7 @@ createNew :: (
 	Pointable n, Pointable c, Pointable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall siv . INew ivfmt siv -> IO a) -> IO a
+	(forall siv . INew ivfmt nm siv -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\i -> M.destroy dvc i macd) (f . INew)
@@ -105,7 +106,7 @@ recreateNew :: (
 	Pointable n, Pointable c, Pointable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	INew ivfmt s -> IO ()
+	INew ivfmt nm s -> IO ()
 recreateNew (Device.D dvc) ci macc macd (INew i) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd i
 

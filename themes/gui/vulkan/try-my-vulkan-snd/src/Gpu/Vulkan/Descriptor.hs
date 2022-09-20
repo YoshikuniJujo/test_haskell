@@ -18,6 +18,10 @@ import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Descriptor.Core as C
 
+import qualified Gpu.Vulkan.Sampler as Sampler
+import qualified Gpu.Vulkan.Image.Enum as Image
+import qualified Gpu.Vulkan.ImageView as ImageView
+
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
 		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
@@ -47,3 +51,9 @@ bufferInfoToMiddle BufferInfoList {
 	M.bufferInfoBuffer = Buffer.M.B b,
 	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ range @obj lns }
+
+data ImageInfo ss fmt nm si = ImageInfo {
+	imageInfoSampler :: Sampler.S ss,
+	imageInfoImageView :: ImageView.INew fmt nm si,
+	imageInfoImageLayout :: Image.Layout }
+	deriving Show
