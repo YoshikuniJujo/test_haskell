@@ -11,6 +11,7 @@
 
 module Gpu.Vulkan.DescriptorSet where
 
+import GHC.TypeLits
 import Foreign.Pointable
 import Data.Kind
 import Data.Kind.Object
@@ -19,6 +20,7 @@ import Data.Word
 
 import Gpu.Vulkan.DescriptorSet.TypeLevel
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.BufferView.Middle as BufferView.M
 import qualified Gpu.Vulkan.Descriptor as Descriptor
@@ -98,12 +100,8 @@ deriving instance (
 	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
-writeToMiddle :: forall n sd sp slbts sbsmobjsobjs . (
-	BufferInfosToMiddle sbsmobjsobjs,
-	BindingAndArrayElem
-		(BindingTypesFromLayoutArg slbts)
-		(ObjectsFromBufferInfoArgs sbsmobjsobjs) ) =>
-	Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs) -> M.Write n
+writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
+	Write n sd sp slbts wsa -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
 	writeDstSet = S ds,
@@ -119,15 +117,16 @@ writeToMiddle Write {
 	where ((bdg, ae), srcs') = writeSourcesToMiddle @slbts srcs
 
 data WriteSourcesArg
-	= WriteSourcesArgBuffer [Descriptor.BufferInfoArg]
+	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
+	| WriteSourcesArgBuffer [Descriptor.BufferInfoArg]
 	| WriteSourcesArgOther
 
 data WriteSources arg where
 	WriteSourcesInNext ::
 		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
 	ImageInfos ::
-		Word32 -> Word32 -> [Descriptor.M.ImageInfo] ->
-		WriteSources 'WriteSourcesArgOther
+		HeteroVarList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
 	BufferInfos ::
 		HeteroVarList Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
@@ -152,11 +151,30 @@ instance (
 		bindingAndArrayElem' @slbts @sbsmobjsobjs,
 		M.WriteSourcesBufferInfo $ bufferInfosToMiddle bis )
 
+instance (
+	BindingAndArrayElemImage bts ssfmtnmsis,
+	ImageInfosToMiddle ssfmtnmsis ) =>
+	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgImage ssfmtnmsis) where
+	writeSourcesToMiddle (ImageInfos iis) = (
+		bindingAndArrayElemImage @bts @ssfmtnmsis 0 0,
+		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
+
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
-		ImageInfos bdg ae iis -> ((bdg, ae), M.WriteSourcesImageInfo iis)
 		TexelBufferViews bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
+
+class ImageInfosToMiddle ssfmtnmsis where
+	imageInfosToMiddle ::
+		HeteroVarList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		[Descriptor.M.ImageInfo]
+
+instance ImageInfosToMiddle '[] where imageInfosToMiddle HVNil = []
+
+instance ImageInfosToMiddle ssfmtnmsis =>
+	ImageInfosToMiddle ('(ss, fmt, nm, si) ': ssfmtnmsis) where
+	imageInfosToMiddle (V4 ii :...: iis) =
+		Descriptor.imageInfoToMiddle ii : imageInfosToMiddle iis
 
 class BufferInfosToMiddle sbsmobjsobjs where
 	bufferInfosToMiddle ::
@@ -186,13 +204,10 @@ class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 instance WriteListToMiddle n '[] where writeListToMiddle HVNil = []
 
 instance (
-	BufferInfosToMiddle sbsmobjsobjs,
-	BindingAndArrayElem
-		(BindingTypesFromLayoutArg slbts)
-		(ObjectsFromBufferInfoArgs sbsmobjsobjs),
-	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
+	WriteSourcesToMiddle slbts wsa,
+	WriteListToMiddle n sdspslbtswsas ) =>
 	WriteListToMiddle n
-		('(sd, sp, slbts, 'WriteSourcesArgBuffer sbsmobjsobjs) ': sdspslbtssbsmobjsobjs) where
+		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
 	writeListToMiddle (Write_ w :...: ws) =
 		writeToMiddle w : writeListToMiddle ws
 

@@ -57,3 +57,13 @@ data ImageInfo ss fmt nm si = ImageInfo {
 	imageInfoImageView :: ImageView.INew fmt nm si,
 	imageInfoImageLayout :: Image.Layout }
 	deriving Show
+
+imageInfoToMiddle ::
+	ImageInfo ss fmt nm si -> M.ImageInfo
+imageInfoToMiddle ImageInfo {
+	imageInfoSampler = s,
+	imageInfoImageView = ImageView.INew iv,
+	imageInfoImageLayout = lyt } = M.ImageInfo {
+	M.imageInfoSampler = Sampler.sToMiddle s,
+	M.imageInfoImageView = iv,
+	M.imageInfoImageLayout = lyt }
