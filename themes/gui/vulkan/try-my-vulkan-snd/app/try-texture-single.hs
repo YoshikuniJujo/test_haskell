@@ -1062,14 +1062,20 @@ createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ 'List Word16] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
-	createBufferList phdvc dvc (length indices)
+	createBufferList' phdvc dvc (length indices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList phdvc dvc (length indices)
+	createBufferList' phdvc dvc (length indices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
-	Vk.Dvc.Mem.Buffer.write @('List Word16) dvc bm' zeroBits indices
+			Vk.Mem.PropertyHostCoherentBit )
+		\(b' :: Vk.Bffr.Binded sb sm "index-buffer" '[ 'List t])
+			(bm' :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+				sb,
+				Vk.Dvc.Mem.ImageBuffer.K.Buffer "index-buffer"
+					'[ 'List Word16] ) ]) -> do
+	Vk.Dvc.Mem.ImageBuffer.write
+		@"index-buffer" @('List Word16) dvc bm' zeroBits indices
 	copyBuffer dvc gq cp b' b
 	f b
 
