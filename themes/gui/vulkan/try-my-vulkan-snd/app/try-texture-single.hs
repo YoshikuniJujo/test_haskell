@@ -578,7 +578,7 @@ createRenderPass dvc scifmt f = do
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.L sdsl '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
-			'Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb] ] ->
+			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 		Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] -> IO b) -> IO b
 createPipelineLayout dvc f =
 	createDescriptorSetLayout dvc \dsl ->
@@ -592,18 +592,18 @@ createPipelineLayout dvc f =
 
 type AtomUbo s = '(s, '[
 	'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
-	'Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb] ])
+	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	Vk.DscSetLyt.L s '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
-		'Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb] ]
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
-		'Vk.DscSetLyt.Image '[ Vk.T.FormatR8g8b8a8Srgb] ]
+		'Vk.DscSetLyt.Image '[ '("texture", Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
@@ -618,7 +618,7 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
 	samplerLayoutBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb])
+		('Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)])
 	samplerLayoutBinding = Vk.DscSetLyt.BindingImage {
 		Vk.DscSetLyt.bindingImageDescriptorType =
 			Vk.Dsc.TypeCombinedImageSampler,
@@ -1101,14 +1101,15 @@ createDescriptorSet ::
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject] ->
 	Vk.DscSetLyt.L sdsc '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
-		'Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb] ] ->
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 	IO (Vk.DscSet.S sd sp '(sdsc, '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
-		'Vk.DscSetLyt.Image '[ 'Vk.T.FormatR8g8b8a8Srgb] ]))
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
 createDescriptorSet dvc dscp ub dscslyt = do
 	Singleton dscs <- Vk.DscSet.allocateSs @() dvc allocInfo
-	Vk.DscSet.updateDs @() @() dvc
-		(Singleton . Vk.DscSet.Write_ $ descriptorWrite ub dscs) []
+	Vk.DscSet.updateDs @() @() dvc (
+		Vk.DscSet.Write_ (descriptorWrite0 ub dscs) :...:
+		HVNil ) []
 	pure dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -1117,18 +1118,24 @@ createDescriptorSet dvc dscp ub dscslyt = do
 		Vk.DscSet.allocateInfoSetLayouts =
 			Singleton $ Vk.DscSet.Layout dscslyt }
 
-descriptorWrite ::
+descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject] ->
 	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write () sd sp slbts '[ '(sb, sm, nm, '[ 'Atom UniformBufferObject], 'Atom UniformBufferObject)]
-descriptorWrite ub dscs = Vk.DscSet.Write {
+	Vk.DscSet.Write () sd sp slbts '[ '(sb, sm, nm,
+		'[ 'Atom UniformBufferObject], 'Atom UniformBufferObject)]
+descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		Singleton bufferInfo
-	}
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $ Singleton bufferInfo }
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
+
+descriptorWrite1 dscs img = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler
+--	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos $ Singleton img
+	}
 
 createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (

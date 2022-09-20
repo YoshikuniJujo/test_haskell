@@ -5,6 +5,7 @@
 
 module Gpu.Vulkan.DescriptorSetLayout.Type where
 
+import GHC.TypeLits
 import Data.Kind
 import Data.Kind.Object
 
@@ -16,7 +17,7 @@ newtype L'' s = L'' { unL'' :: M.L } deriving Show
 newtype L s (bts :: [BindingType]) = L { unL :: M.L } deriving Show
 
 data BindingType
-	= Image [T.Format] | ImageSampler [(T.Format, Type)]
+	= Image [(Symbol, T.Format)] | ImageSampler [(T.Format, Type)]
 	| Buffer [Object] | Other
 
 type family MapSnd (tpls :: [(t, u)]) where
