@@ -771,7 +771,7 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil f = f HVNil
 createFramebuffers dvc sce rp (iv :...: ivs) f =
-	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo' sce rp iv) nil nil \(Vk.Frmbffr.fFromNew -> fb) ->
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv) nil nil \(Vk.Frmbffr.fFromNew -> fb) ->
 	createFramebuffers dvc sce rp ivs \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -786,13 +786,13 @@ instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :...: scivs) (fb :...: fbs) =
 		Vk.Frmbffr.recreateNew dvc
-			(mkFramebufferCreateInfo' sce rp sciv) nil nil (Vk.Frmbffr.fToNew fb) >>
+			(mkFramebufferCreateInfo sce rp sciv) nil nil (Vk.Frmbffr.fToNew fb) >>
 		recreateFramebuffers dvc sce rp scivs fbs
 
-mkFramebufferCreateInfo' ::
+mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
 	Vk.Frmbffr.CreateInfoNew () sr fmt nm '[si]
-mkFramebufferCreateInfo' sce rp attch = Vk.Frmbffr.CreateInfoNew {
+mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfoNew {
 	Vk.Frmbffr.createInfoNextNew = Nothing,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 	Vk.Frmbffr.createInfoRenderPassNew = rp,
