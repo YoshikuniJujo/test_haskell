@@ -1053,8 +1053,14 @@ createVertexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (length vertices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
-	Vk.Dvc.Mem.Buffer.write @('List Vertex) dvc bm' zeroBits vertices
+			Vk.Mem.PropertyHostCoherentBit )
+		\(b' :: Vk.Bffr.Binded sb sm "vertex-buffer" '[ 'List t])
+			(bm' :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+				sb,
+				Vk.Dvc.Mem.ImageBuffer.K.Buffer "vertex-buffer"
+					'[ 'List Vertex] ) ]) -> do
+	Vk.Dvc.Mem.ImageBuffer.write
+		@"vertex-buffer" @('List Vertex) dvc bm' zeroBits vertices
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -1062,10 +1068,10 @@ createIndexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ 'List Word16] -> IO a) -> IO a
 createIndexBuffer phdvc dvc gq cp f =
-	createBufferList' phdvc dvc (length indices)
+	createBufferList phdvc dvc (length indices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList' phdvc dvc (length indices)
+	createBufferList phdvc dvc (length indices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1162,13 +1168,6 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'Atom a]] -> IO b) -> IO b
 createBufferAtom p dv usg props = createBuffer p dv ObjectLengthAtom usg props
 
-createBufferList :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Int -> Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
-		forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ 'List a] ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List a]] -> IO b ) -> IO b
-createBufferList p dv ln usg props = createBuffer p dv (ObjectLengthList ln) usg props
-
 createBuffer :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
@@ -1193,7 +1192,7 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
-createBufferList' :: forall sd nm t a . Storable t =>
+createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[ 'List t] ->
@@ -1202,7 +1201,7 @@ createBufferList' :: forall sd nm t a . Storable t =>
 			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'List t] ) ] ->
 		IO a) ->
 	IO a
-createBufferList' p dv ln usg props =
+createBufferList p dv ln usg props =
 	createBuffer' p dv (ObjectLengthList ln) usg props
 
 createBufferImage :: Storable (IsImagePixel t) =>
