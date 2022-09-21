@@ -809,6 +809,67 @@ createTextureImage phdvc dvc gq cp f = do
 			f tximg
 			-}
 
+createBufferImage :: Storable (IsImagePixel t) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t inm] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage t inm])] ->
+		IO a) -> IO a
+createBufferImage p dv (r, w, h, d) usg props =
+	createBuffer' p dv (ObjectLengthImage r w h d) usg props
+
+createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
+		forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'Atom a] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'Atom a] )] ->
+			IO b) -> IO b
+createBufferAtom' p dv usg props = createBuffer' p dv ObjectLengthAtom usg props
+
+createBufferList' :: forall sd nm t a . Storable t =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
+	Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'List t] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'List t] ) ] ->
+		IO a) ->
+	IO a
+createBufferList' p dv ln usg props =
+	createBuffer' p dv (ObjectLengthList ln) usg props
+
+createBuffer' :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[o] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[o])] ->
+		IO a) -> IO a
+createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
+	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
+		(allcInfo mt) nil nil
+		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
+	where
+	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
+	bffrInfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = singleton ln,
+		Vk.Bffr.createInfoUsage = usg,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	allcInfo :: Vk.Mem.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
