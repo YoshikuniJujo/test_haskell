@@ -13,6 +13,8 @@
 module Main where
 
 import GHC.Generics
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
@@ -23,6 +25,7 @@ import Data.Kind
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
+import Data.Array hiding (indices)
 import Data.HeteroList hiding (length)
 import Data.Proxy
 import Data.Bool
@@ -34,10 +37,12 @@ import Data.Word
 import Data.Color
 import Data.Time
 import Codec.Picture
+import Codec.Picture.Tools
 
 import qualified TypeLevel.List as TpLvlLst
 
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Vector.Storable as V
 import qualified Data.Text as Txt
 import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
@@ -261,6 +266,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
+	createTextureImage phdv dv gq cp \tximg ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createDescriptorPool dv \dscp ->
@@ -771,7 +777,6 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-{-
 createTextureImage ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
 		forall si sm .
@@ -804,7 +809,92 @@ createTextureImage phdvc dvc gq cp f = do
 				Vk.Img.LayoutTransferDstOptimal
 				Vk.Img.LayoutShaderReadOnlyOptimal
 			f tximg
-			-}
+
+copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
+	Storable (IsImagePixel img) =>
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Bffr.Binded sm sb nm '[ 'ObjImage img inm]  ->
+	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+	Word32 -> Word32 -> IO ()
+copyBufferToImage dvc gq cp bf img wdt hgt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	region :: Vk.Bffr.ImageCopy img inm
+		region = Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = isr,
+			Vk.Bffr.imageCopyImageOffset = Vk.C.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.C.Extent3d wdt hgt 1 }
+		isr = Vk.Img.M.SubresourceLayers {
+			Vk.Img.M.subresourceLayersAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.M.subresourceLayersMipLevel = 0,
+			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+			Vk.Img.M.subresourceLayersLayerCount = 1 }
+	Vk.Cmd.copyBufferToImage
+		cb bf img Vk.Img.LayoutTransferDstOptimal (Singleton region)
+
+transitionImageLayout :: forall sd sc si sm nm fmt .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	IO ()
+transitionImageLayout dvc gq cp img olyt nlyt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+		barrier = Vk.Img.MemoryBarrier {
+			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierOldLayout = olyt,
+			Vk.Img.memoryBarrierNewLayout = nlyt,
+			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Img.memoryBarrierDstQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Img.memoryBarrierImage = img,
+			Vk.Img.memoryBarrierSubresourceRange = srr,
+			Vk.Img.memoryBarrierSrcAccessMask = sam,
+			Vk.Img.memoryBarrierDstAccessMask = dam }
+		srr = Vk.Img.SubresourceRange {
+			Vk.Img.subresourceRangeAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.subresourceRangeBaseMipLevel = 0,
+			Vk.Img.subresourceRangeLevelCount = 1,
+			Vk.Img.subresourceRangeBaseArrayLayer = 0,
+			Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.Cmd.pipelineBarrier cb
+		sstg dstg zeroBits HVNil HVNil (Singleton $ V5 barrier)
+	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
+			zeroBits, Vk.AccessTransferWriteBit,
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+		(Vk.Img.LayoutTransferDstOptimal,
+			Vk.Img.LayoutShaderReadOnlyOptimal ) -> (
+			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
+		_ -> error "unsupported layout transition!"
+
+beginSingleTimeCommands :: forall sd sc a .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
+	(forall s . Vk.CmdBffr.C s '[] -> IO a) -> IO a
+beginSingleTimeCommands dvc gq cp cmd = do
+	Vk.CmdBffr.allocateNew
+		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
+		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfoNew {
+				Vk.submitInfoNextNew = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		Vk.CmdBffr.begin @() @() cb beginInfo (cmd cb) <* do
+			Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.waitIdle gq
+	where
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	beginInfo = Vk.CmdBffr.M.BeginInfo {
+		Vk.CmdBffr.beginInfoNext = Nothing,
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
+		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createBufferImage :: Storable (IsImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
@@ -907,6 +997,34 @@ createImage pd dvc wdt hgt tlng usg prps f =
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 newtype MyImage = MyImage (Image PixelRGBA8)
+
+type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+
+newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+
+instance Storable MyRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
+		<$> peekArray 4 (castPtr p)
+	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
+
+listToTuple4 :: [a] -> (a, a, a, a)
+listToTuple4 [r, g, b, a] = (r, g, b, a)
+listToTuple4 _ = error "The length of the list is not 4"
+
+instance IsImage MyImage where
+	type IsImagePixel MyImage = MyRgba8
+	isImageRow = isImageWidth
+	isImageWidth (MyImage img) = imageWidth img
+	isImageHeight (MyImage img) = imageHeight img
+	isImageDepth _ = 1
+	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
+	isImageMake w h _d pss = MyImage
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
