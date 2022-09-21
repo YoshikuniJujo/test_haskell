@@ -748,10 +748,10 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
+		HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil f = f HVNil
 createFramebuffers dvc sce rp (iv :...: ivs) f =
-	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv) nil nil \(Vk.Frmbffr.fFromNew -> fb) ->
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
 	createFramebuffers dvc sce rp ivs \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -1275,19 +1275,18 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sl sdsc sf sg sm sb nm sm' sb' nm' sdsc' sp .
+recordCommandBuffer :: forall scb sr sl sdsc scfmt sf sg sm sb nm sm' sb' nm' sdsc' sp .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
+	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew scfmt sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
---	Vk.DscSet.S sdsc' sp s ->
 	Vk.DscSet.S sdsc' sp (AtomUbo sdsc) ->
 	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
+recordCommandBuffer cb rp (Vk.Frmbffr.fFromNew -> fb) sce ppllyt gpl vb ib dscs =
 	Vk.CmdBffr.begin @() @() cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
@@ -1323,7 +1322,7 @@ mainLoop :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
@@ -1354,7 +1353,7 @@ runLoop :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
@@ -1368,12 +1367,12 @@ runLoop :: (
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs
 	ubs ums dscss tm cf loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
+	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl (heteroVarListMap Vk.Frmbffr.fFromNew fbs) loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums dscss tm cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
+			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl (heteroVarListMap Vk.Frmbffr.fFromNew fbs))
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
@@ -1382,7 +1381,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
