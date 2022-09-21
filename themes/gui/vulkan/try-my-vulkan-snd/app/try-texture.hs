@@ -1386,15 +1386,15 @@ runLoop :: (
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums dscss tm cf loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
-		$ drawFrame dvc gq pq (Vk.Khr.Swapchain.sFromNew sc) ext rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums dscss tm cf
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums dscss tm cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
+drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1408,14 +1408,15 @@ drawFrame :: forall sfs sd ssc sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss s
 	HeteroVarList (Vk.DscSet.S sdsc' sp) slyts ->
 	Float ->
 	Int -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss iffs) ubs ums dscss tm cf =
+drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
+	(SyncObjects iass rfss iffs) ubs ums dscss tm cf =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
 	heteroVarListIndex ubs cf \ub -> heteroVarListIndex ums cf \um ->
 	descriptorSetIndex dscss cf \dscs -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
@@ -1432,13 +1433,13 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 					Vk.Ppl.StageColorAttachmentOutputBit,
 			Vk.submitInfoCommandBuffersNew = singleton $ V2 cb,
 			Vk.submitInfoSignalSemaphoresNew = singleton rfs }
-		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
+		presentInfo = Vk.Khr.PresentInfoNew {
+			Vk.Khr.presentInfoNextNew = Nothing,
+			Vk.Khr.presentInfoWaitSemaphoresNew = singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndicesNew = singleton
+				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfo
 	where	cb = cbs `vssListIndex` cf
 
 class DescriptorSetIndex aus s where
