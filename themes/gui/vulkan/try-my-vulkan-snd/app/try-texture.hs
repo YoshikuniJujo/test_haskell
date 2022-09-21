@@ -86,7 +86,6 @@ import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
 import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.Image.Type as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
@@ -145,7 +144,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as Vk.Dvc.Mem.ImageBuffer.K
-import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -495,17 +493,24 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd -> Vk.Format ->
 	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc _scifmt [] HVNil = pure ()
 recreateImageViews dvc scifmt (sci : scis) (iv :...: ivs) =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo' sci) nil nil iv >>
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci) nil nil iv >>
 	recreateImageViews dvc scifmt scis ivs
 recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
-mkImageViewCreateInfo' ::
+createImageView :: forall ivfmt sd si sm nm ifmt a .
+	Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
+createImageView dvc timg f =
+	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg) nil nil f
+
+mkImageViewCreateInfo ::
 	Vk.Img.BindedNew si sm nm ifmt ->
 	Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
-mkImageViewCreateInfo' sci = Vk.ImgVw.CreateInfoNew {
+mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = Nothing,
-	Vk.ImgVw.createInfoFlagsNew = Vk.ImgVw.CreateFlagsZero,
+	Vk.ImgVw.createInfoFlagsNew = zeroBits,
 	Vk.ImgVw.createInfoImageNew = sci,
 	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
 	Vk.ImgVw.createInfoComponentsNew = components,
@@ -1034,34 +1039,6 @@ instance IsImage MyImage where
 	isImageMake w h _d pss = MyImage
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
-
-createImageView :: forall ivfmt sd si sm nm ifmt a .
-	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
-	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
-createImageView dvc timg f = do
-	let	viewInfo :: Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
-		viewInfo = Vk.ImgVw.CreateInfoNew {
-			Vk.ImgVw.createInfoNextNew = Nothing,
-			Vk.ImgVw.createInfoFlagsNew = zeroBits,
-			Vk.ImgVw.createInfoImageNew = timg,
-			Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
-			Vk.ImgVw.createInfoSubresourceRangeNew = srr,
-			Vk.ImgVw.createInfoComponentsNew = mapping }
-		srr = Vk.Img.M.SubresourceRange {
-			Vk.Img.M.subresourceRangeAspectMask =
-				Vk.Img.AspectColorBit,
-			Vk.Img.M.subresourceRangeBaseMipLevel = 0,
-			Vk.Img.M.subresourceRangeLevelCount = 1,
-			Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
-			Vk.Img.M.subresourceRangeLayerCount = 1 }
-		mapping = Vk.Component.Mapping {
-			Vk.Component.mappingR = Vk.Component.SwizzleIdentity,
-			Vk.Component.mappingG = Vk.Component.SwizzleIdentity,
-			Vk.Component.mappingB = Vk.Component.SwizzleIdentity,
-			Vk.Component.mappingA = Vk.Component.SwizzleIdentity }
-	Vk.ImgVw.createNew dvc viewInfo nil nil f
-
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
