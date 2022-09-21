@@ -12,6 +12,26 @@ import qualified Gpu.Vulkan.RenderPass.Middle as M
 
 newtype R s = R M.R deriving Show
 
+data BeginInfoNew n sr fmt sf cts = BeginInfoNew {
+	beginInfoNextNew :: Maybe n,
+	beginInfoRenderPassNew :: R sr,
+	beginInfoFramebufferNew :: Framebuffer.FNew fmt sf,
+	beginInfoRenderAreaNew :: Rect2d,
+	beginInfoClearValuesNew :: HeteroVarList ClearValue cts }
+
+beginInfoToMiddleNew :: BeginInfoNew n sr fmt sf cts -> M.BeginInfo n cts
+beginInfoToMiddleNew BeginInfoNew {
+	beginInfoNextNew = mnxt,
+	beginInfoRenderPassNew = R rp,
+	beginInfoFramebufferNew = Framebuffer.FNew fb,
+	beginInfoRenderAreaNew = ra,
+	beginInfoClearValuesNew = cvs } = M.BeginInfo {
+		M.beginInfoNext = mnxt,
+		M.beginInfoRenderPass = rp,
+		M.beginInfoFramebuffer = fb,
+		M.beginInfoRenderArea = ra,
+		M.beginInfoClearValues = cvs }
+
 data BeginInfo n sr sf cts = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoRenderPass :: R sr,

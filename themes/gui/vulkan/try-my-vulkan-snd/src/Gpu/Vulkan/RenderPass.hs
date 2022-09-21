@@ -2,7 +2,8 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.RenderPass (R, create, M.CreateInfo(..), BeginInfo(..)) where
+module Gpu.Vulkan.RenderPass (
+	R, create, M.CreateInfo(..), BeginInfo(..), BeginInfoNew(..) ) where
 
 import Foreign.Pointable
 import Control.Exception
