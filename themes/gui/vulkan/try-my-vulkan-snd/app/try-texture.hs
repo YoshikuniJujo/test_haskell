@@ -757,7 +757,7 @@ createFramebuffers dvc sce rp (iv :...: ivs) f =
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
+		HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
 	recreateFramebuffers _dvc _sce _rp HVNil HVNil = pure ()
@@ -766,7 +766,7 @@ instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :...: scivs) (fb :...: fbs) =
 		Vk.Frmbffr.recreateNew dvc
-			(mkFramebufferCreateInfo sce rp sciv) nil nil (Vk.Frmbffr.fToNew fb) >>
+			(mkFramebufferCreateInfo sce rp sciv) nil nil fb >>
 		recreateFramebuffers dvc sce rp scivs fbs
 
 mkFramebufferCreateInfo ::
@@ -1286,9 +1286,9 @@ recordCommandBuffer :: forall scb sr sl sdsc scfmt sf sg sm sb nm sm' sb' nm' sd
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	Vk.DscSet.S sdsc' sp (AtomUbo sdsc) ->
 	IO ()
-recordCommandBuffer cb rp (Vk.Frmbffr.fFromNew -> fb) sce ppllyt gpl vb ib dscs =
+recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 	Vk.CmdBffr.begin @() @() cb def $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
+	Vk.Cmd.beginRenderPassNew cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
@@ -1297,16 +1297,16 @@ recordCommandBuffer cb rp (Vk.Frmbffr.fFromNew -> fb) sce ppllyt gpl vb ib dscs 
 		(Singleton $ Vk.Cmd.DescriptorSet dscs) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 	where
-	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
+	rpInfo :: Vk.RndrPass.BeginInfoNew () sr scfmt sf
 		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
-	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = Nothing,
-		Vk.RndrPass.beginInfoRenderPass = rp,
-		Vk.RndrPass.beginInfoFramebuffer = fb,
-		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
+	rpInfo = Vk.RndrPass.BeginInfoNew {
+		Vk.RndrPass.beginInfoNextNew = Nothing,
+		Vk.RndrPass.beginInfoRenderPassNew = rp,
+		Vk.RndrPass.beginInfoFramebufferNew = fb,
+		Vk.RndrPass.beginInfoRenderAreaNew = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues = singleton
+		Vk.RndrPass.beginInfoClearValuesNew = singleton
 			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (
@@ -1367,12 +1367,12 @@ runLoop :: (
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
 	scivs rp ppllyt gpl fbs vb ib cbs iasrfsifs
 	ubs ums dscss tm cf loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl (heteroVarListMap Vk.Frmbffr.fFromNew fbs) loop
+	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs iasrfsifs ubs ums dscss tm cf
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl (heteroVarListMap Vk.Frmbffr.fFromNew fbs))
+			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
@@ -1469,7 +1469,7 @@ catchAndRecreate :: (
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 	catchJust
@@ -1490,7 +1490,7 @@ recreateSwapChainEtc :: (
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
+	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO Vk.C.Extent2d
 recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
