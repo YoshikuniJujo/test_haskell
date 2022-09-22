@@ -273,13 +273,13 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
-	createTextureSampler phdv dv \txsmplr ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \(tximgvw :: Vk.ImgVw.INew txfmt "texture" siv) ->
+	createTextureSampler phdv dv \(txsmplr :: Vk.Smplr.S ssmp) ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createDescriptorPool dv \dscp ->
-	createUniformBuffers phdv dv dscslyt maxFramesInFlight \dscslyts ubs ums ->
-	createDescriptorSets dv dscp ubs dscslyts >>= \dscss ->
+	createUniformBuffers @ssmp @siv phdv dv dscslyt maxFramesInFlight \dscslyts ubs ums ->
+	createDescriptorSets @_ @_ @ssmp @siv dv dscp ubs dscslyts tximgvw txsmplr >>= \dscss ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
@@ -1138,14 +1138,14 @@ createIndexBuffer phdvc dvc gq cp f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createUniformBuffers ::
+createUniformBuffers :: forall ssmp siv sd sdsc a .
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdsc '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
 	Int -> (forall slyts smsbs . (
 		ListToHeteroVarList slyts,
-		Update smsbs slyts,
+		Update smsbs slyts ssmp siv,
 		DescriptorSetIndex slyts sdsc ) =>
 		HeteroVarList Vk.DscSet.Layout slyts ->
 		HeteroVarList BindedUbo smsbs ->
@@ -1153,7 +1153,7 @@ createUniformBuffers ::
 createUniformBuffers _ _ _ 0 f = f HVNil HVNil HVNil
 createUniformBuffers ph dvc dscslyt n f =
 	createUniformBuffer1 ph dvc \(b :: BindedUbo smsb) m ->
-		createUniformBuffers ph dvc dscslyt (n - 1) \ls (bs :: HeteroVarList BindedUbo smsbs) ms -> f
+		createUniformBuffers @ssmp @siv ph dvc dscslyt (n - 1) \ls (bs :: HeteroVarList BindedUbo smsbs) ms -> f
 			(Vk.DscSet.Layout dscslyt :...: ls)
 			(b :...: bs :: HeteroVarList BindedUbo (smsb ': smsbs))
 			(m :...: ms)
@@ -1197,13 +1197,14 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
 
-createDescriptorSets :: (ListToHeteroVarList ss, Update smsbs ss) =>
+createDescriptorSets :: (ListToHeteroVarList ss, Update smsbs ss ssmp siv) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroVarList BindedUbo smsbs ->
 	HeteroVarList Vk.DscSet.Layout ss ->
+	Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv -> Vk.Smplr.S ssmp ->
 	IO (HeteroVarList (Vk.DscSet.S sd sp) ss)
-createDescriptorSets dvc dscp ubs dscslyts = do
+createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp = do
 	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
-	update dvc ubs dscss
+	update dvc ubs dscss tximgvw txsmp
 	pure dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -1211,13 +1212,13 @@ createDescriptorSets dvc dscp ubs dscslyts = do
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
-descriptorWrite ::
+descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject] ->
 	Vk.DscSet.S sd sp slbts ->
 	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[ 'Atom UniformBufferObject], 'Atom UniformBufferObject )])
-descriptorWrite ub dscs = Vk.DscSet.Write {
+descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
@@ -1226,20 +1227,48 @@ descriptorWrite ub dscs = Vk.DscSet.Write {
 	}
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
-class Update smsbs slbtss where
-	update :: Vk.Dvc.D sd -> HeteroVarList BindedUbo smsbs -> HeteroVarList (Vk.DscSet.S sd sp) slbtss -> IO ()
+descriptorWrite1 ::
+	Vk.DscSet.S sd sp slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
+	Vk.DscSet.Write () sd sp slbts
+		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
+descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
+	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . Singleton
+		$ V4 Vk.Dsc.ImageInfo {
+			Vk.Dsc.imageInfoImageLayout =
+				Vk.Img.LayoutShaderReadOnlyOptimal,
+			Vk.Dsc.imageInfoImageView = tiv,
+			Vk.Dsc.imageInfoSampler = tsmp } }
 
-instance Update '[] '[] where update _ HVNil HVNil = pure ()
+class Update smsbs slbtss ssmp siv where
+	update ::
+		Vk.Dvc.D sd ->
+		HeteroVarList BindedUbo smsbs ->
+		HeteroVarList (Vk.DscSet.S sd sp) slbtss ->
+		Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv ->
+		Vk.Smplr.S ssmp ->
+		IO ()
+
+instance Update '[] '[] ssmp siv where update _ HVNil HVNil _ _ = pure ()
 
 -- instance Update '[t] '[] where update _ HVNil HVNil = pure ()
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom UniformBufferObject],
-	Update ubs dscss) => Update (ub ': ubs) (dscs ': dscss) where
-	update dvc (BindedUbo ub :...: ubs) (dscs :...: dscss) = do
-		Vk.DscSet.updateDs @() @() dvc
-			(Singleton . Vk.DscSet.Write_ $ descriptorWrite ub dscs) []
-		update dvc ubs dscss
+	Update ubs dscss ssmp siv,
+	Vk.DscSet.WriteSourcesToMiddle dscs
+		('Vk.DscSet.WriteSourcesArgImage
+			'[ '(ssmp, 'Vk.T.FormatR8g8b8a8Srgb, "texture", siv)])
+	) =>
+	Update (ub ': ubs) (dscs ': dscss) ssmp siv where
+	update dvc (BindedUbo ub :...: ubs) (dscs :...: dscss) tximgvw txsmp = do
+		Vk.DscSet.updateDs @() @() dvc (
+			Vk.DscSet.Write_ (descriptorWrite0 ub dscs) :...:
+			Vk.DscSet.Write_ (descriptorWrite1 dscs tximgvw txsmp) :...:
+			HVNil ) []
+		update dvc ubs dscss tximgvw txsmp
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
 	IO Vk.Mem.TypeIndex
