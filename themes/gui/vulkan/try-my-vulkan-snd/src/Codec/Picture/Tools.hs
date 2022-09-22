@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
 module Codec.Picture.Tools (
 	Image(..), PixelRGBA8, readRgba8
 	) where
