@@ -582,10 +582,15 @@ createRenderPass dvc scifmt f = do
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
 
-type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]])
+type AtomUbo s = '(s, '[
+	'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
+	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sl sdsc .
-		Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]] ->
+		Vk.DscSetLyt.L sdsc '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
+			'Vk.DscSetLyt.Image
+				'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 		Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> IO b) ->
 	IO b
 createPipelineLayout dvc f =
@@ -598,22 +603,35 @@ createPipelineLayout dvc f =
 	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt -> f descriptorSetLayout ppllyt
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]]
-	-> IO a) -> IO a
+	Vk.DscSetLyt.L s '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
+		'Vk.DscSetLyt.Image
+			'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] -> IO a) ->
+	IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo ()
-		'[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject] ]
+	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = uboLayoutBinding :...: HVNil }
+		Vk.DscSetLyt.createInfoBindings =
+			uboLayoutBinding :...:
+			samplerLayoutBinding :...: HVNil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
 		('Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	samplerLayoutBinding :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)])
+	samplerLayoutBinding = Vk.DscSetLyt.BindingImage {
+		Vk.DscSetLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscSetLyt.bindingImageStageFlags =
+			Vk.ShaderStageFragmentBit }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
@@ -1122,7 +1140,9 @@ createIndexBuffer phdvc dvc gq cp f =
 
 createUniformBuffers ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject]] ->
+	Vk.DscSetLyt.L sdsc '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject],
+		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
 	Int -> (forall slyts smsbs . (
 		ListToHeteroVarList slyts,
 		Update smsbs slyts,
@@ -1169,9 +1189,12 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.createInfoNext = Nothing,
 		Vk.DscPool.createInfoFlags = zeroBits,
 		Vk.DscPool.createInfoMaxSets = maxFramesInFlight,
-		Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	poolSize = Vk.DscPool.Size {
+		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
+	poolSize0 = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
+	poolSize1 = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
 
 createDescriptorSets :: (ListToHeteroVarList ss, Update smsbs ss) =>
