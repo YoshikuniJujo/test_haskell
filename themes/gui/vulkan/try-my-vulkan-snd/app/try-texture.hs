@@ -115,7 +115,6 @@ import qualified Gpu.Vulkan.RenderPass.Middle as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
@@ -145,6 +144,11 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as Vk.Dvc.Mem.ImageBuffer.K
+
+import qualified Gpu.Vulkan.Sampler as Vk.Smplr
+import qualified Gpu.Vulkan.Sampler.Enum as Vk.Smplr
+import qualified Gpu.Vulkan.Sampler.Middle as Vk.Smplr.M
+import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -269,6 +273,8 @@ run w inst g =
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createTextureImage phdv dv gq cp \tximg ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
+	createTextureSampler phdv dv \txsmplr ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
 	createDescriptorPool dv \dscp ->
@@ -304,10 +310,10 @@ isDeviceSuitable ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
 isDeviceSuitable phdvc sfc = do
 	_deviceProperties <- Vk.PhDvc.getProperties phdvc
-	_deviceFeatures <- Vk.PhDvc.getFeatures phdvc
+	deviceFeatures <- Vk.PhDvc.getFeatures phdvc
 	is <- findQueueFamilies phdvc sfc
 	extensionSupported <- checkDeviceExtensionSupport phdvc
-	if extensionSupported
+	if extensionSupported && Vk.PhDvc.featuresSamplerAnisotropy deviceFeatures
 	then (<$> querySwapChainSupport phdvc sfc) \spp ->
 		bool (completeQueueFamilies is) Nothing
 			$ null (formats spp) || null (presentModes spp)
@@ -382,7 +388,8 @@ createLogicalDevice phdvc qfis f =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Dvc.M.createInfoEnabledExtensionNames =
 				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def } in
+			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
+				Vk.PhDvc.featuresSamplerAnisotropy = True } } in
 	Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
 		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
@@ -1040,6 +1047,38 @@ instance IsImage MyImage where
 	isImageMake w h _d pss = MyImage
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
+createTextureSampler ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTextureSampler phdv dvc f = do
+	prp <- Vk.PhDvc.getProperties phdv
+	print . Vk.PhDvc.limitsMaxSamplerAnisotropy $ Vk.PhDvc.propertiesLimits prp
+	let	samplerInfo = Vk.Smplr.M.CreateInfo {
+			Vk.Smplr.M.createInfoNext = Nothing,
+			Vk.Smplr.M.createInfoFlags = zeroBits,
+			Vk.Smplr.M.createInfoMagFilter = Vk.FilterLinear,
+			Vk.Smplr.M.createInfoMinFilter = Vk.FilterLinear,
+			Vk.Smplr.M.createInfoMipmapMode =
+				Vk.Smplr.MipmapModeLinear,
+			Vk.Smplr.M.createInfoAddressModeU =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.M.createInfoAddressModeV =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.M.createInfoAddressModeW =
+				Vk.Smplr.AddressModeRepeat,
+			Vk.Smplr.M.createInfoMipLodBias = 0,
+			Vk.Smplr.M.createInfoAnisotropyEnable = True,
+			Vk.Smplr.M.createInfoMaxAnisotropy =
+				Vk.PhDvc.limitsMaxSamplerAnisotropy
+					$ Vk.PhDvc.propertiesLimits prp,
+			Vk.Smplr.M.createInfoCompareEnable = False,
+			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
+			Vk.Smplr.M.createInfoMinLod = 0,
+			Vk.Smplr.M.createInfoMaxLod = 0,
+			Vk.Smplr.M.createInfoBorderColor =
+				Vk.BorderColorIntOpaqueBlack,
+			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
+	Vk.Smplr.create @() dvc samplerInfo nil nil f
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
