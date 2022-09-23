@@ -289,8 +289,8 @@ executable my-glslc
     , vector
   default-language: Haskell2010
 
-executable try-depth-buffering
-  main-is: try-depth-buffering.hs
+executable try-depth-buffering-old
+  main-is: try-depth-buffering-old.hs
   other-modules:
       Main
       Paths_try_my_vulkan_snd

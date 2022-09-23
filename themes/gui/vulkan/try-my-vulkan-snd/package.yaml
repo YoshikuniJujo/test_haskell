@@ -120,8 +120,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
-  try-depth-buffering:
-    main:                try-depth-buffering.hs
+  try-depth-buffering-old:
+    main:                try-depth-buffering-old.hs
     source-dirs:         app
     ghc-options:
     - -threaded
