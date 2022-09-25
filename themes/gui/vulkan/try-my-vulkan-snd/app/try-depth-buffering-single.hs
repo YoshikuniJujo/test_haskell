@@ -270,6 +270,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
+	createDepthResources >>
 	createTextureImage phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
@@ -810,6 +811,9 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoFlags =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
+
+createDepthResources :: IO ()
+createDepthResources = pure ()
 
 createTextureImage ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
