@@ -838,7 +838,6 @@ createTextureImage phdvc dvc gq cp f = do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
 				@('ObjImage MyImage inm) dvc sbm zeroBits (MyImage img)
 			print sb
-			print sbm
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
 				Vk.Img.LayoutTransferDstOptimal

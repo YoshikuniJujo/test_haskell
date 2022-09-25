@@ -13,12 +13,12 @@ module Gpu.Vulkan.Device.Memory.ImageBuffer where
 import Prelude hiding (map)
 import GHC.TypeLits
 import Foreign.Ptr
-import Foreign.Storable
 import Foreign.Pointable
 import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object hiding (Offset(..))
 import Data.HeteroList
+import Data.IORef
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
@@ -33,10 +33,22 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer as Device.Memory.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
-	M (HeteroVarList (V2 ImageBuffer) sibfoss) Device.C.Memory
+	M (IORef (HeteroVarList (V2 ImageBuffer) sibfoss, Device.C.Memory))
 
-deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
-	Show (M s sibfoss)
+readM :: M s sibfoss ->
+	IO (HeteroVarList (V2 ImageBuffer) sibfoss, Device.C.Memory)
+readM (M r) = readIORef r
+
+writeM :: M s sibfoss -> HeteroVarList (V2 ImageBuffer) sibfoss ->
+	Device.C.Memory -> IO ()
+writeM (M r) ibs cm = writeIORef r (ibs, cm)
+
+newM :: HeteroVarList (V2 ImageBuffer) sibfoss ->
+	Device.C.Memory -> IO (M s sibfoss)
+newM ibs cm = M <$> newIORef (ibs, cm)
+
+-- deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
+--	Show (M s sibfoss)
 
 data ImageBuffer sib (ib :: K.ImageBuffer) where
 	Image :: Image.INew si nm fmt -> ImageBuffer si ('K.Image nm fmt)
@@ -104,7 +116,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
 	(\mem -> Memory.M.free mdvc mem macd)
-	\(Device.M.Memory mem) -> f $ M bs mem
+	\(Device.M.Memory mem) -> f =<< newM bs mem
 
 allocateBind :: (
 	Pointable n, Pointable c, Pointable d, BindAll sibfoss sibfoss ) =>
@@ -142,7 +154,8 @@ instance (Offset sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
 bindImage :: forall sd si nm fmt sm sibfoss . Offset si ('K.Image nm fmt) sibfoss =>
 	Device.D sd -> Image.INew si nm fmt -> M sm sibfoss ->
 	IO (Image.BindedNew si sm nm fmt)
-bindImage dvc@(Device.D mdvc) (Image.INew i) m@(M _ mm) = do
+bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
+	(_, mm) <- readM m
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
 	pure (Image.BindedNew i)
@@ -150,7 +163,8 @@ bindImage dvc@(Device.D mdvc) (Image.INew i) m@(M _ mm) = do
 bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) sibfoss =>
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
 	IO (Buffer.Binded sb sm nm objs)
-bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m@(M _ mm) = do
+bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
+	(_, mm) <- readM m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 	pure (Buffer.Binded lns b)
@@ -160,25 +174,29 @@ class Offset
 	offset :: Device.D sd -> M sm sibfoss -> Device.M.Size -> IO Device.M.Size
 
 instance Offset sib ib ('(sib, ib) ': sibfoss) where
-	offset dvc (M (ib :...: _ibs) _m) ost = do
+	offset dvc m ost = do
+		(ib :...: _ibs, _m) <- readM m
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 		pure $ ((ost - 1) `div` algn + 1) * algn
 
 instance {-# OVERLAPPABLE #-} Offset sib ib sibfoss =>
 	Offset sib ib ('(sib', ib') ': sibfoss) where
-	offset dvc (M (ib :...: ibs) m) ost = do
+	offset dvc m_ ost = do
+		(ib :...: ibs, m) <- readM m_
 		reqs <- getMemoryRequirements' dvc ib
 		let	sz = Memory.M.requirementsSize reqs
 			algn = Memory.M.requirementsAlignment reqs
-		offset @sib @ib dvc (M ibs m)
+		m' <- newM ibs m
+		offset @sib @ib dvc m'
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 
 class Try (nm :: Symbol) sibfoss where
 	try :: Device.D sd -> M sm sibfoss -> IO (Device.M.Size, Device.M.Size)
 
 instance Try nm ('(sib, 'K.Buffer nm objs) ': sibfoss) where
-	try dvc (M (ib :...: _) _) = do
+	try dvc m = do
+		(ib :...: _, _) <- readM m
 		reqs <- getMemoryRequirements' dvc ib
 		let	sz = Memory.M.requirementsSize reqs
 			algn = Memory.M.requirementsAlignment reqs
@@ -186,34 +204,41 @@ instance Try nm ('(sib, 'K.Buffer nm objs) ': sibfoss) where
 
 instance {-# OVERLAPPABLE #-} Try nm sibfoss =>
 	Try nm (_t ': sibfoss) where
-	try dvc (M (_ :...: ibs) m) = try @nm dvc (M ibs m)
+	try dvc m_ = do
+		(_ :...: ibs, m) <- readM m_
+		try @nm dvc =<< newM ibs m
 
 class OffsetSize (nm :: Symbol) (obj :: Object) sibfoss where
 	offsetSize :: Device.D sd -> M sm sibfoss ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
-	offsetSizeLength :: M sm sibfoss -> ObjectLength obj
+	offsetSizeLength :: M sm sibfoss -> IO (ObjectLength obj)
 
 instance OffsetSizeObject obj objs =>
 	OffsetSize nm obj ('(sib, 'K.Buffer nm objs) ': sibfoss) where
-	offsetSize dvc (M (ib@(V2 (Buffer (Buffer.B lns _))) :...: _ibs) _m) ost = do
+	offsetSize dvc m ost = do
+		(ib@(V2 (Buffer (Buffer.B lns _))) :...: _ibs, _m) <- readM m
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 		pure $ offsetSizeObject @obj
 			(((ost - 1) `div` algn + 1) * algn) lns
-	offsetSizeLength (M (V2 (Buffer (Buffer.B lns _)) :...: _) _) =
-		offsetSizeObjectLength @obj lns
+	offsetSizeLength m = do
+		(V2 (Buffer (Buffer.B lns _)) :...: _, _) <- readM m
+		pure $ offsetSizeObjectLength @obj lns
 
 instance {-# OVERLAPPABLE #-}
 	OffsetSize nm obj sibfoss =>
 	OffsetSize nm obj ('(sib, ib) ': sibfoss) where
-	offsetSize dvc (M (ib :...: ibs) m) ost = do
+	offsetSize dvc m_ ost = do
+		(ib :...: ibs, m) <- readM m_
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 			sz = Memory.M.requirementsSize reqs
-		offsetSize @nm @obj dvc (M ibs m)
+		m' <- newM ibs m
+		offsetSize @nm @obj dvc m'
 			$ ((ost - 1) `div` algn + 1) * algn + sz
-	offsetSizeLength (M (_ :...: lns) m) =
-		offsetSizeLength @nm @obj (M lns m)
+	offsetSizeLength m_ = do
+		(_ :...: lns, m) <- readM m_
+		offsetSizeLength @nm @obj =<< newM lns m
 
 class OffsetSizeObject (obj :: Object) (objs :: [Object]) where
 	offsetSizeObject :: Device.M.Size -> HeteroVarList ObjectLength objs ->
@@ -244,8 +269,9 @@ write :: forall nm obj sd sm sibfoss v .
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> v -> IO ()
 write dvc mem flgs v = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (ObjectType obj)) ->
-		storeObject @_ @obj ptr (offsetSizeLength @nm @obj mem) v)
+	(\(ptr :: Ptr (ObjectType obj)) -> do
+		ln <- offsetSizeLength @nm @obj mem
+		storeObject @_ @obj ptr ln v)
 
 read :: forall nm obj v sd sm sibfoss .
 	(StoreObject v obj, OffsetSize nm obj sibfoss) =>
@@ -253,13 +279,16 @@ read :: forall nm obj v sd sm sibfoss .
 read dvc mem flgs = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
 	(\(ptr :: Ptr (ObjectType obj)) ->
-		loadObject @_ @obj ptr (offsetSizeLength @nm @obj mem))
+		loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
 
 map :: forall nm obj sd sm sibfoss . OffsetSize nm obj sibfoss =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (ObjectType obj))
-map dvc@(Device.D mdvc) m@(M _ mm) flgs = do
+map dvc@(Device.D mdvc) m flgs = do
+	(_, mm) <- readM m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0
 	Memory.M.map mdvc (Device.M.Memory mm) ost sz flgs
 
 unmap :: Device.D sd -> M sm sibfoss -> IO ()
-unmap (Device.D mdvc) (M _ mm) = Memory.M.unmap mdvc (Device.M.Memory mm)
+unmap (Device.D mdvc) m = do
+	(_, mm) <- readM m
+	Memory.M.unmap mdvc (Device.M.Memory mm)
