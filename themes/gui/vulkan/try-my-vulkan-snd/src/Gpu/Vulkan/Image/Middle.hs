@@ -159,7 +159,7 @@ createNew dvc = create dvc . createInfoFromNew
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
-create (Device.D dvc) ci mac = (I <$>) . ($ pure) . runContT $ do
+create (Device.D dvc) ci mac = (I <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pimg <- ContT alloca
@@ -167,6 +167,23 @@ create (Device.D dvc) ci mac = (I <$>) . ($ pure) . runContT $ do
 		throwUnlessSuccess $ Result r
 		newIORef . (ex ,) =<< peek pimg
 	where ex = createInfoExtent ci
+
+recreateNew :: (
+	T.FormatToValue fmt,
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D -> CreateInfoNew n fmt ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) ->
+	I -> IO ()
+recreateNew d@(Device.D dvc) ci macc macd i@(I ri) = ($ pure) $ runContT do
+	pci <- createInfoToCore $ createInfoFromNew ci
+	pacc <- AllocationCallbacks.maybeToCore macc
+	pimg <- ContT alloca
+	lift do	r <- C.create dvc pci pacc pimg
+		throwUnlessSuccess $ Result r
+		destroy d i macd
+		writeIORef ri . (ex ,) =<< peek pimg
+	where ex = createInfoExtent $ createInfoFromNew ci
 
 getMemoryRequirements :: Device.D -> I -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I ri) =
