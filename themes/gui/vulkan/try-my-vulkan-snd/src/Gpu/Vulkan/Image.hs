@@ -6,7 +6,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
-	INew, BindedNew, createNew, M.CreateInfoNew(..), getMemoryRequirementsNew,
+	INew, BindedNew, createNew, recreateNew, M.CreateInfoNew(..),
+	getMemoryRequirementsNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
 	M.SubresourceRange(..), MemoryBarrier(..),
@@ -37,6 +38,15 @@ createNew :: (Pointable n, Pointable n2, Pointable n3, T.FormatToValue fmt) =>
 	(forall s . INew s nm fmt -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f =
 	bracket (M.createNew dvc ci macc) (\i -> M.destroy dvc i macd) (f . INew)
+
+recreateNew :: (
+	T.FormatToValue fmt,
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D sd -> M.CreateInfoNew n fmt ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) ->
+	INew si nm fmt -> IO ()
+recreateNew (Device.D dvc) ci macc macd (INew i) = M.recreateNew dvc ci macc macd i
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->
