@@ -118,6 +118,19 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	(\mem -> Memory.M.free mdvc mem macd)
 	\(Device.M.Memory mem) -> f =<< newM bs mem
 
+reallocate :: (
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D sd -> HeteroVarList (V2 ImageBuffer) sibfoss ->
+	Device.Memory.Buffer.AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) -> M s sibfoss -> IO ()
+reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
+	mai <- allocateInfoToMiddle dvc bs ai
+	Device.M.Memory newmem <- Memory.M.allocate mdvc mai macc
+	(_, oldmem) <- readM mem
+	Memory.M.free mdvc (Device.M.Memory oldmem) macd
+	writeM mem bs newmem
+
 allocateBind :: (
 	Pointable n, Pointable c, Pointable d, BindAll sibfoss sibfoss ) =>
 	Device.D sd ->
