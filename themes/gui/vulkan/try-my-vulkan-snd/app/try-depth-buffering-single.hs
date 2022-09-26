@@ -270,7 +270,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createDepthResources >>
+	createDepthResources phdv >>
 	createTextureImage phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
@@ -812,8 +812,40 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createDepthResources :: IO ()
-createDepthResources = pure ()
+createDepthResources :: Vk.PhDvc.P -> IO ()
+createDepthResources phdvc = do
+	fmt <- findDepthFormat phdvc
+	print fmt
+
+recreateDepthResources :: IO ()
+recreateDepthResources = pure ()
+
+findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
+findDepthFormat phdvc = findSupportedFormat phdvc
+	[Vk.FormatD32Sfloat, Vk.FormatD32SfloatS8Uint, Vk.FormatD24UnormS8Uint]
+	Vk.Img.TilingOptimal
+	Vk.FormatFeatureDepthStencilAttachmentBit
+
+findSupportedFormat ::
+	Vk.PhDvc.P -> [Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
+findSupportedFormat phdvc fs tlng fffs = do
+	props <- Vk.PhDvc.getFormatProperties phdvc `mapM` fs
+	case tlng of
+		Vk.Img.TilingLinear -> do
+			putStrLn "LINEAR"
+			pure . orError . find (checkFeatures fffs . snd) . zip fs
+				$ Vk.formatPropertiesLinearTilingFeatures <$> props
+		Vk.Img.TilingOptimal -> do
+			putStrLn "OPTIMAL"
+			pure . orError . find (checkFeatures fffs . snd) . zip fs
+				$ Vk.formatPropertiesOptimalTilingFeatures <$> props
+		_ -> error "no such image tiling"
+	where orError = \case
+		Just (x, _) -> x
+		Nothing -> error "failed to find supported format!"
+
+checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
+checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 
 createTextureImage ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
@@ -1495,6 +1527,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	ext <$ do
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
+		recreateDepthResources
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
