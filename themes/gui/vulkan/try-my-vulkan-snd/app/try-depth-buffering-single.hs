@@ -847,6 +847,12 @@ findDepthFormat phdvc = findSupportedFormat phdvc
 	Vk.Img.TilingOptimal
 	Vk.FormatFeatureDepthStencilAttachmentBit
 
+hasStencilComponent :: Vk.Format -> Bool
+hasStencilComponent = \case
+	Vk.FormatD32SfloatS8Uint -> True
+	Vk.FormatD24UnormS8Uint -> True
+	_ -> False
+
 findSupportedFormat ::
 	Vk.PhDvc.P -> [Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
 findSupportedFormat phdvc fs tlng fffs = do
