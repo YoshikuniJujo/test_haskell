@@ -131,6 +131,22 @@ reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 	Memory.M.free mdvc (Device.M.Memory oldmem) macd
 	writeM mem bs newmem
 
+-- reallocateBind dvc bs ai macc macd m = do
+
+class RebindAll sibfoss sibfoss' where
+	rebindAll :: Device.D sd ->
+		HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
+		M sm sibfoss' -> IO ()
+
+instance RebindAll '[] sibfoss' where rebindAll _ _ _ = pure ()
+
+{-
+instance
+	RebindAll ('(si, 'K.Image nm fmt) ': fibfoss) sibfoss' where
+		rebindAll dvc (V2 (ImageBinded img) :...: ibs) m = do
+		-}
+			
+
 allocateBind :: (
 	Pointable n, Pointable c, Pointable d, BindAll sibfoss sibfoss ) =>
 	Device.D sd ->
@@ -164,7 +180,8 @@ instance (Offset sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
 		<$> (V2 . BufferBinded <$> bindBuffer dvc bf m)
 		<*> bindAll dvc ibs m
 
-bindImage :: forall sd si nm fmt sm sibfoss . Offset si ('K.Image nm fmt) sibfoss =>
+bindImage :: forall sd si nm fmt sm sibfoss .
+	Offset si ('K.Image nm fmt) sibfoss =>
 	Device.D sd -> Image.INew si nm fmt -> M sm sibfoss ->
 	IO (Image.BindedNew si sm nm fmt)
 bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
@@ -172,6 +189,14 @@ bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
 	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
 	pure (Image.BindedNew i)
+
+rebindImage :: forall sd si sm nm fmt sibfoss .
+	Offset si ('K.Image nm fmt) sibfoss =>
+	Device.D sd -> Image.BindedNew si sm nm fmt -> M sm sibfoss -> IO ()
+rebindImage dvc@(Device.D mdvc) (Image.BindedNew i) m = do
+	(_, mm) <- readM m
+	ost <- offset @si @('K.Image nm fmt) dvc m 0
+	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
 
 bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) sibfoss =>
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
@@ -181,6 +206,14 @@ bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 	pure (Buffer.Binded lns b)
+
+rebindBuffer :: forall sd sb sm nm objs sibfoss .
+	Offset sb ('K.Buffer nm objs) sibfoss =>
+	Device.D sd -> Buffer.Binded sb sm nm objs -> M sm sibfoss -> IO ()
+rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
+	(_, mm) <- readM m
+	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
+	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 
 class Offset
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where
