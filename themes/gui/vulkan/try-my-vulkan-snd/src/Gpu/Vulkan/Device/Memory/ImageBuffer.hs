@@ -43,6 +43,14 @@ writeM :: M s sibfoss -> HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.C.Memory -> IO ()
 writeM (M r) ibs cm = writeIORef r (ibs, cm)
 
+writeMBinded :: M s sibfoss -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
+	Device.C.Memory -> IO ()
+writeMBinded (M r) ibs cm = writeIORef r (heteroVarListMap imageBufferFromBinded ibs, cm)
+
+imageBufferFromBinded :: V2 (ImageBufferBinded sm) sibfos -> V2 ImageBuffer sibfos
+imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Image.INew i
+imageBufferFromBinded (V2 (BufferBinded (Buffer.Binded x b))) = V2 . Buffer $ Buffer.B x b
+
 newM :: HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.C.Memory -> IO (M s sibfoss)
 newM ibs cm = M <$> newIORef (ibs, cm)
@@ -73,14 +81,30 @@ getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
 getMemoryRequirements (Device.D dvc) (Image (Image.INew i)) =
 	Image.M.getMemoryRequirements dvc i
 
+getMemoryRequirementsBinded ::
+	Device.D sd -> ImageBufferBinded sm sib fos -> IO Memory.M.Requirements
+getMemoryRequirementsBinded (Device.D dvc) (BufferBinded (Buffer.Binded _ b)) =
+	Buffer.M.getMemoryRequirements dvc (Buffer.M.B b)
+getMemoryRequirementsBinded (Device.D dvc) (ImageBinded (Image.BindedNew i)) =
+	Image.M.getMemoryRequirements dvc i
+
 getMemoryRequirements' ::
 	Device.D sd -> V2 ImageBuffer sibfos -> IO Memory.M.Requirements
 getMemoryRequirements' dvc (V2 bi) = getMemoryRequirements dvc bi
+
+getMemoryRequirementsBinded' ::
+	Device.D sd -> V2 (ImageBufferBinded sm) sibfos -> IO Memory.M.Requirements
+getMemoryRequirementsBinded' dvc (V2 bi) = getMemoryRequirementsBinded dvc bi
 
 getMemoryRequirementsList :: Device.D sd ->
 	HeteroVarList (V2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsList dvc bis =
 	heteroVarListToListM (getMemoryRequirements' dvc) bis
+
+getMemoryRequirementsListBinded :: Device.D sd ->
+	HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
+getMemoryRequirementsListBinded dvc bis =
+	heteroVarListToListM (getMemoryRequirementsBinded' dvc) bis
 
 allocateInfoToMiddle ::
 	Device.D sd -> HeteroVarList (V2 ImageBuffer) sibfoss ->
@@ -89,6 +113,19 @@ allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 	Device.Memory.Buffer.allocateInfoNext = mnxt,
 	Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti } = do
 	reqss <- getMemoryRequirementsList dvc ibs
+	pure Memory.M.AllocateInfo {
+		Memory.M.allocateInfoNext = mnxt,
+		Memory.M.allocateInfoAllocationSize =
+			memoryRequirementsListToSize 0 reqss,
+		Memory.M.allocateInfoMemoryTypeIndex = mti }
+
+reallocateInfoToMiddle ::
+	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
+	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
+reallocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
+	Device.Memory.Buffer.allocateInfoNext = mnxt,
+	Device.Memory.Buffer.allocateInfoMemoryTypeIndex = mti } = do
+	reqss <- getMemoryRequirementsListBinded dvc ibs
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
 		Memory.M.allocateInfoAllocationSize =
@@ -120,18 +157,26 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 
 reallocate :: (
 	Pointable n, Pointable c, Pointable d ) =>
-	Device.D sd -> HeteroVarList (V2 ImageBuffer) sibfoss ->
+	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
-	Maybe (AllocationCallbacks.A d) -> M s sibfoss -> IO ()
+	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
 reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
-	mai <- allocateInfoToMiddle dvc bs ai
+	mai <- reallocateInfoToMiddle dvc bs ai
 	Device.M.Memory newmem <- Memory.M.allocate mdvc mai macc
 	(_, oldmem) <- readM mem
 	Memory.M.free mdvc (Device.M.Memory oldmem) macd
-	writeM mem bs newmem
+	writeMBinded mem bs newmem
 
--- reallocateBind dvc bs ai macc macd m = do
+reallocateBind :: (
+	Pointable n, Pointable c, Pointable d, RebindAll sibfoss sibfoss ) =>
+	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
+	Device.Memory.Buffer.AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
+reallocateBind dvc bs ai macc macd mem = do
+	reallocate dvc bs ai macc macd mem
+	rebindAll dvc bs mem
 
 class RebindAll sibfoss sibfoss' where
 	rebindAll :: Device.D sd ->
@@ -140,12 +185,19 @@ class RebindAll sibfoss sibfoss' where
 
 instance RebindAll '[] sibfoss' where rebindAll _ _ _ = pure ()
 
-{-
-instance
+instance (
+	Offset si ('K.Image nm fmt) sibfoss', RebindAll fibfoss sibfoss' ) =>
 	RebindAll ('(si, 'K.Image nm fmt) ': fibfoss) sibfoss' where
 		rebindAll dvc (V2 (ImageBinded img) :...: ibs) m = do
-		-}
-			
+			rebindImage dvc img m
+			rebindAll dvc ibs m
+
+instance (
+	Offset sb ('K.Buffer nm objs) sibfoss', RebindAll sibfoss sibfoss' ) =>
+	RebindAll ('(sb, 'K.Buffer nm objs) ': sibfoss) sibfoss' where
+	rebindAll dvc (V2 (BufferBinded bf) :...: ibs) m = do
+		rebindBuffer dvc bf m
+		rebindAll dvc ibs m
 
 allocateBind :: (
 	Pointable n, Pointable c, Pointable d, BindAll sibfoss sibfoss ) =>

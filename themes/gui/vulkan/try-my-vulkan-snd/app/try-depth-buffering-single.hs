@@ -954,6 +954,11 @@ imageAllocateBind dvc img memInfo f =
 		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
 		f bnd m
 
+imageReallocateBind dvc img memInfo m =
+	Vk.Dvc.Mem.ImageBuffer.reallocateBind @() dvc
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.ImageBinded img) memInfo
+		nil nil m
+
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
 	Vk.Img.INew s nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo n)
