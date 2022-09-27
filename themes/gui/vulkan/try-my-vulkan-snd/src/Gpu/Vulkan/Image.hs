@@ -7,7 +7,7 @@
 
 module Gpu.Vulkan.Image (
 	INew, BindedNew, createNew, recreateNew, M.CreateInfoNew(..),
-	getMemoryRequirementsNew,
+	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
 	M.SubresourceRange(..), MemoryBarrier(..),
@@ -40,8 +40,7 @@ createNew (Device.D dvc) ci macc macd f =
 	bracket (M.createNew dvc ci macc) (\i -> M.destroy dvc i macd) (f . INew)
 
 recreateNew :: (
-	T.FormatToValue fmt,
-	Pointable n, Pointable c, Pointable d ) =>
+	Pointable n, Pointable c, Pointable d, T.FormatToValue fmt ) =>
 	Device.D sd -> M.CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
@@ -57,6 +56,10 @@ create (Device.D dvc) ci macc macd f =
 
 getMemoryRequirementsNew :: Device.D sd -> INew s nm fmt -> IO Memory.Requirements
 getMemoryRequirementsNew (Device.D dvc) (INew img) =
+	M.getMemoryRequirements dvc img
+
+getMemoryRequirementsBindedNew :: Device.D sd -> BindedNew sm si nm fmt -> IO Memory.Requirements
+getMemoryRequirementsBindedNew (Device.D dvc) (BindedNew img) =
 	M.getMemoryRequirements dvc img
 
 getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements

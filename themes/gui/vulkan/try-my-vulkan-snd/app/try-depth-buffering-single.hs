@@ -922,6 +922,18 @@ createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @() @() @() dvc
 	memInfo <- imageMemoryInfo pd dvc prps img
 	imageAllocateBind dvc img memInfo f
 
+recreateImage :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
+	Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
+recreateImage pd dvc wdt hgt tlng usg prps img mem = do
+	Vk.Img.recreateNew @() @() @() dvc
+		(imageInfo wdt hgt tlng usg) Nothing Nothing img
+	memInfo <- imageMemoryInfoBinded pd dvc prps img
+	imageReallocateBind dvc img memInfo mem
+
 imageInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
 	Vk.Img.M.CreateInfoNew n fmt
@@ -954,6 +966,11 @@ imageAllocateBind dvc img memInfo f =
 		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
 		f bnd m
 
+imageReallocateBind ::
+	Vk.Dvc.D sd -> Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.Mem.Buffer.AllocateInfo () ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
 	Vk.Dvc.Mem.ImageBuffer.reallocateBind @() dvc
 		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.ImageBinded img) memInfo
@@ -964,6 +981,16 @@ imageMemoryInfo ::
 	Vk.Img.INew s nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo n)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
+	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
+	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
+imageMemoryInfoBinded ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
+	Vk.Img.BindedNew sm si nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo n)
+imageMemoryInfoBinded pd dvc prps img = do
+	reqs <- Vk.Img.getMemoryRequirementsBindedNew dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
 		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
