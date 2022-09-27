@@ -270,9 +270,9 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createDepthResources phdv dv ext \dptImg dptImgMem ->
+	createDepthResources phdv dv ext \dptImg dptImgMem dptImgVw ->
 	createTextureImage phdv dv gq cp \tximg ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
 	createVertexBuffer phdv dv gq cp \vb ->
 	createIndexBuffer phdv dv gq cp \ib ->
@@ -490,14 +490,14 @@ createImageViews :: Vk.T.FormatToValue fmt =>
 	(forall si . HeteroVarList (Vk.ImgVw.INew fmt nm) si -> IO a) -> IO a
 createImageViews _dvc [] f = f HVNil
 createImageViews dvc (sci : scis) f =
-	createImageView dvc sci \sciv ->
+	createImageView dvc sci Vk.Img.AspectColorBit \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc [] HVNil = pure ()
 recreateImageViews dvc (sci : scis) (iv :...: ivs) =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci) nil nil iv >>
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit) nil nil iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -505,14 +505,22 @@ recreateImageViews _ _ _ =
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Img.AspectFlags ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
-createImageView dvc timg f =
-	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg) nil nil f
+createImageView dvc timg asps f =
+	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps) nil nil f
+
+recreateImageView :: Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Img.AspectFlags ->
+	Vk.ImgVw.INew ivfmt nm s -> IO ()
+recreateImageView dvc timg asps iv =
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps) nil nil iv
 
 mkImageViewCreateInfo ::
-	Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags ->
 	Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
-mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfoNew {
+mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = Nothing,
 	Vk.ImgVw.createInfoFlagsNew = zeroBits,
 	Vk.ImgVw.createInfoImageNew = sci,
@@ -524,7 +532,7 @@ mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfoNew {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
 		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
 	subresourceRange = Vk.Img.M.SubresourceRange {
-		Vk.Img.M.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.M.subresourceRangeAspectMask = asps,
 		Vk.Img.M.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.M.subresourceRangeLevelCount = 1,
 		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
@@ -813,11 +821,12 @@ createCommandPool qfis dvc f =
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createDepthResources :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	(forall si sm fmt . Vk.T.FormatToValue fmt =>
+	(forall si sm fmt siv . Vk.T.FormatToValue fmt =>
 		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
-			IO a) -> IO a
+		Vk.ImgVw.INew fmt nm siv ->
+		IO a) -> IO a
 createDepthResources phdvc dvc ext f = do
 	fmt <- findDepthFormat phdvc
 	print fmt
@@ -826,8 +835,9 @@ createDepthResources phdvc dvc ext f = do
 		createImage @_ @fmt phdvc dvc
 			(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
 			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
-			Vk.Mem.PropertyDeviceLocalBit
-			f
+			Vk.Mem.PropertyDeviceLocalBit \dptImg dptImgMem ->
+			createImageView @fmt dvc dptImg Vk.Img.AspectDepthBit \dptImgVw ->
+			f dptImg dptImgMem dptImgVw
 
 recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d ->
