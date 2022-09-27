@@ -282,7 +282,7 @@ run w inst g =
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs dptImg dptImgMem vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs dptImg dptImgMem dptImgVw vb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -843,13 +843,15 @@ recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.Img.BindedNew sb sm nm fmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
-		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
-recreateDepthResources phdvc dvc ext dptImg dptImgMem = do
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] ->
+	Vk.ImgVw.INew fmt nm sdiv -> IO ()
+recreateDepthResources phdvc dvc ext dptImg dptImgMem dptImgVw = do
 	print ext
 	recreateImage phdvc dvc
 		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
+	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw
 
 findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
 findDepthFormat phdvc = findSupportedFormat phdvc
@@ -1456,6 +1458,7 @@ mainLoop :: (
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
+	Vk.ImgVw.INew dptfmt "depth-buffer" sdiv ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
@@ -1465,13 +1468,13 @@ mainLoop :: (
 	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs dptImg dptImgMem vb ib ubm ubds cb iasrfsifs tm0 = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs dptImg dptImgMem dptImgVw vb ib ubm ubds cb iasrfsifs tm0 = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
-			rp ppllyt gpl dptImg dptImgMem fbs vb ib ubm ubds cb iasrfsifs
+			rp ppllyt gpl dptImg dptImgMem dptImgVw fbs vb ib ubm ubds cb iasrfsifs
 			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
@@ -1488,6 +1491,7 @@ runLoop :: (
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
+	Vk.ImgVw.INew dptfmt "depth-buffer" sdiv ->
 	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
@@ -1499,15 +1503,15 @@ runLoop :: (
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl dptImg dptImgMem fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl dptImg dptImgMem dptImgVw fbs vb ib ubm ubds cb iasrfsifs tm loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs
-		rp ppllyt gpl dptImg dptImgMem fbs loop
+		rp ppllyt gpl dptImg dptImgMem dptImgVw fbs loop
 		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs
-			rp ppllyt gpl dptImg dptImgMem fbs)
+			rp ppllyt gpl dptImg dptImgMem dptImgVw fbs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsc sp sdsl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
@@ -1595,16 +1599,17 @@ catchAndRecreate :: (
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
+	Vk.ImgVw.INew dptfmt "depth-buffer" sdiv ->
 	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImgMem fbs loop act =
+catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImgMem dptImgVw fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> loop =<< recreateSwapChainEtc
-		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImgMem fbs
+		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImgMem dptImgVw fbs
 
 recreateSwapChainEtc :: (
 	RecreateFramebuffers sis sfs,
@@ -1619,8 +1624,9 @@ recreateSwapChainEtc :: (
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
+	Vk.ImgVw.INew dptfmt "depth-buffer" sdiv ->
 	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO Vk.C.Extent2d
-recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImgMem fbs = do
+recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImgMem dptImgVw fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -1628,7 +1634,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl dptImg dptImg
 	ext <$ do
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
-		recreateDepthResources phdvc dvc ext dptImg dptImgMem
+		recreateDepthResources phdvc dvc ext dptImg dptImgMem dptImgVw
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
