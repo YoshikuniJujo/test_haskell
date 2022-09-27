@@ -3,6 +3,7 @@
 
 module Gpu.Vulkan.Device.Middle where
 
+import Data.IORef
 import Data.Word
 
 import qualified Gpu.Vulkan.Device.Core as C
@@ -15,8 +16,7 @@ instance Num Size
 newtype D = D C.D
 instance Show D
 
-newtype Memory = Memory C.Memory
-instance Show Memory
+newtype Memory = Memory (IORef C.Memory)
 
 data MemoryImage = MemoryImage C.Memory
 instance Show MemoryImage

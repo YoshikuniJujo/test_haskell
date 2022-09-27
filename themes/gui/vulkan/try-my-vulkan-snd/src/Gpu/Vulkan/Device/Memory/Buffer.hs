@@ -14,6 +14,7 @@ import Foreign.Ptr
 import Control.Exception
 import Data.Kind.Object
 import Data.HeteroList
+import Data.IORef
 
 import Gpu.Vulkan.Device.Memory.Buffer.Types
 import Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
@@ -54,9 +55,12 @@ read dvc mem@(M fs _) flgs = bracket
 map :: forall obj objss sd sm . OffsetSize obj objss =>
 	Device.D sd -> M sm objss -> Memory.M.MapFlags ->
 	IO (Ptr (ObjectType obj))
-map (Device.D dvc) (M fs mem) flgs = do
+map (Device.D dvc) (M fs m) flgs = do
 	let	(ost, sz) = offsetSize @obj 0 fs
+	mem <- newIORef m
 	Memory.M.map dvc (Device.M.Memory mem) ost sz flgs
 
 unmap :: Device.D sd -> M sm objss -> IO ()
-unmap (Device.D dvc) (M _ mem) = Memory.M.unmap dvc (Device.M.Memory mem)
+unmap (Device.D dvc) (M _ m) = do
+	mem <- newIORef m
+	Memory.M.unmap dvc (Device.M.Memory mem)

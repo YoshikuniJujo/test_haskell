@@ -11,6 +11,7 @@ module Gpu.Vulkan.Buffer.List.Middle where
 import Foreign.Storable
 import Foreign.Pointable
 import Data.Kind
+import Data.IORef
 
 import qualified Foreign.Storable.Generic
 
@@ -75,7 +76,8 @@ getMemoryRequirements :: Device.D -> B v -> IO Memory.M.Requirements
 getMemoryRequirements dvc (B _ b) = M.getMemoryRequirements dvc $ M.B b
 
 bindMemory :: Device.D -> B v -> Device.MemoryList v -> IO ()
-bindMemory dvc (B _ b) (Device.MemoryList _ mem) =
+bindMemory dvc (B _ b) (Device.MemoryList _ m) = do
+	mem <- newIORef m
 	M.bindMemory dvc (M.B b) (Device.Memory mem) 0
 
 data BList (vs :: [Type]) where

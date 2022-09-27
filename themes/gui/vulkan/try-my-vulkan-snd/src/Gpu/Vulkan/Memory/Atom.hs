@@ -7,6 +7,7 @@ module Gpu.Vulkan.Memory.Atom where
 
 import Foreign.Storable
 import Foreign.Pointable
+import Data.IORef
 
 import qualified Foreign.Storable.Generic
 
@@ -39,16 +40,22 @@ allocate :: (Pointable n, Pointable n') =>
 	Maybe (AllocationCallbacks.A n') -> IO (Device.MemoryAtom v)
 allocate dvc b ai mac = do
 	mai <- allocateInfoToMiddle dvc b ai
-	(\(Device.Memory m) -> Device.MemoryAtom m) <$> M.allocate dvc mai mac
+	(\(Device.Memory mem) -> do
+		m <- readIORef mem
+		pure $ Device.MemoryAtom m)
+		=<< M.allocate dvc mai mac
 
 free :: Pointable n =>
 	Device.D -> Device.MemoryAtom v -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
-free dvc (Device.MemoryAtom m) = M.free dvc (Device.Memory m)
+free dvc (Device.MemoryAtom m) mac = do
+	mem <- newIORef m
+	M.free dvc (Device.Memory mem) mac
 
 write :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryAtom v -> M.MapFlags -> v -> IO ()
-write dvc (Device.Memory . (\(Device.MemoryAtom m) -> m) -> mem) flgs v = do
+write dvc  (Device.MemoryAtom m) flgs v = do
+	mem <- Device.Memory <$> newIORef m
 	dat <- M.map dvc mem 0 (fromIntegral $ sizeOf v') flgs
 	poke dat v'
 	M.unmap dvc mem
@@ -56,7 +63,8 @@ write dvc (Device.Memory . (\(Device.MemoryAtom m) -> m) -> mem) flgs v = do
 
 read :: forall v . Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryAtom v -> M.MapFlags -> IO v
-read dvc (Device.Memory . (\(Device.MemoryAtom m) -> m) -> mem) flgs = do
+read dvc (Device.MemoryAtom m) flgs = do
+	mem <- Device.Memory <$> newIORef m
 	dat <- M.map dvc mem 0 sz flgs
 	Foreign.Storable.Generic.unWrap <$> peek dat <* M.unmap dvc mem
 	where sz = fromIntegral (sizeOf @(Foreign.Storable.Generic.Wrap v) undefined)

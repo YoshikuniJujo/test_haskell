@@ -18,6 +18,7 @@ import Control.Exception
 import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList
+import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Enum hiding (ObjectType)
@@ -120,7 +121,8 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	(\mem -> Memory.M.free mdvc mem macd)
 	\(Device.M.Memory mem) -> do
 		forms <- bsToForms dvc bs
-		f $ Device.Memory.M forms mem
+		m <- readIORef mem
+		f $ Device.Memory.M forms m
 
 type BB = V3 B
 type Bnd sm = V3 (Binded sm)
@@ -153,7 +155,8 @@ bindBuffersToMemory dvc (V3 b :...: bs) mem i = (:...:)
 bindMemory ::
 	Device.D sd -> B sb nm objs -> Device.Memory.M sm objss -> Int ->
 	IO (Binded sm sb nm objs)
-bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms mem) i = do
+bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms m) i = do
+	mem <- newIORef m
 	M.bindMemory dvc (M.B b) (Device.M.Memory mem) . fst $ indexForms fms i
 	pure $ Binded lns b
 

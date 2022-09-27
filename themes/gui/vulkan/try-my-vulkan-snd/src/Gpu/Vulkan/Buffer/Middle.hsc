@@ -14,6 +14,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Core
@@ -90,8 +91,9 @@ getMemoryRequirements (Device.D dvc) (B b) =
 			peek pr
 
 bindMemory :: Device.D -> B -> Device.Memory -> Device.Size -> IO ()
-bindMemory (Device.D dvc) (B b) (Device.Memory mem) (Device.Size sz) =
-	throwUnlessSuccess . Result =<< C.bindMemory dvc b mem sz
+bindMemory (Device.D dvc) (B b) (Device.Memory mem) (Device.Size sz) = do
+	m <- readIORef mem
+	throwUnlessSuccess . Result =<< C.bindMemory dvc b m sz
 
 data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierNext :: Maybe n,

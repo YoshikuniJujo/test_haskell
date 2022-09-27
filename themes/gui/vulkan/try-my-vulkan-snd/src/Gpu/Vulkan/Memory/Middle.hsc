@@ -11,13 +11,14 @@ import Prelude hiding (map)
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
-import Foreign.Marshal.Alloc
+import Foreign.Marshal.Alloc hiding (free)
 import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Default
 import Data.Bits
+import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -108,19 +109,34 @@ allocateInfoToCore AllocateInfo {
 allocate :: (Pointable n, Pointable n') =>
 	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A n') ->
 	IO Device.Memory
-allocate (Device.D dvc) ai mac =  (Device.Memory <$>) . ($ pure) $ runContT do
+allocate (Device.D dvc) ai mac = (Device.Memory <$>) . ($ pure) $ runContT do
 	pai <- allocateInfoToCore ai
 	pac <- AllocationCallbacks.maybeToCore mac
 	pm <- ContT alloca
 	lift do	r <- C.allocate dvc pai pac pm
 		throwUnlessSuccess $ Result r
-		peek pm
+		newIORef =<< peek pm
+
+reallocate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D -> AllocateInfo n ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) ->
+	Device.Memory -> IO ()
+reallocate d@(Device.D dvc) ai macc macd m@(Device.Memory rm) = ($ pure) $ runContT do
+	pai <- allocateInfoToCore ai
+	pac <- AllocationCallbacks.maybeToCore macc
+	pm <- ContT alloca
+	lift do	r <- C.allocate dvc pai pac pm
+		throwUnlessSuccess $ Result r
+		free d m macd
+		writeIORef rm =<< peek pm
 
 free :: Pointable n =>
 	Device.D -> Device.Memory -> Maybe (AllocationCallbacks.A n) -> IO ()
 free (Device.D dvc) (Device.Memory mem) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.free dvc mem pac
+	m <- lift $ readIORef mem
+	lift $ C.free dvc m pac
 
 enum "MapFlags" ''#{type VkMemoryMapFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("MapFlagsZero", 0)]
@@ -132,12 +148,13 @@ map :: Device.D -> Device.Memory -> Device.Size -> Device.Size -> MapFlags ->
 map (Device.D dvc) (Device.Memory mem)
 	(Device.Size ofst) (Device.Size sz) (MapFlags flgs) = ($ pure) $ runContT do
 	pd <- ContT alloca
-	lift do	r <- C.map dvc mem ofst sz flgs pd
+	m <- lift $ readIORef mem
+	lift do	r <- C.map dvc m ofst sz flgs pd
 		throwUnlessSuccess $ Result r
 		peek pd
 
 unmap :: Device.D -> Device.Memory -> IO ()
-unmap (Device.D dvc) (Device.Memory mem) = C.unmap dvc mem
+unmap (Device.D dvc) (Device.Memory mem) = C.unmap dvc =<< readIORef mem
 
 data Barrier n = Barrier {
 	barrierNext :: Maybe n,

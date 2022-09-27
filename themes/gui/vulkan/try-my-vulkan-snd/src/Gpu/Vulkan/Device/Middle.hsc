@@ -18,6 +18,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
 import Data.Bits
+import Data.IORef
 import Data.Word
 
 import qualified Data.Text as T
@@ -115,7 +116,7 @@ enum "Size" ''#{type VkDeviceSize}
 		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral]
 	[("WholeSize", #{const VK_WHOLE_SIZE})]
 
-newtype Memory = Memory C.Memory deriving Show
+newtype Memory = Memory (IORef C.Memory)
 
 data MemoryList v = MemoryList Int C.Memory deriving Show
 

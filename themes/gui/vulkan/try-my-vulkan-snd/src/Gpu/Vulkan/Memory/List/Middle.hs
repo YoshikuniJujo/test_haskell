@@ -14,6 +14,8 @@ import Foreign.Pointable
 import Control.Arrow
 import Control.Exception
 import Data.MonoTraversable
+import Data.IORef
+
 import qualified Data.Sequences as Seq
 
 import qualified Foreign.Storable.Generic
@@ -46,44 +48,58 @@ allocate :: (Pointable n, Pointable n') =>
 	IO (Device.MemoryList v)
 allocate dvc b@(Buffer.B ln _) ai mac = do
 	mai <- allocateInfoToMiddle dvc b ai
-	(\(Device.Memory m) -> Device.MemoryList ln m) <$> M.allocate dvc mai mac
+	(\(Device.Memory mem) -> do
+		m <- readIORef mem
+		pure $ Device.MemoryList ln m) =<< M.allocate dvc mai mac
 
 free :: Pointable n =>
 	Device.D -> Device.MemoryList v -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
-free dvc (Device.MemoryList _ m) mac = M.free dvc (Device.Memory m) mac
+free dvc (Device.MemoryList _ m) mac = do
+	mem <- newIORef m
+	M.free dvc (Device.Memory mem) mac
 
 writeList :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> [v] -> IO ()
-writeList dvc (toMemory -> (ln, mem)) flgs vs = bracket
-	(M.map dvc mem 0 (fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs)
-	(const $ M.unmap dvc mem) (`pokeArray` take ln vs')
+writeList dvc lnmem flgs vs = do
+	(ln, mem) <- toMemory lnmem
+	bracket
+		(M.map dvc mem 0 (fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs)
+		(const $ M.unmap dvc mem) (`pokeArray` take ln vs')
 	where vs' = Foreign.Storable.Generic.Wrap <$> vs
 
 writeMono :: (Foreign.Storable.Generic.G (Element vs), MonoFoldable vs) =>
 	Device.D -> Device.MemoryList (Element vs) -> M.MapFlags -> vs -> IO ()
-writeMono dvc (toMemory -> (ln, mem)) flgs vs = bracket
-	(M.map dvc mem 0
-		(fromIntegral $ sizeOf (w $ headEx vs) * olength vs) flgs)
-	(const $ M.unmap dvc mem)
-	(`pokeArray` (w <$> take ln (otoList vs)))
+writeMono dvc lnmem flgs vs = do
+	(ln, mem) <- toMemory lnmem
+	bracket
+		(M.map dvc mem 0
+			(fromIntegral $ sizeOf (w $ headEx vs) * olength vs) flgs)
+		(const $ M.unmap dvc mem)
+		(`pokeArray` (w <$> take ln (otoList vs)))
 	where w = Foreign.Storable.Generic.Wrap
 
 writeMonoW :: (Foreign.Storable.Generic.G v, MonoFoldable vs, Element vs ~ Foreign.Storable.Generic.Wrap v) =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> vs -> IO ()
-writeMonoW dvc (toMemory -> (ln, mem)) flgs vs = bracket
-	(M.map dvc mem 0 (fromIntegral $ sizeOf (headEx vs) * olength vs) flgs)
-	(const $ M.unmap dvc mem)
-	(`pokeArray` take ln (otoList vs))
+writeMonoW dvc lnmem flgs vs = do
+	(ln, mem) <- toMemory lnmem
+	bracket
+		(M.map dvc mem 0 (fromIntegral $ sizeOf (headEx vs) * olength vs) flgs)
+		(const $ M.unmap dvc mem)
+		(`pokeArray` take ln (otoList vs))
 
-toMemory :: Device.MemoryList v -> (Int, Device.Memory)
-toMemory = second Device.Memory . \(Device.MemoryList l m) -> (l, m)
+toMemory :: Device.MemoryList v -> IO (Int, Device.Memory)
+toMemory (Device.MemoryList l m) = do
+	mem <- newIORef m
+	pure (l, Device.Memory mem)
 
 readList :: forall v . Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> IO [v]
-readList dvc (toMemory -> (ln, mem)) flgs = (Foreign.Storable.Generic.unWrap <$>) <$> bracket
-	(M.map dvc mem 0 (fromIntegral $ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined * ln) flgs)
-	(const $ M.unmap dvc mem) (peekArray ln)
+readList dvc lnmem flgs = do
+	(ln, mem) <- toMemory lnmem
+	(Foreign.Storable.Generic.unWrap <$>) <$> bracket
+		(M.map dvc mem 0 (fromIntegral $ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined * ln) flgs)
+		(const $ M.unmap dvc mem) (peekArray ln)
 
 readMono :: forall vs . (
 	Foreign.Storable.Generic.G (Element vs), Seq.IsSequence vs) =>

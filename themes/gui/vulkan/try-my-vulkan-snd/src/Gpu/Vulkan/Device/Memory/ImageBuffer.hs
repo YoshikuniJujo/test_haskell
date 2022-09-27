@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -33,19 +33,23 @@ import qualified Gpu.Vulkan.Device.Memory.Buffer as Device.Memory.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
-	M (IORef (HeteroVarList (V2 ImageBuffer) sibfoss, Device.C.Memory))
+	M (IORef (HeteroVarList (V2 ImageBuffer) sibfoss)) (IORef Device.C.Memory)
 
 readM :: M s sibfoss ->
 	IO (HeteroVarList (V2 ImageBuffer) sibfoss, Device.C.Memory)
-readM (M r) = readIORef r
+readM (M ib r) = (,) <$> readIORef ib <*> readIORef r
+
+readM' (M ib r) = (, r) <$> readIORef ib
 
 writeM :: M s sibfoss -> HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.C.Memory -> IO ()
-writeM (M r) ibs cm = writeIORef r (ibs, cm)
+writeM (M rib r) ibs cm = writeIORef rib ibs >> writeIORef r cm
 
 writeMBinded :: M s sibfoss -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.C.Memory -> IO ()
-writeMBinded (M r) ibs cm = writeIORef r (heteroVarListMap imageBufferFromBinded ibs, cm)
+writeMBinded (M rib r) ibs cm = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs) >> writeIORef r cm
+
+writeMBinded' (M rib r) ibs = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: V2 (ImageBufferBinded sm) sibfos -> V2 ImageBuffer sibfos
 imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Image.INew i
@@ -53,7 +57,9 @@ imageBufferFromBinded (V2 (BufferBinded (Buffer.Binded x b))) = V2 . Buffer $ Bu
 
 newM :: HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.C.Memory -> IO (M s sibfoss)
-newM ibs cm = M <$> newIORef (ibs, cm)
+newM ibs cm = M <$> newIORef ibs <*> newIORef cm
+
+newM' ibs cm = (`M` cm) <$> newIORef ibs
 
 -- deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
 --	Show (M s sibfoss)
@@ -153,7 +159,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
 	(\mem -> Memory.M.free mdvc mem macd)
-	\(Device.M.Memory mem) -> f =<< newM bs mem
+	\(Device.M.Memory mem) -> f =<< newM' bs mem
 
 reallocate :: (
 	Pointable n, Pointable c, Pointable d ) =>
@@ -163,10 +169,10 @@ reallocate :: (
 	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
 reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 	mai <- reallocateInfoToMiddle dvc bs ai
-	Device.M.Memory newmem <- Memory.M.allocate mdvc mai macc
-	(_, oldmem) <- readM mem
-	Memory.M.free mdvc (Device.M.Memory oldmem) macd
-	writeMBinded mem bs newmem
+	(_, oldmem) <- readM' mem
+--	Memory.M.free mdvc (Device.M.Memory oldmem) macd
+	Memory.M.reallocate mdvc mai macc macd (Device.M.Memory oldmem)
+	writeMBinded' mem bs
 
 reallocateBind :: (
 	Pointable n, Pointable c, Pointable d, RebindAll sibfoss sibfoss ) =>
@@ -254,7 +260,7 @@ bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) si
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
 	IO (Buffer.Binded sb sm nm objs)
 bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
-	(_, mm) <- readM m
+	(_, mm) <- readM' m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 	pure (Buffer.Binded lns b)
@@ -263,7 +269,7 @@ rebindBuffer :: forall sd sb sm nm objs sibfoss .
 	Offset sb ('K.Buffer nm objs) sibfoss =>
 	Device.D sd -> Buffer.Binded sb sm nm objs -> M sm sibfoss -> IO ()
 rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
-	(_, mm) <- readM m
+	(_, mm) <- readM' m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
 	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
 
@@ -382,11 +388,11 @@ read dvc mem flgs = bracket
 map :: forall nm obj sd sm sibfoss . OffsetSize nm obj sibfoss =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (ObjectType obj))
 map dvc@(Device.D mdvc) m flgs = do
-	(_, mm) <- readM m
+	(_, mm) <- readM' m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0
 	Memory.M.map mdvc (Device.M.Memory mm) ost sz flgs
 
 unmap :: Device.D sd -> M sm sibfoss -> IO ()
 unmap (Device.D mdvc) m = do
-	(_, mm) <- readM m
+	(_, mm) <- readM' m
 	Memory.M.unmap mdvc (Device.M.Memory mm)
