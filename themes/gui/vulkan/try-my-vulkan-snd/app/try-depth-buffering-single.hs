@@ -920,10 +920,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @() @() @() dvc
 		(imageInfo wdt hgt tlng usg) Nothing Nothing \img -> do
 	memInfo <- imageMemoryInfo pd dvc prps img
-	Vk.Dvc.Mem.ImageBuffer.allocateBind @() dvc
-		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
-		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
-		f bnd m
+	imageAllocateBind dvc img memInfo f
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
@@ -944,6 +941,18 @@ imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
 		Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
 		Vk.Img.createInfoFlagsNew = zeroBits,
 		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
+
+imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
+	Vk.Dvc.Mem.Buffer.AllocateInfo () -> (forall sm .
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
+		IO a) -> IO a
+imageAllocateBind dvc img memInfo f =
+	Vk.Dvc.Mem.ImageBuffer.allocateBind @() dvc
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
+		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
+		f bnd m
 
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
