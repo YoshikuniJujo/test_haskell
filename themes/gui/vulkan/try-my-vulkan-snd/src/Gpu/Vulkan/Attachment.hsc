@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -12,11 +14,23 @@ import Data.Word
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Attachment.Enum
 
+import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Attachment.Core as C
 
 #include <vulkan/vulkan.h>
+
+data DescriptionNew (fmt :: T.Format) = DescriptionNew {
+	descriptionFlagsNew :: DescriptionFlags,
+	descriptionSamplesNew :: Sample.CountFlagBits,
+	descriptionLoadOpNew :: LoadOp,
+	descriptionStoreOpNew :: StoreOp,
+	descriptionStencilLoadOpNew :: LoadOp,
+	descriptionStencilStoreOpNew :: StoreOp,
+	descriptionInitialLayoutNew :: Image.Layout,
+	descriptionFinalLayoutNew :: Image.Layout }
+	deriving Show
 
 data Description = Description {
 	descriptionFlags :: DescriptionFlags,
