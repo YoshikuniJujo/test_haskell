@@ -45,8 +45,8 @@ recreateNew :: (
 	Device.D sd -> M.CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
-	INew si nm fmt -> IO ()
-recreateNew (Device.D dvc) ci macc macd (INew i) = M.recreateNew dvc ci macc macd i
+	BindedNew si sm nm fmt -> IO ()
+recreateNew (Device.D dvc) ci macc macd (BindedNew i) = M.recreateNew dvc ci macc macd i
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->
