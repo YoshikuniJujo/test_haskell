@@ -270,7 +270,7 @@ run w inst g =
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
-	createDepthResources phdv >>
+	createDepthResources phdv dv ext \dptImg dptImgMem ->
 	createTextureImage phdv dv gq cp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
@@ -812,13 +812,33 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
-createDepthResources :: Vk.PhDvc.P -> IO ()
-createDepthResources phdvc = do
+createDepthResources :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d ->
+	(forall si sm fmt .
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
+			IO a) -> IO a
+createDepthResources phdvc dvc ext f = do
 	fmt <- findDepthFormat phdvc
 	print fmt
+	print ext
+	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+		createImage @_ @fmt phdvc dvc
+			(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
+			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
+			Vk.Mem.PropertyDeviceLocalBit
+			f
 
-recreateDepthResources :: IO ()
-recreateDepthResources = pure ()
+recreateDepthResources :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d ->
+	Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
+recreateDepthResources phdvc dvc ext dptImg dptImgMem =
+	recreateImage phdvc dvc
+		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
+		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
+		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
 
 findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
 findDepthFormat phdvc = findSupportedFormat phdvc
@@ -1575,7 +1595,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	ext <$ do
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
-		recreateDepthResources
+--		recreateDepthResources
 		recreateGraphicsPipeline dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
 
