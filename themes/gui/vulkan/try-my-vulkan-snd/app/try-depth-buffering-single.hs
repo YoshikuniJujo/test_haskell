@@ -266,7 +266,9 @@ run w inst g =
 		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt)  scifmt ext ->
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
-	createRenderPass @scifmt dv \rp ->
+	findDepthFormat phdv >>= \dptfmt ->
+	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
+	createRenderPass @scifmt @dptfmt dv \rp ->
 	createPipelineLayout dv \dscslyt ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
@@ -539,7 +541,8 @@ mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
 		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.M.subresourceRangeLayerCount = 1 }
 
-createRenderPass :: forall (scifmt :: Vk.T.Format) sd a .
+createRenderPass ::
+	forall (scifmt :: Vk.T.Format) (dptfmt :: Vk.T.Format) sd a .
 	Vk.T.FormatToValue scifmt =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
 createRenderPass dvc f = do
@@ -560,6 +563,20 @@ createRenderPass dvc f = do
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
 				Vk.Img.LayoutColorAttachmentOptimal }
+		depthAttachment :: Vk.Att.DescriptionNew dptfmt
+		depthAttachment = Vk.Att.DescriptionNew {
+			Vk.Att.descriptionFlagsNew = zeroBits,
+			Vk.Att.descriptionSamplesNew = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOpNew = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOpNew = Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionStencilLoadOpNew =
+				Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOpNew =
+				Vk.Att.StoreOpDontCare,
+			Vk.Att.descriptionInitialLayoutNew =
+				Vk.Img.LayoutUndefined,
+			Vk.Att.descriptionFinalLayoutNew =
+				Vk.Img.LayoutDepthStencilAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags = zeroBits,
 			Vk.Subpass.descriptionPipelineBindPoint =
