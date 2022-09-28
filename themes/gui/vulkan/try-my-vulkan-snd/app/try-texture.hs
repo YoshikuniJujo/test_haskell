@@ -773,7 +773,7 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO a) -> IO a
+		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil f = f HVNil
 createFramebuffers dvc sce rp (iv :...: ivs) f =
 	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
@@ -782,7 +782,7 @@ createFramebuffers dvc sce rp (iv :...: ivs) f =
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-		HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO ()
+		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
 	recreateFramebuffers _dvc _sce _rp HVNil HVNil = pure ()
@@ -796,12 +796,12 @@ instance RecreateFramebuffers sis sfs =>
 
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
-	Vk.Frmbffr.CreateInfoNew () sr fmt nm '[si]
+	Vk.Frmbffr.CreateInfoNew () sr '[ '(fmt, nm, si)]
 mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfoNew {
 	Vk.Frmbffr.createInfoNextNew = Nothing,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 	Vk.Frmbffr.createInfoRenderPassNew = rp,
-	Vk.Frmbffr.createInfoAttachmentsNew = attch :...: HVNil,
+	Vk.Frmbffr.createInfoAttachmentsNew = V3 attch :...: HVNil,
 	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
 	Vk.Frmbffr.createInfoLayersNew = 1 }
 	where
@@ -1367,7 +1367,7 @@ createSyncObjects dvc f =
 
 recordCommandBuffer :: forall scb sr sl sdsc scfmt sf sg sm sb nm sm' sb' nm' sdsc' sp .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew scfmt sf -> Vk.C.Extent2d ->
+	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1378,7 +1378,7 @@ recordCommandBuffer :: forall scb sr sl sdsc scfmt sf sg sm sb nm sm' sb' nm' sd
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 	Vk.CmdBffr.begin @() @() cb def $
-	Vk.Cmd.beginRenderPassNew cb rpInfo Vk.Subpass.ContentsInline do
+	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
@@ -1387,16 +1387,16 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 		(Singleton $ Vk.Cmd.DescriptorSet dscs) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 	where
-	rpInfo :: Vk.RndrPass.BeginInfoNew () sr scfmt sf
+	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
 		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
-	rpInfo = Vk.RndrPass.BeginInfoNew {
-		Vk.RndrPass.beginInfoNextNew = Nothing,
-		Vk.RndrPass.beginInfoRenderPassNew = rp,
-		Vk.RndrPass.beginInfoFramebufferNew = fb,
-		Vk.RndrPass.beginInfoRenderAreaNew = Vk.C.Rect2d {
+	rpInfo = Vk.RndrPass.BeginInfo {
+		Vk.RndrPass.beginInfoNext = Nothing,
+		Vk.RndrPass.beginInfoRenderPass = rp,
+		Vk.RndrPass.beginInfoFramebuffer = fb,
+		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValuesNew = singleton
+		Vk.RndrPass.beginInfoClearValues = singleton
 			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (
@@ -1412,7 +1412,7 @@ mainLoop :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, TexCoord)] ->
-	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
@@ -1443,7 +1443,7 @@ runLoop :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, TexCoord)] ->
-	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
@@ -1471,7 +1471,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, TexCoord)] ->
-	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
@@ -1559,7 +1559,7 @@ catchAndRecreate :: (
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, TexCoord)] ->
-	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs ->
+	HeteroVarList Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 	catchJust
@@ -1580,7 +1580,7 @@ recreateSwapChainEtc :: (
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, TexCoord)] ->
-	HeteroVarList (Vk.Frmbffr.FNew scfmt) sfs -> IO Vk.C.Extent2d
+	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
 recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc

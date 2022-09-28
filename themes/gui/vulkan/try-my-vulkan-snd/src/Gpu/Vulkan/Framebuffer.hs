@@ -27,21 +27,21 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
-data CreateInfoNew n sr fmt nm sis = CreateInfoNew {
+data CreateInfoNew n sr fmtnmsis = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
---	createInfoAttachmentsNew :: HeteroVarList (V2 (ImageView.INew fmt)) nmsis,
-	createInfoAttachmentsNew :: HeteroVarList (ImageView.INew fmt nm) sis,
+	createInfoAttachmentsNew :: HeteroVarList (V3 ImageView.INew) fmtnmsis,
+--	createInfoAttachmentsNew :: HeteroVarList (ImageView.INew fmt nm) sis,
 	createInfoWidthNew :: Word32,
 	createInfoHeightNew :: Word32,
 	createInfoLayersNew :: Word32 }
 
-type family MapSnd (t :: [(j, k)]) where
-	MapSnd '[] = '[]
-	MapSnd ('(a, b) ': abs) = b ': MapSnd abs
+type family MapThird (t :: [(j, k, l)]) where
+	MapThird '[] = '[]
+	MapThird ('(a, b, c) ': abcs) = c ': MapThird abcs
 
-createInfoFromNew :: CreateInfoNew n sr fmt nm sis -> CreateInfo n sr sis
+createInfoFromNew :: CreateInfoNew n sr fmtnmsis -> CreateInfo n sr (MapThird fmtnmsis)
 createInfoFromNew CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
@@ -52,14 +52,14 @@ createInfoFromNew CreateInfoNew {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoRenderPass = rndpss,
-	createInfoAttachments = heteroVarListMap ImageView.iToOld atts,
+	createInfoAttachments = isToOld atts,
 	createInfoWidth = wdt, createInfoHeight = hgt,
 	createInfoLayers = lyrs }
 
-isToOld :: HeteroVarList (V2 (ImageView.INew fmt)) nmsis ->
-	HeteroVarList ImageView.I (MapSnd nmsis)
+isToOld :: HeteroVarList (V3 ImageView.INew) fmtnmsis ->
+	HeteroVarList ImageView.I (MapThird fmtnmsis)
 isToOld HVNil = HVNil
-isToOld ((V2 i) :...: is) = ImageView.iToOld i :...: isToOld is
+isToOld ((V3 i) :...: is) = ImageView.iToOld i :...: isToOld is
 
 data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -73,7 +73,7 @@ data CreateInfo n sr sis = CreateInfo {
 deriving instance (Show n, Show (HeteroVarList ImageView.I sis)) =>
 	Show (CreateInfo n sr sis)
 
-createInfoToMiddleNew :: CreateInfoNew n sr fmt nm si -> M.CreateInfo n
+createInfoToMiddleNew :: CreateInfoNew n sr fmtnmsis -> M.CreateInfo n
 createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 
 createInfoToMiddle :: CreateInfo n sr si -> M.CreateInfo n
@@ -94,12 +94,12 @@ createInfoToMiddle CreateInfo {
 		M.createInfoLayers = lyrs }
 
 createNew :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D sd -> CreateInfoNew n sr fmt nm sis ->
+	Device.D sd -> CreateInfoNew n sr fmtnmsis ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . FNew fmt s -> IO a) -> IO a
+	(forall s . F s -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
-	(\fb -> M.destroy dvc fb macd) (f . FNew)
+	(\fb -> M.destroy dvc fb macd) (f . F)
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> CreateInfo n sr si ->
@@ -110,10 +110,10 @@ create (Device.D dvc) ci macc macd f = bracket
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
 recreateNew :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D sd -> CreateInfoNew n sr fmt nm si ->
+	Device.D sd -> CreateInfoNew n sr fmtnmsis ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	FNew fmt sf -> IO ()
-recreateNew (Device.D dvc) ci macc macd (FNew fb) =
+	F sf -> IO ()
+recreateNew (Device.D dvc) ci macc macd (F fb) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>

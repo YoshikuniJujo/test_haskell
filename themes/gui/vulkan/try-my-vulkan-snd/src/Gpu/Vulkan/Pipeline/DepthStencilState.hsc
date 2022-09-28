@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.DepthStencilState where
@@ -11,6 +12,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Bits
 import Data.Word
 
 import Gpu.Vulkan.Middle
@@ -22,7 +24,7 @@ import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Core as C
 #include <vulkan/vulkan.h>
 
 enum "CreateFlags" ''#{type VkPipelineDepthStencilStateCreateFlags}
-	[''Show, ''Storable] [("CreateFlagsZero", 0)]
+	[''Show, ''Storable, ''Eq, ''Bits] [("CreateFlagsZero", 0)]
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
