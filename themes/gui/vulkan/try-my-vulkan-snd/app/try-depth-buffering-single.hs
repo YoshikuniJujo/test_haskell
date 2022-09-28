@@ -262,10 +262,11 @@ run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
-	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
+	createSwapChain w sfc phdv qfis dv
+		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt)  scifmt ext ->
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
-	createRenderPass dv scifmt \rp ->
+	createRenderPass @scifmt dv \rp ->
 	createPipelineLayout dv \dscslyt ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
@@ -538,21 +539,22 @@ mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
 		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.M.subresourceRangeLayerCount = 1 }
 
-createRenderPass :: Vk.Dvc.D sd ->
-	Vk.Format -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dvc scifmt f = do
-	let	colorAttachment = Vk.Att.Description {
-			Vk.Att.descriptionFlags = zeroBits,
-			Vk.Att.descriptionFormat = scifmt,
-			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
-			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
-			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
-			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
-			Vk.Att.descriptionStencilStoreOp =
+createRenderPass :: forall (scifmt :: Vk.T.Format) sd a .
+	Vk.T.FormatToValue scifmt =>
+	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
+createRenderPass dvc f = do
+	let	colorAttachment :: Vk.Att.DescriptionNew scifmt
+		colorAttachment = Vk.Att.DescriptionNew {
+			Vk.Att.descriptionFlagsNew = zeroBits,
+			Vk.Att.descriptionSamplesNew = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOpNew = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOpNew = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOpNew = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOpNew =
 				Vk.Att.StoreOpDontCare,
-			Vk.Att.descriptionInitialLayout =
+			Vk.Att.descriptionInitialLayoutNew =
 				Vk.Img.LayoutUndefined,
-			Vk.Att.descriptionFinalLayout =
+			Vk.Att.descriptionFinalLayoutNew =
 				Vk.Img.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
@@ -578,13 +580,13 @@ createRenderPass dvc scifmt f = do
 			Vk.Subpass.dependencyDstAccessMask =
 				Vk.AccessColorAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.M.CreateInfo {
-			Vk.RndrPass.M.createInfoNext = Nothing,
-			Vk.RndrPass.M.createInfoFlags = zeroBits,
-			Vk.RndrPass.M.createInfoAttachments = [colorAttachment],
-			Vk.RndrPass.M.createInfoSubpasses = [subpass],
-			Vk.RndrPass.M.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
+		renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
+			Vk.RndrPass.M.createInfoNextNew = Nothing,
+			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
+			Vk.RndrPass.M.createInfoAttachmentsNew = Singleton colorAttachment,
+			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
+			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
+	Vk.RndrPass.createNew @'[scifmt] @() dvc renderPassInfo nil nil \rp -> f rp
 
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.L sdsl '[

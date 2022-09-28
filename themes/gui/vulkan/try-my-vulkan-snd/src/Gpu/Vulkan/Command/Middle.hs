@@ -8,7 +8,6 @@
 
 module Gpu.Vulkan.Command.Middle where
 
-import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Pointable
@@ -35,8 +34,6 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 
 import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
-
-import qualified Gpu.Vulkan.PushConstant as PushConstant
 
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image

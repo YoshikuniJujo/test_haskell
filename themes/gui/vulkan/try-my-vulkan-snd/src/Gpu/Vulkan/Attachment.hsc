@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -9,6 +11,7 @@ module Gpu.Vulkan.Attachment where
 
 import Foreign.Storable
 import Foreign.C.Enum
+import Data.HeteroList
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -31,6 +34,41 @@ data DescriptionNew (fmt :: T.Format) = DescriptionNew {
 	descriptionInitialLayoutNew :: Image.Layout,
 	descriptionFinalLayoutNew :: Image.Layout }
 	deriving Show
+
+class DescriptionsToCoreNew fmts where
+	descriptionsToCoreNew ::
+		HeteroVarList DescriptionNew fmts -> [C.Description]
+
+instance DescriptionsToCoreNew '[] where descriptionsToCoreNew HVNil = []
+
+instance (T.FormatToValue fmt, DescriptionsToCoreNew fmts) =>
+	DescriptionsToCoreNew (fmt ': fmts) where
+	descriptionsToCoreNew (dsc :...: dscs) =
+		descriptionToCoreNew dsc : descriptionsToCoreNew dscs
+
+descriptionToCoreNew ::
+	forall fmt . T.FormatToValue fmt =>  DescriptionNew fmt -> C.Description
+descriptionToCoreNew DescriptionNew {
+	descriptionFlagsNew = DescriptionFlagBits flgs,
+	descriptionSamplesNew = Sample.CountFlagBits smps,
+	descriptionLoadOpNew = LoadOp lo,
+	descriptionStoreOpNew = StoreOp so,
+	descriptionStencilLoadOpNew = LoadOp slo,
+	descriptionStencilStoreOpNew = StoreOp sso,
+	descriptionInitialLayoutNew = Image.Layout il,
+	descriptionFinalLayoutNew = Image.Layout fl
+	} = C.Description {
+		C.descriptionFlags = flgs,
+		C.descriptionFormat = fmt,
+		C.descriptionSamples = smps,
+		C.descriptionLoadOp = lo,
+		C.descriptionStoreOp = so,
+		C.descriptionStencilLoadOp = slo,
+		C.descriptionStencilStoreOp = sso,
+		C.descriptionInitialLayout = il,
+		C.descriptionFinalLayout = fl }
+	where
+	Format fmt = T.formatToValue @fmt
 
 data Description = Description {
 	descriptionFlags :: DescriptionFlags,

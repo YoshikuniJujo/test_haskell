@@ -27,7 +27,6 @@ import Gpu.Vulkan.Base
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
-import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Instance as Vk.Instance
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice

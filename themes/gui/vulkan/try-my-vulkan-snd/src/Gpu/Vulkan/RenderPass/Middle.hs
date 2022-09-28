@@ -28,6 +28,46 @@ import qualified Gpu.Vulkan.Subpass as Subpass
 import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer
 import qualified Gpu.Vulkan.RenderPass.Core as C
 
+data CreateInfoNew n fmts = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoAttachmentsNew ::
+		HeteroVarList Attachment.DescriptionNew fmts,
+	createInfoSubpassesNew :: [Subpass.Description],
+	createInfoDependenciesNew :: [Subpass.Dependency] }
+
+createInfoToCoreNew :: (Pointable n, Attachment.DescriptionsToCoreNew fmts) =>
+	CreateInfoNew n fmts -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCoreNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = CreateFlagBits flgs,
+	createInfoAttachmentsNew = as_,
+	createInfoSubpassesNew = (length &&& id) -> (sc, ss),
+	createInfoDependenciesNew =
+		(length &&& (Subpass.dependencyToCore <$>)) -> (dc, ds) } = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pas <- ContT $ allocaArray ac
+	lift $ pokeArray pas as
+	css <- Subpass.descriptionToCore `mapM` ss
+	pss <- ContT $ allocaArray sc
+	lift $ pokeArray pss css
+	pds <- ContT $ allocaArray dc
+	lift $ pokeArray pds ds
+	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoAttachmentCount = fromIntegral ac,
+			C.createInfoPAttachments = pas,
+			C.createInfoSubpassCount = fromIntegral sc,
+			C.createInfoPSubpasses = pss,
+			C.createInfoDependencyCount = fromIntegral dc,
+			C.createInfoPDependencies = pds }
+	ContT $ withForeignPtr fCreateInfo
+	where
+	ac = length as
+	as = Attachment.descriptionsToCoreNew as_
+
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
@@ -66,6 +106,18 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fCreateInfo
 
 newtype R = R C.R deriving Show
+
+createNew ::
+	(Pointable n, Pointable c, Attachment.DescriptionsToCoreNew fmts) =>
+	Device.D ->
+	CreateInfoNew n fmts -> Maybe (AllocationCallbacks.A c) -> IO R
+createNew (Device.D dvc) ci mac = ($ pure) . runContT $ R <$> do
+	pci <- createInfoToCoreNew ci
+	pac <- AllocationCallbacks.maybeToCore mac
+	pr <- ContT alloca
+	lift do	r <- C.create dvc pci pac pr
+		throwUnlessSuccess $ Result r
+		peek pr
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO R

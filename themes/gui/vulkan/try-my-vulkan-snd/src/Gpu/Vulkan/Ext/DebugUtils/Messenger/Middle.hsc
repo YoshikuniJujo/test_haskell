@@ -65,8 +65,8 @@ callbackDataFromCore C.CallbackData {
 	C.callbackDataObjectCount = fromIntegral -> objc,
 	C.callbackDataPObjects = pcobjs } = do
 	mnxt <- pointerToMaybe $ castPtr pnxt
-	midnm <- cstringToText cmidnm
-	msg <- cstringToText cmsg
+	midnm <- cstrToText cmidnm
+	msg <- cstrToText cmsg
 	cqls <- peekArray qlc pcqls
 	qls <- labelFromCore `mapM` cqls
 	ccbls <- peekArray cblc pccbls
