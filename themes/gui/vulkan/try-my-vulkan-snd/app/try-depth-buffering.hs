@@ -412,25 +412,24 @@ createSwapChain win sfc phdvc qfis dvc f = do
 	let	fmt = Vk.Khr.Surface.M.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
-		let	(crInfo, scifmt) =
-				mkSwapchainCreateInfo sfc qfis spp ext
+		let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext
 		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt dvc crInfo nil nil
 			\sc -> f sc ext
 
 recreateSwapChain :: Vk.T.FormatToValue scfmt =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.SNew ssc scfmt ->
-	IO (Vk.Format, Vk.C.Extent2d)
+	IO Vk.C.Extent2d
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dvc crInfo nil nil sc
+	let	crInfo = mkSwapchainCreateInfo sfc qfis0 spp ext
+	ext <$ Vk.Khr.Swapchain.recreateNew @() dvc crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	(Vk.Khr.Swapchain.CreateInfoNew n ss fmt, Vk.Format)
-mkSwapchainCreateInfo sfc qfis0 spp ext = (
+	Vk.Khr.Swapchain.CreateInfoNew n ss fmt
+mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfoNew {
 		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
 		Vk.Khr.Swapchain.createInfoFlagsNew = def,
@@ -450,10 +449,9 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 			Vk.Khr.CompositeAlphaOpaqueBit,
 		Vk.Khr.Swapchain.createInfoPresentModeNew = presentMode,
 		Vk.Khr.Swapchain.createInfoClippedNew = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchainNew = Nothing }, scifmt )
+		Vk.Khr.Swapchain.createInfoOldSwapchainNew = Nothing }
 	where
 	fmt = chooseSwapSurfaceFormat $ formats spp
-	scifmt = Vk.Khr.Surface.M.formatFormat fmt
 	presentMode = chooseSwapPresentMode $ presentModes spp
 	caps = capabilities spp
 	maxImgc = fromMaybe maxBound . onlyIf (> 0)
@@ -1799,7 +1797,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp (dp
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
-	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
+	ext <- recreateSwapChain win sfc phdvc qfis dvc sc
 	ext <$ do
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
