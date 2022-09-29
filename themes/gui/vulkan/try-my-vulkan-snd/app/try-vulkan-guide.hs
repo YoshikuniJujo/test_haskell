@@ -255,7 +255,7 @@ run w ist g obj = let
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createDevice phdv qfis \dv gq pq ->
 	createSwapchain w sfc phdv qfis dv \sc scifmt ext ->
-	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
+	Vk.Khr.Swapchain.getImages dv (Vk.Khr.Swapchain.sFromNew sc) >>= \imgs ->
 	createImageViewsOld dv scifmt imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
 	createPipelineLayout dv \ppllyt ->
@@ -366,9 +366,10 @@ createDevice ph qfis f = Vk.Dvc.create @() @() ph crInfo nil nil \dv -> do
 		Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
 
 createSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss .
-		Vk.Khr.Swapchain.S ss -> Vk.Format -> Vk.C.Extent2d -> IO a) ->
-	IO a
+	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
+		Vk.T.FormatToValue scfmt =>
+		Vk.Khr.Swapchain.SNew ss scfmt -> Vk.Format -> Vk.C.Extent2d ->
+		IO a) -> IO a
 createSwapchain win sfc ph qfis dv f = do
 	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
@@ -377,18 +378,19 @@ createSwapchain win sfc ph qfis dv f = do
 		let	(crInfo, scifmt) =
 				mkSwapchainCreateInfo sfc qfis spp ext
 		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt
-			dv crInfo nil nil \sc -> f (Vk.Khr.Swapchain.sFromNew sc) scifmt ext
+			dv crInfo nil nil \sc -> f sc scifmt ext
 
-recreateSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
+recreateSwapchain :: Vk.T.FormatToValue scfmt =>
+	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	IO (Vk.Format, Vk.C.Extent2d)
 recreateSwapchain win sfc ph qfis0 dv sc = do
 	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
---	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
---	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dv crInfo nil nil (Vk.Khr.Swapchain.sToNew sc)
-	let	(crInfo, scifmt) = mkSwapchainCreateInfoOld sfc qfis0 spp ext
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dv crInfo nil nil sc
+	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
+	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dv crInfo nil nil sc
+--	let	(crInfo, scifmt) = mkSwapchainCreateInfoOld sfc qfis0 spp ext
+--	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dv crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapchainSupportDetails -> Vk.C.Extent2d ->
@@ -961,11 +963,13 @@ recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 			. fromJust $ rgbaDouble 0 0 blue 1 }
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
-mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
+mainLoop :: (
+	Vk.T.FormatToValue scfmt, RecreateFramebuffers ss sfs, VssList vss ) =>
+	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
@@ -991,10 +995,11 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb c
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
 	Vk.Dvc.waitIdle dvc
 
-runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
+runLoop :: (
+	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs, VssList vss ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
@@ -1010,7 +1015,7 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn vn
+		$ drawFrame dvc gq pq (Vk.Khr.Swapchain.sFromNew sc) ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
@@ -1063,10 +1068,11 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreate :: RecreateFramebuffers sis sfs =>
+catchAndRecreate :: (
+	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc ->
+	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
@@ -1087,10 +1093,11 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop ac
 	\_ -> loop =<< recreateSwapchainEtc
 		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs
 
-recreateSwapchainEtc :: RecreateFramebuffers sis sfs =>
+recreateSwapchainEtc :: (
+	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroVarList Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
@@ -1106,7 +1113,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = d
 
 	(scifmt, ext) <- recreateSwapchain win sfc phdvc qfis dvc sc
 	ext <$ do
-		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
+		Vk.Khr.Swapchain.getImages dvc (Vk.Khr.Swapchain.sFromNew sc) >>= \imgs ->
 			recreateImageViewsOld dvc scifmt imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
 		recreateGraphicsPipeline dvc ext rp ppllyt 1 gpl1
