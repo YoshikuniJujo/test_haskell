@@ -250,18 +250,18 @@ run w ist g obj = let
 	print cnt >>
 --	print3 (takePosNormalFace 10 vnf) >>
 	let	vns = V.map positionNormalToVertex $ W.facePosNormal vs ns fs in
-	print vns >>
+--	print vns >>
 	Glfw.createWindowSurface ist w nil nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createDevice phdv qfis \dv gq pq ->
 	createSwapchain w sfc phdv qfis dv \sc scifmt ext ->
-	Vk.Khr.Swapchain.getImagesNew dv sc >>= \((Vk.Img.bindedFromNew <$>) -> imgs) ->
-	createImageViewsOld dv scifmt imgs \scivs ->
+	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
+	createImageViews dv imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
 	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
 	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
-	createFramebuffers dv ext rp scivs \fbs ->
+	createFramebuffers dv ext rp (heteroVarListMap Vk.ImgVw.iToOld scivs) \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createCommandBuffers dv cp \cbs ->
@@ -460,38 +460,54 @@ chooseSwapExtent win caps
 	n = Vk.Khr.Surface.M.capabilitiesMinImageExtent caps
 	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
-createImageViewsOld :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.Binded ss ss] ->
-	(forall si . HeteroVarList Vk.ImgVw.I si -> IO a) -> IO a
-createImageViewsOld _dvc _fmt [] f = f HVNil
-createImageViewsOld dvc fmt (sci : scis) f =
-	Vk.ImgVw.create dvc (mkImageViewCreateInfo fmt sci) nil nil \sciv ->
-	createImageViewsOld dvc fmt scis \scivs -> f $ sciv :...: scivs
+createImageViews :: Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> [Vk.Img.BindedNew ss ss nm fmt] ->
+	(forall si . HeteroVarList (Vk.ImgVw.INew fmt nm) si -> IO a) -> IO a
+createImageViews _dvc [] f = f HVNil
+createImageViews dvc (sci : scis) f =
+	createImageView dvc sci Vk.Img.AspectColorBit \sciv ->
+	createImageViews dvc scis \scivs -> f $ sciv :...: scivs
 
-recreateImageViewsOld :: Vk.Dvc.D sd -> Vk.Format ->
-	[Vk.Img.Binded ss ss] -> HeteroVarList Vk.ImgVw.I sis -> IO ()
-recreateImageViewsOld _dvc _scifmt [] HVNil = pure ()
-recreateImageViewsOld dvc scifmt (sci : scis) (iv :...: ivs) =
-	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo scifmt sci) nil nil iv >>
-	recreateImageViewsOld dvc scifmt scis ivs
-recreateImageViewsOld _ _ _ _ =
+recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
+	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
+recreateImageViews _dvc [] HVNil = pure ()
+recreateImageViews dvc (sci : scis) (iv :...: ivs) =
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit) nil nil iv >>
+	recreateImageViews dvc scis ivs
+recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
+createImageView :: forall ivfmt sd si sm nm ifmt a .
+	Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Img.AspectFlags ->
+	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
+createImageView dvc timg asps f =
+	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps) nil nil f
+
+recreateImageView :: Vk.T.FormatToValue ivfmt =>
+	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Img.AspectFlags ->
+	Vk.ImgVw.INew ivfmt nm s -> IO ()
+recreateImageView dvc timg asps iv =
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps) nil nil iv
+
 mkImageViewCreateInfo ::
-	Vk.Format -> Vk.Img.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
-mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = Nothing,
-	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
-	Vk.ImgVw.createInfoImage = sci,
-	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
-	Vk.ImgVw.createInfoFormat = scifmt,
-	Vk.ImgVw.createInfoComponents = components,
-	Vk.ImgVw.createInfoSubresourceRange = subresourceRange }
+	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
+mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
+	Vk.ImgVw.createInfoNextNew = Nothing,
+	Vk.ImgVw.createInfoFlagsNew = zeroBits,
+	Vk.ImgVw.createInfoImageNew = sci,
+	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponentsNew = components,
+	Vk.ImgVw.createInfoSubresourceRangeNew = subresourceRange }
 	where
 	components = Vk.Component.Mapping {
 		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
 		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
 	subresourceRange = Vk.Img.M.SubresourceRange {
-		Vk.Img.M.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.M.subresourceRangeAspectMask = asps,
 		Vk.Img.M.subresourceRangeBaseMipLevel = 0,
 		Vk.Img.M.subresourceRangeLevelCount = 1,
 		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
@@ -928,7 +944,8 @@ mainLoop :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
+	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d ->
+	HeteroVarList (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
@@ -959,7 +976,7 @@ runLoop :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
-	HeteroVarList Vk.ImgVw.I sis ->
+	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1032,7 +1049,7 @@ catchAndRecreate :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroVarList Vk.ImgVw.I sis ->
+	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
@@ -1056,7 +1073,8 @@ recreateSwapchainEtc :: (
 	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroVarList Vk.ImgVw.I sis ->
+	Vk.Khr.Swapchain.SNew ssc scfmt ->
+	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
@@ -1072,11 +1090,11 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = d
 
 	(scifmt, ext) <- recreateSwapchain win sfc phdvc qfis dvc sc
 	ext <$ do
-		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \((Vk.Img.bindedFromNew <$>) -> imgs) ->
-			recreateImageViewsOld dvc scifmt imgs scivs
+		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
+			recreateImageViews dvc imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
 		recreateGraphicsPipeline dvc ext rp ppllyt 1 gpl1
-		recreateFramebuffers dvc ext rp scivs fbs
+		recreateFramebuffers dvc ext rp (heteroVarListMap Vk.ImgVw.iToOld scivs) fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
 waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
