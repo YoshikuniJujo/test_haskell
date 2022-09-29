@@ -254,7 +254,7 @@ run w ist g obj = let
 	Glfw.createWindowSurface ist w nil nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	createDevice phdv qfis \dv gq pq ->
-	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
+	createSwapchain w sfc phdv qfis dv \sc scifmt ext ->
 	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
 	createImageViewsOld dv scifmt imgs \scivs ->
 	createRenderPass dv scifmt \rp ->
@@ -289,7 +289,7 @@ isPhysicalDeviceSuitable ::
 	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO (Maybe QueueFamilyIndices)
 isPhysicalDeviceSuitable ph sfc = findQueueFamilies ph sfc >>= \is ->
 	checkDeviceExtensionSupport ph >>= bool (pure Nothing)
-		((<$> querySwapChainSupport ph sfc) \spp ->
+		((<$> querySwapchainSupport ph sfc) \spp ->
 			bool (completeQueueFamilies is) Nothing
 				$ null (formats spp) || null (presentModes spp))
 
@@ -331,14 +331,14 @@ checkDeviceExtensionSupport dvc =
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swapchain.M.extensionName]
 
-data SwapChainSupportDetails = SwapChainSupportDetails {
+data SwapchainSupportDetails = SwapchainSupportDetails {
 	capabilities :: Vk.Khr.Surface.M.Capabilities,
 	formats :: [Vk.Khr.Surface.M.Format],
 	presentModes :: [Vk.Khr.PresentMode] }
 
-querySwapChainSupport ::
-	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapChainSupportDetails
-querySwapChainSupport dvc sfc = SwapChainSupportDetails
+querySwapchainSupport ::
+	Vk.PhDvc.P -> Vk.Khr.Surface.S ss -> IO SwapchainSupportDetails
+querySwapchainSupport dvc sfc = SwapchainSupportDetails
 	<$> Vk.Khr.Surface.PhysicalDevice.getCapabilities dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getFormats dvc sfc
 	<*> Vk.Khr.Surface.PhysicalDevice.getPresentModes dvc sfc
@@ -365,12 +365,12 @@ createDevice ph qfis f = Vk.Dvc.create @() @() ph crInfo nil nil \dv -> do
 		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
 		Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
 
-createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss .
 		Vk.Khr.Swapchain.S ss -> Vk.Format -> Vk.C.Extent2d -> IO a) ->
 	IO a
-createSwapChain win sfc ph qfis dv f = do
-	spp <- querySwapChainSupport ph sfc
+createSwapchain win sfc ph qfis dv f = do
+	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	fmt = Vk.Khr.Surface.M.formatFormat . chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
@@ -379,17 +379,17 @@ createSwapChain win sfc ph qfis dv f = do
 		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt
 			dv crInfo nil nil \sc -> f (Vk.Khr.Swapchain.sFromNew sc) scifmt ext
 
-recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+recreateSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
 	IO (Vk.Format, Vk.C.Extent2d)
-recreateSwapChain win sfc ph qfis0 dv sc = do
-	spp <- querySwapChainSupport ph sfc
+recreateSwapchain win sfc ph qfis0 dv sc = do
+	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfoOld sfc qfis0 spp ext
 	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dv crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
-	SwapChainSupportDetails -> Vk.C.Extent2d ->
+	SwapchainSupportDetails -> Vk.C.Extent2d ->
 	(Vk.Khr.Swapchain.CreateInfoNew n ss fmt, Vk.Format)
 mkSwapchainCreateInfo sfc qfis0 spp ext = (
 	Vk.Khr.Swapchain.CreateInfoNew {
@@ -428,7 +428,7 @@ mkSwapchainCreateInfo sfc qfis0 spp ext = (
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
 mkSwapchainCreateInfoOld :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
-	SwapChainSupportDetails -> Vk.C.Extent2d ->
+	SwapchainSupportDetails -> Vk.C.Extent2d ->
 	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Format)
 mkSwapchainCreateInfoOld sfc qfis0 spp ext = (
 	Vk.Khr.Swapchain.CreateInfo {
@@ -1011,7 +1011,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs 
 		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
-		(loop =<< recreateSwapChainEtc
+		(loop =<< recreateSwapchainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs)
 
 drawFrame :: forall sfs sd ssc sr sg0 sg1 slyt sm sb nm scb ssos vss . (VssList vss) =>
@@ -1082,10 +1082,10 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop ac
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapChainEtc
+	\_ -> loop =<< recreateSwapchainEtc
 		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs
 
-recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
+recreateSwapchainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
@@ -1098,11 +1098,11 @@ recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
-recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = do
+recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
-	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
+	(scifmt, ext) <- recreateSwapchain win sfc phdvc qfis dvc sc
 	ext <$ do
 		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
 			recreateImageViewsOld dvc scifmt imgs scivs
