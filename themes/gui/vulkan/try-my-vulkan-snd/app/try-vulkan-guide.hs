@@ -385,6 +385,8 @@ recreateSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 recreateSwapchain win sfc ph qfis0 dv sc = do
 	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
+--	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
+--	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dv crInfo nil nil (Vk.Khr.Swapchain.sToNew sc)
 	let	(crInfo, scifmt) = mkSwapchainCreateInfoOld sfc qfis0 spp ext
 	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dv crInfo nil nil sc
 
