@@ -261,7 +261,7 @@ run w ist g obj = let
 	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
 	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
-	createFramebuffers dv ext rp (heteroVarListMap Vk.ImgVw.iToOld scivs) \fbs ->
+	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createCommandBuffers dv cp \cbs ->
@@ -389,8 +389,6 @@ recreateSwapchain win sfc ph qfis0 dv sc = do
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
 	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dv crInfo nil nil sc
---	let	(crInfo, scifmt) = mkSwapchainCreateInfoOld sfc qfis0 spp ext
---	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dv crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapchainSupportDetails -> Vk.C.Extent2d ->
@@ -707,17 +705,17 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroVarList Vk.ImgVw.I sis ->
+	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew fmt nm) sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil f = f HVNil
 createFramebuffers dvc sce rp (iv :...: ivs) f =
-	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
 	createFramebuffers dvc sce rp ivs \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroVarList Vk.ImgVw.I sis ->
+		Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
@@ -726,20 +724,62 @@ instance RecreateFramebuffers '[] '[] where
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :...: scivs) (fb :...: fbs) =
-		Vk.Frmbffr.recreate dvc
+		Vk.Frmbffr.recreateNew dvc
 			(mkFramebufferCreateInfo sce rp sciv) nil nil fb >>
 		recreateFramebuffers dvc sce rp scivs fbs
 
 mkFramebufferCreateInfo ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I si ->
-	Vk.Frmbffr.CreateInfo () sr '[si]
-mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
-	Vk.Frmbffr.createInfoNext = Nothing,
-	Vk.Frmbffr.createInfoFlags = zeroBits,
-	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = Singleton attch,
-	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
-	Vk.Frmbffr.createInfoLayers = 1 } where
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
+	Vk.Frmbffr.CreateInfoNew () sr '[ '(fmt, nm, si)]
+mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfoNew {
+	Vk.Frmbffr.createInfoNextNew = Nothing,
+	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
+	Vk.Frmbffr.createInfoRenderPassNew = rp,
+	Vk.Frmbffr.createInfoAttachmentsNew = V3 attch :...: HVNil,
+	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
+	Vk.Frmbffr.createInfoLayersNew = 1 }
+	where
+	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
+
+createFramebuffersNew :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
+	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew fmt nm) sis ->
+	Vk.ImgVw.INew dptfmt dptnm siv ->
+	(forall sfs . RecreateFramebuffersNew sis sfs =>
+		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
+createFramebuffersNew _ _ _ HVNil _ f = f HVNil
+createFramebuffersNew dvc sce rp (iv :...: ivs) dptiv f =
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfoNew sce rp iv dptiv) nil nil \fb ->
+	createFramebuffersNew dvc sce rp ivs dptiv \fbs -> f (fb :...: fbs)
+
+class RecreateFramebuffersNew (sis :: [Type]) (sfs :: [Type]) where
+	recreateFramebuffersNew :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
+		Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
+		Vk.ImgVw.INew dptfmt dptnm sdiv ->
+		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
+
+instance RecreateFramebuffersNew '[] '[] where
+	recreateFramebuffersNew _dvc _sce _rp HVNil _ HVNil = pure ()
+
+instance RecreateFramebuffersNew sis sfs =>
+	RecreateFramebuffersNew (si ': sis) (sf ': sfs) where
+	recreateFramebuffersNew dvc sce rp (sciv :...: scivs) dptiv (fb :...: fbs) =
+		Vk.Frmbffr.recreateNew dvc
+			(mkFramebufferCreateInfoNew sce rp sciv dptiv) nil nil fb >>
+		recreateFramebuffersNew dvc sce rp scivs dptiv fbs
+
+mkFramebufferCreateInfoNew ::
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
+	Vk.ImgVw.INew dptfmt dptnm sdiv ->
+	Vk.Frmbffr.CreateInfoNew () sr
+		'[ '(fmt, nm, si), '(dptfmt, dptnm, sdiv)]
+mkFramebufferCreateInfoNew sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
+	Vk.Frmbffr.createInfoNextNew = Nothing,
+	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
+	Vk.Frmbffr.createInfoRenderPassNew = rp,
+	Vk.Frmbffr.createInfoAttachmentsNew = V3 attch :...: V3 dpt :...: HVNil,
+	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
+	Vk.Frmbffr.createInfoLayersNew = 1 }
+	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
 
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1094,7 +1134,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = d
 			recreateImageViews dvc imgs scivs
 		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
 		recreateGraphicsPipeline dvc ext rp ppllyt 1 gpl1
-		recreateFramebuffers dvc ext rp (heteroVarListMap Vk.ImgVw.iToOld scivs) fbs
+		recreateFramebuffers dvc ext rp scivs fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
 waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
