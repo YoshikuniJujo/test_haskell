@@ -270,7 +270,7 @@ run w ist g obj = let
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
-		gpl0 gpl1 fbs vb cbs sos (fromIntegral $ V.length vns)
+		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb cbs sos (fromIntegral $ V.length vns)
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -1236,7 +1236,8 @@ recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 mainLoop :: (
-	Vk.T.FormatToValue scfmt, RecreateFramebuffers ss sfs, VssList vss ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers ss sfs, VssList vss ) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1250,11 +1251,13 @@ mainLoop :: (
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.CmdPl.C scp ->
+	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs -> Word32 -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs vn = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb cbs iasrfsifs vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
 		Glfw.pollEvents
 		spst <- Glfw.getKey w Glfw.Key'Space
@@ -1264,12 +1267,13 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 fbs vb c
 			sdrn' = bool id (+ 1) prsd sdrn
 		when prsd $ print sdrn'
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn' vn
+			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb cbs iasrfsifs cf fn sdrn' vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
 	Vk.Dvc.waitIdle dvc
 
 runLoop :: (
-	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs, VssList vss ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers sis sfs, VssList vss ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
@@ -1280,19 +1284,21 @@ runLoop :: (
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.CmdPl.C scp ->
+	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int -> Int -> Int -> Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 fbs vb cbs iasrfsifs cf fn sdrn vn loop = do
-	catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb cbs iasrfsifs cf fn sdrn vn loop = do
+	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb cbs iasrfsifs cf fn sdrn vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
-			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs)
+			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sg0 sg1 slyt sm sb nm scb ssos vss . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
@@ -1342,9 +1348,11 @@ catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 catchAndRecreate :: (
-	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers sis sfs ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
@@ -1355,21 +1363,25 @@ catchAndRecreate :: (
 	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.CmdPl.C scp ->
+	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs loop act =
+catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> loop =<< recreateSwapchainEtc
-		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs
+		win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs
 
 recreateSwapchainEtc :: (
-	Vk.T.FormatToValue scfmt, RecreateFramebuffers sis sfs ) =>
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers sis sfs ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
@@ -1380,8 +1392,10 @@ recreateSwapchainEtc :: (
 	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.CmdPl.C scp ->
+	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroVarList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
-recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = do
+recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp (dimg, dim, divw) fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -1389,6 +1403,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl0 gpl1 fbs = d
 	ext <$ do
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
+		recreateDepthResources phdvc dvc gq cp ext dimg dim divw
 		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
 		recreateGraphicsPipeline dvc ext rp ppllyt 1 gpl1
 		recreateFramebuffers dvc ext rp scivs fbs
