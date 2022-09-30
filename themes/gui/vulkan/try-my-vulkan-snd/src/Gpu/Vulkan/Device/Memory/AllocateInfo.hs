@@ -1,0 +1,10 @@
+{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+
+module Gpu.Vulkan.Device.Memory.AllocateInfo where
+
+import Gpu.Vulkan.Memory
+
+data AllocateInfo n = AllocateInfo {
+	allocateInfoNext :: Maybe n,
+	allocateInfoMemoryTypeIndex :: TypeIndex }
+	deriving (Show, Eq)

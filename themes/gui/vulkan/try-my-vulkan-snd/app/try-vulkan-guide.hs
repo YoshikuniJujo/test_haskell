@@ -124,8 +124,9 @@ import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
-import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
+import qualified Gpu.Vulkan.Device.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
+import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as Vk.Dvc.Mem.ImageBuffer.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
@@ -871,7 +872,7 @@ createCommandPool qfis dv = Vk.CmdPl.create @() dv crInfo nil nil
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ 'List Vertex] -> IO a ) -> IO a
+		Vk.Bffr.Binded sm sb "vertex-buffer" '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
 	createBuffer phdvc dvc (V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -879,21 +880,27 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	createBuffer phdvc dvc (V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
-	Vk.Dvc.Mem.Buffer.write @('List Vertex) dvc bm' zeroBits vtcs
+			Vk.Mem.PropertyHostCoherentBit )
+			\b' (bm' :: Vk.Dvc.Mem.ImageBuffer.M sm '[
+				'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer "vertex-buffer" '[ 'List Vertex])
+				]) -> do
+	Vk.Dvc.Mem.ImageBuffer.write @"vertex-buffer" @('List Vertex) dvc bm' zeroBits vtcs
 	copyBuffer dvc gq cp b' b
 	f b
 
 createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List Vertex ] ] -> IO a ) -> IO a
+		Vk.Bffr.Binded sb sm nm '[ 'List Vertex] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[
+			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'List Vertex ])
+			] -> IO a ) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Bffr.allocateBind dv (Singleton $ V3 b) (allcInfo mt) nil nil
-		$ f . \(Singleton (V3 bnd)) -> bnd
+	Vk.Dvc.Mem.ImageBuffer.allocateBind dv
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b) (allcInfo mt) nil nil
+		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List Vertex]
 	bffrInfo = Vk.Bffr.CreateInfo {

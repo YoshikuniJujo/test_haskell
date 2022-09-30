@@ -29,6 +29,7 @@ import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
+import qualified Gpu.Vulkan.Device.Memory.AllocateInfo as Device.Memory
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Device.Memory
 import qualified Gpu.Vulkan.Device.Memory.Buffer.Types as Device.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M

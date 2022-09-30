@@ -18,7 +18,6 @@ import Data.IORef
 
 import Gpu.Vulkan.Device.Memory.Buffer.Types
 import Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
-import Gpu.Vulkan.Memory
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
@@ -31,11 +30,6 @@ data M s (objss :: [[Object]]) =
 deriving instance Show (HeteroVarList Form objss) => Show (M s objss)
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (Form objs)
-
-data AllocateInfo n = AllocateInfo {
-	allocateInfoNext :: Maybe n,
-	allocateInfoMemoryTypeIndex :: TypeIndex }
-	deriving (Show, Eq)
 
 write :: forall obj v objss sd sm .
 	(StoreObject v obj, OffsetSize obj objss) =>

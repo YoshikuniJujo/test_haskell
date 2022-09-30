@@ -29,7 +29,7 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as K
-import qualified Gpu.Vulkan.Device.Memory.Buffer as Device.Memory.Buffer
+import qualified Gpu.Vulkan.Device.Memory.AllocateInfo as Device.Memory.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
