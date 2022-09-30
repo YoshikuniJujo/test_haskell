@@ -1198,9 +1198,9 @@ recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 			(fromIntegral fn * Cglm.glmRad 1)
 			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 		view = Cglm.glmLookat
-			(Cglm.Vec3 $ 1 :. 1 :. 1 :. NilL)
+			(Cglm.Vec3 $ 0 :. 0 :. 2 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL)
+			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 		proj = Cglm.modifyMat4 1 1 negate
 			$ Cglm.glmPerspective
 				(Cglm.glmRad 70)
