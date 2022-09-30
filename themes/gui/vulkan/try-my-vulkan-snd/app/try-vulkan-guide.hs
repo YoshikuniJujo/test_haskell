@@ -4,7 +4,7 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
@@ -81,7 +81,7 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
-import qualified Gpu.Vulkan.Image.Type as Vk.Img
+import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
@@ -263,8 +263,9 @@ run w ist g obj = let
 	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
 	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
-	createFramebuffers dv ext rp scivs \fbs ->
 	createCommandPool qfis dv \cp ->
+	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
+	createFramebuffers dv ext rp scivs \fbs ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
@@ -706,7 +707,6 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
-{-
 createDepthResources ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	Vk.C.Extent2d ->
@@ -781,7 +781,179 @@ findSupportedFormat phdvc fs tlng fffs = do
 
 checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
 checkFeatures wntd ftrs = wntd .&. ftrs == wntd
--}
+
+createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P ->
+	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
+		IO a) -> IO a
+createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @() @() @() dvc
+		(imageInfo wdt hgt tlng usg) Nothing Nothing \img -> do
+	memInfo <- imageMemoryInfo pd dvc prps img
+	imageAllocateBind dvc img memInfo f
+
+recreateImage :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
+	Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
+recreateImage pd dvc wdt hgt tlng usg prps img mem = do
+	Vk.Img.recreateNew @() @() @() dvc
+		(imageInfo wdt hgt tlng usg) Nothing Nothing img
+	memInfo <- imageMemoryInfoBinded pd dvc prps img
+	imageReallocateBind dvc img memInfo mem
+
+imageInfo ::
+	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
+	Vk.Img.M.CreateInfoNew n fmt
+imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
+		Vk.Img.createInfoNextNew = Nothing,
+		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
+		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
+			Vk.C.extent3dWidth = wdt,
+			Vk.C.extent3dHeight = hgt,
+			Vk.C.extent3dDepth = 1 },
+		Vk.Img.createInfoMipLevelsNew = 1,
+		Vk.Img.createInfoArrayLayersNew = 1,
+		Vk.Img.createInfoTilingNew = tlng,
+		Vk.Img.createInfoInitialLayoutNew = Vk.Img.LayoutUndefined,
+		Vk.Img.createInfoUsageNew = usg,
+		Vk.Img.createInfoSharingModeNew = Vk.SharingModeExclusive,
+		Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoFlagsNew = zeroBits,
+		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
+
+imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
+	Vk.Dvc.Mem.Buffer.AllocateInfo () -> (forall sm .
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
+		IO a) -> IO a
+imageAllocateBind dvc img memInfo f =
+	Vk.Dvc.Mem.ImageBuffer.allocateBind @() dvc
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Image img) memInfo
+		nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
+		f bnd m
+
+imageReallocateBind ::
+	Vk.Dvc.D sd -> Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.Mem.Buffer.AllocateInfo () ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
+imageReallocateBind dvc img memInfo m =
+	Vk.Dvc.Mem.ImageBuffer.reallocateBind @() dvc
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.ImageBinded img) memInfo
+		nil nil m
+
+imageMemoryInfo ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
+	Vk.Img.INew s nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo n)
+imageMemoryInfo pd dvc prps img = do
+	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
+	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
+	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
+imageMemoryInfoBinded ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
+	Vk.Img.BindedNew sm si nm fmt -> IO (Vk.Dvc.Mem.Buffer.AllocateInfo n)
+imageMemoryInfoBinded pd dvc prps img = do
+	reqs <- Vk.Img.getMemoryRequirementsBindedNew dvc img
+	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
+	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
+transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
+	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	IO ()
+transitionImageLayout dvc gq cp img olyt nlyt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+		barrier = Vk.Img.MemoryBarrier {
+			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierOldLayout = olyt,
+			Vk.Img.memoryBarrierNewLayout = nlyt,
+			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Img.memoryBarrierDstQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Img.memoryBarrierImage = img,
+			Vk.Img.memoryBarrierSubresourceRange = srr,
+			Vk.Img.memoryBarrierSrcAccessMask = sam,
+			Vk.Img.memoryBarrierDstAccessMask = dam }
+		srr = Vk.Img.SubresourceRange {
+			Vk.Img.subresourceRangeAspectMask = asps,
+			Vk.Img.subresourceRangeBaseMipLevel = 0,
+			Vk.Img.subresourceRangeLevelCount = 1,
+			Vk.Img.subresourceRangeBaseArrayLayer = 0,
+			Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.Cmd.pipelineBarrier cb
+		sstg dstg zeroBits HVNil HVNil (Singleton $ V5 barrier)
+	where
+	asps = case (nlyt, hasStencilComponentType @fmt) of
+		(Vk.Img.LayoutDepthStencilAttachmentOptimal, hsst) ->
+			Vk.Img.AspectDepthBit .|.
+			bool zeroBits Vk.Img.AspectStencilBit hsst
+		_ -> Vk.Img.AspectColorBit
+	(sam, dam, sstg, dstg) = case (olyt, nlyt) of
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
+			zeroBits, Vk.AccessTransferWriteBit,
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+		(Vk.Img.LayoutTransferDstOptimal,
+			Vk.Img.LayoutShaderReadOnlyOptimal) -> (
+			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
+		(Vk.Img.LayoutUndefined,
+			Vk.Img.LayoutDepthStencilAttachmentOptimal) -> (
+			zeroBits,
+			Vk.AccessDepthStencilAttachmentReadBit .|.
+				Vk.AccessDepthStencilAttachmentWriteBit,
+			Vk.Ppl.StageTopOfPipeBit,
+			Vk.Ppl.StageEarlyFragmentTestsBit )
+		_ -> error "unsupported layout transition!"
+
+hasStencilComponentType ::
+	forall (fmt :: Vk.T.Format) . Vk.T.FormatToValue fmt => Bool
+hasStencilComponentType = hasStencilComponent (Vk.T.formatToValue @fmt)
+
+hasStencilComponent :: Vk.Format -> Bool
+hasStencilComponent = \case
+	Vk.FormatD32SfloatS8Uint -> True
+	Vk.FormatD24UnormS8Uint -> True
+	_ -> False
+
+beginSingleTimeCommands :: forall sd sc a .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
+	(forall s . Vk.CmdBffr.C s '[] -> IO a) -> IO a
+beginSingleTimeCommands dvc gq cp cmd = do
+	Vk.CmdBffr.allocateNew
+		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
+		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfoNew {
+				Vk.submitInfoNextNew = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		Vk.CmdBffr.begin @() @() cb beginInfo (cmd cb) <* do
+			Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.waitIdle gq
+	where
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	beginInfo = Vk.CmdBffr.M.BeginInfo {
+		Vk.CmdBffr.beginInfoNext = Nothing,
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
+		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew fmt nm) sis ->
