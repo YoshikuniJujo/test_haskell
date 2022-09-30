@@ -125,6 +125,7 @@ import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
+import qualified Gpu.Vulkan.Device.Memory.ImageBuffer as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
@@ -703,6 +704,83 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
+
+{-
+createDepthResources ::
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
+	Vk.C.Extent2d ->
+	(forall si sm fmt siv . Vk.T.FormatToValue fmt =>
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
+		Vk.ImgVw.INew fmt nm siv ->
+		IO a) -> IO a
+createDepthResources phdvc dvc gq cp ext f = do
+	fmt <- findDepthFormat phdvc
+	print fmt
+	print ext
+	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+		createImage @_ @fmt phdvc dvc
+			(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
+			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
+			Vk.Mem.PropertyDeviceLocalBit \dptImg dptImgMem ->
+			createImageView @fmt
+				dvc dptImg Vk.Img.AspectDepthBit \dptImgVw -> do
+			transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
+				Vk.Img.LayoutDepthStencilAttachmentOptimal
+			f dptImg dptImgMem dptImgVw
+
+recreateDepthResources :: Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.Queue.Q -> Vk.CmdPl.C sc ->
+	Vk.C.Extent2d ->
+	Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] ->
+	Vk.ImgVw.INew fmt nm sdiv -> IO ()
+recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
+	print ext
+	recreateImage phdvc dvc
+		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
+		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
+		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
+	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw
+	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
+		Vk.Img.LayoutDepthStencilAttachmentOptimal
+
+type DepthResources sb sm nm fmt sdiv = (
+	Vk.Img.BindedNew sb sm nm fmt,
+	Vk.Dvc.Mem.ImageBuffer.M
+		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)],
+	Vk.ImgVw.INew fmt nm sdiv )
+
+findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
+findDepthFormat phdvc = findSupportedFormat phdvc
+	[Vk.FormatD32Sfloat, Vk.FormatD32SfloatS8Uint, Vk.FormatD24UnormS8Uint]
+	Vk.Img.TilingOptimal
+	Vk.FormatFeatureDepthStencilAttachmentBit
+
+findSupportedFormat ::
+	Vk.PhDvc.P -> [Vk.Format] -> Vk.Img.Tiling -> Vk.FormatFeatureFlags -> IO Vk.Format
+findSupportedFormat phdvc fs tlng fffs = do
+	props <- Vk.PhDvc.getFormatProperties phdvc `mapM` fs
+	case tlng of
+		Vk.Img.TilingLinear -> do
+			putStrLn "LINEAR"
+			pure . orError . find (checkFeatures fffs . snd) . zip fs
+				$ Vk.formatPropertiesLinearTilingFeatures <$> props
+		Vk.Img.TilingOptimal -> do
+			putStrLn "OPTIMAL"
+			pure . orError . find (checkFeatures fffs . snd) . zip fs
+				$ Vk.formatPropertiesOptimalTilingFeatures <$> props
+		_ -> error "no such image tiling"
+	where orError = \case
+		Just (x, _) -> x
+		Nothing -> error "failed to find supported format!"
+
+checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
+checkFeatures wntd ftrs = wntd .&. ftrs == wntd
+-}
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew fmt nm) sis ->
