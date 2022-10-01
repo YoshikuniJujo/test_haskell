@@ -1,4 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -8,11 +11,10 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
-import Data.Default
 import Data.Maybe
+import Data.List.Length
 import Data.Word
 import Data.UUID
-import System.IO.Unsafe
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
@@ -107,8 +109,10 @@ sparsePropertiesFromCore C.SparseProperties {
 		sparsePropertiesResidencyStandard3DBlockShape = rs3bs,
 		sparsePropertiesResidencyAlignedMipSize = rams,
 		sparsePropertiesResidencyNonResidentStrict = nrs }
-	where [rs2bs, rs2mbs, rs3bs, rams, nrs] = bool32ToBool <$>
-		[crs2bs, crs2mbs, crs3bs, crams, cnrs]
+	where
+	(rs2bs :. rs2mbs :. rs3bs :. rams :. nrs :. NilL :: LengthL 5 Bool) =
+		bool32ToBool <$>
+			(crs2bs :. crs2mbs :. crs3bs :. crams :. cnrs :. NilL)
 
 getProperties :: P -> IO Properties
 getProperties (P pdvc) =
@@ -123,11 +127,6 @@ getFeatures (P pdvc) =
 		pfts <- ContT alloca
 		lift do	C.getFeatures pdvc pfts
 			peek pfts
-
-featuresZero :: Features
-featuresZero = unsafePerformIO $ featuresFromCore <$> C.getClearedFeatures
-
-instance Default Features where def = featuresZero
 
 getQueueFamilyProperties' :: P -> IO [QueueFamily.Properties]
 getQueueFamilyProperties' p = (snd <$>) <$> getQueueFamilyProperties p

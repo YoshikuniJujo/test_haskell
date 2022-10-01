@@ -49,6 +49,7 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DU.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
 
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
+import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue

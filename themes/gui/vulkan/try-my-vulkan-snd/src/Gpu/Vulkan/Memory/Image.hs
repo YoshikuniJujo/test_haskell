@@ -15,7 +15,6 @@ import qualified Data.ByteString.Internal as BS
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Memory.Image.Middle as M
