@@ -182,7 +182,9 @@ begin (C _ c) bi = ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 
 end :: C vs -> IO ()
-end (C _ c) = throwUnlessSuccess . Result =<< C.end c
+end (C rppl c) = throwUnlessSuccess . Result =<< do
+	writeIORef rppl nullPtr
+	C.end c
 
 reset :: C vs -> ResetFlags -> IO ()
 reset (C _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
