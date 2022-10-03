@@ -1194,8 +1194,13 @@ recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
-		renderObjectMeshSize = vn } fn
+		renderObjectMeshSize = vn,
+		renderObjectTransformMatrix = model }
 	where
+	model = Cglm.glmRotate
+		Cglm.glmMat4Identity
+		(fromIntegral fn * Cglm.glmRad 1)
+		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 	cbInfo :: Vk.CmdBffr.BeginInfo () ()
 	cbInfo = def {
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
@@ -1227,22 +1232,18 @@ data RenderObject sg sl sm sb nm = RenderObject {
 
 drawObject ::
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
-	Vk.C.Extent2d -> RenderObject sg sl sm sb nm -> Int -> IO ()
+	Vk.C.Extent2d -> RenderObject sg sl sm sb nm -> IO ()
 drawObject cb sce RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
-	renderObjectTransformMatrix = tm } fn = do
+	renderObjectTransformMatrix = model } = do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
-	let	model = Cglm.glmRotate
-			Cglm.glmMat4Identity
-			(fromIntegral fn * Cglm.glmRad 1)
-			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-		view = Cglm.glmLookat
-			(Cglm.Vec3 $ 0 :. 0 :. 2 :. NilL)
+	let	view = Cglm.glmLookat
+			(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 		proj = Cglm.modifyMat4 1 1 negate
