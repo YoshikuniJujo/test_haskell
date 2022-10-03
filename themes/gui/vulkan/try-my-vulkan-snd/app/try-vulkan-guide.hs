@@ -1190,6 +1190,50 @@ recordCommandBuffer :: forall scb sr sf sg slyt sm sb nm .
 recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
+	drawObject cb sce RenderObject {
+		renderObjectPipeline = gpl,
+		renderObjectPipelineLayout = lyt,
+		renderObjectMesh = vb,
+		renderObjectMeshSize = vn } fn
+	where
+	cbInfo :: Vk.CmdBffr.BeginInfo () ()
+	cbInfo = def {
+		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
+	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
+		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
+		'Vk.M.ClearTypeDepthStencil ]
+	rpInfo = Vk.RndrPass.BeginInfo {
+		Vk.RndrPass.beginInfoNext = Nothing,
+		Vk.RndrPass.beginInfoRenderPass = rp,
+		Vk.RndrPass.beginInfoFramebuffer = fb,
+		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+			Vk.C.rect2dExtent = sce },
+		Vk.RndrPass.beginInfoClearValues =
+			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :...:
+			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :...:
+			HVNil }
+	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
+
+data RenderObject sg sl sm sb nm = RenderObject {
+	renderObjectPipeline :: Vk.Ppl.Graphics.G sg
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)],
+	renderObjectPipelineLayout ::
+		Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants],
+	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[ 'List Vertex],
+	renderObjectMeshSize :: Word32,
+	renderObjectTransformMatrix :: Cglm.Mat4 }
+
+drawObject ::
+	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.C.Extent2d -> RenderObject sg sl sm sb nm -> Int -> IO ()
+drawObject cb sce RenderObject {
+	renderObjectPipeline = gpl,
+	renderObjectPipelineLayout = lyt,
+	renderObjectMesh = vb,
+	renderObjectMeshSize = vn,
+	renderObjectTransformMatrix = tm } fn = do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
@@ -1213,25 +1257,6 @@ recordCommandBuffer cb rp fb sce gpl lyt vb fn vn =
 				proj `Cglm.glmMat4Mul` view `Cglm.glmMat4Mul` model
 			} :..: HNil
 	Vk.Cmd.draw cb vn 1 0 0
-	where
-	cbInfo :: Vk.CmdBffr.BeginInfo () ()
-	cbInfo = def {
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
-	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
-		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
-		'Vk.M.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = Nothing,
-		Vk.RndrPass.beginInfoRenderPass = rp,
-		Vk.RndrPass.beginInfoFramebuffer = fb,
-		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
-			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues =
-			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :...:
-			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :...:
-			HVNil }
-	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
