@@ -5,9 +5,13 @@
 module Gpu.Vulkan.CommandBuffer.Middle where
 
 import Data.Kind
+import Data.IORef
 
 import qualified Gpu.Vulkan.CommandBuffer.Core as C
+import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
+import qualified Gpu.Vulkan.Pipeline.Layout.Core as Pipeline.Layout.C
 
-newtype C (vs :: [Type]) = C { unC :: C.C }
+data C (vs :: [Type]) = C {
+	cPipeline :: IORef Pipeline.C.P,
+	unC :: C.C }
 
-instance Show (C vs)

@@ -81,7 +81,7 @@ draw (CommandBuffer.C cb) vc ic fv fi = M.draw cb vc ic fv fi
 
 drawIndexedM :: CommandBuffer.M.C vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
-drawIndexedM (CommandBuffer.M.C cb) idxc istc fidx vo fist =
+drawIndexedM (CommandBuffer.M.C _ cb) idxc istc fidx vo fist =
 	C.drawIndexed cb idxc istc fidx vo fist
 
 drawIndexed :: CommandBuffer.C sc vs ->
@@ -92,7 +92,7 @@ drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
 blitImage :: CommandBuffer.M.C v ->
 	Image.M.I -> Image.Layout -> Image.M.I -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()
-blitImage (CommandBuffer.M.C cb)
+blitImage (CommandBuffer.M.C _ cb)
 	(Image.M.I rsrc) (Image.Layout srcLyt) (Image.M.I rdst) (Image.Layout dstLyt)
 	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
 	pblts <- ContT $ allocaArray bltc

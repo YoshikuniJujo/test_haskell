@@ -250,7 +250,6 @@ data SubmitInfo n vs = SubmitInfo {
 		[(Semaphore.S, Pipeline.StageFlags)],
 	submitInfoCommandBuffers :: [CommandBuffer.C vs],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
-	deriving Show
 
 submitInfoToCoreNew :: Pointable n => SubmitInfoNew n vs -> ContT r IO C.SubmitInfo
 submitInfoToCoreNew SubmitInfoNew {

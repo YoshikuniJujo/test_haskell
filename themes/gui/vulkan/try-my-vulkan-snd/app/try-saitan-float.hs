@@ -211,7 +211,7 @@ withCommandPool phdvc device queue commandPool =
 						Vk.CommandBuffer.allocateInfoCommandBufferCount = 1 }
 				Vk.CommandBuffer.allocate @() device commandBufferInfo \commandBuffers -> case commandBuffers of
 					[commandBuffer] -> do
-						print commandBuffer
+						-- print commandBuffer
 						Vk.CommandBuffer.begin @() @() commandBuffer def do
 							Vk.Cmd.bindPipelineCompute commandBuffer
 								Vk.Pipeline.BindPointCompute

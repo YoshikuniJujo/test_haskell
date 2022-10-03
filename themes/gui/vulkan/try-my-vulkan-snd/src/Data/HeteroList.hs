@@ -14,7 +14,8 @@ module Data.HeteroList (
 	HeteroVarList(..), pattern Singleton, singleton,
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
-	ListToHeteroVarList(..), oneOfOne, heteroVarListIndex, heteroVarListLength,
+	ListToHeteroVarList(..), ListToHeteroVarListM(..),
+	oneOfOne, heteroVarListIndex, heteroVarListLength,
 	heteroVarListReplicate,
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	heteroVarListZipWithM_,
@@ -145,6 +146,21 @@ instance ListToHeteroVarList '[] where
 instance ListToHeteroVarList ss => ListToHeteroVarList (s ': ss) where
 	listToHeteroVarList f (x : xs) = f x :...: listToHeteroVarList f xs
 	listToHeteroVarList _ _ = error "bad"
+
+class ListToHeteroVarListM ss where
+	listToHeteroVarListM :: Monad m =>
+		(forall s . t -> m (t' s)) -> [t] -> m (HeteroVarList t' ss)
+
+instance ListToHeteroVarListM '[] where
+	listToHeteroVarListM _ [] = pure HVNil
+	listToHeteroVarListM _ _ = error "bad"
+
+instance ListToHeteroVarListM ss =>
+	ListToHeteroVarListM (s ': ss) where
+	listToHeteroVarListM _ [] = error "bad"
+	listToHeteroVarListM f (x : xs) = (:...:)
+		<$> f x
+		<*> listToHeteroVarListM f xs
 
 oneOfOne :: HeteroVarList t '[s] -> t s
 oneOfOne (x :...: HVNil) = x

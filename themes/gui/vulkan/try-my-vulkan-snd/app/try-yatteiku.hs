@@ -127,7 +127,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
 			makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
-			print cb
+			-- print cb
 			let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
 					Vk.RenderPass.beginInfoNext = Nothing,
 					Vk.RenderPass.beginInfoRenderPass = rp,

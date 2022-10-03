@@ -18,6 +18,7 @@ import Control.Monad.Cont
 import Data.Kind
 import Data.Default
 import Data.HeteroList hiding (length)
+import Data.IORef
 import Data.Word
 
 import qualified TypeLevel.List as TpLvlLst
@@ -33,6 +34,8 @@ import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
 import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer
 import qualified Gpu.Vulkan.CommandPool.Middle as CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Core as C
+import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
+import qualified Gpu.Vulkan.Pipeline.Layout.Core as Pipeline.Layout.C
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
@@ -80,10 +83,15 @@ allocateInfoToCoreNew AllocateInfoNew {
 		C.allocateInfoCommandBufferCount =
 			fromIntegral (TpLvlLst.length @_ @vss) }
 
-newtype C (vs :: [Type]) = C { unC :: C.C } deriving Show
+data C (vs :: [Type]) = C {
+	cPipeline :: IORef Pipeline.C.P,
+	unC :: C.C }
+
+newC :: C.C -> IO (C vs)
+newC c = C <$> newIORef nullPtr <*> pure c
 
 allocateNew ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarListM vss) =>
 	Device.D -> AllocateInfoNew n vss -> IO (HeteroVarList C vss)
 allocateNew (Device.D dvc) ai = ($ pure) . runContT $ do
 	cai@(C.AllocateInfo_ fai) <- allocateInfoToCoreNew ai
@@ -93,10 +101,10 @@ allocateNew (Device.D dvc) ai = ($ pure) . runContT $ do
 	lift do	r <- C.allocate dvc pai pc
 		throwUnlessSuccess $ Result r
 		ccbs <- peekArray cbc pc
-		pure $ listToHeteroVarList C ccbs
+		listToHeteroVarListM newC ccbs
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C vs]
-allocate (Device.D dvc) ai = ($ pure) . runContT $ (C <$>) <$> do
+allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newC =<< do
 	pai <- allocateInfoToCore ai
 	pc <- ContT $ allocaArray cbc
 	lift do	r <- C.allocate dvc pai pc
@@ -168,20 +176,20 @@ inheritanceInfoToCore InheritanceInfo {
 	ContT $ withForeignPtr fInheritanceInfo
 
 begin :: (Pointable n, Pointable n') => C vs -> BeginInfo n n' -> IO ()
-begin (C c) bi = ($ pure) $ runContT do
+begin (C _ c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi
 		throwUnlessSuccess $ Result r
 
 end :: C vs -> IO ()
-end (C c) = throwUnlessSuccess . Result =<< C.end c
+end (C _ c) = throwUnlessSuccess . Result =<< C.end c
 
 reset :: C vs -> ResetFlags -> IO ()
-reset (C c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
+reset (C _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
 
 freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList C vss -> IO ()
 freeCsNew (Device.D dvc) (CommandPool.C cp)
-	((length &&& id) . heteroVarListToList (\(C cb) -> cb) -> (cc, cs)) =
+	((length &&& id) . heteroVarListToList (\(C _ cb) -> cb) -> (cc, cs)) =
 	($ pure) $ runContT do
 		pcs <- ContT $ allocaArray cc
 		lift do	pokeArray pcs cs
@@ -189,7 +197,7 @@ freeCsNew (Device.D dvc) (CommandPool.C cp)
 
 freeCs :: Device.D -> CommandPool.C -> [C vs] -> IO ()
 freeCs (Device.D dvc) (CommandPool.C cp)
-	(length &&& ((\(C cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
+	(length &&& ((\(C _ cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
 	pcs <- ContT $ allocaArray cc
 	lift do	pokeArray pcs cs
 		C.freeCs dvc cp (fromIntegral cc) pcs

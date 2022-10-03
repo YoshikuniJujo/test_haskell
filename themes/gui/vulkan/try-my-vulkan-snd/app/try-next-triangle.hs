@@ -842,7 +842,7 @@ type family MkVss (n :: Nat) :: [[Type]] where
 	MkVss n = '[AddType Vertex 'Vk.VtxInp.RateVertex] ': MkVss (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
-	(TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) =>
+	(TpLvlLst.Length [Type] vss, ListToHeteroVarListM vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p

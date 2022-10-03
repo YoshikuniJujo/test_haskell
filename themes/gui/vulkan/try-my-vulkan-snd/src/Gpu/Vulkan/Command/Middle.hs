@@ -42,31 +42,37 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.C vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
-beginRenderPass (CommandBuffer.C cb)
+beginRenderPass (CommandBuffer.C _ cb)
 	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do
 	prpbi <- RenderPass.beginInfoToCore rpbi
 	lift $ C.beginRenderPass cb prpbi spcnt
 
 endRenderPass :: CommandBuffer.C vs -> IO ()
-endRenderPass (CommandBuffer.C cb) = C.endRenderPass cb
+endRenderPass (CommandBuffer.C _ cb) = C.endRenderPass cb
 
 bindPipeline ::
 	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
-bindPipeline (CommandBuffer.C cb) (Pipeline.BindPoint pbp) ppl = do
+bindPipeline (CommandBuffer.C rppl cb) (Pipeline.BindPoint pbp) ppl = do
+	ppl0 <- readIORef rppl
 	ppl' <- Pipeline.gToCore ppl
-	C.bindPipeline cb pbp ppl'
+	when (ppl' /= ppl0) do
+		writeIORef rppl ppl'
+		C.bindPipeline cb pbp ppl'
 
 bindPipelineCompute ::
 	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.Compute.C -> IO ()
-bindPipelineCompute (CommandBuffer.C cb) (Pipeline.BindPoint pbp) (Pipeline.Compute.C ppl) =
-	C.bindPipeline cb pbp ppl
+bindPipelineCompute (CommandBuffer.C rppl cb) (Pipeline.BindPoint pbp) (Pipeline.Compute.C ppl) = do
+	ppl0 <- readIORef rppl
+	when (ppl /= ppl0) do
+		writeIORef rppl ppl
+		C.bindPipeline cb pbp ppl
 
 draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
-draw (CommandBuffer.C cb) vc ic fv fi = C.draw cb vc ic fv fi
+draw (CommandBuffer.C _ cb) vc ic fv fi = C.draw cb vc ic fv fi
 
 bindVertexBuffers ::
 	CommandBuffer.C vs -> Word32 -> [(Buffer.B, Device.Size)] -> IO ()
-bindVertexBuffers (CommandBuffer.C c)
+bindVertexBuffers (CommandBuffer.C _ c)
 	fb ((length &&& unzip) -> (bc, (bs, os))) = ($ pure) $ runContT do
 	pb <- ContT $ allocaArray bc
 	lift . pokeArray pb $ (\(Buffer.B b) -> b) <$> bs
@@ -76,7 +82,7 @@ bindVertexBuffers (CommandBuffer.C c)
 
 copyBuffer ::
 	CommandBuffer.C vs -> Buffer.B -> Buffer.B -> [Buffer.C.Copy] -> IO ()
-copyBuffer (CommandBuffer.C c) (Buffer.B s) (Buffer.B d)
+copyBuffer (CommandBuffer.C _ c) (Buffer.B s) (Buffer.B d)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
 	lift do	pokeArray prs rs
@@ -85,18 +91,18 @@ copyBuffer (CommandBuffer.C c) (Buffer.B s) (Buffer.B d)
 bindIndexBuffer ::
 	CommandBuffer.C vs -> Buffer.B -> Device.Size -> IndexType -> IO ()
 bindIndexBuffer
-	(CommandBuffer.C cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
+	(CommandBuffer.C _ cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
 	C.bindIndexBuffer cb ib sz it
 
 dispatch ::
 	CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> IO ()
-dispatch (CommandBuffer.C cb) = C.dispatch cb
+dispatch (CommandBuffer.C _ cb) = C.dispatch cb
 
 bindDescriptorSets ::
 	CommandBuffer.C vs -> Pipeline.BindPoint -> Pipeline.Layout.L ->
 	Word32 -> [Descriptor.Set.S] -> [Word32] -> IO ()
 bindDescriptorSets
-	(CommandBuffer.C cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
+	(CommandBuffer.C _ cb) (Pipeline.BindPoint bp) (Pipeline.Layout.L lyt)
 	fs (length &&& id -> (dsc, dss))
 	(length &&& id -> (doc, dos)) = ($ pure) $ runContT do
 	pdss <- ContT $ allocaArray dsc
@@ -111,7 +117,7 @@ pushConstants :: forall vs ts .
 	StoreHetero ts =>
 	CommandBuffer.C vs -> Pipeline.Layout.L ->
 	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
-pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt)
+pushConstants (CommandBuffer.C _ cb) (Pipeline.Layout.L lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n
 		sz = fromIntegral $ storeHeteroSize @ts 0
@@ -127,7 +133,7 @@ pipelineBarrier :: (
 	HeteroVarList Memory.M.Barrier ns ->
 	HeteroVarList Buffer.M.MemoryBarrier ns' ->
 	HeteroVarList Image.MemoryBarrier ns'' -> IO ()
-pipelineBarrier (CommandBuffer.C cb)
+pipelineBarrier (CommandBuffer.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs = ($ pure) $ runContT do
@@ -165,7 +171,7 @@ instance (Pointable n, PointableHeteroMap ns) =>
 copyBufferToImage ::
 	CommandBuffer.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
-copyBufferToImage (CommandBuffer.C cb)
+copyBufferToImage (CommandBuffer.C _ cb)
 	(Buffer.M.B sb) (Image.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc

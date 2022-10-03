@@ -49,8 +49,8 @@ data SubmitInfo n sss s vs = SubmitInfo {
 	submitInfoCommandBuffers :: [CommandBuffer.C s vs],
 	submitInfoSignalSemaphores :: [Semaphore.M.S] }
 
-deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
-	Show (SubmitInfo n sss s vs)
+-- deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
+--	Show (SubmitInfo n sss s vs)
 
 class CommandBufferListToMiddle svss where
 	type CommandBufferListToMiddleMapSnd svss :: [[Type]]

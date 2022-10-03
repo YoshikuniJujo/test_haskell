@@ -48,7 +48,7 @@ bindIndexBuffer cb ib tp = M.bindIndexBuffer cb (Buffer.List.bToMiddle ib) 0 tp
 copyBufferToImage ::
 	CommandBuffer.C vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
-copyBufferToImage (CommandBuffer.C cb)
+copyBufferToImage (CommandBuffer.C _ cb)
 	(Buffer.List.B _ sb) (Image.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc
