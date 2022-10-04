@@ -92,6 +92,12 @@ instance (Show (t s), Show (HeteroVarList t ss)) =>
 	Show (HeteroVarList t (s ': ss)) where
 	show (x :...: xs) = show x ++ " :...: " ++ show xs
 
+instance Eq (HeteroVarList t '[]) where HVNil == HVNil = True
+
+instance (Eq (t s), Eq (HeteroVarList t ss)) =>
+	Eq (HeteroVarList t (s ': ss)) where
+	(x :...: xs) == (y :...: ys) = x == y && xs == ys
+
 {-# COMPLETE Singleton #-}
 
 pattern Singleton :: t s -> HeteroVarList t '[s]

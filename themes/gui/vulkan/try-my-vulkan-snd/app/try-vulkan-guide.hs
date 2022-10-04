@@ -21,6 +21,7 @@ import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
+import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.HeteroList hiding (length)
@@ -1193,23 +1194,31 @@ recordCommandBuffer :: forall scb sr sf sg slyt sm sb nm smtri sbtri nmtri .
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
-	drawObject cb sce RenderObject {
+	om <- newIORef Nothing
+	drawObject om cb sce RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
 		renderObjectMeshSize = vn,
 		renderObjectTransformMatrix = model }
-	drawObject cb sce RenderObject {
-		renderObjectPipeline = gpl,
-		renderObjectPipelineLayout = lyt,
-		renderObjectMesh = vbtri,
-		renderObjectMeshSize = 3,
-		renderObjectTransformMatrix = model }
+	omtri <- newIORef Nothing
+	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
+		drawObject omtri cb sce RenderObject {
+			renderObjectPipeline = gpl,
+			renderObjectPipelineLayout = lyt,
+			renderObjectMesh = vbtri,
+			renderObjectMeshSize = 3,
+			renderObjectTransformMatrix =
+				Cglm.glmMat4Mul (translation x y) scale }
 	where
 	model = Cglm.glmRotate
 		Cglm.glmMat4Identity
 		(fromIntegral fn * Cglm.glmRad 1)
 		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+	translation x y = Cglm.glmTranslate
+		Cglm.glmMat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
+	scale = Cglm.glmScale
+		Cglm.glmMat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 	cbInfo :: Vk.CmdBffr.BeginInfo () ()
 	cbInfo = def {
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
@@ -1239,18 +1248,22 @@ data RenderObject sg sl sm sb nm = RenderObject {
 	renderObjectMeshSize :: Word32,
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
-drawObject ::
+drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[ 'List Vertex])) ->
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.C.Extent2d -> RenderObject sg sl sm sb nm -> IO ()
-drawObject cb sce RenderObject {
+drawObject om cb sce RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } = do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
-	Vk.Cmd.bindVertexBuffers cb
-		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
+	movb <- readIORef om
+	case movb of
+		Just ovb | vb == ovb -> pure ()
+		_ -> do	Vk.Cmd.bindVertexBuffers cb . singleton
+				. V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
+			writeIORef om $ Just vb
 	let	view = Cglm.glmLookat
 			(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)

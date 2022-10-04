@@ -46,6 +46,8 @@ data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sm sb nm objs)
 
+deriving instance Eq (HeteroVarList ObjectLength objs) => Eq (Binded sm sb nm objs)
+
 data CreateInfo n objs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,

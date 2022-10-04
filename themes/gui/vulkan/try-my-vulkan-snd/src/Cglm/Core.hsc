@@ -126,3 +126,27 @@ glmMat4Mul m1 m2 = unsafePerformIO . ($ pure) $ runContT do
 
 foreign import capi "cglm/cglm.h glm_mat4_mul" c_glm_mat4_mul ::
 	Ptr Vec4 -> Ptr Vec4 -> Ptr Vec4 -> IO ()
+
+glmTranslate :: [Vec4] -> [#{type float}] -> [Vec4]
+glmTranslate m v = unsafePerformIO . ($ pure) $ runContT do
+	pm <- ContT $ allocaArray 4
+	pv <- ContT $ allocaArray 3
+	lift do	pokeArray pm m
+		pokeArray pv v
+		c_glm_translate pm pv
+		peekArray 4 pm
+
+foreign import capi "cglm/cglm.h glm_translate" c_glm_translate ::
+	Ptr Vec4 -> Ptr #{type float} -> IO ()
+
+glmScale :: [Vec4] -> [#{type float}] -> [Vec4]
+glmScale m v = unsafePerformIO . ($ pure) $ runContT do
+	pm <- ContT $ allocaArray 4
+	pv <- ContT $ allocaArray 3
+	lift do	pokeArray pm m
+		pokeArray pv v
+		c_glm_scale pm pv
+		peekArray 4 pm
+
+foreign import capi "cglm/cglm.h glm_scale" c_glm_scale ::
+	Ptr Vec4 -> Ptr #{type float} -> IO ()

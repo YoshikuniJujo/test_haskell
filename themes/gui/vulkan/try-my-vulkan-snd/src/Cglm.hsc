@@ -63,3 +63,17 @@ sampleMat4 = C.Mat4 $
 separateN :: Int -> [a] -> [[a]]
 separateN _ [] = []
 separateN n xs = take n xs : separateN n (drop n xs)
+
+glmTranslate :: C.Mat4 -> C.Vec3 -> C.Mat4
+glmTranslate m v = listVec4ToMat4
+	$ C.glmTranslate (mat4ToListVec4 m) (vec3ToList v)
+
+listToVec3 :: [#{type float}] -> C.Vec3
+listToVec3 = C.Vec3 . unsafeToLength
+
+vec3ToList :: C.Vec3 -> [#{type float}]
+vec3ToList (C.Vec3 fs) = toList fs
+
+glmScale :: C.Mat4 -> C.Vec3 -> C.Mat4
+glmScale m v = listVec4ToMat4
+	$ C.glmScale (mat4ToListVec4 m) (vec3ToList v)
