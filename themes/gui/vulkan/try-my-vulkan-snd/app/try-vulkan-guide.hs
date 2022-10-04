@@ -134,6 +134,9 @@ import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
+import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
+import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -1107,6 +1110,25 @@ findMemoryType phdvc flt props =
 		<$> (`Vk.Mem.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
+
+createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
+	Vk.DscSetLyt.L s '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData] ] -> IO a) ->
+	IO a
+createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
+	where
+	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData] ]
+	layoutInfo = Vk.DscSetLyt.CreateInfo {
+		Vk.DscSetLyt.createInfoNext = Nothing,
+		Vk.DscSetLyt.createInfoFlags = zeroBits,
+		Vk.DscSetLyt.createInfoBindings = Singleton camBufferBinding }
+	camBufferBinding :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData])
+	camBufferBinding = Vk.DscSetLyt.BindingBuffer {
+		Vk.DscSetLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeUniformBuffer,
+		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
