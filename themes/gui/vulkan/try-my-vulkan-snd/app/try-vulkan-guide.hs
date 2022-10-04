@@ -14,7 +14,7 @@ module Main where
 
 import GHC.Generics
 import Foreign.Storable
-import Foreign.Storable.SizeAlignment
+import Foreign.Storable.SizeAlignment hiding (SizeAlignment)
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -1044,10 +1044,10 @@ createVertexBuffer :: forall sd sc vbnm a . Vk.PhDvc.P ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb vbnm '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBuffer phdvc dvc (V.length vtcs)
+	createBuffer phdvc dvc (ObjectLengthList $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (V.length vtcs)
+	createBuffer phdvc dvc (ObjectLengthList $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1058,12 +1058,13 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
+createBuffer :: forall obj nm sd a . SizeAlignment obj =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength obj ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'List Vertex] ->
+		Vk.Bffr.Binded sb sm nm '[ obj] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[
-			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'List Vertex ])
+			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ obj])
 			] -> IO a ) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
@@ -1072,11 +1073,11 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b) (allcInfo mt) nil nil
 		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List Vertex]
+	bffrInfo :: Vk.Bffr.CreateInfo () '[ obj]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = singleton $ ObjectLengthList ln,
+		Vk.Bffr.createInfoLengths = singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
