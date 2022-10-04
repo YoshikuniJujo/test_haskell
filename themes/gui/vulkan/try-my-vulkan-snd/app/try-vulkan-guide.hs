@@ -102,6 +102,7 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Layout
+import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -273,7 +274,7 @@ run w ist g obj = let
 	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
 	createDescriptorSetLayout dv \cmdslyt ->
 	createRenderPass @scifmt @dptfmt dv \rp ->
-	createPipelineLayout dv \ppllyt ->
+	createPipelineLayout dv cmdslyt \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
 	createGraphicsPipeline dv ext rp ppllyt 1 \gpl1 ->
 	createCommandPool qfis dv \cp ->
@@ -287,7 +288,7 @@ run w ist g obj = let
 	createDescriptorPool dv \cmdp ->
 	createDescriptorSets dv cmdp cmbs cmlyts >>= \cmds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
-		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos (fromIntegral $ V.length vns)
+		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmbs cmms cmds (fromIntegral $ V.length vns)
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -602,13 +603,16 @@ createRenderPass dvc f = do
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
 	Vk.RndrPass.createNew @'[scifmt, dptfmt] @() dvc renderPassInfo nil nil \rp -> f rp
 
-createPipelineLayout :: 
+createPipelineLayout :: forall sd s b .
 	Vk.Dvc.D sd ->
-	(forall sl . Vk.Ppl.Layout.LLL sl '[] '[WrapMeshPushConstants] -> IO b) ->
+	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]] ->
+	(forall sl . Vk.Ppl.Layout.LLL sl '[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) ] '[WrapMeshPushConstants] -> IO b) ->
 	IO b
-createPipelineLayout dvc f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
+createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
 	where
-	crInfo :: Vk.Ppl.Layout.CreateInfoNew () '[] (
+	crInfo :: Vk.Ppl.Layout.CreateInfoNew ()
+		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) ]
+		(
 		'Vk.PushConstant.PushConstantLayout
 			'[ WrapMeshPushConstants]
 			'[ 'Vk.PushConstant.Range
@@ -616,7 +620,7 @@ createPipelineLayout dvc f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
 	crInfo = Vk.Ppl.Layout.CreateInfoNew {
 		Vk.Ppl.Layout.createInfoNextNew = Nothing,
 		Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
-		Vk.Ppl.Layout.createInfoSetLayoutsNew = HVNil }
+		Vk.Ppl.Layout.createInfoSetLayoutsNew = Singleton $ Vk.Ppl.Layout.Layout cmdslyt }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -1311,7 +1315,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg slyt sm sb nm smtri sbtri nmtri .
+recordCommandBuffer :: forall scb sr sf sg slyt sm sb nm smtri sbtri nmtri sd sp s .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
@@ -1319,13 +1323,14 @@ recordCommandBuffer :: forall scb sr sf sg slyt sm sb nm smtri sbtri nmtri .
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.LLL slyt '[] '[WrapMeshPushConstants] ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] ->
-	Int -> Word32 -> IO ()
-recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn vn =
+	Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] -> Int ->
+	Vk.DscSet.S sd sp s ->
+	Word32 -> IO ()
+recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
-	drawObject om cb sce RenderObject {
+	drawObject om cb sce cmd RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
@@ -1333,7 +1338,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn vn =
 		renderObjectTransformMatrix = model }
 	omtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb sce RenderObject {
+		drawObject omtri cb sce cmd RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbtri,
@@ -1380,14 +1385,18 @@ data RenderObject sg sl sm sb nm = RenderObject {
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[ 'List Vertex])) ->
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
-	Vk.C.Extent2d -> RenderObject sg sl sm sb nm -> IO ()
-drawObject om cb sce RenderObject {
+	Vk.C.Extent2d ->
+	Vk.DscSet.S sd sp s ->
+	RenderObject sg sl sm sb nm -> IO ()
+drawObject om cb sce cmd RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } = do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
+	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics (Vk.Ppl.Layout.lllToll lyt)
+		(Singleton $ Vk.Cmd.DescriptorSet cmd) []
 	movb <- readIORef om
 	case movb of
 		Just ovb | vb == ovb -> pure ()
@@ -1411,6 +1420,12 @@ drawObject om cb sce RenderObject {
 			} :..: HNil
 	Vk.Cmd.draw cb vn 1 0 0
 
+view = Cglm.glmTranslate Cglm.glmMat4Identity . Cglm.Vec3 $ 0 :. (- 6) :. (- 10) :. NilL
+
+projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
+	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
+		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
+
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs, VssList vss ) =>
@@ -1433,8 +1448,12 @@ mainLoop :: (
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
-	SyncObjects siassrfssfs -> Word32 -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs vn = do
+	SyncObjects siassrfssfs ->
+	HeteroVarList BindedGcd sbsms ->
+	HeteroVarList MemoryGcd sbsms ->
+	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
+	Word32 -> IO ()
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms cmds vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
 		Glfw.pollEvents
 		spst <- Glfw.getKey w Glfw.Key'Space
@@ -1444,7 +1463,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrc
 			sdrn' = bool id (+ 1) prsd sdrn
 		when prsd $ print sdrn'
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn' vn
+			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn' cmbs cmms cmds vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
 	Vk.Dvc.waitIdle dvc
 
@@ -1464,21 +1483,25 @@ runLoop :: (
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
-	 Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
-	 Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] ->
+	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
+	Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] ->
 	HeteroVarList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	Int -> Int -> Int -> Word32 ->
+	Int -> Int -> Int ->
+	HeteroVarList BindedGcd sbsms ->
+	HeteroVarList MemoryGcd sbsms ->
+	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
+	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn vn loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms cmds vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn sdrn vn
+		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms cmds vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
 			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs)
 
-drawFrame :: forall sfs sd ssc scfmt sr sg0 sg1 slyt sm sb nm smtri sbtri nmtri scb ssos vss . (VssList vss) =>
+drawFrame :: forall sfs sd ssc scfmt sr sg0 sg1 slyt sm sb nm smtri sbtri nmtri scb ssos vss sbsms sp slyts . (VssList vss) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1489,19 +1512,26 @@ drawFrame :: forall sfs sd ssc scfmt sr sg0 sg1 slyt sm sb nm smtri sbtri nmtri 
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int -> Word32 -> IO ()
-drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn vn =
+	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
+	HeteroVarList BindedGcd sbsms ->
+	HeteroVarList MemoryGcd sbsms ->
+	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
+	Word32 -> IO ()
+drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms cmds vn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) -> do
+	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
+	heteroVarListIndex cmms cf \(MemoryGcd cmm) ->
+	heteroVarListIndex cmds cf \cmd -> do
+	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom GpuCameraData) dvc cmm zeroBits (gpuCameraData ext)
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb -> case sdrn `mod` 2 of
-		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn vn
-		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn vn
+		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
+		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 		_ -> error "never occur"
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
@@ -1689,6 +1719,9 @@ data GpuCameraData = GpuCameraData {
 	gpuCameraDataProj :: Proj,
 	gpuCameraDAtaViewProj :: ViewProj }
 	deriving (Show, Generic)
+
+gpuCameraData sce = GpuCameraData (View view) (Proj $ projection sce)
+	(ViewProj . Cglm.glmMat4Mul view $ projection sce)
 
 instance Storable GpuCameraData where
 	sizeOf = Foreign.Storable.Generic.gSizeOf

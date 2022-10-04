@@ -17,3 +17,6 @@ newtype LL s (sbtss :: [(Type, [DescriptorSetLayout.BindingType])]) =
 newtype LLL s
 	(sbtss :: [(Type, [DescriptorSetLayout.BindingType])]) (pcw :: [Type]) =
 	LLL M.L deriving Show
+
+lllToll :: LLL s sbtss pcw -> LL s sbtss
+lllToll (LLL l) = LL l
