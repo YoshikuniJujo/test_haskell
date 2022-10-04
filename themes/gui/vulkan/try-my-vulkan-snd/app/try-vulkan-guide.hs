@@ -278,6 +278,7 @@ run w ist g obj = let
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
+	createCameraBuffers phdv dv maxFramesInFlight \cmbs cmms ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createVertexBuffer phdv dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
@@ -1065,6 +1066,15 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
+createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
+	(forall sbsms .
+		HeteroVarList BindedGcd sbsms ->
+		HeteroVarList MemoryGcd sbsms -> IO a) -> IO a
+createCameraBuffers _ _ n f | n < 1 = f HVNil HVNil
+createCameraBuffers phdvc dvc n f = createCameraBuffer phdvc dvc \bnd mem ->
+	createCameraBuffers phdvc dvc (n - 1) \bnds mems ->
+	f (BindedGcd bnd :...: bnds) (MemoryGcd mem :...: mems)
+
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[ 'Atom GpuCameraData] ->
@@ -1200,6 +1210,13 @@ data BindedGcd smsb where
 	BindedGcd ::
 		Vk.Bffr.Binded sb sm "camera-buffer" '[ 'Atom GpuCameraData] ->
 		BindedGcd '(sm, sb)
+
+data MemoryGcd smsb where
+	MemoryGcd :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+		sb,
+		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "camera-buffer"
+			'[ 'Atom GpuCameraData] )] ->
+		MemoryGcd '(sm, sb)
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
