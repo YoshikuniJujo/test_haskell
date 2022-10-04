@@ -271,7 +271,7 @@ run w ist g obj = let
 	createImageViews dv imgs \scivs ->
 	findDepthFormat phdv >>= \dptfmt ->
 	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
-	createDescriptorSetLayout dv \cmdsl ->
+	createDescriptorSetLayout dv \cmdslyt ->
 	createRenderPass @scifmt @dptfmt dv \rp ->
 	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
@@ -279,12 +279,13 @@ run w ist g obj = let
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
-	createCameraBuffers phdv dv maxFramesInFlight \cmbs cmms ->
+	createCameraBuffers phdv dv cmdslyt maxFramesInFlight \cmlyts cmbs cmms ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createVertexBuffer phdv dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	createDescriptorPool dv \cmdp ->
+	createDescriptorSets dv cmdp cmbs cmlyts >>= \cmds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
 		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos (fromIntegral $ V.length vns)
 
@@ -1068,14 +1069,19 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
-	(forall sbsms .
+createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Vk.DscSetLyt.L sdsc '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData] ] ->
+	Int ->
+	(forall slyts sbsms . (
+		ListToHeteroVarList slyts, Update sbsms slyts ) =>
+		HeteroVarList Vk.DscSet.Layout slyts ->
 		HeteroVarList BindedGcd sbsms ->
 		HeteroVarList MemoryGcd sbsms -> IO a) -> IO a
-createCameraBuffers _ _ n f | n < 1 = f HVNil HVNil
-createCameraBuffers phdvc dvc n f = createCameraBuffer phdvc dvc \bnd mem ->
-	createCameraBuffers phdvc dvc (n - 1) \bnds mems ->
-	f (BindedGcd bnd :...: bnds) (MemoryGcd mem :...: mems)
+createCameraBuffers _ _ _ n f | n < 1 = f HVNil HVNil HVNil
+createCameraBuffers phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
+	createCameraBuffers phdvc dvc lyt (n - 1) \lyts bnds mems ->
+	f (Vk.DscSet.Layout lyt :...: lyts) (BindedGcd bnd :...: bnds) (MemoryGcd mem :...: mems)
 
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
