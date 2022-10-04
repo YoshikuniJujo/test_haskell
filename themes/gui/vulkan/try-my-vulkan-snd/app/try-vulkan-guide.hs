@@ -271,6 +271,7 @@ run w ist g obj = let
 	createImageViews dv imgs \scivs ->
 	findDepthFormat phdv >>= \dptfmt ->
 	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
+	createDescriptorSetLayout dv \cmdsl ->
 	createRenderPass @scifmt @dptfmt dv \rp ->
 	createPipelineLayout dv \ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt 0 \gpl0 ->
@@ -283,6 +284,7 @@ run w ist g obj = let
 	createVertexBuffer phdv dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
+	createDescriptorPool dv \cmdp ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
 		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos (fromIntegral $ V.length vns)
 
