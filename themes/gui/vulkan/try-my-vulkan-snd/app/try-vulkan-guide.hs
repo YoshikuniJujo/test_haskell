@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving, DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -136,7 +136,11 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
+import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
@@ -1061,7 +1065,7 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
-createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> GpuCameraData ->
+createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[ 'Atom GpuCameraData] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
@@ -1069,7 +1073,7 @@ createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> GpuCameraData ->
 			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm
 				'[ 'Atom GpuCameraData]) ] ->
 		IO a) -> IO a
-createCameraBuffer phdvc dvc gcmdt = createBuffer phdvc dvc ObjectLengthAtom
+createCameraBuffer phdvc dvc = createBuffer phdvc dvc ObjectLengthAtom
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createBuffer :: forall obj nm sd a . SizeAlignment obj =>
@@ -1129,6 +1133,73 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+
+createDescriptorPool ::
+	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
+createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
+	where
+	poolInfo = Vk.DscPool.CreateInfo {
+		Vk.DscPool.createInfoNext = Nothing,
+		Vk.DscPool.createInfoFlags = zeroBits,
+		Vk.DscPool.createInfoMaxSets = 10,
+		Vk.DscPool.createInfoPoolSizes = [poolSize0] }
+	poolSize0 = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
+		Vk.DscPool.sizeDescriptorCount = 10 }
+
+createDescriptorSets :: (ListToHeteroVarList ss, Update smsbs ss) =>
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroVarList BindedGcd smsbs ->
+	HeteroVarList Vk.DscSet.Layout ss ->
+	IO (HeteroVarList (Vk.DscSet.S sd sp) ss)
+createDescriptorSets dvc dscp ubs dscslyts = do
+	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
+	update dvc ubs dscss
+	pure dscss
+	where
+	allocInfo = Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoDescriptorPool = dscp,
+		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
+
+class Update smsbs slbtss where
+	update ::
+		Vk.Dvc.D sd ->
+		HeteroVarList BindedGcd smsbs ->
+		HeteroVarList (Vk.DscSet.S sd sp) slbtss ->
+		IO ()
+
+instance Update '[] '[] where update _ HVNil HVNil = pure ()
+
+instance (
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom GpuCameraData],
+	Update ubs dscss
+	) =>
+	Update (ub ': ubs) (dscs ': dscss) where
+	update dvc (BindedGcd ub :...: ubs) (dscs :...: dscss) = do
+		Vk.DscSet.updateDs @() @() dvc (
+			Vk.DscSet.Write_ (descriptorWrite0 ub dscs) :...:
+			HVNil ) []
+		update dvc ubs dscss
+
+descriptorWrite0 ::
+	Vk.Bffr.Binded sm sb nm '[ 'Atom GpuCameraData] ->
+	Vk.DscSet.S sd sp slbts ->
+	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+		sb, sm, nm,
+		'[ 'Atom GpuCameraData], 'Atom GpuCameraData )])
+descriptorWrite0 ub dscs = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
+		Singleton bufferInfo
+	}
+	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
+
+data BindedGcd smsb where
+	BindedGcd ::
+		Vk.Bffr.Binded sb sm "camera-buffer" '[ 'Atom GpuCameraData] ->
+		BindedGcd '(sm, sb)
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
