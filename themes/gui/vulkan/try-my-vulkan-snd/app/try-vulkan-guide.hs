@@ -1058,6 +1058,17 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 	copyBuffer dvc gq cp b' b
 	f b
 
+createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> GpuCameraData ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'Atom GpuCameraData] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm
+				'[ 'Atom GpuCameraData]) ] ->
+		IO a) -> IO a
+createCameraBuffer phdvc dvc gcmdt = createBuffer phdvc dvc ObjectLengthAtom
+	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
+
 createBuffer :: forall obj nm sd a . SizeAlignment obj =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength obj ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
@@ -1554,6 +1565,25 @@ type WrapMeshPushConstants = Foreign.Storable.Generic.Wrap MeshPushConstants
 
 instance SizeAlignmentList MeshPushConstants
 instance Foreign.Storable.Generic.G MeshPushConstants
+
+data GpuCameraData = GpuCameraData {
+	gpuCameraDataView :: View,
+	gpuCameraDataProj :: Proj,
+	gpuCameraDAtaViewProj :: ViewProj }
+	deriving (Show, Generic)
+
+instance Storable GpuCameraData where
+	sizeOf = Foreign.Storable.Generic.gSizeOf
+	alignment = Foreign.Storable.Generic.gAlignment
+	peek = Foreign.Storable.Generic.gPeek
+	poke = Foreign.Storable.Generic.gPoke
+
+instance Foreign.Storable.Generic.G GpuCameraData
+instance SizeAlignmentList GpuCameraData
+
+newtype View = View Cglm.Mat4 deriving (Show, Storable)
+newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
+newtype ViewProj = ViewProj Cglm.Mat4 deriving (Show, Storable)
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
