@@ -608,13 +608,26 @@ createRenderPass dvc f = do
 
 createPipelineLayout :: forall sd s b .
 	Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]] ->
-	(forall sl . Vk.Ppl.Layout.LLL sl '[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) ] '[WrapMeshPushConstants] -> IO b) ->
-	IO b
+	Vk.DscSetLyt.L s '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer '[
+			'Atom GpuSceneData0, 'Atom GpuSceneData1 ] ] -> (forall sl .
+		Vk.Ppl.Layout.LLL sl
+			'[ '(s, '[
+				'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+				'Vk.DscSetLyt.Buffer '[
+					'Atom GpuSceneData0,
+					'Atom GpuSceneData1 ] ])]
+			'[WrapMeshPushConstants] ->
+		IO b) -> IO b
 createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
 	where
 	crInfo :: Vk.Ppl.Layout.CreateInfoNew ()
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) ]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ]) ]
 		(
 		'Vk.PushConstant.PushConstantLayout
 			'[ WrapMeshPushConstants]
@@ -628,7 +641,11 @@ createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	Int ->
 	(forall sg . Vk.Ppl.Graphics.G sg
@@ -642,7 +659,11 @@ createGraphicsPipeline dvc sce rp ppllyt sdrn f =
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -654,7 +675,11 @@ recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateG
 mkGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.CreateInfoNew () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
@@ -662,7 +687,11 @@ mkGraphicsPipelineCreateInfo ::
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
 		() () () () () () () ()
-		'(sl,	'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])],
+		'(sl,	'[ '(s, '[
+				'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+				'Vk.DscSetLyt.Buffer '[
+					'Atom GpuSceneData0,
+					'Atom GpuSceneData1 ] ])],
 			'[WrapMeshPushConstants])
 		sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfoNew {
@@ -1087,12 +1116,18 @@ createVertexBuffer phdvc dvc gq cp vtcs f =
 
 createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdsc '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData] ] ->
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer '[
+			'Atom GpuSceneData0,
+			'Atom GpuSceneData1 ] ] ->
 	Int ->
 	(forall slyts sbsms . (
 		ListToHeteroVarList slyts, Update sbsms slyts,
-		HeteroVarListIndex' '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) slyts
-		) =>
+		HeteroVarListIndex' '(sdsc, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ]) slyts ) =>
 		HeteroVarList Vk.DscSet.Layout slyts ->
 		HeteroVarList BindedGcd sbsms ->
 		HeteroVarList MemoryGcd sbsms -> IO a) -> IO a
@@ -1153,22 +1188,36 @@ findMemoryType phdvc flt props =
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.L s '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData] ] -> IO a) ->
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer
+			'[ 'Atom GpuSceneData0, 'Atom GpuSceneData1]
+		] -> IO a) ->
 	IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData] ]
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer
+			'[ 'Atom GpuSceneData0, 'Atom GpuSceneData1] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
-		Vk.DscSetLyt.createInfoBindings = Singleton camBufferBinding }
+		Vk.DscSetLyt.createInfoBindings =
+			camBufferBinding :...: sceneBind :...: HVNil }
 	camBufferBinding :: Vk.DscSetLyt.Binding
 		('Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData])
 	camBufferBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
+	sceneBind :: Vk.DscSetLyt.Binding
+		('Vk.DscSetLyt.Buffer '[ 'Atom GpuSceneData0, 'Atom GpuSceneData1])
+	sceneBind = Vk.DscSetLyt.BindingBuffer {
+		Vk.DscSetLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeUniformBuffer,
+		Vk.DscSetLyt.bindingBufferStageFlags =
+			Vk.ShaderStageVertexBit .|.
+			Vk.ShaderStageFragmentBit }
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
@@ -1337,11 +1386,19 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.LLL slyt
-		'[ '(sdlyt, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(sdlyt, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[ 'List Vertex] -> Int ->
-	Vk.DscSet.S sd sp '(sdlyt, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) ->
+	Vk.DscSet.S sd sp '(sdlyt, '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer '[
+			'Atom GpuSceneData0,
+			'Atom GpuSceneData1 ] ]) ->
 	Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
@@ -1396,7 +1453,11 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 		'[ '(0, Position), '(1, Normal), '(2, Color)],
 	renderObjectPipelineLayout ::
 		Vk.Ppl.Layout.LLL sl
-			'[ '(sdlyt, '[ Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+			'[ '(sdlyt, '[
+				'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+				'Vk.DscSetLyt.Buffer '[
+					'Atom GpuSceneData0,
+					'Atom GpuSceneData1 ] ])]
 			'[WrapMeshPushConstants],
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[ 'List Vertex],
 	renderObjectMeshSize :: Word32,
@@ -1405,7 +1466,11 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[ 'List Vertex])) ->
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.C.Extent2d ->
-	Vk.DscSet.S sd sp '(sdlyt, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) ->
+	Vk.DscSet.S sd sp '(sdlyt, '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer '[
+			'Atom GpuSceneData0,
+			'Atom GpuSceneData1 ] ]) ->
 	RenderObject sg sl sdlyt sm sb nm -> IO ()
 drawObject om cb sce cmd RenderObject {
 	renderObjectPipeline = gpl,
@@ -1452,9 +1517,11 @@ projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs, VssList vss,
-	HeteroVarListIndex'
-		'(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) slyts
-	) =>
+	HeteroVarListIndex' '(s, '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer '[
+			'Atom GpuSceneData0,
+			'Atom GpuSceneData1 ] ]) slyts ) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1462,8 +1529,11 @@ mainLoop :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+	Vk.Ppl.Layout.LLL sl '[ '(s, '[
+		'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+		'Vk.DscSetLyt.Buffer '[
+			'Atom GpuSceneData0,
+			'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1499,7 +1569,11 @@ runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs, VssList vss,
 	HeteroVarListIndex'
-		'(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) slyts
+		'(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ]) slyts
 	) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1507,7 +1581,11 @@ runLoop :: (
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -1539,7 +1617,11 @@ drawFrame ::
 		scb ssos vss sbsms sp slyts . (
 	VssList vss,
 	HeteroVarListIndex'
-		'(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]]) slyts
+		'(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ]) slyts
 	) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -1548,7 +1630,11 @@ drawFrame ::
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.LLL slyt
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex] ->
@@ -1607,7 +1693,11 @@ catchAndRecreate :: (
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1638,7 +1728,11 @@ recreateSwapchainEtc :: (
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LLL sl
-		'[ '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData]])]
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom GpuCameraData],
+			'Vk.DscSetLyt.Buffer '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1782,6 +1876,9 @@ newtype View = View Cglm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
 newtype ViewProj = ViewProj Cglm.Mat4 deriving (Show, Storable)
 
+newtype GpuSceneData0 = GpuSceneData0 GpuSceneData deriving (Show, Storable)
+newtype GpuSceneData1 = GpuSceneData1 GpuSceneData deriving (Show, Storable)
+
 data GpuSceneData = GpuSceneData {
 	gpuSceneDataFogColor :: FogColor,
 	gpuSceneDataFogDistances :: FogDistances,
@@ -1917,6 +2014,14 @@ glslFragmentShaderMain1 = [glslFragmentShader|
 
 layout(location = 0) in vec3 inColor;
 layout(location = 0) out vec4 outColor;
+
+layout (set = 0, binding = 1) uniform SceneData {
+	vec4 fogColor;
+	vec4 fogDistances;
+	vec4 ambientColor;
+	vec4 sunlightDirection;
+	vec4 sunlightColor;
+} sceneData;
 
 void
 main()
