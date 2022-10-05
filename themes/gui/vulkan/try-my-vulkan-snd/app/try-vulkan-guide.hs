@@ -290,7 +290,7 @@ run w ist g obj = let
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	createDescriptorPool dv \cmdp ->
-	createDescriptorSets dv cmdp cmbs cmlyts >>= \cmds ->
+	createDescriptorSets dv cmdp cmbs cmlyts scnb >>= \cmds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
 		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmbs cmms cmds (fromIntegral $ V.length vns)
 
@@ -1252,10 +1252,12 @@ createDescriptorSets :: (
 	ListToHeteroVarList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroVarList BindedGcd smsbs ->
 	HeteroVarList Vk.DscSet.Layout ss ->
+	Vk.Bffr.Binded sb sm "scene-buffer"
+		'[ 'Atom GpuSceneData0, 'Atom GpuSceneData1] ->
 	IO (HeteroVarList (Vk.DscSet.S sd sp) ss)
-createDescriptorSets dvc dscp ubs dscslyts = do
+createDescriptorSets dvc dscp ubs dscslyts scnb = do
 	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
-	update dvc ubs dscss
+	update dvc ubs dscss scnb 0
 	pure dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
@@ -1268,34 +1270,45 @@ class Update smsbs slbtss where
 		Vk.Dvc.D sd ->
 		HeteroVarList BindedGcd smsbs ->
 		HeteroVarList (Vk.DscSet.S sd sp) slbtss ->
+		Vk.Bffr.Binded sb sm "scene-buffer"
+			'[ 'Atom GpuSceneData0, 'Atom GpuSceneData1] -> Int ->
 		IO ()
 
-instance Update '[] '[] where update _ HVNil HVNil = pure ()
+instance Update '[] '[] where update _ HVNil HVNil _ _ = pure ()
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom GpuCameraData],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom GpuSceneData0],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom GpuSceneData1],
 	Update ubs dscss
 	) =>
 	Update (ub ': ubs) (dscs ': dscss) where
-	update dvc (BindedGcd ub :...: ubs) (dscs :...: dscss) = do
+	update dvc (BindedGcd ub :...: ubs) (dscs :...: dscss) scnb 0 = do
 		Vk.DscSet.updateDs @() @() dvc (
-			Vk.DscSet.Write_ (descriptorWrite0 ub dscs) :...:
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuCameraData ub dscs Vk.Dsc.TypeUniformBuffer) :...:
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuSceneData0 scnb dscs Vk.Dsc.TypeUniformBuffer) :...:
 			HVNil ) []
-		update dvc ubs dscss
+		update dvc ubs dscss scnb 1
+	update dvc (BindedGcd ub :...: ubs) (dscs :...: dscss) scnb 1 = do
+		Vk.DscSet.updateDs @() @() dvc (
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuCameraData ub dscs Vk.Dsc.TypeUniformBuffer) :...:
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuSceneData1 scnb dscs Vk.Dsc.TypeUniformBuffer) :...:
+			HVNil ) []
+		update dvc ubs dscss scnb 2
+	update _ _ _ _ _ = error "bad"
 
-descriptorWrite0 ::
-	Vk.Bffr.Binded sm sb nm '[ 'Atom GpuCameraData] ->
-	Vk.DscSet.S sd sp slbts ->
+descriptorWrite0 :: forall tp objs sm sb nm sd sp slbts .
+	Vk.Bffr.Binded sm sb nm objs ->
+	Vk.DscSet.S sd sp slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
-		'[ 'Atom GpuCameraData], 'Atom GpuCameraData )])
-descriptorWrite0 ub dscs = Vk.DscSet.Write {
+		objs, 'Atom tp )])
+descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		Singleton bufferInfo
-	}
+		Singleton bufferInfo }
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 data BindedGcd smsb where
@@ -1304,10 +1317,11 @@ data BindedGcd smsb where
 		BindedGcd '(sm, sb)
 
 data MemoryGcd smsb where
-	MemoryGcd :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
-		sb,
-		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "camera-buffer"
-			'[ 'Atom GpuCameraData] )] ->
+	MemoryGcd ::
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer "camera-buffer"
+				'[ 'Atom GpuCameraData] )] ->
 		MemoryGcd '(sm, sb)
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
@@ -1395,7 +1409,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp s .
+recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
@@ -1510,11 +1524,13 @@ drawObject om cb sce cmd RenderObject {
 			} :..: HNil
 	Vk.Cmd.draw cb vn 1 0 0
 
+view :: Cglm.Mat4
 view = Cglm.glmLookat
 	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
 	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
+projection :: Vk.C.Extent2d -> Cglm.Mat4
 projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
 	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
 		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
