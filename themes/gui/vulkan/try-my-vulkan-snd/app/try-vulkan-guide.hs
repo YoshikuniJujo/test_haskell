@@ -70,6 +70,7 @@ import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Msg
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
+import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device as Vk.Dvc
@@ -265,6 +266,8 @@ run w ist g obj = let
 --	print vns >>
 	Glfw.createWindowSurface ist w nil nil \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
+	putStrLn "MIN ALIGN" >>
+	(print . Vk.PhDvc.limitsMinUniformBufferOffsetAlignment . Vk.PhDvc.propertiesLimits =<< Vk.PhDvc.getProperties phdv) >>
 	createDevice phdv qfis \dv gq pq ->
 	createSwapchain w sfc phdv qfis dv
 		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt) ext ->
