@@ -64,6 +64,9 @@ class WholeSize objs where
 
 instance WholeSize '[] where wholeSize sz _ = sz
 
+minimumAlignment :: Int
+minimumAlignment = 256
+
 instance (SizeAlignment obj, WholeSize objs) =>
 	WholeSize (obj ': objs) where
 	wholeSize sz (ln :...: lns) =
@@ -83,7 +86,7 @@ instance Storable t => StoreObject t ('Atom t) where
 	loadObject p ObjectLengthAtom = peek p
 
 instance Storable t => SizeAlignment ('Atom t) where
-	objectAlignment = alignment @t undefined
+	objectAlignment = lcm minimumAlignment $ alignment @t undefined
 	objectSize ObjectLengthAtom = sizeOf @t undefined
 
 instance (

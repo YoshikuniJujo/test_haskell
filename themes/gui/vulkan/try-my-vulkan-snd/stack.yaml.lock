@@ -75,11 +75,11 @@ packages:
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
     pantry-tree:
       size: 964
-      sha256: 891ecab921a3757b3423c73d0db55cce6a3c327b36de7ce095aaf31f2bea13ab
-    commit: 54042a99383c0b6bc690edde3cb1a2fe8b9a21eb
+      sha256: f5634d990509d53fd09852071c4386a12a33e3c793e924d0dbbde20651fd433b
+    commit: 511e579860a040d291373b1c62abc491f91a3110
   original:
     git: https://github.com/YoshikuniJujo/size-alignment-list.git
-    commit: 54042a99383c0b6bc690edde3cb1a2fe8b9a21eb
+    commit: 511e579860a040d291373b1c62abc491f91a3110
 - completed:
     hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
     pantry-tree:

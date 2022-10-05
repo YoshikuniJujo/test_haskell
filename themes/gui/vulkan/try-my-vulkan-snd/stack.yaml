@@ -49,7 +49,7 @@ extra-deps:
   - themes/gui/vulkan/try-shaderc
   - features/ffi/try-pointable
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
-  commit: 54042a99383c0b6bc690edde3cb1a2fe8b9a21eb
+  commit: 511e579860a040d291373b1c62abc491f91a3110
 - union-color-0.1.2.0
 
 # Override default flag values for local packages and extra-deps
