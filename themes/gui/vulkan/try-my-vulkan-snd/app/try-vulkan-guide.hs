@@ -292,7 +292,7 @@ run w ist g obj = let
 	createDescriptorPool dv \cmdp ->
 	createDescriptorSets dv cmdp cmbs cmlyts scnb >>= \cmds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
-		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmbs cmms cmds (fromIntegral $ V.length vns)
+		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmbs cmms scnm cmds (fromIntegral $ V.length vns)
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices)
@@ -1570,9 +1570,12 @@ mainLoop :: (
 	SyncObjects siassrfssfs ->
 	HeteroVarList BindedGcd sbsms ->
 	HeteroVarList MemoryGcd sbsms ->
+	Vk.Dvc.Mem.ImageBuffer.M sscnm
+		'[ '(sscnb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer
+			"scene-buffer" '[ 'Atom GpuSceneData0, 'Atom GpuSceneData1])] ->
 	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms cmds vn = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms scnm cmds vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
 		Glfw.pollEvents
 		spst <- Glfw.getKey w Glfw.Key'Space
@@ -1582,7 +1585,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrc
 			sdrn' = bool id (+ 1) prsd sdrn
 		when prsd $ print sdrn'
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn' cmbs cmms cmds vn
+			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn' cmbs cmms scnm cmds vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)) spst sdrn')
 	Vk.Dvc.waitIdle dvc
 
@@ -1622,12 +1625,15 @@ runLoop :: (
 	Int -> Int -> Int ->
 	HeteroVarList BindedGcd sbsms ->
 	HeteroVarList MemoryGcd sbsms ->
+	Vk.Dvc.Mem.ImageBuffer.M sscnm
+		'[ '(sscnb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer
+			"scene-buffer" '[ 'Atom GpuSceneData0, 'Atom GpuSceneData1])] ->
 	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
 	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms cmds vn loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms scnm cmds vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms cmds vn
+		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms scnm cmds vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
@@ -1635,7 +1641,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp d
 
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
-		scb ssos vss sbsms sp slyts . (
+		scb ssos vss sbsms sscnm sscnb sp slyts . (
 	VssList vss,
 	HeteroVarListIndex'
 		'(s, '[
@@ -1663,15 +1669,21 @@ drawFrame ::
 	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
 	HeteroVarList BindedGcd sbsms ->
 	HeteroVarList MemoryGcd sbsms ->
+	Vk.Dvc.Mem.ImageBuffer.M sscnm
+		'[ '(sscnb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer
+			"scene-buffer" '[ 'Atom GpuSceneData0, 'Atom GpuSceneData1])] ->
 	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
-drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms cmds vn =
+drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
 	heteroVarListIndex cmms cf \(MemoryGcd cmm) ->
 	($ heteroVarListIndex' cmds cf) \cmd -> do
+	print cf
 	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom GpuCameraData) dvc cmm zeroBits (gpuCameraData ext)
+	Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer" @('Atom GpuSceneData0) dvc scnm zeroBits (GpuSceneData0 gpuSceneData)
+	Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer" @('Atom GpuSceneData1) dvc scnm zeroBits (GpuSceneData1 gpuSceneData)
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
@@ -1908,6 +1920,18 @@ data GpuSceneData = GpuSceneData {
 	gpuSceneDataSunlightColor :: SunlightColor }
 	deriving (Show, Generic)
 
+gpuSceneData :: GpuSceneData
+gpuSceneData = GpuSceneData {
+	gpuSceneDataFogColor = FogColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	gpuSceneDataFogDistances =
+		FogDistances . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	gpuSceneDataAmbientColor =
+		AmbientColor . Cglm.Vec4 $ 1 :. 0 :. 0 :. 0 :. NilL,
+	gpuSceneDataSunlightDirection =
+		SunlightDirection . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	gpuSceneDataSunlightColor =
+		SunlightColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+
 instance Storable GpuSceneData where
 	sizeOf = Foreign.Storable.Generic.gSizeOf
 	alignment = Foreign.Storable.Generic.gAlignment
@@ -2047,7 +2071,8 @@ layout (set = 0, binding = 1) uniform SceneData {
 void
 main()
 {
-	outColor = vec4(inColor, 1.0);
+	outColor = vec4(inColor + sceneData.ambientColor.xyz, 1.0);
+//	outColor = vec4(inColor, 1.0);
 }
 
 |]
