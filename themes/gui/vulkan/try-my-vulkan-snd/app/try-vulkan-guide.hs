@@ -1782,6 +1782,30 @@ newtype View = View Cglm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
 newtype ViewProj = ViewProj Cglm.Mat4 deriving (Show, Storable)
 
+data GpuSceneData = GpuSceneData {
+	gpuSceneDataFogColor :: FogColor,
+	gpuSceneDataFogDistances :: FogDistances,
+	gpuSceneDataAmbientColor :: AmbientColor,
+	gpuSceneDataSunlightDirection :: SunlightDirection,
+	gpuSceneDataSunlightColor :: SunlightColor }
+	deriving (Show, Generic)
+
+instance Storable GpuSceneData where
+	sizeOf = Foreign.Storable.Generic.gSizeOf
+	alignment = Foreign.Storable.Generic.gAlignment
+	peek = Foreign.Storable.Generic.gPeek
+	poke = Foreign.Storable.Generic.gPoke
+
+instance Foreign.Storable.Generic.G GpuSceneData
+instance SizeAlignmentList GpuSceneData
+
+newtype FogColor = FogColor Cglm.Vec4 deriving (Show, Storable)
+newtype FogDistances = FogDistances Cglm.Vec4 deriving (Show, Storable)
+newtype AmbientColor = AmbientColor Cglm.Vec4 deriving (Show, Storable)
+newtype SunlightDirection =
+	SunlightDirection Cglm.Vec4 deriving (Show, Storable)
+newtype SunlightColor = SunlightColor Cglm.Vec4 deriving (Show, Storable)
+
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
 	HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfo) '[
