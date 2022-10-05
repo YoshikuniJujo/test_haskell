@@ -284,6 +284,7 @@ run w ist g obj = let
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
 	createCameraBuffers phdv dv cmdslyt maxFramesInFlight \cmlyts cmbs cmms ->
+	createSceneBuffer phdv dv \scnb scnm ->
 	createVertexBuffer phdv dv gq cp vns \vb ->
 	createVertexBuffer phdv dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
@@ -1100,10 +1101,10 @@ createVertexBuffer :: forall sd sc vbnm a . Vk.PhDvc.P ->
 	(forall sm sb .
 		Vk.Bffr.Binded sm sb vbnm '[ 'List Vertex] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBuffer phdvc dvc (ObjectLengthList $ V.length vtcs)
+	createBuffer phdvc dvc (Singleton . ObjectLengthList $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (ObjectLengthList $ V.length vtcs)
+	createBuffer phdvc dvc (Singleton . ObjectLengthList $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1144,29 +1145,44 @@ createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm
 				'[ 'Atom GpuCameraData]) ] ->
 		IO a) -> IO a
-createCameraBuffer phdvc dvc = createBuffer phdvc dvc ObjectLengthAtom
+createCameraBuffer phdvc dvc = createBuffer phdvc dvc (Singleton ObjectLengthAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
-createBuffer :: forall obj nm sd a . SizeAlignment obj =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength obj ->
+createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[
+			'Atom GpuSceneData0,
+			'Atom GpuSceneData1 ] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			sb,
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[
+				'Atom GpuSceneData0,
+				'Atom GpuSceneData1 ] ) ] ->
+		IO a) -> IO a
+createSceneBuffer phdvc dvc = createBuffer phdvc dvc
+	(ObjectLengthAtom :...: ObjectLengthAtom :...: HVNil)
+	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
+
+createBuffer :: forall objs nm sd a . WholeSize objs => -- SizeAlignment obj =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroVarList ObjectLength objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ obj] ->
+		Vk.Bffr.Binded sb sm nm objs ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[
-			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ obj])
+			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm objs)
 			] -> IO a ) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Dvc.Mem.ImageBuffer.allocateBind dv
 		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b) (allcInfo mt) nil nil
 		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[ obj]
+	bffrInfo :: Vk.Bffr.CreateInfo () objs
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = singleton ln,
+		Vk.Bffr.createInfoLengths = lns,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -1487,28 +1503,17 @@ drawObject om cb sce cmd RenderObject {
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . singleton
 				. V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 			writeIORef om $ Just vb
-	let	view = Cglm.glmLookat
-			(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-		proj = Cglm.modifyMat4 1 1 negate
-			$ Cglm.glmPerspective
-				(Cglm.glmRad 70)
-				(fromIntegral (Vk.C.extent2dWidth sce) /
-					fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
 	Vk.Cmd.pushConstants @'[ 'Vk.T.ShaderStageVertexBit ] cb lyt $ Foreign.Storable.Generic.Wrap
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
---				proj `Cglm.glmMat4Mul` view `Cglm.glmMat4Mul` model
 			} :..: HNil
 	Vk.Cmd.draw cb vn 1 0 0
 
--- view = Cglm.glmTranslate Cglm.glmMat4Identity . Cglm.Vec3 $ 0 :. (- 6) :. (- 10) :. NilL
 view = Cglm.glmLookat
-			(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
-			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-			(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
+	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
 projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
 	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
