@@ -15,7 +15,7 @@ module Data.HeteroList (
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
 	ListToHeteroVarList(..), ListToHeteroVarListM(..),
-	oneOfOne, heteroVarListIndex, heteroVarListLength,
+	oneOfOne, heteroVarListIndex, HeteroVarListIndex'(..), heteroVarListLength,
 	heteroVarListReplicate,
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	heteroVarListZipWithM_,
@@ -181,6 +181,16 @@ heteroVarListIndex HVNil _ _ = error "index too large"
 heteroVarListIndex (x :...: _) 0 f = f x
 heteroVarListIndex (_ :...: xs) i f | i > 0 = heteroVarListIndex xs (i - 1) f
 heteroVarListIndex _ _ _ = error "negative index"
+
+class HeteroVarListIndex' (a :: k) ss where
+	heteroVarListIndex' :: Integral i => HeteroVarList t ss -> i -> t a
+
+instance HeteroVarListIndex' a '[] where
+	heteroVarListIndex' HVNil _ = error "index too large"
+
+instance HeteroVarListIndex' a ss => HeteroVarListIndex' a (a ': ss) where
+	heteroVarListIndex' (x :...: _) n | n < 1 = x
+	heteroVarListIndex' (_ :...: xs) n = heteroVarListIndex' xs (n - 1)
 
 heteroVarListReplicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
