@@ -37,6 +37,7 @@ library
       Data.Kind.Object
       Data.Traversable.Utils
       Data.Vector.Storable.Indexing
+      Data.Vector.Storable.Utils
       Foreign.Storable.Generic
       Glfw
       Glfw.Middle
@@ -332,6 +333,46 @@ executable try-depth-buffering
 
 executable try-depth-buffering-single
   main-is: try-depth-buffering-single.hs
+  other-modules:
+      Main
+      Paths_try_my_vulkan_snd
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , c-enum
+    , c-struct
+    , containers
+    , data-default
+    , exception-hierarchy
+    , filepath
+    , ghc-prim
+    , monads-tf
+    , mono-traversable
+    , nowdoc
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-my-vulkan-snd
+    , try-pointable
+    , try-shaderc
+    , try-vulkan-core
+    , try-vulkan-core-ext-debug-utils
+    , try-vulkan-core-khr
+    , union-color
+    , uuid
+    , vector
+  default-language: Haskell2010
+
+executable try-dynamic-dsc-sets
+  main-is: try-dynamic-dsc-sets.hs
   other-modules:
       Main
       Paths_try_my_vulkan_snd
