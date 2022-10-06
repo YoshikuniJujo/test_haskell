@@ -75,10 +75,10 @@ instance {-# OVERLAPPABLE #-}
 
 type SampleBts0 = '[
 	'DescriptorSetLayout.Buffer '[ ],
-	'DescriptorSetLayout.Buffer '[ 'Atom Double, 'List (), 'Atom Bool],
+	'DescriptorSetLayout.Buffer '[ 'Atom Double "", 'List () "", 'Atom Bool ""],
 	'DescriptorSetLayout.Other,
 	'DescriptorSetLayout.Buffer
-		'[ 'Atom Bool, 'List (), 'Atom Int, 'List Double, 'Atom Double]]
+		'[ 'Atom Bool "", 'List () "", 'Atom Int "", 'List Double "", 'Atom Double ""]]
 
 type SampleObjs0 = '[ 'Atom Int, 'List Double]
 

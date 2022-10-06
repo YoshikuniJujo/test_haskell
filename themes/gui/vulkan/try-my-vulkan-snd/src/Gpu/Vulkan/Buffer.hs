@@ -201,7 +201,7 @@ class OffsetList v (vs :: [Object]) where
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
-instance Storable v => OffsetList v ('List v ': vs) where
+instance Storable v => OffsetList v ('List v _nm ': vs) where
 	offsetList _ = fromIntegral . adjust (alignment @v undefined)
 
 instance {-# OVERLAPPABLE #-} (
@@ -210,7 +210,7 @@ instance {-# OVERLAPPABLE #-} (
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
 sampleObjLens :: HeteroVarList ObjectLength
-	['List Bool, 'Atom Char, 'Atom Int, 'List Double, 'List Char]
+	['List Bool "", 'Atom Char "", 'Atom Int "", 'List Double "", 'List Char ""]
 sampleObjLens =
 	ObjectLengthList 3 :...:
 	ObjectLengthAtom :...:

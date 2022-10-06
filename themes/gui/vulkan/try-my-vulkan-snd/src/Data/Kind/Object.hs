@@ -23,16 +23,16 @@ import Data.HeteroList
 
 import qualified Data.Sequences as Seq
 
-data Object = Atom Type | List Type | ObjImage Type Symbol
+data Object = Atom Type Symbol | List Type Symbol | ObjImage Type Symbol
 
 type family ObjectType obj where
-	ObjectType ('Atom t) = t
-	ObjectType ('List t) = t
+	ObjectType ('Atom t _nm) = t
+	ObjectType ('List t _nm) = t
 	ObjectType ('ObjImage t _nm) = t
 
 data ObjectLength (obj :: Object) where
-	ObjectLengthAtom :: ObjectLength ('Atom t)
-	ObjectLengthList :: Int -> ObjectLength ('List t)
+	ObjectLengthAtom :: ObjectLength ('Atom t nm)
+	ObjectLengthList :: Int -> ObjectLength ('List t nm)
 	ObjectLengthImage :: {
 		objectLengthImageRow :: Int,
 		objectLengthImageWidth :: Int,
@@ -81,21 +81,21 @@ class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
 	objectAlignment :: Int
 
-instance Storable t => StoreObject t ('Atom t) where
+instance Storable t => StoreObject t ('Atom t _nm) where
 	storeObject p ObjectLengthAtom x = poke p x
 	loadObject p ObjectLengthAtom = peek p
 
-instance Storable t => SizeAlignment ('Atom t) where
+instance Storable t => SizeAlignment ('Atom t _nm) where
 	objectAlignment = lcm minimumAlignment $ alignment @t undefined
 	objectSize ObjectLengthAtom = sizeOf @t undefined
 
 instance (
 	MonoFoldable v, Seq.IsSequence v,
-	Storable t, Element v ~ t ) => StoreObject v ('List t) where
+	Storable t, Element v ~ t ) => StoreObject v ('List t _nm) where
 	storeObject p (ObjectLengthList n) xs = pokeArray p . take n $ otoList xs
 	loadObject p (ObjectLengthList n) = Seq.fromList <$> peekArray n p
 
-instance Storable t => SizeAlignment ('List t) where
+instance Storable t => SizeAlignment ('List t _nm) where
 	objectAlignment = lcm minimumAlignment $ alignment @t undefined
 	objectSize (ObjectLengthList n) = n * ((sz - 1) `div` algn + 1) * algn
 		where

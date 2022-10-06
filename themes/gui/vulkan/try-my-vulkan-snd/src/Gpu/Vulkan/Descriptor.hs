@@ -25,10 +25,10 @@ import qualified Gpu.Vulkan.ImageView as ImageView
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
 		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, 'Atom v)
+		BufferInfo '(sb, sm, nm, objs, 'Atom v objnm)
 	BufferInfoList ::
 		{ bufferInfoListBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, 'List v)
+		BufferInfo '(sb, sm, nm, objs, 'List v objnm)
 
 type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
 
