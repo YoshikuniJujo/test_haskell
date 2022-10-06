@@ -1670,8 +1670,13 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 	heteroVarListIndex cmms cf \(MemoryGcd cmm) ->
 	($ heteroVarListIndex' cmds cf) \cmd -> do
 	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
-	Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer" @('Atom GpuSceneData0 ('Just "scene-data-0")) dvc scnm zeroBits (GpuSceneData0 gpuSceneData)
-	Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer" @('Atom GpuSceneData0 ('Just "scene-data-1")) dvc scnm zeroBits (GpuSceneData0 gpuSceneData)
+	if cf == 0
+		then Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer"
+			@('Atom GpuSceneData0 ('Just "scene-data-0"))
+			dvc scnm zeroBits (GpuSceneData0 $ gpuSceneData fn)
+		else Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer"
+			@('Atom GpuSceneData0 ('Just "scene-data-1"))
+			dvc scnm zeroBits (GpuSceneData0 $ gpuSceneData fn)
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
@@ -1906,17 +1911,20 @@ data GpuSceneData = GpuSceneData {
 	gpuSceneDataSunlightColor :: SunlightColor }
 	deriving (Show, Generic)
 
-gpuSceneData :: GpuSceneData
-gpuSceneData = GpuSceneData {
+gpuSceneData :: Int -> GpuSceneData
+gpuSceneData fn = GpuSceneData {
 	gpuSceneDataFogColor = FogColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 	gpuSceneDataFogDistances =
 		FogDistances . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 	gpuSceneDataAmbientColor =
-		AmbientColor . Cglm.Vec4 $ 1 :. 0 :. 0 :. 0 :. NilL,
+		AmbientColor . Cglm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
 	gpuSceneDataSunlightDirection =
 		SunlightDirection . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 	gpuSceneDataSunlightColor =
 		SunlightColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+	where
+	r = sin (fromIntegral fn / (180 * frashRate) * pi)
+	b = cos (fromIntegral fn / (180 * frashRate) * pi)
 
 instance Storable GpuSceneData where
 	sizeOf = Foreign.Storable.Generic.gSizeOf
