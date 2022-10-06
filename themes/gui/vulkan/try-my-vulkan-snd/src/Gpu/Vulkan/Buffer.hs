@@ -210,7 +210,7 @@ instance {-# OVERLAPPABLE #-} (
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
 sampleObjLens :: HeteroVarList ObjectLength
-	['List Bool "", 'Atom Char "", 'Atom Int "", 'List Double "", 'List Char ""]
+	['List Bool "", 'Atom Char 'Nothing, 'Atom Int 'Nothing, 'List Double "", 'List Char ""]
 sampleObjLens =
 	ObjectLengthList 3 :...:
 	ObjectLengthAtom :...:

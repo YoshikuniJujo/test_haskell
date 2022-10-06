@@ -23,7 +23,8 @@ import Data.HeteroList
 
 import qualified Data.Sequences as Seq
 
-data Object = Atom Type Symbol | List Type Symbol | ObjImage Type Symbol
+data Object =
+	Atom Type (Maybe Symbol) | List Type Symbol | ObjImage Type Symbol
 
 type family ObjectType obj where
 	ObjectType ('Atom t _nm) = t

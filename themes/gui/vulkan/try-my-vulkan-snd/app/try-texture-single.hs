@@ -579,7 +579,7 @@ createRenderPass dvc scifmt f = do
 
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.L sdsl '[
-			'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""],
+			'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing],
 			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 		Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] -> IO b) -> IO b
 createPipelineLayout dvc f =
@@ -593,18 +593,18 @@ createPipelineLayout dvc f =
 	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil $ f dsl
 
 type AtomUbo s = '(s, '[
-	'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""],
+	'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	Vk.DscSetLyt.L s '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""],
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""],
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
@@ -614,7 +614,7 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 			samplerLayoutBinding :...:
 			HVNil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""])
+		('Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
@@ -1047,11 +1047,11 @@ createIndexBuffer phdvc dvc gq cp f =
 	f b
 
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
-		Vk.Bffr.Binded sb sm "uniform-buffer" '[ 'Atom UniformBufferObject ""]  ->
+		Vk.Bffr.Binded sb sm "uniform-buffer" '[ 'Atom UniformBufferObject 'Nothing]  ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
 			'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
-				'[ 'Atom UniformBufferObject ""]) ] ->
+				'[ 'Atom UniformBufferObject 'Nothing]) ] ->
 		IO b) -> IO b
 createUniformBuffer phdvc dvc = createBufferAtom phdvc dvc
 	Vk.Bffr.UsageUniformBufferBit
@@ -1074,13 +1074,13 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeDescriptorCount = 1 }
 
 createDescriptorSet ::
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject ""] ->
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject 'Nothing] ->
 	Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv  -> Vk.Smplr.S ss ->
 	Vk.DscSetLyt.L sdsc '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""],
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
 	IO (Vk.DscSet.S sd sp '(sdsc, '[
-		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject ""],
+		'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
 createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt = do
 	Singleton dscs <- Vk.DscSet.allocateSs @() dvc allocInfo
@@ -1097,11 +1097,11 @@ createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt = do
 			Singleton $ Vk.DscSet.Layout dscslyt }
 
 descriptorWrite0 ::
-	Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject ""] ->
+	Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject 'Nothing] ->
 	Vk.DscSet.S sd sp slbts ->
 	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
-		'[ 'Atom UniformBufferObject ""], 'Atom UniformBufferObject  "")])
+		'[ 'Atom UniformBufferObject 'Nothing], 'Atom UniformBufferObject  'Nothing)])
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1128,10 +1128,10 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'Atom a ""] ->
+		Vk.Bffr.Binded sb sm nm '[ 'Atom a 'Nothing] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
-			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'Atom a ""] )] ->
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'Atom a 'Nothing] )] ->
 			IO b) -> IO b
 createBufferAtom p dv usg props = createBuffer p dv ObjectLengthAtom usg props
 
@@ -1336,7 +1336,7 @@ mainLoop ::
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
-			'[ 'Atom UniformBufferObject ""] )] ->
+			'[ 'Atom UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
@@ -1365,7 +1365,7 @@ runLoop ::
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
-			'[ 'Atom UniformBufferObject ""] )] ->
+			'[ 'Atom UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
@@ -1392,7 +1392,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
-			'[ 'Atom UniformBufferObject ""] )] ->
+			'[ 'Atom UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
@@ -1427,11 +1427,11 @@ updateUniformBuffer :: Vk.Dvc.D sd ->
 	Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 		sb,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
-			'[ 'Atom UniformBufferObject ""] )] ->
+			'[ 'Atom UniformBufferObject 'Nothing] )] ->
 	Vk.C.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc um sce tm = do
 	Vk.Dvc.Mem.ImageBuffer.write @"uniform-buffer"
-		@('Atom UniformBufferObject "") dvc um zeroBits ubo
+		@('Atom UniformBufferObject 'Nothing) dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
 		uniformBufferObjectModel = Cglm.glmRotate
 			Cglm.glmMat4Identity

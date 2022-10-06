@@ -49,7 +49,27 @@ class BindingAndArrayElem
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (o ': os') ': bts) (o ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t Nothing ': os') ': bts) ('Atom t Nothing ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t Nothing ': os') ': bts) ('Atom t (Just nm) ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t (Just nm) ': os') ': bts) ('Atom t Nothing ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t (Just nm) ': os') ': bts) ('Atom t (Just nm) ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('List t nm ': os') ': bts) ('List t nm ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjImage t nm ': os') ': bts) ('ObjImage t nm ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-}
@@ -75,12 +95,12 @@ instance {-# OVERLAPPABLE #-}
 
 type SampleBts0 = '[
 	'DescriptorSetLayout.Buffer '[ ],
-	'DescriptorSetLayout.Buffer '[ 'Atom Double "", 'List () "", 'Atom Bool ""],
+	'DescriptorSetLayout.Buffer '[ 'Atom Double 'Nothing, 'List () "", 'Atom Bool 'Nothing],
 	'DescriptorSetLayout.Other,
 	'DescriptorSetLayout.Buffer
-		'[ 'Atom Bool "", 'List () "", 'Atom Int "", 'List Double "", 'Atom Double ""]]
+		'[ 'Atom Bool 'Nothing, 'List () "", 'Atom Int 'Nothing, 'List Double "", 'Atom Double 'Nothing]]
 
-type SampleObjs0 = '[ 'Atom Int, 'List Double]
+type SampleObjs0 = '[ 'Atom Int 'Nothing, 'List Double ""]
 
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])
