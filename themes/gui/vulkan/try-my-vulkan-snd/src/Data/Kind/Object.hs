@@ -96,7 +96,7 @@ instance (
 	loadObject p (ObjectLengthList n) = Seq.fromList <$> peekArray n p
 
 instance Storable t => SizeAlignment ('List t) where
-	objectAlignment = alignment @t undefined
+	objectAlignment = lcm minimumAlignment $ alignment @t undefined
 	objectSize (ObjectLengthList n) = n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @t undefined
