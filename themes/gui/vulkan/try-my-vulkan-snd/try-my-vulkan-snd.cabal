@@ -33,6 +33,7 @@ library
       Codec.Picture.Tools
       Codec.Wavefront.Parse
       Codec.Wavefront.Read
+      Data.Bits.Utils
       Data.HeteroList
       Data.Kind.Object
       Data.Traversable.Utils
