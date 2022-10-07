@@ -102,6 +102,12 @@ type SampleBts0 = '[
 
 type SampleObjs0 = '[ 'Atom Int 'Nothing, 'List Double ""]
 
+type SampleBts1 = '[
+	'DescriptorSetLayout.Buffer '[ 'List Double "", 'List Double "", 'List Double ""],
+	'DescriptorSetLayout.Buffer '[ 'Atom Double 'Nothing ] ]
+
+type SampleObj1 = '[ 'Atom Double 'Nothing]
+
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])
 	(btis :: [(Symbol, T.Format)])

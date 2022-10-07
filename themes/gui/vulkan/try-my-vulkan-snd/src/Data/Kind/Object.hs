@@ -77,6 +77,7 @@ instance (SizeAlignment obj, WholeSize objs) =>
 class StoreObject v (obj :: Object) where
 	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
 	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
+	objectLength :: v -> ObjectLength obj
 
 class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
@@ -85,6 +86,7 @@ class SizeAlignment obj where
 instance Storable t => StoreObject t ('Atom t _nm) where
 	storeObject p ObjectLengthAtom x = poke p x
 	loadObject p ObjectLengthAtom = peek p
+	objectLength _ = ObjectLengthAtom
 
 instance Storable t => SizeAlignment ('Atom t _nm) where
 	objectAlignment = lcm minimumAlignment $ alignment @t undefined
@@ -95,6 +97,7 @@ instance (
 	Storable t, Element v ~ t ) => StoreObject v ('List t _nm) where
 	storeObject p (ObjectLengthList n) xs = pokeArray p . take n $ otoList xs
 	loadObject p (ObjectLengthList n) = Seq.fromList <$> peekArray n p
+	objectLength = ObjectLengthList . olength
 
 instance Storable t => SizeAlignment ('List t _nm) where
 	objectAlignment = lcm minimumAlignment $ alignment @t undefined

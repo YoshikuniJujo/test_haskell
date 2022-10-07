@@ -16,7 +16,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object
+import Data.Kind.Object hiding (objectLength)
 import Data.HeteroList
 import Data.IORef
 import Data.Word
