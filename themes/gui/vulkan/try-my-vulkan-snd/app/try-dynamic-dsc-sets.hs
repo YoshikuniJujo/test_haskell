@@ -136,13 +136,16 @@ mkData n = (
 
 type DscSetLytLstW123 = '[
 	'Vk.DscSetLyt.Buffer '[ListW1, ListW2, ListW3],
-	'Vk.DscSetLyt.Buffer '[ 'Atom Word32 'Nothing] ]
+	'Vk.DscSetLyt.Buffer '[ 'Atom Word32 'Nothing],
+	'Vk.DscSetLyt.Buffer '[
+		'Atom Word32 'Nothing,
+		'Atom Word32 'Nothing ] ]
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () DscSetLytLstW123
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = zeroBits,
-	Vk.DscSetLyt.createInfoBindings = bdng0 :...: bdng1 :...: HVNil }
+	Vk.DscSetLyt.createInfoBindings = bdng0 :...: bdng1 :...: bdng2 :...: HVNil }
 	where
 	bdng0 = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
@@ -151,7 +154,12 @@ dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 			Vk.ShaderStageComputeBit }
 	bdng1 = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeStorageBufferDynamic,
+			Vk.Dsc.TypeStorageBuffer,
+		Vk.DscSetLyt.bindingBufferStageFlags =
+			Vk.ShaderStageComputeBit }
+	bdng2 = Vk.DscSetLyt.BindingBuffer {
+		Vk.DscSetLyt.bindingBufferDescriptorType =
+			Vk.Dsc.TypeStorageBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags =
 			Vk.ShaderStageComputeBit }
 
@@ -171,41 +179,38 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 		@('Atom Word32 ('Just "x1"))
 		@('Atom Word32 ('Just "x2"))
 		phdvc dvc 3 5 7 \bx mx -> case arg of
-			"0" -> do
-				Vk.DscSet.updateDs @_ @() dvc (
-					Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
-					Vk.DscSet.Write_ (writeDscSet2 @"x0" ds bx) :...:
-					HVNil
-					) []
-				f ds ma mb mc
-			"1" -> do
-				Vk.DscSet.updateDs @_ @() dvc (
-					Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
-					Vk.DscSet.Write_ (writeDscSet2 @"x1" ds bx) :...:
-					HVNil
-					) []
-				f ds ma mb mc
-			"2" -> do
-				Vk.DscSet.updateDs @_ @() dvc (
-					Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
-					Vk.DscSet.Write_ (writeDscSet2 @"x2" ds bx) :...:
-					HVNil
-					) []
-				f ds ma mb mc
-			_ -> error "bad arg"
+		"0" -> do
+			Vk.DscSet.updateDs @_ @() dvc (
+				Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+				Vk.DscSet.Write_ (writeDscSet2 @"x0" ds bx) :...:
+				HVNil
+				) []
+			f ds ma mb mc
+		"1" -> do
+			Vk.DscSet.updateDs @_ @() dvc (
+				Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+				Vk.DscSet.Write_ (writeDscSet2 @"x1" ds bx) :...:
+				HVNil
+				) []
+			f ds ma mb mc
+		"2" -> do
+			Vk.DscSet.updateDs @_ @() dvc (
+				Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+				Vk.DscSet.Write_ (writeDscSet2 @"x2" ds bx) :...:
+				HVNil
+				) []
+			f ds ma mb mc
+		_ -> error "bad arg"
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoNext = Nothing,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 	Vk.DscPool.createInfoMaxSets = 1,
-	Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
+	Vk.DscPool.createInfoPoolSizes = [poolSize0] }
 	where
 	poolSize0 = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 10 }
-	poolSize1 = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBufferDynamic,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
@@ -445,7 +450,7 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute plyt
-			(Singleton $ Vk.Cmd.DescriptorSet dss) [512]
+			(Singleton $ Vk.Cmd.DescriptorSet dss) [512, 0]
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit @() q [sinfo] Nothing
 	Vk.Queue.waitIdle q
@@ -469,6 +474,10 @@ layout(binding = 0) buffer Data {
 layout(binding = 1) buffer Foo {
 	uint x;
 } x;
+
+layout(binding = 2) buffer Bar {
+	uint y;
+} y;
 
 layout(constant_id = 0) const uint sc = 2;
 layout(constant_id = 1) const uint sc2 = 3;
