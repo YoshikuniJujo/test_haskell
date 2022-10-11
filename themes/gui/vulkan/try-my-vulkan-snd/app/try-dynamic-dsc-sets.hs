@@ -23,6 +23,7 @@ import Data.Bits.Utils
 import Data.List.Length
 import Data.HeteroList
 import Data.Word
+import System.Environment
 
 import qualified Data.Vector.Storable as V
 import qualified Data.Vector.Storable.Utils as V
@@ -73,13 +74,19 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 main :: IO ()
 main = do
-	(r1, r2, r3) <- crtDevice \phdvc qFam dvc mxX ->
-		let	(da, db, dc) = mkData mxX in
-		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dslyt ->
-		prepDscSets phdvc dvc dslyt da db dc $ calc dvc qFam dslyt mxX
-	print . take 20 $ unW1 <$> r1
-	print . take 20 $ unW2 <$> r2
-	print . take 20 $ unW3 <$> r3
+	args <- getArgs
+	case args of
+		[arg] -> do
+			(r1, r2, r3) <- crtDevice \phdvc qFam dvc mxX ->
+				let (da, db, dc) = mkData mxX in
+					Vk.DscSetLyt.create dvc dscSetLayoutInfo
+						nil nil \dslyt ->
+					prepDscSets arg phdvc dvc dslyt da db dc
+						$ calc dvc qFam dslyt mxX
+			print . take 20 $ unW1 <$> r1
+			print . take 20 $ unW2 <$> r2
+			print . take 20 $ unW3 <$> r3
+		_ -> error "bad args"
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
@@ -143,23 +150,43 @@ dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 			Vk.ShaderStageComputeBit }
 
 prepDscSets ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
+	String -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sm2 sm3 sb1 sb2 sb3 .
 		Vk.DscSet.S sd s '(sl, DscSetLytLstW123) ->
 		Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
 		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
 		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO a) -> IO a
-prepDscSets phdvc dvc dslyt da db dc f =
+prepDscSets arg phdvc dvc dslyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dp ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dp dslyt) >>= \(Singleton ds) ->
 	storageBufferNew3 phdvc dvc da db dc \(ba, ma) (bb, mb) (bc, mc) ->
-	storageBufferNew @Word32 @('Atom Word32 ('Just "x0")) phdvc dvc 7 \bx mx -> do
-	Vk.DscSet.updateDs @_ @() dvc (
-		Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
-		Vk.DscSet.Write_ (writeDscSet2 @"x0" ds bx) :...:
-		HVNil
-		) []
-	f ds ma mb mc
+	storageBufferNew3Objs @Word32
+		@('Atom Word32 ('Just "x0"))
+		@('Atom Word32 ('Just "x1"))
+		@('Atom Word32 ('Just "x2"))
+		phdvc dvc 3 5 7 \bx mx -> case arg of
+			"0" -> do
+				Vk.DscSet.updateDs @_ @() dvc (
+					Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+					Vk.DscSet.Write_ (writeDscSet2 @"x0" ds bx) :...:
+					HVNil
+					) []
+				f ds ma mb mc
+			"1" -> do
+				Vk.DscSet.updateDs @_ @() dvc (
+					Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+					Vk.DscSet.Write_ (writeDscSet2 @"x1" ds bx) :...:
+					HVNil
+					) []
+				f ds ma mb mc
+			"2" -> do
+				Vk.DscSet.updateDs @_ @() dvc (
+					Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+					Vk.DscSet.Write_ (writeDscSet2 @"x2" ds bx) :...:
+					HVNil
+					) []
+				f ds ma mb mc
+			_ -> error "bad arg"
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {
@@ -228,11 +255,46 @@ storageBufferNew phdvc dvc xs f =
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj dvc m zeroBits xs
 			f bnd m
 
+storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
+	StoreObject v obj0, SizeAlignment obj0,
+	StoreObject v obj1, SizeAlignment obj1,
+	StoreObject v obj2, SizeAlignment obj2,
+	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj0 '[obj0, obj1, obj2],
+	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj1 '[obj0, obj1, obj2],
+	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj2 '[obj0, obj1, obj2]
+	) =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> v -> v -> (forall sb sm .
+		Vk.Bffr.Binded sb sm nm '[obj0, obj1, obj2]  ->
+		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj0, obj1, obj2])] ->
+		IO a) -> IO a
+storageBufferNew3Objs phdvc dvc x y z f =
+	Vk.Bffr.create dvc (bufferInfo' x y z) nil nil \bff -> do
+		mi <- getMemoryInfo phdvc dvc bff
+		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (Singleton . V2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
+			nil nil \(Singleton (V2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj0 dvc m zeroBits x
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj1 dvc m zeroBits y
+			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
+			f bnd m
+
 bufferInfo :: StoreObject v obj => v -> Vk.Bffr.CreateInfo () '[obj]
 bufferInfo xs = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoNext = Nothing,
 	Vk.Bffr.createInfoFlags = def,
 	Vk.Bffr.createInfoLengths = Singleton $ objectLength xs,
+	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
+	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+	Vk.Bffr.createInfoQueueFamilyIndices = [] }
+
+bufferInfo' :: (
+	StoreObject v obj0, StoreObject v obj1, StoreObject v obj2 ) =>
+	v -> v -> v -> Vk.Bffr.CreateInfo () '[obj0, obj1, obj2]
+bufferInfo' x y z = Vk.Bffr.CreateInfo {
+	Vk.Bffr.createInfoNext = Nothing,
+	Vk.Bffr.createInfoFlags = def,
+	Vk.Bffr.createInfoLengths =
+		objectLength x :...: objectLength y :...:
+		objectLength z :...: HVNil,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
 	Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -283,13 +345,13 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List t "")
 	bil = Vk.Dsc.BufferInfoList
 
-writeDscSet2 :: forall nm sd sp sl sm4 sb4 nm4 .
+writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
 	Vk.DscSet.S sd sp '(sl, DscSetLytLstW123) ->
-	Vk.Bffr.Binded sm4 sb4 nm4 '[ 'Atom Word32 ('Just nm)] ->
+	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.Write () sd sp '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb4, sm4, nm4,
-				'[ 'Atom Word32 ('Just nm)],
+				objs,
 				'Atom Word32 ('Just nm))
 			] )
 writeDscSet2 ds bx = Vk.DscSet.Write {
