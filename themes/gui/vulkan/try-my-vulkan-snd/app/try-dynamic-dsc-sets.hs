@@ -153,10 +153,10 @@ prepDscSets phdvc dvc dslyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dp ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dp dslyt) >>= \(Singleton ds) ->
 	storageBufferNew3 phdvc dvc da db dc \(ba, ma) (bb, mb) (bc, mc) ->
-	storageBufferNew @Word32 @('Atom Word32 'Nothing) phdvc dvc 7 \bx mx -> do
+	storageBufferNew @Word32 @('Atom Word32 ('Just "x0")) phdvc dvc 7 \bx mx -> do
 	Vk.DscSet.updateDs @_ @() dvc (
-		Vk.DscSet.Write_ (writeDscSet ds ba bb bc bx) :...:
-		Vk.DscSet.Write_ (writeDscSet2 ds ba bb bc bx) :...:
+		Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :...:
+		Vk.DscSet.Write_ (writeDscSet2 @"x0" ds bx) :...:
 		HVNil
 		) []
 	f ds ma mb mc
@@ -261,56 +261,43 @@ findMemoryTypeIndex phdvc reqs mprop = do
 		i : _ -> pure i
 		[] -> error "No available memory types"
 
-writeDscSet :: forall sd sp sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sm4 sb4 nm4 .
+writeDscSet :: forall sd sp sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 	Vk.DscSet.S sd sp '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm1 sb1 nm1 '[ListW1] ->
 	Vk.Bffr.Binded sm2 sb2 nm2 '[ListW2] ->
 	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
-	Vk.Bffr.Binded sm4 sb4 nm4 '[ 'Atom Word32 'Nothing] ->
 	Vk.DscSet.Write () sd sp '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb1, sm1, nm1, '[ListW1], ListW1),
 			'(sb2, sm2, nm2, '[ListW2], ListW2),
 			'(sb3, sm3, nm3, '[ListW3], ListW3)
---			'(sb4, sm4, nm4,
---				'[ 'Atom Word32 'Nothing],
---				'Atom Word32 'Nothing)
 			] )
-writeDscSet ds ba bb bc bx = Vk.DscSet.Write {
+writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		bil @W1 ba :...: bil @W2 bb :...: bil @W3 bc :...:
---		Vk.Dsc.BufferInfoAtom bx :...:
-		HVNil }
+		bil @W1 ba :...: bil @W2 bb :...: bil @W3 bc :...: HVNil }
 	where
 	bil :: forall t {sb} {sm} {nm} {objs} .  Vk.Bffr.Binded sm sb nm objs ->
 		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List t "")
 	bil = Vk.Dsc.BufferInfoList
 
-writeDscSet2 :: forall sd sp sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sm4 sb4 nm4 .
+writeDscSet2 :: forall nm sd sp sl sm4 sb4 nm4 .
 	Vk.DscSet.S sd sp '(sl, DscSetLytLstW123) ->
-	Vk.Bffr.Binded sm1 sb1 nm1 '[ListW1] ->
-	Vk.Bffr.Binded sm2 sb2 nm2 '[ListW2] ->
-	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
-	Vk.Bffr.Binded sm4 sb4 nm4 '[ 'Atom Word32 'Nothing] ->
+	Vk.Bffr.Binded sm4 sb4 nm4 '[ 'Atom Word32 ('Just nm)] ->
 	Vk.DscSet.Write () sd sp '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb4, sm4, nm4,
-				'[ 'Atom Word32 'Nothing],
-				'Atom Word32 'Nothing)
+				'[ 'Atom Word32 ('Just nm)],
+				'Atom Word32 ('Just nm))
 			] )
-writeDscSet2 ds ba bb bc bx = Vk.DscSet.Write {
+writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		Vk.Dsc.BufferInfoAtom bx :...: HVNil }
-	where
-	bil :: forall t {sb} {sm} {nm} {objs} .  Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List t "")
-	bil = Vk.Dsc.BufferInfoList
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.S sd sp '(sl, DscSetLytLstW123) ->
