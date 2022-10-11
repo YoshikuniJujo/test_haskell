@@ -142,16 +142,10 @@ dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () DscSetLytLstW123
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = zeroBits,
-	Vk.DscSetLyt.createInfoBindings = bdng0 :...: bdng1 :...: HVNil }
-	where
-	bdng0 = Vk.DscSetLyt.BindingBuffer {
+	Vk.DscSetLyt.createInfoBindings = bdng :...: bdng :...: HVNil }
+	where bdng = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeStorageBuffer,
-		Vk.DscSetLyt.bindingBufferStageFlags =
-			Vk.ShaderStageComputeBit }
-	bdng1 = Vk.DscSetLyt.BindingBuffer {
-		Vk.DscSetLyt.bindingBufferDescriptorType =
-			Vk.Dsc.TypeStorageBufferDynamic,
 		Vk.DscSetLyt.bindingBufferStageFlags =
 			Vk.ShaderStageComputeBit }
 
@@ -199,13 +193,9 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoNext = Nothing,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 	Vk.DscPool.createInfoMaxSets = 1,
-	Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
-	where
-	poolSize0 = Vk.DscPool.Size {
+	Vk.DscPool.createInfoPoolSizes = [poolSize] }
+	where poolSize = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 10 }
-	poolSize1 = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBufferDynamic,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
@@ -367,7 +357,7 @@ writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
 writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBufferDynamic,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		Vk.Dsc.BufferInfoAtom bx :...: HVNil }
 
@@ -445,7 +435,7 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute plyt
-			(Singleton $ Vk.Cmd.DescriptorSet dss) [512]
+			(Singleton $ Vk.Cmd.DescriptorSet dss) []
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit @() q [sinfo] Nothing
 	Vk.Queue.waitIdle q
