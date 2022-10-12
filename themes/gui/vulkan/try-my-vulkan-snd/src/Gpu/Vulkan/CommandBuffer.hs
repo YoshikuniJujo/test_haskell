@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
@@ -22,7 +22,9 @@ import Gpu.Vulkan.CommandBuffer.Type
 import Gpu.Vulkan.CommandBuffer.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.CommandPool.Type as CommandPool
+import qualified Gpu.Vulkan.CommandPool.Middle as CommandPool.M
 import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 
 data AllocateInfo n s = AllocateInfo {
@@ -49,21 +51,21 @@ data AllocateInfoNew n s (vss :: [[Type]]) = AllocateInfoNew {
 	allocateInfoLevelNew :: Level }
 	deriving Show
 
-allocateInfoToMiddleNew :: AllocateInfoNew n s vss -> M.AllocateInfoNewM n vss
+allocateInfoToMiddleNew :: AllocateInfoNew n s vss -> AllocateInfoNewM n vss
 allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoNextNew = nxt,
 	allocateInfoCommandPoolNew = CommandPool.C cp,
-	allocateInfoLevelNew = lvl } = M.AllocateInfoNewM {
-	M.allocateInfoNextNewM = nxt,
-	M.allocateInfoCommandPoolNewM = cp,
-	M.allocateInfoLevelNewM = lvl }
+	allocateInfoLevelNew = lvl } = AllocateInfoNewM {
+	allocateInfoNextNewM = nxt,
+	allocateInfoCommandPoolNewM = cp,
+	allocateInfoLevelNewM = lvl }
 
 allocateNew ::
 	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
-	(M.allocateNewM dvc ai) (M.freeCsNew dvc $ M.allocateInfoCommandPoolNewM ai)
+	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
 	(f . heteroVarListMap C)
 
 allocate :: Pointable n =>
@@ -79,3 +81,31 @@ begin (C (M.CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (M.CC cb)) rfs = M.reset cb rfs
+
+allocateNewM ::
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroVarList M.CC vss)
+allocateNewM dvc ai = listToHeteroVarList M.CC <$> M.allocate dvc (allocateInfoFromNew ai)
+
+freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroVarList M.CC vss -> IO ()
+freeCsNew dvc cp cs =
+	M.freeCs dvc cp (heteroVarListToList (\(M.CC cb) -> cb) cs)
+
+data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
+	allocateInfoNextNewM :: Maybe n,
+	allocateInfoCommandPoolNewM :: CommandPool.M.C,
+	allocateInfoLevelNewM :: Level }
+	deriving Show
+
+allocateInfoFromNew :: forall n vss .
+	TpLvlLst.Length [Type] vss =>
+	AllocateInfoNewM n vss -> M.AllocateInfo n
+allocateInfoFromNew AllocateInfoNewM {
+	allocateInfoNextNewM = mnxt,
+	allocateInfoCommandPoolNewM = cp,
+	allocateInfoLevelNewM = lvl } = M.AllocateInfo {
+	M.allocateInfoNext = mnxt,
+	M.allocateInfoCommandPool = cp,
+	M.allocateInfoLevel = lvl,
+	M.allocateInfoCommandBufferCount =
+		fromIntegral (TpLvlLst.length @_ @vss) }

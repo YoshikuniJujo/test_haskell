@@ -1,5 +1,5 @@
 module Gpu.Vulkan.CommandBuffer.Middle (
-	CC(..), AllocateInfoNewM(..), allocateNewM, freeCsNew,
+	CC(..),
 	AllocateInfo(..), allocate, freeCs,
 	BeginInfo(..), begin, end, reset
 	) where

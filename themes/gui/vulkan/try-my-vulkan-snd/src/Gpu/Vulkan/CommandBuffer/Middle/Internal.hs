@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
-	CC(..), MC(..), AllocateInfoNewM(..), allocateNewM, freeCsNew,
+	CC(..), MC(..),
 	AllocateInfo(..), allocate, freeCs,
 
 	BeginInfo(..), begin, end, reset
@@ -74,38 +74,6 @@ newMC :: C.C -> IO MC
 newMC c = MC <$> newIORef nullPtr <*> pure c
 
 newtype CC (vs :: [Type]) = CC { unCC :: MC }
-
-allocateNewM ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
-	Device.D -> AllocateInfoNewM n vss -> IO (HeteroVarList CC vss)
-allocateNewM dvc ai = listToHeteroVarList CC <$> allocate dvc (allocateInfoFromNew ai)
-
-freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList CC vss -> IO ()
-freeCsNew (Device.D dvc) (CommandPool.C cp)
-	((length &&& id) . heteroVarListToList (\(CC (MC _ cb)) -> cb) -> (cc, cs)) =
-	($ pure) $ runContT do
-		pcs <- ContT $ allocaArray cc
-		lift do	pokeArray pcs cs
-			C.freeCs dvc cp (fromIntegral cc) pcs
-
-data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
-	allocateInfoNextNewM :: Maybe n,
-	allocateInfoCommandPoolNewM :: CommandPool.C,
-	allocateInfoLevelNewM :: Level }
-	deriving Show
-
-allocateInfoFromNew :: forall n vss .
-	TpLvlLst.Length [Type] vss =>
-	AllocateInfoNewM n vss -> AllocateInfo n
-allocateInfoFromNew AllocateInfoNewM {
-	allocateInfoNextNewM = mnxt,
-	allocateInfoCommandPoolNewM = cp,
-	allocateInfoLevelNewM = lvl } = AllocateInfo {
-	allocateInfoNext = mnxt,
-	allocateInfoCommandPool = cp,
-	allocateInfoLevel = lvl,
-	allocateInfoCommandBufferCount =
-		fromIntegral (TpLvlLst.length @_ @vss) }
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [MC]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newMC =<< do
