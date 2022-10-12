@@ -1613,7 +1613,7 @@ recordCommandBuffer cb imageIndex = do
 	cf <- readGlobal globalCurrentFrame
 	lift do	Vk.Cmd.M.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppll 0
 			[dss !! cf] []
-		Vk.Cmd.drawIndexedM cb (fromIntegral $ olength idcs) 1 0 0 0
+		Vk.Cmd.M.drawIndexed cb (fromIntegral $ olength idcs) 1 0 0 0
 		Vk.Cmd.M.endRenderPass cb
 		Vk.CommandBuffer.end cb
 

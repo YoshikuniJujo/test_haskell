@@ -6,7 +6,11 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Command.Middle where
+module Gpu.Vulkan.Command.Middle (
+	beginRenderPass, endRenderPass, bindPipeline, bindPipelineCompute,
+	bindVertexBuffers, bindIndexBuffer, pushConstants, bindDescriptorSets,
+	draw, drawIndexed, dispatch, copyBuffer, copyBufferToImage,
+	pipelineBarrier ) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
@@ -15,6 +19,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList hiding (length)
 import Data.Word
+import Data.Int
 import Data.IORef
 
 import Gpu.Vulkan.Middle
@@ -69,6 +74,11 @@ bindPipelineCompute (CommandBuffer.C rppl cb) (Pipeline.BindPoint pbp) (Pipeline
 
 draw :: CommandBuffer.C vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.C _ cb) vc ic fv fi = C.draw cb vc ic fv fi
+
+drawIndexed :: CommandBuffer.C vs ->
+	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
+drawIndexed (CommandBuffer.C _ cb) idxc istc fidx vo fist =
+	C.drawIndexed cb idxc istc fidx vo fist
 
 bindVertexBuffers ::
 	CommandBuffer.C vs -> Word32 -> [(Buffer.B, Device.Size)] -> IO ()
@@ -151,22 +161,6 @@ pipelineBarrier (CommandBuffer.C _ cb)
 	lift $ pokeArray pibs cibs
 	lift $ C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
 		(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
-
-class PointableHeteroMap ns where
-	pointableHeteroMap :: HeteroVarList t ns ->
-		(forall n . Pointable n => t n -> a) -> [a]
-	pointableHeteroMapM :: Monad m => HeteroVarList t ns ->
-		(forall n . Pointable n => t n -> m a) -> m [a]
-
-instance PointableHeteroMap '[] where
-	pointableHeteroMap HVNil _ = []
-	pointableHeteroMapM HVNil _ = pure []
-
-instance (Pointable n, PointableHeteroMap ns) =>
-	PointableHeteroMap (n ': ns) where
-	pointableHeteroMap (x :...: xs) f = f x : pointableHeteroMap xs f
-	pointableHeteroMapM (x :...: xs) f =
-		(:) <$> f x <*> pointableHeteroMapM xs f
 
 copyBufferToImage ::
 	CommandBuffer.C vs -> Buffer.M.B -> Image.I -> Image.Layout ->

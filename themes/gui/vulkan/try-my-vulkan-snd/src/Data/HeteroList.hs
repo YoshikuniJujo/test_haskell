@@ -19,6 +19,7 @@ module Data.HeteroList (
 	heteroVarListReplicate,
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	heteroVarListZipWithM_,
+	PointableHeteroMap(..),
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
 
@@ -26,6 +27,7 @@ import Prelude hiding (length)
 
 import Foreign.Ptr
 import Foreign.Storable
+import Foreign.Pointable
 import Data.Kind
 
 infixr 5 :.:
@@ -262,3 +264,19 @@ deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15) =>
 	Show (V15 t '(
 		s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15
 		))
+
+class PointableHeteroMap ns where
+	pointableHeteroMap :: HeteroVarList t ns ->
+		(forall n . Pointable n => t n -> a) -> [a]
+	pointableHeteroMapM :: Monad m => HeteroVarList t ns ->
+		(forall n . Pointable n => t n -> m a) -> m [a]
+
+instance PointableHeteroMap '[] where
+	pointableHeteroMap HVNil _ = []
+	pointableHeteroMapM HVNil _ = pure []
+
+instance (Pointable n, PointableHeteroMap ns) =>
+	PointableHeteroMap (n ': ns) where
+	pointableHeteroMap (x :...: xs) f = f x : pointableHeteroMap xs f
+	pointableHeteroMapM (x :...: xs) f =
+		(:) <$> f x <*> pointableHeteroMapM xs f
