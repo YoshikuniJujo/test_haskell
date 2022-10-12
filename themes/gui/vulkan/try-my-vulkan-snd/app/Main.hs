@@ -101,7 +101,7 @@ import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Fb
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Fb
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
-import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CB
+import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as Vk.CB
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
 import qualified Gpu.Vulkan.Semaphore as Vk.Smp.N
 import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Smp
@@ -819,7 +819,7 @@ createCommandBuffers Global {
 		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
 	writeIORef rcbs cbs
 
-recordCommandBuffer :: Global -> Vk.CB.C '[] -> Vk.Fb.F -> IO ()
+recordCommandBuffer :: Global -> Vk.CB.MC -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
 	globalGraphicsPipeline = rppl } cb fb = do
@@ -841,10 +841,10 @@ recordCommandBuffer Global {
 					(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
 	Vk.Cmd.M.beginRenderPass @()
 		@'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-		cb renderPassInfo Vk.Subpass.ContentsInline
-	Vk.Cmd.M.bindPipeline cb Vk.Ppl.BindPointGraphics =<< readIORef rppl
-	Vk.Cmd.M.draw cb 3 1 0 0
-	Vk.Cmd.M.endRenderPass cb
+		(Vk.CB.C cb) renderPassInfo Vk.Subpass.ContentsInline
+	Vk.Cmd.M.bindPipeline (Vk.CB.C cb) Vk.Ppl.BindPointGraphics =<< readIORef rppl
+	Vk.Cmd.M.draw (Vk.CB.C cb) 3 1 0 0
+	Vk.Cmd.M.endRenderPass (Vk.CB.C cb)
 	Vk.CB.end cb
 
 createSyncObjects :: Global -> IO ()
@@ -888,7 +888,7 @@ drawFrame g@Global {
 	ias <- readIORef rias
 	sc <- readIORef rsc
 	scfbs <- readIORef rscfbs
-	cbs <- readIORef rcbs
+	cbs <- (Vk.CB.unCC <$>) <$> readIORef rcbs
 	rfs <- readIORef rrfs
 	gq <- readIORef rgq
 	pq <- readIORef rpq
@@ -902,7 +902,7 @@ drawFrame g@Global {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
 				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
-			Vk.submitInfoCommandBuffers = [cbs !! imageIndex],
+			Vk.submitInfoCommandBuffers = [(Vk.CB.C <$> cbs) !! imageIndex],
 			Vk.submitInfoSignalSemaphores = [rfs] }
 	Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {

@@ -82,12 +82,12 @@ allocate :: Pointable n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
-	((M.C <$>) <$> M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
-	(f . (C <$>))
+	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
+	(f . (C . M.C <$>))
 
 begin :: (Pointable n, Pointable n') =>
 	C s vs -> M.BeginInfo n n' -> IO a -> IO a
-begin (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+begin (C (M.C cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: C sc vs -> ResetFlags -> IO ()
-reset (C cb) rfs = M.reset cb rfs
+reset (C (M.C cb)) rfs = M.reset cb rfs

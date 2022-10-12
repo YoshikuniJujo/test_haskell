@@ -171,19 +171,19 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoPipelineStatistics = ps }
 	ContT $ withForeignPtr fInheritanceInfo
 
-begin :: (Pointable n, Pointable n') => C vs -> BeginInfo n n' -> IO ()
-begin (C (MC _ c)) bi = ($ pure) $ runContT do
+begin :: (Pointable n, Pointable n') => MC -> BeginInfo n n' -> IO ()
+begin (MC _ c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi
 		throwUnlessSuccess $ Result r
 
-end :: C vs -> IO ()
-end (C (MC rppl c)) = throwUnlessSuccess . Result =<< do
+end :: MC -> IO ()
+end (MC rppl c) = throwUnlessSuccess . Result =<< do
 	writeIORef rppl nullPtr
 	C.end c
 
-reset :: C vs -> ResetFlags -> IO ()
-reset (C (MC _ c)) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
+reset :: MC -> ResetFlags -> IO ()
+reset (MC _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
 
 freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList C vss -> IO ()
 freeCsNew (Device.D dvc) (CommandPool.C cp)
@@ -193,9 +193,9 @@ freeCsNew (Device.D dvc) (CommandPool.C cp)
 		lift do	pokeArray pcs cs
 			C.freeCs dvc cp (fromIntegral cc) pcs
 
-freeCs :: Device.D -> CommandPool.C -> [C vs] -> IO ()
+freeCs :: Device.D -> CommandPool.C -> [MC] -> IO ()
 freeCs (Device.D dvc) (CommandPool.C cp)
-	(length &&& ((\(C (MC _ cb)) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
+	(length &&& ((\(MC _ cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
 	pcs <- ContT $ allocaArray cc
 	lift do	pokeArray pcs cs
 		C.freeCs dvc cp (fromIntegral cc) pcs

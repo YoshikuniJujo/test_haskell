@@ -1409,12 +1409,12 @@ beginSingleTimeCommands = do
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageOneTimeSubmitBit,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	[commandBuffer] <- lift $ (Vk.CommandBuffer.C <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo
+	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
 	lift $ Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
-	pure commandBuffer
+	pure $ Vk.CommandBuffer.C commandBuffer
 
 endSingleTimeCommands :: Vk.CommandBuffer.C v -> ReaderT Global IO ()
-endSingleTimeCommands commandBuffer = do
+endSingleTimeCommands commandBuffer@(Vk.CommandBuffer.C cb) = do
 	dvc <- readGlobal globalDevice
 	gq <- readGlobal globalGraphicsQueue
 	cp <- readGlobal globalCommandPool
@@ -1423,10 +1423,10 @@ endSingleTimeCommands commandBuffer = do
 			Vk.submitInfoWaitSemaphoreDstStageMasks = [],
 			Vk.submitInfoCommandBuffers = [commandBuffer],
 			Vk.submitInfoSignalSemaphores = [] }
-	lift do	Vk.CommandBuffer.end commandBuffer
+	lift do	Vk.CommandBuffer.end cb
 		Vk.Queue.submit' @() @'[] gq [submitInfo] Nothing
 		Vk.Queue.waitIdle gq
-		Vk.CommandBuffer.freeCs dvc cp [commandBuffer]
+		Vk.CommandBuffer.freeCs dvc cp [cb]
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
 	Vk.Buffer.List.B v -> Vk.Buffer.List.B v -> Int -> ReaderT Global IO ()
@@ -1579,7 +1579,7 @@ recordCommandBuffer cb imageIndex = do
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageFlagsZero,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	lift $ Vk.CommandBuffer.begin @() @() cb beginInfo
+	lift $ Vk.CommandBuffer.begin @() @() (Vk.CommandBuffer.unCC cb) beginInfo
 	rp <- readGlobal globalRenderPass
 	scfbs <- readGlobal globalSwapChainFramebuffers
 	sce <- readGlobal globalSwapChainExtent
@@ -1615,7 +1615,7 @@ recordCommandBuffer cb imageIndex = do
 			[dss !! cf] []
 		Vk.Cmd.M.drawIndexed cb (fromIntegral $ olength idcs) 1 0 0 0
 		Vk.Cmd.M.endRenderPass cb
-		Vk.CommandBuffer.end cb
+		Vk.CommandBuffer.end (Vk.CommandBuffer.unCC cb)
 
 mainLoop :: ReaderT Global IO ()
 mainLoop = do
@@ -1640,7 +1640,7 @@ drawFrame st = do
 		dvc sc uint64Max (Just ias) Nothing
 	lift $ Vk.Fence.resetFs dvc [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers
-	lift $ Vk.CommandBuffer.reset cb Vk.CommandBuffer.ResetFlagsZero
+	lift $ Vk.CommandBuffer.reset (Vk.CommandBuffer.unCC cb) Vk.CommandBuffer.ResetFlagsZero
 	recordCommandBuffer cb imageIndex
 	rfs <- (!! cf) <$> readGlobal globalRenderFinishedSemaphores
 	updateUniformBuffer st $ fromIntegral cf
