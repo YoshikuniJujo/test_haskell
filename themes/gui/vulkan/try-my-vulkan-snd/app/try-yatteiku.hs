@@ -178,7 +178,7 @@ makeCommandBuffer device graphicsQueueFamilyIndex f = do
 		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
-						Vk.CommandBuffer.beginInfoNil $ f cmdBuf
+					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf
 				let	submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,

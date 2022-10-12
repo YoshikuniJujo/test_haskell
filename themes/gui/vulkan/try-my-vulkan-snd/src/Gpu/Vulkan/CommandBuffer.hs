@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), M.beginInfoNil, reset ) where
+	C, allocate, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset ) where
 
 import Foreign.Pointable
 import Control.Exception

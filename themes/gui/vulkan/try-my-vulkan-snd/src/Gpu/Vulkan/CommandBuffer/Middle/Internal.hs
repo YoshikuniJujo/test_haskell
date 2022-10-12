@@ -11,7 +11,7 @@ module Gpu.Vulkan.CommandBuffer.Middle.Internal (
 	C(..), MC(..), AllocateInfoNew(..), allocateNew, freeCsNew,
 	AllocateInfo(..), allocate, freeCs,
 
-	BeginInfo(..), beginInfoNil, begin, end, reset
+	BeginInfo(..), begin, end, reset
 	) where
 
 import Foreign.Ptr
@@ -115,9 +115,6 @@ data BeginInfo n n' = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoFlags :: UsageFlags,
 	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
-
-beginInfoNil :: BeginInfo () ()
-beginInfoNil = def
 
 instance Default (BeginInfo n n') where
 	def = BeginInfo {
