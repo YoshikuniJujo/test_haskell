@@ -4,7 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Buffer.Atom where
+module Old.Gpu.Vulkan.Buffer.Atom where
 
 import Foreign.Storable
 import Foreign.Pointable

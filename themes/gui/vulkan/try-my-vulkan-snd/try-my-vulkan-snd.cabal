@@ -48,7 +48,6 @@ library
       Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Base
       Gpu.Vulkan.Buffer
-      Gpu.Vulkan.Buffer.Atom
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.Buffer.List
       Gpu.Vulkan.Buffer.List.Middle
@@ -72,7 +71,6 @@ library
       Gpu.Vulkan.Component
       Gpu.Vulkan.Component.Enum
       Gpu.Vulkan.Descriptor
-      Gpu.Vulkan.Descriptor.Atom
       Gpu.Vulkan.Descriptor.Enum
       Gpu.Vulkan.Descriptor.List
       Gpu.Vulkan.Descriptor.Middle
@@ -81,7 +79,6 @@ library
       Gpu.Vulkan.DescriptorPool.Middle
       Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet
-      Gpu.Vulkan.DescriptorSet.Atom
       Gpu.Vulkan.DescriptorSet.List
       Gpu.Vulkan.DescriptorSet.Middle
       Gpu.Vulkan.DescriptorSet.TypeLevel
@@ -141,7 +138,6 @@ library
       Gpu.Vulkan.Khr.Swapchain.MiddleOld
       Gpu.Vulkan.Khr.Swapchain.Type
       Gpu.Vulkan.Memory
-      Gpu.Vulkan.Memory.Atom
       Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Memory.Image
       Gpu.Vulkan.Memory.Image.Middle
@@ -209,6 +205,10 @@ library
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
       Gpu.Vulkan.VertexInput.Enum
+      Old.Gpu.Vulkan.Buffer.Atom
+      Old.Gpu.Vulkan.Descriptor.Atom
+      Old.Gpu.Vulkan.DescriptorSet.Atom
+      Old.Gpu.Vulkan.Memory.Atom
       Sample.GetOpt
       Sample.Image
       ThEnv

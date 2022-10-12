@@ -4,10 +4,9 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.Atom where
+module Old.Gpu.Vulkan.DescriptorSet.Atom where
 
 import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Word
 
 import qualified Foreign.Storable.Generic
@@ -15,12 +14,12 @@ import qualified Foreign.Storable.Generic
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.BufferView.Middle as Buffer.View
 import qualified Gpu.Vulkan.Descriptor.Enum as Dsc
-import qualified Gpu.Vulkan.Descriptor.Atom as Dsc
-import qualified Gpu.Vulkan.DescriptorSet.Core as C
 
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
+
+import qualified Old.Gpu.Vulkan.Descriptor.Atom as Dsc
 
 data Write n v = Write {
 	writeNext :: Maybe n,
