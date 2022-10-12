@@ -58,36 +58,24 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	M.allocateInfoCommandPoolNew = cp,
 	M.allocateInfoLevelNew = lvl }
 
-cListFromMiddle :: HeteroVarList M.C vss -> HeteroVarList (C s) vss
-cListFromMiddle HVNil = HVNil
-cListFromMiddle (cb :...: cbs) = C cb :...: cListFromMiddle cbs
-
 allocateNew ::
 	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
-	(M.allocateNew dvc ai) (M.freeCsNew dvc $ M.allocateInfoCommandPoolNew ai)
+	(M.allocateNewM dvc ai) (M.freeCsNew dvc $ M.allocateInfoCommandPoolNew ai)
 	(f . heteroVarListMap C)
-
-{-
-allocateNew :: Pointable n =>
-	Device.D sd -> AllocateInfo n sp ->
-	(forall s vss . HeteroVarList (C s) vss -> IO a) -> IO a
-allocateNew (Device.D dvc) (allocateInfoToMiddle -> ai) f = M.allocateNew dvc ai \mcbs ->
-	f (cListFromMiddle mcbs) `finally` M.freeCsNew dvc (M.allocateInfoCommandPool ai) mcbs
-	-}
 
 allocate :: Pointable n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
-	(f . (C . M.C <$>))
+	(f . (C . M.CC <$>))
 
 begin :: (Pointable n, Pointable n') =>
 	C s vs -> M.BeginInfo n n' -> IO a -> IO a
-begin (C (M.C cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+begin (C (M.CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: C sc vs -> ResetFlags -> IO ()
-reset (C (M.C cb)) rfs = M.reset cb rfs
+reset (C (M.CC cb)) rfs = M.reset cb rfs

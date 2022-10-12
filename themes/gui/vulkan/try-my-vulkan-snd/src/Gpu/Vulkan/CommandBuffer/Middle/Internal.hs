@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
-	C(..), MC(..), AllocateInfoNew(..), allocateNew, freeCsNew,
+	CC(..), MC(..), AllocateInfoNew(..), allocateNewM, freeCsNew,
 	AllocateInfo(..), allocate, freeCs,
 
 	BeginInfo(..), begin, end, reset
@@ -66,6 +66,20 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoCommandBufferCount = cbc }
 	ContT $ withForeignPtr fAllocateInfo
 
+data MC  = MC {
+	cPipeline :: IORef Pipeline.C.P,
+	unC :: C.C }
+
+newMC :: C.C -> IO MC
+newMC c = MC <$> newIORef nullPtr <*> pure c
+
+newtype CC (vs :: [Type]) = CC { unCC :: MC }
+
+allocateNewM ::
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	Device.D -> AllocateInfoNew n vss -> IO (HeteroVarList CC vss)
+allocateNewM dvc ai = listToHeteroVarList CC <$> allocate dvc (allocateInfoFromNew ai)
+
 data AllocateInfoNew n (vss :: [[Type]]) = AllocateInfoNew {
 	allocateInfoNextNew :: Maybe n,
 	allocateInfoCommandPoolNew :: CommandPool.C,
@@ -84,23 +98,6 @@ allocateInfoFromNew AllocateInfoNew {
 	allocateInfoLevel = lvl,
 	allocateInfoCommandBufferCount =
 		fromIntegral (TpLvlLst.length @_ @vss) }
-
-newtype C (vs :: [Type]) = C { unCC :: MC }
-
-data MC  = MC {
-	cPipeline :: IORef Pipeline.C.P,
-	unC :: C.C }
-
-newC :: C.C -> IO (C vs)
-newC c = C <$> newMC c
-
-newMC :: C.C -> IO MC
-newMC c = MC <$> newIORef nullPtr <*> pure c
-
-allocateNew ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
-	Device.D -> AllocateInfoNew n vss -> IO (HeteroVarList C vss)
-allocateNew dvc ai = listToHeteroVarList C <$> allocate dvc (allocateInfoFromNew ai)
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [MC]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newMC =<< do
@@ -185,9 +182,9 @@ end (MC rppl c) = throwUnlessSuccess . Result =<< do
 reset :: MC -> ResetFlags -> IO ()
 reset (MC _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
 
-freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList C vss -> IO ()
+freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList CC vss -> IO ()
 freeCsNew (Device.D dvc) (CommandPool.C cp)
-	((length &&& id) . heteroVarListToList (\(C (MC _ cb)) -> cb) -> (cc, cs)) =
+	((length &&& id) . heteroVarListToList (\(CC (MC _ cb)) -> cb) -> (cc, cs)) =
 	($ pure) $ runContT do
 		pcs <- ContT $ allocaArray cc
 		lift do	pokeArray pcs cs

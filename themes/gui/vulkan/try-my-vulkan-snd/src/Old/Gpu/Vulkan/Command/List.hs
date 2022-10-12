@@ -33,23 +33,23 @@ import qualified Old.Gpu.Vulkan.Buffer.List.Middle as Buffer.List
 
 bindVertexBuffers :: forall vs vs' .
 	InfixIndex vs' (MapSubType vs) =>
-	CommandBuffer.C vs -> Buffer.List.BList vs' -> IO ()
+	CommandBuffer.CC vs -> Buffer.List.BList vs' -> IO ()
 bindVertexBuffers cb bs =
 	M.bindVertexBuffers cb (fromIntegral fb) (Buffer.List.bListToMList bs)
 	where fb = infixIndex @vs' @(MapSubType vs)
 
 copyBuffer :: Storable (Foreign.Storable.Generic.Wrap v) =>
-	CommandBuffer.C vs -> Buffer.List.B v -> Buffer.List.B v -> Buffer.List.Copy v -> IO ()
+	CommandBuffer.CC vs -> Buffer.List.B v -> Buffer.List.B v -> Buffer.List.Copy v -> IO ()
 copyBuffer cb s d cp = M.copyBuffer
 	cb (Buffer.List.bToMiddle s) (Buffer.List.bToMiddle d) [Buffer.List.copyToCore cp]
 
-bindIndexBuffer :: CommandBuffer.C vs -> Buffer.List.B v -> IndexType -> IO ()
+bindIndexBuffer :: CommandBuffer.CC vs -> Buffer.List.B v -> IndexType -> IO ()
 bindIndexBuffer cb ib tp = M.bindIndexBuffer cb (Buffer.List.bToMiddle ib) 0 tp
 
 copyBufferToImage ::
-	CommandBuffer.C vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
+	CommandBuffer.CC vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
-copyBufferToImage (CommandBuffer.C (CommandBuffer.MC _ cb))
+copyBufferToImage (CommandBuffer.CC (CommandBuffer.MC _ cb))
 	(Buffer.List.B _ sb) (Image.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc

@@ -195,7 +195,7 @@ data Global = Global {
 		'[ '(0, Cglm.Vec3), '(1, Color), '(2, TexCoord)]),
 	globalSwapChainFramebuffers :: IORef [Vk.Framebuffer.F],
 	globalCommandPool :: IORef Vk.CommandPool.C,
-	globalCommandBuffers :: IORef [Vk.CommandBuffer.C (
+	globalCommandBuffers :: IORef [Vk.CommandBuffer.CC (
 		'[AddType Vertex 'Vk.VertexInput.RateVertex] )],
 	globalImageAvailableSemaphores :: IORef [Vk.Semaphore.S],
 	globalRenderFinishedSemaphores :: IORef [Vk.Semaphore.S],
@@ -1394,7 +1394,7 @@ createBufferAtom usage properties = do
 	lift $ Vk.Buffer.Atom.bindMemory dvc b bm
 	pure (b, bm)
 
-beginSingleTimeCommands :: ReaderT Global IO (Vk.CommandBuffer.C v)
+beginSingleTimeCommands :: ReaderT Global IO (Vk.CommandBuffer.CC v)
 beginSingleTimeCommands = do
 	cp <- readGlobal globalCommandPool
 	dvc <- readGlobal globalDevice
@@ -1411,10 +1411,10 @@ beginSingleTimeCommands = do
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
 	lift $ Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
-	pure $ Vk.CommandBuffer.C commandBuffer
+	pure $ Vk.CommandBuffer.CC commandBuffer
 
-endSingleTimeCommands :: Vk.CommandBuffer.C v -> ReaderT Global IO ()
-endSingleTimeCommands commandBuffer@(Vk.CommandBuffer.C cb) = do
+endSingleTimeCommands :: Vk.CommandBuffer.CC v -> ReaderT Global IO ()
+endSingleTimeCommands commandBuffer@(Vk.CommandBuffer.CC cb) = do
 	dvc <- readGlobal globalDevice
 	gq <- readGlobal globalGraphicsQueue
 	cp <- readGlobal globalCommandPool
@@ -1549,7 +1549,7 @@ createCommandBuffers = do
 				fromIntegral maxFramesInFlight }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandBuffers
-		=<< lift ((Vk.CommandBuffer.C <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo)
+		=<< lift ((Vk.CommandBuffer.CC <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo)
 
 createSyncObjects :: ReaderT Global IO ()
 createSyncObjects = do
@@ -1571,7 +1571,7 @@ createSyncObjects = do
 		=<< lift (replicateM maxFramesInFlight
 			$ Vk.Fence.create @() dvc fenceInfo nil)
 
-recordCommandBuffer :: Vk.CommandBuffer.C '[AddType Vertex 'Vk.VertexInput.RateVertex] -> Word32 -> ReaderT Global IO ()
+recordCommandBuffer :: Vk.CommandBuffer.CC '[AddType Vertex 'Vk.VertexInput.RateVertex] -> Word32 -> ReaderT Global IO ()
 recordCommandBuffer cb imageIndex = do
 	idcs <- readGlobal globalIndices
 	let	beginInfo = Vk.CommandBuffer.BeginInfo {

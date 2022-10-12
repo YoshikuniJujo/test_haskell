@@ -142,7 +142,7 @@ data Global = Global {
 	globalGraphicsPipeline :: IORef (Vk.Ppl.G '[] '[]),
 	globalSwapChainFramebuffers :: IORef [Vk.Fb.F],
 	globalCommandPool :: IORef Vk.CP.C,
-	globalCommandBuffers :: IORef [Vk.CB.C '[]],
+	globalCommandBuffers :: IORef [Vk.CB.CC '[]],
 	globalImageAvailableSemaphore :: IORef Vk.Smp.S,
 	globalRenderFinishedSemaphore :: IORef Vk.Smp.S,
 	globalInFlightFence :: IORef Vk.Fnc.F
@@ -812,7 +812,7 @@ createCommandBuffers Global {
 	dvc <- readIORef rdvc
 	scfbs <- readIORef rscfbs
 	cp <- readIORef rcp
-	cbs <- (Vk.CB.C <$>) <$> Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
+	cbs <- (Vk.CB.CC <$>) <$> Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
 		Vk.CB.allocateInfoNext = Nothing,
 		Vk.CB.allocateInfoCommandPool = cp,
 		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
@@ -841,10 +841,10 @@ recordCommandBuffer Global {
 					(fromJust $ rgbaDouble 0 0 0 1) :...: HVNil }
 	Vk.Cmd.M.beginRenderPass @()
 		@'[ 'Vk.ClearTypeColor 'Vk.ClearColorTypeFloat32]
-		(Vk.CB.C cb) renderPassInfo Vk.Subpass.ContentsInline
-	Vk.Cmd.M.bindPipeline (Vk.CB.C cb) Vk.Ppl.BindPointGraphics =<< readIORef rppl
-	Vk.Cmd.M.draw (Vk.CB.C cb) 3 1 0 0
-	Vk.Cmd.M.endRenderPass (Vk.CB.C cb)
+		(Vk.CB.CC cb) renderPassInfo Vk.Subpass.ContentsInline
+	Vk.Cmd.M.bindPipeline (Vk.CB.CC cb) Vk.Ppl.BindPointGraphics =<< readIORef rppl
+	Vk.Cmd.M.draw (Vk.CB.CC cb) 3 1 0 0
+	Vk.Cmd.M.endRenderPass (Vk.CB.CC cb)
 	Vk.CB.end cb
 
 createSyncObjects :: Global -> IO ()
@@ -902,7 +902,7 @@ drawFrame g@Global {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks =
 				[(ias, Vk.Ppl.StageColorAttachmentOutputBit)],
-			Vk.submitInfoCommandBuffers = [(Vk.CB.C <$> cbs) !! imageIndex],
+			Vk.submitInfoCommandBuffers = [(Vk.CB.CC <$> cbs) !! imageIndex],
 			Vk.submitInfoSignalSemaphores = [rfs] }
 	Vk.Queue.submit' @() @'[()] gq [submitInfo] $ Just iff
 	let	presentInfo = Vk.Khr.PresentInfo {

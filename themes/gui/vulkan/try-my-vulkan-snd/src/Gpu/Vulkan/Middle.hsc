@@ -239,17 +239,17 @@ data SubmitInfoNew n vss = SubmitInfoNew {
 	submitInfoNextNew :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasksNew ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffersNew :: HeteroVarList CommandBuffer.C vss,
+	submitInfoCommandBuffersNew :: HeteroVarList CommandBuffer.CC vss,
 	submitInfoSignalSemaphoresNew :: [Semaphore.S] }
 
-deriving instance (Show n, Show (HeteroVarList CommandBuffer.C vss)) =>
+deriving instance (Show n, Show (HeteroVarList CommandBuffer.CC vss)) =>
 	Show (SubmitInfoNew n vss)
 
 data SubmitInfo n vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: [CommandBuffer.C vs],
+	submitInfoCommandBuffers :: [CommandBuffer.CC vs],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 
 submitInfoToCoreNew :: Pointable n => SubmitInfoNew n vs -> ContT r IO C.SubmitInfo
