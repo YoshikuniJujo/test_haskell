@@ -43,12 +43,12 @@ bufferInfoToMiddle :: forall sb sm nm objs obj . Offset obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle BufferInfoAtom {
 	bufferInfoAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
-	M.bufferInfoBuffer = Buffer.M.B b,
+	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ range @obj lns }
 bufferInfoToMiddle BufferInfoList {
 	bufferInfoListBuffer = Buffer.Binded lns b } = M.BufferInfo {
-	M.bufferInfoBuffer = Buffer.M.B b,
+	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ range @obj lns }
 

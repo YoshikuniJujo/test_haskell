@@ -70,7 +70,7 @@ import qualified Gpu.Vulkan.BufferView.Core as Vk.BufferView.C
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
-import qualified Gpu.Vulkan.Buffer.Middle as Vk.Buffer.Middle
+import qualified Gpu.Vulkan.Buffer.Middle.Internal as Vk.Buffer.Middle
 
 import qualified Old.Gpu.Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Old.Gpu.Vulkan.Buffer.List.Type as Vk.Buffer.List

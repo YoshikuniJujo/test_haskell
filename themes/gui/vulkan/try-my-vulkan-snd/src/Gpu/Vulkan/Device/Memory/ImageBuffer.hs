@@ -83,14 +83,14 @@ data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
 getMemoryRequirements ::
 	Device.D sd -> ImageBuffer sib fos -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (Buffer (Buffer.B _ b)) =
-	Buffer.M.getMemoryRequirements dvc (Buffer.M.B b)
+	Buffer.M.getMemoryRequirements dvc b
 getMemoryRequirements (Device.D dvc) (Image (Image.INew i)) =
 	Image.M.getMemoryRequirements dvc i
 
 getMemoryRequirementsBinded ::
 	Device.D sd -> ImageBufferBinded sm sib fos -> IO Memory.M.Requirements
 getMemoryRequirementsBinded (Device.D dvc) (BufferBinded (Buffer.Binded _ b)) =
-	Buffer.M.getMemoryRequirements dvc (Buffer.M.B b)
+	Buffer.M.getMemoryRequirements dvc b
 getMemoryRequirementsBinded (Device.D dvc) (ImageBinded (Image.BindedNew i)) =
 	Image.M.getMemoryRequirements dvc i
 
@@ -262,7 +262,7 @@ bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) si
 bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
 	(_, mm) <- readM' m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
-	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
+	Buffer.M.bindMemory mdvc b (Device.M.Memory mm) ost
 	pure (Buffer.Binded lns b)
 
 rebindBuffer :: forall sd sb sm nm objs sibfoss .
@@ -271,7 +271,7 @@ rebindBuffer :: forall sd sb sm nm objs sibfoss .
 rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
 	(_, mm) <- readM' m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
-	Buffer.M.bindMemory mdvc (Buffer.M.B b) (Device.M.Memory mm) ost
+	Buffer.M.bindMemory mdvc b (Device.M.Memory mm) ost
 
 class Offset
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where

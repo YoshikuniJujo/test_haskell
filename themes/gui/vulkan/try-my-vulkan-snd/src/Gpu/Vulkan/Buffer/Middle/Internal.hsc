@@ -4,7 +4,13 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Buffer.Middle where
+module Gpu.Vulkan.Buffer.Middle.Internal (
+	B(..), CreateInfo(..), create, destroy,
+	bindMemory, getMemoryRequirements,
+
+	ImageCopy(..), imageCopyToCore,
+	MemoryBarrier(..), memoryBarrierToCore
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -65,7 +71,7 @@ createInfoToCore CreateInfo {
 	ContT $ withForeignPtr fci
 
 
-newtype B = B C.B deriving (Show, Storable)
+newtype B = B C.B deriving (Show, Eq, Storable)
 
 create :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO B

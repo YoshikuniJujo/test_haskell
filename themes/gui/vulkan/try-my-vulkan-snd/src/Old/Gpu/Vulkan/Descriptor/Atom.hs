@@ -10,7 +10,7 @@ import Foreign.Storable
 import qualified Foreign.Storable.Generic
 
 import qualified Gpu.Vulkan.Device.Middle as Device
-import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
+import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Descriptor.Core as C
 
 import qualified Gpu.Vulkan.Descriptor.Middle as M

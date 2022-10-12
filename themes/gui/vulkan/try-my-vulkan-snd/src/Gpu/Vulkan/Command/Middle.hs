@@ -21,7 +21,7 @@ import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer
-import qualified Gpu.Vulkan.Buffer.Middle as Buffer
+import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer
 import qualified Gpu.Vulkan.Buffer.Core as Buffer.C
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Command.Core as C
@@ -37,7 +37,7 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
 
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image
-import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
+import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>

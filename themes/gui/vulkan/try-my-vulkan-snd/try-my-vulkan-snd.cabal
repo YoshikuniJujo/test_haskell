@@ -50,6 +50,7 @@ library
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.Buffer.Middle
+      Gpu.Vulkan.Buffer.Middle.Internal
       Gpu.Vulkan.BufferView
       Gpu.Vulkan.BufferView.Middle
       Gpu.Vulkan.ColorComponent.Enum

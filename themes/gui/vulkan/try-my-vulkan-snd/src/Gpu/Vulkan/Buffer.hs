@@ -39,11 +39,11 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Old.Gpu.Vulkan.Device.Memory.Buffer as Device.Memory
 import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.Types as Device.Memory
 
-data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
+data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroVarList ObjectLength objs) M.B
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (B s nm objs)
 
-data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) C.B
+data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded (HeteroVarList ObjectLength objs) M.B
 
 deriving instance Show (HeteroVarList ObjectLength objs) => Show (Binded sm sb nm objs)
 
@@ -83,10 +83,10 @@ create :: (Pointable n, WholeSize objs, Pointable c, Pointable d) =>
 create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\b -> M.destroy dvc b macd)
-	(f . B (createInfoLengths ci) . (\(M.B b) -> b))
+	(f . B (createInfoLengths ci))
 
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.M.Requirements
-getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc (M.B b)
+getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
 getMemoryRequirements' :: Device.D sd -> BB sbobjs -> IO Memory.M.Requirements
 getMemoryRequirements' dvc (V3 b) = getMemoryRequirements dvc b
@@ -161,7 +161,7 @@ bindMemory ::
 	IO (Binded sm sb nm objs)
 bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms m) i = do
 	mem <- newIORef m
-	M.bindMemory dvc (M.B b) (Device.M.Memory mem) . fst $ indexForms fms i
+	M.bindMemory dvc b (Device.M.Memory mem) . fst $ indexForms fms i
 	pure $ Binded lns b
 
 indexForms :: HeteroVarList Device.Memory.Form objss -> Int ->
@@ -227,7 +227,7 @@ indexedListToOffset :: forall sm sb nm v a . IndexedList sm sb nm v ->
 indexedListToOffset (IndexedList b@(Binded lns _)) f = f (b, offsetList @v lns 0)
 
 indexedListToMiddle :: IndexedList sm sb nm v -> (M.B, Device.M.Size)
-indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (M.B b, sz)
+indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 
 indexedListToMiddles ::
 	HeteroVarList (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
@@ -366,7 +366,7 @@ memoryBarrierToMiddle MemoryBarrier {
 		M.memoryBarrierDstAccessMask = dam,
 		M.memoryBarrierSrcQueueFamilyIndex = sqfi,
 		M.memoryBarrierDstQueueFamilyIndex = dqfi,
-		M.memoryBarrierBuffer = M.B b,
+		M.memoryBarrierBuffer = b,
 		M.memoryBarrierOffset = ost,
 		M.memoryBarrierSize = sz }
 	where (ost, sz) = offsetSize @obj lns 0

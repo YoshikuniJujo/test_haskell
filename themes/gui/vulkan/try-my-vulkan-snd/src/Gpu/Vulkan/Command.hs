@@ -164,7 +164,7 @@ copyBuffer :: forall (ass :: [[Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
 	CommandBuffer.C sc vs ->
 	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
-	M.copyBuffer cb (Buffer.M.B src) (Buffer.M.B dst) (Buffer.makeCopies @ass lnss lnsd)
+	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
 pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
 	StoreHetero ts,
@@ -198,7 +198,7 @@ copyBufferToImage :: (
 	HeteroVarList (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
-	M.copyBufferToImage cb (Buffer.M.B mbf) mim imlyt mics
+	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = imageCopyListToMiddle bf ics
 
 class ImageCopyListToMiddle objs (img :: Type) (inms :: [Symbol]) where
