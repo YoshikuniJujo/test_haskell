@@ -49,21 +49,21 @@ data AllocateInfoNew n s (vss :: [[Type]]) = AllocateInfoNew {
 	allocateInfoLevelNew :: Level }
 	deriving Show
 
-allocateInfoToMiddleNew :: AllocateInfoNew n s vss -> M.AllocateInfoNew n vss
+allocateInfoToMiddleNew :: AllocateInfoNew n s vss -> M.AllocateInfoNewM n vss
 allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoNextNew = nxt,
 	allocateInfoCommandPoolNew = CommandPool.C cp,
-	allocateInfoLevelNew = lvl } = M.AllocateInfoNew {
-	M.allocateInfoNextNew = nxt,
-	M.allocateInfoCommandPoolNew = cp,
-	M.allocateInfoLevelNew = lvl }
+	allocateInfoLevelNew = lvl } = M.AllocateInfoNewM {
+	M.allocateInfoNextNewM = nxt,
+	M.allocateInfoCommandPoolNewM = cp,
+	M.allocateInfoLevelNewM = lvl }
 
 allocateNew ::
 	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
-	(M.allocateNewM dvc ai) (M.freeCsNew dvc $ M.allocateInfoCommandPoolNew ai)
+	(M.allocateNewM dvc ai) (M.freeCsNew dvc $ M.allocateInfoCommandPoolNewM ai)
 	(f . heteroVarListMap C)
 
 allocate :: Pointable n =>

@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
-	CC(..), MC(..), AllocateInfoNew(..), allocateNewM, freeCsNew,
+	CC(..), MC(..), AllocateInfoNewM(..), allocateNewM, freeCsNew,
 	AllocateInfo(..), allocate, freeCs,
 
 	BeginInfo(..), begin, end, reset
@@ -77,22 +77,30 @@ newtype CC (vs :: [Type]) = CC { unCC :: MC }
 
 allocateNewM ::
 	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
-	Device.D -> AllocateInfoNew n vss -> IO (HeteroVarList CC vss)
+	Device.D -> AllocateInfoNewM n vss -> IO (HeteroVarList CC vss)
 allocateNewM dvc ai = listToHeteroVarList CC <$> allocate dvc (allocateInfoFromNew ai)
 
-data AllocateInfoNew n (vss :: [[Type]]) = AllocateInfoNew {
-	allocateInfoNextNew :: Maybe n,
-	allocateInfoCommandPoolNew :: CommandPool.C,
-	allocateInfoLevelNew :: Level }
+freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList CC vss -> IO ()
+freeCsNew (Device.D dvc) (CommandPool.C cp)
+	((length &&& id) . heteroVarListToList (\(CC (MC _ cb)) -> cb) -> (cc, cs)) =
+	($ pure) $ runContT do
+		pcs <- ContT $ allocaArray cc
+		lift do	pokeArray pcs cs
+			C.freeCs dvc cp (fromIntegral cc) pcs
+
+data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
+	allocateInfoNextNewM :: Maybe n,
+	allocateInfoCommandPoolNewM :: CommandPool.C,
+	allocateInfoLevelNewM :: Level }
 	deriving Show
 
 allocateInfoFromNew :: forall n vss .
 	TpLvlLst.Length [Type] vss =>
-	AllocateInfoNew n vss -> AllocateInfo n
-allocateInfoFromNew AllocateInfoNew {
-	allocateInfoNextNew = mnxt,
-	allocateInfoCommandPoolNew = cp,
-	allocateInfoLevelNew = lvl } = AllocateInfo {
+	AllocateInfoNewM n vss -> AllocateInfo n
+allocateInfoFromNew AllocateInfoNewM {
+	allocateInfoNextNewM = mnxt,
+	allocateInfoCommandPoolNewM = cp,
+	allocateInfoLevelNewM = lvl } = AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoCommandPool = cp,
 	allocateInfoLevel = lvl,
@@ -181,14 +189,6 @@ end (MC rppl c) = throwUnlessSuccess . Result =<< do
 
 reset :: MC -> ResetFlags -> IO ()
 reset (MC _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
-
-freeCsNew :: Device.D -> CommandPool.C -> HeteroVarList CC vss -> IO ()
-freeCsNew (Device.D dvc) (CommandPool.C cp)
-	((length &&& id) . heteroVarListToList (\(CC (MC _ cb)) -> cb) -> (cc, cs)) =
-	($ pure) $ runContT do
-		pcs <- ContT $ allocaArray cc
-		lift do	pokeArray pcs cs
-			C.freeCs dvc cp (fromIntegral cc) pcs
 
 freeCs :: Device.D -> CommandPool.C -> [MC] -> IO ()
 freeCs (Device.D dvc) (CommandPool.C cp)
