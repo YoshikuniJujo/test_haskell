@@ -82,9 +82,6 @@ library
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Memory.AllocateInfo
-      Gpu.Vulkan.Device.Memory.Buffer
-      Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
-      Gpu.Vulkan.Device.Memory.Buffer.Types
       Gpu.Vulkan.Device.Memory.ImageBuffer
       Gpu.Vulkan.Device.Memory.ImageBuffer.Kind
       Gpu.Vulkan.Device.Middle
@@ -206,6 +203,9 @@ library
       Old.Gpu.Vulkan.Descriptor.List
       Old.Gpu.Vulkan.DescriptorSet.Atom
       Old.Gpu.Vulkan.DescriptorSet.List
+      Old.Gpu.Vulkan.Device.Memory.Buffer
+      Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
+      Old.Gpu.Vulkan.Device.Memory.Buffer.Types
       Old.Gpu.Vulkan.Memory.Atom
       Old.Gpu.Vulkan.Memory.List
       Old.Gpu.Vulkan.Memory.List.Middle

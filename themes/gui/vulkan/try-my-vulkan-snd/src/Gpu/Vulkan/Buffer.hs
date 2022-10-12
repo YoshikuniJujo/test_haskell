@@ -30,13 +30,14 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Device.Memory.AllocateInfo as Device.Memory
-import qualified Gpu.Vulkan.Device.Memory.Buffer as Device.Memory
-import qualified Gpu.Vulkan.Device.Memory.Buffer.Types as Device.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Buffer.Middle as M
 import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle as Image.M
+
+import qualified Old.Gpu.Vulkan.Device.Memory.Buffer as Device.Memory
+import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.Types as Device.Memory
 
 data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroVarList ObjectLength objs) C.B
 

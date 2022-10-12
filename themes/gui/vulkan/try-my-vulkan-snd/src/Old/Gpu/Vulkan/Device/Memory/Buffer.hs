@@ -6,7 +6,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory.Buffer where
+module Old.Gpu.Vulkan.Device.Memory.Buffer where
 
 import Prelude hiding (map)
 
@@ -16,13 +16,13 @@ import Data.Kind.Object
 import Data.HeteroList
 import Data.IORef
 
-import Gpu.Vulkan.Device.Memory.Buffer.Types
-import Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
-
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Device.Core as Device.C
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+
+import Old.Gpu.Vulkan.Device.Memory.Buffer.Types
+import Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
 
 data M s (objss :: [[Object]]) =
 	M (HeteroVarList Form objss) Device.C.Memory

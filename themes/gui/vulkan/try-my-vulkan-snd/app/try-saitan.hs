@@ -65,10 +65,11 @@ import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Device.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
-import qualified Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
-import qualified Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
+
+import qualified Old.Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
+import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 

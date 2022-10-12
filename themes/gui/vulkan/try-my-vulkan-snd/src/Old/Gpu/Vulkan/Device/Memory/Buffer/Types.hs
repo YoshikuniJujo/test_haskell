@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory.Buffer.Types where
+module Old.Gpu.Vulkan.Device.Memory.Buffer.Types where
 
 import Data.Kind.Object
 import Data.HeteroList

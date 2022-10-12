@@ -6,14 +6,15 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory.Buffer.TypeLevel where
+module Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel where
 
 import Foreign.Storable
 import Data.Kind.Object
 import Data.HeteroList
 
 import Gpu.Vulkan.Device.Middle
-import Gpu.Vulkan.Device.Memory.Buffer.Types
+
+import Old.Gpu.Vulkan.Device.Memory.Buffer.Types
 
 class OffsetSize (obj :: Object) (objss :: [[Object]]) where
 	offsetSize :: Size -> HeteroVarList Form objss -> (Size, Size)
