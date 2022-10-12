@@ -1,10 +1,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Buffer.List.Type where
+module Old.Gpu.Vulkan.Buffer.List.Type where
 
 import Prelude hiding (length)
 
-import qualified Gpu.Vulkan.Buffer.List.Middle as M
+import qualified Old.Gpu.Vulkan.Buffer.List.Middle as M
 
 newtype L s v = L (M.B v) deriving Show
 

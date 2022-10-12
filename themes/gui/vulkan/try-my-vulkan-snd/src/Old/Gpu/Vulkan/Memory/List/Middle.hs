@@ -4,14 +4,13 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Memory.List.Middle where
+module Old.Gpu.Vulkan.Memory.List.Middle where
 
 import Prelude hiding (readList)
 
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Pointable
-import Control.Arrow
 import Control.Exception
 import Data.MonoTraversable
 import Data.IORef
@@ -24,8 +23,9 @@ import Gpu.Vulkan.Memory
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
-import qualified Gpu.Vulkan.Buffer.List.Middle as Buffer
 import qualified Gpu.Vulkan.Memory.Middle as M
+
+import qualified Old.Gpu.Vulkan.Buffer.List.Middle as Buffer
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,

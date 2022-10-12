@@ -6,7 +6,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Descriptor.List where
+module Old.Gpu.Vulkan.Descriptor.List where
 
 import Foreign.Storable
 import Data.HeteroList
@@ -15,10 +15,11 @@ import qualified Foreign.Storable.Generic
 
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
-import qualified Gpu.Vulkan.Buffer.List.Type as Buffer.List
-import qualified Gpu.Vulkan.Buffer.List.Middle as Buffer.List.M
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Descriptor.Core as C
+
+import qualified Old.Gpu.Vulkan.Buffer.List.Type as Buffer.List
+import qualified Old.Gpu.Vulkan.Buffer.List.Middle as Buffer.List.M
 
 data BufferInfo slsmv where
 	BufferInfo :: { bufferInfoBuffer :: Buffer.List.Binded sl sm v } ->

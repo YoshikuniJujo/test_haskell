@@ -31,11 +31,9 @@ import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Buffer.List as Vk.Buffer.List
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
-import qualified Gpu.Vulkan.Memory.List as Vk.Memory.List
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Gpu.Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
@@ -51,13 +49,16 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
 import qualified Gpu.Vulkan.DescriptorSet as Vk.Descriptor.Set
-import qualified Gpu.Vulkan.Descriptor.List as Vk.Descriptor.List
-import qualified Gpu.Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
+
+import qualified Old.Gpu.Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Old.Gpu.Vulkan.Memory.List as Vk.Memory.List
+import qualified Old.Gpu.Vulkan.Descriptor.List as Vk.Descriptor.List
+import qualified Old.Gpu.Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
 
 main :: IO ()
 main = do

@@ -41,12 +41,9 @@ import qualified Gpu.Vulkan.Device.Type as Vk.Device
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Buffer.List as Vk.Buffer.List
-import qualified Gpu.Vulkan.Buffer.List.Type as Vk.Buffer.List
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
-import qualified Gpu.Vulkan.Memory.List as Vk.Memory.List
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Descriptor
 import qualified Gpu.Vulkan.DescriptorPool as Vk.Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.Descriptor.Pool
@@ -62,8 +59,6 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Pipeline.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Pipeline.ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Pipeline.Compute
 import qualified Gpu.Vulkan.DescriptorSet as Vk.Descriptor.Set
-import qualified Gpu.Vulkan.Descriptor.List as Vk.Descriptor.List
-import qualified Gpu.Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
@@ -75,8 +70,14 @@ import qualified Gpu.Vulkan.BufferView.Core as Vk.BufferView.C
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
-import qualified Gpu.Vulkan.Buffer.List.Middle as Vk.Buffer.List.Middle
 import qualified Gpu.Vulkan.Buffer.Middle as Vk.Buffer.Middle
+
+import qualified Old.Gpu.Vulkan.Buffer.List as Vk.Buffer.List
+import qualified Old.Gpu.Vulkan.Buffer.List.Type as Vk.Buffer.List
+import qualified Old.Gpu.Vulkan.Memory.List as Vk.Memory.List
+import qualified Old.Gpu.Vulkan.Descriptor.List as Vk.Descriptor.List
+import qualified Old.Gpu.Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
+import qualified Old.Gpu.Vulkan.Buffer.List.Middle as Vk.Buffer.List.Middle
 
 main :: IO ()
 main = do

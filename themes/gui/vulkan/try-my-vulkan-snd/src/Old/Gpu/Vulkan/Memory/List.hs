@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Memory.List (allocate, M.AllocateInfo(..), writeMono, readList) where
+module Old.Gpu.Vulkan.Memory.List (allocate, M.AllocateInfo(..), writeMono, readList) where
 
 import Prelude hiding (readList)
 
@@ -16,8 +16,9 @@ import qualified Foreign.Storable.Generic
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
-import qualified Gpu.Vulkan.Memory.List.Middle as M
-import qualified Gpu.Vulkan.Buffer.List.Type as Buffer.List
+
+import qualified Old.Gpu.Vulkan.Memory.List.Middle as M
+import qualified Old.Gpu.Vulkan.Buffer.List.Type as Buffer.List
 
 allocate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> Buffer.List.L sb v -> M.AllocateInfo n ->

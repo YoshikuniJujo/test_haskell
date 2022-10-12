@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Buffer.List (
+module Old.Gpu.Vulkan.Buffer.List (
 	L, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory
 	) where
 
@@ -13,12 +13,12 @@ import Control.Exception
 
 import qualified Foreign.Storable.Generic
 
-import Gpu.Vulkan.Buffer.List.Type
-
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory
-import qualified Gpu.Vulkan.Buffer.List.Middle as M
+
+import Old.Gpu.Vulkan.Buffer.List.Type
+import qualified Old.Gpu.Vulkan.Buffer.List.Middle as M
 
 create :: forall ds n v c d a . (
 	Storable (Foreign.Storable.Generic.Wrap v),

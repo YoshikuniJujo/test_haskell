@@ -121,12 +121,9 @@ import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
-import qualified Gpu.Vulkan.Buffer.List.Middle as Vk.Buffer.List
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Memory.List.Middle as Vk.Memory.List
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
-import qualified Gpu.Vulkan.Command.List as Vk.Cmd.List
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Vk.DscSet.Lyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.DscSet.Lyt
 import qualified Gpu.Vulkan.DescriptorPool.Middle as Vk.DscPool
@@ -147,7 +144,7 @@ import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
-import Gpu.Vulkan.Buffer.List.Middle (BList(..))
+
 import Vertex
 import Codec.Wavefront.Read
 
@@ -155,6 +152,10 @@ import qualified Old.Gpu.Vulkan.Buffer.Atom as Vk.Buffer.Atom
 import qualified Old.Gpu.Vulkan.Descriptor.Atom as Vk.Dsc
 import qualified Old.Gpu.Vulkan.DescriptorSet.Atom as Vk.DscSet
 import qualified Old.Gpu.Vulkan.Memory.Atom as Vk.Memory.Atom
+import qualified Old.Gpu.Vulkan.Buffer.List.Middle as Vk.Buffer.List
+import qualified Old.Gpu.Vulkan.Memory.List.Middle as Vk.Memory.List
+import qualified Old.Gpu.Vulkan.Command.List as Vk.Cmd.List
+import Old.Gpu.Vulkan.Buffer.List.Middle (BList(..))
 
 main :: IO ()
 main = getArgs >>= \case

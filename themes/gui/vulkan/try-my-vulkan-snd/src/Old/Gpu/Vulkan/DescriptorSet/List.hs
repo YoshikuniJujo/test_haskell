@@ -8,7 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.List where
+module Old.Gpu.Vulkan.DescriptorSet.List where
 
 import Foreign.Pointable
 import Data.HeteroList
@@ -16,12 +16,13 @@ import Data.Word
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.BufferView.Middle as Buffer.View
-import qualified Gpu.Vulkan.Descriptor.List as Dsc
 import qualified Gpu.Vulkan.Descriptor.Enum as Dsc
 import qualified Gpu.Vulkan.Descriptor.Middle as Dsc.M
 import qualified Gpu.Vulkan.DescriptorSet as Dsc.Set
 import qualified Gpu.Vulkan.DescriptorSet.Middle as Dsc.Set.M
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
+
+import qualified Old.Gpu.Vulkan.Descriptor.List as Dsc
 
 data Write n sd sp sl slsmvs = Write {
 	writeNext :: Maybe n,

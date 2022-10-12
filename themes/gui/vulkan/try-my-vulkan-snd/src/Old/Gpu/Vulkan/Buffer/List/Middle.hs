@@ -6,7 +6,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Buffer.List.Middle where
+module Old.Gpu.Vulkan.Buffer.List.Middle where
 
 import Foreign.Storable
 import Foreign.Pointable
