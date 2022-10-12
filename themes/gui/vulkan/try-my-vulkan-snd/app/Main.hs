@@ -812,7 +812,7 @@ createCommandBuffers Global {
 	dvc <- readIORef rdvc
 	scfbs <- readIORef rscfbs
 	cp <- readIORef rcp
-	cbs <- Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
+	cbs <- (Vk.CB.C <$>) <$> Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
 		Vk.CB.allocateInfoNext = Nothing,
 		Vk.CB.allocateInfoCommandPool = cp,
 		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,

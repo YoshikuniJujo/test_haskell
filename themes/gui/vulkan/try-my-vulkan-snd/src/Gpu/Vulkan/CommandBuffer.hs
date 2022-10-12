@@ -82,7 +82,7 @@ allocate :: Pointable n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
-	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
+	((M.C <$>) <$> M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (C <$>))
 
 begin :: (Pointable n, Pointable n') =>

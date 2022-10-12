@@ -12,15 +12,11 @@
 module Gpu.Vulkan.Command where
 
 import GHC.TypeLits
-import Foreign.Marshal.Array
 import Foreign.Pointable
-import Control.Arrow
-import Control.Monad.Cont
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList hiding (length)
-import Data.IORef
 import Data.Word
 import Data.Int
 import TypeLevel.List hiding (length)
@@ -31,18 +27,15 @@ import Gpu.Vulkan.Command.TypeLevel
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
-import qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
-import qualified Gpu.Vulkan.Command.Core as C
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image as Image
 import qualified Gpu.Vulkan.Image.Type as Image
-import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Image.Enum as Image
 
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
@@ -83,18 +76,6 @@ drawIndexed :: CommandBuffer.C sc vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
 drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
 	M.drawIndexed cb idxc istc fidx vo fist
-
-blitImage :: CommandBuffer.M.C v ->
-	Image.M.I -> Image.Layout -> Image.M.I -> Image.Layout ->
-	[Image.M.Blit] -> Filter -> IO ()
-blitImage (CommandBuffer.M.C _ cb)
-	(Image.M.I rsrc) (Image.Layout srcLyt) (Image.M.I rdst) (Image.Layout dstLyt)
-	(length &&& id -> (bltc, blts)) (Filter ft) = ($ pure) $ runContT do
-	pblts <- ContT $ allocaArray bltc
-	lift . pokeArray pblts $ Image.M.blitToCore <$> blts
-	lift do (_, src) <- readIORef rsrc
-		(_, dst) <- readIORef rdst
-		C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
 
 dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
 dispatch (CommandBuffer.C cb) = M.dispatch cb

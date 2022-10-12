@@ -32,7 +32,8 @@ import qualified Gpu.Vulkan.Core as C
 
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Middle as Semaphore
-import {-# SOURCE #-} qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer
+import {-# SOURCE #-} qualified
+	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
 
 #include <vulkan/vulkan.h>
 
@@ -260,7 +261,7 @@ submitInfoToCoreNew SubmitInfoNew {
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
 	submitInfoCommandBuffersNew = (length &&& id)
-		. heteroVarListToList CommandBuffer.unC -> (cbc, cbs),
+		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.unCC) -> (cbc, cbs),
 	submitInfoSignalSemaphoresNew =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss)
 	} = do
@@ -293,7 +294,7 @@ submitInfoToCore SubmitInfo {
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
 	submitInfoCommandBuffers =
-		length &&& (CommandBuffer.unC <$>) -> (cbc, cbs),
+		length &&& (CommandBuffer.unC . CommandBuffer.unCC <$>) -> (cbc, cbs),
 	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss)
 	} = do

@@ -1237,7 +1237,7 @@ generateMipmaps1 commandBuffer img barrier_ texWidth texHeight i = do
 						= 0,
 					Vk.Image.subresourceLayersLayerCount =
 						1 } }
-	lift $ Vk.Cmd.blitImage commandBuffer
+	lift $ Vk.Cmd.M.blitImage commandBuffer
 		img Vk.Image.LayoutTransferSrcOptimal
 		img Vk.Image.LayoutTransferDstOptimal
 		[blit] Vk.FilterLinear
@@ -1556,7 +1556,7 @@ beginSingleTimeCommands = do
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageOneTimeSubmitBit,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
+	[commandBuffer] <- lift $ (Vk.CommandBuffer.C <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo
 	lift $ Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
 	pure commandBuffer
 
@@ -1696,7 +1696,7 @@ createCommandBuffers = do
 				fromIntegral maxFramesInFlight }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandBuffers
-		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
+		=<< lift ((Vk.CommandBuffer.C <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo)
 
 createSyncObjects :: ReaderT Global IO ()
 createSyncObjects = do

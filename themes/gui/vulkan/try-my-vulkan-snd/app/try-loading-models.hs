@@ -1409,7 +1409,7 @@ beginSingleTimeCommands = do
 			Vk.CommandBuffer.beginInfoFlags =
 				Vk.CommandBuffer.UsageOneTimeSubmitBit,
 			Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
-	[commandBuffer] <- lift $ Vk.CommandBuffer.allocate @() dvc allocInfo
+	[commandBuffer] <- lift $ (Vk.CommandBuffer.C <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo
 	lift $ Vk.CommandBuffer.begin @() @() commandBuffer beginInfo
 	pure commandBuffer
 
@@ -1549,7 +1549,7 @@ createCommandBuffers = do
 				fromIntegral maxFramesInFlight }
 	dvc <- readGlobal globalDevice
 	writeGlobal globalCommandBuffers
-		=<< lift (Vk.CommandBuffer.allocate @() dvc allocInfo)
+		=<< lift ((Vk.CommandBuffer.C <$>) <$> Vk.CommandBuffer.allocate @() dvc allocInfo)
 
 createSyncObjects :: ReaderT Global IO ()
 createSyncObjects = do
