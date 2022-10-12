@@ -72,21 +72,18 @@ data AllocateInfoNew n (vss :: [[Type]]) = AllocateInfoNew {
 	allocateInfoLevelNew :: Level }
 	deriving Show
 
-allocateInfoToCoreNew ::
-	forall n vss r . (Pointable n, TpLvlLst.Length [Type] vss) =>
-	AllocateInfoNew n vss -> ContT r IO C.AllocateInfo
-allocateInfoToCoreNew AllocateInfoNew {
+allocateInfoFromNew :: forall n vss .
+	TpLvlLst.Length [Type] vss =>
+	AllocateInfoNew n vss -> AllocateInfo n
+allocateInfoFromNew AllocateInfoNew {
 	allocateInfoNextNew = mnxt,
-	allocateInfoCommandPoolNew = CommandPool.C cp,
-	allocateInfoLevelNew = Level lvl } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pure C.AllocateInfo {
-		C.allocateInfoSType = (),
-		C.allocateInfoPNext = pnxt,
-		C.allocateInfoCommandPool = cp,
-		C.allocateInfoLevel = lvl,
-		C.allocateInfoCommandBufferCount =
-			fromIntegral (TpLvlLst.length @_ @vss) }
+	allocateInfoCommandPoolNew = cp,
+	allocateInfoLevelNew = lvl } = AllocateInfo {
+	allocateInfoNext = mnxt,
+	allocateInfoCommandPool = cp,
+	allocateInfoLevel = lvl,
+	allocateInfoCommandBufferCount =
+		fromIntegral (TpLvlLst.length @_ @vss) }
 
 newtype C (vs :: [Type]) = C { unCC :: MC }
 
@@ -101,17 +98,9 @@ newMC :: C.C -> IO MC
 newMC c = MC <$> newIORef nullPtr <*> pure c
 
 allocateNew ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarListM vss) =>
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D -> AllocateInfoNew n vss -> IO (HeteroVarList C vss)
-allocateNew (Device.D dvc) ai = ($ pure) . runContT $ do
-	cai@(C.AllocateInfo_ fai) <- allocateInfoToCoreNew ai
-	let	cbc = fromIntegral $ C.allocateInfoCommandBufferCount cai
-	pai <- ContT $ withForeignPtr fai
-	pc <- ContT $ allocaArray cbc
-	lift do	r <- C.allocate dvc pai pc
-		throwUnlessSuccess $ Result r
-		ccbs <- peekArray cbc pc
-		listToHeteroVarListM newC ccbs
+allocateNew dvc ai = listToHeteroVarList C <$> allocate dvc (allocateInfoFromNew ai)
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [MC]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newMC =<< do

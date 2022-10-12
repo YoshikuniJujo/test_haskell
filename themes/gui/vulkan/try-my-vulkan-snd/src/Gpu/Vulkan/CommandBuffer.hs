@@ -63,7 +63,7 @@ cListFromMiddle HVNil = HVNil
 cListFromMiddle (cb :...: cbs) = C cb :...: cListFromMiddle cbs
 
 allocateNew ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarListM vss) =>
+	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
