@@ -20,13 +20,9 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
-import Data.Kind
 import Data.Default
-import Data.HeteroList hiding (length)
 import Data.IORef
 import Data.Word
-
-import qualified TypeLevel.List as TpLvlLst
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Base
@@ -37,10 +33,9 @@ import Gpu.Vulkan.CommandBuffer.Enum
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
 import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer
-import qualified Gpu.Vulkan.CommandPool.Middle as CommandPool
+import qualified Gpu.Vulkan.CommandPool.Middle.Internal as CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Core as C
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
-import qualified Gpu.Vulkan.Pipeline.Layout.Core as Pipeline.Layout.C
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,

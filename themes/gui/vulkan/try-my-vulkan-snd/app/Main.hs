@@ -99,7 +99,7 @@ import qualified Gpu.Vulkan.RenderPass.Enum as Vk.RndrPss
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Vk.Ppl
 import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Fb
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Fb
-import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
+import qualified Gpu.Vulkan.CommandPool.Middle.Internal as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
 import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as Vk.CB.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CB

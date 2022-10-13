@@ -66,6 +66,7 @@ library
       Gpu.Vulkan.CommandPool
       Gpu.Vulkan.CommandPool.Enum
       Gpu.Vulkan.CommandPool.Middle
+      Gpu.Vulkan.CommandPool.Middle.Internal
       Gpu.Vulkan.CommandPool.Type
       Gpu.Vulkan.Component
       Gpu.Vulkan.Component.Enum
