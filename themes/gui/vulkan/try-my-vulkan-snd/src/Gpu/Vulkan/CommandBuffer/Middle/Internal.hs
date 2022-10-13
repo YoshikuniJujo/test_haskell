@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
-	MC(..),
+	C(..),
 	AllocateInfo(..), allocate, freeCs,
 
 	BeginInfo(..), InheritanceInfo(..), begin, end, reset
@@ -66,15 +66,15 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoCommandBufferCount = cbc }
 	ContT $ withForeignPtr fAllocateInfo
 
-data MC  = MC {
+data C = C {
 	cPipeline :: IORef Pipeline.C.P,
 	unC :: C.C }
 
-newMC :: C.C -> IO MC
-newMC c = MC <$> newIORef nullPtr <*> pure c
+newC :: C.C -> IO C
+newC c = C <$> newIORef nullPtr <*> pure c
 
-allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [MC]
-allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newMC =<< do
+allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C]
+allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newC =<< do
 	pai <- allocateInfoToCore ai
 	pc <- ContT $ allocaArray cbc
 	lift do	r <- C.allocate dvc pai pc
@@ -142,23 +142,23 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoPipelineStatistics = ps }
 	ContT $ withForeignPtr fInheritanceInfo
 
-begin :: (Pointable n, Pointable n') => MC -> BeginInfo n n' -> IO ()
-begin (MC _ c) bi = ($ pure) $ runContT do
+begin :: (Pointable n, Pointable n') => C -> BeginInfo n n' -> IO ()
+begin (C _ c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi
 		throwUnlessSuccess $ Result r
 
-end :: MC -> IO ()
-end (MC rppl c) = throwUnlessSuccess . Result =<< do
+end :: C -> IO ()
+end (C rppl c) = throwUnlessSuccess . Result =<< do
 	writeIORef rppl nullPtr
 	C.end c
 
-reset :: MC -> ResetFlags -> IO ()
-reset (MC _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
+reset :: C -> ResetFlags -> IO ()
+reset (C _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
 
-freeCs :: Device.D -> CommandPool.C -> [MC] -> IO ()
+freeCs :: Device.D -> CommandPool.C -> [C] -> IO ()
 freeCs (Device.D dvc) (CommandPool.C cp)
-	(length &&& ((\(MC _ cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
+	(length &&& ((\(C _ cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
 	pcs <- ContT $ allocaArray cc
 	lift do	pokeArray pcs cs
 		C.freeCs dvc cp (fromIntegral cc) pcs

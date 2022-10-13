@@ -23,7 +23,7 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
-import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Command.Middle as M
 import qualified Gpu.Vulkan.Command.Core as C
@@ -50,7 +50,7 @@ bindIndexBuffer cb ib tp = M.bindIndexBuffer cb (Buffer.List.bToMiddle ib) 0 tp
 copyBufferToImage ::
 	CommandBuffer.CC vs -> Buffer.List.B Word8 -> Image.I -> Image.Layout ->
 	[Buffer.M.ImageCopy] -> IO ()
-copyBufferToImage (CommandBuffer.CC (CommandBuffer.MC _ cb))
+copyBufferToImage (CommandBuffer.CC (CommandBuffer.M.C _ cb))
 	(Buffer.List.B _ sb) (Image.I rdi) (Image.Layout dil)
 	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
 	prs <- ContT $ allocaArray rc

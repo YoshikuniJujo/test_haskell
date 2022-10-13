@@ -101,7 +101,7 @@ import qualified Gpu.Vulkan.Framebuffer.Middle as Vk.Fb
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Fb
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
-import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as Vk.CB
+import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as Vk.CB.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CB
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
 import qualified Gpu.Vulkan.Semaphore as Vk.Smp.N
@@ -813,21 +813,21 @@ createCommandBuffers Global {
 	dvc <- readIORef rdvc
 	scfbs <- readIORef rscfbs
 	cp <- readIORef rcp
-	cbs <- (Vk.CB.CC <$>) <$> Vk.CB.allocate @() dvc Vk.CB.AllocateInfo {
-		Vk.CB.allocateInfoNext = Nothing,
-		Vk.CB.allocateInfoCommandPool = cp,
-		Vk.CB.allocateInfoLevel = Vk.CB.LevelPrimary,
-		Vk.CB.allocateInfoCommandBufferCount = genericLength scfbs }
+	cbs <- (Vk.CB.CC <$>) <$> Vk.CB.M.allocate @() dvc Vk.CB.M.AllocateInfo {
+		Vk.CB.M.allocateInfoNext = Nothing,
+		Vk.CB.M.allocateInfoCommandPool = cp,
+		Vk.CB.M.allocateInfoLevel = Vk.CB.LevelPrimary,
+		Vk.CB.M.allocateInfoCommandBufferCount = genericLength scfbs }
 	writeIORef rcbs cbs
 
-recordCommandBuffer :: Global -> Vk.CB.MC -> Vk.Fb.F -> IO ()
+recordCommandBuffer :: Global -> Vk.CB.M.C -> Vk.Fb.F -> IO ()
 recordCommandBuffer Global {
 	globalSwapChainExtent = rscex, globalRenderPass = rrp,
 	globalGraphicsPipeline = rppl } cb fb = do
-	Vk.CB.begin @() @() cb Vk.CB.BeginInfo {
-		Vk.CB.beginInfoNext = Nothing,
-		Vk.CB.beginInfoFlags = Vk.CB.UsageFlagsZero,
-		Vk.CB.beginInfoInheritanceInfo = Nothing }
+	Vk.CB.M.begin @() @() cb Vk.CB.M.BeginInfo {
+		Vk.CB.M.beginInfoNext = Nothing,
+		Vk.CB.M.beginInfoFlags = Vk.CB.UsageFlagsZero,
+		Vk.CB.M.beginInfoInheritanceInfo = Nothing }
 	rp <- readIORef rrp
 	sce <- readIORef rscex
 	let	renderPassInfo = Vk.RndrPss.BeginInfo {
@@ -846,7 +846,7 @@ recordCommandBuffer Global {
 	Vk.Cmd.M.bindPipeline (Vk.CB.CC cb) Vk.Ppl.BindPointGraphics =<< readIORef rppl
 	Vk.Cmd.M.draw (Vk.CB.CC cb) 3 1 0 0
 	Vk.Cmd.M.endRenderPass (Vk.CB.CC cb)
-	Vk.CB.end cb
+	Vk.CB.M.end cb
 
 createSyncObjects :: Global -> IO ()
 createSyncObjects Global {
@@ -897,7 +897,7 @@ drawFrame g@Global {
 	Vk.Fnc.resetFs dvc [iff]
 	(fromIntegral -> imageIndex) <-
 		Vk.Khr.acquireNextImageOld dvc sc uint64Max (Just ias) Nothing
-	(`Vk.CB.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
+	(`Vk.CB.M.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
 	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 	let	submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,

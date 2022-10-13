@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle (
-	MC,
+	C,
 	AllocateInfo(..), allocate, freeCs,
 	BeginInfo(..), InheritanceInfo(..), begin, end, reset
 	) where

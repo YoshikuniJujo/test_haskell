@@ -10,4 +10,4 @@ import {-# SOURCE #-} qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as M
 
 newtype C s vs = C { unC :: CC vs }
 
-newtype CC (vs :: [Type]) = CC { unCC :: M.MC }
+newtype CC (vs :: [Type]) = CC { unCC :: M.C }
