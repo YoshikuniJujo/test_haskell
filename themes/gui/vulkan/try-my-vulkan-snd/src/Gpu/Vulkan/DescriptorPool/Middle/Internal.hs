@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorPool.Middle.Internal (
-	P(..), CreateInfo(..), Size(..), create, destroy ) where
+	D(..), CreateInfo(..), Size(..), create, destroy ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -58,11 +58,11 @@ createInfoToCore CreateInfo {
 			C.createInfoPPoolSizes = ppss }
 	ContT $ withForeignPtr fci
 
-newtype P = P C.P deriving Show
+newtype D = D C.P deriving Show
 
 create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO P
-create (Device.D dvc) ci mac = (P <$>) . ($ pure) $ runContT do
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO D
+create (Device.D dvc) ci mac = (D <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	pp <- ContT alloca
@@ -71,7 +71,7 @@ create (Device.D dvc) ci mac = (P <$>) . ($ pure) $ runContT do
 		peek pp
 
 destroy :: Pointable n =>
-	Device.D -> P -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) (P p) mac = ($ pure) $ runContT do
+	Device.D -> D -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy (Device.D dvc) (D p) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc p pac

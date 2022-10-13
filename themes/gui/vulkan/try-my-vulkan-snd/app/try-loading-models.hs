@@ -210,7 +210,7 @@ data Global = Global {
 	globalUniformBuffers :: IORef [Vk.Buffer.Atom.B UniformBufferObject],
 	globalUniformBuffersMemory ::
 		IORef [Vk.Device.MemoryAtom UniformBufferObject],
-	globalDescriptorPool :: IORef Vk.DscPool.P,
+	globalDescriptorPool :: IORef Vk.DscPool.D,
 	globalDescriptorSets :: IORef [Vk.DscSet.M.S],
 	globalTextureImage :: IORef Vk.Image.I,
 	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
@@ -264,7 +264,7 @@ newGlobal = do
 	ibm <- newIORef $ Vk.Device.MemoryList 0 NullPtr
 	ubs <- newIORef []
 	ubms <- newIORef []
-	dp <- newIORef $ Vk.DscPool.P NullPtr
+	dp <- newIORef $ Vk.DscPool.D NullPtr
 	dss <- newIORef []
 	ti <- newIORef $ Vk.Image.I undefined
 	tim <- newIORef $ Vk.Device.MemoryImage NullPtr

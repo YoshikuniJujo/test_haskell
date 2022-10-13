@@ -31,14 +31,14 @@ import qualified Gpu.Vulkan.BufferView.Core as BufferView.C
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
-	allocateInfoDescriptorPool :: Pool.P,
+	allocateInfoDescriptorPool :: Pool.D,
 	allocateInfoSetLayouts :: [Layout.L] }
 	deriving Show
 
 allocateInfoToCore :: Pointable n => AllocateInfo n -> ContT r IO C.AllocateInfo
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
-	allocateInfoDescriptorPool = Pool.P pl,
+	allocateInfoDescriptorPool = Pool.D pl,
 	allocateInfoSetLayouts =
 		(((id &&& fromIntegral) `first`) . (length &&& id)) ->
 		((dsci, dscw), sls)
