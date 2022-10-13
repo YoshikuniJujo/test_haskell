@@ -102,6 +102,7 @@ import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Fb
 import qualified Gpu.Vulkan.CommandPool.Middle as Vk.CP
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CP
 import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as Vk.CB
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CB
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CB
 import qualified Gpu.Vulkan.Semaphore as Vk.Smp.N
 import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Smp

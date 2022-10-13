@@ -56,7 +56,7 @@ class CommandBufferListToMiddle svss where
 	type CommandBufferListToMiddleMapSnd svss :: [[Type]]
 	commandBufferListToMiddle ::
 		HeteroVarList (V2 CommandBuffer.C) svss ->
-		HeteroVarList CommandBuffer.M.CC
+		HeteroVarList CommandBuffer.CC
 			(CommandBufferListToMiddleMapSnd svss)
 
 instance CommandBufferListToMiddle '[] where

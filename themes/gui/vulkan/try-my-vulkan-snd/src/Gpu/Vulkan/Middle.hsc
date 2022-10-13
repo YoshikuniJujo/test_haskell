@@ -34,6 +34,7 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Middle as Semaphore
 import {-# SOURCE #-} qualified
 	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer.T
 
 #include <vulkan/vulkan.h>
 
@@ -239,17 +240,17 @@ data SubmitInfoNew n vss = SubmitInfoNew {
 	submitInfoNextNew :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasksNew ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffersNew :: HeteroVarList CommandBuffer.CC vss,
+	submitInfoCommandBuffersNew :: HeteroVarList CommandBuffer.T.CC vss,
 	submitInfoSignalSemaphoresNew :: [Semaphore.S] }
 
-deriving instance (Show n, Show (HeteroVarList CommandBuffer.CC vss)) =>
+deriving instance (Show n, Show (HeteroVarList CommandBuffer.T.CC vss)) =>
 	Show (SubmitInfoNew n vss)
 
 data SubmitInfo n vs = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: [CommandBuffer.CC vs],
+	submitInfoCommandBuffers :: [CommandBuffer.T.CC vs],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 
 submitInfoToCoreNew :: Pointable n => SubmitInfoNew n vs -> ContT r IO C.SubmitInfo
@@ -261,7 +262,7 @@ submitInfoToCoreNew SubmitInfoNew {
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
 	submitInfoCommandBuffersNew = (length &&& id)
-		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.unCC) -> (cbc, cbs),
+		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
 	submitInfoSignalSemaphoresNew =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss)
 	} = do
@@ -294,7 +295,7 @@ submitInfoToCore SubmitInfo {
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
 	submitInfoCommandBuffers =
-		length &&& (CommandBuffer.unC . CommandBuffer.unCC <$>) -> (cbc, cbs),
+		length &&& (CommandBuffer.unC . CommandBuffer.T.unCC <$>) -> (cbc, cbs),
 	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss)
 	} = do

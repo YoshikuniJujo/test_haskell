@@ -24,6 +24,7 @@ import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Command.Middle as M
 import qualified Gpu.Vulkan.Command.Core as C
 import qualified Gpu.Vulkan.Image.Middle as Image

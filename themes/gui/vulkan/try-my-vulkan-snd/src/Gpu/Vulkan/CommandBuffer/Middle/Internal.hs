@@ -8,10 +8,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
-	CC(..), MC(..),
+	MC(..),
 	AllocateInfo(..), allocate, freeCs,
 
-	BeginInfo(..), begin, end, reset
+	BeginInfo(..), InheritanceInfo(..), begin, end, reset
 	) where
 
 import Foreign.Ptr
@@ -72,8 +72,6 @@ data MC  = MC {
 
 newMC :: C.C -> IO MC
 newMC c = MC <$> newIORef nullPtr <*> pure c
-
-newtype CC (vs :: [Type]) = CC { unCC :: MC }
 
 allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [MC]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newMC =<< do

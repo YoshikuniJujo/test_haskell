@@ -73,23 +73,23 @@ allocate :: Pointable n =>
 	(forall s . [C s vs] -> IO a) -> IO a
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
-	(f . (C . M.CC <$>))
+	(f . (C . CC <$>))
 
 begin :: (Pointable n, Pointable n') =>
 	C s vs -> M.BeginInfo n n' -> IO a -> IO a
-begin (C (M.CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+begin (C (CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: C sc vs -> ResetFlags -> IO ()
-reset (C (M.CC cb)) rfs = M.reset cb rfs
+reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
 	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
-	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroVarList M.CC vss)
-allocateNewM dvc ai = listToHeteroVarList M.CC <$> M.allocate dvc (allocateInfoFromNew ai)
+	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroVarList CC vss)
+allocateNewM dvc ai = listToHeteroVarList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
-freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroVarList M.CC vss -> IO ()
+freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroVarList CC vss -> IO ()
 freeCsNew dvc cp cs =
-	M.freeCs dvc cp (heteroVarListToList (\(M.CC cb) -> cb) cs)
+	M.freeCs dvc cp (heteroVarListToList (\(CC cb) -> cb) cs)
 
 data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
 	allocateInfoNextNewM :: Maybe n,
