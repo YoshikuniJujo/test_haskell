@@ -35,10 +35,6 @@ type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
 deriving instance Show (HeteroVarList ObjectLength objs) =>
 	Show (BufferInfo '(sb, sm, nm, objs, obj))
 
-bufferInfoToCore :: Offset obj objs =>
-	BufferInfo '(sb, sm, nm, objs, obj) -> C.BufferInfo
-bufferInfoToCore = M.bufferInfoToCore . bufferInfoToMiddle
-
 bufferInfoToMiddle :: forall sb sm nm objs obj . Offset obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle BufferInfoAtom {

@@ -73,6 +73,7 @@ library
       Gpu.Vulkan.Descriptor
       Gpu.Vulkan.Descriptor.Enum
       Gpu.Vulkan.Descriptor.Middle
+      Gpu.Vulkan.Descriptor.Middle.Internal
       Gpu.Vulkan.DescriptorPool
       Gpu.Vulkan.DescriptorPool.Enum
       Gpu.Vulkan.DescriptorPool.Middle
