@@ -39,7 +39,7 @@ import qualified Gpu.Vulkan.Pipeline.Compute.Middle as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 
-import qualified Gpu.Vulkan.DescriptorSet.Middle as Descriptor.Set
+import qualified Gpu.Vulkan.DescriptorSet.Middle.Internal as Descriptor.Set
 
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image

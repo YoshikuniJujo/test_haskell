@@ -81,6 +81,7 @@ library
       Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet
       Gpu.Vulkan.DescriptorSet.Middle
+      Gpu.Vulkan.DescriptorSet.Middle.Internal
       Gpu.Vulkan.DescriptorSet.TypeLevel
       Gpu.Vulkan.DescriptorSetLayout
       Gpu.Vulkan.DescriptorSetLayout.Enum
