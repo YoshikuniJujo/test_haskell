@@ -1,6 +1,9 @@
 memo
 ====
 
+* [ ] dynamic descriptor set
+* [ ] texel buffer
+* [ ] no type argument to command buffer
 * [x] make test for AllocationCallbacks
 * [x] refactor app/Main.hs: createInstance
 * [x] use Text instead of ByteString in ExtensionProperties

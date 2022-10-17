@@ -124,7 +124,7 @@ import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
-import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Vk.DscSet.Lyt
+import qualified Gpu.Vulkan.DescriptorSetLayout.Middle.Internal as Vk.DscSet.Lyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Enum as Vk.DscSet.Lyt
 import qualified Gpu.Vulkan.DescriptorPool.Middle.Internal as Vk.DscPool
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Dsc

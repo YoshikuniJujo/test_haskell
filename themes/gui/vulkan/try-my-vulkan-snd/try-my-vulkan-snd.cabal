@@ -86,6 +86,7 @@ library
       Gpu.Vulkan.DescriptorSetLayout
       Gpu.Vulkan.DescriptorSetLayout.Enum
       Gpu.Vulkan.DescriptorSetLayout.Middle
+      Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Memory.AllocateInfo
