@@ -19,7 +19,7 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.BufferView.Core as C
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer
 

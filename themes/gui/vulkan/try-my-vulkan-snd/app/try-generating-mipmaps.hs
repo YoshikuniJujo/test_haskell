@@ -63,13 +63,14 @@ import qualified Gpu.Vulkan.Instance.Type as Vk.Instance.T
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Instance
 import qualified Gpu.Vulkan.Instance.Enum as Vk.Instance
 import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Middle as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DebugUtils.Messenger
 import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Message
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Middle as Vk.Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface
@@ -559,7 +560,7 @@ createLogicalDevice = do
 			Vk.PhysicalDevice.featuresSamplerAnisotropy = True }
 		createInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoNext = Nothing,
-			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
+			Vk.Device.createInfoFlags = zeroBits,
 			Vk.Device.createInfoQueueCreateInfos =
 				queueCreateInfos . Vk.QueueFamily.Index <$> uniqueQueueFamilies,
 			Vk.Device.createInfoEnabledLayerNames =

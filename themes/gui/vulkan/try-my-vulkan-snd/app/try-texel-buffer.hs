@@ -69,7 +69,7 @@ import qualified Gpu.Vulkan.BufferView.Core as Vk.BufferView.C
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
-import qualified Gpu.Vulkan.Device.Middle as Vk.Device.M
+import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device.M
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Vk.Buffer.Middle
 
 import qualified Old.Gpu.Vulkan.Buffer.List as Vk.Buffer.List
@@ -103,8 +103,7 @@ main = do
 					[0.0] }
 			deviceInfo = Vk.Device.CreateInfo {
 				Vk.Device.createInfoNext = Nothing,
-				Vk.Device.createInfoFlags =
-					Vk.Device.CreateFlagsZero,
+				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
 					[queueInfo],
 				Vk.Device.createInfoEnabledLayerNames =

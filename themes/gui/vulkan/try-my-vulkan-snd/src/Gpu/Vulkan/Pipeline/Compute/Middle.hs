@@ -21,7 +21,7 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle as Cache

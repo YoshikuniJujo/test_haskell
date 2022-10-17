@@ -22,7 +22,7 @@ import Gpu.Vulkan.Descriptor.Enum
 import Gpu.Vulkan.DescriptorPool.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.DescriptorPool.Core as C
 
 data Size = Size { sizeType :: Type, sizeDescriptorCount :: Word32 }

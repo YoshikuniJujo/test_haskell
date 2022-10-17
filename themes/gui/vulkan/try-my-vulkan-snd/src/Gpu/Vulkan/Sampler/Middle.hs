@@ -19,7 +19,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Sampler.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Sampler.Core as C
 
 newtype S = S C.S deriving Show

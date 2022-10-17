@@ -21,7 +21,7 @@ import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.BufferView.Middle.Internal as BufferView
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Middle.Internal as Descriptor

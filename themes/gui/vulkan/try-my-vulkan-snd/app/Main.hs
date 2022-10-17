@@ -54,9 +54,10 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
-import qualified Gpu.Vulkan.Device.Middle as Vk.Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Middle as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Sfc
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
@@ -418,7 +419,7 @@ createLogicalDevice g@Global {
 		deviceFeatures = Vk.PhysicalDevice.featuresZero
 		createInfo = Vk.Device.CreateInfo {
 			Vk.Device.createInfoNext = Nothing,
-			Vk.Device.createInfoFlags = Vk.Device.CreateFlagsZero,
+			Vk.Device.createInfoFlags = zeroBits,
 			Vk.Device.createInfoQueueCreateInfos =
 				((: []) . queueCreateInfo . Vk.QueueFamily.Index) `foldMap`
 					uniqueQueueFamilies,

@@ -108,8 +108,7 @@ main = do
 			devCreateInfo :: Vk.Device.CreateInfo () ()
 			devCreateInfo = Vk.Device.CreateInfo {
 				Vk.Device.createInfoNext = Nothing,
-				Vk.Device.createInfoFlags =
-					Vk.Device.CreateFlagsZero,
+				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
 					[queueCreateInfo],
 				Vk.Device.createInfoEnabledLayerNames =

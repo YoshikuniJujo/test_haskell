@@ -16,7 +16,7 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Buffer.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as M
 import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M

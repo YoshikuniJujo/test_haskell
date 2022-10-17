@@ -27,7 +27,7 @@ import Gpu.Vulkan.Image.Enum
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle as Device
+import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory
 import qualified Gpu.Vulkan.Image.Core as C
 import qualified Gpu.Vulkan.Sample.Enum as Sample

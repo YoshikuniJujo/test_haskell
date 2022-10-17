@@ -10,7 +10,7 @@ import Foreign.Storable
 
 import qualified Foreign.Storable.Generic
 
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView.Middle as ImageView

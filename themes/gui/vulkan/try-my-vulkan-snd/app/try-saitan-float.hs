@@ -80,8 +80,7 @@ main = do
 					[0.0] }
 			deviceInfo = Vk.Device.CreateInfo {
 				Vk.Device.createInfoNext = Nothing,
-				Vk.Device.createInfoFlags =
-					Vk.Device.CreateFlagsZero,
+				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
 					[queueInfo],
 				Vk.Device.createInfoEnabledLayerNames = [],

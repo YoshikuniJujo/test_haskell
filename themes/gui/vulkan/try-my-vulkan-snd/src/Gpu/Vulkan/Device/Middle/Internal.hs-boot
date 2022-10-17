@@ -1,7 +1,13 @@
 {-# LANGUAGE RoleAnnotations #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Middle where
+module Gpu.Vulkan.Device.Middle.Internal (
+	D(..),
+
+	Memory(..),
+
+	Size(..), MemoryImage(..), MemoryList
+	) where
 
 import Data.IORef
 import Data.Word

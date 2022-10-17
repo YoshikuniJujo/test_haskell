@@ -22,7 +22,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.DescriptorSetLayout.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Sampler.Middle as Sampler
 import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Core as C

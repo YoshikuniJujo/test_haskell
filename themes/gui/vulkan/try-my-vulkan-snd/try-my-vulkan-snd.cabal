@@ -92,7 +92,9 @@ library
       Gpu.Vulkan.Device.Memory.AllocateInfo
       Gpu.Vulkan.Device.Memory.ImageBuffer
       Gpu.Vulkan.Device.Memory.ImageBuffer.Kind
+      Gpu.Vulkan.Device.Memory.ImageBuffer.Middle
       Gpu.Vulkan.Device.Middle
+      Gpu.Vulkan.Device.Middle.Internal
       Gpu.Vulkan.Device.Queue
       Gpu.Vulkan.Device.Queue.Enum
       Gpu.Vulkan.Device.Type
@@ -126,6 +128,7 @@ library
       Gpu.Vulkan.Khr
       Gpu.Vulkan.Khr.ColorSpace
       Gpu.Vulkan.Khr.Enum
+      Gpu.Vulkan.Khr.Middle
       Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.Enum
       Gpu.Vulkan.Khr.Surface.Middle

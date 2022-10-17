@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device (
-	D, create, M.CreateInfo(..), M.CreateFlags, pattern M.CreateFlagsZero,
+	D, create, M.CreateInfo(..), M.CreateFlags,
 	getQueue, MemoryImage, MemoryList,
 	waitIdle
 	) where

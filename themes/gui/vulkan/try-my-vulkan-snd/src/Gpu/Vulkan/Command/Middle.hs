@@ -29,7 +29,7 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer
 import qualified Gpu.Vulkan.Buffer.Core as Buffer.C
-import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Command.Core as C
 
 import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass

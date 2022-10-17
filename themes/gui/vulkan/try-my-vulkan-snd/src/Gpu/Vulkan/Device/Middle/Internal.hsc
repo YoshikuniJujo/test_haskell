@@ -6,7 +6,15 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Middle where
+module Gpu.Vulkan.Device.Middle.Internal (
+	D(..), CreateInfo(..), CreateFlags, create, destroy,
+
+	getQueue, waitIdle,
+
+	Memory(..),
+
+	Size(..), MemoryImage(..), MemoryList(..), MemoryAtom(..)
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
