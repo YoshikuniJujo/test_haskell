@@ -95,8 +95,8 @@ createInfoToCore CreateInfo {
 			C.createInfoPEnabledFeatures = pef }
 	ContT $ withForeignPtr fCreateInfo
 
-create :: (Pointable n, Pointable n2, Pointable n3) =>
-	PhysicalDevice.P -> CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) ->
+create :: (Pointable n, Pointable n', Pointable c) =>
+	PhysicalDevice.P -> CreateInfo n n' -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
 	pcci <- createInfoToCore ci
@@ -106,7 +106,7 @@ create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
 		throwUnlessSuccess $ Result r
 		peek pdvc
 
-destroy :: Pointable n => D -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (D cdvc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cdvc pac
