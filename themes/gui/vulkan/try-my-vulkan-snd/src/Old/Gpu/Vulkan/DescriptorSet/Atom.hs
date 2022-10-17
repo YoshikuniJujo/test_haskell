@@ -23,7 +23,7 @@ import qualified Old.Gpu.Vulkan.Descriptor.Atom as Dsc
 
 data Write n v = Write {
 	writeNext :: Maybe n,
-	writeDstSet :: M.S,
+	writeDstSet :: M.D,
 	writeDstBinding :: Word32,
 	writeDstArrayElement :: Word32,
 	writeDescriptorType :: Dsc.Type,

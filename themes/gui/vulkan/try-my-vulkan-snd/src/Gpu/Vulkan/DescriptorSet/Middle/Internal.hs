@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
-	S(..), AllocateInfo(..), allocateSs,
+	D(..), AllocateInfo(..), allocateSs,
 	Write(..), WriteSources(..), Copy(..), updateDs
 	) where
 
@@ -57,10 +57,10 @@ allocateInfoToCore AllocateInfo {
 		C.allocateInfoDescriptorSetCount = dscw,
 		C.allocateInfoPSetLayouts = psls }
 
-newtype S = S C.S deriving Show
+newtype D = D C.S deriving Show
 
-allocateSs :: Pointable n => Device.D -> AllocateInfo n -> IO [S]
-allocateSs (Device.D dvc) ai = ((S <$>) <$>) . ($ pure) $ runContT do
+allocateSs :: Pointable n => Device.D -> AllocateInfo n -> IO [D]
+allocateSs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 	cai@(C.AllocateInfo_ fai) <- allocateInfoToCore ai
 	pai <- ContT $ withForeignPtr fai
 	let	dsc = fromIntegral $ C.allocateInfoDescriptorSetCount cai
@@ -71,10 +71,10 @@ allocateSs (Device.D dvc) ai = ((S <$>) <$>) . ($ pure) $ runContT do
 
 data Copy n = Copy {
 	copyNext :: Maybe n,
-	copySrcSet :: S,
+	copySrcSet :: D,
 	copySrcBinding :: Word32,
 	copySrcArrayElement :: Word32,
-	copyDstSet :: S,
+	copyDstSet :: D,
 	copyDstBinding :: Word32,
 	copyDstArrayElement :: Word32,
 	copyDescriptorCount :: Word32 }
@@ -83,10 +83,10 @@ data Copy n = Copy {
 copyToCore :: Pointable n => Copy n -> ContT r IO C.Copy
 copyToCore Copy {
 	copyNext = mnxt,
-	copySrcSet = S ss,
+	copySrcSet = D ss,
 	copySrcBinding = sb,
 	copySrcArrayElement = sae,
-	copyDstSet = S ds,
+	copyDstSet = D ds,
 	copyDstBinding = db,
 	copyDstArrayElement = dae,
 	copyDescriptorCount = dc
@@ -105,7 +105,7 @@ copyToCore Copy {
 
 data Write n = Write {
 	writeNext :: Maybe n,
-	writeDstSet :: S,
+	writeDstSet :: D,
 	writeDstBinding :: Word32,
 	writeDstArrayElement :: Word32,
 	writeDescriptorType :: Descriptor.Type,
@@ -122,7 +122,7 @@ data WriteSources
 writeToCore :: Pointable n => Write n -> ContT r IO C.Write
 writeToCore Write {
 	writeNext = mnxt,
-	writeDstSet = S s,
+	writeDstSet = D s,
 	writeDstBinding = bdg,
 	writeDstArrayElement = ae,
 	writeDescriptorType = Descriptor.Type tp,

@@ -211,7 +211,7 @@ data Global = Global {
 	globalUniformBuffersMemory ::
 		IORef [Vk.Device.MemoryAtom UniformBufferObject],
 	globalDescriptorPool :: IORef Vk.DscPool.D,
-	globalDescriptorSets :: IORef [Vk.DscSet.M.S],
+	globalDescriptorSets :: IORef [Vk.DscSet.M.D],
 	globalTextureImage :: IORef Vk.Image.I,
 	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
 	globalTextureImageView :: IORef Vk.ImageView.I,
