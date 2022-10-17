@@ -1502,7 +1502,7 @@ createDescriptorSets = do
 			Vk.DscSet.M.allocateInfoDescriptorPool = dp,
 			Vk.DscSet.M.allocateInfoSetLayouts = layouts }
 	dvc <- readGlobal globalDevice
-	dss <- lift $ Vk.DscSet.M.allocateSs @() dvc allocInfo
+	dss <- lift $ Vk.DscSet.M.allocateDs @() dvc allocInfo
 	writeGlobal globalDescriptorSets dss
 	ubs <- readGlobal globalUniformBuffers
 	tiv <- readGlobal globalTextureImageView

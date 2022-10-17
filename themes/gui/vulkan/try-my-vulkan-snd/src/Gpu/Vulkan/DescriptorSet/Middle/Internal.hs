@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
-	D(..), AllocateInfo(..), allocateSs,
+	D(..), AllocateInfo(..), allocateDs,
 	Write(..), WriteSources(..), Copy(..), updateDs
 	) where
 
@@ -59,8 +59,8 @@ allocateInfoToCore AllocateInfo {
 
 newtype D = D C.S deriving Show
 
-allocateSs :: Pointable n => Device.D -> AllocateInfo n -> IO [D]
-allocateSs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
+allocateDs :: Pointable n => Device.D -> AllocateInfo n -> IO [D]
+allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 	cai@(C.AllocateInfo_ fai) <- allocateInfoToCore ai
 	pai <- ContT $ withForeignPtr fai
 	let	dsc = fromIntegral $ C.allocateInfoDescriptorSetCount cai

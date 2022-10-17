@@ -51,7 +51,7 @@ newtype S'' sd sp sl = S'' M.D deriving Show
 
 allocateSs'' :: Pointable n =>
 	Device.D sd -> AllocateInfo'' n sp sl -> IO [S'' sd sp sl]
-allocateSs'' (Device.D dvc) ai = (S'' <$>) <$> M.allocateSs dvc (allocateInfoToMiddle'' ai)
+allocateSs'' (Device.D dvc) ai = (S'' <$>) <$> M.allocateDs dvc (allocateInfoToMiddle'' ai)
 
 data Layout (slbts :: LayoutArg) where
 	Layout :: Layout.L sl bts -> Layout '(sl, bts)
@@ -86,7 +86,7 @@ allocateSs :: (Pointable n, ListToHeteroVarList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroVarList (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
-	listToHeteroVarList S <$> M.allocateSs dvc (allocateInfoToMiddle ai)
+	listToHeteroVarList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
