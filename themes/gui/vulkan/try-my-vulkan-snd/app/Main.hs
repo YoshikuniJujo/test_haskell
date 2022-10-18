@@ -431,12 +431,12 @@ createLogicalDevice g@Global {
 	uniqueQueueFamilies indices = Set.fromList [
 		fromJust $ graphicsFamily indices,
 		fromJust $ presentFamily indices ]
-	queueCreateInfo qf = Vk.Device.Queue.CreateInfo {
-		Vk.Device.Queue.createInfoNext = Nothing,
-		Vk.Device.Queue.createInfoFlags =
+	queueCreateInfo qf = Vk.Device.Queue.QueueCreateInfo {
+		Vk.Device.Queue.queueCreateInfoNext = Nothing,
+		Vk.Device.Queue.queueCreateInfoFlags =
 			Vk.Device.Queue.CreateFlagsZero,
-		Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
-		Vk.Device.Queue.createInfoQueuePriorities = [1.0] }
+		Vk.Device.Queue.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Device.Queue.queueCreateInfoQueuePriorities = [1.0] }
 	deviceFeatures = Vk.PhysicalDevice.featuresZero
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->

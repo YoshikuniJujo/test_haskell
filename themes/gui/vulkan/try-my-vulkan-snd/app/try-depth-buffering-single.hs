@@ -392,11 +392,11 @@ createLogicalDevice phdvc qfis f =
 		f dvc gq pq
 	where
 	uniqueQueueFamilies = nub [graphicsFamily qfis, presentFamily qfis]
-	queueCreateInfos qf = Vk.Dvc.Queue.CreateInfo {
-		Vk.Dvc.Queue.createInfoNext = Nothing,
-		Vk.Dvc.Queue.createInfoFlags = def,
-		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
-		Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
+	queueCreateInfos qf = Vk.Dvc.Queue.QueueCreateInfo {
+		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
+		Vk.Dvc.Queue.queueCreateInfoFlags = def,
+		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
 	(forall ss . PointableToListM ss => HeteroVarList t ss -> b) -> b

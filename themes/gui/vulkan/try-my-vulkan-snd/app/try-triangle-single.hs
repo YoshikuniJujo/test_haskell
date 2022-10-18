@@ -345,11 +345,11 @@ createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 createLogicalDevice phdvc qfis f = let
 	uniqueQueueFamilies =
 		nub [graphicsFamily qfis, presentFamily qfis]
-	queueCreateInfos qf = Vk.Dvc.Queue.CreateInfo {
-		Vk.Dvc.Queue.createInfoNext = Nothing,
-		Vk.Dvc.Queue.createInfoFlags = def,
-		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
-		Vk.Dvc.Queue.createInfoQueuePriorities = [1] } in
+	queueCreateInfos qf = Vk.Dvc.Queue.QueueCreateInfo {
+		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
+		Vk.Dvc.Queue.queueCreateInfoFlags = def,
+		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [1] } in
 	mkHeteroVarList @() queueCreateInfos uniqueQueueFamilies \qs -> do
 	let	createInfo = Vk.Dvc.M.CreateInfo {
 			Vk.Dvc.M.createInfoNext = Nothing,

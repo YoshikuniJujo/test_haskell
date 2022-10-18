@@ -15,19 +15,19 @@ import Gpu.Vulkan.Device.Queue.Enum
 import qualified Gpu.Vulkan.Device.Core as C
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
-	createInfoFlags :: CreateFlags,
-	createInfoQueueFamilyIndex :: QueueFamily.Index,
-	createInfoQueuePriorities :: [Float] }
+data QueueCreateInfo n = QueueCreateInfo {
+	queueCreateInfoNext :: Maybe n,
+	queueCreateInfoFlags :: CreateFlags,
+	queueCreateInfoQueueFamilyIndex :: QueueFamily.Index,
+	queueCreateInfoQueuePriorities :: [Float] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.QueueCreateInfo
-createInfoToCore CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = CreateFlagBits flgs,
-	createInfoQueueFamilyIndex = QueueFamily.Index qfi,
-	createInfoQueuePriorities = qps
+queueCreateInfoToCore :: Pointable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
+queueCreateInfoToCore QueueCreateInfo {
+	queueCreateInfoNext = mnxt,
+	queueCreateInfoFlags = CreateFlagBits flgs,
+	queueCreateInfoQueueFamilyIndex = QueueFamily.Index qfi,
+	queueCreateInfoQueuePriorities = qps
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqps <- ContT $ allocaArray (length qps)

@@ -63,12 +63,12 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo n ns = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueCreateInfos :: HeteroVarList Queue.CreateInfo ns,
+	createInfoQueueCreateInfos :: HeteroVarList Queue.QueueCreateInfo ns,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
-deriving instance (Show n, Show (HeteroVarList Queue.CreateInfo ns)) =>
+deriving instance (Show n, Show (HeteroVarList Queue.QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
 createInfoToCore :: (Pointable n, PointableToListM ns) =>
@@ -81,7 +81,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cqcis <- pointableToListM Queue.createInfoToCore qcis
+	cqcis <- pointableToListM Queue.queueCreateInfoToCore qcis
 	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis

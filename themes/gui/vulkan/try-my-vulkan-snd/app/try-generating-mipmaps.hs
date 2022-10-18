@@ -569,12 +569,12 @@ createLogicalDevice = do
 	uniqueQueueFamilies is = nub [
 		fromJust $ graphicsFamily is,
 		fromJust $ presentFamily is ]
-	queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
-		Vk.Device.Queue.createInfoNext = Nothing,
-		Vk.Device.Queue.createInfoFlags =
+	queueCreateInfos qf = Vk.Device.Queue.QueueCreateInfo {
+		Vk.Device.Queue.queueCreateInfoNext = Nothing,
+		Vk.Device.Queue.queueCreateInfoFlags =
 			Vk.Device.Queue.CreateFlagsZero,
-		Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
-		Vk.Device.Queue.createInfoQueuePriorities = [1] }
+		Vk.Device.Queue.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Device.Queue.queueCreateInfoQueuePriorities = [1] }
 	deviceFeatures = Vk.PhysicalDevice.featuresZero {
 		Vk.PhysicalDevice.featuresSamplerAnisotropy = True }
 

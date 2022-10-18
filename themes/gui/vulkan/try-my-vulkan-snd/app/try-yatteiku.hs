@@ -97,13 +97,13 @@ main = do
 				=<< Vk.PhysicalDevice.enumerate inst
 		print physicalDevice
 		print graphicsQueueFamilyIndex
-		let	queueCreateInfo = Vk.Device.Queue.CreateInfo {
-				Vk.Device.Queue.createInfoNext = Nothing,
-				Vk.Device.Queue.createInfoFlags =
+		let	queueCreateInfo = Vk.Device.Queue.QueueCreateInfo {
+				Vk.Device.Queue.queueCreateInfoNext = Nothing,
+				Vk.Device.Queue.queueCreateInfoFlags =
 					Vk.Device.Queue.CreateFlagsZero,
-				Vk.Device.Queue.createInfoQueueFamilyIndex =
+				Vk.Device.Queue.queueCreateInfoQueueFamilyIndex =
 					graphicsQueueFamilyIndex,
-				Vk.Device.Queue.createInfoQueuePriorities =
+				Vk.Device.Queue.queueCreateInfoQueuePriorities =
 					[1.0] }
 			devCreateInfo :: Vk.Device.CreateInfo () '[()]
 			devCreateInfo = Vk.Device.CreateInfo {

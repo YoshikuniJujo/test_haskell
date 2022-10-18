@@ -385,11 +385,11 @@ createDevice ph qfis f = mkHeteroVarList @() qcrInfo qfs \qs ->
 			bool [] validationLayers enableValidationLayers,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
-	qcrInfo qf = Vk.Dvc.Queue.CreateInfo {
-		Vk.Dvc.Queue.createInfoNext = Nothing,
-		Vk.Dvc.Queue.createInfoFlags = def,
-		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
-		Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
+	qcrInfo qf = Vk.Dvc.Queue.QueueCreateInfo {
+		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
+		Vk.Dvc.Queue.queueCreateInfoFlags = def,
+		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
 	(forall ss . PointableToListM ss => HeteroVarList t ss -> b) -> b

@@ -117,11 +117,11 @@ crtDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	queueInfo qf = Vk.Dvc.Queue.CreateInfo {
-		Vk.Dvc.Queue.createInfoNext = Nothing,
-		Vk.Dvc.Queue.createInfoFlags = zeroBits,
-		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
-		Vk.Dvc.Queue.createInfoQueuePriorities = [0] }
+	queueInfo qf = Vk.Dvc.Queue.QueueCreateInfo {
+		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
+		Vk.Dvc.Queue.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [0] }
 
 findQueueFamily :: Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
 findQueueFamily phdvc qb = (<$> Vk.PhDvc.getQueueFamilyProperties phdvc)

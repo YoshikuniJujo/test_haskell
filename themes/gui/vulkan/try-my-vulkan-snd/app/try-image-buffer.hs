@@ -223,11 +223,11 @@ withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	queueInfo qfam = Vk.Dvc.Queue.CreateInfo {
-		Vk.Dvc.Queue.createInfoNext = Nothing,
-		Vk.Dvc.Queue.createInfoFlags = def,
-		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qfam,
-		Vk.Dvc.Queue.createInfoQueuePriorities = [0] }
+	queueInfo qfam = Vk.Dvc.Queue.QueueCreateInfo {
+		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
+		Vk.Dvc.Queue.queueCreateInfoFlags = def,
+		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qfam,
+		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [0] }
 
 instInfo :: Vk.Inst.CreateInfo () ()
 instInfo = def {

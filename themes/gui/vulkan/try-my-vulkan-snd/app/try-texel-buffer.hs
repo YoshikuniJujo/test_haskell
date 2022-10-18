@@ -93,13 +93,13 @@ main = do
 		queueFamily <-
 			findQueueFamily physicalDevice Vk.Queue.ComputeBit
 		print queueFamily
-		let	queueInfo = Vk.Device.Queue.CreateInfo {
-				Vk.Device.Queue.createInfoNext = Nothing,
-				Vk.Device.Queue.createInfoFlags =
+		let	queueInfo = Vk.Device.Queue.QueueCreateInfo {
+				Vk.Device.Queue.queueCreateInfoNext = Nothing,
+				Vk.Device.Queue.queueCreateInfoFlags =
 					Vk.Device.Queue.CreateFlagsZero,
-				Vk.Device.Queue.createInfoQueueFamilyIndex =
+				Vk.Device.Queue.queueCreateInfoQueueFamilyIndex =
 					queueFamily,
-				Vk.Device.Queue.createInfoQueuePriorities =
+				Vk.Device.Queue.queueCreateInfoQueuePriorities =
 					[0.0] }
 			deviceInfo = Vk.Device.CreateInfo {
 				Vk.Device.createInfoNext = Nothing,
