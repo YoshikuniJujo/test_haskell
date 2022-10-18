@@ -41,6 +41,7 @@ import qualified Data.Text as T
 import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
+import Gpu.Vulkan.Device.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
@@ -50,8 +51,6 @@ import qualified Gpu.Vulkan.Memory.Core as Memory
 import qualified Gpu.Vulkan.Queue as Queue
 
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
-
-import qualified Gpu.Vulkan.Device.Queue.Enum as Queue.E
 
 #include <vulkan/vulkan.h>
 
@@ -136,7 +135,7 @@ waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d
 
 data QueueCreateInfo n = QueueCreateInfo {
 	queueCreateInfoNext :: Maybe n,
-	queueCreateInfoFlags :: Queue.E.CreateFlags,
+	queueCreateInfoFlags :: QueueCreateFlags,
 	queueCreateInfoQueueFamilyIndex :: QueueFamily.Index,
 	queueCreateInfoQueuePriorities :: [Float] }
 	deriving Show
@@ -144,7 +143,7 @@ data QueueCreateInfo n = QueueCreateInfo {
 queueCreateInfoToCore :: Pointable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
 queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoNext = mnxt,
-	queueCreateInfoFlags = Queue.E.CreateFlagBits flgs,
+	queueCreateInfoFlags = QueueCreateFlagBits flgs,
 	queueCreateInfoQueueFamilyIndex = QueueFamily.Index qfi,
 	queueCreateInfoQueuePriorities = qps
 	} = do

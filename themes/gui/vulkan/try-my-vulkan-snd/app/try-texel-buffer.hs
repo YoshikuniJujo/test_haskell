@@ -34,7 +34,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.Device.Type as Vk.Device
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
@@ -94,8 +93,7 @@ main = do
 		print queueFamily
 		let	queueInfo = Vk.Device.QueueCreateInfo {
 				Vk.Device.queueCreateInfoNext = Nothing,
-				Vk.Device.queueCreateInfoFlags =
-					Vk.Device.Queue.CreateFlagsZero,
+				Vk.Device.queueCreateInfoFlags = zeroBits,
 				Vk.Device.queueCreateInfoQueueFamilyIndex =
 					queueFamily,
 				Vk.Device.queueCreateInfoQueuePriorities =

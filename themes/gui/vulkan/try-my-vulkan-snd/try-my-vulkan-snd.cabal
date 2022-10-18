@@ -89,9 +89,9 @@ library
       Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
+      Gpu.Vulkan.Device.Enum
       Gpu.Vulkan.Device.Middle
       Gpu.Vulkan.Device.Middle.Internal
-      Gpu.Vulkan.Device.Queue.Enum
       Gpu.Vulkan.Device.Type
       Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception

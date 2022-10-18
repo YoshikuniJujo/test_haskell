@@ -46,6 +46,10 @@ enum "Type" ''#{type VkDescriptorType}
 		#{const VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV}),
 	("TypeMutableValve",
 		#{const VK_DESCRIPTOR_TYPE_MUTABLE_VALVE}),
+	("TypeSampleWeightImageQcom",
+		#{const VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM}),
+	("TypeBlockMatchImageQcom",
+		#{const VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM}),
 	("TypeInlineUniformBlockExt",
 		#{const VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT}),
 	("TypeMaxEnum", #{const VK_DESCRIPTOR_TYPE_MAX_ENUM}) ]

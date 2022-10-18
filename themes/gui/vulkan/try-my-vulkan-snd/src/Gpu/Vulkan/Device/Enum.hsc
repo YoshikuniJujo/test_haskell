@@ -7,7 +7,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Queue.Enum where
+module Gpu.Vulkan.Device.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
@@ -17,15 +17,15 @@ import Data.Default
 
 #include <vulkan/vulkan.h>
 
-enum "CreateFlagBits" ''#{type VkDeviceQueueCreateFlagBits}
+enum "QueueCreateFlagBits" ''#{type VkDeviceQueueCreateFlagBits}
 		[''Show, ''Eq, ''Storable, ''Bits] [
-	("CreateFlagsZero", 0),
-	("CreateProtectedBit",
+	("QueueCreateFlagsZero", 0),
+	("QueueCreateProtectedBit",
 		#{const VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT}),
-	("CreateFlagBitsMaxEnum",
+	("QueueCreateFlagBitsMaxEnum",
 		#{const VK_DEVICE_QUEUE_CREATE_FLAG_BITS_MAX_ENUM}) ]
 
-instance Default CreateFlagBits where
-	def = CreateFlagsZero
+instance Default QueueCreateFlagBits where
+	def = QueueCreateFlagsZero
 
-type CreateFlags = CreateFlagBits
+type QueueCreateFlags = QueueCreateFlagBits

@@ -397,8 +397,8 @@ enum "Filter" ''#{type VkFilter}
 		[''Show, ''Eq, ''Storable] [
 	("FilterNearest", #{const VK_FILTER_NEAREST}),
 	("FilterLinear", #{const VK_FILTER_LINEAR}),
-	("FilterCubicImg", #{const VK_FILTER_CUBIC_IMG}),
 	("FilterCubicExt", #{const VK_FILTER_CUBIC_EXT}),
+	("FilterCubicImg", #{const VK_FILTER_CUBIC_IMG}),
 	("FilterMaxEnum", #{const VK_FILTER_MAX_ENUM}) ]
 
 enum "BorderColor" ''#{type VkBorderColor}
@@ -919,6 +919,8 @@ enum "DependencyFlagBits" ''#{type VkDependencyFlagBits}
 	("DependencyByRegionBit", #{const VK_DEPENDENCY_BY_REGION_BIT}),
 	("DependencyDeviceGroupBit", #{const VK_DEPENDENCY_DEVICE_GROUP_BIT}),
 	("DependencyViewLocalBit", #{const VK_DEPENDENCY_VIEW_LOCAL_BIT}),
+	("DependencyFeedbackLoopBitExt",
+		#{const VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT}),
 	("DependencyViewLocalBitKhr",
 		#{const VK_DEPENDENCY_VIEW_LOCAL_BIT_KHR}),
 	("DependencyDeviceGroupBitKhr",
@@ -1053,14 +1055,16 @@ enum "FormatFeatureFlagBits" ''#{type VkFormatFeatureFlagBits}
 		#{const VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT}),
 	("FormatFeatureSampledImageFilterMinmaxBit",
 		#{const VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT}),
-	("FormatFeatureSampledImageFilterCubicBitImg",
-		#{const VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG}),
 	("FormatFeatureAccelerationStructureVertexBufferBitKhr",
 		#{const VK_FORMAT_FEATURE_ACCELERATION_STRUCTURE_VERTEX_BUFFER_BIT_KHR}),
+	("FormatFeatureSampledImageFilterCubicBitExt",
+		#{const VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT}),
 	("FormatFeatureFragmentDensityMapBitExt",
 		#{const VK_FORMAT_FEATURE_FRAGMENT_DENSITY_MAP_BIT_EXT}),
 	("FormatFeatureFragmentShadingRateAttachmentBitKhr",
 		#{const VK_FORMAT_FEATURE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR}),
+	("FormatFeatureSampledImageFilterCubicBitImg",
+		#{const VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_IMG}),
 	("FormatFeatureTransferSrcBitKhr",
 		#{const VK_FORMAT_FEATURE_TRANSFER_SRC_BIT_KHR}),
 	("FormatFeatureTransferDstBitKhr",
@@ -1081,8 +1085,6 @@ enum "FormatFeatureFlagBits" ''#{type VkFormatFeatureFlagBits}
 		#{const VK_FORMAT_FEATURE_DISJOINT_BIT_KHR}),
 	("FormatFeatureCositedChromaSamplesBitKhr",
 		#{const VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT_KHR}),
-	("FormatFeatureSampledImageFilterCubicBitExt",
-		#{const VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT}),
 	("FormatFeatureFlagBitsMaxEnum",
 		#{const VK_FORMAT_FEATURE_FLAG_BITS_MAX_ENUM}) ]
 

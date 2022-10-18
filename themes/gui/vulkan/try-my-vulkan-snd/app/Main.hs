@@ -54,7 +54,6 @@ import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
@@ -432,8 +431,7 @@ createLogicalDevice g@Global {
 		fromJust $ presentFamily indices ]
 	queueCreateInfo qf = Vk.Device.QueueCreateInfo {
 		Vk.Device.queueCreateInfoNext = Nothing,
-		Vk.Device.queueCreateInfoFlags =
-			Vk.Device.Queue.CreateFlagsZero,
+		Vk.Device.queueCreateInfoFlags = zeroBits,
 		Vk.Device.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Device.queueCreateInfoQueuePriorities = [1.0] }
 	deviceFeatures = Vk.PhysicalDevice.featuresZero

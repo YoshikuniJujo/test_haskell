@@ -5,7 +5,7 @@ module VulkanDeviceQueueEnum where
 import MakeEnum
 
 make :: IO ()
-make = createFileWithDefault vulkanCore "Device.Queue.Enum" ["Data.Bits", "Data.Word"]
-	[(	Just "CreateFlagsZero", [("CreateFlagsZero", Int 0)],
-		("CreateFlagBits", "VkDeviceQueueCreateFlagBits", ["Show", "Eq", "Storable", "Bits"]) )]
-	"type CreateFlags = CreateFlagBits"
+make = createFileWithDefault vulkanCore "Device.Enum" ["Data.Bits", "Data.Word"]
+	[(	Just "QueueCreateFlagsZero", [("QueueCreateFlagsZero", Int 0)],
+		("QueueCreateFlagBits", "VkDeviceQueueCreateFlagBits", ["Show", "Eq", "Storable", "Bits"]) )]
+	"type QueueCreateFlags = QueueCreateFlagBits"

@@ -23,6 +23,10 @@ enum "CreateFlagBits" ''#{type VkSamplerCreateFlagBits}
 		#{const VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT}),
 	("CreateSubsampledCoarseReconstructionBitExt",
 		#{const VK_SAMPLER_CREATE_SUBSAMPLED_COARSE_RECONSTRUCTION_BIT_EXT}),
+	("CreateNonSeamlessCubeMapBitExt",
+		#{const VK_SAMPLER_CREATE_NON_SEAMLESS_CUBE_MAP_BIT_EXT}),
+	("CreateImageProcessingBitQcom",
+		#{const VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM}),
 	("CreateFlagBitsMaxEnum",
 		#{const VK_SAMPLER_CREATE_FLAG_BITS_MAX_ENUM}) ]
 
