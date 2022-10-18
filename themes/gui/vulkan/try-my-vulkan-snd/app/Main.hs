@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -10,11 +10,13 @@
 module Main where
 
 import Foreign.Ptr
-import Foreign.Marshal
 import Foreign.ForeignPtr hiding (newForeignPtr)
+import Foreign.Marshal
+import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Fix
 import Control.Monad.Cont
+import Data.Foldable
 import Data.Maybe
 import Data.List
 import Data.IORef
@@ -407,35 +409,40 @@ createLogicalDevice g@Global {
 	globalPresentQueue = rpq } = do
 	phdvc <- readIORef rphdvc
 	indices <- findQueueFamilies g phdvc
-	let	uniqueQueueFamilies = Set.fromList [
-			fromJust $ graphicsFamily indices,
-			fromJust $ presentFamily indices ]
-		queueCreateInfo qf = Vk.Device.Queue.CreateInfo {
-			Vk.Device.Queue.createInfoNext = Nothing,
-			Vk.Device.Queue.createInfoFlags =
-				Vk.Device.Queue.CreateFlagsZero,
-			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
-			Vk.Device.Queue.createInfoQueuePriorities = [1.0] }
-		deviceFeatures = Vk.PhysicalDevice.featuresZero
-		createInfo = Vk.Device.CreateInfo {
-			Vk.Device.createInfoNext = Nothing,
-			Vk.Device.createInfoFlags = zeroBits,
-			Vk.Device.createInfoQueueCreateInfos =
-				((: []) . queueCreateInfo . Vk.QueueFamily.Index) `foldMap`
-					uniqueQueueFamilies,
-			Vk.Device.createInfoEnabledLayerNames =
-				if enableValidationLayers
-					then validationLayers else [],
-			Vk.Device.createInfoEnabledExtensionNames =
-				deviceExtensions,
-			Vk.Device.createInfoEnabledFeatures =
-				Just deviceFeatures }
-	dvc <- Vk.Device.create @() @() @() phdvc createInfo Nothing
-	writeIORef rdvc dvc
-	gq <- Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0
-	pq <- Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0
-	writeIORef rgq gq
-	writeIORef rpq pq
+	mkHeteroVarList @() queueCreateInfo ((Vk.QueueFamily.Index <$>) . toList $ uniqueQueueFamilies indices) \qs -> do
+		let	createInfo = Vk.Device.CreateInfo {
+				Vk.Device.createInfoNext = Nothing,
+				Vk.Device.createInfoFlags = zeroBits,
+				Vk.Device.createInfoQueueCreateInfos = qs,
+				Vk.Device.createInfoEnabledLayerNames =
+					if enableValidationLayers
+						then validationLayers else [],
+				Vk.Device.createInfoEnabledExtensionNames =
+					deviceExtensions,
+				Vk.Device.createInfoEnabledFeatures =
+					Just deviceFeatures }
+		dvc <- Vk.Device.create @() @_ @() phdvc createInfo Nothing
+		writeIORef rdvc dvc
+		gq <- Vk.Device.getQueue dvc (fromJust $ graphicsFamily indices) 0
+		pq <- Vk.Device.getQueue dvc (fromJust $ presentFamily indices) 0
+		writeIORef rgq gq
+		writeIORef rpq pq
+	where
+	uniqueQueueFamilies indices = Set.fromList [
+		fromJust $ graphicsFamily indices,
+		fromJust $ presentFamily indices ]
+	queueCreateInfo qf = Vk.Device.Queue.CreateInfo {
+		Vk.Device.Queue.createInfoNext = Nothing,
+		Vk.Device.Queue.createInfoFlags =
+			Vk.Device.Queue.CreateFlagsZero,
+		Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
+		Vk.Device.Queue.createInfoQueuePriorities = [1.0] }
+	deviceFeatures = Vk.PhysicalDevice.featuresZero
+
+mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
+	(forall ss . Vk.Device.PointableToListM ss => HeteroVarList t ss -> b) -> b
+mkHeteroVarList _k [] f = f HVNil
+mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 
 createSwapChain :: Global -> IO ()
 createSwapChain g@Global {

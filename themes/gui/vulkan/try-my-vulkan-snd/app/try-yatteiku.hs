@@ -105,12 +105,12 @@ main = do
 					graphicsQueueFamilyIndex,
 				Vk.Device.Queue.createInfoQueuePriorities =
 					[1.0] }
-			devCreateInfo :: Vk.Device.CreateInfo () ()
+			devCreateInfo :: Vk.Device.CreateInfo () '[()]
 			devCreateInfo = Vk.Device.CreateInfo {
 				Vk.Device.createInfoNext = Nothing,
 				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
-					[queueCreateInfo],
+					Singleton queueCreateInfo,
 				Vk.Device.createInfoEnabledLayerNames =
 					[Vk.Khr.validationLayerName],
 				Vk.Device.createInfoEnabledExtensionNames = [],

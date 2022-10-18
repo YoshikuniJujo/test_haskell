@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -580,36 +580,42 @@ querySwapChainSupport dvc = readGlobal globalSurface >>= \sfc ->
 createLogicalDevice :: ReaderT Global IO ()
 createLogicalDevice = do
 	is <- findQueueFamilies =<< readGlobal globalPhysicalDevice
-	let	uniqueQueueFamilies = nub [
-			fromJust $ graphicsFamily is,
-			fromJust $ presentFamily is ]
-		queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
-			Vk.Device.Queue.createInfoNext = Nothing,
-			Vk.Device.Queue.createInfoFlags =
-				Vk.Device.Queue.CreateFlagsZero,
-			Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
-			Vk.Device.Queue.createInfoQueuePriorities = [1] }
-		deviceFeatures = Vk.PhysicalDevice.featuresZero {
-			Vk.PhysicalDevice.featuresSamplerAnisotropy = True,
-			Vk.PhysicalDevice.featuresSampleRateShading = True }
-		createInfo = Vk.Device.CreateInfo {
-			Vk.Device.createInfoNext = Nothing,
-			Vk.Device.createInfoFlags = zeroBits,
-			Vk.Device.createInfoQueueCreateInfos =
-				queueCreateInfos <$> uniqueQueueFamilies,
-			Vk.Device.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Device.createInfoEnabledExtensionNames =
-				deviceExtensions,
-			Vk.Device.createInfoEnabledFeatures =
-				Just deviceFeatures }
-	pdvc <- readGlobal globalPhysicalDevice
-	dvc <- lift (Vk.Device.create @() @() pdvc createInfo nil)
-	writeGlobal globalDevice dvc
-	writeGlobal globalGraphicsQueue =<< lift (
-		Vk.Device.getQueue dvc (Vk.QueueFamily.unIndex . fromJust $ graphicsFamily is) 0 )
-	writeGlobal globalPresentQueue =<< lift (
-		Vk.Device.getQueue dvc (Vk.QueueFamily.unIndex . fromJust $ presentFamily is) 0 )
+	mkHeteroVarList @() queueCreateInfos (uniqueQueueFamilies is) \qs -> do
+		let	createInfo = Vk.Device.CreateInfo {
+				Vk.Device.createInfoNext = Nothing,
+				Vk.Device.createInfoFlags = zeroBits,
+				Vk.Device.createInfoQueueCreateInfos = qs,
+				Vk.Device.createInfoEnabledLayerNames =
+					bool [] validationLayers enableValidationLayers,
+				Vk.Device.createInfoEnabledExtensionNames =
+					deviceExtensions,
+				Vk.Device.createInfoEnabledFeatures =
+					Just deviceFeatures }
+		pdvc <- readGlobal globalPhysicalDevice
+		dvc <- lift (Vk.Device.create @() pdvc createInfo nil)
+		writeGlobal globalDevice dvc
+		writeGlobal globalGraphicsQueue =<< lift (
+			Vk.Device.getQueue dvc (Vk.QueueFamily.unIndex . fromJust $ graphicsFamily is) 0 )
+		writeGlobal globalPresentQueue =<< lift (
+			Vk.Device.getQueue dvc (Vk.QueueFamily.unIndex . fromJust $ presentFamily is) 0 )
+	where
+	uniqueQueueFamilies is = nub [
+		fromJust $ graphicsFamily is,
+		fromJust $ presentFamily is ]
+	queueCreateInfos qf = Vk.Device.Queue.CreateInfo {
+		Vk.Device.Queue.createInfoNext = Nothing,
+		Vk.Device.Queue.createInfoFlags =
+			Vk.Device.Queue.CreateFlagsZero,
+		Vk.Device.Queue.createInfoQueueFamilyIndex = qf,
+		Vk.Device.Queue.createInfoQueuePriorities = [1] }
+	deviceFeatures = Vk.PhysicalDevice.featuresZero {
+		Vk.PhysicalDevice.featuresSamplerAnisotropy = True,
+		Vk.PhysicalDevice.featuresSampleRateShading = True }
+
+mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
+	(forall ss . Vk.Device.PointableToListM ss => HeteroVarList t ss -> b) -> b
+mkHeteroVarList _k [] f = f HVNil
+mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 
 createSwapChain :: ReaderT Global IO ()
 createSwapChain = do

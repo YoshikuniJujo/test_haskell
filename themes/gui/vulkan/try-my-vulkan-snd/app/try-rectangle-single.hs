@@ -15,6 +15,7 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
+import Foreign.Pointable
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix
@@ -360,21 +361,27 @@ createLogicalDevice phdvc qfis f =
 			Vk.Dvc.Queue.createInfoNext = Nothing,
 			Vk.Dvc.Queue.createInfoFlags = def,
 			Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
-			Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
-		createInfo = Vk.Dvc.M.CreateInfo {
-			Vk.Dvc.M.createInfoNext = Nothing,
-			Vk.Dvc.M.createInfoFlags = def,
-			Vk.Dvc.M.createInfoQueueCreateInfos =
-				queueCreateInfos <$> uniqueQueueFamilies,
-			Vk.Dvc.M.createInfoEnabledLayerNames =
-				bool [] validationLayers enableValidationLayers,
-			Vk.Dvc.M.createInfoEnabledExtensionNames =
-				deviceExtensions,
-			Vk.Dvc.M.createInfoEnabledFeatures = Just def } in
-	Vk.Dvc.create @() @() phdvc createInfo nil nil \dvc -> do
-		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
-		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
-		f dvc gq pq
+			Vk.Dvc.Queue.createInfoQueuePriorities = [1] } in
+	mkHeteroVarList @() queueCreateInfos uniqueQueueFamilies \qs -> do
+		let	createInfo = Vk.Dvc.M.CreateInfo {
+				Vk.Dvc.M.createInfoNext = Nothing,
+				Vk.Dvc.M.createInfoFlags = def,
+				Vk.Dvc.M.createInfoQueueCreateInfos = qs,
+--					queueCreateInfos <$> uniqueQueueFamilies,
+				Vk.Dvc.M.createInfoEnabledLayerNames =
+					bool [] validationLayers enableValidationLayers,
+				Vk.Dvc.M.createInfoEnabledExtensionNames =
+					deviceExtensions,
+				Vk.Dvc.M.createInfoEnabledFeatures = Just def }
+		Vk.Dvc.create @() phdvc createInfo nil nil \dvc -> do
+			gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
+			pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
+			f dvc gq pq
+
+mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
+	(forall ss . Vk.Dvc.M.PointableToListM ss => HeteroVarList t ss -> b) -> b
+mkHeteroVarList _k [] f = f HVNil
+mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss .

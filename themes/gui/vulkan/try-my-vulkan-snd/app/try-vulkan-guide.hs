@@ -370,16 +370,17 @@ querySwapchainSupport dvc sfc = SwapchainSupportDetails
 
 createDevice :: Vk.PhDvc.P -> QueueFamilyIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createDevice ph qfis f = Vk.Dvc.create @() @() ph crInfo nil nil \dv -> do
-	gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
-	pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
-	f dv gq pq
+createDevice ph qfis f = mkHeteroVarList @() qcrInfo qfs \qs ->
+	Vk.Dvc.create @() ph (crInfo qs) nil nil \dv -> do
+		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
+		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
+		f dv gq pq
 	where
 	qfs = nub [graphicsFamily qfis, presentFamily qfis]
-	crInfo = Vk.Dvc.M.CreateInfo {
+	crInfo qs = Vk.Dvc.M.CreateInfo {
 		Vk.Dvc.M.createInfoNext = Nothing,
 		Vk.Dvc.M.createInfoFlags = def,
-		Vk.Dvc.M.createInfoQueueCreateInfos = qcrInfo <$> qfs,
+		Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.M.createInfoEnabledLayerNames =
 			bool [] validationLayers enableValidationLayers,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
@@ -389,6 +390,11 @@ createDevice ph qfis f = Vk.Dvc.create @() @() ph crInfo nil nil \dv -> do
 		Vk.Dvc.Queue.createInfoFlags = def,
 		Vk.Dvc.Queue.createInfoQueueFamilyIndex = qf,
 		Vk.Dvc.Queue.createInfoQueuePriorities = [1] }
+
+mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
+	(forall ss . Vk.Dvc.M.PointableToListM ss => HeteroVarList t ss -> b) -> b
+mkHeteroVarList _k [] f = f HVNil
+mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 
 createSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss scfmt .

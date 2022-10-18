@@ -213,12 +213,12 @@ withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
 	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
 	qfam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Dvc.create @() @() phdvc (dvcInfo qfam) nil nil $ \dvc -> f phdvc qfam dvc maxGroupCountX
+	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qfam) nil nil $ \dvc -> f phdvc qfam dvc maxGroupCountX
 	where
 	dvcInfo qfam = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = Nothing,
 		Vk.Dvc.createInfoFlags = def,
-		Vk.Dvc.createInfoQueueCreateInfos = [queueInfo qfam],
+		Vk.Dvc.createInfoQueueCreateInfos = Singleton $ queueInfo qfam,
 		Vk.Dvc.createInfoEnabledLayerNames =
 			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],

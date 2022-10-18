@@ -21,8 +21,8 @@ import qualified Gpu.Vulkan.Device.Middle as M
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
-create :: (Pointable n, Pointable n2, Pointable n3, Pointable n4) =>
-	PhysicalDevice.P -> M.CreateInfo n n2 ->
+create :: (Pointable n, M.PointableToListM ns, Pointable n3, Pointable n4) =>
+	PhysicalDevice.P -> M.CreateInfo n ns ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . D s -> IO a) -> IO a
 create phdvc ci macc macd f =

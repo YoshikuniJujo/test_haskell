@@ -1,13 +1,17 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle.Internal (
-	D(..), CreateInfo(..), CreateFlags, create, destroy,
+	D(..), CreateInfo(..), CreateFlags, create, destroy, PointableToListM,
 
 	getQueue, waitIdle,
 
@@ -26,6 +30,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
 import Data.Bits
+import Data.HeteroList hiding (length)
 import Data.IORef
 import Data.Word
 
@@ -53,26 +58,38 @@ type CreateFlags = CreateFlagBits
 
 instance Default CreateFlags where def = CreateFlagsZero
 
-data CreateInfo n n' = CreateInfo {
+data CreateInfo n ns = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueCreateInfos :: [Queue.CreateInfo n'],
+	createInfoQueueCreateInfos :: HeteroVarList Queue.CreateInfo ns,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
-	deriving Show
 
-createInfoToCore :: (Pointable n, Pointable n') =>
-	CreateInfo n n' -> ContT r IO (Ptr C.CreateInfo)
+deriving instance (Show n, Show (HeteroVarList Queue.CreateInfo ns)) =>
+	Show (CreateInfo n ns)
+
+class PointableToListM ns where
+	pointableToListM :: Monad m =>
+		(forall n . Pointable n => t n -> m t') -> HeteroVarList t ns -> m [t']
+
+instance PointableToListM '[] where pointableToListM _ HVNil = pure []
+
+instance (Storable n, PointableToListM ns) => PointableToListM (n ': ns) where
+	pointableToListM f (x :...: xs) = (:) <$> f x <*> pointableToListM f xs
+
+createInfoToCore :: (Pointable n, PointableToListM ns) =>
+	CreateInfo n ns -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoQueueCreateInfos = (id &&& length) -> (qcis, qcic),
+	createInfoQueueCreateInfos = qcis,
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cqcis <- Queue.createInfoToCore `mapM` qcis
+	cqcis <- pointableToListM Queue.createInfoToCore qcis
+	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
 	pcelns <- textListToCStringArray elns
@@ -95,8 +112,8 @@ createInfoToCore CreateInfo {
 			C.createInfoPEnabledFeatures = pef }
 	ContT $ withForeignPtr fCreateInfo
 
-create :: (Pointable n, Pointable n', Pointable c) =>
-	PhysicalDevice.P -> CreateInfo n n' -> Maybe (AllocationCallbacks.A c) ->
+create :: (Pointable n, PointableToListM ns, Pointable c) =>
+	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
 	pcci <- createInfoToCore ci

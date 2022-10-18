@@ -103,7 +103,7 @@ crtDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 	qf <- findQueueFamily phdvc Vk.Queue.ComputeBit
 	lmts <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	mxX :. _ = Vk.PhDvc.limitsMaxComputeWorkGroupCount lmts
-	Vk.Dvc.create @() @() phdvc (dvcInfo qf) nil nil $ \dvc ->
+	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qf) nil nil $ \dvc ->
 		f phdvc qf dvc mxX
 	where
 	instInfo = def {
@@ -112,7 +112,7 @@ crtDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 	dvcInfo qf = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = Nothing,
 		Vk.Dvc.createInfoFlags = zeroBits,
-		Vk.Dvc.createInfoQueueCreateInfos = [queueInfo qf],
+		Vk.Dvc.createInfoQueueCreateInfos = Singleton $ queueInfo qf,
 		Vk.Dvc.createInfoEnabledLayerNames =
 			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],

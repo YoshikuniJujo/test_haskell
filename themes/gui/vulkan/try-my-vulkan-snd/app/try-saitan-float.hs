@@ -82,11 +82,11 @@ main = do
 				Vk.Device.createInfoNext = Nothing,
 				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
-					[queueInfo],
+					Singleton queueInfo,
 				Vk.Device.createInfoEnabledLayerNames = [],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
-		Vk.Device.create @() @() physicalDevice deviceInfo nil nil
+		Vk.Device.create @() @'[()] physicalDevice deviceInfo nil nil
 			$ withDevice physicalDevice queueFamily
 
 withDevice ::
