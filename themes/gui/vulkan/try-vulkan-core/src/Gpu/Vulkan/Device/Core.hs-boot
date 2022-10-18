@@ -6,6 +6,3 @@ import Foreign.Ptr
 
 data DTag
 type D = Ptr DTag
-
-data MemoryTag
-type Memory = Ptr MemoryTag

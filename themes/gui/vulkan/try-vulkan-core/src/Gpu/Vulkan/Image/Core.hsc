@@ -101,7 +101,7 @@ foreign import ccall "vkGetImageMemoryRequirements" getMemoryRequirements ::
 	Device.D -> I -> Ptr Memory.Requirements -> IO ()
 
 foreign import ccall "vkBindImageMemory" bindMemory ::
-	Device.D -> I -> Device.Memory -> #{type VkDeviceSize} ->
+	Device.D -> I -> Memory.M -> #{type VkDeviceSize} ->
 	IO #{type VkResult}
 
 mbType :: #{type VkStructureType}

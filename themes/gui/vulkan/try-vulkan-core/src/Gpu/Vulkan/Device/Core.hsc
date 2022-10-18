@@ -70,6 +70,3 @@ foreign import ccall "vkGetDeviceQueue" getQueue ::
 
 foreign import ccall "vkDeviceWaitIdle" waitIdle ::
 	D -> IO #{type VkResult}
-
-data MemoryTag
-type Memory = Ptr MemoryTag

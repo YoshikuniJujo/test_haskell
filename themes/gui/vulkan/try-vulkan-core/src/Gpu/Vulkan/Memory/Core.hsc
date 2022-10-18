@@ -18,6 +18,9 @@ import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Core as Device
 
 #include <vulkan/vulkan.h>
 
+data MTag
+type M = Ptr MTag
+
 struct "Requirements" #{size VkMemoryRequirements}
 		#{alignment VkMemoryRequirements} [
 	("size", ''#{type VkDeviceSize},
@@ -77,18 +80,16 @@ struct "AllocateInfo" #{size VkMemoryAllocateInfo}
 
 foreign import ccall "vkAllocateMemory" allocate ::
 	Device.D -> Ptr AllocateInfo -> Ptr AllocationCallbacks.A ->
-	Ptr Device.Memory -> IO #{type VkResult}
+	Ptr M -> IO #{type VkResult}
 
 foreign import ccall "vkFreeMemory" free ::
-	Device.D -> Device.Memory -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> M -> Ptr AllocationCallbacks.A -> IO ()
 
 foreign import ccall "vkMapMemory" map ::
-	Device.D -> Device.Memory ->
-	#{type VkDeviceSize} -> #{type VkDeviceSize} ->
+	Device.D -> M -> #{type VkDeviceSize} -> #{type VkDeviceSize} ->
 	#{type VkMemoryMapFlags} -> Ptr (Ptr a) -> IO #{type VkResult}
 
-foreign import ccall "vkUnmapMemory" unmap ::
-	Device.D -> Device.Memory -> IO ()
+foreign import ccall "vkUnmapMemory" unmap :: Device.D -> M -> IO ()
 
 bType :: #{type VkStructureType}
 bType = #{const VK_STRUCTURE_TYPE_MEMORY_BARRIER}

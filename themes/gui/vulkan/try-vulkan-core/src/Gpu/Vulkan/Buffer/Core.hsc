@@ -62,7 +62,7 @@ foreign import ccall "vkGetBufferMemoryRequirements" getMemoryRequirements ::
 	Device.D -> B -> Ptr Memory.Requirements -> IO ()
 
 foreign import ccall "vkBindBufferMemory" bindMemory ::
-	Device.D -> B -> Device.Memory -> #{type VkDeviceSize} ->
+	Device.D -> B -> Memory.M -> #{type VkDeviceSize} ->
 	IO #{type VkResult}
 
 struct "Copy" #{size VkBufferCopy} #{alignment VkBufferCopy} [
