@@ -48,7 +48,7 @@ import qualified Gpu.Vulkan.Instance.Type as Vk.Ist.T
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Ist
 import qualified Gpu.Vulkan.Instance.Enum as Vk.Ist
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DU.Msngr
-import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DU.Msg
+import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DU
 
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
@@ -287,13 +287,13 @@ debugMessengerCreateInfo = Vk.Ext.DU.Msngr.CreateInfo {
 	Vk.Ext.DU.Msngr.createInfoNext = Nothing,
 	Vk.Ext.DU.Msngr.createInfoFlags = Vk.Ext.DU.Msngr.CreateFlagsZero,
 	Vk.Ext.DU.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DU.Msg.SeverityVerboseBit .|.
-		Vk.Ext.DU.Msg.SeverityWarningBit .|.
-		Vk.Ext.DU.Msg.SeverityErrorBit,
+		Vk.Ext.DU.MessageSeverityVerboseBit .|.
+		Vk.Ext.DU.MessageSeverityWarningBit .|.
+		Vk.Ext.DU.MessageSeverityErrorBit,
 	Vk.Ext.DU.Msngr.createInfoMessageType =
-		Vk.Ext.DU.Msg.TypeGeneralBit .|.
-		Vk.Ext.DU.Msg.TypeValidationBit .|.
-		Vk.Ext.DU.Msg.TypePerformanceBit,
+		Vk.Ext.DU.MessageTypeGeneralBit .|.
+		Vk.Ext.DU.MessageTypeValidationBit .|.
+		Vk.Ext.DU.MessageTypePerformanceBit,
 	Vk.Ext.DU.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DU.Msngr.createInfoUserData = Nothing }
 

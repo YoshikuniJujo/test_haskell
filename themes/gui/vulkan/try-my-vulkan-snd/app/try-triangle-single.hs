@@ -63,7 +63,7 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
-import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DbgUtls.Msg
+import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
@@ -222,13 +222,13 @@ debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = Nothing,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageSeverity =
-		Vk.Ext.DbgUtls.Msg.SeverityVerboseBit .|.
-		Vk.Ext.DbgUtls.Msg.SeverityWarningBit .|.
-		Vk.Ext.DbgUtls.Msg.SeverityErrorBit,
+		Vk.Ext.DbgUtls.MessageSeverityVerboseBit .|.
+		Vk.Ext.DbgUtls.MessageSeverityWarningBit .|.
+		Vk.Ext.DbgUtls.MessageSeverityErrorBit,
 	Vk.Ext.DbgUtls.Msngr.createInfoMessageType =
-		Vk.Ext.DbgUtls.Msg.TypeGeneralBit .|.
-		Vk.Ext.DbgUtls.Msg.TypeValidationBit .|.
-		Vk.Ext.DbgUtls.Msg.TypePerformanceBit,
+		Vk.Ext.DbgUtls.MessageTypeGeneralBit .|.
+		Vk.Ext.DbgUtls.MessageTypeValidationBit .|.
+		Vk.Ext.DbgUtls.MessageTypePerformanceBit,
 	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 

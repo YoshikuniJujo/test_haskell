@@ -9,12 +9,12 @@ import MakeEnum
 
 make :: IO ()
 make = createFile' "/usr/include/vulkan/vulkan_core.h"
-	"Ext.DebugUtils.Message.Enum" ["Data.Bits", "Data.Word"] [
-		("SeverityFlagBits", "VkDebugUtilsMessageSeverityFlagBitsEXT",
+	"Ext.DebugUtils.Enum" ["Data.Bits", "Data.Word"] [
+		("MessageSeverityFlagBits", "VkDebugUtilsMessageSeverityFlagBitsEXT",
 			["Show", "Eq", "Storable", "Bits"]),
-		("TypeFlagBits", "VkDebugUtilsMessageTypeFlagBitsEXT",
+		("MessageTypeFlagBits", "VkDebugUtilsMessageTypeFlagBitsEXT",
 			["Show", "Eq", "Storable", "Bits"])
 		]
 	[nowdoc|
-type SeverityFlags = SeverityFlagBits
-type TypeFlags = TypeFlagBits|]
+type MessageSeverityFlags = MessageSeverityFlagBits
+type MessageTypeFlags = MessageTypeFlagBits|]

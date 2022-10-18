@@ -25,7 +25,7 @@ import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
-import Gpu.Vulkan.Ext.DebugUtils.Message.Enum
+import Gpu.Vulkan.Ext.DebugUtils.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle as Instance
@@ -84,7 +84,7 @@ callbackDataFromCore C.CallbackData {
 		callbackDataObjects = objs }
 
 type FnCallback n n2 n3 n4 ud =
-	SeverityFlagBits -> TypeFlags -> CallbackData n n2 n3 n4 -> Maybe ud ->
+	MessageSeverityFlagBits -> MessageTypeFlags -> CallbackData n n2 n3 n4 -> Maybe ud ->
 	IO Bool
 
 fnCallbackToCore ::
@@ -93,7 +93,7 @@ fnCallbackToCore ::
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- pointerToMaybe $ castPtr pud
-	boolToBool32 <$> f (SeverityFlagBits sfb) (TypeFlagBits tf) cbd mud
+	boolToBool32 <$> f (MessageSeverityFlagBits sfb) (MessageTypeFlagBits tf) cbd mud
 
 enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
 		[''Show, ''Storable] [("CreateFlagsZero", 0)]
@@ -103,8 +103,8 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoMessageSeverity :: SeverityFlags,
-	createInfoMessageType :: TypeFlags,
+	createInfoMessageSeverity :: MessageSeverityFlags,
+	createInfoMessageType :: MessageTypeFlags,
 	createInfoFnUserCallback :: FnCallback n2 n3 n4 n5 ud,
 	createInfoUserData :: Maybe ud }
 
@@ -121,8 +121,8 @@ createInfoToCore ::
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
-	createInfoMessageSeverity = SeverityFlagBits ms,
-	createInfoMessageType = TypeFlagBits mt,
+	createInfoMessageSeverity = MessageSeverityFlagBits ms,
+	createInfoMessageType = MessageTypeFlagBits mt,
 	createInfoFnUserCallback = cb,
 	createInfoUserData = mud
 	} = do

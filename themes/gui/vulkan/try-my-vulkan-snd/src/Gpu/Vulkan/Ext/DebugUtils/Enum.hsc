@@ -7,7 +7,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Ext.DebugUtils.Message.Enum where
+module Gpu.Vulkan.Ext.DebugUtils.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum
@@ -16,29 +16,29 @@ import Data.Word
 
 #include <vulkan/vulkan.h>
 
-enum "SeverityFlagBits" ''#{type VkDebugUtilsMessageSeverityFlagBitsEXT}
+enum "MessageSeverityFlagBits" ''#{type VkDebugUtilsMessageSeverityFlagBitsEXT}
 		[''Show, ''Eq, ''Storable, ''Bits] [
-	("SeverityVerboseBit",
+	("MessageSeverityVerboseBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT}),
-	("SeverityInfoBit",
+	("MessageSeverityInfoBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT}),
-	("SeverityWarningBit",
+	("MessageSeverityWarningBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT}),
-	("SeverityErrorBit",
+	("MessageSeverityErrorBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT}),
-	("SeverityFlagBitsMaxEnum",
+	("MessageSeverityFlagBitsMaxEnum",
 		#{const VK_DEBUG_UTILS_MESSAGE_SEVERITY_FLAG_BITS_MAX_ENUM_EXT}) ]
 
-enum "TypeFlagBits" ''#{type VkDebugUtilsMessageTypeFlagBitsEXT}
+enum "MessageTypeFlagBits" ''#{type VkDebugUtilsMessageTypeFlagBitsEXT}
 		[''Show, ''Eq, ''Storable, ''Bits] [
-	("TypeGeneralBit",
+	("MessageTypeGeneralBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT}),
-	("TypeValidationBit",
+	("MessageTypeValidationBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT}),
-	("TypePerformanceBit",
+	("MessageTypePerformanceBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT}),
-	("TypeFlagBitsMaxEnum",
+	("MessageTypeFlagBitsMaxEnum",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT}) ]
 
-type SeverityFlags = SeverityFlagBits
-type TypeFlags = TypeFlagBits
+type MessageSeverityFlags = MessageSeverityFlagBits
+type MessageTypeFlags = MessageTypeFlagBits
