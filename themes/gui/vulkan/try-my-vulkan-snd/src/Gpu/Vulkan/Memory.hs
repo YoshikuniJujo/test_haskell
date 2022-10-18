@@ -8,7 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory.ImageBuffer (
+module Gpu.Vulkan.Memory (
 	M, allocateBind, reallocateBind, read, write,
 
 	ImageBuffer(..), ImageBufferBinded(..),
