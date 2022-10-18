@@ -15,7 +15,6 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.SizeAlignment
-import Foreign.Pointable
 import Control.Arrow hiding (loop)
 import Control.Monad
 import Control.Monad.Fix

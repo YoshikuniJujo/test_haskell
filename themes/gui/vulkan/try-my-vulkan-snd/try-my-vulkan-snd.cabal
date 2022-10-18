@@ -101,6 +101,8 @@ library
       Gpu.Vulkan.Ext.DebugUtils.Messenger
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
+      Gpu.Vulkan.Ext.DebugUtils.Middle
+      Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Fence.Middle

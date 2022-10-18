@@ -24,7 +24,7 @@ import qualified Data.Text as T
 import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Ext.DebugUtils
+import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
 import Gpu.Vulkan.Ext.DebugUtils.Message.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
