@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle (
-	D, CreateInfo(..), CreateFlags, create, destroy, getQueue, waitIdle, PointableToListM,
+	D, CreateInfo(..), CreateFlags, CreateFlagBits, create, destroy,
 
-	Size,
+	getQueue, waitIdle, Size
 	) where
 
 import Gpu.Vulkan.Device.Middle.Internal

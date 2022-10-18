@@ -440,7 +440,7 @@ createLogicalDevice g@Global {
 	deviceFeatures = Vk.PhysicalDevice.featuresZero
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
-	(forall ss . Vk.Device.PointableToListM ss => HeteroVarList t ss -> b) -> b
+	(forall ss . PointableToListM ss => HeteroVarList t ss -> b) -> b
 mkHeteroVarList _k [] f = f HVNil
 mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 

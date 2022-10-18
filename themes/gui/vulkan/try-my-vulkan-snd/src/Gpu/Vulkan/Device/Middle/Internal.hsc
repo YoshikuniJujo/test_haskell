@@ -11,7 +11,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle.Internal (
-	D(..), CreateInfo(..), CreateFlags, create, destroy, PointableToListM,
+	D(..), CreateInfo(..), create, destroy,
+	CreateFlags, CreateFlagBits,
 
 	getQueue, waitIdle,
 
@@ -68,15 +69,6 @@ data CreateInfo n ns = CreateInfo {
 
 deriving instance (Show n, Show (HeteroVarList Queue.CreateInfo ns)) =>
 	Show (CreateInfo n ns)
-
-class PointableToListM ns where
-	pointableToListM :: Monad m =>
-		(forall n . Pointable n => t n -> m t') -> HeteroVarList t ns -> m [t']
-
-instance PointableToListM '[] where pointableToListM _ HVNil = pure []
-
-instance (Storable n, PointableToListM ns) => PointableToListM (n ': ns) where
-	pointableToListM f (x :...: xs) = (:) <$> f x <*> pointableToListM f xs
 
 createInfoToCore :: (Pointable n, PointableToListM ns) =>
 	CreateInfo n ns -> ContT r IO (Ptr C.CreateInfo)
