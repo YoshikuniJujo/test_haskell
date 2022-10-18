@@ -13,12 +13,38 @@ import Data.Word
 import Data.Int
 
 import qualified Gpu.Vulkan.AllocationCallbacks.Core as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Queue.Core as Device.Queue
 import qualified Gpu.Vulkan.PhysicalDevice.Core as PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct.Core as PhysicalDevice
 import qualified Gpu.Vulkan.Queue.Core as Queue
 
 #include <vulkan/vulkan.h>
+
+queueStructureType :: #{type VkStructureType}
+queueStructureType = #{const VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO}
+
+struct "QueueCreateInfo" #{size VkDeviceQueueCreateInfo} 
+		#{alignment VkDeviceQueueCreateInfo} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ -> #{poke VkDeviceQueueCreateInfo, sType}
+			p queueStructureType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkDeviceQueueCreateInfo, pNext} |],
+		[| #{poke VkDeviceQueueCreateInfo, pNext} |]),
+	("flags", ''#{type VkDeviceQueueCreateFlags},
+		[| #{peek VkDeviceQueueCreateInfo, flags} |],
+		[| #{poke VkDeviceQueueCreateInfo, flags} |]),
+	("queueFamilyIndex", ''#{type uint32_t},
+		[| #{peek VkDeviceQueueCreateInfo, queueFamilyIndex} |],
+		[| #{poke VkDeviceQueueCreateInfo, queueFamilyIndex} |]),
+	("queueCount", ''#{type uint32_t},
+		[| #{peek VkDeviceQueueCreateInfo, queueCount} |],
+		[| #{poke VkDeviceQueueCreateInfo, queueCount} |]),
+	("pQueuePriorities", ''PtrFloat,
+		[| #{peek VkDeviceQueueCreateInfo, pQueuePriorities} |],
+		[| #{poke VkDeviceQueueCreateInfo, pQueuePriorities} |]) ]
+	[''Show, ''Storable]
+
+type PtrQueueCreateInfo = Ptr QueueCreateInfo
 
 struct "CreateInfo" #{size VkDeviceCreateInfo}
 		#{alignment VkDeviceCreateInfo} [
@@ -34,7 +60,7 @@ struct "CreateInfo" #{size VkDeviceCreateInfo}
 	("queueCreateInfoCount", ''#{type uint32_t},
 		[| #{peek VkDeviceCreateInfo, queueCreateInfoCount} |],
 		[| #{poke VkDeviceCreateInfo, queueCreateInfoCount} |]),
-	("pQueueCreateInfos", ''Device.Queue.PtrCreateInfo,
+	("pQueueCreateInfos", ''PtrQueueCreateInfo,
 		[| #{peek VkDeviceCreateInfo, pQueueCreateInfos} |],
 		[| #{poke VkDeviceCreateInfo, pQueueCreateInfos} |]),
 	("enabledLayerCount", ''#{type uint32_t},

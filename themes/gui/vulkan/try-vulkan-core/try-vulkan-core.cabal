@@ -41,7 +41,6 @@ library
       Gpu.Vulkan.DescriptorSet.Core
       Gpu.Vulkan.DescriptorSetLayout.Core
       Gpu.Vulkan.Device.Core
-      Gpu.Vulkan.Device.Queue.Core
       Gpu.Vulkan.Fence.Core
       Gpu.Vulkan.Framebuffer.Core
       Gpu.Vulkan.Image.Core
