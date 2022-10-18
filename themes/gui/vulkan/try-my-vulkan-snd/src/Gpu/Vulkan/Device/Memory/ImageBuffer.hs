@@ -8,9 +8,15 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory.ImageBuffer where
+module Gpu.Vulkan.Device.Memory.ImageBuffer (
+	M, allocateBind, reallocateBind, read, write,
 
-import Prelude hiding (map)
+	ImageBuffer(..), ImageBufferBinded(..),
+
+	OffsetSize(..), OffsetSizeObject(..), getMemoryRequirementsList
+	) where
+
+import Prelude hiding (map, read)
 import GHC.TypeLits
 import Foreign.Ptr
 import Foreign.Pointable
@@ -23,7 +29,6 @@ import Data.IORef
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
-import qualified Gpu.Vulkan.Device.Core as Device.C
 import qualified Gpu.Vulkan.Memory.Core as Memory.C
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
@@ -40,17 +45,12 @@ readM :: M s sibfoss ->
 	IO (HeteroVarList (V2 ImageBuffer) sibfoss, Memory.C.M)
 readM (M ib r) = (,) <$> readIORef ib <*> readIORef r
 
+readM' :: M s sibfoss -> IO (HeteroVarList (V2 ImageBuffer) sibfoss, IORef Memory.C.M)
 readM' (M ib r) = (, r) <$> readIORef ib
 
-writeM :: M s sibfoss -> HeteroVarList (V2 ImageBuffer) sibfoss ->
-	Memory.C.M -> IO ()
-writeM (M rib r) ibs cm = writeIORef rib ibs >> writeIORef r cm
-
-writeMBinded :: M s sibfoss -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
-	Memory.C.M -> IO ()
-writeMBinded (M rib r) ibs cm = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs) >> writeIORef r cm
-
-writeMBinded' (M rib r) ibs = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs)
+writeMBinded' :: M s sibfoss ->
+	HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss -> IO ()
+writeMBinded' (M rib _r) ibs = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: V2 (ImageBufferBinded sm) sibfos -> V2 ImageBuffer sibfos
 imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Image.INew i
@@ -60,6 +60,8 @@ newM :: HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Memory.C.M -> IO (M s sibfoss)
 newM ibs cm = M <$> newIORef ibs <*> newIORef cm
 
+newM' :: HeteroVarList (V2 ImageBuffer) sibfoss ->
+	IORef Memory.C.M -> IO (M s sibfoss)
 newM' ibs cm = (`M` cm) <$> newIORef ibs
 
 -- deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
@@ -295,23 +297,6 @@ instance {-# OVERLAPPABLE #-} Offset sib ib sibfoss =>
 		m' <- newM ibs m
 		offset @sib @ib dvc m'
 			$ ((ost - 1) `div` algn + 1) * algn + sz
-
-class Try (nm :: Symbol) sibfoss where
-	try :: Device.D sd -> M sm sibfoss -> IO (Device.M.Size, Device.M.Size)
-
-instance Try nm ('(sib, 'K.Buffer nm objs) ': sibfoss) where
-	try dvc m = do
-		(ib :...: _, _) <- readM m
-		reqs <- getMemoryRequirements' dvc ib
-		let	sz = Memory.M.requirementsSize reqs
-			algn = Memory.M.requirementsAlignment reqs
-		pure (sz, algn)
-
-instance {-# OVERLAPPABLE #-} Try nm sibfoss =>
-	Try nm (_t ': sibfoss) where
-	try dvc m_ = do
-		(_ :...: ibs, m) <- readM m_
-		try @nm dvc =<< newM ibs m
 
 class OffsetSize (nm :: Symbol) (obj :: Object) sibfoss where
 	offsetSize :: Device.D sd -> M sm sibfoss ->

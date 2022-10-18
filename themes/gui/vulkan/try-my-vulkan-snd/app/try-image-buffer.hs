@@ -344,7 +344,6 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.Dvc.Mem.ImageBuffer.allocateBind dvc imgbuf memInfo nil nil \(
 		V2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded imgb) :...:
 		V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bufb) :...: HVNil) mib ->
-	(print =<< Vk.Dvc.Mem.ImageBuffer.try @"hello" dvc mib) >>
 	(print =<< Vk.Dvc.Mem.ImageBuffer.offsetSize
 		@"hello" @('List w1 "") dvc mib 0) >>
 	(print =<< Vk.Dvc.Mem.ImageBuffer.offsetSize
