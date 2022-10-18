@@ -31,7 +31,7 @@ import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Memory as Vk.Memory
+import qualified Gpu.Vulkan.Memory.Tmp as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Descriptor.Enum as Vk.Descriptor

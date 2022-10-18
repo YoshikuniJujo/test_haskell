@@ -24,7 +24,7 @@ import Data.Word
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Memory
+import Gpu.Vulkan.Memory.Tmp
 import Gpu.Vulkan.Memory.Enum
 
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device

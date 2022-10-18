@@ -34,7 +34,7 @@ import qualified Gpu.Vulkan.Instance.Middle as Instance.M
 import qualified Gpu.Vulkan.PhysicalDevice.Core as C
 import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
-import qualified Gpu.Vulkan.Memory as Memory
+import qualified Gpu.Vulkan.Memory.Tmp as Memory
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 newtype P = P C.P deriving Show

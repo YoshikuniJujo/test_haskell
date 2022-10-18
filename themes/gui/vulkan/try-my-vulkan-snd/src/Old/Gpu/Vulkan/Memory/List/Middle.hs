@@ -19,7 +19,7 @@ import qualified Data.Sequences as Seq
 
 import qualified Foreign.Storable.Generic
 
-import Gpu.Vulkan.Memory
+import Gpu.Vulkan.Memory.Tmp
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device

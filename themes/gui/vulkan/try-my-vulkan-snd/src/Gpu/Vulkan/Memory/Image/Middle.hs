@@ -7,7 +7,7 @@ import Foreign.Ptr
 import Foreign.Pointable
 import Data.IORef
 
-import Gpu.Vulkan.Memory
+import Gpu.Vulkan.Memory.Tmp
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device

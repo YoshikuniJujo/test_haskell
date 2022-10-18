@@ -141,7 +141,7 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DepthStencilSt
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.Memory as Vk.Memory
+import qualified Gpu.Vulkan.Memory.Tmp as Vk.Memory
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
