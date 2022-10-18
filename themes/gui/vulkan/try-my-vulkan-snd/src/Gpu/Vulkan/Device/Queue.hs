@@ -12,7 +12,7 @@ import Data.List
 
 import Gpu.Vulkan.Device.Queue.Enum
 
-import qualified Gpu.Vulkan.Device.Queue.Core as C
+import qualified Gpu.Vulkan.Device.Core as C
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 
 data CreateInfo n = CreateInfo {
@@ -22,7 +22,7 @@ data CreateInfo n = CreateInfo {
 	createInfoQueuePriorities :: [Float] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.QueueCreateInfo
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -32,10 +32,10 @@ createInfoToCore CreateInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqps <- ContT $ allocaArray (length qps)
 	lift $ pokeArray pqps qps
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoQueueFamilyIndex = qfi,
-		C.createInfoQueueCount = genericLength qps,
-		C.createInfoPQueuePriorities = pqps }
+	pure C.QueueCreateInfo {
+		C.queueCreateInfoSType = (),
+		C.queueCreateInfoPNext = pnxt,
+		C.queueCreateInfoFlags = flgs,
+		C.queueCreateInfoQueueFamilyIndex = qfi,
+		C.queueCreateInfoQueueCount = genericLength qps,
+		C.queueCreateInfoPQueuePriorities = pqps }
