@@ -46,6 +46,7 @@ import qualified Gpu.Vulkan.Device.Queue as Queue
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Gpu.Vulkan.Device.Core as C
+import qualified Gpu.Vulkan.Memory.Core as Memory
 import qualified Gpu.Vulkan.Queue as Queue
 
 #include <vulkan/vulkan.h>
@@ -133,10 +134,10 @@ enum "Size" ''#{type VkDeviceSize}
 		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral]
 	[("WholeSize", #{const VK_WHOLE_SIZE})]
 
-newtype Memory = Memory (IORef C.Memory)
+newtype Memory = Memory (IORef Memory.M)
 
-data MemoryList v = MemoryList Int C.Memory deriving Show
+data MemoryList v = MemoryList Int Memory.M deriving Show
 
-newtype MemoryAtom v = MemoryAtom C.Memory deriving Show
+newtype MemoryAtom v = MemoryAtom Memory.M deriving Show
 
-data MemoryImage = MemoryImage C.Memory deriving Show
+data MemoryImage = MemoryImage Memory.M deriving Show

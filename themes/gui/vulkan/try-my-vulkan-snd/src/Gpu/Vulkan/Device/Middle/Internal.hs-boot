@@ -13,6 +13,7 @@ import Data.IORef
 import Data.Word
 
 import qualified Gpu.Vulkan.Device.Core as C
+import qualified Gpu.Vulkan.Memory.Core as Memory
 
 newtype Size = Size Word64
 
@@ -22,9 +23,9 @@ instance Num Size
 newtype D = D C.D
 instance Show D
 
-newtype Memory = Memory (IORef C.Memory)
+newtype Memory = Memory (IORef Memory.M)
 
-data MemoryImage = MemoryImage C.Memory
+data MemoryImage = MemoryImage Memory.M
 instance Show MemoryImage
 
 type role MemoryList phantom

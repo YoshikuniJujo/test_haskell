@@ -20,12 +20,12 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
 import qualified Gpu.Vulkan.Device.Core as Device.C
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+import qualified Gpu.Vulkan.Memory.Core as Memory.C
 
 import Old.Gpu.Vulkan.Device.Memory.Buffer.Types
 import Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
 
-data M s (objss :: [[Object]]) =
-	M (HeteroVarList Form objss) Device.C.Memory
+data M s (objss :: [[Object]]) = M (HeteroVarList Form objss) Memory.C.M
 
 deriving instance Show (HeteroVarList Form objss) => Show (M s objss)
 

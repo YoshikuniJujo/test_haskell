@@ -23,6 +23,7 @@ import Data.IORef
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
 import qualified Gpu.Vulkan.Device.Core as Device.C
+import qualified Gpu.Vulkan.Memory.Core as Memory.C
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer as Buffer
@@ -32,20 +33,20 @@ import qualified Gpu.Vulkan.Device.Memory.AllocateInfo as Device.Memory.Buffer
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
-	M (IORef (HeteroVarList (V2 ImageBuffer) sibfoss)) (IORef Device.C.Memory)
+	M (IORef (HeteroVarList (V2 ImageBuffer) sibfoss)) (IORef Memory.C.M)
 
 readM :: M s sibfoss ->
-	IO (HeteroVarList (V2 ImageBuffer) sibfoss, Device.C.Memory)
+	IO (HeteroVarList (V2 ImageBuffer) sibfoss, Memory.C.M)
 readM (M ib r) = (,) <$> readIORef ib <*> readIORef r
 
 readM' (M ib r) = (, r) <$> readIORef ib
 
 writeM :: M s sibfoss -> HeteroVarList (V2 ImageBuffer) sibfoss ->
-	Device.C.Memory -> IO ()
+	Memory.C.M -> IO ()
 writeM (M rib r) ibs cm = writeIORef rib ibs >> writeIORef r cm
 
 writeMBinded :: M s sibfoss -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
-	Device.C.Memory -> IO ()
+	Memory.C.M -> IO ()
 writeMBinded (M rib r) ibs cm = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs) >> writeIORef r cm
 
 writeMBinded' (M rib r) ibs = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs)
@@ -55,7 +56,7 @@ imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Imag
 imageBufferFromBinded (V2 (BufferBinded (Buffer.Binded x b))) = V2 . Buffer $ Buffer.B x b
 
 newM :: HeteroVarList (V2 ImageBuffer) sibfoss ->
-	Device.C.Memory -> IO (M s sibfoss)
+	Memory.C.M -> IO (M s sibfoss)
 newM ibs cm = M <$> newIORef ibs <*> newIORef cm
 
 newM' ibs cm = (`M` cm) <$> newIORef ibs
