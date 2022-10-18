@@ -143,7 +143,7 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
-import qualified Gpu.Vulkan.Device.Memory.ImageBuffer.Kind as Vk.Dvc.Mem.ImageBuffer.K
+import qualified Gpu.Vulkan.Memory.Kind as Vk.Dvc.Mem.ImageBuffer.K
 
 import qualified Gpu.Vulkan.Sampler as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler.Enum as Vk.Smplr

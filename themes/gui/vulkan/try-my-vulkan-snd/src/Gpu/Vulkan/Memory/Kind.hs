@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Memory.ImageBuffer.Kind where
+module Gpu.Vulkan.Memory.Kind where
 
 import GHC.TypeLits
 import Data.Kind.Object
