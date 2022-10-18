@@ -41,7 +41,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QFam
-import qualified Gpu.Vulkan.Device.Queue as Vk.Dvc.Queue
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CmdPl
@@ -117,11 +116,11 @@ crtDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	queueInfo qf = Vk.Dvc.Queue.QueueCreateInfo {
-		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
-		Vk.Dvc.Queue.queueCreateInfoFlags = zeroBits,
-		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [0] }
+	queueInfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoFlags = zeroBits,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 findQueueFamily :: Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
 findQueueFamily phdvc qb = (<$> Vk.PhDvc.getQueueFamilyProperties phdvc)

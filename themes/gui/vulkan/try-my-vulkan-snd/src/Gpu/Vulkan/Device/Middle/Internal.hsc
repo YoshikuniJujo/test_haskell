@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle.Internal (
-	D(..), CreateInfo(..), create, destroy,
+	D(..), CreateInfo(..), QueueCreateInfo(..), create, destroy,
 	CreateFlags, CreateFlagBits,
 
 	getQueue, waitIdle,
@@ -31,6 +31,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
 import Data.Bits
+import Data.List
 import Data.HeteroList hiding (length)
 import Data.IORef
 import Data.Word
@@ -42,12 +43,15 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Queue as Queue
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Gpu.Vulkan.Device.Core as C
 import qualified Gpu.Vulkan.Memory.Core as Memory
 import qualified Gpu.Vulkan.Queue as Queue
+
+import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
+
+import qualified Gpu.Vulkan.Device.Queue.Enum as Queue.E
 
 #include <vulkan/vulkan.h>
 
@@ -63,12 +67,12 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo n ns = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueCreateInfos :: HeteroVarList Queue.QueueCreateInfo ns,
+	createInfoQueueCreateInfos :: HeteroVarList QueueCreateInfo ns,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
-deriving instance (Show n, Show (HeteroVarList Queue.QueueCreateInfo ns)) =>
+deriving instance (Show n, Show (HeteroVarList QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
 createInfoToCore :: (Pointable n, PointableToListM ns) =>
@@ -81,7 +85,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cqcis <- pointableToListM Queue.queueCreateInfoToCore qcis
+	cqcis <- pointableToListM queueCreateInfoToCore qcis
 	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
@@ -129,6 +133,31 @@ getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue.Q <$> do
 
 waitIdle :: D -> IO ()
 waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d
+
+data QueueCreateInfo n = QueueCreateInfo {
+	queueCreateInfoNext :: Maybe n,
+	queueCreateInfoFlags :: Queue.E.CreateFlags,
+	queueCreateInfoQueueFamilyIndex :: QueueFamily.Index,
+	queueCreateInfoQueuePriorities :: [Float] }
+	deriving Show
+
+queueCreateInfoToCore :: Pointable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
+queueCreateInfoToCore QueueCreateInfo {
+	queueCreateInfoNext = mnxt,
+	queueCreateInfoFlags = Queue.E.CreateFlagBits flgs,
+	queueCreateInfoQueueFamilyIndex = QueueFamily.Index qfi,
+	queueCreateInfoQueuePriorities = qps
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	pqps <- ContT $ allocaArray (length qps)
+	lift $ pokeArray pqps qps
+	pure C.QueueCreateInfo {
+		C.queueCreateInfoSType = (),
+		C.queueCreateInfoPNext = pnxt,
+		C.queueCreateInfoFlags = flgs,
+		C.queueCreateInfoQueueFamilyIndex = qfi,
+		C.queueCreateInfoQueueCount = genericLength qps,
+		C.queueCreateInfoPQueuePriorities = pqps }
 
 enum "Size" ''#{type VkDeviceSize}
 		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral]

@@ -75,7 +75,6 @@ import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
-import qualified Gpu.Vulkan.Device.Queue as Vk.Dvc.Queue
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
@@ -385,11 +384,11 @@ createDevice ph qfis f = mkHeteroVarList @() qcrInfo qfs \qs ->
 			bool [] validationLayers enableValidationLayers,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
-	qcrInfo qf = Vk.Dvc.Queue.QueueCreateInfo {
-		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
-		Vk.Dvc.Queue.queueCreateInfoFlags = def,
-		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [1] }
+	qcrInfo qf = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
 	(forall ss . PointableToListM ss => HeteroVarList t ss -> b) -> b

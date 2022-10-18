@@ -91,7 +91,6 @@ library
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Middle
       Gpu.Vulkan.Device.Middle.Internal
-      Gpu.Vulkan.Device.Queue
       Gpu.Vulkan.Device.Queue.Enum
       Gpu.Vulkan.Device.Type
       Gpu.Vulkan.Enum

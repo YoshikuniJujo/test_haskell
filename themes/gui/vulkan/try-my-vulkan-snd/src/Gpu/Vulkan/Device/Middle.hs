@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle (
-	D, CreateInfo(..), CreateFlags, CreateFlagBits, create, destroy,
+	D, CreateInfo(..), QueueCreateInfo(..), CreateFlags, CreateFlagBits, create, destroy,
 
 	getQueue, waitIdle, Size
 	) where

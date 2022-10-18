@@ -33,7 +33,6 @@ import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
@@ -97,13 +96,13 @@ main = do
 				=<< Vk.PhysicalDevice.enumerate inst
 		print physicalDevice
 		print graphicsQueueFamilyIndex
-		let	queueCreateInfo = Vk.Device.Queue.QueueCreateInfo {
-				Vk.Device.Queue.queueCreateInfoNext = Nothing,
-				Vk.Device.Queue.queueCreateInfoFlags =
+		let	queueCreateInfo = Vk.Device.QueueCreateInfo {
+				Vk.Device.queueCreateInfoNext = Nothing,
+				Vk.Device.queueCreateInfoFlags =
 					Vk.Device.Queue.CreateFlagsZero,
-				Vk.Device.Queue.queueCreateInfoQueueFamilyIndex =
+				Vk.Device.queueCreateInfoQueueFamilyIndex =
 					graphicsQueueFamilyIndex,
-				Vk.Device.Queue.queueCreateInfoQueuePriorities =
+				Vk.Device.queueCreateInfoQueuePriorities =
 					[1.0] }
 			devCreateInfo :: Vk.Device.CreateInfo () '[()]
 			devCreateInfo = Vk.Device.CreateInfo {

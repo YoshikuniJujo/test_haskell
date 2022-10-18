@@ -54,7 +54,6 @@ import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device
 
@@ -431,12 +430,12 @@ createLogicalDevice g@Global {
 	uniqueQueueFamilies indices = Set.fromList [
 		fromJust $ graphicsFamily indices,
 		fromJust $ presentFamily indices ]
-	queueCreateInfo qf = Vk.Device.Queue.QueueCreateInfo {
-		Vk.Device.Queue.queueCreateInfoNext = Nothing,
-		Vk.Device.Queue.queueCreateInfoFlags =
+	queueCreateInfo qf = Vk.Device.QueueCreateInfo {
+		Vk.Device.queueCreateInfoNext = Nothing,
+		Vk.Device.queueCreateInfoFlags =
 			Vk.Device.Queue.CreateFlagsZero,
-		Vk.Device.Queue.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Device.Queue.queueCreateInfoQueuePriorities = [1.0] }
+		Vk.Device.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Device.queueCreateInfoQueuePriorities = [1.0] }
 	deviceFeatures = Vk.PhysicalDevice.featuresZero
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->

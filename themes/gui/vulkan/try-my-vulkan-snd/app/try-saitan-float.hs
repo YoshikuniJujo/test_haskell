@@ -25,7 +25,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
-import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
@@ -70,13 +69,13 @@ main = do
 		queueFamily <-
 			findQueueFamily physicalDevice Vk.Queue.ComputeBit
 		print queueFamily
-		let	queueInfo = Vk.Device.Queue.QueueCreateInfo {
-				Vk.Device.Queue.queueCreateInfoNext = Nothing,
-				Vk.Device.Queue.queueCreateInfoFlags =
+		let	queueInfo = Vk.Device.QueueCreateInfo {
+				Vk.Device.queueCreateInfoNext = Nothing,
+				Vk.Device.queueCreateInfoFlags =
 					Vk.Device.Queue.CreateFlagsZero,
-				Vk.Device.Queue.queueCreateInfoQueueFamilyIndex =
+				Vk.Device.queueCreateInfoQueueFamilyIndex =
 					queueFamily,
-				Vk.Device.Queue.queueCreateInfoQueuePriorities =
+				Vk.Device.queueCreateInfoQueuePriorities =
 					[0.0] }
 			deviceInfo = Vk.Device.CreateInfo {
 				Vk.Device.createInfoNext = Nothing,

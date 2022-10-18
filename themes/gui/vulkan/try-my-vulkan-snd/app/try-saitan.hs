@@ -39,7 +39,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QFam
-import qualified Gpu.Vulkan.Device.Queue as Vk.Dvc.Queue
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
@@ -222,11 +221,11 @@ withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 			[Vk.Khr.validationLayerName],
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	queueInfo qFam = Vk.Dvc.Queue.QueueCreateInfo {
-		Vk.Dvc.Queue.queueCreateInfoNext = Nothing,
-		Vk.Dvc.Queue.queueCreateInfoFlags = def,
-		Vk.Dvc.Queue.queueCreateInfoQueueFamilyIndex = qFam,
-		Vk.Dvc.Queue.queueCreateInfoQueuePriorities = [0] }
+	queueInfo qFam = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 instInfo :: Vk.Inst.CreateInfo () ()
 instInfo = def {

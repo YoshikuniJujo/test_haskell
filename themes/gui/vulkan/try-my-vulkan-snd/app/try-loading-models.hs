@@ -70,7 +70,6 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Message.Enum as Vk.Ext.DebugUtils.Mes
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device
-import qualified Gpu.Vulkan.Device.Queue as Vk.Device.Queue
 import qualified Gpu.Vulkan.Device.Queue.Enum as Vk.Device.Queue
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
@@ -559,12 +558,12 @@ createLogicalDevice = do
 	uniqueQueueFamilies is = nub [
 			fromJust $ graphicsFamily is,
 			fromJust $ presentFamily is ]
-	queueCreateInfos qf = Vk.Device.Queue.QueueCreateInfo {
-		Vk.Device.Queue.queueCreateInfoNext = Nothing,
-		Vk.Device.Queue.queueCreateInfoFlags =
+	queueCreateInfos qf = Vk.Device.QueueCreateInfo {
+		Vk.Device.queueCreateInfoNext = Nothing,
+		Vk.Device.queueCreateInfoFlags =
 			Vk.Device.Queue.CreateFlagsZero,
-		Vk.Device.Queue.queueCreateInfoQueueFamilyIndex = qf,
-		Vk.Device.Queue.queueCreateInfoQueuePriorities = [1] }
+		Vk.Device.queueCreateInfoQueueFamilyIndex = qf,
+		Vk.Device.queueCreateInfoQueuePriorities = [1] }
 	deviceFeatures = Vk.PhysicalDevice.featuresZero {
 		Vk.PhysicalDevice.featuresSamplerAnisotropy = True }
 
