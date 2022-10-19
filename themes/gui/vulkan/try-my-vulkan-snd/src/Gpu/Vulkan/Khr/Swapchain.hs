@@ -6,7 +6,7 @@
 
 module Gpu.Vulkan.Khr.Swapchain (
 	createNew, recreateNew, CreateInfoNew(..), getImagesNew,
-	create, recreate, S, M.CreateInfo(..), getImages) where
+	create, recreate, S, CreateInfo(..), getImages) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -38,11 +38,11 @@ createNew (Device.D dvc) ci macc macd f =
 	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
 create :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D sd -> M.CreateInfo n ssfc ->
+	Device.D sd -> CreateInfo n ssfc ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ssc . S ssc -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
-	bracket (M.create dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
+	bracket (createM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
 
 recreateNew :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew n ssfc fmt ->
@@ -51,10 +51,10 @@ recreateNew :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
 recreateNew (Device.D dvc) ci macc macd (SNew sc) = recreateNewM dvc ci macc macd sc
 
 recreate :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D sd -> M.CreateInfo n ssfc ->
+	Device.D sd -> CreateInfo n ssfc ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S ssc -> IO ()
-recreate (Device.D dvc) ci macc macd (S sc) = M.recreate dvc ci macc macd sc
+recreate (Device.D dvc) ci macc macd (S sc) = recreateM dvc ci macc macd sc
 
 getImagesNew :: Device.D sd -> SNew ss fmt -> IO [Image.BindedNew ss ss nm fmt]
 getImagesNew (Device.D dvc) (SNew sc) = (Image.BindedNew <$>) <$> M.getImages dvc sc
@@ -81,7 +81,7 @@ data CreateInfoNew n ss (fmt :: T.Format) = CreateInfoNew {
 	deriving Show
 
 createInfoFromNew :: forall n ss fmt . T.FormatToValue fmt =>
-	CreateInfoNew n ss fmt -> M.CreateInfo n ss
+	CreateInfoNew n ss fmt -> CreateInfo n ss
 createInfoFromNew CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
@@ -97,30 +97,95 @@ createInfoFromNew CreateInfoNew {
 	createInfoCompositeAlphaNew = calph,
 	createInfoPresentModeNew = pm,
 	createInfoClippedNew = clpd,
-	createInfoOldSwapchainNew = osc } = M.CreateInfo {
-	M.createInfoNext = mnxt,
-	M.createInfoFlags = flgs,
-	M.createInfoSurface = sfc,
-	M.createInfoMinImageCount = mic,
-	M.createInfoImageFormat = T.formatToValue @fmt,
-	M.createInfoImageColorSpace = cs,
-	M.createInfoImageExtent = ext,
-	M.createInfoImageArrayLayers = ials,
-	M.createInfoImageUsage = usg,
-	M.createInfoImageSharingMode = sm,
-	M.createInfoQueueFamilyIndices = qfis,
-	M.createInfoPreTransform = ptfm,
-	M.createInfoCompositeAlpha = calph,
-	M.createInfoPresentMode = pm,
-	M.createInfoClipped = clpd,
-	M.createInfoOldSwapchain = osc }
+	createInfoOldSwapchainNew = osc } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSurface = sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = T.formatToValue @fmt,
+	createInfoImageColorSpace = cs,
+	createInfoImageExtent = ext,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = usg,
+	createInfoImageSharingMode = sm,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoPreTransform = ptfm,
+	createInfoCompositeAlpha = calph,
+	createInfoPresentMode = pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = osc }
 
 createNewM :: (Pointable n, Pointable n', T.FormatToValue fmt) => Device.M.D ->
 	CreateInfoNew n ss fmt -> Maybe (AllocationCallbacks.A n') -> IO M.S
-createNewM dvc ci mac = M.create dvc (createInfoFromNew ci) mac
+createNewM dvc ci mac = createM dvc (createInfoFromNew ci) mac
 
 recreateNewM :: (Pointable n, Pointable c, Pointable d, T.FormatToValue fmt) =>
 	Device.M.D -> CreateInfoNew n ss fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	M.S -> IO ()
-recreateNewM dvc = M.recreate dvc . createInfoFromNew
+recreateNewM dvc = recreateM dvc . createInfoFromNew
+
+data CreateInfo n ss = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoSurface :: Surface.S ss,
+	createInfoMinImageCount :: Word32,
+	createInfoImageFormat :: Format,
+	createInfoImageColorSpace :: ColorSpace,
+	createInfoImageExtent :: C.Extent2d,
+	createInfoImageArrayLayers :: Word32,
+	createInfoImageUsage :: Image.UsageFlags,
+	createInfoImageSharingMode :: SharingMode,
+	createInfoQueueFamilyIndices :: [QueueFamily.Index],
+	createInfoPreTransform :: TransformFlagBits,
+	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
+	createInfoPresentMode :: PresentMode,
+	createInfoClipped :: Bool,
+	createInfoOldSwapchain :: Maybe M.S }
+	deriving Show
+
+createM :: (Pointable n, Pointable n') =>
+	Device.M.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO M.S
+createM dvc ci mac = M.create' dvc (createInfoToOld ci) mac
+
+recreateM :: (Pointable n, Pointable c, Pointable d) =>
+	Device.M.D -> CreateInfo n ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	M.S -> IO ()
+recreateM dvc ci macc macd s = M.recreate' dvc (createInfoToOld ci) macc macd s
+
+createInfoToOld :: CreateInfo n ss -> M.CreateInfo' n
+createInfoToOld CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSurface = Surface.S sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = ifmt,
+	createInfoImageColorSpace = ics,
+	createInfoImageExtent = iext,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = iusg,
+	createInfoImageSharingMode = ism,
+	createInfoQueueFamilyIndices = qfis,
+	createInfoPreTransform = ptfm,
+	createInfoCompositeAlpha = calp,
+	createInfoPresentMode = pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = osc
+	} = M.CreateInfo' {
+	M.createInfoNext' = mnxt,
+	M.createInfoFlags' = flgs,
+	M.createInfoSurface' = sfc,
+	M.createInfoMinImageCount' = mic,
+	M.createInfoImageFormat' = ifmt,
+	M.createInfoImageColorSpace' = ics,
+	M.createInfoImageExtent' = iext,
+	M.createInfoImageArrayLayers' = ials,
+	M.createInfoImageUsage' = iusg,
+	M.createInfoImageSharingMode' = ism,
+	M.createInfoQueueFamilyIndices' = qfis,
+	M.createInfoPreTransform' = ptfm,
+	M.createInfoCompositeAlpha' = calp,
+	M.createInfoPresentMode' = pm,
+	M.createInfoClipped' = clpd,
+	M.createInfoOldSwapchain' = osc }

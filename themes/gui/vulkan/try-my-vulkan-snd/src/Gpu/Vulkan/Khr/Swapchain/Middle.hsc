@@ -32,7 +32,6 @@ import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
-import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface.M
 import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
@@ -41,35 +40,6 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 
 extensionName :: T.Text
 extensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
-
-data CreateInfo n ss = CreateInfo {
-	createInfoNext :: Maybe n,
-	createInfoFlags :: CreateFlags,
-	createInfoSurface :: Surface.S ss,
-	createInfoMinImageCount :: Word32,
-	createInfoImageFormat :: Format,
-	createInfoImageColorSpace :: ColorSpace,
-	createInfoImageExtent :: C.Extent2d,
-	createInfoImageArrayLayers :: Word32,
-	createInfoImageUsage :: Image.UsageFlags,
-	createInfoImageSharingMode :: SharingMode,
-	createInfoQueueFamilyIndices :: [QueueFamily.Index],
-	createInfoPreTransform :: TransformFlagBits,
-	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
-	createInfoPresentMode :: PresentMode,
-	createInfoClipped :: Bool,
-	createInfoOldSwapchain :: Maybe S }
-	deriving Show
-
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO S
-create dvc ci mac = create' dvc (createInfoToOld ci) mac
-
-recreate :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D -> CreateInfo n ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	S -> IO ()
-recreate dvc ci macc macd s = recreate' dvc (createInfoToOld ci) macc macd s
 
 newtype S = S { unS :: IORef (C.Extent2d, C.S) }
 
@@ -99,42 +69,6 @@ data CreateInfo' n = CreateInfo' {
 	createInfoClipped' :: Bool,
 	createInfoOldSwapchain' :: Maybe S }
 	deriving Show
-
-createInfoToOld :: CreateInfo n ss -> CreateInfo' n
-createInfoToOld CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoSurface = Surface.S sfc,
-	createInfoMinImageCount = mic,
-	createInfoImageFormat = ifmt,
-	createInfoImageColorSpace = ics,
-	createInfoImageExtent = iext,
-	createInfoImageArrayLayers = ials,
-	createInfoImageUsage = iusg,
-	createInfoImageSharingMode = ism,
-	createInfoQueueFamilyIndices = qfis,
-	createInfoPreTransform = ptfm,
-	createInfoCompositeAlpha = calp,
-	createInfoPresentMode = pm,
-	createInfoClipped = clpd,
-	createInfoOldSwapchain = osc
-	} = CreateInfo' {
-	createInfoNext' = mnxt,
-	createInfoFlags' = flgs,
-	createInfoSurface' = sfc,
-	createInfoMinImageCount' = mic,
-	createInfoImageFormat' = ifmt,
-	createInfoImageColorSpace' = ics,
-	createInfoImageExtent' = iext,
-	createInfoImageArrayLayers' = ials,
-	createInfoImageUsage' = iusg,
-	createInfoImageSharingMode' = ism,
-	createInfoQueueFamilyIndices' = qfis,
-	createInfoPreTransform' = ptfm,
-	createInfoCompositeAlpha' = calp,
-	createInfoPresentMode' = pm,
-	createInfoClipped' = clpd,
-	createInfoOldSwapchain' = osc }
 
 create' :: (Pointable n, Pointable n') =>
 	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
