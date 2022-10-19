@@ -25,7 +25,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Attachment as Attachment
 import qualified Gpu.Vulkan.Subpass as Subpass
-import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer
+import qualified Gpu.Vulkan.Framebuffer.Middle.Internal as Framebuffer
 import qualified Gpu.Vulkan.RenderPass.Core as C
 
 data CreateInfoNew n fmts = CreateInfoNew {

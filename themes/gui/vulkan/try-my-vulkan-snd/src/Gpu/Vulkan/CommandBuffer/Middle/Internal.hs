@@ -32,7 +32,7 @@ import Gpu.Vulkan.CommandBuffer.Enum
 
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
-import qualified Gpu.Vulkan.Framebuffer.Middle as Framebuffer
+import qualified Gpu.Vulkan.Framebuffer.Middle.Internal as Framebuffer
 import qualified Gpu.Vulkan.CommandPool.Middle.Internal as CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Core as C
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
