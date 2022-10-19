@@ -152,7 +152,7 @@ data Global = Global {
 
 newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
-	ist <- newIORef $ Vk.Ist.I NullPtr
+	ist <- newIORef undefined
 	dmsgr <- newIORef undefined -- $ Vk.Ext.DU.Msngr.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr

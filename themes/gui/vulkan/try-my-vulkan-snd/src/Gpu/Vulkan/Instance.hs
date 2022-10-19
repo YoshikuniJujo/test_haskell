@@ -2,7 +2,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance (
-	I, create, M.CreateInfo(..), M.createInfoNil,
+	I, create, M.CreateInfo(..), -- M.createInfoNil,
 	M.enumerateLayerProperties, M.enumerateExtensionProperties ) where
 
 import Foreign.Pointable

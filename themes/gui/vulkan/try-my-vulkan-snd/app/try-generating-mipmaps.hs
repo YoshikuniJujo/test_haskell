@@ -239,7 +239,7 @@ writeGlobal ref x = lift . (`writeIORef` x) =<< asks ref
 newGlobal :: IO Global
 newGlobal = do
 	win <- newIORef Nothing
-	ist <- newIORef $ Vk.Instance.I NullPtr
+	ist <- newIORef undefined
 	dmsgr <- newIORef undefined -- $ Vk.Ext.DebugUtils.Messenger.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr

@@ -34,7 +34,7 @@ import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
 import Gpu.Vulkan.Ext.DebugUtils.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Instance.Middle as Instance
+import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Core as C
 
 #include <vulkan/vulkan.h>
