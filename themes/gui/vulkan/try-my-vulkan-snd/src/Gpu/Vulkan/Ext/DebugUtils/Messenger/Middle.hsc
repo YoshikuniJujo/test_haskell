@@ -3,9 +3,14 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle where
+module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle (
+	M, CreateInfo(..), create, destroy,
+
+	FnCallback, CallbackData(..)
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
@@ -16,6 +21,7 @@ import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Default
+import Data.Bits
 import Data.Word
 import Data.Int
 
@@ -96,9 +102,9 @@ fnCallbackToCore f sfb tf ccbd pud = do
 	boolToBool32 <$> f (MessageSeverityFlagBits sfb) (MessageTypeFlagBits tf) cbd mud
 
 enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
-		[''Show, ''Storable] [("CreateFlagsZero", 0)]
+		[''Show, ''Eq, ''Storable, ''Bits] []
 
-instance Default CreateFlags where def = CreateFlagsZero
+instance Default CreateFlags where def = zeroBits
 
 data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
 	createInfoNext :: Maybe n,

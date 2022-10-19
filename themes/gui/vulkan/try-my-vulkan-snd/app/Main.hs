@@ -153,7 +153,7 @@ data Global = Global {
 newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
 	ist <- newIORef $ Vk.Ist.I NullPtr
-	dmsgr <- newIORef $ Vk.Ext.DU.Msngr.M NullPtr
+	dmsgr <- newIORef undefined -- $ Vk.Ext.DU.Msngr.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
@@ -285,7 +285,7 @@ setupDebugMessenger Global {
 debugMessengerCreateInfo :: Vk.Ext.DU.Msngr.CreateInfo () () () () () ()
 debugMessengerCreateInfo = Vk.Ext.DU.Msngr.CreateInfo {
 	Vk.Ext.DU.Msngr.createInfoNext = Nothing,
-	Vk.Ext.DU.Msngr.createInfoFlags = Vk.Ext.DU.Msngr.CreateFlagsZero,
+	Vk.Ext.DU.Msngr.createInfoFlags = zeroBits, -- Vk.Ext.DU.Msngr.CreateFlagsZero,
 	Vk.Ext.DU.Msngr.createInfoMessageSeverity =
 		Vk.Ext.DU.MessageSeverityVerboseBit .|.
 		Vk.Ext.DU.MessageSeverityWarningBit .|.

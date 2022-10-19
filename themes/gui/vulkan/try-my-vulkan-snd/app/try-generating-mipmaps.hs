@@ -239,7 +239,7 @@ newGlobal :: IO Global
 newGlobal = do
 	win <- newIORef Nothing
 	ist <- newIORef $ Vk.Instance.I NullPtr
-	dmsgr <- newIORef $ Vk.Ext.DebugUtils.Messenger.M NullPtr
+	dmsgr <- newIORef undefined -- $ Vk.Ext.DebugUtils.Messenger.M NullPtr
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
@@ -439,8 +439,7 @@ populateDebugMessengerCreateInfo ::
 	Vk.Ext.DebugUtils.Messenger.CreateInfo () () () () () ()
 populateDebugMessengerCreateInfo = Vk.Ext.DebugUtils.Messenger.CreateInfo {
 	Vk.Ext.DebugUtils.Messenger.createInfoNext = Nothing,
-	Vk.Ext.DebugUtils.Messenger.createInfoFlags =
-		Vk.Ext.DebugUtils.Messenger.CreateFlagsZero,
+	Vk.Ext.DebugUtils.Messenger.createInfoFlags = zeroBits,
 	Vk.Ext.DebugUtils.Messenger.createInfoMessageSeverity =
 		Vk.Ext.DebugUtils.MessageSeverityVerboseBit .|.
 		Vk.Ext.DebugUtils.MessageSeverityWarningBit .|.
