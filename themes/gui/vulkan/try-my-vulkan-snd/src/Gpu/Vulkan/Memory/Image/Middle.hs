@@ -11,8 +11,9 @@ import Gpu.Vulkan.Memory.Tmp
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
+import qualified Gpu.Vulkan.Memory.Core as M.C
 import qualified Gpu.Vulkan.Memory.Middle as M
-import qualified Gpu.Vulkan.Image.Middle as Image
+import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,
@@ -33,27 +34,27 @@ allocateInfoToMiddle dvc img AllocateInfo {
 
 allocate :: (Pointable n, Pointable n') =>
 	Device.D -> Image.I -> AllocateInfo n ->
-	Maybe (AllocationCallbacks.A n') -> IO (Device.Size, Device.MemoryImage)
+	Maybe (AllocationCallbacks.A n') -> IO (Device.Size, M.C.M)
 allocate dvc img ai mac = do
 	mai <- allocateInfoToMiddle dvc img ai
 	(\(Device.Memory mem) -> do
 		m <- readIORef mem
-		pure (M.allocateInfoAllocationSize mai, Device.MemoryImage m))
+		pure (M.allocateInfoAllocationSize mai, m))
 		=<< M.allocate dvc mai mac
 
 free :: Pointable n =>
-	Device.D -> Device.MemoryImage -> Maybe (AllocationCallbacks.A n) ->
+	Device.D -> M.C.M -> Maybe (AllocationCallbacks.A n) ->
 	IO ()
-free dvc (Device.MemoryImage m) mac = do
+free dvc m mac = do
 	mem <- newIORef m
 	M.free dvc (Device.Memory mem) mac
 
-map :: Device.D -> Device.MemoryImage -> Device.Size -> M.MapFlags -> IO (Ptr a)
-map dvc (Device.MemoryImage m) sz flgs = do
+map :: Device.D -> M.C.M -> Device.Size -> M.MapFlags -> IO (Ptr a)
+map dvc m sz flgs = do
 	mem <- newIORef m
 	M.map dvc (Device.Memory mem) 0 sz flgs
 
-unmap :: Device.D -> Device.MemoryImage -> IO ()
-unmap dvc (Device.MemoryImage m) = do
+unmap :: Device.D -> M.C.M -> IO ()
+unmap dvc m = do
 	mem <- newIORef m
 	M.unmap dvc $ Device.Memory mem

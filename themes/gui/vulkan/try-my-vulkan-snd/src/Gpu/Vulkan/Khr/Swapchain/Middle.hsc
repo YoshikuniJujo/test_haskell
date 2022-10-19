@@ -31,7 +31,7 @@ import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
-import qualified Gpu.Vulkan.Image.Middle as Image
+import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface.M

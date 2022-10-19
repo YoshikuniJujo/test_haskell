@@ -21,7 +21,7 @@ import Gpu.Vulkan.ImageView.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
-import qualified Gpu.Vulkan.Image.Middle as Image
+import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.ImageView.Core as C
 
 data CreateInfo n = CreateInfo {

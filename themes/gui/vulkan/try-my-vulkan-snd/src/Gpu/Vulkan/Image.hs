@@ -1,4 +1,5 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -6,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
-	INew, BindedNew, createNew, recreateNew, M.CreateInfoNew(..),
+	INew, BindedNew, createNew, recreateNew, CreateInfoNew(..),
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 
 	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
@@ -20,7 +21,9 @@ import Foreign.Pointable
 import Control.Exception
 import Data.Kind
 import Data.HeteroList
+import Data.Word
 
+import Gpu.Vulkan.Core
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Image.Type
 import Gpu.Vulkan.Image.Enum hiding (Type)
@@ -31,21 +34,23 @@ import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory
 import qualified Gpu.Vulkan.Image.Middle as M
+import qualified Gpu.Vulkan.Sample.Enum as Sample
+import qualified Gpu.Vulkan.Image.Enum as I
 
 createNew :: (Pointable n, Pointable n2, Pointable n3, T.FormatToValue fmt) =>
-	Device.D sd -> M.CreateInfoNew n fmt ->
+	Device.D sd -> CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
 	(forall s . INew s nm fmt -> IO a) -> IO a
-createNew (Device.D dvc) ci macc macd f =
-	bracket (M.createNew dvc ci macc) (\i -> M.destroy dvc i macd) (f . INew)
+createNew dvc@(Device.D mdvc) ci macc macd f =
+	bracket (createNewM dvc ci macc) (\(INew i) -> M.destroy mdvc i macd) f
 
 recreateNew :: (
 	Pointable n, Pointable c, Pointable d, T.FormatToValue fmt ) =>
-	Device.D sd -> M.CreateInfoNew n fmt ->
+	Device.D sd -> CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	BindedNew si sm nm fmt -> IO ()
-recreateNew (Device.D dvc) ci macc macd (BindedNew i) = M.recreateNew dvc ci macc macd i
+recreateNew dvc ci macc macd i = recreateNewM dvc ci macc macd i
 
 create :: (Pointable n, Pointable n2, Pointable n3) =>
 	Device.D sd -> M.CreateInfo n ->
@@ -119,3 +124,63 @@ instance (Pointable n, MemoryBarrierListToMiddle nsismnmfmts) =>
 	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where
 	memoryBarrierListToMiddle (V5 mb :...: mbs) =
 		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
+
+createNewM :: (Pointable n, Pointable n', T.FormatToValue fmt) =>
+	Device.D sd -> CreateInfoNew n fmt ->
+	Maybe (AllocationCallbacks.A n') -> IO (INew si nm fmt)
+createNewM (Device.D mdvc) ci mac =
+	INew <$> M.create mdvc (createInfoFromNew ci) mac
+
+recreateNewM :: (
+	T.FormatToValue fmt,
+	Pointable n, Pointable c, Pointable d ) =>
+	Device.D sd -> CreateInfoNew n fmt ->
+	Maybe (AllocationCallbacks.A c) ->
+	Maybe (AllocationCallbacks.A d) ->
+	BindedNew si sm nm fmt -> IO ()
+recreateNewM (Device.D mdvc) ci macc macd (BindedNew i) =
+	M.recreate mdvc (createInfoFromNew ci) macc macd i
+
+data CreateInfoNew n (fmt :: T.Format) = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoImageTypeNew :: I.Type,
+	createInfoExtentNew :: Extent3d,
+	createInfoMipLevelsNew :: Word32,
+	createInfoArrayLayersNew :: Word32,
+	createInfoSamplesNew :: Sample.CountFlagBits,
+	createInfoTilingNew :: Tiling,
+	createInfoUsageNew :: UsageFlags,
+	createInfoSharingModeNew :: SharingMode,
+	createInfoQueueFamilyIndicesNew :: [Word32],
+	createInfoInitialLayoutNew :: Layout }
+	deriving Show
+
+createInfoFromNew :: forall n fmt .
+	T.FormatToValue fmt => CreateInfoNew n fmt -> M.CreateInfo n
+createInfoFromNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoImageTypeNew = itp,
+	createInfoExtentNew = ext,
+	createInfoMipLevelsNew = mls,
+	createInfoArrayLayersNew = als,
+	createInfoSamplesNew = smps,
+	createInfoTilingNew = tl,
+	createInfoUsageNew = usg,
+	createInfoSharingModeNew = sm,
+	createInfoQueueFamilyIndicesNew = qfis,
+	createInfoInitialLayoutNew =ilyt } = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoImageType = itp,
+	M.createInfoFormat = T.formatToValue @fmt,
+	M.createInfoExtent = ext,
+	M.createInfoMipLevels = mls,
+	M.createInfoArrayLayers = als,
+	M.createInfoSamples = smps,
+	M.createInfoTiling = tl,
+	M.createInfoUsage = usg,
+	M.createInfoSharingMode = sm,
+	M.createInfoQueueFamilyIndices = qfis,
+	M.createInfoInitialLayout = ilyt }

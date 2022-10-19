@@ -116,6 +116,7 @@ library
       Gpu.Vulkan.Image
       Gpu.Vulkan.Image.Enum
       Gpu.Vulkan.Image.Middle
+      Gpu.Vulkan.Image.Middle.Internal
       Gpu.Vulkan.Image.Type
       Gpu.Vulkan.ImageView
       Gpu.Vulkan.ImageView.Enum

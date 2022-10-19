@@ -900,7 +900,7 @@ recreateImage pd dvc wdt hgt tlng usg prps img mem = do
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
-	Vk.Img.M.CreateInfoNew n fmt
+	Vk.Img.CreateInfoNew n fmt
 imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
 		Vk.Img.createInfoNextNew = Nothing,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,

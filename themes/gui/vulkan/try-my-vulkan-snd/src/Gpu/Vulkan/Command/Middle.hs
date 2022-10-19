@@ -42,7 +42,7 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet.Middle.Internal as Descriptor.Set
 
 import qualified Gpu.Vulkan.Image.Enum as Image
-import qualified Gpu.Vulkan.Image.Middle as Image
+import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 

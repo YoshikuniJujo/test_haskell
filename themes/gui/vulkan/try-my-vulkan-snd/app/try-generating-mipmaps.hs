@@ -122,6 +122,7 @@ import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VertexInput
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
+import qualified Gpu.Vulkan.Memory.Core as Vk.Memory.C
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle.Internal as Vk.DscSet.Lyt
@@ -216,11 +217,11 @@ data Global = Global {
 	globalDescriptorSets :: IORef [Vk.DscSet.M.D],
 	globalMipLevels :: IORef Word32,
 	globalTextureImage :: IORef Vk.Image.I,
-	globalTextureImageMemory :: IORef Vk.Device.MemoryImage,
+	globalTextureImageMemory :: IORef Vk.Memory.C.M,
 	globalTextureImageView :: IORef Vk.ImageView.I,
 	globalTextureSampler :: IORef Vk.Sampler.S,
 	globalDepthImage :: IORef Vk.Image.I,
-	globalDepthImageMemory :: IORef Vk.Device.MemoryImage,
+	globalDepthImageMemory :: IORef Vk.Memory.C.M,
 	globalDepthImageView :: IORef Vk.ImageView.I,
 	globalTextureFilePath :: IORef FilePath,
 	globalModelFilePath :: IORef FilePath,
@@ -271,12 +272,12 @@ newGlobal = do
 	dp <- newIORef $ Vk.DscPool.D NullPtr
 	dss <- newIORef []
 	ml <- newIORef 0
-	ti <- newIORef $ Vk.Image.I undefined
-	tim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	ti <- newIORef undefined -- $ Vk.Image.I undefined
+	tim <- newIORef NullPtr
 	tiv <- newIORef $ Vk.ImageView.I undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
-	di <- newIORef $ Vk.Image.I undefined
-	dim <- newIORef $ Vk.Device.MemoryImage NullPtr
+	di <- newIORef undefined -- $ Vk.Image.I undefined
+	dim <- newIORef NullPtr
 	divw <- newIORef $ Vk.ImageView.I undefined
 	tfp <- newIORef ""
 	mfp <- newIORef ""
@@ -1265,7 +1266,7 @@ createImage ::
 	Word32 -> Word32 -> Word32 ->
 	Vk.Format -> Vk.Image.Tiling ->
 	Vk.Image.UsageFlags -> Vk.Memory.PropertyFlags ->
-	ReaderT Global IO (Vk.Image.I, Vk.Device.MemoryImage)
+	ReaderT Global IO (Vk.Image.I, Vk.Memory.C.M)
 createImage widt hght mipLevels format tiling usage properties = do
 	dvc <- readGlobal globalDevice
 	let	imageInfo = Vk.Image.CreateInfo {

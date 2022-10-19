@@ -248,7 +248,7 @@ bindImage :: forall sd si nm fmt sm sibfoss .
 bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
 	(_, mm) <- readM m
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
-	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
+	Image.M.bindMemory mdvc i mm ost
 	pure (Image.BindedNew i)
 
 rebindImage :: forall sd si sm nm fmt sibfoss .
@@ -257,7 +257,7 @@ rebindImage :: forall sd si sm nm fmt sibfoss .
 rebindImage dvc@(Device.D mdvc) (Image.BindedNew i) m = do
 	(_, mm) <- readM m
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
-	Image.M.bindMemory mdvc i (Device.M.MemoryImage mm) ost
+	Image.M.bindMemory mdvc i mm ost
 
 bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) sibfoss =>
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
