@@ -128,7 +128,6 @@ library
       Gpu.Vulkan.Instance.Middle.Internal
       Gpu.Vulkan.Instance.Type
       Gpu.Vulkan.Khr
-      Gpu.Vulkan.Khr.ColorSpace
       Gpu.Vulkan.Khr.Enum
       Gpu.Vulkan.Khr.Middle
       Gpu.Vulkan.Khr.Surface
