@@ -272,13 +272,13 @@ newGlobal = do
 	dp <- newIORef $ Vk.DscPool.D NullPtr
 	dss <- newIORef []
 	ml <- newIORef 0
-	ti <- newIORef undefined -- $ Vk.Image.I undefined
+	ti <- newIORef undefined
 	tim <- newIORef NullPtr
-	tiv <- newIORef $ Vk.ImageView.I undefined
+	tiv <- newIORef undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
-	di <- newIORef undefined -- $ Vk.Image.I undefined
+	di <- newIORef undefined
 	dim <- newIORef NullPtr
-	divw <- newIORef $ Vk.ImageView.I undefined
+	divw <- newIORef undefined
 	tfp <- newIORef ""
 	mfp <- newIORef ""
 	vtcs <- newIORef V.empty

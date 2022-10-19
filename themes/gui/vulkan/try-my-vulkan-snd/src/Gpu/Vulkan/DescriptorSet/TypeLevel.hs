@@ -49,19 +49,19 @@ class BindingAndArrayElem
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t Nothing ': os') ': bts) ('Atom t Nothing ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t 'Nothing ': os') ': bts) ('Atom t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t Nothing ': os') ': bts) ('Atom t (Just nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t 'Nothing ': os') ': bts) ('Atom t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t (Just nm) ': os') ': bts) ('Atom t Nothing ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t ('Just nm) ': os') ': bts) ('Atom t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t (Just nm) ': os') ': bts) ('Atom t (Just nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t ('Just nm) ': os') ': bts) ('Atom t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>

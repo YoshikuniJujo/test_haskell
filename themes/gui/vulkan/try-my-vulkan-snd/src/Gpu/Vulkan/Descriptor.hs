@@ -14,9 +14,7 @@ import Data.Kind.Object
 import Data.HeteroList
 
 import qualified Gpu.Vulkan.Buffer as Buffer
-import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Descriptor.Middle as M
-import qualified Gpu.Vulkan.Descriptor.Core as C
 
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Image.Enum as Image

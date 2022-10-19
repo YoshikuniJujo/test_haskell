@@ -277,11 +277,11 @@ newGlobal = do
 	ml <- newIORef 0
 	ti <- newIORef undefined -- $ Vk.Image.I undefined
 	tim <- newIORef NullPtr
-	tiv <- newIORef $ Vk.ImageView.I undefined
+	tiv <- newIORef undefined
 	ts <- newIORef $ Vk.Sampler.S NullPtr
 	di <- newIORef undefined -- $ Vk.Image.I undefined
 	dim <- newIORef NullPtr
-	divw <- newIORef $ Vk.ImageView.I undefined
+	divw <- newIORef undefined
 	tfp <- newIORef ""
 	mfp <- newIORef ""
 	vtcs <- newIORef V.empty
@@ -290,7 +290,7 @@ newGlobal = do
 	msaaS <- newIORef Vk.Sample.CountFlagsZero
 	ci <- newIORef undefined -- $ Vk.Image.I undefined
 	cim <- newIORef NullPtr
-	civ <- newIORef $ Vk.ImageView.I undefined
+	civ <- newIORef undefined
 	pure Global {
 		globalWindow = win,
 		globalInstance = ist,

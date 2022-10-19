@@ -121,6 +121,7 @@ library
       Gpu.Vulkan.ImageView
       Gpu.Vulkan.ImageView.Enum
       Gpu.Vulkan.ImageView.Middle
+      Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Instance
       Gpu.Vulkan.Instance.Enum
       Gpu.Vulkan.Instance.Middle
