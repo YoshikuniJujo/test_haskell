@@ -8,7 +8,6 @@
 
 module Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel where
 
-import Foreign.Storable
 import Data.Kind.Object
 import Data.HeteroList
 

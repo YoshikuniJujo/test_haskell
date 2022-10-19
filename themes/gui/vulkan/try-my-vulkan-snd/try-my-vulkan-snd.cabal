@@ -106,6 +106,7 @@ library
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Fence.Middle
+      Gpu.Vulkan.Fence.Middle.Internal
       Gpu.Vulkan.Fence.Type
       Gpu.Vulkan.Framebuffer
       Gpu.Vulkan.Framebuffer.Enum

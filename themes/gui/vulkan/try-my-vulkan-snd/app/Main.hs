@@ -172,7 +172,7 @@ newGlobal w = do
 	cbs <- newIORef []
 	ias <- newIORef $ Vk.Smp.S NullPtr
 	rfs <- newIORef $ Vk.Smp.S NullPtr
-	iff <- newIORef $ Vk.Fnc.F NullPtr
+	iff <- newIORef undefined -- $ Vk.Fnc.F NullPtr
 	pure Global {
 		globalWindow = w,
 		globalInstance = ist,

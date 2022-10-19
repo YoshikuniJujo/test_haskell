@@ -22,7 +22,7 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Fence.Type as Fence
-import {-# SOURCE #-} qualified Gpu.Vulkan.Fence.Middle as Fence.M
+import qualified Gpu.Vulkan.Fence.Middle.Internal as Fence.M
 
 import qualified Gpu.Vulkan.Middle as M
 import qualified Gpu.Vulkan.Core as C
