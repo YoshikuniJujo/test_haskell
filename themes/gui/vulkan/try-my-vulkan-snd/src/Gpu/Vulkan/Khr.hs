@@ -9,9 +9,7 @@ module Gpu.Vulkan.Khr where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
-import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
-import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -20,12 +18,10 @@ import Data.Word
 
 import qualified Data.Text as T
 
-import Gpu.Vulkan.Base
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.Fence.Middle as Fence

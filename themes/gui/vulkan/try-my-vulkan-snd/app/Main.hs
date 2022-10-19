@@ -69,7 +69,6 @@ import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DU
 
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Sc.N
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Sc
-import qualified Gpu.Vulkan.Khr.Swapchain.MiddleOld as Vk.Khr.Sc
 import qualified Gpu.Vulkan.Khr.Swapchain.Enum as Vk.Khr.Sc
 import qualified Gpu.Vulkan.ImageView.Middle as Vk.ImageView
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImageView
@@ -486,7 +485,7 @@ createSwapChain g@Global {
 			Vk.Khr.Sc.createInfoImageUsage' =
 				Vk.Img.UsageColorAttachmentBit,
 			Vk.Khr.Sc.createInfoImageSharingMode' = smode,
-			Vk.Khr.Sc.createInfoQueueFamilyIndices' = fis,
+			Vk.Khr.Sc.createInfoQueueFamilyIndices' = Vk.QueueFamily.Index <$> fis,
 			Vk.Khr.Sc.createInfoPreTransform' =
 				Vk.Khr.Sfc.capabilitiesCurrentTransform
 					$ swapChainSupportDetailsCapabilities scs,

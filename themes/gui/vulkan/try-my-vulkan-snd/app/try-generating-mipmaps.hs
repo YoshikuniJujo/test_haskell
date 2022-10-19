@@ -76,7 +76,6 @@ import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as
 	Vk.Khr.Surface.PhysicalDevice
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain.N
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain
-import qualified Gpu.Vulkan.Khr.Swapchain.MiddleOld as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Enum as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Image.Middle as Vk.Image
 import qualified Gpu.Vulkan.Image.Enum as Vk.Image
@@ -617,7 +616,8 @@ createSwapChain = do
 			Vk.Khr.Swapchain.createInfoImageUsage' =
 				Vk.Image.UsageColorAttachmentBit,
 			Vk.Khr.Swapchain.createInfoImageSharingMode' = ism,
-			Vk.Khr.Swapchain.createInfoQueueFamilyIndices' = qfis,
+			Vk.Khr.Swapchain.createInfoQueueFamilyIndices' =
+				Vk.QueueFamily.Index <$> qfis,
 			Vk.Khr.Swapchain.createInfoPreTransform' =
 				Vk.Khr.Surface.capabilitiesCurrentTransform
 					$ capabilities swapChainSupport,
