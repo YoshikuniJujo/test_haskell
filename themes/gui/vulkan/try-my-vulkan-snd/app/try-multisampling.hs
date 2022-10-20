@@ -113,7 +113,6 @@ import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
-import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore.N
 import qualified Gpu.Vulkan.Semaphore.Middle as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence.Middle as Vk.Fence
@@ -245,7 +244,7 @@ newGlobal = do
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
-	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
+	sfc <- newIORef undefined
 	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sc <- newIORef undefined
 	scis <- newIORef []

@@ -157,7 +157,7 @@ newGlobal w = do
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
-	sfc <- newIORef $ Vk.Khr.Sfc.S NullPtr
+	sfc <- newIORef undefined
 	sc <- newIORef undefined -- $ Vk.Khr.Sc.S undefined
 	scimgs <- newIORef []
 	scimgfmt <- newIORef $ Vk.FormatUndefined

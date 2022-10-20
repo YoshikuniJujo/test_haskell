@@ -133,6 +133,7 @@ library
       Gpu.Vulkan.Khr.Surface
       Gpu.Vulkan.Khr.Surface.Enum
       Gpu.Vulkan.Khr.Surface.Middle
+      Gpu.Vulkan.Khr.Surface.Middle.Internal
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
       Gpu.Vulkan.Khr.Surface.Type
       Gpu.Vulkan.Khr.Swapchain

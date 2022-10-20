@@ -39,7 +39,7 @@ import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
-import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface.M
+import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as Surface.M
 import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 

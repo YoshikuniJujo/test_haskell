@@ -14,7 +14,7 @@ import Gpu.Vulkan.Exception
 import qualified Graphics.UI.GLFW as GlfwB
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
-import qualified Gpu.Vulkan.Khr.Surface.Middle as Surface
+import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as Surface
 
 createWindowSurface :: Pointable n =>
 	Instance.I -> GlfwB.Window -> Maybe (AllocationCallbacks.A n) -> IO Surface.S

@@ -241,7 +241,7 @@ newGlobal = do
 	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
-	sfc <- newIORef $ Vk.Khr.Surface.S NullPtr
+	sfc <- newIORef undefined
 	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sc <- newIORef undefined
 	scis <- newIORef []
@@ -422,7 +422,7 @@ checkValidationLayerSupport = lift do
 getRequiredExtensions :: ReaderT Global IO [Txt.Text]
 getRequiredExtensions = lift do
 	glfwExtensions <-
-		(cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
+		(cstrToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
 	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
 		enableValidationLayers glfwExtensions
 

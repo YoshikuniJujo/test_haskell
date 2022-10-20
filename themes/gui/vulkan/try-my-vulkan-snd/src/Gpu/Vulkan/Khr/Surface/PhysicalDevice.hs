@@ -19,7 +19,7 @@ import Gpu.Vulkan.Khr.Surface.Type
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core as C
-import qualified Gpu.Vulkan.Khr.Surface.Middle as M
+import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as M
 
 getSupport :: PhysicalDevice.P -> QueueFamily.Index -> S ss -> IO Bool
 getSupport (PhysicalDevice.P phdvc) (QueueFamily.Index qfi) (S (M.S sfc)) =
