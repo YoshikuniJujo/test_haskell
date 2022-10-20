@@ -149,5 +149,5 @@ acquireNextImageM = acquireNextImageResultM [Success]
 acquireNextImageResultM :: [Result] -> Device.M.D -> Swapchain.S ssc ->
 	Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImageResultM sccs dvc (Swapchain.S sc) to msmp mfnc =
-	M.acquireNextImageResultOld
+	M.acquireNextImageResult
 		sccs dvc sc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc

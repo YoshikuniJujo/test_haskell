@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan.Instance.Type as Vk.Instance.T
 import qualified Gpu.Vulkan.Instance.Middle as Vk.Instance
 import qualified Gpu.Vulkan.Instance.Enum as Vk.Instance
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Khr.Middle as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Middle as Vk.Khr.M
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DebugUtils
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as Vk.Ext.DebugUtils.Messenger
@@ -1857,7 +1857,7 @@ drawFrame st = do
 	lift $ Vk.Fence.waitForFs dvc [iff] True maxBound
 	sc <- readGlobal globalSwapChain
 	ias <- (!! cf) <$> readGlobal globalImageAvailableSemaphores
-	imageIndex <- lift $ Vk.Khr.acquireNextImageResultOld [Vk.Success, Vk.SuboptimalKhr]
+	imageIndex <- lift $ Vk.Khr.M.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	lift $ Vk.Fence.resetFs dvc [iff]
 	cb <- (!! cf) <$> readGlobal globalCommandBuffers

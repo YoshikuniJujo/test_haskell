@@ -19,13 +19,13 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Fence.Middle.Internal as Fence
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 
-acquireNextImageOld :: Device.M.D ->
+acquireNextImage :: Device.M.D ->
 	Swapchain.M.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
-acquireNextImageOld = acquireNextImageResultOld [Success]
+acquireNextImage = acquireNextImageResult [Success]
 
-acquireNextImageResultOld :: [Result] -> Device.M.D ->
+acquireNextImageResult :: [Result] -> Device.M.D ->
 	Swapchain.M.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
-acquireNextImageResultOld sccs
+acquireNextImageResult sccs
 	(Device.M.D dvc) sc to msmp mfnc = ($ pure) $ runContT do
 	let	smp = maybe NullHandle (\(Semaphore.M.S s) -> s) msmp
 		fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc

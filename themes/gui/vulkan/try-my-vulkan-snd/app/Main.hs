@@ -57,7 +57,7 @@ import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Device
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
-import qualified Gpu.Vulkan.Khr.Middle as Vk.Khr
+import qualified Gpu.Vulkan.Khr.Middle as Vk.Khr.M
 import qualified Gpu.Vulkan.Khr.Enum as Vk.Khr
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Sfc
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice as Vk.Khr.Sfc.PhysicalDevice
@@ -900,7 +900,7 @@ drawFrame g@Global {
 	Vk.Fnc.waitForFs dvc [iff] True maxBound
 	Vk.Fnc.resetFs dvc [iff]
 	(fromIntegral -> imageIndex) <-
-		Vk.Khr.acquireNextImageOld dvc sc uint64Max (Just ias) Nothing
+		Vk.Khr.M.acquireNextImage dvc sc uint64Max (Just ias) Nothing
 	(`Vk.CB.M.reset` Vk.CB.ResetFlagsZero) `mapM_` cbs
 	uncurry (recordCommandBuffer g) `mapM_` zip cbs scfbs
 	let	submitInfo = Vk.SubmitInfo {
