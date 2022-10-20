@@ -22,6 +22,7 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.Fence.Middle as Fence
@@ -46,7 +47,7 @@ acquireNextImage = acquireNextImageResult [Success]
 acquireNextImageResult :: [Result] -> Device.D sd ->
 	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
 acquireNextImageResult sccs
-	(Device.D dvc) sc to msmp mfnc = M.acquireNextImageResult sccs dvc sc to msmp mfnc
+	(Device.D dvc) sc to msmp mfnc = acquireNextImageResultM sccs dvc sc to msmp mfnc
 
 data SwapchainImageIndexNew scfmt ssc =
 	SwapchainImageIndexNew (Swapchain.SNew ssc scfmt) Word32 deriving Show
@@ -135,3 +136,18 @@ queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
 		rs <- peekArray rc $ C.presentInfoPResults cpi
 		throwUnlessSuccesses $ Result <$> rs
 		throwUnlessSuccess $ Result r
+
+acquireNextImageResultNewM :: [Result] -> Device.M.D ->
+	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImageResultNewM sccs dvc (Swapchain.sFromNew -> sc) to msmp mfnc =
+	acquireNextImageResultM sccs dvc sc to msmp mfnc
+
+acquireNextImageM :: Device.M.D ->
+	Swapchain.S ssc -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImageM = acquireNextImageResultM [Success]
+
+acquireNextImageResultM :: [Result] -> Device.M.D -> Swapchain.S ssc ->
+	Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
+acquireNextImageResultM sccs dvc (Swapchain.S sc) to msmp mfnc =
+	M.acquireNextImageResultOld
+		sccs dvc sc to ((\(Semaphore.S smp) -> smp) <$> msmp) mfnc

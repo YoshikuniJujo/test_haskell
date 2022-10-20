@@ -12,7 +12,6 @@
 module Main where
 
 import GHC.Generics
-import GHC.Tuple
 import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Fix

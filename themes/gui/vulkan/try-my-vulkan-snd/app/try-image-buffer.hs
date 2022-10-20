@@ -616,7 +616,7 @@ writeDscSet ::
 	Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
-	Vk.DscSet.Write () sd sp slbts (Vk.DscSet.WriteSourcesArgBuffer '[
+	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sb1, sm1, nm1, objs1, 'List w1 ""), '(sb2, sm2, nm2, objs2, 'List w2 ""),
 		'(sb3, sm3, nm3, objs3, 'List w3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
@@ -630,7 +630,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 writeDscSet' :: forall w1 w2 w3 sd sp slbts sb sm nm objs .
 	Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sm sb nm objs ->
-	Vk.DscSet.Write () sd sp slbts (Vk.DscSet.WriteSourcesArgBuffer '[
+	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sb, sm, nm, objs, 'List w1 ""), '(sb, sm, nm, objs, 'List w2 ""),
 		'(sb, sm, nm, objs, 'List w3 "") ])
 writeDscSet' ds b = Vk.DscSet.Write {
