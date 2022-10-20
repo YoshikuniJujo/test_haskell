@@ -51,41 +51,41 @@ sToCore (S s) = snd <$> readIORef s
 sFromCore :: C.Extent2d -> C.S -> IO S
 sFromCore ex s = S <$> newIORef (ex, s)
 
-data CreateInfo' n = CreateInfo' {
-	createInfoNext' :: Maybe n,
-	createInfoFlags' :: CreateFlags,
-	createInfoSurface' :: Surface.M.S,
-	createInfoMinImageCount' :: Word32,
-	createInfoImageFormat' :: Format,
-	createInfoImageColorSpace' :: ColorSpace,
-	createInfoImageExtent' :: C.Extent2d,
-	createInfoImageArrayLayers' :: Word32,
-	createInfoImageUsage' :: Image.UsageFlags,
-	createInfoImageSharingMode' :: SharingMode,
-	createInfoQueueFamilyIndices' :: [QueueFamily.Index],
-	createInfoPreTransform' :: TransformFlagBits,
-	createInfoCompositeAlpha' :: CompositeAlphaFlagBits,
-	createInfoPresentMode' :: PresentMode,
-	createInfoClipped' :: Bool,
-	createInfoOldSwapchain' :: Maybe S }
+data CreateInfo n = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoSurface :: Surface.M.S,
+	createInfoMinImageCount :: Word32,
+	createInfoImageFormat :: Format,
+	createInfoImageColorSpace :: ColorSpace,
+	createInfoImageExtent :: C.Extent2d,
+	createInfoImageArrayLayers :: Word32,
+	createInfoImageUsage :: Image.UsageFlags,
+	createInfoImageSharingMode :: SharingMode,
+	createInfoQueueFamilyIndices :: [QueueFamily.Index],
+	createInfoPreTransform :: TransformFlagBits,
+	createInfoCompositeAlpha :: CompositeAlphaFlagBits,
+	createInfoPresentMode :: PresentMode,
+	createInfoClipped :: Bool,
+	createInfoOldSwapchain :: Maybe S }
 	deriving Show
 
-create' :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo' n -> Maybe (AllocationCallbacks.A n') -> IO S
-create' (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
+create :: (Pointable n, Pointable n') =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
+create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
 	pci <- createInfoToCoreOld ci
 	pac <- AllocationCallbacks.maybeToCore mac
 	psc <- ContT alloca
 	lift do	r <- C.create dvc pci pac psc
 		throwUnlessSuccess $ Result r
 		peek psc
-	where ex = createInfoImageExtent' ci
+	where ex = createInfoImageExtent ci
 
-recreate' :: (Pointable n, Pointable c, Pointable d) =>
-	Device.D -> CreateInfo' n ->
+recreate :: (Pointable n, Pointable c, Pointable d) =>
+	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S -> IO ()
-recreate' (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
+recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
 	pci <- createInfoToCoreOld ci
 	pacc <- AllocationCallbacks.maybeToCore macc
 	pacd <- AllocationCallbacks.maybeToCore macd
@@ -95,7 +95,7 @@ recreate' (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
 		(_, sco) <- readIORef rs
 		writeIORef rs . (ex ,) =<< peek psc
 		C.destroy dvc sco pacd
-	where ex = createInfoImageExtent' ci
+	where ex = createInfoImageExtent ci
 
 destroy :: Pointable n =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
@@ -104,24 +104,24 @@ destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
 	sc' <- lift $ sToCore sc
 	lift $ C.destroy dvc sc' pac
 
-createInfoToCoreOld :: Pointable n => CreateInfo' n -> ContT r IO (Ptr C.CreateInfo)
-createInfoToCoreOld CreateInfo' {
-	createInfoNext' = mnxt,
-	createInfoFlags' = CreateFlagBits flgs,
-	createInfoSurface' = Surface.M.S sfc,
-	createInfoMinImageCount' = mic,
-	createInfoImageFormat' = Format ifmt,
-	createInfoImageColorSpace' = ColorSpace ics,
-	createInfoImageExtent' = iex,
-	createInfoImageArrayLayers' = ials,
-	createInfoImageUsage' = Image.UsageFlagBits iusg,
-	createInfoImageSharingMode' = SharingMode ism,
-	createInfoQueueFamilyIndices' = ((\(QueueFamily.Index i) -> i) <$>) -> qfis,
-	createInfoPreTransform' = TransformFlagBits pt,
-	createInfoCompositeAlpha' = CompositeAlphaFlagBits caf,
-	createInfoPresentMode' = PresentMode pm,
-	createInfoClipped' = clpd,
-	createInfoOldSwapchain' = mos
+createInfoToCoreOld :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCoreOld CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoSurface = Surface.M.S sfc,
+	createInfoMinImageCount = mic,
+	createInfoImageFormat = Format ifmt,
+	createInfoImageColorSpace = ColorSpace ics,
+	createInfoImageExtent = iex,
+	createInfoImageArrayLayers = ials,
+	createInfoImageUsage = Image.UsageFlagBits iusg,
+	createInfoImageSharingMode = SharingMode ism,
+	createInfoQueueFamilyIndices = ((\(QueueFamily.Index i) -> i) <$>) -> qfis,
+	createInfoPreTransform = TransformFlagBits pt,
+	createInfoCompositeAlpha = CompositeAlphaFlagBits caf,
+	createInfoPresentMode = PresentMode pm,
+	createInfoClipped = clpd,
+	createInfoOldSwapchain = mos
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic

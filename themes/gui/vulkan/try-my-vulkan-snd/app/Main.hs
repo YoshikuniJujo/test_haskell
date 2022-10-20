@@ -471,30 +471,30 @@ createSwapChain g@Global {
 				fromJust $ graphicsFamily indices,
 				fromJust $ presentFamily indices ])
 			else (Vk.SharingModeExclusive, [])
-		createInfo = Vk.Khr.Sc.CreateInfo' {
-			Vk.Khr.Sc.createInfoNext' = Nothing,
-			Vk.Khr.Sc.createInfoFlags' = Vk.Khr.Sc.CreateFlagsZero,
-			Vk.Khr.Sc.createInfoSurface' = sfc,
-			Vk.Khr.Sc.createInfoMinImageCount' = imageCount,
-			Vk.Khr.Sc.createInfoImageFormat' =
+		createInfo = Vk.Khr.Sc.CreateInfo {
+			Vk.Khr.Sc.createInfoNext = Nothing,
+			Vk.Khr.Sc.createInfoFlags = Vk.Khr.Sc.CreateFlagsZero,
+			Vk.Khr.Sc.createInfoSurface = sfc,
+			Vk.Khr.Sc.createInfoMinImageCount = imageCount,
+			Vk.Khr.Sc.createInfoImageFormat =
 				Vk.Khr.Sfc.formatFormat surfaceFormat,
-			Vk.Khr.Sc.createInfoImageColorSpace' =
+			Vk.Khr.Sc.createInfoImageColorSpace =
 				Vk.Khr.Sfc.formatColorSpace surfaceFormat,
-			Vk.Khr.Sc.createInfoImageExtent' = extent,
-			Vk.Khr.Sc.createInfoImageArrayLayers' = 1,
-			Vk.Khr.Sc.createInfoImageUsage' =
+			Vk.Khr.Sc.createInfoImageExtent = extent,
+			Vk.Khr.Sc.createInfoImageArrayLayers = 1,
+			Vk.Khr.Sc.createInfoImageUsage =
 				Vk.Img.UsageColorAttachmentBit,
-			Vk.Khr.Sc.createInfoImageSharingMode' = smode,
-			Vk.Khr.Sc.createInfoQueueFamilyIndices' = Vk.QueueFamily.Index <$> fis,
-			Vk.Khr.Sc.createInfoPreTransform' =
+			Vk.Khr.Sc.createInfoImageSharingMode = smode,
+			Vk.Khr.Sc.createInfoQueueFamilyIndices = Vk.QueueFamily.Index <$> fis,
+			Vk.Khr.Sc.createInfoPreTransform =
 				Vk.Khr.Sfc.capabilitiesCurrentTransform
 					$ swapChainSupportDetailsCapabilities scs,
-			Vk.Khr.Sc.createInfoCompositeAlpha' =
+			Vk.Khr.Sc.createInfoCompositeAlpha =
 				Vk.Khr.CompositeAlphaOpaqueBit,
-			Vk.Khr.Sc.createInfoPresentMode' = presentMode,
-			Vk.Khr.Sc.createInfoClipped' = True,
-			Vk.Khr.Sc.createInfoOldSwapchain' = Nothing }
-	sc <- Vk.Khr.Sc.create' @() @() dvc createInfo Nothing
+			Vk.Khr.Sc.createInfoPresentMode = presentMode,
+			Vk.Khr.Sc.createInfoClipped = True,
+			Vk.Khr.Sc.createInfoOldSwapchain = Nothing }
+	sc <- Vk.Khr.Sc.create @() @() dvc createInfo Nothing
 	writeIORef rsc sc
 	writeIORef rscimgs =<< Vk.Khr.Sc.getImages dvc sc
 	writeIORef rscimgfmt $ Vk.Khr.Sfc.formatFormat surfaceFormat

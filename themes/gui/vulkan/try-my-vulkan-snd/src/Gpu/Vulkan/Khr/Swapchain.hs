@@ -146,15 +146,15 @@ data CreateInfo n ss = CreateInfo {
 
 createM :: (Pointable n, Pointable n') =>
 	Device.M.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO M.S
-createM dvc ci mac = M.create' dvc (createInfoToOld ci) mac
+createM dvc ci mac = M.create dvc (createInfoToOld ci) mac
 
 recreateM :: (Pointable n, Pointable c, Pointable d) =>
 	Device.M.D -> CreateInfo n ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	M.S -> IO ()
-recreateM dvc ci macc macd s = M.recreate' dvc (createInfoToOld ci) macc macd s
+recreateM dvc ci macc macd s = M.recreate dvc (createInfoToOld ci) macc macd s
 
-createInfoToOld :: CreateInfo n ss -> M.CreateInfo' n
+createInfoToOld :: CreateInfo n ss -> M.CreateInfo n
 createInfoToOld CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -172,20 +172,20 @@ createInfoToOld CreateInfo {
 	createInfoPresentMode = pm,
 	createInfoClipped = clpd,
 	createInfoOldSwapchain = osc
-	} = M.CreateInfo' {
-	M.createInfoNext' = mnxt,
-	M.createInfoFlags' = flgs,
-	M.createInfoSurface' = sfc,
-	M.createInfoMinImageCount' = mic,
-	M.createInfoImageFormat' = ifmt,
-	M.createInfoImageColorSpace' = ics,
-	M.createInfoImageExtent' = iext,
-	M.createInfoImageArrayLayers' = ials,
-	M.createInfoImageUsage' = iusg,
-	M.createInfoImageSharingMode' = ism,
-	M.createInfoQueueFamilyIndices' = qfis,
-	M.createInfoPreTransform' = ptfm,
-	M.createInfoCompositeAlpha' = calp,
-	M.createInfoPresentMode' = pm,
-	M.createInfoClipped' = clpd,
-	M.createInfoOldSwapchain' = osc }
+	} = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoSurface = sfc,
+	M.createInfoMinImageCount = mic,
+	M.createInfoImageFormat = ifmt,
+	M.createInfoImageColorSpace = ics,
+	M.createInfoImageExtent = iext,
+	M.createInfoImageArrayLayers = ials,
+	M.createInfoImageUsage = iusg,
+	M.createInfoImageSharingMode = ism,
+	M.createInfoQueueFamilyIndices = qfis,
+	M.createInfoPreTransform = ptfm,
+	M.createInfoCompositeAlpha = calp,
+	M.createInfoPresentMode = pm,
+	M.createInfoClipped = clpd,
+	M.createInfoOldSwapchain = osc }
