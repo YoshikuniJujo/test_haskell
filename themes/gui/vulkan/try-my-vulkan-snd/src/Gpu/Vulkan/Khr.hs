@@ -27,7 +27,7 @@ import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.Fence.Middle as Fence
 import qualified Gpu.Vulkan.Queue as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
-import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Swapchain.M
+import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Middle as M
 import qualified Gpu.Vulkan.Khr.Core as C
 

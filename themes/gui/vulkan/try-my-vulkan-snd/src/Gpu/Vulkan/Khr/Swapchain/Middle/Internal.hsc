@@ -6,7 +6,14 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Swapchain.Middle where
+module Gpu.Vulkan.Khr.Swapchain.Middle.Internal (
+	extensionName,
+	S, CreateInfo(..), create, recreate, destroy,
+
+	getImages,
+
+	sToCore
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

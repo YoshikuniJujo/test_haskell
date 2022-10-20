@@ -138,6 +138,7 @@ library
       Gpu.Vulkan.Khr.Swapchain
       Gpu.Vulkan.Khr.Swapchain.Enum
       Gpu.Vulkan.Khr.Swapchain.Middle
+      Gpu.Vulkan.Khr.Swapchain.Middle.Internal
       Gpu.Vulkan.Khr.Swapchain.Type
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.AllocateInfo
