@@ -158,7 +158,7 @@ newGlobal w = do
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr
 	sfc <- newIORef $ Vk.Khr.Sfc.S NullPtr
-	sc <- newIORef $ Vk.Khr.Sc.S undefined
+	sc <- newIORef undefined -- $ Vk.Khr.Sc.S undefined
 	scimgs <- newIORef []
 	scimgfmt <- newIORef $ Vk.FormatUndefined
 	scex <- newIORef $ Vk.C.Extent2d 0 0
