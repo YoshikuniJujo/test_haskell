@@ -28,6 +28,7 @@ import Gpu.Vulkan.Base
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
+import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Core as Vk.C
 import qualified Gpu.Vulkan.Instance as Vk.Instance
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
@@ -243,32 +244,31 @@ makeImage phdvc dvc f = do
 
 makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	(forall si sm .
-		Vk.Img.BindedNew si sm nm fmt ->
-		Vk.Memory.M sm '[ '(si, 'Vk.Memory.K.Image nm fmt)] -> IO a) ->
+		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Unorm ->
+		Vk.Memory.M sm '[ '(si, 'Vk.Memory.K.Image nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
 	IO a
 makeImage' phdvc dvc f = do
-	let	imgCreateInfo = Vk.Img.CreateInfo {
-			Vk.Img.createInfoNext = Nothing,
-			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
-			Vk.Img.createInfoImageType = Vk.Img.Type2d,
-			Vk.Img.createInfoExtent =
+	let	imgCreateInfo = Vk.Img.CreateInfoNew {
+			Vk.Img.createInfoNextNew = Nothing,
+			Vk.Img.createInfoFlagsNew = Vk.Img.CreateFlagsZero,
+			Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
+			Vk.Img.createInfoExtentNew =
 				Vk.C.Extent3d screenWidth screenHeight 1,
-			Vk.Img.createInfoMipLevels = 1,
-			Vk.Img.createInfoArrayLayers = 1,
-			Vk.Img.createInfoFormat = Vk.FormatR8g8b8a8Unorm,
-			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
-			Vk.Img.createInfoInitialLayout =
+			Vk.Img.createInfoMipLevelsNew = 1,
+			Vk.Img.createInfoArrayLayersNew = 1,
+			Vk.Img.createInfoTilingNew = Vk.Img.TilingLinear,
+			Vk.Img.createInfoInitialLayoutNew =
 				Vk.Img.LayoutUndefined,
-			Vk.Img.createInfoUsage =
+			Vk.Img.createInfoUsageNew =
 				Vk.Img.UsageColorAttachmentBit,
-			Vk.Img.createInfoSharingMode =
+			Vk.Img.createInfoSharingModeNew =
 				Vk.SharingModeExclusive,
-			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
-			Vk.Img.createInfoQueueFamilyIndices = [] }
+			Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
+			Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
-	Vk.Img.create @() dvc imgCreateInfo nil nil \image@(Vk.Img.I img) -> do
-		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
+	Vk.Img.createNew @() dvc imgCreateInfo nil nil \image -> do
+		imgMemReq <- Vk.Img.getMemoryRequirementsNew dvc image
 		print imgMemReq
 		let	imgMemReqTypes =
 				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
@@ -288,7 +288,7 @@ makeImage' phdvc dvc f = do
 				Vk.Memory.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
 		Vk.Memory.allocateBind @()
-			dvc (Singleton . V2 . Vk.Memory.Image . Vk.Img.INew $ img)
+			dvc (Singleton . V2 $ Vk.Memory.Image image)
 			imgMemAllocInfo nil nil \(Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
