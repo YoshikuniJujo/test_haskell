@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PartialTypeSignatures #-}
@@ -9,12 +9,15 @@
 
 module Main where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.Maybe
 import Data.List
+import Data.Array
 import Data.HeteroList
 import Data.Word
 import Data.Color
@@ -137,7 +140,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 	makePipeline device rp \ppl ->
 	makeImage phdvc device \bimg mi ->
 	makeImage' phdvc device \bimg' mi' ->
-	makeBuffer >> do
+	makeBuffer phdvc device screenWidth screenHeight \b bm -> do
 		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
 			makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
@@ -165,6 +168,8 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 			jimg = Image
 				(fromIntegral screenWidth) (fromIntegral screenHeight) v
 		writePng "yatteiku.png" (jimg :: Image PixelRGBA8)
+		MyImage img <- Vk.Memory.read @"image-buffer" @('ObjImage MyImage "") device bm def
+		writePng "yatteiku2.png" (img :: Image PixelRGBA8)
 
 makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
 	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
@@ -303,9 +308,19 @@ makeImage' phdvc dvc f = do
 			imgMemAllocInfo nil nil \(Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
-makeBuffer :: IO ()
-makeBuffer = do
-	putStrLn "MAKE BUFFER"
+makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm "image-buffer" '[ 'ObjImage MyImage ""] ->
+		Vk.Memory.M sm '[ '(
+			sb,
+			'Vk.Memory.K.Buffer "image-buffer" '[ 'ObjImage MyImage ""])] ->
+			IO a) -> IO a
+makeBuffer phdvc dvc wdt hgt f =
+	createBufferImage phdvc dvc
+		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1) 
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Memory.PropertyHostVisibleBit .|.
+			Vk.Memory.PropertyHostCoherentBit ) f
 
 createBufferImage :: Storable (IsImagePixel t) =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
@@ -356,6 +371,36 @@ findMemoryType phdvc flt props =
 		<$> (`Vk.Memory.M.elemTypeIndex` flt) . fst
 		<*> checkBits props . Vk.Memory.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhysicalDevice.memoryPropertiesMemoryTypes props1
+
+newtype MyImage = MyImage (Image PixelRGBA8)
+
+type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+
+newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+
+instance Storable MyRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
+		<$> peekArray 4 (castPtr p)
+	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
+
+listToTuple4 :: [a] -> (a, a, a, a)
+listToTuple4 [r, g, b, a] = (r, g, b, a)
+listToTuple4 _ = error "The length of the list is not 4"
+
+instance IsImage MyImage where
+	type IsImagePixel MyImage = MyRgba8
+	isImageRow = isImageWidth
+	isImageWidth (MyImage img) = imageWidth img
+	isImageHeight (MyImage img) = imageHeight img
+	isImageDepth _ = 1
+	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
+	isImageMake w h _d pss = MyImage
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->
 	(forall s . Vk.ImgView.I s -> IO a) -> IO a
