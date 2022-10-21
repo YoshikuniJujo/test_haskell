@@ -26,10 +26,6 @@ import Codec.Picture
 import Shaderc.TH
 import Shaderc.EnumAuto
 
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Internal as BS
-import qualified Data.Vector.Storable as V
-
 import Gpu.Vulkan.Base
 
 import qualified Gpu.Vulkan as Vk
@@ -56,7 +52,6 @@ import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
-import qualified Gpu.Vulkan.Memory.Image as Vk.Memory.Image
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Memory.K
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Memory
@@ -140,15 +135,12 @@ runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO
 runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
 	makePipeline device rp \ppl ->
-	makeImage phdvc device \bimg@(Vk.Img.Binded obimg) mi ->
-	makeImage' phdvc device \bimg'@(Vk.Img.BindedNew obimg') mi' ->
+	makeImage' phdvc device \bimg'@(Vk.Img.BindedNew obimg') _mi' ->
 	makeBuffer phdvc device screenWidth screenHeight \b bm -> do
 		makeImageView device (Vk.Img.Binded obimg') \iv ->
---		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
 			makeCommandBufferEtc device graphicsQueueFamilyIndex \gq cp -> do
 				makeCommandBuffer device gq cp \cb -> do
-				-- print cb
 					let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
 							Vk.RenderPass.beginInfoNext = Nothing,
 							Vk.RenderPass.beginInfoRenderPass = rp,
@@ -166,23 +158,13 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 				transitionImageLayout device gq cp bimg'
 					Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
 				copyBufferToImage device gq cp bimg' b screenWidth screenHeight
---				transitionImageLayout device gq cp (Vk.Img.BindedNew obimg)
---					Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
---				copyBufferToImage device gq cp (Vk.Img.BindedNew obimg) b screenWidth screenHeight
-		bs <- Vk.Memory.Image.readByteString
-			device mi Vk.Memory.M.MapFlagsZero
-		print $ BS.length bs
 		print screenWidth
 		print screenHeight
-		let	v = uncurry V.unsafeFromForeignPtr0 $ BS.toForeignPtr0 bs
-			jimg = Image
-				(fromIntegral screenWidth) (fromIntegral screenHeight) v
-		writePng "yatteiku.png" (jimg :: Image PixelRGBA8)
 		MyImage img <- Vk.Memory.read @"image-buffer" @('ObjImage MyImage "") device bm def
-		writePng "yatteiku2.png" (img :: Image PixelRGBA8)
+		writePng "yatteiku.png" (img :: Image PixelRGBA8)
 
 makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
-	(forall s scp . Vk.Queue.Q -> Vk.CommandPool.C scp -> IO a) -> IO a
+	(forall scp . Vk.Queue.Q -> Vk.CommandPool.C scp -> IO a) -> IO a
 makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
 	print graphicsQueue
@@ -221,58 +203,6 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
 			_ -> error "never occur"
-
-makeImage :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
-	(forall si sm . Vk.Img.Binded si sm -> Vk.Device.MemoryImage sm -> IO a) ->
-	IO a
-makeImage phdvc dvc f = do
-	let	imgCreateInfo = Vk.Img.CreateInfo {
-			Vk.Img.createInfoNext = Nothing,
-			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
-			Vk.Img.createInfoImageType = Vk.Img.Type2d,
-			Vk.Img.createInfoExtent =
-				Vk.C.Extent3d screenWidth screenHeight 1,
-			Vk.Img.createInfoMipLevels = 1,
-			Vk.Img.createInfoArrayLayers = 1,
-			Vk.Img.createInfoFormat = Vk.FormatR8g8b8a8Unorm,
-			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
-			Vk.Img.createInfoInitialLayout =
-				Vk.Img.LayoutUndefined,
---				Vk.Img.LayoutTransferSrcOptimal,
-			Vk.Img.createInfoUsage =
-				Vk.Img.UsageColorAttachmentBit .|.
-				Vk.Img.UsageTransferSrcBit,
-			Vk.Img.createInfoSharingMode =
-				Vk.SharingModeExclusive,
-			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
-			Vk.Img.createInfoQueueFamilyIndices = [] }
-	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
-	print memProps
-	Vk.Img.create @() dvc imgCreateInfo nil nil \image -> do
-		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
-		print imgMemReq
-		let	imgMemReqTypes =
-				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
-			memPropTypes = (fst <$>)
-				. filter ((/= zeroBits)
-					. (.&. Vk.Memory.PropertyHostVisibleBit)
-					. Vk.Memory.M.mTypePropertyFlags . snd)
-				$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
-					memProps
-			memoryTypeIndex = case filter
-				(`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
-				memPropTypes of
-				[] -> error "No available memory types"
-				i : _ -> i
-			imgMemAllocInfo = Vk.Memory.Image.AllocateInfo {
-				Vk.Memory.Image.allocateInfoNext = Nothing,
-				Vk.Memory.Image.allocateInfoMemoryTypeIndex =
-					memoryTypeIndex }
-		Vk.Memory.Image.allocate @()
-			dvc image imgMemAllocInfo nil nil \imgMem -> do
-			print imgMem
-			bimg <- Vk.Img.bindMemory dvc image imgMem
-			f bimg imgMem
 
 makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	(forall si sm .
