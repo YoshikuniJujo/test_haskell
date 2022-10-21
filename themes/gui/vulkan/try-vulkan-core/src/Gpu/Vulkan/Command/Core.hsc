@@ -64,6 +64,10 @@ foreign import ccall "vkCmdCopyBufferToImage" copyBufferToImage ::
 	CommandBuffer.C -> Buffer.B -> Image.I -> #{type VkImageLayout} ->
 	#{type uint32_t} -> Ptr Buffer.ImageCopy -> IO ()
 
+foreign import ccall "vkCmdCopyImageToBuffer" copyImageToBuffer ::
+	CommandBuffer.C -> Image.I -> #{type VkImageLayout} -> Buffer.B ->
+	#{type uint32_t} -> Ptr Buffer.ImageCopy -> IO ()
+
 foreign import ccall "vkCmdBlitImage" blitImage ::
 	CommandBuffer.C ->
 	Image.I -> #{type VkImageLayout} -> Image.I -> #{type VkImageLayout} ->
