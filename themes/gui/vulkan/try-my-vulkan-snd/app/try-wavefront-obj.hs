@@ -6,7 +6,7 @@ import System.Environment
 
 import qualified Data.ByteString as BS
 
-import Codec.Wavefront.Read
+import Codec.Wavefront.ReadOld
 
 main :: IO ()
 main = do

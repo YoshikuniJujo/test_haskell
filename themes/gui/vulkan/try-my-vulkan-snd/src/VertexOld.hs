@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Vertex where
+module VertexOld where
 
 import GHC.Generics
 import Foreign.Storable

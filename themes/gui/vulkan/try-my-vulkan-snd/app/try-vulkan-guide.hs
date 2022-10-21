@@ -145,7 +145,7 @@ import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
-import qualified Codec.Wavefront.Read as W
+import qualified Codec.Wavefront.ReadOld as W
 import Tools
 
 main :: IO ()

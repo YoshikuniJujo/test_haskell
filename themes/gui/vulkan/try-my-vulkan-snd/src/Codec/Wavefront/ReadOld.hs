@@ -4,7 +4,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Codec.Wavefront.Read (
+module Codec.Wavefront.ReadOld (
 	readVertices, readSample, WWord32, readVerticesIndices,
 	sampleVerticesIndices, tinyVerticesIndices,
 	verticesIndices,
@@ -30,7 +30,7 @@ import qualified Data.ByteString as BS
 import qualified Foreign.Storable.Generic
 
 import qualified Codec.Wavefront.Parse as Wf
-import qualified Vertex as Vtx
+import qualified VertexOld as Vtx
 import qualified Cglm
 
 verticesIndices :: FilePath -> IO (V.Vector Vtx.WVertex, V.Vector WWord32)

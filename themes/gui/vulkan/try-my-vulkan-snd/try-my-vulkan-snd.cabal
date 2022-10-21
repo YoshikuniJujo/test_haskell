@@ -32,7 +32,7 @@ library
       Cglm.Core
       Codec.Picture.Tools
       Codec.Wavefront.Parse
-      Codec.Wavefront.Read
+      Codec.Wavefront.ReadOld
       Data.Bits.Utils
       Data.HeteroList
       Data.Kind.Object
@@ -231,7 +231,7 @@ library
       TypeLevel.List
       TypeLevel.Nat
       TypeValues
-      Vertex
+      VertexOld
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:

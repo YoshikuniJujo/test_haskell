@@ -142,8 +142,8 @@ import qualified Gpu.Vulkan.Memory.Tmp as Vk.Memory
 import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
-import Vertex
-import Codec.Wavefront.Read
+import VertexOld
+import Codec.Wavefront.ReadOld
 
 import qualified Old.Gpu.Vulkan.Buffer.Atom as Vk.Buffer.Atom
 import qualified Old.Gpu.Vulkan.Descriptor.Atom as Vk.Dsc
@@ -434,7 +434,7 @@ checkValidationLayerSupport = lift do
 getRequiredExtensions :: ReaderT Global IO [Txt.Text]
 getRequiredExtensions = lift do
 	glfwExtensions <-
-		(cstringToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
+		(cstrToText `mapM`) =<< GlfwB.getRequiredInstanceExtensions
 	pure $ bool id (Vk.Ext.DebugUtils.extensionName :)
 		enableValidationLayers glfwExtensions
 

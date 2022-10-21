@@ -152,8 +152,14 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 import Tools
 -- import Vertex
-import Codec.Wavefront.Read
+-- import Codec.Wavefront.Read
 import Data.Vector.Storable.Indexing
+
+instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
+	formatOf = Vk.FormatR32g32Sfloat
+
+instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
+	formatOf = Vk.FormatR32g32b32Sfloat
 
 main :: IO ()
 main = do
