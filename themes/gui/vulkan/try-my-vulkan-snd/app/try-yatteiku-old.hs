@@ -1,7 +1,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
@@ -41,16 +40,12 @@ import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.Image.Type as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Memory.M
 import qualified Gpu.Vulkan.Memory.Image as Vk.Memory.Image
-import qualified Gpu.Vulkan.Memory as Vk.Memory
-import qualified Gpu.Vulkan.Memory.Kind as Vk.Memory.K
-import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Memory
 import qualified Gpu.Vulkan.Attachment as Vk.Attachment
 import qualified Gpu.Vulkan.Attachment.Enum as Vk.Attachment
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -124,8 +119,7 @@ runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO
 runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
 	makePipeline device rp \ppl ->
-	makeImage phdvc device \bimg mi ->
-	makeImage' phdvc device \bimg' mi' -> do
+	makeImage phdvc device \bimg mi -> do
 		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
 			makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
@@ -239,57 +233,6 @@ makeImage phdvc dvc f = do
 			dvc image imgMemAllocInfo nil nil \imgMem -> do
 			print imgMem
 			bimg <- Vk.Img.bindMemory dvc image imgMem
-			f bimg imgMem
-
-makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
-	(forall si sm .
-		Vk.Img.BindedNew si sm nm fmt ->
-		Vk.Memory.M sm '[ '(si, 'Vk.Memory.K.Image nm fmt)] -> IO a) ->
-	IO a
-makeImage' phdvc dvc f = do
-	let	imgCreateInfo = Vk.Img.CreateInfo {
-			Vk.Img.createInfoNext = Nothing,
-			Vk.Img.createInfoFlags = Vk.Img.CreateFlagsZero,
-			Vk.Img.createInfoImageType = Vk.Img.Type2d,
-			Vk.Img.createInfoExtent =
-				Vk.C.Extent3d screenWidth screenHeight 1,
-			Vk.Img.createInfoMipLevels = 1,
-			Vk.Img.createInfoArrayLayers = 1,
-			Vk.Img.createInfoFormat = Vk.FormatR8g8b8a8Unorm,
-			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
-			Vk.Img.createInfoInitialLayout =
-				Vk.Img.LayoutUndefined,
-			Vk.Img.createInfoUsage =
-				Vk.Img.UsageColorAttachmentBit,
-			Vk.Img.createInfoSharingMode =
-				Vk.SharingModeExclusive,
-			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
-			Vk.Img.createInfoQueueFamilyIndices = [] }
-	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
-	print memProps
-	Vk.Img.create @() dvc imgCreateInfo nil nil \image@(Vk.Img.I img) -> do
-		imgMemReq <- Vk.Img.getMemoryRequirements dvc image
-		print imgMemReq
-		let	imgMemReqTypes =
-				Vk.Memory.M.requirementsMemoryTypeBits imgMemReq
-			memPropTypes = (fst <$>)
-				. filter ((/= zeroBits)
-					. (.&. Vk.Memory.PropertyHostVisibleBit)
-					. Vk.Memory.M.mTypePropertyFlags . snd)
-				$ Vk.PhysicalDevice.memoryPropertiesMemoryTypes
-					memProps
-			memoryTypeIndex = case filter
-				(`Vk.Memory.M.elemTypeIndex` imgMemReqTypes)
-				memPropTypes of
-				[] -> error "No available memory types"
-				i : _ -> i
-			imgMemAllocInfo = Vk.Memory.AllocateInfo {
-				Vk.Memory.allocateInfoNext = Nothing,
-				Vk.Memory.allocateInfoMemoryTypeIndex =
-					memoryTypeIndex }
-		Vk.Memory.allocateBind @()
-			dvc (Singleton . V2 . Vk.Memory.Image . Vk.Img.INew $ img)
-			imgMemAllocInfo nil nil \(Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->

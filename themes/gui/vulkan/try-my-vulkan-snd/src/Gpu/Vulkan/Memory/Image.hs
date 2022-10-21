@@ -5,6 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Memory.Image (
+--	) where
 	allocate, M.AllocateInfo(..), readByteString) where
 
 import Foreign.Pointable
