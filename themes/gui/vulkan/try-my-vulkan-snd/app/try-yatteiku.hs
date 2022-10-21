@@ -45,6 +45,7 @@ import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Enum as Vk.CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
@@ -321,6 +322,32 @@ makeBuffer phdvc dvc wdt hgt f =
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Memory.PropertyHostVisibleBit .|.
 			Vk.Memory.PropertyHostCoherentBit ) f
+
+beginSingleTimeCommands :: forall sd sc a .
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
+	(forall s . Vk.CommandBuffer.C s '[] -> IO a) -> IO a
+beginSingleTimeCommands dvc gq cp cmd = do
+	Vk.CommandBuffer.allocateNew
+		@() dvc allocInfo \(Singleton (cb :: Vk.CommandBuffer.C s '[])) -> do
+		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfoNew {
+				Vk.submitInfoNextNew = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		Vk.CommandBuffer.begin @() @() cb beginInfo (cmd cb) <* do
+			Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.waitIdle gq
+	where
+	allocInfo :: Vk.CommandBuffer.AllocateInfoNew () sc '[ '[]]
+	allocInfo = Vk.CommandBuffer.AllocateInfoNew {
+		Vk.CommandBuffer.allocateInfoNextNew = Nothing,
+		Vk.CommandBuffer.allocateInfoCommandPoolNew = cp,
+		Vk.CommandBuffer.allocateInfoLevelNew = Vk.CommandBuffer.LevelPrimary }
+	beginInfo = Vk.CommandBuffer.M.BeginInfo {
+		Vk.CommandBuffer.beginInfoNext = Nothing,
+		Vk.CommandBuffer.beginInfoFlags = Vk.CommandBuffer.UsageOneTimeSubmitBit,
+		Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 
 createBufferImage :: Storable (IsImagePixel t) =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
