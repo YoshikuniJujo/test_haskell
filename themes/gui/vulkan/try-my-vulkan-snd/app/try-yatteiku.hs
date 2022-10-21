@@ -51,6 +51,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image.Type as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
+import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.Sample as Vk.Sample
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Memory
@@ -139,12 +140,13 @@ runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO
 runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
 	makePipeline device rp \ppl ->
-	makeImage phdvc device \bimg mi ->
-	makeImage' phdvc device \bimg' mi' ->
+	makeImage phdvc device \bimg@(Vk.Img.Binded obimg) mi ->
+	makeImage' phdvc device \bimg'@(Vk.Img.BindedNew obimg') mi' ->
 	makeBuffer phdvc device screenWidth screenHeight \b bm -> do
-		makeImageView device bimg \iv ->
+		makeImageView device (Vk.Img.Binded obimg') \iv ->
+--		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
-			makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
+			makeCommandBuffer device graphicsQueueFamilyIndex \gq cp cb -> do
 			-- print cb
 			let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
 					Vk.RenderPass.beginInfoNext = Nothing,
@@ -160,6 +162,12 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 				cb renderpassBeginInfo Vk.Subpass.ContentsInline do
 				Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
 				Vk.Cmd.draw cb 3 1 0 0
+			transitionImageLayout device gq cp bimg'
+				Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+			copyBufferToImage device gq cp bimg' b screenWidth screenHeight
+--			transitionImageLayout device gq cp (Vk.Img.BindedNew obimg)
+--				Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+--			copyBufferToImage device gq cp (Vk.Img.BindedNew obimg) b screenWidth screenHeight
 		bs <- Vk.Memory.Image.readByteString
 			device mi Vk.Memory.M.MapFlagsZero
 		print $ BS.length bs
@@ -173,7 +181,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 		writePng "yatteiku2.png" (img :: Image PixelRGBA8)
 
 makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
-	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
+	(forall s scp . Vk.Queue.Q -> Vk.CommandPool.C scp -> Vk.CommandBuffer.C s vs -> IO a) -> IO a
 makeCommandBuffer device graphicsQueueFamilyIndex f = do
 	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
 	print graphicsQueue
@@ -198,7 +206,7 @@ makeCommandBuffer device graphicsQueueFamilyIndex f = do
 		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
-					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf
+					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f graphicsQueue cmdPool cmdBuf
 				let	submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
@@ -225,8 +233,10 @@ makeImage phdvc dvc f = do
 			Vk.Img.createInfoTiling = Vk.Img.TilingLinear,
 			Vk.Img.createInfoInitialLayout =
 				Vk.Img.LayoutUndefined,
+--				Vk.Img.LayoutTransferSrcOptimal,
 			Vk.Img.createInfoUsage =
-				Vk.Img.UsageColorAttachmentBit,
+				Vk.Img.UsageColorAttachmentBit .|.
+				Vk.Img.UsageTransferSrcBit,
 			Vk.Img.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Img.createInfoSamples = Vk.Sample.Count1Bit,
@@ -276,8 +286,10 @@ makeImage' phdvc dvc f = do
 			Vk.Img.createInfoTilingNew = Vk.Img.TilingLinear,
 			Vk.Img.createInfoInitialLayoutNew =
 				Vk.Img.LayoutUndefined,
+--				Vk.Img.LayoutTransferSrcOptimal,
 			Vk.Img.createInfoUsageNew =
-				Vk.Img.UsageColorAttachmentBit,
+				Vk.Img.UsageColorAttachmentBit .|.
+				Vk.Img.UsageTransferSrcBit,
 			Vk.Img.createInfoSharingModeNew =
 				Vk.SharingModeExclusive,
 			Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
@@ -319,9 +331,74 @@ makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
 makeBuffer phdvc dvc wdt hgt f =
 	createBufferImage phdvc dvc
 		(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1) 
-		Vk.Bffr.UsageTransferSrcBit
+		Vk.Bffr.UsageTransferDstBit
 		(	Vk.Memory.PropertyHostVisibleBit .|.
 			Vk.Memory.PropertyHostCoherentBit ) f
+
+copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
+	Storable (IsImagePixel img) =>
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
+	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+	Vk.Bffr.Binded sm sb nm '[ 'ObjImage img inm]  ->
+	Word32 -> Word32 -> IO ()
+copyBufferToImage dvc gq cp img bf wdt hgt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	region :: Vk.Bffr.ImageCopy img inm
+		region = Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = isr,
+			Vk.Bffr.imageCopyImageOffset = Vk.C.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.C.Extent3d wdt hgt 1 }
+		isr = Vk.Img.M.SubresourceLayers {
+			Vk.Img.M.subresourceLayersAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.M.subresourceLayersMipLevel = 0,
+			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+			Vk.Img.M.subresourceLayersLayerCount = 1 }
+	Vk.Cmd.copyImageToBuffer
+		cb img Vk.Img.LayoutTransferSrcOptimal bf (Singleton region)
+
+transitionImageLayout :: forall sd sc si sm nm fmt .
+	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
+	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	IO ()
+transitionImageLayout dvc gq cp img olyt nlyt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+		barrier = Vk.Img.MemoryBarrier {
+			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierOldLayout = olyt,
+			Vk.Img.memoryBarrierNewLayout = nlyt,
+			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Img.memoryBarrierDstQueueFamilyIndex =
+				Vk.QueueFamily.Ignored,
+			Vk.Img.memoryBarrierImage = img,
+			Vk.Img.memoryBarrierSubresourceRange = srr,
+			Vk.Img.memoryBarrierSrcAccessMask = sam,
+			Vk.Img.memoryBarrierDstAccessMask = dam }
+		srr = Vk.Img.SubresourceRange {
+			Vk.Img.subresourceRangeAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.subresourceRangeBaseMipLevel = 0,
+			Vk.Img.subresourceRangeLevelCount = 1,
+			Vk.Img.subresourceRangeBaseArrayLayer = 0,
+			Vk.Img.subresourceRangeLayerCount = 1 }
+	Vk.Cmd.pipelineBarrier cb
+		sstg dstg zeroBits HVNil HVNil (Singleton $ V5 barrier)
+	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
+			zeroBits, Vk.AccessTransferWriteBit,
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+		(Vk.Img.LayoutTransferDstOptimal,
+			Vk.Img.LayoutShaderReadOnlyOptimal ) -> (
+			Vk.AccessTransferWriteBit, Vk.AccessShaderReadBit,
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
+		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferSrcOptimal) -> (
+			zeroBits, Vk.AccessTransferWriteBit,
+--			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit )
+		_ -> error "unsupported layout transition!"
+
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
@@ -401,7 +478,7 @@ findMemoryType phdvc flt props =
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
-type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Unorm
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
@@ -527,6 +604,7 @@ makeRenderPass dvc f = do
 				Vk.Attachment.StoreOpDontCare,
 			Vk.Attachment.descriptionInitialLayout =
 				Vk.Img.LayoutUndefined,
+--				Vk.Img.LayoutTransferSrcOptimal,
 			Vk.Attachment.descriptionFinalLayout =
 				Vk.Img.LayoutGeneral }
 		subpass0AttachmentRef = Vk.Attachment.Reference {

@@ -9,7 +9,8 @@
 module Gpu.Vulkan.Command.Middle (
 	beginRenderPass, endRenderPass, bindPipeline, bindPipelineCompute,
 	bindVertexBuffers, bindIndexBuffer, pushConstants, bindDescriptorSets,
-	draw, drawIndexed, dispatch, copyBuffer, copyBufferToImage,
+	draw, drawIndexed, dispatch, copyBuffer,
+	copyBufferToImage, copyImageToBuffer,
 	pipelineBarrier, blitImage ) where
 
 import Foreign.Marshal.Alloc
@@ -173,6 +174,17 @@ copyBufferToImage (CommandBuffer.CC (CommandBuffer.M.C _ cb))
 	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
 	lift do	(_, di) <- readIORef rdi
 		C.copyBufferToImage cb sb di dil (fromIntegral rc) prs
+
+copyImageToBuffer ::
+	CommandBuffer.CC vs -> Image.I -> Image.Layout -> Buffer.M.B ->
+	[Buffer.M.ImageCopy] -> IO ()
+copyImageToBuffer (CommandBuffer.CC (CommandBuffer.M.C _ cb))
+	(Image.I rsi) (Image.Layout sil) (Buffer.M.B db)
+	(length &&& id -> (rc, rs)) = ($ pure) $ runContT do
+	prs <- ContT $ allocaArray rc
+	lift . pokeArray prs $ Buffer.M.imageCopyToCore <$> rs
+	lift do	(_, si) <- readIORef rsi
+		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 blitImage :: CommandBuffer.CC v ->
 	Image.I -> Image.Layout -> Image.I -> Image.Layout ->
