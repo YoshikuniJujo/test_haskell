@@ -3,11 +3,14 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
 
 module Main where
 
+import Foreign.Storable
+import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.Maybe
@@ -52,6 +55,7 @@ import qualified Gpu.Vulkan.Memory.Image as Vk.Memory.Image
 import qualified Gpu.Vulkan.Memory as Vk.Memory
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Memory.K
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Memory
+import qualified Gpu.Vulkan.Memory.Tmp as Vk.Memory
 import qualified Gpu.Vulkan.Attachment as Vk.Attachment
 import qualified Gpu.Vulkan.Attachment.Enum as Vk.Attachment
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -85,6 +89,12 @@ import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
+
+import qualified Gpu.Vulkan.Buffer as Vk.Bffr
+import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
+import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
+
+import Tools
 
 screenWidth, screenHeight :: Word32
 (screenWidth, screenHeight) = (640, 480)
@@ -126,7 +136,8 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
 	makePipeline device rp \ppl ->
 	makeImage phdvc device \bimg mi ->
-	makeImage' phdvc device \bimg' mi' -> do
+	makeImage' phdvc device \bimg' mi' ->
+	makeBuffer >> do
 		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
 			makeCommandBuffer device graphicsQueueFamilyIndex \cb -> do
@@ -291,6 +302,60 @@ makeImage' phdvc dvc f = do
 			dvc (Singleton . V2 $ Vk.Memory.Image image)
 			imgMemAllocInfo nil nil \(Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
+
+makeBuffer :: IO ()
+makeBuffer = do
+	putStrLn "MAKE BUFFER"
+
+createBufferImage :: Storable (IsImagePixel t) =>
+	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
+	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t inm] ->
+		Vk.Memory.M sm '[ '(
+			sb,
+			'Vk.Memory.K.Buffer nm '[ 'ObjImage t inm])] ->
+		IO a) -> IO a
+createBufferImage p dv (r, w, h, d) usg props =
+	createBuffer p dv (ObjectLengthImage r w h d) usg props
+
+createBuffer :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
+	Vk.PhysicalDevice.P -> Vk.Device.D sd -> ObjectLength o ->
+	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[o] ->
+		Vk.Memory.M sm
+			'[ '(sb, 'Vk.Memory.K.Buffer nm '[o])] ->
+		IO a) -> IO a
+createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMemoryType p (Vk.Memory.M.requirementsMemoryTypeBits reqs) props
+	Vk.Memory.allocateBind dv (Singleton . V2 $ Vk.Memory.Buffer b)
+		(allcInfo mt) nil nil
+		$ f . \(Singleton (V2 (Vk.Memory.BufferBinded bnd))) -> bnd
+	where
+	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
+	bffrInfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = Singleton ln,
+		Vk.Bffr.createInfoUsage = usg,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	allcInfo :: Vk.Memory.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
+findMemoryType :: Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
+	IO Vk.Memory.TypeIndex
+findMemoryType phdvc flt props =
+	fromMaybe (error msg) . suitable <$> Vk.PhysicalDevice.getMemoryProperties phdvc
+	where
+	msg = "failed to find suitable memory type!"
+	suitable props1 = fst <$> find ((&&)
+		<$> (`Vk.Memory.M.elemTypeIndex` flt) . fst
+		<*> checkBits props . Vk.Memory.M.mTypePropertyFlags . snd) tps
+		where tps = Vk.PhysicalDevice.memoryPropertiesMemoryTypes props1
 
 makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->
 	(forall s . Vk.ImgView.I s -> IO a) -> IO a
