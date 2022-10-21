@@ -146,28 +146,29 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 		makeImageView device (Vk.Img.Binded obimg') \iv ->
 --		makeImageView device bimg \iv ->
 			makeFramebuffer device rp iv \fb ->
-			makeCommandBuffer device graphicsQueueFamilyIndex \gq cp cb -> do
-			-- print cb
-			let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
-					Vk.RenderPass.beginInfoNext = Nothing,
-					Vk.RenderPass.beginInfoRenderPass = rp,
-					Vk.RenderPass.beginInfoFramebuffer = fb,
-					Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
-						Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-						Vk.C.rect2dExtent = Vk.C.Extent2d
-							screenWidth screenHeight
-						},
-					Vk.RenderPass.beginInfoClearValues = HVNil }
-			Vk.Cmd.beginRenderPass @() @'[]
-				cb renderpassBeginInfo Vk.Subpass.ContentsInline do
-				Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
-				Vk.Cmd.draw cb 3 1 0 0
-			transitionImageLayout device gq cp bimg'
-				Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
-			copyBufferToImage device gq cp bimg' b screenWidth screenHeight
---			transitionImageLayout device gq cp (Vk.Img.BindedNew obimg)
---				Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
---			copyBufferToImage device gq cp (Vk.Img.BindedNew obimg) b screenWidth screenHeight
+			makeCommandBufferEtc device graphicsQueueFamilyIndex \gq cp -> do
+				makeCommandBuffer device gq cp \cb -> do
+				-- print cb
+					let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
+							Vk.RenderPass.beginInfoNext = Nothing,
+							Vk.RenderPass.beginInfoRenderPass = rp,
+							Vk.RenderPass.beginInfoFramebuffer = fb,
+							Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
+								Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+								Vk.C.rect2dExtent = Vk.C.Extent2d
+									screenWidth screenHeight
+								},
+							Vk.RenderPass.beginInfoClearValues = HVNil }
+					Vk.Cmd.beginRenderPass @() @'[]
+						cb renderpassBeginInfo Vk.Subpass.ContentsInline do
+						Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
+						Vk.Cmd.draw cb 3 1 0 0
+				transitionImageLayout device gq cp bimg'
+					Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+				copyBufferToImage device gq cp bimg' b screenWidth screenHeight
+--				transitionImageLayout device gq cp (Vk.Img.BindedNew obimg)
+--					Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
+--				copyBufferToImage device gq cp (Vk.Img.BindedNew obimg) b screenWidth screenHeight
 		bs <- Vk.Memory.Image.readByteString
 			device mi Vk.Memory.M.MapFlagsZero
 		print $ BS.length bs
@@ -180,9 +181,9 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 		MyImage img <- Vk.Memory.read @"image-buffer" @('ObjImage MyImage "") device bm def
 		writePng "yatteiku2.png" (img :: Image PixelRGBA8)
 
-makeCommandBuffer :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
-	(forall s scp . Vk.Queue.Q -> Vk.CommandPool.C scp -> Vk.CommandBuffer.C s vs -> IO a) -> IO a
-makeCommandBuffer device graphicsQueueFamilyIndex f = do
+makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
+	(forall s scp . Vk.Queue.Q -> Vk.CommandPool.C scp -> IO a) -> IO a
+makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
 	print graphicsQueue
 	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo ()
@@ -193,8 +194,12 @@ makeCommandBuffer device graphicsQueueFamilyIndex f = do
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil
-			\(cmdPool :: Vk.CommandPool.C s) -> do
-		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () s
+			\(cmdPool :: Vk.CommandPool.C s) -> f graphicsQueue cmdPool
+
+makeCommandBuffer :: forall sd scp vs a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
+	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
+makeCommandBuffer device graphicsQueue cmdPool f = do
+		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () scp
 			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfo {
 				Vk.CommandBuffer.allocateInfoNext = Nothing,
 				Vk.CommandBuffer.allocateInfoCommandPool =
@@ -206,7 +211,7 @@ makeCommandBuffer device graphicsQueueFamilyIndex f = do
 		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
-					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f graphicsQueue cmdPool cmdBuf
+					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf
 				let	submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
@@ -395,8 +400,8 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Ppl.StageTransferBit, Vk.Ppl.StageFragmentShaderBit )
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferSrcOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
---			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
-			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit )
+			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
+--			Vk.Ppl.StageTransferBit, Vk.Ppl.StageTransferBit )
 		_ -> error "unsupported layout transition!"
 
 
