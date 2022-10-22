@@ -673,7 +673,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] -> IO a) -> IO a
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (V14 pplInfo :...: HVNil)
 			nil nil \(V2 gpl :...: HVNil) -> f gpl
@@ -683,7 +683,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] -> IO ()
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
@@ -694,7 +694,7 @@ mkGraphicsPipelineCreateInfo ::
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
-			'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] )
+			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		() () () () () () () () '(sl, '[AtomUbo sdsl]) sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = Nothing,
@@ -1489,7 +1489,7 @@ recordCommandBuffer :: forall scb sr scfmt sf sl sg sm sb nm sm' sb' nm' sdsc sp
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] ->
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16 ""] ->
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
@@ -1532,7 +1532,7 @@ mainLoop :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] ->
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
@@ -1567,7 +1567,7 @@ runLoop :: (
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] ->
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
@@ -1599,7 +1599,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] ->
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16 ""] ->
@@ -1676,7 +1676,7 @@ catchAndRecreate :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] ->
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
@@ -1702,7 +1702,7 @@ recreateSwapChainEtc :: (
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Pos), '(1, Cglm.Vec3), '(2, TexCoord)] ->
+		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
@@ -1731,29 +1731,29 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 vertices :: [Vertex]
 vertices = [
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. 0 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. 0 :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL),
 
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. (- 0.5) :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 0.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. (- 0.5) :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0.0 :. 0.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ 0.5 :. 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
+		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 0.0 :. 1.0 :. NilL),
 	Vertex (Pos . Cglm.Vec3 $ (- 0.5) :. 0.5 :. (- 0.5) :. NilL)
-		(Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
+		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
 
 indices :: [Word16]

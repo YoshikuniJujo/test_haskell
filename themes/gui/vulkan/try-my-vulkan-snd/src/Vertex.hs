@@ -16,15 +16,15 @@ import qualified Foreign.Storable.Generic
 
 data Vertex = Vertex {
 	vertexPos :: Pos,
-	vertexColor :: Cglm.Vec3,
+	vertexColor :: Color,
 	vertexTexCoord :: TexCoord }
-	deriving (Show, Generic)
+	deriving (Show, Eq, Ord, Generic)
 
 newtype Pos = Pos Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 newtype TexCoord = TexCoord Cglm.Vec2
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
 instance Storable Vertex where
 	sizeOf = Foreign.Storable.Generic.gSizeOf
@@ -35,7 +35,7 @@ instance Storable Vertex where
 instance SizeAlignmentList Vertex
 
 instance SizeAlignmentListUntil Pos Vertex
-instance SizeAlignmentListUntil Cglm.Vec3 Vertex
+instance SizeAlignmentListUntil Color Vertex
 instance SizeAlignmentListUntil TexCoord Vertex
 
 instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
@@ -45,3 +45,6 @@ instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
 	formatOf = Vk.FormatR32g32b32Sfloat
 
 instance Foreign.Storable.Generic.G Vertex where
+
+newtype Color = Color Cglm.Vec3
+	deriving (Show, Eq, Ord, Storable, Vk.Ppl.VertexInputSt.Formattable)
