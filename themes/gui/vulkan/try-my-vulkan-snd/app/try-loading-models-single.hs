@@ -157,13 +157,13 @@ import Data.Vector.Storable.Indexing
 
 main :: IO ()
 main = do
-	mdlfp : _ <- getArgs
+	txfp : mdlfp : _ <- getArgs
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
 			then setupDebugMessenger inst
-				$ const $ run mdlfp win inst g
-			else run mdlfp win inst g
+				$ const $ run txfp mdlfp win inst g
+			else run txfp mdlfp win inst g
 
 type FramebufferResized = IORef Bool
 
@@ -262,8 +262,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: FilePath -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run mdlfp w inst g =
+run :: FilePath -> FilePath -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
+run txfp mdlfp w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -279,19 +279,19 @@ run mdlfp w inst g =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
-	createTextureImage phdv dv gq cp \tximg ->
+	createTextureImage phdv dv gq cp txfp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
-	loadModel mdlfp >>
-	createVertexBuffer phdv dv gq cp \vb ->
-	createIndexBuffer phdv dv gq cp \ib ->
+	loadModel mdlfp >>= \(vtcs, idcs) ->
+	createVertexBuffer phdv dv gq cp vtcs \vb ->
+	createIndexBuffer phdv dv gq cp idcs \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
 	createDescriptorSet dv dscp ub tximgvw txsmplr dscslyt >>= \ubds ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
-	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb sos tm
+	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw idcs vb ib ubm ubds cb sos tm
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
@@ -947,12 +947,12 @@ checkFeatures :: Vk.FormatFeatureFlags -> Vk.FormatFeatureFlags -> Bool
 checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 
 createTextureImage ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> FilePath -> (
 		forall si sm .
 		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
-createTextureImage phdvc dvc gq cp f = do
-	img <- readRgba8 "../../../../files/images/texture.jpg"
+createTextureImage phdvc dvc gq cp fp f = do
+	img <- readRgba8 fp
 	print . V.length $ imageData img
 	let	wdt = fromIntegral $ imageWidth img
 		hgt = fromIntegral $ imageHeight img
@@ -1209,7 +1209,7 @@ createTextureSampler phdv dvc f = do
 			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
 	Vk.Smplr.create @() dvc samplerInfo nil nil f
 
-loadModel :: FilePath -> IO ()
+loadModel :: FilePath -> IO (V.Vector Vertex, V.Vector Word32)
 loadModel fp = do
 	(vtcs, idcs) <- verticesIndices fp
 	let	(vtcs', idcs') = indexingVector vtcs
@@ -1218,15 +1218,17 @@ loadModel fp = do
 	putStrLn $ "vtcs': " ++ show (V.length (vtcs' :: V.Vector Vertex))
 	putStrLn $ "idcs : " ++ show (V.length (idcs :: V.Vector WWord32))
 	putStrLn $ "idcs': " ++ show (V.length (idcs':: V.Vector WWord32))
+	pure (vtcs', V.map Foreign.Storable.Generic.unWrap idcs')
 
 createVertexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Vertex ->
+	(forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] -> IO a ) -> IO a
-createVertexBuffer phdvc dvc gq cp f =
-	createBufferList phdvc dvc (length vertices)
+createVertexBuffer phdvc dvc gq cp vtcs f =
+	createBufferList phdvc dvc (V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList phdvc dvc (length vertices)
+	createBufferList phdvc dvc (V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1236,18 +1238,18 @@ createVertexBuffer phdvc dvc gq cp f =
 				'Vk.Dvc.Mem.ImageBuffer.K.Buffer "vertex-buffer"
 					'[ 'List Vertex ""] ) ]) -> do
 	Vk.Dvc.Mem.ImageBuffer.write
-		@"vertex-buffer" @('List Vertex "") dvc bm' zeroBits vertices
+		@"vertex-buffer" @('List Vertex "") dvc bm' zeroBits vtcs
 	copyBuffer dvc gq cp b' b
 	f b
 
 createIndexBuffer :: Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ 'List Word16 ""] -> IO a) -> IO a
-createIndexBuffer phdvc dvc gq cp f =
-	createBufferList phdvc dvc (length indices)
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> V.Vector Word32 -> (forall sm sb .
+		Vk.Bffr.Binded sm sb nm '[ 'List Word32 ""] -> IO a) -> IO a
+createIndexBuffer phdvc dvc gq cp idcs f =
+	createBufferList phdvc dvc (V.length idcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageIndexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBufferList phdvc dvc (length indices)
+	createBufferList phdvc dvc (V.length idcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
@@ -1255,9 +1257,9 @@ createIndexBuffer phdvc dvc gq cp f =
 			(bm' :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 				sb,
 				'Vk.Dvc.Mem.ImageBuffer.K.Buffer "index-buffer"
-					'[ 'List Word16 ""] ) ]) -> do
+					'[ 'List Word32 ""] ) ]) -> do
 	Vk.Dvc.Mem.ImageBuffer.write
-		@"index-buffer" @('List Word16 "") dvc bm' zeroBits indices
+		@"index-buffer" @('List Word32 "") dvc bm' zeroBits idcs
 	copyBuffer dvc gq cp b' b
 	f b
 
@@ -1506,20 +1508,21 @@ recordCommandBuffer :: forall scb sr scfmt sf sl sg sm sb nm sm' sb' nm' sdsc sp
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
+	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word32 ""] ->
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
 	IO ()
-recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
+recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.CmdBffr.begin @() @() cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
-	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @_ @Word16 ib
+	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @_ @Word32 ib
 	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppllyt
 		(Singleton $ Vk.Cmd.DescriptorSet ubds) []
-	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
+	Vk.Cmd.drawIndexed cb (fromIntegral $ V.length idcs) 1 0 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
@@ -1555,8 +1558,9 @@ mainLoop :: (
 	Vk.Dvc.Mem.ImageBuffer.M
 		sdm '[ '(sdi, 'Vk.Dvc.Mem.ImageBuffer.K.Image "depth-buffer" dptfmt)] ->
 	Vk.ImgVw.INew dptfmt "depth-buffer" sdiv ->
+	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word32 ""] ->
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
@@ -1564,13 +1568,13 @@ mainLoop :: (
 	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw vb ib ubm ubds cb iasrfsifs tm0 = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw idcs vb ib ubm ubds cb iasrfsifs tm0 = do
 	($ ext0) $ fix \loop ext -> do
 		Glfw.pollEvents
 		tm <- getCurrentTime
 		runLoop w sfc phdvc qfis dvc gq pq
 			sc g ext scivs
-			rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs vb ib ubm ubds cb iasrfsifs
+			rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs idcs vb ib ubm ubds cb iasrfsifs
 			(realToFrac $ tm `diffUTCTime` tm0) loop
 	Vk.Dvc.waitIdle dvc
 
@@ -1590,8 +1594,9 @@ runLoop :: (
 	Vk.ImgVw.INew dptfmt "depth-buffer" sdiv ->
 	Vk.CmdPool.C sc ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
+	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word32 ""] ->
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
@@ -1600,10 +1605,10 @@ runLoop :: (
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs vb ib ubm ubds cb iasrfsifs tm loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs idcs vb ib ubm ubds cb iasrfsifs tm loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs
 		rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs loop
-		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm
+		$ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib ubm ubds cb iasrfsifs tm
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapChainEtc
@@ -1617,15 +1622,16 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
+	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word16 ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ 'List Word32 ""] ->
 	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
 			'[ 'Atom UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
-drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
+drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
@@ -1633,7 +1639,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
 	heteroVarListIndex fbs imgIdx \fb ->
-		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib ubds
+		recordCommandBuffer cb rp fb ext ppllyt gpl idcs vb ib ubds
 	updateUniformBuffer dvc ubm ext tm
 	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
@@ -1772,7 +1778,7 @@ vertices = [
 		(Color . Cglm.Vec3 $ 1.0 :. 1.0 :. 1.0 :. NilL)
 		(TexCoord . Cglm.Vec2 $ 1.0 :. 1.0 :. NilL) ]
 
-indices :: [Word16]
+indices :: [Word32]
 indices = [
 	0, 1, 2, 2, 3, 0,
 	4, 5, 6, 6, 7, 4 ]

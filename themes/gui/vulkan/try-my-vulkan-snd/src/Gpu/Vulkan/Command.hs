@@ -134,6 +134,7 @@ bindIndexBuffer (CommandBuffer.C cb) ib =
 class IsIndexType a where indexType :: IndexType
 
 instance IsIndexType Word16 where indexType = IndexTypeUint16
+instance IsIndexType Word32 where indexType = IndexTypeUint32
 
 copyBuffer :: forall (ass :: [[Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
