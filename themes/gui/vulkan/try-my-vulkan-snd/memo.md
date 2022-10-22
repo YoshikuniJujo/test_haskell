@@ -52,3 +52,18 @@ tmp
 ```
 layout (binding = 1) uniform foo
 ```
+
+app
+---
+
+* try-triangle-single.hs
+* try-next-triangle.hs
+* try-rectangle-single.hs
+* try-rectangle.hs
+* try-texture-single.hs
+* try-texture.hs
+* try-depth-buffering-single.hs
+* try-depth-buffering.hs
+* try-loading-models-single.hs
+* try-generating-mipmaps.hs
+* try-multisampling.hs

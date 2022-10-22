@@ -231,6 +231,7 @@ library
       TypeLevel.List
       TypeLevel.Nat
       TypeValues
+      Vertex
       VertexOld
   other-modules:
       Paths_try_my_vulkan_snd

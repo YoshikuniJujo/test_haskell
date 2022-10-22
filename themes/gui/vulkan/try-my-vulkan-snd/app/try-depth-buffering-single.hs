@@ -94,7 +94,6 @@ import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
@@ -151,6 +150,7 @@ import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 import Tools
+import Vertex
 
 main :: IO ()
 main = do
@@ -824,9 +824,9 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil _ f = f HVNil
-createFramebuffers dvc sce rp (iv :...: ivs) div f =
-	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv div) nil nil \fb ->
-	createFramebuffers dvc sce rp ivs div \fbs -> f (fb :...: fbs)
+createFramebuffers dvc sce rp (iv :...: ivs) divw f =
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv divw) nil nil \fb ->
+	createFramebuffers dvc sce rp ivs divw \fbs -> f (fb :...: fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
@@ -839,10 +839,10 @@ instance RecreateFramebuffers '[] '[] where
 
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :...: scivs) div (fb :...: fbs) =
+	recreateFramebuffers dvc sce rp (sciv :...: scivs) divw (fb :...: fbs) =
 		Vk.Frmbffr.recreateNew dvc
-			(mkFramebufferCreateInfo sce rp sciv div) nil nil fb >>
-		recreateFramebuffers dvc sce rp scivs div fbs
+			(mkFramebufferCreateInfo sce rp sciv divw) nil nil fb >>
+		recreateFramebuffers dvc sce rp scivs divw fbs
 
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
@@ -1727,38 +1727,6 @@ waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
 		Glfw.waitEvents *> Glfw.getFramebufferSize win
 	where zero = uncurry (||) . ((== 0) *** (== 0))
-
-data Vertex = Vertex {
-	vertexPos :: Pos,
-	vertexColor :: Cglm.Vec3,
-	vertexTexCoord :: TexCoord }
-	deriving (Show, Generic)
-
-newtype Pos = Pos Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-newtype TexCoord = TexCoord Cglm.Vec2
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-instance Storable Vertex where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
-
-instance SizeAlignmentList Vertex
-
-instance SizeAlignmentListUntil Pos Vertex
-instance SizeAlignmentListUntil Cglm.Vec3 Vertex
-instance SizeAlignmentListUntil TexCoord Vertex
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec2 where
-	formatOf = Vk.FormatR32g32Sfloat
-
-instance Vk.Ppl.VertexInputSt.Formattable Cglm.Vec3 where
-	formatOf = Vk.FormatR32g32b32Sfloat
-
-instance Foreign.Storable.Generic.G Vertex where
 
 vertices :: [Vertex]
 vertices = [
