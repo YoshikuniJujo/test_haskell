@@ -898,7 +898,7 @@ createDepthResources phdvc dvc gq cp ext f = do
 			createImageView @fmt
 				dvc dptImg Vk.Img.AspectDepthBit 1 \dptImgVw -> do
 			transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
-				Vk.Img.LayoutDepthStencilAttachmentOptimal
+				Vk.Img.LayoutDepthStencilAttachmentOptimal 1
 			f dptImg dptImgMem dptImgVw
 
 recreateDepthResources :: Vk.T.FormatToValue fmt =>
@@ -917,7 +917,7 @@ recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
 	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw 1
 	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
-		Vk.Img.LayoutDepthStencilAttachmentOptimal
+		Vk.Img.LayoutDepthStencilAttachmentOptimal 1
 
 findDepthFormat :: Vk.PhDvc.P -> IO Vk.Format
 findDepthFormat phdvc = findSupportedFormat phdvc
@@ -977,11 +977,11 @@ createTextureImage phdvc dvc gq cp fp f = do
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
-				Vk.Img.LayoutTransferDstOptimal
+				Vk.Img.LayoutTransferDstOptimal 1
 			copyBufferToImage dvc gq cp sb tximg wdt hgt
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutTransferDstOptimal
-				Vk.Img.LayoutShaderReadOnlyOptimal
+				Vk.Img.LayoutShaderReadOnlyOptimal 1
 			f tximg
 
 newtype MyImage = MyImage (Image PixelRGBA8)
@@ -1104,8 +1104,9 @@ imageMemoryInfoBinded pd dvc prps img = do
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	Word32 ->
 	IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
+transitionImageLayout dvc gq cp img olyt nlyt mplvs =
 	beginSingleTimeCommands dvc gq cp \cb -> do
 	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
 		barrier = Vk.Img.MemoryBarrier {
@@ -1123,7 +1124,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 		srr = Vk.Img.SubresourceRange {
 			Vk.Img.subresourceRangeAspectMask = asps,
 			Vk.Img.subresourceRangeBaseMipLevel = 0,
-			Vk.Img.subresourceRangeLevelCount = 1,
+			Vk.Img.subresourceRangeLevelCount = mplvs,
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
