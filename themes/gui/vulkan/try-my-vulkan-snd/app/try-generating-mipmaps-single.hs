@@ -280,7 +280,7 @@ run txfp mdlfp w inst g =
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
 	createTextureImage phdv dv gq cp txfp \tximg ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit \tximgvw ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit 1 \tximgvw ->
 	createTextureSampler phdv dv \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
@@ -504,14 +504,14 @@ createImageViews :: Vk.T.FormatToValue fmt =>
 	(forall si . HeteroVarList (Vk.ImgVw.INew fmt nm) si -> IO a) -> IO a
 createImageViews _dvc [] f = f HVNil
 createImageViews dvc (sci : scis) f =
-	createImageView dvc sci Vk.Img.AspectColorBit \sciv ->
+	createImageView dvc sci Vk.Img.AspectColorBit 1 \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc [] HVNil = pure ()
 recreateImageViews dvc (sci : scis) (iv :...: ivs) =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit) nil nil iv >>
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil nil iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -519,22 +519,22 @@ recreateImageViews _ _ _ =
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
-	Vk.Img.AspectFlags ->
+	Vk.Img.AspectFlags -> Word32 ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
-createImageView dvc timg asps f =
-	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps) nil nil f
+createImageView dvc timg asps mplvs f =
+	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps mplvs) nil nil f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
 	Vk.Img.AspectFlags ->
-	Vk.ImgVw.INew ivfmt nm s -> IO ()
-recreateImageView dvc timg asps iv =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps) nil nil iv
+	Vk.ImgVw.INew ivfmt nm s -> Word32 -> IO ()
+recreateImageView dvc timg asps iv mplvs =
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps mplvs) nil nil iv
 
 mkImageViewCreateInfo ::
-	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags -> Word32 ->
 	Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
-mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
+mkImageViewCreateInfo sci asps mplvs = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = Nothing,
 	Vk.ImgVw.createInfoFlagsNew = zeroBits,
 	Vk.ImgVw.createInfoImageNew = sci,
@@ -548,7 +548,7 @@ mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
 	subresourceRange = Vk.Img.M.SubresourceRange {
 		Vk.Img.M.subresourceRangeAspectMask = asps,
 		Vk.Img.M.subresourceRangeBaseMipLevel = 0,
-		Vk.Img.M.subresourceRangeLevelCount = 1,
+		Vk.Img.M.subresourceRangeLevelCount = mplvs,
 		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Img.M.subresourceRangeLayerCount = 1 }
 
@@ -896,7 +896,7 @@ createDepthResources phdvc dvc gq cp ext f = do
 			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 			Vk.Mem.PropertyDeviceLocalBit \dptImg dptImgMem ->
 			createImageView @fmt
-				dvc dptImg Vk.Img.AspectDepthBit \dptImgVw -> do
+				dvc dptImg Vk.Img.AspectDepthBit 1 \dptImgVw -> do
 			transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
 				Vk.Img.LayoutDepthStencilAttachmentOptimal
 			f dptImg dptImgMem dptImgVw
@@ -915,7 +915,7 @@ recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
-	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw
+	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw 1
 	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal
 
