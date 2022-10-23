@@ -963,7 +963,9 @@ createTextureImage phdvc dvc gq cp fp f = do
 			$ max (fromIntegral wdt_) (fromIntegral hgt_)
 	print (mipLevels :: Word32)
 	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt 1 Vk.Img.TilingOptimal
-		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
+		(	Vk.Img.UsageTransferSrcBit .|.
+			Vk.Img.UsageTransferDstBit .|.
+			Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
 		createBufferImage @MyImage @_ phdvc dvc
 			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
