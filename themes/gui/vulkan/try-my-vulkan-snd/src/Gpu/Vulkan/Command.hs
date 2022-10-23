@@ -37,6 +37,7 @@ import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image as Image
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
+import qualified Gpu.Vulkan.Image.Middle as Image.M
 
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
@@ -205,3 +206,11 @@ instance (
 	imageCopyListToMiddle bf (ic :...: ics) =
 		Buffer.imageCopyToMiddle @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
 		imageCopyListToMiddle bf ics
+
+blitImage :: CommandBuffer.C sc vs ->
+	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
+	Image.BindedNew dsi dsm dnm dfmt -> Image.Layout ->
+	[Image.M.Blit] -> Filter -> IO ()
+blitImage (CommandBuffer.C cb)
+	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
+	M.blitImage cb src slyt dst dlyt blts fltr
