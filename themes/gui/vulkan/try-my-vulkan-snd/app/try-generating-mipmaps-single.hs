@@ -991,9 +991,39 @@ createTextureImage phdvc dvc gq cp fp f = do
 generateMipmaps :: forall sd scp si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp ->
 	Vk.Img.BindedNew si sm nm fmt -> Word32 -> Int32 -> Int32 -> IO ()
-generateMipmaps dvc gq cp img mlvs wdt hgt = beginSingleTimeCommands dvc gq cp \cb ->
+generateMipmaps dvc gq cp img mlvs wdt hgt = beginSingleTimeCommands dvc gq cp \cb -> do
 	for_ ([1 .. mlvs - 1] `zip` (halves wdt `zip` halves hgt)) \(i, (w, h)) ->
-	generateMipmap1 cb img i w h
+		generateMipmap1 cb img i w h
+	Vk.Cmd.pipelineBarrier cb
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
+		HVNil HVNil (Singleton $ V5 barrier)
+	where
+	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier = mipmapBarrier
+		Vk.AccessTransferWriteBit Vk.AccessShaderReadBit
+		Vk.Img.LayoutTransferDstOptimal
+		Vk.Img.LayoutShaderReadOnlyOptimal img (mlvs - 1)
+
+mipmapBarrier :: Vk.AccessFlags -> Vk.AccessFlags ->
+	Vk.Img.Layout -> Vk.Img.Layout -> Vk.Img.BindedNew si sm nm fmt ->
+	Word32 -> Vk.Img.MemoryBarrier n si sm nm fmt
+mipmapBarrier sam dam olyt nlyt img i = Vk.Img.MemoryBarrier {
+	Vk.Img.memoryBarrierNext = Nothing,
+	Vk.Img.memoryBarrierSrcAccessMask = sam,
+	Vk.Img.memoryBarrierDstAccessMask = dam,
+	Vk.Img.memoryBarrierOldLayout = olyt,
+	Vk.Img.memoryBarrierNewLayout = nlyt,
+	Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QueueFamily.Ignored,
+	Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QueueFamily.Ignored,
+	Vk.Img.memoryBarrierImage = img,
+	Vk.Img.memoryBarrierSubresourceRange = srr }
+	where
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = i - 1,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
 
 generateMipmap1 :: forall scb vs si sm nm fmt . Vk.CmdBffr.C scb vs ->
 	Vk.Img.BindedNew si sm nm fmt -> Word32 -> Int32 -> Int32 -> IO ()
@@ -1005,28 +1035,18 @@ generateMipmap1 cb img i w h = do
 		img Vk.Img.LayoutTransferSrcOptimal
 		img Vk.Img.LayoutTransferDstOptimal
 		[blit] Vk.FilterLinear
+	Vk.Cmd.pipelineBarrier cb
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit zeroBits
+		HVNil HVNil . Singleton $ V5 barrier''
 	where
-	barrier sam dam olyt nlyt = Vk.Img.MemoryBarrier {
-		Vk.Img.memoryBarrierNext = Nothing,
-		Vk.Img.memoryBarrierSrcAccessMask = sam,
-		Vk.Img.memoryBarrierDstAccessMask = dam,
-		Vk.Img.memoryBarrierOldLayout = olyt,
-		Vk.Img.memoryBarrierNewLayout = nlyt,
-		Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-			Vk.QueueFamily.Ignored,
-		Vk.Img.memoryBarrierDstQueueFamilyIndex =
-			Vk.QueueFamily.Ignored,
-		Vk.Img.memoryBarrierImage = img,
-		Vk.Img.memoryBarrierSubresourceRange = srr }
-	srr = Vk.Img.SubresourceRange {
-		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
-		Vk.Img.subresourceRangeBaseMipLevel = i - 1,
-		Vk.Img.subresourceRangeLevelCount = 1,
-		Vk.Img.subresourceRangeBaseArrayLayer = 0,
-		Vk.Img.subresourceRangeLayerCount = 1 }
 	barrier' :: Vk.Img.MemoryBarrier () si sm nm fmt
-	barrier' = barrier Vk.AccessTransferWriteBit Vk.AccessTransferReadBit
+	barrier' = mipmapBarrier Vk.AccessTransferWriteBit Vk.AccessTransferReadBit
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+		img i
+	barrier'' :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier'' = mipmapBarrier Vk.AccessTransferReadBit Vk.AccessShaderReadBit
+		Vk.Img.LayoutTransferSrcOptimal Vk.Img.LayoutShaderReadOnlyOptimal
+		img i
 	blit = Vk.Img.M.Blit {
 		Vk.Img.M.blitSrcSubresource = bssr,
 		Vk.Img.M.blitSrcOffsetFrom = Vk.C.Offset3d 0 0 0,
