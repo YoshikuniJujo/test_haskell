@@ -281,9 +281,9 @@ run txfp mdlfp w inst g =
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
-	createTextureImage phdv dv gq cp txfp \tximg ->
-	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit 1 \tximgvw ->
-	createTextureSampler phdv dv 1 \txsmplr ->
+	createTextureImage phdv dv gq cp txfp \tximg mplvs ->
+	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs \tximgvw ->
+	createTextureSampler phdv dv mplvs \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
 	createIndexBuffer phdv dv gq cp idcs \ib ->
@@ -951,7 +951,7 @@ checkFeatures wntd ftrs = wntd .&. ftrs == wntd
 createTextureImage ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> FilePath -> (
 		forall si sm .
-		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
+		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Srgb -> Word32 -> IO a ) ->
 	IO a
 createTextureImage phdvc dvc gq cp fp f = do
 	img <- readRgba8 fp
@@ -964,7 +964,7 @@ createTextureImage phdvc dvc gq cp fp f = do
 		mipLevels :: Word32 = floor @Double . logBase 2
 			$ max (fromIntegral wdt_) (fromIntegral hgt_)
 	print (mipLevels :: Word32)
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt 1 Vk.Img.TilingOptimal
+	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt mipLevels Vk.Img.TilingOptimal
 		(	Vk.Img.UsageTransferSrcBit .|.
 			Vk.Img.UsageTransferDstBit .|.
 			Vk.Img.UsageSampledBit)
@@ -981,13 +981,10 @@ createTextureImage phdvc dvc gq cp fp f = do
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
-				Vk.Img.LayoutTransferDstOptimal 1
+				Vk.Img.LayoutTransferDstOptimal mipLevels
 			copyBufferToImage dvc gq cp sb tximg wdt hgt
-			transitionImageLayout dvc gq cp tximg
-				Vk.Img.LayoutTransferDstOptimal
-				Vk.Img.LayoutShaderReadOnlyOptimal 1
-			checkImageFilterLinearBit @'Vk.T.FormatR8g8b8a8Srgb phdvc
-			f tximg
+			generateMipmaps phdvc dvc gq cp tximg mipLevels (fromIntegral wdt_) (fromIntegral hgt_)
+			f tximg mipLevels
 
 checkImageFilterLinearBit ::
 	forall fmt . Vk.T.FormatToValue fmt => Vk.PhDvc.P -> IO ()
