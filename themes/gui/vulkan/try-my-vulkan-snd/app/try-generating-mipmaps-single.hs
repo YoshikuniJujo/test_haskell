@@ -283,7 +283,7 @@ run txfp mdlfp w inst g =
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
 	createTextureImage phdv dv gq cp txfp \tximg ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit 1 \tximgvw ->
-	createTextureSampler phdv dv \txsmplr ->
+	createTextureSampler phdv dv 1 \txsmplr ->
 	loadModel mdlfp >>= \(vtcs, idcs) ->
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
 	createIndexBuffer phdv dv gq cp idcs \ib ->
@@ -1286,9 +1286,9 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 	Vk.Cmd.copyBufferToImage
 		cb bf img Vk.Img.LayoutTransferDstOptimal (Singleton region)
 
-createTextureSampler ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler phdv dvc f = do
+createTextureSampler :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
+	Word32 -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTextureSampler phdv dvc mplvs f = do
 	prp <- Vk.PhDvc.getProperties phdv
 	print . Vk.PhDvc.limitsMaxSamplerAnisotropy $ Vk.PhDvc.propertiesLimits prp
 	let	samplerInfo = Vk.Smplr.M.CreateInfo {
@@ -1312,7 +1312,7 @@ createTextureSampler phdv dvc f = do
 			Vk.Smplr.M.createInfoCompareEnable = False,
 			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
 			Vk.Smplr.M.createInfoMinLod = 0,
-			Vk.Smplr.M.createInfoMaxLod = 0,
+			Vk.Smplr.M.createInfoMaxLod = fromIntegral mplvs,
 			Vk.Smplr.M.createInfoBorderColor =
 				Vk.BorderColorIntOpaqueBlack,
 			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
