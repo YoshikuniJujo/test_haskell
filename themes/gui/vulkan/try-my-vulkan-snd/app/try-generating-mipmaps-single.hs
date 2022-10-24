@@ -986,18 +986,33 @@ createTextureImage phdvc dvc gq cp fp f = do
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutTransferDstOptimal
 				Vk.Img.LayoutShaderReadOnlyOptimal 1
+			checkImageFilterLinearBit @'Vk.T.FormatR8g8b8a8Srgb phdvc
 			f tximg
 
-generateMipmaps :: forall sd scp si sm nm fmt .
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp ->
+checkImageFilterLinearBit ::
+	forall fmt . Vk.T.FormatToValue fmt => Vk.PhDvc.P -> IO ()
+checkImageFilterLinearBit phdvc = do
+	let	fmt = Vk.T.formatToValue @fmt
+	formatProperties <- Vk.PhDvc.getFormatProperties phdvc fmt
+	let	bt = Vk.formatPropertiesOptimalTilingFeatures
+				formatProperties .&.
+			Vk.FormatFeatureSampledImageFilterLinearBit
+	when (bt == zeroBits) $ error
+		"texture image format does not support linear blitting!"
+
+generateMipmaps :: forall sd scp si sm nm fmt . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp ->
 	Vk.Img.BindedNew si sm nm fmt -> Word32 -> Int32 -> Int32 -> IO ()
-generateMipmaps dvc gq cp img mlvs wdt hgt = beginSingleTimeCommands dvc gq cp \cb -> do
-	for_ ([1 .. mlvs - 1] `zip` (halves wdt `zip` halves hgt)) \(i, (w, h)) ->
-		generateMipmap1 cb img i w h
-	Vk.Cmd.pipelineBarrier cb
-		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
-		HVNil HVNil (Singleton $ V5 barrier)
+generateMipmaps phdvc dvc gq cp img mlvs wdt hgt = do
+	putStrLn "GENERATE MIPMAPS"
+	checkImageFilterLinearBit @fmt phdvc
+	beginSingleTimeCommands dvc gq cp \cb -> do
+		for_ iwhs \(i, (w, h)) -> generateMipmap1 cb img i w h
+		Vk.Cmd.pipelineBarrier cb
+			Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
+			HVNil HVNil (Singleton $ V5 barrier)
 	where
+	iwhs = [1 .. mlvs - 1] `zip` (halves wdt `zip` halves hgt)
 	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
 	barrier = mipmapBarrier
 		Vk.AccessTransferWriteBit Vk.AccessShaderReadBit
