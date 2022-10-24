@@ -23,6 +23,7 @@ import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
+import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
@@ -34,6 +35,7 @@ import Data.List hiding (singleton)
 import Data.IORef
 import Data.List.Length
 import Data.Word
+import Data.Int
 import Data.Color
 import Data.Time
 import System.Environment
@@ -986,9 +988,68 @@ createTextureImage phdvc dvc gq cp fp f = do
 				Vk.Img.LayoutShaderReadOnlyOptimal 1
 			f tximg
 
-generateMipmaps :: Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> IO ()
-generateMipmaps dvc gq cp = beginSingleTimeCommands dvc gq cp \cb -> do
-	pure ()
+generateMipmaps :: forall sd scp si sm nm fmt .
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp ->
+	Vk.Img.BindedNew si sm nm fmt -> Word32 -> Int32 -> Int32 -> IO ()
+generateMipmaps dvc gq cp img mlvs wdt hgt = beginSingleTimeCommands dvc gq cp \cb ->
+	for_ ([1 .. mlvs - 1] `zip` (halves wdt `zip` halves hgt)) \(i, (w, h)) ->
+	generateMipmap1 cb img i w h
+
+generateMipmap1 :: forall scb vs si sm nm fmt . Vk.CmdBffr.C scb vs ->
+	Vk.Img.BindedNew si sm nm fmt -> Word32 -> Int32 -> Int32 -> IO ()
+generateMipmap1 cb img i w h = do
+	Vk.Cmd.pipelineBarrier cb
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit zeroBits
+		HVNil HVNil . Singleton $ V5 barrier'
+	Vk.Cmd.blitImage cb
+		img Vk.Img.LayoutTransferSrcOptimal
+		img Vk.Img.LayoutTransferDstOptimal
+		[blit] Vk.FilterLinear
+	where
+	barrier sam dam olyt nlyt = Vk.Img.MemoryBarrier {
+		Vk.Img.memoryBarrierNext = Nothing,
+		Vk.Img.memoryBarrierSrcAccessMask = sam,
+		Vk.Img.memoryBarrierDstAccessMask = dam,
+		Vk.Img.memoryBarrierOldLayout = olyt,
+		Vk.Img.memoryBarrierNewLayout = nlyt,
+		Vk.Img.memoryBarrierSrcQueueFamilyIndex =
+			Vk.QueueFamily.Ignored,
+		Vk.Img.memoryBarrierDstQueueFamilyIndex =
+			Vk.QueueFamily.Ignored,
+		Vk.Img.memoryBarrierImage = img,
+		Vk.Img.memoryBarrierSubresourceRange = srr }
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.subresourceRangeBaseMipLevel = i - 1,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
+	barrier' :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier' = barrier Vk.AccessTransferWriteBit Vk.AccessTransferReadBit
+		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
+	blit = Vk.Img.M.Blit {
+		Vk.Img.M.blitSrcSubresource = bssr,
+		Vk.Img.M.blitSrcOffsetFrom = Vk.C.Offset3d 0 0 0,
+		Vk.Img.M.blitSrcOffsetTo = Vk.C.Offset3d w h 1,
+		Vk.Img.M.blitDstSubresource = bdsr,
+		Vk.Img.M.blitDstOffsetFrom = Vk.C.Offset3d 0 0 0,
+		Vk.Img.M.blitDstOffsetTo = Vk.C.Offset3d (half w) (half h) 1 }
+	bssr = Vk.Img.M.SubresourceLayers {
+		Vk.Img.M.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.M.subresourceLayersMipLevel = i - 1,
+		Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+		Vk.Img.M.subresourceLayersLayerCount = 1 }
+	bdsr = Vk.Img.M.SubresourceLayers {
+		Vk.Img.M.subresourceLayersAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.M.subresourceLayersMipLevel = i,
+		Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+		Vk.Img.M.subresourceLayersLayerCount = 1 }
+
+half :: Integral i => i -> i
+half n = bool 1 (n `div` 2) (n > 1)
+
+halves :: Integral i => i -> [i]
+halves = iterate half
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
