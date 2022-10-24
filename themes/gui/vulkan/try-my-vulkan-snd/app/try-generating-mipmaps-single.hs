@@ -986,6 +986,10 @@ createTextureImage phdvc dvc gq cp fp f = do
 				Vk.Img.LayoutShaderReadOnlyOptimal 1
 			f tximg
 
+generateMipmaps :: Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C scp -> IO ()
+generateMipmaps dvc gq cp = beginSingleTimeCommands dvc gq cp \cb -> do
+	pure ()
+
 newtype MyImage = MyImage (Image PixelRGBA8)
 
 type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
