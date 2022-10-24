@@ -1014,7 +1014,7 @@ generateMipmaps phdvc dvc gq cp img mlvs wdt hgt = do
 	barrier = mipmapBarrier
 		Vk.AccessTransferWriteBit Vk.AccessShaderReadBit
 		Vk.Img.LayoutTransferDstOptimal
-		Vk.Img.LayoutShaderReadOnlyOptimal img (mlvs - 1)
+		Vk.Img.LayoutShaderReadOnlyOptimal img mlvs
 
 mipmapBarrier :: Vk.AccessFlags -> Vk.AccessFlags ->
 	Vk.Img.Layout -> Vk.Img.Layout -> Vk.Img.BindedNew si sm nm fmt ->
@@ -1048,7 +1048,7 @@ generateMipmap1 cb img i w h = do
 		img Vk.Img.LayoutTransferDstOptimal
 		[blit] Vk.FilterLinear
 	Vk.Cmd.pipelineBarrier cb
-		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit zeroBits
+		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
 		HVNil HVNil . Singleton $ V5 barrier''
 	where
 	barrier' :: Vk.Img.MemoryBarrier () si sm nm fmt
@@ -1308,7 +1308,7 @@ createTextureSampler phdv dvc mplvs f = do
 					$ Vk.PhDvc.propertiesLimits prp,
 			Vk.Smplr.M.createInfoCompareEnable = False,
 			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.M.createInfoMinLod = 0,
+			Vk.Smplr.M.createInfoMinLod = 7,
 			Vk.Smplr.M.createInfoMaxLod = fromIntegral mplvs,
 			Vk.Smplr.M.createInfoBorderColor =
 				Vk.BorderColorIntOpaqueBlack,
