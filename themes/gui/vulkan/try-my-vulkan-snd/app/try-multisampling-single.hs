@@ -279,6 +279,7 @@ run txfp mdlfp mnld w inst g =
 	createPipelineLayout dv \dscslyt ppllyt ->
 	createGraphicsPipeline dv ext rp ppllyt \gpl ->
 	createCommandPool qfis dv \cp ->
+	createColorResources @scifmt phdv dv ext spcnt \clrimg clrimgm clrimgvw ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
 	createTextureImage phdv dv gq cp txfp \tximg mplvs ->
@@ -896,6 +897,39 @@ createCommandPool qfis dvc f =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
+createColorResources :: forall fmt sd nm a . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.Sample.CountFlags ->
+	(forall si sm fmt siv .
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.ImageBuffer.M sm
+			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] ->
+		Vk.ImgVw.INew fmt nm siv ->
+		IO a) -> IO a
+createColorResources phdvc dvc ext msmpls f =
+	createImage @_ @fmt phdvc dvc
+		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1 msmpls
+		Vk.Img.TilingOptimal
+		(	Vk.Img.UsageTransientAttachmentBit .|.
+			Vk.Img.UsageColorAttachmentBit )
+		Vk.Mem.PropertyDeviceLocalBit \img imgmem ->
+	createImageView @fmt dvc img Vk.Img.AspectColorBit 1 \imgvw ->
+	f img imgmem imgvw
+
+recreateColorResources :: forall fmt sd nm si sm siv . Vk.T.FormatToValue fmt =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.Sample.CountFlags ->
+	Vk.Img.BindedNew si sm nm fmt ->
+	Vk.Dvc.Mem.ImageBuffer.M sm
+		'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] ->
+	Vk.ImgVw.INew fmt nm siv -> IO ()
+recreateColorResources phdvc dvc ext msmpls img imgmem imgvw = do
+	recreateImage phdvc dvc
+		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1 msmpls
+		Vk.Img.TilingOptimal
+		(	Vk.Img.UsageTransientAttachmentBit .|.
+			Vk.Img.UsageColorAttachmentBit )
+		Vk.Mem.PropertyDeviceLocalBit img imgmem
+	recreateImageView dvc img Vk.Img.AspectDepthBit imgvw 1
+
 createDepthResources ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.C.Extent2d ->
@@ -911,7 +945,7 @@ createDepthResources phdvc dvc gq cp ext f = do
 	print ext
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		createImage @_ @fmt phdvc dvc
-			(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1
+			(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1 Vk.Sample.Count1Bit
 			Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 			Vk.Mem.PropertyDeviceLocalBit \dptImg dptImgMem ->
 			createImageView @fmt
@@ -931,7 +965,7 @@ recreateDepthResources :: Vk.T.FormatToValue fmt =>
 recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 	print ext
 	recreateImage phdvc dvc
-		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1
+		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext) 1 Vk.Sample.Count1Bit
 		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
 		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
 	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw 1
@@ -981,7 +1015,8 @@ createTextureImage phdvc dvc gq cp fp f = do
 		mipLevels :: Word32 = floor @Double . logBase 2
 			$ max (fromIntegral wdt_) (fromIntegral hgt_)
 	print (mipLevels :: Word32)
-	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt mipLevels Vk.Img.TilingOptimal
+	createImage @_ @'Vk.T.FormatR8g8b8a8Srgb phdvc dvc wdt hgt mipLevels
+		Vk.Sample.Count1Bit Vk.Img.TilingOptimal
 		(	Vk.Img.UsageTransferSrcBit .|.
 			Vk.Img.UsageTransferDstBit .|.
 			Vk.Img.UsageSampledBit)
@@ -1132,33 +1167,33 @@ instance IsImage MyImage where
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
-	Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
 		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a
-createImage pd dvc wdt hgt mplvs tlng usg prps f = Vk.Img.createNew @() @() @() dvc
-		(imageInfo wdt hgt mplvs tlng usg) Nothing Nothing \img -> do
+createImage pd dvc wdt hgt mplvs nss tlng usg prps f = Vk.Img.createNew @() @() @() dvc
+		(imageInfo wdt hgt mplvs nss tlng usg) Nothing Nothing \img -> do
 	memInfo <- imageMemoryInfo pd dvc prps img
 	imageAllocateBind dvc img memInfo f
 
 recreateImage :: Vk.T.FormatToValue fmt =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
 	Vk.Img.BindedNew sb sm nm fmt ->
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
-recreateImage pd dvc wdt hgt mplvs tlng usg prps img mem = do
+recreateImage pd dvc wdt hgt mplvs nss tlng usg prps img mem = do
 	Vk.Img.recreateNew @() @() @() dvc
-		(imageInfo wdt hgt mplvs tlng usg) Nothing Nothing img
+		(imageInfo wdt hgt mplvs nss tlng usg) Nothing Nothing img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem
 
 imageInfo ::
-	Word32 -> Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
+	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
 	Vk.Img.CreateInfoNew n fmt
-imageInfo wdt hgt mplvs tlng usg = Vk.Img.CreateInfoNew {
+imageInfo wdt hgt mplvs numSamples tlng usg = Vk.Img.CreateInfoNew {
 		Vk.Img.createInfoNextNew = Nothing,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
@@ -1171,7 +1206,7 @@ imageInfo wdt hgt mplvs tlng usg = Vk.Img.CreateInfoNew {
 		Vk.Img.createInfoInitialLayoutNew = Vk.Img.LayoutUndefined,
 		Vk.Img.createInfoUsageNew = usg,
 		Vk.Img.createInfoSharingModeNew = Vk.SharingModeExclusive,
-		Vk.Img.createInfoSamplesNew = Vk.Sample.Count1Bit,
+		Vk.Img.createInfoSamplesNew = numSamples,
 		Vk.Img.createInfoFlagsNew = zeroBits,
 		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 
