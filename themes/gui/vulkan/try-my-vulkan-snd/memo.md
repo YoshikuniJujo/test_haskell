@@ -66,5 +66,6 @@ app
 * try-depth-buffering.hs
 * try-loading-models-single.hs
 * try-loading-models.hs
+* try-generating-mipmaps-single.hs
 * try-generating-mipmaps.hs
 * try-multisampling.hs

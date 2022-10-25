@@ -429,8 +429,8 @@ executable try-dynamic-dsc-sets
     , vector
   default-language: Haskell2010
 
-executable try-generating-mipmaps-old
-  main-is: try-generating-mipmaps-old.hs
+executable try-generating-mipmaps
+  main-is: try-generating-mipmaps.hs
   other-modules:
       Main
       Paths_try_my_vulkan_snd

@@ -165,8 +165,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
-  try-generating-mipmaps-old:
-    main:                try-generating-mipmaps-old.hs
+  try-generating-mipmaps:
+    main:                try-generating-mipmaps.hs
     source-dirs:         app
     ghc-options:
     - -threaded
