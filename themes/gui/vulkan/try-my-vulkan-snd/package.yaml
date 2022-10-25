@@ -192,15 +192,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
-  try-multisampling-old:
-    main:                try-multisampling-old.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-my-vulkan-snd
   try-shaderc-core:
     main:                try-shaderc-core.hs
     source-dirs:         app
