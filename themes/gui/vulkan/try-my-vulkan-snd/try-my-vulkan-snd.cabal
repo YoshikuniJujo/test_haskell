@@ -145,7 +145,6 @@ library
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.AllocateInfo
       Gpu.Vulkan.Memory.Enum
-      Gpu.Vulkan.Memory.Image.Middle
       Gpu.Vulkan.Memory.Kind
       Gpu.Vulkan.Memory.Middle
       Gpu.Vulkan.Memory.Tmp
