@@ -189,9 +189,9 @@ readMemories dvc memA memB memC =
 		<*> Vk.Dvc.Mem.Buffer.read @[w3] @('List w3 "") dvc memC def
 
 readMemories' :: forall nm1 nm2 nm3 sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3 . (
-	Vk.Dvc.Mem.ImageBuffer.OffsetSize nm1 ('List w1 "") objss1,
-	Vk.Dvc.Mem.ImageBuffer.OffsetSize nm2 ('List w2 "") objss2,
-	Vk.Dvc.Mem.ImageBuffer.OffsetSize nm3 ('List w3 "") objss3,
+	Vk.Dvc.Mem.ImageBuffer.OffsetSize' nm1 ('List w1 "") objss1,
+	Vk.Dvc.Mem.ImageBuffer.OffsetSize' nm2 ('List w2 "") objss2,
+	Vk.Dvc.Mem.ImageBuffer.OffsetSize' nm3 ('List w3 "") objss3,
 	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.Dvc.D sd ->
