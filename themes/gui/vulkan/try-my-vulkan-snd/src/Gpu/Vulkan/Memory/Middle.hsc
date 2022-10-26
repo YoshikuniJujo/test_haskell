@@ -34,6 +34,17 @@ import qualified Gpu.Vulkan.Memory.Core as C
 
 #include <vulkan/vulkan.h>
 
+newtype M = M (IORef C.M)
+
+mFromCore :: C.M -> IO M
+mFromCore = (M <$>) . newIORef
+
+mToCore :: M -> IO C.M
+mToCore (M r) = readIORef r
+
+mWrite :: M -> C.M -> IO ()
+mWrite (M r) m = writeIORef r m
+
 newtype TypeBits = TypeBits #{type uint32_t} deriving (Show, Eq, Bits, FiniteBits)
 
 typeBitsToTypeIndices :: TypeBits -> [TypeIndex]
