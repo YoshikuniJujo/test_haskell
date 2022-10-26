@@ -61,9 +61,8 @@ newM :: HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Memory.C.M -> IO (M s sibfoss)
 newM ibs cm = M <$> newIORef ibs <*> M.mFromCore cm
 
-newM' :: HeteroVarList (V2 ImageBuffer) sibfoss ->
-	IORef Memory.C.M -> IO (M s sibfoss)
-newM' ibs cm = (`M` M.M cm) <$> newIORef ibs
+newM2' :: HeteroVarList (V2 ImageBuffer) sibfoss -> M.M -> IO (M s sibfoss)
+newM2' ibs mm = (`M` mm) <$> newIORef ibs
 
 -- deriving instance Show (HeteroVarList (V2 ImageBuffer) sibfoss) =>
 --	Show (M s sibfoss)
@@ -162,8 +161,8 @@ allocate :: (Pointable n, Pointable c, Pointable d) =>
 allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
-	(\(Device.M.Memory mem) -> Memory.M.free mdvc (M.M mem) macd)
-	\(Device.M.Memory mem) -> f =<< newM' bs mem
+	(\mem -> Memory.M.free mdvc mem macd)
+	\mem -> f =<< newM2' bs mem
 
 reallocate :: (
 	Pointable n, Pointable c, Pointable d ) =>

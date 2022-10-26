@@ -41,7 +41,7 @@ allocate :: (Pointable n, Pointable n') =>
 	Maybe (AllocationCallbacks.A n') -> IO (Device.MemoryAtom v)
 allocate dvc b ai mac = do
 	mai <- allocateInfoToMiddle dvc b ai
-	(\(Device.Memory mem) -> do
+	(\(M.M mem) -> do
 		m <- readIORef mem
 		pure $ Device.MemoryAtom m)
 		=<< M.allocate dvc mai mac
@@ -56,7 +56,7 @@ free dvc (Device.MemoryAtom m) mac = do
 write :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryAtom v -> M.MapFlags -> v -> IO ()
 write dvc  (Device.MemoryAtom m) flgs v = do
-	mem@(Device.Memory cm) <- Device.Memory <$> newIORef m
+	Device.Memory cm <- Device.Memory <$> newIORef m
 	dat <- M.map dvc (M.M cm) 0 (fromIntegral $ sizeOf v') flgs
 	poke dat v'
 	M.unmap dvc (M.M cm)
@@ -65,7 +65,7 @@ write dvc  (Device.MemoryAtom m) flgs v = do
 read :: forall v . Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryAtom v -> M.MapFlags -> IO v
 read dvc (Device.MemoryAtom m) flgs = do
-	mem@(Device.Memory cm) <- Device.Memory <$> newIORef m
+	Device.Memory cm <- Device.Memory <$> newIORef m
 	dat <- M.map dvc (M.M cm) 0 sz flgs
 	Foreign.Storable.Generic.unWrap <$> peek dat <* M.unmap dvc (M.M cm)
 	where sz = fromIntegral (sizeOf @(Foreign.Storable.Generic.Wrap v) undefined)

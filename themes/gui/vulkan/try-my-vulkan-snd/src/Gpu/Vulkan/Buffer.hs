@@ -122,8 +122,8 @@ allocate :: (Pointable n, Pointable c, Pointable d) =>
 allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
-	(\(Device.M.Memory mem) -> Memory.M.free mdvc (Memory.M.M mem) macd)
-	\(Device.M.Memory mem) -> do
+	(\mem -> Memory.M.free mdvc mem macd)
+	\(Memory.M.M mem) -> do
 		forms <- bsToForms dvc bs
 		m <- readIORef mem
 		f $ Device.Memory.M forms m

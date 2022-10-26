@@ -48,7 +48,7 @@ allocate :: (Pointable n, Pointable n') =>
 	IO (Device.MemoryList v)
 allocate dvc b@(Buffer.B ln _) ai mac = do
 	mai <- allocateInfoToMiddle dvc b ai
-	(\(Device.Memory mem) -> do
+	(\(M.M mem) -> do
 		m <- readIORef mem
 		pure $ Device.MemoryList ln m) =<< M.allocate dvc mai mac
 
@@ -62,7 +62,7 @@ free dvc (Device.MemoryList _ m) mac = do
 writeList :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> [v] -> IO ()
 writeList dvc lnmem flgs vs = do
-	(ln, mem@(Device.Memory cm)) <- toMemory lnmem
+	(ln, Device.Memory cm) <- toMemory lnmem
 	bracket
 		(M.map dvc (M.M cm) 0 (fromIntegral $ sizeOf (vs' !! 0) * length vs') flgs)
 		(const $ M.unmap dvc (M.M cm)) (`pokeArray` take ln vs')
@@ -71,7 +71,7 @@ writeList dvc lnmem flgs vs = do
 writeMono :: (Foreign.Storable.Generic.G (Element vs), MonoFoldable vs) =>
 	Device.D -> Device.MemoryList (Element vs) -> M.MapFlags -> vs -> IO ()
 writeMono dvc lnmem flgs vs = do
-	(ln, mem@(Device.Memory cm)) <- toMemory lnmem
+	(ln, Device.Memory cm) <- toMemory lnmem
 	bracket
 		(M.map dvc (M.M cm) 0
 			(fromIntegral $ sizeOf (w $ headEx vs) * olength vs) flgs)
@@ -82,7 +82,7 @@ writeMono dvc lnmem flgs vs = do
 writeMonoW :: (Foreign.Storable.Generic.G v, MonoFoldable vs, Element vs ~ Foreign.Storable.Generic.Wrap v) =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> vs -> IO ()
 writeMonoW dvc lnmem flgs vs = do
-	(ln, mem@(Device.Memory cm)) <- toMemory lnmem
+	(ln, Device.Memory cm) <- toMemory lnmem
 	bracket
 		(M.map dvc (M.M cm) 0 (fromIntegral $ sizeOf (headEx vs) * olength vs) flgs)
 		(const $ M.unmap dvc (M.M cm))
@@ -96,7 +96,7 @@ toMemory (Device.MemoryList l m) = do
 readList :: forall v . Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryList v -> M.MapFlags -> IO [v]
 readList dvc lnmem flgs = do
-	(ln, mem@(Device.Memory cm)) <- toMemory lnmem
+	(ln, Device.Memory cm) <- toMemory lnmem
 	(Foreign.Storable.Generic.unWrap <$>) <$> bracket
 		(M.map dvc (M.M cm) 0 (fromIntegral $ sizeOf @(Foreign.Storable.Generic.Wrap v) undefined * ln) flgs)
 		(const $ M.unmap dvc (M.M cm)) (peekArray ln)
