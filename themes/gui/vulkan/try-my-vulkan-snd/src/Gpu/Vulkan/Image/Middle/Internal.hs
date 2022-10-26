@@ -35,7 +35,6 @@ import Gpu.Vulkan.Image.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
-import qualified Gpu.Vulkan.Memory.Core as Memory.C
 import qualified Gpu.Vulkan.Memory.Middle as Memory
 import qualified Gpu.Vulkan.Image.Core as C
 import qualified Gpu.Vulkan.Sample.Enum as Sample
@@ -151,10 +150,11 @@ getMemoryRequirements (Device.D dvc) (I ri) =
 			C.getMemoryRequirements dvc i pr
 			peek pr
 
-bindMemory :: Device.D -> I -> Memory.C.M -> Device.Size -> IO ()
+bindMemory :: Device.D -> I -> Memory.M -> Device.Size -> IO ()
 bindMemory (Device.D dvc) (I rimg) mem (Device.Size ost) = do
 	(_, img) <- readIORef rimg
-	r <- C.bindMemory dvc img mem ost
+	cmem <- Memory.mToCore mem
+	r <- C.bindMemory dvc img cmem ost
 	throwUnlessSuccess $ Result r
 
 data MemoryBarrier n = MemoryBarrier {
