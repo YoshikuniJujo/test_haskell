@@ -216,12 +216,10 @@ library
       Old.Gpu.Vulkan.Command.List
       Old.Gpu.Vulkan.Descriptor.Atom
       Old.Gpu.Vulkan.Descriptor.List
-      Old.Gpu.Vulkan.DescriptorSet.Atom
       Old.Gpu.Vulkan.DescriptorSet.List
       Old.Gpu.Vulkan.Device.Memory.Buffer
       Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
       Old.Gpu.Vulkan.Device.Memory.Buffer.Types
-      Old.Gpu.Vulkan.Memory.Atom
       Old.Gpu.Vulkan.Memory.List
       Old.Gpu.Vulkan.Memory.List.Middle
       Sample.GetOpt
