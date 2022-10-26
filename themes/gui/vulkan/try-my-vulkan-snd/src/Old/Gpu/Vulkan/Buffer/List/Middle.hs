@@ -78,7 +78,7 @@ getMemoryRequirements dvc (B _ b) = M.getMemoryRequirements dvc $ M.B b
 bindMemory :: Device.D -> B v -> Device.MemoryList v -> IO ()
 bindMemory dvc (B _ b) (Device.MemoryList _ m) = do
 	mem <- newIORef m
-	M.bindMemory dvc (M.B b) (Device.Memory mem) 0
+	M.bindMemory dvc (M.B b) (Memory.M.M mem) 0
 
 data BList (vs :: [Type]) where
 	BNil :: BList '[]

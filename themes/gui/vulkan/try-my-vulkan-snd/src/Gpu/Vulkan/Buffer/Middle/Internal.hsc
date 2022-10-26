@@ -96,8 +96,8 @@ getMemoryRequirements (Device.D dvc) (B b) =
 		lift do	C.getMemoryRequirements dvc b pr
 			peek pr
 
-bindMemory :: Device.D -> B -> Device.Memory -> Device.Size -> IO ()
-bindMemory (Device.D dvc) (B b) (Device.Memory mem) (Device.Size sz) = do
+bindMemory :: Device.D -> B -> Memory.M -> Device.Size -> IO ()
+bindMemory (Device.D dvc) (B b) (Memory.M mem) (Device.Size sz) = do
 	m <- readIORef mem
 	throwUnlessSuccess . Result =<< C.bindMemory dvc b m sz
 

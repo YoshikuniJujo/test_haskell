@@ -68,4 +68,4 @@ getMemoryRequirements dvc (B b) = M.getMemoryRequirements dvc $ M.B b
 bindMemory :: Device.D -> B v -> Device.MemoryAtom v -> IO ()
 bindMemory dvc (B b) (Device.MemoryAtom m) = do
 	mem <- newIORef m
-	M.bindMemory dvc (M.B b) (Device.Memory mem) 0
+	M.bindMemory dvc (M.B b) (Memory.M.M mem) 0

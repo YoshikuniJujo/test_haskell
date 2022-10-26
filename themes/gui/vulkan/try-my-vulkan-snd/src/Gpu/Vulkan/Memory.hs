@@ -49,6 +49,9 @@ readM (M ib m) = (,) <$> readIORef ib <*> M.mToCore m
 readM' :: M s sibfoss -> IO (HeteroVarList (V2 ImageBuffer) sibfoss, IORef Memory.C.M)
 readM' (M ib (M.M r)) = (, r) <$> readIORef ib
 
+readM'' :: M s sibfoss -> IO (HeteroVarList (V2 ImageBuffer) sibfoss, M.M)
+readM'' (M ib m) = (, m) <$> readIORef ib
+
 writeMBinded' :: M s sibfoss ->
 	HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss -> IO ()
 writeMBinded' (M rib _r) ibs = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs)
@@ -264,18 +267,18 @@ bindBuffer :: forall sd sb nm objs sm sibfoss . Offset sb ('K.Buffer nm objs) si
 	Device.D sd -> Buffer.B sb nm objs -> M sm sibfoss ->
 	IO (Buffer.Binded sb sm nm objs)
 bindBuffer dvc@(Device.D mdvc) (Buffer.B lns b) m = do
-	(_, mm) <- readM' m
+	(_, mm) <- readM'' m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
-	Buffer.M.bindMemory mdvc b (Device.M.Memory mm) ost
+	Buffer.M.bindMemory mdvc b mm ost
 	pure (Buffer.Binded lns b)
 
 rebindBuffer :: forall sd sb sm nm objs sibfoss .
 	Offset sb ('K.Buffer nm objs) sibfoss =>
 	Device.D sd -> Buffer.Binded sb sm nm objs -> M sm sibfoss -> IO ()
 rebindBuffer dvc@(Device.D mdvc) (Buffer.Binded _lns b) m = do
-	(_, mm) <- readM' m
+	(_, mm) <- readM'' m
 	ost <- offset @sb @('K.Buffer nm objs) dvc m 0
-	Buffer.M.bindMemory mdvc b (Device.M.Memory mm) ost
+	Buffer.M.bindMemory mdvc b mm ost
 
 class Offset
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where

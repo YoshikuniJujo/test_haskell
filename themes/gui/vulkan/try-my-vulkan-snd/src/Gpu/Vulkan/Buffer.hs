@@ -161,7 +161,7 @@ bindMemory ::
 	IO (Binded sm sb nm objs)
 bindMemory (Device.D dvc) (B lns b) (Device.Memory.M fms m) i = do
 	mem <- newIORef m
-	M.bindMemory dvc b (Device.M.Memory mem) . fst $ indexForms fms i
+	M.bindMemory dvc b (Memory.M.M mem) . fst $ indexForms fms i
 	pure $ Binded lns b
 
 indexForms :: HeteroVarList Device.Memory.Form objss -> Int ->
