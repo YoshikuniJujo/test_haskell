@@ -51,21 +51,21 @@ free :: Pointable n =>
 	IO ()
 free dvc (Device.MemoryAtom m) mac = do
 	mem <- newIORef m
-	M.free dvc (Device.Memory mem) mac
+	M.free dvc (M.M mem) mac
 
 write :: Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryAtom v -> M.MapFlags -> v -> IO ()
 write dvc  (Device.MemoryAtom m) flgs v = do
-	mem <- Device.Memory <$> newIORef m
-	dat <- M.map dvc mem 0 (fromIntegral $ sizeOf v') flgs
+	mem@(Device.Memory cm) <- Device.Memory <$> newIORef m
+	dat <- M.map dvc (M.M cm) 0 (fromIntegral $ sizeOf v') flgs
 	poke dat v'
-	M.unmap dvc mem
+	M.unmap dvc (M.M cm)
 	where v' = Foreign.Storable.Generic.Wrap v
 
 read :: forall v . Foreign.Storable.Generic.G v =>
 	Device.D -> Device.MemoryAtom v -> M.MapFlags -> IO v
 read dvc (Device.MemoryAtom m) flgs = do
-	mem <- Device.Memory <$> newIORef m
-	dat <- M.map dvc mem 0 sz flgs
-	Foreign.Storable.Generic.unWrap <$> peek dat <* M.unmap dvc mem
+	mem@(Device.Memory cm) <- Device.Memory <$> newIORef m
+	dat <- M.map dvc (M.M cm) 0 sz flgs
+	Foreign.Storable.Generic.unWrap <$> peek dat <* M.unmap dvc (M.M cm)
 	where sz = fromIntegral (sizeOf @(Foreign.Storable.Generic.Wrap v) undefined)

@@ -132,8 +132,8 @@ reallocate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D -> AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
-	Device.Memory -> IO ()
-reallocate d@(Device.D dvc) ai macc macd m@(Device.Memory rm) = ($ pure) $ runContT do
+	M -> IO ()
+reallocate d@(Device.D dvc) ai macc macd m@(M rm) = ($ pure) $ runContT do
 	pai <- allocateInfoToCore ai
 	pac <- AllocationCallbacks.maybeToCore macc
 	pm <- ContT alloca
@@ -143,8 +143,8 @@ reallocate d@(Device.D dvc) ai macc macd m@(Device.Memory rm) = ($ pure) $ runCo
 		writeIORef rm =<< peek pm
 
 free :: Pointable n =>
-	Device.D -> Device.Memory -> Maybe (AllocationCallbacks.A n) -> IO ()
-free (Device.D dvc) (Device.Memory mem) mac = ($ pure) $ runContT do
+	Device.D -> M -> Maybe (AllocationCallbacks.A n) -> IO ()
+free (Device.D dvc) (M mem) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	m <- lift $ readIORef mem
 	lift $ C.free dvc m pac
@@ -154,9 +154,9 @@ enum "MapFlags" ''#{type VkMemoryMapFlags}
 
 instance Default MapFlags where def = MapFlagsZero
 
-map :: Device.D -> Device.Memory -> Device.Size -> Device.Size -> MapFlags ->
+map :: Device.D -> M -> Device.Size -> Device.Size -> MapFlags ->
 	IO (Ptr a)
-map (Device.D dvc) (Device.Memory mem)
+map (Device.D dvc) (M mem)
 	(Device.Size ofst) (Device.Size sz) (MapFlags flgs) = ($ pure) $ runContT do
 	pd <- ContT alloca
 	m <- lift $ readIORef mem
@@ -164,8 +164,8 @@ map (Device.D dvc) (Device.Memory mem)
 		throwUnlessSuccess $ Result r
 		peek pd
 
-unmap :: Device.D -> Device.Memory -> IO ()
-unmap (Device.D dvc) (Device.Memory mem) = C.unmap dvc =<< readIORef mem
+unmap :: Device.D -> M -> IO ()
+unmap (Device.D dvc) (M mem) = C.unmap dvc =<< readIORef mem
 
 data Barrier n = Barrier {
 	barrierNext :: Maybe n,

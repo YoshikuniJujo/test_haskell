@@ -46,9 +46,6 @@ readM :: M s sibfoss ->
 	IO (HeteroVarList (V2 ImageBuffer) sibfoss, Memory.C.M)
 readM (M ib m) = (,) <$> readIORef ib <*> M.mToCore m
 
-readM' :: M s sibfoss -> IO (HeteroVarList (V2 ImageBuffer) sibfoss, IORef Memory.C.M)
-readM' (M ib (M.M r)) = (, r) <$> readIORef ib
-
 readM'' :: M s sibfoss -> IO (HeteroVarList (V2 ImageBuffer) sibfoss, M.M)
 readM'' (M ib m) = (, m) <$> readIORef ib
 
@@ -165,7 +162,7 @@ allocate :: (Pointable n, Pointable c, Pointable d) =>
 allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
-	(\mem -> Memory.M.free mdvc mem macd)
+	(\(Device.M.Memory mem) -> Memory.M.free mdvc (M.M mem) macd)
 	\(Device.M.Memory mem) -> f =<< newM' bs mem
 
 reallocate :: (
@@ -176,9 +173,8 @@ reallocate :: (
 	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
 reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 	mai <- reallocateInfoToMiddle dvc bs ai
-	(_, oldmem) <- readM' mem
---	Memory.M.free mdvc (Device.M.Memory oldmem) macd
-	Memory.M.reallocate mdvc mai macc macd (Device.M.Memory oldmem)
+	(_, oldmem) <- readM'' mem
+	Memory.M.reallocate mdvc mai macc macd oldmem
 	writeMBinded' mem bs
 
 reallocateBind :: (
@@ -378,11 +374,11 @@ read dvc mem flgs = bracket
 map :: forall nm obj sd sm sibfoss . OffsetSize nm obj sibfoss =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (ObjectType obj))
 map dvc@(Device.D mdvc) m flgs = do
-	(_, mm) <- readM' m
+	(_, mm) <- readM'' m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0
-	Memory.M.map mdvc (Device.M.Memory mm) ost sz flgs
+	Memory.M.map mdvc mm ost sz flgs
 
 unmap :: Device.D sd -> M sm sibfoss -> IO ()
 unmap (Device.D mdvc) m = do
-	(_, mm) <- readM' m
-	Memory.M.unmap mdvc (Device.M.Memory mm)
+	(_, mm) <- readM'' m
+	Memory.M.unmap mdvc mm
