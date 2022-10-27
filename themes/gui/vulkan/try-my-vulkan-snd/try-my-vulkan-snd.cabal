@@ -212,7 +212,6 @@ library
       Old.Gpu.Vulkan.Buffer.List
       Old.Gpu.Vulkan.Buffer.List.Middle
       Old.Gpu.Vulkan.Buffer.List.Type
-      Old.Gpu.Vulkan.Command.List
       Old.Gpu.Vulkan.Descriptor.List
       Old.Gpu.Vulkan.DescriptorSet.List
       Old.Gpu.Vulkan.Device.Memory.Buffer
