@@ -117,6 +117,8 @@ import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
@@ -128,8 +130,6 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 import Tools
-	
-import qualified Old.Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
 
 main :: IO ()
 main = valNat maxFramesInFlight \(_ :: Proxy n) -> do
@@ -740,33 +740,48 @@ createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
-	createBuffer phdvc dvc (length vertices)
+	createBufferList phdvc dvc (length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (length vertices)
+	createBufferList phdvc dvc (length vertices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \b' bm' -> do
-	Vk.Dvc.Mem.Buffer.write @('List Vertex "") dvc bm' zeroBits vertices
+			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[ 'List t ""]) bm' -> do
+	Vk.Mem.write @"vertex-buffer" @('List Vertex "") dvc bm' zeroBits vertices
 	copyBuffer dvc gq cp b' b
 	f b
 
-createBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Int ->
-	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
-		forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ 'List Vertex ""] ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List Vertex "" ] ] -> IO a ) -> IO a
-createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+createBufferList :: forall sd nm t a . Storable t =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
+	Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ 'List t ""] ->
+		Vk.Mem.M sm '[ '(
+			sb,
+			'Vk.Mem.K.Buffer nm '[ 'List t ""] ) ] ->
+		IO a) ->
+	IO a
+createBufferList p dv ln usg props =
+	createBuffer' p dv (ObjectLengthList ln) usg props
+
+createBuffer' :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> ObjectLength o ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[o] ->
+		Vk.Mem.M sm
+			'[ '(sb, 'Vk.Mem.K.Buffer nm '[o])] ->
+		IO a) -> IO a
+createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Bffr.allocateBind dv (Singleton $ V3 b) (allcInfo mt) nil nil
-		$ f . \(Singleton (V3 bnd)) -> bnd
+	Vk.Mem.allocateBind dv (Singleton . V2 $ Vk.Mem.Buffer b)
+		(allcInfo mt) nil nil
+		$ f . \(Singleton (V2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[ 'List Vertex ""]
+	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = singleton $ ObjectLengthList ln,
+		Vk.Bffr.createInfoLengths = singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
