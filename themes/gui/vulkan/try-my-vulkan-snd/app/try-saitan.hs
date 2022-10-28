@@ -125,14 +125,16 @@ datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 
 calc :: forall w1 w2 w3 . (
-	Storable w1, Storable w2, Storable w3
+	Storable w1, Storable w2, Storable w3,
+	Vk.Mem.OffsetSizeObject ('List w2 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""],
+	Vk.Mem.OffsetSizeObject ('List w3 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""],
 --	Vk.Mem.OffsetSize' nm1 ('List w1 "") (ListBuffer3Memory3 w1 w2 w3),
 --	Vk.Mem.OffsetSize' nm2 ('List w2 "") (ListBuffer3Memory3 w1 w2 w3),
 --	Vk.Mem.OffsetSize' nm3 ('List w3 "") (ListBuffer3Memory3 w1 w2 w3)
 --	Old.Vk.Dvc.Mem.Buffer.OffsetSize ('List w2 "") (ListBuffer3Memory3 w1 w2 w3),
 --	Old.Vk.Dvc.Mem.Buffer.OffsetSize ('List w3 "") (ListBuffer3Memory3 w1 w2 w3),
---	Offset ('List w2 "") (ListBuffer1 w1 w2 w3),
---	Offset ('List w3 "") (ListBuffer1 w1 w2 w3),
+	Offset ('List w2 "") (ListBuffer1 w1 w2 w3),
+	Offset ('List w3 "") (ListBuffer1 w1 w2 w3)
 --	Old.Vk.Dvc.Mem.Buffer.OffsetSize ('List w2 "") '[ListBuffer1 w1 w2 w3],
 --	Old.Vk.Dvc.Mem.Buffer.OffsetSize ('List w3 "") '[ListBuffer1 w1 w2 w3] ) =>
 	) =>
@@ -148,18 +150,19 @@ calc opt da db dc = withDevice \phdvc qFam dvc maxGroupCountX ->
 		Buffer3Memory3 ->
 			prepareMems
 				phdvc dvc dscSetLyt da' db' dc' \dscSet
-					(ma :: Vk.Mem.M sm1 '[ '( sb1, Vk.Mem.K.Buffer nm1 '[ 'List w1 ""])])
-					(mb :: Vk.Mem.M sm2 '[ '( sb2, Vk.Mem.K.Buffer nm2 '[ 'List w2 ""])])
-					(mc :: Vk.Mem.M sm3 '[ '( sb3, Vk.Mem.K.Buffer nm3 '[ 'List w3 ""])]) ->
+					(ma :: Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.Buffer nm1 '[ 'List w1 ""])])
+					(mb :: Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List w2 ""])])
+					(mc :: Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List w3 ""])]) ->
 			calc' @_ @_ @_ @nm1 @nm2 @nm3 dvc qFam dscSetLyt dscSet maxGroupCountX ma mb mc
 			{-
 		Buffer3Memory1 ->
 			prepareMems' phdvc dvc dscSetLyt da' db' dc' \dscSet m ->
 			calc' dvc qFam dscSetLyt dscSet maxGroupCountX m m m
-		Buffer1Memory1 ->
-			prepareMems'' phdvc dvc dscSetLyt da' db' dc' \dscSet m ->
-			calc' dvc qFam dscSetLyt dscSet maxGroupCountX m m m
 			-}
+		Buffer1Memory1 ->
+			prepareMems'' phdvc dvc dscSetLyt da' db' dc' \dscSet
+				(m :: Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])]) ->
+			calc' @_ @_ @_ @nm @nm @nm dvc qFam dscSetLyt dscSet maxGroupCountX m m m
 
 calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sp sm1 sm2 sm3 .
 	(
@@ -272,9 +275,9 @@ prepareMems ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->
-		Vk.Mem.M sm1 '[ '( sb1, Vk.Mem.K.Buffer nm1 '[ 'List w1 ""])] ->
-		Vk.Mem.M sm2 '[ '( sb2, Vk.Mem.K.Buffer nm2 '[ 'List w2 ""])] ->
-		Vk.Mem.M sm3 '[ '( sb3, Vk.Mem.K.Buffer nm3 '[ 'List w3 ""])] -> IO a) -> IO a
+		Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.Buffer nm1 '[ 'List w1 ""])] ->
+		Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List w2 ""])] ->
+		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List w3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
@@ -305,19 +308,19 @@ prepareMems' phdvc dvc dscSetLyt da db dc f =
 		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) [] >>
 	f dscSet m
 
-prepareMems'' :: forall w1 w2 w3 sd sl bts a . (
+prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
 	Storable w1, Storable w2, Storable w3,
 	Offset ('List w2 "") '[ 'List w1 "", 'List w2 "", 'List w3 "" ],
 	Offset ('List w3 "") '[ 'List w1 "", 'List w2 "", 'List w3 "" ],
-	Old.Vk.Dvc.Mem.Buffer.OffsetSize
-		('List w2 "") '[ '[ 'List w1 "", 'List w2 "", 'List w3 ""]],
-	Old.Vk.Dvc.Mem.Buffer.OffsetSize
-		('List w3 "") '[ '[ 'List w1 "", 'List w2 "", 'List w3 ""]],
+	Vk.Mem.OffsetSizeObject
+		('List w2 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""],
+	Vk.Mem.OffsetSizeObject
+		('List w3 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""],
 	Vk.DscSet.BindingAndArrayElem bts '[ 'List w1 "", 'List w2 "", 'List w3 ""] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm .
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm sb .
 		Vk.DscSet.S sd s '(sl, bts) ->
-		Old.Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List w1 "", 'List w2 "", 'List w3 ""]] -> IO a) -> IO a
+		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])] -> IO a) -> IO a
 prepareMems'' phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
@@ -430,24 +433,35 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 
 storage1BufferNew :: forall sd nm w1 w2 w3 a . (
 	Storable w1, Storable w2, Storable w3,
-	Old.Vk.Dvc.Mem.Buffer.OffsetSize
-		('List w2 "") '[ '[ 'List w1 "", 'List w2 "", 'List w3 ""]],
-	Old.Vk.Dvc.Mem.Buffer.OffsetSize
-		('List w3 "") '[ '[ 'List w1 "", 'List w2 "", 'List w3 ""]] ) =>
+	Vk.Mem.OffsetSizeObject ('List w2 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""],
+	Vk.Mem.OffsetSizeObject ('List w3 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""] ) =>
+	{-
+	Vk.Mem.OffsetSize' nm
+		('List w2 "") '[ '(sb, Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])],
+	Vk.Mem.OffsetSize' nm
+		('List w3 "") '[ '(sb, Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])] ) =>
+		-}
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
-		forall sb sm .
-		Vk.Buffer.Binded sm sb nm '[ 'List w1 "", 'List w2 "", 'List w3 ""] ->
-		Old.Vk.Dvc.Mem.Buffer.M sm
-			'[ '[ 'List w1 "", 'List w2 "", 'List w3 ""]] -> IO a) -> IO a
+		forall sb sm . -- (
+--		Vk.Mem.OffsetSize' nm
+--			('List w2 "") '[ '(sb, Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])],
+--		Vk.Mem.OffsetSize' nm
+--			('List w3 "") '[ '(sb, Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])],
+--		Vk.Mem.OffsetSizeObject ('List w2 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""],
+--		Vk.Mem.OffsetSizeObject ('List w3 "") '[ 'List w1 "", 'List w2 "", 'List w3 ""]
+--		) =>
+		Vk.Buffer.Binded sb sm nm '[ 'List w1 "", 'List w2 "", 'List w3 ""] ->
+		Vk.Mem.M sm
+			'[ '(sb, 'Vk.Mem.K.Buffer nm '[ 'List w1 "", 'List w2 "", 'List w3 ""])] -> IO a) -> IO a
 storage1BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
 		memInfo <- getMemoryInfo phdvc dvc buf
-		Old.Vk.Buffer.Bind.allocateBind dvc (V3 buf :...: HVNil)
-			memInfo nil nil \(V3 bnd :...: HVNil) mem -> do
-			Old.Vk.Dvc.Mem.Buffer.write @('List w1 "") dvc mem def xs
-			Old.Vk.Dvc.Mem.Buffer.write @('List w2 "") dvc mem def ys
-			Old.Vk.Dvc.Mem.Buffer.write @('List w3 "") dvc mem def zs
+		Vk.Mem.allocateBind dvc (Singleton . V2 $ Vk.Mem.Buffer buf)
+			memInfo nil nil \(Singleton (V2 (Vk.Mem.BufferBinded bnd))) mem -> do
+			Vk.Mem.write @nm @('List w1 "") dvc mem def xs
+			Vk.Mem.write @nm @('List w2 "") dvc mem def ys
+			Vk.Mem.write @nm @('List w3 "") dvc mem def zs
 			f bnd mem
 
 bufferInfo' :: (
