@@ -67,10 +67,11 @@ import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
+import qualified Gpu.Vulkan.Khr as Vk.Khr
+
 import qualified Old.Gpu.Vulkan.Device.Memory.Buffer as Old.Vk.Dvc.Mem.Buffer
 import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Old.Vk.Dvc.Mem.Buffer
-
-import qualified Gpu.Vulkan.Khr as Vk.Khr
+import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.Bind as Old.Vk.Buffer.Bind
 
 main :: IO ()
 main = do
@@ -365,7 +366,7 @@ storageBufferNew :: forall sd nm w a . Storable w =>
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
-		Vk.Buffer.allocateBind dvc (V3 buffer :...: HVNil) memoryInfo
+		Old.Vk.Buffer.Bind.allocateBind dvc (V3 buffer :...: HVNil) memoryInfo
 			nil nil \(V3 binded :...: HVNil) memory -> do
 			Old.Vk.Dvc.Mem.Buffer.write @('List w "") dvc memory def xs
 			f binded memory
@@ -392,7 +393,7 @@ storage3BufferNew dvc phdvc xs ys zs f =
 			Vk.Buffer.create dvc (bufferInfo zs) nil nil \buf3 -> do
 				memInfo3 <- getMemoryInfo phdvc dvc buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
-					Vk.Buffer.allocateBind dvc (
+					Old.Vk.Buffer.Bind.allocateBind dvc (
 						V3 buf1 :...: V3 buf2 :...:
 						V3 buf3 :...: HVNil
 						) memInfo1 nil nil
@@ -430,7 +431,7 @@ storage1BufferNew :: forall sd nm w1 w2 w3 a . (
 storage1BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
 		memInfo <- getMemoryInfo phdvc dvc buf
-		Vk.Buffer.allocateBind dvc (V3 buf :...: HVNil)
+		Old.Vk.Buffer.Bind.allocateBind dvc (V3 buf :...: HVNil)
 			memInfo nil nil \(V3 bnd :...: HVNil) mem -> do
 			Old.Vk.Dvc.Mem.Buffer.write @('List w1 "") dvc mem def xs
 			Old.Vk.Dvc.Mem.Buffer.write @('List w2 "") dvc mem def ys

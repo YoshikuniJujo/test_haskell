@@ -64,6 +64,7 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
+import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.Bind as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Dvc.Mem.ImageBuffer.K

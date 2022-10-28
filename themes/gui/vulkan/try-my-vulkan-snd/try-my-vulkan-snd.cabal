@@ -215,6 +215,7 @@ library
       Old.Gpu.Vulkan.Descriptor.List
       Old.Gpu.Vulkan.DescriptorSet.List
       Old.Gpu.Vulkan.Device.Memory.Buffer
+      Old.Gpu.Vulkan.Device.Memory.Buffer.Bind
       Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel
       Old.Gpu.Vulkan.Device.Memory.Buffer.Types
       Old.Gpu.Vulkan.Memory.List
