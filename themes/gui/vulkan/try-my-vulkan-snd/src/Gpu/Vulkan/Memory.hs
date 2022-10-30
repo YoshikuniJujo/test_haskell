@@ -142,6 +142,7 @@ memoryRequirementsListToSize sz0 (reqs : reqss) =
 	where
 	sz = Memory.M.requirementsSize reqs
 	algn = Memory.M.requirementsAlignment reqs
+--	algn = 256 `lcm` Memory.M.requirementsAlignment reqs
 
 allocate :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd ->
