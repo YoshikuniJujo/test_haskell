@@ -65,7 +65,7 @@ instance IsPrefix os os' =>
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('List t nm ': os') ': bts) ('List t nm ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('List algn t nm ': os') ': bts) ('List algn t nm ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
@@ -95,15 +95,15 @@ instance {-# OVERLAPPABLE #-}
 
 type SampleBts0 = '[
 	'DescriptorSetLayout.Buffer '[ ],
-	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing, 'List () "", 'Atom 256 Bool 'Nothing],
+	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing, 'List 256 () "", 'Atom 256 Bool 'Nothing],
 	'DescriptorSetLayout.Other,
 	'DescriptorSetLayout.Buffer
-		'[ 'Atom 256 Bool 'Nothing, 'List () "", 'Atom 256 Int 'Nothing, 'List Double "", 'Atom 256 Double 'Nothing]]
+		'[ 'Atom 256 Bool 'Nothing, 'List 256 () "", 'Atom 256 Int 'Nothing, 'List 256 Double "", 'Atom 256 Double 'Nothing]]
 
-type SampleObjs0 = '[ 'Atom 256 Int 'Nothing, 'List Double ""]
+type SampleObjs0 = '[ 'Atom 256 Int 'Nothing, 'List 256 Double ""]
 
 type SampleBts1 = '[
-	'DescriptorSetLayout.Buffer '[ 'List Double "", 'List Double "", 'List Double ""],
+	'DescriptorSetLayout.Buffer '[ 'List 256 Double "", 'List 256 Double "", 'List 256 Double ""],
 	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing ] ]
 
 type SampleObj1 = '[ 'Atom 256 Double 'Nothing]

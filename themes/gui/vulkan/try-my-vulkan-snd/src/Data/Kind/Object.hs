@@ -25,18 +25,18 @@ import Data.HeteroList
 import qualified Data.Sequences as Seq
 
 data Object =
-	Atom Alignment Type (Maybe Symbol) | List Type Symbol | ObjImage Type Symbol
+	Atom Alignment Type (Maybe Symbol) | List Alignment Type Symbol | ObjImage Type Symbol
 
 type Alignment = Nat
 
 type family ObjectType obj where
 	ObjectType ('Atom _algn t _nm) = t
-	ObjectType ('List t _nm) = t
+	ObjectType ('List _algn t _nm) = t
 	ObjectType ('ObjImage t _nm) = t
 
 data ObjectLength (obj :: Object) where
 	ObjectLengthAtom :: ObjectLength ('Atom _algn t nm)
-	ObjectLengthList :: Int -> ObjectLength ('List t nm)
+	ObjectLengthList :: Int -> ObjectLength ('List _algn t nm)
 	ObjectLengthImage :: {
 		objectLengthImageRow :: Int,
 		objectLengthImageWidth :: Int,
@@ -99,13 +99,14 @@ instance (KnownNat algn, Storable t) => SizeAlignment ('Atom algn t _nm) where
 
 instance (
 	MonoFoldable v, Seq.IsSequence v,
-	Storable t, Element v ~ t ) => StoreObject v ('List t _nm) where
+	Storable t, Element v ~ t ) => StoreObject v ('List _algn t _nm) where
 	storeObject p (ObjectLengthList n) xs = pokeArray p . take n $ otoList xs
 	loadObject p (ObjectLengthList n) = Seq.fromList <$> peekArray n p
 	objectLength = ObjectLengthList . olength
 
-instance Storable t => SizeAlignment ('List t _nm) where
-	objectAlignment = lcm minimumAlignment $ alignment @t undefined
+instance (KnownNat algn, Storable t) => SizeAlignment ('List algn t _nm) where
+	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
+		alignment @t undefined
 	objectSize (ObjectLengthList n) = n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @t undefined

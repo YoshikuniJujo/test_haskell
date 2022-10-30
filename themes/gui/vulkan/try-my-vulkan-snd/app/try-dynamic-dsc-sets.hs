@@ -91,9 +91,9 @@ newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 
-type ListW1 = 'List W1 ""
-type ListW2 = 'List W2 ""
-type ListW3 = 'List W3 ""
+type ListW1 = 'List 256 W1 ""
+type ListW2 = 'List 256 W2 ""
+type ListW3 = 'List 256 W3 ""
 
 crtDevice :: (forall sd .
 	Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
@@ -220,8 +220,8 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :...: HVNil }
 
 type BffMem sm sb nm w = (
-	Vk.Bffr.Binded sb sm nm '[ 'List w ""],
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ 'List w ""])] )
+	Vk.Bffr.Binded sb sm nm '[ 'List 256 w ""],
+	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ 'List 256 w ""])] )
 
 storageBufferNew3 :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (
@@ -240,8 +240,8 @@ class StorageBufferNews f a where
 		HeteroVarList V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
-	Vk.Bffr.Binded sb sm nm '[ 'List w ""] ->
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ 'List w ""])] -> f)
+	Vk.Bffr.Binded sb sm nm '[ 'List 256 w ""] ->
+	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ 'List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
 	type Vectors (IO a) = '[]; storageBufferNews _phdvc _dvc HVNil f = f
@@ -356,7 +356,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		bil @W1 ba :...: bil @W2 bb :...: bil @W3 bc :...: HVNil }
 	where
 	bil :: forall t {sb} {sm} {nm} {objs} .  Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List t "")
+		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List 256 t "")
 	bil = Vk.Dsc.BufferInfoList
 
 writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .

@@ -17,6 +17,7 @@ import Foreign.Pointable
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object hiding (objectLength)
+import Data.Proxy
 import Data.HeteroList
 import Data.Word
 
@@ -89,8 +90,11 @@ class OffsetList v (vs :: [Object]) where
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
-instance Storable v => OffsetList v ('List v _nm ': vs) where
-	offsetList _ = fromIntegral . adjust (alignment @v undefined)
+instance (KnownNat algn, Storable v) =>
+	OffsetList v ('List algn v _nm ': vs) where
+	offsetList _ = fromIntegral . adjust (
+		fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
+		alignment @v undefined )
 
 instance {-# OVERLAPPABLE #-} (
 	SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
@@ -98,7 +102,7 @@ instance {-# OVERLAPPABLE #-} (
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
 sampleObjLens :: HeteroVarList ObjectLength
-	['List Bool "", 'Atom 256 Char 'Nothing, 'Atom 256 Int 'Nothing, 'List Double "", 'List Char ""]
+	['List 256 Bool "", 'Atom 256 Char 'Nothing, 'Atom 256 Int 'Nothing, 'List 256 Double "", 'List 256 Char ""]
 sampleObjLens =
 	ObjectLengthList 3 :...:
 	ObjectLengthAtom :...:
