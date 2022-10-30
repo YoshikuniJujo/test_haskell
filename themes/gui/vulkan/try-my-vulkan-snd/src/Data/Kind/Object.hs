@@ -15,24 +15,27 @@ import GHC.TypeLits
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Data.Kind
 import Data.Foldable
 import Data.Traversable
-import Data.Kind
 import Data.MonoTraversable
+import Data.Proxy
 import Data.HeteroList
 
 import qualified Data.Sequences as Seq
 
 data Object =
-	Atom Type (Maybe Symbol) | List Type Symbol | ObjImage Type Symbol
+	Atom Alignment Type (Maybe Symbol) | List Type Symbol | ObjImage Type Symbol
+
+type Alignment = Nat
 
 type family ObjectType obj where
-	ObjectType ('Atom t _nm) = t
+	ObjectType ('Atom _algn t _nm) = t
 	ObjectType ('List t _nm) = t
 	ObjectType ('ObjImage t _nm) = t
 
 data ObjectLength (obj :: Object) where
-	ObjectLengthAtom :: ObjectLength ('Atom t nm)
+	ObjectLengthAtom :: ObjectLength ('Atom _algn t nm)
 	ObjectLengthList :: Int -> ObjectLength ('List t nm)
 	ObjectLengthImage :: {
 		objectLengthImageRow :: Int,
@@ -66,7 +69,8 @@ class WholeSize objs where
 instance WholeSize '[] where wholeSize sz _ = sz
 
 minimumAlignment :: Int
-minimumAlignment = 256
+-- minimumAlignment = 256
+minimumAlignment = 1
 
 instance (SizeAlignment obj, WholeSize objs) =>
 	WholeSize (obj ': objs) where
@@ -83,13 +87,14 @@ class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
 	objectAlignment :: Int
 
-instance Storable t => StoreObject t ('Atom t _nm) where
+instance Storable t => StoreObject t ('Atom _algn t _nm) where
 	storeObject p ObjectLengthAtom x = poke p x
 	loadObject p ObjectLengthAtom = peek p
 	objectLength _ = ObjectLengthAtom
 
-instance Storable t => SizeAlignment ('Atom t _nm) where
-	objectAlignment = lcm minimumAlignment $ alignment @t undefined
+instance (KnownNat algn, Storable t) => SizeAlignment ('Atom algn t _nm) where
+	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
+		alignment @t undefined
 	objectSize ObjectLengthAtom = sizeOf @t undefined
 
 instance (

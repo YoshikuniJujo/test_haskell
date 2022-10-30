@@ -135,10 +135,10 @@ mkData n = (
 
 type DscSetLytLstW123 = '[
 	'Vk.DscSetLyt.Buffer '[ListW1, ListW2, ListW3],
-	'Vk.DscSetLyt.Buffer '[ 'Atom Word32 'Nothing],
+	'Vk.DscSetLyt.Buffer '[ 'Atom 256 Word32 'Nothing],
 	'Vk.DscSetLyt.Buffer '[
-		'Atom Word32 'Nothing,
-		'Atom Word32 'Nothing ] ]
+		'Atom 256 Word32 'Nothing,
+		'Atom 256 Word32 'Nothing ] ]
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () DscSetLytLstW123
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
@@ -174,9 +174,9 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 	Vk.DscSet.allocateSs dvc (dscSetInfo dp dslyt) >>= \(Singleton ds) ->
 	storageBufferNew3 phdvc dvc da db dc \(ba, ma) (bb, mb) (bc, mc) ->
 	storageBufferNew3Objs @Word32
-		@('Atom Word32 ('Just "x0"))
-		@('Atom Word32 ('Just "x1"))
-		@('Atom Word32 ('Just "x2"))
+		@('Atom 256 Word32 ('Just "x0"))
+		@('Atom 256 Word32 ('Just "x1"))
+		@('Atom 256 Word32 ('Just "x2"))
 		phdvc dvc 3 5 7 \bx mx -> case arg of
 		"0" -> do
 			Vk.DscSet.updateDs @_ @() dvc (
@@ -366,7 +366,7 @@ writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb4, sm4, nm4,
 				objs,
-				'Atom Word32 ('Just nm))
+				'Atom 256 Word32 ('Just nm))
 			] )
 writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,

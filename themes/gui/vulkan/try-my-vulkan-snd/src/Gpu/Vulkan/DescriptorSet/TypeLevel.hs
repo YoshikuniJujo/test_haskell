@@ -49,19 +49,19 @@ class BindingAndArrayElem
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t 'Nothing ': os') ': bts) ('Atom t 'Nothing ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t 'Nothing ': os') ': bts) ('Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t 'Nothing ': os') ': bts) ('Atom t ('Just nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t 'Nothing ': os') ': bts) ('Atom algn t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t ('Just nm) ': os') ': bts) ('Atom t 'Nothing ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t ('Just nm) ': os') ': bts) ('Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom t ('Just nm) ': os') ': bts) ('Atom t ('Just nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t ('Just nm) ': os') ': bts) ('Atom algn t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
@@ -95,18 +95,18 @@ instance {-# OVERLAPPABLE #-}
 
 type SampleBts0 = '[
 	'DescriptorSetLayout.Buffer '[ ],
-	'DescriptorSetLayout.Buffer '[ 'Atom Double 'Nothing, 'List () "", 'Atom Bool 'Nothing],
+	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing, 'List () "", 'Atom 256 Bool 'Nothing],
 	'DescriptorSetLayout.Other,
 	'DescriptorSetLayout.Buffer
-		'[ 'Atom Bool 'Nothing, 'List () "", 'Atom Int 'Nothing, 'List Double "", 'Atom Double 'Nothing]]
+		'[ 'Atom 256 Bool 'Nothing, 'List () "", 'Atom 256 Int 'Nothing, 'List Double "", 'Atom 256 Double 'Nothing]]
 
-type SampleObjs0 = '[ 'Atom Int 'Nothing, 'List Double ""]
+type SampleObjs0 = '[ 'Atom 256 Int 'Nothing, 'List Double ""]
 
 type SampleBts1 = '[
 	'DescriptorSetLayout.Buffer '[ 'List Double "", 'List Double "", 'List Double ""],
-	'DescriptorSetLayout.Buffer '[ 'Atom Double 'Nothing ] ]
+	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing ] ]
 
-type SampleObj1 = '[ 'Atom Double 'Nothing]
+type SampleObj1 = '[ 'Atom 256 Double 'Nothing]
 
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])

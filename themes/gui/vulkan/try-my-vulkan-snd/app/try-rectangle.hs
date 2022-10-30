@@ -556,10 +556,10 @@ createRenderPass dvc scifmt f = do
 			Vk.RndrPass.M.createInfoDependencies = [dependency] }
 	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
 
-type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing]])
+type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing]])
 
 createPipelineLayout :: Vk.Dvc.D sd -> (forall sl sdsc .
-		Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing]] ->
+		Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing]] ->
 		Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> IO b) ->
 	IO b
 createPipelineLayout dvc f =
@@ -572,18 +572,18 @@ createPipelineLayout dvc f =
 	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt -> f descriptorSetLayout ppllyt
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
-	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing]]
+	Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing]]
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo ()
-		'[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing] ]
+		'[ 'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings = uboLayoutBinding :...: HVNil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing])
+		('Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing])
 	uboLayoutBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
@@ -805,7 +805,7 @@ createIndexBuffer phdvc dvc gq cp f =
 
 createUniformBuffers ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
-	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom UniformBufferObject 'Nothing]] ->
+	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing]] ->
 	Int -> (forall slyts smsbs . (
 		ListToHeteroVarList slyts,
 		Update smsbs slyts,
@@ -826,7 +826,7 @@ type family MapFst abs where
 	MapFst ( '(a, b, c :: k) ': abs) = a ': MapFst abs
 
 data BindedUbo smsb where
-	BindedUbo :: Vk.Bffr.Binded sm sb "uniform-buffer" '[ 'Atom UniformBufferObject 'Nothing] ->
+	BindedUbo :: Vk.Bffr.Binded sm sb "uniform-buffer" '[ 'Atom 256 UniformBufferObject 'Nothing] ->
 		BindedUbo '(sm, sb)
 
 data MemoryUbo smsb where
@@ -842,7 +842,7 @@ createUniformBuffer1 phdvc dvc f = createBufferAtom' phdvc dvc
 
 type UniformBufferMemory sm sb nm = Vk.Mem.M sm '[ '(
 	sb,
-	'Vk.Mem.K.Buffer nm '[ 'Atom UniformBufferObject 'Nothing]
+	'Vk.Mem.K.Buffer nm '[ 'Atom 256 UniformBufferObject 'Nothing]
 	)]
 
 createDescriptorPool ::
@@ -873,11 +873,11 @@ createDescriptorSets dvc dscp ubs dscslyts = do
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
 descriptorWrite ::
-	Vk.Bffr.Binded sm sb nm '[ 'Atom UniformBufferObject 'Nothing] ->
+	Vk.Bffr.Binded sm sb nm '[ 'Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.S sd sp slbts ->
 	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
-		'[ 'Atom UniformBufferObject 'Nothing], 'Atom UniformBufferObject 'Nothing )])
+		'[ 'Atom 256 UniformBufferObject 'Nothing], 'Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite ub dscs = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
@@ -895,7 +895,7 @@ instance Update '[] '[] where update _ HVNil HVNil = pure ()
 instance Update '[t] '[] where update _ (Singleton _) HVNil = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom UniformBufferObject 'Nothing],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ 'Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss) => Update (ub ': ubs) (dscs ': dscss) where
 	update dvc (BindedUbo ub :...: ubs) (dscs :...: dscss) = do
 		Vk.DscSet.updateDs @() @() dvc
@@ -905,10 +905,10 @@ instance (
 createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'Atom a 'Nothing] ->
+		Vk.Bffr.Binded sb sm nm '[ 'Atom 256 a 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.Buffer nm '[ 'Atom a 'Nothing] )] ->
+			'Vk.Mem.K.Buffer nm '[ 'Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
 createBufferAtom' p dv usg props = createBuffer' p dv ObjectLengthAtom usg props
 
@@ -1202,7 +1202,7 @@ instance DescriptorSetIndex aus s =>
 updateUniformBuffer ::
 	Vk.Dvc.D sd -> MemoryUbo sbsm -> Vk.C.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc (MemoryUbo um) sce tm =
-	Vk.Mem.write @"uniform-buffer" @('Atom UniformBufferObject 'Nothing) dvc um zeroBits ubo
+	Vk.Mem.write @"uniform-buffer" @('Atom 256 UniformBufferObject 'Nothing) dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
 		uniformBufferObjectModel = Cglm.glmRotate
 			Cglm.glmMat4Identity
