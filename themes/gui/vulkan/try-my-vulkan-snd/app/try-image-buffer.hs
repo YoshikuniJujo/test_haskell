@@ -136,10 +136,10 @@ calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 		Buffer3Memory1 ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
 			calc' dvc qfam dslyt dsst maxX readMemories m m m
+		-}
 		Buffer1Memory1 ->
 			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m m2 ->
 			calc' dvc qfam dslyt dsst maxX (readMemories' @"hello" @"hello" @"hello") m2 m2 m2
-		-}
 
 calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
