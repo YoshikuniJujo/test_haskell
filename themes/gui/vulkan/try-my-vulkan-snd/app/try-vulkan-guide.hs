@@ -1156,26 +1156,66 @@ createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 				'Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				'Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
 		IO a) -> IO a
-createSceneBuffer phdvc dvc = createBuffer phdvc dvc
+createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
 	(ObjectLengthAtom :...: ObjectLengthAtom :...: HVNil)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
-createBuffer :: forall objs nm sd a . WholeSize objs => -- SizeAlignment obj =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroVarList ObjectLength objs ->
+createBuffer :: forall obj nm sd a . (
+	WholeSize '[obj],
+	SizeAlignment obj
+--	Vk.Dvc.Mem.ImageBuffer.Alignments '[
+--		'(s, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm objs) ]
+	) => -- SizeAlignment obj =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroVarList ObjectLength '[obj] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm objs ->
+		Vk.Bffr.Binded sb sm nm '[obj] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[
-			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm objs)
+			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[obj])
 			] -> IO a ) -> IO a
-createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
+createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
+		\b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Dvc.Mem.ImageBuffer.allocateBind dv
 		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b) (allcInfo mt) nil nil
 		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () objs
+	bffrInfo :: Vk.Bffr.CreateInfo () '[obj]
+	bffrInfo = Vk.Bffr.CreateInfo {
+		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoFlags = zeroBits,
+		Vk.Bffr.createInfoLengths = lns,
+		Vk.Bffr.createInfoUsage = usg,
+		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
+		Vk.Bffr.createInfoQueueFamilyIndices = [] }
+	allcInfo :: Vk.Mem.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
+
+createBuffer2 :: forall obj obj2 nm sd a . (
+	WholeSize '[obj, obj2],
+	SizeAlignment obj, SizeAlignment obj2
+--	Vk.Dvc.Mem.ImageBuffer.Alignments '[
+--		'(s, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm objs) ]
+	) => -- SizeAlignment obj =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroVarList ObjectLength '[obj, obj2] ->
+	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
+		forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[obj, obj2] ->
+		Vk.Dvc.Mem.ImageBuffer.M sm '[
+			'(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[obj, obj2])
+			] -> IO a ) -> IO a
+createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
+		\b -> do
+	reqs <- Vk.Bffr.getMemoryRequirements dv b
+	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
+	Vk.Dvc.Mem.ImageBuffer.allocateBind dv
+		(Singleton . V2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b) (allcInfo mt) nil nil
+		$ f . \(Singleton (V2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
+	where
+	bffrInfo :: Vk.Bffr.CreateInfo () '[obj, obj2]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,

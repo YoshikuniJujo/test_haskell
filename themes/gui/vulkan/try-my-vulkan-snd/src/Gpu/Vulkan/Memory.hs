@@ -14,7 +14,8 @@ module Gpu.Vulkan.Memory (
 	ImageBuffer(..), ImageBufferBinded(..),
 
 	OffsetSize'(..), OffsetSizeObject(..), getMemoryRequirementsList,
-	offsetSize
+	offsetSize,
+	Alignments
 	) where
 
 import Prelude hiding (map, read)
@@ -24,6 +25,7 @@ import Foreign.Pointable
 import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object hiding (Offset(..))
+import Data.Maybe
 import Data.HeteroList
 import Data.IORef
 
@@ -62,6 +64,19 @@ newM2' ibs mm = (`M` mm) <$> newIORef ibs
 data ImageBuffer sib (ib :: K.ImageBuffer) where
 	Image :: Image.INew si nm fmt -> ImageBuffer si ('K.Image nm fmt)
 	Buffer :: Buffer.B sb nm objs -> ImageBuffer sb ('K.Buffer nm objs)
+
+class Alignments (ibs :: [(Type, K.ImageBuffer)]) where
+	alignments :: [Maybe Int]
+
+instance Alignments '[] where alignments = []
+
+instance Alignments ibs =>
+	Alignments ('(_s, 'K.Image _nm _fmt) ': ibs) where
+	alignments = Nothing : alignments @ibs
+
+instance (SizeAlignment obj, Alignments ibs) =>
+	Alignments ('(_s, 'K.Buffer _nm (obj ': _objs)) ': ibs) where
+	alignments = Just (objectAlignment @obj) : alignments @ibs
 
 deriving instance Show (Image.INew sib nm fmt) =>
 	Show (ImageBuffer sib ('K.Image nm fmt))
@@ -107,7 +122,7 @@ getMemoryRequirementsListBinded :: Device.D sd ->
 getMemoryRequirementsListBinded dvc bis =
 	heteroVarListToListM (getMemoryRequirementsBinded' dvc) bis
 
-allocateInfoToMiddle ::
+allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
 allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
@@ -117,10 +132,11 @@ allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
 		Memory.M.allocateInfoAllocationSize =
-			memoryRequirementsListToSize 0 reqss,
+			memoryRequirementsListToSize 0
+				(alignments @sibfoss) reqss,
 		Memory.M.allocateInfoMemoryTypeIndex = mti }
 
-reallocateInfoToMiddle ::
+reallocateInfoToMiddle :: forall sd sm sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
 reallocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
@@ -130,21 +146,24 @@ reallocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 	pure Memory.M.AllocateInfo {
 		Memory.M.allocateInfoNext = mnxt,
 		Memory.M.allocateInfoAllocationSize =
-			memoryRequirementsListToSize 0 reqss,
+			memoryRequirementsListToSize 0
+				(alignments @sibfoss) reqss,
 		Memory.M.allocateInfoMemoryTypeIndex = mti }
 
 memoryRequirementsListToSize ::
-	Device.M.Size -> [Memory.M.Requirements] -> Device.M.Size
-memoryRequirementsListToSize sz0 [] = sz0
-memoryRequirementsListToSize sz0 (reqs : reqss) =
+	Device.M.Size -> [Maybe Int] -> [Memory.M.Requirements] -> Device.M.Size
+memoryRequirementsListToSize sz0 _ [] = sz0
+memoryRequirementsListToSize sz0 [] _ = sz0
+memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 	memoryRequirementsListToSize
-		(((sz0 - 1) `div` algn + 1) * algn + sz) reqss
+		(((sz0 - 1) `div` algn + 1) * algn + sz) malgns reqss
 	where
 	sz = Memory.M.requirementsSize reqs
-	algn = Memory.M.requirementsAlignment reqs
---	algn = 256 `lcm` Memory.M.requirementsAlignment reqs
+--	algn = Memory.M.requirementsAlignment reqs
+	algn = fromIntegral (fromMaybe 1 malgn) `lcm`
+		Memory.M.requirementsAlignment reqs
 
-allocate :: (Pointable n, Pointable c, Pointable d) =>
+allocate :: (Pointable n, Pointable c, Pointable d, Alignments sibfoss) =>
 	Device.D sd ->
 	HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
@@ -158,7 +177,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	\mem -> f =<< newM2' bs mem
 
 reallocate :: (
-	Pointable n, Pointable c, Pointable d ) =>
+	Pointable n, Pointable c, Pointable d, Alignments sibfoss ) =>
 	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
@@ -170,7 +189,7 @@ reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 	writeMBinded' mem bs
 
 reallocateBind :: (
-	Pointable n, Pointable c, Pointable d, RebindAll sibfoss sibfoss ) =>
+	Pointable n, Pointable c, Pointable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
@@ -201,7 +220,8 @@ instance (
 		rebindAll dvc ibs m
 
 allocateBind :: (
-	Pointable n, Pointable c, Pointable d, BindAll sibfoss sibfoss ) =>
+	Pointable n, Pointable c, Pointable d,
+	BindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd ->
 	HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
