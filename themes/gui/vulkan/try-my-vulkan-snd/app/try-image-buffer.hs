@@ -64,7 +64,6 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
-import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.Bind as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
@@ -78,9 +77,6 @@ import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 import Sample.GetOpt
 import Sample.Image
 import Codec.Picture.Tools
-
-import qualified Old.Gpu.Vulkan.Device.Memory.Buffer as Vk.Dvc.Mem.Buffer
-import qualified Old.Gpu.Vulkan.Device.Memory.Buffer.TypeLevel as Vk.Dvc.Mem.Buffer
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
@@ -110,12 +106,8 @@ datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 calc :: forall w1 w2 w3 . (
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List 256 w2 "") (ListBuffer3Memory3 w1 w2 w3),
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List 256 w3 "") (ListBuffer3Memory3 w1 w2 w3),
 	Offset ('List 256 w2 "") (ListBuffer1 w1 w2 w3),
 	Offset ('List 256 w3 "") (ListBuffer1 w1 w2 w3),
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List 256 w2 "") '[ListBuffer1 w1 w2 w3],
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List 256 w3 "") '[ListBuffer1 w1 w2 w3],
 	Vk.Mem.OffsetSizeObject ('List 256 w2 "") '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject ('List 256 w3 "") '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]
 	) =>
@@ -132,13 +124,11 @@ calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 				(mb :: Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List 256 w2 ""])])
 				(mc :: Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List 256 w3 ""])]) ->
 			calc' dvc qfam dslyt dsst maxX (readMemories @nm1 @nm2 @nm3) ma mb mc
-		{-
 		Buffer3Memory1 ->
 			prepareMems31 phdvc dvc dslyt da db dc \dsst m ->
-			calc' dvc qfam dslyt dsst maxX readMemories m m m
-		-}
+			calc' dvc qfam dslyt dsst maxX (readMemories @"buffer1" @"buffer2" @"buffer3") m m m
 		Buffer1Memory1 ->
-			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m m2 ->
+			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m2 ->
 			calc' dvc qfam dslyt dsst maxX (readMemories' @"hello" @"hello" @"hello") m2 m2 m2
 
 calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
@@ -286,15 +276,15 @@ prepareMems33 phdvc dvc dscSetLyt da db dc f =
 prepareMems31 ::
 	forall bts w1 w2 w3 sd sl a . (
 	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w2 "") '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], '[ 'List 256 w3 ""]],
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w3 "") '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], '[ 'List 256 w3 ""]],
 	Vk.DscSet.BindingAndArrayElem bts '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm .
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm sb1 sb2 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], '[ 'List 256 w3 ""]] -> IO a) -> IO a
+		Vk.Mem.M sm '[
+			'(sb1, 'Vk.Mem.K.Buffer "buffer1" '[ 'List 256 w1 ""]),
+			'(sb2, 'Vk.Mem.K.Buffer "buffer2" '[ 'List 256 w2 ""]),
+			'(sb3, 'Vk.Mem.K.Buffer "buffer3" '[ 'List 256 w3 ""])
+			] -> IO a) -> IO a
 prepareMems31 phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
@@ -309,19 +299,14 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 	Storable w1, Storable w2, Storable w3,
 	Offset ('List 256 w2 "") '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 "" ],
 	Offset ('List 256 w3 "") '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 "" ],
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w2 "") '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]],
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w3 "") '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]],
 	Vk.DscSet.BindingAndArrayElem bts '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject ('List 256 w2 "") '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject ('List 256 w3 "") '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]
 	) =>
 	FilePath -> Vk.Image.Tiling ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm sm' si sb .
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm' si sb .
 		Vk.DscSet.S sd s '(sl, bts) ->
-		Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]] ->
 		Vk.Mem.M sm' '[
 			'(si, 'Vk.Mem.K.Image nmi 'Vk.T.FormatR8g8b8a8Srgb),
 			'(sb, 'Vk.Mem.K.Buffer "hello" '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]) ] ->
@@ -335,7 +320,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	print wdt >> print hgt >> print (olength imgBody) >>
 	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg nm fmt) ->
 	storage1BufferNewNoBind dvc da db dc \(buf :: Vk.Buffer.B sb "hello" objs) ->
-	storage1BufferNew dvc phdvc da db dc \(buf' :: Vk.Buffer.B sb' nm' objs) bnd' m' ->
+--	storage1BufferNew dvc phdvc da db dc \(buf' :: Vk.Buffer.B sb' nm' objs) bnd' m' ->
 	let	imgbuf = V2 (Vk.Mem.Image img) :...:
 			V2 (Vk.Mem.Buffer buf) :...:
 			HVNil in
@@ -352,7 +337,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 				memTypeIdx } in
 	print memInfo >>
 	Vk.Mem.allocateBind dvc imgbuf memInfo nil nil \(
-		V2 (Vk.Mem.ImageBinded imgb) :...:
+		V2 (Vk.Mem.ImageBinded _imgb) :...:
 		V2 (Vk.Mem.BufferBinded bufb) :...: HVNil) mib ->
 	(print =<< Vk.Mem.offsetSize
 		@"hello" @('List 256 w1 "") dvc mib 0) >>
@@ -371,7 +356,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		>>= \(dscSet :...: HVNil) ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
 		(writeDscSet' @w1 @w2 @w3 dscSet bufb) :...: HVNil) [] >>
-	f dscSet m' mib
+	f dscSet mib
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
@@ -448,19 +433,19 @@ storageBufferNew dvc phdvc xs f =
 			Vk.Mem.write @nm @('List 256 w "") dvc memory def xs
 			f binded memory
 
-storage3BufferNew :: forall sd nm1 nm2 nm3 w1 w2 w3 a . (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List 256 w2 "") '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], '[ 'List 256 w3 ""]],
-	Vk.Dvc.Mem.Buffer.OffsetSize ('List 256 w3 "") '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], '[ 'List 256 w3 ""]]
+storage3BufferNew :: forall sd w1 w2 w3 a . (
+	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sb2 sb3 sm .
-		Vk.Buffer.Binded sm sb1 nm1 '[ 'List 256 w1 ""] ->
-		Vk.Buffer.Binded sm sb2 nm2 '[ 'List 256 w2 ""] ->
-		Vk.Buffer.Binded sm sb3 nm3 '[ 'List 256 w3 ""] ->
-		Vk.Dvc.Mem.Buffer.M sm
-			'[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], '[ 'List 256 w3 ""]] -> IO a
+		Vk.Buffer.Binded sb1 sm "buffer1" '[ 'List 256 w1 ""] ->
+		Vk.Buffer.Binded sb2 sm "buffer2" '[ 'List 256 w2 ""] ->
+		Vk.Buffer.Binded sb3 sm "buffer3" '[ 'List 256 w3 ""] ->
+		Vk.Mem.M sm '[
+			'(sb1, 'Vk.Mem.K.Buffer "buffer1" '[ 'List 256 w1 ""]),
+			'(sb2, 'Vk.Mem.K.Buffer "buffer2" '[ 'List 256 w2 ""]),
+			'(sb3, 'Vk.Mem.K.Buffer "buffer3" '[ 'List 256 w3 ""]) ] -> IO a
 		) -> IO a
 storage3BufferNew dvc phdvc xs ys zs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buf1 -> do
@@ -470,16 +455,17 @@ storage3BufferNew dvc phdvc xs ys zs f =
 			Vk.Buffer.create dvc (bufferInfo zs) nil nil \buf3 -> do
 				memInfo3 <- getMemoryInfo phdvc dvc buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
-					Vk.Buffer.allocateBind dvc (
-						V3 buf1 :...: V3 buf2 :...:
-						V3 buf3 :...: HVNil
+					Vk.Mem.allocateBind dvc (
+						V2 (Vk.Mem.Buffer buf1) :...:
+						V2 (Vk.Mem.Buffer buf2) :...:
+						V2 (Vk.Mem.Buffer buf3) :...: HVNil
 						) memInfo1 nil nil
-						\(	V3 bnd1 :...:
-							V3 bnd2 :...:
-							V3 bnd3 :...: HVNil ) mem -> do
-						Vk.Dvc.Mem.Buffer.write @('List 256 w1 "") dvc mem def xs
-						Vk.Dvc.Mem.Buffer.write @('List 256 w2 "") dvc mem def ys
-						Vk.Dvc.Mem.Buffer.write @('List 256 w3 "") dvc mem def zs
+						\(	V2 (Vk.Mem.BufferBinded bnd1) :...:
+							V2 (Vk.Mem.BufferBinded bnd2) :...:
+							V2 (Vk.Mem.BufferBinded bnd3) :...: HVNil ) mem -> do
+						Vk.Mem.write @"buffer1" @('List 256 w1 "") dvc mem def xs
+						Vk.Mem.write @"buffer2" @('List 256 w2 "") dvc mem def ys
+						Vk.Mem.write @"buffer3" @('List 256 w3 "") dvc mem def zs
 						f bnd1 bnd2 bnd3 mem
 					else error "bad"
 
@@ -493,35 +479,8 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-storage1BufferNew :: forall sd nm w1 w2 w3 a . (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w2 "") '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]],
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w3 "") '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]] ) =>
-	Vk.Dvc.D sd -> Vk.PhDvc.P ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
-		forall sb sm .
-		Vk.Buffer.B sb nm '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""] ->
-		Vk.Buffer.Binded sm sb nm '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""] ->
-		Vk.Dvc.Mem.Buffer.M sm
-			'[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]] -> IO a) -> IO a
-storage1BufferNew dvc phdvc xs ys zs f =
-	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil \buf -> do
-		memInfo <- getMemoryInfo phdvc dvc buf
-		Vk.Buffer.allocateBind dvc (V3 buf :...: HVNil)
-			memInfo nil nil \(V3 bnd :...: HVNil) mem -> do
-			Vk.Dvc.Mem.Buffer.write @('List 256 w1 "") dvc mem def xs
-			Vk.Dvc.Mem.Buffer.write @('List 256 w2 "") dvc mem def ys
-			Vk.Dvc.Mem.Buffer.write @('List 256 w3 "") dvc mem def zs
-			f buf bnd mem
-
 storage1BufferNewNoBind :: forall sd nm w1 w2 w3 a . (
-	Storable w1, Storable w2, Storable w3,
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w2 "") '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]],
-	Vk.Dvc.Mem.Buffer.OffsetSize
-		('List 256 w3 "") '[ '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]] ) =>
+	Storable w1, Storable w2, Storable w3 ) =>
 	Vk.Dvc.D sd ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb .
@@ -656,13 +615,6 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List 256 t "")
 bufferInfoList = Vk.Dsc.BufferInfoList
-
-type BindedMem sm sb nm w = (
-	Vk.Buffer.Binded sm sb nm '[ 'List 256 w ""],
-	Vk.Dvc.Mem.Buffer.M sm '[ '[ 'List 256 w ""]] )
-
-type BindedMem3 sb1 sm1 nm1 w1 sb2 sm2 nm2 w2 sb3 sm3 nm3 w3 =
-	(BindedMem sm1 sb1 nm1 w1, BindedMem sm2 sb2 nm2 w2, BindedMem sm3 sb3 nm3 w3)
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () ()
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {

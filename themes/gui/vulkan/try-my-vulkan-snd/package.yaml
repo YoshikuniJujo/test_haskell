@@ -291,15 +291,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
-  try-image-buffer-old:
-    main:                try-image-buffer-old.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-my-vulkan-snd
   try-no-dynamic-dsc-sets:
     main:                try-no-dynamic-dsc-sets.hs
     source-dirs:         app
