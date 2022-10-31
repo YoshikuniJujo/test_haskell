@@ -11,7 +11,6 @@
 
 module Main where
 
-import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.List.Length
@@ -77,8 +76,6 @@ import qualified Old.Gpu.Vulkan.Memory.List as Vk.Memory.List
 import qualified Old.Gpu.Vulkan.Descriptor.List as Vk.Descriptor.List
 import qualified Old.Gpu.Vulkan.DescriptorSet.List as Vk.Descriptor.Set.List
 import qualified Old.Gpu.Vulkan.Buffer.List.Middle as Vk.Buffer.List.Middle
-
-import Gpu.Vulkan.Buffer as Vk.Buffer
 
 main :: IO ()
 main = do
@@ -374,17 +371,6 @@ storageBufferNew dvc phdvc xs f = do
 			Vk.Buffer.List.createInfoSharingMode =
 				Vk.SharingModeExclusive,
 			Vk.Buffer.List.createInfoQueueFamilyIndices = [] }
-		bInfo' = Vk.Buffer.CreateInfo {
-			Vk.Buffer.createInfoNext = Nothing,
-			Vk.Buffer.createInfoFlags = zeroBits,
-			Vk.Buffer.createInfoLengths =
-				Singleton . ObjectLengthList $ V.length xs,
-			Vk.Buffer.createInfoUsage =
-				Vk.Buffer.UsageStorageBufferBit .|.
-				Vk.Buffer.UsageStorageTexelBufferBit,
-			Vk.Buffer.createInfoSharingMode =
-				Vk.SharingModeExclusive,
-			Vk.Buffer.createInfoQueueFamilyIndices = [] }
 	Vk.Buffer.List.create @_ @() @a dvc bInfo nil nil \buffer -> do
 		print buffer
 		requirements <- Vk.Buffer.List.getMemoryRequirements dvc buffer
