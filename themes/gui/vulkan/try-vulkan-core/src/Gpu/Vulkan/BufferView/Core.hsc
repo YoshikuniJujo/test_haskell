@@ -8,7 +8,6 @@ module Gpu.Vulkan.BufferView.Core where
 import Foreign.Ptr
 import Foreign.Ptr.Synonyms
 import Foreign.Storable
-import Foreign.C.Enum
 import Foreign.C.Struct
 import Data.Word
 import Data.Int
@@ -21,9 +20,6 @@ import qualified Gpu.Vulkan.Buffer.Core as Buffer
 
 stype :: #{type VkStructureType}
 stype = #{const VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO}
-
-enum "CreateFlags" ''#{type VkBufferViewCreateFlags} [''Show, ''Storable]
-	[("CreateFlagsZero", 0)]
 
 struct "CreateInfo" #{size VkBufferViewCreateInfo}
 		#{alignment VkBufferViewCreateInfo} [
