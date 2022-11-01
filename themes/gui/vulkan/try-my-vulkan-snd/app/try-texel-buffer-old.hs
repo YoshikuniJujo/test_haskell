@@ -338,12 +338,16 @@ createDescriptorPool dvc f = do
 			Vk.Descriptor.Pool.sizeType =
 				Vk.Descriptor.TypeStorageBuffer,
 			Vk.Descriptor.Pool.sizeDescriptorCount = 10 }
+		poolSize' = Vk.Descriptor.Pool.Size {
+			Vk.Descriptor.Pool.sizeType =
+				Vk.Descriptor.TypeStorageTexelBuffer,
+			Vk.Descriptor.Pool.sizeDescriptorCount = 10 }
 		descPoolInfo = Vk.Descriptor.Pool.CreateInfo {
 			Vk.Descriptor.Pool.createInfoNext = Nothing,
 			Vk.Descriptor.Pool.createInfoFlags =
 				Vk.Descriptor.Pool.CreateFreeDescriptorSetBit,
 			Vk.Descriptor.Pool.createInfoMaxSets = 1,
-			Vk.Descriptor.Pool.createInfoPoolSizes = [poolSize] }
+			Vk.Descriptor.Pool.createInfoPoolSizes = [poolSize, poolSize'] }
 	Vk.Descriptor.Pool.create @() dvc descPoolInfo nil nil f
 
 dataSize :: Integral n => n
