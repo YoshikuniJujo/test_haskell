@@ -69,6 +69,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
+import qualified Gpu.Vulkan.BufferView.Middle as Vk.BufferView.M
+
 main :: IO ()
 main = do
 	(r1, r2, r3) <- calc datA datB datC
@@ -93,7 +95,7 @@ calc da db dc = withDevice \phdvc qFam dvc mxx ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
 	let	n = fromIntegral mxx
 		da' = V.take n da; db' = V.take n db; dc' = V.take n dc in
-	prepareMems phdvc dvc dscSetLyt da' db' dc' \dscSet
+	prepareMems phdvc dvc dscSetLyt da' db' dc' dc' \dscSet
 		(ma :: MemoryList sm1 sb1 nm1 w1)
 		(mb :: MemoryList sm2 sb2 nm2 w2)
 		(mc :: MemoryList sm3 sb3 nm3 w3) ->
@@ -249,23 +251,27 @@ binding0 = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
 prepareMems ::
-	forall bts w1 w2 w3 sd sl nm1 nm2 nm3 a . (
-	Storable w1, Storable w2, Storable w3
-	) =>
-	Vk.DscSet.BindingAndArrayElem bts '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""] =>
+	forall bts w1 w2 w3 w4 sd sl nm1 nm2 nm3 a .
+	(Storable w1, Storable w2, Storable w3, Storable w4) =>
+	Vk.DscSet.BindingAndArrayElem bts
+		'[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""] =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall s sm1 sb1 sm2 sb2 sm3 sb3 .
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
+		forall s sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.Buffer nm1 '[ 'List 256 w1 ""])] ->
 		Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List 256 w2 ""])] ->
-		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List 256 w3 ""])] -> IO a) -> IO a
-prepareMems phdvc dvc dscSetLyt da db dc f =
+		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List 256 w3 ""])] ->
+		IO a) -> IO a
+prepareMems phdvc dvc dscSetLyt da db dc dd f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
-	storageBufferNew3 dvc phdvc da db dc \ba ma bb mb bc mc ->
+	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc bd md -> do
+	let	bufferViewInfo = Vk.BufferView.M.CreateInfo {
+			}
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) [] >>
+		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) []
 	f dscSet ma mb mc
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
@@ -305,6 +311,35 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List 256 t "")
 bufferInfoList = Vk.Dsc.BufferInfoList
+
+storageBufferNew4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
+	Vk.Dvc.D sd -> Vk.PhDvc.P ->
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
+		forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
+		Vk.Buffer.Binded sb1 sm1 nm1 '[ 'List 256 w1 ""] ->
+		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ 'List 256 w1 ""])] ->
+		Vk.Buffer.Binded sb2 sm2 nm2 '[ 'List 256 w2 ""] ->
+		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List 256 w2 ""])] ->
+		Vk.Buffer.Binded sb3 sm3 nm3 '[ 'List 256 w3 ""] ->
+		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List 256 w3 ""])] ->
+		Vk.Buffer.Binded sb4 sm4 nm4 '[ 'List 256 w4 ""] ->
+		Vk.Mem.M sm4 '[ '(sb4, 'Vk.Mem.K.Buffer nm4 '[ 'List 256 w4 ""])] ->
+		IO a ) -> IO a
+storageBufferNew4 dvc phdvc x y z w f = storageBufferNews
+	dvc phdvc (x :...: y :...: z :...: w :...: HVNil) $ addArg4 f
+
+addArg4 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
+	Vk.Buffer.Binded sb1 sm1 nm1 '[ 'List 256 w1 ""] ->
+	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ 'List 256 w1 ""])] ->
+	Vk.Buffer.Binded sb2 sm2 nm2 '[ 'List 256 w2 ""] ->
+	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List 256 w2 ""])] ->
+	Vk.Buffer.Binded sb3 sm3 nm3 '[ 'List 256 w3 ""] ->
+	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List 256 w3 ""])] ->
+	Vk.Buffer.Binded sb4 sm4 nm4 '[ 'List 256 w4 ""] ->
+	Vk.Mem.M sm4 '[ '(sb4, 'Vk.Mem.K.Buffer nm4 '[ 'List 256 w4 ""])] ->
+	r) -> Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 (Arg nm4 w4 r)))
+addArg4 f = Arg \b1 m1 ->
+	Arg \b2 m2 -> Arg \b3 m3 -> Arg \b4 m4 -> f b1 m1 b2 m2 b3 m3 b4 m4
 
 storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->

@@ -250,9 +250,6 @@ withCommandPool phdvc device queue commandPool = do
 							Vk.Descriptor.Set.List.writeImageBufferInfoTexelBufferViews =
 								Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos
 							}
-						descBufferInfos2 =
-							Vk.Descriptor.List.BufferInfo bufD :...:
-							HVNil
 						Vk.Buffer.List.Binded
 							(Vk.Buffer.List.Middle.B _ cBufD) = bufD
 						mBufD = Vk.Buffer.Middle.B cBufD
@@ -270,17 +267,7 @@ withCommandPool phdvc device queue commandPool = do
 							}
 						Vk.Device.D mDevice = device
 					bffView <- Vk.BufferView.M.create @() mDevice bufferViewInfo nil
-					let	writeDescSet2 = Vk.Descriptor.Set.List.Write {
-							Vk.Descriptor.Set.List.writeNext = Nothing,
-							Vk.Descriptor.Set.List.writeDstSet = descSets !! 0,
-							Vk.Descriptor.Set.List.writeDstBinding = 1,
-							Vk.Descriptor.Set.List.writeDstArrayElement = 0,
-							Vk.Descriptor.Set.List.writeDescriptorType =
-								Vk.Descriptor.TypeStorageBuffer,
-							Vk.Descriptor.Set.List.writeImageBufferInfoTexelBufferViews =
-								Right $ Vk.Descriptor.Set.List.BufferInfos descBufferInfos2
-							}
-						writeDescSet2' :: Vk.Descriptor.Set.List.Write () _ _ _ '[]
+					let	writeDescSet2' :: Vk.Descriptor.Set.List.Write () _ _ _ '[]
 						writeDescSet2' = Vk.Descriptor.Set.List.Write {
 							Vk.Descriptor.Set.List.writeNext = Nothing,
 							Vk.Descriptor.Set.List.writeDstSet = descSets !! 0,
