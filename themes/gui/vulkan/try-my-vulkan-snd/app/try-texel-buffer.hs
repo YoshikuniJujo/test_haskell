@@ -269,6 +269,8 @@ prepareMems phdvc dvc dscSetLyt da db dc dd f =
 		>>= \(dscSet :...: HVNil) ->
 	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc bd md -> do
 	let	bufferViewInfo = Vk.BufferView.M.CreateInfo {
+			Vk.BufferView.M.createInfoNext = Nothing,
+			Vk.BufferView.M.createInfoFlags = zeroBits
 			}
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
 		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) []

@@ -255,8 +255,7 @@ withCommandPool phdvc device queue commandPool = do
 						mBufD = Vk.Buffer.Middle.B cBufD
 						bufferViewInfo = Vk.BufferView.M.CreateInfo {
 							Vk.BufferView.M.createInfoNext = Nothing,
-							Vk.BufferView.M.createInfoFlags =
-								Vk.BufferView.C.CreateFlagsZero,
+							Vk.BufferView.M.createInfoFlags = zeroBits,
 							Vk.BufferView.M.createInfoBuffer = mBufD,
 							Vk.BufferView.M.createInfoFormat =
 								Vk.FormatR32g32b32a32Sfloat,

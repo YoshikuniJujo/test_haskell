@@ -1,6 +1,8 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.BufferView.Middle.Internal (
@@ -12,7 +14,10 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Pointable
+import Foreign.C.Enum
 import Control.Monad.Cont
+import Data.Word
+import Data.Bits
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception
@@ -23,9 +28,14 @@ import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.BufferView.Core as C
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer
 
+#include <vulkan/vulkan.h>
+
+enum "CreateFlags" ''#{type VkBufferViewCreateFlags}
+	[''Show, ''Storable, ''Eq, ''Bits] [("CreateFlagsZero", 0)]
+
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
-	createInfoFlags :: C.CreateFlags,
+	createInfoFlags :: CreateFlags,
 	createInfoBuffer :: Buffer.B,
 	createInfoFormat :: Format,
 	createInfoOffset :: Device.Size,
@@ -35,7 +45,7 @@ data CreateInfo n = CreateInfo {
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
-	createInfoFlags = C.CreateFlags flgs,
+	createInfoFlags = CreateFlags flgs,
 	createInfoBuffer = Buffer.B bf,
 	createInfoFormat = Format fmt,
 	createInfoOffset = Device.Size os,
