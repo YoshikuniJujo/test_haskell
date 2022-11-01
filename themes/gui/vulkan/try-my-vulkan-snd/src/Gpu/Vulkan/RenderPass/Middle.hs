@@ -15,7 +15,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList hiding (length)
 
-import Gpu.Vulkan.Middle
+import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Core (Rect2d)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum

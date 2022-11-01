@@ -149,6 +149,7 @@ library
       Gpu.Vulkan.Memory.Middle
       Gpu.Vulkan.Memory.Middle.Internal
       Gpu.Vulkan.Middle
+      Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Struct

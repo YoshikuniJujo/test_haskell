@@ -23,7 +23,7 @@ import Data.Word
 import Data.Int
 import Data.IORef
 
-import Gpu.Vulkan.Middle
+import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer.M

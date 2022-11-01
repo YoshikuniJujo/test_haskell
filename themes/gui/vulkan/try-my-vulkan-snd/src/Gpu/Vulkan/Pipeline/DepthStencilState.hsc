@@ -15,7 +15,7 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Middle
+import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Base
 

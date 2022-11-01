@@ -8,7 +8,19 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Middle where
+module Gpu.Vulkan.Middle.Internal (
+	ApplicationInfo(..), applicationInfoToCore,
+	ApiVersion(..), makeApiVersion, apiVersion_1_0,
+	LayerProperties(..), layerPropertiesFromCore,
+	ExtensionProperties(..), extensionPropertiesFromCore,
+	ObjectHandle(..),
+	StencilOpState(..), stencilOpStateToCore, stencilOpStateZero,
+	ClearValue(..), ClearValuesToCore(..), clearValueListToArray,
+	ClearType(..), ClearColorType(..),
+
+	SubmitInfo(..), SubmitInfoNew(..),
+	submitInfoToCore, submitInfoToCoreNew
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
