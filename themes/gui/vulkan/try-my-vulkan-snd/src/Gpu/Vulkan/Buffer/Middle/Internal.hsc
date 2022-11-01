@@ -32,7 +32,7 @@ import Gpu.Vulkan.Buffer.Enum
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Buffer.Core as C
-import qualified Gpu.Vulkan.Memory.Middle as Memory
+import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 

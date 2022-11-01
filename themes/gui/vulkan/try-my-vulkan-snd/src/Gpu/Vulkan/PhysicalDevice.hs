@@ -34,8 +34,7 @@ import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance.M
 import qualified Gpu.Vulkan.PhysicalDevice.Core as C
 import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
-import qualified Gpu.Vulkan.Memory.Tmp as Memory
-import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
 newtype P = P C.P deriving Show
 
@@ -163,7 +162,7 @@ enumerateExtensionProperties (P pdvc) mlnm = ($ pure) $ runContT do
 		peekArray extensionCount pAvailableExtensions
 
 data MemoryProperties = MemoryProperties {
-	memoryPropertiesMemoryTypes :: [(Memory.TypeIndex, Memory.M.MType)],
+	memoryPropertiesMemoryTypes :: [(Memory.M.TypeIndex, Memory.M.MType)],
 	memoryPropertiesMemoryHeaps :: [Memory.M.Heap] }
 	deriving Show
 

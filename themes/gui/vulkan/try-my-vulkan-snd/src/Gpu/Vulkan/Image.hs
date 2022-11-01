@@ -10,7 +10,7 @@ module Gpu.Vulkan.Image (
 	INew, BindedNew, createNew, recreateNew, CreateInfoNew(..),
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 
-	I, Binded, create, M.CreateInfo(..), getMemoryRequirements, bindMemory,
+	I, Binded, create, M.CreateInfo(..), getMemoryRequirements,
 	M.SubresourceRange(..), MemoryBarrier(..),
 
 	memoryBarrierToMiddle, MemoryBarrierListToMiddle(..), FirstOfFives
@@ -69,12 +69,6 @@ getMemoryRequirementsBindedNew (Device.D dvc) (BindedNew img) =
 
 getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
-
-bindMemory :: Device.D sd -> I si -> Device.MemoryImage sm -> IO (Binded si sm)
-bindMemory (Device.D dvc) (I img) (Device.MemoryImage _ cmem) = do
-	mem <- Memory.mFromCore cmem
-	M.bindMemory dvc img mem 0
-	pure $ Binded img
 
 data MemoryBarrier n si sm nm fmt = MemoryBarrier {
 	memoryBarrierNext :: Maybe n,

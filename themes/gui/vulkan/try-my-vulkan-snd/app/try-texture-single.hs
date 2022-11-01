@@ -133,7 +133,6 @@ import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Dvc.Mem.ImageBuffer.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.Memory.Tmp as Vk.Mem
 import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
@@ -1185,13 +1184,13 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
 	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
 		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
-	IO Vk.Mem.TypeIndex
+	IO Vk.Mem.M.TypeIndex
 findMemoryType phdvc flt props =
 	fromMaybe (error msg) . suitable <$> Vk.PhDvc.getMemoryProperties phdvc
 	where

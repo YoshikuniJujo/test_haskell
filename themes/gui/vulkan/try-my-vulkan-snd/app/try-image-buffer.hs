@@ -44,7 +44,6 @@ import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
-import qualified Gpu.Vulkan.Memory.Tmp as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
@@ -567,7 +566,7 @@ memoryPropertyBits =
 
 findMemoryTypeIndex ::
 	[Vk.Mem.M.Requirements] -> Vk.Mem.PropertyFlags ->
-	Vk.PhDvc.MemoryProperties -> Vk.Mem.TypeIndex
+	Vk.PhDvc.MemoryProperties -> Vk.Mem.M.TypeIndex
 findMemoryTypeIndex requirementss memoryProp memoryProperties = do
 	let	reqTypess = Vk.Mem.M.requirementsMemoryTypeBits <$> requirementss
 		memPropTypes = (fst <$>)

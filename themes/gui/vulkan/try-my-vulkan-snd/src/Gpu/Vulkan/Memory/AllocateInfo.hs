@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Memory.AllocateInfo where
 
-import Gpu.Vulkan.Memory.Tmp
+import Gpu.Vulkan.Memory.Middle.Internal
 
 data AllocateInfo n = AllocateInfo {
 	allocateInfoNext :: Maybe n,

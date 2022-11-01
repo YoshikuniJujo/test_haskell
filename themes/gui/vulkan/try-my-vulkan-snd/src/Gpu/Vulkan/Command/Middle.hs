@@ -45,7 +45,7 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle.Internal as Descriptor.Set
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
-import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
 beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.CC vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()

@@ -147,7 +147,7 @@ library
       Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Memory.Kind
       Gpu.Vulkan.Memory.Middle
-      Gpu.Vulkan.Memory.Tmp
+      Gpu.Vulkan.Memory.Middle.Internal
       Gpu.Vulkan.Middle
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.PhysicalDevice.Enum

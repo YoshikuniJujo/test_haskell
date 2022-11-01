@@ -45,7 +45,6 @@ import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
-import qualified Gpu.Vulkan.Memory.Tmp as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
@@ -533,7 +532,7 @@ getMemoryInfo phdvc dvc buffer = do
 
 findMemoryTypeIndex ::
 	Vk.PhDvc.P -> Vk.Mem.M.Requirements -> Vk.Mem.PropertyFlags ->
-	IO Vk.Mem.TypeIndex
+	IO Vk.Mem.M.TypeIndex
 findMemoryTypeIndex physicalDevice requirements memoryProp = do
 	memoryProperties <- Vk.PhDvc.getMemoryProperties physicalDevice
 	let	reqTypes = Vk.Mem.M.requirementsMemoryTypeBits requirements

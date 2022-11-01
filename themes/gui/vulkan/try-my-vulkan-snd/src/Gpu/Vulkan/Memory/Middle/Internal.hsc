@@ -5,7 +5,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Memory.Middle where
+module Gpu.Vulkan.Memory.Middle.Internal (
+	M(..), mToCore, AllocateInfo(..), allocate, reallocate, free,
+	MapFlags(..), map, unmap,
+
+	Requirements(..), requirementsFromCore,
+	Barrier(..), barrierToCore,
+
+	Heap, heapFromCore,
+
+	MType(..), mTypeFromCore,
+	TypeBits, TypeIndex, elemTypeIndex, typeBitsToTypeIndices
+	) where
 
 import Prelude hiding (map)
 
@@ -24,7 +35,6 @@ import Data.Word
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Memory.Tmp
 import Gpu.Vulkan.Memory.Enum
 
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
@@ -36,16 +46,13 @@ import qualified Gpu.Vulkan.Memory.Core as C
 
 newtype M = M (IORef C.M)
 
-mFromCore :: C.M -> IO M
-mFromCore = (M <$>) . newIORef
-
 mToCore :: M -> IO C.M
 mToCore (M r) = readIORef r
 
-mWrite :: M -> C.M -> IO ()
-mWrite (M r) m = writeIORef r m
-
 newtype TypeBits = TypeBits #{type uint32_t} deriving (Show, Eq, Bits, FiniteBits)
+
+newtype TypeIndex = TypeIndex Word32
+	deriving (Show, Eq, Ord, Enum, Num, Real, Integral)
 
 typeBitsToTypeIndices :: TypeBits -> [TypeIndex]
 typeBitsToTypeIndices bs = (fst <$>)
@@ -59,15 +66,6 @@ data Requirements = Requirements {
 	requirementsAlignment :: Device.Size,
 	requirementsMemoryTypeBits :: TypeBits }
 	deriving Show
-
-requirementsToCore :: Requirements -> C.Requirements
-requirementsToCore Requirements {
-	requirementsSize = Device.Size sz,
-	requirementsAlignment = Device.Size al,
-	requirementsMemoryTypeBits = TypeBits mtbs } = C.Requirements {
-	C.requirementsSize = sz,
-	C.requirementsAlignment = al,
-	C.requirementsMemoryTypeBits = mtbs }
 
 requirementsFromCore :: C.Requirements -> Requirements
 requirementsFromCore C.Requirements {
