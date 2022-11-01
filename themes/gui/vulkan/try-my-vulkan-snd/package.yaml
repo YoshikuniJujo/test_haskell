@@ -264,15 +264,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
-  try-texel-buffer-old:
-    main:                try-texel-buffer-old.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-my-vulkan-snd
   try-vulkan-guide:
     main:                try-vulkan-guide.hs
     source-dirs:         app

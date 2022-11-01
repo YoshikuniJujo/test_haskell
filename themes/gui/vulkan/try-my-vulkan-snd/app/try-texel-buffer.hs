@@ -38,6 +38,8 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
+import qualified Gpu.Vulkan.Device.Type as Vk.Dvc
+import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Dvc.M
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
@@ -78,11 +80,11 @@ main = do
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
 
-newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
-newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
-newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
+newtype W1 = W1 { unW1 :: Float } deriving (Show, Storable)
+newtype W2 = W2 { unW2 :: Float } deriving (Show, Storable)
+newtype W3 = W3 { unW3 :: Float } deriving (Show, Storable)
 
-dataSize :: Integral n => n
+dataSize :: Num n => n
 dataSize = 1000000
 
 datA :: V.Vector W1; datA = V.replicate dataSize $ W1 3
@@ -94,8 +96,10 @@ calc :: forall w1 w2 w3 . (Storable w1, Storable w2, Storable w3) =>
 calc da db dc = withDevice \phdvc qFam dvc mxx ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
 	let	n = fromIntegral mxx
-		da' = V.take n da; db' = V.take n db; dc' = V.take n dc in
-	prepareMems phdvc dvc dscSetLyt da' db' dc' dc' \dscSet
+		da' = V.take n da; db' = V.take n db; dc' = V.take n dc
+		dd = V.fromList . take (fromIntegral mxx * 4) $ cycle [123 :: Float, 321, 111, 333, 555]
+	in
+	prepareMems phdvc dvc dscSetLyt da' db' dc' dd mxx \dscSet
 		(ma :: MemoryList sm1 sb1 nm1 w1)
 		(mb :: MemoryList sm2 sb2 nm2 w2)
 		(mc :: MemoryList sm3 sb3 nm3 w3) ->
@@ -131,7 +135,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoNext = Nothing,
-	Vk.Ppl.Lyt.createInfoFlags = def,
+	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayouts = Vk.Ppl.Lyt.Layout dsl :...: HVNil,
 	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 
@@ -238,17 +242,28 @@ findQueueFamily phdvc qb = do
 			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
 		qFamProperties
 
-dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
-	'[ 'Vk.DscSetLyt.Buffer '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""]]
+dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () '[
+	'Vk.DscSetLyt.Buffer '[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""],
+	'Vk.DscSetLyt.Other
+	]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = def,
-	Vk.DscSetLyt.createInfoBindings = binding0 :...: HVNil }
+	Vk.DscSetLyt.createInfoBindings = binding0 :...: binding1 :...: HVNil }
 
 binding0 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
 binding0 = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+
+-- binding1 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
+binding1 :: Vk.DscSetLyt.Binding 'Vk.DscSetLyt.Other
+binding1 = Vk.DscSetLyt.BindingOther {
+	Vk.DscSetLyt.bindingOtherDescriptorType =
+		Vk.Dsc.TypeStorageTexelBuffer,
+	Vk.DscSetLyt.bindingOtherDescriptorCountOrImmutableSamplers =
+		Left 1,
+	Vk.DscSetLyt.bindingOtherStageFlags = Vk.ShaderStageComputeBit }
 
 prepareMems ::
 	forall bts w1 w2 w3 w4 sd sl nm1 nm2 nm3 a .
@@ -256,24 +271,42 @@ prepareMems ::
 	Vk.DscSet.BindingAndArrayElem bts
 		'[ 'List 256 w1 "", 'List 256 w2 "", 'List 256 w3 ""] =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> Word32 -> (
 		forall s sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.Buffer nm1 '[ 'List 256 w1 ""])] ->
 		Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[ 'List 256 w2 ""])] ->
 		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[ 'List 256 w3 ""])] ->
 		IO a) -> IO a
-prepareMems phdvc dvc dscSetLyt da db dc dd f =
+prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :...: HVNil) ->
 	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc bd md -> do
-	let	bufferViewInfo = Vk.BufferView.M.CreateInfo {
+	let	Vk.Buffer.Binded _ mbd = bd
+		bufferViewInfo = Vk.BufferView.M.CreateInfo {
 			Vk.BufferView.M.createInfoNext = Nothing,
-			Vk.BufferView.M.createInfoFlags = zeroBits
+			Vk.BufferView.M.createInfoFlags = zeroBits,
+			Vk.BufferView.M.createInfoBuffer = mbd,
+			Vk.BufferView.M.createInfoFormat =
+				Vk.FormatR32g32b32a32Sfloat,
+			Vk.BufferView.M.createInfoOffset = 0,
+			Vk.BufferView.M.createInfoRange =
+				Vk.Dvc.M.Size $ 4 * 4 * fromIntegral mxx }
+		Vk.Dvc.D mdvc = dvc
+	bv <- Vk.BufferView.M.create @() mdvc bufferViewInfo nil
+	let	wds = Vk.DscSet.Write {
+			Vk.DscSet.writeNext = Nothing,
+			Vk.DscSet.writeDstSet = dscSet,
+			Vk.DscSet.writeDescriptorType =
+				Vk.Dsc.TypeStorageTexelBuffer,
+			Vk.DscSet.writeSources =
+				Vk.DscSet.TexelBufferViews 1 0 [bv]
 			}
-	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
-		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...: HVNil) []
+	Vk.DscSet.updateDs @() @() dvc (
+		Vk.DscSet.Write_ (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :...:
+		Vk.DscSet.Write_ wds :...:
+		HVNil ) []
 	f dscSet ma mb mc
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
@@ -281,9 +314,13 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoNext = Nothing,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 	Vk.DscPool.createInfoMaxSets = 1,
-	Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	where poolSize = Vk.DscPool.Size {
+	Vk.DscPool.createInfoPoolSizes = [poolSize, poolSize'] }
+	where
+	poolSize = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscPool.sizeDescriptorCount = 10 }
+	poolSize' = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageTexelBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
@@ -405,7 +442,9 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
 		ObjectLengthList (V.length xs) :...: HVNil,
-	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
+	Vk.Buffer.createInfoUsage =
+		Vk.Buffer.UsageStorageBufferBit .|.
+		Vk.Buffer.UsageStorageTexelBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
@@ -442,17 +481,23 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 #version 460
 layout(local_size_x = 1, local_size_y = 1) in;
 layout(binding = 0) buffer Data {
-	uint val[];
+	float val[];
 } data[3];
 
 layout(constant_id = 0) const uint sc = 2;
 layout(constant_id = 1) const uint sc2 = 3;
 
+layout(binding = 1, rgba32f) uniform imageBuffer storageTexelBuffer;
+
 void
 main()
 {
 	int index = int(gl_GlobalInvocationID.x);
-	data[2].val[index] = (data[0].val[index] + data[1].val[index]) * sc * sc2;
+	vec4 some = imageLoad(storageTexelBuffer, index);
+//	data[2].val[index] = (data[0].val[index] + data[1].val[index]) * sc * sc2;
+	data[0].val[index] = some.x;
+	data[1].val[index] = some.y;
+	data[2].val[index] = some.z;
 }
 
 |]
