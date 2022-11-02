@@ -165,6 +165,8 @@ library
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
       Gpu.Vulkan.Pipeline.ColorBlendState
+      Gpu.Vulkan.Pipeline.ColorBlendState.Middle
+      Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.Compute.Middle
       Gpu.Vulkan.Pipeline.DepthStencilState

@@ -646,8 +646,7 @@ makePipeline dvc rp f = do
 			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 		blend = Vk.Ppl.ClrBlndSt.CreateInfo {
 			Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
-			Vk.Ppl.ClrBlndSt.createInfoFlags =
-				Vk.Ppl.ClrBlndSt.CreateFlagsZero,
+			Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
 			Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
 			Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpClear,
 			Vk.Ppl.ClrBlndSt.createInfoAttachments =
