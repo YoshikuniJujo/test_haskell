@@ -4,7 +4,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.DepthStencilState where
+module Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal (
+	CreateInfo(..), CreateFlags(..), createInfoToCore
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

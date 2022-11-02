@@ -171,6 +171,8 @@ library
       Gpu.Vulkan.Pipeline.Compute.Middle
       Gpu.Vulkan.Pipeline.Compute.Middle.Internal
       Gpu.Vulkan.Pipeline.DepthStencilState
+      Gpu.Vulkan.Pipeline.DepthStencilState.Middle
+      Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal
       Gpu.Vulkan.Pipeline.DynamicState
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
