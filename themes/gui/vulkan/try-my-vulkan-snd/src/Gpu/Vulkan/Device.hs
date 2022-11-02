@@ -5,7 +5,7 @@
 
 module Gpu.Vulkan.Device (
 	D, create, M.CreateInfo(..), M.QueueCreateInfo(..), M.CreateFlags,
-	getQueue, MemoryImage, MemoryList,
+	getQueue,
 	waitIdle
 	) where
 

@@ -11,15 +11,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle.Internal (
-	D(..), CreateInfo(..), QueueCreateInfo(..), create, destroy,
-	CreateFlags, CreateFlagBits,
+	D(..), CreateInfo(..), CreateFlags, CreateFlagBits, QueueCreateInfo(..),
+	create, destroy, getQueue, waitIdle,
 
-	getQueue, waitIdle,
-
-	Memory(..),
-
-	Size(..), MemoryImage(..), MemoryList(..), MemoryAtom(..)
-	) where
+	Size(..) ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -33,7 +28,6 @@ import Data.Default
 import Data.Bits
 import Data.List
 import Data.HeteroList hiding (length)
-import Data.IORef
 import Data.Word
 
 import qualified Data.Text as T
@@ -47,7 +41,6 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.PhysicalDevice.Middle.Internal as PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Gpu.Vulkan.Device.Core as C
-import qualified Gpu.Vulkan.Memory.Core as Memory
 import qualified Gpu.Vulkan.Queue as Queue
 
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
@@ -161,11 +154,3 @@ queueCreateInfoToCore QueueCreateInfo {
 enum "Size" ''#{type VkDeviceSize}
 		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral]
 	[("WholeSize", #{const VK_WHOLE_SIZE})]
-
-newtype Memory = Memory (IORef Memory.M)
-
-data MemoryList v = MemoryList Int Memory.M deriving Show
-
-newtype MemoryAtom v = MemoryAtom Memory.M deriving Show
-
-data MemoryImage = MemoryImage Memory.M deriving Show

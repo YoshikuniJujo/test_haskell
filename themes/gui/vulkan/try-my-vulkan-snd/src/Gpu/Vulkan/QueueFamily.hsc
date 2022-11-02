@@ -6,7 +6,6 @@ module Gpu.Vulkan.QueueFamily where
 import Data.Word
 
 import Gpu.Vulkan.Core
-import Gpu.Vulkan.QueueFamily.EnumManual
 
 import qualified Gpu.Vulkan.Queue.Enum as Queue
 import qualified Gpu.Vulkan.QueueFamily.Core as C
