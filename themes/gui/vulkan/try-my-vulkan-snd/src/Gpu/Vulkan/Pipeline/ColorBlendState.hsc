@@ -21,7 +21,8 @@ import Data.Color
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Base
 
-import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as ColorBlendAttachment
+import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
+	as ColorBlendAttachment
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Core as C
 
 #include <vulkan/vulkan.h>

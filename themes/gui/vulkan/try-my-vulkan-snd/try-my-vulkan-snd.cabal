@@ -162,6 +162,8 @@ library
       Gpu.Vulkan.Pipeline.Cache.Middle.Internal
       Gpu.Vulkan.Pipeline.Cache.Type
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
+      Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle
+      Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
       Gpu.Vulkan.Pipeline.ColorBlendState
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.Compute.Middle
