@@ -169,6 +169,7 @@ library
       Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.Compute.Middle
+      Gpu.Vulkan.Pipeline.Compute.Middle.Internal
       Gpu.Vulkan.Pipeline.DepthStencilState
       Gpu.Vulkan.Pipeline.DynamicState
       Gpu.Vulkan.Pipeline.Enum
