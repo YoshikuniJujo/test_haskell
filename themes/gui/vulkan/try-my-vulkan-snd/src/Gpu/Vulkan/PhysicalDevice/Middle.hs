@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PhysicalDevice (
+module Gpu.Vulkan.PhysicalDevice.Middle (
 	P, enumerate,
 	getFeatures, getQueueFamilyProperties,
 	enumerateExtensionProperties,
@@ -12,4 +12,4 @@ module Gpu.Vulkan.PhysicalDevice (
 	getQueueFamilyProperties'
 	) where
 
-import Gpu.Vulkan.PhysicalDevice.Middle
+import Gpu.Vulkan.PhysicalDevice.Middle.Internal

@@ -153,7 +153,7 @@ newGlobal :: GlfwB.Window -> IO Global
 newGlobal w = do
 	ist <- newIORef undefined
 	dmsgr <- newIORef undefined -- $ Vk.Ext.DU.Msngr.M NullPtr
-	pdvc <- newIORef $ Vk.PhysicalDevice.P NullPtr
+	pdvc <- newIORef undefined -- $ Vk.PhysicalDevice.P NullPtr
 	dvc <- newIORef $ Vk.Device.D NullPtr
 	gq <- newIORef $ Vk.Queue.Q NullPtr
 	pq <- newIORef $ Vk.Queue.Q NullPtr

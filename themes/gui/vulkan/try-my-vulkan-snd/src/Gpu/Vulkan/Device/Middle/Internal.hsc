@@ -44,7 +44,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Device.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
+import qualified Gpu.Vulkan.PhysicalDevice.Middle.Internal as PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Gpu.Vulkan.Device.Core as C
 import qualified Gpu.Vulkan.Memory.Core as Memory

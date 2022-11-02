@@ -136,6 +136,7 @@ library
       Gpu.Vulkan.Khr.Surface.Middle
       Gpu.Vulkan.Khr.Surface.Middle.Internal
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
+      Gpu.Vulkan.Khr.Surface.PhysicalDevice.Middle
       Gpu.Vulkan.Khr.Surface.Type
       Gpu.Vulkan.Khr.Swapchain
       Gpu.Vulkan.Khr.Swapchain.Enum
@@ -152,6 +153,8 @@ library
       Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.PhysicalDevice.Enum
+      Gpu.Vulkan.PhysicalDevice.Middle
+      Gpu.Vulkan.PhysicalDevice.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct
       Gpu.Vulkan.PhysicalDevice.Struct.Th
       Gpu.Vulkan.Pipeline.Cache.Enum
