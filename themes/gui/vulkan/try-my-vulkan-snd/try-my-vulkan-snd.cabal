@@ -260,7 +260,6 @@ library
 executable my-glslc
   main-is: my-glslc.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -300,7 +299,6 @@ executable my-glslc
 executable try-depth-buffering
   main-is: try-depth-buffering.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -340,7 +338,6 @@ executable try-depth-buffering
 executable try-depth-buffering-single
   main-is: try-depth-buffering-single.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -380,7 +377,6 @@ executable try-depth-buffering-single
 executable try-dynamic-dsc-sets
   main-is: try-dynamic-dsc-sets.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -420,7 +416,6 @@ executable try-dynamic-dsc-sets
 executable try-generating-mipmaps
   main-is: try-generating-mipmaps.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -460,7 +455,6 @@ executable try-generating-mipmaps
 executable try-generating-mipmaps-single
   main-is: try-generating-mipmaps-single.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -500,7 +494,6 @@ executable try-generating-mipmaps-single
 executable try-image-buffer
   main-is: try-image-buffer.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -540,7 +533,6 @@ executable try-image-buffer
 executable try-loading-models
   main-is: try-loading-models.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -580,7 +572,6 @@ executable try-loading-models
 executable try-loading-models-single
   main-is: try-loading-models-single.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -620,7 +611,6 @@ executable try-loading-models-single
 executable try-multisampling
   main-is: try-multisampling.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -659,46 +649,6 @@ executable try-multisampling
 
 executable try-multisampling-single
   main-is: try-multisampling-single.hs
-  other-modules:
-      Main
-      Paths_try_my_vulkan_snd
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , array
-    , base >=4.7 && <5
-    , bytestring
-    , c-enum
-    , c-struct
-    , containers
-    , data-default
-    , exception-hierarchy
-    , filepath
-    , ghc-prim
-    , monads-tf
-    , mono-traversable
-    , nowdoc
-    , ranged-list
-    , size-alignment-list
-    , template-haskell
-    , text
-    , time
-    , try-my-vulkan-snd
-    , try-pointable
-    , try-shaderc
-    , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
-    , union-color
-    , uuid
-    , vector
-  default-language: Haskell2010
-
-executable try-my-vulkan-snd-exe
-  main-is: Main.hs
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:
@@ -739,7 +689,6 @@ executable try-my-vulkan-snd-exe
 executable try-next-triangle
   main-is: try-next-triangle.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -779,7 +728,6 @@ executable try-next-triangle
 executable try-no-dynamic-dsc-sets
   main-is: try-no-dynamic-dsc-sets.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -819,7 +767,6 @@ executable try-no-dynamic-dsc-sets
 executable try-rectangle
   main-is: try-rectangle.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -859,7 +806,6 @@ executable try-rectangle
 executable try-rectangle-single
   main-is: try-rectangle-single.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -899,7 +845,6 @@ executable try-rectangle-single
 executable try-saitan
   main-is: try-saitan.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -939,7 +884,6 @@ executable try-saitan
 executable try-saitan-float
   main-is: try-saitan-float.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -979,7 +923,6 @@ executable try-saitan-float
 executable try-shaderc
   main-is: try-shaderc.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1019,7 +962,6 @@ executable try-shaderc
 executable try-shaderc-core
   main-is: try-shaderc-core.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1059,7 +1001,6 @@ executable try-shaderc-core
 executable try-texel-buffer
   main-is: try-texel-buffer.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1099,7 +1040,6 @@ executable try-texel-buffer
 executable try-texture
   main-is: try-texture.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1139,7 +1079,6 @@ executable try-texture
 executable try-texture-single
   main-is: try-texture-single.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1179,7 +1118,6 @@ executable try-texture-single
 executable try-triangle-single
   main-is: try-triangle-single.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1219,7 +1157,6 @@ executable try-triangle-single
 executable try-vertex-input-state
   main-is: try-vertex-input-state.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1259,7 +1196,6 @@ executable try-vertex-input-state
 executable try-vulkan-guide
   main-is: try-vulkan-guide.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1299,7 +1235,6 @@ executable try-vulkan-guide
 executable try-wavefront-obj
   main-is: try-wavefront-obj.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app
@@ -1339,7 +1274,6 @@ executable try-wavefront-obj
 executable try-yatteiku
   main-is: try-yatteiku.hs
   other-modules:
-      Main
       Paths_try_my_vulkan_snd
   hs-source-dirs:
       app

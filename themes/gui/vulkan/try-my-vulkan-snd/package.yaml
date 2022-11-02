@@ -57,15 +57,6 @@ data-files:
   - th/vkPhysicalDeviceFeatures.txt
 
 executables:
-  try-my-vulkan-snd-exe:
-    main:                Main.hs
-    source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - try-my-vulkan-snd
   try-next-triangle:
     main:                try-next-triangle.hs
     source-dirs:         app
