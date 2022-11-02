@@ -8,8 +8,6 @@ module Gpu.Vulkan.PhysicalDevice.Middle (
 
 	Properties(..), getProperties,
 	MemoryProperties(..), getMemoryProperties,
-
-	getQueueFamilyProperties'
 	) where
 
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal

@@ -13,8 +13,6 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 
 	Properties(..), getProperties,
 	MemoryProperties(..), getMemoryProperties,
-
-	getQueueFamilyProperties'
 	) where
 
 import Foreign.Marshal
@@ -136,9 +134,6 @@ getFeatures (P pdvc) =
 		pfts <- ContT alloca
 		lift do	C.getFeatures pdvc pfts
 			peek pfts
-
-getQueueFamilyProperties' :: P -> IO [QueueFamily.Properties]
-getQueueFamilyProperties' p = (snd <$>) <$> getQueueFamilyProperties p
 
 getQueueFamilyProperties :: P -> IO [(QueueFamily.Index, QueueFamily.Properties)]
 getQueueFamilyProperties (P pdvc) =
