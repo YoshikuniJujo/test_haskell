@@ -57,8 +57,8 @@ data-files:
   - th/vkPhysicalDeviceFeatures.txt
 
 executables:
-  try-next-triangle:
-    main:                try-next-triangle.hs
+  try-triangle:
+    main:                try-triangle.hs
     source-dirs:         app
     ghc-options:
     - -threaded
