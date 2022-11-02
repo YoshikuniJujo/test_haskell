@@ -159,6 +159,7 @@ library
       Gpu.Vulkan.PhysicalDevice.Struct.Th
       Gpu.Vulkan.Pipeline.Cache.Enum
       Gpu.Vulkan.Pipeline.Cache.Middle
+      Gpu.Vulkan.Pipeline.Cache.Middle.Internal
       Gpu.Vulkan.Pipeline.Cache.Type
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendState
