@@ -1,4 +1,4 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -9,40 +9,36 @@ import Data.Array.ST
 import Data.Bool
 
 main :: IO ()
-main = print $ hsort [4, 3, 5, 7, 1, 8, 6, 2]
+main = print $ hsortList [4, 3, 5, 7, 1, 8, 6, 2]
 
-hsort :: Ord a => [a] -> [a]
-hsort xs = runST do
-	a <- toArray xs
-	ln <- rangeSize <$> getBounds a
-	putHere a ln `mapM_` [ln - 1, ln - 2 .. 0]
-	putTail a `mapM_` [ln, ln - 1 .. 1]
+hsortList :: Ord a => [a] -> [a]
+hsortList xs = runST do
+	a <- newListArray (0, length xs - 1) xs
+	hsort a
 	getElems a
 
-toArray :: [a] -> ST s (STArray s Int a)
-toArray xs = newListArray (0, length xs - 1) xs
+hsort :: Ord a => STArray s Int a -> ST s ()
+hsort a = do
+	ln <- rangeSize <$> getBounds a
+	putHere a ln `mapM_` [ln - 1, ln - 2 .. 0]
+	putTail a `mapM_` [ln - 1, ln - 2 .. 0]
 
 putTail :: Ord a => STArray s Int a -> Int -> ST s ()
 putTail a sz = do
 	b <- readArray a 0
-	x <- readArray a (sz - 1)
-	writeArray a (sz - 1) b
-	put a (sz - 1) 0 x
+	x <- readArray a sz
+	writeArray a sz b
+	put a sz 0 x
 
 putHere :: Ord a => STArray s Int a -> Int -> Int -> ST s ()
-putHere a sz i = do
-	x <- readArray a i
-	put a sz i x
+putHere a sz i = put a sz i =<< readArray a i
 
 put :: Ord a => STArray s Int a -> Int -> Int -> a -> ST s ()
-put a sz i x = do
-	mt <- target a sz i x
-	case mt of
-		Nothing -> writeArray a i x
-		Just t -> do
-			x' <- readArray a t
-			writeArray a i x'
-			put a sz t x
+put a sz i x = target a sz i x >>= \case
+	Nothing -> writeArray a i x
+	Just t -> do
+		writeArray a i =<< readArray a t
+		put a sz t x
 
 lft, rgt :: Int -> Int
 lft = (+ 1) . (* 2)
