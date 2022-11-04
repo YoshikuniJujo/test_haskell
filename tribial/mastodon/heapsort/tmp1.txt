@@ -1,0 +1,13 @@
+hsort :: Ord a => STArray s Int a -> ST s ()
+hsort a = rangeSize <$> getBounds a >>= \s ->
+	(>>) <$> (treeize a s `mapM_`) <*> (linear a `mapM_`)
+		$ [s - 1, s - 2 .. 0]
+
+treeize :: Ord a => STArray s Int a -> Int -> Int -> ST s ()
+treeize a s i = put a s i =<< readArray a i
+
+linear :: Ord a => STArray s Int a -> Int -> ST s ()
+linear a s = do
+	[b, x] <- readArray a `mapM` [0, s]
+	writeArray a s b
+	put a s 0 x

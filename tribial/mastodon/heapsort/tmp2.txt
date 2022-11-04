@@ -1,0 +1,15 @@
+put :: Ord a => STArray s Int a -> Int -> Int -> a -> ST s ()
+put a s i x = next a s i x >>= \case
+	Nothing -> writeArray a i x
+	Just t -> (writeArray a i =<< readArray a t) >> put a s t x
+
+next :: Ord a => STArray s Int a -> Int -> Int -> a -> ST s (Maybe Int)
+next a s i x
+	| h >= s = pure Nothing
+	| j >= s = rt h <$> readArray a h
+	| True = do
+		[l, r] <- readArray a `mapM` [h, j]
+		pure $ bool (rt h l) (rt j r) (l <= r)
+	where
+	h = i * 2 + 1; j = h + 1
+	rt k y = bool Nothing (Just k) (y > x)
