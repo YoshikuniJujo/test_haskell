@@ -98,6 +98,19 @@ instance HeteroVarListToList' spslbtss =>
 	HeteroVarListToList' (spslbts ': spslbtss) where
 	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
 
+bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
+	(SetPos (MapSnd spslbtss) sbtss, HeteroVarListToList' spslbtss) =>
+	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
+	Pipeline.Layout.LLL s sbtss foo -> HeteroVarList (DescriptorSet sd) spslbtss ->
+	[Word32] -> IO ()
+bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.LLL l) dss dosts =
+	M.bindDescriptorSets c bp l
+		(firstSet' @spslbtss @sbtss)
+		(heteroVarListToList'
+			(\(DescriptorSet (DescriptorSet.S s)) -> s)
+			dss)
+		dosts
+
 bindDescriptorSets :: forall sc vs s sbtss sd spslbtss .
 	(SetPos (MapSnd spslbtss) sbtss, HeteroVarListToList' spslbtss) =>
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
