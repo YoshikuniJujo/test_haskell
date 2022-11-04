@@ -276,8 +276,8 @@ run txfp mdfp w inst g =
 	findDepthFormat phdv >>= \dptfmt ->
 	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
 	createRenderPass @scifmt @dptfmt dv \rp ->
-	createPipelineLayout dv \dscslyt ppllyt ->
-	createGraphicsPipeline dv ext rp ppllyt \gpl ->
+	createPipelineLayout' dv \dscslyt ppllyt ->
+	createGraphicsPipeline' dv ext rp ppllyt \gpl ->
 	createCommandPool qfis dv \cp ->
 	createDepthResources phdv dv gq cp ext \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ext rp scivs dptImgVw \fbs ->
@@ -633,22 +633,6 @@ type AtomUbo s = '(s, '[
 	'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
 	'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ])
 
-createPipelineLayout :: Vk.Dvc.D sd -> (forall sl sdsc .
-		Vk.DscSetLyt.L sdsc '[
-			'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
-			'Vk.DscSetLyt.Image
-				'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-		Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> IO b) ->
-	IO b
-createPipelineLayout dvc f =
-	createDescriptorSetLayout dvc \descriptorSetLayout ->
-	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfo {
-			Vk.Ppl.Layout.createInfoNext = Nothing,
-			Vk.Ppl.Layout.createInfoFlags = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayouts = Vk.Ppl.Layout.Layout descriptorSetLayout :...: HVNil,
-			Vk.Ppl.Layout.createInfoPushConstantRanges = [] } in
-	Vk.Ppl.Layout.create @() dvc pipelineLayoutInfo nil nil \ppllyt -> f descriptorSetLayout ppllyt
-
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.L s '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
@@ -680,51 +664,66 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 		Vk.DscSetLyt.bindingImageStageFlags =
 			Vk.ShaderStageFragmentBit }
 
-createGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
+createPipelineLayout' ::
+	Vk.Dvc.D sd -> (forall sdsl sl .
+		Vk.DscSetLyt.L sdsl '[
+			'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
+			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
+		Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
+createPipelineLayout' dvc f =
+	createDescriptorSetLayout dvc \dsl ->
+	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
+			Vk.Ppl.Layout.createInfoNextNew = Nothing,
+			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
+			Vk.Ppl.Layout.createInfoSetLayoutsNew =
+				Singleton $ Vk.Ppl.Layout.Layout dsl } in
+	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil $ f dsl
+
+createGraphicsPipeline' :: Vk.Dvc.D sd ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO a) -> IO a
-createGraphicsPipeline dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.createGs dvc Nothing (V14 pplInfo :...: HVNil)
+createGraphicsPipeline' dvc sce rp ppllyt f =
+	Vk.Ppl.Graphics.createGsNew dvc Nothing (V14 pplInfo :...: HVNil)
 			nil nil \(V2 gpl :...: HVNil) -> f gpl
-	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
+	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
-recreateGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
+recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO ()
-recreateGraphicsPipeline dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
+recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGsNew
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
-	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
+	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
-mkGraphicsPipelineCreateInfo ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
-	Vk.Ppl.Graphics.CreateInfo () '[
+mkGraphicsPipelineCreateInfo' ::
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.Ppl.Graphics.CreateInfoNew () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
-		() () () () () () () () '(sl, '[AtomUbo sdsl]) sr '(sb, vs', ts')
-mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = Nothing,
-	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStages = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ V3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportState = Just $ mkViewportState sce,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rasterizer,
-	Vk.Ppl.Graphics.createInfoMultisampleState = Just multisampling,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Just depthStencil,
-	Vk.Ppl.Graphics.createInfoColorBlendState = Just colorBlending,
-	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-	Vk.Ppl.Graphics.createInfoLayout = V2 ppllyt,
-	Vk.Ppl.Graphics.createInfoRenderPass = rp,
-	Vk.Ppl.Graphics.createInfoSubpass = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+		() () () () () () () () '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
+mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfoNew {
+	Vk.Ppl.Graphics.createInfoNextNew = Nothing,
+	Vk.Ppl.Graphics.createInfoFlagsNew = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Graphics.createInfoStagesNew = shaderStages,
+	Vk.Ppl.Graphics.createInfoVertexInputStateNew = Just $ V3 def,
+	Vk.Ppl.Graphics.createInfoInputAssemblyStateNew = Just inputAssembly,
+	Vk.Ppl.Graphics.createInfoViewportStateNew = Just $ mkViewportState sce,
+	Vk.Ppl.Graphics.createInfoRasterizationStateNew = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoMultisampleStateNew = Just multisampling,
+	Vk.Ppl.Graphics.createInfoDepthStencilStateNew = Just depthStencil,
+	Vk.Ppl.Graphics.createInfoColorBlendStateNew = Just colorBlending,
+	Vk.Ppl.Graphics.createInfoDynamicStateNew = Nothing,
+	Vk.Ppl.Graphics.createInfoLayoutNew = V3 ppllyt,
+	Vk.Ppl.Graphics.createInfoRenderPassNew = rp,
+	Vk.Ppl.Graphics.createInfoSubpassNew = 0,
+	Vk.Ppl.Graphics.createInfoBasePipelineHandleNew = Nothing,
+	Vk.Ppl.Graphics.createInfoBasePipelineIndexNew = - 1,
+	Vk.Ppl.Graphics.createInfoTessellationStateNew = Nothing }
 	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
@@ -974,8 +973,7 @@ createTextureImage phdvc dvc gq cp txfp f = do
 			Vk.Img.UsageTransferDstBit .|.
 			Vk.Img.UsageSampledBit)
 		Vk.Mem.PropertyDeviceLocalBit \tximg _txmem -> do
-		createBufferImage @MyImage @_ phdvc dvc
-			(fromIntegral wdt, fromIntegral wdt, fromIntegral hgt, 1)
+		createBufferImage @MyImage @_ phdvc dvc (wdt, wdt, hgt, 1)
 			Vk.Bffr.UsageTransferSrcBit
 			(	Vk.Mem.PropertyHostVisibleBit .|.
 				Vk.Mem.PropertyHostCoherentBit )
@@ -1687,7 +1685,7 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Layout.LL sl '[AtomUbo sdsl] ->
+	Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
@@ -1703,7 +1701,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.Cmd.bindVertexBuffers cb
 		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @_ @Word32 ib
-	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppllyt
+	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics ppllyt
 		(Singleton $ Vk.Cmd.DescriptorSet ubds) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ V.length idcs) 1 0 0 0
 	where
@@ -1732,7 +1730,7 @@ mainLoop :: (
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1766,7 +1764,7 @@ runLoop :: (
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1797,7 +1795,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
+	Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1887,7 +1885,7 @@ catchAndRecreate :: (
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
@@ -1912,7 +1910,7 @@ recreateSwapChainEtc :: (
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LL sl '[AtomUbo sdsc] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
@@ -1929,7 +1927,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp (dp
 		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
 		recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw
-		recreateGraphicsPipeline dvc ext rp ppllyt gpl
+		recreateGraphicsPipeline' dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs dptImgVw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
