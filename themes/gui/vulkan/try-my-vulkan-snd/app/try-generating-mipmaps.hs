@@ -160,12 +160,12 @@ import Data.Vector.Storable.Indexing
 
 main :: IO ()
 main = do
-	txfp : mdfp : _ <- getArgs
+	txfp : mdfp : mnld : _ <- getArgs
 	g <- newFramebufferResized
 	(`withWindow` g) \win -> createInstance \inst -> do
 		if enableValidationLayers
-			then setupDebugMessenger inst $ const $ run txfp mdfp win inst g
-			else run txfp mdfp win inst g
+			then setupDebugMessenger inst $ const $ run txfp mdfp (read mnld) win inst g
+			else run txfp mdfp (read mnld) win inst g
 
 type FramebufferResized = IORef Bool
 
@@ -264,8 +264,8 @@ debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () () () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
-run :: FilePath -> FilePath -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
-run txfp mdfp w inst g =
+run :: FilePath -> FilePath -> Float -> Glfw.Window -> Vk.Ist.I si -> FramebufferResized -> IO ()
+run txfp mdfp mnld w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
@@ -284,7 +284,7 @@ run txfp mdfp w inst g =
 	createTextureImage phdv dv gq cp txfp \tximg mplvs ->
 	createImageView @'Vk.T.FormatR8g8b8a8Srgb dv tximg Vk.Img.AspectColorBit mplvs
 		\(tximgvw :: Vk.ImgVw.INew txfmt "texture" siv) ->
-	createTextureSampler phdv dv mplvs \(txsmplr :: Vk.Smplr.S ssmp) ->
+	createTextureSampler phdv dv mplvs mnld \(txsmplr :: Vk.Smplr.S ssmp) ->
 	loadModel mdfp >>= \(vtcs, idcs) ->
 	createVertexBuffer phdv dv gq cp vtcs \vb ->
 	createIndexBuffer phdv dv gq cp idcs \ib ->
@@ -1373,9 +1373,9 @@ instance IsImage MyImage where
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
 createTextureSampler ::
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 ->
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Float ->
 	(forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler phdv dvc mplvs f = do
+createTextureSampler phdv dvc mplvs mnld f = do
 	prp <- Vk.PhDvc.getProperties phdv
 	print . Vk.PhDvc.limitsMaxSamplerAnisotropy $ Vk.PhDvc.propertiesLimits prp
 	let	samplerInfo = Vk.Smplr.M.CreateInfo {
@@ -1398,7 +1398,7 @@ createTextureSampler phdv dvc mplvs f = do
 					$ Vk.PhDvc.propertiesLimits prp,
 			Vk.Smplr.M.createInfoCompareEnable = False,
 			Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
-			Vk.Smplr.M.createInfoMinLod = 0,
+			Vk.Smplr.M.createInfoMinLod = mnld,
 			Vk.Smplr.M.createInfoMaxLod = fromIntegral mplvs,
 			Vk.Smplr.M.createInfoBorderColor =
 				Vk.BorderColorIntOpaqueBlack,
