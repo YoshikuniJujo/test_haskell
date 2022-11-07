@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      HeapSort.Taocp
       Lib
       Some
   other-modules:
