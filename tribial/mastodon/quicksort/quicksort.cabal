@@ -25,8 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      Data.Bounded
       Lib
       QuickSort.Simple
+      QuickSort.Taocp
   other-modules:
       Paths_quicksort
   hs-source-dirs:
@@ -35,6 +37,7 @@ library
   build-depends:
       array
     , base >=4.7 && <5
+    , random
   default-language: Haskell2010
 
 executable quicksort-exe
@@ -48,6 +51,7 @@ executable quicksort-exe
       array
     , base >=4.7 && <5
     , quicksort
+    , random
   default-language: Haskell2010
 
 test-suite quicksort-test
@@ -62,4 +66,5 @@ test-suite quicksort-test
       array
     , base >=4.7 && <5
     , quicksort
+    , random
   default-language: Haskell2010
