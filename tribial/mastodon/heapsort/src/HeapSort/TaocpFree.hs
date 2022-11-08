@@ -15,6 +15,11 @@ mkSample r = do
 	let	(n, g') = randomR (0, 100) g
 	pure . take n $ randomRs r g'
 
+mkSample' :: (Int, Int) -> Int -> IO [Int]
+mkSample' r n = do
+	g <- newStdGen
+	pure . take n $ randomRs r g
+
 checkSample :: Ord a => [a] -> Bool
 checkSample = \case
 	[] -> True
