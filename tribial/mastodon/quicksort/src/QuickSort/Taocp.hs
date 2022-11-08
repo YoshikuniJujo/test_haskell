@@ -37,14 +37,12 @@ stage ks l r = do
 	(j, kj) <- exchange ks k (l + 1) r
 	writeArray ks l kj
 	writeArray ks j k
-	case () of
-		()	| r - j >= j - l && j - l > largeM ->
-				stage ks l (j - 1) >> stage ks (j + 1) r
-			| j - l > r - j && r - j > largeM ->
-				stage ks (j + 1) r >> stage ks l (j - 1)
-			| r - j > largeM && largeM >= j - l -> stage ks (j + 1) r
-			| j - l > largeM && largeM >= r - j -> stage ks l (j - 1)
-			| otherwise -> pure ()
+	case (r - j >= j - l, r - j > largeM, j - l > largeM) of
+		(True, _, True) -> stage ks l (j - 1) >> stage ks (j + 1) r
+		(False, True, _) -> stage ks (j + 1) r >> stage ks l (j - 1)
+		(_, True, False) -> stage ks (j + 1) r
+		(_, False, True) -> stage ks l (j - 1)
+		_ -> pure ()
 
 exchange :: Ord a => STArray s Int a -> a -> Int -> Int -> ST s (Int, a)
 exchange ks k i j = do 
