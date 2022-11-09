@@ -20,6 +20,12 @@ showTime nm n act = do
 	print' t
 	print $ realToFrac t / nLogN n * 10 ^ i7
 
+showTimeMGraph :: Int -> IO a -> IO ()
+showTimeMGraph m act = do
+	putStr $ show m ++ "\t"
+	t <- time act
+	print t
+
 print' :: Show a => a -> IO ()
 print' x = putStr $ show x ++ "\t"
 
