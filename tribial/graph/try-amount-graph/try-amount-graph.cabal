@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f6cf7009586c7d10d12e7363f561778ab76bcca685cb9935a7957b7e186acd49
+-- hash: fd4a6021cb78f9d12f9569b0f0d678126a8f46f4f37c4b40ec36bbcb1b98c386
 
 name:           try-amount-graph
 version:        0.1.0.0
@@ -26,8 +26,6 @@ source-repository head
   location: https://github.com/githubuser/try-amount-graph
 
 library
-  exposed-modules:
-      Lib
   other-modules:
       Paths_try_amount_graph
   hs-source-dirs:
