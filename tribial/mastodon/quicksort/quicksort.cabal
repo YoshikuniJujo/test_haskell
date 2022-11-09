@@ -29,6 +29,7 @@ library
       Lib
       QuickSort.Simple
       QuickSort.Taocp
+      Tools
   other-modules:
       Paths_quicksort
   hs-source-dirs:
@@ -44,6 +45,22 @@ library
 executable quicksort-exe
   main-is: Main.hs
   other-modules:
+      Paths_quicksort
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , quicksort
+    , random
+    , time
+  default-language: Haskell2010
+
+executable try-m
+  main-is: try-m.hs
+  other-modules:
+      Main
       Paths_quicksort
   hs-source-dirs:
       app

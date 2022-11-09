@@ -10,12 +10,13 @@ import Data.Array.ST
 import Data.Bool
 import System.Random
 
-largeM :: Int
-largeM = 9
-
 quicksort :: (Ord a, Bounded a) => [a] -> [a]
 quicksort ks = init $ tail $ runST
-	$ (>>) <$> qsort <*> getElems =<< newListArray' ks
+	$ (>>) <$> qsort mixM <*> getElems =<< newListArray' ks
+
+quicksortM :: (Ord a, Bounded a) => Int -> [a] -> [a]
+quicksortM m ks = init $ tail $ runST
+	$ (>>) <$> qsort m <*> getElems =<< newListArray' ks
 
 newListArray' :: Bounded a => [a] -> ST s (STArray s Int a)
 newListArray' xs = do
@@ -24,24 +25,27 @@ newListArray' xs = do
 	writeArray a (length xs + 1) maxBound
 	a <$ uncurry (writeArray a) `mapM_` zip [1 ..] xs
 
-qsort :: Ord a => STArray s Int a -> ST s ()
-qsort ks = do
-	(0, n1) <- getBounds ks
+mixM :: Int
+mixM = 9
+
+qsort :: Ord a => Int -> STArray s Int a -> ST s ()
+qsort m ks = do
+	(_, n1) <- getBounds ks
 	let n = n1 - 1
-	when (n > largeM) $ stage ks 1 n
+	when (n > m) $ stage m ks 1 n
 	isort ks 1 n
 
-stage :: Ord a => STArray s Int a -> Int -> Int -> ST s ()
-stage ks l r = do
+stage :: Ord a => Int -> STArray s Int a -> Int -> Int -> ST s ()
+stage m ks l r = do
 	k <- readArray ks l
 	(j, kj) <- exchange ks k (l + 1) r
 	writeArray ks l kj
 	writeArray ks j k
-	case (r - j >= j - l, r - j > largeM, j - l > largeM) of
-		(True, _, True) -> stage ks l (j - 1) >> stage ks (j + 1) r
-		(False, True, _) -> stage ks (j + 1) r >> stage ks l (j - 1)
-		(_, True, False) -> stage ks (j + 1) r
-		(_, False, True) -> stage ks l (j - 1)
+	case (r - j >= j - l, r - j > m, j - l > m) of
+		(True, _, True) -> stage m ks l (j - 1) >> stage m ks (j + 1) r
+		(False, True, _) -> stage m ks (j + 1) r >> stage m ks l (j - 1)
+		(_, True, False) -> stage m ks (j + 1) r
+		(_, False, True) -> stage m ks l (j - 1)
 		_ -> pure ()
 
 exchange :: Ord a => STArray s Int a -> a -> Int -> Int -> ST s (Int, a)
@@ -74,23 +78,3 @@ isort1 ks i k = do
 	if ki <= k then writeArray ks (i + 1) k else do
 		writeArray ks (i + 1) =<< readArray ks i
 		isort1 ks (i - 1) k
-
-
-mkSample :: (Int, Int) -> IO [Int]
-mkSample r = do
-	g <- newStdGen
-	let	(n, g') = randomR (0, 200) g
-	pure . take n $ randomRs r g'
-
-mkSample' :: (Int, Int) -> Int -> IO [Int]
-mkSample' r n = do
-	g <- newStdGen
-	pure . take n $ randomRs r g
-
-checkSample :: Ord a => [a] -> Bool
-checkSample = \case
-	[] -> True
-	[_] -> True
-	x : xs@(y : _)
-		| x <= y -> checkSample xs
-		| otherwise -> False

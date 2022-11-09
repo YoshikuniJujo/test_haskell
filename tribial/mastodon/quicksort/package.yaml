@@ -49,6 +49,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - quicksort
+  try-m:
+    main:                try-m.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - quicksort
 
 tests:
   quicksort-test:
