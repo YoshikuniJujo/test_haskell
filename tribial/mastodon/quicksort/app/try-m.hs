@@ -4,6 +4,7 @@
 module Main (main) where
 
 import System.Environment
+import System.Random
 
 import QuickSort.Taocp
 import Tools
@@ -15,7 +16,8 @@ main = do
 			[] -> False
 			["graph"] -> True
 	if gr then pure () else putStrLn "size: 2 ^ 21"
-	xs <- mkSample' (0, 10 ^ i10) (2 ^ i21)
+	sz <- randomRIO (2 ^ i20 - 2 ^ i18, 2 ^ i20)
+	xs <- mkSample' (0, 10 ^ i10) sz
 	readLast xs
 	showTime' gr 1 "quicksort (m = 1)     " (2 ^ i21) (readLast $ quicksortM 1 xs)
 	showTime' gr 2 "quicksort (m = 2)     " (2 ^ i21) (readLast $ quicksortM 2 xs)
@@ -39,9 +41,9 @@ main = do
 	showTime' gr 36 "quicksort (m = 36)    " (2 ^ i21) (readLast $ quicksortM 36 xs)
 	showTime' gr 128 "quicksort (m = 128)   " (2 ^ i21) (readLast $ quicksortM 128 xs)
 	showTime' gr 256 "quicksort (m = 256)   " (2 ^ i21) (readLast $ quicksortM 256 xs)
-	showTime' gr 512 "quicksort (m = 512)   " (2 ^ i21) (readLast $ quicksortM 512 xs)
-	showTime' gr 1024 "quicksort (m = 1024)  " (2 ^ i21) (readLast $ quicksortM 1024 xs)
-	showTime' gr 2048 "quicksort (m = 2048)  " (2 ^ i21) (readLast $ quicksortM 2048 xs)
+--	showTime' gr 512 "quicksort (m = 512)   " (2 ^ i21) (readLast $ quicksortM 512 xs)
+--	showTime' gr 1024 "quicksort (m = 1024)  " (2 ^ i21) (readLast $ quicksortM 1024 xs)
+--	showTime' gr 2048 "quicksort (m = 2048)  " (2 ^ i21) (readLast $ quicksortM 2048 xs)
 
 readLast :: [Int] -> IO ()
 readLast ns = putStr $ replicate (last ns - last ns) 'c'
