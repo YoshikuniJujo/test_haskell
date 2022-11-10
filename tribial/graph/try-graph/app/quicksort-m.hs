@@ -26,7 +26,7 @@ translate (x, y) = (transX x, transY y)
 
 transX, transY :: CDouble -> CDouble
 transX x = log x * 160 + 50
-transY y = 768 - (y - 1.0) * 360
+transY y = 768 - (y - 0.10) * 5000
 
 draw1 :: CairoT s RealWorld -> FilePath -> IO ()
 draw1 cr fp = do
@@ -43,8 +43,8 @@ main = do
 	cairoPaint cr
 	cairoSetLineWidth cr 0.5
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
-	cairoMoveTo cr (transX 9) (transY 1.1)
-	cairoLineTo cr (transX 9) (transY 2.5)
+	cairoMoveTo cr (transX 9) (transY 0.11)
+	cairoLineTo cr (transX 9) (transY 0.23)
 	cairoStroke cr
 	cairoSetLineWidth cr 0.3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.3 0.3
