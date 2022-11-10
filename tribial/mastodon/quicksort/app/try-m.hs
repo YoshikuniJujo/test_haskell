@@ -1,4 +1,5 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, ImportQualifiedPost #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -7,21 +8,29 @@ module Main (main) where
 import Data.Foldable
 import System.Environment
 import System.IO
-import System.Random
+import System.Directory
+import System.Random hiding (next)
 
 import QuickSort.Taocp
 import Tools
+
+import Data.List qualified as L
 
 main :: IO ()
 main = do
 	args <- getArgs
 	let	gr = case args of
 			[] -> False
-			["graph", _] -> True
-		i = args !! 1
-	h <- openFile ("graph/trial" ++ i ++ ".txt") WriteMode
+			["graph"] -> True
+	i <- next
+	h <- openFile ("graph/trial" ++ show i ++ ".txt") WriteMode
 	mainTrial h gr
 	hClose h
+
+next :: IO Int
+next = (+ 1) . maximum
+	. (read @Int . takeWhile (/= '.') . drop 5 <$>)
+	. filter ("trial" `L.isPrefixOf`) <$> getDirectoryContents "graph"
 
 mainTrial :: Handle -> Bool -> IO ()
 mainTrial h gr = do

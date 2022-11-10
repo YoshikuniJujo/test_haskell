@@ -38,6 +38,7 @@ library
   build-depends:
       array
     , base >=4.7 && <5
+    , directory
     , random
     , time
   default-language: Haskell2010
@@ -52,6 +53,7 @@ executable quicksort-exe
   build-depends:
       array
     , base >=4.7 && <5
+    , directory
     , quicksort
     , random
     , time
@@ -68,6 +70,24 @@ executable try-m
   build-depends:
       array
     , base >=4.7 && <5
+    , directory
+    , quicksort
+    , random
+    , time
+  default-language: Haskell2010
+
+executable try-some
+  main-is: try-some.hs
+  other-modules:
+      Main
+      Paths_quicksort
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , directory
     , quicksort
     , random
     , time
@@ -84,6 +104,7 @@ test-suite quicksort-test
   build-depends:
       array
     , base >=4.7 && <5
+    , directory
     , quicksort
     , random
     , time
