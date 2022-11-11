@@ -5,7 +5,7 @@
 module Main where
 
 import Control.Monad.ST
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import System.Environment
 import System.GLib.ErrorReporting
@@ -70,7 +70,7 @@ main = do
 					putStrLn m
 				_ -> putStrLn "No GMarkupError"
 		Right (tpal, _) -> do
-			s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+			s <- cairoImageSurfaceCreate CairoFormatArgb32 300 400
 			cr <- cairoCreate s
 
 			pl <- pangoCairoCreateLayout cr

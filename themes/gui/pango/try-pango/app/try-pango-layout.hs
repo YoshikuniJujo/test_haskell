@@ -29,7 +29,7 @@ import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.LowLevel.TabStops
 
 import Data.Color
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 
 import qualified Data.Text as T
@@ -39,7 +39,7 @@ pangoScale = fromIntegral $ resolution @Type @PU undefined
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 900 900
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 900 900
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr

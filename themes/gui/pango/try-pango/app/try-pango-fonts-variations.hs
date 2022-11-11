@@ -7,7 +7,7 @@ module Main where
 
 import Control.Monad.Primitive
 import Data.Char
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Data.Font.VariationAxis hiding (Weight(..))
 import System.Environment
@@ -43,7 +43,7 @@ main :: IO ()
 main = getArgs >>= \case
 	blda : bldb : wmx2 : skla : sklb : skld :
 			trma : trmb : trmc : trmd : trme : trmf : trmg : trmk : trml : _ -> do
-		s <- cairoImageSurfaceCreate cairoFormatArgb32 1000 400
+		s <- cairoImageSurfaceCreate CairoFormatArgb32 1000 400
 		cr <- cairoCreate s
 
 		fd <- pangoFontDescriptionNew

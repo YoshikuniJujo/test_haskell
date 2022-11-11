@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-18.10
+resolver: lts-19.32
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,18 +41,18 @@ packages:
 #
 extra-deps:
 - union-angle-0.1.0.1
-- git: https://github.com/YoshikuniJujo/simple-pango
-  commit: 29d86652bf47ecc8e29793ff92a56982212bdde1
 - git: https://github.com/YoshikuniJujo/simple-cairo
-  commit: ee391f137f90b3eebd50ee3fe46ecbf868920518
+  commit: 8a050244590207b0f12e9fd1ce03cdf7beb40a6c
 - git: https://github.com/YoshikuniJujo/cairo-image
-  commit: 905c6bf5edf2cee7be806ac5112f53d54012d5ce
+  commit: a5667505de3f7a9afd1a81e1986c51f2e2ac920c
 - git: https://github.com/YoshikuniJujo/union-color
-  commit: a356fa7ff4435bfc62c31a5e9a6ecd073c4002f3
+  commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
 - git: https://github.com/YoshikuniJujo/JuicyCairo
-  commit: 67aceebb48e90e72a2e60c095b91bc6e56b0ca19
-- git: https://github.com/YOshikuniJujo/glib-stopgap
-  commit: 7e668ebcd7784080f4da33d291b567659a66357c
+  commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
+- git: https://github.com/YoshikuniJujo/simple-pango
+  commit: 4219ecf5de6caed418269577834f26eb0199068d
+- git: https://github.com/YoshikuniJujo/glib-stopgap
+  commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

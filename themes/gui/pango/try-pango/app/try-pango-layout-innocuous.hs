@@ -7,7 +7,7 @@ module Main where
 
 import Control.Arrow
 import Data.Maybe
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 
@@ -29,7 +29,7 @@ import qualified Data.Text.IO as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 1100
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 600 1100
 	cr <- cairoCreate s
 
 	T.putStrLn . pangoLanguageGetSampleString =<< pangoLanguageGetDefault

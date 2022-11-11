@@ -5,7 +5,7 @@
 module Main where
 
 import Control.Monad.ST
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
@@ -23,7 +23,7 @@ import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 300 400
 	cr <- cairoCreate s
 	cairoTranslate cr 300 0
 	cairoRotate cr (pi / 2)

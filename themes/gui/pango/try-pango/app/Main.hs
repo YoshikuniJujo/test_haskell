@@ -24,14 +24,14 @@ import Graphics.Pango.Rendering.Cairo
 
 import Data.Color
 import Data.CairoContext
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 
 import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 600 800
 	cr <- cairoCreate s
 
 	helloWorld cr (0, 0.5, 0)
@@ -51,6 +51,15 @@ main = do
 		PangoStyleItalic PangoVariantSmallCaps PangoWeightNormal PangoStretchUltraExpanded
 		(0, 300)
 
+	cairoIdentityMatrix cr
+	cairoTranslate cr 50 50
+	pl <- pangoCairoCreateLayout cr
+	fd <- pangoFontDescriptionNew
+	fd' <- pangoFontDescriptionFreeze fd
+	pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
+	pangoLayoutSet @T.Text pl "Hello"
+	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+
 	cairoImageSurfaceGetCairoImage s >>= \case
 		CairoImageArgb32 a -> writePng "try-pango-exe.png" $ cairoArgb32ToJuicyRGBA8 a
 		_ -> error "never occur"
@@ -63,7 +72,9 @@ helloWorld cr (r, g, b) ff stl vr wt strc (x, y) = do
 	pl <- pangoCairoCreateLayout cr
 	pfd <- pangoFontDescriptionNew
 	pangoFontDescriptionSet pfd $ Family ff
+	{-
 	pangoFontDescriptionSet pfd . Size . fromIntegral $ 30 * resolution @Type @PU undefined
+	-}
 	pangoFontDescriptionSet pfd stl
 	pangoFontDescriptionSet pfd vr
 	pangoFontDescriptionSet pfd wt

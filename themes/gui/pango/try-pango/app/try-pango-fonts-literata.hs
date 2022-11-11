@@ -5,7 +5,7 @@
 module Main where
 
 import Data.Char
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
@@ -24,7 +24,7 @@ import qualified Data.Text as T
 main :: IO ()
 main = getArgs >>= \case
 	opsz : _	| all ((||) <$> isDigit <*> (== '.')) opsz -> do
-		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+		s <- cairoImageSurfaceCreate CairoFormatArgb32 300 400
 		cr <- cairoCreate s
 
 		fd <- pangoFontDescriptionNew

@@ -8,7 +8,7 @@ import Control.Monad.Primitive
 import Data.Foldable
 import Data.Maybe
 import Data.Color
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
@@ -34,7 +34,7 @@ main = do
 	print $ pangoColorParse "#000fff000"
 	print $ pangoColorParse "#0000ffff0000"
 	putStrLn . maybe "bad color" pangoColorToString $ pangoColorParse "ivory"
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 400 600
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 400 600
 	cr <- cairoCreate s
 
 	at <- pangoAttrNew $ Size 20

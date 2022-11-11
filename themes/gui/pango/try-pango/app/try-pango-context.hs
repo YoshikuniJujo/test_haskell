@@ -23,14 +23,14 @@ import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
 import Graphics.Pango.LowLevel.Contexts
 
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 
 import qualified Data.Text as T
 
 main :: IO ()
 main = do
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 700 600
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 700 600
 	cr <- cairoCreate s
 	cairoScale cr 2.5 2
 	cairoRotate cr (pi / 4)

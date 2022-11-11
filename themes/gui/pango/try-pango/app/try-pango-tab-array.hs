@@ -4,7 +4,7 @@
 
 module Main where
 
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
@@ -35,7 +35,7 @@ main = do
 	tai' <- pangoTabArrayIntFreeze tai
 	print $ pangoTabArrayGetTabs tai'
 
-	s <- cairoImageSurfaceCreate cairoFormatArgb32 600 400
+	s <- cairoImageSurfaceCreate CairoFormatArgb32 600 400
 	cr <- cairoCreate s
 
 	pl <- pangoCairoCreateLayout cr

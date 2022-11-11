@@ -5,7 +5,7 @@
 module Main where
 
 import Data.Char
-import Data.CairoImage
+import Data.CairoImage.Internal
 import Data.JuicyCairo
 import System.Environment
 import Codec.Picture
@@ -21,7 +21,7 @@ import qualified Data.Text as T
 main :: IO ()
 main = getArgs >>= \case
 	f : stl : v : w : str : _ -> do
-		s <- cairoImageSurfaceCreate cairoFormatArgb32 300 400
+		s <- cairoImageSurfaceCreate CairoFormatArgb32 300 400
 		cr <- cairoCreate s
 		pl <- pangoCairoCreateLayout cr
 
