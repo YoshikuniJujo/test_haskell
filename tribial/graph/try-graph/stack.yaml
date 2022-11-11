@@ -46,6 +46,10 @@ extra-deps:
   commit: 5657d3a8d4d4fcd92f36493b4649824af1ded9fd
 - git: https://github.com/YoshikuniJujo/JuicyCairo
   commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
+- git: https://github.com/YoshikuniJujo/simple-pango
+  commit: 4219ecf5de6caed418269577834f26eb0199068d
+- git: https://github.com/YoshikuniJujo/glib-stopgap
+  commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 
 #
 # extra-deps: []

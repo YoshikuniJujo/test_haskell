@@ -48,6 +48,28 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/JuicyCairo
     commit: 7a1bbc2291fad7d2eedbce2b254a2229e1032161
+- completed:
+    name: simple-pango
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/simple-pango
+    pantry-tree:
+      size: 3830
+      sha256: 73fc630af21eeb4604cd11ad1b467cd54459cc43fdedfa965ed9a6c04191c726
+    commit: 4219ecf5de6caed418269577834f26eb0199068d
+  original:
+    git: https://github.com/YoshikuniJujo/simple-pango
+    commit: 4219ecf5de6caed418269577834f26eb0199068d
+- completed:
+    name: glib-stopgap
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    pantry-tree:
+      size: 1273
+      sha256: c5f5ebe1aa61232c3fc8b6f2fc30e13d4f9195e289de7754d15edc1d8826ab1e
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+  original:
+    git: https://github.com/YoshikuniJujo/glib-stopgap
+    commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
 snapshots:
 - completed:
     size: 619204
