@@ -33,7 +33,7 @@ qsort m ks = do
 	(_, n1) <- getBounds ks
 	let n = n1 - 1
 	when (n > m) $ stage m ks 1 n
-	isort ks 1 n
+	when (m > 1) $ isort ks 1 n
 
 stage :: Ord a => Int -> STArray s Int a -> Int -> Int -> ST s ()
 stage m ks l r = do

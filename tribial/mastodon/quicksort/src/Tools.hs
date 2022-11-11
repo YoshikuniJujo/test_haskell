@@ -10,8 +10,8 @@ import System.Random
 
 import Data.Time
 
-i5, i6, i7, i8, i9, i10, i14, i16, i17, i18, i19, i20, i21, i22, i23 :: Int
-i5 = 5; i6 = 6; i7 = 7; i8 = 8; i9 = 9; i10 = 10
+i4, i5, i6, i7, i8, i9, i10, i14, i16, i17, i18, i19, i20, i21, i22, i23 :: Int
+i4 = 4; i5 = 5; i6 = 6; i7 = 7; i8 = 8; i9 = 9; i10 = 10
 i14 = 14; i16 = 16; i17 = 17; i18 = 18; i19 = 19; i20 = 20; i21 = 21; i22 = 22; i23 = 23
 
 showTime :: String -> Int -> IO a -> IO ()

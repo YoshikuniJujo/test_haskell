@@ -28,15 +28,18 @@ main = do
 	hClose h
 
 next :: IO Int
-next = (+ 1) . maximum
+next = (+ 1) . foldl max 0
 	. (read @Int . takeWhile (/= '.') . drop 5 <$>)
 	. filter ("trial" `L.isPrefixOf`) <$> getDirectoryContents "graph"
 
 mainTrial :: Handle -> Bool -> IO ()
 mainTrial h gr = do
 	if gr then pure () else putStrLn "size: 2 ^ 21"
---	sz <- randomRIO (2 ^ i17 - 2 ^ i8, 2 ^ i14)
-	xs <- mkSample' (0, 10 ^ i10) (2 ^ i17) -- sz
+	sz <- randomRIO (13 * 10 ^ i4, 2 ^ i17)
+	xs <- mkSample' (0, 10 ^ i10) sz
+--	xs <- mkSample' (0, 10 ^ i10) (2 ^ i17) -- sz
+--	xs <- mkSample' (0, 10 ^ i10) (10 ^ i5) -- sz
+--	xs <- mkSample' (0, 10 ^ i10) (13 * 10 ^ i4) -- sz
 	readLast xs
 	showTime' h gr 1 "quicksort (m = 1)     " (2 ^ i21) (readLast $ quicksortM 1 xs)
 	showTime' h gr 2 "quicksort (m = 2)     " (2 ^ i21) (readLast $ quicksortM 2 xs)
