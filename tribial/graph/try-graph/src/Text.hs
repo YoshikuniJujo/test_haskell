@@ -7,7 +7,8 @@ import Foreign.C.Types
 import Control.Monad.ST
 import Data.Text qualified as T
 import Data.CairoContext
-import Graphics.Cairo.Drawing.Transformations
+import Graphics.Cairo.Drawing.Paths
+-- import Graphics.Cairo.Drawing.Transformations
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
@@ -21,6 +22,8 @@ putText cr sz x y txt = do
 	fd' <- pangoFontDescriptionFreeze fd
 	pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
 	pangoLayoutSet pl txt
-	cairoIdentityMatrix cr
-	cairoTranslate cr x y
+	cairoMoveTo cr x y
+--	cairoIdentityMatrix cr
+--	cairoTranslate cr x y
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
+--	cairoIdentityMatrix cr
