@@ -30,6 +30,7 @@ library
       QuickSort.Simple
       QuickSort.Taocp
       SortingByCounting
+      SortingByInsertion
       Tools
   other-modules:
       Paths_quicksort
