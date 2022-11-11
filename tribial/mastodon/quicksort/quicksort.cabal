@@ -29,6 +29,7 @@ library
       Lib
       QuickSort.Simple
       QuickSort.Taocp
+      SortingByCounting
       Tools
   other-modules:
       Paths_quicksort
