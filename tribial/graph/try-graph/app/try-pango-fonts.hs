@@ -10,6 +10,7 @@ import Data.JuicyCairo
 import System.Environment
 import Codec.Picture
 import Graphics.Cairo.Drawing.CairoT
+import Graphics.Cairo.Drawing.Transformations
 import Graphics.Cairo.Surfaces.ImageSurfaces
 import Graphics.Cairo.Values
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
@@ -51,6 +52,8 @@ main = getArgs >>= \case
 		pangoLayoutSet pl . pangoFontDescriptionToNullable $ Just fd'
 		pangoLayoutSet @T.Text pl "Hello, world!\nこんにちは、世界!\n\x1f9a5"
 
+		cairoTranslate cr 20 100
+		cairoTranslate cr 20 100
 		pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 
 		cairoImageSurfaceGetCairoImage s >>= \case
