@@ -27,6 +27,7 @@ library
   exposed-modules:
       Data.Bounded
       Lib
+      MergeSort
       QuickSort.Simple
       QuickSort.Taocp
       SortingByCounting
