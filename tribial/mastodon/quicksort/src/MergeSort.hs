@@ -32,19 +32,21 @@ testMerge1Left ks = runST do
 		a <$ uncurry (writeArray a) `mapM_` zip [n + 1 .. n * 2] (repeat 0)
 	n = length ks
 
-merge1Left :: Ord a => STArray  s Int a -> Int -> Int -> Int -> Int -> ST s Bool
+merge1Left :: Ord a =>
+	STArray  s Int a -> Int -> Int -> Int -> Int -> ST s (Maybe (Int, Int))
 merge1Left ks i j k d = do
 	ki <- readArray ks i
 	ki1 <- readArray ks (i + 1)
 	writeArray ks k ki
-	if ki <= ki1 then pure False else flushRight ks j (k + d) d >> pure True
+	if ki <= ki1 then pure Nothing else Just <$> flushRight ks j (k + d) d
 
-flushRight :: Ord a => STArray s Int a -> Int -> Int -> Int -> ST s ()
+flushRight :: Ord a => STArray s Int a -> Int -> Int -> Int -> ST s (Int, Int)
 flushRight ks j k d = do
 	kj <- readArray ks j
 	kj1 <- readArray ks (j - 1)
 	writeArray ks k kj
-	when (kj <= kj1) $ flushRight ks (j - 1) (k + d) d
+	if kj <= kj1
+		then flushRight ks (j - 1) (k + d) d else pure (j - 1, k + d)
 
 testMerge1Right :: (Ord a, Num a) => [a] -> [a]
 testMerge1Right ks = runST do
@@ -57,16 +59,18 @@ testMerge1Right ks = runST do
 		a <$ uncurry (writeArray a) `mapM_` zip [n + 1 .. n * 2] (repeat 0)
 	n = length ks
 
-merge1Right :: Ord a => STArray s Int a -> Int -> Int -> Int -> Int -> ST s Bool
+merge1Right :: Ord a =>
+	STArray s Int a -> Int -> Int -> Int -> Int -> ST s (Maybe (Int, Int))
 merge1Right ks i j k d = do
 	kj <- readArray ks j
 	kj1 <- readArray ks (j - 1)
 	writeArray ks k kj
-	if kj <= kj1 then pure False else flushLeft ks i (k + d) d >> pure True
+	if kj <= kj1 then pure Nothing else Just <$> flushLeft ks i (k + d) d
 
-flushLeft :: Ord a => STArray s Int a -> Int -> Int -> Int -> ST s ()
+flushLeft :: Ord a => STArray s Int a -> Int -> Int -> Int -> ST s (Int, Int)
 flushLeft ks i k d = do
 	ki <- readArray ks i
 	ki1 <- readArray ks (i + 1)
 	writeArray ks k ki
-	when (ki <= ki1) $ flushLeft ks (i + 1) (k + d) d
+	if ki <= ki1
+		then flushLeft ks (i + 1) (k + d) d else pure (i + 1, k + d)
