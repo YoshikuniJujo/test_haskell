@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- deepseq
 - array
 - random
 - time
@@ -61,6 +62,15 @@ executables:
     - quicksort
   try-some:
     main:                try-some.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - quicksort
+  try-graph:
+    main:                try-graph.hs
     source-dirs:         app
     ghc-options:
     - -threaded
