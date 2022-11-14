@@ -29,7 +29,7 @@ run :: Ord a => STArray s Int a -> Int -> Bool -> ST s ()
 run ks n s = do
 	end <- inner ks i j k l 1 True
 	if end	then for_ [1 .. n] \m ->
-			unless s $ writeArray ks i =<< readArray ks (n + m)
+			unless s $ writeArray ks m =<< readArray ks (n + m)
 		else run ks n (not s)
 	where (i, j, k, l) = bool (1, n, n + 1, 2 * n) (n + 1, 2 * n, 1, n) s
 
