@@ -75,51 +75,6 @@ main = do
 	draw1 cr `mapM_` as
 --	graph cr $ translate <$> ps
 	cairoStroke cr
-	{-
-	[a1, a1_5, a2, a2_3, a2_5, a3, a4] <- map read . words <$> readFile "amounts.txt"
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.9 0.9 0.9
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a1)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a1)
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a2)
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2_5)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a2_5)
-	cairoStroke cr
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.7 0.7 0.7
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY $ a1_5 - 10000000)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY $ a1_5 - 10000000)
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a1_5)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a1_5)
-	cairoMoveTo cr (dayToX $ fromGregorian 2017 12 24) (amountToY a2_3)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4 30) (amountToY a2_3)
-	cairoMoveTo cr (dayToX $ fromGregorian 2018  1  1) (amountToY a3)
-	cairoLineTo cr (dayToX $ fromGregorian 2018  1  1) (amountToY a4)
-	cairoMoveTo cr (dayToX $ fromGregorian 2019  1  1) (amountToY a3)
-	cairoLineTo cr (dayToX $ fromGregorian 2019  1  1) (amountToY a4)
-	cairoMoveTo cr (dayToX $ fromGregorian 2020  1  1) (amountToY a3)
-	cairoLineTo cr (dayToX $ fromGregorian 2020  1  1) (amountToY a4)
-	cairoMoveTo cr (dayToX $ fromGregorian 2021  1  1) (amountToY a3)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  1  1) (amountToY a4)
-	cairoStroke cr
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.6 0.1
-	dat <- readData "data.txt"
-	let	ps = (dayToX *** amountToY) <$> dat
-	print ps
-	graph cr ps
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.4 1.0
-	dat2 <- readData "data2.txt"
-	let	ps2 = (dayToX *** amountToY . (+ 20000000)) <$> dat2
-	graph cr ps2
-
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.2 0.5 0
-	crr <- read <$> readFile "current.txt"
-	cairoMoveTo cr (dayToX $ fromGregorian 2021  3 25) (amountToY crr)
-	cairoLineTo cr (dayToX $ fromGregorian 2021  4  5) (amountToY crr)
-	cairoStroke cr
-	-}
 
 	cairoImageSurfaceGetCairoImage sr >>= \case
 		CairoImageArgb32 ci ->
