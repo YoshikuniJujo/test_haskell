@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
+{-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -36,14 +36,23 @@ main = do
 			cairoStroke cr
 			putText cr (Size 10) (transX i - 15) 675 . T.pack $ show i
 
+		putText cr (Size 15) 500 700 "N"
+		putTextRot90 cr (Size 15) 30 500 "Second / (N log N)"
+
 		for_ fps \fp -> do
-			cnt <- readData <$> readFile fp
-			uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> cnt))
+			cnt <- readFile fp
+			let	hd = readHeader cnt
+				dat = readData cnt
+			print hd
+			uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> dat))
 --	drawLines cr [(100, 100), (200, 200)]
 
 colors :: [Rgb CDouble]
 colors = fromJust . (\(r, g, b) -> rgbDouble r g b) <$> [
 	(0.8, 0.3, 0.3), (0.3, 0.8, 0.3), (0.3, 0.3, 0.8), (0.6, 0.6, 0.2) ]
+
+readHeader :: String -> [String]
+readHeader = spans (/= '/') . (!! 1) . words . head . lines
 
 readData :: String -> [[(CDouble, CDouble)]]
 readData = L.transpose . (separate . readData1 <$>) . tail . lines

@@ -1,14 +1,14 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Text (putText, Size(..)) where
+module Text (putText, putTextRot90, Size(..)) where
 
 import Foreign.C.Types
 import Control.Monad.ST
 import Data.Text qualified as T
 import Data.CairoContext
 import Graphics.Cairo.Drawing.Paths
--- import Graphics.Cairo.Drawing.Transformations
+import Graphics.Cairo.Drawing.Transformations
 import Graphics.Pango.Basic.Fonts.PangoFontDescription
 import Graphics.Pango.Basic.LayoutObjects.PangoLayout
 import Graphics.Pango.Rendering.Cairo
@@ -27,3 +27,12 @@ putText cr sz x y txt = do
 --	cairoTranslate cr x y
 	pangoCairoShowLayout cr =<< pangoLayoutFreeze pl
 --	cairoIdentityMatrix cr
+
+putTextRot90 :: CairoT s RealWorld -> Size -> CDouble -> CDouble -> T.Text -> IO ()
+putTextRot90 cr sz x y txt = do
+--	cairoTranslate cr (- x) (- y)
+	cairoRotate cr (- pi / 2)
+--	cairoTranslate cr x y
+--	putText cr sz 0 0 txt
+	putText cr sz (- y) x txt
+	cairoIdentityMatrix cr
