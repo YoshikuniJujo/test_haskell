@@ -10,6 +10,7 @@ import Foreign.C.Types
 import Data.Foldable
 import Data.Maybe
 import Data.List qualified as L
+import Data.Text qualified as T
 import Data.Color
 import Data.CairoContext
 import System.Environment
@@ -17,6 +18,7 @@ import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 
 import Cairo
+import Text
 
 main :: IO ()
 main = do
@@ -28,6 +30,11 @@ main = do
 		cairoMoveTo cr (transX $ 10 ^ 3) (transY 0)
 		cairoLineTo cr (transX $ 10 ^ 6) (transY 0)
 		cairoStroke cr
+		for_ [10 ^ 3, 10 ^ 4, 10 ^ 5, 10 ^ 6] \i -> do
+			cairoMoveTo cr (transX i) 668
+			cairoLineTo cr (transX i) 653
+			cairoStroke cr
+			putText cr (Size 10) (transX i - 15) 675 . T.pack $ show i
 
 		for_ fps \fp -> do
 			cnt <- readData <$> readFile fp
@@ -72,5 +79,5 @@ translate :: (CDouble, CDouble) -> (CDouble, CDouble)
 translate = transX *** transY
 
 transX, transY :: CDouble -> CDouble
-transX x = log (x / 1000) * 120 + 145
+transX x = log (x / 1000) * 120 + 130
 transY y = (- y * 1.5 * 10 ^ 9) + 668
