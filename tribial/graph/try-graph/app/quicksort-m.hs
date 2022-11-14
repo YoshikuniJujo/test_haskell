@@ -3,26 +3,20 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Main where
+module Main (main) where
 
 import Foreign.C.Types
-import Control.Arrow
 import Control.Monad.Primitive
 import Data.Foldable
 import Data.Maybe
 import Data.Text qualified as T
 import Data.CairoContext
-import Data.CairoImage.Internal
-import Data.JuicyCairo
 import Data.Color
-import Codec.Picture
 import System.Environment
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
-import Graphics.Cairo.Surfaces.ImageSurfaces
-import Graphics.Cairo.Values hiding (CairoFormatT, cairoFormatArgb32)
 
-import Data.Time
+import Cairo
 import Text
 
 translate :: (CDouble, CDouble) -> (CDouble, CDouble)
@@ -39,12 +33,8 @@ draw1 cr fp = do
 	graph cr $ translate <$> ps
 
 main :: IO ()
-main = do
+main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 	as <- getArgs
-	sr <- cairoImageSurfaceCreate CairoFormatArgb32 1024 768
-	cr <- cairoCreate sr
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 1.0 1.0 1.0
-	cairoPaint cr
 
 	cairoSetLineWidth cr 0.5
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
@@ -73,24 +63,7 @@ main = do
 	cairoSetLineWidth cr 0.3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.3 0.3
 	draw1 cr `mapM_` as
---	graph cr $ translate <$> ps
 	cairoStroke cr
-
-	cairoImageSurfaceGetCairoImage sr >>= \case
-		CairoImageArgb32 ci ->
-			writePng "quicksort-m.png" $ cairoArgb32ToJuicyRGBA8 ci
-		_ -> error "never occur"
-
-readData :: FilePath -> IO [(Day, Int)]
-readData fp = do
-	wss <- map words . lines <$> readFile fp
-	pure $ map (\[d, a] -> (read d, read a)) wss
-
-dayToX :: Day -> CDouble
-dayToX d = fromIntegral (d `diffDays` fromGregorian 2017 12 24) / 2 + 32
-
-amountToY :: Int -> CDouble
-amountToY a = 512 - fromIntegral (a - 20000000) / 50000 - 16
 
 graph :: PrimMonad m => CairoT s (PrimState m) -> [(CDouble, CDouble)] -> m ()
 graph _ [] = pure ()

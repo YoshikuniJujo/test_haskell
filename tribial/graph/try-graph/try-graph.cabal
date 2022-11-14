@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Cairo
       Text
   other-modules:
       Paths_try_graph
