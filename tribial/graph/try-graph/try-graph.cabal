@@ -132,6 +132,28 @@ executable try-pango-simple
     , union-color
   default-language: Haskell2010
 
+executable try-sorts
+  main-is: try-sorts.hs
+  other-modules:
+      Main
+      Paths_try_graph
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , time
+    , try-graph
+    , union-color
+  default-language: Haskell2010
+
 test-suite try-graph-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
