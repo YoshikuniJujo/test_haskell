@@ -17,17 +17,25 @@ import Graphics.Cairo.Drawing.Paths
 
 import Cairo
 
+import Debug.Trace
+
 main :: IO ()
 main = withCairo "try-sorts.png" 1024 768 \cr -> do
 	cnt <- readData <$> readFile "../../mastodon/quicksort/graph/cmp_sorts.txt"
 	print cnt
 	cairoSetLineWidth cr 0.5
+
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
+	cairoMoveTo cr (transX $ 10 ^ 3) (transY 0)
+	cairoLineTo cr (transX $ 10 ^ 6) (transY 0)
+	cairoStroke cr
+
 	uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> cnt))
 --	drawLines cr [(100, 100), (200, 200)]
 
 colors :: [Rgb CDouble]
 colors = fromJust . (\(r, g, b) -> rgbDouble r g b) <$> [
-	(0.8, 0.3, 0.3), (0.3, 0.8, 0.3), (0.3, 0.3, 0.8) ]
+	(0.8, 0.3, 0.3), (0.3, 0.8, 0.3), (0.3, 0.3, 0.8), (0.6, 0.6, 0.2) ]
 
 readData :: String -> [[(CDouble, CDouble)]]
 readData = L.transpose . (separate . readData1 <$>) . tail . lines
@@ -39,8 +47,8 @@ readData1 :: String -> (CDouble, [CDouble])
 readData1 str = case span (/= '\t') str of
 	(n_, '\t' : dat) -> let
 		n = read n_
-		tr = (/ (n * log n)) . read . init in case spans (/= '/') dat of
-		ds -> (n, tr <$> ds)
+		tr = (/ (n * log n)) . read . takeWhile (/= 's') in case spans (/= '/') dat of
+		ds -> trace (show ds) (n, tr <$> ds)
 		_ -> error "bad format"
 	_ -> error "bad format"
 
@@ -63,5 +71,5 @@ translate :: (CDouble, CDouble) -> (CDouble, CDouble)
 translate = transX *** transY
 
 transX, transY :: CDouble -> CDouble
-transX x = log (x / 1000) * 120 + 100
-transY y = (- y * 2 * 10 ^ 9) + 668
+transX x = log (x / 1000) * 120 + 145
+transY y = (- y * 1.5 * 10 ^ 9) + 668
