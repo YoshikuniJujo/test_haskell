@@ -12,25 +12,26 @@ import Data.Maybe
 import Data.List qualified as L
 import Data.Color
 import Data.CairoContext
+import System.Environment
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
 
 import Cairo
 
-import Debug.Trace
-
 main :: IO ()
-main = withCairo "try-sorts.png" 1024 768 \cr -> do
-	cnt <- readData <$> readFile "../../mastodon/quicksort/graph/cmp_sorts.txt"
-	print cnt
-	cairoSetLineWidth cr 0.5
+main = do
+	fps <- getArgs
+	withCairo "try-sorts.png" 1024 768 \cr -> do
+		cairoSetLineWidth cr 0.5
 
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
-	cairoMoveTo cr (transX $ 10 ^ 3) (transY 0)
-	cairoLineTo cr (transX $ 10 ^ 6) (transY 0)
-	cairoStroke cr
+		cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
+		cairoMoveTo cr (transX $ 10 ^ 3) (transY 0)
+		cairoLineTo cr (transX $ 10 ^ 6) (transY 0)
+		cairoStroke cr
 
-	uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> cnt))
+		for_ fps \fp -> do
+			cnt <- readData <$> readFile fp
+			uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> cnt))
 --	drawLines cr [(100, 100), (200, 200)]
 
 colors :: [Rgb CDouble]
@@ -48,7 +49,7 @@ readData1 str = case span (/= '\t') str of
 	(n_, '\t' : dat) -> let
 		n = read n_
 		tr = (/ (n * log n)) . read . takeWhile (/= 's') in case spans (/= '/') dat of
-		ds -> trace (show ds) (n, tr <$> ds)
+		ds -> (n, tr <$> ds)
 		_ -> error "bad format"
 	_ -> error "bad format"
 
