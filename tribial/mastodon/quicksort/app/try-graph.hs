@@ -11,6 +11,7 @@ import System.Environment
 
 import QuickSort.Taocp
 import MergeSort
+import HeapSort.TaocpFree (heapsort)
 import Tools
 
 main :: IO ()
@@ -44,9 +45,11 @@ try False n ns = ns `deepseq` do
 	showTime ("Data.List.sort "++ show n) n (evaluate . rnf $ L.sort ns)
 	showTime ("quicksort      " ++ show n) n (evaluate . rnf $ quicksort ns)
 	showTime ("mergesort      " ++ show n) n (evaluate . rnf $ naturalSort ns)
+	showTime ("heapsort       " ++ show n) n (evaluate . rnf $ heapsort ns)
 try True n ns = ns `deepseq` do
 	evaluate $ rnf ns
 	putStr $ show n ++ "\t"
 	putStr . show =<< time (evaluate . rnf $ L.sort ns); putStr "/"
 	putStr . show =<< time (evaluate . rnf $ quicksort ns); putStr "/"
-	putStr . show =<< time (evaluate . rnf $ naturalSort ns); putStr "\n"
+	putStr . show =<< time (evaluate . rnf $ naturalSort ns); putStr "/"
+	putStr . show =<< time (evaluate . rnf $ heapsort ns); putStr "\n"

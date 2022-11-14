@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Data.Bounded
+      HeapSort.TaocpFree
       Lib
       MergeSort
       QuickSort.Simple
