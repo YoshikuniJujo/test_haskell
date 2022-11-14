@@ -5,6 +5,7 @@
 module Tools where
 
 import Control.Monad
+import Data.Word
 import System.IO
 import System.Random
 
@@ -46,6 +47,11 @@ mkSample r = do
 	g <- newStdGen
 	let	(n, g') = randomR (0, 200) g
 	pure . take n $ randomRs r g'
+
+mkSample'' :: (Word32, Word32) -> Int -> IO [Word32]
+mkSample'' r n = do
+	g <- newStdGen
+	pure . take n $ randomRs r g
 
 mkSample' :: (Int, Int) -> Int -> IO [Int]
 mkSample' r n = do

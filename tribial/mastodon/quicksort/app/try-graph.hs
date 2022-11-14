@@ -20,13 +20,13 @@ import Tools
 main :: IO ()
 main = do
 	args <- getArgs
-	i <- next
+	i <- next "cmp_sorts"
 	h <- openFile ("graph/cmp_sorts" ++ show i ++ ".txt") WriteMode
 	let	g = case args of
 			[] -> False
 			["graph"] -> True
 			_ -> error "bad options"
-	when g $ putStr' h "N\tData.List/quick/merge/heap\n"
+	when g $ putStr' h "N\tData.List/merge/heap/quick\n"
 	xs_3 <- mkSample' (0, 10 ^ i8) (10 ^ i3)
 	try h g (10 ^ i3) xs_3
 	xs_3_5 <- mkSample' (0, 10 ^ i8) (3 * 10 ^ i3)
@@ -45,27 +45,27 @@ main = do
 --	try (10 ^ i7) xs_7
 	hClose h
 
-try :: Handle -> Bool -> Int -> [Int] -> IO ()
+try :: (Ord a, Bounded a, NFData a) => Handle -> Bool -> Int -> [a] -> IO ()
 try _ False n ns = ns `deepseq` do
 	evaluate $ rnf ns
 	showTime ("Data.List.sort "++ show n) n (evaluate . rnf $ L.sort ns)
-	showTime ("quicksort      " ++ show n) n (evaluate . rnf $ quicksort ns)
 	showTime ("mergesort      " ++ show n) n (evaluate . rnf $ naturalSort ns)
 	showTime ("heapsort       " ++ show n) n (evaluate . rnf $ heapsort ns)
+	showTime ("quicksort      " ++ show n) n (evaluate . rnf $ quicksort ns)
 try h True n ns = ns `deepseq` do
 	evaluate $ rnf ns
 	putStr' h $ show n ++ "\t"
 	putStr' h . show =<< time (evaluate . rnf $ L.sort ns); putStr' h "/"
-	putStr' h . show =<< time (evaluate . rnf $ quicksort ns); putStr' h "/"
 	putStr' h . show =<< time (evaluate . rnf $ naturalSort ns); putStr' h "/"
-	putStr' h . show =<< time (evaluate . rnf $ heapsort ns); putStr' h "\n"
+	putStr' h . show =<< time (evaluate . rnf $ heapsort ns); putStr' h "/"
+	putStr' h . show =<< time (evaluate . rnf $ quicksort ns); putStr' h "\n"
 
 putStr' :: Handle -> String -> IO ()
 putStr' h str = do
 	hPutStr h str
 	putStr str
 
-next :: IO Int
-next = (+ 1) . foldl max 0
-	. (read @Int . takeWhile (/= '.') . drop 9 <$>)
-	. filter ("cmp_sort" `L.isPrefixOf`) <$> getDirectoryContents "graph"
+next :: String -> IO Int
+next nm = (+ 1) . foldl max 0
+	. (read @Int . takeWhile (/= '.') . drop (length nm) <$>)
+	. filter (nm `L.isPrefixOf`) <$> getDirectoryContents "graph"
