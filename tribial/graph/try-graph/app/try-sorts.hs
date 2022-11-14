@@ -5,6 +5,7 @@
 module Main where
 
 import Control.Arrow
+import Control.Monad
 import Control.Monad.ST
 import Foreign.C.Types
 import Data.Foldable
@@ -36,14 +37,33 @@ main = do
 			cairoStroke cr
 			putText cr (Size 10) (transX i - 15) 675 . T.pack $ show i
 
+		cairoMoveTo cr 115 (transY $ 5 * 10 ** (- 8))
+		cairoLineTo cr 115 (transY $ 40 * 10 ** (- 8))
+		cairoStroke cr
+		for_ ([5 * 10 ** (- 8), 10 * 10 ** (- 8) .. 40 * 10 ** (- 8)] `zip` cycle [False, True]) \(i, b) -> do
+			cairoMoveTo cr 115 (transY i)
+			cairoLineTo cr 130 (transY i)
+			cairoStroke cr
+			when b . putText cr (Size 10) 70 (transY i - 7) . T.pack $ show i
+
 		putText cr (Size 15) 500 700 "N"
-		putTextRot90 cr (Size 15) 30 500 "Second / (N log N)"
+		putTextRot90 cr (Size 15) 30 450 "Second / (N log N)"
+
+		let	hd0 = ["Data.List", "merge", "heap", "quick"]
+
+		for_ (colors `zip` hd0 `zip` [0 ..]) \((clr, hd), i) -> do
+			cairoSetSourceRgb cr clr
+			cairoMoveTo cr 700 (100 + 30 * i)
+			cairoLineTo cr 760 (100 + 30 * i)
+			cairoStroke cr
+			putText cr (Size 12) 775 (100 - 10 + 30 * i) $ T.pack hd
 
 		for_ fps \fp -> do
 			cnt <- readFile fp
 			let	hd = readHeader cnt
 				dat = readData cnt
 			print hd
+			when (hd /= hd0) $ error "no mutch data"
 			uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> dat))
 --	drawLines cr [(100, 100), (200, 200)]
 
@@ -88,5 +108,5 @@ translate :: (CDouble, CDouble) -> (CDouble, CDouble)
 translate = transX *** transY
 
 transX, transY :: CDouble -> CDouble
-transX x = log (x / 1000) * 120 + 130
+transX x = log (x / 1000) * 115 + 150
 transY y = (- y * 1.5 * 10 ^ 9) + 668
