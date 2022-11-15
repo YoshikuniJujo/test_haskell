@@ -20,12 +20,15 @@ import Tools
 main :: IO ()
 main = do
 	args <- getArgs
-	i <- next "cmp_sorts"
-	h <- openFile ("graph/cmp_sorts" ++ show i ++ ".txt") WriteMode
 	let	g = case args of
 			[] -> False
 			["graph"] -> True
 			_ -> error "bad options"
+	i <- next "cmp_sorts"
+	h <- openFile
+		(if g	then "graph/cmp_sorts" ++ show i ++ ".txt"
+			else "/dev/null")
+		WriteMode
 	when g $ putStr' h "N\tData.List/merge/heap/quick\n"
 	xs_3 <- mkSample' (0, 10 ^ i8) (10 ^ i3)
 	try h g (10 ^ i3) xs_3
