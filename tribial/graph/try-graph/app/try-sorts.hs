@@ -11,6 +11,7 @@ import Foreign.C.Types
 import Data.Foldable
 import Data.Maybe
 import Data.List qualified as L
+import Data.Word
 import Data.Text qualified as T
 import Data.Color
 import Data.CairoContext
@@ -59,17 +60,25 @@ main = do
 			putText cr (Size 12) 775 (100 - 10 + 30 * i) $ T.pack hd
 
 		for_ fps \fp -> do
-			cnt <- readFile fp
-			let	hd = readHeader cnt
-				dat = readData cnt
+			al <- readAll <$> readFile fp
+			let	hd = header al
+				dt = dat al
 			print hd
 			when (hd /= hd0) $ error "no mutch data"
-			uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> dat))
+			uncurry (drawLines cr) `mapM_` (colors `zip` ((translate <$>) <$> dt))
 --	drawLines cr [(100, 100), (200, 200)]
 
 colors :: [Rgb CDouble]
 colors = fromJust . (\(r, g, b) -> rgbDouble r g b) <$> [
 	(0.8, 0.3, 0.3), (0.3, 0.8, 0.3), (0.3, 0.3, 0.8), (0.6, 0.6, 0.2) ]
+
+data All = All {
+	machin :: Maybe (Word64, Word64),
+	header :: [String],
+	dat :: [[(CDouble, CDouble)]] } deriving Show
+
+readAll :: String -> All
+readAll = All <$> const Nothing <*> readHeader <*> readData
 
 readHeader :: String -> [String]
 readHeader = spans (/= '/') . (!! 1) . words . head . lines
