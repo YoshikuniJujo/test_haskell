@@ -74,5 +74,5 @@ readLast :: [Int] -> IO ()
 readLast ns = putStr $ replicate (last ns - last ns) 'c'
 
 showTime' :: Handle -> Bool -> Int -> String -> Int -> IO a -> IO ()
-showTime' _ False _ lbl n act = showTime lbl n act
+showTime' _ False _ lbl n act = () <$ showTime lbl n act
 showTime' h True m _ _ act = showTimeMGraph h m act

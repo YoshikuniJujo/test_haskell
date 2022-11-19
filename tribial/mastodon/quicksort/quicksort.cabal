@@ -44,7 +44,10 @@ library
     , base >=4.7 && <5
     , deepseq
     , directory
+    , hason
+    , pretty
     , random
+    , text
     , time
   default-language: Haskell2010
 
@@ -60,8 +63,11 @@ executable quicksort-exe
     , base >=4.7 && <5
     , deepseq
     , directory
+    , hason
+    , pretty
     , quicksort
     , random
+    , text
     , time
   default-language: Haskell2010
 
@@ -78,8 +84,11 @@ executable try-graph
     , base >=4.7 && <5
     , deepseq
     , directory
+    , hason
+    , pretty
     , quicksort
     , random
+    , text
     , time
   default-language: Haskell2010
 
@@ -96,8 +105,11 @@ executable try-m
     , base >=4.7 && <5
     , deepseq
     , directory
+    , hason
+    , pretty
     , quicksort
     , random
+    , text
     , time
   default-language: Haskell2010
 
@@ -114,8 +126,11 @@ executable try-some
     , base >=4.7 && <5
     , deepseq
     , directory
+    , hason
+    , pretty
     , quicksort
     , random
+    , text
     , time
   default-language: Haskell2010
 
@@ -132,7 +147,10 @@ test-suite quicksort-test
     , base >=4.7 && <5
     , deepseq
     , directory
+    , hason
+    , pretty
     , quicksort
     , random
+    , text
     , time
   default-language: Haskell2010

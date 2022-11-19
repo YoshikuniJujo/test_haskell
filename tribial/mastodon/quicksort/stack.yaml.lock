@@ -3,11 +3,23 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    subdir: packages/hason
+    name: hason
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    pantry-tree:
+      size: 733
+      sha256: e1a5ce60c63b9ded70804fa9f29fa36c4c54097e026d0d999c970e7f8350afe6
+    commit: 38d6e4c1faf95c886ade16a5e105b728d9d18721
+  original:
+    subdir: packages/hason
+    git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 38d6e4c1faf95c886ade16a5e105b728d9d18721
 snapshots:
 - completed:
-    size: 619205
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/31.yaml
-    sha256: e5f56f619132209b826084cacd6374d7f0344cc88a9d1d305878190e4204ae1f
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/31.yaml
+    size: 648420
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/0.yaml
+    sha256: a2cbcd2f37010a64c4ef74c21fd7e55982a07b49840d2bed306f9bac9981a9c3
+  original: lts-20.0

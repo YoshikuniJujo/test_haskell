@@ -17,12 +17,13 @@ i3 = 3; i4 = 4; i5 = 5; i6 = 6; i7 = 7; i8 = 8; i9 = 9; i10 = 10
 i14 = 14; i16 = 16; i17 = 17; i18 = 18; i19 = 19; i20 = 20
 i21 = 21; i22 = 22; i23 = 23
 
-showTime :: String -> Int -> IO a -> IO ()
+showTime :: String -> Int -> IO a -> IO NominalDiffTime
 showTime nm n act = do
 	putStr $ nm ++ ":\t"
 	t <- time act
 	print' t
 	print $ realToFrac t / nLogN n * 10 ^ i7
+	pure t
 
 showTimeMGraph :: Handle -> Int -> IO a -> IO ()
 showTimeMGraph h m act = do

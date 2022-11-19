@@ -35,3 +35,4 @@ main = do
 	print $ last xs_23
 	showTime "quicksort (2^23)     " (2 ^ i23) (print' . last $ quicksort xs_23)
 	showTime "mergesort (2^23)     " (2 ^ i23) (print' . last $ naturalSort xs_23)
+	pure ()
