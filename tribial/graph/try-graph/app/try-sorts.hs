@@ -21,6 +21,7 @@ import Graphics.Cairo.Drawing.Paths
 
 import Cairo
 import Text
+import SortResult
 
 main :: IO ()
 main = do
@@ -71,39 +72,6 @@ main = do
 colors :: [Rgb CDouble]
 colors = fromJust . (\(r, g, b) -> rgbDouble r g b) <$> [
 	(0.8, 0.3, 0.3), (0.3, 0.8, 0.3), (0.3, 0.3, 0.8), (0.6, 0.6, 0.2) ]
-
-data All = All {
-	machin :: Maybe (Word64, Word64),
-	header :: [String],
-	dat :: [[(CDouble, CDouble)]] } deriving Show
-
-readAll :: String -> All
-readAll = All <$> const Nothing <*> readHeader <*> readData
-
-readHeader :: String -> [String]
-readHeader = spans (/= '/') . (!! 1) . words . head . lines
-
-readData :: String -> [[(CDouble, CDouble)]]
-readData = L.transpose . (separate . readData1 <$>) . tail . lines
-
-separate :: (a, [a]) -> [(a, a)]
-separate (x, ys) = (x ,) <$> ys
-
-readData1 :: String -> (CDouble, [CDouble])
-readData1 str = case span (/= '\t') str of
-	(n_, '\t' : dat) -> let
-		n = read n_
-		tr = (/ (n * log n)) . read . takeWhile (/= 's') in case spans (/= '/') dat of
-		ds -> (n, tr <$> ds)
-		_ -> error "bad format"
-	_ -> error "bad format"
-
-spans :: (a -> Bool) -> [a] -> [[a]]
-spans p = \case
-	[] -> [[]]
-	x : xs	| p x -> (x : y) : ys
-		| otherwise -> [] : ya
-		where ya@(y : ys) = spans p xs
 
 drawLines :: CairoT s RealWorld -> Rgb CDouble -> [(CDouble, CDouble)] -> IO ()
 drawLines _ _ [] = pure ()
