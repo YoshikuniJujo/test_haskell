@@ -1,0 +1,27 @@
+Dct [
+	("title", T "HASONの例"),
+	("owner", Dct [
+		("name", T "Yoshikuni Jujo"),
+		("dob", ZT 2022-11-17 14:52:40.123 I) ]),
+	("database", Dct [
+		("server", T "192.168.1.1"),
+		("ports", L [I 8001, I 8001, I 8002]),
+		("connection_max", I 5000),
+		("enabled", B True)
+		]),
+	("servers", Dct [
+		("alpha", Dct [
+			("ip", T "10.0.0.1"),
+			("dc", T "eqdc10") ]),
+		("beta", Dct [
+			("ip", T "10.0.0.2"),
+			("dc", T "eqdc10") ])
+		]),
+	("clients", Dct [
+		("data", L [
+			L [T "gamma", T "delta"],
+			L [I 1, I 2] ])
+		]),
+	("hosts", L [T "alpha", T "omega"]),
+	("diff-time", DT 1.00123s)
+	]
