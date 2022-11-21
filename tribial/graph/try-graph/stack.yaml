@@ -17,8 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver:
-  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/32.yaml
+resolver: lts-20.0
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -50,6 +49,10 @@ extra-deps:
   commit: 4219ecf5de6caed418269577834f26eb0199068d
 - git: https://github.com/YoshikuniJujo/glib-stopgap
   commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+- git: https://github.com/YoshikuniJujo/test_haskell
+  commit: 38d6e4c1faf95c886ade16a5e105b728d9d18721
+  subdirs:
+  - packages/hason
 
 #
 # extra-deps: []

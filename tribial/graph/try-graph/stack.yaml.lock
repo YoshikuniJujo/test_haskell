@@ -70,10 +70,22 @@ packages:
   original:
     git: https://github.com/YoshikuniJujo/glib-stopgap
     commit: bdf7631858e7037d7410b4e8fde305d741c6acaa
+- completed:
+    subdir: packages/hason
+    name: hason
+    version: 0.1.0.0
+    git: https://github.com/YoshikuniJujo/test_haskell
+    pantry-tree:
+      size: 733
+      sha256: e1a5ce60c63b9ded70804fa9f29fa36c4c54097e026d0d999c970e7f8350afe6
+    commit: 38d6e4c1faf95c886ade16a5e105b728d9d18721
+  original:
+    subdir: packages/hason
+    git: https://github.com/YoshikuniJujo/test_haskell
+    commit: 38d6e4c1faf95c886ade16a5e105b728d9d18721
 snapshots:
 - completed:
-    size: 619204
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/32.yaml
-    sha256: ae630fb633086fb5128ec338a40a60c0f2b0a0f1bcfa9920c15855df2001338e
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/32.yaml
+    size: 648420
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/0.yaml
+    sha256: a2cbcd2f37010a64c4ef74c21fd7e55982a07b49840d2bed306f9bac9981a9c3
+  original: lts-20.0

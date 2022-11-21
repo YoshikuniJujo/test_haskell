@@ -21,15 +21,17 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- text
-- time
 - primitive
+- text
+- containers
+- time
 - JuicyPixels
 - JuicyCairo
 - simple-cairo
 - simple-pango
 - cairo-image
 - union-color
+- hason
 
 ghc-options:
 - -Wall
