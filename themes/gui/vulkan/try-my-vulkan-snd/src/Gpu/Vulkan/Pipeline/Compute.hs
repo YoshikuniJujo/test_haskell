@@ -39,6 +39,15 @@ data CreateInfo n n1 n2 c d vs sl sbtss sbph = CreateInfo {
 	createInfoBasePipelineHandle :: Maybe (C sbph),
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
+data CreateInfoNew n n1 n2 c d vs slsbtss sbph = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoStageNew ::
+		ShaderStage.CreateInfo n1 n2 'GlslComputeShader c d vs,
+	createInfoLayoutNew :: V3 Layout.LLL slsbtss,
+	createInfoBasePipelineHandleNew :: Maybe (C sbph),
+	createInfoBasePipelineIndexNew :: Maybe Int32 }
+
 createInfoToMiddle :: (Pointable n2, Pointable c) =>
 	Device.D ds -> CreateInfo n n1 n2 c d vs sl sbtss sbph ->
 	IO (M.CreateInfo n n1 vs)

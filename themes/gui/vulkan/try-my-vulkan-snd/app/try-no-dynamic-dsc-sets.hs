@@ -54,6 +54,7 @@ import qualified Gpu.Vulkan.DescriptorPool.Enum as Vk.DscPool
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
+import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
@@ -69,6 +70,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
+
+import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 main :: IO ()
 main = do
@@ -365,7 +368,7 @@ calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
-	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dslyt) nil nil \plyt ->
+	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCs @'[ '(Word32 :.: Word32 :.: (), _, _, _)]
 		dvc Nothing
 		(Singleton . Vk.Ppl.Cmpt.CreateInfo_ $ computePipelineInfo plyt)
@@ -375,6 +378,15 @@ calc dvc qFam dslyt ln dss ma mb mc =
 		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dss ln ma mb mc
 		_ -> error "never occur"
 
+pplLayoutInfoNew :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
+	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, DscSetLytLstW123)]
+		('Vk.PushConstant.PushConstantLayout '[] '[])
+pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
+	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
+	Vk.Ppl.Lyt.createInfoSetLayoutsNew =
+		Singleton $ Vk.Ppl.Lyt.Layout dslyt }
+
 pplLayoutInfo :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Vk.Ppl.Lyt.CreateInfo () '[ '(sl, DscSetLytLstW123)]
 pplLayoutInfo dslyt = Vk.Ppl.Lyt.CreateInfo {
@@ -383,14 +395,14 @@ pplLayoutInfo dslyt = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoSetLayouts = Singleton $ Vk.Ppl.Lyt.Layout dslyt,
 	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 
-computePipelineInfo :: Vk.Ppl.Lyt.LL sl '[ '(sdsl, DscSetLytLstW123)] ->
+computePipelineInfo :: Vk.Ppl.Lyt.LLL sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfo () () () () ()
 		(Word32 :.: Word32 :.: ()) sl '[ '(sdsl, DscSetLytLstW123)] sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+computePipelineInfo (Vk.Ppl.Lyt.LLL pl) = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = Nothing,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayout = pl,
+	Vk.Ppl.Cmpt.createInfoLayout = Vk.Ppl.Lyt.LL pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
@@ -423,7 +435,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 
 run :: forall sd sc vs sg sl sdsl sp sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.LL sl '[ '(sdsl, DscSetLytLstW123)] ->
+	Vk.Ppl.Lyt.LLL sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.DscSet.S sd sp '(sdsl, DscSetLytLstW123)  -> Word32 ->
 	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
@@ -432,7 +444,7 @@ run :: forall sd sc vs sg sl sdsl sp sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute plyt
+		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute plyt
 			(Singleton $ Vk.Cmd.DescriptorSet dss) []
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit @() q [sinfo] Nothing
