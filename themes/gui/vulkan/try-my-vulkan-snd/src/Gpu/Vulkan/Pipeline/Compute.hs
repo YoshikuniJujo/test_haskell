@@ -47,11 +47,10 @@ data CreateInfo' n nncdvs sl sbtss sbph = CreateInfo' {
 	createInfoBasePipelineHandle' :: Maybe (C sbph),
 	createInfoBasePipelineIndex' :: Maybe Int32 }
 
-data CreateInfoNew n n1 n2 c d vs slsbtss sbph = CreateInfoNew {
+data CreateInfoNew n nncdvs slsbtss sbph = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
-	createInfoStageNew ::
-		ShaderStage.CreateInfo n1 n2 'GlslComputeShader c d vs,
+	createInfoStageNew :: V6 ShaderStage.CreateInfo nncdvs,
 	createInfoLayoutNew :: V3 Layout.LLL slsbtss,
 	createInfoBasePipelineHandleNew :: Maybe (C sbph),
 	createInfoBasePipelineIndexNew :: Maybe Int32 }
@@ -87,6 +86,27 @@ createInfoToMiddle' dvc CreateInfo' {
 	createInfoLayout' = Layout.LL lyt,
 	createInfoBasePipelineHandle' = ((\(C b) -> b) <$>) -> bph,
 	createInfoBasePipelineIndex' = bpi
+	} = do
+	stg' <- ShaderStage.createInfoToMiddle' dvc stg
+	pure M.CreateInfo {
+		M.createInfoNext = mnxt,
+		M.createInfoFlags = flgs,
+		M.createInfoStage = stg',
+		M.createInfoLayout = lyt,
+		M.createInfoBasePipelineHandle = bph,
+		M.createInfoBasePipelineIndex = bpi }
+
+createInfoToMiddleNew :: (Pointable n', Pointable c) =>
+	Device.D ds ->
+	CreateInfoNew n '(n1, n', 'GlslComputeShader, c, d, vs) slsbtss sbph ->
+	IO (M.CreateInfo n n1 vs)
+createInfoToMiddleNew dvc CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoStageNew = stg,
+	createInfoLayoutNew = V3 (Layout.LLL lyt),
+	createInfoBasePipelineHandleNew = ((\(C b) -> b) <$>) -> bph,
+	createInfoBasePipelineIndexNew = bpi
 	} = do
 	stg' <- ShaderStage.createInfoToMiddle' dvc stg
 	pure M.CreateInfo {
