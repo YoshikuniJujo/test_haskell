@@ -154,6 +154,30 @@ instance DestroyCreateInfoMiddleList vss vss' =>
 		destroyCreateInfoMiddle dvc mci ci
 		destroyCreateInfoMiddleList dvc mcis cis
 
+destroyCreateInfoMiddle' :: Pointable d =>
+	Device.D sd ->
+	M.CreateInfo n n1 vs -> CreateInfo' n '(n1, n2, 'GlslComputeShader, c, d, vs) sl sbtss sbph -> IO ()
+destroyCreateInfoMiddle' dvc mci ci = ShaderStage.destroyCreateInfoMiddle dvc
+	(M.createInfoStage mci) ((\(V6 s) -> s) $ createInfoStage' ci)
+
+class DestroyCreateInfoMiddleList' vss vss' where
+	destroyCreateInfoMiddleList' ::
+		Device.D sd ->
+		HeteroVarList (V3 M.CreateInfo) vss ->
+		HeteroVarList (V5 CreateInfo') vss' -> IO ()
+
+instance DestroyCreateInfoMiddleList' '[] '[] where
+	destroyCreateInfoMiddleList' _ HVNil HVNil = pure ()
+
+instance (Pointable d, DestroyCreateInfoMiddleList' vss vss') =>
+	DestroyCreateInfoMiddleList'
+		('(n, n1, vs) ': vss)
+		('(n, '(n1, n2, 'GlslComputeShader, c, d, vs), sl, sbtss, sbph) ': vss') where
+	destroyCreateInfoMiddleList' dvc
+		(V3 mci :...: mcis) (V5 ci :...: cis) = do
+		destroyCreateInfoMiddle' dvc mci ci
+		destroyCreateInfoMiddleList' dvc mcis cis
+
 createCs :: (
 	PipelineListToHetero (ToDummies vss),
 	DestroyCreateInfoMiddleList (FirstList vss) vss,
