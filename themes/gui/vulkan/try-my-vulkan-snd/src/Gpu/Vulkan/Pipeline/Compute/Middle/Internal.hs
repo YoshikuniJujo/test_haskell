@@ -2,11 +2,12 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
-	C(..), CreateInfo(..), CreateInfosToCore, createCs, destroy
+	C(..), CreateInfo(..), CreateInfosToCore, CreateInfosToCore', createCs, createCs', destroy
 	) where
 
 import Foreign.Ptr
@@ -76,6 +77,20 @@ instance (Specialization.StoreValues a, CreateInfosToCore as) =>
 		ccis <- createInfosToCore cis
 		pure $ cci : ccis
 
+class CreateInfosToCore' vss where
+	createInfosToCore' ::
+		HeteroVarList (V3 CreateInfo) vss -> ContT r IO [C.CreateInfo]
+
+instance CreateInfosToCore' '[] where createInfosToCore' HVNil = pure []
+
+instance (
+	Pointable n, Pointable n1, Specialization.StoreValues vss,
+	CreateInfosToCore' as ) =>
+	CreateInfosToCore' ('(n, n1, vss) ': as) where
+	createInfosToCore' (V3 ci :...: cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfosToCore' cis
+
 newtype C = C Pipeline.C.P deriving Show
 
 createCs :: (Pointable n, Pointable n1, CreateInfosToCore vss, Pointable c) =>
@@ -84,6 +99,21 @@ createCs :: (Pointable n, Pointable n1, CreateInfosToCore vss, Pointable c) =>
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	((C <$>) <$>) . ($ pure) $ runContT do
 		cis' <- createInfosToCore cis
+		let	ln = length cis'
+		pcis <- ContT $ allocaArray ln
+		lift $ pokeArray pcis cis'
+		pac <- AllocationCallbacks.maybeToCore mac
+		pps <- ContT $ allocaArray ln
+		lift do	r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
+			throwUnlessSuccess $ Result r
+			peekArray ln pps
+
+createCs' :: (CreateInfosToCore' vss, Pointable c) =>
+	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
+	Maybe (AllocationCallbacks.A c) -> IO [C]
+createCs' (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
+	((C <$>) <$>) . ($ pure) $ runContT do
+		cis' <- createInfosToCore' cis
 		let	ln = length cis'
 		pcis <- ContT $ allocaArray ln
 		lift $ pokeArray pcis cis'
