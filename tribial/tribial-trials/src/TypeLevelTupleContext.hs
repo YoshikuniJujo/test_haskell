@@ -1,17 +1,28 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module TypeLevelTupleContext where
 
-data Two ab where Two :: a -> b -> Two '(a, b)
+import Data.Kind
 
-deriving instance (Show a, Show b) => Show (Two '(a, b))
+data Two a b = Two a b deriving Show
 
-printOne :: ShowOne ab => Two ab -> IO ()
-printOne t = putStrLn $ showOne t
+data Two' ab where Two' :: Two a b -> Two' '(a, b)
 
-class ShowOne ab where showOne :: Two ab -> String
-instance Show a => ShowOne '(a, b) where showOne (Two x _y) = show x
+deriving instance (Show a, Show b) => Show (Two' '(a, b))
+
+printOne :: Show a => Two a b -> IO ()
+printOne (Two x _y) = print x
+
+printOne' :: ShowOne ab => Two' ab -> IO ()
+printOne' = po
+
+class ShowOne (ab :: (Type, Type)) where
+	po :: Two' ab -> IO ()
+
+instance Show a => ShowOne '(a, b) where
+	po (Two' t) = printOne t
