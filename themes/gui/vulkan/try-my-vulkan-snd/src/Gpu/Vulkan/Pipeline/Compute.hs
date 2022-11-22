@@ -39,6 +39,14 @@ data CreateInfo n n1 n2 c d vs sl sbtss sbph = CreateInfo {
 	createInfoBasePipelineHandle :: Maybe (C sbph),
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
+data CreateInfo' n nncdvs sl sbtss sbph = CreateInfo' {
+	createInfoNext' :: Maybe n,
+	createInfoFlags' :: CreateFlags,
+	createInfoStage' :: V6 ShaderStage.CreateInfo nncdvs,
+	createInfoLayout' :: Layout.LL sl sbtss,
+	createInfoBasePipelineHandle' :: Maybe (C sbph),
+	createInfoBasePipelineIndex' :: Maybe Int32 }
+
 data CreateInfoNew n n1 n2 c d vs slsbtss sbph = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
@@ -67,6 +75,28 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoLayout = lyt,
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
+
+{-
+createInfoToMiddle' :: (Pointable n2, Pointable c) =>
+	Device.D ds -> CreateInfo' n nncdvs sl sbtss sbph ->
+	IO (M.CreateInfo n n1 vs)
+createInfoToMiddle' dvc CreateInfo' {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoStage = V6 stg,
+	createInfoLayout = Layout.LL lyt,
+	createInfoBasePipelineHandle = ((\(C b) -> b) <$>) -> bph,
+	createInfoBasePipelineIndex = bpi
+	} = do
+	stg' <- ShaderStage.createInfoToMiddle dvc stg
+	pure M.CreateInfo {
+		M.createInfoNext = mnxt,
+		M.createInfoFlags = flgs,
+		M.createInfoStage = stg',
+		M.createInfoLayout = lyt,
+		M.createInfoBasePipelineHandle = bph,
+		M.createInfoBasePipelineIndex = bpi }
+		-}
 
 -- data CreateInfo_ n n1 n2 c d (vsslsbph :: (Type, Type, Type, Type)) where
 data CreateInfo_ n n1 n2 c d vsslsbph where

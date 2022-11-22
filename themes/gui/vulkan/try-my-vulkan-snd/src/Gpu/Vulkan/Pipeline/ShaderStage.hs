@@ -50,6 +50,15 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoName = nm,
 		M.createInfoSpecializationInfo = spi }
 
+class CreateInfoToMiddle nnskndcdvs where
+	type Result nnskndcdvs
+	createInfoToMiddle' :: Device.D ds -> CreateInfo' nnskndcdvs ->
+		IO (Result nnskndcdvs)
+
+instance (Pointable n', Pointable c) => CreateInfoToMiddle '(n, n', sknd, c, d, vs) where
+	type Result '(n, n', sknd, c, d, vs) = M.CreateInfo n sknd vs
+	createInfoToMiddle' dvc (V6 ci) = createInfoToMiddle dvc ci
+
 destroyCreateInfoMiddle :: Pointable d => Device.D ds ->
 	M.CreateInfo n sknd vs -> CreateInfo n n' sknd c d vs -> IO ()
 destroyCreateInfoMiddle dvc
