@@ -76,19 +76,19 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
 
-{-
-createInfoToMiddle' :: (Pointable n2, Pointable c) =>
-	Device.D ds -> CreateInfo' n nncdvs sl sbtss sbph ->
+createInfoToMiddle' :: (Pointable n', Pointable c) =>
+	Device.D ds ->
+	CreateInfo' n '(n1, n', 'GlslComputeShader, c, d, vs) sl sbtss sbph ->
 	IO (M.CreateInfo n n1 vs)
 createInfoToMiddle' dvc CreateInfo' {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoStage = V6 stg,
-	createInfoLayout = Layout.LL lyt,
-	createInfoBasePipelineHandle = ((\(C b) -> b) <$>) -> bph,
-	createInfoBasePipelineIndex = bpi
+	createInfoNext' = mnxt,
+	createInfoFlags' = flgs,
+	createInfoStage' = stg,
+	createInfoLayout' = Layout.LL lyt,
+	createInfoBasePipelineHandle' = ((\(C b) -> b) <$>) -> bph,
+	createInfoBasePipelineIndex' = bpi
 	} = do
-	stg' <- ShaderStage.createInfoToMiddle dvc stg
+	stg' <- ShaderStage.createInfoToMiddle' dvc stg
 	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
@@ -96,7 +96,6 @@ createInfoToMiddle' dvc CreateInfo' {
 		M.createInfoLayout = lyt,
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
-		-}
 
 -- data CreateInfo_ n n1 n2 c d (vsslsbph :: (Type, Type, Type, Type)) where
 data CreateInfo_ n n1 n2 c d vsslsbph where
@@ -113,6 +112,24 @@ createInfoListToMiddle ::
 	IO (HeteroVarList (M.CreateInfo n n1) (FirstList vss))
 createInfoListToMiddle dvc cis =
 	heteroVarListMapM'' (createInfoToMiddle dvc . (\(CreateInfo_ ci) -> ci)) cis
+
+class CreateInfoListToMiddle (as :: [(Type, (Type, Type, ShaderKind, Type, Type, Type), Type, [(Type, [DescriptorSetLayout.BindingType])], k)]) where
+	type Result as :: [(Type, Type, Type)]
+	createInfoListToMiddle' ::
+		Device.D ds -> HeteroVarList (V5 CreateInfo') as ->
+		IO (HeteroVarList (V3 M.CreateInfo) (Result as))
+
+instance CreateInfoListToMiddle '[] where
+	type Result '[] = '[]
+	createInfoListToMiddle' _ HVNil = pure HVNil
+
+instance (Pointable n', Pointable c, CreateInfoListToMiddle as) =>
+	CreateInfoListToMiddle ('(n, '(n1, n', 'GlslComputeShader, c, d, vs), sl, sbtss, sbph) ': as) where
+	type Result ('(n, '(n1, n', 'GlslComputeShader, c, d, vs), sl, sbtss, sbph) ': as) =
+		'(n, n1, vs) ': Result as
+	createInfoListToMiddle' dvc (V5 ci :...: cis) = (:...:)
+		<$> (V3 <$> createInfoToMiddle' dvc ci)
+		<*> createInfoListToMiddle' dvc cis
 
 destroyCreateInfoMiddle :: Pointable d =>
 	Device.D sd ->
