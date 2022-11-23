@@ -151,6 +151,27 @@ instance (Pointable n', Pointable c, CreateInfoListToMiddle as) =>
 		<$> (V3 <$> createInfoToMiddle' dvc ci)
 		<*> createInfoListToMiddle' dvc cis
 
+class CreateInfoListToMiddleNew as where
+	type ResultNew as :: [(Type, Type, Type)]
+	createInfoListToMiddleNew ::
+		Device.D sd -> HeteroVarList (V4 CreateInfoNew) as ->
+		IO (HeteroVarList (V3 M.CreateInfo) (ResultNew as))
+
+instance CreateInfoListToMiddleNew '[] where
+	type ResultNew '[] = '[]
+	createInfoListToMiddleNew _ HVNil = pure HVNil
+
+instance (Pointable n', Pointable c, CreateInfoListToMiddleNew as) =>
+	CreateInfoListToMiddleNew (
+		'(n, '(n1, n', 'GlslComputeShader, c, d, vs), slsbtss, sbph
+		) ': as) where
+	type ResultNew (
+		'(n, '(n1, n', 'GlslComputeShader, c, d, vs), slsbtss, sbph) ':
+		as ) = '(n, n1, vs) ': ResultNew as
+	createInfoListToMiddleNew dvc (V4 ci :...: cis) = (:...:)
+		<$> (V3 <$> createInfoToMiddleNew dvc ci)
+		<*> createInfoListToMiddleNew dvc cis
+
 destroyCreateInfoMiddle :: Pointable d =>
 	Device.D sd ->
 	M.CreateInfo n n1 vs -> CreateInfo n n1 n2 c d vs sl sbtss sbph -> IO ()
