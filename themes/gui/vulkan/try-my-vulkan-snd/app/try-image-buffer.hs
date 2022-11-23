@@ -79,6 +79,7 @@ import Codec.Picture.Tools
 
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
+import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 main :: IO ()
 main = getOptions >>= maybe (pure ()) \(Opts opt ifp tlng_) -> do
@@ -136,9 +137,9 @@ calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
 	(Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
-	Vk.Ppl.Lyt.create dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
-	Vk.Ppl.Cmpt.createCs dvc Nothing
-		(Singleton . Vk.Ppl.Cmpt.CreateInfo_ $ cmptPipelineInfo pplLyt)
+	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
+	Vk.Ppl.Cmpt.createCsNew dvc Nothing
+		(Singleton . V4 $ cmptPipelineInfo pplLyt)
 		nil nil \(Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(Singleton cmdBuf) ->
@@ -150,14 +151,14 @@ type ListBuffer3Memory3 w1 w2 w3 = '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], 
 run :: forall w1 w2 w3 slbts sbtss sd sc vs sg sl sp m1 m2 m3 .
 	Vk.Cmd.SetPos '[slbts] sbtss =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.LL sl sbtss -> Vk.DscSet.S sd sp slbts -> Word32 -> (
+	Vk.Ppl.Lyt.LLL sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qfam 0
 	Vk.CmdBuf.begin @() @() cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSets cmdBuf Vk.Ppl.BindPointCompute pplLyt
+		Vk.Cmd.bindDescriptorSetsNew cmdBuf Vk.Ppl.BindPointCompute pplLyt
 			(Vk.Cmd.DescriptorSet dscSet :...: HVNil) []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
 	Vk.Queue.submit @() queue [submitInfo] Nothing
@@ -502,22 +503,25 @@ bufferInfo' xs ys zs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-pplLayoutInfo :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
-	Vk.Ppl.Lyt.createInfoNext = Nothing,
-	Vk.Ppl.Lyt.createInfoFlags = def,
-	Vk.Ppl.Lyt.createInfoSetLayouts = Vk.Ppl.Lyt.Layout dsl :...: HVNil,
-	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
+	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
+		('Vk.PushConstant.PushConstantLayout '[] '[])
+pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
+	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+	Vk.Ppl.Lyt.createInfoFlagsNew = def,
+	Vk.Ppl.Lyt.createInfoSetLayoutsNew = Vk.Ppl.Lyt.Layout dsl :...: HVNil }
 
-cmptPipelineInfo :: Vk.Ppl.Lyt.LL sl sbtss ->
-	Vk.Ppl.Cmpt.CreateInfo () () () () () () sl sbtss sbph
-cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-			Vk.Ppl.Cmpt.createInfoNext = Nothing,
-			Vk.Ppl.Cmpt.createInfoFlags = def,
-			Vk.Ppl.Cmpt.createInfoStage = shaderStageInfo,
-			Vk.Ppl.Cmpt.createInfoLayout = pl,
-			Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
-			Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
+cmptPipelineInfo :: Vk.Ppl.Lyt.LLL sl sbtss '[] ->
+	Vk.Ppl.Cmpt.CreateInfoNew ()
+		'((), (), 'GlslComputeShader, (), (), ())
+		'(sl, sbtss, '[]) sbph
+cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoNew {
+	Vk.Ppl.Cmpt.createInfoNextNew = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlagsNew = def,
+	Vk.Ppl.Cmpt.createInfoStageNew = V6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayoutNew = V3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleNew = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndexNew = Nothing }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qfam = Vk.CommandPool.CreateInfo {
