@@ -277,6 +277,22 @@ createCs' dvc@(Device.D mdvc) cch cis macc macd f = do
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . pipelineListToHetero . (C <$>))
 
+createCsNew :: (
+	CreateInfoListToMiddleNew vss, M.CreateInfosToCore' (ResultNew vss),
+	Pointable c', Pointable d',
+	DestroyCreateInfoMiddleListNew (ResultNew vss) vss,
+	PipelineListToHetero (ToDummies vss) ) =>
+	Device.D sd -> Maybe Cache.C -> HeteroVarList (V4 CreateInfoNew) vss ->
+	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
+	(forall s . HeteroVarList (Pipeline s) (ToDummies vss) -> IO a) -> IO a
+createCsNew dvc@(Device.D mdvc) cch cis macc macd f = do
+	cis' <- createInfoListToMiddleNew dvc cis
+	bracket
+		(M.createCs' mdvc cch cis' macc
+			<* destroyCreateInfoMiddleListNew dvc cis' cis)
+		(mapM_ \c -> M.destroy mdvc c macd)
+		(f . pipelineListToHetero . (C <$>))
+
 type family ToDummies tl where
 	ToDummies '[] = '[]
 	ToDummies (t ': ts) = '() ': ToDummies ts

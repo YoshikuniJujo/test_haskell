@@ -369,9 +369,9 @@ calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCs'
+	Vk.Ppl.Cmpt.createCsNew
 		dvc Nothing
-		(Singleton . V5 $ computePipelineInfo' plyt)
+		(Singleton . V4 $ computePipelineInfoNew plyt)
 		nil nil \(Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
 	Vk.CmdPl.create dvc (commandPoolInfo qFam) nil nil \cp ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cp) \case
@@ -395,16 +395,16 @@ pplLayoutInfo dslyt = Vk.Ppl.Lyt.CreateInfo {
 	Vk.Ppl.Lyt.createInfoSetLayouts = Singleton $ Vk.Ppl.Lyt.Layout dslyt,
 	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
 
-computePipelineInfo' :: Vk.Ppl.Lyt.LLL sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
-	Vk.Ppl.Cmpt.CreateInfo' () '((), (), 'GlslComputeShader, (), (),
-		(Word32 :.: Word32 :.: ())) sl '[ '(sdsl, DscSetLytLstW123)] sbph
-computePipelineInfo' (Vk.Ppl.Lyt.LLL pl) = Vk.Ppl.Cmpt.CreateInfo' {
-	Vk.Ppl.Cmpt.createInfoNext' = Nothing,
-	Vk.Ppl.Cmpt.createInfoFlags' = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage' = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayout' = Vk.Ppl.Lyt.LL pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandle' = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndex' = Nothing }
+computePipelineInfoNew :: Vk.Ppl.Lyt.LLL sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
+	Vk.Ppl.Cmpt.CreateInfoNew () '((), (), 'GlslComputeShader, (), (),
+		(Word32 :.: Word32 :.: ())) '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) sbph
+computePipelineInfoNew pl = Vk.Ppl.Cmpt.CreateInfoNew {
+	Vk.Ppl.Cmpt.createInfoNextNew = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlagsNew = zeroBits,
+	Vk.Ppl.Cmpt.createInfoStageNew = V6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayoutNew = V3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleNew = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndexNew = Nothing }
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo
 	() () 'GlslComputeShader () () (Word32 :.: Word32 :.: ())
