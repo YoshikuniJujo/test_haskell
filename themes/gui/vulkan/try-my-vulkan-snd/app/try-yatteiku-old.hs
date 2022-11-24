@@ -92,6 +92,7 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
+import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Tools
 
@@ -653,12 +654,12 @@ makePipeline dvc rp f = do
 				[blendattachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
-		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo () '[]
-		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
-			Vk.Ppl.Lyt.createInfoNext = Nothing,
-			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
-			Vk.Ppl.Lyt.createInfoSetLayouts = HVNil,
-			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+		layoutCreateInfoNew :: Vk.Ppl.Lyt.CreateInfoNew () '[]
+			('Vk.PushConstant.PushConstantLayout '[] '[])
+		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfoNew {
+			Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+			Vk.Ppl.Lyt.createInfoFlagsNew = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HVNil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
@@ -689,7 +690,7 @@ makePipeline dvc rp f = do
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
-	Vk.Ppl.Lyt.create @() dvc layoutCreateInfo nil nil \(Vk.Ppl.Lyt.LL pipelineLayout) -> do
+	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \(Vk.Ppl.Lyt.LLL pipelineLayout) -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo
 				() () ()
 				'[ 'GlslVertexShader, 'GlslFragmentShader] () ()
