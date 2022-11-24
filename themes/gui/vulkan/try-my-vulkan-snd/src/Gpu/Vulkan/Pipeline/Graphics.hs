@@ -10,8 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics (
-	G, createGs, recreateGs, CreateInfo(..),
-	createGsNew, recreateGsNew, CreateInfoNew(..)
+	G, createGsNew, recreateGsNew, CreateInfoNew(..)
 	) where
 
 import GHC.TypeNats
@@ -142,17 +141,6 @@ createInfoFromNew CreateInfoNew {
 	createInfoBasePipelineHandle = bpplh,
 	createInfoBasePipelineIndex = bppli }
 
-{-
-deriving instance (
-	Show n, Show n2, Show n3, Show n4, Show n5, Show n6, Show n7, Show n8,
-	Show n9, Show n10,
-	Show (ShaderStage.M.CreateInfoList n1 sknds vss)
-	) =>
-	Show (CreateInfo
-		n n1 sknds vss n2 vs' ts n3 n4 n5 n6 n7 n8 n9 n10
-		sl sr sb vs'' ts')
-		-}
-
 createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
 	CreateInfo n nnskndscdvss nvsts
@@ -198,19 +186,6 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoBasePipelineHandle' = V2 bph',
 		M.createInfoBasePipelineIndex' = bpi }
 
-class CreateInfoListToMiddle ss where
-	type MiddleVars ss :: [
-		(Type, [(Type, ShaderKind, Type)], (Type, [Type], [(Nat, Type)]),
-		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))
-		]
-	createInfoListToMiddle' :: Device.D sd ->
-		HeteroVarList (V14 CreateInfo) ss ->
-		IO (HeteroVarList M.CreateInfo'' (MiddleVars ss))
-
-	destroyShaderStages' :: Device.D sd ->
-		HeteroVarList M.CreateInfo'' (MiddleVars ss) ->
-		HeteroVarList (V14 CreateInfo) ss -> IO ()
-
 class CreateInfoListToMiddleNew ss where
 	type MiddleVarsNew ss :: [
 		(Type, [(Type, ShaderKind, Type)], (Type, [Type], [(Nat, Type)]),
@@ -224,33 +199,10 @@ class CreateInfoListToMiddleNew ss where
 		HeteroVarList M.CreateInfo'' (MiddleVarsNew ss) ->
 		HeteroVarList (V14 CreateInfoNew) ss -> IO ()
 
-instance CreateInfoListToMiddle '[] where
-	type MiddleVars '[] = '[]
-	createInfoListToMiddle' _ HVNil = pure HVNil
-	destroyShaderStages' _ HVNil HVNil = pure ()
-
 instance CreateInfoListToMiddleNew '[] where
 	type MiddleVarsNew '[] = '[]
 	createInfoListToMiddleNew _ HVNil = pure HVNil
 	destroyShaderStagesNew _ HVNil HVNil = pure ()
-
-instance (
-	ShaderStage.CreateInfoListToMiddle' nnskndscdvss,
-	CreateInfoListToMiddle ss ) =>
-	CreateInfoListToMiddle ('(
-		n, nnskndscdvss, nvsts, n3, n4, n5, n6, n7, n8, n9, n10,
-		sl, sr, '(sb, vs', ts') ) ': ss) where
-	type MiddleVars ('(
-		n, nnskndscdvss, nvsts, n3, n4, n5, n6, n7, n8, n9, n10,
-		sl, sr, '(sb, vs', ts') ) ': ss) =
-		'(n, ShaderStage.MiddleVars nnskndscdvss, nvsts, n3, n4, n5, n6,
-			n7, n8, n9, n10, '(vs', ts')) ': MiddleVars ss
-	createInfoListToMiddle' dvc (V14 ci :...: cis) = (:...:)
-		<$> (V12 <$> createInfoToMiddle dvc ci)
-		<*> createInfoListToMiddle' dvc cis
-	destroyShaderStages' dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
-		ShaderStage.destroyCreateInfoMiddleList' dvc (M.createInfoStages' cim) (createInfoStages ci)
-		destroyShaderStages' dvc cims cis
 
 instance (
 	ShaderStage.CreateInfoListToMiddle' nnskndscdvss,
@@ -269,27 +221,6 @@ instance (
 	destroyShaderStagesNew dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
 		ShaderStage.destroyCreateInfoMiddleList' dvc (M.createInfoStages' cim) (createInfoStagesNew ci)
 		destroyShaderStagesNew dvc cims cis
-
-createGs :: (
-	Pointable c, Pointable d,
-	CreateInfoListToMiddle ss,
-	M.CreateInfoListToCore' (MiddleVars ss),
-	M.GListFromCore (M.GListVars (MiddleVars ss)),
-	V2g (M.GListVars (MiddleVars ss))
-	) =>
-	Device.D sd -> Maybe (Cache.C sc) ->
-	HeteroVarList (V14 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall sg . HeteroVarList (V2 (G sg)) (M.GListVars (MiddleVars ss)) -> IO a) -> IO a
-createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
-	(createInfoListToMiddle' d cis >>= \cis' ->
-		M.createGs' dvc mc cis' macc <* destroyShaderStages' d cis' cis)
-	(\gs -> M.destroyGs' dvc gs macd) (f . v2g)
-
-recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
-	cis' <- createInfoListToMiddle' d cis
-	M.recreateGs' dvc mc cis' macc macd $ g2v gpls
-	destroyShaderStages' d cis' cis
 
 class V2g ss where
 	v2g :: HeteroVarList M.G' ss -> HeteroVarList (V2 (G sg)) ss

@@ -179,7 +179,6 @@ library
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
       Gpu.Vulkan.Pipeline.Graphics.Middle
-      Gpu.Vulkan.Pipeline.Graphics.Old
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.Layout
@@ -1283,45 +1282,6 @@ executable try-wavefront-obj
 
 executable try-yatteiku
   main-is: try-yatteiku.hs
-  other-modules:
-      Paths_try_my_vulkan_snd
-  hs-source-dirs:
-      app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      GLFW-b
-    , JuicyPixels
-    , array
-    , base >=4.7 && <5
-    , bytestring
-    , c-enum
-    , c-struct
-    , containers
-    , data-default
-    , exception-hierarchy
-    , filepath
-    , ghc-prim
-    , monads-tf
-    , mono-traversable
-    , nowdoc
-    , ranged-list
-    , size-alignment-list
-    , template-haskell
-    , text
-    , time
-    , try-my-vulkan-snd
-    , try-pointable
-    , try-shaderc
-    , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
-    , union-color
-    , uuid
-    , vector
-  default-language: Haskell2010
-
-executable try-yatteiku-old
-  main-is: try-yatteiku-old.hs
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:

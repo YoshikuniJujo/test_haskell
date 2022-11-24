@@ -7,7 +7,9 @@
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Compute where
+module Gpu.Vulkan.Pipeline.Compute (
+	C(..), CreateInfoNew(..), createCsNew, Pipeline(..)
+	) where
 
 import Foreign.Pointable
 import Control.Exception
@@ -26,18 +28,7 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Type as Layout
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Middle as M
 
-import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
-
 newtype C s = C M.C deriving Show
-
-data CreateInfo n n1 n2 c d vs sl sbtss sbph = CreateInfo {
-	createInfoNext :: Maybe n,
-	createInfoFlags :: CreateFlags,
-	createInfoStage ::
-		ShaderStage.CreateInfo n1 n2 'GlslComputeShader c d vs,
-	createInfoLayout :: Layout.LL sl sbtss,
-	createInfoBasePipelineHandle :: Maybe (C sbph),
-	createInfoBasePipelineIndex :: Maybe Int32 }
 
 data CreateInfoNew n nncdvs slsbtss sbph = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
@@ -46,26 +37,6 @@ data CreateInfoNew n nncdvs slsbtss sbph = CreateInfoNew {
 	createInfoLayoutNew :: V3 Layout.LLL slsbtss,
 	createInfoBasePipelineHandleNew :: Maybe (C sbph),
 	createInfoBasePipelineIndexNew :: Maybe Int32 }
-
-createInfoToMiddle :: (Pointable n2, Pointable c) =>
-	Device.D ds -> CreateInfo n n1 n2 c d vs sl sbtss sbph ->
-	IO (M.CreateInfo n n1 vs)
-createInfoToMiddle dvc CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoStage = stg,
-	createInfoLayout = Layout.LL lyt,
-	createInfoBasePipelineHandle = ((\(C b) -> b) <$>) -> bph,
-	createInfoBasePipelineIndex = bpi
-	} = do
-	stg' <- ShaderStage.createInfoToMiddle dvc stg
-	pure M.CreateInfo {
-		M.createInfoNext = mnxt,
-		M.createInfoFlags = flgs,
-		M.createInfoStage = stg',
-		M.createInfoLayout = lyt,
-		M.createInfoBasePipelineHandle = bph,
-		M.createInfoBasePipelineIndex = bpi }
 
 createInfoToMiddleNew :: (Pointable n', Pointable c) =>
 	Device.D ds ->
@@ -88,21 +59,6 @@ createInfoToMiddleNew dvc CreateInfoNew {
 		M.createInfoBasePipelineHandle = bph,
 		M.createInfoBasePipelineIndex = bpi }
 
-data CreateInfo_ n n1 n2 c d vsslsbph where
-	CreateInfo_ :: CreateInfo n n1 n2 c d vs sl sbtss sbph ->
-		CreateInfo_ n n1 n2 c d '(vs, sl, sbtss, sbph)
-
-type family FirstList (abcs :: [(Type, Type, [(Type, [DescriptorSetLayout.BindingType])], Type)]) where
-	FirstList '[] = '[]
-	FirstList ('(a, b, c, d) ': abcs) = a ': FirstList abcs
-
-createInfoListToMiddle ::
-	(HeteroVarListMapM'' [(Type, [DescriptorSetLayout.BindingType])] vss (FirstList vss), Pointable n2, Pointable c) =>
-	Device.D ds -> HeteroVarList (CreateInfo_ n n1 n2 c d) vss ->
-	IO (HeteroVarList (M.CreateInfo n n1) (FirstList vss))
-createInfoListToMiddle dvc cis =
-	heteroVarListMapM'' (createInfoToMiddle dvc . (\(CreateInfo_ ci) -> ci)) cis
-
 class CreateInfoListToMiddleNew as where
 	type ResultNew as :: [(Type, Type, Type)]
 	createInfoListToMiddleNew ::
@@ -123,29 +79,6 @@ instance (Pointable n', Pointable c, CreateInfoListToMiddleNew as) =>
 	createInfoListToMiddleNew dvc (V4 ci :...: cis) = (:...:)
 		<$> (V3 <$> createInfoToMiddleNew dvc ci)
 		<*> createInfoListToMiddleNew dvc cis
-
-destroyCreateInfoMiddle :: Pointable d =>
-	Device.D sd ->
-	M.CreateInfo n n1 vs -> CreateInfo n n1 n2 c d vs sl sbtss sbph -> IO ()
-destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddle dvc
-	(M.createInfoStage mci) (createInfoStage ci)
-
-class DestroyCreateInfoMiddleList vss vss' where
-	destroyCreateInfoMiddleList ::
-		Pointable d =>
-		Device.D sd ->
-		HeteroVarList (M.CreateInfo n n1) vss ->
-		HeteroVarList (CreateInfo_ n n1 n2 c d) vss' -> IO ()
-
-instance DestroyCreateInfoMiddleList '[] '[] where
-	destroyCreateInfoMiddleList _ HVNil HVNil = pure ()
-
-instance DestroyCreateInfoMiddleList vss vss' =>
-	DestroyCreateInfoMiddleList (vs ': vss) ('(vs, sl, sbtss, sbph) ': vss') where
-	destroyCreateInfoMiddleList
-		dvc (mci :...: mcis) (CreateInfo_ ci :...: cis) = do
-		destroyCreateInfoMiddle dvc mci ci
-		destroyCreateInfoMiddleList dvc mcis cis
 
 destroyCreateInfoMiddleNew :: Pointable d =>
 	Device.D sd ->
@@ -170,24 +103,6 @@ instance (Pointable d, DestroyCreateInfoMiddleListNew vss vss') =>
 		(V3 mci :...: mcis) (V4 ci :...: cis) = do
 		destroyCreateInfoMiddleNew dvc mci ci
 		destroyCreateInfoMiddleListNew dvc mcis cis
-
-createCs :: (
-	PipelineListToHetero (ToDummies vss),
-	DestroyCreateInfoMiddleList (FirstList vss) vss,
-	M.CreateInfosToCore (FirstList vss),
-	HeteroVarListMapM'' [(Type, [DescriptorSetLayout.BindingType])] vss (FirstList vss),
-	Pointable n, Pointable n1, Pointable n2,
-	Pointable c, Pointable d, Pointable c', Pointable d' ) =>
-	Device.D sd -> Maybe Cache.C -> HeteroVarList (CreateInfo_ n n1 n2 c d) vss ->
-	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
-	(forall s . HeteroVarList (Pipeline s) (ToDummies vss) -> IO a) -> IO a
-createCs dvc@(Device.D mdvc) cch cis macc macd f = do
-	cis' <- createInfoListToMiddle dvc cis
-	bracket
-		(M.createCs mdvc cch cis' macc
-			<* destroyCreateInfoMiddleList dvc cis' cis)
-		(mapM_ \c -> M.destroy mdvc c macd)
-		(f . pipelineListToHetero . (C <$>))
 
 createCsNew :: (
 	CreateInfoListToMiddleNew vss, M.CreateInfosToCore' (ResultNew vss),

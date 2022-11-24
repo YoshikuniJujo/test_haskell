@@ -74,9 +74,7 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
-import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
-import qualified Gpu.Vulkan.Pipeline.Graphics.Old as Vk.Ppl.Gr.Old
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
@@ -93,6 +91,7 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
+import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Tools
 
@@ -134,7 +133,7 @@ main = do
 runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()
 runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
-	makePipeline device rp \ppl ->
+	makePipelineNew device rp \ppl ->
 	makeImage' phdvc device \bimg'@(Vk.Img.BindedNew obimg') _mi' ->
 	makeBuffer phdvc device screenWidth screenHeight \b bm -> do
 		makeImageView device (Vk.Img.Binded obimg') \iv ->
@@ -565,9 +564,9 @@ makeRenderPass dvc f = do
 			Vk.RenderPass.createInfoDependencies = [] }
 	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil f
 
-makePipeline :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
-	(forall s . Vk.Ppl.Gr.Old.G s '[] '[] -> IO a) -> IO a
-makePipeline dvc rp f = do
+makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
+	(forall s . Vk.Ppl.Gr.G s '[] '[] -> IO a) -> IO a
+makePipelineNew dvc rp f = do
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0,
 			Vk.C.viewportY = 0,
@@ -654,12 +653,12 @@ makePipeline dvc rp f = do
 				[blendattachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
-		layoutCreateInfo :: Vk.Ppl.Lyt.CreateInfo () '[]
-		layoutCreateInfo = Vk.Ppl.Lyt.CreateInfo {
-			Vk.Ppl.Lyt.createInfoNext = Nothing,
-			Vk.Ppl.Lyt.createInfoFlags = Vk.Ppl.Lyt.CreateFlagsZero,
-			Vk.Ppl.Lyt.createInfoSetLayouts = HVNil,
-			Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
+		layoutCreateInfoNew :: Vk.Ppl.Lyt.CreateInfoNew () '[]
+			('Vk.PushConstant.PushConstantLayout '[] '[])
+		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfoNew {
+			Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+			Vk.Ppl.Lyt.createInfoFlagsNew = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HVNil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags =
@@ -690,48 +689,42 @@ makePipeline dvc rp f = do
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoName = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
-	Vk.Ppl.Lyt.create @() dvc layoutCreateInfo nil nil \(Vk.Ppl.Lyt.LL pipelineLayout) -> do
-		let	pipelineCreateInfo :: Vk.Ppl.Gr.Old.CreateInfo
-				() () ()
-				'[ 'GlslVertexShader, 'GlslFragmentShader] () ()
-				'[(), ()] ()
-				'[] '[]
-				() () () () () () () () _ _ _ _ '[]
-			pipelineCreateInfo = Vk.Ppl.Gr.Old.CreateInfo {
-				Vk.Ppl.Gr.Old.createInfoNext = Nothing,
-				Vk.Ppl.Gr.Old.createInfoFlags =
+	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
+		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfoNew () '[
+					'((), (), 'GlslVertexShader, (), (), ()),
+					'((), (), 'GlslFragmentShader, (), (), ()) ]
+				'(	(), '[], '[] )
+				() () () () () () () () '(_, _, _) _ '(_, '[], _)
+			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfoNew {
+				Vk.Ppl.Gr.createInfoNextNew = Nothing,
+				Vk.Ppl.Gr.createInfoFlagsNew =
 					Vk.Ppl.CreateFlagsZero,
-				Vk.Ppl.Gr.Old.createInfoStages =
-					vertShaderStage
-					`Vk.Ppl.ShSt.CreateInfoCons`
-					fragShaderStage
-					`Vk.Ppl.ShSt.CreateInfoCons`
-					Vk.Ppl.ShSt.CreateInfoNil,
-				Vk.Ppl.Gr.Old.createInfoVertexInputState =
-					Just vertexInputInfo,
-				Vk.Ppl.Gr.Old.createInfoInputAssemblyState =
+				Vk.Ppl.Gr.createInfoStagesNew =
+					V6 vertShaderStage :...:
+					V6 fragShaderStage :...: HVNil,
+				Vk.Ppl.Gr.createInfoVertexInputStateNew =
+					Just $ V3 vertexInputInfo,
+				Vk.Ppl.Gr.createInfoInputAssemblyStateNew =
 					Just inputAssembly,
-				Vk.Ppl.Gr.Old.createInfoTessellationState = Nothing,
-				Vk.Ppl.Gr.Old.createInfoViewportState =
+				Vk.Ppl.Gr.createInfoTessellationStateNew = Nothing,
+				Vk.Ppl.Gr.createInfoViewportStateNew =
 					Just viewportState,
-				Vk.Ppl.Gr.Old.createInfoRasterizationState =
+				Vk.Ppl.Gr.createInfoRasterizationStateNew =
 					Just rasterizer,
-				Vk.Ppl.Gr.Old.createInfoMultisampleState =
+				Vk.Ppl.Gr.createInfoMultisampleStateNew =
 					Just multisample,
-				Vk.Ppl.Gr.Old.createInfoDepthStencilState = Nothing,
-				Vk.Ppl.Gr.Old.createInfoColorBlendState =
+				Vk.Ppl.Gr.createInfoDepthStencilStateNew = Nothing,
+				Vk.Ppl.Gr.createInfoColorBlendStateNew =
 					Just blend,
-				Vk.Ppl.Gr.Old.createInfoDynamicState = Nothing,
-				Vk.Ppl.Gr.Old.createInfoLayout = Vk.Ppl.Lyt.L pipelineLayout,
-				Vk.Ppl.Gr.Old.createInfoRenderPass = rp,
-				Vk.Ppl.Gr.Old.createInfoSubpass = 0,
-				Vk.Ppl.Gr.Old.createInfoBasePipelineHandle = Nothing,
-				Vk.Ppl.Gr.Old.createInfoBasePipelineIndex = - 1 }
-		Vk.Ppl.Gr.Old.createGs dvc Nothing (
-			pipelineCreateInfo `Vk.Ppl.Gr.Old.CreateInfoCons`
-			Vk.Ppl.Gr.Old.CreateInfoNil ) nil nil \case
-				(g `Vk.Ppl.Gr.Old.GCons` _) -> f g
-				_ -> error "never occur"
+				Vk.Ppl.Gr.createInfoDynamicStateNew = Nothing,
+				Vk.Ppl.Gr.createInfoLayoutNew = V3 plyt,
+				Vk.Ppl.Gr.createInfoRenderPassNew = rp,
+				Vk.Ppl.Gr.createInfoSubpassNew = 0,
+				Vk.Ppl.Gr.createInfoBasePipelineHandleNew = Nothing,
+				Vk.Ppl.Gr.createInfoBasePipelineIndexNew = - 1 }
+		Vk.Ppl.Gr.createGsNew dvc Nothing (
+			V14 pipelineCreateInfo :...: HVNil ) nil nil
+				\(V2 g :...: HVNil) -> f g
 
 [glslVertexShader|
 
