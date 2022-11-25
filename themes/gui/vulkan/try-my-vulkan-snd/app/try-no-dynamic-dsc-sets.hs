@@ -387,14 +387,6 @@ pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew =
 		Singleton $ Vk.Ppl.Lyt.Layout dslyt }
 
-pplLayoutInfo :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
-	Vk.Ppl.Lyt.CreateInfo () '[ '(sl, DscSetLytLstW123)]
-pplLayoutInfo dslyt = Vk.Ppl.Lyt.CreateInfo {
-	Vk.Ppl.Lyt.createInfoNext = Nothing,
-	Vk.Ppl.Lyt.createInfoFlags = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayouts = Singleton $ Vk.Ppl.Lyt.Layout dslyt,
-	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
-
 computePipelineInfoNew :: Vk.Ppl.Lyt.LLL sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfoNew () '((), (), 'GlslComputeShader, (), (),
 		(Word32 :.: Word32 :.: ())) '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) sbph

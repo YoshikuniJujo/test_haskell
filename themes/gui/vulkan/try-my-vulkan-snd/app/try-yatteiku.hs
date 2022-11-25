@@ -657,7 +657,7 @@ makePipelineNew dvc rp f = do
 			('Vk.PushConstant.PushConstantLayout '[] '[])
 		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfoNew {
 			Vk.Ppl.Lyt.createInfoNextNew = Nothing,
-			Vk.Ppl.Lyt.createInfoFlagsNew = Vk.Ppl.Lyt.CreateFlagsZero,
+			Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HVNil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,

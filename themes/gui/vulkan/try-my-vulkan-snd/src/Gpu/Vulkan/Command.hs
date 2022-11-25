@@ -111,19 +111,6 @@ bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.LLL l) dss dosts =
 			dss)
 		dosts
 
-bindDescriptorSets :: forall sc vs s sbtss sd spslbtss .
-	(SetPos (MapSnd spslbtss) sbtss, HeteroVarListToList' spslbtss) =>
-	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
-	Pipeline.Layout.LL s sbtss -> HeteroVarList (DescriptorSet sd) spslbtss ->
-	[Word32] -> IO ()
-bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.LL l) dss dosts =
-	M.bindDescriptorSets c bp l
-		(firstSet' @spslbtss @sbtss)
-		(heteroVarListToList'
-			(\(DescriptorSet (DescriptorSet.S s)) -> s)
-			dss)
-		dosts
-
 type family MapThird tpl where
 	MapThird '[] = '[]
 	MapThird ('(x, y, z) ': xs) = z ': MapThird xs

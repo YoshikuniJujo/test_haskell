@@ -9,8 +9,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Layout (
-	LLL, createNew, CreateInfoNew(..), LL, create, CreateInfo(..), L,
-	M.CreateFlags, pattern M.CreateFlagsZero, Layout(..) ) where
+	LLL, createNew, CreateInfoNew(..),
+	M.CreateFlags,
+	Layout(..)
+	) where
 
 import Foreign.Pointable
 import Control.Exception

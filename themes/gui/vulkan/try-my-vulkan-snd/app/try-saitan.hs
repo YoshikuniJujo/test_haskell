@@ -471,13 +471,6 @@ bufferInfo' xs ys zs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-pplLayoutInfo :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfo () '[ '(sl, bts)]
-pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfo {
-	Vk.Ppl.Lyt.createInfoNext = Nothing,
-	Vk.Ppl.Lyt.createInfoFlags = def,
-	Vk.Ppl.Lyt.createInfoSetLayouts = Vk.Ppl.Lyt.Layout dsl :...: HVNil,
-	Vk.Ppl.Lyt.createInfoPushConstantRanges = [] }
-
 pplLayoutInfoNew :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
 	('Vk.PushConstant.PushConstantLayout '[] '[])
 pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfoNew {
