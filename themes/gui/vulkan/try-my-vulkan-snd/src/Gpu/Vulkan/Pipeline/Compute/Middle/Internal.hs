@@ -7,8 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
-	C(..), CreateInfo(..), CreateInfosToCore, CreateInfosToCore', createCs, createCs', destroy
-	) where
+	C(..), CreateInfo(..), CreateInfosToCore', createCs', destroy ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -64,19 +63,6 @@ createInfoToCore CreateInfo {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
-class CreateInfosToCore vss where
-	createInfosToCore :: (Pointable n, Pointable n1) =>
-		HeteroVarList (CreateInfo n n1) vss -> ContT r IO [C.CreateInfo]
-
-instance CreateInfosToCore '[] where createInfosToCore HVNil = pure []
-
-instance (Specialization.StoreValues a, CreateInfosToCore as) =>
-	CreateInfosToCore (a ': as) where
-	createInfosToCore (ci :...: cis) = do
-		cci <- createInfoToCore ci
-		ccis <- createInfosToCore cis
-		pure $ cci : ccis
-
 class CreateInfosToCore' vss where
 	createInfosToCore' ::
 		HeteroVarList (V3 CreateInfo) vss -> ContT r IO [C.CreateInfo]
@@ -92,21 +78,6 @@ instance (
 		<*> createInfosToCore' cis
 
 newtype C = C Pipeline.C.P deriving Show
-
-createCs :: (Pointable n, Pointable n1, CreateInfosToCore vss, Pointable c) =>
-	Device.D -> Maybe Cache.C -> HeteroVarList (CreateInfo n n1) vss ->
-	Maybe (AllocationCallbacks.A c) -> IO [C]
-createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
-	((C <$>) <$>) . ($ pure) $ runContT do
-		cis' <- createInfosToCore cis
-		let	ln = length cis'
-		pcis <- ContT $ allocaArray ln
-		lift $ pokeArray pcis cis'
-		pac <- AllocationCallbacks.maybeToCore mac
-		pps <- ContT $ allocaArray ln
-		lift do	r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
-			throwUnlessSuccess $ Result r
-			peekArray ln pps
 
 createCs' :: (CreateInfosToCore' vss, Pointable c) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
