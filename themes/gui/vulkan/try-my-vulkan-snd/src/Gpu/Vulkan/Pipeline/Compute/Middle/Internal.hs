@@ -7,7 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
-	C(..), CreateInfo(..), CreateInfosToCore', createCs', destroy ) where
+	C(..), CreateInfo(..), CreateInfoListToCore, createCs, destroy ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -32,10 +32,10 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout
 import qualified Gpu.Vulkan.Specialization as Specialization
 
-data CreateInfo n n1 vs = CreateInfo {
+data CreateInfo n ns vs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: Pipeline.CreateFlags,
-	createInfoStage :: ShaderStage.CreateInfo n1 'GlslComputeShader vs,
+	createInfoStage :: ShaderStage.CreateInfo ns 'GlslComputeShader vs,
 	createInfoLayout :: Pipeline.Layout.L,
 	createInfoBasePipelineHandle :: Maybe C,
 	createInfoBasePipelineIndex :: Maybe Int32 }
@@ -63,28 +63,28 @@ createInfoToCore CreateInfo {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
-class CreateInfosToCore' vss where
-	createInfosToCore' ::
+class CreateInfoListToCore vss where
+	createInfoListToCore ::
 		HeteroVarList (V3 CreateInfo) vss -> ContT r IO [C.CreateInfo]
 
-instance CreateInfosToCore' '[] where createInfosToCore' HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
 instance (
 	Pointable n, Pointable n1, Specialization.StoreValues vss,
-	CreateInfosToCore' as ) =>
-	CreateInfosToCore' ('(n, n1, vss) ': as) where
-	createInfosToCore' (V3 ci :...: cis) = (:)
+	CreateInfoListToCore as ) =>
+	CreateInfoListToCore ('(n, n1, vss) ': as) where
+	createInfoListToCore (V3 ci :...: cis) = (:)
 		<$> createInfoToCore ci
-		<*> createInfosToCore' cis
+		<*> createInfoListToCore cis
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCs' :: (CreateInfosToCore' vss, Pointable c) =>
+createCs :: (CreateInfoListToCore vss, Pointable c) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
-createCs' (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
+createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	((C <$>) <$>) . ($ pure) $ runContT do
-		cis' <- createInfosToCore' cis
+		cis' <- createInfoListToCore cis
 		let	ln = length cis'
 		pcis <- ContT $ allocaArray ln
 		lift $ pokeArray pcis cis'

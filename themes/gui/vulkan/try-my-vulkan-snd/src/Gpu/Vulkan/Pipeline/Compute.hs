@@ -105,7 +105,7 @@ instance (Pointable d, DestroyCreateInfoMiddleListNew vss vss') =>
 		destroyCreateInfoMiddleListNew dvc mcis cis
 
 createCsNew :: (
-	CreateInfoListToMiddleNew vss, M.CreateInfosToCore' (ResultNew vss),
+	CreateInfoListToMiddleNew vss, M.CreateInfoListToCore (ResultNew vss),
 	Pointable c', Pointable d',
 	DestroyCreateInfoMiddleListNew (ResultNew vss) vss,
 	PipelineListToHetero (ToDummies vss) ) =>
@@ -115,7 +115,7 @@ createCsNew :: (
 createCsNew dvc@(Device.D mdvc) cch cis macc macd f = do
 	cis' <- createInfoListToMiddleNew dvc cis
 	bracket
-		(M.createCs' mdvc cch cis' macc
+		(M.createCs mdvc cch cis' macc
 			<* destroyCreateInfoMiddleListNew dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . pipelineListToHetero . (C <$>))
