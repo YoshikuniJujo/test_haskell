@@ -37,7 +37,7 @@ import Gpu.Vulkan.Pipeline.Enum
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
-import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
+import qualified Gpu.Vulkan.Pipeline.InputAssemblyState.Middle as InputAssemblyState
 import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as RasterizationState

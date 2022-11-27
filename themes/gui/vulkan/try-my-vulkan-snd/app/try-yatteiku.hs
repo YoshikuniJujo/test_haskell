@@ -594,8 +594,7 @@ makePipelineNew dvc rp f = do
 		inputAssembly :: Vk.Ppl.InpAssSt.CreateInfo ()
 		inputAssembly = Vk.Ppl.InpAssSt.CreateInfo {
 			Vk.Ppl.InpAssSt.createInfoNext = Nothing,
-			Vk.Ppl.InpAssSt.createInfoFlags =
-				Vk.Ppl.InpAssSt.CreateFlagsZero,
+			Vk.Ppl.InpAssSt.createInfoFlags = zeroBits,
 			Vk.Ppl.InpAssSt.createInfoTopology =
 				Vk.PrimitiveTopologyTriangleList,
 			Vk.Ppl.InpAssSt.createInfoPrimitiveRestartEnable =
