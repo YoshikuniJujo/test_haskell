@@ -35,7 +35,7 @@ import qualified Gpu.Vulkan.Command.Core as C
 
 import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
-import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as Pipeline
+import qualified Gpu.Vulkan.Pipeline.Graphics.Middle.Internal as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute.Middle.Internal as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Pipeline.Layout

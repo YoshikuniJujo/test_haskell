@@ -193,10 +193,10 @@ class CreateInfoListToMiddleNew ss where
 
 	createInfoListToMiddleNew :: Device.D sd ->
 		HeteroVarList (V14 CreateInfoNew) ss ->
-		IO (HeteroVarList M.CreateInfo'' (MiddleVarsNew ss))
+		IO (HeteroVarList (V12 M.CreateInfo') (MiddleVarsNew ss))
 
 	destroyShaderStagesNew :: Device.D sd ->
-		HeteroVarList M.CreateInfo'' (MiddleVarsNew ss) ->
+		HeteroVarList (V12 M.CreateInfo') (MiddleVarsNew ss) ->
 		HeteroVarList (V14 CreateInfoNew) ss -> IO ()
 
 instance CreateInfoListToMiddleNew '[] where
@@ -223,8 +223,8 @@ instance (
 		destroyShaderStagesNew dvc cims cis
 
 class V2g ss where
-	v2g :: HeteroVarList M.G' ss -> HeteroVarList (V2 (G sg)) ss
-	g2v :: HeteroVarList (V2 (G sg)) ss -> HeteroVarList M.G' ss
+	v2g :: HeteroVarList (V2 M.G) ss -> HeteroVarList (V2 (G sg)) ss
+	g2v :: HeteroVarList (V2 (G sg)) ss -> HeteroVarList (V2 M.G) ss
 
 instance V2g '[] where v2g HVNil = HVNil; g2v HVNil = HVNil
 
