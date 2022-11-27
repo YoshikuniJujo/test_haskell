@@ -183,6 +183,7 @@ library
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
+      Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout
       Gpu.Vulkan.Pipeline.Layout.Middle
       Gpu.Vulkan.Pipeline.Layout.Type

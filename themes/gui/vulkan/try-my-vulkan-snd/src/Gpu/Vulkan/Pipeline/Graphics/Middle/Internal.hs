@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -37,7 +38,8 @@ import Gpu.Vulkan.Pipeline.Enum
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
-import qualified Gpu.Vulkan.Pipeline.InputAssemblyState.Middle as InputAssemblyState
+import Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
+	qualified as InputAssemblyState
 import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as RasterizationState

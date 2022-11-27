@@ -4,8 +4,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.InputAssemblyState.Middle where
-
+module Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal (
+	CreateInfo(..), createInfoToCore
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
