@@ -101,9 +101,9 @@ instance HeteroVarListToList' spslbtss =>
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
 	(SetPos (MapSnd spslbtss) sbtss, HeteroVarListToList' spslbtss) =>
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
-	Pipeline.Layout.LLL s sbtss foo -> HeteroVarList (DescriptorSet sd) spslbtss ->
+	Pipeline.Layout.L s sbtss foo -> HeteroVarList (DescriptorSet sd) spslbtss ->
 	[Word32] -> IO ()
-bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.LLL l) dss dosts =
+bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(heteroVarListToList'
@@ -148,9 +148,9 @@ pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts .
 	StoreHetero ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
-	CommandBuffer.C sc vs -> Pipeline.Layout.LLL s sbtss whole ->
+	CommandBuffer.C sc vs -> Pipeline.Layout.L s sbtss whole ->
 	HeteroList ts -> IO ()
-pushConstants (CommandBuffer.C cb) (Pipeline.Layout.LLL lyt) xs =
+pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
 	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 

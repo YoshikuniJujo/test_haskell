@@ -9,7 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Layout (
-	LLL, createNew, CreateInfoNew(..),
+	L, createNew, CreateInfoNew(..),
 	M.CreateFlags,
 	Layout(..)
 	) where
@@ -38,21 +38,6 @@ data CreateInfoNew n sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfo
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: M.CreateFlags,
 	createInfoSetLayoutsNew :: HeteroVarList Layout sbtss }
-
-createInfoFromNew ::
-	forall n sbtss pcl whole ranges .
-	(	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
-		PushConstant.RangesToMiddle whole ranges ) =>
-	CreateInfoNew n sbtss pcl -> CreateInfo n sbtss
-createInfoFromNew CreateInfoNew {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = flgs,
-	createInfoSetLayoutsNew = slyt } = CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoSetLayouts = slyt,
-	createInfoPushConstantRanges =
-		PushConstant.pushConstantLayoutToRanges @pcl }
 
 deriving instance (
 	Show n,
@@ -88,12 +73,27 @@ createInfoToMiddle CreateInfo {
 		M.createInfoSetLayouts = sls,
 		M.createInfoPushConstantRanges = pcrs }
 
-create :: (Pointable n, Pointable c, Pointable d, HeteroVarListToList' sbtss) =>
-	Device.D sd -> CreateInfo n sbtss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . LL s sbtss -> IO a) -> IO a
-create (Device.D dvc) (createInfoToMiddle -> ci) macc macd f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . LL)
+createInfoFromNew ::
+	forall n sbtss pcl whole ranges .
+	(	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
+		PushConstant.RangesToMiddle whole ranges ) =>
+	CreateInfoNew n sbtss pcl -> CreateInfo n sbtss
+createInfoFromNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoSetLayoutsNew = slyt } = CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoSetLayouts = slyt,
+	createInfoPushConstantRanges =
+		PushConstant.pushConstantLayoutToRanges @pcl }
+
+createInfoToMiddleNew :: (
+	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
+	PushConstant.RangesToMiddle whole ranges,
+	HeteroVarListToList' sbtss ) =>
+	CreateInfoNew n sbtss pcl -> M.CreateInfo n
+createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 
 createNew :: (
 	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
@@ -101,6 +101,6 @@ createNew :: (
 	Pointable n, Pointable c, Pointable d, HeteroVarListToList' sbtss ) =>
 	Device.D sd -> CreateInfoNew n sbtss pcl ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall s . LLL s sbtss whole -> IO a) -> IO a
-createNew dvc (createInfoFromNew -> ci) macc macd f =
-	create dvc ci macc macd \(LL lyt) -> f $ LLL lyt
+	(forall s . L s sbtss whole -> IO a) -> IO a
+createNew (Device.D dvc) (createInfoToMiddleNew -> ci) macc macd f =
+	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L)

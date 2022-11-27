@@ -9,9 +9,6 @@ import Data.Kind
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
 
-newtype LL s (sbtss :: [(Type, [DescriptorSetLayout.BindingType])]) =
-	LL M.L deriving Show
-
-newtype LLL s
+newtype L s
 	(sbtss :: [(Type, [DescriptorSetLayout.BindingType])]) (pcw :: [Type]) =
-	LLL M.L deriving Show
+	L M.L deriving Show

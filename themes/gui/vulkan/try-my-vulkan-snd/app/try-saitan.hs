@@ -183,7 +183,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.Mem.OffsetSize' nm3 ('List 256 w3 "") objss3,
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.LLL sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 ->
+	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
@@ -479,7 +479,7 @@ pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew =
 		Vk.Ppl.Lyt.Layout dsl :...: HVNil }
 
-computePipelineInfo :: Vk.Ppl.Lyt.LLL sl sbtss '[] ->
+computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfoNew ()
 		'((), (), 'GlslComputeShader, (), (), (Word32 :.: Word32 :.: ()))
 		'(sl, sbtss, '[]) sbph

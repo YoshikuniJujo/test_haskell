@@ -708,7 +708,7 @@ createPipelineLayout' ::
 		Vk.DscSetLyt.L sdsl '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
 			'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-		Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
+		Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f =
 	createDescriptorSetLayout dvc \dsl ->
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
@@ -719,7 +719,7 @@ createPipelineLayout' dvc f =
 	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -730,7 +730,7 @@ createGraphicsPipeline' dvc sce rp ppllyt mss f =
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -740,7 +740,7 @@ recreateGraphicsPipeline' dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.recreateG
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
 
 mkGraphicsPipelineCreateInfo' ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
 	Vk.Ppl.Graphics.CreateInfoNew () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
@@ -1772,7 +1772,7 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
@@ -1817,7 +1817,7 @@ mainLoop :: (
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1852,7 +1852,7 @@ runLoop :: (
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1884,7 +1884,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
+	Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1974,7 +1974,7 @@ catchAndRecreate :: (
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
@@ -2000,7 +2000,7 @@ recreateSwapChainEtc :: (
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsc] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->

@@ -34,7 +34,7 @@ data CreateInfoNew n nncdvs slsbtss sbph = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoStageNew :: V6 ShaderStage.CreateInfo nncdvs,
-	createInfoLayoutNew :: V3 Layout.LLL slsbtss,
+	createInfoLayoutNew :: V3 Layout.L slsbtss,
 	createInfoBasePipelineHandleNew :: Maybe (C sbph),
 	createInfoBasePipelineIndexNew :: Maybe Int32 }
 
@@ -46,7 +46,7 @@ createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
 	createInfoStageNew = stg,
-	createInfoLayoutNew = V3 (Layout.LLL lyt),
+	createInfoLayoutNew = V3 (Layout.L lyt),
 	createInfoBasePipelineHandleNew = ((\(C b) -> b) <$>) -> bph,
 	createInfoBasePipelineIndexNew = bpi
 	} = do

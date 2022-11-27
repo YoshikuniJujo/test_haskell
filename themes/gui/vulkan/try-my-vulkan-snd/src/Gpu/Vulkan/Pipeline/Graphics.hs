@@ -66,7 +66,7 @@ data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts'
 		createInfoColorBlendState ::
 			Maybe (ColorBlendState.CreateInfo n9),
 		createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
-		createInfoLayout :: V2 Layout.LL slsbtss,
+		createInfoLayout :: V3 Layout.L slsbtss,
 		createInfoRenderPass :: RenderPass.R sr,
 		createInfoSubpass :: Word32,
 		createInfoBasePipelineHandle :: Maybe (V3 G sbvsts'),
@@ -94,7 +94,7 @@ data CreateInfoNew n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvs
 		createInfoColorBlendStateNew ::
 			Maybe (ColorBlendState.CreateInfo n9),
 		createInfoDynamicStateNew :: Maybe (DynamicState.CreateInfo n10),
-		createInfoLayoutNew :: V3 Layout.LLL slsbtss,
+		createInfoLayoutNew :: V3 Layout.L slsbtss,
 		createInfoRenderPassNew :: RenderPass.R sr,
 		createInfoSubpassNew :: Word32,
 		createInfoBasePipelineHandleNew :: Maybe (V3 G sbvsts'),
@@ -104,7 +104,7 @@ createInfoFromNew ::
 	CreateInfoNew n nnskndscdvss
 		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(sl, sbtss, pcl) sr sbvsts' ->
 	CreateInfo n nnskndscdvss
-		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(sl, sbtss) sr sbvsts'
+		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(sl, sbtss, pcl) sr sbvsts'
 createInfoFromNew CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
@@ -118,7 +118,7 @@ createInfoFromNew CreateInfoNew {
 	createInfoDepthStencilStateNew = stst,
 	createInfoColorBlendStateNew = blst,
 	createInfoDynamicStateNew = dsst,
-	createInfoLayoutNew = V3 (Layout.LLL lytm),
+	createInfoLayoutNew = lytm,
 	createInfoRenderPassNew = rp,
 	createInfoSubpassNew = sp,
 	createInfoBasePipelineHandleNew = bpplh,
@@ -135,7 +135,7 @@ createInfoFromNew CreateInfoNew {
 	createInfoDepthStencilState = stst,
 	createInfoColorBlendState = blst,
 	createInfoDynamicState = dsst,
-	createInfoLayout = V2 $ Layout.LL lytm,
+	createInfoLayout = lytm,
 	createInfoRenderPass = rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bpplh,
@@ -144,7 +144,7 @@ createInfoFromNew CreateInfoNew {
 createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
 	CreateInfo n nnskndscdvss nvsts
-		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb,vs', ts') ->
+		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs', ts') ->
 	IO (M.CreateInfo' n (ShaderStage.MiddleVars nnskndscdvss)
 		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
 createInfoToMiddle dvc CreateInfo {
@@ -160,7 +160,7 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoDepthStencilState = dss,
 	createInfoColorBlendState = cbs,
 	createInfoDynamicState = ds,
-	createInfoLayout = V2 (Layout.LL lyt),
+	createInfoLayout = V3 (Layout.L lyt),
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,

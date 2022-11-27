@@ -554,7 +554,7 @@ createRenderPass dvc scifmt f = do
 	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
 
 createPipelineLayout' ::
-	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.LLL sl '[] '[] -> IO b) -> IO b
+	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.L sl '[] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f = do
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
 			Vk.Ppl.Layout.createInfoNextNew = Nothing,
@@ -563,7 +563,7 @@ createPipelineLayout' dvc f = do
 	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil f
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO a) -> IO a
@@ -573,7 +573,7 @@ createGraphicsPipeline' dvc sce rp ppllyt f =
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
@@ -582,7 +582,7 @@ recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGsNew
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo' ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.CreateInfoNew () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
@@ -925,7 +925,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc fmt -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -943,7 +943,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc fmt -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1003,7 +1003,7 @@ catchAndRecreate :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.SNew ssc fmt ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
@@ -1023,7 +1023,7 @@ recreateSwapChainEtc :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.SNew ssc fmt -> HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->

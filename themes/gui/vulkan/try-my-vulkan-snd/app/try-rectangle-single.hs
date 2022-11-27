@@ -578,7 +578,7 @@ createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sdsl sl .
 		Vk.DscSetLyt.L sdsl
 			'[ 'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing]] ->
-		Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
+		Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] -> IO b) -> IO b
 createPipelineLayout' dvc f =
 	createDescriptorSetLayout dvc \dsl ->
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
@@ -589,7 +589,7 @@ createPipelineLayout' dvc f =
 	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO a) -> IO a
@@ -599,7 +599,7 @@ createGraphicsPipeline' dvc sce rp ppllyt f =
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
@@ -608,7 +608,7 @@ recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGsNew
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo' ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.CreateInfoNew () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
@@ -1004,7 +1004,7 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl .
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
@@ -1040,7 +1040,7 @@ mainLoop :: RecreateFramebuffers ss sfs => FramebufferResized ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroVarList Vk.ImgVw.I ss ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] -> Vk.Ppl.Graphics.G sg
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1064,7 +1064,7 @@ runLoop :: RecreateFramebuffers sis sfs =>
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1086,7 +1086,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib 
 drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsc sp sdsl .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroVarList Vk.Frmbffr.F sfs ->
@@ -1153,7 +1153,7 @@ catchAndRecreate :: RecreateFramebuffers sis sfs =>
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc ->
 	HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
@@ -1172,7 +1172,7 @@ recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc -> HeteroVarList Vk.ImgVw.I sis ->
-	Vk.RndrPass.R sr -> Vk.Ppl.Layout.LLL sl '[AtomUbo sdsl] '[] ->
+	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->

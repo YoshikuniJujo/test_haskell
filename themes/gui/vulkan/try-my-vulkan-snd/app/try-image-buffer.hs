@@ -151,7 +151,7 @@ type ListBuffer3Memory3 w1 w2 w3 = '[ '[ 'List 256 w1 ""], '[ 'List 256 w2 ""], 
 run :: forall w1 w2 w3 slbts sbtss sd sc vs sg sl sp m1 m2 m3 .
 	Vk.Cmd.SetPos '[slbts] sbtss =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
-	Vk.Ppl.Lyt.LLL sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> (
+	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
@@ -511,7 +511,7 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoFlagsNew = def,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = Vk.Ppl.Lyt.Layout dsl :...: HVNil }
 
-cmptPipelineInfo :: Vk.Ppl.Lyt.LLL sl sbtss '[] ->
+cmptPipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfoNew ()
 		'((), (), 'GlslComputeShader, (), (), ())
 		'(sl, sbtss, '[]) sbph

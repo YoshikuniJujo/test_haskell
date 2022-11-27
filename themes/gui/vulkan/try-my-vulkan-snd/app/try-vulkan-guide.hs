@@ -617,7 +617,7 @@ createPipelineLayout :: forall sd s b .
 		'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			'Atom 256 GpuSceneData0 'Nothing ] ] -> (forall sl .
-		Vk.Ppl.Layout.LLL sl
+		Vk.Ppl.Layout.L sl
 			'[ '(s, '[
 				'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
@@ -643,7 +643,7 @@ createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil 
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
+	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -660,7 +660,7 @@ createGraphicsPipeline dvc sce rp ppllyt sdrn f =
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
+	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -675,7 +675,7 @@ recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateG
 
 mkGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
+	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1452,7 +1452,7 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Layout.LLL slyt
+	Vk.Ppl.Layout.L slyt
 		'[ '(sdlyt, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1517,7 +1517,7 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)],
 	renderObjectPipelineLayout ::
-		Vk.Ppl.Layout.LLL sl
+		Vk.Ppl.Layout.L sl
 			'[ '(sdlyt, '[
 				'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
@@ -1582,7 +1582,7 @@ mainLoop :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl '[ '(s, '[
+	Vk.Ppl.Layout.L sl '[ '(s, '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			'Atom 256 GpuSceneData0 'Nothing ] ])]
@@ -1636,7 +1636,7 @@ runLoop :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
+	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1688,7 +1688,7 @@ drawFrame ::
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Layout.LLL slyt
+	Vk.Ppl.Layout.L slyt
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1762,7 +1762,7 @@ catchAndRecreate :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
+	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1796,7 +1796,7 @@ recreateSwapchainEtc :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
 	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr ->
-	Vk.Ppl.Layout.LLL sl
+	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
