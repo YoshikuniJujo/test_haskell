@@ -5,7 +5,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Layout.Middle where
+module Gpu.Vulkan.Pipeline.Layout.Middle.Internal (
+	L(..), CreateInfo(..), CreateFlags, create, destroy
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc

@@ -186,6 +186,7 @@ library
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout
       Gpu.Vulkan.Pipeline.Layout.Middle
+      Gpu.Vulkan.Pipeline.Layout.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout.Type
       Gpu.Vulkan.Pipeline.MultisampleState
       Gpu.Vulkan.Pipeline.RasterizationState
