@@ -189,6 +189,8 @@ library
       Gpu.Vulkan.Pipeline.Layout.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout.Type
       Gpu.Vulkan.Pipeline.MultisampleState
+      Gpu.Vulkan.Pipeline.MultisampleState.Middle
+      Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal
       Gpu.Vulkan.Pipeline.RasterizationState
       Gpu.Vulkan.Pipeline.ShaderStage
       Gpu.Vulkan.Pipeline.ShaderStage.Enum

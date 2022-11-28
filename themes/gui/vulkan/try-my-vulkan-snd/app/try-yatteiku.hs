@@ -616,8 +616,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
 		multisample = Vk.Ppl.MulSmplSt.CreateInfo {
 			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
-			Vk.Ppl.MulSmplSt.createInfoFlags =
-				Vk.Ppl.MulSmplSt.CreateFlagsZero,
+			Vk.Ppl.MulSmplSt.createInfoFlags = zeroBits,
 			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
 				Vk.Sample.CountAndMask
 					Vk.Sample.Count1Bit Nothing,

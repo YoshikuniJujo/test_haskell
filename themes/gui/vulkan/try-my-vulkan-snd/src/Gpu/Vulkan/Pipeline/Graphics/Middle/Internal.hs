@@ -43,7 +43,7 @@ import Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
 import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as RasterizationState
-import qualified Gpu.Vulkan.Pipeline.MultisampleState as MultisampleState
+import qualified Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal as MultisampleState
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal
 	as DepthStencilState
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
