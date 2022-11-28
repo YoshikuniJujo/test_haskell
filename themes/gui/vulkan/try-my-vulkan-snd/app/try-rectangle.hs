@@ -586,7 +586,7 @@ createPipelineLayout' dvc f =
 			Vk.Ppl.Layout.createInfoNextNew = Nothing,
 			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayoutsNew =
-				Singleton $ Vk.Ppl.Layout.Layout dsl } in
+				Singleton $ V2 dsl } in
 	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->

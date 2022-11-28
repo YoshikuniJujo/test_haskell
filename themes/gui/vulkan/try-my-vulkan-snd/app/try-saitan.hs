@@ -477,7 +477,7 @@ pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 	Vk.Ppl.Lyt.createInfoFlagsNew = def,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew =
-		Vk.Ppl.Lyt.Layout dsl :...: HVNil }
+		V2 dsl :...: HVNil }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfoNew ()

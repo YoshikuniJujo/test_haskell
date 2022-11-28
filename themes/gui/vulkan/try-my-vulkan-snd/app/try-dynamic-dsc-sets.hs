@@ -398,8 +398,7 @@ pplLayoutInfoNew :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew =
-		Singleton $ Vk.Ppl.Lyt.Layout dslyt }
+	Vk.Ppl.Lyt.createInfoSetLayoutsNew = Singleton $ V2 dslyt }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfoNew () '((), (), 'GlslComputeShader, (), (),

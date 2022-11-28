@@ -639,7 +639,7 @@ createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil 
 	crInfo = Vk.Ppl.Layout.CreateInfoNew {
 		Vk.Ppl.Layout.createInfoNextNew = Nothing,
 		Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
-		Vk.Ppl.Layout.createInfoSetLayoutsNew = Singleton $ Vk.Ppl.Layout.Layout cmdslyt }
+		Vk.Ppl.Layout.createInfoSetLayoutsNew = Singleton $ V2 cmdslyt }
 
 createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->

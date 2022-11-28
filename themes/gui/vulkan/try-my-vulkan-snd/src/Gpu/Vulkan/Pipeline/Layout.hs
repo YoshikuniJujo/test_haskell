@@ -11,7 +11,7 @@
 module Gpu.Vulkan.Pipeline.Layout (
 	L, createNew, CreateInfoNew(..),
 	M.CreateFlags,
-	Layout(..)
+	Layout
 	) where
 
 import Foreign.Pointable
@@ -44,11 +44,10 @@ deriving instance (
 	Show (HeteroVarList Layout sbtss) ) =>
 	Show (CreateInfo n sbtss)
 
-data Layout sbts where
-	Layout :: Descriptor.Set.Layout.L s bts -> Layout '(s, bts)
+type Layout = V2 Descriptor.Set.Layout.L
 
 unLayout :: Layout '(s, bts) -> Descriptor.Set.Layout.L s bts
-unLayout (Layout l) = l
+unLayout (V2 l) = l
 
 class HeteroVarListToList' sbtss where
 	heteroVarListToList' ::
