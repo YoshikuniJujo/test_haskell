@@ -18,7 +18,7 @@ import System.Directory
 import Text.PrettyPrint
 
 import QuickSort.Taocp
-import MergeSort
+import MergeSort.Natural
 import HeapSort.TaocpFree (heapsort)
 import Tools
 

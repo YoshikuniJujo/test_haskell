@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MergeSort where
+module MergeSort.Natural where
 
 import Control.Monad
 import Control.Monad.ST

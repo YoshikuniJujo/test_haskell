@@ -28,7 +28,7 @@ library
       Data.Bounded
       HeapSort.TaocpFree
       Lib
-      MergeSort
+      MergeSort.Natural
       QuickSort.Simple
       QuickSort.Taocp
       SortingByCounting

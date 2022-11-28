@@ -6,7 +6,7 @@ module Main (main) where
 import Data.List (sort)
 
 import QuickSort.Taocp
-import MergeSort
+import MergeSort.Natural
 import Tools
 
 main :: IO ()
