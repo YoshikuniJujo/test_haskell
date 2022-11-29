@@ -192,6 +192,8 @@ library
       Gpu.Vulkan.Pipeline.MultisampleState.Middle
       Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal
       Gpu.Vulkan.Pipeline.RasterizationState
+      Gpu.Vulkan.Pipeline.RasterizationState.Middle
+      Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
       Gpu.Vulkan.Pipeline.ShaderStage
       Gpu.Vulkan.Pipeline.ShaderStage.Enum
       Gpu.Vulkan.Pipeline.ShaderStage.Middle

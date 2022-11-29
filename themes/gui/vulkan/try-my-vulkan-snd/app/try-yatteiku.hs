@@ -601,8 +601,7 @@ makePipelineNew dvc rp f = do
 				False }
 		rasterizer = Vk.Ppl.RstSt.CreateInfo {
 			Vk.Ppl.RstSt.createInfoNext = Nothing,
-			Vk.Ppl.RstSt.createInfoFlags =
-				Vk.Ppl.RstSt.CreateFlagsZero,
+			Vk.Ppl.RstSt.createInfoFlags = zeroBits,
 			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
 			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 			Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
