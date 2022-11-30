@@ -42,7 +42,7 @@ import qualified Gpu.Vulkan.Pipeline.ViewportState as ViewportState
 import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
 data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfo {

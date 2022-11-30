@@ -23,7 +23,7 @@ import Gpu.Vulkan.Pipeline.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Pipeline.ShaderStage as ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Layout
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Middle as M

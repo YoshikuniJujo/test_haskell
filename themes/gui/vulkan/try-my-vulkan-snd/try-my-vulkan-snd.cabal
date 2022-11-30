@@ -196,6 +196,7 @@ library
       Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
       Gpu.Vulkan.Pipeline.ShaderStage
       Gpu.Vulkan.Pipeline.ShaderStage.Enum
+      Gpu.Vulkan.Pipeline.ShaderStage.Internal
       Gpu.Vulkan.Pipeline.ShaderStage.Middle
       Gpu.Vulkan.Pipeline.TessellationState
       Gpu.Vulkan.Pipeline.VertexInputState
