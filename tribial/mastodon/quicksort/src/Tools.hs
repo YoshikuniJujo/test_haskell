@@ -25,11 +25,12 @@ showTime nm n act = do
 	print $ realToFrac t / nLogN n * 10 ^ i7
 	pure t
 
-showTimeMGraph :: Handle -> Int -> IO a -> IO ()
+showTimeMGraph :: Handle -> Int -> IO a -> IO NominalDiffTime
 showTimeMGraph h m act = do
 	hPutStr h $ show m ++ "\t"
 	t <- time act
 	hPutStrLn h $ show t
+	pure t
 
 print' :: Show a => a -> IO ()
 print' x = putStr $ show x ++ "\t"
