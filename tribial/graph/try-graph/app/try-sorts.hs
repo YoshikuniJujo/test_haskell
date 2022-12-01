@@ -51,8 +51,8 @@ mkGraph minY maxY hd0 als = withCairo "try-sorts.png" 1024 768 \cr -> do
 	cairoSetLineWidth cr 0.5
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
-	cairoMoveTo cr (transX $ 10 ^ (3 :: Int)) (transY minY maxY 0)
-	cairoLineTo cr (transX $ 10 ^ (6 :: Int)) (transY minY maxY 0)
+	cairoMoveTo cr (transX $ 10 ^ (3 :: Int)) 668
+	cairoLineTo cr (transX $ 10 ^ (6 :: Int)) 668
 	cairoStroke cr
 	for_ [10 ^ (3 :: Int), 10 ^ (4 :: Int), 10 ^ (5 :: Int), 10 ^ (6 :: Int)] \i -> do
 		cairoMoveTo cr (transX i) 668
@@ -91,7 +91,7 @@ mkGraph minY maxY hd0 als = withCairo "try-sorts.png" 1024 768 \cr -> do
 tick :: CDouble -> CDouble -> CDouble -> [CDouble]
 tick itv mn mx = [t0, t0 + itv .. mx]
 	where
-	t0 = itv * (fromIntegral $ floor @_ @Int (mn / itv))
+	t0 = itv * (fromIntegral $ ceiling @_ @Int (mn / itv))
 
 resultToCDouble :: (Integer, NominalDiffTime) -> (CDouble, CDouble)
 resultToCDouble (fromIntegral -> n, t) = (n, tr $ realToFrac t)
