@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings, TupleSections #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -37,15 +38,21 @@ main = do
 		print hd
 		when (hd /= hd0) $ error "no mutch data"
 		pure al
-	mkGraph hd0 als
+	mid <- readFile "/etc/machine-id"
+	mmy <- lines <$> readFile ("settings/try-sorts/" ++ init mid)
+	print mmy
+--	let	minY = 0.5 * 10 ** (- 7)
+--		maxY = 4.0 * 10 ** (- 7)
+	let	[minY, maxY] = read <$> mmy
+	mkGraph minY maxY hd0 als
 
-mkGraph :: [T.Text] -> [All] -> IO ()
-mkGraph hd0 als = withCairo "try-sorts.png" 1024 768 \cr -> do
+mkGraph :: CDouble -> CDouble -> [T.Text] -> [All] -> IO ()
+mkGraph minY maxY hd0 als = withCairo "try-sorts.png" 1024 768 \cr -> do
 	cairoSetLineWidth cr 0.5
 
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
-	cairoMoveTo cr (transX $ 10 ^ (3 :: Int)) (transY 0)
-	cairoLineTo cr (transX $ 10 ^ (6 :: Int)) (transY 0)
+	cairoMoveTo cr (transX $ 10 ^ (3 :: Int)) (transY minY maxY 0)
+	cairoLineTo cr (transX $ 10 ^ (6 :: Int)) (transY minY maxY 0)
 	cairoStroke cr
 	for_ [10 ^ (3 :: Int), 10 ^ (4 :: Int), 10 ^ (5 :: Int), 10 ^ (6 :: Int)] \i -> do
 		cairoMoveTo cr (transX i) 668
@@ -53,14 +60,15 @@ mkGraph hd0 als = withCairo "try-sorts.png" 1024 768 \cr -> do
 		cairoStroke cr
 		putText cr (Size 10) (transX i - 15) 675 . T.pack $ show i
 
-	cairoMoveTo cr 115 (transY $ 5 * 10 ** (- 8))
-	cairoLineTo cr 115 (transY $ 40 * 10 ** (- 8))
+	cairoMoveTo cr 115 (transY minY maxY minY)
+	cairoLineTo cr 115 (transY minY maxY maxY)
 	cairoStroke cr
-	for_ ([5 * 10 ** (- 8), 10 * 10 ** (- 8) .. 40 * 10 ** (- 8)] `zip` cycle [False, True]) \(i, b) -> do
-		cairoMoveTo cr 115 (transY i)
-		cairoLineTo cr 130 (transY i)
+	for_ (tick (5 * 10 ** (- 8)) minY maxY) \i -> do
+		cairoMoveTo cr 115 (transY minY maxY i)
+		cairoLineTo cr 130 (transY minY maxY i)
 		cairoStroke cr
-		when b . putText cr (Size 10) 70 (transY i - 7) . T.pack $ show i
+	for_ (tick (10 ** (- 7)) minY maxY) \i ->
+		putText cr (Size 10) 70 (transY minY maxY i - 7) . T.pack $ show i
 
 	putText cr (Size 15) 500 700 "N"
 	putTextRot90 cr (Size 15) 30 450 "Second / (N log N)"
@@ -78,7 +86,12 @@ mkGraph hd0 als = withCairo "try-sorts.png" 1024 768 \cr -> do
 	for_ fltrd \al -> let dt = dat al in
 		uncurry (drawLines cr) `mapM_` (
 			colors `zip`
-			((translate . resultToCDouble <$>) <$> dt))
+			((translate minY maxY . resultToCDouble <$>) <$> dt))
+
+tick :: CDouble -> CDouble -> CDouble -> [CDouble]
+tick itv mn mx = [t0, t0 + itv .. mx]
+	where
+	t0 = itv * (fromIntegral $ floor @_ @Int (mn / itv))
 
 resultToCDouble :: (Integer, NominalDiffTime) -> (CDouble, CDouble)
 resultToCDouble (fromIntegral -> n, t) = (n, tr $ realToFrac t)
@@ -96,9 +109,11 @@ drawLines cr clr ((x0, y0) : xys) = do
 	for_ xys \(x, y) -> cairoLineTo cr x y
 	cairoStroke cr
 
-translate :: (CDouble, CDouble) -> (CDouble, CDouble)
-translate = transX *** transY
+translate :: CDouble -> CDouble -> (CDouble, CDouble) -> (CDouble, CDouble)
+translate mny mxy = transX *** transY mny mxy
 
-transX, transY :: CDouble -> CDouble
+transX :: CDouble -> CDouble
 transX x = log (x / 1000) * 115 + 150
-transY y = (- y * 1.5 * 10 ^ (9 :: Int)) + 668
+
+transY :: CDouble -> CDouble -> CDouble -> CDouble
+transY mn mx y = (- (y - mn) / (mx - mn) * 3.5 * 1.5 * 10 ^ (2 :: Int)) + 593
