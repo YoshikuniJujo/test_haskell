@@ -56,8 +56,8 @@ mainTrial i h gr = do
 			("time", DT t) ]
 	writeFile ("graph/try-m" ++ show i ++ ".hason") . (++ "\n") . render . ppr $ Dct [
 		("machine-id", T . T.pack $ tail mid),
-		("result", L rslt)
-		]
+		("N", I $ fromIntegral sz),
+		("result", L rslt) ]
 
 readLast :: [Int] -> IO ()
 readLast ns = putStr $ replicate (last ns - last ns) 'c'
