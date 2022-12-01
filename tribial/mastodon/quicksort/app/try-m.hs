@@ -55,7 +55,7 @@ mainTrial i h gr = do
 			("M", I $ fromIntegral m),
 			("time", DT t) ]
 	writeFile ("graph/try-m" ++ show i ++ ".hason") . (++ "\n") . render . ppr $ Dct [
-		("machine-id", T . T.pack $ tail mid),
+		("machine-id", T . T.pack $ init mid),
 		("N", I $ fromIntegral sz),
 		("result", L rslt) ]
 
