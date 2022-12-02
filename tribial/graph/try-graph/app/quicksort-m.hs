@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main (main) where
@@ -19,17 +20,18 @@ import Data.Color
 import System.Environment
 import Graphics.Cairo.Drawing.CairoT
 import Graphics.Cairo.Drawing.Paths
+import Numeric
 
 import Cairo
 import Text
 
-translate' :: (Int, NominalDiffTime) -> (CDouble, CDouble)
-translate' = tr . (fromIntegral *** realToFrac)
-	where tr (x, y) = (transX x, transY y)
+translate' :: Int -> (Int, NominalDiffTime) -> (CDouble, CDouble)
+translate' (fromIntegral -> n) = tr . (fromIntegral *** realToFrac)
+	where tr (x, y) = (transX x, transY $ y / (n * log n))
 
 transX, transY :: CDouble -> CDouble
 transX x = log x * 150 + 120
-transY y = 768 - (y - 0.110) * 5000
+transY y = 768 - (y - 0.8 * (10 ** (- 7))) * 8 * 10 ** 9
 
 readDict :: String -> M.Map T.Text Hason
 readDict s = case read s of
@@ -73,7 +75,7 @@ filterMachine rs = do
 	pure $ filter ((== mid) . machineId) rs
 
 drawResult1 :: CairoT s RealWorld -> Result1 -> IO ()
-drawResult1 cr rslt = graph cr $ translate' <$> result rslt
+drawResult1 cr rslt = graph cr $ translate' (listSize rslt) <$> result rslt
 
 main :: IO ()
 main = withCairo "quicksort-m.png" 1024 768 \cr -> do
@@ -94,15 +96,15 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 		cairoStroke cr
 		putText cr (Size 10) (transX i - 5) 730
 			. T.pack . show @Int $ round i
-	cairoMoveTo cr 60 (transY 0.15)
-	cairoLineTo cr 60 (transY 0.25)
+	cairoMoveTo cr 70 (transY $ 1.0 * 10 ** (- 7))
+	cairoLineTo cr 70 (transY $ 1.6 * 10 ** (- 7))
 	cairoStroke cr
-	for_ [0.15, 0.2, 0.25] \s -> do
-		cairoMoveTo cr 60 (transY s)
-		cairoLineTo cr 70 (transY s)
+	print . transY $ 1.5 * (10 ** (- 7))
+	for_ ((* (10 ** (- 7))) <$> [1, 1.2, 1.4, 1.6]) \s -> do
+		cairoMoveTo cr 70 (transY s)
+		cairoLineTo cr 80 (transY s)
 		cairoStroke cr
-		putText cr (Size 10) 25 (transY s - 9) . T.pack $ show s
-
+		putText cr (Size 10) 20 (transY s - 9) . T.pack $ showEFloat (Just 1) s ""
 	cairoSetLineWidth cr 0.3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.3 0.3
 	rs <- readFile `mapM` as
