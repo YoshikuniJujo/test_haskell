@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Cairo
+      SortGraph
       SortResult
       SortResultHason
       Text
@@ -146,6 +147,30 @@ executable try-pango-simple
 
 executable try-sorts
   main-is: try-sorts.hs
+  other-modules:
+      Main
+      Paths_try_graph
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      JuicyCairo
+    , JuicyPixels
+    , base >=4.7 && <5
+    , cairo-image
+    , containers
+    , hason
+    , primitive
+    , simple-cairo
+    , simple-pango
+    , text
+    , time
+    , try-graph
+    , union-color
+  default-language: Haskell2010
+
+executable try-wow
+  main-is: try-wow.hs
   other-modules:
       Main
       Paths_try_graph

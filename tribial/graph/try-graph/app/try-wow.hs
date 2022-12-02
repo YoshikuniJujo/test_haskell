@@ -16,7 +16,7 @@ import SortGraph
 main :: IO ()
 main = do
 	fps <- getArgs
-	let	hd0 = ["Data.List", "merge", "heap", "quick"]
+	let	hd0 = ["quick", "merge"]
 	als <- for fps \fp -> do
 		al <- readAll <$> readFile fp
 		let	hd = header al
@@ -25,8 +25,6 @@ main = do
 		when (hd /= hd0) $ error "no mutch data"
 		pure al
 	mid <- readFile "/etc/machine-id"
-	mmy <- lines <$> readFile ("settings/try-sorts/" ++ init mid)
---	let	minY = 0.5 * 10 ** (- 7)
---		maxY = 4.0 * 10 ** (- 7)
+	mmy <- lines <$> readFile ("settings/try-wow/" ++ init mid)
 	let	[minY, maxY] = read <$> mmy
-	mkGraph "try-sorts.png" minY maxY hd0 als
+	mkGraph "try-wow.png" minY maxY hd0 als

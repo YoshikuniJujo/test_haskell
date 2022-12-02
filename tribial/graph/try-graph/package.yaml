@@ -93,6 +93,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-graph
+  try-wow:
+    main:                try-wow.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-graph
 
 tests:
   try-graph-test:
