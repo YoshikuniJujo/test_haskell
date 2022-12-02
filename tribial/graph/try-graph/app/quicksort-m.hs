@@ -30,8 +30,8 @@ translate' (fromIntegral -> n) = tr . (fromIntegral *** realToFrac)
 	where tr (x, y) = (transX x, transY $ y / (n * log n))
 
 transX, transY :: CDouble -> CDouble
-transX x = log x * 150 + 120
-transY y = 768 - (y - 0.8 * (10 ** (- 7))) * 8 * 10 ** 9
+transX x = log x * 145 + 155
+transY y = 768 - (y - 0.7 * (10 ** (- 7))) * 8 * 10 ** 9
 
 readDict :: String -> M.Map T.Text Hason
 readDict s = case read s of
@@ -83,30 +83,30 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 
 	cairoSetLineWidth cr 0.5
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.8 0.8
-	cairoMoveTo cr (transX 9) 200
-	cairoLineTo cr (transX 9) 700
+	cairoMoveTo cr (transX 9) 100
+	cairoLineTo cr (transX 9) 650
 	cairoStroke cr
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.5 0.5 0.5
-	cairoMoveTo cr (transX 1) 715
-	cairoLineTo cr (transX 256) 715
+	cairoMoveTo cr (transX 1) 665
+	cairoLineTo cr (transX 256) 665
 	cairoStroke cr
 	for_ [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024] \i -> do
-		cairoMoveTo cr (transX i) 715
-		cairoLineTo cr (transX i) 700
+		cairoMoveTo cr (transX i) 665
+		cairoLineTo cr (transX i) 650
 		cairoStroke cr
-		putText cr (Size 10) (transX i - 5) 730
+		putText cr (Size 10) (transX i - 5) 680
 			. T.pack . show @Int $ round i
-	cairoMoveTo cr 70 (transY $ 1.0 * 10 ** (- 7))
-	cairoLineTo cr 70 (transY $ 1.6 * 10 ** (- 7))
+	cairoMoveTo cr 115 (transY $ 1.0 * 10 ** (- 7))
+	cairoLineTo cr 115 (transY $ 1.6 * 10 ** (- 7))
 	cairoStroke cr
 	print . transY $ 1.5 * (10 ** (- 7))
 	for_ ((* (10 ** (- 7))) <$> [1, 1.2, 1.4, 1.6]) \s -> do
-		cairoMoveTo cr 70 (transY s)
-		cairoLineTo cr 80 (transY s)
+		cairoMoveTo cr 115 (transY s)
+		cairoLineTo cr 125 (transY s)
 		cairoStroke cr
-		putText cr (Size 10) 20 (transY s - 9) . T.pack $ showEFloat (Just 1) s ""
-	cairoSetLineWidth cr 0.3
-	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.3 0.3
+		putText cr (Size 10) 65 (transY s - 9) . T.pack $ showEFloat (Just 1) s ""
+	cairoSetLineWidth cr 0.2
+	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.05 0.05
 	rs <- readFile `mapM` as
 	(drawResult1 cr `mapM_`) =<< filterMachine (readResult . readDict <$> rs)
 	cairoStroke cr
