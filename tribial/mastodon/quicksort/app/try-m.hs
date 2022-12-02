@@ -41,7 +41,7 @@ mainTrial :: Int -> Handle -> Bool -> IO ()
 mainTrial i h gr = do
 	mid <- readFile "/etc/machine-id"
 	if gr then pure () else putStrLn "size: 2 ^ 21"
-	sz <- randomRIO (13 * 10 ^ i4, 2 ^ i17)
+	sz <- randomRIO (10 ^ 3, 10 ^ 5) -- (13 * 10 ^ i4, 2 ^ i17)
 	xs <- mkSample' (0, 10 ^ i10) sz
 --	xs <- mkSample' (0, 10 ^ i10) (2 ^ i17) -- sz
 --	xs <- mkSample' (0, 10 ^ i10) (10 ^ i5) -- sz
