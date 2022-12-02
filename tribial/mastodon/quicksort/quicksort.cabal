@@ -29,6 +29,7 @@ library
       HeapSort.TaocpFree
       Lib
       MergeSort.Natural
+      MergeSort.Wow
       QuickSort.Simple
       QuickSort.Taocp
       QuickSort.Wow
