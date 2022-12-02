@@ -28,7 +28,7 @@ main = do
 			[] -> False
 			["graph"] -> True
 	i <- next
-	h <- openFile ("graph/trial" ++ show i ++ ".txt") WriteMode
+	h <- openFile "/dev/null" WriteMode
 	mainTrial i h gr
 	hClose h
 
