@@ -6,10 +6,14 @@
 module Main (main) where
 
 import Foreign.C.Types
+import Control.Arrow
 import Control.Monad.Primitive
 import Data.Foldable
 import Data.Maybe
+import Data.Map qualified as M
 import Data.Text qualified as T
+import Data.Time
+import Data.Hason
 import Data.CairoContext
 import Data.Color
 import System.Environment
@@ -19,18 +23,57 @@ import Graphics.Cairo.Drawing.Paths
 import Cairo
 import Text
 
-translate :: (CDouble, CDouble) -> (CDouble, CDouble)
-translate (x, y) = (transX x, transY y)
+translate' :: (Int, NominalDiffTime) -> (CDouble, CDouble)
+translate' = tr . (fromIntegral *** realToFrac)
+	where tr (x, y) = (transX x, transY y)
 
 transX, transY :: CDouble -> CDouble
 transX x = log x * 150 + 120
 transY y = 768 - (y - 0.110) * 5000
 
-draw1 :: CairoT s RealWorld -> FilePath -> IO ()
-draw1 cr fp = do
-	ps <- ((\[m, t] -> (read m :: CDouble, read (init t) :: CDouble)) . words <$>)
-			. lines <$> readFile fp
-	graph cr $ translate <$> ps
+readDict :: String -> M.Map T.Text Hason
+readDict s = case read s of
+	Dct d -> M.fromList d
+	_ -> error "not dictionary"
+
+readResult :: M.Map T.Text Hason -> Result1
+readResult m = Result1 {
+	machineId = toText $ m M.! "machine-id",
+	listSize = fromIntegral . toI $ m M.! "N",
+	result = readResultResult $ m M.! "result"
+	}
+
+readResultResult :: Hason -> [(Int, NominalDiffTime)]
+readResultResult = \case
+	L l -> dictToTime1 <$> l
+	_ -> error "not list"
+
+dictToTime1 :: Hason -> (Int, NominalDiffTime)
+dictToTime1 = \case
+	Dct d -> case (lookup "M" d, lookup "time" d) of
+		(Just (I m), Just (DT t)) -> (fromIntegral m, t)
+		_ -> error "no `M' or `time'"
+	_ -> error "not dict"
+
+toText :: Hason -> T.Text
+toText = \case T t -> t; _ -> error "not text"
+
+toI :: Hason -> Integer
+toI = \case I i -> i; _ -> error "not integer"
+
+data Result1 = Result1 {
+	machineId :: T.Text,
+	listSize :: Int,
+	result :: [(Int, NominalDiffTime)] }
+	deriving Show
+
+filterMachine :: [Result1] -> IO [Result1]
+filterMachine rs = do
+	mid <- (T.pack . init) <$> readFile "/etc/machine-id"
+	pure $ filter ((== mid) . machineId) rs
+
+drawResult1 :: CairoT s RealWorld -> Result1 -> IO ()
+drawResult1 cr rslt = graph cr $ translate' <$> result rslt
 
 main :: IO ()
 main = withCairo "quicksort-m.png" 1024 768 \cr -> do
@@ -62,7 +105,8 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 
 	cairoSetLineWidth cr 0.3
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.8 0.3 0.3
-	draw1 cr `mapM_` as
+	rs <- readFile `mapM` as
+	(drawResult1 cr `mapM_`) =<< filterMachine (readResult . readDict <$> rs)
 	cairoStroke cr
 
 graph :: PrimMonad m => CairoT s (PrimState m) -> [(CDouble, CDouble)] -> m ()

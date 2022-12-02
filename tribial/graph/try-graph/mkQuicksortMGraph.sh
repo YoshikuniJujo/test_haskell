@@ -1,3 +1,3 @@
 #!/bin/sh
 
-stack exec quicksort-m ../../mastodon/quicksort/graph/trial*.txt
+stack exec quicksort-m ../../mastodon/quicksort/graph/try-m*.hason
