@@ -9,10 +9,11 @@ module Tools where
 import Control.Monad
 import Data.List qualified as L
 import Data.Word
+import Data.Text qualified as T
 import Data.Time
 import System.IO
 import System.Directory
-import System.Random
+import System.Random (randomR, randomRs, newStdGen)
 
 i3, i4, i5, i6, i7, i8, i9,
 	i10, i14, i16, i17, i18, i19, i20, i21, i22, i23 :: Int
@@ -75,8 +76,14 @@ chomp :: String -> String
 chomp s	| last s == '\n' = init s
 	| otherwise = s
 
+nextFilePath :: String -> IO FilePath
+nextFilePath nm = ("graph/" ++) . (nm ++) . (++ ".hason") . show <$> next nm
+
 next :: String -> IO Int
 next nm = (+ 1) . foldl max 0
 		. (read @Int . takeWhile (/= '.') . drop (length nm) <$>)
 		. filter ((&&) <$> (nm `L.isPrefixOf`) <*> (".hason" `L.isSuffixOf`))
 	<$> getDirectoryContents "graph"
+
+getMachineId :: IO T.Text
+getMachineId = T.pack . chomp <$> readFile "/etc/machine-id"
