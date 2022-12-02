@@ -31,6 +31,7 @@ library
       MergeSort.Natural
       QuickSort.Simple
       QuickSort.Taocp
+      QuickSort.Wow
       SortingByCounting
       SortingByInsertion
       Tools
