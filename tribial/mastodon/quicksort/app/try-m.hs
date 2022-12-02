@@ -35,7 +35,7 @@ main = do
 next :: IO Int
 next = (+ 1) . foldl max 0
 	. (read @Int . takeWhile (/= '.') . drop 5 <$>)
-	. filter ("trial" `L.isPrefixOf`) <$> getDirectoryContents "graph"
+	. filter ("try-m" `L.isPrefixOf`) <$> getDirectoryContents "graph"
 
 mainTrial :: Int -> Handle -> Bool -> IO ()
 mainTrial i h gr = do
