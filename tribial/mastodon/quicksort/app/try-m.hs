@@ -27,15 +27,10 @@ main = do
 	let	gr = case args of
 			[] -> False
 			["graph"] -> True
-	i <- next
+	i <- next "try-m"
 	h <- openFile "/dev/null" WriteMode
 	mainTrial i h gr
 	hClose h
-
-next :: IO Int
-next = (+ 1) . foldl max 0
-	. (read @Int . takeWhile (/= '.') . drop 5 <$>)
-	. filter ("try-m" `L.isPrefixOf`) <$> getDirectoryContents "graph"
 
 mainTrial :: Int -> Handle -> Bool -> IO ()
 mainTrial i h gr = do

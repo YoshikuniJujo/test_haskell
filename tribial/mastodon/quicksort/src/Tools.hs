@@ -1,15 +1,18 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Tools where
 
 import Control.Monad
+import Data.List qualified as L
 import Data.Word
-import System.IO
-import System.Random
-
 import Data.Time
+import System.IO
+import System.Directory
+import System.Random
 
 i3, i4, i5, i6, i7, i8, i9,
 	i10, i14, i16, i17, i18, i19, i20, i21, i22, i23 :: Int
@@ -67,3 +70,13 @@ checkSample = \case
 	x : xs@(y : _)
 		| x <= y -> checkSample xs
 		| otherwise -> False
+
+chomp :: String -> String
+chomp s	| last s == '\n' = init s
+	| otherwise = s
+
+next :: String -> IO Int
+next nm = (+ 1) . foldl max 0
+		. (read @Int . takeWhile (/= '.') . drop (length nm) <$>)
+		. filter ((&&) <$> (nm `L.isPrefixOf`) <*> (".hason" `L.isSuffixOf`))
+	<$> getDirectoryContents "graph"
