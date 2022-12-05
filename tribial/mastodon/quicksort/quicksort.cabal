@@ -27,6 +27,7 @@ library
   exposed-modules:
       Data.Bounded
       HeapSort.TaocpFree
+      HeapSort.Wow
       Lib
       MergeSort.Natural
       MergeSort.Wow
