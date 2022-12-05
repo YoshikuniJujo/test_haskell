@@ -36,6 +36,7 @@ library
       QuickSort.Wow
       SortingByCounting
       SortingByInsertion
+      StraightInsertionSort
       Tools
   other-modules:
       Paths_quicksort
