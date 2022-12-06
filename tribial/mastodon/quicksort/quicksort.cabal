@@ -38,6 +38,7 @@ library
       SortingByCounting
       SortingByInsertion
       StraightInsertionSort
+      StraightSelectionSort
       Tools
   other-modules:
       Paths_quicksort
