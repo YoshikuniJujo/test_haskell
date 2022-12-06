@@ -119,6 +119,27 @@ executable try-m
     , time
   default-language: Haskell2010
 
+executable try-on2
+  main-is: try-on2.hs
+  other-modules:
+      Main
+      Paths_quicksort
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      array
+    , base >=4.7 && <5
+    , deepseq
+    , directory
+    , hason
+    , pretty
+    , quicksort
+    , random
+    , text
+    , time
+  default-language: Haskell2010
+
 executable try-some
   main-is: try-some.hs
   other-modules:

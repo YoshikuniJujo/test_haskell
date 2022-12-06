@@ -9,7 +9,7 @@ import Data.Array.ST
 
 selectionSort :: Ord a => [a] -> [a]
 selectionSort xs =
-	runST $ (>>) <$> ssort n <*> getElems =<< newListArray (1, n) xs
+	runST $ (>>) <$> ssort' n <*> getElems =<< newListArray (1, n) xs
 	where n = length xs
 
 ssort :: Ord a => Int -> STArray s Int a -> ST s ()
@@ -21,3 +21,15 @@ findMax :: Ord a => STArray s Int a -> Int -> a -> Int -> ST s (Int, a)
 findMax xs i ra k = readArray xs k >>= \xk -> do
 	let	(i', ra') = if ra >= xk then (i, ra) else (k, xk)
 	if (k > 1) then findMax xs i' ra' (k - 1) else pure (i', ra')
+
+ssort' :: Ord a => Int -> STArray s Int a -> ST s ()
+ssort' n xs = for_ [n, n - 1 .. 2] \j -> readArray xs j >>= \xj -> do
+	i <- findMax' xs j (j - 1)
+	xi <- readArray xs i
+	writeArray xs i xj >> writeArray xs j xi
+
+findMax' :: Ord a => STArray s Int a -> Int -> Int -> ST s Int
+findMax' xs i k = readArray xs k >>= \xk -> do
+	ra <- readArray xs i
+	let	i' = if ra >= xk then i else k
+	if (k > 1) then findMax' xs i' (k - 1) else pure i'
