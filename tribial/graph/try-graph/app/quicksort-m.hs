@@ -108,7 +108,9 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 	cairoSetLineWidth cr 0.2
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.05 0.05
 	rs <- readFile `mapM` as
-	(drawResult1 cr `mapM_`) =<< filterMachine (readResult . readDict <$> rs)
+	filterMachine (readResult . readDict <$> rs) >>= \rs' -> do
+		print $ length rs'
+		drawResult1 cr `mapM_` rs'
 	cairoStroke cr
 
 graph :: PrimMonad m => CairoT s (PrimState m) -> [(CDouble, CDouble)] -> m ()
