@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module StraightInsertionSort (insertionSort) where
+module StraightInsertionSort (insertionSort, isort) where
 
 import Control.Monad.ST
 import Data.Foldable

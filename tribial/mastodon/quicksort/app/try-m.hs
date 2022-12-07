@@ -12,14 +12,11 @@ import Data.Time
 import Data.Hason
 import System.Environment
 import System.IO
-import System.Directory
 import System.Random hiding (next)
 import Text.PrettyPrint
 
 import QuickSort.Taocp
 import Tools
-
-import Data.List qualified as L
 
 main :: IO ()
 main = do
@@ -27,6 +24,7 @@ main = do
 	let	gr = case args of
 			[] -> False
 			["graph"] -> True
+			_ -> error "bad options"
 	i <- next "try-m"
 	h <- openFile "/dev/null" WriteMode
 	mainTrial i h gr
@@ -36,7 +34,7 @@ mainTrial :: Int -> Handle -> Bool -> IO ()
 mainTrial i h gr = do
 	mid <- readFile "/etc/machine-id"
 	if gr then pure () else putStrLn "size: 2 ^ 21"
-	sz <- randomRIO (10 ^ 3, 10 ^ 5) -- (13 * 10 ^ i4, 2 ^ i17)
+	sz <- randomRIO (10 ^ (3 :: Int), 10 ^ (5 :: Int)) -- (13 * 10 ^ i4, 2 ^ i17)
 	xs <- mkSample' (0, 10 ^ i10) sz
 --	xs <- mkSample' (0, 10 ^ i10) (2 ^ i17) -- sz
 --	xs <- mkSample' (0, 10 ^ i10) (10 ^ i5) -- sz
