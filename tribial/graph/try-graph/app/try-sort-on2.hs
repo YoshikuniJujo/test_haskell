@@ -30,9 +30,16 @@ main = do
 			drawLines cr (fromJust $ rgbDouble 0.8 0.3 0.3) $ translate <$> (al !! 0)
 			drawLines cr (fromJust $ rgbDouble 0.3 0.8 0.3) $ translate <$> (al !! 1)
 			drawLines cr (fromJust $ rgbDouble 0.3 0.3 0.8) $ translate <$> (al !! 2)
+		cairoSetSourceRgb cr (fromJust $ rgbDouble 0.3 0.3 0.3)
+		cairoMoveTo cr 100 (transY 0)
+		cairoLineTo cr 800 (transY 0)
+		cairoStroke cr
 
 translate :: (Integer, NominalDiffTime) -> (CDouble, CDouble)
-translate (n, t) = (fromIntegral n / 10, (768 - 100) - realToFrac t * 500 * 15000000 / fromIntegral n ^ (2 :: Int))
+translate (n, t) = (fromIntegral n / 10, transY $ realToFrac t / fromIntegral n ^ (2 :: Int))
+
+transY :: CDouble -> CDouble
+transY y = (768 - 100) - y * 500 * 15 * 10 ^ (6 :: Int)
 
 drawLines :: CairoT s RealWorld -> Rgb CDouble -> [(CDouble, CDouble)] -> IO ()
 drawLines _ _ [] = pure ()
