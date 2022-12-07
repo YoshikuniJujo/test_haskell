@@ -96,11 +96,11 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 		cairoStroke cr
 		putText cr (Size 10) (transX i - 5) 680
 			. T.pack . show @Int $ round i
-	cairoMoveTo cr 115 (transY $ 1.0 * 10 ** (- 7))
+	cairoMoveTo cr 115 (transY $ 0.8 * 10 ** (- 7))
 	cairoLineTo cr 115 (transY $ 1.6 * 10 ** (- 7))
 	cairoStroke cr
 	print . transY $ 1.5 * (10 ** (- 7))
-	for_ ((* (10 ** (- 7))) <$> [1, 1.2, 1.4, 1.6]) \s -> do
+	for_ ((* (10 ** (- 7))) <$> [0.8, 1, 1.2, 1.4, 1.6]) \s -> do
 		cairoMoveTo cr 115 (transY s)
 		cairoLineTo cr 125 (transY s)
 		cairoStroke cr
