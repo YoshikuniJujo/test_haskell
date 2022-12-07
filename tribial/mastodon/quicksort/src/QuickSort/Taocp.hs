@@ -11,8 +11,7 @@ import Data.Bool
 import System.Random
 
 quicksort :: (Ord a, Bounded a) => [a] -> [a]
-quicksort ks = init $ tail $ runST
-	$ (>>) <$> qsort mixM <*> getElems =<< newListArray' ks
+quicksort = quicksortM 32
 
 quicksortM :: (Ord a, Bounded a) => Int -> [a] -> [a]
 quicksortM m ks = init $ tail $ runST
