@@ -30,7 +30,7 @@ translate' (fromIntegral -> n) = tr . (fromIntegral *** realToFrac)
 	where tr (x, y) = (transX x, transY $ y / (n * log n))
 
 transX, transY :: CDouble -> CDouble
-transX x = log x * 145 + 155
+transX x = log x * 145 + 165
 transY y = 768 - (y - 0.7 * (10 ** (- 7))) * 8 * 10 ** 9
 
 readDict :: String -> M.Map T.Text Hason
@@ -96,15 +96,15 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 		cairoStroke cr
 		putText cr (Size 10) (transX i - 5) 680
 			. T.pack . show @Int $ round i
-	cairoMoveTo cr 115 (transY $ 0.8 * 10 ** (- 7))
-	cairoLineTo cr 115 (transY $ 1.6 * 10 ** (- 7))
+	cairoMoveTo cr 125 (transY $ 0.8 * 10 ** (- 7))
+	cairoLineTo cr 125 (transY $ 1.6 * 10 ** (- 7))
 	cairoStroke cr
 	print . transY $ 1.5 * (10 ** (- 7))
 	for_ ((* (10 ** (- 7))) <$> [0.8, 1, 1.2, 1.4, 1.6]) \s -> do
-		cairoMoveTo cr 115 (transY s)
-		cairoLineTo cr 125 (transY s)
+		cairoMoveTo cr 125 (transY s)
+		cairoLineTo cr 135 (transY s)
 		cairoStroke cr
-		putText cr (Size 10) 65 (transY s - 9) . T.pack $ showEFloat (Just 1) s ""
+		putText cr (Size 10) 75 (transY s - 9) . T.pack $ showEFloat (Just 1) s ""
 	cairoSetLineWidth cr 0.2
 	cairoSetSourceRgb cr . fromJust $ rgbDouble 0.6 0.05 0.05
 	rs <- readFile `mapM` as
@@ -112,6 +112,10 @@ main = withCairo "quicksort-m.png" 1024 768 \cr -> do
 		print $ length rs'
 		drawResult1 cr `mapM_` rs'
 	cairoStroke cr
+	cairoSetSourceRgb cr (fromJust $ rgbDouble 0.3 0.3 0.3)
+	putTextRot90 cr (Size 15) 30 450 "Second / (N log N)"
+	putText cr (Size 15) 565 710 "M"
+	putText cr (Size 12) 750 100 "1000 <= N <= 100000"
 
 graph :: PrimMonad m => CairoT s (PrimState m) -> [(CDouble, CDouble)] -> m ()
 graph _ [] = pure ()
