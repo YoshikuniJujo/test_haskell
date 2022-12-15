@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module MergeSort.Natural where
+module MergeSort.Natural (naturalSort) where
 
 import Control.Monad
 import Control.Monad.ST
@@ -10,39 +10,28 @@ import Data.Array.ST
 import Data.Bool
 
 naturalSort :: Ord a => [a] -> [a]
-naturalSort ks = take n $ runST
-	$ (>>) <$> nsort <*> getElems =<< prepareArray ks
-	where
-	n = length ks
+naturalSort ks =
+	take n $ runST $ (>>) <$> nsort n False <*> getElems =<< prepareArray n ks
+	where n = length ks
 
-prepareArray :: [a] -> ST s (STArray s Int a)
-prepareArray xs = do
-	a <- newArray_ (1, length xs * 2)
+prepareArray :: Int -> [a] -> ST s (STArray s Int a)
+prepareArray n xs = newArray_ (1, n * 2) >>= \a ->
 	a <$ uncurry (writeArray a) `mapM_` zip [1 ..] xs
 
-nsort :: Ord a => STArray s Int a -> ST s ()
-nsort ks = do
-	(_, n) <- getBounds ks
-	run ks (n `div` 2) False
-
-run :: Ord a => STArray s Int a -> Int -> Bool -> ST s ()
-run ks n s = do
-	end <- inner ks i j k l 1 True
-	if end	then for_ [1 .. n] \m ->
-			unless s $ writeArray ks m =<< readArray ks (n + m)
-		else run ks n (not s)
+nsort :: Ord a => Int -> Bool -> STArray s Int a -> ST s ()
+nsort n s ks = inner ks i j k l 1 True >>= bool
+	(nsort n (not s) ks)
+	(unless s $ for_ [1 .. n] \m -> copy ks m (n + m))
 	where (i, j, k, l) = bool (1, n, n + 1, 2 * n) (n + 1, 2 * n, 1, n) s
 
-inner :: Ord a => STArray s Int a ->
-	Int -> Int -> Int -> Int -> Int -> Bool -> ST s Bool
+copy :: STArray s Int a -> Int -> Int -> ST s ()
+copy a d s = writeArray a d =<< readArray a s
+
+inner :: Ord a =>
+	STArray s Int a -> Int -> Int -> Int -> Int -> Int -> Bool -> ST s Bool
 inner ks i j k l d f
-	| i == j = do
-		writeArray ks k =<< readArray ks i
-		pure f
-	| otherwise = do
-		ki <- readArray ks i
-		kj <- readArray ks j
-		pure True
+	| i == j = f <$ copy ks k i
+	| otherwise = readArray ks i >>= \ki -> readArray ks j >>= \kj ->
 		if ki > kj
 			then merge1Right ks i j k d >>= \case
 				Nothing -> inner ks i (j - 1) (k + d) l d f
@@ -52,17 +41,6 @@ inner ks i j k l d f
 				Nothing -> inner ks (i + 1) j (k + d) l d f
 				Just (j', k') ->
 					inner ks (i + 1) j' l k' (- d) False
-
-testMerge1Left :: (Ord a, Num a) => [a] -> [a]
-testMerge1Left ks = runST do
-	a <- prepareArray'
-	merge1Left a 1 n (n + 1) 1
-	getElems a
-	where
-	prepareArray' = do
-		a <- prepareArray ks
-		a <$ uncurry (writeArray a) `mapM_` zip [n + 1 .. n * 2] (repeat 0)
-	n = length ks
 
 merge1Left :: Ord a =>
 	STArray  s Int a -> Int -> Int -> Int -> Int -> ST s (Maybe (Int, Int))
@@ -79,17 +57,6 @@ flushRight ks j k d = do
 	writeArray ks k kj
 	if kj <= kj1
 		then flushRight ks (j - 1) (k + d) d else pure (j - 1, k + d)
-
-testMerge1Right :: (Ord a, Num a) => [a] -> [a]
-testMerge1Right ks = runST do
-	a <- prepareArray'
-	merge1Right a 1 n (n + 1) 1
-	getElems a
-	where
-	prepareArray' = do
-		a <- prepareArray ks
-		a <$ uncurry (writeArray a) `mapM_` zip [n + 1 .. n * 2] (repeat 0)
-	n = length ks
 
 merge1Right :: Ord a =>
 	STArray s Int a -> Int -> Int -> Int -> Int -> ST s (Maybe (Int, Int))
