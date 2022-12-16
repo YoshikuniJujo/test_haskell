@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Monad.ST
 import Data.Foldable
 import Data.Array.ST
+import Data.Array.Tools
 import Data.Bool
 
 naturalSort :: Ord a => [a] -> [a]
@@ -30,11 +31,12 @@ inner xs i j k l d f
 	| otherwise = readArray xs i >>= \xi -> readArray xs j >>= \xj ->
 		if xi > xj
 		then transR xs i j k d >>= \case
-			Nothing -> inner xs i (j - 1) (k + d) l d f
-			Just (i', k') -> inner xs i' (j - 1) l k' (- d) False
+			Nothing -> inner xs i j' k' l d f
+			Just (ii, kk) -> inner xs ii j' l kk (- d) False
 		else transL xs i j k d >>= \case
-			Nothing -> inner xs (i + 1) j (k + d) l d f
-			Just (j', k') -> inner xs (i + 1) j' l k' (- d) False
+			Nothing -> inner xs i' j k' l d f
+			Just (jj, kk) -> inner xs i' jj l kk (- d) False
+	where i' = i + 1; j' = j - 1; k' = k + d
 
 transL :: Ord a =>
 	STArray  s Int a -> Int -> Int -> Int -> Int -> ST s (Maybe (Int, Int))
@@ -61,6 +63,3 @@ flushL xs i k d = readArray xs i >>= \xi ->
 	writeArray xs k xi >> readArray xs i' >>=
 		bool (pure (i', k')) (flushL xs i' k' d) . (xi <=)
 	where i' = i + 1; k' = k + d
-
-copy :: STArray s Int a -> Int -> Int -> ST s ()
-copy a d s = writeArray a d =<< readArray a s

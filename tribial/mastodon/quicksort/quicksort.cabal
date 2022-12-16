@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       BubbleSort
+      Data.Array.ST.Tools
+      Data.Array.Tools
       Data.Bounded
       HeapSort.TaocpFree
       HeapSort.Wow
