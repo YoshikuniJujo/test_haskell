@@ -12,7 +12,6 @@ import Data.Maybe
 import Data.Int
 import Data.Text qualified as T
 import Data.Time
-import Data.Hason
 import Data.Color
 import Data.CairoContext
 import System.Environment
@@ -34,6 +33,7 @@ main = do
 	als <- for fps \fp -> do
 		al <- readAll <$> readFile fp
 		pure $ dat al
+	print $ length als
 	withCairo "try-sort-on2.png" width height \cr -> do
 		for_ als \al -> for_ (zip [0 ..] colors) \(i, clr) ->
 			drawLines cr clr $ translate <$> (al !! i)
@@ -68,6 +68,7 @@ main = do
 			cairoStroke cr
 			putText cr (Size 12) 775 (100 - 10 + 30 * i) hd
 
+hd0 :: [T.Text]
 hd0 = ["insertion", "bubble", "selection"]
 
 translate :: (Integer, NominalDiffTime) -> (CDouble, CDouble)
