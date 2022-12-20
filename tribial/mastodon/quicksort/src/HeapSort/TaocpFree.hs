@@ -9,13 +9,12 @@ import Data.Array.ST
 import Data.Bool
 
 heapsort :: Ord a => [a] -> [a]
-heapsort xs = runST $ (>>) <$> hsort n <*> getElems =<< newListArray (1, n) xs
-	where n = length xs
+heapsort ks = runST $ (>>) <$> hsort m n <*> getElems =<< newListArray (1, n) ks
+	where m = n `div` 2; n = length ks
 
-hsort :: Ord a => Int -> STArray s Int a -> ST s ()
-hsort n ks = do
-	for_ [n `div` 2, n `div` 2 - 1 .. 1] \l ->
-		shiftup ks l n =<< readArray ks l
+hsort :: Ord a => Int -> Int -> STArray s Int a -> ST s ()
+hsort m n ks = do
+	for_ [m, m - 1 .. 1] \l -> shiftup ks l n =<< readArray ks l
 	for_ [n, n - 1 .. 2] \r -> readArray ks r >>= \k -> do
 		writeArray ks r =<< readArray ks 1
 		shiftup ks 1 (r - 1) k
