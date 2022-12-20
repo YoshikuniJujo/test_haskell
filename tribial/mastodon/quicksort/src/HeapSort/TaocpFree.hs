@@ -21,14 +21,13 @@ hsort m n ks = do
 
 shiftup :: Ord a => STArray s Int a -> Int -> Int -> a -> ST s ()
 shiftup ks j r k
-	| cl <= r = do
-		kcl <- readArray ks cl
-		(cb, kcb) <- if cl < r
-			then do	kcr <- readArray ks cr
-				pure $ bool (cl, kcl) (cr, kcr) (kcl < kcr)
-			else pure (cl, kcl)
-		if k >= kcb
+	| c <= r = readArray ks c >>= \kc -> do
+		(e, ke) <- if c < r
+			then (<$> readArray ks d) \kd ->
+				bool (c, kc) (d, kd) (kc < kd)
+			else pure (c, kc)
+		if k >= ke
 			then writeArray ks j k
-			else writeArray ks j kcb >> shiftup ks cb r k
+			else writeArray ks j ke >> shiftup ks e r k
 	| otherwise = writeArray ks j k
-	where cl = 2 * j; cr = cl + 1
+	where c = 2 * j; d = c + 1
