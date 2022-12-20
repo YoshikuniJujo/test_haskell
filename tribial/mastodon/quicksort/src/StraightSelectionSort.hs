@@ -9,16 +9,16 @@ import Data.Array.ST
 import Data.Bool
 
 selectionSort :: Ord a => [a] -> [a]
-selectionSort xs =
-	runST $ (>>) <$> ssort n <*> getElems =<< newListArray (1, n) xs
-	where n = length xs
+selectionSort ks =
+	runST $ (>>) <$> ssort n <*> getElems =<< newListArray (1, n) ks
+	where n = length ks
 
 ssort :: Ord a => Int -> STArray s Int a -> ST s ()
-ssort n xs = for_ [n, n - 1 .. 2] \j -> findMax xs j (j - 1) >>= \i -> do
-	xi <- readArray xs i; xj <- readArray xs j
-	writeArray xs i xj; writeArray xs j xi
+ssort n ks = for_ [n, n - 1 .. 2] \j -> findMax ks j (j - 1) >>= \i -> do
+	ki <- readArray ks i; kj <- readArray ks j
+	writeArray ks i kj; writeArray ks j ki
 
 findMax :: Ord a => STArray s Int a -> Int -> Int -> ST s Int
-findMax xs i k = readArray xs i >>= \xi -> readArray xs k >>= \xk -> do
-	let	i' = bool k i (xi >= xk)
-	bool (pure i') (findMax xs i' (k - 1)) (k > 1)
+findMax ks i k = readArray ks i >>= \ki -> readArray ks k >>= \kk -> do
+	let	i' = bool k i (ki >= kk)
+	bool (pure i') (findMax ks i' (k - 1)) (k > 1)
