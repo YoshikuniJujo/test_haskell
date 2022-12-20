@@ -29,8 +29,7 @@ qsort m n xs = do
 	when (m > 1) $ isort n xs
 
 stage :: Ord a => Int -> STArray s Int a -> Int -> Int -> ST s ()
-stage m xs l r = do
-	k <- readArray xs l
+stage m xs l r = readArray xs l >>= \k -> do
 	(j, kj) <- exchange xs k (l + 1) r
 	writeArray xs l kj; writeArray xs j k
 	case (r - j >= j - l, r - j > m, j - l > m) of
