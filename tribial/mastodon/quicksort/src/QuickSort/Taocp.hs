@@ -40,17 +40,17 @@ stage m ks l r = readArray ks l >>= \k -> do
 		_ -> pure ()
 
 exchange :: Ord a => STArray s Int a -> a -> Int -> Int -> ST s (Int, a)
-exchange ks k i j = do 
-	(i', ki) <- whileL i (< k) ks
-	(j', kj) <- whileR j (k <) ks
+exchange ks k i j = do
+	(i', ki) <- fromL i (< k) ks
+	(j', kj) <- fromR j (k <) ks
 	if j' <= i' then pure (j', kj) else do
 		writeArray ks i' kj; writeArray ks j' ki
 		exchange ks k (i' + 1) (j' - 1)
 
-whileL :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
-whileL i p a =
-	readArray a i >>= \x -> bool (pure (i, x)) (whileL (i + 1) p a) (p x)
+fromL :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
+fromL i p ks =
+	readArray ks i >>= \k -> bool (pure (i, k)) (fromL (i + 1) p ks) (p k)
 
-whileR :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
-whileR j p a =
-	readArray a j >>= \x -> bool (pure (j, x)) (whileR (j - 1) p a) (p x)
+fromR :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
+fromR j p ks =
+	readArray ks j >>= \k -> bool (pure (j, k)) (fromR (j - 1) p ks) (p k)
