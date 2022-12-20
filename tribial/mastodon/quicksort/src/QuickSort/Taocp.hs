@@ -47,10 +47,9 @@ exchange ks k i j = do
 		writeArray ks i' kj; writeArray ks j' ki
 		exchange ks k (i' + 1) (j' - 1)
 
-fromL :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
+fromL, fromR :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
 fromL i p ks =
 	readArray ks i >>= \k -> bool (pure (i, k)) (fromL (i + 1) p ks) (p k)
 
-fromR :: Int -> (a -> Bool) -> STArray s Int a -> ST s (Int, a)
 fromR j p ks =
 	readArray ks j >>= \k -> bool (pure (j, k)) (fromR (j - 1) p ks) (p k)
