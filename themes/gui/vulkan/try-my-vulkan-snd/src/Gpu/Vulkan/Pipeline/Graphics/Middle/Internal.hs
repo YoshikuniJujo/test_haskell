@@ -88,7 +88,7 @@ maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
 
 createInfoToCore' :: (
 	Pointable n,
-	ShaderStage.CreateInfoListToCore' nskndvss,
+	ShaderStage.CreateInfoListToCore nskndvss,
 	Pointable n2, Pointable n3, Pointable n4,
 	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
 	Pointable n10,
@@ -117,7 +117,7 @@ createInfoToCore' CreateInfo' {
 	createInfoBasePipelineIndex' = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	css <- ShaderStage.createInfoListToCore' ss
+	css <- ShaderStage.createInfoListToCore ss
 	let	sc = length css
 	pss <- ContT $ allocaArray sc
 	lift $ pokeArray pss css
@@ -163,7 +163,7 @@ instance CreateInfoListToCore' '[] where createInfoListToCore' HVNil = pure []
 instance (
 	Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
 	Pointable n6, Pointable n7, Pointable n8, Pointable n9, Pointable n10,
-	ShaderStage.CreateInfoListToCore' nskndvss,
+	ShaderStage.CreateInfoListToCore nskndvss,
 	BindingStrideList.BindingStrideList
 		vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts,

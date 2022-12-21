@@ -10,7 +10,7 @@
 
 module Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal (
 	CreateInfo(..), createInfoToCore,
-	CreateInfoListToCore', createInfoListToCore' ) where
+	CreateInfoListToCore, createInfoListToCore ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -63,15 +63,15 @@ createInfoToCore CreateInfo {
 		C.createInfoPName = cnm,
 		C.createInfoPSpecializationInfo = pcsi }
 
-class CreateInfoListToCore' sss where
-	createInfoListToCore' ::
+class CreateInfoListToCore sss where
+	createInfoListToCore ::
 		HeteroVarList (V3 CreateInfo) sss -> ContT r IO [C.CreateInfo]
 
-instance CreateInfoListToCore' '[] where createInfoListToCore' HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
 instance (
-	Pointable n, Specialization.StoreValues vs, CreateInfoListToCore' sss
-	) => CreateInfoListToCore' ('(n, sknd, vs) ': sss) where
-	createInfoListToCore' (V3 ci :...: cis) = (:)
+	Pointable n, Specialization.StoreValues vs, CreateInfoListToCore sss
+	) => CreateInfoListToCore ('(n, sknd, vs) ': sss) where
+	createInfoListToCore (V3 ci :...: cis) = (:)
 		<$> createInfoToCore ci
-		<*> createInfoListToCore' cis
+		<*> createInfoListToCore cis
