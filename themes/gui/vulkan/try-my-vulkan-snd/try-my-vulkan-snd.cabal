@@ -200,6 +200,8 @@ library
       Gpu.Vulkan.Pipeline.ShaderStage.Middle
       Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal
       Gpu.Vulkan.Pipeline.TessellationState
+      Gpu.Vulkan.Pipeline.TessellationState.Middle
+      Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
       Gpu.Vulkan.Pipeline.VertexInputState
       Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList

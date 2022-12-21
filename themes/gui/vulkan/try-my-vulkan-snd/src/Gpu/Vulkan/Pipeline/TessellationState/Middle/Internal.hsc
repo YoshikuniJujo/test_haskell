@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.TessellationState where
+module Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
