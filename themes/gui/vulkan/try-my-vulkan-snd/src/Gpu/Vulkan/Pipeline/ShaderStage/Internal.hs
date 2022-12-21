@@ -74,9 +74,9 @@ class CreateInfoListToMiddle' (
 	type MiddleVars nnskndcdvss :: [(Type, ShaderKind, Type)]
 	createInfoListToMiddle' :: Device.D ds ->
 		HeteroVarList CreateInfo' nnskndcdvss ->
-		IO (HeteroVarList M.CreateInfo' (MiddleVars nnskndcdvss))
+		IO (HeteroVarList (V3 M.CreateInfo) (MiddleVars nnskndcdvss))
 	destroyCreateInfoMiddleList' :: Device.D ds ->
-		HeteroVarList M.CreateInfo' (MiddleVars nnskndcdvss) ->
+		HeteroVarList (V3 M.CreateInfo) (MiddleVars nnskndcdvss) ->
 		HeteroVarList CreateInfo' nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddle' '[] where

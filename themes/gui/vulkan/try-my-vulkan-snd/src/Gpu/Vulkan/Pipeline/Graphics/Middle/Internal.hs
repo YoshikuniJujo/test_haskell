@@ -36,7 +36,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Pipeline.Enum
 
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
-import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
 import Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
 	qualified as InputAssemblyState
@@ -64,7 +64,7 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 data CreateInfo' n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo' {
 	createInfoNext' :: Maybe n,
 	createInfoFlags' :: CreateFlags,
-	createInfoStages' :: HeteroVarList ShaderStage.CreateInfo' nskndvss,
+	createInfoStages' :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
 	createInfoVertexInputState' ::
 		Maybe (V3 VertexInputState.CreateInfo nvsts),
 	createInfoInputAssemblyState' ::
