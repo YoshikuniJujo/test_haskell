@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-16.27
+resolver: lts-20.4
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,7 +41,7 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple.git
-  commit: 7122f53abc25f40d2ab7422ac53bb7c4ef28722d
+  commit: 3f13cf3a5fc33003e8489e123b3b173bb4ff1bb7
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
