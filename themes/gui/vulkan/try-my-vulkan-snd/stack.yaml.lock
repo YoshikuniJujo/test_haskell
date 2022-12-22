@@ -5,91 +5,91 @@
 
 packages:
 - completed:
-    subdir: themes/gui/vulkan/try-vulkan-core
+    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
-      size: 5055
       sha256: 469543327c9a95441985b2169da463dae7dfe0e896177e1422fff3e47429cff2
-    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
-  original:
+      size: 5055
     subdir: themes/gui/vulkan/try-vulkan-core
-    git: https://github.com/YoshikuniJujo/test_haskell
+    version: 0.1.0.0
+  original:
     commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-core
 - completed:
-    subdir: themes/gui/vulkan/try-vulkan-core-khr
+    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-khr
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
-      size: 884
       sha256: c1783d767057cd1f402be7efe39a8699816232e16592d40d505fb0928ea69f07
-    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
-  original:
+      size: 884
     subdir: themes/gui/vulkan/try-vulkan-core-khr
-    git: https://github.com/YoshikuniJujo/test_haskell
+    version: 0.1.0.0
+  original:
     commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-core-khr
 - completed:
-    subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
+    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
-      size: 751
       sha256: c1cc9b7d5c6d3c9726fa7f754ea74faf4d2f228125300a485c0bc16e2d7dad6e
-    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
-  original:
+      size: 751
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
-    git: https://github.com/YoshikuniJujo/test_haskell
+    version: 0.1.0.0
+  original:
     commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    subdir: themes/gui/vulkan/try-shaderc
+    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-shaderc
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
-      size: 1613
       sha256: 7b2ed57539392172fd5bb8df4e04fa03bcbc3bb7de35e753bdd29f0508310703
-    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
-  original:
+      size: 1613
     subdir: themes/gui/vulkan/try-shaderc
-    git: https://github.com/YoshikuniJujo/test_haskell
+    version: 0.1.0.0
+  original:
     commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-shaderc
 - completed:
-    subdir: features/ffi/try-pointable
+    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-pointable
-    version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/test_haskell
     pantry-tree:
-      size: 629
       sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
-    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
-  original:
+      size: 629
     subdir: features/ffi/try-pointable
-    git: https://github.com/YoshikuniJujo/test_haskell
-    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
-- completed:
-    name: size-alignment-list
     version: 0.1.0.0
-    git: https://github.com/YoshikuniJujo/size-alignment-list.git
-    pantry-tree:
-      size: 964
-      sha256: f5634d990509d53fd09852071c4386a12a33e3c793e924d0dbbde20651fd433b
-    commit: 511e579860a040d291373b1c62abc491f91a3110
   original:
-    git: https://github.com/YoshikuniJujo/size-alignment-list.git
+    commit: 1a72314a79b993ff59c8694e5ffe47acf79dcfd7
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/try-pointable
+- completed:
     commit: 511e579860a040d291373b1c62abc491f91a3110
+    git: https://github.com/YoshikuniJujo/size-alignment-list.git
+    name: size-alignment-list
+    pantry-tree:
+      sha256: f5634d990509d53fd09852071c4386a12a33e3c793e924d0dbbde20651fd433b
+      size: 964
+    version: 0.1.0.0
+  original:
+    commit: 511e579860a040d291373b1c62abc491f91a3110
+    git: https://github.com/YoshikuniJujo/size-alignment-list.git
 - completed:
     hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
     pantry-tree:
-      size: 429
       sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
+      size: 429
   original:
     hackage: union-color-0.1.2.0
 snapshots:
 - completed:
+    sha256: 3770dfd79f5aed67acdcc65c4e7730adddffe6dba79ea723cfb0918356fc0f94
     size: 648660
     url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/4.yaml
-    sha256: 3770dfd79f5aed67acdcc65c4e7730adddffe6dba79ea723cfb0918356fc0f94
   original: lts-20.4
