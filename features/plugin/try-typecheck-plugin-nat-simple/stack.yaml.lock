@@ -5,19 +5,19 @@
 
 packages:
 - completed:
+    commit: a76927a9c4dbad9f8ac29bdf962bf16bc08ea9f7
+    git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple.git
     name: typecheck-plugin-nat-simple
-    version: 0.1.0.8
-    git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple.git
     pantry-tree:
-      size: 1998
-      sha256: 45c6984a77df817081b6eadc6bf07a26a22b56657d61f8441366581cb5345e45
-    commit: d9a308e2d110fd5cbfa888fff9c987779d6833c0
+      sha256: 0d9dfac71d45789b129442856ee6c7a92d615d63c45858a4d2c7b43352fb3629
+      size: 1999
+    version: 0.1.0.8
   original:
+    commit: a76927a9c4dbad9f8ac29bdf962bf16bc08ea9f7
     git: https://github.com/YoshikuniJujo/typecheck-plugin-nat-simple.git
-    commit: d9a308e2d110fd5cbfa888fff9c987779d6833c0
 snapshots:
 - completed:
+    sha256: eef6d5c91b703b406a043f6e5184fd65e2a094d14a88453ead2f3f1ff9b3de04
     size: 562077
     url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2022/12/21.yaml
-    sha256: eef6d5c91b703b406a043f6e5184fd65e2a094d14a88453ead2f3f1ff9b3de04
   original: nightly-2022-12-21
