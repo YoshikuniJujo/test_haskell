@@ -38,6 +38,7 @@ import Gpu.Vulkan.Pipeline.Enum
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
+import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal as VertexInputState.M
 import Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
 	qualified as InputAssemblyState
 import Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
@@ -83,6 +84,28 @@ data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoSubpass :: Word32,
 	createInfoBasePipelineHandle :: V2 G vsts',
 	createInfoBasePipelineIndex :: Int32 }
+
+data CreateInfo' n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo' {
+	createInfoNext' :: Maybe n,
+	createInfoFlags' :: CreateFlags,
+	createInfoStages' :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
+	createInfoVertexInputState' ::
+		Maybe (V3 VertexInputState.CreateInfo nvsts),
+	createInfoInputAssemblyState' ::
+		Maybe (InputAssemblyState.CreateInfo n3),
+	createInfoTessellationState' :: Maybe (TessellationState.CreateInfo n4),
+	createInfoViewportState' :: Maybe (ViewportState.CreateInfo n5),
+	createInfoRasterizationState' ::
+		Maybe (RasterizationState.CreateInfo n6),
+	createInfoMultisampleState' :: Maybe (MultisampleState.CreateInfo n7),
+	createInfoDepthStencilState' :: Maybe (DepthStencilState.CreateInfo n8),
+	createInfoColorBlendState' :: Maybe (ColorBlendState.CreateInfo n9),
+	createInfoDynamicState' :: Maybe (DynamicState.CreateInfo n10),
+	createInfoLayout' :: Layout.L,
+	createInfoRenderPass' :: RenderPass.R,
+	createInfoSubpass' :: Word32,
+	createInfoBasePipelineHandle' :: V2 G vsts',
+	createInfoBasePipelineIndex' :: Int32 }
 
 maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
 maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
