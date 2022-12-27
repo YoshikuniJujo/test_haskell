@@ -6,7 +6,7 @@
 	UndecidableInstances #-}
 {-# OPTIOnS_GHC -Wall -fno-warn-tabs -fplugin=Plugin.TypeCheck.Nat.Simple #-}
 
-module Data.List.Range {- (
+module Data.List.Range (
 	-- * RANGED LIST LEFT
 	module Data.List.Range.RangeL,
 	-- ** Repeat and Unfoldr Min and Max
@@ -28,7 +28,7 @@ module Data.List.Range {- (
 	-- * LEFT TO RIGHT
 	LeftToRight, (++.+), leftToRight,
 	-- * RIGHT TO LEFT
-	RightToLeft, (++..), rightToLeft ) -} where
+	RightToLeft, (++..), rightToLeft ) where
 
 import GHC.TypeNats (type (+), type (-), type (<=))
 import Data.List.Length.LengthL (unfoldr, unfoldrM)
