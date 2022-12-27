@@ -11,8 +11,8 @@
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle.Internal (
 	G, gNull, GListFromCore, GListVars,
-	CreateInfo'(..), CreateInfoListToCore',
-	createGs', recreateGs', destroyGs',
+	CreateInfo(..), CreateInfoListToCore,
+	createGs, recreateGs, destroyGs,
 
 	gToCore
 	) where
@@ -62,32 +62,32 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 
-data CreateInfo' n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo' {
-	createInfoNext' :: Maybe n,
-	createInfoFlags' :: CreateFlags,
-	createInfoStages' :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
-	createInfoVertexInputState' ::
+data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoStages :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
+	createInfoVertexInputState ::
 		Maybe (V3 VertexInputState.CreateInfo nvsts),
-	createInfoInputAssemblyState' ::
+	createInfoInputAssemblyState ::
 		Maybe (InputAssemblyState.CreateInfo n3),
-	createInfoTessellationState' :: Maybe (TessellationState.CreateInfo n4),
-	createInfoViewportState' :: Maybe (ViewportState.CreateInfo n5),
-	createInfoRasterizationState' ::
+	createInfoTessellationState :: Maybe (TessellationState.CreateInfo n4),
+	createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
+	createInfoRasterizationState ::
 		Maybe (RasterizationState.CreateInfo n6),
-	createInfoMultisampleState' :: Maybe (MultisampleState.CreateInfo n7),
-	createInfoDepthStencilState' :: Maybe (DepthStencilState.CreateInfo n8),
-	createInfoColorBlendState' :: Maybe (ColorBlendState.CreateInfo n9),
-	createInfoDynamicState' :: Maybe (DynamicState.CreateInfo n10),
-	createInfoLayout' :: Layout.L,
-	createInfoRenderPass' :: RenderPass.R,
-	createInfoSubpass' :: Word32,
-	createInfoBasePipelineHandle' :: V2 G vsts',
-	createInfoBasePipelineIndex' :: Int32 }
+	createInfoMultisampleState :: Maybe (MultisampleState.CreateInfo n7),
+	createInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo n8),
+	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo n9),
+	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
+	createInfoLayout :: Layout.L,
+	createInfoRenderPass :: RenderPass.R,
+	createInfoSubpass :: Word32,
+	createInfoBasePipelineHandle :: V2 G vsts',
+	createInfoBasePipelineIndex :: Int32 }
 
 maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
 maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
 
-createInfoToCore' :: (
+createInfoToCore :: (
 	Pointable n,
 	ShaderStage.CreateInfoListToCore nskndvss,
 	Pointable n2, Pointable n3, Pointable n4,
@@ -96,26 +96,26 @@ createInfoToCore' :: (
 	BindingStrideList.BindingStrideList
 		vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
-	CreateInfo' n nskndvss '(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
+	CreateInfo n nskndvss '(n2, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
 	ContT r IO C.CreateInfo
-createInfoToCore' CreateInfo' {
-	createInfoNext' = mnxt,
-	createInfoFlags' = CreateFlagBits flgs,
-	createInfoStages' = ss,
-	createInfoVertexInputState' = ((\(V3 x) -> x) <$>) -> mvist,
-	createInfoInputAssemblyState' = miast,
-	createInfoTessellationState' = mtst,
-	createInfoViewportState' = mvst,
-	createInfoRasterizationState' = mrst,
-	createInfoMultisampleState' = mmst,
-	createInfoDepthStencilState' = mdsst,
-	createInfoColorBlendState' = mcbst,
-	createInfoDynamicState' = mdst,
-	createInfoLayout' = Layout.L lyt,
-	createInfoRenderPass' = RenderPass.R rp,
-	createInfoSubpass' = sp,
-	createInfoBasePipelineHandle' = V2 bph,
-	createInfoBasePipelineIndex' = bpi
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoStages = ss,
+	createInfoVertexInputState = ((\(V3 x) -> x) <$>) -> mvist,
+	createInfoInputAssemblyState = miast,
+	createInfoTessellationState = mtst,
+	createInfoViewportState = mvst,
+	createInfoRasterizationState = mrst,
+	createInfoMultisampleState = mmst,
+	createInfoDepthStencilState = mdsst,
+	createInfoColorBlendState = mcbst,
+	createInfoDynamicState = mdst,
+	createInfoLayout = Layout.L lyt,
+	createInfoRenderPass = RenderPass.R rp,
+	createInfoSubpass = sp,
+	createInfoBasePipelineHandle = V2 bph,
+	createInfoBasePipelineIndex = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	css <- ShaderStage.createInfoListToCore ss
@@ -153,13 +153,11 @@ createInfoToCore' CreateInfo' {
 		C.createInfoBasePipelineHandle = bph',
 		C.createInfoBasePipelineIndex = bpi }
 
-type CreateInfo'' = V12 CreateInfo'
+class CreateInfoListToCore sss where
+	createInfoListToCore ::
+		HeteroVarList (V12 CreateInfo) sss -> ContT r IO [C.CreateInfo]
 
-class CreateInfoListToCore' sss where
-	createInfoListToCore' ::
-		HeteroVarList CreateInfo'' sss -> ContT r IO [C.CreateInfo]
-
-instance CreateInfoListToCore' '[] where createInfoListToCore' HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
 instance (
 	Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
@@ -168,12 +166,12 @@ instance (
 	BindingStrideList.BindingStrideList
 		vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts,
-	CreateInfoListToCore' ss ) =>
-	CreateInfoListToCore' ('(
+	CreateInfoListToCore ss ) =>
+	CreateInfoListToCore ('(
 		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) where
-	createInfoListToCore' (V12 ci :...: cis) = (:)
-		<$> createInfoToCore' ci
-		<*> createInfoListToCore' cis
+	createInfoListToCore (V12 ci :...: cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfoListToCore cis
 
 gNull :: IO (G vs ts)
 gNull = G <$> newIORef NullHandle
@@ -186,14 +184,12 @@ gToCore (G rp) = readIORef rp
 gFromCore :: Pipeline.C.P -> IO (G vs ts)
 gFromCore p = G <$> newIORef p
 
-type G' = V2 G
-
 class GListFromCore vstss where
-	gListFromCore :: [Pipeline.C.P] -> IO (HeteroVarList G' vstss)
-	gListToIORefs :: HeteroVarList G' vstss -> [IORef Pipeline.C.P]
+	gListFromCore :: [Pipeline.C.P] -> IO (HeteroVarList (V2 G) vstss)
+	gListToIORefs :: HeteroVarList (V2 G) vstss -> [IORef Pipeline.C.P]
 
 gListToCore :: GListFromCore vstss =>
-	HeteroVarList G' vstss -> IO [Pipeline.C.P]
+	HeteroVarList (V2 G) vstss -> IO [Pipeline.C.P]
 gListToCore cps = readIORef `mapM` gListToIORefs cps
 
 instance GListFromCore '[] where
@@ -207,21 +203,21 @@ instance GListFromCore vstss =>
 	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
 	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
 
-createGs' :: (
-	CreateInfoListToCore' ss, Pointable n', GListFromCore (GListVars ss)
+createGs :: (
+	CreateInfoListToCore ss, Pointable n', GListFromCore (GListVars ss)
 	) => Device.D -> Maybe Cache.C ->
-	HeteroVarList (V12 CreateInfo') ss ->
+	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 G) (GListVars ss))
-createGs' dvc mc cis mac = gListFromCore =<< createRaw' dvc mc cis mac
+createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
-recreateGs' :: (
-	CreateInfoListToCore' ss, Pointable c, Pointable d,
+recreateGs :: (
+	CreateInfoListToCore ss, Pointable c, Pointable d,
 	GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
-	HeteroVarList (V12 CreateInfo') ss ->
+	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	HeteroVarList (V2 G) (GListVars ss) -> IO ()
-recreateGs' dvc mc cis macc macd gs =
-	recreateRaw' dvc mc cis macc macd $ gListToIORefs gs
+recreateGs dvc mc cis macc macd gs =
+	recreateRaw dvc mc cis macc macd $ gListToIORefs gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],
@@ -232,13 +228,13 @@ type family GListVars (ss :: [(
 		n, nskndvss, '(n2, vs, ts),
 		n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(vs, ts) ': GListVars ss
 
-createRaw' :: (CreateInfoListToCore' ss, Pointable n') =>
+createRaw :: (CreateInfoListToCore ss, Pointable n') =>
 	Device.D -> Maybe Cache.C ->
-	HeteroVarList CreateInfo'' ss ->
+	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
-createRaw' (Device.D dvc) mc cis mac = ($ pure) $ runContT do
+createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
-	ccis <- createInfoListToCore' cis
+	ccis <- createInfoListToCore cis
 	let	cic = length ccis
 	pcis <- ContT $ allocaArray cic
 	lift $ pokeArray pcis ccis
@@ -248,14 +244,14 @@ createRaw' (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peekArray cic pps
 
-recreateRaw' :: (CreateInfoListToCore' ss, Pointable c, Pointable d) =>
+recreateRaw :: (CreateInfoListToCore ss, Pointable c, Pointable d) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroVarList CreateInfo'' ss ->
+	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	[IORef Pipeline.C.P] -> IO ()
-recreateRaw' dvc mc cis macc macd rs = do
+recreateRaw dvc mc cis macc macd rs = do
 	os <- readIORef `mapM` rs
-	ns <- createRaw' dvc mc cis macc
+	ns <- createRaw dvc mc cis macc
 	zipWithM_ writeIORef rs ns
 	(\o -> destroyRaw dvc o macd) `mapM_` os
 
@@ -272,6 +268,6 @@ destroy (Device.D dvc) g mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ Pipeline.C.destroy dvc p pac
 
-destroyGs' :: (GListFromCore vstss, Pointable n) =>
+destroyGs :: (GListFromCore vstss, Pointable n) =>
 	Device.D -> HeteroVarList (V2 G) vstss -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroyGs' dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
+destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs

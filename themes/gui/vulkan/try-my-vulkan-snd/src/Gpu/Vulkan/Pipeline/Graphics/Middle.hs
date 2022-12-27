@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle (
 	G, gNull, GListFromCore, GListVars,
-	CreateInfo'(..), CreateInfoListToCore',
-	createGs', recreateGs', destroyGs' ) where
+	CreateInfo(..), CreateInfoListToCore,
+	createGs, recreateGs, destroyGs ) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
