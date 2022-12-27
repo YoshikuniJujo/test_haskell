@@ -10,6 +10,7 @@ import GHC.Generics
 import Foreign.Concurrent
 import Foreign.Storable.SizeAlignment
 import Control.Monad.Cont
+import Data.Bits
 
 import Cglm
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
@@ -46,8 +47,7 @@ main = do
 				'[ '(0, Vec2), '(1, Vec3)]
 		vertexInputInfo = Vk.Ppl.VertexInputSt.CreateInfo {
 			Vk.Ppl.VertexInputSt.createInfoNext = Nothing,
-			Vk.Ppl.VertexInputSt.createInfoFlags =
-				Vk.Ppl.VertexInputSt.M.CreateFlagsZero }
+			Vk.Ppl.VertexInputSt.createInfoFlags = zeroBits }
 	print vertexInputInfo
 	($ pure) $ runContT do
 		pcore <- Vk.Ppl.VertexInputSt.createInfoToCore vertexInputInfo

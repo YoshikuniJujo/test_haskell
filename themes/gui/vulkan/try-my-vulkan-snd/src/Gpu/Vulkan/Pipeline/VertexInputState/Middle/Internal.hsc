@@ -4,7 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.VertexInputState.Middle where
+module Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array

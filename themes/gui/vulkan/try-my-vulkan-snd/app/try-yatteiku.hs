@@ -589,8 +589,7 @@ makePipelineNew dvc rp f = do
 				[scissor] }
 		vertexInputInfo = Vk.Ppl.VertexInputState.CreateInfo {
 			Vk.Ppl.VertexInputState.createInfoNext = Nothing,
-			Vk.Ppl.VertexInputState.createInfoFlags =
-				Vk.Ppl.VertexInputState.M.CreateFlagsZero }
+			Vk.Ppl.VertexInputState.createInfoFlags = zeroBits }
 		inputAssembly :: Vk.Ppl.InpAssSt.CreateInfo ()
 		inputAssembly = Vk.Ppl.InpAssSt.CreateInfo {
 			Vk.Ppl.InpAssSt.createInfoNext = Nothing,
