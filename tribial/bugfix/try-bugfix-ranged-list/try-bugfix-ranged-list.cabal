@@ -27,6 +27,8 @@ library
   exposed-modules:
       Control.Monad.Identity
       Control.Monad.State
+      Data.List.Range.RangeL
+      Data.List.Range.RangeR
       Data.List.Range.RangeRFoo
   other-modules:
       Paths_try_bugfix_ranged_list
