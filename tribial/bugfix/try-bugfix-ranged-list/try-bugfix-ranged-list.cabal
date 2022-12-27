@@ -27,6 +27,9 @@ library
   exposed-modules:
       Control.Monad.Identity
       Control.Monad.State
+      Data.List.Length.LengthL
+      Data.List.Length.LengthR
+      Data.List.Range
       Data.List.Range.RangeL
       Data.List.Range.RangeR
       Data.List.Range.RangeRFoo
