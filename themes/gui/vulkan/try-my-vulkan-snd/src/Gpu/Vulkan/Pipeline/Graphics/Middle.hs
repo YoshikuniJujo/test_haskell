@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle (
 	G, gNull, GListFromCore, GListVars,
-	CreateInfo(..), CreateInfoListToCore,
+	CreateInfo(..),
 	createGs, recreateGs, destroyGs,
 
 	CreateInfoListToCoreNew,

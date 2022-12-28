@@ -237,7 +237,6 @@ createGsNew :: (
 	M.CreateInfoListToNew (MiddleVarsNew ss),
 	Pointable c, Pointable d,
 	CreateInfoListToMiddleNew ss,
-	M.CreateInfoListToCore (MiddleVarsNew ss),
 	M.GListFromCore (M.GListVars (MiddleVarsNew ss)),
 	V2g (M.GListVars (MiddleVarsNew ss)) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
