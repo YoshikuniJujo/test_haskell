@@ -3,6 +3,10 @@
 module Gpu.Vulkan.Pipeline.Graphics.Middle (
 	G, gNull, GListFromCore, GListVars,
 	CreateInfo(..), CreateInfoListToCore,
-	createGs, recreateGs, destroyGs ) where
+	createGs, recreateGs, destroyGs,
+
+	CreateInfoListToCoreNew,
+	CreateInfoListToNew(..)
+	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal

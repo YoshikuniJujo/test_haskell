@@ -233,6 +233,8 @@ instance V2g ss => V2g (s ': ss) where
 	g2v (V2 (G g) :...: gs) = V2 g :...: g2v gs
 
 createGsNew :: (
+	M.CreateInfoListToCoreNew (M.CreateInfoListArgsNew (MiddleVarsNew ss)),
+	M.CreateInfoListToNew (MiddleVarsNew ss),
 	Pointable c, Pointable d,
 	CreateInfoListToMiddleNew ss,
 	M.CreateInfoListToCore (MiddleVarsNew ss),

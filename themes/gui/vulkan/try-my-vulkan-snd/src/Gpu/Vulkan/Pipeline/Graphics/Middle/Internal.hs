@@ -15,6 +15,8 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle.Internal (
 	CreateInfo(..), CreateInfoListToCore,
 	createGs, recreateGs, destroyGs,
 
+	CreateInfoListToNew(..),
+
 	CreateInfoNew(..), CreateInfoListToCoreNew,
 	createGsNew, recreateGsNew,
 
@@ -152,6 +154,29 @@ createInfoToNew CreateInfo {
 	createInfoSubpassNew = sp,
 	createInfoBasePipelineHandleNew = bph,
 	createInfoBasePipelineIndexNew = bpi }
+
+class CreateInfoListToNew sss where
+	type CreateInfoListArgsNew sss ::
+		[(*, [(*, ShaderKind, *)], *, *, *, *, *, *, *, *, *, ([*], [(Nat, *)]))]
+	createInfoListToNew ::
+		HeteroVarList (V12 CreateInfo) sss ->
+		HeteroVarList (V12 CreateInfoNew) (CreateInfoListArgsNew sss)
+
+instance CreateInfoListToNew '[] where
+	type CreateInfoListArgsNew '[] = '[]
+	createInfoListToNew _ = HVNil
+
+instance (
+	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
+	VertexInputState.CreateInfoAttributeDescription vs ts,
+	CreateInfoListToNew ss ) =>
+	CreateInfoListToNew ('(
+		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) where
+	type CreateInfoListArgsNew ('(
+		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(
+		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10, vsts') : CreateInfoListArgsNew ss
+	createInfoListToNew (V12 ci :...: cis) =
+		V12 (createInfoToNew ci) :...: createInfoListToNew cis
 
 maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
 maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
@@ -354,23 +379,41 @@ instance GListFromCore vstss =>
 	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
 
 createGs :: (
-	CreateInfoListToCore ss, Pointable n', GListFromCore (GListVars ss)
-	) => Device.D -> Maybe Cache.C ->
+	Pointable n', GListFromCore (GListVars ss),
+	CreateInfoListToCoreNew (CreateInfoListArgsNew ss),
+	CreateInfoListToNew ss
+	) =>
+	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 G) (GListVars ss))
-createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
+createGs dvc mc cis mac = createGsNew dvc mc (createInfoListToNew cis) mac
 
+createGsNew :: (
+	Pointable n', CreateInfoListToCoreNew ss, GListFromCore vstss
+	) =>
+	Device.D -> Maybe Cache.C ->
+	HeteroVarList (V12 CreateInfoNew) ss ->
+	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 G) vstss)
 createGsNew dvc mc cis mac = gListFromCore =<< createRawNew dvc mc cis mac
 
 recreateGs :: (
-	CreateInfoListToCore ss, Pointable c, Pointable d,
+	CreateInfoListToCoreNew (CreateInfoListArgsNew ss),
+	CreateInfoListToNew ss,
+	Pointable c, Pointable d,
 	GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	HeteroVarList (V2 G) (GListVars ss) -> IO ()
 recreateGs dvc mc cis macc macd gs =
-	recreateRaw dvc mc cis macc macd $ gListToIORefs gs
+	recreateGsNew dvc mc (createInfoListToNew cis) macc macd gs
 
+recreateGsNew :: (
+	Pointable c, Pointable d, CreateInfoListToCoreNew ss, GListFromCore vstss
+	) =>
+	Device.D -> Maybe Cache.C ->
+	HeteroVarList (V12 CreateInfoNew) ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	HeteroVarList (V2 G) vstss -> IO ()
 recreateGsNew dvc mc cis macc macd gs =
 	recreateRawNew dvc mc cis macc macd $ gListToIORefs gs
 
@@ -382,22 +425,6 @@ type family GListVars (ss :: [(
 	GListVars ('(
 		n, nskndvss, '(n2, vs, ts),
 		n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(vs, ts) ': GListVars ss
-
-createRaw :: (CreateInfoListToCore ss, Pointable n') =>
-	Device.D -> Maybe Cache.C ->
-	HeteroVarList (V12 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
-createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
-	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
-	ccis <- createInfoListToCore cis
-	let	cic = length ccis
-	pcis <- ContT $ allocaArray cic
-	lift $ pokeArray pcis ccis
-	pac <- AllocationCallbacks.maybeToCore mac
-	pps <- ContT $ allocaArray cic
-	lift do	r <- C.create dvc cc (fromIntegral cic) pcis pac pps
-		throwUnlessSuccess $ Result r
-		peekArray cic pps
 
 createRawNew :: (CreateInfoListToCoreNew ss, Pointable n') =>
 	Device.D -> Maybe Cache.C ->
@@ -414,17 +441,6 @@ createRawNew (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 	lift do	r <- C.create dvc cc (fromIntegral cic) pcis pac pps
 		throwUnlessSuccess $ Result r
 		peekArray cic pps
-
-recreateRaw :: (CreateInfoListToCore ss, Pointable c, Pointable d) =>
-	Device.D -> Maybe Cache.C ->
-	HeteroVarList (V12 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	[IORef Pipeline.C.P] -> IO ()
-recreateRaw dvc mc cis macc macd rs = do
-	os <- readIORef `mapM` rs
-	ns <- createRaw dvc mc cis macc
-	zipWithM_ writeIORef rs ns
-	(\o -> destroyRaw dvc o macd) `mapM_` os
 
 recreateRawNew :: (CreateInfoListToCoreNew ss, Pointable c, Pointable d) =>
 	Device.D -> Maybe Cache.C ->
