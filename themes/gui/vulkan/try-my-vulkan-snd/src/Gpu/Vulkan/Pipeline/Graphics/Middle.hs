@@ -10,3 +10,4 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle (
 	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
+import Gpu.Vulkan.Pipeline.Graphics.Middle.Tmp
