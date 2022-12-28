@@ -36,15 +36,6 @@ instance Default (CreateInfo n vs ts) where
 	def = CreateInfo {
 		createInfoNext = Nothing, createInfoFlags = zeroBits }
 
-createInfoToCore :: (
-	Pointable n,
-	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
-	CreateInfoAttributeDescription vs ts ) =>
-	CreateInfo n vs ts -> ContT r IO (Ptr C.CreateInfo)
-createInfoToCore ci = do
-	C.CreateInfo_ fCreateInfo <- M.createInfoToCore $ createInfoToMiddle ci
-	ContT $ withForeignPtr fCreateInfo
-
 createInfoToMiddle :: (
 	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	CreateInfoAttributeDescription vs ts ) =>
