@@ -13,7 +13,7 @@ module Gpu.Vulkan.Pipeline.Graphics.Tmp (
 	CreateInfo(..), createGs, recreateGs, CreateInfoListToNew(..),
 	GListVars ) where
 
-import Gpu.Vulkan.Pipeline.Graphics.Middle
+import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
 import GHC.TypeNats
 import Foreign.Pointable
@@ -70,14 +70,14 @@ data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: V2 G vsts',
+	createInfoBasePipelineHandle :: V2 M.G vsts',
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToNew :: (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
-	CreateInfoNew n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
+	M.CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
 createInfoToNew CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -96,32 +96,32 @@ createInfoToNew CreateInfo {
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi
-	} = CreateInfoNew {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = flgs,
-	createInfoStagesNew = stg,
-	createInfoVertexInputStateNew =
+	} = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoStages = stg,
+	M.createInfoVertexInputState =
 		VertexInputState.createInfoToMiddle . unV3 <$> vis,
-	createInfoInputAssemblyStateNew = ias,
-	createInfoTessellationStateNew = ts,
-	createInfoViewportStateNew = vs,
-	createInfoRasterizationStateNew = rs,
-	createInfoMultisampleStateNew = ms,
-	createInfoDepthStencilStateNew = dss,
-	createInfoColorBlendStateNew = cbs,
-	createInfoDynamicStateNew = ds,
-	createInfoLayoutNew = lyt,
-	createInfoRenderPassNew = rp,
-	createInfoSubpassNew = sp,
-	createInfoBasePipelineHandleNew = bph,
-	createInfoBasePipelineIndexNew = bpi }
+	M.createInfoInputAssemblyState = ias,
+	M.createInfoTessellationState = ts,
+	M.createInfoViewportState = vs,
+	M.createInfoRasterizationState = rs,
+	M.createInfoMultisampleState = ms,
+	M.createInfoDepthStencilState = dss,
+	M.createInfoColorBlendState = cbs,
+	M.createInfoDynamicState = ds,
+	M.createInfoLayout = lyt,
+	M.createInfoRenderPass = rp,
+	M.createInfoSubpass = sp,
+	M.createInfoBasePipelineHandle = bph,
+	M.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToNew sss where
 	type CreateInfoListArgsNew sss ::
 		[(*, [(*, ShaderKind, *)], *, *, *, *, *, *, *, *, *, ([*], [(Nat, *)]))]
 	createInfoListToNew ::
 		HeteroVarList (V12 CreateInfo) sss ->
-		HeteroVarList (V12 CreateInfoNew) (CreateInfoListArgsNew sss)
+		HeteroVarList (V12 M.CreateInfo) (CreateInfoListArgsNew sss)
 
 instance CreateInfoListToNew '[] where
 	type CreateInfoListArgsNew '[] = '[]
@@ -140,25 +140,25 @@ instance (
 		V12 (createInfoToNew ci) :...: createInfoListToNew cis
 
 createGs :: (
-	Pointable n', GListFromCore (GListVars ss),
-	CreateInfoListToCoreNew (CreateInfoListArgsNew ss),
+	Pointable n', M.GListFromCore (GListVars ss),
+	M.CreateInfoListToCore (CreateInfoListArgsNew ss),
 	CreateInfoListToNew ss
 	) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 G) (GListVars ss))
-createGs dvc mc cis mac = createGsNew dvc mc (createInfoListToNew cis) mac
+	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 M.G) (GListVars ss))
+createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToNew cis) mac
 
 recreateGs :: (
-	CreateInfoListToCoreNew (CreateInfoListArgsNew ss),
+	M.CreateInfoListToCore (CreateInfoListArgsNew ss),
 	CreateInfoListToNew ss,
 	Pointable c, Pointable d,
-	GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
+	M.GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroVarList (V2 G) (GListVars ss) -> IO ()
+	HeteroVarList (V2 M.G) (GListVars ss) -> IO ()
 recreateGs dvc mc cis macc macd gs =
-	recreateGsNew dvc mc (createInfoListToNew cis) macc macd gs
+	M.recreateGs dvc mc (createInfoListToNew cis) macc macd gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],

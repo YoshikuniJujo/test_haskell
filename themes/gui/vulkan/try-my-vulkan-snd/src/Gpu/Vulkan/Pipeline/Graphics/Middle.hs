@@ -2,9 +2,9 @@
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle (
 	G, gNull, GListFromCore,
-	createGsNew, recreateGsNew, destroyGs,
+	createGs, recreateGs, destroyGs,
 
-	CreateInfoNew(..), CreateInfoListToCoreNew
+	CreateInfo(..), CreateInfoListToCore
 	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
