@@ -9,11 +9,11 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Graphics.Middle.Tmp (
+module Gpu.Vulkan.Pipeline.Graphics.Tmp (
 	CreateInfo(..), createGs, recreateGs, CreateInfoListToNew(..),
 	GListVars ) where
 
-import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
+import Gpu.Vulkan.Pipeline.Graphics.Middle
 
 import GHC.TypeNats
 import Foreign.Pointable

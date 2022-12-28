@@ -29,6 +29,7 @@ import Gpu.Vulkan.Pipeline.Graphics.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as M
+import qualified Gpu.Vulkan.Pipeline.Graphics.Tmp as M
 import qualified Gpu.Vulkan.Pipeline.Cache.Type as Cache
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Layout
 

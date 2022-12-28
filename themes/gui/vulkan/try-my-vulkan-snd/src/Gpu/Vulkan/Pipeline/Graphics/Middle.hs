@@ -1,13 +1,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle (
-	G, gNull, GListFromCore, GListVars,
-	CreateInfo(..),
-	createGs, recreateGs, destroyGs,
+	G, gNull, GListFromCore,
+	createGsNew, recreateGsNew, destroyGs,
 
-	CreateInfoListToCoreNew,
-	CreateInfoListToNew(..)
+	CreateInfoNew(..), CreateInfoListToCoreNew
 	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
-import Gpu.Vulkan.Pipeline.Graphics.Middle.Tmp
