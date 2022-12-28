@@ -7,6 +7,7 @@
 module Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Enum
@@ -32,6 +33,12 @@ data CreateInfo n = CreateInfo {
 	createInfoVertexAttributeDescriptions ::
 		[VertexInput.AttributeDescription] }
 	deriving Show
+
+createInfoToCoreNew ::
+	Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCoreNew ci = do
+	C.CreateInfo_ fCreateInfo <- createInfoToCore ci
+	ContT $ withForeignPtr fCreateInfo
 
 createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
 createInfoToCore CreateInfo {

@@ -14,6 +14,8 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle.Internal (
 	CreateInfo(..), CreateInfoListToCore,
 	createGs, recreateGs, destroyGs,
 
+	CreateInfoNew(..),
+
 	gToCore
 	) where
 
@@ -85,27 +87,69 @@ data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoBasePipelineHandle :: V2 G vsts',
 	createInfoBasePipelineIndex :: Int32 }
 
-data CreateInfo' n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo' {
-	createInfoNext' :: Maybe n,
-	createInfoFlags' :: CreateFlags,
-	createInfoStages' :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
-	createInfoVertexInputState' ::
-		Maybe (V3 VertexInputState.CreateInfo nvsts),
-	createInfoInputAssemblyState' ::
+data CreateInfoNew n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoStagesNew :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
+	createInfoVertexInputStateNew :: Maybe (VertexInputState.M.CreateInfo nv),
+	createInfoInputAssemblyStateNew ::
 		Maybe (InputAssemblyState.CreateInfo n3),
-	createInfoTessellationState' :: Maybe (TessellationState.CreateInfo n4),
-	createInfoViewportState' :: Maybe (ViewportState.CreateInfo n5),
-	createInfoRasterizationState' ::
+	createInfoTessellationStateNew :: Maybe (TessellationState.CreateInfo n4),
+	createInfoViewportStateNew :: Maybe (ViewportState.CreateInfo n5),
+	createInfoRasterizationStateNew ::
 		Maybe (RasterizationState.CreateInfo n6),
-	createInfoMultisampleState' :: Maybe (MultisampleState.CreateInfo n7),
-	createInfoDepthStencilState' :: Maybe (DepthStencilState.CreateInfo n8),
-	createInfoColorBlendState' :: Maybe (ColorBlendState.CreateInfo n9),
-	createInfoDynamicState' :: Maybe (DynamicState.CreateInfo n10),
-	createInfoLayout' :: Layout.L,
-	createInfoRenderPass' :: RenderPass.R,
-	createInfoSubpass' :: Word32,
-	createInfoBasePipelineHandle' :: V2 G vsts',
-	createInfoBasePipelineIndex' :: Int32 }
+	createInfoMultisampleStateNew :: Maybe (MultisampleState.CreateInfo n7),
+	createInfoDepthStencilStateNew :: Maybe (DepthStencilState.CreateInfo n8),
+	createInfoColorBlendStateNew :: Maybe (ColorBlendState.CreateInfo n9),
+	createInfoDynamicStateNew :: Maybe (DynamicState.CreateInfo n10),
+	createInfoLayoutNew :: Layout.L,
+	createInfoRenderPassNew :: RenderPass.R,
+	createInfoSubpassNew :: Word32,
+	createInfoBasePipelineHandleNew :: V2 G vsts',
+	createInfoBasePipelineIndexNew :: Int32 }
+
+createInfoToNew :: (
+	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
+	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
+	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
+	CreateInfoNew n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
+createInfoToNew CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoStages = stg,
+	createInfoVertexInputState = vis,
+	createInfoInputAssemblyState = ias,
+	createInfoTessellationState = ts,
+	createInfoViewportState = vs,
+	createInfoRasterizationState = rs,
+	createInfoMultisampleState = ms,
+	createInfoDepthStencilState = dss,
+	createInfoColorBlendState = cbs,
+	createInfoDynamicState = ds,
+	createInfoLayout = lyt,
+	createInfoRenderPass = rp,
+	createInfoSubpass = sp,
+	createInfoBasePipelineHandle = bph,
+	createInfoBasePipelineIndex = bpi
+	} = CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = flgs,
+	createInfoStagesNew = stg,
+	createInfoVertexInputStateNew =
+		VertexInputState.createInfoToMiddle . unV3 <$> vis,
+	createInfoInputAssemblyStateNew = ias,
+	createInfoTessellationStateNew = ts,
+	createInfoViewportStateNew = vs,
+	createInfoRasterizationStateNew = rs,
+	createInfoMultisampleStateNew = ms,
+	createInfoDepthStencilStateNew = dss,
+	createInfoColorBlendStateNew = cbs,
+	createInfoDynamicStateNew = ds,
+	createInfoLayoutNew = lyt,
+	createInfoRenderPassNew = rp,
+	createInfoSubpassNew = sp,
+	createInfoBasePipelineHandleNew = bph,
+	createInfoBasePipelineIndexNew = bpi }
 
 maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
 maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
@@ -146,6 +190,69 @@ createInfoToCore CreateInfo {
 	pss <- ContT $ allocaArray sc
 	lift $ pokeArray pss css
 	pvist <- maybeToCore VertexInputState.createInfoToCore mvist
+	piast <- maybeToCore InputAssemblyState.createInfoToCore miast
+	ptst <- maybeToCore TessellationState.createInfoToCore mtst
+	pvst <- maybeToCore ViewportState.createInfoToCore mvst
+	prst <- maybeToCore RasterizationState.createInfoToCore mrst
+	pmst <- maybeToCore MultisampleState.createInfoToCore mmst
+	pdsst <- maybeToCore DepthStencilState.createInfoToCore mdsst
+	pcbst <- maybeToCore ColorBlendState.createInfoToCore mcbst
+	pdst <- maybeToCore DynamicState.createInfoToCore mdst
+	bph' <- lift $ gToCore bph
+	pure C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoStageCount = fromIntegral sc,
+		C.createInfoPStages = pss,
+		C.createInfoPVertexInputState = pvist,
+		C.createInfoPInputAssemblyState = piast,
+		C.createInfoPTessellationState = ptst,
+		C.createInfoPViewportState = pvst,
+		C.createInfoPRasterizationState = prst,
+		C.createInfoPMultisampleState = pmst,
+		C.createInfoPDepthStencilState = pdsst,
+		C.createInfoPColorBlendState = pcbst,
+		C.createInfoPDynamicState = pdst,
+		C.createInfoLayout = lyt,
+		C.createInfoRenderPass = rp,
+		C.createInfoSubpass = sp,
+		C.createInfoBasePipelineHandle = bph',
+		C.createInfoBasePipelineIndex = bpi }
+
+createInfoToCoreNew :: (
+	Pointable n,
+	ShaderStage.CreateInfoListToCore nskndvss,
+	Pointable n2, Pointable n3, Pointable n4,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n10 ) =>
+	CreateInfoNew n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
+	ContT r IO C.CreateInfo
+createInfoToCoreNew CreateInfoNew {
+	createInfoNextNew = mnxt,
+	createInfoFlagsNew = CreateFlagBits flgs,
+	createInfoStagesNew = ss,
+	createInfoVertexInputStateNew = mvist,
+	createInfoInputAssemblyStateNew = miast,
+	createInfoTessellationStateNew = mtst,
+	createInfoViewportStateNew = mvst,
+	createInfoRasterizationStateNew = mrst,
+	createInfoMultisampleStateNew = mmst,
+	createInfoDepthStencilStateNew = mdsst,
+	createInfoColorBlendStateNew = mcbst,
+	createInfoDynamicStateNew = mdst,
+	createInfoLayoutNew = Layout.L lyt,
+	createInfoRenderPassNew = RenderPass.R rp,
+	createInfoSubpassNew = sp,
+	createInfoBasePipelineHandleNew = V2 bph,
+	createInfoBasePipelineIndexNew = bpi
+	} = do
+	(castPtr -> pnxt) <- maybeToPointer mnxt
+	css <- ShaderStage.createInfoListToCore ss
+	let	sc = length css
+	pss <- ContT $ allocaArray sc
+	lift $ pokeArray pss css
+	pvist <- maybeToCore VertexInputState.M.createInfoToCoreNew mvist
 	piast <- maybeToCore InputAssemblyState.createInfoToCore miast
 	ptst <- maybeToCore TessellationState.createInfoToCore mtst
 	pvst <- maybeToCore ViewportState.createInfoToCore mvst
