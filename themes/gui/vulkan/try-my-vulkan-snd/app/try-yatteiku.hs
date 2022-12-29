@@ -581,8 +581,7 @@ makePipelineNew dvc rp f = do
 		viewportState :: Vk.Ppl.ViewportState.CreateInfo ()
 		viewportState = Vk.Ppl.ViewportState.CreateInfo {
 			Vk.Ppl.ViewportState.createInfoNext = Nothing,
-			Vk.Ppl.ViewportState.createInfoFlags =
-				Vk.Ppl.ViewportState.CreateFlagsZero,
+			Vk.Ppl.ViewportState.createInfoFlags = zeroBits,
 			Vk.Ppl.ViewportState.createInfoViewports =
 				[viewport],
 			Vk.Ppl.ViewportState.createInfoScissors =

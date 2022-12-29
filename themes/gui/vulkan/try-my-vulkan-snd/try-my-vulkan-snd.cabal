@@ -209,6 +209,8 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.Middle
       Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal
       Gpu.Vulkan.Pipeline.ViewportState
+      Gpu.Vulkan.Pipeline.ViewportState.Middle
+      Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PushConstant
       Gpu.Vulkan.PushConstant.Middle
       Gpu.Vulkan.Queue
