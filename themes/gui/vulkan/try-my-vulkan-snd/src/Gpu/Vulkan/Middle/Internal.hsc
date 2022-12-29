@@ -18,8 +18,7 @@ module Gpu.Vulkan.Middle.Internal (
 	ClearValue(..), ClearValuesToCore(..), clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
-	SubmitInfo(..), SubmitInfoNew(..),
-	submitInfoToCore, submitInfoToCoreNew
+	SubmitInfoNew(..), submitInfoToCoreNew
 	) where
 
 import Foreign.Ptr
@@ -258,13 +257,6 @@ data SubmitInfoNew n vss = SubmitInfoNew {
 deriving instance (Show n, Show (HeteroVarList CommandBuffer.T.CC vss)) =>
 	Show (SubmitInfoNew n vss)
 
-data SubmitInfo n vs = SubmitInfo {
-	submitInfoNext :: Maybe n,
-	submitInfoWaitSemaphoreDstStageMasks ::
-		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: [CommandBuffer.T.CC vs],
-	submitInfoSignalSemaphores :: [Semaphore.S] }
-
 submitInfoToCoreNew :: Pointable n => SubmitInfoNew n vs -> ContT r IO C.SubmitInfo
 submitInfoToCoreNew SubmitInfoNew {
 	submitInfoNextNew = mnxt,
@@ -276,39 +268,6 @@ submitInfoToCoreNew SubmitInfoNew {
 	submitInfoCommandBuffersNew = (length &&& id)
 		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
 	submitInfoSignalSemaphoresNew =
-		length &&& (Semaphore.unS <$>) -> (ssc, sss)
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pwss <- ContT $ allocaArray wsc
-	lift $ pokeArray pwss wss
-	pwdsms <- ContT $ allocaArray wsc
-	lift $ pokeArray pwdsms wdsms
-	pcbs <- ContT $ allocaArray cbc
-	lift $ pokeArray pcbs cbs
-	psss <- ContT $ allocaArray ssc
-	lift $ pokeArray psss sss
-	pure C.SubmitInfo {
-		C.submitInfoSType = (),
-		C.submitInfoPNext = pnxt,
-		C.submitInfoWaitSemaphoreCount = fromIntegral wsc,
-		C.submitInfoPWaitSemaphores = pwss,
-		C.submitInfoPWaitDstStageMask = pwdsms,
-		C.submitInfoCommandBufferCount = fromIntegral cbc,
-		C.submitInfoPCommandBuffers = pcbs,
-		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
-		C.submitInfoPSignalSemaphores = psss }
-
-submitInfoToCore :: Pointable n => SubmitInfo n vs -> ContT r IO C.SubmitInfo
-submitInfoToCore SubmitInfo {
-	submitInfoNext = mnxt,
-	submitInfoWaitSemaphoreDstStageMasks =
-		length &&&
-		(	(Semaphore.unS <$>) ***
-			(Pipeline.unStageFlagBits <$>)) . unzip ->
-		(wsc, (wss, wdsms)),
-	submitInfoCommandBuffers =
-		length &&& (CommandBuffer.unC . CommandBuffer.T.unCC <$>) -> (cbc, cbs),
-	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss)
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt

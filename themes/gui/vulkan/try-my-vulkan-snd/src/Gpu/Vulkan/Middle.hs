@@ -7,7 +7,7 @@ module Gpu.Vulkan.Middle (
 	StencilOpState(..), stencilOpStateZero,
 	ClearValue(..), ClearValuesToCore, ClearType(..), ClearColorType(..),
 
-	SubmitInfo(..), SubmitInfoNew(..)
+	SubmitInfoNew(..)
 	) where
 
 import Gpu.Vulkan.Middle.Internal
