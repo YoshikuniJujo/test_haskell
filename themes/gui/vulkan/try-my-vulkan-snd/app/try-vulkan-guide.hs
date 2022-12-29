@@ -1025,14 +1025,14 @@ beginSingleTimeCommands :: forall sd sc a .
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
-			submitInfo = Vk.SubmitInfoNew {
-				Vk.submitInfoNextNew = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
-				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
-				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
+				Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphores = HVNil }
 		Vk.CmdBffr.begin @() @() cb beginInfo (cmd cb) <* do
-			Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.submit gq (Singleton $ V4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
@@ -1368,15 +1368,15 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
-			submitInfo = Vk.SubmitInfoNew {
-				Vk.submitInfoNextNew = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
-				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
-				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
+				Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphores = HVNil }
 		Vk.CmdBffr.begin @() @() cb beginInfo do
 			Vk.Cmd.copyBuffer @'[ '[ 'List 256 Vertex ""]] cb src dst
-		Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+		Vk.Queue.submit gq (Singleton $ V4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
@@ -1730,22 +1730,22 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
 		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 		_ -> error "never occur"
-	let	submitInfo :: Vk.SubmitInfoNew () '[sias]
+	let	submitInfo :: Vk.SubmitInfo () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
-		submitInfo = Vk.SubmitInfoNew {
-			Vk.submitInfoNextNew = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasksNew = singleton
+		submitInfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffersNew = singleton $ V2 cb,
-			Vk.submitInfoSignalSemaphoresNew = singleton rfs }
+			Vk.submitInfoCommandBuffers = singleton $ V2 cb,
+			Vk.submitInfoSignalSemaphores = singleton rfs }
 		presentInfoNew = Vk.Khr.PresentInfoNew {
 			Vk.Khr.presentInfoNextNew = Nothing,
 			Vk.Khr.presentInfoWaitSemaphoresNew = singleton rfs,
 			Vk.Khr.presentInfoSwapchainImageIndicesNew = singleton
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
-	Vk.Queue.submitNew gq (singleton $ V4 submitInfo) $ Just iff
+	Vk.Queue.submit gq (singleton $ V4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfoNew
 	where	cb = cbs `vssListIndex` cf
 

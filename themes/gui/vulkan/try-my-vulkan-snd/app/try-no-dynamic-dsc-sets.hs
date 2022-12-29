@@ -438,17 +438,17 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute plyt
 			(Singleton $ Vk.Cmd.DescriptorSet dss) []
 		Vk.Cmd.dispatch cb ln 1 1
-	Vk.Queue.submitNew q (V4 sinfo :...: HVNil) Nothing
+	Vk.Queue.submit q (V4 sinfo :...: HVNil) Nothing
 	Vk.Queue.waitIdle q
 	(,,)	<$> Vk.Dvc.Mem.ImgBffr.read @nm1 @ListW1 @[W1] dvc ma zeroBits
 		<*> Vk.Dvc.Mem.ImgBffr.read @nm2 @ListW2 @[W2] dvc mb zeroBits
 		<*> Vk.Dvc.Mem.ImgBffr.read @nm3 @ListW3 @[W3] dvc mc zeroBits
-	where	sinfo :: Vk.SubmitInfoNew () _ _ _
-		sinfo = Vk.SubmitInfoNew {
-			Vk.submitInfoNextNew = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
-			Vk.submitInfoCommandBuffersNew = V2 cb :...: HVNil,
-			Vk.submitInfoSignalSemaphoresNew = HVNil }
+	where	sinfo :: Vk.SubmitInfo () _ _ _
+		sinfo = Vk.SubmitInfo {
+			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
+			Vk.submitInfoCommandBuffers = V2 cb :...: HVNil,
+			Vk.submitInfoSignalSemaphores = HVNil }
 
 [glslComputeShader|
 

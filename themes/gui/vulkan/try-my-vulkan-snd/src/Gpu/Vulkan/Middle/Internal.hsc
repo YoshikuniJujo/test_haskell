@@ -18,7 +18,7 @@ module Gpu.Vulkan.Middle.Internal (
 	ClearValue(..), ClearValuesToCore(..), clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
-	SubmitInfoNew(..), submitInfoToCoreNew
+	SubmitInfo(..), submitInfoToCore
 	) where
 
 import Foreign.Ptr
@@ -247,27 +247,27 @@ clearValueArrayPtrs = iterate (
 pokeClearValue :: Ptr C.ClearValueTag -> Ptr C.ClearValueTag -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
 
-data SubmitInfoNew n vss = SubmitInfoNew {
-	submitInfoNextNew :: Maybe n,
-	submitInfoWaitSemaphoreDstStageMasksNew ::
+data SubmitInfo n vss = SubmitInfo {
+	submitInfoNext :: Maybe n,
+	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffersNew :: HeteroVarList CommandBuffer.T.CC vss,
-	submitInfoSignalSemaphoresNew :: [Semaphore.S] }
+	submitInfoCommandBuffers :: HeteroVarList CommandBuffer.T.CC vss,
+	submitInfoSignalSemaphores :: [Semaphore.S] }
 
 deriving instance (Show n, Show (HeteroVarList CommandBuffer.T.CC vss)) =>
-	Show (SubmitInfoNew n vss)
+	Show (SubmitInfo n vss)
 
-submitInfoToCoreNew :: Pointable n => SubmitInfoNew n vs -> ContT r IO C.SubmitInfo
-submitInfoToCoreNew SubmitInfoNew {
-	submitInfoNextNew = mnxt,
-	submitInfoWaitSemaphoreDstStageMasksNew =
+submitInfoToCore :: Pointable n => SubmitInfo n vs -> ContT r IO C.SubmitInfo
+submitInfoToCore SubmitInfo {
+	submitInfoNext = mnxt,
+	submitInfoWaitSemaphoreDstStageMasks =
 		length &&&
 		(	(Semaphore.unS <$>) ***
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
-	submitInfoCommandBuffersNew = (length &&& id)
+	submitInfoCommandBuffers = (length &&& id)
 		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
-	submitInfoSignalSemaphoresNew =
+	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss)
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt

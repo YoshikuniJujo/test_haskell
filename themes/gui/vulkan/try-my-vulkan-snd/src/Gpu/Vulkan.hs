@@ -33,12 +33,12 @@ semaphorePipelineStageFlagsToMiddle ::
 semaphorePipelineStageFlagsToMiddle = heteroVarListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
-data SubmitInfoNew n sss svss ssss = SubmitInfoNew {
-	submitInfoNextNew :: Maybe n,
-	submitInfoWaitSemaphoreDstStageMasksNew ::
+data SubmitInfo n sss svss ssss = SubmitInfo {
+	submitInfoNext :: Maybe n,
+	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroVarList SemaphorePipelineStageFlags sss,
-	submitInfoCommandBuffersNew :: HeteroVarList (V2 CommandBuffer.C) svss,
-	submitInfoSignalSemaphoresNew ::
+	submitInfoCommandBuffers :: HeteroVarList (V2 CommandBuffer.C) svss,
+	submitInfoSignalSemaphores ::
 		HeteroVarList Semaphore.S ssss }
 
 -- deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
@@ -62,21 +62,21 @@ instance CommandBufferListToMiddle svss =>
 	commandBufferListToMiddle (V2 (CommandBuffer.C cb) :...: cbs) =
 		cb :...: commandBufferListToMiddle cbs
 
-submitInfoToMiddleNew :: CommandBufferListToMiddle svss =>
-	SubmitInfoNew n sss svss ssss ->
-	M.SubmitInfoNew n (CommandBufferListToMiddleMapSnd svss)
-submitInfoToMiddleNew SubmitInfoNew {
-	submitInfoNextNew = mnxt,
-	submitInfoWaitSemaphoreDstStageMasksNew =
+submitInfoToMiddle :: CommandBufferListToMiddle svss =>
+	SubmitInfo n sss svss ssss ->
+	M.SubmitInfo n (CommandBufferListToMiddleMapSnd svss)
+submitInfoToMiddle SubmitInfo {
+	submitInfoNext = mnxt,
+	submitInfoWaitSemaphoreDstStageMasks =
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
-	submitInfoCommandBuffersNew = commandBufferListToMiddle -> cbs,
-	submitInfoSignalSemaphoresNew =
+	submitInfoCommandBuffers = commandBufferListToMiddle -> cbs,
+	submitInfoSignalSemaphores =
 		heteroVarListToList (\(Semaphore.S s) -> s) -> ssmprs
-	} = M.SubmitInfoNew {
-	M.submitInfoNextNew = mnxt,
-	M.submitInfoWaitSemaphoreDstStageMasksNew = wsdsms,
-	M.submitInfoCommandBuffersNew = cbs,
-	M.submitInfoSignalSemaphoresNew = ssmprs }
+	} = M.SubmitInfo {
+	M.submitInfoNext = mnxt,
+	M.submitInfoWaitSemaphoreDstStageMasks = wsdsms,
+	M.submitInfoCommandBuffers = cbs,
+	M.submitInfoSignalSemaphores = ssmprs }
 
 class SemaphorePipelineStageFlagsFromMiddle sss where
 	semaphorePipelineStageFlagsFromMiddle ::

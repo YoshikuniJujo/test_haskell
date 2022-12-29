@@ -193,13 +193,13 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
 					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf
-				let	submitInfo :: Vk.SubmitInfoNew () _ _ _
-					submitInfo = Vk.SubmitInfoNew {
-						Vk.submitInfoNextNew = Nothing,
-						Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
-						Vk.submitInfoCommandBuffersNew = V2 cmdBuf :...: HVNil,
-						Vk.submitInfoSignalSemaphoresNew = HVNil }
-				Vk.Queue.submitNew graphicsQueue (V4 submitInfo :...: HVNil) Nothing
+				let	submitInfo :: Vk.SubmitInfo () _ _ _
+					submitInfo = Vk.SubmitInfo {
+						Vk.submitInfoNext = Nothing,
+						Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
+						Vk.submitInfoCommandBuffers = V2 cmdBuf :...: HVNil,
+						Vk.submitInfoSignalSemaphores = HVNil }
+				Vk.Queue.submit graphicsQueue (V4 submitInfo :...: HVNil) Nothing
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
 			_ -> error "never occur"
@@ -341,14 +341,14 @@ beginSingleTimeCommands :: forall sd sc a .
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CommandBuffer.allocateNew
 		@() dvc allocInfo \(Singleton (cb :: Vk.CommandBuffer.C s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfoNew () '[] '[ '(s, '[])] '[]
-			submitInfo = Vk.SubmitInfoNew {
-				Vk.submitInfoNextNew = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
-				Vk.submitInfoCommandBuffersNew = Singleton $ V2 cb,
-				Vk.submitInfoSignalSemaphoresNew = HVNil }
+		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+			submitInfo = Vk.SubmitInfo {
+				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
+				Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphores = HVNil }
 		Vk.CommandBuffer.begin @() @() cb beginInfo (cmd cb) <* do
-			Vk.Queue.submitNew gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.submit gq (Singleton $ V4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CommandBuffer.AllocateInfoNew () sc '[ '[]]
