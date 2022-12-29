@@ -193,12 +193,13 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
 					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf
-				let	submitInfo = Vk.SubmitInfo {
-						Vk.submitInfoNext = Nothing,
-						Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
-						Vk.submitInfoCommandBuffers = [cmdBuf],
-						Vk.submitInfoSignalSemaphores = [] }
-				Vk.Queue.submit @() graphicsQueue [submitInfo] Nothing
+				let	submitInfo :: Vk.SubmitInfoNew () _ _ _
+					submitInfo = Vk.SubmitInfoNew {
+						Vk.submitInfoNextNew = Nothing,
+						Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+						Vk.submitInfoCommandBuffersNew = V2 cmdBuf :...: HVNil,
+						Vk.submitInfoSignalSemaphoresNew = HVNil }
+				Vk.Queue.submitNew graphicsQueue (V4 submitInfo :...: HVNil) Nothing
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
 			_ -> error "never occur"

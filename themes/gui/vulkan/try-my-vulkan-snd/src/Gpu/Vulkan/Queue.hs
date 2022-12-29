@@ -12,7 +12,6 @@ module Gpu.Vulkan.Queue where
 
 import Foreign.Marshal.Array
 import Foreign.Pointable
-import Control.Arrow
 import Control.Monad.Cont
 import Data.Kind
 import Data.HeteroList hiding (length)
@@ -56,34 +55,6 @@ instance (
 		csi <- M.submitInfoToCoreNew $ submitInfoToMiddleNew si
 		csis <- submitInfoListToCoreNew sis
 		pure $ csi : csis
-
-class SubmitInfoListToCore (nssssvss :: [(Type, [Type], Type, [Type])]) where
-	submitInfoListToCore ::
-		HeteroVarList (V4 SubmitInfo) nssssvss ->
-		ContT r IO [C.SubmitInfo]
-
-instance SubmitInfoListToCore '[] where submitInfoListToCore HVNil = pure []
-
-instance (Pointable n, SubmitInfoListToCore nssssvss) =>
-	SubmitInfoListToCore ('(n, sss, s, vs) ': nssssvss) where
-	submitInfoListToCore (V4 si :...: sis) = do
-		csi <- M.submitInfoToCore $ submitInfoToMiddle si
-		csis <- submitInfoListToCore sis
-		pure $ csi : csis
-
-submit :: Pointable n => Q -> [SubmitInfo n sss s vs] -> Maybe Fence.M.F -> IO ()
-submit (Q q)
-	(length &&& id -> (sic, sis)) f = ($ pure) $ runContT do
-	csis <- (M.submitInfoToCore . submitInfoToMiddle) `mapM` sis
-	psis <- ContT $ allocaArray sic
-	lift do	pokeArray psis csis
-		r <- C.submit q (fromIntegral sic) psis
-			$ Fence.M.maybeFToCore f
-		throwUnlessSuccess $ Result r
-
-submit' :: forall n sss vs . (Pointable n, SemaphorePipelineStageFlagsFromMiddle sss) =>
-	Q -> [M.SubmitInfo n vs] -> Maybe Fence.M.F -> IO ()
-submit' q = submit @_ @sss q . (submitInfoFromMiddle @sss <$>)
 
 waitIdle :: Q -> IO ()
 waitIdle (Q q) = throwUnlessSuccess . Result =<< C.waitIdle q

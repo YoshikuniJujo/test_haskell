@@ -161,14 +161,15 @@ run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
 		Vk.Cmd.bindDescriptorSetsNew cmdBuf Vk.Ppl.BindPointCompute pplLyt
 			(Vk.Cmd.DescriptorSet dscSet :...: HVNil) []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
-	Vk.Queue.submit @() queue [submitInfo] Nothing
+	Vk.Queue.submitNew queue (V4 submitInfo :...: HVNil) Nothing
 	Vk.Queue.waitIdle queue
 	rm dvc memA memB memC
-	where	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
-			Vk.submitInfoCommandBuffers = [cmdBuf],
-			Vk.submitInfoSignalSemaphores = [] }
+	where	submitInfo :: Vk.SubmitInfoNew () _ _ _
+		submitInfo = Vk.SubmitInfoNew {
+			Vk.submitInfoNextNew = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+			Vk.submitInfoCommandBuffersNew = V2 cmdBuf :...: HVNil,
+			Vk.submitInfoSignalSemaphoresNew = HVNil }
 
 readMemories :: forall (nm1 :: Symbol) (nm2 :: Symbol) (nm3 :: Symbol)
 	sd sm1 sm2 sm3 objss1 objss2 objss3 w1 w2 w3 . (

@@ -196,16 +196,17 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		Vk.Cmd.bindDescriptorSetsNew cmdBuf Vk.Ppl.BindPointCompute pplLyt
 			(Vk.Cmd.DescriptorSet dscSet :...: HVNil) []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
-	Vk.Queue.submit @() queue [submitInfo] Nothing
+	Vk.Queue.submitNew queue (V4 submitInfo :...: HVNil) Nothing
 	Vk.Queue.waitIdle queue
 	(,,)	<$> Vk.Mem.read @nm1 @('List 256 w1 "") @[w1] dvc memA def
 		<*> Vk.Mem.read @nm2 @('List 256 w2 "") @[w2] dvc memB def
 		<*> Vk.Mem.read @nm3 @('List 256 w3 "") @[w3] dvc memC def
-	where	submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = HVNil,
-			Vk.submitInfoCommandBuffers = [cmdBuf],
-			Vk.submitInfoSignalSemaphores = [] }
+	where	submitInfo :: Vk.SubmitInfoNew () _ _ _
+		submitInfo = Vk.SubmitInfoNew {
+			Vk.submitInfoNextNew = Nothing,
+			Vk.submitInfoWaitSemaphoreDstStageMasksNew = HVNil,
+			Vk.submitInfoCommandBuffersNew = V2 cmdBuf :...: HVNil,
+			Vk.submitInfoSignalSemaphoresNew = HVNil }
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
