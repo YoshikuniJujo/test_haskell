@@ -216,6 +216,8 @@ library
       Gpu.Vulkan.PushConstant.Middle.Internal
       Gpu.Vulkan.Queue
       Gpu.Vulkan.Queue.Enum
+      Gpu.Vulkan.Queue.Middle
+      Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.QueueFamily.EnumManual
       Gpu.Vulkan.RenderPass

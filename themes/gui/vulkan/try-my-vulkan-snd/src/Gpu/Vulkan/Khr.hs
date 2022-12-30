@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
@@ -31,6 +32,8 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Middle as M
 import qualified Gpu.Vulkan.Khr.Core as C
+
+import Gpu.Vulkan.Queue.Middle.Internal qualified as Queue
 
 validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"

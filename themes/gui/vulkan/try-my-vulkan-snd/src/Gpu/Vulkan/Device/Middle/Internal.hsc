@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.PhysicalDevice.Middle.Internal as PhysicalDevice
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as PhysicalDevice
 import qualified Gpu.Vulkan.Device.Core as C
-import qualified Gpu.Vulkan.Queue as Queue
+import qualified Gpu.Vulkan.Queue.Middle.Internal as Queue
 
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 
