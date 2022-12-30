@@ -1,10 +1,11 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -129,6 +130,7 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 import Tools
+import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
 main :: IO ()
 main = do
@@ -240,10 +242,12 @@ run w inst g =
 	createSurface w inst \sfc ->
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
-	createSwapChain w sfc phdv qfis dv \sc scifmt ext ->
+	createSwapChainNew w sfc phdv qfis dv
+		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt) ext -> let
+			scifmt = Vk.T.formatToValue @scifmt in
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \((Vk.Image.bindedFromNew <$>) -> imgs) ->
 	createImageViews dv scifmt imgs \scivs ->
-	createRenderPass dv scifmt \rp ->
+	createRenderPassNew @scifmt dv \rp ->
 	createPipelineLayout' dv \ppllyt ->
 	createGraphicsPipeline' dv ext rp ppllyt \gpl ->
 	createFramebuffers dv ext rp scivs \fbs ->
@@ -368,17 +372,58 @@ mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
 mkHeteroVarList _k [] f = f HVNil
 mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 
-createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+createSwapChainNew :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall ss fmt . Vk.T.FormatToValue fmt =>
-		Vk.Khr.Swapchain.SNew ss fmt -> Vk.Format -> Vk.C.Extent2d -> IO a) ->
+	(forall ss scfmt . Vk.T.FormatToValue scfmt =>
+		Vk.Khr.Swapchain.SNew ss scfmt -> Vk.C.Extent2d -> IO a) ->
 	IO a
-createSwapChain win sfc phdvc qfis dvc f = do
+createSwapChainNew win sfc phdvc qfis dvc f = do
 	spp <- querySwapChainSupport phdvc sfc
-	print $ formats spp
 	ext <- chooseSwapExtent win $ capabilities spp
-	mkSwapchainCreateInfo sfc qfis spp ext \crInfo scifmt ->
-		Vk.Khr.Swapchain.createNew dvc crInfo nil nil \sc -> f sc scifmt ext
+	let	fmt = Vk.Khr.Surface.M.formatFormat
+			. chooseSwapSurfaceFormat $ formats spp
+	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
+		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
+		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt dvc crInfo nil nil
+			\sc -> f sc ext
+
+mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
+	SwapChainSupportDetails -> Vk.C.Extent2d ->
+	Vk.Khr.Swapchain.CreateInfoNew n ss fmt
+mkSwapchainCreateInfoNew sfc qfis0 spp ext =
+	Vk.Khr.Swapchain.CreateInfoNew {
+		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
+		Vk.Khr.Swapchain.createInfoFlagsNew = def,
+		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
+		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
+		Vk.Khr.Swapchain.createInfoImageColorSpaceNew =
+			Vk.Khr.Surface.M.formatColorSpace fmt,
+		Vk.Khr.Swapchain.createInfoImageExtentNew = ext,
+		Vk.Khr.Swapchain.createInfoImageArrayLayersNew = 1,
+		Vk.Khr.Swapchain.createInfoImageUsageNew =
+			Vk.Img.UsageColorAttachmentBit,
+		Vk.Khr.Swapchain.createInfoImageSharingModeNew = ism,
+		Vk.Khr.Swapchain.createInfoQueueFamilyIndicesNew = qfis,
+		Vk.Khr.Swapchain.createInfoPreTransformNew =
+			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
+		Vk.Khr.Swapchain.createInfoCompositeAlphaNew =
+			Vk.Khr.CompositeAlphaOpaqueBit,
+		Vk.Khr.Swapchain.createInfoPresentModeNew = presentMode,
+		Vk.Khr.Swapchain.createInfoClippedNew = True,
+		Vk.Khr.Swapchain.createInfoOldSwapchainNew = Nothing }
+	where
+	fmt = chooseSwapSurfaceFormat $ formats spp
+	presentMode = chooseSwapPresentMode $ presentModes spp
+	caps = capabilities spp
+	maxImgc = fromMaybe maxBound . onlyIf (> 0)
+		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
+	imgc = clamp
+		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
+	(ism, qfis) = bool
+		(Vk.SharingModeConcurrent,
+			[graphicsFamily qfis0, presentFamily qfis0])
+		(Vk.SharingModeExclusive, [])
+		(graphicsFamily qfis0 == presentFamily qfis0)
 
 recreateSwapChain :: forall ssfc sd ssc fmt . Vk.T.FormatToValue fmt =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
@@ -505,26 +550,27 @@ mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
 		Vk.Image.M.subresourceRangeBaseArrayLayer = 0,
 		Vk.Image.M.subresourceRangeLayerCount = 1 }
 
-createRenderPass :: Vk.Dvc.D sd ->
-	Vk.Format -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dvc scifmt f = do
-	let	colorAttachment = Vk.Att.Description {
-			Vk.Att.descriptionFlags = zeroBits,
-			Vk.Att.descriptionFormat = scifmt,
-			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
-			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
-			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
-			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
-			Vk.Att.descriptionStencilStoreOp =
+createRenderPassNew ::
+	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
+	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
+createRenderPassNew dvc f = do
+	let	colorAttachment :: Vk.Att.DescriptionNew scifmt
+		colorAttachment = Vk.Att.DescriptionNew {
+			Vk.Att.descriptionFlagsNew = zeroBits,
+			Vk.Att.descriptionSamplesNew = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOpNew = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOpNew = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOpNew = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOpNew =
 				Vk.Att.StoreOpDontCare,
-			Vk.Att.descriptionInitialLayout =
-				Vk.Image.LayoutUndefined,
-			Vk.Att.descriptionFinalLayout =
-				Vk.Image.LayoutPresentSrcKhr }
+			Vk.Att.descriptionInitialLayoutNew =
+				Vk.Img.LayoutUndefined,
+			Vk.Att.descriptionFinalLayoutNew =
+				Vk.Img.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = Vk.Att.A 0,
 			Vk.Att.referenceLayout =
-				Vk.Image.LayoutColorAttachmentOptimal }
+				Vk.Img.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
 			Vk.Subpass.descriptionFlags = zeroBits,
 			Vk.Subpass.descriptionPipelineBindPoint =
@@ -538,20 +584,23 @@ createRenderPass dvc scifmt f = do
 			Vk.Subpass.dependencySrcSubpass = Vk.Subpass.SExternal,
 			Vk.Subpass.dependencyDstSubpass = Vk.Subpass.S 0,
 			Vk.Subpass.dependencySrcStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit,
+				Vk.Ppl.StageColorAttachmentOutputBit .|.
+				Vk.Ppl.StageEarlyFragmentTestsBit,
 			Vk.Subpass.dependencySrcAccessMask = zeroBits,
 			Vk.Subpass.dependencyDstStageMask =
-				Vk.Ppl.StageColorAttachmentOutputBit,
+				Vk.Ppl.StageColorAttachmentOutputBit .|.
+				Vk.Ppl.StageEarlyFragmentTestsBit,
 			Vk.Subpass.dependencyDstAccessMask =
-				Vk.AccessColorAttachmentWriteBit,
+				Vk.AccessColorAttachmentWriteBit .|.
+				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
-		renderPassInfo = Vk.RndrPass.M.CreateInfo {
-			Vk.RndrPass.M.createInfoNext = Nothing,
-			Vk.RndrPass.M.createInfoFlags = zeroBits,
-			Vk.RndrPass.M.createInfoAttachments = [colorAttachment],
-			Vk.RndrPass.M.createInfoSubpasses = [subpass],
-			Vk.RndrPass.M.createInfoDependencies = [dependency] }
-	Vk.RndrPass.create @() dvc renderPassInfo nil nil \rp -> f rp
+		renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
+			Vk.RndrPass.M.createInfoNextNew = Nothing,
+			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
+			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :...: HVNil,
+			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
+			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
+	Vk.RndrPass.createNew @'[scifmt] @() dvc renderPassInfo nil nil \rp -> f rp
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.L sl '[] '[] -> IO b) -> IO b

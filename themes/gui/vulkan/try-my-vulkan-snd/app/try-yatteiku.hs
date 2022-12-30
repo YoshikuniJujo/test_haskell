@@ -522,25 +522,24 @@ breakBits = bb (bit 0 `rotateR` 1)
 makeRenderPass ::
 	Vk.Device.D sd -> (forall s . Vk.RenderPass.R s -> IO a) -> IO a
 makeRenderPass dvc f = do
-	let	attachment = Vk.Attachment.Description {
-			Vk.Attachment.descriptionFlags =
+	let	attachmentNew :: Vk.Attachment.DescriptionNew 'Vk.T.FormatR8g8b8a8Unorm
+		attachmentNew = Vk.Attachment.DescriptionNew {
+			Vk.Attachment.descriptionFlagsNew =
 				Vk.Attachment.DescriptionFlagsZero,
-			Vk.Attachment.descriptionFormat =
-				Vk.FormatR8g8b8a8Unorm,
-			Vk.Attachment.descriptionSamples =
+			Vk.Attachment.descriptionSamplesNew =
 				Vk.Sample.Count1Bit,
-			Vk.Attachment.descriptionLoadOp =
+			Vk.Attachment.descriptionLoadOpNew =
 				Vk.Attachment.LoadOpDontCare,
-			Vk.Attachment.descriptionStoreOp =
+			Vk.Attachment.descriptionStoreOpNew =
 				Vk.Attachment.StoreOpDontCare,
-			Vk.Attachment.descriptionStencilLoadOp =
+			Vk.Attachment.descriptionStencilLoadOpNew =
 				Vk.Attachment.LoadOpDontCare,
-			Vk.Attachment.descriptionStencilStoreOp =
+			Vk.Attachment.descriptionStencilStoreOpNew =
 				Vk.Attachment.StoreOpDontCare,
-			Vk.Attachment.descriptionInitialLayout =
+			Vk.Attachment.descriptionInitialLayoutNew =
 				Vk.Img.LayoutUndefined,
 --				Vk.Img.LayoutTransferSrcOptimal,
-			Vk.Attachment.descriptionFinalLayout =
+			Vk.Attachment.descriptionFinalLayoutNew =
 				Vk.Img.LayoutGeneral }
 		subpass0AttachmentRef = Vk.Attachment.Reference {
 			Vk.Attachment.referenceAttachment = 0,
@@ -556,14 +555,16 @@ makeRenderPass dvc f = do
 				Left [subpass0AttachmentRef],
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
-		renderPassCreateInfo = Vk.RenderPass.CreateInfo {
-			Vk.RenderPass.createInfoNext = Nothing,
-			Vk.RenderPass.createInfoFlags =
+		renderPassCreateInfoNew :: Vk.RenderPass.CreateInfoNew () _
+		renderPassCreateInfoNew = Vk.RenderPass.CreateInfoNew {
+			Vk.RenderPass.createInfoNextNew = Nothing,
+			Vk.RenderPass.createInfoFlagsNew =
 				Vk.RenderPass.CreateFlagsZero,
-			Vk.RenderPass.createInfoAttachments = [attachment],
-			Vk.RenderPass.createInfoSubpasses = [subpass],
-			Vk.RenderPass.createInfoDependencies = [] }
-	Vk.RenderPass.create @() dvc renderPassCreateInfo nil nil f
+			Vk.RenderPass.createInfoAttachmentsNew =
+				attachmentNew :...: HVNil,
+			Vk.RenderPass.createInfoSubpassesNew = [subpass],
+			Vk.RenderPass.createInfoDependenciesNew = [] }
+	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil nil f
 
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
 	(forall s . Vk.Ppl.Gr.G s '[] '[] -> IO a) -> IO a
