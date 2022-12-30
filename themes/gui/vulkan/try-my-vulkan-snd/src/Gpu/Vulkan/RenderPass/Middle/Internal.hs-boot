@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.RenderPass.Middle where
+module Gpu.Vulkan.RenderPass.Middle.Internal where
 
 import qualified Gpu.Vulkan.RenderPass.Core as C
 

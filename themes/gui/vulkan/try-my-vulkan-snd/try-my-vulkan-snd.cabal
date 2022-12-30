@@ -225,6 +225,8 @@ library
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Enum
       Gpu.Vulkan.RenderPass.Middle
+      Gpu.Vulkan.RenderPass.Middle.Internal
+      Gpu.Vulkan.RenderPass.Tmp
       Gpu.Vulkan.RenderPass.Type
       Gpu.Vulkan.Sample
       Gpu.Vulkan.Sample.Enum

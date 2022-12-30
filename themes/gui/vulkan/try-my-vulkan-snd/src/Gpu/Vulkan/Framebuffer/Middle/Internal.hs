@@ -26,7 +26,7 @@ import Gpu.Vulkan.Framebuffer.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
-import {-# SOURCE #-} qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
+import {-# SOURCE #-} qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
 import qualified Gpu.Vulkan.ImageView.Middle.Internal as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Core as C
 

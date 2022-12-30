@@ -14,10 +14,11 @@ import Gpu.Vulkan.RenderPass.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.RenderPass.Middle as M
+import qualified Gpu.Vulkan.RenderPass.Tmp as M
 import qualified Gpu.Vulkan.Attachment as Attachment
 
 createNew :: (
-	Attachment.DescriptionsToCoreNew fmts,
+	Attachment.DescriptionsFromNew fmts,
 	Pointable n, Pointable c, Pointable d ) =>
 	Device.D sd -> M.CreateInfoNew n fmts ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
