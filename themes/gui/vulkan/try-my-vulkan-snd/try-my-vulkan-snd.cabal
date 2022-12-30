@@ -220,6 +220,8 @@ library
       Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.QueueFamily.EnumManual
+      Gpu.Vulkan.QueueFamily.Middle
+      Gpu.Vulkan.QueueFamily.Middle.Internal
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Enum
       Gpu.Vulkan.RenderPass.Middle

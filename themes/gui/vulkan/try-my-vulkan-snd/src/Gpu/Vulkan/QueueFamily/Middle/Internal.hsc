@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.QueueFamily where
+module Gpu.Vulkan.QueueFamily.Middle.Internal where
 
 import Data.Word
 

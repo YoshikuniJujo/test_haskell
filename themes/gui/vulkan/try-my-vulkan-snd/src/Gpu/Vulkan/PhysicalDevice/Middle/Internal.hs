@@ -40,7 +40,7 @@ import qualified Gpu.Vulkan.Instance as Instance
 import qualified Gpu.Vulkan.Instance.Type as Instance
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance.M
 import qualified Gpu.Vulkan.PhysicalDevice.Core as C
-import qualified Gpu.Vulkan.QueueFamily as QueueFamily
+import qualified Gpu.Vulkan.QueueFamily.Middle.Internal as QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
