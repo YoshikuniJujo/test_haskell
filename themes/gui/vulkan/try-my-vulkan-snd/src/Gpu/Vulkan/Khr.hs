@@ -9,7 +9,6 @@
 module Gpu.Vulkan.Khr where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
@@ -19,7 +18,6 @@ import Data.Word
 
 import qualified Data.Text as T
 
-import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
@@ -32,8 +30,6 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Middle as M
 import qualified Gpu.Vulkan.Khr.Core as C
-
-import Gpu.Vulkan.Queue.Middle.Internal qualified as Queue
 
 validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"
@@ -126,19 +122,24 @@ presentInfoToCore PresentInfo {
 		C.presentInfoPImageIndices = piis,
 		C.presentInfoPResults = prs }
 
+presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfoMiddle n
+presentInfoFromMiddle PresentInfo {
+	presentInfoNext = mnxt,
+	presentInfoWaitSemaphores =
+		heteroVarListToList (\(Semaphore.S s) -> s) -> wss,
+	presentInfoSwapchainImageIndices =
+		heteroVarListToList swapchainImageIndexToMiddle -> sciis
+	} = M.PresentInfoMiddle {
+		M.presentInfoNextMiddle = mnxt,
+		M.presentInfoWaitSemaphoresMiddle = wss,
+		M.presentInfoSwapchainImageIndicesMiddle = sciis }
+
 queuePresentNew ::
 	Pointable n => Queue.Q -> PresentInfoNew n sws scfmt sscs -> IO ()
 queuePresentNew q = queuePresent q . presentInfoFromNew
 
 queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
-queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
-	cpi@(C.PresentInfo_ fpi) <- presentInfoToCore pi_
-	ppi <- ContT $ withForeignPtr fpi
-	lift do r <- C.queuePresent q ppi
-		let	(fromIntegral -> rc) = C.presentInfoSwapchainCount cpi
-		rs <- peekArray rc $ C.presentInfoPResults cpi
-		throwUnlessSuccesses $ Result <$> rs
-		throwUnlessSuccess $ Result r
+queuePresent q = M.queuePresentMiddle q . presentInfoFromMiddle
 
 acquireNextImageResultNewM :: [Result] -> Device.M.D ->
 	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32
