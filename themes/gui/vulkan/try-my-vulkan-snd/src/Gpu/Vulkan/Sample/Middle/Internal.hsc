@@ -1,7 +1,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Sample where
+module Gpu.Vulkan.Sample.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array

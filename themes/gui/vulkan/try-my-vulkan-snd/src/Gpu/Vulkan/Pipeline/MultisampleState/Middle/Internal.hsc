@@ -18,7 +18,7 @@ import Data.Word
 
 import Gpu.Vulkan.Base
 
-import Gpu.Vulkan.Sample as Sample
+import Gpu.Vulkan.Sample.Middle.Internal as Sample
 import Gpu.Vulkan.Sample.Enum as Sample
 
 import qualified Gpu.Vulkan.Pipeline.MultisampleState.Core as C
