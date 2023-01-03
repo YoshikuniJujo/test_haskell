@@ -238,6 +238,7 @@ library
       Gpu.Vulkan.Sampler.Middle.Internal
       Gpu.Vulkan.Semaphore
       Gpu.Vulkan.Semaphore.Middle
+      Gpu.Vulkan.Semaphore.Middle.Internal
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.ShaderModule.Middle

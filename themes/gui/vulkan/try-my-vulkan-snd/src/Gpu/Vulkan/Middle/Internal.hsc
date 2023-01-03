@@ -42,7 +42,7 @@ import Gpu.Vulkan.Enum
 import qualified Gpu.Vulkan.Core as C
 
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
-import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Middle as Semaphore
+import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore
 import {-# SOURCE #-} qualified
 	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer.T

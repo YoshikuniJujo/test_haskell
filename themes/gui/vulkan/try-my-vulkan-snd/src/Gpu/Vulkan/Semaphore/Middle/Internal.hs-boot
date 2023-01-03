@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Semaphore.Middle where
+module Gpu.Vulkan.Semaphore.Middle.Internal where
 
 import qualified Gpu.Vulkan.Semaphore.Core as C
 

@@ -17,7 +17,7 @@ import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
 import qualified Gpu.Vulkan.Khr.Core as C
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Fence.Middle.Internal as Fence
-import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
+import qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore.M
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

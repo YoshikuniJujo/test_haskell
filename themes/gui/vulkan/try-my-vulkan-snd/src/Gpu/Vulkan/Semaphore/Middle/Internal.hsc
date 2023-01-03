@@ -5,7 +5,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Semaphore.Middle where
+module Gpu.Vulkan.Semaphore.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

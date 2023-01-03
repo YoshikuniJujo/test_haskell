@@ -8,11 +8,7 @@
 
 module Gpu.Vulkan.Khr where
 
-import Foreign.Ptr
-import Foreign.Marshal.Array
 import Foreign.Pointable
-import Control.Arrow
-import Control.Monad.Cont
 import Data.HeteroList hiding (length)
 import Data.Word
 
@@ -23,13 +19,11 @@ import Gpu.Vulkan.Exception.Enum
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Semaphore as Semaphore
-import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.Fence.Middle as Fence
 import qualified Gpu.Vulkan.Queue as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle.Internal as Swapchain.M
 import qualified Gpu.Vulkan.Khr.Middle as M
-import qualified Gpu.Vulkan.Khr.Core as C
 
 validationLayerName :: T.Text
 validationLayerName = "VK_LAYER_KHRONOS_validation"
@@ -92,35 +86,6 @@ deriving instance (
 	Show n, Show (HeteroVarList Semaphore.S sws),
 	Show (HeteroVarList SwapchainImageIndex sscs)) =>
 	Show (PresentInfo n sws sscs)
-
-presentInfoToCore :: Pointable n => PresentInfo n sws sscs -> ContT r IO C.PresentInfo
-presentInfoToCore PresentInfo {
-	presentInfoNext = mnxt,
-	presentInfoWaitSemaphores = (length &&& id)
-		. heteroVarListToList
-			(Semaphore.M.unS . \(Semaphore.S s) -> s) -> (wsc, wss),
-	presentInfoSwapchainImageIndices = (length &&& id . unzip)
-		. heteroVarListToList swapchainImageIndexToMiddle ->
-		(scc, (scs, iis))
-	} = do
-	scs' <- lift $ Swapchain.M.sToCore `mapM` scs
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pwss <- ContT $ allocaArray wsc
-	lift $ pokeArray pwss wss
-	pscs <- ContT $ allocaArray scc
-	lift $ pokeArray pscs scs'
-	piis <- ContT $ allocaArray scc
-	lift $ pokeArray piis iis
-	prs <- ContT $ allocaArray scc
-	pure C.PresentInfo {
-		C.presentInfoSType = (),
-		C.presentInfoPNext = pnxt,
-		C.presentInfoWaitSemaphoreCount = fromIntegral wsc,
-		C.presentInfoPWaitSemaphores = pwss,
-		C.presentInfoSwapchainCount = fromIntegral scc,
-		C.presentInfoPSwapchains = pscs,
-		C.presentInfoPImageIndices = piis,
-		C.presentInfoPResults = prs }
 
 presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfoMiddle n
 presentInfoFromMiddle PresentInfo {
