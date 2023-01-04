@@ -17,7 +17,7 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
-import qualified Gpu.Vulkan.VertexInput as VertexInput
+import qualified Gpu.Vulkan.VertexInput.Middle.Internal as VertexInput
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Core as C
 
 #include <vulkan/vulkan.h>

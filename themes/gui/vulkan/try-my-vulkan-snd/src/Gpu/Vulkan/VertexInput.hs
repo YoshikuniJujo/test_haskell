@@ -1,26 +1,26 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGe MultiParamTypeClasses #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.VertexInput where
+module Gpu.Vulkan.VertexInput (
+	Rate(..),
+	M.AttributeDescription(..),
+	BindingDescription(..),
+
+	bindingDescriptionFromRaw,
+	bindingDescriptionToMiddle ) where
 
 import Foreign.Storable.SizeAlignment
 import Data.Word
 
-import Gpu.Vulkan.Enum
-
-import qualified Gpu.Vulkan.VertexInput.Enum as E
-import qualified Gpu.Vulkan.VertexInput.Core as C
-
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (TypeVal(..))
 
-data Rate = RateVertex | RateInstance deriving Show
+import Gpu.Vulkan.VertexInput.Middle qualified as M
 
-rateToEnum :: Rate -> E.Rate
-rateToEnum RateVertex = E.RateVertex
-rateToEnum RateInstance = E.RateInstance
+data Rate = RateVertex | RateInstance deriving Show
 
 instance TypeVal 'RateVertex Rate where typeVal = RateVertex
 instance TypeVal 'RateInstance Rate where typeVal = RateInstance
@@ -35,35 +35,15 @@ bindingDescriptionFromRaw :: [(SizeAlignment, Rate)] -> [BindingDescription]
 bindingDescriptionFromRaw sars = (<$> zip [0 ..] sars)
 	\(b, ((fromIntegral -> sz, _algn), r)) -> BindingDescription b sz r
 
-bindingDescriptionToCore :: BindingDescription -> C.BindingDescription
-bindingDescriptionToCore BindingDescription {
-	bindingDescriptionBinding = bd,
-	bindingDescriptionStride = st,
-	bindingDescriptionInputRate = rateToEnum -> E.Rate ir
-	} = C.BindingDescription {
-		C.bindingDescriptionBinding = bd,
-		C.bindingDescriptionStride = st,
-		C.bindingDescriptionInputRate = ir }
+bindingDescriptionToMiddle :: BindingDescription -> M.BindingDescription
+bindingDescriptionToMiddle BindingDescription {
+	bindingDescriptionBinding = bdg,
+	bindingDescriptionStride = strd,
+	bindingDescriptionInputRate = rt } = M.BindingDescription {
+	M.bindingDescriptionBinding = bdg,
+	M.bindingDescriptionStride = strd,
+	M.bindingDescriptionInputRate = rateToEnum rt }
 
-data AttributeDescription = AttributeDescription {
-	attributeDescriptionLocation :: Word32,
-	attributeDescriptionBinding :: Word32,
-	attributeDescriptionFormat :: Format,
-	attributeDescriptionOffset :: Word32 }
-	deriving Show
-
-attributeDescriptionToCore :: AttributeDescription -> C.AttributeDescription
-attributeDescriptionToCore AttributeDescription {
-	attributeDescriptionLocation = loc,
-	attributeDescriptionBinding = bnd,
-	attributeDescriptionFormat = Format fmt,
-	attributeDescriptionOffset = oft } = C.AttributeDescription {
-		C.attributeDescriptionLocation = loc,
-		C.attributeDescriptionBinding = bnd,
-		C.attributeDescriptionFormat = fmt,
-		C.attributeDescriptionOffset = oft }
-
-succAttributeDescriptionLocation :: AttributeDescription -> AttributeDescription
-succAttributeDescriptionLocation
-	ad@AttributeDescription { attributeDescriptionLocation = loc } =
-	ad { attributeDescriptionLocation = loc + 1 }
+rateToEnum :: Rate -> M.Rate
+rateToEnum RateVertex = M.RateVertex
+rateToEnum RateInstance = M.RateInstance

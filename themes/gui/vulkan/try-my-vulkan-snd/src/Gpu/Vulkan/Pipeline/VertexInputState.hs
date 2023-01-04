@@ -11,10 +11,6 @@
 module Gpu.Vulkan.Pipeline.VertexInputState where
 
 import GHC.TypeNats
-import Foreign.Ptr
-import Foreign.ForeignPtr
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Kind
 import Data.Bits
 import Data.Default
@@ -24,8 +20,8 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
 
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
-import qualified Gpu.Vulkan.Pipeline.VertexInputState.Core as C
 import qualified Gpu.Vulkan.VertexInput as VertexInput
+import qualified Gpu.Vulkan.VertexInput.Middle as VertexInput.M
 
 data CreateInfo n (vs :: [Type]) (ts :: [(Nat, Type)]) = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -53,8 +49,8 @@ createInfoToMiddle
 createInfoToBindingDescriptions :: forall n vs ts .
 	BindingStrideList vs
 		VertexInput.Rate VertexInput.Rate =>
-	CreateInfo n vs ts -> [VertexInput.BindingDescription]
-createInfoToBindingDescriptions _ = VertexInput.bindingDescriptionFromRaw
+	CreateInfo n vs ts -> [VertexInput.M.BindingDescription]
+createInfoToBindingDescriptions _ = fmap VertexInput.bindingDescriptionToMiddle . VertexInput.bindingDescriptionFromRaw
 	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
 
 class CreateInfoAttributeDescription (vs :: [Type]) (ts :: [(Nat, Type)]) where	
