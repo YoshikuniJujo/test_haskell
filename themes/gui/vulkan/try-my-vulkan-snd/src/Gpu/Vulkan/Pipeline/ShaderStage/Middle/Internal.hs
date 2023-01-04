@@ -25,7 +25,7 @@ import Gpu.Vulkan.Pipeline.ShaderStage.Enum
 
 import qualified Gpu.Vulkan.ShaderModule.Middle.Internal as ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as C
-import qualified Gpu.Vulkan.Specialization as Specialization
+import qualified Gpu.Vulkan.Specialization.Middle.Internal as Specialization
 import qualified Gpu.Vulkan.Specialization.Core as Specialization.C
 
 data CreateInfo n sknd vs = CreateInfo {

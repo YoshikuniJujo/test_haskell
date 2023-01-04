@@ -30,7 +30,7 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
-import qualified Gpu.Vulkan.Specialization as Specialization
+import qualified Gpu.Vulkan.Specialization.Middle.Internal as Specialization
 
 data CreateInfo n ns vs = CreateInfo {
 	createInfoNext :: Maybe n,
