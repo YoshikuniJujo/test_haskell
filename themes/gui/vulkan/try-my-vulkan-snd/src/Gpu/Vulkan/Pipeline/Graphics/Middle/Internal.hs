@@ -52,7 +52,8 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Layout
 import qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
 import qualified Gpu.Vulkan.Pipeline.Graphics.Core as C
 
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 

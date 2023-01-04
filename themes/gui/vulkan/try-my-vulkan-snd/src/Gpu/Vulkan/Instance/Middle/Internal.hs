@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -26,7 +27,8 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Instance.Enum
 
 import qualified Gpu.Vulkan.Instance.Core as C
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 
 data CreateInfo n n' = CreateInfo {
 	createInfoNext :: Maybe n,

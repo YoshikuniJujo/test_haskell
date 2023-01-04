@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -22,7 +23,8 @@ import Shaderc.EnumAuto
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C

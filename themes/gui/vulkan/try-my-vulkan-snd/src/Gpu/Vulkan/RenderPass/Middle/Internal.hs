@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -21,7 +22,8 @@ import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.RenderPass.Enum
 
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Attachment as Attachment
 import qualified Gpu.Vulkan.Subpass.Middle.Internal as Subpass

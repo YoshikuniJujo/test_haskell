@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -12,7 +13,8 @@ import Control.Monad.Cont
 import Gpu.Vulkan.Exception
 
 import qualified Graphics.UI.GLFW as GlfwB
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as Surface
 

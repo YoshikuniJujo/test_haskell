@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications #-}
@@ -33,7 +34,8 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
 import Gpu.Vulkan.Ext.DebugUtils.Enum
 
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Core as C
 

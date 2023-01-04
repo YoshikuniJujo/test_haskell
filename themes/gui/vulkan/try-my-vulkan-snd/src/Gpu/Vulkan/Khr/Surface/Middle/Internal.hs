@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -17,7 +18,8 @@ import Gpu.Vulkan.Khr.Surface.Enum
 
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Core as C
-import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
