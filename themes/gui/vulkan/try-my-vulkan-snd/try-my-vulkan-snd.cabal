@@ -248,6 +248,8 @@ library
       Gpu.Vulkan.Specialization.Middle.Internal
       Gpu.Vulkan.Subpass
       Gpu.Vulkan.Subpass.Enum
+      Gpu.Vulkan.Subpass.Middle
+      Gpu.Vulkan.Subpass.Middle.Internal
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput

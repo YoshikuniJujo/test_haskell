@@ -13,7 +13,7 @@ import Gpu.Vulkan.RenderPass.Enum
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Attachment as Attachment
-import qualified Gpu.Vulkan.Subpass as Subpass
+import qualified Gpu.Vulkan.Subpass.Middle as Subpass
 
 import Gpu.Vulkan.RenderPass.Middle
 

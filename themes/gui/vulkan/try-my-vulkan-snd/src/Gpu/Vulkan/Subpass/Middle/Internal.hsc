@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Subpass where
+module Gpu.Vulkan.Subpass.Middle.Internal where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
