@@ -3,8 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ShaderModule.Internal (
-	M(..), M.CreateInfo(..), M.CreateFlags, pattern M.CreateFlagsZero,
-	create, destroy ) where
+	M(..), M.CreateInfo(..), M.CreateFlags, create, destroy ) where
 
 import Foreign.Pointable
 

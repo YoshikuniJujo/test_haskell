@@ -658,8 +658,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HVNil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
-			Vk.Shader.Module.createInfoFlags =
-				Vk.Shader.Module.CreateFlagsZero,
+			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
 		vertShaderStage = Vk.Ppl.ShSt.CreateInfo {
 			Vk.Ppl.ShSt.createInfoNext = Nothing,
@@ -672,8 +671,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
 		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
-			Vk.Shader.Module.createInfoFlags =
-				Vk.Shader.Module.CreateFlagsZero,
+			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode =
 				glslFragmentShaderMain }
 		fragShaderStage = Vk.Ppl.ShSt.CreateInfo {

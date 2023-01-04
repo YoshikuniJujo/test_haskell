@@ -23,7 +23,7 @@ import qualified Data.ByteString as BS
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Pipeline.ShaderStage.Enum
 
-import qualified Gpu.Vulkan.ShaderModule.Middle as ShaderModule
+import qualified Gpu.Vulkan.ShaderModule.Middle.Internal as ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as C
 import qualified Gpu.Vulkan.Specialization as Specialization
 import qualified Gpu.Vulkan.Specialization.Core as Specialization.C

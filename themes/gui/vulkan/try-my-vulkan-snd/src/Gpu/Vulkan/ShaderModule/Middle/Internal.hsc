@@ -7,7 +7,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ShaderModule.Middle where
+module Gpu.Vulkan.ShaderModule.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
