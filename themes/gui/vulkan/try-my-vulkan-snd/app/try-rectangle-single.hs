@@ -140,7 +140,6 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import Tools
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Image qualified as Vk.Img
 import Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
 main :: IO ()
