@@ -18,7 +18,7 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Subpass.Enum
 
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
-import qualified Gpu.Vulkan.Attachment as Attachment
+import qualified Gpu.Vulkan.Attachment.Middle.Internal as Attachment
 import qualified Gpu.Vulkan.Subpass.Core as C
 
 #include <vulkan/vulkan.h>

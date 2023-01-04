@@ -49,6 +49,8 @@ library
       Gpu.Vulkan.AllocationCallbacks.Middle.Internal
       Gpu.Vulkan.Attachment
       Gpu.Vulkan.Attachment.Enum
+      Gpu.Vulkan.Attachment.Middle
+      Gpu.Vulkan.Attachment.Middle.Internal
       Gpu.Vulkan.Base
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.Buffer.Enum
