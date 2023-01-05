@@ -1,6 +1,9 @@
 memo
 ====
 
+* [ ] Vk.CommandBuffer.C s
+    + [ ] Vk.CommandBuffer.C' s vs
+    + [ ] withC :: C s -> (C' s vs -> IO a) -> IO s
 * [ ] dynamic descriptor set
 * [ ] texel buffer
 * [ ] no type argument to command buffer
