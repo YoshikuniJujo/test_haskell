@@ -570,7 +570,7 @@ createRenderPass dvc f = do
 			Vk.Att.descriptionFinalLayoutNew =
 				Vk.Img.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
-			Vk.Att.referenceAttachment = Vk.Att.A 0,
+			Vk.Att.referenceAttachment = 0,
 			Vk.Att.referenceLayout =
 				Vk.Img.LayoutColorAttachmentOptimal }
 		depthAttachment :: Vk.Att.DescriptionNew dptfmt
@@ -588,7 +588,7 @@ createRenderPass dvc f = do
 			Vk.Att.descriptionFinalLayoutNew =
 				Vk.Img.LayoutDepthStencilAttachmentOptimal }
 		depthAttachmentRef = Vk.Att.Reference {
-			Vk.Att.referenceAttachment = Vk.Att.A 1,
+			Vk.Att.referenceAttachment = 1,
 			Vk.Att.referenceLayout =
 				Vk.Img.LayoutDepthStencilAttachmentOptimal }
 		subpass = Vk.Subpass.Description {

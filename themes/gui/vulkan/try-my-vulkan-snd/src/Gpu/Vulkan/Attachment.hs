@@ -4,8 +4,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Attachment (
-	A(..), DescriptionNew(..), Reference(..), DescriptionsFromNew(..)
-	) where
+	DescriptionNew(..), DescriptionsFromNew(..),
+	Reference(..), A ) where
 
 import Data.HeteroList
 

@@ -568,7 +568,7 @@ createRenderPassNew dvc f = do
 			Vk.Att.descriptionFinalLayoutNew =
 				Vk.Img.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
-			Vk.Att.referenceAttachment = Vk.Att.A 0,
+			Vk.Att.referenceAttachment = 0,
 			Vk.Att.referenceLayout =
 				Vk.Img.LayoutColorAttachmentOptimal }
 		subpass = Vk.Subpass.Description {
