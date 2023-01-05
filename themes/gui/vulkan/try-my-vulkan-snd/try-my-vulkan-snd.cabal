@@ -51,7 +51,6 @@ library
       Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Attachment.Middle
       Gpu.Vulkan.Attachment.Middle.Internal
-      Gpu.Vulkan.Base
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.Buffer.Middle
@@ -155,6 +154,7 @@ library
       Gpu.Vulkan.Memory.Middle.Internal
       Gpu.Vulkan.Middle
       Gpu.Vulkan.Middle.Internal
+      Gpu.Vulkan.Misc
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Middle

@@ -50,7 +50,7 @@ import Shaderc
 import Shaderc.EnumAuto
 import Shaderc.TH
 
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Middle as Vk.M

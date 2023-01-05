@@ -28,7 +28,7 @@ import Data.Int
 
 import qualified Data.Text as T
 
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal

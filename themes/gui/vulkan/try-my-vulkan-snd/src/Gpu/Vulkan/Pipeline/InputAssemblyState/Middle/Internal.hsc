@@ -17,7 +17,7 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState.Core as C

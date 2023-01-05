@@ -21,7 +21,7 @@ import Data.Word
 import Data.Color
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
 	as ColorBlendAttachment

@@ -17,7 +17,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
 
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 

@@ -26,7 +26,7 @@ import Codec.Picture
 import Shaderc.TH
 import Shaderc.EnumAuto
 
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk

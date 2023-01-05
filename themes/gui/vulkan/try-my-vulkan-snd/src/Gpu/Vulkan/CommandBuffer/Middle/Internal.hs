@@ -25,7 +25,7 @@ import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum

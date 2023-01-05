@@ -19,7 +19,7 @@ import Data.Word
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Core as C
 

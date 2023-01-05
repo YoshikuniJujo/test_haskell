@@ -16,7 +16,7 @@ import Data.Word
 import Data.Int
 import Data.Char
 
-import Gpu.Vulkan.Base
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 
