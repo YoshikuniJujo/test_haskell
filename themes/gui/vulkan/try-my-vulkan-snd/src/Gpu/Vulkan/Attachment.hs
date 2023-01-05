@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
