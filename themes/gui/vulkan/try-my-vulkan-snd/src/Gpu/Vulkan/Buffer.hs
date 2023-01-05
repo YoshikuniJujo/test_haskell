@@ -13,7 +13,6 @@ module Gpu.Vulkan.Buffer where
 
 import GHC.TypeLits
 import Foreign.Storable
-import Foreign.Pointable
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object hiding (objectLength)
@@ -72,7 +71,7 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (Pointable n, WholeSize objs, Pointable c, Pointable d) =>
+create :: (Storable n, WholeSize objs, Storable c, Storable d) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . B s nm objs -> IO a) -> IO a
@@ -274,7 +273,7 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HVNil = HVNil
 
-instance (Pointable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
+instance (Storable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
 	memoryBarrierListToMiddle (V5 mb :...: mbs) =
 		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs

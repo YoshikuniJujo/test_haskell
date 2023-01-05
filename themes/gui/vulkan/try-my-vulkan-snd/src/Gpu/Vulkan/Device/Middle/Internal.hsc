@@ -33,7 +33,7 @@ import Data.Word
 
 import qualified Data.Text as T
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Device.Enum

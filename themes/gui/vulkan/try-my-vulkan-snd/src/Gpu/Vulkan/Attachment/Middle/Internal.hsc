@@ -11,13 +11,11 @@ module Gpu.Vulkan.Attachment.Middle.Internal where
 
 import Foreign.Storable
 import Foreign.C.Enum
-import Data.HeteroList
 import Data.Word
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Attachment.Enum
 
-import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Attachment.Core as C

@@ -124,3 +124,11 @@ allocaAndPokeArray :: Storable a => [a] -> ContT r IO (Int, Ptr a)
 allocaAndPokeArray (length &&& id -> (xc, xs)) = do
 	p <- ContT $ allocaArray xc
 	(xc, p) <$ lift (pokeArray p xs)
+
+maybeToStorable :: Storable a => Maybe a -> ContT r IO (Ptr a)
+maybeToStorable = \case
+	Nothing -> pure NullPtr
+	Just x -> ContT $ \f -> alloca \p -> poke p x >> f p
+
+pattern NullPtr :: Ptr a
+pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr

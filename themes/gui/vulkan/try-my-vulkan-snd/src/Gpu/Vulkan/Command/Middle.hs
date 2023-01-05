@@ -138,7 +138,7 @@ pushConstants (CommandBuffer.CC (CommandBuffer.M.C _ cb)) (Pipeline.Layout.L lyt
 		C.pushConstants cb lyt ss ost sz p
 
 pipelineBarrier :: (
-	PointableHeteroMap ns, PointableHeteroMap ns', PointableHeteroMap ns''
+	StorableHeteroMap ns, StorableHeteroMap ns', StorableHeteroMap ns''
 	) =>
 	CommandBuffer.CC vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
@@ -149,15 +149,15 @@ pipelineBarrier (CommandBuffer.CC (CommandBuffer.M.C _ cb))
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs = ($ pure) $ runContT do
-	cmbs <- pointableHeteroMapM mbs Memory.M.barrierToCore
+	cmbs <- storableHeteroMapM mbs Memory.M.barrierToCore
 	let	mbc = length cmbs
 	pmbs <- ContT $ allocaArray mbc
 	lift $ pokeArray pmbs cmbs
-	cbbs <- pointableHeteroMapM bbs Buffer.M.memoryBarrierToCore
+	cbbs <- storableHeteroMapM bbs Buffer.M.memoryBarrierToCore
 	let	bbc = length cbbs
 	pbbs <- ContT $ allocaArray bbc
 	lift $ pokeArray pbbs cbbs
-	cibs <- pointableHeteroMapM ibs Image.memoryBarrierToCore
+	cibs <- storableHeteroMapM ibs Image.memoryBarrierToCore
 	let	ibc = length cibs
 	pibs <- ContT $ allocaArray ibc
 	lift $ pokeArray pibs cibs

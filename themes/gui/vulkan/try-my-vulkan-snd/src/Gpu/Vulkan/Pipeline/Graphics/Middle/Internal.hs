@@ -27,7 +27,7 @@ import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Pipeline.Enum
