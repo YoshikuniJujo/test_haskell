@@ -4,11 +4,23 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset ) where
+	C, allocate, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset,
+	
+	Level,
+	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
+
+	UsageFlags, UsageFlagBits,
+	pattern UsageOneTimeSubmitBit, pattern UsageRenderPassContinueBit,
+	pattern UsageSimultaneousUseBit, pattern UsageFlagBitsMaxEnum,
+	
+	ResetFlags, ResetFlagBits,
+	pattern ResetReleaseResourcesBit, pattern ResetFlagBitsMaxEnum
+
+	) where
 
 import Foreign.Pointable
 import Control.Exception
