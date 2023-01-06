@@ -7,13 +7,32 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Command.Middle (
+
+	-- * begin and end render pass
+
 	beginRenderPass, endRenderPass,
-	bindPipeline, bindPipelineCompute,
-	bindVertexBuffers, bindIndexBuffer,
+
+	-- * draw and dispatch
+
+	-- ** draw
+
+	bindPipeline, bindVertexBuffers, bindIndexBuffer, draw, drawIndexed,
+
+	-- ** dispatch
+
+	bindPipelineCompute, dispatch,
+
+	-- * push constants and descriptor sets
+
 	pushConstants, bindDescriptorSets,
-	draw, drawIndexed, dispatch,
-	copyBuffer, copyBufferToImage, copyImageToBuffer,
-	pipelineBarrier, blitImage ) where
+
+	-- * copy buffers and images
+
+	copyBuffer, blitImage, copyBufferToImage, copyImageToBuffer,
+
+	-- * memory dependency
+
+	pipelineBarrier ) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
