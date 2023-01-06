@@ -1,12 +1,33 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Descriptor where
+module Gpu.Vulkan.Descriptor (
+
+	BufferInfo(..), BufferInfoArg, bufferInfoToMiddle,
+	ImageInfo(..), imageInfoToMiddle,
+
+	-- * Type
+
+	E.Type,
+	pattern E.TypeSampler, pattern E.TypeCombinedImageSampler,
+	pattern E.TypeSampledImage, pattern E.TypeStorageImage,
+	pattern E.TypeUniformTexelBuffer, pattern E.TypeStorageTexelBuffer,
+	pattern E.TypeUniformBuffer, pattern E.TypeStorageBuffer,
+	pattern E.TypeUniformBufferDynamic, pattern E.TypeStorageBufferDynamic,
+	pattern E.TypeInputAttachment, pattern E.TypeInlineUniformBlock,
+	pattern E.TypeAccelerationStructureKhr,
+	pattern E.TypeAccelerationStructureNv, pattern E.TypeMutableValve,
+	pattern E.TypeSampleWeightImageQcom, pattern E.TypeBlockMatchImageQcom,
+	pattern E.TypeInlineUniformBlockExt, pattern E.TypeMaxEnum
+
+	) where
 
 import GHC.TypeLits
 import Data.Kind
@@ -19,6 +40,8 @@ import qualified Gpu.Vulkan.Descriptor.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
+
+import Gpu.Vulkan.Descriptor.Enum qualified as E
 
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::

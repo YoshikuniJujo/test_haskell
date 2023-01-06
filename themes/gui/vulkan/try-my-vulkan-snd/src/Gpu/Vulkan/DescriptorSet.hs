@@ -24,7 +24,6 @@ import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.BufferView.Middle as BufferView.M
 import qualified Gpu.Vulkan.Descriptor as Descriptor
-import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Middle as Descriptor.M
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
