@@ -79,7 +79,6 @@ import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ImageView as Vk.ImgView
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
 import qualified Gpu.Vulkan.Command as Vk.Cmd

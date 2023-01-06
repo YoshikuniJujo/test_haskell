@@ -77,6 +77,8 @@ library
       Gpu.Vulkan.CommandPool.Type
       Gpu.Vulkan.Component
       Gpu.Vulkan.Component.Enum
+      Gpu.Vulkan.Component.Middle
+      Gpu.Vulkan.Component.Middle.Internal
       Gpu.Vulkan.Descriptor
       Gpu.Vulkan.Descriptor.Enum
       Gpu.Vulkan.Descriptor.Middle

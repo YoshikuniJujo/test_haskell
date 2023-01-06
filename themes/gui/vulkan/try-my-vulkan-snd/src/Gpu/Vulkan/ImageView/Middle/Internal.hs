@@ -21,7 +21,7 @@ import Data.IORef
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Component
+import Gpu.Vulkan.Component.Middle.Internal
 import Gpu.Vulkan.ImageView.Enum
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
