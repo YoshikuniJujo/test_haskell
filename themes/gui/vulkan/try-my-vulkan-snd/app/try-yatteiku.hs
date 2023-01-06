@@ -38,7 +38,6 @@ import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
-import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
@@ -169,8 +168,7 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo ()
 		cmdPoolCreateInfo = Vk.CommandPool.CreateInfo {
 			Vk.CommandPool.createInfoNext = Nothing,
-			Vk.CommandPool.createInfoFlags =
-				Vk.CommandPool.CreateFlagsZero,
+			Vk.CommandPool.createInfoFlags = zeroBits,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
 	Vk.CommandPool.create device cmdPoolCreateInfo nil nil

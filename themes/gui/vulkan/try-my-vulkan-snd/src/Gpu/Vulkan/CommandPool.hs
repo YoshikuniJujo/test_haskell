@@ -1,8 +1,14 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.CommandPool (C, create, M.CreateInfo(..)) where
+module Gpu.Vulkan.CommandPool (
+	C, create, M.CreateInfo(..),
+
+	M.CreateFlags, M.CreateFlagBits,
+	pattern M.CreateTransientBit, pattern M.CreateResetCommandBufferBit,
+	pattern M.CreateProtectedBit, pattern M.CreateFlagBitsMaxEnum ) where
 
 import Foreign.Pointable
 import Control.Exception

@@ -41,7 +41,6 @@ import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Type as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Dvc.M
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
-import qualified Gpu.Vulkan.CommandPool.Enum as Vk.CommandPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
