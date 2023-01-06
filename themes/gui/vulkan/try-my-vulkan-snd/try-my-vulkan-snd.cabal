@@ -63,6 +63,7 @@ library
       Gpu.Vulkan.ColorComponent.Middle
       Gpu.Vulkan.Command
       Gpu.Vulkan.Command.Middle
+      Gpu.Vulkan.Command.Tmp
       Gpu.Vulkan.Command.TypeLevel
       Gpu.Vulkan.CommandBuffer
       Gpu.Vulkan.CommandBuffer.Enum

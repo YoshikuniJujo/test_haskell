@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
-import qualified Gpu.Vulkan.Command.Middle as M
+import qualified Gpu.Vulkan.Command.Tmp as M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
