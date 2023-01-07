@@ -1,8 +1,15 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorPool (P, create, M.CreateInfo(..), M.Size(..)) where
+module Gpu.Vulkan.DescriptorPool (
+	P, create, M.CreateInfo(..), M.Size(..),
+
+	M.CreateFlags,
+	pattern M.CreateFreeDescriptorSetBit, pattern M.CreateUpdateAfterBindBit,
+	pattern M.CreateHostOnlyBitValve, pattern M.CreateUpdateAfterBindBitExt,
+	pattern M.CreateFlagBitsMaxEnum ) where
 
 import Foreign.Pointable
 import Control.Exception
