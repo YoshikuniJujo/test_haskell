@@ -4,11 +4,19 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout (
-	L'', create'', L, create, CreateInfo(..), Binding(..) ) where
+	L'', create'', L, create, CreateInfo(..), Binding(..),
+
+	CreateFlags,
+	pattern CreateUpdateAfterBindPoolBit,
+	pattern CreatePushDescriptorBitKhr, pattern CreateHostOnlyPoolBitValve,
+	pattern CreateUpdateAfterBindPoolBitExt, pattern CreateFlagBitsMaxEnum
+
+	) where
 
 import Foreign.Pointable
 import Control.Exception
