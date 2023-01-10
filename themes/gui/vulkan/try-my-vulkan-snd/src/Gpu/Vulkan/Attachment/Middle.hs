@@ -8,7 +8,6 @@ module Gpu.Vulkan.Attachment.Middle (
 
 	-- * Description
 
-	Description(..), DescriptionFlags, DescriptionFlagBits ) where
+	Description(..) ) where
 
-import Gpu.Vulkan.Attachment.Enum
 import Gpu.Vulkan.Attachment.Middle.Internal
