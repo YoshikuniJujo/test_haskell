@@ -2,6 +2,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Attachment.Middle (
+
+	-- * Reference
+
+	Reference(..), A,
+
+	-- * Description
+
 	Description(..), DescriptionFlags, DescriptionFlagBits,
 
 	LoadOp,
@@ -11,9 +18,7 @@ module Gpu.Vulkan.Attachment.Middle (
 	StoreOp,
 	pattern StoreOpStore, pattern StoreOpDontCare, pattern StoreOpNone,
 	pattern StoreOpNoneKhr, pattern StoreOpNoneQcom, pattern StoreOpNoneExt,
-	pattern StoreOpMaxEnum,
-
-	Reference(..), A ) where
+	pattern StoreOpMaxEnum ) where
 
 import Gpu.Vulkan.Attachment.Enum
 import Gpu.Vulkan.Attachment.Middle.Internal
