@@ -7,8 +7,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.BufferView.Middle.Internal (
-	B(..), CreateInfo(..), CreateFlags, create
-	) where
+	B(..), CreateInfo(..), CreateFlags, create, destroy ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -75,3 +74,9 @@ create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 	lift do	r <- C.create dvc pci pac pb
 		throwUnlessSuccess $ Result r
 		peek pb
+
+destroy :: Storable d =>
+	Device.D -> B -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dvc) (B b) mac = ($ pure) $ runContT do
+	pac <- AllocationCallbacks.maybeToCore mac
+	lift $ C.destroy dvc b pac

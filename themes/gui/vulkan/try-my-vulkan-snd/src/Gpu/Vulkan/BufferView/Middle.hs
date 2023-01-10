@@ -6,9 +6,9 @@ module Gpu.Vulkan.BufferView.Middle (
 
 	B,
 
-	-- * Create
+	-- * Create and Destroy
 
-	create,
+	create, destroy,
 	CreateInfo(..), CreateFlags ) where
 
 import Gpu.Vulkan.BufferView.Middle.Internal
