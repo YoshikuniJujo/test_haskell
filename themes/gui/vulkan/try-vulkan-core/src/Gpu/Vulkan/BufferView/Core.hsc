@@ -53,3 +53,6 @@ type PtrB = Ptr B
 foreign import ccall "vkCreateBufferView" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> PtrB ->
 	IO #{type VkResult}
+
+foreign import ccall "vkDestroyBufferView" destroy ::
+	Device.D -> B -> Ptr AllocationCallbacks.A -> IO ()
