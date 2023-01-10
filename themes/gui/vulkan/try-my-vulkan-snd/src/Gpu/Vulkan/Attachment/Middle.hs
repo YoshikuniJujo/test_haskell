@@ -1,4 +1,3 @@
-{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Attachment.Middle (
@@ -9,16 +8,7 @@ module Gpu.Vulkan.Attachment.Middle (
 
 	-- * Description
 
-	Description(..), DescriptionFlags, DescriptionFlagBits,
-
-	LoadOp,
-	pattern LoadOpLoad, pattern LoadOpClear, pattern LoadOpDontCare,
-	pattern LoadOpNoneExt, pattern LoadOpMaxEnum,
-
-	StoreOp,
-	pattern StoreOpStore, pattern StoreOpDontCare, pattern StoreOpNone,
-	pattern StoreOpNoneKhr, pattern StoreOpNoneQcom, pattern StoreOpNoneExt,
-	pattern StoreOpMaxEnum ) where
+	Description(..), DescriptionFlags, DescriptionFlagBits ) where
 
 import Gpu.Vulkan.Attachment.Enum
 import Gpu.Vulkan.Attachment.Middle.Internal
