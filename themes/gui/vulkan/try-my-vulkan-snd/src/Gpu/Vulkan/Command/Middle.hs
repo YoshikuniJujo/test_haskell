@@ -8,35 +8,35 @@
 
 module Gpu.Vulkan.Command.Middle (
 
-	-- * begin and end render pass
+	-- * Begin and End Render Pass
 
 	beginRenderPass, endRenderPass,
 
-	-- * draw and dispatch
+	-- * Draw and Dispatch
 
-	-- ** draw
+	-- ** Draw
 
 	bindPipeline, bindVertexBuffers, bindIndexBuffer, draw, drawIndexed,
 
-	-- ** dispatch
+	-- ** Dispatch
 
 	bindPipelineCompute, dispatch,
 
-	-- * push constants and descriptor sets
+	-- * Push Constants and Bind Descriptor Sets
 
 	pushConstants, bindDescriptorSets,
 
-	-- * copy buffers and images
+	-- * Copy Buffers and Images
 
 	copyBuffer, blitImage, copyBufferToImage, copyImageToBuffer,
 
-	-- * memory dependency
+	-- * Memory Dependency
 
 	pipelineBarrier ) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
-import Foreign.Pointable
+import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList hiding (length)
@@ -67,7 +67,7 @@ import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
-beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Storable n, ClearValuesToCore ct) =>
 	CommandBuffer.M.C -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.M.C _ cb)
 	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do

@@ -17,7 +17,7 @@ module Gpu.Vulkan.Command.Tmp (
 
 	) where
 
-import Foreign.Pointable
+import Foreign.Storable
 import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Int
@@ -46,7 +46,7 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 import Gpu.Vulkan.Command.Middle qualified as M
 
-beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Storable n, ClearValuesToCore ct) =>
 	CommandBuffer.CC vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.CC mcb) = M.beginRenderPass mcb
 

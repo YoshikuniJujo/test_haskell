@@ -12,7 +12,7 @@
 module Gpu.Vulkan.Command where
 
 import GHC.TypeLits
-import Foreign.Pointable
+import Foreign.Storable
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
@@ -48,14 +48,14 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
-beginRenderPassNew :: (Pointable n, ClearValuesToCore ct) =>
+beginRenderPassNew :: (Storable n, ClearValuesToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPassNew (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddleNew bi) cnt)
 	(M.endRenderPass cb) f
 
-beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Storable n, ClearValuesToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_

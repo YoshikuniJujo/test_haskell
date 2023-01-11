@@ -21,6 +21,7 @@ import Gpu.Vulkan.Core (Rect2d)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.RenderPass.Enum
+import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
@@ -91,7 +92,7 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: HeteroVarList ClearValue cts }
 
-beginInfoToCore :: (Pointable n, ClearValuesToCore cts) =>
+beginInfoToCore :: (Storable n, ClearValuesToCore cts) =>
 	BeginInfo n cts -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
@@ -100,7 +101,7 @@ beginInfoToCore BeginInfo {
 	beginInfoRenderArea = ra,
 	beginInfoClearValues = heteroVarListLength &&& id -> (cvc, cvs)
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	pcvl <- clearValuesToCore cvs
 	pcva <- clearValueListToArray pcvl
 	fb' <- lift $ Framebuffer.fToCore fb
