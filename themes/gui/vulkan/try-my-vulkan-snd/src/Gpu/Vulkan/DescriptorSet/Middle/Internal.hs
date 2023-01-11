@@ -12,7 +12,7 @@ module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Pointable
+import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
@@ -20,6 +20,7 @@ import Data.Word
 import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.BufferView.Middle.Internal as BufferView
@@ -38,7 +39,7 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoSetLayouts :: [Layout.L] }
 	deriving Show
 
-allocateInfoToCore :: Pointable n => AllocateInfo n -> ContT r IO C.AllocateInfo
+allocateInfoToCore :: Storable n => AllocateInfo n -> ContT r IO C.AllocateInfo
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoDescriptorPool = Pool.D pl,
@@ -46,7 +47,7 @@ allocateInfoToCore AllocateInfo {
 		(((id &&& fromIntegral) `first`) . (length &&& id)) ->
 		((dsci, dscw), sls)
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	psls <- do
 		p <- ContT $ allocaArray dsci
 		p <$ lift (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
@@ -59,7 +60,7 @@ allocateInfoToCore AllocateInfo {
 
 newtype D = D C.S deriving Show
 
-allocateDs :: Pointable n => Device.D -> AllocateInfo n -> IO [D]
+allocateDs :: Storable n => Device.D -> AllocateInfo n -> IO [D]
 allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 	cai@(C.AllocateInfo_ fai) <- allocateInfoToCore ai
 	pai <- ContT $ withForeignPtr fai
@@ -80,7 +81,7 @@ data Copy n = Copy {
 	copyDescriptorCount :: Word32 }
 	deriving Show
 
-copyToCore :: Pointable n => Copy n -> ContT r IO C.Copy
+copyToCore :: Storable n => Copy n -> ContT r IO C.Copy
 copyToCore Copy {
 	copyNext = mnxt,
 	copySrcSet = D ss,
@@ -91,7 +92,7 @@ copyToCore Copy {
 	copyDstArrayElement = dae,
 	copyDescriptorCount = dc
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	pure C.Copy {
 		C.copySType = (),
 		C.copyPNext = pnxt,
@@ -119,7 +120,7 @@ data WriteSources
 	| WriteSourcesBufferView [BufferView.B]
 	deriving Show
 
-writeToCore :: Pointable n => Write n -> ContT r IO C.Write
+writeToCore :: Storable n => Write n -> ContT r IO C.Write
 writeToCore Write {
 	writeNext = mnxt,
 	writeDstSet = D s,
@@ -128,7 +129,7 @@ writeToCore Write {
 	writeDescriptorType = Descriptor.Type tp,
 	writeSources = srcs
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	(cnt, pii, pbi, ptbv) <- writeSourcesToCore srcs
 	pure C.Write {
 		C.writeSType = (),
@@ -163,8 +164,8 @@ writeSourcesToCore = \case
 		lift $ pokeArray pbvs bvs
 		pure (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
-updateDs :: (Pointable n, Pointable n') =>
-	Device.D -> [Write n] -> [Copy n'] -> IO ()
+updateDs :: (Storable w, Storable c) =>
+	Device.D -> [Write w] -> [Copy c] -> IO ()
 updateDs (Device.D dvc) ws cs = ($ pure) $ runContT do
 	ws' <- writeToCore `mapM` ws
 	cs' <- copyToCore `mapM` cs

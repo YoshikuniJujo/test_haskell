@@ -12,7 +12,7 @@
 module Gpu.Vulkan.DescriptorSet where
 
 import GHC.TypeLits
-import Foreign.Pointable
+import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object
 import Data.HeteroList
@@ -48,7 +48,7 @@ allocateInfoToMiddle'' AllocateInfo'' {
 
 newtype S'' sd sp sl = S'' M.D deriving Show
 
-allocateSs'' :: Pointable n =>
+allocateSs'' :: Storable n =>
 	Device.D sd -> AllocateInfo'' n sp sl -> IO [S'' sd sp sl]
 allocateSs'' (Device.D dvc) ai = (S'' <$>) <$> M.allocateDs dvc (allocateInfoToMiddle'' ai)
 
@@ -81,7 +81,7 @@ allocateInfoToMiddle AllocateInfo {
 
 newtype S sd sp (slbts :: LayoutArg) = S M.D
 
-allocateSs :: (Pointable n, ListToHeteroVarList slbtss) =>
+allocateSs :: (Storable n, ListToHeteroVarList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroVarList (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
@@ -211,7 +211,7 @@ instance (
 		writeToMiddle w : writeListToMiddle ws
 
 updateDs :: (
-	Pointable n, Pointable n',
+	Storable n, Storable n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
 	HeteroVarList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()

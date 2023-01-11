@@ -6,9 +6,12 @@ module Gpu.Vulkan.DescriptorSet.Middle (
 
 	D,
 
-	-- * Allocate and Update
+	-- * Allocate
 
 	allocateDs, AllocateInfo(..),
+
+	-- * Update
+
 	updateDs, Write(..), WriteSources(..), Copy(..) ) where
 
 import Gpu.Vulkan.DescriptorSet.Middle.Internal
