@@ -9,3 +9,4 @@ module Gpu.Vulkan.Component (
 	pattern SwizzleMaxEnum ) where
 
 import Gpu.Vulkan.Component.Middle
+import Gpu.Vulkan.Component.Enum
