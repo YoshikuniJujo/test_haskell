@@ -22,7 +22,6 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -37,6 +36,7 @@ import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Device.Enum
+import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
@@ -69,7 +69,7 @@ data CreateInfo n ns = CreateInfo {
 deriving instance (Show n, Show (HeteroVarList QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
-createInfoToCore :: (Pointable n, PointableToListM ns) =>
+createInfoToCore :: (Storable n, StorableToListM ns) =>
 	CreateInfo n ns -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -78,8 +78,8 @@ createInfoToCore CreateInfo {
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cqcis <- pointableToListM queueCreateInfoToCore qcis
+	(castPtr -> pnxt) <- maybeToStorable mnxt
+	cqcis <- storableToListM queueCreateInfoToCore qcis
 	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
@@ -103,7 +103,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPEnabledFeatures = pef }
 	ContT $ withForeignPtr fCreateInfo
 
-create :: (Pointable n, PointableToListM ns, Pointable c) =>
+create :: (Storable n, StorableToListM ns, Storable c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
@@ -114,7 +114,7 @@ create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
 		throwUnlessSuccess $ Result r
 		peek pdvc
 
-destroy :: Pointable d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Storable d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (D cdvc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cdvc pac
@@ -135,14 +135,14 @@ data QueueCreateInfo n = QueueCreateInfo {
 	queueCreateInfoQueuePriorities :: [Float] }
 	deriving Show
 
-queueCreateInfoToCore :: Pointable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
+queueCreateInfoToCore :: Storable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
 queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoNext = mnxt,
 	queueCreateInfoFlags = QueueCreateFlagBits flgs,
 	queueCreateInfoQueueFamilyIndex = QueueFamily.Index qfi,
 	queueCreateInfoQueuePriorities = qps
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	pqps <- ContT $ allocaArray (length qps)
 	lift $ pokeArray pqps qps
 	pure C.QueueCreateInfo {
