@@ -10,7 +10,7 @@ module Gpu.Vulkan.CommandPool (
 	pattern M.CreateTransientBit, pattern M.CreateResetCommandBufferBit,
 	pattern M.CreateProtectedBit, pattern M.CreateFlagBitsMaxEnum ) where
 
-import Foreign.Pointable
+import Foreign.Storable
 import Control.Exception
 
 import Gpu.Vulkan.CommandPool.Type
@@ -18,10 +18,11 @@ import Gpu.Vulkan.CommandPool.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.CommandPool.Middle as M
+import qualified Gpu.Vulkan.CommandPool.Enum as M
 
-create :: (Pointable n, Pointable n2, Pointable n3) =>
+create :: (Storable n, Storable c, Storable d) =>
 	Device.D sd -> M.CreateInfo n ->
-	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . C s -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\c -> M.destroy dvc c macd) (f . C)
