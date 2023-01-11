@@ -17,7 +17,7 @@ import Data.Kind
 import Data.HeteroList hiding (length)
 
 import Gpu.Vulkan
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Fence.Type as Fence

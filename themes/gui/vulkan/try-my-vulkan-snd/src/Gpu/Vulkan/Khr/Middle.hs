@@ -10,7 +10,7 @@ import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Misc
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M

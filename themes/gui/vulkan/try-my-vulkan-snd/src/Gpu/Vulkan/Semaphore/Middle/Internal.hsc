@@ -18,7 +18,7 @@ import Data.Default
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks.Middle.Internal as AllocationCallbacks

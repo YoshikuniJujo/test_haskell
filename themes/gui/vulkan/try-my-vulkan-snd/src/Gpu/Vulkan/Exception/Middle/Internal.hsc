@@ -3,7 +3,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-orphans #-}
 
-module Gpu.Vulkan.Exception where
+module Gpu.Vulkan.Exception.Middle.Internal where
 
 import Control.Exception
 import Control.Exception.Hierarchy

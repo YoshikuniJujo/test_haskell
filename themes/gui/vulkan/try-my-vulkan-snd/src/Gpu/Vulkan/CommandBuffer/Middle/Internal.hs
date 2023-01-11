@@ -26,7 +26,7 @@ import Data.Word
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Misc hiding (NullPtr)
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum
 import Gpu.Vulkan.Misc

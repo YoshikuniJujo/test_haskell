@@ -22,7 +22,7 @@ import qualified Data.Text as T
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Misc hiding (NullPtr)
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Instance.Enum
 

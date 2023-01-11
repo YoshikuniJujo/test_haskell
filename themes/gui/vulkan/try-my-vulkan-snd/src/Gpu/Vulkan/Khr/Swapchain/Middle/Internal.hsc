@@ -29,7 +29,7 @@ import qualified Data.Text as T
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Misc hiding (NullPtr)
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Enum

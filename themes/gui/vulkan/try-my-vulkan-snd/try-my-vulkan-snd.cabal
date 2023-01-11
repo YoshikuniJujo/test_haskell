@@ -103,6 +103,8 @@ library
       Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception
       Gpu.Vulkan.Exception.Enum
+      Gpu.Vulkan.Exception.Middle
+      Gpu.Vulkan.Exception.Middle.Internal
       Gpu.Vulkan.Ext.DebugUtils
       Gpu.Vulkan.Ext.DebugUtils.Enum
       Gpu.Vulkan.Ext.DebugUtils.Messenger

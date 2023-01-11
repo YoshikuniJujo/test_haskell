@@ -10,7 +10,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 
 import qualified Graphics.UI.GLFW as GlfwB
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal

@@ -15,7 +15,7 @@ import Control.Monad.Cont
 
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Sampler.Enum
 

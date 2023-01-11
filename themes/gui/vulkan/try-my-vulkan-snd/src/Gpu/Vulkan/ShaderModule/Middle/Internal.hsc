@@ -27,7 +27,7 @@ import Foreign.Pointable
 import Shaderc
 import Shaderc.EnumAuto
 
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal

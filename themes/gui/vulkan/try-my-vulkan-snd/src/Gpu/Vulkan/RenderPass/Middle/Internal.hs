@@ -18,7 +18,7 @@ import Data.HeteroList hiding (length)
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Core (Rect2d)
-import Gpu.Vulkan.Exception
+import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.RenderPass.Enum
 import Gpu.Vulkan.Misc
