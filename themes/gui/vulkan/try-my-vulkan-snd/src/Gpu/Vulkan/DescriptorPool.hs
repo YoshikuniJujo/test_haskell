@@ -19,6 +19,7 @@ import Gpu.Vulkan.DescriptorPool.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Middle as M
+import qualified Gpu.Vulkan.DescriptorPool.Enum as M
 
 create :: (Pointable n, Pointable c, Pointable d) =>
 	Device.D sd -> M.CreateInfo n ->
