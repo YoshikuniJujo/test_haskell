@@ -1,4 +1,3 @@
-{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle (
@@ -7,30 +6,14 @@ module Gpu.Vulkan.CommandBuffer.Middle (
 
 	C,
 
-	-- * Allocate
+	-- * Allocate and Free
 
 	allocate, freeCs, AllocateInfo(..),
-	Level,
-	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
 
-	-- * Begin and End
+	-- * Begin, End and Reset
 
-	begin, end,
-
-	BeginInfo(..),
-	UsageFlags, UsageFlagBits,
-	pattern UsageOneTimeSubmitBit, pattern UsageRenderPassContinueBit,
-	pattern UsageSimultaneousUseBit, pattern UsageFlagBitsMaxEnum,
-
-	InheritanceInfo(..),
-
-	-- * Reset
-
-	reset,
-	ResetFlags, ResetFlagBits,
-	pattern ResetReleaseResourcesBit, pattern ResetFlagBitsMaxEnum
+	begin, end, reset, BeginInfo(..), InheritanceInfo(..),
 
 	) where
 
 import Gpu.Vulkan.CommandBuffer.Middle.Internal
-import Gpu.Vulkan.CommandBuffer.Enum

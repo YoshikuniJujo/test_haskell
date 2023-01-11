@@ -17,7 +17,7 @@ module Gpu.Vulkan.CommandBuffer.Middle.Internal (
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Pointable
+import Foreign.Storable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -29,6 +29,7 @@ import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum
+import Gpu.Vulkan.Misc
 
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
@@ -44,7 +45,7 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoCommandBufferCount :: Word32 }
 	deriving Show
 
-allocateInfoToCore :: Pointable n =>
+allocateInfoToCore :: Storable n =>
 	AllocateInfo n -> ContT r IO (Ptr C.AllocateInfo)
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
@@ -52,7 +53,7 @@ allocateInfoToCore AllocateInfo {
 	allocateInfoLevel = Level lvl,
 	allocateInfoCommandBufferCount = cbc
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	let	C.AllocateInfo_ fAllocateInfo = C.AllocateInfo {
 			C.allocateInfoSType = (),
 			C.allocateInfoPNext = pnxt,
@@ -68,7 +69,7 @@ data C = C {
 newC :: C.C -> IO C
 newC c = C <$> newIORef nullPtr <*> pure c
 
-allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C]
+allocate :: Storable n => Device.D -> AllocateInfo n -> IO [C]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newC =<< do
 	pai <- allocateInfoToCore ai
 	pc <- ContT $ allocaArray cbc
@@ -88,14 +89,14 @@ instance Default (BeginInfo n n') where
 		beginInfoFlags = UsageFlagsZero,
 		beginInfoInheritanceInfo = Nothing }
 
-beginInfoToCore :: (Pointable n, Pointable n') =>
+beginInfoToCore :: (Storable n, Storable n') =>
 	BeginInfo n n' -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoFlags = UsageFlagBits flgs,
 	beginInfoInheritanceInfo = mii
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	pii <- maybe (pure NullPtr) inheritanceInfoToCore mii
 	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
 			C.beginInfoSType = (),
@@ -113,7 +114,7 @@ data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoQueryFlags :: QueryControlFlags,
 	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
 
-inheritanceInfoToCore :: Pointable n =>
+inheritanceInfoToCore :: Storable n =>
 	InheritanceInfo n -> ContT r IO (Ptr C.InheritanceInfo)
 inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoNext = mnxt,
@@ -124,7 +125,7 @@ inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoQueryFlags = QueryControlFlagBits qf,
 	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- maybeToStorable mnxt
 	fb' <- lift $ Framebuffer.fToCore fb
 	let	C.InheritanceInfo_ fInheritanceInfo =  C.InheritanceInfo {
 			C.inheritanceInfoSType = (),
@@ -137,7 +138,7 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoPipelineStatistics = ps }
 	ContT $ withForeignPtr fInheritanceInfo
 
-begin :: (Pointable n, Pointable n') => C -> BeginInfo n n' -> IO ()
+begin :: (Storable n, Storable n') => C -> BeginInfo n n' -> IO ()
 begin (C _ c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi

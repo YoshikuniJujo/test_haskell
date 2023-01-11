@@ -22,7 +22,7 @@ module Gpu.Vulkan.CommandBuffer (
 
 	) where
 
-import Foreign.Pointable
+import Foreign.Storable
 import Control.Exception
 import Data.Kind
 import Data.HeteroList
@@ -73,21 +73,21 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoLevelNewM = lvl }
 
 allocateNew ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
 	(f . heteroVarListMap C)
 
-allocate :: Pointable n =>
+allocate :: Storable n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (C . CC <$>))
 
-begin :: (Pointable n, Pointable n') =>
+begin :: (Storable n, Storable n') =>
 	C s vs -> M.BeginInfo n n' -> IO a -> IO a
 begin (C (CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
@@ -95,7 +95,7 @@ reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
-	(Pointable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
 	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroVarList CC vss)
 allocateNewM dvc ai = listToHeteroVarList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
