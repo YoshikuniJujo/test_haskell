@@ -58,9 +58,7 @@ library
       Gpu.Vulkan.BufferView
       Gpu.Vulkan.BufferView.Middle
       Gpu.Vulkan.BufferView.Middle.Internal
-      Gpu.Vulkan.ColorComponent
       Gpu.Vulkan.ColorComponent.Enum
-      Gpu.Vulkan.ColorComponent.Middle
       Gpu.Vulkan.Command
       Gpu.Vulkan.Command.Middle
       Gpu.Vulkan.Command.Tmp
