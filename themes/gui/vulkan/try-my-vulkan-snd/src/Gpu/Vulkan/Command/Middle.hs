@@ -37,6 +37,7 @@ module Gpu.Vulkan.Command.Middle (
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList hiding (length)
@@ -67,7 +68,7 @@ import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
-beginRenderPass :: (Storable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
 	CommandBuffer.M.C -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.M.C _ cb)
 	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do
@@ -179,7 +180,7 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	StorableHeteroMap ns, StorableHeteroMap ns', StorableHeteroMap ns''
+	PointableHeteroMap ns, PointableHeteroMap ns', PointableHeteroMap ns''
 	) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
@@ -190,15 +191,15 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs = ($ pure) $ runContT do
-	cmbs <- storableHeteroMapM mbs Memory.M.barrierToCore
+	cmbs <- pointableHeteroMapM mbs Memory.M.barrierToCore
 	let	mbc = length cmbs
 	pmbs <- ContT $ allocaArray mbc
 	lift $ pokeArray pmbs cmbs
-	cbbs <- storableHeteroMapM bbs Buffer.M.memoryBarrierToCore
+	cbbs <- pointableHeteroMapM bbs Buffer.M.memoryBarrierToCore
 	let	bbc = length cbbs
 	pbbs <- ContT $ allocaArray bbc
 	lift $ pokeArray pbbs cbbs
-	cibs <- storableHeteroMapM ibs Image.memoryBarrierToCore
+	cibs <- pointableHeteroMapM ibs Image.memoryBarrierToCore
 	let	ibc = length cibs
 	pibs <- ContT $ allocaArray ibc
 	lift $ pokeArray pibs cibs

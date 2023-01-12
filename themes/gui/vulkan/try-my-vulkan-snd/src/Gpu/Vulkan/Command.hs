@@ -155,9 +155,9 @@ pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
 		(PushConstant.offset @whole @ts 0) xs
 
 pipelineBarrier :: (
-	StorableHeteroMap ns,
-	StorableHeteroMap (Buffer.FirstOfFives nsmsbnmobjs),
-	StorableHeteroMap (Image.FirstOfFives nsismnmfmts),
+	PointableHeteroMap ns,
+	PointableHeteroMap (Buffer.FirstOfFives nsmsbnmobjs),
+	PointableHeteroMap (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->

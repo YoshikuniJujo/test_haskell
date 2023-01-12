@@ -11,6 +11,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Monad.Cont
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -30,13 +31,13 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndex :: QueueFamily.Index }
 	deriving Show
 
-createInfoToCore :: Storable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoQueueFamilyIndex = QueueFamily.Index qfi
 	} = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
@@ -46,7 +47,7 @@ createInfoToCore CreateInfo {
 
 newtype C = C C.C deriving Show
 
-create :: (Storable n, Storable c) =>
+create :: (Pointable n, Pointable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO C
 create (Device.D dvc) ci mac = ($ pure) . runContT $ C <$> do
 	pci <- createInfoToCore ci
@@ -56,7 +57,7 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ C <$> do
 		throwUnlessSuccess $ Result r
 		peek pc
 
-destroy :: Storable d =>
+destroy :: Pointable d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C c) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

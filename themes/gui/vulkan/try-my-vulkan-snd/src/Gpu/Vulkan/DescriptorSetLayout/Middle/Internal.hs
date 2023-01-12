@@ -12,6 +12,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
@@ -20,7 +21,6 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.DescriptorSetLayout.Enum
-import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
@@ -61,12 +61,12 @@ data CreateInfo n = CreateInfo {
 	createInfoBindings :: [Binding] }
 	deriving Show
 
-createInfoToCore :: Storable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoBindings = length &&& id -> (bc, bs) } = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pbs <- ContT $ allocaArray bc
 	cbs <- bindingToCore `mapM` bs
 	lift $ pokeArray pbs cbs
@@ -78,7 +78,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPBindings = pbs }
 	ContT $ withForeignPtr fci
 
-create :: (Storable n, Storable c) =>
+create :: (Pointable n, Pointable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
@@ -88,7 +88,7 @@ create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pl
 
-destroy :: Storable d =>
+destroy :: Pointable d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (L l) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
@@ -17,7 +17,7 @@ module Gpu.Vulkan.CommandBuffer.Middle.Internal (
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable
+import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -25,11 +25,10 @@ import Data.IORef
 import Data.Word
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc hiding (NullPtr)
 
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
@@ -45,7 +44,7 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoCommandBufferCount :: Word32 }
 	deriving Show
 
-allocateInfoToCore :: Storable n =>
+allocateInfoToCore :: Pointable n =>
 	AllocateInfo n -> ContT r IO (Ptr C.AllocateInfo)
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
@@ -53,7 +52,7 @@ allocateInfoToCore AllocateInfo {
 	allocateInfoLevel = Level lvl,
 	allocateInfoCommandBufferCount = cbc
 	} = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	let	C.AllocateInfo_ fAllocateInfo = C.AllocateInfo {
 			C.allocateInfoSType = (),
 			C.allocateInfoPNext = pnxt,
@@ -69,7 +68,7 @@ data C = C {
 newC :: C.C -> IO C
 newC c = C <$> newIORef nullPtr <*> pure c
 
-allocate :: Storable n => Device.D -> AllocateInfo n -> IO [C]
+allocate :: Pointable n => Device.D -> AllocateInfo n -> IO [C]
 allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newC =<< do
 	pai <- allocateInfoToCore ai
 	pc <- ContT $ allocaArray cbc
@@ -89,14 +88,14 @@ instance Default (BeginInfo n n') where
 		beginInfoFlags = UsageFlagsZero,
 		beginInfoInheritanceInfo = Nothing }
 
-beginInfoToCore :: (Storable n, Storable n') =>
+beginInfoToCore :: (Pointable n, Pointable n') =>
 	BeginInfo n n' -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoFlags = UsageFlagBits flgs,
 	beginInfoInheritanceInfo = mii
 	} = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pii <- maybe (pure NullPtr) inheritanceInfoToCore mii
 	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
 			C.beginInfoSType = (),
@@ -114,7 +113,7 @@ data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoQueryFlags :: QueryControlFlags,
 	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
 
-inheritanceInfoToCore :: Storable n =>
+inheritanceInfoToCore :: Pointable n =>
 	InheritanceInfo n -> ContT r IO (Ptr C.InheritanceInfo)
 inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoNext = mnxt,
@@ -125,7 +124,7 @@ inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoQueryFlags = QueryControlFlagBits qf,
 	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
 	} = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	fb' <- lift $ Framebuffer.fToCore fb
 	let	C.InheritanceInfo_ fInheritanceInfo =  C.InheritanceInfo {
 			C.inheritanceInfoSType = (),
@@ -138,7 +137,7 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoPipelineStatistics = ps }
 	ContT $ withForeignPtr fInheritanceInfo
 
-begin :: (Storable n, Storable n') => C -> BeginInfo n n' -> IO ()
+begin :: (Pointable n, Pointable n') => C -> BeginInfo n n' -> IO ()
 begin (C _ c) bi = ($ pure) $ runContT do
 	pbi <- beginInfoToCore bi
 	lift do	r <- C.begin c pbi
