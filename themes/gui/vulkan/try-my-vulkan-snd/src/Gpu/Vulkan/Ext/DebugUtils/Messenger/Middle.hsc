@@ -46,15 +46,15 @@ enum "CallbackDataFlags" ''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
 
 instance Default CallbackDataFlags where def = CallbackDataFlagsZero
 
-data CallbackData n n2 n3 n4 = CallbackData {
+data CallbackData n ql cbl obj = CallbackData {
 	callbackDataNext :: Maybe n,
 	callbackDataFlags :: CallbackDataFlags,
 	callbackDataMessageIdName :: T.Text,
 	callbackDataMessageIdNumber :: Int32,
 	callbackDataMessage :: T.Text,
-	callbackDataQueueLabels :: [Label n2],
-	callbackDataCmdBufLabels :: [Label n3],
-	callbackDataObjects :: [ObjectNameInfo n4] }
+	callbackDataQueueLabels :: [Label ql],
+	callbackDataCmdBufLabels :: [Label cbl],
+	callbackDataObjects :: [ObjectNameInfo obj] }
 	deriving Show
 
 callbackDataFromCore ::
@@ -91,9 +91,9 @@ callbackDataFromCore C.CallbackData {
 		callbackDataCmdBufLabels = cbls,
 		callbackDataObjects = objs }
 
-type FnCallback n n2 n3 n4 ud =
-	MessageSeverityFlagBits -> MessageTypeFlags -> CallbackData n n2 n3 n4 -> Maybe ud ->
-	IO Bool
+type FnCallback cb ql cbl obj ud =
+	MessageSeverityFlagBits -> MessageTypeFlags ->
+	CallbackData cb ql cbl obj -> Maybe ud -> IO Bool
 
 fnCallbackToCore ::
 	(Storable n, Storable n2, Storable n3, Storable n4, Storable ud) =>
