@@ -1,6 +1,7 @@
 memo
 ====
 
+* [ ] rename Pointable to Pokable
 * [ ] Vk.CommandBuffer.C s
     + [ ] Vk.CommandBuffer.C' s vs
     + [ ] withC :: C s -> (C' s vs -> IO a) -> IO s

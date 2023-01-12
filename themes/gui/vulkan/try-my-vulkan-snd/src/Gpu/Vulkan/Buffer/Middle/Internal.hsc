@@ -18,6 +18,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.IORef
@@ -50,7 +51,7 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
-createInfoToCore :: Storable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -59,7 +60,7 @@ createInfoToCore CreateInfo {
 	createInfoSharingMode = SharingMode sm,
 	createInfoQueueFamilyIndices =
 		length &&& (QueueFamily.unIndex <$>) -> (qfic, qfis) } = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis
 	let	C.CreateInfo_ fci = C.CreateInfo {
@@ -76,7 +77,7 @@ createInfoToCore CreateInfo {
 
 newtype B = B C.B deriving (Show, Eq, Storable)
 
-create :: (Storable n, Storable c) =>
+create :: (Pointable n, Pointable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO B
 create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
@@ -86,7 +87,7 @@ create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pb
 
-destroy :: Storable d =>
+destroy :: Pointable d =>
 	Device.D -> B -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (B b) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -115,7 +116,7 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierSize :: Device.Size }
 	deriving Show
 
-memoryBarrierToCore :: Storable n =>
+memoryBarrierToCore :: Pointable n =>
 	MemoryBarrier n -> ContT r IO C.MemoryBarrier
 memoryBarrierToCore MemoryBarrier {
 	memoryBarrierNext = mnxt,
@@ -126,7 +127,7 @@ memoryBarrierToCore MemoryBarrier {
 	memoryBarrierBuffer = B b,
 	memoryBarrierOffset = Device.Size ofst,
 	memoryBarrierSize = Device.Size sz } = do
-	(castPtr -> pnxt) <- maybeToStorable mnxt
+	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pure C.MemoryBarrier {
 		C.memoryBarrierSType = (),
 		C.memoryBarrierPNext = pnxt,
