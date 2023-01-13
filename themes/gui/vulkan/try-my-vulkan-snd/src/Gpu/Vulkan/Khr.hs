@@ -87,24 +87,24 @@ deriving instance (
 	Show (HeteroVarList SwapchainImageIndex sscs)) =>
 	Show (PresentInfo n sws sscs)
 
-presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfoMiddle n
+presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n
 presentInfoFromMiddle PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
 		heteroVarListToList (\(Semaphore.S s) -> s) -> wss,
 	presentInfoSwapchainImageIndices =
 		heteroVarListToList swapchainImageIndexToMiddle -> sciis
-	} = M.PresentInfoMiddle {
-		M.presentInfoNextMiddle = mnxt,
-		M.presentInfoWaitSemaphoresMiddle = wss,
-		M.presentInfoSwapchainImageIndicesMiddle = sciis }
+	} = M.PresentInfo {
+		M.presentInfoNext = mnxt,
+		M.presentInfoWaitSemaphores = wss,
+		M.presentInfoSwapchainImageIndices = sciis }
 
 queuePresentNew ::
 	Pointable n => Queue.Q -> PresentInfoNew n sws scfmt sscs -> IO ()
 queuePresentNew q = queuePresent q . presentInfoFromNew
 
 queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
-queuePresent q = M.queuePresentMiddle q . presentInfoFromMiddle
+queuePresent q = M.queuePresent q . presentInfoFromMiddle
 
 acquireNextImageResultNewM :: [Result] -> Device.M.D ->
 	Swapchain.SNew ssc scfmt -> Word64 -> Maybe (Semaphore.S ss) -> Maybe Fence.F -> IO Word32

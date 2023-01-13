@@ -1,8 +1,17 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Middle where
+module Gpu.Vulkan.Khr.Middle (
+
+	-- * Acquire Next Image
+
+	acquireNextImage, acquireNextImageResult,
+
+	-- * Queue Present
+
+	queuePresent, PresentInfo(..) ) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Storable
@@ -44,8 +53,8 @@ acquireNextImageResult sccs
 
 ---------------------------------------------------------------------------
 
-queuePresentMiddle :: Pointable n => Queue.Q -> PresentInfoMiddle n -> IO ()
-queuePresentMiddle (Queue.Q q) pi_ = ($ pure) $ runContT do
+queuePresent :: Pointable n => Queue.Q -> PresentInfo n -> IO ()
+queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
 	cpi@(C.PresentInfo_ fpi) <- presentInfoMiddleToCore pi_
 	ppi <- ContT $ withForeignPtr fpi
 	lift do r <- C.queuePresent q ppi
@@ -54,20 +63,20 @@ queuePresentMiddle (Queue.Q q) pi_ = ($ pure) $ runContT do
 		throwUnlessSuccesses $ Result <$> rs
 		throwUnlessSuccess $ Result r
 
-data PresentInfoMiddle n = PresentInfoMiddle {
-	presentInfoNextMiddle :: Maybe n,
-	presentInfoWaitSemaphoresMiddle :: [Semaphore.M.S],
-	presentInfoSwapchainImageIndicesMiddle ::
+data PresentInfo n = PresentInfo {
+	presentInfoNext :: Maybe n,
+	presentInfoWaitSemaphores :: [Semaphore.M.S],
+	presentInfoSwapchainImageIndices ::
 		[(Swapchain.M.S, Word32)]
 	} deriving Show
 
 presentInfoMiddleToCore ::
-	Pointable n => PresentInfoMiddle n -> ContT r IO C.PresentInfo
-presentInfoMiddleToCore PresentInfoMiddle {
-	presentInfoNextMiddle = mnxt,
-	presentInfoWaitSemaphoresMiddle =
+	Pointable n => PresentInfo n -> ContT r IO C.PresentInfo
+presentInfoMiddleToCore PresentInfo {
+	presentInfoNext = mnxt,
+	presentInfoWaitSemaphores =
 		(length &&& id) . (Semaphore.M.unS <$>) -> (wsc, wss),
-	presentInfoSwapchainImageIndicesMiddle =
+	presentInfoSwapchainImageIndices =
 		(length &&& id . unzip) -> (scc, (scs, iis)) } = do
 	scs' <- lift $ Swapchain.M.sToCore `mapM` scs
 	(castPtr -> pnxt) <- maybeToPointer mnxt
