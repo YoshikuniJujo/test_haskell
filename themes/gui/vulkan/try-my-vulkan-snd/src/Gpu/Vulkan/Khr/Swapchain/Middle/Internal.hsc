@@ -79,8 +79,8 @@ data CreateInfo n = CreateInfo {
 	createInfoOldSwapchain :: Maybe S }
 	deriving Show
 
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO S
+create :: (Pointable n, Pointable c) =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO S
 create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
 	pci <- createInfoToCoreOld ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -106,8 +106,8 @@ recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
 		C.destroy dvc sco pacd
 	where ex = createInfoImageExtent ci
 
-destroy :: Pointable n =>
-	Device.D -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d =>
+	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	sc' <- lift $ sToCore sc
