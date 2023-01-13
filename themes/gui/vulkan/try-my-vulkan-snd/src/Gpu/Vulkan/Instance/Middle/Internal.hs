@@ -30,15 +30,15 @@ import qualified Gpu.Vulkan.Instance.Core as C
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
 
-data CreateInfo n n' = CreateInfo {
+data CreateInfo n a = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoApplicationInfo :: Maybe (ApplicationInfo n'),
+	createInfoApplicationInfo :: Maybe (ApplicationInfo a),
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text] }
 	deriving Show
 
-instance Default (CreateInfo n n') where
+instance Default (CreateInfo n a) where
 	def = CreateInfo {
 		createInfoNext = Nothing,
 		createInfoFlags = CreateFlagsZero,
@@ -73,8 +73,8 @@ createInfoToCore CreateInfo {
 
 newtype I = I C.I deriving Show
 
-create :: (Pointable n, Pointable n2, Pointable n3) =>
-	CreateInfo n n2 -> Maybe (AllocationCallbacks.A n3) -> IO I
+create :: (Pointable n, Pointable a, Pointable c) =>
+	CreateInfo n a -> Maybe (AllocationCallbacks.A c) -> IO I
 create ci mac = (I <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -83,7 +83,7 @@ create ci mac = (I <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pist
 
-destroy :: (Pointable n) => I -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d => I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (I cist) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cist pac
