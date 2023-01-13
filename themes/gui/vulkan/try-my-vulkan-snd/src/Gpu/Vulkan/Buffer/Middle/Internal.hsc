@@ -38,8 +38,6 @@ import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 
-import Gpu.Vulkan.Misc
-
 #include <vulkan/vulkan.h>
 
 data CreateInfo n = CreateInfo {

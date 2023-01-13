@@ -10,10 +10,10 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Gpu.Vulkan.Misc hiding (NullPtr)
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
+import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan.PhysicalDevice.Middle.Internal as PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily

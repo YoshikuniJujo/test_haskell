@@ -17,7 +17,6 @@ import Control.Monad.Cont
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandPool.Enum
-import Gpu.Vulkan.Misc
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks

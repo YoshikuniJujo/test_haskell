@@ -82,11 +82,8 @@ pokeText mx dst t = ($ pure) $ runContT do
 	lift do	copyBytes dst src ln'
 		poke (dst `plusPtr` ln' :: Ptr CChar) 0
 
-cstrToText, cstringToText :: CString -> IO Txt.Text
+cstrToText :: CString -> IO Txt.Text
 cstrToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
-cstringToText = cstrToText
-
-{-# DEPRECATED cstringToText "use cstrToText instead" #-}
 
 cstringLength :: CString -> IO Int
 cstringLength pc = do
@@ -127,8 +124,5 @@ allocaAndPokeArray (length &&& id -> (xc, xs)) = do
 
 maybeToStorable :: Storable a => Maybe a -> ContT r IO (Ptr a)
 maybeToStorable = \case
-	Nothing -> pure NullPtr
+	Nothing -> pure nullPtr
 	Just x -> ContT $ \f -> alloca \p -> poke p x >> f p
-
-pattern NullPtr :: Ptr a
-pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr

@@ -28,7 +28,7 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.CommandBuffer.Enum
-import Gpu.Vulkan.Misc hiding (NullPtr)
+import Gpu.Vulkan.Misc
 
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
