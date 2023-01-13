@@ -61,8 +61,8 @@ maybeFToCore :: Maybe F -> C.F
 maybeFToCore Nothing = NullHandle
 maybeFToCore (Just f) = fToCore f
 
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO F
+create :: (Pointable n, Pointable c) =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
 create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -71,8 +71,8 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
 		throwUnlessSuccess $ Result r
 		peek pf
 
-destroy :: Pointable n =>
-	Device.D -> F -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d =>
+	Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (F f) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc f pac

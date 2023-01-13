@@ -1,7 +1,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Fence.Middle (
-	F, CreateInfo(..), create, destroy,
+
+	-- * Type
+
+	F,
+
+	-- * Create and Destroy
+
+	create, destroy, CreateInfo(..),
+
+	-- * Wait and Reset
 
 	waitForFs, resetFs ) where
 
