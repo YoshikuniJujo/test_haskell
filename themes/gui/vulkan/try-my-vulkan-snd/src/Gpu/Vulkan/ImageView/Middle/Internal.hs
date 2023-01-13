@@ -73,8 +73,8 @@ iToCore (I i) = readIORef i
 iFromCore :: C.I -> IO I
 iFromCore i = I <$> newIORef i
 
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
+create :: (Pointable n, Pointable c) =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . iFromCore =<< do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -97,8 +97,8 @@ recreate (Device.D dvc) ci macc macd (I ri) = ($ pure) $ runContT do
 	lift . C.destroy dvc io =<< AllocationCallbacks.maybeToCore macd
 	lift $ writeIORef ri =<< peek pView
 
-destroy :: Pointable n =>
-	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d =>
+	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) iv mac = do
 	iv' <- iToCore iv
 	($ pure) . runContT $ lift . C.destroy dvc iv' =<< AllocationCallbacks.maybeToCore mac

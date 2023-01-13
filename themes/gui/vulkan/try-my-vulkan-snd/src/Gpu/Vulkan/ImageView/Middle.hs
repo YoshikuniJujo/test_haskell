@@ -1,7 +1,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView.Middle (
-	I, CreateInfo(..), create, recreate, destroy
-	) where
+
+	-- * Type
+
+	I,
+
+	-- * Create and Destroy
+
+	create, recreate, destroy, CreateInfo(..) ) where
 
 import Gpu.Vulkan.ImageView.Middle.Internal
