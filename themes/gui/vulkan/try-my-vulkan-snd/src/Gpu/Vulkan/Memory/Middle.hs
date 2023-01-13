@@ -1,14 +1,27 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Memory.Middle (
-	M, AllocateInfo(..), allocate, reallocate, free,
+
+	-- * Type
+
+	M,
+
+	-- * Allocate and Free
+
+	allocate, reallocate, free, AllocateInfo(..),
+
+
+	-- * Map and Unmnap
+
 	MapFlags(..), map, unmap,
+
+	-- * Requirements and Barrier
 
 	Requirements(..), Barrier(..),
 
-	MType(..),
-	TypeBits, TypeIndex, elemTypeIndex,
-	) where
+	-- * Memory Type
+
+	MType(..), TypeBits, TypeIndex, elemTypeIndex ) where
 
 import Prelude hiding (map)
 
