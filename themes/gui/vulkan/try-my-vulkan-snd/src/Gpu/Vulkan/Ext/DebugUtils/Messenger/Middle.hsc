@@ -8,10 +8,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle (
-	M, CreateInfo(..), create, destroy,
 
-	FnCallback, CallbackData(..)
-	) where
+	-- * Type
+
+	M,
+
+	-- * Create and Destroy
+
+	create, destroy, CreateInfo(..), CreateFlags,
+	FnCallback, CallbackData(..), CallbackDataFlags ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr hiding (newForeignPtr)
@@ -108,24 +113,24 @@ enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
 
 instance Default CreateFlags where def = zeroBits
 
-data CreateInfo n n2 n3 n4 n5 ud = CreateInfo {
+data CreateInfo n cb ql cbl obj ud = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoMessageSeverity :: MessageSeverityFlags,
 	createInfoMessageType :: MessageTypeFlags,
-	createInfoFnUserCallback :: FnCallback n2 n3 n4 n5 ud,
+	createInfoFnUserCallback :: FnCallback cb ql cbl obj ud,
 	createInfoUserData :: Maybe ud }
 
-instance
-	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
-		Pointable ud, Storable ud) =>
-	Pointable (CreateInfo n n2 n3 n4 n5 ud) where
+instance (
+	Pointable n,
+	Storable cb, Storable ql, Storable cbl, Storable obj, Storable ud) =>
+	Pointable (CreateInfo n cb ql cbl obj ud) where
 	withPointer = runContT . (castPtr <$>) . createInfoToCore
 
-createInfoToCore ::
-	(Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
-		Pointable ud, Storable ud) =>
-	CreateInfo n n2 n3 n4 n5 ud -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: (
+	Pointable n,
+	Storable cb, Storable ql, Storable cbl, Storable obj, Storable ud ) =>
+	CreateInfo n cb ql cbl obj ud -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -136,7 +141,7 @@ createInfoToCore CreateInfo {
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pccb <- lift . C.wrapCallback $ fnCallbackToCore cb
-	(castPtr -> pud) <- maybeToPointer mud
+	(castPtr -> pud) <- maybeToStorable mud
 	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
@@ -150,10 +155,10 @@ createInfoToCore CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (
-	Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
-	Pointable n6, Pointable ud, Storable ud ) =>
-	Instance.I -> CreateInfo n n2 n3 n4 n5 ud ->
-	Maybe (AllocationCallbacks.A n6) -> IO M
+	Pointable n, Storable cb, Storable ql, Storable cbl, Storable obj,
+	Storable ud, Pointable c ) =>
+	Instance.I -> CreateInfo n cb ql cbl obj ud ->
+	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
 	cci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -162,7 +167,7 @@ create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
 		throwUnlessSuccess $ Result r
 		peek pmsngr
 
-destroy :: Pointable n =>
-	Instance.I -> M -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d =>
+	Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Instance.I ist) (M msgr) mac = ($ pure) . runContT
 	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac
