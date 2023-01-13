@@ -771,8 +771,8 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfoNew 
 		Vk.Ppl.DptStnSt.createInfoDepthCompareOp = Vk.CompareOpLess,
 		Vk.Ppl.DptStnSt.createInfoDepthBoundsTestEnable = False,
 		Vk.Ppl.DptStnSt.createInfoStencilTestEnable = False,
-		Vk.Ppl.DptStnSt.createInfoFront = Vk.M.stencilOpStateZero,
-		Vk.Ppl.DptStnSt.createInfoBack = Vk.M.stencilOpStateZero,
+		Vk.Ppl.DptStnSt.createInfoFront = def,
+		Vk.Ppl.DptStnSt.createInfoBack = def,
 		Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
 		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 

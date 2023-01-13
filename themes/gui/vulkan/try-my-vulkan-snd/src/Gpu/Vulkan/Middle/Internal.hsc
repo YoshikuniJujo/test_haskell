@@ -14,7 +14,7 @@ module Gpu.Vulkan.Middle.Internal (
 	LayerProperties(..), layerPropertiesFromCore,
 	ExtensionProperties(..), extensionPropertiesFromCore,
 	ObjectHandle(..),
-	StencilOpState(..), stencilOpStateToCore, stencilOpStateZero,
+	StencilOpState(..), stencilOpStateToCore,
 	ClearValue(..), ClearValuesToCore(..), clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
@@ -30,6 +30,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
+import Data.Default
 import Data.HeteroList hiding (length)
 import Data.Word
 import Data.Color.Internal
@@ -135,6 +136,8 @@ data StencilOpState = StencilOpState {
 	stencilOpStateWriteMask :: Word32,
 	stencilOpStateReference :: Word32 }
 	deriving Show
+
+instance Default StencilOpState where def = stencilOpStateZero
 
 stencilOpStateZero :: StencilOpState
 stencilOpStateZero = StencilOpState {
