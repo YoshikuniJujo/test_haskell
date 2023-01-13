@@ -24,7 +24,7 @@ import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Instance.Enum
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.Instance.Core as C
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal

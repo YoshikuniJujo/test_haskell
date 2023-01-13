@@ -13,7 +13,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Monad.Cont
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum

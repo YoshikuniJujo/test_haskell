@@ -4,7 +4,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc where
+module Gpu.Vulkan.Misc.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.Marshal

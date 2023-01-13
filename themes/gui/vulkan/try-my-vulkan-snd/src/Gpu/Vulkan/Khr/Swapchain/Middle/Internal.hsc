@@ -33,7 +33,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks

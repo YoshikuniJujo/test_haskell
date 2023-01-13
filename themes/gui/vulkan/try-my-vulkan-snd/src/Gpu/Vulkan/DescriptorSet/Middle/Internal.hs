@@ -19,7 +19,7 @@ import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Misc hiding (NullPtr)
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.BufferView.Middle.Internal as BufferView

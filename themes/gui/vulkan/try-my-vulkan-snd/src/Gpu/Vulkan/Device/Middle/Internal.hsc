@@ -36,7 +36,7 @@ import qualified Data.Text as T
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Device.Enum
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks

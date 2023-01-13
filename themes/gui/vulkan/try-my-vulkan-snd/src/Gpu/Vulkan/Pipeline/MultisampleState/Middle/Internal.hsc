@@ -16,7 +16,7 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.Sample.Middle.Internal as Sample
 import Gpu.Vulkan.Sample.Enum as Sample

@@ -18,7 +18,7 @@ import Foreign.Storable
 import Control.Monad.Cont
 import Data.Word
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 

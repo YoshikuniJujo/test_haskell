@@ -37,7 +37,7 @@ import Data.Color.Internal
 
 import qualified Data.Text as T
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Core as C

@@ -34,7 +34,7 @@ import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.PhysicalDevice.Enum
 import Gpu.Vulkan.PhysicalDevice.Struct
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.Instance as Instance
 import qualified Gpu.Vulkan.Instance.Type as Instance

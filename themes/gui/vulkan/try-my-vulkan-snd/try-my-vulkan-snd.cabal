@@ -160,6 +160,8 @@ library
       Gpu.Vulkan.Middle
       Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.Misc
+      Gpu.Vulkan.Misc.Middle
+      Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Middle

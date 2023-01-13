@@ -17,7 +17,7 @@ import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Misc
+import Gpu.Vulkan.Misc.Middle.Internal
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Pipeline.RasterizationState.Core as C
