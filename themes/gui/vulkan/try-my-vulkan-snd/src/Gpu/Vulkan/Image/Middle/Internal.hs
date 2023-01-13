@@ -118,8 +118,8 @@ createInfoToCore CreateInfo {
 			C.createInfoInitialLayout = lyt }
 	ContT $ withForeignPtr fci
 
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO I
+create :: (Pointable n, Pointable c) =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = (I <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -214,8 +214,8 @@ subresourceLayersToCore SubresourceLayers {
 		C.subresourceLayersBaseArrayLayer = bal,
 		C.subresourceLayersLayerCount = lc }
 
-destroy :: Pointable n =>
-	Device.D -> I -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d =>
+	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (I rimg) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift do	(_, img) <- readIORef rimg
