@@ -114,9 +114,6 @@ bool32ToBool _ = error $
 	"VK_TRUE or VK_FALSE into a Gpu.Vulkan implementation " ++
 	"where a VkBool32 is expected"
 
-nil :: Maybe (t ())
-nil = Nothing
-
 allocaAndPokeArray :: Storable a => [a] -> ContT r IO (Int, Ptr a)
 allocaAndPokeArray (length &&& id -> (xc, xs)) = do
 	p <- ContT $ allocaArray xc
