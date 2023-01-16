@@ -1,6 +1,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute.Middle (
-	C, CreateInfo(..), CreateInfoListToCore, createCs, destroy ) where
+
+	-- * Type
+
+	C,
+
+	-- * Create and Destroy
+
+	createCs, destroy, CreateInfo(..), CreateInfoListToCore ) where
 
 import Gpu.Vulkan.Pipeline.Compute.Middle.Internal
