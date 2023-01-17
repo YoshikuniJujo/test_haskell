@@ -69,8 +69,8 @@ createInfoToCore CreateInfo {
 
 newtype R = R C.R deriving Show
 
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A n') -> IO R
+create :: (Pointable n, Pointable c) =>
+	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO R
 create (Device.D dvc) ci mac = ($ pure) . runContT $ R <$> do
 	pci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -79,7 +79,7 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ R <$> do
 		throwUnlessSuccess $ Result r
 		peek pr
 
-destroy :: Pointable n => Device.D -> R -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d => Device.D -> R -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (R r) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc r pac
