@@ -57,25 +57,25 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 
-data CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
+data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoStages :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
-	createInfoVertexInputState :: Maybe (VertexInputState.M.CreateInfo nv),
+	createInfoVertexInputState :: Maybe (VertexInputState.M.CreateInfo vis),
 	createInfoInputAssemblyState ::
-		Maybe (InputAssemblyState.CreateInfo n3),
-	createInfoTessellationState :: Maybe (TessellationState.CreateInfo n4),
-	createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
+		Maybe (InputAssemblyState.CreateInfo ias),
+	createInfoTessellationState :: Maybe (TessellationState.CreateInfo ts),
+	createInfoViewportState :: Maybe (ViewportState.CreateInfo vs),
 	createInfoRasterizationState ::
-		Maybe (RasterizationState.CreateInfo n6),
-	createInfoMultisampleState :: Maybe (MultisampleState.CreateInfo n7),
-	createInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo n8),
-	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo n9),
-	createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
+		Maybe (RasterizationState.CreateInfo rs),
+	createInfoMultisampleState :: Maybe (MultisampleState.CreateInfo ms),
+	createInfoDepthStencilState :: Maybe (DepthStencilState.CreateInfo dss),
+	createInfoColorBlendState :: Maybe (ColorBlendState.CreateInfo cbs),
+	createInfoDynamicState :: Maybe (DynamicState.CreateInfo ds),
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: V2 G vsts',
+	createInfoBasePipelineHandle :: V2 G bph,
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToCore :: (
@@ -144,20 +144,20 @@ createInfoToCore CreateInfo {
 maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
 maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
 
-class CreateInfoListToCore sss where
+class CreateInfoListToCore ass where
 	createInfoListToCore ::
-		HeteroVarList (V12 CreateInfo) sss -> ContT r IO [C.CreateInfo]
+		HeteroVarList (V12 CreateInfo) ass -> ContT r IO [C.CreateInfo]
 
 instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
 instance (
-	Pointable n, Pointable n2, Pointable n3, Pointable n4, Pointable n5,
-	Pointable n6, Pointable n7, Pointable n8, Pointable n9, Pointable n10,
-	ShaderStage.CreateInfoListToCore nskndvss,
-	CreateInfoListToCore ss
+	Pointable n, ShaderStage.CreateInfoListToCore nskndvss,
+	Pointable vis, Pointable ias, Pointable ts, Pointable vs,
+	Pointable rs, Pointable ms, Pointable dss, Pointable cbs, Pointable ds,
+	CreateInfoListToCore ass
 	) =>
 	CreateInfoListToCore ('(
-		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) where
+		n, nskndvss, vis, ias, ts, vs, rs, ms, dss, cbs, ds, bph ) ': ass) where
 	createInfoListToCore (V12 ci :...: cis) = (:)
 		<$> createInfoToCore ci
 		<*> createInfoListToCore cis
@@ -192,19 +192,16 @@ instance GListFromCore vstss =>
 	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
 	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
 
-createGs :: (
-	Pointable n', CreateInfoListToCore ss, GListFromCore vstss
-	) =>
-	Device.D -> Maybe Cache.C ->
-	HeteroVarList (V12 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 G) vstss)
+createGs :: (CreateInfoListToCore as, Pointable c, GListFromCore vstss) =>
+	Device.D -> Maybe Cache.C -> HeteroVarList (V12 CreateInfo) as ->
+	Maybe (AllocationCallbacks.A c) -> IO (HeteroVarList (V2 G) vstss)
 createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
 recreateGs :: (
-	Pointable c, Pointable d, CreateInfoListToCore ss, GListFromCore vstss
+	CreateInfoListToCore as, Pointable c, Pointable d, GListFromCore vstss
 	) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroVarList (V12 CreateInfo) ss ->
+	HeteroVarList (V12 CreateInfo) as ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	HeteroVarList (V2 G) vstss -> IO ()
 recreateGs dvc mc cis macc macd gs =
@@ -237,8 +234,8 @@ recreateRaw dvc mc cis macc macd rs = do
 	zipWithM_ writeIORef rs ns
 	(\o -> destroyRaw dvc o macd) `mapM_` os
 
-destroyGs :: (GListFromCore vstss, Pointable n) =>
-	Device.D -> HeteroVarList (V2 G) vstss -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroyGs :: (GListFromCore vstss, Pointable d) =>
+	Device.D -> HeteroVarList (V2 G) vstss -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
 
 destroy :: Pointable n =>
