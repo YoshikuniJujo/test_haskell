@@ -12,6 +12,8 @@
 module Data.HeteroList (
 	Tip(..), (:.:)(..), length, StorableList(..),
 
+	StorableList'(..),
+
 	HeteroList', StoreHetero'(..), Id(..),
 
 	HeteroVarList(..), pattern Singleton, singleton,
@@ -55,6 +57,12 @@ instance StorableList () where sizeAlignments _ = []
 instance StorableList Tip where sizeAlignments _ = []
 instance (Storable t, StorableList ts) => StorableList (t :.: ts) where
 	sizeAlignments (x :.: xs) = (sizeOf x, alignment x) : sizeAlignments xs
+
+class StorableList' (vs :: [Type]) where sizeAlignments' :: HeteroList' vs -> [(Int, Int)]
+
+instance StorableList' '[] where sizeAlignments' _ = []
+instance (Storable t, StorableList' ts) => StorableList' (t ': ts) where
+	sizeAlignments' (Id x :...: xs) = (sizeOf x, alignment x) : sizeAlignments' xs
 
 newtype Id t = Id t deriving Show
 

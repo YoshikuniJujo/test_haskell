@@ -10,7 +10,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Control.Monad.Cont
-import Data.HeteroList ((:.:)(..), Tip)
+import Data.HeteroList hiding (length)
 
 import qualified Data.HeteroList as HList
 
@@ -64,4 +64,19 @@ infoToCore xs = do
 		C.infoPData = pd }
 	where
 	szals = HList.sizeAlignments xs
+	ps@(n, _, tsz, tal) = parameters szals
+
+infoToCore' :: (StorableList' vs, StoreHetero' vs) => HeteroList' vs -> ContT r IO C.Info
+infoToCore' xs = do
+	pmes <- ContT $ allocaArray n
+	lift . pokeArray pmes $ mapEntries ps
+	pd <- ContT $ allocaBytesAligned tsz tal
+	lift $ storeHetero' pd xs
+	pure C.Info {
+		C.infoMapEntryCount = fromIntegral n,
+		C.infoPMapEntries = pmes,
+		C.infoDataSize = fromIntegral tsz,
+		C.infoPData = pd }
+	where
+	szals = HList.sizeAlignments' xs
 	ps@(n, _, tsz, tal) = parameters szals
