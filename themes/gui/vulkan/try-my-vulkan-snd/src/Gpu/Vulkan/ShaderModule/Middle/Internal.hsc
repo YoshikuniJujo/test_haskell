@@ -74,8 +74,9 @@ readFromByteString (BS.PS f o l) = do
 	withForeignPtr f \p -> copyBytes p' (p `plusPtr` o) l
 	pure (p', fromIntegral l)
 
-create :: (Pointable n, Pointable n') =>
-	Device.D -> CreateInfo n sknd -> Maybe (AllocationCallbacks.A n') -> IO (M sknd)
+create :: (Pointable n, Pointable c) =>
+	Device.D ->
+	CreateInfo n sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
 create (Device.D dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
 	pac <- AllocationCallbacks.maybeToCore mac
@@ -84,7 +85,8 @@ create (Device.D dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pm
 
-destroy :: Pointable n => Device.D -> M sknd -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Pointable d =>
+	Device.D -> M sknd -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (M m) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy dvc m pac
