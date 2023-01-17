@@ -19,6 +19,7 @@ import Data.Word
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (TypeVal(..))
 
 import Gpu.Vulkan.VertexInput.Middle qualified as M
+import Gpu.Vulkan.VertexInput.Enum qualified as M
 
 data Rate = RateVertex | RateInstance deriving Show
 
