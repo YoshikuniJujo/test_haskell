@@ -78,6 +78,27 @@ data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfo {
 	createInfoBasePipelineHandle :: V2 G bph,
 	createInfoBasePipelineIndex :: Int32 }
 
+data CreateInfoNew n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfoNew {
+	createInfoNextNew :: Maybe n,
+	createInfoFlagsNew :: CreateFlags,
+	createInfoStagesNew :: HeteroVarList (V3 ShaderStage.CreateInfoNew) nskndvss,
+	createInfoVertexInputStateNew :: Maybe (VertexInputState.M.CreateInfo vis),
+	createInfoInputAssemblyStateNew ::
+		Maybe (InputAssemblyState.CreateInfo ias),
+	createInfoTessellationStateNew :: Maybe (TessellationState.CreateInfo ts),
+	createInfoViewportStateNew :: Maybe (ViewportState.CreateInfo vs),
+	createInfoRasterizationStateNew ::
+		Maybe (RasterizationState.CreateInfo rs),
+	createInfoMultisampleStateNew :: Maybe (MultisampleState.CreateInfo ms),
+	createInfoDepthStencilStateNew :: Maybe (DepthStencilState.CreateInfo dss),
+	createInfoColorBlendStateNew :: Maybe (ColorBlendState.CreateInfo cbs),
+	createInfoDynamicStateNew :: Maybe (DynamicState.CreateInfo ds),
+	createInfoLayoutNew :: Layout.L,
+	createInfoRenderPassNew :: RenderPass.R,
+	createInfoSubpassNew :: Word32,
+	createInfoBasePipelineHandleNew :: V2 G bph,
+	createInfoBasePipelineIndexNew :: Int32 }
+
 createInfoToCore :: (
 	Pointable n,
 	ShaderStage.CreateInfoListToCore nskndvss,
