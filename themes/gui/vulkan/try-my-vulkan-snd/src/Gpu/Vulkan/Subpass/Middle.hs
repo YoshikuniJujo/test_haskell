@@ -2,7 +2,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Subpass.Middle (
-	S(..), pattern SExternal,
-	Description(..), Dependency(..) ) where
+
+	-- * Description
+
+	Description(..),
+
+	-- * Dependency
+
+	Dependency(..), S(..), pattern SExternal ) where
 
 import Gpu.Vulkan.Subpass.Middle.Internal
