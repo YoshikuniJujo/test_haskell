@@ -10,7 +10,9 @@
 module Gpu.Vulkan.Command.Tmp (
 
 	beginRenderPass, endRenderPass, bindPipeline, bindPipelineCompute,
-	bindVertexBuffers, bindIndexBuffer, pushConstants, bindDescriptorSets,
+	bindVertexBuffers, bindIndexBuffer,
+	pushConstants',
+	bindDescriptorSets,
 	draw, drawIndexed, dispatch, copyBuffer,
 	copyBufferToImage, copyImageToBuffer,
 	pipelineBarrier, blitImage,
@@ -88,11 +90,11 @@ bindDescriptorSets ::
 	Word32 -> [Descriptor.Set.D] -> [Word32] -> IO ()
 bindDescriptorSets (CommandBuffer.CC mcb) = M.bindDescriptorSets mcb
 
-pushConstants :: forall vs ts .
-	StoreHetero ts =>
+pushConstants' :: forall vs ts .
+	StoreHetero' ts =>
 	CommandBuffer.CC vs -> Pipeline.Layout.L ->
-	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
-pushConstants (CommandBuffer.CC mcb) = M.pushConstants mcb
+	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
+pushConstants' (CommandBuffer.CC mcb) = M.pushConstants' mcb
 
 pipelineBarrier :: (
 	PointableHeteroMap ns, PointableHeteroMap ns', PointableHeteroMap ns''

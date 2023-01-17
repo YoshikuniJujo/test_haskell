@@ -144,14 +144,14 @@ copyBuffer :: forall (ass :: [[Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
-pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
-	StoreHetero ts,
+pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
+	StoreHetero' ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
 	CommandBuffer.C sc vs -> Pipeline.Layout.L s sbtss whole ->
-	HeteroList ts -> IO ()
-pushConstants (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
-	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
+	HeteroList' ts -> IO ()
+pushConstants' (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
+	M.pushConstants' cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 
 pipelineBarrier :: (

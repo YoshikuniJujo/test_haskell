@@ -24,7 +24,7 @@ module Gpu.Vulkan.Command.Middle (
 
 	-- * Push Constants and Bind Descriptor Sets
 
-	pushConstants, bindDescriptorSets,
+	pushConstants', bindDescriptorSets,
 
 	-- * Copy Buffers and Images
 
@@ -36,7 +36,6 @@ module Gpu.Vulkan.Command.Middle (
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
-import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -111,16 +110,16 @@ bindIndexBuffer
 	(CommandBuffer.M.C _ cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
 	C.bindIndexBuffer cb ib sz it
 
-pushConstants :: forall ts .
-	StoreHetero ts =>
+pushConstants' :: forall ts .
+	StoreHetero' ts =>
 	CommandBuffer.M.C -> Pipeline.Layout.L ->
-	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
-pushConstants (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
+	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
+pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n
-		sz = fromIntegral $ storeHeteroSize @ts 0
+		sz = fromIntegral $ storeHeteroSize' @ts 0
 	p <- ContT $ allocaBytes sz
-	lift do	storeHetero p xs
+	lift do	storeHetero' p xs
 		C.pushConstants cb lyt ss ost sz p
 
 bindDescriptorSets ::

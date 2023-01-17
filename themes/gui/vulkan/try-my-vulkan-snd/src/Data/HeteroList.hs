@@ -10,7 +10,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	Tip(..), (:.:)(..), length, StorableList(..), HeteroList(..), StoreHetero(..),
+	Tip(..), (:.:)(..), length, StorableList(..),
+
+	HeteroList', StoreHetero'(..), Id(..),
+
 	HeteroVarList(..), pattern Singleton, singleton,
 	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
@@ -53,34 +56,25 @@ instance StorableList Tip where sizeAlignments _ = []
 instance (Storable t, StorableList ts) => StorableList (t :.: ts) where
 	sizeAlignments (x :.: xs) = (sizeOf x, alignment x) : sizeAlignments xs
 
-infixr 5 :..:
+newtype Id t = Id t deriving Show
 
-data HeteroList (as :: [Type]) where
-	HNil :: HeteroList '[]
-	(:..:) :: a -> HeteroList as -> HeteroList (a ': as)
+type HeteroList' ts = HeteroVarList Id ts
 
-instance Show (HeteroList '[]) where show HNil = "HNil"
+class StoreHetero' (ts :: [Type]) where
+	storeHeteroSize' :: Int -> Int
+	storeHetero' :: Ptr () -> HeteroList' ts -> IO ()
 
-instance (Show a, Show (HeteroList as)) => Show (HeteroList (a ': as)) where
-	show (x :..: xs) = show x ++ " :..: " ++ show xs
+instance StoreHetero' '[] where
+	storeHeteroSize' sz = sz
+	storeHetero' _ HVNil = pure ()
 
--- class
-
-class StoreHetero (ts :: [Type]) where
-	storeHeteroSize :: Int -> Int
-	storeHetero :: Ptr () -> HeteroList ts -> IO ()
-
-instance StoreHetero '[] where
-	storeHeteroSize sz = sz
-	storeHetero _ HNil = pure ()
-
-instance (Storable t, StoreHetero ts) => StoreHetero (t ': ts) where
-	storeHeteroSize sz = storeHeteroSize @ts
+instance (Storable t, StoreHetero' ts) => StoreHetero' (t ': ts) where
+	storeHeteroSize' sz = storeHeteroSize' @ts
 		$ ((sz - 1) `div` al + 1) * al + sizeOf @t undefined
 		where al = alignment @t undefined
-	storeHetero p (x :..: xs) = do
+	storeHetero' p (Id x :...: xs) = do
 		poke (castPtr p') x
-		storeHetero (p' `plusPtr` sizeOf x) xs
+		storeHetero' (p' `plusPtr` sizeOf x) xs
 		where p' = alignPtr p $ alignment x
 
 infixr 5 :...:
