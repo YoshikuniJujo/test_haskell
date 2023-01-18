@@ -134,7 +134,7 @@ calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
-	Vk.Ppl.Cmpt.createCsNew dvc Nothing
+	Vk.Ppl.Cmpt.createCsOld dvc Nothing
 		(Singleton . V4 $ cmptPipelineInfo pplLyt)
 		nil nil \(Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil nil \cmdPool ->
@@ -509,16 +509,16 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = V2 dsl :...: HVNil }
 
 cmptPipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfoNew ()
+	Vk.Ppl.Cmpt.CreateInfoOld ()
 		'((), (), 'GlslComputeShader, (), (), ())
 		'(sl, sbtss, '[]) sbph
-cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoNew {
-	Vk.Ppl.Cmpt.createInfoNextNew = Nothing,
-	Vk.Ppl.Cmpt.createInfoFlagsNew = def,
-	Vk.Ppl.Cmpt.createInfoStageNew = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayoutNew = V3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandleNew = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndexNew = Nothing }
+cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoOld {
+	Vk.Ppl.Cmpt.createInfoNextOld = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlagsOld = def,
+	Vk.Ppl.Cmpt.createInfoStageOld = V6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayoutOld = V3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOld = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndexOld = Nothing }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qfam = Vk.CommandPool.CreateInfo {

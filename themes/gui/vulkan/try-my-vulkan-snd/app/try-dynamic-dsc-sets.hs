@@ -379,7 +379,7 @@ calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCsNew
+	Vk.Ppl.Cmpt.createCsOld
 		dvc Nothing
 		(Singleton . V4 $ computePipelineInfo plyt)
 		nil nil \(Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
@@ -397,15 +397,15 @@ pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = Singleton $ V2 dslyt }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
-	Vk.Ppl.Cmpt.CreateInfoNew () '((), (), 'GlslComputeShader, (), (),
+	Vk.Ppl.Cmpt.CreateInfoOld () '((), (), 'GlslComputeShader, (), (),
 		(Word32 :.: Word32 :.: ())) '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoNew {
-	Vk.Ppl.Cmpt.createInfoNextNew = Nothing,
-	Vk.Ppl.Cmpt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStageNew = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayoutNew = V3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandleNew = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndexNew = Nothing }
+computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoOld {
+	Vk.Ppl.Cmpt.createInfoNextOld = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlagsOld = zeroBits,
+	Vk.Ppl.Cmpt.createInfoStageOld = V6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayoutOld = V3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOld = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndexOld = Nothing }
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo
 	() () 'GlslComputeShader () () (Word32 :.: Word32 :.: ())

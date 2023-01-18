@@ -117,7 +117,7 @@ calc' :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
 	IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
-	Vk.Ppl.Cmpt.createCsNew
+	Vk.Ppl.Cmpt.createCsOld
 		dvc Nothing
 		(V4 (computePipelineInfo pplLyt) :...: HVNil)
 		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :...: HVNil) ->
@@ -136,16 +136,16 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = V2 dsl :...: HVNil }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfoNew ()
+	Vk.Ppl.Cmpt.CreateInfoOld ()
 		'((), (), 'GlslComputeShader, (), (), (Word32 :.: Word32 :.: ()))
 		'(sl, sbtss, '[]) sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoNew {
-	Vk.Ppl.Cmpt.createInfoNextNew = Nothing,
-	Vk.Ppl.Cmpt.createInfoFlagsNew = def,
-	Vk.Ppl.Cmpt.createInfoStageNew = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayoutNew = V3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandleNew = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndexNew = Nothing }
+computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoOld {
+	Vk.Ppl.Cmpt.createInfoNextOld = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlagsOld = def,
+	Vk.Ppl.Cmpt.createInfoStageOld = V6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayoutOld = V3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOld = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndexOld = Nothing }
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () (Word32 :.: Word32 :.: ())
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
