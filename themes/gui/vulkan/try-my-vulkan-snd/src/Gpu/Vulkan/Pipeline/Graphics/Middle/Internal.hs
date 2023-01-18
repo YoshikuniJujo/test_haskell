@@ -13,6 +13,8 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle.Internal (
 	CreateInfo(..), CreateInfoListToCore,
 	createGs, recreateGs, destroyGs,
 
+	CreateInfoNew(..),
+
 	G, gNull, GListFromCore, gToCore,
 	) where
 
