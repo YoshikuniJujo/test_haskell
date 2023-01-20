@@ -682,7 +682,7 @@ createGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.createGsNew dvc Nothing (V14 pplInfo :...: HVNil)
+	Vk.Ppl.Graphics.createGsOld dvc Nothing (V14 pplInfo :...: HVNil)
 			nil nil \(V2 gpl :...: HVNil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
@@ -691,36 +691,36 @@ recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO ()
-recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGsNew
+recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGsOld
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo' ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
-	Vk.Ppl.Graphics.CreateInfoNew () '[
+	Vk.Ppl.Graphics.CreateInfoOld () '[
 			'((), (), 'GlslVertexShader, (), (), ()),
 			'((), (), 'GlslFragmentShader, (), (), ()) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		() () () () () () () () '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
-mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfoNew {
-	Vk.Ppl.Graphics.createInfoNextNew = Nothing,
-	Vk.Ppl.Graphics.createInfoFlagsNew = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStagesNew = shaderStages,
-	Vk.Ppl.Graphics.createInfoVertexInputStateNew = Just $ V3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyStateNew = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportStateNew = Just $ mkViewportState sce,
-	Vk.Ppl.Graphics.createInfoRasterizationStateNew = Just rasterizer,
-	Vk.Ppl.Graphics.createInfoMultisampleStateNew = Just multisampling,
-	Vk.Ppl.Graphics.createInfoDepthStencilStateNew = Just depthStencil,
-	Vk.Ppl.Graphics.createInfoColorBlendStateNew = Just colorBlending,
-	Vk.Ppl.Graphics.createInfoDynamicStateNew = Nothing,
-	Vk.Ppl.Graphics.createInfoLayoutNew = V3 ppllyt,
-	Vk.Ppl.Graphics.createInfoRenderPassNew = rp,
-	Vk.Ppl.Graphics.createInfoSubpassNew = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandleNew = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndexNew = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationStateNew = Nothing }
+mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfoOld {
+	Vk.Ppl.Graphics.createInfoNextOld = Nothing,
+	Vk.Ppl.Graphics.createInfoFlagsOld = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Graphics.createInfoStagesOld = shaderStages,
+	Vk.Ppl.Graphics.createInfoVertexInputStateOld = Just $ V3 def,
+	Vk.Ppl.Graphics.createInfoInputAssemblyStateOld = Just inputAssembly,
+	Vk.Ppl.Graphics.createInfoViewportStateOld = Just $ mkViewportState sce,
+	Vk.Ppl.Graphics.createInfoRasterizationStateOld = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoMultisampleStateOld = Just multisampling,
+	Vk.Ppl.Graphics.createInfoDepthStencilStateOld = Just depthStencil,
+	Vk.Ppl.Graphics.createInfoColorBlendStateOld = Just colorBlending,
+	Vk.Ppl.Graphics.createInfoDynamicStateOld = Nothing,
+	Vk.Ppl.Graphics.createInfoLayoutOld = V3 ppllyt,
+	Vk.Ppl.Graphics.createInfoRenderPassOld = rp,
+	Vk.Ppl.Graphics.createInfoSubpassOld = 0,
+	Vk.Ppl.Graphics.createInfoBasePipelineHandleOld = Nothing,
+	Vk.Ppl.Graphics.createInfoBasePipelineIndexOld = - 1,
+	Vk.Ppl.Graphics.createInfoTessellationStateOld = Nothing }
 	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
