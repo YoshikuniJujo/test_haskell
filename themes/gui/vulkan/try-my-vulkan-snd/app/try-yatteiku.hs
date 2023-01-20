@@ -654,64 +654,64 @@ makePipelineNew dvc rp f = do
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
-		vertShaderStage = Vk.Ppl.ShSt.CreateInfo {
-			Vk.Ppl.ShSt.createInfoNext = Nothing,
-			Vk.Ppl.ShSt.createInfoFlags =
+		vertShaderStage = Vk.Ppl.ShSt.CreateInfoNew {
+			Vk.Ppl.ShSt.createInfoNextNew = Nothing,
+			Vk.Ppl.ShSt.createInfoFlagsNew =
 				Vk.Ppl.ShSt.CreateFlagsZero,
-			Vk.Ppl.ShSt.createInfoStage = Vk.ShaderStageVertexBit,
-			Vk.Ppl.ShSt.createInfoModule =
+			Vk.Ppl.ShSt.createInfoStageNew = Vk.ShaderStageVertexBit,
+			Vk.Ppl.ShSt.createInfoModuleNew =
 				Vk.Shader.Module.M vertShaderCreateInfo nil nil,
-			Vk.Ppl.ShSt.createInfoName = "main",
-			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
+			Vk.Ppl.ShSt.createInfoNameNew = "main",
+			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode =
 				glslFragmentShaderMain }
-		fragShaderStage = Vk.Ppl.ShSt.CreateInfo {
-			Vk.Ppl.ShSt.createInfoNext = Nothing,
-			Vk.Ppl.ShSt.createInfoFlags =
+		fragShaderStage = Vk.Ppl.ShSt.CreateInfoNew {
+			Vk.Ppl.ShSt.createInfoNextNew = Nothing,
+			Vk.Ppl.ShSt.createInfoFlagsNew =
 				Vk.Ppl.ShSt.CreateFlagsZero,
-			Vk.Ppl.ShSt.createInfoStage =
+			Vk.Ppl.ShSt.createInfoStageNew =
 				Vk.ShaderStageFragmentBit,
-			Vk.Ppl.ShSt.createInfoModule =
+			Vk.Ppl.ShSt.createInfoModuleNew =
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
-			Vk.Ppl.ShSt.createInfoName = "main",
-			Vk.Ppl.ShSt.createInfoSpecializationInfo = Nothing }
+			Vk.Ppl.ShSt.createInfoNameNew = "main",
+			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
-		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfoOld () '[
-					'((), (), 'GlslVertexShader, (), (), ()),
-					'((), (), 'GlslFragmentShader, (), (), ()) ]
+		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo () '[
+					'((), (), 'GlslVertexShader, (), (), '[]),
+					'((), (), 'GlslFragmentShader, (), (), '[]) ]
 				'(	(), '[], '[] )
 				() () () () () () () () '(_, _, _) _ '(_, '[], _)
-			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfoOld {
-				Vk.Ppl.Gr.createInfoNextOld = Nothing,
-				Vk.Ppl.Gr.createInfoFlagsOld =
+			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
+				Vk.Ppl.Gr.createInfoNext = Nothing,
+				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
-				Vk.Ppl.Gr.createInfoStagesOld =
+				Vk.Ppl.Gr.createInfoStages =
 					V6 vertShaderStage :...:
 					V6 fragShaderStage :...: HVNil,
-				Vk.Ppl.Gr.createInfoVertexInputStateOld =
+				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just $ V3 vertexInputInfo,
-				Vk.Ppl.Gr.createInfoInputAssemblyStateOld =
+				Vk.Ppl.Gr.createInfoInputAssemblyState =
 					Just inputAssembly,
-				Vk.Ppl.Gr.createInfoTessellationStateOld = Nothing,
-				Vk.Ppl.Gr.createInfoViewportStateOld =
+				Vk.Ppl.Gr.createInfoTessellationState = Nothing,
+				Vk.Ppl.Gr.createInfoViewportState =
 					Just viewportState,
-				Vk.Ppl.Gr.createInfoRasterizationStateOld =
+				Vk.Ppl.Gr.createInfoRasterizationState =
 					Just rasterizer,
-				Vk.Ppl.Gr.createInfoMultisampleStateOld =
+				Vk.Ppl.Gr.createInfoMultisampleState =
 					Just multisample,
-				Vk.Ppl.Gr.createInfoDepthStencilStateOld = Nothing,
-				Vk.Ppl.Gr.createInfoColorBlendStateOld =
+				Vk.Ppl.Gr.createInfoDepthStencilState = Nothing,
+				Vk.Ppl.Gr.createInfoColorBlendState =
 					Just blend,
-				Vk.Ppl.Gr.createInfoDynamicStateOld = Nothing,
-				Vk.Ppl.Gr.createInfoLayoutOld = V3 plyt,
-				Vk.Ppl.Gr.createInfoRenderPassOld = rp,
-				Vk.Ppl.Gr.createInfoSubpassOld = 0,
-				Vk.Ppl.Gr.createInfoBasePipelineHandleOld = Nothing,
-				Vk.Ppl.Gr.createInfoBasePipelineIndexOld = - 1 }
-		Vk.Ppl.Gr.createGsOld dvc Nothing (
+				Vk.Ppl.Gr.createInfoDynamicState = Nothing,
+				Vk.Ppl.Gr.createInfoLayout = V3 plyt,
+				Vk.Ppl.Gr.createInfoRenderPass = rp,
+				Vk.Ppl.Gr.createInfoSubpass = 0,
+				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
+				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
+		Vk.Ppl.Gr.createGs dvc Nothing (
 			V14 pipelineCreateInfo :...: HVNil ) nil nil
 				\(V2 g :...: HVNil) -> f g
 
