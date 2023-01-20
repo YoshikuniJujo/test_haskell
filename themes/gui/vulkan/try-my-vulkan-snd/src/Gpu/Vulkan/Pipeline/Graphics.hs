@@ -10,7 +10,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics (
-	G, createGsOld, recreateGsOld, CreateInfoOld(..)
+	G,
+
+	createGsOld, recreateGsOld, CreateInfoOld(..)
 	) where
 
 import GHC.TypeNats
@@ -45,34 +47,6 @@ import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
-data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
-	CreateInfo {
-		createInfoNext :: Maybe n,
-		createInfoFlags :: CreateFlags,
-		createInfoStages ::
-			HeteroVarList ShaderStage.CreateInfo' nnskndscdvss,
-		createInfoVertexInputState ::
-			Maybe (V3 VertexInputState.CreateInfo nvsts),
-		createInfoInputAssemblyState ::
-			Maybe (InputAssemblyState.CreateInfo n3),
-		createInfoTessellationState ::
-			Maybe (TessellationState.CreateInfo n4),
-		createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
-		createInfoRasterizationState ::
-			Maybe (RasterizationState.CreateInfo n6),
-		createInfoMultisampleState ::
-			Maybe (MultisampleState.CreateInfo n7),
-		createInfoDepthStencilState ::
-			Maybe (DepthStencilState.CreateInfo n8),
-		createInfoColorBlendState ::
-			Maybe (ColorBlendState.CreateInfo n9),
-		createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
-		createInfoLayout :: V3 Layout.L slsbtss,
-		createInfoRenderPass :: RenderPass.R sr,
-		createInfoSubpass :: Word32,
-		createInfoBasePipelineHandle :: Maybe (V3 G sbvsts'),
-		createInfoBasePipelineIndex :: Int32 }
-
 data CreateInfoOld n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfoOld {
 		createInfoNextOld :: Maybe n,
@@ -101,71 +75,30 @@ data CreateInfoOld n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvs
 		createInfoBasePipelineHandleOld :: Maybe (V3 G sbvsts'),
 		createInfoBasePipelineIndexOld :: Int32 }
 
-createInfoFromOld ::
-	CreateInfoOld n nnskndscdvss
-		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(sl, sbtss, pcl) sr sbvsts' ->
-	CreateInfo n nnskndscdvss
-		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(sl, sbtss, pcl) sr sbvsts'
-createInfoFromOld CreateInfoOld {
-	createInfoNextOld = mnxt,
-	createInfoFlagsOld = flgs,
-	createInfoStagesOld = stg,
-	createInfoVertexInputStateOld = vist,
-	createInfoInputAssemblyStateOld = iast,
-	createInfoTessellationStateOld = tssst,
-	createInfoViewportStateOld = vpst,
-	createInfoRasterizationStateOld = rsst,
-	createInfoMultisampleStateOld = msst,
-	createInfoDepthStencilStateOld = stst,
-	createInfoColorBlendStateOld = blst,
-	createInfoDynamicStateOld = dsst,
-	createInfoLayoutOld = lytm,
-	createInfoRenderPassOld = rp,
-	createInfoSubpassOld = sp,
-	createInfoBasePipelineHandleOld = bpplh,
-	createInfoBasePipelineIndexOld = bppli } = CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoStages = stg,
-	createInfoVertexInputState = vist,
-	createInfoInputAssemblyState = iast,
-	createInfoTessellationState = tssst,
-	createInfoViewportState = vpst,
-	createInfoRasterizationState = rsst,
-	createInfoMultisampleState = msst,
-	createInfoDepthStencilState = stst,
-	createInfoColorBlendState = blst,
-	createInfoDynamicState = dsst,
-	createInfoLayout = lytm,
-	createInfoRenderPass = rp,
-	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = bpplh,
-	createInfoBasePipelineIndex = bppli }
-
-createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
+createInfoToMiddleOld :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
-	CreateInfo n nnskndscdvss nvsts
+	CreateInfoOld n nnskndscdvss nvsts
 		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs', ts') ->
 	IO (T.CreateInfo n (ShaderStage.MiddleVars nnskndscdvss)
 		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
-createInfoToMiddle dvc CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoStages = stgs,
-	createInfoVertexInputState = vis,
-	createInfoInputAssemblyState = ias,
-	createInfoTessellationState = ts,
-	createInfoViewportState = vs,
-	createInfoRasterizationState = rs,
-	createInfoMultisampleState = ms,
-	createInfoDepthStencilState = dss,
-	createInfoColorBlendState = cbs,
-	createInfoDynamicState = ds,
-	createInfoLayout = V3 (Layout.L lyt),
-	createInfoRenderPass = RenderPass.R rp,
-	createInfoSubpass = sp,
-	createInfoBasePipelineHandle = bph,
-	createInfoBasePipelineIndex = bpi } = do
+createInfoToMiddleOld dvc CreateInfoOld {
+	createInfoNextOld = mnxt,
+	createInfoFlagsOld = flgs,
+	createInfoStagesOld = stgs,
+	createInfoVertexInputStateOld = vis,
+	createInfoInputAssemblyStateOld = ias,
+	createInfoTessellationStateOld = ts,
+	createInfoViewportStateOld = vs,
+	createInfoRasterizationStateOld = rs,
+	createInfoMultisampleStateOld = ms,
+	createInfoDepthStencilStateOld = dss,
+	createInfoColorBlendStateOld = cbs,
+	createInfoDynamicStateOld = ds,
+	createInfoLayoutOld = V3 (Layout.L lyt),
+	createInfoRenderPassOld = RenderPass.R rp,
+	createInfoSubpassOld = sp,
+	createInfoBasePipelineHandleOld = bph,
+	createInfoBasePipelineIndexOld = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddle' dvc stgs
 	bph' <- maybe M.gNull (\(V3 (G g)) -> pure g) bph
 	pure T.CreateInfo {
@@ -217,7 +150,7 @@ instance (
 		'(n, ShaderStage.MiddleVars nnskndscdvss, nvsts, n3, n4, n5, n6,
 			n7, n8, n9, n10, '(vs', ts')) ': MiddleVarsOld ss
 	createInfoListToMiddleOld dvc (V14 ci :...: cis) = (:...:)
-		<$> (V12 <$> createInfoToMiddle dvc (createInfoFromOld ci))
+		<$> (V12 <$> createInfoToMiddleOld dvc ci)
 		<*> createInfoListToMiddleOld dvc cis
 	destroyShaderStagesOld dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
 		ShaderStage.destroyCreateInfoMiddleList' dvc (T.createInfoStages cim) (createInfoStagesOld ci)
