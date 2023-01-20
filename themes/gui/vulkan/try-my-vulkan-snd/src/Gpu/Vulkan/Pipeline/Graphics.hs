@@ -12,7 +12,11 @@
 module Gpu.Vulkan.Pipeline.Graphics (
 	G,
 
-	CreateInfo(..),
+	-- * New
+
+	createGs, recreateGs, CreateInfo(..),
+
+	-- * Old
 
 	createGsOld, recreateGsOld, CreateInfoOld(..)
 	) where
@@ -150,7 +154,6 @@ createInfoToMiddleOld dvc CreateInfoOld {
 		T.createInfoBasePipelineHandleOld = V2 bph',
 		T.createInfoBasePipelineIndexOld = bpi }
 
-{-
 createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddleNew nnskndscdvss) =>
 	Device.D sd ->
 	CreateInfo n nnskndscdvss nvsts
@@ -195,7 +198,6 @@ createInfoToMiddle dvc CreateInfo {
 		T.createInfoSubpass = sp,
 		T.createInfoBasePipelineHandle = V2 bph',
 		T.createInfoBasePipelineIndex = bpi }
-		-}
 
 class CreateInfoListToMiddleOld ss where
 	type MiddleVarsOld ss :: [
@@ -233,6 +235,42 @@ instance (
 		ShaderStage.destroyCreateInfoMiddleList' dvc (T.createInfoStagesOld cim) (createInfoStagesOld ci)
 		destroyShaderStagesOld dvc cims cis
 
+class CreateInfoListToMiddle ss where
+	type MiddleVars ss :: [
+		(Type, [(Type, ShaderKind, [Type])], (Type, [Type], [(Nat, Type)]),
+		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))]
+
+	createInfoListToMiddle :: Device.D sd ->
+		HeteroVarList (V14 CreateInfo) ss ->
+		IO (HeteroVarList (V12 T.CreateInfo) (MiddleVars ss))
+
+	destroyShaderStages :: Device.D sd ->
+		HeteroVarList (V12 T.CreateInfo) (MiddleVars ss) ->
+		HeteroVarList (V14 CreateInfo) ss -> IO ()
+
+instance CreateInfoListToMiddle '[] where
+	type MiddleVars '[] = '[]
+	createInfoListToMiddle _ HVNil = pure HVNil
+	destroyShaderStages _ HVNil HVNil = pure ()
+
+instance (
+	ShaderStage.CreateInfoListToMiddleNew nnskndscdvss,
+	CreateInfoListToMiddle ss ) =>
+	CreateInfoListToMiddle ('(
+		n, nnskndscdvss, nvsts, n3, n4, n5, n6, n7, n8, n9, n10,
+		'(sl, sbtss, pcl), sr, '(sb, vs', ts') ) ': ss)  where
+	type MiddleVars ('(
+		n, nnskndscdvss, nvsts, n3, n4, n5, n6, n7, n8, n9, n10,
+		'(sl, sbtss, pcl), sr, '(sb, vs', ts') ) ': ss) =
+		'(n, ShaderStage.MiddleVarsNew nnskndscdvss, nvsts, n3, n4, n5, n6,
+			n7, n8, n9, n10, '(vs', ts')) ': MiddleVars ss
+	createInfoListToMiddle dvc (V14 ci :...: cis) = (:...:)
+		<$> (V12 <$> createInfoToMiddle dvc ci)
+		<*> createInfoListToMiddle dvc cis
+	destroyShaderStages dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
+		ShaderStage.destroyCreateInfoMiddleListNew dvc (T.createInfoStages cim) (createInfoStages ci)
+		destroyShaderStages dvc cims cis
+
 class V2g ss where
 	v2g :: HeteroVarList (V2 M.G) ss -> HeteroVarList (V2 (G sg)) ss
 	g2v :: HeteroVarList (V2 (G sg)) ss -> HeteroVarList (V2 M.G) ss
@@ -260,7 +298,39 @@ createGsOld d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bra
 		T.createGsOld dvc mc cis' macc <* destroyShaderStagesOld d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
 
+createGs :: (
+	M.CreateInfoListToCoreNew (T.CreateInfoListArgs (MiddleVars ss)),
+	T.CreateInfoListToMiddle (MiddleVars ss),
+	Pointable c, Pointable d,
+	CreateInfoListToMiddle ss,
+	M.GListFromCore (T.GListVars (MiddleVars ss)),
+	V2g (T.GListVars (MiddleVars ss)) ) =>
+	Device.D sd -> Maybe (Cache.C sc) ->
+	HeteroVarList (V14 CreateInfo) ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall sg . HeteroVarList (V2 (G sg)) (T.GListVars (MiddleVars ss)) ->
+		IO a) -> IO a
+createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
+	(createInfoListToMiddle d cis >>= \cis' ->
+		T.createGs dvc mc cis' macc <* destroyShaderStages d cis' cis)
+	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
+
 recreateGsOld d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddleOld d cis
 	T.recreateGsOld dvc mc cis' macc macd $ g2v gpls
 	destroyShaderStagesOld d cis' cis
+
+recreateGs :: (
+	CreateInfoListToMiddle ss,
+	M.CreateInfoListToCoreNew (T.CreateInfoListArgs (MiddleVars ss)),
+	T.CreateInfoListToMiddle (MiddleVars ss),
+	Pointable c, Pointable d,
+	M.GListFromCore (T.GListVars (MiddleVars ss)),
+	V2g (T.GListVars (MiddleVars ss))) =>
+	Device.D sd -> Maybe (Cache.C s) -> HeteroVarList (V14 CreateInfo) ss ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	HeteroVarList (V2 (G sg)) (T.GListVars (MiddleVars ss)) -> IO ()
+recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
+	cis' <- createInfoListToMiddle d cis
+	T.recreateGs dvc mc cis' macc macd $ g2v gpls
+	destroyShaderStages d cis' cis
