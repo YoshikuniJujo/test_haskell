@@ -24,7 +24,7 @@ import Data.Kind
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 import Data.Proxy
 import Data.Bool
 import Data.Maybe

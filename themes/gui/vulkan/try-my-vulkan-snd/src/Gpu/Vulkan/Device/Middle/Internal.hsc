@@ -28,7 +28,7 @@ import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.List
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 import Data.Word
 
 import qualified Data.Text as T

@@ -14,7 +14,7 @@ import Foreign.Storable
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Core (Rect2d)
