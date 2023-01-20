@@ -102,7 +102,6 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Layout
-import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Attachment as Vk.Att
 import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
@@ -651,7 +650,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt sdrn f =
-	Vk.Ppl.Graphics.createGsOld dvc Nothing (Singleton $ V14 pplInfo) nil nil
+	Vk.Ppl.Graphics.createGs dvc Nothing (Singleton $ V14 pplInfo) nil nil
 		\(Singleton (V2 gpl)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
 
@@ -666,7 +665,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
-recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGsOld
+recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGs
 	dvc Nothing (V14 pplInfo :...: HVNil) nil nil (V2 gpls :...: HVNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
 
@@ -678,9 +677,9 @@ mkGraphicsPipelineCreateInfo ::
 			'Vk.DscSetLyt.Buffer '[
 				'Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
-	Vk.Ppl.Graphics.CreateInfoOld () '[
-			'((), (), 'GlslVertexShader, (), (), ()),
-			'((), (), 'GlslFragmentShader, (), (), ()) ]
+	Vk.Ppl.Graphics.CreateInfo () '[
+			'((), (), 'GlslVertexShader, (), (), '[]),
+			'((), (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
 		() () () () () () () ()
@@ -690,28 +689,28 @@ mkGraphicsPipelineCreateInfo ::
 					'Atom 256 GpuSceneData0 'Nothing ] ])],
 			'[WrapMeshPushConstants])
 		sr '(sb, vs', ts')
-mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfoOld {
-	Vk.Ppl.Graphics.createInfoNextOld = Nothing,
-	Vk.Ppl.Graphics.createInfoFlagsOld = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStagesOld = uncurry shaderStages
+mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
+	Vk.Ppl.Graphics.createInfoNext = Nothing,
+	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Graphics.createInfoStages = uncurry shaderStages
 		case sdrn `mod` 2 of
 			0 -> shaderPair0
 			1 -> shaderPair1
 			_ -> error "never occur",
-	Vk.Ppl.Graphics.createInfoVertexInputStateOld = Just $ V3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyStateOld = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportStateOld = Just $ mkViewportState sce,
-	Vk.Ppl.Graphics.createInfoRasterizationStateOld = Just rasterizer,
-	Vk.Ppl.Graphics.createInfoMultisampleStateOld = Just multisampling,
-	Vk.Ppl.Graphics.createInfoDepthStencilStateOld = Just depthStencil,
-	Vk.Ppl.Graphics.createInfoColorBlendStateOld = Just colorBlending,
-	Vk.Ppl.Graphics.createInfoDynamicStateOld = Nothing,
-	Vk.Ppl.Graphics.createInfoLayoutOld = V3 ppllyt,
-	Vk.Ppl.Graphics.createInfoRenderPassOld = rp,
-	Vk.Ppl.Graphics.createInfoSubpassOld = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandleOld = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndexOld = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationStateOld = Nothing }
+	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ V3 def,
+	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
+	Vk.Ppl.Graphics.createInfoViewportState = Just $ mkViewportState sce,
+	Vk.Ppl.Graphics.createInfoRasterizationState = Just rasterizer,
+	Vk.Ppl.Graphics.createInfoMultisampleState = Just multisampling,
+	Vk.Ppl.Graphics.createInfoDepthStencilState = Just depthStencil,
+	Vk.Ppl.Graphics.createInfoColorBlendState = Just colorBlending,
+	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
+	Vk.Ppl.Graphics.createInfoLayout = V3 ppllyt,
+	Vk.Ppl.Graphics.createInfoRenderPass = rp,
+	Vk.Ppl.Graphics.createInfoSubpass = 0,
+	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
+	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
@@ -1985,25 +1984,25 @@ newtype SunlightColor = SunlightColor Cglm.Vec4 deriving (Show, Storable)
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
-	HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfo) '[
-		'((), (), 'GlslVertexShader, (), (), ()),
-		'((), (), 'GlslFragmentShader, (), (), ()) ]
+	HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+		'((), (), 'GlslVertexShader, (), (), '[]),
+		'((), (), 'GlslFragmentShader, (), (), '[]) ]
 shaderStages vs fs = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
 	where
-	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
-		Vk.Ppl.ShdrSt.createInfoFlags = def,
-		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageVertexBit,
-		Vk.Ppl.ShdrSt.createInfoModule = vertShaderModule1,
-		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
-	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfo {
-		Vk.Ppl.ShdrSt.createInfoNext = Nothing,
-		Vk.Ppl.ShdrSt.createInfoFlags = def,
-		Vk.Ppl.ShdrSt.createInfoStage = Vk.ShaderStageFragmentBit,
-		Vk.Ppl.ShdrSt.createInfoModule = fragShaderModule1,
-		Vk.Ppl.ShdrSt.createInfoName = "main",
-		Vk.Ppl.ShdrSt.createInfoSpecializationInfo = Nothing }
+	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
+		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
+		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
+		Vk.Ppl.ShdrSt.createInfoModuleNew = vertShaderModule1,
+		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
+	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
+		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
+		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
+		Vk.Ppl.ShdrSt.createInfoModuleNew = fragShaderModule1,
+		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
+		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
 	vertShaderModule1 :: Vk.Shader.Module.M n 'GlslVertexShader () ()
 	vertShaderModule1 = mkShaderModule vs
 	fragShaderModule1 :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
