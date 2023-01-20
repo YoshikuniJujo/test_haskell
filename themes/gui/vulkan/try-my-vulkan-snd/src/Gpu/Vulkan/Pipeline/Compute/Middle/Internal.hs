@@ -11,12 +11,7 @@
 module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
 	C(..),
 
-	CreateInfo(..), CreateInfoListToCore, createCs,
-	CreateInfoNew(..), CreateInfoListToCoreNew, createCsNew,
-
-	destroy
-
-	) where
+	createCsNew, destroy, CreateInfoNew(..), CreateInfoListToCoreNew ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -40,16 +35,6 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
-import qualified Gpu.Vulkan.Specialization.Middle.Internal as Specialization
-
-data CreateInfo n ns vs = CreateInfo {
-	createInfoNext :: Maybe n,
-	createInfoFlags :: Pipeline.CreateFlags,
-	createInfoStage :: ShaderStage.CreateInfo ns 'GlslComputeShader vs,
-	createInfoLayout :: Pipeline.Layout.L,
-	createInfoBasePipelineHandle :: Maybe C,
-	createInfoBasePipelineIndex :: Maybe Int32 }
-	deriving Show
 
 data CreateInfoNew n ns vs = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
@@ -62,28 +47,6 @@ data CreateInfoNew n ns vs = CreateInfoNew {
 deriving instance (
 	Show n, Show (ShaderStage.CreateInfoNew ns 'GlslComputeShader vs) ) =>
 	Show (CreateInfoNew n ns vs)
-
-createInfoToCore ::
-	(Pointable n, Pointable n1, Specialization.StoreValues vs) =>
-	CreateInfo n n1 vs -> ContT r IO C.CreateInfo
-createInfoToCore CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = Pipeline.CreateFlagBits flgs,
-	createInfoStage = stg,
-	createInfoLayout = Pipeline.Layout.L lyt,
-	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
-	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	stg' <- ShaderStage.createInfoToCore stg
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoStage = stg',
-		C.createInfoLayout = lyt,
-		C.createInfoBasePipelineHandle = bph,
-		C.createInfoBasePipelineIndex = idx }
 
 createInfoToCoreNew ::
 	(Pointable n, Pointable n1, StorableList' vs, StoreHetero' vs) =>
@@ -107,20 +70,6 @@ createInfoToCoreNew CreateInfoNew {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
-class CreateInfoListToCore vss where
-	createInfoListToCore ::
-		HeteroVarList (V3 CreateInfo) vss -> ContT r IO [C.CreateInfo]
-
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
-
-instance (
-	Pointable n, Pointable n1, Specialization.StoreValues vss,
-	CreateInfoListToCore as ) =>
-	CreateInfoListToCore ('(n, n1, vss) ': as) where
-	createInfoListToCore (V3 ci :...: cis) = (:)
-		<$> createInfoToCore ci
-		<*> createInfoListToCore cis
-
 class CreateInfoListToCoreNew vss where
 	createInfoListToCoreNew ::
 		HeteroVarList (V3 CreateInfoNew) vss -> ContT r IO [C.CreateInfo]
@@ -136,21 +85,6 @@ instance (
 		<*> createInfoListToCoreNew cis
 
 newtype C = C Pipeline.C.P deriving Show
-
-createCs :: (CreateInfoListToCore vss, Pointable c) =>
-	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
-	Maybe (AllocationCallbacks.A c) -> IO [C]
-createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
-	((C <$>) <$>) . ($ pure) $ runContT do
-		cis' <- createInfoListToCore cis
-		let	ln = length cis'
-		pcis <- ContT $ allocaArray ln
-		lift $ pokeArray pcis cis'
-		pac <- AllocationCallbacks.maybeToCore mac
-		pps <- ContT $ allocaArray ln
-		lift do	r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
-			throwUnlessSuccess $ Result r
-			peekArray ln pps
 
 createCsNew :: (CreateInfoListToCoreNew vss, Pointable c) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfoNew) vss ->

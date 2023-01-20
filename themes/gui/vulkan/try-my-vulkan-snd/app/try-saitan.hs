@@ -160,7 +160,7 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sp sm1
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dscSetLyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCsOld
+	Vk.Ppl.Cmpt.createCs
 		dvc Nothing (V4 (computePipelineInfo plyt) :...: HVNil)
 		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :...: HVNil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
@@ -477,16 +477,16 @@ pplLayoutInfoNew dsl = Vk.Ppl.Lyt.CreateInfoNew {
 		V2 dsl :...: HVNil }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfoOld ()
-		'((), (), 'GlslComputeShader, (), (), (Word32 :.: Word32 :.: ()))
+	Vk.Ppl.Cmpt.CreateInfo ()
+		'((), (), 'GlslComputeShader, (), (), '[Word32, Word32])
 		'(sl, sbtss, '[]) sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfoOld {
-	Vk.Ppl.Cmpt.createInfoNextOld = Nothing,
-	Vk.Ppl.Cmpt.createInfoFlagsOld = def,
-	Vk.Ppl.Cmpt.createInfoStageOld = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayoutOld = V3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOld = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndexOld = Nothing }
+computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+	Vk.Ppl.Cmpt.createInfoNext = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlags = def,
+	Vk.Ppl.Cmpt.createInfoStage = V6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayout = V3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
@@ -582,14 +582,15 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
 	Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List 256 t "")
 bufferInfoList = Vk.Dsc.BufferInfoList
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfo () () 'GlslComputeShader () () (Word32 :.: Word32 :.: ())
-shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfo {
-	Vk.Ppl.ShaderSt.createInfoNext = Nothing,
-	Vk.Ppl.ShaderSt.createInfoFlags = def,
-	Vk.Ppl.ShaderSt.createInfoStage = Vk.ShaderStageComputeBit,
-	Vk.Ppl.ShaderSt.createInfoModule = Vk.ShaderMod.M shaderModInfo nil nil,
-	Vk.Ppl.ShaderSt.createInfoName = "main",
-	Vk.Ppl.ShaderSt.createInfoSpecializationInfo = Just $ 3 :.: 10 :.: () }
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew
+	() () 'GlslComputeShader () () '[Word32, Word32]
+shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
+	Vk.Ppl.ShaderSt.createInfoNextNew = Nothing,
+	Vk.Ppl.ShaderSt.createInfoFlagsNew = def,
+	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,
+	Vk.Ppl.ShaderSt.createInfoModuleNew = Vk.ShaderMod.M shaderModInfo nil nil,
+	Vk.Ppl.ShaderSt.createInfoNameNew = "main",
+	Vk.Ppl.ShaderSt.createInfoSpecializationInfoNew = Just $ Id 3 :...: Id 10 :...: HVNil }
 	where shaderModInfo = Vk.ShaderMod.CreateInfo {
 		Vk.ShaderMod.createInfoNext = Nothing,
 		Vk.ShaderMod.createInfoFlags = def,

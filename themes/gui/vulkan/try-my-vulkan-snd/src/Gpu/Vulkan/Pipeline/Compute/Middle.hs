@@ -8,7 +8,6 @@ module Gpu.Vulkan.Pipeline.Compute.Middle (
 
 	-- * Create and Destroy
 
-	createCs, destroy, CreateInfo(..), CreateInfoListToCore,
-	createCsNew, CreateInfoNew(..), CreateInfoListToCoreNew ) where
+	createCsNew, destroy, CreateInfoNew(..), CreateInfoListToCoreNew ) where
 
 import Gpu.Vulkan.Pipeline.Compute.Middle.Internal
