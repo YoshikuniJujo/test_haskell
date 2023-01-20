@@ -4,11 +4,18 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle (
 
 	-- * Type
 
-	G, gNull,
+	G, gNull, GListFromCore,
 
 	-- * Create and Destroy
 
-	createGs, recreateGs, destroyGs, GListFromCore,
+	-- ** New
+
+	createGsNew, recreateGsNew, destroyGs,
+	CreateInfoNew(..), CreateInfoListToCoreNew,
+
+	-- ** Old
+
+	createGs, recreateGs,
 	CreateInfo(..), CreateInfoListToCore ) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
