@@ -248,12 +248,12 @@ createGsOld :: (
 	T.CreateInfoListToMiddleOld (MiddleVarsOld ss),
 	Pointable c, Pointable d,
 	CreateInfoListToMiddleOld ss,
-	M.GListFromCore (T.GListVars (MiddleVarsOld ss)),
-	V2g (T.GListVars (MiddleVarsOld ss)) ) =>
+	M.GListFromCore (T.GListVarsOld (MiddleVarsOld ss)),
+	V2g (T.GListVarsOld (MiddleVarsOld ss)) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	HeteroVarList (V14 CreateInfoOld) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall sg . HeteroVarList (V2 (G sg)) (T.GListVars (MiddleVarsOld ss)) ->
+	(forall sg . HeteroVarList (V2 (G sg)) (T.GListVarsOld (MiddleVarsOld ss)) ->
 		IO a) -> IO a
 createGsOld d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddleOld d cis >>= \cis' ->
