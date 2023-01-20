@@ -109,7 +109,7 @@ createInfoToMiddleOld :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
 	CreateInfoOld n nnskndscdvss nvsts
 		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs', ts') ->
-	IO (T.CreateInfo n (ShaderStage.MiddleVars nnskndscdvss)
+	IO (T.CreateInfoOld n (ShaderStage.MiddleVars nnskndscdvss)
 		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
 createInfoToMiddleOld dvc CreateInfoOld {
 	createInfoNextOld = mnxt,
@@ -131,24 +131,24 @@ createInfoToMiddleOld dvc CreateInfoOld {
 	createInfoBasePipelineIndexOld = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddle' dvc stgs
 	bph' <- maybe M.gNull (\(V3 (G g)) -> pure g) bph
-	pure T.CreateInfo {
-		T.createInfoNext = mnxt,
-		T.createInfoFlags = flgs,
-		T.createInfoStages = stgs',
-		T.createInfoVertexInputState = vis,
-		T.createInfoInputAssemblyState = ias,
-		T.createInfoTessellationState = ts,
-		T.createInfoViewportState = vs,
-		T.createInfoRasterizationState = rs,
-		T.createInfoMultisampleState = ms,
-		T.createInfoDepthStencilState = dss,
-		T.createInfoColorBlendState = cbs,
-		T.createInfoDynamicState = ds,
-		T.createInfoLayout = lyt,
-		T.createInfoRenderPass = rp,
-		T.createInfoSubpass = sp,
-		T.createInfoBasePipelineHandle = V2 bph',
-		T.createInfoBasePipelineIndex = bpi }
+	pure T.CreateInfoOld {
+		T.createInfoNextOld = mnxt,
+		T.createInfoFlagsOld = flgs,
+		T.createInfoStagesOld = stgs',
+		T.createInfoVertexInputStateOld = vis,
+		T.createInfoInputAssemblyStateOld = ias,
+		T.createInfoTessellationStateOld = ts,
+		T.createInfoViewportStateOld = vs,
+		T.createInfoRasterizationStateOld = rs,
+		T.createInfoMultisampleStateOld = ms,
+		T.createInfoDepthStencilStateOld = dss,
+		T.createInfoColorBlendStateOld = cbs,
+		T.createInfoDynamicStateOld = ds,
+		T.createInfoLayoutOld = lyt,
+		T.createInfoRenderPassOld = rp,
+		T.createInfoSubpassOld = sp,
+		T.createInfoBasePipelineHandleOld = V2 bph',
+		T.createInfoBasePipelineIndexOld = bpi }
 
 {-
 createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddleNew nnskndscdvss) =>
@@ -204,10 +204,10 @@ class CreateInfoListToMiddleOld ss where
 
 	createInfoListToMiddleOld :: Device.D sd ->
 		HeteroVarList (V14 CreateInfoOld) ss ->
-		IO (HeteroVarList (V12 T.CreateInfo) (MiddleVarsOld ss))
+		IO (HeteroVarList (V12 T.CreateInfoOld) (MiddleVarsOld ss))
 
 	destroyShaderStagesOld :: Device.D sd ->
-		HeteroVarList (V12 T.CreateInfo) (MiddleVarsOld ss) ->
+		HeteroVarList (V12 T.CreateInfoOld) (MiddleVarsOld ss) ->
 		HeteroVarList (V14 CreateInfoOld) ss -> IO ()
 
 instance CreateInfoListToMiddleOld '[] where
@@ -230,7 +230,7 @@ instance (
 		<$> (V12 <$> createInfoToMiddleOld dvc ci)
 		<*> createInfoListToMiddleOld dvc cis
 	destroyShaderStagesOld dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
-		ShaderStage.destroyCreateInfoMiddleList' dvc (T.createInfoStages cim) (createInfoStagesOld ci)
+		ShaderStage.destroyCreateInfoMiddleList' dvc (T.createInfoStagesOld cim) (createInfoStagesOld ci)
 		destroyShaderStagesOld dvc cims cis
 
 class V2g ss where
@@ -244,8 +244,8 @@ instance V2g ss => V2g (s ': ss) where
 	g2v (V2 (G g) :...: gs) = V2 g :...: g2v gs
 
 createGsOld :: (
-	M.CreateInfoListToCore (T.CreateInfoListArgsNew (MiddleVarsOld ss)),
-	T.CreateInfoListToMiddle (MiddleVarsOld ss),
+	M.CreateInfoListToCore (T.CreateInfoListArgsOld (MiddleVarsOld ss)),
+	T.CreateInfoListToMiddleOld (MiddleVarsOld ss),
 	Pointable c, Pointable d,
 	CreateInfoListToMiddleOld ss,
 	M.GListFromCore (T.GListVars (MiddleVarsOld ss)),
@@ -257,10 +257,10 @@ createGsOld :: (
 		IO a) -> IO a
 createGsOld d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddleOld d cis >>= \cis' ->
-		T.createGs dvc mc cis' macc <* destroyShaderStagesOld d cis' cis)
+		T.createGsOld dvc mc cis' macc <* destroyShaderStagesOld d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
 
 recreateGsOld d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddleOld d cis
-	T.recreateGs dvc mc cis' macc macd $ g2v gpls
+	T.recreateGsOld dvc mc cis' macc macd $ g2v gpls
 	destroyShaderStagesOld d cis' cis
