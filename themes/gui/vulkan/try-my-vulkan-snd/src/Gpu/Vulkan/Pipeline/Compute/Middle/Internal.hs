@@ -17,7 +17,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 import Data.Maybe
 import Data.Int
 

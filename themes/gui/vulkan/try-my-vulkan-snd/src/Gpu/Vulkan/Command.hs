@@ -16,7 +16,7 @@ import Foreign.Storable
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 import Data.Word
 import Data.Int
 import TypeLevel.List hiding (length)

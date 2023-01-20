@@ -51,7 +51,6 @@ import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.ShaderModule as Vk.ShaderMod
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.Pipeline.Layout as Vk.Ppl.Lyt
-import qualified Gpu.Vulkan.Pipeline.Layout.Type as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet

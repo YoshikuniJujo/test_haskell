@@ -6,7 +6,7 @@
 module Gpu.Vulkan.RenderPass.Tmp where
 
 import Foreign.Pointable
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 
 import Gpu.Vulkan.RenderPass.Enum
 

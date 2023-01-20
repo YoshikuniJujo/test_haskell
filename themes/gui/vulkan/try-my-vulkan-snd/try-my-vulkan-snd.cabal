@@ -254,8 +254,6 @@ library
       Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.ShaderModule.Middle
       Gpu.Vulkan.ShaderModule.Middle.Internal
-      Gpu.Vulkan.Specialization
-      Gpu.Vulkan.Specialization.Middle
       Gpu.Vulkan.Specialization.Middle.Internal
       Gpu.Vulkan.Subpass
       Gpu.Vulkan.Subpass.Enum

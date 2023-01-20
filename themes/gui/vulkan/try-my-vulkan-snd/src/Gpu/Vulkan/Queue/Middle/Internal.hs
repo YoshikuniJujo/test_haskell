@@ -14,7 +14,7 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Kind
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Exception.Middle.Internal

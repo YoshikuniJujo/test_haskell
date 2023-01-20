@@ -39,7 +39,7 @@ import Foreign.Marshal.Array
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 import Data.Word
 import Data.Int
 import Data.IORef

@@ -9,7 +9,7 @@
 module Gpu.Vulkan.Khr where
 
 import Foreign.Pointable
-import Data.HeteroList hiding (length)
+import Data.HeteroList
 import Data.Word
 
 import qualified Data.Text as T
