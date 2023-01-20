@@ -12,6 +12,8 @@
 module Gpu.Vulkan.Pipeline.Graphics (
 	G,
 
+	CreateInfo(..),
+
 	createGsOld, recreateGsOld, CreateInfoOld(..)
 	) where
 
@@ -75,6 +77,34 @@ data CreateInfoOld n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvs
 		createInfoBasePipelineHandleOld :: Maybe (V3 G sbvsts'),
 		createInfoBasePipelineIndexOld :: Int32 }
 
+data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
+	CreateInfo {
+		createInfoNext :: Maybe n,
+		createInfoFlags :: CreateFlags,
+		createInfoStages ::
+			HeteroVarList (V6 ShaderStage.CreateInfoNew) nnskndscdvss,
+		createInfoVertexInputState ::
+			Maybe (V3 VertexInputState.CreateInfo nvsts),
+		createInfoInputAssemblyState ::
+			Maybe (InputAssemblyState.CreateInfo n3),
+		createInfoTessellationState ::
+			Maybe (TessellationState.CreateInfo n4),
+		createInfoViewportState :: Maybe (ViewportState.CreateInfo n5),
+		createInfoRasterizationState ::
+			Maybe (RasterizationState.CreateInfo n6),
+		createInfoMultisampleState ::
+			Maybe (MultisampleState.CreateInfo n7),
+		createInfoDepthStencilState ::
+			Maybe (DepthStencilState.CreateInfo n8),
+		createInfoColorBlendState ::
+			Maybe (ColorBlendState.CreateInfo n9),
+		createInfoDynamicState :: Maybe (DynamicState.CreateInfo n10),
+		createInfoLayout :: V3 Layout.L slsbtss,
+		createInfoRenderPass :: RenderPass.R sr,
+		createInfoSubpass :: Word32,
+		createInfoBasePipelineHandle :: Maybe (V3 G sbvsts'),
+		createInfoBasePipelineIndex :: Int32 }
+
 createInfoToMiddleOld :: (ShaderStage.CreateInfoListToMiddle' nnskndscdvss) =>
 	Device.D sd ->
 	CreateInfoOld n nnskndscdvss nvsts
@@ -119,6 +149,53 @@ createInfoToMiddleOld dvc CreateInfoOld {
 		T.createInfoSubpass = sp,
 		T.createInfoBasePipelineHandle = V2 bph',
 		T.createInfoBasePipelineIndex = bpi }
+
+{-
+createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddleNew nnskndscdvss) =>
+	Device.D sd ->
+	CreateInfo n nnskndscdvss nvsts
+		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs', ts') ->
+	IO (T.CreateInfo n (ShaderStage.MiddleVarsNew nnskndscdvss)
+		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
+createInfoToMiddle dvc CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoStages = stgs,
+	createInfoVertexInputState = vis,
+	createInfoInputAssemblyState = ias,
+	createInfoTessellationState = ts,
+	createInfoViewportState = vs,
+	createInfoRasterizationState = rs,
+	createInfoMultisampleState = ms,
+	createInfoDepthStencilState = dss,
+	createInfoColorBlendState = cbs,
+	createInfoDynamicState = ds,
+	createInfoLayout = V3 (Layout.L lyt),
+	createInfoRenderPass = RenderPass.R rp,
+	createInfoSubpass = sp,
+	createInfoBasePipelineHandle = bph,
+	createInfoBasePipelineIndex = bpi } = do
+	stgs' <- ShaderStage.createInfoListToMiddleNew dvc stgs
+	bph' <- maybe M.gNull (\(V3 (G g)) -> pure g) bph
+	pure T.CreateInfo {
+		T.createInfoNext = mnxt,
+		T.createInfoFlags = flgs,
+		T.createInfoStages = stgs',
+		T.createInfoVertexInputState = vis,
+		T.createInfoInputAssemblyState = ias,
+		T.createInfoTessellationState = ts,
+		T.createInfoViewportState = vs,
+		T.createInfoRasterizationState = rs,
+		T.createInfoMultisampleState = ms,
+		T.createInfoDepthStencilState = dss,
+		T.createInfoColorBlendState = cbs,
+		T.createInfoDynamicState = ds,
+		T.createInfoLayout = lyt,
+		T.createInfoRenderPass = rp,
+		T.createInfoSubpass = sp,
+		T.createInfoBasePipelineHandle = V2 bph',
+		T.createInfoBasePipelineIndex = bpi }
+		-}
 
 class CreateInfoListToMiddleOld ss where
 	type MiddleVarsOld ss :: [
@@ -168,7 +245,7 @@ instance V2g ss => V2g (s ': ss) where
 
 createGsOld :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgsNew (MiddleVarsOld ss)),
-	T.CreateInfoListToNew (MiddleVarsOld ss),
+	T.CreateInfoListToMiddle (MiddleVarsOld ss),
 	Pointable c, Pointable d,
 	CreateInfoListToMiddleOld ss,
 	M.GListFromCore (T.GListVars (MiddleVarsOld ss)),

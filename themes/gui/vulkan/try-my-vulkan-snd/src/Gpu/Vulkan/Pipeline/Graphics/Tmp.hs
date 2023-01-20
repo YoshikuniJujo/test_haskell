@@ -10,8 +10,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Graphics.Tmp (
-	CreateInfo(..), createGs, recreateGs, CreateInfoListToNew(..),
-	GListVars ) where
+	createGs, recreateGs, CreateInfo(..), CreateInfoListToMiddle(..),
+	GListVars
+	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
@@ -73,12 +74,12 @@ data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoBasePipelineHandle :: V2 M.G vsts',
 	createInfoBasePipelineIndex :: Int32 }
 
-createInfoToNew :: (
+createInfoToMiddle :: (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
 	M.CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
-createInfoToNew CreateInfo {
+createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoStages = stg,
@@ -116,49 +117,49 @@ createInfoToNew CreateInfo {
 	M.createInfoBasePipelineHandle = bph,
 	M.createInfoBasePipelineIndex = bpi }
 
-class CreateInfoListToNew sss where
+class CreateInfoListToMiddle sss where
 	type CreateInfoListArgsNew sss ::
 		[(*, [(*, ShaderKind, *)], *, *, *, *, *, *, *, *, *, ([*], [(Nat, *)]))]
-	createInfoListToNew ::
+	createInfoListToMiddle ::
 		HeteroVarList (V12 CreateInfo) sss ->
 		HeteroVarList (V12 M.CreateInfo) (CreateInfoListArgsNew sss)
 
-instance CreateInfoListToNew '[] where
+instance CreateInfoListToMiddle '[] where
 	type CreateInfoListArgsNew '[] = '[]
-	createInfoListToNew _ = HVNil
+	createInfoListToMiddle _ = HVNil
 
 instance (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts,
-	CreateInfoListToNew ss ) =>
-	CreateInfoListToNew ('(
+	CreateInfoListToMiddle ss ) =>
+	CreateInfoListToMiddle ('(
 		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) where
 	type CreateInfoListArgsNew ('(
 		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(
 		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10, vsts') : CreateInfoListArgsNew ss
-	createInfoListToNew (V12 ci :...: cis) =
-		V12 (createInfoToNew ci) :...: createInfoListToNew cis
+	createInfoListToMiddle (V12 ci :...: cis) =
+		V12 (createInfoToMiddle ci) :...: createInfoListToMiddle cis
 
 createGs :: (
 	Pointable n', M.GListFromCore (GListVars ss),
 	M.CreateInfoListToCore (CreateInfoListArgsNew ss),
-	CreateInfoListToNew ss
+	CreateInfoListToMiddle ss
 	) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 M.G) (GListVars ss))
-createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToNew cis) mac
+createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
 	M.CreateInfoListToCore (CreateInfoListArgsNew ss),
-	CreateInfoListToNew ss,
+	CreateInfoListToMiddle ss,
 	Pointable c, Pointable d,
 	M.GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	HeteroVarList (V2 M.G) (GListVars ss) -> IO ()
 recreateGs dvc mc cis macc macd gs =
-	M.recreateGs dvc mc (createInfoListToNew cis) macc macd gs
+	M.recreateGs dvc mc (createInfoListToMiddle cis) macc macd gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, Type)],

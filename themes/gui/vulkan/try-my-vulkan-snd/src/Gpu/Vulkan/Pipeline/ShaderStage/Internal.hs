@@ -9,7 +9,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
 	createInfoToMiddleFoo,
 	destroyCreateInfoMiddle,
 
-	CreateInfoNew(..),
+	CreateInfoNew(..), CreateInfoListToMiddleNew(..),
 	createInfoToMiddleFooNew,
 	destroyCreateInfoMiddleNew
 	) where
@@ -133,3 +133,32 @@ instance (
 	destroyCreateInfoMiddleList' dvc (V3 cim :...: cims) (V6 ci :...: cis) =
 		destroyCreateInfoMiddle dvc cim ci >>
 		destroyCreateInfoMiddleList' dvc cims cis
+
+class CreateInfoListToMiddleNew (
+	nnskndcdvss :: [(Type, Type, ShaderKind, Type, Type, [Type])]
+	) where
+	type MiddleVarsNew nnskndcdvss :: [(Type, ShaderKind, [Type])]
+	createInfoListToMiddleNew :: Device.D ds ->
+		HeteroVarList (V6 CreateInfoNew) nnskndcdvss ->
+		IO (HeteroVarList (V3 M.CreateInfoNew) (MiddleVarsNew nnskndcdvss))
+	destroyCreateInfoMiddleListNew :: Device.D ds ->
+		HeteroVarList (V3 M.CreateInfoNew) (MiddleVarsNew nnskndcdvss) ->
+		HeteroVarList (V6 CreateInfoNew) nnskndcdvss -> IO ()
+
+instance CreateInfoListToMiddleNew '[] where
+	type MiddleVarsNew '[] = '[]
+	createInfoListToMiddleNew _ HVNil = pure HVNil
+	destroyCreateInfoMiddleListNew _ HVNil HVNil = pure ()
+
+instance (
+	Pointable m, Pointable c, Pointable d,
+	CreateInfoListToMiddleNew nnskndcdvss ) =>
+	CreateInfoListToMiddleNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) where
+	type MiddleVarsNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) =
+		'(n, sknd, vs) ': MiddleVarsNew nnskndcdvss
+	createInfoListToMiddleNew dvc (V6 ci :...: cis) = (:...:)
+		<$> (V3 <$> createInfoToMiddleNew dvc ci)
+		<*> createInfoListToMiddleNew dvc cis
+	destroyCreateInfoMiddleListNew dvc (V3 cim :...: cims) (V6 ci :...: cis) =
+		destroyCreateInfoMiddleNew dvc cim ci >>
+		destroyCreateInfoMiddleListNew dvc cims cis
