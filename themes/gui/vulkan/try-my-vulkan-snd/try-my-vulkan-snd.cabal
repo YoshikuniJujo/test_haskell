@@ -41,6 +41,7 @@ library
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic
+      Foreign.Storable.PeekPoke
       Glfw
       Glfw.Middle
       Gpu.Vulkan
