@@ -14,7 +14,6 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
 import Foreign.C.Enum
 import Control.Monad.Cont
 import Data.Word
@@ -44,7 +43,7 @@ data CreateInfo n = CreateInfo {
 	createInfoRange :: Device.Size }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -53,7 +52,7 @@ createInfoToCore CreateInfo {
 	createInfoOffset = Device.Size os,
 	createInfoRange = Device.Size rng
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	let	C.CreateInfo_ fci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
@@ -66,7 +65,7 @@ createInfoToCore CreateInfo {
 
 newtype B = B C.B deriving Show
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pokable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO B
 create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
