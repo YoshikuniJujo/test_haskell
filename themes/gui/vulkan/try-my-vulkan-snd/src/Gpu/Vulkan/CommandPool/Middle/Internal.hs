@@ -12,7 +12,6 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Monad.Cont
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -31,13 +30,13 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndex :: QueueFamily.Index }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoQueueFamilyIndex = QueueFamily.Index qfi
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
@@ -47,7 +46,7 @@ createInfoToCore CreateInfo {
 
 newtype C = C C.C deriving Show
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pokable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO C
 create (Device.D dvc) ci mac = ($ pure) . runContT $ C <$> do
 	pci <- createInfoToCore ci

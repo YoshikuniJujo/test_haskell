@@ -13,7 +13,6 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
@@ -62,12 +61,12 @@ data CreateInfo n = CreateInfo {
 	createInfoBindings :: [Binding] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoBindings = length &&& id -> (bc, bs) } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pbs <- ContT $ allocaArray bc
 	cbs <- bindingToCore `mapM` bs
 	lift $ pokeArray pbs cbs
@@ -79,7 +78,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPBindings = pbs }
 	ContT $ withForeignPtr fci
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pokable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci

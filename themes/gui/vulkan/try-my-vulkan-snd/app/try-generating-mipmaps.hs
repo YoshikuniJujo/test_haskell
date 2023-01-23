@@ -404,7 +404,7 @@ createLogicalDevice phdvc qfis f =
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
-	(forall ss . PointableToListM ss => HeteroVarList t ss -> b) -> b
+	(forall ss . PokableToListM ss => HeteroVarList t ss -> b) -> b
 mkHeteroVarList _k [] f = f HVNil
 mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
 

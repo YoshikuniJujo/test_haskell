@@ -22,7 +22,6 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
 import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont
@@ -70,7 +69,7 @@ data CreateInfo n ns = CreateInfo {
 deriving instance (Show n, Show (HeteroVarList QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
-createInfoToCore :: (Pointable n, PointableToListM ns) =>
+createInfoToCore :: (Pokable n, PokableToListM ns) =>
 	CreateInfo n ns -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -79,8 +78,8 @@ createInfoToCore CreateInfo {
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cqcis <- pointableToListM queueCreateInfoToCore qcis
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
+	cqcis <- pokableToListM queueCreateInfoToCore qcis
 	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
@@ -104,7 +103,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPEnabledFeatures = pef }
 	ContT $ withForeignPtr fCreateInfo
 
-create :: (Pointable n, PointableToListM ns, Pokable c) =>
+create :: (Pokable n, PokableToListM ns, Pokable c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
@@ -136,14 +135,14 @@ data QueueCreateInfo n = QueueCreateInfo {
 	queueCreateInfoQueuePriorities :: [Float] }
 	deriving Show
 
-queueCreateInfoToCore :: Pointable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
+queueCreateInfoToCore :: Pokable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
 queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoNext = mnxt,
 	queueCreateInfoFlags = QueueCreateFlagBits flgs,
 	queueCreateInfoQueueFamilyIndex = QueueFamily.Index qfi,
 	queueCreateInfoQueuePriorities = qps
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pqps <- ContT $ allocaArray (length qps)
 	lift $ pokeArray pqps qps
 	pure C.QueueCreateInfo {

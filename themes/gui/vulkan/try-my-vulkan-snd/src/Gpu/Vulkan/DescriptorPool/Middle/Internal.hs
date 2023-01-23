@@ -13,7 +13,6 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
@@ -42,14 +41,14 @@ data CreateInfo n = CreateInfo {
 	createInfoPoolSizes :: [Size] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoMaxSets = ms,
 	createInfoPoolSizes = (length &&& (sizeToCore <$>) -> (psc, pss))
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	ppss <- ContT $ allocaArray psc
 	lift $ pokeArray ppss pss
 	let	C.CreateInfo_ fci = C.CreateInfo {
@@ -63,7 +62,7 @@ createInfoToCore CreateInfo {
 
 newtype D = D C.P deriving Show
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pokable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO D
 create (Device.D dvc) ci mac = (D <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci

@@ -12,7 +12,6 @@ module Gpu.Vulkan.DescriptorPool (
 	pattern M.CreateFlagBitsMaxEnum ) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 
 import Gpu.Vulkan.DescriptorPool.Type
@@ -22,7 +21,7 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Middle as M
 import qualified Gpu.Vulkan.DescriptorPool.Enum as M
 
-create :: (Pointable n, Pokable c, Pokable d) =>
+create :: (Pokable n, Pokable c, Pokable d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . P s -> IO a) -> IO a
