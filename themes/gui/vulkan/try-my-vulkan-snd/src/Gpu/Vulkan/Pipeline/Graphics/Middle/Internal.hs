@@ -22,7 +22,7 @@ import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
+import Foreign.Pointable hiding (NullPtr)
 import Control.Monad.Cont
 import Data.Kind
 import Data.IORef

@@ -19,7 +19,6 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.IORef
@@ -50,7 +49,7 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -59,7 +58,7 @@ createInfoToCore CreateInfo {
 	createInfoSharingMode = SharingMode sm,
 	createInfoQueueFamilyIndices =
 		length &&& (QueueFamily.unIndex <$>) -> (qfic, qfis) } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pqfis <- ContT $ allocaArray qfic
 	lift $ pokeArray pqfis qfis
 	let	C.CreateInfo_ fci = C.CreateInfo {
@@ -76,7 +75,7 @@ createInfoToCore CreateInfo {
 
 newtype B = B C.B deriving (Show, Eq, Storable)
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pokable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO B
 create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
@@ -115,7 +114,7 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierSize :: Device.Size }
 	deriving Show
 
-memoryBarrierToCore :: Pointable n =>
+memoryBarrierToCore :: Pokable n =>
 	MemoryBarrier n -> ContT r IO C.MemoryBarrier
 memoryBarrierToCore MemoryBarrier {
 	memoryBarrierNext = mnxt,
@@ -126,7 +125,7 @@ memoryBarrierToCore MemoryBarrier {
 	memoryBarrierBuffer = B b,
 	memoryBarrierOffset = Device.Size ofst,
 	memoryBarrierSize = Device.Size sz } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pure C.MemoryBarrier {
 		C.memoryBarrierSType = (),
 		C.memoryBarrierPNext = pnxt,

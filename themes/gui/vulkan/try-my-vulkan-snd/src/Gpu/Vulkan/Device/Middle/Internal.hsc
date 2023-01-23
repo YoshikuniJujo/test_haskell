@@ -22,7 +22,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
+import Foreign.Pointable hiding (NullPtr)
 import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont

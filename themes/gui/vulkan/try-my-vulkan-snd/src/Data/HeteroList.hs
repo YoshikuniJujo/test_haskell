@@ -23,6 +23,7 @@ module Data.HeteroList (
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	heteroVarListZipWithM_,
 	PointableHeteroMap(..), PointableToListM(..),
+	PokableHeteroMap(..),
 	StorableHeteroMap(..), StorableToListM(..),
 	V2(..), V3(..), V4(..), V5(..), V6(..),
 	V12(..), V13(..), V14(..), V15(..) ) where
@@ -33,6 +34,8 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Pointable
 import Data.Kind
+
+import Foreign.Storable.PeekPoke
 
 class StorableList' (vs :: [Type]) where sizeAlignments' :: HeteroList' vs -> [(Int, Int)]
 
@@ -259,6 +262,22 @@ instance (Pointable n, PointableHeteroMap ns) =>
 	pointableHeteroMap (x :...: xs) f = f x : pointableHeteroMap xs f
 	pointableHeteroMapM (x :...: xs) f =
 		(:) <$> f x <*> pointableHeteroMapM xs f
+
+class PokableHeteroMap ns where
+	pokableHeteroMap :: HeteroVarList t ns ->
+		(forall n . Pokable n => t n -> a) -> [a]
+	pokableHeteroMapM :: Monad m => HeteroVarList t ns ->
+		(forall n . Pokable n => t n -> m a) -> m [a]
+
+instance PokableHeteroMap '[] where
+	pokableHeteroMap HVNil _ = []
+	pokableHeteroMapM HVNil _ = pure []
+
+instance (Pokable n, PokableHeteroMap ns) =>
+	PokableHeteroMap (n ': ns) where
+	pokableHeteroMap (x :...: xs) f = f x : pokableHeteroMap xs f
+	pokableHeteroMapM (x :...: xs) f =
+		(:) <$> f x <*> pokableHeteroMapM xs f
 
 class StorableHeteroMap ns where
 	storableHeteroMap :: HeteroVarList t ns ->

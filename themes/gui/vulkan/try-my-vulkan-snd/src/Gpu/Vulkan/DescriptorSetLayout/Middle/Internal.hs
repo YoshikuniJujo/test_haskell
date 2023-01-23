@@ -13,7 +13,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
+import Foreign.Pointable hiding (NullPtr)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word

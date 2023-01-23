@@ -1,8 +1,9 @@
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.Storable.PeekPoke where
@@ -34,5 +35,11 @@ instance Storable a => Poke a where poke' = poke
 withPoked :: Pokable a => a -> (Ptr a -> IO b) -> IO b
 withPoked x f = alloca' \p -> poke' p x >> f p
 
+withPokedMaybe :: Pokable a => Maybe a -> (Ptr a -> IO b) -> IO b
+withPokedMaybe = \case Nothing -> ($ NullPtr); Just x -> withPoked x
+
 alloca' :: forall a b . Sizable a => (Ptr a -> IO b) -> IO b
 alloca' = allocaBytesAligned (sizeOf' @a) (alignment' @a)
+
+pattern NullPtr :: Ptr a
+pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
