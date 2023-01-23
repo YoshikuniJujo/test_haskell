@@ -24,6 +24,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc hiding (free)
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
@@ -115,7 +116,7 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoMemoryTypeIndex = mti }
 	ContT $ withForeignPtr fai
 
-allocate :: (Pointable n, Pointable a) =>
+allocate :: (Pointable n, Pokable a) =>
 	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A a) -> IO M
 allocate (Device.D dvc) ai mac = (M <$>) . ($ pure) $ runContT do
 	pai <- allocateInfoToCore ai
@@ -125,7 +126,7 @@ allocate (Device.D dvc) ai mac = (M <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		newIORef =<< peek pm
 
-reallocate :: (Pointable n, Pointable a, Pointable f) =>
+reallocate :: (Pointable n, Pokable a, Pokable f) =>
 	Device.D -> AllocateInfo n ->
 	Maybe (AllocationCallbacks.A a) ->
 	Maybe (AllocationCallbacks.A f) ->
@@ -139,7 +140,7 @@ reallocate d@(Device.D dvc) ai macc macd m@(M rm) = ($ pure) $ runContT do
 		free d m macd
 		writeIORef rm =<< peek pm
 
-free :: Pointable f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
+free :: Pokable f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
 free (Device.D dvc) (M mem) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	m <- lift $ readIORef mem

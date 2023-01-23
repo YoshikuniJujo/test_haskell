@@ -15,6 +15,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -61,7 +62,7 @@ maybeFToCore :: Maybe F -> C.F
 maybeFToCore Nothing = NullHandle
 maybeFToCore (Just f) = fToCore f
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
 create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
 	pci <- createInfoToCore ci
@@ -71,7 +72,7 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
 		throwUnlessSuccess $ Result r
 		peek pf
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (F f) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

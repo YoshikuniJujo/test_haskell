@@ -15,6 +15,7 @@ module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.HeteroList
@@ -86,7 +87,7 @@ instance (
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCsNew :: (CreateInfoListToCoreNew vss, Pointable c) =>
+createCsNew :: (CreateInfoListToCoreNew vss, Pokable c) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfoNew) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCsNew (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
@@ -101,7 +102,7 @@ createCsNew (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 			throwUnlessSuccess $ Result r
 			peekArray ln pps
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 		Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C p) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

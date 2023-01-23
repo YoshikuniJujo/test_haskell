@@ -13,7 +13,7 @@ module Gpu.Vulkan.Pipeline.Graphics (
 	G, createGs, recreateGs, CreateInfo(..) ) where
 
 import GHC.TypeNats
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.HeteroList
@@ -166,7 +166,7 @@ instance V2g ss => V2g (s ': ss) where
 createGs :: (
 	M.CreateInfoListToCoreNew (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
-	Pointable c, Pointable d,
+	Pokable c, Pokable d,
 	CreateInfoListToMiddle ss,
 	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	V2g (T.GListVars (MiddleVars ss)) ) =>
@@ -184,7 +184,7 @@ recreateGs :: (
 	CreateInfoListToMiddle ss,
 	M.CreateInfoListToCoreNew (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
-	Pointable c, Pointable d,
+	Pokable c, Pokable d,
 	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	V2g (T.GListVars (MiddleVars ss))) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroVarList (V14 CreateInfo) ss ->

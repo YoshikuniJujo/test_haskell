@@ -15,6 +15,7 @@ module Gpu.Vulkan.Pipeline.Compute (
 
 	Pipeline(..) ) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 import Data.HeteroList
@@ -42,7 +43,7 @@ data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 	createInfoBasePipelineHandle :: Maybe (C sbph),
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
-createInfoToMiddle :: (Pointable n', Pointable c) =>
+createInfoToMiddle :: (Pointable n', Pokable c) =>
 	Device.D ds ->
 	CreateInfo n '(n1, n', 'GlslComputeShader, c, d, vs) slsbtss sbph ->
 	IO (M.CreateInfoNew n n1 vs)
@@ -73,7 +74,7 @@ instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
 	createInfoListToMiddle _ HVNil = pure HVNil
 
-instance (Pointable n', Pointable c, CreateInfoListToMiddle as) =>
+instance (Pointable n', Pokable c, CreateInfoListToMiddle as) =>
 	CreateInfoListToMiddle (
 		'(n, '(n1, n', 'GlslComputeShader, c, d, vs), slsbtss, sbph
 		) ': as) where
@@ -84,7 +85,7 @@ instance (Pointable n', Pointable c, CreateInfoListToMiddle as) =>
 		<$> (V3 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
 
-destroyCreateInfoMiddle :: Pointable d =>
+destroyCreateInfoMiddle :: Pokable d =>
 	Device.D sd ->
 	M.CreateInfoNew n n1 vs -> CreateInfo n '(n1, n2, 'GlslComputeShader, c, d, vs) slsbtss sbph -> IO ()
 destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
@@ -99,7 +100,7 @@ class DestroyCreateInfoMiddleList vss vss' where
 instance DestroyCreateInfoMiddleList '[] '[] where
 	destroyCreateInfoMiddleList _ HVNil HVNil = pure ()
 
-instance (Pointable d, DestroyCreateInfoMiddleList vss vss') =>
+instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 	DestroyCreateInfoMiddleList
 		('(n, n1, vs) ': vss)
 		('(n, '(n1, n2, 'GlslComputeShader, c, d, vs), slsbtss, sbph) ': vss') where
@@ -110,7 +111,7 @@ instance (Pointable d, DestroyCreateInfoMiddleList vss vss') =>
 
 createCs :: (
 	CreateInfoListToMiddle vss, M.CreateInfoListToCoreNew (Result vss),
-	Pointable c', Pointable d',
+	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	PipelineListToHetero (ToDummiesNew vss) ) =>
 	Device.D sd -> Maybe Cache.C -> HeteroVarList (V4 CreateInfo) vss ->

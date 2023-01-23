@@ -9,6 +9,7 @@ module Gpu.Vulkan.Khr.Surface.Middle.Internal (
 	Capabilities(..), capabilitiesFromCore,
 	Format(..), formatFromCore ) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Word
@@ -26,7 +27,7 @@ import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 
 newtype S = S Sfc.C.S deriving Show
 
-destroy :: Pointable n =>
+destroy :: Pokable n =>
 	Instance.I -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Instance.I ist) (S sfc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

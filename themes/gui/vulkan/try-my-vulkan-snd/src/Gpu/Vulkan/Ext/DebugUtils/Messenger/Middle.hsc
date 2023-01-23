@@ -23,6 +23,7 @@ import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
@@ -156,7 +157,7 @@ newtype M = M C.M deriving Show
 
 create :: (
 	Pointable n, Storable cb, Storable ql, Storable cbl, Storable obj,
-	Storable ud, Pointable c ) =>
+	Storable ud, Pokable c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
@@ -167,7 +168,7 @@ create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
 		throwUnlessSuccess $ Result r
 		peek pmsngr
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Instance.I ist) (M msgr) mac = ($ pure) . runContT
 	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac

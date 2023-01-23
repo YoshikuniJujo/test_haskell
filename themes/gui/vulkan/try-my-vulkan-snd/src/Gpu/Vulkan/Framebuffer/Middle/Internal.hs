@@ -15,6 +15,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -74,7 +75,7 @@ fToCore (F f) = readIORef f
 fFromCore :: C.F -> IO F
 fFromCore f = F <$> newIORef f
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
 create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . fFromCore =<< do
 	pci <- createInfoToCore ci
@@ -84,14 +85,14 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . fFromCore =<< do
 		throwUnlessSuccess $ Result r
 		peek pf
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) f mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	f' <- lift $ fToCore f
 	lift $ C.destroy dvc f' pac
 
-recreate :: (Pointable n, Pointable c, Pointable d) =>
+recreate :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F -> IO ()

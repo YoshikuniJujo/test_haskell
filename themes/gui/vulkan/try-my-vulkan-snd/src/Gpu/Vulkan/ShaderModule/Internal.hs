@@ -5,6 +5,7 @@
 module Gpu.Vulkan.ShaderModule.Internal (
 	M(..), M.CreateInfo(..), M.CreateFlags, create, destroy ) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
@@ -16,10 +17,10 @@ data M n sknd c d = M {
 	mAllocationCallbacksCreate :: Maybe (AllocationCallbacks.A c),
 	mAllocationCallbacksDestroy :: Maybe (AllocationCallbacks.A d) }
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D sd -> M n sknd c d -> IO (M.M sknd)
 create (Device.D dvc) m =
 	M.create dvc (mCreateInfo m) (mAllocationCallbacksCreate m)
 
-destroy :: (Pointable d) => Device.D sd -> M.M sknd -> M n sknd c d -> IO ()
+destroy :: Pokable d => Device.D sd -> M.M sknd -> M n sknd c d -> IO ()
 destroy (Device.D dvc) mm m = M.destroy dvc mm (mAllocationCallbacksDestroy m)

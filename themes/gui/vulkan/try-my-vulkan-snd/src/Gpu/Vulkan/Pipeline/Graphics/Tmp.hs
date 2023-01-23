@@ -16,6 +16,7 @@ module Gpu.Vulkan.Pipeline.Graphics.Tmp (
 import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
 import GHC.TypeNats
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Data.Kind
 import Data.HeteroList
@@ -140,7 +141,7 @@ instance (
 		V12 (createInfoToMiddle ci) :...: createInfoListToMiddle cis
 
 createGs :: (
-	Pointable n', M.GListFromCore (GListVars ss),
+	Pokable n', M.GListFromCore (GListVars ss),
 	M.CreateInfoListToCoreNew (CreateInfoListArgs ss),
 	CreateInfoListToMiddle ss
 	) =>
@@ -152,7 +153,7 @@ createGs dvc mc cis mac = M.createGsNew dvc mc (createInfoListToMiddle cis) mac
 recreateGs :: (
 	M.CreateInfoListToCoreNew (CreateInfoListArgs ss),
 	CreateInfoListToMiddle ss,
-	Pointable c, Pointable d,
+	Pokable c, Pokable d,
 	M.GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->

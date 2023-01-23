@@ -21,6 +21,7 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle.Internal (
 import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.Marshal.Array
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Kind
@@ -194,13 +195,13 @@ instance GListFromCore vstss =>
 	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
 	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
 
-createGsNew :: (CreateInfoListToCoreNew as, Pointable c, GListFromCore vstss) =>
+createGsNew :: (CreateInfoListToCoreNew as, Pokable c, GListFromCore vstss) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V12 CreateInfoNew) as ->
 	Maybe (AllocationCallbacks.A c) -> IO (HeteroVarList (V2 G) vstss)
 createGsNew dvc mc cis mac = gListFromCore =<< createRawNew dvc mc cis mac
 
 recreateGsNew :: (
-	CreateInfoListToCoreNew as, Pointable c, Pointable d, GListFromCore vstss
+	CreateInfoListToCoreNew as, Pokable c, Pokable d, GListFromCore vstss
 	) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfoNew) as ->
@@ -209,7 +210,7 @@ recreateGsNew :: (
 recreateGsNew dvc mc cis macc macd gs =
 	recreateRawNew dvc mc cis macc macd $ gListToIORefs gs
 
-createRawNew :: (CreateInfoListToCoreNew ss, Pointable n') =>
+createRawNew :: (CreateInfoListToCoreNew ss, Pokable n') =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfoNew) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
@@ -225,7 +226,7 @@ createRawNew (Device.D dvc) mc cis mac = ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peekArray cic pps
 
-recreateRawNew :: (CreateInfoListToCoreNew ss, Pointable c, Pointable d) =>
+recreateRawNew :: (CreateInfoListToCoreNew ss, Pokable c, Pokable d) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfoNew) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
@@ -236,18 +237,18 @@ recreateRawNew dvc mc cis macc macd rs = do
 	zipWithM_ writeIORef rs ns
 	(\o -> destroyRaw dvc o macd) `mapM_` os
 
-destroyGs :: (GListFromCore vstss, Pointable d) =>
+destroyGs :: (GListFromCore vstss, Pokable d) =>
 	Device.D -> HeteroVarList (V2 G) vstss -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
 
-destroy :: Pointable n =>
+destroy :: Pokable n =>
 	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) g mac = ($ pure) $ runContT do
 	p <- lift $ gToCore g
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ Pipeline.C.destroy dvc p pac
 
-destroyRaw :: Pointable d =>
+destroyRaw :: Pokable d =>
 	Device.D -> Pipeline.C.P -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyRaw (Device.D dvc) p macd = ($ pure) $ runContT do
 	pacd <- AllocationCallbacks.maybeToCore macd

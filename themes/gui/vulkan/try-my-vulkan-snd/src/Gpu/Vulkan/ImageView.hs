@@ -7,6 +7,7 @@
 module Gpu.Vulkan.ImageView where
 
 import GHC.TypeLits
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 
@@ -85,7 +86,7 @@ createInfoToMiddle CreateInfo {
 
 createNew :: (
 	T.FormatToValue ivfmt,
-	Pointable n, Pointable c, Pointable d ) =>
+	Pointable n, Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall siv . INew ivfmt nm siv -> IO a) -> IO a
@@ -93,7 +94,7 @@ createNew (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\i -> M.destroy dvc i macd) (f . INew)
 
-create :: (Pointable n, Pointable c, Pointable d) =>
+create :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo si sm n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . I s -> IO a) -> IO a
@@ -103,14 +104,14 @@ create (Device.D dvc) ci macc macd f = bracket
 
 recreateNew :: (
 	T.FormatToValue ivfmt,
-	Pointable n, Pointable c, Pointable d ) =>
+	Pointable n, Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	INew ivfmt nm s -> IO ()
 recreateNew (Device.D dvc) ci macc macd (INew i) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd i
 
-recreate :: (Pointable n, Pointable c, Pointable d) =>
+recreate :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo si sm n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	I s -> IO ()

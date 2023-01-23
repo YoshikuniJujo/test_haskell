@@ -4,7 +4,7 @@
 
 module Glfw where
 
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Control.Exception
 
 import qualified Graphics.UI.GLFW as GlfwB
@@ -15,7 +15,7 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Glfw.Middle as M
 
-createWindowSurface :: (Pointable c, Pointable d) =>
+createWindowSurface :: (Pokable c, Pokable d) =>
 	Vk.Instance.I si -> GlfwB.Window ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a

@@ -13,6 +13,7 @@ module Gpu.Vulkan.Framebuffer (
 	, createInfoToMiddle -- <-- temporary
 	) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 import Data.HeteroList
@@ -93,7 +94,7 @@ createInfoToMiddle CreateInfo {
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
 
-createNew :: (Pointable n, Pointable c, Pointable d) =>
+createNew :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfoNew n sr fmtnmsis ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . F s -> IO a) -> IO a
@@ -101,7 +102,7 @@ createNew (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
-create :: (Pointable n, Pointable c, Pointable d) =>
+create :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo n sr si ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . F s -> IO a) -> IO a
@@ -109,14 +110,14 @@ create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
-recreateNew :: (Pointable n, Pointable c, Pointable d) =>
+recreateNew :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfoNew n sr fmtnmsis ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F sf -> IO ()
 recreateNew (Device.D dvc) ci macc macd (F fb) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
 
-recreate :: (Pointable n, Pointable c, Pointable d) =>
+recreate :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo n sr si ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F sf -> IO ()

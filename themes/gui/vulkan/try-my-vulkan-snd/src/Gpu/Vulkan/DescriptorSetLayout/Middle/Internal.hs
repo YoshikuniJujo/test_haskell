@@ -12,6 +12,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -78,7 +79,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPBindings = pbs }
 	ContT $ withForeignPtr fci
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
@@ -88,7 +89,7 @@ create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pl
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (L l) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

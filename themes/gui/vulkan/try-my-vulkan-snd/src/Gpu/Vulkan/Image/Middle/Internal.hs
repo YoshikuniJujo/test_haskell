@@ -22,6 +22,7 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -118,7 +119,7 @@ createInfoToCore CreateInfo {
 			C.createInfoInitialLayout = lyt }
 	ContT $ withForeignPtr fci
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = (I <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
@@ -129,7 +130,7 @@ create (Device.D dvc) ci mac = (I <$>) . ($ pure) $ runContT do
 		newIORef . (ex ,) =<< peek pimg
 	where ex = createInfoExtent ci
 
-recreate :: (Pointable n, Pointable c, Pointable d) =>
+recreate :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
@@ -214,7 +215,7 @@ subresourceLayersToCore SubresourceLayers {
 		C.subresourceLayersBaseArrayLayer = bal,
 		C.subresourceLayersLayerCount = lc }
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (I rimg) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

@@ -5,6 +5,7 @@ module Gpu.Vulkan.Ext.DebugUtils.Messenger (
 	create, M, M.CreateInfo(..), M.FnCallback, M.CallbackData(..) ) where
 
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 
@@ -16,7 +17,7 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as M
 
 create :: (
 	Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
-	Storable ud, Pointable ud, Pointable c, Pointable d ) =>
+	Storable ud, Pointable ud, Pokable c, Pokable d ) =>
 	Instance.I si -> M.CreateInfo n n2 n3 n4 n5 ud ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . M s -> IO a) -> IO a

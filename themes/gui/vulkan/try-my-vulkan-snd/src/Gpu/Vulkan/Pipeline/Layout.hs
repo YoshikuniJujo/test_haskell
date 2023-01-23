@@ -14,6 +14,7 @@ module Gpu.Vulkan.Pipeline.Layout (
 	Layout
 	) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 import Data.Kind
@@ -97,7 +98,7 @@ createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 createNew :: (
 	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
 	PushConstant.RangesToMiddle whole ranges,
-	Pointable n, Pointable c, Pointable d, HeteroVarListToList' sbtss ) =>
+	Pointable n, Pokable c, Pokable d, HeteroVarListToList' sbtss ) =>
 	Device.D sd -> CreateInfoNew n sbtss pcl ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L s sbtss whole -> IO a) -> IO a

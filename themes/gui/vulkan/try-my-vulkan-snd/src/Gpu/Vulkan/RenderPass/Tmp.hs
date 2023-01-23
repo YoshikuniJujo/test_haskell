@@ -5,6 +5,7 @@
 
 module Gpu.Vulkan.RenderPass.Tmp where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Data.HeteroList
 
@@ -40,7 +41,7 @@ createInfoFromNew CreateInfoNew {
 	createInfoDependencies = dps }
 
 createNew ::
-	(Pointable n, Pointable c, Attachment.DescriptionsFromNew fmts) =>
+	(Pointable n, Pokable c, Attachment.DescriptionsFromNew fmts) =>
 	Device.D ->
 	CreateInfoNew n fmts -> Maybe (AllocationCallbacks.A c) -> IO R
 createNew dvc ci mac = create dvc (createInfoFromNew ci) mac

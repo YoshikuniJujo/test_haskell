@@ -20,6 +20,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.IORef
@@ -79,7 +80,7 @@ data CreateInfo n = CreateInfo {
 	createInfoOldSwapchain :: Maybe S }
 	deriving Show
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO S
 create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
 	pci <- createInfoToCoreOld ci
@@ -90,7 +91,7 @@ create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
 		peek psc
 	where ex = createInfoImageExtent ci
 
-recreate :: (Pointable n, Pointable c, Pointable d) =>
+recreate :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S -> IO ()
@@ -106,7 +107,7 @@ recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
 		C.destroy dvc sco pacd
 	where ex = createInfoImageExtent ci
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

@@ -6,6 +6,7 @@ module Gpu.Vulkan.AllocationCallbacks.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Monad.Cont
 
@@ -20,19 +21,19 @@ data A a = A {
 		C.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: C.FnInternalFreeNotification a }
 
-maybeToCore :: Pointable n =>
+maybeToCore :: Pokable n =>
 	Maybe (A n) -> ContT r IO (Ptr C.A)
 maybeToCore = \case Nothing -> pure NullPtr; Just ac -> toCore ac
 
-toCore :: Pointable n =>
+toCore :: Pokable n =>
 	A n -> ContT r IO (Ptr C.A)
 toCore ac = ContT
 	$ \f -> withA ac \(C.A_ fac) ->
 		withForeignPtr fac f
 
-withA :: Pointable a =>
+withA :: Pokable a =>
 	A a -> (C.A -> IO b) -> IO b
-withA ac f = withPointer ud \pud -> do
+withA ac f = withPoked ud \pud -> do
 	pal <- C.wrapAllocationFunction al
 	pral <- C.wrapReallocationFunction ral
 	pfr <- C.wrapFreeFunction fr

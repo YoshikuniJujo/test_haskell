@@ -21,6 +21,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Foreign.C.Enum
 import Control.Arrow
@@ -103,7 +104,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPEnabledFeatures = pef }
 	ContT $ withForeignPtr fCreateInfo
 
-create :: (Pointable n, PointableToListM ns, Pointable c) =>
+create :: (Pointable n, PointableToListM ns, Pokable c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
@@ -114,7 +115,7 @@ create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
 		throwUnlessSuccess $ Result r
 		peek pdvc
 
-destroy :: Pointable d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Pokable d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (D cdvc) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac
 	lift $ C.destroy cdvc pac

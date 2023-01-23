@@ -14,6 +14,7 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Monad.Cont
 import Data.Default
@@ -74,7 +75,7 @@ readFromByteString (BS.PS f o l) = do
 	withForeignPtr f \p -> copyBytes p' (p `plusPtr` o) l
 	pure (p', fromIntegral l)
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D ->
 	CreateInfo n sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
 create (Device.D dvc) ci mac = (M <$>) . ($ pure) $ runContT do
@@ -85,7 +86,7 @@ create (Device.D dvc) ci mac = (M <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pm
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> M sknd -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (M m) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

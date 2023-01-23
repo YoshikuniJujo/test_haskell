@@ -10,6 +10,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.ForeignPtr
 import Foreign.Storable	
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Monad.Cont
 
@@ -87,7 +88,7 @@ createInfoToCore CreateInfo {
 			C.createInfoUnnormalizedCoordinates = unc }
 	ContT $ withForeignPtr fci
 
-create :: (Pointable n, Pointable c) =>
+create :: (Pointable n, Pokable c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO S
 create (Device.D dvc) ci mac = (S <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
@@ -97,7 +98,7 @@ create (Device.D dvc) ci mac = (S <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek ps
 
-destroy :: Pointable d =>
+destroy :: Pokable d =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (S s) mac = ($ pure) $ runContT do
 	pac <- AllocationCallbacks.maybeToCore mac

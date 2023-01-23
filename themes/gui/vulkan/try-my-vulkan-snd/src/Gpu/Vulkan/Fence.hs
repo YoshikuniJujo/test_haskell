@@ -5,6 +5,7 @@
 
 module Gpu.Vulkan.Fence (F, create, M.CreateInfo(..), waitForFs, resetFs) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 import Data.HeteroList
@@ -16,7 +17,7 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Fence.Middle as M
 
-create :: (Pointable n, Pointable c, Pointable d) =>
+create :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall sf . F sf -> IO a) -> IO a

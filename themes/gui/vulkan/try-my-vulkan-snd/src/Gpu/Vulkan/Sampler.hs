@@ -4,6 +4,7 @@
 
 module Gpu.Vulkan.Sampler where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 
@@ -16,7 +17,7 @@ newtype S ss = S M.S deriving Show
 sToMiddle :: S ss -> M.S
 sToMiddle (S s) = s
 
-create :: (Pointable n, Pointable c, Pointable d) =>
+create :: (Pointable n, Pokable c, Pokable d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->

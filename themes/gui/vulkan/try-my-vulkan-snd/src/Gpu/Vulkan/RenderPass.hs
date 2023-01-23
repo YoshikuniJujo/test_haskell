@@ -6,6 +6,7 @@ module Gpu.Vulkan.RenderPass (
 	R, createNew, M.CreateInfoNew(..),
 	BeginInfo(..), BeginInfoNew(..) ) where
 
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Exception
 
@@ -19,7 +20,7 @@ import qualified Gpu.Vulkan.Attachment as Attachment
 
 createNew :: (
 	Attachment.DescriptionsFromNew fmts,
-	Pointable n, Pointable c, Pointable d ) =>
+	Pointable n, Pokable c, Pokable d ) =>
 	Device.D sd -> M.CreateInfoNew n fmts ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . R s -> IO a) -> IO a
