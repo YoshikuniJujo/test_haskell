@@ -21,12 +21,10 @@ data A a = A {
 		C.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: C.FnInternalFreeNotification a }
 
-maybeToCore :: Pokable n =>
-	Maybe (A n) -> ContT r IO (Ptr C.A)
+maybeToCore :: Pokable n => Maybe (A n) -> ContT r IO (Ptr C.A)
 maybeToCore = \case Nothing -> pure NullPtr; Just ac -> toCore ac
 
-toCore :: Pokable n =>
-	A n -> ContT r IO (Ptr C.A)
+toCore :: Pokable n => A n -> ContT r IO (Ptr C.A)
 toCore ac = ContT
 	$ \f -> withA ac \(C.A_ fac) ->
 		withForeignPtr fac f
@@ -45,6 +43,34 @@ withA ac f = withPoked ud \pud -> do
 		freeHaskellFunPtr pfr
 		freeHaskellFunPtr pial
 		freeHaskellFunPtr pifr
+	where
+	ud = allocationCallbacksUserData ac
+	al = allocationCallbacksFnAllocation ac
+	ral = allocationCallbacksFnReallocation ac
+	fr = allocationCallbacksFnFree ac
+	ial = allocationCallbacksFnInternalAllocation ac
+	ifr = allocationCallbacksFnInternalFree ac
+
+maybeToCore' :: WithPoked n => Maybe (A n) -> (Ptr C.A -> IO b) -> IO ()
+maybeToCore' = \case Nothing -> (() <$) . ($ NullPtr); Just ac -> toCore' ac
+
+toCore' :: WithPoked n => A n -> (Ptr C.A -> IO b) -> IO ()
+toCore' ac f = withA' ac \(C.A_ fac) -> withForeignPtr fac $ (() <$) . f
+
+withA' :: WithPoked a =>
+	A a -> (C.A -> IO b) -> IO ()
+withA' ac f = withPoked' ud \pud -> do
+	pal <- C.wrapAllocationFunction al
+	pral <- C.wrapReallocationFunction ral
+	pfr <- C.wrapFreeFunction fr
+	pial <- C.wrapInternalAllocationNotification ial
+	pifr <- C.wrapInternalFreeNotification ifr
+	withPtrS pud \pud' -> f (C.A (castPtr pud') pal pral pfr pial pifr)
+	freeHaskellFunPtr pal
+	freeHaskellFunPtr pral
+	freeHaskellFunPtr pfr
+	freeHaskellFunPtr pial
+	freeHaskellFunPtr pifr
 	where
 	ud = allocationCallbacksUserData ac
 	al = allocationCallbacksFnAllocation ac

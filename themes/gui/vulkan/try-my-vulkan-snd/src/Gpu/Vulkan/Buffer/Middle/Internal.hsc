@@ -31,7 +31,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Buffer.Enum
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
-	qualified as AllocationCallbacks
+	qualified as AllocationCallbacks (A, maybeToCore')
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory
@@ -75,21 +75,20 @@ createInfoToCore CreateInfo {
 
 newtype B = B C.B deriving (Show, Eq, Storable)
 
-create :: (Pokable n, Pokable c) =>
+create :: (Pokable n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO B
 create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
 	pb <- ContT alloca
-	lift do	r <- C.create dvc pci pac pb
+	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
+		r <- C.create dvc pci pac pb
 		throwUnlessSuccess $ Result r
-		peek pb
+	lift $ peek pb
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> B -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (B b) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc b pac
+destroy (Device.D dvc) (B b) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc b
 
 getMemoryRequirements :: Device.D -> B -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B b) =
