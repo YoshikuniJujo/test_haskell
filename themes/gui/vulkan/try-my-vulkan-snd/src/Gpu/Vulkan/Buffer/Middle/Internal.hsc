@@ -10,14 +10,14 @@ module Gpu.Vulkan.Buffer.Middle.Internal (
 	bindMemory, getMemoryRequirements,
 
 	ImageCopy(..), imageCopyToCore,
-	MemoryBarrier(..), memoryBarrierToCore, memoryBarrierToCore' ) where
+	MemoryBarrier(..), memoryBarrierToCore' ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke -- (WithPoked, withPokedMaybe')
+import Foreign.Storable.PeekPoke (WithPoked, withPokedMaybe', withPtrS)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.IORef
@@ -109,29 +109,6 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierOffset :: Device.Size,
 	memoryBarrierSize :: Device.Size }
 	deriving Show
-
-memoryBarrierToCore :: Pokable n =>
-	MemoryBarrier n -> ContT r IO C.MemoryBarrier
-memoryBarrierToCore MemoryBarrier {
-	memoryBarrierNext = mnxt,
-	memoryBarrierSrcAccessMask = AccessFlagBits sam,
-	memoryBarrierDstAccessMask = AccessFlagBits dam,
-	memoryBarrierSrcQueueFamilyIndex = QueueFamily.Index sqfi,
-	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
-	memoryBarrierBuffer = B b,
-	memoryBarrierOffset = Device.Size ofst,
-	memoryBarrierSize = Device.Size sz } = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pure C.MemoryBarrier {
-		C.memoryBarrierSType = (),
-		C.memoryBarrierPNext = pnxt,
-		C.memoryBarrierSrcAccessMask = sam,
-		C.memoryBarrierDstAccessMask = dam,
-		C.memoryBarrierSrcQueueFamilyIndex = sqfi,
-		C.memoryBarrierDstQueueFamilyIndex = dqfi,
-		C.memoryBarrierBuffer = b,
-		C.memoryBarrierOffset = ofst,
-		C.memoryBarrierSize = sz }
 
 memoryBarrierToCore' :: WithPoked n =>
 	MemoryBarrier n -> (C.MemoryBarrier -> IO a) -> IO ()
