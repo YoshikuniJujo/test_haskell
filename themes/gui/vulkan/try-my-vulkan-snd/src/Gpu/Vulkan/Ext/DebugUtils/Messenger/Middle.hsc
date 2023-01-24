@@ -162,6 +162,15 @@ instance Poke (CreateInfo n cb ql cbl obj ud) where
 	poke' p ci = poke' (castPtr p) =<< createInfoToCore' ci
 	-}
 
+instance (
+	Pokable n,
+	Storable cb, Storable ql, Storable cbl, Storable obj, Storable' ud ) =>
+	WithPoked (CreateInfo n cb ql cbl obj ud) where
+	withPoked' ci f =
+		runContT (createInfoToCore' ci) $ \cci -> alloca \pcci -> do
+			poke pcci cci
+			f . ptrS $ castPtr pcci
+
 createInfoToCore' :: (
 	Pokable n,
 	Storable cb, Storable ql, Storable cbl, Storable obj, Storable' ud ) =>

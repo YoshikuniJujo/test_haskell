@@ -1,5 +1,5 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
@@ -46,3 +46,17 @@ pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 
 peekMaybe :: Peek a => Ptr a -> IO (Maybe a)
 peekMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peek' p
+
+newtype PtrS s a = PtrS_ (Ptr a) deriving Show
+
+ptrS :: Ptr a -> PtrS s a
+ptrS = PtrS_
+
+withPtrS :: PtrS s a -> (Ptr a -> IO ()) -> IO ()
+withPtrS (PtrS_ p) = ($ p)
+
+class WithPoked a where
+	withPoked' :: a -> (forall s . PtrS s a -> IO b) -> IO b
+
+instance {-# OVERLAPPABLE #-} Pokable a => WithPoked a where
+	withPoked' x f = withPoked x $ f . ptrS
