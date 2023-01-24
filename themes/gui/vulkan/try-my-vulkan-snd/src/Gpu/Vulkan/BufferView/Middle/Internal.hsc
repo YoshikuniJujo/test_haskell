@@ -15,7 +15,6 @@ import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Control.Monad.Cont
 import Data.Word
 import Data.Bits
 
@@ -43,40 +42,36 @@ data CreateInfo n = CreateInfo {
 	createInfoRange :: Device.Size }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
-createInfoToCore CreateInfo {
+createInfoToCore' :: WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoBuffer = Buffer.B bf,
 	createInfoFormat = Format fmt,
 	createInfoOffset = Device.Size os,
 	createInfoRange = Device.Size rng
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
 	let	C.CreateInfo_ fci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoBuffer = bf,
 			C.createInfoFormat = fmt,
 			C.createInfoOffset = os,
 			C.createInfoRange = rng }
-	ContT $ withForeignPtr fci
+	withForeignPtr fci f
 
 newtype B = B C.B deriving Show
 
-create :: (Pokable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO B
-create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	pci <- createInfoToCore ci
-	pb <- ContT alloca
-	lift do	r <- C.create dvc pci pac pb
+create (Device.D dvc) ci mac = B <$> alloca \pb -> do
+	createInfoToCore' ci \pci -> AllocationCallbacks.maybeToCore' mac \pac -> do
+		r <- C.create dvc pci pac pb
 		throwUnlessSuccess $ Result r
-		peek pb
+	peek pb
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> B -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (B b) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc b pac
+destroy (Device.D dvc) (B b) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc b
