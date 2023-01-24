@@ -25,12 +25,12 @@ instance (Sizable a, Poke a) => Pokable a
 class (Peekable a, Pokable a) => Storable' a
 instance (Peekable a, Pokable a) => Storable' a
 
-instance Storable a => Sizable a where
+instance {-# OVERLAPPABLE #-} Storable a => Sizable a where
 	sizeOf' = sizeOf @a undefined
 	alignment' = alignment @a undefined
 
-instance Storable a => Peek a where peek' = peek
-instance Storable a => Poke a where poke' = poke
+instance {-# OVERLAPPABLE #-} Storable a => Peek a where peek' = peek
+instance {-# OVERLAPPABLE #-} Storable a => Poke a where poke' = poke
 
 withPoked :: Pokable a => a -> (Ptr a -> IO b) -> IO b
 withPoked x f = alloca' \p -> poke' p x >> f p
@@ -43,3 +43,6 @@ alloca' = allocaBytesAligned (sizeOf' @a) (alignment' @a)
 
 pattern NullPtr :: Ptr a
 pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
+
+peekMaybe :: Peek a => Ptr a -> IO (Maybe a)
+peekMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peek' p

@@ -24,8 +24,8 @@ import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.C.Enum
 import Foreign.Pointable
+import Foreign.C.Enum
 import Control.Monad.Cont
 import Data.Default
 import Data.Bits
@@ -102,11 +102,11 @@ type FnCallback cb ql cbl obj ud =
 	CallbackData cb ql cbl obj -> Maybe ud -> IO Bool
 
 fnCallbackToCore ::
-	(Storable n, Storable n2, Storable n3, Storable n4, Storable ud) =>
+	(Storable n, Storable n2, Storable n3, Storable n4, Peek ud) =>
 	FnCallback n n2 n3 n4 ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
-	mud <- pointerToMaybe $ castPtr pud
+	mud <- peekMaybe $ castPtr pud
 	boolToBool32 <$> f (MessageSeverityFlagBits sfb) (MessageTypeFlagBits tf) cbd mud
 
 enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
@@ -123,13 +123,13 @@ data CreateInfo n cb ql cbl obj ud = CreateInfo {
 	createInfoUserData :: Maybe ud }
 
 instance (
-	Pointable n,
+	Pokable n,
 	Storable cb, Storable ql, Storable cbl, Storable obj, Storable ud) =>
 	Pointable (CreateInfo n cb ql cbl obj ud) where
 	withPointer = runContT . (castPtr <$>) . createInfoToCore
 
 createInfoToCore :: (
-	Pointable n,
+	Pokable n,
 	Storable cb, Storable ql, Storable cbl, Storable obj, Storable ud ) =>
 	CreateInfo n cb ql cbl obj ud -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
@@ -140,7 +140,7 @@ createInfoToCore CreateInfo {
 	createInfoFnUserCallback = cb,
 	createInfoUserData = mud
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pccb <- lift . C.wrapCallback $ fnCallbackToCore cb
 	(castPtr -> pud) <- maybeToStorable mud
 	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
@@ -153,10 +153,43 @@ createInfoToCore CreateInfo {
 			C.createInfoPUserData = pud }
 	ContT $ withForeignPtr fCreateInfo
 
+instance Sizable (CreateInfo n cb ql cbl obj ud) where
+	sizeOf' = sizeOf @C.CreateInfo undefined
+	alignment' = alignment @C.CreateInfo undefined
+
+{-
+instance Poke (CreateInfo n cb ql cbl obj ud) where
+	poke' p ci = poke' (castPtr p) =<< createInfoToCore' ci
+	-}
+
+createInfoToCore' :: (
+	Pokable n,
+	Storable cb, Storable ql, Storable cbl, Storable obj, Storable' ud ) =>
+	CreateInfo n cb ql cbl obj ud -> ContT r IO C.CreateInfo
+createInfoToCore' CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlags flgs,
+	createInfoMessageSeverity = MessageSeverityFlagBits ms,
+	createInfoMessageType = MessageTypeFlagBits mt,
+	createInfoFnUserCallback = cb,
+	createInfoUserData = mud
+	} = do
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
+	pccb <- lift . C.wrapCallback $ fnCallbackToCore cb
+	(castPtr -> pud) <- ContT $ withPokedMaybe mud
+	pure C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoMessageSeverity = ms,
+		C.createInfoMessageType = mt,
+		C.createInfoPfnUserCallback = pccb,
+		C.createInfoPUserData = pud }
+
 newtype M = M C.M deriving Show
 
 create :: (
-	Pointable n, Storable cb, Storable ql, Storable cbl, Storable obj,
+	Pokable n, Storable cb, Storable ql, Storable cbl, Storable obj,
 	Storable ud, Pokable c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M

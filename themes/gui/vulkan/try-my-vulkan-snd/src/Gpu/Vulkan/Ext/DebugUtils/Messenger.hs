@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger (
@@ -6,7 +7,6 @@ module Gpu.Vulkan.Ext.DebugUtils.Messenger (
 
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 
 import Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
@@ -16,8 +16,8 @@ import qualified Gpu.Vulkan.Instance.Type as Instance
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as M
 
 create :: (
-	Pointable n, Storable n2, Storable n3, Storable n4, Storable n5,
-	Storable ud, Pointable ud, Pokable c, Pokable d ) =>
+	Pokable n, Storable n2, Storable n3, Storable n4, Storable n5,
+	Storable ud, Pokable ud, Pokable c, Pokable d ) =>
 	Instance.I si -> M.CreateInfo n n2 n3 n4 n5 ud ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . M s -> IO a) -> IO a

@@ -14,6 +14,7 @@ module Main where
 
 import GHC.Generics
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Storable.SizeAlignment hiding (SizeAlignment)
 import Control.Arrow hiding (loop)
 import Control.Monad
@@ -385,7 +386,7 @@ createDevice ph qfis f = mkHeteroVarList @() qcrInfo qfs \qs ->
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
-mkHeteroVarList :: Storable s => (a -> t s) -> [a] ->
+mkHeteroVarList :: Storable' s => (a -> t s) -> [a] ->
 	(forall ss . PokableToListM ss => HeteroVarList t ss -> b) -> b
 mkHeteroVarList _k [] f = f HVNil
 mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
