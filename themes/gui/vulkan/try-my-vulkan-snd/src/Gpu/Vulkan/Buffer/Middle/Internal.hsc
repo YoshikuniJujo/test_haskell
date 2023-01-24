@@ -10,15 +10,14 @@ module Gpu.Vulkan.Buffer.Middle.Internal (
 	bindMemory, getMemoryRequirements,
 
 	ImageCopy(..), imageCopyToCore,
-	MemoryBarrier(..), memoryBarrierToCore
-	) where
+	MemoryBarrier(..), memoryBarrierToCore, memoryBarrierToCore' ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke -- (WithPoked, withPokedMaybe')
 import Control.Arrow
 import Control.Monad.Cont
 import Data.IORef
@@ -49,41 +48,39 @@ data CreateInfo n = CreateInfo {
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
-createInfoToCore CreateInfo {
+createInfoToCore' ::
+	WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoSize = Device.Size sz,
 	createInfoUsage = UsageFlagBits usg,
 	createInfoSharingMode = SharingMode sm,
 	createInfoQueueFamilyIndices =
-		length &&& (QueueFamily.unIndex <$>) -> (qfic, qfis) } = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pqfis <- ContT $ allocaArray qfic
-	lift $ pokeArray pqfis qfis
-	let	C.CreateInfo_ fci = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoSize = sz,
-			C.createInfoUsage = usg,
-			C.createInfoSharingMode = sm,
-			C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
-			C.createInfoPQueueFamilyIndices = pqfis }
-	ContT $ withForeignPtr fci
-
+		length &&& (QueueFamily.unIndex <$>) -> (qfic, qfis) } f =
+	allocaArray qfic \pqfis -> do
+	pokeArray pqfis qfis
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
+		let	C.CreateInfo_ fci = C.CreateInfo {
+				C.createInfoSType = (),
+				C.createInfoPNext = pnxt',
+				C.createInfoFlags = flgs,
+				C.createInfoSize = sz,
+				C.createInfoUsage = usg,
+				C.createInfoSharingMode = sm,
+				C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
+				C.createInfoPQueueFamilyIndices = pqfis }
+		withForeignPtr fci $ (() <$) . f
 
 newtype B = B C.B deriving (Show, Eq, Storable)
 
-create :: (Pokable n, WithPoked c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO B
-create (Device.D dvc) ci mac = (B <$>) . ($ pure) $ runContT do
-	pci <- createInfoToCore ci
-	pb <- ContT alloca
-	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
-		r <- C.create dvc pci pac pb
-		throwUnlessSuccess $ Result r
-	lift $ peek pb
+create (Device.D dvc) ci mac = B <$> alloca \pb -> do
+	createInfoToCore' ci \pci ->
+		AllocationCallbacks.maybeToCore' mac \pac ->
+			throwUnlessSuccess . Result =<< C.create dvc pci pac pb
+	peek pb
 
 destroy :: WithPoked d =>
 	Device.D -> B -> Maybe (AllocationCallbacks.A d) -> IO ()
@@ -128,6 +125,29 @@ memoryBarrierToCore MemoryBarrier {
 	pure C.MemoryBarrier {
 		C.memoryBarrierSType = (),
 		C.memoryBarrierPNext = pnxt,
+		C.memoryBarrierSrcAccessMask = sam,
+		C.memoryBarrierDstAccessMask = dam,
+		C.memoryBarrierSrcQueueFamilyIndex = sqfi,
+		C.memoryBarrierDstQueueFamilyIndex = dqfi,
+		C.memoryBarrierBuffer = b,
+		C.memoryBarrierOffset = ofst,
+		C.memoryBarrierSize = sz }
+
+memoryBarrierToCore' :: WithPoked n =>
+	MemoryBarrier n -> (C.MemoryBarrier -> IO a) -> IO ()
+memoryBarrierToCore' MemoryBarrier {
+	memoryBarrierNext = mnxt,
+	memoryBarrierSrcAccessMask = AccessFlagBits sam,
+	memoryBarrierDstAccessMask = AccessFlagBits dam,
+	memoryBarrierSrcQueueFamilyIndex = QueueFamily.Index sqfi,
+	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
+	memoryBarrierBuffer = B b,
+	memoryBarrierOffset = Device.Size ofst,
+	memoryBarrierSize = Device.Size sz } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	f C.MemoryBarrier {
+		C.memoryBarrierSType = (),
+		C.memoryBarrierPNext = pnxt',
 		C.memoryBarrierSrcAccessMask = sam,
 		C.memoryBarrierDstAccessMask = dam,
 		C.memoryBarrierSrcQueueFamilyIndex = sqfi,

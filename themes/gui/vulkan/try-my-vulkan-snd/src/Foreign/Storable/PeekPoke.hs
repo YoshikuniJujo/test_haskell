@@ -52,6 +52,9 @@ newtype PtrS s a = PtrS_ (Ptr a) deriving Show
 ptrS :: Ptr a -> PtrS s a
 ptrS = PtrS_
 
+pattern NullPtrS :: PtrS s a
+pattern NullPtrS <- PtrS_ NullPtr where NullPtrS = PtrS_ NullPtr
+
 withPtrS :: PtrS s a -> (Ptr a -> IO b) -> IO ()
 withPtrS (PtrS_ p) = (() <$) . ($ p)
 
@@ -60,3 +63,7 @@ class WithPoked a where
 
 instance {-# OVERLAPPABLE #-} Pokable a => WithPoked a where
 	withPoked' x f = withPoked x $ f . ptrS
+
+withPokedMaybe' :: WithPoked a =>
+	Maybe a -> (forall s . PtrS s a -> IO b) -> IO b
+withPokedMaybe' = \case Nothing -> ($ NullPtrS); Just x -> withPoked' x
