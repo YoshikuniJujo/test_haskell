@@ -5,7 +5,101 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Core where
+module Gpu.Vulkan.Core (
+
+	-- * Info
+
+	-- ** ApplicationInfo
+
+	ApplicationInfo, PtrApplicationInfo, pattern ApplicationInfo,
+	applicationInfoSType, applicationInfoPNext,
+	applicationInfoPApplicationName, applicationInfoApplicationVersion,
+	applicationInfoPEngineName, applicationInfoEngineVersion,
+	applicationInfoApiVersion,
+	ApiVersion, makeApiVersion, apiVersion_1_0,
+
+	-- ** SubmitInfo
+
+	SubmitInfo, pattern SubmitInfo, PtrPipelineStageFlags,
+	submitInfoSType, submitInfoPNext,
+	submitInfoWaitSemaphoreCount, submitInfoPWaitSemaphores,
+	submitInfoPWaitDstStageMask,
+	submitInfoCommandBufferCount, submitInfoPCommandBuffers,
+	submitInfoSignalSemaphoreCount, submitInfoPSignalSemaphores,
+
+	-- * Properties
+
+	-- ** ExtensionProperties
+
+	ExtensionProperties, pattern ExtensionProperties,
+	extensionPropertiesExtensionName, extensionPropertiesSpecVersion,
+
+	-- ** LayerProperties
+
+	LayerProperties, pattern LayerProperties,
+	layerPropertiesLayerName, layerPropertiesSpecVersion,
+	layerPropertiesImplementationVersion, layerPropertiesDescription,
+
+	-- ** FormatProperties
+
+	FormatProperties, pattern FormatProperties,
+	formatPropertiesLinearTilingFeatures,
+	formatPropertiesOptimalTilingFeatures, formatPropertiesBufferFeatures,
+
+	-- * Rect, Offset and Extent
+
+	-- ** Rect
+
+	Rect2d, PtrRect2d, pattern Rect2d,
+	rect2dExtent, rect2dOffset,
+
+	-- ** Offset
+
+	Offset2d, pattern Offset2d,
+	offset2dX, offset2dY,
+
+	Offset3d, ListOffset3d, pattern Offset3d,
+	offset3dX, offset3dY, offset3dZ,
+
+	-- ** Extent
+
+	Extent2d, pattern Extent2d,
+	extent2dWidth, extent2dHeight,
+
+	Extent3d, pattern Extent3d,
+	extent3dWidth, extent3dHeight, extent3dDepth,
+
+	-- * Others
+
+	-- ** Viewport
+
+	Viewport, PtrViewport, pattern Viewport,
+	viewportX, viewportY, viewportWidth, viewportHeight,
+	viewportMinDepth, viewportMaxDepth,
+
+	-- ** StencilOpState
+
+	StencilOpState, pattern StencilOpState,
+	stencilOpStateFailOp, stencilOpStatePassOp, stencilOpStateDepthFailOp,
+	stencilOpStateCompareOp, stencilOpStateCompareMask,
+	stencilOpStateWriteMask, stencilOpStateReference,
+
+	-- ** ClearValue
+
+	ClearValueTag, PtrClearValue,
+	clearValueFromClearColorValue, clearValueFromClearDepthStencilValue,
+
+	-- ** ClearColorValue
+
+	clearColorValueFromUints, clearColorValueFromInts,
+	clearColorValueFromFloats,
+
+	-- *** ClearDepthStencilValue
+	
+	ClearDepthStencilValue, pattern ClearDepthStencilValue,
+	clearDepthStencilValueDepth, clearDepthStencilValueStencil
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Synonyms
