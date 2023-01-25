@@ -22,7 +22,6 @@ module Gpu.Vulkan.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Marshal.Utils
@@ -204,11 +203,11 @@ data ClearColorType
 	deriving Show
 
 class ClearValueToCore (ct :: ClearType) where
-	clearValueToCore :: ClearValue ct -> ContT r IO (Ptr C.ClearValueTag)
+	clearValueToCore :: ClearValue ct -> ContT r IO C.PtrClearValue
 
 instance ClearValueToCore 'ClearTypeDepthStencil where
 	clearValueToCore (ClearValueDepthStencil cdsv) =
-		C.clearValueFromClearDepthStencilValue cdsv
+		ContT $ C.clearValueFromClearDepthStencilValue cdsv
 
 instance ClearColorValueToCore cct =>
 	ClearValueToCore ('ClearTypeColor cct) where
@@ -216,7 +215,7 @@ instance ClearColorValueToCore cct =>
 		C.clearValueFromClearColorValue <$> clearColorValueToCore cv
 
 class ClearValuesToCore (cts :: [ClearType]) where
-	clearValuesToCore :: HeteroVarList ClearValue cts -> ContT r IO [Ptr C.ClearValueTag]
+	clearValuesToCore :: HeteroVarList ClearValue cts -> ContT r IO [C.PtrClearValue]
 
 instance ClearValuesToCore '[] where clearValuesToCore HVNil = pure []
 
@@ -226,13 +225,13 @@ instance (ClearValueToCore ct, ClearValuesToCore cts) =>
 		<$> clearValueToCore cv
 		<*> clearValuesToCore cvs
 
-clearValueListToArray :: [Ptr C.ClearValueTag] -> ContT r IO (Ptr C.ClearValueTag)
+clearValueListToArray :: [C.PtrClearValue] -> ContT r IO C.PtrClearValue
 clearValueListToArray (length &&& id -> (pcvc, pcvl)) = do
 	pcva <- allocaClearValueArray pcvc
 	lift $ pokeClearValueArray pcva pcvl
 	pure pcva
 
-allocaClearValueArray :: Int -> ContT r IO (Ptr C.ClearValueTag)
+allocaClearValueArray :: Int -> ContT r IO C.PtrClearValue
 allocaClearValueArray n = ContT $ allocaBytesAligned
 	(alignedSize #{size VkClearValue} #{alignment VkClearValue} * n)
 	#{alignment VkClearValue}
@@ -240,15 +239,15 @@ allocaClearValueArray n = ContT $ allocaBytesAligned
 alignedSize :: Int -> Int -> Int
 alignedSize sz al = (sz - 1) `div` al * al + 1
 
-pokeClearValueArray :: Ptr C.ClearValueTag -> [Ptr C.ClearValueTag] -> IO ()
+pokeClearValueArray :: C.PtrClearValue -> [C.PtrClearValue] -> IO ()
 pokeClearValueArray p lst = zipWithM_ pokeClearValue (clearValueArrayPtrs p) lst
 
-clearValueArrayPtrs :: Ptr C.ClearValueTag -> [Ptr C.ClearValueTag]
+clearValueArrayPtrs :: C.PtrClearValue -> [C.PtrClearValue]
 clearValueArrayPtrs = iterate (
 	(`alignPtr` #{alignment VkClearValue})
 		. (`plusPtr` #{size VkClearValue}) )
 
-pokeClearValue :: Ptr C.ClearValueTag -> Ptr C.ClearValueTag -> IO ()
+pokeClearValue :: C.PtrClearValue -> C.PtrClearValue -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
 
 data SubmitInfo n vss = SubmitInfo {
