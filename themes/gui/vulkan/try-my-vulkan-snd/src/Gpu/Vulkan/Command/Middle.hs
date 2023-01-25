@@ -36,6 +36,7 @@ module Gpu.Vulkan.Command.Middle (
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable hiding (NullPtr)
 import Control.Arrow
 import Control.Monad.Cont
@@ -67,7 +68,7 @@ import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
-beginRenderPass :: (Pointable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Pokable n, ClearValuesToCore ct) =>
 	CommandBuffer.M.C -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.M.C _ cb)
 	rpbi (Subpass.Contents spcnt) = ($ pure) $ runContT do

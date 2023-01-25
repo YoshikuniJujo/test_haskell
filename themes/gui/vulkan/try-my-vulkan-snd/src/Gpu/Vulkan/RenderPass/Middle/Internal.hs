@@ -92,7 +92,7 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: HeteroVarList ClearValue cts }
 
-beginInfoToCore :: (Pointable n, ClearValuesToCore cts) =>
+beginInfoToCore :: (Pokable n, ClearValuesToCore cts) =>
 	BeginInfo n cts -> ContT r IO (Ptr C.BeginInfo)
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
@@ -101,7 +101,7 @@ beginInfoToCore BeginInfo {
 	beginInfoRenderArea = ra,
 	beginInfoClearValues = heteroVarListLength &&& id -> (cvc, cvs)
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pcvl <- clearValuesToCore cvs
 	pcva <- clearValueListToArray pcvl
 	fb' <- lift $ Framebuffer.fToCore fb
