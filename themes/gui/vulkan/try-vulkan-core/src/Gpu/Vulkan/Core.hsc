@@ -147,7 +147,7 @@ struct "ApplicationInfo" #{size VkApplicationInfo}
 	("apiVersion", ''ApiVersion,
 		[| #{peek VkApplicationInfo, apiVersion} |],
 		[| #{poke VkApplicationInfo, apiVersion} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
 	Word8 -> Word8 -> Word16 -> Word16 -> ApiVersion
