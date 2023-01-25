@@ -19,7 +19,7 @@ class Poke a where poke' :: Ptr a -> a -> IO ()
 class (Sizable a, Peek a) => Peekable a
 instance (Sizable a, Peek a) => Peekable a
 
-class (Sizable a, Poke a) => Pokable a
+class (Sizable a, Poke a, WithPoked a) => Pokable a
 instance (Sizable a, Poke a) => Pokable a
 
 class (Peekable a, Pokable a) => Storable' a
