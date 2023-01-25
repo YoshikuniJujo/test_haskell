@@ -92,25 +92,24 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: HeteroVarList ClearValue cts }
 
-beginInfoToCore :: (Pokable n, ClearValuesToCore cts) =>
-	BeginInfo n cts -> ContT r IO (Ptr C.BeginInfo)
+beginInfoToCore :: (WithPoked n, ClearValuesToCore cts) =>
+	BeginInfo n cts -> (Ptr C.BeginInfo -> IO a) -> IO ()
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoRenderPass = R rp,
 	beginInfoFramebuffer = fb,
 	beginInfoRenderArea = ra,
 	beginInfoClearValues = heteroVarListLength &&& id -> (cvc, cvs)
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pcvl <- clearValuesToCore cvs
-	pcva <- clearValueListToArray pcvl
-	fb' <- lift $ Framebuffer.fToCore fb
-	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
-			C.beginInfoSType = (),
-			C.beginInfoPNext = pnxt,
-			C.beginInfoRenderPass = rp,
-			C.beginInfoFramebuffer = fb',
-			C.beginInfoRenderArea = ra,
-			C.beginInfoClearValueCount = fromIntegral cvc,
-			C.beginInfoPClearValues = pcva }
-	ContT $ withForeignPtr fBeginInfo
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+		clearValuesToCore cvs \pcvl ->
+		clearValueListToArray pcvl \pcva -> do
+		fb' <- Framebuffer.fToCore fb
+		let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
+				C.beginInfoSType = (),
+				C.beginInfoPNext = pnxt',
+				C.beginInfoRenderPass = rp,
+				C.beginInfoFramebuffer = fb',
+				C.beginInfoRenderArea = ra,
+				C.beginInfoClearValueCount = fromIntegral cvc,
+				C.beginInfoPClearValues = pcva }
+		withForeignPtr fBeginInfo f

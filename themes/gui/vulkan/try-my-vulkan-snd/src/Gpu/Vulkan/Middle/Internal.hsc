@@ -173,25 +173,26 @@ data ClearValue (ct :: ClearType) where
 
 class ClearColorValueToCore (cct :: ClearColorType) where
 	clearColorValueToCore ::
-		ClearValue ('ClearTypeColor cct) -> ContT r IO (C.PtrClearColorValue)
+		ClearValue ('ClearTypeColor cct) ->
+		(C.PtrClearColorValue -> IO a) -> IO a
 
 instance ClearColorValueToCore 'ClearColorTypeFloat32 where
-	clearColorValueToCore (ClearValueColor (RgbaDouble r g b a)) = do
-		prgba <- ContT $ allocaArray 4
-		lift $ pokeArray prgba [r, g, b, a]
-		pure $ C.clearColorValueFromFloats prgba
+	clearColorValueToCore (ClearValueColor (RgbaDouble r g b a)) f =
+		allocaArray 4 \prgba -> do
+			pokeArray prgba [r, g, b, a]
+			f $ C.clearColorValueFromFloats prgba
 
 instance ClearColorValueToCore 'ClearColorTypeInt32 where
-	clearColorValueToCore (ClearValueColor (RgbaInt32 r g b a)) = do
-		prgba <- ContT $ allocaArray 4
-		lift $ pokeArray prgba [r, g, b, a]
-		pure $ C.clearColorValueFromInts prgba
+	clearColorValueToCore (ClearValueColor (RgbaInt32 r g b a)) f =
+		allocaArray 4 \prgba -> do
+			pokeArray prgba [r, g, b, a]
+			f $ C.clearColorValueFromInts prgba
 
 instance ClearColorValueToCore 'ClearColorTypeUint32 where
-	clearColorValueToCore (ClearValueColor (RgbaWord32 r g b a)) = do
-		prgba <- ContT $ allocaArray 4
-		lift $ pokeArray prgba [r, g, b, a]
-		pure $ C.clearColorValueFromUints prgba
+	clearColorValueToCore (ClearValueColor (RgbaWord32 r g b a)) f =
+		allocaArray 4 \prgba -> do
+			pokeArray prgba [r, g, b, a]
+			f $ C.clearColorValueFromUints prgba
 
 deriving instance Show (ClearValue ct)
 
@@ -203,36 +204,38 @@ data ClearColorType
 	deriving Show
 
 class ClearValueToCore (ct :: ClearType) where
-	clearValueToCore :: ClearValue ct -> ContT r IO C.PtrClearValue
+	clearValueToCore :: ClearValue ct -> (C.PtrClearValue -> IO a) -> IO a
 
 instance ClearValueToCore 'ClearTypeDepthStencil where
 	clearValueToCore (ClearValueDepthStencil cdsv) =
-		ContT $ C.clearValueFromClearDepthStencilValue cdsv
+		C.clearValueFromClearDepthStencilValue cdsv
 
 instance ClearColorValueToCore cct =>
 	ClearValueToCore ('ClearTypeColor cct) where
-	clearValueToCore cv@(ClearValueColor _) =
-		C.clearValueFromClearColorValue <$> clearColorValueToCore cv
+	clearValueToCore cv@(ClearValueColor _) f =
+		clearColorValueToCore cv $ f . C.clearValueFromClearColorValue
 
 class ClearValuesToCore (cts :: [ClearType]) where
-	clearValuesToCore :: HeteroVarList ClearValue cts -> ContT r IO [C.PtrClearValue]
+	clearValuesToCore ::
+		HeteroVarList ClearValue cts ->
+		([C.PtrClearValue] -> IO a) -> IO a
 
-instance ClearValuesToCore '[] where clearValuesToCore HVNil = pure []
+instance ClearValuesToCore '[] where clearValuesToCore HVNil = ($ [])
 
 instance (ClearValueToCore ct, ClearValuesToCore cts) =>
 	ClearValuesToCore (ct ': cts) where
-	clearValuesToCore (cv :...: cvs) = (:)
-		<$> clearValueToCore cv
-		<*> clearValuesToCore cvs
+	clearValuesToCore (cv :...: cvs) f =
+		clearValueToCore cv \ccv ->
+		clearValuesToCore cvs \ccvs -> f $ ccv : ccvs
 
-clearValueListToArray :: [C.PtrClearValue] -> ContT r IO C.PtrClearValue
-clearValueListToArray (length &&& id -> (pcvc, pcvl)) = do
-	pcva <- allocaClearValueArray pcvc
-	lift $ pokeClearValueArray pcva pcvl
-	pure pcva
+clearValueListToArray :: [C.PtrClearValue] -> (C.PtrClearValue -> IO a) -> IO a
+clearValueListToArray (length &&& id -> (pcvc, pcvl)) f =
+	allocaClearValueArray pcvc \pcva -> do
+		pokeClearValueArray pcva pcvl
+		f pcva
 
-allocaClearValueArray :: Int -> ContT r IO C.PtrClearValue
-allocaClearValueArray n = ContT $ allocaBytesAligned
+allocaClearValueArray :: Int -> (C.PtrClearValue -> IO a) -> IO a
+allocaClearValueArray n = allocaBytesAligned
 	(alignedSize #{size VkClearValue} #{alignment VkClearValue} * n)
 	#{alignment VkClearValue}
 
