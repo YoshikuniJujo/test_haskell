@@ -19,7 +19,7 @@ import qualified Data.Text as T
 
 -- import Gpu.Vulkan.Base
 
-import Gpu.Vulkan.Core (ExtensionProperties(..), FormatProperties)
+import Gpu.Vulkan.Core (ExtensionProperties, FormatProperties)
 import Gpu.Vulkan.PhysicalDevice.Struct.Core
 
 import qualified Gpu.Vulkan.Instance.Core as Instance

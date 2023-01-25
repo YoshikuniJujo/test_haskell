@@ -86,7 +86,7 @@ module Gpu.Vulkan.Core (
 
 	-- ** ClearValue
 
-	ClearValueTag, PtrClearValue,
+	PtrClearValue,
 	clearValueFromClearColorValue, clearValueFromClearDepthStencilValue,
 
 	-- ** ClearColorValue
@@ -110,7 +110,6 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Struct
-import Control.Monad.Cont
 import Data.Word
 import Data.Int
 
@@ -172,9 +171,6 @@ struct "Extent3d" #{size VkExtent3D} #{alignment VkExtent3D} [
 	("depth", ''#{type uint32_t}, [| #{peek VkExtent3D, depth} |],
 		[| #{poke VkExtent3D, depth} |]) ]
 	[''Show, ''Storable]
-
-sharingModeExclusive :: #{type VkSharingMode}
-sharingModeExclusive = #{const VK_SHARING_MODE_EXCLUSIVE}
 
 struct "Viewport" #{size VkViewport} #{alignment VkViewport} [
 	("x", ''#{type float}, [| #{peek VkViewport, x} |],
@@ -345,12 +341,13 @@ struct "ClearDepthStencilValue" #{size VkClearDepthStencilValue}
 		[| #{poke VkClearDepthStencilValue, stencil} |]) ]
 	[''Show, ''Storable]
 
-clearValueFromClearColorValue :: PtrClearColorValue -> Ptr ClearValueTag
+clearValueFromClearColorValue :: PtrClearColorValue -> PtrClearValue
 clearValueFromClearColorValue = castPtr
 
-clearValueFromClearDepthStencilValue :: ClearDepthStencilValue -> ContT r IO (Ptr ClearValueTag)
-clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) =
-	castPtr <$> ContT (withForeignPtr fp)
+clearValueFromClearDepthStencilValue ::
+	ClearDepthStencilValue -> (PtrClearValue -> IO a) -> IO a
+clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) f =
+	withForeignPtr fp $ f . castPtr
 
 struct "FormatProperties" #{size VkFormatProperties}
 		#{alignment VkFormatProperties} [

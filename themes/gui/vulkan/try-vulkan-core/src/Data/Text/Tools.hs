@@ -8,17 +8,15 @@ import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
-import Control.Monad.Cont
 
 import qualified Data.Text as Txt
 import qualified Data.Text.Foreign as Txt
 
 pokeText :: Int -> CString -> Txt.Text -> IO ()
-pokeText mx dst t = ($ pure) $ runContT do
-	(src, ln) <- ContT $ Txt.withCStringLen t
+pokeText mx dst t = Txt.withCStringLen t \(src, ln) -> do
 	let	ln' = min ln (mx - 1)
-	lift do	copyBytes dst src ln'
-		poke (dst `plusPtr` ln' :: Ptr CChar) 0
+	copyBytes dst src ln'
+	poke (dst `plusPtr` ln' :: Ptr CChar) 0
 
 cstringToText :: CString -> IO Txt.Text
 cstringToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
