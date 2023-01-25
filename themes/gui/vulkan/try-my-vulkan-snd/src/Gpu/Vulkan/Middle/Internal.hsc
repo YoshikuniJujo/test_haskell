@@ -27,6 +27,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Marshal.Utils
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
@@ -85,7 +86,7 @@ applicationInfoToCore ApplicationInfo {
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	canm <- textToCString anm
 	cenm <- textToCString enm
-	let	C.ApplicationInfo_ fApplicationInfo = C.ApplicationInfo {
+	let	appInfo = C.ApplicationInfo {
 			C.applicationInfoSType = (),
 			C.applicationInfoPNext = pnxt,
 			C.applicationInfoPApplicationName = canm,
@@ -93,7 +94,7 @@ applicationInfoToCore ApplicationInfo {
 			C.applicationInfoPEngineName = cenm,
 			C.applicationInfoEngineVersion = engv,
 			C.applicationInfoApiVersion = apiv }
-	ContT $ withForeignPtr fApplicationInfo
+	ContT $ withPoked appInfo
 
 newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show
 
@@ -173,7 +174,7 @@ data ClearValue (ct :: ClearType) where
 
 class ClearColorValueToCore (cct :: ClearColorType) where
 	clearColorValueToCore ::
-		ClearValue ('ClearTypeColor cct) -> ContT r IO (Ptr C.ClearColorValueTag)
+		ClearValue ('ClearTypeColor cct) -> ContT r IO (C.PtrClearColorValue)
 
 instance ClearColorValueToCore 'ClearColorTypeFloat32 where
 	clearColorValueToCore (ClearValueColor (RgbaDouble r g b a)) = do
