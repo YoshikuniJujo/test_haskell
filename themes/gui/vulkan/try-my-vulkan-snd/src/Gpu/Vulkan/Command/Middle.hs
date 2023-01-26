@@ -36,7 +36,7 @@ module Gpu.Vulkan.Command.Middle (
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke (WithPoked)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList
@@ -178,7 +178,7 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	WithPokedHeteroMap ns, WithPokedHeteroMap ns', PokableHeteroMap ns''
+	WithPokedHeteroMap ns, WithPokedHeteroMap ns', WithPokedHeteroMap ns''
 	) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
@@ -197,8 +197,7 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 		let	bbc = length cbbs in
 		allocaArray bbc \pbbs ->
 		pokeArray pbbs cbbs >>
-
-		runContT (pokableHeteroMapM ibs $ ContT . Image.memoryBarrierToCore) \cibs ->
+		withPokedHeteroMapM ibs Image.memoryBarrierToCore \cibs ->
 		let	ibc = length cibs in
 		allocaArray ibc \pibs ->
 		pokeArray pibs cibs >>

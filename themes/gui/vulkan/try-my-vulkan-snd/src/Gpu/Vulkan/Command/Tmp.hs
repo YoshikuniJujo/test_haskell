@@ -97,7 +97,7 @@ pushConstants' :: forall vs ts .
 pushConstants' (CommandBuffer.CC mcb) = M.pushConstants' mcb
 
 pipelineBarrier :: (
-	WithPokedHeteroMap ns, WithPokedHeteroMap ns', PokableHeteroMap ns''
+	WithPokedHeteroMap ns, WithPokedHeteroMap ns', WithPokedHeteroMap ns''
 	) =>
 	CommandBuffer.CC vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->

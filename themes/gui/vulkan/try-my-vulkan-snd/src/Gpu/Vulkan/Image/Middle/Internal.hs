@@ -171,8 +171,8 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierImage :: I,
 	memoryBarrierSubresourceRange :: SubresourceRange }
 
-memoryBarrierToCore :: Pokable n =>
-	MemoryBarrier n -> (C.MemoryBarrier -> IO a) -> IO a
+memoryBarrierToCore :: WithPoked n =>
+	MemoryBarrier n -> (C.MemoryBarrier -> IO a) -> IO ()
 memoryBarrierToCore MemoryBarrier {
 	memoryBarrierNext = mnxt,
 	memoryBarrierSrcAccessMask = AccessFlagBits sam,
@@ -183,11 +183,11 @@ memoryBarrierToCore MemoryBarrier {
 	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
 	memoryBarrierImage = I rimg,
 	memoryBarrierSubresourceRange = srr } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	readIORef rimg >>= \(_, img) ->
 	f C.MemoryBarrier {
 		C.memoryBarrierSType = (),
-		C.memoryBarrierPNext = pnxt,
+		C.memoryBarrierPNext = pnxt',
 		C.memoryBarrierSrcAccessMask = sam,
 		C.memoryBarrierDstAccessMask = dam,
 		C.memoryBarrierOldLayout = ol,
