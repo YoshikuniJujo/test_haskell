@@ -170,12 +170,12 @@ data Barrier n = Barrier {
 	barrierDstAccessMask :: AccessFlags }
 	deriving Show
 
-barrierToCore :: Pointable n => Barrier n -> ContT r IO C.Barrier
+barrierToCore :: Pokable n => Barrier n -> ContT r IO C.Barrier
 barrierToCore Barrier {
 	barrierNext = mnxt,
 	barrierSrcAccessMask = AccessFlagBits sam,
 	barrierDstAccessMask = AccessFlagBits dam } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pure C.Barrier {
 		C.barrierSType = (),
 		C.barrierPNext = pnxt,

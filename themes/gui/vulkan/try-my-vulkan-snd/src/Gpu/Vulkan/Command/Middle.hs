@@ -178,7 +178,7 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	PointableHeteroMap ns, WithPokedHeteroMap ns', PointableHeteroMap ns''
+	PokableHeteroMap ns, WithPokedHeteroMap ns', PointableHeteroMap ns''
 	) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
@@ -189,7 +189,7 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs = ($ pure) $ runContT do
-	cmbs <- pointableHeteroMapM mbs Memory.M.barrierToCore
+	cmbs <- pokableHeteroMapM mbs Memory.M.barrierToCore
 	let	mbc = length cmbs
 	pmbs <- ContT $ allocaArray mbc
 	lift $ pokeArray pmbs cmbs
