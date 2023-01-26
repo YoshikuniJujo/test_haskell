@@ -155,7 +155,7 @@ pushConstants' (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
 		(PushConstant.offset @whole @ts 0) xs
 
 pipelineBarrier :: (
-	PokableHeteroMap ns,
+	WithPokedHeteroMap ns,
 	WithPokedHeteroMap (Buffer.FirstOfFives nsmsbnmobjs),
 	PointableHeteroMap (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,

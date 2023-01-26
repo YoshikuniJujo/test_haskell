@@ -178,7 +178,7 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	PokableHeteroMap ns, WithPokedHeteroMap ns', PointableHeteroMap ns''
+	WithPokedHeteroMap ns, WithPokedHeteroMap ns', PointableHeteroMap ns''
 	) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
@@ -189,20 +189,23 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs = ($ pure) $ runContT do
-	cmbs <- pokableHeteroMapM mbs Memory.M.barrierToCore
-	let	mbc = length cmbs
-	pmbs <- ContT $ allocaArray mbc
-	lift $ pokeArray pmbs cmbs
+
 	cibs <- pointableHeteroMapM ibs Image.memoryBarrierToCore
 	let	ibc = length cibs
 	pibs <- ContT $ allocaArray ibc
 	lift $ pokeArray pibs cibs
 
-	lift $ withPokedHeteroMapM bbs Buffer.M.memoryBarrierToCore' \cbbs -> let
-		bbc = length cbbs in allocaArray bbc \pbbs -> do
-			pokeArray pbbs cbbs
-			C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
-				(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
+	lift $	
+		withPokedHeteroMapM mbs Memory.M.barrierToCore \cmbs ->
+		let	mbc = length cmbs in
+		allocaArray mbc \pmbs ->
+		pokeArray pmbs cmbs >>
+		withPokedHeteroMapM bbs Buffer.M.memoryBarrierToCore' \cbbs ->
+		let	bbc = length cbbs in
+		allocaArray bbc \pbbs ->
+		pokeArray pbbs cbbs >>
+		C.pipelineBarrier cb ssm dsm dfs (fromIntegral mbc) pmbs
+			(fromIntegral bbc) pbbs (fromIntegral ibc) pibs
 
 blitImage :: CommandBuffer.M.C ->
 	Image.I -> Image.Layout -> Image.I -> Image.Layout ->
