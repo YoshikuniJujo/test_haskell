@@ -17,7 +17,8 @@ module Gpu.Vulkan.CommandBuffer.Middle.Internal (
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke (
+	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -76,32 +77,31 @@ allocate (Device.D dvc) ai =  mapM newC =<<
 	peekArray cbc pc
 	where cbc = fromIntegral $ allocateInfoCommandBufferCount ai
 
-data BeginInfo n n' = BeginInfo {
+data BeginInfo n ii = BeginInfo {
 	beginInfoNext :: Maybe n,
 	beginInfoFlags :: UsageFlags,
-	beginInfoInheritanceInfo :: Maybe (InheritanceInfo n') }
+	beginInfoInheritanceInfo :: Maybe (InheritanceInfo ii) }
 
-instance Default (BeginInfo n n') where
+instance Default (BeginInfo n ii) where
 	def = BeginInfo {
 		beginInfoNext = Nothing,
 		beginInfoFlags = UsageFlagsZero,
 		beginInfoInheritanceInfo = Nothing }
 
-beginInfoToCore :: (Pokable n, Pokable n') =>
-	BeginInfo n n' -> ContT r IO (Ptr C.BeginInfo)
+beginInfoToCore :: (WithPoked n, WithPoked ii) =>
+	BeginInfo n ii -> (Ptr C.BeginInfo -> IO a) -> IO ()
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoFlags = UsageFlagBits flgs,
-	beginInfoInheritanceInfo = mii
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pii <- maybe (pure NullPtr) inheritanceInfoToCore mii
+	beginInfoInheritanceInfo = mii } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	maybe ($ NullPtr) inheritanceInfoToCore mii \pii ->
 	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
 			C.beginInfoSType = (),
-			C.beginInfoPNext = pnxt,
+			C.beginInfoPNext = pnxt',
 			C.beginInfoFlags = flgs,
-			C.beginInfoPInheritanceInfo = pii }
-	ContT $ withForeignPtr fBeginInfo
+			C.beginInfoPInheritanceInfo = pii } in
+	withForeignPtr fBeginInfo $ (() <$) . f
 
 data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoNext :: Maybe n,
@@ -112,8 +112,8 @@ data InheritanceInfo n = InheritanceInfo {
 	inheritanceInfoQueryFlags :: QueryControlFlags,
 	inheritanceInfoPipelineStatistics :: QueryPipelineStatisticFlags }
 
-inheritanceInfoToCore :: Pokable n =>
-	InheritanceInfo n -> ContT r IO (Ptr C.InheritanceInfo)
+inheritanceInfoToCore :: WithPoked n =>
+	InheritanceInfo n -> (Ptr C.InheritanceInfo -> IO a) -> IO ()
 inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoNext = mnxt,
 	inheritanceInfoRenderPass = RenderPass.R rp,
@@ -122,25 +122,22 @@ inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoOcclusionQueryEnable = oqe,
 	inheritanceInfoQueryFlags = QueryControlFlagBits qf,
 	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	fb' <- lift $ Framebuffer.fToCore fb
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	Framebuffer.fToCore fb >>= \fb' ->
 	let	C.InheritanceInfo_ fInheritanceInfo =  C.InheritanceInfo {
 			C.inheritanceInfoSType = (),
-			C.inheritanceInfoPNext = pnxt,
+			C.inheritanceInfoPNext = pnxt',
 			C.inheritanceInfoRenderPass = rp,
 			C.inheritanceInfoSubpass = sp,
 			C.inheritanceInfoFramebuffer = fb',
 			C.inheritanceInfoOcclusionQueryEnable = boolToBool32 oqe,
 			C.inheritanceInfoQueryFlags = qf,
-			C.inheritanceInfoPipelineStatistics = ps }
-	ContT $ withForeignPtr fInheritanceInfo
+			C.inheritanceInfoPipelineStatistics = ps } in
+	withForeignPtr fInheritanceInfo $ (() <$) . f
 
-begin :: (Pokable n, Pokable n') => C -> BeginInfo n n' -> IO ()
-begin (C _ c) bi = ($ pure) $ runContT do
-	pbi <- beginInfoToCore bi
-	lift do	r <- C.begin c pbi
-		throwUnlessSuccess $ Result r
+begin :: (WithPoked n, WithPoked ii) => C -> BeginInfo n ii -> IO ()
+begin (C _ c) bi =
+	beginInfoToCore bi \pbi -> throwUnlessSuccess . Result =<< C.begin c pbi
 
 end :: C -> IO ()
 end (C rppl c) = throwUnlessSuccess . Result =<< do
