@@ -44,22 +44,21 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoCommandBufferCount :: Word32 }
 	deriving Show
 
-allocateInfoToCore :: Pokable n =>
-	AllocateInfo n -> ContT r IO (Ptr C.AllocateInfo)
+allocateInfoToCore :: WithPoked n =>
+	AllocateInfo n -> (Ptr C.AllocateInfo -> IO a) -> IO ()
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoCommandPool = CommandPool.C cp,
 	allocateInfoLevel = Level lvl,
 	allocateInfoCommandBufferCount = cbc
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	C.AllocateInfo_ fAllocateInfo = C.AllocateInfo {
 			C.allocateInfoSType = (),
-			C.allocateInfoPNext = pnxt,
+			C.allocateInfoPNext = pnxt',
 			C.allocateInfoCommandPool = cp,
 			C.allocateInfoLevel = lvl,
-			C.allocateInfoCommandBufferCount = cbc }
-	ContT $ withForeignPtr fAllocateInfo
+			C.allocateInfoCommandBufferCount = cbc } in
+	withForeignPtr fAllocateInfo f
 
 data C = C {
 	cPipeline :: IORef Pipeline.C.P,
@@ -68,13 +67,13 @@ data C = C {
 newC :: C.C -> IO C
 newC c = C <$> newIORef nullPtr <*> pure c
 
-allocate :: Pokable n => Device.D -> AllocateInfo n -> IO [C]
-allocate (Device.D dvc) ai = ($ pure) . runContT $ lift . mapM newC =<< do
-	pai <- allocateInfoToCore ai
-	pc <- ContT $ allocaArray cbc
-	lift do	r <- C.allocate dvc pai pc
+allocate :: WithPoked n => Device.D -> AllocateInfo n -> IO [C]
+allocate (Device.D dvc) ai =  mapM newC =<<
+	allocaArray cbc \pc -> do
+	allocateInfoToCore ai \pai -> do
+		r <- C.allocate dvc pai pc
 		throwUnlessSuccess $ Result r
-		peekArray cbc pc
+	peekArray cbc pc
 	where cbc = fromIntegral $ allocateInfoCommandBufferCount ai
 
 data BeginInfo n n' = BeginInfo {
