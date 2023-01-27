@@ -88,8 +88,7 @@ create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 		throwUnlessSuccess $ Result r
 		peek pl
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (L l) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc l pac
+destroy (Device.D dvc) (L l) mac =
+	AllocationCallbacks.maybeToCore' mac \pac -> C.destroy dvc l pac
