@@ -78,15 +78,15 @@ createInfoToCore CreateInfo {
 			C.createInfoPBindings = pbs }
 	ContT $ withForeignPtr fci
 
-create :: (Pokable n, Pokable c) =>
+create :: (Pokable n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
 	pl <- ContT alloca
-	lift do	r <- C.create dvc pci pac pl
+	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
+		r <- C.create dvc pci pac pl
 		throwUnlessSuccess $ Result r
-		peek pl
+	lift $ peek pl
 
 destroy :: WithPoked d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
