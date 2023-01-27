@@ -38,36 +38,35 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoSetLayouts :: [Layout.L] }
 	deriving Show
 
-allocateInfoToCore :: Pokable n => AllocateInfo n -> ContT r IO C.AllocateInfo
+allocateInfoToCore ::
+	WithPoked n => AllocateInfo n -> (C.AllocateInfo -> IO a) -> IO ()
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoDescriptorPool = Pool.D pl,
 	allocateInfoSetLayouts =
 		(((id &&& fromIntegral) `first`) . (length &&& id)) ->
-		((dsci, dscw), sls)
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	psls <- do
-		p <- ContT $ allocaArray dsci
-		p <$ lift (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
-	pure C.AllocateInfo {
+		((dsci, dscw), sls) } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
+	psls <- allocaArray dsci \p ->
+		p <$ (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
+	f C.AllocateInfo {
 		C.allocateInfoSType = (),
-		C.allocateInfoPNext = pnxt,
+		C.allocateInfoPNext = pnxt',
 		C.allocateInfoDescriptorPool = pl,
 		C.allocateInfoDescriptorSetCount = dscw,
 		C.allocateInfoPSetLayouts = psls }
 
 newtype D = D C.S deriving Show
 
-allocateDs :: Pokable n => Device.D -> AllocateInfo n -> IO [D]
+allocateDs :: WithPoked n => Device.D -> AllocateInfo n -> IO [D]
 allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
-	cai@(C.AllocateInfo_ fai) <- allocateInfoToCore ai
-	pai <- ContT $ withForeignPtr fai
-	let	dsc = fromIntegral $ C.allocateInfoDescriptorSetCount cai
+	let	dsc = fromIntegral . length $ allocateInfoSetLayouts ai
 	pss <- ContT $ allocaArray dsc
-	lift do	r <- C.allocateSs dvc pai pss
-		throwUnlessSuccess $ Result r
-		peekArray dsc pss
+	lift $ allocateInfoToCore ai \(C.AllocateInfo_ fai) ->
+		withForeignPtr fai \pai -> do
+			r <- C.allocateSs dvc pai pss
+			throwUnlessSuccess $ Result r
+	lift $ peekArray dsc pss
 
 data Copy n = Copy {
 	copyNext :: Maybe n,
@@ -80,7 +79,7 @@ data Copy n = Copy {
 	copyDescriptorCount :: Word32 }
 	deriving Show
 
-copyToCore :: Pokable n => Copy n -> ContT r IO C.Copy
+copyToCore :: WithPoked n => Copy n -> (C.Copy -> IO a) -> IO ()
 copyToCore Copy {
 	copyNext = mnxt,
 	copySrcSet = D ss,
@@ -89,12 +88,11 @@ copyToCore Copy {
 	copyDstSet = D ds,
 	copyDstBinding = db,
 	copyDstArrayElement = dae,
-	copyDescriptorCount = dc
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pure C.Copy {
+	copyDescriptorCount = dc } f =
+	withPokedMaybe' mnxt \pnxt ->
+	withPtrS pnxt \(castPtr -> pnxt') -> f C.Copy {
 		C.copySType = (),
-		C.copyPNext = pnxt,
+		C.copyPNext = pnxt',
 		C.copySrcSet = ss,
 		C.copySrcBinding = sb,
 		C.copySrcArrayElement = sae,
@@ -147,11 +145,11 @@ writeSourcesToCore :: WriteSources -> ContT r IO (
 	Ptr Descriptor.C.BufferInfo, Ptr BufferView.C.B )
 writeSourcesToCore = \case
 	WriteSourcesInNext c -> pure (c, NullPtr, NullPtr, NullPtr)
-	WriteSourcesImageInfo (length &&& id -> (ln, iis)) -> do
-		piis <- ContT $ allocaArray ln
-		iis' <- lift $ Descriptor.imageInfoToCore `mapM` iis
-		lift $ pokeArray piis iis'
-		pure (fromIntegral ln, piis, NullPtr, NullPtr)
+	WriteSourcesImageInfo (length &&& id -> (ln, iis)) -> ContT \f ->
+		allocaArray ln \piis ->
+		Descriptor.imageInfoToCore `mapM` iis >>= \iis' ->
+		pokeArray piis iis' >>
+		f (fromIntegral ln, piis, NullPtr, NullPtr)
 	WriteSourcesBufferInfo
 		(length &&& (Descriptor.bufferInfoToCore <$>) -> (ln, bis)) ->
 		do	pbis <- ContT $ allocaArray ln
@@ -163,11 +161,12 @@ writeSourcesToCore = \case
 		lift $ pokeArray pbvs bvs
 		pure (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
-updateDs :: (Pokable w, Pokable c) =>
+updateDs :: (Pokable w, WithPoked c) =>
 	Device.D -> [Write w] -> [Copy c] -> IO ()
 updateDs (Device.D dvc) ws cs = ($ pure) $ runContT do
 	ws' <- writeToCore `mapM` ws
-	cs' <- copyToCore `mapM` cs
 	(fromIntegral -> wc, pws) <- allocaAndPokeArray ws'
-	(fromIntegral -> cc, pcs) <- allocaAndPokeArray cs'
-	lift $ C.updateSs dvc wc pws cc pcs
+
+	lift $ (copyToCore `mapContM` cs) \cs' ->
+		allocaAndPokeArray' cs' \(fromIntegral -> cc, pcs) ->
+		C.updateSs dvc wc pws cc pcs

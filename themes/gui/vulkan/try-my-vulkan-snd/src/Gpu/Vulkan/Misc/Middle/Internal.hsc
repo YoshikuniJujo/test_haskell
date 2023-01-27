@@ -119,6 +119,13 @@ allocaAndPokeArray (length &&& id -> (xc, xs)) = do
 	p <- ContT $ allocaArray xc
 	(xc, p) <$ lift (pokeArray p xs)
 
+allocaAndPokeArray' :: Storable a => [a] -> ((Int, Ptr a) -> IO b) -> IO b
+allocaAndPokeArray' (length &&& id -> (xc, xs)) f
+	= allocaArray xc \p -> f (xc, p) <* pokeArray p xs
+
+mapContM :: Monad m => (a -> (b -> m c) -> m c) -> [a] -> ([b] -> m c) -> m c
+mapContM f = runContT . mapM (ContT . f)
+
 maybeToStorable :: Storable a => Maybe a -> ContT r IO (Ptr a)
 maybeToStorable = \case
 	Nothing -> pure nullPtr
