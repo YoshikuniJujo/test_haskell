@@ -117,7 +117,7 @@ data WriteSources
 	| WriteSourcesBufferView [BufferView.B]
 	deriving Show
 
-writeToCore :: Pokable n => Write n -> ContT r IO C.Write
+writeToCore :: Pokable n => Write n -> (C.Write -> IO a) -> IO a
 writeToCore Write {
 	writeNext = mnxt,
 	writeDstSet = D s,
@@ -125,10 +125,9 @@ writeToCore Write {
 	writeDstArrayElement = ae,
 	writeDescriptorType = Descriptor.Type tp,
 	writeSources = srcs
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	(cnt, pii, pbi, ptbv) <- writeSourcesToCore srcs
-	pure C.Write {
+	} f = withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	writeSourcesToCore srcs \(cnt, pii, pbi, ptbv) ->
+	f C.Write {
 		C.writeSType = (),
 		C.writePNext = pnxt,
 		C.writeDstSet = s,
@@ -140,31 +139,31 @@ writeToCore Write {
 		C.writePBufferInfo = pbi,
 		C.writePTexelBufferView = ptbv }
 
-writeSourcesToCore :: WriteSources -> ContT r IO (
+writeSourcesToCore :: WriteSources -> ((
 	Word32, Ptr Descriptor.C.ImageInfo,
-	Ptr Descriptor.C.BufferInfo, Ptr BufferView.C.B )
-writeSourcesToCore = \case
-	WriteSourcesInNext c -> pure (c, NullPtr, NullPtr, NullPtr)
-	WriteSourcesImageInfo (length &&& id -> (ln, iis)) -> ContT \f ->
+	Ptr Descriptor.C.BufferInfo, Ptr BufferView.C.B ) -> IO a) -> IO a
+writeSourcesToCore ws f = case ws of
+	WriteSourcesInNext c -> f (c, NullPtr, NullPtr, NullPtr)
+	WriteSourcesImageInfo (length &&& id -> (ln, iis)) ->
 		allocaArray ln \piis ->
 		Descriptor.imageInfoToCore `mapM` iis >>= \iis' ->
 		pokeArray piis iis' >>
 		f (fromIntegral ln, piis, NullPtr, NullPtr)
 	WriteSourcesBufferInfo
 		(length &&& (Descriptor.bufferInfoToCore <$>) -> (ln, bis)) ->
-		do	pbis <- ContT $ allocaArray ln
-			lift $ pokeArray pbis bis
-			pure (fromIntegral ln, NullPtr, pbis, NullPtr)
+		allocaArray ln \pbis ->
+		pokeArray pbis bis >>
+		f (fromIntegral ln, NullPtr, pbis, NullPtr)
 	WriteSourcesBufferView
-		(length &&& ((\(BufferView.B b) -> b) <$>) -> (ln, bvs)) -> do
-		pbvs <- ContT $ allocaArray ln
-		lift $ pokeArray pbvs bvs
-		pure (fromIntegral ln, NullPtr, NullPtr, pbvs)
+		(length &&& ((\(BufferView.B b) -> b) <$>) -> (ln, bvs)) ->
+		allocaArray ln \pbvs ->
+		pokeArray pbvs bvs >>
+		f (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
 updateDs :: (Pokable w, WithPoked c) =>
 	Device.D -> [Write w] -> [Copy c] -> IO ()
 updateDs (Device.D dvc) ws cs = ($ pure) $ runContT do
-	ws' <- writeToCore `mapM` ws
+	ws' <- (ContT . writeToCore) `mapM` ws
 	(fromIntegral -> wc, pws) <- allocaAndPokeArray ws'
 
 	lift $ (copyToCore `mapContM` cs) \cs' ->
