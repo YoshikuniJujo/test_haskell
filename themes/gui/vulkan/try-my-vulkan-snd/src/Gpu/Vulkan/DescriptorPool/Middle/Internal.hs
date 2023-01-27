@@ -12,9 +12,8 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke (WithPoked, withPokedMaybe', withPtrS)
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -41,39 +40,37 @@ data CreateInfo n = CreateInfo {
 	createInfoPoolSizes :: [Size] }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore ::
+	WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoMaxSets = ms,
 	createInfoPoolSizes = (length &&& (sizeToCore <$>) -> (psc, pss))
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	ppss <- ContT $ allocaArray psc
-	lift $ pokeArray ppss pss
+	} f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray psc \ppss ->
+	pokeArray ppss pss >>
 	let	C.CreateInfo_ fci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoMaxSets = ms,
 			C.createInfoPoolSizeCount = fromIntegral psc,
-			C.createInfoPPoolSizes = ppss }
-	ContT $ withForeignPtr fci
+			C.createInfoPPoolSizes = ppss } in
+	withForeignPtr fci f
 
 newtype D = D C.P deriving Show
 
-create :: (Pokable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO D
-create (Device.D dvc) ci mac = (D <$>) . ($ pure) $ runContT do
-	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pp <- ContT alloca
-	lift do	r <- C.create dvc pci pac pp
-		throwUnlessSuccess $ Result r
-		peek pp
+create (Device.D dvc) ci mac = D <$> alloca \pp -> do
+	createInfoToCore ci \pci ->
+		AllocationCallbacks.maybeToCore' mac \pac ->
+		throwUnlessSuccess . Result =<< C.create dvc pci pac pp
+	peek pp
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> D -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (D p) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc p pac
+destroy (Device.D dvc) (D p) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc p
