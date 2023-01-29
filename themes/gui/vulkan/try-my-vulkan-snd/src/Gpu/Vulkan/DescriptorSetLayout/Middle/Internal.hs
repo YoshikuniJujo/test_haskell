@@ -43,9 +43,9 @@ bindingToCore Binding {
 	bindingDescriptorCountOrImmutableSamplers =
 		either ((, []) . Left) (Right . length &&& id) -> (dc, ss),
 	bindingStageFlags = ShaderStageFlagBits sf } = do
-		pss <- flip (either . const $ pure NullPtr) dc \c -> do
-			p <- ContT $ allocaArray c
-			p <$ lift (pokeArray p $ (\(Sampler.S s) -> s) <$> ss)
+		pss <- ContT \f -> flip (either . const $ f NullPtr) dc \c -> allocaArray c \p -> do
+			pokeArray p $ (\(Sampler.S s) -> s) <$> ss
+			f p
 		pure C.Binding {
 			C.bindingBinding = b,
 			C.bindingDescriptorType = dt,
