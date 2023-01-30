@@ -42,16 +42,17 @@ bindingToCore Binding {
 	bindingDescriptorType = Descriptor.Type dt,
 	bindingDescriptorCountOrImmutableSamplers =
 		either ((, []) . Left) (Right . length &&& id) -> (dc, ss),
-	bindingStageFlags = ShaderStageFlagBits sf } = do
-		pss <- ContT \f -> flip (either . const $ f NullPtr) dc \c -> allocaArray c \p -> do
+	bindingStageFlags = ShaderStageFlagBits sf } = ContT \f -> case dc of
+		Left _ -> f $ mk NullPtr
+		Right c -> allocaArray c \p -> do
 			pokeArray p $ (\(Sampler.S s) -> s) <$> ss
-			f p
-		pure C.Binding {
-			C.bindingBinding = b,
-			C.bindingDescriptorType = dt,
-			C.bindingDescriptorCount = either id fromIntegral dc,
-			C.bindingStageFlags = sf,
-			C.bindingPImmutableSamplers = pss }
+			f $ mk p
+	where mk p = C.Binding {
+		C.bindingBinding = b,
+		C.bindingDescriptorType = dt,
+		C.bindingDescriptorCount = either id fromIntegral dc,
+		C.bindingStageFlags = sf,
+		C.bindingPImmutableSamplers = p }
 
 newtype L = L C.L deriving Show
 
