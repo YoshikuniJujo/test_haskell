@@ -21,6 +21,7 @@ import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.DescriptorSetLayout.Enum
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
@@ -36,13 +37,13 @@ data Binding = Binding {
 	bindingStageFlags :: ShaderStageFlags }
 	deriving Show
 
-bindingToCore :: Binding -> ContT r IO C.Binding
+bindingToCore :: Binding -> (C.Binding -> IO a) -> IO a
 bindingToCore Binding {
 	bindingBinding = b,
 	bindingDescriptorType = Descriptor.Type dt,
 	bindingDescriptorCountOrImmutableSamplers =
 		either ((, []) . Left) (Right . length &&& id) -> (dc, ss),
-	bindingStageFlags = ShaderStageFlagBits sf } = ContT \f -> case dc of
+	bindingStageFlags = ShaderStageFlagBits sf } f = case dc of
 		Left _ -> f $ mk NullPtr
 		Right c -> allocaArray c \p -> do
 			pokeArray p $ (\(Sampler.S s) -> s) <$> ss
@@ -62,27 +63,28 @@ data CreateInfo n = CreateInfo {
 	createInfoBindings :: [Binding] }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore ::
+	Pokable n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoBindings = length &&& id -> (bc, bs) } = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pbs <- ContT $ allocaArray bc
-	cbs <- bindingToCore `mapM` bs
-	lift $ pokeArray pbs cbs
-	let	C.CreateInfo_ fci = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoBindingCount = fromIntegral bc,
-			C.createInfoPBindings = pbs }
-	ContT $ withForeignPtr fci
+	createInfoBindings = length &&& id -> (bc, bs) } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	allocaArray bc \pbs ->
+	(bindingToCore `mapContM` bs) \cbs -> do
+		pokeArray pbs cbs
+		let	C.CreateInfo_ fci = C.CreateInfo {
+				C.createInfoSType = (),
+				C.createInfoPNext = pnxt,
+				C.createInfoFlags = flgs,
+				C.createInfoBindingCount = fromIntegral bc,
+				C.createInfoPBindings = pbs }
+		withForeignPtr fci f
 
 create :: (Pokable n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
-	pci <- createInfoToCore ci
+	pci <- ContT $ createInfoToCore ci
 	pl <- ContT alloca
 	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
 		r <- C.create dvc pci pac pl
