@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
@@ -12,8 +12,7 @@ module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable.PeekPoke (
-	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
+import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
@@ -118,19 +117,19 @@ data WriteSources
 	| WriteSourcesBufferView [BufferView.B]
 	deriving Show
 
-writeToCore :: WithPoked n => Write n -> (C.Write -> IO a) -> IO ()
+writeToCore :: Pokable n => Write n -> (C.Write -> IO a) -> IO a
 writeToCore Write {
 	writeNext = mnxt,
 	writeDstSet = D s,
 	writeDstBinding = bdg,
 	writeDstArrayElement = ae,
 	writeDescriptorType = Descriptor.Type tp,
-	writeSources = srcs } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	writeSources = srcs
+	} f = withPokedMaybe mnxt \(castPtr -> pnxt) ->
 	writeSourcesToCore srcs \(cnt, pii, pbi, ptbv) ->
 	f C.Write {
 		C.writeSType = (),
-		C.writePNext = pnxt',
+		C.writePNext = pnxt,
 		C.writeDstSet = s,
 		C.writeDstBinding = bdg,
 		C.writeDstArrayElement = ae,
@@ -161,11 +160,12 @@ writeSourcesToCore ws f = case ws of
 		pokeArray pbvs bvs >>
 		f (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
-updateDs :: (WithPoked w, WithPoked c) =>
+updateDs :: (Pokable w, WithPoked c) =>
 	Device.D -> [Write w] -> [Copy c] -> IO ()
-updateDs (Device.D dvc) ws cs =
-	(writeToCore `mapContM` ws) \ws' ->
-	allocaAndPokeArray' ws' \(fromIntegral -> wc, pws) ->
-	(copyToCore `mapContM` cs) \cs' ->
-	allocaAndPokeArray' cs' \(fromIntegral -> cc, pcs) ->
-	C.updateSs dvc wc pws cc pcs
+updateDs (Device.D dvc) ws cs = ($ pure) $ runContT do
+	ws' <- (ContT . writeToCore) `mapM` ws
+	(fromIntegral -> wc, pws) <- allocaAndPokeArray ws'
+
+	lift $ (copyToCore `mapContM` cs) \cs' ->
+		allocaAndPokeArray' cs' \(fromIntegral -> cc, pcs) ->
+		C.updateSs dvc wc pws cc pcs
