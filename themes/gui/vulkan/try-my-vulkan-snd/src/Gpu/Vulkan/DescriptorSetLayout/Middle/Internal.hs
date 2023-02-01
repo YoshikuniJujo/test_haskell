@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout.Middle.Internal (
@@ -12,9 +12,9 @@ import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke (
+	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -64,32 +64,29 @@ data CreateInfo n = CreateInfo {
 	deriving Show
 
 createInfoToCore ::
-	Pokable n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+	WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoBindings = length &&& id -> (bc, bs) } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray bc \pbs ->
 	(bindingToCore `mapContM` bs) \cbs -> do
 		pokeArray pbs cbs
 		let	C.CreateInfo_ fci = C.CreateInfo {
 				C.createInfoSType = (),
-				C.createInfoPNext = pnxt,
+				C.createInfoPNext = pnxt',
 				C.createInfoFlags = flgs,
 				C.createInfoBindingCount = fromIntegral bc,
 				C.createInfoPBindings = pbs }
 		withForeignPtr fci f
 
-create :: (Pokable n, WithPoked c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
-create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
-	pci <- ContT $ createInfoToCore ci
-	pl <- ContT alloca
-	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
-		r <- C.create dvc pci pac pl
-		throwUnlessSuccess $ Result r
-	lift $ peek pl
+create (Device.D dvc) ci mac = L <$> alloca \pl -> do
+	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore' mac \pac ->
+		throwUnlessSuccess . Result =<< C.create dvc pci pac pl
+	peek pl
 
 destroy :: WithPoked d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
