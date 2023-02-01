@@ -153,7 +153,7 @@ enumerateExtensionProperties (P pdvc) mlnm = ($ pure) $ runContT do
 	pExtensionCount <- ContT alloca
 	cmlnm <- case mlnm of
 		Nothing -> pure NullPtr
-		Just lnm -> textToCString lnm
+		Just lnm -> ContT $ textToCString lnm
 	(fromIntegral -> extensionCount) <- lift do
 		r <- C.enumerateExtensionProperties
 			pdvc cmlnm pExtensionCount NullPtr

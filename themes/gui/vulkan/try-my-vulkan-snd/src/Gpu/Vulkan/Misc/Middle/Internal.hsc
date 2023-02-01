@@ -32,7 +32,7 @@ stringListToCStringArray strs = do
 
 textListToCStringArray :: [Txt.Text] -> ContT r IO (Ptr CString)
 textListToCStringArray txts = do
-	cstrl <- textToCString `mapM` txts
+	cstrl <- (ContT . textToCString) `mapM` txts
 	pcstra <- ContT . allocaArray $ length txts
 	pcstra <$ lift (pokeArray pcstra cstrl)
 
@@ -67,13 +67,12 @@ type ListUint32T = [#{type uint32_t}]
 uint64Max :: #{type uint64_t}
 uint64Max = #{const UINT64_MAX}
 
-textToCString :: Txt.Text -> ContT r IO CString
-textToCString t = do
-	(cs, ln) <- ContT $ Txt.withCStringLen t
-	cs' <- ContT . allocaArray $ ln + 1
-	cs' <$ lift do
+textToCString :: Txt.Text -> (CString -> IO a) -> IO a
+textToCString t f = Txt.withCStringLen t \(cs, ln) ->
+	allocaArray (ln + 1) \cs' -> do
 		copyBytes cs' cs ln
 		poke (cs' `plusPtr` ln :: Ptr CChar) 0
+		f cs'
 
 pokeText :: Int -> CString -> Txt.Text -> IO ()
 pokeText mx dst t = ($ pure) $ runContT do

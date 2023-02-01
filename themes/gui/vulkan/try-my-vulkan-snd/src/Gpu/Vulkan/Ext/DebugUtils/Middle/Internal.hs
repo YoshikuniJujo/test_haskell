@@ -47,7 +47,7 @@ labelToCore Label {
 	labelLabelName = ln,
 	labelColor = RgbaDouble r g b a } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cln <- textToCString ln
+	cln <- ContT $ textToCString ln
 	pure C.Label {
 		C.labelSType = (),
 		C.labelPNext = pnxt,
@@ -82,7 +82,7 @@ objectNameInfoToCore ObjectNameInfo {
 	objectNameInfoObjectName = mon
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	con <- maybe (pure NullPtr) textToCString mon
+	con <- maybe (pure NullPtr) (ContT . textToCString) mon
 	pure C.ObjectNameInfo {
 		C.objectNameInfoSType = (),
 		C.objectNameInfoPNext = pnxt,

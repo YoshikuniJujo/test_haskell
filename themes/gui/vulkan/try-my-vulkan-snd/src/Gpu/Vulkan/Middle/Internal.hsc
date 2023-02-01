@@ -83,8 +83,8 @@ applicationInfoToCore ApplicationInfo {
 	applicationInfoApiVersion = (\(ApiVersion v) -> v) -> apiv
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	canm <- textToCString anm
-	cenm <- textToCString enm
+	canm <- ContT $ textToCString anm
+	cenm <- ContT $ textToCString enm
 	let	appInfo = C.ApplicationInfo {
 			C.applicationInfoSType = (),
 			C.applicationInfoPNext = pnxt,

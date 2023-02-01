@@ -107,7 +107,7 @@ enumerateExtensionProperties mln = ($ pure) . runContT
 	$ map extensionPropertiesFromCore <$> do
 		cln <- case mln of
 			Nothing -> pure NullPtr
-			Just ln -> textToCString ln
+			Just ln -> ContT $ textToCString ln
 		pExtCount <- ContT alloca
 		(fromIntegral -> extCount) <- lift do
 			r <- C.enumerateExtensionProperties cln pExtCount NullPtr
