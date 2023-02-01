@@ -199,18 +199,18 @@ newtype M = M C.M deriving Show
 
 create :: (
 	Pokable n, Storable cb, Storable ql, Storable cbl, Storable obj,
-	Storable ud, Pokable c ) =>
+	Storable ud, WithPoked c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
 	cci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pmsngr <- ContT alloca
-	lift do	r <- C.create ist cci pac pmsngr
-		throwUnlessSuccess $ Result r
-		peek pmsngr
+	ContT \f -> alloca \pmsngr -> do
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create ist cci pac pmsngr
+			throwUnlessSuccess $ Result r
+		f =<< peek pmsngr
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Instance.I ist) (M msgr) mac = ($ pure) . runContT
-	$ lift . C.destroy ist msgr =<< AllocationCallbacks.maybeToCore mac
+destroy (Instance.I ist) (M msgr) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy ist msgr
