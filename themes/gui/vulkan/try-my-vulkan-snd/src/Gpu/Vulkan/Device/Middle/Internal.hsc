@@ -79,7 +79,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } = do
 	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	cqcis <- pokableToListM queueCreateInfoToCore qcis
+	cqcis <- pokableToListM (ContT . queueCreateInfoToCore) qcis
 	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
@@ -133,23 +133,23 @@ data QueueCreateInfo n = QueueCreateInfo {
 	queueCreateInfoQueuePriorities :: [Float] }
 	deriving Show
 
-queueCreateInfoToCore :: Pokable n => QueueCreateInfo n -> ContT r IO C.QueueCreateInfo
+queueCreateInfoToCore ::
+	Pokable n => QueueCreateInfo n -> (C.QueueCreateInfo -> IO a) -> IO a
 queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoNext = mnxt,
 	queueCreateInfoFlags = QueueCreateFlagBits flgs,
 	queueCreateInfoQueueFamilyIndex = QueueFamily.Index qfi,
 	queueCreateInfoQueuePriorities = qps
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pqps <- ContT $ allocaArray (length qps)
-	lift $ pokeArray pqps qps
-	pure C.QueueCreateInfo {
-		C.queueCreateInfoSType = (),
-		C.queueCreateInfoPNext = pnxt,
-		C.queueCreateInfoFlags = flgs,
-		C.queueCreateInfoQueueFamilyIndex = qfi,
-		C.queueCreateInfoQueueCount = genericLength qps,
-		C.queueCreateInfoPQueuePriorities = pqps }
+	} f = allocaArray (length qps) \pqps -> do
+	pokeArray pqps qps
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+		f C.QueueCreateInfo {
+			C.queueCreateInfoSType = (),
+			C.queueCreateInfoPNext = pnxt,
+			C.queueCreateInfoFlags = flgs,
+			C.queueCreateInfoQueueFamilyIndex = qfi,
+			C.queueCreateInfoQueueCount = genericLength qps,
+			C.queueCreateInfoPQueuePriorities = pqps }
 
 enum "Size" ''#{type VkDeviceSize}
 		[''Show, ''Eq, ''Ord, ''Enum, ''Num, ''Real, ''Integral]
