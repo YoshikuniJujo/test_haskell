@@ -103,21 +103,19 @@ createInfoToCore CreateInfo {
 			C.createInfoPEnabledFeatures = pef }
 	ContT $ withForeignPtr fCreateInfo
 
-create :: (Pokable n, PokableToListM ns, Pokable c) =>
+create :: (Pokable n, PokableToListM ns, WithPoked c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
-	pcci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
 	pdvc <- ContT alloca
-	lift do	r <- C.create phdvc pcci pac pdvc
+	pcci <- createInfoToCore ci
+	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
+		r <- C.create phdvc pcci pac pdvc
 		throwUnlessSuccess $ Result r
-		peek pdvc
+	lift $ peek pdvc
 
-destroy :: Pokable d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (D cdvc) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy cdvc pac
+destroy :: WithPoked d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (D cdvc) mac = AllocationCallbacks.maybeToCore' mac $ C.destroy cdvc
 
 getQueue :: D -> Word32 -> Word32 -> IO Queue.Q
 getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue.Q <$> do
