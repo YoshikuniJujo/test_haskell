@@ -121,7 +121,7 @@ allocaAndPokeArray (length &&& id -> (xc, xs)) = do
 
 allocaAndPokeArray' :: Storable a => [a] -> ((Int, Ptr a) -> IO b) -> IO b
 allocaAndPokeArray' (length &&& id -> (xc, xs)) f
-	= allocaArray xc \p -> f (xc, p) <* pokeArray p xs
+	= allocaArray xc \p -> pokeArray p xs >> f (xc, p)
 
 mapContM :: Monad m => (a -> (b -> m c) -> m c) -> [a] -> ([b] -> m c) -> m c
 mapContM f = runContT . mapM (ContT . f)
