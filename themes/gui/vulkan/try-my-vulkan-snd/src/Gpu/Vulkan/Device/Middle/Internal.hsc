@@ -83,8 +83,8 @@ createInfoToCore CreateInfo {
 	let	qcic = length cqcis
 	pcqcis <- ContT $ allocaArray qcic
 	lift $ pokeArray pcqcis cqcis
-	pcelns <- textListToCStringArray elns
-	pceens <- textListToCStringArray eens
+	pcelns <- ContT $ textListToCStringArray elns
+	pceens <- ContT $ textListToCStringArray eens
 	pef <- case mef of
 		Nothing -> pure NullPtr
 		Just ef -> do

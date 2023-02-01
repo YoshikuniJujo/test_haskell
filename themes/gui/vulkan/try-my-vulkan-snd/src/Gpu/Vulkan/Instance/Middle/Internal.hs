@@ -59,8 +59,8 @@ createInfoToCore CreateInfo {
 		(fromIntegral . length &&& id) -> (eenc, eens) } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	pai <- maybe (pure NullPtr) applicationInfoToCore mai
-	pelna <- textListToCStringArray elns
-	peena <- textListToCStringArray eens
+	pelna <- ContT $ textListToCStringArray elns
+	peena <- ContT $ textListToCStringArray eens
 	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
