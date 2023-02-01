@@ -79,7 +79,7 @@ struct "CreateInfo" #{size VkDeviceCreateInfo}
 		[| #{peek VkDeviceCreateInfo, pEnabledFeatures} |],
 		[| #{poke VkDeviceCreateInfo, pEnabledFeatures} |])
 	]
-	[''Show]
+	[''Show, ''Storable]
 
 data DTag
 type D = Ptr DTag
