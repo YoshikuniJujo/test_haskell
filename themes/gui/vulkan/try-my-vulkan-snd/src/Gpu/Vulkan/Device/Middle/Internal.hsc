@@ -20,7 +20,8 @@ module Gpu.Vulkan.Device.Middle.Internal (
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke (
+	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont
@@ -68,7 +69,7 @@ data CreateInfo n ns = CreateInfo {
 deriving instance (Show n, Show (HeteroVarList QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
-createInfoToCore :: (Pokable n, WithPokedToListM ns) =>
+createInfoToCore :: (WithPoked n, WithPokedToListM ns) =>
 	CreateInfo n ns -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -77,7 +78,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	alloca \pci ->
 		runContT (withPokedToListM (ContT . queueCreateInfoToCore) qcis) \cqcis ->
 		let	qcic = length cqcis in
@@ -87,7 +88,7 @@ createInfoToCore CreateInfo {
 		textListToCStringArray eens \pceens -> do
 		let mk pef = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoQueueCreateInfoCount = fromIntegral qcic,
 			C.createInfoPQueueCreateInfos = pcqcis,
@@ -103,7 +104,7 @@ createInfoToCore CreateInfo {
 				poke pci (mk p)
 		() <$ f pci
 
-create :: (Pokable n, WithPokedToListM ns, WithPoked c) =>
+create :: (WithPoked n, WithPokedToListM ns, WithPoked c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
