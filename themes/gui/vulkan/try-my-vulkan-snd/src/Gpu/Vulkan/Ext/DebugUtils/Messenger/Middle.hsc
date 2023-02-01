@@ -198,7 +198,7 @@ createInfoToCore' CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (
-	Pokable n, Storable cb, Storable ql, Storable cbl, Storable obj,
+	Pokable n, Peek cb, Storable ql, Storable cbl, Storable obj,
 	Storable ud, WithPoked c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
