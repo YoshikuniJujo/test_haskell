@@ -18,7 +18,6 @@ module Gpu.Vulkan.Device.Middle.Internal (
 	Size(..) ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -69,28 +68,24 @@ data CreateInfo n ns = CreateInfo {
 deriving instance (Show n, Show (HeteroVarList QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
-createInfoToCore :: (Pokable n, PokableToListM ns) =>
-	CreateInfo n ns -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: (Pokable n, WithPokedToListM ns) =>
+	CreateInfo n ns -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoQueueCreateInfos = qcis,
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
-	createInfoEnabledFeatures = mef } = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	cqcis <- pokableToListM (ContT . queueCreateInfoToCore) qcis
-	let	qcic = length cqcis
-	pcqcis <- ContT $ allocaArray qcic
-	lift $ pokeArray pcqcis cqcis
-	pcelns <- ContT $ textListToCStringArray elns
-	pceens <- ContT $ textListToCStringArray eens
-	pef <- case mef of
-		Nothing -> pure NullPtr
-		Just ef -> do
-			p <- ContT alloca
-			p <$ lift (poke p $ PhysicalDevice.featuresToCore ef)
-	let	 C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoEnabledFeatures = mef } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	alloca \pci ->
+		runContT (withPokedToListM (ContT . queueCreateInfoToCore) qcis) \cqcis ->
+		let	qcic = length cqcis in
+		allocaArray qcic \pcqcis ->
+		pokeArray pcqcis cqcis >>
+		textListToCStringArray elns \pcelns ->
+		textListToCStringArray eens \pceens -> do
+		let mk pef = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
@@ -101,18 +96,22 @@ createInfoToCore CreateInfo {
 			C.createInfoEnabledExtensionCount = fromIntegral eenc,
 			C.createInfoPpEnabledExtensionNames = pceens,
 			C.createInfoPEnabledFeatures = pef }
-	ContT $ withForeignPtr fCreateInfo
+		case mef of
+			Nothing -> poke pci (mk NullPtr)
+			Just ef -> alloca \p -> do
+				poke p $ PhysicalDevice.featuresToCore ef
+				poke pci (mk p)
+		() <$ f pci
 
-create :: (Pokable n, PokableToListM ns, WithPoked c) =>
+create :: (Pokable n, WithPokedToListM ns, WithPoked c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
-create (PhysicalDevice.P phdvc) ci mac = ($ pure) . runContT $ D <$> do
-	pdvc <- ContT alloca
-	pcci <- createInfoToCore ci
-	lift $ AllocationCallbacks.maybeToCore' mac \pac -> do
-		r <- C.create phdvc pcci pac pdvc
-		throwUnlessSuccess $ Result r
-	lift $ peek pdvc
+create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
+	createInfoToCore ci \pcci ->
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create phdvc pcci pac pdvc
+			throwUnlessSuccess $ Result r
+	peek pdvc
 
 destroy :: WithPoked d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (D cdvc) mac = AllocationCallbacks.maybeToCore' mac $ C.destroy cdvc
@@ -134,7 +133,7 @@ data QueueCreateInfo n = QueueCreateInfo {
 	deriving Show
 
 queueCreateInfoToCore ::
-	Pokable n => QueueCreateInfo n -> (C.QueueCreateInfo -> IO a) -> IO a
+	WithPoked n => QueueCreateInfo n -> (C.QueueCreateInfo -> IO a) -> IO ()
 queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoNext = mnxt,
 	queueCreateInfoFlags = QueueCreateFlagBits flgs,
@@ -142,10 +141,10 @@ queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoQueuePriorities = qps
 	} f = allocaArray (length qps) \pqps -> do
 	pokeArray pqps qps
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
-		f C.QueueCreateInfo {
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+		() <$ f C.QueueCreateInfo {
 			C.queueCreateInfoSType = (),
-			C.queueCreateInfoPNext = pnxt,
+			C.queueCreateInfoPNext = pnxt',
 			C.queueCreateInfoFlags = flgs,
 			C.queueCreateInfoQueueFamilyIndex = qfi,
 			C.queueCreateInfoQueueCount = genericLength qps,

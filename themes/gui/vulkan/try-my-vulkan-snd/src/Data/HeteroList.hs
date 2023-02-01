@@ -22,7 +22,7 @@ module Data.HeteroList (
 	heteroVarListReplicate,
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	heteroVarListZipWithM_,
-	PointableHeteroMap(..), PointableToListM(..), PokableToListM(..),
+	PointableHeteroMap(..), PointableToListM(..), PokableToListM(..), WithPokedToListM(..),
 	PokableHeteroMap(..), WithPokedHeteroMap(..),
 	StorableHeteroMap(..), StorableToListM(..),
 	V2(..), V3(..), V4(..), V5(..), V6(..),
@@ -325,6 +325,15 @@ instance PokableToListM '[] where pokableToListM _ HVNil = pure []
 
 instance (Pokable n, PokableToListM ns) => PokableToListM (n ': ns) where
 	pokableToListM f (x :...: xs) = (:) <$> f x <*> pokableToListM f xs
+
+class WithPokedToListM ns where
+	withPokedToListM :: Monad m =>
+		(forall n . WithPoked n => t n -> m t') -> HeteroVarList t ns -> m [t']
+
+instance WithPokedToListM '[] where withPokedToListM _ HVNil = pure []
+
+instance (WithPoked n, WithPokedToListM ns) => WithPokedToListM (n ': ns) where
+	withPokedToListM f (x :...: xs) = (:) <$> f x <*> withPokedToListM f xs
 
 class StorableToListM ns where
 	storableToListM :: Monad m =>
