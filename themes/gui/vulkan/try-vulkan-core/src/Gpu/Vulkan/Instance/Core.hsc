@@ -45,7 +45,7 @@ struct "CreateInfo" #{size VkInstanceCreateInfo}
 	("ppEnabledExtensionNames", ''PtrCString,
 		[| #{peek VkInstanceCreateInfo, ppEnabledExtensionNames} |],
 		[| #{poke VkInstanceCreateInfo, ppEnabledExtensionNames} |]) ]
-	[''Show]
+	[''Show, ''Storable]
 
 data ITag
 type I = Ptr ITag
