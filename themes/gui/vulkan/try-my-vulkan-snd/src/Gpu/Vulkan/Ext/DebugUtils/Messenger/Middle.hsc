@@ -63,8 +63,8 @@ data CallbackData n ql cbl obj = CallbackData {
 	deriving Show
 
 callbackDataFromCore ::
-	(Peek n, Peek ql, Storable n3, Storable n4) =>
-	C.CallbackData -> IO (CallbackData n ql n3 n4)
+	(Peek n, Peek ql, Peek cbl, Storable n4) =>
+	C.CallbackData -> IO (CallbackData n ql cbl n4)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
 	C.callbackDataFlags = flgs,
@@ -82,7 +82,7 @@ callbackDataFromCore C.CallbackData {
 	msg <- cstrToText cmsg
 	cqls <- peekArray' qlc pcqls
 	qls <- labelFromCore `mapM` cqls
-	ccbls <- peekArray cblc pccbls
+	ccbls <- peekArray' cblc pccbls
 	cbls <- labelFromCore `mapM` ccbls
 	cobjs <- peekArray objc pcobjs
 	objs <- objectNameInfoFromCore `mapM` cobjs
@@ -101,8 +101,8 @@ type FnCallback cb ql cbl obj ud =
 	CallbackData cb ql cbl obj -> Maybe ud -> IO Bool
 
 fnCallbackToCore ::
-	(Peek n, Peek ql, Storable n3, Storable n4, Peek ud) =>
-	FnCallback n ql n3 n4 ud -> C.FnCallback
+	(Peek n, Peek ql, Peek cbl, Storable n4, Peek ud) =>
+	FnCallback n ql cbl n4 ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- peekMaybe $ castPtr pud
@@ -126,8 +126,7 @@ instance Sizable (CreateInfo n cb ql cbl obj ud) where
 	alignment' = alignment @C.CreateInfo undefined
 
 instance (
-	WithPoked n,
-	Peek cb, Peek ql, Storable cbl, Storable obj, Storable' ud ) =>
+	WithPoked n, Peek cb, Peek ql, Peek cbl, Storable obj, Storable' ud ) =>
 	WithPoked (CreateInfo n cb ql cbl obj ud) where
 	withPoked' ci f = alloca \pcci -> do
 		createInfoToCore' ci $ \cci -> poke pcci cci
@@ -135,7 +134,7 @@ instance (
 
 createInfoToCore' :: (
 	WithPoked n,
-	Peek cb, Peek ql, Storable cbl, Storable obj, Storable' ud ) =>
+	Peek cb, Peek ql, Peek cbl, Storable obj, Storable' ud ) =>
 	CreateInfo n cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
@@ -158,7 +157,7 @@ createInfoToCore' CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (
-	WithPoked n, Peek cb, Peek ql, Storable cbl, Storable obj,
+	WithPoked n, Peek cb, Peek ql, Peek cbl, Storable obj,
 	Storable' ud, WithPoked c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
