@@ -9,7 +9,6 @@
 module TypeLevel.List where
 
 import Prelude hiding (length)
-import qualified Prelude
 
 import Data.Kind
 

@@ -7,7 +7,6 @@ module Gpu.Vulkan.AllocationCallbacks.Middle.Internal where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
 import Control.Monad.Cont
 
 import qualified Gpu.Vulkan.AllocationCallbacks.Core as C

@@ -19,14 +19,13 @@ module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle (
 	FnCallback, CallbackData(..), CallbackDataFlags ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr hiding (newForeignPtr)
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke (
+	Sizable(..), Peek, peekMaybe, peekArray', withPoked, withPokedMaybe,
+	WithPoked(..), withPokedMaybe', ptrS, withPtrS, Storable' )
 import Foreign.C.Enum
-import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -122,29 +121,22 @@ data CreateInfo n cb ql cbl obj ud = CreateInfo {
 	createInfoFnUserCallback :: FnCallback cb ql cbl obj ud,
 	createInfoUserData :: Maybe ud }
 
-instance (
-	Pokable n,
-	Peek cb, Peek ql, Storable cbl, Storable obj, Storable ud) =>
-	Pointable (CreateInfo n cb ql cbl obj ud) where
-	withPointer = runContT . (castPtr <$>)
-		. (ContT . withPoked =<<) . ContT . createInfoToCore'
-
 instance Sizable (CreateInfo n cb ql cbl obj ud) where
 	sizeOf' = sizeOf @C.CreateInfo undefined
 	alignment' = alignment @C.CreateInfo undefined
 
 instance (
-	Pokable n,
+	WithPoked n,
 	Peek cb, Peek ql, Storable cbl, Storable obj, Storable' ud ) =>
 	WithPoked (CreateInfo n cb ql cbl obj ud) where
-	withPoked' ci f = createInfoToCore' ci $ \cci -> alloca \pcci -> do
-		poke pcci cci
+	withPoked' ci f = alloca \pcci -> do
+		createInfoToCore' ci $ \cci -> poke pcci cci
 		f . ptrS $ castPtr pcci
 
 createInfoToCore' :: (
-	Pokable n,
+	WithPoked n,
 	Peek cb, Peek ql, Storable cbl, Storable obj, Storable' ud ) =>
-	CreateInfo n cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO a
+	CreateInfo n cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -152,11 +144,11 @@ createInfoToCore' CreateInfo {
 	createInfoMessageType = MessageTypeFlagBits mt,
 	createInfoFnUserCallback = cb,
 	createInfoUserData = mud
-	} f = withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	C.wrapCallback (fnCallbackToCore cb) >>= \pccb ->
 	withPokedMaybe mud \(castPtr -> pud) -> f C.CreateInfo {
 		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
+		C.createInfoPNext = pnxt',
 		C.createInfoFlags = flgs,
 		C.createInfoMessageSeverity = ms,
 		C.createInfoMessageType = mt,
@@ -166,18 +158,16 @@ createInfoToCore' CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (
-	Pokable n, Peek cb, Peek ql, Storable cbl, Storable obj,
+	WithPoked n, Peek cb, Peek ql, Storable cbl, Storable obj,
 	Storable' ud, WithPoked c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
-create (Instance.I ist) ci mac = ($ pure) . runContT $ M <$> do
-	cci <- ContT $ createInfoToCore' ci
-	pcci <- ContT $ withPoked cci
-	ContT \f -> alloca \pmsngr -> do
-		AllocationCallbacks.maybeToCore' mac \pac -> do
-			r <- C.create ist pcci pac pmsngr
-			throwUnlessSuccess $ Result r
-		f =<< peek pmsngr
+create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
+	createInfoToCore' ci \cci ->
+		withPoked cci \pcci ->
+		AllocationCallbacks.maybeToCore' mac \pac ->
+		throwUnlessSuccess . Result =<< C.create ist pcci pac pmsngr
+	peek pmsngr
 
 destroy :: WithPoked d =>
 	Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
