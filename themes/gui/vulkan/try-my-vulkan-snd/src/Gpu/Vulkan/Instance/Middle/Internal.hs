@@ -74,20 +74,18 @@ createInfoToCore CreateInfo {
 
 newtype I = I C.I deriving Show
 
-create :: (Pointable n, Pointable a, Pokable c) =>
+create :: (Pointable n, Pointable a, WithPoked c) =>
 	CreateInfo n a -> Maybe (AllocationCallbacks.A c) -> IO I
 create ci mac = (I <$>) . ($ pure) $ runContT do
 	pcci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pist <- ContT alloca
-	lift do r <- C.create pcci pac pist
-		throwUnlessSuccess $ Result r
-		peek pist
+	ContT \f -> alloca \pist -> do
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create pcci pac pist
+			throwUnlessSuccess $ Result r
+		f =<< peek pist
 
-destroy :: Pokable d => I -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (I cist) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy cist pac
+destroy :: WithPoked d => I -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (I cist) mac = AllocationCallbacks.maybeToCore' mac $ C.destroy cist
 
 enumerateLayerProperties :: IO [LayerProperties]
 enumerateLayerProperties = ($ pure) . runContT
