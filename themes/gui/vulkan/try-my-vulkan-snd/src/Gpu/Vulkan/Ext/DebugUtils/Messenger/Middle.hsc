@@ -64,8 +64,8 @@ data CallbackData n ql cbl obj = CallbackData {
 	deriving Show
 
 callbackDataFromCore ::
-	(Peek n, Storable n2, Storable n3, Storable n4) =>
-	C.CallbackData -> IO (CallbackData n n2 n3 n4)
+	(Peek n, Peek ql, Storable n3, Storable n4) =>
+	C.CallbackData -> IO (CallbackData n ql n3 n4)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
 	C.callbackDataFlags = flgs,
@@ -81,7 +81,7 @@ callbackDataFromCore C.CallbackData {
 	mnxt <- peekMaybe $ castPtr pnxt
 	midnm <- cstrToText cmidnm
 	msg <- cstrToText cmsg
-	cqls <- peekArray qlc pcqls
+	cqls <- peekArray' qlc pcqls
 	qls <- labelFromCore `mapM` cqls
 	ccbls <- peekArray cblc pccbls
 	cbls <- labelFromCore `mapM` ccbls
@@ -102,8 +102,8 @@ type FnCallback cb ql cbl obj ud =
 	CallbackData cb ql cbl obj -> Maybe ud -> IO Bool
 
 fnCallbackToCore ::
-	(Peek n, Storable n2, Storable n3, Storable n4, Peek ud) =>
-	FnCallback n n2 n3 n4 ud -> C.FnCallback
+	(Peek n, Peek ql, Storable n3, Storable n4, Peek ud) =>
+	FnCallback n ql n3 n4 ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- peekMaybe $ castPtr pud
@@ -124,13 +124,13 @@ data CreateInfo n cb ql cbl obj ud = CreateInfo {
 
 instance (
 	Pokable n,
-	Peek cb, Storable ql, Storable cbl, Storable obj, Storable ud) =>
+	Peek cb, Peek ql, Storable cbl, Storable obj, Storable ud) =>
 	Pointable (CreateInfo n cb ql cbl obj ud) where
 	withPointer = runContT . (castPtr <$>) . createInfoToCore
 
 createInfoToCore :: (
 	Pokable n,
-	Peek cb, Storable ql, Storable cbl, Storable obj, Storable ud ) =>
+	Peek cb, Peek ql, Storable cbl, Storable obj, Storable ud ) =>
 	CreateInfo n cb ql cbl obj ud -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -164,7 +164,7 @@ instance Poke (CreateInfo n cb ql cbl obj ud) where
 
 instance (
 	Pokable n,
-	Peek cb, Storable ql, Storable cbl, Storable obj, Storable' ud ) =>
+	Peek cb, Peek ql, Storable cbl, Storable obj, Storable' ud ) =>
 	WithPoked (CreateInfo n cb ql cbl obj ud) where
 	withPoked' ci f =
 		runContT (createInfoToCore' ci) $ \cci -> alloca \pcci -> do
@@ -173,7 +173,7 @@ instance (
 
 createInfoToCore' :: (
 	Pokable n,
-	Peek cb, Storable ql, Storable cbl, Storable obj, Storable' ud ) =>
+	Peek cb, Peek ql, Storable cbl, Storable obj, Storable' ud ) =>
 	CreateInfo n cb ql cbl obj ud -> ContT r IO C.CreateInfo
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
@@ -198,7 +198,7 @@ createInfoToCore' CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (
-	Pokable n, Peek cb, Storable ql, Storable cbl, Storable obj,
+	Pokable n, Peek cb, Peek ql, Storable cbl, Storable obj,
 	Storable ud, WithPoked c ) =>
 	Instance.I -> CreateInfo n cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M

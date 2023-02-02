@@ -47,6 +47,11 @@ pattern NullPtr <- ((== nullPtr) -> True) where NullPtr = nullPtr
 peekMaybe :: Peek a => Ptr a -> IO (Maybe a)
 peekMaybe = \case NullPtr -> pure Nothing; p -> Just <$> peek' p
 
+peekArray' :: forall a . Peekable a => Int -> Ptr a -> IO [a]
+peekArray' n ((`alignPtr` (alignment' @a)) -> p)
+	| n <= 0 = pure []
+	| True = (:) <$> peek' p <*> peekArray' (n - 1) (p `plusPtr` sizeOf' @a)
+
 newtype PtrS s a = PtrS_ (Ptr a) deriving Show
 
 ptrS :: Ptr a -> PtrS s a

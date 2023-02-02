@@ -1,7 +1,7 @@
 {-# LANGUAGE CApiFFI #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
@@ -12,8 +12,9 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 
 import Foreign.Ptr
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.String
-import Foreign.Pointable
+import Foreign.Pointable hiding (pattern NullPtr)
 import Control.Monad.Cont
 import Data.Maybe
 import Data.String
@@ -54,12 +55,12 @@ labelToCore Label {
 		C.labelPLabelName = cln,
 		C.labelColor = [r, g, b, a] }
 
-labelFromCore :: Storable n => C.Label -> IO (Label n)
+labelFromCore :: Peek n => C.Label -> IO (Label n)
 labelFromCore C.Label {
 	C.labelPNext = pnxt,
 	C.labelPLabelName = cln,
 	C.labelColor = [r, g, b, a] } = do
-	mnxt <- pointerToMaybe $ castPtr pnxt
+	mnxt <- peekMaybe $ castPtr pnxt
 	ln <- cstrToText cln
 	pure Label {
 		labelNext = mnxt,
