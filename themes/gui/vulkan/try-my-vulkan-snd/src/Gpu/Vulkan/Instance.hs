@@ -7,7 +7,6 @@ module Gpu.Vulkan.Instance (
 	M.enumerateLayerProperties, M.enumerateExtensionProperties ) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 
 import Gpu.Vulkan.Instance.Type
@@ -15,7 +14,7 @@ import Gpu.Vulkan.Instance.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle as M
 
-create :: (Pointable n, Pointable n2, Pokable n3, Pokable n4) =>
+create :: (WithPoked n, Pokable n2, Pokable n3, Pokable n4) =>
 	M.CreateInfo n n2 ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . I s -> IO a) -> IO a

@@ -72,8 +72,8 @@ type Patch = Word16	-- 0 <= patch < 4095
 makeApiVersion :: Variant -> Major -> Minor -> Patch -> ApiVersion
 makeApiVersion v mj mn p = ApiVersion $ C.makeApiVersion v mj mn p
 
-applicationInfoToCore :: Pointable a =>
-	ApplicationInfo a -> ContT r IO (Ptr C.ApplicationInfo)
+applicationInfoToCore :: Pokable n =>
+	ApplicationInfo n -> (Ptr C.ApplicationInfo -> IO a) -> IO a
 applicationInfoToCore ApplicationInfo {
 	applicationInfoNext = mnxt,
 	applicationInfoApplicationName = anm,
@@ -81,10 +81,8 @@ applicationInfoToCore ApplicationInfo {
 	applicationInfoEngineName = enm,
 	applicationInfoEngineVersion = (\(ApiVersion v) -> v) -> engv,
 	applicationInfoApiVersion = (\(ApiVersion v) -> v) -> apiv
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	canm <- ContT $ textToCString anm
-	cenm <- ContT $ textToCString enm
+	} f = withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	textToCString anm \canm -> textToCString enm \cenm ->
 	let	appInfo = C.ApplicationInfo {
 			C.applicationInfoSType = (),
 			C.applicationInfoPNext = pnxt,
@@ -92,8 +90,8 @@ applicationInfoToCore ApplicationInfo {
 			C.applicationInfoApplicationVersion = appv,
 			C.applicationInfoPEngineName = cenm,
 			C.applicationInfoEngineVersion = engv,
-			C.applicationInfoApiVersion = apiv }
-	ContT $ withPoked appInfo
+			C.applicationInfoApiVersion = apiv } in
+	withPoked appInfo f
 
 newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show
 

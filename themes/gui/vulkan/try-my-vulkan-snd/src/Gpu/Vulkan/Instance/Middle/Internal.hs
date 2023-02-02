@@ -10,11 +10,9 @@ module Gpu.Vulkan.Instance.Middle.Internal (
 	enumerateLayerProperties, enumerateExtensionProperties ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -47,8 +45,8 @@ instance Default (CreateInfo n a) where
 		createInfoEnabledLayerNames = [],
 		createInfoEnabledExtensionNames = [] }
 
-createInfoToCore :: (Pointable n, Pointable n') =>
-	CreateInfo n n' -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: (WithPoked n, Pokable n') =>
+	CreateInfo n n' -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = (\(CreateFlags f) -> f) -> flgs,
@@ -56,32 +54,34 @@ createInfoToCore CreateInfo {
 	createInfoEnabledLayerNames =
 		(fromIntegral . length &&& id) -> (elnc, elns),
 	createInfoEnabledExtensionNames =
-		(fromIntegral . length &&& id) -> (eenc, eens) } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pai <- maybe (pure NullPtr) applicationInfoToCore mai
-	pelna <- ContT $ textListToCStringArray elns
-	peena <- ContT $ textListToCStringArray eens
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+		(fromIntegral . length &&& id) -> (eenc, eens) } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	textListToCStringArray elns \pelna ->
+	textListToCStringArray eens \peena ->
+	let	ci pai = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoPApplicationInfo = pai,
 			C.createInfoEnabledLayerCount = elnc,
 			C.createInfoPpEnabledLayerNames = pelna,
 			C.createInfoEnabledExtensionCount = eenc,
-			C.createInfoPpEnabledExtensionNames = peena }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoPpEnabledExtensionNames = peena } in
+	case mai of
+		Nothing -> withPoked (ci NullPtr) f
+		Just ai -> applicationInfoToCore ai \pai ->
+			withPoked (ci pai) f
 
 newtype I = I C.I deriving Show
 
-create :: (Pointable n, Pointable a, WithPoked c) =>
+create :: (WithPoked n, Pokable a, WithPoked c) =>
 	CreateInfo n a -> Maybe (AllocationCallbacks.A c) -> IO I
-create ci mac = (I <$>) . ($ pure) $ runContT do
-	pcci <- createInfoToCore ci
-	ContT \f -> alloca \pist -> do
-		AllocationCallbacks.maybeToCore' mac \pac -> do
-			r <- C.create pcci pac pist
-			throwUnlessSuccess $ Result r
+create ci mac = (I <$>) . ($ pure) $ runContT $ ContT \f ->
+	alloca \pist -> do
+		createInfoToCore ci \pcci ->
+			AllocationCallbacks.maybeToCore' mac \pac -> do
+				r <- C.create pcci pac pist
+				throwUnlessSuccess $ Result r
 		f =<< peek pist
 
 destroy :: WithPoked d => I -> Maybe (AllocationCallbacks.A d) -> IO ()
