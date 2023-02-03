@@ -91,15 +91,14 @@ objectNameInfoToCore ObjectNameInfo {
 		C.objectNameInfoObjectHandle = oh,
 		C.objectNameInfoPObjectName = con }
 
-objectNameInfoFromCore ::
-	Storable n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
+objectNameInfoFromCore :: Peek n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
 objectNameInfoFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = pnxt,
 	C.objectNameInfoObjectType = ot,
 	C.objectNameInfoObjectHandle = oh,
 	C.objectNameInfoPObjectName = con
 	} = do
-	mnxt <- pointerToMaybe $ castPtr pnxt
+	mnxt <- peekMaybe $ castPtr pnxt
 	mon <- case con of
 		NullPtr -> pure Nothing
 		p -> Just <$> cstrToText p
