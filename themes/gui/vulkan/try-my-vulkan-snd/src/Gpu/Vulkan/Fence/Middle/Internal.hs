@@ -11,12 +11,11 @@ module Gpu.Vulkan.Fence.Middle.Internal (
 	maybeFToCore ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke (
+	withPoked, WithPoked, withPokedMaybe', withPtrS )
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -41,17 +40,15 @@ instance Default (CreateInfo n) where
 	def = CreateInfo {
 		createInfoNext = Nothing, createInfoFlags = zeroBits }
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = CreateFlagBits flgs
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs }
-	ContT $ withForeignPtr fCreateInfo
+	createInfoNext = mnxt, createInfoFlags = CreateFlagBits flgs } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+		withPoked C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt',
+			C.createInfoFlags = flgs } f
 
 newtype F = F C.F deriving Show
 
@@ -62,21 +59,19 @@ maybeFToCore :: Maybe F -> C.F
 maybeFToCore Nothing = NullHandle
 maybeFToCore (Just f) = fToCore f
 
-create :: (Pointable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
-create (Device.D dvc) ci mac = ($ pure) . runContT $ F <$> do
-	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pf <- ContT alloca
-	lift do	r <- C.create dvc pci pac pf
-		throwUnlessSuccess $ Result r
-		peek pf
+create (Device.D dvc) ci mac = F <$> alloca \pf -> do
+	createInfoToCore ci \pci ->
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create dvc pci pac pf
+			throwUnlessSuccess $ Result r
+	peek pf
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (F f) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc f pac
+destroy (Device.D dvc) (F f) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc f
 
 waitForFs :: Device.D -> [F] -> Bool -> Word64 -> IO ()
 waitForFs (Device.D dvc) (length &&& ((\(F f) -> f) <$>) -> (fc, fs))
