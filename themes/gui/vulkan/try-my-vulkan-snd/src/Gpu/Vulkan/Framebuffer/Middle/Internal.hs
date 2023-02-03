@@ -7,18 +7,15 @@
 module Gpu.Vulkan.Framebuffer.Middle.Internal (
 	F, CreateInfo(..), create, recreate, destroy,
 
-	fToCore
-	) where
+	fToCore ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke (
+	withPoked, WithPoked, withPokedMaybe', withPtrS )
 import Control.Arrow
-import Control.Monad.Cont
 import Data.IORef
 import Data.Word
 
@@ -43,7 +40,8 @@ data CreateInfo n = CreateInfo {
 	createInfoLayers :: Word32 }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -51,21 +49,21 @@ createInfoToCore CreateInfo {
 	createInfoAttachments = length &&& id -> (ac, as),
 	createInfoWidth = w,
 	createInfoHeight = h,
-	createInfoLayers = l } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pas <- ContT $ allocaArray ac
-	lift $ pokeArray pas =<< ImageView.iToCore `mapM` as
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoRenderPass = rp,
-			C.createInfoAttachmentCount = fromIntegral ac,
-			C.createInfoPAttachments = pas,
-			C.createInfoWidth = w,
-			C.createInfoHeight = h,
-			C.createInfoLayers = l }
-	ContT $ withForeignPtr fCreateInfo
+	createInfoLayers = l } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray ac \pas -> do
+		pokeArray pas =<< ImageView.iToCore `mapM` as
+		let	ci = C.CreateInfo {
+				C.createInfoSType = (),
+				C.createInfoPNext = pnxt',
+				C.createInfoFlags = flgs,
+				C.createInfoRenderPass = rp,
+				C.createInfoAttachmentCount = fromIntegral ac,
+				C.createInfoPAttachments = pas,
+				C.createInfoWidth = w,
+				C.createInfoHeight = h,
+				C.createInfoLayers = l }
+		withPoked ci f
 
 newtype F = F (IORef C.F)
 
@@ -75,32 +73,29 @@ fToCore (F f) = readIORef f
 fFromCore :: C.F -> IO F
 fFromCore f = F <$> newIORef f
 
-create :: (Pointable n, WithPoked c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
-create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . fFromCore =<< do
-	pci <- createInfoToCore ci
-	ContT \f -> alloca \pf -> do
+create (Device.D dvc) ci mac = fFromCore =<< alloca \pf -> do
+	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore' mac \pac -> do
-			r <- C.create dvc pci pac pf
-			throwUnlessSuccess $ Result r
-		f =<< peek pf
+			throwUnlessSuccess . Result =<< C.create dvc pci pac pf
+	peek pf
 
 destroy :: WithPoked d =>
 	Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) f mac = AllocationCallbacks.maybeToCore' mac \pac -> do
 	f' <- fToCore f; C.destroy dvc f' pac
 
-recreate :: (Pointable n, WithPoked c, WithPoked d) =>
+recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F -> IO ()
-recreate (Device.D dvc) ci macc macd f@(F rf) = ($ pure) $ runContT do
-	o <- lift $ fToCore f
-	pci <- createInfoToCore ci
-	ContT \_f -> alloca \pf ->
-		AllocationCallbacks.maybeToCore' macc \pacc ->
-		AllocationCallbacks.maybeToCore' macd \pacd -> do
-			r <- C.create dvc pci pacc pf
-			throwUnlessSuccess $ Result r
-			writeIORef rf =<< peek pf
-			C.destroy dvc o pacd
+recreate (Device.D dvc) ci macc macd f@(F rf) =
+	fToCore f >>= \o -> alloca \pf ->
+	createInfoToCore ci \pci ->
+	AllocationCallbacks.maybeToCore' macc \pacc ->
+	AllocationCallbacks.maybeToCore' macd \pacd -> do
+		r <- C.create dvc pci pacc pf
+		throwUnlessSuccess $ Result r
+		writeIORef rf =<< peek pf
+		C.destroy dvc o pacd
