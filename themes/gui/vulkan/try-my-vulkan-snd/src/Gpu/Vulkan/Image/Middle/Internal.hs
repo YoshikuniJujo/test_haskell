@@ -119,27 +119,27 @@ createInfoToCore CreateInfo {
 			C.createInfoInitialLayout = lyt }
 	ContT $ withForeignPtr fci
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pointable n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = (I <$>) . ($ pure) $ runContT do
 	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pimg <- ContT alloca
-	lift do	r <- C.create dvc pci pac pimg
-		throwUnlessSuccess $ Result r
-		newIORef . (ex ,) =<< peek pimg
+	ContT \f -> alloca \pimg -> do
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create dvc pci pac pimg
+			throwUnlessSuccess $ Result r
+		f =<< newIORef . (ex ,) =<< peek pimg
 	where ex = createInfoExtent ci
 
-recreate :: (Pointable n, Pokable c, Pokable d) =>
+recreate :: (Pointable n, WithPoked c, WithPoked d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	I -> IO ()
 recreate d@(Device.D dvc) ci macc macd i@(I ri) = ($ pure) $ runContT do
 	pci <- createInfoToCore ci
-	pacc <- AllocationCallbacks.maybeToCore macc
 	pimg <- ContT alloca
-	lift do	r <- C.create dvc pci pacc pimg
+	ContT \_f -> AllocationCallbacks.maybeToCore' macc \pacc -> do
+		r <- C.create dvc pci pacc pimg
 		throwUnlessSuccess $ Result r
 		destroy d i macd
 		writeIORef ri . (ex ,) =<< peek pimg
@@ -215,11 +215,11 @@ subresourceLayersToCore SubresourceLayers {
 		C.subresourceLayersBaseArrayLayer = bal,
 		C.subresourceLayersLayerCount = lc }
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (I rimg) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift do	(_, img) <- readIORef rimg
+destroy (Device.D dvc) (I rimg) mac =
+	AllocationCallbacks.maybeToCore' mac \pac -> do
+		(_, img) <- readIORef rimg
 		C.destroy dvc img pac
 
 data Blit = Blit {
