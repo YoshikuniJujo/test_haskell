@@ -18,7 +18,6 @@ module Gpu.Vulkan.Image (
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 import Data.Kind
 import Data.HeteroList
@@ -38,7 +37,7 @@ import qualified Gpu.Vulkan.Image.Middle as M
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as I
 
-createNew :: (Pointable n, Pokable n2, Pokable n3, T.FormatToValue fmt) =>
+createNew :: (Pokable n, Pokable n2, Pokable n3, T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
 	(forall s . INew s nm fmt -> IO a) -> IO a
@@ -46,14 +45,14 @@ createNew dvc@(Device.D mdvc) ci macc macd f =
 	bracket (createNewM dvc ci macc) (\(INew i) -> M.destroy mdvc i macd) f
 
 recreateNew :: (
-	Pointable n, Pokable c, Pokable d, T.FormatToValue fmt ) =>
+	Pokable n, Pokable c, Pokable d, T.FormatToValue fmt ) =>
 	Device.D sd -> CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	BindedNew si sm nm fmt -> IO ()
 recreateNew dvc ci macc macd i = recreateNewM dvc ci macc macd i
 
-create :: (Pointable n, Pokable n2, Pokable n3) =>
+create :: (Pokable n, Pokable n2, Pokable n3) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
 	(forall s . I s -> IO a) -> IO a
@@ -116,12 +115,12 @@ class MemoryBarrierListToMiddle
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HVNil = HVNil
 
-instance (Pointable n, MemoryBarrierListToMiddle nsismnmfmts) =>
+instance (Pokable n, MemoryBarrierListToMiddle nsismnmfmts) =>
 	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where
 	memoryBarrierListToMiddle (V5 mb :...: mbs) =
 		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
 
-createNewM :: (Pointable n, Pokable n', T.FormatToValue fmt) =>
+createNewM :: (Pokable n, Pokable n', T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A n') -> IO (INew si nm fmt)
 createNewM (Device.D mdvc) ci mac =
@@ -129,7 +128,7 @@ createNewM (Device.D mdvc) ci mac =
 
 recreateNewM :: (
 	T.FormatToValue fmt,
-	Pointable n, Pokable c, Pokable d ) =>
+	Pokable n, Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
