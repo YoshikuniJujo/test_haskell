@@ -98,8 +98,8 @@ recreate (Device.D dvc) ci macc macd (I ri) = ($ pure) $ runContT do
 	lift . C.destroy dvc io =<< AllocationCallbacks.maybeToCore macd
 	lift $ writeIORef ri =<< peek pView
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) iv mac = do
 	iv' <- iToCore iv
-	($ pure) . runContT $ lift . C.destroy dvc iv' =<< AllocationCallbacks.maybeToCore mac
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc iv'
