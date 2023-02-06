@@ -11,12 +11,9 @@ module Gpu.Vulkan.ImageView.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.IORef
 
 import Gpu.Vulkan.Enum
@@ -40,7 +37,8 @@ data CreateInfo n = CreateInfo {
 	createInfoComponents :: Mapping,
 	createInfoSubresourceRange :: Image.SubresourceRange }
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -49,20 +47,18 @@ createInfoToCore CreateInfo {
 	createInfoFormat = Format fmt,
 	createInfoComponents = cpns,
 	createInfoSubresourceRange = srr
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	(_, img) <- lift $ readIORef rimg
-	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	readIORef rimg >>= \(_, img) -> let ci = C.CreateInfo {
 		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
+		C.createInfoPNext = pnxt',
 		C.createInfoFlags = flgs,
 		C.createInfoImage = img,
 		C.createInfoViewType = tp,
 		C.createInfoFormat = fmt,
 		C.createInfoComponents = mappingToCore cpns,
 		C.createInfoSubresourceRange =
-			Image.subresourceRangeToCore srr }
-	ContT $ withForeignPtr fCreateInfo
+			Image.subresourceRangeToCore srr } in
+	withPoked ci f
 
 newtype I = I (IORef C.I)
 
@@ -74,24 +70,22 @@ iToCore (I i) = readIORef i
 iFromCore :: C.I -> IO I
 iFromCore i = I <$> newIORef i
 
-create :: (Pointable n, WithPoked c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
-create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . iFromCore =<< do
-	pci <- createInfoToCore ci
-	ContT \f -> alloca \pView -> do
+create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
+	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore' mac \pac -> do
 			r <- C.create dvc pci pac pView
 			throwUnlessSuccess $ Result r
-		f =<< peek pView
+	peek pView
 
-recreate :: (Pointable n, WithPoked c, WithPoked d) =>
+recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	I -> IO ()
-recreate (Device.D dvc) ci macc macd (I ri) = ($ pure) $ runContT do
-	pView <- ContT alloca
-	pci <- createInfoToCore ci
-	ContT \_f -> AllocationCallbacks.maybeToCore' macc \pac -> do
+recreate (Device.D dvc) ci macc macd (I ri) = alloca \pView ->
+	createInfoToCore ci \pci ->
+	AllocationCallbacks.maybeToCore' macc \pac -> do
 		r <- C.create dvc pci pac pView
 		throwUnlessSuccess $ Result r
 		io <- readIORef ri
