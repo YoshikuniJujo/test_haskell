@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance.Middle.Internal (
@@ -12,7 +12,8 @@ module Gpu.Vulkan.Instance.Middle.Internal (
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.Storable.PeekPoke
+import Foreign.Storable.PeekPoke (
+	WithPoked, withPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -45,7 +46,7 @@ instance Default (CreateInfo n a) where
 		createInfoEnabledLayerNames = [],
 		createInfoEnabledExtensionNames = [] }
 
-createInfoToCore :: (WithPoked n, Pokable n') =>
+createInfoToCore :: (WithPoked n, WithPoked n') =>
 	CreateInfo n n' -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -68,13 +69,13 @@ createInfoToCore CreateInfo {
 			C.createInfoEnabledExtensionCount = eenc,
 			C.createInfoPpEnabledExtensionNames = peena } in
 	case mai of
-		Nothing -> withPoked (ci NullPtr) f
+		Nothing -> () <$ withPoked (ci NullPtr) f
 		Just ai -> applicationInfoToCore ai \pai ->
 			withPoked (ci pai) f
 
 newtype I = I C.I deriving Show
 
-create :: (WithPoked n, Pokable a, WithPoked c) =>
+create :: (WithPoked n, WithPoked a, WithPoked c) =>
 	CreateInfo n a -> Maybe (AllocationCallbacks.A c) -> IO I
 create ci mac = (I <$>) . ($ pure) $ runContT $ ContT \f ->
 	alloca \pist -> do

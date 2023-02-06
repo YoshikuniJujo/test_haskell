@@ -72,8 +72,8 @@ type Patch = Word16	-- 0 <= patch < 4095
 makeApiVersion :: Variant -> Major -> Minor -> Patch -> ApiVersion
 makeApiVersion v mj mn p = ApiVersion $ C.makeApiVersion v mj mn p
 
-applicationInfoToCore :: Pokable n =>
-	ApplicationInfo n -> (Ptr C.ApplicationInfo -> IO a) -> IO a
+applicationInfoToCore :: WithPoked n =>
+	ApplicationInfo n -> (Ptr C.ApplicationInfo -> IO a) -> IO ()
 applicationInfoToCore ApplicationInfo {
 	applicationInfoNext = mnxt,
 	applicationInfoApplicationName = anm,
@@ -81,11 +81,11 @@ applicationInfoToCore ApplicationInfo {
 	applicationInfoEngineName = enm,
 	applicationInfoEngineVersion = (\(ApiVersion v) -> v) -> engv,
 	applicationInfoApiVersion = (\(ApiVersion v) -> v) -> apiv
-	} f = withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	textToCString anm \canm -> textToCString enm \cenm ->
 	let	appInfo = C.ApplicationInfo {
 			C.applicationInfoSType = (),
-			C.applicationInfoPNext = pnxt,
+			C.applicationInfoPNext = pnxt',
 			C.applicationInfoPApplicationName = canm,
 			C.applicationInfoApplicationVersion = appv,
 			C.applicationInfoPEngineName = cenm,
