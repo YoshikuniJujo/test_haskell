@@ -10,8 +10,6 @@ module Gpu.Vulkan.Khr.Surface.Middle.Internal (
 	Format(..), formatFromCore ) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Khr.Enum
@@ -27,11 +25,10 @@ import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 
 newtype S = S Sfc.C.S deriving Show
 
-destroy :: Pokable n =>
+destroy :: WithPoked n =>
 	Instance.I -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Instance.I ist) (S sfc) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ Sfc.C.destroy ist sfc pac
+destroy (Instance.I ist) (S sfc) mac =
+	AllocationCallbacks.maybeToCore' mac $ Sfc.C.destroy ist sfc
 
 data Capabilities = Capabilities {
 	capabilitiesMinImageCount :: Word32,
@@ -84,9 +81,11 @@ formatFromCore Sfc.C.Format {
 		formatFormat = Vk.Format fmt,
 		formatColorSpace = ColorSpace cs }
 
+{-
 formatToCore :: Format -> Sfc.C.Format
 formatToCore Format {
 	formatFormat = Vk.Format fmt,
 	formatColorSpace = ColorSpace cs } = Sfc.C.Format {
 		Sfc.C.formatFormat = fmt,
 		Sfc.C.formatColorSpace = cs }
+-}
