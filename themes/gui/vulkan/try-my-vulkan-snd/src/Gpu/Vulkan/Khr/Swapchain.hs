@@ -9,7 +9,6 @@ module Gpu.Vulkan.Khr.Swapchain (
 	create, recreate, S, CreateInfo(..), getImages) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 import Data.Word
 
@@ -31,27 +30,27 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
-createNew :: (Pointable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
+createNew :: (Pokable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew n ssfc fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ssc . SNew ssc fmt -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f =
 	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
-create :: (Pointable n, Pokable c, Pokable d) =>
+create :: (Pokable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo n ssfc ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ssc . S ssc -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
 	bracket (createM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
 
-recreateNew :: (Pointable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
+recreateNew :: (Pokable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew n ssfc fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	SNew ssc fmt -> IO ()
 recreateNew (Device.D dvc) ci macc macd (SNew sc) = recreateNewM dvc ci macc macd sc
 
-recreate :: (Pointable n, Pokable c, Pokable d) =>
+recreate :: (Pokable n, Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo n ssfc ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S ssc -> IO ()
@@ -116,11 +115,11 @@ createInfoFromNew CreateInfoNew {
 	createInfoClipped = clpd,
 	createInfoOldSwapchain = osc }
 
-createNewM :: (Pointable n, Pokable n', T.FormatToValue fmt) => Device.M.D ->
+createNewM :: (Pokable n, Pokable n', T.FormatToValue fmt) => Device.M.D ->
 	CreateInfoNew n ss fmt -> Maybe (AllocationCallbacks.A n') -> IO M.S
 createNewM dvc ci mac = createM dvc (createInfoFromNew ci) mac
 
-recreateNewM :: (Pointable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
+recreateNewM :: (Pokable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
 	Device.M.D -> CreateInfoNew n ss fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	M.S -> IO ()
@@ -145,11 +144,11 @@ data CreateInfo n ss = CreateInfo {
 	createInfoOldSwapchain :: Maybe M.S }
 	deriving Show
 
-createM :: (Pointable n, Pokable n') =>
+createM :: (Pokable n, Pokable n') =>
 	Device.M.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO M.S
 createM dvc ci mac = M.create dvc (createInfoToOld ci) mac
 
-recreateM :: (Pointable n, Pokable c, Pokable d) =>
+recreateM :: (Pokable n, Pokable c, Pokable d) =>
 	Device.M.D -> CreateInfo n ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	M.S -> IO ()

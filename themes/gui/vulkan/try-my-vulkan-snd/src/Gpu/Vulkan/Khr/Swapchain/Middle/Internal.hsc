@@ -17,11 +17,9 @@ module Gpu.Vulkan.Khr.Swapchain.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
 import Control.Monad.Cont
 import Data.IORef
 import Data.Word
@@ -51,7 +49,7 @@ import qualified Gpu.Vulkan.Khr.Swapchain.Core as C
 extensionName :: T.Text
 extensionName = #{const_str VK_KHR_SWAPCHAIN_EXTENSION_NAME}
 
-newtype S = S { unS :: IORef (C.Extent2d, C.S) }
+newtype S = S { _unS :: IORef (C.Extent2d, C.S) }
 
 instance Show S where show _ = "Gpu.Vulkan.Khr.Swapchain.Middle.S"
 
@@ -80,41 +78,38 @@ data CreateInfo n = CreateInfo {
 	createInfoOldSwapchain :: Maybe S }
 	deriving Show
 
-create :: (Pointable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO S
-create (Device.D dvc) ci mac = ($ pure) . runContT $ lift . sFromCore ex =<< do
-	pci <- createInfoToCoreOld ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	psc <- ContT alloca
-	lift do	r <- C.create dvc pci pac psc
-		throwUnlessSuccess $ Result r
+create (Device.D dvc) ci mac = sFromCore ex =<< alloca \psc -> do
+		createInfoToCoreOld ci \pci ->
+			AllocationCallbacks.maybeToCore' mac \pac -> do
+				r <- C.create dvc pci pac psc
+				throwUnlessSuccess $ Result r
 		peek psc
 	where ex = createInfoImageExtent ci
 
-recreate :: (Pointable n, Pokable c, Pokable d) =>
+recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
 	Device.D -> CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S -> IO ()
-recreate (Device.D dvc) ci macc macd (S rs) = ($ pure) $ runContT do
-	pci <- createInfoToCoreOld ci
-	pacc <- AllocationCallbacks.maybeToCore macc
-	pacd <- AllocationCallbacks.maybeToCore macd
-	psc <- ContT alloca
-	lift do	r <- C.create dvc pci pacc psc
-		throwUnlessSuccess $ Result r
-		(_, sco) <- readIORef rs
-		writeIORef rs . (ex ,) =<< peek psc
-		C.destroy dvc sco pacd
+recreate (Device.D dvc) ci macc macd (S rs) = alloca \psc ->
+		createInfoToCoreOld ci \pci ->
+		AllocationCallbacks.maybeToCore' macc \pacc ->
+		AllocationCallbacks.maybeToCore' macd \pacd -> do
+			r <- C.create dvc pci pacc psc
+			throwUnlessSuccess $ Result r
+			(_, sco) <- readIORef rs
+			writeIORef rs . (ex ,) =<< peek psc
+			C.destroy dvc sco pacd
 	where ex = createInfoImageExtent ci
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) sc mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	sc' <- lift $ sToCore sc
-	lift $ C.destroy dvc sc' pac
+destroy (Device.D dvc) sc mac = AllocationCallbacks.maybeToCore' mac \pac -> do
+	sc' <- sToCore sc
+	C.destroy dvc sc' pac
 
-createInfoToCoreOld :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCoreOld :: WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCoreOld CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -131,17 +126,13 @@ createInfoToCoreOld CreateInfo {
 	createInfoCompositeAlpha = CompositeAlphaFlagBits caf,
 	createInfoPresentMode = PresentMode pm,
 	createInfoClipped = clpd,
-	createInfoOldSwapchain = mos
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pqfis <- ContT $ allocaArray qfic
-	lift $ pokeArray pqfis qfis
-	os <- case mos of
-		Nothing -> pure $ wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
-		Just s -> lift $ sToCore s
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoOldSwapchain = mos } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray qfic \pqfis ->
+	pokeArray pqfis qfis >>
+	let	ci os = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoSurface = sfc,
 			C.createInfoMinImageCount = mic,
@@ -157,8 +148,10 @@ createInfoToCoreOld CreateInfo {
 			C.createInfoCompositeAlpha = caf,
 			C.createInfoPresentMode = pm,
 			C.createInfoClipped = boolToBool32 clpd,
-			C.createInfoOldSwapchain = os }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoOldSwapchain = os } in
+	case mos of
+		Nothing -> withPoked (ci . wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}) f
+		Just s -> sToCore s >>= \os -> withPoked (ci os) f
 	where qfic = length qfis
 
 getImages :: Device.D -> S -> IO [Image.I]
