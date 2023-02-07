@@ -31,7 +31,7 @@ import qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore.M
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke (WithPoked, withPokedMaybe', withPtrS)
 import Control.Arrow
 import Gpu.Vulkan.Queue.Middle.Internal as Queue
 
@@ -53,9 +53,9 @@ acquireNextImageResult sccs
 
 ---------------------------------------------------------------------------
 
-queuePresent :: Pointable n => Queue.Q -> PresentInfo n -> IO ()
+queuePresent :: WithPoked n => Queue.Q -> PresentInfo n -> IO ()
 queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
-	cpi@(C.PresentInfo_ fpi) <- presentInfoMiddleToCore pi_
+	cpi@(C.PresentInfo_ fpi) <- ContT $ presentInfoMiddleToCore pi_
 	ppi <- ContT $ withForeignPtr fpi
 	lift do r <- C.queuePresent q ppi
 		let	(fromIntegral -> rc) = C.presentInfoSwapchainCount cpi
@@ -71,25 +71,24 @@ data PresentInfo n = PresentInfo {
 	} deriving Show
 
 presentInfoMiddleToCore ::
-	Pointable n => PresentInfo n -> ContT r IO C.PresentInfo
+	WithPoked n => PresentInfo n -> (C.PresentInfo -> IO a) -> IO ()
 presentInfoMiddleToCore PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
 		(length &&& id) . (Semaphore.M.unS <$>) -> (wsc, wss),
 	presentInfoSwapchainImageIndices =
-		(length &&& id . unzip) -> (scc, (scs, iis)) } = do
-	scs' <- lift $ Swapchain.M.sToCore `mapM` scs
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pwss <- ContT $ allocaArray wsc
-	lift $ pokeArray pwss wss
-	pscs <- ContT $ allocaArray scc
-	lift $ pokeArray pscs scs'
-	piis <- ContT $ allocaArray scc
-	lift $ pokeArray piis iis
-	prs <- ContT $ allocaArray scc
-	pure C.PresentInfo {
+		(length &&& id . unzip) -> (scc, (scs, iis)) } f =
+	Swapchain.M.sToCore `mapM` scs >>= \scs' ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray wsc \pwss ->
+	pokeArray pwss wss >>
+	allocaArray scc \pscs ->
+	pokeArray pscs scs' >>
+	allocaArray scc \piis ->
+	pokeArray piis iis >>
+	allocaArray scc \prs -> f C.PresentInfo {
 		C.presentInfoSType = (),
-		C.presentInfoPNext = pnxt,
+		C.presentInfoPNext = pnxt',
 		C.presentInfoWaitSemaphoreCount = fromIntegral wsc,
 		C.presentInfoPWaitSemaphores = pwss,
 		C.presentInfoSwapchainCount = fromIntegral scc,

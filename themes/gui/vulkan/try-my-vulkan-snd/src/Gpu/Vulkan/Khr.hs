@@ -8,7 +8,7 @@
 
 module Gpu.Vulkan.Khr where
 
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Data.HeteroList
 import Data.Word
 
@@ -100,10 +100,10 @@ presentInfoFromMiddle PresentInfo {
 		M.presentInfoSwapchainImageIndices = sciis }
 
 queuePresentNew ::
-	Pointable n => Queue.Q -> PresentInfoNew n sws scfmt sscs -> IO ()
+	Pokable n => Queue.Q -> PresentInfoNew n sws scfmt sscs -> IO ()
 queuePresentNew q = queuePresent q . presentInfoFromNew
 
-queuePresent :: Pointable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
+queuePresent :: Pokable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
 queuePresent q = M.queuePresent q . presentInfoFromMiddle
 
 acquireNextImageResultNewM :: [Result] -> Device.M.D ->
