@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -9,7 +10,6 @@ module Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -50,11 +50,11 @@ createInfoToCore CreateInfo {
 	createInfoAttachments =
 		length &&& (ColorBlendAttachment.stateToCore <$>) -> (ac, as),
 	createInfoBlendConstants = RgbaDouble r g b a
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pas <- ContT $ allocaArray ac
-	lift $ pokeArray pas as
-	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	} = ContT \f ->
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	allocaArray ac \pas ->
+	pokeArray pas as >>
+	let ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
@@ -62,5 +62,5 @@ createInfoToCore CreateInfo {
 			C.createInfoLogicOp = lo,
 			C.createInfoAttachmentCount = fromIntegral ac,
 			C.createInfoPAttachments = pas,
-			C.createInfoBlendConstants = [r, g, b, a] }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoBlendConstants = [r, g, b, a] } in
+	withPoked ci f
