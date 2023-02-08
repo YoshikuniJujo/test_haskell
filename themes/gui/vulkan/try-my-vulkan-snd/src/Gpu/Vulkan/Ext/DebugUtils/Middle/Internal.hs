@@ -13,8 +13,6 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Foreign.C.String
-import Foreign.Pointable hiding (pattern NullPtr)
-import Control.Monad.Cont
 import Data.Maybe
 import Data.String
 import System.IO.Unsafe
@@ -41,6 +39,7 @@ data Label n = Label {
 	labelColor :: Rgba Float }
 	deriving Show
 
+{-
 labelToCore :: Pointable n => Label n -> ContT r IO C.Label
 labelToCore Label {
 	labelNext = mnxt,
@@ -53,6 +52,7 @@ labelToCore Label {
 		C.labelPNext = pnxt,
 		C.labelPLabelName = cln,
 		C.labelColor = [r, g, b, a] }
+-}
 
 labelFromCore :: Peek n => C.Label -> IO (Label n)
 labelFromCore C.Label {
@@ -74,6 +74,7 @@ data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoObjectName :: Maybe T.Text }
 	deriving Show
 
+{-
 objectNameInfoToCore :: Pointable n => ObjectNameInfo n -> ContT r IO C.ObjectNameInfo
 objectNameInfoToCore ObjectNameInfo {
 	objectNameInfoNext = mnxt,
@@ -89,6 +90,7 @@ objectNameInfoToCore ObjectNameInfo {
 		C.objectNameInfoObjectType = ot,
 		C.objectNameInfoObjectHandle = oh,
 		C.objectNameInfoPObjectName = con }
+-}
 
 objectNameInfoFromCore :: Peek n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
 objectNameInfoFromCore C.ObjectNameInfo {
