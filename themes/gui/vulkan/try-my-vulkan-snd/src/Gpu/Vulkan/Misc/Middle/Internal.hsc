@@ -4,7 +4,23 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc.Middle.Internal where
+module Gpu.Vulkan.Misc.Middle.Internal (
+
+	-- * Control
+
+	mapContM, allocaAndPokeArray',
+
+	-- * Values
+
+	pattern NullHandle,
+
+	-- * Bool
+
+	boolToBool32, bool32ToBool,
+
+	-- * Text
+
+	textToCString, cstrToText, textListToCStringArray ) where
 
 import Foreign.Ptr
 import Foreign.Marshal
@@ -14,21 +30,12 @@ import Foreign.C.String
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Word
-import Data.Int
 
 import qualified Data.Text as Txt
 import qualified Data.Text.Foreign as Txt
 
+
 #include <vulkan/vulkan.h>
-
-stringToCString :: String -> ContT r IO CString
-stringToCString = ContT . withCString
-
-stringListToCStringArray :: [String] -> ContT r IO (Ptr CString)
-stringListToCStringArray strs = do
-	cstrl <- stringToCString `mapM` strs
-	pcstra <- ContT . allocaArray $ length strs
-	pcstra <$ lift (pokeArray pcstra cstrl)
 
 textListToCStringArray :: [Txt.Text] -> (Ptr CString -> IO a) -> IO a
 textListToCStringArray txts f =
@@ -36,36 +43,9 @@ textListToCStringArray txts f =
 	allocaArray (length txts) \pcstra ->
 	pokeArray pcstra cstrl >> f pcstra
 
-type PtrVoid = Ptr ()
-
-type PtrCString = Ptr CString
-
-success :: #{type VkResult}
-success = #{const VK_SUCCESS}
-
-type PtrResult = Ptr #{type VkResult}
-
-vkFalse, vkTrue :: #{type VkBool32}
-vkFalse = #{const VK_FALSE}
-vkTrue = #{const VK_TRUE}
-
 pattern NullHandle :: Ptr a
 pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
 	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}
-
-queueGraphicsBit :: #{type VkQueueFlags}
-queueGraphicsBit = #{const VK_QUEUE_GRAPHICS_BIT}
-
-type PtrFloat = Ptr #{type float}
-
-uint32Max :: #{type uint32_t}
-uint32Max = #{const UINT32_MAX}
-
-type PtrUint32T = Ptr #{type uint32_t}
-type ListUint32T = [#{type uint32_t}]
-
-uint64Max :: #{type uint64_t}
-uint64Max = #{const UINT64_MAX}
 
 textToCString :: Txt.Text -> (CString -> IO a) -> IO a
 textToCString t f = Txt.withCStringLen t \(cs, ln) ->
@@ -73,13 +53,6 @@ textToCString t f = Txt.withCStringLen t \(cs, ln) ->
 		copyBytes cs' cs ln
 		poke (cs' `plusPtr` ln :: Ptr CChar) 0
 		f cs'
-
-pokeText :: Int -> CString -> Txt.Text -> IO ()
-pokeText mx dst t = ($ pure) $ runContT do
-	(src, ln) <- ContT $ Txt.withCStringLen t
-	let	ln' = min ln (mx - 1)
-	lift do	copyBytes dst src ln'
-		poke (dst `plusPtr` ln' :: Ptr CChar) 0
 
 cstrToText :: CString -> IO Txt.Text
 cstrToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
@@ -94,13 +67,6 @@ cstringLength pc = do
 cstringToCStringLen :: CString -> IO CStringLen
 cstringToCStringLen cs = (cs ,) <$> cstringLength cs
 
-sTypeCheck :: #{type VkStructureType} -> Ptr a -> IO ()
-sTypeCheck st p = do
-	st' <- peek $ castPtr p
-	when (st /= st') $ error "Vulkan Structure Type not match"
-
-type ListFloat = [#{type float}]
-
 boolToBool32 :: Bool -> #{type VkBool32}
 boolToBool32 False = #{const VK_FALSE}
 boolToBool32 True = #{const VK_TRUE}
@@ -113,19 +79,9 @@ bool32ToBool _ = error $
 	"VK_TRUE or VK_FALSE into a Gpu.Vulkan implementation " ++
 	"where a VkBool32 is expected"
 
-allocaAndPokeArray :: Storable a => [a] -> ContT r IO (Int, Ptr a)
-allocaAndPokeArray (length &&& id -> (xc, xs)) = do
-	p <- ContT $ allocaArray xc
-	(xc, p) <$ lift (pokeArray p xs)
-
 allocaAndPokeArray' :: Storable a => [a] -> ((Int, Ptr a) -> IO b) -> IO b
 allocaAndPokeArray' (length &&& id -> (xc, xs)) f
 	= allocaArray xc \p -> pokeArray p xs >> f (xc, p)
 
 mapContM :: Monad m => (a -> (b -> m c) -> m c) -> [a] -> ([b] -> m c) -> m c
 mapContM f = runContT . mapM (ContT . f)
-
-maybeToStorable :: Storable a => Maybe a -> ContT r IO (Ptr a)
-maybeToStorable = \case
-	Nothing -> pure nullPtr
-	Just x -> ContT $ \f -> alloca \p -> poke p x >> f p

@@ -2,17 +2,13 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc (
-	nil, cstrToText, uint64Max
-	) where
+module Gpu.Vulkan.Misc (nil, cstrToText) where
 
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.String
 import Data.Text qualified as Txt
 import Data.Text.Foreign qualified as Txt
-
-import Gpu.Vulkan.Misc.Middle
 
 nil :: Maybe (t ())
 nil = Nothing

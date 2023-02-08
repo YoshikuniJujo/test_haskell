@@ -11,7 +11,6 @@ module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.String
 import Foreign.Pointable hiding (pattern NullPtr)
