@@ -8,12 +8,9 @@ module Gpu.Vulkan.Pipeline.Cache.Middle.Internal (
 	C(..), CreateInfo(..), InitialData(..), create, destroy ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -35,31 +32,31 @@ data CreateInfo n = CreateInfo {
 
 data InitialData = InitialData #{type size_t} (Ptr ()) deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoInitialData = InitialData dtsz pdt } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoInitialData = InitialData dtsz pdt } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoInitialDataSize = dtsz,
-			C.createInfoPInitialData = pdt }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoPInitialData = pdt } in
+	withPoked ci f
 
 newtype C = C C.C deriving Show
 
-create :: (Pointable n, WithPoked c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO C
-create (Device.D dvc) ci mac = ($ pure) . runContT $ C <$> do
-	pci <- createInfoToCore ci
-	ContT \f -> alloca \pc -> do
+create (Device.D dvc) ci mac = C <$> alloca \pc -> do
+	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore' mac \pac -> do
 			r <- C.create dvc pci pac pc
 			throwUnlessSuccess $ Result r
-		f =<< peek pc
+	peek pc
 
 destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
