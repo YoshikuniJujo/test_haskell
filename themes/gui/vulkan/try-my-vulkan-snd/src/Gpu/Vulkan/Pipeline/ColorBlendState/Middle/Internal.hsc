@@ -12,8 +12,8 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Bits
@@ -41,7 +41,7 @@ data CreateInfo n = CreateInfo {
 	createInfoBlendConstants :: Rgba Float }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -51,7 +51,7 @@ createInfoToCore CreateInfo {
 		length &&& (ColorBlendAttachment.stateToCore <$>) -> (ac, as),
 	createInfoBlendConstants = RgbaDouble r g b a
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pas <- ContT $ allocaArray ac
 	lift $ pokeArray pas as
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {

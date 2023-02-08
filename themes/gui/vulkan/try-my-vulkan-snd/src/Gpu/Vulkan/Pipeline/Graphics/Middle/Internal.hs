@@ -85,7 +85,7 @@ createInfoToCoreNew :: (
 	Pointable n,
 	ShaderStage.CreateInfoListToCoreNew nskndvss,
 	Pointable n2, Pointable n3, Pointable n4,
-	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pointable n9,
+	Pointable n5, Pointable n6, Pointable n7, Pointable n8, Pokable n9,
 	Pointable n10 ) =>
 	CreateInfoNew n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
 	ContT r IO C.CreateInfo
@@ -156,7 +156,7 @@ instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure 
 instance (
 	Pointable n, ShaderStage.CreateInfoListToCoreNew nskndvss,
 	Pointable vis, Pointable ias, Pointable ts, Pointable vs,
-	Pointable rs, Pointable ms, Pointable dss, Pointable cbs, Pointable ds,
+	Pointable rs, Pointable ms, Pointable dss, Pokable cbs, Pointable ds,
 	CreateInfoListToCoreNew ass
 	) =>
 	CreateInfoListToCoreNew ('(
