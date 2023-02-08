@@ -116,35 +116,35 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoMemoryTypeIndex = mti }
 	ContT $ withForeignPtr fai
 
-allocate :: (Pointable n, Pokable a) =>
+allocate :: (Pointable n, WithPoked a) =>
 	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A a) -> IO M
 allocate (Device.D dvc) ai mac = (M <$>) . ($ pure) $ runContT do
 	pai <- allocateInfoToCore ai
-	pac <- AllocationCallbacks.maybeToCore mac
-	pm <- ContT alloca
-	lift do	r <- C.allocate dvc pai pac pm
-		throwUnlessSuccess $ Result r
-		newIORef =<< peek pm
+	ContT \f -> alloca \pm -> do
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.allocate dvc pai pac pm
+			throwUnlessSuccess $ Result r
+		f =<< newIORef =<< peek pm
 
-reallocate :: (Pointable n, Pokable a, Pokable f) =>
+reallocate :: (Pointable n, WithPoked a, WithPoked f) =>
 	Device.D -> AllocateInfo n ->
 	Maybe (AllocationCallbacks.A a) ->
 	Maybe (AllocationCallbacks.A f) ->
 	M -> IO ()
 reallocate d@(Device.D dvc) ai macc macd m@(M rm) = ($ pure) $ runContT do
 	pai <- allocateInfoToCore ai
-	pac <- AllocationCallbacks.maybeToCore macc
-	pm <- ContT alloca
-	lift do	r <- C.allocate dvc pai pac pm
-		throwUnlessSuccess $ Result r
-		free d m macd
-		writeIORef rm =<< peek pm
+	ContT \_f -> alloca \pm ->
+		AllocationCallbacks.maybeToCore' macc \pac -> do
+			r <- C.allocate dvc pai pac pm
+			throwUnlessSuccess $ Result r
+			free d m macd
+			writeIORef rm =<< peek pm
 
-free :: Pokable f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
-free (Device.D dvc) (M mem) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	m <- lift $ readIORef mem
-	lift $ C.free dvc m pac
+free :: WithPoked f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
+free (Device.D dvc) (M mem) mac =
+	AllocationCallbacks.maybeToCore' mac \pac -> do
+		m <- readIORef mem
+		C.free dvc m pac
 
 enum "MapFlags" ''#{type VkMemoryMapFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("MapFlagsZero", 0)]
