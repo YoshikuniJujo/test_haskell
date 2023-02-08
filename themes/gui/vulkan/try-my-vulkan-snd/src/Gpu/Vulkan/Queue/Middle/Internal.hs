@@ -11,8 +11,7 @@
 module Gpu.Vulkan.Queue.Middle.Internal where
 
 import Foreign.Marshal.Array
-import Foreign.Pointable
-import Control.Monad.Cont
+import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.HeteroList
 
@@ -29,32 +28,31 @@ import qualified Gpu.Vulkan.Queue.Core as C
 
 newtype Q = Q C.Q deriving Show
 
-submit :: SubmitInfoListToCore nssssvsss =>
-	Q -> HeteroVarList (V4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
-submit (Q q) sis mf = ($ pure) $ runContT do
-	csis <- submitInfoListToCore sis
-	let	sic = length csis
-	psis <- ContT $ allocaArray sic
-	lift do	pokeArray psis csis
-		r <- C.submit q (fromIntegral sic) psis . Fence.M.maybeFToCore $ (\(Fence.F f) -> f) <$> mf
+submit :: SubmitInfoListToCore nssssvsss => Q ->
+	HeteroVarList (V4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
+submit (Q q) sis mf = submitInfoListToCore sis \csis ->
+	let sic = length csis in allocaArray sic \psis -> do
+		pokeArray psis csis
+		r <- C.submit q (fromIntegral sic) psis
+			. Fence.M.maybeFToCore $ (\(Fence.F f) -> f) <$> mf
 		throwUnlessSuccess $ Result r
 
 class SubmitInfoListToCore (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
 	submitInfoListToCore ::
 		HeteroVarList (V4 SubmitInfo) nssssvsss ->
-		ContT r IO [C.SubmitInfo]
+		([C.SubmitInfo] -> IO a) -> IO ()
 
 instance SubmitInfoListToCore '[] where
-	submitInfoListToCore HVNil = pure []
+	submitInfoListToCore HVNil f = () <$ f []
 
 instance (
-	Pointable n, CommandBufferListToMiddle svss,
+	Pokable n, CommandBufferListToMiddle svss,
 	SubmitInfoListToCore nssssvsss ) =>
 	SubmitInfoListToCore ('(n, sss, svss, ssss) ': nssssvsss) where
-	submitInfoListToCore (V4 si :...: sis) = do
-		csi <- M.submitInfoToCore $ submitInfoToMiddle si
-		csis <- submitInfoListToCore sis
-		pure $ csi : csis
+	submitInfoListToCore (V4 si :...: sis) f =
+		M.submitInfoToCore (submitInfoToMiddle si) \csi ->
+		submitInfoListToCore sis \csis ->
+		f $ csi : csis
 
 waitIdle :: Q -> IO ()
 waitIdle (Q q) = throwUnlessSuccess . Result =<< C.waitIdle q

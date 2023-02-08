@@ -27,7 +27,6 @@ import Foreign.Marshal.Array
 import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
@@ -261,7 +260,8 @@ data SubmitInfo n vss = SubmitInfo {
 deriving instance (Show n, Show (HeteroVarList CommandBuffer.T.CC vss)) =>
 	Show (SubmitInfo n vss)
 
-submitInfoToCore :: Pointable n => SubmitInfo n vs -> ContT r IO C.SubmitInfo
+submitInfoToCore :: WithPoked n =>
+	SubmitInfo n vs -> (C.SubmitInfo -> IO a) -> IO ()
 submitInfoToCore SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
@@ -272,20 +272,19 @@ submitInfoToCore SubmitInfo {
 	submitInfoCommandBuffers = (length &&& id)
 		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
 	submitInfoSignalSemaphores =
-		length &&& (Semaphore.unS <$>) -> (ssc, sss)
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pwss <- ContT $ allocaArray wsc
-	lift $ pokeArray pwss wss
-	pwdsms <- ContT $ allocaArray wsc
-	lift $ pokeArray pwdsms wdsms
-	pcbs <- ContT $ allocaArray cbc
-	lift $ pokeArray pcbs cbs
-	psss <- ContT $ allocaArray ssc
-	lift $ pokeArray psss sss
-	pure C.SubmitInfo {
+		length &&& (Semaphore.unS <$>) -> (ssc, sss) } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray wsc \pwss ->
+	pokeArray pwss wss >>
+	allocaArray wsc \pwdsms ->
+	pokeArray pwdsms wdsms >>
+	allocaArray cbc \pcbs ->
+	pokeArray pcbs cbs >>
+	allocaArray ssc \psss ->
+	pokeArray psss sss >>
+	f C.SubmitInfo {
 		C.submitInfoSType = (),
-		C.submitInfoPNext = pnxt,
+		C.submitInfoPNext = pnxt',
 		C.submitInfoWaitSemaphoreCount = fromIntegral wsc,
 		C.submitInfoPWaitSemaphores = pwss,
 		C.submitInfoPWaitDstStageMask = pwdsms,
