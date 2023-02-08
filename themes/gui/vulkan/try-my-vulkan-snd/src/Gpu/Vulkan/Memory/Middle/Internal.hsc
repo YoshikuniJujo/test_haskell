@@ -21,12 +21,10 @@ module Gpu.Vulkan.Memory.Middle.Internal (
 import Prelude hiding (map)
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc hiding (free)
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Default
 import Data.Bits
@@ -102,43 +100,41 @@ data AllocateInfo n = AllocateInfo {
 	allocateInfoMemoryTypeIndex :: TypeIndex }
 	deriving Show
 
-allocateInfoToCore :: Pointable n =>
-	AllocateInfo n -> ContT r IO (Ptr C.AllocateInfo)
+allocateInfoToCore :: WithPoked n =>
+	AllocateInfo n -> (Ptr C.AllocateInfo -> IO a) -> IO ()
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoAllocationSize = Device.Size sz,
-	allocateInfoMemoryTypeIndex = TypeIndex mti } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.AllocateInfo_ fai = C.AllocateInfo {
+	allocateInfoMemoryTypeIndex = TypeIndex mti } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	let	ci = C.AllocateInfo {
 			C.allocateInfoSType = (),
-			C.allocateInfoPNext = pnxt,
+			C.allocateInfoPNext = pnxt',
 			C.allocateInfoAllocationSize = sz,
-			C.allocateInfoMemoryTypeIndex = mti }
-	ContT $ withForeignPtr fai
+			C.allocateInfoMemoryTypeIndex = mti } in
+	withPoked ci f
 
-allocate :: (Pointable n, WithPoked a) =>
+allocate :: (WithPoked n, WithPoked a) =>
 	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A a) -> IO M
-allocate (Device.D dvc) ai mac = (M <$>) . ($ pure) $ runContT do
-	pai <- allocateInfoToCore ai
-	ContT \f -> alloca \pm -> do
+allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
+	allocateInfoToCore ai \pai ->
 		AllocationCallbacks.maybeToCore' mac \pac -> do
 			r <- C.allocate dvc pai pac pm
 			throwUnlessSuccess $ Result r
-		f =<< newIORef =<< peek pm
+	newIORef =<< peek pm
 
-reallocate :: (Pointable n, WithPoked a, WithPoked f) =>
+reallocate :: (WithPoked n, WithPoked a, WithPoked f) =>
 	Device.D -> AllocateInfo n ->
 	Maybe (AllocationCallbacks.A a) ->
 	Maybe (AllocationCallbacks.A f) ->
 	M -> IO ()
-reallocate d@(Device.D dvc) ai macc macd m@(M rm) = ($ pure) $ runContT do
-	pai <- allocateInfoToCore ai
-	ContT \_f -> alloca \pm ->
-		AllocationCallbacks.maybeToCore' macc \pac -> do
-			r <- C.allocate dvc pai pac pm
-			throwUnlessSuccess $ Result r
-			free d m macd
-			writeIORef rm =<< peek pm
+reallocate d@(Device.D dvc) ai macc macd m@(M rm) =
+	alloca \pm -> allocateInfoToCore ai \pai ->
+	AllocationCallbacks.maybeToCore' macc \pac -> do
+		r <- C.allocate dvc pai pac pm
+		throwUnlessSuccess $ Result r
+		free d m macd
+		writeIORef rm =<< peek pm
 
 free :: WithPoked f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
 free (Device.D dvc) (M mem) mac =

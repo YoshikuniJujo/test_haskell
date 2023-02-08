@@ -22,7 +22,6 @@ import Prelude hiding (map, read)
 import GHC.TypeLits
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object hiding (Offset(..))
@@ -164,7 +163,7 @@ memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 	algn = fromIntegral (fromMaybe 1 malgn) `lcm`
 		Memory.M.requirementsAlignment reqs
 
-allocate :: (Pointable n, Pokable c, Pokable d, Alignments sibfoss) =>
+allocate :: (Pokable n, Pokable c, Pokable d, Alignments sibfoss) =>
 	Device.D sd ->
 	HeteroVarList (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
@@ -178,7 +177,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	\mem -> f =<< newM2' bs mem
 
 reallocate :: (
-	Pointable n, Pokable c, Pokable d, Alignments sibfoss ) =>
+	Pokable n, Pokable c, Pokable d, Alignments sibfoss ) =>
 	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
@@ -190,7 +189,7 @@ reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 	writeMBinded' mem bs
 
 reallocateBind :: (
-	Pointable n, Pokable c, Pokable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
+	Pokable n, Pokable c, Pokable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd -> HeteroVarList (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
@@ -221,7 +220,7 @@ instance (
 		rebindAll dvc ibs m
 
 allocateBind :: (
-	Pointable n, Pokable c, Pokable d,
+	Pokable n, Pokable c, Pokable d,
 	BindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd ->
 	HeteroVarList (V2 ImageBuffer) sibfoss ->
