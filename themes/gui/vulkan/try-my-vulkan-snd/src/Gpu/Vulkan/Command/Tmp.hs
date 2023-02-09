@@ -91,7 +91,7 @@ bindDescriptorSets ::
 bindDescriptorSets (CommandBuffer.CC mcb) = M.bindDescriptorSets mcb
 
 pushConstants' :: forall vs ts .
-	StoreHetero' ts =>
+	(StorableList' ts, StoreHetero' ts) =>
 	CommandBuffer.CC vs -> Pipeline.Layout.L ->
 	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
 pushConstants' (CommandBuffer.CC mcb) = M.pushConstants' mcb

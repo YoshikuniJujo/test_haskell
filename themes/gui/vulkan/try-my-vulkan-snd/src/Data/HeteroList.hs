@@ -10,9 +10,11 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	StorableList'(..),
+	StorableList'(..), storeHeteroSize,
 
-	HeteroList', StoreHetero'(..), Id(..),
+	HeteroList',
+	StoreHetero'(..),
+	Id(..),
 
 	HeteroVarList(..), pattern Singleton, singleton,
 	heteroVarListToList, heteroVarListToListM,
@@ -48,21 +50,23 @@ newtype Id t = Id t deriving Show
 type HeteroList' ts = HeteroVarList Id ts
 
 class StoreHetero' (ts :: [Type]) where
-	storeHeteroSize' :: Int -> Int
 	storeHetero' :: Ptr () -> HeteroList' ts -> IO ()
 
 instance StoreHetero' '[] where
-	storeHeteroSize' sz = sz
 	storeHetero' _ HVNil = pure ()
 
 instance (Storable t, StoreHetero' ts) => StoreHetero' (t ': ts) where
-	storeHeteroSize' sz = storeHeteroSize' @ts
-		$ ((sz - 1) `div` al + 1) * al + sizeOf @t undefined
-		where al = alignment @t undefined
 	storeHetero' p (Id x :...: xs) = do
 		poke (castPtr p') x
 		storeHetero' (p' `plusPtr` sizeOf x) xs
 		where p' = alignPtr p $ alignment x
+
+storeHeteroSize :: forall ts . StorableList' ts => HeteroList' ts -> Int
+storeHeteroSize = calcSize 0 . sizeAlignments'
+
+calcSize :: Int -> [(Int, Int)] -> Int
+calcSize n [] = n
+calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szals
 
 infixr 5 :...:
 
