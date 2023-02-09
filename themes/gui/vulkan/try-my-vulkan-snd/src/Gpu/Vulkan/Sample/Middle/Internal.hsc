@@ -1,4 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Sample.Middle.Internal where
@@ -6,7 +6,6 @@ module Gpu.Vulkan.Sample.Middle.Internal where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -19,13 +18,13 @@ data CountAndMask = CountAndMask CountFlagBits (Maybe Mask) deriving Show
 newtype Mask = Mask Integer deriving Show
 
 countAndMaskToCore ::
-	CountAndMask -> ContT r IO (CountFlagBits, Ptr #{type VkSampleMask})
-countAndMaskToCore = \case
-	CountAndMask cfb Nothing -> pure (cfb, NullPtr)
-	CountAndMask cfb@(CountFlagBits c) (Just (Mask m)) -> do
-		pm <- ContT $ allocaArray ln
-		lift . pokeArray pm $ integerToWord32s ln m
-		pure (cfb, pm)
+	CountAndMask -> ((CountFlagBits, Ptr #{type VkSampleMask}) -> IO a) -> IO a
+countAndMaskToCore foo f = case foo of
+	CountAndMask cfb Nothing -> f (cfb, NullPtr)
+	CountAndMask cfb@(CountFlagBits c) (Just (Mask m)) ->
+		allocaArray ln \pm ->
+		pokeArray pm (integerToWord32s ln m) >>
+		f (cfb, pm)
 		where ln = fromIntegral $ (c - 1) `div` 32 + 1
 
 integerToWord32s :: Int -> Integer -> [Word32]

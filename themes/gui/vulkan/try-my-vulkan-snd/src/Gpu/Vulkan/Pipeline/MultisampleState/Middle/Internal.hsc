@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -8,11 +9,9 @@ module Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal (
 	CreateInfo(..), createInfoToCore ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -38,7 +37,8 @@ data CreateInfo n = CreateInfo {
 	createInfoAlphaToOneEnable :: Bool }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -46,18 +46,17 @@ createInfoToCore CreateInfo {
 	createInfoSampleShadingEnable = boolToBool32 -> sse,
 	createInfoMinSampleShading = mss,
 	createInfoAlphaToCoverageEnable = boolToBool32 -> ace,
-	createInfoAlphaToOneEnable = boolToBool32 -> aoe
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	(Sample.CountFlagBits c, m) <- countAndMaskToCore cm
-	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoRasterizationSamples = c,
-			C.createInfoSampleShadingEnable = sse,
-			C.createInfoMinSampleShading = mss,
-			C.createInfoPSampleMask = m,
-			C.createInfoAlphaToCoverageEnable = ace,
-			C.createInfoAlphaToOneEnable = aoe }
-	ContT $ withForeignPtr fCreateInfo
+	createInfoAlphaToOneEnable = boolToBool32 -> aoe } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	countAndMaskToCore cm \(Sample.CountFlagBits c, m) ->
+	let ci = C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt,
+		C.createInfoFlags = flgs,
+		C.createInfoRasterizationSamples = c,
+		C.createInfoSampleShadingEnable = sse,
+		C.createInfoMinSampleShading = mss,
+		C.createInfoPSampleMask = m,
+		C.createInfoAlphaToCoverageEnable = ace,
+		C.createInfoAlphaToOneEnable = aoe } in
+	withPoked ci f
