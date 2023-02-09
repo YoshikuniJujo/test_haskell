@@ -86,7 +86,7 @@ createInfoToCoreNew :: (
 	ShaderStage.CreateInfoListToCoreNew nskndvss,
 	Pointable n2, Pointable n3, Pointable n4,
 	Pointable n5, Pointable n6, Pointable n7, Pokable n8, Pokable n9,
-	Pointable n10 ) =>
+	Pokable n10 ) =>
 	CreateInfoNew n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
 	ContT r IO C.CreateInfo
 createInfoToCoreNew CreateInfoNew {
@@ -121,7 +121,7 @@ createInfoToCoreNew CreateInfoNew {
 	pmst <- maybeToCore MultisampleState.createInfoToCore mmst
 	pdsst <- maybeToCore (ContT . DepthStencilState.createInfoToCore) mdsst
 	pcbst <- maybeToCore (ContT . ColorBlendState.createInfoToCore) mcbst
-	pdst <- maybeToCore DynamicState.createInfoToCore mdst
+	pdst <- maybeToCore (ContT . DynamicState.createInfoToCore) mdst
 	bph' <- lift $ gToCore bph
 	pure C.CreateInfo {
 		C.createInfoSType = (),
@@ -156,7 +156,7 @@ instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure 
 instance (
 	Pointable n, ShaderStage.CreateInfoListToCoreNew nskndvss,
 	Pointable vis, Pointable ias, Pointable ts, Pointable vs,
-	Pointable rs, Pointable ms, Pokable dss, Pokable cbs, Pointable ds,
+	Pointable rs, Pointable ms, Pokable dss, Pokable cbs, Pokable ds,
 	CreateInfoListToCoreNew ass
 	) =>
 	CreateInfoListToCoreNew ('(

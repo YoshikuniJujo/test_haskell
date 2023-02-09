@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,13 +9,11 @@ module Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -32,19 +31,21 @@ data CreateInfo n = CreateInfo {
 	createInfoDynamicStates :: [DynamicState] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
-	createInfoDynamicStates = (length &&& ((\(DynamicState ds) -> ds) <$>)) -> (dsc, dss)
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pdss <- ContT $ allocaArray dsc
-	lift $ pokeArray pdss dss
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoDynamicStates = (
+		length &&&
+		((\(DynamicState ds) -> ds) <$>) ) -> (dsc, dss) } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	allocaArray dsc \pdss ->
+	pokeArray pdss dss >>
+	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
 			C.createInfoDynamicStateCount = fromIntegral dsc,
-			C.createInfoPDynamicStates = pdss }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoPDynamicStates = pdss } in
+	withPoked ci f
