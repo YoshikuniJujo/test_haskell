@@ -12,14 +12,11 @@ module Gpu.Vulkan.Pipeline.Layout.Middle.Internal (
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -48,45 +45,44 @@ data CreateInfo n = CreateInfo {
 	createInfoPushConstantRanges :: [PushConstant.Range] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoSetLayouts =
 		(length &&& ((\(DescriptorSet.Layout.L lyt) -> lyt) <$>)) ->
 			(slc, sls),
-	createInfoPushConstantRanges =
-		(length &&& (PushConstant.rangeToCore <$>)) -> (pcrc, pcrs)
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	psls <- ContT $ allocaArray slc
-	lift $ pokeArray psls sls
-	ppcrs <- ContT $ allocaArray pcrc
-	lift $ pokeArray ppcrs pcrs
-	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoSetLayoutCount = fromIntegral slc,
-			C.createInfoPSetLayouts = psls,
-			C.createInfoPushConstantRangeCount = fromIntegral pcrc,
-			C.createInfoPPushConstantRanges = ppcrs }
-	ContT $ withForeignPtr fCreateInfo
+	createInfoPushConstantRanges = (
+		length &&&
+		(PushConstant.rangeToCore <$>)) -> (pcrc, pcrs) } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> 
+	allocaArray slc \psls ->
+	pokeArray psls sls >>
+	allocaArray pcrc \ppcrs ->
+	pokeArray ppcrs pcrs >>
+	let ci = C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt',
+		C.createInfoFlags = flgs,
+		C.createInfoSetLayoutCount = fromIntegral slc,
+		C.createInfoPSetLayouts = psls,
+		C.createInfoPushConstantRangeCount = fromIntegral pcrc,
+		C.createInfoPPushConstantRanges = ppcrs } in
+	withPoked ci f
 
 newtype L = L C.L deriving Show
 
-create :: (Pointable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
-create (Device.D dvc) ci mac = (L <$>) . ($ pure) $ runContT do
-	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pl <- ContT alloca
-	lift do	r <- C.create dvc pci pac pl
-		throwUnlessSuccess $ Result r
-		peek pl
+create (Device.D dvc) ci mac = L <$> alloca \pl -> do
+	createInfoToCore ci \pci ->
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create dvc pci pac pl
+			throwUnlessSuccess $ Result r
+	peek pl
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (L lyt) mac =
-	($ pure) . runContT $ lift . C.destroy dvc lyt
-		=<< AllocationCallbacks.maybeToCore mac
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc lyt
