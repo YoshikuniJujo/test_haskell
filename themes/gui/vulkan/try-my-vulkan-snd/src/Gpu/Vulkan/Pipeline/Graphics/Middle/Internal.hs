@@ -120,7 +120,7 @@ createInfoToCoreNew CreateInfoNew {
 	prst <- maybeToCore RasterizationState.createInfoToCore mrst
 	pmst <- maybeToCore MultisampleState.createInfoToCore mmst
 	pdsst <- maybeToCore DepthStencilState.createInfoToCore mdsst
-	pcbst <- maybeToCore ColorBlendState.createInfoToCore mcbst
+	pcbst <- maybeToCore (ContT . ColorBlendState.createInfoToCore) mcbst
 	pdst <- maybeToCore DynamicState.createInfoToCore mdst
 	bph' <- lift $ gToCore bph
 	pure C.CreateInfo {

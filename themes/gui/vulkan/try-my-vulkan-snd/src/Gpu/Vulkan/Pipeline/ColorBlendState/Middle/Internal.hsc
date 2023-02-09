@@ -15,7 +15,6 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 import Data.Color
@@ -41,7 +40,8 @@ data CreateInfo n = CreateInfo {
 	createInfoBlendConstants :: Rgba Float }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -49,8 +49,7 @@ createInfoToCore CreateInfo {
 	createInfoLogicOp = LogicOp lo,
 	createInfoAttachments =
 		length &&& (ColorBlendAttachment.stateToCore <$>) -> (ac, as),
-	createInfoBlendConstants = RgbaDouble r g b a
-	} = ContT \f ->
+	createInfoBlendConstants = RgbaDouble r g b a } f =
 	withPokedMaybe mnxt \(castPtr -> pnxt) ->
 	allocaArray ac \pas ->
 	pokeArray pas as >>
