@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -9,11 +10,9 @@ module Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -42,7 +41,8 @@ data CreateInfo n = CreateInfo {
 	createInfoLineWidth :: Float }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -55,9 +55,9 @@ createInfoToCore CreateInfo {
 	createInfoDepthBiasConstantFactor = dbcf,
 	createInfoDepthBiasClamp = dbc,
 	createInfoDepthBiasSlopeFactor = dbsf,
-	createInfoLineWidth = lw } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoLineWidth = lw } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
@@ -70,5 +70,5 @@ createInfoToCore CreateInfo {
 			C.createInfoDepthBiasConstantFactor = dbcf,
 			C.createInfoDepthBiasClamp = dbc,
 			C.createInfoDepthBiasSlopeFactor = dbsf,
-			C.createInfoLineWidth = lw }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoLineWidth = lw } in
+	withPoked ci f
