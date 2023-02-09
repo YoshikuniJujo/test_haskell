@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -9,11 +10,9 @@ module Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -42,7 +41,8 @@ data CreateInfo n = CreateInfo {
 	createInfoMaxDepthBounds :: Float }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -54,10 +54,9 @@ createInfoToCore CreateInfo {
 	createInfoFront = stencilOpStateToCore -> fr,
 	createInfoBack = stencilOpStateToCore -> bk,
 	createInfoMinDepthBounds = mndb,
-	createInfoMaxDepthBounds = mxdb
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoMaxDepthBounds = mxdb } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
@@ -69,5 +68,5 @@ createInfoToCore CreateInfo {
 			C.createInfoFront = fr,
 			C.createInfoBack = bk,
 			C.createInfoMinDepthBounds = mndb,
-			C.createInfoMaxDepthBounds = mxdb }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoMaxDepthBounds = mxdb } in
+	withPoked ci f
