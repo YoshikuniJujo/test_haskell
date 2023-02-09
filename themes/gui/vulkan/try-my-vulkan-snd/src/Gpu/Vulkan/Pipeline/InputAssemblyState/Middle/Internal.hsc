@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -9,11 +10,9 @@ module Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -34,18 +33,19 @@ data CreateInfo n = CreateInfo {
 	createInfoPrimitiveRestartEnable :: Bool }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoTopology = PrimitiveTopology tplg,
-	createInfoPrimitiveRestartEnable = pre
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	createInfoPrimitiveRestartEnable = pre } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
 			C.createInfoTopology = tplg,
-			C.createInfoPrimitiveRestartEnable = boolToBool32 pre }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoPrimitiveRestartEnable =
+				boolToBool32 pre } in
+	withPoked ci f
