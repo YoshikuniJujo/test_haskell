@@ -8,10 +8,9 @@ module Gpu.Vulkan.Specialization.Middle.Internal (infoToCore') where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
+import Foreign.Storable.Hetero hiding (alignments)
 import Control.Monad.Cont
-import Data.HeteroList hiding (alignments)
-
-import qualified Data.HeteroList as HList
+import Data.HeteroList
 
 import qualified Gpu.Vulkan.Specialization.Core as C
 
@@ -52,5 +51,5 @@ infoToCore' xs = do
 		C.infoDataSize = fromIntegral tsz,
 		C.infoPData = pd }
 	where
-	szals = HList.sizeAlignments' @vs
+	szals = sizeAlignments' @vs
 	ps@(n, _, tsz, tal) = parameters szals

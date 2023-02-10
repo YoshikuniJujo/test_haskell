@@ -37,6 +37,7 @@ module Gpu.Vulkan.Command.Middle (
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (WithPoked)
+import Foreign.Storable.Hetero
 import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList

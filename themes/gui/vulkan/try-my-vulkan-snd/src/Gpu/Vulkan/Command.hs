@@ -13,6 +13,7 @@ module Gpu.Vulkan.Command where
 
 import GHC.TypeLits
 import Foreign.Storable
+import Foreign.Storable.Hetero
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object

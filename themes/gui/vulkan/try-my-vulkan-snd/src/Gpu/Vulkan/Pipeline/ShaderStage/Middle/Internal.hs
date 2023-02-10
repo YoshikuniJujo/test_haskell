@@ -14,6 +14,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal (
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
+import Foreign.Storable.Hetero
 import Foreign.Pointable
 import Control.Monad.Cont
 import Data.HeteroList

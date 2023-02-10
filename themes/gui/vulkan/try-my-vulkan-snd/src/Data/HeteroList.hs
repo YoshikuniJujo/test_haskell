@@ -10,11 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	SizableList(..), sizeAlignments', storeHeteroSize,
-
-	HeteroList',
-	StoreHetero'(..),
-	Id(..),
+	HeteroList', Id(..),
 
 	HeteroVarList(..), pattern Singleton, singleton,
 	heteroVarListToList, heteroVarListToListM,
@@ -32,48 +28,15 @@ module Data.HeteroList (
 
 import Prelude hiding (length)
 
-import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Pointable
 import Data.Kind
 
 import Foreign.Storable.PeekPoke
 
-class SizableList (vs :: [Type]) where
-	sizes :: [Int]
-	alignments :: [Int]
-
-instance SizableList '[] where sizes = []; alignments = []
-
-instance (Sizable t, SizableList ts) => SizableList (t ': ts) where
-	sizes = sizeOf' @t: sizes @ts
-	alignments = alignment' @t : alignments @ts
-
-sizeAlignments' :: forall ts . SizableList ts => [(Int, Int)]
-sizeAlignments' = zip (sizes @ts) (alignments @ts)
-
-newtype Id t = Id t deriving Show
-
 type HeteroList' ts = HeteroVarList Id ts
 
-class StoreHetero' (ts :: [Type]) where
-	storeHetero' :: Ptr () -> HeteroList' ts -> IO ()
-
-instance StoreHetero' '[] where
-	storeHetero' _ HVNil = pure ()
-
-instance (Storable t, StoreHetero' ts) => StoreHetero' (t ': ts) where
-	storeHetero' p (Id x :...: xs) = do
-		poke (castPtr p') x
-		storeHetero' (p' `plusPtr` sizeOf x) xs
-		where p' = alignPtr p $ alignment x
-
-storeHeteroSize :: forall ts . SizableList ts => HeteroList' ts -> Int
-storeHeteroSize _ = calcSize 0 $ sizeAlignments' @ts
-
-calcSize :: Int -> [(Int, Int)] -> Int
-calcSize n [] = n
-calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szals
+newtype Id t = Id t deriving Show
 
 infixr 5 :...:
 

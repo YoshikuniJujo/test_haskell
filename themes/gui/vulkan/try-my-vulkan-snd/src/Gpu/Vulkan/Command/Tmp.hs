@@ -20,6 +20,7 @@ module Gpu.Vulkan.Command.Tmp (
 	) where
 
 import Foreign.Storable
+import Foreign.Storable.Hetero
 import Data.HeteroList
 import Data.Word
 import Data.Int
