@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal where
@@ -11,6 +12,7 @@ import Foreign.Storable
 import Foreign.C.Enum
 import Foreign.Pointable
 import Control.Monad.Cont
+import Data.Bits
 import Data.Word
 
 import qualified Gpu.Vulkan.Pipeline.TessellationState.Core as C
@@ -18,7 +20,7 @@ import qualified Gpu.Vulkan.Pipeline.TessellationState.Core as C
 #include <vulkan/vulkan.h>
 
 enum "CreateFlags" ''#{type VkPipelineTessellationStateCreateFlags}
-	[''Show, ''Storable] [("CreateFlagsZero", 0)]
+	[''Show, ''Eq, ''Bits, ''Storable] []
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
