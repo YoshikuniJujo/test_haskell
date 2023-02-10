@@ -110,8 +110,7 @@ bindIndexBuffer
 	(CommandBuffer.M.C _ cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
 	C.bindIndexBuffer cb ib sz it
 
-pushConstants' :: forall ts .
-	(SizableList ts, StoreHetero' ts) =>
+pushConstants' :: forall ts . PokableList ts =>
 	CommandBuffer.M.C -> Pipeline.Layout.L ->
 	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
 pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
@@ -119,7 +118,7 @@ pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 	let	sz :: Integral n => n
 		sz = fromIntegral $ wholeSize @ts
 	p <- ContT $ allocaBytes sz
-	lift do	storeHetero' p xs
+	lift do	pokeList p xs
 		C.pushConstants cb lyt ss ost sz p
 
 bindDescriptorSets ::

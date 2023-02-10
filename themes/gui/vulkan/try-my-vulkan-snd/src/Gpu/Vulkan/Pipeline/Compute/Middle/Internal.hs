@@ -51,7 +51,7 @@ deriving instance (
 	Show (CreateInfoNew n ns vs)
 
 createInfoToCoreNew ::
-	(Pointable n, Pointable n1, SizableList vs, StoreHetero' vs) =>
+	(Pointable n, Pointable n1, PokableList vs) =>
 	CreateInfoNew n n1 vs -> ContT r IO C.CreateInfo
 createInfoToCoreNew CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -79,7 +79,7 @@ class CreateInfoListToCoreNew vss where
 instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure []
 
 instance (
-	Pointable n, Pointable n1, SizableList vss, StoreHetero' vss,
+	Pointable n, Pointable n1, PokableList vss,
 	CreateInfoListToCoreNew as ) =>
 	CreateInfoListToCoreNew ('(n, n1, vss) ': as) where
 	createInfoListToCoreNew (V3 ci :...: cis) = (:)

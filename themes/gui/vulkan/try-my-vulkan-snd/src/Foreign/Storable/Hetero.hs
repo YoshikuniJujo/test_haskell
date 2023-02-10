@@ -3,6 +3,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.Storable.Hetero (
@@ -11,15 +12,16 @@ module Foreign.Storable.Hetero (
 
 	SizableList(..), sizeAlignments, wholeSize,
 
-	-- * Poke
+	-- * Pokable
 
-	StoreHetero'(..) ) where
+	PokableList(..) ) where
 
 import Foreign.Ptr
-import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.HeteroList
+
+-- Size and Alignment
 
 class SizableList (vs :: [Type]) where
 	sizes :: [Int]
@@ -41,14 +43,15 @@ calcSize :: Int -> [(Int, Int)] -> Int
 calcSize n [] = n
 calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szals
 
-class StoreHetero' (ts :: [Type]) where
-	storeHetero' :: Ptr () -> HeteroList' ts -> IO ()
+-- Pokable
 
-instance StoreHetero' '[] where
-	storeHetero' _ HVNil = pure ()
+class SizableList ts => PokableList (ts :: [Type]) where
+	pokeList :: Ptr a -> HeteroList' ts -> IO ()
 
-instance (Storable t, StoreHetero' ts) => StoreHetero' (t ': ts) where
-	storeHetero' p (Id x :...: xs) = do
-		poke (castPtr p') x
-		storeHetero' (p' `plusPtr` sizeOf x) xs
-		where p' = alignPtr p $ alignment x
+instance PokableList '[] where
+	pokeList _ HVNil = pure ()
+
+instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
+	pokeList ((`alignPtr` alignment' @t) -> p) (Id x :...: xs) = do
+		poke' (castPtr p) x
+		pokeList (p `plusPtr` sizeOf' @t) xs

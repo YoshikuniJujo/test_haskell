@@ -146,7 +146,7 @@ copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
 pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
-	SizableList ts, StoreHetero' ts,
+	PokableList ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
 	CommandBuffer.C sc vs -> Pipeline.Layout.L s sbtss whole ->

@@ -38,13 +38,13 @@ mapEntries (_, ps, _, _) = (<$> ps) \(i, o, s) -> C.MapEntry {
 	C.mapEntryOffset = fromIntegral o,
 	C.mapEntrySize = fromIntegral s }
 
-infoToCore' :: forall vs r . (SizableList vs, StoreHetero' vs) =>
+infoToCore' :: forall vs r . PokableList vs =>
 	HeteroList' vs -> ContT r IO C.Info
 infoToCore' xs = do
 	pmes <- ContT $ allocaArray n
 	lift . pokeArray pmes $ mapEntries ps
 	pd <- ContT $ allocaBytesAligned tsz tal
-	lift $ storeHetero' pd xs
+	lift $ pokeList pd xs
 	pure C.Info {
 		C.infoMapEntryCount = fromIntegral n,
 		C.infoPMapEntries = pmes,

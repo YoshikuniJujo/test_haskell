@@ -40,7 +40,7 @@ data CreateInfoNew n sknd vs = CreateInfoNew {
 deriving instance (Show n, Show (HeteroList' vs)) => Show (CreateInfoNew n sknd vs)
 
 createInfoToCoreNew ::
-	forall n sknd vs r . (Pointable n, SizableList vs, StoreHetero' vs) =>
+	forall n sknd vs r . (Pointable n, PokableList vs) =>
 	CreateInfoNew n sknd vs -> ContT r IO C.CreateInfo
 createInfoToCoreNew CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -71,9 +71,8 @@ class CreateInfoListToCoreNew sss where
 
 instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure []
 
-instance (
-	Pointable n, SizableList vs, StoreHetero' vs, CreateInfoListToCoreNew sss
-	) => CreateInfoListToCoreNew ('(n, sknd, vs) ': sss) where
+instance (Pointable n, PokableList vs, CreateInfoListToCoreNew sss) =>
+	CreateInfoListToCoreNew ('(n, sknd, vs) ': sss) where
 	createInfoListToCoreNew (V3 ci :...: cis) = (:)
 		<$> createInfoToCoreNew ci
 		<*> createInfoListToCoreNew cis

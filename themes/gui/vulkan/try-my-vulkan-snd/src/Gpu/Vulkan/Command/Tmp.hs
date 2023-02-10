@@ -91,8 +91,7 @@ bindDescriptorSets ::
 	Word32 -> [Descriptor.Set.D] -> [Word32] -> IO ()
 bindDescriptorSets (CommandBuffer.CC mcb) = M.bindDescriptorSets mcb
 
-pushConstants' :: forall vs ts .
-	(SizableList ts, StoreHetero' ts) =>
+pushConstants' :: forall vs ts . PokableList ts =>
 	CommandBuffer.CC vs -> Pipeline.Layout.L ->
 	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
 pushConstants' (CommandBuffer.CC mcb) = M.pushConstants' mcb
