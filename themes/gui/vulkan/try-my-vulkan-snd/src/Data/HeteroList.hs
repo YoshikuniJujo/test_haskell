@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	StorableList'(..), storeHeteroSize,
+	SizableList(..), sizeAlignments', storeHeteroSize,
 
 	HeteroList',
 	StoreHetero'(..),
@@ -39,11 +39,18 @@ import Data.Kind
 
 import Foreign.Storable.PeekPoke
 
-class StorableList' (vs :: [Type]) where sizeAlignments' :: HeteroList' vs -> [(Int, Int)]
+class SizableList (vs :: [Type]) where
+	sizes :: [Int]
+	alignments :: [Int]
 
-instance StorableList' '[] where sizeAlignments' _ = []
-instance (Storable t, StorableList' ts) => StorableList' (t ': ts) where
-	sizeAlignments' (Id x :...: xs) = (sizeOf x, alignment x) : sizeAlignments' xs
+instance SizableList '[] where sizes = []; alignments = []
+
+instance (Sizable t, SizableList ts) => SizableList (t ': ts) where
+	sizes = sizeOf' @t: sizes @ts
+	alignments = alignment' @t : alignments @ts
+
+sizeAlignments' :: forall ts . SizableList ts => [(Int, Int)]
+sizeAlignments' = zip (sizes @ts) (alignments @ts)
 
 newtype Id t = Id t deriving Show
 
@@ -61,8 +68,8 @@ instance (Storable t, StoreHetero' ts) => StoreHetero' (t ': ts) where
 		storeHetero' (p' `plusPtr` sizeOf x) xs
 		where p' = alignPtr p $ alignment x
 
-storeHeteroSize :: forall ts . StorableList' ts => HeteroList' ts -> Int
-storeHeteroSize = calcSize 0 . sizeAlignments'
+storeHeteroSize :: forall ts . SizableList ts => HeteroList' ts -> Int
+storeHeteroSize _ = calcSize 0 $ sizeAlignments' @ts
 
 calcSize :: Int -> [(Int, Int)] -> Int
 calcSize n [] = n

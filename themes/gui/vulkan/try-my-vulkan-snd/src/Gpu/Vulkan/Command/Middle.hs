@@ -110,7 +110,7 @@ bindIndexBuffer
 	C.bindIndexBuffer cb ib sz it
 
 pushConstants' :: forall ts .
-	(StorableList' ts, StoreHetero' ts) =>
+	(SizableList ts, StoreHetero' ts) =>
 	CommandBuffer.M.C -> Pipeline.Layout.L ->
 	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
 pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)

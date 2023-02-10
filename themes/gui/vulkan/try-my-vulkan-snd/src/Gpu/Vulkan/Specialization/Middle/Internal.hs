@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -8,7 +9,7 @@ module Gpu.Vulkan.Specialization.Middle.Internal (infoToCore') where
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Control.Monad.Cont
-import Data.HeteroList
+import Data.HeteroList hiding (alignments)
 
 import qualified Data.HeteroList as HList
 
@@ -38,7 +39,8 @@ mapEntries (_, ps, _, _) = (<$> ps) \(i, o, s) -> C.MapEntry {
 	C.mapEntryOffset = fromIntegral o,
 	C.mapEntrySize = fromIntegral s }
 
-infoToCore' :: (StorableList' vs, StoreHetero' vs) => HeteroList' vs -> ContT r IO C.Info
+infoToCore' :: forall vs r . (SizableList vs, StoreHetero' vs) =>
+	HeteroList' vs -> ContT r IO C.Info
 infoToCore' xs = do
 	pmes <- ContT $ allocaArray n
 	lift . pokeArray pmes $ mapEntries ps
@@ -50,5 +52,5 @@ infoToCore' xs = do
 		C.infoDataSize = fromIntegral tsz,
 		C.infoPData = pd }
 	where
-	szals = HList.sizeAlignments' xs
+	szals = HList.sizeAlignments' @vs
 	ps@(n, _, tsz, tal) = parameters szals
