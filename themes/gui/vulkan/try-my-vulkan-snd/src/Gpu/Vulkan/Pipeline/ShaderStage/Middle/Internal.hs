@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -13,9 +14,8 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal (
 	CreateInfoListToCore, createInfoListToCore ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
+import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
-import Foreign.Pointable
 import Control.Monad.Cont
 import Data.HeteroList
 
@@ -27,7 +27,6 @@ import Gpu.Vulkan.Pipeline.ShaderStage.Enum
 import qualified Gpu.Vulkan.ShaderModule.Middle.Internal as ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as C
 import qualified Gpu.Vulkan.Specialization.Middle.Internal as Specialization
-import qualified Gpu.Vulkan.Specialization.Core as Specialization.C
 
 data CreateInfo n sknd vs = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -40,30 +39,29 @@ data CreateInfo n sknd vs = CreateInfo {
 deriving instance (Show n, Show (HeteroList' vs)) => Show (CreateInfo n sknd vs)
 
 createInfoToCore ::
-	forall n sknd vs r . (Pointable n, PokableList vs) =>
-	CreateInfo n sknd vs -> ContT r IO C.CreateInfo
+	forall n sknd vs r . (Pokable n, PokableList vs) =>
+	CreateInfo n sknd vs -> (C.CreateInfo -> IO r) -> IO r
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoStage = ShaderStageFlagBits stg,
 	createInfoModule = ShaderModule.M mdl,
 	createInfoName = nm,
-	createInfoSpecializationInfo = mxs } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cnm <- ContT $ BS.useAsCString nm
-	pcsi <- case mxs of
-		Nothing -> pure NullPtr
-		Just xs -> do
-			Specialization.C.Info_ fcsi <- Specialization.infoToCore' xs
-			ContT $ withForeignPtr fcsi
-	pure C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoStage = stg,
-		C.createInfoModule = mdl,
-		C.createInfoPName = cnm,
-		C.createInfoPSpecializationInfo = pcsi }
+	createInfoSpecializationInfo = mxs } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	BS.useAsCString nm \cnm ->
+	let	 ci pcsi = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt,
+			C.createInfoFlags = flgs,
+			C.createInfoStage = stg,
+			C.createInfoModule = mdl,
+			C.createInfoPName = cnm,
+			C.createInfoPSpecializationInfo = pcsi } in
+	case mxs of
+		Nothing -> f $ ci NullPtr
+		Just xs -> Specialization.infoToCore' xs \csi ->
+			withPoked csi $ f . ci
 
 class CreateInfoListToCore sss where
 	createInfoListToCore ::
@@ -71,8 +69,8 @@ class CreateInfoListToCore sss where
 
 instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
-instance (Pointable n, PokableList vs, CreateInfoListToCore sss) =>
+instance (Pokable n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where
 	createInfoListToCore (V3 ci :...: cis) = (:)
-		<$> createInfoToCore ci
+		<$> ContT (createInfoToCore ci)
 		<*> createInfoListToCore cis

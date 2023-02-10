@@ -9,7 +9,6 @@ module Gpu.Vulkan.Specialization.Middle.Internal (infoToCore') where
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable.Hetero hiding (alignments)
-import Control.Monad.Cont
 import Data.HeteroList
 
 import qualified Gpu.Vulkan.Specialization.Core as C
@@ -38,14 +37,14 @@ mapEntries (_, ps, _, _) = (<$> ps) \(i, o, s) -> C.MapEntry {
 	C.mapEntryOffset = fromIntegral o,
 	C.mapEntrySize = fromIntegral s }
 
-infoToCore' :: forall vs r . PokableList vs =>
-	HeteroList' vs -> ContT r IO C.Info
-infoToCore' xs = do
-	pmes <- ContT $ allocaArray n
-	lift . pokeArray pmes $ mapEntries ps
-	pd <- ContT $ allocaBytesAligned tsz tal
-	lift $ pokeList pd xs
-	pure C.Info {
+infoToCore' :: forall vs a . PokableList vs =>
+	HeteroList' vs -> (C.Info -> IO a) -> IO a
+infoToCore' xs f =
+	allocaArray n \pmes ->
+	pokeArray pmes (mapEntries ps) >>
+	allocaBytesAligned tsz tal \pd ->
+	pokeList pd xs >>
+	f C.Info {
 		C.infoMapEntryCount = fromIntegral n,
 		C.infoPMapEntries = pmes,
 		C.infoDataSize = fromIntegral tsz,

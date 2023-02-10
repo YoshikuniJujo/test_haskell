@@ -51,7 +51,7 @@ deriving instance (
 	Show (CreateInfoNew n ns vs)
 
 createInfoToCoreNew ::
-	(Pointable n, Pointable n1, PokableList vs) =>
+	(Pointable n, Pokable  n1, PokableList vs) =>
 	CreateInfoNew n n1 vs -> ContT r IO C.CreateInfo
 createInfoToCoreNew CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -62,7 +62,7 @@ createInfoToCoreNew CreateInfoNew {
 	createInfoBasePipelineIndexNew = fromMaybe (- 1) -> idx
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	stg' <- ShaderStage.createInfoToCore stg
+	stg' <- ContT $ ShaderStage.createInfoToCore stg
 	pure C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
@@ -79,7 +79,7 @@ class CreateInfoListToCoreNew vss where
 instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure []
 
 instance (
-	Pointable n, Pointable n1, PokableList vss,
+	Pointable n, Pokable n1, PokableList vss,
 	CreateInfoListToCoreNew as ) =>
 	CreateInfoListToCoreNew ('(n, n1, vss) ': as) where
 	createInfoListToCoreNew (V3 ci :...: cis) = (:)
