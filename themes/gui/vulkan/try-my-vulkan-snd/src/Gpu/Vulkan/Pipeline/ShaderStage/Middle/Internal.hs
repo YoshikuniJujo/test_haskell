@@ -9,8 +9,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal (
-	CreateInfoNew(..), createInfoToCoreNew,
-	CreateInfoListToCoreNew, createInfoListToCoreNew ) where
+	CreateInfo(..), createInfoToCore,
+	CreateInfoListToCore, createInfoListToCore ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -29,26 +29,26 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as C
 import qualified Gpu.Vulkan.Specialization.Middle.Internal as Specialization
 import qualified Gpu.Vulkan.Specialization.Core as Specialization.C
 
-data CreateInfoNew n sknd vs = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
-	createInfoFlagsNew :: CreateFlags,
-	createInfoStageNew :: ShaderStageFlagBits,
-	createInfoModuleNew :: ShaderModule.M sknd,
-	createInfoNameNew :: BS.ByteString,
-	createInfoSpecializationInfoNew :: Maybe (HeteroList' vs) }
+data CreateInfo n sknd vs = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: CreateFlags,
+	createInfoStage :: ShaderStageFlagBits,
+	createInfoModule :: ShaderModule.M sknd,
+	createInfoName :: BS.ByteString,
+	createInfoSpecializationInfo :: Maybe (HeteroList' vs) }
 
-deriving instance (Show n, Show (HeteroList' vs)) => Show (CreateInfoNew n sknd vs)
+deriving instance (Show n, Show (HeteroList' vs)) => Show (CreateInfo n sknd vs)
 
-createInfoToCoreNew ::
+createInfoToCore ::
 	forall n sknd vs r . (Pointable n, PokableList vs) =>
-	CreateInfoNew n sknd vs -> ContT r IO C.CreateInfo
-createInfoToCoreNew CreateInfoNew {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = CreateFlagBits flgs,
-	createInfoStageNew = ShaderStageFlagBits stg,
-	createInfoModuleNew = ShaderModule.M mdl,
-	createInfoNameNew = nm,
-	createInfoSpecializationInfoNew = mxs } = do
+	CreateInfo n sknd vs -> ContT r IO C.CreateInfo
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = CreateFlagBits flgs,
+	createInfoStage = ShaderStageFlagBits stg,
+	createInfoModule = ShaderModule.M mdl,
+	createInfoName = nm,
+	createInfoSpecializationInfo = mxs } = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
 	cnm <- ContT $ BS.useAsCString nm
 	pcsi <- case mxs of
@@ -65,14 +65,14 @@ createInfoToCoreNew CreateInfoNew {
 		C.createInfoPName = cnm,
 		C.createInfoPSpecializationInfo = pcsi }
 
-class CreateInfoListToCoreNew sss where
-	createInfoListToCoreNew ::
-		HeteroVarList (V3 CreateInfoNew) sss -> ContT r IO [C.CreateInfo]
+class CreateInfoListToCore sss where
+	createInfoListToCore ::
+		HeteroVarList (V3 CreateInfo) sss -> ContT r IO [C.CreateInfo]
 
-instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
-instance (Pointable n, PokableList vs, CreateInfoListToCoreNew sss) =>
-	CreateInfoListToCoreNew ('(n, sknd, vs) ': sss) where
-	createInfoListToCoreNew (V3 ci :...: cis) = (:)
-		<$> createInfoToCoreNew ci
-		<*> createInfoListToCoreNew cis
+instance (Pointable n, PokableList vs, CreateInfoListToCore sss) =>
+	CreateInfoListToCore ('(n, sknd, vs) ': sss) where
+	createInfoListToCore (V3 ci :...: cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfoListToCore cis

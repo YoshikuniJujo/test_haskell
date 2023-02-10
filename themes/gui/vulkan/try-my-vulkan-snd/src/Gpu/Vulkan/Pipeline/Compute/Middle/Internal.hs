@@ -41,13 +41,13 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
 data CreateInfoNew n ns vs = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: Pipeline.CreateFlags,
-	createInfoStageNew :: ShaderStage.CreateInfoNew ns 'GlslComputeShader vs,
+	createInfoStageNew :: ShaderStage.CreateInfo ns 'GlslComputeShader vs,
 	createInfoLayoutNew :: Pipeline.Layout.L,
 	createInfoBasePipelineHandleNew :: Maybe C,
 	createInfoBasePipelineIndexNew :: Maybe Int32 }
 
 deriving instance (
-	Show n, Show (ShaderStage.CreateInfoNew ns 'GlslComputeShader vs) ) =>
+	Show n, Show (ShaderStage.CreateInfo ns 'GlslComputeShader vs) ) =>
 	Show (CreateInfoNew n ns vs)
 
 createInfoToCoreNew ::
@@ -62,7 +62,7 @@ createInfoToCoreNew CreateInfoNew {
 	createInfoBasePipelineIndexNew = fromMaybe (- 1) -> idx
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	stg' <- ShaderStage.createInfoToCoreNew stg
+	stg' <- ShaderStage.createInfoToCore stg
 	pure C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,

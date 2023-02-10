@@ -63,7 +63,7 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 data CreateInfoNew n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
-	createInfoStagesNew :: HeteroVarList (V3 ShaderStage.CreateInfoNew) nskndvss,
+	createInfoStagesNew :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
 	createInfoVertexInputStateNew :: Maybe (VertexInputState.M.CreateInfo vis),
 	createInfoInputAssemblyStateNew ::
 		Maybe (InputAssemblyState.CreateInfo ias),
@@ -83,7 +83,7 @@ data CreateInfoNew n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfoNew
 
 createInfoToCoreNew :: (
 	Pointable n,
-	ShaderStage.CreateInfoListToCoreNew nskndvss,
+	ShaderStage.CreateInfoListToCore nskndvss,
 	Pointable n2, Pokable n3, Pointable n4,
 	Pointable n5, Pokable n6, Pokable n7, Pokable n8, Pokable n9,
 	Pokable n10 ) =>
@@ -109,7 +109,7 @@ createInfoToCoreNew CreateInfoNew {
 	createInfoBasePipelineIndexNew = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	css <- ShaderStage.createInfoListToCoreNew ss
+	css <- ShaderStage.createInfoListToCore ss
 	let	sc = length css
 	pss <- ContT $ allocaArray sc
 	lift $ pokeArray pss css
@@ -154,7 +154,7 @@ class CreateInfoListToCoreNew ass where
 instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure []
 
 instance (
-	Pointable n, ShaderStage.CreateInfoListToCoreNew nskndvss,
+	Pointable n, ShaderStage.CreateInfoListToCore nskndvss,
 	Pointable vis, Pokable ias, Pointable ts, Pointable vs,
 	Pokable rs, Pokable ms, Pokable dss, Pokable cbs, Pokable ds,
 	CreateInfoListToCoreNew ass

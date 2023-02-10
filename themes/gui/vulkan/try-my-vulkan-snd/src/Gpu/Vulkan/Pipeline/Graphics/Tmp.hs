@@ -54,7 +54,7 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: HeteroVarList (V3 ShaderStage.CreateInfoNew) nskndvss,
+	createInfoStages :: HeteroVarList (V3 ShaderStage.CreateInfo) nskndvss,
 	createInfoVertexInputState ::
 		Maybe (V3 VertexInputState.CreateInfo nvsts),
 	createInfoInputAssemblyState ::

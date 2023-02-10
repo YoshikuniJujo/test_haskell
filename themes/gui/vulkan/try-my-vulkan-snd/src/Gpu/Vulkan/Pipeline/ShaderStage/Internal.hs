@@ -35,7 +35,7 @@ data CreateInfoNew n m sknd c d vs = CreateInfoNew {
 	createInfoSpecializationInfoNew :: Maybe (HeteroList' vs) }
 
 createInfoToMiddleNew :: (Pointable m, Pokable c) =>
-	Device.D ds -> CreateInfoNew n m sknd c d vs -> IO (M.CreateInfoNew n sknd vs)
+	Device.D ds -> CreateInfoNew n m sknd c d vs -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
@@ -45,22 +45,22 @@ createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoSpecializationInfoNew = spi
 	} = do
 	mdl' <- Shader.Module.create dvc mdl
-	pure M.CreateInfoNew {
-		M.createInfoNextNew = mnxt,
-		M.createInfoFlagsNew = flgs,
-		M.createInfoStageNew = stg,
-		M.createInfoModuleNew = mdl',
-		M.createInfoNameNew = nm,
-		M.createInfoSpecializationInfoNew = spi }
+	pure M.CreateInfo {
+		M.createInfoNext = mnxt,
+		M.createInfoFlags = flgs,
+		M.createInfoStage = stg,
+		M.createInfoModule = mdl',
+		M.createInfoName = nm,
+		M.createInfoSpecializationInfo = spi }
 
 createInfoToMiddleFooNew :: (Pointable m, Pokable c) => Device.D ds ->
-	V6 CreateInfoNew '(n, m, sknd, c, d, vs) -> IO (M.CreateInfoNew n sknd vs)
+	V6 CreateInfoNew '(n, m, sknd, c, d, vs) -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleFooNew dvc (V6 ci) = createInfoToMiddleNew dvc ci
 
 destroyCreateInfoMiddleNew :: Pokable d => Device.D ds ->
-	M.CreateInfoNew n sknd vs -> CreateInfoNew n m sknd c d vs -> IO ()
+	M.CreateInfo n sknd vs -> CreateInfoNew n m sknd c d vs -> IO ()
 destroyCreateInfoMiddleNew dvc
-	M.CreateInfoNew { M.createInfoModuleNew = mmdl }
+	M.CreateInfo { M.createInfoModule = mmdl }
 	CreateInfoNew { createInfoModuleNew = mdl } = Shader.Module.destroy dvc mmdl mdl
 
 class CreateInfoListToMiddleNew (
@@ -69,9 +69,9 @@ class CreateInfoListToMiddleNew (
 	type MiddleVarsNew nnskndcdvss :: [(Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
 		HeteroVarList (V6 CreateInfoNew) nnskndcdvss ->
-		IO (HeteroVarList (V3 M.CreateInfoNew) (MiddleVarsNew nnskndcdvss))
+		IO (HeteroVarList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
 	destroyCreateInfoMiddleListNew :: Device.D ds ->
-		HeteroVarList (V3 M.CreateInfoNew) (MiddleVarsNew nnskndcdvss) ->
+		HeteroVarList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
 		HeteroVarList (V6 CreateInfoNew) nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddleNew '[] where

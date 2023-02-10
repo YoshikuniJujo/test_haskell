@@ -3,6 +3,6 @@
 module Gpu.Vulkan.Pipeline.ShaderStage.Middle (
 
 	-- * CreateInfo
-	CreateInfoNew(..), CreateInfoListToCoreNew ) where
+	CreateInfo(..), CreateInfoListToCore ) where
 
 import Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal
