@@ -117,7 +117,7 @@ pushConstants' :: forall ts .
 pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n
-		sz = fromIntegral $ storeHeteroSize xs
+		sz = fromIntegral $ wholeSize @ts
 	p <- ContT $ allocaBytes sz
 	lift do	storeHetero' p xs
 		C.pushConstants cb lyt ss ost sz p

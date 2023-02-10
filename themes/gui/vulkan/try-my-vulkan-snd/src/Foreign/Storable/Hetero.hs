@@ -5,7 +5,15 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Foreign.Storable.Hetero where
+module Foreign.Storable.Hetero (
+
+	-- * Size and Alignment
+
+	SizableList(..), sizeAlignments, wholeSize,
+
+	-- * Poke
+
+	StoreHetero'(..) ) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -23,8 +31,15 @@ instance (Sizable t, SizableList ts) => SizableList (t ': ts) where
 	sizes = sizeOf' @t: sizes @ts
 	alignments = alignment' @t : alignments @ts
 
-sizeAlignments' :: forall ts . SizableList ts => [(Int, Int)]
-sizeAlignments' = zip (sizes @ts) (alignments @ts)
+sizeAlignments :: forall ts . SizableList ts => [(Int, Int)]
+sizeAlignments = zip (sizes @ts) (alignments @ts)
+
+wholeSize :: forall ts . SizableList ts => Int
+wholeSize = calcSize 0 $ sizeAlignments @ts
+
+calcSize :: Int -> [(Int, Int)] -> Int
+calcSize n [] = n
+calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szals
 
 class StoreHetero' (ts :: [Type]) where
 	storeHetero' :: Ptr () -> HeteroList' ts -> IO ()
@@ -37,10 +52,3 @@ instance (Storable t, StoreHetero' ts) => StoreHetero' (t ': ts) where
 		poke (castPtr p') x
 		storeHetero' (p' `plusPtr` sizeOf x) xs
 		where p' = alignPtr p $ alignment x
-
-storeHeteroSize :: forall ts . SizableList ts => HeteroList' ts -> Int
-storeHeteroSize _ = calcSize 0 $ sizeAlignments' @ts
-
-calcSize :: Int -> [(Int, Int)] -> Int
-calcSize n [] = n
-calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szals

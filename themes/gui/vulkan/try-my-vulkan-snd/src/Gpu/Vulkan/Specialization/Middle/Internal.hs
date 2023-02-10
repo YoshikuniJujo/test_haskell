@@ -51,5 +51,5 @@ infoToCore' xs = do
 		C.infoDataSize = fromIntegral tsz,
 		C.infoPData = pd }
 	where
-	szals = sizeAlignments' @vs
+	szals = sizeAlignments @vs
 	ps@(n, _, tsz, tal) = parameters szals
