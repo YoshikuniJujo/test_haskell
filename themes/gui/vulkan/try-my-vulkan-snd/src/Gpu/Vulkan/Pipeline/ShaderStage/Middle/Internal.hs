@@ -16,7 +16,6 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal (
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
-import Control.Monad.Cont
 import Data.HeteroList
 
 import qualified Data.ByteString as BS
@@ -65,12 +64,13 @@ createInfoToCore CreateInfo {
 
 class CreateInfoListToCore sss where
 	createInfoListToCore ::
-		HeteroVarList (V3 CreateInfo) sss -> ContT r IO [C.CreateInfo]
+		HeteroVarList (V3 CreateInfo) sss ->
+		([C.CreateInfo] -> IO r) -> IO r
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = ($ [])
 
 instance (Pokable n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where
-	createInfoListToCore (V3 ci :...: cis) = (:)
-		<$> ContT (createInfoToCore ci)
-		<*> createInfoListToCore cis
+	createInfoListToCore (V3 ci :...: cis) f =
+		createInfoToCore ci \cci ->
+		createInfoListToCore cis \ccis -> f $ cci : ccis

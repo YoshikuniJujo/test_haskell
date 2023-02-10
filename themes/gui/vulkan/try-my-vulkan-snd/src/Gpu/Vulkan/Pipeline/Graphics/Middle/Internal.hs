@@ -109,7 +109,7 @@ createInfoToCoreNew CreateInfoNew {
 	createInfoBasePipelineIndexNew = bpi
 	} = do
 	(castPtr -> pnxt) <- maybeToPointer mnxt
-	css <- ShaderStage.createInfoListToCore ss
+	css <- ContT $ ShaderStage.createInfoListToCore ss
 	let	sc = length css
 	pss <- ContT $ allocaArray sc
 	lift $ pokeArray pss css
