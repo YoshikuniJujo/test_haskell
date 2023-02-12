@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -7,13 +8,11 @@
 module Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -23,7 +22,7 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Core as C
 #include <vulkan/vulkan.h>
 
 enum "CreateFlags" ''#{type VkPipelineVertexInputStateCreateFlags}
-		[''Show, ''Storable, ''Eq, ''Bits] [("CreateFlagsZero", 0)]
+		[''Show, ''Storable, ''Eq, ''Bits] []
 
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -34,13 +33,12 @@ data CreateInfo n = CreateInfo {
 		[VertexInput.AttributeDescription] }
 	deriving Show
 
-createInfoToCoreNew ::
-	Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
-createInfoToCoreNew ci = do
-	C.CreateInfo_ fCreateInfo <- createInfoToCore ci
-	ContT $ withForeignPtr fCreateInfo
+createInfoToCoreNew :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCoreNew ci f = createInfoToCore ci \cci -> withPoked cci f
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO C.CreateInfo
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -49,13 +47,13 @@ createInfoToCore CreateInfo {
 			-> (vbdc, vbds),
 	createInfoVertexAttributeDescriptions =
 		((length &&& id) . (VertexInput.attributeDescriptionToCore <$>))
-			-> (vadc, vads) } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	pvbds <- ContT $ allocaArray vbdc
-	lift $ pokeArray pvbds vbds
-	pvads <- ContT $ allocaArray vadc
-	lift $ pokeArray pvads vads
-	pure C.CreateInfo {
+			-> (vadc, vads) } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	allocaArray vbdc \pvbds ->
+	pokeArray pvbds vbds >>
+	allocaArray vadc \pvads ->
+	pokeArray pvads vads >>
+	f C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
 		C.createInfoFlags = flgs,
