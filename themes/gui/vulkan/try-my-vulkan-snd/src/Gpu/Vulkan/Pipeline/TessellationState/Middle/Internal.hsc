@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -7,11 +8,9 @@
 module Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Control.Monad.Cont
 import Data.Bits
 import Data.Word
 
@@ -28,16 +27,17 @@ data CreateInfo n = CreateInfo {
 	createInfoPatchControlPoints :: Word32 }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoPatchControlPoints = pcps
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	} f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	let ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
-			C.createInfoPatchControlPoints = pcps }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoPatchControlPoints = pcps } in
+	withPoked ci f

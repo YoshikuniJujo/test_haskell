@@ -115,7 +115,7 @@ createInfoToCoreNew CreateInfoNew {
 	lift $ pokeArray pss css
 	pvist <- maybeToCore VertexInputState.M.createInfoToCoreNew mvist
 	piast <- maybeToCore (ContT . InputAssemblyState.createInfoToCore) miast
-	ptst <- maybeToCore TessellationState.createInfoToCore mtst
+	ptst <- maybeToCore (ContT . TessellationState.createInfoToCore) mtst
 	pvst <- maybeToCore ViewportState.createInfoToCore mvst
 	prst <- maybeToCore (ContT . RasterizationState.createInfoToCore) mrst
 	pmst <- maybeToCore (ContT . MultisampleState.createInfoToCore) mmst
