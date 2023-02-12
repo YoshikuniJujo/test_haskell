@@ -84,7 +84,7 @@ data CreateInfoNew n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfoNew
 createInfoToCoreNew :: (
 	Pointable n,
 	ShaderStage.CreateInfoListToCore nskndvss,
-	Pointable n2, Pokable n3, Pointable n4,
+	Pointable n2, Pokable n3, Pokable n4,
 	Pointable n5, Pokable n6, Pokable n7, Pokable n8, Pokable n9,
 	Pokable n10 ) =>
 	CreateInfoNew n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
@@ -155,7 +155,7 @@ instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure 
 
 instance (
 	Pointable n, ShaderStage.CreateInfoListToCore nskndvss,
-	Pointable vis, Pokable ias, Pointable ts, Pointable vs,
+	Pointable vis, Pokable ias, Pokable ts, Pointable vs,
 	Pokable rs, Pokable ms, Pokable dss, Pokable cbs, Pokable ds,
 	CreateInfoListToCoreNew ass
 	) =>

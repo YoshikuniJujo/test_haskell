@@ -9,8 +9,8 @@ module Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal where
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Foreign.Pointable
 import Control.Monad.Cont
 import Data.Bits
 import Data.Word
@@ -28,13 +28,13 @@ data CreateInfo n = CreateInfo {
 	createInfoPatchControlPoints :: Word32 }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoPatchControlPoints = pcps
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	let C.CreateInfo_ fCreateInfo = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
