@@ -87,7 +87,7 @@ instance (
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCs :: (CreateInfoListToCore vss, Pokable c) =>
+createCs :: (CreateInfoListToCore vss, WithPoked c) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
@@ -96,14 +96,13 @@ createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 		let	ln = length cis'
 		pcis <- ContT $ allocaArray ln
 		lift $ pokeArray pcis cis'
-		pac <- AllocationCallbacks.maybeToCore mac
-		pps <- ContT $ allocaArray ln
-		lift do	r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
-			throwUnlessSuccess $ Result r
-			peekArray ln pps
+		ContT \f -> allocaArray ln \pps -> do
+			AllocationCallbacks.maybeToCore' mac \pac -> do
+				r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
+				throwUnlessSuccess $ Result r
+			f =<< peekArray ln pps
 
-destroy :: Pokable d =>
-		Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (C p) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ Pipeline.C.destroy dvc p pac
+destroy :: WithPoked d =>
+	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dvc) (C p) mac =
+	AllocationCallbacks.maybeToCore' mac $ Pipeline.C.destroy dvc p
