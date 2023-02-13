@@ -41,8 +41,8 @@ data CreateInfo n = CreateInfo {
 	createInfoMaxDepthBounds :: Float }
 	deriving Show
 
-createInfoToCore :: Pokable n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -55,10 +55,10 @@ createInfoToCore CreateInfo {
 	createInfoBack = stencilOpStateToCore -> bk,
 	createInfoMinDepthBounds = mndb,
 	createInfoMaxDepthBounds = mxdb } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoDepthTestEnable = dte,
 			C.createInfoDepthWriteEnable = dwe,

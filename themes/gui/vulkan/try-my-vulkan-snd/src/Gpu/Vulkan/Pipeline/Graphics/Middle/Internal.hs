@@ -88,7 +88,7 @@ createInfoToCore :: (
 	WithPoked n,
 	ShaderStage.CreateInfoListToCore nskndvss,
 	Pokable n2, Pokable n3, Pokable n4,
-	Pokable n5, Pokable n6, Pokable n7, Pokable n8, Pokable n9,
+	Pokable n5, Pokable n6, Pokable n7, Pokable n8, WithPoked n9,
 	WithPoked n10 ) =>
 	CreateInfo n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
 	(C.CreateInfo -> IO a) -> IO ()
@@ -162,7 +162,7 @@ instance CreateInfoListToCore '[] where createInfoListToCore HVNil f = () <$ f [
 instance (
 	WithPoked n, ShaderStage.CreateInfoListToCore nskndvss,
 	Pokable vis, Pokable ias, Pokable ts, Pokable vs,
-	Pokable rs, Pokable ms, Pokable dss, Pokable cbs, WithPoked ds,
+	Pokable rs, Pokable ms, Pokable dss, WithPoked cbs, WithPoked ds,
 	CreateInfoListToCore ass
 	) =>
 	CreateInfoListToCore ('(
