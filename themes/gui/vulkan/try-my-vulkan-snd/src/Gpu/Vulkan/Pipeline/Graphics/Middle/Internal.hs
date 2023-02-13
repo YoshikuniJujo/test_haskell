@@ -85,13 +85,13 @@ data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToCore :: (
-	Pokable n,
+	WithPoked n,
 	ShaderStage.CreateInfoListToCore nskndvss,
 	Pokable n2, Pokable n3, Pokable n4,
 	Pokable n5, Pokable n6, Pokable n7, Pokable n8, Pokable n9,
-	Pokable n10 ) =>
+	WithPoked n10 ) =>
 	CreateInfo n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
-	(C.CreateInfo -> IO a) -> IO a
+	(C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -110,7 +110,7 @@ createInfoToCore CreateInfo {
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = V2 bph,
 	createInfoBasePipelineIndex = bpi } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	ShaderStage.createInfoListToCore ss \css ->
 	let sc = P.length css in
 	allocaArray sc \pss ->
@@ -123,11 +123,11 @@ createInfoToCore CreateInfo {
 	maybeToCore MultisampleState.createInfoToCore mmst \pmst ->
 	maybeToCore DepthStencilState.createInfoToCore mdsst \pdsst ->
 	maybeToCore ColorBlendState.createInfoToCore mcbst \pcbst ->
-	maybeToCore DynamicState.createInfoToCore mdst \pdst ->
+	maybeToCore' DynamicState.createInfoToCore mdst \pdst ->
 	gToCore bph >>= \bph' ->
 	f C.CreateInfo {
 		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
+		C.createInfoPNext = pnxt',
 		C.createInfoFlags = flgs,
 		C.createInfoStageCount = fromIntegral sc,
 		C.createInfoPStages = pss,
@@ -149,17 +149,20 @@ createInfoToCore CreateInfo {
 maybeToCore :: (a -> (Ptr b -> IO r) -> IO r) -> Maybe a -> (Ptr b -> IO r) -> IO r
 maybeToCore f mx g = case mx of Nothing -> g NullPtr; Just x -> f x g
 
+maybeToCore' :: (a -> (Ptr b -> IO r) -> IO ()) -> Maybe a -> (Ptr b -> IO r) -> IO ()
+maybeToCore' f mx g = case mx of Nothing -> () <$ g NullPtr; Just x -> f x g
+
 class Length ass => CreateInfoListToCore ass where
 	createInfoListToCore ::
 		HeteroVarList (V12 CreateInfo) ass ->
-		([C.CreateInfo] -> IO r) -> IO r
+		([C.CreateInfo] -> IO r) -> IO ()
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil f = f []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil f = () <$ f []
 
 instance (
-	Pokable n, ShaderStage.CreateInfoListToCore nskndvss,
+	WithPoked n, ShaderStage.CreateInfoListToCore nskndvss,
 	Pokable vis, Pokable ias, Pokable ts, Pokable vs,
-	Pokable rs, Pokable ms, Pokable dss, Pokable cbs, Pokable ds,
+	Pokable rs, Pokable ms, Pokable dss, Pokable cbs, WithPoked ds,
 	CreateInfoListToCore ass
 	) =>
 	CreateInfoListToCore ('(
@@ -198,13 +201,13 @@ instance GListFromCore vstss =>
 	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
 	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
 
-createGs :: (CreateInfoListToCore as, Pokable c, GListFromCore vstss) =>
+createGs :: (CreateInfoListToCore as, WithPoked c, GListFromCore vstss) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V12 CreateInfo) as ->
 	Maybe (AllocationCallbacks.A c) -> IO (HeteroVarList (V2 G) vstss)
 createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
 recreateGs :: (
-	CreateInfoListToCore as, Pokable c, Pokable d, GListFromCore vstss
+	CreateInfoListToCore as, WithPoked c, WithPoked d, GListFromCore vstss
 	) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) as ->
@@ -220,9 +223,8 @@ createRaw :: forall ss n' . (CreateInfoListToCore ss, WithPoked n') =>
 createRaw (Device.D dvc) mc cis mac = let
 	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
 	cic = length @_ @ss in
-	createInfoListToCore cis \ccis ->
-		allocaArray cic \pps -> do
-		allocaArray cic \pcis ->
+	allocaArray cic \pps -> do
+		createInfoListToCore cis \ccis -> allocaArray cic \pcis ->
 			pokeArray pcis ccis >>
 			AllocationCallbacks.maybeToCore' mac \pac -> do
 				r <- C.create dvc cc (fromIntegral cic) pcis pac pps
@@ -233,7 +235,7 @@ class Length (as :: [k]) where length :: Int
 instance Length '[] where length = 0
 instance Length as => Length (a ': as) where length = length @_ @as + 1
 
-recreateRaw :: (CreateInfoListToCore ss, Pokable c, Pokable d) =>
+recreateRaw :: (CreateInfoListToCore ss, WithPoked c, WithPoked d) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
@@ -244,7 +246,7 @@ recreateRaw dvc mc cis macc macd rs = do
 	zipWithM_ writeIORef rs ns
 	(\o -> destroyRaw dvc o macd) `mapM_` os
 
-destroyGs :: (GListFromCore vstss, Pokable d) =>
+destroyGs :: (GListFromCore vstss, WithPoked d) =>
 	Device.D -> HeteroVarList (V2 G) vstss -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
 

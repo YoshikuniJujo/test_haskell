@@ -31,20 +31,20 @@ data CreateInfo n = CreateInfo {
 	createInfoDynamicStates :: [DynamicState] }
 	deriving Show
 
-createInfoToCore :: Pokable n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoDynamicStates = (
 		length &&&
 		((\(DynamicState ds) -> ds) <$>) ) -> (dsc, dss) } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray dsc \pdss ->
 	pokeArray pdss dss >>
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoDynamicStateCount = fromIntegral dsc,
 			C.createInfoPDynamicStates = pdss } in
