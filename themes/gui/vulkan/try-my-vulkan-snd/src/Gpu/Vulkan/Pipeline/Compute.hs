@@ -46,7 +46,7 @@ data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 createInfoToMiddle :: (Pointable n', Pokable c) =>
 	Device.D ds ->
 	CreateInfo n '(n1, n', 'GlslComputeShader, c, d, vs) slsbtss sbph ->
-	IO (M.CreateInfoNew n n1 vs)
+	IO (M.CreateInfo n n1 vs)
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -56,19 +56,19 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoBasePipelineIndex = bpi
 	} = do
 	stg' <- ShaderStage.createInfoToMiddleFooNew dvc stg
-	pure M.CreateInfoNew {
-		M.createInfoNextNew = mnxt,
-		M.createInfoFlagsNew = flgs,
-		M.createInfoStageNew = stg',
-		M.createInfoLayoutNew = lyt,
-		M.createInfoBasePipelineHandleNew = bph,
-		M.createInfoBasePipelineIndexNew = bpi }
+	pure M.CreateInfo {
+		M.createInfoNext = mnxt,
+		M.createInfoFlags = flgs,
+		M.createInfoStage = stg',
+		M.createInfoLayout = lyt,
+		M.createInfoBasePipelineHandle = bph,
+		M.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle as where
 	type Result as :: [(Type, Type, [Type])]
 	createInfoListToMiddle ::
 		Device.D sd -> HeteroVarList (V4 CreateInfo) as ->
-		IO (HeteroVarList (V3 M.CreateInfoNew) (Result as))
+		IO (HeteroVarList (V3 M.CreateInfo) (Result as))
 
 instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
@@ -87,14 +87,14 @@ instance (Pointable n', Pokable c, CreateInfoListToMiddle as) =>
 
 destroyCreateInfoMiddle :: Pokable d =>
 	Device.D sd ->
-	M.CreateInfoNew n n1 vs -> CreateInfo n '(n1, n2, 'GlslComputeShader, c, d, vs) slsbtss sbph -> IO ()
+	M.CreateInfo n n1 vs -> CreateInfo n '(n1, n2, 'GlslComputeShader, c, d, vs) slsbtss sbph -> IO ()
 destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
-	(M.createInfoStageNew mci) ((\(V6 s) -> s) $ createInfoStage ci)
+	(M.createInfoStage mci) ((\(V6 s) -> s) $ createInfoStage ci)
 
 class DestroyCreateInfoMiddleList vss vss' where
 	destroyCreateInfoMiddleList ::
 		Device.D sd ->
-		HeteroVarList (V3 M.CreateInfoNew) vss ->
+		HeteroVarList (V3 M.CreateInfo) vss ->
 		HeteroVarList (V4 CreateInfo) vss' -> IO ()
 
 instance DestroyCreateInfoMiddleList '[] '[] where
@@ -110,7 +110,7 @@ instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 		destroyCreateInfoMiddleList dvc mcis cis
 
 createCs :: (
-	CreateInfoListToMiddle vss, M.CreateInfoListToCoreNew (Result vss),
+	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
 	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	PipelineListToHetero (ToDummiesNew vss) ) =>
@@ -120,7 +120,7 @@ createCs :: (
 createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
 	bracket
-		(M.createCsNew mdvc cch cis' macc
+		(M.createCs mdvc cch cis' macc
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . pipelineListToHetero . (C <$>))

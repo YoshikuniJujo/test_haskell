@@ -11,13 +11,12 @@
 module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
 	C(..),
 
-	createCsNew, destroy, CreateInfoNew(..), CreateInfoListToCoreNew ) where
+	createCs, destroy, CreateInfo(..), CreateInfoListToCore ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
-import Foreign.Pointable hiding (NullPtr)
 import Control.Monad.Cont
 import Data.HeteroList
 import Data.Maybe
@@ -38,30 +37,30 @@ import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
 
-data CreateInfoNew n ns vs = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
-	createInfoFlagsNew :: Pipeline.CreateFlags,
-	createInfoStageNew :: ShaderStage.CreateInfo ns 'GlslComputeShader vs,
-	createInfoLayoutNew :: Pipeline.Layout.L,
-	createInfoBasePipelineHandleNew :: Maybe C,
-	createInfoBasePipelineIndexNew :: Maybe Int32 }
+data CreateInfo n ns vs = CreateInfo {
+	createInfoNext :: Maybe n,
+	createInfoFlags :: Pipeline.CreateFlags,
+	createInfoStage :: ShaderStage.CreateInfo ns 'GlslComputeShader vs,
+	createInfoLayout :: Pipeline.Layout.L,
+	createInfoBasePipelineHandle :: Maybe C,
+	createInfoBasePipelineIndex :: Maybe Int32 }
 
 deriving instance (
 	Show n, Show (ShaderStage.CreateInfo ns 'GlslComputeShader vs) ) =>
-	Show (CreateInfoNew n ns vs)
+	Show (CreateInfo n ns vs)
 
-createInfoToCoreNew ::
-	(Pointable n, Pokable  n1, PokableList vs) =>
-	CreateInfoNew n n1 vs -> ContT r IO C.CreateInfo
-createInfoToCoreNew CreateInfoNew {
-	createInfoNextNew = mnxt,
-	createInfoFlagsNew = Pipeline.CreateFlagBits flgs,
-	createInfoStageNew = stg,
-	createInfoLayoutNew = Pipeline.Layout.L lyt,
-	createInfoBasePipelineHandleNew = maybe NullPtr (\(C b) -> b) -> bph,
-	createInfoBasePipelineIndexNew = fromMaybe (- 1) -> idx
+createInfoToCore ::
+	(Pokable n, Pokable n1, PokableList vs) =>
+	CreateInfo n n1 vs -> ContT r IO C.CreateInfo
+createInfoToCore CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = Pipeline.CreateFlagBits flgs,
+	createInfoStage = stg,
+	createInfoLayout = Pipeline.Layout.L lyt,
+	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
+	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx
 	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	stg' <- ContT $ ShaderStage.createInfoToCore stg
 	pure C.CreateInfo {
 		C.createInfoSType = (),
@@ -72,28 +71,28 @@ createInfoToCoreNew CreateInfoNew {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
-class CreateInfoListToCoreNew vss where
-	createInfoListToCoreNew ::
-		HeteroVarList (V3 CreateInfoNew) vss -> ContT r IO [C.CreateInfo]
+class CreateInfoListToCore vss where
+	createInfoListToCore ::
+		HeteroVarList (V3 CreateInfo) vss -> ContT r IO [C.CreateInfo]
 
-instance CreateInfoListToCoreNew '[] where createInfoListToCoreNew HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
 
 instance (
-	Pointable n, Pokable n1, PokableList vss,
-	CreateInfoListToCoreNew as ) =>
-	CreateInfoListToCoreNew ('(n, n1, vss) ': as) where
-	createInfoListToCoreNew (V3 ci :...: cis) = (:)
-		<$> createInfoToCoreNew ci
-		<*> createInfoListToCoreNew cis
+	Pokable n, Pokable n1, PokableList vss,
+	CreateInfoListToCore as ) =>
+	CreateInfoListToCore ('(n, n1, vss) ': as) where
+	createInfoListToCore (V3 ci :...: cis) = (:)
+		<$> createInfoToCore ci
+		<*> createInfoListToCore cis
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCsNew :: (CreateInfoListToCoreNew vss, Pokable c) =>
-	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfoNew) vss ->
+createCs :: (CreateInfoListToCore vss, Pokable c) =>
+	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
-createCsNew (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
+createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	((C <$>) <$>) . ($ pure) $ runContT do
-		cis' <- createInfoListToCoreNew cis
+		cis' <- createInfoListToCore cis
 		let	ln = length cis'
 		pcis <- ContT $ allocaArray ln
 		lift $ pokeArray pcis cis'
