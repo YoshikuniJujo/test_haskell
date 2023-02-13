@@ -1,9 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -18,12 +19,14 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle.Internal (
 	G, gNull, GListFromCore, gToCore,
 	) where
 
+import Prelude hiding (length)
+import Prelude qualified as P
+
 import GHC.TypeNats
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable hiding (NullPtr)
-import Control.Monad.Cont
+import Control.Monad
 import Data.Kind
 import Data.IORef
 import Data.HeteroList
@@ -82,13 +85,13 @@ data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToCore :: (
-	Pointable n,
+	Pokable n,
 	ShaderStage.CreateInfoListToCore nskndvss,
 	Pokable n2, Pokable n3, Pokable n4,
 	Pokable n5, Pokable n6, Pokable n7, Pokable n8, Pokable n9,
 	Pokable n10 ) =>
 	CreateInfo n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
-	ContT r IO C.CreateInfo
+	(C.CreateInfo -> IO a) -> IO a
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -106,24 +109,23 @@ createInfoToCore CreateInfo {
 	createInfoRenderPass = RenderPass.R rp,
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = V2 bph,
-	createInfoBasePipelineIndex = bpi
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	css <- ContT $ ShaderStage.createInfoListToCore ss
-	let	sc = length css
-	pss <- ContT $ allocaArray sc
-	lift $ pokeArray pss css
-	pvist <- maybeToCore (ContT . VertexInputState.M.createInfoToCore) mvist
-	piast <- maybeToCore (ContT . InputAssemblyState.createInfoToCore) miast
-	ptst <- maybeToCore (ContT . TessellationState.createInfoToCore) mtst
-	pvst <- maybeToCore (ContT . ViewportState.createInfoToCore) mvst
-	prst <- maybeToCore (ContT . RasterizationState.createInfoToCore) mrst
-	pmst <- maybeToCore (ContT . MultisampleState.createInfoToCore) mmst
-	pdsst <- maybeToCore (ContT . DepthStencilState.createInfoToCore) mdsst
-	pcbst <- maybeToCore (ContT . ColorBlendState.createInfoToCore) mcbst
-	pdst <- maybeToCore (ContT . DynamicState.createInfoToCore) mdst
-	bph' <- lift $ gToCore bph
-	pure C.CreateInfo {
+	createInfoBasePipelineIndex = bpi } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	ShaderStage.createInfoListToCore ss \css ->
+	let sc = P.length css in
+	allocaArray sc \pss ->
+	pokeArray pss css >>
+	maybeToCore VertexInputState.M.createInfoToCore mvist \pvist ->
+	maybeToCore InputAssemblyState.createInfoToCore miast \piast ->
+	maybeToCore TessellationState.createInfoToCore mtst \ptst ->
+	maybeToCore ViewportState.createInfoToCore mvst \pvst ->
+	maybeToCore RasterizationState.createInfoToCore mrst \prst ->
+	maybeToCore MultisampleState.createInfoToCore mmst \pmst ->
+	maybeToCore DepthStencilState.createInfoToCore mdsst \pdsst ->
+	maybeToCore ColorBlendState.createInfoToCore mcbst \pcbst ->
+	maybeToCore DynamicState.createInfoToCore mdst \pdst ->
+	gToCore bph >>= \bph' ->
+	f C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
 		C.createInfoFlags = flgs,
@@ -144,26 +146,27 @@ createInfoToCore CreateInfo {
 		C.createInfoBasePipelineHandle = bph',
 		C.createInfoBasePipelineIndex = bpi }
 
-maybeToCore :: (a -> ContT r IO (Ptr b)) -> Maybe a -> ContT r IO (Ptr b)
-maybeToCore f = \case Nothing -> return NullPtr; Just x -> f x
+maybeToCore :: (a -> (Ptr b -> IO r) -> IO r) -> Maybe a -> (Ptr b -> IO r) -> IO r
+maybeToCore f mx g = case mx of Nothing -> g NullPtr; Just x -> f x g
 
-class CreateInfoListToCore ass where
+class Length ass => CreateInfoListToCore ass where
 	createInfoListToCore ::
-		HeteroVarList (V12 CreateInfo) ass -> ContT r IO [C.CreateInfo]
+		HeteroVarList (V12 CreateInfo) ass ->
+		([C.CreateInfo] -> IO r) -> IO r
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil f = f []
 
 instance (
-	Pointable n, ShaderStage.CreateInfoListToCore nskndvss,
+	Pokable n, ShaderStage.CreateInfoListToCore nskndvss,
 	Pokable vis, Pokable ias, Pokable ts, Pokable vs,
 	Pokable rs, Pokable ms, Pokable dss, Pokable cbs, Pokable ds,
 	CreateInfoListToCore ass
 	) =>
 	CreateInfoListToCore ('(
 		n, nskndvss, vis, ias, ts, vs, rs, ms, dss, cbs, ds, bph ) ': ass) where
-	createInfoListToCore (V12 ci :...: cis) = (:)
-		<$> createInfoToCore ci
-		<*> createInfoListToCore cis
+	createInfoListToCore (V12 ci :...: cis) f =
+		createInfoToCore ci \cci ->
+		createInfoListToCore cis \ccis -> f $ cci : ccis
 
 gNull :: IO (G vs ts)
 gNull = G <$> newIORef NullHandle
@@ -210,21 +213,25 @@ recreateGs :: (
 recreateGs dvc mc cis macc macd gs =
 	recreateRaw dvc mc cis macc macd $ gListToIORefs gs
 
-createRaw :: (CreateInfoListToCore ss, Pokable n') =>
+createRaw :: forall ss n' . (CreateInfoListToCore ss, WithPoked n') =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
-createRaw (Device.D dvc) mc cis mac = ($ pure) $ runContT do
-	let	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
-	ccis <- createInfoListToCore cis
-	let	cic = length ccis
-	pcis <- ContT $ allocaArray cic
-	lift $ pokeArray pcis ccis
-	pac <- AllocationCallbacks.maybeToCore mac
-	pps <- ContT $ allocaArray cic
-	lift do	r <- C.create dvc cc (fromIntegral cic) pcis pac pps
-		throwUnlessSuccess $ Result r
+createRaw (Device.D dvc) mc cis mac = let
+	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
+	cic = length @_ @ss in
+	createInfoListToCore cis \ccis ->
+		allocaArray cic \pps -> do
+		allocaArray cic \pcis ->
+			pokeArray pcis ccis >>
+			AllocationCallbacks.maybeToCore' mac \pac -> do
+				r <- C.create dvc cc (fromIntegral cic) pcis pac pps
+				throwUnlessSuccess $ Result r
 		peekArray cic pps
+
+class Length (as :: [k]) where length :: Int
+instance Length '[] where length = 0
+instance Length as => Length (a ': as) where length = length @_ @as + 1
 
 recreateRaw :: (CreateInfoListToCore ss, Pokable c, Pokable d) =>
 	Device.D -> Maybe Cache.C ->
@@ -241,15 +248,12 @@ destroyGs :: (GListFromCore vstss, Pokable d) =>
 	Device.D -> HeteroVarList (V2 G) vstss -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
 
-destroy :: Pokable n =>
+destroy :: WithPoked n =>
 	Device.D -> G vs ts -> Maybe (AllocationCallbacks.A n) -> IO ()
-destroy (Device.D dvc) g mac = ($ pure) $ runContT do
-	p <- lift $ gToCore g
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ Pipeline.C.destroy dvc p pac
+destroy (Device.D dvc) g mac = gToCore g >>= \p ->
+	AllocationCallbacks.maybeToCore' mac $ Pipeline.C.destroy dvc p
 
-destroyRaw :: Pokable d =>
+destroyRaw :: WithPoked d =>
 	Device.D -> Pipeline.C.P -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroyRaw (Device.D dvc) p macd = ($ pure) $ runContT do
-	pacd <- AllocationCallbacks.maybeToCore macd
-	lift $ Pipeline.C.destroy dvc p pacd
+destroyRaw (Device.D dvc) p macd =
+	AllocationCallbacks.maybeToCore' macd $ Pipeline.C.destroy dvc p
