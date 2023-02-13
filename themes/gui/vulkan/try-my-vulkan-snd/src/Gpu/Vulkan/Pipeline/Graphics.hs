@@ -164,7 +164,7 @@ instance V2g ss => V2g (s ': ss) where
 	g2v (V2 (G g) :...: gs) = V2 g :...: g2v gs
 
 createGs :: (
-	M.CreateInfoListToCoreNew (T.CreateInfoListArgs (MiddleVars ss)),
+	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	Pokable c, Pokable d,
 	CreateInfoListToMiddle ss,
@@ -182,7 +182,7 @@ createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracke
 
 recreateGs :: (
 	CreateInfoListToMiddle ss,
-	M.CreateInfoListToCoreNew (T.CreateInfoListArgs (MiddleVars ss)),
+	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	Pokable c, Pokable d,
 	M.GListFromCore (T.GListVars (MiddleVars ss)),

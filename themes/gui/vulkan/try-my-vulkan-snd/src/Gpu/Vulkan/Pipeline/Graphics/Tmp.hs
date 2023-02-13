@@ -77,7 +77,7 @@ createInfoToMiddle :: (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
-	M.CreateInfoNew n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
+	M.CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -96,32 +96,32 @@ createInfoToMiddle CreateInfo {
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi
-	} = M.CreateInfoNew {
-	M.createInfoNextNew = mnxt,
-	M.createInfoFlagsNew = flgs,
-	M.createInfoStagesNew = stg,
-	M.createInfoVertexInputStateNew =
+	} = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoStages = stg,
+	M.createInfoVertexInputState =
 		VertexInputState.createInfoToMiddle . unV3 <$> vis,
-	M.createInfoInputAssemblyStateNew = ias,
-	M.createInfoTessellationStateNew = ts,
-	M.createInfoViewportStateNew = vs,
-	M.createInfoRasterizationStateNew = rs,
-	M.createInfoMultisampleStateNew = ms,
-	M.createInfoDepthStencilStateNew = dss,
-	M.createInfoColorBlendStateNew = cbs,
-	M.createInfoDynamicStateNew = ds,
-	M.createInfoLayoutNew = lyt,
-	M.createInfoRenderPassNew = rp,
-	M.createInfoSubpassNew = sp,
-	M.createInfoBasePipelineHandleNew = bph,
-	M.createInfoBasePipelineIndexNew = bpi }
+	M.createInfoInputAssemblyState = ias,
+	M.createInfoTessellationState = ts,
+	M.createInfoViewportState = vs,
+	M.createInfoRasterizationState = rs,
+	M.createInfoMultisampleState = ms,
+	M.createInfoDepthStencilState = dss,
+	M.createInfoColorBlendState = cbs,
+	M.createInfoDynamicState = ds,
+	M.createInfoLayout = lyt,
+	M.createInfoRenderPass = rp,
+	M.createInfoSubpass = sp,
+	M.createInfoBasePipelineHandle = bph,
+	M.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle sss where
 	type CreateInfoListArgs sss ::
 		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, *, *, ([*], [(Nat, *)]))]
 	createInfoListToMiddle ::
 		HeteroVarList (V12 CreateInfo) sss ->
-		HeteroVarList (V12 M.CreateInfoNew) (CreateInfoListArgs sss)
+		HeteroVarList (V12 M.CreateInfo) (CreateInfoListArgs sss)
 
 instance CreateInfoListToMiddle '[] where
 	type CreateInfoListArgs '[] = '[]
@@ -141,16 +141,16 @@ instance (
 
 createGs :: (
 	Pokable n', M.GListFromCore (GListVars ss),
-	M.CreateInfoListToCoreNew (CreateInfoListArgs ss),
+	M.CreateInfoListToCore (CreateInfoListArgs ss),
 	CreateInfoListToMiddle ss
 	) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroVarList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO (HeteroVarList (V2 M.G) (GListVars ss))
-createGs dvc mc cis mac = M.createGsNew dvc mc (createInfoListToMiddle cis) mac
+createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
-	M.CreateInfoListToCoreNew (CreateInfoListArgs ss),
+	M.CreateInfoListToCore (CreateInfoListArgs ss),
 	CreateInfoListToMiddle ss,
 	Pokable c, Pokable d,
 	M.GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
@@ -158,7 +158,7 @@ recreateGs :: (
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	HeteroVarList (V2 M.G) (GListVars ss) -> IO ()
 recreateGs dvc mc cis macc macd gs =
-	M.recreateGsNew dvc mc (createInfoListToMiddle cis) macc macd gs
+	M.recreateGs dvc mc (createInfoListToMiddle cis) macc macd gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, [Type])],
