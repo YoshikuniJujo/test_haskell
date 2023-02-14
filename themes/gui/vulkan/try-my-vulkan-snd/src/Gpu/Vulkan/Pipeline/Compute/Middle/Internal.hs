@@ -53,8 +53,8 @@ deriving instance (
 	Show (CreateInfo n ns vs)
 
 createInfoToCore ::
-	(Pokable n, Pokable n1, PokableList vs) =>
-	CreateInfo n n1 vs -> (C.CreateInfo -> IO r) -> IO r
+	(WithPoked n, WithPoked n1, PokableList vs) =>
+	CreateInfo n n1 vs -> (C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = Pipeline.CreateFlagBits flgs,
@@ -62,11 +62,11 @@ createInfoToCore CreateInfo {
 	createInfoLayout = Pipeline.Layout.L lyt,
 	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
 	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	ShaderStage.createInfoToCore stg \stg' ->
 	f C.CreateInfo {
 		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
+		C.createInfoPNext = pnxt',
 		C.createInfoFlags = flgs,
 		C.createInfoStage = stg',
 		C.createInfoLayout = lyt,
@@ -76,12 +76,13 @@ createInfoToCore CreateInfo {
 class Length vss => CreateInfoListToCore vss where
 	createInfoListToCore ::
 		HeteroVarList (V3 CreateInfo) vss ->
-		([C.CreateInfo] -> IO r) -> IO r
+		([C.CreateInfo] -> IO r) -> IO ()
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil = ($ [])
+instance CreateInfoListToCore '[] where
+	createInfoListToCore HVNil = (() <$) . ($ [])
 
 instance (
-	Pokable n, Pokable n1, PokableList vss,
+	WithPoked n, WithPoked n1, PokableList vss,
 	CreateInfoListToCore as ) =>
 	CreateInfoListToCore ('(n, n1, vss) ': as) where
 	createInfoListToCore (V3 ci :...: cis) f =

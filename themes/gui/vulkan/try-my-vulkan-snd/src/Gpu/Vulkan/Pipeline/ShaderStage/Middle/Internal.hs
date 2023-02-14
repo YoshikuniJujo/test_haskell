@@ -38,8 +38,8 @@ data CreateInfo n sknd vs = CreateInfo {
 deriving instance (Show n, Show (HeteroList' vs)) => Show (CreateInfo n sknd vs)
 
 createInfoToCore ::
-	forall n sknd vs r . (Pokable n, PokableList vs) =>
-	CreateInfo n sknd vs -> (C.CreateInfo -> IO r) -> IO r
+	forall n sknd vs r . (WithPoked n, PokableList vs) =>
+	CreateInfo n sknd vs -> (C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -47,11 +47,11 @@ createInfoToCore CreateInfo {
 	createInfoModule = ShaderModule.M mdl,
 	createInfoName = nm,
 	createInfoSpecializationInfo = mxs } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	BS.useAsCString nm \cnm ->
 	let	 ci pcsi = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoStage = stg,
 			C.createInfoModule = mdl,
@@ -65,11 +65,12 @@ createInfoToCore CreateInfo {
 class CreateInfoListToCore sss where
 	createInfoListToCore ::
 		HeteroVarList (V3 CreateInfo) sss ->
-		([C.CreateInfo] -> IO r) -> IO r
+		([C.CreateInfo] -> IO r) -> IO ()
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil = ($ [])
+instance CreateInfoListToCore '[] where
+	createInfoListToCore HVNil = (() <$) . ($ [])
 
-instance (Pokable n, PokableList vs, CreateInfoListToCore sss) =>
+instance (WithPoked n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where
 	createInfoListToCore (V3 ci :...: cis) f =
 		createInfoToCore ci \cci ->
