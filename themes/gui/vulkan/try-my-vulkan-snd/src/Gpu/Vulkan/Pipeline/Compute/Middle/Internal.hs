@@ -51,18 +51,17 @@ deriving instance (
 
 createInfoToCore ::
 	(Pokable n, Pokable n1, PokableList vs) =>
-	CreateInfo n n1 vs -> ContT r IO C.CreateInfo
+	CreateInfo n n1 vs -> (C.CreateInfo -> IO r) -> IO r
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = Pipeline.CreateFlagBits flgs,
 	createInfoStage = stg,
 	createInfoLayout = Pipeline.Layout.L lyt,
 	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
-	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx
-	} = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	stg' <- ContT $ ShaderStage.createInfoToCore stg
-	pure C.CreateInfo {
+	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx } f =
+	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	ShaderStage.createInfoToCore stg \stg' ->
+	f C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt,
 		C.createInfoFlags = flgs,
@@ -73,17 +72,18 @@ createInfoToCore CreateInfo {
 
 class CreateInfoListToCore vss where
 	createInfoListToCore ::
-		HeteroVarList (V3 CreateInfo) vss -> ContT r IO [C.CreateInfo]
+		HeteroVarList (V3 CreateInfo) vss ->
+		([C.CreateInfo] -> IO r) -> IO r
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil = pure []
+instance CreateInfoListToCore '[] where createInfoListToCore HVNil = ($ [])
 
 instance (
 	Pokable n, Pokable n1, PokableList vss,
 	CreateInfoListToCore as ) =>
 	CreateInfoListToCore ('(n, n1, vss) ': as) where
-	createInfoListToCore (V3 ci :...: cis) = (:)
-		<$> createInfoToCore ci
-		<*> createInfoListToCore cis
+	createInfoListToCore (V3 ci :...: cis) f =
+		createInfoToCore ci \cci ->
+		createInfoListToCore cis \ccis -> f $ cci : ccis
 
 newtype C = C Pipeline.C.P deriving Show
 
@@ -92,7 +92,7 @@ createCs :: (CreateInfoListToCore vss, WithPoked c) =>
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	((C <$>) <$>) . ($ pure) $ runContT do
-		cis' <- createInfoListToCore cis
+		cis' <- ContT $ createInfoListToCore cis
 		let	ln = length cis'
 		pcis <- ContT $ allocaArray ln
 		lift $ pokeArray pcis cis'
