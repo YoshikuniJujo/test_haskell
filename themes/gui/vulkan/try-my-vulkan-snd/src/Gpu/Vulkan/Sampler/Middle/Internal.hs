@@ -8,10 +8,8 @@ module Gpu.Vulkan.Sampler.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
-import Foreign.ForeignPtr
 import Foreign.Storable	
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Monad.Cont
 
 import Gpu.Vulkan.Misc.Middle.Internal
@@ -47,7 +45,8 @@ data CreateInfo n = CreateInfo {
 	createInfoUnnormalizedCoordinates :: Bool }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -65,11 +64,11 @@ createInfoToCore CreateInfo {
 	createInfoMinLod = mnl,
 	createInfoMaxLod = mxl,
 	createInfoBorderColor = BorderColor bc,
-	createInfoUnnormalizedCoordinates = boolToBool32 -> unc } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	let	C.CreateInfo_ fci = C.CreateInfo {
+	createInfoUnnormalizedCoordinates = boolToBool32 -> unc } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoMagFilter = mgf,
 			C.createInfoMinFilter = mnf,
@@ -85,21 +84,19 @@ createInfoToCore CreateInfo {
 			C.createInfoMinLod = mnl,
 			C.createInfoMaxLod = mxl,
 			C.createInfoBorderColor = bc,
-			C.createInfoUnnormalizedCoordinates = unc }
-	ContT $ withForeignPtr fci
+			C.createInfoUnnormalizedCoordinates = unc } in
+	withPoked ci f
 
-create :: (Pointable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO S
-create (Device.D dvc) ci mac = (S <$>) . ($ pure) $ runContT do
-	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	ps <- ContT alloca
-	lift do	r <- C.create dvc pci pac ps
-		throwUnlessSuccess $ Result r
-		peek ps
+create (Device.D dvc) ci mac = S <$> alloca \ps -> do
+	createInfoToCore ci \pci ->
+		AllocationCallbacks.maybeToCore' mac \pac ->
+			throwUnlessSuccess . Result
+				=<< C.create dvc pci pac ps
+	peek ps
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (S s) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc s pac
+destroy (Device.D dvc) (S s) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc s
