@@ -5,7 +5,6 @@
 module Gpu.Vulkan.Semaphore where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 
 import qualified Gpu.Vulkan.Device.Type as Device
@@ -14,7 +13,7 @@ import qualified Gpu.Vulkan.Semaphore.Middle as M
 
 newtype S ss = S M.S deriving Show
 
-create :: (Pointable n, Pokable c, Pokable d) =>
+create :: (Pokable n, Pokable c, Pokable d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ss . S ss -> IO a) -> IO a
