@@ -16,7 +16,6 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -24,7 +23,6 @@ import Data.Word
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 
-import Foreign.Pointable
 import Shaderc
 import Shaderc.EnumAuto
 
@@ -53,21 +51,21 @@ data CreateInfo n sknd = CreateInfo {
 	createInfoCode :: Spv sknd }
 	deriving Show
 
-createInfoToCore :: Pointable n =>
-	CreateInfo n sknd -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n sknd -> (Ptr C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoCode = cd } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	(p, n) <- lift . readFromByteString $ (\(Spv spv) -> spv) cd
-	let C.CreateInfo_ fci = C.CreateInfo {
-		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
-		C.createInfoFlags = flgs,
-		C.createInfoCodeSize = n,
-		C.createInfoPCode = p }
-	ContT $ withForeignPtr fci
+	createInfoCode = cd } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
+		(p, n) <- readFromByteString $ (\(Spv spv) -> spv) cd
+		let ci = C.CreateInfo {
+			C.createInfoSType = (),
+			C.createInfoPNext = pnxt',
+			C.createInfoFlags = flgs,
+			C.createInfoCodeSize = n,
+			C.createInfoPCode = p }
+		withPoked ci f
 
 readFromByteString :: BS.ByteString -> IO (Ptr Word32, Word64)
 readFromByteString (BS.PS f o l) = do
@@ -75,19 +73,17 @@ readFromByteString (BS.PS f o l) = do
 	withForeignPtr f \p -> copyBytes p' (p `plusPtr` o) l
 	pure (p', fromIntegral l)
 
-create :: (Pointable n, Pokable c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D ->
 	CreateInfo n sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
-create (Device.D dvc) ci mac = (M <$>) . ($ pure) $ runContT do
-	pcci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pm <- ContT alloca
-	lift do	r <- C.create dvc pcci pac pm
-		throwUnlessSuccess $ Result r
-		peek pm
+create (Device.D dvc) ci mac = M <$> alloca \pm -> do
+	createInfoToCore ci \pcci ->
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create dvc pcci pac pm
+			throwUnlessSuccess $ Result r
+	peek pm
 
-destroy :: Pokable d =>
+destroy :: WithPoked d =>
 	Device.D -> M sknd -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (M m) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc m pac
+destroy (Device.D dvc) (M m) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc m

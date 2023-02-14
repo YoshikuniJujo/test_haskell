@@ -16,7 +16,6 @@ module Gpu.Vulkan.Pipeline.Compute (
 	Pipeline(..) ) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Exception
 import Data.HeteroList
 import Data.Kind
@@ -43,7 +42,7 @@ data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 	createInfoBasePipelineHandle :: Maybe (C sbph),
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
-createInfoToMiddle :: (Pointable n', Pokable c) =>
+createInfoToMiddle :: (Pokable n', Pokable c) =>
 	Device.D ds ->
 	CreateInfo n '(n1, n', 'GlslComputeShader, c, d, vs) slsbtss sbph ->
 	IO (M.CreateInfo n n1 vs)
@@ -74,7 +73,7 @@ instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
 	createInfoListToMiddle _ HVNil = pure HVNil
 
-instance (Pointable n', Pokable c, CreateInfoListToMiddle as) =>
+instance (Pokable n', Pokable c, CreateInfoListToMiddle as) =>
 	CreateInfoListToMiddle (
 		'(n, '(n1, n', 'GlslComputeShader, c, d, vs), slsbtss, sbph
 		) ': as) where

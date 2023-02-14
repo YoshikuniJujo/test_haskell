@@ -11,7 +11,6 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
 	) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Data.Kind
 import Data.HeteroList
 
@@ -34,7 +33,7 @@ data CreateInfoNew n m sknd c d vs = CreateInfoNew {
 	createInfoNameNew :: BS.ByteString,
 	createInfoSpecializationInfoNew :: Maybe (HeteroList' vs) }
 
-createInfoToMiddleNew :: (Pointable m, Pokable c) =>
+createInfoToMiddleNew :: (Pokable m, Pokable c) =>
 	Device.D ds -> CreateInfoNew n m sknd c d vs -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -53,7 +52,7 @@ createInfoToMiddleNew dvc CreateInfoNew {
 		M.createInfoName = nm,
 		M.createInfoSpecializationInfo = spi }
 
-createInfoToMiddleFooNew :: (Pointable m, Pokable c) => Device.D ds ->
+createInfoToMiddleFooNew :: (Pokable m, Pokable c) => Device.D ds ->
 	V6 CreateInfoNew '(n, m, sknd, c, d, vs) -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleFooNew dvc (V6 ci) = createInfoToMiddleNew dvc ci
 
@@ -80,7 +79,7 @@ instance CreateInfoListToMiddleNew '[] where
 	destroyCreateInfoMiddleListNew _ HVNil HVNil = pure ()
 
 instance (
-	Pointable m, Pokable c, Pokable d,
+	Pokable m, Pokable c, Pokable d,
 	CreateInfoListToMiddleNew nnskndcdvss ) =>
 	CreateInfoListToMiddleNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) where
 	type MiddleVarsNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) =
