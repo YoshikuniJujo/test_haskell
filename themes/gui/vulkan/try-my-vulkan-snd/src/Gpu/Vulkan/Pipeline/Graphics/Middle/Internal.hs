@@ -28,6 +28,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.Kind
+import Data.TypeLevel
 import Data.IORef
 import Data.HeteroList
 import Data.Word
@@ -230,10 +231,6 @@ createRaw (Device.D dvc) mc cis mac = let
 				r <- C.create dvc cc (fromIntegral cic) pcis pac pps
 				throwUnlessSuccess $ Result r
 		peekArray cic pps
-
-class Length (as :: [k]) where length :: Int
-instance Length '[] where length = 0
-instance Length as => Length (a ': as) where length = length @_ @as + 1
 
 recreateRaw :: (CreateInfoListToCore ss, WithPoked c, WithPoked d) =>
 	Device.D -> Maybe Cache.C ->

@@ -38,6 +38,7 @@ library
       Data.HeteroList
       Data.Kind.Object
       Data.Traversable.Utils
+      Data.TypeLevel
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic

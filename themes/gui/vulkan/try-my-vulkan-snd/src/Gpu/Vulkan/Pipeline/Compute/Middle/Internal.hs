@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -13,11 +14,13 @@ module Gpu.Vulkan.Pipeline.Compute.Middle.Internal (
 
 	createCs, destroy, CreateInfo(..), CreateInfoListToCore ) where
 
+import Prelude hiding (length)
+
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
-import Control.Monad.Cont
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Maybe
 import Data.Int
@@ -70,7 +73,7 @@ createInfoToCore CreateInfo {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
-class CreateInfoListToCore vss where
+class Length vss => CreateInfoListToCore vss where
 	createInfoListToCore ::
 		HeteroVarList (V3 CreateInfo) vss ->
 		([C.CreateInfo] -> IO r) -> IO r
@@ -87,20 +90,20 @@ instance (
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCs :: (CreateInfoListToCore vss, WithPoked c) =>
+createCs :: forall vss c .
+	(CreateInfoListToCore vss, WithPoked c) =>
 	Device.D -> Maybe Cache.C -> HeteroVarList (V3 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
-	((C <$>) <$>) . ($ pure) $ runContT do
-		cis' <- ContT $ createInfoListToCore cis
-		let	ln = length cis'
-		pcis <- ContT $ allocaArray ln
-		lift $ pokeArray pcis cis'
-		ContT \f -> allocaArray ln \pps -> do
-			AllocationCallbacks.maybeToCore' mac \pac -> do
-				r <- C.createCs dvc cch (fromIntegral ln) pcis pac pps
-				throwUnlessSuccess $ Result r
-			f =<< peekArray ln pps
+	(C <$>) <$> allocaArray ln \pps -> do
+		createInfoListToCore cis \cis' ->
+			allocaArray ln \pcis ->
+			pokeArray pcis cis' >>
+			AllocationCallbacks.maybeToCore' mac \pac ->
+				throwUnlessSuccess . Result =<< C.createCs
+					dvc cch (fromIntegral ln) pcis pac pps
+		peekArray ln pps
+	where ln = length @_ @vss
 
 destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
