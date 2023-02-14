@@ -12,7 +12,6 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
-import Control.Monad.Cont
 import Data.HeteroList
 
 import Gpu.Vulkan.Middle.Internal
@@ -20,6 +19,8 @@ import Gpu.Vulkan.Core (Rect2d)
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.RenderPass.Enum
+
+import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
@@ -37,7 +38,8 @@ data CreateInfo n = CreateInfo {
 	createInfoDependencies :: [Subpass.Dependency] }
 	deriving Show
 
-createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -45,39 +47,38 @@ createInfoToCore CreateInfo {
 		(length &&& (Attachment.descriptionToCore <$>)) -> (ac, as),
 	createInfoSubpasses = (length &&& id) -> (sc, ss),
 	createInfoDependencies =
-		(length &&& (Subpass.dependencyToCore <$>)) -> (dc, ds) } = do
-	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
-	pas <- ContT $ allocaArray ac
-	lift $ pokeArray pas as
-	css <- Subpass.descriptionToCore `mapM` ss
-	ContT \f ->
-		allocaArray sc \pss ->
-		pokeArray pss css >>
-		allocaArray dc \pds ->
-		pokeArray pds ds >>
-		let ci = C.CreateInfo {
-			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
-			C.createInfoFlags = flgs,
-			C.createInfoAttachmentCount = fromIntegral ac,
-			C.createInfoPAttachments = pas,
-			C.createInfoSubpassCount = fromIntegral sc,
-			C.createInfoPSubpasses = pss,
-			C.createInfoDependencyCount = fromIntegral dc,
-			C.createInfoPDependencies = pds } in
-		withPoked ci f
+		(length &&& (Subpass.dependencyToCore <$>)) -> (dc, ds) } f =
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	allocaArray ac \pas ->
+	pokeArray pas as >>
+	(Subpass.descriptionToCore `mapContM` ss) \css ->
+	allocaArray sc \pss ->
+	pokeArray pss css >>
+	allocaArray dc \pds ->
+	pokeArray pds ds >>
+	let ci = C.CreateInfo {
+		C.createInfoSType = (),
+		C.createInfoPNext = pnxt',
+		C.createInfoFlags = flgs,
+		C.createInfoAttachmentCount = fromIntegral ac,
+		C.createInfoPAttachments = pas,
+		C.createInfoSubpassCount = fromIntegral sc,
+		C.createInfoPSubpasses = pss,
+		C.createInfoDependencyCount = fromIntegral dc,
+		C.createInfoPDependencies = pds } in
+	withPoked ci f
 
 newtype R = R C.R deriving Show
 
-create :: (Pokable n, WithPoked c) =>
+create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO R
-create (Device.D dvc) ci mac = ($ pure) . runContT $ R <$> do
-	pci <- createInfoToCore ci
-	ContT \f -> alloca \pr -> do
-		AllocationCallbacks.maybeToCore' mac \pac -> do
-			r <- C.create dvc pci pac pr
-			throwUnlessSuccess $ Result r
-		f =<< peek pr
+create (Device.D dvc) ci mac = R <$>
+	alloca \pr -> do
+		createInfoToCore ci \pci ->
+			AllocationCallbacks.maybeToCore' mac \pac -> do
+				r <- C.create dvc pci pac pr
+				throwUnlessSuccess $ Result r
+		peek pr
 
 destroy :: WithPoked d => Device.D -> R -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (R r) mac =
