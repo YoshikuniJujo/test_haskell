@@ -7,12 +7,10 @@
 module Gpu.Vulkan.RenderPass.Middle.Internal where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Pointable
 import Control.Arrow
 import Control.Monad.Cont
 import Data.HeteroList
@@ -39,7 +37,7 @@ data CreateInfo n = CreateInfo {
 	createInfoDependencies :: [Subpass.Dependency] }
 	deriving Show
 
-createInfoToCore :: Pointable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
+createInfoToCore :: Pokable n => CreateInfo n -> ContT r IO (Ptr C.CreateInfo)
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -48,15 +46,16 @@ createInfoToCore CreateInfo {
 	createInfoSubpasses = (length &&& id) -> (sc, ss),
 	createInfoDependencies =
 		(length &&& (Subpass.dependencyToCore <$>)) -> (dc, ds) } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
+	(castPtr -> pnxt) <- ContT $ withPokedMaybe mnxt
 	pas <- ContT $ allocaArray ac
 	lift $ pokeArray pas as
 	css <- Subpass.descriptionToCore `mapM` ss
-	pss <- ContT $ allocaArray sc
-	lift $ pokeArray pss css
-	pds <- ContT $ allocaArray dc
-	lift $ pokeArray pds ds
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	ContT \f ->
+		allocaArray sc \pss ->
+		pokeArray pss css >>
+		allocaArray dc \pds ->
+		pokeArray pds ds >>
+		let ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt,
 			C.createInfoFlags = flgs,
@@ -65,25 +64,24 @@ createInfoToCore CreateInfo {
 			C.createInfoSubpassCount = fromIntegral sc,
 			C.createInfoPSubpasses = pss,
 			C.createInfoDependencyCount = fromIntegral dc,
-			C.createInfoPDependencies = pds }
-	ContT $ withForeignPtr fCreateInfo
+			C.createInfoPDependencies = pds } in
+		withPoked ci f
 
 newtype R = R C.R deriving Show
 
-create :: (Pointable n, Pokable c) =>
+create :: (Pokable n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO R
 create (Device.D dvc) ci mac = ($ pure) . runContT $ R <$> do
 	pci <- createInfoToCore ci
-	pac <- AllocationCallbacks.maybeToCore mac
-	pr <- ContT alloca
-	lift do	r <- C.create dvc pci pac pr
-		throwUnlessSuccess $ Result r
-		peek pr
+	ContT \f -> alloca \pr -> do
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- C.create dvc pci pac pr
+			throwUnlessSuccess $ Result r
+		f =<< peek pr
 
-destroy :: Pokable d => Device.D -> R -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) (R r) mac = ($ pure) $ runContT do
-	pac <- AllocationCallbacks.maybeToCore mac
-	lift $ C.destroy dvc r pac
+destroy :: WithPoked d => Device.D -> R -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dvc) (R r) mac =
+	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc r
 
 data BeginInfo n cts = BeginInfo {
 	beginInfoNext :: Maybe n,
@@ -104,7 +102,7 @@ beginInfoToCore BeginInfo {
 		clearValuesToCore cvs \pcvl ->
 		clearValueListToArray pcvl \pcva -> do
 		fb' <- Framebuffer.fToCore fb
-		let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
+		let	ci = C.BeginInfo {
 				C.beginInfoSType = (),
 				C.beginInfoPNext = pnxt',
 				C.beginInfoRenderPass = rp,
@@ -112,4 +110,4 @@ beginInfoToCore BeginInfo {
 				C.beginInfoRenderArea = ra,
 				C.beginInfoClearValueCount = fromIntegral cvc,
 				C.beginInfoPClearValues = pcva }
-		withForeignPtr fBeginInfo f
+		withPoked ci f
