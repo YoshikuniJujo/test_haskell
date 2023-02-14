@@ -33,17 +33,17 @@ data CreateInfo n = CreateInfo {
 	createInfoPrimitiveRestartEnable :: Bool }
 	deriving Show
 
-createInfoToCore :: Pokable n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoTopology = PrimitiveTopology tplg,
 	createInfoPrimitiveRestartEnable = pre } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoTopology = tplg,
 			C.createInfoPrimitiveRestartEnable =

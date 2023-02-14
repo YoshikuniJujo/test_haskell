@@ -33,8 +33,8 @@ data CreateInfo n = CreateInfo {
 		[VertexInput.AttributeDescription] }
 	deriving Show
 
-createInfoToCore :: Pokable n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -44,14 +44,14 @@ createInfoToCore CreateInfo {
 	createInfoVertexAttributeDescriptions =
 		((length &&& id) . (VertexInput.attributeDescriptionToCore <$>))
 			-> (vadc, vads) } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray vbdc \pvbds ->
 	pokeArray pvbds vbds >>
 	allocaArray vadc \pvads ->
 	pokeArray pvads vads >>
 	let ci = C.CreateInfo {
 		C.createInfoSType = (),
-		C.createInfoPNext = pnxt,
+		C.createInfoPNext = pnxt',
 		C.createInfoFlags = flgs,
 		C.createInfoVertexBindingDescriptionCount = fromIntegral vbdc,
 		C.createInfoPVertexBindingDescriptions = pvbds,

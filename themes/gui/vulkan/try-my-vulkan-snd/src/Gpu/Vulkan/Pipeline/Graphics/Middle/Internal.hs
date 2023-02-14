@@ -88,8 +88,8 @@ data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfo {
 createInfoToCore :: (
 	WithPoked n,
 	ShaderStage.CreateInfoListToCore nskndvss,
-	Pokable n2, Pokable n3, Pokable n4,
-	Pokable n5, Pokable n6, Pokable n7, Pokable n8, WithPoked n9,
+	WithPoked n2, WithPoked n3, WithPoked n4,
+	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked n8, WithPoked n9,
 	WithPoked n10 ) =>
 	CreateInfo n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
 	(C.CreateInfo -> IO a) -> IO ()
@@ -162,8 +162,8 @@ instance CreateInfoListToCore '[] where createInfoListToCore HVNil f = () <$ f [
 
 instance (
 	WithPoked n, ShaderStage.CreateInfoListToCore nskndvss,
-	Pokable vis, Pokable ias, Pokable ts, Pokable vs,
-	Pokable rs, Pokable ms, Pokable dss, WithPoked cbs, WithPoked ds,
+	WithPoked vis, WithPoked ias, WithPoked ts, WithPoked vs,
+	WithPoked rs, WithPoked ms, WithPoked dss, WithPoked cbs, WithPoked ds,
 	CreateInfoListToCore ass
 	) =>
 	CreateInfoListToCore ('(

@@ -41,8 +41,8 @@ data CreateInfo n = CreateInfo {
 	createInfoLineWidth :: Float }
 	deriving Show
 
-createInfoToCore :: Pokable n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -56,10 +56,10 @@ createInfoToCore CreateInfo {
 	createInfoDepthBiasClamp = dbc,
 	createInfoDepthBiasSlopeFactor = dbsf,
 	createInfoLineWidth = lw } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoDepthClampEnable = dce,
 			C.createInfoRasterizerDiscardEnable = rde,

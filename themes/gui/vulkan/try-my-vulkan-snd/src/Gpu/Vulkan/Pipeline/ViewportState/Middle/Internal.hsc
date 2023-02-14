@@ -38,21 +38,21 @@ instance Default (CreateInfo n) where
 		createInfoNext = Nothing, createInfoFlags = zeroBits,
 		createInfoViewports = [], createInfoScissors = [] }
 
-createInfoToCore :: Pokable n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO a
+createInfoToCore :: WithPoked n =>
+	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoViewports = (length &&& id) -> (vpc, vps),
 	createInfoScissors = (length &&& id) -> (scc, scs) } f =
-	withPokedMaybe mnxt \(castPtr -> pnxt) ->
+	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray vpc \pvps ->
 	pokeArray pvps vps >>
 	allocaArray scc \pscs ->
 	pokeArray pscs scs >>
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
-			C.createInfoPNext = pnxt,
+			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoViewportCount = fromIntegral vpc,
 			C.createInfoPViewports = pvps,
