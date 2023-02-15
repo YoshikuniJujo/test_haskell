@@ -20,7 +20,7 @@ module Data.HeteroList (
 	heteroVarListReplicate,
 	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
 	heteroVarListZipWithM_,
-	PointableHeteroMap(..), PointableToListM(..), PokableToListM(..), WithPokedToListM(..),
+	PokableToListM(..), WithPokedToListM(..),
 	PokableHeteroMap(..), WithPokedHeteroMap(..),
 	StorableHeteroMap(..), StorableToListM(..),
 	V2(..), V3(..), V4(..), V5(..), V6(..),
@@ -29,7 +29,6 @@ module Data.HeteroList (
 import Prelude hiding (length)
 
 import Foreign.Storable
-import Foreign.Pointable
 import Data.Kind
 
 import Foreign.Storable.PeekPoke
@@ -221,22 +220,6 @@ deriving instance Show (t s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15) =>
 		s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15
 		))
 
-class PointableHeteroMap ns where
-	pointableHeteroMap :: HeteroVarList t ns ->
-		(forall n . Pointable n => t n -> a) -> [a]
-	pointableHeteroMapM :: Monad m => HeteroVarList t ns ->
-		(forall n . Pointable n => t n -> m a) -> m [a]
-
-instance PointableHeteroMap '[] where
-	pointableHeteroMap HVNil _ = []
-	pointableHeteroMapM HVNil _ = pure []
-
-instance (Pointable n, PointableHeteroMap ns) =>
-	PointableHeteroMap (n ': ns) where
-	pointableHeteroMap (x :...: xs) f = f x : pointableHeteroMap xs f
-	pointableHeteroMapM (x :...: xs) f =
-		(:) <$> f x <*> pointableHeteroMapM xs f
-
 class PokableHeteroMap ns where
 	pokableHeteroMap :: HeteroVarList t ns ->
 		(forall n . Pokable n => t n -> a) -> [a]
@@ -281,15 +264,6 @@ instance (Storable n, StorableHeteroMap ns) =>
 	storableHeteroMap (x :...: xs) f = f x : storableHeteroMap xs f
 	storableHeteroMapM (x :...: xs) f =
 		(:) <$> f x <*> storableHeteroMapM xs f
-
-class PointableToListM ns where
-	pointableToListM :: Monad m =>
-		(forall n . Pointable n => t n -> m t') -> HeteroVarList t ns -> m [t']
-
-instance PointableToListM '[] where pointableToListM _ HVNil = pure []
-
-instance (Storable n, PointableToListM ns) => PointableToListM (n ': ns) where
-	pointableToListM f (x :...: xs) = (:) <$> f x <*> pointableToListM f xs
 
 class PokableToListM ns where
 	pokableToListM :: Monad m =>

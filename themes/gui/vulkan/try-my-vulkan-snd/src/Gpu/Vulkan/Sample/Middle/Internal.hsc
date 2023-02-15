@@ -5,7 +5,7 @@ module Gpu.Vulkan.Sample.Middle.Internal where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Data.Bits
 import Data.Word
 

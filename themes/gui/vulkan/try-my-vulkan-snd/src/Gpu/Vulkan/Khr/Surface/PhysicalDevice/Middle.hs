@@ -7,7 +7,7 @@ module Gpu.Vulkan.Khr.Surface.PhysicalDevice.Middle (
 
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Control.Monad.Cont
 
 import Gpu.Vulkan.Exception.Middle.Internal

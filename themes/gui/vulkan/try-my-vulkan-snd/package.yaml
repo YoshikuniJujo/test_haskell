@@ -38,7 +38,6 @@ dependencies:
 - GLFW-b
 - ranged-list
 - try-shaderc
-- try-pointable
 - size-alignment-list
 - union-color
 - ghc-prim

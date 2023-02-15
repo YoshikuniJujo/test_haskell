@@ -303,7 +303,6 @@ library
     , template-haskell
     , text
     , time
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -342,7 +341,6 @@ executable my-glslc
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -381,7 +379,6 @@ executable try-depth-buffering
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -420,7 +417,6 @@ executable try-depth-buffering-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -459,7 +455,6 @@ executable try-dynamic-dsc-sets
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -498,7 +493,6 @@ executable try-generating-mipmaps
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -537,7 +531,6 @@ executable try-generating-mipmaps-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -576,7 +569,6 @@ executable try-image-buffer
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -615,7 +607,6 @@ executable try-loading-models
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -654,7 +645,6 @@ executable try-loading-models-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -693,7 +683,6 @@ executable try-multisampling
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -732,7 +721,6 @@ executable try-multisampling-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -771,7 +759,6 @@ executable try-no-dynamic-dsc-sets
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -810,7 +797,6 @@ executable try-rectangle
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -849,7 +835,6 @@ executable try-rectangle-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -888,7 +873,6 @@ executable try-saitan
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -927,7 +911,6 @@ executable try-saitan-float
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -966,7 +949,6 @@ executable try-shaderc
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1005,7 +987,6 @@ executable try-shaderc-core
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1044,7 +1025,6 @@ executable try-texel-buffer
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1083,7 +1063,6 @@ executable try-texture
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1122,7 +1101,6 @@ executable try-texture-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1161,7 +1139,6 @@ executable try-triangle
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1200,7 +1177,6 @@ executable try-triangle-single
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1239,7 +1215,6 @@ executable try-vulkan-guide
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1278,7 +1253,6 @@ executable try-wavefront-obj
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1317,7 +1291,6 @@ executable try-yatteiku
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1357,7 +1330,6 @@ test-suite try-my-vulkan-snd-test
     , text
     , time
     , try-my-vulkan-snd
-    , try-pointable
     , try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
