@@ -13,13 +13,13 @@ module Data.HeteroList (
 	HeteroList', Id(..),
 
 	HeteroVarList(..), pattern Singleton, singleton,
-	heteroVarListToList, heteroVarListToListM,
-	heteroVarListMapM, HeteroVarListMapM(..), TLength(..),
-	ListToHeteroVarList(..), ListToHeteroVarListM(..),
-	oneOfOne, heteroVarListIndex, HeteroVarListIndex'(..), heteroVarListLength,
-	heteroVarListReplicate,
-	heteroVarListReplicateM, listToHeteroVarList', heteroVarListMap,
-	heteroVarListZipWithM_,
+
+	heteroVarListToList, heteroVarListToListM, heteroVarListLength,
+	TLength(..),
+	heteroVarListMap,
+	ListToHeteroVarList(..),
+
+	heteroVarListIndex, heteroVarListReplicateM, HeteroVarListIndex'(..),
 
 	) where
 
@@ -65,22 +65,6 @@ heteroVarListToListM :: Applicative m =>
 heteroVarListToListM _ HVNil = pure []
 heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
 
-heteroVarListMapM :: Applicative m =>
-	(forall (s :: k) . t s -> m (t' s)) -> HeteroVarList t ss -> m (HeteroVarList t' ss)
-heteroVarListMapM _ HVNil = pure HVNil
-heteroVarListMapM f (x :...: xs) = (:...:) <$> f x <*>  heteroVarListMapM f xs
-
-class HeteroVarListMapM ss fss where
-	heteroVarListMapM' :: Applicative m =>
-		(forall a b c . t '(a, b, c) -> m (t' a)) -> HeteroVarList t ss ->
-		m (HeteroVarList t' fss)
-
-instance HeteroVarListMapM '[] '[] where heteroVarListMapM' _ HVNil = pure HVNil
-
-instance HeteroVarListMapM ss fss =>
-	HeteroVarListMapM ('(x, y, z) ': ss) (x ': fss) where
-	heteroVarListMapM' f (x :...: xs) = (:...:) <$> f x <*> heteroVarListMapM' f xs
-
 heteroVarListLength :: HeteroVarList t ss -> Int
 heteroVarListLength HVNil = 0
 heteroVarListLength (_ :...: xs) = 1 + heteroVarListLength xs
@@ -117,14 +101,6 @@ instance ListToHeteroVarListM ss =>
 		<$> f x
 		<*> listToHeteroVarListM f xs
 
-oneOfOne :: HeteroVarList t '[s] -> t s
-oneOfOne (x :...: HVNil) = x
-
-listToHeteroVarList' :: (forall s . t -> t' s) -> [t] ->
-	(forall ss . HeteroVarList t' ss -> a) -> a
-listToHeteroVarList' _ [] g = g HVNil
-listToHeteroVarList' f (x : xs) g = listToHeteroVarList' f xs \ys -> g $ f x :...: ys
-
 heteroVarListIndex :: Integral i => HeteroVarList t ss -> i -> (forall s . t s -> a) -> a
 heteroVarListIndex HVNil _ _ = error "index too large"
 heteroVarListIndex (x :...: _) 0 f = f x
@@ -148,20 +124,8 @@ heteroVarListReplicateM 0 _ f = f HVNil
 heteroVarListReplicateM n x f = x \v -> heteroVarListReplicateM (n - 1) x \vs ->
 	f $ v :...: vs
 
-heteroVarListReplicate ::
-	Int -> t s -> (forall ss . ListToHeteroVarList ss => HeteroVarList t ss -> IO a) -> IO a
-heteroVarListReplicate 0 _ f = f HVNil
-heteroVarListReplicate n x f = heteroVarListReplicate (n - 1) x \xs -> f $ x :...: xs
-
 heteroVarListMap ::
 	(forall s . t s -> t' s) -> HeteroVarList t ss -> HeteroVarList t' ss
 heteroVarListMap f = \case
 	HVNil -> HVNil
 	x :...: xs -> f x :...: heteroVarListMap f xs
-
-heteroVarListZipWithM_ :: Monad m => (forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	HeteroVarList t ss -> HeteroVarList t' ss' -> m ()
-heteroVarListZipWithM_ _ HVNil _ = pure ()
-heteroVarListZipWithM_ _ _ HVNil = pure ()
-heteroVarListZipWithM_ op (x :...: xs) (y :...: ys) =
-	op x y >> heteroVarListZipWithM_ op xs ys
