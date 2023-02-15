@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-01-03
+resolver: nightly-2023-02-14
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,14 +41,13 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
+  commit: 9609cc2336c9d460536b7e1fe1d31cd04cc20635
   subdirs:
   - themes/gui/vulkan/try-vulkan-core
   - themes/gui/vulkan/try-vulkan-core-khr
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-shaderc
   - features/ffi/pointer/try-storable-peek-poke
-  - features/ffi/try-pointable
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 511e579860a040d291373b1c62abc491f91a3110
 - union-color-0.1.2.0

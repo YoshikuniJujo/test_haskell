@@ -44,6 +44,7 @@ dependencies:
 - time
 - mono-traversable
 - data-default
+- try-storable-peek-poke
 - try-vulkan-core
 - try-vulkan-core-khr
 - try-vulkan-core-ext-debug-utils

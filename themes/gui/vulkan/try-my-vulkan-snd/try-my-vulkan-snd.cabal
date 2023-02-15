@@ -43,7 +43,6 @@ library
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic
       Foreign.Storable.Hetero
-      Foreign.Storable.PeekPoke
       Glfw
       Glfw.Middle
       Gpu.Vulkan
@@ -304,6 +303,7 @@ library
     , text
     , time
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -342,6 +342,7 @@ executable my-glslc
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -380,6 +381,7 @@ executable try-depth-buffering
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -418,6 +420,7 @@ executable try-depth-buffering-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -456,6 +459,7 @@ executable try-dynamic-dsc-sets
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -494,6 +498,7 @@ executable try-generating-mipmaps
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -532,6 +537,7 @@ executable try-generating-mipmaps-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -570,6 +576,7 @@ executable try-image-buffer
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -608,6 +615,7 @@ executable try-loading-models
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -646,6 +654,7 @@ executable try-loading-models-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -684,6 +693,7 @@ executable try-multisampling
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -722,6 +732,7 @@ executable try-multisampling-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -760,6 +771,7 @@ executable try-no-dynamic-dsc-sets
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -798,6 +810,7 @@ executable try-rectangle
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -836,6 +849,7 @@ executable try-rectangle-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -874,6 +888,7 @@ executable try-saitan
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -912,6 +927,7 @@ executable try-saitan-float
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -950,6 +966,7 @@ executable try-shaderc
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -988,6 +1005,7 @@ executable try-shaderc-core
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1026,6 +1044,7 @@ executable try-texel-buffer
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1064,6 +1083,7 @@ executable try-texture
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1102,6 +1122,7 @@ executable try-texture-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1140,6 +1161,7 @@ executable try-triangle
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1178,6 +1200,7 @@ executable try-triangle-single
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1216,6 +1239,7 @@ executable try-vulkan-guide
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1254,6 +1278,7 @@ executable try-wavefront-obj
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1292,6 +1317,7 @@ executable try-yatteiku
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
@@ -1331,6 +1357,7 @@ test-suite try-my-vulkan-snd-test
     , time
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
