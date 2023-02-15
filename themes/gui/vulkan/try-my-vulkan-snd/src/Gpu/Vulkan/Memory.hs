@@ -26,7 +26,8 @@ import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object hiding (Offset(..))
 import Data.Maybe
-import Data.HeteroList hiding (alignments)
+import Data.TypeLevel
+import Data.HeteroList
 import Data.IORef
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks

@@ -16,6 +16,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal (
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
+import Data.TypeLevel
 import Data.HeteroList
 
 import qualified Data.ByteString as BS

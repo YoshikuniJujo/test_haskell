@@ -15,6 +15,7 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Foreign.Storable.Hetero
 import Foreign.Storable.SizeAlignment hiding (SizeAlignment)
 import Control.Arrow hiding (loop)
 import Control.Monad
@@ -25,6 +26,7 @@ import Data.Kind.Object
 import Data.Foldable
 import Data.Default
 import Data.Bits
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Proxy
 import Data.Bool

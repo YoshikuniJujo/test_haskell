@@ -10,6 +10,7 @@
 module Gpu.Vulkan where
 
 import Data.Kind
+import Data.TypeLevel
 import Data.HeteroList
 
 import Gpu.Vulkan.Enum

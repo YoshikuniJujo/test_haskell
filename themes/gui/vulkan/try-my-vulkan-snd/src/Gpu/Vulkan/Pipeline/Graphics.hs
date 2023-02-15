@@ -16,6 +16,7 @@ import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 import Data.Int

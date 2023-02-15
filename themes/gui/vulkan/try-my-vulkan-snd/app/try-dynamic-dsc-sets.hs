@@ -21,6 +21,7 @@ import Data.Default
 import Data.Bits
 import Data.Bits.Utils
 import Data.List.Length
+import Data.TypeLevel hiding (length)
 import Data.HeteroList
 import Data.Word
 import System.Environment

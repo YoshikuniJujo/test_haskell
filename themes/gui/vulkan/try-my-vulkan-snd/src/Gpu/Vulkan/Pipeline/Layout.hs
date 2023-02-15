@@ -17,6 +17,7 @@ module Gpu.Vulkan.Pipeline.Layout (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel
 import Data.HeteroList
 
 import Gpu.Vulkan.Pipeline.Layout.Type

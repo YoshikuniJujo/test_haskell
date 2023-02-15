@@ -22,6 +22,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
 	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
+import Foreign.Storable.Hetero
 import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont

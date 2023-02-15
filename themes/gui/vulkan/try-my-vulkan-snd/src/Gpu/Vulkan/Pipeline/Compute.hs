@@ -17,6 +17,7 @@ module Gpu.Vulkan.Pipeline.Compute (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Kind
 import Data.Int

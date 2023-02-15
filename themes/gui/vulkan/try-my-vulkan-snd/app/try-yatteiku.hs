@@ -18,6 +18,7 @@ import Data.Bits
 import Data.Maybe
 import Data.List
 import Data.Array
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 import Data.Color

@@ -17,6 +17,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Foreign.Storable.Hetero
 import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
@@ -27,6 +28,7 @@ import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
+import Data.TypeLevel hiding (length)
 import Data.HeteroList
 import Data.Proxy
 import Data.Bool

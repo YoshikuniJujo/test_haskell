@@ -1,4 +1,5 @@
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -14,7 +15,14 @@ module Foreign.Storable.Hetero (
 
 	-- * Pokable
 
-	PokableList(..) ) where
+	PokableList(..),
+
+	-- * WithPoked
+
+	WithPokedToListM(..),
+	WithPokedHeteroMap(..)
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
@@ -55,3 +63,27 @@ instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
 	pokeList ((`alignPtr` alignment' @t) -> p) (Id x :...: xs) = do
 		poke' (castPtr p) x
 		pokeList (p `plusPtr` sizeOf' @t) xs
+
+-- WithPoked
+
+class WithPokedToListM ns where
+	withPokedToListM :: Monad m =>
+		(forall n . WithPoked n => t n -> m t') -> HeteroVarList t ns -> m [t']
+
+instance WithPokedToListM '[] where withPokedToListM _ HVNil = pure []
+
+instance (WithPoked n, WithPokedToListM ns) => WithPokedToListM (n ': ns) where
+	withPokedToListM f (x :...: xs) = (:) <$> f x <*> withPokedToListM f xs
+
+class WithPokedHeteroMap ns where
+	withPokedHeteroMapM :: HeteroVarList t ns ->
+		(forall n . WithPoked n => t n -> (a -> m ()) -> m ()) ->
+		([a] -> m ()) -> m ()
+
+instance WithPokedHeteroMap '[] where
+	withPokedHeteroMapM HVNil _ g = g []
+
+instance (WithPoked n, WithPokedHeteroMap ns) =>
+	WithPokedHeteroMap (n ': ns) where
+	withPokedHeteroMapM (x :...: xs) f g =
+		f x \y -> withPokedHeteroMapM xs f \ys -> g $ y : ys

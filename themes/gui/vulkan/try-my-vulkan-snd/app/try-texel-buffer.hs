@@ -19,6 +19,7 @@ import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.List.Length
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 

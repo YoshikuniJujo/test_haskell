@@ -17,6 +17,7 @@ import Foreign.Storable.Hetero
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 import Data.Int

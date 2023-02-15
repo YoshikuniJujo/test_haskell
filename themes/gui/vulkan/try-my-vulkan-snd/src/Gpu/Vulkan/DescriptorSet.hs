@@ -15,6 +15,7 @@ import GHC.TypeLits
 import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 

@@ -10,8 +10,8 @@ module Gpu.Vulkan.Device (
 	) where
 
 import Foreign.Storable.PeekPoke
+import Foreign.Storable.Hetero
 import Control.Exception
-import Data.HeteroList
 import Data.Word
 
 import Gpu.Vulkan.Device.Type

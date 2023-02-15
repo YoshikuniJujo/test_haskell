@@ -16,6 +16,7 @@ import GHC.Generics
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Foreign.Storable.Hetero
 import Foreign.Storable.SizeAlignment
 import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
@@ -27,6 +28,7 @@ import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
+import Data.TypeLevel hiding (length)
 import Data.HeteroList
 import Data.Proxy
 import Data.Bool

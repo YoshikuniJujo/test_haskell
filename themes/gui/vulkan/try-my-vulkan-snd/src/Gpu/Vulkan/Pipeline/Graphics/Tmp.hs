@@ -18,6 +18,7 @@ import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 import Data.Int
