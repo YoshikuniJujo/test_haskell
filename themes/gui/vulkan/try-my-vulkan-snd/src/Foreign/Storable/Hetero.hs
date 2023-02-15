@@ -54,7 +54,7 @@ calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szal
 -- Pokable
 
 class SizableList ts => PokableList (ts :: [Type]) where
-	pokeList :: Ptr a -> HeteroList' ts -> IO ()
+	pokeList :: Ptr a -> HeteroList ts -> IO ()
 
 instance PokableList '[] where
 	pokeList _ HVNil = pure ()

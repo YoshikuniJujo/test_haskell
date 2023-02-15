@@ -32,7 +32,7 @@ data CreateInfoNew n m sknd c d vs = CreateInfoNew {
 	createInfoStageNew :: ShaderStageFlagBits,
 	createInfoModuleNew :: Shader.Module.M m sknd c d,
 	createInfoNameNew :: BS.ByteString,
-	createInfoSpecializationInfoNew :: Maybe (HeteroList' vs) }
+	createInfoSpecializationInfoNew :: Maybe (HeteroList vs) }
 
 createInfoToMiddleNew :: (Pokable m, Pokable c) =>
 	Device.D ds -> CreateInfoNew n m sknd c d vs -> IO (M.CreateInfo n sknd vs)

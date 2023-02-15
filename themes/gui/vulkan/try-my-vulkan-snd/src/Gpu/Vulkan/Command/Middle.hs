@@ -112,7 +112,7 @@ bindIndexBuffer
 
 pushConstants' :: forall ts . PokableList ts =>
 	CommandBuffer.M.C -> Pipeline.Layout.L ->
-	ShaderStageFlags -> Word32 -> HeteroList' ts -> IO ()
+	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
 pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n

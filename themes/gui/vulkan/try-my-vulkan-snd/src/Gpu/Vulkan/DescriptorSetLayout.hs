@@ -18,9 +18,12 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 	) where
 
+import Prelude hiding (length)
+
 import Foreign.Storable
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel
 import Data.HeteroList
 import Data.Word
 
@@ -75,24 +78,24 @@ data Binding (bt :: BindingType) where
 class BindingToMiddle bt where
 	bindingToMiddle :: Binding bt -> Word32 -> M.Binding
 
-instance TLength objs => BindingToMiddle ('Buffer objs) where
+instance Length objs => BindingToMiddle ('Buffer objs) where
 	bindingToMiddle BindingBuffer {
 		bindingBufferDescriptorType = dt,
 		bindingBufferStageFlags = sfs } bb = M.Binding {
 			M.bindingBinding = bb,
 			M.bindingDescriptorType = dt,
 			M.bindingDescriptorCountOrImmutableSamplers =
-				Left (tLength @objs),
+				Left (length @_ @objs),
 			M.bindingStageFlags = sfs }
 
-instance TLength fmts => BindingToMiddle ('Image fmts) where
+instance Length fmts => BindingToMiddle ('Image fmts) where
 	bindingToMiddle BindingImage {
 		bindingImageDescriptorType = dt,
 		bindingImageStageFlags = sfs } bb = M.Binding {
 			M.bindingBinding = bb,
 			M.bindingDescriptorType = dt,
 			M.bindingDescriptorCountOrImmutableSamplers =
-				Left (tLength @fmts),
+				Left (length @_ @fmts),
 			M.bindingStageFlags = sfs }
 
 instance BindingToMiddle ('ImageSampler fmtss) where

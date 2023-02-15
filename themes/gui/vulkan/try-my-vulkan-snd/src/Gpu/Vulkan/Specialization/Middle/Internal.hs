@@ -38,7 +38,7 @@ mapEntries (_, ps, _, _) = (<$> ps) \(i, o, s) -> C.MapEntry {
 	C.mapEntrySize = fromIntegral s }
 
 infoToCore' :: forall vs a . PokableList vs =>
-	HeteroList' vs -> (C.Info -> IO a) -> IO a
+	HeteroList vs -> (C.Info -> IO a) -> IO a
 infoToCore' xs f =
 	allocaArray n \pmes ->
 	pokeArray pmes (mapEntries ps) >>

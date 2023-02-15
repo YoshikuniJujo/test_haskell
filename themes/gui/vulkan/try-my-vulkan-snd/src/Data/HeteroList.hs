@@ -10,12 +10,18 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.HeteroList (
-	HeteroList', Id(..),
+
+	-- * HeteroList
+
+	HeteroList, Id(..),
+
+	-- * HeteroVarList
 
 	HeteroVarList(..), pattern Singleton, singleton,
 
+	-- * Others
+
 	heteroVarListToList, heteroVarListToListM, heteroVarListLength,
-	TLength(..),
 	heteroVarListMap,
 	ListToHeteroVarList(..),
 
@@ -25,7 +31,7 @@ module Data.HeteroList (
 
 import Data.Kind
 
-type HeteroList' ts = HeteroVarList Id ts
+type HeteroList ts = HeteroVarList Id ts
 
 newtype Id t = Id t deriving Show
 
@@ -68,12 +74,6 @@ heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
 heteroVarListLength :: HeteroVarList t ss -> Int
 heteroVarListLength HVNil = 0
 heteroVarListLength (_ :...: xs) = 1 + heteroVarListLength xs
-
-class TLength ts where tLength :: Num n => n
-
-instance TLength '[] where tLength = 0
-
-instance TLength ts => TLength (t ': ts) where tLength = 1 + tLength @ts
 
 class ListToHeteroVarList ss where
 	listToHeteroVarList :: (forall s . t -> t' s) -> [t] -> HeteroVarList t' ss

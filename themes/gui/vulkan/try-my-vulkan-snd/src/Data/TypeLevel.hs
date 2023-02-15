@@ -11,7 +11,7 @@ module Data.TypeLevel where
 
 import Prelude hiding (length)
 
-class Length (as :: [k]) where length :: Int
+class Length (as :: [k]) where length :: Integral n => n
 instance Length '[] where length = 0
 instance Length as => Length (a ': as) where length = length @_ @as + 1
 

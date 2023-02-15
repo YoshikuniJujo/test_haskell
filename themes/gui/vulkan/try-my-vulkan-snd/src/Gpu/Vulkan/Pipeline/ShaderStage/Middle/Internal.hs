@@ -34,9 +34,9 @@ data CreateInfo n sknd vs = CreateInfo {
 	createInfoStage :: ShaderStageFlagBits,
 	createInfoModule :: ShaderModule.M sknd,
 	createInfoName :: BS.ByteString,
-	createInfoSpecializationInfo :: Maybe (HeteroList' vs) }
+	createInfoSpecializationInfo :: Maybe (HeteroList vs) }
 
-deriving instance (Show n, Show (HeteroList' vs)) => Show (CreateInfo n sknd vs)
+deriving instance (Show n, Show (HeteroList vs)) => Show (CreateInfo n sknd vs)
 
 createInfoToCore ::
 	forall n sknd vs r . (WithPoked n, PokableList vs) =>

@@ -151,7 +151,7 @@ pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts 
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
 	CommandBuffer.C sc vs -> Pipeline.Layout.L s sbtss whole ->
-	HeteroList' ts -> IO ()
+	HeteroList ts -> IO ()
 pushConstants' (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
 	M.pushConstants' cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
