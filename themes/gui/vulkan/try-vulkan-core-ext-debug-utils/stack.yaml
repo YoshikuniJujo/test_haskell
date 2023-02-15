@@ -44,7 +44,6 @@ extra-deps:
   commit: d238088bb58ec2eb7f908a431d087a1548cf3664
   subdirs:
   - themes/gui/vulkan/try-vulkan-core
-  - features/ffi/try-pointable
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

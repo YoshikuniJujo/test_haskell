@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -34,7 +34,6 @@ library
   build-depends:
       base >=4.7 && <5
     , c-struct
-    , try-pointable
     , try-vulkan-core
   default-language: Haskell2010
 
@@ -48,7 +47,6 @@ executable try-vulkan-core-ext-debug-utils-exe
   build-depends:
       base >=4.7 && <5
     , c-struct
-    , try-pointable
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
   default-language: Haskell2010
@@ -64,7 +62,6 @@ test-suite try-vulkan-core-ext-debug-utils-test
   build-depends:
       base >=4.7 && <5
     , c-struct
-    , try-pointable
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
   default-language: Haskell2010

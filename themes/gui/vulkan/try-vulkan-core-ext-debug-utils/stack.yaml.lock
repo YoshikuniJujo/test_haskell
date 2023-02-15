@@ -17,19 +17,6 @@ packages:
     commit: d238088bb58ec2eb7f908a431d087a1548cf3664
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
-- completed:
-    commit: d238088bb58ec2eb7f908a431d087a1548cf3664
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-pointable
-    pantry-tree:
-      sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
-      size: 629
-    subdir: features/ffi/try-pointable
-    version: 0.1.0.0
-  original:
-    commit: d238088bb58ec2eb7f908a431d087a1548cf3664
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/try-pointable
 snapshots:
 - completed:
     sha256: 1d25e3e0e2edb856951e8903821e0199a1112ab48b76c83f814e4f7596961e89

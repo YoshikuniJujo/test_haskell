@@ -11,7 +11,6 @@ import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
-import Foreign.Pointable
 import Data.Word
 import Data.Int
 
@@ -146,3 +145,6 @@ foreign import ccall "dynamic" mkFnDestroy :: FunPtr FnDestroy -> FnDestroy
 
 foreign import ccall "vkGetInstanceProcAddr" c_vkGetInstanceProcAddr ::
 	Instance.I -> CString -> IO (FunPtr a)
+
+pattern NullFunPtr :: FunPtr a
+pattern NullFunPtr <- ((== nullFunPtr) -> True) where NullFunPtr = nullFunPtr
