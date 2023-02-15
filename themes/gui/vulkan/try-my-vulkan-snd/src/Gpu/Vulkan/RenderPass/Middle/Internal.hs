@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -12,6 +13,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
+import Data.TypeLevel qualified as TL
 import Data.HeteroList
 
 import Gpu.Vulkan.Middle.Internal
@@ -91,14 +93,14 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: HeteroVarList ClearValue cts }
 
-beginInfoToCore :: (WithPoked n, ClearValuesToCore cts) =>
+beginInfoToCore :: forall n cts a . (WithPoked n, ClearValuesToCore cts) =>
 	BeginInfo n cts -> (Ptr C.BeginInfo -> IO a) -> IO ()
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoRenderPass = R rp,
 	beginInfoFramebuffer = fb,
 	beginInfoRenderArea = ra,
-	beginInfoClearValues = heteroVarListLength &&& id -> (cvc, cvs)
+	beginInfoClearValues = const (TL.length @_ @cts) &&& id -> (cvc, cvs)
 	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 		clearValuesToCore cvs \pcvl ->
 		clearValueListToArray pcvl \pcva -> do
@@ -109,6 +111,6 @@ beginInfoToCore BeginInfo {
 				C.beginInfoRenderPass = rp,
 				C.beginInfoFramebuffer = fb',
 				C.beginInfoRenderArea = ra,
-				C.beginInfoClearValueCount = fromIntegral cvc,
+				C.beginInfoClearValueCount = cvc,
 				C.beginInfoPClearValues = pcva }
 		withPoked ci f

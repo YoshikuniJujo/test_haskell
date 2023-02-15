@@ -21,7 +21,7 @@ module Data.HeteroList (
 
 	-- * Others
 
-	heteroVarListToList, heteroVarListToListM, heteroVarListLength,
+	heteroVarListToList, heteroVarListToListM,
 	heteroVarListMap,
 	ListToHeteroVarList(..),
 
@@ -70,10 +70,6 @@ heteroVarListToListM :: Applicative m =>
 	(forall (s :: k) . t s -> m t') -> HeteroVarList t ss -> m [t']
 heteroVarListToListM _ HVNil = pure []
 heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
-
-heteroVarListLength :: HeteroVarList t ss -> Int
-heteroVarListLength HVNil = 0
-heteroVarListLength (_ :...: xs) = 1 + heteroVarListLength xs
 
 class ListToHeteroVarList ss where
 	listToHeteroVarList :: (forall s . t -> t' s) -> [t] -> HeteroVarList t' ss

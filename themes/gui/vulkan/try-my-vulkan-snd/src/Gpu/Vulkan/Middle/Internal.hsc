@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
@@ -30,6 +31,7 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
+import Data.TypeLevel qualified as TL
 import Data.HeteroList
 import Data.Word
 import Data.Color.Internal
@@ -212,7 +214,7 @@ instance ClearColorValueToCore cct =>
 	clearValueToCore cv@(ClearValueColor _) f =
 		clearColorValueToCore cv $ f . C.clearValueFromClearColorValue
 
-class ClearValuesToCore (cts :: [ClearType]) where
+class TL.Length cts => ClearValuesToCore (cts :: [ClearType]) where
 	clearValuesToCore ::
 		HeteroVarList ClearValue cts ->
 		([C.PtrClearValue] -> IO a) -> IO a
