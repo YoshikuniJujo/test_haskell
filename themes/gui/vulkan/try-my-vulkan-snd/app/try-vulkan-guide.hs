@@ -31,7 +31,7 @@ import Data.HeteroList
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
-import Data.List hiding (singleton)
+import Data.List
 import Data.IORef
 import Data.List.Length
 import Data.Word
@@ -1547,7 +1547,7 @@ drawObject om cb sce cmd RenderObject {
 	movb <- readIORef om
 	case movb of
 		Just ovb | vb == ovb -> pure ()
-		_ -> do	Vk.Cmd.bindVertexBuffers cb . singleton
+		_ -> do	Vk.Cmd.bindVertexBuffers cb . Singleton
 				. V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 			writeIORef om $ Just vb
 	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] cb lyt $ Id (Foreign.Storable.Generic.Wrap
@@ -1710,7 +1710,7 @@ drawFrame ::
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
+	heteroVarListIndex iffs cf \(id &&& Singleton -> (iff, siff)) ->
 	heteroVarListIndex cmms cf \(MemoryGcd cmm) ->
 	($ homoListIndex cmds cf) \cmd -> do
 	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom 256 GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
@@ -1735,17 +1735,17 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 			'[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = singleton
+			Vk.submitInfoWaitSemaphoreDstStageMasks = Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = singleton $ V2 cb,
-			Vk.submitInfoSignalSemaphores = singleton rfs }
+			Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
+			Vk.submitInfoSignalSemaphores = Singleton rfs }
 		presentInfoNew = Vk.Khr.PresentInfoNew {
 			Vk.Khr.presentInfoNextNew = Nothing,
-			Vk.Khr.presentInfoWaitSemaphoresNew = singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndicesNew = singleton
+			Vk.Khr.presentInfoWaitSemaphoresNew = Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndicesNew = Singleton
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
-	Vk.Queue.submit gq (singleton $ V4 submitInfo) $ Just iff
+	Vk.Queue.submit gq (Singleton $ V4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfoNew
 	where	cb = cbs `vssListIndex` cf
 

@@ -17,7 +17,7 @@ module Data.HeteroList (
 
 	-- * HeteroVarList
 
-	HeteroVarList(..), pattern Singleton, singleton,
+	HeteroVarList(..), pattern Singleton,
 
 	-- * From/To List
 
@@ -61,9 +61,6 @@ instance (Eq (t s), Eq (HeteroVarList t ss)) =>
 pattern Singleton :: t s -> HeteroVarList t '[s]
 pattern Singleton x <- (x :...: HVNil) where
 	Singleton x = x :...: HVNil
-
-singleton :: t s -> HeteroVarList t '[s]
-singleton = (:...: HVNil)
 
 heteroVarListToList :: (forall (s :: k) . t s -> t') -> HeteroVarList t ss -> [t']
 heteroVarListToList _ HVNil = []

@@ -33,7 +33,7 @@ import Data.HeteroList
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
-import Data.List hiding (singleton)
+import Data.List
 import Data.IORef
 import Data.List.Length
 import Data.Word
@@ -1032,7 +1032,7 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = singleton ln,
+		Vk.Bffr.createInfoLengths = Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -1426,7 +1426,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
-		. singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
+		. Singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @_ @Word16 ib
 	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics ppllyt
 		(Singleton $ Vk.Cmd.DescriptorSet dscs) []
@@ -1441,7 +1441,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues = singleton
+		Vk.RndrPass.beginInfoClearValues = Singleton
 			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (
@@ -1529,7 +1529,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
 	(SyncObjects iass rfss iffs) ubs ums dscss tm cf =
 	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
+	heteroVarListIndex iffs cf \(id &&& Singleton -> (iff, siff)) ->
 	heteroVarListIndex ubs cf \ub -> heteroVarListIndex ums cf \um ->
 	descriptorSetIndex dscss cf \dscs -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
@@ -1545,17 +1545,17 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
 			'[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = singleton
+			Vk.submitInfoWaitSemaphoreDstStageMasks = Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = singleton $ V2 cb,
-			Vk.submitInfoSignalSemaphores = singleton rfs }
+			Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
+			Vk.submitInfoSignalSemaphores = Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfoNew {
 			Vk.Khr.presentInfoNextNew = Nothing,
-			Vk.Khr.presentInfoWaitSemaphoresNew = singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndicesNew = singleton
+			Vk.Khr.presentInfoWaitSemaphoresNew = Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndicesNew = Singleton
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
-	Vk.Queue.submit gq (singleton $ V4 submitInfo) $ Just iff
+	Vk.Queue.submit gq (Singleton $ V4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfo
 	where	cb = cbs `vssListIndex` cf
 
