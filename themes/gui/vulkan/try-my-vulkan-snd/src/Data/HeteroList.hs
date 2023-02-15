@@ -19,17 +19,20 @@ module Data.HeteroList (
 
 	HeteroVarList(..), pattern Singleton, singleton,
 
+	-- * From/To List
+
+	ListToHeteroVarList(..), heteroVarListToList, heteroVarListToListM,
+
 	-- * Others
 
-	heteroVarListToList, heteroVarListToListM,
-	heteroVarListMap,
-	ListToHeteroVarList(..),
+	HomoList, homoListIndex, heteroVarListIndex,
 
-	heteroVarListIndex, heteroVarListReplicateM, HeteroVarListIndex'(..),
+	heteroVarListMap, heteroVarListReplicateM,
 
 	) where
 
 import Data.Kind
+import Data.List (genericIndex)
 
 type HeteroList ts = HeteroVarList Id ts
 
@@ -103,15 +106,16 @@ heteroVarListIndex (x :...: _) 0 f = f x
 heteroVarListIndex (_ :...: xs) i f | i > 0 = heteroVarListIndex xs (i - 1) f
 heteroVarListIndex _ _ _ = error "negative index"
 
-class HeteroVarListIndex' (a :: k) ss where
-	heteroVarListIndex' :: Integral i => HeteroVarList t ss -> i -> t a
+homoListIndex :: (HomoList a as, Integral i) => HeteroVarList t as -> i -> t a
+homoListIndex xs i = homoListToList xs `genericIndex` i
 
-instance HeteroVarListIndex' a '[] where
-	heteroVarListIndex' HVNil _ = error "index too large"
+class HomoList (a :: k) as where
+	homoListToList :: HeteroVarList t as -> [t a]
 
-instance HeteroVarListIndex' a ss => HeteroVarListIndex' a (a ': ss) where
-	heteroVarListIndex' (x :...: _) n | n < 1 = x
-	heteroVarListIndex' (_ :...: xs) n = heteroVarListIndex' xs (n - 1)
+instance HomoList a '[] where homoListToList HVNil = []
+
+instance HomoList a as => HomoList a (a ': as) where
+	homoListToList (x :...: xs) = x : homoListToList xs
 
 heteroVarListReplicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->

@@ -1121,7 +1121,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Int ->
 	(forall slyts sbsms . (
 		ListToHeteroVarList slyts, Update sbsms slyts,
-		HeteroVarListIndex' '(sdsc, '[
+		HomoList '(sdsc, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
 				'Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
@@ -1571,7 +1571,7 @@ projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs, VssList vss,
-	HeteroVarListIndex' '(s, '[
+	HomoList '(s, '[
 		'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			'Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
@@ -1625,7 +1625,7 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrc
 runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs, VssList vss,
-	HeteroVarListIndex'
+	HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1676,7 +1676,7 @@ drawFrame ::
 	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
 		scb ssos vss sbsms sscnm sscnb sp slyts . (
 	VssList vss,
-	HeteroVarListIndex'
+	HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1712,7 +1712,7 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	heteroVarListIndex iffs cf \(id &&& singleton -> (iff, siff)) ->
 	heteroVarListIndex cmms cf \(MemoryGcd cmm) ->
-	($ heteroVarListIndex' cmds cf) \cmd -> do
+	($ homoListIndex cmds cf) \cmd -> do
 	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom 256 GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
 	if cf == 0
 		then Vk.Dvc.Mem.ImageBuffer.write @"scene-buffer"
