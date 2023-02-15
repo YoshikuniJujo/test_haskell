@@ -21,11 +21,19 @@ module Data.HeteroList (
 
 	-- * From/To List
 
+	-- ** Hetero List
+
 	ListToHeteroVarList(..), heteroVarListToList, heteroVarListToListM,
 
-	-- * Others
+	-- ** Homo List
 
-	HomoList, homoListIndex, heteroVarListIndex,
+	HomoList(..),
+
+	-- * Index
+
+	heteroVarListIndex, homoListIndex,
+
+	-- * Others
 
 	heteroVarListMap, heteroVarListReplicateM,
 
