@@ -41,9 +41,9 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 619ee79a72408e6635fb249196782ac9a69d597c
+  commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
   subdirs:
-  - features/ffi/try-pointable
+  - features/ffi/pointer/try-storable-peek-poke
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

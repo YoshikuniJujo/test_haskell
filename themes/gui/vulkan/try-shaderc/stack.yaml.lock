@@ -5,18 +5,18 @@
 
 packages:
 - completed:
-    commit: 619ee79a72408e6635fb249196782ac9a69d597c
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-pointable
+    name: try-storable-peek-poke
     pantry-tree:
-      sha256: e7195e9ae8c1def52eb20486e83464143f847c1e8124759971231bd7b45fc9db
-      size: 629
-    subdir: features/ffi/try-pointable
+      sha256: ffad77863447d572674d88b4d9afd2dea4f7d7c11bc9596385ad69d3f408630d
+      size: 597
+    subdir: features/ffi/pointer/try-storable-peek-poke
     version: 0.1.0.0
   original:
-    commit: 619ee79a72408e6635fb249196782ac9a69d597c
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/try-pointable
+    subdir: features/ffi/pointer/try-storable-peek-poke
 snapshots:
 - completed:
     sha256: 1d25e3e0e2edb856951e8903821e0199a1112ab48b76c83f814e4f7596961e89

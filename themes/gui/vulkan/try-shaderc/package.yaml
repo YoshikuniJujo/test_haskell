@@ -28,7 +28,7 @@ dependencies:
 - exception-hierarchy
 - c-enum
 - c-struct
-- try-pointable
+- try-storable-peek-poke
 
 library:
   source-dirs: src

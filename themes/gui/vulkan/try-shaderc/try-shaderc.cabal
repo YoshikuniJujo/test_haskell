@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -56,7 +56,7 @@ library
     , monads-tf
     , nowdoc
     , template-haskell
-    , try-pointable
+    , try-storable-peek-poke
   default-language: Haskell2010
 
 executable try-shaderc-exe
@@ -75,8 +75,8 @@ executable try-shaderc-exe
     , monads-tf
     , nowdoc
     , template-haskell
-    , try-pointable
     , try-shaderc
+    , try-storable-peek-poke
   default-language: Haskell2010
 
 test-suite try-shaderc-test
@@ -96,6 +96,6 @@ test-suite try-shaderc-test
     , monads-tf
     , nowdoc
     , template-haskell
-    , try-pointable
     , try-shaderc
+    , try-storable-peek-poke
   default-language: Haskell2010

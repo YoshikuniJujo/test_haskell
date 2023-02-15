@@ -7,7 +7,7 @@ module Shaderc.CompileOptions where
 
 import Foreign.Ptr
 import Foreign.Storable
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Control.Monad.Cont
 import Data.Bool
 
@@ -66,9 +66,9 @@ setForcedVersionProfile :: C.T -> Maybe (Version, Profile) -> ContT r IO ()
 setForcedVersionProfile opts =
 	maybe (pure ()) $ lift . uncurry (C.setForcedVersionProfile opts)
 
-setIncludeCallbacks :: (Storable ud, Pointable ud) =>
+setIncludeCallbacks :: (Storable ud, Pokable ud) =>
 	C.T -> ResolveFn ud -> Maybe ud -> ContT r IO ()
 setIncludeCallbacks opts rfun mud = do
 	let	(crfn, crrfn) = resolveFnToCore rfun
-	(castPtr -> pud) <- maybeToPointer mud
+	(castPtr -> pud) <- ContT $ withPokedMaybe mud
 	lift $ C.setIncludeCallbacks opts crfn crrfn pud

@@ -7,7 +7,7 @@ module Shaderc.Include where
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
-import Foreign.Pointable
+import Foreign.Storable.PeekPoke
 import Control.Monad.Cont
 
 import qualified Data.ByteString as BS
@@ -20,14 +20,14 @@ data Result ud = Result {
 	resultUserData :: Maybe ud }
 	deriving Show
 
-resultToCore :: Pointable ud => Result ud -> ContT r IO C.Result
+resultToCore :: Pokable ud => Result ud -> ContT r IO C.Result
 resultToCore Result {
 	resultSourceName = src,
 	resultContent = cnt,
 	resultUserData = ud } = do
 	(csrc, fromIntegral -> csrcln) <- ContT $ BS.useAsCStringLen src
 	(ccnt, fromIntegral -> ccntln) <- ContT $ BS.useAsCStringLen cnt
-	(castPtr -> pud) <- maybeToPointer ud
+	(castPtr -> pud) <- ContT $ withPokedMaybe ud
 	pure $ C.Result {
 		C.resultSourceName = csrc,
 		C.resultSourceNameLength = csrcln,
