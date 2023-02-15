@@ -5,7 +5,7 @@
 
 packages:
 - completed:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
@@ -14,11 +14,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core
     version: 0.1.0.1
   original:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
 - completed:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-khr
     pantry-tree:
@@ -27,11 +27,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-khr
     version: 0.1.0.0
   original:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-khr
 - completed:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core-ext-debug-utils
     pantry-tree:
@@ -40,11 +40,11 @@ packages:
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
     version: 0.1.0.0
   original:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core-ext-debug-utils
 - completed:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-shaderc
     pantry-tree:
@@ -53,11 +53,24 @@ packages:
     subdir: themes/gui/vulkan/try-shaderc
     version: 0.1.0.0
   original:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-shaderc
 - completed:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-storable-peek-poke
+    pantry-tree:
+      sha256: ffad77863447d572674d88b4d9afd2dea4f7d7c11bc9596385ad69d3f408630d
+      size: 597
+    subdir: features/ffi/pointer/try-storable-peek-poke
+    version: 0.1.0.0
+  original:
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/pointer/try-storable-peek-poke
+- completed:
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-pointable
     pantry-tree:
@@ -66,7 +79,7 @@ packages:
     subdir: features/ffi/try-pointable
     version: 0.1.0.0
   original:
-    commit: fe3b0eb4356fa8bdcf7c0de8265938036911a3b0
+    commit: 9a4d58a620e23379a4032e15d63f4e2acd9b7a8b
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/try-pointable
 - completed:
