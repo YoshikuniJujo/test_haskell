@@ -42,6 +42,8 @@ module Data.HeteroParList (
 import Data.Kind
 import Data.List (genericIndex)
 
+-- HeteroList
+
 type HeteroList ts = HeteroParList Id ts
 
 infixr 5 :*
@@ -50,6 +52,8 @@ pattern (:*) :: t -> HeteroList ts -> HeteroList (t ': ts)
 pattern x :* xs <- Id x :...: xs where x :* xs = Id x :...: xs
 
 newtype Id t = Id t deriving Show
+
+-- HeteroParList
 
 infixr 5 :...:
 
@@ -75,14 +79,7 @@ pattern Singleton :: t s -> HeteroParList t '[s]
 pattern Singleton x <- (x :...: HNil) where
 	Singleton x = x :...: HNil
 
-heteroVarListToList :: (forall (s :: k) . t s -> t') -> HeteroParList t ss -> [t']
-heteroVarListToList _ HNil = []
-heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs
-
-heteroVarListToListM :: Applicative m =>
-	(forall (s :: k) . t s -> m t') -> HeteroParList t ss -> m [t']
-heteroVarListToListM _ HNil = pure []
-heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
+-- From/To List
 
 class ListToHeteroParList ss where
 	listToHeteroParList :: (forall s . t -> t' s) -> [t] -> HeteroParList t' ss
@@ -95,20 +92,24 @@ instance ListToHeteroParList ss => ListToHeteroParList (s ': ss) where
 	listToHeteroParList f (x : xs) = f x :...: listToHeteroParList f xs
 	listToHeteroParList _ _ = error "bad"
 
-class ListToHeteroParListM ss where
-	listToHeteroParListM :: Monad m =>
-		(forall s . t -> m (t' s)) -> [t] -> m (HeteroParList t' ss)
+heteroVarListToList :: (forall (s :: k) . t s -> t') -> HeteroParList t ss -> [t']
+heteroVarListToList _ HNil = []
+heteroVarListToList f (x :...: xs) = f x : heteroVarListToList f xs
 
-instance ListToHeteroParListM '[] where
-	listToHeteroParListM _ [] = pure HNil
-	listToHeteroParListM _ _ = error "bad"
+heteroVarListToListM :: Applicative m =>
+	(forall (s :: k) . t s -> m t') -> HeteroParList t ss -> m [t']
+heteroVarListToListM _ HNil = pure []
+heteroVarListToListM f (x :...: xs) = (:) <$> f x <*> heteroVarListToListM f xs
 
-instance ListToHeteroParListM ss =>
-	ListToHeteroParListM (s ': ss) where
-	listToHeteroParListM _ [] = error "bad"
-	listToHeteroParListM f (x : xs) = (:...:)
-		<$> f x
-		<*> listToHeteroParListM f xs
+class HomoList (a :: k) as where
+	homoListToList :: HeteroParList t as -> [t a]
+
+instance HomoList a '[] where homoListToList HNil = []
+
+instance HomoList a as => HomoList a (a ': as) where
+	homoListToList (x :...: xs) = x : homoListToList xs
+
+-- Index
 
 heteroVarListIndex :: Integral i => HeteroParList t ss -> i -> (forall s . t s -> a) -> a
 heteroVarListIndex HNil _ _ = error "index too large"
@@ -119,13 +120,13 @@ heteroVarListIndex _ _ _ = error "negative index"
 homoListIndex :: (HomoList a as, Integral i) => HeteroParList t as -> i -> t a
 homoListIndex xs i = homoListToList xs `genericIndex` i
 
-class HomoList (a :: k) as where
-	homoListToList :: HeteroParList t as -> [t a]
+-- Map and ReplicateM
 
-instance HomoList a '[] where homoListToList HNil = []
-
-instance HomoList a as => HomoList a (a ': as) where
-	homoListToList (x :...: xs) = x : homoListToList xs
+heteroVarListMap ::
+	(forall s . t s -> t' s) -> HeteroParList t ss -> HeteroParList t' ss
+heteroVarListMap f = \case
+	HNil -> HNil
+	x :...: xs -> f x :...: heteroVarListMap f xs
 
 heteroVarListReplicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
@@ -133,9 +134,3 @@ heteroVarListReplicateM :: Monad m =>
 heteroVarListReplicateM 0 _ f = f HNil
 heteroVarListReplicateM n x f = x \v -> heteroVarListReplicateM (n - 1) x \vs ->
 	f $ v :...: vs
-
-heteroVarListMap ::
-	(forall s . t s -> t' s) -> HeteroParList t ss -> HeteroParList t' ss
-heteroVarListMap f = \case
-	HNil -> HNil
-	x :...: xs -> f x :...: heteroVarListMap f xs
