@@ -32,7 +32,7 @@ module Gpu.Vulkan.Descriptor (
 import GHC.TypeLits
 import Data.Kind
 import Data.Kind.Object
-import Data.HeteroList
+import Data.HeteroParList
 
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Descriptor.Middle as M

@@ -24,7 +24,7 @@ import Foreign.Storable
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import Gpu.Vulkan.Enum

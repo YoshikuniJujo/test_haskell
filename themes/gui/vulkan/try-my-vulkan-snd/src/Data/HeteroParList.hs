@@ -9,7 +9,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.HeteroList (
+module Data.HeteroParList (
 
 	-- * HeteroList
 
@@ -33,7 +33,7 @@ module Data.HeteroList (
 
 	heteroVarListIndex, homoListIndex,
 
-	-- * Others
+	-- * Map and ReplicateM
 
 	heteroVarListMap, heteroVarListReplicateM,
 

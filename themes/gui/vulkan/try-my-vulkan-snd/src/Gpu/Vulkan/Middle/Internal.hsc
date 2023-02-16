@@ -32,7 +32,7 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
 import Data.TypeLevel qualified as TL
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import Data.Color.Internal
 

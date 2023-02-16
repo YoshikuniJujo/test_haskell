@@ -30,7 +30,7 @@ import Control.Monad
 import Data.Kind
 import Data.TypeLevel
 import Data.IORef
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import Data.Int
 

@@ -17,7 +17,7 @@ import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 
 import qualified Data.ByteString as BS
 

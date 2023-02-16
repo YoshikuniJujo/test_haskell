@@ -25,7 +25,7 @@ module Gpu.Vulkan.CommandBuffer (
 import Foreign.Storable
 import Control.Exception
 import Data.Kind
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import qualified TypeLevel.List as TpLvlLst

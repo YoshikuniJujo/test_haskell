@@ -16,7 +16,7 @@ module Gpu.Vulkan.Framebuffer (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import Gpu.Vulkan.Framebuffer.Enum

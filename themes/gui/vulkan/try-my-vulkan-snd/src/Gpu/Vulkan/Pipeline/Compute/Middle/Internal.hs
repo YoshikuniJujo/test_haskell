@@ -21,7 +21,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Maybe
 import Data.Int
 

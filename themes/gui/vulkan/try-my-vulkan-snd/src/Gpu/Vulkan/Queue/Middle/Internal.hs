@@ -14,7 +14,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel hiding (length)
-import Data.HeteroList
+import Data.HeteroParList
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Exception.Middle.Internal

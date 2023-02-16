@@ -22,7 +22,7 @@ import Data.Bits
 import Data.Bits.Utils
 import Data.List.Length
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import System.Environment
 

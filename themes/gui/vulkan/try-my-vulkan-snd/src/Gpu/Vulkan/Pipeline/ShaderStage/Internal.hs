@@ -13,7 +13,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 
 import Shaderc.EnumAuto
 

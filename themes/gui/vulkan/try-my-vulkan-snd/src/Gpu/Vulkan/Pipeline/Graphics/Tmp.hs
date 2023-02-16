@@ -19,7 +19,7 @@ import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import Data.Int
 

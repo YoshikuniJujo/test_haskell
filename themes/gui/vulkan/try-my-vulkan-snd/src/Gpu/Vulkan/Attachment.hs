@@ -8,7 +8,7 @@ module Gpu.Vulkan.Attachment (
 	DescriptionNew(..), DescriptionsFromNew(..),
 	Reference(..), A ) where
 
-import Data.HeteroList
+import Data.HeteroParList
 
 import Gpu.Vulkan.Attachment.Enum
 

@@ -27,7 +27,7 @@ module Foreign.Storable.Hetero (
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Data.Kind
-import Data.HeteroList
+import Data.HeteroParList
 
 -- Size and Alignment
 

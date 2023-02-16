@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.RenderPass.Type where
 
-import Data.HeteroList
+import Data.HeteroParList
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Core

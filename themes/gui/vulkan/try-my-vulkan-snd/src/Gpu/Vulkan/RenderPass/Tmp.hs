@@ -6,7 +6,7 @@
 module Gpu.Vulkan.RenderPass.Tmp where
 
 import Foreign.Storable.PeekPoke
-import Data.HeteroList
+import Data.HeteroParList
 
 import Gpu.Vulkan.RenderPass.Enum
 

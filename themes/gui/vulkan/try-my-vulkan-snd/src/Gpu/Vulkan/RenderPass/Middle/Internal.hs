@@ -14,7 +14,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Data.TypeLevel qualified as TL
-import Data.HeteroList
+import Data.HeteroParList
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Core (Rect2d)

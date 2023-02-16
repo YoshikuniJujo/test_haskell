@@ -9,7 +9,7 @@ module Gpu.Vulkan.Specialization.Middle.Internal (infoToCore') where
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable.Hetero hiding (alignments)
-import Data.HeteroList
+import Data.HeteroParList
 
 import qualified Gpu.Vulkan.Specialization.Core as C
 

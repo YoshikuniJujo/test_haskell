@@ -9,7 +9,7 @@
 module Gpu.Vulkan.Khr where
 
 import Foreign.Storable.PeekPoke
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import qualified Data.Text as T

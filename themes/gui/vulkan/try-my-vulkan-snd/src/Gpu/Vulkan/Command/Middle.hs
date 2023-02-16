@@ -40,7 +40,7 @@ import Foreign.Storable.PeekPoke (WithPoked)
 import Foreign.Storable.Hetero
 import Control.Arrow
 import Control.Monad.Cont
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import Data.Int
 import Data.IORef

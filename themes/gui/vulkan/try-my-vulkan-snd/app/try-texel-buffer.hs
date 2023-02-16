@@ -20,7 +20,7 @@ import Data.Default
 import Data.Bits
 import Data.List.Length
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import qualified Data.Vector.Storable as V

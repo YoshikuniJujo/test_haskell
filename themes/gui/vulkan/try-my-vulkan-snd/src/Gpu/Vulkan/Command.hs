@@ -18,7 +18,7 @@ import Control.Exception
 import Data.Kind
 import Data.Kind.Object
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import Data.Int
 import TypeLevel.List

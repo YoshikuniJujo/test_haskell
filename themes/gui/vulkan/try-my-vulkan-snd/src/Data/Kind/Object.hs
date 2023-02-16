@@ -20,7 +20,7 @@ import Data.Foldable
 import Data.Traversable
 import Data.MonoTraversable
 import Data.Proxy
-import Data.HeteroList
+import Data.HeteroParList
 
 import qualified Data.Sequences as Seq
 

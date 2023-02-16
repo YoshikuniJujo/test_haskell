@@ -18,7 +18,7 @@ import Data.Kind
 import Data.Kind.Object hiding (objectLength)
 import Data.Proxy
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import Gpu.Vulkan.Enum hiding (ObjectType)

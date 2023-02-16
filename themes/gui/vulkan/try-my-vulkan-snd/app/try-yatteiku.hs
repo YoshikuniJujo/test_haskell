@@ -19,7 +19,7 @@ import Data.Maybe
 import Data.List
 import Data.Array
 import Data.TypeLevel
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 import Data.Color
 import Codec.Picture

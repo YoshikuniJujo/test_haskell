@@ -35,7 +35,7 @@ library
       Codec.Wavefront.Read
       Codec.Wavefront.ReadOld
       Data.Bits.Utils
-      Data.HeteroList
+      Data.HeteroParList
       Data.Kind.Object
       Data.Traversable.Utils
       Data.TypeLevel

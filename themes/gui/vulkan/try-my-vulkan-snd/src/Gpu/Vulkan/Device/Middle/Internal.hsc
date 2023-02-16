@@ -29,7 +29,7 @@ import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.List
-import Data.HeteroList
+import Data.HeteroParList
 import Data.Word
 
 import qualified Data.Text as T
