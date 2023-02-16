@@ -74,7 +74,7 @@ presentInfoFromNew PresentInfoNew {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores = wsmps,
 	presentInfoSwapchainImageIndices =
-		heteroVarListMap swapchainImageIndexFromNew sciis }
+		heteroParListMap swapchainImageIndexFromNew sciis }
 
 data PresentInfo n sws sscs = PresentInfo {
 	presentInfoNext :: Maybe n,
@@ -91,9 +91,9 @@ presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n
 presentInfoFromMiddle PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
-		heteroVarListToList (\(Semaphore.S s) -> s) -> wss,
+		heteroParListToList (\(Semaphore.S s) -> s) -> wss,
 	presentInfoSwapchainImageIndices =
-		heteroVarListToList swapchainImageIndexToMiddle -> sciis
+		heteroParListToList swapchainImageIndexToMiddle -> sciis
 	} = M.PresentInfo {
 		M.presentInfoNext = mnxt,
 		M.presentInfoWaitSemaphores = wss,

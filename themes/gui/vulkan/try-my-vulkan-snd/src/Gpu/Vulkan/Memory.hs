@@ -50,7 +50,7 @@ readM'' (M ib m) = (, m) <$> readIORef ib
 
 writeMBinded' :: M s sibfoss ->
 	HeteroParList (V2 (ImageBufferBinded sm)) sibfoss -> IO ()
-writeMBinded' (M rib _r) ibs = writeIORef rib (heteroVarListMap imageBufferFromBinded ibs)
+writeMBinded' (M rib _r) ibs = writeIORef rib (heteroParListMap imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: V2 (ImageBufferBinded sm) sibfos -> V2 ImageBuffer sibfos
 imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Image.INew i
@@ -116,12 +116,12 @@ getMemoryRequirementsBinded' dvc (V2 bi) = getMemoryRequirementsBinded dvc bi
 getMemoryRequirementsList :: Device.D sd ->
 	HeteroParList (V2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsList dvc bis =
-	heteroVarListToListM (getMemoryRequirements' dvc) bis
+	heteroParListToListM (getMemoryRequirements' dvc) bis
 
 getMemoryRequirementsListBinded :: Device.D sd ->
 	HeteroParList (V2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsListBinded dvc bis =
-	heteroVarListToListM (getMemoryRequirementsBinded' dvc) bis
+	heteroParListToListM (getMemoryRequirementsBinded' dvc) bis
 
 allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroParList (V2 ImageBuffer) sibfoss ->

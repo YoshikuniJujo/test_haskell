@@ -146,14 +146,14 @@ instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
 	pipelineListToHetero (p : ps) = Pipeline p :...: pipelineListToHetero ps
 
 class HeteroParListMapM'' k ss fss where
-	heteroVarListMapM'' :: Applicative m =>
+	heteroParListMapM'' :: Applicative m =>
 		(forall a b (c :: k) d . t '(a, b, c, d) -> m (t' a)) ->
 		HeteroParList t ss -> m (HeteroParList t' fss)
 
 instance HeteroParListMapM'' k '[] '[] where
-	heteroVarListMapM'' _ HNil = pure HNil
+	heteroParListMapM'' _ HNil = pure HNil
 
 instance HeteroParListMapM'' k ss fss =>
 	HeteroParListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where
-	heteroVarListMapM'' f (x :...: xs) =
-		(:...:) <$> f x <*> heteroVarListMapM'' f xs
+	heteroParListMapM'' f (x :...: xs) =
+		(:...:) <$> f x <*> heteroParListMapM'' f xs

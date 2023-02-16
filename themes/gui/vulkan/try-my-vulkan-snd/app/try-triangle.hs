@@ -935,11 +935,11 @@ data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
-	heteroVarListReplicateM maxFramesInFlight
+	heteroParListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
-	heteroVarListReplicateM maxFramesInFlight
+	heteroParListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
-	heteroVarListReplicateM maxFramesInFlight
+	heteroParListReplicateM maxFramesInFlight
 		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
@@ -1022,15 +1022,15 @@ drawFrame :: forall sfs sd ssc sr sg sm sb nm scb ssos vss . (VssList vss) =>
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
 	HeteroParList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
-	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
-	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex iffs cf \(id &&& Singleton -> (iff, siff)) -> do
+	heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
+	heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	heteroParListIndex iffs cf \(id &&& Singleton -> (iff, siff)) -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	heteroVarListIndex fbs imgIdx \fb ->
+	heteroParListIndex fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]

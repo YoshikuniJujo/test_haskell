@@ -272,7 +272,7 @@ submitInfoToCore SubmitInfo {
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
 	submitInfoCommandBuffers = (length &&& id)
-		. heteroVarListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
+		. heteroParListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
 	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss) } f =
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->

@@ -1436,11 +1436,11 @@ data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
-	heteroVarListReplicateM maxFramesInFlight
+	heteroParListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
-	heteroVarListReplicateM maxFramesInFlight
+	heteroParListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
-	heteroVarListReplicateM maxFramesInFlight
+	heteroParListReplicateM maxFramesInFlight
 		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
@@ -1708,10 +1708,10 @@ drawFrame ::
 	HeteroParList (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
-	heteroVarListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
-	heteroVarListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroVarListIndex iffs cf \(id &&& Singleton -> (iff, siff)) ->
-	heteroVarListIndex cmms cf \(MemoryGcd cmm) ->
+	heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
+	heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	heteroParListIndex iffs cf \(id &&& Singleton -> (iff, siff)) ->
+	heteroParListIndex cmms cf \(MemoryGcd cmm) ->
 	($ homoListIndex cmds cf) \cmd -> do
 	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom 256 GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
 	if cf == 0
@@ -1726,7 +1726,7 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	heteroVarListIndex fbs imgIdx \fb -> case sdrn `mod` 2 of
+	heteroParListIndex fbs imgIdx \fb -> case sdrn `mod` 2 of
 		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
 		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 		_ -> error "never occur"

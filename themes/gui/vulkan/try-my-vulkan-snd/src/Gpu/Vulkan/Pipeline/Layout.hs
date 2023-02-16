@@ -51,21 +51,21 @@ unLayout :: Layout '(s, bts) -> Descriptor.Set.Layout.L s bts
 unLayout (V2 l) = l
 
 class HeteroParListToList' sbtss where
-	heteroVarListToList' ::
+	heteroParListToList' ::
 		(forall (s :: Type) (bts :: [Descriptor.Set.Layout.BindingType]) . t '(s, bts) -> t') ->
 		HeteroParList t sbtss -> [t']
 
-instance HeteroParListToList' '[] where heteroVarListToList' _ HNil = []
+instance HeteroParListToList' '[] where heteroParListToList' _ HNil = []
 
 instance HeteroParListToList' sbtss => HeteroParListToList' ('(s, bts) ': sbtss) where
-	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
+	heteroParListToList' f (x :...: xs) = f x : heteroParListToList' f xs
 
 createInfoToMiddle ::
 	HeteroParListToList' sbtss => CreateInfo n sbtss -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
-	createInfoSetLayouts = heteroVarListToList'
+	createInfoSetLayouts = heteroParListToList'
 		$ Descriptor.Set.Layout.unL . unLayout -> sls,
 	createInfoPushConstantRanges = pcrs } = M.CreateInfo {
 		M.createInfoNext = mnxt,

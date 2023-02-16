@@ -78,7 +78,7 @@ allocateNew ::
 	(forall s . HeteroParList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
-	(f . heteroVarListMap C)
+	(f . heteroParListMap C)
 
 allocate :: Storable n =>
 	Device.D sd -> AllocateInfo n sp ->
@@ -101,7 +101,7 @@ allocateNewM dvc ai = listToHeteroParList CC <$> M.allocate dvc (allocateInfoFro
 
 freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList CC vss -> IO ()
 freeCsNew dvc cp cs =
-	M.freeCs dvc cp (heteroVarListToList (\(CC cb) -> cb) cs)
+	M.freeCs dvc cp (heteroParListToList (\(CC cb) -> cb) cs)
 
 data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
 	allocateInfoNextNewM :: Maybe n,

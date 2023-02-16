@@ -91,14 +91,14 @@ deriving instance Show (DescriptorSet.S sd sp slbts) =>
 	Show (DescriptorSet sd '(sp, slbts))
 
 class HeteroParListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
-	heteroVarListToList' :: (forall spslbts . t spslbts -> t') ->
+	heteroParListToList' :: (forall spslbts . t spslbts -> t') ->
 		HeteroParList t spslbtss -> [t']
 
-instance HeteroParListToList' '[] where heteroVarListToList' _ HNil = []
+instance HeteroParListToList' '[] where heteroParListToList' _ HNil = []
 
 instance HeteroParListToList' spslbtss =>
 	HeteroParListToList' (spslbts ': spslbtss) where
-	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
+	heteroParListToList' f (x :...: xs) = f x : heteroParListToList' f xs
 
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
 	(SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss) =>
@@ -108,7 +108,7 @@ bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
 bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
-		(heteroVarListToList'
+		(heteroParListToList'
 			(\(DescriptorSet (DescriptorSet.S s)) -> s)
 			dss)
 		dosts

@@ -78,7 +78,7 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoNext = mnxt,
 		M.allocateInfoDescriptorPool = dp,
 		M.allocateInfoSetLayouts =
-			heteroVarListToList layoutToMiddle dscsls }
+			heteroParListToList layoutToMiddle dscsls }
 
 newtype S sd sp (slbts :: LayoutArg) = S M.D
 

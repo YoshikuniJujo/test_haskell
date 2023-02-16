@@ -31,7 +31,7 @@ data SemaphorePipelineStageFlags ss =
 semaphorePipelineStageFlagsToMiddle ::
 	HeteroParList SemaphorePipelineStageFlags sss ->
 	[(Semaphore.M.S, Pipeline.StageFlags)]
-semaphorePipelineStageFlagsToMiddle = heteroVarListToList
+semaphorePipelineStageFlagsToMiddle = heteroParListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
 data SubmitInfo n sss svss ssss = SubmitInfo {
@@ -72,7 +72,7 @@ submitInfoToMiddle SubmitInfo {
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
 	submitInfoCommandBuffers = commandBufferListToMiddle -> cbs,
 	submitInfoSignalSemaphores =
-		heteroVarListToList (\(Semaphore.S s) -> s) -> ssmprs
+		heteroParListToList (\(Semaphore.S s) -> s) -> ssmprs
 	} = M.SubmitInfo {
 	M.submitInfoNext = mnxt,
 	M.submitInfoWaitSemaphoreDstStageMasks = wsdsms,
