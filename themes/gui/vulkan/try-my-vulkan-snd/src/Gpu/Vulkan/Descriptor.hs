@@ -53,7 +53,7 @@ data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 
 type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
 
-deriving instance Show (HeteroVarList ObjectLength objs) =>
+deriving instance Show (HeteroParList ObjectLength objs) =>
 	Show (BufferInfo '(sb, sm, nm, objs, obj))
 
 bufferInfoToMiddle :: forall sb sm nm objs obj . Offset obj objs =>

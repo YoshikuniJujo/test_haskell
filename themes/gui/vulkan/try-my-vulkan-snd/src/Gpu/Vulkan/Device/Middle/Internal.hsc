@@ -62,12 +62,12 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo n ns = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueCreateInfos :: HeteroVarList QueueCreateInfo ns,
+	createInfoQueueCreateInfos :: HeteroParList QueueCreateInfo ns,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
-deriving instance (Show n, Show (HeteroVarList QueueCreateInfo ns)) =>
+deriving instance (Show n, Show (HeteroParList QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
 createInfoToCore :: (WithPoked n, WithPokedToListM ns) =>

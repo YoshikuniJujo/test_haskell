@@ -50,7 +50,7 @@ data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts'
 		createInfoNext :: Maybe n,
 		createInfoFlags :: CreateFlags,
 		createInfoStages ::
-			HeteroVarList (V6 ShaderStage.CreateInfoNew) nnskndscdvss,
+			HeteroParList (V6 ShaderStage.CreateInfoNew) nnskndscdvss,
 		createInfoVertexInputState ::
 			Maybe (V3 VertexInputState.CreateInfo nvsts),
 		createInfoInputAssemblyState ::
@@ -124,12 +124,12 @@ class CreateInfoListToMiddle ss where
 		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))]
 
 	createInfoListToMiddle :: Device.D sd ->
-		HeteroVarList (V14 CreateInfo) ss ->
-		IO (HeteroVarList (V12 T.CreateInfo) (MiddleVars ss))
+		HeteroParList (V14 CreateInfo) ss ->
+		IO (HeteroParList (V12 T.CreateInfo) (MiddleVars ss))
 
 	destroyShaderStages :: Device.D sd ->
-		HeteroVarList (V12 T.CreateInfo) (MiddleVars ss) ->
-		HeteroVarList (V14 CreateInfo) ss -> IO ()
+		HeteroParList (V12 T.CreateInfo) (MiddleVars ss) ->
+		HeteroParList (V14 CreateInfo) ss -> IO ()
 
 instance CreateInfoListToMiddle '[] where
 	type MiddleVars '[] = '[]
@@ -155,8 +155,8 @@ instance (
 		destroyShaderStages dvc cims cis
 
 class V2g ss where
-	v2g :: HeteroVarList (V2 M.G) ss -> HeteroVarList (V2 (G sg)) ss
-	g2v :: HeteroVarList (V2 (G sg)) ss -> HeteroVarList (V2 M.G) ss
+	v2g :: HeteroParList (V2 M.G) ss -> HeteroParList (V2 (G sg)) ss
+	g2v :: HeteroParList (V2 (G sg)) ss -> HeteroParList (V2 M.G) ss
 
 instance V2g '[] where v2g HVNil = HVNil; g2v HVNil = HVNil
 
@@ -172,9 +172,9 @@ createGs :: (
 	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	V2g (T.GListVars (MiddleVars ss)) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
-	HeteroVarList (V14 CreateInfo) ss ->
+	HeteroParList (V14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall sg . HeteroVarList (V2 (G sg)) (T.GListVars (MiddleVars ss)) ->
+	(forall sg . HeteroParList (V2 (G sg)) (T.GListVars (MiddleVars ss)) ->
 		IO a) -> IO a
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddle d cis >>= \cis' ->
@@ -188,9 +188,9 @@ recreateGs :: (
 	Pokable c, Pokable d,
 	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	V2g (T.GListVars (MiddleVars ss))) =>
-	Device.D sd -> Maybe (Cache.C s) -> HeteroVarList (V14 CreateInfo) ss ->
+	Device.D sd -> Maybe (Cache.C s) -> HeteroParList (V14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroVarList (V2 (G sg)) (T.GListVars (MiddleVars ss)) -> IO ()
+	HeteroParList (V2 (G sg)) (T.GListVars (MiddleVars ss)) -> IO ()
 recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddle d cis
 	T.recreateGs dvc mc cis' macc macd $ g2v gpls

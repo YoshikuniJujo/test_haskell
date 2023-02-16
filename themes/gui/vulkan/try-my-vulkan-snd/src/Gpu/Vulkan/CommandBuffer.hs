@@ -73,9 +73,9 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoLevelNewM = lvl }
 
 allocateNew ::
-	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
+	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroParList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
-	(forall s . HeteroVarList (C s) vss -> IO a) -> IO a
+	(forall s . HeteroParList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
 	(f . heteroVarListMap C)
@@ -95,11 +95,11 @@ reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
-	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroVarList vss) =>
-	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroVarList CC vss)
-allocateNewM dvc ai = listToHeteroVarList CC <$> M.allocate dvc (allocateInfoFromNew ai)
+	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroParList vss) =>
+	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList CC vss)
+allocateNewM dvc ai = listToHeteroParList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
-freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroVarList CC vss -> IO ()
+freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList CC vss -> IO ()
 freeCsNew dvc cp cs =
 	M.freeCs dvc cp (heteroVarListToList (\(CC cb) -> cb) cs)
 

@@ -90,20 +90,20 @@ data DescriptorSet sd spslbts where
 deriving instance Show (DescriptorSet.S sd sp slbts) =>
 	Show (DescriptorSet sd '(sp, slbts))
 
-class HeteroVarListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
+class HeteroParListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
 	heteroVarListToList' :: (forall spslbts . t spslbts -> t') ->
-		HeteroVarList t spslbtss -> [t']
+		HeteroParList t spslbtss -> [t']
 
-instance HeteroVarListToList' '[] where heteroVarListToList' _ HVNil = []
+instance HeteroParListToList' '[] where heteroVarListToList' _ HVNil = []
 
-instance HeteroVarListToList' spslbtss =>
-	HeteroVarListToList' (spslbts ': spslbtss) where
+instance HeteroParListToList' spslbtss =>
+	HeteroParListToList' (spslbts ': spslbtss) where
 	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
 
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
-	(SetPos (MapSnd spslbtss) sbtss, HeteroVarListToList' spslbtss) =>
+	(SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss) =>
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
-	Pipeline.Layout.L s sbtss foo -> HeteroVarList (DescriptorSet sd) spslbtss ->
+	Pipeline.Layout.L s sbtss foo -> HeteroParList (DescriptorSet sd) spslbtss ->
 	[Word32] -> IO ()
 bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
@@ -123,7 +123,7 @@ type family MapForth tpl where
 
 bindVertexBuffers :: forall sc vs smsbvs .
 	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
-	CommandBuffer.C sc vs -> HeteroVarList (V4 Buffer.IndexedList) smsbvs ->
+	CommandBuffer.C sc vs -> HeteroParList (V4 Buffer.IndexedList) smsbvs ->
 	IO ()
 bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
@@ -163,9 +163,9 @@ pipelineBarrier :: (
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
-	DependencyFlags -> HeteroVarList Memory.M.Barrier ns ->
-	HeteroVarList (V5 Buffer.MemoryBarrier) nsmsbnmobjs ->
-	HeteroVarList (V5 Image.MemoryBarrier) nsismnmfmts -> IO ()
+	DependencyFlags -> HeteroParList Memory.M.Barrier ns ->
+	HeteroParList (V5 Buffer.MemoryBarrier) nsmsbnmobjs ->
+	HeteroParList (V5 Image.MemoryBarrier) nsismnmfmts -> IO ()
 pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.memoryBarrierListToMiddle bmbs)
@@ -175,7 +175,7 @@ copyBufferToImage :: (
 	ImageCopyListToMiddle objs img inms ) =>
 	CommandBuffer.C sc vs -> Buffer.Binded sm sb nm objs ->
 	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
-	HeteroVarList (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
+	HeteroParList (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
@@ -186,7 +186,7 @@ copyImageToBuffer :: (
 	CommandBuffer.C sc vs ->
 	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
-	HeteroVarList (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
+	HeteroParList (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
 copyImageToBuffer (CommandBuffer.C cb)
 	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
@@ -195,7 +195,7 @@ copyImageToBuffer (CommandBuffer.C cb)
 class ImageCopyListToMiddle objs (img :: Type) (inms :: [Symbol]) where
 	imageCopyListToMiddle ::
 		Buffer.Binded sm sb nm objs ->
-		HeteroVarList (Buffer.ImageCopy img) inms ->
+		HeteroParList (Buffer.ImageCopy img) inms ->
 		[Buffer.M.ImageCopy]
 
 instance ImageCopyListToMiddle objs img '[] where

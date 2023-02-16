@@ -32,17 +32,17 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
 data CreateInfo n sbtss = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags,
-	createInfoSetLayouts :: HeteroVarList Layout sbtss,
+	createInfoSetLayouts :: HeteroParList Layout sbtss,
 	createInfoPushConstantRanges :: [PushConstant.M.Range] }
 
 data CreateInfoNew n sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: M.CreateFlags,
-	createInfoSetLayoutsNew :: HeteroVarList Layout sbtss }
+	createInfoSetLayoutsNew :: HeteroParList Layout sbtss }
 
 deriving instance (
 	Show n,
-	Show (HeteroVarList Layout sbtss) ) =>
+	Show (HeteroParList Layout sbtss) ) =>
 	Show (CreateInfo n sbtss)
 
 type Layout = V2 Descriptor.Set.Layout.L
@@ -50,18 +50,18 @@ type Layout = V2 Descriptor.Set.Layout.L
 unLayout :: Layout '(s, bts) -> Descriptor.Set.Layout.L s bts
 unLayout (V2 l) = l
 
-class HeteroVarListToList' sbtss where
+class HeteroParListToList' sbtss where
 	heteroVarListToList' ::
 		(forall (s :: Type) (bts :: [Descriptor.Set.Layout.BindingType]) . t '(s, bts) -> t') ->
-		HeteroVarList t sbtss -> [t']
+		HeteroParList t sbtss -> [t']
 
-instance HeteroVarListToList' '[] where heteroVarListToList' _ HVNil = []
+instance HeteroParListToList' '[] where heteroVarListToList' _ HVNil = []
 
-instance HeteroVarListToList' sbtss => HeteroVarListToList' ('(s, bts) ': sbtss) where
+instance HeteroParListToList' sbtss => HeteroParListToList' ('(s, bts) ': sbtss) where
 	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs
 
 createInfoToMiddle ::
-	HeteroVarListToList' sbtss => CreateInfo n sbtss -> M.CreateInfo n
+	HeteroParListToList' sbtss => CreateInfo n sbtss -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -91,14 +91,14 @@ createInfoFromNew CreateInfoNew {
 createInfoToMiddleNew :: (
 	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
 	PushConstant.RangesToMiddle whole ranges,
-	HeteroVarListToList' sbtss ) =>
+	HeteroParListToList' sbtss ) =>
 	CreateInfoNew n sbtss pcl -> M.CreateInfo n
 createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 
 createNew :: (
 	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
 	PushConstant.RangesToMiddle whole ranges,
-	Pokable n, Pokable c, Pokable d, HeteroVarListToList' sbtss ) =>
+	Pokable n, Pokable c, Pokable d, HeteroParListToList' sbtss ) =>
 	Device.D sd -> CreateInfoNew n sbtss pcl ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L s sbtss whole -> IO a) -> IO a

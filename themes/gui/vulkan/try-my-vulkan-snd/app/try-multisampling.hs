@@ -405,7 +405,7 @@ querySwapChainSupport dvc sfc = SwapChainSupportDetails
 createLogicalDevice :: Vk.PhDvc.P -> QueueFamilyIndices -> (forall sd .
 		Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createLogicalDevice phdvc qfis f =
-	mkHeteroVarList @() queueCreateInfos uniqueQueueFamilies \qs ->
+	mkHeteroParList @() queueCreateInfos uniqueQueueFamilies \qs ->
 	let	createInfo = Vk.Dvc.M.CreateInfo {
 			Vk.Dvc.M.createInfoNext = Nothing,
 			Vk.Dvc.M.createInfoFlags = def,
@@ -428,10 +428,10 @@ createLogicalDevice phdvc qfis f =
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
-mkHeteroVarList :: Storable' s => (a -> t s) -> [a] ->
-	(forall ss . WithPokedToListM ss => HeteroVarList t ss -> b) -> b
-mkHeteroVarList _k [] f = f HVNil
-mkHeteroVarList k (x : xs) f = mkHeteroVarList k xs \xs' -> f (k x :...: xs')
+mkHeteroParList :: Storable' s => (a -> t s) -> [a] ->
+	(forall ss . WithPokedToListM ss => HeteroParList t ss -> b) -> b
+mkHeteroParList _k [] f = f HVNil
+mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :...: xs')
 
 createSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -527,14 +527,14 @@ chooseSwapExtent win caps
 
 createImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.BindedNew ss ss nm fmt] ->
-	(forall si . HeteroVarList (Vk.ImgVw.INew fmt nm) si -> IO a) -> IO a
+	(forall si . HeteroParList (Vk.ImgVw.INew fmt nm) si -> IO a) -> IO a
 createImageViews _dvc [] f = f HVNil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci Vk.Img.AspectColorBit 1 \sciv ->
 	createImageViews dvc scis \scivs -> f $ sciv :...: scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
-	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
+	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroParList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc [] HVNil = pure ()
 recreateImageViews dvc (sci : scis) (iv :...: ivs) =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil nil iv >>
@@ -780,7 +780,7 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
 		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 
-shaderStages :: HeteroVarList (V6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+shaderStages :: HeteroParList (V6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
 	'((), (), 'GlslVertexShader, (), (), '[]),
 	'((), (), 'GlslFragmentShader, (), (), '[]) ]
 shaderStages = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HVNil
@@ -872,11 +872,11 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew fmt nm) sis ->
+	Vk.RndrPass.R sr -> HeteroParList (Vk.ImgVw.INew fmt nm) sis ->
 	Vk.ImgVw.INew fmt clrnm slrsiv ->
 	Vk.ImgVw.INew dptfmt dptnm siv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroVarList Vk.Frmbffr.F sfs -> IO a) -> IO a
+		HeteroParList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HVNil _ _ f = f HVNil
 createFramebuffers dvc sce rp (iv :...: ivs) clriv dptiv f =
 	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv clriv dptiv) nil nil \fb ->
@@ -884,10 +884,10 @@ createFramebuffers dvc sce rp (iv :...: ivs) clriv dptiv f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
+		Vk.RndrPass.R sr -> HeteroParList (Vk.ImgVw.INew scfmt nm) sis ->
 		Vk.ImgVw.INew scfmt clrnm clrsdiv ->
 		Vk.ImgVw.INew dptfmt dptnm sdiv ->
-		HeteroVarList Vk.Frmbffr.F sfs -> IO ()
+		HeteroParList Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
 	recreateFramebuffers _dvc _sce _rp HVNil _ _ HVNil = pure ()
@@ -1550,18 +1550,18 @@ createUniformBuffers :: forall ssmp siv sd sdsc a .
 		'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
 	Int -> (forall slyts smsbs . (
-		ListToHeteroVarList slyts,
+		ListToHeteroParList slyts,
 		Update smsbs slyts ssmp siv,
 		DescriptorSetIndex slyts sdsc ) =>
-		HeteroVarList Vk.DscSet.Layout slyts ->
-		HeteroVarList BindedUbo smsbs ->
-		HeteroVarList MemoryUbo smsbs -> IO a) -> IO a
+		HeteroParList Vk.DscSet.Layout slyts ->
+		HeteroParList BindedUbo smsbs ->
+		HeteroParList MemoryUbo smsbs -> IO a) -> IO a
 createUniformBuffers _ _ _ 0 f = f HVNil HVNil HVNil
 createUniformBuffers ph dvc dscslyt n f =
 	createUniformBuffer1 ph dvc \(b :: BindedUbo smsb) m ->
-		createUniformBuffers @ssmp @siv ph dvc dscslyt (n - 1) \ls (bs :: HeteroVarList BindedUbo smsbs) ms -> f
+		createUniformBuffers @ssmp @siv ph dvc dscslyt (n - 1) \ls (bs :: HeteroParList BindedUbo smsbs) ms -> f
 			(Vk.DscSet.Layout dscslyt :...: ls)
-			(b :...: bs :: HeteroVarList BindedUbo (smsb ': smsbs))
+			(b :...: bs :: HeteroParList BindedUbo (smsb ': smsbs))
 			(m :...: ms)
 
 type family MapFst abs where
@@ -1603,11 +1603,11 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
 
-createDescriptorSets :: (ListToHeteroVarList ss, Update smsbs ss ssmp siv) =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroVarList BindedUbo smsbs ->
-	HeteroVarList Vk.DscSet.Layout ss ->
+createDescriptorSets :: (ListToHeteroParList ss, Update smsbs ss ssmp siv) =>
+	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList BindedUbo smsbs ->
+	HeteroParList Vk.DscSet.Layout ss ->
 	Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv -> Vk.Smplr.S ssmp ->
-	IO (HeteroVarList (Vk.DscSet.S sd sp) ss)
+	IO (HeteroParList (Vk.DscSet.S sd sp) ss)
 createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp = do
 	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
 	update dvc ubs dscss tximgvw txsmp
@@ -1651,8 +1651,8 @@ descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 class Update smsbs slbtss ssmp siv where
 	update ::
 		Vk.Dvc.D sd ->
-		HeteroVarList BindedUbo smsbs ->
-		HeteroVarList (Vk.DscSet.S sd sp) slbtss ->
+		HeteroParList BindedUbo smsbs ->
+		HeteroParList (Vk.DscSet.S sd sp) slbtss ->
 		Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv ->
 		Vk.Smplr.S ssmp ->
 		IO ()
@@ -1716,7 +1716,7 @@ copyBuffer dvc gq cp src dst = do
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb vss . VssList vss =>
-		HeteroVarList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
+		HeteroParList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 	Vk.CmdBffr.allocateNew @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
@@ -1729,7 +1729,7 @@ createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::
-		HeteroVarList (Vk.CmdBffr.C scb) vss -> Int ->
+		HeteroParList (Vk.CmdBffr.C scb) vss -> Int ->
 		Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
 
 instance VssList '[] where
@@ -1741,7 +1741,7 @@ instance VssList vss =>
 	vssListIndex (_ :...: cbs) n = vssListIndex cbs (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
-	(TpLvlLst.Length [Type] vss, ListToHeteroVarList vss, VssList vss) =>
+	(TpLvlLst.Length [Type] vss, ListToHeteroParList vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
@@ -1752,9 +1752,9 @@ addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: HeteroVarList Vk.Semaphore.S siass,
-		renderFinishedSemaphores :: HeteroVarList Vk.Semaphore.S srfss,
-		inFlightFences :: HeteroVarList Vk.Fence.F sfss } ->
+		imageAvailableSemaphores :: HeteroParList Vk.Semaphore.S siass,
+		renderFinishedSemaphores :: HeteroParList Vk.Semaphore.S srfss,
+		inFlightFences :: HeteroParList Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
 createSyncObjects ::
@@ -1817,22 +1817,22 @@ mainLoop :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> Vk.C.Extent2d ->
-	HeteroVarList (Vk.ImgVw.INew scfmt nm) ss ->
+	HeteroParList (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroParList Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources scfmt clrnm  clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List 256 Word32 ""] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss ->
+	HeteroParList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	HeteroVarList BindedUbo smsbs ->
-	HeteroVarList MemoryUbo smsbs ->
-	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
+	HeteroParList BindedUbo smsbs ->
+	HeteroParList MemoryUbo smsbs ->
+	HeteroParList (Vk.DscSet.S sd sp) slyts ->
 	UTCTime ->
 	IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp crsrcs drsrcs idcs vb ib cbs iasrfsifs ubs ums dscss tm0 = do
@@ -1852,22 +1852,22 @@ runLoop :: (
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
-	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
+	HeteroParList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroParList Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources scfmt clrnm  clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List 256 Word32 ""] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss ->
+	HeteroParList (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
-	HeteroVarList BindedUbo smsbs ->
-	HeteroVarList MemoryUbo smsbs ->
-	HeteroVarList (Vk.DscSet.S sd sp) slyts ->
+	HeteroParList BindedUbo smsbs ->
+	HeteroParList MemoryUbo smsbs ->
+	HeteroParList (Vk.DscSet.S sd sp) slyts ->
 	Float ->
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
@@ -1888,14 +1888,14 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroParList Vk.Frmbffr.F sfs ->
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List 256 Word32 ""] ->
-	HeteroVarList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
-	HeteroVarList BindedUbo smsbs ->
-	HeteroVarList MemoryUbo smsbs ->
-	HeteroVarList (Vk.DscSet.S sdsc' sp) slyts ->
+	HeteroParList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
+	HeteroParList BindedUbo smsbs ->
+	HeteroParList MemoryUbo smsbs ->
+	HeteroParList (Vk.DscSet.S sdsc' sp) slyts ->
 	Float ->
 	Int -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
@@ -1933,7 +1933,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
 	where	cb = cbs `vssListIndex` cf
 
 class DescriptorSetIndex aus s where
-	descriptorSetIndex :: HeteroVarList (Vk.DscSet.S sdsc sp) aus -> Int ->
+	descriptorSetIndex :: HeteroParList (Vk.DscSet.S sdsc sp) aus -> Int ->
 		(Vk.DscSet.S sdsc sp (AtomUbo s) -> a) -> a
 
 instance DescriptorSetIndex '[] s where
@@ -1974,12 +1974,12 @@ catchAndRecreate :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
+	HeteroParList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroParList Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources scfmt clrnm  clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -2000,12 +2000,12 @@ recreateSwapChainEtc :: (
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt ->
-	HeteroVarList (Vk.ImgVw.INew scfmt nm) sis ->
+	HeteroParList (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] ->
-	HeteroVarList Vk.Frmbffr.F sfs ->
+	HeteroParList Vk.Frmbffr.F sfs ->
 	Vk.CmdPool.C sc ->
 	ColorResources scfmt clrnm  clrsi clrsm clrsiv ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->

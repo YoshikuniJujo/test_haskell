@@ -221,7 +221,7 @@ storageBufferNew3 phdvc dvc x y z f =
 class StorageBufferNews f a where
 	type Vectors f :: [Type]
 	storageBufferNews :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
-		HeteroVarList V.Vector (Vectors f) -> f -> IO a
+		HeteroParList V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[ 'List 256 w ""] ->

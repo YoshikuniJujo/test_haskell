@@ -48,8 +48,8 @@ deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
 class Offset (obj :: Object) objs where
-	offset :: Int -> HeteroVarList ObjectLength objs -> Int
-	range :: HeteroVarList ObjectLength objs -> Int
+	offset :: Int -> HeteroParList ObjectLength objs -> Int
+	range :: HeteroParList ObjectLength objs -> Int
 
 instance SizeAlignment obj => Offset obj (obj ': objs) where
 	offset ofst _ = ((ofst - 1) `div` algn + 1) * algn
@@ -64,7 +64,7 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 	range (_ :...: lns) = range @obj lns
 
 class WholeSize objs where
-	wholeSize :: Int -> HeteroVarList ObjectLength objs -> Int
+	wholeSize :: Int -> HeteroParList ObjectLength objs -> Int
 
 instance WholeSize '[] where wholeSize sz _ = sz
 

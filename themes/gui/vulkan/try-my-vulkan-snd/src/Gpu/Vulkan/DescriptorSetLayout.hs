@@ -66,7 +66,7 @@ data Binding (bt :: BindingType) where
 		bindingImageSamplerDescriptorType :: Descriptor.Type,
 		bindingImageSamplerStageFlags :: ShaderStageFlags,
 		bindingImageSamplerImmutableSamplers ::
-			HeteroVarList Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
+			HeteroParList Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
 		} -> Binding ('ImageSampler fmtss)
 	BindingOther :: {
 		bindingOtherDescriptorType :: Descriptor.Type,
@@ -121,7 +121,7 @@ instance BindingToMiddle 'Other where
 			M.bindingStageFlags = sfs }
 
 class BindingsToMiddle bts where
-	bindingsToMiddle :: HeteroVarList Binding bts -> Word32 -> [M.Binding]
+	bindingsToMiddle :: HeteroParList Binding bts -> Word32 -> [M.Binding]
 
 instance BindingsToMiddle '[] where bindingsToMiddle HVNil _ = []
 
@@ -133,7 +133,7 @@ instance (BindingToMiddle bt, BindingsToMiddle bts) =>
 data CreateInfo n bts = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoBindings :: HeteroVarList Binding bts }
+	createInfoBindings :: HeteroParList Binding bts }
 
 createInfoToMiddle :: BindingsToMiddle bts => CreateInfo n bts -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
@@ -144,7 +144,7 @@ createInfoToMiddle CreateInfo {
 		M.createInfoFlags = flgs,
 		M.createInfoBindings = bindingsToMiddle bds 0 }
 
-deriving instance (Show n, Show (HeteroVarList Binding bts)) =>
+deriving instance (Show n, Show (HeteroParList Binding bts)) =>
 	Show (CreateInfo n bts)
 
 -- deriving instance Show (Binding bt)

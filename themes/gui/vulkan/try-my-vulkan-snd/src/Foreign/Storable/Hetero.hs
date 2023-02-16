@@ -68,7 +68,7 @@ instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
 
 class WithPokedToListM ns where
 	withPokedToListM :: Monad m =>
-		(forall n . WithPoked n => t n -> m t') -> HeteroVarList t ns -> m [t']
+		(forall n . WithPoked n => t n -> m t') -> HeteroParList t ns -> m [t']
 
 instance WithPokedToListM '[] where withPokedToListM _ HVNil = pure []
 
@@ -76,7 +76,7 @@ instance (WithPoked n, WithPokedToListM ns) => WithPokedToListM (n ': ns) where
 	withPokedToListM f (x :...: xs) = (:) <$> f x <*> withPokedToListM f xs
 
 class WithPokedHeteroMap ns where
-	withPokedHeteroMapM :: HeteroVarList t ns ->
+	withPokedHeteroMapM :: HeteroParList t ns ->
 		(forall n . WithPoked n => t n -> (a -> m ()) -> m ()) ->
 		([a] -> m ()) -> m ()
 

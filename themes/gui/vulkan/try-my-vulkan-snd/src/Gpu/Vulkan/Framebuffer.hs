@@ -32,8 +32,8 @@ data CreateInfoNew n sr fmtnmsis = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
-	createInfoAttachmentsNew :: HeteroVarList (V3 ImageView.INew) fmtnmsis,
---	createInfoAttachmentsNew :: HeteroVarList (ImageView.INew fmt nm) sis,
+	createInfoAttachmentsNew :: HeteroParList (V3 ImageView.INew) fmtnmsis,
+--	createInfoAttachmentsNew :: HeteroParList (ImageView.INew fmt nm) sis,
 	createInfoWidthNew :: Word32,
 	createInfoHeightNew :: Word32,
 	createInfoLayersNew :: Word32 }
@@ -57,8 +57,8 @@ createInfoFromNew CreateInfoNew {
 	createInfoWidth = wdt, createInfoHeight = hgt,
 	createInfoLayers = lyrs }
 
-isToOld :: HeteroVarList (V3 ImageView.INew) fmtnmsis ->
-	HeteroVarList ImageView.I (MapThird fmtnmsis)
+isToOld :: HeteroParList (V3 ImageView.INew) fmtnmsis ->
+	HeteroParList ImageView.I (MapThird fmtnmsis)
 isToOld HVNil = HVNil
 isToOld ((V3 i) :...: is) = ImageView.iToOld i :...: isToOld is
 
@@ -66,12 +66,12 @@ data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R sr,
-	createInfoAttachments :: HeteroVarList ImageView.I sis,
+	createInfoAttachments :: HeteroParList ImageView.I sis,
 	createInfoWidth :: Word32,
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
 
-deriving instance (Show n, Show (HeteroVarList ImageView.I sis)) =>
+deriving instance (Show n, Show (HeteroParList ImageView.I sis)) =>
 	Show (CreateInfo n sr sis)
 
 createInfoToMiddleNew :: CreateInfoNew n sr fmtnmsis -> M.CreateInfo n

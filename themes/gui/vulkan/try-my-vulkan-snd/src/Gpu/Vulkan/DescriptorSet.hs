@@ -64,9 +64,9 @@ layoutToMiddle (Layout (Layout.L l)) = l
 data AllocateInfo n sp slbtss = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts :: HeteroVarList Layout slbtss }
+	allocateInfoSetLayouts :: HeteroParList Layout slbtss }
 
-deriving instance (Show n, Show (HeteroVarList Layout slbtss)) =>
+deriving instance (Show n, Show (HeteroParList Layout slbtss)) =>
 	Show (AllocateInfo n sp slbtss)
 
 allocateInfoToMiddle :: AllocateInfo n sp slbtss -> M.AllocateInfo n
@@ -82,11 +82,11 @@ allocateInfoToMiddle AllocateInfo {
 
 newtype S sd sp (slbts :: LayoutArg) = S M.D
 
-allocateSs :: (Storable n, ListToHeteroVarList slbtss) =>
+allocateSs :: (Storable n, ListToHeteroParList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
-	IO (HeteroVarList (S sd sp) slbtss)
+	IO (HeteroParList (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
-	listToHeteroVarList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
+	listToHeteroParList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
@@ -97,7 +97,7 @@ data Write n sd sp (slbts :: LayoutArg)
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
-	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs)) =>
+	Show (HeteroParList Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
@@ -125,16 +125,16 @@ data WriteSources arg where
 	WriteSourcesInNext ::
 		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
 	ImageInfos ::
-		HeteroVarList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
 	BufferInfos ::
-		HeteroVarList Descriptor.BufferInfo sbsmobjsobjs ->
+		HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
 	TexelBufferViews ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther
 
-deriving instance Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) =>
+deriving instance Show (HeteroParList Descriptor.BufferInfo sbsmobjsobjs) =>
 	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
@@ -166,7 +166,7 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
-		HeteroVarList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		[Descriptor.M.ImageInfo]
 
 instance ImageInfosToMiddle '[] where imageInfosToMiddle HVNil = []
@@ -178,7 +178,7 @@ instance ImageInfosToMiddle ssfmtnmsis =>
 
 class BufferInfosToMiddle sbsmobjsobjs where
 	bufferInfosToMiddle ::
-		HeteroVarList Descriptor.BufferInfo sbsmobjsobjs ->
+		HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
 		[Descriptor.M.BufferInfo]
 
 instance BufferInfosToMiddle '[] where bufferInfosToMiddle HVNil = []
@@ -194,12 +194,12 @@ data Write_ n sdspslbtssbsmobjsobjs where
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
-	Show (HeteroVarList Descriptor.BufferInfo sbsmobjsobjs) ) =>
+	Show (HeteroParList Descriptor.BufferInfo sbsmobjsobjs) ) =>
 	Show (Write_ n '(sd, sp, slbts, ('WriteSourcesArgBuffer sbsmobjsobjs)))
 
 class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 	writeListToMiddle ::
-		HeteroVarList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
+		HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
 
 instance WriteListToMiddle n '[] where writeListToMiddle HVNil = []
 
@@ -215,5 +215,5 @@ updateDs :: (
 	Storable n, Storable n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
-	HeteroVarList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
+	HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
 updateDs (Device.D dvc) (writeListToMiddle -> ws) cs = M.updateDs dvc ws cs

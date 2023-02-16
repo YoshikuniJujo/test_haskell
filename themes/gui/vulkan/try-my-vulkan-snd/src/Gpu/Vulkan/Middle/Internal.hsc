@@ -216,7 +216,7 @@ instance ClearColorValueToCore cct =>
 
 class TL.Length cts => ClearValuesToCore (cts :: [ClearType]) where
 	clearValuesToCore ::
-		HeteroVarList ClearValue cts ->
+		HeteroParList ClearValue cts ->
 		([C.PtrClearValue] -> IO a) -> IO a
 
 instance ClearValuesToCore '[] where clearValuesToCore HVNil = ($ [])
@@ -256,10 +256,10 @@ data SubmitInfo n vss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: HeteroVarList CommandBuffer.T.CC vss,
+	submitInfoCommandBuffers :: HeteroParList CommandBuffer.T.CC vss,
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 
-deriving instance (Show n, Show (HeteroVarList CommandBuffer.T.CC vss)) =>
+deriving instance (Show n, Show (HeteroParList CommandBuffer.T.CC vss)) =>
 	Show (SubmitInfo n vss)
 
 submitInfoToCore :: WithPoked n =>

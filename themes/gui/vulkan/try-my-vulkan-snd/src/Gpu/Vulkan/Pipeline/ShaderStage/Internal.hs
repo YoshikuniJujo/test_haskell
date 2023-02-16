@@ -68,11 +68,11 @@ class CreateInfoListToMiddleNew (
 	) where
 	type MiddleVarsNew nnskndcdvss :: [(Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
-		HeteroVarList (V6 CreateInfoNew) nnskndcdvss ->
-		IO (HeteroVarList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
+		HeteroParList (V6 CreateInfoNew) nnskndcdvss ->
+		IO (HeteroParList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
 	destroyCreateInfoMiddleListNew :: Device.D ds ->
-		HeteroVarList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
-		HeteroVarList (V6 CreateInfoNew) nnskndcdvss -> IO ()
+		HeteroParList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
+		HeteroParList (V6 CreateInfoNew) nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddleNew '[] where
 	type MiddleVarsNew '[] = '[]

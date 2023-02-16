@@ -60,9 +60,9 @@ swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
 
 data PresentInfoNew n sws scfmt sscs = PresentInfoNew {
 	presentInfoNextNew :: Maybe n,
-	presentInfoWaitSemaphoresNew :: HeteroVarList Semaphore.S sws,
+	presentInfoWaitSemaphoresNew :: HeteroParList Semaphore.S sws,
 	presentInfoSwapchainImageIndicesNew ::
-		HeteroVarList (SwapchainImageIndexNew scfmt) sscs }
+		HeteroParList (SwapchainImageIndexNew scfmt) sscs }
 
 
 presentInfoFromNew ::
@@ -78,13 +78,13 @@ presentInfoFromNew PresentInfoNew {
 
 data PresentInfo n sws sscs = PresentInfo {
 	presentInfoNext :: Maybe n,
-	presentInfoWaitSemaphores :: HeteroVarList Semaphore.S sws,
+	presentInfoWaitSemaphores :: HeteroParList Semaphore.S sws,
 	presentInfoSwapchainImageIndices ::
-		HeteroVarList SwapchainImageIndex sscs }
+		HeteroParList SwapchainImageIndex sscs }
 
 deriving instance (
-	Show n, Show (HeteroVarList Semaphore.S sws),
-	Show (HeteroVarList SwapchainImageIndex sscs)) =>
+	Show n, Show (HeteroParList Semaphore.S sws),
+	Show (HeteroParList SwapchainImageIndex sscs)) =>
 	Show (PresentInfo n sws sscs)
 
 presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n

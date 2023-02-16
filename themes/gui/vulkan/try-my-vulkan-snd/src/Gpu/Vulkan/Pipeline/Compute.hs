@@ -67,8 +67,8 @@ createInfoToMiddle dvc CreateInfo {
 class CreateInfoListToMiddle as where
 	type Result as :: [(Type, Type, [Type])]
 	createInfoListToMiddle ::
-		Device.D sd -> HeteroVarList (V4 CreateInfo) as ->
-		IO (HeteroVarList (V3 M.CreateInfo) (Result as))
+		Device.D sd -> HeteroParList (V4 CreateInfo) as ->
+		IO (HeteroParList (V3 M.CreateInfo) (Result as))
 
 instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
@@ -94,8 +94,8 @@ destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
 class DestroyCreateInfoMiddleList vss vss' where
 	destroyCreateInfoMiddleList ::
 		Device.D sd ->
-		HeteroVarList (V3 M.CreateInfo) vss ->
-		HeteroVarList (V4 CreateInfo) vss' -> IO ()
+		HeteroParList (V3 M.CreateInfo) vss ->
+		HeteroParList (V4 CreateInfo) vss' -> IO ()
 
 instance DestroyCreateInfoMiddleList '[] '[] where
 	destroyCreateInfoMiddleList _ HVNil HVNil = pure ()
@@ -114,9 +114,9 @@ createCs :: (
 	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	PipelineListToHetero (ToDummiesNew vss) ) =>
-	Device.D sd -> Maybe Cache.C -> HeteroVarList (V4 CreateInfo) vss ->
+	Device.D sd -> Maybe Cache.C -> HeteroParList (V4 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
-	(forall s . HeteroVarList (Pipeline s) (ToDummiesNew vss) -> IO a) -> IO a
+	(forall s . HeteroParList (Pipeline s) (ToDummiesNew vss) -> IO a) -> IO a
 createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
 	bracket
@@ -136,7 +136,7 @@ type family ToDummiesNew tl where
 newtype Pipeline s (d :: ()) = Pipeline { unPipeline :: C s } deriving Show
 
 class PipelineListToHetero ds where
-	pipelineListToHetero :: [C s] -> HeteroVarList (Pipeline s) ds
+	pipelineListToHetero :: [C s] -> HeteroParList (Pipeline s) ds
 
 instance PipelineListToHetero '[] where
 	pipelineListToHetero [] = HVNil
@@ -145,15 +145,15 @@ instance PipelineListToHetero '[] where
 instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
 	pipelineListToHetero (p : ps) = Pipeline p :...: pipelineListToHetero ps
 
-class HeteroVarListMapM'' k ss fss where
+class HeteroParListMapM'' k ss fss where
 	heteroVarListMapM'' :: Applicative m =>
 		(forall a b (c :: k) d . t '(a, b, c, d) -> m (t' a)) ->
-		HeteroVarList t ss -> m (HeteroVarList t' fss)
+		HeteroParList t ss -> m (HeteroParList t' fss)
 
-instance HeteroVarListMapM'' k '[] '[] where
+instance HeteroParListMapM'' k '[] '[] where
 	heteroVarListMapM'' _ HVNil = pure HVNil
 
-instance HeteroVarListMapM'' k ss fss =>
-	HeteroVarListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where
+instance HeteroParListMapM'' k ss fss =>
+	HeteroParListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where
 	heteroVarListMapM'' f (x :...: xs) =
 		(:...:) <$> f x <*> heteroVarListMapM'' f xs

@@ -340,7 +340,7 @@ addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
 class StorageBufferNews f a where
 	type Vectors f :: [Type]
 	storageBufferNews :: Vk.Dvc.D sd -> Vk.PhDvc.P ->
-		HeteroVarList V.Vector (Vectors f) -> f -> IO a
+		HeteroParList V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
 	Vk.Buffer.Binded sb sm nm '[ 'List 256 w ""] ->

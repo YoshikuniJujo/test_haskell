@@ -26,10 +26,10 @@ data SemaphorePipelineStageFlags ss =
 	SemaphorePipelineStageFlags (Semaphore.S ss) Pipeline.StageFlags
 	deriving Show
 
--- deriving instance Show (HeteroVarList Semaphore.S ss)
+-- deriving instance Show (HeteroParList Semaphore.S ss)
 
 semaphorePipelineStageFlagsToMiddle ::
-	HeteroVarList SemaphorePipelineStageFlags sss ->
+	HeteroParList SemaphorePipelineStageFlags sss ->
 	[(Semaphore.M.S, Pipeline.StageFlags)]
 semaphorePipelineStageFlagsToMiddle = heteroVarListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
@@ -37,19 +37,19 @@ semaphorePipelineStageFlagsToMiddle = heteroVarListToList
 data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
-		HeteroVarList SemaphorePipelineStageFlags sss,
-	submitInfoCommandBuffers :: HeteroVarList (V2 CommandBuffer.C) svss,
+		HeteroParList SemaphorePipelineStageFlags sss,
+	submitInfoCommandBuffers :: HeteroParList (V2 CommandBuffer.C) svss,
 	submitInfoSignalSemaphores ::
-		HeteroVarList Semaphore.S ssss }
+		HeteroParList Semaphore.S ssss }
 
--- deriving instance (Show n, Show (HeteroVarList SemaphorePipelineStageFlags sss)) =>
+-- deriving instance (Show n, Show (HeteroParList SemaphorePipelineStageFlags sss)) =>
 --	Show (SubmitInfo n sss s vs)
 
 class CommandBufferListToMiddle svss where
 	type CommandBufferListToMiddleMapSnd svss :: [[Type]]
 	commandBufferListToMiddle ::
-		HeteroVarList (V2 CommandBuffer.C) svss ->
-		HeteroVarList CommandBuffer.CC
+		HeteroParList (V2 CommandBuffer.C) svss ->
+		HeteroParList CommandBuffer.CC
 			(CommandBufferListToMiddleMapSnd svss)
 
 instance CommandBufferListToMiddle '[] where
@@ -82,7 +82,7 @@ submitInfoToMiddle SubmitInfo {
 class SemaphorePipelineStageFlagsFromMiddle sss where
 	semaphorePipelineStageFlagsFromMiddle ::
 		[(Semaphore.M.S, Pipeline.StageFlags)] ->
-		HeteroVarList SemaphorePipelineStageFlags sss
+		HeteroParList SemaphorePipelineStageFlags sss
 
 instance SemaphorePipelineStageFlagsFromMiddle '[] where
 	semaphorePipelineStageFlagsFromMiddle [] = HVNil

@@ -182,9 +182,9 @@ pipelineBarrier :: (
 	) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
-	HeteroVarList Memory.M.Barrier ns ->
-	HeteroVarList Buffer.M.MemoryBarrier ns' ->
-	HeteroVarList Image.MemoryBarrier ns'' -> IO ()
+	HeteroParList Memory.M.Barrier ns ->
+	HeteroParList Buffer.M.MemoryBarrier ns' ->
+	HeteroParList Image.MemoryBarrier ns'' -> IO ()
 pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)

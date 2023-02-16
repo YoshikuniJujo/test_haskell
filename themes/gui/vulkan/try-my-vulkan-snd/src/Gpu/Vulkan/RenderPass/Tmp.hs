@@ -21,7 +21,7 @@ data CreateInfoNew n fmts = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoAttachmentsNew ::
-		HeteroVarList Attachment.DescriptionNew fmts,
+		HeteroParList Attachment.DescriptionNew fmts,
 	createInfoSubpassesNew :: [Subpass.Description],
 	createInfoDependenciesNew :: [Subpass.Dependency] }
 

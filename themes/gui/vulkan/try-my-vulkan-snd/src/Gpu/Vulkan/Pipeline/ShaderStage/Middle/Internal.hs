@@ -65,7 +65,7 @@ createInfoToCore CreateInfo {
 
 class CreateInfoListToCore sss where
 	createInfoListToCore ::
-		HeteroVarList (V3 CreateInfo) sss ->
+		HeteroParList (V3 CreateInfo) sss ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
