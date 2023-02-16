@@ -1,0 +1,73 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           try-simple-web-server
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-simple-web-server#readme>
+homepage:       https://github.com/YoshikuniJujo/try-simple-web-server#readme
+bug-reports:    https://github.com/YoshikuniJujo/try-simple-web-server/issues
+author:         Yoshikuni Jujo
+maintainer:     yoshikuni.jujo@gmail.com
+copyright:      2023 Yoshikuni Jujo
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/YoshikuniJujo/try-simple-web-server
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_try_simple_web_server
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , http-types
+    , text
+    , wai
+    , warp
+  default-language: Haskell2010
+
+executable try-simple-web-server-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_try_simple_web_server
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , http-types
+    , text
+    , try-simple-web-server
+    , wai
+    , warp
+  default-language: Haskell2010
+
+test-suite try-simple-web-server-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_try_simple_web_server
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , http-types
+    , text
+    , try-simple-web-server
+    , wai
+    , warp
+  default-language: Haskell2010
