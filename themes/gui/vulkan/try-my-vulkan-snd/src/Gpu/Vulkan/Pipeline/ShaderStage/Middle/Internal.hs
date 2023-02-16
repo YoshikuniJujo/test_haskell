@@ -69,7 +69,7 @@ class CreateInfoListToCore sss where
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
-	createInfoListToCore HVNil = (() <$) . ($ [])
+	createInfoListToCore HNil = (() <$) . ($ [])
 
 instance (WithPoked n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where

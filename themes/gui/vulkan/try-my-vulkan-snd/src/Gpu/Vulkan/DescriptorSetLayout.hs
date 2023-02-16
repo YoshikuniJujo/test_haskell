@@ -123,7 +123,7 @@ instance BindingToMiddle 'Other where
 class BindingsToMiddle bts where
 	bindingsToMiddle :: HeteroParList Binding bts -> Word32 -> [M.Binding]
 
-instance BindingsToMiddle '[] where bindingsToMiddle HVNil _ = []
+instance BindingsToMiddle '[] where bindingsToMiddle HNil _ = []
 
 instance (BindingToMiddle bt, BindingsToMiddle bts) =>
 	BindingsToMiddle (bt ': bts) where

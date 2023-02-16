@@ -240,7 +240,7 @@ class BindAll sibfoss sibfoss' where
 		M sm sibfoss' ->
 		IO (HeteroParList (V2 (ImageBufferBinded sm)) sibfoss)
 
-instance BindAll '[] sibfoss' where bindAll _ _ _ = pure HVNil
+instance BindAll '[] sibfoss' where bindAll _ _ _ = pure HNil
 
 instance (Offset' si ('K.Image nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
 	BindAll ('(si, ('K.Image nm fmt)) ': fibfoss) sibfoss' where

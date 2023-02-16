@@ -126,7 +126,7 @@ class CreateInfoListToMiddle sss where
 
 instance CreateInfoListToMiddle '[] where
 	type CreateInfoListArgs '[] = '[]
-	createInfoListToMiddle _ = HVNil
+	createInfoListToMiddle _ = HNil
 
 instance (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,

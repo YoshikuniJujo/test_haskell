@@ -108,7 +108,7 @@ sampleObjLens =
 	ObjectLengthAtom :...:
 	ObjectLengthAtom :...:
 	ObjectLengthList 5 :...:
-	ObjectLengthList 3 :...: HVNil
+	ObjectLengthList 3 :...: HNil
 
 data IndexedList sm sb nm v =
 	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
@@ -122,7 +122,7 @@ indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 
 indexedListToMiddles ::
 	HeteroParList (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
-indexedListToMiddles HVNil = []
+indexedListToMiddles HNil = []
 indexedListToMiddles (V4 il :...: ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
@@ -272,7 +272,7 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
 
 instance MemoryBarrierListToMiddle '[] where
-	memoryBarrierListToMiddle HVNil = HVNil
+	memoryBarrierListToMiddle HNil = HNil
 
 instance (Storable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where

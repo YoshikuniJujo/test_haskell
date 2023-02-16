@@ -55,7 +55,7 @@ class HeteroParListToList' sbtss where
 		(forall (s :: Type) (bts :: [Descriptor.Set.Layout.BindingType]) . t '(s, bts) -> t') ->
 		HeteroParList t sbtss -> [t']
 
-instance HeteroParListToList' '[] where heteroVarListToList' _ HVNil = []
+instance HeteroParListToList' '[] where heteroVarListToList' _ HNil = []
 
 instance HeteroParListToList' sbtss => HeteroParListToList' ('(s, bts) ': sbtss) where
 	heteroVarListToList' f (x :...: xs) = f x : heteroVarListToList' f xs

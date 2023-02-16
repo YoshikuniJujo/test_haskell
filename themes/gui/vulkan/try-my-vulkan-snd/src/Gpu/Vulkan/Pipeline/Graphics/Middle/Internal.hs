@@ -158,7 +158,7 @@ class Length ass => CreateInfoListToCore ass where
 		HeteroParList (V12 CreateInfo) ass ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
-instance CreateInfoListToCore '[] where createInfoListToCore HVNil f = () <$ f []
+instance CreateInfoListToCore '[] where createInfoListToCore HNil f = () <$ f []
 
 instance (
 	WithPoked n, ShaderStage.CreateInfoListToCore nskndvss,
@@ -192,9 +192,9 @@ gListToCore :: GListFromCore vstss =>
 gListToCore cps = readIORef `mapM` gListToIORefs cps
 
 instance GListFromCore '[] where
-	gListFromCore [] = pure HVNil
+	gListFromCore [] = pure HNil
 	gListFromCore _ = error "bad"
-	gListToIORefs HVNil = []
+	gListToIORefs HNil = []
 	
 instance GListFromCore vstss =>
 	GListFromCore ('(vs, ts) ': vstss) where

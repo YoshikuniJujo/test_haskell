@@ -33,7 +33,7 @@ class DescriptionsFromNew fmts where
 	descriptionsFromNew ::
 		HeteroParList DescriptionNew fmts -> [Description]
 
-instance DescriptionsFromNew '[] where descriptionsFromNew HVNil = []
+instance DescriptionsFromNew '[] where descriptionsFromNew HNil = []
 
 instance (T.FormatToValue fmt, DescriptionsFromNew fmts) =>
 	DescriptionsFromNew (fmt ': fmts) where

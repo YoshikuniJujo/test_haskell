@@ -57,7 +57,7 @@ class SizableList ts => PokableList (ts :: [Type]) where
 	pokeList :: Ptr a -> HeteroList ts -> IO ()
 
 instance PokableList '[] where
-	pokeList _ HVNil = pure ()
+	pokeList _ HNil = pure ()
 
 instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
 	pokeList ((`alignPtr` alignment' @t) -> p) (Id x :...: xs) = do
@@ -70,7 +70,7 @@ class WithPokedToListM ns where
 	withPokedToListM :: Monad m =>
 		(forall n . WithPoked n => t n -> m t') -> HeteroParList t ns -> m [t']
 
-instance WithPokedToListM '[] where withPokedToListM _ HVNil = pure []
+instance WithPokedToListM '[] where withPokedToListM _ HNil = pure []
 
 instance (WithPoked n, WithPokedToListM ns) => WithPokedToListM (n ': ns) where
 	withPokedToListM f (x :...: xs) = (:) <$> f x <*> withPokedToListM f xs
@@ -81,7 +81,7 @@ class WithPokedHeteroMap ns where
 		([a] -> m ()) -> m ()
 
 instance WithPokedHeteroMap '[] where
-	withPokedHeteroMapM HVNil _ g = g []
+	withPokedHeteroMapM HNil _ g = g []
 
 instance (WithPoked n, WithPokedHeteroMap ns) =>
 	WithPokedHeteroMap (n ': ns) where

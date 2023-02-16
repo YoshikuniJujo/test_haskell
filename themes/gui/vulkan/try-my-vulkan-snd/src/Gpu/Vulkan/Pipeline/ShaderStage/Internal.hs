@@ -76,8 +76,8 @@ class CreateInfoListToMiddleNew (
 
 instance CreateInfoListToMiddleNew '[] where
 	type MiddleVarsNew '[] = '[]
-	createInfoListToMiddleNew _ HVNil = pure HVNil
-	destroyCreateInfoMiddleListNew _ HVNil HVNil = pure ()
+	createInfoListToMiddleNew _ HNil = pure HNil
+	destroyCreateInfoMiddleListNew _ HNil HNil = pure ()
 
 instance (
 	Pokable m, Pokable c, Pokable d,

@@ -79,7 +79,7 @@ class Length vss => CreateInfoListToCore vss where
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
-	createInfoListToCore HVNil = (() <$) . ($ [])
+	createInfoListToCore HNil = (() <$) . ($ [])
 
 instance (
 	WithPoked n, WithPoked n1, PokableList vss,
