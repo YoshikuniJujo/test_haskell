@@ -209,14 +209,14 @@ instance RebindAll '[] sibfoss' where rebindAll _ _ _ = pure ()
 instance (
 	Offset' si ('K.Image nm fmt) sibfoss', RebindAll fibfoss sibfoss' ) =>
 	RebindAll ('(si, 'K.Image nm fmt) ': fibfoss) sibfoss' where
-		rebindAll dvc (V2 (ImageBinded img) :...: ibs) m = do
+		rebindAll dvc (V2 (ImageBinded img) :** ibs) m = do
 			rebindImage dvc img m
 			rebindAll dvc ibs m
 
 instance (
 	Offset' sb ('K.Buffer nm objs) sibfoss', RebindAll sibfoss sibfoss' ) =>
 	RebindAll ('(sb, 'K.Buffer nm objs) ': sibfoss) sibfoss' where
-	rebindAll dvc (V2 (BufferBinded bf) :...: ibs) m = do
+	rebindAll dvc (V2 (BufferBinded bf) :** ibs) m = do
 		rebindBuffer dvc bf m
 		rebindAll dvc ibs m
 
@@ -244,13 +244,13 @@ instance BindAll '[] sibfoss' where bindAll _ _ _ = pure HNil
 
 instance (Offset' si ('K.Image nm fmt) sibfoss', BindAll fibfoss sibfoss') =>
 	BindAll ('(si, ('K.Image nm fmt)) ': fibfoss) sibfoss' where
-	bindAll dvc (V2 (Image img) :...: ibs) m = (:...:)
+	bindAll dvc (V2 (Image img) :** ibs) m = (:**)
 		<$> (V2 . ImageBinded <$> bindImage dvc img m)
 		<*> bindAll dvc ibs m
 
 instance (Offset' sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
 	BindAll ('(sb, ('K.Buffer nm objs)) ': fibfoss) sibfoss' where
-	bindAll dvc (V2 (Buffer bf) :...: ibs) m = (:...:)
+	bindAll dvc (V2 (Buffer bf) :** ibs) m = (:**)
 		<$> (V2 . BufferBinded <$> bindBuffer dvc bf m)
 		<*> bindAll dvc ibs m
 
@@ -301,14 +301,14 @@ class Offset'
 		Device.M.Size -> IO Device.M.Size
 
 instance Offset' sib ib ('(sib, ib) ': sibfoss) where
-	offset' dvc (ib :...: _ibs) ost = do
+	offset' dvc (ib :** _ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 		pure $ ((ost - 1) `div` algn + 1) * algn
 
 instance {-# OVERLAPPABLE #-} Offset' sib ib sibfoss =>
 	Offset' sib ib ('(sib', ib') ': sibfoss) where
-	offset' dvc (ib :...: ibs) ost = do
+	offset' dvc (ib :** ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	sz = Memory.M.requirementsSize reqs
 			algn = Memory.M.requirementsAlignment reqs
@@ -335,24 +335,24 @@ class OffsetSize' (nm :: Symbol) (obj :: Object) sibfoss where
 
 instance OffsetSizeObject obj objs =>
 	OffsetSize' nm obj ('(sib, 'K.Buffer nm objs) ': sibfoss) where
-	offsetSize' dvc (ib@(V2 (Buffer (Buffer.B lns _))) :...: _ibs) ost = do
+	offsetSize' dvc (ib@(V2 (Buffer (Buffer.B lns _))) :** _ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 		pure $ offsetSizeObject @obj
 			(((ost - 1) `div` algn + 1) * algn) lns
-	offsetSizeLength' (V2 (Buffer (Buffer.B lns _)) :...: _) =
+	offsetSizeLength' (V2 (Buffer (Buffer.B lns _)) :** _) =
 		pure $ offsetSizeObjectLength @obj lns
 
 instance {-# OVERLAPPABLE #-}
 	OffsetSize' nm obj sibfoss =>
 	OffsetSize' nm obj ('(sib, ib) ': sibfoss) where
-	offsetSize' dvc (ib :...: ibs) ost = do
+	offsetSize' dvc (ib :** ibs) ost = do
 		reqs <- getMemoryRequirements' dvc ib
 		let	algn = Memory.M.requirementsAlignment reqs
 			sz = Memory.M.requirementsSize reqs
 		offsetSize' @nm @obj dvc ibs
 			$ ((ost - 1) `div` algn + 1) * algn + sz
-	offsetSizeLength' (_ :...: lns) = offsetSizeLength' @nm @obj lns
+	offsetSizeLength' (_ :** lns) = offsetSizeLength' @nm @obj lns
 
 class OffsetSizeObject (obj :: Object) (objs :: [Object]) where
 	offsetSizeObject :: Device.M.Size -> HeteroParList ObjectLength objs ->
@@ -361,22 +361,22 @@ class OffsetSizeObject (obj :: Object) (objs :: [Object]) where
 		ObjectLength obj
 
 instance SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where
-	offsetSizeObject n (ln :...: _) = (ost, fromIntegral $ objectSize ln)
+	offsetSizeObject n (ln :** _) = (ost, fromIntegral $ objectSize ln)
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (objectAlignment @obj)
-	offsetSizeObjectLength (ln :...: _) = ln
+	offsetSizeObjectLength (ln :** _) = ln
 
 instance {-# OVERLAPPABLE #-} (
 	SizeAlignment obj, SizeAlignment obj',
 	OffsetSizeObject obj objs ) =>
 	OffsetSizeObject obj (obj' ': objs) where
-	offsetSizeObject n (ln :...: lns) =
+	offsetSizeObject n (ln :** lns) =
 		offsetSizeObject @obj (ost + fromIntegral (objectSize ln)) lns
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (objectAlignment @obj)
-	offsetSizeObjectLength (_ :...: lns) = offsetSizeObjectLength @obj lns
+	offsetSizeObjectLength (_ :** lns) = offsetSizeObjectLength @obj lns
 
 write :: forall nm obj sd sm sibfoss v .
 	(StoreObject v obj, OffsetSize' nm obj sibfoss) =>

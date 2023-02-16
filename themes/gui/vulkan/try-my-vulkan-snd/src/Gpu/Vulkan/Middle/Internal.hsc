@@ -223,7 +223,7 @@ instance ClearValuesToCore '[] where clearValuesToCore HNil = ($ [])
 
 instance (ClearValueToCore ct, ClearValuesToCore cts) =>
 	ClearValuesToCore (ct ': cts) where
-	clearValuesToCore (cv :...: cvs) f =
+	clearValuesToCore (cv :** cvs) f =
 		clearValueToCore cv \ccv ->
 		clearValuesToCore cvs \ccvs -> f $ ccv : ccvs
 

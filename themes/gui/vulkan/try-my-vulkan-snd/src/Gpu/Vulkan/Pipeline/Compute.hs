@@ -81,7 +81,7 @@ instance (Pokable n', Pokable c, CreateInfoListToMiddle as) =>
 	type Result (
 		'(n, '(n1, n', 'GlslComputeShader, c, d, vs), slsbtss, sbph) ':
 		as ) = '(n, n1, vs) ': Result as
-	createInfoListToMiddle dvc (V4 ci :...: cis) = (:...:)
+	createInfoListToMiddle dvc (V4 ci :** cis) = (:**)
 		<$> (V3 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
 
@@ -105,7 +105,7 @@ instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 		('(n, n1, vs) ': vss)
 		('(n, '(n1, n2, 'GlslComputeShader, c, d, vs), slsbtss, sbph) ': vss') where
 	destroyCreateInfoMiddleList dvc
-		(V3 mci :...: mcis) (V4 ci :...: cis) = do
+		(V3 mci :** mcis) (V4 ci :** cis) = do
 		destroyCreateInfoMiddle dvc mci ci
 		destroyCreateInfoMiddleList dvc mcis cis
 
@@ -143,7 +143,7 @@ instance PipelineListToHetero '[] where
 	pipelineListToHetero _ = error "mismatch"
 
 instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
-	pipelineListToHetero (p : ps) = Pipeline p :...: pipelineListToHetero ps
+	pipelineListToHetero (p : ps) = Pipeline p :** pipelineListToHetero ps
 
 class HeteroParListMapM'' k ss fss where
 	heteroParListMapM'' :: Applicative m =>
@@ -155,5 +155,5 @@ instance HeteroParListMapM'' k '[] '[] where
 
 instance HeteroParListMapM'' k ss fss =>
 	HeteroParListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where
-	heteroParListMapM'' f (x :...: xs) =
-		(:...:) <$> f x <*> heteroParListMapM'' f xs
+	heteroParListMapM'' f (x :** xs) =
+		(:**) <$> f x <*> heteroParListMapM'' f xs

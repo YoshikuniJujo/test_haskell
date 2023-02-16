@@ -392,7 +392,7 @@ createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qs ->
 mkHeteroParList :: Storable' s => (a -> t s) -> [a] ->
 	(forall ss . WithPokedToListM ss => HeteroParList t ss -> b) -> b
 mkHeteroParList _k [] f = f HNil
-mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :...: xs')
+mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 createSwapchain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> (forall ss scfmt .
@@ -491,12 +491,12 @@ createImageViews :: Vk.T.FormatToValue fmt =>
 createImageViews _dvc [] f = f HNil
 createImageViews dvc (sci : scis) f =
 	createImageView dvc sci Vk.Img.AspectColorBit \sciv ->
-	createImageViews dvc scis \scivs -> f $ sciv :...: scivs
+	createImageViews dvc scis \scivs -> f $ sciv :** scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroParList (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc [] HNil = pure ()
-recreateImageViews dvc (sci : scis) (iv :...: ivs) =
+recreateImageViews dvc (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit) nil nil iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
@@ -606,7 +606,7 @@ createRenderPass dvc f = do
 			Vk.RndrPass.M.createInfoNextNew = Nothing,
 			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
 			Vk.RndrPass.M.createInfoAttachmentsNew =
-				colorAttachment :...: depthAttachment :...: HNil,
+				colorAttachment :** depthAttachment :** HNil,
 			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
 	Vk.RndrPass.createNew @'[scifmt, dptfmt] @() dvc renderPassInfo nil nil \rp -> f rp
@@ -670,7 +670,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (V14 pplInfo :...: HNil) nil nil (V2 gpls :...: HNil)
+	dvc Nothing (V14 pplInfo :** HNil) nil nil (V2 gpls :** HNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
 
 mkGraphicsPipelineCreateInfo ::
@@ -1051,9 +1051,9 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HeteroParList Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HNil _ f = f HNil
-createFramebuffers dvc sce rp (iv :...: ivs) dptiv f =
+createFramebuffers dvc sce rp (iv :** ivs) dptiv f =
 	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv dptiv) nil nil \fb ->
-	createFramebuffers dvc sce rp ivs dptiv \fbs -> f (fb :...: fbs)
+	createFramebuffers dvc sce rp ivs dptiv \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
@@ -1066,7 +1066,7 @@ instance RecreateFramebuffers '[] '[] where
 
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :...: scivs) dptiv (fb :...: fbs) =
+	recreateFramebuffers dvc sce rp (sciv :** scivs) dptiv (fb :** fbs) =
 		Vk.Frmbffr.recreateNew dvc
 			(mkFramebufferCreateInfo sce rp sciv dptiv) nil nil fb >>
 		recreateFramebuffers dvc sce rp scivs dptiv fbs
@@ -1080,7 +1080,7 @@ mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
 	Vk.Frmbffr.createInfoNextNew = Nothing,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 	Vk.Frmbffr.createInfoRenderPassNew = rp,
-	Vk.Frmbffr.createInfoAttachmentsNew = V3 attch :...: V3 dpt :...: HNil,
+	Vk.Frmbffr.createInfoAttachmentsNew = V3 attch :** V3 dpt :** HNil,
 	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
 	Vk.Frmbffr.createInfoLayersNew = 1 }
 	where
@@ -1131,7 +1131,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 createCameraBuffers _ _ _ n f | n < 1 = f HNil HNil HNil
 createCameraBuffers phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
 	createCameraBuffers phdvc dvc lyt (n - 1) \lyts bnds mems ->
-	f (Vk.DscSet.Layout lyt :...: lyts) (BindedGcd bnd :...: bnds) (MemoryGcd mem :...: mems)
+	f (Vk.DscSet.Layout lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
 
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
@@ -1156,7 +1156,7 @@ createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 				'Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
 		IO a) -> IO a
 createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
-	(ObjectLengthAtom :...: ObjectLengthAtom :...: HNil)
+	(ObjectLengthAtom :** ObjectLengthAtom :** HNil)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createBuffer :: forall obj nm sd a . (
@@ -1255,7 +1255,7 @@ createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings =
-			camBufferBinding :...: sceneBind :...: HNil }
+			camBufferBinding :** sceneBind :** HNil }
 	camBufferBinding :: Vk.DscSetLyt.Binding
 		('Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing])
 	camBufferBinding = Vk.DscSetLyt.BindingBuffer {
@@ -1320,16 +1320,16 @@ instance (
 	Update ubs dscss
 	) =>
 	Update (ub ': ubs) (dscs ': dscss) where
-	update dvc (BindedGcd ub :...: ubs) (dscs :...: dscss) scnb 0 = do
+	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 0 = do
 		Vk.DscSet.updateDs @() @() dvc (
-			Vk.DscSet.Write_ (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :...:
-			Vk.DscSet.Write_ (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :...:
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HNil ) []
 		update dvc ubs dscss scnb 1
-	update dvc (BindedGcd ub :...: ubs) (dscs :...: dscss) scnb 1 = do
+	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 1 = do
 		Vk.DscSet.updateDs @() @() dvc (
-			Vk.DscSet.Write_ (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :...:
-			Vk.DscSet.Write_ (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :...:
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			Vk.DscSet.Write_ (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HNil ) []
 		update dvc ubs dscss scnb 2
 	update _ _ _ _ _ = error "bad"
@@ -1413,8 +1413,8 @@ instance VssList '[] where
 
 instance VssList vss =>
 	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
-	vssListIndex (cb :...: _) 0 = cb
-	vssListIndex (_ :...: cbs) n = vssListIndex cbs (n - 1)
+	vssListIndex (cb :** _) 0 = cb
+	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
 	(TpLvlLst.Length [Type] vss, ListToHeteroParList vss, VssList vss) =>
@@ -1507,8 +1507,8 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
 		Vk.RndrPass.beginInfoClearValues =
-			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :...:
-			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :...:
+			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
+			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
 			HNil }
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
@@ -1554,7 +1554,7 @@ drawObject om cb sce cmd RenderObject {
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
-			}) :...: HNil
+			}) :** HNil
 	Vk.Cmd.draw cb vn 1 0 0
 
 view :: Cglm.Mat4
@@ -1991,7 +1991,7 @@ shaderStages ::
 	HeteroParList (V6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
 		'((), (), 'GlslVertexShader, (), (), '[]),
 		'((), (), 'GlslFragmentShader, (), (), '[]) ]
-shaderStages vs fs = V6 vertShaderStageInfo :...: V6 fragShaderStageInfo :...: HNil
+shaderStages vs fs = V6 vertShaderStageInfo :** V6 fragShaderStageInfo :** HNil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
 		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,

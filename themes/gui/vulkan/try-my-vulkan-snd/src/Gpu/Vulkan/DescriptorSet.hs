@@ -173,7 +173,7 @@ instance ImageInfosToMiddle '[] where imageInfosToMiddle HNil = []
 
 instance ImageInfosToMiddle ssfmtnmsis =>
 	ImageInfosToMiddle ('(ss, fmt, nm, si) ': ssfmtnmsis) where
-	imageInfosToMiddle (V4 ii :...: iis) =
+	imageInfosToMiddle (V4 ii :** iis) =
 		Descriptor.imageInfoToMiddle ii : imageInfosToMiddle iis
 
 class BufferInfosToMiddle sbsmobjsobjs where
@@ -185,7 +185,7 @@ instance BufferInfosToMiddle '[] where bufferInfosToMiddle HNil = []
 
 instance (Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
-	bufferInfosToMiddle (bi :...: bis) =
+	bufferInfosToMiddle (bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis
 
 data Write_ n sdspslbtssbsmobjsobjs where
@@ -208,7 +208,7 @@ instance (
 	WriteListToMiddle n sdspslbtswsas ) =>
 	WriteListToMiddle n
 		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
-	writeListToMiddle (Write_ w :...: ws) =
+	writeListToMiddle (Write_ w :** ws) =
 		writeToMiddle w : writeListToMiddle ws
 
 updateDs :: (

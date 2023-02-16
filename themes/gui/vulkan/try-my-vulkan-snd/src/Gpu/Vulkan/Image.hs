@@ -118,8 +118,8 @@ instance MemoryBarrierListToMiddle '[] where
 
 instance (Pokable n, MemoryBarrierListToMiddle nsismnmfmts) =>
 	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where
-	memoryBarrierListToMiddle (V5 mb :...: mbs) =
-		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
+	memoryBarrierListToMiddle (V5 mb :** mbs) =
+		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
 createNewM :: (Pokable n, Pokable n', T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew n fmt ->

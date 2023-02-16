@@ -98,17 +98,17 @@ instance (KnownNat algn, Storable v) =>
 
 instance {-# OVERLAPPABLE #-} (
 	SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
-	offsetList (objlen :...: objlens) ost =
+	offsetList (objlen :** objlens) ost =
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
 sampleObjLens :: HeteroParList ObjectLength
 	['List 256 Bool "", 'Atom 256 Char 'Nothing, 'Atom 256 Int 'Nothing, 'List 256 Double "", 'List 256 Char ""]
 sampleObjLens =
-	ObjectLengthList 3 :...:
-	ObjectLengthAtom :...:
-	ObjectLengthAtom :...:
-	ObjectLengthList 5 :...:
-	ObjectLengthList 3 :...: HNil
+	ObjectLengthList 3 :**
+	ObjectLengthAtom :**
+	ObjectLengthAtom :**
+	ObjectLengthList 5 :**
+	ObjectLengthList 3 :** HNil
 
 data IndexedList sm sb nm v =
 	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
@@ -123,7 +123,7 @@ indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 indexedListToMiddles ::
 	HeteroParList (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
 indexedListToMiddles HNil = []
-indexedListToMiddles (V4 il :...: ils) =
+indexedListToMiddles (V4 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
 class CopyPrefix (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
@@ -140,9 +140,9 @@ instance (
 	SizeAlignment a,
 	CopyPrefix as ss ds ) =>
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) where
-	copyCheckLengthPrefix (s :...: ss) (d :...: ds) =
+	copyCheckLengthPrefix (s :** ss) (d :** ds) =
 		s == d && copyCheckLengthPrefix @as ss ds
-	copySizePrefix sz (ln :...: lns) = copySizePrefix @as @ss @ds
+	copySizePrefix sz (ln :** lns) = copySizePrefix @as @ss @ds
 		(((sz - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
 		lns
 		where algn = fromIntegral $ objectAlignment @a
@@ -170,10 +170,10 @@ instance (
 instance {-# OVERLAPPABLE #-}
 	(SizeAlignment d, CopyInfo (a ': as) (a ': ss) ds) =>
 	CopyInfo (a ': as) (a ': ss) (d ': ds) where
-	copyCheckLength ss (_ :...: ds) =
+	copyCheckLength ss (_ :** ds) =
 		copyCheckLength @(a ': as) @(a ': ss) @ds ss ds
 	copySrcOffset ost lns = copySrcOffset @(a ': as) @(a ': ss) @ds ost lns
-	copyDstOffset ost (ln :...: lns) = copyDstOffset @(a ': as) @(a ': ss)
+	copyDstOffset ost (ln :** lns) = copyDstOffset @(a ': as) @(a ': ss)
 		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
 		lns
 		where algn = fromIntegral $ objectAlignment @d
@@ -183,13 +183,13 @@ instance {-# OVERLAPPABLE #-}
 	(SizeAlignment s,
 	CopyInfo as ss ds) =>
 	CopyInfo as (s ': ss) ds where
-	copyCheckLength (_ :...: ss) ds = copyCheckLength @as ss ds
-	copySrcOffset ost (ln :...: lns) = copySrcOffset @as @ss @ds
+	copyCheckLength (_ :** ss) ds = copyCheckLength @as ss ds
+	copySrcOffset ost (ln :** lns) = copySrcOffset @as @ss @ds
 		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
 		lns
 		where algn = fromIntegral (objectAlignment @s)
 	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
-	copySize (_ :...: lns) = copySize @as @ss @ds lns
+	copySize (_ :** lns) = copySize @as @ss @ds lns
 
 makeCopy :: forall (as :: [Object]) ss ds . CopyInfo as ss ds =>
 	HeteroParList ObjectLength ss -> HeteroParList ObjectLength ds -> C.Copy
@@ -217,21 +217,21 @@ class OffsetSize (v :: Object) (vs :: [Object]) where
 	objectLength :: HeteroParList ObjectLength vs -> ObjectLength v
 
 instance SizeAlignment v => OffsetSize v (v ': vs) where
-	offsetSize (ln :...: _) ost = (
+	offsetSize (ln :** _) ost = (
 		((ost - 1) `div` algn + 1) * algn,
 		fromIntegral $ objectSize ln )
 		where algn = fromIntegral $ objectAlignment @v
-	objectLength (ln :...: _) = ln
+	objectLength (ln :** _) = ln
 
 instance {-# OVERLAPPABLE #-}
 	(SizeAlignment v, SizeAlignment v', OffsetSize v vs ) =>
 	OffsetSize v (v' ': vs) where
-	offsetSize (ln :...: lns) ost = offsetSize @v lns
+	offsetSize (ln :** lns) ost = offsetSize @v lns
 		$ ((ost - 1) `div` algn + 1) * algn + sz
 		where
 		algn = fromIntegral $ objectAlignment @v
 		sz = fromIntegral $ objectSize ln
-	objectLength (_ :...: lns) = objectLength @v lns
+	objectLength (_ :** lns) = objectLength @v lns
 
 data MemoryBarrier n sm sb nm obj = forall objs . OffsetSize obj objs =>
 	MemoryBarrier {
@@ -276,8 +276,8 @@ instance MemoryBarrierListToMiddle '[] where
 
 instance (Storable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
-	memoryBarrierListToMiddle (V5 mb :...: mbs) =
-		memoryBarrierToMiddle mb :...: memoryBarrierListToMiddle mbs
+	memoryBarrierListToMiddle (V5 mb :** mbs) =
+		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
 data ImageCopy img inm = ImageCopy {
 	imageCopyImageSubresource :: Image.M.SubresourceLayers,

@@ -50,7 +50,7 @@ instance (
 	Pokable n, CommandBufferListToMiddle svss,
 	SubmitInfoListToCore nssssvsss ) =>
 	SubmitInfoListToCore ('(n, sss, svss, ssss) ': nssssvsss) where
-	submitInfoListToCore (V4 si :...: sis) f =
+	submitInfoListToCore (V4 si :** sis) f =
 		M.submitInfoToCore (submitInfoToMiddle si) \csi ->
 		submitInfoListToCore sis \csis ->
 		f $ csi : csis

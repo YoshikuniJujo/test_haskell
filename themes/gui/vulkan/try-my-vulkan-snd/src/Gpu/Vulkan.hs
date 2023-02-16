@@ -60,8 +60,8 @@ instance CommandBufferListToMiddle svss =>
 	CommandBufferListToMiddle ('(s, vs) ': svss) where
 	type CommandBufferListToMiddleMapSnd ('(s, vs) ': svss) =
 		vs ': CommandBufferListToMiddleMapSnd svss
-	commandBufferListToMiddle (V2 (CommandBuffer.C cb) :...: cbs) =
-		cb :...: commandBufferListToMiddle cbs
+	commandBufferListToMiddle (V2 (CommandBuffer.C cb) :** cbs) =
+		cb :** commandBufferListToMiddle cbs
 
 submitInfoToMiddle :: CommandBufferListToMiddle svss =>
 	SubmitInfo n sss svss ssss ->
@@ -90,7 +90,7 @@ instance SemaphorePipelineStageFlagsFromMiddle '[] where
 instance SemaphorePipelineStageFlagsFromMiddle sss =>
 	SemaphorePipelineStageFlagsFromMiddle (ss ': sss) where
 	semaphorePipelineStageFlagsFromMiddle ((s, psfs) : spsfss) =
-		SemaphorePipelineStageFlags (Semaphore.S s) psfs :...:
+		SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
 		semaphorePipelineStageFlagsFromMiddle spsfss
 
 data FormatProperties = FormatProperties {

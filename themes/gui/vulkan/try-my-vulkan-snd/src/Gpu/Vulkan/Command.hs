@@ -98,7 +98,7 @@ instance HeteroParListToList' '[] where heteroParListToList' _ HNil = []
 
 instance HeteroParListToList' spslbtss =>
 	HeteroParListToList' (spslbts ': spslbtss) where
-	heteroParListToList' f (x :...: xs) = f x : heteroParListToList' f xs
+	heteroParListToList' f (x :** xs) = f x : heteroParListToList' f xs
 
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
 	(SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss) =>
@@ -205,7 +205,7 @@ instance (
 	Buffer.OffsetSize ('ObjImage img nm) objs,
 	ImageCopyListToMiddle objs img nms ) =>
 	ImageCopyListToMiddle objs img (nm ': nms) where
-	imageCopyListToMiddle bf (ic :...: ics) =
+	imageCopyListToMiddle bf (ic :** ics) =
 		Buffer.imageCopyToMiddle @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
 		imageCopyListToMiddle bf ics
 

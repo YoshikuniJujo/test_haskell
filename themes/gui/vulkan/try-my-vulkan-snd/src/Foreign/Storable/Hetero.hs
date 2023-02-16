@@ -60,7 +60,7 @@ instance PokableList '[] where
 	pokeList _ HNil = pure ()
 
 instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
-	pokeList ((`alignPtr` alignment' @t) -> p) (Id x :...: xs) = do
+	pokeList ((`alignPtr` alignment' @t) -> p) (Id x :** xs) = do
 		poke' (castPtr p) x
 		pokeList (p `plusPtr` sizeOf' @t) xs
 
@@ -73,7 +73,7 @@ class WithPokedToListM ns where
 instance WithPokedToListM '[] where withPokedToListM _ HNil = pure []
 
 instance (WithPoked n, WithPokedToListM ns) => WithPokedToListM (n ': ns) where
-	withPokedToListM f (x :...: xs) = (:) <$> f x <*> withPokedToListM f xs
+	withPokedToListM f (x :** xs) = (:) <$> f x <*> withPokedToListM f xs
 
 class WithPokedHeteroMap ns where
 	withPokedHeteroMapM :: HeteroParList t ns ->
@@ -85,5 +85,5 @@ instance WithPokedHeteroMap '[] where
 
 instance (WithPoked n, WithPokedHeteroMap ns) =>
 	WithPokedHeteroMap (n ': ns) where
-	withPokedHeteroMapM (x :...: xs) f g =
+	withPokedHeteroMapM (x :** xs) f g =
 		f x \y -> withPokedHeteroMapM xs f \ys -> g $ y : ys

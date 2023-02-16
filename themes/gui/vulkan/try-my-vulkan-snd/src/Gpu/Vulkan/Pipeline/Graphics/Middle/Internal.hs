@@ -168,7 +168,7 @@ instance (
 	) =>
 	CreateInfoListToCore ('(
 		n, nskndvss, vis, ias, ts, vs, rs, ms, dss, cbs, ds, bph ) ': ass) where
-	createInfoListToCore (V12 ci :...: cis) f =
+	createInfoListToCore (V12 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
 
@@ -199,8 +199,8 @@ instance GListFromCore '[] where
 instance GListFromCore vstss =>
 	GListFromCore ('(vs, ts) ': vstss) where
 	gListFromCore [] = error "bad"
-	gListFromCore (cp : cps) = (:...:) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
-	gListToIORefs (V2 (G cp) :...: cps) = cp : gListToIORefs cps
+	gListFromCore (cp : cps) = (:**) <$> (V2 <$> gFromCore cp) <*> gListFromCore cps
+	gListToIORefs (V2 (G cp) :** cps) = cp : gListToIORefs cps
 
 createGs :: (CreateInfoListToCore as, WithPoked c, GListFromCore vstss) =>
 	Device.D -> Maybe Cache.C -> HeteroParList (V12 CreateInfo) as ->

@@ -192,9 +192,9 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 					submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HNil,
-						Vk.submitInfoCommandBuffers = V2 cmdBuf :...: HNil,
+						Vk.submitInfoCommandBuffers = V2 cmdBuf :** HNil,
 						Vk.submitInfoSignalSemaphores = HNil }
-				Vk.Queue.submit graphicsQueue (V4 submitInfo :...: HNil) Nothing
+				Vk.Queue.submit graphicsQueue (V4 submitInfo :** HNil) Nothing
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
 			_ -> error "never occur"
@@ -478,7 +478,7 @@ makeFramebuffer dvc rp iv f = do
 			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
-			Vk.Framebuffer.createInfoAttachments = iv :...: HNil,
+			Vk.Framebuffer.createInfoAttachments = iv :** HNil,
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
@@ -556,7 +556,7 @@ makeRenderPass dvc f = do
 			Vk.RenderPass.createInfoFlagsNew =
 				Vk.RenderPass.CreateFlagsZero,
 			Vk.RenderPass.createInfoAttachmentsNew =
-				attachmentNew :...: HNil,
+				attachmentNew :** HNil,
 			Vk.RenderPass.createInfoSubpassesNew = [subpass],
 			Vk.RenderPass.createInfoDependenciesNew = [] }
 	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil nil f
@@ -690,8 +690,8 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
-					V6 vertShaderStage :...:
-					V6 fragShaderStage :...: HNil,
+					V6 vertShaderStage :**
+					V6 fragShaderStage :** HNil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just $ V3 vertexInputInfo,
 				Vk.Ppl.Gr.createInfoInputAssemblyState =
@@ -713,8 +713,8 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
-			V14 pipelineCreateInfo :...: HNil ) nil nil
-				\(V2 g :...: HNil) -> f g
+			V14 pipelineCreateInfo :** HNil ) nil nil
+				\(V2 g :** HNil) -> f g
 
 [glslVertexShader|
 

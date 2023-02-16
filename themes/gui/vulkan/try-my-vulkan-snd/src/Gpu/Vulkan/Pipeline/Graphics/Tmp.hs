@@ -137,8 +137,8 @@ instance (
 	type CreateInfoListArgs ('(
 		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(
 		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10, vsts') : CreateInfoListArgs ss
-	createInfoListToMiddle (V12 ci :...: cis) =
-		V12 (createInfoToMiddle ci) :...: createInfoListToMiddle cis
+	createInfoListToMiddle (V12 ci :** cis) =
+		V12 (createInfoToMiddle ci) :** createInfoListToMiddle cis
 
 createGs :: (
 	Pokable n', M.GListFromCore (GListVars ss),

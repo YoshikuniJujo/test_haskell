@@ -127,7 +127,7 @@ instance BindingsToMiddle '[] where bindingsToMiddle HNil _ = []
 
 instance (BindingToMiddle bt, BindingsToMiddle bts) =>
 	BindingsToMiddle (bt ': bts) where
-	bindingsToMiddle (bd :...: bds) bb =
+	bindingsToMiddle (bd :** bds) bb =
 		bindingToMiddle bd bb : bindingsToMiddle bds (bb + 1)
 
 data CreateInfo n bts = CreateInfo {

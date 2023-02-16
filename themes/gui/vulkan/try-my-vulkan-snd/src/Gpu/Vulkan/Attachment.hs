@@ -37,7 +37,7 @@ instance DescriptionsFromNew '[] where descriptionsFromNew HNil = []
 
 instance (T.FormatToValue fmt, DescriptionsFromNew fmts) =>
 	DescriptionsFromNew (fmt ': fmts) where
-	descriptionsFromNew (d :...: ds) =
+	descriptionsFromNew (d :** ds) =
 		descriptionFromNew d : descriptionsFromNew ds
 
 descriptionFromNew :: forall fmt . T.FormatToValue fmt => DescriptionNew fmt -> Description

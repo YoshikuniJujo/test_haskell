@@ -54,14 +54,14 @@ class Offset (obj :: Object) objs where
 instance SizeAlignment obj => Offset obj (obj ': objs) where
 	offset ofst _ = ((ofst - 1) `div` algn + 1) * algn
 		where algn = objectAlignment @obj
-	range (ln :...: _) = objectSize ln
+	range (ln :** _) = objectSize ln
 
 instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 	Offset obj (obj' ': objs) where
-	offset ofst (ln :...: lns) = offset @obj
+	offset ofst (ln :** lns) = offset @obj
 		(((ofst - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj'
-	range (_ :...: lns) = range @obj lns
+	range (_ :** lns) = range @obj lns
 
 class WholeSize objs where
 	wholeSize :: Int -> HeteroParList ObjectLength objs -> Int
@@ -74,7 +74,7 @@ minimumAlignment = 1
 
 instance (SizeAlignment obj, WholeSize objs) =>
 	WholeSize (obj ': objs) where
-	wholeSize sz (ln :...: lns) =
+	wholeSize sz (ln :** lns) =
 		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj
 

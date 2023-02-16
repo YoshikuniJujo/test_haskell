@@ -85,9 +85,9 @@ instance (
 	CreateInfoListToMiddleNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) where
 	type MiddleVarsNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) =
 		'(n, sknd, vs) ': MiddleVarsNew nnskndcdvss
-	createInfoListToMiddleNew dvc (V6 ci :...: cis) = (:...:)
+	createInfoListToMiddleNew dvc (V6 ci :** cis) = (:**)
 		<$> (V3 <$> createInfoToMiddleNew dvc ci)
 		<*> createInfoListToMiddleNew dvc cis
-	destroyCreateInfoMiddleListNew dvc (V3 cim :...: cims) (V6 ci :...: cis) =
+	destroyCreateInfoMiddleListNew dvc (V3 cim :** cims) (V6 ci :** cis) =
 		destroyCreateInfoMiddleNew dvc cim ci >>
 		destroyCreateInfoMiddleListNew dvc cims cis

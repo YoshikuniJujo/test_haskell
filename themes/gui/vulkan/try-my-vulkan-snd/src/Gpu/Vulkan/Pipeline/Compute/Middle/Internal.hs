@@ -85,7 +85,7 @@ instance (
 	WithPoked n, WithPoked n1, PokableList vss,
 	CreateInfoListToCore as ) =>
 	CreateInfoListToCore ('(n, n1, vss) ': as) where
-	createInfoListToCore (V3 ci :...: cis) f =
+	createInfoListToCore (V3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
 

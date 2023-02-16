@@ -58,7 +58,7 @@ class HeteroParListToList' sbtss where
 instance HeteroParListToList' '[] where heteroParListToList' _ HNil = []
 
 instance HeteroParListToList' sbtss => HeteroParListToList' ('(s, bts) ': sbtss) where
-	heteroParListToList' f (x :...: xs) = f x : heteroParListToList' f xs
+	heteroParListToList' f (x :** xs) = f x : heteroParListToList' f xs
 
 createInfoToMiddle ::
 	HeteroParListToList' sbtss => CreateInfo n sbtss -> M.CreateInfo n

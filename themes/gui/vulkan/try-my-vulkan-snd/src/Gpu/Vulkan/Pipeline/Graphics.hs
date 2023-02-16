@@ -147,10 +147,10 @@ instance (
 		'(sl, sbtss, pcl), sr, '(sb, vs', ts') ) ': ss) =
 		'(n, ShaderStage.MiddleVarsNew nnskndscdvss, nvsts, n3, n4, n5, n6,
 			n7, n8, n9, n10, '(vs', ts')) ': MiddleVars ss
-	createInfoListToMiddle dvc (V14 ci :...: cis) = (:...:)
+	createInfoListToMiddle dvc (V14 ci :** cis) = (:**)
 		<$> (V12 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
-	destroyShaderStages dvc (V12 cim :...: cims) (V14 ci :...: cis) = do
+	destroyShaderStages dvc (V12 cim :** cims) (V14 ci :** cis) = do
 		ShaderStage.destroyCreateInfoMiddleListNew dvc (T.createInfoStages cim) (createInfoStages ci)
 		destroyShaderStages dvc cims cis
 
@@ -161,8 +161,8 @@ class V2g ss where
 instance V2g '[] where v2g HNil = HNil; g2v HNil = HNil
 
 instance V2g ss => V2g (s ': ss) where
-	v2g (V2 g :...: gs) = V2 (G g) :...: v2g gs
-	g2v (V2 (G g) :...: gs) = V2 g :...: g2v gs
+	v2g (V2 g :** gs) = V2 (G g) :** v2g gs
+	g2v (V2 (G g) :** gs) = V2 g :** g2v gs
 
 createGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
