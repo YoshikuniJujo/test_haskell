@@ -1464,7 +1464,7 @@ createUniformBuffers :: forall ssmp siv sd sdsc a .
 		'Vk.DscSetLyt.Buffer '[ 'Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
 	Int -> (forall slyts smsbs . (
-		HeteroParList.ListToHeteroParList slyts,
+		HeteroParList.FromList slyts,
 		Update smsbs slyts ssmp siv,
 		DescriptorSetIndex slyts sdsc ) =>
 		HeteroParList.PL Vk.DscSet.Layout slyts ->
@@ -1517,7 +1517,7 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeCombinedImageSampler,
 		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
 
-createDescriptorSets :: (HeteroParList.ListToHeteroParList ss, Update smsbs ss ssmp siv) =>
+createDescriptorSets :: (HeteroParList.FromList ss, Update smsbs ss ssmp siv) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
 	Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv -> Vk.Smplr.S ssmp ->
@@ -1655,7 +1655,7 @@ instance VssList vss =>
 	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
-	(TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss, VssList vss) =>
+	(TpLvlLst.Length [Type] vss, HeteroParList.FromList vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p

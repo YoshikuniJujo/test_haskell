@@ -75,7 +75,7 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoLevelNewM = lvl }
 
 allocateNew ::
-	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss) =>
+	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
@@ -97,7 +97,7 @@ reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
-	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss) =>
+	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.PL CC vss)
 allocateNewM dvc ai = HeteroParList.listToHeteroParList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 

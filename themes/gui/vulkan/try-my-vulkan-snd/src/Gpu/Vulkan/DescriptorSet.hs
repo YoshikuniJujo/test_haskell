@@ -84,7 +84,7 @@ allocateInfoToMiddle AllocateInfo {
 
 newtype S sd sp (slbts :: LayoutArg) = S M.D
 
-allocateSs :: (Storable n, HeteroParList.ListToHeteroParList slbtss) =>
+allocateSs :: (Storable n, HeteroParList.FromList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroParList.PL (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =

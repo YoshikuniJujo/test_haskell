@@ -23,7 +23,7 @@ module Data.HeteroParList (
 
 	-- ** Hetero List
 
-	ListToHeteroParList(..), heteroParListToList, heteroParListToListM,
+	FromList(..), heteroParListToList, heteroParListToListM,
 
 	-- ** Homo List
 
@@ -81,14 +81,14 @@ pattern Singleton x <- (x :** Nil) where
 
 -- From/To List
 
-class ListToHeteroParList ss where
+class FromList ss where
 	listToHeteroParList :: (forall s . t -> t' s) -> [t] -> PL t' ss
 
-instance ListToHeteroParList '[] where
+instance FromList '[] where
 	listToHeteroParList _ [] = Nil
 	listToHeteroParList _ _ = error "bad"
 
-instance ListToHeteroParList ss => ListToHeteroParList (s ': ss) where
+instance FromList ss => FromList (s ': ss) where
 	listToHeteroParList f (x : xs) = f x :** listToHeteroParList f xs
 	listToHeteroParList _ _ = error "bad"
 

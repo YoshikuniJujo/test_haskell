@@ -1121,7 +1121,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			'Atom 256 GpuSceneData0 'Nothing ] ] ->
 	Int ->
 	(forall slyts sbsms . (
-		HeteroParList.ListToHeteroParList slyts, Update sbsms slyts,
+		HeteroParList.FromList slyts, Update sbsms slyts,
 		HeteroParList.HomoList '(sdsc, '[
 			'Vk.DscSetLyt.Buffer '[ 'Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
@@ -1286,7 +1286,7 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 createDescriptorSets :: (
-	HeteroParList.ListToHeteroParList ss, Update smsbs ss ) =>
+	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
 	Vk.Bffr.Binded sb sm "scene-buffer" '[
@@ -1418,7 +1418,7 @@ instance VssList vss =>
 	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
-	(TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss, VssList vss) =>
+	(TpLvlLst.Length [Type] vss, HeteroParList.FromList vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
