@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -32,7 +32,8 @@ import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
 import Data.TypeLevel qualified as TL
-import Data.HeteroParList
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 import Data.Color.Internal
 
@@ -216,10 +217,10 @@ instance ClearColorValueToCore cct =>
 
 class TL.Length cts => ClearValuesToCore (cts :: [ClearType]) where
 	clearValuesToCore ::
-		HeteroParList ClearValue cts ->
+		HeteroParList.PL ClearValue cts ->
 		([C.PtrClearValue] -> IO a) -> IO a
 
-instance ClearValuesToCore '[] where clearValuesToCore HNil = ($ [])
+instance ClearValuesToCore '[] where clearValuesToCore HeteroParList.HNil = ($ [])
 
 instance (ClearValueToCore ct, ClearValuesToCore cts) =>
 	ClearValuesToCore (ct ': cts) where
@@ -256,10 +257,10 @@ data SubmitInfo n vss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: HeteroParList CommandBuffer.T.CC vss,
+	submitInfoCommandBuffers :: HeteroParList.PL CommandBuffer.T.CC vss,
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 
-deriving instance (Show n, Show (HeteroParList CommandBuffer.T.CC vss)) =>
+deriving instance (Show n, Show (HeteroParList.PL CommandBuffer.T.CC vss)) =>
 	Show (SubmitInfo n vss)
 
 submitInfoToCore :: WithPoked n =>
@@ -272,7 +273,7 @@ submitInfoToCore SubmitInfo {
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
 	submitInfoCommandBuffers = (length &&& id)
-		. heteroParListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
+		. HeteroParList.heteroParListToList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
 	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss) } f =
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->

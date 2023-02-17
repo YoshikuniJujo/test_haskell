@@ -34,7 +34,7 @@ data DescriptionNew (fmt :: T.Format) = DescriptionNew {
 
 class DescriptionsFromNew fmts where
 	descriptionsFromNew ::
-		HeteroParList.HeteroParList DescriptionNew fmts -> [Description]
+		HeteroParList.PL DescriptionNew fmts -> [Description]
 
 instance DescriptionsFromNew '[] where descriptionsFromNew HeteroParList.HNil = []
 

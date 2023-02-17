@@ -92,7 +92,7 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderPass :: R,
 	beginInfoFramebuffer :: Framebuffer.F,
 	beginInfoRenderArea :: Rect2d,
-	beginInfoClearValues :: HeteroParList.HeteroParList ClearValue cts }
+	beginInfoClearValues :: HeteroParList.PL ClearValue cts }
 
 beginInfoToCore :: forall n cts a . (WithPoked n, ClearValuesToCore cts) =>
 	BeginInfo n cts -> (Ptr C.BeginInfo -> IO a) -> IO ()

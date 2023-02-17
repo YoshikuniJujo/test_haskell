@@ -66,9 +66,9 @@ layoutToMiddle (Layout (Layout.L l)) = l
 data AllocateInfo n sp slbtss = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts :: HeteroParList.HeteroParList Layout slbtss }
+	allocateInfoSetLayouts :: HeteroParList.PL Layout slbtss }
 
-deriving instance (Show n, Show (HeteroParList.HeteroParList Layout slbtss)) =>
+deriving instance (Show n, Show (HeteroParList.PL Layout slbtss)) =>
 	Show (AllocateInfo n sp slbtss)
 
 allocateInfoToMiddle :: AllocateInfo n sp slbtss -> M.AllocateInfo n
@@ -86,7 +86,7 @@ newtype S sd sp (slbts :: LayoutArg) = S M.D
 
 allocateSs :: (Storable n, HeteroParList.ListToHeteroParList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
-	IO (HeteroParList.HeteroParList (S sd sp) slbtss)
+	IO (HeteroParList.PL (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
 	HeteroParList.listToHeteroParList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
 
@@ -99,7 +99,7 @@ data Write n sd sp (slbts :: LayoutArg)
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
-	Show (HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs)) =>
+	Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
@@ -127,16 +127,16 @@ data WriteSources arg where
 	WriteSourcesInNext ::
 		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
 	ImageInfos ::
-		HeteroParList.HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList.PL (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
 	BufferInfos ::
-		HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
+		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
 	TexelBufferViews ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther
 
-deriving instance Show (HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs) =>
+deriving instance Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs) =>
 	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
@@ -168,7 +168,7 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
-		HeteroParList.HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList.PL (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		[Descriptor.M.ImageInfo]
 
 instance ImageInfosToMiddle '[] where imageInfosToMiddle HeteroParList.HNil = []
@@ -180,7 +180,7 @@ instance ImageInfosToMiddle ssfmtnmsis =>
 
 class BufferInfosToMiddle sbsmobjsobjs where
 	bufferInfosToMiddle ::
-		HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
+		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
 		[Descriptor.M.BufferInfo]
 
 instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.HNil = []
@@ -196,12 +196,12 @@ data Write_ n sdspslbtssbsmobjsobjs where
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
-	Show (HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs) ) =>
+	Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs) ) =>
 	Show (Write_ n '(sd, sp, slbts, ('WriteSourcesArgBuffer sbsmobjsobjs)))
 
 class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 	writeListToMiddle ::
-		HeteroParList.HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
+		HeteroParList.PL (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
 
 instance WriteListToMiddle n '[] where writeListToMiddle HeteroParList.HNil = []
 
@@ -217,5 +217,5 @@ updateDs :: (
 	Storable n, Storable n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
-	HeteroParList.HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
+	HeteroParList.PL (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
 updateDs (Device.D dvc) (writeListToMiddle -> ws) cs = M.updateDs dvc ws cs

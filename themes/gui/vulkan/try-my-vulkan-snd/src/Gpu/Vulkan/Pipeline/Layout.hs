@@ -33,17 +33,17 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
 data CreateInfo n sbtss = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags,
-	createInfoSetLayouts :: HeteroParList.HeteroParList Layout sbtss,
+	createInfoSetLayouts :: HeteroParList.PL Layout sbtss,
 	createInfoPushConstantRanges :: [PushConstant.M.Range] }
 
 data CreateInfoNew n sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: M.CreateFlags,
-	createInfoSetLayoutsNew :: HeteroParList.HeteroParList Layout sbtss }
+	createInfoSetLayoutsNew :: HeteroParList.PL Layout sbtss }
 
 deriving instance (
 	Show n,
-	Show (HeteroParList.HeteroParList Layout sbtss) ) =>
+	Show (HeteroParList.PL Layout sbtss) ) =>
 	Show (CreateInfo n sbtss)
 
 type Layout = V2 Descriptor.Set.Layout.L
@@ -54,7 +54,7 @@ unLayout (V2 l) = l
 class HeteroParListToList' sbtss where
 	heteroParListToList' ::
 		(forall (s :: Type) (bts :: [Descriptor.Set.Layout.BindingType]) . t '(s, bts) -> t') ->
-		HeteroParList.HeteroParList t sbtss -> [t']
+		HeteroParList.PL t sbtss -> [t']
 
 instance HeteroParListToList' '[] where heteroParListToList' _ HeteroParList.HNil = []
 

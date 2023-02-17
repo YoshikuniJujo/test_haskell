@@ -46,23 +46,23 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Memory.Middle as M
 
 data M s (sibfoss :: [(Type, K.ImageBuffer)]) =
-	M (IORef (HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss)) M.M
+	M (IORef (HeteroParList.PL (V2 ImageBuffer) sibfoss)) M.M
 
-readM'' :: M s sibfoss -> IO (HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss, M.M)
+readM'' :: M s sibfoss -> IO (HeteroParList.PL (V2 ImageBuffer) sibfoss, M.M)
 readM'' (M ib m) = (, m) <$> readIORef ib
 
 writeMBinded' :: M s sibfoss ->
-	HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss -> IO ()
+	HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss -> IO ()
 writeMBinded' (M rib _r) ibs = writeIORef rib (HeteroParList.heteroParListMap imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: V2 (ImageBufferBinded sm) sibfos -> V2 ImageBuffer sibfos
 imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Image.INew i
 imageBufferFromBinded (V2 (BufferBinded (Buffer.Binded x b))) = V2 . Buffer $ Buffer.B x b
 
-newM2' :: HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss -> M.M -> IO (M s sibfoss)
+newM2' :: HeteroParList.PL (V2 ImageBuffer) sibfoss -> M.M -> IO (M s sibfoss)
 newM2' ibs mm = (`M` mm) <$> newIORef ibs
 
--- deriving instance Show (HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss) =>
+-- deriving instance Show (HeteroParList.PL (V2 ImageBuffer) sibfoss) =>
 --	Show (M s sibfoss)
 
 data ImageBuffer sib (ib :: K.ImageBuffer) where
@@ -85,7 +85,7 @@ instance (SizeAlignment obj, Alignments ibs) =>
 deriving instance Show (Image.INew sib nm fmt) =>
 	Show (ImageBuffer sib ('K.Image nm fmt))
 
-deriving instance Show (HeteroParList.HeteroParList ObjectLength objs) =>
+deriving instance Show (HeteroParList.PL ObjectLength objs) =>
 	Show (ImageBuffer sib ('K.Buffer nm objs))
 
 data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
@@ -117,17 +117,17 @@ getMemoryRequirementsBinded' ::
 getMemoryRequirementsBinded' dvc (V2 bi) = getMemoryRequirementsBinded dvc bi
 
 getMemoryRequirementsList :: Device.D sd ->
-	HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
+	HeteroParList.PL (V2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsList dvc bis =
 	HeteroParList.heteroParListToListM (getMemoryRequirements' dvc) bis
 
 getMemoryRequirementsListBinded :: Device.D sd ->
-	HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
+	HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsListBinded dvc bis =
 	HeteroParList.heteroParListToListM (getMemoryRequirementsBinded' dvc) bis
 
 allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
-	Device.D sd -> HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss ->
+	Device.D sd -> HeteroParList.PL (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
 allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 	Device.Memory.Buffer.allocateInfoNext = mnxt,
@@ -141,7 +141,7 @@ allocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 		Memory.M.allocateInfoMemoryTypeIndex = mti }
 
 reallocateInfoToMiddle :: forall sd sm sibfoss n . Alignments sibfoss =>
-	Device.D sd -> HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss ->
+	Device.D sd -> HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n -> IO (Memory.M.AllocateInfo n)
 reallocateInfoToMiddle dvc ibs Device.Memory.Buffer.AllocateInfo {
 	Device.Memory.Buffer.allocateInfoNext = mnxt,
@@ -169,7 +169,7 @@ memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 
 allocate :: (Pokable n, Pokable c, Pokable d, Alignments sibfoss) =>
 	Device.D sd ->
-	HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss ->
+	HeteroParList.PL (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
@@ -182,7 +182,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 
 reallocate :: (
 	Pokable n, Pokable c, Pokable d, Alignments sibfoss ) =>
-	Device.D sd -> HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss ->
+	Device.D sd -> HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
@@ -194,7 +194,7 @@ reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 
 reallocateBind :: (
 	Pokable n, Pokable c, Pokable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
-	Device.D sd -> HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss ->
+	Device.D sd -> HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
@@ -204,7 +204,7 @@ reallocateBind dvc bs ai macc macd mem = do
 
 class RebindAll sibfoss sibfoss' where
 	rebindAll :: Device.D sd ->
-		HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss ->
+		HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss ->
 		M sm sibfoss' -> IO ()
 
 instance RebindAll '[] sibfoss' where rebindAll _ _ _ = pure ()
@@ -227,21 +227,21 @@ allocateBind :: (
 	Pokable n, Pokable c, Pokable d,
 	BindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd ->
-	HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss ->
+	HeteroParList.PL (V2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	(forall s .
-		HeteroParList.HeteroParList (V2 (ImageBufferBinded s)) sibfoss ->
+		HeteroParList.PL (V2 (ImageBufferBinded s)) sibfoss ->
 		M s sibfoss -> IO a) -> IO a
 allocateBind dvc bs ai macc macd f = allocate dvc bs ai macc macd \m -> do
 	bnds <- bindAll dvc bs m
 	f bnds m
 
 class BindAll sibfoss sibfoss' where
-	bindAll :: Device.D sd -> HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss ->
+	bindAll :: Device.D sd -> HeteroParList.PL (V2 ImageBuffer) sibfoss ->
 		M sm sibfoss' ->
-		IO (HeteroParList.HeteroParList (V2 (ImageBufferBinded sm)) sibfoss)
+		IO (HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss)
 
 instance BindAll '[] sibfoss' where bindAll _ _ _ = pure HeteroParList.HNil
 
@@ -300,7 +300,7 @@ offset dvc m ost = do
 
 class Offset'
 	sib (ib :: K.ImageBuffer) (sibfoss :: [(Type, K.ImageBuffer)]) where
-	offset' :: Device.D sd -> HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss ->
+	offset' :: Device.D sd -> HeteroParList.PL (V2 ImageBuffer) sibfoss ->
 		Device.M.Size -> IO Device.M.Size
 
 instance Offset' sib ib ('(sib, ib) ': sibfoss) where
@@ -332,9 +332,9 @@ offsetSizeLength m = do
 	offsetSizeLength' @nm @obj @sibfoss lns
 
 class OffsetSize' (nm :: Symbol) (obj :: Object) sibfoss where
-	offsetSize' :: Device.D sd -> HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss ->
+	offsetSize' :: Device.D sd -> HeteroParList.PL (V2 ImageBuffer) sibfoss ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
-	offsetSizeLength' :: HeteroParList.HeteroParList (V2 ImageBuffer) sibfoss -> IO (ObjectLength obj)
+	offsetSizeLength' :: HeteroParList.PL (V2 ImageBuffer) sibfoss -> IO (ObjectLength obj)
 
 instance OffsetSizeObject obj objs =>
 	OffsetSize' nm obj ('(sib, 'K.Buffer nm objs) ': sibfoss) where
@@ -358,9 +358,9 @@ instance {-# OVERLAPPABLE #-}
 	offsetSizeLength' (_ :** lns) = offsetSizeLength' @nm @obj lns
 
 class OffsetSizeObject (obj :: Object) (objs :: [Object]) where
-	offsetSizeObject :: Device.M.Size -> HeteroParList.HeteroParList ObjectLength objs ->
+	offsetSizeObject :: Device.M.Size -> HeteroParList.PL ObjectLength objs ->
 		(Device.M.Size, Device.M.Size)
-	offsetSizeObjectLength :: HeteroParList.HeteroParList ObjectLength objs ->
+	offsetSizeObjectLength :: HeteroParList.PL ObjectLength objs ->
 		ObjectLength obj
 
 instance SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where

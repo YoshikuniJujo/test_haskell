@@ -77,7 +77,7 @@ allocateInfoToMiddleNew AllocateInfoNew {
 allocateNew ::
 	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
-	(forall s . HeteroParList.HeteroParList (C s) vss -> IO a) -> IO a
+	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
 	(f . HeteroParList.heteroParListMap C)
@@ -98,10 +98,10 @@ reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
 	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss) =>
-	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.HeteroParList CC vss)
+	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.PL CC vss)
 allocateNewM dvc ai = HeteroParList.listToHeteroParList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
-freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList.HeteroParList CC vss -> IO ()
+freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList.PL CC vss -> IO ()
 freeCsNew dvc cp cs =
 	M.freeCs dvc cp (HeteroParList.heteroParListToList (\(CC cb) -> cb) cs)
 

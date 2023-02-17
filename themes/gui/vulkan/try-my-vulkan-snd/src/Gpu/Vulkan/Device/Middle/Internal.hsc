@@ -29,7 +29,7 @@ import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.List
-import Data.HeteroParList
+import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
 import qualified Data.Text as T
@@ -62,12 +62,12 @@ instance Default CreateFlags where def = CreateFlagsZero
 data CreateInfo n ns = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueCreateInfos :: HeteroParList QueueCreateInfo ns,
+	createInfoQueueCreateInfos :: HeteroParList.PL QueueCreateInfo ns,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
-deriving instance (Show n, Show (HeteroParList QueueCreateInfo ns)) =>
+deriving instance (Show n, Show (HeteroParList.PL QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
 createInfoToCore :: (WithPoked n, WithPokedToListM ns) =>

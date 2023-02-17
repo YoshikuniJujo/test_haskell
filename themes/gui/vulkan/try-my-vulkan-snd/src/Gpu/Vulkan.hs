@@ -1,9 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -11,7 +12,8 @@ module Gpu.Vulkan where
 
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.Enum
 
@@ -29,18 +31,18 @@ data SemaphorePipelineStageFlags ss =
 -- deriving instance Show (HeteroParList Semaphore.S ss)
 
 semaphorePipelineStageFlagsToMiddle ::
-	HeteroParList SemaphorePipelineStageFlags sss ->
+	HeteroParList.PL SemaphorePipelineStageFlags sss ->
 	[(Semaphore.M.S, Pipeline.StageFlags)]
-semaphorePipelineStageFlagsToMiddle = heteroParListToList
+semaphorePipelineStageFlagsToMiddle = HeteroParList.heteroParListToList
 	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
 data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
-		HeteroParList SemaphorePipelineStageFlags sss,
-	submitInfoCommandBuffers :: HeteroParList (V2 CommandBuffer.C) svss,
+		HeteroParList.PL SemaphorePipelineStageFlags sss,
+	submitInfoCommandBuffers :: HeteroParList.PL (V2 CommandBuffer.C) svss,
 	submitInfoSignalSemaphores ::
-		HeteroParList Semaphore.S ssss }
+		HeteroParList.PL Semaphore.S ssss }
 
 -- deriving instance (Show n, Show (HeteroParList SemaphorePipelineStageFlags sss)) =>
 --	Show (SubmitInfo n sss s vs)
@@ -48,13 +50,13 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 class CommandBufferListToMiddle svss where
 	type CommandBufferListToMiddleMapSnd svss :: [[Type]]
 	commandBufferListToMiddle ::
-		HeteroParList (V2 CommandBuffer.C) svss ->
-		HeteroParList CommandBuffer.CC
+		HeteroParList.PL (V2 CommandBuffer.C) svss ->
+		HeteroParList.PL CommandBuffer.CC
 			(CommandBufferListToMiddleMapSnd svss)
 
 instance CommandBufferListToMiddle '[] where
 	type CommandBufferListToMiddleMapSnd '[] = '[]
-	commandBufferListToMiddle HNil = HNil
+	commandBufferListToMiddle HeteroParList.HNil = HeteroParList.HNil
 
 instance CommandBufferListToMiddle svss =>
 	CommandBufferListToMiddle ('(s, vs) ': svss) where
@@ -72,7 +74,7 @@ submitInfoToMiddle SubmitInfo {
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
 	submitInfoCommandBuffers = commandBufferListToMiddle -> cbs,
 	submitInfoSignalSemaphores =
-		heteroParListToList (\(Semaphore.S s) -> s) -> ssmprs
+		HeteroParList.heteroParListToList (\(Semaphore.S s) -> s) -> ssmprs
 	} = M.SubmitInfo {
 	M.submitInfoNext = mnxt,
 	M.submitInfoWaitSemaphoreDstStageMasks = wsdsms,
@@ -82,10 +84,10 @@ submitInfoToMiddle SubmitInfo {
 class SemaphorePipelineStageFlagsFromMiddle sss where
 	semaphorePipelineStageFlagsFromMiddle ::
 		[(Semaphore.M.S, Pipeline.StageFlags)] ->
-		HeteroParList SemaphorePipelineStageFlags sss
+		HeteroParList.PL SemaphorePipelineStageFlags sss
 
 instance SemaphorePipelineStageFlagsFromMiddle '[] where
-	semaphorePipelineStageFlagsFromMiddle [] = HNil
+	semaphorePipelineStageFlagsFromMiddle [] = HeteroParList.HNil
 
 instance SemaphorePipelineStageFlagsFromMiddle sss =>
 	SemaphorePipelineStageFlagsFromMiddle (ss ': sss) where

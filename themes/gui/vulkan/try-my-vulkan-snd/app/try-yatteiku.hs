@@ -5,6 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PartialTypeSignatures #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
 
 module Main where
@@ -19,7 +20,8 @@ import Data.Maybe
 import Data.List
 import Data.Array
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Color
 import Codec.Picture
@@ -118,7 +120,7 @@ main = do
 				Vk.Device.createInfoNext = Nothing,
 				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
-					Singleton queueCreateInfo,
+					HeteroParList.Singleton queueCreateInfo,
 				Vk.Device.createInfoEnabledLayerNames =
 					[Vk.Khr.validationLayerName],
 				Vk.Device.createInfoEnabledExtensionNames = [],
@@ -145,7 +147,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 								Vk.C.rect2dExtent = Vk.C.Extent2d
 									screenWidth screenHeight
 								},
-							Vk.RenderPass.beginInfoClearValues = HNil }
+							Vk.RenderPass.beginInfoClearValues = HeteroParList.HNil }
 					Vk.Cmd.beginRenderPass @() @'[]
 						cb renderpassBeginInfo Vk.Subpass.ContentsInline do
 						Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
@@ -191,10 +193,10 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 				let	submitInfo :: Vk.SubmitInfo () _ _ _
 					submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
-						Vk.submitInfoWaitSemaphoreDstStageMasks = HNil,
-						Vk.submitInfoCommandBuffers = V2 cmdBuf :** HNil,
-						Vk.submitInfoSignalSemaphores = HNil }
-				Vk.Queue.submit graphicsQueue (V4 submitInfo :** HNil) Nothing
+						Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.HNil,
+						Vk.submitInfoCommandBuffers = V2 cmdBuf :** HeteroParList.HNil,
+						Vk.submitInfoSignalSemaphores = HeteroParList.HNil }
+				Vk.Queue.submit graphicsQueue (V4 submitInfo :** HeteroParList.HNil) Nothing
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
 			_ -> error "never occur"
@@ -247,8 +249,8 @@ makeImage' phdvc dvc f = do
 				Vk.Memory.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
 		Vk.Memory.allocateBind @()
-			dvc (Singleton . V2 $ Vk.Memory.Image image)
-			imgMemAllocInfo nil nil \(Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
+			dvc (HeteroParList.Singleton . V2 $ Vk.Memory.Image image)
+			imgMemAllocInfo nil nil \(HeteroParList.Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
@@ -285,7 +287,7 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
 	Vk.Cmd.copyImageToBuffer
-		cb img Vk.Img.LayoutTransferSrcOptimal bf (Singleton region)
+		cb img Vk.Img.LayoutTransferSrcOptimal bf (HeteroParList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
@@ -314,7 +316,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HNil HNil (Singleton $ V5 barrier)
+		sstg dstg zeroBits HeteroParList.HNil HeteroParList.HNil (HeteroParList.Singleton $ V5 barrier)
 	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
@@ -335,15 +337,15 @@ beginSingleTimeCommands :: forall sd sc a .
 	(forall s . Vk.CommandBuffer.C s '[] -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CommandBuffer.allocateNew
-		@() dvc allocInfo \(Singleton (cb :: Vk.CommandBuffer.C s '[])) -> do
+		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.C s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HNil,
-				Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
-				Vk.submitInfoSignalSemaphores = HNil }
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.HNil,
+				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphores = HeteroParList.HNil }
 		Vk.CommandBuffer.begin @() @() cb beginInfo (cmd cb) <* do
-			Vk.Queue.submit gq (Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.submit gq (HeteroParList.Singleton $ V4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CommandBuffer.AllocateInfoNew () sc '[ '[]]
@@ -378,15 +380,15 @@ createBuffer :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Memory.M.requirementsMemoryTypeBits reqs) props
-	Vk.Memory.allocateBind dv (Singleton . V2 $ Vk.Memory.Buffer b)
+	Vk.Memory.allocateBind dv (HeteroParList.Singleton . V2 $ Vk.Memory.Buffer b)
 		(allcInfo mt) nil nil
-		$ f . \(Singleton (V2 (Vk.Memory.BufferBinded bnd))) -> bnd
+		$ f . \(HeteroParList.Singleton (V2 (Vk.Memory.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = Singleton ln,
+		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -478,7 +480,7 @@ makeFramebuffer dvc rp iv f = do
 			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
-			Vk.Framebuffer.createInfoAttachments = iv :** HNil,
+			Vk.Framebuffer.createInfoAttachments = iv :** HeteroParList.HNil,
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
@@ -556,7 +558,7 @@ makeRenderPass dvc f = do
 			Vk.RenderPass.createInfoFlagsNew =
 				Vk.RenderPass.CreateFlagsZero,
 			Vk.RenderPass.createInfoAttachmentsNew =
-				attachmentNew :** HNil,
+				attachmentNew :** HeteroParList.HNil,
 			Vk.RenderPass.createInfoSubpassesNew = [subpass],
 			Vk.RenderPass.createInfoDependenciesNew = [] }
 	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil nil f
@@ -650,7 +652,7 @@ makePipelineNew dvc rp f = do
 		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfoNew {
 			Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 			Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HNil }
+			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.HNil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
 			Vk.Shader.Module.createInfoNext = Nothing,
 			Vk.Shader.Module.createInfoFlags = zeroBits,
@@ -691,7 +693,7 @@ makePipelineNew dvc rp f = do
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
 					V6 vertShaderStage :**
-					V6 fragShaderStage :** HNil,
+					V6 fragShaderStage :** HeteroParList.HNil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just $ V3 vertexInputInfo,
 				Vk.Ppl.Gr.createInfoInputAssemblyState =
@@ -713,8 +715,8 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
-			V14 pipelineCreateInfo :** HNil ) nil nil
-				\(V2 g :** HNil) -> f g
+			V14 pipelineCreateInfo :** HeteroParList.HNil ) nil nil
+				\(V2 g :** HeteroParList.HNil) -> f g
 
 [glslVertexShader|
 

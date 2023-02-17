@@ -113,8 +113,8 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 class MemoryBarrierListToMiddle
 	(nsismnmfmts :: [(Type, Type, Type, Symbol, T.Format)])  where
 	memoryBarrierListToMiddle ::
-		HeteroParList.HeteroParList (V5 MemoryBarrier) nsismnmfmts ->
-		HeteroParList.HeteroParList M.MemoryBarrier (FirstOfFives nsismnmfmts)
+		HeteroParList.PL (V5 MemoryBarrier) nsismnmfmts ->
+		HeteroParList.PL M.MemoryBarrier (FirstOfFives nsismnmfmts)
 
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.HNil = HeteroParList.HNil

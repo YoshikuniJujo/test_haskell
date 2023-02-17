@@ -7,7 +7,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -27,7 +27,8 @@ import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.TypeLevel hiding (length)
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
@@ -373,8 +374,8 @@ createLogicalDevice phdvc qfis f =
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroParList :: Storable' s => (a -> t s) -> [a] ->
-	(forall ss . WithPokedToListM ss => HeteroParList t ss -> b) -> b
-mkHeteroParList _k [] f = f HNil
+	(forall ss . WithPokedToListM ss => HeteroParList.PL t ss -> b) -> b
+mkHeteroParList _k [] f = f HeteroParList.HNil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
 createSwapChainNew :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
@@ -510,15 +511,15 @@ chooseSwapExtent win caps
 	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
 createImageViews :: Vk.Dvc.D sd -> Vk.Format -> [Vk.Image.Binded ss ss] ->
-	(forall si . HeteroParList Vk.ImgVw.I si -> IO a) -> IO a
-createImageViews _dvc _fmt [] f = f HNil
+	(forall si . HeteroParList.PL Vk.ImgVw.I si -> IO a) -> IO a
+createImageViews _dvc _fmt [] f = f HeteroParList.HNil
 createImageViews dvc fmt (sci : scis) f =
 	Vk.ImgVw.create dvc (mkImageViewCreateInfo fmt sci) nil nil \sciv ->
 	createImageViews dvc fmt scis \scivs -> f $ sciv :** scivs
 
 recreateImageViews :: Vk.Dvc.D sd -> Vk.Format ->
-	[Vk.Image.Binded ss ss] -> HeteroParList Vk.ImgVw.I sis -> IO ()
-recreateImageViews _dvc _scifmt [] HNil = pure ()
+	[Vk.Image.Binded ss ss] -> HeteroParList.PL Vk.ImgVw.I sis -> IO ()
+recreateImageViews _dvc _scifmt [] HeteroParList.HNil = pure ()
 recreateImageViews dvc scifmt (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreate dvc (mkImageViewCreateInfo scifmt sci) nil nil iv >>
 	recreateImageViews dvc scifmt scis ivs
@@ -593,7 +594,7 @@ createRenderPassNew dvc f = do
 		renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
 			Vk.RndrPass.M.createInfoNextNew = Nothing,
 			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
-			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :** HNil,
+			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :** HeteroParList.HNil,
 			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
 	Vk.RndrPass.createNew @'[scifmt] @() dvc renderPassInfo nil nil \rp -> f rp
@@ -604,7 +605,7 @@ createPipelineLayout' dvc f = do
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
 			Vk.Ppl.Layout.createInfoNextNew = Nothing,
 			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
-			Vk.Ppl.Layout.createInfoSetLayoutsNew = HNil }
+			Vk.Ppl.Layout.createInfoSetLayoutsNew = HeteroParList.HNil }
 	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil f
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
@@ -613,8 +614,8 @@ createGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt f =
-	Vk.Ppl.Graphics.createGs dvc Nothing (V14 pplInfo :** HNil)
-			nil nil \(V2 gpl :** HNil) -> f gpl
+	Vk.Ppl.Graphics.createGs dvc Nothing (V14 pplInfo :** HeteroParList.HNil)
+			nil nil \(V2 gpl :** HeteroParList.HNil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
@@ -623,7 +624,7 @@ recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (V14 pplInfo :** HNil) nil nil (V2 gpls :** HNil)
+	dvc Nothing (V14 pplInfo :** HeteroParList.HNil) nil nil (V2 gpls :** HeteroParList.HNil)
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo' ::
@@ -653,10 +654,10 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
-shaderStages :: HeteroParList (V6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+shaderStages :: HeteroParList.PL (V6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
 	'((), (), 'GlslVertexShader, (), (), '[]),
 	'((), (), 'GlslFragmentShader, (), (), '[]) ]
-shaderStages = V6 vertShaderStageInfo :** V6 fragShaderStageInfo :** HNil
+shaderStages = V6 vertShaderStageInfo :** V6 fragShaderStageInfo :** HeteroParList.HNil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
 		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
@@ -745,21 +746,21 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	Vk.RndrPass.R sr -> HeteroParList Vk.ImgVw.I sis ->
+	Vk.RndrPass.R sr -> HeteroParList.PL Vk.ImgVw.I sis ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
-		HeteroParList Vk.Frmbffr.F sfs -> IO a) -> IO a
-createFramebuffers _ _ _ HNil f = f HNil
+		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
+createFramebuffers _ _ _ HeteroParList.HNil f = f HeteroParList.HNil
 createFramebuffers dvc sce rp (iv :** ivs) f =
 	Vk.Frmbffr.create dvc (mkFramebufferCreateInfo sce rp iv) nil nil \fb ->
 	createFramebuffers dvc sce rp ivs \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-		Vk.RndrPass.R sr -> HeteroParList Vk.ImgVw.I sis ->
-		HeteroParList Vk.Frmbffr.F sfs -> IO ()
+		Vk.RndrPass.R sr -> HeteroParList.PL Vk.ImgVw.I sis ->
+		HeteroParList.PL Vk.Frmbffr.F sfs -> IO ()
 
 instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HNil HNil = pure ()
+	recreateFramebuffers _dvc _sce _rp HeteroParList.HNil HeteroParList.HNil = pure ()
 
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
@@ -775,7 +776,7 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 	Vk.Frmbffr.createInfoNext = Nothing,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
-	Vk.Frmbffr.createInfoAttachments = attch :** HNil,
+	Vk.Frmbffr.createInfoAttachments = attch :** HeteroParList.HNil,
 	Vk.Frmbffr.createInfoWidth = w, Vk.Frmbffr.createInfoHeight = h,
 	Vk.Frmbffr.createInfoLayers = 1 }
 	where
@@ -828,15 +829,15 @@ createBuffer' :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
 createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Mem.allocateBind dv (Singleton . V2 $ Vk.Mem.Buffer b)
+	Vk.Mem.allocateBind dv (HeteroParList.Singleton . V2 $ Vk.Mem.Buffer b)
 		(allcInfo mt) nil nil
-		$ f . \(Singleton (V2 (Vk.Mem.BufferBinded bnd))) -> bnd
+		$ f . \(HeteroParList.Singleton (V2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
 		Vk.Bffr.createInfoNext = Nothing,
 		Vk.Bffr.createInfoFlags = zeroBits,
-		Vk.Bffr.createInfoLengths = Singleton ln,
+		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
@@ -862,16 +863,16 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
-		@() dvc allocInfo \(Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
+		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HNil,
-				Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
-				Vk.submitInfoSignalSemaphores = HNil }
+				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.HNil,
+				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ V2 cb,
+				Vk.submitInfoSignalSemaphores = HeteroParList.HNil }
 		Vk.CmdBffr.begin @() @() cb beginInfo do
 			Vk.Cmd.copyBuffer @'[ '[ 'List 256 Vertex ""]] cb src dst
-		Vk.Queue.submit gq (Singleton $ V4 submitInfo) Nothing
+		Vk.Queue.submit gq (HeteroParList.Singleton $ V4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
@@ -887,7 +888,7 @@ copyBuffer dvc gq cp src dst = do
 createCommandBuffers ::
 	forall (n :: Nat) sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb vss . VssList vss =>
-		HeteroParList (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
+		HeteroParList.PL (Vk.CmdBffr.C scb) (vss :: [[Type]]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 	Vk.CmdBffr.allocateNew @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
@@ -900,11 +901,11 @@ createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::
-		HeteroParList (Vk.CmdBffr.C scb) vss -> Int ->
+		HeteroParList.PL (Vk.CmdBffr.C scb) vss -> Int ->
 		Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
 
 instance VssList '[] where
-	vssListIndex HNil _ = error "index too large"
+	vssListIndex HeteroParList.HNil _ = error "index too large"
 
 instance VssList vss =>
 	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
@@ -916,7 +917,7 @@ type family MkVss (n :: Nat) :: [[Type]] where
 	MkVss n = '[AddType Vertex 'Vk.VtxInp.RateVertex] ': MkVss (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[Type]]) .
-	(TpLvlLst.Length [Type] vss, ListToHeteroParList vss, VssList vss) =>
+	(TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
@@ -927,19 +928,19 @@ addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
-		imageAvailableSemaphores :: HeteroParList Vk.Semaphore.S siass,
-		renderFinishedSemaphores :: HeteroParList Vk.Semaphore.S srfss,
-		inFlightFences :: HeteroParList Vk.Fence.F sfss } ->
+		imageAvailableSemaphores :: HeteroParList.PL Vk.Semaphore.S siass,
+		renderFinishedSemaphores :: HeteroParList.PL Vk.Semaphore.S srfss,
+		inFlightFences :: HeteroParList.PL Vk.Fence.F sfss } ->
 		SyncObjects '(siass, srfss, sfss)
 
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
-	heteroParListReplicateM maxFramesInFlight
+	HeteroParList.heteroParListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
-	heteroParListReplicateM maxFramesInFlight
+	HeteroParList.heteroParListReplicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
-	heteroParListReplicateM maxFramesInFlight
+	HeteroParList.heteroParListReplicateM maxFramesInFlight
 		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
@@ -957,7 +958,7 @@ recordCommandBuffer cb rp fb sce gpl vb =
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindVertexBuffers cb
-		. Singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
+		. HeteroParList.Singleton . V4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 	Vk.Cmd.draw cb 3 1 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
@@ -969,20 +970,20 @@ recordCommandBuffer cb rp fb sce gpl vb =
 		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues = Singleton
+		Vk.RndrPass.beginInfoClearValues = HeteroParList.Singleton
 			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
 mainLoop :: (RecreateFramebuffers ss sfs, VssList vss) => FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroParList Vk.ImgVw.I ss ->
+	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroParList.PL Vk.ImgVw.I ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroParList Vk.Frmbffr.F sfs ->
+	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
-	HeteroParList (Vk.CmdBffr.C scb) vss ->
+	HeteroParList.PL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cbs iasrfsifs = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
@@ -995,13 +996,13 @@ runLoop :: (RecreateFramebuffers sis sfs, VssList vss) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
-	HeteroParList Vk.ImgVw.I sis ->
+	HeteroParList.PL Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroParList Vk.Frmbffr.F sfs ->
+	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	 Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
-	HeteroParList (Vk.CmdBffr.C scb) vss ->
+	HeteroParList.PL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
@@ -1018,36 +1019,36 @@ drawFrame :: forall sfs sd ssc sr sg sm sb nm scb ssos vss . (VssList vss) =>
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroParList Vk.Frmbffr.F sfs ->
+	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
-	HeteroParList (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
+	HeteroParList.PL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
-	heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
-	heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	heteroParListIndex iffs cf \(id &&& Singleton -> (iff, siff)) -> do
+	HeteroParList.heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
+	HeteroParList.heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	HeteroParList.heteroParListIndex iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	heteroParListIndex fbs imgIdx \fb ->
+	HeteroParList.heteroParListIndex fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
-			Vk.submitInfoWaitSemaphoreDstStageMasks = Singleton
+			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = Singleton $ V2 cb,
-			Vk.submitInfoSignalSemaphores = Singleton rfs }
+			Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ V2 cb,
+			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,
-			Vk.Khr.presentInfoWaitSemaphores = Singleton rfs,
-			Vk.Khr.presentInfoSwapchainImageIndices = Singleton
+			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
+			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
 				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
-	Vk.Queue.submit gq (Singleton $ V4 submitInfo) $ Just iff
+	Vk.Queue.submit gq (HeteroParList.Singleton $ V4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 	where	cb = cbs `vssListIndex` cf
 
@@ -1059,12 +1060,12 @@ catchAndRecreate :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Khr.Swapchain.S ssc ->
-	HeteroParList Vk.ImgVw.I sis ->
+	HeteroParList.PL Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroParList Vk.Frmbffr.F sfs ->
+	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
 catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 	catchJust
@@ -1078,12 +1079,12 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc -> HeteroParList Vk.ImgVw.I sis ->
+	Vk.Khr.Swapchain.S ssc -> HeteroParList.PL Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	HeteroParList Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
+	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
 recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc

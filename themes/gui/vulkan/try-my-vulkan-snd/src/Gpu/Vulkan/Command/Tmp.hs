@@ -102,9 +102,9 @@ pipelineBarrier :: (
 	) =>
 	CommandBuffer.CC vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
-	HeteroParList.HeteroParList Memory.M.Barrier ns ->
-	HeteroParList.HeteroParList Buffer.M.MemoryBarrier ns' ->
-	HeteroParList.HeteroParList Image.MemoryBarrier ns'' -> IO ()
+	HeteroParList.PL Memory.M.Barrier ns ->
+	HeteroParList.PL Buffer.M.MemoryBarrier ns' ->
+	HeteroParList.PL Image.MemoryBarrier ns'' -> IO ()
 pipelineBarrier (CommandBuffer.CC mcb) = M.pipelineBarrier mcb
 
 copyBufferToImage ::

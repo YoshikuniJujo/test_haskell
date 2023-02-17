@@ -19,7 +19,7 @@ data BeginInfoNew n sr fmt sf cts = BeginInfoNew {
 	beginInfoRenderPassNew :: R sr,
 	beginInfoFramebufferNew :: Framebuffer.FNew fmt sf,
 	beginInfoRenderAreaNew :: Rect2d,
-	beginInfoClearValuesNew :: HeteroParList.HeteroParList ClearValue cts }
+	beginInfoClearValuesNew :: HeteroParList.PL ClearValue cts }
 
 beginInfoToMiddleNew :: BeginInfoNew n sr fmt sf cts -> M.BeginInfo n cts
 beginInfoToMiddleNew BeginInfoNew {
@@ -39,7 +39,7 @@ data BeginInfo n sr sf cts = BeginInfo {
 	beginInfoRenderPass :: R sr,
 	beginInfoFramebuffer :: Framebuffer.F sf,
 	beginInfoRenderArea :: Rect2d,
-	beginInfoClearValues :: HeteroParList.HeteroParList ClearValue cts }
+	beginInfoClearValues :: HeteroParList.PL ClearValue cts }
 
 beginInfoToMiddle :: BeginInfo n sr sf cts -> M.BeginInfo n cts
 beginInfoToMiddle BeginInfo {

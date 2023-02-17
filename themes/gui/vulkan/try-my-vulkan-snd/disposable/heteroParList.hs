@@ -23,6 +23,7 @@ conv _ _ "" = ""
 
 proc :: String -> String
 proc ('\\' : 'n' : cs) = '\n' : proc cs
+proc ('\\' : 't' : cs) = '\t' : proc cs
 proc ('\\' : c : cs) = c : proc cs
 proc (c : cs) = c : proc cs
 proc "" = ""

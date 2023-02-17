@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -5,7 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -20,7 +21,8 @@ import Data.Foldable
 import Data.Traversable
 import Data.MonoTraversable
 import Data.Proxy
-import Data.HeteroParList
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 
 import qualified Data.Sequences as Seq
 
@@ -48,8 +50,8 @@ deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
 class Offset (obj :: Object) objs where
-	offset :: Int -> HeteroParList ObjectLength objs -> Int
-	range :: HeteroParList ObjectLength objs -> Int
+	offset :: Int -> HeteroParList.PL ObjectLength objs -> Int
+	range :: HeteroParList.PL ObjectLength objs -> Int
 
 instance SizeAlignment obj => Offset obj (obj ': objs) where
 	offset ofst _ = ((ofst - 1) `div` algn + 1) * algn
@@ -64,7 +66,7 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 	range (_ :** lns) = range @obj lns
 
 class WholeSize objs where
-	wholeSize :: Int -> HeteroParList ObjectLength objs -> Int
+	wholeSize :: Int -> HeteroParList.PL ObjectLength objs -> Int
 
 instance WholeSize '[] where wholeSize sz _ = sz
 

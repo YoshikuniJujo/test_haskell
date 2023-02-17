@@ -34,8 +34,8 @@ data CreateInfoNew n sr fmtnmsis = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
-	createInfoAttachmentsNew :: HeteroParList.HeteroParList (V3 ImageView.INew) fmtnmsis,
---	createInfoAttachmentsNew :: HeteroParList.HeteroParList (ImageView.INew fmt nm) sis,
+	createInfoAttachmentsNew :: HeteroParList.PL (V3 ImageView.INew) fmtnmsis,
+--	createInfoAttachmentsNew :: HeteroParList.PL (ImageView.INew fmt nm) sis,
 	createInfoWidthNew :: Word32,
 	createInfoHeightNew :: Word32,
 	createInfoLayersNew :: Word32 }
@@ -59,8 +59,8 @@ createInfoFromNew CreateInfoNew {
 	createInfoWidth = wdt, createInfoHeight = hgt,
 	createInfoLayers = lyrs }
 
-isToOld :: HeteroParList.HeteroParList (V3 ImageView.INew) fmtnmsis ->
-	HeteroParList.HeteroParList ImageView.I (MapThird fmtnmsis)
+isToOld :: HeteroParList.PL (V3 ImageView.INew) fmtnmsis ->
+	HeteroParList.PL ImageView.I (MapThird fmtnmsis)
 isToOld HeteroParList.HNil = HeteroParList.HNil
 isToOld ((V3 i) :** is) = ImageView.iToOld i :** isToOld is
 
@@ -68,12 +68,12 @@ data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R sr,
-	createInfoAttachments :: HeteroParList.HeteroParList ImageView.I sis,
+	createInfoAttachments :: HeteroParList.PL ImageView.I sis,
 	createInfoWidth :: Word32,
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
 
-deriving instance (Show n, Show (HeteroParList.HeteroParList ImageView.I sis)) =>
+deriving instance (Show n, Show (HeteroParList.PL ImageView.I sis)) =>
 	Show (CreateInfo n sr sis)
 
 createInfoToMiddleNew :: CreateInfoNew n sr fmtnmsis -> M.CreateInfo n
