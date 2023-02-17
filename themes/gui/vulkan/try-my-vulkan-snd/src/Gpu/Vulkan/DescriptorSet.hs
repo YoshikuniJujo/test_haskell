@@ -88,7 +88,7 @@ allocateSs :: (Storable n, HeteroParList.FromList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroParList.PL (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
-	HeteroParList.listToHeteroParList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
+	HeteroParList.fromList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {

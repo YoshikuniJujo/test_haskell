@@ -99,7 +99,7 @@ reset (C (CC cb)) rfs = M.reset cb rfs
 allocateNewM ::
 	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.PL CC vss)
-allocateNewM dvc ai = HeteroParList.listToHeteroParList CC <$> M.allocate dvc (allocateInfoFromNew ai)
+allocateNewM dvc ai = HeteroParList.fromList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
 freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList.PL CC vss -> IO ()
 freeCsNew dvc cp cs =

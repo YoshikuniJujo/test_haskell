@@ -82,15 +82,15 @@ pattern Singleton x <- (x :** Nil) where
 -- From/To List
 
 class FromList ss where
-	listToHeteroParList :: (forall s . t -> t' s) -> [t] -> PL t' ss
+	fromList :: (forall s . t -> t' s) -> [t] -> PL t' ss
 
 instance FromList '[] where
-	listToHeteroParList _ [] = Nil
-	listToHeteroParList _ _ = error "bad"
+	fromList _ [] = Nil
+	fromList _ _ = error "bad"
 
 instance FromList ss => FromList (s ': ss) where
-	listToHeteroParList f (x : xs) = f x :** listToHeteroParList f xs
-	listToHeteroParList _ _ = error "bad"
+	fromList f (x : xs) = f x :** fromList f xs
+	fromList _ _ = error "bad"
 
 heteroParListToList :: (forall (s :: k) . t s -> t') -> PL t ss -> [t']
 heteroParListToList _ Nil = []
