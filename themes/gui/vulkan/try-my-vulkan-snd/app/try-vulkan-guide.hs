@@ -1709,10 +1709,10 @@ drawFrame ::
 	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
-	HeteroParList.heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
-	HeteroParList.heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	HeteroParList.heteroParListIndex iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
-	HeteroParList.heteroParListIndex cmms cf \(MemoryGcd cmm) ->
+	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
+	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
+	HeteroParList.index cmms cf \(MemoryGcd cmm) ->
 	($ HeteroParList.homoListIndex cmds cf) \cmd -> do
 	Vk.Dvc.Mem.ImageBuffer.write @"camera-buffer" @('Atom 256 GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
 	if cf == 0
@@ -1727,7 +1727,7 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	HeteroParList.heteroParListIndex fbs imgIdx \fb -> case sdrn `mod` 2 of
+	HeteroParList.index fbs imgIdx \fb -> case sdrn `mod` 2 of
 		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
 		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 		_ -> error "never occur"

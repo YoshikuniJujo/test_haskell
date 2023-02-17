@@ -31,7 +31,7 @@ module Data.HeteroParList (
 
 	-- * Index
 
-	heteroParListIndex, homoListIndex,
+	index, homoListIndex,
 
 	-- * Map and ReplicateM
 
@@ -111,11 +111,11 @@ instance HomoList a as => HomoList a (a ': as) where
 
 -- Index
 
-heteroParListIndex :: Integral i => PL t ss -> i -> (forall s . t s -> a) -> a
-heteroParListIndex Nil _ _ = error "index too large"
-heteroParListIndex (x :** _) 0 f = f x
-heteroParListIndex (_ :** xs) i f | i > 0 = heteroParListIndex xs (i - 1) f
-heteroParListIndex _ _ _ = error "negative index"
+index :: Integral i => PL t ss -> i -> (forall s . t s -> a) -> a
+index Nil _ _ = error "index too large"
+index (x :** _) 0 f = f x
+index (_ :** xs) i f | i > 0 = index xs (i - 1) f
+index _ _ _ = error "negative index"
 
 homoListIndex :: (HomoList a as, Integral i) => PL t as -> i -> t a
 homoListIndex xs i = homoListToList xs `genericIndex` i

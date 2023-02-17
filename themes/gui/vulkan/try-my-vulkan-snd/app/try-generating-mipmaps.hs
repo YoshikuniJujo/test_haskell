@@ -1812,17 +1812,17 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	Int -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
 	(SyncObjects iass rfss iffs) ubs ums dscss tm cf =
-	HeteroParList.heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
-	HeteroParList.heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	HeteroParList.heteroParListIndex iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
-	HeteroParList.heteroParListIndex ubs cf \ub -> HeteroParList.heteroParListIndex ums cf \um ->
+	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
+	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
+	HeteroParList.index ubs cf \ub -> HeteroParList.index ums cf \um ->
 	descriptorSetIndex dscss cf \dscs -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	HeteroParList.heteroParListIndex fbs imgIdx \fb ->
+	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl idcs vb ib dscs
 	updateUniformBuffer dvc um ext tm
 	let	submitInfo :: Vk.SubmitInfo () '[sias]

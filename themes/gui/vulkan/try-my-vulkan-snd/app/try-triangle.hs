@@ -1023,15 +1023,15 @@ drawFrame :: forall sfs sd ssc sr sg sm sb nm scb ssos vss . (VssList vss) =>
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
 	HeteroParList.PL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cbs (SyncObjects iass rfss iffs) cf =
-	HeteroParList.heteroParListIndex iass cf \(ias :: Vk.Semaphore.S sias) ->
-	HeteroParList.heteroParListIndex rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
-	HeteroParList.heteroParListIndex iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) -> do
+	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
+	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
+	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	HeteroParList.heteroParListIndex fbs imgIdx \fb ->
+	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
