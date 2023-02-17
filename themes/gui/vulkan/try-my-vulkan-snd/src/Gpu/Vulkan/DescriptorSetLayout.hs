@@ -108,7 +108,7 @@ instance BindingToMiddle ('ImageSampler fmtss) where
 			M.bindingBinding = bb,
 			M.bindingDescriptorType = dt,
 			M.bindingDescriptorCountOrImmutableSamplers = Right
-				$ HeteroParList.heteroParListToList Sampler.sToMiddle iss,
+				$ HeteroParList.toList Sampler.sToMiddle iss,
 			M.bindingStageFlags = sfs
 			}
 

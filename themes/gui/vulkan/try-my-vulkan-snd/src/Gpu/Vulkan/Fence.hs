@@ -28,7 +28,7 @@ create (Device.D dvc) ci macc macd f = bracket
 
 waitForFs :: Device.D sd -> HeteroParList.PL F sfs -> Bool -> Word64 -> IO ()
 waitForFs (Device.D dvc) fs wa to =
-	M.waitForFs dvc (HeteroParList.heteroParListToList (\(F f) -> f) fs) wa to
+	M.waitForFs dvc (HeteroParList.toList (\(F f) -> f) fs) wa to
 
 resetFs :: Device.D sd -> HeteroParList.PL F sfs -> IO ()
-resetFs (Device.D dvc) = M.resetFs dvc . HeteroParList.heteroParListToList \(F f) -> f
+resetFs (Device.D dvc) = M.resetFs dvc . HeteroParList.toList \(F f) -> f

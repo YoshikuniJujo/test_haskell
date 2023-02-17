@@ -103,7 +103,7 @@ allocateNewM dvc ai = HeteroParList.fromList CC <$> M.allocate dvc (allocateInfo
 
 freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList.PL CC vss -> IO ()
 freeCsNew dvc cp cs =
-	M.freeCs dvc cp (HeteroParList.heteroParListToList (\(CC cb) -> cb) cs)
+	M.freeCs dvc cp (HeteroParList.toList (\(CC cb) -> cb) cs)
 
 data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
 	allocateInfoNextNewM :: Maybe n,

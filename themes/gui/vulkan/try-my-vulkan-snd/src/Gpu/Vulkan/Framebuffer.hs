@@ -84,7 +84,7 @@ createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoRenderPass = RenderPass.R rp,
-	createInfoAttachments = HeteroParList.heteroParListToList (\(ImageView.I iv) -> iv) -> ivs,
+	createInfoAttachments = HeteroParList.toList (\(ImageView.I iv) -> iv) -> ivs,
 	createInfoWidth = w,
 	createInfoHeight = h,
 	createInfoLayers = lyrs } = M.CreateInfo {

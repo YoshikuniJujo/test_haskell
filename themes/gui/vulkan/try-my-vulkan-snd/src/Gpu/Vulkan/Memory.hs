@@ -119,12 +119,12 @@ getMemoryRequirementsBinded' dvc (V2 bi) = getMemoryRequirementsBinded dvc bi
 getMemoryRequirementsList :: Device.D sd ->
 	HeteroParList.PL (V2 ImageBuffer) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsList dvc bis =
-	HeteroParList.heteroParListToListM (getMemoryRequirements' dvc) bis
+	HeteroParList.toListM (getMemoryRequirements' dvc) bis
 
 getMemoryRequirementsListBinded :: Device.D sd ->
 	HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss -> IO [Memory.M.Requirements]
 getMemoryRequirementsListBinded dvc bis =
-	HeteroParList.heteroParListToListM (getMemoryRequirementsBinded' dvc) bis
+	HeteroParList.toListM (getMemoryRequirementsBinded' dvc) bis
 
 allocateInfoToMiddle :: forall sd sibfoss n . Alignments sibfoss =>
 	Device.D sd -> HeteroParList.PL (V2 ImageBuffer) sibfoss ->

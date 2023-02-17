@@ -23,7 +23,7 @@ module Data.HeteroParList (
 
 	-- ** Hetero List
 
-	FromList(..), heteroParListToList, heteroParListToListM,
+	FromList(..), toList, toListM,
 
 	-- ** Homo List
 
@@ -92,14 +92,14 @@ instance FromList ss => FromList (s ': ss) where
 	fromList f (x : xs) = f x :** fromList f xs
 	fromList _ _ = error "bad"
 
-heteroParListToList :: (forall (s :: k) . t s -> t') -> PL t ss -> [t']
-heteroParListToList _ Nil = []
-heteroParListToList f (x :** xs) = f x : heteroParListToList f xs
+toList :: (forall (s :: k) . t s -> t') -> PL t ss -> [t']
+toList _ Nil = []
+toList f (x :** xs) = f x : toList f xs
 
-heteroParListToListM :: Applicative m =>
+toListM :: Applicative m =>
 	(forall (s :: k) . t s -> m t') -> PL t ss -> m [t']
-heteroParListToListM _ Nil = pure []
-heteroParListToListM f (x :** xs) = (:) <$> f x <*> heteroParListToListM f xs
+toListM _ Nil = pure []
+toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
 
 class HomoList (a :: k) as where
 	homoListToList :: PL t as -> [t a]

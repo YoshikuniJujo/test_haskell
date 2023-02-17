@@ -93,9 +93,9 @@ presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n
 presentInfoFromMiddle PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
-		HeteroParList.heteroParListToList (\(Semaphore.S s) -> s) -> wss,
+		HeteroParList.toList (\(Semaphore.S s) -> s) -> wss,
 	presentInfoSwapchainImageIndices =
-		HeteroParList.heteroParListToList swapchainImageIndexToMiddle -> sciis
+		HeteroParList.toList swapchainImageIndexToMiddle -> sciis
 	} = M.PresentInfo {
 		M.presentInfoNext = mnxt,
 		M.presentInfoWaitSemaphores = wss,
