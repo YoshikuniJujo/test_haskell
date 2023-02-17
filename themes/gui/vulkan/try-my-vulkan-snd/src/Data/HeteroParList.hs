@@ -35,7 +35,7 @@ module Data.HeteroParList (
 
 	-- * Map and ReplicateM
 
-	map, heteroParListReplicateM,
+	map, replicateM,
 
 	) where
 
@@ -130,9 +130,9 @@ map f = \case
 	Nil -> Nil
 	x :** xs -> f x :** map f xs
 
-heteroParListReplicateM :: Monad m =>
+replicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
 	(forall ss . PL t ss -> m b) -> m b
-heteroParListReplicateM 0 _ f = f Nil
-heteroParListReplicateM n x f = x \v -> heteroParListReplicateM (n - 1) x \vs ->
+replicateM 0 _ f = f Nil
+replicateM n x f = x \v -> replicateM (n - 1) x \vs ->
 	f $ v :** vs

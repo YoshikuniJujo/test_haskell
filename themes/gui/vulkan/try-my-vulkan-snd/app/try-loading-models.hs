@@ -1571,11 +1571,11 @@ data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
-	HeteroParList.heteroParListReplicateM maxFramesInFlight
+	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
-	HeteroParList.heteroParListReplicateM maxFramesInFlight
+	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
-	HeteroParList.heteroParListReplicateM maxFramesInFlight
+	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
