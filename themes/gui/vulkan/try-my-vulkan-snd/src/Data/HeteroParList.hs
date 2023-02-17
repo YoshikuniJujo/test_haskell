@@ -35,9 +35,11 @@ module Data.HeteroParList (
 
 	-- * Map and ReplicateM
 
-	heteroParListMap, heteroParListReplicateM,
+	map, heteroParListReplicateM,
 
 	) where
+
+import Prelude hiding (map)
 
 import Data.Kind
 import Data.List (genericIndex)
@@ -122,11 +124,11 @@ homoListIndex xs i = homoListToList xs `genericIndex` i
 
 -- Map and ReplicateM
 
-heteroParListMap ::
+map ::
 	(forall s . t s -> t' s) -> PL t ss -> PL t' ss
-heteroParListMap f = \case
+map f = \case
 	Nil -> Nil
-	x :** xs -> f x :** heteroParListMap f xs
+	x :** xs -> f x :** map f xs
 
 heteroParListReplicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->

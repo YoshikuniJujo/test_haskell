@@ -76,7 +76,7 @@ presentInfoFromNew PresentInfoNew {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores = wsmps,
 	presentInfoSwapchainImageIndices =
-		HeteroParList.heteroParListMap swapchainImageIndexFromNew sciis }
+		HeteroParList.map swapchainImageIndexFromNew sciis }
 
 data PresentInfo n sws sscs = PresentInfo {
 	presentInfoNext :: Maybe n,

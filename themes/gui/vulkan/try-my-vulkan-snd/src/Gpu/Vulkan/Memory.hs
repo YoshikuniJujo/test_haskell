@@ -53,7 +53,7 @@ readM'' (M ib m) = (, m) <$> readIORef ib
 
 writeMBinded' :: M s sibfoss ->
 	HeteroParList.PL (V2 (ImageBufferBinded sm)) sibfoss -> IO ()
-writeMBinded' (M rib _r) ibs = writeIORef rib (HeteroParList.heteroParListMap imageBufferFromBinded ibs)
+writeMBinded' (M rib _r) ibs = writeIORef rib (HeteroParList.map imageBufferFromBinded ibs)
 
 imageBufferFromBinded :: V2 (ImageBufferBinded sm) sibfos -> V2 ImageBuffer sibfos
 imageBufferFromBinded (V2 (ImageBinded (Image.BindedNew i))) = V2 . Image $ Image.INew i

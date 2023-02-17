@@ -80,7 +80,7 @@ allocateNew ::
 	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
-	(f . HeteroParList.heteroParListMap C)
+	(f . HeteroParList.map C)
 
 allocate :: Storable n =>
 	Device.D sd -> AllocateInfo n sp ->
