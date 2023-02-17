@@ -46,14 +46,14 @@ import Data.List (genericIndex)
 
 -- Hetero List
 
-type L ts = PL Id ts
+type L as = PL Id as
 
 infixr 5 :*
 
-pattern (:*) :: t -> L ts -> L (t ': ts)
+pattern (:*) :: a -> L as -> L (a ': as)
 pattern x :* xs <- Id x :** xs where x :* xs = Id x :** xs
 
-newtype Id t = Id t deriving Show
+newtype Id a = Id a deriving Show
 
 -- Hetero Parameter List
 
