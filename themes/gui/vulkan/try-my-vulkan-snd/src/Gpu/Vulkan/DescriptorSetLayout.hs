@@ -24,7 +24,9 @@ import Foreign.Storable
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -66,7 +68,7 @@ data Binding (bt :: BindingType) where
 		bindingImageSamplerDescriptorType :: Descriptor.Type,
 		bindingImageSamplerStageFlags :: ShaderStageFlags,
 		bindingImageSamplerImmutableSamplers ::
-			HeteroParList Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
+			HeteroParList.HeteroParList Sampler.S (MapSnd (fmtss :: [(T.Format, Type)]))
 		} -> Binding ('ImageSampler fmtss)
 	BindingOther :: {
 		bindingOtherDescriptorType :: Descriptor.Type,
@@ -106,7 +108,7 @@ instance BindingToMiddle ('ImageSampler fmtss) where
 			M.bindingBinding = bb,
 			M.bindingDescriptorType = dt,
 			M.bindingDescriptorCountOrImmutableSamplers = Right
-				$ heteroParListToList Sampler.sToMiddle iss,
+				$ HeteroParList.heteroParListToList Sampler.sToMiddle iss,
 			M.bindingStageFlags = sfs
 			}
 
@@ -121,9 +123,9 @@ instance BindingToMiddle 'Other where
 			M.bindingStageFlags = sfs }
 
 class BindingsToMiddle bts where
-	bindingsToMiddle :: HeteroParList Binding bts -> Word32 -> [M.Binding]
+	bindingsToMiddle :: HeteroParList.HeteroParList Binding bts -> Word32 -> [M.Binding]
 
-instance BindingsToMiddle '[] where bindingsToMiddle HNil _ = []
+instance BindingsToMiddle '[] where bindingsToMiddle HeteroParList.HNil _ = []
 
 instance (BindingToMiddle bt, BindingsToMiddle bts) =>
 	BindingsToMiddle (bt ': bts) where
@@ -133,7 +135,7 @@ instance (BindingToMiddle bt, BindingsToMiddle bts) =>
 data CreateInfo n bts = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoBindings :: HeteroParList Binding bts }
+	createInfoBindings :: HeteroParList.HeteroParList Binding bts }
 
 createInfoToMiddle :: BindingsToMiddle bts => CreateInfo n bts -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
@@ -144,7 +146,7 @@ createInfoToMiddle CreateInfo {
 		M.createInfoFlags = flgs,
 		M.createInfoBindings = bindingsToMiddle bds 0 }
 
-deriving instance (Show n, Show (HeteroParList Binding bts)) =>
+deriving instance (Show n, Show (HeteroParList.HeteroParList Binding bts)) =>
 	Show (CreateInfo n bts)
 
 -- deriving instance Show (Binding bt)

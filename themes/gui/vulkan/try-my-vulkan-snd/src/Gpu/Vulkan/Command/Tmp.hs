@@ -4,7 +4,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Command.Tmp (
@@ -21,7 +21,8 @@ module Gpu.Vulkan.Command.Tmp (
 
 import Foreign.Storable
 import Foreign.Storable.Hetero
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -93,7 +94,7 @@ bindDescriptorSets (CommandBuffer.CC mcb) = M.bindDescriptorSets mcb
 
 pushConstants' :: forall vs ts . PokableList ts =>
 	CommandBuffer.CC vs -> Pipeline.Layout.L ->
-	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
+	ShaderStageFlags -> Word32 -> HeteroParList.L ts -> IO ()
 pushConstants' (CommandBuffer.CC mcb) = M.pushConstants' mcb
 
 pipelineBarrier :: (
@@ -101,9 +102,9 @@ pipelineBarrier :: (
 	) =>
 	CommandBuffer.CC vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
-	HeteroParList Memory.M.Barrier ns ->
-	HeteroParList Buffer.M.MemoryBarrier ns' ->
-	HeteroParList Image.MemoryBarrier ns'' -> IO ()
+	HeteroParList.HeteroParList Memory.M.Barrier ns ->
+	HeteroParList.HeteroParList Buffer.M.MemoryBarrier ns' ->
+	HeteroParList.HeteroParList Image.MemoryBarrier ns'' -> IO ()
 pipelineBarrier (CommandBuffer.CC mcb) = M.pipelineBarrier mcb
 
 copyBufferToImage ::

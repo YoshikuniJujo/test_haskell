@@ -2,7 +2,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass.Middle.Internal where
@@ -14,7 +14,8 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Data.TypeLevel qualified as TL
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Core (Rect2d)
@@ -91,7 +92,7 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderPass :: R,
 	beginInfoFramebuffer :: Framebuffer.F,
 	beginInfoRenderArea :: Rect2d,
-	beginInfoClearValues :: HeteroParList ClearValue cts }
+	beginInfoClearValues :: HeteroParList.HeteroParList ClearValue cts }
 
 beginInfoToCore :: forall n cts a . (WithPoked n, ClearValuesToCore cts) =>
 	BeginInfo n cts -> (Ptr C.BeginInfo -> IO a) -> IO ()

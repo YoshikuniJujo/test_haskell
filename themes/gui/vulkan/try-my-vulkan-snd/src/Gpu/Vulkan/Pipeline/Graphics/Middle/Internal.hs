@@ -30,7 +30,8 @@ import Control.Monad
 import Data.Kind
 import Data.TypeLevel
 import Data.IORef
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -67,7 +68,7 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds bph = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: HeteroParList (V3 ShaderStage.CreateInfo) nskndvss,
+	createInfoStages :: HeteroParList.HeteroParList (V3 ShaderStage.CreateInfo) nskndvss,
 	createInfoVertexInputState :: Maybe (VertexInputState.M.CreateInfo vis),
 	createInfoInputAssemblyState ::
 		Maybe (InputAssemblyState.CreateInfo ias),
@@ -155,10 +156,10 @@ maybeToCore' f mx g = case mx of Nothing -> () <$ g NullPtr; Just x -> f x g
 
 class Length ass => CreateInfoListToCore ass where
 	createInfoListToCore ::
-		HeteroParList (V12 CreateInfo) ass ->
+		HeteroParList.HeteroParList (V12 CreateInfo) ass ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
-instance CreateInfoListToCore '[] where createInfoListToCore HNil f = () <$ f []
+instance CreateInfoListToCore '[] where createInfoListToCore HeteroParList.HNil f = () <$ f []
 
 instance (
 	WithPoked n, ShaderStage.CreateInfoListToCore nskndvss,
@@ -184,17 +185,17 @@ gFromCore :: Pipeline.C.P -> IO (G vs ts)
 gFromCore p = G <$> newIORef p
 
 class GListFromCore vstss where
-	gListFromCore :: [Pipeline.C.P] -> IO (HeteroParList (V2 G) vstss)
-	gListToIORefs :: HeteroParList (V2 G) vstss -> [IORef Pipeline.C.P]
+	gListFromCore :: [Pipeline.C.P] -> IO (HeteroParList.HeteroParList (V2 G) vstss)
+	gListToIORefs :: HeteroParList.HeteroParList (V2 G) vstss -> [IORef Pipeline.C.P]
 
 gListToCore :: GListFromCore vstss =>
-	HeteroParList (V2 G) vstss -> IO [Pipeline.C.P]
+	HeteroParList.HeteroParList (V2 G) vstss -> IO [Pipeline.C.P]
 gListToCore cps = readIORef `mapM` gListToIORefs cps
 
 instance GListFromCore '[] where
-	gListFromCore [] = pure HNil
+	gListFromCore [] = pure HeteroParList.HNil
 	gListFromCore _ = error "bad"
-	gListToIORefs HNil = []
+	gListToIORefs HeteroParList.HNil = []
 	
 instance GListFromCore vstss =>
 	GListFromCore ('(vs, ts) ': vstss) where
@@ -203,23 +204,23 @@ instance GListFromCore vstss =>
 	gListToIORefs (V2 (G cp) :** cps) = cp : gListToIORefs cps
 
 createGs :: (CreateInfoListToCore as, WithPoked c, GListFromCore vstss) =>
-	Device.D -> Maybe Cache.C -> HeteroParList (V12 CreateInfo) as ->
-	Maybe (AllocationCallbacks.A c) -> IO (HeteroParList (V2 G) vstss)
+	Device.D -> Maybe Cache.C -> HeteroParList.HeteroParList (V12 CreateInfo) as ->
+	Maybe (AllocationCallbacks.A c) -> IO (HeteroParList.HeteroParList (V2 G) vstss)
 createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
 recreateGs :: (
 	CreateInfoListToCore as, WithPoked c, WithPoked d, GListFromCore vstss
 	) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroParList (V12 CreateInfo) as ->
+	HeteroParList.HeteroParList (V12 CreateInfo) as ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroParList (V2 G) vstss -> IO ()
+	HeteroParList.HeteroParList (V2 G) vstss -> IO ()
 recreateGs dvc mc cis macc macd gs =
 	recreateRaw dvc mc cis macc macd $ gListToIORefs gs
 
 createRaw :: forall ss n' . (CreateInfoListToCore ss, WithPoked n') =>
 	Device.D -> Maybe Cache.C ->
-	HeteroParList (V12 CreateInfo) ss ->
+	HeteroParList.HeteroParList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
 createRaw (Device.D dvc) mc cis mac = let
 	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
@@ -234,7 +235,7 @@ createRaw (Device.D dvc) mc cis mac = let
 
 recreateRaw :: (CreateInfoListToCore ss, WithPoked c, WithPoked d) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroParList (V12 CreateInfo) ss ->
+	HeteroParList.HeteroParList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	[IORef Pipeline.C.P] -> IO ()
 recreateRaw dvc mc cis macc macd rs = do
@@ -244,7 +245,7 @@ recreateRaw dvc mc cis macc macd rs = do
 	(\o -> destroyRaw dvc o macd) `mapM_` os
 
 destroyGs :: (GListFromCore vstss, WithPoked d) =>
-	Device.D -> HeteroParList (V2 G) vstss -> Maybe (AllocationCallbacks.A d) -> IO ()
+	Device.D -> HeteroParList.HeteroParList (V2 G) vstss -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
 
 destroy :: WithPoked n =>

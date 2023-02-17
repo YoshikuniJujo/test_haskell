@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -21,7 +21,8 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Maybe
 import Data.Int
 
@@ -75,11 +76,11 @@ createInfoToCore CreateInfo {
 
 class Length vss => CreateInfoListToCore vss where
 	createInfoListToCore ::
-		HeteroParList (V3 CreateInfo) vss ->
+		HeteroParList.HeteroParList (V3 CreateInfo) vss ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
-	createInfoListToCore HNil = (() <$) . ($ [])
+	createInfoListToCore HeteroParList.HNil = (() <$) . ($ [])
 
 instance (
 	WithPoked n, WithPoked n1, PokableList vss,
@@ -93,7 +94,7 @@ newtype C = C Pipeline.C.P deriving Show
 
 createCs :: forall vss c .
 	(CreateInfoListToCore vss, WithPoked c) =>
-	Device.D -> Maybe Cache.C -> HeteroParList (V3 CreateInfo) vss ->
+	Device.D -> Maybe Cache.C -> HeteroParList.HeteroParList (V3 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	(C <$>) <$> allocaArray ln \pps -> do

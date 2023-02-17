@@ -4,6 +4,7 @@
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
@@ -21,7 +22,9 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Core
@@ -110,11 +113,11 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 class MemoryBarrierListToMiddle
 	(nsismnmfmts :: [(Type, Type, Type, Symbol, T.Format)])  where
 	memoryBarrierListToMiddle ::
-		HeteroParList (V5 MemoryBarrier) nsismnmfmts ->
-		HeteroParList M.MemoryBarrier (FirstOfFives nsismnmfmts)
+		HeteroParList.HeteroParList (V5 MemoryBarrier) nsismnmfmts ->
+		HeteroParList.HeteroParList M.MemoryBarrier (FirstOfFives nsismnmfmts)
 
 instance MemoryBarrierListToMiddle '[] where
-	memoryBarrierListToMiddle HNil = HNil
+	memoryBarrierListToMiddle HeteroParList.HNil = HeteroParList.HNil
 
 instance (Pokable n, MemoryBarrierListToMiddle nsismnmfmts) =>
 	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where

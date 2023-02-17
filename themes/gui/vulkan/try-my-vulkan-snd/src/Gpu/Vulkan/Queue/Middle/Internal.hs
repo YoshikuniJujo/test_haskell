@@ -5,7 +5,7 @@
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Queue.Middle.Internal where
@@ -14,7 +14,8 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel hiding (length)
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -30,7 +31,7 @@ import qualified Gpu.Vulkan.Queue.Core as C
 newtype Q = Q C.Q deriving Show
 
 submit :: SubmitInfoListToCore nssssvsss => Q ->
-	HeteroParList (V4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
+	HeteroParList.HeteroParList (V4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
 submit (Q q) sis mf = submitInfoListToCore sis \csis ->
 	let sic = length csis in allocaArray sic \psis -> do
 		pokeArray psis csis
@@ -40,11 +41,11 @@ submit (Q q) sis mf = submitInfoListToCore sis \csis ->
 
 class SubmitInfoListToCore (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
 	submitInfoListToCore ::
-		HeteroParList (V4 SubmitInfo) nssssvsss ->
+		HeteroParList.HeteroParList (V4 SubmitInfo) nssssvsss ->
 		([C.SubmitInfo] -> IO a) -> IO ()
 
 instance SubmitInfoListToCore '[] where
-	submitInfoListToCore HNil f = () <$ f []
+	submitInfoListToCore HeteroParList.HNil f = () <$ f []
 
 instance (
 	Pokable n, CommandBufferListToMiddle svss,

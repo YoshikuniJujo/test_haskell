@@ -18,7 +18,8 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Pipeline.Layout.Type
 
@@ -32,17 +33,17 @@ import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
 data CreateInfo n sbtss = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags,
-	createInfoSetLayouts :: HeteroParList Layout sbtss,
+	createInfoSetLayouts :: HeteroParList.HeteroParList Layout sbtss,
 	createInfoPushConstantRanges :: [PushConstant.M.Range] }
 
 data CreateInfoNew n sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: M.CreateFlags,
-	createInfoSetLayoutsNew :: HeteroParList Layout sbtss }
+	createInfoSetLayoutsNew :: HeteroParList.HeteroParList Layout sbtss }
 
 deriving instance (
 	Show n,
-	Show (HeteroParList Layout sbtss) ) =>
+	Show (HeteroParList.HeteroParList Layout sbtss) ) =>
 	Show (CreateInfo n sbtss)
 
 type Layout = V2 Descriptor.Set.Layout.L
@@ -53,9 +54,9 @@ unLayout (V2 l) = l
 class HeteroParListToList' sbtss where
 	heteroParListToList' ::
 		(forall (s :: Type) (bts :: [Descriptor.Set.Layout.BindingType]) . t '(s, bts) -> t') ->
-		HeteroParList t sbtss -> [t']
+		HeteroParList.HeteroParList t sbtss -> [t']
 
-instance HeteroParListToList' '[] where heteroParListToList' _ HNil = []
+instance HeteroParListToList' '[] where heteroParListToList' _ HeteroParList.HNil = []
 
 instance HeteroParListToList' sbtss => HeteroParListToList' ('(s, bts) ': sbtss) where
 	heteroParListToList' f (x :** xs) = f x : heteroParListToList' f xs

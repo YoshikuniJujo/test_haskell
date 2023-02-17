@@ -3,7 +3,7 @@
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -16,7 +16,9 @@ module Gpu.Vulkan.Framebuffer (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Framebuffer.Enum
@@ -32,8 +34,8 @@ data CreateInfoNew n sr fmtnmsis = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
-	createInfoAttachmentsNew :: HeteroParList (V3 ImageView.INew) fmtnmsis,
---	createInfoAttachmentsNew :: HeteroParList (ImageView.INew fmt nm) sis,
+	createInfoAttachmentsNew :: HeteroParList.HeteroParList (V3 ImageView.INew) fmtnmsis,
+--	createInfoAttachmentsNew :: HeteroParList.HeteroParList (ImageView.INew fmt nm) sis,
 	createInfoWidthNew :: Word32,
 	createInfoHeightNew :: Word32,
 	createInfoLayersNew :: Word32 }
@@ -57,21 +59,21 @@ createInfoFromNew CreateInfoNew {
 	createInfoWidth = wdt, createInfoHeight = hgt,
 	createInfoLayers = lyrs }
 
-isToOld :: HeteroParList (V3 ImageView.INew) fmtnmsis ->
-	HeteroParList ImageView.I (MapThird fmtnmsis)
-isToOld HNil = HNil
+isToOld :: HeteroParList.HeteroParList (V3 ImageView.INew) fmtnmsis ->
+	HeteroParList.HeteroParList ImageView.I (MapThird fmtnmsis)
+isToOld HeteroParList.HNil = HeteroParList.HNil
 isToOld ((V3 i) :** is) = ImageView.iToOld i :** isToOld is
 
 data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R sr,
-	createInfoAttachments :: HeteroParList ImageView.I sis,
+	createInfoAttachments :: HeteroParList.HeteroParList ImageView.I sis,
 	createInfoWidth :: Word32,
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
 
-deriving instance (Show n, Show (HeteroParList ImageView.I sis)) =>
+deriving instance (Show n, Show (HeteroParList.HeteroParList ImageView.I sis)) =>
 	Show (CreateInfo n sr sis)
 
 createInfoToMiddleNew :: CreateInfoNew n sr fmtnmsis -> M.CreateInfo n
@@ -82,7 +84,7 @@ createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
 	createInfoRenderPass = RenderPass.R rp,
-	createInfoAttachments = heteroParListToList (\(ImageView.I iv) -> iv) -> ivs,
+	createInfoAttachments = HeteroParList.heteroParListToList (\(ImageView.I iv) -> iv) -> ivs,
 	createInfoWidth = w,
 	createInfoHeight = h,
 	createInfoLayers = lyrs } = M.CreateInfo {

@@ -32,7 +32,9 @@ module Gpu.Vulkan.Descriptor (
 import GHC.TypeLits
 import Data.Kind
 import Data.Kind.Object
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Descriptor.Middle as M
@@ -53,7 +55,7 @@ data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 
 type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
 
-deriving instance Show (HeteroParList ObjectLength objs) =>
+deriving instance Show (HeteroParList.HeteroParList ObjectLength objs) =>
 	Show (BufferInfo '(sb, sm, nm, objs, obj))
 
 bufferInfoToMiddle :: forall sb sm nm objs obj . Offset obj objs =>

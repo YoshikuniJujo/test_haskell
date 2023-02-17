@@ -2,14 +2,16 @@
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr where
 
 import Foreign.Storable.PeekPoke
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import qualified Data.Text as T
@@ -60,9 +62,9 @@ swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
 
 data PresentInfoNew n sws scfmt sscs = PresentInfoNew {
 	presentInfoNextNew :: Maybe n,
-	presentInfoWaitSemaphoresNew :: HeteroParList Semaphore.S sws,
+	presentInfoWaitSemaphoresNew :: HeteroParList.HeteroParList Semaphore.S sws,
 	presentInfoSwapchainImageIndicesNew ::
-		HeteroParList (SwapchainImageIndexNew scfmt) sscs }
+		HeteroParList.HeteroParList (SwapchainImageIndexNew scfmt) sscs }
 
 
 presentInfoFromNew ::
@@ -74,26 +76,26 @@ presentInfoFromNew PresentInfoNew {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores = wsmps,
 	presentInfoSwapchainImageIndices =
-		heteroParListMap swapchainImageIndexFromNew sciis }
+		HeteroParList.heteroParListMap swapchainImageIndexFromNew sciis }
 
 data PresentInfo n sws sscs = PresentInfo {
 	presentInfoNext :: Maybe n,
-	presentInfoWaitSemaphores :: HeteroParList Semaphore.S sws,
+	presentInfoWaitSemaphores :: HeteroParList.HeteroParList Semaphore.S sws,
 	presentInfoSwapchainImageIndices ::
-		HeteroParList SwapchainImageIndex sscs }
+		HeteroParList.HeteroParList SwapchainImageIndex sscs }
 
 deriving instance (
-	Show n, Show (HeteroParList Semaphore.S sws),
-	Show (HeteroParList SwapchainImageIndex sscs)) =>
+	Show n, Show (HeteroParList.HeteroParList Semaphore.S sws),
+	Show (HeteroParList.HeteroParList SwapchainImageIndex sscs)) =>
 	Show (PresentInfo n sws sscs)
 
 presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n
 presentInfoFromMiddle PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
-		heteroParListToList (\(Semaphore.S s) -> s) -> wss,
+		HeteroParList.heteroParListToList (\(Semaphore.S s) -> s) -> wss,
 	presentInfoSwapchainImageIndices =
-		heteroParListToList swapchainImageIndexToMiddle -> sciis
+		HeteroParList.heteroParListToList swapchainImageIndexToMiddle -> sciis
 	} = M.PresentInfo {
 		M.presentInfoNext = mnxt,
 		M.presentInfoWaitSemaphores = wss,

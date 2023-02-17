@@ -2,13 +2,16 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Attachment (
 	DescriptionNew(..), DescriptionsFromNew(..),
 	Reference(..), A ) where
 
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Attachment.Enum
 
@@ -31,9 +34,9 @@ data DescriptionNew (fmt :: T.Format) = DescriptionNew {
 
 class DescriptionsFromNew fmts where
 	descriptionsFromNew ::
-		HeteroParList DescriptionNew fmts -> [Description]
+		HeteroParList.HeteroParList DescriptionNew fmts -> [Description]
 
-instance DescriptionsFromNew '[] where descriptionsFromNew HNil = []
+instance DescriptionsFromNew '[] where descriptionsFromNew HeteroParList.HNil = []
 
 instance (T.FormatToValue fmt, DescriptionsFromNew fmts) =>
 	DescriptionsFromNew (fmt ': fmts) where

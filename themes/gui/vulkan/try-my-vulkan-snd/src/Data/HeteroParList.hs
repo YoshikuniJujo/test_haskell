@@ -11,11 +11,11 @@
 
 module Data.HeteroParList (
 
-	-- * HeteroList
+	-- * Hetero List
 
-	HeteroList, pattern (:*), Id(..),
+	L, pattern (:*), Id(..),
 
-	-- * HeteroParList
+	-- * Hetero Parameter List
 
 	HeteroParList(..), pattern Singleton,
 
@@ -42,18 +42,18 @@ module Data.HeteroParList (
 import Data.Kind
 import Data.List (genericIndex)
 
--- HeteroList
+-- Hetero List
 
-type HeteroList ts = HeteroParList Id ts
+type L ts = HeteroParList Id ts
 
 infixr 5 :*
 
-pattern (:*) :: t -> HeteroList ts -> HeteroList (t ': ts)
+pattern (:*) :: t -> L ts -> L (t ': ts)
 pattern x :* xs <- Id x :** xs where x :* xs = Id x :** xs
 
 newtype Id t = Id t deriving Show
 
--- HeteroParList
+-- Hetero Parameter List
 
 infixr 5 :**
 

@@ -6,6 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -18,7 +19,9 @@ import Data.Kind
 import Data.Kind.Object hiding (objectLength)
 import Data.Proxy
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Enum hiding (ObjectType)
@@ -35,25 +38,25 @@ import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 
-data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroParList ObjectLength objs) M.B
+data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroParList.HeteroParList ObjectLength objs) M.B
 
-deriving instance Show (HeteroParList ObjectLength objs) => Show (B s nm objs)
+deriving instance Show (HeteroParList.HeteroParList ObjectLength objs) => Show (B s nm objs)
 
-data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded (HeteroParList ObjectLength objs) M.B
+data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded (HeteroParList.HeteroParList ObjectLength objs) M.B
 
-deriving instance Show (HeteroParList ObjectLength objs) => Show (Binded sm sb nm objs)
+deriving instance Show (HeteroParList.HeteroParList ObjectLength objs) => Show (Binded sm sb nm objs)
 
-deriving instance Eq (HeteroParList ObjectLength objs) => Eq (Binded sm sb nm objs)
+deriving instance Eq (HeteroParList.HeteroParList ObjectLength objs) => Eq (Binded sm sb nm objs)
 
 data CreateInfo n objs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoLengths :: HeteroParList ObjectLength objs,
+	createInfoLengths :: HeteroParList.HeteroParList ObjectLength objs,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 
-deriving instance (Show n, Show (HeteroParList ObjectLength objs)) =>
+deriving instance (Show n, Show (HeteroParList.HeteroParList ObjectLength objs)) =>
 	Show (CreateInfo n objs)
 
 createInfoToMiddle :: WholeSize objs =>
@@ -85,7 +88,7 @@ getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
 class OffsetList v (vs :: [Object]) where
-	offsetList :: HeteroParList ObjectLength vs -> Int -> Device.M.Size
+	offsetList :: HeteroParList.HeteroParList ObjectLength vs -> Int -> Device.M.Size
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
@@ -101,14 +104,14 @@ instance {-# OVERLAPPABLE #-} (
 	offsetList (objlen :** objlens) ost =
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
-sampleObjLens :: HeteroParList ObjectLength
+sampleObjLens :: HeteroParList.HeteroParList ObjectLength
 	['List 256 Bool "", 'Atom 256 Char 'Nothing, 'Atom 256 Int 'Nothing, 'List 256 Double "", 'List 256 Char ""]
 sampleObjLens =
 	ObjectLengthList 3 :**
 	ObjectLengthAtom :**
 	ObjectLengthAtom :**
 	ObjectLengthList 5 :**
-	ObjectLengthList 3 :** HNil
+	ObjectLengthList 3 :** HeteroParList.HNil
 
 data IndexedList sm sb nm v =
 	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
@@ -121,16 +124,16 @@ indexedListToMiddle :: IndexedList sm sb nm v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 
 indexedListToMiddles ::
-	HeteroParList (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
-indexedListToMiddles HNil = []
+	HeteroParList.HeteroParList (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
+indexedListToMiddles HeteroParList.HNil = []
 indexedListToMiddles (V4 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
 class CopyPrefix (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
 	copyCheckLengthPrefix ::
-		HeteroParList ObjectLength src ->
-		HeteroParList ObjectLength dst -> Bool
-	copySizePrefix :: Word64 -> HeteroParList ObjectLength src -> Word64
+		HeteroParList.HeteroParList ObjectLength src ->
+		HeteroParList.HeteroParList ObjectLength dst -> Bool
+	copySizePrefix :: Word64 -> HeteroParList.HeteroParList ObjectLength src -> Word64
 
 instance CopyPrefix '[] src dst where
 	copyCheckLengthPrefix _ _ = True
@@ -149,11 +152,11 @@ instance (
 
 class CopyInfo (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
 	copyCheckLength ::
-		HeteroParList ObjectLength src ->
-		HeteroParList ObjectLength dst -> Bool
-	copySrcOffset :: Word64 -> HeteroParList ObjectLength src -> Word64
-	copyDstOffset :: Word64 -> HeteroParList ObjectLength dst -> Word64
-	copySize :: HeteroParList ObjectLength src -> Word64
+		HeteroParList.HeteroParList ObjectLength src ->
+		HeteroParList.HeteroParList ObjectLength dst -> Bool
+	copySrcOffset :: Word64 -> HeteroParList.HeteroParList ObjectLength src -> Word64
+	copyDstOffset :: Word64 -> HeteroParList.HeteroParList ObjectLength dst -> Word64
+	copySize :: HeteroParList.HeteroParList ObjectLength src -> Word64
 
 type OT o = Data.Kind.Object.ObjectType o
 
@@ -192,7 +195,7 @@ instance {-# OVERLAPPABLE #-}
 	copySize (_ :** lns) = copySize @as @ss @ds lns
 
 makeCopy :: forall (as :: [Object]) ss ds . CopyInfo as ss ds =>
-	HeteroParList ObjectLength ss -> HeteroParList ObjectLength ds -> C.Copy
+	HeteroParList.HeteroParList ObjectLength ss -> HeteroParList.HeteroParList ObjectLength ds -> C.Copy
 makeCopy src dst
 	| copyCheckLength @as src dst = C.Copy {
 		C.copySrcOffset = copySrcOffset @as @ss @ds 0 src,
@@ -202,8 +205,8 @@ makeCopy src dst
 
 class MakeCopies (ass :: [[Object]]) (ss :: [Object]) (ds :: [Object]) where
 	makeCopies ::
-		HeteroParList ObjectLength ss ->
-		HeteroParList ObjectLength ds -> [C.Copy]
+		HeteroParList.HeteroParList ObjectLength ss ->
+		HeteroParList.HeteroParList ObjectLength ds -> [C.Copy]
 
 instance MakeCopies '[] ss ds where makeCopies _ _ = []
 
@@ -212,9 +215,9 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
 
 class OffsetSize (v :: Object) (vs :: [Object]) where
-	offsetSize :: HeteroParList ObjectLength vs ->
+	offsetSize :: HeteroParList.HeteroParList ObjectLength vs ->
 		Device.M.Size -> (Device.M.Size, Device.M.Size)
-	objectLength :: HeteroParList ObjectLength vs -> ObjectLength v
+	objectLength :: HeteroParList.HeteroParList ObjectLength vs -> ObjectLength v
 
 instance SizeAlignment v => OffsetSize v (v ': vs) where
 	offsetSize (ln :** _) ost = (
@@ -264,15 +267,15 @@ memoryBarrierToMiddle MemoryBarrier {
 
 class MemoryBarrierListToMiddle nsmsbnmobjs where
 	memoryBarrierListToMiddle ::
-		HeteroParList (V5 MemoryBarrier) nsmsbnmobjs ->
-		HeteroParList M.MemoryBarrier (FirstOfFives nsmsbnmobjs)
+		HeteroParList.HeteroParList (V5 MemoryBarrier) nsmsbnmobjs ->
+		HeteroParList.HeteroParList M.MemoryBarrier (FirstOfFives nsmsbnmobjs)
 
 type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 	FirstOfFives '[] = '[]
 	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
 
 instance MemoryBarrierListToMiddle '[] where
-	memoryBarrierListToMiddle HNil = HNil
+	memoryBarrierListToMiddle HeteroParList.HNil = HeteroParList.HNil
 
 instance (Storable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where

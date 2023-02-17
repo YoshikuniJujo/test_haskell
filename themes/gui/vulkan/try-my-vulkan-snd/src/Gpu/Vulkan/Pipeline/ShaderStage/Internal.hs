@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
@@ -13,7 +14,8 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Shaderc.EnumAuto
 
@@ -32,7 +34,7 @@ data CreateInfoNew n m sknd c d vs = CreateInfoNew {
 	createInfoStageNew :: ShaderStageFlagBits,
 	createInfoModuleNew :: Shader.Module.M m sknd c d,
 	createInfoNameNew :: BS.ByteString,
-	createInfoSpecializationInfoNew :: Maybe (HeteroList vs) }
+	createInfoSpecializationInfoNew :: Maybe (HeteroParList.L vs) }
 
 createInfoToMiddleNew :: (Pokable m, Pokable c) =>
 	Device.D ds -> CreateInfoNew n m sknd c d vs -> IO (M.CreateInfo n sknd vs)
@@ -68,16 +70,16 @@ class CreateInfoListToMiddleNew (
 	) where
 	type MiddleVarsNew nnskndcdvss :: [(Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
-		HeteroParList (V6 CreateInfoNew) nnskndcdvss ->
-		IO (HeteroParList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
+		HeteroParList.HeteroParList (V6 CreateInfoNew) nnskndcdvss ->
+		IO (HeteroParList.HeteroParList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
 	destroyCreateInfoMiddleListNew :: Device.D ds ->
-		HeteroParList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
-		HeteroParList (V6 CreateInfoNew) nnskndcdvss -> IO ()
+		HeteroParList.HeteroParList (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
+		HeteroParList.HeteroParList (V6 CreateInfoNew) nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddleNew '[] where
 	type MiddleVarsNew '[] = '[]
-	createInfoListToMiddleNew _ HNil = pure HNil
-	destroyCreateInfoMiddleListNew _ HNil HNil = pure ()
+	createInfoListToMiddleNew _ HeteroParList.HNil = pure HeteroParList.HNil
+	destroyCreateInfoMiddleListNew _ HeteroParList.HNil HeteroParList.HNil = pure ()
 
 instance (
 	Pokable m, Pokable c, Pokable d,

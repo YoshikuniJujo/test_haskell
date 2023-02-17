@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,7 +17,8 @@ import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import qualified Data.ByteString as BS
 
@@ -34,9 +35,9 @@ data CreateInfo n sknd vs = CreateInfo {
 	createInfoStage :: ShaderStageFlagBits,
 	createInfoModule :: ShaderModule.M sknd,
 	createInfoName :: BS.ByteString,
-	createInfoSpecializationInfo :: Maybe (HeteroList vs) }
+	createInfoSpecializationInfo :: Maybe (HeteroParList.L vs) }
 
-deriving instance (Show n, Show (HeteroList vs)) => Show (CreateInfo n sknd vs)
+deriving instance (Show n, Show (HeteroParList.L vs)) => Show (CreateInfo n sknd vs)
 
 createInfoToCore ::
 	forall n sknd vs r . (WithPoked n, PokableList vs) =>
@@ -65,11 +66,11 @@ createInfoToCore CreateInfo {
 
 class CreateInfoListToCore sss where
 	createInfoListToCore ::
-		HeteroParList (V3 CreateInfo) sss ->
+		HeteroParList.HeteroParList (V3 CreateInfo) sss ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
-	createInfoListToCore HNil = (() <$) . ($ [])
+	createInfoListToCore HeteroParList.HNil = (() <$) . ($ [])
 
 instance (WithPoked n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where

@@ -25,7 +25,9 @@ module Gpu.Vulkan.CommandBuffer (
 import Foreign.Storable
 import Control.Exception
 import Data.Kind
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import qualified TypeLevel.List as TpLvlLst
@@ -73,12 +75,12 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoLevelNewM = lvl }
 
 allocateNew ::
-	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroParList vss) =>
+	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
-	(forall s . HeteroParList (C s) vss -> IO a) -> IO a
+	(forall s . HeteroParList.HeteroParList (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
-	(f . heteroParListMap C)
+	(f . HeteroParList.heteroParListMap C)
 
 allocate :: Storable n =>
 	Device.D sd -> AllocateInfo n sp ->
@@ -95,13 +97,13 @@ reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
-	(Storable n, TpLvlLst.Length [Type] vss, ListToHeteroParList vss) =>
-	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList CC vss)
-allocateNewM dvc ai = listToHeteroParList CC <$> M.allocate dvc (allocateInfoFromNew ai)
+	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.ListToHeteroParList vss) =>
+	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.HeteroParList CC vss)
+allocateNewM dvc ai = HeteroParList.listToHeteroParList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
-freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList CC vss -> IO ()
+freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList.HeteroParList CC vss -> IO ()
 freeCsNew dvc cp cs =
-	M.freeCs dvc cp (heteroParListToList (\(CC cb) -> cb) cs)
+	M.freeCs dvc cp (HeteroParList.heteroParListToList (\(CC cb) -> cb) cs)
 
 data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
 	allocateInfoNextNewM :: Maybe n,

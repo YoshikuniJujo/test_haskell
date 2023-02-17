@@ -1,12 +1,13 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass.Tmp where
 
 import Foreign.Storable.PeekPoke
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.RenderPass.Enum
 
@@ -21,7 +22,7 @@ data CreateInfoNew n fmts = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoAttachmentsNew ::
-		HeteroParList Attachment.DescriptionNew fmts,
+		HeteroParList.HeteroParList Attachment.DescriptionNew fmts,
 	createInfoSubpassesNew :: [Subpass.Description],
 	createInfoDependenciesNew :: [Subpass.Dependency] }
 

@@ -5,7 +5,7 @@
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -16,7 +16,9 @@ import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.DescriptorSet.TypeLevel
@@ -64,9 +66,9 @@ layoutToMiddle (Layout (Layout.L l)) = l
 data AllocateInfo n sp slbtss = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts :: HeteroParList Layout slbtss }
+	allocateInfoSetLayouts :: HeteroParList.HeteroParList Layout slbtss }
 
-deriving instance (Show n, Show (HeteroParList Layout slbtss)) =>
+deriving instance (Show n, Show (HeteroParList.HeteroParList Layout slbtss)) =>
 	Show (AllocateInfo n sp slbtss)
 
 allocateInfoToMiddle :: AllocateInfo n sp slbtss -> M.AllocateInfo n
@@ -78,15 +80,15 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoNext = mnxt,
 		M.allocateInfoDescriptorPool = dp,
 		M.allocateInfoSetLayouts =
-			heteroParListToList layoutToMiddle dscsls }
+			HeteroParList.heteroParListToList layoutToMiddle dscsls }
 
 newtype S sd sp (slbts :: LayoutArg) = S M.D
 
-allocateSs :: (Storable n, ListToHeteroParList slbtss) =>
+allocateSs :: (Storable n, HeteroParList.ListToHeteroParList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
-	IO (HeteroParList (S sd sp) slbtss)
+	IO (HeteroParList.HeteroParList (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
-	listToHeteroParList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
+	HeteroParList.listToHeteroParList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
@@ -97,7 +99,7 @@ data Write n sd sp (slbts :: LayoutArg)
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
-	Show (HeteroParList Descriptor.BufferInfo sbsmobjsobjs)) =>
+	Show (HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
@@ -125,16 +127,16 @@ data WriteSources arg where
 	WriteSourcesInNext ::
 		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
 	ImageInfos ::
-		HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList.HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
 	BufferInfos ::
-		HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
+		HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
 	TexelBufferViews ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther
 
-deriving instance Show (HeteroParList Descriptor.BufferInfo sbsmobjsobjs) =>
+deriving instance Show (HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs) =>
 	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
@@ -166,10 +168,10 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
-		HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList.HeteroParList (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		[Descriptor.M.ImageInfo]
 
-instance ImageInfosToMiddle '[] where imageInfosToMiddle HNil = []
+instance ImageInfosToMiddle '[] where imageInfosToMiddle HeteroParList.HNil = []
 
 instance ImageInfosToMiddle ssfmtnmsis =>
 	ImageInfosToMiddle ('(ss, fmt, nm, si) ': ssfmtnmsis) where
@@ -178,10 +180,10 @@ instance ImageInfosToMiddle ssfmtnmsis =>
 
 class BufferInfosToMiddle sbsmobjsobjs where
 	bufferInfosToMiddle ::
-		HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
+		HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs ->
 		[Descriptor.M.BufferInfo]
 
-instance BufferInfosToMiddle '[] where bufferInfosToMiddle HNil = []
+instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.HNil = []
 
 instance (Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
@@ -194,14 +196,14 @@ data Write_ n sdspslbtssbsmobjsobjs where
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
-	Show (HeteroParList Descriptor.BufferInfo sbsmobjsobjs) ) =>
+	Show (HeteroParList.HeteroParList Descriptor.BufferInfo sbsmobjsobjs) ) =>
 	Show (Write_ n '(sd, sp, slbts, ('WriteSourcesArgBuffer sbsmobjsobjs)))
 
 class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 	writeListToMiddle ::
-		HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
+		HeteroParList.HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
 
-instance WriteListToMiddle n '[] where writeListToMiddle HNil = []
+instance WriteListToMiddle n '[] where writeListToMiddle HeteroParList.HNil = []
 
 instance (
 	WriteSourcesToMiddle slbts wsa,
@@ -215,5 +217,5 @@ updateDs :: (
 	Storable n, Storable n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
-	HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
+	HeteroParList.HeteroParList (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
 updateDs (Device.D dvc) (writeListToMiddle -> ws) cs = M.updateDs dvc ws cs

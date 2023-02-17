@@ -17,7 +17,8 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -50,7 +51,7 @@ data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts'
 		createInfoNext :: Maybe n,
 		createInfoFlags :: CreateFlags,
 		createInfoStages ::
-			HeteroParList (V6 ShaderStage.CreateInfoNew) nnskndscdvss,
+			HeteroParList.HeteroParList (V6 ShaderStage.CreateInfoNew) nnskndscdvss,
 		createInfoVertexInputState ::
 			Maybe (V3 VertexInputState.CreateInfo nvsts),
 		createInfoInputAssemblyState ::
@@ -124,17 +125,17 @@ class CreateInfoListToMiddle ss where
 		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))]
 
 	createInfoListToMiddle :: Device.D sd ->
-		HeteroParList (V14 CreateInfo) ss ->
-		IO (HeteroParList (V12 T.CreateInfo) (MiddleVars ss))
+		HeteroParList.HeteroParList (V14 CreateInfo) ss ->
+		IO (HeteroParList.HeteroParList (V12 T.CreateInfo) (MiddleVars ss))
 
 	destroyShaderStages :: Device.D sd ->
-		HeteroParList (V12 T.CreateInfo) (MiddleVars ss) ->
-		HeteroParList (V14 CreateInfo) ss -> IO ()
+		HeteroParList.HeteroParList (V12 T.CreateInfo) (MiddleVars ss) ->
+		HeteroParList.HeteroParList (V14 CreateInfo) ss -> IO ()
 
 instance CreateInfoListToMiddle '[] where
 	type MiddleVars '[] = '[]
-	createInfoListToMiddle _ HNil = pure HNil
-	destroyShaderStages _ HNil HNil = pure ()
+	createInfoListToMiddle _ HeteroParList.HNil = pure HeteroParList.HNil
+	destroyShaderStages _ HeteroParList.HNil HeteroParList.HNil = pure ()
 
 instance (
 	ShaderStage.CreateInfoListToMiddleNew nnskndscdvss,
@@ -155,10 +156,10 @@ instance (
 		destroyShaderStages dvc cims cis
 
 class V2g ss where
-	v2g :: HeteroParList (V2 M.G) ss -> HeteroParList (V2 (G sg)) ss
-	g2v :: HeteroParList (V2 (G sg)) ss -> HeteroParList (V2 M.G) ss
+	v2g :: HeteroParList.HeteroParList (V2 M.G) ss -> HeteroParList.HeteroParList (V2 (G sg)) ss
+	g2v :: HeteroParList.HeteroParList (V2 (G sg)) ss -> HeteroParList.HeteroParList (V2 M.G) ss
 
-instance V2g '[] where v2g HNil = HNil; g2v HNil = HNil
+instance V2g '[] where v2g HeteroParList.HNil = HeteroParList.HNil; g2v HeteroParList.HNil = HeteroParList.HNil
 
 instance V2g ss => V2g (s ': ss) where
 	v2g (V2 g :** gs) = V2 (G g) :** v2g gs
@@ -172,9 +173,9 @@ createGs :: (
 	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	V2g (T.GListVars (MiddleVars ss)) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
-	HeteroParList (V14 CreateInfo) ss ->
+	HeteroParList.HeteroParList (V14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall sg . HeteroParList (V2 (G sg)) (T.GListVars (MiddleVars ss)) ->
+	(forall sg . HeteroParList.HeteroParList (V2 (G sg)) (T.GListVars (MiddleVars ss)) ->
 		IO a) -> IO a
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddle d cis >>= \cis' ->
@@ -188,9 +189,9 @@ recreateGs :: (
 	Pokable c, Pokable d,
 	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	V2g (T.GListVars (MiddleVars ss))) =>
-	Device.D sd -> Maybe (Cache.C s) -> HeteroParList (V14 CreateInfo) ss ->
+	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.HeteroParList (V14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroParList (V2 (G sg)) (T.GListVars (MiddleVars ss)) -> IO ()
+	HeteroParList.HeteroParList (V2 (G sg)) (T.GListVars (MiddleVars ss)) -> IO ()
 recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddle d cis
 	T.recreateGs dvc mc cis' macc macd $ g2v gpls

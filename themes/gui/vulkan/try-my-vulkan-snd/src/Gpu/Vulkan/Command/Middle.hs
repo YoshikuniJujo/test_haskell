@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Command.Middle (
@@ -40,7 +40,8 @@ import Foreign.Storable.PeekPoke (WithPoked)
 import Foreign.Storable.Hetero
 import Control.Arrow
 import Control.Monad.Cont
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 import Data.IORef
@@ -112,7 +113,7 @@ bindIndexBuffer
 
 pushConstants' :: forall ts . PokableList ts =>
 	CommandBuffer.M.C -> Pipeline.Layout.L ->
-	ShaderStageFlags -> Word32 -> HeteroList ts -> IO ()
+	ShaderStageFlags -> Word32 -> HeteroParList.L ts -> IO ()
 pushConstants' (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n
@@ -182,9 +183,9 @@ pipelineBarrier :: (
 	) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
-	HeteroParList Memory.M.Barrier ns ->
-	HeteroParList Buffer.M.MemoryBarrier ns' ->
-	HeteroParList Image.MemoryBarrier ns'' -> IO ()
+	HeteroParList.HeteroParList Memory.M.Barrier ns ->
+	HeteroParList.HeteroParList Buffer.M.MemoryBarrier ns' ->
+	HeteroParList.HeteroParList Image.MemoryBarrier ns'' -> IO ()
 pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)

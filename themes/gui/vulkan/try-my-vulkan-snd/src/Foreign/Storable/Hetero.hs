@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.Storable.Hetero (
@@ -27,7 +27,8 @@ module Foreign.Storable.Hetero (
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Data.Kind
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 -- Size and Alignment
 
@@ -54,13 +55,13 @@ calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szal
 -- Pokable
 
 class SizableList ts => PokableList (ts :: [Type]) where
-	pokeList :: Ptr a -> HeteroList ts -> IO ()
+	pokeList :: Ptr a -> HeteroParList.L ts -> IO ()
 
 instance PokableList '[] where
-	pokeList _ HNil = pure ()
+	pokeList _ HeteroParList.HNil = pure ()
 
 instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
-	pokeList ((`alignPtr` alignment' @t) -> p) (Id x :** xs) = do
+	pokeList ((`alignPtr` alignment' @t) -> p) (HeteroParList.Id x :** xs) = do
 		poke' (castPtr p) x
 		pokeList (p `plusPtr` sizeOf' @t) xs
 
@@ -68,20 +69,20 @@ instance (Pokable t, PokableList ts) => PokableList (t ': ts) where
 
 class WithPokedToListM ns where
 	withPokedToListM :: Monad m =>
-		(forall n . WithPoked n => t n -> m t') -> HeteroParList t ns -> m [t']
+		(forall n . WithPoked n => t n -> m t') -> HeteroParList.HeteroParList t ns -> m [t']
 
-instance WithPokedToListM '[] where withPokedToListM _ HNil = pure []
+instance WithPokedToListM '[] where withPokedToListM _ HeteroParList.HNil = pure []
 
 instance (WithPoked n, WithPokedToListM ns) => WithPokedToListM (n ': ns) where
 	withPokedToListM f (x :** xs) = (:) <$> f x <*> withPokedToListM f xs
 
 class WithPokedHeteroMap ns where
-	withPokedHeteroMapM :: HeteroParList t ns ->
+	withPokedHeteroMapM :: HeteroParList.HeteroParList t ns ->
 		(forall n . WithPoked n => t n -> (a -> m ()) -> m ()) ->
 		([a] -> m ()) -> m ()
 
 instance WithPokedHeteroMap '[] where
-	withPokedHeteroMapM HNil _ g = g []
+	withPokedHeteroMapM HeteroParList.HNil _ g = g []
 
 instance (WithPoked n, WithPokedHeteroMap ns) =>
 	WithPokedHeteroMap (n ': ns) where

@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute (
@@ -18,7 +18,8 @@ module Gpu.Vulkan.Pipeline.Compute (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Kind
 import Data.Int
 
@@ -67,12 +68,12 @@ createInfoToMiddle dvc CreateInfo {
 class CreateInfoListToMiddle as where
 	type Result as :: [(Type, Type, [Type])]
 	createInfoListToMiddle ::
-		Device.D sd -> HeteroParList (V4 CreateInfo) as ->
-		IO (HeteroParList (V3 M.CreateInfo) (Result as))
+		Device.D sd -> HeteroParList.HeteroParList (V4 CreateInfo) as ->
+		IO (HeteroParList.HeteroParList (V3 M.CreateInfo) (Result as))
 
 instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
-	createInfoListToMiddle _ HNil = pure HNil
+	createInfoListToMiddle _ HeteroParList.HNil = pure HeteroParList.HNil
 
 instance (Pokable n', Pokable c, CreateInfoListToMiddle as) =>
 	CreateInfoListToMiddle (
@@ -94,11 +95,11 @@ destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
 class DestroyCreateInfoMiddleList vss vss' where
 	destroyCreateInfoMiddleList ::
 		Device.D sd ->
-		HeteroParList (V3 M.CreateInfo) vss ->
-		HeteroParList (V4 CreateInfo) vss' -> IO ()
+		HeteroParList.HeteroParList (V3 M.CreateInfo) vss ->
+		HeteroParList.HeteroParList (V4 CreateInfo) vss' -> IO ()
 
 instance DestroyCreateInfoMiddleList '[] '[] where
-	destroyCreateInfoMiddleList _ HNil HNil = pure ()
+	destroyCreateInfoMiddleList _ HeteroParList.HNil HeteroParList.HNil = pure ()
 
 instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 	DestroyCreateInfoMiddleList
@@ -114,9 +115,9 @@ createCs :: (
 	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	PipelineListToHetero (ToDummiesNew vss) ) =>
-	Device.D sd -> Maybe Cache.C -> HeteroParList (V4 CreateInfo) vss ->
+	Device.D sd -> Maybe Cache.C -> HeteroParList.HeteroParList (V4 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
-	(forall s . HeteroParList (Pipeline s) (ToDummiesNew vss) -> IO a) -> IO a
+	(forall s . HeteroParList.HeteroParList (Pipeline s) (ToDummiesNew vss) -> IO a) -> IO a
 createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
 	bracket
@@ -136,10 +137,10 @@ type family ToDummiesNew tl where
 newtype Pipeline s (d :: ()) = Pipeline { unPipeline :: C s } deriving Show
 
 class PipelineListToHetero ds where
-	pipelineListToHetero :: [C s] -> HeteroParList (Pipeline s) ds
+	pipelineListToHetero :: [C s] -> HeteroParList.HeteroParList (Pipeline s) ds
 
 instance PipelineListToHetero '[] where
-	pipelineListToHetero [] = HNil
+	pipelineListToHetero [] = HeteroParList.HNil
 	pipelineListToHetero _ = error "mismatch"
 
 instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
@@ -148,10 +149,10 @@ instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
 class HeteroParListMapM'' k ss fss where
 	heteroParListMapM'' :: Applicative m =>
 		(forall a b (c :: k) d . t '(a, b, c, d) -> m (t' a)) ->
-		HeteroParList t ss -> m (HeteroParList t' fss)
+		HeteroParList.HeteroParList t ss -> m (HeteroParList.HeteroParList t' fss)
 
 instance HeteroParListMapM'' k '[] '[] where
-	heteroParListMapM'' _ HNil = pure HNil
+	heteroParListMapM'' _ HeteroParList.HNil = pure HeteroParList.HNil
 
 instance HeteroParListMapM'' k ss fss =>
 	HeteroParListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where

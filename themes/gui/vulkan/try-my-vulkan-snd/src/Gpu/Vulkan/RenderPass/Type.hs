@@ -1,8 +1,10 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass.Type where
 
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Core
@@ -17,7 +19,7 @@ data BeginInfoNew n sr fmt sf cts = BeginInfoNew {
 	beginInfoRenderPassNew :: R sr,
 	beginInfoFramebufferNew :: Framebuffer.FNew fmt sf,
 	beginInfoRenderAreaNew :: Rect2d,
-	beginInfoClearValuesNew :: HeteroParList ClearValue cts }
+	beginInfoClearValuesNew :: HeteroParList.HeteroParList ClearValue cts }
 
 beginInfoToMiddleNew :: BeginInfoNew n sr fmt sf cts -> M.BeginInfo n cts
 beginInfoToMiddleNew BeginInfoNew {
@@ -37,7 +39,7 @@ data BeginInfo n sr sf cts = BeginInfo {
 	beginInfoRenderPass :: R sr,
 	beginInfoFramebuffer :: Framebuffer.F sf,
 	beginInfoRenderArea :: Rect2d,
-	beginInfoClearValues :: HeteroParList ClearValue cts }
+	beginInfoClearValues :: HeteroParList.HeteroParList ClearValue cts }
 
 beginInfoToMiddle :: BeginInfo n sr sf cts -> M.BeginInfo n cts
 beginInfoToMiddle BeginInfo {

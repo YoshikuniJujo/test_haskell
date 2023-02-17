@@ -19,7 +19,8 @@ import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel
-import Data.HeteroParList
+import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -55,7 +56,7 @@ import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: HeteroParList (V3 ShaderStage.CreateInfo) nskndvss,
+	createInfoStages :: HeteroParList.HeteroParList (V3 ShaderStage.CreateInfo) nskndvss,
 	createInfoVertexInputState ::
 		Maybe (V3 VertexInputState.CreateInfo nvsts),
 	createInfoInputAssemblyState ::
@@ -121,12 +122,12 @@ class CreateInfoListToMiddle sss where
 	type CreateInfoListArgs sss ::
 		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, *, *, ([*], [(Nat, *)]))]
 	createInfoListToMiddle ::
-		HeteroParList (V12 CreateInfo) sss ->
-		HeteroParList (V12 M.CreateInfo) (CreateInfoListArgs sss)
+		HeteroParList.HeteroParList (V12 CreateInfo) sss ->
+		HeteroParList.HeteroParList (V12 M.CreateInfo) (CreateInfoListArgs sss)
 
 instance CreateInfoListToMiddle '[] where
 	type CreateInfoListArgs '[] = '[]
-	createInfoListToMiddle _ = HNil
+	createInfoListToMiddle _ = HeteroParList.HNil
 
 instance (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
@@ -146,8 +147,8 @@ createGs :: (
 	CreateInfoListToMiddle ss
 	) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroParList (V12 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO (HeteroParList (V2 M.G) (GListVars ss))
+	HeteroParList.HeteroParList (V12 CreateInfo) ss ->
+	Maybe (AllocationCallbacks.A n') -> IO (HeteroParList.HeteroParList (V2 M.G) (GListVars ss))
 createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
@@ -155,9 +156,9 @@ recreateGs :: (
 	CreateInfoListToMiddle ss,
 	Pokable c, Pokable d,
 	M.GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
-	HeteroParList (V12 CreateInfo) ss ->
+	HeteroParList.HeteroParList (V12 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroParList (V2 M.G) (GListVars ss) -> IO ()
+	HeteroParList.HeteroParList (V2 M.G) (GListVars ss) -> IO ()
 recreateGs dvc mc cis macc macd gs =
 	M.recreateGs dvc mc (createInfoListToMiddle cis) macc macd gs
 
