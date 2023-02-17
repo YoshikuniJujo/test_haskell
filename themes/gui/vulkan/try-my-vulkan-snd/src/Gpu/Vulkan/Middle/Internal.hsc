@@ -220,7 +220,7 @@ class TL.Length cts => ClearValuesToCore (cts :: [ClearType]) where
 		HeteroParList.PL ClearValue cts ->
 		([C.PtrClearValue] -> IO a) -> IO a
 
-instance ClearValuesToCore '[] where clearValuesToCore HeteroParList.HNil = ($ [])
+instance ClearValuesToCore '[] where clearValuesToCore HeteroParList.Nil = ($ [])
 
 instance (ClearValueToCore ct, ClearValuesToCore cts) =>
 	ClearValuesToCore (ct ': cts) where

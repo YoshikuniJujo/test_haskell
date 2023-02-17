@@ -45,7 +45,7 @@ class SubmitInfoListToCore (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type
 		([C.SubmitInfo] -> IO a) -> IO ()
 
 instance SubmitInfoListToCore '[] where
-	submitInfoListToCore HeteroParList.HNil f = () <$ f []
+	submitInfoListToCore HeteroParList.Nil f = () <$ f []
 
 instance (
 	Pokable n, CommandBufferListToMiddle svss,

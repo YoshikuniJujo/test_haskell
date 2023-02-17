@@ -134,8 +134,8 @@ class CreateInfoListToMiddle ss where
 
 instance CreateInfoListToMiddle '[] where
 	type MiddleVars '[] = '[]
-	createInfoListToMiddle _ HeteroParList.HNil = pure HeteroParList.HNil
-	destroyShaderStages _ HeteroParList.HNil HeteroParList.HNil = pure ()
+	createInfoListToMiddle _ HeteroParList.Nil = pure HeteroParList.Nil
+	destroyShaderStages _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (
 	ShaderStage.CreateInfoListToMiddleNew nnskndscdvss,
@@ -159,7 +159,7 @@ class V2g ss where
 	v2g :: HeteroParList.PL (V2 M.G) ss -> HeteroParList.PL (V2 (G sg)) ss
 	g2v :: HeteroParList.PL (V2 (G sg)) ss -> HeteroParList.PL (V2 M.G) ss
 
-instance V2g '[] where v2g HeteroParList.HNil = HeteroParList.HNil; g2v HeteroParList.HNil = HeteroParList.HNil
+instance V2g '[] where v2g HeteroParList.Nil = HeteroParList.Nil; g2v HeteroParList.Nil = HeteroParList.Nil
 
 instance V2g ss => V2g (s ': ss) where
 	v2g (V2 g :** gs) = V2 (G g) :** v2g gs

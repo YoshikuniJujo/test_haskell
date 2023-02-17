@@ -73,7 +73,7 @@ class CreateInfoListToMiddle as where
 
 instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
-	createInfoListToMiddle _ HeteroParList.HNil = pure HeteroParList.HNil
+	createInfoListToMiddle _ HeteroParList.Nil = pure HeteroParList.Nil
 
 instance (Pokable n', Pokable c, CreateInfoListToMiddle as) =>
 	CreateInfoListToMiddle (
@@ -99,7 +99,7 @@ class DestroyCreateInfoMiddleList vss vss' where
 		HeteroParList.PL (V4 CreateInfo) vss' -> IO ()
 
 instance DestroyCreateInfoMiddleList '[] '[] where
-	destroyCreateInfoMiddleList _ HeteroParList.HNil HeteroParList.HNil = pure ()
+	destroyCreateInfoMiddleList _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 	DestroyCreateInfoMiddleList
@@ -140,7 +140,7 @@ class PipelineListToHetero ds where
 	pipelineListToHetero :: [C s] -> HeteroParList.PL (Pipeline s) ds
 
 instance PipelineListToHetero '[] where
-	pipelineListToHetero [] = HeteroParList.HNil
+	pipelineListToHetero [] = HeteroParList.Nil
 	pipelineListToHetero _ = error "mismatch"
 
 instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
@@ -152,7 +152,7 @@ class HeteroParListMapM'' k ss fss where
 		HeteroParList.PL t ss -> m (HeteroParList.PL t' fss)
 
 instance HeteroParListMapM'' k '[] '[] where
-	heteroParListMapM'' _ HeteroParList.HNil = pure HeteroParList.HNil
+	heteroParListMapM'' _ HeteroParList.Nil = pure HeteroParList.Nil
 
 instance HeteroParListMapM'' k ss fss =>
 	HeteroParListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where

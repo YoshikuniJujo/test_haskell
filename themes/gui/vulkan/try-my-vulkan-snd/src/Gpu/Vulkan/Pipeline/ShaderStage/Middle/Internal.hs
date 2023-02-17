@@ -70,7 +70,7 @@ class CreateInfoListToCore sss where
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
-	createInfoListToCore HeteroParList.HNil = (() <$) . ($ [])
+	createInfoListToCore HeteroParList.Nil = (() <$) . ($ [])
 
 instance (WithPoked n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where

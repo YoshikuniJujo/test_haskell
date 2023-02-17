@@ -95,7 +95,7 @@ class HeteroParListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
 	heteroParListToList' :: (forall spslbts . t spslbts -> t') ->
 		HeteroParList.PL t spslbtss -> [t']
 
-instance HeteroParListToList' '[] where heteroParListToList' _ HeteroParList.HNil = []
+instance HeteroParListToList' '[] where heteroParListToList' _ HeteroParList.Nil = []
 
 instance HeteroParListToList' spslbtss =>
 	HeteroParListToList' (spslbts ': spslbtss) where
@@ -200,7 +200,7 @@ class ImageCopyListToMiddle objs (img :: Type) (inms :: [Symbol]) where
 		[Buffer.M.ImageCopy]
 
 instance ImageCopyListToMiddle objs img '[] where
-	imageCopyListToMiddle _ HeteroParList.HNil = []
+	imageCopyListToMiddle _ HeteroParList.Nil = []
 
 instance (
 	Buffer.OffsetSize ('ObjImage img nm) objs,

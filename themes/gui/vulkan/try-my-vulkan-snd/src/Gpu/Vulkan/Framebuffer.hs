@@ -61,7 +61,7 @@ createInfoFromNew CreateInfoNew {
 
 isToOld :: HeteroParList.PL (V3 ImageView.INew) fmtnmsis ->
 	HeteroParList.PL ImageView.I (MapThird fmtnmsis)
-isToOld HeteroParList.HNil = HeteroParList.HNil
+isToOld HeteroParList.Nil = HeteroParList.Nil
 isToOld ((V3 i) :** is) = ImageView.iToOld i :** isToOld is
 
 data CreateInfo n sr sis = CreateInfo {

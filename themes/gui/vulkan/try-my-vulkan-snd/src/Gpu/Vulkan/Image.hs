@@ -117,7 +117,7 @@ class MemoryBarrierListToMiddle
 		HeteroParList.PL M.MemoryBarrier (FirstOfFives nsismnmfmts)
 
 instance MemoryBarrierListToMiddle '[] where
-	memoryBarrierListToMiddle HeteroParList.HNil = HeteroParList.HNil
+	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
 instance (Pokable n, MemoryBarrierListToMiddle nsismnmfmts) =>
 	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where

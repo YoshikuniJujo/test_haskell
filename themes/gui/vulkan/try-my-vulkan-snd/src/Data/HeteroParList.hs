@@ -58,16 +58,16 @@ newtype Id t = Id t deriving Show
 infixr 5 :**
 
 data PL (t :: k -> Type) (ss :: [k]) where
-	HNil :: PL t '[]
+	Nil :: PL t '[]
 	(:**) :: t s -> PL t ss -> PL t (s ': ss)
 
-instance Show (PL t '[]) where show HNil = "HNil"
+instance Show (PL t '[]) where show Nil = "Nil"
 
 instance (Show (t s), Show (PL t ss)) =>
 	Show (PL t (s ': ss)) where
 	show (x :** xs) = show x ++ " :** " ++ show xs
 
-instance Eq (PL t '[]) where HNil == HNil = True
+instance Eq (PL t '[]) where Nil == Nil = True
 
 instance (Eq (t s), Eq (PL t ss)) =>
 	Eq (PL t (s ': ss)) where
@@ -76,8 +76,8 @@ instance (Eq (t s), Eq (PL t ss)) =>
 {-# COMPLETE Singleton #-}
 
 pattern Singleton :: t s -> PL t '[s]
-pattern Singleton x <- (x :** HNil) where
-	Singleton x = x :** HNil
+pattern Singleton x <- (x :** Nil) where
+	Singleton x = x :** Nil
 
 -- From/To List
 
@@ -85,7 +85,7 @@ class ListToHeteroParList ss where
 	listToHeteroParList :: (forall s . t -> t' s) -> [t] -> PL t' ss
 
 instance ListToHeteroParList '[] where
-	listToHeteroParList _ [] = HNil
+	listToHeteroParList _ [] = Nil
 	listToHeteroParList _ _ = error "bad"
 
 instance ListToHeteroParList ss => ListToHeteroParList (s ': ss) where
@@ -93,18 +93,18 @@ instance ListToHeteroParList ss => ListToHeteroParList (s ': ss) where
 	listToHeteroParList _ _ = error "bad"
 
 heteroParListToList :: (forall (s :: k) . t s -> t') -> PL t ss -> [t']
-heteroParListToList _ HNil = []
+heteroParListToList _ Nil = []
 heteroParListToList f (x :** xs) = f x : heteroParListToList f xs
 
 heteroParListToListM :: Applicative m =>
 	(forall (s :: k) . t s -> m t') -> PL t ss -> m [t']
-heteroParListToListM _ HNil = pure []
+heteroParListToListM _ Nil = pure []
 heteroParListToListM f (x :** xs) = (:) <$> f x <*> heteroParListToListM f xs
 
 class HomoList (a :: k) as where
 	homoListToList :: PL t as -> [t a]
 
-instance HomoList a '[] where homoListToList HNil = []
+instance HomoList a '[] where homoListToList Nil = []
 
 instance HomoList a as => HomoList a (a ': as) where
 	homoListToList (x :** xs) = x : homoListToList xs
@@ -112,7 +112,7 @@ instance HomoList a as => HomoList a (a ': as) where
 -- Index
 
 heteroParListIndex :: Integral i => PL t ss -> i -> (forall s . t s -> a) -> a
-heteroParListIndex HNil _ _ = error "index too large"
+heteroParListIndex Nil _ _ = error "index too large"
 heteroParListIndex (x :** _) 0 f = f x
 heteroParListIndex (_ :** xs) i f | i > 0 = heteroParListIndex xs (i - 1) f
 heteroParListIndex _ _ _ = error "negative index"
@@ -125,12 +125,12 @@ homoListIndex xs i = homoListToList xs `genericIndex` i
 heteroParListMap ::
 	(forall s . t s -> t' s) -> PL t ss -> PL t' ss
 heteroParListMap f = \case
-	HNil -> HNil
+	Nil -> Nil
 	x :** xs -> f x :** heteroParListMap f xs
 
 heteroParListReplicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
 	(forall ss . PL t ss -> m b) -> m b
-heteroParListReplicateM 0 _ f = f HNil
+heteroParListReplicateM 0 _ f = f Nil
 heteroParListReplicateM n x f = x \v -> heteroParListReplicateM (n - 1) x \vs ->
 	f $ v :** vs

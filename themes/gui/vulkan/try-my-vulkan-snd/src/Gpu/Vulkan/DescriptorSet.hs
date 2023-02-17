@@ -171,7 +171,7 @@ class ImageInfosToMiddle ssfmtnmsis where
 		HeteroParList.PL (V4 Descriptor.ImageInfo) ssfmtnmsis ->
 		[Descriptor.M.ImageInfo]
 
-instance ImageInfosToMiddle '[] where imageInfosToMiddle HeteroParList.HNil = []
+instance ImageInfosToMiddle '[] where imageInfosToMiddle HeteroParList.Nil = []
 
 instance ImageInfosToMiddle ssfmtnmsis =>
 	ImageInfosToMiddle ('(ss, fmt, nm, si) ': ssfmtnmsis) where
@@ -183,7 +183,7 @@ class BufferInfosToMiddle sbsmobjsobjs where
 		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
 		[Descriptor.M.BufferInfo]
 
-instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.HNil = []
+instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.Nil = []
 
 instance (Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
@@ -203,7 +203,7 @@ class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 	writeListToMiddle ::
 		HeteroParList.PL (Write_ n) sdspslbtssbsmobjsobjs -> [M.Write n]
 
-instance WriteListToMiddle n '[] where writeListToMiddle HeteroParList.HNil = []
+instance WriteListToMiddle n '[] where writeListToMiddle HeteroParList.Nil = []
 
 instance (
 	WriteSourcesToMiddle slbts wsa,

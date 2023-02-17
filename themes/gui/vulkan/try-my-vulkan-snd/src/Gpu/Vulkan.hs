@@ -56,7 +56,7 @@ class CommandBufferListToMiddle svss where
 
 instance CommandBufferListToMiddle '[] where
 	type CommandBufferListToMiddleMapSnd '[] = '[]
-	commandBufferListToMiddle HeteroParList.HNil = HeteroParList.HNil
+	commandBufferListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
 instance CommandBufferListToMiddle svss =>
 	CommandBufferListToMiddle ('(s, vs) ': svss) where
@@ -87,7 +87,7 @@ class SemaphorePipelineStageFlagsFromMiddle sss where
 		HeteroParList.PL SemaphorePipelineStageFlags sss
 
 instance SemaphorePipelineStageFlagsFromMiddle '[] where
-	semaphorePipelineStageFlagsFromMiddle [] = HeteroParList.HNil
+	semaphorePipelineStageFlagsFromMiddle [] = HeteroParList.Nil
 
 instance SemaphorePipelineStageFlagsFromMiddle sss =>
 	SemaphorePipelineStageFlagsFromMiddle (ss ': sss) where
