@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
@@ -9,7 +10,10 @@
 
 module Data.TypeLevel.Uncurry where
 
-data V2 t ss where V2 :: { unV2 :: t s1 s2 } -> V2 t '(s1, s2)
+import Data.TypeLevel.Uncurry.TH
+
+(: []) <$> v2
+
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)
 data V4 t ss where V4 :: t s1 s2 s3 s4 -> V4 t '(s1, s2, s3, s4)
 data V5 t ss where V5 :: t s1 s2 s3 s4 s5 -> V5 t '(s1, s2, s3, s4, s5)
@@ -32,7 +36,8 @@ data V15 t ss where
 		s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15
 		)
 
-deriving instance Show (t s1 s2) => Show (V2 t '(s1, s2))
+(: []) <$> showV2
+
 deriving instance Show (t s1 s2 s3) => Show (V3 t '(s1, s2, s3))
 deriving instance Show (t s1 s2 s3 s4) => Show (V4 t '(s1, s2, s3, s4))
 deriving instance Show (t s1 s2 s3 s4 s5) => Show (V5 t '(s1, s2, s3, s4, s5))
