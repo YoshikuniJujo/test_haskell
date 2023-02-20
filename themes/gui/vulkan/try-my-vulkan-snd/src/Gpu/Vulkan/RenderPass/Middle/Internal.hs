@@ -13,7 +13,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
-import Data.TypeLevel qualified as TL
+import Data.TypeLevel.Length qualified as TL
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 

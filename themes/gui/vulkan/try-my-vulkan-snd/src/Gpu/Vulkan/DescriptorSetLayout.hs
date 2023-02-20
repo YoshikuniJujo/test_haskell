@@ -23,7 +23,7 @@ import Prelude hiding (length)
 import Foreign.Storable
 import Control.Exception
 import Data.Kind
-import Data.TypeLevel
+import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))

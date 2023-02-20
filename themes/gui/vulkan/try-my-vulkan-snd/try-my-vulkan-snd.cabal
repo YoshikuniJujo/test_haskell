@@ -39,6 +39,7 @@ library
       Data.Kind.Object
       Data.Traversable.Utils
       Data.TypeLevel
+      Data.TypeLevel.Length
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic

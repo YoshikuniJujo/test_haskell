@@ -9,12 +9,6 @@
 
 module Data.TypeLevel where
 
-import Prelude hiding (length)
-
-class Length (as :: [k]) where length :: Integral n => n
-instance Length '[] where length = 0
-instance Length as => Length (a ': as) where length = length @_ @as + 1
-
 data V2 t ss where V2 :: { unV2 :: t s1 s2 } -> V2 t '(s1, s2)
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)
 data V4 t ss where V4 :: t s1 s2 s3 s4 -> V4 t '(s1, s2, s3, s4)

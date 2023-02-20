@@ -31,7 +31,7 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Default
-import Data.TypeLevel qualified as TL
+import Data.TypeLevel.Length qualified as TL
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word

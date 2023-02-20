@@ -29,6 +29,7 @@ import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.Kind
 import Data.TypeLevel
+import Data.TypeLevel.Length
 import Data.IORef
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
