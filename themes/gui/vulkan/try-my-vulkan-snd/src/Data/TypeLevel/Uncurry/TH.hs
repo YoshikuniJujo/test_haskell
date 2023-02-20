@@ -13,9 +13,13 @@ v2 = dataD (cxt []) (mkName "V2")
 			[mkName "V2"]
 			[	varBangType (mkName "unV2") (
 					(,)	<$> bang noSourceUnpackedness noSourceStrictness
-						<*> varT (mkName "t") `appT` varT (mkName "s1") `appT` varT (mkName "s2")
+						<*> varT (mkName "t")
+							`appT` varT (mkName "s1")
+							`appT` varT (mkName "s2")
 					)]
-			(	conT (mkName "V2") `appT` varT (mkName "t") `appT` pTupT2 (varT $ mkName "s1") (varT $ mkName "s2")
+			(	conT (mkName "V2") `appT` varT (mkName "t") `appT` pTupT2
+					(varT $ mkName "s1")
+					(varT $ mkName "s2")
 				) ]
 	[]
 
