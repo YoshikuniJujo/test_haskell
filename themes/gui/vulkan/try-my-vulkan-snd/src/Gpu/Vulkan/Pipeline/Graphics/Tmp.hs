@@ -18,7 +18,7 @@ import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Data.Kind
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word

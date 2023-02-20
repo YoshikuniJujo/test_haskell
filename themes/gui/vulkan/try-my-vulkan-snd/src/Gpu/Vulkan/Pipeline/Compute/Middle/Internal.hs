@@ -20,7 +20,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.Hetero
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))

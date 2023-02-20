@@ -38,8 +38,8 @@ library
       Data.HeteroParList
       Data.Kind.Object
       Data.Traversable.Utils
-      Data.TypeLevel
       Data.TypeLevel.Length
+      Data.TypeLevel.Uncurry
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic

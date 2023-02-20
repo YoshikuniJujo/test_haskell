@@ -26,7 +26,7 @@ import Data.Kind.Object
 import Data.Foldable
 import Data.Default
 import Data.Bits
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Proxy

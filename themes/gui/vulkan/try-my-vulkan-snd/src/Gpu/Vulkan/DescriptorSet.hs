@@ -15,7 +15,7 @@ import GHC.TypeLits
 import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))

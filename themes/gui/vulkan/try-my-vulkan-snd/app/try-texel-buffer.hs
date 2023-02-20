@@ -20,7 +20,7 @@ import Data.Kind.Object
 import Data.Default
 import Data.Bits
 import Data.List.Length
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word

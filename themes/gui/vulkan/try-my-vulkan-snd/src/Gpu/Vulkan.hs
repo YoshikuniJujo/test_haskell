@@ -11,7 +11,7 @@
 module Gpu.Vulkan where
 
 import Data.Kind
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 

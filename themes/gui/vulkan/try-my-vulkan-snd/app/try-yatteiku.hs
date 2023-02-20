@@ -19,7 +19,7 @@ import Data.Bits
 import Data.Maybe
 import Data.List
 import Data.Array
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word

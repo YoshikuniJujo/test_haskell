@@ -17,7 +17,7 @@ import Foreign.Storable.Hetero
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word

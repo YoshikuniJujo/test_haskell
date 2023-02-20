@@ -13,7 +13,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
 
 import Foreign.Storable.PeekPoke
 import Data.Kind
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 

@@ -26,7 +26,7 @@ import Data.Kind
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
-import Data.TypeLevel hiding (length)
+import Data.TypeLevel.Uncurry hiding (length)
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Proxy

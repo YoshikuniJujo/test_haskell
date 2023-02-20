@@ -7,7 +7,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel where
+module Data.TypeLevel.Uncurry where
 
 data V2 t ss where V2 :: { unV2 :: t s1 s2 } -> V2 t '(s1, s2)
 data V3 t ss where V3 :: { unV3 :: t s1 s2 s3 } -> V3 t '(s1, s2, s3)

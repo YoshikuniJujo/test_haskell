@@ -27,7 +27,7 @@ import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object hiding (Offset(..))
 import Data.Maybe
-import Data.TypeLevel
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))

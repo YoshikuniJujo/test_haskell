@@ -13,7 +13,7 @@ module Gpu.Vulkan.Queue.Middle.Internal where
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Data.Kind
-import Data.TypeLevel hiding (length)
+import Data.TypeLevel.Uncurry hiding (length)
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 
