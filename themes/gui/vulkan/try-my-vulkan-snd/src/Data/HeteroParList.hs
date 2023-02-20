@@ -35,11 +35,11 @@ module Data.HeteroParList (
 
 	-- * Map and ReplicateM
 
-	map, replicateM,
+	map, replicate, replicateM,
 
 	) where
 
-import Prelude hiding (map)
+import Prelude hiding (map, replicate)
 
 import Data.Kind
 import Data.List (genericIndex)
@@ -103,12 +103,12 @@ toListM :: Applicative m =>
 toListM _ Nil = pure []
 toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
 
-class HomoList (a :: k) as where
-	homoListToList :: PL t as -> [t a]
+class HomoList (s :: k) ss where
+	homoListToList :: PL t ss -> [t s]
 
-instance HomoList a '[] where homoListToList Nil = []
+instance HomoList s '[] where homoListToList Nil = []
 
-instance HomoList a as => HomoList a (a ': as) where
+instance HomoList s ss => HomoList s (s ': ss) where
 	homoListToList (x :** xs) = x : homoListToList xs
 
 -- Index
@@ -119,16 +119,21 @@ index (x :** _) 0 f = f x
 index (_ :** xs) i f | i > 0 = index xs (i - 1) f
 index _ _ _ = error "negative index"
 
-homoListIndex :: (HomoList a as, Integral i) => PL t as -> i -> t a
+homoListIndex :: (HomoList s ss, Integral i) => PL t ss -> i -> t s
 homoListIndex xs i = homoListToList xs `genericIndex` i
 
--- Map and ReplicateM
+-- Map and Replicate
 
 map ::
 	(forall s . t s -> t' s) -> PL t ss -> PL t' ss
 map f = \case
 	Nil -> Nil
 	x :** xs -> f x :** map f xs
+
+replicate :: Int -> (forall a . (forall s . t s -> a) -> a) ->
+	(forall ss . PL t ss -> b) -> b
+replicate 0 _ f = f Nil
+replicate n x f = x \v -> replicate (n - 1) x \vs -> f $ v :** vs
 
 replicateM :: Monad m =>
 	Int -> (forall a . (forall s . t s -> m a) -> m a) ->
