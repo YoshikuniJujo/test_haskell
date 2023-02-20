@@ -84,7 +84,7 @@ pattern Singleton x <- (x :** Nil) where
 -- From/To List
 
 class FromList ss where
-	fromList :: (forall s . t -> t' s) -> [t] -> PL t' ss
+	fromList :: (forall s . a -> t s) -> [a] -> PL t ss
 
 instance FromList '[] where
 	fromList _ [] = Nil
@@ -94,12 +94,12 @@ instance FromList ss => FromList (s ': ss) where
 	fromList f (x : xs) = f x :** fromList f xs
 	fromList _ _ = error "bad"
 
-toList :: (forall (s :: k) . t s -> t') -> PL t ss -> [t']
+toList :: (forall (s :: k) . t s -> a) -> PL t ss -> [a]
 toList _ Nil = []
 toList f (x :** xs) = f x : toList f xs
 
 toListM :: Applicative m =>
-	(forall (s :: k) . t s -> m t') -> PL t ss -> m [t']
+	(forall (s :: k) . t s -> m a) -> PL t ss -> m [a]
 toListM _ Nil = pure []
 toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
 
