@@ -94,7 +94,7 @@ data BeginInfo n cts = BeginInfo {
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: HeteroParList.PL ClearValue cts }
 
-beginInfoToCore :: forall n cts a . (WithPoked n, ClearValuesToCore cts) =>
+beginInfoToCore :: forall n cts a . (WithPoked n, ClearValueListToCore cts) =>
 	BeginInfo n cts -> (Ptr C.BeginInfo -> IO a) -> IO ()
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
@@ -103,7 +103,7 @@ beginInfoToCore BeginInfo {
 	beginInfoRenderArea = ra,
 	beginInfoClearValues = const (TL.length @_ @cts) &&& id -> (cvc, cvs)
 	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
-		clearValuesToCore cvs \pcvl ->
+		clearValueListToCore cvs \pcvl ->
 		clearValueListToArray pcvl \pcva -> do
 		fb' <- Framebuffer.fToCore fb
 		let	ci = C.BeginInfo {

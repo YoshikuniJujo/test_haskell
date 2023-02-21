@@ -50,7 +50,7 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
 import Gpu.Vulkan.Command.Middle qualified as M
 
-beginRenderPass :: (Storable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Storable n, ClearValueListToCore ct) =>
 	CommandBuffer.CC vs -> RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.CC mcb) = M.beginRenderPass mcb
 

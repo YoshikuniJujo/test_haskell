@@ -16,7 +16,7 @@ module Gpu.Vulkan.Middle.Internal (
 	ExtensionProperties(..), extensionPropertiesFromCore,
 	ObjectHandle(..),
 	StencilOpState(..), stencilOpStateToCore,
-	ClearValue(..), ClearValuesToCore(..), clearValueListToArray,
+	ClearValue(..), ClearValueListToCore(..), clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
 	SubmitInfo(..), submitInfoToCore
@@ -215,18 +215,18 @@ instance ClearColorValueToCore cct =>
 	clearValueToCore cv@(ClearValueColor _) f =
 		clearColorValueToCore cv $ f . C.clearValueFromClearColorValue
 
-class TL.Length cts => ClearValuesToCore (cts :: [ClearType]) where
-	clearValuesToCore ::
+class TL.Length cts => ClearValueListToCore (cts :: [ClearType]) where
+	clearValueListToCore ::
 		HeteroParList.PL ClearValue cts ->
 		([C.PtrClearValue] -> IO a) -> IO a
 
-instance ClearValuesToCore '[] where clearValuesToCore HeteroParList.Nil = ($ [])
+instance ClearValueListToCore '[] where clearValueListToCore HeteroParList.Nil = ($ [])
 
-instance (ClearValueToCore ct, ClearValuesToCore cts) =>
-	ClearValuesToCore (ct ': cts) where
-	clearValuesToCore (cv :** cvs) f =
+instance (ClearValueToCore ct, ClearValueListToCore cts) =>
+	ClearValueListToCore (ct ': cts) where
+	clearValueListToCore (cv :** cvs) f =
 		clearValueToCore cv \ccv ->
-		clearValuesToCore cvs \ccvs -> f $ ccv : ccvs
+		clearValueListToCore cvs \ccvs -> f $ ccv : ccvs
 
 clearValueListToArray :: [C.PtrClearValue] -> (C.PtrClearValue -> IO a) -> IO a
 clearValueListToArray (length &&& id -> (pcvc, pcvl)) f =

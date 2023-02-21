@@ -17,7 +17,7 @@ module Gpu.Vulkan.Middle (
 	-- * Stencil Op State and Clear
 
 	StencilOpState(..),
-	ClearValue(..), ClearValuesToCore, ClearType(..), ClearColorType(..),
+	ClearValue(..), ClearValueListToCore, ClearType(..), ClearColorType(..),
 
 	-- * Object Handle
 

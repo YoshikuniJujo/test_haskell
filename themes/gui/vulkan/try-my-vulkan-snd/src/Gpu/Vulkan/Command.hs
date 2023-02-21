@@ -51,14 +51,14 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
-beginRenderPassNew :: (Storable n, ClearValuesToCore ct) =>
+beginRenderPassNew :: (Storable n, ClearValueListToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPassNew (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddleNew bi) cnt)
 	(M.endRenderPass cb) f
 
-beginRenderPass :: (Storable n, ClearValuesToCore ct) =>
+beginRenderPass :: (Storable n, ClearValueListToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_

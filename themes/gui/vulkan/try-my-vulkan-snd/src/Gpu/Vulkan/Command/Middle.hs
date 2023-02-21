@@ -69,7 +69,7 @@ import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
-beginRenderPass :: (WithPoked n, ClearValuesToCore ct) => CommandBuffer.M.C ->
+beginRenderPass :: (WithPoked n, ClearValueListToCore ct) => CommandBuffer.M.C ->
 	RenderPass.BeginInfo n ct -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.M.C _ cb) rpbi (Subpass.Contents spcnt) =
 	RenderPass.beginInfoToCore rpbi \prpbi ->
