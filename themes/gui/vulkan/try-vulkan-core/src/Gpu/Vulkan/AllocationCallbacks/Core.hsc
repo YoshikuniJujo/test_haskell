@@ -14,14 +14,14 @@ import Data.Word
 #include <vulkan/vulkan.h>
 
 ---------------------------------------------------------------------------
--- * ALLOCATION FUNCTION
--- * REALLOCATION FUNCTION
--- * FREE FUNCTION
--- * INTERNAL ALLOCATION NOTIFICATION
--- * INTERNAL FREE NOTIFICATION
+-- ALLOCATION FUNCTION
+-- REALLOCATION FUNCTION
+-- FREE FUNCTION
+-- INTERNAL ALLOCATION NOTIFICATION
+-- INTERNAL FREE NOTIFICATION
 ---------------------------------------------------------------------------
 
--- ALLOCATION FUNCTION
+-- * ALLOCATION FUNCTION
 
 type FnAllocationFunction a = Ptr a -> #{type size_t} ->
 	#{type size_t} -> #{type VkSystemAllocationScope} -> IO (Ptr ())
@@ -34,7 +34,7 @@ wrapAllocationFunction = wrapAllocationFunctionGen . (. castPtr)
 foreign import ccall "wrapper" wrapAllocationFunctionGen ::
 	FnAllocationFunction () -> IO PfnAllocationFunction
 
--- REALLOCATION FUNCTION
+-- * REALLOCATION FUNCTION
 
 type FnReallocationFunction a = Ptr a -> Ptr () -> #{type size_t} ->
 	#{type size_t} -> #{type VkSystemAllocationScope} -> IO (Ptr ())
@@ -48,7 +48,7 @@ wrapReallocationFunction = wrapReallocationFunctionGen . (. castPtr)
 foreign import ccall "wrapper" wrapReallocationFunctionGen ::
 	FnReallocationFunction () -> IO PfnReallocationFunction
 
--- FREE FUNCTION
+-- * FREE FUNCTION
 
 type FnFreeFunction a = Ptr a -> Ptr () -> IO ()
 
@@ -60,7 +60,7 @@ wrapFreeFunction = wrapFreeFunctionGen . (. castPtr)
 foreign import ccall "wrapper" wrapFreeFunctionGen ::
 	FnFreeFunction () -> IO (PfnFreeFunction)
 
--- INTERNAL ALLOCATION NOTIFICATION
+-- * INTERNAL ALLOCATION NOTIFICATION
 
 type FnInternalAllocationNotification a = Ptr a -> #{type size_t} ->
 	#{type VkInternalAllocationType} -> #{type VkSystemAllocationScope} ->
@@ -79,7 +79,7 @@ foreign import ccall "wrapper" wrapInternalAllocationNotificationGen ::
 	FnInternalAllocationNotification () ->
 	IO PfnInternalAllocationNotification
 
--- INTERNAL FREE NOTIFICATION
+-- * INTERNAL FREE NOTIFICATION
 
 type FnInternalFreeNotification a = Ptr a -> #{type size_t} ->
 	#{type VkInternalAllocationType} -> #{type VkSystemAllocationScope} ->
@@ -94,7 +94,7 @@ wrapInternalFreeNotification = wrapInternalFreeNotificationGen . (. castPtr)
 foreign import ccall "wrapper" wrapInternalFreeNotificationGen ::
 	FnInternalFreeNotification () -> IO PfnInternalFreeNotification
 
--- ALLOCATION CALLBACKS
+-- * ALLOCATION CALLBACKS
 
 struct "A" #{size VkAllocationCallbacks}
 		#{alignment VkAllocationCallbacks} [
