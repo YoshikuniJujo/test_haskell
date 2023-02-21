@@ -5,24 +5,35 @@ module Data.TypeLevel.Uncurry.TH where
 
 import Language.Haskell.TH
 
-v2 :: DecQ
-v2 = dataD (cxt []) (ucName 2)
-	[	plainTV (mkName "t"), plainTV (mkName "ss") ]
-	Nothing
-	[	recGadtC
-			[ucName 2]
-			[	varBangType (ucUnName 2) (
-					(,)	<$> bang noSourceUnpackedness noSourceStrictness
-						<*> crrType2 )]
-			(	conT (mkName "V2") `appT` varT (mkName "t") `appT` ucrrType2 ) ]
-	[]
+uc :: Int -> DecQ
+uc n = do
+	t <- mkT
+	ss <- mkSs n
+	dataD (cxt []) (ucName n)
+		[	plainTV (mkName "t"), plainTV (mkName "ss") ]
+		Nothing
+		[	recGadtC
+				[ucName n]
+				[	varBangType (ucUnName n) (
+						(,)	<$> noSourceBang
+							<*> crrType t ss)]
+				(	conT (ucName n)
+						`appT` varT t
+						`appT` ucrrType ss ) ]
+		[]
 
-showV2 :: DecQ
-showV2 = standaloneDerivD
-	(cxt [	conT ''Show `appT` crrType2 ])
-	(conT ''Show `appT` (
-		conT (ucName 2)
-			`appT` varT (mkName "t") `appT` ucrrType2 ))
+noSourceBang :: BangQ
+noSourceBang = bang noSourceUnpackedness noSourceStrictness
+
+showUc :: Int -> DecQ
+showUc n = do
+	t <- mkT
+	ss <- mkSs n
+	standaloneDerivD
+		(cxt [	conT ''Show `appT` crrType t ss ])
+		(conT ''Show `appT` (
+			conT (ucName n)
+				`appT` varT t `appT` ucrrType ss ))
 
 ucName :: Int -> Name
 ucName = mkName . ("V" ++) . show
@@ -30,16 +41,17 @@ ucName = mkName . ("V" ++) . show
 ucUnName :: Int -> Name
 ucUnName = mkName . ("unV" ++) . show
 
-crrType2 :: Q Type
-crrType2 = varT (mkName "t")
-	`appT` varT (mkName "s1")
-	`appT` varT (mkName "s2")
+mkT :: Q Name
+mkT = newName "t"
 
-ucrrType2 :: Q Type
-ucrrType2 = pTupT2
-	(varT $ mkName "s1")
-	(varT $ mkName "s2")
+mkSs :: Int -> Q [Name]
+mkSs n = (newName . ("s" ++) . show) `mapM` [1 .. n]
 
-t1 `arrT` t2 = arrowT `appT` t1 `appT` t2
+crrType :: Name -> [Name] -> TypeQ
+crrType t = foldl appT (varT t) . map varT -- varT t `appT` varT (mkName "s1") `appT` varT (mkName "s2")
 
-pTupT2 t1 t2 = promotedTupleT 2 `appT` t1 `appT` t2
+ucrrType :: [Name] -> Q Type
+ucrrType = pTupTN -- pTupT2 (varT $ mkName "s1") (varT $ mkName "s2")
+
+pTupTN :: [Name] -> TypeQ
+pTupTN ns = foldl appT (promotedTupleT $ length ns) $ map varT ns
