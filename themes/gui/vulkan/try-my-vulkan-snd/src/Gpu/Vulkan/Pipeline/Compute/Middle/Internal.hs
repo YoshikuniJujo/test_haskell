@@ -77,7 +77,7 @@ createInfoToCore CreateInfo {
 
 class Length vss => CreateInfoListToCore vss where
 	createInfoListToCore ::
-		HeteroParList.PL (V3 CreateInfo) vss ->
+		HeteroParList.PL (U3 CreateInfo) vss ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
@@ -87,7 +87,7 @@ instance (
 	WithPoked n, WithPoked n1, PokableList vss,
 	CreateInfoListToCore as ) =>
 	CreateInfoListToCore ('(n, n1, vss) ': as) where
-	createInfoListToCore (V3 ci :** cis) f =
+	createInfoListToCore (U3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
 
@@ -95,7 +95,7 @@ newtype C = C Pipeline.C.P deriving Show
 
 createCs :: forall vss c .
 	(CreateInfoListToCore vss, WithPoked c) =>
-	Device.D -> Maybe Cache.C -> HeteroParList.PL (V3 CreateInfo) vss ->
+	Device.D -> Maybe Cache.C -> HeteroParList.PL (U3 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	(C <$>) <$> allocaArray ln \pps -> do

@@ -34,7 +34,7 @@ data CreateInfoNew n sr fmtnmsis = CreateInfoNew {
 	createInfoNextNew :: Maybe n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
-	createInfoAttachmentsNew :: HeteroParList.PL (V3 ImageView.INew) fmtnmsis,
+	createInfoAttachmentsNew :: HeteroParList.PL (U3 ImageView.INew) fmtnmsis,
 --	createInfoAttachmentsNew :: HeteroParList.PL (ImageView.INew fmt nm) sis,
 	createInfoWidthNew :: Word32,
 	createInfoHeightNew :: Word32,
@@ -59,10 +59,10 @@ createInfoFromNew CreateInfoNew {
 	createInfoWidth = wdt, createInfoHeight = hgt,
 	createInfoLayers = lyrs }
 
-isToOld :: HeteroParList.PL (V3 ImageView.INew) fmtnmsis ->
+isToOld :: HeteroParList.PL (U3 ImageView.INew) fmtnmsis ->
 	HeteroParList.PL ImageView.I (MapThird fmtnmsis)
 isToOld HeteroParList.Nil = HeteroParList.Nil
-isToOld ((V3 i) :** is) = ImageView.iToOld i :** isToOld is
+isToOld ((U3 i) :** is) = ImageView.iToOld i :** isToOld is
 
 data CreateInfo n sr sis = CreateInfo {
 	createInfoNext :: Maybe n,

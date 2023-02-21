@@ -127,7 +127,7 @@ data WriteSources arg where
 	WriteSourcesInNext ::
 		Word32 -> Word32 -> Word32 -> WriteSources 'WriteSourcesArgOther
 	ImageInfos ::
-		HeteroParList.PL (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList.PL (U4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
 	BufferInfos ::
 		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
@@ -168,14 +168,14 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
-		HeteroParList.PL (V4 Descriptor.ImageInfo) ssfmtnmsis ->
+		HeteroParList.PL (U4 Descriptor.ImageInfo) ssfmtnmsis ->
 		[Descriptor.M.ImageInfo]
 
 instance ImageInfosToMiddle '[] where imageInfosToMiddle HeteroParList.Nil = []
 
 instance ImageInfosToMiddle ssfmtnmsis =>
 	ImageInfosToMiddle ('(ss, fmt, nm, si) ': ssfmtnmsis) where
-	imageInfosToMiddle (V4 ii :** iis) =
+	imageInfosToMiddle (U4 ii :** iis) =
 		Descriptor.imageInfoToMiddle ii : imageInfosToMiddle iis
 
 class BufferInfosToMiddle sbsmobjsobjs where

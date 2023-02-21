@@ -56,8 +56,8 @@ createInfoToMiddleNew dvc CreateInfoNew {
 		M.createInfoSpecializationInfo = spi }
 
 createInfoToMiddleFooNew :: (Pokable m, Pokable c) => Device.D ds ->
-	V6 CreateInfoNew '(n, m, sknd, c, d, vs) -> IO (M.CreateInfo n sknd vs)
-createInfoToMiddleFooNew dvc (V6 ci) = createInfoToMiddleNew dvc ci
+	U6 CreateInfoNew '(n, m, sknd, c, d, vs) -> IO (M.CreateInfo n sknd vs)
+createInfoToMiddleFooNew dvc (U6 ci) = createInfoToMiddleNew dvc ci
 
 destroyCreateInfoMiddleNew :: Pokable d => Device.D ds ->
 	M.CreateInfo n sknd vs -> CreateInfoNew n m sknd c d vs -> IO ()
@@ -70,11 +70,11 @@ class CreateInfoListToMiddleNew (
 	) where
 	type MiddleVarsNew nnskndcdvss :: [(Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
-		HeteroParList.PL (V6 CreateInfoNew) nnskndcdvss ->
-		IO (HeteroParList.PL (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
+		HeteroParList.PL (U6 CreateInfoNew) nnskndcdvss ->
+		IO (HeteroParList.PL (U3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
 	destroyCreateInfoMiddleListNew :: Device.D ds ->
-		HeteroParList.PL (V3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
-		HeteroParList.PL (V6 CreateInfoNew) nnskndcdvss -> IO ()
+		HeteroParList.PL (U3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
+		HeteroParList.PL (U6 CreateInfoNew) nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddleNew '[] where
 	type MiddleVarsNew '[] = '[]
@@ -87,9 +87,9 @@ instance (
 	CreateInfoListToMiddleNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) where
 	type MiddleVarsNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) =
 		'(n, sknd, vs) ': MiddleVarsNew nnskndcdvss
-	createInfoListToMiddleNew dvc (V6 ci :** cis) = (:**)
-		<$> (V3 <$> createInfoToMiddleNew dvc ci)
+	createInfoListToMiddleNew dvc (U6 ci :** cis) = (:**)
+		<$> (U3 <$> createInfoToMiddleNew dvc ci)
 		<*> createInfoListToMiddleNew dvc cis
-	destroyCreateInfoMiddleListNew dvc (V3 cim :** cims) (V6 ci :** cis) =
+	destroyCreateInfoMiddleListNew dvc (U3 cim :** cims) (U6 ci :** cis) =
 		destroyCreateInfoMiddleNew dvc cim ci >>
 		destroyCreateInfoMiddleListNew dvc cims cis

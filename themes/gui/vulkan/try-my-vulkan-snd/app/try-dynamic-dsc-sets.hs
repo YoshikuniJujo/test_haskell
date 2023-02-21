@@ -262,8 +262,8 @@ storageBufferNew :: forall {sd} v {nm} obj {a} . (
 storageBufferNew phdvc dvc xs f =
 	Vk.Bffr.create dvc (bufferInfo xs) nil nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
-		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . V2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
-			nil nil \(HeteroParList.Singleton (V2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
+		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
+			nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj dvc m zeroBits xs
 			f bnd m
 
@@ -282,8 +282,8 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 storageBufferNew3Objs phdvc dvc x y z f =
 	Vk.Bffr.create dvc (bufferInfo' x y z) nil nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
-		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . V2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
-			nil nil \(HeteroParList.Singleton (V2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
+		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
+			nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj0 dvc m zeroBits x
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj1 dvc m zeroBits y
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
@@ -382,7 +382,7 @@ calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
-		(HeteroParList.Singleton . V4 $ computePipelineInfo plyt)
+		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil nil \(HeteroParList.Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
 	Vk.CmdPl.create dvc (commandPoolInfo qFam) nil nil \cp ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cp) \case
@@ -395,7 +395,7 @@ pplLayoutInfoNew :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ V2 dslyt }
+	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dslyt }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.Ppl.Cmpt.CreateInfo () '((), (), 'GlslComputeShader, (), (),
@@ -403,8 +403,8 @@ computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = Nothing,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayout = V3 pl,
+	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
@@ -449,7 +449,7 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute plyt
 			(HeteroParList.Singleton $ Vk.Cmd.DescriptorSet dss) [512, 0]
 		Vk.Cmd.dispatch cb ln 1 1
-	Vk.Queue.submit q (V4 sinfo :** HeteroParList.Nil) Nothing
+	Vk.Queue.submit q (U4 sinfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle q
 	(,,)	<$> Vk.Dvc.Mem.ImgBffr.read @nm1 @ListW1 @[W1] dvc ma zeroBits
 		<*> Vk.Dvc.Mem.ImgBffr.read @nm2 @ListW2 @[W2] dvc mb zeroBits
@@ -458,7 +458,7 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 		sinfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-			Vk.submitInfoCommandBuffers = V2 cb :** HeteroParList.Nil,
+			Vk.submitInfoCommandBuffers = U2 cb :** HeteroParList.Nil,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
 [glslComputeShader|

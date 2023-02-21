@@ -46,10 +46,10 @@ deriving instance (
 	Show (HeteroParList.PL Layout sbtss) ) =>
 	Show (CreateInfo n sbtss)
 
-type Layout = V2 Descriptor.Set.Layout.L
+type Layout = U2 Descriptor.Set.Layout.L
 
 unLayout :: Layout '(s, bts) -> Descriptor.Set.Layout.L s bts
-unLayout (V2 l) = l
+unLayout (U2 l) = l
 
 class HeteroParListToList' sbtss where
 	toList' ::

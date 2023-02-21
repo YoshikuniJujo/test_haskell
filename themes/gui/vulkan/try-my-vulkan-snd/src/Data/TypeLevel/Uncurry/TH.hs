@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel.Uncurry.TH where
+module Data.TypeLevel.Uncurry.TH (uc, showUc) where
 
 import Language.Haskell.TH
 
@@ -36,10 +36,10 @@ showUc n = do
 				`appT` varT t `appT` ucrrType ss ))
 
 ucName :: Int -> Name
-ucName = mkName . ("V" ++) . show
+ucName = mkName . ("U" ++) . show
 
 ucUnName :: Int -> Name
-ucUnName = mkName . ("unV" ++) . show
+ucUnName = mkName . ("unU" ++) . show
 
 mkT :: Q Name
 mkT = newName "t"

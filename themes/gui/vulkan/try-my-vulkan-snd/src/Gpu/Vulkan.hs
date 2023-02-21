@@ -40,7 +40,7 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroParList.PL SemaphorePipelineStageFlags sss,
-	submitInfoCommandBuffers :: HeteroParList.PL (V2 CommandBuffer.C) svss,
+	submitInfoCommandBuffers :: HeteroParList.PL (U2 CommandBuffer.C) svss,
 	submitInfoSignalSemaphores ::
 		HeteroParList.PL Semaphore.S ssss }
 
@@ -50,7 +50,7 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 class CommandBufferListToMiddle svss where
 	type CommandBufferListToMiddleMapSnd svss :: [[Type]]
 	commandBufferListToMiddle ::
-		HeteroParList.PL (V2 CommandBuffer.C) svss ->
+		HeteroParList.PL (U2 CommandBuffer.C) svss ->
 		HeteroParList.PL CommandBuffer.CC
 			(CommandBufferListToMiddleMapSnd svss)
 
@@ -62,7 +62,7 @@ instance CommandBufferListToMiddle svss =>
 	CommandBufferListToMiddle ('(s, vs) ': svss) where
 	type CommandBufferListToMiddleMapSnd ('(s, vs) ': svss) =
 		vs ': CommandBufferListToMiddleMapSnd svss
-	commandBufferListToMiddle (V2 (CommandBuffer.C cb) :** cbs) =
+	commandBufferListToMiddle (U2 (CommandBuffer.C cb) :** cbs) =
 		cb :** commandBufferListToMiddle cbs
 
 submitInfoToMiddle :: CommandBufferListToMiddle svss =>

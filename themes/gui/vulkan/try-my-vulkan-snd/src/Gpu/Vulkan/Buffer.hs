@@ -124,9 +124,9 @@ indexedListToMiddle :: IndexedList sm sb nm v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 
 indexedListToMiddles ::
-	HeteroParList.PL (V4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
+	HeteroParList.PL (U4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
 indexedListToMiddles HeteroParList.Nil = []
-indexedListToMiddles (V4 il :** ils) =
+indexedListToMiddles (U4 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
 class CopyPrefix (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
@@ -267,7 +267,7 @@ memoryBarrierToMiddle MemoryBarrier {
 
 class MemoryBarrierListToMiddle nsmsbnmobjs where
 	memoryBarrierListToMiddle ::
-		HeteroParList.PL (V5 MemoryBarrier) nsmsbnmobjs ->
+		HeteroParList.PL (U5 MemoryBarrier) nsmsbnmobjs ->
 		HeteroParList.PL M.MemoryBarrier (FirstOfFives nsmsbnmobjs)
 
 type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
@@ -279,7 +279,7 @@ instance MemoryBarrierListToMiddle '[] where
 
 instance (Storable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
-	memoryBarrierListToMiddle (V5 mb :** mbs) =
+	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
 data ImageCopy img inm = ImageCopy {

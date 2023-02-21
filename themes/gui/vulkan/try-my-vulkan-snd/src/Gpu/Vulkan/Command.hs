@@ -124,7 +124,7 @@ type family MapForth tpl where
 
 bindVertexBuffers :: forall sc vs smsbvs .
 	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
-	CommandBuffer.C sc vs -> HeteroParList.PL (V4 Buffer.IndexedList) smsbvs ->
+	CommandBuffer.C sc vs -> HeteroParList.PL (U4 Buffer.IndexedList) smsbvs ->
 	IO ()
 bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
@@ -165,8 +165,8 @@ pipelineBarrier :: (
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags -> HeteroParList.PL Memory.M.Barrier ns ->
-	HeteroParList.PL (V5 Buffer.MemoryBarrier) nsmsbnmobjs ->
-	HeteroParList.PL (V5 Image.MemoryBarrier) nsismnmfmts -> IO ()
+	HeteroParList.PL (U5 Buffer.MemoryBarrier) nsmsbnmobjs ->
+	HeteroParList.PL (U5 Image.MemoryBarrier) nsismnmfmts -> IO ()
 pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.memoryBarrierListToMiddle bmbs)

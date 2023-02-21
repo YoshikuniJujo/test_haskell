@@ -194,9 +194,9 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 					submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-						Vk.submitInfoCommandBuffers = V2 cmdBuf :** HeteroParList.Nil,
+						Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 						Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-				Vk.Queue.submit graphicsQueue (V4 submitInfo :** HeteroParList.Nil) Nothing
+				Vk.Queue.submit graphicsQueue (U4 submitInfo :** HeteroParList.Nil) Nothing
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
 			_ -> error "never occur"
@@ -249,8 +249,8 @@ makeImage' phdvc dvc f = do
 				Vk.Memory.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
 		Vk.Memory.allocateBind @()
-			dvc (HeteroParList.Singleton . V2 $ Vk.Memory.Image image)
-			imgMemAllocInfo nil nil \(HeteroParList.Singleton (V2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
+			dvc (HeteroParList.Singleton . U2 $ Vk.Memory.Image image)
+			imgMemAllocInfo nil nil \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
@@ -316,7 +316,7 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Img.subresourceRangeBaseArrayLayer = 0,
 			Vk.Img.subresourceRangeLayerCount = 1 }
 	Vk.Cmd.pipelineBarrier cb
-		sstg dstg zeroBits HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ V5 barrier)
+		sstg dstg zeroBits HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
 	where (sam, dam, sstg, dstg) = case (olyt, nlyt) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
@@ -342,10 +342,10 @@ beginSingleTimeCommands dvc gq cp cmd = do
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ V2 cb,
+				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CommandBuffer.begin @() @() cb beginInfo (cmd cb) <* do
-			Vk.Queue.submit gq (HeteroParList.Singleton $ V4 submitInfo) Nothing
+			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CommandBuffer.AllocateInfoNew () sc '[ '[]]
@@ -380,9 +380,9 @@ createBuffer :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Memory.M.requirementsMemoryTypeBits reqs) props
-	Vk.Memory.allocateBind dv (HeteroParList.Singleton . V2 $ Vk.Memory.Buffer b)
+	Vk.Memory.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Memory.Buffer b)
 		(allcInfo mt) nil nil
-		$ f . \(HeteroParList.Singleton (V2 (Vk.Memory.BufferBinded bnd))) -> bnd
+		$ f . \(HeteroParList.Singleton (U2 (Vk.Memory.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -692,10 +692,10 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
-					V6 vertShaderStage :**
-					V6 fragShaderStage :** HeteroParList.Nil,
+					U6 vertShaderStage :**
+					U6 fragShaderStage :** HeteroParList.Nil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
-					Just $ V3 vertexInputInfo,
+					Just $ U3 vertexInputInfo,
 				Vk.Ppl.Gr.createInfoInputAssemblyState =
 					Just inputAssembly,
 				Vk.Ppl.Gr.createInfoTessellationState = Nothing,
@@ -709,14 +709,14 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoColorBlendState =
 					Just blend,
 				Vk.Ppl.Gr.createInfoDynamicState = Nothing,
-				Vk.Ppl.Gr.createInfoLayout = V3 plyt,
+				Vk.Ppl.Gr.createInfoLayout = U3 plyt,
 				Vk.Ppl.Gr.createInfoRenderPass = rp,
 				Vk.Ppl.Gr.createInfoSubpass = 0,
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
-			V14 pipelineCreateInfo :** HeteroParList.Nil ) nil nil
-				\(V2 g :** HeteroParList.Nil) -> f g
+			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil nil
+				\(U2 g :** HeteroParList.Nil) -> f g
 
 [glslVertexShader|
 

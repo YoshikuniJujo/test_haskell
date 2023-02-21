@@ -122,7 +122,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \pplLyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
-		(V4 (computePipelineInfo pplLyt) :** HeteroParList.Nil)
+		(U4 (computePipelineInfo pplLyt) :** HeteroParList.Nil)
 		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :** HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
@@ -136,7 +136,7 @@ pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
-	Vk.Ppl.Lyt.createInfoSetLayoutsNew = V2 dsl :** HeteroParList.Nil }
+	Vk.Ppl.Lyt.createInfoSetLayoutsNew = U2 dsl :** HeteroParList.Nil }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo ()
@@ -145,8 +145,8 @@ computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = Nothing,
 	Vk.Ppl.Cmpt.createInfoFlags = def,
-	Vk.Ppl.Cmpt.createInfoStage = V6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayout = V3 pl,
+	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
@@ -195,7 +195,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		Vk.Cmd.bindDescriptorSetsNew cmdBuf Vk.Ppl.BindPointCompute pplLyt
 			(Vk.Cmd.DescriptorSet dscSet :** HeteroParList.Nil) []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
-	Vk.Queue.submit queue (V4 submitInfo :** HeteroParList.Nil) Nothing
+	Vk.Queue.submit queue (U4 submitInfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle queue
 	(,,)	<$> Vk.Mem.read @nm1 @('List 256 w1 "") @[w1] dvc memA def
 		<*> Vk.Mem.read @nm2 @('List 256 w2 "") @[w2] dvc memB def
@@ -204,7 +204,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-			Vk.submitInfoCommandBuffers = V2 cmdBuf :** HeteroParList.Nil,
+			Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
 withDevice ::
@@ -433,8 +433,8 @@ storageBufferNew :: forall sd nm w a . Storable w =>
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
-		Vk.Mem.allocateBind dvc (V2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
-			nil nil \(V2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
+		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
+			nil nil \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
 			Vk.Mem.write @nm @('List 256 w "") dvc memory def xs
 			f binded memory
 

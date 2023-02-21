@@ -66,7 +66,7 @@ createInfoToCore CreateInfo {
 
 class CreateInfoListToCore sss where
 	createInfoListToCore ::
-		HeteroParList.PL (V3 CreateInfo) sss ->
+		HeteroParList.PL (U3 CreateInfo) sss ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
@@ -74,6 +74,6 @@ instance CreateInfoListToCore '[] where
 
 instance (WithPoked n, PokableList vs, CreateInfoListToCore sss) =>
 	CreateInfoListToCore ('(n, sknd, vs) ': sss) where
-	createInfoListToCore (V3 ci :** cis) f =
+	createInfoListToCore (U3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis

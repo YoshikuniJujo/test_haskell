@@ -31,7 +31,7 @@ import qualified Gpu.Vulkan.Queue.Core as C
 newtype Q = Q C.Q deriving Show
 
 submit :: SubmitInfoListToCore nssssvsss => Q ->
-	HeteroParList.PL (V4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
+	HeteroParList.PL (U4 SubmitInfo) nssssvsss -> Maybe (Fence.F sf) -> IO ()
 submit (Q q) sis mf = submitInfoListToCore sis \csis ->
 	let sic = length csis in allocaArray sic \psis -> do
 		pokeArray psis csis
@@ -41,7 +41,7 @@ submit (Q q) sis mf = submitInfoListToCore sis \csis ->
 
 class SubmitInfoListToCore (nssssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
 	submitInfoListToCore ::
-		HeteroParList.PL (V4 SubmitInfo) nssssvsss ->
+		HeteroParList.PL (U4 SubmitInfo) nssssvsss ->
 		([C.SubmitInfo] -> IO a) -> IO ()
 
 instance SubmitInfoListToCore '[] where
@@ -51,7 +51,7 @@ instance (
 	Pokable n, CommandBufferListToMiddle svss,
 	SubmitInfoListToCore nssssvsss ) =>
 	SubmitInfoListToCore ('(n, sss, svss, ssss) ': nssssvsss) where
-	submitInfoListToCore (V4 si :** sis) f =
+	submitInfoListToCore (U4 si :** sis) f =
 		M.submitInfoToCore (submitInfoToMiddle si) \csi ->
 		submitInfoListToCore sis \csis ->
 		f $ csi : csis
