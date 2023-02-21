@@ -35,12 +35,8 @@ library
       Codec.Wavefront.Read
       Codec.Wavefront.ReadOld
       Data.Bits.Utils
-      Data.HeteroParList
       Data.Kind.Object
       Data.Traversable.Utils
-      Data.TypeLevel.Length
-      Data.TypeLevel.Uncurry
-      Data.TypeLevel.Uncurry.TH
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic
@@ -304,6 +300,7 @@ library
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-shaderc
     , try-storable-peek-poke
     , try-vulkan-core
@@ -342,6 +339,7 @@ executable my-glslc
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -381,6 +379,7 @@ executable try-depth-buffering
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -420,6 +419,7 @@ executable try-depth-buffering-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -459,6 +459,7 @@ executable try-dynamic-dsc-sets
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -498,6 +499,7 @@ executable try-generating-mipmaps
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -537,6 +539,7 @@ executable try-generating-mipmaps-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -576,6 +579,7 @@ executable try-image-buffer
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -615,6 +619,7 @@ executable try-loading-models
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -654,6 +659,7 @@ executable try-loading-models-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -693,6 +699,7 @@ executable try-multisampling
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -732,6 +739,7 @@ executable try-multisampling-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -771,6 +779,7 @@ executable try-no-dynamic-dsc-sets
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -810,6 +819,7 @@ executable try-rectangle
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -849,6 +859,7 @@ executable try-rectangle-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -888,6 +899,7 @@ executable try-saitan
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -927,6 +939,7 @@ executable try-saitan-float
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -966,6 +979,7 @@ executable try-shaderc
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1005,6 +1019,7 @@ executable try-shaderc-core
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1044,6 +1059,7 @@ executable try-texel-buffer
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1083,6 +1099,7 @@ executable try-texture
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1122,6 +1139,7 @@ executable try-texture-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1161,6 +1179,7 @@ executable try-triangle
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1200,6 +1219,7 @@ executable try-triangle-single
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1239,6 +1259,7 @@ executable try-vulkan-guide
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1278,6 +1299,7 @@ executable try-wavefront-obj
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1317,6 +1339,7 @@ executable try-yatteiku
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke
@@ -1357,6 +1380,7 @@ test-suite try-my-vulkan-snd-test
     , template-haskell
     , text
     , time
+    , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-peek-poke

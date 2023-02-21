@@ -41,12 +41,13 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 9609cc2336c9d460536b7e1fe1d31cd04cc20635
+  commit: f504f2165136eb9ee96751861e199b15fcccaed0
   subdirs:
   - themes/gui/vulkan/try-vulkan-core
   - themes/gui/vulkan/try-vulkan-core-khr
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils
   - themes/gui/vulkan/try-shaderc
+  - themes/hetero-list/try-hetero-parameter-list
   - features/ffi/pointer/try-storable-peek-poke
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 511e579860a040d291373b1c62abc491f91a3110
