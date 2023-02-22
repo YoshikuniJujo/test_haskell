@@ -59,19 +59,19 @@ type CreateFlags = CreateFlagBits
 
 instance Default CreateFlags where def = CreateFlagsZero
 
-data CreateInfo n ns = CreateInfo {
+data CreateInfo n qcis = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoQueueCreateInfos :: HeteroParList.PL QueueCreateInfo ns,
+	createInfoQueueCreateInfos :: HeteroParList.PL QueueCreateInfo qcis,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
-deriving instance (Show n, Show (HeteroParList.PL QueueCreateInfo ns)) =>
-	Show (CreateInfo n ns)
+deriving instance (Show n, Show (HeteroParList.PL QueueCreateInfo qcis)) =>
+	Show (CreateInfo n qcis)
 
-createInfoToCore :: (WithPoked n, WithPokedHeteroToListM ns) =>
-	CreateInfo n ns -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore :: (WithPoked n, WithPokedHeteroToListM qcis) =>
+	CreateInfo n qcis -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -105,8 +105,8 @@ createInfoToCore CreateInfo {
 				poke pci (mk p)
 		() <$ f pci
 
-create :: (WithPoked n, WithPokedHeteroToListM ns, WithPoked c) =>
-	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
+create :: (WithPoked n, WithPokedHeteroToListM qcis, WithPoked c) =>
+	PhysicalDevice.P -> CreateInfo n qcis -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
 	createInfoToCore ci \pcci ->
