@@ -14,4 +14,3 @@ import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 data C = C {
 	cPipeline :: IORef Pipeline.C.P,
 	unC :: C.C }
-

@@ -22,6 +22,7 @@ import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.Semaphore as Semaphore
 import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Middle as CommandBuffer.M
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
 data SemaphorePipelineStageFlags ss =
@@ -66,13 +67,12 @@ instance CommandBufferListToMiddle svss =>
 		cb :** commandBufferListToMiddle cbs
 
 submitInfoToMiddle :: CommandBufferListToMiddle svss =>
-	SubmitInfo n sss svss ssss ->
-	M.SubmitInfo n (CommandBufferListToMiddleMapSnd svss)
+	SubmitInfo n sss svss ssss -> M.SubmitInfo n
 submitInfoToMiddle SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
-	submitInfoCommandBuffers = commandBufferListToMiddle -> cbs,
+	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unCC $ CommandBuffer.unC x) -> cbs,
 	submitInfoSignalSemaphores =
 		HeteroParList.toList (\(Semaphore.S s) -> s) -> ssmprs
 	} = M.SubmitInfo {

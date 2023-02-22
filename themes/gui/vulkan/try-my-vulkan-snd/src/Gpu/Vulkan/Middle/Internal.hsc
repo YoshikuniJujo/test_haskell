@@ -48,7 +48,6 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore
 import {-# SOURCE #-} qualified
 	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
-import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer.T
 
 #include <vulkan/vulkan.h>
 
@@ -253,18 +252,15 @@ clearValueArrayPtrs = iterate (
 pokeClearValue :: C.PtrClearValue -> C.PtrClearValue -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
 
-data SubmitInfo n vss = SubmitInfo {
+data SubmitInfo n = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
-	submitInfoCommandBuffers :: HeteroParList.PL CommandBuffer.T.CC vss,
+	submitInfoCommandBuffers :: [CommandBuffer.C],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
 
-deriving instance (Show n, Show (HeteroParList.PL CommandBuffer.T.CC vss)) =>
-	Show (SubmitInfo n vss)
-
 submitInfoToCore :: WithPoked n =>
-	SubmitInfo n vs -> (C.SubmitInfo -> IO a) -> IO ()
+	SubmitInfo n -> (C.SubmitInfo -> IO a) -> IO ()
 submitInfoToCore SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
@@ -272,8 +268,7 @@ submitInfoToCore SubmitInfo {
 		(	(Semaphore.unS <$>) ***
 			(Pipeline.unStageFlagBits <$>)) . unzip ->
 		(wsc, (wss, wdsms)),
-	submitInfoCommandBuffers = (length &&& id)
-		. HeteroParList.toList (CommandBuffer.unC . CommandBuffer.T.unCC) -> (cbc, cbs),
+	submitInfoCommandBuffers = (length &&& id) . map CommandBuffer.unC -> (cbc, cbs),
 	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss) } f =
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
