@@ -95,7 +95,7 @@ bindDescriptorSets (CommandBuffer.CC mcb) = M.bindDescriptorSets mcb
 pushConstants' :: forall vs ts . PokableList ts =>
 	CommandBuffer.CC vs -> Pipeline.Layout.L ->
 	ShaderStageFlags -> Word32 -> HeteroParList.L ts -> IO ()
-pushConstants' (CommandBuffer.CC mcb) = M.pushConstants' mcb
+pushConstants' (CommandBuffer.CC mcb) = M.pushConstants mcb
 
 pipelineBarrier :: (
 	WithPokedHeteroMap ns, WithPokedHeteroMap ns', WithPokedHeteroMap ns''
