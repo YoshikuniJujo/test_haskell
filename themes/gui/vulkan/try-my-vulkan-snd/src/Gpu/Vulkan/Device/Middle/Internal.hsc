@@ -22,7 +22,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
 	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont
@@ -70,7 +70,7 @@ data CreateInfo n ns = CreateInfo {
 deriving instance (Show n, Show (HeteroParList.PL QueueCreateInfo ns)) =>
 	Show (CreateInfo n ns)
 
-createInfoToCore :: (WithPoked n, WithPokedToListM ns) =>
+createInfoToCore :: (WithPoked n, WithPokedHeteroToListM ns) =>
 	CreateInfo n ns -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -81,7 +81,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledFeatures = mef } f =
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	alloca \pci ->
-		runContT (withPokedToListM (ContT . queueCreateInfoToCore) qcis) \cqcis ->
+		runContT (withPokedHeteroToListM (ContT . queueCreateInfoToCore) qcis) \cqcis ->
 		let	qcic = length cqcis in
 		allocaArray qcic \pcqcis ->
 		pokeArray pcqcis cqcis >>
@@ -105,7 +105,7 @@ createInfoToCore CreateInfo {
 				poke pci (mk p)
 		() <$ f pci
 
-create :: (WithPoked n, WithPokedToListM ns, WithPoked c) =>
+create :: (WithPoked n, WithPokedHeteroToListM ns, WithPoked c) =>
 	PhysicalDevice.P -> CreateInfo n ns -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do

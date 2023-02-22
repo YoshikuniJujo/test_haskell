@@ -16,7 +16,7 @@ import GHC.Generics
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import Foreign.Storable.SizeAlignment
 import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
@@ -405,7 +405,7 @@ createLogicalDevice phdvc qfis f =
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroParList :: Storable' s => (a -> t s) -> [a] ->
-	(forall ss . WithPokedToListM ss => HeteroParList.PL t ss -> b) -> b
+	(forall ss . WithPokedHeteroToListM ss => HeteroParList.PL t ss -> b) -> b
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 

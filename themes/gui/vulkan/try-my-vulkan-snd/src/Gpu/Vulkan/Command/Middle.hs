@@ -37,7 +37,7 @@ module Gpu.Vulkan.Command.Middle (
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (WithPoked)
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import Control.Arrow
 import Control.Monad.Cont
 import qualified Data.HeteroParList as HeteroParList
@@ -179,8 +179,8 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	WithPokedHeteroMap ns, WithPokedHeteroMap ns', WithPokedHeteroMap ns''
-	) =>
+	WithPokedHeteroToListCpsM ns, WithPokedHeteroToListCpsM ns',
+	WithPokedHeteroToListCpsM ns'' ) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
 	HeteroParList.PL Memory.M.Barrier ns ->
@@ -190,15 +190,15 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs =
-		withPokedHeteroMapM mbs Memory.M.barrierToCore \cmbs ->
+		withPokedWithHeteroListCpsM mbs Memory.M.barrierToCore \cmbs ->
 		let	mbc = length cmbs in
 		allocaArray mbc \pmbs ->
 		pokeArray pmbs cmbs >>
-		withPokedHeteroMapM bbs Buffer.M.memoryBarrierToCore' \cbbs ->
+		withPokedWithHeteroListCpsM bbs Buffer.M.memoryBarrierToCore' \cbbs ->
 		let	bbc = length cbbs in
 		allocaArray bbc \pbbs ->
 		pokeArray pbbs cbbs >>
-		withPokedHeteroMapM ibs Image.memoryBarrierToCore \cibs ->
+		withPokedWithHeteroListCpsM ibs Image.memoryBarrierToCore \cibs ->
 		let	ibc = length cibs in
 		allocaArray ibc \pibs ->
 		pokeArray pibs cibs >>

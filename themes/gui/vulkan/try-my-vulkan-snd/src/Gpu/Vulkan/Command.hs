@@ -13,7 +13,7 @@ module Gpu.Vulkan.Command where
 
 import GHC.TypeLits
 import Foreign.Storable
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object
@@ -158,9 +158,9 @@ pushConstants' (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
 		(PushConstant.offset @whole @ts 0) xs
 
 pipelineBarrier :: (
-	WithPokedHeteroMap ns,
-	WithPokedHeteroMap (Buffer.FirstOfFives nsmsbnmobjs),
-	WithPokedHeteroMap (Image.FirstOfFives nsismnmfmts),
+	WithPokedHeteroToListCpsM ns,
+	WithPokedHeteroToListCpsM (Buffer.FirstOfFives nsmsbnmobjs),
+	WithPokedHeteroToListCpsM (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->

@@ -19,7 +19,7 @@ import Prelude hiding (length)
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList

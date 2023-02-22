@@ -20,7 +20,7 @@ module Gpu.Vulkan.Command.Tmp (
 	) where
 
 import Foreign.Storable
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
@@ -98,8 +98,8 @@ pushConstants' :: forall vs ts . PokableList ts =>
 pushConstants' (CommandBuffer.CC mcb) = M.pushConstants mcb
 
 pipelineBarrier :: (
-	WithPokedHeteroMap ns, WithPokedHeteroMap ns', WithPokedHeteroMap ns''
-	) =>
+	WithPokedHeteroToListCpsM ns, WithPokedHeteroToListCpsM ns',
+	WithPokedHeteroToListCpsM ns'' ) =>
 	CommandBuffer.CC vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
 	HeteroParList.PL Memory.M.Barrier ns ->

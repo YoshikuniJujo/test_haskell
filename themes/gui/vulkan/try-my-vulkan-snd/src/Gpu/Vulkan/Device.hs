@@ -10,7 +10,7 @@ module Gpu.Vulkan.Device (
 	) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.Hetero
+import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.Word
 
@@ -22,7 +22,7 @@ import qualified Gpu.Vulkan.Device.Middle as M
 import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
-create :: (Pokable n, WithPokedToListM ns, Pokable n3, Pokable n4) =>
+create :: (Pokable n, WithPokedHeteroToListM ns, Pokable n3, Pokable n4) =>
 	PhysicalDevice.P -> M.CreateInfo n ns ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . D s -> IO a) -> IO a
