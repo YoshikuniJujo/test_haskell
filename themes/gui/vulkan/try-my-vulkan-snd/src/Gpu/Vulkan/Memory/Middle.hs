@@ -13,7 +13,7 @@ module Gpu.Vulkan.Memory.Middle (
 
 	-- * Map and Unmnap
 
-	MapFlags(..), map, unmap,
+	map, unmap, MapFlags(..),
 
 	-- * Requirements and Barrier
 
