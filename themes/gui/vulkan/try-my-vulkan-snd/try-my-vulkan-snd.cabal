@@ -40,7 +40,6 @@ library
       Data.Vector.Storable.Indexing
       Data.Vector.Storable.Utils
       Foreign.Storable.Generic
-      Foreign.Storable.HeteroList
       Glfw
       Glfw.Middle
       Gpu.Vulkan
@@ -302,6 +301,7 @@ library
     , time
     , try-hetero-parameter-list
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -342,6 +342,7 @@ executable my-glslc
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -382,6 +383,7 @@ executable try-depth-buffering
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -422,6 +424,7 @@ executable try-depth-buffering-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -462,6 +465,7 @@ executable try-dynamic-dsc-sets
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -502,6 +506,7 @@ executable try-generating-mipmaps
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -542,6 +547,7 @@ executable try-generating-mipmaps-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -582,6 +588,7 @@ executable try-image-buffer
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -622,6 +629,7 @@ executable try-loading-models
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -662,6 +670,7 @@ executable try-loading-models-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -702,6 +711,7 @@ executable try-multisampling
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -742,6 +752,7 @@ executable try-multisampling-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -782,6 +793,7 @@ executable try-no-dynamic-dsc-sets
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -822,6 +834,7 @@ executable try-rectangle
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -862,6 +875,7 @@ executable try-rectangle-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -902,6 +916,7 @@ executable try-saitan
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -942,6 +957,7 @@ executable try-saitan-float
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -982,6 +998,7 @@ executable try-shaderc
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1022,6 +1039,7 @@ executable try-shaderc-core
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1062,6 +1080,7 @@ executable try-texel-buffer
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1102,6 +1121,7 @@ executable try-texture
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1142,6 +1162,7 @@ executable try-texture-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1182,6 +1203,7 @@ executable try-triangle
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1222,6 +1244,7 @@ executable try-triangle-single
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1262,6 +1285,7 @@ executable try-vulkan-guide
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1302,6 +1326,7 @@ executable try-wavefront-obj
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1342,6 +1367,7 @@ executable try-yatteiku
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
@@ -1383,6 +1409,7 @@ test-suite try-my-vulkan-snd-test
     , try-hetero-parameter-list
     , try-my-vulkan-snd
     , try-shaderc
+    , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
