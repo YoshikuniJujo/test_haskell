@@ -111,13 +111,13 @@ bindIndexBuffer
 	(CommandBuffer.M.C _ cb) (Buffer.B ib) (Device.Size sz) (IndexType it) =
 	C.bindIndexBuffer cb ib sz it
 
-pushConstants :: forall ts . PokableList ts =>
+pushConstants :: forall as . PokableList as =>
 	CommandBuffer.M.C -> Pipeline.Layout.L ->
-	ShaderStageFlags -> Word32 -> HeteroParList.L ts -> IO ()
+	ShaderStageFlags -> Word32 -> HeteroParList.L as -> IO ()
 pushConstants (CommandBuffer.M.C _ cb) (Pipeline.Layout.L lyt)
 	(ShaderStageFlagBits ss) ost xs = ($ pure) $ runContT do
 	let	sz :: Integral n => n
-		sz = fromIntegral $ wholeSize @ts
+		sz = fromIntegral $ wholeSize @as
 	p <- ContT $ allocaBytes sz
 	lift do	pokeList p xs
 		C.pushConstants cb lyt ss ost sz p
