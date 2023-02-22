@@ -16,7 +16,8 @@ module Gpu.Vulkan.Middle.Internal (
 	ExtensionProperties(..), extensionPropertiesFromCore,
 	ObjectHandle(..),
 	StencilOpState(..), stencilOpStateToCore,
-	ClearValue(..), ClearValueListToCore(..), clearValueListToArray,
+	ClearValue(..), ClearValueListToCore(..), ClearValueToCore,
+	clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
 	SubmitInfo(..), submitInfoToCore
