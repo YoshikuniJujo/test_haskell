@@ -22,7 +22,8 @@ module Gpu.Vulkan.Middle (
 
 	-- ** Clear Value
 
-	ClearValue(..), ClearValueListToCore, ClearValueToCore,
+	ClearValue(..), ClearValueListToCore,
+	ClearValueToCore, ClearColorValueToCore,
 
 	-- ** Clear Type
 

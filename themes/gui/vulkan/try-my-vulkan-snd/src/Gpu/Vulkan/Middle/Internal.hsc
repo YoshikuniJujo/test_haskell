@@ -16,7 +16,8 @@ module Gpu.Vulkan.Middle.Internal (
 	ExtensionProperties(..), extensionPropertiesFromCore,
 	ObjectHandle(..),
 	StencilOpState(..), stencilOpStateToCore,
-	ClearValue(..), ClearValueListToCore(..), ClearValueToCore,
+	ClearValue(..), ClearValueListToCore(..),
+	ClearValueToCore, ClearColorValueToCore,
 	clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
@@ -52,8 +53,8 @@ import {-# SOURCE #-} qualified
 
 #include <vulkan/vulkan.h>
 
-data ApplicationInfo a = ApplicationInfo {
-	applicationInfoNext :: Maybe a,
+data ApplicationInfo n = ApplicationInfo {
+	applicationInfoNext :: Maybe n,
 	applicationInfoApplicationName :: T.Text,
 	applicationInfoApplicationVersion :: ApiVersion,
 	applicationInfoEngineName :: T.Text,
