@@ -42,17 +42,17 @@ import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
 
-data CreateInfo n ns vs = CreateInfo {
+data CreateInfo n ss sivs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: Pipeline.CreateFlags,
-	createInfoStage :: ShaderStage.CreateInfo ns 'GlslComputeShader vs,
+	createInfoStage :: ShaderStage.CreateInfo ss 'GlslComputeShader sivs,
 	createInfoLayout :: Pipeline.Layout.L,
 	createInfoBasePipelineHandle :: Maybe C,
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
 deriving instance (
-	Show n, Show (ShaderStage.CreateInfo ns 'GlslComputeShader vs) ) =>
-	Show (CreateInfo n ns vs)
+	Show n, Show (ShaderStage.CreateInfo ss 'GlslComputeShader sivs) ) =>
+	Show (CreateInfo n ss sivs)
 
 createInfoToCore ::
 	(WithPoked n, WithPoked n1, PokableList vs) =>

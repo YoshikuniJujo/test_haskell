@@ -29,19 +29,19 @@ import qualified Gpu.Vulkan.ShaderModule.Middle.Internal as ShaderModule
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as C
 import qualified Gpu.Vulkan.Specialization.Middle.Internal as Specialization
 
-data CreateInfo n sknd vs = CreateInfo {
+data CreateInfo n sknd sivs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoStage :: ShaderStageFlagBits,
 	createInfoModule :: ShaderModule.M sknd,
 	createInfoName :: BS.ByteString,
-	createInfoSpecializationInfo :: Maybe (HeteroParList.L vs) }
+	createInfoSpecializationInfo :: Maybe (HeteroParList.L sivs) }
 
-deriving instance (Show n, Show (HeteroParList.L vs)) => Show (CreateInfo n sknd vs)
+deriving instance (Show n, Show (HeteroParList.L sivs)) => Show (CreateInfo n sknd sivs)
 
 createInfoToCore ::
-	forall n sknd vs r . (WithPoked n, PokableList vs) =>
-	CreateInfo n sknd vs -> (C.CreateInfo -> IO r) -> IO ()
+	forall n sknd sivs r . (WithPoked n, PokableList sivs) =>
+	CreateInfo n sknd sivs -> (C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -72,8 +72,8 @@ class CreateInfoListToCore sss where
 instance CreateInfoListToCore '[] where
 	createInfoListToCore HeteroParList.Nil = (() <$) . ($ [])
 
-instance (WithPoked n, PokableList vs, CreateInfoListToCore sss) =>
-	CreateInfoListToCore ('(n, sknd, vs) ': sss) where
+instance (WithPoked n, PokableList sivs, CreateInfoListToCore sss) =>
+	CreateInfoListToCore ('(n, sknd, sivs) ': sss) where
 	createInfoListToCore (U3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
