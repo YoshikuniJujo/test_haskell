@@ -75,27 +75,27 @@ createInfoToCore CreateInfo {
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
-class Length vss => CreateInfoListToCore vss where
+class Length cias => CreateInfoListToCore cias where
 	createInfoListToCore ::
-		HeteroParList.PL (U3 CreateInfo) vss ->
+		HeteroParList.PL (U3 CreateInfo) cias ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
 	createInfoListToCore HeteroParList.Nil = (() <$) . ($ [])
 
 instance (
-	WithPoked n, WithPoked n1, PokableList vss,
-	CreateInfoListToCore as ) =>
-	CreateInfoListToCore ('(n, n1, vss) ': as) where
+	WithPoked n, WithPoked ss, PokableList sivs,
+	CreateInfoListToCore cias ) =>
+	CreateInfoListToCore ('(n, ss, sivs) ': cias) where
 	createInfoListToCore (U3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCs :: forall vss c .
-	(CreateInfoListToCore vss, WithPoked c) =>
-	Device.D -> Maybe Cache.C -> HeteroParList.PL (U3 CreateInfo) vss ->
+createCs :: forall cias c .
+	(CreateInfoListToCore cias, WithPoked c) =>
+	Device.D -> Maybe Cache.C -> HeteroParList.PL (U3 CreateInfo) cias ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	(C <$>) <$> allocaArray ln \pps -> do
@@ -106,7 +106,7 @@ createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 				throwUnlessSuccess . Result =<< C.createCs
 					dvc cch (fromIntegral ln) pcis pac pps
 		peekArray ln pps
-	where ln = length @_ @vss
+	where ln = length @_ @cias
 
 destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
