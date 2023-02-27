@@ -3,11 +3,49 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-storable-peek-poke
+    pantry-tree:
+      sha256: 4e5cccfcb9ccb026d53db0c73fd08eea43c1f22d098d585e680e9f6abc11fd12
+      size: 597
+    subdir: features/ffi/pointer/try-storable-peek-poke
+    version: 0.1.0.0
+  original:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/pointer/try-storable-peek-poke
+- completed:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-vulkan-core
+    pantry-tree:
+      sha256: 14f27c40203afb1f5179230e0786fd69e0e4756d50f6141896cd11ef4adfaf48
+      size: 5055
+    subdir: themes/gui/vulkan/try-vulkan-core
+    version: 0.1.0.1
+  original:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/gui/vulkan/try-vulkan-core
+- completed:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-storable-hetero-list
+    pantry-tree:
+      sha256: 24c9717b23107fa9036fad9e278cb8109cdfeece6c47a3ff6908ebb145bc7b6b
+      size: 602
+    subdir: features/ffi/pointer/try-storable-hetero-list
+    version: 0.1.0.0
+  original:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/pointer/try-storable-hetero-list
 snapshots:
 - completed:
-    size: 619405
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/28.yaml
-    sha256: 7f4393ad659c579944d12202cffb12d8e4b8114566b015f77bbc303a24cff934
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/19/28.yaml
+    sha256: 859c14182cd0c4d1f9b0f7ff8baaefb15c778278fb0ea2fa90cfea326bb4e62c
+    size: 598563
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/2/27.yaml
+  original: nightly-2023-02-27
