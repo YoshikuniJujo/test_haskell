@@ -58,7 +58,7 @@ endRenderPass :: CommandBuffer.CC vs -> IO ()
 endRenderPass (CommandBuffer.CC mcb) = M.endRenderPass mcb
 
 bindPipeline ::
-	CommandBuffer.CC vs -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
+	CommandBuffer.CC vs -> Pipeline.BindPoint -> Pipeline.G -> IO ()
 bindPipeline (CommandBuffer.CC mcb) = M.bindPipeline mcb
 
 bindPipelineCompute ::

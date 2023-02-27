@@ -11,4 +11,4 @@ import Data.Kind
 
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as M
 
-newtype G s (vs :: [Type]) (ts :: [(Nat, Type)]) = G (M.G vs ts)
+newtype G s (vs :: [Type]) (ts :: [(Nat, Type)]) = G M.G

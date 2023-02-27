@@ -53,7 +53,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 
-data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
+data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
 	createInfoStages :: HeteroParList.PL (U3 ShaderStage.CreateInfo) nskndvss,
@@ -72,14 +72,14 @@ data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 vsts' = CreateInfo {
 	createInfoLayout :: Layout.L,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoSubpass :: Word32,
-	createInfoBasePipelineHandle :: U2 M.G vsts',
+	createInfoBasePipelineHandle :: M.G,
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToMiddle :: (
 	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
-	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 vsts' ->
-	M.CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10 vsts'
+	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 ->
+	M.CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -120,10 +120,10 @@ createInfoToMiddle CreateInfo {
 
 class CreateInfoListToMiddle sss where
 	type CreateInfoListArgs sss ::
-		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, *, *, ([*], [(Nat, *)]))]
+		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, *, *)]
 	createInfoListToMiddle ::
-		HeteroParList.PL (U12 CreateInfo) sss ->
-		HeteroParList.PL (U12 M.CreateInfo) (CreateInfoListArgs sss)
+		HeteroParList.PL (U11 CreateInfo) sss ->
+		HeteroParList.PL (U11 M.CreateInfo) (CreateInfoListArgs sss)
 
 instance CreateInfoListToMiddle '[] where
 	type CreateInfoListArgs '[] = '[]
@@ -134,39 +134,39 @@ instance (
 	VertexInputState.CreateInfoAttributeDescription vs ts,
 	CreateInfoListToMiddle ss ) =>
 	CreateInfoListToMiddle ('(
-		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) where
+		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10 ) ': ss) where
 	type CreateInfoListArgs ('(
-		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(
-		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10, vsts') : CreateInfoListArgs ss
-	createInfoListToMiddle (U12 ci :** cis) =
-		U12 (createInfoToMiddle ci) :** createInfoListToMiddle cis
+		n, nskndvss, '(n2, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10 ) ': ss) = '(
+		n, nskndvss, n2, n3, n4, n5, n6, n7, n8, n9, n10) : CreateInfoListArgs ss
+	createInfoListToMiddle (U11 ci :** cis) =
+		U11 (createInfoToMiddle ci) :** createInfoListToMiddle cis
 
 createGs :: (
-	Pokable n', M.GListFromCore (GListVars ss),
+	Pokable n',
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
 	CreateInfoListToMiddle ss
 	) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroParList.PL (U12 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO (HeteroParList.PL (U2 M.G) (GListVars ss))
+	HeteroParList.PL (U11 CreateInfo) ss ->
+	Maybe (AllocationCallbacks.A n') -> IO [M.G]
 createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
 	CreateInfoListToMiddle ss,
-	Pokable c, Pokable d,
-	M.GListFromCore (GListVars ss) ) => Device.D -> Maybe Cache.C ->
-	HeteroParList.PL (U12 CreateInfo) ss ->
+	Pokable c, Pokable d
+	) => Device.D -> Maybe Cache.C ->
+	HeteroParList.PL (U11 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroParList.PL (U2 M.G) (GListVars ss) -> IO ()
+	[M.G] -> IO ()
 recreateGs dvc mc cis macc macd gs =
 	M.recreateGs dvc mc (createInfoListToMiddle cis) macc macd gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, [Type])],
 		(Type, [Type], [(Nat, Type)]), Type, Type, Type, Type, Type, Type, Type,
-		Type, ([Type], [(Nat, Type)]))]) :: [([Type], [(Nat, Type)])] where
+		Type)]) :: [([Type], [(Nat, Type)])] where
 	GListVars '[] = '[]
 	GListVars ('(
 		n, nskndvss, '(n2, vs, ts),
-		n3, n4, n5, n6, n7, n8, n9, n10, vsts' ) ': ss) = '(vs, ts) ': GListVars ss
+		n3, n4, n5, n6, n7, n8, n9, n10 ) ': ss) = '(vs, ts) ': GListVars ss

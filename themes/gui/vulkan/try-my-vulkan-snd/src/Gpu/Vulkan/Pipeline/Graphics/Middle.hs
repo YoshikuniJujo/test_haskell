@@ -4,7 +4,7 @@ module Gpu.Vulkan.Pipeline.Graphics.Middle (
 
 	-- * Type
 
-	G, gNull, GListFromCore,
+	G, gNull,
 
 	-- * Create and Destroy
 

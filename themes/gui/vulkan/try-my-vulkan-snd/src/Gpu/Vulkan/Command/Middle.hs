@@ -79,7 +79,7 @@ endRenderPass :: CommandBuffer.M.C -> IO ()
 endRenderPass (CommandBuffer.M.C _ cb) = C.endRenderPass cb
 
 bindPipeline ::
-	CommandBuffer.M.C -> Pipeline.BindPoint -> Pipeline.G vs ts -> IO ()
+	CommandBuffer.M.C -> Pipeline.BindPoint -> Pipeline.G -> IO ()
 bindPipeline (CommandBuffer.M.C rppl cb) (Pipeline.BindPoint pbp) ppl = do
 	ppl0 <- readIORef rppl
 	ppl' <- Pipeline.gToCore ppl

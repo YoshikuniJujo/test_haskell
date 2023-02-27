@@ -1,5 +1,5 @@
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -79,7 +79,7 @@ createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddleNew nnskndscdvss) =>
 	CreateInfo n nnskndscdvss nvsts
 		n3 n4 n5 n6 n7 n8 n9 n10 sl sr '(sb, vs', ts') ->
 	IO (T.CreateInfo n (ShaderStage.MiddleVarsNew nnskndscdvss)
-		nvsts n3 n4 n5 n6 n7 n8 n9 n10 '(vs', ts'))
+		nvsts n3 n4 n5 n6 n7 n8 n9 n10)
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -116,20 +116,20 @@ createInfoToMiddle dvc CreateInfo {
 		T.createInfoLayout = lyt,
 		T.createInfoRenderPass = rp,
 		T.createInfoSubpass = sp,
-		T.createInfoBasePipelineHandle = U2 bph',
+		T.createInfoBasePipelineHandle = bph',
 		T.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle ss where
 	type MiddleVars ss :: [
 		(Type, [(Type, ShaderKind, [Type])], (Type, [Type], [(Nat, Type)]),
-		Type, Type, Type, Type, Type, Type, Type, Type, ([Type], [(Nat, Type)]))]
+		Type, Type, Type, Type, Type, Type, Type, Type)]
 
 	createInfoListToMiddle :: Device.D sd ->
 		HeteroParList.PL (U14 CreateInfo) ss ->
-		IO (HeteroParList.PL (U12 T.CreateInfo) (MiddleVars ss))
+		IO (HeteroParList.PL (U11 T.CreateInfo) (MiddleVars ss))
 
 	destroyShaderStages :: Device.D sd ->
-		HeteroParList.PL (U12 T.CreateInfo) (MiddleVars ss) ->
+		HeteroParList.PL (U11 T.CreateInfo) (MiddleVars ss) ->
 		HeteroParList.PL (U14 CreateInfo) ss -> IO ()
 
 instance CreateInfoListToMiddle '[] where
@@ -147,30 +147,29 @@ instance (
 		n, nnskndscdvss, nvsts, n3, n4, n5, n6, n7, n8, n9, n10,
 		'(sl, sbtss, pcl), sr, '(sb, vs', ts') ) ': ss) =
 		'(n, ShaderStage.MiddleVarsNew nnskndscdvss, nvsts, n3, n4, n5, n6,
-			n7, n8, n9, n10, '(vs', ts')) ': MiddleVars ss
+			n7, n8, n9, n10) ': MiddleVars ss
 	createInfoListToMiddle dvc (U14 ci :** cis) = (:**)
-		<$> (U12 <$> createInfoToMiddle dvc ci)
+		<$> (U11 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
-	destroyShaderStages dvc (U12 cim :** cims) (U14 ci :** cis) = do
+	destroyShaderStages dvc (U11 cim :** cims) (U14 ci :** cis) = do
 		ShaderStage.destroyCreateInfoMiddleListNew dvc (T.createInfoStages cim) (createInfoStages ci)
 		destroyShaderStages dvc cims cis
 
 class U2g ss where
-	v2g :: HeteroParList.PL (U2 M.G) ss -> HeteroParList.PL (U2 (G sg)) ss
-	g2v :: HeteroParList.PL (U2 (G sg)) ss -> HeteroParList.PL (U2 M.G) ss
+	v2g :: [M.G] -> HeteroParList.PL (U2 (G sg)) ss
+	g2v :: HeteroParList.PL (U2 (G sg)) ss -> [M.G]
 
-instance U2g '[] where v2g HeteroParList.Nil = HeteroParList.Nil; g2v HeteroParList.Nil = HeteroParList.Nil
+instance U2g '[] where v2g [] = HeteroParList.Nil; g2v HeteroParList.Nil = []
 
-instance U2g ss => U2g (s ': ss) where
-	v2g (U2 g :** gs) = U2 (G g) :** v2g gs
-	g2v (U2 (G g) :** gs) = U2 g :** g2v gs
+instance U2g ss => U2g ('(s, t) ': ss) where
+	v2g (g : gs) = U2 (G @_ @s @t g) :** v2g @ss gs
+	g2v (U2 (G g) :** gs) = g : g2v gs
 
 createGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	Pokable c, Pokable d,
 	CreateInfoListToMiddle ss,
-	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	U2g (T.GListVars (MiddleVars ss)) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	HeteroParList.PL (U14 CreateInfo) ss ->
@@ -187,7 +186,6 @@ recreateGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	Pokable c, Pokable d,
-	M.GListFromCore (T.GListVars (MiddleVars ss)),
 	U2g (T.GListVars (MiddleVars ss))) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
