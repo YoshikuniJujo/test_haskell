@@ -61,7 +61,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPSpecializationInfo = pcsi } in
 	case mxs of
 		Nothing -> f $ ci NullPtr
-		Just xs -> Specialization.infoToCore' xs \csi ->
+		Just xs -> Specialization.infoToCore xs \csi ->
 			withPoked csi $ f . ci
 
 class CreateInfoListToCore cias where

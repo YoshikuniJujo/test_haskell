@@ -4,13 +4,12 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Specialization.Middle.Internal (infoToCore') where
+module Gpu.Vulkan.Specialization.Middle.Internal (infoToCore) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable.HeteroList hiding (alignments)
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import qualified Gpu.Vulkan.Specialization.Core as C
 
@@ -38,9 +37,9 @@ mapEntries (_, ps, _, _) = (<$> ps) \(i, o, s) -> C.MapEntry {
 	C.mapEntryOffset = fromIntegral o,
 	C.mapEntrySize = fromIntegral s }
 
-infoToCore' :: forall vs a . PokableList vs =>
+infoToCore :: forall vs a . PokableList vs =>
 	HeteroParList.L vs -> (C.Info -> IO a) -> IO a
-infoToCore' xs f =
+infoToCore xs f =
 	allocaArray n \pmes ->
 	pokeArray pmes (mapEntries ps) >>
 	allocaBytesAligned tsz tal \pd ->
