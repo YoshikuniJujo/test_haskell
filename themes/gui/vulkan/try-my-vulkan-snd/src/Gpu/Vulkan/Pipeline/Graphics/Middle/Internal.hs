@@ -64,10 +64,10 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 
-data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds = CreateInfo {
+data CreateInfo n stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoStages :: HeteroParList.PL (U3 ShaderStage.CreateInfo) nskndvss,
+	createInfoStages :: HeteroParList.PL (U3 ShaderStage.CreateInfo) stg,
 	createInfoVertexInputState :: Maybe (VertexInputState.M.CreateInfo vis),
 	createInfoInputAssemblyState ::
 		Maybe (InputAssemblyState.CreateInfo ias),
@@ -87,11 +87,11 @@ data CreateInfo n nskndvss vis ias ts vs rs ms dss cbs ds = CreateInfo {
 
 createInfoToCore :: (
 	WithPoked n,
-	ShaderStage.CreateInfoListToCore nskndvss,
+	ShaderStage.CreateInfoListToCore stg,
 	WithPoked n2, WithPoked n3, WithPoked n4,
 	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked n8, WithPoked n9,
 	WithPoked n10 ) =>
-	CreateInfo n nskndvss n2 n3 n4 n5 n6 n7 n8 n9 n10 ->
+	CreateInfo n stg n2 n3 n4 n5 n6 n7 n8 n9 n10 ->
 	(C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -153,21 +153,21 @@ maybeToCore f mx g = case mx of Nothing -> g NullPtr; Just x -> f x g
 maybeToCore' :: (a -> (Ptr b -> IO r) -> IO ()) -> Maybe a -> (Ptr b -> IO r) -> IO ()
 maybeToCore' f mx g = case mx of Nothing -> () <$ g NullPtr; Just x -> f x g
 
-class Length ass => CreateInfoListToCore ass where
+class Length cias => CreateInfoListToCore cias where
 	createInfoListToCore ::
-		HeteroParList.PL (U11 CreateInfo) ass ->
+		HeteroParList.PL (U11 CreateInfo) cias ->
 		([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where createInfoListToCore HeteroParList.Nil f = () <$ f []
 
 instance (
-	WithPoked n, ShaderStage.CreateInfoListToCore nskndvss,
+	WithPoked n, ShaderStage.CreateInfoListToCore stg,
 	WithPoked vis, WithPoked ias, WithPoked ts, WithPoked vs,
 	WithPoked rs, WithPoked ms, WithPoked dss, WithPoked cbs, WithPoked ds,
-	CreateInfoListToCore ass
+	CreateInfoListToCore cias
 	) =>
 	CreateInfoListToCore ('(
-		n, nskndvss, vis, ias, ts, vs, rs, ms, dss, cbs, ds ) ': ass) where
+		n, stg, vis, ias, ts, vs, rs, ms, dss, cbs, ds ) ': cias) where
 	createInfoListToCore (U11 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
@@ -194,16 +194,14 @@ gListToIORefs (G cp : cps) = cp : gListToIORefs cps
 gListToCore :: [G] -> IO [Pipeline.C.P]
 gListToCore cps = readIORef `mapM` gListToIORefs cps
 
-createGs :: (CreateInfoListToCore as, WithPoked c) =>
-	Device.D -> Maybe Cache.C -> HeteroParList.PL (U11 CreateInfo) as ->
+createGs :: (CreateInfoListToCore cias, WithPoked c) =>
+	Device.D -> Maybe Cache.C -> HeteroParList.PL (U11 CreateInfo) cias ->
 	Maybe (AllocationCallbacks.A c) -> IO [G]
 createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
-recreateGs :: (
-	CreateInfoListToCore as, WithPoked c, WithPoked d
-	) =>
+recreateGs :: (CreateInfoListToCore cias, WithPoked c, WithPoked d) =>
 	Device.D -> Maybe Cache.C ->
-	HeteroParList.PL (U11 CreateInfo) as ->
+	HeteroParList.PL (U11 CreateInfo) cias ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	[G] -> IO ()
 recreateGs dvc mc cis macc macd gs =
