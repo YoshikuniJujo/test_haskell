@@ -64,16 +64,16 @@ createInfoToCore CreateInfo {
 		Just xs -> Specialization.infoToCore' xs \csi ->
 			withPoked csi $ f . ci
 
-class CreateInfoListToCore sss where
+class CreateInfoListToCore cias where
 	createInfoListToCore ::
-		HeteroParList.PL (U3 CreateInfo) sss ->
-		([C.CreateInfo] -> IO r) -> IO ()
+		HeteroParList.PL (U3 CreateInfo) cias ->
+			([C.CreateInfo] -> IO r) -> IO ()
 
 instance CreateInfoListToCore '[] where
 	createInfoListToCore HeteroParList.Nil = (() <$) . ($ [])
 
-instance (WithPoked n, PokableList sivs, CreateInfoListToCore sss) =>
-	CreateInfoListToCore ('(n, sknd, sivs) ': sss) where
+instance (WithPoked n, PokableList sivs, CreateInfoListToCore cias) =>
+	CreateInfoListToCore ('(n, sknd, sivs) ': cias) where
 	createInfoListToCore (U3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
