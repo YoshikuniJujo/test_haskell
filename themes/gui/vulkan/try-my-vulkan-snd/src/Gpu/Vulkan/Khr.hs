@@ -10,8 +10,6 @@ module Gpu.Vulkan.Khr where
 
 import Foreign.Storable.PeekPoke
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import qualified Data.Text as T

@@ -21,7 +21,7 @@ module Gpu.Vulkan.Middle.Internal (
 	clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
-	SubmitInfo(..), submitInfoToCore
+	SubmitInfo(..), SubmitInfoListToCore(..), submitInfoToCore
 	) where
 
 import Foreign.Ptr
@@ -260,6 +260,18 @@ data SubmitInfo n = SubmitInfo {
 		[(Semaphore.S, Pipeline.StageFlags)],
 	submitInfoCommandBuffers :: [CommandBuffer.C],
 	submitInfoSignalSemaphores :: [Semaphore.S] }
+
+class SubmitInfoListToCore ns where
+	submitInfoListToCore :: HeteroParList.PL SubmitInfo ns ->
+		([C.SubmitInfo] -> IO a) -> IO ()
+
+instance SubmitInfoListToCore '[] where
+	submitInfoListToCore HeteroParList.Nil f = () <$ f []
+
+instance (WithPoked n, SubmitInfoListToCore ns) =>
+	SubmitInfoListToCore (n ': ns) where
+	submitInfoListToCore (ci :** cis) f = submitInfoToCore ci \cci ->
+		submitInfoListToCore cis \ccis -> f $ cci : ccis
 
 submitInfoToCore :: WithPoked n =>
 	SubmitInfo n -> (C.SubmitInfo -> IO a) -> IO ()

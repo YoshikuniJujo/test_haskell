@@ -10,6 +10,7 @@
 
 module Gpu.Vulkan where
 
+import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
@@ -45,6 +46,41 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoSignalSemaphores ::
 		HeteroParList.PL Semaphore.S ssss }
 
+class M.SubmitInfoListToCore (MiddleNextList nsssvsss) => SubmitInfoListToMiddle
+	(nsssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
+	type MiddleNextList nsssvsss :: [Type]
+	submitInfoListToMiddle ::
+		HeteroParList.PL (U4 SubmitInfo) nsssvsss ->
+		HeteroParList.PL M.SubmitInfo (MiddleNextList nsssvsss)
+
+instance SubmitInfoListToMiddle '[] where
+	type MiddleNextList '[] = '[]
+	submitInfoListToMiddle HeteroParList.Nil = HeteroParList.Nil
+
+instance (
+	WithPoked n, CommandBufferListToMiddle svss,
+	SubmitInfoListToMiddle nssvsss ) =>
+	SubmitInfoListToMiddle ('(n, sss, svss, ssss) ': nssvsss) where
+	type MiddleNextList ('(n, sss, svss, ssss) ': nssvsss) =
+		n ': MiddleNextList nssvsss
+	submitInfoListToMiddle (U4 si :** sis) =
+		submitInfoToMiddle si :** submitInfoListToMiddle sis
+
+submitInfoToMiddle :: CommandBufferListToMiddle svss =>
+	SubmitInfo n sss svss ssss -> M.SubmitInfo n
+submitInfoToMiddle SubmitInfo {
+	submitInfoNext = mnxt,
+	submitInfoWaitSemaphoreDstStageMasks =
+		semaphorePipelineStageFlagsToMiddle -> wsdsms,
+	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unCC $ CommandBuffer.unC x) -> cbs,
+	submitInfoSignalSemaphores =
+		HeteroParList.toList (\(Semaphore.S s) -> s) -> ssmprs
+	} = M.SubmitInfo {
+	M.submitInfoNext = mnxt,
+	M.submitInfoWaitSemaphoreDstStageMasks = wsdsms,
+	M.submitInfoCommandBuffers = cbs,
+	M.submitInfoSignalSemaphores = ssmprs }
+
 -- deriving instance (Show n, Show (HeteroParList SemaphorePipelineStageFlags sss)) =>
 --	Show (SubmitInfo n sss s vs)
 
@@ -65,21 +101,6 @@ instance CommandBufferListToMiddle svss =>
 		vs ': CommandBufferListToMiddleMapSnd svss
 	commandBufferListToMiddle (U2 (CommandBuffer.C cb) :** cbs) =
 		cb :** commandBufferListToMiddle cbs
-
-submitInfoToMiddle :: CommandBufferListToMiddle svss =>
-	SubmitInfo n sss svss ssss -> M.SubmitInfo n
-submitInfoToMiddle SubmitInfo {
-	submitInfoNext = mnxt,
-	submitInfoWaitSemaphoreDstStageMasks =
-		semaphorePipelineStageFlagsToMiddle -> wsdsms,
-	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unCC $ CommandBuffer.unC x) -> cbs,
-	submitInfoSignalSemaphores =
-		HeteroParList.toList (\(Semaphore.S s) -> s) -> ssmprs
-	} = M.SubmitInfo {
-	M.submitInfoNext = mnxt,
-	M.submitInfoWaitSemaphoreDstStageMasks = wsdsms,
-	M.submitInfoCommandBuffers = cbs,
-	M.submitInfoSignalSemaphores = ssmprs }
 
 class SemaphorePipelineStageFlagsFromMiddle sss where
 	semaphorePipelineStageFlagsFromMiddle ::

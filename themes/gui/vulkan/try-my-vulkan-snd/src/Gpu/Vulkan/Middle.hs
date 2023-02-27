@@ -12,7 +12,7 @@ module Gpu.Vulkan.Middle (
 
 	-- * Submit Info
 
-	SubmitInfo(..),
+	SubmitInfo(..), SubmitInfoListToCore(..),
 
 	-- * Stencil Op State and Clear
 
