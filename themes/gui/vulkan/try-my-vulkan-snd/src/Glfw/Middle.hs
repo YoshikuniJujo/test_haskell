@@ -8,7 +8,6 @@ module Glfw.Middle where
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Control.Monad.Cont
 
 import Gpu.Vulkan.Exception.Middle.Internal
 
@@ -18,12 +17,11 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as Surface
 
-createWindowSurface :: Pokable n =>
+createWindowSurface :: WithPoked n =>
 	Instance.I -> GlfwB.Window -> Maybe (AllocationCallbacks.A n) -> IO Surface.S
-createWindowSurface (Instance.I ist) win mac =
-	($ pure) . runContT $ Surface.S <$> do
-		pac <- AllocationCallbacks.maybeToCore mac
-		psfc <- ContT alloca
-		lift do	r <- GlfwB.createWindowSurface ist win pac psfc
+createWindowSurface (Instance.I ist) win mac = Surface.S <$>
+	alloca \psfc -> do
+		AllocationCallbacks.maybeToCore' mac \pac -> do
+			r <- GlfwB.createWindowSurface ist win pac psfc
 			throwUnlessSuccess r
-			peek psfc
+		peek psfc
