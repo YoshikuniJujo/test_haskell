@@ -80,13 +80,13 @@ create :: (WithPoked n, WithPoked a, WithPoked c) =>
 create ci mac = (I <$>) . ($ pure) $ runContT $ ContT \f ->
 	alloca \pist -> do
 		createInfoToCore ci \pcci ->
-			AllocationCallbacks.maybeToCore' mac \pac -> do
+			AllocationCallbacks.maybeToCore mac \pac -> do
 				r <- C.create pcci pac pist
 				throwUnlessSuccess $ Result r
 		f =<< peek pist
 
 destroy :: WithPoked d => I -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (I cist) mac = AllocationCallbacks.maybeToCore' mac $ C.destroy cist
+destroy (I cist) mac = AllocationCallbacks.maybeToCore mac $ C.destroy cist
 
 enumerateLayerProperties :: IO [LayerProperties]
 enumerateLayerProperties = ($ pure) . runContT

@@ -217,7 +217,7 @@ createRaw (Device.D dvc) mc cis mac = let
 	allocaArray cic \pps -> do
 		createInfoListToCore cis \ccis -> allocaArray cic \pcis ->
 			pokeArray pcis ccis >>
-			AllocationCallbacks.maybeToCore' mac \pac -> do
+			AllocationCallbacks.maybeToCore mac \pac -> do
 				r <- C.create dvc cc (fromIntegral cic) pcis pac pps
 				throwUnlessSuccess $ Result r
 		peekArray cic pps
@@ -240,9 +240,9 @@ destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_
 destroy :: WithPoked n =>
 	Device.D -> G -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Device.D dvc) g mac = gToCore g >>= \p ->
-	AllocationCallbacks.maybeToCore' mac $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.maybeToCore mac $ Pipeline.C.destroy dvc p
 
 destroyRaw :: WithPoked d =>
 	Device.D -> Pipeline.C.P -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroyRaw (Device.D dvc) p macd =
-	AllocationCallbacks.maybeToCore' macd $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.maybeToCore macd $ Pipeline.C.destroy dvc p

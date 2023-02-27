@@ -84,11 +84,11 @@ createInfoToCore CreateInfo {
 create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = L <$> alloca \pl -> do
-	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore' mac \pac ->
+	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pl
 	peek pl
 
 destroy :: WithPoked d =>
 	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (L l) mac =
-	AllocationCallbacks.maybeToCore' mac \pac -> C.destroy dvc l pac
+	AllocationCallbacks.maybeToCore mac \pac -> C.destroy dvc l pac

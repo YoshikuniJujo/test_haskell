@@ -49,11 +49,11 @@ newtype C = C C.C deriving Show
 create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO C
 create (Device.D dvc) ci mac = C <$> alloca \pc -> do
-	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore' mac \pac ->
+	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pc
 	peek pc
 
 destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C c) mac =
-	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc c
+	AllocationCallbacks.maybeToCore mac $ C.destroy dvc c

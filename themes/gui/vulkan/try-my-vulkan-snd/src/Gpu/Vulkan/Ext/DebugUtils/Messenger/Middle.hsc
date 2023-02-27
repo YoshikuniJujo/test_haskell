@@ -160,11 +160,11 @@ create :: (
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
 	createInfoToCore' ci \cci ->
 		withPoked cci \pcci ->
-		AllocationCallbacks.maybeToCore' mac \pac ->
+		AllocationCallbacks.maybeToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create ist pcci pac pmsngr
 	peek pmsngr
 
 destroy :: WithPoked d =>
 	Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Instance.I ist) (M msgr) mac =
-	AllocationCallbacks.maybeToCore' mac $ C.destroy ist msgr
+	AllocationCallbacks.maybeToCore mac $ C.destroy ist msgr

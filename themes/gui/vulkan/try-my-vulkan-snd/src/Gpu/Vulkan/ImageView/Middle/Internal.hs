@@ -74,7 +74,7 @@ create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCore' mac \pac -> do
+		AllocationCallbacks.maybeToCore mac \pac -> do
 			r <- C.create dvc pci pac pView
 			throwUnlessSuccess $ Result r
 	peek pView
@@ -85,15 +85,15 @@ recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
 	I -> IO ()
 recreate (Device.D dvc) ci macc macd (I ri) = alloca \pView ->
 	createInfoToCore ci \pci ->
-	AllocationCallbacks.maybeToCore' macc \pac -> do
+	AllocationCallbacks.maybeToCore macc \pac -> do
 		r <- C.create dvc pci pac pView
 		throwUnlessSuccess $ Result r
 		io <- readIORef ri
-		AllocationCallbacks.maybeToCore' macd $ C.destroy dvc io
+		AllocationCallbacks.maybeToCore macd $ C.destroy dvc io
 		writeIORef ri =<< peek pView
 
 destroy :: WithPoked d =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) iv mac = do
 	iv' <- iToCore iv
-	AllocationCallbacks.maybeToCore' mac $ C.destroy dvc iv'
+	AllocationCallbacks.maybeToCore mac $ C.destroy dvc iv'

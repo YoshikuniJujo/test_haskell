@@ -122,7 +122,7 @@ create :: (WithPoked n, WithPoked c) =>
 	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCore' mac \pac ->
+		AllocationCallbacks.maybeToCore mac \pac ->
 			throwUnlessSuccess . Result
 				=<< C.create dvc pci pac pimg
 	newIORef . (ex ,) =<< peek pimg
@@ -135,7 +135,7 @@ recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
 	I -> IO ()
 recreate d@(Device.D dvc) ci macc macd i@(I ri) = alloca \pimg ->
 	createInfoToCore ci \pci ->
-	AllocationCallbacks.maybeToCore' macc \pacc -> do
+	AllocationCallbacks.maybeToCore macc \pacc -> do
 		r <- C.create dvc pci pacc pimg
 		throwUnlessSuccess $ Result r
 		destroy d i macd
@@ -215,7 +215,7 @@ subresourceLayersToCore SubresourceLayers {
 destroy :: WithPoked d =>
 	Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (I rimg) mac =
-	AllocationCallbacks.maybeToCore' mac \pac -> do
+	AllocationCallbacks.maybeToCore mac \pac -> do
 		(_, img) <- readIORef rimg
 		C.destroy dvc img pac
 

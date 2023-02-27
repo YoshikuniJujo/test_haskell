@@ -2,7 +2,8 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.AllocationCallbacks.Middle.Internal where
+module Gpu.Vulkan.AllocationCallbacks.Middle.Internal (
+	A(..), maybeToCore ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -19,8 +20,8 @@ data A a = A {
 		C.FnInternalAllocationNotification a,
 	allocationCallbacksFnInternalFree :: C.FnInternalFreeNotification a }
 
-maybeToCore' :: WithPoked n => Maybe (A n) -> (Ptr C.A -> IO b) -> IO ()
-maybeToCore' = \case Nothing -> (() <$) . ($ NullPtr); Just ac -> toCore ac
+maybeToCore :: WithPoked n => Maybe (A n) -> (Ptr C.A -> IO b) -> IO ()
+maybeToCore = \case Nothing -> (() <$) . ($ NullPtr); Just ac -> toCore ac
 
 toCore :: WithPoked n => A n -> (Ptr C.A -> IO b) -> IO ()
 toCore ac f = withA ac \(C.A_ fac) -> withForeignPtr fac $ (() <$) . f

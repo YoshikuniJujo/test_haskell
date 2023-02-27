@@ -110,13 +110,13 @@ create :: (WithPoked n, WithPokedHeteroToListM qcis, WithPoked c) =>
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
 	createInfoToCore ci \pcci ->
-		AllocationCallbacks.maybeToCore' mac \pac -> do
+		AllocationCallbacks.maybeToCore mac \pac -> do
 			r <- C.create phdvc pcci pac pdvc
 			throwUnlessSuccess $ Result r
 	peek pdvc
 
 destroy :: WithPoked d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (D cdvc) mac = AllocationCallbacks.maybeToCore' mac $ C.destroy cdvc
+destroy (D cdvc) mac = AllocationCallbacks.maybeToCore mac $ C.destroy cdvc
 
 getQueue :: D -> Word32 -> Word32 -> IO Queue.Q
 getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue.Q <$> do

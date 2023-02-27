@@ -28,7 +28,7 @@ newtype S = S Sfc.C.S deriving Show
 destroy :: WithPoked n =>
 	Instance.I -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
 destroy (Instance.I ist) (S sfc) mac =
-	AllocationCallbacks.maybeToCore' mac $ Sfc.C.destroy ist sfc
+	AllocationCallbacks.maybeToCore mac $ Sfc.C.destroy ist sfc
 
 data Capabilities = Capabilities {
 	capabilitiesMinImageCount :: Word32,

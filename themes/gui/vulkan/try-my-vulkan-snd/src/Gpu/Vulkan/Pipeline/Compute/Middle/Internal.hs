@@ -102,7 +102,7 @@ createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 		createInfoListToCore cis \cis' ->
 			allocaArray ln \pcis ->
 			pokeArray pcis cis' >>
-			AllocationCallbacks.maybeToCore' mac \pac ->
+			AllocationCallbacks.maybeToCore mac \pac ->
 				throwUnlessSuccess . Result =<< C.createCs
 					dvc cch (fromIntegral ln) pcis pac pps
 		peekArray ln pps
@@ -111,4 +111,4 @@ createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C p) mac =
-	AllocationCallbacks.maybeToCore' mac $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.maybeToCore mac $ Pipeline.C.destroy dvc p

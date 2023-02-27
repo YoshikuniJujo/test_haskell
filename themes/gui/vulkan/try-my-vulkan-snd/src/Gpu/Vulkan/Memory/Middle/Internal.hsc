@@ -118,7 +118,7 @@ allocate :: (WithPoked n, WithPoked a) =>
 	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A a) -> IO M
 allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 	allocateInfoToCore ai \pai ->
-		AllocationCallbacks.maybeToCore' mac \pac -> do
+		AllocationCallbacks.maybeToCore mac \pac -> do
 			r <- C.allocate dvc pai pac pm
 			throwUnlessSuccess $ Result r
 	newIORef =<< peek pm
@@ -130,7 +130,7 @@ reallocate :: (WithPoked n, WithPoked a, WithPoked f) =>
 	M -> IO ()
 reallocate d@(Device.D dvc) ai macc macd m@(M rm) =
 	alloca \pm -> allocateInfoToCore ai \pai ->
-	AllocationCallbacks.maybeToCore' macc \pac -> do
+	AllocationCallbacks.maybeToCore macc \pac -> do
 		r <- C.allocate dvc pai pac pm
 		throwUnlessSuccess $ Result r
 		free d m macd
@@ -138,7 +138,7 @@ reallocate d@(Device.D dvc) ai macc macd m@(M rm) =
 
 free :: WithPoked f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
 free (Device.D dvc) (M mem) mac =
-	AllocationCallbacks.maybeToCore' mac \pac -> do
+	AllocationCallbacks.maybeToCore mac \pac -> do
 		m <- readIORef mem
 		C.free dvc m pac
 
