@@ -82,6 +82,7 @@ library:
   - Gpu.Vulkan.Exception.Middle
   - Gpu.Vulkan.Fence.Enum
   - Gpu.Vulkan.Fence.Middle
+  - Gpu.Vulkan.Fence.Middle.Internal
   - Gpu.Vulkan.Framebuffer.Enum
   - Gpu.Vulkan.Framebuffer.Middle
   - Gpu.Vulkan.Image.Enum
@@ -121,6 +122,7 @@ library:
   - Gpu.Vulkan.PushConstant.Middle
   - Gpu.Vulkan.Queue.Enum
   - Gpu.Vulkan.Queue.Middle
+  - Gpu.Vulkan.Queue.Middle.Internal
   - Gpu.Vulkan.QueueFamily.Middle
   - Gpu.Vulkan.RenderPass.Enum
   - Gpu.Vulkan.RenderPass.Middle
@@ -129,6 +131,7 @@ library:
   - Gpu.Vulkan.Sampler.Enum
   - Gpu.Vulkan.Sampler.Middle
   - Gpu.Vulkan.Semaphore.Middle
+  - Gpu.Vulkan.Semaphore.Middle.Internal
   - Gpu.Vulkan.ShaderModule.Middle
   - Gpu.Vulkan.Subpass.Enum
   - Gpu.Vulkan.Subpass.Middle

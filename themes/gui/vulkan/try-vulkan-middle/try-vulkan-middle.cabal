@@ -56,6 +56,7 @@ library
       Gpu.Vulkan.Exception.Middle
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Fence.Middle
+      Gpu.Vulkan.Fence.Middle.Internal
       Gpu.Vulkan.Framebuffer.Enum
       Gpu.Vulkan.Framebuffer.Middle
       Gpu.Vulkan.Image.Enum
@@ -95,6 +96,7 @@ library
       Gpu.Vulkan.PushConstant.Middle
       Gpu.Vulkan.Queue.Enum
       Gpu.Vulkan.Queue.Middle
+      Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily.Middle
       Gpu.Vulkan.RenderPass.Enum
       Gpu.Vulkan.RenderPass.Middle
@@ -103,6 +105,7 @@ library
       Gpu.Vulkan.Sampler.Enum
       Gpu.Vulkan.Sampler.Middle
       Gpu.Vulkan.Semaphore.Middle
+      Gpu.Vulkan.Semaphore.Middle.Internal
       Gpu.Vulkan.ShaderModule.Middle
       Gpu.Vulkan.Subpass.Enum
       Gpu.Vulkan.Subpass.Middle
@@ -120,7 +123,6 @@ library
       Gpu.Vulkan.DescriptorSet.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
       Gpu.Vulkan.Exception.Middle.Internal
-      Gpu.Vulkan.Fence.Middle.Internal
       Gpu.Vulkan.Framebuffer.Middle.Internal
       Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Memory.Middle.Internal
@@ -142,13 +144,11 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal
       Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PushConstant.Middle.Internal
-      Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily.EnumManual
       Gpu.Vulkan.QueueFamily.Middle.Internal
       Gpu.Vulkan.RenderPass.Middle.Internal
       Gpu.Vulkan.Sample.Middle.Internal
       Gpu.Vulkan.Sampler.Middle.Internal
-      Gpu.Vulkan.Semaphore.Middle.Internal
       Gpu.Vulkan.ShaderModule.Middle.Internal
       Gpu.Vulkan.Specialization.Middle.Internal
       Gpu.Vulkan.Subpass.Middle.Internal
