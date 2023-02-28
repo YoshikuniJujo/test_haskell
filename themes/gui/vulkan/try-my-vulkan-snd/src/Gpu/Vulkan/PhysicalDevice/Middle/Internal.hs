@@ -48,7 +48,7 @@ enumerate (Instance.M.I ist) = map P <$> alloca \pdvcc ->
 	throwUnlessSuccess (Result r) >>
 	peek pdvcc >>= \(fromIntegral -> dvcc) ->
 	allocaArray dvcc \pdvcs ->
-	C.enumerate ist pdvcc NullPtr >>= \r' ->
+	C.enumerate ist pdvcc pdvcs >>= \r' ->
 	throwUnlessSuccess (Result r') >>
 	peekArray dvcc pdvcs
 
