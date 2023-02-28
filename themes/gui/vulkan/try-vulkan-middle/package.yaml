@@ -35,6 +35,7 @@ dependencies:
 - try-storable-peek-poke
 - try-storable-hetero-list
 - try-vulkan-core
+- try-shaderc
 
 ghc-options:
 - -Wall
