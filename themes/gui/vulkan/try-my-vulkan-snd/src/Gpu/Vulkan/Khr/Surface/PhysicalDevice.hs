@@ -7,7 +7,7 @@ import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Surface.Type
 
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
-import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Middle.Internal as M
 import qualified Gpu.Vulkan.Khr.Surface.PhysicalDevice.Middle as M
 
