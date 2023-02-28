@@ -10,7 +10,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad.Cont
 
-import Gpu.Vulkan.Exception.Middle.Internal
+import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Misc.Middle.Internal

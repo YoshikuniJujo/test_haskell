@@ -101,7 +101,6 @@ library
       Gpu.Vulkan.Memory.AllocateInfo
       Gpu.Vulkan.Memory.Kind
       Gpu.Vulkan.Misc
-      Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.Pipeline.Cache.Type
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
@@ -135,7 +134,6 @@ library
       Gpu.Vulkan.Semaphore
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
-      Gpu.Vulkan.Specialization.Middle.Internal
       Gpu.Vulkan.Subpass
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th

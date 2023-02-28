@@ -39,7 +39,7 @@ import qualified Gpu.Vulkan.Instance as Vk.Instance
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Device as Vk.Device
 import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
-import qualified Gpu.Vulkan.QueueFamily.EnumManual as Vk.QueueFamily
+import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QueueFamily
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
