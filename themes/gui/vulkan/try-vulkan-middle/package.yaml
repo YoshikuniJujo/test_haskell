@@ -89,6 +89,7 @@ library:
   - Gpu.Vulkan.ImageView.Middle
   - Gpu.Vulkan.Instance.Enum
   - Gpu.Vulkan.Instance.Middle
+  - Gpu.Vulkan.Instance.Middle.Internal
   - Gpu.Vulkan.Memory.Enum
   - Gpu.Vulkan.Memory.Middle
   - Gpu.Vulkan.Middle

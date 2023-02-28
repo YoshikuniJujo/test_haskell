@@ -35,7 +35,7 @@ import Data.IORef
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
+import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 import qualified Gpu.Vulkan.Buffer as Buffer

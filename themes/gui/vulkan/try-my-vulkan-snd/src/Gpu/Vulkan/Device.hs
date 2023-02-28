@@ -19,7 +19,7 @@ import Gpu.Vulkan.Device.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.PhysicalDevice as PhysicalDevice
 import qualified Gpu.Vulkan.Device.Middle as M
-import qualified Gpu.Vulkan.QueueFamily as QueueFamily
+import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
 create :: (Pokable n, WithPokedHeteroToListM ns, Pokable n3, Pokable n4) =>

@@ -113,38 +113,24 @@ library
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
       Gpu.Vulkan.Pipeline.ColorBlendState
-      Gpu.Vulkan.Pipeline.ColorBlendState.Middle
-      Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.DepthStencilState
       Gpu.Vulkan.Pipeline.DynamicState
-      Gpu.Vulkan.Pipeline.DynamicState.Middle
-      Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
       Gpu.Vulkan.Pipeline.Graphics
       Gpu.Vulkan.Pipeline.Graphics.Tmp
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
-      Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
-      Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout
       Gpu.Vulkan.Pipeline.Layout.Type
       Gpu.Vulkan.Pipeline.MultisampleState
       Gpu.Vulkan.Pipeline.RasterizationState
-      Gpu.Vulkan.Pipeline.RasterizationState.Middle
-      Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
       Gpu.Vulkan.Pipeline.ShaderStage
       Gpu.Vulkan.Pipeline.ShaderStage.Internal
       Gpu.Vulkan.Pipeline.TessellationState
-      Gpu.Vulkan.Pipeline.TessellationState.Middle
-      Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
       Gpu.Vulkan.Pipeline.VertexInputState
       Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
-      Gpu.Vulkan.Pipeline.VertexInputState.Middle
-      Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal
       Gpu.Vulkan.Pipeline.ViewportState
-      Gpu.Vulkan.Pipeline.ViewportState.Middle
-      Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PushConstant
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
@@ -161,9 +147,6 @@ library
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
-      Gpu.Vulkan.VertexInput.Enum
-      Gpu.Vulkan.VertexInput.Middle
-      Gpu.Vulkan.VertexInput.Middle.Internal
       Sample.GetOpt
       Sample.Image
       ThEnv
