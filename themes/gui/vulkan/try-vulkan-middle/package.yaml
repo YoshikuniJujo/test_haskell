@@ -76,6 +76,7 @@ library:
   - Gpu.Vulkan.DescriptorSetLayout.Middle
   - Gpu.Vulkan.Device.Enum
   - Gpu.Vulkan.Device.Middle
+  - Gpu.Vulkan.Device.Middle.Internal
   - Gpu.Vulkan.Enum
   - Gpu.Vulkan.Exception.Enum
   - Gpu.Vulkan.Exception.Middle
@@ -85,6 +86,7 @@ library:
   - Gpu.Vulkan.Framebuffer.Middle
   - Gpu.Vulkan.Image.Enum
   - Gpu.Vulkan.Image.Middle
+  - Gpu.Vulkan.Image.Middle.Internal
   - Gpu.Vulkan.ImageView.Enum
   - Gpu.Vulkan.ImageView.Middle
   - Gpu.Vulkan.Instance.Enum
@@ -96,6 +98,7 @@ library:
   - Gpu.Vulkan.Middle.Internal
   - Gpu.Vulkan.PhysicalDevice.Enum
   - Gpu.Vulkan.PhysicalDevice.Middle
+  - Gpu.Vulkan.PhysicalDevice.Middle.Internal
   - Gpu.Vulkan.PhysicalDevice.Struct
   - Gpu.Vulkan.Pipeline.Cache.Enum
   - Gpu.Vulkan.Pipeline.Cache.Middle
