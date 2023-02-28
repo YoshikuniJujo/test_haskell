@@ -9,7 +9,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 
-import Gpu.Vulkan.Exception.Middle.Internal
+import Gpu.Vulkan.Exception.Middle
 
 import qualified Graphics.UI.GLFW as GlfwB
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal

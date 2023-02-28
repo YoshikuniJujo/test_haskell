@@ -27,7 +27,7 @@ import Data.Word
 import qualified Data.Text as T
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Exception.Middle.Internal
+import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Enum
