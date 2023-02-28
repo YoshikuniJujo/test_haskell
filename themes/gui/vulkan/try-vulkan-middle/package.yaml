@@ -21,7 +21,19 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- template-haskell
+- text
+- bytestring
+- data-default
+- monads-tf
+- uuid
+- c-enum
+- ranged-list
+- exception-hierarchy
+- union-color
+- try-hetero-parameter-list
 - try-storable-peek-poke
+- try-storable-hetero-list
 - try-vulkan-core
 
 ghc-options:

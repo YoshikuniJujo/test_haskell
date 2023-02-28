@@ -20,6 +20,32 @@ packages:
 - completed:
     commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
     git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-storable-hetero-list
+    pantry-tree:
+      sha256: 24c9717b23107fa9036fad9e278cb8109cdfeece6c47a3ff6908ebb145bc7b6b
+      size: 602
+    subdir: features/ffi/pointer/try-storable-hetero-list
+    version: 0.1.0.0
+  original:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/pointer/try-storable-hetero-list
+- completed:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-hetero-parameter-list
+    pantry-tree:
+      sha256: 8dbce8b6a63d13851bfc4cbeea2835d38001da08701cd6b974bb166a63f5b790
+      size: 803
+    subdir: themes/hetero-list/try-hetero-parameter-list
+    version: 0.1.0.0
+  original:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/hetero-list/try-hetero-parameter-list
+- completed:
+    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
+    git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
       sha256: 14f27c40203afb1f5179230e0786fd69e0e4756d50f6141896cd11ef4adfaf48
@@ -31,18 +57,12 @@ packages:
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
 - completed:
-    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
-    git: https://github.com/YoshikuniJujo/test_haskell
-    name: try-storable-hetero-list
+    hackage: union-color-0.1.2.0@sha256:e98fd15e216d2729465fefb4a980a41fcf4b5ba022a40b2a8fbc5d6e7f6dadf8,1326
     pantry-tree:
-      sha256: 24c9717b23107fa9036fad9e278cb8109cdfeece6c47a3ff6908ebb145bc7b6b
-      size: 602
-    subdir: features/ffi/pointer/try-storable-hetero-list
-    version: 0.1.0.0
+      sha256: f675b5871b146343c41469c3702b4ffcdb40dab215f2e3bf80333fda44013850
+      size: 429
   original:
-    commit: 16981f6d9cfe0e2da792cb4386b87777cf2f61e4
-    git: https://github.com/YoshikuniJujo/test_haskell
-    subdir: features/ffi/pointer/try-storable-hetero-list
+    hackage: union-color-0.1.2.0
 snapshots:
 - completed:
     sha256: 859c14182cd0c4d1f9b0f7ff8baaefb15c778278fb0ea2fa90cfea326bb4e62c
