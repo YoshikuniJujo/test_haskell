@@ -15,7 +15,6 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke (
 	WithPoked, withPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Default
 
 import qualified Data.Text as T
@@ -77,42 +76,37 @@ newtype I = I C.I deriving Show
 
 create :: (WithPoked n, WithPoked a, WithPoked c) =>
 	CreateInfo n a -> Maybe (AllocationCallbacks.A c) -> IO I
-create ci mac = (I <$>) . ($ pure) $ runContT $ ContT \f ->
-	alloca \pist -> do
-		createInfoToCore ci \pcci ->
-			AllocationCallbacks.maybeToCore mac \pac -> do
-				r <- C.create pcci pac pist
-				throwUnlessSuccess $ Result r
-		f =<< peek pist
+create ci mac = I <$> alloca \pist -> do
+	createInfoToCore ci \pcci ->
+		AllocationCallbacks.maybeToCore mac \pac -> do
+			r <- C.create pcci pac pist
+			throwUnlessSuccess $ Result r
+	peek pist
 
 destroy :: WithPoked d => I -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (I cist) mac = AllocationCallbacks.maybeToCore mac $ C.destroy cist
 
 enumerateLayerProperties :: IO [LayerProperties]
-enumerateLayerProperties = ($ pure) . runContT
-	$ map layerPropertiesFromCore <$> do
-		pLayerCount <- ContT alloca
-		(fromIntegral -> layerCount) <- lift do
-			r <- C.enumerateLayerProperties pLayerCount NullPtr
-			throwUnlessSuccess $ Result r
-			peek pLayerCount
-		pLayerProps <- ContT $ allocaArray layerCount
-		lift do	r <- C.enumerateLayerProperties pLayerCount pLayerProps
-			throwUnlessSuccess $ Result r
-			peekArray layerCount pLayerProps
+enumerateLayerProperties =
+	map layerPropertiesFromCore <$> alloca \pLayerCount ->
+	C.enumerateLayerProperties pLayerCount NullPtr >>= \r ->
+	throwUnlessSuccess (Result r) >>
+	peek pLayerCount >>= \(fromIntegral -> layerCount) ->
+	allocaArray layerCount \pLayerProps ->
+	C.enumerateLayerProperties pLayerCount pLayerProps >>= \r' ->
+	throwUnlessSuccess (Result r') >>
+	peekArray layerCount pLayerProps
 
 enumerateExtensionProperties :: Maybe T.Text -> IO [ExtensionProperties]
-enumerateExtensionProperties mln = ($ pure) . runContT
-	$ map extensionPropertiesFromCore <$> do
-		cln <- case mln of
-			Nothing -> pure NullPtr
-			Just ln -> ContT $ textToCString ln
-		pExtCount <- ContT alloca
-		(fromIntegral -> extCount) <- lift do
-			r <- C.enumerateExtensionProperties cln pExtCount NullPtr
-			throwUnlessSuccess $ Result r
-			peek pExtCount
-		pExts <- ContT $ allocaArray extCount
-		lift do	r <- C.enumerateExtensionProperties cln pExtCount pExts
-			throwUnlessSuccess $ Result r
-			peekArray extCount pExts
+enumerateExtensionProperties mln =
+	map extensionPropertiesFromCore <$> case mln of
+		Nothing -> go NullPtr
+		Just ln -> textToCString ln go
+	where go cln = alloca \pExtCount ->
+		C.enumerateExtensionProperties cln pExtCount NullPtr >>= \r ->
+		throwUnlessSuccess (Result r) >>
+		peek pExtCount >>= \(fromIntegral -> extCount) ->
+		allocaArray extCount \pExts ->
+		C.enumerateExtensionProperties cln pExtCount pExts >>= \r' ->
+		throwUnlessSuccess (Result r') >>
+		peekArray extCount pExts

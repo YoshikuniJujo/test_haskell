@@ -119,10 +119,9 @@ destroy :: WithPoked d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (D cdvc) mac = AllocationCallbacks.maybeToCore mac $ C.destroy cdvc
 
 getQueue :: D -> Word32 -> Word32 -> IO Queue.Q
-getQueue (D cdvc) qfi qi = ($ pure) . runContT $ Queue.Q <$> do
-	pQueue <- ContT alloca
-	lift do	C.getQueue cdvc qfi qi pQueue
-		peek pQueue
+getQueue (D cdvc) qfi qi = Queue.Q <$> alloca \pQueue -> do
+	C.getQueue cdvc qfi qi pQueue
+	peek pQueue
 
 waitIdle :: D -> IO ()
 waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d
