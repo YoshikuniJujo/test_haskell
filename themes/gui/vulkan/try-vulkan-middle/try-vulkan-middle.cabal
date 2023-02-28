@@ -26,133 +26,133 @@ source-repository head
 library
   exposed-modules:
       Gpu.Vulkan.AllocationCallbacks.Middle
-      Gpu.Vulkan.AllocationCallbacks.Middle.Internal
       Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Attachment.Middle
-      Gpu.Vulkan.Attachment.Middle.Internal
       Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.Buffer.Middle
-      Gpu.Vulkan.Buffer.Middle.Internal
       Gpu.Vulkan.BufferView.Middle
-      Gpu.Vulkan.BufferView.Middle.Internal
       Gpu.Vulkan.ColorComponent.Enum
       Gpu.Vulkan.Command.Middle
       Gpu.Vulkan.CommandBuffer.Enum
       Gpu.Vulkan.CommandBuffer.Middle
-      Gpu.Vulkan.CommandBuffer.Middle.Internal
       Gpu.Vulkan.CommandPool.Enum
       Gpu.Vulkan.CommandPool.Middle
-      Gpu.Vulkan.CommandPool.Middle.Internal
       Gpu.Vulkan.Component.Enum
       Gpu.Vulkan.Component.Middle
-      Gpu.Vulkan.Component.Middle.Internal
       Gpu.Vulkan.Data.Middle
       Gpu.Vulkan.Descriptor.Enum
       Gpu.Vulkan.Descriptor.Middle
-      Gpu.Vulkan.Descriptor.Middle.Internal
       Gpu.Vulkan.DescriptorPool.Enum
       Gpu.Vulkan.DescriptorPool.Middle
-      Gpu.Vulkan.DescriptorPool.Middle.Internal
       Gpu.Vulkan.DescriptorSet.Middle
-      Gpu.Vulkan.DescriptorSet.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.Enum
       Gpu.Vulkan.DescriptorSetLayout.Middle
-      Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
       Gpu.Vulkan.Device.Enum
       Gpu.Vulkan.Device.Middle
-      Gpu.Vulkan.Device.Middle.Internal
       Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception.Enum
       Gpu.Vulkan.Exception.Middle
-      Gpu.Vulkan.Exception.Middle.Internal
       Gpu.Vulkan.Fence.Enum
       Gpu.Vulkan.Fence.Middle
-      Gpu.Vulkan.Fence.Middle.Internal
       Gpu.Vulkan.Framebuffer.Enum
       Gpu.Vulkan.Framebuffer.Middle
-      Gpu.Vulkan.Framebuffer.Middle.Internal
       Gpu.Vulkan.Image.Enum
       Gpu.Vulkan.Image.Middle
-      Gpu.Vulkan.Image.Middle.Internal
       Gpu.Vulkan.ImageView.Enum
       Gpu.Vulkan.ImageView.Middle
-      Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Instance.Enum
       Gpu.Vulkan.Instance.Middle
-      Gpu.Vulkan.Instance.Middle.Internal
       Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Memory.Middle
-      Gpu.Vulkan.Memory.Middle.Internal
       Gpu.Vulkan.Middle
-      Gpu.Vulkan.Middle.Internal
-      Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Middle
-      Gpu.Vulkan.PhysicalDevice.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct
-      Gpu.Vulkan.PhysicalDevice.Struct.Th
       Gpu.Vulkan.Pipeline.Cache.Enum
       Gpu.Vulkan.Pipeline.Cache.Middle
-      Gpu.Vulkan.Pipeline.Cache.Middle.Internal
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle
-      Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
       Gpu.Vulkan.Pipeline.ColorBlendState.Middle
-      Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
       Gpu.Vulkan.Pipeline.Compute.Middle
-      Gpu.Vulkan.Pipeline.Compute.Middle.Internal
       Gpu.Vulkan.Pipeline.DepthStencilState.Middle
-      Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal
       Gpu.Vulkan.Pipeline.DynamicState.Middle
-      Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics.Middle
-      Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
-      Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout.Middle
-      Gpu.Vulkan.Pipeline.Layout.Middle.Internal
       Gpu.Vulkan.Pipeline.MultisampleState.Middle
-      Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal
       Gpu.Vulkan.Pipeline.RasterizationState.Middle
-      Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
-      Gpu.Vulkan.Pipeline.ShaderStage.Enum
       Gpu.Vulkan.Pipeline.ShaderStage.Middle
-      Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal
       Gpu.Vulkan.Pipeline.TessellationState.Middle
-      Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
       Gpu.Vulkan.Pipeline.VertexInputState.Middle
-      Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal
       Gpu.Vulkan.Pipeline.ViewportState.Middle
-      Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PushConstant.Middle
-      Gpu.Vulkan.PushConstant.Middle.Internal
       Gpu.Vulkan.Queue.Enum
       Gpu.Vulkan.Queue.Middle
+      Gpu.Vulkan.QueueFamily.Middle
+      Gpu.Vulkan.Sample.Enum
+      Gpu.Vulkan.Sample.Middle
+      Gpu.Vulkan.Sampler.Enum
+      Gpu.Vulkan.Sampler.Middle
+      Gpu.Vulkan.Semaphore.Middle
+      Gpu.Vulkan.ShaderModule.Middle
+      Gpu.Vulkan.Subpass.Enum
+      Gpu.Vulkan.Subpass.Middle
+      Gpu.Vulkan.VertexInput.Enum
+      Gpu.Vulkan.VertexInput.Middle
+  other-modules:
+      Gpu.Vulkan.AllocationCallbacks.Middle.Internal
+      Gpu.Vulkan.Attachment.Middle.Internal
+      Gpu.Vulkan.Buffer.Middle.Internal
+      Gpu.Vulkan.BufferView.Middle.Internal
+      Gpu.Vulkan.CommandBuffer.Middle.Internal
+      Gpu.Vulkan.CommandPool.Middle.Internal
+      Gpu.Vulkan.Component.Middle.Internal
+      Gpu.Vulkan.Descriptor.Middle.Internal
+      Gpu.Vulkan.DescriptorPool.Middle.Internal
+      Gpu.Vulkan.DescriptorSet.Middle.Internal
+      Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
+      Gpu.Vulkan.Device.Middle.Internal
+      Gpu.Vulkan.Exception.Middle.Internal
+      Gpu.Vulkan.Fence.Middle.Internal
+      Gpu.Vulkan.Framebuffer.Middle.Internal
+      Gpu.Vulkan.Image.Middle.Internal
+      Gpu.Vulkan.ImageView.Middle.Internal
+      Gpu.Vulkan.Instance.Middle.Internal
+      Gpu.Vulkan.Memory.Middle.Internal
+      Gpu.Vulkan.Middle.Internal
+      Gpu.Vulkan.Misc.Middle.Internal
+      Gpu.Vulkan.PhysicalDevice.Middle.Internal
+      Gpu.Vulkan.PhysicalDevice.Struct.Th
+      Gpu.Vulkan.Pipeline.Cache.Middle.Internal
+      Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal
+      Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
+      Gpu.Vulkan.Pipeline.Compute.Middle.Internal
+      Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal
+      Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
+      Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
+      Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
+      Gpu.Vulkan.Pipeline.Layout.Middle.Internal
+      Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal
+      Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
+      Gpu.Vulkan.Pipeline.ShaderStage.Enum
+      Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal
+      Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
+      Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal
+      Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
+      Gpu.Vulkan.PushConstant.Middle.Internal
       Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily.EnumManual
-      Gpu.Vulkan.QueueFamily.Middle
       Gpu.Vulkan.QueueFamily.Middle.Internal
       Gpu.Vulkan.RenderPass.Enum
       Gpu.Vulkan.RenderPass.Middle
       Gpu.Vulkan.RenderPass.Middle.Internal
-      Gpu.Vulkan.Sample.Enum
-      Gpu.Vulkan.Sample.Middle
       Gpu.Vulkan.Sample.Middle.Internal
-      Gpu.Vulkan.Sampler.Enum
-      Gpu.Vulkan.Sampler.Middle
       Gpu.Vulkan.Sampler.Middle.Internal
-      Gpu.Vulkan.Semaphore.Middle
       Gpu.Vulkan.Semaphore.Middle.Internal
-      Gpu.Vulkan.ShaderModule.Middle
       Gpu.Vulkan.ShaderModule.Middle.Internal
       Gpu.Vulkan.Specialization.Middle.Internal
-      Gpu.Vulkan.Subpass.Enum
-      Gpu.Vulkan.Subpass.Middle
       Gpu.Vulkan.Subpass.Middle.Internal
-      Gpu.Vulkan.VertexInput.Enum
-      Gpu.Vulkan.VertexInput.Middle
       Gpu.Vulkan.VertexInput.Middle.Internal
-  other-modules:
       Paths_try_vulkan_middle
   hs-source-dirs:
       src

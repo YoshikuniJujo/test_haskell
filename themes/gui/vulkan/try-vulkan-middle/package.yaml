@@ -50,6 +50,81 @@ ghc-options:
 
 library:
   source-dirs: src
+  exposed-modules:
+  - Gpu.Vulkan.AllocationCallbacks.Middle
+  - Gpu.Vulkan.Attachment.Enum
+  - Gpu.Vulkan.Attachment.Middle
+  - Gpu.Vulkan.Buffer.Enum
+  - Gpu.Vulkan.Buffer.Middle
+  - Gpu.Vulkan.BufferView.Middle
+  - Gpu.Vulkan.ColorComponent.Enum
+  - Gpu.Vulkan.Command.Middle
+  - Gpu.Vulkan.CommandBuffer.Enum
+  - Gpu.Vulkan.CommandBuffer.Middle
+  - Gpu.Vulkan.CommandPool.Enum
+  - Gpu.Vulkan.CommandPool.Middle
+  - Gpu.Vulkan.Component.Enum
+  - Gpu.Vulkan.Component.Middle
+  - Gpu.Vulkan.Data.Middle
+  - Gpu.Vulkan.Descriptor.Enum
+  - Gpu.Vulkan.Descriptor.Middle
+  - Gpu.Vulkan.DescriptorPool.Enum
+  - Gpu.Vulkan.DescriptorPool.Middle
+  - Gpu.Vulkan.DescriptorSet.Middle
+  - Gpu.Vulkan.DescriptorSetLayout.Enum
+  - Gpu.Vulkan.DescriptorSetLayout.Middle
+  - Gpu.Vulkan.Device.Enum
+  - Gpu.Vulkan.Device.Middle
+  - Gpu.Vulkan.Enum
+  - Gpu.Vulkan.Exception.Enum
+  - Gpu.Vulkan.Exception.Middle
+  - Gpu.Vulkan.Fence.Enum
+  - Gpu.Vulkan.Fence.Middle
+  - Gpu.Vulkan.Framebuffer.Enum
+  - Gpu.Vulkan.Framebuffer.Middle
+  - Gpu.Vulkan.Image.Enum
+  - Gpu.Vulkan.Image.Middle
+  - Gpu.Vulkan.ImageView.Enum
+  - Gpu.Vulkan.ImageView.Middle
+  - Gpu.Vulkan.Instance.Enum
+  - Gpu.Vulkan.Instance.Middle
+  - Gpu.Vulkan.Memory.Enum
+  - Gpu.Vulkan.Memory.Middle
+  - Gpu.Vulkan.Middle
+  - Gpu.Vulkan.PhysicalDevice.Enum
+  - Gpu.Vulkan.PhysicalDevice.Middle
+  - Gpu.Vulkan.PhysicalDevice.Struct
+  - Gpu.Vulkan.Pipeline.Cache.Enum
+  - Gpu.Vulkan.Pipeline.Cache.Middle
+  - Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle
+  - Gpu.Vulkan.Pipeline.ColorBlendState.Middle
+  - Gpu.Vulkan.Pipeline.Compute.Middle
+  - Gpu.Vulkan.Pipeline.DepthStencilState.Middle
+  - Gpu.Vulkan.Pipeline.DynamicState.Middle
+  - Gpu.Vulkan.Pipeline.Enum
+  - Gpu.Vulkan.Pipeline.Graphics.Middle
+  - Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
+  - Gpu.Vulkan.Pipeline.Layout.Middle
+  - Gpu.Vulkan.Pipeline.MultisampleState.Middle
+  - Gpu.Vulkan.Pipeline.RasterizationState.Middle
+  - Gpu.Vulkan.Pipeline.ShaderStage.Middle
+  - Gpu.Vulkan.Pipeline.TessellationState.Middle
+  - Gpu.Vulkan.Pipeline.VertexInputState.Middle
+  - Gpu.Vulkan.Pipeline.ViewportState.Middle
+  - Gpu.Vulkan.PushConstant.Middle
+  - Gpu.Vulkan.Queue.Enum
+  - Gpu.Vulkan.Queue.Middle
+  - Gpu.Vulkan.QueueFamily.Middle
+  - Gpu.Vulkan.Sample.Enum
+  - Gpu.Vulkan.Sample.Middle
+  - Gpu.Vulkan.Sampler.Enum
+  - Gpu.Vulkan.Sampler.Middle
+  - Gpu.Vulkan.Semaphore.Middle
+  - Gpu.Vulkan.ShaderModule.Middle
+  - Gpu.Vulkan.Subpass.Enum
+  - Gpu.Vulkan.Subpass.Middle
+  - Gpu.Vulkan.VertexInput.Enum
+  - Gpu.Vulkan.VertexInput.Middle
 
 tests:
   try-vulkan-middle-test:
