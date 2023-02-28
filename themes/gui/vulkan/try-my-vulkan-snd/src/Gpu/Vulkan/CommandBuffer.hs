@@ -26,8 +26,6 @@ import Foreign.Storable
 import Control.Exception
 import Data.Kind
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import qualified TypeLevel.List as TpLvlLst

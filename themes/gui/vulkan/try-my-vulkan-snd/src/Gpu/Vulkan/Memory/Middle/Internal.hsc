@@ -25,7 +25,6 @@ import Foreign.Marshal.Alloc hiding (free)
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
-import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.IORef
@@ -150,12 +149,11 @@ instance Default MapFlags where def = MapFlagsZero
 map :: Device.D -> M -> Device.Size -> Device.Size -> MapFlags ->
 	IO (Ptr a)
 map (Device.D dvc) (M mem)
-	(Device.Size ofst) (Device.Size sz) (MapFlags flgs) = ($ pure) $ runContT do
-	pd <- ContT alloca
-	m <- lift $ readIORef mem
-	lift do	r <- C.map dvc m ofst sz flgs pd
-		throwUnlessSuccess $ Result r
-		peek pd
+	(Device.Size ofst) (Device.Size sz) (MapFlags flgs) = alloca \pd ->
+	readIORef mem >>= \m ->
+	C.map dvc m ofst sz flgs pd >>= \r ->
+	throwUnlessSuccess (Result r) >>
+	peek pd
 
 unmap :: Device.D -> M -> IO ()
 unmap (Device.D dvc) (M mem) = C.unmap dvc =<< readIORef mem

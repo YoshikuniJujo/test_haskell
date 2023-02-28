@@ -20,7 +20,6 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (
 	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Default
 import Data.IORef
 import Data.Word
@@ -149,7 +148,6 @@ reset (C _ c) (ResetFlagBits fs) = throwUnlessSuccess . Result =<< C.reset c fs
 
 freeCs :: Device.D -> CommandPool.C -> [C] -> IO ()
 freeCs (Device.D dvc) (CommandPool.C cp)
-	(length &&& ((\(C _ cb) -> cb) <$>) -> (cc, cs)) = ($ pure) $ runContT do
-	pcs <- ContT $ allocaArray cc
-	lift do	pokeArray pcs cs
+	(length &&& ((\(C _ cb) -> cb) <$>) -> (cc, cs)) = allocaArray cc \pcs -> do
+		pokeArray pcs cs
 		C.freeCs dvc cp (fromIntegral cc) pcs

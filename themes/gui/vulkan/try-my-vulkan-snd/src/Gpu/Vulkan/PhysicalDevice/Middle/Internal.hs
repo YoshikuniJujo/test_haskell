@@ -18,7 +18,6 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Control.Monad.Cont
 import Data.Maybe
 import Data.List.Length
 import Data.Word
@@ -44,16 +43,14 @@ import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 newtype P = P C.P deriving Show
 
 enumerate :: Instance.M.I -> IO [P]
-enumerate (Instance.M.I ist) = ($ pure) . runContT $ map P <$> do
-	pdvcc <- ContT alloca
-	(fromIntegral -> dvcc) <- lift do
-		r <- C.enumerate ist pdvcc NullPtr
-		throwUnlessSuccess $ Result r
-		peek pdvcc
-	pdvcs <- ContT $ allocaArray dvcc
-	lift do	r <- C.enumerate ist pdvcc pdvcs
-		throwUnlessSuccess $ Result r
-		peekArray dvcc pdvcs
+enumerate (Instance.M.I ist) = map P <$> alloca \pdvcc ->
+	C.enumerate ist pdvcc NullPtr >>= \r ->
+	throwUnlessSuccess (Result r) >>
+	peek pdvcc >>= \(fromIntegral -> dvcc) ->
+	allocaArray dvcc \pdvcs ->
+	C.enumerate ist pdvcc NullPtr >>= \r' ->
+	throwUnlessSuccess (Result r') >>
+	peekArray dvcc pdvcs
 
 data Properties = Properties {
 	propertiesApiVersion :: ApiVersion,
@@ -119,49 +116,42 @@ sparsePropertiesFromCore C.SparseProperties {
 			(crs2bs :. crs2mbs :. crs3bs :. crams :. cnrs :. NilL)
 
 getProperties :: P -> IO Properties
-getProperties (P pdvc) =
-	($ pure) . runContT $ propertiesFromCore <$> do
-		pppts <- ContT alloca
-		lift do	C.getProperties pdvc pppts
-			peek pppts
+getProperties (P pdvc) = propertiesFromCore <$> alloca \pppts -> do
+	C.getProperties pdvc pppts
+	peek pppts
 
 getFeatures :: P -> IO Features
-getFeatures (P pdvc) =
-	($ pure) . runContT $ featuresFromCore <$> do
-		pfts <- ContT alloca
-		lift do	C.getFeatures pdvc pfts
-			peek pfts
+getFeatures (P pdvc) = featuresFromCore <$> alloca \pfts -> do
+	C.getFeatures pdvc pfts
+	peek pfts
 
 getQueueFamilyProperties :: P -> IO [(QueueFamily.Index, QueueFamily.Properties)]
 getQueueFamilyProperties (P pdvc) =
-	((QueueFamily.indices `zip`) . map QueueFamily.propertiesFromCore <$>)
-			. ($ pure) $ runContT do
-		ppptc <- ContT alloca
-		(fromIntegral -> pptc) <- lift do
-			C.getQueueFamilyProperties pdvc ppptc NullPtr
-			peek ppptc
-		pppts <- ContT $ allocaArray pptc
-		lift do	C.getQueueFamilyProperties pdvc ppptc pppts
-			peekArray pptc pppts
+	(QueueFamily.indices `zip`)
+		. map QueueFamily.propertiesFromCore <$> alloca \ppptc ->
+	C.getQueueFamilyProperties pdvc ppptc NullPtr >>
+	peek ppptc >>= \(fromIntegral -> pptc) ->
+	allocaArray pptc \pppts ->
+	C.getQueueFamilyProperties pdvc ppptc pppts >>
+	peekArray pptc pppts
 
 enumerateExtensionProperties ::
 	P -> Maybe T.Text -> IO [ExtensionProperties]
-enumerateExtensionProperties (P pdvc) mlnm = ($ pure) $ runContT do
-	pExtensionCount <- ContT alloca
-	cmlnm <- case mlnm of
-		Nothing -> pure NullPtr
-		Just lnm -> ContT $ textToCString lnm
-	(fromIntegral -> extensionCount) <- lift do
-		r <- C.enumerateExtensionProperties
-			pdvc cmlnm pExtensionCount NullPtr
-		throwUnlessSuccess $ Result r
-		peek pExtensionCount
-	pAvailableExtensions <- ContT $ allocaArray extensionCount
-	map extensionPropertiesFromCore <$> lift do
-		r <- C.enumerateExtensionProperties
-			pdvc cmlnm pExtensionCount pAvailableExtensions
-		throwUnlessSuccess $ Result r
-		peekArray extensionCount pAvailableExtensions
+enumerateExtensionProperties (P pdvc) mlnm =
+	map extensionPropertiesFromCore <$> case mlnm of
+		Nothing -> go NullPtr
+		Just lnm -> textToCString lnm go
+	where
+	go cmlnm = alloca \pExtensionCount ->
+		C.enumerateExtensionProperties
+			pdvc cmlnm pExtensionCount NullPtr >>= \r ->
+		throwUnlessSuccess (Result r) >>
+		peek pExtensionCount >>= \(fromIntegral -> extensionCount) ->
+		allocaArray extensionCount \pAvailableExtensions -> do
+			r' <- C.enumerateExtensionProperties pdvc cmlnm
+				pExtensionCount pAvailableExtensions
+			throwUnlessSuccess $ Result r'
+			peekArray extensionCount pAvailableExtensions
 
 data MemoryProperties = MemoryProperties {
 	memoryPropertiesMemoryTypes :: [(Memory.M.TypeIndex, Memory.M.MType)],
@@ -179,15 +169,11 @@ memoryPropertiesFromCore C.MemoryProperties {
 		memoryPropertiesMemoryHeaps = take mhc mhs }
 
 getMemoryProperties :: P -> IO MemoryProperties
-getMemoryProperties (P p) =
-	(memoryPropertiesFromCore <$>) . ($ pure) $ runContT do
-		pmps <- ContT alloca
-		lift do	C.getMemoryProperties p pmps
-			peek pmps
+getMemoryProperties (P p) = memoryPropertiesFromCore <$> alloca \pmps -> do
+	C.getMemoryProperties p pmps
+	peek pmps
 
 getFormatProperties :: P -> Format -> IO FormatProperties
-getFormatProperties (P pdvc) (Format fmt) =
-	(formatPropertiesFromCore <$>) . ($ pure) $ runContT do
-		pp <- ContT alloca
-		lift do	C.getFormatProperties pdvc fmt pp
-			peek pp
+getFormatProperties (P pdvc) (Format fmt) = formatPropertiesFromCore <$> alloca \pp -> do
+	C.getFormatProperties pdvc fmt pp
+	peek pp
