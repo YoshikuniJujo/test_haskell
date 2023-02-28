@@ -37,6 +37,8 @@ enum "MessageTypeFlagBits" ''#{type VkDebugUtilsMessageTypeFlagBitsEXT}
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT}),
 	("MessageTypePerformanceBit",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT}),
+	("MessageTypeDeviceAddressBindingBit",
+		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_DEVICE_ADDRESS_BINDING_BIT_EXT}),
 	("MessageTypeFlagBitsMaxEnum",
 		#{const VK_DEBUG_UTILS_MESSAGE_TYPE_FLAG_BITS_MAX_ENUM_EXT}) ]
 
