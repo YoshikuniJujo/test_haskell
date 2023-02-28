@@ -21,7 +21,9 @@ module Gpu.Vulkan.Middle.Internal (
 	clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
-	SubmitInfo(..), SubmitInfoListToCore(..), submitInfoToCore
+	SubmitInfo(..), SubmitInfoListToCore(..), submitInfoToCore,
+
+	FormatProperties(..), formatPropertiesFromCore
 	) where
 
 import Foreign.Ptr
@@ -31,7 +33,7 @@ import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
-import Control.Monad.Cont
+import Control.Monad
 import Data.Default
 import Data.TypeLevel.Length qualified as TL
 import Data.HeteroParList qualified as HeteroParList
@@ -304,3 +306,21 @@ submitInfoToCore SubmitInfo {
 		C.submitInfoPCommandBuffers = pcbs,
 		C.submitInfoSignalSemaphoreCount = fromIntegral ssc,
 		C.submitInfoPSignalSemaphores = psss }
+
+data FormatProperties = FormatProperties {
+	formatPropertiesLinearTilingFeatures :: FormatFeatureFlags,
+	formatPropertiesOptimalTilingFeatures :: FormatFeatureFlags,
+	formatPropertiesBufferFeatures :: FormatFeatureFlags }
+	deriving Show
+
+formatPropertiesFromCore :: C.FormatProperties -> FormatProperties
+formatPropertiesFromCore C.FormatProperties {
+	C.formatPropertiesLinearTilingFeatures = ltfs,
+	C.formatPropertiesOptimalTilingFeatures = otfs,
+	C.formatPropertiesBufferFeatures = bfs
+	} = FormatProperties {
+		formatPropertiesLinearTilingFeatures =
+			FormatFeatureFlagBits ltfs,
+		formatPropertiesOptimalTilingFeatures =
+			FormatFeatureFlagBits otfs,
+		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }

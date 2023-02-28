@@ -27,7 +27,6 @@ import Data.UUID
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 
-import Gpu.Vulkan
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -36,8 +35,6 @@ import Gpu.Vulkan.PhysicalDevice.Enum
 import Gpu.Vulkan.PhysicalDevice.Struct
 import Gpu.Vulkan.Misc.Middle.Internal
 
-import qualified Gpu.Vulkan.Instance as Instance
-import qualified Gpu.Vulkan.Instance.Type as Instance
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance.M
 import qualified Gpu.Vulkan.PhysicalDevice.Core as C
 import qualified Gpu.Vulkan.QueueFamily.Middle.Internal as QueueFamily
@@ -46,8 +43,8 @@ import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 
 newtype P = P C.P deriving Show
 
-enumerate :: Instance.I s -> IO [P]
-enumerate (Instance.I (Instance.M.I ist)) = ($ pure) . runContT $ map P <$> do
+enumerate :: Instance.M.I -> IO [P]
+enumerate (Instance.M.I ist) = ($ pure) . runContT $ map P <$> do
 	pdvcc <- ContT alloca
 	(fromIntegral -> dvcc) <- lift do
 		r <- C.enumerate ist pdvcc NullPtr

@@ -8,7 +8,10 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan where
+module Gpu.Vulkan (
+	module Gpu.Vulkan,
+	M.FormatProperties(..)
+	) where
 
 import Foreign.Storable.PeekPoke
 import Data.Kind
@@ -115,21 +118,3 @@ instance SemaphorePipelineStageFlagsFromMiddle sss =>
 	semaphorePipelineStageFlagsFromMiddle ((s, psfs) : spsfss) =
 		SemaphorePipelineStageFlags (Semaphore.S s) psfs :**
 		semaphorePipelineStageFlagsFromMiddle spsfss
-
-data FormatProperties = FormatProperties {
-	formatPropertiesLinearTilingFeatures :: FormatFeatureFlags,
-	formatPropertiesOptimalTilingFeatures :: FormatFeatureFlags,
-	formatPropertiesBufferFeatures :: FormatFeatureFlags }
-	deriving Show
-
-formatPropertiesFromCore :: C.FormatProperties -> FormatProperties
-formatPropertiesFromCore C.FormatProperties {
-	C.formatPropertiesLinearTilingFeatures = ltfs,
-	C.formatPropertiesOptimalTilingFeatures = otfs,
-	C.formatPropertiesBufferFeatures = bfs
-	} = FormatProperties {
-		formatPropertiesLinearTilingFeatures =
-			FormatFeatureFlagBits ltfs,
-		formatPropertiesOptimalTilingFeatures =
-			FormatFeatureFlagBits otfs,
-		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }

@@ -17,7 +17,6 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke (
 	withPoked, WithPoked, withPokedMaybe', withPtrS )
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -75,16 +74,14 @@ destroy (Device.D dvc) (F f) mac =
 
 waitForFs :: Device.D -> [F] -> Bool -> Word64 -> IO ()
 waitForFs (Device.D dvc) (length &&& ((\(F f) -> f) <$>) -> (fc, fs))
-	(boolToBool32 -> wa) to = ($ pure) $ runContT do
-	pfs <- ContT $ allocaArray fc
-	lift do	pokeArray pfs fs
+	(boolToBool32 -> wa) to = allocaArray fc \pfs -> do
+		pokeArray pfs fs
 		r <- C.waitForFs dvc (fromIntegral fc) pfs wa to
 		throwUnlessSuccess $ Result r
 
 resetFs :: Device.D -> [F] -> IO ()
 resetFs (Device.D dvc)
-	(length &&& ((\(F f) -> f) <$>) -> (fc, fs)) = ($ pure) $ runContT do
-	pfs <- ContT $ allocaArray fc
-	lift do	pokeArray pfs fs
+	(length &&& ((\(F f) -> f) <$>) -> (fc, fs)) = allocaArray fc \pfs -> do
+		pokeArray pfs fs
 		r <- C.resetFs dvc (fromIntegral fc) pfs
 		throwUnlessSuccess $ Result r

@@ -32,6 +32,12 @@ module Gpu.Vulkan.Middle (
 
 	-- * Object Handle
 
-	ObjectHandle ) where
+	ObjectHandle,
+
+	-- * Others
+
+	FormatProperties(..)
+
+	) where
 
 import Gpu.Vulkan.Middle.Internal

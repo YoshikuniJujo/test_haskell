@@ -28,7 +28,6 @@ import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Control.Arrow
-import Control.Monad.Cont
 import Data.Word
 
 import qualified Data.Text as Txt
@@ -84,4 +83,6 @@ allocaAndPokeArray' (length &&& id -> (xc, xs)) f
 	= allocaArray xc \p -> pokeArray p xs >> f (xc, p)
 
 mapContM :: Monad m => (a -> (b -> m c) -> m c) -> [a] -> ([b] -> m c) -> m c
-mapContM f = runContT . mapM (ContT . f)
+-- mapContM f = runContT . mapM (ContT . f)
+mapContM _ [] g = g []
+mapContM f (x : xs) g = f x \y -> mapContM f xs \ys -> g $ y : ys
