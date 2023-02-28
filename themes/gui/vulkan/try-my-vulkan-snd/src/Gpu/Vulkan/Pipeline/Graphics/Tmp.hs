@@ -28,30 +28,30 @@ import Shaderc.EnumAuto
 
 import Gpu.Vulkan.Pipeline.Enum
 
-import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
-import Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
+import Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
 	qualified as InputAssemblyState
-import Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
+import Gpu.Vulkan.Pipeline.TessellationState.Middle
 	qualified as TessellationState
 import qualified Gpu.Vulkan.Pipeline.ViewportState.Middle as ViewportState
-import qualified Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal as RasterizationState
-import qualified Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal as MultisampleState
-import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal
+import qualified Gpu.Vulkan.Pipeline.RasterizationState.Middle as RasterizationState
+import qualified Gpu.Vulkan.Pipeline.MultisampleState.Middle as MultisampleState
+import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Middle
 	as DepthStencilState
-import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
+import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Middle
 	as ColorBlendState
-import qualified Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
+import qualified Gpu.Vulkan.Pipeline.DynamicState.Middle
 	as DynamicState
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Layout
+import qualified Gpu.Vulkan.Pipeline.Layout.Middle as Layout
 import qualified Gpu.Vulkan.RenderPass.Middle as RenderPass
 import qualified Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
 	as BindingStrideList
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Middle.Internal as Device
-import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
+import qualified Gpu.Vulkan.Device.Middle as Device
+import qualified Gpu.Vulkan.Pipeline.Cache.Middle as Cache
 
 data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: Maybe n,

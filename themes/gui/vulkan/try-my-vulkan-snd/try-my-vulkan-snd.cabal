@@ -44,64 +44,27 @@ library
       Glfw.Middle
       Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
-      Gpu.Vulkan.AllocationCallbacks.Middle
-      Gpu.Vulkan.AllocationCallbacks.Middle.Internal
       Gpu.Vulkan.Attachment
-      Gpu.Vulkan.Attachment.Enum
-      Gpu.Vulkan.Attachment.Middle
-      Gpu.Vulkan.Attachment.Middle.Internal
       Gpu.Vulkan.Buffer
-      Gpu.Vulkan.Buffer.Enum
-      Gpu.Vulkan.Buffer.Middle
-      Gpu.Vulkan.Buffer.Middle.Internal
       Gpu.Vulkan.BufferView
-      Gpu.Vulkan.BufferView.Middle
-      Gpu.Vulkan.BufferView.Middle.Internal
-      Gpu.Vulkan.ColorComponent.Enum
       Gpu.Vulkan.Command
-      Gpu.Vulkan.Command.Middle
       Gpu.Vulkan.Command.Tmp
       Gpu.Vulkan.Command.TypeLevel
       Gpu.Vulkan.CommandBuffer
-      Gpu.Vulkan.CommandBuffer.Enum
-      Gpu.Vulkan.CommandBuffer.Middle
-      Gpu.Vulkan.CommandBuffer.Middle.Internal
       Gpu.Vulkan.CommandBuffer.Type
       Gpu.Vulkan.CommandPool
-      Gpu.Vulkan.CommandPool.Enum
-      Gpu.Vulkan.CommandPool.Middle
-      Gpu.Vulkan.CommandPool.Middle.Internal
       Gpu.Vulkan.CommandPool.Type
       Gpu.Vulkan.Component
-      Gpu.Vulkan.Component.Enum
-      Gpu.Vulkan.Component.Middle
-      Gpu.Vulkan.Component.Middle.Internal
       Gpu.Vulkan.Data
-      Gpu.Vulkan.Data.Middle
       Gpu.Vulkan.Descriptor
-      Gpu.Vulkan.Descriptor.Enum
-      Gpu.Vulkan.Descriptor.Middle
-      Gpu.Vulkan.Descriptor.Middle.Internal
       Gpu.Vulkan.DescriptorPool
-      Gpu.Vulkan.DescriptorPool.Enum
-      Gpu.Vulkan.DescriptorPool.Middle
-      Gpu.Vulkan.DescriptorPool.Middle.Internal
       Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet
-      Gpu.Vulkan.DescriptorSet.Middle
-      Gpu.Vulkan.DescriptorSet.Middle.Internal
       Gpu.Vulkan.DescriptorSet.TypeLevel
       Gpu.Vulkan.DescriptorSetLayout
-      Gpu.Vulkan.DescriptorSetLayout.Enum
-      Gpu.Vulkan.DescriptorSetLayout.Middle
-      Gpu.Vulkan.DescriptorSetLayout.Middle.Internal
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
-      Gpu.Vulkan.Device.Enum
-      Gpu.Vulkan.Device.Middle
-      Gpu.Vulkan.Device.Middle.Internal
       Gpu.Vulkan.Device.Type
-      Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception
       Gpu.Vulkan.Exception.Enum
       Gpu.Vulkan.Exception.Middle
@@ -114,28 +77,13 @@ library
       Gpu.Vulkan.Ext.DebugUtils.Middle
       Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
       Gpu.Vulkan.Fence
-      Gpu.Vulkan.Fence.Enum
-      Gpu.Vulkan.Fence.Middle
-      Gpu.Vulkan.Fence.Middle.Internal
       Gpu.Vulkan.Fence.Type
       Gpu.Vulkan.Framebuffer
-      Gpu.Vulkan.Framebuffer.Enum
-      Gpu.Vulkan.Framebuffer.Middle
-      Gpu.Vulkan.Framebuffer.Middle.Internal
       Gpu.Vulkan.Framebuffer.Type
       Gpu.Vulkan.Image
-      Gpu.Vulkan.Image.Enum
-      Gpu.Vulkan.Image.Middle
-      Gpu.Vulkan.Image.Middle.Internal
       Gpu.Vulkan.Image.Type
       Gpu.Vulkan.ImageView
-      Gpu.Vulkan.ImageView.Enum
-      Gpu.Vulkan.ImageView.Middle
-      Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Instance
-      Gpu.Vulkan.Instance.Enum
-      Gpu.Vulkan.Instance.Middle
-      Gpu.Vulkan.Instance.Middle.Internal
       Gpu.Vulkan.Instance.Type
       Gpu.Vulkan.Khr
       Gpu.Vulkan.Khr.Enum
@@ -154,23 +102,12 @@ library
       Gpu.Vulkan.Khr.Swapchain.Type
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.AllocateInfo
-      Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Memory.Kind
-      Gpu.Vulkan.Memory.Middle
-      Gpu.Vulkan.Memory.Middle.Internal
-      Gpu.Vulkan.Middle
-      Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice
-      Gpu.Vulkan.PhysicalDevice.Enum
-      Gpu.Vulkan.PhysicalDevice.Middle
-      Gpu.Vulkan.PhysicalDevice.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct
       Gpu.Vulkan.PhysicalDevice.Struct.Th
-      Gpu.Vulkan.Pipeline.Cache.Enum
-      Gpu.Vulkan.Pipeline.Cache.Middle
-      Gpu.Vulkan.Pipeline.Cache.Middle.Internal
       Gpu.Vulkan.Pipeline.Cache.Type
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle
@@ -179,38 +116,24 @@ library
       Gpu.Vulkan.Pipeline.ColorBlendState.Middle
       Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
       Gpu.Vulkan.Pipeline.Compute
-      Gpu.Vulkan.Pipeline.Compute.Middle
-      Gpu.Vulkan.Pipeline.Compute.Middle.Internal
       Gpu.Vulkan.Pipeline.DepthStencilState
-      Gpu.Vulkan.Pipeline.DepthStencilState.Middle
-      Gpu.Vulkan.Pipeline.DepthStencilState.Middle.Internal
       Gpu.Vulkan.Pipeline.DynamicState
       Gpu.Vulkan.Pipeline.DynamicState.Middle
       Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
-      Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
-      Gpu.Vulkan.Pipeline.Graphics.Middle
-      Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
       Gpu.Vulkan.Pipeline.Graphics.Tmp
       Gpu.Vulkan.Pipeline.Graphics.Type
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout
-      Gpu.Vulkan.Pipeline.Layout.Middle
-      Gpu.Vulkan.Pipeline.Layout.Middle.Internal
       Gpu.Vulkan.Pipeline.Layout.Type
       Gpu.Vulkan.Pipeline.MultisampleState
-      Gpu.Vulkan.Pipeline.MultisampleState.Middle
-      Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal
       Gpu.Vulkan.Pipeline.RasterizationState
       Gpu.Vulkan.Pipeline.RasterizationState.Middle
       Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
       Gpu.Vulkan.Pipeline.ShaderStage
-      Gpu.Vulkan.Pipeline.ShaderStage.Enum
       Gpu.Vulkan.Pipeline.ShaderStage.Internal
-      Gpu.Vulkan.Pipeline.ShaderStage.Middle
-      Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal
       Gpu.Vulkan.Pipeline.TessellationState
       Gpu.Vulkan.Pipeline.TessellationState.Middle
       Gpu.Vulkan.Pipeline.TessellationState.Middle.Internal
@@ -223,42 +146,18 @@ library
       Gpu.Vulkan.Pipeline.ViewportState.Middle
       Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PushConstant
-      Gpu.Vulkan.PushConstant.Middle
-      Gpu.Vulkan.PushConstant.Middle.Internal
       Gpu.Vulkan.Queue
-      Gpu.Vulkan.Queue.Enum
-      Gpu.Vulkan.Queue.Middle
-      Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily
-      Gpu.Vulkan.QueueFamily.EnumManual
-      Gpu.Vulkan.QueueFamily.Middle
-      Gpu.Vulkan.QueueFamily.Middle.Internal
       Gpu.Vulkan.RenderPass
-      Gpu.Vulkan.RenderPass.Enum
-      Gpu.Vulkan.RenderPass.Middle
-      Gpu.Vulkan.RenderPass.Middle.Internal
       Gpu.Vulkan.RenderPass.Tmp
       Gpu.Vulkan.RenderPass.Type
       Gpu.Vulkan.Sample
-      Gpu.Vulkan.Sample.Enum
-      Gpu.Vulkan.Sample.Middle
-      Gpu.Vulkan.Sample.Middle.Internal
       Gpu.Vulkan.Sampler
-      Gpu.Vulkan.Sampler.Enum
-      Gpu.Vulkan.Sampler.Middle
-      Gpu.Vulkan.Sampler.Middle.Internal
       Gpu.Vulkan.Semaphore
-      Gpu.Vulkan.Semaphore.Middle
-      Gpu.Vulkan.Semaphore.Middle.Internal
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
-      Gpu.Vulkan.ShaderModule.Middle
-      Gpu.Vulkan.ShaderModule.Middle.Internal
       Gpu.Vulkan.Specialization.Middle.Internal
       Gpu.Vulkan.Subpass
-      Gpu.Vulkan.Subpass.Enum
-      Gpu.Vulkan.Subpass.Middle
-      Gpu.Vulkan.Subpass.Middle.Internal
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
@@ -306,6 +205,7 @@ library
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -347,6 +247,7 @@ executable my-glslc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -388,6 +289,7 @@ executable try-depth-buffering
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -429,6 +331,7 @@ executable try-depth-buffering-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -470,6 +373,7 @@ executable try-dynamic-dsc-sets
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -511,6 +415,7 @@ executable try-generating-mipmaps
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -552,6 +457,7 @@ executable try-generating-mipmaps-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -593,6 +499,7 @@ executable try-image-buffer
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -634,6 +541,7 @@ executable try-loading-models
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -675,6 +583,7 @@ executable try-loading-models-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -716,6 +625,7 @@ executable try-multisampling
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -757,6 +667,7 @@ executable try-multisampling-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -798,6 +709,7 @@ executable try-no-dynamic-dsc-sets
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -839,6 +751,7 @@ executable try-rectangle
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -880,6 +793,7 @@ executable try-rectangle-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -921,6 +835,7 @@ executable try-saitan
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -962,6 +877,7 @@ executable try-saitan-float
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1003,6 +919,7 @@ executable try-shaderc
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1044,6 +961,7 @@ executable try-shaderc-core
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1085,6 +1003,7 @@ executable try-texel-buffer
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1126,6 +1045,7 @@ executable try-texture
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1167,6 +1087,7 @@ executable try-texture-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1208,6 +1129,7 @@ executable try-triangle
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1249,6 +1171,7 @@ executable try-triangle-single
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1290,6 +1213,7 @@ executable try-vulkan-guide
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1331,6 +1255,7 @@ executable try-wavefront-obj
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1372,6 +1297,7 @@ executable try-yatteiku
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector
@@ -1414,6 +1340,7 @@ test-suite try-my-vulkan-snd-test
     , try-vulkan-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
+    , try-vulkan-middle
     , union-color
     , uuid
     , vector

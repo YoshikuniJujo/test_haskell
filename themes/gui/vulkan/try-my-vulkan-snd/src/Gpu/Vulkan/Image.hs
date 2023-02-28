@@ -34,7 +34,7 @@ import Gpu.Vulkan.Image.Enum hiding (Type)
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
-import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Memory.Middle as Memory
 import qualified Gpu.Vulkan.Image.Middle as M

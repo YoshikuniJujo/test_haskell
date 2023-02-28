@@ -52,6 +52,7 @@ library:
   source-dirs: src
   exposed-modules:
   - Gpu.Vulkan.AllocationCallbacks.Middle
+  - Gpu.Vulkan.AllocationCallbacks.Middle.Internal
   - Gpu.Vulkan.Attachment.Enum
   - Gpu.Vulkan.Attachment.Middle
   - Gpu.Vulkan.Buffer.Enum
@@ -91,6 +92,7 @@ library:
   - Gpu.Vulkan.Memory.Enum
   - Gpu.Vulkan.Memory.Middle
   - Gpu.Vulkan.Middle
+  - Gpu.Vulkan.Middle.Internal
   - Gpu.Vulkan.PhysicalDevice.Enum
   - Gpu.Vulkan.PhysicalDevice.Middle
   - Gpu.Vulkan.PhysicalDevice.Struct
@@ -107,6 +109,7 @@ library:
   - Gpu.Vulkan.Pipeline.Layout.Middle
   - Gpu.Vulkan.Pipeline.MultisampleState.Middle
   - Gpu.Vulkan.Pipeline.RasterizationState.Middle
+  - Gpu.Vulkan.Pipeline.ShaderStage.Enum
   - Gpu.Vulkan.Pipeline.ShaderStage.Middle
   - Gpu.Vulkan.Pipeline.TessellationState.Middle
   - Gpu.Vulkan.Pipeline.VertexInputState.Middle
@@ -115,6 +118,8 @@ library:
   - Gpu.Vulkan.Queue.Enum
   - Gpu.Vulkan.Queue.Middle
   - Gpu.Vulkan.QueueFamily.Middle
+  - Gpu.Vulkan.RenderPass.Enum
+  - Gpu.Vulkan.RenderPass.Middle
   - Gpu.Vulkan.Sample.Enum
   - Gpu.Vulkan.Sample.Middle
   - Gpu.Vulkan.Sampler.Enum

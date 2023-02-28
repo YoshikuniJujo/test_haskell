@@ -31,11 +31,11 @@ import qualified Gpu.Vulkan.Core as C
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Device.Middle.Internal as Device.M
+import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Buffer.Middle as M
 import qualified Gpu.Vulkan.Buffer.Core as C
-import qualified Gpu.Vulkan.QueueFamily.EnumManual as QueueFamily
+import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 
 data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroParList.PL ObjectLength objs) M.B

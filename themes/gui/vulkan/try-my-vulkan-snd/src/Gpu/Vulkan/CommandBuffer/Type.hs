@@ -6,7 +6,7 @@ module Gpu.Vulkan.CommandBuffer.Type where
 
 import Data.Kind
 
-import {-# SOURCE #-} qualified Gpu.Vulkan.CommandBuffer.Middle.Internal as M
+import Gpu.Vulkan.CommandBuffer.Middle as M
 
 newtype C s vs = C { unC :: CC vs }
 

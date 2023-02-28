@@ -4,6 +4,7 @@ module Gpu.Vulkan.QueueFamily.Middle (
 
 	-- * Properties
 
-	Properties(..) ) where
+	Properties(..), Index(..) ) where
 
+import Gpu.Vulkan.QueueFamily.EnumManual
 import Gpu.Vulkan.QueueFamily.Middle.Internal

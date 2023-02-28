@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Gpu.Vulkan.AllocationCallbacks.Middle
+      Gpu.Vulkan.AllocationCallbacks.Middle.Internal
       Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Attachment.Middle
       Gpu.Vulkan.Buffer.Enum
@@ -65,6 +66,7 @@ library
       Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Memory.Middle
       Gpu.Vulkan.Middle
+      Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Middle
       Gpu.Vulkan.PhysicalDevice.Struct
@@ -89,6 +91,8 @@ library
       Gpu.Vulkan.Queue.Enum
       Gpu.Vulkan.Queue.Middle
       Gpu.Vulkan.QueueFamily.Middle
+      Gpu.Vulkan.RenderPass.Enum
+      Gpu.Vulkan.RenderPass.Middle
       Gpu.Vulkan.Sample.Enum
       Gpu.Vulkan.Sample.Middle
       Gpu.Vulkan.Sampler.Enum
@@ -100,7 +104,6 @@ library
       Gpu.Vulkan.VertexInput.Enum
       Gpu.Vulkan.VertexInput.Middle
   other-modules:
-      Gpu.Vulkan.AllocationCallbacks.Middle.Internal
       Gpu.Vulkan.Attachment.Middle.Internal
       Gpu.Vulkan.Buffer.Middle.Internal
       Gpu.Vulkan.BufferView.Middle.Internal
@@ -119,7 +122,6 @@ library
       Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Instance.Middle.Internal
       Gpu.Vulkan.Memory.Middle.Internal
-      Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct.Th
@@ -143,8 +145,6 @@ library
       Gpu.Vulkan.Queue.Middle.Internal
       Gpu.Vulkan.QueueFamily.EnumManual
       Gpu.Vulkan.QueueFamily.Middle.Internal
-      Gpu.Vulkan.RenderPass.Enum
-      Gpu.Vulkan.RenderPass.Middle
       Gpu.Vulkan.RenderPass.Middle.Internal
       Gpu.Vulkan.Sample.Middle.Internal
       Gpu.Vulkan.Sampler.Middle.Internal

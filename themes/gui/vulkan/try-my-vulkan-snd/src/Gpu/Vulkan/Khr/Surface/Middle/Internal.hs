@@ -21,7 +21,7 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Khr.Surface.Core as Sfc.C
 import qualified Gpu.Vulkan.Image.Enum as Image
-import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
+import qualified Gpu.Vulkan.Instance.Middle as Instance
 
 newtype S = S Sfc.C.S deriving Show
 
