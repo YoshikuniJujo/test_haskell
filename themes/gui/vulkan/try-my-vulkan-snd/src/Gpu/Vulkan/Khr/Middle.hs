@@ -15,7 +15,6 @@ module Gpu.Vulkan.Khr.Middle (
 
 import Foreign.Marshal.Alloc
 import Foreign.Storable
-import Control.Monad.Cont
 import Data.Word
 
 import Gpu.Vulkan.Misc.Middle.Internal
@@ -42,22 +41,22 @@ acquireNextImage = acquireNextImageResult [Success]
 acquireNextImageResult :: [Result] -> Device.M.D ->
 	Swapchain.M.S -> Word64 -> Maybe Semaphore.M.S -> Maybe Fence.F -> IO Word32
 acquireNextImageResult sccs
-	(Device.M.D dvc) sc to msmp mfnc = ($ pure) $ runContT do
-	let	smp = maybe NullHandle (\(Semaphore.M.S s) -> s) msmp
-		fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
-	pii <- ContT alloca
-	sc' <- lift $ Swapchain.M.sToCore sc
-	lift do	r <- C.acquireNextImage dvc sc' to smp fnc pii
+	(Device.M.D dvc) sc to msmp mfnc = alloca \pii ->
+	Swapchain.M.sToCore sc >>= \sc' -> do
+		r <- C.acquireNextImage dvc sc' to smp fnc pii
 		throwUnless sccs $ Result r
 		peek pii
+	where
+	smp = maybe NullHandle (\(Semaphore.M.S s) -> s) msmp
+	fnc = maybe NullHandle (\(Fence.F f) -> f) mfnc
 
 ---------------------------------------------------------------------------
 
 queuePresent :: WithPoked n => Queue.Q -> PresentInfo n -> IO ()
-queuePresent (Queue.Q q) pi_ = ($ pure) $ runContT do
-	cpi@(C.PresentInfo_ fpi) <- ContT $ presentInfoMiddleToCore pi_
-	ppi <- ContT $ withForeignPtr fpi
-	lift do r <- C.queuePresent q ppi
+queuePresent (Queue.Q q) pi_ =
+	presentInfoMiddleToCore pi_ \cpi@(C.PresentInfo_ fpi) ->
+	withForeignPtr fpi \ppi -> do
+		r <- C.queuePresent q ppi
 		let	(fromIntegral -> rc) = C.presentInfoSwapchainCount cpi
 		rs <- peekArray rc $ C.presentInfoPResults cpi
 		throwUnlessSuccesses $ Result <$> rs
