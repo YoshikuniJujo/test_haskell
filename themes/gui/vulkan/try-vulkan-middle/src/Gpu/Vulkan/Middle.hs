@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Middle (
@@ -36,7 +37,10 @@ module Gpu.Vulkan.Middle (
 
 	-- * Others
 
-	FormatProperties(..)
+	FormatProperties(..),
+
+	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
+	Extent3d, pattern Extent3d, extent3dWidth, extent3dHeight, extent3dDepth
 
 	) where
 

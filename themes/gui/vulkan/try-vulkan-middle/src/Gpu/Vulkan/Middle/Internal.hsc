@@ -23,7 +23,11 @@ module Gpu.Vulkan.Middle.Internal (
 
 	SubmitInfo(..), SubmitInfoListToCore(..), submitInfoToCore,
 
-	FormatProperties(..), formatPropertiesFromCore
+	FormatProperties(..), formatPropertiesFromCore,
+
+	C.Offset3d, pattern C.Offset3d, C.offset3dX, C.offset3dY, C.offset3dZ,
+	C.Extent3d,
+	pattern C.Extent3d, C.extent3dWidth, C.extent3dHeight, C.extent3dDepth
 	) where
 
 import Foreign.Ptr
