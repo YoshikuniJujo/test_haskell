@@ -33,6 +33,11 @@ module Gpu.Vulkan.Middle.Internal (
 	C.Extent2d, pattern C.Extent2d, C.extent2dWidth, C.extent2dHeight,
 	C.Extent3d,
 	pattern C.Extent3d, C.extent3dWidth, C.extent3dHeight, C.extent3dDepth,
+
+	C.Viewport, pattern C.Viewport,
+	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
+	C.viewportMinDepth, C.viewportMaxDepth
+
 	) where
 
 import Foreign.Ptr
