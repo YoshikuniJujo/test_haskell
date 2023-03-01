@@ -48,6 +48,7 @@ dependencies:
 - try-storable-peek-poke
 - try-storable-hetero-list
 - try-vulkan-middle
+- try-vulkan-middle-khr
 - try-vulkan-core
 - try-vulkan-core-khr
 - try-vulkan-core-ext-debug-utils

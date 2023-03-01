@@ -83,19 +83,10 @@ library
       Gpu.Vulkan.Instance
       Gpu.Vulkan.Instance.Type
       Gpu.Vulkan.Khr
-      Gpu.Vulkan.Khr.Enum
-      Gpu.Vulkan.Khr.Middle
       Gpu.Vulkan.Khr.Surface
-      Gpu.Vulkan.Khr.Surface.Enum
-      Gpu.Vulkan.Khr.Surface.Middle
-      Gpu.Vulkan.Khr.Surface.Middle.Internal
       Gpu.Vulkan.Khr.Surface.PhysicalDevice
-      Gpu.Vulkan.Khr.Surface.PhysicalDevice.Middle
       Gpu.Vulkan.Khr.Surface.Type
       Gpu.Vulkan.Khr.Swapchain
-      Gpu.Vulkan.Khr.Swapchain.Enum
-      Gpu.Vulkan.Khr.Swapchain.Middle
-      Gpu.Vulkan.Khr.Swapchain.Middle.Internal
       Gpu.Vulkan.Khr.Swapchain.Type
       Gpu.Vulkan.Memory
       Gpu.Vulkan.Memory.AllocateInfo
@@ -180,6 +171,7 @@ library
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -222,6 +214,7 @@ executable my-glslc
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -264,6 +257,7 @@ executable try-depth-buffering
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -306,6 +300,7 @@ executable try-depth-buffering-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -348,6 +343,7 @@ executable try-dynamic-dsc-sets
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -390,6 +386,7 @@ executable try-generating-mipmaps
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -432,6 +429,7 @@ executable try-generating-mipmaps-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -474,6 +472,7 @@ executable try-image-buffer
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -516,6 +515,7 @@ executable try-loading-models
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -558,6 +558,7 @@ executable try-loading-models-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -600,6 +601,7 @@ executable try-multisampling
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -642,6 +644,7 @@ executable try-multisampling-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -684,6 +687,7 @@ executable try-no-dynamic-dsc-sets
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -726,6 +730,7 @@ executable try-rectangle
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -768,6 +773,7 @@ executable try-rectangle-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -810,6 +816,7 @@ executable try-saitan
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -852,6 +859,7 @@ executable try-saitan-float
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -894,6 +902,7 @@ executable try-shaderc
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -936,6 +945,7 @@ executable try-shaderc-core
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -978,6 +988,7 @@ executable try-texel-buffer
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1020,6 +1031,7 @@ executable try-texture
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1062,6 +1074,7 @@ executable try-texture-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1104,6 +1117,7 @@ executable try-triangle
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1146,6 +1160,7 @@ executable try-triangle-single
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1188,6 +1203,7 @@ executable try-vulkan-guide
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1230,6 +1246,7 @@ executable try-wavefront-obj
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1272,6 +1289,7 @@ executable try-yatteiku
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
@@ -1315,6 +1333,7 @@ test-suite try-my-vulkan-snd-test
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-khr
     , union-color
     , uuid
     , vector
