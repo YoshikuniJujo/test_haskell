@@ -26,10 +26,13 @@ module Gpu.Vulkan.Middle.Internal (
 	FormatProperties(..), formatPropertiesFromCore,
 
 	C.Rect2d, pattern C.Rect2d, C.rect2dExtent, C.rect2dOffset,
+
+	C.Offset2d, pattern C.Offset2d, C.offset2dX, C.offset2dY,
 	C.Offset3d, pattern C.Offset3d, C.offset3dX, C.offset3dY, C.offset3dZ,
+
+	C.Extent2d, pattern C.Extent2d, C.extent2dWidth, C.extent2dHeight,
 	C.Extent3d,
 	pattern C.Extent3d, C.extent3dWidth, C.extent3dHeight, C.extent3dDepth,
-	C.Extent2d, pattern C.Extent2d, C.extent2dWidth, C.extent2dHeight
 	) where
 
 import Foreign.Ptr

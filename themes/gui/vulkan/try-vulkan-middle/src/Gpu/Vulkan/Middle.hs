@@ -35,6 +35,7 @@ module Gpu.Vulkan.Middle (
 
 	Rect2d, pattern Rect2d, rect2dExtent, rect2dOffset,
 
+	Offset2d, pattern Offset2d, offset2dX, offset2dY,
 	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
 
 	Extent2d, pattern Extent2d, extent2dWidth, extent2dHeight,
