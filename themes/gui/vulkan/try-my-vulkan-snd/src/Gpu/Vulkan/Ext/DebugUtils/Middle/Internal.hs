@@ -39,21 +39,6 @@ data Label n = Label {
 	labelColor :: Rgba Float }
 	deriving Show
 
-{-
-labelToCore :: Pointable n => Label n -> ContT r IO C.Label
-labelToCore Label {
-	labelNext = mnxt,
-	labelLabelName = ln,
-	labelColor = RgbaDouble r g b a } = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	cln <- ContT $ textToCString ln
-	pure C.Label {
-		C.labelSType = (),
-		C.labelPNext = pnxt,
-		C.labelPLabelName = cln,
-		C.labelColor = [r, g, b, a] }
--}
-
 labelFromCore :: Peek n => C.Label -> IO (Label n)
 labelFromCore C.Label {
 	C.labelPNext = pnxt,
@@ -73,24 +58,6 @@ data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoObjectHandle :: ObjectHandle,
 	objectNameInfoObjectName :: Maybe T.Text }
 	deriving Show
-
-{-
-objectNameInfoToCore :: Pointable n => ObjectNameInfo n -> ContT r IO C.ObjectNameInfo
-objectNameInfoToCore ObjectNameInfo {
-	objectNameInfoNext = mnxt,
-	objectNameInfoObjectType = ObjectType ot,
-	objectNameInfoObjectHandle = ObjectHandle oh,
-	objectNameInfoObjectName = mon
-	} = do
-	(castPtr -> pnxt) <- maybeToPointer mnxt
-	con <- maybe (pure NullPtr) (ContT . textToCString) mon
-	pure C.ObjectNameInfo {
-		C.objectNameInfoSType = (),
-		C.objectNameInfoPNext = pnxt,
-		C.objectNameInfoObjectType = ot,
-		C.objectNameInfoObjectHandle = oh,
-		C.objectNameInfoPObjectName = con }
--}
 
 objectNameInfoFromCore :: Peek n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
 objectNameInfoFromCore C.ObjectNameInfo {
