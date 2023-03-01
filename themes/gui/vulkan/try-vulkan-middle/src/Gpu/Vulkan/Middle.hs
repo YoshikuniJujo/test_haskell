@@ -31,6 +31,13 @@ module Gpu.Vulkan.Middle (
 	ClearType(..),
 	ClearColorType(..),
 
+	-- * Offset and Extent
+
+	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
+
+	Extent2d, pattern Extent2d, extent2dWidth, extent2dHeight,
+	Extent3d, pattern Extent3d, extent3dWidth, extent3dHeight, extent3dDepth,
+
 	-- * Object Handle
 
 	ObjectHandle,
@@ -38,9 +45,6 @@ module Gpu.Vulkan.Middle (
 	-- * Others
 
 	FormatProperties(..),
-
-	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
-	Extent3d, pattern Extent3d, extent3dWidth, extent3dHeight, extent3dDepth
 
 	) where
 
