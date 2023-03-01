@@ -7,7 +7,6 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Middle
-import Gpu.Vulkan.Core
 
 import qualified Gpu.Vulkan.Framebuffer.Type as Framebuffer
 import qualified Gpu.Vulkan.RenderPass.Middle as M

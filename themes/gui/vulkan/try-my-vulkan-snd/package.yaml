@@ -30,10 +30,6 @@ dependencies:
 - filepath
 - JuicyPixels
 - vector
-- nowdoc
-- exception-hierarchy
-- c-enum
-- c-struct
 - uuid
 - GLFW-b
 - ranged-list
@@ -50,7 +46,6 @@ dependencies:
 - try-vulkan-middle
 - try-vulkan-middle-khr
 - try-vulkan-middle-ext-debug-utils
-- try-vulkan-core
 
 library:
   source-dirs: src

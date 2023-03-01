@@ -27,14 +27,14 @@ import Data.Word
 import Gpu.Vulkan.Enum hiding (ObjectType)
 import Gpu.Vulkan.Buffer.Enum
 
-import qualified Gpu.Vulkan.Core as C
+import qualified Gpu.Vulkan.Middle as C
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import qualified Gpu.Vulkan.Buffer.Middle as M
-import qualified Gpu.Vulkan.Buffer.Core as C
+import qualified Gpu.Vulkan.Buffer.Middle as C
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 

@@ -27,7 +27,7 @@ import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
-import Gpu.Vulkan.Core
+import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Image.Type
 import Gpu.Vulkan.Image.Enum hiding (Type)

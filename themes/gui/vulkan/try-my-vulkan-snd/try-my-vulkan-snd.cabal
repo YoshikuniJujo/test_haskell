@@ -144,16 +144,12 @@ library
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -163,7 +159,6 @@ library
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -185,16 +180,12 @@ executable my-glslc
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -205,7 +196,6 @@ executable my-glslc
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -227,16 +217,12 @@ executable try-depth-buffering
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -247,7 +233,6 @@ executable try-depth-buffering
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -269,16 +254,12 @@ executable try-depth-buffering-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -289,7 +270,6 @@ executable try-depth-buffering-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -311,16 +291,12 @@ executable try-dynamic-dsc-sets
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -331,7 +307,6 @@ executable try-dynamic-dsc-sets
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -353,16 +328,12 @@ executable try-generating-mipmaps
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -373,7 +344,6 @@ executable try-generating-mipmaps
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -395,16 +365,12 @@ executable try-generating-mipmaps-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -415,7 +381,6 @@ executable try-generating-mipmaps-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -437,16 +402,12 @@ executable try-image-buffer
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -457,7 +418,6 @@ executable try-image-buffer
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -479,16 +439,12 @@ executable try-loading-models
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -499,7 +455,6 @@ executable try-loading-models
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -521,16 +476,12 @@ executable try-loading-models-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -541,7 +492,6 @@ executable try-loading-models-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -563,16 +513,12 @@ executable try-multisampling
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -583,7 +529,6 @@ executable try-multisampling
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -605,16 +550,12 @@ executable try-multisampling-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -625,7 +566,6 @@ executable try-multisampling-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -647,16 +587,12 @@ executable try-no-dynamic-dsc-sets
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -667,7 +603,6 @@ executable try-no-dynamic-dsc-sets
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -689,16 +624,12 @@ executable try-rectangle
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -709,7 +640,6 @@ executable try-rectangle
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -731,16 +661,12 @@ executable try-rectangle-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -751,7 +677,6 @@ executable try-rectangle-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -773,16 +698,12 @@ executable try-saitan
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -793,7 +714,6 @@ executable try-saitan
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -815,16 +735,12 @@ executable try-saitan-float
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -835,7 +751,6 @@ executable try-saitan-float
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -857,16 +772,12 @@ executable try-shaderc
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -877,7 +788,6 @@ executable try-shaderc
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -899,16 +809,12 @@ executable try-shaderc-core
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -919,7 +825,6 @@ executable try-shaderc-core
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -941,16 +846,12 @@ executable try-texel-buffer
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -961,7 +862,6 @@ executable try-texel-buffer
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -983,16 +883,12 @@ executable try-texture
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1003,7 +899,6 @@ executable try-texture
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1025,16 +920,12 @@ executable try-texture-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1045,7 +936,6 @@ executable try-texture-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1067,16 +957,12 @@ executable try-triangle
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1087,7 +973,6 @@ executable try-triangle
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1109,16 +994,12 @@ executable try-triangle-single
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1129,7 +1010,6 @@ executable try-triangle-single
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1151,16 +1031,12 @@ executable try-vulkan-guide
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1171,7 +1047,6 @@ executable try-vulkan-guide
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1193,16 +1068,12 @@ executable try-wavefront-obj
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1213,7 +1084,6 @@ executable try-wavefront-obj
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1235,16 +1105,12 @@ executable try-yatteiku
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1255,7 +1121,6 @@ executable try-yatteiku
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
@@ -1278,16 +1143,12 @@ test-suite try-my-vulkan-snd-test
     , array
     , base >=4.7 && <5
     , bytestring
-    , c-enum
-    , c-struct
     , containers
     , data-default
-    , exception-hierarchy
     , filepath
     , ghc-prim
     , monads-tf
     , mono-traversable
-    , nowdoc
     , ranged-list
     , size-alignment-list
     , template-haskell
@@ -1298,7 +1159,6 @@ test-suite try-my-vulkan-snd-test
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
-    , try-vulkan-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
