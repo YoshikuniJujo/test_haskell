@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -10,7 +10,10 @@ module Gpu.Vulkan.Buffer.Middle.Internal (
 	bindMemory, getMemoryRequirements,
 
 	ImageCopy(..), imageCopyToCore,
-	MemoryBarrier(..), memoryBarrierToCore' ) where
+	MemoryBarrier(..), memoryBarrierToCore',
+
+	C.Copy, pattern C.Copy, C.copySrcOffset, C.copyDstOffset, C.copySize
+	) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr

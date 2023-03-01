@@ -1,3 +1,4 @@
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Buffer.Middle (
@@ -13,6 +14,10 @@ module Gpu.Vulkan.Buffer.Middle (
 	-- * Bind and Get Memory
 
 	bindMemory, getMemoryRequirements,
+
+	-- * Copy
+
+	Copy, pattern Copy, copySrcOffset, copyDstOffset, copySize,
 
 	-- * ImageCopy and MemoryBarrier
 
