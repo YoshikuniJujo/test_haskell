@@ -26,6 +26,9 @@ module Gpu.Vulkan.Middle (
 	ClearValue(..), ClearValueListToCore,
 	ClearValueToCore, ClearColorValueToCore,
 
+	ClearDepthStencilValue, pattern ClearDepthStencilValue,
+	clearDepthStencilValueDepth, clearDepthStencilValueStencil,
+
 	-- ** Clear Type
 
 	ClearType(..),

@@ -21,6 +21,9 @@ module Gpu.Vulkan.Middle.Internal (
 	clearValueListToArray,
 	ClearType(..), ClearColorType(..),
 
+	C.ClearDepthStencilValue, pattern C.ClearDepthStencilValue,
+	C.clearDepthStencilValueDepth, C.clearDepthStencilValueStencil,
+
 	SubmitInfo(..), SubmitInfoListToCore(..), submitInfoToCore,
 
 	FormatProperties(..), formatPropertiesFromCore,
