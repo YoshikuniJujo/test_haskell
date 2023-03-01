@@ -19,7 +19,7 @@ import Data.Kind
 import Data.Kind.Object
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 import Data.Int
 import TypeLevel.List
@@ -84,13 +84,6 @@ drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
 dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
 dispatch (CommandBuffer.C cb) = M.dispatch cb
 
-data DescriptorSet sd spslbts where
-	DescriptorSet ::
-		DescriptorSet.S sd sp slbts -> DescriptorSet sd '(sp, slbts)
-
-deriving instance Show (DescriptorSet.S sd sp slbts) =>
-	Show (DescriptorSet sd '(sp, slbts))
-
 class HeteroParListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
 	toList' :: (forall spslbts . t spslbts -> t') ->
 		HeteroParList.PL t spslbtss -> [t']
@@ -104,13 +97,13 @@ instance HeteroParListToList' spslbtss =>
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss .
 	(SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss) =>
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
-	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (DescriptorSet sd) spslbtss ->
+	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	[Word32] -> IO ()
 bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'
-			(\(DescriptorSet (DescriptorSet.S s)) -> s)
+			(\(U2 (DescriptorSet.S s)) -> s)
 			dss)
 		dosts
 

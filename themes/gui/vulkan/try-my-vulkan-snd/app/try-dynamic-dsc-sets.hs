@@ -447,7 +447,7 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute plyt
-			(HeteroParList.Singleton $ Vk.Cmd.DescriptorSet dss) [512, 0]
+			(HeteroParList.Singleton $ U2 dss) [512, 0]
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit q (U4 sinfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle q

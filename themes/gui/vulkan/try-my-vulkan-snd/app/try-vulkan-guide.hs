@@ -1544,7 +1544,7 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectTransformMatrix = model } = do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
 	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
-		(HeteroParList.Singleton $ Vk.Cmd.DescriptorSet cmd) []
+		(HeteroParList.Singleton $ U2 cmd) []
 	movb <- readIORef om
 	case movb of
 		Just ovb | vb == ovb -> pure ()

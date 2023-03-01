@@ -190,7 +190,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 	Vk.CmdBuf.begin @() @() cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSetsNew cmdBuf Vk.Ppl.BindPointCompute pplLyt
-			(Vk.Cmd.DescriptorSet dscSet :** HeteroParList.Nil) []
+			(U2 dscSet :** HeteroParList.Nil) []
 		Vk.Cmd.dispatch cmdBuf dsz 1 1
 	Vk.Queue.submit queue (U4 submitInfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle queue
