@@ -30,7 +30,6 @@ dependencies:
 - filepath
 - JuicyPixels
 - vector
-- uuid
 - GLFW-b
 - ranged-list
 - try-shaderc
