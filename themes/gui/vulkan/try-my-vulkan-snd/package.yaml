@@ -49,9 +49,8 @@ dependencies:
 - try-storable-hetero-list
 - try-vulkan-middle
 - try-vulkan-middle-khr
+- try-vulkan-middle-ext-debug-utils
 - try-vulkan-core
-- try-vulkan-core-khr
-- try-vulkan-core-ext-debug-utils
 
 library:
   source-dirs: src

@@ -1019,7 +1019,7 @@ findMemoryType phdvc flt props =
 		<*> checkBits props . Vk.Mem.M.mTypePropertyFlags . snd) tps
 		where tps = Vk.PhDvc.memoryPropertiesMemoryTypes props1
 
-copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable a =>
+copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ 'List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[ 'List 256 a ""] -> IO ()

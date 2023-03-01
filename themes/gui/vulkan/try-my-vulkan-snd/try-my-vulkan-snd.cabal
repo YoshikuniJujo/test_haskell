@@ -67,12 +67,8 @@ library
       Gpu.Vulkan.Device.Type
       Gpu.Vulkan.Exception
       Gpu.Vulkan.Ext.DebugUtils
-      Gpu.Vulkan.Ext.DebugUtils.Enum
       Gpu.Vulkan.Ext.DebugUtils.Messenger
-      Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle
       Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
-      Gpu.Vulkan.Ext.DebugUtils.Middle
-      Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
       Gpu.Vulkan.Fence
       Gpu.Vulkan.Fence.Type
       Gpu.Vulkan.Framebuffer
@@ -168,9 +164,8 @@ library
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -211,9 +206,8 @@ executable my-glslc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -254,9 +248,8 @@ executable try-depth-buffering
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -297,9 +290,8 @@ executable try-depth-buffering-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -340,9 +332,8 @@ executable try-dynamic-dsc-sets
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -383,9 +374,8 @@ executable try-generating-mipmaps
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -426,9 +416,8 @@ executable try-generating-mipmaps-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -469,9 +458,8 @@ executable try-image-buffer
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -512,9 +500,8 @@ executable try-loading-models
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -555,9 +542,8 @@ executable try-loading-models-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -598,9 +584,8 @@ executable try-multisampling
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -641,9 +626,8 @@ executable try-multisampling-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -684,9 +668,8 @@ executable try-no-dynamic-dsc-sets
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -727,9 +710,8 @@ executable try-rectangle
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -770,9 +752,8 @@ executable try-rectangle-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -813,9 +794,8 @@ executable try-saitan
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -856,9 +836,8 @@ executable try-saitan-float
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -899,9 +878,8 @@ executable try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -942,9 +920,8 @@ executable try-shaderc-core
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -985,9 +962,8 @@ executable try-texel-buffer
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1028,9 +1004,8 @@ executable try-texture
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1071,9 +1046,8 @@ executable try-texture-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1114,9 +1088,8 @@ executable try-triangle
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1157,9 +1130,8 @@ executable try-triangle-single
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1200,9 +1172,8 @@ executable try-vulkan-guide
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1243,9 +1214,8 @@ executable try-wavefront-obj
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1286,9 +1256,8 @@ executable try-yatteiku
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid
@@ -1330,9 +1299,8 @@ test-suite try-my-vulkan-snd-test
     , try-storable-hetero-list
     , try-storable-peek-poke
     , try-vulkan-core
-    , try-vulkan-core-ext-debug-utils
-    , try-vulkan-core-khr
     , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
     , union-color
     , uuid

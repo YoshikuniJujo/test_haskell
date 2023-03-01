@@ -13,7 +13,7 @@
 module Gpu.Vulkan.Buffer where
 
 import GHC.TypeLits
-import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object hiding (objectLength)
@@ -75,7 +75,7 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (Storable n, WholeSize objs, Storable c, Storable d) =>
+create :: (WithPoked n, WholeSize objs, WithPoked c, WithPoked d) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . B s nm objs -> IO a) -> IO a
@@ -93,11 +93,11 @@ class OffsetList v (vs :: [Object]) where
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
-instance (KnownNat algn, Storable v) =>
+instance (KnownNat algn, WithPoked v, Sizable v) =>
 	OffsetList v ('List algn v _nm ': vs) where
 	offsetList _ = fromIntegral . adjust (
 		fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
-		alignment @v undefined )
+		alignment' @v )
 
 instance {-# OVERLAPPABLE #-} (
 	SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
@@ -161,13 +161,14 @@ class CopyInfo (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
 type OT o = Data.Kind.Object.ObjectType o
 
 instance (
-	Storable (Data.Kind.Object.ObjectType a),
+	WithPoked (Data.Kind.Object.ObjectType a),
+	Sizable (Data.Kind.Object.ObjectType a),
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) (a ': ss) (a ': ds) where
 	copyCheckLength = copyCheckLengthPrefix @(a ': as) @(a ': ss) @(a ': ds)
 	copySrcOffset ost _ = ((ost - 1) `div` algn + 1) * algn
-		where algn = fromIntegral $ alignment @(OT a) undefined
+		where algn = fromIntegral $ alignment' @(OT a)
 	copyDstOffset ost _ = ((ost - 1) `div` algn + 1) * algn
-		where algn = fromIntegral $ alignment @(OT a) undefined
+		where algn = fromIntegral $ alignment' @(OT a)
 	copySize = copySizePrefix @(a ': as) @(a ': ss) @(a ': ds) 0
 
 instance {-# OVERLAPPABLE #-}
@@ -277,7 +278,7 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
-instance (Storable n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
+instance (WithPoked n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs

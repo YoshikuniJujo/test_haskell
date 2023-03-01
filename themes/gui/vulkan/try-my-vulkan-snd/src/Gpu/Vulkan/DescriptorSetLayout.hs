@@ -20,13 +20,12 @@ module Gpu.Vulkan.DescriptorSetLayout (
 
 import Prelude hiding (length)
 
-import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -41,14 +40,14 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
-create'' :: (Storable n, Storable c, Storable d) =>
+create'' :: (WithPoked n, WithPoked c, WithPoked d) =>
 	Device.D sd -> M.CreateInfo n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L'' s -> IO a) -> IO a
 create'' (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L'')
 
-create :: (Storable n, BindingsToMiddle bts, Storable c, Storable d) =>
+create :: (WithPoked n, BindingsToMiddle bts, WithPoked c, WithPoked d) =>
 	Device.D sd -> CreateInfo n bts ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L s bts -> IO a) -> IO a

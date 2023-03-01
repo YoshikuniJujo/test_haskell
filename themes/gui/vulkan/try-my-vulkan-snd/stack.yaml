@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: nightly-2023-02-14
+resolver: nightly-2023-02-27
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -38,13 +38,14 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 7fd5e3dc04f29583f20ba78b731f53f2f24d0fd9
+  commit: 61e12080d971705bddb1a86d53bfd34c51e95e6e
   subdirs:
   - themes/gui/vulkan/try-vulkan-middle
   - themes/gui/vulkan/try-vulkan-middle-khr
+  - themes/gui/vulkan/try-vulkan-middle-ext-debug-utils
   - themes/gui/vulkan/try-vulkan-core
   - themes/gui/vulkan/try-vulkan-core-khr
   - themes/gui/vulkan/try-vulkan-core-ext-debug-utils

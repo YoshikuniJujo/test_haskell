@@ -12,13 +12,12 @@
 module Gpu.Vulkan.DescriptorSet where
 
 import GHC.TypeLits
-import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.Kind.Object
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.DescriptorSet.TypeLevel
@@ -51,7 +50,7 @@ allocateInfoToMiddle'' AllocateInfo'' {
 
 newtype S'' sd sp sl = S'' M.D deriving Show
 
-allocateSs'' :: Storable n =>
+allocateSs'' :: WithPoked n =>
 	Device.D sd -> AllocateInfo'' n sp sl -> IO [S'' sd sp sl]
 allocateSs'' (Device.D dvc) ai = (S'' <$>) <$> M.allocateDs dvc (allocateInfoToMiddle'' ai)
 
@@ -84,7 +83,7 @@ allocateInfoToMiddle AllocateInfo {
 
 newtype S sd sp (slbts :: LayoutArg) = S M.D
 
-allocateSs :: (Storable n, HeteroParList.FromList slbtss) =>
+allocateSs :: (WithPoked n, HeteroParList.FromList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroParList.PL (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
@@ -214,7 +213,7 @@ instance (
 		writeToMiddle w : writeListToMiddle ws
 
 updateDs :: (
-	Storable n, Storable n',
+	WithPoked n, WithPoked n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
 	HeteroParList.PL (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()

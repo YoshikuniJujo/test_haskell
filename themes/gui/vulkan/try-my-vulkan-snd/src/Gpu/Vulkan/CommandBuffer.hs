@@ -22,7 +22,7 @@ module Gpu.Vulkan.CommandBuffer (
 
 	) where
 
-import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import qualified Data.HeteroParList as HeteroParList
@@ -73,21 +73,21 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoLevelNewM = lvl }
 
 allocateNew ::
-	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
+	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.D sd -> AllocateInfoNew n scp vss ->
 	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
 allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
 	(f . HeteroParList.map C)
 
-allocate :: Storable n =>
+allocate :: WithPoked n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
 allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (C . CC <$>))
 
-begin :: (Storable n, Storable n') =>
+begin :: (WithPoked n, WithPoked n') =>
 	C s vs -> M.BeginInfo n n' -> IO a -> IO a
 begin (C (CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
@@ -95,7 +95,7 @@ reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (CC cb)) rfs = M.reset cb rfs
 
 allocateNewM ::
-	(Storable n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
+	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.PL CC vss)
 allocateNewM dvc ai = HeteroParList.fromList CC <$> M.allocate dvc (allocateInfoFromNew ai)
 
