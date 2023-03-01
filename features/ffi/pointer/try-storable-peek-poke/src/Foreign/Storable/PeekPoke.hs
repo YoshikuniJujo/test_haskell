@@ -36,8 +36,8 @@ instance (Sizable a, Peek a) => Peekable a
 class (Sizable a, Poke a, WithPoked a) => Pokable a
 instance (Sizable a, Poke a) => Pokable a
 
-class (Peekable a, Pokable a) => Storable' a
-instance (Peekable a, Pokable a) => Storable' a
+class (Peekable a, Pokable a, Storable a) => Storable' a
+instance (Peekable a, Pokable a, Storable a) => Storable' a
 
 instance {-# OVERLAPPABLE #-} Storable a => Sizable a where
 	sizeOf' = sizeOf @a undefined
