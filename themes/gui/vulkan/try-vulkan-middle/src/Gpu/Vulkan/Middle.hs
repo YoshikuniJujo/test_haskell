@@ -31,7 +31,9 @@ module Gpu.Vulkan.Middle (
 	ClearType(..),
 	ClearColorType(..),
 
-	-- * Offset and Extent
+	-- * Rect, Offset and Extent
+
+	Rect2d, pattern Rect2d, rect2dExtent, rect2dOffset,
 
 	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
 

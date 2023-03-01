@@ -25,6 +25,7 @@ module Gpu.Vulkan.Middle.Internal (
 
 	FormatProperties(..), formatPropertiesFromCore,
 
+	C.Rect2d, pattern C.Rect2d, C.rect2dExtent, C.rect2dOffset,
 	C.Offset3d, pattern C.Offset3d, C.offset3dX, C.offset3dY, C.offset3dZ,
 	C.Extent3d,
 	pattern C.Extent3d, C.extent3dWidth, C.extent3dHeight, C.extent3dDepth,
