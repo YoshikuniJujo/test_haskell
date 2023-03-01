@@ -20,7 +20,6 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Control.Monad.Cont
 import Data.IORef
 import Data.Word
 
@@ -155,17 +154,15 @@ createInfoToCoreOld CreateInfo {
 	where qfic = length qfis
 
 getImages :: Device.D -> S -> IO [Image.I]
-getImages (Device.D dvc) sc = ($ pure) . runContT $ (Image.I <$>) <$> do
-	sc' <- lift $ sToCore sc
-	ex <- lift $ sToExtent sc
-	pSwapchainImageCount <- ContT alloca
-	(fromIntegral -> swapchainImageCount) <- lift do
-		r <- C.getImages dvc sc' pSwapchainImageCount NullPtr
-		throwUnlessSuccess $ Result r
-		peek pSwapchainImageCount
-	pSwapchainImages <- ContT $ allocaArray swapchainImageCount
-	lift do	r <- C.getImages dvc sc' pSwapchainImageCount pSwapchainImages
-		throwUnlessSuccess $ Result r
+getImages (Device.D dvc) sc = ((Image.I <$>) <$>) $ sToCore sc >>= \sc' ->
+	sToExtent sc >>= \ex ->
+	alloca \pSwapchainImageCount ->
+	C.getImages dvc sc' pSwapchainImageCount NullPtr >>= \r ->
+	throwUnlessSuccess (Result r) >>
+	peek pSwapchainImageCount >>= \(fromIntegral -> swapchainImageCount) ->
+	allocaArray swapchainImageCount \pSwapchainImages -> do
+		r' <- C.getImages dvc sc' pSwapchainImageCount pSwapchainImages
+		throwUnlessSuccess $ Result r'
 		mapM (newIORef . (extent2dTo3d ex ,))
 			=<< peekArray swapchainImageCount pSwapchainImages
 
