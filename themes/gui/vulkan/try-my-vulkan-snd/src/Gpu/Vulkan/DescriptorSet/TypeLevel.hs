@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -12,6 +13,7 @@ import GHC.TypeLits
 import Control.Arrow
 import Data.Kind
 import Data.Kind.Object
+import Data.Kind.ObjectNew qualified as N
 
 import {-# SOURCE #-} Gpu.Vulkan.DescriptorSet
 
@@ -49,23 +51,23 @@ class BindingAndArrayElem
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t 'Nothing ': os') ': bts) ('Atom algn t 'Nothing ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t 'Nothing) ': os') ': bts) ('ObjObject ('N.Atom algn t 'Nothing) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t 'Nothing ': os') ': bts) ('Atom algn t ('Just nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t 'Nothing) ': os') ': bts) ('ObjObject ('N.Atom algn t ('Just nm)) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t ('Just nm) ': os') ': bts) ('Atom algn t 'Nothing ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t ('Just nm)) ': os') ': bts) ('ObjObject ('N.Atom algn t 'Nothing) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('Atom algn t ('Just nm) ': os') ': bts) ('Atom algn t ('Just nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t ('Just nm)) ': os') ': bts) ('ObjObject ('N.Atom algn t ('Just nm)) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('List algn t nm ': os') ': bts) ('List algn t nm ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.List algn t nm) ': os') ': bts) ('ObjObject ('N.List algn t nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
@@ -93,20 +95,22 @@ instance {-# OVERLAPPABLE #-}
 		('DescriptorSetLayout.Other ': bts) os where
 	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @os 0
 
+{-
 type SampleBts0 = '[
 	'DescriptorSetLayout.Buffer '[ ],
-	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing, 'List 256 () "", 'Atom 256 Bool 'Nothing],
+	'DescriptorSetLayout.Buffer '[ 'N.Atom 256 Double 'Nothing, 'N.List 256 () "", 'N.Atom 256 Bool 'Nothing],
 	'DescriptorSetLayout.Other,
 	'DescriptorSetLayout.Buffer
-		'[ 'Atom 256 Bool 'Nothing, 'List 256 () "", 'Atom 256 Int 'Nothing, 'List 256 Double "", 'Atom 256 Double 'Nothing]]
+		'[ 'N.Atom 256 Bool 'Nothing, 'N.List 256 () "", 'N.Atom 256 Int 'Nothing, 'N.List 256 Double "", 'N.Atom 256 Double 'Nothing]]
 
-type SampleObjs0 = '[ 'Atom 256 Int 'Nothing, 'List 256 Double ""]
+type SampleObjs0 = '[ 'N.Atom 256 Int 'Nothing, 'N.List 256 Double ""]
 
 type SampleBts1 = '[
-	'DescriptorSetLayout.Buffer '[ 'List 256 Double "", 'List 256 Double "", 'List 256 Double ""],
-	'DescriptorSetLayout.Buffer '[ 'Atom 256 Double 'Nothing ] ]
+	'DescriptorSetLayout.Buffer '[ 'N.List 256 Double "", 'N.List 256 Double "", 'N.List 256 Double ""],
+	'DescriptorSetLayout.Buffer '[ 'N.Atom 256 Double 'Nothing ] ]
 
-type SampleObj1 = '[ 'Atom 256 Double 'Nothing]
+type SampleObj1 = '[ 'N.Atom 256 Double 'Nothing]
+-}
 
 class IsPrefixImage
 	(sais :: [(Type, T.Format, Symbol, Type)])

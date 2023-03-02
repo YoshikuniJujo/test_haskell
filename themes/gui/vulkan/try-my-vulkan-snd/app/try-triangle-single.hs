@@ -800,7 +800,7 @@ createCommandPool qfis dvc f =
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .
-		Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] -> IO a ) -> IO a
+		Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (length vertices)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
@@ -808,18 +808,18 @@ createVertexBuffer phdvc dvc gq cp f =
 	createBufferList phdvc dvc (length vertices)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[ 'List 256 t ""]) bm' -> do
-	Vk.Mem.write @"vertex-buffer" @('List 256 Vertex "") dvc bm' zeroBits vertices
+			Vk.Mem.PropertyHostCoherentBit ) \(b' :: Vk.Bffr.Binded sm sb "vertex-buffer" '[ List 256 t ""]) bm' -> do
+	Vk.Mem.write @"vertex-buffer" @(List 256 Vertex "") dvc bm' zeroBits vertices
 	copyBuffer dvc gq cp b' b
 	f b
 
 createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'List 256 t ""] ->
+		Vk.Bffr.Binded sb sm nm '[ List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
 			sb,
-			'Vk.Mem.K.Buffer nm '[ 'List 256 t ""] ) ] ->
+			'Vk.Mem.K.Buffer nm '[ List 256 t ""] ) ] ->
 		IO a) ->
 	IO a
 createBufferList p dv ln usg props =
@@ -865,8 +865,8 @@ findMemoryType phdvc flt props =
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ 'List 256 Vertex ""] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[ List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
@@ -877,7 +877,7 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CmdBffr.begin @() @() cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[ 'List 256 Vertex ""]] cb src dst
+			Vk.Cmd.copyBuffer @'[ '[ List 256 Vertex ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
@@ -951,7 +951,7 @@ recordCommandBuffer :: forall scb sr sf sg sm sb nm .
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
-	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb =
 	Vk.CmdBffr.begin @() @() cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
@@ -981,7 +981,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasrfsifs = do
@@ -999,7 +999,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
 	Vk.CmdBffr.C scb Vs ->
 	SyncObjects '(sias, srfs, siff) ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
@@ -1017,7 +1017,7 @@ drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff .
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ 'List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
 	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 	let	siff = HeteroParList.Singleton iff

@@ -32,9 +32,8 @@ module Gpu.Vulkan.Descriptor (
 import GHC.TypeLits
 import Data.Kind
 import Data.Kind.Object
+import Data.Kind.ObjectNew qualified as N
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Descriptor.Middle as M
@@ -48,10 +47,10 @@ import Gpu.Vulkan.Descriptor.Enum qualified as E
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
 		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, 'Atom algn v objnm)
+		BufferInfo '(sb, sm, nm, objs, 'ObjObject ('N.Atom algn v objnm))
 	BufferInfoList ::
 		{ bufferInfoListBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, 'List algn v objnm)
+		BufferInfo '(sb, sm, nm, objs, 'ObjObject ('N.List algn v objnm))
 
 type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
 

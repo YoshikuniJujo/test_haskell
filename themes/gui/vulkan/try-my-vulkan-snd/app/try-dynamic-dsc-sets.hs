@@ -89,9 +89,9 @@ newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 
-type ListW1 = 'List 256 W1 ""
-type ListW2 = 'List 256 W2 ""
-type ListW3 = 'List 256 W3 ""
+type ListW1 = List 256 W1 ""
+type ListW2 = List 256 W2 ""
+type ListW3 = List 256 W3 ""
 
 crtDevice :: (forall sd .
 	Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
@@ -133,10 +133,10 @@ mkData n = (
 
 type DscSetLytLstW123 = '[
 	'Vk.DscSetLyt.Buffer '[ListW1, ListW2, ListW3],
-	'Vk.DscSetLyt.Buffer '[ 'Atom 256 Word32 'Nothing],
+	'Vk.DscSetLyt.Buffer '[ Atom 256 Word32 'Nothing],
 	'Vk.DscSetLyt.Buffer '[
-		'Atom 256 Word32 'Nothing,
-		'Atom 256 Word32 'Nothing ] ]
+		Atom 256 Word32 'Nothing,
+		Atom 256 Word32 'Nothing ] ]
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () DscSetLytLstW123
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
@@ -172,9 +172,9 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 	Vk.DscSet.allocateSs dvc (dscSetInfo dp dslyt) >>= \(HeteroParList.Singleton ds) ->
 	storageBufferNew3 phdvc dvc da db dc \(ba, ma) (bb, mb) (bc, mc) ->
 	storageBufferNew3Objs @Word32
-		@('Atom 256 Word32 ('Just "x0"))
-		@('Atom 256 Word32 ('Just "x1"))
-		@('Atom 256 Word32 ('Just "x2"))
+		@(Atom 256 Word32 ('Just "x0"))
+		@(Atom 256 Word32 ('Just "x1"))
+		@(Atom 256 Word32 ('Just "x2"))
 		phdvc dvc 3 5 7 \bx mx -> case arg of
 		"0" -> do
 			Vk.DscSet.updateDs @_ @() dvc (
@@ -218,8 +218,8 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
 
 type BffMem sm sb nm w = (
-	Vk.Bffr.Binded sb sm nm '[ 'List 256 w ""],
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ 'List 256 w ""])] )
+	Vk.Bffr.Binded sb sm nm '[ List 256 w ""],
+	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ List 256 w ""])] )
 
 storageBufferNew3 :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (
@@ -238,8 +238,8 @@ class StorageBufferNews f a where
 		HeteroParList.PL V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
-	Vk.Bffr.Binded sb sm nm '[ 'List 256 w ""] ->
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ 'List 256 w ""])] -> f)
+	Vk.Bffr.Binded sb sm nm '[ List 256 w ""] ->
+	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
 	type Vectors (IO a) = '[]; storageBufferNews _phdvc _dvc HeteroParList.Nil f = f
@@ -354,7 +354,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		bil @W1 ba :** bil @W2 bb :** bil @W3 bc :** HeteroParList.Nil }
 	where
 	bil :: forall t {sb} {sm} {nm} {objs} .  Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, 'List 256 t "")
+		Vk.Dsc.BufferInfo '(sb, sm, nm, objs, List 256 t "")
 	bil = Vk.Dsc.BufferInfoList
 
 writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
@@ -364,7 +364,7 @@ writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb4, sm4, nm4,
 				objs,
-				'Atom 256 Word32 ('Just nm))
+				Atom 256 Word32 ('Just nm))
 			] )
 writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,

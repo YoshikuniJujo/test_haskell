@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -17,6 +18,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.Kind.Object hiding (objectLength)
+import Data.Kind.ObjectNew qualified as N
 import Data.Proxy
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
@@ -94,7 +96,7 @@ adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
 instance (KnownNat algn, WithPoked v, Sizable v) =>
-	OffsetList v ('List algn v _nm ': vs) where
+	OffsetList v ('ObjObject ('N.List algn v _nm) ': vs) where
 	offsetList _ = fromIntegral . adjust (
 		fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment' @v )
@@ -104,14 +106,14 @@ instance {-# OVERLAPPABLE #-} (
 	offsetList (objlen :** objlens) ost =
 		offsetList @v @vs objlens (ost + objectSize objlen)
 
-sampleObjLens :: HeteroParList.PL ObjectLength
-	['List 256 Bool "", 'Atom 256 Char 'Nothing, 'Atom 256 Int 'Nothing, 'List 256 Double "", 'List 256 Char ""]
+sampleObjLens :: HeteroParList.PL N.ObjectLength
+	['N.List 256 Bool "", 'N.Atom 256 Char 'Nothing, 'N.Atom 256 Int 'Nothing, 'N.List 256 Double "", 'N.List 256 Char ""]
 sampleObjLens =
-	ObjectLengthList 3 :**
-	ObjectLengthAtom :**
-	ObjectLengthAtom :**
-	ObjectLengthList 5 :**
-	ObjectLengthList 3 :** HeteroParList.Nil
+	N.ObjectLengthList 3 :**
+	N.ObjectLengthAtom :**
+	N.ObjectLengthAtom :**
+	N.ObjectLengthList 5 :**
+	N.ObjectLengthList 3 :** HeteroParList.Nil
 
 data IndexedList sm sb nm v =
 	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
