@@ -175,7 +175,7 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 		@(Atom 256 Word32 ('Just "x0"))
 		@(Atom 256 Word32 ('Just "x1"))
 		@(Atom 256 Word32 ('Just "x2"))
-		phdvc dvc 3 5 7 \bx mx -> case arg of
+		phdvc dvc 3000 5000 7000 \bx mx -> case arg of
 		"0" -> do
 			Vk.DscSet.updateDs @_ @() dvc (
 				Vk.DscSet.Write_ (writeDscSet ds ba bb bc) :**
@@ -369,7 +369,7 @@ writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
 writeDscSet2 ds bx = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBufferDynamic,
+	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
 		Vk.Dsc.BufferInfoAtom bx :** HeteroParList.Nil }
 
@@ -447,7 +447,7 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute plyt
-			(HeteroParList.Singleton $ U2 dss) [512, 0]
+			(HeteroParList.Singleton $ U2 dss) [] -- [0] -- [512, 0]
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit q (U4 sinfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle q
@@ -486,6 +486,7 @@ main()
 	int index = int(gl_GlobalInvocationID.x);
 	data[2].val[index] =
 		(data[0].val[index] + data[1].val[index]) * sc * sc2 + x.x;
+	data[0].val[index] = y.y;
 }
 
 |]
