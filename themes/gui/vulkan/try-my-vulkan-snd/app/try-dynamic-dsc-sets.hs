@@ -61,8 +61,8 @@ import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
-import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImgBffr
-import qualified Gpu.Vulkan.Memory.Kind as Vk.Dvc.Mem.ImgBffr.K
+import qualified Gpu.Vulkan.Memory as Vk.Mem
+import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
@@ -164,9 +164,9 @@ prepDscSets ::
 	String -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sm2 sm3 sb1 sb2 sb3 .
 		Vk.DscSet.S sd s '(sl, DscSetLytLstW123) ->
-		Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
-		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
-		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO a) -> IO a
+		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ListW1])] ->
+		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ListW2])] ->
+		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ListW3])] -> IO a) -> IO a
 prepDscSets arg phdvc dvc dslyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dp ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dp dslyt) >>= \(HeteroParList.Singleton ds) ->
@@ -219,7 +219,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 
 type BffMem sm sb nm w = (
 	Vk.Bffr.Binded sb sm nm '[ List 256 w ""],
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ List 256 w ""])] )
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[ List 256 w ""])] )
 
 storageBufferNew3 :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (
@@ -239,7 +239,7 @@ class StorageBufferNews f a where
 
 data Arg nm w f = Arg (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[ List 256 w ""] ->
-	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[ List 256 w ""])] -> f)
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[ List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
 	type Vectors (IO a) = '[]; storageBufferNews _phdvc _dvc HeteroParList.Nil f = f
@@ -251,42 +251,42 @@ instance (Storable w, StorageBufferNews f a) =>
 		storageBufferNew phdvc dvc vs \buf mem ->
 		storageBufferNews @f @a phdvc dvc vss $ f buf mem
 
-type KBuffer = 'Vk.Dvc.Mem.ImgBffr.K.Buffer
+type KBuffer = 'Vk.Mem.K.Buffer
 
 storageBufferNew :: forall {sd} v {nm} obj {a} . (
 	StoreObject v obj, SizeAlignment obj ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> (forall sb sm .
 		Vk.Bffr.Binded sb sm nm '[obj]  ->
-		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj])] ->
+		Vk.Mem.M sm '[ '(sb, KBuffer nm '[obj])] ->
 		IO a) -> IO a
 storageBufferNew phdvc dvc xs f =
 	Vk.Bffr.create dvc (bufferInfo xs) nil nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
-		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
-			nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj dvc m zeroBits xs
+		Vk.Mem.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer bff) mi
+			nil nil \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) m -> do
+			Vk.Mem.write @nm @obj dvc m zeroBits xs
 			f bnd m
 
 storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 	StoreObject v obj0, SizeAlignment obj0,
 	StoreObject v obj1, SizeAlignment obj1,
 	StoreObject v obj2, SizeAlignment obj2,
-	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj0 '[obj0, obj1, obj2],
-	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj1 '[obj0, obj1, obj2],
-	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj2 '[obj0, obj1, obj2]
+	Vk.Mem.OffsetSizeObject obj0 '[obj0, obj1, obj2],
+	Vk.Mem.OffsetSizeObject obj1 '[obj0, obj1, obj2],
+	Vk.Mem.OffsetSizeObject obj2 '[obj0, obj1, obj2]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> v -> v -> (forall sb sm .
 		Vk.Bffr.Binded sb sm nm '[obj0, obj1, obj2]  ->
-		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj0, obj1, obj2])] ->
+		Vk.Mem.M sm '[ '(sb, KBuffer nm '[obj0, obj1, obj2])] ->
 		IO a) -> IO a
 storageBufferNew3Objs phdvc dvc x y z f =
 	Vk.Bffr.create dvc (bufferInfo' x y z) nil nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
-		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
-			nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj0 dvc m zeroBits x
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj1 dvc m zeroBits y
-			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
+		Vk.Mem.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Mem.Buffer bff) mi
+			nil nil \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) m -> do
+			Vk.Mem.write @nm @obj0 dvc m zeroBits x
+			Vk.Mem.write @nm @obj1 dvc m zeroBits y
+			Vk.Mem.write @nm @obj2 dvc m zeroBits z
 			f bnd m
 
 bufferInfo :: StoreObject v obj => v -> Vk.Bffr.CreateInfo () '[obj]
@@ -375,9 +375,9 @@ writeDscSet2 ds bx = Vk.DscSet.Write {
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.S sd sp '(sl, DscSetLytLstW123) ->
-	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
+	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ListW1])] ->
+	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ListW2])] ->
+	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
 calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCs
@@ -439,9 +439,9 @@ run :: forall sd sc vs sg sl sdsl sp sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.DscSet.S sd sp '(sdsl, DscSetLytLstW123)  -> Word32 ->
-	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
-	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] ->
+	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ListW1])] ->
+	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ListW2])] ->
+	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ListW3])] ->
 	IO ([W1], [W2], [W3])
 run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
@@ -451,9 +451,9 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit q (U4 sinfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle q
-	(,,)	<$> Vk.Dvc.Mem.ImgBffr.read @nm1 @ListW1 @[W1] dvc ma zeroBits
-		<*> Vk.Dvc.Mem.ImgBffr.read @nm2 @ListW2 @[W2] dvc mb zeroBits
-		<*> Vk.Dvc.Mem.ImgBffr.read @nm3 @ListW3 @[W3] dvc mc zeroBits
+	(,,)	<$> Vk.Mem.read @nm1 @ListW1 @[W1] dvc ma zeroBits
+		<*> Vk.Mem.read @nm2 @ListW2 @[W2] dvc mb zeroBits
+		<*> Vk.Mem.read @nm3 @ListW3 @[W3] dvc mc zeroBits
 	where	sinfo :: Vk.SubmitInfo () _ _ _
 		sinfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
