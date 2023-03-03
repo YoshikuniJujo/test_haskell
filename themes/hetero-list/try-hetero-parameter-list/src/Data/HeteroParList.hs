@@ -53,6 +53,8 @@ import Data.List (genericIndex)
 
 type L as = PL Id as
 
+{-# COMPLETE (:*) #-}
+
 infixr 5 :*
 
 pattern (:*) :: a -> L as -> L (a ': as)
@@ -64,6 +66,8 @@ newtype Id a = Id a deriving Show
 
 type LL a ds = PL (Dummy a) ds
 type LL' a n = PL (Dummy a) (Dummies n)
+
+{-# COMPLETE (:*.) #-}
 
 infixr 5 :*.
 
