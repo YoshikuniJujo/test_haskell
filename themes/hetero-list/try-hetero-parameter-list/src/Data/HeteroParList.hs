@@ -104,11 +104,16 @@ toListM _ Nil = pure []
 toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
 
 class HomoList (s :: k) ss where
+	homoListFromList :: [t s] -> PL t ss
 	homoListToList :: PL t ss -> [t s]
 
-instance HomoList s '[] where homoListToList Nil = []
+instance HomoList s '[] where
+	homoListFromList = \case [] -> Nil; _ -> error "bad"
+	homoListToList Nil = []
 
 instance HomoList s ss => HomoList s (s ': ss) where
+	homoListFromList =
+		\case x : xs -> x :** homoListFromList xs; _ -> error "bad"
 	homoListToList (x :** xs) = x : homoListToList xs
 
 -- Index
