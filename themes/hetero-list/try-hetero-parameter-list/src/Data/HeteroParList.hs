@@ -17,7 +17,7 @@ module Data.HeteroParList (
 
 	-- * Lengthed List
 	
-	LL, LL', pattern (:*.), Dummy(..), Dummies,
+	LL, LL', pattern (:*.), Dummy(..), Dummies, ToDummies,
 
 	-- * Hetero Parameter List
 
@@ -75,6 +75,10 @@ newtype Dummy a (d :: ()) = Dummy a deriving Show
 type family Dummies n where
 	Dummies 0 = '[]
 	Dummies n = '() ': Dummies (n - 1)
+
+type family ToDummies xs where
+	ToDummies '[] = '[]
+	ToDummies (x ': xs) = '() ': ToDummies xs
 
 -- Hetero Parameter List
 
