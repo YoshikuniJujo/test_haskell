@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
-import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
+import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Buffer
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
@@ -118,7 +118,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil nil \(ppl :*. HeteroParList.Nil) ->
-	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
+	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
 		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dscSet dsz ma mb mc
 		_ -> error "never occur"
@@ -141,6 +141,19 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
+
+commandPoolInfo :: Vk.QFam.Index -> Vk.CmdPool.CreateInfo ()
+commandPoolInfo qFam = Vk.CmdPool.CreateInfo {
+	Vk.CmdPool.createInfoNext = Nothing,
+	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
+	Vk.CmdPool.createInfoQueueFamilyIndex = qFam }
+
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfo () s
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
+	Vk.CmdBuf.allocateInfoNext = Nothing,
+	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
+	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
+	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
 run :: forall objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
 	Storable W1, Storable W2, Storable W3,
@@ -295,26 +308,12 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
-commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
-commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
-	Vk.CommandPool.createInfoNext = Nothing,
-	Vk.CommandPool.createInfoFlags =
-		Vk.CommandPool.CreateResetCommandBufferBit,
-	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
-
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.AllocateInfo () sp '[ '(sl, bts)]
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoNext = Nothing,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
-
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
-	Vk.CmdBuf.allocateInfoNext = Nothing,
-	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
-	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {
