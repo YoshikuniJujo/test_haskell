@@ -4,7 +4,9 @@
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
+-- {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+-- {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute (
@@ -125,6 +127,51 @@ createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . pipelineListToHetero . (C <$>))
+
+{-
+createCsNew :: (
+	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
+	Pokable c', Pokable d',
+	DestroyCreateInfoMiddleList (Result vss) vss
+	) =>
+	Device.D sd -> Maybe Cache.C -> HeteroParList.PL (U4 CreateInfo) vss ->
+	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
+	(forall s . HeteroParList.PL HeteroParList.Id (SameNumber' (C s) vss) ->
+		IO a) -> IO a
+createCsNew dvc@(Device.D mdvc) cch cis macc macd f = do
+	cis' <- createInfoListToMiddle dvc cis
+	bracket
+		(M.createCs mdvc cch cis' macc
+			<* destroyCreateInfoMiddleList dvc cis' cis)
+		(mapM_ \c -> M.destroy mdvc c macd)
+		(f . HeteroParList.homoListFromList . (HeteroParList.Id . C <$>))
+		-}
+
+{-
+class FooFromList c cs where
+	fooFromList :: [c s] -> HeteroParList.L (cs s)
+
+instance FooFromList c '[] where
+	fooFromList [] = HeteroParList.Nil
+
+instance FooFromList c cs => FooFromList c (c ': cs) where
+	fooFromList (x : xs) = x :* fooFromList xs
+-}
+
+{-
+type family SameNumber a xs where
+	SameNumber _a '[] = '[]
+	SameNumber a (x ': xs) = a ': SameNumber a xs
+
+class HeteroParList.HomoList a (SameNumber' a xs) => Foo a xs where
+	type SameNumber' a xs :: [Type]
+
+instance Foo a '[] where
+	type SameNumber' a '[] = '[]
+
+instance HeteroParList.HomoList a (SameNumber' a xs) => Foo a (x ': xs) where
+	type SameNumber' a (x ': xs) = a ': SameNumber' a xs
+	-}
 
 type family ToDummies tl where
 	ToDummies '[] = '[]
