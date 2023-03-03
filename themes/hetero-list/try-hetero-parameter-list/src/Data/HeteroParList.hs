@@ -15,6 +15,10 @@ module Data.HeteroParList (
 
 	L, pattern (:*), Id(..),
 
+	-- * Lengthed List
+	
+	LL, LL', pattern (:*.), Dummy(..), Dummies,
+
 	-- * Hetero Parameter List
 
 	PL(..), pattern Singleton,
@@ -41,6 +45,7 @@ module Data.HeteroParList (
 
 import Prelude hiding (map, replicate)
 
+import GHC.TypeLits
 import Data.Kind
 import Data.List (genericIndex)
 
@@ -54,6 +59,22 @@ pattern (:*) :: a -> L as -> L (a ': as)
 pattern x :* xs <- Id x :** xs where x :* xs = Id x :** xs
 
 newtype Id a = Id a deriving Show
+
+-- Lengthed List
+
+type LL a ds = PL (Dummy a) ds
+type LL' a n = PL (Dummy a) (Dummies n)
+
+infixr 5 :*.
+
+pattern (:*.) :: a -> LL a ds -> LL a ('() ': ds)
+pattern x :*. xs <- Dummy x :** xs where x :*. xs = Dummy x :** xs
+
+newtype Dummy a (d :: ()) = Dummy a deriving Show
+
+type family Dummies n where
+	Dummies 0 = '[]
+	Dummies n = '() ': Dummies (n - 1)
 
 -- Hetero Parameter List
 
