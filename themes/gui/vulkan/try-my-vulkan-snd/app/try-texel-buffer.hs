@@ -22,7 +22,7 @@ import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 
 import qualified Data.Vector.Storable as V
@@ -123,7 +123,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(U4 (computePipelineInfo pplLyt) :** HeteroParList.Nil)
-		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :** HeteroParList.Nil) ->
+		nil nil \(ppl :*. HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
 		[cmdBuf] -> run @nm1 @nm2 @nm3

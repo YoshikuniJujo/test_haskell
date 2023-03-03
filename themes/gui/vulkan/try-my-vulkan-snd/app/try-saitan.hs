@@ -22,7 +22,7 @@ import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Uncurry hiding (length)
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import System.Environment
 import System.Console.GetOpt
@@ -165,7 +165,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dscSetLyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing (U4 (computePipelineInfo plyt) :** HeteroParList.Nil)
-		nil nil \(Vk.Ppl.Cmpt.Pipeline ppl :** HeteroParList.Nil) ->
+		nil nil \(ppl :*. HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
 		[cmdBuf] -> run @nm1 @nm2 @nm3 dvc qFam cmdBuf ppl plyt dscSet dsz ma mb mc

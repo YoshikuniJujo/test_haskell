@@ -23,7 +23,7 @@ import Data.Bits.Utils
 import Data.List.Length
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import System.Environment
 
@@ -370,7 +370,7 @@ calc dvc qFam dslyt ln dss ma mb mc =
 	Vk.Ppl.Cmpt.createCs
 		dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
-		nil nil \(HeteroParList.Singleton (Vk.Ppl.Cmpt.Pipeline ppl)) ->
+		nil nil \(ppl :*. HeteroParList.Nil) ->
 	Vk.CmdPl.create dvc (commandPoolInfo qFam) nil nil \cp ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cp) \case
 		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dss ln ma mb mc

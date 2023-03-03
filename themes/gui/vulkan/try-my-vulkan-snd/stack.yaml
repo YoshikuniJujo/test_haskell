@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: d176982175c86776567def19f2a9d79c7466cce9
+  commit: 7170fd95fe4b9fc98332581978606597a297c7b4
   subdirs:
   - themes/gui/vulkan/try-vulkan-middle
   - themes/gui/vulkan/try-vulkan-middle-khr

@@ -4,24 +4,17 @@
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
--- {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
--- {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute (
-
-	C(..),
-
-	CreateInfo(..), createCs,
-
-	Pipeline(..) ) where
+	C(..), CreateInfo(..), createCs ) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Kind
 import Data.Int
 
@@ -116,92 +109,14 @@ createCs :: (
 	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
 	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
-	PipelineListToHetero (ToDummiesNew vss) ) =>
+	HeteroParList.HomoList '() (HeteroParList.ToDummies vss) ) =>
 	Device.D sd -> Maybe Cache.C -> HeteroParList.PL (U4 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
-	(forall s . HeteroParList.PL (Pipeline s) (ToDummiesNew vss) -> IO a) -> IO a
+	(forall s . HeteroParList.LL (C s) (HeteroParList.ToDummies vss) -> IO a) -> IO a
 createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
 	bracket
 		(M.createCs mdvc cch cis' macc
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
-		(f . pipelineListToHetero . (C <$>))
-
-{-
-createCsNew :: (
-	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
-	Pokable c', Pokable d',
-	DestroyCreateInfoMiddleList (Result vss) vss
-	) =>
-	Device.D sd -> Maybe Cache.C -> HeteroParList.PL (U4 CreateInfo) vss ->
-	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
-	(forall s . HeteroParList.PL HeteroParList.Id (SameNumber' (C s) vss) ->
-		IO a) -> IO a
-createCsNew dvc@(Device.D mdvc) cch cis macc macd f = do
-	cis' <- createInfoListToMiddle dvc cis
-	bracket
-		(M.createCs mdvc cch cis' macc
-			<* destroyCreateInfoMiddleList dvc cis' cis)
-		(mapM_ \c -> M.destroy mdvc c macd)
-		(f . HeteroParList.homoListFromList . (HeteroParList.Id . C <$>))
-		-}
-
-{-
-class FooFromList c cs where
-	fooFromList :: [c s] -> HeteroParList.L (cs s)
-
-instance FooFromList c '[] where
-	fooFromList [] = HeteroParList.Nil
-
-instance FooFromList c cs => FooFromList c (c ': cs) where
-	fooFromList (x : xs) = x :* fooFromList xs
--}
-
-{-
-type family SameNumber a xs where
-	SameNumber _a '[] = '[]
-	SameNumber a (x ': xs) = a ': SameNumber a xs
-
-class HeteroParList.HomoList a (SameNumber' a xs) => Foo a xs where
-	type SameNumber' a xs :: [Type]
-
-instance Foo a '[] where
-	type SameNumber' a '[] = '[]
-
-instance HeteroParList.HomoList a (SameNumber' a xs) => Foo a (x ': xs) where
-	type SameNumber' a (x ': xs) = a ': SameNumber' a xs
-	-}
-
-type family ToDummies tl where
-	ToDummies '[] = '[]
-	ToDummies (t ': ts) = '() ': ToDummies ts
-
-type family ToDummiesNew tl where
-	ToDummiesNew '[] = '[]
-	ToDummiesNew (t ': ts) = '() ': ToDummiesNew ts
-
-newtype Pipeline s (d :: ()) = Pipeline { unPipeline :: C s } deriving Show
-
-class PipelineListToHetero ds where
-	pipelineListToHetero :: [C s] -> HeteroParList.PL (Pipeline s) ds
-
-instance PipelineListToHetero '[] where
-	pipelineListToHetero [] = HeteroParList.Nil
-	pipelineListToHetero _ = error "mismatch"
-
-instance PipelineListToHetero ds => PipelineListToHetero ('() ': ds) where
-	pipelineListToHetero (p : ps) = Pipeline p :** pipelineListToHetero ps
-
-class HeteroParListMapM'' k ss fss where
-	heteroParListMapM'' :: Applicative m =>
-		(forall a b (c :: k) d . t '(a, b, c, d) -> m (t' a)) ->
-		HeteroParList.PL t ss -> m (HeteroParList.PL t' fss)
-
-instance HeteroParListMapM'' k '[] '[] where
-	heteroParListMapM'' _ HeteroParList.Nil = pure HeteroParList.Nil
-
-instance HeteroParListMapM'' k ss fss =>
-	HeteroParListMapM'' k ('(a, b, c, d) ': ss) (a ': fss) where
-	heteroParListMapM'' f (x :** xs) =
-		(:**) <$> f x <*> heteroParListMapM'' f xs
+		(f . HeteroParList.homoListFromList @_ @'() . (HeteroParList.Dummy . C <$>))
