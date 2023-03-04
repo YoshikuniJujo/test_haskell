@@ -385,7 +385,7 @@ calc dvc qFam dslyt ln dss ma mb mc =
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil nil \(ppl :*. HeteroParList.Nil) ->
 	Vk.CmdPl.create dvc (commandPoolInfo qFam) nil nil \cp ->
-	Vk.CmdBuf.allocate dvc (commandBufferInfo cp) \case
+	Vk.CmdBuf.allocateOld dvc (commandBufferInfo cp) \case
 		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dss ln ma mb mc
 		_ -> error "never occur"
 

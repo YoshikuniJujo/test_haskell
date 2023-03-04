@@ -186,7 +186,7 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 					Vk.CommandBuffer.LevelPrimary,
 				Vk.CommandBuffer.allocateInfoCommandBufferCount
 					= 1 }
-		Vk.CommandBuffer.allocate device cmdBufAllocInfo \case
+		Vk.CommandBuffer.allocateOld device cmdBufAllocInfo \case
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
 					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf

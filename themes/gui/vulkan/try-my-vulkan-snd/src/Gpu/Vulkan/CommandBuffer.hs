@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocate, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset,
+	C, allocateOld, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset,
 	
 	Level,
 	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
@@ -80,10 +80,10 @@ allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
 	(f . HeteroParList.map C)
 
-allocate :: WithPoked n =>
+allocateOld :: WithPoked n =>
 	Device.D sd -> AllocateInfo n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
-allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
+allocateOld (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (C . CC <$>))
 

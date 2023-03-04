@@ -167,7 +167,7 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 		dvc Nothing (U4 (computePipelineInfo plyt) :** HeteroParList.Nil)
 		nil nil \(ppl :*. HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil nil \cmdPool ->
-	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \case
+	Vk.CmdBuf.allocateOld dvc (commandBufferInfo cmdPool) \case
 		[cmdBuf] -> run @nm1 @nm2 @nm3 dvc qFam cmdBuf ppl plyt dscSet dsz ma mb mc
 		_ -> error "never occur"
 
