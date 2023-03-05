@@ -85,12 +85,51 @@ datA :: V.Vector W1; datA = V.replicate dataSize $ W1 3
 datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 
+-- CALC
+
 calc :: V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
 calc da db dc = withDevice \phdvc qFam dvc mgcx ->
 	let da' = V.take mgcx da; db' = V.take mgcx db; dc' = V.take mgcx dc in
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
 	prepareMems phdvc dvc dscSetLyt da' db' dc' \dscSet ma mb mc ->
 	calc' dvc qFam dscSetLyt dscSet mgcx ma mb mc
+
+-- With Device
+
+withDevice ::
+	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> (forall c . Integral c => c) -> IO a) -> IO a
+withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
+	phdvc <- head <$> Vk.PhDvc.enumerate inst
+	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
+	let	maxGroupCountX :. _ =
+			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
+	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
+	qFam <- findQueueFamily phdvc Vk.Queue.ComputeBit
+	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qFam) nil nil $ \dvc -> f phdvc qFam dvc (fromIntegral maxGroupCountX)
+	where
+	dvcInfo qFam = Vk.Dvc.CreateInfo {
+		Vk.Dvc.createInfoNext = Nothing,
+		Vk.Dvc.createInfoFlags = def,
+		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qFam,
+		Vk.Dvc.createInfoEnabledLayerNames =
+			[Vk.Khr.validationLayerName],
+		Vk.Dvc.createInfoEnabledExtensionNames = [],
+		Vk.Dvc.createInfoEnabledFeatures = Nothing }
+	queueInfo qFam = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
+
+findQueueFamily ::
+	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
+findQueueFamily phdvc qb = do
+	qFamProperties <- Vk.PhDvc.getQueueFamilyProperties phdvc
+	pure . fst . head $ filter ((/= zeroBits)
+			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
+		qFamProperties
+
+-- Descriptor Set Layout Info
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () '[
 	'Vk.DscSetLyt.Buffer '[List 256 W1 "", List 256 W2 "", List 256 W3 ""] ]
@@ -103,6 +142,8 @@ binding :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
 binding = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
+
+-- CALC'
 
 calc' :: forall objss1 objss2 objss3 slbts sl bts sd sp sm1 sm2 sm3 . (
 	Vk.Mem.OffsetSize' "" (List 256 W1 "") objss1,
@@ -123,12 +164,16 @@ calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dscSet dsz ma mb mc
 		_ -> error "never occur"
 
+-- Pipeline Layout Info
+
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts -> Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
 	('Vk.PushConstant.PushConstantLayout '[] '[])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dsl }
+
+-- Compute Pipeline Info
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo ()
@@ -142,11 +187,15 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
+-- Command Pool Info
+
 commandPoolInfo :: Vk.QFam.Index -> Vk.CmdPool.CreateInfo ()
 commandPoolInfo qFam = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoNext = Nothing,
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qFam }
+
+-- Command Buffer Info
 
 commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfo () s
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
@@ -154,6 +203,8 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
+
+-- RUN
 
 run :: forall objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
 	Storable W1, Storable W2, Storable W3,
@@ -185,42 +236,13 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 		Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
-withDevice ::
-	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> (forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
-	phdvc <- head <$> Vk.PhDvc.enumerate inst
-	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
-	let	maxGroupCountX :. _ =
-			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
-	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
-	qFam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qFam) nil nil $ \dvc -> f phdvc qFam dvc (fromIntegral maxGroupCountX)
-	where
-	dvcInfo qFam = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = Nothing,
-		Vk.Dvc.createInfoFlags = def,
-		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qFam,
-		Vk.Dvc.createInfoEnabledLayerNames =
-			[Vk.Khr.validationLayerName],
-		Vk.Dvc.createInfoEnabledExtensionNames = [],
-		Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	queueInfo qFam = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = Nothing,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
+-- Instance Info
 
 instInfo :: Vk.Inst.CreateInfo () ()
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 
-findQueueFamily ::
-	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
-findQueueFamily phdvc qb = do
-	qFamProperties <- Vk.PhDvc.getQueueFamilyProperties phdvc
-	pure . fst . head $ filter ((/= zeroBits)
-			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
-		qFamProperties
+-- PREPARE MEMORIES
 
 prepareMems ::
 	forall bts w1 w2 w3 sd sl a . (
