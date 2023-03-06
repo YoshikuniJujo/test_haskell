@@ -15,7 +15,6 @@
 module Main where
 
 import Foreign.Storable
-import Data.Kind
 import Data.Kind.Object
 import Data.Default
 import Data.Bits
@@ -264,6 +263,23 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** HeteroParList.Nil) [] >>
 	f dscSet ma mb mc
 
+dscPoolInfo :: Vk.DscPool.CreateInfo ()
+dscPoolInfo = Vk.DscPool.CreateInfo {
+	Vk.DscPool.createInfoNext = Nothing,
+	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
+	Vk.DscPool.createInfoMaxSets = 1,
+	Vk.DscPool.createInfoPoolSizes = [poolSize] }
+	where poolSize = Vk.DscPool.Size {
+		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
+		Vk.DscPool.sizeDescriptorCount = 10 }
+
+dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
+	Vk.DscSet.AllocateInfo () sp '[ '(sl, bts)]
+dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
+	Vk.DscSet.allocateInfoNext = Nothing,
+	Vk.DscSet.allocateInfoDescriptorPool = pl,
+	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
+
 storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
@@ -275,37 +291,9 @@ storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 		Vk.Buffer.Binded sb3 sm3 nm3 '[ List 256 w3 ""] ->
 		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ List 256 w3 ""])] -> IO a ) -> IO a
 storageBufferNew3 dvc phdvc x y z f =
-	storageBufferNews dvc phdvc (x :** y :** z :** HeteroParList.Nil) $ addArg3 f
-
-addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
-	Vk.Buffer.Binded sb1 sm1 nm1 '[ List 256 w1 ""] ->
-	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ List 256 w1 ""])] ->
-	Vk.Buffer.Binded sb2 sm2 nm2 '[ List 256 w2 ""] ->
-	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ List 256 w2 ""])] ->
-	Vk.Buffer.Binded sb3 sm3 nm3 '[ List 256 w3 ""] ->
-	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ List 256 w3 ""])] -> r) ->
-	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
-addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
-
-class StorageBufferNews f a where
-	type Vectors f :: [Type]
-	storageBufferNews :: Vk.Dvc.D sd -> Vk.PhDvc.P ->
-		HeteroParList.PL V.Vector (Vectors f) -> f -> IO a
-
-data Arg nm w f = Arg (forall sb sm .
-	Vk.Buffer.Binded sb sm nm '[ List 256 w ""] ->
-	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[ List 256 w ""])] -> f)
-
-instance StorageBufferNews (IO a) a where
-	type Vectors (IO a) = '[]
-	storageBufferNews _dvc _phdvc HeteroParList.Nil f = f
-
-instance (Storable w, StorageBufferNews f a) =>
-	StorageBufferNews (Arg nm w f) a where
-	type Vectors (Arg nm w f) = w ': Vectors f
-	storageBufferNews dvc phdvc (vs :** vss) (Arg f) =
-		storageBufferNew dvc phdvc vs \buf mem ->
-		storageBufferNews @f @a dvc phdvc vss (f buf mem)
+	storageBufferNew dvc phdvc x \sb1 sm1 ->
+	storageBufferNew dvc phdvc y \sb2 sm2 ->
+	storageBufferNew dvc phdvc z \sb3 sm3 -> f sb1 sm1 sb2 sm2 sb3 sm3
 
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
@@ -329,23 +317,6 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
-
-dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.AllocateInfo () sp '[ '(sl, bts)]
-dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
-	Vk.DscSet.allocateInfoNext = Nothing,
-	Vk.DscSet.allocateInfoDescriptorPool = pl,
-	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
-
-dscPoolInfo :: Vk.DscPool.CreateInfo ()
-dscPoolInfo = Vk.DscPool.CreateInfo {
-	Vk.DscPool.createInfoNext = Nothing,
-	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
-	Vk.DscPool.createInfoMaxSets = 1,
-	Vk.DscPool.createInfoPoolSizes = [poolSize] }
-	where poolSize = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
-		Vk.DscPool.sizeDescriptorCount = 10 }
 
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
 	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
@@ -388,7 +359,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		bufferInfoList @w1 ba :** bufferInfoList @w2 bb :**
+		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @w1 ba :** bufferInfoList @w2 bb :**
 		bufferInfoList @w3 bc :** HeteroParList.Nil }
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
