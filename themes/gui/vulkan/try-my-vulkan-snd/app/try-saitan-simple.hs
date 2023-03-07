@@ -67,8 +67,14 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
+---------------------------------------------------------------------------
+
 main :: IO ()
-main = calc datA datB datC >>= \(r1, r2, r3) -> do
+main = withDevice \phdvc qFam dvc mgcx -> do
+	let	datA = V.fromList $ W1 <$> [1 .. mgcx]
+		datB = V.fromList $ W2 <$> [100, 200 .. 100 * mgcx]
+		datC = V.replicate mgcx $ W3 0
+	(r1, r2, r3) <- calc phdvc qFam dvc mgcx datA datB datC
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
@@ -77,20 +83,47 @@ newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 
-dataSize :: Integral n => n
-dataSize = 1000000
+-- WITH DEVICE
 
-datA :: V.Vector W1; datA = V.fromList $ W1 <$> [1 ..  dataSize]
-datB :: V.Vector W2; datB = V.fromList $ W2 <$> [100, 200 .. 100 * dataSize]
-datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
+withDevice ::
+	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
+	(forall c . Integral c => c) -> IO a) -> IO a
+withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
+	phdvc <- head <$> Vk.PhDvc.enumerate inst
+	qFam <- fst . head . filter (
+			(/= zeroBits) . (.&. Vk.Queue.ComputeBit)
+				. Vk.QFam.propertiesQueueFlags . snd )
+		<$> Vk.PhDvc.getQueueFamilyProperties phdvc
+	mgcx :. _ <- Vk.PhDvc.limitsMaxComputeWorkGroupCount
+		. Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
+	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qFam) nil nil $ \dvc ->
+		f phdvc qFam dvc (fromIntegral mgcx)
+
+instInfo :: Vk.Inst.CreateInfo () ()
+instInfo = def {
+	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
+	
+dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo n '[s]
+dvcInfo qFam = Vk.Dvc.CreateInfo {
+	Vk.Dvc.createInfoNext = Nothing,
+	Vk.Dvc.createInfoFlags = def,
+	Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton queueInfo,
+	Vk.Dvc.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
+	Vk.Dvc.createInfoEnabledExtensionNames = [],
+	Vk.Dvc.createInfoEnabledFeatures = Nothing }
+	where queueInfo = Vk.Dvc.QueueCreateInfo {
+		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoFlags = def,
+		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
+		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 -- CALC
 
-calc :: V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
-calc da db dc = withDevice \phdvc qFam dvc mgcx ->
-	let da' = V.take mgcx da; db' = V.take mgcx db; dc' = V.take mgcx dc in
+calc :: Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 ->
+	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
+calc phdvc qFam dvc mgcx da db dc =
 	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
-	prepareMems phdvc dvc dscSetLyt da' db' dc' \dscSet ma mb mc ->
+	prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 	calc' dvc qFam dscSetLyt dscSet mgcx >>
 	(,,)	<$> Vk.Mem.read @"" @(List 256 W1 "") @[W1] dvc ma def
 		<*> Vk.Mem.read @"" @(List 256 W2 "") @[W2] dvc mb def
@@ -107,48 +140,6 @@ binding :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
 binding = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
-
--- WITH DEVICE
-
-withDevice ::
-	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
-	(forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
-	phdvc <- head <$> Vk.PhDvc.enumerate inst
-	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
-	let	maxGroupCountX :. _ =
-			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
-	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
-	qFam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qFam) nil nil $ \dvc ->
-		f phdvc qFam dvc (fromIntegral maxGroupCountX)
-
-instInfo :: Vk.Inst.CreateInfo () ()
-instInfo = def {
-	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
-	
-dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo n '[s]
-dvcInfo qFam = Vk.Dvc.CreateInfo {
-	Vk.Dvc.createInfoNext = Nothing,
-		Vk.Dvc.createInfoFlags = def,
-	Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton queueInfo,
-	Vk.Dvc.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
-	Vk.Dvc.createInfoEnabledExtensionNames = [],
-	Vk.Dvc.createInfoEnabledFeatures = Nothing }
-	where
-	queueInfo = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = Nothing,
-		Vk.Dvc.queueCreateInfoFlags = def,
-		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
-		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
-
-findQueueFamily ::
-	Vk.PhDvc.P -> Vk.Queue.FlagBits -> IO Vk.QFam.Index
-findQueueFamily phdvc qb = do
-	qFamProperties <- Vk.PhDvc.getQueueFamilyProperties phdvc
-	pure . fst . head $ filter ((/= zeroBits)
-			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
-		qFamProperties
 
 -- PREPARE MEMORIES
 
