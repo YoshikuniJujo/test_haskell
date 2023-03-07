@@ -69,12 +69,27 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 ---------------------------------------------------------------------------
 
+-- MAIN
+-- PREPARE MEMORIES
+-- CALC
+-- COMPUTE PIPELINE INFO
+
+---------------------------------------------------------------------------
+
+-- MAIN
+
 main :: IO ()
 main = withDevice \phdvc qFam dvc mgcx -> do
-	let	datA = V.fromList $ W1 <$> [1 .. mgcx]
-		datB = V.fromList $ W2 <$> [100, 200 .. 100 * mgcx]
-		datC = V.replicate mgcx $ W3 0
-	(r1, r2, r3) <- calc phdvc qFam dvc mgcx datA datB datC
+	let	da = V.fromList $ W1 <$> [1 .. mgcx]
+		db = V.fromList $ W2 <$> [100, 200 .. 100 * mgcx]
+		dc = V.replicate mgcx $ W3 0
+	(r1, r2, r3) <-
+		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
+		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
+		calc dvc qFam dscSetLyt dscSet mgcx >>
+		(,,)	<$> Vk.Mem.read @"" @(List 256 W1 "") @[W1] dvc ma def
+			<*> Vk.Mem.read @"" @(List 256 W2 "") @[W2] dvc mb def
+			<*> Vk.Mem.read @"" @(List 256 W3 "") @[W3] dvc mc def
 	print . take 20 $ unW1 <$> r1
 	print . take 20 $ unW2 <$> r2
 	print . take 20 $ unW3 <$> r3
@@ -82,8 +97,6 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
 newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
-
--- WITH DEVICE
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
@@ -116,18 +129,6 @@ dvcInfo qFam = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
-
--- CALC
-
-calc :: Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> IO ([W1], [W2], [W3])
-calc phdvc qFam dvc mgcx da db dc =
-	Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
-	prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
-	calc' dvc qFam dscSetLyt dscSet mgcx >>
-	(,,)	<$> Vk.Mem.read @"" @(List 256 W1 "") @[W1] dvc ma def
-		<*> Vk.Mem.read @"" @(List 256 W2 "") @[W2] dvc mb def
-		<*> Vk.Mem.read @"" @(List 256 W3 "") @[W3] dvc mc def
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () '[
 	'Vk.DscSetLyt.Buffer '[List 256 W1 "", List 256 W2 "", List 256 W3 ""] ]
@@ -252,14 +253,14 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @w3 bc :**
 		HeteroParList.Nil }
 
--- CALC'
+-- CALC
 
-calc' :: forall slbts sl bts sd sp . (
+calc :: forall slbts sl bts sd sp . (
 	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.S sd sp slbts -> Word32 ->
 	IO ()
-calc' dvc qFam dscSetLyt dscSet dsz =
+calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
@@ -289,8 +290,6 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
--- RUN
-
 run :: forall slbts sbtss sd sc vs sg sl sp . (
 	Storable W1, Storable W2, Storable W3,
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
@@ -314,7 +313,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz = do
 		Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 		Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
--- Compute Pipeline Info
+-- COMPUTE PIPELINE INFO
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo ()
