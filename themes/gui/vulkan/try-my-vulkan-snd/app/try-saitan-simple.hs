@@ -172,20 +172,6 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dsl }
 
--- Compute Pipeline Info
-
-computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo ()
-		'((), (), 'GlslComputeShader, (), (), '[Word32, Word32])
-		'(sl, sbtss, '[]) sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-	Vk.Ppl.Cmpt.createInfoNext = Nothing,
-	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
-	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
-
 -- Command Pool Info
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CmdPool.CreateInfo ()
@@ -257,8 +243,10 @@ prepareMems ::
 prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
-		>>= \(dscSet :** HeteroParList.Nil) ->
-	storageBufferNew3 dvc phdvc da db dc \ba ma bb mb bc mc ->
+		>>= \(HeteroParList.Singleton dscSet) ->
+	storageBufferNew dvc phdvc da \ba ma ->
+	storageBufferNew dvc phdvc db \bb mb ->
+	storageBufferNew dvc phdvc dc \bc mc ->
 	Vk.DscSet.updateDs @() @() dvc (Vk.DscSet.Write_
 		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** HeteroParList.Nil) [] >>
 	f dscSet ma mb mc
@@ -279,21 +267,6 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoNext = Nothing,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
-
-storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
-	Vk.Dvc.D sd -> Vk.PhDvc.P ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
-		forall sb1 sm1 sb2 sm2 sb3 sm3 .
-		Vk.Buffer.Binded sb1 sm1 nm1 '[ List 256 w1 ""] ->
-		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[ List 256 w1 ""])] ->
-		Vk.Buffer.Binded sb2 sm2 nm2 '[ List 256 w2 ""] ->
-		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[ List 256 w2 ""])] ->
-		Vk.Buffer.Binded sb3 sm3 nm3 '[ List 256 w3 ""] ->
-		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[ List 256 w3 ""])] -> IO a ) -> IO a
-storageBufferNew3 dvc phdvc x y z f =
-	storageBufferNew dvc phdvc x \sb1 sm1 ->
-	storageBufferNew dvc phdvc y \sb2 sm2 ->
-	storageBufferNew dvc phdvc z \sb3 sm3 -> f sb1 sm1 sb2 sm2 sb3 sm3
 
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
@@ -359,13 +332,24 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @w1 ba :** bufferInfoList @w2 bb :**
-		bufferInfoList @w3 bc :** HeteroParList.Nil }
+		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @w1 ba :**
+		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @w2 bb :**
+		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @w3 bc :**
+		HeteroParList.Nil }
 
-bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
-	Vk.Buffer.Binded sm sb nm objs ->
-	Vk.Dsc.BufferInfo '(sb, sm, nm, objs, List 256 t "")
-bufferInfoList = Vk.Dsc.BufferInfoList
+-- Compute Pipeline Info
+
+computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
+	Vk.Ppl.Cmpt.CreateInfo ()
+		'((), (), 'GlslComputeShader, (), (), '[Word32, Word32])
+		'(sl, sbtss, '[]) sbph
+computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+	Vk.Ppl.Cmpt.createInfoNext = Nothing,
+	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
+	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew
 	() () 'GlslComputeShader () () '[Word32, Word32]
