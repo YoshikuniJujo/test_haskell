@@ -212,9 +212,32 @@ instance (
 	writeListToMiddle (Write_ w :** ws) =
 		writeToMiddle w : writeListToMiddle ws
 
+class WriteListToMiddleNew n sdspslbtssbsmobjsobjs where
+	writeListToMiddleNew ::
+		HeteroParList.PL (U4 (Write n)) sdspslbtssbsmobjsobjs ->
+		[M.Write n]
+
+instance WriteListToMiddleNew n '[] where
+	writeListToMiddleNew HeteroParList.Nil = []
+
+instance (
+	WriteSourcesToMiddle slbts wsa,
+	WriteListToMiddleNew n sdspslbtswsas ) =>
+	WriteListToMiddleNew n
+		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
+	writeListToMiddleNew (U4 w :** ws) =
+		writeToMiddle w : writeListToMiddleNew ws
+
 updateDs :: (
 	WithPoked n, WithPoked n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
 	HeteroParList.PL (Write_ n) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
 updateDs (Device.D dvc) (writeListToMiddle -> ws) cs = M.updateDs dvc ws cs
+
+updateDsNew :: (
+	WithPoked n, WithPoked n',
+	WriteListToMiddleNew n sdspslbtssbsmobjsobjs ) =>
+	Device.D sd ->
+	HeteroParList.PL (U4 (Write  n)) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
+updateDsNew (Device.D dvc) (writeListToMiddleNew -> ws) cs = M.updateDs dvc ws cs
