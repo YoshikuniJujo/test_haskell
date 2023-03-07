@@ -22,7 +22,6 @@ import Data.Kind.ObjectNew qualified as N
 import Data.Proxy
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 

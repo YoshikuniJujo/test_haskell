@@ -31,7 +31,7 @@ import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
