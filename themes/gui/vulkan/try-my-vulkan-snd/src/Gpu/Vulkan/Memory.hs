@@ -29,8 +29,7 @@ import Data.Kind.Object hiding (Offset(..))
 import Data.Maybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.IORef
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks

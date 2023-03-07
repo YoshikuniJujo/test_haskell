@@ -89,6 +89,7 @@ library
       Gpu.Vulkan.Memory.AllocateInfo
       Gpu.Vulkan.Memory.Kind
       Gpu.Vulkan.Misc
+      Gpu.Vulkan.Object
       Gpu.Vulkan.PhysicalDevice
       Gpu.Vulkan.Pipeline.Cache.Type
       Gpu.Vulkan.Pipeline.ColorBlendAttachment

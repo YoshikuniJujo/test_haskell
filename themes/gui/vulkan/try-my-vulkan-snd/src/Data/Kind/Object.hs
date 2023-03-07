@@ -79,10 +79,6 @@ class WholeSize objs where
 
 instance WholeSize '[] where wholeSize sz _ = sz
 
-minimumAlignment :: Int
--- minimumAlignment = 256
-minimumAlignment = 1
-
 instance (SizeAlignment obj, WholeSize objs) =>
 	WholeSize (obj ': objs) where
 	wholeSize sz (ln :** lns) =
