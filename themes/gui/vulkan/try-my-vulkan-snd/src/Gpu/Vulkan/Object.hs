@@ -3,13 +3,15 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Object where
 
 import GHC.TypeNats
+import Foreign.Ptr
 import Data.Kind.Object qualified as K
 import Data.Proxy
 import Data.HeteroParList qualified as HeteroParList
@@ -49,3 +51,15 @@ instance (SizeAlignment obj, WholeSize objs) => WholeSize (obj ': objs) where
 	wholeSize sz (ln :** lns) =
 		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj
+
+class StoreObject v obj where
+	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
+	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
+	objectLength :: v -> ObjectLength obj
+
+instance K.StoreObject v kobj => StoreObject v (Static kobj) where
+	storeObject p (ObjectLengthStatic kln) = K.storeObject p kln
+	loadObject p (ObjectLengthStatic kln) = K.loadObject p kln
+	objectLength x = ObjectLengthStatic $ K.objectLength x
+
+instance K.StoreObject v kobj => StoreObject [v] (Dynamic n kobj) where
