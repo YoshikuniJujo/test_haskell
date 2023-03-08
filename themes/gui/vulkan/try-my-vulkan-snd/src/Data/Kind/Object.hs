@@ -11,11 +11,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.Kind.Object (
-	Object(..), ObjectLength(..), ObjectType,
+	Object(..), ObjectLength(..), ObjectType, ObjectAlignment,
 
 	SizeAlignment(..), WholeSize(..),
 
-	StoreObject(..), Offset(..),
+	StoreObject(..),
+	Offset(..),
 
 	IsImage(..), Atom, List,
 	pattern ObjectLengthAtom, pattern ObjectLengthList
@@ -38,6 +39,10 @@ import qualified Data.Sequences as Seq
 import Data.Kind.ObjectNew qualified as N
 
 data Object = ObjObject N.Object | ObjImage N.Alignment Type Symbol
+
+type family ObjectAlignment obj where
+	ObjectAlignment (ObjObject nobj) = N.ObjectAlignment nobj
+	ObjectAlignment (ObjImage algn t nm) = algn
 
 type Atom algn t mnm = 'ObjObject ('N.Atom algn t mnm)
 type List algn t nm = 'ObjObject ('N.List algn t nm)
@@ -113,8 +118,10 @@ instance (KnownNat algn, Storable t) =>
 		sz = sizeOf @t undefined
 		algn = alignment @t undefined
 
-instance Storable (IsImagePixel img) => SizeAlignment ('ObjImage algn img nm) where
-	objectAlignment = alignment @(IsImagePixel img) undefined
+instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ('ObjImage algn img nm) where
+	objectAlignment =fromIntegral (natVal (Proxy :: Proxy algn))
+		`lcm`
+		alignment @(IsImagePixel img) undefined
 	objectSize (ObjectLengthImage r _w h d) =
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
 		where
@@ -143,13 +150,15 @@ instance (
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
 	StoreObject img ('ObjImage algn img nm) where
-	storeObject p0 (ObjectLengthImage r w h d) img =
+	storeObject p0 (ObjectLengthImage r w _h _d) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ isImageBody img)
 			\(p, take w -> rw) -> pokeArray (castPtr p) $ take w rw
 		where s = r * sizeOf @(IsImagePixel img) undefined
 	loadObject p0 (ObjectLengthImage r w h d) = isImageMake w h d
 		<$> for (take (h * d) $ iterate (`plusPtr` s) p0) \p -> peekArray w (castPtr p)
 		where s = r * sizeOf @(IsImagePixel img) undefined
+	objectLength img = ObjectLengthImage
+		(isImageRow img) (isImageWidth img) (isImageHeight img) (isImageDepth img)
 
 class IsImage img where
 	type IsImagePixel img

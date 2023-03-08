@@ -26,6 +26,10 @@ import qualified Data.Sequences as Seq
 
 data Object = Atom Alignment Type (Maybe Symbol) | List Alignment Type Symbol
 
+type family ObjectAlignment obj where
+	ObjectAlignment (Atom algn t nm) = algn
+	ObjectAlignment (List algn t nm) = algn
+
 type Alignment = Nat
 
 type family ObjectType obj where
