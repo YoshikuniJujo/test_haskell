@@ -22,7 +22,7 @@ import Data.Kind.ObjectNew qualified as N
 import Data.Proxy
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Enum hiding (ObjectType)
@@ -290,8 +290,8 @@ data ImageCopy img inm = ImageCopy {
 	imageCopyImageExtent :: C.Extent3d }
 	deriving Show
 
-imageCopyToMiddle :: forall img (inm :: Symbol) sm sb nm objs .
-	OffsetSize ('ObjImage img inm) objs =>
+imageCopyToMiddle :: forall algn img (inm :: Symbol) sm sb nm objs .
+	OffsetSize ('ObjImage algn img inm) objs =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -304,7 +304,7 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageOffset = iost,
 	M.imageCopyImageExtent = iext }
 	where
-	(ost, _) = offsetSize @('ObjImage img inm) lns 0
-	ObjectLengthImage r _w h _d = objectLength @('ObjImage img inm) lns
+	(ost, _) = offsetSize @('ObjImage algn img inm) lns 0
+	ObjectLengthImage r _w h _d = objectLength @('ObjImage algn img inm) lns
 
 type family ImageFormat img :: T.Format

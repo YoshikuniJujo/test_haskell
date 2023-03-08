@@ -71,7 +71,7 @@ instance IsPrefix os os' =>
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjImage t nm ': os') ': bts) ('ObjImage t nm ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjImage algn t nm ': os') ': bts) ('ObjImage algn t nm ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-}

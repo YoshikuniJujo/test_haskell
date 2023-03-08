@@ -37,7 +37,7 @@ import qualified Data.Sequences as Seq
 
 import Data.Kind.ObjectNew qualified as N
 
-data Object = ObjObject N.Object | ObjImage Type Symbol
+data Object = ObjObject N.Object | ObjImage N.Alignment Type Symbol
 
 type Atom algn t mnm = 'ObjObject ('N.Atom algn t mnm)
 type List algn t nm = 'ObjObject ('N.List algn t nm)
@@ -53,7 +53,7 @@ pattern ObjectLengthList n <- ObjectLengthObject (N.ObjectLengthList n) where
 type family ObjectType obj where
 	ObjectType ('ObjObject ('N.Atom _algn t _nm)) = t
 	ObjectType ('ObjObject ('N.List _algn t _nm)) = t
-	ObjectType ('ObjImage t _nm) = t
+	ObjectType ('ObjImage _algn t _nm) = t
 
 data ObjectLength (obj :: Object) where
 	ObjectLengthObject :: N.ObjectLength obj -> ObjectLength (ObjObject obj)
@@ -61,7 +61,7 @@ data ObjectLength (obj :: Object) where
 		objectLengthImageRow :: Int,
 		objectLengthImageWidth :: Int,
 		objectLengthImageHeight :: Int,
-		objectLengthImageDepth :: Int } -> ObjectLength ('ObjImage t nm)
+		objectLengthImageDepth :: Int } -> ObjectLength ('ObjImage algn t nm)
 
 deriving instance Eq (ObjectLength obj)
 
@@ -113,7 +113,7 @@ instance (KnownNat algn, Storable t) =>
 		sz = sizeOf @t undefined
 		algn = alignment @t undefined
 
-instance Storable (IsImagePixel img) => SizeAlignment ('ObjImage img nm) where
+instance Storable (IsImagePixel img) => SizeAlignment ('ObjImage algn img nm) where
 	objectAlignment = alignment @(IsImagePixel img) undefined
 	objectSize (ObjectLengthImage r _w h d) =
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
@@ -142,7 +142,7 @@ instance (
 	objectLength = ObjectLengthObject . N.ObjectLengthList . olength
 
 instance (IsImage img, Storable (IsImagePixel img)) =>
-	StoreObject img ('ObjImage img nm) where
+	StoreObject img ('ObjImage algn img nm) where
 	storeObject p0 (ObjectLengthImage r w h d) img =
 		for_ (zip (iterate (`plusPtr` s) p0) $ isImageBody img)
 			\(p, take w -> rw) -> pokeArray (castPtr p) $ take w rw

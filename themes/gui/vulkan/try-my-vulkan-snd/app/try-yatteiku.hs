@@ -157,7 +157,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 				copyBufferToImage device gq cp bimg' b screenWidth screenHeight
 		print screenWidth
 		print screenHeight
-		MyImage img <- Vk.Memory.read @"image-buffer" @('ObjImage MyImage "") device bm def
+		MyImage img <- Vk.Memory.read @"image-buffer" @('ObjImage 1 MyImage "") device bm def
 		writePng "yatteiku.png" (img :: Image PixelRGBA8)
 
 makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
@@ -255,10 +255,10 @@ makeImage' phdvc dvc f = do
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm "image-buffer" '[ 'ObjImage MyImage ""] ->
+		Vk.Bffr.Binded sb sm "image-buffer" '[ 'ObjImage 1 MyImage ""] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.K.Buffer "image-buffer" '[ 'ObjImage MyImage ""])] ->
+			'Vk.Memory.K.Buffer "image-buffer" '[ 'ObjImage 1 MyImage ""])] ->
 			IO a) -> IO a
 makeBuffer phdvc dvc wdt hgt f =
 	createBufferImage phdvc dvc
@@ -271,7 +271,7 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (IsImagePixel img) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
 	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
-	Vk.Bffr.Binded sm sb nm '[ 'ObjImage img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[ 'ObjImage 1 img inm]  ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp img bf wdt hgt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -286,7 +286,7 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyImageToBuffer
+	Vk.Cmd.copyImageToBuffer @1
 		cb img Vk.Img.LayoutTransferSrcOptimal bf (HeteroParList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
@@ -362,10 +362,10 @@ createBufferImage :: Storable (IsImagePixel t) =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t inm] ->
+		Vk.Bffr.Binded sb sm nm '[ 'ObjImage 1 t inm] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.K.Buffer nm '[ 'ObjImage t inm])] ->
+			'Vk.Memory.K.Buffer nm '[ 'ObjImage 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer p dv (ObjectLengthImage r w h d) usg props

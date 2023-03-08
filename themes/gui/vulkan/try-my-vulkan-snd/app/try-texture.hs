@@ -882,9 +882,9 @@ createTextureImage phdvc dvc gq cp f = do
 			(	Vk.Mem.PropertyHostVisibleBit .|.
 				Vk.Mem.PropertyHostCoherentBit )
 			\(sb :: Vk.Bffr.Binded
-				sm sb "texture-buffer" '[ 'ObjImage a inm]) sbm -> do
+				sm sb "texture-buffer" '[ 'ObjImage 1 a inm]) sbm -> do
 			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
-				@('ObjImage MyImage inm) dvc sbm zeroBits (MyImage img)
+				@('ObjImage 1 MyImage inm) dvc sbm zeroBits (MyImage img)
 			print sb
 			transitionImageLayout dvc gq cp tximg
 				Vk.Img.LayoutUndefined
@@ -898,7 +898,7 @@ createTextureImage phdvc dvc gq cp f = do
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (IsImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ 'ObjImage img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[ 'ObjImage 1 img inm]  ->
 	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp bf img wdt hgt =
@@ -914,7 +914,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImage
+	Vk.Cmd.copyBufferToImage @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
@@ -985,10 +985,10 @@ createBufferImage :: Storable (IsImagePixel t) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'ObjImage t inm] ->
+		Vk.Bffr.Binded sb sm nm '[ 'ObjImage 1 t inm] ->
 		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
 			sb,
-			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage t inm])] ->
+			'Vk.Dvc.Mem.ImageBuffer.K.Buffer nm '[ 'ObjImage 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
 	createBuffer' p dv (ObjectLengthImage r w h d) usg props

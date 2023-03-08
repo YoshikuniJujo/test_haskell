@@ -4,7 +4,7 @@
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGe StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -165,18 +165,18 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)
 
-copyBufferToImage :: (
-	ImageCopyListToMiddle objs img inms ) =>
+copyBufferToImage :: forall algn objs img inms sc vs sm sb nm si sm' nm' . (
+	ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc vs -> Buffer.Binded sm sb nm objs ->
 	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
-	where mics = imageCopyListToMiddle bf ics
+	where mics = imageCopyListToMiddle @algn bf ics
 
-copyImageToBuffer :: (
-	ImageCopyListToMiddle objs img inms ) =>
+copyImageToBuffer :: forall algn objs img inms sc vs sm sb nm si sm' nm' . (
+	ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc vs ->
 	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
@@ -184,24 +184,24 @@ copyImageToBuffer :: (
 copyImageToBuffer (CommandBuffer.C cb)
 	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
-	where mics = imageCopyListToMiddle bf ics
+	where mics = imageCopyListToMiddle @algn bf ics
 
-class ImageCopyListToMiddle objs (img :: Type) (inms :: [Symbol]) where
+class ImageCopyListToMiddle algn objs (img :: Type) (inms :: [Symbol]) where
 	imageCopyListToMiddle ::
 		Buffer.Binded sm sb nm objs ->
 		HeteroParList.PL (Buffer.ImageCopy img) inms ->
 		[Buffer.M.ImageCopy]
 
-instance ImageCopyListToMiddle objs img '[] where
+instance ImageCopyListToMiddle algn objs img '[] where
 	imageCopyListToMiddle _ HeteroParList.Nil = []
 
 instance (
-	Buffer.OffsetSize ('ObjImage img nm) objs,
-	ImageCopyListToMiddle objs img nms ) =>
-	ImageCopyListToMiddle objs img (nm ': nms) where
+	Buffer.OffsetSize ('ObjImage algn img nm) objs,
+	ImageCopyListToMiddle algn objs img nms ) =>
+	ImageCopyListToMiddle algn objs img (nm ': nms) where
 	imageCopyListToMiddle bf (ic :** ics) =
-		Buffer.imageCopyToMiddle @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
-		imageCopyListToMiddle bf ics
+		Buffer.imageCopyToMiddle @algn @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
+		imageCopyListToMiddle @algn bf ics
 
 blitImage :: CommandBuffer.C sc vs ->
 	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
