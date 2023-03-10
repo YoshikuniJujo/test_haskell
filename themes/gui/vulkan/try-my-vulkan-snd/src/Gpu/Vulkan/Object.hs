@@ -6,6 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Object where
@@ -19,10 +20,28 @@ import Data.HeteroParList (pattern (:**))
 
 data Object = Static K.Object | Dynamic Nat K.Object
 
+type List algn t nm = Static (K.List algn t nm)
+type Atom algn t mnm = Static (K.Atom algn t mnm)
+type ObjImage algn t nm = Static (K.ObjImage algn t nm)
+
 data ObjectLength obj where
 	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
 	ObjectLengthDynamic ::
 		K.ObjectLength kobj -> ObjectLength ('Dynamic n kobj)
+
+deriving instance Eq (ObjectLength obj)
+deriving instance Show (ObjectLength obj)
+
+pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
+	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
+
+pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
+pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
+	ObjectLengthAtom = ObjectLengthStatic K.ObjectLengthAtom
+
+pattern ObjectLengthList :: Int -> ObjectLength ('Static (K.List algn t nm))
+pattern ObjectLengthList n <- ObjectLengthStatic (K.ObjectLengthList n) where
+	ObjectLengthList n = ObjectLengthStatic (K.ObjectLengthList n)
 
 type family ObjectType obj where
 	ObjectType (Static kobj) = K.ObjectType kobj

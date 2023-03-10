@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -7,7 +8,7 @@ module Gpu.Vulkan.DescriptorSetLayout.Type where
 
 import GHC.TypeLits
 import Data.Kind
-import Data.Kind.Object
+import Gpu.Vulkan.Object qualified as VObj
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
@@ -18,7 +19,7 @@ newtype L s (bts :: [BindingType]) = L { unL :: M.L } deriving Show
 
 data BindingType
 	= Image [(Symbol, T.Format)] | ImageSampler [(T.Format, Type)]
-	| Buffer [Object] | Other
+	| Buffer [VObj.Object] | Other
 
 type family MapSnd (tpls :: [(t, u)]) where
 	MapSnd '[] = '[]

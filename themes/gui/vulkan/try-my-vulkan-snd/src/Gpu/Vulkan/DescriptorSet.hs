@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
@@ -14,7 +15,7 @@ module Gpu.Vulkan.DescriptorSet where
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Data.Kind
-import Data.Kind.Object
+import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -184,7 +185,7 @@ class BufferInfosToMiddle sbsmobjsobjs where
 
 instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.Nil = []
 
-instance (Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
+instance (VObj.Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
 	bufferInfosToMiddle (bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis

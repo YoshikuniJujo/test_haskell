@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell, QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
@@ -22,7 +23,8 @@ import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object
+import Data.Kind.Object qualified as KObj
+import Gpu.Vulkan.Object qualified as VObj
 import Data.Foldable
 import Data.Default
 import Data.Bits
@@ -615,23 +617,23 @@ createRenderPass dvc f = do
 createPipelineLayout :: forall sd s b .
 	Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L s '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			Atom 256 GpuSceneData0 'Nothing ] ] -> (forall sl .
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ] -> (forall sl .
 		Vk.Ppl.Layout.L sl
 			'[ '(s, '[
-				'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
-					Atom 256 GpuSceneData0 'Nothing ] ])]
+					VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 			'[WrapMeshPushConstants] ->
 		IO b) -> IO b
 createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
 	where
 	crInfo :: Vk.Ppl.Layout.CreateInfoNew ()
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing] ]) ]
+				VObj.Atom 256 GpuSceneData0 'Nothing] ]) ]
 		(
 		'Vk.PushConstant.PushConstantLayout
 			'[ WrapMeshPushConstants]
@@ -646,9 +648,9 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Int ->
 	(forall sg . Vk.Ppl.Graphics.G sg
@@ -663,9 +665,9 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -678,9 +680,9 @@ mkGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.CreateInfo () '[
 			'((), (), 'GlslVertexShader, (), (), '[]),
@@ -689,9 +691,9 @@ mkGraphicsPipelineCreateInfo ::
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
 		() () () () () () () ()
 		'(sl,	'[ '(s, '[
-				'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
-					Atom 256 GpuSceneData0 'Nothing ] ])],
+					VObj.Atom 256 GpuSceneData0 'Nothing ] ])],
 			'[WrapMeshPushConstants])
 		sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
@@ -1098,34 +1100,34 @@ createCommandPool qfis dv = Vk.CmdPl.create @() dv crInfo nil nil
 createVertexBuffer :: forall sd sc vbnm a . Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
 	(forall sm sb .
-		Vk.Bffr.Binded sm sb vbnm '[ List 256 Vertex ""] -> IO a ) -> IO a
+		Vk.Bffr.Binded sm sb vbnm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
 createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBuffer phdvc dvc (HeteroParList.Singleton . ObjectLengthList $ V.length vtcs)
+	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList $ V.length vtcs)
 		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
 		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (HeteroParList.Singleton . ObjectLengthList $ V.length vtcs)
+	createBuffer phdvc dvc (HeteroParList.Singleton . VObj.ObjectLengthList $ V.length vtcs)
 		Vk.Bffr.UsageTransferSrcBit
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 			\b' (bm' :: Vk.Mem.M sm '[
-				'(sb, 'Vk.Mem.K.Buffer vbnm '[ List 256 Vertex ""])
+				'(sb, 'Vk.Mem.K.Buffer vbnm '[VObj.List 256 Vertex ""])
 				]) -> do
-	Vk.Mem.write @vbnm @(List 256 Vertex "") dvc bm' zeroBits vtcs
+	Vk.Mem.write @vbnm @(VObj.List 256 Vertex "") dvc bm' zeroBits vtcs
 	copyBuffer dvc gq cp b' b
 	f b
 
 createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdsc '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			Atom 256 GpuSceneData0 'Nothing ] ] ->
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
 	Int ->
 	(forall slyts sbsms . (
 		HeteroParList.FromList slyts, Update sbsms slyts,
 		HeteroParList.HomoList '(sdsc, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
 		HeteroParList.PL Vk.DscSet.Layout slyts ->
 		HeteroParList.PL BindedGcd sbsms ->
 		HeteroParList.PL MemoryGcd sbsms -> IO a) -> IO a
@@ -1136,37 +1138,37 @@ createCameraBuffers phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
 
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ Atom 256 GpuCameraData 'Nothing] ->
+		Vk.Bffr.Binded sb sm nm '[VObj.Atom 256 GpuCameraData 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm
-				'[ Atom 256 GpuCameraData 'Nothing]) ] ->
+				'[VObj.Atom 256 GpuCameraData 'Nothing]) ] ->
 		IO a) -> IO a
-createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HeteroParList.Singleton ObjectLengthAtom)
+createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HeteroParList.Singleton VObj.ObjectLengthAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[
-			Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-			Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
+			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm '[
-				Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ) ] ->
 		IO a) -> IO a
 createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
-	(ObjectLengthAtom :** ObjectLengthAtom :** HeteroParList.Nil)
+	(VObj.ObjectLengthAtom :** VObj.ObjectLengthAtom :** HeteroParList.Nil)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createBuffer :: forall obj nm sd a . (
-	WholeSize '[obj],
-	SizeAlignment obj
+	VObj.WholeSize '[obj],
+	VObj.SizeAlignment obj
 --	Vk.Mem.Alignments '[
 --		'(s, 'Vk.Mem.K.Buffer nm objs) ]
-	) => -- SizeAlignment obj =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL ObjectLength '[obj] ->
+	) => -- VObj.SizeAlignment obj =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[obj] ->
@@ -1195,12 +1197,12 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createBuffer2 :: forall obj obj2 nm sd a . (
-	WholeSize '[obj, obj2],
-	SizeAlignment obj, SizeAlignment obj2
+	VObj.WholeSize '[obj, obj2],
+	VObj.SizeAlignment obj, VObj.SizeAlignment obj2
 --	Vk.Mem.Alignments '[
 --		'(s, 'Vk.Mem.K.Buffer nm objs) ]
-	) => -- SizeAlignment obj =>
-	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL ObjectLength '[obj, obj2] ->
+	) => -- VObj.SizeAlignment obj =>
+	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj, obj2] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[obj, obj2] ->
@@ -1241,30 +1243,30 @@ findMemoryType phdvc flt props =
 
 createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.L s '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer
-			'[ Atom 256 GpuSceneData0 'Nothing]
+			'[VObj.Atom 256 GpuSceneData0 'Nothing]
 		] -> IO a) ->
 	IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer
-			'[ Atom 256 GpuSceneData0 'Nothing] ]
+			'[VObj.Atom 256 GpuSceneData0 'Nothing] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = Nothing,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings =
 			camBufferBinding :** sceneBind :** HeteroParList.Nil }
 	camBufferBinding :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing])
+		('Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing])
 	camBufferBinding = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
 		Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageVertexBit }
 	sceneBind :: Vk.DscSetLyt.Binding
-		('Vk.DscSetLyt.Buffer '[ Atom 256 GpuSceneData0 'Nothing])
+		('Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuSceneData0 'Nothing])
 	sceneBind = Vk.DscSetLyt.BindingBuffer {
 		Vk.DscSetLyt.bindingBufferDescriptorType =
 			Vk.Dsc.TypeUniformBuffer,
@@ -1290,8 +1292,8 @@ createDescriptorSets :: (
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
 	Vk.Bffr.Binded sb sm "scene-buffer" '[
-		Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-		Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
+		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 	IO (HeteroParList.PL (Vk.DscSet.S sd sp) ss)
 createDescriptorSets dvc dscp ubs dscslyts scnb = do
 	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
@@ -1309,15 +1311,15 @@ class Update smsbs slbtss where
 		HeteroParList.PL BindedGcd smsbs ->
 		HeteroParList.PL (Vk.DscSet.S sd sp) slbtss ->
 		Vk.Bffr.Binded sb sm "scene-buffer" '[
-			Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-			Atom 256 GpuSceneData0 ('Just "scene-data-1") ] -> Int -> IO ()
+			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] -> Int -> IO ()
 
 instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ Atom 256 GpuCameraData 'Nothing],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ Atom 256 GpuSceneData0 ('Just "scene-data-0")],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[ Atom 256 GpuSceneData0 ('Just "scene-data-1")],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 GpuCameraData 'Nothing],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],
 	Update ubs dscss
 	) =>
 	Update (ub ': ubs) (dscs ': dscss) where
@@ -1340,7 +1342,7 @@ descriptorWrite0 :: forall tp objnm objs sm sb nm sd sp slbts .
 	Vk.DscSet.S sd sp slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
-		objs, Atom 256 tp objnm )])
+		objs,VObj.Atom 256 tp objnm )])
 descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = dscs,
@@ -1351,7 +1353,7 @@ descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 
 data BindedGcd smsb where
 	BindedGcd ::
-		Vk.Bffr.Binded sb sm "camera-buffer" '[ Atom 256 GpuCameraData 'Nothing] ->
+		Vk.Bffr.Binded sb sm "camera-buffer" '[VObj.Atom 256 GpuCameraData 'Nothing] ->
 		BindedGcd '(sm, sb)
 
 data MemoryGcd smsb where
@@ -1359,13 +1361,13 @@ data MemoryGcd smsb where
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer "camera-buffer"
-				'[ Atom 256 GpuCameraData 'Nothing] )] ->
+				'[VObj.Atom 256 GpuCameraData 'Nothing] )] ->
 		MemoryGcd '(sm, sb)
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
-	Vk.Bffr.Binded sm' sb' nm' '[ List 256 Vertex ""] -> IO ()
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
@@ -1376,7 +1378,7 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CmdBffr.begin @() @() cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[ List 256 Vertex ""]] cb src dst
+			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 Vertex ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
@@ -1455,16 +1457,16 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.L slyt
 		'[ '(sdlyt, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[ List 256 Vertex ""] -> Int ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] -> Int ->
 	Vk.DscSet.S sd sp '(sdlyt, '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			Atom 256 GpuSceneData0 'Nothing ] ]) ->
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
 	Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	Vk.CmdBffr.begin @() @() cb cbInfo $
@@ -1520,21 +1522,21 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectPipelineLayout ::
 		Vk.Ppl.Layout.L sl
 			'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
-					Atom 256 GpuSceneData0 'Nothing ] ])]
+					VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 			'[WrapMeshPushConstants],
-	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""],
+	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""],
 	renderObjectMeshSize :: Word32,
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
-drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""])) ->
+drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])) ->
 	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.C.Extent2d ->
 	Vk.DscSet.S sd sp '(sdlyt, '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			Atom 256 GpuSceneData0 'Nothing ] ]) ->
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
 	RenderObject sg sl sdlyt sm sb nm -> IO ()
 drawObject om cb sce cmd RenderObject {
 	renderObjectPipeline = gpl,
@@ -1573,9 +1575,9 @@ mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs, VssList vss,
 	HeteroParList.HomoList '(s, '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1584,9 +1586,9 @@ mainLoop :: (
 	HeteroParList.PL (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[ '(s, '[
-		'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			Atom 256 GpuSceneData0 'Nothing ] ])]
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1596,8 +1598,8 @@ mainLoop :: (
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[ List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HeteroParList.PL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HeteroParList.PL BindedGcd sbsms ->
@@ -1605,8 +1607,8 @@ mainLoop :: (
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
 			"scene-buffer" '[
-				Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
 	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms scnm cmds vn = do
@@ -1628,9 +1630,9 @@ runLoop :: (
 	RecreateFramebuffers sis sfs, VssList vss,
 	HeteroParList.HomoList
 		'(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ]) slyts
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts
 	) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
@@ -1639,9 +1641,9 @@ runLoop :: (
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -1650,8 +1652,8 @@ runLoop :: (
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[ List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HeteroParList.PL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int -> Int -> Int ->
@@ -1660,8 +1662,8 @@ runLoop :: (
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
 			"scene-buffer" '[
-				Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
 	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
@@ -1679,9 +1681,9 @@ drawFrame ::
 	VssList vss,
 	HeteroParList.HomoList
 		'(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ]) slyts
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts
 	) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -1691,21 +1693,21 @@ drawFrame ::
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Layout.L slyt
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
-	Vk.Bffr.Binded sm sb nm '[ List 256 Vertex ""] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[ List 256 Vertex ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
 	HeteroParList.PL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
 	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
 			"scene-buffer" '[
-				Atom 256 GpuSceneData0 ('Just "scene-data-0"),
-				Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
+				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
 	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
@@ -1714,13 +1716,13 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
 	HeteroParList.index cmms cf \(MemoryGcd cmm) ->
 	($ HeteroParList.homoListIndex cmds cf) \cmd -> do
-	Vk.Mem.write @"camera-buffer" @(Atom 256 GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
+	Vk.Mem.write @"camera-buffer" @(VObj.Atom 256 GpuCameraData 'Nothing) dvc cmm zeroBits (gpuCameraData ext)
 	if cf == 0
 		then Vk.Mem.write @"scene-buffer"
-			@(Atom 256 GpuSceneData0 ('Just "scene-data-0"))
+			@(VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"))
 			dvc scnm zeroBits (GpuSceneData0 $ gpuSceneData fn)
 		else Vk.Mem.write @"scene-buffer"
-			@(Atom 256 GpuSceneData0 ('Just "scene-data-1"))
+			@(VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1"))
 			dvc scnm zeroBits (GpuSceneData0 $ gpuSceneData fn)
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
@@ -1765,9 +1767,9 @@ catchAndRecreate :: (
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1799,9 +1801,9 @@ recreateSwapchainEtc :: (
 	Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl
 		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[ Atom 256 GpuCameraData 'Nothing],
+			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				Atom 256 GpuSceneData0 'Nothing ] ])]
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]

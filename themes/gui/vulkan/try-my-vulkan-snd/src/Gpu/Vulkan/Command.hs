@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -16,7 +17,7 @@ import Foreign.Storable
 import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object
+import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -133,7 +134,7 @@ class IsIndexType a where indexType :: IndexType
 instance IsIndexType Word16 where indexType = IndexTypeUint16
 instance IsIndexType Word32 where indexType = IndexTypeUint32
 
-copyBuffer :: forall (ass :: [[Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
+copyBuffer :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
 	CommandBuffer.C sc vs ->
 	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
@@ -196,7 +197,7 @@ instance ImageCopyListToMiddle algn objs img '[] where
 	imageCopyListToMiddle _ HeteroParList.Nil = []
 
 instance (
-	Buffer.OffsetSize ('ObjImage algn img nm) objs,
+	Buffer.OffsetSize (VObj.ObjImage algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where
 	imageCopyListToMiddle bf (ic :** ics) =

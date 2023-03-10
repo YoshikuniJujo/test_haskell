@@ -17,8 +17,8 @@ import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object hiding (objectLength)
-import Data.Kind.ObjectNew qualified as N
+import Data.Kind.Object qualified as KObj hiding (objectLength)
+import Gpu.Vulkan.Object qualified as VObj
 import Data.Proxy
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
@@ -39,28 +39,28 @@ import qualified Gpu.Vulkan.Buffer.Middle as C
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Image.Middle as Image.M
 
-data B s (nm :: Symbol) (objs :: [Object]) = B (HeteroParList.PL ObjectLength objs) M.B
+data B s (nm :: Symbol) (objs :: [VObj.Object]) = B (HeteroParList.PL VObj.ObjectLength objs) M.B
 
-deriving instance Show (HeteroParList.PL ObjectLength objs) => Show (B s nm objs)
+deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) => Show (B s nm objs)
 
-data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [Object]) = Binded (HeteroParList.PL ObjectLength objs) M.B
+data Binded (sm :: Type) (sb :: Type) (nm :: Symbol) (objs :: [VObj.Object]) = Binded (HeteroParList.PL VObj.ObjectLength objs) M.B
 
-deriving instance Show (HeteroParList.PL ObjectLength objs) => Show (Binded sm sb nm objs)
+deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) => Show (Binded sm sb nm objs)
 
-deriving instance Eq (HeteroParList.PL ObjectLength objs) => Eq (Binded sm sb nm objs)
+deriving instance Eq (HeteroParList.PL VObj.ObjectLength objs) => Eq (Binded sm sb nm objs)
 
 data CreateInfo n objs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoLengths :: HeteroParList.PL ObjectLength objs,
+	createInfoLengths :: HeteroParList.PL VObj.ObjectLength objs,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 
-deriving instance (Show n, Show (HeteroParList.PL ObjectLength objs)) =>
+deriving instance (Show n, Show (HeteroParList.PL VObj.ObjectLength objs)) =>
 	Show (CreateInfo n objs)
 
-createInfoToMiddle :: WholeSize objs =>
+createInfoToMiddle :: VObj.WholeSize objs =>
 	CreateInfo n objs -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
@@ -71,12 +71,12 @@ createInfoToMiddle CreateInfo {
 	createInfoQueueFamilyIndices = qfis } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
-	M.createInfoSize = fromIntegral $ wholeSize 0 lns,
+	M.createInfoSize = fromIntegral $ VObj.wholeSize 0 lns,
 	M.createInfoUsage = usg,
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked n, WholeSize objs, WithPoked c, WithPoked d) =>
+create :: (WithPoked n, VObj.WholeSize objs, WithPoked c, WithPoked d) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . B s nm objs -> IO a) -> IO a
@@ -88,31 +88,33 @@ create (Device.D dvc) ci macc macd f = bracket
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
-class OffsetList v (vs :: [Object]) where
-	offsetList :: HeteroParList.PL ObjectLength vs -> Int -> Device.M.Size
+class OffsetList v (vs :: [VObj.Object]) where
+	offsetList :: HeteroParList.PL VObj.ObjectLength vs -> Int -> Device.M.Size
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
 instance (KnownNat algn, WithPoked v, Sizable v) =>
-	OffsetList v ('ObjObject ('N.List algn v _nm) ': vs) where
+	OffsetList v (VObj.List algn v _nm ': vs) where
 	offsetList _ = fromIntegral . adjust (
 		fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment' @v )
 
 instance {-# OVERLAPPABLE #-} (
-	SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
+	VObj.SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
 	offsetList (objlen :** objlens) ost =
-		offsetList @v @vs objlens (ost + objectSize objlen)
+		offsetList @v @vs objlens (ost + VObj.objectSize objlen)
 
-sampleObjLens :: HeteroParList.PL N.ObjectLength
-	['N.List 256 Bool "", 'N.Atom 256 Char 'Nothing, 'N.Atom 256 Int 'Nothing, 'N.List 256 Double "", 'N.List 256 Char ""]
+{-
+sampleObjLens :: HeteroParList.PL NObj.ObjectLength
+	['NObj.List 256 Bool "", 'NObj.Atom 256 Char 'Nothing, 'NObj.Atom 256 Int 'Nothing, 'NObj.List 256 Double "", 'NObj.List 256 Char ""]
 sampleObjLens =
-	N.ObjectLengthList 3 :**
-	N.ObjectLengthAtom :**
-	N.ObjectLengthAtom :**
-	N.ObjectLengthList 5 :**
-	N.ObjectLengthList 3 :** HeteroParList.Nil
+	NObj.ObjectLengthList 3 :**
+	NObj.ObjectLengthAtom :**
+	NObj.ObjectLengthAtom :**
+	NObj.ObjectLengthList 5 :**
+	NObj.ObjectLengthList 3 :** HeteroParList.Nil
+	-}
 
 data IndexedList sm sb nm v =
 	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
@@ -130,40 +132,40 @@ indexedListToMiddles HeteroParList.Nil = []
 indexedListToMiddles (U4 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
-class CopyPrefix (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
+class CopyPrefix (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Object]) where
 	copyCheckLengthPrefix ::
-		HeteroParList.PL ObjectLength src ->
-		HeteroParList.PL ObjectLength dst -> Bool
-	copySizePrefix :: Word64 -> HeteroParList.PL ObjectLength src -> Word64
+		HeteroParList.PL VObj.ObjectLength src ->
+		HeteroParList.PL VObj.ObjectLength dst -> Bool
+	copySizePrefix :: Word64 -> HeteroParList.PL VObj.ObjectLength src -> Word64
 
 instance CopyPrefix '[] src dst where
 	copyCheckLengthPrefix _ _ = True
 	copySizePrefix sz _ = sz
 
 instance (
-	SizeAlignment a,
+	VObj.SizeAlignment a,
 	CopyPrefix as ss ds ) =>
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) where
 	copyCheckLengthPrefix (s :** ss) (d :** ds) =
 		s == d && copyCheckLengthPrefix @as ss ds
 	copySizePrefix sz (ln :** lns) = copySizePrefix @as @ss @ds
-		(((sz - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
+		(((sz - 1) `div` algn + 1) * algn + fromIntegral (VObj.objectSize ln))
 		lns
-		where algn = fromIntegral $ objectAlignment @a
+		where algn = fromIntegral $ VObj.objectAlignment @a
 
-class CopyInfo (area :: [Object]) (src :: [Object]) (dst :: [Object]) where
+class CopyInfo (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Object]) where
 	copyCheckLength ::
-		HeteroParList.PL ObjectLength src ->
-		HeteroParList.PL ObjectLength dst -> Bool
-	copySrcOffset :: Word64 -> HeteroParList.PL ObjectLength src -> Word64
-	copyDstOffset :: Word64 -> HeteroParList.PL ObjectLength dst -> Word64
-	copySize :: HeteroParList.PL ObjectLength src -> Word64
+		HeteroParList.PL VObj.ObjectLength src ->
+		HeteroParList.PL VObj.ObjectLength dst -> Bool
+	copySrcOffset :: Word64 -> HeteroParList.PL VObj.ObjectLength src -> Word64
+	copyDstOffset :: Word64 -> HeteroParList.PL VObj.ObjectLength dst -> Word64
+	copySize :: HeteroParList.PL VObj.ObjectLength src -> Word64
 
-type OT o = Data.Kind.Object.ObjectType o
+type OT o = VObj.ObjectType o
 
 instance (
-	WithPoked (Data.Kind.Object.ObjectType a),
-	Sizable (Data.Kind.Object.ObjectType a),
+	WithPoked (VObj.ObjectType a),
+	Sizable (VObj.ObjectType a),
 	CopyPrefix (a ': as) (a ': ss) (a ': ds) ) => CopyInfo (a ': as) (a ': ss) (a ': ds) where
 	copyCheckLength = copyCheckLengthPrefix @(a ': as) @(a ': ss) @(a ': ds)
 	copySrcOffset ost _ = ((ost - 1) `div` algn + 1) * algn
@@ -173,31 +175,31 @@ instance (
 	copySize = copySizePrefix @(a ': as) @(a ': ss) @(a ': ds) 0
 
 instance {-# OVERLAPPABLE #-}
-	(SizeAlignment d, CopyInfo (a ': as) (a ': ss) ds) =>
+	(VObj.SizeAlignment d, CopyInfo (a ': as) (a ': ss) ds) =>
 	CopyInfo (a ': as) (a ': ss) (d ': ds) where
 	copyCheckLength ss (_ :** ds) =
 		copyCheckLength @(a ': as) @(a ': ss) @ds ss ds
 	copySrcOffset ost lns = copySrcOffset @(a ': as) @(a ': ss) @ds ost lns
 	copyDstOffset ost (ln :** lns) = copyDstOffset @(a ': as) @(a ': ss)
-		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.objectSize ln))
 		lns
-		where algn = fromIntegral $ objectAlignment @d
+		where algn = fromIntegral $ VObj.objectAlignment @d
 	copySize = copySize @(a ': as) @(a ': ss) @ds
 
 instance {-# OVERLAPPABLE #-}
-	(SizeAlignment s,
+	(VObj.SizeAlignment s,
 	CopyInfo as ss ds) =>
 	CopyInfo as (s ': ss) ds where
 	copyCheckLength (_ :** ss) ds = copyCheckLength @as ss ds
 	copySrcOffset ost (ln :** lns) = copySrcOffset @as @ss @ds
-		(((ost - 1) `div` algn + 1) * algn + fromIntegral (objectSize ln))
+		(((ost - 1) `div` algn + 1) * algn + fromIntegral (VObj.objectSize ln))
 		lns
-		where algn = fromIntegral (objectAlignment @s)
+		where algn = fromIntegral (VObj.objectAlignment @s)
 	copyDstOffset ost lns = copyDstOffset @as @ss ost lns
 	copySize (_ :** lns) = copySize @as @ss @ds lns
 
-makeCopy :: forall (as :: [Object]) ss ds . CopyInfo as ss ds =>
-	HeteroParList.PL ObjectLength ss -> HeteroParList.PL ObjectLength ds -> C.Copy
+makeCopy :: forall (as :: [VObj.Object]) ss ds . CopyInfo as ss ds =>
+	HeteroParList.PL VObj.ObjectLength ss -> HeteroParList.PL VObj.ObjectLength ds -> C.Copy
 makeCopy src dst
 	| copyCheckLength @as src dst = C.Copy {
 		C.copySrcOffset = copySrcOffset @as @ss @ds 0 src,
@@ -205,10 +207,10 @@ makeCopy src dst
 		C.copySize = copySize @as @ss @ds src }
 	| otherwise = error "List lengths are different"
 
-class MakeCopies (ass :: [[Object]]) (ss :: [Object]) (ds :: [Object]) where
+class MakeCopies (ass :: [[VObj.Object]]) (ss :: [VObj.Object]) (ds :: [VObj.Object]) where
 	makeCopies ::
-		HeteroParList.PL ObjectLength ss ->
-		HeteroParList.PL ObjectLength ds -> [C.Copy]
+		HeteroParList.PL VObj.ObjectLength ss ->
+		HeteroParList.PL VObj.ObjectLength ds -> [C.Copy]
 
 instance MakeCopies '[] ss ds where makeCopies _ _ = []
 
@@ -216,26 +218,26 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 	MakeCopies (as ': ass) ss ds where
 	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
 
-class OffsetSize (v :: Object) (vs :: [Object]) where
-	offsetSize :: HeteroParList.PL ObjectLength vs ->
+class OffsetSize (v :: VObj.Object) (vs :: [VObj.Object]) where
+	offsetSize :: HeteroParList.PL VObj.ObjectLength vs ->
 		Device.M.Size -> (Device.M.Size, Device.M.Size)
-	objectLength :: HeteroParList.PL ObjectLength vs -> ObjectLength v
+	objectLength :: HeteroParList.PL VObj.ObjectLength vs -> VObj.ObjectLength v
 
-instance SizeAlignment v => OffsetSize v (v ': vs) where
+instance VObj.SizeAlignment v => OffsetSize v (v ': vs) where
 	offsetSize (ln :** _) ost = (
 		((ost - 1) `div` algn + 1) * algn,
-		fromIntegral $ objectSize ln )
-		where algn = fromIntegral $ objectAlignment @v
+		fromIntegral $ VObj.objectSize ln )
+		where algn = fromIntegral $ VObj.objectAlignment @v
 	objectLength (ln :** _) = ln
 
 instance {-# OVERLAPPABLE #-}
-	(SizeAlignment v, SizeAlignment v', OffsetSize v vs ) =>
+	(VObj.SizeAlignment v, VObj.SizeAlignment v', OffsetSize v vs ) =>
 	OffsetSize v (v' ': vs) where
 	offsetSize (ln :** lns) ost = offsetSize @v lns
 		$ ((ost - 1) `div` algn + 1) * algn + sz
 		where
-		algn = fromIntegral $ objectAlignment @v
-		sz = fromIntegral $ objectSize ln
+		algn = fromIntegral $ VObj.objectAlignment @v
+		sz = fromIntegral $ VObj.objectSize ln
 	objectLength (_ :** lns) = objectLength @v lns
 
 data MemoryBarrier n sm sb nm obj = forall objs . OffsetSize obj objs =>
@@ -291,7 +293,7 @@ data ImageCopy img inm = ImageCopy {
 	deriving Show
 
 imageCopyToMiddle :: forall algn img (inm :: Symbol) sm sb nm objs .
-	OffsetSize ('ObjImage algn img inm) objs =>
+	OffsetSize (VObj.ObjImage algn img inm) objs =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -304,7 +306,7 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageOffset = iost,
 	M.imageCopyImageExtent = iext }
 	where
-	(ost, _) = offsetSize @('ObjImage algn img inm) lns 0
-	ObjectLengthImage r _w h _d = objectLength @('ObjImage algn img inm) lns
+	(ost, _) = offsetSize @(VObj.ObjImage algn img inm) lns 0
+	VObj.ObjectLengthImage r _w h _d = objectLength @(VObj.ObjImage algn img inm) lns
 
 type family ImageFormat img :: T.Format

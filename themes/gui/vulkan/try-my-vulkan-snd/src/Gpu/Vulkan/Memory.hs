@@ -27,7 +27,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception hiding (try)
 import Data.Kind
 import Data.Kind.Object qualified as KObj
-import Gpu.Vulkan.Object qualified as V
+import Gpu.Vulkan.Object qualified as VObj
 import Data.Maybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
@@ -79,14 +79,14 @@ instance Alignments ibs =>
 	Alignments ('(_s, 'K.Image _nm _fmt) ': ibs) where
 	alignments = Nothing : alignments @ibs
 
-instance (KObj.SizeAlignment obj, Alignments ibs) =>
+instance (VObj.SizeAlignment obj, Alignments ibs) =>
 	Alignments ('(_s, 'K.Buffer _nm (obj ': _objs)) ': ibs) where
-	alignments = Just (KObj.objectAlignment @obj) : alignments @ibs
+	alignments = Just (VObj.objectAlignment @obj) : alignments @ibs
 
 deriving instance Show (Image.INew sib nm fmt) =>
 	Show (ImageBuffer sib ('K.Image nm fmt))
 
-deriving instance Show (HeteroParList.PL KObj.ObjectLength objs) =>
+deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 	Show (ImageBuffer sib ('K.Buffer nm objs))
 
 data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
@@ -327,15 +327,15 @@ offsetSize dvc m ost = do
 	offsetSize' @nm @obj @sibfoss dvc ibs ost
 
 offsetSizeLength :: forall nm obj sibfoss sm . OffsetSize' nm obj sibfoss =>
-	M sm sibfoss -> IO (KObj.ObjectLength obj)
+	M sm sibfoss -> IO (VObj.ObjectLength obj)
 offsetSizeLength m = do
 	(lns, _m) <- readM'' m
 	offsetSizeLength' @nm @obj @sibfoss lns
 
-class OffsetSize' (nm :: Symbol) (obj :: KObj.Object) sibfoss where
+class OffsetSize' (nm :: Symbol) (obj :: VObj.Object) sibfoss where
 	offsetSize' :: Device.D sd -> HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 		Device.M.Size -> IO (Device.M.Size, Device.M.Size)
-	offsetSizeLength' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO (KObj.ObjectLength obj)
+	offsetSizeLength' :: HeteroParList.PL (U2 ImageBuffer) sibfoss -> IO (VObj.ObjectLength obj)
 
 instance OffsetSizeObject obj objs =>
 	OffsetSize' nm obj ('(sib, 'K.Buffer nm objs) ': sibfoss) where
@@ -358,49 +358,49 @@ instance {-# OVERLAPPABLE #-}
 			$ ((ost - 1) `div` algn + 1) * algn + sz
 	offsetSizeLength' (_ :** lns) = offsetSizeLength' @nm @obj lns
 
-class OffsetSizeObject (obj :: KObj.Object) (objs :: [KObj.Object]) where
-	offsetSizeObject :: Device.M.Size -> HeteroParList.PL KObj.ObjectLength objs ->
+class OffsetSizeObject (obj :: VObj.Object) (objs :: [VObj.Object]) where
+	offsetSizeObject :: Device.M.Size -> HeteroParList.PL VObj.ObjectLength objs ->
 		(Device.M.Size, Device.M.Size)
-	offsetSizeObjectLength :: HeteroParList.PL KObj.ObjectLength objs ->
-		KObj.ObjectLength obj
+	offsetSizeObjectLength :: HeteroParList.PL VObj.ObjectLength objs ->
+		VObj.ObjectLength obj
 
-instance KObj.SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where
-	offsetSizeObject n (ln :** _) = (ost, fromIntegral $ KObj.objectSize ln)
+instance VObj.SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where
+	offsetSizeObject n (ln :** _) = (ost, fromIntegral $ VObj.objectSize ln)
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
-		algn = fromIntegral (KObj.objectAlignment @obj)
+		algn = fromIntegral (VObj.objectAlignment @obj)
 	offsetSizeObjectLength (ln :** _) = ln
 
 instance {-# OVERLAPPABLE #-} (
-	KObj.SizeAlignment obj, KObj.SizeAlignment obj',
+	VObj.SizeAlignment obj, VObj.SizeAlignment obj',
 	OffsetSizeObject obj objs ) =>
 	OffsetSizeObject obj (obj' ': objs) where
 	offsetSizeObject n (ln :** lns) =
-		offsetSizeObject @obj (ost + fromIntegral (KObj.objectSize ln)) lns
+		offsetSizeObject @obj (ost + fromIntegral (VObj.objectSize ln)) lns
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
-		algn = fromIntegral (KObj.objectAlignment @obj)
+		algn = fromIntegral (VObj.objectAlignment @obj)
 	offsetSizeObjectLength (_ :** lns) = offsetSizeObjectLength @obj lns
 
 write :: forall nm obj sd sm sibfoss v .
-	(KObj.StoreObject v obj, OffsetSize' nm obj sibfoss) =>
+	(VObj.StoreObject v obj, OffsetSize' nm obj sibfoss) =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> v -> IO ()
 write dvc mem flgs v = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (KObj.ObjectType obj)) -> do
+	(\(ptr :: Ptr (VObj.ObjectType obj)) -> do
 		ln <- offsetSizeLength @nm @obj mem
-		KObj.storeObject @_ @obj ptr ln v)
+		VObj.storeObject @_ @obj ptr ln v)
 
 read :: forall nm obj v sd sm sibfoss .
-	(KObj.StoreObject v obj, OffsetSize' nm obj sibfoss) =>
+	(VObj.StoreObject v obj, OffsetSize' nm obj sibfoss) =>
 	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO v
 read dvc mem flgs = bracket
 	(map @nm @obj dvc mem flgs) (const $ unmap dvc mem)
-	(\(ptr :: Ptr (KObj.ObjectType obj)) ->
-		KObj.loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
+	(\(ptr :: Ptr (VObj.ObjectType obj)) ->
+		VObj.loadObject @_ @obj ptr =<< offsetSizeLength @nm @obj mem)
 
 map :: forall nm obj sd sm sibfoss . OffsetSize' nm obj sibfoss =>
-	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (KObj.ObjectType obj))
+	Device.D sd -> M sm sibfoss -> Memory.M.MapFlags -> IO (Ptr (VObj.ObjectType obj))
 map dvc@(Device.D mdvc) m flgs = do
 	(_, mm) <- readM'' m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0

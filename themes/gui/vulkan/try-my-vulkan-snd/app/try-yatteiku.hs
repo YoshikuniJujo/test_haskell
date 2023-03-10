@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
@@ -13,7 +14,8 @@ module Main where
 import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Data.Kind.Object
+import Data.Kind.Object qualified as KObj
+import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
 import Data.Maybe
@@ -157,7 +159,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 				copyBufferToImage device gq cp bimg' b screenWidth screenHeight
 		print screenWidth
 		print screenHeight
-		MyImage img <- Vk.Memory.read @"image-buffer" @('ObjImage 1 MyImage "") device bm def
+		MyImage img <- Vk.Memory.read @"image-buffer" @(VObj.ObjImage 1 MyImage "") device bm def
 		writePng "yatteiku.png" (img :: Image PixelRGBA8)
 
 makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
@@ -255,10 +257,10 @@ makeImage' phdvc dvc f = do
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm "image-buffer" '[ 'ObjImage 1 MyImage ""] ->
+		Vk.Bffr.Binded sb sm "image-buffer" '[ VObj.ObjImage 1 MyImage ""] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.K.Buffer "image-buffer" '[ 'ObjImage 1 MyImage ""])] ->
+			'Vk.Memory.K.Buffer "image-buffer" '[ VObj.ObjImage 1 MyImage ""])] ->
 			IO a) -> IO a
 makeBuffer phdvc dvc wdt hgt f =
 	createBufferImage phdvc dvc
@@ -268,10 +270,10 @@ makeBuffer phdvc dvc wdt hgt f =
 			Vk.Memory.PropertyHostCoherentBit ) f
 
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
-	Storable (IsImagePixel img) =>
+	Storable (KObj.IsImagePixel img) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
 	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
-	Vk.Bffr.Binded sm sb nm '[ 'ObjImage 1 img inm]  ->
+	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp img bf wdt hgt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -358,20 +360,20 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CommandBuffer.beginInfoFlags = Vk.CommandBuffer.UsageOneTimeSubmitBit,
 		Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 
-createBufferImage :: Storable (IsImagePixel t) =>
+createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ 'ObjImage 1 t inm] ->
+		Vk.Bffr.Binded sb sm nm '[ VObj.ObjImage 1 t inm] ->
 		Vk.Memory.M sm '[ '(
 			sb,
-			'Vk.Memory.K.Buffer nm '[ 'ObjImage 1 t inm])] ->
+			'Vk.Memory.K.Buffer nm '[ VObj.ObjImage 1 t inm])] ->
 		IO a) -> IO a
 createBufferImage p dv (r, w, h, d) usg props =
-	createBuffer p dv (ObjectLengthImage r w h d) usg props
+	createBuffer p dv (VObj.ObjectLengthImage r w h d) usg props
 
-createBuffer :: forall sd nm o a . Data.Kind.Object.SizeAlignment o =>
-	Vk.PhysicalDevice.P -> Vk.Device.D sd -> ObjectLength o ->
+createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
+	Vk.PhysicalDevice.P -> Vk.Device.D sd -> VObj.ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[o] ->
 		Vk.Memory.M sm
@@ -426,9 +428,9 @@ listToTuple4 :: [a] -> (a, a, a, a)
 listToTuple4 [r, g, b, a] = (r, g, b, a)
 listToTuple4 _ = error "The length of the list is not 4"
 
-instance IsImage MyImage where
+instance KObj.IsImage MyImage where
 	type IsImagePixel MyImage = MyRgba8
-	isImageRow = isImageWidth
+	isImageRow = KObj.isImageWidth
 	isImageWidth (MyImage img) = imageWidth img
 	isImageHeight (MyImage img) = imageHeight img
 	isImageDepth _ = 1

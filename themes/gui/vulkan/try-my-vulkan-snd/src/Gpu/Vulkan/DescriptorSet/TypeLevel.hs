@@ -12,8 +12,9 @@ module Gpu.Vulkan.DescriptorSet.TypeLevel where
 import GHC.TypeLits
 import Control.Arrow
 import Data.Kind
-import Data.Kind.Object
-import Data.Kind.ObjectNew qualified as N
+import Data.Kind.Object qualified as KObj
+import Data.Kind.ObjectNew qualified as NObj
+import Gpu.Vulkan.Object qualified as VObj
 
 import {-# SOURCE #-} Gpu.Vulkan.DescriptorSet
 
@@ -35,43 +36,43 @@ type family BindingTypesFromLayoutArg (tbts :: LayoutArg) ::
 	BindingTypesFromLayoutArg '(t, bts) = bts
 
 type family ObjectsFromBufferInfoArgs (bias :: [Descriptor.BufferInfoArg]) ::
-	[Object] where
+	[VObj.Object] where
 	ObjectsFromBufferInfoArgs '[] = '[]
 	ObjectsFromBufferInfoArgs ('(sb, sm, nm, objs, obj) ': args) =
 		obj ': ObjectsFromBufferInfoArgs args
 
-class IsPrefix (objs :: [Object]) (objs' :: [Object])
+class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object])
 
 instance IsPrefix '[] objs
 
 instance IsPrefix os os' => IsPrefix (o : os) (o : os')
 
 class BindingAndArrayElem
-	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [Object]) where
+	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t 'Nothing) ': os') ': bts) ('ObjObject ('N.Atom algn t 'Nothing) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts) (VObj.Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t 'Nothing) ': os') ': bts) ('ObjObject ('N.Atom algn t ('Just nm)) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts) (VObj.Atom algn t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t ('Just nm)) ': os') ': bts) ('ObjObject ('N.Atom algn t 'Nothing) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts) (VObj.Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.Atom algn t ('Just nm)) ': os') ': bts) ('ObjObject ('N.Atom algn t ('Just nm)) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts) (VObj.Atom algn t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjObject ('N.List algn t nm) ': os') ': bts) ('ObjObject ('N.List algn t nm) ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.List algn t nm ': os') ': bts) (VObj.List algn t nm ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer ('ObjImage algn t nm ': os') ': bts) ('ObjImage algn t nm ': os) where
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.ObjImage algn t nm ': os') ': bts) (VObj.ObjImage algn t nm ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-}

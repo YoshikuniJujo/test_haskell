@@ -3,7 +3,7 @@
 module Gpu.Vulkan.Memory.Kind where
 
 import GHC.TypeLits
-import Data.Kind.Object
+import Gpu.Vulkan.Object
 
 import qualified Gpu.Vulkan.TypeEnum as T
 

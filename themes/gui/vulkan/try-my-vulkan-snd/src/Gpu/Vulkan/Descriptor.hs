@@ -31,8 +31,7 @@ module Gpu.Vulkan.Descriptor (
 
 import GHC.TypeLits
 import Data.Kind
-import Data.Kind.Object
-import Data.Kind.ObjectNew qualified as N
+import Gpu.Vulkan.Object qualified as VObj
 import qualified Data.HeteroParList as HeteroParList
 
 import qualified Gpu.Vulkan.Buffer as Buffer
@@ -47,28 +46,28 @@ import Gpu.Vulkan.Descriptor.Enum qualified as E
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoAtom ::
 		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, 'ObjObject ('N.Atom algn v objnm))
+		BufferInfo '(sb, sm, nm, objs, VObj.Atom algn v objnm)
 	BufferInfoList ::
 		{ bufferInfoListBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, 'ObjObject ('N.List algn v objnm))
+		BufferInfo '(sb, sm, nm, objs, VObj.List algn v objnm)
 
-type BufferInfoArg = (Type, Type, Symbol, [Object], Object)
+type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
 
-deriving instance Show (HeteroParList.PL ObjectLength objs) =>
+deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 	Show (BufferInfo '(sb, sm, nm, objs, obj))
 
-bufferInfoToMiddle :: forall sb sm nm objs obj . Offset obj objs =>
+bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.Offset obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle BufferInfoAtom {
 	bufferInfoAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
-	M.bufferInfoRange = fromIntegral $ range @obj lns }
+	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
+	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
 bufferInfoToMiddle BufferInfoList {
 	bufferInfoListBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ offset @obj 0 lns,
-	M.bufferInfoRange = fromIntegral $ range @obj lns }
+	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
+	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
 
 data ImageInfo ss fmt nm si = ImageInfo {
 	imageInfoSampler :: Sampler.S ss,
