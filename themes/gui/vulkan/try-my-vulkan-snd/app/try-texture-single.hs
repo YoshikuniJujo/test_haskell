@@ -1356,7 +1356,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.Cmd.bindVertexBuffers cb
 		. HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 	Vk.Cmd.bindIndexBuffer cb $ Vk.Bffr.IndexedList @_ @_ @_ @Word16 ib
-	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics ppllyt
+	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics ppllyt
 		(HeteroParList.Singleton $ U2 ubds) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 	where

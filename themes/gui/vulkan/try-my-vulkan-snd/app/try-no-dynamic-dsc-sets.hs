@@ -436,7 +436,7 @@ run :: forall sd sc vs sg sl sdsl sp sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute plyt
+		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute plyt
 			(HeteroParList.Singleton $ U2 dss) []
 		Vk.Cmd.dispatch cb ln 1 1
 	Vk.Queue.submit q (U4 sinfo :** HeteroParList.Nil) Nothing

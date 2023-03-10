@@ -294,7 +294,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute
+		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute
 			pplLyt (HeteroParList.Singleton $ U2 dscSet) [256, 512, 0]
 		Vk.Cmd.dispatch cb dsz 1 1
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing

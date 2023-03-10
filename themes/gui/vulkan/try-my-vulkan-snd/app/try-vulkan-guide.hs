@@ -1545,7 +1545,7 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } = do
 	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
-	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
+	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics lyt
 		(HeteroParList.Singleton $ U2 cmd) []
 	movb <- readIORef om
 	case movb of
