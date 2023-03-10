@@ -24,6 +24,8 @@ type List algn t nm = Static (K.List algn t nm)
 type Atom algn t mnm = Static (K.Atom algn t mnm)
 type ObjImage algn t nm = Static (K.ObjImage algn t nm)
 
+type DynList n algn t nm = Dynamic n (K.List algn t nm)
+
 data ObjectLength obj where
 	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
 	ObjectLengthDynamic ::
@@ -42,6 +44,10 @@ pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
 pattern ObjectLengthList :: Int -> ObjectLength ('Static (K.List algn t nm))
 pattern ObjectLengthList n <- ObjectLengthStatic (K.ObjectLengthList n) where
 	ObjectLengthList n = ObjectLengthStatic (K.ObjectLengthList n)
+
+pattern ObjectLengthDynList :: Int -> ObjectLength ('Dynamic n (K.List algn t nm))
+pattern ObjectLengthDynList n <- ObjectLengthDynamic (K.ObjectLengthList n) where
+	ObjectLengthDynList n = ObjectLengthDynamic (K.ObjectLengthList n)
 
 type family ObjectType obj where
 	ObjectType (Static kobj) = K.ObjectType kobj

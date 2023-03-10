@@ -88,12 +88,12 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet mgcx >>
-		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def
-			<*> Vk.Mm.read @"" @(VObj.List 256 W2 "") @[W2] dvc mb def
-			<*> Vk.Mm.read @"" @(VObj.List 256 W3 "") @[W3] dvc mc def
-	print . take 20 $ unW1 <$> r1
-	print . take 20 $ unW2 <$> r2
-	print . take 20 $ unW3 <$> r3
+		(,,)	<$> Vk.Mm.read @"" @(VObj.DynList 1 256 W1 "") @[[W1]] dvc ma def
+			<*> Vk.Mm.read @"" @(VObj.DynList 1 256 W2 "") @[[W2]] dvc mb def
+			<*> Vk.Mm.read @"" @(VObj.DynList 1 256 W3 "") @[[W3]] dvc mc def
+	print . take 20 $ unW1 <$> head r1
+	print . take 20 $ unW2 <$> head r2
+	print . take 20 $ unW3 <$> head r3
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
@@ -132,7 +132,7 @@ dvcInfo qFam = Vk.Dvc.CreateInfo {
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () '[
-	'Vk.DscSetLyt.Buffer '[VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 ""] ]
+	'Vk.DscSetLyt.Buffer '[VObj.DynList 1 256 W1 "",VObj.DynList 1 256 W2 "",VObj.DynList 1 256 W3 ""] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = zeroBits,
@@ -146,13 +146,13 @@ binding = Vk.DscSetLyt.BindingBuffer {
 -- PREPARE MEMORIES
 
 prepareMems :: Vk.DscSet.BindingAndArrayElem bts '[
-		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ] =>
+		VObj.DynList 1 256 W1 "",VObj.DynList 1 256 W2 "",VObj.DynList 1 256 W3 "" ] =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->
-		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W1 ""])] ->
-		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W2 ""])] ->
-		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
+		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.K.Buffer "" '[VObj.DynList 1 256 W1 ""])] ->
+		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.K.Buffer "" '[VObj.DynList 1 256 W2 ""])] ->
+		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.K.Buffer "" '[VObj.DynList 1 256 W3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
@@ -185,8 +185,8 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (forall sb sm .
-		Vk.Buffer.Binded sb sm nm '[VObj.List 256 w ""]  ->
-		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[VObj.List 256 w ""])] ->
+		Vk.Buffer.Binded sb sm nm '[VObj.DynList 1 256 w ""]  ->
+		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[VObj.DynList 1 256 w ""])] ->
 		IO a) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil nil \bf ->
@@ -194,14 +194,14 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(VObj.List 256 w "") dvc mm def xs >> f bnd mm
+	Vk.Mm.write @nm @(VObj.DynList 1 256 w "") dvc mm def [xs] >> f bnd mm
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[VObj.List 256 w ""]
+bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[VObj.DynList 1 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoNext = Nothing,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
-		VObj.ObjectLengthList (V.length xs) :** HeteroParList.Nil,
+		VObj.ObjectLengthDynList (V.length xs) :** HeteroParList.Nil,
 	Vk.Buffer.createInfoUsage = Vk.Buffer.UsageStorageBufferBit,
 	Vk.Buffer.createInfoSharingMode = Vk.SharingModeExclusive,
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
@@ -239,16 +239,16 @@ writeDscSet ::
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sb1, sm1, "", objs1,VObj.List 256 W1 ""), '(sb2, sm2, "", objs2,VObj.List 256 W2 ""),
-		'(sb3, sm3, "", objs3,VObj.List 256 W3 "") ])
+		'(sb1, sm1, "", objs1,VObj.DynList 1 256 W1 ""), '(sb2, sm2, "", objs2,VObj.DynList 1 256 W2 ""),
+		'(sb3, sm3, "", objs3,VObj.DynList 1 256 W3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBufferDynamic,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @W1 ba :**
-		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @W2 bb :**
-		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @W3 bc :**
+		Vk.Dsc.BufferInfoDynList @_ @_ @_ @_ @_ @_ @W1 ba :**
+		Vk.Dsc.BufferInfoDynList @_ @_ @_ @_ @_ @_ @W2 bb :**
+		Vk.Dsc.BufferInfoDynList @_ @_ @_ @_ @_ @_ @W3 bc :**
 		HeteroParList.Nil }
 
 -- CALC

@@ -50,6 +50,9 @@ data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoList ::
 		{ bufferInfoListBuffer :: Buffer.Binded sm sb nm objs } ->
 		BufferInfo '(sb, sm, nm, objs, VObj.List algn v objnm)
+	BufferInfoDynList ::
+		{ bufferInfoDynListBuffer :: Buffer.Binded sm sb nm objs } ->
+		BufferInfo '(sb, sm, nm, objs, VObj.DynList n algn v objnm)
 
 type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
 
@@ -65,6 +68,11 @@ bufferInfoToMiddle BufferInfoAtom {
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
 bufferInfoToMiddle BufferInfoList {
 	bufferInfoListBuffer = Buffer.Binded lns b } = M.BufferInfo {
+	M.bufferInfoBuffer = b,
+	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
+	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
+bufferInfoToMiddle BufferInfoDynList {
+	bufferInfoDynListBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }

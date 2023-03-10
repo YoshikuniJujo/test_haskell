@@ -72,6 +72,10 @@ instance IsPrefix os os' =>
 	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.DynList n algn t nm ': os') ': bts) (VObj.DynList n algn t nm ': os) where
+	bindingAndArrayElem _ = (0, 0)
+
+instance IsPrefix os os' =>
 	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.ObjImage algn t nm ': os') ': bts) (VObj.ObjImage algn t nm ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
