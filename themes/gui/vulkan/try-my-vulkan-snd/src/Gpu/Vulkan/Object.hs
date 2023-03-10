@@ -52,6 +52,13 @@ instance (SizeAlignment obj, WholeSize objs) => WholeSize (obj ': objs) where
 		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj
 
+nextObject :: forall kobj . K.SizeAlignment kobj =>
+	Ptr (K.ObjectType kobj) -> K.ObjectLength kobj -> Ptr (K.ObjectType kobj)
+nextObject p ln = p `plusPtr` n
+	where
+	n = ((K.objectSize ln - 1) `div` algn + 1) * algn
+	algn = K.objectAlignment @kobj
+
 class StoreObject v obj where
 	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()
 	loadObject :: Ptr (ObjectType obj) -> ObjectLength obj -> IO v
@@ -60,6 +67,19 @@ class StoreObject v obj where
 instance K.StoreObject v kobj => StoreObject v (Static kobj) where
 	storeObject p (ObjectLengthStatic kln) = K.storeObject p kln
 	loadObject p (ObjectLengthStatic kln) = K.loadObject p kln
-	objectLength x = ObjectLengthStatic $ K.objectLength x
+	objectLength = ObjectLengthStatic . K.objectLength
 
-instance K.StoreObject v kobj => StoreObject [v] (Dynamic n kobj) where
+instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
+	StoreObject [v] (Dynamic n kobj) where
+	storeObject p0 (ObjectLengthDynamic kln) =
+		go p0 (natVal (Proxy :: Proxy n))
+		where
+		go _ _ [] = pure ()
+		go _ n _ | n < 1 = pure ()
+		go p n (x : xs) =
+			K.storeObject p kln x >> go (nextObject p kln) (n - 1) xs
+	loadObject p0 (ObjectLengthDynamic kln) = go p0 (natVal (Proxy :: Proxy n))
+		where
+		go _ n | n < 1 = pure []
+		go p n = (:) <$> K.loadObject p kln <*> go (nextObject p kln) (n - 1)
+	objectLength = ObjectLengthDynamic . K.objectLength . head
