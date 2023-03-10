@@ -204,7 +204,7 @@ dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoNext = Nothing,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
-	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
+	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
 type BffMem sm sb nm w = (
 	Vk.Bffr.Binded sb sm nm '[VObj.List 256 w ""],

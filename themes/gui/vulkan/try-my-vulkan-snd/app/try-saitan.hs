@@ -505,7 +505,7 @@ dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoNext = Nothing,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
-	Vk.DscSet.allocateInfoSetLayouts = Vk.DscSet.Layout lyt :** HeteroParList.Nil }
+	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
 commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {

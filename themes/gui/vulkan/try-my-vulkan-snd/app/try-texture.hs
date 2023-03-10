@@ -1201,7 +1201,7 @@ createUniformBuffers _ _ _ 0 f = f HeteroParList.Nil HeteroParList.Nil HeteroPar
 createUniformBuffers ph dvc dscslyt n f =
 	createUniformBuffer1 ph dvc \(b :: BindedUbo smsb) m ->
 		createUniformBuffers @ssmp @siv ph dvc dscslyt (n - 1) \ls (bs :: HeteroParList.PL BindedUbo smsbs) ms -> f
-			(Vk.DscSet.Layout dscslyt :** ls)
+			(U2 dscslyt :** ls)
 			(b :** bs :: HeteroParList.PL BindedUbo (smsb ': smsbs))
 			(m :** ms)
 

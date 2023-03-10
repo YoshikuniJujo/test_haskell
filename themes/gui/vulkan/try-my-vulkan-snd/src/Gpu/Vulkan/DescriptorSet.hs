@@ -33,35 +33,12 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
-data AllocateInfo'' n sp sl = AllocateInfo'' {
-	allocateInfoNext'' :: Maybe n,
-	allocateInfoDescriptorPool'' :: Descriptor.Pool.P sp,
-	allocateInfoSetLayouts'' :: [Layout.L'' sl] }
-	deriving Show
-
-allocateInfoToMiddle'' :: AllocateInfo'' n sp sl -> M.AllocateInfo n
-allocateInfoToMiddle'' AllocateInfo'' {
-	allocateInfoNext'' = mnxt,
-	allocateInfoDescriptorPool'' = Descriptor.Pool.P dp,
-	allocateInfoSetLayouts'' = (Layout.unL'' <$>) -> dscsls
-	} = M.AllocateInfo {
-		M.allocateInfoNext = mnxt,
-		M.allocateInfoDescriptorPool = dp,
-		M.allocateInfoSetLayouts = dscsls }
-
-newtype S'' sd sp sl = S'' M.D deriving Show
-
-allocateSs'' :: WithPoked n =>
-	Device.D sd -> AllocateInfo'' n sp sl -> IO [S'' sd sp sl]
-allocateSs'' (Device.D dvc) ai = (S'' <$>) <$> M.allocateDs dvc (allocateInfoToMiddle'' ai)
-
-data Layout (slbts :: LayoutArg) where
-	Layout :: Layout.L sl bts -> Layout '(sl, bts)
+type Layout = U2 Layout.L
 
 type LayoutArg = (Type, [Layout.BindingType])
 
 layoutToMiddle :: Layout slbts -> Layout.M.L
-layoutToMiddle (Layout (Layout.L l)) = l
+layoutToMiddle (U2 (Layout.L l)) = l
 
 data AllocateInfo n sp slbtss = AllocateInfo {
 	allocateInfoNext :: Maybe n,

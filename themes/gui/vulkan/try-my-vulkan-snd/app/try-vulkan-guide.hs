@@ -1134,7 +1134,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 createCameraBuffers _ _ _ n f | n < 1 = f HeteroParList.Nil HeteroParList.Nil HeteroParList.Nil
 createCameraBuffers phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
 	createCameraBuffers phdvc dvc lyt (n - 1) \lyts bnds mems ->
-	f (Vk.DscSet.Layout lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
+	f (U2 lyt :** lyts) (BindedGcd bnd :** bnds) (MemoryGcd mem :** mems)
 
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .

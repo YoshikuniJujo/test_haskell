@@ -900,7 +900,7 @@ createDescriptorSet dvc dscp ub dscslyt = do
 		Vk.DscSet.allocateInfoNext = Nothing,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts =
-			HeteroParList.Singleton $ Vk.DscSet.Layout dscslyt }
+			HeteroParList.Singleton $ U2 dscslyt }
 
 descriptorWrite ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
