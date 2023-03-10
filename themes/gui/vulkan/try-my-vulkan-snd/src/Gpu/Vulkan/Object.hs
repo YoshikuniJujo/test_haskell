@@ -55,16 +55,18 @@ type family ObjectType obj where
 
 class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
+	objectSize' :: ObjectLength obj -> Int
 	objectAlignment :: Int
 
 instance K.SizeAlignment kobj => SizeAlignment (Static kobj) where
 	objectSize (ObjectLengthStatic kln) = K.objectSize kln
+	objectSize' = objectSize
 	objectAlignment = K.objectAlignment @kobj
 
 instance (KnownNat n, K.SizeAlignment kobj) =>
 	SizeAlignment (Dynamic n kobj) where
-	objectSize (ObjectLengthDynamic kln) =
-		fromIntegral (natVal (Proxy :: Proxy n)) * K.objectSize kln
+	objectSize (ObjectLengthDynamic kln) = K.objectSize kln
+	objectSize' obj = fromIntegral (natVal (Proxy :: Proxy n)) * objectSize obj
 	objectAlignment = K.objectAlignment @kobj
 
 class WholeSize objs where
@@ -74,7 +76,7 @@ instance WholeSize '[] where wholeSize sz _ = sz
 
 instance (SizeAlignment obj, WholeSize objs) => WholeSize (obj ': objs) where
 	wholeSize sz (ln :** lns) =
-		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
+		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize' ln) lns
 		where algn = objectAlignment @obj
 
 nextObject :: forall kobj . K.SizeAlignment kobj =>
@@ -121,6 +123,6 @@ instance SizeAlignment obj => Offset obj (obj ': objs) where
 instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 	Offset obj (obj' ': objs) where
 	offset ofst (ln :** lns) = offset @obj
-		(((ofst - 1) `div` algn + 1) * algn + objectSize ln) lns
+		(((ofst - 1) `div` algn + 1) * algn + objectSize' ln) lns
 		where algn = objectAlignment @obj'
 	range (_ :** lns) = range @obj lns
