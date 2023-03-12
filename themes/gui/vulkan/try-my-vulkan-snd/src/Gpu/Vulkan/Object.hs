@@ -34,6 +34,8 @@ data ObjectLength obj where
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
+pattern ObjectLengthImage ::
+	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.ObjImage algn t nm))
 pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))
 	where ObjectLengthImage kr kw kh kd = ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd)
 
@@ -126,3 +128,8 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 		(((ofst - 1) `div` algn + 1) * algn + objectSize' ln) lns
 		where algn = objectAlignment @obj'
 	range (_ :** lns) = range @obj lns
+
+type family OnlyDynamics os where
+	OnlyDynamics '[] = '[]
+	OnlyDynamics (Static _o ': os) = OnlyDynamics os
+	OnlyDynamics (Dynamic n ko ': os) = '(n, ko) ': OnlyDynamics os

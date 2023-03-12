@@ -17,7 +17,6 @@ import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object qualified as KObj hiding (objectLength)
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Proxy
 import Data.TypeLevel.Uncurry
