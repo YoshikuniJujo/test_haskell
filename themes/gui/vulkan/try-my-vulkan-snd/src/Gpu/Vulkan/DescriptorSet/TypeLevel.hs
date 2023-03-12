@@ -13,14 +13,19 @@ import GHC.TypeLits
 import Control.Arrow
 import Data.Kind
 import Data.Kind.Object qualified as KObj
-import Data.Kind.ObjectNew qualified as NObj
 import Gpu.Vulkan.Object qualified as VObj
 
-import {-# SOURCE #-} Gpu.Vulkan.DescriptorSet
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Descriptor as Descriptor
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
+
+type LayoutArg = (Type, [Layout.BindingType])
+
+type family LayoutArgOnlyDynamics la where
+	LayoutArgOnlyDynamics '(_t, bts) =
+		Layout.BindingTypeListBufferOnlyDynamics bts
 
 bindingAndArrayElem' ::
 	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) n . (
@@ -41,19 +46,21 @@ type family ObjectsFromBufferInfoArgs (bias :: [Descriptor.BufferInfoArg]) ::
 	ObjectsFromBufferInfoArgs ('(sb, sm, nm, objs, obj) ': args) =
 		obj ': ObjectsFromBufferInfoArgs args
 
-class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object])
+class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
+	type IsPrefixOnlyDynamics objs :: [KObj.Object]
 
-instance IsPrefix '[] objs
+instance IsPrefix '[] objs where
+	type IsPrefixOnlyDynamics '[] = '[]
 
-instance IsPrefix os os' => IsPrefix (o : os) (o : os')
+instance IsPrefix os os' => IsPrefix (VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
+	type IsPrefixOnlyDynamics (VObj.Dynamic n o ': os) = o ': IsPrefixOnlyDynamics os
+
+instance IsPrefix os os' => IsPrefix (VObj.Static o : os) (VObj.Static o : os') where
+	type IsPrefixOnlyDynamics (VObj.Static o ': os) = IsPrefixOnlyDynamics os
 
 class BindingAndArrayElem
 	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
-
-instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts) (VObj.Atom algn t 'Nothing ': os) where
-	bindingAndArrayElem _ = (0, 0)
 
 instance IsPrefix os os' =>
 	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts) (VObj.Atom algn t ('Just nm) ': os) where
@@ -63,20 +70,8 @@ instance IsPrefix os os' =>
 	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts) (VObj.Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
-instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts) (VObj.Atom algn t ('Just nm) ': os) where
-	bindingAndArrayElem _ = (0, 0)
-
-instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.List algn t nm ': os') ': bts) (VObj.List algn t nm ': os) where
-	bindingAndArrayElem _ = (0, 0)
-
-instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.DynList n algn t nm ': os') ': bts) (VObj.DynList n algn t nm ': os) where
-	bindingAndArrayElem _ = (0, 0)
-
-instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.ObjImage algn t nm ': os') ': bts) (VObj.ObjImage algn t nm ': os) where
+instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
+	BindingAndArrayElem ('DescriptorSetLayout.Buffer (o ': os') ': bts) (o ': os) where
 	bindingAndArrayElem _ = (0, 0)
 
 instance {-# OVERLAPPABLE #-}

@@ -129,7 +129,14 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 		where algn = objectAlignment @obj'
 	range (_ :** lns) = range @obj lns
 
-type family OnlyDynamics os where
-	OnlyDynamics '[] = '[]
-	OnlyDynamics (Static _o ': os) = OnlyDynamics os
-	OnlyDynamics (Dynamic n ko ': os) = '(n, ko) ': OnlyDynamics os
+class OnlyDynamicLengths (os :: [Object]) where
+	type OnlyDynamics os :: [K.Object]
+
+instance OnlyDynamicLengths '[] where
+	type OnlyDynamics '[] = '[]
+
+instance OnlyDynamicLengths ('Static _o ': os) where
+	type OnlyDynamics ('Static _o ': os) = OnlyDynamics os
+
+instance OnlyDynamicLengths ('Dynamic _n ko ': os) where
+	type OnlyDynamics ('Dynamic _n ko ': os) = ko ': OnlyDynamics os

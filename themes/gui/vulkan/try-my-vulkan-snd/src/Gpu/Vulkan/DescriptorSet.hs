@@ -37,12 +37,6 @@ import qualified Gpu.Vulkan.DescriptorSet.Middle as M
 
 type Layout = U2 Layout.L
 
-type LayoutArg = (Type, [Layout.BindingType])
-
-type family LayoutArgOnlyDynamics la where
-	LayoutArgOnlyDynamics '(_t, bts) =
-		Layout.BindingTypeListBufferOnlyDynamics bts
-
 layoutToMiddle :: Layout slbts -> Layout.M.L
 layoutToMiddle (U2 (Layout.L l)) = l
 

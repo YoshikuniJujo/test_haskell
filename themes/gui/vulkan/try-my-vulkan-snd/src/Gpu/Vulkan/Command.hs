@@ -36,6 +36,7 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as DescriptorSet
 import qualified Gpu.Vulkan.Buffer as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image as Image
