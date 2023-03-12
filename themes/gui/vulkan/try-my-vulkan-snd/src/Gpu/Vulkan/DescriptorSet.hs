@@ -15,6 +15,8 @@ module Gpu.Vulkan.DescriptorSet where
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.IORef
+import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
@@ -63,7 +65,9 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoSetLayouts =
 			HeteroParList.toList layoutToMiddle dscsls }
 
-newtype S sd sp (slbts :: LayoutArg) = S M.D
+newtype S sd sp (slbts :: LayoutArg) = S
+--	(IORef (HeteroParList.PL KObj.ObjectLength (LayoutArgOnlyDynamics slbts)))
+	M.D
 
 allocateSs :: (WithPoked n, HeteroParList.FromList slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
