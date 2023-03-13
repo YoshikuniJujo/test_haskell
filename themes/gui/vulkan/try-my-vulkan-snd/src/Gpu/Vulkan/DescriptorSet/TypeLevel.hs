@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.TypeLevel where
@@ -14,6 +15,8 @@ import Control.Arrow
 import Data.Kind
 import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 
@@ -47,41 +50,91 @@ type family ObjectsFromBufferInfoArgs (bias :: [Descriptor.BufferInfoArg]) ::
 		obj ': ObjectsFromBufferInfoArgs args
 
 class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
-	type IsPrefixOnlyDynamics objs :: [KObj.Object]
+	isPrefixUpdateDynamicLength ::
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs') ->
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs) ->
+		HeteroParList.PL KObj.ObjectLength (VObj.OnlyDynamics objs')
 
-instance IsPrefix '[] objs where
-	type IsPrefixOnlyDynamics '[] = '[]
+instance IsPrefix '[] objs where isPrefixUpdateDynamicLength lns _ = lns
 
-instance IsPrefix os os' => IsPrefix (VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
-	type IsPrefixOnlyDynamics (VObj.Dynamic n o ': os) = o ': IsPrefixOnlyDynamics os
+instance IsPrefix os os' =>
+	IsPrefix (VObj.Static o : os) (VObj.Static o : os') where
+	isPrefixUpdateDynamicLength lns' lns  = isPrefixUpdateDynamicLength @os @os' lns' lns
 
-instance IsPrefix os os' => IsPrefix (VObj.Static o : os) (VObj.Static o : os') where
-	type IsPrefixOnlyDynamics (VObj.Static o ': os) = IsPrefixOnlyDynamics os
+instance IsPrefix os os' =>
+	IsPrefix (VObj.Dynamic n o : os) (VObj.Dynamic n o : os') where
+	isPrefixUpdateDynamicLength (_ln :** lns') (ln :** lns) =
+		ln :** isPrefixUpdateDynamicLength @os @os' lns' lns
 
 class BindingAndArrayElem
 	(bts :: [DescriptorSetLayout.BindingType]) (objs :: [VObj.Object]) where
 	bindingAndArrayElem :: Integral n => n -> (n, n)
+	updateDynamicLength ::
+		HeteroParList.PL
+			(HeteroParList.PL KObj.ObjectLength)
+			(Layout.BindingTypeListBufferOnlyDynamics bts) ->
+		HeteroParList.PL KObj.ObjectLength
+			(VObj.OnlyDynamics objs) ->
+		HeteroParList.PL
+			(HeteroParList.PL KObj.ObjectLength)
+			(Layout.BindingTypeListBufferOnlyDynamics bts)
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts) (VObj.Atom algn t ('Just nm) ': os) where
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Atom algn t 'Nothing ': os') ': bts)
+		(VObj.Atom algn t ('Just nm) ': os) where
 	bindingAndArrayElem _ = (0, 0)
+	updateDynamicLength (lns' :** lnss) lns =
+		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
 instance IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts) (VObj.Atom algn t 'Nothing ': os) where
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Atom algn t ('Just nm) ': os') ': bts)
+		(VObj.Atom algn t 'Nothing ': os) where
 	bindingAndArrayElem _ = (0, 0)
+	updateDynamicLength (lns' :** lnss) lns =
+		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
 instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
-	BindingAndArrayElem ('DescriptorSetLayout.Buffer (o ': os') ': bts) (o ': os) where
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)
+		(VObj.Static o ': os) where
 	bindingAndArrayElem _ = (0, 0)
+	updateDynamicLength (lns' :** lnss) lns =
+		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
+
+instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts)
+		(VObj.Dynamic n o ': os) where
+	bindingAndArrayElem _ = (0, 0)
+	updateDynamicLength ((_ln :** lns') :** lnss) (ln :** lns) =
+		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer os' ': bts) os =>
 	BindingAndArrayElem
-		('DescriptorSetLayout.Buffer (o ': os') ': bts) os where
+		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts) os where
 	bindingAndArrayElem c = (+ 1) `second`
 		(bindingAndArrayElem
 			@('DescriptorSetLayout.Buffer os' ': bts) @os $ c + 1)
+	updateDynamicLength lnss lns =
+		updateDynamicLength
+			@('DescriptorSetLayout.Buffer os' ': bts) @os lnss lns
+
+instance {-# OVERLAPPABLE #-}
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer os' ': bts) os =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.Dynamic n o ': os') ': bts) os where
+	bindingAndArrayElem c = (+ 1) `second`
+		(bindingAndArrayElem
+			@('DescriptorSetLayout.Buffer os' ': bts) @os $ c + 1)
+	updateDynamicLength ((ln :** lns') :** lnss) lns = let
+		ls' :** lss = updateDynamicLength
+			@('DescriptorSetLayout.Buffer os' ': bts) @os (lns' :** lnss) lns in
+		(ln :** ls') :** lss
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem bts os =>
