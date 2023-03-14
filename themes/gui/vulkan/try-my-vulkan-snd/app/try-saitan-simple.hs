@@ -259,7 +259,11 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sp . (Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
+calc :: forall slbts sl bts sd sp . (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
@@ -293,7 +297,11 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
-run :: forall slbts sbtss sd sc vs sg sl sp . (Vk.Cmd.SetPos '[slbts] sbtss) =>
+run :: forall slbts sbtss sd sc vs sg sl sp . (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do

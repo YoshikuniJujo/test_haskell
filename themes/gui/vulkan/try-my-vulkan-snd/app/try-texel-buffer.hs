@@ -111,6 +111,9 @@ type MemoryList sm sb nm w =
 
 calc' :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
 		slbts sl bts sd sp . (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
@@ -181,6 +184,9 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
 	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,

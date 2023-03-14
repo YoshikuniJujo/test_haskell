@@ -154,6 +154,9 @@ calc opt da db dc = withDevice \phdvc qFam dvc maxGroupCountX ->
 
 calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sp sm1 sm2 sm3 .
 	(
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
@@ -178,6 +181,9 @@ type ListBuffer3Memory3 w1 w2 w3 = '[ '[VObj.List 256 w1 ""], '[VObj.List 256 w2
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
 	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,

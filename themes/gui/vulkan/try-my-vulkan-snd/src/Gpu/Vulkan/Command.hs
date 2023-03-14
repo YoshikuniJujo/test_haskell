@@ -53,6 +53,9 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
+import Data.IORef -- for debug
+import Data.Kind.Object qualified as KObj
+
 beginRenderPassNew :: (Storable n, ClearValueListToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
 	Subpass.Contents -> IO a -> IO a
@@ -96,18 +99,45 @@ instance HeteroParListToList' spslbtss =>
 	HeteroParListToList' (spslbts ': spslbtss) where
 	toList' f (x :** xs) = f x : toList' f xs
 
-bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss .
-	(SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss) =>
+bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss . (
+	PrintDscSetListLength spslbtss,
+	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	[Word32] -> IO ()
-bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
+bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts = do
+	putStrLn "bindDescriptorSets:"
+	printDscSetListLength dss
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'
 			(\(U2 (DescriptorSet.S _ s)) -> s)
 			dss)
 		dosts
+
+printDscSetLengths ::
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(DescriptorSet.LayoutArgOnlyDynamics slbts)) =>
+	DescriptorSet.S sd sp slbts -> IO ()
+printDscSetLengths (DescriptorSet.S lns _) = print =<< readIORef lns
+
+class PrintDscSetListLength spslbtss where
+	printDscSetListLength ::
+		HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss -> IO ()
+
+instance PrintDscSetListLength '[] where
+	printDscSetListLength HeteroParList.Nil = pure ()
+
+instance (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(DescriptorSet.LayoutArgOnlyDynamics slbts)),
+	PrintDscSetListLength spslbtss
+	) =>
+	PrintDscSetListLength ('(sp, slbts) ': spslbtss) where
+	printDscSetListLength (U2 s :** ss) =
+		printDscSetLengths s >> printDscSetListLength ss
 
 type family MapThird tpl where
 	MapThird '[] = '[]

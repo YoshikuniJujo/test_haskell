@@ -132,7 +132,11 @@ calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
 			prepareMems11 ifp tlng phdvc dvc dslyt da db dc \dsst m2 ->
 			calc' dvc qfam dslyt dsst maxX (readMemories' @"hello" @"hello" @"hello") m2 m2 m2
 
-calc' :: Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] =>
+calc' :: (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)] ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.S sd sp slbts -> Word32 ->
 	(Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])) ->
@@ -149,8 +153,11 @@ calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 type ListBuffer1 w1 w2 w3 = '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 type ListBuffer3Memory3 w1 w2 w3 = '[ '[VObj.List 256 w1 ""], '[VObj.List 256 w2 ""], '[VObj.List 256 w3 ""]]
 
-run :: forall w1 w2 w3 slbts sbtss sd sc vs sg sl sp m1 m2 m3 .
-	Vk.Cmd.SetPos '[slbts] sbtss =>
+run :: forall w1 w2 w3 slbts sbtss sd sc vs sg sl sp m1 m2 m3 . (
+	Show (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
+	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
