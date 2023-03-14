@@ -95,6 +95,10 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 	print . take 20 $ unW1 <$> head r1
 	print . take 20 $ unW2 <$> head r2
 	print . take 20 $ unW3 <$> head r3
+	putStrLn ""
+	print . take 20 $ unW1 <$> head (tail r1)
+	print . take 20 $ unW2 <$> head (tail r2)
+	print . take 20 $ unW3 <$> head (tail r3)
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)

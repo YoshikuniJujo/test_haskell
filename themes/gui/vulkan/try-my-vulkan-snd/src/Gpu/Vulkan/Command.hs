@@ -115,6 +115,8 @@ bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts = do
 			dss)
 		dosts
 
+newtype DynamicIndex (obj :: KObj.Object) = DynamicIndex Word32 deriving Show
+
 printDscSetLengths ::
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
