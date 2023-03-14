@@ -1264,8 +1264,8 @@ createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp = do
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.S sd sp '(sl, bts) ->
+	Vk.DscSet.Write () sd sp '(sl, bts) ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
@@ -1278,8 +1278,8 @@ descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 descriptorWrite1 ::
-	Vk.DscSet.S sd sp slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
-	Vk.DscSet.Write () sd sp slbts
+	Vk.DscSet.S sd sp '(sl, bts) -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
+	Vk.DscSet.Write () sd sp '(sl, bts)
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,
@@ -1306,13 +1306,13 @@ instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.
 -- instance Update '[t] '[] where update _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 UniformBufferObject 'Nothing],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ssmp siv,
-	Vk.DscSet.WriteSourcesToMiddle dscs
+	Vk.DscSet.WriteSourcesToMiddle '(ds, cs)
 		('Vk.DscSet.WriteSourcesArgImage
 			'[ '(ssmp, 'Vk.T.FormatR8g8b8a8Srgb, "texture", siv)])
 	) =>
-	Update (ub ': ubs) (dscs ': dscss) ssmp siv where
+	Update (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
 		Vk.DscSet.updateDs @() @() dvc (
 			U4 (descriptorWrite0 ub dscs) :**

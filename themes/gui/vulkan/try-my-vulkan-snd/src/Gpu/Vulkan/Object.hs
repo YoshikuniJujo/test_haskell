@@ -18,13 +18,14 @@ import Data.Proxy
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
-data Object = Static K.Object | Dynamic Nat K.Object
+data Object = Static K.Object | Dynamic Nat K.Object | Dummy
 
 type List algn t nm = Static (K.List algn t nm)
 type Atom algn t mnm = Static (K.Atom algn t mnm)
 type ObjImage algn t nm = Static (K.ObjImage algn t nm)
 
 type DynList n algn t nm = Dynamic n (K.List algn t nm)
+type DynAtom n algn t nm = Dynamic n (K.Atom algn t nm)
 
 data ObjectLength obj where
 	ObjectLengthStatic :: K.ObjectLength kobj -> ObjectLength ('Static kobj)
@@ -131,12 +132,35 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 
 class OnlyDynamicLengths (os :: [Object]) where
 	type OnlyDynamics os :: [K.Object]
+	onlyDynamicLength ::
+		HeteroParList.PL ObjectLength os ->
+		HeteroParList.PL K.ObjectLength (OnlyDynamics os)
 
 instance OnlyDynamicLengths '[] where
 	type OnlyDynamics '[] = '[]
+	onlyDynamicLength HeteroParList.Nil = HeteroParList.Nil
 
-instance OnlyDynamicLengths ('Static _o ': os) where
+instance OnlyDynamicLengths os => OnlyDynamicLengths ('Static _o ': os) where
 	type OnlyDynamics ('Static _o ': os) = OnlyDynamics os
+	onlyDynamicLength (ObjectLengthStatic _ :** os) = onlyDynamicLength os
 
-instance OnlyDynamicLengths ('Dynamic _n ko ': os) where
+instance OnlyDynamicLengths os => OnlyDynamicLengths ('Dynamic _n ko ': os) where
 	type OnlyDynamics ('Dynamic _n ko ': os) = ko ': OnlyDynamics os
+	onlyDynamicLength (ObjectLengthDynamic kln :** os) =
+		kln :** onlyDynamicLength os
+
+instance OnlyDynamicLengths '[ 'Dummy] where
+	type OnlyDynamics '[ 'Dummy] = '[]
+	onlyDynamicLength _ = HeteroParList.Nil
+
+class ObjectLengthIndex obj objs where
+	objectLengthIndex ::
+		HeteroParList.PL ObjectLength objs -> ObjectLength obj
+
+instance ObjectLengthIndex obj (obj ': objs) where
+	objectLengthIndex (ln :** _lns) = ln
+
+instance {-# OVERLAPPABLE #-}
+	ObjectLengthIndex obj objs =>
+	ObjectLengthIndex obj (obj' ': objs) where
+	objectLengthIndex (_ :** lns) = objectLengthIndex @obj @objs lns

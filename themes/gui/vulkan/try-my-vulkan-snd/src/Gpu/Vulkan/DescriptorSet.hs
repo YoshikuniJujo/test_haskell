@@ -101,6 +101,21 @@ deriving instance (
 	Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
+writeUpdateLength :: forall sbsmobjsobjs n sd sp sl bts . (
+	WriteSourcesToLengthList sbsmobjsobjs,
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs),
+	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj sbsmobjsobjs)
+	) =>
+	Write n sd sp '(sl, bts) sbsmobjsobjs -> IO ()
+writeUpdateLength Write {
+	writeDstSet = S rlns _,
+	writeSources = ws } = do
+	lns <- readIORef rlns
+	maybe	(pure ())
+		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) lns
+			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
+		(writeSourcesToLengthList @sbsmobjsobjs ws)
+
 writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n sd sp slbts wsa -> M.Write n
 writeToMiddle Write {
@@ -134,6 +149,34 @@ data WriteSources arg where
 	TexelBufferViews ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther
+
+class WriteSourcesToLengthList arg where
+	type WriteSourcesToLengthListObj arg :: [VObj.Object]
+	writeSourcesToLengthList :: WriteSources arg ->
+		Maybe (HeteroParList.PL
+			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
+
+instance
+	Descriptor.BufferInfoListToLength sbsmobjsobjs =>
+	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
+	type WriteSourcesToLengthListObj
+		('WriteSourcesArgBuffer sbsmobjsobjs) =
+		Descriptor.BufferInfoListToLengthObjs sbsmobjsobjs
+	writeSourcesToLengthList (BufferInfos bis) =
+		Just $ Descriptor.bufferInfoListToLength bis
+
+instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
+	type WriteSourcesToLengthListObj
+--		('WriteSourcesArgImage ssfmtnmsis) = '[VObj.Dummy]
+		('WriteSourcesArgImage ssfmtnmsis) = '[]
+	writeSourcesToLengthList (ImageInfos bis) = Nothing
+
+instance WriteSourcesToLengthList 'WriteSourcesArgOther where
+	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]
+	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
+	writeSourcesToLengthList (TexelBufferViews _ _ _) = Nothing
+
+-- writeSourcesToLengthList :: WriteSources 
 
 deriving instance Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs) =>
 	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
@@ -198,21 +241,36 @@ class WriteListToMiddle n sdspslbtssbsmobjsobjs where
 	writeListToMiddle ::
 		HeteroParList.PL (U4 (Write n)) sdspslbtssbsmobjsobjs ->
 		[M.Write n]
+	writeListUpdateLength ::
+		HeteroParList.PL (U4 (Write n)) sdspslbtssbsmobjsobjs -> IO ()
 
 instance WriteListToMiddle n '[] where
 	writeListToMiddle HeteroParList.Nil = []
+	writeListUpdateLength HeteroParList.Nil = pure ()
 
 instance (
-	WriteSourcesToMiddle slbts wsa,
-	WriteListToMiddle n sdspslbtswsas ) =>
+	WriteSourcesToMiddle '(sl, bts) wsa,
+--	WriteSourcesToMiddle slbts wsa,
+	WriteListToMiddle n sdspslbtswsas,
+
+	WriteSourcesToLengthList wsa,
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa),
+	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa)
+	) =>
 	WriteListToMiddle n
-		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
+		('(sd, sp, '(sl, bts), wsa) ': sdspslbtswsas) where
+--		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
 	writeListToMiddle (U4 w :** ws) =
 		writeToMiddle w : writeListToMiddle ws
+	writeListUpdateLength (U4 w :** ws) =
+		writeUpdateLength w >> writeListUpdateLength ws
 
 updateDs :: (
 	WithPoked n, WithPoked n',
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 (Write  n)) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
-updateDs (Device.D dvc) (writeListToMiddle -> ws) cs = M.updateDs dvc ws cs
+updateDs (Device.D dvc) ws cs =
+	writeListUpdateLength ws >>
+	M.updateDs dvc ws' cs
+	where ws' = writeListToMiddle ws

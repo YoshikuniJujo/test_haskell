@@ -1477,13 +1477,13 @@ class Update smsbs slbtss ssmp siv where
 instance Update '[] '[] ssmp siv where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 UniformBufferObject 'Nothing],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss ssmp siv,
-	Vk.DscSet.WriteSourcesToMiddle dscs
+	Vk.DscSet.WriteSourcesToMiddle '(ds, cs)
 		('Vk.DscSet.WriteSourcesArgImage
 			'[ '(ssmp, 'Vk.T.FormatR8g8b8a8Srgb, "texture", siv)])
 	) =>
-	Update (ub ': ubs) (dscs ': dscss) ssmp siv where
+	Update (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
 		Vk.DscSet.updateDs @() @() dvc (
 			U4 (descriptorWrite0 ub dscs) :**

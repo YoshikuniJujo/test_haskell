@@ -122,6 +122,10 @@ datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 
 calc :: forall w1 w2 w3 . (
+	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w2 ""))
+		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
+	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w3 ""))
+		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
@@ -309,6 +313,10 @@ prepareMems' phdvc dvc dscSetLyt da db dc f =
 	f dscSet m
 
 prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
+	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w2 ""))
+		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
+	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w3 ""))
+		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),

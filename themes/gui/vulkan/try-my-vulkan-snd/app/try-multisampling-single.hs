@@ -1511,8 +1511,8 @@ createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt = do
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[ VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.S sd sp '(sl, bts) ->
+	Vk.DscSet.Write () sd sp '(sl, bts) ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[ VObj.Atom 256 UniformBufferObject 'Nothing], VObj.Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
@@ -1523,8 +1523,8 @@ descriptorWrite0 ub dscs = Vk.DscSet.Write {
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 descriptorWrite1 ::
-	Vk.DscSet.S sd sp slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
-	Vk.DscSet.Write () sd sp slbts
+	Vk.DscSet.S sd sp '(sl, bts) -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
+	Vk.DscSet.Write () sd sp '(sl, bts)
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
 	Vk.DscSet.writeNext = Nothing,

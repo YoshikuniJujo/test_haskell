@@ -29,7 +29,7 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry hiding (length)
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
