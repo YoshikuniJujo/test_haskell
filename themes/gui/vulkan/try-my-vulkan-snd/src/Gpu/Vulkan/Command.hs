@@ -105,7 +105,7 @@ bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'
-			(\(U2 (DescriptorSet.S s)) -> s)
+			(\(U2 (DescriptorSet.S _ s)) -> s)
 			dss)
 		dosts
 

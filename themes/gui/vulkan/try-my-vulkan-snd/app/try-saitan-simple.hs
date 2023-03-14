@@ -17,6 +17,7 @@ module Main where
 
 import Foreign.Storable
 import Gpu.Vulkan.Object qualified as VObj
+import Data.Kind.Object qualified as KObj
 import Data.Default
 import Data.Bits
 import Data.List.Length
@@ -145,8 +146,13 @@ binding = Vk.DscSetLyt.BindingBuffer {
 
 -- PREPARE MEMORIES
 
-prepareMems :: Vk.DscSet.BindingAndArrayElem bts '[
-		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ] =>
+prepareMems :: (
+	Default (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
+	Vk.DscSet.BindingAndArrayElem bts '[
+		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ]
+	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->

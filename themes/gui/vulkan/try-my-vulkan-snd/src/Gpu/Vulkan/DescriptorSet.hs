@@ -15,6 +15,7 @@ module Gpu.Vulkan.DescriptorSet where
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.Default
 import Data.IORef
 import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
@@ -34,6 +35,8 @@ import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
 import qualified Gpu.Vulkan.DescriptorSet.Middle as M
+
+import Gpu.Vulkan.Misc
 
 type Layout = U2 Layout.L
 
@@ -59,15 +62,32 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoSetLayouts =
 			HeteroParList.toList layoutToMiddle dscsls }
 
-newtype S sd sp (slbts :: LayoutArg) = S
---	(IORef (HeteroParList.PL KObj.ObjectLength (LayoutArgOnlyDynamics slbts)))
+data S sd sp (slbts :: LayoutArg) = S
+	(IORef (HeteroParList.PL (HeteroParList.PL KObj.ObjectLength)
+		(LayoutArgOnlyDynamics slbts)))
 	M.D
 
-allocateSs :: (WithPoked n, HeteroParList.FromList slbtss) =>
+class SListFromMiddle slbtss where
+	sListFromMiddle :: [M.D] -> IO (HeteroParList.PL (S sd sp) slbtss)
+
+instance SListFromMiddle '[] where
+	sListFromMiddle [] = pure HeteroParList.Nil
+
+instance (
+	Default (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(LayoutArgOnlyDynamics slbts)),
+	SListFromMiddle slbtss ) =>
+	SListFromMiddle (slbts ': slbtss) where
+	sListFromMiddle (d : ds) = (:**)
+		<$> ((`S` d) <$> newDefaultIORef)
+		<*> sListFromMiddle @slbtss ds
+
+allocateSs :: (WithPoked n, SListFromMiddle slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroParList.PL (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
-	HeteroParList.fromList S <$> M.allocateDs dvc (allocateInfoToMiddle ai)
+	sListFromMiddle =<< M.allocateDs dvc (allocateInfoToMiddle ai)
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
@@ -85,7 +105,7 @@ writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n sd sp slbts wsa -> M.Write n
 writeToMiddle Write {
 	writeNext = mnxt,
-	writeDstSet = S ds,
+	writeDstSet = S _ ds,
 	writeDescriptorType = dt,
 	writeSources = srcs
 	} = M.Write {

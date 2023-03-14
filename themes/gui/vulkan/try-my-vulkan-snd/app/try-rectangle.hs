@@ -23,13 +23,12 @@ import Control.Monad
 import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
-import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
-import Data.TypeLevel.Uncurry hiding (length)
+import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
@@ -865,6 +864,7 @@ createUniformBuffers ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]] ->
 	Int -> (forall slyts smsbs . (
+		Vk.DscSet.SListFromMiddle slyts,
 		HeteroParList.FromList slyts,
 		Update smsbs slyts,
 		DescriptorSetIndex slyts sdsc ) =>
@@ -916,7 +916,9 @@ createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
 		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
 		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
 
-createDescriptorSets :: (HeteroParList.FromList ss, Update smsbs ss) =>
+createDescriptorSets :: (
+	Vk.DscSet.SListFromMiddle ss,
+	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
 	IO (HeteroParList.PL (Vk.DscSet.S sd sp) ss)

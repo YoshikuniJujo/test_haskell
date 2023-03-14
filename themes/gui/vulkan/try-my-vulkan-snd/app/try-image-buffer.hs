@@ -257,6 +257,9 @@ binding0 = Vk.DscSetLyt.BindingBuffer {
 
 prepareMems33 ::
 	forall bts w1 w2 w3 sd sl nm1 nm2 nm3 a . (
+	Default (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3
 	) =>
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] =>
@@ -277,6 +280,9 @@ prepareMems33 phdvc dvc dscSetLyt da db dc f =
 
 prepareMems31 ::
 	forall bts w1 w2 w3 sd sl a . (
+	Default (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Storable w1, Storable w2, Storable w3,
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
@@ -297,6 +303,9 @@ prepareMems31 phdvc dvc dscSetLyt da db dc f =
 	f dscSet m
 
 prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
+	Default (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Show w1, Show w2, Show w3,
 	Storable w1, Storable w2, Storable w3,
 	VObj.Offset (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 "" ],

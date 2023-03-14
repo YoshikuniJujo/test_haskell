@@ -270,8 +270,12 @@ binding1 = Vk.DscSetLyt.BindingOther {
 	Vk.DscSetLyt.bindingOtherStageFlags = Vk.ShaderStageComputeBit }
 
 prepareMems ::
-	forall bts w1 w2 w3 w4 sd sl nm1 nm2 nm3 a .
-	(Storable w1, Storable w2, Storable w3, Storable w4) =>
+	forall bts w1 w2 w3 w4 sd sl nm1 nm2 nm3 a . (
+	Default (HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
+	Storable w1, Storable w2, Storable w3, Storable w4
+	) =>
 	Vk.DscSet.BindingAndArrayElem bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
