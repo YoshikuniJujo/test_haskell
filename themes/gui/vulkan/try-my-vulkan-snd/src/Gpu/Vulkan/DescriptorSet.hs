@@ -194,25 +194,25 @@ instance (VObj.Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	bufferInfosToMiddle (bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis
 
-class WriteListToMiddleNew n sdspslbtssbsmobjsobjs where
-	writeListToMiddleNew ::
+class WriteListToMiddle n sdspslbtssbsmobjsobjs where
+	writeListToMiddle ::
 		HeteroParList.PL (U4 (Write n)) sdspslbtssbsmobjsobjs ->
 		[M.Write n]
 
-instance WriteListToMiddleNew n '[] where
-	writeListToMiddleNew HeteroParList.Nil = []
+instance WriteListToMiddle n '[] where
+	writeListToMiddle HeteroParList.Nil = []
 
 instance (
 	WriteSourcesToMiddle slbts wsa,
-	WriteListToMiddleNew n sdspslbtswsas ) =>
-	WriteListToMiddleNew n
+	WriteListToMiddle n sdspslbtswsas ) =>
+	WriteListToMiddle n
 		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
-	writeListToMiddleNew (U4 w :** ws) =
-		writeToMiddle w : writeListToMiddleNew ws
+	writeListToMiddle (U4 w :** ws) =
+		writeToMiddle w : writeListToMiddle ws
 
-updateDsNew :: (
+updateDs :: (
 	WithPoked n, WithPoked n',
-	WriteListToMiddleNew n sdspslbtssbsmobjsobjs ) =>
+	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 (Write  n)) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
-updateDsNew (Device.D dvc) (writeListToMiddleNew -> ws) cs = M.updateDs dvc ws cs
+updateDs (Device.D dvc) (writeListToMiddle -> ws) cs = M.updateDs dvc ws cs

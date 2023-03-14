@@ -958,7 +958,7 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss) => Update (ub ': ubs) (dscs ': dscss) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do
-		Vk.DscSet.updateDsNew @() @() dvc
+		Vk.DscSet.updateDs @() @() dvc
 			(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) []
 		update dvc ubs dscss
 

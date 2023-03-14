@@ -1497,7 +1497,7 @@ createDescriptorSet ::
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]))
 createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt = do
 	HeteroParList.Singleton dscs <- Vk.DscSet.allocateSs @() dvc allocInfo
-	Vk.DscSet.updateDsNew @() @() dvc (
+	Vk.DscSet.updateDs @() @() dvc (
 		U4 (descriptorWrite0 ub dscs) :**
 		U4 (descriptorWrite1 dscs tximgvw txsmp) :**
 		HeteroParList.Nil ) []
