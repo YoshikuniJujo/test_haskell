@@ -47,6 +47,7 @@ import Prelude hiding (map, replicate)
 
 import GHC.TypeLits
 import Data.Kind
+import Data.Default
 import Data.List (genericIndex)
 
 -- Hetero List
@@ -175,3 +176,14 @@ replicateM :: Monad m =>
 replicateM 0 _ f = f Nil
 replicateM n x f = x \v -> replicateM (n - 1) x \vs ->
 	f $ v :** vs
+
+-- Default
+
+instance Default (PL t '[]) where def = Nil
+
+instance (Default (t s), Default (PL t ss)) => Default (PL t (s ': ss)) where
+	def = def :** def
+
+instance Default a => Default (Id a) where def = Id def
+
+instance Default a => Default (Dummy a d) where def = Dummy def
