@@ -31,6 +31,7 @@ import Data.Foldable
 import Data.Traversable
 import Data.MonoTraversable
 import Data.Proxy
+import Data.Default
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
@@ -67,6 +68,12 @@ data ObjectLength (obj :: Object) where
 		objectLengthImageWidth :: Int,
 		objectLengthImageHeight :: Int,
 		objectLengthImageDepth :: Int } -> ObjectLength ('ObjImage algn t nm)
+
+instance Default (ObjectLength (Atom algn t mnm)) where def = ObjectLengthAtom
+instance Default (ObjectLength (List algn t nm)) where def = ObjectLengthList 0
+
+instance Default (ObjectLength (ObjImage algn t nm)) where
+	def = ObjectLengthImage 0 0 0 0
 
 deriving instance Eq (ObjectLength obj)
 

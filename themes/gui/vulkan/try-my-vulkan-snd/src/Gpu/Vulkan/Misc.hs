@@ -2,13 +2,15 @@
 {-# LANGUAGE TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc (nil, cstrToText) where
+module Gpu.Vulkan.Misc (nil, cstrToText, newDefaultIORef) where
 
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.C.String
+import Data.Default
 import Data.Text qualified as Txt
 import Data.Text.Foreign qualified as Txt
+import Data.IORef
 
 nil :: Maybe (t ())
 nil = Nothing
@@ -25,3 +27,6 @@ cstringLength pc = do
 
 cstringToCStringLen :: CString -> IO CStringLen
 cstringToCStringLen cs = (cs ,) <$> cstringLength cs
+
+newDefaultIORef :: Default a => IO (IORef a)
+newDefaultIORef = newIORef def
