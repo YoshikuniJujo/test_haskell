@@ -141,12 +141,17 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer '[] ': bts) os where
 	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @os 0
+	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
+		HeteroParList.Nil :** updateDynamicLength @bts @os lnss lns
 
 instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElem bts os =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Other ': bts) os where
-	bindingAndArrayElem c = (a + 1, b - c) where (a, b) = bindingAndArrayElem @bts @os 0
+	bindingAndArrayElem c = (a + 1, b - c)
+		where (a, b) = bindingAndArrayElem @bts @os 0
+	updateDynamicLength (HeteroParList.Nil :** lnss) lns =
+		HeteroParList.Nil :** updateDynamicLength @bts @os lnss lns
 
 {-
 type SampleBts0 = '[
