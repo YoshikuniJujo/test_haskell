@@ -317,9 +317,8 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 			Vk.DscSet.writeSources =
 				Vk.DscSet.TexelBufferViews 1 0 [bv]
 			}
-	Vk.DscSet.updateDs @() @() dvc (
-		Vk.DscSet.Write_ (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :**
-		Vk.DscSet.Write_ wds :**
+	Vk.DscSet.updateDsNew @() @() dvc (
+		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds :**
 		HeteroParList.Nil ) []
 	f dscSet ma mb mc
 

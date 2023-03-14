@@ -1588,9 +1588,9 @@ instance (
 	) =>
 	Update (ub ': ubs) (dscs ': dscss) ssmp siv where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
-		Vk.DscSet.updateDs @() @() dvc (
-			Vk.DscSet.Write_ (descriptorWrite0 ub dscs) :**
-			Vk.DscSet.Write_ (descriptorWrite1 dscs tximgvw txsmp) :**
+		Vk.DscSet.updateDsNew @() @() dvc (
+			U4 (descriptorWrite0 ub dscs) :**
+			U4 (descriptorWrite1 dscs tximgvw txsmp) :**
 			HeteroParList.Nil ) []
 		update dvc ubs dscss tximgvw txsmp
 

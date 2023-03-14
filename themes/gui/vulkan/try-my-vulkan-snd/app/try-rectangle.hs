@@ -958,8 +958,8 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg dscs) '[VObj.Atom 256 UniformBufferObject 'Nothing],
 	Update ubs dscss) => Update (ub ': ubs) (dscs ': dscss) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do
-		Vk.DscSet.updateDs @() @() dvc
-			(HeteroParList.Singleton . Vk.DscSet.Write_ $ descriptorWrite ub dscs) []
+		Vk.DscSet.updateDsNew @() @() dvc
+			(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) []
 		update dvc ubs dscss
 
 createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
