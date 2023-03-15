@@ -101,7 +101,6 @@ instance HeteroParListToList' spslbtss =>
 	toList' f (x :** xs) = f x : toList' f xs
 
 bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss . (
-	PrintDscSetListLength spslbtss,
 	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
@@ -115,13 +114,13 @@ bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
 		dosts
 
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
+	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
 	Show (HeteroParList.PL3
 		DynamicOffset (DescriptorSet.LayoutArgListOnlyDynamics sbtss)),
 	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
 	GetDscSetListLengthSnds spslbtss ~ sbtss,
 	Show (HeteroParList.PL3 DynamicIndex
 		(DescriptorSet.LayoutArgListOnlyDynamics sbtss)),
-	PrintDscSetListLength spslbtss,
 	GetDscSetListLength spslbtss,
 	Show (HeteroParList.PL3 KObj.ObjectLength
 		(DescriptorSet.LayoutArgListOnlyDynamics
@@ -130,14 +129,15 @@ bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
 	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
-	[Word32] -> IO ()
-bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss idxs dosts = do
+	IO ()
+bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss idxs = do
 	putStrLn "bindDescriptorSets:"
-	printDscSetListLength dss
 	lns <- getDscSetListLength dss
 	print lns
 	print idxs
 	print $ getOffsetList3 lns idxs
+	print . dynamicOffsetList3ToList $ getOffsetList3 lns idxs
+	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'
@@ -183,7 +183,7 @@ instance (GetOffsetList os, GetOffsetList2 oss) =>
 	getOffsetList2 (lns :** lnss) (is :** iss) =
 		getOffsetList lns is :** getOffsetList2 lnss iss
 
-class GetOffsetList3 osss where
+class GetOffsetList3 (osss :: [[[KObj.Object]]]) where
 	getOffsetList3 ::
 		HeteroParList.PL3 KObj.ObjectLength osss ->
 		HeteroParList.PL3 DynamicIndex osss ->
@@ -197,6 +197,28 @@ instance (GetOffsetList2 oss, GetOffsetList3 osss) =>
 	getOffsetList3 (lnss :** lnsss) (iss :** isss) =
 		getOffsetList2 lnss iss :** getOffsetList3 lnsss isss
 
+class DynamicOffsetList3ToList osss where
+	dynamicOffsetList3ToList ::
+		HeteroParList.PL3 DynamicOffset osss -> [Word32]
+
+instance DynamicOffsetList3ToList '[] where
+	dynamicOffsetList3ToList HeteroParList.Nil = []
+
+instance DynamicOffsetList3ToList osss =>
+	DynamicOffsetList3ToList ('[] ': osss) where
+	dynamicOffsetList3ToList (HeteroParList.Nil :** dosss) =
+		dynamicOffsetList3ToList dosss
+
+instance DynamicOffsetList3ToList (oss ': osss) =>
+	DynamicOffsetList3ToList (('[] ': oss) ': osss) where
+	dynamicOffsetList3ToList ((HeteroParList.Nil :** doss) :** dosss) =
+		dynamicOffsetList3ToList $ doss :** dosss
+
+instance DynamicOffsetList3ToList ((os ': oss) ': osss) =>
+	DynamicOffsetList3ToList (((obj ': os) ': oss) ': osss) where
+	dynamicOffsetList3ToList (((DynamicOffset ofst :** dos) :** doss) :** dosss) =
+		ofst : dynamicOffsetList3ToList ((dos :** doss) :** dosss)
+
 printDscSetLengths ::
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
@@ -208,23 +230,6 @@ getDscSetLengths :: DescriptorSet.S sd sp slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
 		(DescriptorSet.LayoutArgOnlyDynamics slbts))
 getDscSetLengths (DescriptorSet.S lns _) = readIORef lns
-
-class PrintDscSetListLength spslbtss where
-	printDscSetListLength ::
-		HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss -> IO ()
-
-instance PrintDscSetListLength '[] where
-	printDscSetListLength HeteroParList.Nil = pure ()
-
-instance (
-	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
-		(DescriptorSet.LayoutArgOnlyDynamics slbts)),
-	PrintDscSetListLength spslbtss
-	) =>
-	PrintDscSetListLength ('(sp, slbts) ': spslbtss) where
-	printDscSetListLength (U2 s :** ss) =
-		printDscSetLengths s >> printDscSetListLength ss
 
 class GetDscSetListLength spslbtss where
 	type GetDscSetListLengthSnds spslbtss ::

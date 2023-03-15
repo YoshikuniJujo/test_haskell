@@ -325,7 +325,6 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 				Vk.Cmd.DynamicIndex 0 :**
 				HeteroParList.Nil )) ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
-			[0, 262144, 0]
 		Vk.Cmd.dispatch cb dsz 1 1
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q
