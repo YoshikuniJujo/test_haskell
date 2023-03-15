@@ -30,6 +30,11 @@ type family LayoutArgOnlyDynamics la where
 	LayoutArgOnlyDynamics '(_t, bts) =
 		Layout.BindingTypeListBufferOnlyDynamics bts
 
+type family LayoutArgListOnlyDynamics las where
+	LayoutArgListOnlyDynamics '[] = '[]
+	LayoutArgListOnlyDynamics (la ': las) =
+		LayoutArgOnlyDynamics la ': LayoutArgListOnlyDynamics las
+
 bindingAndArrayElem' ::
 	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) n . (
 	BindingAndArrayElem
