@@ -110,20 +110,25 @@ class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
 	objectAlignment :: Int
 
+applyAlign :: Integral n => n -> n -> n
+applyAlign algn ofst = ((ofst - 1) `div` algn + 1) * algn
+
 instance (KnownNat algn, Storable t) =>
 	SizeAlignment ('ObjObject ('N.Atom algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
-	objectSize (ObjectLengthObject N.ObjectLengthAtom) = sizeOf @t undefined
+	objectSize (ObjectLengthObject N.ObjectLengthAtom) = applyAlign algn $ sizeOf @t undefined
+		where algn = objectAlignment @('ObjObject ('N.Atom algn t _nm))
 
 instance (KnownNat algn, Storable t) =>
 	SizeAlignment ('ObjObject ('N.List algn t _nm)) where
 	objectAlignment = fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment @t undefined
-	objectSize (ObjectLengthObject (N.ObjectLengthList n)) = n * ((sz - 1) `div` algn + 1) * algn
+	objectSize (ObjectLengthObject (N.ObjectLengthList n)) = applyAlign algn' $ n * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @t undefined
 		algn = alignment @t undefined
+		algn' = objectAlignment @('ObjObject ('N.List algn t _nm))
 
 instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ('ObjImage algn img nm) where
 	objectAlignment =fromIntegral (natVal (Proxy :: Proxy algn))
@@ -133,7 +138,8 @@ instance (KnownNat algn, Storable (IsImagePixel img)) => SizeAlignment ('ObjImag
 		r * h * d * ((sz - 1) `div` algn + 1) * algn
 		where
 		sz = sizeOf @(IsImagePixel img) undefined
-		algn = alignment @(IsImagePixel img) undefined
+--		algn = alignment @(IsImagePixel img) undefined
+		algn = objectAlignment @('ObjImage algn img nm)
 
 class StoreObject v (obj :: Object) where
 	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()

@@ -203,7 +203,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(VObj.DynList 2 256 w "") dvc mm def [xs] >> f bnd mm
+	Vk.Mm.write @nm @(VObj.DynList 2 256 w "") dvc mm def [xs, V.reverse xs] >> f bnd mm
 
 bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[VObj.DynList 2 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
@@ -263,6 +263,8 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 -- CALC
 
 calc :: forall slbts sl bts sd sp o0 o1 o2 . (
+	KObj.SizeAlignment o0, KObj.SizeAlignment o1, KObj.SizeAlignment o2,
+	slbts ~ '(sl, bts),
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[o0, o1, o2]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
@@ -302,6 +304,8 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
 run :: forall slbts sbtss sd sc vs sg sl sp o0 o1 o2 . (
+	KObj.SizeAlignment o0, KObj.SizeAlignment o1, KObj.SizeAlignment o2,
+	sbtss ~ '[slbts],
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[o0, o1, o2]]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
@@ -314,7 +318,6 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute
---		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute
 			pplLyt (HeteroParList.Singleton $ U2 dscSet)
 			(HeteroParList.Singleton (HeteroParList.Singleton (
 				Vk.Cmd.DynamicIndex 0 :**
@@ -322,7 +325,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 				Vk.Cmd.DynamicIndex 0 :**
 				HeteroParList.Nil )) ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
-			[256, 512, 0]
+			[0, 262144, 0]
 		Vk.Cmd.dispatch cb dsz 1 1
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q

@@ -365,7 +365,7 @@ class OffsetSizeObject (obj :: VObj.Object) (objs :: [VObj.Object]) where
 		VObj.ObjectLength obj
 
 instance VObj.SizeAlignment obj => OffsetSizeObject obj (obj ': objs) where
-	offsetSizeObject n (ln :** _) = (ost, fromIntegral $ VObj.objectSize ln)
+	offsetSizeObject n (ln :** _) = (ost, fromIntegral $ VObj.objectSize' ln)
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (VObj.objectAlignment @obj)
@@ -376,7 +376,7 @@ instance {-# OVERLAPPABLE #-} (
 	OffsetSizeObject obj objs ) =>
 	OffsetSizeObject obj (obj' ': objs) where
 	offsetSizeObject n (ln :** lns) =
-		offsetSizeObject @obj (ost + fromIntegral (VObj.objectSize ln)) lns
+		offsetSizeObject @obj (ost + fromIntegral (VObj.objectSize' ln)) lns
 		where
 		ost = ((n - 1) `div` algn + 1) * algn
 		algn = fromIntegral (VObj.objectAlignment @obj)
@@ -404,6 +404,9 @@ map :: forall nm obj sd sm sibfoss . OffsetSize' nm obj sibfoss =>
 map dvc@(Device.D mdvc) m flgs = do
 	(_, mm) <- readM'' m
 	(ost, sz) <- offsetSize @nm @obj dvc m 0
+--	putStrLn "Vk.Memory.map:"
+--	putStr "ost: "; print ost
+--	putStr "sz : "; print sz
 	Memory.M.map mdvc mm ost sz flgs
 
 unmap :: Device.D sd -> M sm sibfoss -> IO ()

@@ -106,7 +106,9 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		where
 		go _ _ [] = pure ()
 		go _ n _ | n < 1 = pure ()
-		go p n (x : xs) =
+		go p n (x : xs) = do
+--			putStrLn "Vk.Object.storeObject: go:"
+--			print p
 			K.storeObject p kln x >> go (nextObject p kln) (n - 1) xs
 	loadObject p0 (ObjectLengthDynamic kln) = go p0 (natVal (Proxy :: Proxy n))
 		where

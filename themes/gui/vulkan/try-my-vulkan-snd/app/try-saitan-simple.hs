@@ -260,6 +260,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 -- CALC
 
 calc :: forall slbts sl bts sd sp . (
+	slbts ~ '(sl, bts),
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
@@ -299,6 +300,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
 run :: forall slbts sbtss sd sc vs sg sl sp . (
+	sbtss ~ '[slbts],
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
