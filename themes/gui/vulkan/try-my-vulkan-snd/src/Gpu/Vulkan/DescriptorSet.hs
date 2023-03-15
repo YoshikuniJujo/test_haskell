@@ -63,7 +63,7 @@ allocateInfoToMiddle AllocateInfo {
 			HeteroParList.toList layoutToMiddle dscsls }
 
 data S sd sp (slbts :: LayoutArg) = S
-	(IORef (HeteroParList.PL (HeteroParList.PL KObj.ObjectLength)
+	(IORef (HeteroParList.PL2 KObj.ObjectLength
 		(LayoutArgOnlyDynamics slbts)))
 	M.D
 
