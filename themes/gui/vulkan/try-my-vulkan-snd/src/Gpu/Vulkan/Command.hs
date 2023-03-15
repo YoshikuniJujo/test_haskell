@@ -106,8 +106,27 @@ bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss . (
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	[Word32] -> IO ()
 bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts = do
+	printDscSetListLength dss
+	M.bindDescriptorSets c bp l
+		(firstSet' @spslbtss @sbtss)
+		(toList'
+			(\(U2 (DescriptorSet.S _ s)) -> s)
+			dss)
+		dosts
+
+bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
+	Show (HeteroParList.PL3 DynamicIndex
+		(DescriptorSet.LayoutArgListOnlyDynamics sbtss)),
+	PrintDscSetListLength spslbtss,
+	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
+	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
+	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
+	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
+	[Word32] -> IO ()
+bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss idxs dosts = do
 	putStrLn "bindDescriptorSets:"
 	printDscSetListLength dss
+	print idxs
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'

@@ -262,7 +262,8 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sp . (
+calc :: forall slbts sl bts sd sp o0 o1 o2 . (
+	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[o0, o1, o2]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
@@ -300,7 +301,8 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
 	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
 
-run :: forall slbts sbtss sd sc vs sg sl sp . (
+run :: forall slbts sbtss sd sc vs sg sl sp o0 o1 o2 . (
+	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[o0, o1, o2]]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
@@ -311,8 +313,16 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.begin @() @() cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute
-			pplLyt (HeteroParList.Singleton $ U2 dscSet) [256, 512, 0]
+		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute
+--		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute
+			pplLyt (HeteroParList.Singleton $ U2 dscSet)
+			(HeteroParList.Singleton (HeteroParList.Singleton (
+				Vk.Cmd.DynamicIndex 0 :**
+				Vk.Cmd.DynamicIndex 1 :**
+				Vk.Cmd.DynamicIndex 0 :**
+				HeteroParList.Nil )) ::
+					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
+			[256, 512, 0]
 		Vk.Cmd.dispatch cb dsz 1 1
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q
