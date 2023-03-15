@@ -852,8 +852,8 @@ executable try-shaderc-core
     , vector
   default-language: Haskell2010
 
-executable try-texel-buffer
-  main-is: try-texel-buffer.hs
+executable try-texel-buffer-float
+  main-is: try-texel-buffer-float.hs
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:

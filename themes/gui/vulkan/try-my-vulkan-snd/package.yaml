@@ -234,8 +234,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
-  try-texel-buffer:
-    main:                try-texel-buffer.hs
+  try-texel-buffer-float:
+    main:                try-texel-buffer-float.hs
     source-dirs:         app
     ghc-options:
     - -threaded
