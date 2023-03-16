@@ -315,7 +315,7 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 			Vk.DscSet.writeDescriptorType =
 				Vk.Dsc.TypeStorageTexelBuffer,
 			Vk.DscSet.writeSources =
-				Vk.DscSet.TexelBufferViews 1 0 [bv]
+				Vk.DscSet.TexelBufferViewsOld 1 0 [bv]
 			}
 	Vk.DscSet.updateDs @() @() dvc (
 		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds :**

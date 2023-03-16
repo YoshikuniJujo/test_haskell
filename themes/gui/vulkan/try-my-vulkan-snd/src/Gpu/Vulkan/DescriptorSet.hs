@@ -146,7 +146,7 @@ data WriteSources arg where
 	BufferInfos ::
 		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
-	TexelBufferViews ::
+	TexelBufferViewsOld ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther
 
@@ -174,7 +174,7 @@ instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
 instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
-	writeSourcesToLengthList (TexelBufferViews _ _ _) = Nothing
+	writeSourcesToLengthList (TexelBufferViewsOld _ _ _) = Nothing
 
 -- writeSourcesToLengthList :: WriteSources 
 
@@ -211,7 +211,7 @@ instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 	type WriteSourcesObjs 'WriteSourcesArgOther = '[]
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
-		TexelBufferViews bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
+		TexelBufferViewsOld bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
