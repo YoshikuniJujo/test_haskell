@@ -134,7 +134,7 @@ import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
-import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
+import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
@@ -885,7 +885,7 @@ createTextureImage phdvc dvc gq cp f = do
 				Vk.Mem.PropertyHostCoherentBit )
 			\(sb :: Vk.Bffr.Binded
 				sm sb "texture-buffer" '[ VObj.ObjImage 1 a inm]) sbm -> do
-			Vk.Dvc.Mem.ImageBuffer.write @"texture-buffer"
+			Vk.Dvc.Mem.write @"texture-buffer"
 				@(VObj.ObjImage 1 MyImage inm) dvc sbm zeroBits (MyImage img)
 			print sb
 			transitionImageLayout dvc gq cp tximg
@@ -932,7 +932,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
 		Vk.Img.BindedNew si sm nm fmt ->
-		Vk.Dvc.Mem.ImageBuffer.M sm
+		Vk.Dvc.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
 		IO a) -> IO a
 createImage pd dvc wdt hgt tlng usg prps f =
@@ -941,9 +941,9 @@ createImage pd dvc wdt hgt tlng usg prps f =
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	print mt
-	Vk.Dvc.Mem.ImageBuffer.allocateBind @() dvc
-		(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Image img) (memInfo mt)
-		nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.ImageBinded bnd))) m -> do
+	Vk.Dvc.Mem.allocateBind @() dvc
+		(HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
+		nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd))) m -> do
 		f bnd m
 	where
 	imageInfo = Vk.Img.CreateInfoNew {
@@ -1070,11 +1070,11 @@ createVertexBuffer phdvc dvc gq cp f =
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 		\(b' :: Vk.Bffr.Binded sb sm "vertex-buffer" '[VObj.List 256 t ""])
-			(bm' :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			(bm' :: Vk.Dvc.Mem.M sm '[ '(
 				sb,
 				'Vk.Mem.K.Buffer "vertex-buffer"
 					'[VObj.List 256 Vertex ""] ) ]) -> do
-	Vk.Dvc.Mem.ImageBuffer.write
+	Vk.Dvc.Mem.write
 		@"vertex-buffer" @(VObj.List 256 Vertex "") dvc bm' zeroBits vertices
 	copyBuffer dvc gq cp b' b
 	f b
@@ -1091,18 +1091,18 @@ createIndexBuffer phdvc dvc gq cp f =
 		(	Vk.Mem.PropertyHostVisibleBit .|.
 			Vk.Mem.PropertyHostCoherentBit )
 		\(b' :: Vk.Bffr.Binded sb sm "index-buffer" '[VObj.List 256 t ""])
-			(bm' :: Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+			(bm' :: Vk.Dvc.Mem.M sm '[ '(
 				sb,
 				'Vk.Mem.K.Buffer "index-buffer"
 					'[VObj.List 256 Word16 ""] ) ]) -> do
-	Vk.Dvc.Mem.ImageBuffer.write
+	Vk.Dvc.Mem.write
 		@"index-buffer" @(VObj.List 256 Word16 "") dvc bm' zeroBits indices
 	copyBuffer dvc gq cp b' b
 	f b
 
 createUniformBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 		Vk.Bffr.Binded sb sm "uniform-buffer" '[VObj.Atom 256 UniformBufferObject 'Nothing]  ->
-		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer "uniform-buffer"
 				'[VObj.Atom 256 UniformBufferObject 'Nothing]) ] ->
@@ -1183,7 +1183,7 @@ createBufferAtom :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd -
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[VObj.Atom 256 a 'Nothing] ->
-		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm '[VObj.Atom 256 a 'Nothing] )] ->
 			IO b) -> IO b
@@ -1193,7 +1193,7 @@ createBufferList :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[VObj.List 256 t ""] ->
-		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm '[VObj.List 256 t ""] ) ] ->
 		IO a) ->
@@ -1206,7 +1206,7 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags ->
 	(forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[ VObj.ObjImage 1 t inm] ->
-		Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm '[ VObj.ObjImage 1 t inm])] ->
 		IO a) -> IO a
@@ -1217,15 +1217,15 @@ createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sb sm nm '[o] ->
-		Vk.Dvc.Mem.ImageBuffer.M sm
+		Vk.Dvc.Mem.M sm
 			'[ '(sb, 'Vk.Mem.K.Buffer nm '[o])] ->
 		IO a) -> IO a
 createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
-	Vk.Dvc.Mem.ImageBuffer.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImageBuffer.Buffer b)
+	Vk.Dvc.Mem.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.Buffer b)
 		(allcInfo mt) nil nil
-		$ f . \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
+		$ f . \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
@@ -1387,7 +1387,7 @@ mainLoop ::
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
-	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
+	Vk.Dvc.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
@@ -1416,7 +1416,7 @@ runLoop ::
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
-	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
+	Vk.Dvc.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
@@ -1443,7 +1443,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
-	Vk.Dvc.Mem.ImageBuffer.M sm2 '[ '(
+	Vk.Dvc.Mem.M sm2 '[ '(
 		sb2,
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
@@ -1478,13 +1478,13 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias 
 	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfo'
 
 updateUniformBuffer :: Vk.Dvc.D sd ->
-	Vk.Dvc.Mem.ImageBuffer.M sm '[ '(
+	Vk.Dvc.Mem.M sm '[ '(
 		sb,
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.C.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc um sce tm = do
-	Vk.Dvc.Mem.ImageBuffer.write @"uniform-buffer"
+	Vk.Dvc.Mem.write @"uniform-buffer"
 		@(VObj.Atom 256 UniformBufferObject 'Nothing) dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
 		uniformBufferObjectModel = Cglm.glmRotate
