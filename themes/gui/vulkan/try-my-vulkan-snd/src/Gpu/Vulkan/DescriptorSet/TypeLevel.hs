@@ -229,3 +229,9 @@ class BindingAndArrayElemBufferView
 	(bt :: [DescriptorSetLayout.BindingType])
 	(bvs :: [(Symbol, Type)]) where
 	bindingAndArrayElemBufferView :: Integral n => n -> n -> (n, n)
+
+instance {-# OVERLAPPABLE #-} IsPrefixBufferView bvs bvs' =>
+	BindingAndArrayElemBufferView
+		('DescriptorSetLayout.BufferView ('(nm, t) ': bvs') ': bts)
+		('(nm, t) ': bvs) where
+	bindingAndArrayElemBufferView _ _ = (0, 0)
