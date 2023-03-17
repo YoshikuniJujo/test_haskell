@@ -44,6 +44,8 @@ pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
 	ObjectLengthAtom = ObjectLengthStatic K.ObjectLengthAtom
 
+{-# COMPLETE ObjectLengthList #-}
+
 pattern ObjectLengthList :: Int -> ObjectLength ('Static (K.List algn t nm))
 pattern ObjectLengthList n <- ObjectLengthStatic (K.ObjectLengthList n) where
 	ObjectLengthList n = ObjectLengthStatic (K.ObjectLengthList n)

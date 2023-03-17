@@ -28,6 +28,7 @@ import Gpu.Vulkan.DescriptorSet.TypeLevel
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Device.Type as Device
+import qualified Gpu.Vulkan.BufferView as BufferView
 import qualified Gpu.Vulkan.BufferView.Middle as BufferView.M
 import qualified Gpu.Vulkan.Descriptor as Descriptor
 import qualified Gpu.Vulkan.Descriptor.Middle as Descriptor.M
@@ -71,7 +72,7 @@ class SListFromMiddle slbtss where
 	sListFromMiddle :: [M.D] -> IO (HeteroParList.PL (S sd sp) slbtss)
 
 instance SListFromMiddle '[] where
-	sListFromMiddle [] = pure HeteroParList.Nil
+	sListFromMiddle = \case [] -> pure HeteroParList.Nil; _ -> error "bad"
 
 instance (
 	Default (HeteroParList.PL
@@ -79,9 +80,11 @@ instance (
 		(LayoutArgOnlyDynamics slbts)),
 	SListFromMiddle slbtss ) =>
 	SListFromMiddle (slbts ': slbtss) where
-	sListFromMiddle (d : ds) = (:**)
-		<$> ((`S` d) <$> newDefaultIORef)
-		<*> sListFromMiddle @slbtss ds
+	sListFromMiddle = \case
+		(d : ds) -> (:**)
+			<$> ((`S` d) <$> newDefaultIORef)
+			<*> sListFromMiddle @slbtss ds
+		_ -> error "bad"
 
 allocateSs :: (WithPoked n, SListFromMiddle slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
@@ -135,6 +138,7 @@ writeToMiddle Write {
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
 	| WriteSourcesArgBuffer [Descriptor.BufferInfoArg]
+	| WriteSourcesArgBufferView [(Symbol, Type)]
 	| WriteSourcesArgOther
 
 data WriteSources arg where
@@ -146,6 +150,9 @@ data WriteSources arg where
 	BufferInfos ::
 		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
+	TexelBufferViews ::
+		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
+		WriteSources ('WriteSourcesArgBufferView nmts)
 	TexelBufferViewsOld ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther

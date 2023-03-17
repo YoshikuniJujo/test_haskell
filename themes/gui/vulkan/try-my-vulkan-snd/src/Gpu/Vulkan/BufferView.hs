@@ -1,26 +1,83 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.BufferView where
 
+import GHC.TypeLits
+import Foreign.Storable
+import Foreign.Storable.PeekPoke
+import Control.Exception
 import Data.TypeLevel.Uncurry
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
+import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 
+import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
+import Gpu.Vulkan.Device qualified as Device
+import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 import Gpu.Vulkan.TypeEnum qualified as TEnum
 import Gpu.Vulkan.Buffer qualified as Buffer
 import Gpu.Vulkan.BufferView.Middle qualified as M
 
-data CreateInfo n t snmobjs = CreateInfo {
+newtype B s (nm :: Symbol) t = B M.B deriving Show
+
+create :: (
+	WithPoked n, WithPoked c, WithPoked d,
+	TEnum.FormatToValue (FormatOf t), OffsetRange t nm objs ) =>
+	Device.D sd -> CreateInfo n t nm '(sb, bnm, objs) ->
+	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	(forall s . B s nm t -> IO a) -> IO a
+create (Device.D dvc) ci macc macd f = bracket
+	(M.create dvc (createInfoToMiddle ci) macc)
+	(\b -> M.destroy dvc b macd) (f . B)
+
+data CreateInfo n t (nm :: Symbol) snmobjs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags,
 	createInfoBuffer :: U3 Buffer.B snmobjs }
 
-class OffsetRange t (objs :: [VObj.Object]) where
-	offsetRange :: (Device.M.Size, Device.M.Size)
+createInfoToMiddle :: forall n t nm s bnm objs . (
+	TEnum.FormatToValue (FormatOf t),
+	OffsetRange t nm objs ) =>
+	CreateInfo n t nm '(s, bnm, objs) -> M.CreateInfo n
+createInfoToMiddle CreateInfo {
+	createInfoNext = mnxt,
+	createInfoFlags = flgs,
+	createInfoBuffer = U3 (Buffer.B lns b) } = M.CreateInfo {
+	M.createInfoNext = mnxt,
+	M.createInfoFlags = flgs,
+	M.createInfoBuffer = b,
+	M.createInfoFormat = TEnum.formatToValue @(FormatOf t),
+	M.createInfoOffset = offset @t @nm 0 lns,
+	M.createInfoRange = range @t @nm lns }
 
 type family FormatOf t :: TEnum.Format
+
+class OffsetRange t (nm :: Symbol) (objs :: [VObj.Object]) where
+	offset :: Device.M.Size ->
+		HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
+	range :: HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
+
+instance (KnownNat algn, Storable t) =>
+	OffsetRange t nm (VObj.List algn t nm ': _objs) where
+	offset sz _ = sz
+	range (ln :** _) = fromIntegral $ VObj.objectSize' ln
+
+instance {-# OVERLAPPABLE #-} (VObj.SizeAlignment obj, OffsetRange t nm objs) =>
+	OffsetRange t nm (obj ': objs) where
+	offset sz (ln :** lns) = offset @t @nm (sz + objectSize ln) lns
+	range (_ :** lns) = range @t @nm lns
+
+objectSize :: forall obj . VObj.SizeAlignment obj =>
+	VObj.ObjectLength obj -> Device.M.Size
+objectSize ln = ((fromIntegral (VObj.objectSize' ln) - 1) `div` algn + 1) * algn
+	where algn = fromIntegral (VObj.objectAlignment @obj)
