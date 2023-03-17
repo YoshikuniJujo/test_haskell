@@ -59,6 +59,10 @@ data Binding (bt :: BindingType) where
 		bindingBufferDescriptorType :: Descriptor.Type,
 		bindingBufferStageFlags :: ShaderStageFlags
 		} -> Binding ('Buffer objs)
+	BindingBufferView :: {
+		bindingBufferViewDescriptorType :: Descriptor.Type,
+		bindingBufferViewStageFlags :: ShaderStageFlags
+		} -> Binding ('BufferView bvs)
 	BindingImage :: {
 		bindingImageDescriptorType :: Descriptor.Type,
 		bindingImageStageFlags :: ShaderStageFlags

@@ -176,7 +176,7 @@ instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
 	type WriteSourcesToLengthListObj
 --		('WriteSourcesArgImage ssfmtnmsis) = '[VObj.Dummy]
 		('WriteSourcesArgImage ssfmtnmsis) = '[]
-	writeSourcesToLengthList (ImageInfos bis) = Nothing
+	writeSourcesToLengthList (ImageInfos _bis) = Nothing
 
 instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]

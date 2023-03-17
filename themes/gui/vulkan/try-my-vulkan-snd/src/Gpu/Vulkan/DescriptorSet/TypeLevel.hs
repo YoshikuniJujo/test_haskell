@@ -217,3 +217,15 @@ instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemImage bts sais =>
 	BindingAndArrayElemImage (bt ': bts) sais where
 	bindingAndArrayElemImage b _ = bindingAndArrayElemImage @bts @sais (b + 1) 0
+
+class IsPrefixBufferView (bvs :: [(Symbol, Type)]) (bvs' :: [(Symbol, Type)])
+
+instance IsPrefixBufferView '[] _bvs'
+
+instance IsPrefixBufferView bvs bvs' =>
+	IsPrefixBufferView (bv ': bvs) (bv ': bvs')
+
+class BindingAndArrayElemBufferView
+	(bt :: [DescriptorSetLayout.BindingType])
+	(bvs :: [(Symbol, Type)]) where
+	bindingAndArrayElemBufferView :: Integral n => n -> n -> (n, n)
