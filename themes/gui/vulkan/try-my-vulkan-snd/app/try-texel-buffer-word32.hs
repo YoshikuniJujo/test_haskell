@@ -15,6 +15,8 @@
 
 module Main where
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
 import Foreign.Storable
 import Data.Kind
 import Data.Kind.Object qualified as KObj
@@ -71,8 +73,11 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
+import qualified Gpu.Vulkan.BufferView as Vk.BufferView
 import qualified Gpu.Vulkan.BufferView.Middle as Vk.BufferView.M
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
+
+import Gpu.Vulkan.TypeEnum qualified as Vk.TEnum
 
 main :: IO ()
 main = do
@@ -98,8 +103,10 @@ calc da db dc = withDevice \phdvc qFam dvc mxx ->
 	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
 	let	n = fromIntegral mxx
 		da' = V.take n da; db' = V.take n db; dc' = V.take n dc
-		dd = V.fromList . take (fromIntegral mxx * 4) $ cycle [123 :: Word32, 321, 111, 333, 555]
-	in
+		dd = V.fromList . take (fromIntegral mxx) $ cycle [
+			MyPixel 123 321 111 333,
+			MyPixel 555 444 333 222,
+			MyPixel 999 888 777 666 ] in
 	prepareMems phdvc dvc dscSetLyt da' db' dc' dd mxx \dscSet
 		(ma :: MemoryList sm1 sb1 nm1 w1)
 		(mb :: MemoryList sm2 sb2 nm2 w2)
@@ -254,8 +261,7 @@ findQueueFamily phdvc qb = do
 
 dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () '[
 	'Vk.DscSetLyt.Buffer '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
-	'Vk.DscSetLyt.Other
-	]
+	'Vk.DscSetLyt.BufferView '[ '("", MyPixel)] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 	Vk.DscSetLyt.createInfoNext = Nothing,
 	Vk.DscSetLyt.createInfoFlags = def,
@@ -266,26 +272,24 @@ binding0 = Vk.DscSetLyt.BindingBuffer {
 	Vk.DscSetLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSetLyt.bindingBufferStageFlags = Vk.ShaderStageComputeBit }
 
--- binding1 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer objs)
-binding1 :: Vk.DscSetLyt.Binding 'Vk.DscSetLyt.Other
-binding1 = Vk.DscSetLyt.BindingOther {
-	Vk.DscSetLyt.bindingOtherDescriptorType =
+binding1 :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.BufferView '[ '("", MyPixel) ])
+binding1 = Vk.DscSetLyt.BindingBufferView {
+	Vk.DscSetLyt.bindingBufferViewDescriptorType =
 		Vk.Dsc.TypeStorageTexelBuffer,
-	Vk.DscSetLyt.bindingOtherDescriptorCountOrImmutableSamplers =
-		Left 1,
-	Vk.DscSetLyt.bindingOtherStageFlags = Vk.ShaderStageComputeBit }
+	Vk.DscSetLyt.bindingBufferViewStageFlags = Vk.ShaderStageComputeBit }
 
 prepareMems ::
-	forall bts w1 w2 w3 w4 sd sl nm1 nm2 nm3 a . (
+	forall bts w1 w2 w3 sd sl nm1 nm2 nm3 a . (
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
-	Storable w1, Storable w2, Storable w3, Storable w4
+	Storable w1, Storable w2, Storable w3,
+	Vk.DscSet.BindingAndArrayElemBufferView bts '[ '("", MyPixel)]
 	) =>
 	Vk.DscSet.BindingAndArrayElem bts
 		'[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> Word32 -> (
+	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector MyPixel -> Word32 -> (
 		forall s sm1 sb1 sm2 sb2 sm3 sb3 .
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Mem.M sm1 '[ '( sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
@@ -296,7 +300,8 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 	Vk.DscPool.create dvc dscPoolInfo nil nil \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
-	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc bd md -> do
+	storageBufferNew4 dvc phdvc da db dc dd \ba ma bb mb bc mc
+		(bd :: Vk.Buffer.Binded sm sb nm '[VObj.List 256 MyPixel ""]) md ->
 	let	Vk.Buffer.Binded _ mbd = bd
 		bufferViewInfo = Vk.BufferView.M.CreateInfo {
 			Vk.BufferView.M.createInfoNext = Nothing,
@@ -307,20 +312,46 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 			Vk.BufferView.M.createInfoOffset = 0,
 			Vk.BufferView.M.createInfoRange =
 				Vk.Dvc.M.Size $ 4 * 4 * fromIntegral mxx }
-		Vk.Dvc.D mdvc = dvc
-	bv <- Vk.BufferView.M.create @() mdvc bufferViewInfo nil
+		bufferViewInfo' :: Vk.BufferView.CreateInfo () MyPixel ""
+			'(sm, sb, nm, '[VObj.List 256 MyPixel ""])
+		bufferViewInfo' = Vk.BufferView.CreateInfo {
+			Vk.BufferView.createInfoNext = Nothing,
+			Vk.BufferView.createInfoFlags = zeroBits,
+			Vk.BufferView.createInfoBuffer = U4 bd }
+		Vk.Dvc.D mdvc = dvc in
+--	Vk.BufferView.M.create @() mdvc bufferViewInfo nil >>= \bv -> do
+	Vk.BufferView.create @() dvc bufferViewInfo' nil nil \bv@(Vk.BufferView.B mbv) -> do
 	let	wds = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = Nothing,
 			Vk.DscSet.writeDstSet = dscSet,
 			Vk.DscSet.writeDescriptorType =
 				Vk.Dsc.TypeStorageTexelBuffer,
 			Vk.DscSet.writeSources =
-				Vk.DscSet.TexelBufferViewsOld 1 0 [bv]
+				Vk.DscSet.TexelBufferViewsOld 1 0 [mbv]
 			}
+		wds' = Vk.DscSet.Write {
+			Vk.DscSet.writeNext = Nothing,
+			Vk.DscSet.writeDstSet = dscSet,
+			Vk.DscSet.writeDescriptorType =
+				Vk.Dsc.TypeStorageTexelBuffer,
+			Vk.DscSet.writeSources = Vk.DscSet.TexelBufferViews
+				. HeteroParList.Singleton $ U2 bv }
 	Vk.DscSet.updateDs @() @() dvc (
-		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds :**
+		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds' :**
 		HeteroParList.Nil ) []
 	f dscSet ma mb mc
+
+data MyPixel = MyPixel Word32 Word32 Word32 Word32 deriving Show
+
+type instance Vk.BufferView.FormatOf MyPixel = 'Vk.TEnum.FormatR32g32b32a32Uint
+
+instance Storable MyPixel where
+	sizeOf _ = 4 * sizeOf @Word32 undefined
+	alignment _ = alignment @Word32 undefined
+	peek p = do
+		[r, g, b, a] <- peekArray 4 $ castPtr p
+		pure $ MyPixel r g b a
+	poke p (MyPixel r g b a) = pokeArray (castPtr p) [r, g, b, a]
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {

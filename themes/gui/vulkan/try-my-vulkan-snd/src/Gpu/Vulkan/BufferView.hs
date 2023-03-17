@@ -17,7 +17,6 @@ import Control.Exception
 import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
-import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 
 import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
@@ -33,7 +32,7 @@ newtype B s (nm :: Symbol) t = B M.B deriving Show
 create :: (
 	WithPoked n, WithPoked c, WithPoked d,
 	TEnum.FormatToValue (FormatOf t), OffsetRange t nm objs ) =>
-	Device.D sd -> CreateInfo n t nm '(sb, bnm, objs) ->
+	Device.D sd -> CreateInfo n t nm '(sm, sb, bnm, objs) ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . B s nm t -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f = bracket
@@ -43,16 +42,16 @@ create (Device.D dvc) ci macc macd f = bracket
 data CreateInfo n t (nm :: Symbol) snmobjs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags,
-	createInfoBuffer :: U3 Buffer.B snmobjs }
+	createInfoBuffer :: U4 Buffer.Binded snmobjs }
 
-createInfoToMiddle :: forall n t nm s bnm objs . (
+createInfoToMiddle :: forall n t nm sm sb bnm objs . (
 	TEnum.FormatToValue (FormatOf t),
 	OffsetRange t nm objs ) =>
-	CreateInfo n t nm '(s, bnm, objs) -> M.CreateInfo n
+	CreateInfo n t nm '(sm, sb, bnm, objs) -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
-	createInfoBuffer = U3 (Buffer.B lns b) } = M.CreateInfo {
+	createInfoBuffer = U4 (Buffer.Binded lns b) } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
 	M.createInfoBuffer = b,

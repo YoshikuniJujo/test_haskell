@@ -93,6 +93,16 @@ instance Length objs => BindingToMiddle ('Buffer objs) where
 				Left (length @_ @objs),
 			M.bindingStageFlags = sfs }
 
+instance Length bvs => BindingToMiddle ('BufferView bvs) where
+	bindingToMiddle BindingBufferView {
+		bindingBufferViewDescriptorType = dt,
+		bindingBufferViewStageFlags = sfs } bb = M.Binding {
+			M.bindingBinding = bb,
+			M.bindingDescriptorType = dt,
+			M.bindingDescriptorCountOrImmutableSamplers =
+				Left (length @_ @bvs),
+			M.bindingStageFlags = sfs }
+
 instance Length fmts => BindingToMiddle ('Image fmts) where
 	bindingToMiddle BindingImage {
 		bindingImageDescriptorType = dt,

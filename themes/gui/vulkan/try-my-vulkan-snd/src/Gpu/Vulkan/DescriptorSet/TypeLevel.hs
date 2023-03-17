@@ -200,7 +200,7 @@ instance IsPrefixImage sais nmfmts =>
 	bindingAndArrayElemImage b a = (b, a)
 
 instance BindingAndArrayElemImage bts sais =>
-	BindingAndArrayElemImage ('DescriptorSetLayout.Image '[] : bts)
+	BindingAndArrayElemImage ('DescriptorSetLayout.Image '[] ': bts)
 	sais where
 	bindingAndArrayElemImage b _ =
 		bindingAndArrayElemImage @bts @sais (b + 1) 0
@@ -230,8 +230,22 @@ class BindingAndArrayElemBufferView
 	(bvs :: [(Symbol, Type)]) where
 	bindingAndArrayElemBufferView :: Integral n => n -> n -> (n, n)
 
-instance {-# OVERLAPPABLE #-} IsPrefixBufferView bvs bvs' =>
+instance IsPrefixBufferView bvs bvs' =>
 	BindingAndArrayElemBufferView
 		('DescriptorSetLayout.BufferView ('(nm, t) ': bvs') ': bts)
 		('(nm, t) ': bvs) where
-	bindingAndArrayElemBufferView _ _ = (0, 0)
+	bindingAndArrayElemBufferView b a = (b, a)
+
+instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView
+	('DescriptorSetLayout.BufferView bvs' ': bts) bvs =>
+	BindingAndArrayElemBufferView
+		('DescriptorSetLayout.BufferView (nmt ': bvs') ': bts) bvs where
+	bindingAndArrayElemBufferView b a = bindingAndArrayElemBufferView
+		@('DescriptorSetLayout.BufferView bvs' ': bts) @bvs b (a + 1)
+
+instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView bts bvs =>
+	BindingAndArrayElemBufferView
+--	('DescriptorSetLayout.BufferView '[] ': bts) bvs where
+		(bt ': bts) bvs where
+	bindingAndArrayElemBufferView b _a =
+		bindingAndArrayElemBufferView @bts @bvs (b + 1) 0

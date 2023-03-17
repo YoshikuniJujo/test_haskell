@@ -174,9 +174,13 @@ instance
 
 instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
 	type WriteSourcesToLengthListObj
---		('WriteSourcesArgImage ssfmtnmsis) = '[VObj.Dummy]
 		('WriteSourcesArgImage ssfmtnmsis) = '[]
 	writeSourcesToLengthList (ImageInfos _bis) = Nothing
+
+instance WriteSourcesToLengthList ('WriteSourcesArgBufferView foo) where
+	type WriteSourcesToLengthListObj
+		('WriteSourcesArgBufferView foo) = '[]
+	writeSourcesToLengthList (TexelBufferViews _) = Nothing
 
 instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]
@@ -214,11 +218,32 @@ instance (
 		bindingAndArrayElemImage @bts @ssfmtnmsis 0 0,
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
+instance (
+	BindingAndArrayElemBufferView bts bvs,
+	BufferViewsToMiddle bvs ) =>
+	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
+	type WriteSourcesObjs ('WriteSourcesArgBufferView bvs) = '[]
+	writeSourcesToMiddle (TexelBufferViews bvs) = (
+		bindingAndArrayElemBufferView @bts @bvs 0 0,
+		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
+
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
 	type WriteSourcesObjs 'WriteSourcesArgOther = '[]
 	writeSourcesToMiddle = \case
 		WriteSourcesInNext bdg ae cnt -> ((bdg, ae), M.WriteSourcesInNext cnt)
 		TexelBufferViewsOld bdg ae bvs -> ((bdg, ae), M.WriteSourcesBufferView bvs)
+
+class BufferViewsToMiddle bvs where
+	bufferViewsToMiddle ::
+		HeteroParList.PL (U2 (BufferView.B s)) bvs -> [BufferView.M.B]
+
+instance BufferViewsToMiddle '[] where
+	bufferViewsToMiddle HeteroParList.Nil = []
+
+instance BufferViewsToMiddle bvs =>
+	BufferViewsToMiddle (bv ': bvs) where
+	bufferViewsToMiddle (U2 (BufferView.B mbv) :** bvs) =
+		mbv : bufferViewsToMiddle bvs
 
 class ImageInfosToMiddle ssfmtnmsis where
 	imageInfosToMiddle ::
@@ -257,7 +282,6 @@ instance WriteListToMiddle n '[] where
 
 instance (
 	WriteSourcesToMiddle '(sl, bts) wsa,
---	WriteSourcesToMiddle slbts wsa,
 	WriteListToMiddle n sdspslbtswsas,
 
 	WriteSourcesToLengthList wsa,
@@ -266,7 +290,6 @@ instance (
 	) =>
 	WriteListToMiddle n
 		('(sd, sp, '(sl, bts), wsa) ': sdspslbtswsas) where
---		('(sd, sp, slbts, wsa) ': sdspslbtswsas) where
 	writeListToMiddle (U4 w :** ws) =
 		writeToMiddle w : writeListToMiddle ws
 	writeListUpdateLength (U4 w :** ws) =
