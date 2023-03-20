@@ -179,14 +179,14 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 makeCommandBuffer :: forall sd scp vs a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
 	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
 makeCommandBuffer device graphicsQueue cmdPool f = do
-		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfo () scp
-			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfo {
-				Vk.CommandBuffer.allocateInfoNext = Nothing,
-				Vk.CommandBuffer.allocateInfoCommandPool =
+		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfoOld () scp
+			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfoOld {
+				Vk.CommandBuffer.allocateInfoNextOld = Nothing,
+				Vk.CommandBuffer.allocateInfoCommandPoolOld =
 					cmdPool,
-				Vk.CommandBuffer.allocateInfoLevel =
+				Vk.CommandBuffer.allocateInfoLevelOld =
 					Vk.CommandBuffer.LevelPrimary,
-				Vk.CommandBuffer.allocateInfoCommandBufferCount
+				Vk.CommandBuffer.allocateInfoCommandBufferCountOld
 					= 1 }
 		Vk.CommandBuffer.allocateOld device cmdBufAllocInfo \case
 			[cmdBuf] -> do

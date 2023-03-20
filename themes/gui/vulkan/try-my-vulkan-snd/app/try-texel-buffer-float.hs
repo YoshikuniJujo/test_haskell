@@ -175,12 +175,12 @@ commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
 		Vk.CommandPool.CreateResetCommandBufferBit,
 	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
-	Vk.CmdBuf.allocateInfoNext = Nothing,
-	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
-	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoOld () s
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
+	Vk.CmdBuf.allocateInfoNextOld = Nothing,
+	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
+	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
 	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (

@@ -531,12 +531,12 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
-	Vk.CmdBuf.allocateInfoNext = Nothing,
-	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
-	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCount = 1 }
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoOld () s
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
+	Vk.CmdBuf.allocateInfoNextOld = Nothing,
+	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
+	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {

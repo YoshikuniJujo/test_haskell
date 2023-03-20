@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocateOld, allocateNew, AllocateInfo(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset,
+	C, allocateOld, allocateNew, AllocateInfoOld(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset,
 	
 	Level,
 	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
@@ -39,19 +39,19 @@ import qualified Gpu.Vulkan.CommandPool.Type as CommandPool
 import qualified Gpu.Vulkan.CommandPool.Middle as CommandPool.M
 import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 
-data AllocateInfo n s = AllocateInfo {
-	allocateInfoNext :: Maybe n,
-	allocateInfoCommandPool :: CommandPool.C s,
-	allocateInfoLevel :: Level,
-	allocateInfoCommandBufferCount :: Word32 }
+data AllocateInfoOld n s = AllocateInfoOld {
+	allocateInfoNextOld :: Maybe n,
+	allocateInfoCommandPoolOld :: CommandPool.C s,
+	allocateInfoLevelOld :: Level,
+	allocateInfoCommandBufferCountOld :: Word32 }
 	deriving Show
 
-allocateInfoToMiddle :: AllocateInfo n s -> M.AllocateInfo n
-allocateInfoToMiddle AllocateInfo {
-	allocateInfoNext = nxt,
-	allocateInfoCommandPool = CommandPool.C cp,
-	allocateInfoLevel = lvl,
-	allocateInfoCommandBufferCount = cnt } = M.AllocateInfo {
+allocateInfoToMiddleOld :: AllocateInfoOld n s -> M.AllocateInfo n
+allocateInfoToMiddleOld AllocateInfoOld {
+	allocateInfoNextOld = nxt,
+	allocateInfoCommandPoolOld = CommandPool.C cp,
+	allocateInfoLevelOld = lvl,
+	allocateInfoCommandBufferCountOld = cnt } = M.AllocateInfo {
 	M.allocateInfoNext = nxt,
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
@@ -81,9 +81,9 @@ allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
 	(f . HeteroParList.map C)
 
 allocateOld :: WithPoked n =>
-	Device.D sd -> AllocateInfo n sp ->
+	Device.D sd -> AllocateInfoOld n sp ->
 	(forall s . [C s vs] -> IO a) -> IO a
-allocateOld (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
+allocateOld (Device.D dvc) (allocateInfoToMiddleOld -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (C . CC <$>))
 
