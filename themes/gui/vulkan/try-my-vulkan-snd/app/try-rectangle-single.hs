@@ -982,7 +982,7 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
-	Vk.CmdBffr.allocateNew
+	Vk.CmdBffr.allocate
 		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
@@ -995,11 +995,11 @@ copyBuffer dvc gq cp src dst = do
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc '[ '[]]
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfo () sc '[ '[]]
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = Nothing,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1009,13 +1009,13 @@ createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb . Vk.CmdBffr.C scb Vs -> IO a) ->
 	IO a
-createCommandBuffer dvc cp f = Vk.CmdBffr.allocateNew @() dvc allocInfo $ f . \(HeteroParList.Singleton cb) -> cb
+createCommandBuffer dvc cp f = Vk.CmdBffr.allocate @() dvc allocInfo $ f . \(HeteroParList.Singleton cb) -> cb
 	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew () scp vss
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfo () scp vss
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::

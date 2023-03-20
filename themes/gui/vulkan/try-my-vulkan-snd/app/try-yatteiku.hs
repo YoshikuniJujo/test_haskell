@@ -338,7 +338,7 @@ beginSingleTimeCommands :: forall sd sc a .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
 	(forall s . Vk.CommandBuffer.C s '[] -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
-	Vk.CommandBuffer.allocateNew
+	Vk.CommandBuffer.allocate
 		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.C s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
@@ -350,11 +350,11 @@ beginSingleTimeCommands dvc gq cp cmd = do
 			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CommandBuffer.AllocateInfoNew () sc '[ '[]]
-	allocInfo = Vk.CommandBuffer.AllocateInfoNew {
-		Vk.CommandBuffer.allocateInfoNextNew = Nothing,
-		Vk.CommandBuffer.allocateInfoCommandPoolNew = cp,
-		Vk.CommandBuffer.allocateInfoLevelNew = Vk.CommandBuffer.LevelPrimary }
+	allocInfo :: Vk.CommandBuffer.AllocateInfo () sc '[ '[]]
+	allocInfo = Vk.CommandBuffer.AllocateInfo {
+		Vk.CommandBuffer.allocateInfoNext = Nothing,
+		Vk.CommandBuffer.allocateInfoCommandPool = cp,
+		Vk.CommandBuffer.allocateInfoLevel = Vk.CommandBuffer.LevelPrimary }
 	beginInfo = Vk.CommandBuffer.M.BeginInfo {
 		Vk.CommandBuffer.beginInfoNext = Nothing,
 		Vk.CommandBuffer.beginInfoFlags = Vk.CommandBuffer.UsageOneTimeSubmitBit,

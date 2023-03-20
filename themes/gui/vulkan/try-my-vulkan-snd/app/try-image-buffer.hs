@@ -151,7 +151,7 @@ calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 		(HeteroParList.Singleton . U4 $ cmptPipelineInfo pplLyt)
 		nil nil \(ppl :*. HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil nil \cmdPool ->
-	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(HeteroParList.Singleton cmdBuf) ->
+	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(HeteroParList.Singleton cmdBuf) ->
 		run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm ma mb mc
 
 type ListBuffer1 w1 w2 w3 = '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
@@ -563,11 +563,11 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoNew () s vss
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
-	Vk.CmdBuf.allocateInfoNextNew = Nothing,
-	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo () s vss
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
+	Vk.CmdBuf.allocateInfoNext = Nothing,
+	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
+	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {

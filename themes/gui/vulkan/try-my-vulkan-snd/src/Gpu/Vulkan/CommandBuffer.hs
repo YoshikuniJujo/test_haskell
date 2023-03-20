@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocateOld, allocateNew, AllocateInfoOld(..), AllocateInfoNew(..), begin, M.BeginInfo(..), reset,
+	C, allocateOld, allocate, AllocateInfoOld(..), AllocateInfo(..), begin, M.BeginInfo(..), reset,
 	
 	Level,
 	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
@@ -57,27 +57,27 @@ allocateInfoToMiddleOld AllocateInfoOld {
 	M.allocateInfoLevel = lvl,
 	M.allocateInfoCommandBufferCount = cnt }
 
-data AllocateInfoNew n s (vss :: [[Type]]) = AllocateInfoNew {
-	allocateInfoNextNew :: Maybe n,
-	allocateInfoCommandPoolNew :: CommandPool.C s,
-	allocateInfoLevelNew :: Level }
+data AllocateInfo n s (vss :: [[Type]]) = AllocateInfo {
+	allocateInfoNext :: Maybe n,
+	allocateInfoCommandPool :: CommandPool.C s,
+	allocateInfoLevel :: Level }
 	deriving Show
 
-allocateInfoToMiddleNew :: AllocateInfoNew n s vss -> AllocateInfoNewM n vss
-allocateInfoToMiddleNew AllocateInfoNew {
-	allocateInfoNextNew = nxt,
-	allocateInfoCommandPoolNew = CommandPool.C cp,
-	allocateInfoLevelNew = lvl } = AllocateInfoNewM {
-	allocateInfoNextNewM = nxt,
-	allocateInfoCommandPoolNewM = cp,
-	allocateInfoLevelNewM = lvl }
+allocateInfoToMiddle :: AllocateInfo n s vss -> AllocateInfoM n vss
+allocateInfoToMiddle AllocateInfo {
+	allocateInfoNext = nxt,
+	allocateInfoCommandPool = CommandPool.C cp,
+	allocateInfoLevel = lvl } = AllocateInfoM {
+	allocateInfoNextM = nxt,
+	allocateInfoCommandPoolM = cp,
+	allocateInfoLevelM = lvl }
 
-allocateNew ::
+allocate ::
 	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
-	Device.D sd -> AllocateInfoNew n scp vss ->
+	Device.D sd -> AllocateInfo n scp vss ->
 	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
-allocateNew (Device.D dvc) (allocateInfoToMiddleNew -> ai) f = bracket
-	(allocateNewM dvc ai) (freeCsNew dvc $ allocateInfoCommandPoolNewM ai)
+allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
+	(allocateM dvc ai) (freeCs dvc $ allocateInfoCommandPoolM ai)
 	(f . HeteroParList.map C)
 
 allocateOld :: WithPoked n =>
@@ -94,28 +94,28 @@ begin (C (CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 reset :: C sc vs -> ResetFlags -> IO ()
 reset (C (CC cb)) rfs = M.reset cb rfs
 
-allocateNewM ::
+allocateM ::
 	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
-	Device.M.D -> AllocateInfoNewM n vss -> IO (HeteroParList.PL CC vss)
-allocateNewM dvc ai = HeteroParList.fromList CC <$> M.allocate dvc (allocateInfoFromNew ai)
+	Device.M.D -> AllocateInfoM n vss -> IO (HeteroParList.PL CC vss)
+allocateM dvc ai = HeteroParList.fromList CC <$> M.allocate dvc (allocateInfoFrom ai)
 
-freeCsNew :: Device.M.D -> CommandPool.M.C -> HeteroParList.PL CC vss -> IO ()
-freeCsNew dvc cp cs =
+freeCs :: Device.M.D -> CommandPool.M.C -> HeteroParList.PL CC vss -> IO ()
+freeCs dvc cp cs =
 	M.freeCs dvc cp (HeteroParList.toList (\(CC cb) -> cb) cs)
 
-data AllocateInfoNewM n (vss :: [[Type]]) = AllocateInfoNewM {
-	allocateInfoNextNewM :: Maybe n,
-	allocateInfoCommandPoolNewM :: CommandPool.M.C,
-	allocateInfoLevelNewM :: Level }
+data AllocateInfoM n (vss :: [[Type]]) = AllocateInfoM {
+	allocateInfoNextM :: Maybe n,
+	allocateInfoCommandPoolM :: CommandPool.M.C,
+	allocateInfoLevelM :: Level }
 	deriving Show
 
-allocateInfoFromNew :: forall n vss .
+allocateInfoFrom :: forall n vss .
 	TpLvlLst.Length [Type] vss =>
-	AllocateInfoNewM n vss -> M.AllocateInfo n
-allocateInfoFromNew AllocateInfoNewM {
-	allocateInfoNextNewM = mnxt,
-	allocateInfoCommandPoolNewM = cp,
-	allocateInfoLevelNewM = lvl } = M.AllocateInfo {
+	AllocateInfoM n vss -> M.AllocateInfo n
+allocateInfoFrom AllocateInfoM {
+	allocateInfoNextM = mnxt,
+	allocateInfoCommandPoolM = cp,
+	allocateInfoLevelM = lvl } = M.AllocateInfo {
 	M.allocateInfoNext = mnxt,
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
