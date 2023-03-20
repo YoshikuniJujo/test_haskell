@@ -177,7 +177,7 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 			\(cmdPool :: Vk.CommandPool.C s) -> f graphicsQueue cmdPool
 
 makeCommandBuffer :: forall sd scp vs a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
-	(forall s . Vk.CommandBuffer.C s vs -> IO a) -> IO a
+	(forall s . Vk.CommandBuffer.Binded s vs -> IO a) -> IO a
 makeCommandBuffer device graphicsQueue cmdPool f = do
 		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfoOld () scp
 			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfoOld {
@@ -336,10 +336,10 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
-	(forall s . Vk.CommandBuffer.C s '[] -> IO a) -> IO a
+	(forall s . Vk.CommandBuffer.Binded s '[] -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CommandBuffer.allocate
-		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.C s '[])) -> do
+		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.Binded s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,

@@ -58,37 +58,37 @@ import Data.IORef -- for debug
 import Data.Kind.Object qualified as KObj
 
 beginRenderPassNew :: (WithPoked n, ClearValueListToCore ct) =>
-	CommandBuffer.C sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
+	CommandBuffer.Binded sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
 	Subpass.Contents -> IO a -> IO a
-beginRenderPassNew (CommandBuffer.C cb) bi cnt f = bracket_
+beginRenderPassNew (CommandBuffer.Binded cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddleNew bi) cnt)
 	(M.endRenderPass cb) f
 
 beginRenderPass :: (WithPoked n, ClearValueListToCore ct) =>
-	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct ->
+	CommandBuffer.Binded sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
-beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
+beginRenderPass (CommandBuffer.Binded cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 
 bindPipeline ::
-	CommandBuffer.C sc vs -> Pipeline.BindPoint -> Pipeline.G sg vs ts -> IO ()
-bindPipeline (CommandBuffer.C cb) bp (Pipeline.G g) = M.bindPipeline cb bp g
+	CommandBuffer.Binded sc vs -> Pipeline.BindPoint -> Pipeline.G sg vs ts -> IO ()
+bindPipeline (CommandBuffer.Binded cb) bp (Pipeline.G g) = M.bindPipeline cb bp g
 
 bindPipelineCompute ::
-	CommandBuffer.C sc vs -> Pipeline.BindPoint -> Pipeline.Compute.C sg -> IO ()
-bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.C g) = M.bindPipelineCompute cb bp g
+	CommandBuffer.Binded sc vs -> Pipeline.BindPoint -> Pipeline.Compute.C sg -> IO ()
+bindPipelineCompute (CommandBuffer.Binded cb) bp (Pipeline.Compute.C g) = M.bindPipelineCompute cb bp g
 
-draw :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
-draw (CommandBuffer.C cb) vc ic fv fi = M.draw cb vc ic fv fi
+draw :: CommandBuffer.Binded sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw (CommandBuffer.Binded cb) vc ic fv fi = M.draw cb vc ic fv fi
 
-drawIndexed :: CommandBuffer.C sc vs ->
+drawIndexed :: CommandBuffer.Binded sc vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
-drawIndexed (CommandBuffer.C cb) idxc istc fidx vo fist =
+drawIndexed (CommandBuffer.Binded cb) idxc istc fidx vo fist =
 	M.drawIndexed cb idxc istc fidx vo fist
 
-dispatch :: CommandBuffer.C sc vs -> Word32 -> Word32 -> Word32 -> IO ()
-dispatch (CommandBuffer.C cb) = M.dispatch cb
+dispatch :: CommandBuffer.Binded sc vs -> Word32 -> Word32 -> Word32 -> IO ()
+dispatch (CommandBuffer.Binded cb) = M.dispatch cb
 
 class HeteroParListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
 	toList' :: (forall spslbts . t spslbts -> t') ->
@@ -102,10 +102,10 @@ instance HeteroParListToList' spslbtss =>
 
 bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss . (
 	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
-	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
+	CommandBuffer.Binded sc vs -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	[Word32] -> IO ()
-bindDescriptorSets (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss dosts =
+bindDescriptorSets (CommandBuffer.Binded c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'
@@ -126,11 +126,11 @@ bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
 		(DescriptorSet.LayoutArgListOnlyDynamics
 			(GetDscSetListLengthSnds spslbtss))),
 	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
-	CommandBuffer.C sc vs -> Pipeline.BindPoint ->
+	CommandBuffer.Binded sc vs -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
 	IO ()
-bindDescriptorSetsNew (CommandBuffer.C c) bp (Pipeline.Layout.L l) dss idxs = do
+bindDescriptorSetsNew (CommandBuffer.Binded c) bp (Pipeline.Layout.L l) dss idxs = do
 	putStrLn "bindDescriptorSets:"
 	lns <- getDscSetListLength dss
 	print lns
@@ -261,15 +261,15 @@ type family MapForth tpl where
 
 bindVertexBuffers :: forall sc vs smsbvs .
 	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
-	CommandBuffer.C sc vs -> HeteroParList.PL (U4 Buffer.IndexedList) smsbvs ->
+	CommandBuffer.Binded sc vs -> HeteroParList.PL (U4 Buffer.IndexedList) smsbvs ->
 	IO ()
-bindVertexBuffers (CommandBuffer.C cb) bils = M.bindVertexBuffers
+bindVertexBuffers (CommandBuffer.Binded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(MapForth smsbvs) @(MapSubType vs)
 
 bindIndexBuffer :: forall sc vs sm sb nm v . IsIndexType v =>
-	CommandBuffer.C sc vs -> Buffer.IndexedList sm sb nm v -> IO ()
-bindIndexBuffer (CommandBuffer.C cb) ib =
+	CommandBuffer.Binded sc vs -> Buffer.IndexedList sm sb nm v -> IO ()
+bindIndexBuffer (CommandBuffer.Binded cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @v)
 
 class IsIndexType a where indexType :: IndexType
@@ -279,18 +279,18 @@ instance IsIndexType Word32 where indexType = IndexTypeUint32
 
 copyBuffer :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc vs sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
-	CommandBuffer.C sc vs ->
+	CommandBuffer.Binded sc vs ->
 	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
-copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
+copyBuffer (CommandBuffer.Binded cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
 pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
 	PokableList ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
-	CommandBuffer.C sc vs -> Pipeline.Layout.L s sbtss whole ->
+	CommandBuffer.Binded sc vs -> Pipeline.Layout.L s sbtss whole ->
 	HeteroParList.L ts -> IO ()
-pushConstants' (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
+pushConstants' (CommandBuffer.Binded cb) (Pipeline.Layout.L lyt) xs =
 	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 
@@ -300,32 +300,32 @@ pipelineBarrier :: (
 	WithPokedHeteroToListCpsM (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
-	CommandBuffer.C sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	CommandBuffer.Binded sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags -> HeteroParList.PL Memory.M.Barrier ns ->
 	HeteroParList.PL (U5 Buffer.MemoryBarrier) nsmsbnmobjs ->
 	HeteroParList.PL (U5 Image.MemoryBarrier) nsismnmfmts -> IO ()
-pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
+pipelineBarrier (CommandBuffer.Binded cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)
 
 copyBufferToImage :: forall algn objs img inms sc vs sm sb nm si sm' nm' . (
 	ImageCopyListToMiddle algn objs img inms ) =>
-	CommandBuffer.C sc vs -> Buffer.Binded sm sb nm objs ->
+	CommandBuffer.Binded sc vs -> Buffer.Binded sm sb nm objs ->
 	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
-copyBufferToImage (CommandBuffer.C cb)
+copyBufferToImage (CommandBuffer.Binded cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = imageCopyListToMiddle @algn bf ics
 
 copyImageToBuffer :: forall algn objs img inms sc vs sm sb nm si sm' nm' . (
 	ImageCopyListToMiddle algn objs img inms ) =>
-	CommandBuffer.C sc vs ->
+	CommandBuffer.Binded sc vs ->
 	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
-copyImageToBuffer (CommandBuffer.C cb)
+copyImageToBuffer (CommandBuffer.Binded cb)
 	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = imageCopyListToMiddle @algn bf ics
@@ -347,10 +347,10 @@ instance (
 		Buffer.imageCopyToMiddle @algn @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
 		imageCopyListToMiddle @algn bf ics
 
-blitImage :: CommandBuffer.C sc vs ->
+blitImage :: CommandBuffer.Binded sc vs ->
 	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
 	Image.BindedNew dsi dsm dnm dfmt -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()
-blitImage (CommandBuffer.C cb)
+blitImage (CommandBuffer.Binded cb)
 	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr

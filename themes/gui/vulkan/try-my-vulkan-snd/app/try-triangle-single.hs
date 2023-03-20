@@ -869,7 +869,7 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocate
-		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
+		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
@@ -893,7 +893,7 @@ copyBuffer dvc gq cp src dst = do
 
 createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb . Vk.CmdBffr.C scb Vs -> IO a) ->
+	(forall scb . Vk.CmdBffr.Binded scb Vs -> IO a) ->
 	IO a
 createCommandBuffer dvc cp f = Vk.CmdBffr.allocate @() dvc allocInfo $ f . \(HeteroParList.Singleton cb) -> cb
 	where
@@ -905,8 +905,8 @@ createCommandBuffer dvc cp f = Vk.CmdBffr.allocate @() dvc allocInfo $ f . \(Het
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::
-		HeteroParList.PL (Vk.CmdBffr.C scb) vss -> Int ->
-		Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
+		Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
 
 instance VssList '[] where
 	vssListIndex HeteroParList.Nil _ = error "index too large"
@@ -946,7 +946,7 @@ createSyncObjects dvc f =
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sf sg sm sb nm .
-	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -982,7 +982,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.CmdBffr.C scb Vs ->
+	Vk.CmdBffr.Binded scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasrfsifs = do
 	($ ext0) $ fix \loop ext -> do
@@ -1000,7 +1000,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.CmdBffr.C scb Vs ->
+	Vk.CmdBffr.Binded scb Vs ->
 	SyncObjects '(sias, srfs, siff) ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop = do
@@ -1018,7 +1018,7 @@ drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff .
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> IO ()
+	Vk.CmdBffr.Binded scb Vs -> SyncObjects '(sias, srfs, siff) -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound

@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	C, allocateOld, allocate, AllocateInfoOld(..), AllocateInfo(..), begin, M.BeginInfo(..), reset,
+	Binded, allocateOld, allocate, AllocateInfoOld(..), AllocateInfo(..), begin, M.BeginInfo(..), reset,
 	
 	Level,
 	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
@@ -40,12 +40,12 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 allocate ::
 	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.D sd -> AllocateInfo n scp vss ->
-	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
+	(forall s . HeteroParList.PL (Binded s) vss -> IO a) -> IO a
 allocate (Device.D dvc) ai f = bracket
 	(M.allocate dvc $ allocateInfoToMiddle ai)
 	(M.freeCs dvc
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
-	(f . HeteroParList.fromList C)
+	(f . HeteroParList.fromList Binded)
 
 data AllocateInfo n s (vss :: [[Type]]) = AllocateInfo {
 	allocateInfoNext :: Maybe n,
@@ -66,18 +66,18 @@ allocateInfoToMiddle AllocateInfo {
 		fromIntegral (TpLvlLst.length @_ @vss) }
 
 begin :: (WithPoked n, WithPoked n') =>
-	C s vs -> M.BeginInfo n n' -> IO a -> IO a
-begin (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+	Binded s vs -> M.BeginInfo n n' -> IO a -> IO a
+begin (Binded cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
-reset :: C sc vs -> ResetFlags -> IO ()
-reset (C cb) rfs = M.reset cb rfs
+reset :: Binded sc vs -> ResetFlags -> IO ()
+reset (Binded cb) rfs = M.reset cb rfs
 
 allocateOld :: WithPoked n =>
 	Device.D sd -> AllocateInfoOld n sp ->
-	(forall s . [C s vs] -> IO a) -> IO a
+	(forall s . [Binded s vs] -> IO a) -> IO a
 allocateOld (Device.D dvc) (allocateInfoToMiddleOld -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
-	(f . (C <$>))
+	(f . (Binded <$>))
 
 data AllocateInfoOld n s = AllocateInfoOld {
 	allocateInfoNextOld :: Maybe n,

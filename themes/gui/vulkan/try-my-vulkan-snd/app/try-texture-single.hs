@@ -1260,10 +1260,10 @@ copyBuffer dvc gq cp src dst = beginSingleTimeCommands dvc gq cp \cb ->
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	(forall s . Vk.CmdBffr.C s '[] -> IO a) -> IO a
+	(forall s . Vk.CmdBffr.Binded s '[] -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocate
-		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.C s '[])) -> do
+		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
@@ -1286,7 +1286,7 @@ beginSingleTimeCommands dvc gq cp cmd = do
 
 createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb . Vk.CmdBffr.C scb Vs -> IO a) ->
+	(forall scb . Vk.CmdBffr.Binded scb Vs -> IO a) ->
 	IO a
 createCommandBuffer dvc cp f = Vk.CmdBffr.allocate @() dvc allocInfo $ f . \(HeteroParList.Singleton cb) -> cb
 	where
@@ -1298,8 +1298,8 @@ createCommandBuffer dvc cp f = Vk.CmdBffr.allocate @() dvc allocInfo $ f . \(Het
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::
-		HeteroParList.PL (Vk.CmdBffr.C scb) vss -> Int ->
-		Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
+		Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
 
 instance VssList '[] where
 	vssListIndex HeteroParList.Nil _ = error "index too large"
@@ -1339,7 +1339,7 @@ createSyncObjects dvc f =
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr scfmt sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl .
-	Vk.CmdBffr.C scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1392,7 +1392,7 @@ mainLoop ::
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb Vs ->
+	Vk.CmdBffr.Binded scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
 	($ ext0) $ fix \loop ext -> do
@@ -1421,7 +1421,7 @@ runLoop ::
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb Vs ->
+	Vk.CmdBffr.Binded scb Vs ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm loop = do
@@ -1448,7 +1448,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 		'Vk.Mem.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
-	Vk.CmdBffr.C scb Vs -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
+	Vk.CmdBffr.Binded scb Vs -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound

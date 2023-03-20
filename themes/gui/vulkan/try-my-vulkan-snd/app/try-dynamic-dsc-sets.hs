@@ -311,7 +311,7 @@ run :: forall slbts sbtss sd sc vs sg sl sp o0 o1 o2 . (
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc vs -> Vk.Ppl.Cmpt.C sg ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.Binded sc vs -> Vk.Ppl.Cmpt.C sg ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0

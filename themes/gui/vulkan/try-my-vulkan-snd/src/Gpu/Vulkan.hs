@@ -41,7 +41,7 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroParList.PL SemaphorePipelineStageFlags sss,
-	submitInfoCommandBuffers :: HeteroParList.PL (U2 CommandBuffer.C) svss,
+	submitInfoCommandBuffers :: HeteroParList.PL (U2 CommandBuffer.Binded) svss,
 	submitInfoSignalSemaphores ::
 		HeteroParList.PL Semaphore.S ssss }
 
@@ -71,7 +71,7 @@ submitInfoToMiddle SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
-	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unC x) -> cbs,
+	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unBinded x) -> cbs,
 	submitInfoSignalSemaphores =
 		HeteroParList.toList (\(Semaphore.S s) -> s) -> ssmprs
 	} = M.SubmitInfo {
