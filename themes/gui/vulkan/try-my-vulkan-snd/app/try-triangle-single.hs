@@ -27,8 +27,8 @@ import Gpu.Vulkan.Object qualified as VObj
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
@@ -114,6 +114,7 @@ import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr.T
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
@@ -893,15 +894,16 @@ copyBuffer dvc gq cp src dst = do
 
 createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
-	(forall scb . Vk.CmdBffr.Binded scb Vs -> IO a) ->
+	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
 	IO a
-createCommandBuffer dvc cp f = Vk.CmdBffr.allocate @() dvc allocInfo $ f . \(HeteroParList.Singleton cb) -> cb
+createCommandBuffer dvc cp f =
+	Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfo () scp vss
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew () scp 1
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
 class VssList (vss :: [[Type]]) where
 	vssListIndex ::
@@ -946,19 +948,19 @@ createSyncObjects dvc f =
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sf sg sm sb nm .
-	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.CmdBffr.C scb  ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb =
-	Vk.CmdBffr.begin @() @() cb def $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
-	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
-	Vk.Cmd.bindVertexBuffers cb
-		. HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
-	Vk.Cmd.draw cb 3 1 0 0
+	Vk.CmdBffr.begin @() @() (Vk.CmdBffr.T.toBinded cb) def $
+	Vk.Cmd.beginRenderPass (Vk.CmdBffr.T.toBinded cb) rpInfo Vk.Subpass.ContentsInline $
+	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+	Vk.Cmd.bindVertexBuffers cbb
+		(HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb) >>
+	Vk.Cmd.draw cbb 3 1 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
 		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
@@ -982,7 +984,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue fmt) =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.CmdBffr.Binded scb Vs ->
+	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb cb iasrfsifs = do
 	($ ext0) $ fix \loop ext -> do
@@ -1000,7 +1002,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.CmdBffr.Binded scb Vs ->
+	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb cb iasrfsifs loop = do
@@ -1018,14 +1020,14 @@ drawFrame :: forall sfs sd ssc fmt sr sg sm sb nm scb sias srfs siff .
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
-	Vk.CmdBffr.Binded scb Vs -> SyncObjects '(sias, srfs, siff) -> IO ()
+	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> IO ()
 drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 	let	siff = HeteroParList.Singleton iff
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
 		dvc (Vk.Khr.Swapchain.sFromNew sc) uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
-	Vk.CmdBffr.reset cb def
+	Vk.CmdBffr.resetNew cb def
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl vb
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
@@ -1036,7 +1038,8 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
+			Vk.submitInfoCommandBuffers =
+				HeteroParList.Singleton . U2 $ Vk.CmdBffr.T.toBinded cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfo {
 			Vk.Khr.presentInfoNext = Nothing,

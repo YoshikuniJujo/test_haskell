@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
@@ -8,7 +9,13 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
-	Binded, allocateOld, allocate, AllocateInfoOld(..), AllocateInfo(..), begin, M.BeginInfo(..), reset,
+	C, Binded,
+
+	allocateNew, AllocateInfoNew(..),
+	allocate, AllocateInfo(..),
+	allocateOld, AllocateInfoOld(..),
+
+	begin, M.BeginInfo(..), reset, resetNew,
 	
 	Level,
 	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
@@ -22,10 +29,12 @@ module Gpu.Vulkan.CommandBuffer (
 
 	) where
 
+import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
-import qualified Data.HeteroParList as HeteroParList
+import Data.Proxy
+import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
 import qualified TypeLevel.List as TpLvlLst
@@ -36,6 +45,35 @@ import Gpu.Vulkan.CommandBuffer.Enum
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.CommandPool.Type as CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Middle as M
+
+allocateNew :: (
+	WithPoked n, KnownNat c,
+	HeteroParList.FromList (HeteroParList.Dummies c) ) =>
+	Device.D sd -> AllocateInfoNew n scp c ->
+	(forall s . HeteroParList.LL' (C s) c -> IO a) -> IO a
+allocateNew (Device.D dvc) ai f = bracket
+	(M.allocate dvc $ allocateInfoToMiddleNew ai)
+	(M.freeCs dvc
+		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
+	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
+
+data AllocateInfoNew n s (c :: Nat) = AllocateInfoNew {
+	allocateInfoNextNew :: Maybe n,
+	allocateInfoCommandPoolNew :: CommandPool.C s,
+	allocateInfoLevelNew :: Level }
+	deriving Show
+
+allocateInfoToMiddleNew :: forall n s c . KnownNat c =>
+	AllocateInfoNew n s c -> M.AllocateInfo n
+allocateInfoToMiddleNew AllocateInfoNew {
+	allocateInfoNextNew = mnxt,
+	allocateInfoCommandPoolNew = CommandPool.C cp,
+	allocateInfoLevelNew = lvl } = M.AllocateInfo {
+	M.allocateInfoNext = mnxt,
+	M.allocateInfoCommandPool = cp,
+	M.allocateInfoLevel = lvl,
+	M.allocateInfoCommandBufferCount =
+		fromIntegral $ natVal (Proxy :: Proxy c) }
 
 allocate ::
 	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
@@ -71,6 +109,9 @@ begin (Binded cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: Binded sc vs -> ResetFlags -> IO ()
 reset (Binded cb) rfs = M.reset cb rfs
+
+resetNew :: C sc -> ResetFlags -> IO ()
+resetNew (C cb) rfs = M.reset cb rfs
 
 allocateOld :: WithPoked n =>
 	Device.D sd -> AllocateInfoOld n sp ->

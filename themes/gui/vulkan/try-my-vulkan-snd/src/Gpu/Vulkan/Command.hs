@@ -71,9 +71,15 @@ beginRenderPass (CommandBuffer.Binded cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 
-bindPipeline ::
-	CommandBuffer.Binded sc vs -> Pipeline.BindPoint -> Pipeline.G sg vs ts -> IO ()
+bindPipeline :: CommandBuffer.Binded sc vs ->
+	Pipeline.BindPoint -> Pipeline.G sg vs ts -> IO ()
 bindPipeline (CommandBuffer.Binded cb) bp (Pipeline.G g) = M.bindPipeline cb bp g
+
+bindPipelineNew :: CommandBuffer.C sc ->
+	Pipeline.BindPoint -> Pipeline.G sg vs ts ->
+	(forall sb . CommandBuffer.Binded sb vs -> IO a) -> IO a
+bindPipelineNew (CommandBuffer.C c) bp (Pipeline.G g) f =
+	M.bindPipeline c bp g >> f (CommandBuffer.Binded c)
 
 bindPipelineCompute ::
 	CommandBuffer.Binded sc vs -> Pipeline.BindPoint -> Pipeline.Compute.C sg -> IO ()
