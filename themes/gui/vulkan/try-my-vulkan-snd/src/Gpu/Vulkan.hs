@@ -57,7 +57,7 @@ instance SubmitInfoListToMiddle '[] where
 	submitInfoListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
 instance (
-	WithPoked n, CommandBufferListToMiddle svss,
+	WithPoked n,
 	SubmitInfoListToMiddle nssvsss ) =>
 	SubmitInfoListToMiddle ('(n, sss, svss, ssss) ': nssvsss) where
 	type MiddleNextList ('(n, sss, svss, ssss) ': nssvsss) =
@@ -65,13 +65,13 @@ instance (
 	submitInfoListToMiddle (U4 si :** sis) =
 		submitInfoToMiddle si :** submitInfoListToMiddle sis
 
-submitInfoToMiddle :: CommandBufferListToMiddle svss =>
+submitInfoToMiddle ::
 	SubmitInfo n sss svss ssss -> M.SubmitInfo n
 submitInfoToMiddle SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
-	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unCC $ CommandBuffer.unC x) -> cbs,
+	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unC x) -> cbs,
 	submitInfoSignalSemaphores =
 		HeteroParList.toList (\(Semaphore.S s) -> s) -> ssmprs
 	} = M.SubmitInfo {
@@ -82,24 +82,6 @@ submitInfoToMiddle SubmitInfo {
 
 -- deriving instance (Show n, Show (HeteroParList SemaphorePipelineStageFlags sss)) =>
 --	Show (SubmitInfo n sss s vs)
-
-class CommandBufferListToMiddle svss where
-	type CommandBufferListToMiddleMapSnd svss :: [[Type]]
-	commandBufferListToMiddle ::
-		HeteroParList.PL (U2 CommandBuffer.C) svss ->
-		HeteroParList.PL CommandBuffer.CC
-			(CommandBufferListToMiddleMapSnd svss)
-
-instance CommandBufferListToMiddle '[] where
-	type CommandBufferListToMiddleMapSnd '[] = '[]
-	commandBufferListToMiddle HeteroParList.Nil = HeteroParList.Nil
-
-instance CommandBufferListToMiddle svss =>
-	CommandBufferListToMiddle ('(s, vs) ': svss) where
-	type CommandBufferListToMiddleMapSnd ('(s, vs) ': svss) =
-		vs ': CommandBufferListToMiddleMapSnd svss
-	commandBufferListToMiddle (U2 (CommandBuffer.C cb) :** cbs) =
-		cb :** commandBufferListToMiddle cbs
 
 class SemaphorePipelineStageFlagsFromMiddle sss where
 	semaphorePipelineStageFlagsFromMiddle ::

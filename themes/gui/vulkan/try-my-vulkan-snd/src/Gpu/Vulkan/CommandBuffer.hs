@@ -63,45 +63,44 @@ data AllocateInfo n s (vss :: [[Type]]) = AllocateInfo {
 	allocateInfoLevel :: Level }
 	deriving Show
 
-allocateInfoToMiddle :: AllocateInfo n s vss -> AllocateInfoM n vss
-allocateInfoToMiddle AllocateInfo {
-	allocateInfoNext = nxt,
-	allocateInfoCommandPool = CommandPool.C cp,
-	allocateInfoLevel = lvl } = AllocateInfoM {
-	allocateInfoNextM = nxt,
-	allocateInfoCommandPoolM = cp,
-	allocateInfoLevelM = lvl }
-
 allocate ::
 	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
 	Device.D sd -> AllocateInfo n scp vss ->
 	(forall s . HeteroParList.PL (C s) vss -> IO a) -> IO a
-allocate (Device.D dvc) (allocateInfoToMiddle -> ai) f = bracket
+allocate (Device.D dvc) ai_ f = bracket
 	(allocateM dvc ai) (freeCs dvc $ allocateInfoCommandPoolM ai)
-	(f . HeteroParList.map C)
+	(f . HeteroParList.fromList C)
+	where
+	ai = allocateInfoToMiddle ai_
+	allocateM ::
+		(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
+		Device.M.D -> AllocateInfoM n vss -> IO [M.C]
+	allocateM dvc ai = M.allocate dvc (allocateInfoFrom ai)
 
-allocateOld :: WithPoked n =>
-	Device.D sd -> AllocateInfoOld n sp ->
-	(forall s . [C s vs] -> IO a) -> IO a
-allocateOld (Device.D dvc) (allocateInfoToMiddleOld -> ai) f = bracket
-	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
-	(f . (C . CC <$>))
+	freeCs :: Device.M.D -> CommandPool.M.C -> [M.C] -> IO ()
+	freeCs dvc cp cs = M.freeCs dvc cp cs
 
-begin :: (WithPoked n, WithPoked n') =>
-	C s vs -> M.BeginInfo n n' -> IO a -> IO a
-begin (C (CC cb)) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+	allocateInfoFrom :: forall n vss .
+		TpLvlLst.Length [Type] vss =>
+		AllocateInfoM n vss -> M.AllocateInfo n
+	allocateInfoFrom AllocateInfoM {
+		allocateInfoNextM = mnxt,
+		allocateInfoCommandPoolM = cp,
+		allocateInfoLevelM = lvl } = M.AllocateInfo {
+		M.allocateInfoNext = mnxt,
+		M.allocateInfoCommandPool = cp,
+		M.allocateInfoLevel = lvl,
+		M.allocateInfoCommandBufferCount =
+			fromIntegral (TpLvlLst.length @_ @vss) }
 
-reset :: C sc vs -> ResetFlags -> IO ()
-reset (C (CC cb)) rfs = M.reset cb rfs
-
-allocateM ::
-	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
-	Device.M.D -> AllocateInfoM n vss -> IO (HeteroParList.PL CC vss)
-allocateM dvc ai = HeteroParList.fromList CC <$> M.allocate dvc (allocateInfoFrom ai)
-
-freeCs :: Device.M.D -> CommandPool.M.C -> HeteroParList.PL CC vss -> IO ()
-freeCs dvc cp cs =
-	M.freeCs dvc cp (HeteroParList.toList (\(CC cb) -> cb) cs)
+	allocateInfoToMiddle :: AllocateInfo n s vss -> AllocateInfoM n vss
+	allocateInfoToMiddle AllocateInfo {
+		allocateInfoNext = nxt,
+		allocateInfoCommandPool = CommandPool.C cp,
+		allocateInfoLevel = lvl } = AllocateInfoM {
+		allocateInfoNextM = nxt,
+		allocateInfoCommandPoolM = cp,
+		allocateInfoLevelM = lvl }
 
 data AllocateInfoM n (vss :: [[Type]]) = AllocateInfoM {
 	allocateInfoNextM :: Maybe n,
@@ -109,15 +108,16 @@ data AllocateInfoM n (vss :: [[Type]]) = AllocateInfoM {
 	allocateInfoLevelM :: Level }
 	deriving Show
 
-allocateInfoFrom :: forall n vss .
-	TpLvlLst.Length [Type] vss =>
-	AllocateInfoM n vss -> M.AllocateInfo n
-allocateInfoFrom AllocateInfoM {
-	allocateInfoNextM = mnxt,
-	allocateInfoCommandPoolM = cp,
-	allocateInfoLevelM = lvl } = M.AllocateInfo {
-	M.allocateInfoNext = mnxt,
-	M.allocateInfoCommandPool = cp,
-	M.allocateInfoLevel = lvl,
-	M.allocateInfoCommandBufferCount =
-		fromIntegral (TpLvlLst.length @_ @vss) }
+allocateOld :: WithPoked n =>
+	Device.D sd -> AllocateInfoOld n sp ->
+	(forall s . [C s vs] -> IO a) -> IO a
+allocateOld (Device.D dvc) (allocateInfoToMiddleOld -> ai) f = bracket
+	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
+	(f . (C <$>))
+
+begin :: (WithPoked n, WithPoked n') =>
+	C s vs -> M.BeginInfo n n' -> IO a -> IO a
+begin (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+
+reset :: C sc vs -> ResetFlags -> IO ()
+reset (C cb) rfs = M.reset cb rfs

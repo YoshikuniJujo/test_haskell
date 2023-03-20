@@ -8,6 +8,4 @@ import Data.Kind
 
 import Gpu.Vulkan.CommandBuffer.Middle as M
 
-newtype C s vs = C { unC :: CC vs }
-
-newtype CC (vs :: [Type]) = CC { unCC :: M.C }
+newtype C s (vs :: [Type]) = C { unC :: M.C }
