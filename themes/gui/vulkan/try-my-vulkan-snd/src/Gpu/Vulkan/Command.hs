@@ -13,7 +13,7 @@
 module Gpu.Vulkan.Command where
 
 import GHC.TypeLits
-import Foreign.Storable
+import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.Kind
@@ -47,7 +47,7 @@ import qualified Gpu.Vulkan.Image.Middle as Image.M
 
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
-import qualified Gpu.Vulkan.Command.Tmp as M
+import qualified Gpu.Vulkan.Command.Middle as M
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
@@ -57,14 +57,14 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import Data.IORef -- for debug
 import Data.Kind.Object qualified as KObj
 
-beginRenderPassNew :: (Storable n, ClearValueListToCore ct) =>
+beginRenderPassNew :: (WithPoked n, ClearValueListToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPassNew (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddleNew bi) cnt)
 	(M.endRenderPass cb) f
 
-beginRenderPass :: (Storable n, ClearValueListToCore ct) =>
+beginRenderPass :: (WithPoked n, ClearValueListToCore ct) =>
 	CommandBuffer.C sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
@@ -291,7 +291,7 @@ pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts 
 	CommandBuffer.C sc vs -> Pipeline.Layout.L s sbtss whole ->
 	HeteroParList.L ts -> IO ()
 pushConstants' (CommandBuffer.C cb) (Pipeline.Layout.L lyt) xs =
-	M.pushConstants' cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
+	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 
 pipelineBarrier :: (

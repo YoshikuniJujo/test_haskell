@@ -49,7 +49,6 @@ library
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.BufferView
       Gpu.Vulkan.Command
-      Gpu.Vulkan.Command.Tmp
       Gpu.Vulkan.Command.TypeLevel
       Gpu.Vulkan.CommandBuffer
       Gpu.Vulkan.CommandBuffer.Type
