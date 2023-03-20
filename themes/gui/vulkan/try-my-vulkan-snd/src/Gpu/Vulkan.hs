@@ -25,18 +25,6 @@ import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
-data SemaphorePipelineStageFlags ss =
-	SemaphorePipelineStageFlags (Semaphore.S ss) Pipeline.StageFlags
-	deriving Show
-
--- deriving instance Show (HeteroParList Semaphore.S ss)
-
-semaphorePipelineStageFlagsToMiddle ::
-	HeteroParList.PL SemaphorePipelineStageFlags sss ->
-	[(Semaphore.M.S, Pipeline.StageFlags)]
-semaphorePipelineStageFlagsToMiddle = HeteroParList.toList
-	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
-
 data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
@@ -80,8 +68,20 @@ submitInfoToMiddle SubmitInfo {
 	M.submitInfoCommandBuffers = cbs,
 	M.submitInfoSignalSemaphores = ssmprs }
 
+data SemaphorePipelineStageFlags ss =
+	SemaphorePipelineStageFlags (Semaphore.S ss) Pipeline.StageFlags
+	deriving Show
+
 -- deriving instance (Show n, Show (HeteroParList SemaphorePipelineStageFlags sss)) =>
 --	Show (SubmitInfo n sss s vs)
+
+-- deriving instance Show (HeteroParList Semaphore.S ss)
+
+semaphorePipelineStageFlagsToMiddle ::
+	HeteroParList.PL SemaphorePipelineStageFlags sss ->
+	[(Semaphore.M.S, Pipeline.StageFlags)]
+semaphorePipelineStageFlagsToMiddle = HeteroParList.toList
+	\(SemaphorePipelineStageFlags (Semaphore.S s) psfs) -> (s, psfs)
 
 class SemaphorePipelineStageFlagsFromMiddle sss where
 	semaphorePipelineStageFlagsFromMiddle ::
