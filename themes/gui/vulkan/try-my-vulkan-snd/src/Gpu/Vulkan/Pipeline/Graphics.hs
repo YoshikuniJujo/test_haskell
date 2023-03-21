@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
@@ -18,7 +19,7 @@ import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -45,6 +46,8 @@ import qualified Gpu.Vulkan.Pipeline.TessellationState as TessellationState
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as InputAssemblyState
 import qualified Gpu.Vulkan.Pipeline.VertexInputState as VertexInputState
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
+
+import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 
 data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfo {
@@ -73,6 +76,29 @@ data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts'
 		createInfoSubpass :: Word32,
 		createInfoBasePipelineHandle :: Maybe (U3 G sbvsts'),
 		createInfoBasePipelineIndex :: Int32 }
+
+type CreateInfoArgs14 = (
+	Type,
+	[(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type])],
+	(Type, [Type], [(Nat, Type)]),
+	Type, Type, Type, Type, Type, Type, Type, Type,
+	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
+	Type,
+	(Type, [Type], [(Nat, Type)]) )
+
+type GArgs2 = ([Type], [(Nat, Type)])
+
+type family CreateInfoArgs14ToGArgs2 (cia :: CreateInfoArgs14) :: GArgs2 where
+	CreateInfoArgs14ToGArgs2 '(
+		n, nnskndscdvss, '(nv, vs, ts), n3, n4, n5, n6, n7, n8, n9, n10,
+		slbtss, sr, sbvsts' ) = '(vs, ts)
+
+type family CreateInfoListArgs14ToGArgs2 (cias :: [CreateInfoArgs14]) ::
+	[GArgs2] where
+	CreateInfoListArgs14ToGArgs2 '[] = '[]
+	CreateInfoListArgs14ToGArgs2 (cia ': cias) =
+		CreateInfoArgs14ToGArgs2 cia ':
+		CreateInfoListArgs14ToGArgs2 cias
 
 createInfoToMiddle :: (ShaderStage.CreateInfoListToMiddleNew nnskndscdvss) =>
 	Device.D sd ->
@@ -170,11 +196,12 @@ createGs :: (
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	Pokable c, Pokable d,
 	CreateInfoListToMiddle ss,
-	U2g (T.GListVars (MiddleVars ss)) ) =>
+	U2g (CreateInfoListArgs14ToGArgs2 ss) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	HeteroParList.PL (U14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	(forall sg . HeteroParList.PL (U2 (G sg)) (T.GListVars (MiddleVars ss)) ->
+	(forall sg .
+		HeteroParList.PL (U2 (G sg)) (CreateInfoListArgs14ToGArgs2 ss) ->
 		IO a) -> IO a
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
 	(createInfoListToMiddle d cis >>= \cis' ->
@@ -186,10 +213,10 @@ recreateGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	Pokable c, Pokable d,
-	U2g (T.GListVars (MiddleVars ss))) =>
+	U2g (CreateInfoListArgs14ToGArgs2 ss) ) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
-	HeteroParList.PL (U2 (G sg)) (T.GListVars (MiddleVars ss)) -> IO ()
+	HeteroParList.PL (U2 (G sg)) (CreateInfoListArgs14ToGArgs2 ss) -> IO ()
 recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddle d cis
 	T.recreateGs dvc mc cis' macc macd $ g2v gpls
