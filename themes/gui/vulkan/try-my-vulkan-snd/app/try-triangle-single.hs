@@ -110,7 +110,7 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
+import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
@@ -622,7 +622,7 @@ createGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
-			nil nil \(U2 gpl :** HeteroParList.Nil) -> f gpl
+			nil nil \(U3 gpl :** HeteroParList.Nil) -> f $ Vk.Ppl.Graphics.gFromNew gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
@@ -631,7 +631,7 @@ recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil nil (U2 gpls :** HeteroParList.Nil)
+	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil nil (U3 (Vk.Ppl.Graphics.gToNew gpls) :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt
 
 mkGraphicsPipelineCreateInfo ::
@@ -641,7 +641,7 @@ mkGraphicsPipelineCreateInfo ::
 			'((), (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
-		() () () () () () () () '(sl, '[], '[]) sr '(sb, vs', ts')
+		() () () () () () () () '(sl, '[], '[]) sr '(sb, vs', ts', slbtss')
 mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,

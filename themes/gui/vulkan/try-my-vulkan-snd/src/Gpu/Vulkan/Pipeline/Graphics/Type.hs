@@ -5,7 +5,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Graphics.Type (G(..)) where
+module Gpu.Vulkan.Pipeline.Graphics.Type (G(..), GNew(..), gFromNew, gToNew) where
 
 import GHC.TypeNats
 import Data.Kind
@@ -17,3 +17,9 @@ newtype G s (vs :: [Type]) (ts :: [(Nat, Type)]) = G M.G
 
 newtype GNew s (vs :: [Type]) (ts :: [(Nat, Type)])
 	(slbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) = GNew M.G
+
+gFromNew :: GNew s vs ts slbtss -> G s vs ts
+gFromNew (GNew mg) = G mg
+
+gToNew :: G s vs ts -> GNew s vs ts slbtss
+gToNew (G mg) = GNew mg
