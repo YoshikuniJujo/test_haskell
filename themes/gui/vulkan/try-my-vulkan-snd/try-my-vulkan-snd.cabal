@@ -116,6 +116,7 @@ library
       Gpu.Vulkan.PushConstant
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
+      Gpu.Vulkan.QueueNew
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Tmp
       Gpu.Vulkan.RenderPass.Type
@@ -128,6 +129,7 @@ library
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
+      Gpu.VulkanNew
       Sample.GetOpt
       Sample.Image
       ThEnv
