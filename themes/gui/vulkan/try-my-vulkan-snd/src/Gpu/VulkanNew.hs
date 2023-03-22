@@ -25,20 +25,20 @@ import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
-data SubmitInfo n sss svss ssss = SubmitInfo {
+data SubmitInfo n sss ss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroParList.PL SemaphorePipelineStageFlags sss,
-	submitInfoCommandBuffers :: HeteroParList.PL (U2 CommandBuffer.Binded) svss,
+	submitInfoCommandBuffers :: HeteroParList.PL CommandBuffer.C ss,
 	submitInfoSignalSemaphores ::
 		HeteroParList.PL Semaphore.S ssss }
 
-class M.SubmitInfoListToCore (MiddleNextList nsssvsss) => SubmitInfoListToMiddle
-	(nsssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
-	type MiddleNextList nsssvsss :: [Type]
+class M.SubmitInfoListToCore (MiddleNextList ns3s2s4) => SubmitInfoListToMiddle
+	(ns3s2s4 :: [(Type, [Type], [Type], [Type])]) where
+	type MiddleNextList ns3s2s4 :: [Type]
 	submitInfoListToMiddle ::
-		HeteroParList.PL (U4 SubmitInfo) nsssvsss ->
-		HeteroParList.PL M.SubmitInfo (MiddleNextList nsssvsss)
+		HeteroParList.PL (U4 SubmitInfo) ns3s2s4 ->
+		HeteroParList.PL M.SubmitInfo (MiddleNextList ns3s2s4)
 
 instance SubmitInfoListToMiddle '[] where
 	type MiddleNextList '[] = '[]
@@ -59,7 +59,7 @@ submitInfoToMiddle SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
 		semaphorePipelineStageFlagsToMiddle -> wsdsms,
-	submitInfoCommandBuffers = HeteroParList.toList (\(U2 x) -> CommandBuffer.unBinded x) -> cbs,
+	submitInfoCommandBuffers = HeteroParList.toList (\x -> CommandBuffer.unC x) -> cbs,
 	submitInfoSignalSemaphores =
 		HeteroParList.toList (\(Semaphore.S s) -> s) -> ssmprs
 	} = M.SubmitInfo {

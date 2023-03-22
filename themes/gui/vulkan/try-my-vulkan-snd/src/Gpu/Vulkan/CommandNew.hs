@@ -64,6 +64,13 @@ beginRenderPassNew (CommandBuffer.Binded cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddleNew bi) cnt)
 	(M.endRenderPass cb) f
 
+beginRenderPass' :: (WithPoked n, ClearValueListToCore ct) =>
+	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
+	Subpass.Contents -> IO a -> IO a
+beginRenderPass' (CommandBuffer.C cb) bi cnt f = bracket_
+	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
+	(M.endRenderPass cb) f
+
 beginRenderPass :: (WithPoked n, ClearValueListToCore ct) =>
 	CommandBuffer.Binded sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
@@ -288,6 +295,13 @@ copyBuffer :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc vs sms sbs smd 
 	CommandBuffer.Binded sc vs ->
 	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
 copyBuffer (CommandBuffer.Binded cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
+	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
+
+copyBufferNew :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc sms sbs smd sbd .
+	Buffer.MakeCopies ass sos sod =>
+	CommandBuffer.C sc ->
+	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
+copyBufferNew (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
 pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
