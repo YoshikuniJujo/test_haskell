@@ -88,9 +88,9 @@ bindPipelineCompute (CommandBuffer.Binded cb) bp (Pipeline.Compute.C g) = M.bind
 draw :: CommandBuffer.GBinded sc vs slbtss -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.GBinded cb) vc ic fv fi = M.draw cb vc ic fv fi
 
-drawIndexed :: CommandBuffer.Binded sc vs ->
+drawIndexed :: CommandBuffer.GBinded sc vs slbtss ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
-drawIndexed (CommandBuffer.Binded cb) idxc istc fidx vo fist =
+drawIndexed (CommandBuffer.GBinded cb) idxc istc fidx vo fist =
 	M.drawIndexed cb idxc istc fidx vo fist
 
 dispatch :: CommandBuffer.Binded sc vs -> Word32 -> Word32 -> Word32 -> IO ()
@@ -108,10 +108,10 @@ instance HeteroParListToList' spslbtss =>
 
 bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss . (
 	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
-	CommandBuffer.Binded sc vs -> Pipeline.BindPoint ->
+	CommandBuffer.GBinded sc vs '(s, sbtss, foo) -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	[Word32] -> IO ()
-bindDescriptorSets (CommandBuffer.Binded c) bp (Pipeline.Layout.L l) dss dosts =
+bindDescriptorSets (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss dosts =
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
 		(toList'
@@ -273,9 +273,9 @@ bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(MapForth smsbvs) @(MapSubType vs)
 
-bindIndexBuffer :: forall sc vs sm sb nm v . IsIndexType v =>
-	CommandBuffer.Binded sc vs -> Buffer.IndexedList sm sb nm v -> IO ()
-bindIndexBuffer (CommandBuffer.Binded cb) ib =
+bindIndexBuffer :: forall sc vs slbtss sm sb nm v . IsIndexType v =>
+	CommandBuffer.GBinded sc vs slbtss -> Buffer.IndexedList sm sb nm v -> IO ()
+bindIndexBuffer (CommandBuffer.GBinded cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @v)
 
 class IsIndexType a where indexType :: IndexType

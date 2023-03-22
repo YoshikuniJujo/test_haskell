@@ -15,7 +15,7 @@ module Gpu.Vulkan.CommandBuffer (
 	allocate, AllocateInfo(..),
 	allocateOld, AllocateInfoOld(..),
 
-	begin, M.BeginInfo(..), reset, resetNew,
+	begin, beginNew, M.BeginInfo(..), reset, resetNew,
 	
 	Level,
 	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
@@ -106,6 +106,10 @@ allocateInfoToMiddle AllocateInfo {
 begin :: (WithPoked n, WithPoked n') =>
 	Binded s vs -> M.BeginInfo n n' -> IO a -> IO a
 begin (Binded cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+
+beginNew :: (WithPoked n, WithPoked n') =>
+	C s -> M.BeginInfo n n' -> IO a -> IO a
+beginNew (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: Binded sc vs -> ResetFlags -> IO ()
 reset (Binded cb) rfs = M.reset cb rfs
