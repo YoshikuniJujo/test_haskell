@@ -77,16 +77,16 @@ bindPipeline (CommandBuffer.Binded cb) bp (Pipeline.G g) = M.bindPipeline cb bp 
 
 bindPipelineNew :: CommandBuffer.C sc ->
 	Pipeline.BindPoint -> Pipeline.GNew sg vs ts slbtss ->
-	(forall sb . CommandBuffer.Binded sb vs -> IO a) -> IO a
+	(forall sb . CommandBuffer.GBinded sb vs slbtss -> IO a) -> IO a
 bindPipelineNew (CommandBuffer.C c) bp (Pipeline.GNew g) f =
-	M.bindPipeline c bp g >> f (CommandBuffer.Binded c)
+	M.bindPipeline c bp g >> f (CommandBuffer.GBinded c)
 
 bindPipelineCompute ::
 	CommandBuffer.Binded sc vs -> Pipeline.BindPoint -> Pipeline.Compute.C sg -> IO ()
 bindPipelineCompute (CommandBuffer.Binded cb) bp (Pipeline.Compute.C g) = M.bindPipelineCompute cb bp g
 
-draw :: CommandBuffer.Binded sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
-draw (CommandBuffer.Binded cb) vc ic fv fi = M.draw cb vc ic fv fi
+draw :: CommandBuffer.GBinded sc vs slbtss -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw (CommandBuffer.GBinded cb) vc ic fv fi = M.draw cb vc ic fv fi
 
 drawIndexed :: CommandBuffer.Binded sc vs ->
 	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
@@ -265,11 +265,11 @@ type family MapForth tpl where
 	MapForth '[] = '[]
 	MapForth ('(x :: j, y :: k, z :: l, w :: m) ': xs) = w ': MapForth xs
 
-bindVertexBuffers :: forall sc vs smsbvs .
+bindVertexBuffers :: forall sc vs slbtss smsbvs .
 	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
-	CommandBuffer.Binded sc vs -> HeteroParList.PL (U4 Buffer.IndexedList) smsbvs ->
+	CommandBuffer.GBinded sc vs slbtss -> HeteroParList.PL (U4 Buffer.IndexedList) smsbvs ->
 	IO ()
-bindVertexBuffers (CommandBuffer.Binded cb) bils = M.bindVertexBuffers
+bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(MapForth smsbvs) @(MapSubType vs)
 
