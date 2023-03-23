@@ -164,12 +164,6 @@ type FramebufferResized = IORef Bool
 newFramebufferResized :: IO FramebufferResized
 newFramebufferResized = newIORef False
 
-windowName :: String
-windowName = "Triangle"
-
-windowSize :: (Int, Int)
-windowSize = (width, height) where width = 800; height = 600
-
 enableValidationLayers :: Bool
 enableValidationLayers = maybe True (const False) $(lookupCompileEnv "NDEBUG")
 
@@ -185,15 +179,18 @@ frashRate = 2
 withWindow :: (Glfw.Window -> IO a) -> FramebufferResized -> IO a
 withWindow f g = initWindow g >>= \w ->
 	f w <* (Glfw.destroyWindow w >> Glfw.terminate)
-
-initWindow :: FramebufferResized -> IO Glfw.Window
-initWindow frszd = do
-	Just w <- do
-		True <- Glfw.init
-		Glfw.windowHint $ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
-		uncurry Glfw.createWindow windowSize windowName Nothing Nothing
-	w <$ Glfw.setFramebufferSizeCallback
-		w (Just $ \_ _ _ -> writeIORef frszd True)
+	where
+	initWindow frszd = do
+		Just w <- do
+			True <- Glfw.init
+			Glfw.windowHint
+				$ Glfw.WindowHint'ClientAPI Glfw.ClientAPI'NoAPI
+			uncurry Glfw.createWindow
+				windowSize windowName Nothing Nothing
+		w <$ Glfw.setFramebufferSizeCallback
+			w (Just $ \_ _ _ -> writeIORef frszd True)
+	windowName = "Spinning Monkey"
+	windowSize = (width, height) where width = 800; height = 600
 
 createInstance :: (forall si . Vk.Ist.I si -> IO a) -> IO a
 createInstance f = do
@@ -224,9 +221,6 @@ createInstance f = do
 		Vk.M.applicationInfoEngineName = "No Engine",
 		Vk.M.applicationInfoEngineVersion = Vk.M.makeApiVersion 0 1 0 0,
 		Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
-
-instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
-instanceToMiddle (Vk.Ist.I inst) = inst
 
 setupDebugMessenger ::
 	Vk.Ist.I si ->
