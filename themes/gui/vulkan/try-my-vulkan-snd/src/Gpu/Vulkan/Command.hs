@@ -137,12 +137,12 @@ bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
 	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
 	IO ()
 bindDescriptorSetsNew (CommandBuffer.Binded c) bp (Pipeline.Layout.L l) dss idxs = do
-	putStrLn "bindDescriptorSets:"
+--	putStrLn "bindDescriptorSets:"
 	lns <- getDscSetListLength dss
-	print lns
-	print idxs
-	print $ getOffsetList3 lns idxs
-	print . dynamicOffsetList3ToList $ getOffsetList3 lns idxs
+--	print lns
+--	print idxs
+--	print $ getOffsetList3 lns idxs
+--	print . dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
 		(firstSet' @spslbtss @sbtss)
