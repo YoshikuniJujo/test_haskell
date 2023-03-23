@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -76,7 +76,7 @@ data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToMiddle :: (
-	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
+	BindingStrideList.BindingStrideList VertexInput.Rate vs VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n nskndvss '(nv, vs, ts) n3 n4 n5 n6 n7 n8 n9 n10 ->
 	M.CreateInfo n nskndvss nv n3 n4 n5 n6 n7 n8 n9 n10
@@ -130,7 +130,7 @@ instance CreateInfoListToMiddle '[] where
 	createInfoListToMiddle _ = HeteroParList.Nil
 
 instance (
-	BindingStrideList.BindingStrideList vs VertexInput.Rate VertexInput.Rate,
+	BindingStrideList.BindingStrideList VertexInput.Rate vs VertexInput.Rate,
 	VertexInputState.CreateInfoAttributeDescription vs ts,
 	CreateInfoListToMiddle ss ) =>
 	CreateInfoListToMiddle ('(

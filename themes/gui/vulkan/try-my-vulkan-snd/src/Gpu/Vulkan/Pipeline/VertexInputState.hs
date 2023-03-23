@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
@@ -23,7 +23,7 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 import qualified Gpu.Vulkan.VertexInput.Middle as VertexInput.M
 
-data CreateInfo n (vs :: [Type]) (ts :: [(Nat, Type)]) = CreateInfo {
+data CreateInfo n (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)]) = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: M.CreateFlags }
 	deriving Show
@@ -33,7 +33,7 @@ instance Default (CreateInfo n vs ts) where
 		createInfoNext = Nothing, createInfoFlags = zeroBits }
 
 createInfoToMiddle :: (
-	BindingStrideList vs VertexInput.Rate VertexInput.Rate,
+	BindingStrideList VertexInput.Rate vs VertexInput.Rate,
 	CreateInfoAttributeDescription vs ts ) =>
 	CreateInfo n vs ts -> M.CreateInfo n
 createInfoToMiddle
@@ -47,13 +47,13 @@ createInfoToMiddle
 			createInfoAttributeDescriptions ci }
 
 createInfoToBindingDescriptions :: forall n vs ts .
-	BindingStrideList vs
-		VertexInput.Rate VertexInput.Rate =>
+	BindingStrideList 
+		VertexInput.Rate vs VertexInput.Rate =>
 	CreateInfo n vs ts -> [VertexInput.M.BindingDescription]
 createInfoToBindingDescriptions _ = fmap VertexInput.bindingDescriptionToMiddle . VertexInput.bindingDescriptionFromRaw
-	$ bindingStrideList @vs @VertexInput.Rate @VertexInput.Rate
+	$ bindingStrideList @VertexInput.Rate @vs @VertexInput.Rate
 
-class CreateInfoAttributeDescription (vs :: [Type]) (ts :: [(Nat, Type)]) where	
+class CreateInfoAttributeDescription (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)]) where	
 	createInfoAttributeDescriptions ::
 		CreateInfo n vs ts -> [VertexInput.AttributeDescription]
 
@@ -72,7 +72,7 @@ instance (
 		VertexInput.attributeDescriptionFormat = formatOf @t,
 		VertexInput.attributeDescriptionOffset = os } : ads
 		where
-		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @vs @t
+		Just (fromIntegral -> bd, fromIntegral -> os) = bindingOffset @_ @vs @t
 		ads = createInfoAttributeDescriptions @vs @ts undefined
 
 class Formattable a where formatOf :: Format

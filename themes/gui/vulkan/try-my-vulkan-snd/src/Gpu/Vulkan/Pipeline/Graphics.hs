@@ -49,6 +49,8 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 
+import Gpu.Vulkan.VertexInput qualified as VertexInput
+
 data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfo {
 		createInfoNext :: Maybe n,
@@ -80,13 +82,13 @@ data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts'
 type CreateInfoArgs14 = (
 	Type,
 	[(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type])],
-	(Type, [Type], [(Nat, Type)]),
+	(Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
 	Type, Type, Type, Type, Type, Type, Type, Type,
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	Type,
-	(Type, [Type], [(Nat, Type)]) )
+	(Type, [(Type, VertexInput.Rate)], [(Nat, Type)]) )
 
-type GArgs2 = ([Type], [(Nat, Type)])
+type GArgs2 = ([(Type, VertexInput.Rate)], [(Nat, Type)])
 
 type family CreateInfoArgs14ToGArgs2 (cia :: CreateInfoArgs14) :: GArgs2 where
 	CreateInfoArgs14ToGArgs2 '(
@@ -146,9 +148,10 @@ createInfoToMiddle dvc CreateInfo {
 		T.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle ss where
-	type MiddleVars ss :: [
-		(Type, [(Type, ShaderKind, [Type])], (Type, [Type], [(Nat, Type)]),
-		Type, Type, Type, Type, Type, Type, Type, Type)]
+	type MiddleVars ss :: [(
+		Type, [(Type, ShaderKind, [Type])],
+		(Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
+		Type, Type, Type, Type, Type, Type, Type, Type )]
 
 	createInfoListToMiddle :: Device.D sd ->
 		HeteroParList.PL (U14 CreateInfo) ss ->

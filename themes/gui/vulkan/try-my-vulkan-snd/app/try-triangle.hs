@@ -889,7 +889,7 @@ copyBuffer dvc gq cp src dst = do
 createCommandBuffers ::
 	forall (n :: Nat) sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb vss . VssList vss =>
-		HeteroParList.PL (Vk.CmdBffr.Binded scb) (vss :: [[Type]]) -> IO a) ->
+		HeteroParList.PL (Vk.CmdBffr.Binded scb) (vss :: [[(Type, Vk.VtxInp.Rate)]]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 	Vk.CmdBffr.allocate @() @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
@@ -900,7 +900,7 @@ createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-class VssList (vss :: [[Type]]) where
+class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
 	vssListIndex ::
 		HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
 		Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -913,12 +913,12 @@ instance VssList vss =>
 	vssListIndex (cb :** _) 0 = cb
 	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
 
-type family MkVss (n :: Nat) :: [[Type]] where
+type family MkVss (n :: Nat) :: [[(Type, Vk.VtxInp.Rate)]] where
 	MkVss 0 = '[]
 	MkVss n = '[AddType Vertex 'Vk.VtxInp.RateVertex] ': MkVss (n - 1)
 
-mkVss :: Int -> (forall (vss :: [[Type]]) .
-	(TpLvlLst.Length [Type] vss, HeteroParList.FromList vss, VssList vss) =>
+mkVss :: Int -> (forall (vss :: [[(Type, Vk.VtxInp.Rate)]]) .
+	(TpLvlLst.Length [(Type, Vk.VtxInp.Rate)] vss, HeteroParList.FromList vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p

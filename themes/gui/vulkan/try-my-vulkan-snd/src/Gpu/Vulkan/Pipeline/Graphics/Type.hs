@@ -13,9 +13,11 @@ import Data.Kind
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
-newtype G s (vs :: [Type]) (ts :: [(Nat, Type)]) = G M.G
+import Gpu.Vulkan.VertexInput qualified as VertexInput
 
-newtype GNew s (vs :: [Type]) (ts :: [(Nat, Type)])
+newtype G s (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)]) = G M.G
+
+newtype GNew s (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)])
 	(slbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) = GNew M.G
 
 gFromNew :: GNew s vs ts slbtss -> G s vs ts

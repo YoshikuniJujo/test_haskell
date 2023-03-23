@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -13,7 +13,7 @@ import Data.Kind
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
 
-class BindingOffset (tss :: [Type]) t where bindingOffset :: Maybe (Int, Offset)
+class BindingOffset (tss :: [(Type, k)]) t where bindingOffset :: Maybe (Int, Offset)
 
 instance BindingOffsetNoType (MapSubType tss) t => BindingOffset tss t where
 	bindingOffset = bindingOffsetNoType @(MapSubType tss) @t

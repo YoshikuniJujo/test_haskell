@@ -11,17 +11,19 @@ module Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList where
 import Foreign.Storable.SizeAlignment
 import Data.Kind
 
-class BindingStrideList (ts :: [Type]) k v where
+class BindingStrideList k (ts :: [(Type, k)]) v where
 	bindingStrideList :: [(SizeAlignment, v)]
 
-instance BindingStrideList '[] k v where bindingStrideList = []
+instance BindingStrideList k '[] v where bindingStrideList = []
 
-instance (SizeAlignmentList t, BindingStrideList ts k v, TypeVal a v) =>
-	BindingStrideList (AddType t (a :: k) ': ts) k v where
+instance (SizeAlignmentList t, BindingStrideList k ts v, TypeVal a v) =>
+	BindingStrideList k (AddType t (a :: k) ': ts) v where
 	bindingStrideList = (wholeSizeAlignment @t, typeVal @k @a @v) :
-		bindingStrideList @ts @k @v
+		bindingStrideList @k @ts @v
 
-newtype v `AddType` t = AT v deriving Show
+-- newtype v `AddType` t = AT v deriving Show
+
+type v `AddType` t = '(v, t)
 
 type family SubType t where SubType (v `AddType` t) = v
 

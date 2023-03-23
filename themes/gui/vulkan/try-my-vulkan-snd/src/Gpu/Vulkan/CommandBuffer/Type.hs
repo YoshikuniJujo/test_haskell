@@ -10,11 +10,13 @@ import Data.Kind
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 import Gpu.Vulkan.CommandBuffer.Middle qualified as M
 
+import Gpu.Vulkan.VertexInput qualified as VertexInput
+
 newtype C s = C { unC :: M.C }
 
-newtype Binded s (vs :: [Type]) = Binded { unBinded :: M.C }
+newtype Binded s (vs :: [(Type, VertexInput.Rate)]) = Binded { unBinded :: M.C }
 
-newtype GBinded s (vs :: [Type])
+newtype GBinded s (vs :: [(Type, VertexInput.Rate)])
 	(slsbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
 	GBinded { unGBinded :: M.C }
 

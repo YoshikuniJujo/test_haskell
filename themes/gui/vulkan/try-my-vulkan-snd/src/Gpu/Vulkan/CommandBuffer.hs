@@ -46,6 +46,8 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.CommandPool.Type as CommandPool
 import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 
+import qualified Gpu.Vulkan.VertexInput as VertexInput
+
 allocateNew :: (
 	WithPoked n, KnownNat c,
 	HeteroParList.FromList (HeteroParList.Dummies c) ) =>
@@ -76,7 +78,7 @@ allocateInfoToMiddleNew AllocateInfoNew {
 		fromIntegral $ natVal (Proxy :: Proxy c) }
 
 allocate ::
-	(WithPoked n, TpLvlLst.Length [Type] vss, HeteroParList.FromList vss) =>
+	(WithPoked n, TpLvlLst.Length [(Type, VertexInput.Rate)] vss, HeteroParList.FromList vss) =>
 	Device.D sd -> AllocateInfo n scp vss ->
 	(forall s . HeteroParList.PL (Binded s) vss -> IO a) -> IO a
 allocate (Device.D dvc) ai f = bracket
@@ -85,14 +87,14 @@ allocate (Device.D dvc) ai f = bracket
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
 	(f . HeteroParList.fromList Binded)
 
-data AllocateInfo n s (vss :: [[Type]]) = AllocateInfo {
+data AllocateInfo n s (vss :: [[(Type, VertexInput.Rate)]]) = AllocateInfo {
 	allocateInfoNext :: Maybe n,
 	allocateInfoCommandPool :: CommandPool.C s,
 	allocateInfoLevel :: Level }
 	deriving Show
 
 allocateInfoToMiddle :: forall n s vss .
-	TpLvlLst.Length [Type] vss => AllocateInfo n s vss -> M.AllocateInfo n
+	TpLvlLst.Length [(Type, VertexInput.Rate)] vss => AllocateInfo n s vss -> M.AllocateInfo n
 allocateInfoToMiddle AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoCommandPool = CommandPool.C cp,

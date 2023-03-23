@@ -25,6 +25,8 @@ import qualified Gpu.Vulkan.Semaphore.Middle as Semaphore.M
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 
+import Gpu.Vulkan.VertexInput qualified as VertexInput
+
 data SubmitInfo n sss svss ssss = SubmitInfo {
 	submitInfoNext :: Maybe n,
 	submitInfoWaitSemaphoreDstStageMasks ::
@@ -34,7 +36,7 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 		HeteroParList.PL Semaphore.S ssss }
 
 class M.SubmitInfoListToCore (MiddleNextList nsssvsss) => SubmitInfoListToMiddle
-	(nsssvsss :: [(Type, [Type], [(Type, [Type])], [Type])]) where
+	(nsssvsss :: [(Type, [Type], [(Type, [(Type, VertexInput.Rate)])], [Type])]) where
 	type MiddleNextList nsssvsss :: [Type]
 	submitInfoListToMiddle ::
 		HeteroParList.PL (U4 SubmitInfo) nsssvsss ->

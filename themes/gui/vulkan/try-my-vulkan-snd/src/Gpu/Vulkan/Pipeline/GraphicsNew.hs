@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
@@ -49,6 +49,8 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 
+import Gpu.Vulkan.VertexInput qualified as VertexInput
+
 data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts' =
 	CreateInfo {
 		createInfoNext :: Maybe n,
@@ -80,14 +82,14 @@ data CreateInfo n nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts'
 type CreateInfoArgs14 = (
 	Type,
 	[(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type])],
-	(Type, [Type], [(Nat, Type)]),
+	(Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
 	Type, Type, Type, Type, Type, Type, Type, Type,
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	Type,
-	(Type, [Type], [(Nat, Type)],
+	(Type, [(Type, VertexInput.Rate)], [(Nat, Type)],
 		(Type, [(Type, [DscStLyt.BindingType])], [Type])) )
 
-type GArgs3 = ([Type], [(Nat, Type)],
+type GArgs3 = ([(Type, VertexInput.Rate)], [(Nat, Type)],
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]))
 
 type family CreateInfoArgs14ToGArgs3 (cia :: CreateInfoArgs14) :: GArgs3 where
@@ -149,7 +151,7 @@ createInfoToMiddle dvc CreateInfo {
 
 class CreateInfoListToMiddle ss where
 	type MiddleVars ss :: [
-		(Type, [(Type, ShaderKind, [Type])], (Type, [Type], [(Nat, Type)]),
+		(Type, [(Type, ShaderKind, [Type])], (Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
 		Type, Type, Type, Type, Type, Type, Type, Type)]
 
 	createInfoListToMiddle :: Device.D sd ->
