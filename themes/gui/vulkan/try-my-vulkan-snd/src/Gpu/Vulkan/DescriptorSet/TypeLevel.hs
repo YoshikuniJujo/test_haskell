@@ -104,6 +104,24 @@ instance IsPrefix os os' =>
 	updateDynamicLength (lns' :** lnss) lns =
 		isPrefixUpdateDynamicLength @os @os' lns' lns :** lnss
 
+{-
+instance IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.DynAtom n algn t 'Nothing ': os') ': bts)
+		(VObj.DynAtom n algn t ('Just nm) ': os) where
+	bindingAndArrayElem _ = (0, 0)
+	updateDynamicLength (lns' :** lnss) (ln :** lns) =
+		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
+
+instance IsPrefix os os' =>
+	BindingAndArrayElem
+		('DescriptorSetLayout.Buffer (VObj.DynAtom n algn t ('Just nm) ': os') ': bts)
+		(VObj.DynAtom n algn t 'Nothing ': os) where
+	bindingAndArrayElem _ = (0, 0)
+	updateDynamicLength (lns' :** lnss) (ln :** lns) =
+		(ln :** isPrefixUpdateDynamicLength @os @os' lns' lns) :** lnss
+-}
+
 instance {-# OVERLAPPABLE #-} IsPrefix os os' =>
 	BindingAndArrayElem
 		('DescriptorSetLayout.Buffer (VObj.Static o ': os') ': bts)

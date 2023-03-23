@@ -18,6 +18,8 @@ import Data.Proxy
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
+import Data.Maybe
+
 data Object = Static K.Object | Dynamic Nat K.Object | Dummy
 
 type List algn t nm = Static (K.List algn t nm)
@@ -43,6 +45,10 @@ pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImag
 pattern ObjectLengthAtom :: ObjectLength ('Static (K.Atom algn t nm))
 pattern ObjectLengthAtom <- ObjectLengthStatic K.ObjectLengthAtom where
 	ObjectLengthAtom = ObjectLengthStatic K.ObjectLengthAtom
+
+pattern ObjectLengthDynAtom :: ObjectLength ('Dynamic n (K.Atom algn t nm))
+pattern ObjectLengthDynAtom <- ObjectLengthDynamic K.ObjectLengthAtom where
+	ObjectLengthDynAtom = ObjectLengthDynamic K.ObjectLengthAtom
 
 {-# COMPLETE ObjectLengthList #-}
 
@@ -102,21 +108,25 @@ instance K.StoreObject v kobj => StoreObject v (Static kobj) where
 	objectLength = ObjectLengthStatic . K.objectLength
 
 instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
-	StoreObject [v] (Dynamic n kobj) where
+	StoreObject [Maybe v] (Dynamic n kobj) where
 	storeObject p0 (ObjectLengthDynamic kln) =
 		go p0 (natVal (Proxy :: Proxy n))
 		where
 		go _ _ [] = pure ()
 		go _ n _ | n < 1 = pure ()
-		go p n (x : xs) = do
+		go p n (Just x : xs) = do
 --			putStrLn "Vk.Object.storeObject: go:"
 --			print p
 			K.storeObject p kln x >> go (nextObject p kln) (n - 1) xs
+		go p n (Nothing : xs) = do
+--			putStrLn "Vk.Object.storeObject: go:"
+--			print p
+			go (nextObject p kln) (n - 1) xs
 	loadObject p0 (ObjectLengthDynamic kln) = go p0 (natVal (Proxy :: Proxy n))
 		where
 		go _ n | n < 1 = pure []
-		go p n = (:) <$> K.loadObject p kln <*> go (nextObject p kln) (n - 1)
-	objectLength = ObjectLengthDynamic . K.objectLength . head
+		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
+	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
 
 class Offset (obj :: Object) objs where
 	offset :: Int -> HeteroParList.PL ObjectLength objs -> Int

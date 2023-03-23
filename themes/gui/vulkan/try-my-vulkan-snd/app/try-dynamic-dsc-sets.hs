@@ -69,6 +69,8 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
+import Data.Maybe
+
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -89,16 +91,16 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet mgcx >>
-		(,,)	<$> Vk.Mm.read @"" @(VObj.DynList 2 256 W1 "") @[[W1]] dvc ma def
-			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W2 "") @[[W2]] dvc mb def
-			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W3 "") @[[W3]] dvc mc def
-	print . take 20 $ unW1 <$> head r1
-	print . take 20 $ unW2 <$> head r2
-	print . take 20 $ unW3 <$> head r3
+		(,,)	<$> Vk.Mm.read @"" @(VObj.DynList 2 256 W1 "") @[Maybe [W1]] dvc ma def
+			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W2 "") @[Maybe [W2]] dvc mb def
+			<*> Vk.Mm.read @"" @(VObj.DynList 2 256 W3 "") @[Maybe [W3]] dvc mc def
+	print . take 20 $ unW1 <$> fromJust (head r1)
+	print . take 20 $ unW2 <$> fromJust (head r2)
+	print . take 20 $ unW3 <$> fromJust (head r3)
 	putStrLn ""
-	print . take 20 $ unW1 <$> head (tail r1)
-	print . take 20 $ unW2 <$> head (tail r2)
-	print . take 20 $ unW3 <$> head (tail r3)
+	print . take 20 $ unW1 <$> fromJust (head $ tail r1)
+	print . take 20 $ unW2 <$> fromJust (head $ tail r2)
+	print . take 20 $ unW3 <$> fromJust (head $ tail r3)
 
 newtype W1 = W1 { unW1 :: Word32 } deriving (Show, Storable)
 newtype W2 = W2 { unW2 :: Word32 } deriving (Show, Storable)
@@ -203,7 +205,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
-	Vk.Mm.write @nm @(VObj.DynList 2 256 w "") dvc mm def [xs, V.reverse xs] >> f bnd mm
+	Vk.Mm.write @nm @(VObj.DynList 2 256 w "") dvc mm def [Just xs, Just $ V.reverse xs] >> f bnd mm
 
 bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[VObj.DynList 2 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
