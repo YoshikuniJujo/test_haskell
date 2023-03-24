@@ -9,9 +9,9 @@ module Codec.Wavefront.ReadOld (
 	sampleVerticesIndices, tinyVerticesIndices,
 	verticesIndices,
 
-	pattern W,
+	W, pattern W,
 
-	Position(..), Normal(..),
+	Position(..), Normal(..), Face(..),
 
 	countV, countV', Count(..), readV', takePosNormalFace, facePosNormal, PositionNormal(..) ) where
 
