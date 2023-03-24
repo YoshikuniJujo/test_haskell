@@ -257,11 +257,10 @@ run w inst g =
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChainNew w sfc phdv qfis dv
-		\(Vk.Khr.Swapchain.SNew msc :: Vk.Khr.Swapchain.SNew ss scifmt) ext -> let
-			sc = Vk.Khr.Swapchain.S msc
+		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt) ext -> let
 			scifmt = Vk.T.formatToValue @scifmt in
-	Vk.Khr.Swapchain.getImages dv sc >>= \imgs ->
-	createImageViews dv scifmt imgs \scivs ->
+	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
+	createImageViews dv scifmt (Vk.Image.bindedFromNew <$> imgs) \scivs ->
 	createRenderPassNew @scifmt dv \rp ->
 	createPipelineLayout' dv \dscslyt ppllyt ->
 	createGraphicsPipeline' dv ext rp ppllyt \gpl ->
@@ -444,55 +443,16 @@ mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 		(Vk.SharingModeExclusive, [])
 		(graphicsFamily qfis0 == presentFamily qfis0)
 
-recreateSwapChain :: Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
-	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.S ssc ->
+recreateSwapChain :: Vk.T.FormatToValue fmt => Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
+	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Khr.Swapchain.SNew ssc fmt ->
 	IO (Vk.Format, Vk.C.Extent2d)
 recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
-	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreate @() dvc crInfo nil nil sc
-
-mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
-	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	(Vk.Khr.Swapchain.CreateInfo n ss, Vk.Format)
-mkSwapchainCreateInfo sfc qfis0 spp ext = (
-	Vk.Khr.Swapchain.CreateInfo {
-		Vk.Khr.Swapchain.createInfoNext = Nothing,
-		Vk.Khr.Swapchain.createInfoFlags = def,
-		Vk.Khr.Swapchain.createInfoSurface = sfc,
-		Vk.Khr.Swapchain.createInfoMinImageCount = imgc,
-		Vk.Khr.Swapchain.createInfoImageFormat =
-			Vk.Khr.Surface.M.formatFormat fmt,
-		Vk.Khr.Swapchain.createInfoImageColorSpace =
-			Vk.Khr.Surface.M.formatColorSpace fmt,
-		Vk.Khr.Swapchain.createInfoImageExtent = ext,
-		Vk.Khr.Swapchain.createInfoImageArrayLayers = 1,
-		Vk.Khr.Swapchain.createInfoImageUsage =
-			Vk.Image.UsageColorAttachmentBit,
-		Vk.Khr.Swapchain.createInfoImageSharingMode = ism,
-		Vk.Khr.Swapchain.createInfoQueueFamilyIndices = qfis,
-		Vk.Khr.Swapchain.createInfoPreTransform =
-			Vk.Khr.Surface.M.capabilitiesCurrentTransform caps,
-		Vk.Khr.Swapchain.createInfoCompositeAlpha =
-			Vk.Khr.CompositeAlphaOpaqueBit,
-		Vk.Khr.Swapchain.createInfoPresentMode = presentMode,
-		Vk.Khr.Swapchain.createInfoClipped = True,
-		Vk.Khr.Swapchain.createInfoOldSwapchain = Nothing }, scifmt )
-	where
-	fmt = chooseSwapSurfaceFormat $ formats spp
-	scifmt = Vk.Khr.Surface.M.formatFormat fmt
-	presentMode = chooseSwapPresentMode $ presentModes spp
-	caps = capabilities spp
-	maxImgc = fromMaybe maxBound . onlyIf (> 0)
-		$ Vk.Khr.Surface.M.capabilitiesMaxImageCount caps
-	imgc = clamp
-		(Vk.Khr.Surface.M.capabilitiesMinImageCount caps + 1) 0 maxImgc
-	(ism, qfis) = bool
-		(Vk.SharingModeConcurrent,
-			[graphicsFamily qfis0, presentFamily qfis0])
-		(Vk.SharingModeExclusive, [])
-		(graphicsFamily qfis0 == presentFamily qfis0)
+	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
+		fmt = chooseSwapSurfaceFormat $ formats spp
+		scifmt = Vk.Khr.Surface.M.formatFormat fmt
+	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dvc crInfo nil nil sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
@@ -1142,12 +1102,15 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
 		Vk.RndrPass.beginInfoClearValues = HeteroParList.Singleton
 			. Vk.M.ClearValueColor . fromJust $ rgbaDouble 0 0 0 1 }
 
-mainLoop :: (RecreateFramebuffers ss sfs, VssList vss, DescriptorSetIndex slyts sdsc) =>
+mainLoop :: (
+	RecreateFramebuffers ss sfs, VssList vss,
+	DescriptorSetIndex slyts sdsc,
+	Vk.T.FormatToValue fmt ) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> Vk.C.Extent2d -> HeteroParList.PL Vk.ImgVw.I ss ->
+	Vk.Khr.Swapchain.SNew ssc fmt -> Vk.C.Extent2d -> HeteroParList.PL Vk.ImgVw.I ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] -> Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] ->
@@ -1171,10 +1134,13 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib cbs 
 			cf (`loop` cfs)
 	Vk.Dvc.waitIdle dvc
 
-runLoop :: (RecreateFramebuffers sis sfs, VssList vss, DescriptorSetIndex slyts sdsc) =>
+runLoop :: (
+	RecreateFramebuffers sis sfs,
+	VssList vss, DescriptorSetIndex slyts sdsc,
+	Vk.T.FormatToValue fmt ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
-	Vk.Khr.Swapchain.S ssc -> FramebufferResized -> Vk.C.Extent2d ->
+	Vk.Khr.Swapchain.SNew ssc fmt -> FramebufferResized -> Vk.C.Extent2d ->
 	HeteroParList.PL Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1198,9 +1164,9 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib 
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
+drawFrame :: forall sfs sd ssc fmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts .
 	(VssList vss, DescriptorSetIndex slyts sdsc) =>
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.S ssc ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc fmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1218,10 +1184,10 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
-	HeteroParList.index ubs cf \ub -> HeteroParList.index ums cf \um ->
+	HeteroParList.index ubs cf \_ub -> HeteroParList.index ums cf \um ->
 	descriptorSetIndex dscss cf \dscs -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
-	imgIdx <- Vk.Khr.acquireNextImageResult [Vk.Success, Vk.SuboptimalKhr]
+	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
@@ -1242,7 +1208,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 			Vk.Khr.presentInfoNext = Nothing,
 			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
 			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
-				$ Vk.Khr.SwapchainImageIndex sc imgIdx }
+				$ Vk.Khr.SwapchainImageIndex (Vk.Khr.Swapchain.sFromNew sc) imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
 	where	cb = cbs `vssListIndex` cf
@@ -1283,10 +1249,11 @@ catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
 	(`catch` \(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
-catchAndRecreate :: RecreateFramebuffers sis sfs =>
+catchAndRecreate :: (
+	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc ->
+	Vk.Khr.Swapchain.SNew ssc fmt ->
 	HeteroParList.PL Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
@@ -1303,10 +1270,11 @@ catchAndRecreate win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs loop act =
 	\_ -> loop =<< recreateSwapChainEtc
 		win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs
 
-recreateSwapChainEtc :: RecreateFramebuffers sis sfs =>
+recreateSwapChainEtc :: (
+	RecreateFramebuffers sis sfs, Vk.T.FormatToValue fmt) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Khr.Swapchain.S ssc -> HeteroParList.PL Vk.ImgVw.I sis ->
+	Vk.Khr.Swapchain.SNew ssc fmt -> HeteroParList.PL Vk.ImgVw.I sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
 	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1318,7 +1286,7 @@ recreateSwapChainEtc win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs = do
 
 	(scifmt, ext) <- recreateSwapChain win sfc phdvc qfis dvc sc
 	ext <$ do
-		Vk.Khr.Swapchain.getImages dvc sc >>= \imgs ->
+		Vk.Khr.Swapchain.getImagesNew dvc sc >>= \((Vk.Image.bindedFromNew <$>) -> imgs) ->
 			recreateImageViews dvc scifmt imgs scivs
 		recreateGraphicsPipeline' dvc ext rp ppllyt gpl
 		recreateFramebuffers dvc ext rp scivs fbs
