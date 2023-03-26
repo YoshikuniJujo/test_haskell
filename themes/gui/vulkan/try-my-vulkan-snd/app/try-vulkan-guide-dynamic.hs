@@ -114,7 +114,7 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Grph
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Grph
+import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
@@ -245,7 +245,7 @@ run w ist g vns =
 
 	createDescriptorSetLayout dv \dslyt ->
 	createPipelineLayout dv dslyt \ppllyt ->
-	createGraphicsPipeline dv ex rp ppllyt \gpl ->
+	createGraphicsPipeline dv ex rp ppllyt \(Vk.Ppl.Grph.gFromNew -> gpl) ->
 
 	createCommandPool qfs dv \cp ->
 	createDepthResources phd dv gq cp ex \dptImg dptImgMem dptImgVw ->
@@ -631,26 +631,32 @@ createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	(forall sg . Vk.Ppl.Grph.G sg
+	(forall sg . Vk.Ppl.Grph.GNew sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, '[ '(sdl, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])], '[WrapMeshPushConstants]) -> IO a) -> IO a
 createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 	(HL.Singleton . U14 $ graphicsPipelineCreateInfo sce rp lyt) nil nil
-	\(HL.Singleton (U2 gpl)) -> f gpl
+	\(HL.Singleton (U3 gpl)) -> f gpl
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(s, '[
+		'[ '(sdl, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg
+	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, '[ '(sdl, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])], '[WrapMeshPushConstants]) -> IO ()
 recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 	(U14 (graphicsPipelineCreateInfo sce rp lyt) :** HL.Nil) nil nil
-	(U2 gpls :** HL.Nil)
+	(U3 gpls :** HL.Nil)
 
 graphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Lyt.L sl
@@ -668,7 +674,7 @@ graphicsPipelineCreateInfo ::
 				'Vk.DscSetLyt.Buffer '[CameraObj],
 				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
 			'[WrapMeshPushConstants])
-		sr '(sb, vs', ts')
+		sr '(sb, vs', ts', larg)
 graphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Grph.CreateInfo {
 	Vk.Ppl.Grph.createInfoNext = Nothing,
 	Vk.Ppl.Grph.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -1575,12 +1581,12 @@ runLoop :: (
 	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn loop = do
-	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop
+	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn 1 cmms scnm cmds vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
-			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs)
+			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs)
 
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
@@ -1681,9 +1687,6 @@ catchAndRecreate :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg0
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Grph.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
@@ -1691,14 +1694,14 @@ catchAndRecreate :: (
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs ->
 	(Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs loop act =
+catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs loop act =
 	catchJust
 	(\case	Vk.ErrorOutOfDateKhr -> Just ()
 		Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
 	\_ -> loop =<< recreateSwapchainEtc
-		win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs
+		win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs
 
 recreateSwapchainEtc :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
@@ -1714,16 +1717,13 @@ recreateSwapchainEtc :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg0
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Grph.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
-recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp (dimg, dim, divw) fbs = do
+recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp (dimg, dim, divw) fbs = do
 	waitFramebufferSize win
 	Vk.Dvc.waitIdle dvc
 
@@ -1732,7 +1732,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp (
 		Vk.Khr.Swpch.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
 		recreateDepthResources phdvc dvc gq cp ext dimg dim divw
-		recreateGraphicsPipeline dvc ext rp ppllyt gpl1
+		recreateGraphicsPipeline dvc ext rp ppllyt (Vk.Ppl.Grph.gToNew gpl1)
 		recreateFramebuffers dvc ext rp scivs divw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
