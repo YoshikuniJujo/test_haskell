@@ -113,8 +113,8 @@ import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
-import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
+import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Grph
+import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
@@ -245,8 +245,7 @@ run w ist g vns =
 
 	createDescriptorSetLayout dv \dslyt ->
 	createPipelineLayout dv dslyt \ppllyt ->
-	createGraphicsPipeline dv ex rp ppllyt 0 \gpl0 ->
-	createGraphicsPipeline dv ex rp ppllyt 1 \gpl1 ->
+	createGraphicsPipeline dv ex rp ppllyt \gpl ->
 
 	createCommandPool qfs dv \cp ->
 	createDepthResources phd dv gq cp ex \dptImg dptImgMem dptImgVw ->
@@ -261,13 +260,13 @@ run w ist g vns =
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp ppllyt
-		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
+		undefined gpl cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
 
 pickPhysicalDevice ::
 	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
-pickPhysicalDevice ist sfc = Vk.Phd.enumerate ist >>= \dvcs -> do
-	when (null dvcs) $ error "failed to find GPUs with Gpu.Vulkan support!"
-	findPlusM (`isPhysicalDeviceSuitable` sfc) dvcs >>= \case
+pickPhysicalDevice ist sfc = Vk.Phd.enumerate ist >>= \dvs -> do
+	when (null dvs) $ error "failed to find GPUs with Gpu.Vulkan support!"
+	findPlusM (`isPhysicalDeviceSuitable` sfc) dvs >>= \case
 		Just ph -> pure ph
 		Nothing -> error "failed to find a suitable GPU!"
 
@@ -281,16 +280,16 @@ isPhysicalDeviceSuitable ph sfc =
 		$ null (formats spp) || null (presentModes spp))
 
 checkDeviceExtensionSupport :: Vk.Phd.P -> IO Bool
-checkDeviceExtensionSupport dvc = null
+checkDeviceExtensionSupport dv = null
 	. (deviceExtensions \\) . (Vk.M.extensionPropertiesExtensionName <$>)
-		<$> Vk.Phd.enumerateExtensionProperties dvc Nothing
+		<$> Vk.Phd.enumerateExtensionProperties dv Nothing
 
 deviceExtensions :: [Txt.Text]
 deviceExtensions = [Vk.Khr.Swpch.M.extensionName]
 
 findQueueFamilies :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO QueueFamilyIndicesMaybe
-findQueueFamilies dvc sfc = Vk.Phd.getQueueFamilyProperties dvc >>= \qfs ->
-	filterM	(\i -> Vk.Khr.Sfc.Phd.getSupport dvc i sfc)
+findQueueFamilies dv sfc = Vk.Phd.getQueueFamilyProperties dv >>= \qfs ->
+	filterM	(\i -> Vk.Khr.Sfc.Phd.getSupport dv i sfc)
 		(fst <$> qfs) >>= \(listToMaybe -> pfi) ->
 	pure QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = (`findBySnd` qfs)
@@ -511,8 +510,8 @@ createRenderPass ::
 	forall (scifmt :: Vk.T.Format) (dptfmt :: Vk.T.Format) sd a . (
 	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dptfmt ) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dvc f = Vk.RndrPass.createNew @'[scifmt, dptfmt] @()
-	dvc renderPassInfo nil nil f where
+createRenderPass dv f = Vk.RndrPass.createNew @'[scifmt, dptfmt] @()
+	dv renderPassInfo nil nil f where
 	renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
 		Vk.RndrPass.M.createInfoNextNew = Nothing,
 		Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
@@ -580,7 +579,7 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	Vk.DscSetLyt.L s '[
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ] -> IO a) -> IO a
-createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil where
+createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil nil where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]
@@ -611,7 +610,7 @@ createPipelineLayout :: forall sd sdl a . Vk.Dvc.D sd ->
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] -> IO a) -> IO a
-createPipelineLayout dvc dslyt f = Vk.Ppl.Lyt.createNew dvc ci nil nil f where
+createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.createNew dv ci nil nil f where
 	ci :: Vk.Ppl.Lyt.CreateInfoNew ()
 		'[ '(sdl, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
@@ -626,21 +625,18 @@ createPipelineLayout dvc dslyt f = Vk.Ppl.Lyt.createNew dvc ci nil nil f where
 		Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 		Vk.Ppl.Lyt.createInfoSetLayoutsNew = HL.Singleton $ U2 dslyt }
 
-createGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(s, '[
+		'[ '(sdl, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Int ->
-	(forall sg . Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+	(forall sg . Vk.Ppl.Grph.G sg
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
-createGraphicsPipeline dvc sce rp ppllyt sdrn f =
-	Vk.Ppl.Graphics.createGs dvc Nothing (HL.Singleton $ U14 pplInfo) nil nil
-		\(HL.Singleton (U2 gpl)) -> f gpl
-	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
+createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
+	(HL.Singleton . U14 $ graphicsPipelineCreateInfo sce rp lyt) nil nil
+	\(HL.Singleton (U2 gpl)) -> f gpl
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -648,54 +644,49 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-		'[WrapMeshPushConstants] -> Int ->
-	Vk.Ppl.Graphics.G sg
+		'[WrapMeshPushConstants] ->
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
-recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (U14 pplInfo :** HL.Nil) nil nil (U2 gpls :** HL.Nil)
-	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
+recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
+	(U14 (graphicsPipelineCreateInfo sce rp lyt) :** HL.Nil) nil nil
+	(U2 gpls :** HL.Nil)
 
-mkGraphicsPipelineCreateInfo ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Lyt.L sl
-		'[ '(s, '[
+graphicsPipelineCreateInfo ::
+	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Lyt.L sl
+		'[ '(sdl, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-		'[WrapMeshPushConstants] -> Int ->
-	Vk.Ppl.Graphics.CreateInfo () '[
-			'((), (), 'GlslVertexShader, (), (), '[]),
+		'[WrapMeshPushConstants] ->
+	Vk.Ppl.Grph.CreateInfo ()
+		'[	'((), (), 'GlslVertexShader, (), (), '[]),
 			'((), (), 'GlslFragmentShader, (), (), '[]) ]
-		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
+		'(	(), '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
 		() () () () () () () ()
-		'(sl,	'[ '(s, '[
+		'(sl,	'[ '(sdl, '[
 				'Vk.DscSetLyt.Buffer '[CameraObj],
 				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
 			'[WrapMeshPushConstants])
 		sr '(sb, vs', ts')
-mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = Nothing,
-	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Graphics.createInfoStages = uncurry shaderStages
-		case sdrn `mod` 2 of
-			0 -> shaderPair0
-			1 -> shaderPair1
-			_ -> error "never occur",
-	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
-	Vk.Ppl.Graphics.createInfoInputAssemblyState = Just inputAssembly,
-	Vk.Ppl.Graphics.createInfoViewportState = Just $ mkViewportState sce,
-	Vk.Ppl.Graphics.createInfoRasterizationState = Just rasterizer,
-	Vk.Ppl.Graphics.createInfoMultisampleState = Just multisampling,
-	Vk.Ppl.Graphics.createInfoDepthStencilState = Just depthStencil,
-	Vk.Ppl.Graphics.createInfoColorBlendState = Just colorBlending,
-	Vk.Ppl.Graphics.createInfoDynamicState = Nothing,
-	Vk.Ppl.Graphics.createInfoLayout = U3 ppllyt,
-	Vk.Ppl.Graphics.createInfoRenderPass = rp,
-	Vk.Ppl.Graphics.createInfoSubpass = 0,
-	Vk.Ppl.Graphics.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
-	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
+graphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Grph.CreateInfo {
+	Vk.Ppl.Grph.createInfoNext = Nothing,
+	Vk.Ppl.Grph.createInfoFlags = Vk.Ppl.CreateFlagsZero,
+	Vk.Ppl.Grph.createInfoStages = uncurry shaderStages shaderPair1,
+	Vk.Ppl.Grph.createInfoVertexInputState = Just $ U3 def,
+	Vk.Ppl.Grph.createInfoInputAssemblyState = Just inputAssembly,
+	Vk.Ppl.Grph.createInfoViewportState = Just $ mkViewportState sce,
+	Vk.Ppl.Grph.createInfoRasterizationState = Just rasterizer,
+	Vk.Ppl.Grph.createInfoMultisampleState = Just multisampling,
+	Vk.Ppl.Grph.createInfoDepthStencilState = Just depthStencil,
+	Vk.Ppl.Grph.createInfoColorBlendState = Just colorBlending,
+	Vk.Ppl.Grph.createInfoDynamicState = Nothing,
+	Vk.Ppl.Grph.createInfoLayout = U3 ppllyt,
+	Vk.Ppl.Grph.createInfoRenderPass = rp,
+	Vk.Ppl.Grph.createInfoSubpass = 0,
+	Vk.Ppl.Grph.createInfoBasePipelineHandle = Nothing,
+	Vk.Ppl.Grph.createInfoBasePipelineIndex = - 1,
+	Vk.Ppl.Grph.createInfoTessellationState = Nothing }
 	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
@@ -1384,7 +1375,7 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
 	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Lyt.L slyt
@@ -1446,7 +1437,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Graphics.G sg
+	renderObjectPipeline :: Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)],
 	renderObjectPipelineLayout ::
@@ -1516,9 +1507,9 @@ mainLoop :: (
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Grph.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Graphics.G sg1
+		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Grph.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
@@ -1562,9 +1553,9 @@ runLoop :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1602,9 +1593,9 @@ drawFrame ::
 	) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Lyt.L slyt
 		'[ '(s, '[
@@ -1690,10 +1681,10 @@ catchAndRecreate :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Grph.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1
+	Vk.Ppl.Grph.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
@@ -1723,10 +1714,10 @@ recreateSwapchainEtc :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Grph.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1
+	Vk.Ppl.Grph.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
@@ -1741,8 +1732,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl0 gpl1 cp (
 		Vk.Khr.Swpch.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
 		recreateDepthResources phdvc dvc gq cp ext dimg dim divw
-		recreateGraphicsPipeline dvc ext rp ppllyt 0 gpl0
-		recreateGraphicsPipeline dvc ext rp ppllyt 1 gpl1
+		recreateGraphicsPipeline dvc ext rp ppllyt gpl1
 		recreateFramebuffers dvc ext rp scivs divw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
