@@ -14,6 +14,7 @@
 module Main where
 
 import GHC.Generics
+import GHC.TypeNats
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
@@ -29,7 +30,7 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HL
-import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
@@ -118,6 +119,7 @@ import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
@@ -146,9 +148,12 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 import qualified Codec.Wavefront.ReadOld as W
 import Tools
+import TypeLevel.Nat
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
+
+type MaxFramesInFlight = 2
 
 frashRate :: Num n => n
 frashRate = 2
@@ -1326,14 +1331,28 @@ createCommandBuffers ::
 	(forall scb vss . VssList vss =>
 		HL.PL (Vk.CmdBffr.Binded scb) (vss :: [[(Type, Vk.VtxInp.Rate)]]) -> IO a) ->
 	IO a
-createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocate @() @vss1 dvc (allcInfo @vss1) (f @_ @vss1)
+createCommandBuffers dvc cp f = -- mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
+	($ (Proxy :: Proxy (MkVss' MaxFramesInFlight))) \(_p :: Proxy vss1) ->
+--	valNat' @vss1 maxFramesInFlight \(_p :: Proxy n) ->
+--	valNat' maxFramesInFlight \(_p :: Proxy n) ->
+		Vk.CmdBffr.allocateNew @() @MaxFramesInFlight dvc allcInfo
+			(f @_ @vss1 . (grphToBindedList @(HL.Dummies MaxFramesInFlight) @vss1))
+
+-- mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
+--	Vk.CmdBffr.allocate @() @vss1 dvc (allcInfo @vss1) (f @_ @vss1)
 	where
-	allcInfo :: forall vss . Vk.CmdBffr.AllocateInfo () scp vss
-	allcInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allcInfo :: forall n . Vk.CmdBffr.AllocateInfoNew () scp n
+	allcInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+
+valNat' :: forall vss a . Natural ->
+--	(forall n . (KnownNat n, HL.FromList (HL.Dummies n), GrphToBindedList (HL.Dummies n) vss) => Proxy n -> a) ->
+--	(forall n . (KnownNat n, GrphToBindedList (HL.Dummies n) vss) => Proxy n -> a) ->
+	(forall n . KnownNat n => Proxy n -> a) ->
+	a
+valNat' nat f = (\(SomeNat n) -> f n) $ someNatVal nat
 
 class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
 	vssListIndex ::
@@ -1353,6 +1372,21 @@ mkVss :: Int -> (forall (vss :: [[(Type, Vk.VtxInp.Rate)]]) .
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
+
+type family MkVss' n where
+	MkVss' 0 = '[]
+	MkVss' n = '[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': MkVss' (n - 1)
+
+class GrphToBindedList ds vss where
+	grphToBindedList ::
+		HL.LL (Vk.CmdBffr.C s) ds -> HL.PL (Vk.CmdBffr.Binded s) vss
+
+instance GrphToBindedList '[] '[] where
+	grphToBindedList HL.Nil = HL.Nil
+
+instance GrphToBindedList ds vss =>
+	GrphToBindedList ('() ': ds) (vs ': vss) where
+	grphToBindedList (c :*. cs) = Vk.CmdBffr.toBinded c :** grphToBindedList cs
 
 addTypeToProxy ::
 	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
