@@ -245,7 +245,7 @@ run w ist g vns =
 
 	createDescriptorSetLayout dv \dslyt ->
 	createPipelineLayout dv dslyt \ppllyt ->
-	createGraphicsPipeline dv ex rp ppllyt \(Vk.Ppl.Grph.gFromNew -> gpl) ->
+	createGraphicsPipeline dv ex rp ppllyt \gpl ->
 
 	createCommandPool qfs dv \cp ->
 	createDepthResources phd dv gq cp ex \dptImg dptImgMem dptImgVw ->
@@ -1381,9 +1381,13 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
 	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Grph.G sg
+	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(slyt,	'[ '(sdlyt, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
 	Vk.Ppl.Lyt.L slyt
 		'[ '(sdlyt, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
@@ -1443,9 +1447,13 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Grph.G sg
+	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)],
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(sdlyt, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]),
 	renderObjectPipelineLayout ::
 		Vk.Ppl.Lyt.L sl
 			'[ '(sdlyt, '[
@@ -1468,7 +1476,7 @@ drawObject om cb cmd RenderObject {
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } cf = do
-	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
+	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics (Vk.Ppl.Grph.gFromNew gpl)
 	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
 		(HL.Singleton $ U2 cmd) . HL.Singleton $
 		(HL.Nil :** (Vk.Cmd.DynamicIndex cf :** HL.Nil) :** HL.Nil)
@@ -1509,13 +1517,18 @@ mainLoop :: (
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr ->
-	Vk.Ppl.Lyt.L sl '[ '(s, '[
-		'Vk.DscSetLyt.Buffer '[CameraObj],
-		'Vk.DscSetLyt.Buffer '[SceneObj] ])]
+	Vk.Ppl.Lyt.L sl
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg1
+	Vk.Ppl.Grph.GNew sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(s, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs ->
@@ -1557,8 +1570,12 @@ runLoop :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.Ppl.Grph.GNew sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(s, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs ->
@@ -1576,7 +1593,8 @@ runLoop :: (
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt
+	gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs loop
 		$ drawFrame dvc gq pq sc ext rp gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn
 	cls <- Glfw.windowShouldClose win
@@ -1585,7 +1603,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl1 cp drsrcs
 			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs)
 
 drawFrame ::
-	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
+	forall sfs sd ssc scfmt sr sg1 slyt s sm sb nm smtri sbtri nmtri
 		scb ssos vss sbsms sscnm sscnb sp slyts . (
 	VssList vss,
 	HL.HomoList
@@ -1595,8 +1613,12 @@ drawFrame ::
 	) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Grph.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.Ppl.Grph.GNew sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(slyt,	'[ '(s, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
 	Vk.Ppl.Lyt.L slyt
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
@@ -1679,9 +1701,13 @@ catchAndRecreate :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg1
+	Vk.Ppl.Grph.GNew sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(s, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs ->
@@ -1709,9 +1735,13 @@ recreateSwapchainEtc :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg1
+	Vk.Ppl.Grph.GNew sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
@@ -1724,7 +1754,7 @@ recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp (dimg,
 		Vk.Khr.Swpch.getImagesNew dvc sc >>= \imgs ->
 			recreateImageViews dvc imgs scivs
 		recreateDepthResources phdvc dvc gq cp ext dimg dim divw
-		recreateGraphicsPipeline dvc ext rp ppllyt (Vk.Ppl.Grph.gToNew gpl1)
+		recreateGraphicsPipeline dvc ext rp ppllyt gpl1
 		recreateFramebuffers dvc ext rp scivs divw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
