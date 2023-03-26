@@ -1923,41 +1923,6 @@ shaderStages vs fs = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HL.Ni
 			Vk.Shader.Module.M.createInfoFlags = def,
 			Vk.Shader.Module.M.createInfoCode = cd }
 
-shaderPair0 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
-shaderPair0 = (glslVertexShaderMain0, glslFragmentShaderMain0)
-
-glslVertexShaderMain0 :: Spv 'GlslVertexShader
-glslVertexShaderMain0 = [glslVertexShader|
-
-#version 450
-
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inNormal;
-layout(location = 2) in vec3 inColor;
-
-void
-main()
-{
-	gl_Position = vec4(inPosition, 1.0);
-}
-
-|]
-
-glslFragmentShaderMain0 :: Spv 'GlslFragmentShader
-glslFragmentShaderMain0 = [glslFragmentShader|
-
-#version 450
-
-layout(location = 0) out vec4 outColor;
-
-void
-main()
-{
-	outColor = vec4(1.0, 0.0, 0.0, 1.0);
-}
-
-|]
-
 shaderPair1 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
 shaderPair1 = (glslVertexShaderMain1, glslFragmentShaderMain1)
 
