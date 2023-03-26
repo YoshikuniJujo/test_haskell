@@ -260,7 +260,7 @@ run w ist g vns =
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp ppllyt
-		undefined gpl cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
+		gpl cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
 
 pickPhysicalDevice ::
 	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
@@ -1513,9 +1513,7 @@ mainLoop :: (
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg0
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Grph.G sg1
+	Vk.Ppl.Grph.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
@@ -1533,11 +1531,11 @@ mainLoop :: (
 				SceneObj ])] ->
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
-mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmms scnm cmds vn = do
+mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmms scnm cmds vn = do
 	($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn
+			sc g ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)))
 	Vk.Dvc.waitIdle dvc
 
@@ -1559,8 +1557,6 @@ runLoop :: (
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Grph.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.CmdPl.C scp ->
@@ -1580,9 +1576,9 @@ runLoop :: (
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
-runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn loop = do
+runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn loop = do
 	catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs loop
-		$ drawFrame dvc gq pq sc ext rp gpl0 gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn 1 cmms scnm cmds vn
+		$ drawFrame dvc gq pq sc ext rp gpl1 ppllyt fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn
 	cls <- Glfw.windowShouldClose win
 	if cls then (pure ()) else checkFlag frszd >>= bool (loop ext)
 		(loop =<< recreateSwapchainEtc
@@ -1599,8 +1595,6 @@ drawFrame ::
 	) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Grph.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Grph.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
 	Vk.Ppl.Lyt.L slyt
@@ -1611,7 +1605,7 @@ drawFrame ::
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HL.PL (Vk.CmdBffr.Binded scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
+	HL.PL (Vk.CmdBffr.Binded scb) vss -> SyncObjects ssos -> Int -> Int ->
 	HL.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
@@ -1620,7 +1614,7 @@ drawFrame ::
 				SceneObj ])] ->
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
-drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmms scnm cmds vn =
+drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn cmms scnm cmds vn =
 	HL.index iass cf \(ias :: Vk.Semaphore.S sias) ->
 	HL.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HL.index iffs cf \(id &&& HL.Singleton -> (iff, siff)) ->
@@ -1646,10 +1640,8 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.reset cb def
-	HL.index fbs imgIdx \fb -> case sdrn `mod` 2 of
-		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn $ fromIntegral cf
-		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
-		_ -> error "never occur"
+	HL.index fbs imgIdx \fb ->
+		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
