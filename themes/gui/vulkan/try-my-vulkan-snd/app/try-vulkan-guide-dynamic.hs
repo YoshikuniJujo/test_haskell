@@ -246,10 +246,10 @@ run w ist g vns =
 	createRenderPass @fmt @dptfmt dv \rp ->
 
 	createDescriptorSetLayout dv \dslyt ->
-	createPipelineLayout dv dslyt \ppllyt ->
-	createGraphicsPipeline dv ex rp ppllyt \gpl ->
+	createPipelineLayout dv dslyt \lyt ->
+	createGraphicsPipeline dv ex rp lyt \gpl ->
 
-	createCommandPool qfs dv \cp ->
+	createCommandPool dv qfs \cp ->
 	createDepthResources phd dv gq cp ex \dptImg dptImgMem dptImgVw ->
 	createFramebuffers dv ex rp scivs dptImgVw \fbs ->
 
@@ -261,7 +261,7 @@ run w ist g vns =
 	createVertexBuffer phd dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
-	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp ppllyt
+	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp lyt
 		gpl cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
 
 pickPhysicalDevice ::
@@ -636,9 +636,10 @@ createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
 	(forall sg . Vk.Ppl.Grph.GNew sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(sdl, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])], '[WrapMeshPushConstants]) -> IO a) -> IO a
+		'(sl,	'[ '(sdl, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) -> IO a) -> IO a
 createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 	(HL.Singleton . U14 $ graphicsPipelineCreateInfo sce rp lyt) nil nil
 	\(HL.Singleton (U3 gpl)) -> f gpl
@@ -653,9 +654,10 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(sdl, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])], '[WrapMeshPushConstants]) -> IO ()
+		'(sl,	'[ '(sdl, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) -> IO ()
 recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 	(U14 (graphicsPipelineCreateInfo sce rp lyt) :** HL.Nil) nil nil
 	(U3 gpls :** HL.Nil)
@@ -677,36 +679,25 @@ graphicsPipelineCreateInfo ::
 				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
 			'[WrapMeshPushConstants])
 		sr '(sb, vs', ts', larg)
-graphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Grph.CreateInfo {
+graphicsPipelineCreateInfo sce rp lyt = Vk.Ppl.Grph.CreateInfo {
 	Vk.Ppl.Grph.createInfoNext = Nothing,
-	Vk.Ppl.Grph.createInfoFlags = Vk.Ppl.CreateFlagsZero,
-	Vk.Ppl.Grph.createInfoStages = uncurry shaderStages shaderPair1,
+	Vk.Ppl.Grph.createInfoFlags = zeroBits,
+	Vk.Ppl.Grph.createInfoStages =
+		shaderStages glslVertexShaderMain glslFragmentShaderMain,
 	Vk.Ppl.Grph.createInfoVertexInputState = Just $ U3 def,
 	Vk.Ppl.Grph.createInfoInputAssemblyState = Just inputAssembly,
-	Vk.Ppl.Grph.createInfoViewportState = Just $ mkViewportState sce,
+	Vk.Ppl.Grph.createInfoViewportState = Just $ viewportState sce,
 	Vk.Ppl.Grph.createInfoRasterizationState = Just rasterizer,
 	Vk.Ppl.Grph.createInfoMultisampleState = Just multisampling,
 	Vk.Ppl.Grph.createInfoDepthStencilState = Just depthStencil,
 	Vk.Ppl.Grph.createInfoColorBlendState = Just colorBlending,
 	Vk.Ppl.Grph.createInfoDynamicState = Nothing,
-	Vk.Ppl.Grph.createInfoLayout = U3 ppllyt,
+	Vk.Ppl.Grph.createInfoLayout = U3 lyt,
 	Vk.Ppl.Grph.createInfoRenderPass = rp,
 	Vk.Ppl.Grph.createInfoSubpass = 0,
 	Vk.Ppl.Grph.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Grph.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Grph.createInfoTessellationState = Nothing }
-	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
-		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
-		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
-		Vk.Ppl.DptStnSt.createInfoDepthTestEnable = True,
-		Vk.Ppl.DptStnSt.createInfoDepthWriteEnable = True,
-		Vk.Ppl.DptStnSt.createInfoDepthCompareOp = Vk.CompareOpLess,
-		Vk.Ppl.DptStnSt.createInfoDepthBoundsTestEnable = False,
-		Vk.Ppl.DptStnSt.createInfoStencilTestEnable = False,
-		Vk.Ppl.DptStnSt.createInfoFront = def,
-		Vk.Ppl.DptStnSt.createInfoBack = def,
-		Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
-		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 
 inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
@@ -715,8 +706,8 @@ inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
 	Vk.Ppl.InpAsmbSt.createInfoTopology = Vk.PrimitiveTopologyTriangleList,
 	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
 
-mkViewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
-mkViewportState sce = def {
+viewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
+viewportState sce = def {
 	Vk.Ppl.ViewportSt.createInfoViewports = [viewport],
 	Vk.Ppl.ViewportSt.createInfoScissors = [scissor] }
 	where
@@ -736,12 +727,26 @@ rasterizer = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
 	Vk.Ppl.RstSt.createInfoPolygonMode = Vk.PolygonModeFill,
 	Vk.Ppl.RstSt.createInfoLineWidth = 1,
-	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeNone, -- Vk.CullModeBackBit,
+	Vk.Ppl.RstSt.createInfoCullMode = Vk.CullModeNone,
 	Vk.Ppl.RstSt.createInfoFrontFace = Vk.FrontFaceClockwise,
 	Vk.Ppl.RstSt.createInfoDepthBiasEnable = False,
 	Vk.Ppl.RstSt.createInfoDepthBiasConstantFactor = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
+
+depthStencil :: Vk.Ppl.DptStnSt.CreateInfo ()
+depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
+	Vk.Ppl.DptStnSt.createInfoNext = Nothing,
+	Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
+	Vk.Ppl.DptStnSt.createInfoDepthTestEnable = True,
+	Vk.Ppl.DptStnSt.createInfoDepthWriteEnable = True,
+	Vk.Ppl.DptStnSt.createInfoDepthCompareOp = Vk.CompareOpLess,
+	Vk.Ppl.DptStnSt.createInfoDepthBoundsTestEnable = False,
+	Vk.Ppl.DptStnSt.createInfoStencilTestEnable = False,
+	Vk.Ppl.DptStnSt.createInfoFront = def,
+	Vk.Ppl.DptStnSt.createInfoBack = def,
+	Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
+	Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 
 multisampling :: Vk.Ppl.MltSmplSt.CreateInfo ()
 multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
@@ -776,6 +781,14 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 	Vk.Ppl.ClrBlndAtt.stateSrcAlphaBlendFactor = Vk.BlendFactorOne,
 	Vk.Ppl.ClrBlndAtt.stateDstAlphaBlendFactor = Vk.BlendFactorZero,
 	Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
+
+createCommandPool :: Vk.Dvc.D sd ->
+	QueueFamilyIndices -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
+createCommandPool dv qfs = Vk.CmdPl.create @() dv crInfo nil nil
+	where crInfo = Vk.CmdPl.CreateInfo {
+		Vk.CmdPl.createInfoNext = Nothing,
+		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
+		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfs }
 
 createDepthResources ::
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
@@ -1038,14 +1051,6 @@ mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
 	Vk.Frmbffr.createInfoLayersNew = 1 }
 	where
 	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
-
-createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
-	(forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
-createCommandPool qfis dv = Vk.CmdPl.create @() dv crInfo nil nil
-	where crInfo = Vk.CmdPl.CreateInfo {
-		Vk.CmdPl.createInfoNext = Nothing,
-		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
-		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 createVertexBuffer :: forall sd sc vbnm a . Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
@@ -1950,11 +1955,9 @@ shaderStages vs fs = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HL.Ni
 			Vk.Shader.Module.M.createInfoFlags = def,
 			Vk.Shader.Module.M.createInfoCode = cd }
 
-shaderPair1 :: (Spv 'GlslVertexShader, Spv 'GlslFragmentShader)
-shaderPair1 = (glslVertexShaderMain1, glslFragmentShaderMain1)
+-- SHADERS
 
-glslVertexShaderMain1 :: Spv 'GlslVertexShader
-glslVertexShaderMain1 = [glslVertexShader|
+[glslVertexShader|
 
 #version 450
 
@@ -1987,8 +1990,7 @@ main()
 
 |]
 
-glslFragmentShaderMain1 :: Spv 'GlslFragmentShader
-glslFragmentShaderMain1 = [glslFragmentShader|
+[glslFragmentShader|
 
 #version 450
 
