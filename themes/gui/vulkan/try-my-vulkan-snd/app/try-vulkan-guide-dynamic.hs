@@ -41,8 +41,6 @@ import Data.Word
 import Data.Color
 import System.Environment
 
-import qualified TypeLevel.List as TpLvlLst
-
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.ByteString as BS
@@ -148,7 +146,6 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
 import qualified Codec.Wavefront.ReadOld as W
 import Tools
-import TypeLevel.Nat
 
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
@@ -263,6 +260,7 @@ run w ist g vns =
 	createVertexBuffer phd dv gq cp vns \vb ->
 	createVertexBuffer phd dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
+--	\(grphToBindedList @_ @(MkVss' MaxFramesInFlight) -> cbs) ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp ppllyt
 		gpl cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
@@ -1114,9 +1112,7 @@ createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
 createBuffer :: forall obj nm sd a . (
 	VObj.WholeSize '[obj],
 	VObj.SizeAlignment obj
---	Vk.Mem.Alignments '[
---		'(s, 'Vk.Mem.K.Buffer nm objs) ]
-	) => -- VObj.SizeAlignment obj =>
+	) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL VObj.ObjectLength '[obj] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
@@ -1148,9 +1144,7 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
 createBuffer2 :: forall obj obj2 nm sd a . (
 	VObj.WholeSize '[obj, obj2],
 	VObj.SizeAlignment obj, VObj.SizeAlignment obj2
---	Vk.Mem.Alignments '[
---		'(s, 'Vk.Mem.K.Buffer nm objs) ]
-	) => -- VObj.SizeAlignment obj =>
+	) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL VObj.ObjectLength '[obj, obj2] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
@@ -1329,30 +1323,17 @@ copyBuffer dvc gq cp src dst = do
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb vss . VssList vss =>
-		HL.PL (Vk.CmdBffr.Binded scb) (vss :: [[(Type, Vk.VtxInp.Rate)]]) -> IO a) ->
-	IO a
-createCommandBuffers dvc cp f = -- mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	($ (Proxy :: Proxy (MkVss' MaxFramesInFlight))) \(_p :: Proxy vss1) ->
---	valNat' @vss1 maxFramesInFlight \(_p :: Proxy n) ->
---	valNat' maxFramesInFlight \(_p :: Proxy n) ->
-		Vk.CmdBffr.allocateNew @() @MaxFramesInFlight dvc allcInfo
-			(f @_ @vss1 . (grphToBindedList @(HL.Dummies MaxFramesInFlight) @vss1))
-
--- mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
---	Vk.CmdBffr.allocate @() @vss1 dvc (allcInfo @vss1) (f @_ @vss1)
+		HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
+--			(vss :: [[(Type, Vk.VtxInp.Rate)]]) -> IO a) -> IO a
+createCommandBuffers dvc cp f =
+	Vk.CmdBffr.allocateNew @() @MaxFramesInFlight dvc allcInfo
+		(f @_ @(MkVss' MaxFramesInFlight))
 	where
 	allcInfo :: forall n . Vk.CmdBffr.AllocateInfoNew () scp n
 	allcInfo = Vk.CmdBffr.AllocateInfoNew {
 		Vk.CmdBffr.allocateInfoNextNew = Nothing,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
-
-valNat' :: forall vss a . Natural ->
---	(forall n . (KnownNat n, HL.FromList (HL.Dummies n), GrphToBindedList (HL.Dummies n) vss) => Proxy n -> a) ->
---	(forall n . (KnownNat n, GrphToBindedList (HL.Dummies n) vss) => Proxy n -> a) ->
-	(forall n . KnownNat n => Proxy n -> a) ->
-	a
-valNat' nat f = (\(SomeNat n) -> f n) $ someNatVal nat
 
 class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
 	vssListIndex ::
@@ -1366,12 +1347,6 @@ instance VssList vss =>
 	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
 	vssListIndex (cb :** _) 0 = cb
 	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
-
-mkVss :: Int -> (forall (vss :: [[(Type, Vk.VtxInp.Rate)]]) .
-	(TpLvlLst.Length [(Type, Vk.VtxInp.Rate)] vss, HL.FromList vss, VssList vss) =>
-	Proxy vss -> a) -> a
-mkVss 0 f = f (Proxy @'[])
-mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
 
 type family MkVss' n where
 	MkVss' 0 = '[]
@@ -1540,7 +1515,7 @@ projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
 
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers ss sfs, VssList vss,
+	RecreateFramebuffers ss sfs,
 	HL.HomoList '(s, '[
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]) slyts ) =>
@@ -1568,7 +1543,7 @@ mainLoop :: (
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HL.PL (Vk.CmdBffr.Binded scb) vss ->
+	HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight ->
 	SyncObjects siassrfssfs ->
 	HL.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
@@ -1582,9 +1557,10 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl1 cp drsrcs fbs
 	($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn
+			sc g ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs_ iasrfsifs cf fn cmms scnm cmds vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)))
 	Vk.Dvc.waitIdle dvc
+	where cbs_ = grphToBindedList @_ @(MkVss' MaxFramesInFlight) cbs
 
 runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
@@ -1682,14 +1658,10 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 			@(SceneObj)
 			dvc scnm zeroBits [
 				Just $ gpuSceneData fn, Nothing ]
---				SceneData $ gpuSceneData fn ]
---				SceneData gpuSceneDataZero ]
 		else Vk.Mem.write @"scene-buffer"
 			@(SceneObj)
 			dvc scnm zeroBits [
 				Nothing,
---				SceneData gpuSceneDataZero,
---				SceneData $ gpuSceneData fn,
 				Just $ gpuSceneData fn]
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
@@ -1899,8 +1871,6 @@ instance SizeAlignmentList GpuCameraData
 newtype View = View Cglm.Mat4 deriving (Show, Storable)
 newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
 newtype ViewProj = ViewProj Cglm.Mat4 deriving (Show, Storable)
-
--- newtype SceneData = SceneData SceneData deriving (Show, Storable)
 
 data SceneData = SceneData {
 	gpuSceneDataFogColor :: FogColor,
