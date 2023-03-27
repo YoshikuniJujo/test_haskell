@@ -14,7 +14,6 @@
 module Main where
 
 import GHC.Generics
-import GHC.TypeNats
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
@@ -260,7 +259,6 @@ run w ist g vns =
 	createVertexBuffer phd dv gq cp vns \vb ->
 	createVertexBuffer phd dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
---	\(grphToBindedList @_ @(MkVss' MaxFramesInFlight) -> cbs) ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp ppllyt
 		gpl cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
@@ -1322,12 +1320,10 @@ copyBuffer dvc gq cp src dst = do
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb vss . VssList vss =>
+	(forall scb .
 		HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
---			(vss :: [[(Type, Vk.VtxInp.Rate)]]) -> IO a) -> IO a
 createCommandBuffers dvc cp f =
-	Vk.CmdBffr.allocateNew @() @MaxFramesInFlight dvc allcInfo
-		(f @_ @(MkVss' MaxFramesInFlight))
+	Vk.CmdBffr.allocateNew @() @MaxFramesInFlight dvc allcInfo f
 	where
 	allcInfo :: forall n . Vk.CmdBffr.AllocateInfoNew () scp n
 	allcInfo = Vk.CmdBffr.AllocateInfoNew {
@@ -1335,22 +1331,15 @@ createCommandBuffers dvc cp f =
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
-class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
-	vssListIndex ::
-		HL.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
-		Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
+class CmdBufListIndex (ds :: [()]) where
+	cmdBufListIndex :: HL.LL (Vk.CmdBffr.C sc) ds -> Int -> Vk.CmdBffr.C sc
 
-instance VssList '[] where
-	vssListIndex HL.Nil _ = error "index too large"
+instance CmdBufListIndex '[] where
+	cmdBufListIndex HL.Nil _ = error "index too large"
 
-instance VssList vss =>
-	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
-	vssListIndex (cb :** _) 0 = cb
-	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
-
-type family MkVss' n where
-	MkVss' 0 = '[]
-	MkVss' n = '[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': MkVss' (n - 1)
+instance {-# OVERLAPPABLE #-} CmdBufListIndex ds => CmdBufListIndex ('() ': ds) where
+	cmdBufListIndex (cb :*. _) 0 = cb
+	cmdBufListIndex (_ :*. cbs) i = cmdBufListIndex @ds cbs (i - 1)
 
 class GrphToBindedList ds vss where
 	grphToBindedList ::
@@ -1387,8 +1376,9 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
-	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+recordCommandBuffer ::
+	forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
+	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1409,10 +1399,10 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
 	Word32 -> Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
-	Vk.CmdBffr.begin @() @() cb cbInfo $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
+	Vk.CmdBffr.begin @() @() cb_ cbInfo $
+	Vk.Cmd.beginRenderPass cb_ rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
-	drawObject om cb cmd RenderObject {
+	drawObject om cb_ cmd RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
@@ -1420,7 +1410,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 		renderObjectTransformMatrix = model } cf
 	omtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb cmd RenderObject {
+		drawObject omtri cb_ cmd RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbtri,
@@ -1454,6 +1444,8 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
 			HL.Nil }
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
+
+	cb_ = Vk.CmdBffr.toBinded cb :: Vk.CmdBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
@@ -1557,14 +1549,13 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl1 cp drsrcs fbs
 	($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn -> do
 		Glfw.pollEvents
 		runLoop w sfc phdvc qfis dvc gq pq
-			sc g ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs_ iasrfsifs cf fn cmms scnm cmds vn
+			sc g ext scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn cmms scnm cmds vn
 			(\ex -> loop ex cfs ((fn + 1) `mod` (360 * frashRate)))
 	Vk.Dvc.waitIdle dvc
-	where cbs_ = grphToBindedList @_ @(MkVss' MaxFramesInFlight) cbs
 
 runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs, VssList vss,
+	RecreateFramebuffers sis sfs,
 	HL.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
@@ -1591,7 +1582,7 @@ runLoop :: (
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HL.PL (Vk.CmdBffr.Binded scb) vss ->
+	HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight ->
 	SyncObjects siassrfssfs ->
 	Int -> Int ->
 	HL.PL MemoryGcd sbsms ->
@@ -1614,8 +1605,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt
 
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg1 slyt s sm sb nm smtri sbtri nmtri
-		scb ssos vss sbsms sscnm sscnb sp slyts . (
-	VssList vss,
+		scb ssos sbsms sscnm sscnb sp slyts . (
 	HL.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
@@ -1637,7 +1627,8 @@ drawFrame ::
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HL.PL (Vk.CmdBffr.Binded scb) vss -> SyncObjects ssos -> Int -> Int ->
+	HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight ->
+	SyncObjects ssos -> Int -> Int ->
 	HL.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
@@ -1667,7 +1658,7 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
-	Vk.CmdBffr.reset cb def
+	Vk.CmdBffr.resetNew cb zeroBits
 	HL.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
@@ -1678,7 +1669,7 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HL.Singleton $ U2 cb,
+			Vk.submitInfoCommandBuffers = HL.Singleton . U2 $ Vk.CmdBffr.toBinded cb,
 			Vk.submitInfoSignalSemaphores = HL.Singleton rfs }
 		presentInfoNew = Vk.Khr.PresentInfoNew {
 			Vk.Khr.presentInfoNextNew = Nothing,
@@ -1687,7 +1678,8 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HL.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfoNew
-	where	cb = cbs `vssListIndex` cf
+	where
+	cb = cbs `cmdBufListIndex` cf
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
