@@ -250,7 +250,7 @@ run w ist g vns =
 	createGraphicsPipeline dv ex rp lyt \gpl ->
 
 	createCommandPool dv qfs \cp ->
-	createDepthResources @dptfmt phd dv gq cp ex \dimg dimgm dimgv ->
+	createDepthResources @dptfmt phd dv gq cp ex \drs@(_, _, dimgv) ->
 	createFramebuffers dv ex rp scivs dimgv \fbs ->
 
 	createCameraBuffers phd dv dslyt maxFramesInFlight \cmlyts cmbs cmms ->
@@ -262,7 +262,7 @@ run w ist g vns =
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp lyt
-		gpl cp (dimg, dimgm, dimgv) fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
+		gpl cp drs fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
 
 pickPhysicalDevice ::
 	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
@@ -790,12 +790,15 @@ createCommandPool dv qfs = Vk.CmdPl.create @() dv crInfo nil nil
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfs }
 
+type DepthResources sb sm nm fmt sdiv = (
+	Vk.Img.BindedNew sb sm nm fmt,
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)],
+	Vk.ImgVw.INew fmt nm sdiv )
+
 createDepthResources :: forall fmt sd sc nm a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	Vk.C.Extent2d -> (forall si sm siv .
-		Vk.Img.BindedNew si sm nm fmt ->
-		Vk.Mem.M sm '[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
-		Vk.ImgVw.INew fmt nm siv -> IO a) -> IO a
+	Vk.C.Extent2d ->
+	(forall si sm siv . DepthResources si sm nm fmt siv -> IO a) -> IO a
 createDepthResources phd dv gq cp ext f =
 	createImage @_ @fmt phd dv ext
 		Vk.Img.TilingOptimal
@@ -804,31 +807,21 @@ createDepthResources phd dv gq cp ext f =
 	createImageView @fmt dv dimg Vk.Img.AspectDepthBit \dimgv ->
 	transitionImageLayout dv gq cp dimg Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal >>
-	f dimg dimgm dimgv
+	f (dimg, dimgm, dimgv)
 
 recreateDepthResources :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd ->
-	Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	Vk.C.Extent2d ->
-	Vk.Img.BindedNew sb sm nm fmt ->
-	Vk.Mem.M
-		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
+	Vk.C.Extent2d -> Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] ->
 	Vk.ImgVw.INew fmt nm sdiv -> IO ()
-recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
-	print ext
-	recreateImage phdvc dvc
-		(Vk.C.extent2dWidth ext) (Vk.C.extent2dHeight ext)
-		Vk.Img.TilingOptimal Vk.Img.UsageDepthStencilAttachmentBit
-		Vk.Mem.PropertyDeviceLocalBit dptImg dptImgMem
-	recreateImageView dvc dptImg Vk.Img.AspectDepthBit dptImgVw
-	transitionImageLayout dvc gq cp dptImg Vk.Img.LayoutUndefined
+recreateDepthResources phd dv gq cp ext dimg dimgm dimgv = do
+	recreateImage phd dv ext
+		Vk.Img.TilingOptimal
+		Vk.Img.UsageDepthStencilAttachmentBit
+		Vk.Mem.PropertyDeviceLocalBit dimg dimgm
+	recreateImageView dv dimg Vk.Img.AspectDepthBit dimgv
+	transitionImageLayout dv gq cp dimg Vk.Img.LayoutUndefined
 		Vk.Img.LayoutDepthStencilAttachmentOptimal
-
-type DepthResources sb sm nm fmt sdiv = (
-	Vk.Img.BindedNew sb sm nm fmt,
-	Vk.Mem.M
-		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)],
-	Vk.ImgVw.INew fmt nm sdiv )
 
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P ->
@@ -847,16 +840,19 @@ createImage pd dvc ext tlng usg prps f = Vk.Img.createNew @() @() @() dvc
 	hgt = Vk.C.extent2dHeight ext
 
 recreateImage :: Vk.T.FormatToValue fmt =>
-	Vk.Phd.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
 	Vk.Img.BindedNew sb sm nm fmt ->
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] -> IO ()
-recreateImage pd dvc wdt hgt tlng usg prps img mem = do
+recreateImage pd dvc ext tlng usg prps img mem = do
 	Vk.Img.recreateNew @() @() @() dvc
 		(imageInfo wdt hgt tlng usg) Nothing Nothing img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem
+	where
+	wdt = Vk.C.extent2dWidth ext
+	hgt = Vk.C.extent2dHeight ext
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
