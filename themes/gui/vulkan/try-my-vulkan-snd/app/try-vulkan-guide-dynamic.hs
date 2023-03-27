@@ -114,6 +114,7 @@ import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
+import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
@@ -131,7 +132,7 @@ import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
@@ -1377,9 +1378,9 @@ createSyncObjects dvc f =
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer ::
-	forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
+	forall scb sr fmt sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
 	Vk.CmdBffr.C scb ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
+	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew fmt sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1399,10 +1400,10 @@ recordCommandBuffer ::
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
 	Word32 -> Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
-	Vk.CmdBffr.begin @() @() cb_ cbInfo $
-	Vk.Cmd.beginRenderPass cb_ rpInfo Vk.Subpass.ContentsInline do
+	Vk.CmdBffr.beginNew @() @() cb cbInfo $
+	Vk.Cmd.beginRenderPassNew cb_ rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
-	drawObject om cb_ cmd RenderObject {
+	drawObject om cb cmd RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
@@ -1410,7 +1411,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 		renderObjectTransformMatrix = model } cf
 	omtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb_ cmd RenderObject {
+		drawObject omtri cb cmd RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbtri,
@@ -1429,17 +1430,17 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 	cbInfo :: Vk.CmdBffr.BeginInfo () ()
 	cbInfo = def {
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
-	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
+	rpInfo :: Vk.RndrPass.BeginInfoNew () sr fmt sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
 		'Vk.M.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = Nothing,
-		Vk.RndrPass.beginInfoRenderPass = rp,
-		Vk.RndrPass.beginInfoFramebuffer = fb,
-		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
+	rpInfo = Vk.RndrPass.BeginInfoNew {
+		Vk.RndrPass.beginInfoNextNew = Nothing,
+		Vk.RndrPass.beginInfoRenderPassNew = rp,
+		Vk.RndrPass.beginInfoFramebufferNew = fb,
+		Vk.RndrPass.beginInfoRenderAreaNew = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues =
+		Vk.RndrPass.beginInfoClearValuesNew =
 			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
 			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
 			HL.Nil }
@@ -1466,19 +1467,19 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])) ->
-	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.CmdBffr.C scb ->
 	Vk.DscSet.S sd sp '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
 	RenderObject sg sl sdlyt sm sb nm -> Word32 -> IO ()
-drawObject om cb cmd RenderObject {
+drawObject om cb0 cmd RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
-	renderObjectTransformMatrix = model } cf = do
-	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics (Vk.Ppl.Grph.gFromNew gpl)
-	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
+	renderObjectTransformMatrix = model } cf =
+	Vk.Cmd.bindPipelineNew cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
+	Vk.Cmd.bindDescriptorSetsNew (Vk.CmdBffr.gBindedToBinded cb) Vk.Ppl.BindPointGraphics lyt
 		(HL.Singleton $ U2 cmd) . HL.Singleton $
 		(HL.Nil :** (Vk.Cmd.DynamicIndex cf :** HL.Nil) :** HL.Nil)
 	movb <- readIORef om
@@ -1487,7 +1488,7 @@ drawObject om cb cmd RenderObject {
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
 				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 			writeIORef om $ Just vb
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] cb lyt $ HL.Id (Foreign.Storable.Generic.Wrap
+	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] (Vk.CmdBffr.gBindedToBinded cb) lyt $ HL.Id (Foreign.Storable.Generic.Wrap
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
@@ -1659,7 +1660,7 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
 	Vk.CmdBffr.resetNew cb zeroBits
-	HL.index fbs imgIdx \fb ->
+	HL.index fbs imgIdx \(Vk.Frmbffr.fToNew -> fb) ->
 		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
 	let	submitInfo :: Vk.SubmitInfo () '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]

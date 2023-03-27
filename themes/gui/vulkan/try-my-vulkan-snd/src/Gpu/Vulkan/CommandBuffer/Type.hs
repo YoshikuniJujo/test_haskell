@@ -25,3 +25,6 @@ toBinded = Binded . unC
 
 fromBinded :: Binded s vs -> C s
 fromBinded = C . unBinded
+
+gBindedToBinded :: GBinded s vs slsbtss -> Binded s vs
+gBindedToBinded = Binded . unGBinded
