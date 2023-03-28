@@ -1071,8 +1071,12 @@ createBuffer p dv lns usg prs f =
 		(HL.Singleton . U2 $ Vk.Mem.Buffer b) (memoryInfo mt) nil nil
 		$ f . \(HL.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
 
-class Vk.Mem.Alignments '[ '(s, 'Vk.Mem.K.Buffer nm objs)] => SizeAlignmentAll s nm (objs :: [VObj.Object])
-instance Vk.Mem.Alignments '[ '(s, 'Vk.Mem.K.Buffer nm '[obj])] => SizeAlignmentAll s nm '[obj]
+class Vk.Mem.Alignments '[ '(s, 'Vk.Mem.K.Buffer nm objs)] =>
+	SizeAlignmentAll s nm (objs :: [VObj.Object])
+
+instance Vk.Mem.Alignments '[ '(s, 'Vk.Mem.K.Buffer nm '[obj])] =>
+	SizeAlignmentAll s nm '[obj]
+
 instance {-# OVERLAPPABLE #-} (
 	VObj.SizeAlignment obj, SizeAlignmentAll s nm objs ) =>
 	SizeAlignmentAll s nm (obj ': objs)
@@ -1092,39 +1096,13 @@ memoryInfo mt = Vk.Dvc.Mem.AllocateInfo {
 	Vk.Dvc.Mem.allocateInfoNext = Nothing,
 	Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
-createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[
-			SceneObj,
-			SceneObj ] ->
-		Vk.Mem.M sm '[ '(
-			sb,
-			'Vk.Mem.K.Buffer nm '[
-				SceneObj,
-				SceneObj ] ) ] ->
-		IO a) -> IO a
-createSceneBuffer phdvc dvc = createBuffer phdvc dvc
-	(VObj.ObjectLengthDynAtom :** VObj.ObjectLengthDynAtom :** HL.Nil)
+createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
+	Vk.Bffr.Binded sb sm nm '[SceneObj] ->
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[SceneObj])] ->
+	IO a) -> IO a
+createSceneBuffer pd dv = createBuffer pd dv
+	(HL.Singleton VObj.ObjectLengthDynAtom)
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
-
-createVertexBuffer :: forall sd sc vbnm a . Vk.Phd.P ->
-	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
-	(forall sm sb .
-		Vk.Bffr.Binded sm sb vbnm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
-createVertexBuffer phdvc dvc gq cp vtcs f =
-	createBuffer phdvc dvc (HL.Singleton . VObj.ObjectLengthList $ V.length vtcs)
-		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
-		Vk.Mem.PropertyDeviceLocalBit \b _ ->
-	createBuffer phdvc dvc (HL.Singleton . VObj.ObjectLengthList $ V.length vtcs)
-		Vk.Bffr.UsageTransferSrcBit
-		(	Vk.Mem.PropertyHostVisibleBit .|.
-			Vk.Mem.PropertyHostCoherentBit )
-			\b' (bm' :: Vk.Mem.M sm '[
-				'(sb, 'Vk.Mem.K.Buffer vbnm '[VObj.List 256 Vertex ""])
-				]) -> do
-	Vk.Mem.write @vbnm @(VObj.List 256 Vertex "") dvc bm' zeroBits vtcs
-	copyBuffer dvc gq cp b' b
-	f b
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
@@ -1147,9 +1125,7 @@ createDescriptorSets :: (
 	HL.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HL.PL BindedGcd smsbs ->
 	HL.PL Vk.DscSet.Layout ss ->
-	Vk.Bffr.Binded sb sm "scene-buffer" '[
-		SceneObj,
-		SceneObj ] ->
+	Vk.Bffr.Binded sb sm "scene-buffer" '[SceneObj] ->
 	IO (HL.PL (Vk.DscSet.S sd sp) ss)
 createDescriptorSets dvc dscp ubs dscslyts scnb = do
 	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
@@ -1166,9 +1142,7 @@ class Update smsbs slbtss where
 		Vk.Dvc.D sd ->
 		HL.PL BindedGcd smsbs ->
 		HL.PL (Vk.DscSet.S sd sp) slbtss ->
-		Vk.Bffr.Binded sb sm "scene-buffer" '[
-			SceneObj,
-			SceneObj ] -> Int -> IO ()
+		Vk.Bffr.Binded sb sm "scene-buffer" '[SceneObj] -> Int -> IO ()
 
 instance Update '[] '[] where update _ HL.Nil HL.Nil _ _ = pure ()
 
@@ -1218,6 +1192,25 @@ descriptorWrite1 ub dscs tp = Vk.DscSet.Write {
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos .
 		HL.Singleton $ Vk.Dsc.BufferInfoDynAtom ub }
+
+createVertexBuffer :: forall sd sc vbnm a . Vk.Phd.P ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
+	(forall sm sb .
+		Vk.Bffr.Binded sm sb vbnm '[VObj.List 256 Vertex ""] -> IO a ) -> IO a
+createVertexBuffer phdvc dvc gq cp vtcs f =
+	createBuffer phdvc dvc (HL.Singleton . VObj.ObjectLengthList $ V.length vtcs)
+		(Vk.Bffr.UsageTransferDstBit .|. Vk.Bffr.UsageVertexBufferBit)
+		Vk.Mem.PropertyDeviceLocalBit \b _ ->
+	createBuffer phdvc dvc (HL.Singleton . VObj.ObjectLengthList $ V.length vtcs)
+		Vk.Bffr.UsageTransferSrcBit
+		(	Vk.Mem.PropertyHostVisibleBit .|.
+			Vk.Mem.PropertyHostCoherentBit )
+			\b' (bm' :: Vk.Mem.M sm '[
+				'(sb, 'Vk.Mem.K.Buffer vbnm '[VObj.List 256 Vertex ""])
+				]) -> do
+	Vk.Mem.write @vbnm @(VObj.List 256 Vertex "") dvc bm' zeroBits vtcs
+	copyBuffer dvc gq cp b' b
+	f b
 
 copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
@@ -1469,9 +1462,7 @@ mainLoop :: (
 	HL.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
-			"scene-buffer" '[
-				SceneObj,
-				SceneObj ])] ->
+			"scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmms scnm cmds vn = do
@@ -1517,9 +1508,7 @@ runLoop :: (
 	HL.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
-			"scene-buffer" '[
-				SceneObj,
-				SceneObj ])] ->
+			"scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 ->
 	(Vk.C.Extent2d -> IO ()) -> IO ()
@@ -1561,9 +1550,7 @@ drawFrame ::
 	HL.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
 		'[ '(sscnb, 'Vk.Mem.K.Buffer
-			"scene-buffer" '[
-				SceneObj,
-				SceneObj ])] ->
+			"scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.S sd sp) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn cmms scnm cmds vn =
