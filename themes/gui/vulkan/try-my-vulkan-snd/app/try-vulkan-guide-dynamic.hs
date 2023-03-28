@@ -58,7 +58,7 @@ import Shaderc.TH
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
 
-import qualified Gpu.Vulkan as Vk
+import qualified Gpu.VulkanNew as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Middle as Vk.C
@@ -130,7 +130,7 @@ import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.QueueNew as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
@@ -905,8 +905,7 @@ imageReallocateBind dv i mi m = Vk.Mem.reallocateBind @() dv
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
-	IO ()
+	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
 	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
@@ -967,23 +966,24 @@ beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CmdBffr.Binded s '[] -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
-	Vk.CmdBffr.allocate
-		@() dvc allocInfo \(HL.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+	Vk.CmdBffr.allocateNew
+		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HL.Nil) -> do
+		let	cb_ = Vk.CmdBffr.toBinded cb
+			submitInfo :: Vk.SubmitInfo () '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
-				Vk.submitInfoCommandBuffers = HL.Singleton $ U2 cb,
+				Vk.submitInfoCommandBuffers = HL.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HL.Nil }
-		Vk.CmdBffr.begin @() @() cb beginInfo (cmd cb) <* do
+		Vk.CmdBffr.begin @() @() cb_ beginInfo (cmd cb_) <* do
 			Vk.Queue.submit gq (HL.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo () sc '[ '[]]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc 1
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = Nothing,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1268,24 +1268,24 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
-	Vk.CmdBffr.allocate
-		@() dvc allocInfo \(HL.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+	Vk.CmdBffr.allocateNew
+		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HL.Nil) -> do
+		let	submitInfo :: Vk.SubmitInfo () '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
-				Vk.submitInfoCommandBuffers = HL.Singleton $ U2 cb,
+				Vk.submitInfoCommandBuffers = HL.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HL.Nil }
-		Vk.CmdBffr.begin @() @() cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 Vertex ""]] cb src dst
+		Vk.CmdBffr.begin @() @() (Vk.CmdBffr.toBinded cb) beginInfo do
+			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 Vertex ""]] (Vk.CmdBffr.toBinded cb) src dst
 		Vk.Queue.submit gq (HL.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo () sc '[ '[]]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc 1
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = Nothing,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1634,15 +1634,13 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 	Vk.CmdBffr.resetNew cb zeroBits
 	HL.index fbs imgIdx \(Vk.Frmbffr.fToNew -> fb) ->
 		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
-	let	submitInfo :: Vk.SubmitInfo () '[sias]
-			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
-			'[srfs]
+	let	submitInfo :: Vk.SubmitInfo () '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = Nothing,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HL.Singleton . U2 $ Vk.CmdBffr.toBinded cb,
+			Vk.submitInfoCommandBuffers = HL.Singleton cb,
 			Vk.submitInfoSignalSemaphores = HL.Singleton rfs }
 		presentInfoNew = Vk.Khr.PresentInfoNew {
 			Vk.Khr.presentInfoNextNew = Nothing,
