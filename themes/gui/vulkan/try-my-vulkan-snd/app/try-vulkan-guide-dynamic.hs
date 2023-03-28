@@ -955,18 +955,11 @@ transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
-beginSingleTimeCommands dvc gq cp cmd = do
-	Vk.CmdBffr.allocateNew
-		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HL.Nil) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[s] '[]
-			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
-				Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
-				Vk.submitInfoCommandBuffers = HL.Singleton cb,
-				Vk.submitInfoSignalSemaphores = HL.Nil }
-		Vk.CmdBffr.beginNew @() @() cb beginInfo (cmd cb) <* do
-			Vk.Queue.submit gq (HL.Singleton $ U4 submitInfo) Nothing
-			Vk.Queue.waitIdle gq
+beginSingleTimeCommands dv gq cp cmds =
+	Vk.CmdBffr.allocateNew @() dv allocInfo \(cb :*. HL.Nil) ->
+	Vk.CmdBffr.beginNew @() @() cb beginInfo (cmds cb) <* do
+	Vk.Queue.submit gq (HL.Singleton . U4 $ submitInfo cb) Nothing
+	Vk.Queue.waitIdle gq
 	where
 	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc 1
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
@@ -977,6 +970,12 @@ beginSingleTimeCommands dvc gq cp cmd = do
 		Vk.CmdBffr.beginInfoNext = Nothing,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
+	submitInfo :: forall s . Vk.CmdBffr.C s -> Vk.SubmitInfo () '[] '[s] '[]
+	submitInfo cb = Vk.SubmitInfo {
+		Vk.submitInfoNext = Nothing,
+		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
+		Vk.submitInfoCommandBuffers = HL.Singleton cb,
+		Vk.submitInfoSignalSemaphores = HL.Nil }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.RndrPass.R sr -> HL.PL (Vk.ImgVw.INew fmt nm) sis ->
