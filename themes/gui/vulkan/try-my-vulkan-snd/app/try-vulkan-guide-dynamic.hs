@@ -1027,7 +1027,8 @@ createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 		'Vk.DscSetLyt.Buffer '[SceneObj] ] -> Int ->
 	(forall slyts sbsms . (
 		Vk.DscSet.SListFromMiddle slyts,
-		HL.FromList slyts, Update sbsms slyts,
+		HL.FromList slyts,
+		Update sbsms slyts,
 		HL.HomoList '(sdsc, '[
 			'Vk.DscSetLyt.Buffer '[CameraObj],
 			'Vk.DscSetLyt.Buffer '[SceneObj] ]) slyts ) =>
@@ -1124,8 +1125,8 @@ createDescriptorPool dv = Vk.DscPl.create @() dv poolInfo nil nil
 createDescriptorSets :: (
 	Vk.DscSet.SListFromMiddle ss,
 	HL.FromList ss, Update smsbs ss ) =>
-	Vk.Dvc.D sd -> Vk.DscPl.P sp -> HL.PL BindedGcd smsbs ->
-	HL.PL Vk.DscSet.Layout ss ->
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	HL.PL BindedGcd smsbs -> HL.PL Vk.DscSet.Layout ss ->
 	Vk.Bffr.Binded sb sm "scene-buffer" '[SceneObj] ->
 	IO (HL.PL (Vk.DscSet.S sd sp) ss)
 createDescriptorSets dvc dscp ubs dscslyts scnb = do
@@ -1149,7 +1150,6 @@ instance Update '[] '[] where update _ HL.Nil HL.Nil _ _ = pure ()
 
 instance (
 	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[CameraObj],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[SceneObj],
 	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[SceneObj],
 	Update ubs dscss
 	) =>
