@@ -139,7 +139,7 @@ import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Descriptor as Vk.Dsc
-import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
+import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPl
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 
@@ -256,14 +256,15 @@ run w ist g vns =
 
 	createCameraBuffers phd dv dslyt maxFramesInFlight \cmlyts cmbs cmms ->
 	createSceneBuffer phd dv \scnb scnm ->
-	createDescriptorPool dv \cmdp ->
-	createDescriptorSets dv cmdp cmbs cmlyts scnb >>= \cmds ->
+	createDescriptorPool dv \dp ->
+	createDescriptorSets dv dp cmbs cmlyts scnb >>= \dss ->
 	createVertexBuffer phd dv gq cp vns \vb ->
 	createVertexBuffer phd dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
+
 	mainLoop g w sfc phd qfs dv gq pq sc ex scivs rp lyt
-		gpl cp drs fbs vb vbtri cbs sos cmms scnm cmds (fromIntegral $ V.length vns)
+		gpl cp drs fbs vb vbtri cbs sos cmms scnm dss (fromIntegral $ V.length vns)
 
 pickPhysicalDevice ::
 	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
@@ -1105,25 +1106,25 @@ createSceneBuffer pd dv = createBuffer pd dv
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createDescriptorPool ::
-	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
-	where
-	poolInfo = Vk.DscPool.CreateInfo {
-		Vk.DscPool.createInfoNext = Nothing,
-		Vk.DscPool.createInfoFlags = zeroBits,
-		Vk.DscPool.createInfoMaxSets = 10,
-		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
-	poolSize0 = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBuffer,
-		Vk.DscPool.sizeDescriptorCount = 10 }
-	poolSize1 = Vk.DscPool.Size {
-		Vk.DscPool.sizeType = Vk.Dsc.TypeUniformBufferDynamic,
-		Vk.DscPool.sizeDescriptorCount = 10 }
+	Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
+createDescriptorPool dv = Vk.DscPl.create @() dv poolInfo nil nil
+	where poolInfo = Vk.DscPl.CreateInfo {
+		Vk.DscPl.createInfoNext = Nothing,
+		Vk.DscPl.createInfoFlags = zeroBits,
+		Vk.DscPl.createInfoMaxSets = 10,
+		Vk.DscPl.createInfoPoolSizes = [
+			Vk.DscPl.Size {
+				Vk.DscPl.sizeType = Vk.Dsc.TypeUniformBuffer,
+				Vk.DscPl.sizeDescriptorCount = 10 },
+			Vk.DscPl.Size {
+				Vk.DscPl.sizeType =
+					Vk.Dsc.TypeUniformBufferDynamic,
+				Vk.DscPl.sizeDescriptorCount = 10 } ] }
 
 createDescriptorSets :: (
 	Vk.DscSet.SListFromMiddle ss,
 	HL.FromList ss, Update smsbs ss ) =>
-	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HL.PL BindedGcd smsbs ->
+	Vk.Dvc.D sd -> Vk.DscPl.P sp -> HL.PL BindedGcd smsbs ->
 	HL.PL Vk.DscSet.Layout ss ->
 	Vk.Bffr.Binded sb sm "scene-buffer" '[SceneObj] ->
 	IO (HL.PL (Vk.DscSet.S sd sp) ss)
