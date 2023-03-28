@@ -315,11 +315,11 @@ pipelineBarrier :: (
 	WithPokedHeteroToListCpsM (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
-	CommandBuffer.Binded sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	CommandBuffer.C sc -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags -> HeteroParList.PL Memory.M.Barrier ns ->
 	HeteroParList.PL (U5 Buffer.MemoryBarrier) nsmsbnmobjs ->
 	HeteroParList.PL (U5 Image.MemoryBarrier) nsismnmfmts -> IO ()
-pipelineBarrier (CommandBuffer.Binded cb) ssm dsm dfs mbs bmbs imbs =
+pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)

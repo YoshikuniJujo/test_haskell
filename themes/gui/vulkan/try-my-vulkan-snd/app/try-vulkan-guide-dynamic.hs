@@ -74,8 +74,8 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
-import qualified Gpu.Vulkan.QueueFamily as Vk.QueueFamily
-import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QueueFamily
+import qualified Gpu.Vulkan.QueueFamily as Vk.QFmly
+import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFmly
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
@@ -296,16 +296,15 @@ findQueueFamilies dv sfc = Vk.Phd.getQueueFamilyProperties dv >>= \qfs ->
 	pure QueueFamilyIndicesMaybe {
 		graphicsFamilyMaybe = (`findBySnd` qfs)
 			$ checkBits Vk.Queue.GraphicsBit
-				. Vk.QueueFamily.propertiesQueueFlags,
+				. Vk.QFmly.propertiesQueueFlags,
 		presentFamilyMaybe = pfi }
 
 data QueueFamilyIndices = QueueFamilyIndices {
-	graphicsFamily :: Vk.QueueFamily.Index,
-	presentFamily :: Vk.QueueFamily.Index }
+	graphicsFamily :: Vk.QFmly.Index, presentFamily :: Vk.QFmly.Index }
 
 data QueueFamilyIndicesMaybe = QueueFamilyIndicesMaybe {
-	graphicsFamilyMaybe :: Maybe Vk.QueueFamily.Index,
-	presentFamilyMaybe :: Maybe Vk.QueueFamily.Index }
+	graphicsFamilyMaybe :: Maybe Vk.QFmly.Index,
+	presentFamilyMaybe :: Maybe Vk.QFmly.Index }
 
 completeQueueFamilies :: QueueFamilyIndicesMaybe -> Maybe QueueFamilyIndices
 completeQueueFamilies = \case
@@ -826,8 +825,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
 		Vk.Img.BindedNew si sm nm fmt ->
-		Vk.Mem.M sm '[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
-		IO a) -> IO a
+		Vk.Mem.M sm '[ '(si, 'Vk.Mem.K.Image nm fmt) ] -> IO a) -> IO a
 createImage pd dv ex tlng usg prs f =
 	Vk.Img.createNew @() @() @() dv (imageInfo ex tlng usg) nil nil \i ->
 	imageMemoryInfo pd dv prs i >>= \ii -> imageAllocateBind dv i ii f
@@ -906,36 +904,38 @@ imageReallocateBind dv i mi m = Vk.Mem.reallocateBind @() dv
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
-transitionImageLayout dvc gq cp img olyt nlyt =
-	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
-		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = Nothing,
-			Vk.Img.memoryBarrierOldLayout = olyt,
-			Vk.Img.memoryBarrierNewLayout = nlyt,
-			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
-			Vk.Img.memoryBarrierDstQueueFamilyIndex =
-				Vk.QueueFamily.Ignored,
-			Vk.Img.memoryBarrierImage = img,
-			Vk.Img.memoryBarrierSubresourceRange = srr,
-			Vk.Img.memoryBarrierSrcAccessMask = sam,
-			Vk.Img.memoryBarrierDstAccessMask = dam }
-		srr = Vk.Img.SubresourceRange {
-			Vk.Img.subresourceRangeAspectMask = asps,
-			Vk.Img.subresourceRangeBaseMipLevel = 0,
-			Vk.Img.subresourceRangeLevelCount = 1,
-			Vk.Img.subresourceRangeBaseArrayLayer = 0,
-			Vk.Img.subresourceRangeLayerCount = 1 }
+transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 	Vk.Cmd.pipelineBarrier cb
 		sstg dstg zeroBits HL.Nil HL.Nil (HL.Singleton $ U5 barrier)
 	where
-	asps = case (nlyt, hasStencilComponentType @fmt) of
-		(Vk.Img.LayoutDepthStencilAttachmentOptimal, hsst) ->
+	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier = Vk.Img.MemoryBarrier {
+		Vk.Img.memoryBarrierNext = Nothing,
+		Vk.Img.memoryBarrierOldLayout = ol,
+		Vk.Img.memoryBarrierNewLayout = nl,
+		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFmly.Ignored,
+		Vk.Img.memoryBarrierDstQueueFamilyIndex = Vk.QFmly.Ignored,
+		Vk.Img.memoryBarrierImage = i,
+		Vk.Img.memoryBarrierSubresourceRange = srr,
+		Vk.Img.memoryBarrierSrcAccessMask = sam,
+		Vk.Img.memoryBarrierDstAccessMask = dam }
+	srr = Vk.Img.SubresourceRange {
+		Vk.Img.subresourceRangeAspectMask = asps,
+		Vk.Img.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.subresourceRangeLevelCount = 1,
+		Vk.Img.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.subresourceRangeLayerCount = 1 }
+	asps = case nl of
+		Vk.Img.LayoutDepthStencilAttachmentOptimal ->
 			Vk.Img.AspectDepthBit .|.
-			bool zeroBits Vk.Img.AspectStencilBit hsst
+			case Vk.T.formatToValue @fmt of
+				Vk.FormatD32SfloatS8Uint ->
+					Vk.Img.AspectStencilBit
+				Vk.FormatD24UnormS8Uint ->
+					Vk.Img.AspectStencilBit
+				_ -> zeroBits
 		_ -> Vk.Img.AspectColorBit
-	(sam, dam, sstg, dstg) = case (olyt, nlyt) of
+	(sam, dam, sstg, dstg) = case (ol, nl) of
 		(Vk.Img.LayoutUndefined, Vk.Img.LayoutTransferDstOptimal) -> (
 			zeroBits, Vk.AccessTransferWriteBit,
 			Vk.Ppl.StageTopOfPipeBit, Vk.Ppl.StageTransferBit )
@@ -952,30 +952,19 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 			Vk.Ppl.StageEarlyFragmentTestsBit )
 		_ -> error "unsupported layout transition!"
 
-hasStencilComponentType ::
-	forall (fmt :: Vk.T.Format) . Vk.T.FormatToValue fmt => Bool
-hasStencilComponentType = hasStencilComponent (Vk.T.formatToValue @fmt)
-
-hasStencilComponent :: Vk.Format -> Bool
-hasStencilComponent = \case
-	Vk.FormatD32SfloatS8Uint -> True
-	Vk.FormatD24UnormS8Uint -> True
-	_ -> False
-
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	(forall s . Vk.CmdBffr.Binded s '[] -> IO a) -> IO a
+	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocateNew
 		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HL.Nil) -> do
-		let	cb_ = Vk.CmdBffr.toBinded cb
-			submitInfo :: Vk.SubmitInfo () '[] '[s] '[]
+		let	submitInfo :: Vk.SubmitInfo () '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
 				Vk.submitInfoCommandBuffers = HL.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HL.Nil }
-		Vk.CmdBffr.begin @() @() cb_ beginInfo (cmd cb_) <* do
+		Vk.CmdBffr.beginNew @() @() cb beginInfo (cmd cb) <* do
 			Vk.Queue.submit gq (HL.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
