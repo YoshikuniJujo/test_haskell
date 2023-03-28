@@ -1139,6 +1139,28 @@ createDescriptorSets dvc dscp ubs dscslyts scnb = do
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
+{-
+createDescriptorSets' :: (
+	Vk.DscSet.SListFromMiddle ss,
+	HL.FromList ss, Update smsbs ss ) =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	HL.PL BindedGcd smsbs ->
+	Vk.DscSetLyt.L sdsc '[
+		'Vk.DscSetLyt.Buffer '[CameraObj],
+		'Vk.DscSetLyt.Buffer '[SceneObj] ] ->
+	Vk.Bffr.Binded sb sm "scene-buffer" '[SceneObj] ->
+	IO (HL.PL (Vk.DscSet.S sd sp) ss)
+createDescriptorSets' dvc dscp ubs dscslyt scnb = do
+	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
+	update dvc ubs dscss scnb 0
+	pure dscss
+	where
+	allocInfo = Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoDescriptorPool = dscp,
+		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
+-}
+
 class Update smsbs slbtss where
 	update ::
 		Vk.Dvc.D sd ->
