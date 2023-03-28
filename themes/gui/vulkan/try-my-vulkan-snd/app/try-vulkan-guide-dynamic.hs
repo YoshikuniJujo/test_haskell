@@ -241,16 +241,16 @@ run w ist g vns =
 	createSwapchain w sfc phd qfs dv \(sc :: Vk.Khr.Swpch.SNew ss fmt) ex ->
 	Vk.Khr.Swpch.getImagesNew dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
-	findDepthFormat phd >>= \dptfmt ->
-	Vk.T.formatToType dptfmt \(_ :: Proxy dptfmt) ->
-	createRenderPass @fmt @dptfmt dv \rp ->
+	findDepthFormat phd >>= \dfmt ->
+	Vk.T.formatToType dfmt \(_ :: Proxy dfmt) ->
+	createRenderPass @fmt @dfmt dv \rp ->
 
 	createDescriptorSetLayout dv \dslyt ->
 	createPipelineLayout dv dslyt \lyt ->
 	createGraphicsPipeline dv ex rp lyt \gpl ->
 
 	createCommandPool dv qfs \cp ->
-	createDepthResources @dptfmt phd dv gq cp ex \drs@(_, _, dimgv) ->
+	createDepthResources @dfmt phd dv gq cp ex \drs@(_, _, dimgv) ->
 	createFramebuffers dv ex rp scivs dimgv \fbs ->
 
 	createCameraBuffers phd dv dslyt maxFramesInFlight \cmlyts cmbs cmms ->
@@ -508,10 +508,10 @@ findSupportedFormat phd fs tlng fffs = do
 	where orError = maybe (error "failed to find supported format!") fst
 
 createRenderPass ::
-	forall (scifmt :: Vk.T.Format) (dptfmt :: Vk.T.Format) sd a . (
-	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dptfmt ) =>
+	forall (scifmt :: Vk.T.Format) (dfmt :: Vk.T.Format) sd a . (
+	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dfmt ) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dv f = Vk.RndrPass.createNew @'[scifmt, dptfmt] @()
+createRenderPass dv f = Vk.RndrPass.createNew @'[scifmt, dfmt] @()
 	dv renderPassInfo nil nil f where
 	renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
 		Vk.RndrPass.M.createInfoNextNew = Nothing,
@@ -530,7 +530,7 @@ createRenderPass dv f = Vk.RndrPass.createNew @'[scifmt, dptfmt] @()
 		Vk.Att.descriptionStencilStoreOpNew = Vk.Att.StoreOpDontCare,
 		Vk.Att.descriptionInitialLayoutNew = Vk.Img.LayoutUndefined,
 		Vk.Att.descriptionFinalLayoutNew = Vk.Img.LayoutPresentSrcKhr }
-	depthAttachment :: Vk.Att.DescriptionNew dptfmt
+	depthAttachment :: Vk.Att.DescriptionNew dfmt
 	depthAttachment = Vk.Att.DescriptionNew {
 		Vk.Att.descriptionFlagsNew = zeroBits,
 		Vk.Att.descriptionSamplesNew = Vk.Sample.Count1Bit,
@@ -979,44 +979,45 @@ beginSingleTimeCommands dv gq cp cmds =
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 	Vk.RndrPass.R sr -> HL.PL (Vk.ImgVw.INew fmt nm) sis ->
-	Vk.ImgVw.INew dptfmt dptnm siv ->
+	Vk.ImgVw.INew dfmt dnm siv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HL.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HL.Nil _ f = f HL.Nil
-createFramebuffers dvc sce rp (iv :** ivs) dptiv f =
-	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv dptiv) nil nil \fb ->
-	createFramebuffers dvc sce rp ivs dptiv \fbs -> f (fb :** fbs)
+createFramebuffers dv sce rp (iv :** ivs) dptiv f =
+	Vk.Frmbffr.createNew dv (framebufferInfo sce rp iv dptiv) nil nil \fb ->
+	createFramebuffers dv sce rp ivs dptiv \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		Vk.RndrPass.R sr -> HL.PL (Vk.ImgVw.INew scfmt nm) sis ->
-		Vk.ImgVw.INew dptfmt dptnm sdiv ->
-		HL.PL Vk.Frmbffr.F sfs -> IO ()
+		Vk.ImgVw.INew dfmt dnm sdiv -> HL.PL Vk.Frmbffr.F sfs ->
+		IO ()
 
 instance RecreateFramebuffers '[] '[] where
-	recreateFramebuffers _dvc _sce _rp HL.Nil _ HL.Nil = pure ()
+	recreateFramebuffers _ _ _ HL.Nil _ HL.Nil = pure ()
 
 instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
-	recreateFramebuffers dvc sce rp (sciv :** scivs) dptiv (fb :** fbs) =
-		Vk.Frmbffr.recreateNew dvc
-			(mkFramebufferCreateInfo sce rp sciv dptiv) nil nil fb >>
-		recreateFramebuffers dvc sce rp scivs dptiv fbs
+	recreateFramebuffers dv sce rp (sciv :** scivs) dptiv (fb :** fbs) =
+		Vk.Frmbffr.recreateNew dv
+			(framebufferInfo sce rp sciv dptiv) nil nil fb >>
+		recreateFramebuffers dv sce rp scivs dptiv fbs
 
-mkFramebufferCreateInfo ::
+framebufferInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
-	Vk.ImgVw.INew dptfmt dptnm sdiv ->
-	Vk.Frmbffr.CreateInfoNew () sr
-		'[ '(fmt, nm, si), '(dptfmt, dptnm, sdiv)]
-mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
-	Vk.Frmbffr.createInfoNextNew = Nothing,
-	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
-	Vk.Frmbffr.createInfoRenderPassNew = rp,
-	Vk.Frmbffr.createInfoAttachmentsNew = U3 attch :** U3 dpt :** HL.Nil,
-	Vk.Frmbffr.createInfoWidthNew = w, Vk.Frmbffr.createInfoHeightNew = h,
-	Vk.Frmbffr.createInfoLayersNew = 1 }
-	where
-	Vk.C.Extent2d { Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } = sce
+	Vk.ImgVw.INew dfmt dnm sdiv ->
+	Vk.Frmbffr.CreateInfoNew () sr '[ '(fmt, nm, si), '(dfmt, dnm, sdiv)]
+framebufferInfo Vk.C.Extent2d {
+	Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } rp attch dpt =
+	Vk.Frmbffr.CreateInfoNew {
+		Vk.Frmbffr.createInfoNextNew = Nothing,
+		Vk.Frmbffr.createInfoFlagsNew = zeroBits,
+		Vk.Frmbffr.createInfoRenderPassNew = rp,
+		Vk.Frmbffr.createInfoAttachmentsNew =
+			U3 attch :** U3 dpt :** HL.Nil,
+		Vk.Frmbffr.createInfoWidthNew = w,
+		Vk.Frmbffr.createInfoHeightNew = h,
+		Vk.Frmbffr.createInfoLayersNew = 1 }
 
 createVertexBuffer :: forall sd sc vbnm a . Vk.Phd.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc -> V.Vector Vertex ->
