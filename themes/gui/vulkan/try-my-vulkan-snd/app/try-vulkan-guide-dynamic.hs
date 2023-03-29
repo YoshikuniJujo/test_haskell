@@ -1235,8 +1235,8 @@ step w frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
 			cmms scnm dss vb vbtri cbs sos vnsln ffn fn
 	(Glfw.windowShouldClose w >>=) . flip bool (pure ()) $
 		(checkFlag frszd >>=) . bool (loop ex) $
-		loop =<< recreateSwapchainEtc w sfc pd qfis dv gq sc scivs rp
-			lyt gpl cp drs fbs
+		loop =<< recreateAll
+			w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs
 
 catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
@@ -1244,20 +1244,61 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(s, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg1
+	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(s, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> (Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
-catchAndRecreate win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs loop act =
+catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop act =
 	catchJust
-	(\case	Vk.ErrorOutOfDateKhr -> Just ()
-		Vk.SuboptimalKhr -> Just ()
+	(\case	Vk.ErrorOutOfDateKhr -> Just (); Vk.SuboptimalKhr -> Just ()
 		_ -> Nothing)
 	act
-	\_ -> loop =<< recreateSwapchainEtc
-		win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drsrcs fbs
+	\() -> loop =<< recreateAll
+		w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs
+
+recreateAll :: (
+	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers sis sfs ) =>
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
+	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
+	Vk.Queue.Q ->
+	Vk.Khr.Swpch.SNew ssc scfmt ->
+	HL.PL (Vk.ImgVw.INew scfmt nm) sis ->
+	Vk.RndrPass.R sr ->
+	Vk.Ppl.Lyt.L sl
+		'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
+		'[WMeshPushConstants] ->
+	Vk.Ppl.Grph.GNew sg1
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(s, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WMeshPushConstants]) ->
+	Vk.CmdPl.C scp ->
+	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
+	HL.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
+recreateAll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drs@(_, _, divw) fbs = do
+	waitFramebufferSize win
+	Vk.Dvc.waitIdle dvc
+
+	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
+	ext <$ do
+		Vk.Khr.Swpch.getImagesNew dvc sc >>= \imgs ->
+			recreateImageViews dvc imgs scivs
+		recreateDepthResources phdvc dvc gq cp ext drs
+		recreateGraphicsPipeline dvc ext rp ppllyt gpl1
+		recreateFramebuffers dvc ext rp scivs divw fbs
+
+waitFramebufferSize :: Glfw.Window -> IO ()
+waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
+		Glfw.waitEvents *> Glfw.getFramebufferSize win
+	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg1 slyt s sm sb nm smtri sbtri nmtri
@@ -1449,48 +1490,6 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],
 	renderObjectMeshSize :: Word32,
 	renderObjectTransformMatrix :: Cglm.Mat4 }
-
-recreateSwapchainEtc :: (
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs ) =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Queue.Q ->
-	Vk.Khr.Swpch.SNew ssc scfmt ->
-	HL.PL (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr ->
-	Vk.Ppl.Lyt.L sl
-		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg1
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])],
-			'[WMeshPushConstants]) ->
-	Vk.CmdPl.C scp ->
-	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
-	HL.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
-recreateSwapchainEtc win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drs@(_, _, divw) fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
-
-	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImagesNew dvc sc >>= \imgs ->
-			recreateImageViews dvc imgs scivs
-		recreateDepthResources phdvc dvc gq cp ext drs
-		recreateGraphicsPipeline dvc ext rp ppllyt gpl1
-		recreateFramebuffers dvc ext rp scivs divw fbs
-
-waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
-	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
-	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 data Vertex = Vertex {
 	vertexPos :: Position,
