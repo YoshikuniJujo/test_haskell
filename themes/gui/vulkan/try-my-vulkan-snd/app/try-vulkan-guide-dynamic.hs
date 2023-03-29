@@ -117,9 +117,9 @@ import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
+import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
@@ -956,23 +956,23 @@ transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
+	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dv gq cp cmds =
-	Vk.CmdBffr.allocateNew @() dv allocInfo \(cb :*. HL.Nil) ->
-	Vk.CmdBffr.beginNew @() @() cb beginInfo (cmds cb) <* do
+	Vk.CBffr.allocateNew @() dv allocInfo \(cb :*. HL.Nil) ->
+	Vk.CBffr.beginNew @() @() cb beginInfo (cmds cb) <* do
 	Vk.Queue.submit gq (HL.Singleton . U4 $ submitInfo cb) Nothing
 	Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc 1
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
-	beginInfo = Vk.CmdBffr.M.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = Nothing,
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
-		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
-	submitInfo :: forall s . Vk.CmdBffr.C s -> Vk.SubmitInfo () '[] '[s] '[]
+	allocInfo :: Vk.CBffr.AllocateInfoNew () sc 1
+	allocInfo = Vk.CBffr.AllocateInfoNew {
+		Vk.CBffr.allocateInfoNextNew = Nothing,
+		Vk.CBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
+	beginInfo = Vk.CBffr.M.BeginInfo {
+		Vk.CBffr.beginInfoNext = Nothing,
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
+		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
+	submitInfo :: forall s . Vk.CBffr.C s -> Vk.SubmitInfo () '[] '[s] '[]
 	submitInfo cb = Vk.SubmitInfo {
 		Vk.submitInfoNext = Nothing,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
@@ -1194,48 +1194,14 @@ createVertexBuffer pd dv gq cp vs f =
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb .
-		HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
-createCommandBuffers dvc cp f =
-	Vk.CmdBffr.allocateNew @() @MaxFramesInFlight dvc allcInfo f
+	(forall scb . HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
+createCommandBuffers dv cp f = Vk.CBffr.allocateNew dv allcInfo f
 	where
-	allcInfo :: forall n . Vk.CmdBffr.AllocateInfoNew () scp n
-	allcInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
-
-class CmdBufListIndex (ds :: [()]) where
-	cmdBufListIndex :: HL.LL (Vk.CmdBffr.C sc) ds -> Int -> Vk.CmdBffr.C sc
-
-instance CmdBufListIndex '[] where
-	cmdBufListIndex HL.Nil _ = error "index too large"
-
-instance {-# OVERLAPPABLE #-} CmdBufListIndex ds => CmdBufListIndex ('() ': ds) where
-	cmdBufListIndex (cb :*. _) 0 = cb
-	cmdBufListIndex (_ :*. cbs) i = cmdBufListIndex @ds cbs (i - 1)
-
-class GrphToBindedList ds vss where
-	grphToBindedList ::
-		HL.LL (Vk.CmdBffr.C s) ds -> HL.PL (Vk.CmdBffr.Binded s) vss
-
-instance GrphToBindedList '[] '[] where
-	grphToBindedList HL.Nil = HL.Nil
-
-instance GrphToBindedList ds vss =>
-	GrphToBindedList ('() ': ds) (vs ': vss) where
-	grphToBindedList (c :*. cs) = Vk.CmdBffr.toBinded c :** grphToBindedList cs
-
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
-addTypeToProxy Proxy = Proxy
-
-data SyncObjects (ssos :: ([Type], [Type], [Type])) where
-	SyncObjects :: {
-		imageAvailableSemaphores :: HL.PL Vk.Semaphore.S siass,
-		renderFinishedSemaphores :: HL.PL Vk.Semaphore.S srfss,
-		inFlightFences :: HL.PL Vk.Fence.F sfss } ->
-		SyncObjects '(siass, srfss, sfss)
+	allcInfo :: Vk.CBffr.AllocateInfoNew () scp MaxFramesInFlight
+	allcInfo = Vk.CBffr.AllocateInfoNew {
+		Vk.CBffr.allocateInfoNextNew = Nothing,
+		Vk.CBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
@@ -1250,9 +1216,16 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
+data SyncObjects (ssos :: ([Type], [Type], [Type])) where
+	SyncObjects :: {
+		imageAvailableSemaphores :: HL.PL Vk.Semaphore.S siass,
+		renderFinishedSemaphores :: HL.PL Vk.Semaphore.S srfss,
+		inFlightFences :: HL.PL Vk.Fence.F sfss } ->
+		SyncObjects '(siass, srfss, sfss)
+
 recordCommandBuffer ::
 	forall scb sr fmt sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
-	Vk.CmdBffr.C scb ->
+	Vk.CBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew fmt sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1273,7 +1246,7 @@ recordCommandBuffer ::
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
 	Word32 -> Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
-	Vk.CmdBffr.beginNew @() @() cb cbInfo $
+	Vk.CBffr.beginNew @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPassNew cb_ rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
 	drawObject om cb cmd RenderObject {
@@ -1300,9 +1273,9 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 		Cglm.glmMat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
 	scale = Cglm.glmScale
 		Cglm.glmMat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
-	cbInfo :: Vk.CmdBffr.BeginInfo () ()
+	cbInfo :: Vk.CBffr.BeginInfo () ()
 	cbInfo = def {
-		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
 	rpInfo :: Vk.RndrPass.BeginInfoNew () sr fmt sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
 		'Vk.M.ClearTypeDepthStencil ]
@@ -1319,7 +1292,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 			HL.Nil }
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
-	cb_ = Vk.CmdBffr.toBinded cb :: Vk.CmdBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	cb_ = Vk.CBffr.toBinded cb :: Vk.CBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
@@ -1340,7 +1313,7 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
-	Vk.CmdBffr.C scb ->
+	Vk.CBffr.C scb ->
 	Vk.DscSet.S sd sp '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[CameraObj],
 		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
@@ -1352,7 +1325,7 @@ drawObject om cb0 cmd RenderObject {
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } cf =
 	Vk.Cmd.bindPipelineNew cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
-	Vk.Cmd.bindDescriptorSetsNew (Vk.CmdBffr.gBindedToBinded cb) Vk.Ppl.BindPointGraphics lyt
+	Vk.Cmd.bindDescriptorSetsNew (Vk.CBffr.gBindedToBinded cb) Vk.Ppl.BindPointGraphics lyt
 		(HL.Singleton $ U2 cmd) . HL.Singleton $
 		(HL.Nil :** (Vk.Cmd.DynamicIndex cf :** HL.Nil) :** HL.Nil)
 	movb <- readIORef om
@@ -1361,7 +1334,7 @@ drawObject om cb0 cmd RenderObject {
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
 				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 			writeIORef om $ Just vb
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] (Vk.CmdBffr.gBindedToBinded cb) lyt $ HL.Id (Foreign.Storable.Generic.Wrap
+	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] (Vk.CBffr.gBindedToBinded cb) lyt $ HL.Id (Foreign.Storable.Generic.Wrap
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
@@ -1409,7 +1382,7 @@ mainLoop :: (
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
-	HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight ->
+	HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight ->
 	SyncObjects siassrfssfs ->
 	HL.PL MemoryCamera sbsms ->
 	Vk.Mm.M sscnm
@@ -1454,7 +1427,7 @@ runLoop :: (
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
-	HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight ->
+	HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight ->
 	SyncObjects siassrfssfs ->
 	Int -> Int ->
 	HL.PL MemoryCamera sbsms ->
@@ -1497,7 +1470,7 @@ drawFrame ::
 	HL.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
-	HL.LL' (Vk.CmdBffr.C scb) MaxFramesInFlight ->
+	HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight ->
 	SyncObjects ssos -> Int -> Int ->
 	HL.PL MemoryCamera sbsms ->
 	Vk.Mm.M sscnm
@@ -1526,7 +1499,7 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
-	Vk.CmdBffr.resetNew cb zeroBits
+	Vk.CBffr.resetNew cb zeroBits
 	HL.index fbs imgIdx \(Vk.Frmbffr.fToNew -> fb) ->
 		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
 	let	submitInfo :: Vk.SubmitInfo () '[sias] '[scb] '[srfs]
@@ -1544,8 +1517,17 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HL.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfoNew
-	where
-	cb = cbs `cmdBufListIndex` cf
+	where cb = cbs `cmdBufListIndex` cf
+
+class CmdBufListIndex (ds :: [()]) where
+	cmdBufListIndex :: HL.LL (Vk.CBffr.C sc) ds -> Int -> Vk.CBffr.C sc
+
+instance CmdBufListIndex '[] where
+	cmdBufListIndex HL.Nil _ = error "index too large"
+
+instance {-# OVERLAPPABLE #-} CmdBufListIndex ds => CmdBufListIndex ('() ': ds) where
+	cmdBufListIndex (cb :*. _) 0 = cb
+	cmdBufListIndex (_ :*. cbs) i = cmdBufListIndex @ds cbs (i - 1)
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
