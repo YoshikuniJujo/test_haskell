@@ -43,3 +43,8 @@ findPlusM prd = \case
 
 findBySnd :: (b -> Bool) -> [(a, b)] -> Maybe a
 findBySnd p = (fst <$>) . find (p . snd)
+
+data Inf a = a :- Inf a deriving Show
+
+cycleI :: [a] -> Inf a
+cycleI xs = go xs where go = \case [] -> cycleI xs; y : ys -> y :- go ys
