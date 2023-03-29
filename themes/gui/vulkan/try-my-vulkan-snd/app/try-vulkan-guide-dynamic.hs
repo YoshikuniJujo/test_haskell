@@ -1258,46 +1258,31 @@ catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop act =
 	\() -> loop =<< recreateAll
 		w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs
 
-recreateAll :: (
-	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs ) =>
-	Glfw.Window -> Vk.Khr.Sfc.S ssfc ->
-	Vk.Phd.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
-	Vk.Queue.Q ->
-	Vk.Khr.Swpch.SNew ssc scfmt ->
-	HL.PL (Vk.ImgVw.INew scfmt nm) sis ->
-	Vk.RndrPass.R sr ->
-	Vk.Ppl.Lyt.L sl
-		'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg1
+recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
+	RecreateFramebuffers sis sfs) =>
+	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
+	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
+	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPass.R sr ->
+	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
+	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(s, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])],
-			'[WMeshPushConstants]) ->
-	Vk.CmdPl.C scp ->
-	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
+		'(sl, '[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
+	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
-recreateAll win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl1 cp drs@(_, _, divw) fbs = do
-	waitFramebufferSize win
-	Vk.Dvc.waitIdle dvc
-
-	ext <- recreateSwapchain win sfc phdvc qfis dvc sc
-	ext <$ do
-		Vk.Khr.Swpch.getImagesNew dvc sc >>= \imgs ->
-			recreateImageViews dvc imgs scivs
-		recreateDepthResources phdvc dvc gq cp ext drs
-		recreateGraphicsPipeline dvc ext rp ppllyt gpl1
-		recreateFramebuffers dvc ext rp scivs divw fbs
+recreateAll w sfc pd qfs dv gq sc scivs rp lyt gpl cp drs@(_, _, divw) fbs =
+	waitFramebufferSize w >> Vk.Dvc.waitIdle dv >>
+	recreateSwapchain w sfc pd qfs dv sc >>= \ex ->
+	ex <$ do
+	Vk.Khr.Swpch.getImagesNew dv sc >>= \i -> recreateImageViews dv i scivs
+	recreateDepthResources pd dv gq cp ex drs
+	recreateGraphicsPipeline dv ex rp lyt gpl
+	recreateFramebuffers dv ex rp scivs divw fbs
 
 waitFramebufferSize :: Glfw.Window -> IO ()
-waitFramebufferSize win = Glfw.getFramebufferSize win >>= \sz ->
+waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
 	when (zero sz) $ fix \loop -> (`when` loop) . zero =<<
-		Glfw.waitEvents *> Glfw.getFramebufferSize win
+		Glfw.waitEvents *> Glfw.getFramebufferSize w
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 drawFrame ::
