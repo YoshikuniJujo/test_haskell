@@ -121,8 +121,8 @@ import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
-import qualified Gpu.Vulkan.Fence as Vk.Fence
-import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
+import qualified Gpu.Vulkan.Fence as Vk.Fnc
+import qualified Gpu.Vulkan.Fence.Enum as Vk.Fnc
 import qualified Gpu.Vulkan.VertexInput as Vk.VtxInp
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
@@ -1205,152 +1205,22 @@ createCommandBuffers dv cp f = Vk.CBffr.allocateNew dv allcInfo f
 
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
-createSyncObjects dvc f =
+createSyncObjects dv f =
 	HL.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
+		(Vk.Semaphore.create @() dv def nil nil) \iass ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
+		(Vk.Semaphore.create @() dv def nil nil) \rfss ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
+		(Vk.Fnc.create @() dv inf nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
-	where
-	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
+	where inf = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
 		imageAvailableSemaphores :: HL.PL Vk.Semaphore.S siass,
 		renderFinishedSemaphores :: HL.PL Vk.Semaphore.S srfss,
-		inFlightFences :: HL.PL Vk.Fence.F sfss } ->
-		SyncObjects '(siass, srfss, sfss)
-
-recordCommandBuffer ::
-	forall scb sr fmt sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
-	Vk.CBffr.C scb ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew fmt sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Grph.GNew sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[CameraObj],
-				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
-			'[WrapMeshPushConstants]) ->
-	Vk.Ppl.Lyt.L slyt
-		'[ '(sdlyt, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-		'[WrapMeshPushConstants] ->
-	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] -> Int ->
-	Vk.DscSet.S sd sp '(sdlyt, '[
-		'Vk.DscSetLyt.Buffer '[CameraObj],
-		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
-	Word32 -> Word32 -> IO ()
-recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
-	Vk.CBffr.beginNew @() @() cb cbInfo $
-	Vk.Cmd.beginRenderPassNew cb_ rpInfo Vk.Subpass.ContentsInline do
-	om <- newIORef Nothing
-	drawObject om cb cmd RenderObject {
-		renderObjectPipeline = gpl,
-		renderObjectPipelineLayout = lyt,
-		renderObjectMesh = vb,
-		renderObjectMeshSize = vn,
-		renderObjectTransformMatrix = model } cf
-	omtri <- newIORef Nothing
-	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb cmd RenderObject {
-			renderObjectPipeline = gpl,
-			renderObjectPipelineLayout = lyt,
-			renderObjectMesh = vbtri,
-			renderObjectMeshSize = 3,
-			renderObjectTransformMatrix =
-				Cglm.glmMat4Mul (translation x y) scale } cf
-	where
-	model = Cglm.glmRotate
-		Cglm.glmMat4Identity
-		(fromIntegral fn * Cglm.glmRad 1)
-		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-	translation x y = Cglm.glmTranslate
-		Cglm.glmMat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
-	scale = Cglm.glmScale
-		Cglm.glmMat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
-	cbInfo :: Vk.CBffr.BeginInfo () ()
-	cbInfo = def {
-		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
-	rpInfo :: Vk.RndrPass.BeginInfoNew () sr fmt sf '[
-		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
-		'Vk.M.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPass.BeginInfoNew {
-		Vk.RndrPass.beginInfoNextNew = Nothing,
-		Vk.RndrPass.beginInfoRenderPassNew = rp,
-		Vk.RndrPass.beginInfoFramebufferNew = fb,
-		Vk.RndrPass.beginInfoRenderAreaNew = Vk.C.Rect2d {
-			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValuesNew =
-			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
-			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
-			HL.Nil }
-	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
-
-	cb_ = Vk.CBffr.toBinded cb :: Vk.CBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-
-data RenderObject sg sl sdlyt sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[CameraObj],
-				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
-			'[WrapMeshPushConstants]),
-	renderObjectPipelineLayout ::
-		Vk.Ppl.Lyt.L sl
-			'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[CameraObj],
-				'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-			'[WrapMeshPushConstants],
-	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],
-	renderObjectMeshSize :: Word32,
-	renderObjectTransformMatrix :: Cglm.Mat4 }
-
-drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
-	Vk.CBffr.C scb ->
-	Vk.DscSet.S sd sp '(sdlyt, '[
-		'Vk.DscSetLyt.Buffer '[CameraObj],
-		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
-	RenderObject sg sl sdlyt sm sb nm -> Word32 -> IO ()
-drawObject om cb0 cmd RenderObject {
-	renderObjectPipeline = gpl,
-	renderObjectPipelineLayout = lyt,
-	renderObjectMesh = vb,
-	renderObjectMeshSize = vn,
-	renderObjectTransformMatrix = model } cf =
-	Vk.Cmd.bindPipelineNew cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
-	Vk.Cmd.bindDescriptorSetsNew (Vk.CBffr.gBindedToBinded cb) Vk.Ppl.BindPointGraphics lyt
-		(HL.Singleton $ U2 cmd) . HL.Singleton $
-		(HL.Nil :** (Vk.Cmd.DynamicIndex cf :** HL.Nil) :** HL.Nil)
-	movb <- readIORef om
-	case movb of
-		Just ovb | vb == ovb -> pure ()
-		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
-				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
-			writeIORef om $ Just vb
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] (Vk.CBffr.gBindedToBinded cb) lyt $ HL.Id (Foreign.Storable.Generic.Wrap
-		MeshPushConstants {
-			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-			meshPushConstantsRenderMatrix = model
-			}) :** HL.Nil
-	Vk.Cmd.draw cb vn 1 0 0
-
-view :: Cglm.Mat4
-view = Cglm.glmLookat
-	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
-	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
-	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-
-projection :: Vk.C.Extent2d -> Cglm.Mat4
-projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
-	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
-		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
+		inFlightFences :: HL.PL Vk.Fnc.F sffs } ->
+		SyncObjects '(siass, srfss, siffs)
 
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
@@ -1495,10 +1365,10 @@ drawFrame dvc gq pq sc ext rp gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss i
 			dvc scnm zeroBits [
 				Nothing,
 				Just $ gpuSceneData fn]
-	Vk.Fence.waitForFs dvc siff True maxBound
+	Vk.Fnc.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
-	Vk.Fence.resetFs dvc siff
+	Vk.Fnc.resetFs dvc siff
 	Vk.CBffr.resetNew cb zeroBits
 	HL.index fbs imgIdx \(Vk.Frmbffr.fToNew -> fb) ->
 		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
@@ -1528,6 +1398,124 @@ instance CmdBufListIndex '[] where
 instance {-# OVERLAPPABLE #-} CmdBufListIndex ds => CmdBufListIndex ('() ': ds) where
 	cmdBufListIndex (cb :*. _) 0 = cb
 	cmdBufListIndex (_ :*. cbs) i = cmdBufListIndex @ds cbs (i - 1)
+
+recordCommandBuffer ::
+	forall scb sr fmt sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
+	Vk.CBffr.C scb ->
+	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew fmt sf -> Vk.C.Extent2d ->
+	Vk.Ppl.Grph.GNew sg
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(slyt,	'[ '(sdlyt, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]) ->
+	Vk.Ppl.Lyt.L slyt
+		'[ '(sdlyt, '[
+			'Vk.DscSetLyt.Buffer '[CameraObj],
+			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
+		'[WrapMeshPushConstants] ->
+	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
+	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] -> Int ->
+	Vk.DscSet.S sd sp '(sdlyt, '[
+		'Vk.DscSetLyt.Buffer '[CameraObj],
+		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
+	Word32 -> Word32 -> IO ()
+recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
+	Vk.CBffr.beginNew @() @() cb cbInfo $
+	Vk.Cmd.beginRenderPassNew cb_ rpInfo Vk.Subpass.ContentsInline do
+	om <- newIORef Nothing
+	drawObject om cb cmd RenderObject {
+		renderObjectPipeline = gpl,
+		renderObjectPipelineLayout = lyt,
+		renderObjectMesh = vb,
+		renderObjectMeshSize = vn,
+		renderObjectTransformMatrix = model } cf
+	omtri <- newIORef Nothing
+	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
+		drawObject omtri cb cmd RenderObject {
+			renderObjectPipeline = gpl,
+			renderObjectPipelineLayout = lyt,
+			renderObjectMesh = vbtri,
+			renderObjectMeshSize = 3,
+			renderObjectTransformMatrix =
+				Cglm.glmMat4Mul (translation x y) scale } cf
+	where
+	model = Cglm.glmRotate
+		Cglm.glmMat4Identity
+		(fromIntegral fn * Cglm.glmRad 1)
+		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+	translation x y = Cglm.glmTranslate
+		Cglm.glmMat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
+	scale = Cglm.glmScale
+		Cglm.glmMat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
+	cbInfo :: Vk.CBffr.BeginInfo () ()
+	cbInfo = def {
+		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
+	rpInfo :: Vk.RndrPass.BeginInfoNew () sr fmt sf '[
+		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
+		'Vk.M.ClearTypeDepthStencil ]
+	rpInfo = Vk.RndrPass.BeginInfoNew {
+		Vk.RndrPass.beginInfoNextNew = Nothing,
+		Vk.RndrPass.beginInfoRenderPassNew = rp,
+		Vk.RndrPass.beginInfoFramebufferNew = fb,
+		Vk.RndrPass.beginInfoRenderAreaNew = Vk.C.Rect2d {
+			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
+			Vk.C.rect2dExtent = sce },
+		Vk.RndrPass.beginInfoClearValuesNew =
+			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
+			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
+			HL.Nil }
+	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
+
+	cb_ = Vk.CBffr.toBinded cb :: Vk.CBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+
+drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
+	Vk.CBffr.C scb ->
+	Vk.DscSet.S sd sp '(sdlyt, '[
+		'Vk.DscSetLyt.Buffer '[CameraObj],
+		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
+	RenderObject sg sl sdlyt sm sb nm -> Word32 -> IO ()
+drawObject om cb0 cmd RenderObject {
+	renderObjectPipeline = gpl,
+	renderObjectPipelineLayout = lyt,
+	renderObjectMesh = vb,
+	renderObjectMeshSize = vn,
+	renderObjectTransformMatrix = model } cf =
+	Vk.Cmd.bindPipelineNew cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
+	Vk.Cmd.bindDescriptorSetsNew (Vk.CBffr.gBindedToBinded cb) Vk.Ppl.BindPointGraphics lyt
+		(HL.Singleton $ U2 cmd) . HL.Singleton $
+		(HL.Nil :** (Vk.Cmd.DynamicIndex cf :** HL.Nil) :** HL.Nil)
+	movb <- readIORef om
+	case movb of
+		Just ovb | vb == ovb -> pure ()
+		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
+				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
+			writeIORef om $ Just vb
+	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] (Vk.CBffr.gBindedToBinded cb) lyt $ HL.Id (Foreign.Storable.Generic.Wrap
+		MeshPushConstants {
+			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+			meshPushConstantsRenderMatrix = model
+			}) :** HL.Nil
+	Vk.Cmd.draw cb vn 1 0 0
+
+data RenderObject sg sl sdlyt sm sb nm = RenderObject {
+	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
+		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl,	'[ '(sdlyt, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
+			'[WrapMeshPushConstants]),
+	renderObjectPipelineLayout ::
+		Vk.Ppl.Lyt.L sl
+			'[ '(sdlyt, '[
+				'Vk.DscSetLyt.Buffer '[CameraObj],
+				'Vk.DscSetLyt.Buffer '[SceneObj] ])]
+			'[WrapMeshPushConstants],
+	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],
+	renderObjectMeshSize :: Word32,
+	renderObjectTransformMatrix :: Cglm.Mat4 }
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
@@ -1698,6 +1686,17 @@ data GpuCameraData = GpuCameraData {
 gpuCameraData :: Vk.C.Extent2d -> GpuCameraData
 gpuCameraData sce = GpuCameraData (View view) (Proj $ projection sce)
 	(ViewProj $ Cglm.glmMat4Mul (projection sce) view)
+
+view :: Cglm.Mat4
+view = Cglm.glmLookat
+	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
+	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+
+projection :: Vk.C.Extent2d -> Cglm.Mat4
+projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
+	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
+		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
 
 instance Storable GpuCameraData where
 	sizeOf = Foreign.Storable.Generic.gSizeOf
