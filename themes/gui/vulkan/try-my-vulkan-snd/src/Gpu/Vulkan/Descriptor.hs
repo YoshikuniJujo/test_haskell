@@ -46,6 +46,11 @@ import qualified Gpu.Vulkan.ImageView as ImageView
 import Gpu.Vulkan.Descriptor.Enum qualified as E
 
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
+	BufferInfoObj ::
+		{ bufferInfoObjBuffer :: Buffer.Binded sm sb nm objs } ->
+		BufferInfo '(sb, sm, nm, objs, obj)
+
+-- REMOVE FROM HERE
 	BufferInfoAtom ::
 		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
 		BufferInfo '(sb, sm, nm, objs, VObj.Atom algn v objnm)
@@ -58,6 +63,7 @@ data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoDynAtom ::
 		{ bufferInfoDynAtomBuffer :: Buffer.Binded sm sb nm objs } ->
 		BufferInfo '(sb, sm, nm, objs, VObj.DynAtom n algn v objnm)
+-- REMOVE UNTIL HERE
 
 type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
 
@@ -67,6 +73,8 @@ deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 bufferInfoToLength ::
 	VObj.ObjectLengthIndex obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> VObj.ObjectLength obj
+bufferInfoToLength (BufferInfoObj (Buffer.Binded lns _)) =
+	VObj.objectLengthIndex lns
 bufferInfoToLength (BufferInfoAtom (Buffer.Binded lns _)) =
 	VObj.objectLengthIndex lns
 bufferInfoToLength (BufferInfoList (Buffer.Binded lns _)) =
@@ -98,6 +106,11 @@ instance (
 
 bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.Offset obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
+bufferInfoToMiddle BufferInfoObj {
+	bufferInfoObjBuffer = Buffer.Binded lns b } = M.BufferInfo {
+	M.bufferInfoBuffer = b,
+	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
+	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
 bufferInfoToMiddle BufferInfoAtom {
 	bufferInfoAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = b,
