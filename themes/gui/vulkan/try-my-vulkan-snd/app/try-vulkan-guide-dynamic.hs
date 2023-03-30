@@ -115,7 +115,6 @@ import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
-import qualified Gpu.Vulkan.Framebuffer.Type as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
@@ -1325,7 +1324,7 @@ drawFrame dvc gq pq sc ext rp lyt gpl1 fbs cmms scnm cmds vb vbtri cbs
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fnc.resetFs dvc siff
 	Vk.CBffr.resetNew cb zeroBits
-	HL.index fbs imgIdx \(Vk.Frmbffr.fToNew -> fb) ->
+	HL.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn $ fromIntegral cf
 	let	submitInfo :: Vk.SubmitInfo () '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
@@ -1359,9 +1358,9 @@ instance {-# OVERLAPPABLE #-} CmdBufListIndex ds => CmdBufListIndex ('() ': ds) 
 	cmdBufListIndex (_ :*. cbs) i = cmdBufListIndex @ds cbs (i - 1)
 
 recordCommandBuffer ::
-	forall scb sr fmt sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
+	forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
 	Vk.CBffr.C scb ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.FNew fmt sf -> Vk.C.Extent2d ->
+	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1382,7 +1381,7 @@ recordCommandBuffer ::
 	Word32 -> Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 	Vk.CBffr.beginNew @() @() cb cbInfo $
-	Vk.Cmd.beginRenderPassNew cb_ rpInfo Vk.Subpass.ContentsInline do
+	Vk.Cmd.beginRenderPass cb_ rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
 	drawObject om cb cmd RenderObject {
 		renderObjectPipeline = gpl,
@@ -1411,17 +1410,17 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 	cbInfo :: Vk.CBffr.BeginInfo () ()
 	cbInfo = def {
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
-	rpInfo :: Vk.RndrPass.BeginInfoNew () sr fmt sf '[
+	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
 		'Vk.M.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPass.BeginInfoNew {
-		Vk.RndrPass.beginInfoNextNew = Nothing,
-		Vk.RndrPass.beginInfoRenderPassNew = rp,
-		Vk.RndrPass.beginInfoFramebufferNew = fb,
-		Vk.RndrPass.beginInfoRenderAreaNew = Vk.C.Rect2d {
+	rpInfo = Vk.RndrPass.BeginInfo {
+		Vk.RndrPass.beginInfoNext = Nothing,
+		Vk.RndrPass.beginInfoRenderPass = rp,
+		Vk.RndrPass.beginInfoFramebuffer = fb,
+		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValuesNew =
+		Vk.RndrPass.beginInfoClearValues =
 			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
 			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
 			HL.Nil }

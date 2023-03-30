@@ -7,12 +7,4 @@ module Gpu.Vulkan.Framebuffer.Type where
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
-newtype FNew (fmt :: T.Format) sf = FNew M.F
-
-fFromNew :: FNew fmt sf -> F sf
-fFromNew (FNew f) = F f
-
-fToNew :: F sf -> FNew fmt sf
-fToNew (F f) = FNew f
-
 newtype F s = F M.F

@@ -3,8 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass (
-	R, createNew, M.CreateInfoNew(..),
-	BeginInfo(..), BeginInfoNew(..) ) where
+	R, createNew, M.CreateInfoNew(..), BeginInfo(..) ) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception

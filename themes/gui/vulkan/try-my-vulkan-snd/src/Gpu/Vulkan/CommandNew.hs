@@ -57,13 +57,6 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import Data.IORef -- for debug
 import Data.Kind.Object qualified as KObj
 
-beginRenderPassNew :: (WithPoked n, ClearValueListToCore ct) =>
-	CommandBuffer.Binded sc vs -> RenderPass.BeginInfoNew n sr fmt sf ct ->
-	Subpass.Contents -> IO a -> IO a
-beginRenderPassNew (CommandBuffer.Binded cb) bi cnt f = bracket_
-	(M.beginRenderPass cb (RenderPass.beginInfoToMiddleNew bi) cnt)
-	(M.endRenderPass cb) f
-
 beginRenderPass' :: (WithPoked n, ClearValueListToCore ct) =>
 	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
