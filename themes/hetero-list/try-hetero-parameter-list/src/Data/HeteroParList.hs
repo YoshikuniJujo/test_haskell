@@ -158,7 +158,8 @@ index (x :** _) 0 f = f x
 index (_ :** xs) i f | i > 0 = index xs (i - 1) f
 index _ _ _ = error "negative index"
 
-homoListIndex :: (HomoList s ss, Integral i) => PL t ss -> i -> t s
+homoListIndex :: forall s {t} {ss} {i} .
+	(HomoList s ss, Integral i) => PL t ss -> i -> t s
 homoListIndex xs i = homoListToList xs `genericIndex` i
 
 -- Map and Replicate
