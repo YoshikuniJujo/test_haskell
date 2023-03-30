@@ -137,19 +137,15 @@ toListM :: Applicative m =>
 toListM _ Nil = pure []
 toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
 
-class HomoList ss where
-	type Elem ss :: k
-	homoListFromList :: [t (Elem ss)] -> PL t ss
-	homoListToList :: PL t ss -> [t (Elem ss)]
+class HomoList (s :: k) ss where
+	homoListFromList :: [t s] -> PL t ss
+	homoListToList :: PL t ss -> [t s]
 
-instance HomoList '[s] where
-	type Elem '[s] = s
-	homoListFromList = \case [x] -> x :** Nil; _ -> error "bad"
-	homoListToList (x :** Nil) = [x]
+instance HomoList s '[] where
+	homoListFromList = \case [] -> Nil; _ -> error "bad"
+	homoListToList Nil = []
 
-instance {-# OVERLAPPABLE #-} (HomoList ss, Elem ss ~ s) =>
-	HomoList (s ': ss) where
-	type Elem (s ': ss) = s
+instance HomoList s ss => HomoList s (s ': ss) where
 	homoListFromList =
 		\case x : xs -> x :** homoListFromList xs; _ -> error "bad"
 	homoListToList (x :** xs) = x : homoListToList xs
@@ -162,7 +158,7 @@ index (x :** _) 0 f = f x
 index (_ :** xs) i f | i > 0 = index xs (i - 1) f
 index _ _ _ = error "negative index"
 
-homoListIndex :: (HomoList ss, Integral i) => PL t ss -> i -> t (Elem ss)
+homoListIndex :: (HomoList s ss, Integral i) => PL t ss -> i -> t s
 homoListIndex xs i = homoListToList xs `genericIndex` i
 
 -- Map and Replicate
