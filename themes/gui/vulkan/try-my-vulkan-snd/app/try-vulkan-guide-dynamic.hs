@@ -110,8 +110,8 @@ import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
-import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
+import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss
+import qualified Gpu.Vulkan.RenderPass as Vk.RndrPss.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
@@ -511,16 +511,16 @@ findSupportedFormat phd fs tlng fffs = do
 createRenderPass ::
 	forall (scifmt :: Vk.T.Format) (dfmt :: Vk.T.Format) sd a . (
 	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dfmt ) =>
-	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
-createRenderPass dv f = Vk.RndrPass.createNew @'[scifmt, dfmt] @()
+	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
+createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @()
 	dv renderPassInfo nil nil f where
-	renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
-		Vk.RndrPass.M.createInfoNextNew = Nothing,
-		Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
-		Vk.RndrPass.M.createInfoAttachmentsNew =
+	renderPassInfo = Vk.RndrPss.M.CreateInfoNew {
+		Vk.RndrPss.M.createInfoNextNew = Nothing,
+		Vk.RndrPss.M.createInfoFlagsNew = zeroBits,
+		Vk.RndrPss.M.createInfoAttachmentsNew =
 			colorAttachment :** depthAttachment :** HL.Nil,
-		Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
-		Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
+		Vk.RndrPss.M.createInfoSubpassesNew = [subpass],
+		Vk.RndrPss.M.createInfoDependenciesNew = [dependency] }
 	colorAttachment :: Vk.Att.DescriptionNew scifmt
 	colorAttachment = Vk.Att.DescriptionNew {
 		Vk.Att.descriptionFlagsNew = zeroBits,
@@ -615,7 +615,7 @@ createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.createNew dv ci nil nil f where
 		Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 		Vk.Ppl.Lyt.createInfoSetLayoutsNew = HL.Singleton $ U2 dslyt }
 
-createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 	(forall sg . Vk.Ppl.Grph.GNew sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
@@ -627,7 +627,7 @@ createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 	\(HL.Singleton (U3 gpl)) -> f gpl
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
-	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -637,7 +637,7 @@ recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 	(U14 (graphicsPipelineCreateInfo sce rp lyt) :** HL.Nil) nil nil
 	(U3 gpls :** HL.Nil)
 
-graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.CreateInfo ()
 		'[ '((), (), 'GlslVertexShader, (), (), '[]),
@@ -947,7 +947,7 @@ beginSingleTimeCommands dv gq cp cmds =
 		Vk.submitInfoSignalSemaphores = HL.Nil }
 
 createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-	Vk.RndrPass.R sr -> HL.PL (Vk.ImgVw.INew fmt nm) sis ->
+	Vk.RndrPss.R sr -> HL.PL (Vk.ImgVw.INew fmt nm) sis ->
 	Vk.ImgVw.INew dfmt dnm siv ->
 	(forall sfs . RecreateFramebuffers sis sfs =>
 		HL.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
@@ -958,7 +958,7 @@ createFramebuffers dv sce rp (iv :** ivs) dptiv f =
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
 	recreateFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
-		Vk.RndrPass.R sr -> HL.PL (Vk.ImgVw.INew scfmt nm) sis ->
+		Vk.RndrPss.R sr -> HL.PL (Vk.ImgVw.INew scfmt nm) sis ->
 		Vk.ImgVw.INew dfmt dnm sdiv -> HL.PL Vk.Frmbffr.F sfs ->
 		IO ()
 
@@ -973,7 +973,7 @@ instance RecreateFramebuffers sis sfs =>
 		recreateFramebuffers dv sce rp scivs dptiv fbs
 
 framebufferInfo ::
-	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
+	Vk.C.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.INew fmt nm si ->
 	Vk.ImgVw.INew dfmt dnm sdiv ->
 	Vk.Frmbffr.CreateInfoNew () sr '[ '(fmt, nm, si), '(dfmt, dnm, sdiv)]
 framebufferInfo Vk.C.Extent2d {
@@ -1185,7 +1185,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d ->
-	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPass.R sr ->
+	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1214,7 +1214,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Glfw.Window -> FramebufferResized -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d ->
-	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPass.R sr ->
+	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1241,7 +1241,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
-	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPass.R sr ->
+	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(s, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1261,7 +1261,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs) =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P -> QueueFamilyIndices ->
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
-	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPass.R sr ->
+	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
@@ -1289,7 +1289,7 @@ drawFrame ::
 	sm sb nm smtri sbtri nmtri scb ssos .
 	(HL.HomoList '(sl, Buffers) lyts ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
-	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d -> Vk.RndrPass.R sr ->
+	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt '[ '(sl, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
@@ -1316,7 +1316,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 	Vk.Fnc.resetFs dv siff
 	Vk.CBffr.resetNew cb zeroBits
 	HL.index fbs iid \fb -> recordCommandBuffer
-		cb rp fb ex gpl lyt vb vbtri fn ds vnsln $ fromIntegral ffn
+		ex rp lyt gpl fb ds vb vbtri cb vnsln (fromIntegral ffn) fn
 	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo ias rfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresentNew @() pq $ presentInfo rfs iid
 	where
@@ -1343,27 +1343,17 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 
 recordCommandBuffer ::
 	forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
-	Vk.CBffr.C scb ->
-	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
+	Vk.C.Extent2d -> Vk.RndrPss.R sr ->
+	Vk.Ppl.Lyt.L slyt '[ '(sdlyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[CameraObj],
-				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
-			'[WMeshPushConstants]) ->
-	Vk.Ppl.Lyt.L slyt
-		'[ '(sdlyt, '[
-			'Vk.DscSetLyt.Buffer '[CameraObj],
-			'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-		'[WMeshPushConstants] ->
+		'(slyt,	'[ '(sdlyt, Buffers)], '[WMeshPushConstants]) ->
+	Vk.Frmbffr.F sf -> Vk.DscSet.S sd sp '(sdlyt, Buffers) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
-	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] -> Int ->
-	Vk.DscSet.S sd sp '(sdlyt, '[
-		'Vk.DscSetLyt.Buffer '[CameraObj],
-		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
-	Word32 -> Word32 -> IO ()
-recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
+	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
+	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
+recordCommandBuffer sce rp lyt gpl fb cmd vb vbtri cb vn cf fn =
 	Vk.CBffr.beginNew @() @() cb cbInfo $
 	Vk.Cmd.beginRenderPass cb_ rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
@@ -1394,17 +1384,17 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn cf =
 	cbInfo :: Vk.CBffr.BeginInfo () ()
 	cbInfo = def {
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
-	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
+	rpInfo :: Vk.RndrPss.BeginInfo () sr sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
 		'Vk.M.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = Nothing,
-		Vk.RndrPass.beginInfoRenderPass = rp,
-		Vk.RndrPass.beginInfoFramebuffer = fb,
-		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
+	rpInfo = Vk.RndrPss.BeginInfo {
+		Vk.RndrPss.beginInfoNext = Nothing,
+		Vk.RndrPss.beginInfoRenderPass = rp,
+		Vk.RndrPss.beginInfoFramebuffer = fb,
+		Vk.RndrPss.beginInfoRenderArea = Vk.C.Rect2d {
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
-		Vk.RndrPass.beginInfoClearValues =
+		Vk.RndrPss.beginInfoClearValues =
 			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
 			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
 			HL.Nil }
