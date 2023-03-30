@@ -147,7 +147,8 @@ instance HomoList '[s] where
 	homoListFromList = \case [x] -> x :** Nil; _ -> error "bad"
 	homoListToList (x :** Nil) = [x]
 
-instance (HomoList ss, Elem ss ~ s) => HomoList (s ': ss) where
+instance {-# OVERLAPPABLE #-} (HomoList ss, Elem ss ~ s) =>
+	HomoList (s ': ss) where
 	type Elem (s ': ss) = s
 	homoListFromList =
 		\case x : xs -> x :** homoListFromList xs; _ -> error "bad"
