@@ -1342,7 +1342,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 recordCommandBuffer ::
-	forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
+	forall sr slyt sg sdlyt sf sd sp sm sb nm smtri sbtri nmtri scb .
 	Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt '[ '(sdlyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
@@ -1353,25 +1353,25 @@ recordCommandBuffer ::
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
-recordCommandBuffer sce rp lyt gpl fb cmd vb vbtri cb vn cf fn =
+recordCommandBuffer sce rp lyt gpl fb ds vb vbtri cb vn ffn fn =
 	Vk.CBffr.beginNew @() @() cb cbInfo $
-	Vk.Cmd.beginRenderPass cb_ rpInfo Vk.Subpass.ContentsInline do
+	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
-	drawObject om cb cmd RenderObject {
+	drawObject om cb ds RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
 		renderObjectMeshSize = vn,
-		renderObjectTransformMatrix = model } cf
+		renderObjectTransformMatrix = model } ffn
 	omtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb cmd RenderObject {
+		drawObject omtri cb ds RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbtri,
 			renderObjectMeshSize = 3,
 			renderObjectTransformMatrix =
-				Cglm.glmMat4Mul (translation x y) scale } cf
+				Cglm.glmMat4Mul (translation x y) scale } ffn
 	where
 	model = Cglm.glmRotate
 		Cglm.glmMat4Identity
@@ -1399,8 +1399,6 @@ recordCommandBuffer sce rp lyt gpl fb cmd vb vbtri cb vn cf fn =
 			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
 			HL.Nil }
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
-
-	cb_ = Vk.CBffr.toBinded cb :: Vk.CBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
 	Vk.CBffr.C scb ->
