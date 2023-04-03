@@ -1353,41 +1353,30 @@ recordCommandBuffer ::
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
-recordCommandBuffer sce rp lyt gpl fb ds vb vbtri cb vn ffn fn =
-	Vk.CBffr.beginNew @() @() cb cbInfo $
-	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline do
+recordCommandBuffer sce rp lyt gpl fb ds vb vbt cb vn ffn (fromIntegral -> fn) =
+	Vk.CBffr.beginNew @() @() cb binfo $
+	Vk.Cmd.beginRenderPass' cb rpinfo Vk.Subpass.ContentsInline do
 	om <- newIORef Nothing
 	drawObject om cb ds RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
-		renderObjectMesh = vb,
-		renderObjectMeshSize = vn,
+		renderObjectMesh = vb, renderObjectMeshSize = vn,
 		renderObjectTransformMatrix = model } ffn
 	omtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
 		drawObject omtri cb ds RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
-			renderObjectMesh = vbtri,
-			renderObjectMeshSize = 3,
+			renderObjectMesh = vbt, renderObjectMeshSize = 3,
 			renderObjectTransformMatrix =
-				Cglm.glmMat4Mul (translation x y) scale } ffn
+				trans x y `Cglm.mat4Mul` scale } ffn
 	where
-	model = Cglm.glmRotate
-		Cglm.glmMat4Identity
-		(fromIntegral fn * Cglm.glmRad 1)
-		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-	translation x y = Cglm.glmTranslate
-		Cglm.glmMat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
-	scale = Cglm.glmScale
-		Cglm.glmMat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
-	cbInfo :: Vk.CBffr.BeginInfo () ()
-	cbInfo = def {
-		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
-	rpInfo :: Vk.RndrPss.BeginInfo () sr sf '[
+	binfo :: Vk.CBffr.BeginInfo () ()
+	binfo = def { Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
+	rpinfo :: Vk.RndrPss.BeginInfo () sr sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
 		'Vk.M.ClearTypeDepthStencil ]
-	rpInfo = Vk.RndrPss.BeginInfo {
+	rpinfo = Vk.RndrPss.BeginInfo {
 		Vk.RndrPss.beginInfoNext = Nothing,
 		Vk.RndrPss.beginInfoRenderPass = rp,
 		Vk.RndrPss.beginInfoFramebuffer = fb,
@@ -1395,10 +1384,17 @@ recordCommandBuffer sce rp lyt gpl fb ds vb vbtri cb vn ffn fn =
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent = sce },
 		Vk.RndrPss.beginInfoClearValues =
-			Vk.M.ClearValueColor (fromJust $ rgbaDouble 0 0 blue 1) :**
-			Vk.M.ClearValueDepthStencil (Vk.C.ClearDepthStencilValue 1 0) :**
-			HL.Nil }
-	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
+			Vk.M.ClearValueColor
+				(fromJust $ rgbaDouble 0 0 blue 1) :**
+			Vk.M.ClearValueDepthStencil
+				(Vk.C.ClearDepthStencilValue 1 0) :** HL.Nil }
+	blue = 0.5 + sin (fn / (180 * frashRate) * pi) / 2
+	model = Cglm.rotate Cglm.mat4Identity
+		(fn * Cglm.rad 1) (Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+	trans x y = Cglm.translate
+		Cglm.mat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
+	scale = Cglm.scale
+		Cglm.mat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
 	Vk.CBffr.C scb ->
@@ -1535,17 +1531,17 @@ data CameraData = CameraData {
 
 cameraData :: Vk.C.Extent2d -> CameraData
 cameraData sce = CameraData (View view) (Proj $ projection sce)
-	(ViewProj $ Cglm.glmMat4Mul (projection sce) view)
+	(ViewProj $ Cglm.mat4Mul (projection sce) view)
 
 view :: Cglm.Mat4
-view = Cglm.glmLookat
+view = Cglm.lookat
 	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
 	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
 projection :: Vk.C.Extent2d -> Cglm.Mat4
-projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
-	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
+projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.perspective
+	(Cglm.rad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
 		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
 
 instance Storable CameraData where

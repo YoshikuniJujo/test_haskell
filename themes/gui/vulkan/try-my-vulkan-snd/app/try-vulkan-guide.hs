@@ -1487,16 +1487,16 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 			renderObjectMesh = vbtri,
 			renderObjectMeshSize = 3,
 			renderObjectTransformMatrix =
-				Cglm.glmMat4Mul (translation x y) scale }
+				Cglm.mat4Mul (translation x y) scale }
 	where
-	model = Cglm.glmRotate
-		Cglm.glmMat4Identity
-		(fromIntegral fn * Cglm.glmRad 1)
+	model = Cglm.rotate
+		Cglm.mat4Identity
+		(fromIntegral fn * Cglm.rad 1)
 		(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
-	translation x y = Cglm.glmTranslate
-		Cglm.glmMat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
-	scale = Cglm.glmScale
-		Cglm.glmMat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
+	translation x y = Cglm.translate
+		Cglm.mat4Identity (Cglm.Vec3 $ x :. 0 :. y :. NilL)
+	scale = Cglm.scale
+		Cglm.mat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 	cbInfo :: Vk.CmdBffr.BeginInfo () ()
 	cbInfo = def {
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit }
@@ -1562,14 +1562,14 @@ drawObject om cb sce cmd RenderObject {
 	Vk.Cmd.draw cb vn 1 0 0
 
 view :: Cglm.Mat4
-view = Cglm.glmLookat
+view = Cglm.lookat
 	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
 	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
 projection :: Vk.C.Extent2d -> Cglm.Mat4
-projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.glmPerspective
-	(Cglm.glmRad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
+projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.perspective
+	(Cglm.rad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
 		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
 
 mainLoop :: (
@@ -1932,8 +1932,8 @@ data GpuCameraData = GpuCameraData {
 	deriving (Show, Generic)
 
 gpuCameraData sce = GpuCameraData (View view) (Proj $ projection sce)
---	(ViewProj . Cglm.glmMat4Mul view $ projection sce)
-	(ViewProj $ Cglm.glmMat4Mul (projection sce) view)
+--	(ViewProj . Cglm.mat4Mul view $ projection sce)
+	(ViewProj $ Cglm.mat4Mul (projection sce) view)
 
 instance Storable GpuCameraData where
 	sizeOf = Foreign.Storable.Generic.gSizeOf

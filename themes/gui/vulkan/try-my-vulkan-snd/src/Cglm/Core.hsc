@@ -111,7 +111,7 @@ glmMat4Identity = unsafePerformIO . ($ pure) $ runContT do
 foreign import capi "cglm/cglm.h glm_mat4_identity" c_glm_mat4_identity ::
 	Ptr Vec4 -> IO ()
 
-foreign import capi "cglm/cglm.h glm_rad" glmRad ::
+foreign import capi "cglm/cglm.h glm_rad" rad ::
 	#{type float} -> #{type float}
 
 glmMat4Mul :: [Vec4] -> [Vec4] -> [Vec4]

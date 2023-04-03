@@ -3,7 +3,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Cglm (
-	module Cglm, C.Vec2(..), C.Vec3(..), C.Vec4(..), C.Mat4, C.glmRad
+	module Cglm, C.Vec2(..), C.Vec3(..), C.Vec4(..), C.Mat4, C.rad
 	) where
 
 import Data.Foldable
@@ -15,24 +15,24 @@ import qualified Cglm.Core as C
 
 #include <cglm/cglm.h>
 
-glmRotate :: C.Mat4 -> #{type float} -> C.Vec3 -> C.Mat4
-glmRotate m angle (C.Vec3 axis) = listVec4ToMat4
+rotate :: C.Mat4 -> #{type float} -> C.Vec3 -> C.Mat4
+rotate m angle (C.Vec3 axis) = listVec4ToMat4
 	$ C.glmRotate (mat4ToListVec4 m) angle (toList axis)
 
-glmLookat :: C.Vec3 -> C.Vec3 -> C.Vec3 -> C.Mat4
-glmLookat (C.Vec3 eye) (C.Vec3 center) (C.Vec3 up) = listVec4ToMat4
+lookat :: C.Vec3 -> C.Vec3 -> C.Vec3 -> C.Mat4
+lookat (C.Vec3 eye) (C.Vec3 center) (C.Vec3 up) = listVec4ToMat4
 	$ C.glmLookat (toList eye) (toList center) (toList up)
 
-glmPerspective ::
+perspective ::
 	#{type float} -> #{type float} -> #{type float} -> #{type float} -> C.Mat4
-glmPerspective fovy aspect nearZ farZ =
+perspective fovy aspect nearZ farZ =
 	listVec4ToMat4 $ C.glmPerspective fovy aspect nearZ farZ
 
-glmMat4Identity :: C.Mat4
-glmMat4Identity = listVec4ToMat4 C.glmMat4Identity
+mat4Identity :: C.Mat4
+mat4Identity = listVec4ToMat4 C.glmMat4Identity
 
-glmMat4Mul :: C.Mat4 -> C.Mat4 -> C.Mat4
-glmMat4Mul m1 m2 =
+mat4Mul :: C.Mat4 -> C.Mat4 -> C.Mat4
+mat4Mul m1 m2 =
 	listVec4ToMat4 $ C.glmMat4Mul (mat4ToListVec4 m1) (mat4ToListVec4 m2)
 
 modifyMat4 :: Int -> Int -> (#{type float} -> #{type float}) -> C.Mat4 -> C.Mat4
@@ -64,8 +64,8 @@ separateN :: Int -> [a] -> [[a]]
 separateN _ [] = []
 separateN n xs = take n xs : separateN n (drop n xs)
 
-glmTranslate :: C.Mat4 -> C.Vec3 -> C.Mat4
-glmTranslate m v = listVec4ToMat4
+translate :: C.Mat4 -> C.Vec3 -> C.Mat4
+translate m v = listVec4ToMat4
 	$ C.glmTranslate (mat4ToListVec4 m) (vec3ToList v)
 
 listToVec3 :: [#{type float}] -> C.Vec3
@@ -74,6 +74,6 @@ listToVec3 = C.Vec3 . unsafeToLength
 vec3ToList :: C.Vec3 -> [#{type float}]
 vec3ToList (C.Vec3 fs) = toList fs
 
-glmScale :: C.Mat4 -> C.Vec3 -> C.Mat4
-glmScale m v = listVec4ToMat4
+scale :: C.Mat4 -> C.Vec3 -> C.Mat4
+scale m v = listVec4ToMat4
 	$ C.glmScale (mat4ToListVec4 m) (vec3ToList v)

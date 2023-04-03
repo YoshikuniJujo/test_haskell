@@ -1869,17 +1869,17 @@ updateUniformBuffer dvc um sce tm = do
 	Vk.Dvc.Mem.ImageBuffer.write @"uniform-buffer"
 		@(VObj.Atom 256 UniformBufferObject 'Nothing) dvc um zeroBits ubo
 	where ubo = UniformBufferObject {
-		uniformBufferObjectModel = Cglm.glmRotate
-			Cglm.glmMat4Identity
-			(tm * Cglm.glmRad 90)
+		uniformBufferObjectModel = Cglm.rotate
+			Cglm.mat4Identity
+			(tm * Cglm.rad 90)
 			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
-		uniformBufferObjectView = Cglm.glmLookat
+		uniformBufferObjectView = Cglm.lookat
 			(Cglm.Vec3 $ 2 :. 2 :. 2 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
 			(Cglm.Vec3 $ 0 :. 0 :. 1 :. NilL),
 		uniformBufferObjectProj = Cglm.modifyMat4 1 1 negate
-			$ Cglm.glmPerspective
-				(Cglm.glmRad 45)
+			$ Cglm.perspective
+				(Cglm.rad 45)
 				(fromIntegral (Vk.C.extent2dWidth sce) /
 					fromIntegral (Vk.C.extent2dHeight sce))
 				0.1 10 }
