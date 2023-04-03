@@ -1356,15 +1356,15 @@ recordCommandBuffer ::
 recordCommandBuffer sce rp lyt gpl fb ds vb vbt cb vn ffn (fromIntegral -> fn) =
 	Vk.CBffr.beginNew @() @() cb binfo $
 	Vk.Cmd.beginRenderPass' cb rpinfo Vk.Subpass.ContentsInline do
-	om <- newIORef Nothing
-	drawObject om cb ds RenderObject {
+	ovb <- newIORef Nothing
+	drawObject ovb cb ds RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb, renderObjectMeshSize = vn,
 		renderObjectTransformMatrix = model } ffn
-	omtri <- newIORef Nothing
+	ovbtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject omtri cb ds RenderObject {
+		drawObject ovbtri cb ds RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbt, renderObjectMeshSize = 3,
@@ -1396,57 +1396,45 @@ recordCommandBuffer sce rp lyt gpl fb ds vb vbt cb vn ffn (fromIntegral -> fn) =
 	scale = Cglm.scale
 		Cglm.mat4Identity (Cglm.Vec3 $ 0.2 :. 0.2 :. 0.2 :. NilL)
 
-drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
-	Vk.CBffr.C scb ->
-	Vk.DscSet.S sd sp '(sdlyt, '[
-		'Vk.DscSetLyt.Buffer '[CameraObj],
-		'Vk.DscSetLyt.Buffer '[SceneObj] ]) ->
+drawObject ::
+	IORef (Maybe (Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""])) ->
+	Vk.CBffr.C scb -> Vk.DscSet.S sd sp '(sdlyt, Buffers) ->
 	RenderObject sg sl sdlyt sm sb nm -> Word32 -> IO ()
-drawObject om cb0 cmd RenderObject {
+drawObject ovb cb0 ds RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
-	renderObjectMesh = vb,
-	renderObjectMeshSize = vn,
-	renderObjectTransformMatrix = model } cf =
+	renderObjectMesh = vb, renderObjectMeshSize = vn,
+	renderObjectTransformMatrix = model } ffn =
 	Vk.Cmd.bindPipelineNew cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
-	Vk.Cmd.bindDescriptorSetsNew (Vk.CBffr.gBindedToBinded cb) Vk.Ppl.BindPointGraphics lyt
-		(HL.Singleton $ U2 cmd) . HL.Singleton $
-		(HL.Nil :** (Vk.Cmd.DynamicIndex cf :** HL.Nil) :** HL.Nil)
-	movb <- readIORef om
-	case movb of
-		Just ovb | vb == ovb -> pure ()
+	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
+		(HL.Singleton $ U2 ds) . HL.Singleton $
+		(HL.Nil :** (Vk.Cmd.DynamicIndex ffn :** HL.Nil) :** HL.Nil)
+	readIORef ovb >>= \case
+		Just o | vb == o -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
 				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
-			writeIORef om $ Just vb
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] (Vk.CBffr.gBindedToBinded cb) lyt $ HL.Id (Foreign.Storable.Generic.Wrap
-		MeshPushConstants {
-			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-			meshPushConstantsRenderMatrix = model
-			}) :** HL.Nil
+			writeIORef ovb $ Just vb
+	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
+		$ HL.Id (Foreign.Storable.Generic.Wrap MeshPushConstants {
+			meshPushConstantsData =
+				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+			meshPushConstantsRenderMatrix = model }) :** HL.Nil
 	Vk.Cmd.draw cb vn 1 0 0
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[CameraObj],
-				'Vk.DscSetLyt.Buffer '[SceneObj] ])],
-			'[WMeshPushConstants]),
+		'(sl, '[ '(sdlyt, Buffers)], '[WMeshPushConstants]),
 	renderObjectPipelineLayout ::
-		Vk.Ppl.Lyt.L sl
-			'[ '(sdlyt, '[
-				'Vk.DscSetLyt.Buffer '[CameraObj],
-				'Vk.DscSetLyt.Buffer '[SceneObj] ])]
-			'[WMeshPushConstants],
+		Vk.Ppl.Lyt.L sl '[ '(sdlyt, Buffers)] '[WMeshPushConstants],
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],
 	renderObjectMeshSize :: Word32,
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
 data Vertex = Vertex {
-	vertexPos :: Position,
-	vertexNormal :: Normal,
-	vertexColor :: Color } deriving (Show, Generic)
+	vertexPos :: Position, vertexNormal :: Normal, vertexColor :: Color }
+	deriving (Show, Generic)
 
 triangle :: V.Vector Vertex
 triangle = V.fromList [

@@ -121,22 +121,15 @@ bindDescriptorSets (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss dosts 
 
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
 	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
-	Show (HeteroParList.PL3
-		DynamicOffset (DescriptorSet.LayoutArgListOnlyDynamics sbtss)),
 	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
 	GetDscSetListLengthSnds spslbtss ~ sbtss,
-	Show (HeteroParList.PL3 DynamicIndex
-		(DescriptorSet.LayoutArgListOnlyDynamics sbtss)),
 	GetDscSetListLength spslbtss,
-	Show (HeteroParList.PL3 KObj.ObjectLength
-		(DescriptorSet.LayoutArgListOnlyDynamics
-			(GetDscSetListLengthSnds spslbtss))),
 	SetPos (MapSnd spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
-	CommandBuffer.Binded sc vs -> Pipeline.BindPoint ->
+	CommandBuffer.GBinded sc vs '(s, sbtss, foo) -> Pipeline.BindPoint ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
 	IO ()
-bindDescriptorSetsNew (CommandBuffer.Binded c) bp (Pipeline.Layout.L l) dss idxs = do
+bindDescriptorSetsNew (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss idxs = do
 	lns <- getDscSetListLength dss
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
@@ -296,9 +289,9 @@ pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts 
 	PokableList ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
-	CommandBuffer.Binded sc vs -> Pipeline.Layout.L s sbtss whole ->
+	CommandBuffer.GBinded sc vs '(s, sbtss, whole) -> Pipeline.Layout.L s sbtss whole ->
 	HeteroParList.L ts -> IO ()
-pushConstants' (CommandBuffer.Binded cb) (Pipeline.Layout.L lyt) xs =
+pushConstants' (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
 	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 
