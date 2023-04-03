@@ -117,7 +117,6 @@ import qualified Gpu.Vulkan.Pipeline.GraphicsNew as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fnc
@@ -1436,21 +1435,6 @@ data Vertex = Vertex {
 	vertexPos :: Position, vertexNormal :: Normal, vertexColor :: Color }
 	deriving (Show, Generic)
 
-triangle :: V.Vector Vertex
-triangle = V.fromList [
-	Vertex {
-		vertexPos = Position . Cglm.Vec3 $ 1 :. 1 :. 0.5 :. NilL,
-		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL },
-	Vertex {
-		vertexPos = Position . Cglm.Vec3 $ (- 1) :. 1 :. 0.5 :. NilL,
-		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL },
-	Vertex {
-		vertexPos = Position . Cglm.Vec3 $ 0 :. (- 1) :. 0.5 :. NilL,
-		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL } ]
-
 newtype Position = Position Cglm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
 
@@ -1480,27 +1464,20 @@ positionNormalToVertex
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL }
 
-vertices, vertices' :: V.Vector Vertex
-vertices = V.fromList [
-	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 1.0 :. 0.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ (- 1.0) :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
-vertices' = V.fromList [
-	Vertex (Position . Cglm.Vec3 $ 1.0 :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ (- 1.0) :. 1.0 :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL),
-	Vertex (Position . Cglm.Vec3 $ 0.0 :. (- 1.0) :. 0.0 :. NilL)
-		(Normal . Cglm.Vec3 $ 0.0 :. 0.0 :. 0.0 :. NilL)
-		(Color . Cglm.Vec3 $ 0.0 :. 1.0 :. 0.0 :. NilL) ]
+triangle :: V.Vector Vertex
+triangle = V.fromList [
+	Vertex {
+		vertexPos = Position . Cglm.Vec3 $ 1 :. 1 :. 0.5 :. NilL,
+		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
+		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL },
+	Vertex {
+		vertexPos = Position . Cglm.Vec3 $ (- 1) :. 1 :. 0.5 :. NilL,
+		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
+		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL },
+	Vertex {
+		vertexPos = Position . Cglm.Vec3 $ 0 :. (- 1) :. 0.5 :. NilL,
+		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
+		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL } ]
 
 data MeshPushConstants = MeshPushConstants {
 	meshPushConstantsData :: Cglm.Vec4,
@@ -1514,8 +1491,7 @@ instance Foreign.Storable.Generic.G MeshPushConstants
 data CameraData = CameraData {
 	cameraDataView :: View,
 	cameraDataProj :: Proj,
-	cameraDataViewProj :: ViewProj }
-	deriving (Show, Generic)
+	cameraDataViewProj :: ViewProj } deriving (Show, Generic)
 
 cameraData :: Vk.C.Extent2d -> CameraData
 cameraData sce = CameraData (View view) (Proj $ projection sce)
