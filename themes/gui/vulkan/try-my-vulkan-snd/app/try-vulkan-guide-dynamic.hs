@@ -49,7 +49,8 @@ import qualified Data.Text.IO as Txt
 import qualified Graphics.UI.GLFW as Glfw hiding (createWindowSurface)
 import qualified Glfw as Glfw
 import qualified Cglm
-import qualified Foreign.Storable.Generic
+
+import Foreign.Storable.Generic qualified as Str.G
 
 import ThEnv
 import Shaderc
@@ -94,7 +95,7 @@ import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
-import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VertexInputSt
+import qualified Gpu.Vulkan.Pipeline.VertexInputState as Vk.Ppl.VtxIptSt
 import qualified Gpu.Vulkan.Pipeline.InputAssemblyState as Vk.Ppl.InpAsmbSt
 import qualified Gpu.Vulkan.Pipeline.ViewportState as Vk.Ppl.ViewportSt
 import qualified Gpu.Vulkan.Pipeline.RasterizationState as Vk.Ppl.RstSt
@@ -143,7 +144,7 @@ import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 
-import qualified Codec.Wavefront.ReadOld as W
+import qualified Codec.Wavefront.ReadOld as Wv
 import Tools
 
 maxFramesInFlight :: Integral n => n
@@ -157,15 +158,18 @@ frashRate = 2
 main :: IO ()
 main = do
 	[objfile] <- getArgs
-	vns <- readVertices <$> BS.readFile objfile
+	vns <- vertices <$> BS.readFile objfile
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil nil
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where
-	readVertices s = V.map positionNormalToVertex . uncurry3 W.facePosNormal
-		$ W.readV' (W.countVertex c) (W.countNormal c) (W.countFace c) s
-		where c = W.countV' s
+	vertices s = V.map posNormalToVertex
+		. uncurry3 Wv.facePosNormal $ Wv.readV' cv cn cf s
+		where Wv.Count {
+			Wv.countVertex = cv,
+			Wv.countNormal = cn,
+			Wv.countFace = cf } = Wv.countV' s
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
@@ -1308,7 +1312,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 	HL.index cmms ffn \(MemoryCamera cmm) -> do
 	Vk.Mm.write @"camera-buffer" @CameraObj dv cmm zeroBits (cameraData ex)
 	Vk.Mm.write @"scene-buffer" @(SceneObj) dv scnm zeroBits . (!! ffn)
-		$ iterate (Nothing :) [Just $ gpuSceneData fn]
+		$ iterate (Nothing :) [Just $ sceneData fn]
 	Vk.Fnc.waitForFs dv siff True maxBound
 	iid <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dv sc uint64Max (Just ias) Nothing
@@ -1414,7 +1418,7 @@ drawObject ovb cb0 ds RenderObject {
 				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
-		$ HL.Id (Foreign.Storable.Generic.Wrap MeshPushConstants {
+		$ HL.Id (Str.G.Wrap MeshPushConstants {
 			meshPushConstantsData =
 				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model }) :** HL.Nil
@@ -1431,34 +1435,34 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectMeshSize :: Word32,
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
+-- VERTEX
+
 data Vertex = Vertex {
 	vertexPos :: Position, vertexNormal :: Normal, vertexColor :: Color }
 	deriving (Show, Generic)
 
 newtype Position = Position Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 newtype Normal = Normal Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 newtype Color = Color Cglm.Vec3
-	deriving (Show, Storable, Vk.Ppl.VertexInputSt.Formattable)
-
-instance Storable Vertex where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 instance SizeAlignmentList Vertex
 instance SizeAlignmentListUntil Position Vertex
 instance SizeAlignmentListUntil Normal Vertex
 instance SizeAlignmentListUntil Color Vertex
-instance Foreign.Storable.Generic.G Vertex
+instance Str.G.G Vertex
 
-positionNormalToVertex :: Foreign.Storable.Generic.Wrap W.PositionNormal -> Vertex
-positionNormalToVertex
-	(W.W (W.PositionNormal (W.W (W.Position x y z)) (W.W (W.Normal v w u)))) =
+instance Storable Vertex where
+	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
+	peek = Str.G.gPeek; poke = Str.G.gPoke
+
+posNormalToVertex :: Str.G.Wrap Wv.PositionNormal -> Vertex
+posNormalToVertex (Wv.W (Wv.PositionNormal
+	(Wv.W (Wv.Position x y z)) (Wv.W (Wv.Normal v w u)))) =
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
@@ -1479,23 +1483,26 @@ triangle = V.fromList [
 		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
 		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL } ]
 
-data MeshPushConstants = MeshPushConstants {
-	meshPushConstantsData :: Cglm.Vec4,
-	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
-
-type WMeshPushConstants = Foreign.Storable.Generic.Wrap MeshPushConstants
-
-instance SizeAlignmentList MeshPushConstants
-instance Foreign.Storable.Generic.G MeshPushConstants
+-- CAMERA DATA
 
 data CameraData = CameraData {
-	cameraDataView :: View,
-	cameraDataProj :: Proj,
+	cameraDataView :: View, cameraDataProj :: Proj,
 	cameraDataViewProj :: ViewProj } deriving (Show, Generic)
 
+newtype View = View Cglm.Mat4 deriving (Show, Storable)
+newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
+newtype ViewProj = ViewProj Cglm.Mat4 deriving (Show, Storable)
+
+instance Storable CameraData where
+	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
+	peek = Str.G.gPeek; poke = Str.G.gPoke
+
+instance Str.G.G CameraData
+instance SizeAlignmentList CameraData
+
 cameraData :: Vk.C.Extent2d -> CameraData
-cameraData sce = CameraData (View view) (Proj $ projection sce)
-	(ViewProj $ Cglm.mat4Mul (projection sce) view)
+cameraData ex = CameraData (View view) (Proj $ projection ex)
+	(ViewProj $ Cglm.mat4Mul (projection ex) view)
 
 view :: Cglm.Mat4
 view = Cglm.lookat
@@ -1504,109 +1511,86 @@ view = Cglm.lookat
 	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
 projection :: Vk.C.Extent2d -> Cglm.Mat4
-projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.perspective
-	(Cglm.rad 70) (fromIntegral (Vk.C.extent2dWidth sce) /
-		fromIntegral (Vk.C.extent2dHeight sce)) 0.1 200
+projection Vk.C.Extent2d {
+	Vk.C.extent2dWidth = fromIntegral -> w,
+	Vk.C.extent2dHeight = fromIntegral -> h } = Cglm.modifyMat4 1 1 negate
+	$ Cglm.perspective (Cglm.rad 70) (w / h) 0.1 200
 
-instance Storable CameraData where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
-
-instance Foreign.Storable.Generic.G CameraData
-instance SizeAlignmentList CameraData
-
-newtype View = View Cglm.Mat4 deriving (Show, Storable)
-newtype Proj = Proj Cglm.Mat4 deriving (Show, Storable)
-newtype ViewProj = ViewProj Cglm.Mat4 deriving (Show, Storable)
+-- SCENE DATA
 
 data SceneData = SceneData {
-	gpuSceneDataFogColor :: FogColor,
-	gpuSceneDataFogDistances :: FogDistances,
-	gpuSceneDataAmbientColor :: AmbientColor,
-	gpuSceneDataSunlightDirection :: SunlightDirection,
-	gpuSceneDataSunlightColor :: SunlightColor }
+	sceneDataFogColor :: FogColor, sceneDataFogDists :: FogDists,
+	sceneDataAmbColor :: AmbColor,
+	sceneDataSunDir :: SunDir, sceneDataSunColor :: SunColor }
 	deriving (Show, Generic)
 
-gpuSceneDataZero :: SceneData
-gpuSceneDataZero = SceneData {
-	gpuSceneDataFogColor = FogColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataFogDistances =
-		FogDistances . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataAmbientColor =
-		AmbientColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataSunlightDirection =
-		SunlightDirection . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataSunlightColor =
-		SunlightColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+newtype FogColor = FogColor Cglm.Vec4 deriving (Show, Storable)
+newtype FogDists = FogDists Cglm.Vec4 deriving (Show, Storable)
+newtype AmbColor = AmbColor Cglm.Vec4 deriving (Show, Storable)
+newtype SunDir = SunDir Cglm.Vec4 deriving (Show, Storable)
+newtype SunColor = SunColor Cglm.Vec4 deriving (Show, Storable)
 
-gpuSceneData :: Int -> SceneData
-gpuSceneData fn = SceneData {
-	gpuSceneDataFogColor = FogColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataFogDistances =
-		FogDistances . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataAmbientColor =
-		AmbientColor . Cglm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
-	gpuSceneDataSunlightDirection =
-		SunlightDirection . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
-	gpuSceneDataSunlightColor =
-		SunlightColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
+instance Storable SceneData where
+	sizeOf = Str.G.gSizeOf; alignment = Str.G.gAlignment
+	peek = Str.G.gPeek; poke = Str.G.gPoke
+
+instance Str.G.G SceneData
+instance SizeAlignmentList SceneData
+
+sceneData :: Int -> SceneData
+sceneData fn = SceneData {
+	sceneDataFogColor = FogColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneDataFogDists = FogDists . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneDataAmbColor = AmbColor . Cglm.Vec4 $ r :. 0 :. b :. 0 :. NilL,
+	sceneDataSunDir = SunDir . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
+	sceneDataSunColor = SunColor . Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL }
 	where
 	r = sin (fromIntegral fn / (180 * frashRate) * pi)
 	b = cos (fromIntegral fn / (180 * frashRate) * pi)
 
-instance Storable SceneData where
-	sizeOf = Foreign.Storable.Generic.gSizeOf
-	alignment = Foreign.Storable.Generic.gAlignment
-	peek = Foreign.Storable.Generic.gPeek
-	poke = Foreign.Storable.Generic.gPoke
+-- MESH PUSH CONSTANTS
 
-instance Foreign.Storable.Generic.G SceneData
-instance SizeAlignmentList SceneData
+data MeshPushConstants = MeshPushConstants {
+	meshPushConstantsData :: Cglm.Vec4,
+	meshPushConstantsRenderMatrix :: Cglm.Mat4 } deriving (Show, Generic)
 
-newtype FogColor = FogColor Cglm.Vec4 deriving (Show, Storable)
-newtype FogDistances = FogDistances Cglm.Vec4 deriving (Show, Storable)
-newtype AmbientColor = AmbientColor Cglm.Vec4 deriving (Show, Storable)
-newtype SunlightDirection =
-	SunlightDirection Cglm.Vec4 deriving (Show, Storable)
-newtype SunlightColor = SunlightColor Cglm.Vec4 deriving (Show, Storable)
+type WMeshPushConstants = Str.G.Wrap MeshPushConstants
+
+instance SizeAlignmentList MeshPushConstants
+instance Str.G.G MeshPushConstants
+
+-- OTHER TYPES
 
 type FramebufferResized = IORef Bool
+
+-- SHADER
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
 	HL.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
 		'((), (), 'GlslVertexShader, (), (), '[]),
 		'((), (), 'GlslFragmentShader, (), (), '[]) ]
-shaderStages vs fs = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HL.Nil
-	where
-	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+shaderStages vs fs = U6 vertinfo :** U6 fraginfo :** HL.Nil where
+	vertinfo = Vk.Ppl.ShdrSt.CreateInfoNew {
 		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
-		Vk.Ppl.ShdrSt.createInfoModuleNew = vertShaderModule1,
+		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl vs,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
-	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
+	fraginfo = Vk.Ppl.ShdrSt.CreateInfoNew {
 		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
-		Vk.Ppl.ShdrSt.createInfoModuleNew = fragShaderModule1,
+		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl fs,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
-	vertShaderModule1 :: Vk.Shader.Module.M n 'GlslVertexShader () ()
-	vertShaderModule1 = mkShaderModule vs
-	fragShaderModule1 :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
-	fragShaderModule1 = mkShaderModule fs
-	mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
-	mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
+	mdl :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+	mdl cd = Vk.Shader.Module.M crInfo nil nil
 		where crInfo = Vk.Shader.Module.M.CreateInfo {
 			Vk.Shader.Module.M.createInfoNext = Nothing,
-			Vk.Shader.Module.M.createInfoFlags = def,
+			Vk.Shader.Module.M.createInfoFlags = zeroBits,
 			Vk.Shader.Module.M.createInfoCode = cd }
-
--- SHADERS
 
 [glslVertexShader|
 
@@ -1619,22 +1603,16 @@ layout(location = 2) in vec3 inColor;
 layout(location = 0) out vec3 outColor;
 
 layout (set = 0, binding = 0) uniform CameraBuffer {
-	mat4 view;
-	mat4 proj;
-	mat4 viewproj;
-} cameraData;
+	mat4 view; mat4 proj; mat4 viewproj; } cameraData;
 
-layout(push_constant) uniform constants
-{
-	vec4 data;
-	mat4 render_matrix;
-} PushConstants;
+layout(push_constant) uniform constants {
+	vec4 data; mat4 render_matrix; } PushConstants;
 
 void
 main()
 {
-	mat4 transformMatrix = (cameraData.viewproj * PushConstants.render_matrix);
-//	mat4 transformMatrix = (cameraData.proj * cameraData.view * PushConstants.render_matrix);
+	mat4 transformMatrix =
+		(cameraData.viewproj * PushConstants.render_matrix);
 	gl_Position = transformMatrix * vec4(inPosition, 1.0);
 	outColor = inColor;
 }
@@ -1649,18 +1627,14 @@ layout(location = 0) in vec3 inColor;
 layout(location = 0) out vec4 outColor;
 
 layout (set = 0, binding = 1) uniform SceneData {
-	vec4 fogColor;
-	vec4 fogDistances;
+	vec4 fogColor; vec4 fogDists;
 	vec4 ambientColor;
-	vec4 sunlightDirection;
-	vec4 sunlightColor;
-} sceneData;
+	vec4 sunlightDir; vec4 sunlightColor; } sceneData;
 
 void
 main()
 {
 	outColor = vec4(inColor + sceneData.ambientColor.xyz, 1.0);
-//	outColor = vec4(inColor, 1.0);
 }
 
 |]
