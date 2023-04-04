@@ -1099,9 +1099,9 @@ createDescriptorSets dv dscp cmbs lyts scnb = do
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lyts }
 
-class Update cmbs lyts where
+class Update csbs lyts where
 	update :: Vk.Dvc.D sd -> HL.PL (Vk.DscSet.S sd sp) lyts ->
-		HL.PL BindedCamera cmbs ->
+		HL.PL BindedCamera csbs ->
 		Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] -> IO ()
 
 instance Update '[] '[] where update _ HL.Nil HL.Nil _ = pure ()
@@ -1113,15 +1113,15 @@ instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
 		'[SceneObj],
-	Update cmbs lyts ) => Update (cmb ': cmbs) ('(slyt, bs) ': lyts) where
-	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs) scnb = do
+	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
+	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
 		Vk.DscSet.updateDs @() @() dv (
 			U4 (descriptorWrite @CameraObj
-				dscs cmb Vk.Dsc.TypeUniformBuffer) :**
+				dscs csb Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite @SceneObj
 				dscs scnb Vk.Dsc.TypeUniformBufferDynamic) :**
 			HL.Nil ) []
-		update dv dscss cmbs scnb
+		update dv dscss csbs scnb
 
 descriptorWrite :: forall obj sd sp slbts sb sm nm objs .
 	Vk.DscSet.S sd sp slbts -> Vk.Bffr.Binded sm sb nm objs ->
