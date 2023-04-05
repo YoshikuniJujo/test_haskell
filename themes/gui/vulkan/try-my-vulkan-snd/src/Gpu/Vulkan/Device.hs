@@ -22,7 +22,7 @@ import qualified Gpu.Vulkan.Device.Middle as M
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
-create :: (Pokable n, WithPokedHeteroToListM ns, Pokable n3, Pokable n4) =>
+create :: (WithPoked n, WithPokedHeteroToListM ns, Pokable n3, Pokable n4) =>
 	PhysicalDevice.P -> M.CreateInfo n ns ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . D s -> IO a) -> IO a

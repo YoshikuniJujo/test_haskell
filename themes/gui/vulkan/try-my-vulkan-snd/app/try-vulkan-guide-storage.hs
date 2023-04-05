@@ -75,6 +75,7 @@ import qualified Gpu.Vulkan.Ext.DebugUtils as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger as Vk.Ext.DbgUtls.Msngr
 import qualified Gpu.Vulkan.Ext.DebugUtils.Enum as Vk.Ext.DbgUtls
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
+import qualified Gpu.Vulkan.PhysicalDevice.Middle as Vk.Phd.M
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFmly
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFmly
@@ -212,7 +213,7 @@ createInstance f = do
 			Vk.M.makeApiVersion 0 1 0 0,
 		Vk.M.applicationInfoEngineName = "No Engine",
 		Vk.M.applicationInfoEngineVersion = Vk.M.makeApiVersion 0 1 0 0,
-		Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
+		Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_1 }
 
 debugMessengerInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()
 debugMessengerInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
@@ -326,7 +327,7 @@ completeQueueFamilies = \case
 createDevice :: Vk.Phd.P -> QueueFamilyIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
 createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qcris ->
-	Vk.Dvc.create @() ph (crInfo qcris) nil nil \dv -> do
+	Vk.Dvc.create ph (crInfo qcris) nil nil \dv -> do
 		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
 		f dv gq pq
@@ -338,13 +339,17 @@ createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qcris ->
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 	crInfo qcris = Vk.Dvc.M.CreateInfo {
-		Vk.Dvc.M.createInfoNext = Nothing,
+		Vk.Dvc.M.createInfoNext = Just drawParFeatures,
 		Vk.Dvc.M.createInfoFlags = zeroBits,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qcris,
 		Vk.Dvc.M.createInfoEnabledLayerNames = bool
 			[] [Vk.Khr.validationLayerName] enableValidationLayers,
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
+	drawParFeatures :: Vk.Phd.M.ShaderDrawParametersFeatures ()
+	drawParFeatures = Vk.Phd.M.ShaderDrawParametersFeatures {
+		Vk.Phd.M.shaderDrawParametersFeaturesNext = Nothing,
+		Vk.Phd.M.shaderDrawParametersFeaturesShaderDrawParameters = True }
 
 mkHeteroParList :: WithPoked s => (a -> t s) -> [a] ->
 	(forall ss . WithPokedHeteroToListM ss => HL.PL t ss -> b) ->
