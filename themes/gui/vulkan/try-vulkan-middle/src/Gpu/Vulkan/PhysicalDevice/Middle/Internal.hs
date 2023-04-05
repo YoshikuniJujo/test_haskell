@@ -192,14 +192,13 @@ shaderDrawParametersFeaturesToCore :: WithPoked n =>
 shaderDrawParametersFeaturesToCore ShaderDrawParametersFeatures {
 	shaderDrawParametersFeaturesNext = mnxt,
 	shaderDrawParametersFeaturesShaderDrawParameters = sdp } f =
-	alloca \pfs -> do
-		withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
-			let sdpf = C.ShaderDrawParametersFeatures {
+	alloca \pfs -> withPokedMaybe' mnxt \pnxt -> do
+		withPtrS pnxt \(castPtr -> pnxt') -> poke pfs
+			C.ShaderDrawParametersFeatures {
 				C.shaderDrawParametersFeaturesSType = (),
 				C.shaderDrawParametersFeaturesPNext = pnxt',
 				C.shaderDrawParametersFeaturesShaderDrawParameters =
 					boolToBool32 sdp }
-			poke pfs sdpf
 		f pfs
 
 instance WithPoked n => WithPoked (ShaderDrawParametersFeatures n) where
