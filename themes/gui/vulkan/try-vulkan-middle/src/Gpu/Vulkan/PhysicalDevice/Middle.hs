@@ -15,6 +15,12 @@ module Gpu.Vulkan.PhysicalDevice.Middle (
 	enumerateExtensionProperties,
 	getQueueFamilyProperties,
 	getFormatProperties,
-	getMemoryProperties, MemoryProperties(..) ) where
+	getMemoryProperties, MemoryProperties(..),
+
+	-- * Others
+
+	ShaderDrawParametersFeatures(..)
+
+	) where
 
 import Gpu.Vulkan.PhysicalDevice.Middle.Internal

@@ -13,8 +13,11 @@ module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
 
 	Properties(..), getProperties,
 	MemoryProperties(..), getMemoryProperties,
+
+	ShaderDrawParametersFeatures(..)
 	) where
 
+import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -177,3 +180,28 @@ getFormatProperties :: P -> Format -> IO FormatProperties
 getFormatProperties (P pdvc) (Format fmt) = formatPropertiesFromCore <$> alloca \pp -> do
 	C.getFormatProperties pdvc fmt pp
 	peek pp
+
+data ShaderDrawParametersFeatures n = ShaderDrawParametersFeatures {
+	shaderDrawParametersFeaturesNext :: Maybe n,
+	shaderDrawParametersFeaturesShaderDrawParameters :: Bool }
+	deriving Show
+
+shaderDrawParametersFeaturesToCore :: WithPoked n =>
+	ShaderDrawParametersFeatures n ->
+	(Ptr C.ShaderDrawParametersFeatures -> IO a) -> IO a
+shaderDrawParametersFeaturesToCore ShaderDrawParametersFeatures {
+	shaderDrawParametersFeaturesNext = mnxt,
+	shaderDrawParametersFeaturesShaderDrawParameters = sdp } f =
+	alloca \pfs -> do
+		withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
+			let sdpf = C.ShaderDrawParametersFeatures {
+				C.shaderDrawParametersFeaturesSType = (),
+				C.shaderDrawParametersFeaturesPNext = pnxt',
+				C.shaderDrawParametersFeaturesShaderDrawParameters =
+					boolToBool32 sdp }
+			poke pfs sdpf
+		f pfs
+
+instance WithPoked n => WithPoked (ShaderDrawParametersFeatures n) where
+	withPoked' sdpfs f =
+		shaderDrawParametersFeaturesToCore sdpfs $ f . ptrS . castPtr
