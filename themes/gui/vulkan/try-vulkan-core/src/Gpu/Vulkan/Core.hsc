@@ -16,7 +16,7 @@ module Gpu.Vulkan.Core (
 	applicationInfoPApplicationName, applicationInfoApplicationVersion,
 	applicationInfoPEngineName, applicationInfoEngineVersion,
 	applicationInfoApiVersion,
-	ApiVersion, makeApiVersion, apiVersion_1_0,
+	ApiVersion, makeApiVersion, apiVersion_1_0, apiVersion_1_1,
 
 	-- ** SubmitInfo
 
@@ -152,6 +152,9 @@ foreign import capi "vulkan/vulkan.h VK_MAKE_API_VERSION" makeApiVersion ::
 	Word8 -> Word8 -> Word16 -> Word16 -> ApiVersion
 
 foreign import capi "vulkan/vulkan.h value VK_API_VERSION_1_0" apiVersion_1_0 ::
+	ApiVersion
+
+foreign import capi "vulkan/vulkan.h value VK_API_VERSION_1_1" apiVersion_1_1 ::
 	ApiVersion
 
 type PtrApplicationInfo = Ptr ApplicationInfo
