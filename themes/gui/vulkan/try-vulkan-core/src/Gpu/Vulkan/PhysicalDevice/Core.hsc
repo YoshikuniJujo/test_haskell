@@ -6,6 +6,7 @@
 module Gpu.Vulkan.PhysicalDevice.Core where
 
 import Foreign.Ptr
+import Foreign.Ptr.Synonyms
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
@@ -163,3 +164,24 @@ foreign import ccall "vkGetPhysicalDeviceMemoryProperties"
 foreign import ccall "vkGetPhysicalDeviceFormatProperties"
 	getFormatProperties ::
 	P -> #{type VkFormat} -> Ptr FormatProperties -> IO ()
+
+shaderDrawParametersFeaturesType :: #{type VkStructureType}
+shaderDrawParametersFeaturesType =
+	#{const VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES}
+
+struct "ShaderDrawParametersFeatures"
+	#{size VkPhysicalDeviceShaderDrawParametersFeatures}
+	#{alignment VkPhysicalDeviceShaderDrawParametersFeatures} [
+	("sType", ''(), [| const $ pure () |],
+		[| \p _ ->
+			#{poke VkPhysicalDeviceShaderDrawParametersFeatures,
+				sType} p shaderDrawParametersFeaturesType |]),
+	("pNext", ''PtrVoid,
+		[| #{peek VkPhysicalDeviceShaderDrawParametersFeatures, pNext} |],
+		[| #{poke VkPhysicalDeviceShaderDrawParametersFeatures, pNext} |]),
+	("shaderDrawParameters", ''#{type VkBool32},
+		[| #{peek VkPhysicalDeviceShaderDrawParametersFeatures,
+			shaderDrawParameters} |],
+		[| #{poke VkPhysicalDeviceShaderDrawParametersFeatures,
+			shaderDrawParameters} |]) ]
+	[''Show, ''Storable]
