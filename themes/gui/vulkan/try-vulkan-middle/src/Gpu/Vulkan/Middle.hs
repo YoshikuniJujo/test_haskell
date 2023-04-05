@@ -5,7 +5,7 @@ module Gpu.Vulkan.Middle (
 
 	-- * Application Info and Api Version
 
-	ApplicationInfo(..), ApiVersion, makeApiVersion, apiVersion_1_0,
+	ApplicationInfo(..), ApiVersion, makeApiVersion, apiVersion_1_0, apiVersion_1_1,
 
 	-- * Properties
 
