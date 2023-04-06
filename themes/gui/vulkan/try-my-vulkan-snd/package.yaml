@@ -279,6 +279,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
+  try-vulkan-guide-texture:
+    main:                try-vulkan-guide-texture.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan-snd
   try-wavefront-obj:
     main:                try-wavefront-obj.hs
     source-dirs:         app
