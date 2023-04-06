@@ -1751,6 +1751,13 @@ instance SizeAlignmentList ObjData
 
 type FramebufferResized = IORef Bool
 
+-- IMMEDIATE SUBMIT
+
+data UploadContext sf scp scb = UploadContext {
+	uploadContextFence :: Vk.Fnc.F sf,
+	uploadContextCommandPool :: Vk.CmdPl.C scp,
+	uploadContextCommandBuffer :: Vk.CBffr.C scb }
+
 -- SHADER
 
 shaderStages ::
