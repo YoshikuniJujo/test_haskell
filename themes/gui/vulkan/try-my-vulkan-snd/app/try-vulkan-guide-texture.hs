@@ -1758,6 +1758,15 @@ data UploadContext sf scp scb = UploadContext {
 	uploadContextCommandPool :: Vk.CmdPl.C scp,
 	uploadContextCommandBuffer :: Vk.CBffr.C scb }
 
+vulkanEngineInitSyncStructures ::
+	Vk.Dvc.D sd -> (forall sf . Vk.Fnc.F sf -> IO a) -> IO a
+vulkanEngineInitSyncStructures dv f = do
+	let	uploadFenceCreateInfo :: Vk.Fnc.CreateInfo ()
+		uploadFenceCreateInfo = Vk.Fnc.CreateInfo {
+			Vk.Fnc.createInfoNext = Nothing,
+			Vk.Fnc.createInfoFlags = zeroBits }
+	Vk.Fnc.create dv uploadFenceCreateInfo nil nil f
+
 -- SHADER
 
 shaderStages ::
