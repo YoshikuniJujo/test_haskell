@@ -971,7 +971,7 @@ beginSingleTimeCommands :: forall sd sc a .
 beginSingleTimeCommands dv gq cp cmds =
 	Vk.CBffr.allocateNew @() dv allocInfo \(cb :*. HL.Nil) ->
 	Vk.CBffr.beginNew @() @() cb beginInfo (cmds cb) <* do
-	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo cb) Nothing
+	Vk.Q.submit gq (HL.Singleton . U4 $ sminfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
 	allocInfo :: Vk.CBffr.AllocateInfoNew () sc 1
@@ -983,8 +983,8 @@ beginSingleTimeCommands dv gq cp cmds =
 		Vk.CBffr.beginInfoNext = Nothing,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
-	submitInfo :: forall s . Vk.CBffr.C s -> Vk.SubmitInfo () '[] '[s] '[]
-	submitInfo cb = Vk.SubmitInfo {
+	sminfo :: forall s . Vk.CBffr.C s -> Vk.SubmitInfo () '[] '[s] '[]
+	sminfo cb = Vk.SubmitInfo {
 		Vk.submitInfoNext = Nothing,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
 		Vk.submitInfoCommandBuffers = HL.Singleton cb,
@@ -1476,12 +1476,12 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 	Vk.CBffr.resetNew cb zeroBits
 	HL.index fbs iid \fb -> recordCommandBuffer
 		ex rp lyt gpl fb ds dsod vb vbtri cb vnsln (fromIntegral ffn) fn
-	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo ias rfs) $ Just iff
+	Vk.Q.submit gq (HL.Singleton . U4 $ sminfo ias rfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresentNew @() pq $ presentInfo rfs iid
 	where
-	submitInfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
+	sminfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
 		Vk.SubmitInfo () '[ssi] '[scb] '[ssr]
-	submitInfo ias rfs = Vk.SubmitInfo {
+	sminfo ias rfs = Vk.SubmitInfo {
 		Vk.submitInfoNext = Nothing :: Maybe (),
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Singleton
 			$ Vk.SemaphorePipelineStageFlags ias
@@ -1766,6 +1766,20 @@ vulkanEngineInitSyncStructures dv f = do
 			Vk.Fnc.createInfoNext = Nothing,
 			Vk.Fnc.createInfoFlags = zeroBits }
 	Vk.Fnc.create dv uploadFenceCreateInfo nil nil f
+
+commandBufferBeginInfo :: Vk.CBffr.UsageFlags -> Vk.CBffr.BeginInfo () ()
+commandBufferBeginInfo flags = Vk.CBffr.BeginInfo {
+	Vk.CBffr.beginInfoNext = Nothing,
+	Vk.CBffr.beginInfoFlags = flags,
+	Vk.CBffr.beginInfoInheritanceInfo = Nothing }
+
+submitInfo :: Vk.CBffr.C scb -> Vk.SubmitInfo () '[] '[scb] '[]
+submitInfo cmd = Vk.SubmitInfo {
+	Vk.submitInfoNext = Nothing,
+	Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
+	Vk.submitInfoCommandBuffers = HL.Singleton cmd,
+	Vk.submitInfoSignalSemaphores = HL.Nil }
+
 
 -- SHADER
 
