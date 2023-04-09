@@ -12,4 +12,4 @@ make = createFile'' vulkanCore "CommandPool.Enum" ["Data.Bits", "Data.Word"] [
 	(	[],
 		(	"ResetFlagBits", "VkCommandPoolResetFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) ) ]
-	"type CreateFlags = CreateFlagBits"
+	"type CreateFlags = CreateFlagBits\ntype ResetFlags = ResetFlagBits"

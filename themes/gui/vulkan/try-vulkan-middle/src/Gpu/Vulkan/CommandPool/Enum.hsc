@@ -36,3 +36,4 @@ enum "ResetFlagBits" ''#{type VkCommandPoolResetFlagBits}
 		#{const VK_COMMAND_POOL_RESET_FLAG_BITS_MAX_ENUM}) ]
 
 type CreateFlags = CreateFlagBits
+type ResetFlags = ResetFlagBits
