@@ -8,5 +8,8 @@ make :: IO ()
 make = createFile'' vulkanCore "CommandPool.Enum" ["Data.Bits", "Data.Word"] [
 	(	[("CreateFlagsZero", Int 0)],
 		(	"CreateFlagBits", "VkCommandPoolCreateFlagBits",
+			["Show", "Eq", "Storable", "Bits"] ) ),
+	(	[],
+		(	"ResetFlagBits", "VkCommandPoolResetFlagBits",
 			["Show", "Eq", "Storable", "Bits"] ) ) ]
 	"type CreateFlags = CreateFlagBits"

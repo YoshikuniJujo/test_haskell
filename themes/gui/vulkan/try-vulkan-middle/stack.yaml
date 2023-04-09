@@ -38,10 +38,10 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f83ef8ffb6a1f52926065fc2565011a40e5123bf
+  commit: 8d925b73bb3d2cc68aaa02bc3379c35a2298343e
   subdirs:
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
