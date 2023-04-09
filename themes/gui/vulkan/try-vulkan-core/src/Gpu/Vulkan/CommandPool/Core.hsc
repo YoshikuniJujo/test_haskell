@@ -44,3 +44,6 @@ foreign import ccall "vkCreateCommandPool" create ::
 
 foreign import ccall "vkDestroyCommandPool" destroy ::
 	Device.D -> C -> Ptr AllocationCallbacks.A -> IO ()
+
+foreign import ccall "vkResetCommandPool" reset ::
+	Device.D -> C -> #{type VkCommandPoolResetFlags} -> IO ()
