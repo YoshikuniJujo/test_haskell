@@ -6,8 +6,8 @@ module Gpu.Vulkan.CommandPool.Middle (
 
 	C,
 
-	-- * Create and Destroy
+	-- * Create, Destroy and Reset
 
-	create, destroy, CreateInfo(..) ) where
+	create, destroy, reset, CreateInfo(..) ) where
 
 import Gpu.Vulkan.CommandPool.Middle.Internal

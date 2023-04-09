@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandPool.Middle.Internal (
-	C(..), CreateInfo(..), create, destroy ) where
+	C(..), CreateInfo(..), create, destroy, reset ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -57,3 +57,6 @@ destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C c) mac =
 	AllocationCallbacks.maybeToCore mac $ C.destroy dvc c
+
+reset :: Device.D -> C -> ResetFlags -> IO ()
+reset (Device.D dv) (C c) (ResetFlagBits fs) = C.reset dv c fs
