@@ -266,6 +266,9 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 --	createObjDataBuffers pd dv dslyto maxFramesInFlight \lytods odbs odms ->
 	createDescriptorPool dv \dp ->
 	createDescriptorSets @sbsmods @slytods dv dp cmbs lyts odbs lytods scnb >>= \(dss, dssod) ->
+
+	createUploadContext dv qfs \uctxt ->
+
 	createVertexBuffer pd dv gq cp vns \vb ->
 	createVertexBuffer pd dv gq cp triangle \vbtri ->
 	createCommandBuffers dv cp \cbs ->
@@ -1773,13 +1776,58 @@ commandBufferBeginInfo flags = Vk.CBffr.BeginInfo {
 	Vk.CBffr.beginInfoFlags = flags,
 	Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 
-submitInfo :: Vk.CBffr.C scb -> Vk.SubmitInfo () '[] '[scb] '[]
-submitInfo cmd = Vk.SubmitInfo {
+uploadContextSubmitInfo :: Vk.CBffr.C scb -> Vk.SubmitInfo () '[] '[scb] '[]
+uploadContextSubmitInfo cmd = Vk.SubmitInfo {
 	Vk.submitInfoNext = Nothing,
 	Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
 	Vk.submitInfoCommandBuffers = HL.Singleton cmd,
 	Vk.submitInfoSignalSemaphores = HL.Nil }
 
+uploadContextCreateFence ::
+	Vk.Dvc.D sd -> (forall sf . Vk.Fnc.F sf -> IO a) -> IO a
+uploadContextCreateFence dv = Vk.Fnc.create @() @() @() dv def Nothing Nothing
+
+uploadContextCommandPoolCreateInfo :: QueueFamilyIndices -> Vk.CmdPl.CreateInfo ()
+uploadContextCommandPoolCreateInfo qfis = Vk.CmdPl.CreateInfo {
+	Vk.CmdPl.createInfoNext = Nothing,
+	Vk.CmdPl.createInfoFlags = zeroBits,
+	Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfis }
+
+uploadContextCommandBufferAllocateInfo ::
+	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfoNew () scp 1
+uploadContextCommandBufferAllocateInfo cp = Vk.CBffr.AllocateInfoNew {
+	Vk.CBffr.allocateInfoNextNew = Nothing,
+	Vk.CBffr.allocateInfoCommandPoolNew = cp,
+	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
+
+createUploadContext ::
+	Vk.Dvc.D sd -> QueueFamilyIndices ->
+	(forall sf scp scb . UploadContext sf scp scb -> IO a) -> IO a
+createUploadContext dv qfis f =
+	uploadContextCreateFence dv \fnc ->
+	Vk.CmdPl.create dv
+		(uploadContextCommandPoolCreateInfo qfis) nil nil \cp ->
+	Vk.CBffr.allocateNew dv
+		(uploadContextCommandBufferAllocateInfo cp) \(cb :*. HL.Nil) ->
+	f UploadContext {
+		uploadContextFence = fnc,
+		uploadContextCommandPool = cp,
+		uploadContextCommandBuffer = cb }
+
+immediateSubmit :: Vk.Dvc.D sd -> Vk.Q.Q ->
+	UploadContext sf scp scb -> (Vk.CBffr.C scb -> IO a) -> IO a
+immediateSubmit dv gq uctxt f =
+	let	cmd = uploadContextCommandBuffer uctxt
+		cmdBeginInfo =
+			commandBufferBeginInfo Vk.CBffr.UsageOneTimeSubmitBit in
+	Vk.CBffr.beginNew cmd cmdBeginInfo (f cmd) >>= \rt ->
+	let	submit = uploadContextSubmitInfo cmd
+		fnc = uploadContextFence uctxt in
+	Vk.Q.submit gq (HL.Singleton $ U4 submit) (Just fnc) >>
+	Vk.Fnc.waitForFs dv (HL.Singleton fnc) True 9999999999 >>
+	Vk.Fnc.resetFs dv (HL.Singleton fnc) >>
+	Vk.CmdPl.reset dv (uploadContextCommandPool uctxt) zeroBits >>
+	pure rt
 
 -- SHADER
 
