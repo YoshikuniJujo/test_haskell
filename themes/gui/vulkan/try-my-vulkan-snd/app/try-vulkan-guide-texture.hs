@@ -25,6 +25,7 @@ import Control.Monad.Fix
 import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object qualified as Obj
+import Data.Kind.Object qualified as KObj
 import Data.Foldable
 import Data.Default
 import Data.Bits
@@ -129,6 +130,7 @@ import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mm.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mm
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem
+import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mm
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mm.K
 import qualified Gpu.Vulkan.QueueNew as Vk.Q
@@ -148,6 +150,12 @@ import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 import qualified Codec.Wavefront.ReadOld as Wv
 import Tools
 
+import Foreign.Ptr
+import Foreign.Marshal.Array
+import Data.Array
+import Codec.Picture
+import Codec.Picture.Tools
+
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
@@ -159,18 +167,24 @@ frashRate = 2
 main :: IO ()
 main = do
 	[objfile] <- getArgs
-	vns <- vertices <$> BS.readFile objfile
+	s <- BS.readFile objfile
+	print $ Wv.countV' s
+	let	vns = vertices s
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil nil
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where
-	vertices s = V.map posNormalToVertex
-		. uncurry3 Wv.facePosNormal $ Wv.readV' cv cn cf s
+	vertices s = V.map posTxtNormalToVertex
+		. uncurry4 Wv.facePosTxtNormal $ Wv.readV'' cv ct cn cf s
 		where Wv.Count {
 			Wv.countVertex = cv,
+			Wv.countTexture = ct,
 			Wv.countNormal = cn,
 			Wv.countFace = cf } = Wv.countV' s
+
+uncurry4 :: (a -> b -> c -> d -> e) -> (a, b, c, d) -> e
+uncurry4 f (x, y, z, w) = f x y z w
 
 withWindow :: (Glfw.Window -> FramebufferResized -> IO a) -> IO a
 withWindow f = newIORef False >>= \frszd -> initWindow frszd >>= \w ->
@@ -267,7 +281,11 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 	createDescriptorPool dv \dp ->
 	createDescriptorSets @sbsmods @slytods dv dp cmbs lyts odbs lytods scnb >>= \(dss, dssod) ->
 
-	createUploadContext dv qfs \uctxt ->
+--	createUploadContext dv qfs \uctxt ->
+
+	createTextureImage pd dv gq cp "assets/lost_empire-RGBA.png" \timg ->
+
+--	print vns >>
 
 	createVertexBuffer pd dv gq cp vns \vb ->
 	createVertexBuffer pd dv gq cp triangle \vbtri ->
@@ -1617,8 +1635,10 @@ data RenderObject sg sl sdlyt sdlytod sm sb nm = RenderObject {
 -- VERTEX
 
 data Vertex = Vertex {
-	vertexPos :: Position, vertexNormal :: Normal, vertexColor :: Color }
-	deriving (Show, Generic)
+	vertexPos :: Position,
+	vertexNormal :: Normal,
+	vertexColor :: Color,
+	vertexUv :: Uv } deriving (Show, Generic)
 
 newtype Position = Position Cglm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
@@ -1627,6 +1647,9 @@ newtype Normal = Normal Cglm.Vec3
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 newtype Color = Color Cglm.Vec3
+	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
+
+newtype Uv = Uv Cglm.Vec2
 	deriving (Show, Storable, Vk.Ppl.VtxIptSt.Formattable)
 
 instance SizeAlignmentList Vertex
@@ -1645,22 +1668,35 @@ posNormalToVertex (Wv.W (Wv.PositionNormal
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL }
+		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
+		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL }
+
+posTxtNormalToVertex :: Str.G.Wrap Wv.PositionTxtNormal -> Vertex
+posTxtNormalToVertex (Wv.W (Wv.PositionTxtNormal
+	(Wv.W (Wv.Position x y z)) (Wv.W (Wv.TexCoord p q)) (Wv.W (Wv.Normal v w u)))) =
+	Vertex {
+		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
+		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
+		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
+		vertexUv = Uv . Cglm.Vec2 $ p :. q :. NilL }
 
 triangle :: V.Vector Vertex
 triangle = V.fromList [
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ 1 :. 1 :. 0.5 :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL },
+		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL,
+		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL },
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ (- 1) :. 1 :. 0.5 :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL },
+		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL,
+		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL },
 	Vertex {
 		vertexPos = Position . Cglm.Vec3 $ 0 :. (- 1) :. 0.5 :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ 1 :. 0 :. 0 :. NilL,
-		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL } ]
+		vertexColor = Color . Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL,
+		vertexUv = Uv . Cglm.Vec2 $ 0 :. 0 :. NilL } ]
 
 -- CAMERA DATA
 
@@ -1828,6 +1864,129 @@ immediateSubmit dv gq uctxt f =
 	Vk.Fnc.resetFs dv (HL.Singleton fnc) >>
 	Vk.CmdPl.reset dv (uploadContextCommandPool uctxt) zeroBits >>
 	pure rt
+
+-- TEXTURE
+
+createTextureImage ::
+	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc -> FilePath -> (
+		forall si sm .
+		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
+	IO a
+createTextureImage pd dv gq cp fp f =
+	readRgba8 fp >>= \img ->
+	print (V.length $ imageData img) >>
+	let	wdt, hgt :: Integral n => n
+		wdt = fromIntegral $ imageWidth img
+		hgt = fromIntegral $ imageHeight img in
+	createImage' @_ @'Vk.T.FormatR8g8b8a8Srgb
+		pd dv wdt hgt Vk.Img.TilingOptimal
+		(Vk.Img.UsageTransferDstBit .|.  Vk.Img.UsageSampledBit)
+		Vk.Mm.PropertyDeviceLocalBit \tximg _txmem -> do
+	createBufferImage @MyImage @_ pd dv (wdt, wdt, hgt, 1)
+		Vk.Bffr.UsageTransferSrcBit
+		(Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit)
+		\(sb :: Vk.Bffr.Binded
+			sm sb "texture-buffer" '[ Obj.ObjImage 1 a inm]) sbm ->
+		Vk.Dvc.Mem.write @"texture-buffer" @(Obj.ObjImage 1 MyImage inm)
+			dv sbm zeroBits (MyImage img) >>
+		print sb >>
+		transitionImageLayout dv gq cp tximg Vk.Img.LayoutUndefined
+			Vk.Img.LayoutTransferDstOptimal >>
+		copyBufferToImage dv gq cp sb tximg wdt hgt >>
+		transitionImageLayout dv gq cp tximg
+			Vk.Img.LayoutTransferDstOptimal
+			Vk.Img.LayoutShaderReadOnlyOptimal
+	f tximg
+
+newtype MyImage = MyImage (Image PixelRGBA8)
+
+type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+
+newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
+
+instance Storable MyRgba8 where
+	sizeOf _ = 4 * sizeOf @Pixel8 undefined
+	alignment _ = alignment @Pixel8 undefined
+	peek p = MyRgba8 . (\(r, g, b, a) -> PixelRGBA8 r g b a) . listToTuple4
+		<$> peekArray 4 (castPtr p)
+	poke p (MyRgba8 (PixelRGBA8 r g b a)) =
+		pokeArray (castPtr p) [r, g, b, a]
+
+listToTuple4 :: [a] -> (a, a, a, a)
+listToTuple4 [r, g, b, a] = (r, g, b, a)
+listToTuple4 _ = error "The length of the list is not 4"
+
+instance KObj.IsImage MyImage where
+	type IsImagePixel MyImage = MyRgba8
+	isImageRow = KObj.isImageWidth
+	isImageWidth (MyImage img) = imageWidth img
+	isImageHeight (MyImage img) = imageHeight img
+	isImageDepth _ = 1
+	isImageBody (MyImage img) = (<$> [0 .. imageHeight img - 1]) \y ->
+		(<$> [0 .. imageWidth img - 1]) \x -> MyRgba8 $ pixelAt img x y
+	isImageMake w h _d pss = MyImage
+		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
+		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
+
+createImage' :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
+	Vk.Phd.P ->
+	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
+	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> (forall si sm .
+		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Dvc.Mem.M sm
+			'[ '(si, 'Vk.Mm.K.Image nm fmt) ] ->
+		IO a) -> IO a
+createImage' pd dvc wdt hgt tlng usg prps f =
+	Vk.Img.createNew @() @() @()
+		dvc (imageInfo ext tlng usg) Nothing Nothing \img -> do
+	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
+	print reqs
+	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits reqs) prps
+	print mt
+	Vk.Dvc.Mem.allocateBind @() dvc
+		(HL.Singleton . U2 $ Vk.Dvc.Mem.Image img) (memInfo mt)
+		nil nil \(HL.Singleton (U2 (Vk.Dvc.Mem.ImageBinded bnd))) m -> do
+		f bnd m
+	where
+	ext = Vk.C.Extent2d {
+		Vk.C.extent2dWidth = wdt, Vk.C.extent2dHeight = hgt }
+	memInfo mt = Vk.Dvc.Mem.AllocateInfo {
+		Vk.Dvc.Mem.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
+
+createBufferImage :: Storable (KObj.IsImagePixel t) =>
+	Vk.Phd.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
+	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
+	(forall sm sb .
+		Vk.Bffr.Binded sb sm nm '[ Obj.ObjImage 1 t inm] ->
+		Vk.Dvc.Mem.M sm '[ '(
+			sb,
+			'Vk.Mm.K.Buffer nm '[ Obj.ObjImage 1 t inm])] ->
+		IO a) -> IO a
+createBufferImage p dv (r, w, h, d) usg props =
+	createBuffer p dv (HL.Singleton $ Obj.ObjectLengthImage r w h d) usg props
+
+copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
+	Storable (KObj.IsImagePixel img) =>
+	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
+	Vk.Bffr.Binded sm sb nm '[ Obj.ObjImage 1 img inm]  ->
+	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+	Word32 -> Word32 -> IO ()
+copyBufferToImage dvc gq cp bf img wdt hgt =
+	beginSingleTimeCommands dvc gq cp \cb -> do
+	let	region :: Vk.Bffr.ImageCopy img inm
+		region = Vk.Bffr.ImageCopy {
+			Vk.Bffr.imageCopyImageSubresource = isr,
+			Vk.Bffr.imageCopyImageOffset = Vk.C.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.C.Extent3d wdt hgt 1 }
+		isr = Vk.Img.M.SubresourceLayers {
+			Vk.Img.M.subresourceLayersAspectMask =
+				Vk.Img.AspectColorBit,
+			Vk.Img.M.subresourceLayersMipLevel = 0,
+			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
+			Vk.Img.M.subresourceLayersLayerCount = 1 }
+	Vk.Cmd.copyBufferToImage @1
+		cb bf img Vk.Img.LayoutTransferDstOptimal (HL.Singleton region)
 
 -- SHADER
 

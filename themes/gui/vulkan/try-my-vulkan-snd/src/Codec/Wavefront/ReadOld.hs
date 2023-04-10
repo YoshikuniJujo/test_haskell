@@ -11,9 +11,11 @@ module Codec.Wavefront.ReadOld (
 
 	W, pattern W,
 
-	Position(..), Normal(..), Face(..),
+	Position(..), TexCoord(..), Normal(..), Face(..),
 
-	countV, countV', Count(..), readV', takePosNormalFace, facePosNormal, PositionNormal(..) ) where
+	countV, countV', Count(..), readV', readV'',
+	takePosNormalFace, facePosNormal, facePosTxtNormal,
+	PositionNormal(..), PositionTxtNormal(..)) where
 
 import GHC.Generics
 import Foreign.Storable.SizeAlignment
@@ -50,6 +52,7 @@ countV = Wf.parseWavefront_ @_ @Word32 \case
 	Wf.Vt _ _ -> tell (0, 1, 0, 0)
 	Wf.Vn _ _ _ -> tell (0, 0, 1, 0)
 	Wf.F _ _ _ -> tell (0, 0, 0, 1)
+	Wf.F4 _ _ _ _ -> tell (0, 0, 0, 2)
 	_ -> tell (0, 0, 0, 0)
 
 countV' :: BS.ByteString -> Count
@@ -58,6 +61,7 @@ countV' = snd . runWriter . Wf.parseWavefront_ @_ @Word32 \case
 	Wf.Vt _ _ -> tell $ mempty { countTexture = 1 }
 	Wf.Vn _ _ _ -> tell $ mempty { countNormal = 1 }
 	Wf.F _ _ _ -> tell $ mempty { countFace = 1 }
+	Wf.F4 _ _ _ _ -> tell $ mempty { countFace = 2 }
 	_ -> tell mempty
 
 data Count = Count {
@@ -167,13 +171,74 @@ readV' nv nn nf str = runST do
 				(indicesToIndices i2)
 				(indicesToIndices i3)
 			writeSTRef ifc (i + 1)
+		Wf.F4 i1 i2 i3 i4 -> do
+			i <- readSTRef ifc
+			MV.write f i . W $ Face
+				(indicesToIndices i1)
+				(indicesToIndices i2)
+				(indicesToIndices i3)
+			MV.write f (i + 1) . W $ Face
+				(indicesToIndices i1)
+				(indicesToIndices i3)
+				(indicesToIndices i4)
+			writeSTRef ifc (i + 2)
 		_ -> pure ()
 	(,,) <$> V.freeze v <*> V.freeze n <*> V.freeze f
+
+readV'' :: Int -> Int -> Int -> Int -> BS.ByteString ->
+	(V.Vector (W Position), V.Vector (W TexCoord), V.Vector (W Normal), V.Vector (W Face))
+readV'' nv nt nn nf str = runST do
+	iv <- newSTRef 0
+	it <- newSTRef 0
+	inml <- newSTRef 0
+	ifc <- newSTRef 0
+	vv <- MV.new nv
+	t <- MV.new nt
+	n <- MV.new nn
+	f <- MV.new nf
+	flip (Wf.parseWavefront_ @_ @Int) str \case
+		Wf.V x y z -> do
+			i <- readSTRef iv
+			MV.write vv i . W $ Position x y z
+			writeSTRef iv (i + 1)
+		Wf.Vt u v -> do
+			i <- readSTRef it
+			MV.write t i . W $ TexCoord u v
+			writeSTRef it (i + 1)
+		Wf.Vn x y z -> do
+			i <- readSTRef inml
+			MV.write n i . W $ Normal x y z
+			writeSTRef inml (i + 1)
+		Wf.F i1 i2 i3 -> do
+			i <- readSTRef ifc
+			MV.write f i . W $ Face
+				(indicesToIndices i1)
+				(indicesToIndices i2)
+				(indicesToIndices i3)
+			writeSTRef ifc (i + 1)
+		Wf.F4 i1 i2 i3 i4 -> do
+			i <- readSTRef ifc
+			MV.write f i . W $ Face
+				(indicesToIndices i1)
+				(indicesToIndices i2)
+				(indicesToIndices i3)
+			MV.write f (i + 1) . W $ Face
+				(indicesToIndices i1)
+				(indicesToIndices i3)
+				(indicesToIndices i4)
+			writeSTRef ifc (i + 2)
+		_ -> pure ()
+	(,,,) <$> V.freeze vv <*> V.freeze t <*> V.freeze n <*> V.freeze f
 
 facePosNormal ::
 	V.Vector (W Position) -> V.Vector (W Normal) -> V.Vector (W Face) ->
 	V.Vector (W PositionNormal)
 facePosNormal ps ns = indexPosNormal ps ns . loosenFace
+
+facePosTxtNormal ::
+	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Normal) -> V.Vector (W Face) ->
+	V.Vector (W PositionTxtNormal)
+facePosTxtNormal ps ts ns = indexPosTxtNormal ps ts ns . loosenFace
 
 indexPosNormal ::
 	V.Vector (W Position) -> V.Vector (W Normal) -> V.Vector (W Indices) ->
@@ -184,6 +249,15 @@ indexPosNormal ps ns is = V.generate ln \i -> let
 	W $ PositionNormal (ps V.! (iv - 1)) (ns V.! (inml - 1))
 	where ln = V.length is
 
+indexPosTxtNormal ::
+	V.Vector (W Position) -> V.Vector (W TexCoord) -> V.Vector (W Normal) -> V.Vector (W Indices) ->
+	V.Vector (W PositionTxtNormal)
+indexPosTxtNormal ps ts ns is = V.generate ln \i -> let
+	W (Indices iv it inml) = is V.! i
+	in
+	W $ PositionTxtNormal (ps V.! (iv - 1)) (ts V.! (it - 1)) (ns V.! (inml - 1))
+	where ln = V.length is
+
 data PositionNormal = PositionNormal {
 	positionNormalPosition :: W Position,
 	positionNormalNormal :: W Normal }
@@ -191,6 +265,15 @@ data PositionNormal = PositionNormal {
 
 instance SizeAlignmentList PositionNormal
 instance Foreign.Storable.Generic.G PositionNormal
+
+data PositionTxtNormal = PositionTxtNormal {
+	positionTxtNormalPosition :: W Position,
+	positionTxtNormalTxt :: W TexCoord,
+	positionTxtNormalNormal :: W Normal }
+	deriving (Show, Generic)
+
+instance SizeAlignmentList PositionTxtNormal
+instance Foreign.Storable.Generic.G PositionTxtNormal
 
 takePosNormalFace :: Int ->
 	(V.Vector (W Position), V.Vector (W Normal), V.Vector (W Face)) ->

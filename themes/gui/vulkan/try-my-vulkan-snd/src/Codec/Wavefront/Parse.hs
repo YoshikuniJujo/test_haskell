@@ -23,6 +23,7 @@ data WavefrontAtom i
 	| Vt Float Float
 	| Vn Float Float Float
 	| F (Vertex i) (Vertex i) (Vertex i)
+	| F4 (Vertex i) (Vertex i) (Vertex i) (Vertex i)
 	| Mtllib FilePath
 	| Usemtl String
 	| O String
@@ -46,6 +47,7 @@ waveFrontAtom = \case
 	"vt" :| [x, y] -> Vt (bread x) (bread y)
 	"vn" :| [x, y, z] -> Vn (bread x) (bread y) (bread z)
 	"f" :| [a, b, c] -> F (vertex a) (vertex b) (vertex c)
+	"f" :| [a, b, c, d] -> F4 (vertex a) (vertex b) (vertex c) (vertex d)
 	"mtllib" :| [fp] -> Mtllib $ BSC.unpack fp
 	"usemtl" :| [nm] -> Usemtl $ BSC.unpack nm
 	"o" :| [nm] -> O $ BSC.unpack nm
