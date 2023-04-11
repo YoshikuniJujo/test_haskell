@@ -156,6 +156,10 @@ import Data.Array
 import Codec.Picture
 import Codec.Picture.Tools
 
+import Gpu.Vulkan.Sampler as Vk.Smplr
+import Gpu.Vulkan.Sampler.Enum as Vk.Smplr
+import Gpu.Vulkan.Sampler.Middle as Vk.Smplr.M
+
 maxFramesInFlight :: Integral n => n
 maxFramesInFlight = 2
 
@@ -170,6 +174,7 @@ main = do
 	s <- BS.readFile objfile
 	print $ Wv.countV' s
 	let	vns = vertices s
+--	print vns
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
 		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil nil
 			$ const $ run w ist frszd vns
@@ -265,7 +270,8 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 
 	createDescriptorSetLayout dv \dslyt ->
 	createDescriptorSetLayoutObjData dv \dslyto ->
-	createPipelineLayout dv dslyt dslyto \lyt ->
+	createSingleTextureSetLayout dv \dslyttx ->
+	createPipelineLayout dv dslyt dslyto dslyttx \lyt ->
 	createGraphicsPipeline dv ex rp lyt \gpl ->
 
 	createCommandPool dv qfs \cp ->
@@ -276,14 +282,21 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 		\lyts cmbs cmms
 			(lytods :: HL.PL Vk.DscSet.Layout slytods)
 			(odbs :: HL.PL BindedObjData sbsmods) odms ->
+
+	createTextureImage pd dv gq cp "assets/lost_empire-RGBA.png" \timg ->
+	createTextureImageView dv timg \timgvw ->
+
 	createSceneBuffer pd dv \scnb scnm ->
 --	createObjDataBuffers pd dv dslyto maxFramesInFlight \lytods odbs odms ->
 	createDescriptorPool dv \dp ->
+
+	allocateTextureDescriptorSets dv dp dslyttx >>= \dscstx ->
+	writeTexture1 dv dscstx timgvw \wtx ->
+	Vk.DscSet.updateDs @() @() dv (HL.Singleton $ U4 wtx) [] >>
+
 	createDescriptorSets @sbsmods @slytods dv dp cmbs lyts odbs lytods scnb >>= \(dss, dssod) ->
 
 --	createUploadContext dv qfs \uctxt ->
-
-	createTextureImage pd dv gq cp "assets/lost_empire-RGBA.png" \timg ->
 
 --	print vns >>
 
@@ -293,7 +306,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 	createSyncObjects dv \sos ->
 
 	mainLoop w rszd sfc pd qfs dv gq pq sc ex scivs rp lyt gpl cp drs fbs
-		cmms scnm dss odms dssod vb vbtri cbs sos vnsln
+		cmms scnm dss odms dssod dscstx vb vbtri cbs sos vnsln
 
 pickPhysicalDevice ::
 	Vk.Ist.I si -> Vk.Khr.Sfc.S ss -> IO (Vk.Phd.P, QueueFamilyIndices)
@@ -652,15 +665,33 @@ createDescriptorSetLayoutObjData dv = Vk.DscSetLyt.create dv layoutInfo nil nil 
 
 type ObjDataList = Obj.List 256 ObjData ""
 
-createPipelineLayout :: forall sd sdl sdlod a . Vk.Dvc.D sd ->
+createSingleTextureSetLayout :: Vk.Dvc.D sd ->
+	(forall s .
+		Vk.DscSetLyt.L s '[
+			'Vk.DscSetLyt.Image '[
+				'("texture", 'Vk.T.FormatR8g8b8a8Srgb) ] ] ->
+		IO a) -> IO a
+createSingleTextureSetLayout dv = Vk.DscSetLyt.create @() dv layoutInfo nil nil where
+	layoutInfo = Vk.DscSetLyt.CreateInfo {
+		Vk.DscSetLyt.createInfoNext = Nothing,
+		Vk.DscSetLyt.createInfoFlags = zeroBits,
+		Vk.DscSetLyt.createInfoBindings = textureBind :** HL.Nil }
+	textureBind = Vk.DscSetLyt.BindingImage {
+		Vk.DscSetLyt.bindingImageDescriptorType =
+			Vk.Dsc.TypeCombinedImageSampler,
+		Vk.DscSetLyt.bindingImageStageFlags =
+			Vk.ShaderStageFragmentBit }
+
+createPipelineLayout :: forall sd sdl sdlod sdltx foo a . Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdl Buffers ->
 	Vk.DscSetLyt.L sdlod ObjDataBuffers ->
+	Vk.DscSetLyt.L sdltx foo ->
 	(forall sl . Vk.Ppl.Lyt.L sl
-			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers) ]
+			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ]
 			'[WMeshPushConstants] ->
 		IO a) -> IO a
-createPipelineLayout dv dslyt dslytod f = Vk.Ppl.Lyt.createNew dv ci nil nil f where
-	ci :: Vk.Ppl.Lyt.CreateInfoNew () '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers) ] (
+createPipelineLayout dv dslyt dslytod dslyttx f = Vk.Ppl.Lyt.createNew dv ci nil nil f where
+	ci :: Vk.Ppl.Lyt.CreateInfoNew () '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sdltx, foo) ] (
 		'Vk.PushConstant.PushConstantLayout
 			'[ WMeshPushConstants]
 			'[ 'Vk.PushConstant.Range '[ 'Vk.T.ShaderStageVertexBit]
@@ -669,16 +700,18 @@ createPipelineLayout dv dslyt dslytod f = Vk.Ppl.Lyt.createNew dv ci nil nil f w
 		Vk.Ppl.Lyt.createInfoNextNew = Nothing,
 		Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 		Vk.Ppl.Lyt.createInfoSetLayoutsNew =
-			U2 dslyt :** U2 dslytod :** HL.Nil }
+			U2 dslyt :** U2 dslytod :** U2 dslyttx :** HL.Nil }
+
+type Foo = '[ 'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]]
 
 createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
+		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	(forall sg . Vk.Ppl.Grph.GNew sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl, '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl, '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) -> IO a) ->
 	IO a
 createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
@@ -688,12 +721,12 @@ createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
+		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) -> IO ()
 recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 	(U14 (graphicsPipelineCreateInfo sce rp lyt) :** HL.Nil) nil nil
@@ -701,15 +734,15 @@ recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 
 graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
+		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.CreateInfo ()
 		'[ '((), (), 'GlslVertexShader, (), (), '[]),
 			'((), (), 'GlslFragmentShader, (), (), '[])]
 		'((), '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
-			'[ '(0, Position), '(1, Normal), '(2, Color)])
+			'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)])
 		() () () () () () () ()
-		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)],
+		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) sr
 		'(sb, vs', ts', larg)
 graphicsPipelineCreateInfo sce rp lyt = Vk.Ppl.Grph.CreateInfo {
@@ -1212,6 +1245,10 @@ createDescriptorPool dv = Vk.DscPl.create @() dv poolInfo nil nil
 			Vk.DscPl.Size {
 				Vk.DscPl.sizeType =
 					Vk.Dsc.TypeStorageBuffer,
+				Vk.DscPl.sizeDescriptorCount = 10 },
+			Vk.DscPl.Size {
+				Vk.DscPl.sizeType =
+					Vk.Dsc.TypeCombinedImageSampler,
 				Vk.DscPl.sizeDescriptorCount = 10 } ] }
 
 createDescriptorSets ::
@@ -1238,6 +1275,18 @@ createDescriptorSets dv dscp cmbs lyts odbs lytods scnb = do
 		Vk.DscSet.allocateInfoNext = Nothing,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lytods }
+
+allocateTextureDescriptorSets :: forall slyt foo sd sp .
+	Default (HL.PL (HL.PL KObj.ObjectLength) (Vk.DscSet.T.LayoutArgOnlyDynamics '(slyt, foo))) =>
+	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
+	Vk.DscSetLyt.L slyt foo -> IO (Vk.DscSet.S sd sp '(slyt, foo))
+allocateTextureDescriptorSets dv dscpl lyt = do
+	HL.Singleton dscs <- Vk.DscSet.allocateSs @() dv Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoDescriptorPool = dscpl,
+		Vk.DscSet.allocateInfoSetLayouts = HL.Singleton $ U2 lyt
+		}
+	pure dscs
 
 class Update cmbs lyts odbs lytods where
 	update :: Vk.Dvc.D sd ->
@@ -1280,6 +1329,37 @@ descriptorWrite dscs ub tp = Vk.DscSet.Write {
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources =
 		Vk.DscSet.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoObj ub }
+
+writeTexture1 ::
+	Vk.Dvc.D sd -> Vk.DscSet.S sd sp lyt -> Vk.ImgVw.INew ifmt "texture" siv -> (
+		forall ss . 
+		Vk.DscSet.Write n sd sp lyt
+			('Vk.DscSet.WriteSourcesArgImage '[ '(ss, ifmt, "texture", siv)]) ->
+		IO a) -> IO a
+writeTexture1 dv dscs tiv f =
+	createTextureSampler dv \smplr ->
+	f $ writeDescriptorImage
+		Vk.Dsc.TypeCombinedImageSampler dscs
+		(textureImageBufferInfo tiv smplr)
+
+writeDescriptorImage :: Vk.Dsc.Type ->
+	Vk.DscSet.S sd sp slbts -> Vk.Dsc.ImageInfo ss fmt nm si ->
+	Vk.DscSet.Write n sd sp slbts
+		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si)])
+writeDescriptorImage tp dscs ii = Vk.DscSet.Write {
+	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeDstSet = dscs,
+	Vk.DscSet.writeDescriptorType = tp,
+	Vk.DscSet.writeSources =
+		Vk.DscSet.ImageInfos . HL.Singleton $ U4 ii }
+
+textureImageBufferInfo :: Vk.ImgVw.INew fmt nm si ->
+	Vk.Smplr.S ss -> Vk.Dsc.ImageInfo ss fmt nm si
+textureImageBufferInfo tiv tsmp = Vk.Dsc.ImageInfo {
+	Vk.Dsc.imageInfoImageLayout =
+		Vk.Img.LayoutShaderReadOnlyOptimal,
+	Vk.Dsc.imageInfoImageView = tiv,
+	Vk.Dsc.imageInfoSampler = tsmp }
 
 createVertexBuffer :: forall sd sc nm a . Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> V.Vector Vertex -> (forall sm sb .
@@ -1340,29 +1420,31 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
+		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs ->
 	HL.PL MemoryCamera scms ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.Buffer "scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.S sd sp) lyts ->
-	HL.PL MemoryObjData sods -> HL.PL (Vk.DscSet.S sd sp) lytods ->
+	HL.PL MemoryObjData sods ->
+	HL.PL (Vk.DscSet.S sd sp) lytods ->
+	Vk.DscSet.S sd sp '(sfoo, Foo) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects sos ->
 	VertexNumber -> IO ()
 mainLoop w rszd sfc pd qfis dv gq pq sc ex0 scivs rp lyt gpl cp drs fbs
-	cmms scnm dss odms dssod vb vbtri cbs sos vnsln =
+	cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln =
 	($ 0) . ($ cycleI [0 .. maxFramesInFlight - 1]) . ($ ex0) $ fix
 		\loop ex (ffn :- ffns) fn -> Glfw.pollEvents >>
 	step w rszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
-		cmms scnm dss odms dssod vb vbtri cbs sos vnsln ffn fn
-		(\ex' -> loop ex' ffns ((fn + 1) `mod` (360 * frashRate))) >>
+		cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln ffn fn
+		(\ex' -> loop ex' ffns ((fn + 1) `mod` (3600 * frashRate))) >>
 	Vk.Dvc.waitIdle dv
 
 type VertexNumber = Word32
@@ -1377,26 +1459,28 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
+		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scms ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.Buffer "scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.S sd sp) lyts ->
-	HL.PL MemoryObjData sods -> HL.PL (Vk.DscSet.S sd sp) lytods ->
+	HL.PL MemoryObjData sods ->
+	HL.PL (Vk.DscSet.S sd sp) lytods ->
+	Vk.DscSet.S sd sp '(sfoo, Foo) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects sos ->
 	Word32 -> Int -> Int -> (Vk.C.Extent2d -> IO ()) -> IO ()
 step w frszd sfc pd qfis dv gq pq sc ex scivs rp lyt gpl cp drs fbs
-	cmms scnm dss odms dssod vb vbtri cbs sos vnsln ffn fn loop = do
+	cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln ffn fn loop = do
 	catchAndRecreate w sfc pd qfis dv gq sc scivs rp lyt gpl cp drs fbs loop
 		$ drawFrame dv gq pq sc ex rp lyt gpl fbs
-			cmms scnm dss odms dssod vb vbtri cbs sos vnsln ffn fn
+			cmms scnm dss odms dssod dstx vb vbtri cbs sos vnsln ffn fn
 	(Glfw.windowShouldClose w >>=) . flip bool (pure ()) $
 		(checkFlag frszd >>=) . bool (loop ex) $
 		loop =<< recreateAll
@@ -1408,12 +1492,12 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(s, Buffers), '(sod, ObjDataBuffers)]
+		'[ '(s, Buffers), '(sod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(s, Buffers), '(sod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[ '(s, Buffers), '(sod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> (Vk.C.Extent2d -> IO ()) -> IO () -> IO ()
@@ -1431,12 +1515,12 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
-		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
+		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HL.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
@@ -1456,7 +1540,7 @@ waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 drawFrame ::
-	forall sd ssc scfmt sr slyt sl slod sg sfs scmmbs ssm ssb sp lyts
+	forall sd ssc scfmt sr slyt sl slod sfoo sg sfs scmmbs ssm ssb sp lyts
 	sm sb nm smtri sbtri nmtri scb ssos sods lytods .  (
 	HL.HomoList '(sl, Buffers) lyts,
 	HL.HomoList '(slod, ObjDataBuffers) lytods
@@ -1464,21 +1548,23 @@ drawFrame ::
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt
-		'[ '(sl, Buffers), '(slod, ObjDataBuffers)]
+		'[ '(sl, Buffers), '(slod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sl, Buffers), '(slod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(slyt,	'[ '(sl, Buffers), '(slod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scmmbs ->
 	Vk.Mm.M ssm '[ '(ssb, 'Vk.Mm.K.Buffer "scene-buffer" '[SceneObj])] ->
 	HL.PL (Vk.DscSet.S sd sp) lyts ->
-	HL.PL MemoryObjData sods -> HL.PL (Vk.DscSet.S sd sp) lytods ->
+	HL.PL MemoryObjData sods ->
+	HL.PL (Vk.DscSet.S sd sp) lytods ->
+	Vk.DscSet.S sd sp '(sfoo, Foo) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> SyncObjects ssos ->
 	Word32 -> Int -> Int -> IO ()
-drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
+drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod dstx vb vbtri cbs
 	(SyncObjects iass rfss iffs) vnsln ffn fn =
 	HL.index iass ffn \(ias :: Vk.Semaphore.S sias) ->
 	HL.index rfss ffn \(rfs :: Vk.Semaphore.S srfs) ->
@@ -1496,7 +1582,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 	Vk.Fnc.resetFs dv siff
 	Vk.CBffr.resetNew cb zeroBits
 	HL.index fbs iid \fb -> recordCommandBuffer
-		ex rp lyt gpl fb ds dsod vb vbtri cb vnsln (fromIntegral ffn) fn
+		ex rp lyt gpl fb ds dsod dstx vb vbtri cb vnsln (fromIntegral ffn) fn
 	Vk.Q.submit gq (HL.Singleton . U4 $ sminfo ias rfs) $ Just iff
 	catchAndSerialize . Vk.Khr.queuePresentNew @() pq $ presentInfo rfs iid
 	where
@@ -1523,34 +1609,35 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 recordCommandBuffer ::
-	forall sr slyt sg sdlyt sdlytod sf sd sp sm sb nm smtri sbtri nmtri scb .
+	forall sr slyt sg sdlyt sdlytod sfoo sf sd sp sm sb nm smtri sbtri nmtri scb .
 	Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt
-		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)]
+		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(slyt,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(slyt,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
 	Vk.Frmbffr.F sf ->
 	Vk.DscSet.S sd sp '(sdlyt, Buffers) ->
 	Vk.DscSet.S sd sp '(sdlytod, ObjDataBuffers) ->
+	Vk.DscSet.S sd sp '(sfoo, Foo) ->
 	Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
-recordCommandBuffer sce rp lyt gpl fb ds dsod vb vbt cb vn ffn (fromIntegral -> fn) =
+recordCommandBuffer sce rp lyt gpl fb ds dsod dstx vb vbt cb vn ffn (fromIntegral -> fn) =
 	Vk.CBffr.beginNew @() @() cb binfo $
 	Vk.Cmd.beginRenderPass' cb rpinfo Vk.Subpass.ContentsInline do
 	ovb <- newIORef Nothing
-	drawObject ovb cb ds dsod RenderObject {
+	drawObject ovb cb ds dsod dstx RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb, renderObjectMeshSize = vn,
 		renderObjectTransformMatrix = model fn } ffn 0
 	ovbtri <- newIORef Nothing
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
-		drawObject ovbtri cb ds dsod RenderObject {
+		drawObject ovbtri cb ds dsod dstx RenderObject {
 			renderObjectPipeline = gpl,
 			renderObjectPipelineLayout = lyt,
 			renderObjectMesh = vbt, renderObjectMeshSize = 3,
@@ -1572,14 +1659,15 @@ recordCommandBuffer sce rp lyt gpl fb ds dsod vb vbt cb vn ffn (fromIntegral -> 
 			Vk.C.rect2dExtent = sce },
 		Vk.RndrPss.beginInfoClearValues =
 			Vk.M.ClearValueColor
-				(fromJust $ rgbaDouble 0 0 blue 1) :**
+--				(fromJust $ rgbaDouble 0 0 blue 1) :**
+				(fromJust $ rgbaDouble 0 0 0 1) :**
 			Vk.M.ClearValueDepthStencil
 				(Vk.C.ClearDepthStencilValue 1 0) :** HL.Nil }
 	blue = 0.5 + sin (fn / (180 * frashRate) * pi) / 2
 
 model :: Float -> Cglm.Mat4
 model fn = Cglm.rotate
-	Cglm.mat4Identity (fn * Cglm.rad 1) (Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
+	Cglm.mat4Identity (fn / 10 * Cglm.rad 1) (Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
 objectMatrix :: Float -> Float -> Cglm.Mat4
 objectMatrix x y = trans x y `Cglm.mat4Mul` scale
@@ -1595,17 +1683,18 @@ drawObject ::
 	Vk.CBffr.C scb ->
 	Vk.DscSet.S sd sp '(sdlyt, Buffers) ->
 	Vk.DscSet.S sd sp '(sdlytod, ObjDataBuffers) ->
-	RenderObject sg sl sdlyt sdlytod sm sb nm -> Word32 -> Word32 -> IO ()
-drawObject ovb cb0 ds dsod RenderObject {
+	Vk.DscSet.S sd sp '(sfoo, Foo) ->
+	RenderObject sg sl sdlyt sdlytod sfoo sm sb nm -> Word32 -> Word32 -> IO ()
+drawObject ovb cb0 ds dsod dstx RenderObject {
 	renderObjectPipeline = gpl,
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb, renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = mdl } ffn i =
 	Vk.Cmd.bindPipelineNew cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
 	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
-		(U2 ds :** U2 dsod :** HL.Nil) $
+		(U2 ds :** U2 dsod :** U2 dstx :** HL.Nil) $
 		(HL.Nil :** (Vk.Cmd.DynamicIndex ffn :** HL.Nil) :** HL.Nil) :**
-		(HL.Nil :** HL.Nil) :** HL.Nil
+		(HL.Nil :** HL.Nil) :** (HL.Nil :** HL.Nil) :** HL.Nil
 	readIORef ovb >>= \case
 		Just o | vb == o -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
@@ -1618,15 +1707,15 @@ drawObject ovb cb0 ds dsod RenderObject {
 			meshPushConstantsRenderMatrix = mdl }) :** HL.Nil
 	Vk.Cmd.draw cb vn 1 0 i
 
-data RenderObject sg sl sdlyt sdlytod sm sb nm = RenderObject {
+data RenderObject sg sl sdlyt sdlytod sfoo sm sb nm = RenderObject {
 	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-		'[ '(0, Position), '(1, Normal), '(2, Color)]
-		'(sl,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)],
+		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
+		'(sl,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]),
 	renderObjectPipelineLayout ::
 		Vk.Ppl.Lyt.L sl
-			'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)]
+			'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)]
 			'[WMeshPushConstants],
 	renderObjectMesh :: Vk.Bffr.Binded sm sb nm '[Obj.List 256 Vertex ""],
 	renderObjectMeshSize :: Word32,
@@ -1656,6 +1745,7 @@ instance SizeAlignmentList Vertex
 instance SizeAlignmentListUntil Position Vertex
 instance SizeAlignmentListUntil Normal Vertex
 instance SizeAlignmentListUntil Color Vertex
+instance SizeAlignmentListUntil Uv Vertex
 instance Str.G.G Vertex
 
 instance Storable Vertex where
@@ -1678,7 +1768,7 @@ posTxtNormalToVertex (Wv.W (Wv.PositionTxtNormal
 		vertexPos = Position . Cglm.Vec3 $ x :. y :. z :. NilL,
 		vertexNormal = Normal . Cglm.Vec3 $ v :. w :. u :. NilL,
 		vertexColor = Color . Cglm.Vec3 $ v :. w :. u :. NilL,
-		vertexUv = Uv . Cglm.Vec2 $ p :. q :. NilL }
+		vertexUv = Uv . Cglm.Vec2 $ p :. (1 - q) :. NilL }
 
 triangle :: V.Vector Vertex
 triangle = V.fromList [
@@ -1721,8 +1811,8 @@ cameraData ex = CameraData (View view) (Proj $ projection ex)
 
 view :: Cglm.Mat4
 view = Cglm.lookat
-	(Cglm.Vec3 $ 0 :. 6 :. 10 :. NilL)
-	(Cglm.Vec3 $ 0 :. 0 :. 0 :. NilL)
+	(Cglm.Vec3 $ 0 :. 20 :. 20 :. NilL)
+	(Cglm.Vec3 $ 0 :. 10 :. 0 :. NilL)
 	(Cglm.Vec3 $ 0 :. 1 :. 0 :. NilL)
 
 projection :: Vk.C.Extent2d -> Cglm.Mat4
@@ -1898,6 +1988,56 @@ createTextureImage pd dv gq cp fp f =
 			Vk.Img.LayoutShaderReadOnlyOptimal
 	f tximg
 
+createTextureImageView :: Vk.T.FormatToValue ifmt =>
+	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	(forall siv . Vk.ImgVw.INew ifmt nm siv -> IO a) -> IO a
+createTextureImageView dv timg f =
+	Vk.ImgVw.createNew dv (textureImageViewCreateInfo timg) nil nil f
+
+textureImageViewCreateInfo ::
+	Vk.Img.BindedNew si sm nm ifmt -> Vk.ImgVw.CreateInfoNew () si sm nm ifmt ifmt
+textureImageViewCreateInfo timg = Vk.ImgVw.CreateInfoNew {
+	Vk.ImgVw.createInfoNextNew = Nothing,
+	Vk.ImgVw.createInfoFlagsNew = zeroBits,
+	Vk.ImgVw.createInfoImageNew = timg,
+	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
+	Vk.ImgVw.createInfoComponentsNew = components,
+	Vk.ImgVw.createInfoSubresourceRangeNew = srr }
+	where
+	components = Vk.Component.Mapping {
+		Vk.Component.mappingR = def, Vk.Component.mappingG = def,
+		Vk.Component.mappingB = def, Vk.Component.mappingA = def }
+	srr = Vk.Img.M.SubresourceRange {
+		Vk.Img.M.subresourceRangeAspectMask = Vk.Img.AspectColorBit,
+		Vk.Img.M.subresourceRangeBaseMipLevel = 0,
+		Vk.Img.M.subresourceRangeLevelCount = 1,
+		Vk.Img.M.subresourceRangeBaseArrayLayer = 0,
+		Vk.Img.M.subresourceRangeLayerCount = 1 }
+
+createTextureSampler ::
+	Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
+createTextureSampler dv = Vk.Smplr.create dv textureSamplerCreateInfo nil nil
+
+textureSamplerCreateInfo :: Vk.Smplr.M.CreateInfo ()
+textureSamplerCreateInfo = Vk.Smplr.M.CreateInfo {
+	Vk.Smplr.M.createInfoNext = Nothing,
+	Vk.Smplr.M.createInfoFlags = zeroBits,
+	Vk.Smplr.M.createInfoMagFilter = Vk.FilterNearest,
+	Vk.Smplr.M.createInfoMinFilter = Vk.FilterNearest,
+	Vk.Smplr.M.createInfoMipmapMode = Vk.Smplr.MipmapModeLinear,
+	Vk.Smplr.M.createInfoAddressModeU = Vk.Smplr.AddressModeRepeat,
+	Vk.Smplr.M.createInfoAddressModeV = Vk.Smplr.AddressModeRepeat,
+	Vk.Smplr.M.createInfoAddressModeW = Vk.Smplr.AddressModeRepeat,
+	Vk.Smplr.M.createInfoMipLodBias = 0,
+	Vk.Smplr.M.createInfoAnisotropyEnable = False,
+	Vk.Smplr.M.createInfoMaxAnisotropy = 0,
+	Vk.Smplr.M.createInfoCompareEnable = False,
+	Vk.Smplr.M.createInfoCompareOp = Vk.CompareOpAlways,
+	Vk.Smplr.M.createInfoMinLod = 0,
+	Vk.Smplr.M.createInfoMaxLod = 0,
+	Vk.Smplr.M.createInfoBorderColor = Vk.BorderColorIntOpaqueBlack,
+	Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
+
 newtype MyImage = MyImage (Image PixelRGBA8)
 
 type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
@@ -2024,8 +2164,10 @@ shaderStages vs fs = U6 vertinfo :** U6 fraginfo :** HL.Nil where
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inColor;
+layout(location = 3) in vec2 vTexCoord;
 
 layout(location = 0) out vec3 outColor;
+layout(location = 1) out vec2 texCoord;
 
 layout (set = 0, binding = 0) uniform CameraBuffer {
 	mat4 view; mat4 proj; mat4 viewproj; } cameraData;
@@ -2043,11 +2185,10 @@ void
 main()
 {
 	mat4 modelMatrix = objectBuffer.objects[gl_BaseInstance].model;
-	mat4 transformMatrix =
-//		cameraData.viewproj * PushConstants.render_matrix;
-		cameraData.viewproj * modelMatrix;
+	mat4 transformMatrix = cameraData.viewproj * modelMatrix;
 	gl_Position = transformMatrix * vec4(inPosition, 1.0);
 	outColor = inColor;
+	texCoord = vTexCoord;
 }
 
 |]
@@ -2057,17 +2198,23 @@ main()
 #version 450
 
 layout(location = 0) in vec3 inColor;
-layout(location = 0) out vec4 outColor;
+layout(location = 1) in vec2 texCoord;
+
+layout(location = 0) out vec4 outFragColor;
 
 layout (set = 0, binding = 1) uniform SceneData {
 	vec4 fogColor; vec4 fogDists;
 	vec4 ambientColor;
 	vec4 sunlightDir; vec4 sunlightColor; } sceneData;
 
+layout (set = 2, binding = 0) uniform sampler2D tex1;
+
 void
 main()
 {
-	outColor = vec4(inColor + sceneData.ambientColor.xyz, 1.0);
+	vec3 color = texture(tex1, texCoord).xyz;
+//	outFragColor = vec4(texCoord.x, texCoord.y, 0.5f, 1.0f);
+	outFragColor = vec4(color, 1.0f);
 }
 
 |]
