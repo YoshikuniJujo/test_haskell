@@ -387,6 +387,42 @@ executable try-generating-mipmaps-single
     , vector
   default-language: Haskell2010
 
+executable try-hello-world
+  main-is: try-hello-world.hs
+  other-modules:
+      Paths_try_my_vulkan_snd
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , filepath
+    , ghc-prim
+    , monads-tf
+    , mono-traversable
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-hetero-parameter-list
+    , try-my-vulkan-snd
+    , try-shaderc
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
+    , try-vulkan-middle-khr
+    , union-color
+    , vector
+  default-language: Haskell2010
+
 executable try-image-buffer
   main-is: try-image-buffer.hs
   other-modules:
