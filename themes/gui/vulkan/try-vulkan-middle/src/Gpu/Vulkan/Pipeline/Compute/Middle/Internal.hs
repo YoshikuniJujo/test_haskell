@@ -23,7 +23,7 @@ import Foreign.Storable.HeteroList
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Maybe
 import Data.Int
 
@@ -40,13 +40,14 @@ import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
+import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as ShaderStage.C
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
 
 data CreateInfo n ss sivs = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: Pipeline.CreateFlags,
-	createInfoStage :: ShaderStage.CreateInfo ss 'GlslComputeShader sivs,
-	createInfoLayout :: Pipeline.Layout.L,
+	createInfoStage :: Maybe (ShaderStage.CreateInfo ss 'GlslComputeShader sivs),
+	createInfoLayout :: Maybe Pipeline.Layout.L,
 	createInfoBasePipelineHandle :: Maybe C,
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
@@ -60,18 +61,18 @@ createInfoToCore ::
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = Pipeline.CreateFlagBits flgs,
-	createInfoStage = stg,
-	createInfoLayout = Pipeline.Layout.L lyt,
+	createInfoStage = mstg,
+	createInfoLayout = ((\(Pipeline.Layout.L l) -> l) <$>) -> mlyt,
 	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
 	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx } f =
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
-	ShaderStage.createInfoToCore stg \stg' ->
+	maybe (\g -> () <$ (g =<< ShaderStage.C.nullCreateInfo)) ShaderStage.createInfoToCore mstg \stg' ->
 	f C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt',
 		C.createInfoFlags = flgs,
 		C.createInfoStage = stg',
-		C.createInfoLayout = lyt,
+		C.createInfoLayout = fromMaybe NullPtr mlyt,
 		C.createInfoBasePipelineHandle = bph,
 		C.createInfoBasePipelineIndex = idx }
 
