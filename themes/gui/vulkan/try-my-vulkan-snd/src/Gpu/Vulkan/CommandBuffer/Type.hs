@@ -20,6 +20,10 @@ newtype GBinded s (vs :: [(Type, VertexInput.Rate)])
 	(slsbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
 	GBinded { unGBinded :: M.C }
 
+newtype CBinded s
+	(slbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
+	CBinded { unCBinded :: M.C }
+
 toBinded :: C s -> Binded s vs
 toBinded = Binded . unC
 

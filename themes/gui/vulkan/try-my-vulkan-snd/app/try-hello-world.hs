@@ -21,7 +21,7 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HL
-import Data.HeteroParList (pattern (:*.))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Char
 
@@ -29,11 +29,11 @@ import Shaderc.TH
 import Shaderc.EnumAuto
 import Gpu.Vulkan.Misc
 
-import qualified Gpu.Vulkan as Vk
+import qualified Gpu.VulkanNew as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.QueueNew as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFm
@@ -53,8 +53,9 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DS
-import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
+import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
@@ -223,13 +224,11 @@ calc :: forall slbts sl bts sd sp . (
 	Vk.DS.S sd sp slbts -> Word32 -> IO ()
 calc dv qfi dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCs dv Nothing
-		(HL.Singleton . U4 $ computePipelineInfo plyt)
-		nil nil \(ppl :*. HL.Nil) ->
+	Vk.Ppl.Cmpt.createCsNew dv Nothing
+		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(ppl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil nil \cp ->
-	Vk.CmdBuf.allocateOld dv (commandBufferInfo cp) \case
-		[cmdBuf] -> run dv qfi cmdBuf ppl plyt ds sz
-		_ -> error "never occur"
+	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
+	run dv qfi cb ppl plyt ds sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
 	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
@@ -245,12 +244,11 @@ commandPoolInfo qfi = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qfi }
 
-commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoOld () s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
-	Vk.CmdBuf.allocateInfoNextOld = Nothing,
-	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CBffr.AllocateInfoNew () s 1
+commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
+	Vk.CBffr.allocateInfoNextNew = Nothing,
+	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
+	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
 run :: forall slbts sbtss sd sc vs sg sl sp . (
 	sbtss ~ '[slbts],
@@ -259,34 +257,34 @@ run :: forall slbts sbtss sd sc vs sg sl sp . (
 		(HL.PL KObj.ObjectLength)
 		(Vk.DS.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
-	Vk.Dv.D sd -> Vk.QFm.Index -> Vk.CmdBuf.Binded sc vs -> Vk.Ppl.Cmpt.C sg ->
+	Vk.Dv.D sd -> Vk.QFm.Index -> Vk.CBffr.C sc -> Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DS.S sd sp slbts -> Word32 -> IO ()
 run dv qfi cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dv.getQueue dv qfi 0
-	Vk.CmdBuf.begin @() @() cb def do
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute
-			pplLyt (HL.Singleton $ U2 dscSet)
-			(HL.Singleton $ HL.Singleton HL.Nil ::
-				HL.PL3 Vk.Cmd.DynamicIndex (Vk.DS.LayoutArgListOnlyDynamics sbtss))
-		Vk.Cmd.dispatch cb dsz 1 1
+	Vk.CBffr.beginNew @() @() cb def $
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb Vk.Ppl.BindPointCompute
+				pplLyt (HL.Singleton $ U2 dscSet)
+				(HL.Singleton $ HL.Singleton HL.Nil ::
+					HL.PL3 Vk.Cmd.DynamicIndex (Vk.DS.LayoutArgListOnlyDynamics sbtss))
+			Vk.Cmd.dispatch ccb dsz 1 1
 	Vk.Queue.submit q (HL.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q
 	where
-	submitInfo :: Vk.SubmitInfo () '[] '[ '(sc, vs)] '[]
+	submitInfo :: Vk.SubmitInfo () '[] '[sc] '[]
 	submitInfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = Nothing,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
-		Vk.submitInfoCommandBuffers = HL.Singleton $ U2 cb,
+		Vk.submitInfoCommandBuffers = HL.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HL.Nil }
 
 -- COMPUTE PIPELINE INFO
 
-computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
+pplInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo ()
 		'((), (), 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
-computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
+pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = Nothing,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,

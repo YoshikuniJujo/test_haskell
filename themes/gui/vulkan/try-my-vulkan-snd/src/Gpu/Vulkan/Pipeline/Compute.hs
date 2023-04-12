@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications, RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds, GADTs, TypeFamilies #-}
@@ -8,7 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Compute (
-	C(..), CreateInfo(..), createCs ) where
+	C(..), CNew(..), CreateInfo(..), createCs, createCsNew ) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -25,11 +26,16 @@ import Gpu.Vulkan.Pipeline.Enum
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
+import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Layout
 import qualified Gpu.Vulkan.Pipeline.Cache.Middle as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Middle as M
 
+import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
+
 newtype C s = C M.C deriving Show
+
+newtype CNew s (slbtss :: (Type, [(Type, [DescriptorSetLayout.BindingType])], [Type])) = CNew M.C deriving Show
 
 data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -38,6 +44,24 @@ data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 	createInfoLayout :: U3 Layout.L slsbtss,
 	createInfoBasePipelineHandle :: Maybe (C sbph),
 	createInfoBasePipelineIndex :: Maybe Int32 }
+
+type CreateInfoArgs4 = (
+	Type,
+	(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
+	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
+	Type )
+
+type CArgs1 = (Type, [(Type, [DscStLyt.BindingType])], [Type])
+
+type family CreateInfoArgs4ToCArgs1 (cia :: CreateInfoArgs4) :: CArgs1 where
+	CreateInfoArgs4ToCArgs1 '(n, nnskndscdvss, slsbtss, sbph) = slsbtss
+
+type family
+	CreateInfoListArgs4ToCArgs1 (cias :: [CreateInfoArgs4]) :: [CArgs1] where
+	CreateInfoListArgs4ToCArgs1 '[] = '[]
+	CreateInfoListArgs4ToCArgs1 (cia ': cias) =
+		CreateInfoArgs4ToCArgs1 cia ':
+		CreateInfoListArgs4ToCArgs1 cias
 
 createInfoToMiddle :: (Pokable n', Pokable c) =>
 	Device.D ds ->
@@ -120,3 +144,28 @@ createCs dvc@(Device.D mdvc) cch cis macc macd f = do
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . HeteroParList.homoListFromList @_ @'() . (HeteroParList.Dummy . C <$>))
+
+createCsNew :: (
+	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
+	Pokable c', Pokable d',
+	DestroyCreateInfoMiddleList (Result vss) vss,
+	HeteroParList.HomoList '() (HeteroParList.ToDummies vss),
+	FromMiddleList (CreateInfoListArgs4ToCArgs1 vss) ) =>
+	Device.D sd -> Maybe Cache.C -> HeteroParList.PL (U4 CreateInfo) vss ->
+	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
+	(forall s . HeteroParList.PL (CNew s) (CreateInfoListArgs4ToCArgs1 vss) -> IO a) -> IO a
+createCsNew dvc@(Device.D mdvc) cch cis macc macd f = do
+	cis' <- createInfoListToMiddle dvc cis
+	bracket
+		(M.createCs mdvc cch cis' macc
+			<* destroyCreateInfoMiddleList dvc cis' cis)
+		(mapM_ \c -> M.destroy mdvc c macd)
+		(f . fromMiddleList)
+
+class FromMiddleList ss where
+	fromMiddleList :: [M.C] -> HeteroParList.PL (CNew sc) ss
+
+instance FromMiddleList '[] where fromMiddleList [] = HeteroParList.Nil
+
+instance FromMiddleList ss => FromMiddleList (s ': ss) where
+	fromMiddleList (c : cs) = CNew c :** fromMiddleList cs
