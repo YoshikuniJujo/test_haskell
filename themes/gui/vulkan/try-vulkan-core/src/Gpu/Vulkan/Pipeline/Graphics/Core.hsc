@@ -27,7 +27,7 @@ import qualified Gpu.Vulkan.Pipeline.DynamicState.Core as DynamicState
 import qualified Gpu.Vulkan.Pipeline.Layout.Core as Layout
 import qualified Gpu.Vulkan.RenderPass.Core as RenderPass
 
-import qualified Gpu.Vulkan.Pipeline.Cache.Core as Cache
+import qualified Gpu.Vulkan.PipelineCache.Core as Cache
 import qualified Gpu.Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 
 #include <vulkan/vulkan.h>
