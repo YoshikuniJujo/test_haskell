@@ -7,6 +7,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Core where
 
 import Foreign.Ptr
 import Foreign.Ptr.Synonyms
+import Foreign.Concurrent
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
@@ -46,6 +47,9 @@ struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		[| #{poke VkPipelineShaderStageCreateInfo,
 			pSpecializationInfo} |]) ]
 	[''Show, ''Storable]
+
+nullCreateInfo :: IO CreateInfo
+nullCreateInfo = CreateInfo_ <$> newForeignPtr nullPtr (pure ())
 
 vertexBit, fragmentBit :: #{type VkShaderStageFlagBits}
 vertexBit = #{const VK_SHADER_STAGE_VERTEX_BIT}
