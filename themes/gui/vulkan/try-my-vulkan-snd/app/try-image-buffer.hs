@@ -546,8 +546,7 @@ cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoFlags = def,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
 commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
 commandPoolInfo qfam = Vk.CommandPool.CreateInfo {

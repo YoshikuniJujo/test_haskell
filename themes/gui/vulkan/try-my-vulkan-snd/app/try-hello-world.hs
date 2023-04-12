@@ -281,8 +281,7 @@ pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
 shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfoNew () () 'GlslComputeShader () () '[]
 shaderStInfo = Vk.Ppl.ShaderSt.CreateInfoNew {

@@ -42,14 +42,14 @@ data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 	createInfoFlags :: CreateFlags,
 	createInfoStage :: U6 ShaderStage.CreateInfoNew nncdvs,
 	createInfoLayout :: U3 Layout.L slsbtss,
-	createInfoBasePipelineHandle :: Maybe (C sbph),
-	createInfoBasePipelineIndex :: Maybe Int32 }
+	createInfoBasePipelineHandleOrIndex ::
+		Maybe (Either (U2 CNew sbph) Int32) }
 
 type CreateInfoArgs4 = (
 	Type,
 	(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
-	Type )
+	(Type, (Type, [(Type, [DscStLyt.BindingType])], [Type])) )
 
 type CArgs1 = (Type, [(Type, [DscStLyt.BindingType])], [Type])
 
@@ -72,10 +72,12 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoFlags = flgs,
 	createInfoStage = stg,
 	createInfoLayout = U3 (Layout.L lyt),
-	createInfoBasePipelineHandle = ((\(C b) -> b) <$>) -> bph,
-	createInfoBasePipelineIndex = bpi
-	} = do
+	createInfoBasePipelineHandleOrIndex = mbphi } = do
 	stg' <- ShaderStage.createInfoToMiddleFooNew dvc stg
+	let	(bph, bpi) = case mbphi of
+			Nothing -> (Nothing, Nothing)
+			Just (Left (U2 (CNew h))) -> (Just h, Nothing)
+			Just (Right i) -> (Nothing, Just i)
 	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,

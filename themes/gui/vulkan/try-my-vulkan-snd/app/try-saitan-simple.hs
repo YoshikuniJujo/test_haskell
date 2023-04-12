@@ -338,8 +338,7 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
-	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
-	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
+	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
 shaderStageInfo ::
 	Vk.Ppl.ShaderSt.CreateInfoNew () () 'GlslComputeShader () () '[]
