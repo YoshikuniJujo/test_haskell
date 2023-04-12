@@ -54,7 +54,6 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
 import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
@@ -84,7 +83,7 @@ main :: IO ()
 main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
 	prepareMems pd dv dslyt \dscs m ->
-	calc dv qfi dslyt dscs bffSize >>
+	calc qfi dv dslyt dscs bffSize >>
 	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
@@ -220,15 +219,15 @@ calc :: forall slbts sl bts sd sp . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
-	Vk.Dv.D sd -> Vk.QFm.Index -> Vk.DSLyt.L sl bts ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	Vk.DS.S sd sp slbts -> Word32 -> IO ()
-calc dv qfi dslyt ds sz =
+calc qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
-		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(ppl :** HL.Nil) ->
+		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil nil \cp ->
 	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
-	run dv qfi cb ppl plyt ds sz
+	run qfi dv ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
 	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
@@ -250,24 +249,19 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
-run :: forall slbts sbtss sd sc vs sg sl sp . (
-	sbtss ~ '[slbts],
-	Vk.DS.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
-	Show (HL.PL
-		(HL.PL KObj.ObjectLength)
-		(Vk.DS.LayoutArgOnlyDynamics slbts)),
-	Vk.Cmd.SetPos '[slbts] sbtss ) =>
-	Vk.Dv.D sd -> Vk.QFm.Index -> Vk.CBffr.C sc -> Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DS.S sd sp slbts -> Word32 -> IO ()
-run dv qfi cb ppl pplLyt dscSet dsz = do
-	q <- Vk.Dv.getQueue dv qfi 0
+run :: forall slbts sd sc sg sl sp . (
+	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
+	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
+	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
+	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
+run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @() @() cb def $
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute ccb Vk.Ppl.BindPointCompute
-				pplLyt (HL.Singleton $ U2 dscSet)
-				(HL.Singleton $ HL.Singleton HL.Nil ::
-					HL.PL3 Vk.Cmd.DynamicIndex (Vk.DS.LayoutArgListOnlyDynamics sbtss))
-			Vk.Cmd.dispatch ccb dsz 1 1
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
+		Vk.Cmd.bindDescriptorSetsCompute ccb Vk.Ppl.BindPointCompute lyt
+			(HL.Singleton $ U2 ds)
+			(HL.Singleton $ HL.Singleton HL.Nil) >>
+		Vk.Cmd.dispatch ccb sz 1 1
 	Vk.Queue.submit q (HL.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q
 	where
