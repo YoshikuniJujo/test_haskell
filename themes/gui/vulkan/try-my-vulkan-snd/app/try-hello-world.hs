@@ -258,15 +258,14 @@ run :: forall slbts sd sc sg sl sp . (
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @() @() cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.bindDescriptorSetsCompute ccb Vk.Ppl.BindPointCompute lyt
-			(HL.Singleton $ U2 ds)
-			(HL.Singleton $ HL.Singleton HL.Nil) >>
+		Vk.Cmd.bindDescriptorSetsCompute
+			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
-	Vk.Queue.submit q (HL.Singleton $ U4 submitInfo) Nothing
+	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
-	submitInfo :: Vk.SubmitInfo () '[] '[sc] '[]
-	submitInfo = Vk.SubmitInfo {
+	sinfo :: Vk.SubmitInfo () '[] '[sc] '[]
+	sinfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = Nothing,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
 		Vk.submitInfoCommandBuffers = HL.Singleton cb,
@@ -275,22 +274,20 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 -- COMPUTE PIPELINE INFO
 
 pplInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo ()
-		'((), (), 'GlslComputeShader, (), (), '[])
+	Vk.Ppl.Cmpt.CreateInfo () '((), (), 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = Nothing,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandle = Nothing,
 	Vk.Ppl.Cmpt.createInfoBasePipelineIndex = Nothing }
 
-shaderStageInfo ::
-	Vk.Ppl.ShaderSt.CreateInfoNew () () 'GlslComputeShader () () '[]
-shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
+shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfoNew () () 'GlslComputeShader () () '[]
+shaderStInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = Nothing,
-	Vk.Ppl.ShaderSt.createInfoFlagsNew = def,
+	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,
 	Vk.Ppl.ShaderSt.createInfoModuleNew = Vk.ShaderMod.M shdrMdInfo nil nil,
 	Vk.Ppl.ShaderSt.createInfoNameNew = "main",
