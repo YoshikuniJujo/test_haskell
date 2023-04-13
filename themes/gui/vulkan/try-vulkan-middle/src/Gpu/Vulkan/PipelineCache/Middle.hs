@@ -8,6 +8,6 @@ module Gpu.Vulkan.PipelineCache.Middle (
 
 	-- * Create and Destroy
 
-	create, destroy, CreateInfo(..), InitialData(..) ) where
+	create, destroy, getData, CreateInfo(..), Data(..) ) where
 
 import Gpu.Vulkan.PipelineCache.Middle.Internal

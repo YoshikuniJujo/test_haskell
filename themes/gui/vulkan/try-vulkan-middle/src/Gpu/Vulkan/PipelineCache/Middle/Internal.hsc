@@ -5,7 +5,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
-	C(..), CreateInfo(..), InitialData(..), create, destroy ) where
+	C(..), CreateInfo(..), Data(..), create, destroy, getData ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
@@ -28,19 +28,19 @@ import qualified Gpu.Vulkan.PipelineCache.Core as C
 data CreateInfo n = CreateInfo {
 	createInfoNext :: Maybe n,
 	createInfoFlags :: CreateFlags,
-	createInfoInitialData :: InitialData }
+	createInfoInitialData :: Data }
 	deriving Show
 
-data InitialData = InitialData #{type size_t} (Ptr ()) deriving Show
+data Data = Data #{type size_t} (Ptr ()) deriving Show
 
-instance Default InitialData where def = InitialData 0 nullPtr
+instance Default Data where def = Data 0 nullPtr
 
 createInfoToCore :: WithPoked n =>
 	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoInitialData = InitialData dtsz pdt } f =
+	createInfoInitialData = Data dtsz pdt } f =
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
@@ -65,3 +65,13 @@ destroy :: WithPoked d =>
 	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C c) mac =
 	AllocationCallbacks.maybeToCore mac $ C.destroy dvc c
+
+getData :: Device.D -> C -> IO Data
+getData (Device.D dv) (C c) = alloca \psz -> do
+	r <- C.getData dv c psz nullPtr
+	throwUnlessSuccess $ Result r
+	sz <- peek psz
+	allocaBytes (fromIntegral sz) \pdt -> do
+		r' <- C.getData dv c psz pdt
+		throwUnlessSuccess $ Result r'
+		pure $ Data sz pdt
