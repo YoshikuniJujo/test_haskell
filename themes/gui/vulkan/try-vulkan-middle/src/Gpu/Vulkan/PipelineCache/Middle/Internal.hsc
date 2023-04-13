@@ -11,6 +11,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Data.Default
 import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -31,6 +32,8 @@ data CreateInfo n = CreateInfo {
 	deriving Show
 
 data InitialData = InitialData #{type size_t} (Ptr ()) deriving Show
+
+instance Default InitialData where def = InitialData 0 nullPtr
 
 createInfoToCore :: WithPoked n =>
 	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
