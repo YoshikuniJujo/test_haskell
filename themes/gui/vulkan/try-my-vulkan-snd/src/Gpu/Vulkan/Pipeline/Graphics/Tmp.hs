@@ -51,7 +51,7 @@ import qualified Gpu.Vulkan.VertexInput as VertexInput
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
-import qualified Gpu.Vulkan.Pipeline.Cache.Middle as Cache
+import qualified Gpu.Vulkan.PipelineCache.Middle as Cache
 
 data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
 	createInfoNext :: Maybe n,

@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Cache.Type where
+module Gpu.Vulkan.PipelineCache.Type where
 
-import qualified Gpu.Vulkan.Pipeline.Cache.Middle as M
+import qualified Gpu.Vulkan.PipelineCache.Middle as M
 
 newtype C s = C M.C deriving Show
 

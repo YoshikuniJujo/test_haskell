@@ -91,7 +91,6 @@ library
       Gpu.Vulkan.Misc
       Gpu.Vulkan.Object
       Gpu.Vulkan.PhysicalDevice
-      Gpu.Vulkan.Pipeline.Cache.Type
       Gpu.Vulkan.Pipeline.ColorBlendAttachment
       Gpu.Vulkan.Pipeline.ColorBlendState
       Gpu.Vulkan.Pipeline.Compute
@@ -113,6 +112,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
       Gpu.Vulkan.Pipeline.ViewportState
+      Gpu.Vulkan.PipelineCache.Type
       Gpu.Vulkan.PushConstant
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
