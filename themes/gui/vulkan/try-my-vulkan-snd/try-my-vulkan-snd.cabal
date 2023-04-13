@@ -112,6 +112,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset
       Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
       Gpu.Vulkan.Pipeline.ViewportState
+      Gpu.Vulkan.PipelineCache
       Gpu.Vulkan.PipelineCache.Type
       Gpu.Vulkan.PushConstant
       Gpu.Vulkan.Queue
@@ -605,6 +606,42 @@ executable try-multisampling-single
 
 executable try-no-dynamic-dsc-sets
   main-is: try-no-dynamic-dsc-sets.hs
+  other-modules:
+      Paths_try_my_vulkan_snd
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      GLFW-b
+    , JuicyPixels
+    , array
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , data-default
+    , filepath
+    , ghc-prim
+    , monads-tf
+    , mono-traversable
+    , ranged-list
+    , size-alignment-list
+    , template-haskell
+    , text
+    , time
+    , try-hetero-parameter-list
+    , try-my-vulkan-snd
+    , try-shaderc
+    , try-storable-hetero-list
+    , try-storable-peek-poke
+    , try-vulkan-middle
+    , try-vulkan-middle-ext-debug-utils
+    , try-vulkan-middle-khr
+    , union-color
+    , vector
+  default-language: Haskell2010
+
+executable try-pipeline-cache
+  main-is: try-pipeline-cache.hs
   other-modules:
       Paths_try_my_vulkan_snd
   hs-source-dirs:

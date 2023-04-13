@@ -28,7 +28,7 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Internal as ShaderStage
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 import qualified Gpu.Vulkan.Pipeline.Layout.Type as Layout
-import qualified Gpu.Vulkan.PipelineCache.Middle as Cache
+import qualified Gpu.Vulkan.PipelineCache.Type as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Middle as M
 
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
@@ -136,13 +136,14 @@ createCs :: (
 	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	HeteroParList.HomoList '() (HeteroParList.ToDummies vss) ) =>
-	Device.D sd -> Maybe Cache.C -> HeteroParList.PL (U4 CreateInfo) vss ->
+	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
 	(forall s . HeteroParList.LL (C s) (HeteroParList.ToDummies vss) -> IO a) -> IO a
-createCs dvc@(Device.D mdvc) cch cis macc macd f = do
+createCs dvc@(Device.D mdvc) mcch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
+	let	mcch' = (\(Cache.C c) -> c) <$> mcch
 	bracket
-		(M.createCs mdvc cch cis' macc
+		(M.createCs mdvc mcch' cis' macc
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . HeteroParList.homoListFromList @_ @'() . (HeteroParList.Dummy . C <$>))
@@ -153,13 +154,14 @@ createCsNew :: (
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	HeteroParList.HomoList '() (HeteroParList.ToDummies vss),
 	FromMiddleList (CreateInfoListArgs4ToCArgs1 vss) ) =>
-	Device.D sd -> Maybe Cache.C -> HeteroParList.PL (U4 CreateInfo) vss ->
+	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) vss ->
 	Maybe (AllocationCallbacks.A c') -> Maybe (AllocationCallbacks.A d') ->
 	(forall s . HeteroParList.PL (CNew s) (CreateInfoListArgs4ToCArgs1 vss) -> IO a) -> IO a
-createCsNew dvc@(Device.D mdvc) cch cis macc macd f = do
+createCsNew dvc@(Device.D mdvc) mcch cis macc macd f = do
 	cis' <- createInfoListToMiddle dvc cis
+	let	mcch' = (\(Cache.C c) -> c) <$> mcch
 	bracket
-		(M.createCs mdvc cch cis' macc
+		(M.createCs mdvc mcch' cis' macc
 			<* destroyCreateInfoMiddleList dvc cis' cis)
 		(mapM_ \c -> M.destroy mdvc c macd)
 		(f . fromMiddleList)
