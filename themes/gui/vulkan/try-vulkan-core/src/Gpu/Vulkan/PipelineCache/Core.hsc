@@ -47,3 +47,6 @@ foreign import ccall "vkCreatePipelineCache" create ::
 
 foreign import ccall "vkDestroyPipelineCache" destroy ::
 	Device.D -> C -> Ptr AllocationCallbacks.A -> IO ()
+
+foreign import ccall "vkGetPipelineCacheData" getData ::
+	Device.D -> C -> Ptr #{type size_t} -> Ptr () -> IO #{type VkResult}
