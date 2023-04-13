@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan.Pipeline.Graphics.Core as C
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
-import qualified Gpu.Vulkan.Pipeline.Cache.Middle.Internal as Cache
+import qualified Gpu.Vulkan.PipelineCache.Middle.Internal as Cache
 
 data CreateInfo n stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
 	createInfoNext :: Maybe n,

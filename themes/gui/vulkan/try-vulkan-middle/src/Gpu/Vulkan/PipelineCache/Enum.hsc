@@ -7,7 +7,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Cache.Enum where
+module Gpu.Vulkan.PipelineCache.Enum where
 
 import Foreign.Storable
 import Foreign.C.Enum

@@ -5,7 +5,7 @@ module VulkanPipelineCacheEnum where
 import MakeEnum
 
 make :: IO ()
-make = createFile'' vulkanCore "Pipeline.Cache.Enum"
+make = createFile'' vulkanCore "PipelineCache.Enum"
 		["Data.Bits", "Data.Word"] [
 	(	[("CreateFlagsZero", Int 0)],
 		(	"CreateFlagBits", "VkPipelineCacheCreateFlagBits",

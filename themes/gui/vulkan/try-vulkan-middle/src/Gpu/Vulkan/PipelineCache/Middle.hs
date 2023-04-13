@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Cache.Middle (
+module Gpu.Vulkan.PipelineCache.Middle (
 
 	-- * Type
 
@@ -10,4 +10,4 @@ module Gpu.Vulkan.Pipeline.Cache.Middle (
 
 	create, destroy, CreateInfo(..), InitialData(..) ) where
 
-import Gpu.Vulkan.Pipeline.Cache.Middle.Internal
+import Gpu.Vulkan.PipelineCache.Middle.Internal
