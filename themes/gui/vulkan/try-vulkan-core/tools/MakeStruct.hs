@@ -19,7 +19,7 @@ sourceFile :: String -> FilePath
 sourceFile mn = directory mn ++ "/Core.hsc"
 
 cName :: String -> String -> String
-cName mn hsn = "Vk" ++ concat (tail . init $ sep '.' mn) ++ hsn
+cName mn hsn = "Vk" ++ concat (tail . tail . init $ sep '.' mn) ++ hsn
 
 data Name = Atom String | List String Int deriving Show
 

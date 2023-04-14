@@ -7,7 +7,7 @@ module VulkanPhysicalDeviceStruct (make) where
 import qualified MakeStruct
 
 moduleName :: String
-moduleName = "Vulkan.PhysicalDevice.Struct.Core"
+moduleName = "Gpu.Vulkan.PhysicalDevice.Struct.Core"
 
 hsName :: [String]
 hsName = ["Limits", "Features"]
