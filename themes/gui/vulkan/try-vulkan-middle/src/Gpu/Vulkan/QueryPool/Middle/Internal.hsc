@@ -68,6 +68,11 @@ create (Device.D dv) ci mac = Q <$> alloca \pq -> do
 			throwUnlessSuccess $ Result r
 	peek pq
 
+destroy :: WithPoked d =>
+	Device.D -> Q -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dv) (Q q) mad = AllocationCallbacks.maybeToCore mad \pad ->
+	C.destroy dv q pad
+
 reset :: Device.D -> Q -> Word32 -> Word32 -> IO ()
 reset (Device.D dv) (Q q) fq qc = C.reset dv q fq qc
 
