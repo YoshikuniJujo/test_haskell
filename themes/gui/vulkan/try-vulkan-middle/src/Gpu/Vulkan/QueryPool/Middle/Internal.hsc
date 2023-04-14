@@ -158,6 +158,11 @@ data Availability (av :: Bool) a where
 
 deriving instance Show a => Show (Availability av a)
 
+instance Functor (Availability av) where
+	fmap f = \case
+		NonAvailability x -> NonAvailability $ f x
+		Availability mx -> Availability $ f <$> mx
+
 class AvailabilityTools (av :: Bool) a where
 	numOfWords :: Integral n => n
 	resultWithAvailBit :: ResultFlags -> ResultFlags
