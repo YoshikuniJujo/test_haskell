@@ -15,6 +15,8 @@ import qualified Gpu.Vulkan.DescriptorSet.Core as DscSet
 import qualified Gpu.Vulkan.Memory.Core as Memory
 import qualified Gpu.Vulkan.Image.Core as Image
 
+import Gpu.Vulkan.QueryPool.Core as QueryPool
+
 #include <vulkan/vulkan.h>
 
 foreign import ccall "vkCmdBeginRenderPass" beginRenderPass ::
@@ -80,3 +82,10 @@ foreign import ccall "vkCmdDispatch" dispatch ::
 foreign import ccall "vkCmdPushConstants" pushConstants ::
 	CommandBuffer.C -> Pipeline.Layout.L -> #{type VkShaderStageFlags} ->
 	#{type uint32_t} -> #{type uint32_t} -> Ptr () -> IO ()
+
+foreign import ccall "vkCmdBeginQuery" beginQuery ::
+	CommandBuffer.C -> QueryPool.Q -> #{type uint32_t} ->
+	#{type VkQueryControlFlags} -> IO ()
+
+foreign import ccall "vkCmdEndQuery" endQuery ::
+	CommandBuffer.C -> QueryPool.Q -> #{type uint32_t} -> IO ()

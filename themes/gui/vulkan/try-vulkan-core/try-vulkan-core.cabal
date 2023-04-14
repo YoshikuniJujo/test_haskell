@@ -66,6 +66,7 @@ library
       Gpu.Vulkan.Pipeline.ViewportState.Core
       Gpu.Vulkan.PipelineCache.Core
       Gpu.Vulkan.PushConstant.Core
+      Gpu.Vulkan.QueryPool.Core
       Gpu.Vulkan.Queue.Core
       Gpu.Vulkan.QueueFamily.Core
       Gpu.Vulkan.RenderPass.Core
