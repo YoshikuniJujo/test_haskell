@@ -5,7 +5,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving, StandaloneDeriving #-}
@@ -20,6 +20,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Data.Bits
+import Data.Bool
 import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -109,6 +110,22 @@ instance Storable (W32W64 'True) where
 	peek p = W64 <$> peek (castPtr p)
 	poke p (W64 w) = poke (castPtr p) w
 
+instance Num (W32W64 'False) where
+	W32 m + W32 n = W32 $ m + n
+	W32 m * W32 n = W32 $ m * n
+	abs (W32 n) = W32 $ abs n
+	signum (W32 n) = W32 $ signum n
+	fromInteger = W32 . fromInteger
+	negate (W32 n) = W32 $ negate n
+
+instance Num (W32W64 'True) where
+	W64 m + W64 n = W64 $ m + n
+	W64 m * W64 n = W64 $ m * n
+	abs (W64 n) = W64 $ abs n
+	signum (W64 n) = W64 $ signum n
+	fromInteger = W64 . fromInteger
+	negate (W64 n) = W64 $ negate n
+
 class W32W64Tools (w64 :: Bool) where
 	bytesOf :: Integral n => n
 	result64Bit :: ResultFlags -> ResultFlags
@@ -133,3 +150,46 @@ getResultsW32W64
 	where
 	qc' :: Integral n => n
 	qc' = fromIntegral qc
+
+data Availability (av :: Bool) a where
+	NonAvailability :: a -> Availability 'False a
+	Availability :: Maybe a -> Availability 'True a
+
+deriving instance Show a => Show (Availability av a)
+
+class AvailabilityTools (av :: Bool) a where
+	numOfWords :: Integral n => n
+	resultWithAvailBit :: ResultFlags -> ResultFlags
+	mkAvailability :: [a] -> [Availability av a]
+
+instance AvailabilityTools 'False a where
+	numOfWords = 1
+	resultWithAvailBit = (.&. complement ResultWithAvailabilityBit)
+	mkAvailability = (NonAvailability <$>)
+
+instance (Eq n, Num n) => AvailabilityTools 'True n where
+	numOfWords = 2
+	resultWithAvailBit = (.|. ResultWithAvailabilityBit)
+	mkAvailability = \case
+		[] -> []
+		[_] -> error "never occur"
+		x : a : xas -> Availability
+			(bool Nothing (Just x) (a /= 0)) : mkAvailability xas
+
+getResults :: forall av w64 . (
+	Storable (W32W64 w64), W32W64Tools w64,
+	AvailabilityTools av (W32W64 w64) ) =>
+	Device.D -> Q -> Word32 -> Word32 -> ResultFlags ->
+	IO [Availability av (W32W64 w64)]
+getResults (Device.D dv) (Q q) fq qc
+	(resultWithAvailBit @av @(W32W64 w64) . result64Bit @w64 -> ResultFlagBits flgs) =
+	allocaArray (qc' * nw) \pd -> do
+		r <- C.getResults dv q fq qc
+			(qc' * nw * bytesOf @w64) pd (nw * bytesOf @w64) flgs
+		throwUnlessSuccess $ Result r
+		mkAvailability <$> peekArray (qc' * nw) (castPtr pd)
+	where
+	qc' :: Integral n => n
+	qc' = fromIntegral qc
+	nw :: Integral n => n
+	nw = numOfWords @av @(W32W64 w64)
