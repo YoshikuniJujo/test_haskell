@@ -15,6 +15,8 @@
 
 module Main where
 
+import Control.Concurrent
+
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Kind.Object qualified as KObj
 import Data.Default
@@ -39,6 +41,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
+import qualified Gpu.Vulkan.Device.Type as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
@@ -55,8 +58,10 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
+import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
 import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
+import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dv.Mem.Buffer
@@ -65,6 +70,9 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DSLyt
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
+
+import Gpu.Vulkan.Query.Enum as Vk.Qry
+import Gpu.Vulkan.QueryPool.Middle as Vk.QP.M
 
 ---------------------------------------------------------------------------
 
@@ -81,7 +89,8 @@ bffSize :: Integral n => n
 bffSize = 30
 
 main :: IO ()
-main = withDevice \pd qfi dv -> do
+main = withDevice \pd qfi dv@(Vk.Dv.D mdv) -> do
+
 	ftrs <- Vk.Phd.getFeatures pd
 	putStr "PIPELINE STATISTICS QUERY: "
 	print $ Vk.Phd.featuresPipelineStatisticsQuery ftrs
@@ -94,13 +103,33 @@ main = withDevice \pd qfi dv -> do
 	print $ Vk.Phd.limitsTimestampComputeAndGraphics lmts
 	putStr "TIMESTAMP PERIOD: "
 	print $ Vk.Phd.limitsTimestampPeriod lmts
+
+	qp <- Vk.QP.M.create mdv queryPoolInfo nil
+
+	print qp
+
 	putStrLn . map (chr . fromIntegral) =<<
 		Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
 		prepareMems pd dv dslyt \dscs m ->
-		calc qfi dv dslyt dscs bffSize >>
+		calc qfi dv qp dslyt dscs bffSize >>
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
+--	threadDelay 1000000
+--	print =<< Vk.QP.M.getResultsRaw mdv qp 0 1 zeroBits
+	print =<< Vk.QP.M.getResultsRaw mdv qp 0 1 Vk.Qry.ResultWithAvailabilityBit
+
+	Vk.QP.M.destroy mdv qp nil
+
 type Word32List = Obj.List 256 Word32 ""
+
+queryPoolInfo :: Vk.QP.M.CreateInfo ()
+queryPoolInfo = Vk.QP.M.CreateInfo {
+	Vk.QP.M.createInfoNext = Nothing,
+	Vk.QP.M.createInfoFlags = zeroBits,
+	Vk.QP.M.createInfoQueryType = Vk.Qry.TypePipelineStatistics,
+	Vk.QP.M.createInfoQueryCount = 10,
+	Vk.QP.M.createInfoPipelineStatistics =
+		Vk.Qry.PipelineStatisticComputeShaderInvocationsBit }
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
 withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
@@ -121,7 +150,8 @@ dvcInfo qfi = Vk.Dv.CreateInfo {
 	Vk.Dv.createInfoQueueCreateInfos = HL.Singleton qinfo,
 	Vk.Dv.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
 	Vk.Dv.createInfoEnabledExtensionNames = [],
-	Vk.Dv.createInfoEnabledFeatures = Nothing }
+	Vk.Dv.createInfoEnabledFeatures = Just $ Vk.Phd.featuresZero {
+		Vk.Phd.featuresPipelineStatisticsQuery = True } }
 	where qinfo = Vk.Dv.QueueCreateInfo {
 		Vk.Dv.queueCreateInfoNext = Nothing,
 		Vk.Dv.queueCreateInfoFlags = zeroBits,
@@ -233,15 +263,16 @@ calc :: forall slbts sl bts sd sp . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.M.Q ->
+	Vk.DSLyt.L sl bts ->
 	Vk.DS.S sd sp slbts -> Word32 -> IO ()
-calc qfi dv dslyt ds sz =
+calc qfi dv qp dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil nil \cp ->
-	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
-	run qfi dv ds cb plyt pl sz
+	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb@(Vk.CBffr.C mcb) :*. HL.Nil) -> do
+	run qfi dv qp ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
 	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
@@ -266,15 +297,19 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 run :: forall slbts sd sc sg sl sp . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.M.Q ->
+	Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
-run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
+run qfi dv qp ds cb@(Vk.CBffr.C mcb) lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @() @() cb def $
+		Vk.Cmd.M.resetQueryPool mcb qp 0 10 >>
+		Vk.Cmd.M.beginQuery mcb qp 0 zeroBits >>
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
-		Vk.Cmd.dispatch ccb sz 1 1
+		Vk.Cmd.dispatch ccb sz 1 1 >>
+		Vk.Cmd.M.endQuery mcb qp 0
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
