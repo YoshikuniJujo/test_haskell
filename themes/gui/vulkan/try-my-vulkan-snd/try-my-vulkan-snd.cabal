@@ -115,6 +115,7 @@ library
       Gpu.Vulkan.PipelineCache
       Gpu.Vulkan.PipelineCache.Type
       Gpu.Vulkan.PushConstant
+      Gpu.Vulkan.QueryPool
       Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
       Gpu.Vulkan.QueueNew

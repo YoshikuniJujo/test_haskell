@@ -74,6 +74,8 @@ import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import Gpu.Vulkan.Query.Enum as Vk.Qry
 import Gpu.Vulkan.QueryPool.Middle as Vk.QP.M
 
+import Gpu.Vulkan.QueryPool as Vk.QP
+
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -104,32 +106,28 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) -> do
 	putStr "TIMESTAMP PERIOD: "
 	print $ Vk.Phd.limitsTimestampPeriod lmts
 
-	qp <- Vk.QP.M.create mdv queryPoolInfo nil
+	Vk.QP.create dv queryPoolInfo nil nil \qp@(Vk.QP.Q mqp) -> do
 
-	print qp
+		print qp
 
-	putStrLn . map (chr . fromIntegral) =<<
-		Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
-		prepareMems pd dv dslyt \dscs m ->
-		calc qfi dv qp dslyt dscs bffSize >>
-		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
+		putStrLn . map (chr . fromIntegral) =<<
+			Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
+			prepareMems pd dv dslyt \dscs m ->
+			calc qfi dv mqp dslyt dscs bffSize >>
+			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
-	print @[Vk.QP.M.Availability 'False (Vk.QP.M.W32W64 'False)] =<<
-		Vk.QP.M.getResults mdv qp 0 2 zeroBits
-	print @[Vk.QP.M.Availability 'True (Vk.QP.M.W32W64 'True)] =<<
-		Vk.QP.M.getResults mdv qp 0 2 zeroBits
-
-	Vk.QP.M.destroy mdv qp nil
+		print @[Vk.QP.M.Availability 'True (Vk.QP.PipelineStatistics 'True)] =<<
+			Vk.QP.getResults dv qp 0 2 zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
 
-queryPoolInfo :: Vk.QP.M.CreateInfo ()
-queryPoolInfo = Vk.QP.M.CreateInfo {
-	Vk.QP.M.createInfoNext = Nothing,
-	Vk.QP.M.createInfoFlags = zeroBits,
-	Vk.QP.M.createInfoQueryType = Vk.Qry.TypePipelineStatistics,
-	Vk.QP.M.createInfoQueryCount = 10,
-	Vk.QP.M.createInfoPipelineStatistics =
+queryPoolInfo :: Vk.QP.CreateInfo () Vk.QP.PipelineStatistics
+queryPoolInfo = Vk.QP.CreateInfo {
+	Vk.QP.createInfoNext = Nothing,
+	Vk.QP.createInfoFlags = zeroBits,
+--	Vk.QP.createInfoQueryType = Vk.Qry.TypePipelineStatistics,
+	Vk.QP.createInfoQueryCount = 10,
+	Vk.QP.createInfoPipelineStatistics =
 		Vk.Qry.PipelineStatisticComputeShaderInvocationsBit }
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
