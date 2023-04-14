@@ -41,7 +41,6 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
-import qualified Gpu.Vulkan.Device.Type as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
@@ -58,10 +57,8 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
-import qualified Gpu.Vulkan.CommandBuffer.Type as Vk.CBffr
 import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
-import qualified Gpu.Vulkan.Command.Middle as Vk.Cmd.M
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dv.Mem.Buffer
@@ -91,7 +88,7 @@ bffSize :: Integral n => n
 bffSize = 30
 
 main :: IO ()
-main = withDevice \pd qfi dv@(Vk.Dv.D mdv) -> do
+main = withDevice \pd qfi dv -> do
 
 	ftrs <- Vk.Phd.getFeatures pd
 	putStr "PIPELINE STATISTICS QUERY: "
@@ -106,14 +103,14 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) -> do
 	putStr "TIMESTAMP PERIOD: "
 	print $ Vk.Phd.limitsTimestampPeriod lmts
 
-	Vk.QP.create dv queryPoolInfo nil nil \qp@(Vk.QP.Q mqp) -> do
+	Vk.QP.create dv queryPoolInfo nil nil \qp -> do
 
 		print qp
 
 		putStrLn . map (chr . fromIntegral) =<<
 			Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
 			prepareMems pd dv dslyt \dscs m ->
-			calc qfi dv mqp dslyt dscs bffSize >>
+			calc qfi dv qp dslyt dscs bffSize >>
 			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
 		print @[Vk.QP.M.Availability 'True (Vk.QP.PipelineStatistics 'True)] =<<
@@ -125,7 +122,6 @@ queryPoolInfo :: Vk.QP.CreateInfo () Vk.QP.PipelineStatistics
 queryPoolInfo = Vk.QP.CreateInfo {
 	Vk.QP.createInfoNext = Nothing,
 	Vk.QP.createInfoFlags = zeroBits,
---	Vk.QP.createInfoQueryType = Vk.Qry.TypePipelineStatistics,
 	Vk.QP.createInfoQueryCount = 10,
 	Vk.QP.createInfoPipelineStatistics =
 		Vk.Qry.PipelineStatisticComputeShaderInvocationsBit }
@@ -258,11 +254,11 @@ writeDscSet ds ba = Vk.DS.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sp . (
+calc :: forall slbts sl bts sd sq tp sp . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.M.Q ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.Q sq tp ->
 	Vk.DSLyt.L sl bts ->
 	Vk.DS.S sd sp slbts -> Word32 -> IO ()
 calc qfi dv qp dslyt ds sz =
@@ -293,24 +289,24 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
-run :: forall slbts sd sc sg sl sp . (
+run :: forall slbts sd sq tp sc sg sl sp . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.M.Q ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.Q sq tp ->
 	Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
-run qfi dv qp ds cb@(Vk.CBffr.C mcb) lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
+run qfi dv qp ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @() @() cb def $
-		Vk.Cmd.M.resetQueryPool mcb qp 0 10 >>
-		Vk.Cmd.M.beginQuery mcb qp 0 zeroBits >>
+		Vk.Cmd.resetQueryPool cb qp 0 10 >>
+		Vk.Cmd.beginQuery cb qp 0 zeroBits >>
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1 >>
-		Vk.Cmd.M.endQuery mcb qp 0 >>
-		Vk.Cmd.M.beginQuery mcb qp 1 zeroBits >>
-		Vk.Cmd.M.endQuery mcb qp 1
+		Vk.Cmd.endQuery cb qp 0 >>
+		Vk.Cmd.beginQuery cb qp 1 zeroBits >>
+		Vk.Cmd.endQuery cb qp 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where

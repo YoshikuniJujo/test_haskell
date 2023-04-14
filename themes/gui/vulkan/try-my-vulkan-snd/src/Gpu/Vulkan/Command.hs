@@ -57,6 +57,9 @@ import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 import Data.IORef -- for debug
 import Data.Kind.Object qualified as KObj
 
+import Gpu.Vulkan.Query.Enum qualified as Query
+import Gpu.Vulkan.QueryPool qualified as QueryPool
+
 beginRenderPass :: (WithPoked n, ClearValueListToCore ct) =>
 	CommandBuffer.Binded sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
@@ -348,3 +351,16 @@ blitImage :: CommandBuffer.Binded sc vs ->
 blitImage (CommandBuffer.Binded cb)
 	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
+
+resetQueryPool ::
+	CommandBuffer.C sc -> QueryPool.Q sq tp -> Word32 -> Word32 -> IO ()
+resetQueryPool (CommandBuffer.C cb) (QueryPool.Q qp) fq qc =
+	M.resetQueryPool cb qp fq qc
+
+beginQuery :: CommandBuffer.C sc ->
+	QueryPool.Q sq tp -> Word32 -> Query.ControlFlags -> IO ()
+beginQuery (CommandBuffer.C cb) (QueryPool.Q qp) i flgs =
+	M.beginQuery cb qp i flgs
+
+endQuery :: CommandBuffer.C sc -> QueryPool.Q sq tp -> Word32 -> IO ()
+endQuery (CommandBuffer.C cb) (QueryPool.Q qp) i = M.endQuery cb qp i
