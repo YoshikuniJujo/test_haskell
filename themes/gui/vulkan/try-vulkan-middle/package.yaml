@@ -121,6 +121,8 @@ library:
   - Gpu.Vulkan.Pipeline.VertexInputState.Middle
   - Gpu.Vulkan.Pipeline.ViewportState.Middle
   - Gpu.Vulkan.PushConstant.Middle
+  - Gpu.Vulkan.Query.Enum
+  - Gpu.Vulkan.QueryPool.Middle
   - Gpu.Vulkan.Queue.Enum
   - Gpu.Vulkan.Queue.Middle
   - Gpu.Vulkan.Queue.Middle.Internal

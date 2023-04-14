@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
@@ -32,7 +33,13 @@ module Gpu.Vulkan.Command.Middle (
 
 	-- * Memory Dependency
 
-	pipelineBarrier ) where
+	pipelineBarrier,
+
+	-- * Query
+
+	beginQuery, endQuery
+
+	) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
@@ -67,6 +74,9 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.Buffer.Middle.Internal as Buffer.M
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
+
+import Gpu.Vulkan.Query.Enum qualified as Query
+import Gpu.Vulkan.QueryPool.Middle.Internal qualified as QueryPool
 
 beginRenderPass :: (WithPoked n, ClearValueListToCore cts) => CommandBuffer.M.C ->
 	RenderPass.BeginInfo n cts -> Subpass.Contents -> IO ()
@@ -216,3 +226,11 @@ blitImage (CommandBuffer.M.C _ cb)
 	lift do (_, src) <- readIORef rsrc
 		(_, dst) <- readIORef rdst
 		C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
+
+beginQuery :: CommandBuffer.M.C ->
+	QueryPool.Q -> Word32 -> Query.ControlFlags -> IO ()
+beginQuery (CommandBuffer.M.C _ c) (QueryPool.Q q) i (Query.ControlFlagBits flgs) =
+	C.beginQuery c q i flgs
+
+endQuery :: CommandBuffer.M.C -> QueryPool.Q -> Word32 -> IO ()
+endQuery (CommandBuffer.M.C _ c) (QueryPool.Q q) = C.endQuery c q
