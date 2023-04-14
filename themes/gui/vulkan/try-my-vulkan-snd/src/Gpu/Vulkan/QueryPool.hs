@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
@@ -19,6 +19,7 @@ import Data.Kind
 import Data.Word
 
 import Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Query.Enum qualified as Q
 import Gpu.Vulkan.QueryPool.Middle qualified as M
@@ -39,8 +40,9 @@ getResults :: (
 	M.AvailabilityTools av (M.W32W64 w64) ) =>
 	Device.D sd -> Q sq tp -> Word32 -> Word32 -> Q.ResultFlags ->
 	IO [M.Availability av (tp w64)]
-getResults (Device.D dv) (Q qp) fq qc flgs =
-	((fromWord <$>) <$>) <$> M.getResults dv qp fq qc flgs
+getResults (Device.D dv) (Q qp) fq qc flgs = do
+	r <- M.getResults dv qp fq qc flgs
+	pure $ (fromWord <$>) <$> r
 
 data CreateInfo n (tp :: Bool -> Type) = CreateInfo {
 	createInfoNext :: Maybe n,
@@ -63,12 +65,16 @@ createInfoToMiddle CreateInfo {
 	M.createInfoPipelineStatistics = ps }
 
 class QueryType (qt :: Bool -> Type) where
+	type QueryArg qt
 	queryType :: Q.Type
 	fromWord :: M.W32W64 w64 -> qt w64
+	getQueryArg :: PhysicalDevice.P -> IO (QueryArg qt)
 
 instance QueryType PipelineStatistics where
+	type QueryArg PipelineStatistics = ()
 	queryType = Q.TypePipelineStatistics
 	fromWord = pipelineStatisticsFromWord
+	getQueryArg _ = pure ()
 
 data PipelineStatistics (w64 :: Bool) where
 	PipelineStatistics32 :: Word32 -> PipelineStatistics 'False
