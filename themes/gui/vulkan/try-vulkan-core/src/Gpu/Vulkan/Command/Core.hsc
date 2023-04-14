@@ -83,6 +83,10 @@ foreign import ccall "vkCmdPushConstants" pushConstants ::
 	CommandBuffer.C -> Pipeline.Layout.L -> #{type VkShaderStageFlags} ->
 	#{type uint32_t} -> #{type uint32_t} -> Ptr () -> IO ()
 
+foreign import ccall "vkCmdResetQueryPool" resetQueryPool ::
+	CommandBuffer.C -> QueryPool.Q ->
+	#{type uint32_t} -> #{type uint32_t} -> IO ()
+
 foreign import ccall "vkCmdBeginQuery" beginQuery ::
 	CommandBuffer.C -> QueryPool.Q -> #{type uint32_t} ->
 	#{type VkQueryControlFlags} -> IO ()
