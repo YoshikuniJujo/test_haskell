@@ -8,7 +8,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
  
 module Gpu.Vulkan.QueryPool.Middle.Internal where
@@ -94,6 +94,8 @@ getResultsRaw (Device.D dv) (Q q) fq qc (ResultFlagBits flgs) =
 data W32W64 (w64 :: Bool) where
 	W32 :: Word32 -> W32W64 'False
 	W64 :: Word64 -> W32W64 'True
+
+deriving instance Show (W32W64 w64)
 
 instance Storable (W32W64 'False) where
 	sizeOf _ = sizeOf @Word32 undefined
