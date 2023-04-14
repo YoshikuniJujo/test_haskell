@@ -114,9 +114,8 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) -> do
 		calc qfi dv qp dslyt dscs bffSize >>
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
---	threadDelay 1000000
---	print =<< Vk.QP.M.getResultsRaw mdv qp 0 1 zeroBits
-	print =<< Vk.QP.M.getResultsRaw mdv qp 0 1 Vk.Qry.ResultWithAvailabilityBit
+	print @[Vk.QP.M.W32W64 'False] =<< Vk.QP.M.getResultsW32W64 mdv qp 0 1 Vk.Qry.ResultWithAvailabilityBit
+	print @[Vk.QP.M.W32W64 'True] =<< Vk.QP.M.getResultsW32W64 mdv qp 0 1 Vk.Qry.ResultWithAvailabilityBit
 
 	Vk.QP.M.destroy mdv qp nil
 
