@@ -97,6 +97,7 @@ data W32W64 (w64 :: Bool) where
 	W64 :: Word64 -> W32W64 'True
 
 deriving instance Show (W32W64 w64)
+deriving instance Eq (W32W64 w64)
 
 instance Storable (W32W64 'False) where
 	sizeOf _ = sizeOf @Word32 undefined
