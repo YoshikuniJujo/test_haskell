@@ -15,7 +15,7 @@
 
 module Main where
 
-import Control.Concurrent
+-- import Control.Concurrent
 
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Kind.Object qualified as KObj
@@ -114,8 +114,10 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) -> do
 		calc qfi dv qp dslyt dscs bffSize >>
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
-	print @[Vk.QP.M.W32W64 'False] =<< Vk.QP.M.getResultsW32W64 mdv qp 0 1 Vk.Qry.ResultWithAvailabilityBit
-	print @[Vk.QP.M.W32W64 'True] =<< Vk.QP.M.getResultsW32W64 mdv qp 0 1 Vk.Qry.ResultWithAvailabilityBit
+	print @[Vk.QP.M.Availability 'False (Vk.QP.M.W32W64 'False)] =<<
+		Vk.QP.M.getResults mdv qp 0 2 zeroBits
+	print @[Vk.QP.M.Availability 'True (Vk.QP.M.W32W64 'True)] =<<
+		Vk.QP.M.getResults mdv qp 0 2 zeroBits
 
 	Vk.QP.M.destroy mdv qp nil
 
@@ -270,7 +272,7 @@ calc qfi dv qp dslyt ds sz =
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil nil \cp ->
-	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb@(Vk.CBffr.C mcb) :*. HL.Nil) -> do
+	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) -> do
 	run qfi dv qp ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
@@ -308,7 +310,9 @@ run qfi dv qp ds cb@(Vk.CBffr.C mcb) lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q 
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1 >>
-		Vk.Cmd.M.endQuery mcb qp 0
+		Vk.Cmd.M.endQuery mcb qp 0 >>
+		Vk.Cmd.M.beginQuery mcb qp 1 zeroBits >>
+		Vk.Cmd.M.endQuery mcb qp 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
