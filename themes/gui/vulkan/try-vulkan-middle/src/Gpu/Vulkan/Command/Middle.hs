@@ -37,7 +37,7 @@ module Gpu.Vulkan.Command.Middle (
 
 	-- * Query
 
-	beginQuery, endQuery
+	resetQueryPool, beginQuery, endQuery
 
 	) where
 
@@ -226,6 +226,10 @@ blitImage (CommandBuffer.M.C _ cb)
 	lift do (_, src) <- readIORef rsrc
 		(_, dst) <- readIORef rdst
 		C.blitImage cb src srcLyt dst dstLyt (fromIntegral bltc) pblts ft
+
+resetQueryPool :: CommandBuffer.M.C -> QueryPool.Q -> Word32 -> Word32 -> IO ()
+resetQueryPool (CommandBuffer.M.C _ c) (QueryPool.Q q) fq qc =
+	C.resetQueryPool c q fq qc
 
 beginQuery :: CommandBuffer.M.C ->
 	QueryPool.Q -> Word32 -> Query.ControlFlags -> IO ()
