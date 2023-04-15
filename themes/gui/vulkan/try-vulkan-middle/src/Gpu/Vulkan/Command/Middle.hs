@@ -37,7 +37,7 @@ module Gpu.Vulkan.Command.Middle (
 
 	-- * Query
 
-	resetQueryPool, beginQuery, endQuery
+	resetQueryPool, beginQuery, endQuery, writeTimestamp
 
 	) where
 
@@ -238,3 +238,9 @@ beginQuery (CommandBuffer.M.C _ c) (QueryPool.Q q) i (Query.ControlFlagBits flgs
 
 endQuery :: CommandBuffer.M.C -> QueryPool.Q -> Word32 -> IO ()
 endQuery (CommandBuffer.M.C _ c) (QueryPool.Q q) = C.endQuery c q
+
+writeTimestamp :: CommandBuffer.M.C -> Pipeline.StageFlagBits ->
+	QueryPool.Q -> Word32 -> IO ()
+writeTimestamp
+	(CommandBuffer.M.C _ c) (Pipeline.StageFlagBits fls) (QueryPool.Q q) i =
+	C.writeTimestamp c fls q i
