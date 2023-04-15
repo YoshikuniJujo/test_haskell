@@ -93,3 +93,7 @@ foreign import ccall "vkCmdBeginQuery" beginQuery ::
 
 foreign import ccall "vkCmdEndQuery" endQuery ::
 	CommandBuffer.C -> QueryPool.Q -> #{type uint32_t} -> IO ()
+
+foreign import ccall "vkCmdWriteTimestamp" writeTimestamp ::
+	CommandBuffer.C -> #{type VkPipelineStageFlagBits} -> QueryPool.Q ->
+	#{type uint32_t} -> IO ()
