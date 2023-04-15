@@ -1,18 +1,23 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
-	C(..), CreateInfo(..), Data(..), create, destroy, getData ) where
+	C(..), CreateInfo(..), create, destroy,
+	Data(..), getData, writeData, readData ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Foreign.C.Types
 import Data.Default
 import Data.Word
+import Data.ByteString qualified as BS
+import System.IO
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
@@ -31,23 +36,20 @@ data CreateInfo n = CreateInfo {
 	createInfoInitialData :: Data }
 	deriving Show
 
-data Data = Data #{type size_t} (Ptr ()) deriving Show
-
-instance Default Data where def = Data 0 nullPtr
-
 createInfoToCore :: WithPoked n =>
 	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
-	createInfoInitialData = Data dtsz pdt } f =
+	createInfoInitialData = d } f =
+	dataToRaw d \(DataRaw dtsz pdt) ->
 	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoInitialDataSize = dtsz,
-			C.createInfoPInitialData = pdt } in
+			C.createInfoPInitialData = castPtr pdt } in
 	withPoked ci f
 
 newtype C = C C.C deriving Show
@@ -74,4 +76,39 @@ getData (Device.D dv) (C c) = alloca \psz -> do
 	allocaBytes (fromIntegral sz) \pdt -> do
 		r' <- C.getData dv c psz pdt
 		throwUnlessSuccess $ Result r'
-		pure $ Data sz pdt
+		dataFromRaw . DataRaw sz $ castPtr pdt
+
+dataFromRaw :: DataRaw -> IO Data
+dataFromRaw (DataRaw sz pd) = Data <$> BS.packCStringLen (pd, fromIntegral sz)
+
+dataToRaw :: Data -> (DataRaw -> IO a) -> IO a
+dataToRaw (Data bs) f = BS.useAsCStringLen bs \(pd, sz) ->
+	f $ DataRaw (fromIntegral sz) pd
+
+newtype Data = Data BS.ByteString deriving Show
+
+data DataRaw = DataRaw #{type size_t} (Ptr CChar) deriving Show
+
+instance Default DataRaw where def = DataRaw 0 nullPtr
+
+writeData :: FilePath -> Data -> IO ()
+writeData fp d = dataToRaw d (writeDataRaw fp)
+
+readData :: FilePath -> IO Data
+readData fp = alloca \pd -> dataFromRaw =<< readDataRaw fp pd
+
+writeDataRaw :: FilePath -> DataRaw -> IO ()
+writeDataRaw fp (DataRaw sz pd) = withBinaryFile fp WriteMode \h ->
+	writeStorable h sz >> hPutBuf h pd (fromIntegral sz)
+
+readDataRaw :: FilePath -> Ptr CChar -> IO DataRaw
+readDataRaw fp pd = withBinaryFile fp ReadMode \h -> do
+	sz <- readStorable h
+	_ <- hGetBuf h pd $ fromIntegral sz
+	pure $ DataRaw sz pd
+
+writeStorable :: Storable a => Handle -> a -> IO ()
+writeStorable h x = alloca \px -> poke px x >> hPutBuf h px (sizeOf x)
+
+readStorable :: forall a . Storable a => Handle -> IO a
+readStorable h = alloca \px -> hGetBuf h px (sizeOf @a undefined) >> peek px
