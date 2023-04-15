@@ -308,14 +308,14 @@ run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 		Vk.Cmd.resetQueryPool cb qpt 0 10 >>
 		Vk.Cmd.writeTimestamp cb Vk.Ppl.StageTopOfPipeBit qpt 0 >>
 		Vk.Cmd.resetQueryPool cb qp 0 10 >>
-		Vk.Cmd.beginQuery cb qp 0 zeroBits >>
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb lyt (HL.Singleton $ U2 ds) def >>
-		Vk.Cmd.dispatch ccb sz 1 1 >>
-		Vk.Cmd.endQuery cb qp 0 >>
-		Vk.Cmd.beginQuery cb qp 1 zeroBits >>
-		Vk.Cmd.endQuery cb qp 1 >>
+		Vk.Cmd.beginQuery cb qp 0 zeroBits (
+			Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
+			Vk.Cmd.bindDescriptorSetsCompute
+				ccb lyt (HL.Singleton $ U2 ds) def >>
+			Vk.Cmd.dispatch ccb sz 1 1 ) >>
+
+		Vk.Cmd.beginQuery cb qp 1 zeroBits (pure ()) >>
+
 		Vk.Cmd.writeTimestamp cb Vk.Ppl.StageBottomOfPipeBit qpt 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q

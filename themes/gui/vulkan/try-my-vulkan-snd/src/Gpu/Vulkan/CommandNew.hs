@@ -387,12 +387,9 @@ resetQueryPool (CommandBuffer.C cb) (QueryPool.Q qp) fq qc =
 	M.resetQueryPool cb qp fq qc
 
 beginQuery :: CommandBuffer.C sc ->
-	QueryPool.Q sq tp -> Word32 -> Query.ControlFlags -> IO ()
-beginQuery (CommandBuffer.C cb) (QueryPool.Q qp) i flgs =
-	M.beginQuery cb qp i flgs
-
-endQuery :: CommandBuffer.C sc -> QueryPool.Q sq tp -> Word32 -> IO ()
-endQuery (CommandBuffer.C cb) (QueryPool.Q qp) i = M.endQuery cb qp i
+	QueryPool.Q sq tp -> Word32 -> Query.ControlFlags -> IO a -> IO ()
+beginQuery (CommandBuffer.C cb) (QueryPool.Q qp) i flgs act =
+	M.beginQuery cb qp i flgs >> act >> M.endQuery cb qp i
 
 writeTimestamp :: CommandBuffer.C sc -> Pipeline.StageFlagBits ->
 	QueryPool.Q sq QueryPool.Timestamp -> Word32 -> IO ()
