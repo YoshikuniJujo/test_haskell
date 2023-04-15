@@ -83,7 +83,8 @@ bffSize :: Integral n => n
 bffSize = 30
 
 main :: IO ()
-main = withDevice \pd qfi dv -> Vk.PplCch.create dv pplCchInfo nil nil \pc -> do
+main = withDevice \pd qfi dv ->
+	Vk.PplCch.create dv (pplCchInfo def) nil nil \pc -> do
 	print =<< Vk.PplCch.getData dv pc
 	putStrLn . map (chr . fromIntegral) =<<
 		Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
@@ -92,11 +93,11 @@ main = withDevice \pd qfi dv -> Vk.PplCch.create dv pplCchInfo nil nil \pc -> do
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 	print =<< Vk.PplCch.getData dv pc
 
-pplCchInfo :: Vk.PplCch.M.CreateInfo ()
-pplCchInfo = Vk.PplCch.M.CreateInfo {
+pplCchInfo :: Vk.PplCch.M.Data -> Vk.PplCch.M.CreateInfo ()
+pplCchInfo mid = Vk.PplCch.M.CreateInfo {
 	Vk.PplCch.M.createInfoNext = Nothing,
 	Vk.PplCch.M.createInfoFlags = zeroBits,
-	Vk.PplCch.M.createInfoInitialData = def }
+	Vk.PplCch.M.createInfoInitialData = mid }
 
 type Word32List = Obj.List 256 Word32 ""
 
