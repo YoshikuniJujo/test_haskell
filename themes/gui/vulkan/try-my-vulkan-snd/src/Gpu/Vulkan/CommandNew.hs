@@ -393,3 +393,8 @@ beginQuery (CommandBuffer.C cb) (QueryPool.Q qp) i flgs =
 
 endQuery :: CommandBuffer.C sc -> QueryPool.Q sq tp -> Word32 -> IO ()
 endQuery (CommandBuffer.C cb) (QueryPool.Q qp) i = M.endQuery cb qp i
+
+writeTimestamp :: CommandBuffer.C sc -> Pipeline.StageFlagBits ->
+	QueryPool.Q sq QueryPool.Timestamp -> Word32 -> IO ()
+writeTimestamp (CommandBuffer.C cb) sflgs (QueryPool.Q qp) i =
+	M.writeTimestamp cb sflgs qp i

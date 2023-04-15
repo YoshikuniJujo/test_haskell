@@ -103,22 +103,27 @@ main = withDevice \pd qfi dv -> do
 	putStr "TIMESTAMP PERIOD: "
 	print $ Vk.Phd.limitsTimestampPeriod lmts
 
-	Vk.QP.create dv queryPoolInfo nil nil \qp -> do
+	Vk.QP.create dv queryPoolInfo nil nil \qp ->
+		Vk.QP.create dv queryPoolInfo nil nil \qpt -> do
 
 		print qp
+		print qpt
 
 		putStrLn . map (chr . fromIntegral) =<<
 			Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
 			prepareMems pd dv dslyt \dscs m ->
-			calc qfi dv qp dslyt dscs bffSize >>
+			calc qfi dv qp qpt dslyt dscs bffSize >>
 			Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
 		print @[Vk.QP.M.Availability 'True (Vk.QP.PipelineStatistics 'True)] =<<
-			Vk.QP.getResults dv qp 0 2 zeroBits
+			Vk.QP.getResults pd dv qp 0 2 zeroBits
+
+		print @[Vk.QP.M.Availability 'True (Vk.QP.Timestamp 'True)] =<<
+			Vk.QP.getResults pd dv qpt 0 2 zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
 
-queryPoolInfo :: Vk.QP.CreateInfo () Vk.QP.PipelineStatistics
+queryPoolInfo :: Vk.QP.CreateInfo () qt -- Vk.QP.PipelineStatistics
 queryPoolInfo = Vk.QP.CreateInfo {
 	Vk.QP.createInfoNext = Nothing,
 	Vk.QP.createInfoFlags = zeroBits,
@@ -254,20 +259,21 @@ writeDscSet ds ba = Vk.DS.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sq tp sp . (
+calc :: forall slbts sl bts sd sq sq' tp sp . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.Q sq tp ->
+	Vk.QFm.Index -> Vk.Dv.D sd ->
+	Vk.QP.Q sq tp -> Vk.QP.Q sq' Vk.QP.Timestamp ->
 	Vk.DSLyt.L sl bts ->
 	Vk.DS.S sd sp slbts -> Word32 -> IO ()
-calc qfi dv qp dslyt ds sz =
+calc qfi dv qp qpt dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil nil \cp ->
 	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) -> do
-	run qfi dv qp ds cb plyt pl sz
+	run qfi dv qp qpt ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
 	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
@@ -289,15 +295,18 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
-run :: forall slbts sd sq tp sc sg sl sp . (
+run :: forall slbts sd sq sq' tp sc sg sl sp . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.QP.Q sq tp ->
+	Vk.QFm.Index -> Vk.Dv.D sd ->
+	Vk.QP.Q sq tp -> Vk.QP.Q sq' Vk.QP.Timestamp ->
 	Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
-run qfi dv qp ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
+run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @() @() cb def $
+		Vk.Cmd.resetQueryPool cb qpt 0 10 >>
+		Vk.Cmd.writeTimestamp cb Vk.Ppl.StageTopOfPipeBit qpt 0 >>
 		Vk.Cmd.resetQueryPool cb qp 0 10 >>
 		Vk.Cmd.beginQuery cb qp 0 zeroBits >>
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
@@ -306,7 +315,8 @@ run qfi dv qp ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 		Vk.Cmd.dispatch ccb sz 1 1 >>
 		Vk.Cmd.endQuery cb qp 0 >>
 		Vk.Cmd.beginQuery cb qp 1 zeroBits >>
-		Vk.Cmd.endQuery cb qp 1
+		Vk.Cmd.endQuery cb qp 1 >>
+		Vk.Cmd.writeTimestamp cb Vk.Ppl.StageBottomOfPipeBit qpt 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
