@@ -100,8 +100,8 @@ data Timestamp w64 where
 
 instance Show (Timestamp w64) where
 	show = \case
-		Timestamp32 p w -> show (p * fromIntegral w) ++ "ns"
-		Timestamp64 p w -> show (p * fromIntegral w) ++ "ns"
+		Timestamp32 p w -> show @Double (realToFrac p * fromIntegral w) ++ "ns"
+		Timestamp64 p w -> show @Double (realToFrac p * fromIntegral w) ++ "ns"
 
 instance QueryType Timestamp where
 	type QueryArg Timestamp = Float
