@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -88,6 +88,8 @@ dataToRaw (Data bs) f = BS.useAsCStringLen bs \(pd, sz) ->
 newtype Data = Data BS.ByteString deriving Show
 
 data DataRaw = DataRaw #{type size_t} (Ptr CChar) deriving Show
+
+instance Default Data where def = Data ""
 
 instance Default DataRaw where def = DataRaw 0 nullPtr
 
