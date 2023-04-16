@@ -46,6 +46,8 @@ dependencies:
 - try-vulkan-middle-khr
 - try-vulkan-middle-ext-debug-utils
 
+- directory
+
 library:
   source-dirs: src
 

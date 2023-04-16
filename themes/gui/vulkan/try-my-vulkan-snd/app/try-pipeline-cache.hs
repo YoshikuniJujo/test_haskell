@@ -15,6 +15,7 @@
 
 module Main where
 
+import Control.Concurrent
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Kind.Object qualified as KObj
 import Data.Default
@@ -24,6 +25,7 @@ import qualified Data.HeteroParList as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Char
+import System.Directory
 
 import Shaderc.TH
 import Shaderc.EnumAuto
@@ -65,8 +67,10 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DSLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
-import Gpu.Vulkan.PipelineCache as Vk.PplCch
-import Gpu.Vulkan.PipelineCache.Middle as Vk.PplCch.M
+import Gpu.Vulkan.PipelineCache qualified as Vk.PplCch
+import Gpu.Vulkan.PipelineCache.Middle qualified as Vk.PplCch.M
+
+import Data.ByteString qualified as BS
 
 ---------------------------------------------------------------------------
 
@@ -84,14 +88,44 @@ bffSize = 30
 
 main :: IO ()
 main = withDevice \pd qfi dv ->
-	Vk.PplCch.create dv (pplCchInfo def) nil nil \pc -> do
+	readData "pipeline.cache" >>= \cch ->
+	print cch >>
+	Vk.PplCch.create dv (pplCchInfo cch) nil nil \pc -> do
+	threadDelay 1000000
 	print =<< Vk.PplCch.getData dv pc
 	putStrLn . map (chr . fromIntegral) =<<
 		Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
 		prepareMems pd dv dslyt \dscs m ->
 		calc qfi dv pc dslyt dscs bffSize >>
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
-	print =<< Vk.PplCch.getData dv pc
+	cch'@(Vk.PplCch.M.Data bs1) <- Vk.PplCch.getData dv pc
+	print cch'
+	Vk.PplCch.M.writeData "pipeline.cache" cch'
+	cch''@(Vk.PplCch.M.Data bs2) <- readData "pipeline.cache"
+	print cch''
+
+	Vk.PplCch.create dv (pplCchInfo cch') nil nil \pc' -> do
+
+		print =<< Vk.PplCch.getData dv pc'
+
+		bs3 <- BS.readFile "pipeline.cache"
+
+		print $ BS.length bs1
+		print $ BS.length bs2
+		let	foo = BS.zip bs1 bs2
+			bar = map (uncurry (==)) $ BS.zip bs1 bs2
+			bs3' = BS.drop 8 bs3
+--	print $ zip bar foo
+--	print bs1
+--	print bs2
+		print $ BS.drop 8 bs3
+		print $ bs1 == bs3'
+		print $ bs2 == bs3'
+
+readData :: FilePath -> IO Vk.PplCch.M.Data
+readData fp = do
+	b <- doesFileExist fp
+	if b then Vk.PplCch.M.readData fp else pure def
 
 pplCchInfo :: Vk.PplCch.M.Data -> Vk.PplCch.M.CreateInfo ()
 pplCchInfo mid = Vk.PplCch.M.CreateInfo {

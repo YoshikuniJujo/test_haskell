@@ -153,6 +153,7 @@ library
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -188,6 +189,7 @@ executable my-glslc
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -224,6 +226,7 @@ executable try-depth-buffering
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -260,6 +263,7 @@ executable try-depth-buffering-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -296,6 +300,7 @@ executable try-dynamic-dsc-sets
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -332,6 +337,7 @@ executable try-generating-mipmaps
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -368,6 +374,7 @@ executable try-generating-mipmaps-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -404,6 +411,7 @@ executable try-hello-world
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -440,6 +448,7 @@ executable try-image-buffer
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -476,6 +485,7 @@ executable try-loading-models
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -512,6 +522,7 @@ executable try-loading-models-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -548,6 +559,7 @@ executable try-multisampling
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -584,6 +596,7 @@ executable try-multisampling-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -620,6 +633,7 @@ executable try-no-dynamic-dsc-sets
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -656,6 +670,7 @@ executable try-pipeline-cache
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -692,6 +707,7 @@ executable try-query
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -728,6 +744,7 @@ executable try-rectangle
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -764,6 +781,7 @@ executable try-rectangle-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -800,6 +818,7 @@ executable try-saitan
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -836,6 +855,7 @@ executable try-saitan-float
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -872,6 +892,7 @@ executable try-saitan-simple
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -908,6 +929,7 @@ executable try-shaderc
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -944,6 +966,7 @@ executable try-shaderc-core
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -980,6 +1003,7 @@ executable try-texel-buffer-float
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1016,6 +1040,7 @@ executable try-texel-buffer-word32
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1052,6 +1077,7 @@ executable try-texture
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1088,6 +1114,7 @@ executable try-texture-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1124,6 +1151,7 @@ executable try-triangle
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1160,6 +1188,7 @@ executable try-triangle-single
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1196,6 +1225,7 @@ executable try-vulkan-guide
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1232,6 +1262,7 @@ executable try-vulkan-guide-dynamic
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1268,6 +1299,7 @@ executable try-vulkan-guide-storage
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1304,6 +1336,7 @@ executable try-vulkan-guide-texture
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1340,6 +1373,7 @@ executable try-wavefront-obj
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1376,6 +1410,7 @@ executable try-yatteiku
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
@@ -1413,6 +1448,7 @@ test-suite try-my-vulkan-snd-test
     , bytestring
     , containers
     , data-default
+    , directory
     , filepath
     , ghc-prim
     , monads-tf
