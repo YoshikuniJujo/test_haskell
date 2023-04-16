@@ -50,6 +50,7 @@ createInfoToCore CreateInfo {
 			C.createInfoFlags = flgs,
 			C.createInfoInitialDataSize = dtsz,
 			C.createInfoPInitialData = castPtr pdt } in
+	print dtsz >>
 	withPoked ci f
 
 newtype C = C C.C deriving Show
@@ -97,11 +98,19 @@ writeData :: FilePath -> Data -> IO ()
 writeData fp d = dataToRaw d (writeDataRaw fp)
 
 readData :: FilePath -> IO Data
-readData fp = alloca \pd -> dataFromRaw =<< readDataRaw fp pd
+readData fp = -- alloca \pd -> dataFromRaw =<< readDataRaw fp pd
+	withBinaryFile fp ReadMode \h -> do
+	sz <- readDataSize h
+	allocaBytes (fromIntegral sz) \pd -> do
+		_ <- hGetBuf h pd (fromIntegral sz)
+		dataFromRaw $ DataRaw sz pd
 
 writeDataRaw :: FilePath -> DataRaw -> IO ()
 writeDataRaw fp (DataRaw sz pd) = withBinaryFile fp WriteMode \h ->
 	writeStorable h sz >> hPutBuf h pd (fromIntegral sz)
+
+readDataSize :: Handle -> IO #{type size_t}
+readDataSize h = readStorable h
 
 readDataRaw :: FilePath -> Ptr CChar -> IO DataRaw
 readDataRaw fp pd = withBinaryFile fp ReadMode \h -> do
