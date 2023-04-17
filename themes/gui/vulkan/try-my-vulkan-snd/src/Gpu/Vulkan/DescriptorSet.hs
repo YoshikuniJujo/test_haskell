@@ -99,6 +99,12 @@ data Write n sd sp (slbts :: LayoutArg)
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources sbsmobjsobjs }
 
+data Copy n sds sps (slbtss :: LayoutArg) sdd spd (slbtsd :: LayoutArg)
+	(bts :: [Layout.BindingType]) (is :: Nat) (id :: Nat) = Copy {
+	copyNext :: Maybe n,
+	copySrcSet :: S sds sps slbtss,
+	copyDstSet :: S sdd spd slbtsd }
+
 deriving instance (
 	Show n, Show (S sd sp slbts),
 	Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs)) =>
