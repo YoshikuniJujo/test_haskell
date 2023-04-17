@@ -41,19 +41,30 @@ data CreateInfo n = CreateInfo {
 	createInfoInitialData :: Data }
 	deriving Show
 
-tryInitialDataCreateInfo :: Device.D -> C -> IO (CreateInfo n)
-tryInitialDataCreateInfo d c = do
-	d <- getData d c
-	pure CreateInfo {
-		createInfoNext = Nothing,
-		createInfoFlags = zeroBits,
-		createInfoInitialData = d }
-
 tryCreateAndPrintData :: Device.D -> C -> IO ()
-tryCreateAndPrintData d c = do
-	ci <- tryInitialDataCreateInfo d c
-	c' <- create @() @() d ci Nothing
-	print =<< getData d c'
+tryCreateAndPrintData dv@(Device.D cdv) c@(C cc) = alloca \psz -> do
+	r <- C.getData cdv cc psz nullPtr
+	throwUnlessSuccess $ Result r
+	sz <- peek psz
+	allocaBytes (fromIntegral sz) \pdt -> do
+		r' <- C.getData cdv cc psz pdt
+		throwUnlessSuccess $ Result r'
+		d <- dataFromRaw . DataRaw sz $ castPtr pdt
+		let	ci = CreateInfo {
+				createInfoNext = Nothing,
+				createInfoFlags = zeroBits,
+				createInfoInitialData = d }
+			cci = C.CreateInfo {
+				C.createInfoPNext = nullPtr,
+				C.createInfoFlags = zeroBits,
+				C.createInfoInitialDataSize = sz,
+				C.createInfoPInitialData = pdt }
+		alloca \pc -> withPoked cci \pcci -> do
+			C.create cdv pcci nullPtr pc
+			c' <- peek pc
+			print =<< getData dv (C c')
+--		c' <- create @() @() dv ci Nothing
+--		print =<< getData dv c'
 
 createInfoToCore :: WithPoked n =>
 	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
