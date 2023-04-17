@@ -7,7 +7,10 @@
 
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
 	C(..), CreateInfo(..), create, destroy,
-	Data(..), getData, writeData, readData ) where
+	Data(..), getData, writeData, readData,
+
+	tryCreateAndPrintData
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
@@ -28,6 +31,8 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.PipelineCache.Core as C
 
+import Data.Bits
+
 #include <vulkan/vulkan.h>
 
 data CreateInfo n = CreateInfo {
@@ -35,6 +40,20 @@ data CreateInfo n = CreateInfo {
 	createInfoFlags :: CreateFlags,
 	createInfoInitialData :: Data }
 	deriving Show
+
+tryInitialDataCreateInfo :: Device.D -> C -> IO (CreateInfo n)
+tryInitialDataCreateInfo d c = do
+	d <- getData d c
+	pure CreateInfo {
+		createInfoNext = Nothing,
+		createInfoFlags = zeroBits,
+		createInfoInitialData = d }
+
+tryCreateAndPrintData :: Device.D -> C -> IO ()
+tryCreateAndPrintData d c = do
+	ci <- tryInitialDataCreateInfo d c
+	c' <- create @() @() d ci Nothing
+	print =<< getData d c'
 
 createInfoToCore :: WithPoked n =>
 	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
