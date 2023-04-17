@@ -40,6 +40,7 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
+import qualified Gpu.Vulkan.Device.Type as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
@@ -68,6 +69,7 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Gpu.Vulkan.PipelineCache qualified as Vk.PplCch
+import Gpu.Vulkan.PipelineCache.Type qualified as Vk.PplCch
 import Gpu.Vulkan.PipelineCache.Middle qualified as Vk.PplCch.M
 
 import Data.ByteString qualified as BS
@@ -87,10 +89,10 @@ bffSize :: Integral n => n
 bffSize = 30
 
 main :: IO ()
-main = withDevice \pd qfi dv ->
+main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 	readData "pipeline.cache" >>= \cch ->
 	print cch >>
-	Vk.PplCch.create dv (pplCchInfo cch) nil nil \pc -> do
+	Vk.PplCch.create dv (pplCchInfo cch) nil nil \pc@(Vk.PplCch.C mpc) -> do
 	threadDelay 1000000
 	print =<< Vk.PplCch.getData dv pc
 	putStrLn . map (chr . fromIntegral) =<<
@@ -104,23 +106,25 @@ main = withDevice \pd qfi dv ->
 	cch''@(Vk.PplCch.M.Data bs2) <- readData "pipeline.cache"
 	print cch''
 
-	Vk.PplCch.create dv (pplCchInfo cch') nil nil \pc' -> do
+	Vk.PplCch.M.tryCreateAndPrintData mdv mpc
 
-		print =<< Vk.PplCch.getData dv pc'
+--	Vk.PplCch.create dv (pplCchInfo cch') nil nil \pc' -> do
 
-		bs3 <- BS.readFile "pipeline.cache"
+--		print =<< Vk.PplCch.getData dv pc'
 
-		print $ BS.length bs1
-		print $ BS.length bs2
-		let	foo = BS.zip bs1 bs2
-			bar = map (uncurry (==)) $ BS.zip bs1 bs2
-			bs3' = BS.drop 8 bs3
+--		bs3 <- BS.readFile "pipeline.cache"
+
+--		print $ BS.length bs1
+--		print $ BS.length bs2
+--		let	foo = BS.zip bs1 bs2
+--			bar = map (uncurry (==)) $ BS.zip bs1 bs2
+--			bs3' = BS.drop 8 bs3
 --	print $ zip bar foo
 --	print bs1
 --	print bs2
-		print $ BS.drop 8 bs3
-		print $ bs1 == bs3'
-		print $ bs2 == bs3'
+--		print $ BS.drop 8 bs3
+--		print $ bs1 == bs3'
+--		print $ bs2 == bs3'
 
 readData :: FilePath -> IO Vk.PplCch.M.Data
 readData fp = do
