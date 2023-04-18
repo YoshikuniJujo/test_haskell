@@ -142,8 +142,9 @@ import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.DescriptorPool as Vk.DscPool
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 
-import qualified Gpu.Vulkan.DescriptorSet.TypeLevel as Vk.DscSet.T
+import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet.T
 import qualified Gpu.Vulkan.Memory as Vk.Dvc.Mem.ImageBuffer
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Dvc.Mem.ImageBuffer.K
 

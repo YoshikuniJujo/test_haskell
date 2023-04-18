@@ -61,7 +61,9 @@ library
       Gpu.Vulkan.DescriptorPool
       Gpu.Vulkan.DescriptorPool.Type
       Gpu.Vulkan.DescriptorSet
-      Gpu.Vulkan.DescriptorSet.TypeLevel
+      Gpu.Vulkan.DescriptorSet.TypeLevel.Common
+      Gpu.Vulkan.DescriptorSet.TypeLevel.Copy
+      Gpu.Vulkan.DescriptorSet.TypeLevel.Write
       Gpu.Vulkan.DescriptorSetLayout
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device

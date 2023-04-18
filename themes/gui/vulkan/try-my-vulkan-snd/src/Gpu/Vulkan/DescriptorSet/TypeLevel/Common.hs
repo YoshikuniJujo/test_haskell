@@ -8,7 +8,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.TypeLevel where
+module Gpu.Vulkan.DescriptorSet.TypeLevel.Common where
 
 import GHC.TypeLits
 import Control.Arrow
