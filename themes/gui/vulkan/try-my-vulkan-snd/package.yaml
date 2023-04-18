@@ -362,6 +362,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - try-my-vulkan-snd
+  try-copy-descriptor-set:
+    main:                try-copy-descriptor-set.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - try-my-vulkan-snd
 
 tests:
   try-my-vulkan-snd-test:

@@ -15,7 +15,6 @@
 
 module Main where
 
-import Control.Concurrent
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Kind.Object qualified as KObj
 import Data.Default
@@ -25,7 +24,6 @@ import qualified Data.HeteroParList as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Char
-import System.Directory
 
 import Shaderc.TH
 import Shaderc.EnumAuto
@@ -40,7 +38,6 @@ import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
-import qualified Gpu.Vulkan.Device.Type as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
@@ -68,10 +65,6 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DSLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
-import Gpu.Vulkan.PipelineCache qualified as Vk.PplCch
-import Gpu.Vulkan.PipelineCache.Type qualified as Vk.PplCch
-import Gpu.Vulkan.PipelineCache.Middle qualified as Vk.PplCch.M
-
 ---------------------------------------------------------------------------
 
 -- MAIN
@@ -87,53 +80,11 @@ bffSize :: Integral n => n
 bffSize = 30
 
 main :: IO ()
-main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
-	readData "pipeline.cache" >>= \cch ->
-	print cch >>
-	Vk.PplCch.create dv (pplCchInfo cch) nil nil \pc@(Vk.PplCch.C mpc) -> do
-	threadDelay 1000000
-	print =<< Vk.PplCch.getData dv pc
-	putStrLn . map (chr . fromIntegral) =<<
-		Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
-		prepareMems pd dv dslyt \dscs m ->
-		calc qfi dv pc dslyt dscs bffSize >>
-		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
-	cch'@(Vk.PplCch.M.Data bs1) <- Vk.PplCch.getData dv pc
-	print cch'
-	Vk.PplCch.M.writeData "pipeline.cache" cch'
-	cch''@(Vk.PplCch.M.Data bs2) <- readData "pipeline.cache"
-	print cch''
-
-	Vk.PplCch.M.tryCreateAndPrintData mdv mpc
-
---	Vk.PplCch.create dv (pplCchInfo cch') nil nil \pc' -> do
-
---		print =<< Vk.PplCch.getData dv pc'
-
---		bs3 <- BS.readFile "pipeline.cache"
-
---		print $ BS.length bs1
---		print $ BS.length bs2
---		let	foo = BS.zip bs1 bs2
---			bar = map (uncurry (==)) $ BS.zip bs1 bs2
---			bs3' = BS.drop 8 bs3
---	print $ zip bar foo
---	print bs1
---	print bs2
---		print $ BS.drop 8 bs3
---		print $ bs1 == bs3'
---		print $ bs2 == bs3'
-
-readData :: FilePath -> IO Vk.PplCch.M.Data
-readData fp = do
-	b <- doesFileExist fp
-	if b then Vk.PplCch.M.readData fp else pure def
-
-pplCchInfo :: Vk.PplCch.M.Data -> Vk.PplCch.M.CreateInfo ()
-pplCchInfo mid = Vk.PplCch.M.CreateInfo {
-	Vk.PplCch.M.createInfoNext = Nothing,
-	Vk.PplCch.M.createInfoFlags = zeroBits,
-	Vk.PplCch.M.createInfoInitialData = mid }
+main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
+	Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
+	prepareMems pd dv dslyt \dscs dscs' m ->
+	calc qfi dv dslyt dscs' bffSize >>
+	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
 type Word32List = Obj.List 256 Word32 ""
 
@@ -183,31 +134,34 @@ prepareMems :: (
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	(forall s sm sb .
 		Vk.DS.S sd s '(sl, bts) ->
+		Vk.DS.S sd s '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil nil \dp ->
-	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(HL.Singleton ds) ->
+	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(ds :** ds' :** HL.Nil) ->
 	storageBufferNew pd dv \b m ->
-	Vk.DS.updateDs @_ @() dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
-	f ds m
+	Vk.DS.updateDsNew dv
+		(HL.Singleton . U5 $ writeDscSet ds b)
+		(HL.Singleton . U10 $ copyDscSet ds ds') >>
+	f ds ds' m
 
 dscPoolInfo :: Vk.DscPool.CreateInfo ()
 dscPoolInfo = Vk.DscPool.CreateInfo {
 	Vk.DscPool.createInfoNext = Nothing,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
-	Vk.DscPool.createInfoMaxSets = 1,
+	Vk.DscPool.createInfoMaxSets = 2,
 	Vk.DscPool.createInfoPoolSizes = [sz] }
 	where sz = Vk.DscPool.Size {
 		Vk.DscPool.sizeType = Vk.Dsc.TypeStorageBuffer,
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DSLyt.L sl bts ->
-	Vk.DS.AllocateInfo () sp '[ '(sl, bts)]
+	Vk.DS.AllocateInfo () sp '[ '(sl, bts), '(sl, bts)]
 dscSetInfo pl lyt = Vk.DS.AllocateInfo {
 	Vk.DS.allocateInfoNext = Nothing,
 	Vk.DS.allocateInfoDescriptorPool = pl,
-	Vk.DS.allocateInfoSetLayouts = HL.Singleton $ U2 lyt }
+	Vk.DS.allocateInfoSetLayouts = U2 lyt :** U2 lyt :** HL.Nil }
 
 storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[Word32List]  ->
@@ -262,18 +216,22 @@ writeDscSet ds ba = Vk.DS.Write {
 	Vk.DS.writeSources =
 		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
 
+copyDscSet :: Vk.DS.S sd sp slbts -> Vk.DS.S sd sp slbts -> Vk.DS.Copy
+	() sd sp slbts sd sp slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0
+copyDscSet s d = Vk.DS.Copy
+	{ Vk.DS.copyNext = Nothing, Vk.DS.copySrcSet = s, Vk.DS.copyDstSet = d }
+
 -- CALC
 
-calc :: forall slbts sl bts sd spc sp . (
+calc :: forall slbts sl bts sd sp . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.PplCch.C spc ->
-	Vk.DSLyt.L sl bts ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	Vk.DS.S sd sp slbts -> Word32 -> IO ()
-calc qfi dv pcch dslyt ds sz =
+calc qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCsNew dv (Just pcch)
+	Vk.Ppl.Cmpt.createCsNew dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil nil \cp ->
 	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->

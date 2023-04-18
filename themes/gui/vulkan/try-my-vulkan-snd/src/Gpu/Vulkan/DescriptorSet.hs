@@ -285,7 +285,6 @@ updateDs (Device.D dvc) ws cs =
 	where ws' = writeListToMiddle ws
 
 updateDsNew :: (
-	WithPoked n, WithPoked n',
 	WriteListToMiddleNew sdspslbtssbsmobjsobjs,
 	M.WriteListToCore (WriteNexts sdspslbtssbsmobjsobjs),
 	CopyListToMiddle copyArgs, M.CopyListToCore (CopyNexts copyArgs) ) =>
