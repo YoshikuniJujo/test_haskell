@@ -1,13 +1,15 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 	D(..), AllocateInfo(..), allocateDs,
-	Write(..), WriteSources(..), Copy(..), updateDs
-	) where
+	Write(..), WriteSources(..), Copy(..), updateDs, updateDsNew ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
@@ -16,6 +18,8 @@ import Foreign.Storable.PeekPoke (
 	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Control.Monad.Cont
+import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -80,6 +84,18 @@ data Copy n = Copy {
 	copyDescriptorCount :: Word32 }
 	deriving Show
 
+class CopyListToCore cs where
+	copyListToCore ::
+		HeteroParList.PL Copy cs -> ([C.Copy] -> IO a) -> IO ()
+
+instance CopyListToCore '[] where
+	copyListToCore HeteroParList.Nil f = () <$ f []
+
+instance (WithPoked c, CopyListToCore cs) =>
+	CopyListToCore (c ': cs) where
+	copyListToCore (c :** cs) f =
+		copyToCore c \cc -> copyListToCore cs \ccs -> f $ cc : ccs
+
 copyToCore :: WithPoked n => Copy n -> (C.Copy -> IO a) -> IO ()
 copyToCore Copy {
 	copyNext = mnxt,
@@ -117,6 +133,17 @@ data WriteSources
 	| WriteSourcesBufferInfo [Descriptor.BufferInfo]
 	| WriteSourcesBufferView [BufferView.B]
 	deriving Show
+
+class WriteListToCore ws where
+	writeListToCore ::
+		HeteroParList.PL Write ws -> ([C.Write] -> IO a) -> IO ()
+
+instance WriteListToCore '[] where
+	writeListToCore HeteroParList.Nil f = () <$ f []
+
+instance (WithPoked w, WriteListToCore ws) => WriteListToCore (w ': ws) where
+	writeListToCore (w :** ws) f =
+		writeToCore w \cw -> writeListToCore ws \cws -> f $ cw : cws
 
 writeToCore :: WithPoked n => Write n -> (C.Write -> IO a) -> IO ()
 writeToCore Write {
@@ -168,4 +195,15 @@ updateDs (Device.D dvc) ws cs =
 	allocaAndPokeArray' ws' \(fromIntegral -> wc, pws) ->
 	(copyToCore `mapContM` cs) \cs' ->
 	allocaAndPokeArray' cs' \(fromIntegral -> cc, pcs) ->
+	C.updateSs dvc wc pws cc pcs
+
+updateDsNew :: (WriteListToCore ws, CopyListToCore cs) =>
+	Device.D ->
+	HeteroParList.PL Write ws -> HeteroParList.PL Copy cs ->
+	IO ()
+updateDsNew (Device.D dvc) ws cs =
+	writeListToCore ws \cws ->
+	allocaAndPokeArray' cws \(fromIntegral -> wc, pws) ->
+	copyListToCore cs \ccs ->
+	allocaAndPokeArray' ccs \(fromIntegral -> cc, pcs) ->
 	C.updateSs dvc wc pws cc pcs
