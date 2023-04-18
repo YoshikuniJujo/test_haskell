@@ -41,13 +41,13 @@ class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 instance (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
-		(ObjectsFromBufferInfoArgs sbsmobjsobjs),
+		(ObjectsFromBufferInfoArgs sbsmobjsobjs) 0,
 	BufferInfosToMiddle sbsmobjsobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer sbsmobjsobjs) where
 	type WriteSourcesObjs ('WriteSourcesArgBuffer sbsmobjsobjs) =
 		ObjectsFromBufferInfoArgs sbsmobjsobjs
 	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem' @slbts @sbsmobjsobjs,
+		bindingAndArrayElem' @slbts @sbsmobjsobjs @0,
 		M.WriteSourcesBufferInfo $ bufferInfosToMiddle bis )
 
 instance (

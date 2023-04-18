@@ -1319,9 +1319,9 @@ class Update smsbs slbtss where
 instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil _ _ = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")],
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")],
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuCameraData 'Nothing] 0,
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0")] 0,
+	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1")] 0,
 	Update ubs dscss
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) where

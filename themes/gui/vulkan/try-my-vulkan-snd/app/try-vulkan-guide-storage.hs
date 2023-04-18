@@ -1230,11 +1230,11 @@ instance Update '[] '[] '[] '[] where update _ HL.Nil HL.Nil HL.Nil HL.Nil _ = p
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
-		'[CameraObj],
+		'[CameraObj] 0,
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
-		'[SceneObj],
-	Vk.DscSet.T.BindingAndArrayElem bods '[ObjDataList],
+		'[SceneObj] 0,
+	Vk.DscSet.T.BindingAndArrayElem bods '[ObjDataList] 0,
 	Update cmbs lyts odbs lytods ) =>
 	Update (cmb ': cmbs) ('(slyt, bs) ': lyts)
 		(odb ': odbs) ('(slytod, bods) ': lytods) where

@@ -14,24 +14,20 @@ module Gpu.Vulkan.DescriptorSet where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
-import Data.Kind
 import Data.Default
+import Data.Word
 import Data.IORef
 import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
-import Data.Word
 
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
+import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
-import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.BufferView as BufferView
-import qualified Gpu.Vulkan.BufferView.Middle as BufferView.M
 import qualified Gpu.Vulkan.Descriptor as Descriptor
-import qualified Gpu.Vulkan.Descriptor.Middle as Descriptor.M
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M
@@ -100,10 +96,36 @@ data Write n sd sp (slbts :: LayoutArg)
 	writeSources :: WriteSources sbsmobjsobjs }
 
 data Copy n sds sps (slbtss :: LayoutArg) sdd spd (slbtsd :: LayoutArg)
-	(bts :: [Layout.BindingType]) (is :: Nat) (id :: Nat) = Copy {
+	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = Copy {
 	copyNext :: Maybe n,
 	copySrcSet :: S sds sps slbtss,
 	copyDstSet :: S sdd spd slbtsd }
+
+copyToMiddle :: (
+	Copy.BindingAndArrayElement btss bts is,
+	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
+	Copy n sds sps '(sls, btss) sdd spd '(sld, btsd) bts is id -> M.Copy n
+copyToMiddle c@Copy {
+	copyNext = mnxt, copySrcSet = S _ ss, copyDstSet = S _ ds } = let
+	(sb, sae, db, dae, cnt) = getCopyArgs c in
+	M.Copy {
+		M.copyNext = mnxt,
+		M.copySrcSet = ss,
+		M.copySrcBinding = sb,
+		M.copySrcArrayElement = sae, M.copyDstSet = ds,
+		M.copyDstBinding = db,
+		M.copyDstArrayElement = dae, M.copyDescriptorCount = cnt }
+
+getCopyArgs :: forall n sds sps sls btss sdd spd sld btsd bts is id . (
+	Copy.BindingAndArrayElement btss bts is,
+	Copy.BindingAndArrayElement btsd bts id,
+	Copy.BindingLength bts ) =>
+	Copy n sds sps '(sls, btss) sdd spd '(sld, btsd) bts is id ->
+	(Word32, Word32, Word32, Word32, Word32)
+getCopyArgs _ = let
+	(sb, sae) = Copy.bindingAndArrayElement @btss @bts @is
+	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
+	(sb, sae, db, dae, Copy.bindingLength @bts)
 
 deriving instance (
 	Show n, Show (S sd sp slbts),
@@ -112,7 +134,7 @@ deriving instance (
 
 writeUpdateLength :: forall sbsmobjsobjs n sd sp sl bts . (
 	WriteSourcesToLengthList sbsmobjsobjs,
-	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs),
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj sbsmobjsobjs) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj sbsmobjsobjs)
 	) =>
 	Write n sd sp '(sl, bts) sbsmobjsobjs -> IO ()
@@ -121,7 +143,7 @@ writeUpdateLength Write {
 	writeSources = ws } = do
 	lns <- readIORef rlns
 	maybe	(pure ())
-		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) lns
+		(writeIORef rlns . updateDynamicLength @bts @(WriteSourcesToLengthListObj sbsmobjsobjs) @0 lns
 			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
@@ -192,7 +214,7 @@ instance (
 	WriteListToMiddle n sdspslbtswsas,
 
 	WriteSourcesToLengthList wsa,
-	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa),
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
 	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa)
 	) =>
 	WriteListToMiddle n

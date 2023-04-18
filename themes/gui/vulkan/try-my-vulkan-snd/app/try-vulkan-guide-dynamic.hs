@@ -1110,10 +1110,10 @@ instance Update '[] '[] where update _ HL.Nil HL.Nil _ = pure ()
 instance (
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
-		'[CameraObj],
+		'[CameraObj] 0,
 	Vk.DscSet.T.BindingAndArrayElem
 		(Vk.DscSet.T.BindingTypesFromLayoutArg '(slyt, bs))
-		'[SceneObj],
+		'[SceneObj] 0,
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
 		Vk.DscSet.updateDs @() @() dv (
