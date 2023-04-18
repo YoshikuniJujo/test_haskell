@@ -102,6 +102,28 @@ data Copy n sds sps (slbtss :: LayoutArg) sdd spd (slbtsd :: LayoutArg)
 	copySrcSet :: S sds sps slbtss,
 	copyDstSet :: S sdd spd slbtsd }
 
+class CopyListToMiddle copyArgs where
+	type CopyNexts copyArgs :: [Type]
+	copyListToMiddle ::
+		HeteroParList.PL (U10 Copy) copyArgs ->
+		HeteroParList.PL M.Copy (CopyNexts copyArgs)
+
+instance CopyListToMiddle '[] where
+	type CopyNexts '[] = '[]
+	copyListToMiddle HeteroParList.Nil = HeteroParList.Nil
+
+instance (
+	Copy.BindingAndArrayElement btss bts is,
+	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts,
+	CopyListToMiddle copyArgs ) =>
+	CopyListToMiddle (
+		'(n, sds, sps, '(sls, btss), sdd, spd, '(sld, btsd), bts, is, id) ':
+		copyArgs) where
+	type CopyNexts (
+		'(n, sds, sps, '(sls, btss), sdd, spd, '(sld, btsd), bts, is, id) ':
+		copyArgs ) = n ': CopyNexts copyArgs
+	copyListToMiddle (U10 c :** cs) = copyToMiddle c :** copyListToMiddle cs
+
 copyToMiddle :: (
 	Copy.BindingAndArrayElement btss bts is,
 	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
@@ -265,10 +287,11 @@ updateDs (Device.D dvc) ws cs =
 updateDsNew :: (
 	WithPoked n, WithPoked n',
 	WriteListToMiddleNew sdspslbtssbsmobjsobjs,
-	M.WriteListToCore (WriteNexts sdspslbtssbsmobjsobjs) ) =>
+	M.WriteListToCore (WriteNexts sdspslbtssbsmobjsobjs),
+	CopyListToMiddle copyArgs, M.CopyListToCore (CopyNexts copyArgs) ) =>
 	Device.D sd ->
-	HeteroParList.PL (U5 Write) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
+	HeteroParList.PL (U5 Write) sdspslbtssbsmobjsobjs ->
+	HeteroParList.PL (U10 Copy) copyArgs  -> IO ()
 updateDsNew (Device.D dvc) ws cs =
-	writeListUpdateLengthNew ws >>
-	M.updateDsNew dvc ws' HeteroParList.Nil
-	where ws' = writeListToMiddleNew ws
+	writeListUpdateLengthNew ws >> M.updateDsNew dvc ws' cs'
+	where ws' = writeListToMiddleNew ws; cs' = copyListToMiddle cs
