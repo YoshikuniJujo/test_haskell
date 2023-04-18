@@ -12,6 +12,8 @@ module Gpu.Vulkan.DescriptorSet.Middle (
 
 	-- * Update
 
-	updateDs, Write(..), WriteSources(..), Copy(..) ) where
+	updateDs, Write(..), WriteSources(..), Copy(..),
+
+	updateDsNew, WriteListToCore, CopyListToCore ) where
 
 import Gpu.Vulkan.DescriptorSet.Middle.Internal

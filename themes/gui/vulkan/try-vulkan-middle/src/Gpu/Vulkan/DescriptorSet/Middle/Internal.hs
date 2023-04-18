@@ -9,7 +9,8 @@
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 	D(..), AllocateInfo(..), allocateDs,
-	Write(..), WriteSources(..), Copy(..), updateDs, updateDsNew ) where
+	Write(..), WriteSources(..), Copy(..), updateDs,
+	updateDsNew, WriteListToCore, CopyListToCore ) where
 
 import Foreign.Ptr
 import Foreign.ForeignPtr
