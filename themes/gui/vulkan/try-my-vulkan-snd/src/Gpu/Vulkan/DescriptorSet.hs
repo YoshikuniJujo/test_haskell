@@ -14,6 +14,7 @@ module Gpu.Vulkan.DescriptorSet where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
+import Data.Kind
 import Data.Default
 import Data.Word
 import Data.IORef
@@ -147,6 +148,33 @@ writeUpdateLength Write {
 			. (VObj.onlyDynamicLength @(WriteSourcesToLengthListObj sbsmobjsobjs)))
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
+class WriteListToMiddleNew nsdspslbtswsas where
+	type WriteNexts nsdspslbtswsas :: [Type]
+	writeListToMiddleNew ::
+		HeteroParList.PL (U5 Write) nsdspslbtswsas ->
+		HeteroParList.PL M.Write (WriteNexts nsdspslbtswsas)
+	writeListUpdateLengthNew ::
+		HeteroParList.PL (U5 Write) nsdspslbtswsas -> IO ()
+
+instance WriteListToMiddleNew '[] where
+	type WriteNexts '[] = '[]
+	writeListToMiddleNew HeteroParList.Nil = HeteroParList.Nil
+	writeListUpdateLengthNew HeteroParList.Nil = pure ()
+
+instance (
+	WriteSourcesToMiddle '(sl, bts) wsa,
+	WriteListToMiddleNew nsdspslbtswsas,
+	WriteSourcesToLengthList wsa,
+	BindingAndArrayElem bts (WriteSourcesToLengthListObj wsa) 0,
+	VObj.OnlyDynamicLengths (WriteSourcesToLengthListObj wsa) ) =>
+	WriteListToMiddleNew ('(n, sd, sp, '(sl, bts), wsa) ': nsdspslbtswsas) where
+	type WriteNexts ('(n, sd, sp, '(sl, bts), wsa) ': nsdspslbtswsas) =
+		n ': WriteNexts nsdspslbtswsas
+	writeListToMiddleNew (U5 w :** ws) =
+		writeToMiddle w :** writeListToMiddleNew ws
+	writeListUpdateLengthNew (U5 w :** ws) =
+		writeUpdateLength w >> writeListUpdateLengthNew ws
+
 writeToMiddle :: forall n sd sp slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	Write n sd sp slbts wsa -> M.Write n
 writeToMiddle Write {
@@ -233,3 +261,14 @@ updateDs (Device.D dvc) ws cs =
 	writeListUpdateLength ws >>
 	M.updateDs dvc ws' cs
 	where ws' = writeListToMiddle ws
+
+updateDsNew :: (
+	WithPoked n, WithPoked n',
+	WriteListToMiddleNew sdspslbtssbsmobjsobjs,
+	M.WriteListToCore (WriteNexts sdspslbtssbsmobjsobjs) ) =>
+	Device.D sd ->
+	HeteroParList.PL (U5 Write) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
+updateDsNew (Device.D dvc) ws cs =
+	writeListUpdateLengthNew ws >>
+	M.updateDsNew dvc ws' HeteroParList.Nil
+	where ws' = writeListToMiddleNew ws
