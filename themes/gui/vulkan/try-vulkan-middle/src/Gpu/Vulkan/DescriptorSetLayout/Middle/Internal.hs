@@ -1,7 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout.Middle.Internal (
@@ -13,8 +15,9 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
+	WithPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -57,19 +60,20 @@ bindingToCore Binding {
 
 newtype L = L C.L deriving Show
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoBindings :: [Binding] }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
 
 createInfoToCore ::
-	WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+	WithPoked (TMaybe.M mn) => CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoBindings = length &&& id -> (bc, bs) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray bc \pbs ->
 	(bindingToCore `mapContM` bs) \cbs -> do
 		pokeArray pbs cbs
@@ -81,8 +85,8 @@ createInfoToCore CreateInfo {
 				C.createInfoPBindings = pbs }
 		withForeignPtr fci f
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = L <$> alloca \pl -> do
 	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pl
