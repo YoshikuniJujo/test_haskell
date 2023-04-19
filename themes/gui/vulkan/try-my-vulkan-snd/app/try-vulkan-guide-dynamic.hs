@@ -767,9 +767,9 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 
 createCommandPool :: Vk.Dvc.D sd ->
 	QueueFamilyIndices -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
-createCommandPool dv qfs = Vk.CmdPl.create @() dv crInfo nil nil
+createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil nil
 	where crInfo = Vk.CmdPl.CreateInfo {
-		Vk.CmdPl.createInfoNext = Nothing,
+		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfs }
 
@@ -940,18 +940,18 @@ beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dv gq cp cmds =
-	Vk.CBffr.allocateNew @() dv allocInfo \(cb :*. HL.Nil) ->
-	Vk.CBffr.beginNew @() @() cb beginInfo (cmds cb) <* do
+	Vk.CBffr.allocateNew dv allocInfo \(cb :*. HL.Nil) ->
+	Vk.CBffr.beginNew @'Nothing @'Nothing cb beginInfo (cmds cb) <* do
 	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
-	allocInfo :: Vk.CBffr.AllocateInfoNew () sc 1
+	allocInfo :: Vk.CBffr.AllocateInfoNew 'Nothing sc 1
 	allocInfo = Vk.CBffr.AllocateInfoNew {
-		Vk.CBffr.allocateInfoNextNew = Nothing,
+		Vk.CBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 	beginInfo = Vk.CBffr.M.BeginInfo {
-		Vk.CBffr.beginInfoNext = Nothing,
+		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
 		Vk.CBffr.beginInfoInheritanceInfo = Nothing }
 	submitInfo :: forall s . Vk.CBffr.C s -> Vk.SubmitInfo () '[] '[s] '[]
@@ -1083,9 +1083,9 @@ createSceneBuffer pd dv = createBuffer pd dv
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
-createDescriptorPool dv = Vk.DscPl.create @() dv poolInfo nil nil
+createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil nil
 	where poolInfo = Vk.DscPl.CreateInfo {
-		Vk.DscPl.createInfoNext = Nothing,
+		Vk.DscPl.createInfoNext = TMaybe.N,
 		Vk.DscPl.createInfoFlags = zeroBits,
 		Vk.DscPl.createInfoMaxSets = 10,
 		Vk.DscPl.createInfoPoolSizes = [
@@ -1170,9 +1170,9 @@ createCommandBuffers ::
 	(forall scb . HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
 createCommandBuffers dv cp f = Vk.CBffr.allocateNew dv allcInfo f
 	where
-	allcInfo :: Vk.CBffr.AllocateInfoNew () scp MaxFramesInFlight
+	allcInfo :: Vk.CBffr.AllocateInfoNew 'Nothing scp MaxFramesInFlight
 	allcInfo = Vk.CBffr.AllocateInfoNew {
-		Vk.CBffr.allocateInfoNextNew = Nothing,
+		Vk.CBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
@@ -1369,7 +1369,7 @@ recordCommandBuffer ::
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
 recordCommandBuffer sce rp lyt gpl fb ds vb vbt cb vn ffn (fromIntegral -> fn) =
-	Vk.CBffr.beginNew @() @() cb binfo $
+	Vk.CBffr.beginNew @'Nothing @'Nothing cb binfo $
 	Vk.Cmd.beginRenderPass' cb rpinfo Vk.Subpass.ContentsInline do
 	ovb <- newIORef Nothing
 	drawObject ovb cb ds RenderObject {
@@ -1386,7 +1386,7 @@ recordCommandBuffer sce rp lyt gpl fb ds vb vbt cb vn ffn (fromIntegral -> fn) =
 			renderObjectTransformMatrix =
 				trans x y `Cglm.mat4Mul` scale } ffn
 	where
-	binfo :: Vk.CBffr.BeginInfo () ()
+	binfo :: Vk.CBffr.BeginInfo 'Nothing 'Nothing
 	binfo = def { Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit }
 	rpinfo :: Vk.RndrPss.BeginInfo () sr sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,

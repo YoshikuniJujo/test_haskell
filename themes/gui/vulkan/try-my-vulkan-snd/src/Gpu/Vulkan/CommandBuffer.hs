@@ -6,6 +6,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandBuffer (
@@ -33,6 +34,7 @@ import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Proxy
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
@@ -49,9 +51,9 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 
 allocateNew :: (
-	WithPoked n, KnownNat c,
+	WithPoked (TMaybe.M mn), KnownNat c,
 	HeteroParList.FromList (HeteroParList.Dummies c) ) =>
-	Device.D sd -> AllocateInfoNew n scp c ->
+	Device.D sd -> AllocateInfoNew mn scp c ->
 	(forall s . HeteroParList.LL' (C s) c -> IO a) -> IO a
 allocateNew (Device.D dvc) ai f = bracket
 	(M.allocate dvc $ allocateInfoToMiddleNew ai)
@@ -59,11 +61,12 @@ allocateNew (Device.D dvc) ai f = bracket
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
 	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
 
-data AllocateInfoNew n s (c :: Nat) = AllocateInfoNew {
-	allocateInfoNextNew :: Maybe n,
+data AllocateInfoNew mn s (c :: Nat) = AllocateInfoNew {
+	allocateInfoNextNew :: TMaybe.M mn,
 	allocateInfoCommandPoolNew :: CommandPool.C s,
 	allocateInfoLevelNew :: Level }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfoNew mn s c)
 
 allocateInfoToMiddleNew :: forall n s c . KnownNat c =>
 	AllocateInfoNew n s c -> M.AllocateInfo n
@@ -78,8 +81,8 @@ allocateInfoToMiddleNew AllocateInfoNew {
 		fromIntegral $ natVal (Proxy :: Proxy c) }
 
 allocate ::
-	(WithPoked n, TpLvlLst.Length [(Type, VertexInput.Rate)] vss, HeteroParList.FromList vss) =>
-	Device.D sd -> AllocateInfo n scp vss ->
+	(WithPoked (TMaybe.M mn), TpLvlLst.Length [(Type, VertexInput.Rate)] vss, HeteroParList.FromList vss) =>
+	Device.D sd -> AllocateInfo mn scp vss ->
 	(forall s . HeteroParList.PL (Binded s) vss -> IO a) -> IO a
 allocate (Device.D dvc) ai f = bracket
 	(M.allocate dvc $ allocateInfoToMiddle ai)
@@ -87,11 +90,12 @@ allocate (Device.D dvc) ai f = bracket
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
 	(f . HeteroParList.fromList Binded)
 
-data AllocateInfo n s (vss :: [[(Type, VertexInput.Rate)]]) = AllocateInfo {
-	allocateInfoNext :: Maybe n,
+data AllocateInfo mn s (vss :: [[(Type, VertexInput.Rate)]]) = AllocateInfo {
+	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoCommandPool :: CommandPool.C s,
 	allocateInfoLevel :: Level }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn s vss)
 
 allocateInfoToMiddle :: forall n s vss .
 	TpLvlLst.Length [(Type, VertexInput.Rate)] vss => AllocateInfo n s vss -> M.AllocateInfo n
@@ -105,12 +109,12 @@ allocateInfoToMiddle AllocateInfo {
 	M.allocateInfoCommandBufferCount =
 		fromIntegral (TpLvlLst.length @_ @vss) }
 
-begin :: (WithPoked n, WithPoked n') =>
-	Binded s vs -> M.BeginInfo n n' -> IO a -> IO a
+begin :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M mn')) =>
+	Binded s vs -> M.BeginInfo mn mn' -> IO a -> IO a
 begin (Binded cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
-beginNew :: (WithPoked n, WithPoked n') =>
-	C s -> M.BeginInfo n n' -> IO a -> IO a
+beginNew :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M mn')) =>
+	C s -> M.BeginInfo mn mn' -> IO a -> IO a
 beginNew (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
 reset :: Binded sc vs -> ResetFlags -> IO ()
@@ -119,19 +123,20 @@ reset (Binded cb) rfs = M.reset cb rfs
 resetNew :: C sc -> ResetFlags -> IO ()
 resetNew (C cb) rfs = M.reset cb rfs
 
-allocateOld :: WithPoked n =>
-	Device.D sd -> AllocateInfoOld n sp ->
+allocateOld :: WithPoked (TMaybe.M mn) =>
+	Device.D sd -> AllocateInfoOld mn sp ->
 	(forall s . [Binded s vs] -> IO a) -> IO a
 allocateOld (Device.D dvc) (allocateInfoToMiddleOld -> ai) f = bracket
 	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (Binded <$>))
 
-data AllocateInfoOld n s = AllocateInfoOld {
-	allocateInfoNextOld :: Maybe n,
+data AllocateInfoOld mn s = AllocateInfoOld {
+	allocateInfoNextOld :: TMaybe.M mn,
 	allocateInfoCommandPoolOld :: CommandPool.C s,
 	allocateInfoLevelOld :: Level,
 	allocateInfoCommandBufferCountOld :: Word32 }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfoOld mn s)
 
 allocateInfoToMiddleOld :: AllocateInfoOld n s -> M.AllocateInfo n
 allocateInfoToMiddleOld AllocateInfoOld {

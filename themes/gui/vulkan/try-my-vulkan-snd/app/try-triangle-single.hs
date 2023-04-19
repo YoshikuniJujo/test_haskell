@@ -794,9 +794,9 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
 createCommandPool qfis dvc f =
-	Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp
+	Vk.CmdPool.create dvc poolInfo nil nil \cp -> f cp
 	where poolInfo = Vk.CmdPool.CreateInfo {
-		Vk.CmdPool.createInfoNext = Nothing,
+		Vk.CmdPool.createInfoNext = TMaybe.N,
 		Vk.CmdPool.createInfoFlags =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
@@ -873,25 +873,25 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocateNew
 --		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		@() dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
+		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.beginNew @() @() cb beginInfo do
+		Vk.CmdBffr.beginNew @'Nothing @'Nothing cb beginInfo do
 			Vk.Cmd.copyBufferNew @'[ '[VObj.List 256 Vertex ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew () sc 1
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc 1
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = Nothing,
+		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
@@ -902,9 +902,9 @@ createCommandBuffer ::
 createCommandBuffer dvc cp f =
 	Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew () scp 1
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing scp 1
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
@@ -959,7 +959,7 @@ recordCommandBuffer :: forall scb sr sf sg sm sb nm sl .
 		'(sl, '[], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb =
-	Vk.CmdBffr.beginNew @() @() cb def $
+	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb

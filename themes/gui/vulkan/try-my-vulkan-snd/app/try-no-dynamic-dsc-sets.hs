@@ -192,9 +192,9 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 				f ds ma mb mc
 			_ -> error "bad arg"
 
-dscPoolInfo :: Vk.DscPool.CreateInfo ()
+dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPoolInfo = Vk.DscPool.CreateInfo {
-	Vk.DscPool.createInfoNext = Nothing,
+	Vk.DscPool.createInfoNext = TMaybe.N,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 	Vk.DscPool.createInfoMaxSets = 1,
 	Vk.DscPool.createInfoPoolSizes = [poolSize] }
@@ -414,15 +414,15 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
 
-commandPoolInfo :: Vk.QFam.Index -> Vk.CmdPl.CreateInfo ()
+commandPoolInfo :: Vk.QFam.Index -> Vk.CmdPl.CreateInfo 'Nothing
 commandPoolInfo qFam = Vk.CmdPl.CreateInfo {
-	Vk.CmdPl.createInfoNext = Nothing,
+	Vk.CmdPl.createInfoNext = TMaybe.N,
 	Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
 	Vk.CmdPl.createInfoQueueFamilyIndex = qFam }
 
-commandBufferInfo :: Vk.CmdPl.C s -> Vk.CmdBuf.AllocateInfoOld () s
+commandBufferInfo :: Vk.CmdPl.C s -> Vk.CmdBuf.AllocateInfoOld 'Nothing s
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
-	Vk.CmdBuf.allocateInfoNextOld = Nothing,
+	Vk.CmdBuf.allocateInfoNextOld = TMaybe.N,
 	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
 	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
@@ -436,7 +436,7 @@ run :: forall sd sc vs sg sl sdsl sp sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] ->
 	IO ([W1], [W2], [W3])
 run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
-	Vk.CmdBuf.begin @() @() cb def do
+	Vk.CmdBuf.begin @'Nothing @'Nothing cb def do
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointCompute plyt
 			(HeteroParList.Singleton $ U2 dss) []

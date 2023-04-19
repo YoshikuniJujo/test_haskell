@@ -54,7 +54,6 @@ import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShaderSt
 import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DS
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DS
-import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DS
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
@@ -145,9 +144,9 @@ prepareMems pd dv dslyt f =
 	Vk.DS.updateDs @_ @() dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
 	f ds m
 
-dscPoolInfo :: Vk.DscPool.CreateInfo ()
+dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPoolInfo = Vk.DscPool.CreateInfo {
-	Vk.DscPool.createInfoNext = Nothing,
+	Vk.DscPool.createInfoNext = TMaybe.N,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 	Vk.DscPool.createInfoMaxSets = 1,
 	Vk.DscPool.createInfoPoolSizes = [sz] }
@@ -239,15 +238,15 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HL.Singleton $ U2 dsl }
 
-commandPoolInfo :: Vk.QFm.Index -> Vk.CmdPool.CreateInfo ()
+commandPoolInfo :: Vk.QFm.Index -> Vk.CmdPool.CreateInfo 'Nothing
 commandPoolInfo qfi = Vk.CmdPool.CreateInfo {
-	Vk.CmdPool.createInfoNext = Nothing,
+	Vk.CmdPool.createInfoNext = TMaybe.N,
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qfi }
 
-commandBufferInfo :: Vk.CmdPool.C s -> Vk.CBffr.AllocateInfoNew () s 1
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CBffr.AllocateInfoNew 'Nothing s 1
 commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
-	Vk.CBffr.allocateInfoNextNew = Nothing,
+	Vk.CBffr.allocateInfoNextNew = TMaybe.N,
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
@@ -258,7 +257,7 @@ run :: forall slbts sd sc sg sl sp . (
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
-	Vk.CBffr.beginNew @() @() cb def $
+	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
 		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>

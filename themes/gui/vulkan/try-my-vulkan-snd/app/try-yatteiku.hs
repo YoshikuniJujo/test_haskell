@@ -168,9 +168,9 @@ makeCommandBufferEtc :: Vk.Device.D sd -> Vk.QueueFamily.Index ->
 makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 	graphicsQueue <- Vk.Device.getQueue device graphicsQueueFamilyIndex 0
 	print graphicsQueue
-	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo ()
+	let	cmdPoolCreateInfo :: Vk.CommandPool.CreateInfo 'Nothing
 		cmdPoolCreateInfo = Vk.CommandPool.CreateInfo {
-			Vk.CommandPool.createInfoNext = Nothing,
+			Vk.CommandPool.createInfoNext = TMaybe.N,
 			Vk.CommandPool.createInfoFlags = zeroBits,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
@@ -180,9 +180,9 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 makeCommandBuffer :: forall sd scp vs a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
 	(forall s . Vk.CommandBuffer.Binded s vs -> IO a) -> IO a
 makeCommandBuffer device graphicsQueue cmdPool f = do
-		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfoOld () scp
+		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfoOld 'Nothing scp
 			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfoOld {
-				Vk.CommandBuffer.allocateInfoNextOld = Nothing,
+				Vk.CommandBuffer.allocateInfoNextOld = TMaybe.N,
 				Vk.CommandBuffer.allocateInfoCommandPoolOld =
 					cmdPool,
 				Vk.CommandBuffer.allocateInfoLevelOld =
@@ -192,7 +192,7 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 		Vk.CommandBuffer.allocateOld device cmdBufAllocInfo \case
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
-					(def :: Vk.CommandBuffer.BeginInfo () ()) $ f cmdBuf
+					(def :: Vk.CommandBuffer.BeginInfo 'Nothing 'Nothing) $ f cmdBuf
 				let	submitInfo :: Vk.SubmitInfo () _ _ _
 					submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = Nothing,
@@ -340,24 +340,24 @@ beginSingleTimeCommands :: forall sd sc a .
 	(forall s . Vk.CommandBuffer.Binded s '[] -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CommandBuffer.allocate
-		@() dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.Binded s '[])) -> do
+		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.Binded s '[])) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CommandBuffer.begin @() @() cb beginInfo (cmd cb) <* do
+		Vk.CommandBuffer.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
 			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CommandBuffer.AllocateInfo () sc '[ '[]]
+	allocInfo :: Vk.CommandBuffer.AllocateInfo 'Nothing sc '[ '[]]
 	allocInfo = Vk.CommandBuffer.AllocateInfo {
-		Vk.CommandBuffer.allocateInfoNext = Nothing,
+		Vk.CommandBuffer.allocateInfoNext = TMaybe.N,
 		Vk.CommandBuffer.allocateInfoCommandPool = cp,
 		Vk.CommandBuffer.allocateInfoLevel = Vk.CommandBuffer.LevelPrimary }
 	beginInfo = Vk.CommandBuffer.M.BeginInfo {
-		Vk.CommandBuffer.beginInfoNext = Nothing,
+		Vk.CommandBuffer.beginInfoNext = TMaybe.N,
 		Vk.CommandBuffer.beginInfoFlags = Vk.CommandBuffer.UsageOneTimeSubmitBit,
 		Vk.CommandBuffer.beginInfoInheritanceInfo = Nothing }
 

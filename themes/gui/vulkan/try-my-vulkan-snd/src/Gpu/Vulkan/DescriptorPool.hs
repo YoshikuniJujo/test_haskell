@@ -1,5 +1,7 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -13,6 +15,7 @@ module Gpu.Vulkan.DescriptorPool (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 import Gpu.Vulkan.DescriptorPool.Type
 
@@ -21,8 +24,8 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Middle as M
 import qualified Gpu.Vulkan.DescriptorPool.Enum as M
 
-create :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> M.CreateInfo n ->
+create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> M.CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . P s -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =

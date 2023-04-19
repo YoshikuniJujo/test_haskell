@@ -829,9 +829,9 @@ mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
 createCommandPool :: QueueFamilyIndices -> Vk.Dvc.D sd ->
 	(forall sc . Vk.CmdPool.C sc -> IO a) -> IO a
 createCommandPool qfis dvc f =
-	Vk.CmdPool.create @() dvc poolInfo nil nil \cp -> f cp
+	Vk.CmdPool.create dvc poolInfo nil nil \cp -> f cp
 	where poolInfo = Vk.CmdPool.CreateInfo {
-		Vk.CmdPool.createInfoNext = Nothing,
+		Vk.CmdPool.createInfoNext = TMaybe.N,
 		Vk.CmdPool.createInfoFlags =
 			Vk.CmdPool.CreateResetCommandBufferBit,
 		Vk.CmdPool.createInfoQueueFamilyIndex = graphicsFamily qfis }
@@ -881,10 +881,10 @@ type UniformBufferMemory sm sb = Vk.Mem.M sm '[ '(
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDescriptorPool dvc = Vk.DscPool.create @() dvc poolInfo nil nil
+createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil nil
 	where
 	poolInfo = Vk.DscPool.CreateInfo {
-		Vk.DscPool.createInfoNext = Nothing,
+		Vk.DscPool.createInfoNext = TMaybe.N,
 		Vk.DscPool.createInfoFlags = zeroBits,
 		Vk.DscPool.createInfoMaxSets = 1,
 		Vk.DscPool.createInfoPoolSizes = [poolSize] }
@@ -989,7 +989,7 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocate
-		@() dvc allocInfo \(cb :** HeteroParList.Nil) -> do
+		dvc allocInfo \(cb :** HeteroParList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(_, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = Nothing,
@@ -997,18 +997,18 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers =
 					HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.begin @() @() cb beginInfo do
+		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
 			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 a ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo () sc '[ '[]]
+	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '[]]
 	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = Nothing,
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
-		Vk.CmdBffr.beginInfoNext = Nothing,
+		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
 
@@ -1016,11 +1016,11 @@ createCommandBuffer ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPool.C scp ->
 	(forall scb . Vk.CmdBffr.C scb -> IO a) ->
 	IO a
-createCommandBuffer dvc cp f = Vk.CmdBffr.allocateNew @() dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
+createCommandBuffer dvc cp f = Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew () scp 1
+	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew 'Nothing scp 1
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = Nothing,
+		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
@@ -1078,7 +1078,7 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl 
 	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
-	Vk.CmdBffr.beginNew @() @() cb def $
+	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass (Vk.CmdBffr.T.toBinded cb) rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb

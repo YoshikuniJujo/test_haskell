@@ -200,7 +200,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
-	Vk.CmdBuf.begin @() @() cmdBuf def do
+	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
 		Vk.Cmd.bindDescriptorSets cmdBuf Vk.Ppl.BindPointCompute pplLyt
 			(U2 dscSet :** HeteroParList.Nil) []
@@ -517,9 +517,9 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo ()
+commandPoolInfo :: Vk.QFam.Index -> Vk.CommandPool.CreateInfo 'Nothing
 commandPoolInfo qFam = Vk.CommandPool.CreateInfo {
-	Vk.CommandPool.createInfoNext = Nothing,
+	Vk.CommandPool.createInfoNext = TMaybe.N,
 	Vk.CommandPool.createInfoFlags =
 		Vk.CommandPool.CreateResetCommandBufferBit,
 	Vk.CommandPool.createInfoQueueFamilyIndex = qFam }
@@ -531,16 +531,16 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoOld () s
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoOld 'Nothing s
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
-	Vk.CmdBuf.allocateInfoNextOld = Nothing,
+	Vk.CmdBuf.allocateInfoNextOld = TMaybe.N,
 	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
 	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
 	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
 
-dscPoolInfo :: Vk.DscPool.CreateInfo ()
+dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPoolInfo = Vk.DscPool.CreateInfo {
-	Vk.DscPool.createInfoNext = Nothing,
+	Vk.DscPool.createInfoNext = TMaybe.N,
 	Vk.DscPool.createInfoFlags = Vk.DscPool.CreateFreeDescriptorSetBit,
 	Vk.DscPool.createInfoMaxSets = 1,
 	Vk.DscPool.createInfoPoolSizes = [poolSize] }
