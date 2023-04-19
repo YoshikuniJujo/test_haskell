@@ -1104,10 +1104,10 @@ createDescriptorSets ::
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	IO (HL.PL (Vk.DscSet.S sd sp) lyts)
 createDescriptorSets dv dscp cmbs lyts scnb = do
-	dscss <- Vk.DscSet.allocateSs @() dv allocInfo
+	dscss <- Vk.DscSet.allocateSs dv allocInfo
 	dscss <$ update dv dscss cmbs scnb
 	where allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lyts }
 
@@ -1127,7 +1127,7 @@ instance (
 		'[SceneObj] 0,
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
-		Vk.DscSet.updateDs @() @() dv (
+		Vk.DscSet.updateDs @'Nothing @'Nothing dv (
 			U4 (descriptorWrite @CameraObj
 				dscs csb Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite @SceneObj
@@ -1137,10 +1137,10 @@ instance (
 
 descriptorWrite :: forall obj sd sp slbts sb sm nm objs .
 	Vk.DscSet.S sd sp slbts -> Vk.Bffr.Binded sm sb nm objs ->
-	Vk.Dsc.Type -> Vk.DscSet.Write () sd sp slbts
+	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sd sp slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sb, sm, nm, objs, obj)])
 descriptorWrite dscs ub tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources =

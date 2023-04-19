@@ -303,7 +303,7 @@ run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
 
 	allocateTextureDescriptorSets dv dp dslyttx >>= \dscstx ->
 	writeTexture1 dv dscstx timgvw \wtx ->
-	Vk.DscSet.updateDs @() @() dv (HL.Singleton $ U4 wtx) [] >>
+	Vk.DscSet.updateDs @'Nothing @'Nothing dv (HL.Singleton $ U4 wtx) [] >>
 
 	createDescriptorSets @sbsmods @slytods dv dp cmbs lyts odbs lytods scnb >>= \(dss, dssod) ->
 
@@ -1274,16 +1274,16 @@ createDescriptorSets ::
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->
 	IO ((HL.PL (Vk.DscSet.S sd sp) lyts), HL.PL (Vk.DscSet.S sd sp) lytods)
 createDescriptorSets dv dscp cmbs lyts odbs lytods scnb = do
-	dscss <- Vk.DscSet.allocateSs @() dv allocInfo
-	dscsods <- Vk.DscSet.allocateSs @() dv allocInfoOd
+	dscss <- Vk.DscSet.allocateSs dv allocInfo
+	dscsods <- Vk.DscSet.allocateSs dv allocInfoOd
 	(dscss, dscsods) <$ update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lyts }
 	allocInfoOd = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = lytods }
 
@@ -1292,8 +1292,8 @@ allocateTextureDescriptorSets :: forall slyt foo sd sp .
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	Vk.DscSetLyt.L slyt foo -> IO (Vk.DscSet.S sd sp '(slyt, foo))
 allocateTextureDescriptorSets dv dscpl lyt = do
-	HL.Singleton dscs <- Vk.DscSet.allocateSs @() dv Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+	HL.Singleton dscs <- Vk.DscSet.allocateSs dv Vk.DscSet.AllocateInfo {
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscpl,
 		Vk.DscSet.allocateInfoSetLayouts = HL.Singleton $ U2 lyt
 		}
@@ -1320,7 +1320,7 @@ instance (
 		(odb ': odbs) ('(slytod, bods) ': lytods) where
 	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
 		(dscsod :** dscsods) (BindedObjData odb :** odbs) scnb = do
-		Vk.DscSet.updateDs @() @() dv (
+		Vk.DscSet.updateDs @'Nothing @'Nothing dv (
 			U4 (descriptorWrite @CameraObj
 				dscs cmb Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite @SceneObj
@@ -1332,10 +1332,10 @@ instance (
 
 descriptorWrite :: forall obj sd sp slbts sb sm nm objs .
 	Vk.DscSet.S sd sp slbts -> Vk.Bffr.Binded sm sb nm objs ->
-	Vk.Dsc.Type -> Vk.DscSet.Write () sd sp slbts
+	Vk.Dsc.Type -> Vk.DscSet.Write 'Nothing sd sp slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sb, sm, nm, objs, obj)])
 descriptorWrite dscs ub tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources =
@@ -1344,7 +1344,7 @@ descriptorWrite dscs ub tp = Vk.DscSet.Write {
 writeTexture1 ::
 	Vk.Dvc.D sd -> Vk.DscSet.S sd sp lyt -> Vk.ImgVw.INew ifmt "texture" siv -> (
 		forall ss . 
-		Vk.DscSet.Write n sd sp lyt
+		Vk.DscSet.Write 'Nothing sd sp lyt
 			('Vk.DscSet.WriteSourcesArgImage '[ '(ss, ifmt, "texture", siv)]) ->
 		IO a) -> IO a
 writeTexture1 dv dscs tiv f =
@@ -1355,10 +1355,10 @@ writeTexture1 dv dscs tiv f =
 
 writeDescriptorImage :: Vk.Dsc.Type ->
 	Vk.DscSet.S sd sp slbts -> Vk.Dsc.ImageInfo ss fmt nm si ->
-	Vk.DscSet.Write n sd sp slbts
+	Vk.DscSet.Write 'Nothing sd sp slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si)])
 writeDescriptorImage tp dscs ii = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources =

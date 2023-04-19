@@ -1617,23 +1617,23 @@ createDescriptorSets :: (
 	Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv -> Vk.Smplr.S ssmp ->
 	IO (HeteroParList.PL (Vk.DscSet.S sd sp) ss)
 createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp = do
-	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
+	dscss <- Vk.DscSet.allocateSs dvc allocInfo
 	update dvc ubs dscss tximgvw txsmp
 	pure dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite0 ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
@@ -1643,10 +1643,10 @@ descriptorWrite0 ub dscs = Vk.DscSet.Write {
 
 descriptorWrite1 ::
 	Vk.DscSet.S sd sp slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
-	Vk.DscSet.Write () sd sp slbts
+	Vk.DscSet.Write 'Nothing sd sp slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeCombinedImageSampler,
 	Vk.DscSet.writeSources = Vk.DscSet.ImageInfos . HeteroParList.Singleton
@@ -1676,7 +1676,7 @@ instance (
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
-		Vk.DscSet.updateDs @() @() dvc (
+		Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
 			U4 (descriptorWrite0 ub dscs) :**
 			U4 (descriptorWrite1 dscs tximgvw txsmp) :**
 			HeteroParList.Nil ) []

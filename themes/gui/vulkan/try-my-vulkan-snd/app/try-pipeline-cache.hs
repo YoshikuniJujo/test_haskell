@@ -190,7 +190,7 @@ prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil nil \dp ->
 	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
-	Vk.DS.updateDs @_ @() dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
+	Vk.DS.updateDs @_ @'Nothing dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
 	f ds m
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
@@ -204,9 +204,9 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DSLyt.L sl bts ->
-	Vk.DS.AllocateInfo () sp '[ '(sl, bts)]
+	Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts)]
 dscSetInfo pl lyt = Vk.DS.AllocateInfo {
-	Vk.DS.allocateInfoNext = Nothing,
+	Vk.DS.allocateInfoNext = TMaybe.N,
 	Vk.DS.allocateInfoDescriptorPool = pl,
 	Vk.DS.allocateInfoSetLayouts = HL.Singleton $ U2 lyt }
 
@@ -254,10 +254,10 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 
 writeDscSet :: forall sd sp slbts sb sm os .
 	Vk.DS.S sd sp slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.Write () sd sp slbts
+	Vk.DS.Write 'Nothing sd sp slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
 writeDscSet ds ba = Vk.DS.Write {
-	Vk.DS.writeNext = Nothing,
+	Vk.DS.writeNext = TMaybe.N,
 	Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =

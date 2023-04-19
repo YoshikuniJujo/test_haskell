@@ -310,14 +310,14 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 		Vk.Dvc.D mdvc = dvc
 	bv <- Vk.BufferView.M.create mdvc bufferViewInfo nil
 	let	wds = Vk.DscSet.Write {
-			Vk.DscSet.writeNext = Nothing,
+			Vk.DscSet.writeNext = TMaybe.N,
 			Vk.DscSet.writeDstSet = dscSet,
 			Vk.DscSet.writeDescriptorType =
 				Vk.Dsc.TypeStorageTexelBuffer,
 			Vk.DscSet.writeSources =
 				Vk.DscSet.TexelBufferViewsOld 1 0 [bv]
 			}
-	Vk.DscSet.updateDs @() @() dvc (
+	Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
 		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds :**
 		HeteroParList.Nil ) []
 	f dscSet ma mb mc
@@ -337,9 +337,9 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.AllocateInfo () sp '[ '(sl, bts)]
+	Vk.DscSet.AllocateInfo 'Nothing sp '[ '(sl, bts)]
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
-	Vk.DscSet.allocateInfoNext = Nothing,
+	Vk.DscSet.allocateInfoNext = TMaybe.N,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
@@ -348,11 +348,11 @@ writeDscSet ::
 	Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
+	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sb1, sm1, nm1, objs1,VObj.List 256 w1 ""), '(sb2, sm2, nm2, objs2,VObj.List 256 w2 ""),
 		'(sb3, sm3, nm3, objs3,VObj.List 256 w3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $

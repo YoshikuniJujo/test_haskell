@@ -158,9 +158,9 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DSLyt.L sl bts ->
-	Vk.DS.AllocateInfo () sp '[ '(sl, bts), '(sl, bts)]
+	Vk.DS.AllocateInfo 'Nothing sp '[ '(sl, bts), '(sl, bts)]
 dscSetInfo pl lyt = Vk.DS.AllocateInfo {
-	Vk.DS.allocateInfoNext = Nothing,
+	Vk.DS.allocateInfoNext = TMaybe.N,
 	Vk.DS.allocateInfoDescriptorPool = pl,
 	Vk.DS.allocateInfoSetLayouts = U2 lyt :** U2 lyt :** HL.Nil }
 
@@ -208,19 +208,19 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 
 writeDscSet :: forall sd sp slbts sb sm os .
 	Vk.DS.S sd sp slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.Write () sd sp slbts
+	Vk.DS.Write 'Nothing sd sp slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
 writeDscSet ds ba = Vk.DS.Write {
-	Vk.DS.writeNext = Nothing,
+	Vk.DS.writeNext = TMaybe.N,
 	Vk.DS.writeDstSet = ds,
 	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSources =
 		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
 
 copyDscSet :: Vk.DS.S sd sp slbts -> Vk.DS.S sd sp slbts -> Vk.DS.Copy
-	() sd sp slbts sd sp slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0
+	'Nothing sd sp slbts sd sp slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0
 copyDscSet s d = Vk.DS.Copy
-	{ Vk.DS.copyNext = Nothing, Vk.DS.copySrcSet = s, Vk.DS.copyDstSet = d }
+	{ Vk.DS.copyNext = TMaybe.N, Vk.DS.copySrcSet = s, Vk.DS.copyDstSet = d }
 
 -- CALC
 

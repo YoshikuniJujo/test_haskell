@@ -172,7 +172,7 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	storageBufferNew dvc phdvc da \ba ma ->
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
-	Vk.DscSet.updateDs @() @() dvc
+	Vk.DscSet.updateDs @'Nothing @'Nothing dvc
 		(HeteroParList.Singleton . U4 $ writeDscSet dscSet ba bb bc)
 		[] >>
 	f dscSet ma mb mc
@@ -188,9 +188,9 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.AllocateInfo () sp '[ '(sl, bts)]
+	Vk.DscSet.AllocateInfo 'Nothing sp '[ '(sl, bts)]
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
-	Vk.DscSet.allocateInfoNext = Nothing,
+	Vk.DscSet.allocateInfoNext = TMaybe.N,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts =
 		HeteroParList.Singleton $ U2 lyt }
@@ -250,11 +250,11 @@ writeDscSet ::
 	Vk.DscSet.S sd sp slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
+	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sb1, sm1, "", objs1,VObj.DynList 2 256 W1 ""), '(sb2, sm2, "", objs2,VObj.DynList 2 256 W2 ""),
 		'(sb3, sm3, "", objs3,VObj.DynList 2 256 W3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBufferDynamic,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $

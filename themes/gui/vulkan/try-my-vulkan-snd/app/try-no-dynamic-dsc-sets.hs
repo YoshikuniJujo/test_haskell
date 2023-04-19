@@ -170,21 +170,21 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 		@(VObj.Atom 256 Word32 ('Just "x2"))
 		phdvc dvc 3 5 7 \bx mx -> case arg of
 			"0" -> do
-				Vk.DscSet.updateDs @_ @() dvc (
+				Vk.DscSet.updateDs @_ @'Nothing dvc (
 					U4 (writeDscSet ds ba bb bc) :**
 					U4 (writeDscSet2 @"x0" ds bx) :**
 					HeteroParList.Nil
 					) []
 				f ds ma mb mc
 			"1" -> do
-				Vk.DscSet.updateDs @_ @() dvc (
+				Vk.DscSet.updateDs @_ @'Nothing dvc (
 					U4 (writeDscSet ds ba bb bc) :**
 					U4 (writeDscSet2 @"x1" ds bx) :**
 					HeteroParList.Nil
 					) []
 				f ds ma mb mc
 			"2" -> do
-				Vk.DscSet.updateDs @_ @() dvc (
+				Vk.DscSet.updateDs @_ @'Nothing dvc (
 					U4 (writeDscSet ds ba bb bc) :**
 					U4 (writeDscSet2 @"x2" ds bx) :**
 					HeteroParList.Nil
@@ -203,9 +203,9 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 dscSetInfo :: Vk.DscPool.P sp -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
-	Vk.DscSet.AllocateInfo () sp '[ '(sl, DscSetLytLstW123)]
+	Vk.DscSet.AllocateInfo 'Nothing sp '[ '(sl, DscSetLytLstW123)]
 dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
-	Vk.DscSet.allocateInfoNext = Nothing,
+	Vk.DscSet.allocateInfoNext = TMaybe.N,
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
@@ -332,14 +332,14 @@ writeDscSet :: forall sd sp sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 .
 	Vk.Bffr.Binded sm1 sb1 nm1 '[ListW1] ->
 	Vk.Bffr.Binded sm2 sb2 nm2 '[ListW2] ->
 	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
-	Vk.DscSet.Write () sd sp '(sl, DscSetLytLstW123) (
+	Vk.DscSet.Write 'Nothing sd sp '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb1, sm1, nm1, '[ListW1], ListW1),
 			'(sb2, sm2, nm2, '[ListW2], ListW2),
 			'(sb3, sm3, nm3, '[ListW3], ListW3)
 			] )
 writeDscSet ds ba bb bc = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
@@ -352,14 +352,14 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 writeDscSet2 :: forall nm objs sd sp sl sm4 sb4 nm4 .
 	Vk.DscSet.S sd sp '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
-	Vk.DscSet.Write () sd sp '(sl, DscSetLytLstW123) (
+	Vk.DscSet.Write 'Nothing sd sp '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
 			'(sb4, sm4, nm4,
 				objs,
 				VObj.Atom 256 Word32 ('Just nm))
 			] )
 writeDscSet2 ds bx = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = ds,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $

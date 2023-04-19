@@ -1299,12 +1299,12 @@ createDescriptorSets :: (
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 	IO (HeteroParList.PL (Vk.DscSet.S sd sp) ss)
 createDescriptorSets dvc dscp ubs dscslyts scnb = do
-	dscss <- Vk.DscSet.allocateSs @() dvc allocInfo
+	dscss <- Vk.DscSet.allocateSs dvc allocInfo
 	update dvc ubs dscss scnb 0
 	pure dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts = dscslyts }
 
@@ -1327,13 +1327,13 @@ instance (
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) where
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 0 = do
-		Vk.DscSet.updateDs @() @() dvc (
+		Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
 			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil ) []
 		update dvc ubs dscss scnb 1
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 1 = do
-		Vk.DscSet.updateDs @() @() dvc (
+		Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
 			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
 			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil ) []
@@ -1343,11 +1343,11 @@ instance (
 descriptorWrite0 :: forall tp objnm objs sm sb nm sd sp slbts .
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.S sd sp slbts -> Vk.Dsc.Type ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		objs,VObj.Atom 256 tp objnm )])
 descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = tp,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $

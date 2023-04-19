@@ -20,6 +20,7 @@ import Data.Word
 import Data.IORef
 import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -42,11 +43,11 @@ layoutToMiddle :: Layout slbts -> Layout.M.L
 layoutToMiddle (U2 (Layout.L l)) = l
 
 data AllocateInfo n sp slbtss = AllocateInfo {
-	allocateInfoNext :: Maybe n,
+	allocateInfoNext :: TMaybe.M n,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
 	allocateInfoSetLayouts :: HeteroParList.PL Layout slbtss }
 
-deriving instance (Show n, Show (HeteroParList.PL Layout slbtss)) =>
+deriving instance (Show (TMaybe.M n), Show (HeteroParList.PL Layout slbtss)) =>
 	Show (AllocateInfo n sp slbtss)
 
 allocateInfoToMiddle :: AllocateInfo n sp slbtss -> M.AllocateInfo n
@@ -83,7 +84,7 @@ instance (
 			<*> sListFromMiddle @slbtss ds
 		_ -> error "bad"
 
-allocateSs :: (WithPoked n, SListFromMiddle slbtss) =>
+allocateSs :: (WithPoked (TMaybe.M n), SListFromMiddle slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	IO (HeteroParList.PL (S sd sp) slbtss)
 allocateSs (Device.D dvc) ai =
@@ -91,19 +92,19 @@ allocateSs (Device.D dvc) ai =
 
 data Write n sd sp (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = Write {
-	writeNext :: Maybe n,
+	writeNext :: TMaybe.M n,
 	writeDstSet :: S sd sp slbts,
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources sbsmobjsobjs }
 
 data Copy n sds sps (slbtss :: LayoutArg) sdd spd (slbtsd :: LayoutArg)
 	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = Copy {
-	copyNext :: Maybe n,
+	copyNext :: TMaybe.M n,
 	copySrcSet :: S sds sps slbtss,
 	copyDstSet :: S sdd spd slbtsd }
 
 class CopyListToMiddle copyArgs where
-	type CopyNexts copyArgs :: [Type]
+	type CopyNexts copyArgs :: [Maybe Type]
 	copyListToMiddle ::
 		HeteroParList.PL (U10 Copy) copyArgs ->
 		HeteroParList.PL M.Copy (CopyNexts copyArgs)
@@ -151,7 +152,7 @@ getCopyArgs _ = let
 	(sb, sae, db, dae, Copy.bindingLength @bts)
 
 deriving instance (
-	Show n, Show (S sd sp slbts),
+	Show (TMaybe.M n), Show (S sd sp slbts),
 	Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs)) =>
 	Show (Write n sd sp slbts ('WriteSourcesArgBuffer sbsmobjsobjs))
 
@@ -171,7 +172,7 @@ writeUpdateLength Write {
 		(writeSourcesToLengthList @sbsmobjsobjs ws)
 
 class WriteListToMiddleNew nsdspslbtswsas where
-	type WriteNexts nsdspslbtswsas :: [Type]
+	type WriteNexts nsdspslbtswsas :: [Maybe Type]
 	writeListToMiddleNew ::
 		HeteroParList.PL (U5 Write) nsdspslbtswsas ->
 		HeteroParList.PL M.Write (WriteNexts nsdspslbtswsas)
@@ -275,7 +276,7 @@ instance (
 		writeUpdateLength w >> writeListUpdateLength ws
 
 updateDs :: (
-	WithPoked n, WithPoked n',
+	WithPoked (TMaybe.M n), WithPoked (TMaybe.M n'),
 	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 (Write  n)) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()

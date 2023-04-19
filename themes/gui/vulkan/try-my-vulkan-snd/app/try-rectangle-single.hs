@@ -897,13 +897,13 @@ createDescriptorSet ::
 	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]] ->
 	IO (Vk.DscSet.S sd sp '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]))
 createDescriptorSet dvc dscp ub dscslyt = do
-	HeteroParList.Singleton dscs <- Vk.DscSet.allocateSs @() dvc allocInfo
-	Vk.DscSet.updateDs @() @() dvc
+	HeteroParList.Singleton dscs <- Vk.DscSet.allocateSs dvc allocInfo
+	Vk.DscSet.updateDs @'Nothing @'Nothing dvc
 		(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) []
 	pure dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
-		Vk.DscSet.allocateInfoNext = Nothing,
+		Vk.DscSet.allocateInfoNext = TMaybe.N,
 		Vk.DscSet.allocateInfoDescriptorPool = dscp,
 		Vk.DscSet.allocateInfoSetLayouts =
 			HeteroParList.Singleton $ U2 dscslyt }
@@ -911,11 +911,11 @@ createDescriptorSet dvc dscp ub dscslyt = do
 descriptorWrite ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write () sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing)])
 descriptorWrite ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = Nothing,
+	Vk.DscSet.writeNext = TMaybe.N,
 	Vk.DscSet.writeDstSet = dscs,
 	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
 	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
