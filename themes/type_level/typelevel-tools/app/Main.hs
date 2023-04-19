@@ -20,4 +20,4 @@ bar :: TMaybe.M ('Just Int)
 bar = TMaybe.J 123
 
 fooBar :: Bool -> String
-fooBar b = TBool.b @Show b foo bar show
+fooBar b = TBool.b @Show foo bar b show

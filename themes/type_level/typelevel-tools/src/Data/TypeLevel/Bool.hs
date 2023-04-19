@@ -5,6 +5,6 @@
 module Data.TypeLevel.Bool (b) where
 
 b :: forall {k} c (f :: k) (t :: k) tp b . (c (tp f), c (tp t)) =>
-	Bool -> tp f -> tp t -> (forall (a :: k) . c (tp a) => tp a -> b) -> b
-b False f _ fn  = fn f
-b True _ t fn = fn t
+	tp f -> tp t -> Bool -> (forall (a :: k) . c (tp a) => tp a -> b) -> b
+b f _ False fn  = fn f
+b _ t True fn = fn t
