@@ -22,6 +22,7 @@ import Data.Maybe
 import Data.List
 import Data.Array
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
@@ -100,7 +101,7 @@ screenWidth, screenHeight :: Word32
 
 main :: IO ()
 main = do
-	let	createInfo :: Vk.Instance.CreateInfo () ()
+	let	createInfo :: Vk.Instance.CreateInfo 'Nothing ()
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
 				[Vk.Khr.validationLayerName] }
@@ -386,9 +387,9 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		(allcInfo mt) nil nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Memory.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
+	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
 		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,

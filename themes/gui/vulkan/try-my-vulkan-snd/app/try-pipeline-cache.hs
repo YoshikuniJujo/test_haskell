@@ -21,6 +21,7 @@ import Data.Kind.Object qualified as KObj
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
@@ -146,7 +147,7 @@ withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	Vk.Dv.create pd (dvcInfo qfi) nil nil $ f pd qfi
 
-instInfo :: Vk.Inst.CreateInfo () ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing ()
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
@@ -220,9 +221,9 @@ storageBufferNew pd dv f =
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 
-bufferInfo :: Vk.Bffr.CreateInfo () '[Word32List]
+bufferInfo :: Vk.Bffr.CreateInfo 'Nothing '[Word32List]
 bufferInfo = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = Nothing,
+	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = HL.Singleton $ Obj.ObjectLengthList bffSize,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,

@@ -20,7 +20,8 @@ import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
 import Data.Proxy
 import Data.TypeLevel.Uncurry
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
 
@@ -49,14 +50,15 @@ deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) => Show (Binded
 deriving instance Eq (HeteroParList.PL VObj.ObjectLength objs) => Eq (Binded sm sb nm objs)
 
 data CreateInfo n objs = CreateInfo {
-	createInfoNext :: Maybe n,
+	createInfoNext :: TMaybe.M n,
 	createInfoFlags :: CreateFlags,
 	createInfoLengths :: HeteroParList.PL VObj.ObjectLength objs,
 	createInfoUsage :: UsageFlags,
 	createInfoSharingMode :: SharingMode,
 	createInfoQueueFamilyIndices :: [QueueFamily.Index] }
 
-deriving instance (Show n, Show (HeteroParList.PL VObj.ObjectLength objs)) =>
+deriving instance
+	(Show (TMaybe.M n), Show (HeteroParList.PL VObj.ObjectLength objs)) =>
 	Show (CreateInfo n objs)
 
 createInfoToMiddle :: VObj.WholeSize objs =>
@@ -75,7 +77,7 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked n, VObj.WholeSize objs, WithPoked c, WithPoked d) =>
+create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs, WithPoked c, WithPoked d) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . B s nm objs -> IO a) -> IO a

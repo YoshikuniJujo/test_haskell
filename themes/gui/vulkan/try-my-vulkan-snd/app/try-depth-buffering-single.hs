@@ -31,6 +31,7 @@ import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Uncurry hiding (length)
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Proxy
@@ -222,10 +223,10 @@ createInstance f = do
 				Vk.M.makeApiVersion 0 1 0 0,
 			Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
-			(Vk.Ext.DbgUtls.Msngr.CreateInfo
-				() () () () () ()) ()
+			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
+				() () () () () ())) ()
 		createInfo = Vk.Ist.M.CreateInfo {
-			Vk.Ist.M.createInfoNext = Just debugMessengerCreateInfo,
+			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 			Vk.Ist.M.createInfoFlags = def,
 			Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 			Vk.Ist.M.createInfoEnabledLayerNames =
@@ -1376,9 +1377,9 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		(allcInfo mt) nil nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImageBuffer.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[o]
+	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]
 	bffrInfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
 		Vk.Bffr.createInfoLengths = HeteroParList.Singleton ln,
 		Vk.Bffr.createInfoUsage = usg,

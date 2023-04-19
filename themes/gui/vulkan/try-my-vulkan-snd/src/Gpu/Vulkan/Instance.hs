@@ -1,5 +1,7 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance (
@@ -8,13 +10,14 @@ module Gpu.Vulkan.Instance (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 import Gpu.Vulkan.Instance.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle as M
 
-create :: (WithPoked n, Pokable n2, Pokable n3, Pokable n4) =>
+create :: (WithPoked (TMaybe.M n), Pokable n2, Pokable n3, Pokable n4) =>
 	M.CreateInfo n n2 ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . I s -> IO a) -> IO a

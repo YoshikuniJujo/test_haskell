@@ -24,6 +24,7 @@ import Data.Bits
 import Data.Bits.Utils
 import Data.List.Length
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
@@ -100,7 +101,7 @@ type ListW3 =VObj.List 256 W3 ""
 
 crtDevice :: (forall sd .
 	Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-crtDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
+crtDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qf <- findQueueFamily phdvc Vk.Queue.ComputeBit
 	lmts <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
@@ -108,6 +109,7 @@ crtDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qf) nil nil $ \dvc ->
 		f phdvc qf dvc mxX
 	where
+	instInfo :: Vk.Inst.CreateInfo 'Nothing ()
 	instInfo = def {
 		Vk.Inst.createInfoEnabledLayerNames =
 			[Vk.Khr.validationLayerName] }
@@ -279,9 +281,9 @@ storageBufferNew3Objs phdvc dvc x y z f =
 			Vk.Dvc.Mem.ImgBffr.write @nm @obj2 dvc m zeroBits z
 			f bnd m
 
-bufferInfo :: VObj.StoreObject v obj => v -> Vk.Bffr.CreateInfo () '[obj]
+bufferInfo :: VObj.StoreObject v obj => v -> Vk.Bffr.CreateInfo 'Nothing '[obj]
 bufferInfo xs = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = Nothing,
+	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = def,
 	Vk.Bffr.createInfoLengths = HeteroParList.Singleton $ VObj.objectLength xs,
 	Vk.Bffr.createInfoUsage = Vk.Bffr.UsageStorageBufferBit,
@@ -290,9 +292,9 @@ bufferInfo xs = Vk.Bffr.CreateInfo {
 
 bufferInfo' :: (
 	VObj.StoreObject v obj0, VObj.StoreObject v obj1, VObj.StoreObject v obj2 ) =>
-	v -> v -> v -> Vk.Bffr.CreateInfo () '[obj0, obj1, obj2]
+	v -> v -> v -> Vk.Bffr.CreateInfo 'Nothing '[obj0, obj1, obj2]
 bufferInfo' x y z = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = Nothing,
+	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = def,
 	Vk.Bffr.createInfoLengths =
 		VObj.objectLength x :** VObj.objectLength y :**

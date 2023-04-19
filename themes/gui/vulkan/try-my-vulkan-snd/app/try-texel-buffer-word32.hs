@@ -25,7 +25,8 @@ import Data.Default
 import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Uncurry
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 
@@ -223,7 +224,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	maxGroupCountX :. _ =
@@ -246,7 +247,7 @@ withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
-instInfo :: Vk.Inst.CreateInfo () ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing ()
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 
@@ -479,9 +480,9 @@ storageBufferNew dvc phdvc xs f =
 			Vk.Mem.write @nm @(VObj.List 256 w "") dvc memory def xs
 			f binded memory
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[VObj.List 256 w ""]
+bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
-	Vk.Buffer.createInfoNext = Nothing,
+	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
 		VObj.ObjectLengthList (V.length xs) :** HeteroParList.Nil,

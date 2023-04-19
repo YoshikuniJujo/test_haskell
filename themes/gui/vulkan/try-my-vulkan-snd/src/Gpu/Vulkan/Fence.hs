@@ -9,8 +9,6 @@ module Gpu.Vulkan.Fence (F, create, M.CreateInfo(..), waitForFs, resetFs) where
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Fence.Type

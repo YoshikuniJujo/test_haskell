@@ -28,7 +28,8 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Proxy
 import Data.Bool
@@ -208,9 +209,9 @@ createInstance f = do
 	where
 	msg = "validation layers requested, but not available!"
 	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
-		(Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()) ()
+		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ())) ()
 	crInfo exts = Vk.Ist.M.CreateInfo {
-		Vk.Ist.M.createInfoNext = Just debugMessengerCreateInfo,
+		Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 		Vk.Ist.M.createInfoFlags = def,
 		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 		Vk.Ist.M.createInfoEnabledLayerNames =
@@ -1184,9 +1185,9 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
 		(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[obj]
+	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[obj]
 	bffrInfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
 		Vk.Bffr.createInfoLengths = lns,
 		Vk.Bffr.createInfoUsage = usg,
@@ -1218,9 +1219,9 @@ createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
 		(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil nil
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
-	bffrInfo :: Vk.Bffr.CreateInfo () '[obj, obj2]
+	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[obj, obj2]
 	bffrInfo = Vk.Bffr.CreateInfo {
-		Vk.Bffr.createInfoNext = Nothing,
+		Vk.Bffr.createInfoNext = TMaybe.N,
 		Vk.Bffr.createInfoFlags = zeroBits,
 		Vk.Bffr.createInfoLengths = lns,
 		Vk.Bffr.createInfoUsage = usg,

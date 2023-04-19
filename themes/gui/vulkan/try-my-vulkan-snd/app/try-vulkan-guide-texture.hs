@@ -30,6 +30,8 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Bool qualified as TBool
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
@@ -212,19 +214,23 @@ createInstance f = do
 		<$> Vk.Ist.M.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	Vk.Ist.create (crInfo exts) nil nil f
+	instInfo enableValidationLayers exts \ci ->
+		Vk.Ist.create ci nil nil f
 	where
 	msg = "validation layers requested, but not available!"
-	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
-		(Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()) ()
-	crInfo exts = Vk.Ist.M.CreateInfo {
-		Vk.Ist.M.createInfoNext = bool Nothing
-			(Just debugMessengerInfo) enableValidationLayers,
+
+instInfo :: Bool -> [Txt.Text] -> (
+	forall mn . WithPoked (TMaybe.M mn) => Vk.Ist.M.CreateInfo mn () -> b
+	) -> b
+instInfo b exts f = istCreateInfoNext b \mn ->
+	f Vk.Ist.M.CreateInfo {
+		Vk.Ist.M.createInfoNext = mn,
 		Vk.Ist.M.createInfoFlags = zeroBits,
 		Vk.Ist.M.createInfoApplicationInfo = Just appInfo,
 		Vk.Ist.M.createInfoEnabledLayerNames = bool
 			[] [Vk.Khr.validationLayerName] enableValidationLayers,
 		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
+	where
 	appInfo = Vk.M.ApplicationInfo {
 		Vk.M.applicationInfoNext = Nothing,
 		Vk.M.applicationInfoApplicationName =
@@ -234,6 +240,10 @@ createInstance f = do
 		Vk.M.applicationInfoEngineName = "No Engine",
 		Vk.M.applicationInfoEngineVersion = Vk.M.makeApiVersion 0 1 0 0,
 		Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_1 }
+
+istCreateInfoNext :: Bool ->
+	(forall mn . WithPoked (TMaybe.M mn) => TMaybe.M mn -> b) -> b
+istCreateInfoNext = TBool.b @WithPoked TMaybe.N (TMaybe.J debugMessengerInfo)
 
 debugMessengerInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ()
 debugMessengerInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
@@ -1179,9 +1189,9 @@ instance {-# OVERLAPPABLE #-} (
 	SizeAlignmentAll s nm (obj ': objs)
 
 bufferInfo :: HL.PL Obj.ObjectLength objs ->
-	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo () objs
+	Vk.Bffr.UsageFlags -> Vk.Bffr.CreateInfo 'Nothing objs
 bufferInfo lns usg = Vk.Bffr.CreateInfo {
-	Vk.Bffr.createInfoNext = Nothing,
+	Vk.Bffr.createInfoNext = TMaybe.N,
 	Vk.Bffr.createInfoFlags = zeroBits,
 	Vk.Bffr.createInfoLengths = lns,
 	Vk.Bffr.createInfoUsage = usg,
@@ -1664,7 +1674,6 @@ recordCommandBuffer sce rp lyt gpl fb ds dsod dstx vb vbt cb vn ffn (fromIntegra
 				(fromJust $ rgbaDouble 0 0 0 1) :**
 			Vk.M.ClearValueDepthStencil
 				(Vk.C.ClearDepthStencilValue 1 0) :** HL.Nil }
-	blue = 0.5 + sin (fn / (180 * frashRate) * pi) / 2
 
 model :: Float -> Cglm.Mat4
 model fn = Cglm.rotate

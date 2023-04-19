@@ -22,7 +22,8 @@ import Data.Default
 import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Uncurry
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 
@@ -103,7 +104,7 @@ newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
 	(forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qFam <- fst . head . filter (
 			(/= zeroBits) . (.&. Vk.Queue.ComputeBit)
@@ -114,7 +115,7 @@ withDevice f = Vk.Inst.create @() @() instInfo nil nil \inst -> do
 	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qFam) nil nil $ \dvc ->
 		f phdvc qFam dvc (fromIntegral mgcx)
 
-instInfo :: Vk.Inst.CreateInfo () ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing ()
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
@@ -202,9 +203,9 @@ storageBufferNew dvc phdvc xs f =
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	Vk.Mm.write @nm @(VObj.List 256 w "") dvc mm def xs >> f bnd mm
 
-bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo () '[VObj.List 256 w ""]
+bufferInfo :: Storable w => V.Vector w -> Vk.Buffer.CreateInfo 'Nothing '[VObj.List 256 w ""]
 bufferInfo xs = Vk.Buffer.CreateInfo {
-	Vk.Buffer.createInfoNext = Nothing,
+	Vk.Buffer.createInfoNext = TMaybe.N,
 	Vk.Buffer.createInfoFlags = def,
 	Vk.Buffer.createInfoLengths =
 		VObj.ObjectLengthList (V.length xs) :** HeteroParList.Nil,

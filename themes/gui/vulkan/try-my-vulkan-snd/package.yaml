@@ -45,6 +45,7 @@ dependencies:
 - try-vulkan-middle
 - try-vulkan-middle-khr
 - try-vulkan-middle-ext-debug-utils
+- typelevel-tools
 
 - directory
 

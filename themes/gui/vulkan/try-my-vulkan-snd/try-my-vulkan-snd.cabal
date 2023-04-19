@@ -172,6 +172,7 @@ library
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -209,6 +210,7 @@ executable my-glslc
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -246,6 +248,7 @@ executable try-copy-descriptor-set
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -283,6 +286,7 @@ executable try-depth-buffering
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -320,6 +324,7 @@ executable try-depth-buffering-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -357,6 +362,7 @@ executable try-dynamic-dsc-sets
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -394,6 +400,7 @@ executable try-generating-mipmaps
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -431,6 +438,7 @@ executable try-generating-mipmaps-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -468,6 +476,7 @@ executable try-hello-world
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -505,6 +514,7 @@ executable try-image-buffer
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -542,6 +552,7 @@ executable try-loading-models
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -579,6 +590,7 @@ executable try-loading-models-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -616,6 +628,7 @@ executable try-multisampling
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -653,6 +666,7 @@ executable try-multisampling-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -690,6 +704,7 @@ executable try-no-dynamic-dsc-sets
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -727,6 +742,7 @@ executable try-pipeline-cache
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -764,6 +780,7 @@ executable try-query
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -801,6 +818,7 @@ executable try-rectangle
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -838,6 +856,7 @@ executable try-rectangle-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -875,6 +894,7 @@ executable try-saitan
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -912,6 +932,7 @@ executable try-saitan-float
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -949,6 +970,7 @@ executable try-saitan-simple
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -986,6 +1008,7 @@ executable try-shaderc
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1023,6 +1046,7 @@ executable try-shaderc-core
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1060,6 +1084,7 @@ executable try-texel-buffer-float
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1097,6 +1122,7 @@ executable try-texel-buffer-word32
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1134,6 +1160,7 @@ executable try-texture
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1171,6 +1198,7 @@ executable try-texture-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1208,6 +1236,7 @@ executable try-triangle
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1245,6 +1274,7 @@ executable try-triangle-single
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1282,6 +1312,7 @@ executable try-vulkan-guide
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1319,6 +1350,7 @@ executable try-vulkan-guide-dynamic
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1356,6 +1388,7 @@ executable try-vulkan-guide-storage
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1393,6 +1426,7 @@ executable try-vulkan-guide-texture
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1430,6 +1464,7 @@ executable try-wavefront-obj
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1467,6 +1502,7 @@ executable try-yatteiku
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
@@ -1505,6 +1541,7 @@ test-suite try-my-vulkan-snd-test
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
     , try-vulkan-middle-khr
+    , typelevel-tools
     , union-color
     , vector
   default-language: Haskell2010
