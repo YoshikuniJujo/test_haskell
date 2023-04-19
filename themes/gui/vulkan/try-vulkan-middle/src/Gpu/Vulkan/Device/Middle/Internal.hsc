@@ -2,8 +2,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
@@ -21,14 +21,15 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
+	WithPoked, withPoked', withPokedMaybe', withPtrS, pattern NullPtr )
 import Foreign.Storable.HeteroList
 import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
-import Data.List
+import Data.List (genericLength)
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
@@ -59,19 +60,23 @@ type CreateFlags = CreateFlagBits
 
 instance Default CreateFlags where def = CreateFlagsZero
 
-data CreateInfo n qcis = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn qcis = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoQueueCreateInfos :: HeteroParList.PL QueueCreateInfo qcis,
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text],
 	createInfoEnabledFeatures :: Maybe PhysicalDevice.Features }
 
-deriving instance (Show n, Show (HeteroParList.PL QueueCreateInfo qcis)) =>
-	Show (CreateInfo n qcis)
+deriving instance (Show (TMaybe.M mn), Show (HeteroParList.PL QueueCreateInfo qcis)) =>
+	Show (CreateInfo mn qcis)
 
-createInfoToCore :: (WithPoked n, WithPokedHeteroToListM qcis) =>
-	CreateInfo n qcis -> (Ptr C.CreateInfo -> IO a) -> IO ()
+type family Map (f :: j -> k) xs where
+	Map _f '[] = '[]
+	Map f (x ': xs) = f x ': Map f xs
+
+createInfoToCore :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM qcis) =>
+	CreateInfo mn qcis -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -79,7 +84,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledLayerNames = (id &&& length) -> (elns, elnc),
 	createInfoEnabledExtensionNames = (id &&& length) -> (eens, eenc),
 	createInfoEnabledFeatures = mef } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	alloca \pci ->
 		runContT (withPokedHeteroToListM (ContT . queueCreateInfoToCore) qcis) \cqcis ->
 		let	qcic = length cqcis in
@@ -105,8 +110,8 @@ createInfoToCore CreateInfo {
 				poke pci (mk p)
 		() <$ f pci
 
-create :: (WithPoked n, WithPokedHeteroToListM qcis, WithPoked c) =>
-	PhysicalDevice.P -> CreateInfo n qcis -> Maybe (AllocationCallbacks.A c) ->
+create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM qcis, WithPoked c) =>
+	PhysicalDevice.P -> CreateInfo mn qcis -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
 	createInfoToCore ci \pcci ->
@@ -131,7 +136,8 @@ data QueueCreateInfo n = QueueCreateInfo {
 	queueCreateInfoFlags :: QueueCreateFlags,
 	queueCreateInfoQueueFamilyIndex :: QueueFamily.Index,
 	queueCreateInfoQueuePriorities :: [Float] }
-	deriving Show
+
+deriving instance Show n => Show (QueueCreateInfo n)
 
 queueCreateInfoToCore ::
 	WithPoked n => QueueCreateInfo n -> (C.QueueCreateInfo -> IO a) -> IO ()
