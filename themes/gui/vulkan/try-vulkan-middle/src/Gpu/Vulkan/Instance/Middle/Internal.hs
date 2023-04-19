@@ -1,7 +1,10 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance.Middle.Internal (
@@ -13,8 +16,9 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked, withPokedMaybe', withPtrS, pattern NullPtr )
+	WithPoked, withPoked, withPoked', withPokedMaybe', withPtrS, pattern NullPtr )
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 
 import qualified Data.Text as T
@@ -29,24 +33,25 @@ import qualified Gpu.Vulkan.Instance.Core as C
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks
 
-data CreateInfo n a = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn a = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoApplicationInfo :: Maybe (ApplicationInfo a),
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text] }
-	deriving Show
 
-instance Default (CreateInfo n a) where
+deriving instance (Show (TMaybe.M mn), Show a) => Show (CreateInfo mn a)
+
+instance Default (CreateInfo 'Nothing a) where
 	def = CreateInfo {
-		createInfoNext = Nothing,
+		createInfoNext = TMaybe.N,
 		createInfoFlags = CreateFlagsZero,
 		createInfoApplicationInfo = Nothing,
 		createInfoEnabledLayerNames = [],
 		createInfoEnabledExtensionNames = [] }
 
-createInfoToCore :: (WithPoked n, WithPoked n') =>
-	CreateInfo n n' -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore :: (WithPoked (TMaybe.M mn), WithPoked n') =>
+	CreateInfo mn n' -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = (\(CreateFlags f) -> f) -> flgs,
@@ -55,7 +60,7 @@ createInfoToCore CreateInfo {
 		(fromIntegral . length &&& id) -> (elnc, elns),
 	createInfoEnabledExtensionNames =
 		(fromIntegral . length &&& id) -> (eenc, eens) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	textListToCStringArray elns \pelna ->
 	textListToCStringArray eens \peena ->
 	let	ci pai = C.CreateInfo {
@@ -74,8 +79,8 @@ createInfoToCore CreateInfo {
 
 newtype I = I C.I deriving Show
 
-create :: (WithPoked n, WithPoked a, WithPoked c) =>
-	CreateInfo n a -> Maybe (AllocationCallbacks.A c) -> IO I
+create :: (WithPoked (TMaybe.M mn), WithPoked a, WithPoked c) =>
+	CreateInfo mn a -> Maybe (AllocationCallbacks.A c) -> IO I
 create ci mac = I <$> alloca \pist -> do
 	createInfoToCore ci \pcci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do

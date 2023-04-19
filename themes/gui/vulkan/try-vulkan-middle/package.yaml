@@ -36,6 +36,7 @@ dependencies:
 - try-storable-hetero-list
 - try-vulkan-core
 - try-shaderc
+- typelevel-tools
 
 ghc-options:
 - -Wall
