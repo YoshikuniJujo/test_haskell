@@ -28,6 +28,11 @@ instance Common.BindingAndArrayElem bts vobjs i =>
 class BindingLength (bt :: Layout.BindingType) where
 	bindingLength :: Integral n => n
 
+instance Common.BindingAndArrayElemBufferView bts nmts i =>
+	BindingAndArrayElement bts (Layout.BufferView nmts) i where
+	bindingAndArrayElement =
+		Common.bindingAndArrayElemBufferView @bts @nmts @i 0 0
+
 instance
 	BindingAndArrayElemImage bts imgs i =>
 	BindingAndArrayElement bts (Layout.Image imgs) i where

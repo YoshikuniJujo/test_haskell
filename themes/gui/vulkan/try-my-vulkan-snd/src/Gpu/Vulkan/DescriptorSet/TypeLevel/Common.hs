@@ -255,25 +255,36 @@ instance IsPrefixBufferView bvs bvs' =>
 
 class BindingAndArrayElemBufferView
 	(bt :: [DescriptorSetLayout.BindingType])
-	(bvs :: [(Symbol, Type)]) where
+	(bvs :: [(Symbol, Type)]) (i :: Nat) where
 	bindingAndArrayElemBufferView :: Integral n => n -> n -> (n, n)
 
 instance IsPrefixBufferView bvs bvs' =>
 	BindingAndArrayElemBufferView
 		('DescriptorSetLayout.BufferView ('(nm, t) ': bvs') ': bts)
-		('(nm, t) ': bvs) where
+		('(nm, t) ': bvs) 0 where
 	bindingAndArrayElemBufferView b a = (b, a)
 
-instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView
-	('DescriptorSetLayout.BufferView bvs' ': bts) bvs =>
+instance {-# OVERLAPPABLE #-}
 	BindingAndArrayElemBufferView
-		('DescriptorSetLayout.BufferView (nmt ': bvs') ': bts) bvs where
+		('DescriptorSetLayout.BufferView bvs' ': bts)
+		('(nm, t) ': bvs) (i - 1) =>
+	BindingAndArrayElemBufferView
+		('DescriptorSetLayout.BufferView ('(nm, t) ': bvs') ': bts)
+		('(nm, t) ': bvs) i where
 	bindingAndArrayElemBufferView b a = bindingAndArrayElemBufferView
-		@('DescriptorSetLayout.BufferView bvs' ': bts) @bvs b (a + 1)
+		@('DescriptorSetLayout.BufferView bvs' ': bts)
+		@('(nm, t) ': bvs) @(i - 1) b a
 
-instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView bts bvs =>
+instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView
+	('DescriptorSetLayout.BufferView bvs' ': bts) bvs i =>
+	BindingAndArrayElemBufferView
+		('DescriptorSetLayout.BufferView (nmt ': bvs') ': bts) bvs i where
+	bindingAndArrayElemBufferView b a = bindingAndArrayElemBufferView
+		@('DescriptorSetLayout.BufferView bvs' ': bts) @bvs @i b (a + 1)
+
+instance {-# OVERLAPPABLE #-} BindingAndArrayElemBufferView bts bvs i =>
 	BindingAndArrayElemBufferView
 --	('DescriptorSetLayout.BufferView '[] ': bts) bvs where
-		(bt ': bts) bvs where
+		(bt ': bts) bvs i where
 	bindingAndArrayElemBufferView b _a =
-		bindingAndArrayElemBufferView @bts @bvs (b + 1) 0
+		bindingAndArrayElemBufferView @bts @bvs @i (b + 1) 0

@@ -60,12 +60,12 @@ instance (
 		M.WriteSourcesImageInfo $ imageInfosToMiddle iis )
 
 instance (
-	BindingAndArrayElemBufferView bts bvs,
+	BindingAndArrayElemBufferView bts bvs 0,
 	BufferViewsToMiddle bvs ) =>
 	WriteSourcesToMiddle '(sl, bts) ('WriteSourcesArgBufferView bvs) where
 	type WriteSourcesObjs ('WriteSourcesArgBufferView bvs) = '[]
 	writeSourcesToMiddle (TexelBufferViews bvs) = (
-		bindingAndArrayElemBufferView @bts @bvs 0 0,
+		bindingAndArrayElemBufferView @bts @bvs @0 0 0,
 		M.WriteSourcesBufferView $ bufferViewsToMiddle bvs )
 
 instance WriteSourcesToMiddle slbts 'WriteSourcesArgOther where
