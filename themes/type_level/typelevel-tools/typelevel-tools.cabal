@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Data.TypeLevel.Bool
       Data.TypeLevel.Maybe
       Lib
   other-modules:
