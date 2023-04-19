@@ -3,8 +3,9 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
@@ -16,9 +17,10 @@ import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPokedMaybe', withPtrS, pattern NullPtr )
+	WithPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Control.Monad.Cont
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
@@ -38,21 +40,22 @@ import qualified Gpu.Vulkan.DescriptorSet.Core as C
 import qualified Gpu.Vulkan.Descriptor.Core as Descriptor.C
 import qualified Gpu.Vulkan.BufferView.Core as BufferView.C
 
-data AllocateInfo n = AllocateInfo {
-	allocateInfoNext :: Maybe n,
+data AllocateInfo mn = AllocateInfo {
+	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoDescriptorPool :: Pool.D,
 	allocateInfoSetLayouts :: [Layout.L] }
-	deriving Show
 
-allocateInfoToCore ::
-	WithPoked n => AllocateInfo n -> (C.AllocateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
+
+allocateInfoToCore :: WithPoked (TMaybe.M mn) =>
+	AllocateInfo mn -> (C.AllocateInfo -> IO a) -> IO ()
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoDescriptorPool = Pool.D pl,
 	allocateInfoSetLayouts =
 		(((id &&& fromIntegral) `first`) . (length &&& id)) ->
 		((dsci, dscw), sls) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
 	psls <- allocaArray dsci \p ->
 		p <$ (pokeArray p $ (\(Layout.L l) -> l) <$> sls)
 	f C.AllocateInfo {
@@ -64,7 +67,7 @@ allocateInfoToCore AllocateInfo {
 
 newtype D = D C.S deriving Show
 
-allocateDs :: WithPoked n => Device.D -> AllocateInfo n -> IO [D]
+allocateDs :: WithPoked (TMaybe.M mn) => Device.D -> AllocateInfo mn -> IO [D]
 allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 	let	dsc = length $ allocateInfoSetLayouts ai
 	pss <- ContT $ allocaArray dsc
@@ -74,8 +77,8 @@ allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 			throwUnlessSuccess $ Result r
 	lift $ peekArray dsc pss
 
-data Copy n = Copy {
-	copyNext :: Maybe n,
+data Copy mn = Copy {
+	copyNext :: TMaybe.M mn,
 	copySrcSet :: D,
 	copySrcBinding :: Word32,
 	copySrcArrayElement :: Word32,
@@ -83,7 +86,8 @@ data Copy n = Copy {
 	copyDstBinding :: Word32,
 	copyDstArrayElement :: Word32,
 	copyDescriptorCount :: Word32 }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (Copy mn)
 
 class CopyListToCore cs where
 	copyListToCore ::
@@ -92,12 +96,12 @@ class CopyListToCore cs where
 instance CopyListToCore '[] where
 	copyListToCore HeteroParList.Nil f = () <$ f []
 
-instance (WithPoked c, CopyListToCore cs) =>
+instance (WithPoked (TMaybe.M c), CopyListToCore cs) =>
 	CopyListToCore (c ': cs) where
 	copyListToCore (c :** cs) f =
 		copyToCore c \cc -> copyListToCore cs \ccs -> f $ cc : ccs
 
-copyToCore :: WithPoked n => Copy n -> (C.Copy -> IO a) -> IO ()
+copyToCore :: WithPoked (TMaybe.M mn) => Copy mn -> (C.Copy -> IO a) -> IO ()
 copyToCore Copy {
 	copyNext = mnxt,
 	copySrcSet = D ss,
@@ -107,7 +111,7 @@ copyToCore Copy {
 	copyDstBinding = db,
 	copyDstArrayElement = dae,
 	copyDescriptorCount = dc } f =
-	withPokedMaybe' mnxt \pnxt ->
+	withPoked' mnxt \pnxt ->
 	withPtrS pnxt \(castPtr -> pnxt') -> f C.Copy {
 		C.copySType = (),
 		C.copyPNext = pnxt',
@@ -119,14 +123,15 @@ copyToCore Copy {
 		C.copyDstArrayElement = dae,
 		C.copyDescriptorCount = dc }
 
-data Write n = Write {
-	writeNext :: Maybe n,
+data Write mn = Write {
+	writeNext :: TMaybe.M mn,
 	writeDstSet :: D,
 	writeDstBinding :: Word32,
 	writeDstArrayElement :: Word32,
 	writeDescriptorType :: Descriptor.Type,
 	writeSources :: WriteSources }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (Write mn)
 
 data WriteSources
 	= WriteSourcesInNext Word32
@@ -142,11 +147,11 @@ class WriteListToCore ws where
 instance WriteListToCore '[] where
 	writeListToCore HeteroParList.Nil f = () <$ f []
 
-instance (WithPoked w, WriteListToCore ws) => WriteListToCore (w ': ws) where
+instance (WithPoked (TMaybe.M w), WriteListToCore ws) => WriteListToCore (w ': ws) where
 	writeListToCore (w :** ws) f =
 		writeToCore w \cw -> writeListToCore ws \cws -> f $ cw : cws
 
-writeToCore :: WithPoked n => Write n -> (C.Write -> IO a) -> IO ()
+writeToCore :: WithPoked (TMaybe.M mn) => Write mn -> (C.Write -> IO a) -> IO ()
 writeToCore Write {
 	writeNext = mnxt,
 	writeDstSet = D s,
@@ -154,7 +159,7 @@ writeToCore Write {
 	writeDstArrayElement = ae,
 	writeDescriptorType = Descriptor.Type tp,
 	writeSources = srcs } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	writeSourcesToCore srcs \(cnt, pii, pbi, ptbv) ->
 	f C.Write {
 		C.writeSType = (),
@@ -189,7 +194,7 @@ writeSourcesToCore ws f = case ws of
 		pokeArray pbvs bvs >>
 		f (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
-updateDs :: (WithPoked w, WithPoked c) =>
+updateDs :: (WithPoked (TMaybe.M w), WithPoked (TMaybe.M c)) =>
 	Device.D -> [Write w] -> [Copy c] -> IO ()
 updateDs (Device.D dvc) ws cs =
 	(writeToCore `mapContM` ws) \ws' ->
