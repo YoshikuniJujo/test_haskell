@@ -1,6 +1,8 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -25,6 +27,7 @@ module Foreign.Storable.PeekPoke (
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 class Sizable a where sizeOf' :: Int; alignment' :: Int
 class Peek a where peek' :: Ptr a -> IO a
@@ -71,6 +74,9 @@ newtype PtrS s a = PtrS_ (Ptr a) deriving Show
 ptrS :: Ptr a -> PtrS s a
 ptrS = PtrS_
 
+castPtrS :: PtrS s a -> PtrS s b
+castPtrS (PtrS_ p) = PtrS_ $ castPtr p
+
 pattern NullPtrS :: PtrS s a
 pattern NullPtrS <- PtrS_ NullPtr where NullPtrS = PtrS_ NullPtr
 
@@ -86,3 +92,9 @@ instance {-# OVERLAPPABLE #-} Pokable a => WithPoked a where
 withPokedMaybe' :: WithPoked a =>
 	Maybe a -> (forall s . PtrS s a -> IO b) -> IO b
 withPokedMaybe' = \case Nothing -> ($ NullPtrS); Just x -> withPoked' x
+
+instance WithPoked (TMaybe.M 'Nothing) where
+	withPoked' TMaybe.N f = f $ ptrS nullPtr
+
+instance WithPoked a => WithPoked (TMaybe.M ('Just a)) where
+	withPoked' (TMaybe.J x) f = withPoked' x (f . castPtrS)
