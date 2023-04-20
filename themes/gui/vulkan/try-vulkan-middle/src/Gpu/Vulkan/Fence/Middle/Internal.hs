@@ -1,6 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Fence.Middle.Internal (
@@ -14,9 +18,9 @@ import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke (
-	withPoked, WithPoked, withPokedMaybe', withPtrS )
+import Foreign.Storable.PeekPoke (withPoked, withPoked', WithPoked, withPtrS)
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -30,20 +34,21 @@ import qualified Gpu.Vulkan.AllocationCallbacks.Middle.Internal as AllocationCal
 import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Fence.Core as C
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags }
-	deriving Show
 
-instance Default (CreateInfo n) where
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+instance Default (CreateInfo 'Nothing) where
 	def = CreateInfo {
-		createInfoNext = Nothing, createInfoFlags = zeroBits }
+		createInfoNext = TMaybe.N, createInfoFlags = zeroBits }
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt, createInfoFlags = CreateFlagBits flgs } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 		withPoked C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',
@@ -58,8 +63,8 @@ maybeFToCore :: Maybe F -> C.F
 maybeFToCore Nothing = NullHandle
 maybeFToCore (Just f) = fToCore f
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO F
 create (Device.D dvc) ci mac = F <$> alloca \pf -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do

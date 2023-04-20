@@ -15,10 +15,8 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Data.TypeLevel.Length qualified as TL
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Middle.Internal
-import Gpu.Vulkan.Core (Rect2d)
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.RenderPass.Enum

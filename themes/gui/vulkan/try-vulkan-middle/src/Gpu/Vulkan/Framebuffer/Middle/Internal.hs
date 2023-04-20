@@ -1,7 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer.Middle.Internal (
@@ -14,10 +16,11 @@ import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	withPoked, WithPoked, withPokedMaybe', withPtrS )
+	withPoked, WithPoked, withPoked', withPtrS )
 import Control.Arrow
-import Data.IORef
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
+import Data.IORef
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
@@ -30,18 +33,19 @@ import {-# SOURCE #-} qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderP
 import qualified Gpu.Vulkan.ImageView.Middle.Internal as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Core as C
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R,
 	createInfoAttachments :: [ImageView.I],
 	createInfoWidth :: Word32,
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -50,7 +54,7 @@ createInfoToCore CreateInfo {
 	createInfoWidth = w,
 	createInfoHeight = h,
 	createInfoLayers = l } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray ac \pas -> do
 		pokeArray pas =<< ImageView.iToCore `mapM` as
 		let	ci = C.CreateInfo {
@@ -73,8 +77,8 @@ fToCore (F f) = readIORef f
 fFromCore :: C.F -> IO F
 fFromCore f = F <$> newIORef f
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO F
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO F
 create (Device.D dvc) ci mac = fFromCore =<< alloca \pf -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do
@@ -86,8 +90,8 @@ destroy :: WithPoked d =>
 destroy (Device.D dvc) f mac = AllocationCallbacks.maybeToCore mac \pac -> do
 	f' <- fToCore f; C.destroy dvc f' pac
 
-recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
-	Device.D -> CreateInfo n ->
+recreate :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+	Device.D -> CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F -> IO ()
 recreate (Device.D dvc) ci macc macd f@(F rf) =

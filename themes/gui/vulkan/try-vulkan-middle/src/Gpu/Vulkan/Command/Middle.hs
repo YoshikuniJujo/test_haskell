@@ -4,6 +4,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -47,7 +48,8 @@ import Foreign.Storable.PeekPoke (WithPoked)
 import Foreign.Storable.HeteroList
 import Control.Arrow
 import Control.Monad.Cont
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 import Data.Int
 import Data.IORef
@@ -189,7 +191,7 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 
 pipelineBarrier :: (
 	WithPokedHeteroToListCpsM ns, WithPokedHeteroToListCpsM ns',
-	WithPokedHeteroToListCpsM ns'' ) =>
+	WithPokedHeteroToListCpsM' TMaybe.M ns'' ) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
 	HeteroParList.PL Memory.M.Barrier ns ->
@@ -207,7 +209,7 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 		let	bbc = length cbbs in
 		allocaArray bbc \pbbs ->
 		pokeArray pbbs cbbs >>
-		withPokedWithHeteroListCpsM ibs Image.memoryBarrierToCore \cibs ->
+		withPokedWithHeteroListCpsM' @TMaybe.M ibs Image.memoryBarrierToCore \cibs ->
 		let	ibc = length cibs in
 		allocaArray ibc \pibs ->
 		pokeArray pibs cibs >>

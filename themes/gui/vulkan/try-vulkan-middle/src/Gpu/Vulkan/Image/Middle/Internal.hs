@@ -4,7 +4,9 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image.Middle.Internal (
@@ -21,10 +23,10 @@ import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke (
-	withPoked, WithPoked, withPokedMaybe',  withPtrS )
+import Foreign.Storable.PeekPoke (withPoked, WithPoked, withPoked', withPtrS)
 import Control.Arrow
 import Control.Monad.Cont
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.IORef
 import Data.Word
 
@@ -65,8 +67,8 @@ subresourceRangeToCore SubresourceRange {
 
 newtype I = I (IORef (Extent3d, C.I))
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoImageType :: Type,
 	createInfoFormat :: Format,
@@ -79,10 +81,11 @@ data CreateInfo n = CreateInfo {
 	createInfoSharingMode :: SharingMode,
 	createInfoQueueFamilyIndices :: [Word32],
 	createInfoInitialLayout :: Layout }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -97,7 +100,7 @@ createInfoToCore CreateInfo {
 	createInfoSharingMode = SharingMode sm,
 	createInfoQueueFamilyIndices = length &&& id -> (qfic, qfis),
 	createInfoInitialLayout = Layout lyt } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray qfic \pqfis -> do
 		pokeArray pqfis qfis
 		let	ci = C.CreateInfo {
@@ -118,8 +121,8 @@ createInfoToCore CreateInfo {
 				C.createInfoInitialLayout = lyt }
 		withPoked ci f
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore mac \pac ->
@@ -128,8 +131,8 @@ create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 	newIORef . (ex ,) =<< peek pimg
 	where ex = createInfoExtent ci
 
-recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
-	Device.D -> CreateInfo n ->
+recreate :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+	Device.D -> CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	I -> IO ()
@@ -157,8 +160,8 @@ bindMemory (Device.D dvc) (I rimg) mem (Device.Size ost) = do
 	r <- C.bindMemory dvc img cmem ost
 	throwUnlessSuccess $ Result r
 
-data MemoryBarrier n = MemoryBarrier {
-	memoryBarrierNext :: Maybe n,
+data MemoryBarrier mn = MemoryBarrier {
+	memoryBarrierNext :: TMaybe.M mn,
 	memoryBarrierSrcAccessMask :: AccessFlags,
 	memoryBarrierDstAccessMask :: AccessFlags,
 	memoryBarrierOldLayout :: Layout,
@@ -168,8 +171,8 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierImage :: I,
 	memoryBarrierSubresourceRange :: SubresourceRange }
 
-memoryBarrierToCore :: WithPoked n =>
-	MemoryBarrier n -> (C.MemoryBarrier -> IO a) -> IO ()
+memoryBarrierToCore :: WithPoked (TMaybe.M mn) =>
+	MemoryBarrier mn -> (C.MemoryBarrier -> IO a) -> IO ()
 memoryBarrierToCore MemoryBarrier {
 	memoryBarrierNext = mnxt,
 	memoryBarrierSrcAccessMask = AccessFlagBits sam,
@@ -180,7 +183,7 @@ memoryBarrierToCore MemoryBarrier {
 	memoryBarrierDstQueueFamilyIndex = QueueFamily.Index dqfi,
 	memoryBarrierImage = I rimg,
 	memoryBarrierSubresourceRange = srr } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	readIORef rimg >>= \(_, img) ->
 	f C.MemoryBarrier {
 		C.memoryBarrierSType = (),
