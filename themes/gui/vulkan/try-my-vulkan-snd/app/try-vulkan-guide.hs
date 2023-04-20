@@ -372,15 +372,15 @@ querySwapchainSupport dvc sfc = SwapchainSupportDetails
 
 createDevice :: Vk.PhDvc.P -> QueueFamilyIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
-createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qs ->
-	Vk.Dvc.create @() ph (crInfo qs) nil nil \dv -> do
+createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qs ->
+	Vk.Dvc.create ph (crInfo qs) nil nil \dv -> do
 		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
 		f dv gq pq
 	where
 	qfs = nub [graphicsFamily qfis, presentFamily qfis]
 	crInfo qs = Vk.Dvc.M.CreateInfo {
-		Vk.Dvc.M.createInfoNext = Nothing,
+		Vk.Dvc.M.createInfoNext = TMaybe.N,
 		Vk.Dvc.M.createInfoFlags = def,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 		Vk.Dvc.M.createInfoEnabledLayerNames =
@@ -388,13 +388,13 @@ createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qs ->
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 	qcrInfo qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
-mkHeteroParList :: Storable' s => (a -> t s) -> [a] ->
-	(forall ss . WithPokedHeteroToListM ss => HeteroParList.PL t ss -> b) -> b
+mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
+	(forall ss . WithPokedHeteroToListM' TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
@@ -1252,12 +1252,12 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 	IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo () '[
+	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer
 			'[VObj.Atom 256 GpuSceneData0 'Nothing] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = Nothing,
+		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings =
 			camBufferBinding :** sceneBind :** HeteroParList.Nil }

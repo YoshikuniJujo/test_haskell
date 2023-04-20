@@ -228,10 +228,10 @@ withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
 	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
 	qfam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qfam) nil nil $ \dvc -> f phdvc qfam dvc maxGroupCountX
+	Vk.Dvc.create @'Nothing @'[ 'Nothing] phdvc (dvcInfo qfam) nil nil $ \dvc -> f phdvc qfam dvc maxGroupCountX
 	where
 	dvcInfo qfam = Vk.Dvc.CreateInfo {
-		Vk.Dvc.createInfoNext = Nothing,
+		Vk.Dvc.createInfoNext = TMaybe.N,
 		Vk.Dvc.createInfoFlags = def,
 		Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton $ queueInfo qfam,
 		Vk.Dvc.createInfoEnabledLayerNames =
@@ -239,7 +239,7 @@ withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 		Vk.Dvc.createInfoEnabledExtensionNames = [],
 		Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	queueInfo qfam = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfam,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
@@ -256,10 +256,10 @@ findQueueFamily phdvc qb = do
 			. (.&. qb) . Vk.QFam.propertiesQueueFlags . snd)
 		qFamProperties
 
-dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo ()
+dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing
 	'[ 'Vk.DscSetLyt.Buffer '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
-	Vk.DscSetLyt.createInfoNext = Nothing,
+	Vk.DscSetLyt.createInfoNext = TMaybe.N,
 	Vk.DscSetLyt.createInfoFlags = def,
 	Vk.DscSetLyt.createInfoBindings = binding0 :** HeteroParList.Nil }
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE GADTs #-}
@@ -23,8 +24,9 @@ import Prelude hiding (length)
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Length
-import qualified Data.HeteroParList as HeteroParList
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
 
@@ -40,15 +42,15 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
-create'' :: (WithPoked n, WithPoked c, WithPoked d) =>
-	Device.D sd -> M.CreateInfo n ->
+create'' :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+	Device.D sd -> M.CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L'' s -> IO a) -> IO a
 create'' (Device.D dvc) ci macc macd f =
 	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L'')
 
-create :: (WithPoked n, BindingsToMiddle bts, WithPoked c, WithPoked d) =>
-	Device.D sd -> CreateInfo n bts ->
+create :: (WithPoked (TMaybe.M mn), BindingsToMiddle bts, WithPoked c, WithPoked d) =>
+	Device.D sd -> CreateInfo mn bts ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L s bts -> IO a) -> IO a
 create dvc ci macc macd f =
@@ -145,12 +147,12 @@ instance (BindingToMiddle bt, BindingsToMiddle bts) =>
 	bindingsToMiddle (bd :** bds) bb =
 		bindingToMiddle bd bb : bindingsToMiddle bds (bb + 1)
 
-data CreateInfo n bts = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn bts = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoBindings :: HeteroParList.PL Binding bts }
 
-createInfoToMiddle :: BindingsToMiddle bts => CreateInfo n bts -> M.CreateInfo n
+createInfoToMiddle :: BindingsToMiddle bts => CreateInfo mn bts -> M.CreateInfo mn
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
@@ -159,7 +161,7 @@ createInfoToMiddle CreateInfo {
 		M.createInfoFlags = flgs,
 		M.createInfoBindings = bindingsToMiddle bds 0 }
 
-deriving instance (Show n, Show (HeteroParList.PL Binding bts)) =>
-	Show (CreateInfo n bts)
+deriving instance (Show (TMaybe.M mn), Show (HeteroParList.PL Binding bts)) =>
+	Show (CreateInfo mn bts)
 
 -- deriving instance Show (Binding bt)

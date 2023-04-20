@@ -332,20 +332,20 @@ completeQueueFamilies = \case
 
 createDevice :: Vk.Phd.P -> QueueFamilyIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
-createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qcris ->
-	Vk.Dvc.create @() ph (crInfo qcris) nil nil \dv -> do
+createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qcris ->
+	Vk.Dvc.create ph (crInfo qcris) nil nil \dv -> do
 		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
 		f dv gq pq
 	where
 	qfs = nub [graphicsFamily qfis, presentFamily qfis]
 	qcrInfo qf = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = zeroBits,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 	crInfo qcris = Vk.Dvc.M.CreateInfo {
-		Vk.Dvc.M.createInfoNext = Nothing,
+		Vk.Dvc.M.createInfoNext = TMaybe.N,
 		Vk.Dvc.M.createInfoFlags = zeroBits,
 		Vk.Dvc.M.createInfoQueueCreateInfos = qcris,
 		Vk.Dvc.M.createInfoEnabledLayerNames = bool
@@ -353,8 +353,8 @@ createDevice ph qfis f = mkHeteroParList @() qcrInfo qfs \qcris ->
 		Vk.Dvc.M.createInfoEnabledExtensionNames = deviceExtensions,
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 
-mkHeteroParList :: WithPoked s => (a -> t s) -> [a] ->
-	(forall ss . WithPokedHeteroToListM ss => HL.PL t ss -> b) ->
+mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
+	(forall ss . WithPokedHeteroToListM' TMaybe.M ss => HL.PL t ss -> b) ->
 	b
 mkHeteroParList _k [] f = f HL.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
@@ -592,9 +592,9 @@ createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @()
 createDescriptorSetLayout :: Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DscSetLyt.L s Buffers -> IO a) -> IO a
 createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil nil where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo () Buffers
+	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing Buffers
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = Nothing,
+		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings = camera :** scene :** HL.Nil }
 	camera :: Vk.DscSetLyt.Binding ('Vk.DscSetLyt.Buffer '[CameraObj])

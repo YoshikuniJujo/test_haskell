@@ -112,15 +112,15 @@ main = do
 		print physicalDevice
 		print graphicsQueueFamilyIndex
 		let	queueCreateInfo = Vk.Device.QueueCreateInfo {
-				Vk.Device.queueCreateInfoNext = Nothing,
+				Vk.Device.queueCreateInfoNext = TMaybe.N,
 				Vk.Device.queueCreateInfoFlags = zeroBits,
 				Vk.Device.queueCreateInfoQueueFamilyIndex =
 					graphicsQueueFamilyIndex,
 				Vk.Device.queueCreateInfoQueuePriorities =
 					[1.0] }
-			devCreateInfo :: Vk.Device.CreateInfo () '[()]
+			devCreateInfo :: Vk.Device.CreateInfo 'Nothing '[ 'Nothing]
 			devCreateInfo = Vk.Device.CreateInfo {
-				Vk.Device.createInfoNext = Nothing,
+				Vk.Device.createInfoNext = TMaybe.N,
 				Vk.Device.createInfoFlags = zeroBits,
 				Vk.Device.createInfoQueueCreateInfos =
 					HeteroParList.Singleton queueCreateInfo,

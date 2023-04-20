@@ -1,5 +1,7 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -12,6 +14,7 @@ module Gpu.Vulkan.Device (
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
 
 import Gpu.Vulkan.Device.Type
@@ -22,8 +25,8 @@ import qualified Gpu.Vulkan.Device.Middle as M
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
-create :: (WithPoked n, WithPokedHeteroToListM ns, Pokable n3, Pokable n4) =>
-	PhysicalDevice.P -> M.CreateInfo n ns ->
+create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M mns, Pokable n3, Pokable n4) =>
+	PhysicalDevice.P -> M.CreateInfo mn mns ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . D s -> IO a) -> IO a
 create phdvc ci macc macd f =

@@ -112,31 +112,31 @@ withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 		<$> Vk.PhDvc.getQueueFamilyProperties phdvc
 	mgcx :. _ <- Vk.PhDvc.limitsMaxComputeWorkGroupCount
 		. Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
-	Vk.Dvc.create @() @'[()] phdvc (dvcInfo qFam) nil nil $ \dvc ->
+	Vk.Dvc.create phdvc (dvcInfo qFam) nil nil $ \dvc ->
 		f phdvc qFam dvc (fromIntegral mgcx)
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing ()
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
-dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo n '[s]
+dvcInfo :: Vk.QFam.Index -> Vk.Dvc.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qFam = Vk.Dvc.CreateInfo {
-	Vk.Dvc.createInfoNext = Nothing,
+	Vk.Dvc.createInfoNext = TMaybe.N,
 	Vk.Dvc.createInfoFlags = def,
 	Vk.Dvc.createInfoQueueCreateInfos = HeteroParList.Singleton queueInfo,
 	Vk.Dvc.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
 	Vk.Dvc.createInfoEnabledExtensionNames = [],
 	Vk.Dvc.createInfoEnabledFeatures = Nothing }
 	where queueInfo = Vk.Dvc.QueueCreateInfo {
-		Vk.Dvc.queueCreateInfoNext = Nothing,
+		Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 		Vk.Dvc.queueCreateInfoFlags = def,
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
-dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo () '[
+dscSetLayoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 	'Vk.DscSetLyt.Buffer '[VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 ""] ]
 dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
-	Vk.DscSetLyt.createInfoNext = Nothing,
+	Vk.DscSetLyt.createInfoNext = TMaybe.N,
 	Vk.DscSetLyt.createInfoFlags = zeroBits,
 	Vk.DscSetLyt.createInfoBindings = HeteroParList.Singleton binding }
 

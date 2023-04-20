@@ -370,13 +370,13 @@ createLogicalDevice phdvc qfis f =
 	let	uniqueQueueFamilies =
 			nub [graphicsFamily qfis, presentFamily qfis]
 		queueCreateInfos qf = Vk.Dvc.QueueCreateInfo {
-			Vk.Dvc.queueCreateInfoNext = Nothing,
+			Vk.Dvc.queueCreateInfoNext = TMaybe.N,
 			Vk.Dvc.queueCreateInfoFlags = def,
 			Vk.Dvc.queueCreateInfoQueueFamilyIndex = qf,
 			Vk.Dvc.queueCreateInfoQueuePriorities = [1] } in
-	mkHeteroParList @() queueCreateInfos uniqueQueueFamilies \qs -> do
+	mkHeteroParList queueCreateInfos uniqueQueueFamilies \qs -> do
 		let	createInfo = Vk.Dvc.M.CreateInfo {
-				Vk.Dvc.M.createInfoNext = Nothing,
+				Vk.Dvc.M.createInfoNext = TMaybe.N,
 				Vk.Dvc.M.createInfoFlags = def,
 				Vk.Dvc.M.createInfoQueueCreateInfos = qs,
 --					queueCreateInfos <$> uniqueQueueFamilies,
@@ -385,13 +385,13 @@ createLogicalDevice phdvc qfis f =
 				Vk.Dvc.M.createInfoEnabledExtensionNames =
 					deviceExtensions,
 				Vk.Dvc.M.createInfoEnabledFeatures = Just def }
-		Vk.Dvc.create @() phdvc createInfo nil nil \dvc -> do
+		Vk.Dvc.create phdvc createInfo nil nil \dvc -> do
 			gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
 			pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
 			f dvc gq pq
 
-mkHeteroParList :: Storable' s => (a -> t s) -> [a] ->
-	(forall ss . WithPokedHeteroToListM ss => HeteroParList.PL t ss -> b) -> b
+mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
+	(forall ss . WithPokedHeteroToListM' TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 
@@ -623,10 +623,10 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall s .
 	-> IO a) -> IO a
 createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
 	where
-	layoutInfo :: Vk.DscSetLyt.CreateInfo ()
+	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing
 		'[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing] ]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
-		Vk.DscSetLyt.createInfoNext = Nothing,
+		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,
 		Vk.DscSetLyt.createInfoBindings = uboLayoutBinding :** HeteroParList.Nil }
 	uboLayoutBinding :: Vk.DscSetLyt.Binding

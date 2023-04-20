@@ -102,22 +102,22 @@ instInfo :: Vk.Inst.CreateInfo 'Nothing ()
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
-dvcInfo :: Vk.QFm.Index -> Vk.Dv.CreateInfo () '[()]
+dvcInfo :: Vk.QFm.Index -> Vk.Dv.CreateInfo 'Nothing '[ 'Nothing]
 dvcInfo qfi = Vk.Dv.CreateInfo {
-	Vk.Dv.createInfoNext = Nothing, Vk.Dv.createInfoFlags = zeroBits,
+	Vk.Dv.createInfoNext = TMaybe.N, Vk.Dv.createInfoFlags = zeroBits,
 	Vk.Dv.createInfoQueueCreateInfos = HL.Singleton qinfo,
 	Vk.Dv.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName],
 	Vk.Dv.createInfoEnabledExtensionNames = [],
 	Vk.Dv.createInfoEnabledFeatures = Nothing }
 	where qinfo = Vk.Dv.QueueCreateInfo {
-		Vk.Dv.queueCreateInfoNext = Nothing,
+		Vk.Dv.queueCreateInfoNext = TMaybe.N,
 		Vk.Dv.queueCreateInfoFlags = zeroBits,
 		Vk.Dv.queueCreateInfoQueueFamilyIndex = qfi,
 		Vk.Dv.queueCreateInfoQueuePriorities = [0] }
 
-dscSetLayoutInfo :: Vk.DSLyt.CreateInfo () '[ 'Vk.DSLyt.Buffer '[Word32List]]
+dscSetLayoutInfo :: Vk.DSLyt.CreateInfo 'Nothing '[ 'Vk.DSLyt.Buffer '[Word32List]]
 dscSetLayoutInfo = Vk.DSLyt.CreateInfo {
-	Vk.DSLyt.createInfoNext = Nothing, Vk.DSLyt.createInfoFlags = zeroBits,
+	Vk.DSLyt.createInfoNext = TMaybe.N, Vk.DSLyt.createInfoFlags = zeroBits,
 	Vk.DSLyt.createInfoBindings = HL.Singleton bdg }
 	where bdg = Vk.DSLyt.BindingBuffer {
 		Vk.DSLyt.bindingBufferDescriptorType = Vk.Dsc.TypeStorageBuffer,
