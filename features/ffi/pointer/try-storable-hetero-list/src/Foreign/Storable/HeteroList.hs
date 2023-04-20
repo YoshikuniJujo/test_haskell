@@ -27,7 +27,8 @@ module Foreign.Storable.HeteroList (
 
 	-- ** CPS
 
-	WithPokedHeteroToListCpsM(..), withPokedWithHeteroListCpsM
+	WithPokedHeteroToListCpsM(..), withPokedWithHeteroListCpsM,
+	WithPokedHeteroToListCpsM'(..), withPokedWithHeteroListCpsM'
 
 	) where
 
@@ -117,8 +118,29 @@ instance (WithPoked n, WithPokedHeteroToListCpsM ns) =>
 	withPokedHeteroToListCpsM f (x :** xs) g =
 		f x \y -> withPokedHeteroToListCpsM f xs \ys -> g $ y : ys
 
+class WithPokedHeteroToListCpsM' (t' :: k -> Type) (ns :: [k]) where
+	withPokedHeteroToListCpsM' ::
+		(forall (s :: k) . WithPoked (t' s) => t s -> (a -> m b) -> m b) ->
+		HeteroParList.PL t ns ->
+		([a] -> m b) -> m b
+
+instance WithPokedHeteroToListCpsM' t' '[] where
+	withPokedHeteroToListCpsM' _ HeteroParList.Nil = ($ [])
+
+instance (WithPoked (t' n), WithPokedHeteroToListCpsM' t' ns) =>
+	WithPokedHeteroToListCpsM' t' (n ': ns) where
+	withPokedHeteroToListCpsM' f (x :** xs) g =
+		f x \y -> withPokedHeteroToListCpsM' @_ @t' f xs \ys -> g $ y : ys
+
 withPokedWithHeteroListCpsM :: WithPokedHeteroToListCpsM ss =>
 	HeteroParList.PL t ss ->
 	(forall s . WithPoked s => t s -> (a -> m b) -> m b) ->
 	([a] -> m b) -> m b
 withPokedWithHeteroListCpsM f xs = withPokedHeteroToListCpsM xs f
+
+withPokedWithHeteroListCpsM' :: forall t' t ss a m b .
+	WithPokedHeteroToListCpsM' t' ss =>
+	HeteroParList.PL t ss ->
+	(forall s . WithPoked (t' s) => t s -> (a -> m b) -> m b) ->
+	([a] -> m b) -> m b
+withPokedWithHeteroListCpsM' f xs = withPokedHeteroToListCpsM' @_ @t' xs f
