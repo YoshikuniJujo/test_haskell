@@ -1,9 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -22,6 +23,7 @@ module Foreign.Storable.HeteroList (
 	-- ** Plain
 
 	WithPokedHeteroToListM(..), withPokedWithHeteroListM,
+	WithPokedHeteroToListM'(..),
 
 	-- ** CPS
 
@@ -33,7 +35,7 @@ import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 
 -- Size and Alignment
 
@@ -82,6 +84,19 @@ instance (WithPoked s, WithPokedHeteroToListM ss) =>
 	WithPokedHeteroToListM (s ': ss) where
 	withPokedHeteroToListM f (x :** xs) =
 		(:) <$> f x <*> withPokedHeteroToListM f xs
+
+class WithPokedHeteroToListM' (t' :: k -> Type) (ss :: [k]) where
+	withPokedHeteroToListM' :: Applicative m =>
+		(forall (s :: k) . WithPoked (t' s) => t s -> m a) ->
+		HeteroParList.PL t ss -> m [a]
+
+instance WithPokedHeteroToListM' t' '[] where
+	withPokedHeteroToListM' _ HeteroParList.Nil = pure []
+
+instance (WithPoked (t' s), WithPokedHeteroToListM' t' ss) =>
+	WithPokedHeteroToListM' t' (s ': ss) where
+	withPokedHeteroToListM' f (x :** xs) =
+		(:) <$> f x <*> withPokedHeteroToListM' @_ @t' f xs
 
 withPokedWithHeteroListM :: (WithPokedHeteroToListM ss, Applicative m) =>
 		HeteroParList.PL t ss ->
