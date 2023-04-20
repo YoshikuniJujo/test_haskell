@@ -19,6 +19,7 @@ import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
@@ -294,7 +295,7 @@ pushConstants' (CommandBuffer.Binded cb) (Pipeline.Layout.L lyt) xs =
 pipelineBarrier :: (
 	WithPokedHeteroToListCpsM ns,
 	WithPokedHeteroToListCpsM (Buffer.FirstOfFives nsmsbnmobjs),
-	WithPokedHeteroToListCpsM (Image.FirstOfFives nsismnmfmts),
+	WithPokedHeteroToListCpsM' TMaybe.M (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.Binded sc vs -> Pipeline.StageFlags -> Pipeline.StageFlags ->

@@ -211,7 +211,7 @@ makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	IO a
 makeImage' phdvc dvc f = do
 	let	imgCreateInfo = Vk.Img.CreateInfoNew {
-			Vk.Img.createInfoNextNew = Nothing,
+			Vk.Img.createInfoNextNew = TMaybe.N,
 			Vk.Img.createInfoFlagsNew = Vk.Img.CreateFlagsZero,
 			Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 			Vk.Img.createInfoExtentNew =
@@ -231,7 +231,7 @@ makeImage' phdvc dvc f = do
 			Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
-	Vk.Img.createNew @() dvc imgCreateInfo nil nil \image -> do
+	Vk.Img.createNew @'Nothing dvc imgCreateInfo nil nil \image -> do
 		imgMemReq <- Vk.Img.getMemoryRequirementsNew dvc image
 		print imgMemReq
 		let	imgMemReqTypes =
@@ -298,9 +298,9 @@ transitionImageLayout :: forall sd sc si sm nm fmt .
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
@@ -479,7 +479,7 @@ makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f = do
 	let	frameBufCreateInfo = Vk.Framebuffer.CreateInfo {
-			Vk.Framebuffer.createInfoNext = Nothing,
+			Vk.Framebuffer.createInfoNext = TMaybe.N,
 			Vk.Framebuffer.createInfoFlags =
 				Vk.Framebuffer.CreateFlagsZero,
 			Vk.Framebuffer.createInfoRenderPass = rp,
@@ -487,7 +487,7 @@ makeFramebuffer dvc rp iv f = do
 			Vk.Framebuffer.createInfoWidth = screenWidth,
 			Vk.Framebuffer.createInfoHeight = screenHeight,
 			Vk.Framebuffer.createInfoLayers = 1 }
-	Vk.Framebuffer.create @() dvc frameBufCreateInfo nil nil f
+	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil nil f
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

@@ -1,10 +1,12 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
@@ -22,9 +24,9 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Middle
@@ -41,23 +43,23 @@ import qualified Gpu.Vulkan.Image.Middle as M
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as I
 
-createNew :: (Pokable n, Pokable n2, Pokable n3, T.FormatToValue fmt) =>
-	Device.D sd -> CreateInfoNew n fmt ->
+createNew :: (WithPoked (TMaybe.M mn), Pokable n2, Pokable n3, T.FormatToValue fmt) =>
+	Device.D sd -> CreateInfoNew mn fmt ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
 	(forall s . INew s nm fmt -> IO a) -> IO a
 createNew dvc@(Device.D mdvc) ci macc macd f =
 	bracket (createNewM dvc ci macc) (\(INew i) -> M.destroy mdvc i macd) f
 
 recreateNew :: (
-	Pokable n, Pokable c, Pokable d, T.FormatToValue fmt ) =>
-	Device.D sd -> CreateInfoNew n fmt ->
+	WithPoked (TMaybe.M mn), Pokable c, Pokable d, T.FormatToValue fmt ) =>
+	Device.D sd -> CreateInfoNew mn fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	BindedNew si sm nm fmt -> IO ()
 recreateNew dvc ci macc macd i = recreateNewM dvc ci macc macd i
 
-create :: (Pokable n, Pokable n2, Pokable n3) =>
-	Device.D sd -> M.CreateInfo n ->
+create :: (Pokable (TMaybe.M mn), Pokable n2, Pokable n3) =>
+	Device.D sd -> M.CreateInfo mn ->
 	Maybe (AllocationCallbacks.A n2) -> Maybe (AllocationCallbacks.A n3) ->
 	(forall s . I s -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
@@ -74,8 +76,8 @@ getMemoryRequirementsBindedNew (Device.D dvc) (BindedNew img) =
 getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
 
-data MemoryBarrier n si sm nm fmt = MemoryBarrier {
-	memoryBarrierNext :: Maybe n,
+data MemoryBarrier mn si sm nm fmt = MemoryBarrier {
+	memoryBarrierNext :: TMaybe.M mn,
 	memoryBarrierSrcAccessMask :: AccessFlags,
 	memoryBarrierDstAccessMask :: AccessFlags,
 	memoryBarrierOldLayout :: Layout,
@@ -111,7 +113,7 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
 
 class MemoryBarrierListToMiddle
-	(nsismnmfmts :: [(Type, Type, Type, Symbol, T.Format)])  where
+	(nsismnmfmts :: [(Maybe Type, Type, Type, Symbol, T.Format)])  where
 	memoryBarrierListToMiddle ::
 		HeteroParList.PL (U5 MemoryBarrier) nsismnmfmts ->
 		HeteroParList.PL M.MemoryBarrier (FirstOfFives nsismnmfmts)
@@ -119,29 +121,29 @@ class MemoryBarrierListToMiddle
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
-instance (Pokable n, MemoryBarrierListToMiddle nsismnmfmts) =>
-	MemoryBarrierListToMiddle ('(n, si, sm, nm, fmt) ': nsismnmfmts) where
+instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsismnmfmts) =>
+	MemoryBarrierListToMiddle ('(mn, si, sm, nm, fmt) ': nsismnmfmts) where
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
-createNewM :: (Pokable n, Pokable n', T.FormatToValue fmt) =>
-	Device.D sd -> CreateInfoNew n fmt ->
+createNewM :: (WithPoked (TMaybe.M mn), Pokable n', T.FormatToValue fmt) =>
+	Device.D sd -> CreateInfoNew mn fmt ->
 	Maybe (AllocationCallbacks.A n') -> IO (INew si nm fmt)
 createNewM (Device.D mdvc) ci mac =
 	INew <$> M.create mdvc (createInfoFromNew ci) mac
 
 recreateNewM :: (
 	T.FormatToValue fmt,
-	Pokable n, Pokable c, Pokable d ) =>
-	Device.D sd -> CreateInfoNew n fmt ->
+	WithPoked (TMaybe.M mn), Pokable c, Pokable d ) =>
+	Device.D sd -> CreateInfoNew mn fmt ->
 	Maybe (AllocationCallbacks.A c) ->
 	Maybe (AllocationCallbacks.A d) ->
 	BindedNew si sm nm fmt -> IO ()
 recreateNewM (Device.D mdvc) ci macc macd (BindedNew i) =
 	M.recreate mdvc (createInfoFromNew ci) macc macd i
 
-data CreateInfoNew n (fmt :: T.Format) = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+data CreateInfoNew mn (fmt :: T.Format) = CreateInfoNew {
+	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoImageTypeNew :: I.Type,
 	createInfoExtentNew :: Extent3d,
@@ -153,7 +155,8 @@ data CreateInfoNew n (fmt :: T.Format) = CreateInfoNew {
 	createInfoSharingModeNew :: SharingMode,
 	createInfoQueueFamilyIndicesNew :: [Word32],
 	createInfoInitialLayoutNew :: Layout }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (CreateInfoNew mn fmt)
 
 createInfoFromNew :: forall n fmt .
 	T.FormatToValue fmt => CreateInfoNew n fmt -> M.CreateInfo n

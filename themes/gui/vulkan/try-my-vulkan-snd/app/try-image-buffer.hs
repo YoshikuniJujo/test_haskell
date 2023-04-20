@@ -346,7 +346,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 		imgBody = ImageRgba8 $ imageData img_
 		in
 	print wdt >> print hgt >> print (olength imgBody) >>
-	Vk.Image.createNew @() @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg nm fmt) ->
+	Vk.Image.createNew @'Nothing @() @() dvc (imageInfo wdt hgt tlng) nil nil \(img :: Vk.Image.INew simg nm fmt) ->
 	storage1BufferNewNoBind dvc da db dc \(buf :: Vk.Buffer.B sb "hello" objs) ->
 --	storage1BufferNew dvc phdvc da db dc \(buf' :: Vk.Buffer.B sb' nm' objs) bnd' m' ->
 	let	imgbuf = U2 (Vk.Mem.Image img) :**
@@ -387,9 +387,9 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	f dscSet mib
 
 imageInfo ::
-	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew n 'Vk.T.FormatR8g8b8a8Srgb
+	Word32 -> Word32 -> Vk.Image.Tiling -> Vk.Image.CreateInfoNew 'Nothing 'Vk.T.FormatR8g8b8a8Srgb
 imageInfo wdt hgt tlng = Vk.Image.CreateInfoNew {
-	Vk.Image.createInfoNextNew = Nothing,
+	Vk.Image.createInfoNextNew = TMaybe.N,
 	Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
 	Vk.Image.createInfoExtentNew = Vk.C.Extent3d {
 		Vk.C.extent3dWidth = wdt,

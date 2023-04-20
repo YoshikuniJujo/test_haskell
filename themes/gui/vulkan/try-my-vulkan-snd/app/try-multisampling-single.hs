@@ -905,11 +905,11 @@ instance RecreateFramebuffers sis sfs =>
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
 	Vk.ImgVw.INew dptfmt dptnm sdiv -> Vk.ImgVw.INew clrfmt clrnm clrsdiv ->
-	Vk.Frmbffr.CreateInfoNew () sr
+	Vk.Frmbffr.CreateInfoNew 'Nothing sr
 		'[ '(clrfmt, clrnm, clrsdiv), '(dptfmt, dptnm, sdiv), '(fmt, nm, si)]
 --	Vk.Frmbffr.CreateInfoNew () sr fmt nm '[si, sdiv]
 mkFramebufferCreateInfo sce rp attch dpt clr = Vk.Frmbffr.CreateInfoNew {
-	Vk.Frmbffr.createInfoNextNew = Nothing,
+	Vk.Frmbffr.createInfoNextNew = TMaybe.N,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 	Vk.Frmbffr.createInfoRenderPassNew = rp,
 	Vk.Frmbffr.createInfoAttachmentsNew = U3 clr :** U3 dpt :** U3 attch :** HeteroParList.Nil,
@@ -1102,7 +1102,7 @@ generateMipmaps phdvc dvc gq cp img mlvs wdt hgt = do
 			HeteroParList.Nil HeteroParList.Nil (HeteroParList.Singleton $ U5 barrier)
 	where
 	iwhs = [1 .. mlvs - 1] `zip` (halves wdt `zip` halves hgt)
-	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 	barrier = mipmapBarrier
 		Vk.AccessTransferWriteBit Vk.AccessShaderReadBit
 		Vk.Img.LayoutTransferDstOptimal
@@ -1110,9 +1110,9 @@ generateMipmaps phdvc dvc gq cp img mlvs wdt hgt = do
 
 mipmapBarrier :: Vk.AccessFlags -> Vk.AccessFlags ->
 	Vk.Img.Layout -> Vk.Img.Layout -> Vk.Img.BindedNew si sm nm fmt ->
-	Word32 -> Vk.Img.MemoryBarrier n si sm nm fmt
+	Word32 -> Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 mipmapBarrier sam dam olyt nlyt img i = Vk.Img.MemoryBarrier {
-	Vk.Img.memoryBarrierNext = Nothing,
+	Vk.Img.memoryBarrierNext = TMaybe.N,
 	Vk.Img.memoryBarrierSrcAccessMask = sam,
 	Vk.Img.memoryBarrierDstAccessMask = dam,
 	Vk.Img.memoryBarrierOldLayout = olyt,
@@ -1143,11 +1143,11 @@ generateMipmap1 cb img i w h = do
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageFragmentShaderBit zeroBits
 		HeteroParList.Nil HeteroParList.Nil . HeteroParList.Singleton $ U5 barrier''
 	where
-	barrier' :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier' :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 	barrier' = mipmapBarrier Vk.AccessTransferWriteBit Vk.AccessTransferReadBit
 		Vk.Img.LayoutTransferDstOptimal Vk.Img.LayoutTransferSrcOptimal
 		img i
-	barrier'' :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier'' :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 	barrier'' = mipmapBarrier Vk.AccessTransferReadBit Vk.AccessShaderReadBit
 		Vk.Img.LayoutTransferSrcOptimal Vk.Img.LayoutShaderReadOnlyOptimal
 		img i
@@ -1213,7 +1213,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a
-createImage pd dvc wdt hgt mplvs nss tlng usg prps f = Vk.Img.createNew @() @() @() dvc
+createImage pd dvc wdt hgt mplvs nss tlng usg prps f = Vk.Img.createNew @'Nothing @() @() dvc
 		(imageInfo wdt hgt mplvs nss tlng usg) Nothing Nothing \img -> do
 	memInfo <- imageMemoryInfo pd dvc prps img
 	imageAllocateBind dvc img memInfo f
@@ -1225,16 +1225,16 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
 recreateImage pd dvc wdt hgt mplvs nss tlng usg prps img mem = do
-	Vk.Img.recreateNew @() @() @() dvc
+	Vk.Img.recreateNew @'Nothing @() @() dvc
 		(imageInfo wdt hgt mplvs nss tlng usg) Nothing Nothing img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem
 
 imageInfo ::
 	Word32 -> Word32 -> Word32 -> Vk.Sample.CountFlags -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
-	Vk.Img.CreateInfoNew n fmt
+	Vk.Img.CreateInfoNew 'Nothing fmt
 imageInfo wdt hgt mplvs numSamples tlng usg = Vk.Img.CreateInfoNew {
-		Vk.Img.createInfoNextNew = Nothing,
+		Vk.Img.createInfoNextNew = TMaybe.N,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
 			Vk.C.extent3dWidth = wdt,
@@ -1299,9 +1299,9 @@ transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt mplvs =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
@@ -1694,7 +1694,7 @@ createSyncObjects ::
 createSyncObjects dvc f =
 	Vk.Semaphore.create @() dvc def nil nil \ias ->
 	Vk.Semaphore.create @() dvc def nil nil \rfs ->
-	Vk.Fence.create @() dvc fncInfo nil nil \iff ->
+	Vk.Fence.create @'Nothing dvc fncInfo nil nil \iff ->
 	f $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }

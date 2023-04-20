@@ -846,9 +846,9 @@ instance RecreateFramebuffers sis sfs =>
 
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
-	Vk.Frmbffr.CreateInfoNew () sr '[ '(fmt, nm, si)]
+	Vk.Frmbffr.CreateInfoNew 'Nothing sr '[ '(fmt, nm, si)]
 mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfoNew {
-	Vk.Frmbffr.createInfoNextNew = Nothing,
+	Vk.Frmbffr.createInfoNextNew = TMaybe.N,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 	Vk.Frmbffr.createInfoRenderPassNew = rp,
 	Vk.Frmbffr.createInfoAttachmentsNew = U3 attch :** HeteroParList.Nil,
@@ -938,7 +938,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
 		IO a) -> IO a
 createImage pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.createNew @() @() @() dvc imageInfo Nothing Nothing \img -> do
+	Vk.Img.createNew @'Nothing @() @() dvc imageInfo Nothing Nothing \img -> do
 	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
 	print reqs
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
@@ -949,7 +949,7 @@ createImage pd dvc wdt hgt tlng usg prps f =
 		f bnd m
 	where
 	imageInfo = Vk.Img.CreateInfoNew {
-		Vk.Img.createInfoNextNew = Nothing,
+		Vk.Img.createInfoNextNew = TMaybe.N,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
 			Vk.C.extent3dWidth = wdt,
@@ -974,9 +974,9 @@ transitionImageLayout :: forall sd sc si sm nm fmt .
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
@@ -1335,7 +1335,7 @@ createSyncObjects ::
 createSyncObjects dvc f =
 	Vk.Semaphore.create @() dvc def nil nil \ias ->
 	Vk.Semaphore.create @() dvc def nil nil \rfs ->
-	Vk.Fence.create @() dvc fncInfo nil nil \iff ->
+	Vk.Fence.create @'Nothing dvc fncInfo nil nil \iff ->
 	f $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }

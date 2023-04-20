@@ -855,10 +855,10 @@ instance RecreateFramebuffers sis sfs =>
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.INew fmt nm si ->
 	Vk.ImgVw.INew dptfmt dptnm sdiv ->
-	Vk.Frmbffr.CreateInfoNew () sr
+	Vk.Frmbffr.CreateInfoNew 'Nothing sr
 		'[ '(fmt, nm, si), '(dptfmt, dptnm, sdiv)]
 mkFramebufferCreateInfo sce rp attch dpt = Vk.Frmbffr.CreateInfoNew {
-	Vk.Frmbffr.createInfoNextNew = Nothing,
+	Vk.Frmbffr.createInfoNextNew = TMaybe.N,
 	Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 	Vk.Frmbffr.createInfoRenderPassNew = rp,
 	Vk.Frmbffr.createInfoAttachmentsNew = U3 attch :** U3 dpt :** HeteroParList.Nil,
@@ -1012,9 +1012,9 @@ transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
@@ -1162,7 +1162,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a
-createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @() @() @() dvc
+createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @'Nothing @() @() dvc
 		(imageInfo wdt hgt tlng usg) Nothing Nothing \img -> do
 	memInfo <- imageMemoryInfo pd dvc prps img
 	imageAllocateBind dvc img memInfo f
@@ -1174,16 +1174,16 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
 recreateImage pd dvc wdt hgt tlng usg prps img mem = do
-	Vk.Img.recreateNew @() @() @() dvc
+	Vk.Img.recreateNew @'Nothing @() @() dvc
 		(imageInfo wdt hgt tlng usg) Nothing Nothing img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem
 
 imageInfo ::
 	Word32 -> Word32 -> Vk.Img.Tiling -> Vk.Img.UsageFlags ->
-	Vk.Img.CreateInfoNew n fmt
+	Vk.Img.CreateInfoNew 'Nothing fmt
 imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
-		Vk.Img.createInfoNextNew = Nothing,
+		Vk.Img.createInfoNextNew = TMaybe.N,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
 			Vk.C.extent3dWidth = wdt,
@@ -1568,7 +1568,7 @@ createSyncObjects dvc f =
 	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
 	HeteroParList.replicateM maxFramesInFlight
-		(Vk.Fence.create @() dvc fncInfo nil nil) \iffs ->
+		(Vk.Fence.create @'Nothing dvc fncInfo nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }

@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
@@ -16,9 +17,9 @@ module Gpu.Vulkan.Framebuffer (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Framebuffer.Enum
@@ -30,8 +31,8 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
-data CreateInfoNew n sr fmtnmsis = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+data CreateInfoNew mn sr fmtnmsis = CreateInfoNew {
+	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
 	createInfoAttachmentsNew :: HeteroParList.PL (U3 ImageView.INew) fmtnmsis,
@@ -64,8 +65,8 @@ isToOld :: HeteroParList.PL (U3 ImageView.INew) fmtnmsis ->
 isToOld HeteroParList.Nil = HeteroParList.Nil
 isToOld ((U3 i) :** is) = ImageView.iToOld i :** isToOld is
 
-data CreateInfo n sr sis = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn sr sis = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoRenderPass :: RenderPass.R sr,
 	createInfoAttachments :: HeteroParList.PL ImageView.I sis,
@@ -73,8 +74,8 @@ data CreateInfo n sr sis = CreateInfo {
 	createInfoHeight :: Word32,
 	createInfoLayers :: Word32 }
 
-deriving instance (Show n, Show (HeteroParList.PL ImageView.I sis)) =>
-	Show (CreateInfo n sr sis)
+deriving instance (Show (TMaybe.M mn), Show (HeteroParList.PL ImageView.I sis)) =>
+	Show (CreateInfo mn sr sis)
 
 createInfoToMiddleNew :: CreateInfoNew n sr fmtnmsis -> M.CreateInfo n
 createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
@@ -96,31 +97,31 @@ createInfoToMiddle CreateInfo {
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
 
-createNew :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfoNew n sr fmtnmsis ->
+createNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . F s -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
-create :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfo n sr si ->
+create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> CreateInfo mn sr si ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . F s -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
-recreateNew :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfoNew n sr fmtnmsis ->
+recreateNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F sf -> IO ()
 recreateNew (Device.D dvc) ci macc macd (F fb) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
 
-recreate :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfo n sr si ->
+recreate :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> CreateInfo mn sr si ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F sf -> IO ()
 recreate (Device.D dvc) ci macc macd (F fb) =

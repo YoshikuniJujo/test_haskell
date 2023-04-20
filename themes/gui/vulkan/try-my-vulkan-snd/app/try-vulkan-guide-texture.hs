@@ -905,7 +905,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
 createImage pd dv ex tlng usg prs f =
-	Vk.Img.createNew @() @() @() dv (imageInfo ex tlng usg) nil nil \i ->
+	Vk.Img.createNew @'Nothing @() @() dv (imageInfo ex tlng usg) nil nil \i ->
 	imageMemoryInfo pd dv prs i >>= \ii -> imageAllocateBind dv i ii f
 
 recreateImage :: Vk.T.FormatToValue fmt =>
@@ -914,13 +914,13 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Img.BindedNew sb sm nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
 recreateImage pd dv ex tlng usg prs i m = do
-	Vk.Img.recreateNew @() @() @() dv (imageInfo ex tlng usg) nil nil i
+	Vk.Img.recreateNew @'Nothing @() @() dv (imageInfo ex tlng usg) nil nil i
 	imageMemoryInfoB pd dv prs i >>= \ii -> imageReallocateBind dv i ii m
 
 imageInfo :: Vk.C.Extent2d ->
-	Vk.Img.Tiling -> Vk.Img.UsageFlags -> Vk.Img.CreateInfoNew n fmt
+	Vk.Img.Tiling -> Vk.Img.UsageFlags -> Vk.Img.CreateInfoNew 'Nothing fmt
 imageInfo ex tlng usg = Vk.Img.CreateInfoNew {
-		Vk.Img.createInfoNextNew = Nothing,
+		Vk.Img.createInfoNextNew = TMaybe.N,
 		Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 		Vk.Img.createInfoExtentNew = Vk.C.Extent3d {
 			Vk.C.extent3dWidth = Vk.C.extent2dWidth ex,
@@ -986,9 +986,9 @@ transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 	Vk.Cmd.pipelineBarrier cb
 		sstg dstg zeroBits HL.Nil HL.Nil (HL.Singleton $ U5 barrier)
 	where
-	barrier :: Vk.Img.MemoryBarrier () si sm nm fmt
+	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 	barrier = Vk.Img.MemoryBarrier {
-		Vk.Img.memoryBarrierNext = Nothing,
+		Vk.Img.memoryBarrierNext = TMaybe.N,
 		Vk.Img.memoryBarrierOldLayout = ol,
 		Vk.Img.memoryBarrierNewLayout = nl,
 		Vk.Img.memoryBarrierSrcQueueFamilyIndex = Vk.QFmly.Ignored,
@@ -1084,11 +1084,11 @@ instance RecreateFramebuffers sis sfs =>
 framebufferInfo ::
 	Vk.C.Extent2d -> Vk.RndrPss.R sr -> Vk.ImgVw.INew fmt nm si ->
 	Vk.ImgVw.INew dfmt dnm sdiv ->
-	Vk.Frmbffr.CreateInfoNew () sr '[ '(fmt, nm, si), '(dfmt, dnm, sdiv)]
+	Vk.Frmbffr.CreateInfoNew 'Nothing sr '[ '(fmt, nm, si), '(dfmt, dnm, sdiv)]
 framebufferInfo Vk.C.Extent2d {
 	Vk.C.extent2dWidth = w, Vk.C.extent2dHeight = h } rp attch dpt =
 	Vk.Frmbffr.CreateInfoNew {
-		Vk.Frmbffr.createInfoNextNew = Nothing,
+		Vk.Frmbffr.createInfoNextNew = TMaybe.N,
 		Vk.Frmbffr.createInfoFlagsNew = zeroBits,
 		Vk.Frmbffr.createInfoRenderPassNew = rp,
 		Vk.Frmbffr.createInfoAttachmentsNew =
@@ -1410,7 +1410,7 @@ createSyncObjects dv f =
 	HL.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @() dv def nil nil) \rfss ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Fnc.create @() dv inf nil nil) \iffs ->
+		(Vk.Fnc.create @'Nothing dv inf nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where inf = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
@@ -1900,9 +1900,9 @@ data UploadContext sf scp scb = UploadContext {
 vulkanEngineInitSyncStructures ::
 	Vk.Dvc.D sd -> (forall sf . Vk.Fnc.F sf -> IO a) -> IO a
 vulkanEngineInitSyncStructures dv f = do
-	let	uploadFenceCreateInfo :: Vk.Fnc.CreateInfo ()
+	let	uploadFenceCreateInfo :: Vk.Fnc.CreateInfo 'Nothing
 		uploadFenceCreateInfo = Vk.Fnc.CreateInfo {
-			Vk.Fnc.createInfoNext = Nothing,
+			Vk.Fnc.createInfoNext = TMaybe.N,
 			Vk.Fnc.createInfoFlags = zeroBits }
 	Vk.Fnc.create dv uploadFenceCreateInfo nil nil f
 
@@ -1921,7 +1921,7 @@ uploadContextSubmitInfo cmd = Vk.SubmitInfo {
 
 uploadContextCreateFence ::
 	Vk.Dvc.D sd -> (forall sf . Vk.Fnc.F sf -> IO a) -> IO a
-uploadContextCreateFence dv = Vk.Fnc.create @() @() @() dv def Nothing Nothing
+uploadContextCreateFence dv = Vk.Fnc.create @'Nothing @() @() dv def Nothing Nothing
 
 uploadContextCommandPoolCreateInfo :: QueueFamilyIndices -> Vk.CmdPl.CreateInfo 'Nothing
 uploadContextCommandPoolCreateInfo qfis = Vk.CmdPl.CreateInfo {
@@ -2087,7 +2087,7 @@ createImage' :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 			'[ '(si, 'Vk.Mm.K.Image nm fmt) ] ->
 		IO a) -> IO a
 createImage' pd dvc wdt hgt tlng usg prps f =
-	Vk.Img.createNew @() @() @()
+	Vk.Img.createNew @'Nothing @() @()
 		dvc (imageInfo ext tlng usg) Nothing Nothing \img -> do
 	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
 	print reqs

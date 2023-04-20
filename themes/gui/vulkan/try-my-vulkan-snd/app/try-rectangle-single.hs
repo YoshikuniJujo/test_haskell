@@ -815,9 +815,9 @@ instance RecreateFramebuffers sis sfs =>
 
 mkFramebufferCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.ImgVw.I si ->
-	Vk.Frmbffr.CreateInfo () sr '[si]
+	Vk.Frmbffr.CreateInfo 'Nothing sr '[si]
 mkFramebufferCreateInfo sce rp attch = Vk.Frmbffr.CreateInfo {
-	Vk.Frmbffr.createInfoNext = Nothing,
+	Vk.Frmbffr.createInfoNext = TMaybe.N,
 	Vk.Frmbffr.createInfoFlags = zeroBits,
 	Vk.Frmbffr.createInfoRenderPass = rp,
 	Vk.Frmbffr.createInfoAttachments = attch :** HeteroParList.Nil,
@@ -1061,7 +1061,7 @@ createSyncObjects ::
 createSyncObjects dvc f =
 	Vk.Semaphore.create @() dvc def nil nil \ias ->
 	Vk.Semaphore.create @() dvc def nil nil \rfs ->
-	Vk.Fence.create @() dvc fncInfo nil nil \iff ->
+	Vk.Fence.create @'Nothing dvc fncInfo nil nil \iff ->
 	f $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
