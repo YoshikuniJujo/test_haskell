@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -21,7 +21,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked', withPokedMaybe', withPtrS, pattern NullPtr )
+	WithPoked, withPoked', withPtrS, pattern NullPtr )
 import Foreign.Storable.HeteroList
 import Foreign.C.Enum
 import Control.Arrow
@@ -75,7 +75,7 @@ type family Map (f :: j -> k) xs where
 	Map _f '[] = '[]
 	Map f (x ': xs) = f x ': Map f xs
 
-createInfoToCore :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM qcis) =>
+createInfoToCore :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M qcis) =>
 	CreateInfo mn qcis -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -86,7 +86,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledFeatures = mef } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	alloca \pci ->
-		runContT (withPokedHeteroToListM (ContT . queueCreateInfoToCore) qcis) \cqcis ->
+		runContT (withPokedHeteroToListM' @_ @TMaybe.M (ContT . queueCreateInfoToCore) qcis) \cqcis ->
 		let	qcic = length cqcis in
 		allocaArray qcic \pcqcis ->
 		pokeArray pcqcis cqcis >>
@@ -110,7 +110,7 @@ createInfoToCore CreateInfo {
 				poke pci (mk p)
 		() <$ f pci
 
-create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM qcis, WithPoked c) =>
+create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M qcis, WithPoked c) =>
 	PhysicalDevice.P -> CreateInfo mn qcis -> Maybe (AllocationCallbacks.A c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
@@ -131,16 +131,16 @@ getQueue (D cdvc) qfi qi = Queue.Q <$> alloca \pQueue -> do
 waitIdle :: D -> IO ()
 waitIdle (D d) = throwUnlessSuccess . Result =<< C.waitIdle d
 
-data QueueCreateInfo n = QueueCreateInfo {
-	queueCreateInfoNext :: Maybe n,
+data QueueCreateInfo mn = QueueCreateInfo {
+	queueCreateInfoNext :: TMaybe.M mn,
 	queueCreateInfoFlags :: QueueCreateFlags,
 	queueCreateInfoQueueFamilyIndex :: QueueFamily.Index,
 	queueCreateInfoQueuePriorities :: [Float] }
 
-deriving instance Show n => Show (QueueCreateInfo n)
+deriving instance Show (TMaybe.M mn) => Show (QueueCreateInfo mn)
 
-queueCreateInfoToCore ::
-	WithPoked n => QueueCreateInfo n -> (C.QueueCreateInfo -> IO a) -> IO ()
+queueCreateInfoToCore :: WithPoked (TMaybe.M mn) =>
+	QueueCreateInfo mn -> (C.QueueCreateInfo -> IO a) -> IO ()
 queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoNext = mnxt,
 	queueCreateInfoFlags = QueueCreateFlagBits flgs,
@@ -148,7 +148,7 @@ queueCreateInfoToCore QueueCreateInfo {
 	queueCreateInfoQueuePriorities = qps
 	} f = allocaArray (length qps) \pqps -> do
 	pokeArray pqps qps
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 		() <$ f C.QueueCreateInfo {
 			C.queueCreateInfoSType = (),
 			C.queueCreateInfoPNext = pnxt',
