@@ -1214,7 +1214,7 @@ transitionImageLayout dvc gq cp img olyt nlyt mplvs =
 	beginSingleTimeCommands dvc gq cp \cb -> do
 	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
 		barrier = Vk.Img.MemoryBarrier {
-			Vk.Img.memoryBarrierNext = Nothing,
+			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
 			Vk.Img.memoryBarrierNewLayout = nlyt,
 			Vk.Img.memoryBarrierSrcQueueFamilyIndex =
