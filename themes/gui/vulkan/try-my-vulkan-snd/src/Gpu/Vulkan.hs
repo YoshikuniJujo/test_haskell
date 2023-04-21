@@ -15,6 +15,7 @@ module Gpu.Vulkan (
 
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -28,7 +29,7 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import Gpu.Vulkan.VertexInput qualified as VertexInput
 
 data SubmitInfo n sss svss ssss = SubmitInfo {
-	submitInfoNext :: Maybe n,
+	submitInfoNext :: TMaybe.M n,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		HeteroParList.PL SemaphorePipelineStageFlags sss,
 	submitInfoCommandBuffers :: HeteroParList.PL (U2 CommandBuffer.Binded) svss,
@@ -36,8 +37,8 @@ data SubmitInfo n sss svss ssss = SubmitInfo {
 		HeteroParList.PL Semaphore.S ssss }
 
 class M.SubmitInfoListToCore (MiddleNextList nsssvsss) => SubmitInfoListToMiddle
-	(nsssvsss :: [(Type, [Type], [(Type, [(Type, VertexInput.Rate)])], [Type])]) where
-	type MiddleNextList nsssvsss :: [Type]
+	(nsssvsss :: [(Maybe Type, [Type], [(Type, [(Type, VertexInput.Rate)])], [Type])]) where
+	type MiddleNextList nsssvsss :: [Maybe Type]
 	submitInfoListToMiddle ::
 		HeteroParList.PL (U4 SubmitInfo) nsssvsss ->
 		HeteroParList.PL M.SubmitInfo (MiddleNextList nsssvsss)
@@ -47,7 +48,7 @@ instance SubmitInfoListToMiddle '[] where
 	submitInfoListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
 instance (
-	WithPoked n,
+	WithPoked (TMaybe.M n),
 	SubmitInfoListToMiddle nssvsss ) =>
 	SubmitInfoListToMiddle ('(n, sss, svss, ssss) ': nssvsss) where
 	type MiddleNextList ('(n, sss, svss, ssss) ': nssvsss) =

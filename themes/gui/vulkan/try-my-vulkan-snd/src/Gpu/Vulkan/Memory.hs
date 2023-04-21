@@ -26,10 +26,10 @@ import Foreign.Ptr
 import Foreign.Storable.PeekPoke
 import Control.Exception hiding (try)
 import Data.Kind
-import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
-import Data.Maybe
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
+import Data.Maybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.IORef
@@ -168,7 +168,7 @@ memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 	algn = fromIntegral (fromMaybe 1 malgn) `lcm`
 		Memory.M.requirementsAlignment reqs
 
-allocate :: (Pokable n, Pokable c, Pokable d, Alignments sibfoss) =>
+allocate :: (WithPoked (TMaybe.M n), Pokable c, Pokable d, Alignments sibfoss) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
@@ -182,7 +182,7 @@ allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
 	\mem -> f =<< newM2' bs mem
 
 reallocate :: (
-	Pokable n, Pokable c, Pokable d, Alignments sibfoss ) =>
+	WithPoked (TMaybe.M n), Pokable c, Pokable d, Alignments sibfoss ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
@@ -194,7 +194,7 @@ reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
 	writeMBinded' mem bs
 
 reallocateBind :: (
-	Pokable n, Pokable c, Pokable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
+	WithPoked (TMaybe.M n), Pokable c, Pokable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	Maybe (AllocationCallbacks.A c) ->
@@ -225,7 +225,7 @@ instance (
 		rebindAll dvc ibs m
 
 allocateBind :: (
-	Pokable n, Pokable c, Pokable d,
+	WithPoked (TMaybe.M n), Pokable c, Pokable d,
 	BindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->

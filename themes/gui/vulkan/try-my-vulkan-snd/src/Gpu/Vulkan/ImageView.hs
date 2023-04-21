@@ -1,7 +1,9 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView where
@@ -9,6 +11,7 @@ module Gpu.Vulkan.ImageView where
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.ImageView.Enum
@@ -32,7 +35,7 @@ iToNew :: I s -> INew fmt nm si
 iToNew (I i) = INew i
 
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+	createInfoNextNew :: TMaybe.M n,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoImageNew :: Image.BindedNew si sm nm ifmt,
 	createInfoViewTypeNew :: Type,
@@ -40,7 +43,7 @@ data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
 	createInfoSubresourceRangeNew :: Image.M.SubresourceRange }
 
 data CreateInfo si sm n = CreateInfo {
-	createInfoNext :: Maybe n,
+	createInfoNext :: TMaybe.M n,
 	createInfoFlags :: CreateFlags,
 	createInfoImage :: Image.Binded si sm,
 	createInfoViewType :: Type,
@@ -85,7 +88,7 @@ createInfoToMiddle CreateInfo {
 
 createNew :: (
 	T.FormatToValue ivfmt,
-	Pokable n, Pokable c, Pokable d ) =>
+	WithPoked (TMaybe.M n), Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall siv . INew ivfmt nm siv -> IO a) -> IO a
@@ -93,7 +96,7 @@ createNew (Device.D dvc) ci macc macd f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\i -> M.destroy dvc i macd) (f . INew)
 
-create :: (Pokable n, Pokable c, Pokable d) =>
+create :: (WithPoked (TMaybe.M n), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo si sm n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . I s -> IO a) -> IO a
@@ -103,14 +106,14 @@ create (Device.D dvc) ci macc macd f = bracket
 
 recreateNew :: (
 	T.FormatToValue ivfmt,
-	Pokable n, Pokable c, Pokable d ) =>
+	WithPoked (TMaybe.M n), Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	INew ivfmt nm s -> IO ()
 recreateNew (Device.D dvc) ci macc macd (INew i) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd i
 
-recreate :: (Pokable n, Pokable c, Pokable d) =>
+recreate :: (WithPoked (TMaybe.M n), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo si sm n ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	I s -> IO ()

@@ -17,7 +17,7 @@ import Gpu.Vulkan.Instance.Type
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle as M
 
-create :: (WithPoked (TMaybe.M n), Pokable n2, Pokable n3, Pokable n4) =>
+create :: (WithPoked (TMaybe.M n), WithPoked (TMaybe.M n2), Pokable n3, Pokable n4) =>
 	M.CreateInfo n n2 ->
 	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
 	(forall s . I s -> IO a) -> IO a
