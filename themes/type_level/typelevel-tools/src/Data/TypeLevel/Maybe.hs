@@ -15,3 +15,6 @@ data M (mt :: Maybe Type) where
 
 deriving instance Show (M 'Nothing)
 deriving instance Show a => Show (M ('Just a))
+
+deriving instance Eq (M 'Nothing)
+deriving instance Eq a => Eq (M ('Just a))
