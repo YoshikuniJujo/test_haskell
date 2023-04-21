@@ -215,16 +215,16 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @[w1] dvc memA def
 		<*> Vk.Mem.read @nm2 @(VObj.List 256 w2 "") @[w2] dvc memB def
 		<*> Vk.Mem.read @nm3 @(VObj.List 256 w3 "") @[w3] dvc memC def
-	where	submitInfo :: Vk.SubmitInfo () _ _ _
+	where	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 			Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	maxGroupCountX :. _ =
@@ -247,7 +247,7 @@ withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qFam,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
-instInfo :: Vk.Inst.CreateInfo 'Nothing ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 
@@ -493,14 +493,14 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
-	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
+	IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
 getMemoryInfo phdvc dvc buffer = do
 	requirements <- Vk.Buffer.getMemoryRequirements dvc buffer
 	memTypeIdx <- findMemoryTypeIndex phdvc requirements (
 		Vk.Mem.PropertyHostVisibleBit .|.
 		Vk.Mem.PropertyHostCoherentBit )
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = memTypeIdx }
 
 findMemoryTypeIndex ::

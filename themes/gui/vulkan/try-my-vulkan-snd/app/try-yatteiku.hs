@@ -101,7 +101,7 @@ screenWidth, screenHeight :: Word32
 
 main :: IO ()
 main = do
-	let	createInfo :: Vk.Instance.CreateInfo 'Nothing ()
+	let	createInfo :: Vk.Instance.CreateInfo 'Nothing 'Nothing
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
 				[Vk.Khr.validationLayerName] }
@@ -193,9 +193,9 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 			[cmdBuf] -> do
 				r <- Vk.CommandBuffer.begin cmdBuf
 					(def :: Vk.CommandBuffer.BeginInfo 'Nothing 'Nothing) $ f cmdBuf
-				let	submitInfo :: Vk.SubmitInfo () _ _ _
+				let	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 					submitInfo = Vk.SubmitInfo {
-						Vk.submitInfoNext = Nothing,
+						Vk.submitInfoNext = TMaybe.N,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 						Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 						Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
@@ -248,10 +248,10 @@ makeImage' phdvc dvc f = do
 				[] -> error "No available memory types"
 				i : _ -> i
 			imgMemAllocInfo = Vk.Memory.AllocateInfo {
-				Vk.Memory.allocateInfoNext = Nothing,
+				Vk.Memory.allocateInfoNext = TMaybe.N,
 				Vk.Memory.allocateInfoMemoryTypeIndex =
 					memoryTypeIndex }
-		Vk.Memory.allocateBind @()
+		Vk.Memory.allocateBind @'Nothing
 			dvc (HeteroParList.Singleton . U2 $ Vk.Memory.Image image)
 			imgMemAllocInfo nil nil \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
@@ -341,9 +341,9 @@ beginSingleTimeCommands :: forall sd sc a .
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CommandBuffer.allocate
 		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
@@ -395,9 +395,9 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Memory.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo :: Vk.Memory.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
 	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhysicalDevice.P -> Vk.Memory.M.TypeBits -> Vk.Memory.PropertyFlags ->
@@ -445,7 +445,7 @@ makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->
 	(forall s . Vk.ImgView.I s -> IO a) -> IO a
 makeImageView dvc bimg f = do
 	let	imgViewCreateInfo = Vk.ImgView.CreateInfo {
-			Vk.ImgView.createInfoNext = Nothing,
+			Vk.ImgView.createInfoNext = TMaybe.N,
 			Vk.ImgView.createInfoFlags =
 				Vk.ImgView.CreateFlagsZero,
 			Vk.ImgView.createInfoImage = bimg,
@@ -471,7 +471,7 @@ makeImageView dvc bimg f = do
 						0,
 					Vk.Img.subresourceRangeLayerCount = 1 }
 			}
-	Vk.ImgView.create @() dvc imgViewCreateInfo nil nil \imgView -> do
+	Vk.ImgView.create @'Nothing dvc imgViewCreateInfo nil nil \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
 		f imgView
 

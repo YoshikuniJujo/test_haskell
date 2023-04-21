@@ -178,9 +178,9 @@ run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
 	Vk.Queue.submit queue (U4 submitInfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle queue
 	rm dvc memA memB memC
-	where	submitInfo :: Vk.SubmitInfo () _ _ _
+	where	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 			Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
@@ -221,7 +221,7 @@ readMemories' dvc memA memB memC =
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	maxGroupCountX :. _ =
@@ -244,7 +244,7 @@ withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 		Vk.Dvc.queueCreateInfoQueueFamilyIndex = qfam,
 		Vk.Dvc.queueCreateInfoQueuePriorities = [0] }
 
-instInfo :: Vk.Inst.CreateInfo 'Nothing ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 
@@ -358,9 +358,9 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	print mprops >>
 	let	memTypeIdx =
 			findMemoryTypeIndex reqs memoryPropertyBits mprops
-		memInfo :: Vk.Dvc.Mem.Buffer.AllocateInfo ()
+		memInfo :: Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
 		memInfo = Vk.Dvc.Mem.Buffer.AllocateInfo {
-			Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+			Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex =
 				memTypeIdx } in
 	print memInfo >>
@@ -581,14 +581,14 @@ dscPoolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
-	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
+	IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
 getMemoryInfo phdvc dvc buffer = do
 	memTypeIdx <- findMemoryTypeIndex
 		<$> ((: []) <$> Vk.Buffer.getMemoryRequirements dvc buffer)
 		<*> pure memoryPropertyBits
 		<*> Vk.PhDvc.getMemoryProperties phdvc
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = memTypeIdx }
 
 memoryPropertyBits :: Vk.Mem.PropertyFlagBits

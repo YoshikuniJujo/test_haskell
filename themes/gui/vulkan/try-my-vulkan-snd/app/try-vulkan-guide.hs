@@ -209,7 +209,7 @@ createInstance f = do
 	where
 	msg = "validation layers requested, but not available!"
 	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
-		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ())) ()
+		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo () () () () () ())) 'Nothing
 	crInfo exts = Vk.Ist.M.CreateInfo {
 		Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 		Vk.Ist.M.createInfoFlags = def,
@@ -218,7 +218,7 @@ createInstance f = do
 			bool [] validationLayers enableValidationLayers,
 		Vk.Ist.M.createInfoEnabledExtensionNames = exts }
 	appInfo = Vk.M.ApplicationInfo {
-		Vk.M.applicationInfoNext = Nothing,
+		Vk.M.applicationInfoNext = TMaybe.N,
 		Vk.M.applicationInfoApplicationName =
 			"Example Vulkan Application",
 		Vk.M.applicationInfoApplicationVersion =
@@ -523,9 +523,9 @@ recreateImageView dvc timg asps iv =
 
 mkImageViewCreateInfo ::
 	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags ->
-	Vk.ImgVw.CreateInfoNew () si sm nm ifmt ivfmt
+	Vk.ImgVw.CreateInfoNew 'Nothing si sm nm ifmt ivfmt
 mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
-	Vk.ImgVw.createInfoNextNew = Nothing,
+	Vk.ImgVw.createInfoNextNew = TMaybe.N,
 	Vk.ImgVw.createInfoFlagsNew = zeroBits,
 	Vk.ImgVw.createInfoImageNew = sci,
 	Vk.ImgVw.createInfoViewTypeNew = Vk.ImgVw.Type2d,
@@ -922,45 +922,44 @@ imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
 		Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
-	Vk.Dvc.Mem.AllocateInfo () -> (forall sm .
+	Vk.Dvc.Mem.AllocateInfo 'Nothing -> (forall sm .
 		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
 		IO a) -> IO a
 imageAllocateBind dvc img memInfo f =
-	Vk.Mem.allocateBind @() dvc
+	Vk.Mem.allocateBind @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.Image img) memInfo
 		nil nil \(HeteroParList.Singleton (U2 (Vk.Mem.ImageBinded bnd))) m -> do
 		f bnd m
 
 imageReallocateBind ::
 	Vk.Dvc.D sd -> Vk.Img.BindedNew sb sm nm fmt ->
-	Vk.Dvc.Mem.AllocateInfo () ->
-	Vk.Mem.M
-		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] -> IO ()
+	Vk.Dvc.Mem.AllocateInfo 'Nothing ->
+	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
-	Vk.Mem.reallocateBind @() dvc
+	Vk.Mem.reallocateBind @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
 		nil nil m
 
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.INew s nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo n)
+	Vk.Img.INew s nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
 imageMemoryInfo pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsNew dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	pure Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 imageMemoryInfoBinded ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
-	Vk.Img.BindedNew sm si nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo n)
+	Vk.Img.BindedNew sm si nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
 imageMemoryInfoBinded pd dvc prps img = do
 	reqs <- Vk.Img.getMemoryRequirementsBindedNew dvc img
 	mt <- findMemoryType pd (Vk.Mem.M.requirementsMemoryTypeBits reqs) prps
 	pure Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
@@ -1029,9 +1028,9 @@ beginSingleTimeCommands :: forall sd sc a .
 beginSingleTimeCommands dvc gq cp cmd = do
 	Vk.CmdBffr.allocate
 		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
@@ -1193,9 +1192,9 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.AllocateInfo ()
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.AllocateInfo 'Nothing
 	allcInfo mt = Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createBuffer2 :: forall obj obj2 nm sd a . (
@@ -1227,9 +1226,9 @@ createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil nil
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.AllocateInfo ()
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.AllocateInfo 'Nothing
 	allcInfo mt = Vk.Dvc.Mem.AllocateInfo {
-		Vk.Dvc.Mem.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
@@ -1374,9 +1373,9 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocate
 		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
@@ -1736,11 +1735,11 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
 		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 		_ -> error "never occur"
-	let	submitInfo :: Vk.SubmitInfo () '[sias]
+	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
 		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
