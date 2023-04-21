@@ -1,6 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -14,6 +15,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.IORef
 
 import Gpu.Vulkan.Enum
@@ -28,8 +30,8 @@ import {-# SOURCE #-} qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Image.Middle.Internal as Image
 import qualified Gpu.Vulkan.ImageView.Core as C
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoImage :: Image.I,
 	createInfoViewType :: Type,
@@ -37,8 +39,8 @@ data CreateInfo n = CreateInfo {
 	createInfoComponents :: Mapping,
 	createInfoSubresourceRange :: Image.SubresourceRange }
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -47,7 +49,7 @@ createInfoToCore CreateInfo {
 	createInfoFormat = Format fmt,
 	createInfoComponents = cpns,
 	createInfoSubresourceRange = srr
-	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	readIORef rimg >>= \(_, img) -> let ci = C.CreateInfo {
 		C.createInfoSType = (),
 		C.createInfoPNext = pnxt',
@@ -70,8 +72,8 @@ iToCore (I i) = readIORef i
 iFromCore :: C.I -> IO I
 iFromCore i = I <$> newIORef i
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO I
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO I
 create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do
@@ -79,8 +81,8 @@ create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 			throwUnlessSuccess $ Result r
 	peek pView
 
-recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
-	Device.D -> CreateInfo n ->
+recreate :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+	Device.D -> CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	I -> IO ()
 recreate (Device.D dvc) ci macc macd (I ri) = alloca \pView ->

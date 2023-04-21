@@ -1,12 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Middle.Internal (
@@ -52,6 +52,7 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Control.Monad
 import Data.Default
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Length qualified as TL
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -72,14 +73,15 @@ import {-# SOURCE #-} qualified
 
 #include <vulkan/vulkan.h>
 
-data ApplicationInfo n = ApplicationInfo {
-	applicationInfoNext :: Maybe n,
+data ApplicationInfo mn = ApplicationInfo {
+	applicationInfoNext :: TMaybe.M mn,
 	applicationInfoApplicationName :: T.Text,
 	applicationInfoApplicationVersion :: ApiVersion,
 	applicationInfoEngineName :: T.Text,
 	applicationInfoEngineVersion :: ApiVersion,
 	applicationInfoApiVersion :: ApiVersion }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (ApplicationInfo mn)
 
 newtype ApiVersion = ApiVersion C.ApiVersion deriving (Show, Eq, Ord, Storable)
 
@@ -95,8 +97,8 @@ type Patch = Word16	-- 0 <= patch < 4095
 makeApiVersion :: Variant -> Major -> Minor -> Patch -> ApiVersion
 makeApiVersion v mj mn p = ApiVersion $ C.makeApiVersion v mj mn p
 
-applicationInfoToCore :: WithPoked n =>
-	ApplicationInfo n -> (Ptr C.ApplicationInfo -> IO a) -> IO ()
+applicationInfoToCore :: WithPoked (TMaybe.M mn) =>
+	ApplicationInfo mn -> (Ptr C.ApplicationInfo -> IO a) -> IO ()
 applicationInfoToCore ApplicationInfo {
 	applicationInfoNext = mnxt,
 	applicationInfoApplicationName = anm,
@@ -104,7 +106,7 @@ applicationInfoToCore ApplicationInfo {
 	applicationInfoEngineName = enm,
 	applicationInfoEngineVersion = (\(ApiVersion v) -> v) -> engv,
 	applicationInfoApiVersion = (\(ApiVersion v) -> v) -> apiv
-	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	textToCString anm \canm -> textToCString enm \cenm ->
 	let	appInfo = C.ApplicationInfo {
 			C.applicationInfoSType = (),
@@ -274,8 +276,8 @@ clearValueArrayPtrs = iterate (
 pokeClearValue :: C.PtrClearValue -> C.PtrClearValue -> IO ()
 pokeClearValue dst src = copyBytes dst src #{size VkClearValue}
 
-data SubmitInfo n = SubmitInfo {
-	submitInfoNext :: Maybe n,
+data SubmitInfo mn = SubmitInfo {
+	submitInfoNext :: TMaybe.M mn,
 	submitInfoWaitSemaphoreDstStageMasks ::
 		[(Semaphore.S, Pipeline.StageFlags)],
 	submitInfoCommandBuffers :: [CommandBuffer.C],
@@ -288,13 +290,13 @@ class SubmitInfoListToCore ns where
 instance SubmitInfoListToCore '[] where
 	submitInfoListToCore HeteroParList.Nil f = () <$ f []
 
-instance (WithPoked n, SubmitInfoListToCore ns) =>
+instance (WithPoked (TMaybe.M n), SubmitInfoListToCore ns) =>
 	SubmitInfoListToCore (n ': ns) where
-	submitInfoListToCore (ci :** cis) f = submitInfoToCore ci \cci ->
+	submitInfoListToCore (ci :** cis) f = submitInfoToCore @n ci \cci ->
 		submitInfoListToCore cis \ccis -> f $ cci : ccis
 
-submitInfoToCore :: WithPoked n =>
-	SubmitInfo n -> (C.SubmitInfo -> IO a) -> IO ()
+submitInfoToCore :: WithPoked (TMaybe.M mn) =>
+	SubmitInfo mn -> (C.SubmitInfo -> IO a) -> IO ()
 submitInfoToCore SubmitInfo {
 	submitInfoNext = mnxt,
 	submitInfoWaitSemaphoreDstStageMasks =
@@ -305,7 +307,7 @@ submitInfoToCore SubmitInfo {
 	submitInfoCommandBuffers = (length &&& id) . map CommandBuffer.unC -> (cbc, cbs),
 	submitInfoSignalSemaphores =
 		length &&& (Semaphore.unS <$>) -> (ssc, sss) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray wsc \pwss ->
 	pokeArray pwss wss >>
 	allocaArray wsc \pwdsms ->

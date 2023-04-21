@@ -1,8 +1,11 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
@@ -21,6 +24,7 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Maybe
 import Data.List.Length
 import Data.Word
@@ -181,18 +185,19 @@ getFormatProperties (P pdvc) (Format fmt) = formatPropertiesFromCore <$> alloca 
 	C.getFormatProperties pdvc fmt pp
 	peek pp
 
-data ShaderDrawParametersFeatures n = ShaderDrawParametersFeatures {
-	shaderDrawParametersFeaturesNext :: Maybe n,
+data ShaderDrawParametersFeatures mn = ShaderDrawParametersFeatures {
+	shaderDrawParametersFeaturesNext :: TMaybe.M mn,
 	shaderDrawParametersFeaturesShaderDrawParameters :: Bool }
-	deriving Show
 
-shaderDrawParametersFeaturesToCore :: WithPoked n =>
-	ShaderDrawParametersFeatures n ->
+deriving instance Show (TMaybe.M mn) => Show (ShaderDrawParametersFeatures mn)
+
+shaderDrawParametersFeaturesToCore :: WithPoked (TMaybe.M mn) =>
+	ShaderDrawParametersFeatures mn ->
 	(Ptr C.ShaderDrawParametersFeatures -> IO a) -> IO a
 shaderDrawParametersFeaturesToCore ShaderDrawParametersFeatures {
 	shaderDrawParametersFeaturesNext = mnxt,
 	shaderDrawParametersFeaturesShaderDrawParameters = sdp } f =
-	alloca \pfs -> withPokedMaybe' mnxt \pnxt -> do
+	alloca \pfs -> withPoked' mnxt \pnxt -> do
 		withPtrS pnxt \(castPtr -> pnxt') -> poke pfs
 			C.ShaderDrawParametersFeatures {
 				C.shaderDrawParametersFeaturesSType = (),
@@ -201,6 +206,6 @@ shaderDrawParametersFeaturesToCore ShaderDrawParametersFeatures {
 					boolToBool32 sdp }
 		f pfs
 
-instance WithPoked n => WithPoked (ShaderDrawParametersFeatures n) where
+instance WithPoked (TMaybe.M mn) => WithPoked (ShaderDrawParametersFeatures mn) where
 	withPoked' sdpfs f =
 		shaderDrawParametersFeaturesToCore sdpfs $ f . ptrS . castPtr

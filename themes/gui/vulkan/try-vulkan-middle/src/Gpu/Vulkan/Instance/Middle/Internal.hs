@@ -40,7 +40,7 @@ data CreateInfo mn a = CreateInfo {
 	createInfoEnabledLayerNames :: [T.Text],
 	createInfoEnabledExtensionNames :: [T.Text] }
 
-deriving instance (Show (TMaybe.M mn), Show a) => Show (CreateInfo mn a)
+deriving instance (Show (TMaybe.M mn), Show (TMaybe.M a)) => Show (CreateInfo mn a)
 
 instance Default (CreateInfo 'Nothing a) where
 	def = CreateInfo {
@@ -50,7 +50,7 @@ instance Default (CreateInfo 'Nothing a) where
 		createInfoEnabledLayerNames = [],
 		createInfoEnabledExtensionNames = [] }
 
-createInfoToCore :: (WithPoked (TMaybe.M mn), WithPoked n') =>
+createInfoToCore :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M n')) =>
 	CreateInfo mn n' -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -79,7 +79,7 @@ createInfoToCore CreateInfo {
 
 newtype I = I C.I deriving Show
 
-create :: (WithPoked (TMaybe.M mn), WithPoked a, WithPoked c) =>
+create :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M a), WithPoked c) =>
 	CreateInfo mn a -> Maybe (AllocationCallbacks.A c) -> IO I
 create ci mac = I <$> alloca \pist -> do
 	createInfoToCore ci \pcci ->

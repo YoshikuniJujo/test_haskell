@@ -1,8 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Memory.Middle.Internal (
@@ -25,6 +27,7 @@ import Foreign.Marshal.Alloc hiding (free)
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
 import Data.IORef
@@ -93,19 +96,20 @@ heapFromCore :: C.Heap -> Heap
 heapFromCore C.Heap { C.heapSize = sz, C.heapFlags = flgs } =
 	Heap { heapSize = Device.Size sz, heapFlags = HeapFlagBits flgs }
 
-data AllocateInfo n = AllocateInfo {
-	allocateInfoNext :: Maybe n,
+data AllocateInfo mn = AllocateInfo {
+	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoAllocationSize :: Device.Size,
 	allocateInfoMemoryTypeIndex :: TypeIndex }
-	deriving Show
 
-allocateInfoToCore :: WithPoked n =>
-	AllocateInfo n -> (Ptr C.AllocateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn)
+
+allocateInfoToCore :: WithPoked (TMaybe.M mn) =>
+	AllocateInfo mn -> (Ptr C.AllocateInfo -> IO a) -> IO ()
 allocateInfoToCore AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoAllocationSize = Device.Size sz,
 	allocateInfoMemoryTypeIndex = TypeIndex mti } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.AllocateInfo {
 			C.allocateInfoSType = (),
 			C.allocateInfoPNext = pnxt',
@@ -113,8 +117,8 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoMemoryTypeIndex = mti } in
 	withPoked ci f
 
-allocate :: (WithPoked n, WithPoked a) =>
-	Device.D -> AllocateInfo n -> Maybe (AllocationCallbacks.A a) -> IO M
+allocate :: (WithPoked (TMaybe.M mn), WithPoked a) =>
+	Device.D -> AllocateInfo mn -> Maybe (AllocationCallbacks.A a) -> IO M
 allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 	allocateInfoToCore ai \pai ->
 		AllocationCallbacks.maybeToCore mac \pac -> do
@@ -122,8 +126,8 @@ allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 			throwUnlessSuccess $ Result r
 	newIORef =<< peek pm
 
-reallocate :: (WithPoked n, WithPoked a, WithPoked f) =>
-	Device.D -> AllocateInfo n ->
+reallocate :: (WithPoked (TMaybe.M mn), WithPoked a, WithPoked f) =>
+	Device.D -> AllocateInfo mn ->
 	Maybe (AllocationCallbacks.A a) ->
 	Maybe (AllocationCallbacks.A f) ->
 	M -> IO ()
@@ -158,18 +162,19 @@ map (Device.D dvc) (M mem)
 unmap :: Device.D -> M -> IO ()
 unmap (Device.D dvc) (M mem) = C.unmap dvc =<< readIORef mem
 
-data Barrier n = Barrier {
-	barrierNext :: Maybe n,
+data Barrier mn = Barrier {
+	barrierNext :: TMaybe.M mn,
 	barrierSrcAccessMask :: AccessFlags,
 	barrierDstAccessMask :: AccessFlags }
-	deriving Show
 
-barrierToCore :: WithPoked n => Barrier n -> (C.Barrier -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (Barrier mn)
+
+barrierToCore :: WithPoked (TMaybe.M mn) => Barrier mn -> (C.Barrier -> IO a) -> IO ()
 barrierToCore Barrier {
 	barrierNext = mnxt,
 	barrierSrcAccessMask = AccessFlagBits sam,
 	barrierDstAccessMask = AccessFlagBits dam } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> f C.Barrier {
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> f C.Barrier {
 		C.barrierSType = (),
 		C.barrierPNext = pnxt',
 		C.barrierSrcAccessMask = sam,
