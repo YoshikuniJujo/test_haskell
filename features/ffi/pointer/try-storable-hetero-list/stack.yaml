@@ -39,11 +39,13 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
+
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f504f2165136eb9ee96751861e199b15fcccaed0
+  commit: 062d82aeffec902f752c4d87d433364b0d9ce1c3
   subdirs:
   - themes/hetero-list/try-hetero-parameter-list
+  - themes/type_level/typelevel-tools
   - features/ffi/pointer/try-storable-peek-poke
 
 # Override default flag values for local packages and extra-deps

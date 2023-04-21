@@ -1,9 +1,10 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE DataKinds, PolyKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds, ConstraintKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
@@ -22,13 +23,15 @@ module Foreign.Storable.HeteroList (
 
 	-- ** Plain
 
-	WithPokedHeteroToListM(..), withPokedWithHeteroListM,
-	WithPokedHeteroToListM'(..),
+	WithPokedHeteroToListM, withPokedHeteroToListM, withPokedWithHeteroListM,
+	WithPokedHeteroToListM', withPokedHeteroToListM',
 
 	-- ** CPS
 
-	WithPokedHeteroToListCpsM(..), withPokedWithHeteroListCpsM,
-	WithPokedHeteroToListCpsM'(..), withPokedWithHeteroListCpsM'
+	WithPokedHeteroToListCpsM,
+	withPokedHeteroToListCpsM, withPokedWithHeteroListCpsM,
+	WithPokedHeteroToListCpsM',
+	withPokedHeteroToListCpsM', withPokedWithHeteroListCpsM'
 
 	) where
 
@@ -73,70 +76,50 @@ instance (Pokable a, PokableList as) => PokableList (a ': as) where
 
 -- WithPoked
 
-class WithPokedHeteroToListM ss where
-	withPokedHeteroToListM :: Applicative m =>
-		(forall s . WithPoked s => t s -> m a) ->
-		HeteroParList.PL t ss -> m [a]
+type WithPokedHeteroToListM = HeteroParList.ConstraintHeteroToListM WithPoked
 
-instance WithPokedHeteroToListM '[] where
-	withPokedHeteroToListM _ HeteroParList.Nil = pure []
+withPokedHeteroToListM :: (
+	WithPokedHeteroToListM ss, Applicative m ) =>
+	(forall s . WithPoked s => t s -> m a) -> HeteroParList.PL t ss -> m [a]
+withPokedHeteroToListM = HeteroParList.constraintHeteroToListM @WithPoked
 
-instance (WithPoked s, WithPokedHeteroToListM ss) =>
-	WithPokedHeteroToListM (s ': ss) where
-	withPokedHeteroToListM f (x :** xs) =
-		(:) <$> f x <*> withPokedHeteroToListM f xs
+type WithPokedHeteroToListM' = HeteroParList.ConstraintHeteroToListM' WithPoked
 
-class WithPokedHeteroToListM' (t' :: k -> Type) (ss :: [k]) where
-	withPokedHeteroToListM' :: Applicative m =>
-		(forall (s :: k) . WithPoked (t' s) => t s -> m a) ->
-		HeteroParList.PL t ss -> m [a]
-
-instance WithPokedHeteroToListM' t' '[] where
-	withPokedHeteroToListM' _ HeteroParList.Nil = pure []
-
-instance (WithPoked (t' s), WithPokedHeteroToListM' t' ss) =>
-	WithPokedHeteroToListM' t' (s ': ss) where
-	withPokedHeteroToListM' f (x :** xs) =
-		(:) <$> f x <*> withPokedHeteroToListM' @_ @t' f xs
+withPokedHeteroToListM' :: forall k t' t ss m a .
+	(WithPokedHeteroToListM' t' ss, Applicative m) =>
+	(forall (s :: k) . WithPoked (t' s) => t s -> m a) ->
+	HeteroParList.PL t ss -> m [a]
+withPokedHeteroToListM' = HeteroParList.constraintHeteroToListM' @_ @WithPoked @t'
 
 withPokedWithHeteroListM :: (WithPokedHeteroToListM ss, Applicative m) =>
 		HeteroParList.PL t ss ->
 		(forall s . WithPoked s => t s -> m a) -> m [a]
 withPokedWithHeteroListM xs f = withPokedHeteroToListM f xs
 
-class WithPokedHeteroToListCpsM ns where
-	withPokedHeteroToListCpsM ::
-		(forall s . WithPoked s => t s -> (a -> m b) -> m b) ->
-		HeteroParList.PL t ns ->
-		([a] -> m b) -> m b
+type WithPokedHeteroToListCpsM =
+	HeteroParList.ConstraintHeteroToListCpsM WithPoked
 
-instance WithPokedHeteroToListCpsM '[] where
-	withPokedHeteroToListCpsM _ HeteroParList.Nil g = g []
-
-instance (WithPoked n, WithPokedHeteroToListCpsM ns) =>
-	WithPokedHeteroToListCpsM (n ': ns) where
-	withPokedHeteroToListCpsM f (x :** xs) g =
-		f x \y -> withPokedHeteroToListCpsM f xs \ys -> g $ y : ys
-
-class WithPokedHeteroToListCpsM' (t' :: k -> Type) (ns :: [k]) where
-	withPokedHeteroToListCpsM' ::
-		(forall (s :: k) . WithPoked (t' s) => t s -> (a -> m b) -> m b) ->
-		HeteroParList.PL t ns ->
-		([a] -> m b) -> m b
-
-instance WithPokedHeteroToListCpsM' t' '[] where
-	withPokedHeteroToListCpsM' _ HeteroParList.Nil = ($ [])
-
-instance (WithPoked (t' n), WithPokedHeteroToListCpsM' t' ns) =>
-	WithPokedHeteroToListCpsM' t' (n ': ns) where
-	withPokedHeteroToListCpsM' f (x :** xs) g =
-		f x \y -> withPokedHeteroToListCpsM' @_ @t' f xs \ys -> g $ y : ys
+withPokedHeteroToListCpsM :: WithPokedHeteroToListCpsM ns =>
+	(forall s . WithPoked s => t s -> (a -> m b) -> m b) ->
+	HeteroParList.PL t ns ->
+	([a] -> m b) -> m b
+withPokedHeteroToListCpsM = HeteroParList.constraintHeteroToListCpsM @WithPoked
 
 withPokedWithHeteroListCpsM :: WithPokedHeteroToListCpsM ss =>
 	HeteroParList.PL t ss ->
 	(forall s . WithPoked s => t s -> (a -> m b) -> m b) ->
 	([a] -> m b) -> m b
 withPokedWithHeteroListCpsM f xs = withPokedHeteroToListCpsM xs f
+
+type WithPokedHeteroToListCpsM' =
+	HeteroParList.ConstraintHeteroToListCpsM' WithPoked
+
+withPokedHeteroToListCpsM' :: forall k t' t ns a m b .
+	WithPokedHeteroToListCpsM' t' ns =>
+	(forall (s :: k) . WithPoked (t' s) => t s -> (a -> m b) -> m b) ->
+	HeteroParList.PL t ns -> ([a] -> m b) -> m b
+withPokedHeteroToListCpsM' =
+	HeteroParList.constraintHeteroToListCpsM' @_ @WithPoked @t'
 
 withPokedWithHeteroListCpsM' :: forall t' t ss a m b .
 	WithPokedHeteroToListCpsM' t' ss =>
