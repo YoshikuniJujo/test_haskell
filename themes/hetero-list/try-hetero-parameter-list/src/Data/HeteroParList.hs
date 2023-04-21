@@ -32,6 +32,7 @@ module Data.HeteroParList (
 	toList, toListM,
 	ConstraintHeteroToListM(..),
 	ConstraintHeteroToListM'(..),
+	ConstraintHeteroToListCpsM(..),
 
 	-- ** Homo List
 
@@ -222,3 +223,16 @@ instance (c (t' s), ConstraintHeteroToListM' c t' ss) =>
 	ConstraintHeteroToListM' c t' (s ': ss) where
 	constraintHeteroToListM' f (x :** xs) =
 		(:) <$> f x <*> constraintHeteroToListM' @_ @c @t' f xs
+
+class ConstraintHeteroToListCpsM c ns where
+	constraintHeteroToListCpsM ::
+		(forall s . c s => t s -> (a -> m b) -> m b) -> PL t ns ->
+		([a] -> m b) -> m b
+
+instance ConstraintHeteroToListCpsM c '[] where
+	constraintHeteroToListCpsM _ Nil g = g []
+
+instance (c n, ConstraintHeteroToListCpsM c ns) =>
+	ConstraintHeteroToListCpsM c (n ': ns) where
+	constraintHeteroToListCpsM f (x :** xs) g =
+		f x \y -> constraintHeteroToListCpsM @c f xs \ys -> g $ y : ys
