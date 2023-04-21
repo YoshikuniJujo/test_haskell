@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications, RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE GADTs, TypeFamilies, DataKinds #-}
+{-# LANGUAGE GADTs, TypeFamilies, DataKinds, ConstraintKinds #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PolyKinds #-}
@@ -27,7 +27,10 @@ module Data.HeteroParList (
 
 	-- ** Hetero List
 
-	FromList(..), toList, toListM,
+	FromList(..),
+
+	toList, toListM,
+	ConstraintHeteroToListM(..),
 
 	-- ** Homo List
 
@@ -192,3 +195,17 @@ instance (Default (t s), Default (PL t ss)) => Default (PL t (s ': ss)) where
 instance Default a => Default (Id a) where def = Id def
 
 instance Default a => Default (Dummy a d) where def = Dummy def
+
+-- Flatten
+
+class ConstraintHeteroToListM c ss where
+	constraintHeteroToListM :: Applicative m =>
+		(forall s . c s => t s -> m a) -> PL t ss -> m [a]
+
+instance ConstraintHeteroToListM c '[] where
+	constraintHeteroToListM _ Nil = pure []
+
+instance (c s, ConstraintHeteroToListM c ss) =>
+	ConstraintHeteroToListM c (s ': ss) where
+	constraintHeteroToListM f (x :** xs) =
+		(:) <$> f x <*> constraintHeteroToListM @c f xs
