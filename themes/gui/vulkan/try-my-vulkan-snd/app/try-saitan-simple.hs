@@ -104,7 +104,7 @@ newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
 	(forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qFam <- fst . head . filter (
 			(/= zeroBits) . (.&. Vk.Queue.ComputeBit)
@@ -115,7 +115,7 @@ withDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 	Vk.Dvc.create phdvc (dvcInfo qFam) nil nil $ \dvc ->
 		f phdvc qFam dvc (fromIntegral mgcx)
 
-instInfo :: Vk.Inst.CreateInfo 'Nothing ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
@@ -214,13 +214,13 @@ bufferInfo xs = Vk.Buffer.CreateInfo {
 	Vk.Buffer.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Buffer.B sb nm objs ->
-	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
+	IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
 getMemoryInfo phdvc dvc buffer = do
 	rqs <- Vk.Buffer.getMemoryRequirements dvc buffer
 	mti <- findMemoryTypeIndex phdvc rqs
 		$ Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mti }
 
 findMemoryTypeIndex ::
@@ -321,9 +321,9 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q
 	where
-	submitInfo :: Vk.SubmitInfo () '[] '[ '(sc, vs)] '[]
+	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(sc, vs)] '[]
 	submitInfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = Nothing,
+		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 		Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 		Vk.submitInfoSignalSemaphores = HeteroParList.Nil }

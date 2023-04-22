@@ -205,7 +205,7 @@ createInstance f = do
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	print extensions
 	let	appInfo = Vk.M.ApplicationInfo {
-			Vk.M.applicationInfoNext = Nothing,
+			Vk.M.applicationInfoNext = TMaybe.N,
 			Vk.M.applicationInfoApplicationName = "Hello Triangle",
 			Vk.M.applicationInfoApplicationVersion =
 				Vk.M.makeApiVersion 0 1 0 0,
@@ -215,7 +215,7 @@ createInstance f = do
 			Vk.M.applicationInfoApiVersion = Vk.M.apiVersion_1_0 }
 		createInfo :: Vk.Ist.M.CreateInfo
 			('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo
-				() () () () () ())) ()
+				() () () () () ())) 'Nothing
 		createInfo = Vk.Ist.M.CreateInfo {
 			Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 			Vk.Ist.M.createInfoFlags = def,
@@ -502,9 +502,9 @@ recreateImageViews _ _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
 mkImageViewCreateInfo ::
-	Vk.Format -> Vk.Image.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss ()
+	Vk.Format -> Vk.Image.Binded ss ss -> Vk.ImgVw.CreateInfo ss ss 'Nothing
 mkImageViewCreateInfo scifmt sci = Vk.ImgVw.CreateInfo {
-	Vk.ImgVw.createInfoNext = Nothing,
+	Vk.ImgVw.createInfoNext = TMaybe.N,
 	Vk.ImgVw.createInfoFlags = Vk.ImgVw.CreateFlagsZero,
 	Vk.ImgVw.createInfoImage = sci,
 	Vk.ImgVw.createInfoViewType = Vk.ImgVw.Type2d,
@@ -968,9 +968,9 @@ createBuffer' p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil nil \b -> do
 		Vk.Bffr.createInfoUsage = usg,
 		Vk.Bffr.createInfoSharingMode = Vk.SharingModeExclusive,
 		Vk.Bffr.createInfoQueueFamilyIndices = [] }
-	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo ()
+	allcInfo :: Vk.Mem.M.TypeIndex -> Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing
 	allcInfo mt = Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->
@@ -991,9 +991,9 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 copyBuffer dvc gq cp src dst = do
 	Vk.CmdBffr.allocate
 		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo () '[] '[ '(s, '[])] '[]
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
 			submitInfo = Vk.SubmitInfo {
-				Vk.submitInfoNext = Nothing,
+				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
@@ -1196,11 +1196,11 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib dscs
 	updateUniformBuffer dvc um ext tm
-	let	submitInfo :: Vk.SubmitInfo () '[sias]
+	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias]
 			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
 			'[srfs]
 		submitInfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,

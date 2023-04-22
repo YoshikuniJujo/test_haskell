@@ -99,10 +99,10 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 		prepareMems pd dv dslyt \dscs m ->
 		calc qfi dv pc dslyt dscs bffSize >>
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
-	cch'@(Vk.PplCch.M.Data bs1) <- Vk.PplCch.getData dv pc
+	cch' <- Vk.PplCch.getData dv pc
 	print cch'
 	Vk.PplCch.M.writeData "pipeline.cache" cch'
-	cch''@(Vk.PplCch.M.Data bs2) <- readData "pipeline.cache"
+	cch'' <- readData "pipeline.cache"
 	print cch''
 
 	Vk.PplCch.M.tryCreateAndPrintData mdv mpc
@@ -147,7 +147,7 @@ withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	Vk.Dv.create pd (dvcInfo qfi) nil nil $ f pd qfi
 
-instInfo :: Vk.Inst.CreateInfo 'Nothing ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
@@ -231,13 +231,13 @@ bufferInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.Phd.P -> Vk.Dv.D sd -> Vk.Bffr.B sb nm objs ->
-	IO (Vk.Dv.Mem.Buffer.AllocateInfo ())
+	IO (Vk.Dv.Mem.Buffer.AllocateInfo 'Nothing)
 getMemoryInfo pd dv bff = do
 	rqs <- Vk.Bffr.getMemoryRequirements dv bff
 	mti <- findMemoryTypeIndex pd rqs
 		$ Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit
 	pure Vk.Dv.Mem.Buffer.AllocateInfo {
-		Vk.Dv.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dv.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dv.Mem.Buffer.allocateInfoMemoryTypeIndex = mti }
 
 findMemoryTypeIndex :: Vk.Phd.P ->
@@ -315,9 +315,9 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
-	sinfo :: Vk.SubmitInfo () '[] '[sc] '[]
+	sinfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
 	sinfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = Nothing,
+		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
 		Vk.submitInfoCommandBuffers = HL.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HL.Nil }

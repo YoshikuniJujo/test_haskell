@@ -98,7 +98,7 @@ withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	Vk.Dv.create pd (dvcInfo qfi) nil nil $ f pd qfi
 
-instInfo :: Vk.Inst.CreateInfo 'Nothing ()
+instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
 	Vk.Inst.createInfoEnabledLayerNames = [Vk.Khr.validationLayerName] }
 	
@@ -185,13 +185,13 @@ bufferInfo = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.Phd.P -> Vk.Dv.D sd -> Vk.Bffr.B sb nm objs ->
-	IO (Vk.Dv.Mem.Buffer.AllocateInfo ())
+	IO (Vk.Dv.Mem.Buffer.AllocateInfo 'Nothing)
 getMemoryInfo pd dv bff = do
 	rqs <- Vk.Bffr.getMemoryRequirements dv bff
 	mti <- findMemoryTypeIndex pd rqs
 		$ Vk.Mm.PropertyHostVisibleBit .|. Vk.Mm.PropertyHostCoherentBit
 	pure Vk.Dv.Mem.Buffer.AllocateInfo {
-		Vk.Dv.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dv.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dv.Mem.Buffer.allocateInfoMemoryTypeIndex = mti }
 
 findMemoryTypeIndex :: Vk.Phd.P ->
@@ -273,9 +273,9 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
 	where
-	sinfo :: Vk.SubmitInfo () '[] '[sc] '[]
+	sinfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
 	sinfo = Vk.SubmitInfo {
-		Vk.submitInfoNext = Nothing,
+		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HL.Nil,
 		Vk.submitInfoCommandBuffers = HL.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HL.Nil }

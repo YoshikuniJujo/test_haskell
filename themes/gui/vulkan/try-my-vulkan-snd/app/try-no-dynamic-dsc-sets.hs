@@ -101,7 +101,7 @@ type ListW3 =VObj.List 256 W3 ""
 
 crtDevice :: (forall sd .
 	Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-crtDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
+crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qf <- findQueueFamily phdvc Vk.Queue.ComputeBit
 	lmts <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
@@ -109,7 +109,7 @@ crtDevice f = Vk.Inst.create @_ @() instInfo nil nil \inst -> do
 	Vk.Dvc.create phdvc (dvcInfo qf) nil nil $ \dvc ->
 		f phdvc qf dvc mxX
 	where
-	instInfo :: Vk.Inst.CreateInfo 'Nothing ()
+	instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 	instInfo = def {
 		Vk.Inst.createInfoEnabledLayerNames =
 			[Vk.Khr.validationLayerName] }
@@ -304,14 +304,14 @@ bufferInfo' x y z = Vk.Bffr.CreateInfo {
 	Vk.Bffr.createInfoQueueFamilyIndices = [] }
 
 getMemoryInfo :: Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Bffr.B sb nm objs ->
-	IO (Vk.Dvc.Mem.Buffer.AllocateInfo ())
+	IO (Vk.Dvc.Mem.Buffer.AllocateInfo 'Nothing)
 getMemoryInfo phdvc dvc buffer = do
 	reqs <- Vk.Bffr.getMemoryRequirements dvc buffer
 	mt <- findMemoryTypeIndex phdvc reqs (
 		Vk.Mem.PropertyHostVisibleBit .|.
 		Vk.Mem.PropertyHostCoherentBit )
 	pure Vk.Dvc.Mem.Buffer.AllocateInfo {
-		Vk.Dvc.Mem.Buffer.allocateInfoNext = Nothing,
+		Vk.Dvc.Mem.Buffer.allocateInfoNext = TMaybe.N,
 		Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex = mt }
 
 findMemoryTypeIndex ::
@@ -446,9 +446,9 @@ run dvc qf cb ppl plyt dss ln ma mb mc = Vk.Dvc.getQueue dvc qf 0 >>= \q -> do
 	(,,)	<$> Vk.Dvc.Mem.ImgBffr.read @nm1 @ListW1 @[W1] dvc ma zeroBits
 		<*> Vk.Dvc.Mem.ImgBffr.read @nm2 @ListW2 @[W2] dvc mb zeroBits
 		<*> Vk.Dvc.Mem.ImgBffr.read @nm3 @ListW3 @[W3] dvc mc zeroBits
-	where	sinfo :: Vk.SubmitInfo () _ _ _
+	where	sinfo :: Vk.SubmitInfo 'Nothing _ _ _
 		sinfo = Vk.SubmitInfo {
-			Vk.submitInfoNext = Nothing,
+			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 			Vk.submitInfoCommandBuffers = U2 cb :** HeteroParList.Nil,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
