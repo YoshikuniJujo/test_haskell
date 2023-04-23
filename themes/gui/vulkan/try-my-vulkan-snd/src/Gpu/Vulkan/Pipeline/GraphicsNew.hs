@@ -82,9 +82,9 @@ data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 
 type CreateInfoArgs14 = (
 	Maybe Type,
-	[(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type])],
+	[(Maybe Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type])],
 	(Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
-	Type, Type, Type, Type, Type, Maybe Type, Maybe Type, Maybe Type,
+	Maybe Type, Type, Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type,
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	Type,
 	(Type, [(Type, VertexInput.Rate)], [(Nat, Type)],
@@ -152,8 +152,8 @@ createInfoToMiddle dvc CreateInfo {
 
 class CreateInfoListToMiddle ss where
 	type MiddleVars ss :: [
-		(Maybe Type, [(Type, ShaderKind, [Type])], (Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
-		Type, Type, Type, Type, Type, Maybe Type, Maybe Type, Maybe Type)]
+		(Maybe Type, [(Maybe Type, ShaderKind, [Type])], (Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
+		Maybe Type, Type, Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type)]
 
 	createInfoListToMiddle :: Device.D sd ->
 		HeteroParList.PL (U14 CreateInfo) ss ->

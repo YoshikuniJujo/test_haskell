@@ -48,7 +48,7 @@ data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
 
 type CreateInfoArgs4 = (
 	Maybe Type,
-	(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
+	(Maybe Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	(Type, (Type, [(Type, [DscStLyt.BindingType])], [Type])) )
 
@@ -88,7 +88,7 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle as where
-	type Result as :: [(Maybe Type, Type, [Type])]
+	type Result as :: [(Maybe Type, Maybe Type, [Type])]
 	createInfoListToMiddle ::
 		Device.D sd -> HeteroParList.PL (U4 CreateInfo) as ->
 		IO (HeteroParList.PL (U3 M.CreateInfo) (Result as))

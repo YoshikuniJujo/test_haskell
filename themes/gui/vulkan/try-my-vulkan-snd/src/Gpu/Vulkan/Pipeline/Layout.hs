@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
@@ -17,9 +18,10 @@ module Gpu.Vulkan.Pipeline.Layout (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.Pipeline.Layout.Type
 
@@ -30,21 +32,21 @@ import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.PushConstant.Middle as PushConstant.M
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
 
-data CreateInfo n sbtss = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn sbtss = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: M.CreateFlags,
 	createInfoSetLayouts :: HeteroParList.PL Layout sbtss,
 	createInfoPushConstantRanges :: [PushConstant.M.Range] }
 
-data CreateInfoNew n sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+data CreateInfoNew mn sbtss (pcl :: PushConstant.PushConstantLayout) = CreateInfoNew {
+	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: M.CreateFlags,
 	createInfoSetLayoutsNew :: HeteroParList.PL Layout sbtss }
 
 deriving instance (
-	Show n,
+	Show (TMaybe.M mn),
 	Show (HeteroParList.PL Layout sbtss) ) =>
-	Show (CreateInfo n sbtss)
+	Show (CreateInfo mn sbtss)
 
 type Layout = U2 Descriptor.Set.Layout.L
 
@@ -99,8 +101,8 @@ createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 createNew :: (
 	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
 	PushConstant.RangesToMiddle whole ranges,
-	Pokable n, Pokable c, Pokable d, HeteroParListToList' sbtss ) =>
-	Device.D sd -> CreateInfoNew n sbtss pcl ->
+	WithPoked (TMaybe.M mn), Pokable c, Pokable d, HeteroParListToList' sbtss ) =>
+	Device.D sd -> CreateInfoNew mn sbtss pcl ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . L s sbtss whole -> IO a) -> IO a
 createNew (Device.D dvc) (createInfoToMiddleNew -> ci) macc macd f =

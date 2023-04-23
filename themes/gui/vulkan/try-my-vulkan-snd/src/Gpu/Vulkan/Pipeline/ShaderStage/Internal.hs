@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -13,6 +14,7 @@ module Gpu.Vulkan.Pipeline.ShaderStage.Internal (
 
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
@@ -28,8 +30,8 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.ShaderModule.Internal as Shader.Module
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as M
 
-data CreateInfoNew n m sknd c d vs = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+data CreateInfoNew mn m sknd c d vs = CreateInfoNew {
+	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoStageNew :: ShaderStageFlagBits,
 	createInfoModuleNew :: Shader.Module.M m sknd c d,
@@ -66,9 +68,9 @@ destroyCreateInfoMiddleNew dvc
 	CreateInfoNew { createInfoModuleNew = mdl } = Shader.Module.destroy dvc mmdl mdl
 
 class CreateInfoListToMiddleNew (
-	nnskndcdvss :: [(Type, Type, ShaderKind, Type, Type, [Type])]
+	nnskndcdvss :: [(Maybe Type, Type, ShaderKind, Type, Type, [Type])]
 	) where
-	type MiddleVarsNew nnskndcdvss :: [(Type, ShaderKind, [Type])]
+	type MiddleVarsNew nnskndcdvss :: [(Maybe Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
 		HeteroParList.PL (U6 CreateInfoNew) nnskndcdvss ->
 		IO (HeteroParList.PL (U3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
