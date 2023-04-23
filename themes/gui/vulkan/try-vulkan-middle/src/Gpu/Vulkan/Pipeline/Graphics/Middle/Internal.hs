@@ -26,6 +26,7 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Control.Monad
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import Data.IORef
@@ -89,7 +90,7 @@ createInfoToCore :: (
 	WithPoked n,
 	ShaderStage.CreateInfoListToCore stg,
 	WithPoked n2, WithPoked n3, WithPoked n4,
-	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked n8, WithPoked n9,
+	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked n8, WithPoked (TMaybe.M n9),
 	WithPoked n10 ) =>
 	CreateInfo n stg n2 n3 n4 n5 n6 n7 n8 n9 n10 ->
 	(C.CreateInfo -> IO a) -> IO ()
@@ -163,7 +164,7 @@ instance CreateInfoListToCore '[] where createInfoListToCore HeteroParList.Nil f
 instance (
 	WithPoked n, ShaderStage.CreateInfoListToCore stg,
 	WithPoked vis, WithPoked ias, WithPoked ts, WithPoked vs,
-	WithPoked rs, WithPoked ms, WithPoked dss, WithPoked cbs, WithPoked ds,
+	WithPoked rs, WithPoked ms, WithPoked dss, WithPoked (TMaybe.M cbs), WithPoked ds,
 	CreateInfoListToCore cias
 	) =>
 	CreateInfoListToCore ('(

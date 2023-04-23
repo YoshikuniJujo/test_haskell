@@ -1,8 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal (
@@ -15,6 +17,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Bits
 import Data.Word
 import Data.Color
@@ -31,17 +34,18 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Core as C
 enum "CreateFlags" ''#{type VkPipelineColorBlendStateCreateFlags}
 	[''Show, ''Storable, ''Eq, ''Bits] [("CreateFlagsZero", 0)]
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoLogicOpEnable :: Bool,
 	createInfoLogicOp :: LogicOp,
 	createInfoAttachments :: [ColorBlendAttachment.State],
 	createInfoBlendConstants :: Rgba Float }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -50,7 +54,7 @@ createInfoToCore CreateInfo {
 	createInfoAttachments =
 		length &&& (ColorBlendAttachment.stateToCore <$>) -> (ac, as),
 	createInfoBlendConstants = RgbaDouble r g b a } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray ac \pas ->
 	pokeArray pas as >>
 	let ci = C.CreateInfo {
