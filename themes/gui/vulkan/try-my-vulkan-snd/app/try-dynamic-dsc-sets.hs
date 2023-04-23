@@ -342,11 +342,11 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 -- COMPUTE PIPELINE INFO
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo ()
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'((), (), 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-	Vk.Ppl.Cmpt.createInfoNext = Nothing,
+	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,

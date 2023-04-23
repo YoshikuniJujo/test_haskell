@@ -331,10 +331,10 @@ run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 -- COMPUTE PIPELINE INFO
 
 pplInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo () '((), (), 'GlslComputeShader, (), (), '[])
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing '((), (), 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-	Vk.Ppl.Cmpt.createInfoNext = Nothing,
+	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,

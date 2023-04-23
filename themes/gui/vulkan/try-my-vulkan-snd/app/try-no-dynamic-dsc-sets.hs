@@ -390,10 +390,10 @@ pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dslyt }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
-	Vk.Ppl.Cmpt.CreateInfo () '((), (), 'GlslComputeShader, (), (),
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing '((), (), 'GlslComputeShader, (), (),
 		'[Word32, Word32]) '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-	Vk.Ppl.Cmpt.createInfoNext = Nothing,
+	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,

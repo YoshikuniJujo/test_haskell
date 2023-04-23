@@ -13,6 +13,7 @@ module Gpu.Vulkan.Pipeline.Compute (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -37,8 +38,8 @@ newtype C s = C M.C deriving Show
 
 newtype CNew s (slbtss :: (Type, [(Type, [DescriptorSetLayout.BindingType])], [Type])) = CNew M.C deriving Show
 
-data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoStage :: U6 ShaderStage.CreateInfoNew nncdvs,
 	createInfoLayout :: U3 Layout.L slsbtss,
@@ -46,7 +47,7 @@ data CreateInfo n nncdvs slsbtss sbph = CreateInfo {
 		Maybe (Either (U2 CNew sbph) Int32) }
 
 type CreateInfoArgs4 = (
-	Type,
+	Maybe Type,
 	(Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	(Type, (Type, [(Type, [DscStLyt.BindingType])], [Type])) )
@@ -87,7 +88,7 @@ createInfoToMiddle dvc CreateInfo {
 		M.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle as where
-	type Result as :: [(Type, Type, [Type])]
+	type Result as :: [(Maybe Type, Type, [Type])]
 	createInfoListToMiddle ::
 		Device.D sd -> HeteroParList.PL (U4 CreateInfo) as ->
 		IO (HeteroParList.PL (U3 M.CreateInfo) (Result as))

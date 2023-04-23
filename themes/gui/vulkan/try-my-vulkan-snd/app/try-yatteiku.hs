@@ -642,7 +642,7 @@ makePipelineNew dvc rp f = do
 				Vk.BlendFactorZero,
 			Vk.Ppl.ClrBlndAtt.stateAlphaBlendOp = Vk.BlendOpAdd }
 		blend = Vk.Ppl.ClrBlndSt.CreateInfo {
-			Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+			Vk.Ppl.ClrBlndSt.createInfoNext = TMaybe.N,
 			Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
 			Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
 			Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpClear,
@@ -689,7 +689,7 @@ makePipelineNew dvc rp f = do
 					'((), (), 'GlslVertexShader, (), (), '[]),
 					'((), (), 'GlslFragmentShader, (), (), '[]) ]
 				'(	(), '[], '[] )
-				() () () () () () () () '(_, _, _) _ '(_, '[], _)
+				() () () () () () 'Nothing () '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
 				Vk.Ppl.Gr.createInfoNext = Nothing,
 				Vk.Ppl.Gr.createInfoFlags =

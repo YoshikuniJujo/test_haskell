@@ -540,11 +540,11 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = U2 dsl :** HeteroParList.Nil }
 
 cmptPipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo ()
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing
 		'((), (), 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
 cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
-	Vk.Ppl.Cmpt.createInfoNext = Nothing,
+	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = def,
 	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,

@@ -752,7 +752,7 @@ graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 			'((), (), 'GlslFragmentShader, (), (), '[])]
 		'((), '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)])
-		() () () () () () () ()
+		() () () () () () 'Nothing ()
 		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) sr
 		'(sb, vs', ts', larg)
@@ -836,9 +836,9 @@ multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
 	Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 	Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
 
-colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo ()
+colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo 'Nothing
 colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
-	Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+	Vk.Ppl.ClrBlndSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
 	Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,

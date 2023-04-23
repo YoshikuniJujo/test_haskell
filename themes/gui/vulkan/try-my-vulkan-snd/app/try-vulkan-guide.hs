@@ -690,7 +690,7 @@ mkGraphicsPipelineCreateInfo ::
 			'((), (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
-		() () () () () () () ()
+		() () () () () () 'Nothing ()
 		'(sl,	'[ '(s, '[
 				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
@@ -778,9 +778,9 @@ multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
 	Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 	Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
 
-colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo ()
+colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo 'Nothing
 colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
-	Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+	Vk.Ppl.ClrBlndSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
 	Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,

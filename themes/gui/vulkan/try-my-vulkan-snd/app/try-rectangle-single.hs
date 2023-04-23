@@ -678,7 +678,7 @@ mkGraphicsPipelineCreateInfo' ::
 			'((), (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
-		() () () () () () () () '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', foo)
+		() () () () () () 'Nothing () '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', foo)
 mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = Nothing,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -766,9 +766,9 @@ multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
 	Vk.Ppl.MltSmplSt.createInfoAlphaToCoverageEnable = False,
 	Vk.Ppl.MltSmplSt.createInfoAlphaToOneEnable = False }
 
-colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo ()
+colorBlending :: Vk.Ppl.ClrBlndSt.CreateInfo 'Nothing
 colorBlending = Vk.Ppl.ClrBlndSt.CreateInfo {
-	Vk.Ppl.ClrBlndSt.createInfoNext = Nothing,
+	Vk.Ppl.ClrBlndSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.ClrBlndSt.createInfoFlags = zeroBits,
 	Vk.Ppl.ClrBlndSt.createInfoLogicOpEnable = False,
 	Vk.Ppl.ClrBlndSt.createInfoLogicOp = Vk.LogicOpCopy,

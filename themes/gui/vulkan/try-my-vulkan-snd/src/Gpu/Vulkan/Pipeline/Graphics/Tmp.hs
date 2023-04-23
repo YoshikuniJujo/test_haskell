@@ -120,7 +120,7 @@ createInfoToMiddle CreateInfo {
 
 class CreateInfoListToMiddle sss where
 	type CreateInfoListArgs sss ::
-		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, *, *)]
+		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, Maybe Type, *)]
 	createInfoListToMiddle ::
 		HeteroParList.PL (U11 CreateInfo) sss ->
 		HeteroParList.PL (U11 M.CreateInfo) (CreateInfoListArgs sss)
