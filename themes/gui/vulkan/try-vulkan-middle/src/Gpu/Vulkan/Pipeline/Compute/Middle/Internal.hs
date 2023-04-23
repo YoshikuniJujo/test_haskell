@@ -20,10 +20,11 @@ import Foreign.Ptr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Maybe
 import Data.Int
 
@@ -42,8 +43,8 @@ import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
 import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
 
-data CreateInfo n ss sivs = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn ss sivs = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: Pipeline.CreateFlags,
 	createInfoStage :: ShaderStage.CreateInfo ss 'GlslComputeShader sivs,
 	createInfoLayout :: Pipeline.Layout.L,
@@ -51,12 +52,12 @@ data CreateInfo n ss sivs = CreateInfo {
 	createInfoBasePipelineIndex :: Maybe Int32 }
 
 deriving instance (
-	Show n, Show (ShaderStage.CreateInfo ss 'GlslComputeShader sivs) ) =>
-	Show (CreateInfo n ss sivs)
+	Show (TMaybe.M mn), Show (ShaderStage.CreateInfo ss 'GlslComputeShader sivs) ) =>
+	Show (CreateInfo mn ss sivs)
 
 createInfoToCore ::
-	(WithPoked n, WithPoked n1, PokableList vs) =>
-	CreateInfo n n1 vs -> (C.CreateInfo -> IO r) -> IO ()
+	(WithPoked (TMaybe.M mn), WithPoked n1, PokableList vs) =>
+	CreateInfo mn n1 vs -> (C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = Pipeline.CreateFlagBits flgs,
@@ -64,7 +65,7 @@ createInfoToCore CreateInfo {
 	createInfoLayout = Pipeline.Layout.L lyt,
 	createInfoBasePipelineHandle = maybe NullPtr (\(C b) -> b) -> bph,
 	createInfoBasePipelineIndex = fromMaybe (- 1) -> idx } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	ShaderStage.createInfoToCore stg \stg' ->
 	f C.CreateInfo {
 		C.createInfoSType = (),
@@ -84,9 +85,9 @@ instance CreateInfoListToCore '[] where
 	createInfoListToCore HeteroParList.Nil = (() <$) . ($ [])
 
 instance (
-	WithPoked n, WithPoked ss, PokableList sivs,
+	WithPoked (TMaybe.M mn), WithPoked ss, PokableList sivs,
 	CreateInfoListToCore cias ) =>
-	CreateInfoListToCore ('(n, ss, sivs) ': cias) where
+	CreateInfoListToCore ('(mn, ss, sivs) ': cias) where
 	createInfoListToCore (U3 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
