@@ -65,8 +65,8 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.PipelineCache.Middle.Internal as Cache
 
-data CreateInfo n stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoStages :: HeteroParList.PL (U3 ShaderStage.CreateInfo) stg,
 	createInfoVertexInputState :: Maybe (VertexInputState.M.CreateInfo vis),
@@ -87,12 +87,12 @@ data CreateInfo n stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
 	createInfoBasePipelineIndex :: Int32 }
 
 createInfoToCore :: (
-	WithPoked n,
+	WithPoked (TMaybe.M mn),
 	ShaderStage.CreateInfoListToCore stg,
 	WithPoked n2, WithPoked n3, WithPoked n4,
-	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked n8, WithPoked (TMaybe.M n9),
-	WithPoked n10 ) =>
-	CreateInfo n stg n2 n3 n4 n5 n6 n7 n8 n9 n10 ->
+	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked (TMaybe.M n8),
+	WithPoked (TMaybe.M n9), WithPoked (TMaybe.M n10) ) =>
+	CreateInfo mn stg n2 n3 n4 n5 n6 n7 n8 n9 n10 ->
 	(C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -112,7 +112,7 @@ createInfoToCore CreateInfo {
 	createInfoSubpass = sp,
 	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	ShaderStage.createInfoListToCore ss \css ->
 	let sc = P.length css in
 	allocaArray sc \pss ->
@@ -162,13 +162,13 @@ class Length cias => CreateInfoListToCore cias where
 instance CreateInfoListToCore '[] where createInfoListToCore HeteroParList.Nil f = () <$ f []
 
 instance (
-	WithPoked n, ShaderStage.CreateInfoListToCore stg,
+	WithPoked (TMaybe.M mn), ShaderStage.CreateInfoListToCore stg,
 	WithPoked vis, WithPoked ias, WithPoked ts, WithPoked vs,
-	WithPoked rs, WithPoked ms, WithPoked dss, WithPoked (TMaybe.M cbs), WithPoked ds,
-	CreateInfoListToCore cias
-	) =>
+	WithPoked rs, WithPoked ms, WithPoked (TMaybe.M dss),
+	WithPoked (TMaybe.M cbs), WithPoked (TMaybe.M ds),
+	CreateInfoListToCore cias ) =>
 	CreateInfoListToCore ('(
-		n, stg, vis, ias, ts, vs, rs, ms, dss, cbs, ds ) ': cias) where
+		mn, stg, vis, ias, ts, vs, rs, ms, dss, cbs, ds ) ': cias) where
 	createInfoListToCore (U11 ci :** cis) f =
 		createInfoToCore ci \cci ->
 		createInfoListToCore cis \ccis -> f $ cci : ccis
