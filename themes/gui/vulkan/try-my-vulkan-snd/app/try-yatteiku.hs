@@ -685,13 +685,13 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoNameNew = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
-		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo () '[
+		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
 					'((), (), 'GlslVertexShader, (), (), '[]),
 					'((), (), 'GlslFragmentShader, (), (), '[]) ]
 				'(	(), '[], '[] )
-				() () () () () () 'Nothing () '(_, _, _) _ '(_, '[], _)
+				() () () () () 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
-				Vk.Ppl.Gr.createInfoNext = Nothing,
+				Vk.Ppl.Gr.createInfoNext = TMaybe.N,
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =

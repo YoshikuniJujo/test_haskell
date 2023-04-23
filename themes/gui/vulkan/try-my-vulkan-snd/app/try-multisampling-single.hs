@@ -746,14 +746,14 @@ recreateGraphicsPipeline' dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.recreateG
 mkGraphicsPipelineCreateInfo' ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Sample.CountFlags ->
-	Vk.Ppl.Graphics.CreateInfo () '[
+	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
 			'((), (), 'GlslVertexShader, (), (), '[]),
 			'((), (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
-		() () () () () () 'Nothing () '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
+		() () () () () 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo' sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = Nothing,
+	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages = shaderStages,
 	Vk.Ppl.Graphics.createInfoVertexInputState = Just $ U3 def,
@@ -771,7 +771,7 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt mss = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
-		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
+		Vk.Ppl.DptStnSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
 		Vk.Ppl.DptStnSt.createInfoDepthTestEnable = True,
 		Vk.Ppl.DptStnSt.createInfoDepthWriteEnable = True,

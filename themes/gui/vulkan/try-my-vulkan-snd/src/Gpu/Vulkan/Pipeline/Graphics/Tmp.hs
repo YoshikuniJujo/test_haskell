@@ -18,6 +18,7 @@ import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
@@ -53,8 +54,8 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.PipelineCache.Middle as Cache
 
-data CreateInfo n nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn nskndvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoStages :: HeteroParList.PL (U3 ShaderStage.CreateInfo) nskndvss,
 	createInfoVertexInputState ::
@@ -119,8 +120,9 @@ createInfoToMiddle CreateInfo {
 	M.createInfoBasePipelineIndex = bpi }
 
 class CreateInfoListToMiddle sss where
-	type CreateInfoListArgs sss ::
-		[(*, [(*, ShaderKind, [*])], *, *, *, *, *, *, *, Maybe Type, *)]
+	type CreateInfoListArgs sss :: [(
+		Maybe Type, [(*, ShaderKind, [*])],
+		*, *, *, *, *, *, Maybe Type, Maybe Type, Maybe Type )]
 	createInfoListToMiddle ::
 		HeteroParList.PL (U11 CreateInfo) sss ->
 		HeteroParList.PL (U11 M.CreateInfo) (CreateInfoListArgs sss)

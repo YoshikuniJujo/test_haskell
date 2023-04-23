@@ -685,12 +685,12 @@ mkGraphicsPipelineCreateInfo ::
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
-	Vk.Ppl.Graphics.CreateInfo () '[
+	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
 			'((), (), 'GlslVertexShader, (), (), '[]),
 			'((), (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
-		() () () () () () 'Nothing ()
+		() () () () () 'Nothing 'Nothing 'Nothing
 		'(sl,	'[ '(s, '[
 				'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 				'Vk.DscSetLyt.Buffer '[
@@ -698,7 +698,7 @@ mkGraphicsPipelineCreateInfo ::
 			'[WrapMeshPushConstants])
 		sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
-	Vk.Ppl.Graphics.createInfoNext = Nothing,
+	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
 	Vk.Ppl.Graphics.createInfoStages = uncurry shaderStages
 		case sdrn `mod` 2 of
@@ -720,7 +720,7 @@ mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 	where depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
-		Vk.Ppl.DptStnSt.createInfoNext = Nothing,
+		Vk.Ppl.DptStnSt.createInfoNext = TMaybe.N,
 		Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
 		Vk.Ppl.DptStnSt.createInfoDepthTestEnable = True,
 		Vk.Ppl.DptStnSt.createInfoDepthWriteEnable = True,

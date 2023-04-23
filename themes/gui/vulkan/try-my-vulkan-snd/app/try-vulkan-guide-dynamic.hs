@@ -654,16 +654,16 @@ recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 
 graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.CreateInfo ()
+	Vk.Ppl.Grph.CreateInfo 'Nothing
 		'[ '((), (), 'GlslVertexShader, (), (), '[]),
 			'((), (), 'GlslFragmentShader, (), (), '[])]
 		'((), '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color)])
-		() () () () () () 'Nothing ()
+		() () () () () 'Nothing 'Nothing 'Nothing
 		'(sl, '[ '(sdl, Buffers)], '[WMeshPushConstants]) sr
 		'(sb, vs', ts', larg)
 graphicsPipelineCreateInfo sce rp lyt = Vk.Ppl.Grph.CreateInfo {
-	Vk.Ppl.Grph.createInfoNext = Nothing,
+	Vk.Ppl.Grph.createInfoNext = TMaybe.N,
 	Vk.Ppl.Grph.createInfoFlags = zeroBits,
 	Vk.Ppl.Grph.createInfoStages =
 		shaderStages glslVertexShaderMain glslFragmentShaderMain,
@@ -717,9 +717,9 @@ rasterizer = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
 
-depthStencil :: Vk.Ppl.DptStnSt.CreateInfo ()
+depthStencil :: Vk.Ppl.DptStnSt.CreateInfo 'Nothing
 depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
-	Vk.Ppl.DptStnSt.createInfoNext = Nothing,
+	Vk.Ppl.DptStnSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.DptStnSt.createInfoFlags = zeroBits,
 	Vk.Ppl.DptStnSt.createInfoDepthTestEnable = True,
 	Vk.Ppl.DptStnSt.createInfoDepthWriteEnable = True,
