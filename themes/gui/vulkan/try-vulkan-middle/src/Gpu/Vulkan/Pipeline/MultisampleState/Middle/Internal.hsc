@@ -1,8 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal (
@@ -12,6 +14,7 @@ import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Bits
 import Data.Word
 
@@ -27,18 +30,19 @@ import qualified Gpu.Vulkan.Pipeline.MultisampleState.Core as C
 enum "CreateFlags" ''#{type VkPipelineMultisampleStateCreateFlags}
 	[''Show, ''Eq, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoRasterizationSamplesAndMask :: Sample.CountAndMask,
 	createInfoSampleShadingEnable :: Bool,
 	createInfoMinSampleShading :: Float,
 	createInfoAlphaToCoverageEnable :: Bool,
 	createInfoAlphaToOneEnable :: Bool }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -47,7 +51,7 @@ createInfoToCore CreateInfo {
 	createInfoMinSampleShading = mss,
 	createInfoAlphaToCoverageEnable = boolToBool32 -> ace,
 	createInfoAlphaToOneEnable = boolToBool32 -> aoe } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	countAndMaskToCore cm \(Sample.CountFlagBits c, m) ->
 	let ci = C.CreateInfo {
 		C.createInfoSType = (),

@@ -89,9 +89,10 @@ data CreateInfo mn stg vis ias ts vs rs ms dss cbs ds = CreateInfo {
 createInfoToCore :: (
 	WithPoked (TMaybe.M mn),
 	ShaderStage.CreateInfoListToCore stg,
-	WithPoked n2, WithPoked n3, WithPoked n4,
-	WithPoked n5, WithPoked n6, WithPoked n7, WithPoked (TMaybe.M n8),
-	WithPoked (TMaybe.M n9), WithPoked (TMaybe.M n10) ) =>
+	WithPoked n2, WithPoked (TMaybe.M n3), WithPoked n4,
+	WithPoked n5, WithPoked (TMaybe.M n6), WithPoked (TMaybe.M n7),
+	WithPoked (TMaybe.M n8), WithPoked (TMaybe.M n9),
+	WithPoked (TMaybe.M n10) ) =>
 	CreateInfo mn stg n2 n3 n4 n5 n6 n7 n8 n9 n10 ->
 	(C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
@@ -163,8 +164,8 @@ instance CreateInfoListToCore '[] where createInfoListToCore HeteroParList.Nil f
 
 instance (
 	WithPoked (TMaybe.M mn), ShaderStage.CreateInfoListToCore stg,
-	WithPoked vis, WithPoked ias, WithPoked ts, WithPoked vs,
-	WithPoked rs, WithPoked ms, WithPoked (TMaybe.M dss),
+	WithPoked vis, WithPoked (TMaybe.M ias), WithPoked ts, WithPoked vs,
+	WithPoked (TMaybe.M rs), WithPoked (TMaybe.M ms), WithPoked (TMaybe.M dss),
 	WithPoked (TMaybe.M cbs), WithPoked (TMaybe.M ds),
 	CreateInfoListToCore cias ) =>
 	CreateInfoListToCore ('(

@@ -2,8 +2,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.Layout.Middle.Internal (
@@ -17,6 +18,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -38,15 +40,16 @@ enum "CreateFlags" ''#{type VkPipelineLayoutCreateFlags}
 
 instance Default CreateFlags where def = CreateFlagsZero
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoSetLayouts :: [DescriptorSet.Layout.L],
 	createInfoPushConstantRanges :: [PushConstant.Range] }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -56,7 +59,7 @@ createInfoToCore CreateInfo {
 	createInfoPushConstantRanges = (
 		length &&&
 		(PushConstant.rangeToCore <$>)) -> (pcrc, pcrs) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> 
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> 
 	allocaArray slc \psls ->
 	pokeArray psls sls >>
 	allocaArray pcrc \ppcrs ->
@@ -73,8 +76,8 @@ createInfoToCore CreateInfo {
 
 newtype L = L C.L deriving Show
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO L
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = L <$> alloca \pl -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do

@@ -56,7 +56,7 @@ deriving instance (
 	Show (CreateInfo mn ss sivs)
 
 createInfoToCore ::
-	(WithPoked (TMaybe.M mn), WithPoked n1, PokableList vs) =>
+	(WithPoked (TMaybe.M mn), WithPoked (TMaybe.M n1), PokableList vs) =>
 	CreateInfo mn n1 vs -> (C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -85,7 +85,7 @@ instance CreateInfoListToCore '[] where
 	createInfoListToCore HeteroParList.Nil = (() <$) . ($ [])
 
 instance (
-	WithPoked (TMaybe.M mn), WithPoked ss, PokableList sivs,
+	WithPoked (TMaybe.M mn), WithPoked (TMaybe.M ss), PokableList sivs,
 	CreateInfoListToCore cias ) =>
 	CreateInfoListToCore ('(mn, ss, sivs) ': cias) where
 	createInfoListToCore (U3 ci :** cis) f =
