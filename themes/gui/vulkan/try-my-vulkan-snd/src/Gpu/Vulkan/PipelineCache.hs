@@ -1,5 +1,6 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache (
@@ -8,6 +9,7 @@ module Gpu.Vulkan.PipelineCache (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 import Gpu.Vulkan.PipelineCache.Type
 
@@ -16,8 +18,8 @@ import Gpu.Vulkan.Device qualified as Device
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.PipelineCache.Middle qualified as M
 
-create :: (WithPoked n, WithPoked c, WithPoked d) =>
-	Device.D sd -> M.CreateInfo n ->
+create :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+	Device.D sd -> M.CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . C s -> IO a) -> IO a
 create (Device.D dv) ci macc macd f =

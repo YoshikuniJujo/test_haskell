@@ -130,9 +130,9 @@ readData fp = do
 	b <- doesFileExist fp
 	if b then Vk.PplCch.M.readData fp else pure def
 
-pplCchInfo :: Vk.PplCch.M.Data -> Vk.PplCch.M.CreateInfo ()
+pplCchInfo :: Vk.PplCch.M.Data -> Vk.PplCch.M.CreateInfo 'Nothing
 pplCchInfo mid = Vk.PplCch.M.CreateInfo {
-	Vk.PplCch.M.createInfoNext = Nothing,
+	Vk.PplCch.M.createInfoNext = TMaybe.N,
 	Vk.PplCch.M.createInfoFlags = zeroBits,
 	Vk.PplCch.M.createInfoInitialData = mid }
 
