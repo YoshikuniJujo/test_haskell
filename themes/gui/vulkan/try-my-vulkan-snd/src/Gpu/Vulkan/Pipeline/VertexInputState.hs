@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
@@ -6,11 +7,13 @@
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.VertexInputState where
 
 import GHC.TypeNats
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Kind
 import Data.Bits
 import Data.Default
@@ -23,14 +26,15 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Middle as M
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 import qualified Gpu.Vulkan.VertexInput.Middle as VertexInput.M
 
-data CreateInfo n (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)]) = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn (vs :: [(Type, VertexInput.Rate)]) (ts :: [(Nat, Type)]) = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: M.CreateFlags }
-	deriving Show
 
-instance Default (CreateInfo n vs ts) where
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn vs ts)
+
+instance Default (CreateInfo 'Nothing vs ts) where
 	def = CreateInfo {
-		createInfoNext = Nothing, createInfoFlags = zeroBits }
+		createInfoNext = TMaybe.N, createInfoFlags = zeroBits }
 
 createInfoToMiddle :: (
 	BindingStrideList VertexInput.Rate vs VertexInput.Rate,

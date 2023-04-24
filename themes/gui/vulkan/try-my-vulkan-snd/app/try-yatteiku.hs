@@ -580,16 +580,16 @@ makePipelineNew dvc rp f = do
 			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 			Vk.C.rect2dExtent =
 				Vk.C.Extent2d screenWidth screenHeight }
-		viewportState :: Vk.Ppl.ViewportState.CreateInfo ()
+		viewportState :: Vk.Ppl.ViewportState.CreateInfo 'Nothing
 		viewportState = Vk.Ppl.ViewportState.CreateInfo {
-			Vk.Ppl.ViewportState.createInfoNext = Nothing,
+			Vk.Ppl.ViewportState.createInfoNext = TMaybe.N,
 			Vk.Ppl.ViewportState.createInfoFlags = zeroBits,
 			Vk.Ppl.ViewportState.createInfoViewports =
 				[viewport],
 			Vk.Ppl.ViewportState.createInfoScissors =
 				[scissor] }
 		vertexInputInfo = Vk.Ppl.VertexInputState.CreateInfo {
-			Vk.Ppl.VertexInputState.createInfoNext = Nothing,
+			Vk.Ppl.VertexInputState.createInfoNext = TMaybe.N,
 			Vk.Ppl.VertexInputState.createInfoFlags = zeroBits }
 		inputAssembly :: Vk.Ppl.InpAssSt.CreateInfo 'Nothing
 		inputAssembly = Vk.Ppl.InpAssSt.CreateInfo {
@@ -688,8 +688,8 @@ makePipelineNew dvc rp f = do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
 					'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
 					'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
-				'(	(), '[], '[] )
-				'Nothing () () 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
+				'(	'Nothing, '[], '[] )
+				'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
 				Vk.Ppl.Gr.createInfoNext = TMaybe.N,
 				Vk.Ppl.Gr.createInfoFlags =

@@ -750,9 +750,9 @@ graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Grph.CreateInfo 'Nothing
 		'[	'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
 			'( 'Nothing, (), 'GlslFragmentShader, (), (), '[])]
-		'((), '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
+		'( 'Nothing, '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)])
-		'Nothing () () 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
+		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) sr
 		'(sb, vs', ts', larg)
@@ -783,7 +783,7 @@ inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
 	Vk.Ppl.InpAsmbSt.createInfoTopology = Vk.PrimitiveTopologyTriangleList,
 	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
 
-viewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo n
+viewportState :: Vk.C.Extent2d -> Vk.Ppl.ViewportSt.CreateInfo 'Nothing
 viewportState sce = def {
 	Vk.Ppl.ViewportSt.createInfoViewports = [viewport],
 	Vk.Ppl.ViewportSt.createInfoScissors = [scissor] }

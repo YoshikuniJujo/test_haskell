@@ -21,7 +21,7 @@ import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 import Data.Word
 import Data.Int
 
@@ -121,8 +121,8 @@ createInfoToMiddle CreateInfo {
 
 class CreateInfoListToMiddle sss where
 	type CreateInfoListArgs sss :: [(
-		Maybe Type, [(Maybe Type, ShaderKind, [*])],
-		*, Maybe Type, *, *, Maybe Type, Maybe Type, Maybe Type,
+		Maybe Type, [(Maybe Type, ShaderKind, [Type])],
+		Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type,
 		Maybe Type, Maybe Type )]
 	createInfoListToMiddle ::
 		HeteroParList.PL (U11 CreateInfo) sss ->
