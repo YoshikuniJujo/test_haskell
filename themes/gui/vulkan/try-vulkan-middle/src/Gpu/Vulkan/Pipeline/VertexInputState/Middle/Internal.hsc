@@ -1,8 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal where
@@ -13,6 +15,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Bits
 import Data.Word
 
@@ -24,17 +27,18 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.Core as C
 enum "CreateFlags" ''#{type VkPipelineVertexInputStateCreateFlags}
 		[''Show, ''Storable, ''Eq, ''Bits] []
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoVertexBindingDescriptions ::
 		[VertexInput.BindingDescription],
 	createInfoVertexAttributeDescriptions ::
 		[VertexInput.AttributeDescription] }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -44,7 +48,7 @@ createInfoToCore CreateInfo {
 	createInfoVertexAttributeDescriptions =
 		((length &&& id) . (VertexInput.attributeDescriptionToCore <$>))
 			-> (vadc, vads) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray vbdc \pvbds ->
 	pokeArray pvbds vbds >>
 	allocaArray vadc \pvads ->

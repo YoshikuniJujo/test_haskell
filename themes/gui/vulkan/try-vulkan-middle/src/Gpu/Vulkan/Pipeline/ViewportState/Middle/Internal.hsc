@@ -1,8 +1,11 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal where
@@ -13,6 +16,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -26,26 +30,27 @@ import qualified Gpu.Vulkan.Pipeline.ViewportState.Core as C
 enum "CreateFlags" ''#{type VkPipelineViewportStateCreateFlags}
 	[''Show, ''Eq, ''Storable, ''Bits] []
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoViewports :: [Viewport],
 	createInfoScissors :: [Rect2d] }
-	deriving Show
 
-instance Default (CreateInfo n) where
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+instance Default (CreateInfo 'Nothing) where
 	def = CreateInfo {
-		createInfoNext = Nothing, createInfoFlags = zeroBits,
+		createInfoNext = TMaybe.N, createInfoFlags = zeroBits,
 		createInfoViewports = [], createInfoScissors = [] }
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
 	createInfoViewports = (length &&& id) -> (vpc, vps),
 	createInfoScissors = (length &&& id) -> (scc, scs) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray vpc \pvps ->
 	pokeArray pvps vps >>
 	allocaArray scc \pscs ->
