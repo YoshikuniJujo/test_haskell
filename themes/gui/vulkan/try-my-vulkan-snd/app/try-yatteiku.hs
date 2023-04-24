@@ -591,16 +591,16 @@ makePipelineNew dvc rp f = do
 		vertexInputInfo = Vk.Ppl.VertexInputState.CreateInfo {
 			Vk.Ppl.VertexInputState.createInfoNext = Nothing,
 			Vk.Ppl.VertexInputState.createInfoFlags = zeroBits }
-		inputAssembly :: Vk.Ppl.InpAssSt.CreateInfo ()
+		inputAssembly :: Vk.Ppl.InpAssSt.CreateInfo 'Nothing
 		inputAssembly = Vk.Ppl.InpAssSt.CreateInfo {
-			Vk.Ppl.InpAssSt.createInfoNext = Nothing,
+			Vk.Ppl.InpAssSt.createInfoNext = TMaybe.N,
 			Vk.Ppl.InpAssSt.createInfoFlags = zeroBits,
 			Vk.Ppl.InpAssSt.createInfoTopology =
 				Vk.PrimitiveTopologyTriangleList,
 			Vk.Ppl.InpAssSt.createInfoPrimitiveRestartEnable =
 				False }
 		rasterizer = Vk.Ppl.RstSt.CreateInfo {
-			Vk.Ppl.RstSt.createInfoNext = Nothing,
+			Vk.Ppl.RstSt.createInfoNext = TMaybe.N,
 			Vk.Ppl.RstSt.createInfoFlags = zeroBits,
 			Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
 			Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
@@ -614,7 +614,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 			Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
 		multisample = Vk.Ppl.MulSmplSt.CreateInfo {
-			Vk.Ppl.MulSmplSt.createInfoNext = Nothing,
+			Vk.Ppl.MulSmplSt.createInfoNext = TMaybe.N,
 			Vk.Ppl.MulSmplSt.createInfoFlags = zeroBits,
 			Vk.Ppl.MulSmplSt.createInfoRasterizationSamplesAndMask =
 				Vk.Sample.CountAndMask
@@ -650,10 +650,10 @@ makePipelineNew dvc rp f = do
 				[blendattachment],
 			Vk.Ppl.ClrBlndSt.createInfoBlendConstants =
 				fromJust $ rgbaDouble 0 0 0 0 }
-		layoutCreateInfoNew :: Vk.Ppl.Lyt.CreateInfoNew () '[]
+		layoutCreateInfoNew :: Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[]
 			('Vk.PushConstant.PushConstantLayout '[] '[])
 		layoutCreateInfoNew = Vk.Ppl.Lyt.CreateInfoNew {
-			Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+			Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
 			Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Nil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
@@ -661,7 +661,7 @@ makePipelineNew dvc rp f = do
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
 		vertShaderStage = Vk.Ppl.ShSt.CreateInfoNew {
-			Vk.Ppl.ShSt.createInfoNextNew = Nothing,
+			Vk.Ppl.ShSt.createInfoNextNew = TMaybe.N,
 			Vk.Ppl.ShSt.createInfoFlagsNew =
 				Vk.Ppl.ShSt.CreateFlagsZero,
 			Vk.Ppl.ShSt.createInfoStageNew = Vk.ShaderStageVertexBit,
@@ -675,7 +675,7 @@ makePipelineNew dvc rp f = do
 			Vk.Shader.Module.createInfoCode =
 				glslFragmentShaderMain }
 		fragShaderStage = Vk.Ppl.ShSt.CreateInfoNew {
-			Vk.Ppl.ShSt.createInfoNextNew = Nothing,
+			Vk.Ppl.ShSt.createInfoNextNew = TMaybe.N,
 			Vk.Ppl.ShSt.createInfoFlagsNew =
 				Vk.Ppl.ShSt.CreateFlagsZero,
 			Vk.Ppl.ShSt.createInfoStageNew =
@@ -686,10 +686,10 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
-					'((), (), 'GlslVertexShader, (), (), '[]),
-					'((), (), 'GlslFragmentShader, (), (), '[]) ]
+					'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
+					'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
 				'(	(), '[], '[] )
-				() () () () () 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
+				'Nothing () () 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
 				Vk.Ppl.Gr.createInfoNext = TMaybe.N,
 				Vk.Ppl.Gr.createInfoFlags =
