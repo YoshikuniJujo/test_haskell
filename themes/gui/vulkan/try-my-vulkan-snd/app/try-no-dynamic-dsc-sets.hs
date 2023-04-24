@@ -382,15 +382,15 @@ calc dvc qFam dslyt ln dss ma mb mc =
 		_ -> error "never occur"
 
 pplLayoutInfoNew :: Vk.DscSetLyt.L sl DscSetLytLstW123 ->
-	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, DscSetLytLstW123)]
+	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, DscSetLytLstW123)]
 		('Vk.PushConstant.PushConstantLayout '[] '[])
 pplLayoutInfoNew dslyt = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dslyt }
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
-	Vk.Ppl.Cmpt.CreateInfo 'Nothing '((), (), 'GlslComputeShader, (), (),
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, (), 'GlslComputeShader, (), (),
 		'[Word32, Word32]) '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
@@ -400,9 +400,9 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew
-	() () 'GlslComputeShader () () '[Word32, Word32]
+	'Nothing () 'GlslComputeShader () () '[Word32, Word32]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
-	Vk.Ppl.ShaderSt.createInfoNextNew = Nothing,
+	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,
 	Vk.Ppl.ShaderSt.createInfoModuleNew = Vk.ShaderMod.M shaderModInfo nil nil,

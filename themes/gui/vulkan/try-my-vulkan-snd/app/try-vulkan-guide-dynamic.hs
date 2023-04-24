@@ -620,13 +620,13 @@ createPipelineLayout :: forall sd sdl a . Vk.Dvc.D sd ->
 		Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 		IO a) -> IO a
 createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.createNew dv ci nil nil f where
-	ci :: Vk.Ppl.Lyt.CreateInfoNew () '[ '(sdl, Buffers)] (
+	ci :: Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sdl, Buffers)] (
 		'Vk.PushConstant.PushConstantLayout
 			'[ WMeshPushConstants]
 			'[ 'Vk.PushConstant.Range '[ 'Vk.T.ShaderStageVertexBit]
 				'[WMeshPushConstants]] )
 	ci = Vk.Ppl.Lyt.CreateInfoNew {
-		Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+		Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 		Vk.Ppl.Lyt.createInfoSetLayoutsNew = HL.Singleton $ U2 dslyt }
 
@@ -655,11 +655,11 @@ recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
 graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.CreateInfo 'Nothing
-		'[ '((), (), 'GlslVertexShader, (), (), '[]),
-			'((), (), 'GlslFragmentShader, (), (), '[])]
+		'[	'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
+			'( 'Nothing, (), 'GlslFragmentShader, (), (), '[])]
 		'((), '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color)])
-		() () () () () 'Nothing 'Nothing 'Nothing
+		'Nothing () () 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
 		'(sl, '[ '(sdl, Buffers)], '[WMeshPushConstants]) sr
 		'(sb, vs', ts', larg)
 graphicsPipelineCreateInfo sce rp lyt = Vk.Ppl.Grph.CreateInfo {
@@ -682,9 +682,9 @@ graphicsPipelineCreateInfo sce rp lyt = Vk.Ppl.Grph.CreateInfo {
 	Vk.Ppl.Grph.createInfoBasePipelineIndex = - 1,
 	Vk.Ppl.Grph.createInfoTessellationState = Nothing }
 
-inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
+inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo 'Nothing
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
-	Vk.Ppl.InpAsmbSt.createInfoNext = Nothing,
+	Vk.Ppl.InpAsmbSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.InpAsmbSt.createInfoFlags = zeroBits,
 	Vk.Ppl.InpAsmbSt.createInfoTopology = Vk.PrimitiveTopologyTriangleList,
 	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
@@ -702,9 +702,9 @@ viewportState sce = def {
 	scissor = Vk.C.Rect2d {
 		Vk.C.rect2dOffset = Vk.C.Offset2d 0 0, Vk.C.rect2dExtent = sce }
 
-rasterizer :: Vk.Ppl.RstSt.CreateInfo ()
+rasterizer :: Vk.Ppl.RstSt.CreateInfo 'Nothing
 rasterizer = Vk.Ppl.RstSt.CreateInfo {
-	Vk.Ppl.RstSt.createInfoNext = Nothing,
+	Vk.Ppl.RstSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.RstSt.createInfoFlags = zeroBits,
 	Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
 	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
@@ -731,9 +731,9 @@ depthStencil = Vk.Ppl.DptStnSt.CreateInfo {
 	Vk.Ppl.DptStnSt.createInfoMinDepthBounds = 0,
 	Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 
-multisampling :: Vk.Ppl.MltSmplSt.CreateInfo ()
+multisampling :: Vk.Ppl.MltSmplSt.CreateInfo 'Nothing
 multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
-	Vk.Ppl.MltSmplSt.createInfoNext = Nothing,
+	Vk.Ppl.MltSmplSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.MltSmplSt.createInfoFlags = zeroBits,
 	Vk.Ppl.MltSmplSt.createInfoSampleShadingEnable = False,
 	Vk.Ppl.MltSmplSt.createInfoRasterizationSamplesAndMask =
@@ -1580,18 +1580,18 @@ type FramebufferResized = IORef Bool
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
 	HL.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
-		'((), (), 'GlslVertexShader, (), (), '[]),
-		'((), (), 'GlslFragmentShader, (), (), '[]) ]
+		'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
+		'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
 shaderStages vs fs = U6 vertinfo :** U6 fraginfo :** HL.Nil where
 	vertinfo = Vk.Ppl.ShdrSt.CreateInfoNew {
-		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
+		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl vs,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
 	fraginfo = Vk.Ppl.ShdrSt.CreateInfoNew {
-		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
+		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
 		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl fs,

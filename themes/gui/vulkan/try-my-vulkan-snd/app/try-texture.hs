@@ -677,11 +677,11 @@ createPipelineLayout' ::
 createPipelineLayout' dvc f =
 	createDescriptorSetLayout dvc \dsl ->
 	let	pipelineLayoutInfo = Vk.Ppl.Layout.CreateInfoNew {
-			Vk.Ppl.Layout.createInfoNextNew = Nothing,
+			Vk.Ppl.Layout.createInfoNextNew = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayoutsNew =
 				HeteroParList.Singleton $ U2 dsl } in
-	Vk.Ppl.Layout.createNew @_ @_ @'[] @() @() @() dvc pipelineLayoutInfo nil nil $ f dsl
+	Vk.Ppl.Layout.createNew @_ @_ @'[] @'Nothing @() @() dvc pipelineLayoutInfo nil nil $ f dsl
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
@@ -705,11 +705,11 @@ recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
 mkGraphicsPipelineCreateInfo' ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
-			'((), (), 'GlslVertexShader, (), (), '[]),
-			'((), (), 'GlslFragmentShader, (), (), '[]) ]
+			'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
+			'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
 		'(	(), '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3), '(2, TexCoord)] )
-		() () () () () 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
+		'Nothing () () 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
 mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -730,28 +730,28 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
 shaderStages :: HeteroParList.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
-	'((), (), 'GlslVertexShader, (), (), '[]),
-	'((), (), 'GlslFragmentShader, (), (), '[]) ]
+	'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
+	'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
 shaderStages = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HeteroParList.Nil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
-		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
+		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageVertexBit,
 		Vk.Ppl.ShdrSt.createInfoModuleNew = vertShaderModule,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
 	fragShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
-		Vk.Ppl.ShdrSt.createInfoNextNew = Nothing,
+		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
 		Vk.Ppl.ShdrSt.createInfoStageNew = Vk.ShaderStageFragmentBit,
 		Vk.Ppl.ShdrSt.createInfoModuleNew = fragShaderModule,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
 
-inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo ()
+inputAssembly :: Vk.Ppl.InpAsmbSt.CreateInfo 'Nothing
 inputAssembly = Vk.Ppl.InpAsmbSt.CreateInfo {
-	Vk.Ppl.InpAsmbSt.createInfoNext = Nothing,
+	Vk.Ppl.InpAsmbSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.InpAsmbSt.createInfoFlags = zeroBits,
 	Vk.Ppl.InpAsmbSt.createInfoTopology = Vk.PrimitiveTopologyTriangleList,
 	Vk.Ppl.InpAsmbSt.createInfoPrimitiveRestartEnable = False }
@@ -771,9 +771,9 @@ mkViewportState sce = Vk.Ppl.ViewportSt.CreateInfo {
 	scissor = Vk.C.Rect2d {
 		Vk.C.rect2dOffset = Vk.C.Offset2d 0 0, Vk.C.rect2dExtent = sce }
 
-rasterizer :: Vk.Ppl.RstSt.CreateInfo ()
+rasterizer :: Vk.Ppl.RstSt.CreateInfo 'Nothing
 rasterizer = Vk.Ppl.RstSt.CreateInfo {
-	Vk.Ppl.RstSt.createInfoNext = Nothing,
+	Vk.Ppl.RstSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.RstSt.createInfoFlags = zeroBits,
 	Vk.Ppl.RstSt.createInfoDepthClampEnable = False,
 	Vk.Ppl.RstSt.createInfoRasterizerDiscardEnable = False,
@@ -786,9 +786,9 @@ rasterizer = Vk.Ppl.RstSt.CreateInfo {
 	Vk.Ppl.RstSt.createInfoDepthBiasClamp = 0,
 	Vk.Ppl.RstSt.createInfoDepthBiasSlopeFactor = 0 }
 
-multisampling :: Vk.Ppl.MltSmplSt.CreateInfo ()
+multisampling :: Vk.Ppl.MltSmplSt.CreateInfo 'Nothing
 multisampling = Vk.Ppl.MltSmplSt.CreateInfo {
-	Vk.Ppl.MltSmplSt.createInfoNext = Nothing,
+	Vk.Ppl.MltSmplSt.createInfoNext = TMaybe.N,
 	Vk.Ppl.MltSmplSt.createInfoFlags = zeroBits,
 	Vk.Ppl.MltSmplSt.createInfoSampleShadingEnable = False,
 	Vk.Ppl.MltSmplSt.createInfoRasterizationSamplesAndMask =
