@@ -2,7 +2,9 @@
 {-# LANGUAGE BlockArguments, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
@@ -17,6 +19,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Types
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Word
 import Data.ByteString qualified as BS
@@ -35,11 +38,12 @@ import Data.Bits
 
 #include <vulkan/vulkan.h>
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoInitialData :: Data }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
 
 tryCreateAndPrintData :: Device.D -> C -> IO ()
 tryCreateAndPrintData dv@(Device.D cdv) c@(C cc) = alloca \psz -> do
@@ -51,7 +55,7 @@ tryCreateAndPrintData dv@(Device.D cdv) c@(C cc) = alloca \psz -> do
 		throwUnlessSuccess $ Result r'
 		d <- dataFromRaw . DataRaw sz $ castPtr pdt
 		let	ci = CreateInfo {
-				createInfoNext = Nothing,
+				createInfoNext = TMaybe.N,
 				createInfoFlags = zeroBits,
 				createInfoInitialData = d }
 			cci = C.CreateInfo {
@@ -66,14 +70,14 @@ tryCreateAndPrintData dv@(Device.D cdv) c@(C cc) = alloca \psz -> do
 --		c' <- create @() @() dv ci Nothing
 --		print =<< getData dv c'
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoInitialData = d } f =
 	dataToRaw d \(DataRaw dtsz pdt) ->
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	let	ci = C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',
@@ -85,8 +89,8 @@ createInfoToCore CreateInfo {
 
 newtype C = C C.C deriving Show
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO C
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO C
 create (Device.D dvc) ci mac = C <$> alloca \pc -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do
