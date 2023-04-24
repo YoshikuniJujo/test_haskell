@@ -286,10 +286,10 @@ calc dvc qFam dscSetLyt dscSet dsz =
 		_ -> error "never occur"
 
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
-	Vk.Ppl.Lyt.CreateInfoNew () '[ '(sl, bts)]
+	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, bts)]
 		('Vk.PushConstant.PushConstantLayout '[] '[])
 pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
-	Vk.Ppl.Lyt.createInfoNextNew = Nothing,
+	Vk.Ppl.Lyt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 	Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Singleton $ U2 dsl }
 
@@ -343,7 +343,7 @@ run dvc qFam cb ppl pplLyt dscSet dsz = do
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
-		'((), (), 'GlslComputeShader, (), (), '[])
+		'( 'Nothing, (), 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
@@ -353,9 +353,9 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
 shaderStageInfo ::
-	Vk.Ppl.ShaderSt.CreateInfoNew () () 'GlslComputeShader () () '[]
+	Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing () 'GlslComputeShader () () '[]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
-	Vk.Ppl.ShaderSt.createInfoNextNew = Nothing,
+	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = def,
 	Vk.Ppl.ShaderSt.createInfoStageNew = Vk.ShaderStageComputeBit,
 	Vk.Ppl.ShaderSt.createInfoModuleNew = Vk.ShaderMod.M shdrMdInfo nil nil,
