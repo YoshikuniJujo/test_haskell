@@ -124,9 +124,9 @@ main = withDevice \pd qfi dv -> do
 
 type Word32List = Obj.List 256 Word32 ""
 
-queryPoolInfo :: Vk.QP.CreateInfo () qt -- Vk.QP.PipelineStatistics
+queryPoolInfo :: Vk.QP.CreateInfo 'Nothing qt -- Vk.QP.PipelineStatistics
 queryPoolInfo = Vk.QP.CreateInfo {
-	Vk.QP.createInfoNext = Nothing,
+	Vk.QP.createInfoNext = TMaybe.N,
 	Vk.QP.createInfoFlags = zeroBits,
 	Vk.QP.createInfoQueryCount = 10,
 	Vk.QP.createInfoPipelineStatistics =

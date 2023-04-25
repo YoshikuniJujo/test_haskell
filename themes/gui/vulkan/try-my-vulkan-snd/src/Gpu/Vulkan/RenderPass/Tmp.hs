@@ -1,12 +1,15 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass.Tmp where
 
 import Foreign.Storable.PeekPoke
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.RenderPass.Enum
@@ -18,8 +21,8 @@ import qualified Gpu.Vulkan.Subpass.Middle as Subpass
 
 import Gpu.Vulkan.RenderPass.Middle
 
-data CreateInfoNew n fmts = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+data CreateInfoNew mn fmts = CreateInfoNew {
+	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoAttachmentsNew ::
 		HeteroParList.PL Attachment.DescriptionNew fmts,
@@ -41,7 +44,7 @@ createInfoFromNew CreateInfoNew {
 	createInfoDependencies = dps }
 
 createNew ::
-	(Pokable n, Pokable c, Attachment.DescriptionsFromNew fmts) =>
+	(WithPoked (TMaybe.M mn), Pokable c, Attachment.DescriptionsFromNew fmts) =>
 	Device.D ->
-	CreateInfoNew n fmts -> Maybe (AllocationCallbacks.A c) -> IO R
+	CreateInfoNew mn fmts -> Maybe (AllocationCallbacks.A c) -> IO R
 createNew dvc ci mac = create dvc (createInfoFromNew ci) mac

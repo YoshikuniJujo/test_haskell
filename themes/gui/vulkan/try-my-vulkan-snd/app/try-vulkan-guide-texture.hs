@@ -570,10 +570,10 @@ createRenderPass ::
 	forall (scifmt :: Vk.T.Format) (dfmt :: Vk.T.Format) sd a . (
 	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dfmt ) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
-createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @()
+createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @'Nothing
 	dv renderPassInfo nil nil f where
 	renderPassInfo = Vk.RndrPss.M.CreateInfoNew {
-		Vk.RndrPss.M.createInfoNextNew = Nothing,
+		Vk.RndrPss.M.createInfoNextNew = TMaybe.N,
 		Vk.RndrPss.M.createInfoFlagsNew = zeroBits,
 		Vk.RndrPss.M.createInfoAttachmentsNew =
 			colorAttachment :** depthAttachment :** HL.Nil,
@@ -1406,9 +1406,9 @@ createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dv f =
 	HL.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dv def nil nil) \iass ->
+		(Vk.Semaphore.create @'Nothing dv def nil nil) \iass ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dv def nil nil) \rfss ->
+		(Vk.Semaphore.create @'Nothing dv def nil nil) \rfss ->
 	HL.replicateM maxFramesInFlight
 		(Vk.Fnc.create @'Nothing dv inf nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
@@ -2028,9 +2028,9 @@ createTextureSampler ::
 	Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
 createTextureSampler dv = Vk.Smplr.create dv textureSamplerCreateInfo nil nil
 
-textureSamplerCreateInfo :: Vk.Smplr.M.CreateInfo ()
+textureSamplerCreateInfo :: Vk.Smplr.M.CreateInfo 'Nothing
 textureSamplerCreateInfo = Vk.Smplr.M.CreateInfo {
-	Vk.Smplr.M.createInfoNext = Nothing,
+	Vk.Smplr.M.createInfoNext = TMaybe.N,
 	Vk.Smplr.M.createInfoFlags = zeroBits,
 	Vk.Smplr.M.createInfoMagFilter = Vk.FilterNearest,
 	Vk.Smplr.M.createInfoMinFilter = Vk.FilterNearest,

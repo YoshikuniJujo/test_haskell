@@ -555,9 +555,9 @@ makeRenderPass dvc f = do
 				Left [subpass0AttachmentRef],
 			Vk.Subpass.descriptionDepthStencilAttachment = Nothing,
 			Vk.Subpass.descriptionPreserveAttachments = [] }
-		renderPassCreateInfoNew :: Vk.RenderPass.CreateInfoNew () _
+		renderPassCreateInfoNew :: Vk.RenderPass.CreateInfoNew 'Nothing _
 		renderPassCreateInfoNew = Vk.RenderPass.CreateInfoNew {
-			Vk.RenderPass.createInfoNextNew = Nothing,
+			Vk.RenderPass.createInfoNextNew = TMaybe.N,
 			Vk.RenderPass.createInfoFlagsNew =
 				Vk.RenderPass.CreateFlagsZero,
 			Vk.RenderPass.createInfoAttachmentsNew =

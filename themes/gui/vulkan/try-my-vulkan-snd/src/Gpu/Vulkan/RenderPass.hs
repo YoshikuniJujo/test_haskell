@@ -1,5 +1,7 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass (
@@ -7,6 +9,7 @@ module Gpu.Vulkan.RenderPass (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 
 import Gpu.Vulkan.RenderPass.Type
 
@@ -18,8 +21,8 @@ import qualified Gpu.Vulkan.Attachment as Attachment
 
 createNew :: (
 	Attachment.DescriptionsFromNew fmts,
-	Pokable n, Pokable c, Pokable d ) =>
-	Device.D sd -> M.CreateInfoNew n fmts ->
+	WithPoked (TMaybe.M mn), Pokable c, Pokable d ) =>
+	Device.D sd -> M.CreateInfoNew mn fmts ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall s . R s -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f =

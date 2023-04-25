@@ -5,7 +5,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -14,7 +14,7 @@ module Gpu.Vulkan.QueryPool where
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Exception
-
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Kind
 import Data.Word
 
@@ -27,8 +27,8 @@ import Gpu.Vulkan.QueryPool.Middle qualified as M
 
 newtype Q sq (tp :: Bool -> Type) = Q M.Q deriving Show
 
-create :: (WithPoked n, QueryType tp, WithPoked c, WithPoked d) =>
-	Device.D sd -> CreateInfo n tp ->
+create :: (WithPoked (TMaybe.M mn), QueryType tp, WithPoked c, WithPoked d) =>
+	Device.D sd -> CreateInfo mn tp ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall sq . Q sq tp -> IO a) -> IO a
 create (Device.D dv) ci macc macd f = bracket
@@ -46,12 +46,13 @@ getResults pd (Device.D dv) (Q qp) fq qc flgs = do
 	a <- getQueryArg @tp pd
 	((fromWord a <$>) <$>) <$> M.getResults dv qp fq qc flgs
 
-data CreateInfo n (tp :: Bool -> Type) = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn (tp :: Bool -> Type) = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: M.CreateFlagBits,
 	createInfoQueryCount :: Word32,
 	createInfoPipelineStatistics :: Q.PipelineStatisticFlags }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn tp)
 
 createInfoToMiddle ::
 	forall n tp . QueryType tp => CreateInfo n tp -> M.CreateInfo n

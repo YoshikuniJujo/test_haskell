@@ -592,12 +592,12 @@ createRenderPassNew dvc f = do
 				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
 		renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
-			Vk.RndrPass.M.createInfoNextNew = Nothing,
+			Vk.RndrPass.M.createInfoNextNew = TMaybe.N,
 			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
 			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :** HeteroParList.Nil,
 			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
-	Vk.RndrPass.createNew @'[scifmt] @() dvc renderPassInfo nil nil \rp -> f rp
+	Vk.RndrPass.createNew @'[scifmt] @'Nothing dvc renderPassInfo nil nil \rp -> f rp
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.L sl '[] '[] -> IO b) -> IO b
@@ -937,9 +937,9 @@ createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
 	HeteroParList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dvc def nil nil) \iass ->
+		(Vk.Semaphore.create @'Nothing dvc def nil nil) \iass ->
 	HeteroParList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @() dvc def nil nil) \rfss ->
+		(Vk.Semaphore.create @'Nothing dvc def nil nil) \rfss ->
 	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Fence.create @'Nothing dvc fncInfo nil nil) \iffs ->
 	f $ SyncObjects iass rfss iffs

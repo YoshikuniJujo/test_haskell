@@ -608,12 +608,12 @@ createRenderPassNew dvc f = do
 				Vk.AccessDepthStencilAttachmentWriteBit,
 			Vk.Subpass.dependencyDependencyFlags = zeroBits }
 		renderPassInfo = Vk.RndrPass.M.CreateInfoNew {
-			Vk.RndrPass.M.createInfoNextNew = Nothing,
+			Vk.RndrPass.M.createInfoNextNew = TMaybe.N,
 			Vk.RndrPass.M.createInfoFlagsNew = zeroBits,
 			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :** HeteroParList.Nil,
 			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
-	Vk.RndrPass.createNew @'[scifmt] @() dvc renderPassInfo nil nil \rp -> f rp
+	Vk.RndrPass.createNew @'[scifmt] @'Nothing dvc renderPassInfo nil nil \rp -> f rp
 
 type AtomUbo s = '(s, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]])
 
@@ -1058,8 +1058,8 @@ data SyncObjects (ssos :: (Type, Type, Type)) where
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall sias srfs siff . SyncObjects '(sias, srfs, siff) -> IO a ) -> IO a
 createSyncObjects dvc f =
-	Vk.Semaphore.create @() dvc def nil nil \ias ->
-	Vk.Semaphore.create @() dvc def nil nil \rfs ->
+	Vk.Semaphore.create @'Nothing dvc def nil nil \ias ->
+	Vk.Semaphore.create @'Nothing dvc def nil nil \rfs ->
 	Vk.Fence.create @'Nothing dvc fncInfo nil nil \iff ->
 	f $ SyncObjects ias rfs iff
 	where
