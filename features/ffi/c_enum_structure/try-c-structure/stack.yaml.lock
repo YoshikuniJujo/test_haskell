@@ -5,19 +5,19 @@
 
 packages:
 - completed:
+    commit: 0cd7b1104497294e5e5d1f3ada753d0733e24c60
+    git: https://github.com/YoshikuniJujo/c-struct
     name: c-struct
-    version: 0.1.1.1
-    git: https://github.com/YoshikuniJujo/c-struct
     pantry-tree:
-      size: 692
-      sha256: 630a73594bb61b7e24aad5c985a6b45c9746597b338eb9b5e4faa6869d9274d6
-    commit: 20a12061931b11c9c2d50417fac59c391ccd5351
+      sha256: f729e6459c7c05701a8d55e7418e170a869a33f4d6e6d64ed3bd76ad62c0f23f
+      size: 760
+    version: 0.1.1.2
   original:
+    commit: 0cd7b1104497294e5e5d1f3ada753d0733e24c60
     git: https://github.com/YoshikuniJujo/c-struct
-    commit: 20a12061931b11c9c2d50417fac59c391ccd5351
 snapshots:
 - completed:
+    sha256: facf6cac73b22a83ca955b580a98a7a09ed71f8f974c7a55d28e608c23e689a9
     size: 567669
     url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/17/12.yaml
-    sha256: facf6cac73b22a83ca955b580a98a7a09ed71f8f974c7a55d28e608c23e689a9
   original: lts-17.12
