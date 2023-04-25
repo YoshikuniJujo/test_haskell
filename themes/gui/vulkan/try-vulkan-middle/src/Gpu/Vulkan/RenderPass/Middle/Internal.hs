@@ -2,7 +2,9 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass.Middle.Internal where
@@ -13,6 +15,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Length qualified as TL
 import qualified Data.HeteroParList as HeteroParList
 
@@ -31,16 +34,17 @@ import qualified Gpu.Vulkan.Subpass.Middle.Internal as Subpass
 import qualified Gpu.Vulkan.Framebuffer.Middle.Internal as Framebuffer
 import qualified Gpu.Vulkan.RenderPass.Core as C
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoAttachments :: [Attachment.Description],
 	createInfoSubpasses :: [Subpass.Description],
 	createInfoDependencies :: [Subpass.Dependency] }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n -> (Ptr C.CreateInfo -> IO r) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn -> (Ptr C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -49,7 +53,7 @@ createInfoToCore CreateInfo {
 	createInfoSubpasses = (length &&& id) -> (sc, ss),
 	createInfoDependencies =
 		(length &&& (Subpass.dependencyToCore <$>)) -> (dc, ds) } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray ac \pas ->
 	pokeArray pas as >>
 	(Subpass.descriptionToCore `mapContM` ss) \css ->
@@ -71,8 +75,8 @@ createInfoToCore CreateInfo {
 
 newtype R = R C.R deriving Show
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO R
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO R
 create (Device.D dvc) ci mac = R <$>
 	alloca \pr -> do
 		createInfoToCore ci \pci ->
