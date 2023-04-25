@@ -80,8 +80,8 @@ import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory.M
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool.Middle.Internal qualified as QueryPool
 
-beginRenderPass :: (WithPoked n, ClearValueListToCore cts) => CommandBuffer.M.C ->
-	RenderPass.BeginInfo n cts -> Subpass.Contents -> IO ()
+beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) => CommandBuffer.M.C ->
+	RenderPass.BeginInfo mn cts -> Subpass.Contents -> IO ()
 beginRenderPass (CommandBuffer.M.C _ cb) rpbi (Subpass.Contents spcnt) =
 	RenderPass.beginInfoToCore rpbi \prpbi ->
 		C.beginRenderPass cb prpbi spcnt

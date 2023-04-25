@@ -89,22 +89,22 @@ destroy :: WithPoked d => Device.D -> R -> Maybe (AllocationCallbacks.A d) -> IO
 destroy (Device.D dvc) (R r) mac =
 	AllocationCallbacks.maybeToCore mac $ C.destroy dvc r
 
-data BeginInfo n cts = BeginInfo {
-	beginInfoNext :: Maybe n,
+data BeginInfo mn cts = BeginInfo {
+	beginInfoNext :: TMaybe.M mn,
 	beginInfoRenderPass :: R,
 	beginInfoFramebuffer :: Framebuffer.F,
 	beginInfoRenderArea :: Rect2d,
 	beginInfoClearValues :: HeteroParList.PL ClearValue cts }
 
-beginInfoToCore :: forall n cts a . (WithPoked n, ClearValueListToCore cts) =>
-	BeginInfo n cts -> (Ptr C.BeginInfo -> IO a) -> IO ()
+beginInfoToCore :: forall mn cts a . (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
+	BeginInfo mn cts -> (Ptr C.BeginInfo -> IO a) -> IO ()
 beginInfoToCore BeginInfo {
 	beginInfoNext = mnxt,
 	beginInfoRenderPass = R rp,
 	beginInfoFramebuffer = fb,
 	beginInfoRenderArea = ra,
 	beginInfoClearValues = const (TL.length @_ @cts) &&& id -> (cvc, cvs)
-	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 		clearValueListToCore cvs \pcvl ->
 		clearValueListToArray pcvl \pcva -> do
 		fb' <- Framebuffer.fToCore fb
