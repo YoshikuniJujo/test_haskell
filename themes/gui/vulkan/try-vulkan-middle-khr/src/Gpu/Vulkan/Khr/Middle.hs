@@ -1,6 +1,9 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Middle (
@@ -15,6 +18,7 @@ module Gpu.Vulkan.Khr.Middle (
 
 import Foreign.Marshal.Alloc
 import Foreign.Storable
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
 
 import Gpu.Vulkan.Misc.Middle.Internal
@@ -30,7 +34,7 @@ import qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore.M
 import Foreign.Ptr
 import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable.PeekPoke (WithPoked, withPokedMaybe', withPtrS)
+import Foreign.Storable.PeekPoke (WithPoked, withPoked', withPtrS)
 import Control.Arrow
 import Gpu.Vulkan.Queue.Middle.Internal as Queue
 
@@ -52,7 +56,7 @@ acquireNextImageResult sccs
 
 ---------------------------------------------------------------------------
 
-queuePresent :: WithPoked n => Queue.Q -> PresentInfo n -> IO ()
+queuePresent :: WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfo mn -> IO ()
 queuePresent (Queue.Q q) pi_ =
 	presentInfoMiddleToCore pi_ \cpi@(C.PresentInfo_ fpi) ->
 	withForeignPtr fpi \ppi -> do
@@ -62,15 +66,16 @@ queuePresent (Queue.Q q) pi_ =
 		throwUnlessSuccesses $ Result <$> rs
 		throwUnlessSuccess $ Result r
 
-data PresentInfo n = PresentInfo {
-	presentInfoNext :: Maybe n,
+data PresentInfo mn = PresentInfo {
+	presentInfoNext :: TMaybe.M mn,
 	presentInfoWaitSemaphores :: [Semaphore.M.S],
 	presentInfoSwapchainImageIndices ::
-		[(Swapchain.M.S, Word32)]
-	} deriving Show
+		[(Swapchain.M.S, Word32)] }
+
+deriving instance Show (TMaybe.M mn) => Show (PresentInfo mn)
 
 presentInfoMiddleToCore ::
-	WithPoked n => PresentInfo n -> (C.PresentInfo -> IO a) -> IO ()
+	WithPoked (TMaybe.M mn) => PresentInfo mn -> (C.PresentInfo -> IO a) -> IO ()
 presentInfoMiddleToCore PresentInfo {
 	presentInfoNext = mnxt,
 	presentInfoWaitSemaphores =
@@ -78,7 +83,7 @@ presentInfoMiddleToCore PresentInfo {
 	presentInfoSwapchainImageIndices =
 		(length &&& id . unzip) -> (scc, (scs, iis)) } f =
 	Swapchain.M.sToCore `mapM` scs >>= \scs' ->
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray wsc \pwss ->
 	pokeArray pwss wss >>
 	allocaArray scc \pscs ->

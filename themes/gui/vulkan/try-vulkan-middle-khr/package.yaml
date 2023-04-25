@@ -28,6 +28,7 @@ dependencies:
 - try-vulkan-middle
 - try-vulkan-core
 - try-vulkan-core-khr
+- typelevel-tools
 
 ghc-options:
 - -Wall

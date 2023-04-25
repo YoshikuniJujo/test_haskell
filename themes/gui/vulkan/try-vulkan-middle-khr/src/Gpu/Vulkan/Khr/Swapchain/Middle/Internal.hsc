@@ -4,7 +4,9 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Swapchain.Middle.Internal (
@@ -20,8 +22,9 @@ import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Data.IORef
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
+import Data.IORef
 
 import qualified Data.Text as T
 
@@ -58,8 +61,8 @@ sToCore (S s) = snd <$> readIORef s
 sFromCore :: C.Extent2d -> C.S -> IO S
 sFromCore ex s = S <$> newIORef (ex, s)
 
-data CreateInfo n = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoSurface :: Surface.M.S,
 	createInfoMinImageCount :: Word32,
@@ -75,10 +78,11 @@ data CreateInfo n = CreateInfo {
 	createInfoPresentMode :: PresentMode,
 	createInfoClipped :: Bool,
 	createInfoOldSwapchain :: Maybe S }
-	deriving Show
 
-create :: (WithPoked n, WithPoked c) =>
-	Device.D -> CreateInfo n -> Maybe (AllocationCallbacks.A c) -> IO S
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
+
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO S
 create (Device.D dvc) ci mac = sFromCore ex =<< alloca \psc -> do
 		createInfoToCoreOld ci \pci ->
 			AllocationCallbacks.maybeToCore mac \pac -> do
@@ -87,8 +91,8 @@ create (Device.D dvc) ci mac = sFromCore ex =<< alloca \psc -> do
 		peek psc
 	where ex = createInfoImageExtent ci
 
-recreate :: (WithPoked n, WithPoked c, WithPoked d) =>
-	Device.D -> CreateInfo n ->
+recreate :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+	Device.D -> CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S -> IO ()
 recreate (Device.D dvc) ci macc macd (S rs) = alloca \psc ->
@@ -108,7 +112,7 @@ destroy (Device.D dvc) sc mac = AllocationCallbacks.maybeToCore mac \pac -> do
 	sc' <- sToCore sc
 	C.destroy dvc sc' pac
 
-createInfoToCoreOld :: WithPoked n => CreateInfo n -> (Ptr C.CreateInfo -> IO a) -> IO ()
+createInfoToCoreOld :: WithPoked (TMaybe.M mn) => CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCoreOld CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
@@ -126,7 +130,7 @@ createInfoToCoreOld CreateInfo {
 	createInfoPresentMode = PresentMode pm,
 	createInfoClipped = clpd,
 	createInfoOldSwapchain = mos } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray qfic \pqfis ->
 	pokeArray pqfis qfis >>
 	let	ci os = C.CreateInfo {
