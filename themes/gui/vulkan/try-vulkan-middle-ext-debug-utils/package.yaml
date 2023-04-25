@@ -28,6 +28,7 @@ dependencies:
 - try-storable-peek-poke
 - try-vulkan-middle
 - try-vulkan-core-ext-debug-utils
+- typelevel-tools
 
 ghc-options:
 - -Wall

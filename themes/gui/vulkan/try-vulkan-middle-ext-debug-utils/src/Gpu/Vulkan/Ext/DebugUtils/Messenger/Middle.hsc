@@ -3,8 +3,9 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle (
@@ -24,8 +25,9 @@ import Foreign.Marshal
 import Foreign.Storable (Storable(..))
 import Foreign.Storable.PeekPoke (
 	Sizable(..), Peek, peekMaybe, peekArray', withPoked, withPokedMaybe,
-	WithPoked(..), withPokedMaybe', ptrS, withPtrS, Storable' )
+	WithPoked(..), withPoked', ptrS, withPtrS, Storable' )
 import Foreign.C.Enum
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -60,7 +62,8 @@ data CallbackData n ql cbl obj = CallbackData {
 	callbackDataQueueLabels :: [Label ql],
 	callbackDataCmdBufLabels :: [Label cbl],
 	callbackDataObjects :: [ObjectNameInfo obj] }
-	deriving Show
+
+deriving instance (Show n, Show ql, Show cbl, Show obj) => Show (CallbackData n ql cbl obj)
 
 callbackDataFromCore :: (Peek n, Peek ql, Peek cbl, Peek obj) =>
 	C.CallbackData -> IO (CallbackData n ql cbl obj)
@@ -111,8 +114,8 @@ enum "CreateFlags" ''#{type VkDebugUtilsMessengerCreateFlagsEXT}
 
 instance Default CreateFlags where def = zeroBits
 
-data CreateInfo n cb ql cbl obj ud = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn cb ql cbl obj ud = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoMessageSeverity :: MessageSeverityFlags,
 	createInfoMessageType :: MessageTypeFlags,
@@ -123,15 +126,15 @@ instance Sizable (CreateInfo n cb ql cbl obj ud) where
 	sizeOf' = sizeOf @C.CreateInfo undefined
 	alignment' = alignment @C.CreateInfo undefined
 
-instance (WithPoked n, Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud) =>
-	WithPoked (CreateInfo n cb ql cbl obj ud) where
+instance (WithPoked (TMaybe.M mn), Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud) =>
+	WithPoked (CreateInfo mn cb ql cbl obj ud) where
 	withPoked' ci f = alloca \pcci -> do
 		createInfoToCore' ci $ \cci -> poke pcci cci
 		f . ptrS $ castPtr pcci
 
 createInfoToCore' :: (
-	WithPoked n, Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud ) =>
-	CreateInfo n cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
+	WithPoked (TMaybe.M mn), Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud ) =>
+	CreateInfo mn cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlags flgs,
@@ -139,7 +142,7 @@ createInfoToCore' CreateInfo {
 	createInfoMessageType = MessageTypeFlagBits mt,
 	createInfoFnUserCallback = cb,
 	createInfoUserData = mud
-	} f = withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	C.wrapCallback (fnCallbackToCore cb) >>= \pccb ->
 	withPokedMaybe mud \(castPtr -> pud) -> f C.CreateInfo {
 		C.createInfoSType = (),
@@ -153,9 +156,9 @@ createInfoToCore' CreateInfo {
 newtype M = M C.M deriving Show
 
 create :: (
-	WithPoked n, Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud,
+	WithPoked (TMaybe.M mn), Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud,
 	WithPoked c ) =>
-	Instance.I -> CreateInfo n cb ql cbl obj ud ->
+	Instance.I -> CreateInfo mn cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
 	createInfoToCore' ci \cci ->
