@@ -4,8 +4,9 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds, KindSignatures #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ShaderModule.Middle.Internal where
@@ -16,6 +17,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -45,19 +47,20 @@ type CreateFlags = CreateFlagBits
 
 instance Default CreateFlags where def = CreateFlagsZero
 
-data CreateInfo n sknd = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn sknd = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoCode :: Spv sknd }
-	deriving Show
 
-createInfoToCore :: WithPoked n =>
-	CreateInfo n sknd -> (Ptr C.CreateInfo -> IO r) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn sknd)
+
+createInfoToCore :: WithPoked (TMaybe.M mn) =>
+	CreateInfo mn sknd -> (Ptr C.CreateInfo -> IO r) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = CreateFlagBits flgs,
 	createInfoCode = cd } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
 		(p, n) <- readFromByteString $ (\(Spv spv) -> spv) cd
 		let ci = C.CreateInfo {
 			C.createInfoSType = (),
@@ -73,9 +76,9 @@ readFromByteString (BS.PS f o l) = do
 	withForeignPtr f \p -> copyBytes p' (p `plusPtr` o) l
 	pure (p', fromIntegral l)
 
-create :: (WithPoked n, WithPoked c) =>
+create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
 	Device.D ->
-	CreateInfo n sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
+	CreateInfo mn sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
 create (Device.D dvc) ci mac = M <$> alloca \pm -> do
 	createInfoToCore ci \pcci ->
 		AllocationCallbacks.maybeToCore mac \pac -> do
