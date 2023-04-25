@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -17,7 +17,7 @@ import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 
 import Shaderc.EnumAuto
 
@@ -38,7 +38,7 @@ data CreateInfoNew mn m sknd c d vs = CreateInfoNew {
 	createInfoNameNew :: BS.ByteString,
 	createInfoSpecializationInfoNew :: Maybe (HeteroParList.L vs) }
 
-createInfoToMiddleNew :: (Pokable m, Pokable c) =>
+createInfoToMiddleNew :: (WithPoked (TMaybe.M m), Pokable c) =>
 	Device.D ds -> CreateInfoNew n m sknd c d vs -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -57,7 +57,7 @@ createInfoToMiddleNew dvc CreateInfoNew {
 		M.createInfoName = nm,
 		M.createInfoSpecializationInfo = spi }
 
-createInfoToMiddleFooNew :: (Pokable m, Pokable c) => Device.D ds ->
+createInfoToMiddleFooNew :: (WithPoked (TMaybe.M m), Pokable c) => Device.D ds ->
 	U6 CreateInfoNew '(n, m, sknd, c, d, vs) -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleFooNew dvc (U6 ci) = createInfoToMiddleNew dvc ci
 
@@ -68,7 +68,7 @@ destroyCreateInfoMiddleNew dvc
 	CreateInfoNew { createInfoModuleNew = mdl } = Shader.Module.destroy dvc mmdl mdl
 
 class CreateInfoListToMiddleNew (
-	nnskndcdvss :: [(Maybe Type, Type, ShaderKind, Type, Type, [Type])]
+	nnskndcdvss :: [(Maybe Type, Maybe Type, ShaderKind, Type, Type, [Type])]
 	) where
 	type MiddleVarsNew nnskndcdvss :: [(Maybe Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
@@ -84,7 +84,7 @@ instance CreateInfoListToMiddleNew '[] where
 	destroyCreateInfoMiddleListNew _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (
-	Pokable m, Pokable c, Pokable d,
+	WithPoked (TMaybe.M m), Pokable c, Pokable d,
 	CreateInfoListToMiddleNew nnskndcdvss ) =>
 	CreateInfoListToMiddleNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) where
 	type MiddleVarsNew ('(n, m, sknd, c, d, vs) ': nnskndcdvss) =

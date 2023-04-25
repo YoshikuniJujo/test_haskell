@@ -639,8 +639,8 @@ recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
 mkGraphicsPipelineCreateInfo ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
-			'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
-			'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
+			'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
+			'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
 		'(	'Nothing, '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[], '[]) sr '(sb, vs', ts', slbtss')
@@ -664,8 +664,8 @@ mkGraphicsPipelineCreateInfo sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoTessellationState = Nothing }
 
 shaderStages :: HeteroParList.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
-	'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
-	'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
+	'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
+	'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
 shaderStages = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HeteroParList.Nil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
@@ -966,10 +966,10 @@ recordCommandBuffer cb rp fb sce gpl vb =
 		(HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb) >>
 	Vk.Cmd.draw cbb 3 1 0 0
 	where
-	rpInfo :: Vk.RndrPass.BeginInfo () sr sf
+	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf
 		'[ 'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32]
 	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = Nothing,
+		Vk.RndrPass.beginInfoNext = TMaybe.N,
 		Vk.RndrPass.beginInfoRenderPass = rp,
 		Vk.RndrPass.beginInfoFramebuffer = fb,
 		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
@@ -1137,16 +1137,16 @@ vertices = [
 	Vertex (Cglm.Vec2 $ (- 0.5) :. 0.5 :. NilL)
 		(Cglm.Vec3 $ 0.0 :. 0.0 :. 1.0 :. NilL) ]
 
-vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
+vertShaderModule :: Vk.Shader.Module.M 'Nothing 'GlslVertexShader () ()
 vertShaderModule = mkShaderModule glslVertexShaderMain
 
-fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
+fragShaderModule :: Vk.Shader.Module.M 'Nothing 'GlslFragmentShader () ()
 fragShaderModule = mkShaderModule glslFragmentShaderMain
 
-mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+mkShaderModule :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd () ()
 mkShaderModule code = Vk.Shader.Module.M createInfo nil nil
 	where createInfo = Vk.Shader.Module.M.CreateInfo {
-		Vk.Shader.Module.M.createInfoNext = Nothing,
+		Vk.Shader.Module.M.createInfoNext = TMaybe.N,
 		Vk.Shader.Module.M.createInfoFlags = def,
 		Vk.Shader.Module.M.createInfoCode = code }
 

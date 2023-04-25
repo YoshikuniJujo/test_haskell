@@ -142,7 +142,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 			makeCommandBufferEtc device graphicsQueueFamilyIndex \gq cp -> do
 				makeCommandBuffer device gq cp \cb -> do
 					let	renderpassBeginInfo = Vk.RenderPass.BeginInfo {
-							Vk.RenderPass.beginInfoNext = Nothing,
+							Vk.RenderPass.beginInfoNext = TMaybe.N,
 							Vk.RenderPass.beginInfoRenderPass = rp,
 							Vk.RenderPass.beginInfoFramebuffer = fb,
 							Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
@@ -151,7 +151,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 									screenWidth screenHeight
 								},
 							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
-					Vk.Cmd.beginRenderPass @() @'[]
+					Vk.Cmd.beginRenderPass @'Nothing @'[]
 						cb renderpassBeginInfo Vk.Subpass.ContentsInline do
 						Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
 						Vk.Cmd.draw cb 3 1 0 0
@@ -657,7 +657,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.Lyt.createInfoFlagsNew = zeroBits,
 			Vk.Ppl.Lyt.createInfoSetLayoutsNew = HeteroParList.Nil }
 		vertShaderCreateInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoNext = TMaybe.N,
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode = glslVertexShaderMain }
 		vertShaderStage = Vk.Ppl.ShSt.CreateInfoNew {
@@ -670,7 +670,7 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoNameNew = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
-			Vk.Shader.Module.createInfoNext = Nothing,
+			Vk.Shader.Module.createInfoNext = TMaybe.N,
 			Vk.Shader.Module.createInfoFlags = zeroBits,
 			Vk.Shader.Module.createInfoCode =
 				glslFragmentShaderMain }
@@ -686,8 +686,8 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
-					'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
-					'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
+					'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
+					'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
 				'(	'Nothing, '[], '[] )
 				'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {

@@ -146,7 +146,7 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
-		'( 'Nothing, (), 'GlslComputeShader, (), (), '[Word32, Word32])
+		'( 'Nothing, 'Nothing, 'GlslComputeShader, (), (), '[Word32, Word32])
 		'(sl, sbtss, '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
@@ -155,7 +155,7 @@ computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing () 'GlslComputeShader () () '[Word32, Word32]
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader () () '[Word32, Word32]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,
@@ -164,7 +164,7 @@ shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNameNew = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfoNew = Just $ HeteroParList.Id 3 :** HeteroParList.Id 10 :** HeteroParList.Nil }
 	where shaderModInfo = Vk.ShaderMod.CreateInfo {
-		Vk.ShaderMod.createInfoNext = Nothing,
+		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
 

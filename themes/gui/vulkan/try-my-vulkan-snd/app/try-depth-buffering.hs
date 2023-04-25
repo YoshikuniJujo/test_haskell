@@ -699,8 +699,8 @@ recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
 mkGraphicsPipelineCreateInfo' ::
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
-			'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
-			'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
+			'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
+			'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
 		'(	'Nothing, '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts')
@@ -736,8 +736,8 @@ mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
 		Vk.Ppl.DptStnSt.createInfoMaxDepthBounds = 1 }
 
 shaderStages :: HeteroParList.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
-	'( 'Nothing, (), 'GlslVertexShader, (), (), '[]),
-	'( 'Nothing, (), 'GlslFragmentShader, (), (), '[]) ]
+	'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
+	'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
 shaderStages = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HeteroParList.Nil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
@@ -1595,11 +1595,11 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		(HeteroParList.Singleton $ U2 ubds) []
 	Vk.Cmd.drawIndexed cb (fromIntegral $ length indices) 1 0 0 0
 	where
-	rpInfo :: Vk.RndrPass.BeginInfo () sr sf '[
+	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf '[
 		'Vk.M.ClearTypeColor 'Vk.M.ClearColorTypeFloat32,
 		'Vk.M.ClearTypeDepthStencil ]
 	rpInfo = Vk.RndrPass.BeginInfo {
-		Vk.RndrPass.beginInfoNext = Nothing,
+		Vk.RndrPass.beginInfoNext = TMaybe.N,
 		Vk.RndrPass.beginInfoRenderPass = rp,
 		Vk.RndrPass.beginInfoFramebuffer = fb,
 		Vk.RndrPass.beginInfoRenderArea = Vk.C.Rect2d {
@@ -1869,16 +1869,16 @@ instance Storable UniformBufferObject where
 instance SizeAlignmentList UniformBufferObject
 instance Foreign.Storable.Generic.G UniformBufferObject
 
-vertShaderModule :: Vk.Shader.Module.M n 'GlslVertexShader () ()
+vertShaderModule :: Vk.Shader.Module.M 'Nothing 'GlslVertexShader () ()
 vertShaderModule = mkShaderModule glslVertexShaderMain
 
-fragShaderModule :: Vk.Shader.Module.M n 'GlslFragmentShader () ()
+fragShaderModule :: Vk.Shader.Module.M 'Nothing 'GlslFragmentShader () ()
 fragShaderModule = mkShaderModule glslFragmentShaderMain
 
-mkShaderModule :: Spv sknd -> Vk.Shader.Module.M n sknd () ()
+mkShaderModule :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd () ()
 mkShaderModule code = Vk.Shader.Module.M createInfo nil nil
 	where createInfo = Vk.Shader.Module.M.CreateInfo {
-		Vk.Shader.Module.M.createInfoNext = Nothing,
+		Vk.Shader.Module.M.createInfoNext = TMaybe.N,
 		Vk.Shader.Module.M.createInfoFlags = def,
 		Vk.Shader.Module.M.createInfoCode = code }
 

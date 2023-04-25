@@ -275,7 +275,7 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 -- COMPUTE PIPELINE INFO
 
 pplInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, (), 'GlslComputeShader, (), (), '[])
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, (), (), '[])
 		'(sl, sbtss, '[]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
@@ -284,7 +284,7 @@ pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing () 'GlslComputeShader () () '[]
+shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader () () '[]
 shaderStInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,
@@ -293,7 +293,7 @@ shaderStInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNameNew = "main",
 	Vk.Ppl.ShaderSt.createInfoSpecializationInfoNew = Nothing }
 	where shdrMdInfo = Vk.ShaderMod.CreateInfo {
-		Vk.ShaderMod.createInfoNext = Nothing,
+		Vk.ShaderMod.createInfoNext = TMaybe.N,
 		Vk.ShaderMod.createInfoFlags = zeroBits,
 		Vk.ShaderMod.createInfoCode = glslComputeShaderMain }
 

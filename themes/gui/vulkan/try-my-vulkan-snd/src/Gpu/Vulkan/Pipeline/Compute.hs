@@ -48,7 +48,7 @@ data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
 
 type CreateInfoArgs4 = (
 	Maybe Type,
-	(Maybe Type, Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
+	(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type]),
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	(Type, (Type, [(Type, [DscStLyt.BindingType])], [Type])) )
 
@@ -64,7 +64,7 @@ type family
 		CreateInfoArgs4ToCArgs1 cia ':
 		CreateInfoListArgs4ToCArgs1 cias
 
-createInfoToMiddle :: (Pokable n', Pokable c) =>
+createInfoToMiddle :: (WithPoked (TMaybe.M n'), Pokable c) =>
 	Device.D ds ->
 	CreateInfo n '(n1, n', 'GlslComputeShader, c, d, vs) slsbtss sbph ->
 	IO (M.CreateInfo n n1 vs)
@@ -97,7 +97,7 @@ instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
 	createInfoListToMiddle _ HeteroParList.Nil = pure HeteroParList.Nil
 
-instance (Pokable n', Pokable c, CreateInfoListToMiddle as) =>
+instance (WithPoked (TMaybe.M n'), Pokable c, CreateInfoListToMiddle as) =>
 	CreateInfoListToMiddle (
 		'(n, '(n1, n', 'GlslComputeShader, c, d, vs), slsbtss, sbph
 		) ': as) where

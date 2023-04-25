@@ -1,9 +1,11 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass.Type where
 
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Middle
@@ -13,8 +15,8 @@ import qualified Gpu.Vulkan.RenderPass.Middle as M
 
 newtype R s = R M.R deriving Show
 
-data BeginInfo n sr sf cts = BeginInfo {
-	beginInfoNext :: Maybe n,
+data BeginInfo mn sr sf cts = BeginInfo {
+	beginInfoNext :: TMaybe.M mn,
 	beginInfoRenderPass :: R sr,
 	beginInfoFramebuffer :: Framebuffer.F sf,
 	beginInfoRenderArea :: Rect2d,

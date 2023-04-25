@@ -61,14 +61,14 @@ import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
 
-beginRenderPass' :: (WithPoked n, ClearValueListToCore ct) =>
+beginRenderPass' :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
 	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass' (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 
-beginRenderPass :: (WithPoked n, ClearValueListToCore ct) =>
+beginRenderPass :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
 	CommandBuffer.Binded sc vs -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass (CommandBuffer.Binded cb) bi cnt f = bracket_
