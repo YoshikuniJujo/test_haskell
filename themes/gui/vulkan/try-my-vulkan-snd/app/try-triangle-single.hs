@@ -388,15 +388,15 @@ createSwapChainNew win sfc phdvc qfis dvc f = do
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt dvc crInfo nil nil
+		Vk.Khr.Swapchain.createNew @'Nothing @_ @_ @fmt dvc crInfo nil nil
 			\sc -> f sc ext
 
 mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	Vk.Khr.Swapchain.CreateInfoNew n ss fmt
+	Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt
 mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfoNew {
-		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
+		Vk.Khr.Swapchain.createInfoNextNew = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlagsNew = def,
 		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
@@ -442,7 +442,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
 	(forall fmt . Vk.T.FormatToValue fmt =>
-		Vk.Khr.Swapchain.CreateInfoNew () ss fmt -> Vk.Format -> a) -> a
+		Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt -> Vk.Format -> a) -> a
 mkSwapchainCreateInfo sfc qfis spp ext f = Vk.T.formatToType (Vk.Khr.Surface.M.formatFormat fmt) \(_ :: Proxy t) ->
 	uncurry f $ mkSwapchainCreateInfoRaw @t sfc qfis spp ext
 	where
@@ -451,10 +451,10 @@ mkSwapchainCreateInfo sfc qfis spp ext f = Vk.T.formatToType (Vk.Khr.Surface.M.f
 mkSwapchainCreateInfoRaw :: forall fmt ss .
 	Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	(Vk.Khr.Swapchain.CreateInfoNew () ss fmt, Vk.Format)
+	(Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt, Vk.Format)
 mkSwapchainCreateInfoRaw sfc qfis0 spp ext = (
 	Vk.Khr.Swapchain.CreateInfoNew {
-		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
+		Vk.Khr.Swapchain.createInfoNextNew = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlagsNew = def,
 		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
@@ -1045,12 +1045,12 @@ drawFrame dvc gq pq sc ext rp gpl fbs vb cb (SyncObjects ias rfs iff) = do
 				HeteroParList.Singleton  cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = Nothing,
+			Vk.Khr.presentInfoNext = TMaybe.N,
 			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
 			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
 				$ Vk.Khr.SwapchainImageIndex (Vk.Khr.Swapchain.sFromNew sc) imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =

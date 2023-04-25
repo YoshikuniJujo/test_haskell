@@ -1,7 +1,10 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Swapchain (
@@ -10,6 +13,7 @@ module Gpu.Vulkan.Khr.Swapchain (
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -30,28 +34,28 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
-createNew :: (Pokable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
-	Device.D sd -> CreateInfoNew n ssfc fmt ->
+createNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d, T.FormatToValue fmt) =>
+	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ssc . SNew ssc fmt -> IO a) -> IO a
 createNew (Device.D dvc) ci macc macd f =
 	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
-create :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfo n ssfc ->
+create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> CreateInfo mn ssfc ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	(forall ssc . S ssc -> IO a) -> IO a
 create (Device.D dvc) ci macc macd f =
 	bracket (createM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . S)
 
-recreateNew :: (Pokable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
-	Device.D sd -> CreateInfoNew n ssfc fmt ->
+recreateNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d, T.FormatToValue fmt) =>
+	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	SNew ssc fmt -> IO ()
 recreateNew (Device.D dvc) ci macc macd (SNew sc) = recreateNewM dvc ci macc macd sc
 
-recreate :: (Pokable n, Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfo n ssfc ->
+recreate :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.D sd -> CreateInfo mn ssfc ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S ssc -> IO ()
 recreate (Device.D dvc) ci macc macd (S sc) = recreateM dvc ci macc macd sc
@@ -62,8 +66,8 @@ getImagesNew (Device.D dvc) (SNew sc) = (Image.BindedNew <$>) <$> M.getImages dv
 getImages :: Device.D sd -> S ss -> IO [Image.Binded ss ss]
 getImages (Device.D dvc) (S sc) = (Image.Binded <$>) <$> M.getImages dvc sc
 
-data CreateInfoNew n ss (fmt :: T.Format) = CreateInfoNew {
-	createInfoNextNew :: Maybe n,
+data CreateInfoNew mn ss (fmt :: T.Format) = CreateInfoNew {
+	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoSurfaceNew :: Surface.S ss,
 	createInfoMinImageCountNew :: Word32,
@@ -78,7 +82,8 @@ data CreateInfoNew n ss (fmt :: T.Format) = CreateInfoNew {
 	createInfoPresentModeNew :: PresentMode,
 	createInfoClippedNew :: Bool,
 	createInfoOldSwapchainNew :: Maybe M.S }
-	deriving Show
+
+deriving instance Show (TMaybe.M mn) => Show (CreateInfoNew mn ss fmt)
 
 createInfoFromNew :: forall n ss fmt . T.FormatToValue fmt =>
 	CreateInfoNew n ss fmt -> CreateInfo n ss
@@ -115,18 +120,18 @@ createInfoFromNew CreateInfoNew {
 	createInfoClipped = clpd,
 	createInfoOldSwapchain = osc }
 
-createNewM :: (Pokable n, Pokable n', T.FormatToValue fmt) => Device.M.D ->
-	CreateInfoNew n ss fmt -> Maybe (AllocationCallbacks.A n') -> IO M.S
+createNewM :: (WithPoked (TMaybe.M mn), Pokable n', T.FormatToValue fmt) => Device.M.D ->
+	CreateInfoNew mn ss fmt -> Maybe (AllocationCallbacks.A n') -> IO M.S
 createNewM dvc ci mac = createM dvc (createInfoFromNew ci) mac
 
-recreateNewM :: (Pokable n, Pokable c, Pokable d, T.FormatToValue fmt) =>
-	Device.M.D -> CreateInfoNew n ss fmt ->
+recreateNewM :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d, T.FormatToValue fmt) =>
+	Device.M.D -> CreateInfoNew mn ss fmt ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	M.S -> IO ()
 recreateNewM dvc = recreateM dvc . createInfoFromNew
 
-data CreateInfo n ss = CreateInfo {
-	createInfoNext :: Maybe n,
+data CreateInfo mn ss = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoSurface :: Surface.S ss,
 	createInfoMinImageCount :: Word32,
@@ -142,14 +147,15 @@ data CreateInfo n ss = CreateInfo {
 	createInfoPresentMode :: PresentMode,
 	createInfoClipped :: Bool,
 	createInfoOldSwapchain :: Maybe M.S }
-	deriving Show
 
-createM :: (Pokable n, Pokable n') =>
-	Device.M.D -> CreateInfo n ss -> Maybe (AllocationCallbacks.A n') -> IO M.S
+deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn ss)
+
+createM :: (WithPoked (TMaybe.M mn), Pokable n') =>
+	Device.M.D -> CreateInfo mn ss -> Maybe (AllocationCallbacks.A n') -> IO M.S
 createM dvc ci mac = M.create dvc (createInfoToOld ci) mac
 
-recreateM :: (Pokable n, Pokable c, Pokable d) =>
-	Device.M.D -> CreateInfo n ss ->
+recreateM :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+	Device.M.D -> CreateInfo mn ss ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	M.S -> IO ()
 recreateM dvc ci macc macd s = M.recreate dvc (createInfoToOld ci) macc macd s

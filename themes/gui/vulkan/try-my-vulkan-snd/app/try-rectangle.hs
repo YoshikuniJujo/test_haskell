@@ -404,15 +404,15 @@ createSwapChainNew win sfc phdvc qfis dvc f = do
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt dvc crInfo nil nil
+		Vk.Khr.Swapchain.createNew @'Nothing @_ @_ @fmt dvc crInfo nil nil
 			\sc -> f sc ext
 
 mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	Vk.Khr.Swapchain.CreateInfoNew n ss fmt
+	Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt
 mkSwapchainCreateInfoNew sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfoNew {
-		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
+		Vk.Khr.Swapchain.createInfoNextNew = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlagsNew = def,
 		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
@@ -454,7 +454,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
 		fmt = chooseSwapSurfaceFormat $ formats spp
 		scifmt = Vk.Khr.Surface.M.formatFormat fmt
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @() dvc crInfo nil nil sc
+	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @'Nothing dvc crInfo nil nil sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case
@@ -1207,12 +1207,12 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs (SyncObjects iass rfss if
 			Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfo {
-			Vk.Khr.presentInfoNext = Nothing,
+			Vk.Khr.presentInfoNext = TMaybe.N,
 			Vk.Khr.presentInfoWaitSemaphores = HeteroParList.Singleton rfs,
 			Vk.Khr.presentInfoSwapchainImageIndices = HeteroParList.Singleton
 				$ Vk.Khr.SwapchainImageIndex (Vk.Khr.Swapchain.sFromNew sc) imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresent @() pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresent @'Nothing pq presentInfo
 	where	cb = cbs `vssListIndex` cf
 
 class DescriptorSetIndex aus s where

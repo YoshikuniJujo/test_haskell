@@ -450,7 +450,7 @@ createSwapChain win sfc phdvc qfis dvc f = do
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt dvc crInfo nil nil
+		Vk.Khr.Swapchain.createNew @'Nothing @_ @_ @fmt dvc crInfo nil nil
 			\sc -> f sc ext
 
 recreateSwapChain :: Vk.T.FormatToValue scfmt =>
@@ -461,14 +461,14 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfo sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreateNew @() dvc crInfo nil nil sc
+	ext <$ Vk.Khr.Swapchain.recreateNew @'Nothing dvc crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
-	Vk.Khr.Swapchain.CreateInfoNew n ss fmt
+	Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfoNew {
-		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
+		Vk.Khr.Swapchain.createInfoNextNew = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlagsNew = def,
 		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
@@ -1932,12 +1932,12 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
 			Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfo = Vk.Khr.PresentInfoNew {
-			Vk.Khr.presentInfoNextNew = Nothing,
+			Vk.Khr.presentInfoNextNew = TMaybe.N,
 			Vk.Khr.presentInfoWaitSemaphoresNew = HeteroParList.Singleton rfs,
 			Vk.Khr.presentInfoSwapchainImageIndicesNew = HeteroParList.Singleton
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfo
+	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfo
 	where	cb = cbs `vssListIndex` cf
 
 class DescriptorSetIndex aus s where

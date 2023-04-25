@@ -9,7 +9,8 @@
 module Gpu.Vulkan.Khr where
 
 import Foreign.Storable.PeekPoke
-import qualified Data.HeteroParList as HeteroParList
+import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
 import qualified Data.Text as T
@@ -58,15 +59,15 @@ swapchainImageIndexToMiddle ::
 swapchainImageIndexToMiddle (SwapchainImageIndex (Swapchain.S sc) idx) =
 	(sc, idx)
 
-data PresentInfoNew n sws scfmt sscs = PresentInfoNew {
-	presentInfoNextNew :: Maybe n,
+data PresentInfoNew mn sws scfmt sscs = PresentInfoNew {
+	presentInfoNextNew :: TMaybe.M mn,
 	presentInfoWaitSemaphoresNew :: HeteroParList.PL Semaphore.S sws,
 	presentInfoSwapchainImageIndicesNew ::
 		HeteroParList.PL (SwapchainImageIndexNew scfmt) sscs }
 
 
 presentInfoFromNew ::
-	PresentInfoNew n sws scfmt sscs -> PresentInfo n sws sscs
+	PresentInfoNew mn sws scfmt sscs -> PresentInfo mn sws sscs
 presentInfoFromNew PresentInfoNew {
 	presentInfoNextNew = mnxt,
 	presentInfoWaitSemaphoresNew = wsmps,
@@ -76,16 +77,16 @@ presentInfoFromNew PresentInfoNew {
 	presentInfoSwapchainImageIndices =
 		HeteroParList.map swapchainImageIndexFromNew sciis }
 
-data PresentInfo n sws sscs = PresentInfo {
-	presentInfoNext :: Maybe n,
+data PresentInfo mn sws sscs = PresentInfo {
+	presentInfoNext :: TMaybe.M mn,
 	presentInfoWaitSemaphores :: HeteroParList.PL Semaphore.S sws,
 	presentInfoSwapchainImageIndices ::
 		HeteroParList.PL SwapchainImageIndex sscs }
 
 deriving instance (
-	Show n, Show (HeteroParList.PL Semaphore.S sws),
+	Show (TMaybe.M mn), Show (HeteroParList.PL Semaphore.S sws),
 	Show (HeteroParList.PL SwapchainImageIndex sscs)) =>
-	Show (PresentInfo n sws sscs)
+	Show (PresentInfo mn sws sscs)
 
 presentInfoFromMiddle :: PresentInfo n sws sccs -> M.PresentInfo n
 presentInfoFromMiddle PresentInfo {
@@ -100,10 +101,10 @@ presentInfoFromMiddle PresentInfo {
 		M.presentInfoSwapchainImageIndices = sciis }
 
 queuePresentNew ::
-	Pokable n => Queue.Q -> PresentInfoNew n sws scfmt sscs -> IO ()
+	WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfoNew mn sws scfmt sscs -> IO ()
 queuePresentNew q = queuePresent q . presentInfoFromNew
 
-queuePresent :: Pokable n => Queue.Q -> PresentInfo n sws sscs -> IO ()
+queuePresent :: WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfo mn sws sscs -> IO ()
 queuePresent q = M.queuePresent q . presentInfoFromMiddle
 
 acquireNextImageResultNewM :: [Result] -> Device.M.D ->

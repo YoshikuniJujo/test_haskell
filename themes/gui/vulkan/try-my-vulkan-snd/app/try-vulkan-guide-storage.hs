@@ -381,7 +381,7 @@ createSwapchain w sfc ph qfs dv f = getSwapchainSupport ph sfc >>= \spp -> do
 	let	fmt = Vk.Khr.Sfc.M.formatFormat
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
-		Vk.Khr.Swpch.createNew @() @_ @_ @fmt dv
+		Vk.Khr.Swpch.createNew @'Nothing @_ @_ @fmt dv
 			(swapchainCreateInfo sfc qfs spp ex) nil nil (`f` ex)
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
@@ -390,7 +390,7 @@ recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	IO Vk.C.Extent2d
 recreateSwapchain w sfc ph qfs dv sc = getSwapchainSupport ph sfc >>= \spp -> do
 	ex <- chooseSwapExtent w $ capabilities spp
-	ex <$ Vk.Khr.Swpch.recreateNew @() dv
+	ex <$ Vk.Khr.Swpch.recreateNew @'Nothing dv
 		(swapchainCreateInfo sfc qfs spp ex) nil nil sc
 
 getSwapchainSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapchainSupportDetails
@@ -421,9 +421,9 @@ data SwapchainSupportDetails = SwapchainSupportDetails {
 
 swapchainCreateInfo :: Vk.Khr.Sfc.S ss -> QueueFamilyIndices ->
 	SwapchainSupportDetails -> Vk.C.Extent2d ->
-	Vk.Khr.Swpch.CreateInfoNew n ss fmt
+	Vk.Khr.Swpch.CreateInfoNew 'Nothing ss fmt
 swapchainCreateInfo sfc qfs spp ext = Vk.Khr.Swpch.CreateInfoNew {
-	Vk.Khr.Swpch.createInfoNextNew = Nothing,
+	Vk.Khr.Swpch.createInfoNextNew = TMaybe.N,
 	Vk.Khr.Swpch.createInfoFlagsNew = zeroBits,
 	Vk.Khr.Swpch.createInfoSurfaceNew = sfc,
 	Vk.Khr.Swpch.createInfoMinImageCountNew = imgc,
@@ -1489,7 +1489,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 	HL.index fbs iid \fb -> recordCommandBuffer
 		ex rp lyt gpl fb ds dsod vb vbtri cb vnsln (fromIntegral ffn) fn
 	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo ias rfs) $ Just iff
-	catchAndSerialize . Vk.Khr.queuePresentNew @() pq $ presentInfo rfs iid
+	catchAndSerialize . Vk.Khr.queuePresentNew @'Nothing pq $ presentInfo rfs iid
 	where
 	submitInfo :: Vk.Semaphore.S ssi -> Vk.Semaphore.S ssr ->
 		Vk.SubmitInfo 'Nothing '[ssi] '[scb] '[ssr]
@@ -1501,9 +1501,9 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 		Vk.submitInfoCommandBuffers = HL.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HL.Singleton rfs }
 	presentInfo :: Vk.Semaphore.S ssr -> Word32 ->
-		Vk.Khr.PresentInfoNew () '[ssr] scfmt '[ssc]
+		Vk.Khr.PresentInfoNew 'Nothing '[ssr] scfmt '[ssc]
 	presentInfo rfs iid = Vk.Khr.PresentInfoNew {
-		Vk.Khr.presentInfoNextNew = Nothing,
+		Vk.Khr.presentInfoNextNew = TMaybe.N,
 		Vk.Khr.presentInfoWaitSemaphoresNew = HL.Singleton rfs,
 		Vk.Khr.presentInfoSwapchainImageIndicesNew = HL.Singleton
 			$ Vk.Khr.SwapchainImageIndexNew sc iid }

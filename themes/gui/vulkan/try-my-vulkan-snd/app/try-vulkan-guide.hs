@@ -409,7 +409,7 @@ createSwapchain win sfc ph qfis dv f = do
 	let	fmt = Vk.Khr.Surface.M.formatFormat . chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @() @_ @_ @fmt
+		Vk.Khr.Swapchain.createNew @'Nothing @_ @_ @fmt
 			dv crInfo nil nil \sc -> f sc ext
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
@@ -420,14 +420,14 @@ recreateSwapchain win sfc ph qfis0 dv sc = do
 	spp <- querySwapchainSupport ph sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	crInfo = mkSwapchainCreateInfo sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreateNew @() dv crInfo nil nil sc
+	ext <$ Vk.Khr.Swapchain.recreateNew @'Nothing dv crInfo nil nil sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapchainSupportDetails -> Vk.C.Extent2d ->
-	Vk.Khr.Swapchain.CreateInfoNew n ss fmt
+	Vk.Khr.Swapchain.CreateInfoNew 'Nothing ss fmt
 mkSwapchainCreateInfo sfc qfis0 spp ext =
 	Vk.Khr.Swapchain.CreateInfoNew {
-		Vk.Khr.Swapchain.createInfoNextNew = Nothing,
+		Vk.Khr.Swapchain.createInfoNextNew = TMaybe.N,
 		Vk.Khr.Swapchain.createInfoFlagsNew = zeroBits,
 		Vk.Khr.Swapchain.createInfoSurfaceNew = sfc,
 		Vk.Khr.Swapchain.createInfoMinImageCountNew = imgc,
@@ -1746,12 +1746,12 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 			Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfoNew = Vk.Khr.PresentInfoNew {
-			Vk.Khr.presentInfoNextNew = Nothing,
+			Vk.Khr.presentInfoNextNew = TMaybe.N,
 			Vk.Khr.presentInfoWaitSemaphoresNew = HeteroParList.Singleton rfs,
 			Vk.Khr.presentInfoSwapchainImageIndicesNew = HeteroParList.Singleton
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
-	catchAndSerialize $ Vk.Khr.queuePresentNew @() pq presentInfoNew
+	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfoNew
 	where	cb = cbs `vssListIndex` cf
 
 catchAndSerialize :: IO () -> IO ()
