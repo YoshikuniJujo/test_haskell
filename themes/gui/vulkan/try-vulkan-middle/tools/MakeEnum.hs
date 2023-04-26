@@ -90,9 +90,15 @@ makeEnum src (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 makeEnum' :: HeaderCode -> ModuleName -> [(String, Const)] -> (HaskellName, CName, [DerivName]) -> HaskellCode
 makeEnum' src mnm elms (hsnm, cnm, drvs) = body hsnm cnm drvs ++
 	intercalate ",\n"
-		(map (makeItem' mnm) . (elms ++) . map makeVarConstPair . takeDefinition cnm
+		(map (makeItem' mnm) . (elms ++) . removeDups [] . map makeVarConstPair . takeDefinition cnm
 			. removeBetaExtensions $ lines src ) ++
 		" ]\n"
+
+removeDups :: [String] -> [(String, Const)] -> [(String, Const)]
+removeDups _ [] = []
+removeDups os ((helm, celm) : ss) = if helm `elem` os
+	then removeDups os ss
+	else (helm, celm) : removeDups (helm : os) ss
 
 makeEnumWithDefault ::
 	HeaderCode -> ModuleName -> [(String, Const)] ->
@@ -145,6 +151,7 @@ makeEnum'' hf icds hsnm cnm elms drvs ext = do
 			intercalate ",\n" (
 				map (uncurry $ makeItemFromConst ("", ""))
 					. (elms ++)
+					. removeDups []
 					. map makeVarConstPair
 					. takeDefinition cnm $ lines src
 				) ++ " ]\n" ++

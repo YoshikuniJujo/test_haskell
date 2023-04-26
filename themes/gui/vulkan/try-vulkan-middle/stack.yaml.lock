@@ -5,33 +5,33 @@
 
 packages:
 - completed:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-peek-poke
     pantry-tree:
-      sha256: 50ef19a353be75b9966d6170b946ea3cf86ad245bebcdc9e472a9bef6502453c
-      size: 597
+      sha256: 03e17bd11edefbfb42fcb6c624a32f7be50db9d27d060a08ccbaadb5f14e1df9
+      size: 678
     subdir: features/ffi/pointer/try-storable-peek-poke
     version: 0.1.0.0
   original:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-peek-poke
 - completed:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-storable-hetero-list
     pantry-tree:
-      sha256: f3b0b769963286da9c4077716416929ee01d54dbb5ffc8d4a4afd5ea2ba4dda1
+      sha256: 7fed19bca9a6e9090b47f4874ea101afa1106bfca31e9f4c01cdc34b44f422ea
       size: 602
     subdir: features/ffi/pointer/try-storable-hetero-list
-    version: 0.1.0.0
+    version: 0.1.0.1
   original:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: features/ffi/pointer/try-storable-hetero-list
 - completed:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-hetero-parameter-list
     pantry-tree:
@@ -40,24 +40,24 @@ packages:
     subdir: themes/hetero-list/try-hetero-parameter-list
     version: 0.1.0.0
   original:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/hetero-list/try-hetero-parameter-list
 - completed:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
-      sha256: 9ad75c0a7068cda2ac6edebac49a3c2a1bab8a06c4adc6e28c95a530a7950ec6
+      sha256: 9b07b93b5ed7ede9e84e198f533b3394f84e19498e19a64351e0f1a23a820a9e
       size: 5128
     subdir: themes/gui/vulkan/try-vulkan-core
     version: 0.1.0.1
   original:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
 - completed:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-shaderc
     pantry-tree:
@@ -66,20 +66,20 @@ packages:
     subdir: themes/gui/vulkan/try-shaderc
     version: 0.1.0.0
   original:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-shaderc
 - completed:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     name: typelevel-tools
     pantry-tree:
-      sha256: b798d2b3d440bcbbce3abde88cf3b711d1e5e00791632b66c0f12594d4237b86
+      sha256: 7e795930381ae28d339dc8b27d130c089b68ac460302401a6c8a4d76751e1a84
       size: 750
     subdir: themes/type_level/typelevel-tools
     version: 0.1.0.0
   original:
-    commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+    commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
 - completed:
@@ -89,6 +89,13 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.0
+- completed:
+    hackage: c-struct-0.1.1.3@sha256:ccba847f44d8c81b1fb3c50e573d0e12d7cb2888f4e524cb316bbb7fde3c7fe9,1445
+    pantry-tree:
+      sha256: 9b27ad5c171f26eb71a4ed9b0a5b8f4d33259c68036018720d14885f32b9e26c
+      size: 506
+  original:
+    hackage: c-struct-0.1.1.3
 snapshots:
 - completed:
     sha256: 859c14182cd0c4d1f9b0f7ff8baaefb15c778278fb0ea2fa90cfea326bb4e62c

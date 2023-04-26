@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 4e1dd4e5eb50bef95dbecba547e03d4e62e66a24
+  commit: 70aa2ed63f2af57015ad005eebb0956be9d47228
   subdirs:
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
@@ -50,6 +50,7 @@ extra-deps:
   - themes/gui/vulkan/try-shaderc
   - themes/type_level/typelevel-tools
 - union-color-0.1.2.0
+- c-struct-0.1.1.3
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

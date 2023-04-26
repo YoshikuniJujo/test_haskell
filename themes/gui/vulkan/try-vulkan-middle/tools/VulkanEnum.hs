@@ -26,6 +26,7 @@ type FormatFeatureFlags = FormatFeatureFlagBits|]
 
 noZeros :: [(HaskellName, CName, [DerivName])]
 noZeros = [
+	("StructureType", "VkStructureType", ["Show", "Eq", "Storable"]),
 	("SystemAllocationScope","VkSystemAllocationScope",
 		["Show", "Eq", "Storable"]),
 	("InternalAllocationType", "VkInternalAllocationType",
