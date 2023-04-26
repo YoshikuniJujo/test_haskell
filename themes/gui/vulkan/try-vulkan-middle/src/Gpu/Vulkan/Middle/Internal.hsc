@@ -39,7 +39,9 @@ module Gpu.Vulkan.Middle.Internal (
 
 	C.Viewport, pattern C.Viewport,
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
-	C.viewportMinDepth, C.viewportMaxDepth
+	C.viewportMinDepth, C.viewportMaxDepth,
+
+	StructCommon(..)
 
 	) where
 
@@ -72,6 +74,21 @@ import {-# SOURCE #-} qualified
 	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
 
 #include <vulkan/vulkan.h>
+
+data StructCommon = StructCommon {
+	structCommonSType :: StructureType,
+	structCommonPNext :: Ptr () }
+	deriving Show
+
+structCommonFromCore :: C.StructCommon -> StructCommon
+structCommonFromCore C.StructCommon {
+	C.structCommonSType = stp,
+	C.structCommonPNext = pn } = StructCommon {
+	structCommonSType = StructureType stp,
+	structCommonPNext = pn }
+
+instance Peek StructCommon where
+	peek' p = structCommonFromCore <$> peek (castPtr p)
 
 data ApplicationInfo mn = ApplicationInfo {
 	applicationInfoNext :: TMaybe.M mn,
