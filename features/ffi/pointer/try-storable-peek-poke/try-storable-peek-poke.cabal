@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Foreign.Storable.PeekPoke
+      Foreign.Storable.PeekPoke.Internal
   other-modules:
       Paths_try_storable_peek_poke
   hs-source-dirs:
