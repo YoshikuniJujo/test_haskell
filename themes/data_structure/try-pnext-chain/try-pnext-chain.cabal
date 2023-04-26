@@ -25,7 +25,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Pnext.Core
+      Pnext.Write
   other-modules:
       Paths_try_pnext_chain
   hs-source-dirs:
@@ -36,6 +37,8 @@ library
   build-depends:
       base >=4.7 && <5
     , c-struct
+    , try-storable-peek-poke
+    , typelevel-tools
   default-language: Haskell2010
 
 executable try-pnext-chain-exe
@@ -49,6 +52,8 @@ executable try-pnext-chain-exe
       base >=4.7 && <5
     , c-struct
     , try-pnext-chain
+    , try-storable-peek-poke
+    , typelevel-tools
   default-language: Haskell2010
 
 test-suite try-pnext-chain-test
@@ -63,4 +68,6 @@ test-suite try-pnext-chain-test
       base >=4.7 && <5
     , c-struct
     , try-pnext-chain
+    , try-storable-peek-poke
+    , typelevel-tools
   default-language: Haskell2010

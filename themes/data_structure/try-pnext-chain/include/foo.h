@@ -13,4 +13,14 @@ typedef struct {
 	const void* 	pNext;
 	int		intNum; } IntValue;
 
+typedef struct {
+	StructureType	sType;
+	const void*	pNext;
+	float		floatNum; } FloatValue;
+
+typedef struct {
+	StructureType	sType;
+	const void*	pNext;
+	double		doubleNum; } DoubleValue;		
+
 #endif

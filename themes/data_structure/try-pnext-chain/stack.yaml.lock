@@ -11,10 +11,35 @@ packages:
       size: 506
   original:
     hackage: c-struct-0.1.1.3
+- completed:
+    commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-storable-peek-poke
+    pantry-tree:
+      sha256: 03e17bd11edefbfb42fcb6c624a32f7be50db9d27d060a08ccbaadb5f14e1df9
+      size: 678
+    subdir: features/ffi/pointer/try-storable-peek-poke
+    version: 0.1.0.0
+  original:
+    commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: features/ffi/pointer/try-storable-peek-poke
+- completed:
+    commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: typelevel-tools
+    pantry-tree:
+      sha256: 7e795930381ae28d339dc8b27d130c089b68ac460302401a6c8a4d76751e1a84
+      size: 750
+    subdir: themes/type_level/typelevel-tools
+    version: 0.1.0.0
+  original:
+    commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/type_level/typelevel-tools
 snapshots:
 - completed:
-    sha256: 9fa4bece7acfac1fc7930c5d6e24606004b09e80aa0e52e9f68b148201008db9
-    size: 649606
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/18.yaml
-  original:
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/20/18.yaml
+    sha256: c110d42fae0aff8f393c87e2f52e70c50653554c4a6b942e401f464ea4c08a80
+    size: 609034
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/4/25.yaml
+  original: nightly-2023-04-25
