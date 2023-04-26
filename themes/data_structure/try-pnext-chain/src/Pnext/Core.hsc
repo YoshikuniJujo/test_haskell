@@ -6,14 +6,26 @@
 module Pnext.Core where
 
 import Foreign.Ptr
+import Foreign.ForeignPtr
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 import Data.Int
 
+import Pnext.Enum
+
 #include "foo.h"
 
 type PtrVoid = Ptr ()
+
+struct "StructCommon" #{size IntValue} #{alignment IntValue} [
+	("sType",  ''StructureType,
+		[| #{peek IntValue, sType} |],
+		[| #{poke IntValue, sType} |]),
+	("pNext", ''PtrVoid,
+		[| #{peek IntValue, pNext} |],
+		[| #{poke IntValue, pNext} |]) ]
+	[''Show, ''Eq, ''Ord, ''Storable]
 
 struct "IntValue" #{size IntValue} #{alignment IntValue} [
 	("sType", ''(), [| const $ pure () |],
@@ -48,3 +60,6 @@ struct "DoubleValue" #{size DoubleValue} #{alignment DoubleValue} [
 		[| #{peek DoubleValue, doubleNum} |],
 		[| #{poke DoubleValue, doubleNum} |] ) ]
 	[''Show, ''Eq, ''Ord, ''Storable]
+
+intValueToStructCommon :: IntValue -> StructCommon
+intValueToStructCommon (IntValue_ iv) = StructCommon_ $ castForeignPtr iv

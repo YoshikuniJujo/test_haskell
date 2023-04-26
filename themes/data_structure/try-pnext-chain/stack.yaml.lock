@@ -37,6 +37,19 @@ packages:
     commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
+- completed:
+    commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
+    git: https://github.com/YoshikuniJujo/test_haskell
+    name: try-hetero-parameter-list
+    pantry-tree:
+      sha256: 7a95da7231123ef81349c86c119512f6274d6410277d7a83f97f0f124c3fd641
+      size: 803
+    subdir: themes/hetero-list/try-hetero-parameter-list
+    version: 0.1.0.0
+  original:
+    commit: 9d3018191c9e3c3d10ff09c4a1624229b0aab487
+    git: https://github.com/YoshikuniJujo/test_haskell
+    subdir: themes/hetero-list/try-hetero-parameter-list
 snapshots:
 - completed:
     sha256: c110d42fae0aff8f393c87e2f52e70c50653554c4a6b942e401f464ea4c08a80
