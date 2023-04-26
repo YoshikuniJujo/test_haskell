@@ -7,6 +7,11 @@
 
 module Gpu.Vulkan.Core (
 
+	-- * Struct Common
+
+	StructCommon, pattern StructCommon,
+	structCommonSType, structCommonPNext,
+
 	-- * Info
 
 	-- ** ApplicationInfo
@@ -120,6 +125,16 @@ import {-# SOURCE #-} qualified Gpu.Vulkan.CommandBuffer.Core as CommandBuffer
 import {-# SOURCE #-} qualified Gpu.Vulkan.Semaphore.Core as Semaphore
 
 #include <vulkan/vulkan.h>
+
+struct "StructCommon" #{size VkApplicationInfo}
+		#{alignment VkApplicationInfo} [
+	("sType", ''#{type VkStructureType},
+		[| #{peek VkApplicationInfo, sType} |],
+		[| #{poke VkApplicationInfo, sType} |] ),
+	("pNext", ''PtrVoid,
+		[| #{peek VkApplicationInfo, pNext} |],
+		[| #{poke VkApplicationInfo, pNext} |]) ]
+	[''Show, ''Storable]
 
 type ApiVersion = #{type uint32_t}
 
