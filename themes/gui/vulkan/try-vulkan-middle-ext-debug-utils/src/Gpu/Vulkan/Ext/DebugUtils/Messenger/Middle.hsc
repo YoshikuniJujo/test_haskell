@@ -53,7 +53,7 @@ enum "CallbackDataFlags" ''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
 
 instance Default CallbackDataFlags where def = CallbackDataFlagsZero
 
-data CallbackData n obj = CallbackData {
+data CallbackData n = CallbackData {
 	callbackDataNext :: Maybe n,
 	callbackDataFlags :: CallbackDataFlags,
 	callbackDataMessageIdName :: T.Text,
@@ -61,12 +61,12 @@ data CallbackData n obj = CallbackData {
 	callbackDataMessage :: T.Text,
 	callbackDataQueueLabels :: [Label],
 	callbackDataCmdBufLabels :: [Label],
-	callbackDataObjects :: [ObjectNameInfo obj] }
+	callbackDataObjects :: [ObjectNameInfoResult] }
 
-deriving instance (Show n, Show obj) => Show (CallbackData n obj)
+deriving instance Show n => Show (CallbackData n)
 
-callbackDataFromCore :: (Peek n, Peek obj) =>
-	C.CallbackData -> IO (CallbackData n obj)
+callbackDataFromCore :: Peek n =>
+	C.CallbackData -> IO (CallbackData n)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
 	C.callbackDataFlags = flgs,
@@ -87,7 +87,7 @@ callbackDataFromCore C.CallbackData {
 	ccbls <- peekArray' cblc pccbls
 	cbls <- labelFromCore `mapM` ccbls
 	cobjs <- peekArray' objc pcobjs
-	objs <- objectNameInfoFromCore `mapM` cobjs
+	objs <- objectNameInfoResultFromCore `mapM` cobjs
 	pure CallbackData {
 		callbackDataNext = mnxt,
 		callbackDataFlags = CallbackDataFlags flgs,
@@ -98,12 +98,11 @@ callbackDataFromCore C.CallbackData {
 		callbackDataCmdBufLabels = cbls,
 		callbackDataObjects = objs }
 
-type FnCallback cb obj ud =
+type FnCallback cb ud =
 	MessageSeverityFlagBits -> MessageTypeFlags ->
-	CallbackData cb obj -> Maybe ud -> IO Bool
+	CallbackData cb -> Maybe ud -> IO Bool
 
-fnCallbackToCore :: (Peek n, Peek obj, Peek ud) =>
-	FnCallback n obj ud -> C.FnCallback
+fnCallbackToCore :: (Peek n, Peek ud) => FnCallback n ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- peekMaybe $ castPtr pud
@@ -119,21 +118,21 @@ data CreateInfo mn cb ql cbl obj ud = CreateInfo {
 	createInfoFlags :: CreateFlags,
 	createInfoMessageSeverity :: MessageSeverityFlags,
 	createInfoMessageType :: MessageTypeFlags,
-	createInfoFnUserCallback :: FnCallback cb obj ud,
+	createInfoFnUserCallback :: FnCallback cb ud,
 	createInfoUserData :: Maybe ud }
 
 instance Sizable (CreateInfo n cb ql cbl obj ud) where
 	sizeOf' = sizeOf @C.CreateInfo undefined
 	alignment' = alignment @C.CreateInfo undefined
 
-instance (WithPoked (TMaybe.M mn), Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud) =>
+instance (WithPoked (TMaybe.M mn), Peek cb, Storable' ud) =>
 	WithPoked (CreateInfo mn cb ql cbl obj ud) where
 	withPoked' ci f = alloca \pcci -> do
 		createInfoToCore' ci $ \cci -> poke pcci cci
 		f . ptrS $ castPtr pcci
 
 createInfoToCore' :: (
-	WithPoked (TMaybe.M mn), Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud ) =>
+	WithPoked (TMaybe.M mn), Peek cb, Storable' ud ) =>
 	CreateInfo mn cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
@@ -155,9 +154,7 @@ createInfoToCore' CreateInfo {
 
 newtype M = M C.M deriving Show
 
-create :: (
-	WithPoked (TMaybe.M mn), Peek cb, Peek ql, Peek cbl, Peek obj, Storable' ud,
-	WithPoked c ) =>
+create :: (WithPoked (TMaybe.M mn), Peek cb, Storable' ud, WithPoked c) =>
 	Instance.I -> CreateInfo mn cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do

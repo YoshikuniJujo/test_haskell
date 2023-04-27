@@ -7,8 +7,8 @@
 module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
 	extensionName,
 	Label(..), labelFromCore,
-	ObjectNameInfo(..), objectNameInfoFromCore
-	) where
+	ObjectNameInfo(..), objectNameInfoFromCore,
+	ObjectNameInfoResult(..), objectNameInfoResultFromCore ) where
 
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke
@@ -56,12 +56,6 @@ data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoObjectName :: Maybe T.Text }
 	deriving Show
 
-data ObjectNameInfoResult = ObjectNameInfoResult {
-	objectNameInfoResultObjectType :: ObjectType,
-	objectNameInfoResultObjectHandle :: ObjectHandle,
-	objectNameInfoResultObjectName :: Maybe T.Text }
-	deriving Show
-
 objectNameInfoFromCore :: Peek n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
 objectNameInfoFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = pnxt,
@@ -78,3 +72,24 @@ objectNameInfoFromCore C.ObjectNameInfo {
 		objectNameInfoObjectType = ObjectType ot,
 		objectNameInfoObjectHandle = ObjectHandle oh,
 		objectNameInfoObjectName = mon }
+
+data ObjectNameInfoResult = ObjectNameInfoResult {
+	objectNameInfoResultObjectType :: ObjectType,
+	objectNameInfoResultObjectHandle :: ObjectHandle,
+	objectNameInfoResultObjectName :: Maybe T.Text }
+	deriving Show
+
+objectNameInfoResultFromCore :: C.ObjectNameInfo -> IO ObjectNameInfoResult
+objectNameInfoResultFromCore C.ObjectNameInfo {
+	C.objectNameInfoPNext = _pnxt,
+	C.objectNameInfoObjectType = ot,
+	C.objectNameInfoObjectHandle = oh,
+	C.objectNameInfoPObjectName = con
+	} = do
+	mon <- case con of
+		NullPtr -> pure Nothing
+		p -> Just <$> cstrToText p
+	pure ObjectNameInfoResult {
+		objectNameInfoResultObjectType = ObjectType ot,
+		objectNameInfoResultObjectHandle = ObjectHandle oh,
+		objectNameInfoResultObjectName = mon }
