@@ -4,6 +4,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
@@ -41,7 +42,7 @@ module Gpu.Vulkan.Middle.Internal (
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
 	C.viewportMinDepth, C.viewportMaxDepth,
 
-	StructCommon(..)
+	StructCommon(..), FindPNextChainAll(..)
 
 	) where
 
@@ -89,6 +90,27 @@ structCommonFromCore C.StructCommon {
 
 instance Peek StructCommon where
 	peek' p = structCommonFromCore <$> peek (castPtr p)
+
+class Peek n => Nextable n where nextableType :: StructureType
+
+class FindPNextChainAll ns where
+	findPNextChainAll :: Ptr () -> IO (HeteroParList.PL Maybe ns)
+
+instance FindPNextChainAll '[] where
+	findPNextChainAll _ = pure HeteroParList.Nil
+
+instance (Nextable n, FindPNextChainAll ns) =>
+	FindPNextChainAll (n ': ns) where
+	findPNextChainAll p =
+		(:**) <$> findPNextChain p <*> findPNextChainAll p
+
+findPNextChain :: forall n . Nextable n => Ptr () -> IO (Maybe n)
+findPNextChain NullPtr = pure Nothing
+findPNextChain p = do
+	sc <- peek' $ castPtr p
+	if structCommonSType sc == nextableType @n
+	then Just <$> peek' (castPtr p)
+	else findPNextChain $ structCommonPNext sc
 
 data ApplicationInfo mn = ApplicationInfo {
 	applicationInfoNext :: TMaybe.M mn,
