@@ -56,6 +56,12 @@ data ObjectNameInfo n = ObjectNameInfo {
 	objectNameInfoObjectName :: Maybe T.Text }
 	deriving Show
 
+data ObjectNameInfoResult = ObjectNameInfoResult {
+	objectNameInfoResultObjectType :: ObjectType,
+	objectNameInfoResultObjectHandle :: ObjectHandle,
+	objectNameInfoResultObjectName :: Maybe T.Text }
+	deriving Show
+
 objectNameInfoFromCore :: Peek n => C.ObjectNameInfo -> IO (ObjectNameInfo n)
 objectNameInfoFromCore C.ObjectNameInfo {
 	C.objectNameInfoPNext = pnxt,
