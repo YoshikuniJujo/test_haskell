@@ -209,7 +209,7 @@ createInstance f = do
 	where
 	msg = "validation layers requested, but not available!"
 	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo
-		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing () () () () ())) 'Nothing
+		('Just (Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ())) 'Nothing
 	crInfo exts = Vk.Ist.M.CreateInfo {
 		Vk.Ist.M.createInfoNext = TMaybe.J debugMessengerCreateInfo,
 		Vk.Ist.M.createInfoFlags = def,
@@ -236,7 +236,7 @@ setupDebugMessenger ::
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
 	debugMessengerCreateInfo nil nil \m -> f m
 
-debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing () () () () ()
+debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoNext = TMaybe.N,
 	Vk.Ext.DbgUtls.Msngr.createInfoFlags = def,
@@ -251,7 +251,7 @@ debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () ()
+debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback '[] ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
