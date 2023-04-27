@@ -257,7 +257,7 @@ debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 	Vk.Ext.DbgUtls.Msngr.createInfoFnUserCallback = debugCallback,
 	Vk.Ext.DbgUtls.Msngr.createInfoUserData = Nothing }
 
-debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () () ()
+debugCallback :: Vk.Ext.DbgUtls.Msngr.FnCallback () ()
 debugCallback _msgSeverity _msgType cbdt _userData = False <$ Txt.putStrLn
 	("validation layer: " <> Vk.Ext.DbgUtls.Msngr.callbackDataMessage cbdt)
 
