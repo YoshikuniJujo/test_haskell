@@ -29,6 +29,7 @@ dependencies:
 - try-vulkan-middle
 - try-vulkan-core-ext-debug-utils
 - typelevel-tools
+- try-hetero-parameter-list
 
 ghc-options:
 - -Wall

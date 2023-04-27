@@ -28,6 +28,7 @@ import Foreign.Storable.PeekPoke (
 	WithPoked(..), withPoked', ptrS, withPtrS, Storable' )
 import Foreign.C.Enum
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.HeteroParList qualified as HeteroParList
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -35,6 +36,7 @@ import Data.Int
 
 import qualified Data.Text as T
 
+import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Misc.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
@@ -53,8 +55,8 @@ enum "CallbackDataFlags" ''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
 
 instance Default CallbackDataFlags where def = CallbackDataFlagsZero
 
-data CallbackData n = CallbackData {
-	callbackDataNext :: Maybe n,
+data CallbackData ns = CallbackData {
+	callbackDataNext :: HeteroParList.PL Maybe ns,
 	callbackDataFlags :: CallbackDataFlags,
 	callbackDataMessageIdName :: T.Text,
 	callbackDataMessageIdNumber :: Int32,
@@ -63,10 +65,10 @@ data CallbackData n = CallbackData {
 	callbackDataCmdBufLabels :: [Label],
 	callbackDataObjects :: [ObjectNameInfoResult] }
 
-deriving instance Show n => Show (CallbackData n)
+deriving instance Show (HeteroParList.PL Maybe ns) => Show (CallbackData ns)
 
-callbackDataFromCore :: Peek n =>
-	C.CallbackData -> IO (CallbackData n)
+callbackDataFromCore :: FindPNextChainAll ns =>
+	C.CallbackData -> IO (CallbackData ns)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
 	C.callbackDataFlags = flgs,
@@ -79,7 +81,8 @@ callbackDataFromCore C.CallbackData {
 	C.callbackDataPCmdBufLabels = pccbls,
 	C.callbackDataObjectCount = fromIntegral -> objc,
 	C.callbackDataPObjects = pcobjs } = do
-	mnxt <- peekMaybe $ castPtr pnxt
+--	mnxt <- peekMaybe $ castPtr pnxt
+	mnxt <- findPNextChainAll pnxt
 	midnm <- cstrToText cmidnm
 	msg <- cstrToText cmsg
 	cqls <- peekArray' qlc pcqls
@@ -102,7 +105,7 @@ type FnCallback cb ud =
 	MessageSeverityFlagBits -> MessageTypeFlags ->
 	CallbackData cb -> Maybe ud -> IO Bool
 
-fnCallbackToCore :: (Peek n, Peek ud) => FnCallback n ud -> C.FnCallback
+fnCallbackToCore :: (FindPNextChainAll n, Peek ud) => FnCallback n ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- peekMaybe $ castPtr pud
@@ -125,14 +128,14 @@ instance Sizable (CreateInfo n cb ql cbl obj ud) where
 	sizeOf' = sizeOf @C.CreateInfo undefined
 	alignment' = alignment @C.CreateInfo undefined
 
-instance (WithPoked (TMaybe.M mn), Peek cb, Storable' ud) =>
+instance (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
 	WithPoked (CreateInfo mn cb ql cbl obj ud) where
 	withPoked' ci f = alloca \pcci -> do
 		createInfoToCore' ci $ \cci -> poke pcci cci
 		f . ptrS $ castPtr pcci
 
 createInfoToCore' :: (
-	WithPoked (TMaybe.M mn), Peek cb, Storable' ud ) =>
+	WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud ) =>
 	CreateInfo mn cb ql cbl obj ud -> (C.CreateInfo -> IO a) -> IO ()
 createInfoToCore' CreateInfo {
 	createInfoNext = mnxt,
@@ -154,7 +157,7 @@ createInfoToCore' CreateInfo {
 
 newtype M = M C.M deriving Show
 
-create :: (WithPoked (TMaybe.M mn), Peek cb, Storable' ud, WithPoked c) =>
+create :: (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud, WithPoked c) =>
 	Instance.I -> CreateInfo mn cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do

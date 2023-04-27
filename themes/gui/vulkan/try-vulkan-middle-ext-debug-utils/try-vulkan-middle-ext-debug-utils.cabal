@@ -39,6 +39,7 @@ library
     , c-enum
     , data-default
     , text
+    , try-hetero-parameter-list
     , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle
@@ -59,6 +60,7 @@ test-suite try-vulkan-middle-ext-debug-utils-test
     , c-enum
     , data-default
     , text
+    , try-hetero-parameter-list
     , try-storable-peek-poke
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle
