@@ -53,20 +53,20 @@ enum "CallbackDataFlags" ''#{type VkDebugUtilsMessengerCallbackDataFlagsEXT}
 
 instance Default CallbackDataFlags where def = CallbackDataFlagsZero
 
-data CallbackData n ql cbl obj = CallbackData {
+data CallbackData n obj = CallbackData {
 	callbackDataNext :: Maybe n,
 	callbackDataFlags :: CallbackDataFlags,
 	callbackDataMessageIdName :: T.Text,
 	callbackDataMessageIdNumber :: Int32,
 	callbackDataMessage :: T.Text,
-	callbackDataQueueLabels :: [Label ql],
-	callbackDataCmdBufLabels :: [Label cbl],
+	callbackDataQueueLabels :: [Label],
+	callbackDataCmdBufLabels :: [Label],
 	callbackDataObjects :: [ObjectNameInfo obj] }
 
-deriving instance (Show n, Show ql, Show cbl, Show obj) => Show (CallbackData n ql cbl obj)
+deriving instance (Show n, Show obj) => Show (CallbackData n obj)
 
-callbackDataFromCore :: (Peek n, Peek ql, Peek cbl, Peek obj) =>
-	C.CallbackData -> IO (CallbackData n ql cbl obj)
+callbackDataFromCore :: (Peek n, Peek obj) =>
+	C.CallbackData -> IO (CallbackData n obj)
 callbackDataFromCore C.CallbackData {
 	C.callbackDataPNext = pnxt,
 	C.callbackDataFlags = flgs,
@@ -98,12 +98,12 @@ callbackDataFromCore C.CallbackData {
 		callbackDataCmdBufLabels = cbls,
 		callbackDataObjects = objs }
 
-type FnCallback cb ql cbl obj ud =
+type FnCallback cb obj ud =
 	MessageSeverityFlagBits -> MessageTypeFlags ->
-	CallbackData cb ql cbl obj -> Maybe ud -> IO Bool
+	CallbackData cb obj -> Maybe ud -> IO Bool
 
-fnCallbackToCore :: (Peek n, Peek ql, Peek cbl, Peek obj, Peek ud) =>
-	FnCallback n ql cbl obj ud -> C.FnCallback
+fnCallbackToCore :: (Peek n, Peek obj, Peek ud) =>
+	FnCallback n obj ud -> C.FnCallback
 fnCallbackToCore f sfb tf ccbd pud = do
 	cbd <- callbackDataFromCore . C.CallbackData_ =<< newForeignPtr ccbd (pure ())
 	mud <- peekMaybe $ castPtr pud
@@ -119,7 +119,7 @@ data CreateInfo mn cb ql cbl obj ud = CreateInfo {
 	createInfoFlags :: CreateFlags,
 	createInfoMessageSeverity :: MessageSeverityFlags,
 	createInfoMessageType :: MessageTypeFlags,
-	createInfoFnUserCallback :: FnCallback cb ql cbl obj ud,
+	createInfoFnUserCallback :: FnCallback cb obj ud,
 	createInfoUserData :: Maybe ud }
 
 instance Sizable (CreateInfo n cb ql cbl obj ud) where

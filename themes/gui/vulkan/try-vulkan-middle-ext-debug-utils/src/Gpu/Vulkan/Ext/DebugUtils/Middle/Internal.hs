@@ -33,21 +33,18 @@ foreign import capi "vulkan/vulkan.h value VK_EXT_DEBUG_UTILS_EXTENSION_NAME"
 extensionName :: IsString s => s
 extensionName = unsafePerformIO $ fromString <$> peekCString c_extensionName
 
-data Label n = Label {
-	labelNext :: Maybe n,
+data Label = Label {
 	labelLabelName :: T.Text,
 	labelColor :: Rgba Float }
 	deriving Show
 
-labelFromCore :: Peek n => C.Label -> IO (Label n)
+labelFromCore :: C.Label -> IO Label
 labelFromCore C.Label {
-	C.labelPNext = pnxt,
+	C.labelPNext = _pnxt,
 	C.labelPLabelName = cln,
 	C.labelColor = [r, g, b, a] } = do
-	mnxt <- peekMaybe $ castPtr pnxt
 	ln <- cstrToText cln
 	pure Label {
-		labelNext = mnxt,
 		labelLabelName = ln,
 		labelColor = fromJust $ rgbaDouble r g b a }
 labelFromCore _ = error "C.labelColor should be [r, g, b, a]"
