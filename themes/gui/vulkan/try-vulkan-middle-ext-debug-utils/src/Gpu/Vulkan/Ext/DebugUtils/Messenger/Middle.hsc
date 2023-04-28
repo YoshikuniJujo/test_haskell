@@ -157,17 +157,16 @@ createInfoToCore' CreateInfo {
 
 newtype M = M C.M deriving Show
 
-create :: (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud, WithPoked c) =>
+create :: (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
 	Instance.I -> CreateInfo mn cb ql cbl obj ud ->
 	Maybe (AllocationCallbacks.A c) -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
 	createInfoToCore' ci \cci ->
 		withPoked cci \pcci ->
-		AllocationCallbacks.maybeToCore mac \pac ->
+		AllocationCallbacks.maybeToCoreNew mac \pac ->
 		throwUnlessSuccess . Result =<< C.create ist pcci pac pmsngr
 	peek pmsngr
 
-destroy :: WithPoked d =>
-	Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Instance.I ist) (M msgr) mac =
-	AllocationCallbacks.maybeToCore mac $ C.destroy ist msgr
+	AllocationCallbacks.maybeToCoreNew mac $ C.destroy ist msgr
