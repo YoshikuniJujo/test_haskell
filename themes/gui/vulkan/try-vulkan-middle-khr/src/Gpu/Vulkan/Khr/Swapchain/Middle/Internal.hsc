@@ -81,24 +81,24 @@ data CreateInfo mn = CreateInfo {
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO S
 create (Device.D dvc) ci mac = sFromCore ex =<< alloca \psc -> do
 		createInfoToCoreOld ci \pci ->
-			AllocationCallbacks.maybeToCore mac \pac -> do
+			AllocationCallbacks.maybeToCoreNew mac \pac -> do
 				r <- C.create dvc pci pac psc
 				throwUnlessSuccess $ Result r
 		peek psc
 	where ex = createInfoImageExtent ci
 
-recreate :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	S -> IO ()
 recreate (Device.D dvc) ci macc macd (S rs) = alloca \psc ->
 		createInfoToCoreOld ci \pci ->
-		AllocationCallbacks.maybeToCore macc \pacc ->
-		AllocationCallbacks.maybeToCore macd \pacd -> do
+		AllocationCallbacks.maybeToCoreNew macc \pacc ->
+		AllocationCallbacks.maybeToCoreNew macd \pacd -> do
 			r <- C.create dvc pci pacc psc
 			throwUnlessSuccess $ Result r
 			(_, sco) <- readIORef rs
@@ -106,9 +106,8 @@ recreate (Device.D dvc) ci macc macd (S rs) = alloca \psc ->
 			C.destroy dvc sco pacd
 	where ex = createInfoImageExtent ci
 
-destroy :: WithPoked d =>
-	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) sc mac = AllocationCallbacks.maybeToCore mac \pac -> do
+destroy :: Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dvc) sc mac = AllocationCallbacks.maybeToCoreNew mac \pac -> do
 	sc' <- sToCore sc
 	C.destroy dvc sc' pac
 
