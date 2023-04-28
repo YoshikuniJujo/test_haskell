@@ -116,4 +116,4 @@ struct "A" #{size VkAllocationCallbacks}
 	("pfnInternalFree", ''PfnInternalFreeNotification,
 		[| #{peek VkAllocationCallbacks, pfnInternalFree} |],
 		[| #{poke VkAllocationCallbacks, pfnInternalFree} |]) ]
-	[''Show]
+	[''Show, ''Storable]
