@@ -111,17 +111,17 @@ createInfoToCore CreateInfo {
 		() <$ f pci
 
 create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M qcis, WithPoked c) =>
-	PhysicalDevice.P -> CreateInfo mn qcis -> Maybe (AllocationCallbacks.A c) ->
+	PhysicalDevice.P -> CreateInfo mn qcis -> Maybe (AllocationCallbacks.ANew c) ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
 	createInfoToCore ci \pcci ->
-		AllocationCallbacks.maybeToCore mac \pac -> do
+		AllocationCallbacks.maybeToCoreNew mac \pac -> do
 			r <- C.create phdvc pcci pac pdvc
 			throwUnlessSuccess $ Result r
 	peek pdvc
 
-destroy :: WithPoked d => D -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (D cdvc) mac = AllocationCallbacks.maybeToCore mac $ C.destroy cdvc
+destroy :: WithPoked d => D -> Maybe (AllocationCallbacks.ANew d) -> IO ()
+destroy (D cdvc) mac = AllocationCallbacks.maybeToCoreNew mac $ C.destroy cdvc
 
 getQueue :: D -> Word32 -> Word32 -> IO Queue.Q
 getQueue (D cdvc) qfi qi = Queue.Q <$> alloca \pQueue -> do
