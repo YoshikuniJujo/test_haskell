@@ -41,7 +41,13 @@ withA ac f = withPoked' ud \pud -> do
 				wal <- C.wrapInternalAllocationNotification ial
 				wfr <- C.wrapInternalFreeNotification ifr
 				pure (wal, wfr)
-	withPtrS pud \pud' -> f (C.A (castPtr pud') pal pral pfr pial pifr)
+	withPtrS pud \pud' -> f C.A {
+		C.aPUserData = castPtr pud',
+		C.aPfnAllocation = pal,
+		C.aPfnReallocation = pral,
+		C.aPfnFree = pfr,
+		C.aPfnInternalAllocation = pial,
+		C.aPfnInternalFree = pifr }
 	freeHaskellFunPtr pal
 	freeHaskellFunPtr pral
 	freeHaskellFunPtr pfr
