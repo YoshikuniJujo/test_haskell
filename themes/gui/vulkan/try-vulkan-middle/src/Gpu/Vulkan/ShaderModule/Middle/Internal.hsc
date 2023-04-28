@@ -76,17 +76,16 @@ readFromByteString (BS.PS f o l) = do
 	withForeignPtr f \p -> copyBytes p' (p `plusPtr` o) l
 	pure (p', fromIntegral l)
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D ->
 	CreateInfo mn sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
 create (Device.D dvc) ci mac = M <$> alloca \pm -> do
 	createInfoToCore ci \pcci ->
-		AllocationCallbacks.maybeToCore mac \pac -> do
+		AllocationCallbacks.maybeToCoreNew mac \pac -> do
 			r <- C.create dvc pcci pac pm
 			throwUnlessSuccess $ Result r
 	peek pm
 
-destroy :: WithPoked d =>
-	Device.D -> M sknd -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> M sknd -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (M m) mac =
-	AllocationCallbacks.maybeToCore mac $ C.destroy dvc m
+	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc m

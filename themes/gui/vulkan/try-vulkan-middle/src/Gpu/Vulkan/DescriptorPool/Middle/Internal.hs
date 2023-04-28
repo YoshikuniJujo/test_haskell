@@ -66,15 +66,14 @@ createInfoToCore CreateInfo {
 
 newtype D = D C.P deriving Show
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO D
 create (Device.D dvc) ci mac = D <$> alloca \pp -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCore mac \pac ->
+		AllocationCallbacks.maybeToCoreNew mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pp
 	peek pp
 
-destroy :: WithPoked d =>
-	Device.D -> D -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> D -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (D p) mac =
-	AllocationCallbacks.maybeToCore mac $ C.destroy dvc p
+	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc p

@@ -94,8 +94,7 @@ instance (
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCs :: forall cias c .
-	(CreateInfoListToCore cias, WithPoked c) =>
+createCs :: forall cias c . CreateInfoListToCore cias =>
 	Device.D -> Maybe Cache.C -> HeteroParList.PL (U3 CreateInfo) cias ->
 	Maybe (AllocationCallbacks.A c) -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
@@ -103,13 +102,12 @@ createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 		createInfoListToCore cis \cis' ->
 			allocaArray ln \pcis ->
 			pokeArray pcis cis' >>
-			AllocationCallbacks.maybeToCore mac \pac ->
+			AllocationCallbacks.maybeToCoreNew mac \pac ->
 				throwUnlessSuccess . Result =<< C.createCs
 					dvc cch (fromIntegral ln) pcis pac pps
 		peekArray ln pps
 	where ln = length @_ @cias
 
-destroy :: WithPoked d =>
-	Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (C p) mac =
-	AllocationCallbacks.maybeToCore mac $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.maybeToCoreNew mac $ Pipeline.C.destroy dvc p

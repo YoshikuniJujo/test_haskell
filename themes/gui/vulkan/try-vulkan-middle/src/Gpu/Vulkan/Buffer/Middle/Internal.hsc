@@ -38,7 +38,7 @@ import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Buffer.Enum
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
-	qualified as AllocationCallbacks (ANew, maybeToCoreNew)
+	qualified as AllocationCallbacks (A, maybeToCoreNew)
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.Buffer.Core as C
 import qualified Gpu.Vulkan.Memory.Middle.Internal as Memory
@@ -84,14 +84,14 @@ createInfoToCore CreateInfo {
 newtype B = B C.B deriving (Show, Eq, Storable)
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.ANew c) -> IO B
+	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO B
 create (Device.D dvc) ci mac = B <$> alloca \pb -> do
 	createInfoToCore ci \pci ->
 		AllocationCallbacks.maybeToCoreNew mac \pac ->
 			throwUnlessSuccess . Result =<< C.create dvc pci pac pb
 	peek pb
 
-destroy :: Device.D -> B -> Maybe (AllocationCallbacks.ANew d) -> IO ()
+destroy :: Device.D -> B -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (B b) mac =
 	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc b
 

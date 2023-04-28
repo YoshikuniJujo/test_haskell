@@ -117,31 +117,31 @@ allocateInfoToCore AllocateInfo {
 			C.allocateInfoMemoryTypeIndex = mti } in
 	withPoked ci f
 
-allocate :: (WithPoked (TMaybe.M mn), WithPoked a) =>
+allocate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> AllocateInfo mn -> Maybe (AllocationCallbacks.A a) -> IO M
 allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 	allocateInfoToCore ai \pai ->
-		AllocationCallbacks.maybeToCore mac \pac -> do
+		AllocationCallbacks.maybeToCoreNew mac \pac -> do
 			r <- C.allocate dvc pai pac pm
 			throwUnlessSuccess $ Result r
 	newIORef =<< peek pm
 
-reallocate :: (WithPoked (TMaybe.M mn), WithPoked a, WithPoked f) =>
+reallocate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> AllocateInfo mn ->
 	Maybe (AllocationCallbacks.A a) ->
 	Maybe (AllocationCallbacks.A f) ->
 	M -> IO ()
 reallocate d@(Device.D dvc) ai macc macd m@(M rm) =
 	alloca \pm -> allocateInfoToCore ai \pai ->
-	AllocationCallbacks.maybeToCore macc \pac -> do
+	AllocationCallbacks.maybeToCoreNew macc \pac -> do
 		r <- C.allocate dvc pai pac pm
 		throwUnlessSuccess $ Result r
 		free d m macd
 		writeIORef rm =<< peek pm
 
-free :: WithPoked f => Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
+free :: Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
 free (Device.D dvc) (M mem) mac =
-	AllocationCallbacks.maybeToCore mac \pac -> do
+	AllocationCallbacks.maybeToCoreNew mac \pac -> do
 		m <- readIORef mem
 		C.free dvc m pac
 

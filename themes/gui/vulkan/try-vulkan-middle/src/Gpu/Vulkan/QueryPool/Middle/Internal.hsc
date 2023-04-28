@@ -67,18 +67,17 @@ createInfoToCore CreateInfo {
 
 newtype Q = Q C.Q deriving Show
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO Q
 create (Device.D dv) ci mac = Q <$> alloca \pq -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCore mac \pac -> do
+		AllocationCallbacks.maybeToCoreNew mac \pac -> do
 			r <- C.create dv pci pac pq
 			throwUnlessSuccess $ Result r
 	peek pq
 
-destroy :: WithPoked d =>
-	Device.D -> Q -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dv) (Q q) mad = AllocationCallbacks.maybeToCore mad \pad ->
+destroy :: Device.D -> Q -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dv) (Q q) mad = AllocationCallbacks.maybeToCoreNew mad \pad ->
 	C.destroy dv q pad
 
 reset :: Device.D -> Q -> Word32 -> Word32 -> IO ()

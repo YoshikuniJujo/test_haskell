@@ -85,14 +85,13 @@ createInfoToCore CreateInfo {
 				C.createInfoPBindings = pbs }
 		withForeignPtr fci f
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO L
 create (Device.D dvc) ci mac = L <$> alloca \pl -> do
-	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCore mac \pac ->
+	createInfoToCore ci \pci -> AllocationCallbacks.maybeToCoreNew mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pl
 	peek pl
 
-destroy :: WithPoked d =>
-	Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> L -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (L l) mac =
-	AllocationCallbacks.maybeToCore mac \pac -> C.destroy dvc l pac
+	AllocationCallbacks.maybeToCoreNew mac \pac -> C.destroy dvc l pac

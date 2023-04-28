@@ -77,28 +77,27 @@ fToCore (F f) = readIORef f
 fFromCore :: C.F -> IO F
 fFromCore f = F <$> newIORef f
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO F
 create (Device.D dvc) ci mac = fFromCore =<< alloca \pf -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCore mac \pac -> do
+		AllocationCallbacks.maybeToCoreNew mac \pac -> do
 			throwUnlessSuccess . Result =<< C.create dvc pci pac pf
 	peek pf
 
-destroy :: WithPoked d =>
-	Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) f mac = AllocationCallbacks.maybeToCore mac \pac -> do
+destroy :: Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy (Device.D dvc) f mac = AllocationCallbacks.maybeToCoreNew mac \pac -> do
 	f' <- fToCore f; C.destroy dvc f' pac
 
-recreate :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
 	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
 	F -> IO ()
 recreate (Device.D dvc) ci macc macd f@(F rf) =
 	fToCore f >>= \o -> alloca \pf ->
 	createInfoToCore ci \pci ->
-	AllocationCallbacks.maybeToCore macc \pacc ->
-	AllocationCallbacks.maybeToCore macd \pacd -> do
+	AllocationCallbacks.maybeToCoreNew macc \pacc ->
+	AllocationCallbacks.maybeToCoreNew macd \pacd -> do
 		r <- C.create dvc pci pacc pf
 		throwUnlessSuccess $ Result r
 		writeIORef rf =<< peek pf

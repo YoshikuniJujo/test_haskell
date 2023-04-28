@@ -90,16 +90,15 @@ createInfoToCore CreateInfo {
 			C.createInfoUnnormalizedCoordinates = unc } in
 	withPoked ci f
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c) =>
+create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO S
 create (Device.D dvc) ci mac = S <$> alloca \ps -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCore mac \pac ->
+		AllocationCallbacks.maybeToCoreNew mac \pac ->
 			throwUnlessSuccess . Result
 				=<< C.create dvc pci pac ps
 	peek ps
 
-destroy :: WithPoked d =>
-	Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
 destroy (Device.D dvc) (S s) mac =
-	AllocationCallbacks.maybeToCore mac $ C.destroy dvc s
+	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc s
