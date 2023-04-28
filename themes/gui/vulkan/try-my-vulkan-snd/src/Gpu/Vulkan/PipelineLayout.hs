@@ -9,7 +9,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Layout (
+module Gpu.Vulkan.PipelineLayout (
 	L, createNew, CreateInfoNew(..),
 	M.CreateFlags,
 	Layout
@@ -23,14 +23,14 @@ import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
-import Gpu.Vulkan.Pipeline.Layout.Type
+import Gpu.Vulkan.PipelineLayout.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Descriptor.Set.Layout
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.PushConstant.Middle as PushConstant.M
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
+import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 
 data CreateInfo mn sbtss = CreateInfo {
 	createInfoNext :: TMaybe.M mn,

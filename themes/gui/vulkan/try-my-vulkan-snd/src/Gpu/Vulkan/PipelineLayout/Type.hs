@@ -2,12 +2,12 @@
 {-# LANGUAGE KindSignatures #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Layout.Type where
+module Gpu.Vulkan.PipelineLayout.Type where
 
 import Data.Kind
 
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle as M
+import qualified Gpu.Vulkan.PipelineLayout.Middle as M
 
 newtype L s
 	(sbtss :: [(Type, [DescriptorSetLayout.BindingType])]) (pcw :: [Type]) =
