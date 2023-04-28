@@ -86,7 +86,7 @@ withA ac f = do -- withPoked' ud \pud -> do
 				wfr <- C.wrapInternalFreeNotification
 					$ fnInternalFreeNotificationToCore ifr
 				pure (wal, wfr)
-	_ <- ($ pud) \pud' -> f C.A {
+	void $ ($ pud) \pud' -> f C.A {
 --	withPtrS pud \pud' -> f C.A {
 		C.aPUserData = castPtr pud',
 		C.aPfnAllocation = pal,
@@ -94,11 +94,11 @@ withA ac f = do -- withPoked' ud \pud -> do
 		C.aPfnFree = pfr,
 		C.aPfnInternalAllocation = pial,
 		C.aPfnInternalFree = pifr }
-	freeHaskellFunPtr pal
-	freeHaskellFunPtr pral
-	freeHaskellFunPtr pfr
-	when (pial /= nullFunPtr) $ freeHaskellFunPtr pial
-	when (pifr /= nullFunPtr) $ freeHaskellFunPtr pifr
+--	freeHaskellFunPtr pal
+--	freeHaskellFunPtr pral
+--	freeHaskellFunPtr pfr
+--	when (pial /= nullFunPtr) $ freeHaskellFunPtr pial
+--	when (pifr /= nullFunPtr) $ freeHaskellFunPtr pifr
 	where
 	pud = allocationCallbacksUserData ac
 	al = allocationCallbacksFnAllocation ac
