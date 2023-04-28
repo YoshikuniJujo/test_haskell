@@ -3,7 +3,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Layout.Core where
+module Gpu.Vulkan.PipelineLayout.Core where
 
 import Foreign.Ptr
 import Foreign.Ptr.Synonyms

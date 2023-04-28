@@ -57,7 +57,6 @@ library
       Gpu.Vulkan.Pipeline.DynamicState.Core
       Gpu.Vulkan.Pipeline.Graphics.Core
       Gpu.Vulkan.Pipeline.InputAssemblyState.Core
-      Gpu.Vulkan.Pipeline.Layout.Core
       Gpu.Vulkan.Pipeline.MultisampleState.Core
       Gpu.Vulkan.Pipeline.RasterizationState.Core
       Gpu.Vulkan.Pipeline.ShaderStage.Core
@@ -65,6 +64,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.Core
       Gpu.Vulkan.Pipeline.ViewportState.Core
       Gpu.Vulkan.PipelineCache.Core
+      Gpu.Vulkan.PipelineLayout.Core
       Gpu.Vulkan.PushConstant.Core
       Gpu.Vulkan.QueryPool.Core
       Gpu.Vulkan.Queue.Core

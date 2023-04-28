@@ -10,7 +10,7 @@ import qualified Gpu.Vulkan.RenderPass.Core as RenderPass
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline
 import qualified Gpu.Vulkan.CommandBuffer.Core as CommandBuffer
 import qualified Gpu.Vulkan.Buffer.Core as Buffer
-import qualified Gpu.Vulkan.Pipeline.Layout.Core as Pipeline.Layout
+import qualified Gpu.Vulkan.PipelineLayout.Core as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet.Core as DscSet
 import qualified Gpu.Vulkan.Memory.Core as Memory
 import qualified Gpu.Vulkan.Image.Core as Image

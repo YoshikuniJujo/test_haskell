@@ -16,7 +16,7 @@ import qualified Gpu.Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Core as Device
 import qualified Gpu.Vulkan.Pipeline.Core as Pipeline
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Core as Pipeline.ShaderStage
-import qualified Gpu.Vulkan.Pipeline.Layout.Core as Pipeline.Layout
+import qualified Gpu.Vulkan.PipelineLayout.Core as Pipeline.Layout
 import qualified Gpu.Vulkan.PipelineCache.Core as Cache
 
 #include <vulkan/vulkan.h>

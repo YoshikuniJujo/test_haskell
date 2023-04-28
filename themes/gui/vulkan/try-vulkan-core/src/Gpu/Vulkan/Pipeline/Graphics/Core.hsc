@@ -24,7 +24,7 @@ import qualified Gpu.Vulkan.Pipeline.MultisampleState.Core as MultisampleState
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Core as DepthStencilState
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Core as ColorBlendState
 import qualified Gpu.Vulkan.Pipeline.DynamicState.Core as DynamicState
-import qualified Gpu.Vulkan.Pipeline.Layout.Core as Layout
+import qualified Gpu.Vulkan.PipelineLayout.Core as Layout
 import qualified Gpu.Vulkan.RenderPass.Core as RenderPass
 
 import qualified Gpu.Vulkan.PipelineCache.Core as Cache
