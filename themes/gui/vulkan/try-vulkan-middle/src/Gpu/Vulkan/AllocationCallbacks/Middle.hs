@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.AllocationCallbacks.Middle (
-	A(..), ANew,
+	create, A(..), ANew,
 	FnAllocationFunction, FnReallocationFunction, FnFreeFunction,
 	FnInternalAllocationNotification, FnInternalFreeNotification,
 	Size, Alignment ) where
