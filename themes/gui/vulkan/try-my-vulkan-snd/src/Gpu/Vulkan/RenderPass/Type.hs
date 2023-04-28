@@ -6,7 +6,6 @@ module Gpu.Vulkan.RenderPass.Type where
 
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.Middle
 

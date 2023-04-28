@@ -21,7 +21,7 @@ createWindowSurface :: WithPoked n =>
 	Instance.I -> GlfwB.Window -> Maybe (AllocationCallbacks.A n) -> IO Surface.S
 createWindowSurface (Instance.I ist) win mac = Surface.S <$>
 	alloca \psfc -> do
-		AllocationCallbacks.maybeToCore mac \pac -> do
+		AllocationCallbacks.maybeToCoreNew mac \pac -> do
 			r <- GlfwB.createWindowSurface ist win pac psfc
 			throwUnlessSuccess r
 		peek psfc

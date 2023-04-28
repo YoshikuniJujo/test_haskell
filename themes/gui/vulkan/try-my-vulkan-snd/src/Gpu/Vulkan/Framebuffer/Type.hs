@@ -4,7 +4,6 @@
 
 module Gpu.Vulkan.Framebuffer.Type where
 
-import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Framebuffer.Middle as M
 
 newtype F s = F M.F

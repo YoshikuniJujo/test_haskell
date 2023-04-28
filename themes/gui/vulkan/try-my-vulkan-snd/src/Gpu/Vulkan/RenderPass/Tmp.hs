@@ -10,7 +10,6 @@ module Gpu.Vulkan.RenderPass.Tmp where
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
 
 import Gpu.Vulkan.RenderPass.Enum
 

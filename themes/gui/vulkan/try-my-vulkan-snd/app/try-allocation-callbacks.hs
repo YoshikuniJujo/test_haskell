@@ -15,6 +15,9 @@
 
 module Main where
 
+import Foreign.Ptr
+import Foreign.Marshal.Alloc
+
 import Gpu.Vulkan.Object qualified as Obj
 import Data.Kind.Object qualified as KObj
 import Data.Default
@@ -85,28 +88,56 @@ bffSize = 30
 main :: IO ()
 main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
+--		(Just allocationCallbacks)
+--		(Just allocationCallbacks) \dslyt ->
 	prepareMems pd dv dslyt \dscs m ->
 	calc qfi dv dslyt dscs bffSize >>
 	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
-allocationCallbacks :: Vk.AllocCallbacks.A ()
-allocationCallbacks = Vk.AllocCallbacks.A {
-	Vk.AllocCallbacks.allocationCallbacksUserData = (),
-	Vk.AllocCallbacks.allocationCallbacksFnAllocation = undefined,
-	Vk.AllocCallbacks.allocationCallbacksFnReallocation = undefined,
-	Vk.AllocCallbacks.allocationCallbacksFnFree = undefined,
+allocationCallbacks :: Vk.AllocCallbacks.Functions Int
+allocationCallbacks = Vk.AllocCallbacks.Functions {
+	Vk.AllocCallbacks.allocationCallbacksUserData = intPtrToPtr $ IntPtr 0x01234567,
+	Vk.AllocCallbacks.allocationCallbacksFnAllocation = allocate,
+	Vk.AllocCallbacks.allocationCallbacksFnReallocation = reallocate,
+	Vk.AllocCallbacks.allocationCallbacksFnFree = freeFunction,
 	Vk.AllocCallbacks.allocationCallbacksFnInternalAllocationFree = Nothing }
+
+allocate :: Vk.AllocCallbacks.FnAllocationFunction Int
+allocate pud sz algn ascp = do
+	putStr "ALLOCATE: "
+	print (pud, sz, algn, ascp)
+	callocBytes $ fromIntegral sz
+
+reallocate :: Vk.AllocCallbacks.FnReallocationFunction Int
+reallocate pud po sz algn ascp = do
+	putStr "REALLOCATE: "
+	print (pud, po, sz, algn, ascp)
+	reallocBytes po $ fromIntegral sz
+
+freeFunction :: Vk.AllocCallbacks.FnFreeFunction Int
+freeFunction pud p = do
+	putStr "FREE: "
+	print (pud, p)
+	free p
 
 type Word32List = Obj.List 256 Word32 ""
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create instInfo
+--		(Just allocationCallbacks)
+--		(Just allocationCallbacks) \inst -> do
+		nil nil \inst -> do
+	print inst
 	pd <- head <$> Vk.Phd.enumerate inst
+	putStrLn "withDevice: after Vk.PhysicalDevice.enumerate"
 	qfi <- fst . head . filter (
 			checkBits Vk.Queue.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
-	Vk.Dv.create pd (dvcInfo qfi) nil nil $ f pd qfi
+	putStrLn "before Vk.Device.create"
+	ac <- Vk.AllocCallbacks.create allocationCallbacks
+	Vk.Dv.create pd (dvcInfo qfi)
+		(Just ac) (Just ac) $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
