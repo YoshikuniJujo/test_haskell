@@ -56,7 +56,7 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendState.Middle.Internal
 	as ColorBlendState
 import qualified Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
 	as DynamicState
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Layout
+import qualified Gpu.Vulkan.PipelineLayout.Middle.Internal as Layout
 import qualified Gpu.Vulkan.RenderPass.Middle.Internal as RenderPass
 import qualified Gpu.Vulkan.Pipeline.Graphics.Core as C
 

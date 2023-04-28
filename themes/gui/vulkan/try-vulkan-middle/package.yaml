@@ -113,7 +113,7 @@ library:
   - Gpu.Vulkan.Pipeline.Enum
   - Gpu.Vulkan.Pipeline.Graphics.Middle
   - Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
-  - Gpu.Vulkan.Pipeline.Layout.Middle
+  - Gpu.Vulkan.PipelineLayout.Middle
   - Gpu.Vulkan.Pipeline.MultisampleState.Middle
   - Gpu.Vulkan.Pipeline.RasterizationState.Middle
   - Gpu.Vulkan.Pipeline.ShaderStage.Enum

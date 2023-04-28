@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.Pipeline.Core as Pipeline.C
 import qualified Gpu.Vulkan.PipelineCache.Middle.Internal as Cache
 import qualified Gpu.Vulkan.Pipeline.Compute.Core as C
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal as ShaderStage
-import qualified Gpu.Vulkan.Pipeline.Layout.Middle.Internal as Pipeline.Layout
+import qualified Gpu.Vulkan.PipelineLayout.Middle.Internal as Pipeline.Layout
 
 data CreateInfo mn ss sivs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,

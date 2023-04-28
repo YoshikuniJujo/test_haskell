@@ -86,7 +86,7 @@ library
       Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics.Middle
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle
-      Gpu.Vulkan.Pipeline.Layout.Middle
+      Gpu.Vulkan.PipelineLayout.Middle
       Gpu.Vulkan.Pipeline.MultisampleState.Middle
       Gpu.Vulkan.Pipeline.RasterizationState.Middle
       Gpu.Vulkan.Pipeline.ShaderStage.Enum
@@ -137,7 +137,6 @@ library
       Gpu.Vulkan.Pipeline.DynamicState.Middle.Internal
       Gpu.Vulkan.Pipeline.Graphics.Middle.Internal
       Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal
-      Gpu.Vulkan.Pipeline.Layout.Middle.Internal
       Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal
       Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal
       Gpu.Vulkan.Pipeline.ShaderStage.Middle.Internal
@@ -145,6 +144,7 @@ library
       Gpu.Vulkan.Pipeline.VertexInputState.Middle.Internal
       Gpu.Vulkan.Pipeline.ViewportState.Middle.Internal
       Gpu.Vulkan.PipelineCache.Middle.Internal
+      Gpu.Vulkan.PipelineLayout.Middle.Internal
       Gpu.Vulkan.PushConstant.Middle.Internal
       Gpu.Vulkan.QueryPool.Middle.Internal
       Gpu.Vulkan.QueueFamily.EnumManual

@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Layout.Middle (
+module Gpu.Vulkan.PipelineLayout.Middle (
 
 	-- * Type
 
@@ -10,4 +10,4 @@ module Gpu.Vulkan.Pipeline.Layout.Middle (
 
 	create, destroy, CreateInfo(..), CreateFlags ) where
 
-import Gpu.Vulkan.Pipeline.Layout.Middle.Internal
+import Gpu.Vulkan.PipelineLayout.Middle.Internal

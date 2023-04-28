@@ -7,7 +7,7 @@
 {-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Layout.Middle.Internal (
+module Gpu.Vulkan.PipelineLayout.Middle.Internal (
 	L(..), CreateInfo(..), CreateFlags, create, destroy
 	) where
 
@@ -31,7 +31,7 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle.Internal as DescriptorSet.Layout
 import qualified Gpu.Vulkan.PushConstant.Middle.Internal as PushConstant
-import qualified Gpu.Vulkan.Pipeline.Layout.Core as C
+import qualified Gpu.Vulkan.PipelineLayout.Core as C
 
 #include <vulkan/vulkan.h>
 
