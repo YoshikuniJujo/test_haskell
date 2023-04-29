@@ -25,11 +25,11 @@ create :: Functions a -> IO (A a)
 create = (A <$>) . mkCallbacks
 
 data Functions a = Functions {
-	allocationCallbacksUserData :: Ptr a,
-	allocationCallbacksFnAllocation :: FnAllocationFunction a,
-	allocationCallbacksFnReallocation :: FnReallocationFunction a,
-	allocationCallbacksFnFree :: C.FnFreeFunction a,
-	allocationCallbacksFnInternalAllocationFree :: Maybe (
+	functionUserData :: Ptr a,
+	functionFnAllocation :: FnAllocationFunction a,
+	functionFnReallocation :: FnReallocationFunction a,
+	functionFnFree :: C.FnFreeFunction a,
+	functionFnInternalAllocationFree :: Maybe (
 		FnInternalAllocationNotification a,
 		FnInternalFreeNotification a ) }
 
@@ -80,7 +80,7 @@ mkCallbacks ac = do
 	pral <- C.wrapReallocationFunction $ fnReallocationFunctionToCore ral
 	pfr <- C.wrapFreeFunction fr
 	(pial, pifr) <- do
-		case allocationCallbacksFnInternalAllocationFree ac of
+		case functionFnInternalAllocationFree ac of
 			Nothing -> pure (nullFunPtr, nullFunPtr)
 			Just (ial, ifr) -> do
 				wal <- C.wrapInternalAllocationNotification
@@ -96,7 +96,7 @@ mkCallbacks ac = do
 		C.aPfnInternalAllocation = pial,
 		C.aPfnInternalFree = pifr }
 	where
-	pud = allocationCallbacksUserData ac
-	al = allocationCallbacksFnAllocation ac
-	ral = allocationCallbacksFnReallocation ac
-	fr = allocationCallbacksFnFree ac
+	pud = functionUserData ac
+	al = functionFnAllocation ac
+	ral = functionFnReallocation ac
+	fr = functionFnFree ac
