@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.AllocationCallbacks.Middle.Internal (
-	create, Functions(..), A,
+	create, destroy, Functions(..), A,
 	FnAllocationFunction, FnReallocationFunction, C.FnFreeFunction,
 	FnInternalAllocationNotification, FnInternalFreeNotification,
 	Size, Alignment,
@@ -14,6 +14,7 @@ import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
+import Control.Monad
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -23,6 +24,20 @@ newtype A a = A C.A deriving Show
 
 create :: Functions a -> IO (A a)
 create = (A <$>) . mkCallbacks
+
+destroy :: A a -> IO ()
+destroy (A a) = do
+	freeHaskellFunPtr allc
+	freeHaskellFunPtr rallc
+	freeHaskellFunPtr fr
+	when (iallc /= nullFunPtr) $ freeHaskellFunPtr iallc
+	when (ifr /= nullFunPtr) $ freeHaskellFunPtr ifr
+	where
+	allc = C.aPfnAllocation a
+	rallc = C.aPfnReallocation a
+	fr = C.aPfnFree a
+	iallc = C.aPfnInternalAllocation a
+	ifr = C.aPfnInternalFree a
 
 data Functions a = Functions {
 	functionUserData :: Ptr a,
