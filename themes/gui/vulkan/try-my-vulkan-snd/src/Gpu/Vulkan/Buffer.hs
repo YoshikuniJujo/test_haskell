@@ -7,7 +7,7 @@
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -31,6 +31,7 @@ import Gpu.Vulkan.Buffer.Enum
 import qualified Gpu.Vulkan.Middle as C
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
@@ -79,9 +80,11 @@ createInfoToMiddle CreateInfo {
 
 create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs, WithPoked c, WithPoked d) =>
 	Device.D ds -> CreateInfo n objs ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . B s nm objs -> IO a) -> IO a
-create (Device.D dvc) ci macc macd f = do
+create (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = do
 --	putStrLn "Vk.Buffer.create:"
 --	print . M.createInfoSize $ createInfoToMiddle ci
 	bracket

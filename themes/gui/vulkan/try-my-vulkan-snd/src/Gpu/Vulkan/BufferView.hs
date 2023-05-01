@@ -5,7 +5,7 @@
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.BufferView where
@@ -21,6 +21,7 @@ import Data.HeteroParList (pattern (:**))
 import Gpu.Vulkan.Object qualified as VObj
 
 import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.Device qualified as Device
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Device.Middle qualified as Device.M
@@ -34,9 +35,11 @@ create :: (
 	WithPoked (TMaybe.M mn), WithPoked c, WithPoked d,
 	TEnum.FormatToValue (FormatOf t), OffsetRange t nm objs ) =>
 	Device.D sd -> CreateInfo mn t nm '(sm, sb, bnm, objs) ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . B s nm t -> IO a) -> IO a
-create (Device.D dvc) ci macc macd f = bracket
+create (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\b -> M.destroy dvc b macd) (f . B)
 

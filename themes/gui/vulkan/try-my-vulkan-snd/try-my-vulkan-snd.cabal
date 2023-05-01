@@ -45,6 +45,7 @@ library
       Glfw.Middle
       Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
+      Gpu.Vulkan.AllocationCallbacks.Type
       Gpu.Vulkan.Attachment
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.BufferView

@@ -6,7 +6,7 @@
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -35,6 +35,7 @@ import Data.HeteroParList (pattern (:**))
 import Data.IORef
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Image.Type as Image
@@ -172,10 +173,12 @@ allocate :: (WithPoked (TMaybe.M n), Pokable c, Pokable d, Alignments sibfoss) =
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
-	Maybe (AllocationCallbacks.A c) ->
-	Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) ->
+	Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . M s sibfoss -> IO a) -> IO a
-allocate dvc@(Device.D mdvc) bs ai macc macd f = bracket
+allocate dvc@(Device.D mdvc) bs ai
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai macc
 	(\mem -> Memory.M.free mdvc mem macd)
@@ -185,9 +188,11 @@ reallocate :: (
 	WithPoked (TMaybe.M n), Pokable c, Pokable d, Alignments sibfoss ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
-	Maybe (AllocationCallbacks.A c) ->
-	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
-reallocate dvc@(Device.D mdvc) bs ai macc macd mem = do
+	Maybe (AllocationCallbacks.A sc c) ->
+	Maybe (AllocationCallbacks.A sd d) -> M sm sibfoss -> IO ()
+reallocate dvc@(Device.D mdvc) bs ai
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) mem = do
 	mai <- reallocateInfoToMiddle dvc bs ai
 	(_, oldmem) <- readM'' mem
 	Memory.M.reallocate mdvc mai macc macd oldmem
@@ -197,8 +202,8 @@ reallocateBind :: (
 	WithPoked (TMaybe.M n), Pokable c, Pokable d, RebindAll sibfoss sibfoss, Alignments sibfoss ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
-	Maybe (AllocationCallbacks.A c) ->
-	Maybe (AllocationCallbacks.A d) -> M sm sibfoss -> IO ()
+	Maybe (AllocationCallbacks.A sc c) ->
+	Maybe (AllocationCallbacks.A sd d) -> M sm sibfoss -> IO ()
 reallocateBind dvc bs ai macc macd mem = do
 	reallocate dvc bs ai macc macd mem
 	rebindAll dvc bs mem
@@ -230,8 +235,8 @@ allocateBind :: (
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
-	Maybe (AllocationCallbacks.A c) ->
-	Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) ->
+	Maybe (AllocationCallbacks.A sd d) ->
 	(forall s .
 		HeteroParList.PL (U2 (ImageBufferBinded s)) sibfoss ->
 		M s sibfoss -> IO a) -> IO a

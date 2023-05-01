@@ -2,6 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance (
@@ -15,10 +16,13 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Gpu.Vulkan.Instance.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Middle as M
 
 create :: (WithPoked (TMaybe.M n), WithPoked (TMaybe.M n2), Pokable n3, Pokable n4) =>
 	M.CreateInfo n n2 ->
-	Maybe (AllocationCallbacks.A n3) -> Maybe (AllocationCallbacks.A n4) ->
+	Maybe (AllocationCallbacks.A sn3 n3) -> Maybe (AllocationCallbacks.A sn4 n4) ->
 	(forall s . I s -> IO a) -> IO a
-create ci macc macd f = bracket (M.create ci macc) (`M.destroy` macd) (f . I)
+create ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket (M.create ci macc) (`M.destroy` macd) (f . I)

@@ -2,6 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.RenderPass (
@@ -14,6 +15,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Gpu.Vulkan.RenderPass.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.RenderPass.Middle as M
 import qualified Gpu.Vulkan.RenderPass.Tmp as M
@@ -23,7 +25,7 @@ createNew :: (
 	Attachment.DescriptionsFromNew fmts,
 	WithPoked (TMaybe.M mn), Pokable c, Pokable d ) =>
 	Device.D sd -> M.CreateInfoNew mn fmts ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . R s -> IO a) -> IO a
-createNew (Device.D dvc) ci macc macd f =
+createNew (Device.D dvc) ci macc (((\(AllocationCallbacks.A a) -> a) <$>) -> macd) f =
 	bracket (M.createNew dvc ci macc) (\r -> M.destroy dvc r macd) (f . R)

@@ -6,6 +6,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
@@ -19,6 +20,7 @@ import Data.Kind
 import Data.Word
 
 import Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import Gpu.Vulkan.PhysicalDevice qualified as PhysicalDevice
 import Gpu.Vulkan.PhysicalDevice.Struct qualified as PhysicalDevice
 import Gpu.Vulkan.Device.Type qualified as Device
@@ -29,9 +31,11 @@ newtype Q sq (tp :: Bool -> Type) = Q M.Q deriving Show
 
 create :: (WithPoked (TMaybe.M mn), QueryType tp, WithPoked c, WithPoked d) =>
 	Device.D sd -> CreateInfo mn tp ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
 	(forall sq . Q sq tp -> IO a) -> IO a
-create (Device.D dv) ci macc macd f = bracket
+create (Device.D dv) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dv (createInfoToMiddle ci) macc)
 	(\qp -> M.destroy dv qp macd) (f . Q)
 

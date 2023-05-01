@@ -51,6 +51,7 @@ import qualified Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.PipelineCache.Middle as Cache
 
@@ -151,8 +152,9 @@ createGs :: (
 	) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO [M.G]
-createGs dvc mc cis mac = M.createGs dvc mc (createInfoListToMiddle cis) mac
+	Maybe (AllocationCallbacks.A sn' n') -> IO [M.G]
+createGs dvc mc cis ((AllocationCallbacks.toMiddle <$>) -> mac) =
+	M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
@@ -160,9 +162,11 @@ recreateGs :: (
 	Pokable c, Pokable d
 	) => Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	[M.G] -> IO ()
-recreateGs dvc mc cis macc macd gs =
+recreateGs dvc mc cis
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) gs =
 	M.recreateGs dvc mc (createInfoListToMiddle cis) macc macd gs
 
 type family GListVars (ss :: [(

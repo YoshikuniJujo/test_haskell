@@ -26,6 +26,7 @@ import Gpu.Vulkan.Framebuffer.Enum
 import Gpu.Vulkan.Framebuffer.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.ImageView as ImageView
@@ -99,30 +100,38 @@ createInfoToMiddle CreateInfo {
 
 createNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . F s -> IO a) -> IO a
-createNew (Device.D dvc) ci macc macd f = bracket
+createNew (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
 create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo mn sr si ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . F s -> IO a) -> IO a
-create (Device.D dvc) ci macc macd f = bracket
+create (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\fb -> M.destroy dvc fb macd) (f . F)
 
 recreateNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	F sf -> IO ()
-recreateNew (Device.D dvc) ci macc macd (F fb) =
+recreateNew (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) (F fb) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
 
 recreate :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo mn sr si ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	F sf -> IO ()
-recreate (Device.D dvc) ci macc macd (F fb) =
+recreate (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) (F fb) =
 	M.recreate dvc (createInfoToMiddle ci) macc macd fb

@@ -3,7 +3,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Fence (F, create, M.CreateInfo(..), waitForFs, resetFs) where
@@ -18,13 +18,16 @@ import Gpu.Vulkan.Fence.Type
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Fence.Middle as M
 
 create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
 	Device.D sd -> M.CreateInfo mn ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall sf . F sf -> IO a) -> IO a
-create (Device.D dvc) ci macc macd f = bracket
+create (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dvc ci macc) (\fnc -> M.destroy dvc fnc macd) (f . F)
 
 waitForFs :: Device.D sd -> HeteroParList.PL F sfs -> Bool -> Word64 -> IO ()

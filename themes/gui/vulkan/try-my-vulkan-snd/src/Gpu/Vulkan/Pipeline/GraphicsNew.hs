@@ -30,6 +30,7 @@ import Gpu.Vulkan.Pipeline.Enum
 import Gpu.Vulkan.Pipeline.Graphics.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Pipeline.Graphics.Middle as M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Tmp as T
@@ -57,7 +58,7 @@ data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 		createInfoNext :: TMaybe.M mn,
 		createInfoFlags :: CreateFlags,
 		createInfoStages ::
-			HeteroParList.PL (U6 ShaderStage.CreateInfoNew) nnskndscdvss,
+			HeteroParList.PL (U8 ShaderStage.CreateInfoNew) nnskndscdvss,
 		createInfoVertexInputState ::
 			Maybe (U3 VertexInputState.CreateInfo nvsts),
 		createInfoInputAssemblyState ::
@@ -82,7 +83,7 @@ data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 
 type CreateInfoArgs14 = (
 	Maybe Type,
-	[(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Type, Type, [Type])],
+	[(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Type, Type, Type, Type, [Type])],
 	(Maybe Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
 	Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type,
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
@@ -205,11 +206,12 @@ createGs :: (
 	U2g (CreateInfoListArgs14ToGArgs3 ss) ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	HeteroParList.PL (U14 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
 	(forall sg .
 		HeteroParList.PL (U3 (GNew sg)) (CreateInfoListArgs14ToGArgs3 ss) ->
 		IO a) -> IO a
-createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd f = bracket
+createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(createInfoListToMiddle d cis >>= \cis' ->
 		T.createGs dvc mc cis' macc <* destroyShaderStages d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
@@ -221,7 +223,7 @@ recreateGs :: (
 	Pokable c, Pokable d,
 	U2g (CreateInfoListArgs14ToGArgs3 ss) ) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
 	HeteroParList.PL (U3 (GNew sg)) (CreateInfoListArgs14ToGArgs3 ss) -> IO ()
 recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
 	cis' <- createInfoListToMiddle d cis

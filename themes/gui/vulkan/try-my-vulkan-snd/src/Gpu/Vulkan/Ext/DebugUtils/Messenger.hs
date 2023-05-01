@@ -2,6 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger (
@@ -17,6 +18,7 @@ import Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
 import Gpu.Vulkan.Middle.Internal qualified as MI
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Instance.Type as Instance
 import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as M
 
@@ -24,7 +26,9 @@ create :: (
 	WithPoked (TMaybe.M mn), MI.FindPNextChainAll n2, Storable n3, Storable n4, Storable n5,
 	Storable ud, Pokable ud, Peek ud, Pokable c, Pokable d ) =>
 	Instance.I si -> M.CreateInfo mn n2 n3 n4 n5 ud ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
 	(forall s . M s -> IO a) -> IO a
-create (Instance.I ist) ci macc macd f = bracket
+create (Instance.I ist) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create ist ci macc) (\m -> M.destroy ist m macd) (f . M)

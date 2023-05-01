@@ -14,6 +14,7 @@ import Data.HeteroParList qualified as HeteroParList
 import Gpu.Vulkan.RenderPass.Enum
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Middle as Device
 import qualified Gpu.Vulkan.Attachment as Attachment
 import qualified Gpu.Vulkan.Subpass.Middle as Subpass
@@ -45,5 +46,5 @@ createInfoFromNew CreateInfoNew {
 createNew ::
 	(WithPoked (TMaybe.M mn), Pokable c, Attachment.DescriptionsFromNew fmts) =>
 	Device.D ->
-	CreateInfoNew mn fmts -> Maybe (AllocationCallbacks.A c) -> IO R
-createNew dvc ci mac = create dvc (createInfoFromNew ci) mac
+	CreateInfoNew mn fmts -> Maybe (AllocationCallbacks.A s c) -> IO R
+createNew dvc ci mac = create dvc (createInfoFromNew ci) ((\(AllocationCallbacks.A a) -> a) <$> mac)

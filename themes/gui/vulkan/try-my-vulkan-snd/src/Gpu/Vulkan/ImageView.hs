@@ -4,6 +4,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView where
@@ -18,6 +19,7 @@ import Gpu.Vulkan.ImageView.Enum
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Component as Component
 import qualified Gpu.Vulkan.Image.Type as Image
@@ -90,17 +92,21 @@ createNew :: (
 	T.FormatToValue ivfmt,
 	WithPoked (TMaybe.M n), Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall siv . INew ivfmt nm siv -> IO a) -> IO a
-createNew (Device.D dvc) ci macc macd f = bracket
+createNew (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\i -> M.destroy dvc i macd) (f . INew)
 
 create :: (WithPoked (TMaybe.M n), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo si sm n ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . I s -> IO a) -> IO a
-create (Device.D dvc) ci macc macd f = bracket
+create (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\i -> M.destroy dvc i macd) (f . I)
 
@@ -108,14 +114,18 @@ recreateNew :: (
 	T.FormatToValue ivfmt,
 	WithPoked (TMaybe.M n), Pokable c, Pokable d ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	INew ivfmt nm s -> IO ()
-recreateNew (Device.D dvc) ci macc macd (INew i) =
+recreateNew (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) (INew i) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd i
 
 recreate :: (WithPoked (TMaybe.M n), Pokable c, Pokable d) =>
 	Device.D sd -> CreateInfo si sm n ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	I s -> IO ()
-recreate (Device.D dvc) ci macc macd (I i) =
+recreate (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) (I i) =
 	M.recreate dvc (createInfoToMiddle ci) macc macd i

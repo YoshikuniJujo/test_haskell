@@ -26,6 +26,7 @@ import Data.HeteroParList (pattern (:**))
 import Gpu.Vulkan.PipelineLayout.Type
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
+import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Descriptor.Set.Layout
 import qualified Gpu.Vulkan.PushConstant as PushConstant
@@ -103,7 +104,9 @@ createNew :: (
 	PushConstant.RangesToMiddle whole ranges,
 	WithPoked (TMaybe.M mn), Pokable c, Pokable d, HeteroParListToList' sbtss ) =>
 	Device.D sd -> CreateInfoNew mn sbtss pcl ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . L s sbtss whole -> IO a) -> IO a
-createNew (Device.D dvc) (createInfoToMiddleNew -> ci) macc macd f =
+createNew (Device.D dvc) (createInfoToMiddleNew -> ci)
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f =
 	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L)
