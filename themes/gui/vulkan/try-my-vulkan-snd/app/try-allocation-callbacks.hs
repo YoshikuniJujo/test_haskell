@@ -98,8 +98,8 @@ main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 ptr :: Int -> Ptr ()
 ptr i = intPtrToPtr $ IntPtr i
 
-allocationCallbacks :: Vk.AllocCallbacks.Functions a
-allocationCallbacks = Vk.AllocCallbacks.Functions {
+allocationCallbacks :: Vk.AllocCallbacks.FunctionsInfo a
+allocationCallbacks = Vk.AllocCallbacks.FunctionsInfo {
 	Vk.AllocCallbacks.functionUserData = intPtrToPtr $ IntPtr 0x01234567,
 	Vk.AllocCallbacks.functionFnAllocation = allocate,
 	Vk.AllocCallbacks.functionFnReallocation = reallocate,
@@ -210,7 +210,8 @@ storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
-	Vk.AllocCallbacks.create allocationCallbacks \ac ->
+	Vk.AllocCallbacks.createNew allocationCallbacks \fs -> let
+	ac = fs `Vk.AllocCallbacks.apply` ptr 0x123 in
 	Vk.Bffr.create dv bufferInfo (TPMaybe.J $ U2 ac) \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
