@@ -135,9 +135,8 @@ withDevice f = Vk.Inst.create instInfo
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	putStrLn "before Vk.Device.create"
-	ac <- Vk.AllocCallbacks.create allocationCallbacks
-	Vk.Dv.create pd (dvcInfo qfi)
-		(Just ac) (Just ac) $ f pd qfi
+	Vk.AllocCallbacks.create allocationCallbacks \ac ->
+		Vk.Dv.create pd (dvcInfo qfi) (Just ac) (Just ac) $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {
@@ -316,16 +315,16 @@ run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 -- COMPUTE PIPELINE INFO
 
 pplInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
-	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, (), (), '[])
+	Vk.Ppl.Cmpt.CreateInfo 'Nothing '( 'Nothing, 'Nothing, 'GlslComputeShader, sc, (), sd, (), '[])
 		'(sl, sbtss, '[]) sbph
 pplInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = zeroBits,
-	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStInfo,
+	Vk.Ppl.Cmpt.createInfoStage = U8 shaderStInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader () () '[]
+shaderStInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader sc () sd () '[]
 shaderStInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,

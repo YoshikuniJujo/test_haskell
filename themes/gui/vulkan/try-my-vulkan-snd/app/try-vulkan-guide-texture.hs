@@ -748,8 +748,8 @@ graphicsPipelineCreateInfo :: Vk.C.Extent2d -> Vk.RndrPss.R sr ->
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.CreateInfo 'Nothing
-		'[	'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
-			'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[])]
+		'[	'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd, (), '[]),
+			'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd, (), '[])]
 		'( 'Nothing, '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)])
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
@@ -2142,10 +2142,10 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
-	HL.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
-		'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
-		'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
-shaderStages vs fs = U6 vertinfo :** U6 fraginfo :** HL.Nil where
+	HL.PL (U8 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+		'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd, (), '[]),
+		'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd, (), '[]) ]
+shaderStages vs fs = U8 vertinfo :** U8 fraginfo :** HL.Nil where
 	vertinfo = Vk.Ppl.ShdrSt.CreateInfoNew {
 		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
 		Vk.Ppl.ShdrSt.createInfoFlagsNew = def,
@@ -2160,7 +2160,7 @@ shaderStages vs fs = U6 vertinfo :** U6 fraginfo :** HL.Nil where
 		Vk.Ppl.ShdrSt.createInfoModuleNew = mdl fs,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
-	mdl :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd () ()
+	mdl :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd sc () sd ()
 	mdl cd = Vk.Shader.Module.M crInfo nil nil
 		where crInfo = Vk.Shader.Module.M.CreateInfo {
 			Vk.Shader.Module.M.createInfoNext = TMaybe.N,

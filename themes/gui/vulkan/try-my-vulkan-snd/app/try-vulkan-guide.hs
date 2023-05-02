@@ -686,8 +686,8 @@ mkGraphicsPipelineCreateInfo ::
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
-			'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
-			'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
+			'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd, (), '[]),
+			'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd, (), '[]) ]
 		'(	'Nothing, '[AddType Vertex 'Vk.VtxInp.RateVertex],
 			'[ '(0, Position), '(1, Normal), '(2, Color)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
@@ -1993,10 +1993,10 @@ newtype SunlightColor = SunlightColor Cglm.Vec4 deriving (Show, Storable)
 
 shaderStages ::
 	Spv 'GlslVertexShader -> Spv 'GlslFragmentShader ->
-	HeteroParList.PL (U6 Vk.Ppl.ShdrSt.CreateInfoNew) '[
-		'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
-		'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
-shaderStages vs fs = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** HeteroParList.Nil
+	HeteroParList.PL (U8 Vk.Ppl.ShdrSt.CreateInfoNew) '[
+		'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd, (), '[]),
+		'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd, (), '[]) ]
+shaderStages vs fs = U8 vertShaderStageInfo :** U8 fragShaderStageInfo :** HeteroParList.Nil
 	where
 	vertShaderStageInfo = Vk.Ppl.ShdrSt.CreateInfoNew {
 		Vk.Ppl.ShdrSt.createInfoNextNew = TMaybe.N,
@@ -2012,11 +2012,11 @@ shaderStages vs fs = U6 vertShaderStageInfo :** U6 fragShaderStageInfo :** Heter
 		Vk.Ppl.ShdrSt.createInfoModuleNew = fragShaderModule1,
 		Vk.Ppl.ShdrSt.createInfoNameNew = "main",
 		Vk.Ppl.ShdrSt.createInfoSpecializationInfoNew = Nothing }
-	vertShaderModule1 :: Vk.Shader.Module.M 'Nothing 'GlslVertexShader () ()
+	vertShaderModule1 :: Vk.Shader.Module.M 'Nothing 'GlslVertexShader sc () sd ()
 	vertShaderModule1 = mkShaderModule vs
-	fragShaderModule1 :: Vk.Shader.Module.M 'Nothing 'GlslFragmentShader () ()
+	fragShaderModule1 :: Vk.Shader.Module.M 'Nothing 'GlslFragmentShader sc () sd ()
 	fragShaderModule1 = mkShaderModule fs
-	mkShaderModule :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd () ()
+	mkShaderModule :: Spv sknd -> Vk.Shader.Module.M 'Nothing sknd sc () sd ()
 	mkShaderModule cd = Vk.Shader.Module.M crInfo nil nil
 		where crInfo = Vk.Shader.Module.M.CreateInfo {
 			Vk.Shader.Module.M.createInfoNext = TMaybe.N,

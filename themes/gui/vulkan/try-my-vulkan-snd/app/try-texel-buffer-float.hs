@@ -146,16 +146,16 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 
 computePipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
-		'( 'Nothing, 'Nothing, 'GlslComputeShader, (), (), '[Word32, Word32])
+		'( 'Nothing, 'Nothing, 'GlslComputeShader, sc, (), sd, (), '[Word32, Word32])
 		'(sl, sbtss, '[]) sbph
 computePipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = def,
-	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoStage = U8 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader () () '[Word32, Word32]
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader sc () sd () '[Word32, Word32]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = zeroBits,

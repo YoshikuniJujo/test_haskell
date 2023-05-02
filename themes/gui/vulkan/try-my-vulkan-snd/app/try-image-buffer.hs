@@ -541,12 +541,12 @@ pplLayoutInfo dsl = Vk.Ppl.Lyt.CreateInfoNew {
 
 cmptPipelineInfo :: Vk.Ppl.Lyt.L sl sbtss '[] ->
 	Vk.Ppl.Cmpt.CreateInfo 'Nothing
-		'( 'Nothing, 'Nothing, 'GlslComputeShader, (), (), '[])
+		'( 'Nothing, 'Nothing, 'GlslComputeShader, sc, (), sd, (), '[])
 		'(sl, sbtss, '[]) sbph
 cmptPipelineInfo pl = Vk.Ppl.Cmpt.CreateInfo {
 	Vk.Ppl.Cmpt.createInfoNext = TMaybe.N,
 	Vk.Ppl.Cmpt.createInfoFlags = def,
-	Vk.Ppl.Cmpt.createInfoStage = U6 shaderStageInfo,
+	Vk.Ppl.Cmpt.createInfoStage = U8 shaderStageInfo,
 	Vk.Ppl.Cmpt.createInfoLayout = U3 pl,
 	Vk.Ppl.Cmpt.createInfoBasePipelineHandleOrIndex = Nothing }
 
@@ -646,7 +646,7 @@ bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
 	Vk.Dsc.BufferInfo '(sb, sm, nm, objs,VObj.List 256 t "")
 bufferInfoList = Vk.Dsc.BufferInfoList
 
-shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader () () '[]
+shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew 'Nothing 'Nothing 'GlslComputeShader sc () sd () '[]
 shaderStageInfo = Vk.Ppl.ShaderSt.CreateInfoNew {
 	Vk.Ppl.ShaderSt.createInfoNextNew = TMaybe.N,
 	Vk.Ppl.ShaderSt.createInfoFlagsNew = def,

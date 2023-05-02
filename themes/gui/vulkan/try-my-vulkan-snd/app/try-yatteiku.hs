@@ -6,7 +6,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE PartialTypeSignatures #-}
-{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs -fno-warn-partial-type-signatures #-}
 
 module Main where
@@ -686,8 +686,8 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
-					'( 'Nothing, 'Nothing, 'GlslVertexShader, (), (), '[]),
-					'( 'Nothing, 'Nothing, 'GlslFragmentShader, (), (), '[]) ]
+					'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd', (), '[]),
+					'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd', (), '[]) ]
 				'(	'Nothing, '[], '[] )
 				'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
@@ -695,8 +695,8 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
-					U6 vertShaderStage :**
-					U6 fragShaderStage :** HeteroParList.Nil,
+					U8 vertShaderStage :**
+					U8 fragShaderStage :** HeteroParList.Nil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just $ U3 vertexInputInfo,
 				Vk.Ppl.Gr.createInfoInputAssemblyState =
