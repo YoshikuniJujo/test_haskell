@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.AllocationCallbacks.Middle.Internal (
-	createNew, destroyNew, FunctionsInfo(..), FunctionsNew, apply, A,
+	create, destroy, FunctionsInfo(..), Functions, apply, A,
 	FnAllocationFunction, FnReallocationFunction, C.FnFreeFunction,
 	FnInternalAllocationNotification, FnInternalFreeNotification,
 	Size, Alignment,
@@ -23,7 +23,7 @@ import Gpu.Vulkan.AllocationCallbacks.Core qualified as C
 
 newtype A a = A C.A deriving Show
 
-data FunctionsNew a = FunctionsNew {
+data Functions a = Functions {
 	aPfnAllocation :: C.PfnAllocationFunction,
 	aPfnReallocation :: C.PfnReallocationFunction,
 	aPfnFree :: C.PfnFreeFunction,
@@ -31,7 +31,7 @@ data FunctionsNew a = FunctionsNew {
 	aPfnInternalFree :: C.PfnInternalFreeNotification }
 	deriving Show
 
-apply :: FunctionsNew a -> Ptr a -> A a
+apply :: Functions a -> Ptr a -> A a
 apply a p = A C.A {
 	C.aPUserData = castPtr p,
 	C.aPfnAllocation = aPfnAllocation a,
@@ -40,11 +40,11 @@ apply a p = A C.A {
 	C.aPfnInternalAllocation = aPfnInternalAllocation a,
 	C.aPfnInternalFree = aPfnInternalFree a }
 
-createNew :: FunctionsInfo a -> IO (FunctionsNew a)
-createNew = mkCallbacksNew
+create :: FunctionsInfo a -> IO (Functions a)
+create = mkCallbacksNew
 
-destroyNew :: FunctionsNew a -> IO ()
-destroyNew a = do
+destroy :: Functions a -> IO ()
+destroy a = do
 	freeHaskellFunPtr allc
 	freeHaskellFunPtr rallc
 	freeHaskellFunPtr fr
@@ -110,7 +110,7 @@ mToCore = TPMaybe.maybe ((() <$) . ($ NullPtr)) toCoreNew
 toCoreNew :: A a -> (Ptr C.A -> IO b) -> IO ()
 toCoreNew (A ac) f = () <$ alloca \p -> poke p ac >> f p
 
-mkCallbacksNew :: FunctionsInfo a -> IO (FunctionsNew a)
+mkCallbacksNew :: FunctionsInfo a -> IO (Functions a)
 mkCallbacksNew ac = do
 	pal <- C.wrapAllocationFunction $ fnAllocationFunctionToCore al
 	pral <- C.wrapReallocationFunction $ fnReallocationFunctionToCore ral
@@ -124,7 +124,7 @@ mkCallbacksNew ac = do
 				wfr <- C.wrapInternalFreeNotification
 					$ fnInternalFreeNotificationToCore ifr
 				pure (wal, wfr)
-	pure FunctionsNew {
+	pure Functions {
 		aPfnAllocation = pal,
 		aPfnReallocation = pral,
 		aPfnFree = pfr,
