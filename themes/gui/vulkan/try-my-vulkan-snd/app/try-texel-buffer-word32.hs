@@ -319,8 +319,7 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 			Vk.BufferView.createInfoFlags = zeroBits,
 			Vk.BufferView.createInfoBuffer = U4 bd }
 		Vk.Dvc.D mdvc = dvc in
---	Vk.BufferView.M.create @() mdvc bufferViewInfo nil >>= \bv -> do
-	Vk.BufferView.create dvc bufferViewInfo' nil nil \bv@(Vk.BufferView.B mbv) -> do
+	Vk.BufferView.create dvc bufferViewInfo' nil' \bv@(Vk.BufferView.B mbv) -> do
 	let	wds = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = TMaybe.N,
 			Vk.DscSet.writeDstSet = dscSet,

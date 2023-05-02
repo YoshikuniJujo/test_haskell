@@ -308,7 +308,7 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 			Vk.BufferView.M.createInfoRange =
 				Vk.Dvc.M.Size $ 4 * 4 * fromIntegral mxx }
 		Vk.Dvc.D mdvc = dvc
-	bv <- Vk.BufferView.M.create mdvc bufferViewInfo nil
+	bv <- Vk.BufferView.M.create mdvc bufferViewInfo nil'
 	let	wds = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = TMaybe.N,
 			Vk.DscSet.writeDstSet = dscSet,

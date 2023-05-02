@@ -16,6 +16,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Gpu.Vulkan.Object qualified as VObj
@@ -32,16 +33,15 @@ import Gpu.Vulkan.BufferView.Middle qualified as M
 newtype B s (nm :: Symbol) t = B M.B deriving Show
 
 create :: (
-	WithPoked (TMaybe.M mn), WithPoked c, WithPoked d,
+	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc,
 	TEnum.FormatToValue (FormatOf t), OffsetRange t nm objs ) =>
 	Device.D sd -> CreateInfo mn t nm '(sm, sb, bnm, objs) ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . B s nm t -> IO a) -> IO a
 create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
+	(AllocationCallbacks.toMiddle' -> macc) f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
-	(\b -> M.destroy dvc b macd) (f . B)
+	(\b -> M.destroy dvc b macc) (f . B)
 
 data CreateInfo mn t (nm :: Symbol) snmobjs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
