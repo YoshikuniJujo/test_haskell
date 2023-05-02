@@ -473,7 +473,7 @@ storageBufferNew :: forall sd nm w a . Storable w =>
 		Vk.Buffer.Binded sb sm nm '[VObj.List 256 w ""]  ->
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil \buffer -> do
+	Vk.Buffer.create dvc (bufferInfo xs) nil' \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
 		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
 			nil nil \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do

@@ -1176,7 +1176,7 @@ createBuffer :: forall obj nm sd a . (
 		Vk.Mem.M sm '[
 			'(sb, 'Vk.Mem.K.Buffer nm '[obj])
 			] -> IO a ) -> IO a
-createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil
+createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		\b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
@@ -1210,7 +1210,7 @@ createBuffer2 :: forall obj obj2 nm sd a . (
 		Vk.Mem.M sm '[
 			'(sb, 'Vk.Mem.K.Buffer nm '[obj, obj2])
 			] -> IO a ) -> IO a
-createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil
+createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		\b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props

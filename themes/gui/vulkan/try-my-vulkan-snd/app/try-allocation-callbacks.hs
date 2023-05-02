@@ -24,6 +24,7 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import qualified Data.HeteroParList as HL
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
@@ -205,7 +206,8 @@ storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
-	Vk.Bffr.create dv bufferInfo nil \bf ->
+	Vk.AllocCallbacks.create allocationCallbacks \ac ->
+	Vk.Bffr.create dv bufferInfo (TPMaybe.J $ U2 ac) \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
 		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil

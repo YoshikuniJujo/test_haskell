@@ -1118,7 +1118,7 @@ createBuffer :: forall objs nm sd a . (
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm objs)] -> IO a) ->
 	IO a
 createBuffer pd dv lns usg prs f =
-	Vk.Bffr.create dv (bufferInfo lns usg) nil \b ->
+	Vk.Bffr.create dv (bufferInfo lns usg) nil' \b ->
 	Vk.Bffr.getMemoryRequirements dv b >>= \rs ->
 	findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits rs) prs >>= \mt ->
 	Vk.Mm.allocateBind dv

@@ -21,6 +21,7 @@ import Gpu.Vulkan.Object qualified as VObj
 import Data.Proxy
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
@@ -78,11 +79,11 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs) =>
+create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs, AllocationCallbacks.ToMiddle' mscc) =>
 	Device.D ds -> CreateInfo n objs ->
-	Maybe (AllocationCallbacks.A sc c) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . B s nm objs -> IO a) -> IO a
-create (Device.D dvc) ci ((AllocationCallbacks.toMiddle <$>) -> mac) f = bracket
+create (Device.D dvc) ci (AllocationCallbacks.toMiddle' -> mac) f = bracket
 	(M.create dvc (createInfoToMiddle ci) mac) (\b -> M.destroy dvc b mac)
 	(f . B (createInfoLengths ci))
 

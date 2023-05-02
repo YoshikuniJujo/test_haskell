@@ -209,7 +209,7 @@ storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
-	Vk.Bffr.create dv bufferInfo nil \bf ->
+	Vk.Bffr.create dv bufferInfo nil' \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
 		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
