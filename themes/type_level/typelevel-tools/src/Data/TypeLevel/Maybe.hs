@@ -1,20 +1,22 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel.Maybe (M(..)) where
+module Data.TypeLevel.Maybe (M, pattern N, pattern J) where
 
-import Data.Kind
+import Data.TypeLevel.ParMaybe qualified as P
 
-data M (mt :: Maybe Type) where
-	N :: M 'Nothing
-	J :: a -> M ('Just a)
+newtype Id a = Id a deriving (Show, Eq, Ord)
 
-deriving instance Show (M 'Nothing)
-deriving instance Show a => Show (M ('Just a))
+type M = P.M Id
 
-deriving instance Eq (M 'Nothing)
-deriving instance Eq a => Eq (M ('Just a))
+pattern N :: M 'Nothing
+pattern N <- P.N where N = P.N
+
+pattern J :: a -> M ('Just a)
+pattern J x <- (P.J (Id x)) where J x = P.J $ Id x
