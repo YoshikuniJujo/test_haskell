@@ -152,7 +152,7 @@ calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ cmptPipelineInfo pplLyt)
 		nil nil \(ppl :*. HeteroParList.Nil) ->
-	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil nil \cmdPool ->
+	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil \cmdPool ->
 	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(HeteroParList.Singleton cmdBuf) ->
 		run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm ma mb mc
 

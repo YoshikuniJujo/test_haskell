@@ -861,7 +861,7 @@ colorBlendAttachment = Vk.Ppl.ClrBlndAtt.State {
 
 createCommandPool :: Vk.Dvc.D sd ->
 	QueueFamilyIndices -> (forall sc . Vk.CmdPl.C sc -> IO a) -> IO a
-createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil nil
+createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil
 	where crInfo = Vk.CmdPl.CreateInfo {
 		Vk.CmdPl.createInfoNext = TMaybe.N,
 		Vk.CmdPl.createInfoFlags = Vk.CmdPl.CreateResetCommandBufferBit,
@@ -1942,7 +1942,7 @@ createUploadContext ::
 createUploadContext dv qfis f =
 	uploadContextCreateFence dv \fnc ->
 	Vk.CmdPl.create dv
-		(uploadContextCommandPoolCreateInfo qfis) nil nil \cp ->
+		(uploadContextCommandPoolCreateInfo qfis) nil \cp ->
 	Vk.CBffr.allocateNew dv
 		(uploadContextCommandBufferAllocateInfo cp) \(cb :*. HL.Nil) ->
 	f UploadContext {
