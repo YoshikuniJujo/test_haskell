@@ -27,7 +27,7 @@ module Foreign.Storable.PeekPoke.Internal (
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
-import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
 class Sizable a where sizeOf' :: Int; alignment' :: Int
 class Peek a where peek' :: Ptr a -> IO a
@@ -93,8 +93,8 @@ withPokedMaybe' :: WithPoked a =>
 	Maybe a -> (forall s . PtrS s a -> IO b) -> IO b
 withPokedMaybe' = \case Nothing -> ($ NullPtrS); Just x -> withPoked' x
 
-instance WithPoked (TMaybe.M 'Nothing) where
-	withPoked' TMaybe.N f = f $ ptrS nullPtr
+instance WithPoked (TPMaybe.M t 'Nothing) where
+	withPoked' TPMaybe.N f = f $ ptrS nullPtr
 
-instance WithPoked a => WithPoked (TMaybe.M ('Just a)) where
-	withPoked' (TMaybe.J x) f = withPoked' x (f . castPtrS)
+instance WithPoked (t a) => WithPoked (TPMaybe.M t ('Just a)) where
+	withPoked' (TPMaybe.J x) f = withPoked' x (f . castPtrS)

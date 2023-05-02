@@ -5,16 +5,16 @@
 
 packages:
 - completed:
-    commit: 33ba848b565dde38a8689fa5b2bdf9d60bd9dbc1
+    commit: 63c9760554de0b2e7d719d1d137844e9cd1e5b53
     git: https://github.com/YoshikuniJujo/test_haskell
     name: typelevel-tools
     pantry-tree:
-      sha256: 25c007e8734effd1635c1df39a4d549de6c6fac8298cf517b166b4ca4883c7c5
-      size: 683
+      sha256: 440a894147110c5ea17be7b28ee6fef29776401a977f7940dc115288c5f21935
+      size: 820
     subdir: themes/type_level/typelevel-tools
-    version: 0.1.0.0
+    version: 0.1.0.1
   original:
-    commit: 33ba848b565dde38a8689fa5b2bdf9d60bd9dbc1
+    commit: 63c9760554de0b2e7d719d1d137844e9cd1e5b53
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/type_level/typelevel-tools
 snapshots:
