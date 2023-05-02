@@ -78,19 +78,13 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs, WithPoked c, WithPoked d) =>
+create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs, WithPoked c) =>
 	Device.D ds -> CreateInfo n objs ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	Maybe (AllocationCallbacks.A sc c) ->
 	(forall s . B s nm objs -> IO a) -> IO a
-create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = do
---	putStrLn "Vk.Buffer.create:"
---	print . M.createInfoSize $ createInfoToMiddle ci
-	bracket
-		(M.create dvc (createInfoToMiddle ci) macc)
-		(\b -> M.destroy dvc b macd)
-		(f . B (createInfoLengths ci))
+create (Device.D dvc) ci ((AllocationCallbacks.toMiddle <$>) -> mac) f = bracket
+	(M.create dvc (createInfoToMiddle ci) mac) (\b -> M.destroy dvc b mac)
+	(f . B (createInfoLengths ci))
 
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.M.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b

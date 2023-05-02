@@ -252,7 +252,7 @@ storageBufferNew :: forall {sd} v {nm} obj {a} . (
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj])] ->
 		IO a) -> IO a
 storageBufferNew phdvc dvc xs f =
-	Vk.Bffr.create dvc (bufferInfo xs) nil nil \bff -> do
+	Vk.Bffr.create dvc (bufferInfo xs) nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
 		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
 			nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do
@@ -272,7 +272,7 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj0, obj1, obj2])] ->
 		IO a) -> IO a
 storageBufferNew3Objs phdvc dvc x y z f =
-	Vk.Bffr.create dvc (bufferInfo' x y z) nil nil \bff -> do
+	Vk.Bffr.create dvc (bufferInfo' x y z) nil \bff -> do
 		mi <- getMemoryInfo phdvc dvc bff
 		Vk.Dvc.Mem.ImgBffr.allocateBind dvc (HeteroParList.Singleton . U2 $ Vk.Dvc.Mem.ImgBffr.Buffer bff) mi
 			nil nil \(HeteroParList.Singleton (U2 (Vk.Dvc.Mem.ImgBffr.BufferBinded bnd))) m -> do

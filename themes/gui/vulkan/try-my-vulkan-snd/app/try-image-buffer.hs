@@ -454,7 +454,7 @@ storageBufferNew :: forall sd w a nm . Storable w =>
 		Vk.Buffer.Binded sb sm nm '[VObj.List 256 w ""]  ->
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buffer -> do
+	Vk.Buffer.create dvc (bufferInfo xs) nil \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
 		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
 			nil nil \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
@@ -476,11 +476,11 @@ storage3BufferNew :: forall sd w1 w2 w3 a . (
 			'(sb3, 'Vk.Mem.K.Buffer "buffer3" '[VObj.List 256 w3 ""]) ] -> IO a
 		) -> IO a
 storage3BufferNew dvc phdvc xs ys zs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil nil \buf1 -> do
+	Vk.Buffer.create dvc (bufferInfo xs) nil \buf1 -> do
 		memInfo1 <- getMemoryInfo phdvc dvc buf1
-		Vk.Buffer.create dvc (bufferInfo ys) nil nil \buf2 -> do
+		Vk.Buffer.create dvc (bufferInfo ys) nil \buf2 -> do
 			memInfo2 <- getMemoryInfo phdvc dvc buf2
-			Vk.Buffer.create dvc (bufferInfo zs) nil nil \buf3 -> do
+			Vk.Buffer.create dvc (bufferInfo zs) nil \buf3 -> do
 				memInfo3 <- getMemoryInfo phdvc dvc buf3
 				if (memInfo1 == memInfo2 && memInfo2 == memInfo3) then
 					Vk.Mem.allocateBind dvc (
@@ -514,7 +514,7 @@ storage1BufferNewNoBind :: forall sd nm w1 w2 w3 a . (
 		forall sb .
 		Vk.Buffer.B sb nm '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] -> IO a) -> IO a
 storage1BufferNewNoBind dvc xs ys zs f =
-	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil nil f
+	Vk.Buffer.create dvc (bufferInfo' xs ys zs) nil f
 
 bufferInfo' :: (
 	Storable w1, Storable w2, Storable w3 ) =>

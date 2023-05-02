@@ -1,8 +1,9 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE DataKinds #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Misc (nil, cstrToText, newDefaultIORef) where
+module Gpu.Vulkan.Misc (nil, nil', cstrToText, newDefaultIORef) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -12,8 +13,13 @@ import Data.Text qualified as Txt
 import Data.Text.Foreign qualified as Txt
 import Data.IORef
 
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+
 nil :: Maybe (t ())
 nil = Nothing
+
+nil' :: TPMaybe.M t 'Nothing
+nil' = TPMaybe.N
 
 cstrToText :: CString -> IO Txt.Text
 cstrToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs

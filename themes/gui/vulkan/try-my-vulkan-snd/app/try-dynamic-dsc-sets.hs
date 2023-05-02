@@ -201,7 +201,7 @@ storageBufferNew :: forall sd nm w a . Storable w =>
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[VObj.DynList 2 256 w ""])] ->
 		IO a) -> IO a
 storageBufferNew dvc phdvc xs f =
-	Vk.Buffer.create dvc (bufferInfo xs) nil nil \bf ->
+	Vk.Buffer.create dvc (bufferInfo xs) nil \bf ->
 	getMemoryInfo phdvc dvc bf >>= \mmi ->
 	Vk.Mm.allocateBind dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
