@@ -95,7 +95,10 @@ main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 	calc qfi dv dslyt dscs bffSize >>
 	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
-allocationCallbacks :: Vk.AllocCallbacks.Functions Int
+ptr :: Int -> Ptr ()
+ptr i = intPtrToPtr $ IntPtr i
+
+allocationCallbacks :: Vk.AllocCallbacks.Functions a
 allocationCallbacks = Vk.AllocCallbacks.Functions {
 	Vk.AllocCallbacks.functionUserData = intPtrToPtr $ IntPtr 0x01234567,
 	Vk.AllocCallbacks.functionFnAllocation = allocate,
@@ -103,19 +106,19 @@ allocationCallbacks = Vk.AllocCallbacks.Functions {
 	Vk.AllocCallbacks.functionFnFree = freeFunction,
 	Vk.AllocCallbacks.functionFnInternalAllocationFree = Nothing }
 
-allocate :: Vk.AllocCallbacks.FnAllocationFunction Int
+allocate :: Vk.AllocCallbacks.FnAllocationFunction a
 allocate pud sz algn ascp = do
 	putStr "ALLOCATE: "
 	print (pud, sz, algn, ascp)
 	callocBytes $ fromIntegral sz
 
-reallocate :: Vk.AllocCallbacks.FnReallocationFunction Int
+reallocate :: Vk.AllocCallbacks.FnReallocationFunction a
 reallocate pud po sz algn ascp = do
 	putStr "REALLOCATE: "
 	print (pud, po, sz, algn, ascp)
 	reallocBytes po $ fromIntegral sz
 
-freeFunction :: Vk.AllocCallbacks.FnFreeFunction Int
+freeFunction :: Vk.AllocCallbacks.FnFreeFunction a
 freeFunction pud p = do
 	putStr "FREE: "
 	print (pud, p)
@@ -136,7 +139,8 @@ withDevice f = Vk.Inst.create instInfo
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	putStrLn "before Vk.Device.create"
-	Vk.AllocCallbacks.create allocationCallbacks \ac ->
+	Vk.AllocCallbacks.createNew allocationCallbacks \fs -> let
+		ac = fs `Vk.AllocCallbacks.apply` ptr 321 in
 		Vk.Dv.create pd (dvcInfo qfi) (Just ac) (Just ac) $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing

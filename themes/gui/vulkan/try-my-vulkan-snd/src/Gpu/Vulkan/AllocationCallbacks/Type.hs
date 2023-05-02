@@ -6,6 +6,7 @@
 
 module Gpu.Vulkan.AllocationCallbacks.Type where
 
+import Foreign.Ptr
 import Data.Kind
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
@@ -25,3 +26,9 @@ instance ToMiddle' 'Nothing where
 instance ToMiddle' ('Just '(s, a)) where
 	type Snd ('Just '(s, a)) = 'Just a
 	toMiddle' (TPMaybe.J (U2 a)) = TPMaybe.J $ toMiddle a
+
+newtype FunctionsT s a = FunctionsT { toMiddleFunctions :: M.FunctionsNew a }
+	deriving Show
+
+apply :: FunctionsT s a -> Ptr a -> A s a
+FunctionsT f `apply` p = A $ f `M.apply` p
