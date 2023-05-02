@@ -4,14 +4,15 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Data.TypeLevel.Maybe (M, pattern N, pattern J) where
 
+import Foreign.Storable
 import Data.TypeLevel.ParMaybe qualified as P
 
-newtype Id a = Id a deriving (Show, Eq, Ord)
+newtype Id a = Id a deriving (Show, Eq, Ord, Storable)
 
 type M = P.M Id
 
