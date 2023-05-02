@@ -7,7 +7,7 @@
 {-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel.Maybe (M, pattern N, pattern J) where
+module Data.TypeLevel.Maybe (M, pattern N, pattern J, Id(..)) where
 
 import Foreign.Storable
 import Data.TypeLevel.ParMaybe qualified as P
