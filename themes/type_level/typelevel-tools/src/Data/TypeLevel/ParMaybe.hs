@@ -1,5 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
@@ -7,6 +7,7 @@
 
 module Data.TypeLevel.ParMaybe where
 
+import Prelude hiding (map)
 import Data.Kind
 
 data M (t :: k -> Type) (m :: Maybe k) where
@@ -22,6 +23,14 @@ deriving instance Eq (t a) => Eq (M t ('Just a))
 deriving instance Ord (M t 'Nothing)
 deriving instance Ord (t a) => Ord (M t ('Just a))
 
+type family Map (f :: k -> l) (m :: Maybe k) where
+	Map _f 'Nothing = 'Nothing
+	Map f ('Just x) = 'Just (f x)
+
 maybe :: a -> (forall s . t s -> a) -> M t ms -> a
 maybe d _ N = d
 maybe _ f (J x) = f x
+
+map :: (forall s . t s -> t' (f s)) -> M t ms -> M t' (Map f ms)
+map _ N = N
+map f (J x) = J $ f x
