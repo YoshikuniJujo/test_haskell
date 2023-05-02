@@ -78,7 +78,7 @@ createInfoToMiddle CreateInfo {
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs, WithPoked c) =>
+create :: (WithPoked (TMaybe.M n), VObj.WholeSize objs) =>
 	Device.D ds -> CreateInfo n objs ->
 	Maybe (AllocationCallbacks.A sc c) ->
 	(forall s . B s nm objs -> IO a) -> IO a
