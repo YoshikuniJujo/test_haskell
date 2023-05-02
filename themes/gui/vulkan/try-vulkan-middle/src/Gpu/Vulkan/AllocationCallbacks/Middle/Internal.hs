@@ -8,7 +8,10 @@ module Gpu.Vulkan.AllocationCallbacks.Middle.Internal (
 	FnAllocationFunction, FnReallocationFunction, C.FnFreeFunction,
 	FnInternalAllocationNotification, FnInternalFreeNotification,
 	Size, Alignment,
-	maybeToCoreNew, mToCore ) where
+	maybeToCoreNew, mToCore,
+
+	createNew, destroyNew, FunctionsNew, apply
+	) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
@@ -23,8 +26,28 @@ import Gpu.Vulkan.AllocationCallbacks.Core qualified as C
 
 newtype A a = A C.A deriving Show
 
+data FunctionsNew a = FunctionsNew {
+	aPfnAllocation :: C.PfnAllocationFunction,
+	aPfnReallocation :: C.PfnReallocationFunction,
+	aPfnFree :: C.PfnFreeFunction,
+	aPfnInternalAllocation :: C.PfnInternalAllocationNotification,
+	aPfnInternalFree :: C.PfnInternalFreeNotification }
+	deriving Show
+
+apply :: FunctionsNew a -> Ptr a -> A a
+apply a p = A C.A {
+	C.aPUserData = castPtr p,
+	C.aPfnAllocation = aPfnAllocation a,
+	C.aPfnReallocation = aPfnReallocation a,
+	C.aPfnFree = aPfnFree a,
+	C.aPfnInternalAllocation = aPfnInternalAllocation a,
+	C.aPfnInternalFree = aPfnInternalFree a }
+
 create :: Functions a -> IO (A a)
 create = (A <$>) . mkCallbacks
+
+createNew :: Functions a -> IO (FunctionsNew a)
+createNew = mkCallbacksNew
 
 destroy :: A a -> IO ()
 destroy (A a) = do
@@ -39,6 +62,20 @@ destroy (A a) = do
 	fr = C.aPfnFree a
 	iallc = C.aPfnInternalAllocation a
 	ifr = C.aPfnInternalFree a
+
+destroyNew :: FunctionsNew a -> IO ()
+destroyNew a = do
+	freeHaskellFunPtr allc
+	freeHaskellFunPtr rallc
+	freeHaskellFunPtr fr
+	when (iallc /= nullFunPtr) $ freeHaskellFunPtr iallc
+	when (ifr /= nullFunPtr) $ freeHaskellFunPtr ifr
+	where
+	allc = aPfnAllocation a
+	rallc = aPfnReallocation a
+	fr = aPfnFree a
+	iallc = aPfnInternalAllocation a
+	ifr = aPfnInternalFree a
 
 data Functions a = Functions {
 	functionUserData :: Ptr a,
@@ -116,6 +153,31 @@ mkCallbacks ac = do
 		C.aPfnInternalFree = pifr }
 	where
 	pud = functionUserData ac
+	al = functionFnAllocation ac
+	ral = functionFnReallocation ac
+	fr = functionFnFree ac
+
+mkCallbacksNew :: Functions a -> IO (FunctionsNew a)
+mkCallbacksNew ac = do
+	pal <- C.wrapAllocationFunction $ fnAllocationFunctionToCore al
+	pral <- C.wrapReallocationFunction $ fnReallocationFunctionToCore ral
+	pfr <- C.wrapFreeFunction fr
+	(pial, pifr) <- do
+		case functionFnInternalAllocationFree ac of
+			Nothing -> pure (nullFunPtr, nullFunPtr)
+			Just (ial, ifr) -> do
+				wal <- C.wrapInternalAllocationNotification
+					$ fnInternalAllocationNotificationToCore ial
+				wfr <- C.wrapInternalFreeNotification
+					$ fnInternalFreeNotificationToCore ifr
+				pure (wal, wfr)
+	pure FunctionsNew {
+		aPfnAllocation = pal,
+		aPfnReallocation = pral,
+		aPfnFree = pfr,
+		aPfnInternalAllocation = pial,
+		aPfnInternalFree = pifr }
+	where
 	al = functionFnAllocation ac
 	ral = functionFnReallocation ac
 	fr = functionFnFree ac
