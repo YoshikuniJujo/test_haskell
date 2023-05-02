@@ -27,6 +27,7 @@ module Foreign.Storable.PeekPoke.Internal (
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
+import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
 class Sizable a where sizeOf' :: Int; alignment' :: Int
@@ -98,3 +99,6 @@ instance WithPoked (TPMaybe.M t 'Nothing) where
 
 instance WithPoked (t a) => WithPoked (TPMaybe.M t ('Just a)) where
 	withPoked' (TPMaybe.J x) f = withPoked' x (f . castPtrS)
+
+instance {-# OVERLAPPABLE #-} WithPoked a => WithPoked (TMaybe.Id a) where
+	withPoked' (TMaybe.Id x) f = withPoked' x (f . castPtrS)

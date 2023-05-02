@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 63c9760554de0b2e7d719d1d137844e9cd1e5b53
+  commit: 6bf76fc2f9161d03033e54c2d573ee44b5d42756
   subdirs:
   - themes/type_level/typelevel-tools
 
