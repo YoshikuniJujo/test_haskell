@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -20,3 +21,7 @@ deriving instance Eq (t a) => Eq (M t ('Just a))
 
 deriving instance Ord (M t 'Nothing)
 deriving instance Ord (t a) => Ord (M t ('Just a))
+
+maybe :: a -> (forall s . t s -> a) -> M t ms -> a
+maybe d _ N = d
+maybe _ f (J x) = f x
