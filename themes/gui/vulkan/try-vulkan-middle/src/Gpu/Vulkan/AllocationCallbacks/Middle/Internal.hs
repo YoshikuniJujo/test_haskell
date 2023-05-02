@@ -8,13 +8,14 @@ module Gpu.Vulkan.AllocationCallbacks.Middle.Internal (
 	FnAllocationFunction, FnReallocationFunction, C.FnFreeFunction,
 	FnInternalAllocationNotification, FnInternalFreeNotification,
 	Size, Alignment,
-	maybeToCoreNew ) where
+	maybeToCoreNew, mToCore ) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Monad
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Word
 
 import Gpu.Vulkan.Enum
@@ -85,6 +86,9 @@ fnInternalFreeNotificationToCore f pud sz iatp ascp =
 
 maybeToCoreNew :: Maybe (A a) -> (Ptr C.A -> IO b) -> IO ()
 maybeToCoreNew = \case Nothing -> (() <$) . ($ NullPtr); Just ac -> toCoreNew ac
+
+mToCore :: TPMaybe.M A ma -> (Ptr C.A -> IO b) -> IO ()
+mToCore = TPMaybe.maybe ((() <$) . ($ NullPtr)) toCoreNew
 
 toCoreNew :: A a -> (Ptr C.A -> IO b) -> IO ()
 toCoreNew (A ac) f = () <$ alloca \p -> poke p ac >> f p
