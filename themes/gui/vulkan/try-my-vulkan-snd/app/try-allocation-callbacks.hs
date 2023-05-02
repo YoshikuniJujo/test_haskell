@@ -139,7 +139,7 @@ withDevice f = Vk.Inst.create instInfo
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
 	putStrLn "before Vk.Device.create"
-	Vk.AllocCallbacks.createNew allocationCallbacks \fs -> let
+	Vk.AllocCallbacks.create allocationCallbacks \fs -> let
 		ac = fs `Vk.AllocCallbacks.apply` ptr 321 in
 		Vk.Dv.create pd (dvcInfo qfi) (Just ac) (Just ac) $ f pd qfi
 
@@ -210,7 +210,7 @@ storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
 	Vk.Bffr.Binded sb sm nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
-	Vk.AllocCallbacks.createNew allocationCallbacks \fs -> let
+	Vk.AllocCallbacks.create allocationCallbacks \fs -> let
 	ac = fs `Vk.AllocCallbacks.apply` ptr 0x123 in
 	Vk.Bffr.create dv bufferInfo (TPMaybe.J $ U2 ac) \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->

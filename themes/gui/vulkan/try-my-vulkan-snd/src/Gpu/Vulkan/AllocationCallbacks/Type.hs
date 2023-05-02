@@ -27,7 +27,7 @@ instance ToMiddle' ('Just '(s, a)) where
 	type Snd ('Just '(s, a)) = 'Just a
 	toMiddle' (TPMaybe.J (U2 a)) = TPMaybe.J $ toMiddle a
 
-newtype Functions s a = Functions { toMiddleFunctions :: M.FunctionsNew a }
+newtype Functions s a = Functions { toMiddleFunctions :: M.Functions a }
 	deriving Show
 
 apply :: Functions s a -> Ptr a -> A s a
