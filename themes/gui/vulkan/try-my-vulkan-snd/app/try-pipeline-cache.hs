@@ -276,7 +276,7 @@ calc qfi dv pcch dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv (Just pcch)
 		(HL.Singleton . U4 $ pplInfo plyt) nil nil \(pl :** HL.Nil) ->
-	Vk.CmdPool.create dv (commandPoolInfo qfi) nil \cp ->
+	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
 	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) ->
 	run qfi dv ds cb plyt pl sz
 

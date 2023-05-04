@@ -174,7 +174,7 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 			Vk.CommandPool.createInfoFlags = zeroBits,
 			Vk.CommandPool.createInfoQueueFamilyIndex =
 				graphicsQueueFamilyIndex }
-	Vk.CommandPool.create device cmdPoolCreateInfo nil
+	Vk.CommandPool.create device cmdPoolCreateInfo nil'
 			\(cmdPool :: Vk.CommandPool.C s) -> f graphicsQueue cmdPool
 
 makeCommandBuffer :: forall sd scp vs a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->

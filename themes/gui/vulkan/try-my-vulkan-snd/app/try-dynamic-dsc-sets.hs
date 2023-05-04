@@ -280,7 +280,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Cmpt.createCs dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil nil \(ppl :*. HeteroParList.Nil) ->
-	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil \cmdPool ->
+	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
 	Vk.CmdBuf.allocateOld dvc (commandBufferInfo cmdPool) \case
 		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dscSet dsz
 		_ -> error "never occur"
