@@ -187,7 +187,7 @@ prepareMems :: (
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
-	Vk.DscPool.create dv dscPoolInfo nil nil \dp ->
+	Vk.DscPool.create dv dscPoolInfo nil \dp ->
 	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
 	Vk.DS.updateDs @_ @'Nothing dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>

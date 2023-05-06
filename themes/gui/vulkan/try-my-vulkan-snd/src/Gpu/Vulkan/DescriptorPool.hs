@@ -25,11 +25,9 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Middle as M
 import qualified Gpu.Vulkan.DescriptorPool.Enum as M
 
-create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
-	Device.D sd -> M.CreateInfo mn ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
+create :: (WithPoked (TMaybe.M mn)) =>
+	Device.D sd -> M.CreateInfo mn -> Maybe (AllocationCallbacks.A sc c) ->
 	(forall s . P s -> IO a) -> IO a
 create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
-	bracket (M.create dvc ci macc) (\p -> M.destroy dvc p macd) (f . P)
+	((AllocationCallbacks.toMiddle <$>) -> macc) f =
+	bracket (M.create dvc ci macc) (\p -> M.destroy dvc p macc) (f . P)

@@ -1187,7 +1187,7 @@ createObjDataBuffer pd dv = createBuffer pd dv
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPl.P sp -> IO a) -> IO a
-createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil nil
+createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil
 	where poolInfo = Vk.DscPl.CreateInfo {
 		Vk.DscPl.createInfoNext = TMaybe.N,
 		Vk.DscPl.createInfoFlags = zeroBits,
