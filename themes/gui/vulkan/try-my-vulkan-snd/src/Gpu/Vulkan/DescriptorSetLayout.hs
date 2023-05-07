@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSetLayout (
-	L'', create'', L, create, CreateInfo(..), Binding(..),
+	L, create, CreateInfo(..), Binding(..),
 
 	CreateFlags,
 	pattern CreateUpdateAfterBindPoolBit,
@@ -43,21 +43,15 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
-create'' :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
-	Device.D sd -> M.CreateInfo mn ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
-	(forall s . L'' s -> IO a) -> IO a
-create'' (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L'')
-
 create :: (WithPoked (TMaybe.M mn), BindingsToMiddle bts, WithPoked c, WithPoked d) =>
 	Device.D sd -> CreateInfo mn bts ->
 	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
 	(forall s . L s bts -> IO a) -> IO a
-create dvc ci macc macd f =
-	create'' dvc (createInfoToMiddle ci) macc macd \(L'' l) -> f $ L l
+create (Device.D dvc) ci
+	((AllocationCallbacks.toMiddle <$>) -> macc)
+	((AllocationCallbacks.toMiddle <$>) -> macd) f =
+	bracket (M.create dvc (createInfoToMiddle ci) macc)
+		(\l -> M.destroy dvc l macd) (f . L)
 
 data Binding (bt :: BindingType) where
 	BindingBuffer :: {

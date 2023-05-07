@@ -14,8 +14,6 @@ import Gpu.Vulkan.Object qualified as VObj
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 
-newtype L'' s = L'' { unL'' :: M.L } deriving Show
-
 newtype L s (bts :: [BindingType]) = L { unL :: M.L } deriving Show
 
 data BindingType
