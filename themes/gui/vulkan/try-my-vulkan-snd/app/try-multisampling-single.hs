@@ -1474,7 +1474,7 @@ createUniformBuffer phdvc dvc = createBufferAtom phdvc dvc
 
 createDescriptorPool ::
 	Vk.Dvc.D sd -> (forall sp . Vk.DscPool.P sp -> IO a) -> IO a
-createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil
+createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 	where
 	poolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,

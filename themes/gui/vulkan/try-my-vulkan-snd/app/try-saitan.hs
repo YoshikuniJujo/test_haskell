@@ -281,7 +281,7 @@ prepareMems ::
 		Vk.Mem.M sm2 '[ '( sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
 		Vk.Mem.M sm3 '[ '( sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
+	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
 	storageBufferNew3' dvc phdvc da db dc \ba ma bb mb bc mc ->
@@ -305,7 +305,7 @@ prepareMems' ::
 			'(sb3, 'Vk.Mem.K.Buffer "buffer3" '[VObj.List 256 w3 ""])
 			] -> IO a) -> IO a
 prepareMems' phdvc dvc dscSetLyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
+	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
 	storage3BufferNew dvc phdvc da db dc \ba bb bc m ->
@@ -334,7 +334,7 @@ prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
 		Vk.DscSet.S sd s '(sl, bts) ->
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""])] -> IO a) -> IO a
 prepareMems'' phdvc dvc dscSetLyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil \dscPool ->
+	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
 	storage1BufferNew dvc phdvc da db dc \b m ->

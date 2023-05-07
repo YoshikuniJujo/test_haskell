@@ -16,6 +16,8 @@ module Gpu.Vulkan.DescriptorPool (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 
 import Gpu.Vulkan.DescriptorPool.Type
 
@@ -25,9 +27,9 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.DescriptorPool.Middle as M
 import qualified Gpu.Vulkan.DescriptorPool.Enum as M
 
-create :: (WithPoked (TMaybe.M mn)) =>
-	Device.D sd -> M.CreateInfo mn -> Maybe (AllocationCallbacks.A sc c) ->
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+	Device.D sd -> M.CreateInfo mn -> TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . P s -> IO a) -> IO a
 create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc) f =
+	(AllocationCallbacks.toMiddle' -> macc) f =
 	bracket (M.create dvc ci macc) (\p -> M.destroy dvc p macc) (f . P)

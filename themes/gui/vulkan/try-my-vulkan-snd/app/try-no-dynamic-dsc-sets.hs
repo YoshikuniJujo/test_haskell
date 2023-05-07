@@ -161,7 +161,7 @@ prepDscSets ::
 		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
 		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO a) -> IO a
 prepDscSets arg phdvc dvc dslyt da db dc f =
-	Vk.DscPool.create dvc dscPoolInfo nil \dp ->
+	Vk.DscPool.create dvc dscPoolInfo nil' \dp ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dp dslyt) >>= \(HeteroParList.Singleton ds) ->
 	storageBufferNew3 phdvc dvc da db dc \(ba, ma) (bb, mb) (bc, mc) ->
 	storageBufferNew3Objs @Word32
