@@ -17,6 +17,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke (WithPoked, withPoked', withPtrS)
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
@@ -67,13 +68,13 @@ createInfoToCore CreateInfo {
 newtype D = D C.P deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO D
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO D
 create (Device.D dvc) ci mac = D <$> alloca \pp -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac ->
+		AllocationCallbacks.mToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create dvc pci pac pp
 	peek pp
 
-destroy :: Device.D -> D -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> D -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (D p) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc p
+	AllocationCallbacks.mToCore mac $ C.destroy dvc p
