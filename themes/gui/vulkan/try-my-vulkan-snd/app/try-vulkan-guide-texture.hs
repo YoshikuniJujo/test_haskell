@@ -1410,7 +1410,7 @@ createSyncObjects dv f =
 	HL.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @'Nothing dv def nil nil) \rfss ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Fnc.create @'Nothing dv inf nil nil) \iffs ->
+		(Vk.Fnc.create @'Nothing dv inf nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where inf = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
@@ -1904,7 +1904,7 @@ vulkanEngineInitSyncStructures dv f = do
 		uploadFenceCreateInfo = Vk.Fnc.CreateInfo {
 			Vk.Fnc.createInfoNext = TMaybe.N,
 			Vk.Fnc.createInfoFlags = zeroBits }
-	Vk.Fnc.create dv uploadFenceCreateInfo nil nil f
+	Vk.Fnc.create dv uploadFenceCreateInfo nil f
 
 commandBufferBeginInfo :: Vk.CBffr.UsageFlags -> Vk.CBffr.BeginInfo 'Nothing 'Nothing
 commandBufferBeginInfo flags = Vk.CBffr.BeginInfo {
@@ -1921,7 +1921,7 @@ uploadContextSubmitInfo cmd = Vk.SubmitInfo {
 
 uploadContextCreateFence ::
 	Vk.Dvc.D sd -> (forall sf . Vk.Fnc.F sf -> IO a) -> IO a
-uploadContextCreateFence dv = Vk.Fnc.create @'Nothing @() @() dv def Nothing Nothing
+uploadContextCreateFence dv = Vk.Fnc.create @'Nothing dv def Nothing
 
 uploadContextCommandPoolCreateInfo :: QueueFamilyIndices -> Vk.CmdPl.CreateInfo 'Nothing
 uploadContextCommandPoolCreateInfo qfis = Vk.CmdPl.CreateInfo {
