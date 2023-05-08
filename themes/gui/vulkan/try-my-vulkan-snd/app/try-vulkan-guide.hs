@@ -373,7 +373,7 @@ querySwapchainSupport dvc sfc = SwapchainSupportDetails
 createDevice :: Vk.PhDvc.P -> QueueFamilyIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> IO a) -> IO a
 createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qs ->
-	Vk.Dvc.create ph (crInfo qs) nil nil \dv -> do
+	Vk.Dvc.create ph (crInfo qs) nil' \dv -> do
 		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
 		f dv gq pq

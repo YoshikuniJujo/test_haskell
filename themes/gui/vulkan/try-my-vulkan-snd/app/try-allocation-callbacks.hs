@@ -141,7 +141,7 @@ withDevice f = Vk.Inst.create instInfo
 	putStrLn "before Vk.Device.create"
 	Vk.AllocCallbacks.create allocationCallbacks \fs -> let
 		ac = fs `Vk.AllocCallbacks.apply` ptr 321 in
-		Vk.Dv.create pd (dvcInfo qfi) (Just ac) (Just ac) $ f pd qfi
+		Vk.Dv.create pd (dvcInfo qfi) (TPMaybe.J $ U2 ac) $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {

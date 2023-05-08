@@ -15,6 +15,8 @@ import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 import Data.Word
 
 import Gpu.Vulkan.Device.Type
@@ -26,14 +28,15 @@ import qualified Gpu.Vulkan.Device.Middle as M
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
-create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M mns, Pokable n3, Pokable n4) =>
+create :: (
+	WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M mns,
+	AllocationCallbacks.ToMiddle' msn3n3 ) =>
 	PhysicalDevice.P -> M.CreateInfo mn mns ->
-	Maybe (AllocationCallbacks.A sn3 n3) -> Maybe (AllocationCallbacks.A sn4 n4) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) msn3n3 ->
 	(forall s . D s -> IO a) -> IO a
 create phdvc ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
-	bracket (M.create phdvc ci macc) (`M.destroy` macd) (f . D)
+	(AllocationCallbacks.toMiddle' -> macc) f =
+	bracket (M.create phdvc ci macc) (`M.destroy` macc) (f . D)
 
 getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue.Q
 getQueue (D dvc) (QueueFamily.Index qfi) qi = M.getQueue dvc qfi qi

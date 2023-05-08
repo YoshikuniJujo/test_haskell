@@ -387,7 +387,7 @@ createLogicalDevice phdvc qfis f =
 				deviceExtensions,
 			Vk.Dvc.M.createInfoEnabledFeatures = Just def {
 				Vk.PhDvc.featuresSamplerAnisotropy = True } } in
-	Vk.Dvc.create phdvc createInfo nil nil \dvc -> do
+	Vk.Dvc.create phdvc createInfo nil' \dvc -> do
 		gq <- Vk.Dvc.getQueue dvc (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dvc (presentFamily qfis) 0
 		f dvc gq pq

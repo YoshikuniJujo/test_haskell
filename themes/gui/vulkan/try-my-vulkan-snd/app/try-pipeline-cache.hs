@@ -145,7 +145,7 @@ withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
 			checkBits Vk.Queue.ComputeBit .
 			Vk.QFm.propertiesQueueFlags . snd )
 		<$> Vk.Phd.getQueueFamilyProperties pd
-	Vk.Dv.create pd (dvcInfo qfi) nil nil $ f pd qfi
+	Vk.Dv.create pd (dvcInfo qfi) nil' $ f pd qfi
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing
 instInfo = def {

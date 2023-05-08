@@ -106,7 +106,7 @@ crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 	qf <- findQueueFamily phdvc Vk.Queue.ComputeBit
 	lmts <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	mxX :. _ = Vk.PhDvc.limitsMaxComputeWorkGroupCount lmts
-	Vk.Dvc.create phdvc (dvcInfo qf) nil nil $ \dvc ->
+	Vk.Dvc.create phdvc (dvcInfo qf) nil' $ \dvc ->
 		f phdvc qf dvc mxX
 	where
 	instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing

@@ -128,7 +128,7 @@ main = do
 					[Vk.Khr.validationLayerName],
 				Vk.Device.createInfoEnabledExtensionNames = [],
 				Vk.Device.createInfoEnabledFeatures = Nothing }
-		Vk.Device.create physicalDevice devCreateInfo nil nil \dvc ->
+		Vk.Device.create physicalDevice devCreateInfo nil' \dvc ->
 			runDevice physicalDevice dvc graphicsQueueFamilyIndex
 
 runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO ()

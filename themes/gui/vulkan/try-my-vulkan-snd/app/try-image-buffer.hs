@@ -228,7 +228,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 			Vk.PhDvc.limitsMaxComputeWorkGroupCount limits
 	putStrLn $ "maxGroupCountX: " ++ show maxGroupCountX
 	qfam <- findQueueFamily phdvc Vk.Queue.ComputeBit
-	Vk.Dvc.create @'Nothing @'[ 'Nothing] phdvc (dvcInfo qfam) nil nil $ \dvc -> f phdvc qfam dvc maxGroupCountX
+	Vk.Dvc.create @'Nothing @'[ 'Nothing] phdvc (dvcInfo qfam) nil' $ \dvc -> f phdvc qfam dvc maxGroupCountX
 	where
 	dvcInfo qfam = Vk.Dvc.CreateInfo {
 		Vk.Dvc.createInfoNext = TMaybe.N,

@@ -112,7 +112,7 @@ withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
 		<$> Vk.PhDvc.getQueueFamilyProperties phdvc
 	mgcx :. _ <- Vk.PhDvc.limitsMaxComputeWorkGroupCount
 		. Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
-	Vk.Dvc.create phdvc (dvcInfo qFam) nil nil $ \dvc ->
+	Vk.Dvc.create phdvc (dvcInfo qFam) nil' $ \dvc ->
 		f phdvc qFam dvc (fromIntegral mgcx)
 
 instInfo :: Vk.Inst.CreateInfo 'Nothing 'Nothing

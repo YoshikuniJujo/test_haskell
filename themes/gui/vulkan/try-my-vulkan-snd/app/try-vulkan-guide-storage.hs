@@ -339,7 +339,7 @@ completeQueueFamilies = \case
 createDevice :: Vk.Phd.P -> QueueFamilyIndices ->
 	(forall sd . Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q -> IO a) -> IO a
 createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qcris ->
-	Vk.Dvc.create ph (crInfo qcris) nil nil \dv -> do
+	Vk.Dvc.create ph (crInfo qcris) nil' \dv -> do
 		gq <- Vk.Dvc.getQueue dv (graphicsFamily qfis) 0
 		pq <- Vk.Dvc.getQueue dv (presentFamily qfis) 0
 		f dv gq pq
