@@ -12,6 +12,8 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 
 import Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
 
@@ -24,11 +26,10 @@ import qualified Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle as M
 
 create :: (
 	WithPoked (TMaybe.M mn), MI.FindPNextChainAll n2, Storable n3, Storable n4, Storable n5,
-	Storable ud, Pokable ud, Peek ud, Pokable c, Pokable d ) =>
+	Storable ud, Pokable ud, Peek ud, AllocationCallbacks.ToMiddle' mscc ) =>
 	Instance.I si -> M.CreateInfo mn n2 n3 n4 n5 ud ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . M s -> IO a) -> IO a
 create (Instance.I ist) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
-	(M.create ist ci macc) (\m -> M.destroy ist m macd) (f . M)
+	(AllocationCallbacks.toMiddle' -> macc) f = bracket
+	(M.create ist ci macc) (\m -> M.destroy ist m macc) (f . M)

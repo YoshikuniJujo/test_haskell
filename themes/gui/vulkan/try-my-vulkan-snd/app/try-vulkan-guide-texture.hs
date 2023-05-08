@@ -179,7 +179,7 @@ main = do
 	let	vns = vertices s
 --	print vns
 	withWindow \w frszd -> createInstance \ist -> if enableValidationLayers
-		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil nil
+		then Vk.Ext.DbgUtls.Msngr.create ist debugMessengerInfo nil'
 			$ const $ run w ist frszd vns
 		else run w ist frszd vns
 	where

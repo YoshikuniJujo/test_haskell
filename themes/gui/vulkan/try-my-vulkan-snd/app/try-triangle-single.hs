@@ -220,7 +220,7 @@ setupDebugMessenger ::
 	Vk.Ist.I si ->
 	(forall sm . Vk.Ext.DbgUtls.Msngr.M sm -> IO a) -> IO a
 setupDebugMessenger ist f = Vk.Ext.DbgUtls.Msngr.create ist
-	debugMessengerCreateInfo nil nil \m -> f m
+	debugMessengerCreateInfo nil' \m -> f m
 
 debugMessengerCreateInfo :: Vk.Ext.DbgUtls.Msngr.CreateInfo 'Nothing '[] () () () ()
 debugMessengerCreateInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
