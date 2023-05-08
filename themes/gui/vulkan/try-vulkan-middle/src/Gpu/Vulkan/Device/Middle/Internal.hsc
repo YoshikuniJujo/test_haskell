@@ -27,6 +27,7 @@ import Foreign.C.Enum
 import Control.Arrow
 import Control.Monad.Cont
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Bits
 import Data.List (genericLength)
@@ -111,17 +112,17 @@ createInfoToCore CreateInfo {
 		() <$ f pci
 
 create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M qcis) =>
-	PhysicalDevice.P -> CreateInfo mn qcis -> Maybe (AllocationCallbacks.A c) ->
+	PhysicalDevice.P -> CreateInfo mn qcis -> TPMaybe.M AllocationCallbacks.A mc ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
 	createInfoToCore ci \pcci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create phdvc pcci pac pdvc
 			throwUnlessSuccess $ Result r
 	peek pdvc
 
-destroy :: D -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (D cdvc) mac = AllocationCallbacks.maybeToCoreNew mac $ C.destroy cdvc
+destroy :: D -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (D cdvc) mac = AllocationCallbacks.mToCore mac $ C.destroy cdvc
 
 getQueue :: D -> Word32 -> Word32 -> IO Queue.Q
 getQueue (D cdvc) qfi qi = Queue.Q <$> alloca \pQueue -> do
