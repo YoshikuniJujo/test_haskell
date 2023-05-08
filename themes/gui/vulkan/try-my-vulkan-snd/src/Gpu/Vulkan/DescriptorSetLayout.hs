@@ -25,7 +25,9 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Length
+import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
@@ -43,15 +45,16 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as M
 import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
-create :: (WithPoked (TMaybe.M mn), BindingsToMiddle bts, WithPoked c, WithPoked d) =>
+create :: (
+	WithPoked (TMaybe.M mn), BindingsToMiddle bts,
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> CreateInfo mn bts ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . L s bts -> IO a) -> IO a
 create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
+	(AllocationCallbacks.toMiddle' -> macc) f =
 	bracket (M.create dvc (createInfoToMiddle ci) macc)
-		(\l -> M.destroy dvc l macd) (f . L)
+		(\l -> M.destroy dvc l macc) (f . L)
 
 data Binding (bt :: BindingType) where
 	BindingBuffer :: {

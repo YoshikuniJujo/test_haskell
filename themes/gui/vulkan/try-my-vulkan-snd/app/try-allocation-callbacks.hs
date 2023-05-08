@@ -88,7 +88,7 @@ bffSize = 30
 
 main :: IO ()
 main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
-	Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
+	Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
 --		(Just allocationCallbacks)
 --		(Just allocationCallbacks) \dslyt ->
 	prepareMems pd dv dslyt \dscs m ->

@@ -83,7 +83,7 @@ main = do
 			(r1, r2, r3) <- crtDevice \phdvc qFam dvc mxX ->
 				let (da, db, dc) = mkData mxX in
 					Vk.DscSetLyt.create dvc dscSetLayoutInfo
-						nil nil \dslyt ->
+						nil' \dslyt ->
 					prepDscSets arg phdvc dvc dslyt da db dc
 						$ calc dvc qFam dslyt mxX
 			print . take 20 $ unW1 <$> r1

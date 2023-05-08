@@ -634,7 +634,7 @@ createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @'Nothing
 
 createDescriptorSetLayout :: Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DscSetLyt.L s Buffers -> IO a) -> IO a
-createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil nil where
+createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing Buffers
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
@@ -662,7 +662,7 @@ type SceneObj = Obj.DynAtom 2 256 SceneData 'Nothing
 
 createDescriptorSetLayoutObjData :: Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DscSetLyt.L s '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]] -> IO a) -> IO a
-createDescriptorSetLayoutObjData dv = Vk.DscSetLyt.create dv layoutInfo nil nil where
+createDescriptorSetLayoutObjData dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]]
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
@@ -682,7 +682,7 @@ createSingleTextureSetLayout :: Vk.Dvc.D sd ->
 			'Vk.DscSetLyt.Image '[
 				'("texture", 'Vk.T.FormatR8g8b8a8Srgb) ] ] ->
 		IO a) -> IO a
-createSingleTextureSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil nil where
+createSingleTextureSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,
 		Vk.DscSetLyt.createInfoFlags = zeroBits,

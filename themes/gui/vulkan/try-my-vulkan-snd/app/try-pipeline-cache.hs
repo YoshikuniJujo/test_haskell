@@ -95,7 +95,7 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 	threadDelay 1000000
 	print =<< Vk.PplCch.getData dv pc
 	putStrLn . map (chr . fromIntegral) =<<
-		Vk.DSLyt.create dv dscSetLayoutInfo nil nil \dslyt ->
+		Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
 		prepareMems pd dv dslyt \dscs m ->
 		calc qfi dv pc dslyt dscs bffSize >>
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits

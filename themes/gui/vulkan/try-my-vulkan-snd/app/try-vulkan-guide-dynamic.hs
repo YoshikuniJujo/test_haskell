@@ -591,7 +591,7 @@ createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @'Nothing
 
 createDescriptorSetLayout :: Vk.Dvc.D sd ->
 	(forall (s :: Type) . Vk.DscSetLyt.L s Buffers -> IO a) -> IO a
-createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil nil where
+createDescriptorSetLayout dv = Vk.DscSetLyt.create dv layoutInfo nil' where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing Buffers
 	layoutInfo = Vk.DscSetLyt.CreateInfo {
 		Vk.DscSetLyt.createInfoNext = TMaybe.N,

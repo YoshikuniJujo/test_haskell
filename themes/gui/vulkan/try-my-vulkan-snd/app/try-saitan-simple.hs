@@ -87,7 +87,7 @@ main = withDevice \phdvc qFam dvc mgcx -> do
 		db = V.fromList $ W2 <$> [100, 200 .. 100 * mgcx]
 		dc = V.replicate mgcx $ W3 0
 	(r1, r2, r3) <-
-		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil nil \dscSetLyt ->
+		Vk.DscSetLyt.create dvc dscSetLayoutInfo nil' \dscSetLyt ->
 		prepareMems phdvc dvc dscSetLyt da db dc \dscSet ma mb mc ->
 		calc dvc qFam dscSetLyt dscSet mgcx >>
 		(,,)	<$> Vk.Mm.read @"" @(VObj.List 256 W1 "") @[W1] dvc ma def

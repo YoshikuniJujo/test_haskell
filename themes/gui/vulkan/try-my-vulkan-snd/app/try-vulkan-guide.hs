@@ -1249,7 +1249,7 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 			'[VObj.Atom 256 GpuSceneData0 'Nothing]
 		] -> IO a) ->
 	IO a
-createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
+createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],

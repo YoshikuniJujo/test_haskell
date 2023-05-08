@@ -136,7 +136,7 @@ calc :: forall w1 w2 w3 . (
 	BufMem -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
 calc opt da db dc = withDevice \phdvc qFam dvc maxGroupCountX ->
-	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
+	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil' \dscSetLyt ->
 
 	let	n = fromIntegral maxGroupCountX
 		da' = V.take n da; db' = V.take n db; dc' = V.take n dc in

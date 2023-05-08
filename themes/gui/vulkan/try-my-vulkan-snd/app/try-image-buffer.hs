@@ -121,7 +121,7 @@ calc :: forall w1 w2 w3 . (
 	BufMem -> FilePath -> Vk.Image.Tiling -> V.Vector w1 -> V.Vector w2 -> V.Vector w3 ->
 	IO ([w1], [w2], [w3])
 calc opt ifp tlng da_ db_ dc_ = withDevice \phdvc qfam dvc maxX ->
-	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dslyt ->
+	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil' \dslyt ->
 	let	n = fromIntegral maxX
 		da = V.take n da_; db = V.take n db_; dc = V.take n dc_ in
 	case opt of

@@ -101,7 +101,7 @@ datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 calc :: forall w1 w2 w3 . (Storable w1, Storable w2, Storable w3) =>
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> IO ([w1], [w2], [w3])
 calc da db dc = withDevice \phdvc qFam dvc mxx ->
-	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil nil \dscSetLyt ->
+	Vk.DscSetLyt.create dvc (dscSetLayoutInfo @w1 @w2 @w3) nil' \dscSetLyt ->
 	let	n = fromIntegral mxx
 		da' = V.take n da; db' = V.take n db; dc' = V.take n dc
 		dd = V.fromList . take (fromIntegral mxx) $ cycle [

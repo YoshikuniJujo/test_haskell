@@ -637,7 +637,7 @@ createDescriptorSetLayout :: Vk.Dvc.D sd -> (forall (s :: Type) .
 		'Vk.DscSetLyt.Image
 			'[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] -> IO a) ->
 	IO a
-createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil nil
+createDescriptorSetLayout dvc = Vk.DscSetLyt.create dvc layoutInfo nil'
 	where
 	layoutInfo :: Vk.DscSetLyt.CreateInfo 'Nothing '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
