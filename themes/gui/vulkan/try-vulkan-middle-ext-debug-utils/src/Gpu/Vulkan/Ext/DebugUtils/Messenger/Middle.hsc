@@ -28,6 +28,7 @@ import Foreign.Storable.PeekPoke (
 	WithPoked(..), withPoked', ptrS, withPtrS, Storable' )
 import Foreign.C.Enum
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HeteroParList
 import Data.Default
 import Data.Bits
@@ -159,14 +160,14 @@ newtype M = M C.M deriving Show
 
 create :: (WithPoked (TMaybe.M mn), FindPNextChainAll cb, Storable' ud) =>
 	Instance.I -> CreateInfo mn cb ql cbl obj ud ->
-	Maybe (AllocationCallbacks.A c) -> IO M
+	TPMaybe.M AllocationCallbacks.A mc -> IO M
 create (Instance.I ist) ci mac = M <$> alloca \pmsngr -> do
 	createInfoToCore' ci \cci ->
 		withPoked cci \pcci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac ->
+		AllocationCallbacks.mToCore mac \pac ->
 		throwUnlessSuccess . Result =<< C.create ist pcci pac pmsngr
 	peek pmsngr
 
-destroy :: Instance.I -> M -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Instance.I -> M -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Instance.I ist) (M msgr) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy ist msgr
+	AllocationCallbacks.mToCore mac $ C.destroy ist msgr
