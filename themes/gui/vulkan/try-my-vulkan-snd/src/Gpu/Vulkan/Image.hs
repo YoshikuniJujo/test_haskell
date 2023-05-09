@@ -11,12 +11,10 @@
 
 module Gpu.Vulkan.Image (
 	INew, BindedNew, createNew, recreateNew, CreateInfoNew(..),
+
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
-
-	I, Binded, create, M.CreateInfo(..), getMemoryRequirements,
 	M.SubresourceRange(..), MemoryBarrier(..),
-
-	memoryBarrierToMiddle, MemoryBarrierListToMiddle(..), FirstOfFives
+	MemoryBarrierListToMiddle(..), FirstOfFives
 	) where
 
 import GHC.TypeLits
@@ -60,15 +58,6 @@ recreateNew :: (
 	BindedNew si sm nm fmt -> IO ()
 recreateNew dvc ci macc macd i = recreateNewM dvc ci macc macd i
 
-create :: (Pokable (TMaybe.M mn), Pokable n2, Pokable n3) =>
-	Device.D sd -> M.CreateInfo mn ->
-	Maybe (AllocationCallbacks.A sn2 n2) -> Maybe (AllocationCallbacks.A sn3 n3) ->
-	(forall s . I s -> IO a) -> IO a
-create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
-	bracket (M.create dvc ci macc) (\i -> M.destroy dvc i macd) (f . I)
-
 getMemoryRequirementsNew :: Device.D sd -> INew s nm fmt -> IO Memory.Requirements
 getMemoryRequirementsNew (Device.D dvc) (INew img) =
 	M.getMemoryRequirements dvc img
@@ -76,9 +65,6 @@ getMemoryRequirementsNew (Device.D dvc) (INew img) =
 getMemoryRequirementsBindedNew :: Device.D sd -> BindedNew sm si nm fmt -> IO Memory.Requirements
 getMemoryRequirementsBindedNew (Device.D dvc) (BindedNew img) =
 	M.getMemoryRequirements dvc img
-
-getMemoryRequirements :: Device.D sd -> I s -> IO Memory.Requirements
-getMemoryRequirements (Device.D dvc) (I img) = M.getMemoryRequirements dvc img
 
 data MemoryBarrier mn si sm nm fmt = MemoryBarrier {
 	memoryBarrierNext :: TMaybe.M mn,
