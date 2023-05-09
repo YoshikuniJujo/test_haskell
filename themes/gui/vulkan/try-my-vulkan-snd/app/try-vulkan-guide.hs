@@ -409,7 +409,7 @@ createSwapchain win sfc ph qfis dv f = do
 	let	fmt = Vk.Khr.Surface.M.formatFormat . chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfo sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @'Nothing @_ @_ @fmt
+		Vk.Khr.Swapchain.createNew @'Nothing @fmt
 			dv crInfo nil nil \sc -> f sc ext
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
