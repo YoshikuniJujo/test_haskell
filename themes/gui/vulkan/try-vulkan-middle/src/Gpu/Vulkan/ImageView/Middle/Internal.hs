@@ -16,6 +16,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.IORef
 
 import Gpu.Vulkan.Enum
@@ -73,28 +74,28 @@ iFromCore :: C.I -> IO I
 iFromCore i = I <$> newIORef i
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO I
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO I
 create (Device.D dvc) ci mac = iFromCore =<< alloca \pView -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pci pac pView
 			throwUnlessSuccess $ Result r
 	peek pView
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	TPMaybe.M AllocationCallbacks.A mc -> TPMaybe.M AllocationCallbacks.A md ->
 	I -> IO ()
 recreate (Device.D dvc) ci macc macd (I ri) = alloca \pView ->
 	createInfoToCore ci \pci ->
-	AllocationCallbacks.maybeToCoreNew macc \pac -> do
+	AllocationCallbacks.mToCore macc \pac -> do
 		r <- C.create dvc pci pac pView
 		throwUnlessSuccess $ Result r
 		io <- readIORef ri
-		AllocationCallbacks.maybeToCoreNew macd $ C.destroy dvc io
+		AllocationCallbacks.mToCore macd $ C.destroy dvc io
 		writeIORef ri =<< peek pView
 
-destroy :: Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> I -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) iv mac = do
 	iv' <- iToCore iv
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc iv'
+	AllocationCallbacks.mToCore mac $ C.destroy dvc iv'
