@@ -15,8 +15,8 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:**))
 import Data.Word
 
 import Gpu.Vulkan.Framebuffer.Enum
@@ -60,21 +60,19 @@ createInfoToMiddleNew CreateInfoNew {
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
 
-createNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+createNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
 	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . F s -> IO a) -> IO a
 createNew (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
+	(AllocationCallbacks.toMiddle' -> macc) f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
-	(\fb -> M.destroy dvc fb macd) (f . F)
+	(\fb -> M.destroy dvc fb macc) (f . F)
 
-recreateNew :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
+recreateNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
 	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	F sf -> IO ()
 recreateNew (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) (F fb) =
-	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
+	(AllocationCallbacks.toMiddle' -> macc) (F fb) =
+	M.recreate dvc (createInfoToMiddleNew ci) macc macc fb

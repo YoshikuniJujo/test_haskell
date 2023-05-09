@@ -474,7 +474,7 @@ makeImageView dvc bimg f =
 makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.INew fmt nm si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
 makeFramebuffer dvc rp iv f =
-	Vk.Framebuffer.createNew @'Nothing dvc frameBufCreateInfo nil nil f
+	Vk.Framebuffer.createNew @'Nothing dvc frameBufCreateInfo nil' f
 	where	frameBufCreateInfo = Vk.Framebuffer.CreateInfoNew {
 			Vk.Framebuffer.createInfoNextNew = TMaybe.N,
 			Vk.Framebuffer.createInfoFlagsNew =

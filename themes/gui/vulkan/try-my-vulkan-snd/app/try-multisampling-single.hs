@@ -882,7 +882,7 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		HeteroParList.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HeteroParList.Nil _ _ f = f HeteroParList.Nil
 createFramebuffers dvc sce rp (iv :** ivs) divw clrvw f =
-	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv divw clrvw) nil nil \fb ->
+	Vk.Frmbffr.createNew dvc (mkFramebufferCreateInfo sce rp iv divw clrvw) nil' \fb ->
 	createFramebuffers dvc sce rp ivs divw clrvw \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -899,7 +899,7 @@ instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dvc sce rp (sciv :** scivs) divw clrvw (fb :** fbs) =
 		Vk.Frmbffr.recreateNew dvc
-			(mkFramebufferCreateInfo sce rp sciv divw clrvw) nil nil fb >>
+			(mkFramebufferCreateInfo sce rp sciv divw clrvw) nil' fb >>
 		recreateFramebuffers dvc sce rp scivs divw clrvw fbs
 
 mkFramebufferCreateInfo ::

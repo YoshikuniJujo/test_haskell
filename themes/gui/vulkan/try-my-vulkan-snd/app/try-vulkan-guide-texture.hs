@@ -1062,7 +1062,7 @@ createFramebuffers :: Vk.Dvc.D sd -> Vk.C.Extent2d ->
 		HL.PL Vk.Frmbffr.F sfs -> IO a) -> IO a
 createFramebuffers _ _ _ HL.Nil _ f = f HL.Nil
 createFramebuffers dv sce rp (iv :** ivs) dptiv f =
-	Vk.Frmbffr.createNew dv (framebufferInfo sce rp iv dptiv) nil nil \fb ->
+	Vk.Frmbffr.createNew dv (framebufferInfo sce rp iv dptiv) nil' \fb ->
 	createFramebuffers dv sce rp ivs dptiv \fbs -> f (fb :** fbs)
 
 class RecreateFramebuffers (sis :: [Type]) (sfs :: [Type]) where
@@ -1078,7 +1078,7 @@ instance RecreateFramebuffers sis sfs =>
 	RecreateFramebuffers (si ': sis) (sf ': sfs) where
 	recreateFramebuffers dv sce rp (sciv :** scivs) dptiv (fb :** fbs) =
 		Vk.Frmbffr.recreateNew dv
-			(framebufferInfo sce rp sciv dptiv) nil nil fb >>
+			(framebufferInfo sce rp sciv dptiv) nil' fb >>
 		recreateFramebuffers dv sce rp scivs dptiv fbs
 
 framebufferInfo ::
