@@ -37,17 +37,16 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
 createNew :: (WithPoked (TMaybe.M mn), T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	Maybe (AllocationCallbacks.A sc c) ->
 	(forall ssc . SNew ssc fmt -> IO a) -> IO a
-createNew (Device.D dvc) ci macc
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
+createNew (Device.D dvc) ci macc@((AllocationCallbacks.toMiddle <$>) -> macd) f =
 	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
 recreateNew :: (WithPoked (TMaybe.M mn), T.FormatToValue fmt) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	Maybe (AllocationCallbacks.A sc c) ->
 	SNew ssc fmt -> IO ()
-recreateNew (Device.D dvc) ci macc macd (SNew sc) = recreateNewM dvc ci macc macd sc
+recreateNew (Device.D dvc) ci macc (SNew sc) = recreateNewM dvc ci macc sc
 
 getImagesNew :: Device.D sd -> SNew ss fmt -> IO [Image.BindedNew ss ss nm fmt]
 getImagesNew (Device.D dvc) (SNew sc) = (Image.BindedNew <$>) <$> M.getImages dvc sc
@@ -112,9 +111,9 @@ createNewM dvc ci mac = createM dvc (createInfoFromNew ci) mac
 
 recreateNewM :: (WithPoked (TMaybe.M mn), T.FormatToValue fmt) =>
 	Device.M.D -> CreateInfoNew mn ss fmt ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	Maybe (AllocationCallbacks.A sc c) ->
 	M.S -> IO ()
-recreateNewM dvc = recreateM dvc . createInfoFromNew
+recreateNewM dvc ci mac = recreateM dvc (createInfoFromNew ci) mac
 
 data CreateInfo mn ss = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -142,12 +141,10 @@ createM dvc ci ((AllocationCallbacks.toMiddle <$>) -> mac) =
 	M.create dvc (createInfoToMiddle ci) mac
 
 recreateM :: WithPoked (TMaybe.M mn) =>
-	Device.M.D -> CreateInfo mn ss ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	Device.M.D -> CreateInfo mn ss -> Maybe (AllocationCallbacks.A sc c) ->
 	M.S -> IO ()
 recreateM dvc ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) s = M.recreate dvc (createInfoToMiddle ci) macc macd s
+	((AllocationCallbacks.toMiddle <$>) -> mac) s = M.recreate dvc (createInfoToMiddle ci) mac mac s
 
 createInfoToMiddle :: CreateInfo n ss -> M.CreateInfo n
 createInfoToMiddle CreateInfo {

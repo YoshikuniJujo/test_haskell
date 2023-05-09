@@ -415,7 +415,7 @@ createSwapchain w sfc ph qfs dv f = getSwapchainSupport ph sfc >>= \spp -> do
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) ->
 		Vk.Khr.Swpch.createNew @'Nothing @fmt dv
-			(swapchainCreateInfo sfc qfs spp ex) nil nil (`f` ex)
+			(swapchainCreateInfo sfc qfs spp ex) nil (`f` ex)
 
 recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 	Glfw.Window -> Vk.Khr.Sfc.S ssfc -> Vk.Phd.P ->
@@ -424,7 +424,7 @@ recreateSwapchain :: Vk.T.FormatToValue scfmt =>
 recreateSwapchain w sfc ph qfs dv sc = getSwapchainSupport ph sfc >>= \spp -> do
 	ex <- chooseSwapExtent w $ capabilities spp
 	ex <$ Vk.Khr.Swpch.recreateNew @'Nothing dv
-		(swapchainCreateInfo sfc qfs spp ex) nil nil sc
+		(swapchainCreateInfo sfc qfs spp ex) nil sc
 
 getSwapchainSupport :: Vk.Phd.P -> Vk.Khr.Sfc.S ss -> IO SwapchainSupportDetails
 getSwapchainSupport dv sfc = SwapchainSupportDetails
