@@ -27,6 +27,7 @@ import Foreign.Storable.PeekPoke (withPoked, WithPoked, withPoked', withPtrS)
 import Control.Arrow
 import Control.Monad.Cont
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.IORef
 import Data.Word
 
@@ -122,10 +123,10 @@ createInfoToCore CreateInfo {
 		withPoked ci f
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO I
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO I
 create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac ->
+		AllocationCallbacks.mToCore mac \pac ->
 			throwUnlessSuccess . Result
 				=<< C.create dvc pci pac pimg
 	newIORef . (ex ,) =<< peek pimg
@@ -133,12 +134,12 @@ create (Device.D dvc) ci mac = I <$> alloca \pimg -> do
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
-	Maybe (AllocationCallbacks.A c) ->
-	Maybe (AllocationCallbacks.A d) ->
+	TPMaybe.M AllocationCallbacks.A mc ->
+	TPMaybe.M AllocationCallbacks.A md ->
 	I -> IO ()
 recreate d@(Device.D dvc) ci macc macd i@(I ri) = alloca \pimg ->
 	createInfoToCore ci \pci ->
-	AllocationCallbacks.maybeToCoreNew macc \pacc -> do
+	AllocationCallbacks.mToCore macc \pacc -> do
 		r <- C.create dvc pci pacc pimg
 		throwUnlessSuccess $ Result r
 		destroy d i macd
@@ -215,9 +216,9 @@ subresourceLayersToCore SubresourceLayers {
 		C.subresourceLayersBaseArrayLayer = bal,
 		C.subresourceLayersLayerCount = lc }
 
-destroy :: Device.D -> I -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> I -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (I rimg) mac =
-	AllocationCallbacks.maybeToCoreNew mac \pac -> do
+	AllocationCallbacks.mToCore mac \pac -> do
 		(_, img) <- readIORef rimg
 		C.destroy dvc img pac
 
