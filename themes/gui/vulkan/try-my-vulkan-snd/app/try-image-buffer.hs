@@ -221,7 +221,7 @@ readMemories' dvc memA memB memC =
 
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	limits <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc
 	let	maxGroupCountX :. _ =

@@ -104,7 +104,7 @@ main = do
 		createInfo = def {
 			Vk.Instance.createInfoEnabledLayerNames =
 				[Vk.Khr.validationLayerName] }
-	Vk.Instance.create createInfo nil nil \inst -> do
+	Vk.Instance.create createInfo nil' \inst -> do
 		(physicalDevice, graphicsQueueFamilyIndex) <-
 			selectPhysicalDeviceAndQueueFamily
 				=<< Vk.PhysicalDevice.enumerate inst

@@ -133,7 +133,7 @@ queryPoolInfo = Vk.QP.CreateInfo {
 		Vk.Qry.PipelineStatisticComputeShaderInvocationsBit }
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create instInfo nil' \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Queue.ComputeBit .

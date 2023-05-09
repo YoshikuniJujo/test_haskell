@@ -205,7 +205,7 @@ createInstance f = do
 			<$> Vk.Ist.M.enumerateLayerProperties
 	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
-	Vk.Ist.create (crInfo exts) nil nil f
+	Vk.Ist.create (crInfo exts) nil' f
 	where
 	msg = "validation layers requested, but not available!"
 	crInfo :: [Txt.Text] -> Vk.Ist.M.CreateInfo

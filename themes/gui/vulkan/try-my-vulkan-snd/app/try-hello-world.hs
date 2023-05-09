@@ -90,7 +90,7 @@ main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 type Word32List = Obj.List 256 Word32 ""
 
 withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
-withDevice f = Vk.Inst.create instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create instInfo nil' \inst -> do
 	pd <- head <$> Vk.Phd.enumerate inst
 	qfi <- fst . head . filter (
 			checkBits Vk.Queue.ComputeBit .

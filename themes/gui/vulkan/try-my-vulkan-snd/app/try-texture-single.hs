@@ -231,7 +231,7 @@ createInstance f = do
 			Vk.Ist.M.createInfoEnabledLayerNames =
 				bool [] validationLayers enableValidationLayers,
 			Vk.Ist.M.createInfoEnabledExtensionNames = extensions }
-	Vk.Ist.create createInfo nil nil \i -> f i
+	Vk.Ist.create createInfo nil' \i -> f i
 
 instanceToMiddle :: Vk.Ist.I si -> Vk.Ist.M.I
 instanceToMiddle (Vk.Ist.I inst) = inst

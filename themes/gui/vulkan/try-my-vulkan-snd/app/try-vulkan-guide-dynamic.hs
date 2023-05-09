@@ -195,7 +195,7 @@ createInstance f = do
 	exts <- bool id (Vk.Ext.DbgUtls.extensionName :) enableValidationLayers
 		<$> ((cstrToText `mapM`) =<< Glfw.getRequiredInstanceExtensions)
 	instInfo enableValidationLayers exts \ci ->
-		Vk.Ist.create ci nil nil f
+		Vk.Ist.create ci nil' f
 	where
 	msg = "validation layers requested, but not available!"
 

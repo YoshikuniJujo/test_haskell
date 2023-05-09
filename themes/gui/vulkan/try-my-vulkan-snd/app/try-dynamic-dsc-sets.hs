@@ -110,7 +110,7 @@ newtype W3 = W3 { unW3 :: Word32 } deriving (Show, Storable)
 withDevice ::
 	(forall sd . Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd ->
 	(forall c . Integral c => c) -> IO a) -> IO a
-withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
+withDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qFam <- fst . head . filter (
 			(/= zeroBits) . (.&. Vk.Queue.ComputeBit)

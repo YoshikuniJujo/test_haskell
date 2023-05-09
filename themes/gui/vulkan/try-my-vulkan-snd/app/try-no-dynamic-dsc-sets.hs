@@ -101,7 +101,7 @@ type ListW3 =VObj.List 256 W3 ""
 
 crtDevice :: (forall sd .
 	Vk.PhDvc.P -> Vk.QFam.Index -> Vk.Dvc.D sd -> Word32 -> IO a) -> IO a
-crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil nil \inst -> do
+crtDevice f = Vk.Inst.create @_ @'Nothing instInfo nil' \inst -> do
 	phdvc <- head <$> Vk.PhDvc.enumerate inst
 	qf <- findQueueFamily phdvc Vk.Queue.ComputeBit
 	lmts <- Vk.PhDvc.propertiesLimits <$> Vk.PhDvc.getProperties phdvc

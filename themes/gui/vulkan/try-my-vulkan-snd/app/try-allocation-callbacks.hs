@@ -130,7 +130,7 @@ withDevice :: (forall s . Vk.Phd.P -> Vk.QFm.Index -> Vk.Dv.D s -> IO a) -> IO a
 withDevice f = Vk.Inst.create instInfo
 --		(Just allocationCallbacks)
 --		(Just allocationCallbacks) \inst -> do
-		nil nil \inst -> do
+		nil' \inst -> do
 	print inst
 	pd <- head <$> Vk.Phd.enumerate inst
 	putStrLn "withDevice: after Vk.PhysicalDevice.enumerate"
