@@ -475,7 +475,7 @@ createImageView :: forall ivfmt sd si sm nm ifmt a . Vk.T.FormatToValue ivfmt =>
 	Vk.Img.AspectFlags ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dv img asps =
-	Vk.ImgVw.createNew dv (imageViewCreateInfo img asps) nil nil
+	Vk.ImgVw.createNew dv (imageViewCreateInfo img asps) nil'
 
 recreateImageViews :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> [Vk.Img.BindedNew ss ss nm fmt] ->
@@ -491,7 +491,7 @@ recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
 	Vk.Img.AspectFlags -> Vk.ImgVw.INew ivfmt nm s -> IO ()
 recreateImageView dv img asps iv =
-	Vk.ImgVw.recreateNew dv (imageViewCreateInfo img asps) nil nil iv
+	Vk.ImgVw.recreateNew dv (imageViewCreateInfo img asps) nil' iv
 
 imageViewCreateInfo ::
 	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags ->

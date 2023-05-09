@@ -442,7 +442,7 @@ instance KObj.IsImage MyImage where
 makeImageView :: Vk.Device.D sd -> Vk.Img.BindedNew si sm nm fmt ->
 	(forall s . Vk.ImgView.INew Vk.T.FormatR8g8b8a8Unorm nm s -> IO a) -> IO a
 makeImageView dvc bimg f =
-	Vk.ImgView.createNew dvc imgViewCreateInfo nil nil \imgView -> do
+	Vk.ImgView.createNew dvc imgViewCreateInfo nil' \imgView -> do
 		putStrLn $ "imgView: " ++ show imgView
 		f imgView
 	where	imgViewCreateInfo = Vk.ImgView.CreateInfoNew {

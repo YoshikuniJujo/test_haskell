@@ -548,7 +548,7 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci) nil nil iv >>
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci) nil' iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -558,7 +558,7 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dvc timg f =
-	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg) nil nil f
+	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg) nil' f
 
 mkImageViewCreateInfo ::
 	Vk.Img.BindedNew si sm nm ifmt ->

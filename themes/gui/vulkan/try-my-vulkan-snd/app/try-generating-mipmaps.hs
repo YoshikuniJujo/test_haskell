@@ -520,7 +520,7 @@ recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd ->
 	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc [] HeteroParList.Nil = pure ()
 recreateImageViews dvc (sci : scis) (iv :** ivs) =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil nil iv >>
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci Vk.Img.AspectColorBit 1) nil' iv >>
 	recreateImageViews dvc scis ivs
 recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
@@ -531,14 +531,14 @@ createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.Img.AspectFlags -> Word32 ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dvc timg asps mplvs f =
-	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps mplvs) nil nil f
+	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps mplvs) nil' f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
 	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
 	Vk.Img.AspectFlags ->
 	Vk.ImgVw.INew ivfmt nm s -> Word32 -> IO ()
 recreateImageView dvc timg asps iv mplvs =
-	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps mplvs) nil nil iv
+	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps mplvs) nil' iv
 
 mkImageViewCreateInfo ::
 	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags -> Word32 ->

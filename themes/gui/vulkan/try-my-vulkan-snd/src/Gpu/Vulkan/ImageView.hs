@@ -8,13 +8,14 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.ImageView (
-	INew(..), createNew, recreateNew, CreateInfoNew(..)
-	) where
+	INew(..), createNew, recreateNew, CreateInfoNew(..) ) where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 
 import Gpu.Vulkan.ImageView.Enum
 
@@ -56,24 +57,22 @@ createInfoToMiddleNew CreateInfoNew {
 	where fmt = T.formatToValue @ivfmt
 
 createNew :: (
-	T.FormatToValue ivfmt,
-	WithPoked (TMaybe.M n), Pokable c, Pokable d ) =>
+	T.FormatToValue ivfmt, WithPoked (TMaybe.M n),
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall siv . INew ivfmt nm siv -> IO a) -> IO a
 createNew (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
+	(AllocationCallbacks.toMiddle' -> macc) f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
-	(\i -> M.destroy dvc i macd) (f . INew)
+	(\i -> M.destroy dvc i macc) (f . INew)
 
 recreateNew :: (
-	T.FormatToValue ivfmt,
-	WithPoked (TMaybe.M n), Pokable c, Pokable d ) =>
+	T.FormatToValue ivfmt, WithPoked (TMaybe.M n),
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> CreateInfoNew n si sm nm ifmt ivfmt ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	INew ivfmt nm s -> IO ()
 recreateNew (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) (INew i) =
-	M.recreate dvc (createInfoToMiddleNew ci) macc macd i
+	(AllocationCallbacks.toMiddle' -> macc) (INew i) =
+	M.recreate dvc (createInfoToMiddleNew ci) macc macc i
