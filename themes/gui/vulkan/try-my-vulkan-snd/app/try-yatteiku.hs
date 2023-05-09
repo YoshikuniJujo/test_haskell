@@ -49,7 +49,6 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
-import qualified Gpu.Vulkan.Image.Type as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
 import qualified Gpu.Vulkan.Image.Middle as Vk.Img.M
 import qualified Gpu.Vulkan.Sample as Vk.Sample
@@ -135,9 +134,9 @@ runDevice :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Vk.QueueFamily.Index -> IO
 runDevice phdvc device graphicsQueueFamilyIndex =
 	makeRenderPass device \rp ->
 	makePipelineNew device rp \ppl ->
-	makeImage' phdvc device \bimg'@(Vk.Img.BindedNew obimg') _mi' ->
+	makeImage' phdvc device \bimg' _mi' ->
 	makeBuffer phdvc device screenWidth screenHeight \b bm -> do
-		makeImageView device (Vk.Img.Binded obimg') \iv ->
+		makeImageView device bimg' \iv ->
 			makeFramebuffer device rp iv \fb ->
 			makeCommandBufferEtc device graphicsQueueFamilyIndex \gq cp -> do
 				makeCommandBuffer device gq cp \cb -> do
@@ -148,8 +147,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 							Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
 								Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
 								Vk.C.rect2dExtent = Vk.C.Extent2d
-									screenWidth screenHeight
-								},
+									screenWidth screenHeight },
 							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
 					Vk.Cmd.beginRenderPass @'Nothing @'[]
 						cb renderpassBeginInfo Vk.Subpass.ContentsInline do
@@ -441,17 +439,19 @@ instance KObj.IsImage MyImage where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
-makeImageView :: Vk.Device.D sd -> Vk.Img.Binded si sm ->
-	(forall s . Vk.ImgView.I s -> IO a) -> IO a
-makeImageView dvc bimg f = do
-	let	imgViewCreateInfo = Vk.ImgView.CreateInfo {
-			Vk.ImgView.createInfoNext = TMaybe.N,
-			Vk.ImgView.createInfoFlags =
+makeImageView :: Vk.Device.D sd -> Vk.Img.BindedNew si sm nm fmt ->
+	(forall s . Vk.ImgView.INew Vk.T.FormatR8g8b8a8Unorm nm s -> IO a) -> IO a
+makeImageView dvc bimg f =
+	Vk.ImgView.createNew dvc imgViewCreateInfo nil nil \imgView -> do
+		putStrLn $ "imgView: " ++ show imgView
+		f imgView
+	where	imgViewCreateInfo = Vk.ImgView.CreateInfoNew {
+			Vk.ImgView.createInfoNextNew = TMaybe.N,
+			Vk.ImgView.createInfoFlagsNew =
 				Vk.ImgView.CreateFlagsZero,
-			Vk.ImgView.createInfoImage = bimg,
-			Vk.ImgView.createInfoViewType = Vk.ImgView.Type2d,
-			Vk.ImgView.createInfoFormat = Vk.FormatR8g8b8a8Unorm,
-			Vk.ImgView.createInfoComponents =
+			Vk.ImgView.createInfoImageNew = bimg,
+			Vk.ImgView.createInfoViewTypeNew = Vk.ImgView.Type2d,
+			Vk.ImgView.createInfoComponentsNew =
 				Vk.Component.Mapping {
 					Vk.Component.mappingR =
 						Vk.Component.SwizzleIdentity,
@@ -461,7 +461,7 @@ makeImageView dvc bimg f = do
 						Vk.Component.SwizzleIdentity,
 					Vk.Component.mappingA =
 						Vk.Component.SwizzleIdentity },
-			Vk.ImgView.createInfoSubresourceRange =
+			Vk.ImgView.createInfoSubresourceRangeNew =
 				Vk.Img.SubresourceRange {
 					Vk.Img.subresourceRangeAspectMask =
 						Vk.Img.AspectColorBit,
@@ -469,25 +469,21 @@ makeImageView dvc bimg f = do
 					Vk.Img.subresourceRangeLevelCount = 1,
 					Vk.Img.subresourceRangeBaseArrayLayer =
 						0,
-					Vk.Img.subresourceRangeLayerCount = 1 }
-			}
-	Vk.ImgView.create @'Nothing dvc imgViewCreateInfo nil nil \imgView -> do
-		putStrLn $ "imgView: " ++ show imgView
-		f imgView
+					Vk.Img.subresourceRangeLayerCount = 1 } }
 
-makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.I si ->
+makeFramebuffer :: Vk.Device.D sd -> Vk.RenderPass.R sr -> Vk.ImgView.INew fmt nm si ->
 	(forall s . Vk.Framebuffer.F s -> IO a) -> IO a
-makeFramebuffer dvc rp iv f = do
-	let	frameBufCreateInfo = Vk.Framebuffer.CreateInfo {
-			Vk.Framebuffer.createInfoNext = TMaybe.N,
-			Vk.Framebuffer.createInfoFlags =
+makeFramebuffer dvc rp iv f =
+	Vk.Framebuffer.createNew @'Nothing dvc frameBufCreateInfo nil nil f
+	where	frameBufCreateInfo = Vk.Framebuffer.CreateInfoNew {
+			Vk.Framebuffer.createInfoNextNew = TMaybe.N,
+			Vk.Framebuffer.createInfoFlagsNew =
 				Vk.Framebuffer.CreateFlagsZero,
-			Vk.Framebuffer.createInfoRenderPass = rp,
-			Vk.Framebuffer.createInfoAttachments = iv :** HeteroParList.Nil,
-			Vk.Framebuffer.createInfoWidth = screenWidth,
-			Vk.Framebuffer.createInfoHeight = screenHeight,
-			Vk.Framebuffer.createInfoLayers = 1 }
-	Vk.Framebuffer.create @'Nothing dvc frameBufCreateInfo nil nil f
+			Vk.Framebuffer.createInfoRenderPassNew = rp,
+			Vk.Framebuffer.createInfoAttachmentsNew = U3 iv :** HeteroParList.Nil,
+			Vk.Framebuffer.createInfoWidthNew = screenWidth,
+			Vk.Framebuffer.createInfoHeightNew = screenHeight,
+			Vk.Framebuffer.createInfoLayersNew = 1 }
 
 selectPhysicalDeviceAndQueueFamily ::
 	[Vk.PhysicalDevice.P] -> IO (Vk.PhysicalDevice.P, Vk.QueueFamily.Index)

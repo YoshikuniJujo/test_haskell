@@ -9,12 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Framebuffer (
-	createNew, recreateNew, CreateInfoNew(..),
-	F
---	, createInfoToMiddle -- <-- temporary
-	, CreateInfo(..)
-	, create
-	) where
+	F, createNew, recreateNew, CreateInfoNew(..) ) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -118,13 +113,3 @@ recreateNew (Device.D dvc) ci
 	((AllocationCallbacks.toMiddle <$>) -> macc)
 	((AllocationCallbacks.toMiddle <$>) -> macd) (F fb) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macd fb
-
-create :: (WithPoked (TMaybe.M mn), Pokable c, Pokable d) =>
-	Device.D sd -> CreateInfo mn sr si ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
-	(forall s . F s -> IO a) -> IO a
-create (Device.D dvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
-	(M.create dvc (createInfoToMiddle ci) macc)
-	(\fb -> M.destroy dvc fb macd) (f . F)
