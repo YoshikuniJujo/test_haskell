@@ -19,6 +19,7 @@ import Foreign.Storable.PeekPoke (
 	WithPoked, withPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 
 import qualified Data.Text as T
@@ -80,16 +81,16 @@ createInfoToCore CreateInfo {
 newtype I = I C.I deriving Show
 
 create :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M a)) =>
-	CreateInfo mn a -> Maybe (AllocationCallbacks.A c) -> IO I
+	CreateInfo mn a -> TPMaybe.M AllocationCallbacks.A mc -> IO I
 create ci mac = I <$> alloca \pist -> do
 	createInfoToCore ci \pcci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create pcci pac pist
 			throwUnlessSuccess $ Result r
 	peek pist
 
-destroy :: I -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (I cist) mac = AllocationCallbacks.maybeToCoreNew mac $ C.destroy cist
+destroy :: I -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (I cist) mac = AllocationCallbacks.mToCore mac $ C.destroy cist
 
 enumerateLayerProperties :: IO [LayerProperties]
 enumerateLayerProperties =
