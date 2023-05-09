@@ -43,50 +43,15 @@ type family MapThird (t :: [(j, k, l)]) where
 	MapThird '[] = '[]
 	MapThird ('(a, b, c) ': abcs) = c ': MapThird abcs
 
-createInfoFromNew :: CreateInfoNew n sr fmtnmsis -> CreateInfo n sr (MapThird fmtnmsis)
-createInfoFromNew CreateInfoNew {
+createInfoToMiddleNew :: CreateInfoNew n sr fmtmnsis -> M.CreateInfo n
+createInfoToMiddleNew CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
-	createInfoRenderPassNew = rndpss,
-	createInfoAttachmentsNew = atts,
-	createInfoWidthNew = wdt, createInfoHeightNew = hgt,
-	createInfoLayersNew = lyrs } = CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoRenderPass = rndpss,
-	createInfoAttachments = isToOld atts,
-	createInfoWidth = wdt, createInfoHeight = hgt,
-	createInfoLayers = lyrs }
-
-isToOld :: HeteroParList.PL (U3 ImageView.INew) fmtnmsis ->
-	HeteroParList.PL ImageView.I (MapThird fmtnmsis)
-isToOld HeteroParList.Nil = HeteroParList.Nil
-isToOld ((U3 i) :** is) = ImageView.iToOld i :** isToOld is
-
-data CreateInfo mn sr sis = CreateInfo {
-	createInfoNext :: TMaybe.M mn,
-	createInfoFlags :: CreateFlags,
-	createInfoRenderPass :: RenderPass.R sr,
-	createInfoAttachments :: HeteroParList.PL ImageView.I sis,
-	createInfoWidth :: Word32,
-	createInfoHeight :: Word32,
-	createInfoLayers :: Word32 }
-
-deriving instance (Show (TMaybe.M mn), Show (HeteroParList.PL ImageView.I sis)) =>
-	Show (CreateInfo mn sr sis)
-
-createInfoToMiddleNew :: CreateInfoNew n sr fmtnmsis -> M.CreateInfo n
-createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
-
-createInfoToMiddle :: CreateInfo n sr si -> M.CreateInfo n
-createInfoToMiddle CreateInfo {
-	createInfoNext = mnxt,
-	createInfoFlags = flgs,
-	createInfoRenderPass = RenderPass.R rp,
-	createInfoAttachments = HeteroParList.toList (\(ImageView.I iv) -> iv) -> ivs,
-	createInfoWidth = w,
-	createInfoHeight = h,
-	createInfoLayers = lyrs } = M.CreateInfo {
+	createInfoRenderPassNew = RenderPass.R rp,
+	createInfoAttachmentsNew = HeteroParList.toList (\(U3 (ImageView.INew iv)) -> iv) -> ivs,
+	createInfoWidthNew = w,
+	createInfoHeightNew = h,
+	createInfoLayersNew = lyrs } = M.CreateInfo {
 		M.createInfoNext = mnxt,
 		M.createInfoFlags = flgs,
 		M.createInfoRenderPass = rp,
