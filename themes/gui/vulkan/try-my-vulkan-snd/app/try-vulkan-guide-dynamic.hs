@@ -811,7 +811,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
 createImage pd dv ex tlng usg prs f =
-	Vk.Img.createNew @'Nothing @() @() dv (imageInfo ex tlng usg) nil nil \i ->
+	Vk.Img.createNew @'Nothing dv (imageInfo ex tlng usg) nil' \i ->
 	imageMemoryInfo pd dv prs i >>= \ii -> imageAllocateBind dv i ii f
 
 recreateImage :: Vk.T.FormatToValue fmt =>
@@ -820,7 +820,7 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Img.BindedNew sb sm nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
 recreateImage pd dv ex tlng usg prs i m = do
-	Vk.Img.recreateNew @'Nothing @() @() dv (imageInfo ex tlng usg) nil nil i
+	Vk.Img.recreateNew @'Nothing dv (imageInfo ex tlng usg) nil' i
 	imageMemoryInfoB pd dv prs i >>= \ii -> imageReallocateBind dv i ii m
 
 imageInfo :: Vk.C.Extent2d ->

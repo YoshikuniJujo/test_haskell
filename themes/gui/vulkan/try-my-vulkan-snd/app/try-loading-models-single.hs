@@ -1021,8 +1021,8 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a
-createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @'Nothing @() @() dvc
-		(imageInfo wdt hgt tlng usg) Nothing Nothing \img -> do
+createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @'Nothing dvc
+		(imageInfo wdt hgt tlng usg) nil' \img -> do
 	memInfo <- imageMemoryInfo pd dvc prps img
 	imageAllocateBind dvc img memInfo f
 
@@ -1033,8 +1033,8 @@ recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Dvc.Mem.ImageBuffer.M
 		sm '[ '(sb, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt)] -> IO ()
 recreateImage pd dvc wdt hgt tlng usg prps img mem = do
-	Vk.Img.recreateNew @'Nothing @() @() dvc
-		(imageInfo wdt hgt tlng usg) Nothing Nothing img
+	Vk.Img.recreateNew @'Nothing dvc
+		(imageInfo wdt hgt tlng usg) nil' img
 	memInfo <- imageMemoryInfoBinded pd dvc prps img
 	imageReallocateBind dvc img memInfo mem
 

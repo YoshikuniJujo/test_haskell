@@ -229,7 +229,7 @@ makeImage' phdvc dvc f = do
 			Vk.Img.createInfoQueueFamilyIndicesNew = [] }
 	memProps <- Vk.PhysicalDevice.getMemoryProperties phdvc
 	print memProps
-	Vk.Img.createNew @'Nothing dvc imgCreateInfo nil nil \image -> do
+	Vk.Img.createNew @'Nothing dvc imgCreateInfo nil' \image -> do
 		imgMemReq <- Vk.Img.getMemoryRequirementsNew dvc image
 		print imgMemReq
 		let	imgMemReqTypes =

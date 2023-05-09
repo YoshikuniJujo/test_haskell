@@ -23,6 +23,7 @@ import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
@@ -42,21 +43,23 @@ import qualified Gpu.Vulkan.Image.Middle as M
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as I
 
-createNew :: (WithPoked (TMaybe.M mn), Pokable n2, Pokable n3, T.FormatToValue fmt) =>
+createNew :: (
+	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
+	AllocationCallbacks.ToMiddle' msn2n2 ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
-	Maybe (AllocationCallbacks.A sn2 n2) -> Maybe (AllocationCallbacks.A sn3 n3) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) msn2n2 ->
 	(forall s . INew s nm fmt -> IO a) -> IO a
-createNew dvc@(Device.D mdvc) ci macc
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
+createNew dvc@(Device.D mdvc) ci
+	macc@(AllocationCallbacks.toMiddle' -> macd) f =
 	bracket (createNewM dvc ci macc) (\(INew i) -> M.destroy mdvc i macd) f
 
 recreateNew :: (
-	WithPoked (TMaybe.M mn), Pokable c, Pokable d, T.FormatToValue fmt ) =>
+	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
-	Maybe (AllocationCallbacks.A sc c) ->
-	Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	BindedNew si sm nm fmt -> IO ()
-recreateNew dvc ci macc macd i = recreateNewM dvc ci macc macd i
+recreateNew dvc ci macc i = recreateNewM dvc ci macc macc i
 
 getMemoryRequirementsNew :: Device.D sd -> INew s nm fmt -> IO Memory.Requirements
 getMemoryRequirementsNew (Device.D dvc) (INew img) =
@@ -116,22 +119,25 @@ instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsismnmfmts) =>
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
-createNewM :: (WithPoked (TMaybe.M mn), Pokable n', T.FormatToValue fmt) =>
+createNewM :: (
+	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
+	AllocationCallbacks.ToMiddle' msn'n' ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
-	Maybe (AllocationCallbacks.A sn' n') -> IO (INew si nm fmt)
-createNewM (Device.D mdvc) ci ((AllocationCallbacks.toMiddle <$>) -> mac) =
+	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO (INew si nm fmt)
+createNewM (Device.D mdvc) ci (AllocationCallbacks.toMiddle' -> mac) =
 	INew <$> M.create mdvc (createInfoFromNew ci) mac
 
 recreateNewM :: (
-	T.FormatToValue fmt,
-	WithPoked (TMaybe.M mn), Pokable c, Pokable d ) =>
+	T.FormatToValue fmt, WithPoked (TMaybe.M mn),
+	AllocationCallbacks.ToMiddle' mscc,
+	AllocationCallbacks.ToMiddle' msdd ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
-	Maybe (AllocationCallbacks.A sc c) ->
-	Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	TPMaybe.M (U2 AllocationCallbacks.A) msdd ->
 	BindedNew si sm nm fmt -> IO ()
 recreateNewM (Device.D mdvc) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) (BindedNew i) =
+	(AllocationCallbacks.toMiddle' -> macc)
+	(AllocationCallbacks.toMiddle' -> macd) (BindedNew i) =
 	M.recreate mdvc (createInfoFromNew ci) macc macd i
 
 data CreateInfoNew mn (fmt :: T.Format) = CreateInfoNew {
