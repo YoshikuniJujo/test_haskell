@@ -28,6 +28,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Bits
 import Data.IORef
@@ -118,30 +119,29 @@ allocateInfoToCore AllocateInfo {
 	withPoked ci f
 
 allocate :: WithPoked (TMaybe.M mn) =>
-	Device.D -> AllocateInfo mn -> Maybe (AllocationCallbacks.A a) -> IO M
+	Device.D -> AllocateInfo mn -> TPMaybe.M AllocationCallbacks.A ma -> IO M
 allocate (Device.D dvc) ai mac = M <$> alloca \pm -> do
 	allocateInfoToCore ai \pai ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.allocate dvc pai pac pm
 			throwUnlessSuccess $ Result r
 	newIORef =<< peek pm
 
 reallocate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> AllocateInfo mn ->
-	Maybe (AllocationCallbacks.A a) ->
-	Maybe (AllocationCallbacks.A f) ->
+	TPMaybe.M AllocationCallbacks.A ma ->
 	M -> IO ()
-reallocate d@(Device.D dvc) ai macc macd m@(M rm) =
+reallocate d@(Device.D dvc) ai macc m@(M rm) =
 	alloca \pm -> allocateInfoToCore ai \pai ->
-	AllocationCallbacks.maybeToCoreNew macc \pac -> do
+	AllocationCallbacks.mToCore macc \pac -> do
 		r <- C.allocate dvc pai pac pm
 		throwUnlessSuccess $ Result r
-		free d m macd
+		free d m macc
 		writeIORef rm =<< peek pm
 
-free :: Device.D -> M -> Maybe (AllocationCallbacks.A f) -> IO ()
+free :: Device.D -> M -> TPMaybe.M AllocationCallbacks.A mf -> IO ()
 free (Device.D dvc) (M mem) mac =
-	AllocationCallbacks.maybeToCoreNew mac \pac -> do
+	AllocationCallbacks.mToCore mac \pac -> do
 		m <- readIORef mem
 		C.free dvc m pac
 
