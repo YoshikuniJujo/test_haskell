@@ -19,6 +19,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -102,11 +103,11 @@ createInfoToMiddleNew = createInfoToMiddle . createInfoFromNew
 createNew :: (
 	pcl ~ ('PushConstant.PushConstantLayout whole ranges),
 	PushConstant.RangesToMiddle whole ranges,
-	WithPoked (TMaybe.M mn), Pokable c, Pokable d, HeteroParListToList' sbtss ) =>
+	WithPoked (TMaybe.M mn), HeteroParListToList' sbtss,
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> CreateInfoNew mn sbtss pcl ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . L s sbtss whole -> IO a) -> IO a
 createNew (Device.D dvc) (createInfoToMiddleNew -> ci)
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
-	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macd) (f . L)
+	(AllocationCallbacks.toMiddle' -> macc) f =
+	bracket (M.create dvc ci macc) (\l -> M.destroy dvc l macc) (f . L)

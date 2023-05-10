@@ -628,7 +628,7 @@ createPipelineLayout :: forall sd s b .
 					VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 			'[WrapMeshPushConstants] ->
 		IO b) -> IO b
-createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil nil f
+createPipelineLayout dvc cmdslyt f = Vk.Ppl.Layout.createNew dvc crInfo nil' f
 	where
 	crInfo :: Vk.Ppl.Layout.CreateInfoNew 'Nothing
 		'[ '(s, '[

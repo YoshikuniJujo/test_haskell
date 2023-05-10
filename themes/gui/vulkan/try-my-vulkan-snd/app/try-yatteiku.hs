@@ -680,7 +680,7 @@ makePipelineNew dvc rp f = do
 				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
 			Vk.Ppl.ShSt.createInfoNameNew = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
-	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil nil \plyt -> do
+	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil' \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
 					'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd', (), '[]),
 					'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd', (), '[]) ]

@@ -650,7 +650,7 @@ createPipelineLayout :: forall sd sdl sdlod a . Vk.Dvc.D sd ->
 			'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers) ]
 			'[WMeshPushConstants] ->
 		IO a) -> IO a
-createPipelineLayout dv dslyt dslytod f = Vk.Ppl.Lyt.createNew dv ci nil nil f where
+createPipelineLayout dv dslyt dslytod f = Vk.Ppl.Lyt.createNew dv ci nil' f where
 	ci :: Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers) ] (
 		'Vk.PushConstant.PushConstantLayout
 			'[ WMeshPushConstants]

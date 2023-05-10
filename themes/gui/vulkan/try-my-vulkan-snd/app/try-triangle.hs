@@ -571,7 +571,7 @@ createPipelineLayout' dvc f = do
 			Vk.Ppl.Layout.createInfoNextNew = TMaybe.N,
 			Vk.Ppl.Layout.createInfoFlagsNew = zeroBits,
 			Vk.Ppl.Layout.createInfoSetLayoutsNew = HeteroParList.Nil }
-	Vk.Ppl.Layout.createNew @_ @_ @'[] @'Nothing @() @() dvc pipelineLayoutInfo nil nil f
+	Vk.Ppl.Layout.createNew @_ @_ @'[] @'Nothing dvc pipelineLayoutInfo nil' f
 
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[] '[] ->
