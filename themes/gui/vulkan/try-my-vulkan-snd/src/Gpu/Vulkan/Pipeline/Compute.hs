@@ -8,8 +8,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Compute (
-	C(..), CNew(..), CreateInfo(..), createCs, createCsNew ) where
+module Gpu.Vulkan.Pipeline.Compute (createCsNew, CNew(..), CreateInfo(..)) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -35,9 +34,9 @@ import qualified Gpu.Vulkan.Pipeline.Compute.Middle as M
 
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 
-newtype C s = C M.C deriving Show
-
-newtype CNew s (slbtss :: (Type, [(Type, [DescriptorSetLayout.BindingType])], [Type])) = CNew M.C deriving Show
+newtype CNew s (slbtss ::
+	(Type, [(Type, [DescriptorSetLayout.BindingType])], [Type])) = CNew M.C
+	deriving Show
 
 data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -132,25 +131,6 @@ instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 		(U3 mci :** mcis) (U4 ci :** cis) = do
 		destroyCreateInfoMiddle dvc mci ci
 		destroyCreateInfoMiddleList dvc mcis cis
-
-createCs :: (
-	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
-	Pokable c', Pokable d',
-	DestroyCreateInfoMiddleList (Result vss) vss,
-	HeteroParList.HomoList '() (HeteroParList.ToDummies vss) ) =>
-	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) vss ->
-	Maybe (AllocationCallbacks.A sc c') -> Maybe (AllocationCallbacks.A sd' d') ->
-	(forall s . HeteroParList.LL (C s) (HeteroParList.ToDummies vss) -> IO a) -> IO a
-createCs dvc@(Device.D mdvc) mcch cis
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = do
-	cis' <- createInfoListToMiddle dvc cis
-	let	mcch' = (\(Cache.C c) -> c) <$> mcch
-	bracket
-		(M.createCs mdvc mcch' cis' macc
-			<* destroyCreateInfoMiddleList dvc cis' cis)
-		(mapM_ \c -> M.destroy mdvc c macd)
-		(f . HeteroParList.homoListFromList @_ @'() . (HeteroParList.Dummy . C <$>))
 
 createCsNew :: (
 	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),

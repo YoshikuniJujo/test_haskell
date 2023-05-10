@@ -33,12 +33,12 @@ import Shaderc.TH
 import Shaderc.EnumAuto
 import Gpu.Vulkan.Misc
 
-import qualified Gpu.Vulkan as Vk
+import qualified Gpu.VulkanNew as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.QueueNew as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFam
@@ -59,7 +59,7 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
@@ -271,13 +271,12 @@ calc :: forall slbts sl bts sd sp . (
 	Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCs dvc Nothing
+	Vk.Ppl.Cmpt.createCsNew dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
-		nil nil \(ppl :*. HeteroParList.Nil) ->
+		nil nil \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateOld dvc (commandBufferInfo cmdPool) \case
-		[cmdBuf] -> run dvc qFam cmdBuf ppl plyt dscSet dsz
-		_ -> error "never occur"
+	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(cb :*. HeteroParList.Nil) ->
+		run dvc qFam cb ppl plyt dscSet dsz
 
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
 	Vk.Ppl.Lyt.CreateInfoNew 'Nothing '[ '(sl, bts)]
@@ -293,39 +292,38 @@ commandPoolInfo qFam = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qFam }
 
-commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoOld 'Nothing s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
-	Vk.CmdBuf.allocateInfoNextOld = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s 1
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
+	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
+	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
 
-run :: forall slbts sbtss sd sc vs sg sl sp . (
+run :: forall slbts sbtss sd sc sg sl sp . (
 	sbtss ~ '[slbts],
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.Binded sc vs -> Vk.Ppl.Cmpt.C sg ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
-	Vk.CmdBuf.begin @'Nothing @'Nothing cb def do
-		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointCompute
-			pplLyt (HeteroParList.Singleton $ U2 dscSet)
-			(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
-				HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
-		Vk.Cmd.dispatch cb dsz 1 1
+	Vk.CmdBuf.beginNew @'Nothing @'Nothing cb def $
+		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb
+				pplLyt (HeteroParList.Singleton $ U2 dscSet)
+				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
+					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
+			Vk.Cmd.dispatch ccb dsz 1 1
 	Vk.Queue.submit q (HeteroParList.Singleton $ U4 submitInfo) Nothing
 	Vk.Queue.waitIdle q
 	where
-	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(sc, vs)] '[]
+	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[sc] '[]
 	submitInfo = Vk.SubmitInfo {
 		Vk.submitInfoNext = TMaybe.N,
 		Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-		Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
+		Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 		Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
 -- COMPUTE PIPELINE INFO

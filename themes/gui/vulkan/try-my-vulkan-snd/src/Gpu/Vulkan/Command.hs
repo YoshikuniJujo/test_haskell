@@ -33,7 +33,6 @@ import Gpu.Vulkan.Command.TypeLevel
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
-import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
 import qualified Gpu.Vulkan.PipelineLayout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
@@ -77,10 +76,6 @@ bindPipelineNew :: CommandBuffer.C sc ->
 	(forall sb . CommandBuffer.Binded sb vs -> IO a) -> IO a
 bindPipelineNew (CommandBuffer.C c) bp (Pipeline.G g) f =
 	M.bindPipeline c bp g >> f (CommandBuffer.Binded c)
-
-bindPipelineCompute ::
-	CommandBuffer.Binded sc vs -> Pipeline.BindPoint -> Pipeline.Compute.C sg -> IO ()
-bindPipelineCompute (CommandBuffer.Binded cb) bp (Pipeline.Compute.C g) = M.bindPipelineCompute cb bp g
 
 draw :: CommandBuffer.Binded sc vs -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
 draw (CommandBuffer.Binded cb) vc ic fv fi = M.draw cb vc ic fv fi

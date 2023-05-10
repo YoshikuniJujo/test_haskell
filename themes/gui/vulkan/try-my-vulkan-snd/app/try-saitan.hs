@@ -36,12 +36,12 @@ import Shaderc.TH
 import Shaderc.EnumAuto
 import Gpu.Vulkan.Misc
 
-import qualified Gpu.Vulkan as Vk
+import qualified Gpu.VulkanNew as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.QueueNew as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
 import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFam
@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.CommandNew as Vk.Cmd
 import qualified Gpu.Vulkan.Command.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
@@ -159,6 +159,8 @@ calc opt da db dc = withDevice \phdvc qFam dvc maxGroupCountX ->
 
 calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sp sm1 sm2 sm3 .
 	(
+	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
+	slbts ~ '(sl, bts),
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
@@ -173,19 +175,20 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sp sm1
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 calc' dvc qFam dscSetLyt dscSet dsz ma mb mc =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfoNew dscSetLyt) nil nil \plyt ->
-	Vk.Ppl.Cmpt.createCs
+	Vk.Ppl.Cmpt.createCsNew
 		dvc Nothing (U4 (computePipelineInfo plyt) :** HeteroParList.Nil)
-		nil nil \(ppl :*. HeteroParList.Nil) ->
+		nil nil \(ppl :** HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateOld dvc (commandBufferInfo cmdPool) \case
-		[cmdBuf] -> run @nm1 @nm2 @nm3 dvc qFam cmdBuf ppl plyt dscSet dsz ma mb mc
-		_ -> error "never occur"
+	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HeteroParList.Nil) ->
+		run @nm1 @nm2 @nm3 dvc qFam cmdBuf ppl plyt dscSet dsz ma mb mc
 
 type ListBuffer1 w1 w2 w3 = '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
 type ListBuffer3Memory3 w1 w2 w3 = '[ '[VObj.List 256 w1 ""], '[VObj.List 256 w2 ""], '[VObj.List 256 w3 ""]]
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
 	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 . (
+	Vk.DscSet.LayoutArgOnlyDynamics slbts ~ '[ '[]],
+	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
@@ -194,17 +197,20 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
 	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.Binded sc vs -> Vk.Ppl.Cmpt.C sg ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
+	Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
 	Vk.Mem.M sm3 objss3 -> IO ([w1], [w2], [w3])
 run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qFam 0
-	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def do
-		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl
-		Vk.Cmd.bindDescriptorSets cmdBuf Vk.Ppl.BindPointCompute pplLyt
-			(U2 dscSet :** HeteroParList.Nil) []
-		Vk.Cmd.dispatch cmdBuf dsz 1 1
+	Vk.CmdBuf.beginNew @'Nothing @'Nothing cmdBuf def $
+		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl \ccb -> do
+			Vk.Cmd.bindDescriptorSetsCompute ccb pplLyt
+				(U2 dscSet :** HeteroParList.Nil)
+				(HeteroParList.Singleton
+					$ HeteroParList.Singleton HeteroParList.Nil)
+			Vk.Cmd.dispatch ccb dsz 1 1
 	Vk.Queue.submit queue (U4 submitInfo :** HeteroParList.Nil) Nothing
 	Vk.Queue.waitIdle queue
 	(,,)	<$> Vk.Mem.read @nm1 @(VObj.List 256 w1 "") @[w1] dvc memA def
@@ -214,7 +220,7 @@ run dvc qFam cmdBuf ppl pplLyt dscSet dsz memA memB memC = do
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-			Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
+			Vk.submitInfoCommandBuffers = cmdBuf :** HeteroParList.Nil,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 
 withDevice ::
@@ -530,12 +536,11 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoOld 'Nothing s
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoOld {
-	Vk.CmdBuf.allocateInfoNextOld = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPoolOld = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelOld = Vk.CmdBuf.LevelPrimary,
-	Vk.CmdBuf.allocateInfoCommandBufferCountOld = 1 }
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s 1
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
+	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
+	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
+	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPoolInfo = Vk.DscPool.CreateInfo {
