@@ -714,7 +714,7 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoBasePipelineHandle = Nothing,
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
-			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil nil
+			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil'
 				\(U2 g :** HeteroParList.Nil) -> f g
 
 [glslVertexShader|

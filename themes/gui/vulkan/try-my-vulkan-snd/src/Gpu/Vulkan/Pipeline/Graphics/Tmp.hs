@@ -16,9 +16,9 @@ module Gpu.Vulkan.Pipeline.Graphics.Tmp (
 import Gpu.Vulkan.Pipeline.Graphics.Middle qualified as M
 
 import GHC.TypeNats
-import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -146,28 +146,23 @@ instance (
 		U11 (createInfoToMiddle ci) :** createInfoListToMiddle cis
 
 createGs :: (
-	Pokable n',
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
-	CreateInfoListToMiddle ss
-	) =>
+	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle' msn'n' ) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A sn' n') -> IO [M.G]
-createGs dvc mc cis ((AllocationCallbacks.toMiddle <$>) -> mac) =
+	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO [M.G]
+createGs dvc mc cis (AllocationCallbacks.toMiddle' -> mac) =
 	M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
-	CreateInfoListToMiddle ss,
-	Pokable c, Pokable d
-	) => Device.D -> Maybe Cache.C ->
+	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle' mscc ) => Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	[M.G] -> IO ()
 recreateGs dvc mc cis
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) gs =
-	M.recreateGs dvc mc (createInfoListToMiddle cis) macc macd gs
+	(AllocationCallbacks.toMiddle' -> macc) gs =
+	M.recreateGs dvc mc (createInfoListToMiddle cis) macc gs
 
 type family GListVars (ss :: [(
 		Type, [(Type, ShaderKind, [Type])],

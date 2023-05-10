@@ -732,7 +732,7 @@ createGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt mss f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (U14 pplInfo :** HeteroParList.Nil)
-			nil nil \(U2 gpl :** HeteroParList.Nil) -> f gpl
+			nil' \(U2 gpl :** HeteroParList.Nil) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
 
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
@@ -742,7 +742,7 @@ recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)] -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt mss gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil nil (U2 gpls :** HeteroParList.Nil)
+	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U2 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo' sce rp ppllyt mss
 
 mkGraphicsPipelineCreateInfo' ::

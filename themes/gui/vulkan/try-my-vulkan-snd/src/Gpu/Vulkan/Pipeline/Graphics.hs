@@ -14,10 +14,10 @@ module Gpu.Vulkan.Pipeline.Graphics (
 	G, createGs, recreateGs, CreateInfo(..) ) where
 
 import GHC.TypeNats
-import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -199,17 +199,17 @@ instance U2g ss => U2g ('(s, t) ': ss) where
 createGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
-	Pokable c, Pokable d,
 	CreateInfoListToMiddle ss,
-	U2g (CreateInfoListArgs14ToGArgs2 ss) ) =>
+	U2g (CreateInfoListArgs14ToGArgs2 ss),
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	HeteroParList.PL (U14 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall sg .
 		HeteroParList.PL (U2 (G sg)) (CreateInfoListArgs14ToGArgs2 ss) ->
 		IO a) -> IO a
-createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
+createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis
+	macc@(AllocationCallbacks.toMiddle' -> macd) f = bracket
 	(createInfoListToMiddle d cis >>= \cis' ->
 		T.createGs dvc mc cis' macc <* destroyShaderStages d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
@@ -218,12 +218,12 @@ recreateGs :: (
 	CreateInfoListToMiddle ss,
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
-	Pokable c, Pokable d,
-	U2g (CreateInfoListArgs14ToGArgs2 ss) ) =>
+	U2g (CreateInfoListArgs14ToGArgs2 ss),
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	HeteroParList.PL (U2 (G sg)) (CreateInfoListArgs14ToGArgs2 ss) -> IO ()
-recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc macd gpls = do
+recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc gpls = do
 	cis' <- createInfoListToMiddle d cis
-	T.recreateGs dvc mc cis' macc macd $ g2v gpls
+	T.recreateGs dvc mc cis' macc $ g2v gpls
 	destroyShaderStages d cis' cis
