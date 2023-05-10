@@ -9,8 +9,8 @@ module Gpu.Vulkan.Khr.Surface.Middle.Internal (
 	Capabilities(..), capabilitiesFromCore,
 	Format(..), formatFromCore ) where
 
-import Foreign.Storable.PeekPoke
 import Data.Word
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
@@ -25,9 +25,9 @@ import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance
 
 newtype S = S Sfc.C.S deriving Show
 
-destroy :: Instance.I -> S -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Instance.I -> S -> TPMaybe.M AllocationCallbacks.A mn -> IO ()
 destroy (Instance.I ist) (S sfc) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ Sfc.C.destroy ist sfc
+	AllocationCallbacks.mToCore mac $ Sfc.C.destroy ist sfc
 
 data Capabilities = Capabilities {
 	capabilitiesMinImageCount :: Word32,
