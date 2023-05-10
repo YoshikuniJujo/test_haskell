@@ -308,7 +308,7 @@ run txfp mdfp mnld w inst g =
 
 createSurface :: Glfw.Window -> Vk.Ist.I si ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
-createSurface win ist f = Glfw.createWindowSurface ist win nil nil \sfc -> f sfc
+createSurface win ist f = Glfw.createWindowSurface ist win nil' \sfc -> f sfc
 
 pickPhysicalDevice :: Vk.Ist.I si ->
 	Vk.Khr.Surface.S ss -> IO (Vk.PhDvc.P, QueueFamilyIndices, Vk.Sample.CountFlags)

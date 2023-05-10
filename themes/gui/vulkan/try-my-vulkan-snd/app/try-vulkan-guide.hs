@@ -266,7 +266,7 @@ run w ist g obj = let
 --	print3 (takePosNormalFace 10 vnf) >>
 	let	vns = V.map positionNormalToVertex $ W.facePosNormal vs ns fs in
 --	print vns >>
-	Glfw.createWindowSurface ist w nil nil \sfc ->
+	Glfw.createWindowSurface ist w nil' \sfc ->
 	pickPhysicalDevice ist sfc >>= \(phdv, qfis) ->
 	putStrLn "MIN ALIGN" >>
 	(print . Vk.PhDvc.limitsMinUniformBufferOffsetAlignment . Vk.PhDvc.propertiesLimits =<< Vk.PhDvc.getProperties phdv) >>

@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE ViewPatterns #-}
@@ -5,8 +6,9 @@
 
 module Glfw where
 
-import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 
 import qualified Graphics.UI.GLFW as GlfwB
 
@@ -17,13 +19,12 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Vk.Khr.Surface
 import qualified Gpu.Vulkan.Khr.Surface.Middle as Vk.Khr.Surface.M
 import qualified Glfw.Middle as M
 
-createWindowSurface :: (Pokable c, Pokable d) =>
+createWindowSurface :: (AllocationCallbacks.ToMiddle' mscc ) =>
 	Vk.Instance.I si -> GlfwB.Window ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall ss . Vk.Khr.Surface.S ss -> IO a) -> IO a
 createWindowSurface (Vk.Instance.I ist) win
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = bracket
+	(AllocationCallbacks.toMiddle' -> macc) f = bracket
 	(M.createWindowSurface ist win macc)
-	(\sfc -> Vk.Khr.Surface.M.destroy ist sfc macd)
+	(\sfc -> Vk.Khr.Surface.M.destroy ist sfc macc)
 	(f . Vk.Khr.Surface.S)

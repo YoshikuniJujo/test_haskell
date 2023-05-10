@@ -248,7 +248,7 @@ debugMessengerInfo = Vk.Ext.DbgUtls.Msngr.CreateInfo {
 
 run :: Glfw.Window -> Vk.Ist.I s -> FramebufferResized -> V.Vector Vertex -> IO ()
 run w ist rszd (id &&& fromIntegral . V.length -> (vns, vnsln)) =
-	Glfw.createWindowSurface ist w nil nil \sfc ->
+	Glfw.createWindowSurface ist w nil' \sfc ->
 	pickPhysicalDevice ist sfc >>= \(pd, qfs) ->
 	putStrLn "MIN ALIGN" >>
 	(print . Vk.Phd.limitsMinUniformBufferOffsetAlignment
