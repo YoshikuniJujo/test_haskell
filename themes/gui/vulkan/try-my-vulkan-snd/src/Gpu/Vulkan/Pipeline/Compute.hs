@@ -13,6 +13,7 @@ module Gpu.Vulkan.Pipeline.Compute (createCsNew, CNew(..), CreateInfo(..)) where
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -134,22 +135,21 @@ instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
 
 createCsNew :: (
 	CreateInfoListToMiddle vss, M.CreateInfoListToCore (Result vss),
-	Pokable c', Pokable d',
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	HeteroParList.HomoList '() (HeteroParList.ToDummies vss),
-	FromMiddleList (CreateInfoListArgs4ToCArgs1 vss) ) =>
+	FromMiddleList (CreateInfoListArgs4ToCArgs1 vss),
+	AllocationCallbacks.ToMiddle' mscc' ) =>
 	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) vss ->
-	Maybe (AllocationCallbacks.A sc c') -> Maybe (AllocationCallbacks.A sd' d') ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc' ->
 	(forall s . HeteroParList.PL (CNew s) (CreateInfoListArgs4ToCArgs1 vss) -> IO a) -> IO a
 createCsNew dvc@(Device.D mdvc) mcch cis
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f = do
+	(AllocationCallbacks.toMiddle' -> mac) f = do
 	cis' <- createInfoListToMiddle dvc cis
 	let	mcch' = (\(Cache.C c) -> c) <$> mcch
 	bracket
-		(M.createCs mdvc mcch' cis' macc
+		(M.createCs mdvc mcch' cis' mac
 			<* destroyCreateInfoMiddleList dvc cis' cis)
-		(mapM_ \c -> M.destroy mdvc c macd)
+		(mapM_ \c -> M.destroy mdvc c mac)
 		(f . fromMiddleList)
 
 class FromMiddleList ss where

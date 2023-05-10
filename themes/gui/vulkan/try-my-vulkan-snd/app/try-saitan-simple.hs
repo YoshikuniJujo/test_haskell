@@ -273,7 +273,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil nil \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dvc Nothing
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
-		nil nil \(ppl :** HeteroParList.Nil) ->
+		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
 	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(cb :*. HeteroParList.Nil) ->
 		run dvc qFam cb ppl plyt dscSet dsz
