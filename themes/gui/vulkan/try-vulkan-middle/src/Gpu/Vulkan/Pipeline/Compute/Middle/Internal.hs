@@ -21,6 +21,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import qualified Data.HeteroParList as HeteroParList
@@ -94,20 +95,20 @@ instance (
 
 newtype C = C Pipeline.C.P deriving Show
 
-createCs :: forall cias c . CreateInfoListToCore cias =>
+createCs :: forall cias mc . CreateInfoListToCore cias =>
 	Device.D -> Maybe Cache.C -> HeteroParList.PL (U3 CreateInfo) cias ->
-	Maybe (AllocationCallbacks.A c) -> IO [C]
+	TPMaybe.M AllocationCallbacks.A mc -> IO [C]
 createCs (Device.D dvc) (maybe NullPtr (\(Cache.C c) -> c) -> cch) cis mac =
 	(C <$>) <$> allocaArray ln \pps -> do
 		createInfoListToCore cis \cis' ->
 			allocaArray ln \pcis ->
 			pokeArray pcis cis' >>
-			AllocationCallbacks.maybeToCoreNew mac \pac ->
+			AllocationCallbacks.mToCore mac \pac ->
 				throwUnlessSuccess . Result =<< C.createCs
 					dvc cch (fromIntegral ln) pcis pac pps
 		peekArray ln pps
 	where ln = length @_ @cias
 
-destroy :: Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> C -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (C p) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.mToCore mac $ Pipeline.C.destroy dvc p
