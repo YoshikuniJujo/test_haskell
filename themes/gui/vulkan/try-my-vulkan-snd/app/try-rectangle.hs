@@ -403,7 +403,7 @@ createSwapChainNew win sfc phdvc qfis dvc f = do
 			. chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	crInfo = mkSwapchainCreateInfoNew sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @'Nothing @fmt dvc crInfo nil
+		Vk.Khr.Swapchain.createNew @'Nothing @fmt dvc crInfo nil'
 			\sc -> f sc ext
 
 mkSwapchainCreateInfoNew :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
@@ -453,7 +453,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	let	crInfo = mkSwapchainCreateInfoNew sfc qfis0 spp ext
 		fmt = chooseSwapSurfaceFormat $ formats spp
 		scifmt = Vk.Khr.Surface.M.formatFormat fmt
-	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @'Nothing dvc crInfo nil sc
+	(scifmt, ext) <$ Vk.Khr.Swapchain.recreateNew @'Nothing dvc crInfo nil' sc
 
 chooseSwapSurfaceFormat  :: [Vk.Khr.Surface.M.Format] -> Vk.Khr.Surface.M.Format
 chooseSwapSurfaceFormat = \case

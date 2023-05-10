@@ -423,7 +423,7 @@ createSwapChain win sfc phdvc qfis dvc f = do
 	let	fmt = Vk.Khr.Surface.M.formatFormat . chooseSwapSurfaceFormat $ formats spp
 	Vk.T.formatToType fmt \(_ :: Proxy fmt) -> do
 		let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis spp ext
-		Vk.Khr.Swapchain.createNew @'Nothing @fmt dvc crInfo nil \sc -> f sc scifmt ext
+		Vk.Khr.Swapchain.createNew @'Nothing @fmt dvc crInfo nil' \sc -> f sc scifmt ext
 
 recreateSwapChain :: forall ssfc sd ssc scfmt .
 	Vk.T.FormatToValue scfmt =>
@@ -434,7 +434,7 @@ recreateSwapChain win sfc phdvc qfis0 dvc sc = do
 	spp <- querySwapChainSupport phdvc sfc
 	ext <- chooseSwapExtent win $ capabilities spp
 	let	(crInfo, scifmt) = mkSwapchainCreateInfo sfc qfis0 spp ext
-	ext <$ Vk.Khr.Swapchain.recreateNew @'Nothing @scfmt dvc crInfo nil sc
+	ext <$ Vk.Khr.Swapchain.recreateNew @'Nothing @scfmt dvc crInfo nil' sc
 
 mkSwapchainCreateInfo :: Vk.Khr.Surface.S ss -> QueueFamilyIndices ->
 	SwapChainSupportDetails -> Vk.C.Extent2d ->
