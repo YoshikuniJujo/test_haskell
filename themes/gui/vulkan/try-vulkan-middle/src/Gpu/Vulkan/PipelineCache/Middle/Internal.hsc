@@ -20,6 +20,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Types
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Word
 import Data.ByteString qualified as BS
@@ -46,25 +47,21 @@ data CreateInfo mn = CreateInfo {
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
 
 tryCreateAndPrintData :: Device.D -> C -> IO ()
-tryCreateAndPrintData dv@(Device.D cdv) c@(C cc) = alloca \psz -> do
+tryCreateAndPrintData dv@(Device.D cdv) (C cc) = alloca \psz -> do
 	r <- C.getData cdv cc psz nullPtr
 	throwUnlessSuccess $ Result r
 	sz <- peek psz
 	allocaBytes (fromIntegral sz) \pdt -> do
 		r' <- C.getData cdv cc psz pdt
 		throwUnlessSuccess $ Result r'
-		d <- dataFromRaw . DataRaw sz $ castPtr pdt
-		let	ci = CreateInfo {
-				createInfoNext = TMaybe.N,
-				createInfoFlags = zeroBits,
-				createInfoInitialData = d }
-			cci = C.CreateInfo {
+		let	cci = C.CreateInfo {
+				C.createInfoSType = (),
 				C.createInfoPNext = nullPtr,
 				C.createInfoFlags = zeroBits,
 				C.createInfoInitialDataSize = sz,
 				C.createInfoPInitialData = pdt }
 		alloca \pc -> withPoked cci \pcci -> do
-			C.create cdv pcci nullPtr pc
+			_ <- C.create cdv pcci nullPtr pc
 			c' <- peek pc
 			print =<< getData dv (C c')
 --		c' <- create @() @() dv ci Nothing
@@ -90,17 +87,17 @@ createInfoToCore CreateInfo {
 newtype C = C C.C deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO C
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO C
 create (Device.D dvc) ci mac = C <$> alloca \pc -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pci pac pc
 			throwUnlessSuccess $ Result r
 	peek pc
 
-destroy :: Device.D -> C -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> C -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (C c) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc c
+	AllocationCallbacks.mToCore mac $ C.destroy dvc c
 
 getData :: Device.D -> C -> IO Data
 getData (Device.D dv) (C c) = alloca \psz -> do
@@ -145,11 +142,13 @@ writeDataRaw fp (DataRaw sz pd) = withBinaryFile fp WriteMode \h ->
 readDataSize :: Handle -> IO #{type size_t}
 readDataSize h = readStorable h
 
+{-
 readDataRaw :: FilePath -> Ptr CChar -> IO DataRaw
 readDataRaw fp pd = withBinaryFile fp ReadMode \h -> do
 	sz <- readStorable h
 	_ <- hGetBuf h pd $ fromIntegral sz
 	pure $ DataRaw sz pd
+	-}
 
 writeStorable :: Storable a => Handle -> a -> IO ()
 writeStorable h x = alloca \px -> poke px x >> hPutBuf h px (sizeOf x)
