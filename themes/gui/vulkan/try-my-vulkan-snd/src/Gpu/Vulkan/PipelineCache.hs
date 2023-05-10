@@ -11,6 +11,8 @@ module Gpu.Vulkan.PipelineCache (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 
 import Gpu.Vulkan.PipelineCache.Type
 
@@ -20,14 +22,12 @@ import Gpu.Vulkan.Device qualified as Device
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.PipelineCache.Middle qualified as M
 
-create :: (WithPoked (TMaybe.M mn), WithPoked c, WithPoked d) =>
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
 	Device.D sd -> M.CreateInfo mn ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd' d) ->
-	(forall s . C s -> IO a) -> IO a
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> (forall s . C s -> IO a) -> IO a
 create (Device.D dv) ci
-	((AllocationCallbacks.toMiddle <$>) -> macc)
-	((AllocationCallbacks.toMiddle <$>) -> macd) f =
-	bracket (M.create dv ci macc) (\c -> M.destroy dv c macd) (f . C)
+	(AllocationCallbacks.toMiddle' -> mac) f =
+	bracket (M.create dv ci mac) (\c -> M.destroy dv c mac) (f . C)
 
 getData :: Device.D sd -> C s -> IO M.Data
 getData (Device.D dv) (C c) = M.getData dv c

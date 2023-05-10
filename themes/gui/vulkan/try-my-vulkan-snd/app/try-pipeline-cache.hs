@@ -91,7 +91,7 @@ main :: IO ()
 main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 	readData "pipeline.cache" >>= \cch ->
 	print cch >>
-	Vk.PplCch.create dv (pplCchInfo cch) nil nil \pc@(Vk.PplCch.C mpc) -> do
+	Vk.PplCch.create dv (pplCchInfo cch) nil' \pc@(Vk.PplCch.C mpc) -> do
 	threadDelay 1000000
 	print =<< Vk.PplCch.getData dv pc
 	putStrLn . map (chr . fromIntegral) =<<
