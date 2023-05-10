@@ -251,7 +251,7 @@ makeImage' phdvc dvc f = do
 					memoryTypeIndex }
 		Vk.Memory.allocateBind @'Nothing
 			dvc (HeteroParList.Singleton . U2 $ Vk.Memory.Image image)
-			imgMemAllocInfo nil nil \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
+			imgMemAllocInfo nil' \(HeteroParList.Singleton (U2 (Vk.Memory.ImageBinded bimg))) imgMem -> do
 			f bimg imgMem
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
@@ -382,7 +382,7 @@ createBuffer p dv ln usg props f = Vk.Bffr.create dv bffrInfo nil' \b -> do
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Memory.M.requirementsMemoryTypeBits reqs) props
 	Vk.Memory.allocateBind dv (HeteroParList.Singleton . U2 $ Vk.Memory.Buffer b)
-		(allcInfo mt) nil nil
+		(allcInfo mt) nil'
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Memory.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[o]

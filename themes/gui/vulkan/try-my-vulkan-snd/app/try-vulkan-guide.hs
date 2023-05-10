@@ -930,7 +930,7 @@ imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
 imageAllocateBind dvc img memInfo f =
 	Vk.Mem.allocateBind @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.Image img) memInfo
-		nil nil \(HeteroParList.Singleton (U2 (Vk.Mem.ImageBinded bnd))) m -> do
+		nil' \(HeteroParList.Singleton (U2 (Vk.Mem.ImageBinded bnd))) m -> do
 		f bnd m
 
 imageReallocateBind ::
@@ -940,7 +940,7 @@ imageReallocateBind ::
 imageReallocateBind dvc img memInfo m =
 	Vk.Mem.reallocateBind @'Nothing dvc
 		(HeteroParList.Singleton . U2 $ Vk.Mem.ImageBinded img) memInfo
-		nil nil m
+		nil' m
 
 imageMemoryInfo ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Mem.PropertyFlags ->
@@ -1181,7 +1181,7 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv
-		(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil nil
+		(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil'
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[obj]
@@ -1215,7 +1215,7 @@ createBuffer2 p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 	reqs <- Vk.Bffr.getMemoryRequirements dv b
 	mt <- findMemoryType p (Vk.Mem.M.requirementsMemoryTypeBits reqs) props
 	Vk.Mem.allocateBind dv
-		(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil nil
+		(HeteroParList.Singleton . U2 $ Vk.Mem.Buffer b) (allcInfo mt) nil'
 		$ f . \(HeteroParList.Singleton (U2 (Vk.Mem.BufferBinded bnd))) -> bnd
 	where
 	bffrInfo :: Vk.Bffr.CreateInfo 'Nothing '[obj, obj2]

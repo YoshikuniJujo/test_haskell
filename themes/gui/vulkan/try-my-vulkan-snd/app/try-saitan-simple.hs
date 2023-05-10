@@ -199,7 +199,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \bf ->
 	getMemoryInfo phdvc dvc bf >>= \mmi ->
 	Vk.Mm.allocateBind dvc
-		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
+		(HeteroParList.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
 		\(HeteroParList.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	Vk.Mm.write @nm @(VObj.List 256 w "") dvc mm def xs >> f bnd mm
 

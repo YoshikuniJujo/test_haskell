@@ -876,14 +876,14 @@ imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
 		Vk.Img.BindedNew si sm nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
 imageAllocateBind dv i mi f = Vk.Mm.allocateBind @'Nothing dv
-	(HL.Singleton . U2 $ Vk.Mm.Image i) mi nil nil
+	(HL.Singleton . U2 $ Vk.Mm.Image i) mi nil'
 	\(HL.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> f b m
 
 imageReallocateBind :: Vk.Dvc.D sd -> Vk.Img.BindedNew sb sm nm fmt ->
 	Vk.Dvc.Mem.AllocateInfo 'Nothing ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
 imageReallocateBind dv i mi m = Vk.Mm.reallocateBind @'Nothing dv
-	(HL.Singleton . U2 $ Vk.Mm.ImageBinded i) mi nil nil m
+	(HL.Singleton . U2 $ Vk.Mm.ImageBinded i) mi nil' m
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
@@ -1045,7 +1045,7 @@ createBuffer p dv lns usg prs f =
 	Vk.Bffr.getMemoryRequirements dv b >>= \rs ->
 	findMemoryType p (Vk.Mm.M.requirementsMemoryTypeBits rs) prs >>= \mt ->
 	Vk.Mm.allocateBind dv
-		(HL.Singleton . U2 $ Vk.Mm.Buffer b) (memoryInfo mt) nil nil
+		(HL.Singleton . U2 $ Vk.Mm.Buffer b) (memoryInfo mt) nil'
 		$ f . \(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) -> bnd
 
 class Vk.Mm.Alignments '[ '(s, 'Vk.Mm.K.Buffer nm objs)] =>

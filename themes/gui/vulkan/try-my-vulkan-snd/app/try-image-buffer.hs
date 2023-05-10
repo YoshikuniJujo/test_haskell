@@ -364,7 +364,7 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 			Vk.Dvc.Mem.Buffer.allocateInfoMemoryTypeIndex =
 				memTypeIdx } in
 	print memInfo >>
-	Vk.Mem.allocateBind dvc imgbuf memInfo nil nil \(
+	Vk.Mem.allocateBind dvc imgbuf memInfo nil' \(
 		U2 (Vk.Mem.ImageBinded _imgb) :**
 		U2 (Vk.Mem.BufferBinded bufb) :** HeteroParList.Nil) mib ->
 	(print =<< Vk.Mem.offsetSize
@@ -457,7 +457,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
 		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
-			nil nil \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
+			nil' \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
 			Vk.Mem.write @nm @(VObj.List 256 w "") dvc memory def xs
 			f binded memory
 
@@ -487,7 +487,7 @@ storage3BufferNew dvc phdvc xs ys zs f =
 						U2 (Vk.Mem.Buffer buf1) :**
 						U2 (Vk.Mem.Buffer buf2) :**
 						U2 (Vk.Mem.Buffer buf3) :** HeteroParList.Nil
-						) memInfo1 nil nil
+						) memInfo1 nil'
 						\(	U2 (Vk.Mem.BufferBinded bnd1) :**
 							U2 (Vk.Mem.BufferBinded bnd2) :**
 							U2 (Vk.Mem.BufferBinded bnd3) :** HeteroParList.Nil ) mem -> do

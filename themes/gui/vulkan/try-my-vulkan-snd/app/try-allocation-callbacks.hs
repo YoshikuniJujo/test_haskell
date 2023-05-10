@@ -215,7 +215,7 @@ storageBufferNew pd dv f =
 	Vk.Bffr.create dv bufferInfo (TPMaybe.J $ U2 ac) \bf ->
 	getMemoryInfo pd dv bf >>= \mmi ->
 	Vk.Mm.allocateBind dv
-		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil nil
+		(HL.Singleton . U2 $ Vk.Mm.Buffer bf) mmi nil'
 		\(HL.Singleton (U2 (Vk.Mm.BufferBinded bnd))) mm ->
 	f bnd mm
 

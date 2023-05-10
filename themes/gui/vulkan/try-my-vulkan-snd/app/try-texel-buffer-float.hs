@@ -445,7 +445,7 @@ storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \buffer -> do
 		memoryInfo <- getMemoryInfo phdvc dvc buffer
 		Vk.Mem.allocateBind dvc (U2 (Vk.Mem.Buffer buffer) :** HeteroParList.Nil) memoryInfo
-			nil nil \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
+			nil' \(U2 (Vk.Mem.BufferBinded binded) :** HeteroParList.Nil) memory -> do
 			Vk.Mem.write @nm @(VObj.List 256 w "") dvc memory def xs
 			f binded memory
 
