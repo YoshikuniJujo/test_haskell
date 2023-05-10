@@ -23,6 +23,7 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Word
 import Data.IORef
 
@@ -82,10 +83,10 @@ data CreateInfo mn = CreateInfo {
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO S
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO S
 create (Device.D dvc) ci mac = sFromCore ex =<< alloca \psc -> do
 		createInfoToCoreOld ci \pci ->
-			AllocationCallbacks.maybeToCoreNew mac \pac -> do
+			AllocationCallbacks.mToCore mac \pac -> do
 				r <- C.create dvc pci pac psc
 				throwUnlessSuccess $ Result r
 		peek psc
@@ -93,21 +94,20 @@ create (Device.D dvc) ci mac = sFromCore ex =<< alloca \psc -> do
 
 recreate :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	TPMaybe.M AllocationCallbacks.A mc ->
 	S -> IO ()
-recreate (Device.D dvc) ci macc macd (S rs) = alloca \psc ->
+recreate (Device.D dvc) ci macc (S rs) = alloca \psc ->
 		createInfoToCoreOld ci \pci ->
-		AllocationCallbacks.maybeToCoreNew macc \pacc ->
-		AllocationCallbacks.maybeToCoreNew macd \pacd -> do
+		AllocationCallbacks.mToCore macc \pacc -> do
 			r <- C.create dvc pci pacc psc
 			throwUnlessSuccess $ Result r
 			(_, sco) <- readIORef rs
 			writeIORef rs . (ex ,) =<< peek psc
-			C.destroy dvc sco pacd
+			C.destroy dvc sco pacc
 	where ex = createInfoImageExtent ci
 
-destroy :: Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
-destroy (Device.D dvc) sc mac = AllocationCallbacks.maybeToCoreNew mac \pac -> do
+destroy :: Device.D -> S -> TPMaybe.M AllocationCallbacks.A md -> IO ()
+destroy (Device.D dvc) sc mac = AllocationCallbacks.mToCore mac \pac -> do
 	sc' <- sToCore sc
 	C.destroy dvc sc' pac
 
