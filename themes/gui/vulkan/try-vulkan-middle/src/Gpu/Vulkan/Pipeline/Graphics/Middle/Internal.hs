@@ -27,6 +27,7 @@ import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke
 import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Length
 import Data.IORef
@@ -200,28 +201,28 @@ gListToCore cps = readIORef `mapM` gListToIORefs cps
 
 createGs :: CreateInfoListToCore cias =>
 	Device.D -> Maybe Cache.C -> HeteroParList.PL (U11 CreateInfo) cias ->
-	Maybe (AllocationCallbacks.A c) -> IO [G]
+	TPMaybe.M AllocationCallbacks.A mc -> IO [G]
 createGs dvc mc cis mac = gListFromCore =<< createRaw dvc mc cis mac
 
 recreateGs :: CreateInfoListToCore cias =>
 	Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) cias ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	TPMaybe.M AllocationCallbacks.A mc ->
 	[G] -> IO ()
-recreateGs dvc mc cis macc macd gs =
-	recreateRaw dvc mc cis macc macd $ gListToIORefs gs
+recreateGs dvc mc cis macc gs =
+	recreateRaw dvc mc cis macc $ gListToIORefs gs
 
-createRaw :: forall ss n' . CreateInfoListToCore ss =>
+createRaw :: forall ss mn' . CreateInfoListToCore ss =>
 	Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A n') -> IO [Pipeline.C.P]
+	TPMaybe.M AllocationCallbacks.A mn' -> IO [Pipeline.C.P]
 createRaw (Device.D dvc) mc cis mac = let
 	cc = case mc of Nothing -> NullPtr; Just (Cache.C c) -> c
 	cic = length @_ @ss in
 	allocaArray cic \pps -> do
 		createInfoListToCore cis \ccis -> allocaArray cic \pcis ->
 			pokeArray pcis ccis >>
-			AllocationCallbacks.maybeToCoreNew mac \pac -> do
+			AllocationCallbacks.mToCore mac \pac -> do
 				r <- C.create dvc cc (fromIntegral cic) pcis pac pps
 				throwUnlessSuccess $ Result r
 		peekArray cic pps
@@ -229,22 +230,22 @@ createRaw (Device.D dvc) mc cis mac = let
 recreateRaw :: CreateInfoListToCore ss =>
 	Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
-	Maybe (AllocationCallbacks.A c) -> Maybe (AllocationCallbacks.A d) ->
+	TPMaybe.M AllocationCallbacks.A mc ->
 	[IORef Pipeline.C.P] -> IO ()
-recreateRaw dvc mc cis macc macd rs = do
+recreateRaw dvc mc cis macc rs = do
 	os <- readIORef `mapM` rs
 	ns <- createRaw dvc mc cis macc
 	zipWithM_ writeIORef rs ns
-	(\o -> destroyRaw dvc o macd) `mapM_` os
+	(\o -> destroyRaw dvc o macc) `mapM_` os
 
-destroyGs :: Device.D -> [G] -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroyGs :: Device.D -> [G] -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroyGs dvc gs mac = ((\g -> gFromCore g >>= \g' -> destroy dvc g' mac) `mapM_`) =<< gListToCore gs
 
-destroy :: Device.D -> G -> Maybe (AllocationCallbacks.A n) -> IO ()
+destroy :: Device.D -> G -> TPMaybe.M AllocationCallbacks.A mn -> IO ()
 destroy (Device.D dvc) g mac = gToCore g >>= \p ->
-	AllocationCallbacks.maybeToCoreNew mac $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.mToCore mac $ Pipeline.C.destroy dvc p
 
 destroyRaw ::
-	Device.D -> Pipeline.C.P -> Maybe (AllocationCallbacks.A d) -> IO ()
+	Device.D -> Pipeline.C.P -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroyRaw (Device.D dvc) p macd =
-	AllocationCallbacks.maybeToCoreNew macd $ Pipeline.C.destroy dvc p
+	AllocationCallbacks.mToCore macd $ Pipeline.C.destroy dvc p
