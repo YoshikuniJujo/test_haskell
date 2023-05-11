@@ -104,8 +104,8 @@ main = withDevice \pd qfi dv -> do
 	putStr "TIMESTAMP PERIOD: "
 	print $ Vk.Phd.limitsTimestampPeriod lmts
 
-	Vk.QP.create dv queryPoolInfo nil nil \qp ->
-		Vk.QP.create dv queryPoolInfo nil nil \qpt -> do
+	Vk.QP.create dv queryPoolInfo nil' \qp ->
+		Vk.QP.create dv queryPoolInfo nil' \qpt -> do
 
 		print qp
 		print qpt
