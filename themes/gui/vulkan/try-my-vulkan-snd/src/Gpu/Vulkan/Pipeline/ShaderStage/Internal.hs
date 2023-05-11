@@ -24,22 +24,24 @@ import Shaderc.EnumAuto
 import qualified Data.ByteString as BS
 
 import Gpu.Vulkan.Enum
+import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.Pipeline.ShaderStage.Enum
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.ShaderModule.Internal as Shader.Module
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Middle as M
 
-data CreateInfoNew mn m sknd sc c sd d vs = CreateInfoNew {
+data CreateInfoNew mn m sknd mscc vs = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoStageNew :: ShaderStageFlagBits,
-	createInfoModuleNew :: Shader.Module.M m sknd sc c sd d,
+	createInfoModuleNew :: Shader.Module.M m sknd mscc,
 	createInfoNameNew :: BS.ByteString,
 	createInfoSpecializationInfoNew :: Maybe (HeteroParList.L vs) }
 
-createInfoToMiddleNew :: (WithPoked (TMaybe.M m), Pokable c) =>
-	Device.D ds -> CreateInfoNew n m sknd sc c sd d vs -> IO (M.CreateInfo n sknd vs)
+createInfoToMiddleNew ::
+	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle' mscc)  =>
+	Device.D ds -> CreateInfoNew n m sknd mscc vs -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
@@ -57,26 +59,29 @@ createInfoToMiddleNew dvc CreateInfoNew {
 		M.createInfoName = nm,
 		M.createInfoSpecializationInfo = spi }
 
-createInfoToMiddleFooNew :: (WithPoked (TMaybe.M m), Pokable c) => Device.D ds ->
-	U8 CreateInfoNew '(n, m, sknd, sc, c, sd, d, vs) -> IO (M.CreateInfo n sknd vs)
-createInfoToMiddleFooNew dvc (U8 ci) = createInfoToMiddleNew dvc ci
+createInfoToMiddleFooNew ::
+	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle' mscc) =>
+	Device.D ds ->
+	U5 CreateInfoNew '(n, m, sknd, mscc, vs) -> IO (M.CreateInfo n sknd vs)
+createInfoToMiddleFooNew dvc (U5 ci) = createInfoToMiddleNew dvc ci
 
-destroyCreateInfoMiddleNew :: Pokable d => Device.D ds ->
-	M.CreateInfo n sknd vs -> CreateInfoNew n m sknd sc c sd d vs -> IO ()
+destroyCreateInfoMiddleNew :: AllocationCallbacks.ToMiddle' mscc =>
+	Device.D ds ->
+	M.CreateInfo n sknd vs -> CreateInfoNew n m sknd mscc vs -> IO ()
 destroyCreateInfoMiddleNew dvc
 	M.CreateInfo { M.createInfoModule = mmdl }
 	CreateInfoNew { createInfoModuleNew = mdl } = Shader.Module.destroy dvc mmdl mdl
 
 class CreateInfoListToMiddleNew (
-	nnskndcdvss :: [(Maybe Type, Maybe Type, ShaderKind, Type, Type, Type, Type, [Type])]
+	nnskndcdvss :: [(Maybe Type, Maybe Type, ShaderKind, Maybe (Type, Type), [Type])]
 	) where
 	type MiddleVarsNew nnskndcdvss :: [(Maybe Type, ShaderKind, [Type])]
 	createInfoListToMiddleNew :: Device.D ds ->
-		HeteroParList.PL (U8 CreateInfoNew) nnskndcdvss ->
+		HeteroParList.PL (U5 CreateInfoNew) nnskndcdvss ->
 		IO (HeteroParList.PL (U3 M.CreateInfo) (MiddleVarsNew nnskndcdvss))
 	destroyCreateInfoMiddleListNew :: Device.D ds ->
 		HeteroParList.PL (U3 M.CreateInfo) (MiddleVarsNew nnskndcdvss) ->
-		HeteroParList.PL (U8 CreateInfoNew) nnskndcdvss -> IO ()
+		HeteroParList.PL (U5 CreateInfoNew) nnskndcdvss -> IO ()
 
 instance CreateInfoListToMiddleNew '[] where
 	type MiddleVarsNew '[] = '[]
@@ -84,14 +89,15 @@ instance CreateInfoListToMiddleNew '[] where
 	destroyCreateInfoMiddleListNew _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance (
-	WithPoked (TMaybe.M m), Pokable c, Pokable d,
-	CreateInfoListToMiddleNew nnskndcdvss ) =>
-	CreateInfoListToMiddleNew ('(n, m, sknd, sc, c, sd, d, vs) ': nnskndcdvss) where
-	type MiddleVarsNew ('(n, m, sknd, sc, c, sd, d, vs) ': nnskndcdvss) =
+	WithPoked (TMaybe.M m),
+	CreateInfoListToMiddleNew nnskndcdvss,
+	AllocationCallbacks.ToMiddle' mscc ) =>
+	CreateInfoListToMiddleNew ('(n, m, sknd, mscc, vs) ': nnskndcdvss) where
+	type MiddleVarsNew ('(n, m, sknd, mscc, vs) ': nnskndcdvss) =
 		'(n, sknd, vs) ': MiddleVarsNew nnskndcdvss
-	createInfoListToMiddleNew dvc (U8 ci :** cis) = (:**)
+	createInfoListToMiddleNew dvc (U5 ci :** cis) = (:**)
 		<$> (U3 <$> createInfoToMiddleNew dvc ci)
 		<*> createInfoListToMiddleNew dvc cis
-	destroyCreateInfoMiddleListNew dvc (U3 cim :** cims) (U8 ci :** cis) =
+	destroyCreateInfoMiddleListNew dvc (U3 cim :** cims) (U5 ci :** cis) =
 		destroyCreateInfoMiddleNew dvc cim ci >>
 		destroyCreateInfoMiddleListNew dvc cims cis

@@ -58,7 +58,7 @@ data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 		createInfoNext :: TMaybe.M mn,
 		createInfoFlags :: CreateFlags,
 		createInfoStages ::
-			HeteroParList.PL (U8 ShaderStage.CreateInfoNew) nnskndscdvss,
+			HeteroParList.PL (U5 ShaderStage.CreateInfoNew) nnskndscdvss,
 		createInfoVertexInputState ::
 			Maybe (U3 VertexInputState.CreateInfo nvsts),
 		createInfoInputAssemblyState ::
@@ -83,7 +83,7 @@ data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 
 type CreateInfoArgs14 = (
 	Maybe Type,
-	[(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Type, Type, Type, Type, [Type])],
+	[(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Maybe (Type, Type), [Type])],
 	(Maybe Type, [(Type, VertexInput.Rate)], [(Nat, Type)]),
 	Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type, Maybe Type,
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),

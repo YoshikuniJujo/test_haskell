@@ -42,14 +42,14 @@ newtype CNew s (slbtss ::
 data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
-	createInfoStage :: U8 ShaderStage.CreateInfoNew nncdvs,
+	createInfoStage :: U5 ShaderStage.CreateInfoNew nncdvs,
 	createInfoLayout :: U3 Layout.L slsbtss,
 	createInfoBasePipelineHandleOrIndex ::
 		Maybe (Either (U2 CNew sbph) Int32) }
 
 type CreateInfoArgs4 = (
 	Maybe Type,
-	(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Type, Type, Type, Type, [Type]),
+	(Maybe Type, Maybe Type, Shaderc.EnumAuto.ShaderKind, Maybe (Type, Type), [Type]),
 	(Type, [(Type, [DscStLyt.BindingType])], [Type]),
 	(Type, (Type, [(Type, [DscStLyt.BindingType])], [Type])) )
 
@@ -65,9 +65,10 @@ type family
 		CreateInfoArgs4ToCArgs1 cia ':
 		CreateInfoListArgs4ToCArgs1 cias
 
-createInfoToMiddle :: (WithPoked (TMaybe.M n'), Pokable c) =>
+createInfoToMiddle ::
+	(WithPoked (TMaybe.M n'), AllocationCallbacks.ToMiddle' mscc) =>
 	Device.D ds ->
-	CreateInfo n '(n1, n', 'GlslComputeShader, sc, c, sd', d, vs) slsbtss sbph ->
+	CreateInfo n '(n1, n', 'GlslComputeShader, mscc, vs) slsbtss sbph ->
 	IO (M.CreateInfo n n1 vs)
 createInfoToMiddle dvc CreateInfo {
 	createInfoNext = mnxt,
@@ -98,22 +99,25 @@ instance CreateInfoListToMiddle '[] where
 	type Result '[] = '[]
 	createInfoListToMiddle _ HeteroParList.Nil = pure HeteroParList.Nil
 
-instance (WithPoked (TMaybe.M n'), Pokable c, CreateInfoListToMiddle as) =>
+instance (
+	WithPoked (TMaybe.M n'), CreateInfoListToMiddle as,
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	CreateInfoListToMiddle (
-		'(n, '(n1, n', 'GlslComputeShader, sc, c, sd, d, vs), slsbtss, sbph
+		'(n, '(n1, n', 'GlslComputeShader, mscc, vs), slsbtss, sbph
 		) ': as) where
 	type Result (
-		'(n, '(n1, n', 'GlslComputeShader, sc, c, sd, d, vs), slsbtss, sbph) ':
+		'(n, '(n1, n', 'GlslComputeShader, mscc, vs), slsbtss, sbph) ':
 		as ) = '(n, n1, vs) ': Result as
 	createInfoListToMiddle dvc (U4 ci :** cis) = (:**)
 		<$> (U3 <$> createInfoToMiddle dvc ci)
 		<*> createInfoListToMiddle dvc cis
 
-destroyCreateInfoMiddle :: Pokable d =>
-	Device.D sd ->
-	M.CreateInfo n n1 vs -> CreateInfo n '(n1, n2, 'GlslComputeShader, sc, c, sd', d, vs) slsbtss sbph -> IO ()
+destroyCreateInfoMiddle ::
+	AllocationCallbacks.ToMiddle' mscc =>
+	Device.D sd -> M.CreateInfo n n1 vs ->
+	CreateInfo n '(n1, n2, 'GlslComputeShader, mscc, vs) slsbtss sbph -> IO ()
 destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
-	(M.createInfoStage mci) ((\(U8 s) -> s) $ createInfoStage ci)
+	(M.createInfoStage mci) ((\(U5 s) -> s) $ createInfoStage ci)
 
 class DestroyCreateInfoMiddleList vss vss' where
 	destroyCreateInfoMiddleList ::
@@ -124,10 +128,12 @@ class DestroyCreateInfoMiddleList vss vss' where
 instance DestroyCreateInfoMiddleList '[] '[] where
 	destroyCreateInfoMiddleList _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
-instance (Pokable d, DestroyCreateInfoMiddleList vss vss') =>
+instance (
+	DestroyCreateInfoMiddleList vss vss',
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	DestroyCreateInfoMiddleList
 		('(n, n1, vs) ': vss)
-		('(n, '(n1, n2, 'GlslComputeShader, sc, c, sd, d, vs), slsbtss, sbph) ': vss') where
+		('(n, '(n1, n2, 'GlslComputeShader, mscc, vs), slsbtss, sbph) ': vss') where
 	destroyCreateInfoMiddleList dvc
 		(U3 mci :** mcis) (U4 ci :** cis) = do
 		destroyCreateInfoMiddle dvc mci ci

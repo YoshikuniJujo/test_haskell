@@ -662,7 +662,7 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.ShSt.CreateFlagsZero,
 			Vk.Ppl.ShSt.createInfoStageNew = Vk.ShaderStageVertexBit,
 			Vk.Ppl.ShSt.createInfoModuleNew =
-				Vk.Shader.Module.M vertShaderCreateInfo nil nil,
+				Vk.Shader.Module.M vertShaderCreateInfo nil',
 			Vk.Ppl.ShSt.createInfoNameNew = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 		fragShaderCreateInfo = Vk.Shader.Module.CreateInfo {
@@ -677,13 +677,13 @@ makePipelineNew dvc rp f = do
 			Vk.Ppl.ShSt.createInfoStageNew =
 				Vk.ShaderStageFragmentBit,
 			Vk.Ppl.ShSt.createInfoModuleNew =
-				Vk.Shader.Module.M fragShaderCreateInfo nil nil,
+				Vk.Shader.Module.M fragShaderCreateInfo nil',
 			Vk.Ppl.ShSt.createInfoNameNew = "main",
 			Vk.Ppl.ShSt.createInfoSpecializationInfoNew = Nothing }
 	Vk.Ppl.Lyt.createNew dvc layoutCreateInfoNew nil' \plyt -> do
 		let	pipelineCreateInfo :: Vk.Ppl.Gr.CreateInfo 'Nothing '[
-					'( 'Nothing, 'Nothing, 'GlslVertexShader, sc, (), sd', (), '[]),
-					'( 'Nothing, 'Nothing, 'GlslFragmentShader, sc, (), sd', (), '[]) ]
+					'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
+					'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 				'(	'Nothing, '[], '[] )
 				'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
@@ -691,8 +691,8 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoFlags =
 					Vk.Ppl.CreateFlagsZero,
 				Vk.Ppl.Gr.createInfoStages =
-					U8 vertShaderStage :**
-					U8 fragShaderStage :** HeteroParList.Nil,
+					U5 vertShaderStage :**
+					U5 fragShaderStage :** HeteroParList.Nil,
 				Vk.Ppl.Gr.createInfoVertexInputState =
 					Just $ U3 vertexInputInfo,
 				Vk.Ppl.Gr.createInfoInputAssemblyState =
