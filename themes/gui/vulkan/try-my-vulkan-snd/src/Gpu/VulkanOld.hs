@@ -8,8 +8,8 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan (
-	module Gpu.Vulkan,
+module Gpu.VulkanOld (
+	module Gpu.VulkanOld,
 	M.FormatProperties(..)
 	) where
 

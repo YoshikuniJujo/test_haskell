@@ -59,7 +59,7 @@ import Shaderc.TH
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
 
-import qualified Gpu.Vulkan as Vk
+import qualified Gpu.VulkanOld as Vk
 import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Middle as Vk.C
 import qualified Gpu.Vulkan.Enum as Vk
@@ -128,7 +128,7 @@ import qualified Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.Middle as Vk.Mem.M
 import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.QueueOld as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K

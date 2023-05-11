@@ -34,7 +34,7 @@ import Shaderc.EnumAuto
 
 import Gpu.Vulkan.Misc
 
-import qualified Gpu.Vulkan as Vk
+import qualified Gpu.VulkanOld as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Middle as Vk.C
@@ -46,7 +46,7 @@ import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QueueFamily
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
-import qualified Gpu.Vulkan.Queue as Vk.Queue
+import qualified Gpu.Vulkan.QueueOld as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
@@ -75,7 +75,7 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
-import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
+import qualified Gpu.Vulkan.Pipeline.GraphicsOld as Vk.Ppl.Gr
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
@@ -84,7 +84,7 @@ import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.CommandOld as Vk.Cmd
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 

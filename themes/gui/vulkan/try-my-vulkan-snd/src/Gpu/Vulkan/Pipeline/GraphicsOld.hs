@@ -10,7 +10,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Graphics (
+module Gpu.Vulkan.Pipeline.GraphicsOld (
 	G, createGs, recreateGs, CreateInfo(..) ) where
 
 import GHC.TypeNats

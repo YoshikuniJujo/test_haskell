@@ -1,14 +1,14 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Queue (
+module Gpu.Vulkan.QueueOld (
 	M.Q, submit, M.waitIdle
 	) where
 
 import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 
-import Gpu.Vulkan
+import Gpu.VulkanOld
 
 import qualified Gpu.Vulkan.Fence.Type as Fence
 

@@ -10,7 +10,7 @@
 {-# LANGUAGe StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Command where
+module Gpu.Vulkan.CommandOld where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
