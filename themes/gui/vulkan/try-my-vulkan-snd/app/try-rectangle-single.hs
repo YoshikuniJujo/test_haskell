@@ -1024,8 +1024,8 @@ data SyncObjects (ssos :: (Type, Type, Type)) where
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall sias srfs siff . SyncObjects '(sias, srfs, siff) -> IO a ) -> IO a
 createSyncObjects dvc f =
-	Vk.Semaphore.create @'Nothing dvc def nil nil \ias ->
-	Vk.Semaphore.create @'Nothing dvc def nil nil \rfs ->
+	Vk.Semaphore.create @'Nothing dvc def nil' \ias ->
+	Vk.Semaphore.create @'Nothing dvc def nil' \rfs ->
 	Vk.Fence.create @'Nothing dvc fncInfo nil \iff ->
 	f $ SyncObjects ias rfs iff
 	where

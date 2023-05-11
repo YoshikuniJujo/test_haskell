@@ -1180,9 +1180,9 @@ createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dv f =
 	HL.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dv def nil nil) \iass ->
+		(Vk.Semaphore.create @'Nothing dv def nil') \iass ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dv def nil nil) \rfss ->
+		(Vk.Semaphore.create @'Nothing dv def nil') \rfss ->
 	HL.replicateM maxFramesInFlight
 		(Vk.Fnc.create @'Nothing dv inf nil) \iffs ->
 	f $ SyncObjects iass rfss iffs

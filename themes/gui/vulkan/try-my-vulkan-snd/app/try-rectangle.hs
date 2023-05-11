@@ -1067,9 +1067,9 @@ createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
 createSyncObjects dvc f =
 	HeteroParList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dvc def nil nil) \iass ->
+		(Vk.Semaphore.create @'Nothing dvc def nil') \iass ->
 	HeteroParList.replicateM maxFramesInFlight
-		(Vk.Semaphore.create @'Nothing dvc def nil nil) \rfss ->
+		(Vk.Semaphore.create @'Nothing dvc def nil') \rfss ->
 	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Fence.create @'Nothing dvc fncInfo nil) \iffs ->
 	f $ SyncObjects iass rfss iffs
