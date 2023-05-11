@@ -11,6 +11,8 @@ module Gpu.Vulkan.RenderPass (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 
 import Gpu.Vulkan.RenderPass.Type
 
@@ -22,10 +24,10 @@ import qualified Gpu.Vulkan.RenderPass.Tmp as M
 import qualified Gpu.Vulkan.Attachment as Attachment
 
 createNew :: (
-	Attachment.DescriptionsFromNew fmts,
-	WithPoked (TMaybe.M mn), Pokable c, Pokable d ) =>
+	Attachment.DescriptionsFromNew fmts, WithPoked (TMaybe.M mn),
+	AllocationCallbacks.ToMiddle' mscc ) =>
 	Device.D sd -> M.CreateInfoNew mn fmts ->
-	Maybe (AllocationCallbacks.A sc c) -> Maybe (AllocationCallbacks.A sd d) ->
+	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . R s -> IO a) -> IO a
-createNew (Device.D dvc) ci macc (((\(AllocationCallbacks.A a) -> a) <$>) -> macd) f =
+createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle' -> macd) f =
 	bracket (M.createNew dvc ci macc) (\r -> M.destroy dvc r macd) (f . R)

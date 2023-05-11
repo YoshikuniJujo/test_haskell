@@ -9,6 +9,8 @@ module Gpu.Vulkan.RenderPass.Tmp where
 
 import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
+import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 
 import Gpu.Vulkan.RenderPass.Enum
@@ -43,8 +45,10 @@ createInfoFromNew CreateInfoNew {
 	createInfoSubpasses = spss,
 	createInfoDependencies = dps }
 
-createNew ::
-	(WithPoked (TMaybe.M mn), Pokable c, Attachment.DescriptionsFromNew fmts) =>
-	Device.D ->
-	CreateInfoNew mn fmts -> Maybe (AllocationCallbacks.A s c) -> IO R
-createNew dvc ci mac = create dvc (createInfoFromNew ci) ((\(AllocationCallbacks.A a) -> a) <$> mac)
+createNew :: (
+	WithPoked (TMaybe.M mn), Attachment.DescriptionsFromNew fmts,
+	AllocationCallbacks.ToMiddle' msc ) =>
+	Device.D -> CreateInfoNew mn fmts ->
+	TPMaybe.M (U2 AllocationCallbacks.A) msc -> IO R
+createNew dvc ci mac =
+	create dvc (createInfoFromNew ci) (AllocationCallbacks.toMiddle' mac)

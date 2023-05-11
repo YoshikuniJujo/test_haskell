@@ -560,7 +560,7 @@ makeRenderPass dvc f = do
 				attachmentNew :** HeteroParList.Nil,
 			Vk.RenderPass.createInfoSubpassesNew = [subpass],
 			Vk.RenderPass.createInfoDependenciesNew = [] }
-	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil nil f
+	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil' f
 
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
 	(forall s . Vk.Ppl.Gr.G s '[] '[] -> IO a) -> IO a

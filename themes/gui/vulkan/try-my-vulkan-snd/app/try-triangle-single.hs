@@ -611,7 +611,7 @@ createRenderPassNew dvc f = do
 			Vk.RndrPass.M.createInfoAttachmentsNew = colorAttachment :** HeteroParList.Nil,
 			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
-	Vk.RndrPass.createNew @'[scifmt] @'Nothing dvc renderPassInfo nil nil \rp -> f rp
+	Vk.RndrPass.createNew @'[scifmt] @'Nothing dvc renderPassInfo nil' \rp -> f rp
 
 createPipelineLayout' ::
 	Vk.Dvc.D sd -> (forall sl . Vk.Ppl.Layout.L sl '[] '[] -> IO b) -> IO b

@@ -571,7 +571,7 @@ createRenderPass ::
 	Vk.T.FormatToValue scifmt, Vk.T.FormatToValue dfmt ) =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPss.R sr -> IO a) -> IO a
 createRenderPass dv f = Vk.RndrPss.createNew @'[scifmt, dfmt] @'Nothing
-	dv renderPassInfo nil nil f where
+	dv renderPassInfo nil' f where
 	renderPassInfo = Vk.RndrPss.M.CreateInfoNew {
 		Vk.RndrPss.M.createInfoNextNew = TMaybe.N,
 		Vk.RndrPss.M.createInfoFlagsNew = zeroBits,

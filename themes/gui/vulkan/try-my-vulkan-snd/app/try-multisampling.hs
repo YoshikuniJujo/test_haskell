@@ -672,7 +672,7 @@ createRenderPass dvc mss f = do
 				colorAttachmentResolve :** HeteroParList.Nil,
 			Vk.RndrPass.M.createInfoSubpassesNew = [subpass],
 			Vk.RndrPass.M.createInfoDependenciesNew = [dependency] }
-	Vk.RndrPass.createNew @'[scifmt, dptfmt, scifmt] @'Nothing dvc renderPassInfo nil nil \rp -> f rp
+	Vk.RndrPass.createNew @'[scifmt, dptfmt, scifmt] @'Nothing dvc renderPassInfo nil' \rp -> f rp
 
 type AtomUbo s = '(s, '[
 	'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
