@@ -16,6 +16,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -56,14 +57,12 @@ createInfoToCore CreateInfo {
 newtype S = S { unS :: C.S } deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO S
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO S
 create (Device.D dvc) ci mac = S <$> alloca \ps -> do
-	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac ->
-			throwUnlessSuccess . Result
-				=<< C.create dvc pci pac ps
+	createInfoToCore ci \pci -> AllocationCallbacks.mToCore mac \pac ->
+		throwUnlessSuccess . Result =<< C.create dvc pci pac ps
 	peek ps
 
-destroy :: Device.D -> S -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> S -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (S s) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc s
+	AllocationCallbacks.mToCore mac $ C.destroy dvc s
