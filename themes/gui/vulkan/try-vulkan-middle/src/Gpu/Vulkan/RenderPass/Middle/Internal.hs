@@ -16,6 +16,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Length qualified as TL
 import qualified Data.HeteroParList as HeteroParList
 
@@ -76,18 +77,18 @@ createInfoToCore CreateInfo {
 newtype R = R C.R deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO R
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO R
 create (Device.D dvc) ci mac = R <$>
 	alloca \pr -> do
 		createInfoToCore ci \pci ->
-			AllocationCallbacks.maybeToCoreNew mac \pac -> do
+			AllocationCallbacks.mToCore mac \pac -> do
 				r <- C.create dvc pci pac pr
 				throwUnlessSuccess $ Result r
 		peek pr
 
-destroy :: Device.D -> R -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> R -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (R r) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc r
+	AllocationCallbacks.mToCore mac $ C.destroy dvc r
 
 data BeginInfo mn cts = BeginInfo {
 	beginInfoNext :: TMaybe.M mn,
