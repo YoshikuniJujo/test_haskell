@@ -1058,7 +1058,7 @@ createTextureSampler phdv dvc f = do
 			Vk.Smplr.M.createInfoBorderColor =
 				Vk.BorderColorIntOpaqueBlack,
 			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil nil f
+	Vk.Smplr.create @'Nothing dvc samplerInfo nil' f
 
 createVertexBuffer :: Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (forall sm sb .

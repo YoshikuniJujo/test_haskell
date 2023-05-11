@@ -1408,7 +1408,7 @@ createTextureSampler phdv dvc mplvs mnld f = do
 			Vk.Smplr.M.createInfoBorderColor =
 				Vk.BorderColorIntOpaqueBlack,
 			Vk.Smplr.M.createInfoUnnormalizedCoordinates = False }
-	Vk.Smplr.create @'Nothing dvc samplerInfo nil nil f
+	Vk.Smplr.create @'Nothing dvc samplerInfo nil' f
 
 loadModel :: FilePath -> IO (V.Vector Vertex, V.Vector Word32)
 loadModel fp = do

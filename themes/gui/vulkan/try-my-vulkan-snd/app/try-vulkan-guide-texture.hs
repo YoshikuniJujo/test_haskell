@@ -2026,7 +2026,7 @@ textureImageViewCreateInfo timg = Vk.ImgVw.CreateInfoNew {
 
 createTextureSampler ::
 	Vk.Dvc.D sd -> (forall ss . Vk.Smplr.S ss -> IO a) -> IO a
-createTextureSampler dv = Vk.Smplr.create dv textureSamplerCreateInfo nil nil
+createTextureSampler dv = Vk.Smplr.create dv textureSamplerCreateInfo nil'
 
 textureSamplerCreateInfo :: Vk.Smplr.M.CreateInfo 'Nothing
 textureSamplerCreateInfo = Vk.Smplr.M.CreateInfo {
