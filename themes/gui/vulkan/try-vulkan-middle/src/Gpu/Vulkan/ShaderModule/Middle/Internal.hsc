@@ -18,6 +18,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Foreign.C.Enum
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -78,14 +79,14 @@ readFromByteString (BS.PS f o l) = do
 
 create :: WithPoked (TMaybe.M mn) =>
 	Device.D ->
-	CreateInfo mn sknd -> Maybe (AllocationCallbacks.A c) -> IO (M sknd)
+	CreateInfo mn sknd -> TPMaybe.M AllocationCallbacks.A mc -> IO (M sknd)
 create (Device.D dvc) ci mac = M <$> alloca \pm -> do
 	createInfoToCore ci \pcci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pcci pac pm
 			throwUnlessSuccess $ Result r
 	peek pm
 
-destroy :: Device.D -> M sknd -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> M sknd -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (M m) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc m
+	AllocationCallbacks.mToCore mac $ C.destroy dvc m
