@@ -43,15 +43,16 @@ library
       Foreign.Storable.Generic
       Glfw
       Glfw.Middle
+      Gpu.Vulkan
       Gpu.Vulkan.AllocationCallbacks
       Gpu.Vulkan.AllocationCallbacks.Type
       Gpu.Vulkan.Attachment
       Gpu.Vulkan.Buffer
       Gpu.Vulkan.BufferView
+      Gpu.Vulkan.Command
       Gpu.Vulkan.Command.TypeLevel
       Gpu.Vulkan.CommandBuffer
       Gpu.Vulkan.CommandBuffer.Type
-      Gpu.Vulkan.CommandNew
       Gpu.Vulkan.CommandOld
       Gpu.Vulkan.CommandPool
       Gpu.Vulkan.CommandPool.Type
@@ -98,9 +99,9 @@ library
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.DepthStencilState
       Gpu.Vulkan.Pipeline.DynamicState
+      Gpu.Vulkan.Pipeline.Graphics
       Gpu.Vulkan.Pipeline.Graphics.Tmp
       Gpu.Vulkan.Pipeline.Graphics.Type
-      Gpu.Vulkan.Pipeline.GraphicsNew
       Gpu.Vulkan.Pipeline.GraphicsOld
       Gpu.Vulkan.Pipeline.InputAssemblyState
       Gpu.Vulkan.Pipeline.MultisampleState
@@ -118,8 +119,8 @@ library
       Gpu.Vulkan.PipelineLayout.Type
       Gpu.Vulkan.PushConstant
       Gpu.Vulkan.QueryPool
+      Gpu.Vulkan.Queue
       Gpu.Vulkan.QueueFamily
-      Gpu.Vulkan.QueueNew
       Gpu.Vulkan.QueueOld
       Gpu.Vulkan.RenderPass
       Gpu.Vulkan.RenderPass.Tmp
@@ -133,7 +134,6 @@ library
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput
-      Gpu.VulkanNew
       Gpu.VulkanOld
       Sample.GetOpt
       Sample.Image
