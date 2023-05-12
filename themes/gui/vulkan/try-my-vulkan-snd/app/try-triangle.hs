@@ -860,9 +860,7 @@ createCommandBuffers ::
 		HeteroParList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f =
---	mkVss' maxFramesInFlight \(_ :: Proxy n) ->
 	mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
---	Vk.CmdBffr.allocateNew @_ @(Count vss1) dvc (allocInfo @(Count vss1)) (f @_ @vss1)
 	Vk.CmdBffr.allocateNew @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
 	where
 	allocInfo :: forall n . Vk.CmdBffr.AllocateInfoNew 'Nothing scp n
@@ -871,37 +869,14 @@ createCommandBuffers dvc cp f =
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
-class VssList (vss :: [()]) where
-	vssListIndex :: HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
-		Int -> Vk.CmdBffr.C scb
-
-instance VssList '[] where
-	vssListIndex HeteroParList.Nil _ = error "index too large"
-
-instance VssList vss =>
-	VssList ('() ': vss) where
-	vssListIndex (cb :*. _) 0 = cb
-	vssListIndex (_ :*. cbs) n = vssListIndex cbs (n - 1)
-
-type family MkVss (n :: Nat) :: [[(Type, Vk.VtxInp.Rate)]] where
-	MkVss 0 = '[]
-	MkVss n = '[AddType Vertex 'Vk.VtxInp.RateVertex] ': MkVss (n - 1)
-
 mkVss :: Int -> (forall (vss :: [()]) .
-	(TpLvlLst.Length () vss, HeteroParList.FromList vss, VssList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
+	(TpLvlLst.Length () vss, HeteroParList.FromList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
-
-type family Count (vss :: [()]) where
-	Count '[] = 0
-	Count (_ ': vss) = 1 + Count vss
-
-mkVss' :: Int -> (forall n . KnownNat n => Proxy (n :: Nat) -> a) -> a
-mkVss' n f = ($ someNatVal (fromIntegral n)) \(SomeNat (p :: Proxy n)) -> f p
-
-addTypeToProxy :: Proxy vss -> Proxy ('() ': vss)
-addTypeToProxy Proxy = Proxy
+	where
+	addTypeToProxy :: Proxy vss -> Proxy ('() ': vss)
+	addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
