@@ -892,7 +892,7 @@ copyBuffer dvc gq cp src dst = do
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc 1
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
 		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
@@ -909,7 +909,7 @@ createCommandBuffer ::
 createCommandBuffer dvc cp f =
 	Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing scp 1
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing scp '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
 		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,

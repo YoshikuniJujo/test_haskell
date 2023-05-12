@@ -983,7 +983,7 @@ createCommandBuffer ::
 	IO a
 createCommandBuffer dvc cp f = Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing scp 1
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing scp '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
 		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,

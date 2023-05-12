@@ -29,6 +29,7 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.Length qualified as TLength
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**), pattern (:*.))
 import Data.Proxy
@@ -843,7 +844,7 @@ copyBuffer dvc gq cp src dst = do
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc 1
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
 		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
@@ -859,10 +860,10 @@ createCommandBuffers ::
 		HeteroParList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f =
-	mkVss' maxFramesInFlight \(_ :: Proxy n) ->
---	mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
+--	mkVss' maxFramesInFlight \(_ :: Proxy n) ->
+	mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 --	Vk.CmdBffr.allocateNew @_ @(Count vss1) dvc (allocInfo @(Count vss1)) (f @_ @vss1)
-	Vk.CmdBffr.allocateNew @_ @n dvc (allocInfo @n) (f @_ @(HeteroParList.Dummies n))
+	Vk.CmdBffr.allocateNew @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
 	where
 	allocInfo :: forall n . Vk.CmdBffr.AllocateInfoNew 'Nothing scp n
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
@@ -887,7 +888,7 @@ type family MkVss (n :: Nat) :: [[(Type, Vk.VtxInp.Rate)]] where
 	MkVss n = '[AddType Vertex 'Vk.VtxInp.RateVertex] ': MkVss (n - 1)
 
 mkVss :: Int -> (forall (vss :: [()]) .
-	(TpLvlLst.Length () vss, HeteroParList.FromList vss, VssList vss) =>
+	(TpLvlLst.Length () vss, HeteroParList.FromList vss, VssList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p

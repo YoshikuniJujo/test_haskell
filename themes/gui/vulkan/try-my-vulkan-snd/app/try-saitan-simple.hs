@@ -292,7 +292,7 @@ commandPoolInfo qFam = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qFam }
 
-commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s 1
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s '[ '()]
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
 	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
 	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,

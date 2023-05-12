@@ -1039,7 +1039,7 @@ beginSingleTimeCommands dv gq cp cmds =
 	Vk.Q.submit gq (HL.Singleton . U4 $ sminfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
-	allocInfo :: Vk.CBffr.AllocateInfoNew 'Nothing sc 1
+	allocInfo :: Vk.CBffr.AllocateInfoNew 'Nothing sc  '[ '()]
 	allocInfo = Vk.CBffr.AllocateInfoNew {
 		Vk.CBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPoolNew = cp,
@@ -1396,7 +1396,7 @@ createCommandBuffers ::
 	(forall scb . HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
 createCommandBuffers dv cp f = Vk.CBffr.allocateNew dv allcInfo f
 	where
-	allcInfo :: Vk.CBffr.AllocateInfoNew 'Nothing scp MaxFramesInFlight
+	allcInfo :: Vk.CBffr.AllocateInfoNew 'Nothing scp (HL.Dummies MaxFramesInFlight)
 	allcInfo = Vk.CBffr.AllocateInfoNew {
 		Vk.CBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CBffr.allocateInfoCommandPoolNew = cp,
@@ -1930,7 +1930,7 @@ uploadContextCommandPoolCreateInfo qfis = Vk.CmdPl.CreateInfo {
 	Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfis }
 
 uploadContextCommandBufferAllocateInfo ::
-	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfoNew 'Nothing scp 1
+	Vk.CmdPl.C scp -> Vk.CBffr.AllocateInfoNew 'Nothing scp '[ '()]
 uploadContextCommandBufferAllocateInfo cp = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoNextNew = TMaybe.N,
 	Vk.CBffr.allocateInfoCommandPoolNew = cp,

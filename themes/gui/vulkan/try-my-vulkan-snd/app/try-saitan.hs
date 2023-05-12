@@ -536,7 +536,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s 1
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s '[ '()]
 commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
 	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
 	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,

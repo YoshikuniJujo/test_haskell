@@ -30,12 +30,11 @@ module Gpu.Vulkan.CommandBuffer (
 
 	) where
 
-import GHC.TypeNats
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.Proxy
+import Data.TypeLevel.Length qualified as TLength
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
@@ -51,24 +50,23 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 
 allocateNew :: (
-	WithPoked (TMaybe.M mn), KnownNat c,
-	HeteroParList.FromList (HeteroParList.Dummies c) ) =>
+	WithPoked (TMaybe.M mn), HeteroParList.FromList c, TLength.Length c ) =>
 	Device.D sd -> AllocateInfoNew mn scp c ->
-	(forall s . HeteroParList.LL' (C s) c -> IO a) -> IO a
+	(forall s . HeteroParList.LL (C s) c -> IO a) -> IO a
 allocateNew (Device.D dvc) ai f = bracket
 	(M.allocate dvc $ allocateInfoToMiddleNew ai)
 	(M.freeCs dvc
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
 	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
 
-data AllocateInfoNew mn s (c :: Nat) = AllocateInfoNew {
+data AllocateInfoNew mn s (c :: [()]) = AllocateInfoNew {
 	allocateInfoNextNew :: TMaybe.M mn,
 	allocateInfoCommandPoolNew :: CommandPool.C s,
 	allocateInfoLevelNew :: Level }
 
 deriving instance Show (TMaybe.M mn) => Show (AllocateInfoNew mn s c)
 
-allocateInfoToMiddleNew :: forall n s c . KnownNat c =>
+allocateInfoToMiddleNew :: forall n s c . TLength.Length c =>
 	AllocateInfoNew n s c -> M.AllocateInfo n
 allocateInfoToMiddleNew AllocateInfoNew {
 	allocateInfoNextNew = mnxt,
@@ -77,8 +75,7 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	M.allocateInfoNext = mnxt,
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
-	M.allocateInfoCommandBufferCount =
-		fromIntegral $ natVal (Proxy :: Proxy c) }
+	M.allocateInfoCommandBufferCount = TLength.length @_ @c }
 
 allocate ::
 	(WithPoked (TMaybe.M mn), TpLvlLst.Length [(Type, VertexInput.Rate)] vss, HeteroParList.FromList vss) =>
