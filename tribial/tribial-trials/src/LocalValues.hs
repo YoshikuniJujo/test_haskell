@@ -33,9 +33,11 @@ fooMessages :: [String] ->
 fooMessages [] f = f Nil
 fooMessages (s : ss) f = createMessage s \msg -> fooMessages ss \msgs -> f $ msg :. msgs
 
+{-
 indexMessage :: List Message ss -> Int -> (forall s . Message s -> IO a) -> IO a
 indexMessage (x :. _) 0 f = f x
 indexMessage (_ :. xs) i f | i > 0 = indexMessage xs (i - 1) f
+-}
 
 copyMessage :: Message s -> Message t -> Message t
 copyMessage (Message str) _ = Message str

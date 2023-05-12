@@ -51,7 +51,7 @@ makeMessage3' s1 s2 s3 f =
 makeMessage3'' s1 s2 s3 f =
 	makeMessage s3 \m3 -> makeMessage2 s1 s2 \m1 m2 -> f m1 m2 m3
 
-type AddArg f = forall s . Message s -> f
+-- type AddArg f = forall s . Message s -> f
 
 class Foo f where foo :: f -> IO ()
 
