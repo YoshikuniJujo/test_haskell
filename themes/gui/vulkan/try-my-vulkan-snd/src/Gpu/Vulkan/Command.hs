@@ -382,6 +382,14 @@ blitImage (CommandBuffer.Binded cb)
 	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
 
+blitImageNew :: CommandBuffer.C sc ->
+	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
+	Image.BindedNew dsi dsm dnm dfmt -> Image.Layout ->
+	[Image.M.Blit] -> Filter -> IO ()
+blitImageNew (CommandBuffer.C cb)
+	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
+	M.blitImage cb src slyt dst dlyt blts fltr
+
 resetQueryPool ::
 	CommandBuffer.C sc -> QueryPool.Q sq tp -> Word32 -> Word32 -> IO ()
 resetQueryPool (CommandBuffer.C cb) (QueryPool.Q qp) fq qc =
