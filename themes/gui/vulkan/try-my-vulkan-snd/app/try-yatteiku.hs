@@ -24,7 +24,7 @@ import Data.Array
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
 import Data.Color
 import Codec.Picture
@@ -34,7 +34,7 @@ import Shaderc.EnumAuto
 
 import Gpu.Vulkan.Misc
 
-import qualified Gpu.VulkanOld as Vk
+import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Middle as Vk.C
@@ -46,7 +46,7 @@ import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QueueFamily
 import qualified Gpu.Vulkan.CommandPool as Vk.CommandPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CommandBuffer
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CommandBuffer.M
-import qualified Gpu.Vulkan.QueueOld as Vk.Queue
+import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.Image as Vk.Img
 import qualified Gpu.Vulkan.Image.Enum as Vk.Img
@@ -75,7 +75,8 @@ import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment as Vk.Ppl.ClrBlndAtt
 import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
-import qualified Gpu.Vulkan.Pipeline.GraphicsOld as Vk.Ppl.Gr
+import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
+import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Gr
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
@@ -84,7 +85,7 @@ import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgView
 import qualified Gpu.Vulkan.Component as Vk.Component
 import qualified Gpu.Vulkan.Framebuffer as Vk.Framebuffer
 import qualified Gpu.Vulkan.Framebuffer.Enum as Vk.Framebuffer
-import qualified Gpu.Vulkan.CommandOld as Vk.Cmd
+import qualified Gpu.Vulkan.Command as Vk.Cmd
 
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
@@ -149,10 +150,10 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 								Vk.C.rect2dExtent = Vk.C.Extent2d
 									screenWidth screenHeight },
 							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
-					Vk.Cmd.beginRenderPass @'Nothing @'[]
-						cb renderpassBeginInfo Vk.Subpass.ContentsInline do
-						Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics ppl
-						Vk.Cmd.draw cb 3 1 0 0
+					Vk.Cmd.beginRenderPass' @'Nothing @'[]
+						cb renderpassBeginInfo Vk.Subpass.ContentsInline $
+						Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics ppl \cbb ->
+						Vk.Cmd.draw cbb 3 1 0 0
 				transitionImageLayout device gq cp bimg'
 					Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal
 				copyBufferToImage device gq cp bimg' b screenWidth screenHeight
@@ -175,32 +176,28 @@ makeCommandBufferEtc device graphicsQueueFamilyIndex f = do
 	Vk.CommandPool.create device cmdPoolCreateInfo nil'
 			\(cmdPool :: Vk.CommandPool.C s) -> f graphicsQueue cmdPool
 
-makeCommandBuffer :: forall sd scp vs a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
-	(forall s . Vk.CommandBuffer.Binded s vs -> IO a) -> IO a
+makeCommandBuffer :: forall sd scp a . Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C scp ->
+	(forall s . Vk.CommandBuffer.C s -> IO a) -> IO a
 makeCommandBuffer device graphicsQueue cmdPool f = do
-		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfoOld 'Nothing scp
-			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfoOld {
-				Vk.CommandBuffer.allocateInfoNextOld = TMaybe.N,
-				Vk.CommandBuffer.allocateInfoCommandPoolOld =
+		let	cmdBufAllocInfo :: Vk.CommandBuffer.AllocateInfoNew 'Nothing scp '[ '()]
+			cmdBufAllocInfo = Vk.CommandBuffer.AllocateInfoNew {
+				Vk.CommandBuffer.allocateInfoNextNew = TMaybe.N,
+				Vk.CommandBuffer.allocateInfoCommandPoolNew =
 					cmdPool,
-				Vk.CommandBuffer.allocateInfoLevelOld =
-					Vk.CommandBuffer.LevelPrimary,
-				Vk.CommandBuffer.allocateInfoCommandBufferCountOld
-					= 1 }
-		Vk.CommandBuffer.allocateOld device cmdBufAllocInfo \case
-			[cmdBuf] -> do
-				r <- Vk.CommandBuffer.begin cmdBuf
+				Vk.CommandBuffer.allocateInfoLevelNew =
+					Vk.CommandBuffer.LevelPrimary }
+		Vk.CommandBuffer.allocateNew device cmdBufAllocInfo \(cmdBuf :*. HeteroParList.Nil) -> do
+				r <- Vk.CommandBuffer.beginNew cmdBuf
 					(def :: Vk.CommandBuffer.BeginInfo 'Nothing 'Nothing) $ f cmdBuf
 				let	submitInfo :: Vk.SubmitInfo 'Nothing _ _ _
 					submitInfo = Vk.SubmitInfo {
 						Vk.submitInfoNext = TMaybe.N,
 						Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-						Vk.submitInfoCommandBuffers = U2 cmdBuf :** HeteroParList.Nil,
+						Vk.submitInfoCommandBuffers = cmdBuf :** HeteroParList.Nil,
 						Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 				Vk.Queue.submit graphicsQueue (U4 submitInfo :** HeteroParList.Nil) Nothing
 				Vk.Queue.waitIdle graphicsQueue
 				pure r
-			_ -> error "never occur"
 
 makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	(forall si sm .
@@ -287,7 +284,7 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyImageToBuffer @1
+	Vk.Cmd.copyImageToBufferNew @1
 		cb img Vk.Img.LayoutTransferSrcOptimal bf (HeteroParList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
@@ -335,25 +332,25 @@ transitionImageLayout dvc gq cp img olyt nlyt =
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
-	(forall s . Vk.CommandBuffer.Binded s '[] -> IO a) -> IO a
+	(forall s . Vk.CommandBuffer.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
-	Vk.CommandBuffer.allocate
-		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CommandBuffer.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
+	Vk.CommandBuffer.allocateNew
+		dvc allocInfo \((cb :: Vk.CommandBuffer.C s) :*. HeteroParList.Nil) -> do
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
+				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CommandBuffer.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
+		Vk.CommandBuffer.beginNew @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
 			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CommandBuffer.AllocateInfo 'Nothing sc '[ '[]]
-	allocInfo = Vk.CommandBuffer.AllocateInfo {
-		Vk.CommandBuffer.allocateInfoNext = TMaybe.N,
-		Vk.CommandBuffer.allocateInfoCommandPool = cp,
-		Vk.CommandBuffer.allocateInfoLevel = Vk.CommandBuffer.LevelPrimary }
+	allocInfo :: Vk.CommandBuffer.AllocateInfoNew 'Nothing sc '[ '()]
+	allocInfo = Vk.CommandBuffer.AllocateInfoNew {
+		Vk.CommandBuffer.allocateInfoNextNew = TMaybe.N,
+		Vk.CommandBuffer.allocateInfoCommandPoolNew = cp,
+		Vk.CommandBuffer.allocateInfoLevelNew = Vk.CommandBuffer.LevelPrimary }
 	beginInfo = Vk.CommandBuffer.M.BeginInfo {
 		Vk.CommandBuffer.beginInfoNext = TMaybe.N,
 		Vk.CommandBuffer.beginInfoFlags = Vk.CommandBuffer.UsageOneTimeSubmitBit,
@@ -563,7 +560,7 @@ makeRenderPass dvc f = do
 	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil' f
 
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
-	(forall s . Vk.Ppl.Gr.G s '[] '[] -> IO a) -> IO a
+	(forall s sl . Vk.Ppl.Gr.GNew s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
 makePipelineNew dvc rp f = do
 	let	viewport = Vk.C.Viewport {
 			Vk.C.viewportX = 0,
@@ -685,7 +682,8 @@ makePipelineNew dvc rp f = do
 					'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 					'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
 				'(	'Nothing, '[], '[] )
-				'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _)
+				'Nothing 'Nothing 'Nothing 'Nothing 'Nothing
+				'Nothing 'Nothing 'Nothing '(_, _, _) _ '(_, '[], _, _)
 			pipelineCreateInfo = Vk.Ppl.Gr.CreateInfo {
 				Vk.Ppl.Gr.createInfoNext = TMaybe.N,
 				Vk.Ppl.Gr.createInfoFlags =
@@ -715,7 +713,7 @@ makePipelineNew dvc rp f = do
 				Vk.Ppl.Gr.createInfoBasePipelineIndex = - 1 }
 		Vk.Ppl.Gr.createGs dvc Nothing (
 			U14 pipelineCreateInfo :** HeteroParList.Nil ) nil'
-				\(U2 g :** HeteroParList.Nil) -> f g
+				\(U3 g :** HeteroParList.Nil) -> f g
 
 [glslVertexShader|
 

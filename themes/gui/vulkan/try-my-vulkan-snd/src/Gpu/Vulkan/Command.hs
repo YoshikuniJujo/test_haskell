@@ -357,6 +357,17 @@ copyImageToBuffer (CommandBuffer.Binded cb)
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = imageCopyListToMiddle @algn bf ics
 
+copyImageToBufferNew :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
+	ImageCopyListToMiddle algn objs img inms ) =>
+	CommandBuffer.C sc  ->
+	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
+	Buffer.Binded sm sb nm objs ->
+	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
+copyImageToBufferNew (CommandBuffer.C cb)
+	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
+	M.copyImageToBuffer cb mim imlyt mbf mics
+	where mics = imageCopyListToMiddle @algn bf ics
+
 class ImageCopyListToMiddle algn objs (img :: Type) (inms :: [Symbol]) where
 	imageCopyListToMiddle ::
 		Buffer.Binded sm sb nm objs ->
