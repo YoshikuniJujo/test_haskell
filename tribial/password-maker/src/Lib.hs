@@ -8,8 +8,9 @@ import System.Random
 import Paths_password_maker
 
 import qualified Data.Vector as V
-import qualified Data.HashMap.Strict as H
 import qualified Data.Text as T
+
+import qualified Data.Aeson.KeyMap as K
 
 randomWords :: IO [T.Text]
 randomWords = do
@@ -24,7 +25,7 @@ getWordsFrom :: FilePath -> IO [T.Text]
 getWordsFrom fp = stringsFromObject <$> decodeFileThrow @_ @Object fp
 
 stringsFromObject :: Object -> [T.Text]
-stringsFromObject o = stringsFromValue =<< H.elems o
+stringsFromObject o = stringsFromValue =<< K.elems o
 
 stringsFromValue :: Value -> [T.Text]
 stringsFromValue (Object o) = stringsFromObject o

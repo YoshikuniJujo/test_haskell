@@ -22,7 +22,6 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - vector
-- unordered-containers
 - memory
 - bytestring
 - text
@@ -32,6 +31,7 @@ dependencies:
 - yaml
 - cryptonite
 - base58-bitcoin-flavor
+- aeson
 
 library:
   source-dirs: src
