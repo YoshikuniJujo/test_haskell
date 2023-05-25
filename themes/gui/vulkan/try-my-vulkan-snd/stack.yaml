@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 50a058bf01aeb3e34c474196192731f0fb835921
+  commit: f3831ce6604c836ae77ca6c95df14737f56679a6
   subdirs:
   - themes/gui/vulkan/try-vulkan-middle
   - themes/gui/vulkan/try-vulkan-middle-khr
@@ -57,6 +57,8 @@ extra-deps:
 - git: https://github.com/YoshikuniJujo/size-alignment-list.git
   commit: 511e579860a040d291373b1c62abc491f91a3110
 - union-color-0.1.2.0
+- git: https://github.com/YoshikuniJujo/c-struct
+  commit: 85f71455821d3924ec75737f5fe6c597809ba34b
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
