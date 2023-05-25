@@ -6,9 +6,9 @@
 module Gpu.Vulkan.Khr.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 
@@ -19,6 +19,9 @@ import qualified Gpu.Vulkan.Queue.Core as Queue
 import qualified Gpu.Vulkan.Khr.Swapchain.Core as Swapchain
 
 #include <vulkan/vulkan.h>
+
+type PtrResult = Ptr #{type VkResult}
+type PtrUint32T = Ptr #{type uint32_t}
 
 foreign import ccall "vkAcquireNextImageKHR" acquireNextImage ::
 	Device.D -> Swapchain.S -> #{type uint64_t} -> Semaphore.S -> Fence.F ->

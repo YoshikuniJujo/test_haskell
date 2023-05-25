@@ -6,9 +6,9 @@
 module Gpu.Vulkan.Khr.Swapchain.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 
@@ -20,6 +20,8 @@ import qualified Gpu.Vulkan.Khr.Surface.Core as Surface
 import qualified Gpu.Vulkan.Image.Core as Image
 
 #include <vulkan/vulkan.h>
+
+type PtrUint32T = Ptr #{type uint32_t}
 
 data STag
 type S = Ptr STag
