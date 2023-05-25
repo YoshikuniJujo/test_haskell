@@ -29,8 +29,9 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.Length qualified as TLength
 import Data.HeteroParList qualified as HeteroParList
-import Data.HeteroParList (pattern (:**))
+import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
 import Data.Bool
 import Data.Maybe
@@ -61,7 +62,7 @@ import Shaderc.TH
 import Gpu.Vulkan.Misc
 import Gpu.Vulkan.Data
 
-import qualified Gpu.VulkanOld as Vk
+import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
 import qualified Gpu.Vulkan.Middle as Vk.M
 import qualified Gpu.Vulkan.Middle as Vk.C
@@ -117,7 +118,7 @@ import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass
 import qualified Gpu.Vulkan.RenderPass as Vk.RndrPass.M
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
-import qualified Gpu.Vulkan.Pipeline.GraphicsOld as Vk.Ppl.Graphics
+import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
@@ -133,9 +134,9 @@ import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem
 import qualified Gpu.Vulkan.Memory as Vk.Mem
 import qualified Gpu.Vulkan.Memory.Kind as Vk.Mem.K
-import qualified Gpu.Vulkan.QueueOld as Vk.Queue
+import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.CommandOld as Vk.Cmd
+import qualified Gpu.Vulkan.Command as Vk.Cmd
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 import qualified Gpu.Vulkan.DescriptorSetLayout as Vk.DscSetLyt
@@ -654,13 +655,19 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Int ->
-	(forall sg . Vk.Ppl.Graphics.G sg
+	(forall sg . Vk.Ppl.Graphics.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO a) -> IO a
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) -> IO a) -> IO a
 createGraphicsPipeline dvc sce rp ppllyt sdrn f =
 	Vk.Ppl.Graphics.createGs dvc Nothing (HeteroParList.Singleton $ U14 pplInfo) nil'
-		\(HeteroParList.Singleton (U2 gpl)) -> f gpl
+		\(HeteroParList.Singleton (U3 gpl)) -> f gpl
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
+
+type Foo s = '[ '(s, '[
+	'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
+	'Vk.DscSetLyt.Buffer '[
+		VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
@@ -670,11 +677,12 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Graphics.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> IO ()
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) -> IO ()
 recreateGraphicsPipeline dvc sce rp ppllyt sdrn gpls = Vk.Ppl.Graphics.recreateGs
-	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U2 gpls :** HeteroParList.Nil)
+	dvc Nothing (U14 pplInfo :** HeteroParList.Nil) nil' (U3 gpls :** HeteroParList.Nil)
 	where pplInfo = mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn
 
 mkGraphicsPipelineCreateInfo ::
@@ -696,7 +704,7 @@ mkGraphicsPipelineCreateInfo ::
 				'Vk.DscSetLyt.Buffer '[
 					VObj.Atom 256 GpuSceneData0 'Nothing ] ])],
 			'[WrapMeshPushConstants])
-		sr '(sb, vs', ts')
+		sr '(sb, vs', ts', sbtss')
 mkGraphicsPipelineCreateInfo sce rp ppllyt sdrn = Vk.Ppl.Graphics.CreateInfo {
 	Vk.Ppl.Graphics.createInfoNext = TMaybe.N,
 	Vk.Ppl.Graphics.createInfoFlags = Vk.Ppl.CreateFlagsZero,
@@ -1024,25 +1032,25 @@ hasStencilComponent = \case
 
 beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	(forall s . Vk.CmdBffr.Binded s '[] -> IO a) -> IO a
+	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
-	Vk.CmdBffr.allocate
-		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
+	Vk.CmdBffr.allocateNew
+		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
+				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
+		Vk.CmdBffr.beginNew @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
 			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '[]]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc '[ '()]
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1371,24 +1379,24 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' .
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Vertex ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
-	Vk.CmdBffr.allocate
-		dvc allocInfo \(HeteroParList.Singleton (cb :: Vk.CmdBffr.Binded s '[])) -> do
-		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[ '(s, '[])] '[]
+	Vk.CmdBffr.allocateNew
+		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
+		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
 				Vk.submitInfoNext = TMaybe.N,
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
-				Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
+				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 Vertex ""]] cb src dst
+		Vk.CmdBffr.beginNew @'Nothing @'Nothing cb beginInfo do
+			Vk.Cmd.copyBufferNew @'[ '[VObj.List 256 Vertex ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '[]]
-	allocInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc '[ '()]
+	allocInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1396,40 +1404,28 @@ copyBuffer dvc gq cp src dst = do
 
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
-	(forall scb vss . VssList vss =>
-		HeteroParList.PL (Vk.CmdBffr.Binded scb) (vss :: [[(Type, Vk.VtxInp.Rate)]]) -> IO a) ->
+	(forall scb vss . (
+		TLength.Length vss, HeteroParList.HomoList '() vss ) =>
+		HeteroParList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocate @_ @vss1 dvc (allcInfo @vss1) (f @_ @vss1)
+	Vk.CmdBffr.allocateNew @_ @vss1 dvc (allcInfo @vss1) (f @_ @vss1)
 	where
-	allcInfo :: forall vss . Vk.CmdBffr.AllocateInfo 'Nothing scp vss
-	allcInfo = Vk.CmdBffr.AllocateInfo {
-		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPool = cp,
-		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
+	allcInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew 'Nothing scp vss
+	allcInfo = Vk.CmdBffr.AllocateInfoNew {
+		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
+		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
-class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
-	vssListIndex ::
-		HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
-		Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
-
-instance VssList '[] where
-	vssListIndex HeteroParList.Nil _ = error "index too large"
-
-instance VssList vss =>
-	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
-	vssListIndex (cb :** _) 0 = cb
-	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
-
-mkVss :: Int -> (forall (vss :: [[(Type, Vk.VtxInp.Rate)]]) .
-	(TpLvlLst.Length [(Type, Vk.VtxInp.Rate)] vss, HeteroParList.FromList vss, VssList vss) =>
+mkVss :: Int -> (forall (vss :: [()]) . (
+	TpLvlLst.Length () vss, TLength.Length vss,
+	HeteroParList.FromList vss, HeteroParList.HomoList '() vss ) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
-
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
-addTypeToProxy Proxy = Proxy
+	where
+	addTypeToProxy :: Proxy vss -> Proxy ('() ': vss)
+	addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
@@ -1452,11 +1448,12 @@ createSyncObjects dvc f =
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
 recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
-	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.C.Extent2d ->
-	Vk.Ppl.Graphics.G sg
+	Vk.Ppl.Graphics.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(slyt, Foo sdlyt, '[WrapMeshPushConstants]) ->
 	Vk.Ppl.Layout.L slyt
 		'[ '(sdlyt, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1471,16 +1468,16 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
 	Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
-	Vk.CmdBffr.begin @'Nothing @'Nothing cb cbInfo $
-	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline do
-	om <- newIORef Nothing
+	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb cbInfo $
+	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline $
+	newIORef Nothing >>= \om ->
 	drawObject om cb sce cmd RenderObject {
 		renderObjectPipeline = gpl,
 		renderObjectPipelineLayout = lyt,
 		renderObjectMesh = vb,
 		renderObjectMeshSize = vn,
-		renderObjectTransformMatrix = model }
-	omtri <- newIORef Nothing
+		renderObjectTransformMatrix = model } >>
+	newIORef Nothing >>= \omtri ->
 	for_ [- 20 .. 20] \x -> for_ [- 20 .. 20] \y ->
 		drawObject omtri cb sce cmd RenderObject {
 			renderObjectPipeline = gpl,
@@ -1518,9 +1515,10 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Graphics.G sg
+	renderObjectPipeline :: Vk.Ppl.Graphics.GNew sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)],
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo sdlyt, '[WrapMeshPushConstants]),
 	renderObjectPipelineLayout ::
 		Vk.Ppl.Layout.L sl
 			'[ '(sdlyt, '[
@@ -1533,7 +1531,7 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 	renderObjectTransformMatrix :: Cglm.Mat4 }
 
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])) ->
-	Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex] ->
+	Vk.CmdBffr.C scb ->
 	Vk.C.Extent2d ->
 	Vk.DscSet.S sd sp '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1545,22 +1543,22 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectPipelineLayout = lyt,
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
-	renderObjectTransformMatrix = model } = do
-	Vk.Cmd.bindPipeline cb Vk.Ppl.BindPointGraphics gpl
-	Vk.Cmd.bindDescriptorSets cb Vk.Ppl.BindPointGraphics lyt
-		(HeteroParList.Singleton $ U2 cmd) []
-	movb <- readIORef om
-	case movb of
+	renderObjectTransformMatrix = model } =
+	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+	Vk.Cmd.bindDescriptorSets cbb Vk.Ppl.BindPointGraphics lyt
+		(HeteroParList.Singleton $ U2 cmd) [] >>
+	readIORef om >>= \movb ->
+	(case movb of
 		Just ovb | vb == ovb -> pure ()
-		_ -> do	Vk.Cmd.bindVertexBuffers cb . HeteroParList.Singleton
+		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HeteroParList.Singleton
 				. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb
-			writeIORef om $ Just vb
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] cb lyt $ HeteroParList.Id (Foreign.Storable.Generic.Wrap
+			writeIORef om $ Just vb) >>
+	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] cbb lyt (HeteroParList.Id (Foreign.Storable.Generic.Wrap
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
-			}) :** HeteroParList.Nil
-	Vk.Cmd.draw cb vn 1 0 0
+			}) :** HeteroParList.Nil) >>
+	Vk.Cmd.draw cbb vn 1 0 0
 
 view :: Cglm.Mat4
 view = Cglm.lookat
@@ -1575,11 +1573,12 @@ projection sce = Cglm.modifyMat4 1 1 negate $ Cglm.perspective
 
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers ss sfs, VssList vss,
+	RecreateFramebuffers ss sfs,
 	HeteroParList.HomoList '(s, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
-			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts ) =>
+			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts,
+	HeteroParList.HomoList '() vss ) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1592,17 +1591,20 @@ mainLoop :: (
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Graphics.GNew sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] -> Vk.Ppl.Graphics.G sg1
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
+	Vk.Ppl.Graphics.GNew sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HeteroParList.PL (Vk.CmdBffr.Binded scb) vss ->
+	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
@@ -1629,13 +1631,13 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrc
 
 runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
-	RecreateFramebuffers sis sfs, VssList vss,
+	RecreateFramebuffers sis sfs,
 	HeteroParList.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts
-	) =>
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts,
+	HeteroParList.HomoList '() vss ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.C.Extent2d ->
@@ -1647,16 +1649,18 @@ runLoop :: (
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.Ppl.Graphics.GNew sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
+	Vk.Ppl.Graphics.GNew sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HeteroParList.PL (Vk.CmdBffr.Binded scb) vss ->
+	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	Int -> Int -> Int ->
 	HeteroParList.PL BindedGcd sbsms ->
@@ -1680,19 +1684,20 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp d
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
 		scb ssos vss sbsms sscnm sscnb sp slyts . (
-	VssList vss,
 	HeteroParList.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 			'Vk.DscSetLyt.Buffer '[
-				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts
-	) =>
+				VObj.Atom 256 GpuSceneData0 'Nothing ] ]) slyts,
+	HeteroParList.HomoList '() vss ) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.C.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+	Vk.Ppl.Graphics.GNew sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(slyt, Foo s, '[WrapMeshPushConstants]) ->
+	Vk.Ppl.Graphics.GNew sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(slyt, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.Ppl.Layout.L slyt
 		'[ '(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1702,7 +1707,7 @@ drawFrame ::
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] ->
-	HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
+	HeteroParList.LL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos -> Int -> Int -> Int ->
 	HeteroParList.PL BindedGcd sbsms ->
 	HeteroParList.PL MemoryGcd sbsms ->
 	Vk.Mem.M sscnm
@@ -1730,20 +1735,18 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
-	Vk.CmdBffr.reset cb def
+	Vk.CmdBffr.resetNew cb def
 	HeteroParList.index fbs imgIdx \fb -> case sdrn `mod` 2 of
 		0 -> recordCommandBuffer cb rp fb ext gpl0 lyt vb vbtri fn cmd vn
 		1 -> recordCommandBuffer cb rp fb ext gpl1 lyt vb vbtri fn cmd vn
 		_ -> error "never occur"
-	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias]
-			'[ '(scb, '[AddType Vertex 'Vk.VtxInp.RateVertex])]
-			'[srfs]
+	let	submitInfo :: Vk.SubmitInfo 'Nothing '[sias] '[scb] '[srfs]
 		submitInfo = Vk.SubmitInfo {
 			Vk.submitInfoNext = TMaybe.N,
 			Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Singleton
 				$ Vk.SemaphorePipelineStageFlags ias
 					Vk.Ppl.StageColorAttachmentOutputBit,
-			Vk.submitInfoCommandBuffers = HeteroParList.Singleton $ U2 cb,
+			Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 			Vk.submitInfoSignalSemaphores = HeteroParList.Singleton rfs }
 		presentInfoNew = Vk.Khr.PresentInfoNew {
 			Vk.Khr.presentInfoNextNew = TMaybe.N,
@@ -1752,7 +1755,8 @@ drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass r
 				$ Vk.Khr.SwapchainImageIndexNew sc imgIdx }
 	Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) $ Just iff
 	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfoNew
-	where	cb = cbs `vssListIndex` cf
+	where	HeteroParList.Dummy cb = cbs `HeteroParList.homoListIndex` cf ::
+			HeteroParList.Dummy (Vk.CmdBffr.C scb) '()
 
 catchAndSerialize :: IO () -> IO ()
 catchAndSerialize =
@@ -1773,12 +1777,14 @@ catchAndRecreate :: (
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Graphics.GNew sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
+	Vk.Ppl.Graphics.GNew sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
@@ -1807,12 +1813,14 @@ recreateSwapchainEtc :: (
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.G sg0
+	Vk.Ppl.Graphics.GNew sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
-	Vk.Ppl.Graphics.G sg1
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
+	Vk.Ppl.Graphics.GNew sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
-		'[ '(0, Position), '(1, Normal), '(2, Color)] ->
+		'[ '(0, Position), '(1, Normal), '(2, Color)]
+		'(sl, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
 	DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
 	HeteroParList.PL Vk.Frmbffr.F sfs -> IO Vk.C.Extent2d
