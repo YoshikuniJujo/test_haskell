@@ -41,9 +41,11 @@ packages:
 #
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: d238088bb58ec2eb7f908a431d087a1548cf3664
+  commit: 1a79f6c81f6a87d552a4ff9138ab8e287410ac27
   subdirs:
   - themes/gui/vulkan/try-vulkan-core
+- git: https://github.com/YoshikuniJujo/c-struct
+  commit: 85f71455821d3924ec75737f5fe6c597809ba34b
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

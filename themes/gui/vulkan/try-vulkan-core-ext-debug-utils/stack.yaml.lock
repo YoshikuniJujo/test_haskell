@@ -5,18 +5,29 @@
 
 packages:
 - completed:
-    commit: d238088bb58ec2eb7f908a431d087a1548cf3664
+    commit: 1a79f6c81f6a87d552a4ff9138ab8e287410ac27
     git: https://github.com/YoshikuniJujo/test_haskell
     name: try-vulkan-core
     pantry-tree:
-      sha256: 3bf9bf1647601a85d9b91b140373dab4fa20fcf7a6b3e274a3687085eec981db
-      size: 5132
+      sha256: 5887d6c18921a2adff7d92bd9ee619cf1e900c4a9fcd783f82657b3ad4b7dfe4
+      size: 5127
     subdir: themes/gui/vulkan/try-vulkan-core
-    version: 0.1.0.0
+    version: 0.1.0.1
   original:
-    commit: d238088bb58ec2eb7f908a431d087a1548cf3664
+    commit: 1a79f6c81f6a87d552a4ff9138ab8e287410ac27
     git: https://github.com/YoshikuniJujo/test_haskell
     subdir: themes/gui/vulkan/try-vulkan-core
+- completed:
+    commit: 85f71455821d3924ec75737f5fe6c597809ba34b
+    git: https://github.com/YoshikuniJujo/c-struct
+    name: c-struct
+    pantry-tree:
+      sha256: 6668192a8c6e70dc57a6124aae0f882ca8fd1450648aa4bd7991e0ab4f1e70eb
+      size: 836
+    version: 0.1.2.0
+  original:
+    commit: 85f71455821d3924ec75737f5fe6c597809ba34b
+    git: https://github.com/YoshikuniJujo/c-struct
 snapshots:
 - completed:
     sha256: 1d25e3e0e2edb856951e8903821e0199a1112ab48b76c83f814e4f7596961e89

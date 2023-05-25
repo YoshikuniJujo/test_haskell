@@ -6,11 +6,11 @@
 module Gpu.Vulkan.Ext.DebugUtils.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Control.Monad
 import Data.Word
 
