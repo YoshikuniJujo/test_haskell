@@ -1,7 +1,7 @@
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Text.Tools where
+module Data.Text.Tools (pokeText, cstringToText) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Utils

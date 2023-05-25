@@ -30,6 +30,56 @@ library:
   source-dirs: src
   pkg-config-dependencies:
   - vulkan
+  exposed-modules:
+  - Gpu.Vulkan.AllocationCallbacks.Core
+  - Gpu.Vulkan.Attachment.Core
+  - Gpu.Vulkan.Buffer.Core
+  - Gpu.Vulkan.BufferView.Core
+  - Gpu.Vulkan.Command.Core
+  - Gpu.Vulkan.CommandBuffer.Core
+  - Gpu.Vulkan.CommandPool.Core
+  - Gpu.Vulkan.Component.Core
+  - Gpu.Vulkan.Core
+  - Gpu.Vulkan.Descriptor.Core
+  - Gpu.Vulkan.DescriptorPool.Core
+  - Gpu.Vulkan.DescriptorSet.Core
+  - Gpu.Vulkan.DescriptorSetLayout.Core
+  - Gpu.Vulkan.Device.Core
+  - Gpu.Vulkan.Fence.Core
+  - Gpu.Vulkan.Framebuffer.Core
+  - Gpu.Vulkan.Image.Core
+  - Gpu.Vulkan.ImageView.Core
+  - Gpu.Vulkan.Instance.Core
+  - Gpu.Vulkan.Memory.Core
+  - Gpu.Vulkan.PhysicalDevice.Core
+  - Gpu.Vulkan.PhysicalDevice.Struct.Core
+  - Gpu.Vulkan.Pipeline.ColorBlendAttachment.Core
+  - Gpu.Vulkan.Pipeline.ColorBlendState.Core
+  - Gpu.Vulkan.Pipeline.Compute.Core
+  - Gpu.Vulkan.Pipeline.Core
+  - Gpu.Vulkan.Pipeline.DepthStencilState.Core
+  - Gpu.Vulkan.Pipeline.DynamicState.Core
+  - Gpu.Vulkan.Pipeline.Graphics.Core
+  - Gpu.Vulkan.Pipeline.InputAssemblyState.Core
+  - Gpu.Vulkan.Pipeline.MultisampleState.Core
+  - Gpu.Vulkan.Pipeline.RasterizationState.Core
+  - Gpu.Vulkan.Pipeline.ShaderStage.Core
+  - Gpu.Vulkan.Pipeline.TessellationState.Core
+  - Gpu.Vulkan.Pipeline.VertexInputState.Core
+  - Gpu.Vulkan.Pipeline.ViewportState.Core
+  - Gpu.Vulkan.PipelineCache.Core
+  - Gpu.Vulkan.PipelineLayout.Core
+  - Gpu.Vulkan.PushConstant.Core
+  - Gpu.Vulkan.QueryPool.Core
+  - Gpu.Vulkan.Queue.Core
+  - Gpu.Vulkan.QueueFamily.Core
+  - Gpu.Vulkan.RenderPass.Core
+  - Gpu.Vulkan.Sampler.Core
+  - Gpu.Vulkan.Semaphore.Core
+  - Gpu.Vulkan.ShaderModule.Core
+  - Gpu.Vulkan.Specialization.Core
+  - Gpu.Vulkan.Subpass.Core
+  - Gpu.Vulkan.VertexInput.Core
 
 executables:
   try-vulkan-core-exe:

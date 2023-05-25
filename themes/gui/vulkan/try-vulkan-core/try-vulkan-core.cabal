@@ -25,8 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Text.Tools
-      Foreign.Ptr.Synonyms
       Gpu.Vulkan.AllocationCallbacks.Core
       Gpu.Vulkan.Attachment.Core
       Gpu.Vulkan.Buffer.Core
@@ -77,6 +75,8 @@ library
       Gpu.Vulkan.Subpass.Core
       Gpu.Vulkan.VertexInput.Core
   other-modules:
+      Data.Text.Tools
+      Foreign.Ptr.Synonyms
       Paths_try_vulkan_core
   hs-source-dirs:
       src
