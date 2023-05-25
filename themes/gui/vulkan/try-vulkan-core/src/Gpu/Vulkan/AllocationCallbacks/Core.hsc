@@ -3,7 +3,35 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.AllocationCallbacks.Core where
+module Gpu.Vulkan.AllocationCallbacks.Core (
+	-- * TYPE
+	A, pattern A,
+	aPUserData, aPfnAllocation, aPfnReallocation, aPfnFree,
+	aPfnInternalAllocation, aPfnInternalFree,
+
+	-- * FUNCTIONS
+	-- ** ALLOCATION
+	wrapAllocationFunction,
+	FnAllocationFunction, PfnAllocationFunction,
+
+	-- ** REALLOCATION
+	wrapReallocationFunction,
+	FnReallocationFunction, PfnReallocationFunction,
+	
+	-- ** FREE
+	wrapFreeFunction,
+	FnFreeFunction, PfnFreeFunction,
+	
+	-- * INTERNAL NOTIFICATION
+	-- ** ALLOCATION
+	wrapInternalAllocationNotification,
+	FnInternalAllocationNotification, PfnInternalAllocationNotification,
+	
+	-- ** FREE
+	wrapInternalFreeNotification,
+	FnInternalFreeNotification, PfnInternalFreeNotification
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Ptr.Synonyms
