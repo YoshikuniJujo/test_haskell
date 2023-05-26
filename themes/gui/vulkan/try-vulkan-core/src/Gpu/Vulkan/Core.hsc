@@ -108,13 +108,13 @@ module Gpu.Vulkan.Core (
 	) where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.ForeignPtr
 import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 

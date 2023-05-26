@@ -6,9 +6,9 @@
 module Gpu.Vulkan.ImageView.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 

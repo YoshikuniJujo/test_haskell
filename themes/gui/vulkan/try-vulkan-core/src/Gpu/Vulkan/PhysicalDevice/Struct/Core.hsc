@@ -6,12 +6,14 @@
 module Gpu.Vulkan.PhysicalDevice.Struct.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
+
+import Gpu.Vulkan.TypeSynonyms.Core
 
 #include <vulkan/vulkan.h>
 

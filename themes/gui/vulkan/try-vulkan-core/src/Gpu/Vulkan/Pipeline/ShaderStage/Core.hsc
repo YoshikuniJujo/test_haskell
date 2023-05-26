@@ -6,10 +6,10 @@
 module Gpu.Vulkan.Pipeline.ShaderStage.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 
 import qualified Gpu.Vulkan.ShaderModule.Core as Shader.Module

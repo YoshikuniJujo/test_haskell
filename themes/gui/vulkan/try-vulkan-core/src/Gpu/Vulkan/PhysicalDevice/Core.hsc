@@ -6,12 +6,12 @@
 module Gpu.Vulkan.PhysicalDevice.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Concurrent
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.String
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 import Data.Text.Tools

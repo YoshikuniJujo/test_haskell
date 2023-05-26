@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -6,12 +7,12 @@
 module Gpu.Vulkan.Subpass.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.Struct
 import Data.Word
 
-import qualified Gpu.Vulkan.Attachment.Core as Attachment
+import Gpu.Vulkan.TypeSynonyms.Core
+import Gpu.Vulkan.Attachment.Core qualified as Attachment
 
 #include <vulkan/vulkan.h>
 

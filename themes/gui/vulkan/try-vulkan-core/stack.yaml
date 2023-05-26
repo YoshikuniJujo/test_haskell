@@ -38,10 +38,10 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
 - git: https://github.com/YoshikuniJujo/c-struct
-  commit: a9919be14b83d3045be6c904fdacf37b522042c4
+  commit: 120910bb3809f608b335c37cae66ac70f75703e0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

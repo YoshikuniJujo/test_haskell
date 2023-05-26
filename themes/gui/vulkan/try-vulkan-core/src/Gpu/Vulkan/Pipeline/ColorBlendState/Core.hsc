@@ -5,10 +5,10 @@
 module Gpu.Vulkan.Pipeline.ColorBlendState.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment.Core as ColorBlendAttachment

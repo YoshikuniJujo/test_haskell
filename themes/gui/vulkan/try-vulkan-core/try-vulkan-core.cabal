@@ -74,9 +74,9 @@ library
       Gpu.Vulkan.Specialization.Core
       Gpu.Vulkan.Subpass.Core
       Gpu.Vulkan.VertexInput.Core
+      Gpu.Vulkan.TypeSynonyms.Core
   other-modules:
       Data.Text.Tools
-      Foreign.Ptr.Synonyms
       Paths_try_vulkan_core
   hs-source-dirs:
       src

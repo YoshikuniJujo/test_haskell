@@ -7,9 +7,9 @@
 module Gpu.Vulkan.Pipeline.TessellationState.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 
 #include <vulkan/vulkan.h>

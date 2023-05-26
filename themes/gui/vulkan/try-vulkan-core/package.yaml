@@ -80,6 +80,7 @@ library:
   - Gpu.Vulkan.Specialization.Core
   - Gpu.Vulkan.Subpass.Core
   - Gpu.Vulkan.VertexInput.Core
+  - Gpu.Vulkan.TypeSynonyms.Core
 
 executables:
   try-vulkan-core-exe:

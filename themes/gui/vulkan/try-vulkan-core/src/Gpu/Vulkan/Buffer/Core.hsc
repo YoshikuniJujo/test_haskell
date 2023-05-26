@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -6,18 +7,18 @@
 module Gpu.Vulkan.Buffer.Core where
 
 import Foreign.Ptr
-import Foreign.Ptr.Synonyms
 import Foreign.Storable
 import Foreign.C.Struct
+import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 
 import Gpu.Vulkan.Core
-
-import qualified Gpu.Vulkan.AllocationCallbacks.Core as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Core as Device
-import qualified Gpu.Vulkan.Memory.Core as Memory
-import qualified Gpu.Vulkan.Image.Core as Image
+import Gpu.Vulkan.TypeSynonyms.Core
+import Gpu.Vulkan.AllocationCallbacks.Core qualified as AllocationCallbacks
+import Gpu.Vulkan.Device.Core qualified as Device
+import Gpu.Vulkan.Memory.Core qualified as Memory
+import Gpu.Vulkan.Image.Core qualified as Image
 
 #include <vulkan/vulkan.h>
 
