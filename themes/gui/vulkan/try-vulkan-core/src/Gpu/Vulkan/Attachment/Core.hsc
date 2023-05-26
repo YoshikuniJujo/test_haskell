@@ -3,7 +3,22 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Attachment.Core where
+module Gpu.Vulkan.Attachment.Core (
+
+	-- * DESCRIPTION
+
+	Description, PtrDescription, pattern Description,
+	descriptionFlags, descriptionFormat, descriptionSamples,
+	descriptionLoadOp, descriptionStoreOp,
+	descriptionStencilLoadOp, descriptionStencilStoreOp,
+	descriptionInitialLayout, descriptionFinalLayout,
+
+	-- * REFERENCE
+
+	Reference, PtrReference, pattern Reference,
+	referenceAttachment, referenceLayout
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
