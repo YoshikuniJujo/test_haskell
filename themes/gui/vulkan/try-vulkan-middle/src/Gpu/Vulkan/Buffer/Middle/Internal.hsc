@@ -18,12 +18,11 @@ module Gpu.Vulkan.Buffer.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked', withPokedMaybe', withPtrS )
+	WithPoked, withPoked, withPoked', withPokedMaybe', withPtrS )
 import Control.Arrow
 import Control.Monad.Cont
 import Data.Kind
@@ -71,7 +70,7 @@ createInfoToCore CreateInfo {
 	allocaArray qfic \pqfis -> do
 	pokeArray pqfis qfis
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
-		let	C.CreateInfo_ fci = C.CreateInfo {
+		withPoked C.CreateInfo {
 				C.createInfoSType = (),
 				C.createInfoPNext = pnxt',
 				C.createInfoFlags = flgs,
@@ -79,8 +78,7 @@ createInfoToCore CreateInfo {
 				C.createInfoUsage = usg,
 				C.createInfoSharingMode = sm,
 				C.createInfoQueueFamilyIndexCount = fromIntegral qfic,
-				C.createInfoPQueueFamilyIndices = pqfis }
-		withForeignPtr fci $ (() <$) . f
+				C.createInfoPQueueFamilyIndices = pqfis } f
 
 newtype B = B C.B deriving (Show, Eq, Storable)
 

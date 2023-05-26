@@ -11,7 +11,6 @@ module Gpu.Vulkan.BufferView.Middle.Internal (
 	B(..), CreateInfo(..), CreateFlags, create, destroy ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
@@ -54,16 +53,15 @@ createInfoToCore' CreateInfo {
 	createInfoFormat = Format fmt,
 	createInfoOffset = Device.Size os,
 	createInfoRange = Device.Size rng
-	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') -> do
-	let	C.CreateInfo_ fci = C.CreateInfo {
+	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoBuffer = bf,
 			C.createInfoFormat = fmt,
 			C.createInfoOffset = os,
-			C.createInfoRange = rng }
-	withForeignPtr fci f
+			C.createInfoRange = rng } f
 
 newtype B = B C.B deriving Show
 
