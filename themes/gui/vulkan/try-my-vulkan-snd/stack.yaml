@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f3831ce6604c836ae77ca6c95df14737f56679a6
+  commit: 1e254375add8e5e74bb0e834d0a15b5c7ae0b6c8
   subdirs:
   - themes/gui/vulkan/try-vulkan-middle
   - themes/gui/vulkan/try-vulkan-middle-khr
@@ -58,7 +58,7 @@ extra-deps:
   commit: 511e579860a040d291373b1c62abc491f91a3110
 - union-color-0.1.2.0
 - git: https://github.com/YoshikuniJujo/c-struct
-  commit: 85f71455821d3924ec75737f5fe6c597809ba34b
+  commit: 120910bb3809f608b335c37cae66ac70f75703e0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
