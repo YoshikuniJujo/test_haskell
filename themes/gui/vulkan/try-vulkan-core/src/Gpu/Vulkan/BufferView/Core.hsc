@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.BufferView.Core where
+module Gpu.Vulkan.BufferView.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, B, PtrB,
+	CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoBuffer, createInfoFormat, createInfoOffset, createInfoRange
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
