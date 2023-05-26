@@ -4,7 +4,35 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Buffer.Core where
+module Gpu.Vulkan.Buffer.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, getMemoryRequirements, bindMemory, B,
+	CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags, createInfoSize,
+	createInfoUsage, createInfoSharingMode,
+	createInfoQueueFamilyIndexCount, createInfoPQueueFamilyIndices,
+
+	-- * COPY
+
+	Copy, pattern Copy,
+	copySrcOffset, copyDstOffset, copySize,
+
+	ImageCopy, pattern ImageCopy,
+	imageCopyBufferOffset,
+	imageCopyBufferRowLength, imageCopyBufferImageHeight,
+	imageCopyImageSubresource, imageCopyImageOffset, imageCopyImageExtent,
+
+	-- * MEMORY BARRIER
+
+	MemoryBarrier, pattern MemoryBarrier,
+	memoryBarrierSType, memoryBarrierPNext,
+	memoryBarrierSrcAccessMask, memoryBarrierDstAccessMask,
+	memoryBarrierSrcQueueFamilyIndex, memoryBarrierDstQueueFamilyIndex,
+	memoryBarrierBuffer, memoryBarrierOffset, memoryBarrierSize
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
