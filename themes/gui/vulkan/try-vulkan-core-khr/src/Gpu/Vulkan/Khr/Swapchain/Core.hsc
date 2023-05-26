@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -13,15 +14,13 @@ import Data.Word
 import Data.Int
 
 import Gpu.Vulkan.Core
-
-import qualified Gpu.Vulkan.AllocationCallbacks.Core as AllocationCallbacks
-import qualified Gpu.Vulkan.Device.Core as Device
-import qualified Gpu.Vulkan.Khr.Surface.Core as Surface
-import qualified Gpu.Vulkan.Image.Core as Image
+import Gpu.Vulkan.TypeSynonyms.Core
+import Gpu.Vulkan.AllocationCallbacks.Core qualified as AllocationCallbacks
+import Gpu.Vulkan.Device.Core qualified as Device
+import Gpu.Vulkan.Khr.Surface.Core qualified as Surface
+import Gpu.Vulkan.Image.Core qualified as Image
 
 #include <vulkan/vulkan.h>
-
-type PtrUint32T = Ptr #{type uint32_t}
 
 data STag
 type S = Ptr STag

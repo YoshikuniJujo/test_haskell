@@ -38,14 +38,14 @@ packages:
 # - acme-missiles-0.3
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
+
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f6cff407b89fb7b24f3d9abadeab04a5ac780daa
+  commit: d5bf30ff8705eba48b09f1dbc79aa71bef6a096c
   subdirs:
   - themes/gui/vulkan/try-vulkan-core
 - git: https://github.com/YoshikuniJujo/c-struct
-  commit: 85f71455821d3924ec75737f5fe6c597809ba34b
+  commit: 120910bb3809f608b335c37cae66ac70f75703e0
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

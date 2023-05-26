@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
@@ -12,16 +13,14 @@ import Foreign.C.Struct.TypeSynonyms
 import Data.Word
 import Data.Int
 
-import qualified Gpu.Vulkan.Device.Core as Device
-import qualified Gpu.Vulkan.Semaphore.Core as Semaphore
-import qualified Gpu.Vulkan.Fence.Core as Fence
-import qualified Gpu.Vulkan.Queue.Core as Queue
-import qualified Gpu.Vulkan.Khr.Swapchain.Core as Swapchain
+import Gpu.Vulkan.TypeSynonyms.Core
+import Gpu.Vulkan.Device.Core qualified as Device
+import Gpu.Vulkan.Semaphore.Core qualified as Semaphore
+import Gpu.Vulkan.Fence.Core qualified as Fence
+import Gpu.Vulkan.Queue.Core qualified as Queue
+import Gpu.Vulkan.Khr.Swapchain.Core qualified as Swapchain
 
 #include <vulkan/vulkan.h>
-
-type PtrResult = Ptr #{type VkResult}
-type PtrUint32T = Ptr #{type uint32_t}
 
 foreign import ccall "vkAcquireNextImageKHR" acquireNextImage ::
 	Device.D -> Swapchain.S -> #{type uint64_t} -> Semaphore.S -> Fence.F ->
