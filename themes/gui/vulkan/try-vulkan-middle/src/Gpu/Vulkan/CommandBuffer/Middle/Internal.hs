@@ -17,10 +17,9 @@ module Gpu.Vulkan.CommandBuffer.Middle.Internal (
 	) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked', withPtrS, pattern NullPtr )
+	WithPoked, withPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Default
@@ -56,13 +55,12 @@ allocateInfoToCore AllocateInfo {
 	allocateInfoLevel = Level lvl,
 	allocateInfoCommandBufferCount = cbc
 	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
-	let	C.AllocateInfo_ fAllocateInfo = C.AllocateInfo {
+	withPoked C.AllocateInfo {
 			C.allocateInfoSType = (),
 			C.allocateInfoPNext = pnxt',
 			C.allocateInfoCommandPool = cp,
 			C.allocateInfoLevel = lvl,
-			C.allocateInfoCommandBufferCount = cbc } in
-	withForeignPtr fAllocateInfo f
+			C.allocateInfoCommandBufferCount = cbc } f
 
 data C = C {
 	cPipeline :: IORef Pipeline.C.P,
@@ -99,12 +97,11 @@ beginInfoToCore BeginInfo {
 	beginInfoInheritanceInfo = mii } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	maybe ($ NullPtr) inheritanceInfoToCore mii \pii ->
-	let	C.BeginInfo_ fBeginInfo = C.BeginInfo {
+	() <$ withPoked C.BeginInfo {
 			C.beginInfoSType = (),
 			C.beginInfoPNext = pnxt',
 			C.beginInfoFlags = flgs,
-			C.beginInfoPInheritanceInfo = pii } in
-	withForeignPtr fBeginInfo $ (() <$) . f
+			C.beginInfoPInheritanceInfo = pii } f
 
 data InheritanceInfo mn = InheritanceInfo {
 	inheritanceInfoNext :: TMaybe.M mn,
@@ -127,7 +124,7 @@ inheritanceInfoToCore InheritanceInfo {
 	inheritanceInfoPipelineStatistics = QueryPipelineStatisticFlagBits ps
 	} f = withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	Framebuffer.fToCore fb >>= \fb' ->
-	let	C.InheritanceInfo_ fInheritanceInfo =  C.InheritanceInfo {
+	withPoked C.InheritanceInfo {
 			C.inheritanceInfoSType = (),
 			C.inheritanceInfoPNext = pnxt',
 			C.inheritanceInfoRenderPass = rp,
@@ -135,8 +132,7 @@ inheritanceInfoToCore InheritanceInfo {
 			C.inheritanceInfoFramebuffer = fb',
 			C.inheritanceInfoOcclusionQueryEnable = boolToBool32 oqe,
 			C.inheritanceInfoQueryFlags = qf,
-			C.inheritanceInfoPipelineStatistics = ps } in
-	withForeignPtr fInheritanceInfo $ (() <$) . f
+			C.inheritanceInfoPipelineStatistics = ps } f
 
 begin :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M ii)) => C -> BeginInfo mn ii -> IO ()
 begin (C _ c) bi =
