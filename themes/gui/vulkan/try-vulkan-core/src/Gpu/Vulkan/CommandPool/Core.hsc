@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.CommandPool.Core where
+module Gpu.Vulkan.CommandPool.Core (
+
+	-- * CREATE, DESTROY AND RESET
+
+	create, destroy, reset, C,
+	CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext,
+	createInfoFlags, createInfoQueueFamilyIndex
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
