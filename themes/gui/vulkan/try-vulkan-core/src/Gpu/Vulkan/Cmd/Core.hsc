@@ -1,6 +1,35 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Cmd.Core where
+module Gpu.Vulkan.Cmd.Core (
+
+	-- * BEGIN AND END RENDER PASS
+
+	beginRenderPass, endRenderPass,
+
+	-- * DRAW AND DISPATCH
+
+	draw, drawIndexed, dispatch,
+
+	-- * BIND
+
+	bindPipeline, bindVertexBuffers, bindIndexBuffer,
+	bindDescriptorSets,
+	pushConstants,
+
+	-- * COPY BUFFER AND IMAGE
+
+	copyBuffer, copyBufferToImage, copyImageToBuffer, blitImage,
+
+	-- * PIPELINE BARRIER
+
+	pipelineBarrier,
+
+	-- * QUERY
+
+	beginQuery, endQuery, resetQueryPool,
+	writeTimestamp,
+
+	) where
 
 import Foreign.Ptr
 import Data.Word
