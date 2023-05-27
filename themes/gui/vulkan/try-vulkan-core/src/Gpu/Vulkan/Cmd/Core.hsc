@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Command.Core where
+module Gpu.Vulkan.Cmd.Core where
 
 import Foreign.Ptr
 import Data.Word

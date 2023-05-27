@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -29,7 +29,7 @@ library
       Gpu.Vulkan.Attachment.Core
       Gpu.Vulkan.Buffer.Core
       Gpu.Vulkan.BufferView.Core
-      Gpu.Vulkan.Command.Core
+      Gpu.Vulkan.Cmd.Core
       Gpu.Vulkan.CommandBuffer.Core
       Gpu.Vulkan.CommandPool.Core
       Gpu.Vulkan.Component.Core

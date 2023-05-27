@@ -35,7 +35,7 @@ library:
   - Gpu.Vulkan.Attachment.Core
   - Gpu.Vulkan.Buffer.Core
   - Gpu.Vulkan.BufferView.Core
-  - Gpu.Vulkan.Command.Core
+  - Gpu.Vulkan.Cmd.Core
   - Gpu.Vulkan.CommandBuffer.Core
   - Gpu.Vulkan.CommandPool.Core
   - Gpu.Vulkan.Component.Core
