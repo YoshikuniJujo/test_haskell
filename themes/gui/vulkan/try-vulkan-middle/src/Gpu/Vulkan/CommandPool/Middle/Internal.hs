@@ -10,10 +10,9 @@ module Gpu.Vulkan.CommandPool.Middle.Internal (
 	C(..), CreateInfo(..), create, destroy, reset ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Storable
-import Foreign.Storable.PeekPoke (WithPoked, withPoked', withPtrS)
+import Foreign.Storable.PeekPoke (WithPoked, withPoked, withPoked', withPtrS)
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
@@ -42,12 +41,11 @@ createInfoToCore CreateInfo {
 	createInfoQueueFamilyIndex = QueueFamily.Index qfi
 	} f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
-	let	C.CreateInfo_ fCreateInfo = C.CreateInfo {
+	withPoked C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
-			C.createInfoQueueFamilyIndex = qfi } in
-	withForeignPtr fCreateInfo f
+			C.createInfoQueueFamilyIndex = qfi } f
 
 newtype C = C C.C deriving Show
 
