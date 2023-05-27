@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.CommandBuffer.Core where
+module Gpu.Vulkan.CommandBuffer.Core (C, PtrC) where
 
 import Foreign.Ptr
 

@@ -3,7 +3,29 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.CommandBuffer.Core where
+module Gpu.Vulkan.CommandBuffer.Core (
+
+	-- * ALLOCATE AND FREE
+
+	allocate, freeCs, C, PtrC,
+	AllocateInfo, pattern AllocateInfo,
+	allocateInfoSType, allocateInfoPNext, allocateInfoCommandPool,
+	allocateInfoLevel, levelPrimary, allocateInfoCommandBufferCount,
+
+	-- * BEGIN, END AND RESET
+	begin, end, reset,
+	BeginInfo, pattern BeginInfo,
+	beginInfoSType, beginInfoPNext, beginInfoFlags,
+	beginInfoPInheritanceInfo,
+
+	-- ** INHERITANCE INFO
+	InheritanceInfo, pattern InheritanceInfo,
+	inheritanceInfoSType, inheritanceInfoPNext,
+	inheritanceInfoRenderPass, inheritanceInfoSubpass,
+	inheritanceInfoFramebuffer, inheritanceInfoOcclusionQueryEnable,
+	inheritanceInfoQueryFlags, inheritanceInfoPipelineStatistics
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
