@@ -236,7 +236,7 @@ data ClearValue (ct :: ClearType) where
 class ClearColorValueToCore (cct :: ClearColorType) where
 	clearColorValueToCore ::
 		ClearValue ('ClearTypeColor cct) ->
-		(C.PtrClearColorValue -> IO a) -> IO a
+		(C.ClearColorValue -> IO a) -> IO a
 
 instance ClearColorValueToCore 'ClearColorTypeFloat32 where
 	clearColorValueToCore (ClearValueColor (RgbaDouble r g b a)) f =
