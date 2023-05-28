@@ -7,12 +7,12 @@
 
 module Gpu.Vulkan.Core (
 
-	-- * Struct Common
+	-- * STRUCT COMMON
 
 	StructCommon, pattern StructCommon,
 	structCommonSType, structCommonPNext,
 
-	-- * Info
+	-- * INFO
 
 	-- ** ApplicationInfo
 
@@ -32,7 +32,7 @@ module Gpu.Vulkan.Core (
 	submitInfoCommandBufferCount, submitInfoPCommandBuffers,
 	submitInfoSignalSemaphoreCount, submitInfoPSignalSemaphores,
 
-	-- * Properties
+	-- * PROPERTIES
 
 	-- ** ExtensionProperties
 
@@ -74,7 +74,7 @@ module Gpu.Vulkan.Core (
 	Extent3d, pattern Extent3d,
 	extent3dWidth, extent3dHeight, extent3dDepth,
 
-	-- * Others
+	-- * PIPELINE VALUES
 
 	-- ** Viewport
 
@@ -94,7 +94,7 @@ module Gpu.Vulkan.Core (
 	PtrClearValue,
 	clearValueFromClearColorValue, clearValueFromClearDepthStencilValue,
 
-	-- ** ClearColorValue
+	-- *** ClearColorValue
 
 	PtrClearColorValue,
 	clearColorValueFromUints, clearColorValueFromInts,
