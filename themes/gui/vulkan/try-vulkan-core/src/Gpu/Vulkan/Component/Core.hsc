@@ -3,7 +3,9 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Component.Core where
+module Gpu.Vulkan.Component.Core (
+	Mapping, pattern Mapping, mappingR, mappingG, mappingB, mappingA,
+	swizzleIdentity ) where
 
 import Foreign.Storable
 import Foreign.C.Struct
