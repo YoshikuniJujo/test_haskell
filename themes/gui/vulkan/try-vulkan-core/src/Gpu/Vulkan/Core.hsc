@@ -68,7 +68,7 @@ module Gpu.Vulkan.Core (
 
 	-- *** ClearColorValue
 
-	ClearColorValue, PtrClearColorValue,
+	ClearColorValue,
 	clearColorValueFromUints, clearColorValueFromInts,
 	clearColorValueFromFloats,
 
@@ -336,17 +336,15 @@ struct "StencilOpState" #{size VkStencilOpState} #{alignment VkStencilOpState} [
 
 data ClearValue
 type PtrClearValue = Ptr ClearValue
-
 data ClearColorValue
-type PtrClearColorValue = Ptr ClearColorValue
 
-clearColorValueFromFloats :: Ptr #{type float} -> PtrClearColorValue
+clearColorValueFromFloats :: Ptr #{type float} -> Ptr ClearColorValue
 clearColorValueFromFloats = castPtr
 
-clearColorValueFromInts :: Ptr #{type int32_t} -> PtrClearColorValue
+clearColorValueFromInts :: Ptr #{type int32_t} -> Ptr ClearColorValue
 clearColorValueFromInts = castPtr
 
-clearColorValueFromUints :: Ptr #{type uint32_t} -> PtrClearColorValue
+clearColorValueFromUints :: Ptr #{type uint32_t} -> Ptr ClearColorValue
 clearColorValueFromUints = castPtr
 
 struct "ClearDepthStencilValue" #{size VkClearDepthStencilValue}
@@ -359,11 +357,11 @@ struct "ClearDepthStencilValue" #{size VkClearDepthStencilValue}
 		[| #{poke VkClearDepthStencilValue, stencil} |]) ]
 	[''Show, ''Storable]
 
-clearValueFromClearColorValue :: PtrClearColorValue -> PtrClearValue
+clearValueFromClearColorValue :: Ptr ClearColorValue -> Ptr ClearValue
 clearValueFromClearColorValue = castPtr
 
 clearValueFromClearDepthStencilValue ::
-	ClearDepthStencilValue -> (PtrClearValue -> IO a) -> IO a
+	ClearDepthStencilValue -> (Ptr ClearValue -> IO a) -> IO a
 clearValueFromClearDepthStencilValue (ClearDepthStencilValue_ fp) f =
 	withForeignPtr fp $ f . castPtr
 
