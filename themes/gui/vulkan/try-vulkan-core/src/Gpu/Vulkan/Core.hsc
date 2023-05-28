@@ -7,11 +7,6 @@
 
 module Gpu.Vulkan.Core (
 
-	-- * STRUCT COMMON
-
-	StructCommon, pattern StructCommon,
-	structCommonSType, structCommonPNext,
-
 	-- * INFO
 
 	-- ** ApplicationInfo
@@ -25,7 +20,7 @@ module Gpu.Vulkan.Core (
 
 	-- ** SubmitInfo
 
-	SubmitInfo, pattern SubmitInfo, PtrPipelineStageFlags,
+	SubmitInfo, PtrPipelineStageFlags, pattern SubmitInfo,
 	submitInfoSType, submitInfoPNext,
 	submitInfoWaitSemaphoreCount, submitInfoPWaitSemaphores,
 	submitInfoPWaitDstStageMask,
@@ -50,29 +45,6 @@ module Gpu.Vulkan.Core (
 	FormatProperties, pattern FormatProperties,
 	formatPropertiesLinearTilingFeatures,
 	formatPropertiesOptimalTilingFeatures, formatPropertiesBufferFeatures,
-
-	-- * Rect, Offset and Extent
-
-	-- ** Rect
-
-	Rect2d, PtrRect2d, pattern Rect2d,
-	rect2dExtent, rect2dOffset,
-
-	-- ** Offset
-
-	Offset2d, pattern Offset2d,
-	offset2dX, offset2dY,
-
-	Offset3d, ListOffset3d, pattern Offset3d,
-	offset3dX, offset3dY, offset3dZ,
-
-	-- ** Extent
-
-	Extent2d, pattern Extent2d,
-	extent2dWidth, extent2dHeight,
-
-	Extent3d, pattern Extent3d,
-	extent3dWidth, extent3dHeight, extent3dDepth,
 
 	-- * PIPELINE VALUES
 
@@ -103,7 +75,35 @@ module Gpu.Vulkan.Core (
 	-- *** ClearDepthStencilValue
 	
 	ClearDepthStencilValue, pattern ClearDepthStencilValue,
-	clearDepthStencilValueDepth, clearDepthStencilValueStencil
+	clearDepthStencilValueDepth, clearDepthStencilValueStencil,
+
+	-- * STRUCT COMMON
+
+	StructCommon, pattern StructCommon,
+	structCommonSType, structCommonPNext,
+
+	-- * RECT, OFFSET AND EXTENT
+
+	-- ** Rect
+
+	Rect2d, PtrRect2d, pattern Rect2d,
+	rect2dExtent, rect2dOffset,
+
+	-- ** Offset
+
+	Offset2d, pattern Offset2d,
+	offset2dX, offset2dY,
+
+	Offset3d, ListOffset3d, pattern Offset3d,
+	offset3dX, offset3dY, offset3dZ,
+
+	-- ** Extent
+
+	Extent2d, pattern Extent2d,
+	extent2dWidth, extent2dHeight,
+
+	Extent3d, pattern Extent3d,
+	extent3dWidth, extent3dHeight, extent3dDepth,
 
 	) where
 
