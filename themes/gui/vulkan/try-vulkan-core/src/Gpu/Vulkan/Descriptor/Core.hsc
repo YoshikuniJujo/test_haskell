@@ -3,7 +3,21 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Descriptor.Core where
+module Gpu.Vulkan.Descriptor.Core (
+
+	-- * BUFFER INFO
+
+	BufferInfo, PtrBufferInfo,
+	pattern BufferInfo,
+	bufferInfoBuffer, bufferInfoOffset, bufferInfoRange,
+
+	-- * IMAGE INFO
+
+	ImageInfo, PtrImageInfo,
+	pattern ImageInfo,
+	imageInfoSampler, imageInfoImageView, imageInfoImageLayout
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
