@@ -16,14 +16,17 @@ module Gpu.Vulkan.Core (
 	applicationInfoPApplicationName, applicationInfoApplicationVersion,
 	applicationInfoPEngineName, applicationInfoEngineVersion,
 	applicationInfoApiVersion,
+
+	-- *** ApiVersion
+
 	ApiVersion, makeApiVersion, apiVersion_1_0, apiVersion_1_1,
 
 	-- ** SubmitInfo
 
-	SubmitInfo, PtrPipelineStageFlags, pattern SubmitInfo,
+	SubmitInfo, pattern SubmitInfo,
 	submitInfoSType, submitInfoPNext,
 	submitInfoWaitSemaphoreCount, submitInfoPWaitSemaphores,
-	submitInfoPWaitDstStageMask,
+	submitInfoPWaitDstStageMask, PtrPipelineStageFlags,
 	submitInfoCommandBufferCount, submitInfoPCommandBuffers,
 	submitInfoSignalSemaphoreCount, submitInfoPSignalSemaphores,
 
