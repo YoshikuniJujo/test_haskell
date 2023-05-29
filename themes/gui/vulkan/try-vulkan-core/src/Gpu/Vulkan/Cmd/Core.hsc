@@ -80,7 +80,7 @@ foreign import ccall "vkCmdBindIndexBuffer" bindIndexBuffer ::
 
 foreign import ccall "vkCmdBindDescriptorSets" bindDescriptorSets ::
 	CommandBuffer.C -> #{type VkPipelineBindPoint} -> Pipeline.Layout.L ->
-	#{type uint32_t} -> #{type uint32_t} -> Ptr DscSet.S ->
+	#{type uint32_t} -> #{type uint32_t} -> Ptr DscSet.D ->
 	#{type uint32_t} -> Ptr #{type uint32_t} -> IO ()
 
 foreign import ccall "vkCmdPipelineBarrier" pipelineBarrier ::

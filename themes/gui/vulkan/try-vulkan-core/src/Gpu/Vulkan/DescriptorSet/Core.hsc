@@ -41,11 +41,11 @@ struct "AllocateInfo" #{size VkDescriptorSetAllocateInfo}
 		[| #{poke VkDescriptorSetAllocateInfo, pSetLayouts} |]) ]
 	[''Show, ''Storable]
 
-data STag
-type S = Ptr STag
+data DTag
+type D = Ptr DTag
 
-foreign import ccall "vkAllocateDescriptorSets" allocateSs ::
-	Device.D -> Ptr AllocateInfo -> Ptr S -> IO #{type VkResult}
+foreign import ccall "vkAllocateDescriptorSets" allocateDs ::
+	Device.D -> Ptr AllocateInfo -> Ptr D -> IO #{type VkResult}
 
 wType :: #{type VkStructureType}
 wType = #{const VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET}
@@ -56,7 +56,7 @@ struct "Write" #{size VkWriteDescriptorSet} #{alignment VkWriteDescriptorSet} [
 	("pNext", ''PtrVoid,
 		[| #{peek VkWriteDescriptorSet, pNext} |],
 		[| #{poke VkWriteDescriptorSet, pNext} |]),
-	("dstSet", ''S,
+	("dstSet", ''D,
 		[| #{peek VkWriteDescriptorSet, dstSet} |],
 		[| #{poke VkWriteDescriptorSet, dstSet} |]),
 	("dstBinding", ''#{type uint32_t},
@@ -91,7 +91,7 @@ struct "Copy" #{size VkCopyDescriptorSet} #{alignment VkCopyDescriptorSet} [
 	("pNext", ''PtrVoid,
 		[| #{peek VkCopyDescriptorSet, pNext} |],
 		[| #{poke VkCopyDescriptorSet, pNext} |]),
-	("srcSet", ''S,
+	("srcSet", ''D,
 		[| #{peek VkCopyDescriptorSet, srcSet} |],
 		[| #{poke VkCopyDescriptorSet, srcSet} |]),
 	("srcBinding", ''#{type uint32_t},
@@ -100,7 +100,7 @@ struct "Copy" #{size VkCopyDescriptorSet} #{alignment VkCopyDescriptorSet} [
 	("srcArrayElement", ''#{type uint32_t},
 		[| #{peek VkCopyDescriptorSet, srcArrayElement} |],
 		[| #{poke VkCopyDescriptorSet, srcArrayElement} |]),
-	("dstSet", ''S,
+	("dstSet", ''D,
 		[| #{peek VkCopyDescriptorSet, dstSet} |],
 		[| #{poke VkCopyDescriptorSet, dstSet} |]),
 	("dstBinding", ''#{type uint32_t},
@@ -114,6 +114,6 @@ struct "Copy" #{size VkCopyDescriptorSet} #{alignment VkCopyDescriptorSet} [
 		[| #{poke VkCopyDescriptorSet, descriptorCount} |]) ]
 	[''Show, ''Storable]
 
-foreign import ccall "vkUpdateDescriptorSets" updateSs ::
+foreign import ccall "vkUpdateDescriptorSets" updateDs ::
 	Device.D ->
 	#{type uint32_t} -> Ptr Write -> #{type uint32_t} -> Ptr Copy -> IO ()
