@@ -10,11 +10,10 @@ module Gpu.Vulkan.DescriptorPool.Middle.Internal (
 	D(..), CreateInfo(..), Size(..), create, destroy ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
-import Foreign.Storable.PeekPoke (WithPoked, withPoked', withPtrS)
+import Foreign.Storable.PeekPoke (WithPoked, withPoked, withPoked', withPtrS)
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
@@ -56,14 +55,13 @@ createInfoToCore CreateInfo {
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	allocaArray psc \ppss ->
 	pokeArray ppss pss >>
-	let	C.CreateInfo_ fci = C.CreateInfo {
+	withPoked C.CreateInfo {
 			C.createInfoSType = (),
 			C.createInfoPNext = pnxt',
 			C.createInfoFlags = flgs,
 			C.createInfoMaxSets = ms,
 			C.createInfoPoolSizeCount = fromIntegral psc,
-			C.createInfoPPoolSizes = ppss } in
-	withForeignPtr fci f
+			C.createInfoPPoolSizes = ppss } f
 
 newtype D = D C.P deriving Show
 

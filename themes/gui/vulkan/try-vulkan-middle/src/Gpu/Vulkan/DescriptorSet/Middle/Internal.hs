@@ -65,7 +65,7 @@ allocateInfoToCore AllocateInfo {
 		C.allocateInfoDescriptorSetCount = dscw,
 		C.allocateInfoPSetLayouts = psls }
 
-newtype D = D C.S deriving Show
+newtype D = D C.D deriving Show
 
 allocateDs :: WithPoked (TMaybe.M mn) => Device.D -> AllocateInfo mn -> IO [D]
 allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
@@ -73,7 +73,7 @@ allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 	pss <- ContT $ allocaArray dsc
 	lift $ allocateInfoToCore ai \(C.AllocateInfo_ fai) ->
 		withForeignPtr fai \pai -> do
-			r <- C.allocateSs dvc pai pss
+			r <- C.allocateDs dvc pai pss
 			throwUnlessSuccess $ Result r
 	lift $ peekArray dsc pss
 
@@ -201,7 +201,7 @@ updateDs (Device.D dvc) ws cs =
 	allocaAndPokeArray' ws' \(fromIntegral -> wc, pws) ->
 	(copyToCore `mapContM` cs) \cs' ->
 	allocaAndPokeArray' cs' \(fromIntegral -> cc, pcs) ->
-	C.updateSs dvc wc pws cc pcs
+	C.updateDs dvc wc pws cc pcs
 
 updateDsNew :: (WriteListToCore ws, CopyListToCore cs) =>
 	Device.D ->
@@ -212,4 +212,4 @@ updateDsNew (Device.D dvc) ws cs =
 	allocaAndPokeArray' cws \(fromIntegral -> wc, pws) ->
 	copyListToCore cs \ccs ->
 	allocaAndPokeArray' ccs \(fromIntegral -> cc, pcs) ->
-	C.updateSs dvc wc pws cc pcs
+	C.updateDs dvc wc pws cc pcs
