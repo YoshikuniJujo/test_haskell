@@ -7,7 +7,7 @@ module Gpu.Vulkan.DescriptorPool.Core (
 
 	-- * CREATE AND DESTROY
 
-	create, destroy, P, CreateInfo, pattern CreateInfo,
+	create, destroy, D, CreateInfo, pattern CreateInfo,
 	createInfoSType, createInfoPNext, createInfoFlags,
 	createInfoMaxSets, createInfoPoolSizeCount, createInfoPPoolSizes,
 
@@ -66,12 +66,12 @@ struct "CreateInfo" #{size VkDescriptorPoolCreateInfo}
 		[| #{poke VkDescriptorPoolCreateInfo, pPoolSizes} |]) ]
 	[''Show, ''Storable]
 
-data PTag
-type P = Ptr PTag
+data DTag
+type D = Ptr DTag
 
 foreign import ccall "vkCreateDescriptorPool" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A ->
-	Ptr P -> IO #{type VkResult}
+	Ptr D -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyDescriptorPool" destroy ::
-	Device.D -> P -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> D -> Ptr AllocationCallbacks.A -> IO ()

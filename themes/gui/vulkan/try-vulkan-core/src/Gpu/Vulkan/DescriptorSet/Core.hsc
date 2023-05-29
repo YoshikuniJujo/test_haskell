@@ -30,7 +30,7 @@ struct "AllocateInfo" #{size VkDescriptorSetAllocateInfo}
 	("pNext", ''PtrVoid,
 		[| #{peek VkDescriptorSetAllocateInfo, pNext} |],
 		[| #{poke VkDescriptorSetAllocateInfo, pNext} |]),
-	("descriptorPool", ''Pool.P,
+	("descriptorPool", ''Pool.D,
 		[| #{peek VkDescriptorSetAllocateInfo, descriptorPool} |],
 		[| #{poke VkDescriptorSetAllocateInfo, descriptorPool} |]),
 	("descriptorSetCount", ''#{type uint32_t},
