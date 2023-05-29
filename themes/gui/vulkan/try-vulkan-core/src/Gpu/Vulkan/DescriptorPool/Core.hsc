@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorPool.Core where
+module Gpu.Vulkan.DescriptorPool.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, P, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoMaxSets, createInfoPoolSizeCount, createInfoPPoolSizes,
+
+	-- ** Size
+
+	Size, PtrSize, pattern Size, sizeType, sizeDescriptorCount
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
