@@ -3,7 +3,21 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Instance.Core where
+module Gpu.Vulkan.Instance.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, I, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoPApplicationInfo,
+	createInfoEnabledLayerCount, createInfoPpEnabledLayerNames,
+	createInfoEnabledExtensionCount, createInfoPpEnabledExtensionNames,
+
+	-- * ENUMERATE
+
+	enumerateLayerProperties, enumerateExtensionProperties
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
