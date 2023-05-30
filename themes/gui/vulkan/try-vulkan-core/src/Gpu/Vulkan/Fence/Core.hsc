@@ -3,7 +3,18 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Fence.Core where
+module Gpu.Vulkan.Fence.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, F, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+
+	-- * WAIT AND RESET
+
+	waitForFs, resetFs
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

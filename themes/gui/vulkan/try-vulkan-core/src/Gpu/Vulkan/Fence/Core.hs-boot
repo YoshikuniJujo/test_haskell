@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Fence.Core where
+module Gpu.Vulkan.Fence.Core (F) where
 
 import Foreign.Ptr
 
