@@ -63,7 +63,7 @@ createInfoToCore CreateInfo {
 			C.createInfoPoolSizeCount = fromIntegral psc,
 			C.createInfoPPoolSizes = ppss } f
 
-newtype D = D C.P deriving Show
+newtype D = D C.D deriving Show
 
 create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO D
