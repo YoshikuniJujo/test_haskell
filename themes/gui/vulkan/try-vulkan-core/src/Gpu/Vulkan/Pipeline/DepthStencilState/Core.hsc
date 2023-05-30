@@ -3,7 +3,18 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.DepthStencilState.Core where
+module Gpu.Vulkan.Pipeline.DepthStencilState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoDepthTestEnable, createInfoDepthWriteEnable,
+	createInfoDepthCompareOp, createInfoDepthBoundsTestEnable,
+	createInfoStencilTestEnable, createInfoFront, createInfoBack,
+	createInfoMinDepthBounds, createInfoMaxDepthBounds
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
