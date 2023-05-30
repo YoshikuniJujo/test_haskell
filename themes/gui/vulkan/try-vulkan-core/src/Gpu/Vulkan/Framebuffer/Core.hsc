@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Framebuffer.Core where
+module Gpu.Vulkan.Framebuffer.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, F, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags, createInfoRenderPass,
+	createInfoAttachmentCount, createInfoPAttachments,
+	createInfoWidth, createInfoHeight, createInfoLayers
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
