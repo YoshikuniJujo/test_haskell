@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ImageView.Core where
+module Gpu.Vulkan.ImageView.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, I, PtrI, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoImage, createInfoViewType, createInfoFormat,
+	createInfoComponents, createInfoSubresourceRange,
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -52,9 +61,6 @@ struct "CreateInfo" #{size VkImageViewCreateInfo}
 		[| #{peek VkImageViewCreateInfo, subresourceRange} |],
 		[| #{poke VkImageViewCreateInfo, subresourceRange} |]) ]
 	[''Show, ''Storable]
-
-type2d :: #{type VkImageViewType}
-type2d = #{const VK_IMAGE_VIEW_TYPE_2D}
 
 foreign import ccall "vkCreateImageView" create ::
 	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr I ->
