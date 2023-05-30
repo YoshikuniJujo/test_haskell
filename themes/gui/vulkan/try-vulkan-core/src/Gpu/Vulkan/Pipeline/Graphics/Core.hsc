@@ -3,7 +3,22 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Graphics.Core where
+module Gpu.Vulkan.Pipeline.Graphics.Core (
+
+	-- * CREATE
+
+	create, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoStageCount, createInfoPStages,
+	createInfoPVertexInputState, createInfoPInputAssemblyState,
+	createInfoPTessellationState, createInfoPViewportState,
+	createInfoPRasterizationState, createInfoPMultisampleState,
+	createInfoPDepthStencilState, createInfoPColorBlendState,
+	createInfoPDynamicState,
+	createInfoLayout, createInfoRenderPass, createInfoSubpass,
+	createInfoBasePipelineHandle, createInfoBasePipelineIndex
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -31,9 +46,6 @@ import qualified Gpu.Vulkan.PipelineCache.Core as Cache
 import qualified Gpu.Vulkan.AllocationCallbacks.Core as AllocationCallbacks
 
 #include <vulkan/vulkan.h>
-
-bindPointGraphics :: #{type VkPipelineBindPoint}
-bindPointGraphics = #{const VK_PIPELINE_BIND_POINT_GRAPHICS}
 
 sType :: #{type VkStructureType}
 sType = #{const VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO}
@@ -104,7 +116,3 @@ struct "CreateInfo" #{size VkGraphicsPipelineCreateInfo}
 foreign import ccall "vkCreateGraphicsPipelines" create ::
 	Device.D -> Cache.C -> #{type uint32_t} -> Ptr CreateInfo ->
 	Ptr AllocationCallbacks.A -> Ptr Pipeline.P -> IO #{type VkResult}
-
-stageColorAttachmentOutputBit :: #{type VkPipelineStageFlagBits}
-stageColorAttachmentOutputBit =
-	#{const VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}
