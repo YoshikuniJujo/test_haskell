@@ -3,7 +3,29 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Device.Core where
+module Gpu.Vulkan.Device.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, D, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoQueueCreateInfoCount, createInfoPQueueCreateInfos,
+	createInfoEnabledLayerCount, createInfoPpEnabledLayerNames,
+	createInfoEnabledExtensionCount, createInfoPpEnabledExtensionNames,
+	createInfoPEnabledFeatures,
+
+	-- ** QueueCreateInfo
+
+	QueueCreateInfo, PtrQueueCreateInfo, pattern QueueCreateInfo,
+	queueCreateInfoSType, queueCreateInfoPNext, queueCreateInfoFlags,
+	queueCreateInfoQueueFamilyIndex,
+	queueCreateInfoQueueCount, queueCreateInfoPQueuePriorities,
+
+	-- * GET AND WAIT IDLE
+
+	getQueue, waitIdle
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
