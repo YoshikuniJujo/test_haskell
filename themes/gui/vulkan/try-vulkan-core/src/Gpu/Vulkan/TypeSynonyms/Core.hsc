@@ -10,4 +10,6 @@ import Data.Int
 
 type PtrUint32T = Ptr #{type uint32_t}
 type PtrResult = Ptr #{type VkResult}
+
+type ListUint8T = [#{type uint8_t}]
 type ListUint32T = [#{type uint32_t}]

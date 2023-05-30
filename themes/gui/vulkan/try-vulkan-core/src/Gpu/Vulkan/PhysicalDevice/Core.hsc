@@ -3,7 +3,59 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PhysicalDevice.Core where
+module Gpu.Vulkan.PhysicalDevice.Core (
+
+	-- * ENUMERATE
+
+	enumerate, P,
+
+	-- * PROPERTIES
+
+	getProperties, Properties, pattern Properties,
+	propertiesApiVersion, propertiesDriverVersion,
+	propertiesVendorId, propertiesDeviceId,
+	propertiesDeviceType, propertiesDeviceName,
+	propertiesPipelineCacheUuid, propertiesLimits,
+	propertiesSparseProperties,
+
+	-- ** SparseProperties
+
+	SparseProperties, pattern SparseProperties,
+	sparsePropertiesResidencyStandard2DBlockShape,
+	sparsePropertiesResidencyStandard2DMultisampleBlockShape,
+	sparsePropertiesResidencyStandard3DBlockShape,
+	sparsePropertiesResidencyAlignedMipSize,
+	sparsePropertiesResidencyNonResidentStrict,
+
+	-- ** ExtensionProperties
+
+	enumerateExtensionProperties,
+
+	-- ** QqueueFamilyProperties
+
+	getQueueFamilyProperties,
+
+	-- ** MemoryProperties
+
+	getMemoryProperties, MemoryProperties, pattern MemoryProperties,
+	memoryPropertiesMemoryTypeCount, memoryPropertiesMemoryTypes,
+	memoryPropertiesMemoryHeapCount, memoryPropertiesMemoryHeaps,
+
+	-- ** FormatProperties
+
+	getFormatProperties,
+
+	-- * FEATURES
+
+	getFeatures, Features, pattern Features, getClearedFeatures,
+
+	-- ** ShaderDrawParametersFeatures
+
+	ShaderDrawParametersFeatures, pattern ShaderDrawParametersFeatures,
+	shaderDrawParametersFeaturesSType, shaderDrawParametersFeaturesPNext,
+	shaderDrawParametersFeaturesShaderDrawParameters
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Concurrent
@@ -21,6 +73,7 @@ import qualified Data.Text as T
 -- import Gpu.Vulkan.Base
 
 import Gpu.Vulkan.Core (ExtensionProperties, FormatProperties)
+import Gpu.Vulkan.TypeSynonyms.Core
 import Gpu.Vulkan.PhysicalDevice.Struct.Core
 
 import qualified Gpu.Vulkan.Instance.Core as Instance
@@ -35,8 +88,6 @@ type P = Ptr PTag
 foreign import ccall "vkEnumeratePhysicalDevices" enumerate ::
 	Instance.I -> Ptr #{type uint32_t} -> Ptr P ->
 	IO #{type VkResult}
-
-type ListCFloat = [#{type float}]
 
 struct "SparseProperties" #{size VkPhysicalDeviceSparseProperties}
 		#{alignment VkPhysicalDeviceSparseProperties} [
@@ -67,8 +118,6 @@ struct "SparseProperties" #{size VkPhysicalDeviceSparseProperties}
 			residencyNonResidentStrict} |]) ]
 	[''Show, ''Storable]
 
-type ListUint8T = [#{type uint8_t}]
-
 struct "Properties" #{size VkPhysicalDeviceProperties}
 		#{alignment VkPhysicalDeviceProperties} [
 	("apiVersion", ''#{type uint32_t},
@@ -89,7 +138,7 @@ struct "Properties" #{size VkPhysicalDeviceProperties}
 	("deviceName", ''T.Text,
 		[| cstringToText
 			. #{ptr VkPhysicalDeviceProperties, deviceName} |],
-		[| \p -> pokeText vkMaxPhysicalDeviceNameSize
+		[| \p -> pokeText maxNameSize
 			(#{ptr VkPhysicalDeviceProperties, deviceName} p) |]),
 	("pipelineCacheUuid", ''ListUint8T,
 		[| peekArray #{const VK_UUID_SIZE}
@@ -106,8 +155,8 @@ struct "Properties" #{size VkPhysicalDeviceProperties}
 		[| #{poke VkPhysicalDeviceProperties, sparseProperties} |]) ]
 	[''Show, ''Storable]
 
-vkMaxPhysicalDeviceNameSize :: Integral n => n
-vkMaxPhysicalDeviceNameSize = #{const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE}
+maxNameSize :: Integral n => n
+maxNameSize = #{const VK_MAX_PHYSICAL_DEVICE_NAME_SIZE}
 
 foreign import ccall "vkGetPhysicalDeviceProperties" getProperties ::
 	P -> Ptr Properties -> IO ()
