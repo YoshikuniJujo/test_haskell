@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSetLayout.Core where
+module Gpu.Vulkan.DescriptorSetLayout.Core (
+	-- * CREATE AND DESTROY
+
+	create, destroy, L, PtrL, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoBindingCount, createInfoPBindings,
+
+	-- ** Binding
+	Binding, PtrBinding, pattern Binding,
+	bindingBinding, bindingDescriptorType, bindingDescriptorCount,
+	bindingStageFlags, bindingPImmutableSamplers
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
