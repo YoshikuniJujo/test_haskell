@@ -10,12 +10,11 @@ module Gpu.Vulkan.DescriptorSetLayout.Middle.Internal (
 	L(..), CreateInfo(..), Binding(..), create, destroy ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
 import Foreign.Marshal.Array
 import Foreign.Storable
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked', withPtrS, pattern NullPtr )
+	WithPoked, withPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
@@ -78,13 +77,12 @@ createInfoToCore CreateInfo {
 	allocaArray bc \pbs ->
 	(bindingToCore `mapContM` bs) \cbs -> do
 		pokeArray pbs cbs
-		let	C.CreateInfo_ fci = C.CreateInfo {
+		withPoked C.CreateInfo {
 				C.createInfoSType = (),
 				C.createInfoPNext = pnxt',
 				C.createInfoFlags = flgs,
 				C.createInfoBindingCount = fromIntegral bc,
-				C.createInfoPBindings = pbs }
-		withForeignPtr fci f
+				C.createInfoPBindings = pbs } f
 
 create :: WithPoked (TMaybe.M mn) =>
 	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO L
