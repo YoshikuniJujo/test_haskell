@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.RasterizationState.Core where
+module Gpu.Vulkan.Pipeline.RasterizationState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoDepthClampEnable, createInfoRasterizerDiscardEnable,
+	createInfoPolygonMode, createInfoCullMode, createInfoFrontFace,
+	createInfoDepthBiasEnable, createInfoDepthBiasConstantFactor,
+	createInfoDepthBiasClamp, createInfoDepthBiasSlopeFactor,
+	createInfoLineWidth
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

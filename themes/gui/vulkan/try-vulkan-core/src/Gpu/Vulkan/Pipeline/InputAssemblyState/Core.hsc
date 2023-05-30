@@ -3,7 +3,15 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.InputAssemblyState.Core where
+module Gpu.Vulkan.Pipeline.InputAssemblyState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoTopology, createInfoPrimitiveRestartEnable
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

@@ -3,7 +3,17 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.MultisampleState.Core where
+module Gpu.Vulkan.Pipeline.MultisampleState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoRasterizationSamples, createInfoSampleShadingEnable,
+	createInfoMinSampleShading, createInfoPSampleMask,
+	createInfoAlphaToCoverageEnable, createInfoAlphaToOneEnable
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
