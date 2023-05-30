@@ -4,7 +4,49 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Image.Core where
+module Gpu.Vulkan.Image.Core (
+
+	-- * CREATE AND DESTROY
+	create, destroy, I, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoImageType, createInfoFormat, createInfoExtent,
+	createInfoMipLevels, createInfoArrayLayers, createInfoSamples,
+	createInfoTiling, createInfoUsage, createInfoSharingMode,
+	createInfoQueueFamilyIndexCount, createInfoPQueueFamilyIndices,
+	createInfoInitialLayout,
+
+	-- * MEMORY: REQUIREMENTS AND BINDING
+
+	getMemoryRequirements, bindMemory,
+
+	-- * MEMORY BARRIER
+
+	MemoryBarrier, pattern MemoryBarrier,
+	memoryBarrierSType, memoryBarrierPNext,
+	memoryBarrierSrcAccessMask, memoryBarrierDstAccessMask,
+	memoryBarrierOldLayout, memoryBarrierNewLayout,
+	memoryBarrierSrcQueueFamilyIndex, memoryBarrierDstQueueFamilyIndex,
+	memoryBarrierImage, memoryBarrierSubresourceRange,
+
+	-- ** SubresourceRange
+
+	SubresourceRange, pattern SubresourceRange,
+	subresourceRangeAspectMask, subresourceRangeBaseMipLevel,
+	subresourceRangeLevelCount, subresourceRangeBaseArrayLayer,
+	subresourceRangeLayerCount,
+
+	-- * BLIT
+	
+	Blit, pattern Blit,
+	blitSrcSubresource, blitSrcOffsets, blitDstSubresource, blitDstOffsets,
+
+	-- ** SubresourceLayers
+
+	SubresourceLayers, pattern SubresourceLayers,
+	subresourceLayersAspectMask, subresourceLayersMipLevel,
+	subresourceLayersBaseArrayLayer, subresourceLayersLayerCount,
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
