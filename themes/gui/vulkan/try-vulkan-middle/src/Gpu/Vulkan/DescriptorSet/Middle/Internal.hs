@@ -14,10 +14,9 @@ module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 	updateDsNew, WriteListToCore, CopyListToCore ) where
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
 import Foreign.Storable.PeekPoke (
-	WithPoked, withPoked', withPtrS, pattern NullPtr )
+	WithPoked, withPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
 import Control.Monad.Cont
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -72,8 +71,8 @@ allocateDs :: WithPoked (TMaybe.M mn) => Device.D -> AllocateInfo mn -> IO [D]
 allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 	let	dsc = length $ allocateInfoSetLayouts ai
 	pss <- ContT $ allocaArray dsc
-	lift $ allocateInfoToCore ai \(C.AllocateInfo_ fai) ->
-		withForeignPtr fai \pai -> do
+	lift $ allocateInfoToCore ai \fai ->
+		withPoked fai \pai -> do
 			r <- C.allocateDs dvc pai pss
 			throwUnlessSuccess $ Result r
 	lift $ peekArray dsc pss
