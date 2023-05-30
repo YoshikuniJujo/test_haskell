@@ -47,6 +47,9 @@ type D = Ptr DTag
 foreign import ccall "vkAllocateDescriptorSets" allocateDs ::
 	Device.D -> Ptr AllocateInfo -> Ptr D -> IO #{type VkResult}
 
+foreign import ccall "vkFreeDescriptorSets" freeDs ::
+	Device.D -> Pool.D -> #{type uint32_t} -> Ptr D -> IO #{type VkResult}
+
 wType :: #{type VkStructureType}
 wType = #{const VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET}
 
