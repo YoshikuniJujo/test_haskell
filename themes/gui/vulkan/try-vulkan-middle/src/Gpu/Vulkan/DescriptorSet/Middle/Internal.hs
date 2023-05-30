@@ -9,7 +9,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
-	D(..), AllocateInfo(..), allocateDs,
+	D(..), AllocateInfo(..), allocateDs, freeDs,
 	Write(..), WriteSources(..), Copy(..), updateDs,
 	updateDsNew, WriteListToCore, CopyListToCore ) where
 
@@ -21,6 +21,7 @@ import Foreign.Storable.PeekPoke (
 import Control.Arrow
 import Control.Monad.Cont
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.List (genericLength)
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
@@ -76,6 +77,15 @@ allocateDs (Device.D dvc) ai = ((D <$>) <$>) . ($ pure) $ runContT do
 			r <- C.allocateDs dvc pai pss
 			throwUnlessSuccess $ Result r
 	lift $ peekArray dsc pss
+
+freeDs :: Device.D -> Pool.D -> [D] -> IO ()
+freeDs (Device.D dvc) (Pool.D pl) ds = allocaArray ln \pds -> do
+	pokeArray pds $ (\(D d) -> d) <$> ds
+	r <- C.freeDs dvc pl ln pds
+	throwUnlessSuccess $ Result r
+	where
+	ln :: Integral n => n
+	ln = genericLength ds
 
 data Copy mn = Copy {
 	copyNext :: TMaybe.M mn,

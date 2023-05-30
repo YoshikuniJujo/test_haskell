@@ -8,7 +8,7 @@ module Gpu.Vulkan.DescriptorSet.Middle (
 
 	-- * Allocate
 
-	allocateDs, AllocateInfo(..),
+	allocateDs, freeDs, AllocateInfo(..),
 
 	-- * Update
 
