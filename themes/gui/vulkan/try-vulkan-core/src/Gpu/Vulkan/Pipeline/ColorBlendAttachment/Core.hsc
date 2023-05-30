@@ -3,7 +3,17 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.ColorBlendAttachment.Core where
+module Gpu.Vulkan.Pipeline.ColorBlendAttachment.Core (
+
+	-- * STATE
+
+	State, PtrState, pattern State,
+	stateBlendEnable,
+	stateSrcColorBlendFactor, stateDstColorBlendFactor, stateColorBlendOp,
+	stateSrcAlphaBlendFactor, stateDstAlphaBlendFactor, stateAlphaBlendOp,
+	stateColorWriteMask
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

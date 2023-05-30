@@ -2,7 +2,17 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.ColorBlendState.Core where
+module Gpu.Vulkan.Pipeline.ColorBlendState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoLogicOpEnable, createInfoLogicOp,
+	createInfoAttachmentCount, createInfoPAttachments,
+	createInfoBlendConstants
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
