@@ -3,7 +3,39 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Memory.Core where
+module Gpu.Vulkan.Memory.Core (
+
+	-- * ALLOCATE AND FREE
+
+	allocate, free, M, AllocateInfo, pattern AllocateInfo,
+	allocateInfoSType, allocateInfoPNext, allocateInfoAllocationSize,
+	allocateInfoMemoryTypeIndex,
+
+	-- * MAP AND UNMAP
+
+	map, unmap,
+
+	-- * REQUIREMENTS
+
+	Requirements, pattern Requirements,
+	requirementsSize, requirementsAlignment, requirementsMemoryTypeBits,
+
+	-- * TYPE
+
+	MType, ListMType, pattern MType, mTypePropertyFlags, mTypeHeapIndex, maxTypes,
+
+	-- * HEAP
+
+	Heap, ListHeap, pattern Heap, heapSize, heapFlags, maxHeaps,
+
+	-- * BARRIER
+
+	Barrier, pattern Barrier,
+	barrierSType, barrierPNext, barrierSrcAccessMask, barrierDstAccessMask
+
+	) where
+
+import Prelude hiding (map)
 
 import Foreign.Ptr
 import Foreign.Storable
