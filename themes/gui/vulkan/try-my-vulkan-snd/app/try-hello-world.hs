@@ -133,15 +133,16 @@ prepareMems :: (
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElem bts '[Word32List] 0 ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
-	(forall s sm sb .
-		Vk.DS.S sd s '(sl, bts) ->
+	(forall sds sm sb .
+		Vk.DS.SNew sds '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
-	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(HL.Singleton ds) ->
+	Vk.DS.allocateSsNew dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
-	Vk.DS.updateDs @_ @'Nothing dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
+--	Vk.DS.updateDsNewNew @_ @'Nothing dv (HL.Singleton . U4 $ writeDscSet ds b) [] >>
+	Vk.DS.updateDsNewNew dv (HL.Singleton . U4 $ writeDscSet ds b) HL.Nil >>
 	f ds m
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
@@ -203,25 +204,25 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSet :: forall sd sp slbts sb sm os .
-	Vk.DS.S sd sp slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.Write 'Nothing sd sp slbts
+writeDscSet :: forall s slbts sb sm os .
+	Vk.DS.SNew s slbts -> Vk.Bffr.Binded sm sb "" os ->
+	Vk.DS.WriteNew 'Nothing s slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
-writeDscSet ds ba = Vk.DS.Write {
-	Vk.DS.writeNext = TMaybe.N,
-	Vk.DS.writeDstSet = ds,
-	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DS.writeSources =
+writeDscSet ds ba = Vk.DS.WriteNew {
+	Vk.DS.writeNextNew = TMaybe.N,
+	Vk.DS.writeDstSetNew = ds,
+	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
+	Vk.DS.writeSourcesNew =
 		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
 
 -- CALC
 
-calc :: forall slbts sl bts sd sp . (
+calc :: forall slbts sl bts sd s . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
-	Vk.DS.S sd sp slbts -> Word32 -> IO ()
+	Vk.DS.SNew s slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
@@ -250,17 +251,17 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
-run :: forall slbts sd sc sg sl sp . (
+run :: forall slbts sd sc sg sl s . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.SNew s slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.bindDescriptorSetsCompute
-			ccb lyt (HL.Singleton $ U2 ds) def >>
+		Vk.Cmd.bindDescriptorSetsComputeNew
+			ccb lyt (HL.Singleton ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
 	Vk.Queue.waitIdle q
