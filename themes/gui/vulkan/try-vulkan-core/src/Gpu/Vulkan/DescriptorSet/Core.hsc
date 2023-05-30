@@ -3,7 +3,36 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.DescriptorSet.Core where
+module Gpu.Vulkan.DescriptorSet.Core (
+
+	-- * ALLOCATE AND FREE
+
+	allocateDs, freeDs, D, AllocateInfo, pattern AllocateInfo,
+	allocateInfoSType, allocateInfoPNext,
+	allocateInfoDescriptorPool, allocateInfoDescriptorSetCount,
+	allocateInfoPSetLayouts,
+
+	-- * UPDATE
+
+	updateDs,
+
+	-- ** Write
+
+	Write, pattern Write,
+	writeSType, writePNext,
+	writeDstSet, writeDstBinding, writeDstArrayElement,
+	writeDescriptorCount, writeDescriptorType,
+	writePImageInfo, writePBufferInfo, writePTexelBufferView,
+
+	-- ** Copy
+
+	Copy, pattern Copy,
+	copySType, copyPNext,
+	copySrcSet, copySrcBinding, copySrcArrayElement,
+	copyDstSet, copyDstBinding, copyDstArrayElement,
+	copyDescriptorCount
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
