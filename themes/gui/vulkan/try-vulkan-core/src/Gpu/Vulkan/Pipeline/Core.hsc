@@ -1,6 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Core where
+module Gpu.Vulkan.Pipeline.Core (
+
+	-- * DESTROY
+
+	destroy, P
+
+	) where
 
 import Foreign.Ptr
 

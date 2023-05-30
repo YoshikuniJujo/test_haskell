@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Compute.Core where
+module Gpu.Vulkan.Pipeline.Compute.Core (
+
+	-- * CREATE
+
+	createCs, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoStage, createInfoLayout,
+	createInfoBasePipelineHandle, createInfoBasePipelineIndex
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -20,9 +29,6 @@ import qualified Gpu.Vulkan.PipelineLayout.Core as Pipeline.Layout
 import qualified Gpu.Vulkan.PipelineCache.Core as Cache
 
 #include <vulkan/vulkan.h>
-
-data CTag
-type C = Ptr CTag
 
 stype :: #{type VkStructureType}
 stype = #{const VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO}
