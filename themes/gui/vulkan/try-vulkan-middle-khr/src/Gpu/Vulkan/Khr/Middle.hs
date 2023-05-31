@@ -32,9 +32,8 @@ import qualified Gpu.Vulkan.Fence.Middle.Internal as Fence
 import qualified Gpu.Vulkan.Semaphore.Middle.Internal as Semaphore.M
 
 import Foreign.Ptr
-import Foreign.ForeignPtr
 import Foreign.Marshal.Array
-import Foreign.Storable.PeekPoke (WithPoked, withPoked', withPtrS)
+import Foreign.Storable.PeekPoke (WithPoked, withPoked, withPoked', withPtrS)
 import Control.Arrow
 import Gpu.Vulkan.Queue.Middle.Internal as Queue
 
@@ -58,8 +57,8 @@ acquireNextImageResult sccs
 
 queuePresent :: WithPoked (TMaybe.M mn) => Queue.Q -> PresentInfo mn -> IO ()
 queuePresent (Queue.Q q) pi_ =
-	presentInfoMiddleToCore pi_ \cpi@(C.PresentInfo_ fpi) ->
-	withForeignPtr fpi \ppi -> do
+	presentInfoMiddleToCore pi_ \cpi -> do
+	withPoked cpi \ppi -> do
 		r <- C.queuePresent q ppi
 		let	(fromIntegral -> rc) = C.presentInfoSwapchainCount cpi
 		rs <- peekArray rc $ C.presentInfoPResults cpi
