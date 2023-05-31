@@ -4,7 +4,22 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Core where
+module Gpu.Vulkan.Khr.Core (
+
+	-- * ACQUIRE NEXT IMAGE
+
+	acquireNextImage,
+
+	-- * QUEUEU PRESENT
+
+	queuePresent,
+	PresentInfo, pattern PresentInfo,
+	presentInfoSType, presentInfoPNext,
+	presentInfoWaitSemaphoreCount, presentInfoPWaitSemaphores,
+	presentInfoSwapchainCount, presentInfoPSwapchains,
+	presentInfoPImageIndices, presentInfoPResults
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
