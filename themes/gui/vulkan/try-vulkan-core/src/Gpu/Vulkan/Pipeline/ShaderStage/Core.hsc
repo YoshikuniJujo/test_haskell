@@ -43,7 +43,7 @@ struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
 	("stage", ''#{type VkShaderStageFlagBits},
 		[| #{peek VkPipelineShaderStageCreateInfo, stage} |],
 		[| #{poke VkPipelineShaderStageCreateInfo, stage} |]),
-	("module", ''Shader.Module.Module,
+	("module", ''Shader.Module.S,
 		[| #{peek VkPipelineShaderStageCreateInfo, module} |],
 		[| #{poke VkPipelineShaderStageCreateInfo, module} |]),
 	("pName", ''CString,

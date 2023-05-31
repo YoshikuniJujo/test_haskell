@@ -4,7 +4,15 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.ShaderModule.Core where
+module Gpu.Vulkan.ShaderModule.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, S, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoCodeSize, createInfoPCode
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -39,11 +47,11 @@ struct "CreateInfo" #{size VkShaderModuleCreateInfo}
 		[| #{poke VkShaderModuleCreateInfo, pCode} |]) ]
 	[''Show, ''Storable]
 
-data ModuleTag
-type Module = Ptr ModuleTag
+data STag
+type S = Ptr STag
 
 foreign import ccall "vkCreateShaderModule" create ::
-	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr Module -> IO #{type VkResult}
+	Device.D -> Ptr CreateInfo -> Ptr AllocationCallbacks.A -> Ptr S -> IO #{type VkResult}
 
 foreign import ccall "vkDestroyShaderModule" destroy ::
-	Device.D -> Module -> Ptr AllocationCallbacks.A -> IO ()
+	Device.D -> S -> Ptr AllocationCallbacks.A -> IO ()

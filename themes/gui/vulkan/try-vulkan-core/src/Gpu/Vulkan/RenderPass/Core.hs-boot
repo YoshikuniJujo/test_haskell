@@ -1,4 +1,4 @@
-module Gpu.Vulkan.RenderPass.Core where
+module Gpu.Vulkan.RenderPass.Core (R) where
 
 import Foreign.Ptr
 

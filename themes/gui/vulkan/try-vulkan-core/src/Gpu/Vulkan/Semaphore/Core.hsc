@@ -3,7 +3,14 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Semaphore.Core where
+module Gpu.Vulkan.Semaphore.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, S, PtrS, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

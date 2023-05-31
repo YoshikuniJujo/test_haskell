@@ -3,7 +3,24 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.RenderPass.Core where
+module Gpu.Vulkan.RenderPass.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, R, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoAttachmentCount, createInfoPAttachments,
+	createInfoSubpassCount, createInfoPSubpasses,
+	createInfoDependencyCount, createInfoPDependencies,
+
+	-- * BEGIN INFO
+
+	BeginInfo, pattern BeginInfo,
+	beginInfoSType, beginInfoPNext,
+	beginInfoRenderPass, beginInfoFramebuffer, beginInfoRenderArea,
+	beginInfoClearValueCount, beginInfoPClearValues
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

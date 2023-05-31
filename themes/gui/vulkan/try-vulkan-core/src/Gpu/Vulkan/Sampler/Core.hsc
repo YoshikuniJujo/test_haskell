@@ -3,7 +3,21 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Sampler.Core where
+module Gpu.Vulkan.Sampler.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, S, PtrS, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoMagFilter, createInfoMinFilter, createInfoMipmapMode,
+	createInfoAddressModeU, createInfoAddressModeV, createInfoAddressModeW,
+	createInfoMipLodBias,
+	createInfoAnisotropyEnable, createInfoMaxAnisotropy,
+	createInfoCompareEnable, createInfoCompareOp,
+	createInfoMinLod, createInfoMaxLod,
+	createInfoBorderColor, createInfoUnnormalizedCoordinates
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

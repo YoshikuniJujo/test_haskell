@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Semaphore.Core where
+module Gpu.Vulkan.Semaphore.Core (S, PtrS) where
 
 import Foreign.Ptr
 
