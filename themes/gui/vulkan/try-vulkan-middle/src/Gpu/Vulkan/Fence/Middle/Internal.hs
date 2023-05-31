@@ -21,6 +21,7 @@ import Foreign.Storable
 import Foreign.Storable.PeekPoke (withPoked, withPoked', WithPoked, withPtrS)
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Bits
 import Data.Word
@@ -64,17 +65,17 @@ maybeFToCore Nothing = NullHandle
 maybeFToCore (Just f) = fToCore f
 
 create :: WithPoked (TMaybe.M mn) =>
-	Device.D -> CreateInfo mn -> Maybe (AllocationCallbacks.A c) -> IO F
+	Device.D -> CreateInfo mn -> TPMaybe.M AllocationCallbacks.A mc -> IO F
 create (Device.D dvc) ci mac = F <$> alloca \pf -> do
 	createInfoToCore ci \pci ->
-		AllocationCallbacks.maybeToCoreNew mac \pac -> do
+		AllocationCallbacks.mToCore mac \pac -> do
 			r <- C.create dvc pci pac pf
 			throwUnlessSuccess $ Result r
 	peek pf
 
-destroy :: Device.D -> F -> Maybe (AllocationCallbacks.A d) -> IO ()
+destroy :: Device.D -> F -> TPMaybe.M AllocationCallbacks.A md -> IO ()
 destroy (Device.D dvc) (F f) mac =
-	AllocationCallbacks.maybeToCoreNew mac $ C.destroy dvc f
+	AllocationCallbacks.mToCore mac $ C.destroy dvc f
 
 waitForFs :: Device.D -> [F] -> Bool -> Word64 -> IO ()
 waitForFs (Device.D dvc) (length &&& ((\(F f) -> f) <$>) -> (fc, fs))

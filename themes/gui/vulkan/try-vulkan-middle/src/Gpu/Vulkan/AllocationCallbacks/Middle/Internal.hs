@@ -4,11 +4,29 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.AllocationCallbacks.Middle.Internal (
-	create, destroy, FunctionsInfo(..), Functions, apply, A,
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, Functions, FunctionsInfo(..),
+
+	-- ** Function Types
+
 	FnAllocationFunction, FnReallocationFunction, C.FnFreeFunction,
 	FnInternalAllocationNotification, FnInternalFreeNotification,
+
+	-- *** size and alignment
+
 	Size, Alignment,
-	maybeToCoreNew, mToCore ) where
+
+	-- * APPLY
+
+	apply, A,
+
+	-- * INTERNAL USE
+
+	mToCore
+
+	) where
 
 import Foreign.Marshal.Alloc
 import Foreign.Ptr
@@ -58,7 +76,6 @@ destroy a = do
 	ifr = aPfnInternalFree a
 
 data FunctionsInfo a = FunctionsInfo {
-	functionUserData :: Ptr a,
 	functionFnAllocation :: FnAllocationFunction a,
 	functionFnReallocation :: FnReallocationFunction a,
 	functionFnFree :: C.FnFreeFunction a,
@@ -100,9 +117,6 @@ fnInternalFreeNotificationToCore ::
 	FnInternalFreeNotification a -> C.FnInternalFreeNotification a
 fnInternalFreeNotificationToCore f pud sz iatp ascp =
 	f pud sz (InternalAllocationType iatp) (SystemAllocationScope ascp)
-
-maybeToCoreNew :: Maybe (A a) -> (Ptr C.A -> IO b) -> IO ()
-maybeToCoreNew = \case Nothing -> (() <$) . ($ NullPtr); Just ac -> toCoreNew ac
 
 mToCore :: TPMaybe.M A ma -> (Ptr C.A -> IO b) -> IO ()
 mToCore = TPMaybe.maybe ((() <$) . ($ NullPtr)) toCoreNew
