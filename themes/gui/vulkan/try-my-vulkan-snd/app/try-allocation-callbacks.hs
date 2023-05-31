@@ -100,10 +100,10 @@ ptr i = intPtrToPtr $ IntPtr i
 
 allocationCallbacks :: Vk.AllocCallbacks.FunctionsInfo a
 allocationCallbacks = Vk.AllocCallbacks.FunctionsInfo {
-	Vk.AllocCallbacks.functionFnAllocation = allocate,
-	Vk.AllocCallbacks.functionFnReallocation = reallocate,
-	Vk.AllocCallbacks.functionFnFree = freeFunction,
-	Vk.AllocCallbacks.functionFnInternalAllocationFree = Nothing }
+	Vk.AllocCallbacks.functionsInfoFnAllocation = allocate,
+	Vk.AllocCallbacks.functionsInfoFnReallocation = reallocate,
+	Vk.AllocCallbacks.functionsInfoFnFree = freeFunction,
+	Vk.AllocCallbacks.functionsInfoFnInternalAllocationFree = Nothing }
 
 allocate :: Vk.AllocCallbacks.FnAllocationFunction a
 allocate pud sz algn ascp = do
