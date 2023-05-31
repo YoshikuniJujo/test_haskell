@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PipelineCache.Core where
+module Gpu.Vulkan.PipelineCache.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, C, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoInitialDataSize, createInfoPInitialData,
+
+	-- * GET DATA
+
+	getData
+	
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
