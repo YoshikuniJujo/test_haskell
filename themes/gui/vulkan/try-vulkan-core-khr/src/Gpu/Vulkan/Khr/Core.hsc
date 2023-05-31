@@ -10,7 +10,7 @@ module Gpu.Vulkan.Khr.Core (
 
 	acquireNextImage,
 
-	-- * QUEUEU PRESENT
+	-- * QUEUE PRESENT
 
 	queuePresent,
 	PresentInfo, pattern PresentInfo,
