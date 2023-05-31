@@ -39,7 +39,7 @@ import qualified Gpu.Vulkan.ShaderModule.Core as C
 
 #include <vulkan/vulkan.h>
 
-newtype M (sknd :: ShaderKind) = M C.Module deriving Show
+newtype M (sknd :: ShaderKind) = M C.S deriving Show
 
 enum "CreateFlagBits" ''#{type VkShaderModuleCreateFlags}
 	[''Eq, ''Show, ''Storable, ''Bits] [("CreateFlagsZero", 0)]
