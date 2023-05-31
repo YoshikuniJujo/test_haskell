@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PipelineLayout.Core where
+module Gpu.Vulkan.PipelineLayout.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, L, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoSetLayoutCount, createInfoPSetLayouts,
+	createInfoPushConstantRangeCount, createInfoPPushConstantRanges
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

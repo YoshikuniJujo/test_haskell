@@ -3,7 +3,15 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.QueueFamily.Core where
+module Gpu.Vulkan.QueueFamily.Core (
+
+	-- * PROPERTIES
+
+	Properties, pattern Properties,
+	propertiesQueueFlags, propertiesQueueCount,
+	propertiesTimestampValidBits, propertiesMinImageTransferGranularity
+
+	) where
 
 import Foreign.Storable
 import Foreign.C.Struct

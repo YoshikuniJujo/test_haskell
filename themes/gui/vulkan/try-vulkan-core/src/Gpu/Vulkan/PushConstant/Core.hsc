@@ -3,7 +3,13 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PushConstant.Core where
+module Gpu.Vulkan.PushConstant.Core (
+
+	-- * RANGE
+
+	Range, PtrRange, pattern Range, rangeStageFlags, rangeOffset, rangeSize
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

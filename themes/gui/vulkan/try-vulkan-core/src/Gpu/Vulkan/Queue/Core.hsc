@@ -1,6 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Queue.Core where
+module Gpu.Vulkan.Queue.Core (
+
+	-- SUBMIT AND WAIT IDLE
+
+	Q, submit, waitIdle
+
+	) where
 
 import Foreign.Ptr
 import Data.Word

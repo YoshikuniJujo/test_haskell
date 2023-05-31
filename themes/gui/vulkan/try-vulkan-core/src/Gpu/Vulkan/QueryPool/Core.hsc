@@ -4,7 +4,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.QueryPool.Core where
+module Gpu.Vulkan.QueryPool.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, Q, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoQueryType, createInfoQueryCount, createInfoPipelineStatistics,
+
+	-- * RESET AND GET RESULTS
+
+	reset, getResults
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
