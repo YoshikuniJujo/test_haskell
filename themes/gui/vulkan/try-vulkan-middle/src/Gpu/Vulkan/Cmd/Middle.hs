@@ -30,7 +30,7 @@ module Gpu.Vulkan.Cmd.Middle (
 
 	-- * Copy Buffers and Images
 
-	copyBuffer, blitImage, copyBufferToImage, copyImageToBuffer,
+	copyBuffer, copyBufferToImage, copyImageToBuffer, blitImage,
 
 	-- * Memory Dependency
 
