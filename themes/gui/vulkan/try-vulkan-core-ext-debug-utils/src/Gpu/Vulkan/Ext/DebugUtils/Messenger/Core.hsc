@@ -15,7 +15,8 @@ module Gpu.Vulkan.Ext.DebugUtils.Messenger.Core (
 
 	-- * CALLBACK
 
-	wrapCallback, FnCallback, PfnCallback, CallbackData, pattern CallbackData,
+	wrapCallback, FnCallback, PfnCallback, CallbackData(..),
+	pattern CallbackData,
 	callbackDataSType, callbackDataPNext, callbackDataFlags,
 	callbackDataPMessageIdName, callbackDataMessageIdNumber,
 	callbackDataPMessage,
