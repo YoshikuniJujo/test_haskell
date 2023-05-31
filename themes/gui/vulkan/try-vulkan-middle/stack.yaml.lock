@@ -89,13 +89,6 @@ packages:
       size: 429
   original:
     hackage: union-color-0.1.2.0
-- completed:
-    hackage: c-struct-0.1.3.0@sha256:92b587b98a8fe00fd2cf293bfaf6ebac21d01c5e4f254507b34c1885241a4b59,1481
-    pantry-tree:
-      sha256: f166dd4d8add459250b9ddb455cbf1fe11d89c91bd4b8af346883e7512174d58
-      size: 583
-  original:
-    hackage: c-struct-0.1.3.0
 snapshots:
 - completed:
     sha256: cfd4536710fbd0ee992ba694f7229bb2a3e3d9f7e084c2524faed472c4bdbee3
