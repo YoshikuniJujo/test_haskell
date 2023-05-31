@@ -4,7 +4,26 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Ext.DebugUtils.Messenger.Core where
+module Gpu.Vulkan.Ext.DebugUtils.Messenger.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, M, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoMessageSeverity, createInfoMessageType,
+	createInfoPfnUserCallback, createInfoPUserData,
+
+	-- * CALLBACK
+
+	wrapCallback, FnCallback, PfnCallback, CallbackData, pattern CallbackData,
+	callbackDataSType, callbackDataPNext, callbackDataFlags,
+	callbackDataPMessageIdName, callbackDataMessageIdNumber,
+	callbackDataPMessage,
+	callbackDataQueueLabelCount, callbackDataPQueueLabels,
+	callbackDataCmdBufLabelCount, callbackDataPCmdBufLabels,
+	callbackDataObjectCount, callbackDataPObjects
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

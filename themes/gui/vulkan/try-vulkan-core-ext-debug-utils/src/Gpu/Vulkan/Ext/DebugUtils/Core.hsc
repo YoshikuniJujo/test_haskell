@@ -3,7 +3,21 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Ext.DebugUtils.Core where
+module Gpu.Vulkan.Ext.DebugUtils.Core (
+
+	-- * LABEL
+
+	Label, PtrLabel, pattern Label,
+	labelSType, labelPNext, labelPLabelName, labelColor,
+
+	-- * OBJECT NAME INFO
+
+	ObjectNameInfo, PtrObjectNameInfo, pattern ObjectNameInfo,
+	objectNameInfoSType, objectNameInfoPNext,
+	objectNameInfoObjectType, objectNameInfoObjectHandle,
+	objectNameInfoPObjectName
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
