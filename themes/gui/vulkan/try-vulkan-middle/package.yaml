@@ -60,7 +60,7 @@ library:
   - Gpu.Vulkan.Buffer.Middle
   - Gpu.Vulkan.BufferView.Middle
   - Gpu.Vulkan.ColorComponent.Enum
-  - Gpu.Vulkan.Command.Middle
+  - Gpu.Vulkan.Cmd.Middle
   - Gpu.Vulkan.CommandBuffer.Enum
   - Gpu.Vulkan.CommandBuffer.Middle
   - Gpu.Vulkan.CommandPool.Enum

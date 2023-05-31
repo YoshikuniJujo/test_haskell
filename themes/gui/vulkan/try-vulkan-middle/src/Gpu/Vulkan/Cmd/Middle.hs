@@ -8,7 +8,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Command.Middle (
+module Gpu.Vulkan.Cmd.Middle (
 
 	-- * Begin and End Render Pass
 
