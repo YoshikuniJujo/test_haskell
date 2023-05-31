@@ -1026,7 +1026,7 @@ createSyncObjects ::
 createSyncObjects dvc f =
 	Vk.Semaphore.create @'Nothing dvc def nil' \ias ->
 	Vk.Semaphore.create @'Nothing dvc def nil' \rfs ->
-	Vk.Fence.create @'Nothing dvc fncInfo nil \iff ->
+	Vk.Fence.create @'Nothing dvc fncInfo nil' \iff ->
 	f $ SyncObjects ias rfs iff
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }

@@ -100,7 +100,6 @@ ptr i = intPtrToPtr $ IntPtr i
 
 allocationCallbacks :: Vk.AllocCallbacks.FunctionsInfo a
 allocationCallbacks = Vk.AllocCallbacks.FunctionsInfo {
-	Vk.AllocCallbacks.functionUserData = intPtrToPtr $ IntPtr 0x01234567,
 	Vk.AllocCallbacks.functionFnAllocation = allocate,
 	Vk.AllocCallbacks.functionFnReallocation = reallocate,
 	Vk.AllocCallbacks.functionFnFree = freeFunction,

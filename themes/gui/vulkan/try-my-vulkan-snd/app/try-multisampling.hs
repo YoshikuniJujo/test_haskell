@@ -1763,7 +1763,7 @@ createSyncObjects dvc f =
 	HeteroParList.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @'Nothing dvc def nil') \rfss ->
 	HeteroParList.replicateM maxFramesInFlight
-		(Vk.Fence.create @'Nothing dvc fncInfo nil) \iffs ->
+		(Vk.Fence.create @'Nothing dvc fncInfo nil') \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }

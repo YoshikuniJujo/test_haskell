@@ -1310,7 +1310,7 @@ createSyncObjects dv f =
 	HL.replicateM maxFramesInFlight
 		(Vk.Semaphore.create @'Nothing dv def nil') \rfss ->
 	HL.replicateM maxFramesInFlight
-		(Vk.Fnc.create @'Nothing dv inf nil) \iffs ->
+		(Vk.Fnc.create @'Nothing dv inf nil') \iffs ->
 	f $ SyncObjects iass rfss iffs
 	where inf = def { Vk.Fnc.createInfoFlags = Vk.Fnc.CreateSignaledBit }
 
