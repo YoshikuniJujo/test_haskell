@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-missing-export-lists -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image.Enum where
 
@@ -31,6 +31,12 @@ enum "UsageFlagBits" ''#{type VkImageUsageFlagBits}
 		#{const VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT}),
 	("UsageInputAttachmentBit",
 		#{const VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT}),
+	("UsageVideoDecodeDstBitKhr",
+		#{const VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR}),
+	("UsageVideoDecodeSrcBitKhr",
+		#{const VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR}),
+	("UsageVideoDecodeDpbBitKhr",
+		#{const VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR}),
 	("UsageFragmentDensityMapBitExt",
 		#{const VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT}),
 	("UsageFragmentShadingRateAttachmentBitKhr",
@@ -108,6 +114,12 @@ enum "Layout" ''#{type VkImageLayout}
 	("LayoutAttachmentOptimal",
 		#{const VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL}),
 	("LayoutPresentSrcKhr", #{const VK_IMAGE_LAYOUT_PRESENT_SRC_KHR}),
+	("LayoutVideoDecodeDstKhr",
+		#{const VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR}),
+	("LayoutVideoDecodeSrcKhr",
+		#{const VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR}),
+	("LayoutVideoDecodeDpbKhr",
+		#{const VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR}),
 	("LayoutSharedPresentKhr",
 		#{const VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR}),
 	("LayoutFragmentDensityMapOptimalExt",

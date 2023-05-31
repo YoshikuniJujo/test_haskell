@@ -16,6 +16,7 @@ ShaderStageCallableBitKhr
 ShaderStageTaskBitExt
 ShaderStageMeshBitExt
 ShaderStageSubpassShadingBitHuawei
+ShaderStageClusterCullingBitHuawei
 ShaderStageRaygenBitNv
 ShaderStageAnyHitBitNv
 ShaderStageClosestHitBitNv

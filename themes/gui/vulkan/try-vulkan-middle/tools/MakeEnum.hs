@@ -217,7 +217,7 @@ header tnm icds mnm =
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-missing-export-lists -fno-warn-tabs #-}
 
 module |] ++ "Gpu.Vulkan." ++ mnm ++ [nowdoc| where
 

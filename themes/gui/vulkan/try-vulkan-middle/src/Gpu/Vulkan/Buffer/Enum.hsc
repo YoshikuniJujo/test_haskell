@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-missing-export-lists -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Buffer.Enum where
 
@@ -65,6 +65,10 @@ enum "UsageFlagBits" ''#{type VkBufferUsageFlagBits}
 		#{const VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT}),
 	("UsageShaderDeviceAddressBit",
 		#{const VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT}),
+	("UsageVideoDecodeSrcBitKhr",
+		#{const VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR}),
+	("UsageVideoDecodeDstBitKhr",
+		#{const VK_BUFFER_USAGE_VIDEO_DECODE_DST_BIT_KHR}),
 	("UsageTransformFeedbackBufferBitExt",
 		#{const VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT}),
 	("UsageTransformFeedbackCounterBufferBitExt",

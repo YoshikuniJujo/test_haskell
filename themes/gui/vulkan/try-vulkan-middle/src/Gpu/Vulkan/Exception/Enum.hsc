@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-missing-export-lists -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Exception.Enum where
 
@@ -52,6 +52,18 @@ enum "Result" ''#{type VkResult}
 		#{const VK_ERROR_INCOMPATIBLE_DISPLAY_KHR}),
 	("ErrorValidationFailedExt", #{const VK_ERROR_VALIDATION_FAILED_EXT}),
 	("ErrorInvalidShaderNv", #{const VK_ERROR_INVALID_SHADER_NV}),
+	("ErrorImageUsageNotSupportedKhr",
+		#{const VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR}),
+	("ErrorVideoPictureLayoutNotSupportedKhr",
+		#{const VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR}),
+	("ErrorVideoProfileOperationNotSupportedKhr",
+		#{const VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR}),
+	("ErrorVideoProfileFormatNotSupportedKhr",
+		#{const VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR}),
+	("ErrorVideoProfileCodecNotSupportedKhr",
+		#{const VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR}),
+	("ErrorVideoStdVersionNotSupportedKhr",
+		#{const VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR}),
 	("ErrorInvalidDrmFormatModifierPlaneLayoutExt",
 		#{const VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT}),
 	("ErrorNotPermittedKhr", #{const VK_ERROR_NOT_PERMITTED_KHR}),

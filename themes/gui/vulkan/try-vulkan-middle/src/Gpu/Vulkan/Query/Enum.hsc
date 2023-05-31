@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# OPTIONS_GHC -Wall -fno-warn-missing-export-lists -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Query.Enum where
 
@@ -44,6 +44,8 @@ enum "PipelineStatisticFlagBits" ''#{type VkQueryPipelineStatisticFlagBits}
 		#{const VK_QUERY_PIPELINE_STATISTIC_TASK_SHADER_INVOCATIONS_BIT_EXT}),
 	("PipelineStatisticMeshShaderInvocationsBitExt",
 		#{const VK_QUERY_PIPELINE_STATISTIC_MESH_SHADER_INVOCATIONS_BIT_EXT}),
+	("PipelineStatisticClusterCullingShaderInvocationsBitHuawei",
+		#{const VK_QUERY_PIPELINE_STATISTIC_CLUSTER_CULLING_SHADER_INVOCATIONS_BIT_HUAWEI}),
 	("PipelineStatisticFlagBitsMaxEnum",
 		#{const VK_QUERY_PIPELINE_STATISTIC_FLAG_BITS_MAX_ENUM}) ]
 
@@ -60,6 +62,8 @@ enum "ResultFlagBits" ''#{type VkQueryResultFlagBits}
 	("ResultWithAvailabilityBit",
 		#{const VK_QUERY_RESULT_WITH_AVAILABILITY_BIT}),
 	("ResultPartialBit", #{const VK_QUERY_RESULT_PARTIAL_BIT}),
+	("ResultWithStatusBitKhr",
+		#{const VK_QUERY_RESULT_WITH_STATUS_BIT_KHR}),
 	("ResultFlagBitsMaxEnum",
 		#{const VK_QUERY_RESULT_FLAG_BITS_MAX_ENUM}) ]
 
@@ -69,6 +73,8 @@ enum "Type" ''#{type VkQueryType}
 	("TypePipelineStatistics",
 		#{const VK_QUERY_TYPE_PIPELINE_STATISTICS}),
 	("TypeTimestamp", #{const VK_QUERY_TYPE_TIMESTAMP}),
+	("TypeResultStatusOnlyKhr",
+		#{const VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR}),
 	("TypeTransformFeedbackStreamExt",
 		#{const VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT}),
 	("TypePerformanceQueryKhr",
