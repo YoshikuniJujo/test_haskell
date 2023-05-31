@@ -54,7 +54,7 @@ allocateNew :: (
 	Device.D sd -> AllocateInfoNew mn scp c ->
 	(forall s . HeteroParList.LL (C s) c -> IO a) -> IO a
 allocateNew (Device.D dvc) ai f = bracket
-	(M.allocate dvc $ allocateInfoToMiddleNew ai)
+	(M.allocateCs dvc $ allocateInfoToMiddleNew ai)
 	(M.freeCs dvc
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
 	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
@@ -82,7 +82,7 @@ allocate ::
 	Device.D sd -> AllocateInfo mn scp vss ->
 	(forall s . HeteroParList.PL (Binded s) vss -> IO a) -> IO a
 allocate (Device.D dvc) ai f = bracket
-	(M.allocate dvc $ allocateInfoToMiddle ai)
+	(M.allocateCs dvc $ allocateInfoToMiddle ai)
 	(M.freeCs dvc
 		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
 	(f . HeteroParList.fromList Binded)
@@ -124,7 +124,7 @@ allocateOld :: WithPoked (TMaybe.M mn) =>
 	Device.D sd -> AllocateInfoOld mn sp ->
 	(forall s . [Binded s vs] -> IO a) -> IO a
 allocateOld (Device.D dvc) (allocateInfoToMiddleOld -> ai) f = bracket
-	(M.allocate dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
+	(M.allocateCs dvc ai) (M.freeCs dvc (M.allocateInfoCommandPool ai))
 	(f . (Binded <$>))
 
 data AllocateInfoOld mn s = AllocateInfoOld {
