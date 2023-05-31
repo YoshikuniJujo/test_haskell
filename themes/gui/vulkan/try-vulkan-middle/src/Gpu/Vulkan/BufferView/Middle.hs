@@ -2,13 +2,10 @@
 
 module Gpu.Vulkan.BufferView.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	B,
+	create, destroy, B, CreateInfo(..), CreateFlags
 
-	-- * Create and Destroy
-
-	create, destroy,
-	CreateInfo(..), CreateFlags ) where
+	) where
 
 import Gpu.Vulkan.BufferView.Middle.Internal
