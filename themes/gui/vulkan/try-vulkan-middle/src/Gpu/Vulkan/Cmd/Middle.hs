@@ -18,7 +18,7 @@ module Gpu.Vulkan.Cmd.Middle (
 
 	-- ** Draw
 
-	bindPipeline, bindVertexBuffers, bindIndexBuffer, draw, drawIndexed,
+	bindPipelineGraphics, bindVertexBuffers, bindIndexBuffer, draw, drawIndexed,
 
 	-- ** Dispatch
 
@@ -89,9 +89,9 @@ beginRenderPass (CommandBuffer.M.C _ cb) rpbi (Subpass.Contents spcnt) =
 endRenderPass :: CommandBuffer.M.C -> IO ()
 endRenderPass (CommandBuffer.M.C _ cb) = C.endRenderPass cb
 
-bindPipeline ::
+bindPipelineGraphics ::
 	CommandBuffer.M.C -> Pipeline.BindPoint -> Pipeline.G -> IO ()
-bindPipeline (CommandBuffer.M.C rppl cb) (Pipeline.BindPoint pbp) ppl = do
+bindPipelineGraphics (CommandBuffer.M.C rppl cb) (Pipeline.BindPoint pbp) ppl = do
 	ppl0 <- readIORef rppl
 	ppl' <- Pipeline.gToCore ppl
 	when (ppl' /= ppl0) do
