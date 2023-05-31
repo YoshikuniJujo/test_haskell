@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.ShaderStage.Core where
+module Gpu.Vulkan.Pipeline.ShaderStage.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoStage, createInfoModule, createInfoPName,
+	createInfoPSpecializationInfo
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -46,9 +55,5 @@ struct "CreateInfo" #{size VkPipelineShaderStageCreateInfo}
 		[| #{poke VkPipelineShaderStageCreateInfo,
 			pSpecializationInfo} |]) ]
 	[''Show, ''Storable]
-
-vertexBit, fragmentBit :: #{type VkShaderStageFlagBits}
-vertexBit = #{const VK_SHADER_STAGE_VERTEX_BIT}
-fragmentBit = #{const VK_SHADER_STAGE_FRAGMENT_BIT}
 
 type PtrCreateInfo = Ptr CreateInfo
