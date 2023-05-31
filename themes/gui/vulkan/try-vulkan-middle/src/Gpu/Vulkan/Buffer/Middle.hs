@@ -3,24 +3,21 @@
 
 module Gpu.Vulkan.Buffer.Middle (
 
-	-- * Type
-	
-	B,
+	-- * CREATE AND DESTROY
 
-	-- * Create and Destroy
+	create, destroy, B, CreateInfo(..),
 
-	create, destroy, CreateInfo(..),
+	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
-	-- * Bind and Get Memory
+	getMemoryRequirements, bindMemory,
 
-	bindMemory, getMemoryRequirements,
-
-	-- * Copy
+	-- * COPY
 
 	Copy, pattern Copy, copySrcOffset, copyDstOffset, copySize,
+	ImageCopy(..),
 
-	-- * ImageCopy and MemoryBarrier
+	-- * MEMORY BARRIER
 
-	ImageCopy(..), MemoryBarrier(..) ) where
+	MemoryBarrier(..) ) where
 
 import Gpu.Vulkan.Buffer.Middle.Internal
