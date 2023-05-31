@@ -11,7 +11,7 @@
 
 module Gpu.Vulkan.CommandBuffer.Middle.Internal (
 	C(..),
-	AllocateInfo(..), allocate, freeCs,
+	AllocateInfo(..), allocateCs, freeCs,
 
 	BeginInfo(..), InheritanceInfo(..), begin, end, reset
 	) where
@@ -69,11 +69,11 @@ data C = C {
 newC :: C.C -> IO C
 newC c = C <$> newIORef nullPtr <*> pure c
 
-allocate :: WithPoked (TMaybe.M mn) => Device.D -> AllocateInfo mn -> IO [C]
-allocate (Device.D dvc) ai =  mapM newC =<<
+allocateCs :: WithPoked (TMaybe.M mn) => Device.D -> AllocateInfo mn -> IO [C]
+allocateCs (Device.D dvc) ai =  mapM newC =<<
 	allocaArray cbc \pc -> do
 	allocateInfoToCore ai \pai -> do
-		r <- C.allocate dvc pai pc
+		r <- C.allocateCs dvc pai pc
 		throwUnlessSuccess $ Result r
 	peekArray cbc pc
 	where cbc = fromIntegral $ allocateInfoCommandBufferCount ai
