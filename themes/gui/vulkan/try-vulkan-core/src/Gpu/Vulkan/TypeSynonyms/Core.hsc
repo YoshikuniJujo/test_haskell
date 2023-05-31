@@ -1,6 +1,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.TypeSynonyms.Core where
+module Gpu.Vulkan.TypeSynonyms.Core (
+
+	-- * PTR
+
+	PtrResult, PtrUint32T,
+
+	-- * LIST
+
+	ListUint8T, ListUint32T
+
+	) where
 
 import Foreign.Ptr
 import Data.Word

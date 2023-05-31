@@ -4,7 +4,26 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Subpass.Core where
+module Gpu.Vulkan.Subpass.Core (
+
+	-- * DESCRIPTION
+
+	Description, PtrDescription, pattern Description,
+	descriptionFlags, descriptionPipelineBindPoint,
+	descriptionInputAttachmentCount, descriptionPInputAttachments,
+	descriptionColorAttachmentCount, descriptionPColorAttachments,
+	descriptionPResolveAttachments, descriptionPDepthStencilAttachment,
+	descriptionPreserveAttachmentCount, descriptionPPreserveAttachments,
+
+	-- * DEPENDENCY
+
+	Dependency, PtrDependency, pattern Dependency,
+	dependencySrcSubpass, dependencyDstSubpass,
+	dependencySrcStageMask, dependencyDstStageMask,
+	dependencySrcAccessMask, dependencyDstAccessMask,
+	dependencyDependencyFlags
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
@@ -78,6 +97,3 @@ struct "Dependency" #{size VkSubpassDependency}
 	[''Show, ''Storable]
 
 type PtrDependency = Ptr Dependency
-
-contentsInline :: #{type VkSubpassContents}
-contentsInline = #{const VK_SUBPASS_CONTENTS_INLINE}

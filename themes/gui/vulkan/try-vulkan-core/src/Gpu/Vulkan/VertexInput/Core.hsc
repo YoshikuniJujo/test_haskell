@@ -3,7 +3,22 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.VertexInput.Core where
+module Gpu.Vulkan.VertexInput.Core (
+
+	-- * BINDING DESCRIPTION
+
+	BindingDescription, PtrBindingDescription, pattern BindingDescription,
+	bindingDescriptionBinding, bindingDescriptionStride,
+	bindingDescriptionInputRate,
+
+	-- * ATTRIBUTE DESCRIPTION
+
+	AttributeDescription, PtrAttributeDescription,
+	pattern AttributeDescription,
+	attributeDescriptionLocation, attributeDescriptionBinding,
+	attributeDescriptionFormat, attributeDescriptionOffset
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

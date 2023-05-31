@@ -3,7 +3,19 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Specialization.Core where
+module Gpu.Vulkan.Specialization.Core (
+
+	-- * INFO
+
+	Info, PtrInfo, pattern Info,
+	infoMapEntryCount, infoPMapEntries, infoDataSize, infoPData,
+
+	-- ** MapEntry
+
+	MapEntry, pattern MapEntry,
+	mapEntryConstantId, mapEntryOffset, mapEntrySize,
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
