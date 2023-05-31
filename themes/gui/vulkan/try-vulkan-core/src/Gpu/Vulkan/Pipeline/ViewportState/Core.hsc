@@ -3,7 +3,16 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.ViewportState.Core where
+module Gpu.Vulkan.Pipeline.ViewportState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoViewportCount, createInfoPViewports,
+	createInfoScissorCount, createInfoPScissors
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

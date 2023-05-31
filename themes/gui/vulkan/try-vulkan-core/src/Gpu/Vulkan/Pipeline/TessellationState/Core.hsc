@@ -4,7 +4,15 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.TessellationState.Core where
+module Gpu.Vulkan.Pipeline.TessellationState.Core (
+
+	-- * CREATE INFO
+
+	CreateInfo, PtrCreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoPatchControlPoints
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
