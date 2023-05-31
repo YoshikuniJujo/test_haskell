@@ -7,7 +7,7 @@ module Gpu.Vulkan.CommandBuffer.Core (
 
 	-- * ALLOCATE AND FREE
 
-	allocate, freeCs, C, PtrC,
+	allocateCs, freeCs, C, PtrC,
 	AllocateInfo, pattern AllocateInfo,
 	allocateInfoSType, allocateInfoPNext, allocateInfoCommandPool,
 	allocateInfoLevel, levelPrimary, allocateInfoCommandBufferCount,
@@ -72,7 +72,7 @@ data CTag
 type C = Ptr CTag
 type PtrC = Ptr C
 
-foreign import ccall "vkAllocateCommandBuffers" allocate ::
+foreign import ccall "vkAllocateCommandBuffers" allocateCs ::
 	Device.D -> Ptr AllocateInfo -> Ptr C -> IO #{type VkResult}
 
 struct "InheritanceInfo" #{size VkCommandBufferInheritanceInfo}
