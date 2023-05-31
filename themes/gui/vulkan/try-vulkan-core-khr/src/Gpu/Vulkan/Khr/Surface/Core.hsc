@@ -3,7 +3,27 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Surface.Core where
+module Gpu.Vulkan.Khr.Surface.Core (
+
+	-- * DESTROY
+
+	destroy, S,
+
+	-- * CAPABILITIES
+
+	Capabilities, pattern Capabilities,
+	capabilitiesMinImageCount, capabilitiesMaxImageCount,
+	capabilitiesCurrentExtent,
+	capabilitiesMinImageExtent, capabilitiesMaxImageExtent,
+	capabilitiesMaxImageArrayLayers,
+	capabilitiesSupportedTransforms, capabilitiesCurrentTransform,
+	capabilitiesSupportedCompositeAlpha, capabilitiesSupportedUsageFlags,
+
+	-- * FORMAT
+
+	Format, pattern Format, formatFormat, formatColorSpace
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

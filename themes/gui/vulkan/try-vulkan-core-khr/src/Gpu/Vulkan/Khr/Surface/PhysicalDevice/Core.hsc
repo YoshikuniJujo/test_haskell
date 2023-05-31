@@ -1,6 +1,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core where
+module Gpu.Vulkan.Khr.Surface.PhysicalDevice.Core (
+
+	-- * FUNCTIONS
+
+	getSupport, getCapabilities, getFormats, getPresentModes
+
+	) where
 
 import Foreign.Ptr
 import Data.Word

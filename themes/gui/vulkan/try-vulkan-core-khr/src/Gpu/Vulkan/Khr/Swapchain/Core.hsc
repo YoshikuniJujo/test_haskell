@@ -4,7 +4,25 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Khr.Swapchain.Core where
+module Gpu.Vulkan.Khr.Swapchain.Core (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, S, PtrS, CreateInfo, pattern CreateInfo,
+	createInfoSType, createInfoPNext, createInfoFlags,
+	createInfoSurface, createInfoMinImageCount,
+	createInfoImageFormat, createInfoImageColorSpace, createInfoImageExtent,
+	createInfoImageArrayLayers, createInfoImageUsage,
+	createInfoImageSharingMode,
+	createInfoQueueFamilyIndexCount, createInfoPQueueFamilyIndices,
+	createInfoPreTransform, createInfoCompositeAlpha, createInfoPresentMode,
+	createInfoClipped, createInfoOldSwapchain,
+
+	-- * GET IMAGES
+
+	getImages
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable
