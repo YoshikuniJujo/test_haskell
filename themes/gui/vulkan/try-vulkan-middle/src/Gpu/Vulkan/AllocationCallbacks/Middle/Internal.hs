@@ -76,10 +76,10 @@ destroy a = do
 	ifr = aPfnInternalFree a
 
 data FunctionsInfo a = FunctionsInfo {
-	functionFnAllocation :: FnAllocationFunction a,
-	functionFnReallocation :: FnReallocationFunction a,
-	functionFnFree :: C.FnFreeFunction a,
-	functionFnInternalAllocationFree :: Maybe (
+	functionsInfoFnAllocation :: FnAllocationFunction a,
+	functionsInfoFnReallocation :: FnReallocationFunction a,
+	functionsInfoFnFree :: C.FnFreeFunction a,
+	functionsInfoFnInternalAllocationFree :: Maybe (
 		FnInternalAllocationNotification a,
 		FnInternalFreeNotification a ) }
 
@@ -130,7 +130,7 @@ mkCallbacksNew ac = do
 	pral <- C.wrapReallocationFunction $ fnReallocationFunctionToCore ral
 	pfr <- C.wrapFreeFunction fr
 	(pial, pifr) <- do
-		case functionFnInternalAllocationFree ac of
+		case functionsInfoFnInternalAllocationFree ac of
 			Nothing -> pure (nullFunPtr, nullFunPtr)
 			Just (ial, ifr) -> do
 				wal <- C.wrapInternalAllocationNotification
@@ -145,6 +145,6 @@ mkCallbacksNew ac = do
 		aPfnInternalAllocation = pial,
 		aPfnInternalFree = pifr }
 	where
-	al = functionFnAllocation ac
-	ral = functionFnReallocation ac
-	fr = functionFnFree ac
+	al = functionsInfoFnAllocation ac
+	ral = functionsInfoFnReallocation ac
+	fr = functionsInfoFnFree ac
