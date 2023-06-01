@@ -381,7 +381,7 @@ updateDsNew :: (
 	HeteroParList.PL (U5 Write) sdspslbtssbsmobjsobjs ->
 	HeteroParList.PL (U10 Copy) copyArgs  -> IO ()
 updateDsNew (Device.D dvc) ws cs =
-	writeListUpdateLengthNew ws >> M.updateDsNew dvc ws' cs'
+	writeListUpdateLengthNew ws >> M.updateDs dvc ws' cs'
 	where ws' = writeListToMiddleNew ws; cs' = copyListToMiddle cs
 
 updateDsNewNew :: (
@@ -392,5 +392,5 @@ updateDsNewNew :: (
 	HeteroParList.PL (U4 WriteNew) sdspslbtssbsmobjsobjs ->
 	HeteroParList.PL (U10 Copy) copyArgs  -> IO ()
 updateDsNewNew (Device.D dvc) ws cs =
-	writeListUpdateLengthNewNew ws >> M.updateDsNew dvc ws' cs'
+	writeListUpdateLengthNewNew ws >> M.updateDs dvc ws' cs'
 	where ws' = writeListToMiddleNewNew ws; cs' = copyListToMiddle cs
