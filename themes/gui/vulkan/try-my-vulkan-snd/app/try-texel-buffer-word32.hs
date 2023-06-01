@@ -340,9 +340,10 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 				Vk.Dsc.TypeStorageTexelBuffer,
 			Vk.DscSet.writeSources = Vk.DscSet.TexelBufferViews
 				. HeteroParList.Singleton $ U2 bv }
-	Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
-		U4 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U4 wds' :**
-		HeteroParList.Nil ) []
+	Vk.DscSet.updateDsNew dvc (
+		U5 (writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** U5 wds' :**
+		HeteroParList.Nil )
+		HeteroParList.Nil
 	f dscSet ma mb mc
 
 data MyPixel = MyPixel Word32 Word32 Word32 Word32 deriving Show

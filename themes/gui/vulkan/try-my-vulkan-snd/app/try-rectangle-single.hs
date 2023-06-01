@@ -863,8 +863,8 @@ createDescriptorSet ::
 	IO (Vk.DscSet.S sd sp '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]))
 createDescriptorSet dvc dscp ub dscslyt = do
 	HeteroParList.Singleton dscs <- Vk.DscSet.allocateSs dvc allocInfo
-	Vk.DscSet.updateDs @'Nothing @'Nothing dvc
-		(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) []
+	Vk.DscSet.updateDsNew dvc
+		(HeteroParList.Singleton . U5 $ descriptorWrite ub dscs) HeteroParList.Nil
 	pure dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {

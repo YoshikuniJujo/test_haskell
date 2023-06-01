@@ -170,25 +170,25 @@ prepDscSets arg phdvc dvc dslyt da db dc f =
 		@(VObj.Atom 256 Word32 ('Just "x2"))
 		phdvc dvc 3 5 7 \bx mx -> case arg of
 			"0" -> do
-				Vk.DscSet.updateDs @_ @'Nothing dvc (
-					U4 (writeDscSet ds ba bb bc) :**
-					U4 (writeDscSet2 @"x0" ds bx) :**
+				Vk.DscSet.updateDsNew dvc (
+					U5 (writeDscSet ds ba bb bc) :**
+					U5 (writeDscSet2 @"x0" ds bx) :**
+					HeteroParList.Nil )
 					HeteroParList.Nil
-					) []
 				f ds ma mb mc
 			"1" -> do
-				Vk.DscSet.updateDs @_ @'Nothing dvc (
-					U4 (writeDscSet ds ba bb bc) :**
-					U4 (writeDscSet2 @"x1" ds bx) :**
+				Vk.DscSet.updateDsNew dvc (
+					U5 (writeDscSet ds ba bb bc) :**
+					U5 (writeDscSet2 @"x1" ds bx) :**
+					HeteroParList.Nil )
 					HeteroParList.Nil
-					) []
 				f ds ma mb mc
 			"2" -> do
-				Vk.DscSet.updateDs @_ @'Nothing dvc (
-					U4 (writeDscSet ds ba bb bc) :**
-					U4 (writeDscSet2 @"x2" ds bx) :**
+				Vk.DscSet.updateDsNew dvc (
+					U5 (writeDscSet ds ba bb bc) :**
+					U5 (writeDscSet2 @"x2" ds bx) :**
+					HeteroParList.Nil )
 					HeteroParList.Nil
-					) []
 				f ds ma mb mc
 			_ -> error "bad arg"
 

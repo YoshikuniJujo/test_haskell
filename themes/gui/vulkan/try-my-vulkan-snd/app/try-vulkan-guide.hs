@@ -1334,16 +1334,17 @@ instance (
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) where
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 0 = do
-		Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
-			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
-			HeteroParList.Nil ) []
+		Vk.DscSet.updateDsNew dvc (
+			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+			HeteroParList.Nil ) HeteroParList.Nil
 		update dvc ubs dscss scnb 1
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 1 = do
-		Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
-			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
-			HeteroParList.Nil ) []
+		Vk.DscSet.updateDsNew dvc (
+			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+			HeteroParList.Nil )
+			HeteroParList.Nil
 		update dvc ubs dscss scnb 2
 	update _ _ _ _ _ = error "bad"
 

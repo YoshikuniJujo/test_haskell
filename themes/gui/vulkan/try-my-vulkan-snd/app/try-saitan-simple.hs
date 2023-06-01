@@ -167,9 +167,9 @@ prepareMems phdvc dvc dscSetLyt da db dc f =
 	storageBufferNew dvc phdvc da \ba ma ->
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
-	Vk.DscSet.updateDs @'Nothing @'Nothing dvc
-		(HeteroParList.Singleton . U4 $ writeDscSet dscSet ba bb bc)
-		[] >>
+	Vk.DscSet.updateDsNew dvc
+		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
+		HeteroParList.Nil >>
 	f dscSet ma mb mc
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing

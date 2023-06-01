@@ -1680,10 +1680,11 @@ instance (
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) ssmp siv where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) tximgvw txsmp = do
-		Vk.DscSet.updateDs @'Nothing @'Nothing dvc (
-			U4 (descriptorWrite0 ub dscs) :**
-			U4 (descriptorWrite1 dscs tximgvw txsmp) :**
-			HeteroParList.Nil ) []
+		Vk.DscSet.updateDsNew dvc (
+			U5 (descriptorWrite0 ub dscs) :**
+			U5 (descriptorWrite1 dscs tximgvw txsmp) :**
+			HeteroParList.Nil )
+			HeteroParList.Nil
 		update dvc ubs dscss tximgvw txsmp
 
 findMemoryType :: Vk.PhDvc.P -> Vk.Mem.M.TypeBits -> Vk.Mem.PropertyFlags ->

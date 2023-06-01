@@ -1251,14 +1251,15 @@ instance (
 		(odb ': odbs) ('(slytod, bods) ': lytods) where
 	update dv (dscs :** dscss) (BindedCamera cmb :** cmbs)
 		(dscsod :** dscsods) (BindedObjData odb :** odbs) scnb = do
-		Vk.DscSet.updateDs @'Nothing @'Nothing dv (
-			U4 (descriptorWrite @CameraObj
+		Vk.DscSet.updateDsNew dv (
+			U5 (descriptorWrite @CameraObj
 				dscs cmb Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite @SceneObj
+			U5 (descriptorWrite @SceneObj
 				dscs scnb Vk.Dsc.TypeUniformBufferDynamic) :**
-			U4 (descriptorWrite @ObjDataList
+			U5 (descriptorWrite @ObjDataList
 				dscsod odb Vk.Dsc.TypeStorageBuffer) :**
-			HL.Nil ) []
+			HL.Nil )
+			HL.Nil
 		update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 
 descriptorWrite :: forall obj sd sp slbts sb sm nm objs .

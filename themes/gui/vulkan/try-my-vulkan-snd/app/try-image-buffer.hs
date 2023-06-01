@@ -293,8 +293,8 @@ prepareMems33 phdvc dvc dscSetLyt da db dc f =
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
 	storageBufferNew3' dvc phdvc da db dc \ba ma bb mb bc mc ->
-	Vk.DscSet.updateDs @'Nothing @'Nothing dvc (U4
-		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** HeteroParList.Nil) [] >>
+	Vk.DscSet.updateDsNew dvc (U5
+		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** HeteroParList.Nil) HeteroParList.Nil >>
 	f dscSet ma mb mc
 
 prepareMems31 ::
@@ -317,8 +317,8 @@ prepareMems31 phdvc dvc dscSetLyt da db dc f =
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
 	storage3BufferNew dvc phdvc da db dc \ba bb bc m ->
-	Vk.DscSet.updateDs @'Nothing @'Nothing dvc (U4
-		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** HeteroParList.Nil) [] >>
+	Vk.DscSet.updateDsNew dvc (U5
+		(writeDscSet @w1 @w2 @w3 dscSet ba bb bc) :** HeteroParList.Nil) HeteroParList.Nil >>
 	f dscSet m
 
 prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
@@ -388,8 +388,8 @@ prepareMems11 ifp tlng phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
 	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
 		>>= \(dscSet :** HeteroParList.Nil) ->
-	Vk.DscSet.updateDs @'Nothing @'Nothing dvc (U4
-		(writeDscSet' @w1 @w2 @w3 dscSet bufb) :** HeteroParList.Nil) [] >>
+	Vk.DscSet.updateDsNew dvc (U5
+		(writeDscSet' @w1 @w2 @w3 dscSet bufb) :** HeteroParList.Nil) HeteroParList.Nil >>
 	f dscSet mib
 
 imageInfo ::

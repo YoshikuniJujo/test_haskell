@@ -1127,12 +1127,13 @@ instance (
 		'[SceneObj] 0,
 	Update csbs lyts ) => Update (csb ': csbs) ('(slyt, bs) ': lyts) where
 	update dv (dscs :** dscss) (BindedCamera csb :** csbs) scnb = do
-		Vk.DscSet.updateDs @'Nothing @'Nothing dv (
-			U4 (descriptorWrite @CameraObj
+		Vk.DscSet.updateDsNew dv (
+			U5 (descriptorWrite @CameraObj
 				dscs csb Vk.Dsc.TypeUniformBuffer) :**
-			U4 (descriptorWrite @SceneObj
+			U5 (descriptorWrite @SceneObj
 				dscs scnb Vk.Dsc.TypeUniformBufferDynamic) :**
-			HL.Nil ) []
+			HL.Nil )
+			HL.Nil
 		update dv dscss csbs scnb
 
 descriptorWrite :: forall obj sd sp slbts sb sm nm objs .

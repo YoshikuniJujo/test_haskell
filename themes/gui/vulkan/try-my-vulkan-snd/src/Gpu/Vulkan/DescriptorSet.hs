@@ -373,16 +373,6 @@ instance (
 	writeListUpdateLength (U4 w :** ws) =
 		writeUpdateLength w >> writeListUpdateLength ws
 
-updateDs :: (
-	WithPoked (TMaybe.M n), WithPoked (TMaybe.M n'),
-	WriteListToMiddle n sdspslbtssbsmobjsobjs ) =>
-	Device.D sd ->
-	HeteroParList.PL (U4 (Write  n)) sdspslbtssbsmobjsobjs -> [M.Copy n'] -> IO ()
-updateDs (Device.D dvc) ws cs =
-	writeListUpdateLength ws >>
-	M.updateDs dvc ws' cs
-	where ws' = writeListToMiddle ws
-
 updateDsNew :: (
 	WriteListToMiddleNew sdspslbtssbsmobjsobjs,
 	M.WriteListToCore (WriteNexts sdspslbtssbsmobjsobjs),
