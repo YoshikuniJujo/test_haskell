@@ -2,12 +2,8 @@
 
 module Gpu.Vulkan.ImageView.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	I,
-
-	-- * Create and Destroy
-
-	create, recreate, destroy, CreateInfo(..) ) where
+	create, recreate, destroy, I, CreateInfo(..) ) where
 
 import Gpu.Vulkan.ImageView.Middle.Internal

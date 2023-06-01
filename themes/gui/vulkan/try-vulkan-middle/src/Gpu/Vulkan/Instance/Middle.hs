@@ -2,16 +2,14 @@
 
 module Gpu.Vulkan.Instance.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	I,
+	create, destroy, I, CreateInfo(..),
 
-	-- * Create and Destroy
+	-- * ENUMERATE
 
-	create, destroy, CreateInfo(..),
+	enumerateLayerProperties, enumerateExtensionProperties
 
-	-- * Enumerate
-
-	enumerateLayerProperties, enumerateExtensionProperties ) where
+	) where
 
 import Gpu.Vulkan.Instance.Middle.Internal
