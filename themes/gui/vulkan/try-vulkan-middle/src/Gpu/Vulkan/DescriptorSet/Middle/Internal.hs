@@ -11,7 +11,7 @@
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 	D(..), AllocateInfo(..), allocateDs, freeDs,
 	Write(..), WriteSources(..), Copy(..),
-	updateDsNew, WriteListToCore, CopyListToCore ) where
+	updateDs, WriteListToCore, CopyListToCore ) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
@@ -203,11 +203,11 @@ writeSourcesToCore ws f = case ws of
 		pokeArray pbvs bvs >>
 		f (fromIntegral ln, NullPtr, NullPtr, pbvs)
 
-updateDsNew :: (WriteListToCore ws, CopyListToCore cs) =>
+updateDs :: (WriteListToCore ws, CopyListToCore cs) =>
 	Device.D ->
 	HeteroParList.PL Write ws -> HeteroParList.PL Copy cs ->
 	IO ()
-updateDsNew (Device.D dvc) ws cs =
+updateDs (Device.D dvc) ws cs =
 	writeListToCore ws \cws ->
 	allocaAndPokeArray' cws \(fromIntegral -> wc, pws) ->
 	copyListToCore cs \ccs ->

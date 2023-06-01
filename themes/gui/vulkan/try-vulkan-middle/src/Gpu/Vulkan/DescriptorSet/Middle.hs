@@ -8,7 +8,7 @@ module Gpu.Vulkan.DescriptorSet.Middle (
 
 	-- * UPDATE
 
-	updateDsNew,
+	updateDs,
 	WriteListToCore, Write(..), WriteSources(..), CopyListToCore, Copy(..)
 
 	) where
