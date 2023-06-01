@@ -10,7 +10,7 @@
 
 module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 	D(..), AllocateInfo(..), allocateDs, freeDs,
-	Write(..), WriteSources(..), Copy(..), updateDs,
+	Write(..), WriteSources(..), Copy(..),
 	updateDsNew, WriteListToCore, CopyListToCore ) where
 
 import Foreign.Ptr
@@ -202,15 +202,6 @@ writeSourcesToCore ws f = case ws of
 		allocaArray ln \pbvs ->
 		pokeArray pbvs bvs >>
 		f (fromIntegral ln, NullPtr, NullPtr, pbvs)
-
-updateDs :: (WithPoked (TMaybe.M w), WithPoked (TMaybe.M c)) =>
-	Device.D -> [Write w] -> [Copy c] -> IO ()
-updateDs (Device.D dvc) ws cs =
-	(writeToCore `mapContM` ws) \ws' ->
-	allocaAndPokeArray' ws' \(fromIntegral -> wc, pws) ->
-	(copyToCore `mapContM` cs) \cs' ->
-	allocaAndPokeArray' cs' \(fromIntegral -> cc, pcs) ->
-	C.updateDs dvc wc pws cc pcs
 
 updateDsNew :: (WriteListToCore ws, CopyListToCore cs) =>
 	Device.D ->

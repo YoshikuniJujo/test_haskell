@@ -2,18 +2,15 @@
 
 module Gpu.Vulkan.DescriptorSet.Middle (
 
-	-- * Type
+	-- * ALLOCATE AND FREE
 
-	D,
+	allocateDs, freeDs, D, AllocateInfo(..),
 
-	-- * Allocate
+	-- * UPDATE
 
-	allocateDs, freeDs, AllocateInfo(..),
+	updateDsNew,
+	WriteListToCore, Write(..), WriteSources(..), CopyListToCore, Copy(..)
 
-	-- * Update
-
-	updateDs, Write(..), WriteSources(..), Copy(..),
-
-	updateDsNew, WriteListToCore, CopyListToCore ) where
+	) where
 
 import Gpu.Vulkan.DescriptorSet.Middle.Internal
