@@ -2,19 +2,20 @@
 
 module Gpu.Vulkan.Device.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	D,
-
-	-- * Create and Destroy
-
-	create, destroy,
+	create, destroy, D,
 	CreateInfo(..), CreateFlags, CreateFlagBits,
 	QueueCreateInfo(..),
 
-	-- * Others
+	-- * GET QUEUE AND WAIT IDLE
 
-	getQueue, waitIdle, Size
+	getQueue, waitIdle,
+
+	-- * SIZE
+
+	Size
+
 	) where
 
 import Gpu.Vulkan.Device.Middle.Internal

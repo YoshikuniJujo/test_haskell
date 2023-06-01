@@ -2,16 +2,14 @@
 
 module Gpu.Vulkan.Fence.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	F,
+	create, destroy, F, CreateInfo(..),
 
-	-- * Create and Destroy
+	-- * RESET AND WAIT
 
-	create, destroy, CreateInfo(..),
+	resetFs, waitForFs
 
-	-- * Wait and Reset
-
-	waitForFs, resetFs ) where
+	) where
 
 import Gpu.Vulkan.Fence.Middle.Internal

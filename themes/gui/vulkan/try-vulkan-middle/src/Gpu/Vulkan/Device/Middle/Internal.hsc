@@ -12,10 +12,21 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Device.Middle.Internal (
-	D(..), CreateInfo(..), CreateFlags, CreateFlagBits, QueueCreateInfo(..),
-	create, destroy, getQueue, waitIdle,
 
-	Size(..) ) where
+	-- * CREATE AND DESTROY
+
+	create, destroy, D(..), CreateInfo(..), CreateFlags, CreateFlagBits,
+	QueueCreateInfo(..),
+
+	-- * GET QUEUE AND WAIT IDLE
+
+	getQueue, waitIdle,
+
+	-- * SIZE
+
+	Size(..)
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal

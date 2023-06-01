@@ -2,12 +2,10 @@
 
 module Gpu.Vulkan.DescriptorSetLayout.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	L,
+	create, destroy, L, CreateInfo(..), Binding(..)
 
-	-- * Create and Destroy
-
-	create, destroy, CreateInfo(..), Binding(..) ) where
+	) where
 
 import Gpu.Vulkan.DescriptorSetLayout.Middle.Internal

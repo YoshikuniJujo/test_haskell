@@ -8,11 +8,20 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Fence.Middle.Internal (
-	F(..), CreateInfo(..), create, destroy,
 
-	waitForFs, resetFs,
+	-- * CREATE AND DESTROY
 
-	maybeFToCore ) where
+	create, destroy, F(..), CreateInfo(..),
+
+	-- * RESET AND WAIT
+
+	resetFs, waitForFs,
+
+	-- * INTERNAL USE
+
+	maybeFToCore
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc

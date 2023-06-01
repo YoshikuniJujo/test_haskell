@@ -2,12 +2,10 @@
 
 module Gpu.Vulkan.Framebuffer.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	F,
+	create, recreate, destroy, F, CreateInfo(..)
 
-	-- * Create and Destroy
-
-	create, recreate, destroy, CreateInfo(..) ) where
+	) where
 
 import Gpu.Vulkan.Framebuffer.Middle.Internal
