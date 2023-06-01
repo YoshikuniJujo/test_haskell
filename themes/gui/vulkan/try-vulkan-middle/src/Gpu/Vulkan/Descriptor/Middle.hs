@@ -2,8 +2,14 @@
 
 module Gpu.Vulkan.Descriptor.Middle (
 
-	-- * ImageInfo and BufferInfo
+	-- * BUFFER INFO
 
-	ImageInfo(..), BufferInfo(.. ) ) where
+	BufferInfo(..),
+
+	-- * IMAGE INFO
+
+	ImageInfo(..)
+
+	) where
 
 import Gpu.Vulkan.Descriptor.Middle.Internal

@@ -2,16 +2,10 @@
 
 module Gpu.Vulkan.DescriptorPool.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	D,
+	create, destroy, D, CreateInfo(..), Size(..)
 
-	-- * Create and Destroy
-
-	create, destroy, CreateInfo(..),
-
-	-- ** Size
-
-	Size(..) ) where
+	) where
 
 import Gpu.Vulkan.DescriptorPool.Middle.Internal
