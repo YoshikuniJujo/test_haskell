@@ -10,14 +10,26 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image.Middle.Internal (
-	I(..), CreateInfo(..),
-	create, recreate, destroy,
-	bindMemory, getMemoryRequirements,
+
+	-- * CREATE AND DESTROY
+
+	create, recreate, destroy, I(..), CreateInfo(..),
+
+	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
+
+	getMemoryRequirements, bindMemory,
+
+	-- * MEMORY BARRIER
 
 	MemoryBarrier(..), memoryBarrierToCore,
 	SubresourceRange(..), subresourceRangeToCore,
+
+	-- * BLIT
+
 	Blit(..), blitToCore,
-	SubresourceLayers(..), subresourceLayersToCore ) where
+	SubresourceLayers(..), subresourceLayersToCore
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc

@@ -2,24 +2,22 @@
 
 module Gpu.Vulkan.Image.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	I,
+	create, recreate, destroy, I, CreateInfo(..),
 
-	-- * Create and Destroy
+	-- * GET MEMORY REQUIREMENTS AND BIND MEMORY
 
-	create, recreate, destroy, CreateInfo(..),
+	getMemoryRequirements, bindMemory,
 
-	-- * Bind Memory and Get Memory Requirements
-
-	bindMemory, getMemoryRequirements,
-
-	-- * Memory Barrier
+	-- * MEMORY BARRIER
 
 	MemoryBarrier(..), SubresourceRange(..),
 
-	-- * Blit
+	-- * BLIT
 
-	Blit(..), SubresourceLayers(..) ) where
+	Blit(..), SubresourceLayers(..)
+
+	) where
 
 import Gpu.Vulkan.Image.Middle.Internal
