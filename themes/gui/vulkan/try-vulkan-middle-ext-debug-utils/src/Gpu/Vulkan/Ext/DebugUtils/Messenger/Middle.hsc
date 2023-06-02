@@ -38,7 +38,6 @@ import Data.Int
 import qualified Data.Text as T
 import Data.Text.Foreign.Misc
 
-import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.PNext.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
@@ -86,8 +85,8 @@ callbackDataFromCore C.CallbackData {
 	C.callbackDataPObjects = pcobjs } = do
 --	mnxt <- peekMaybe $ castPtr pnxt
 	mnxt <- findPNextChainAll pnxt
-	midnm <- cstrToText cmidnm
-	msg <- cstrToText cmsg
+	midnm <- cStringToText cmidnm
+	msg <- cStringToText cmsg
 	cqls <- peekArray' qlc pcqls
 	qls <- labelFromCore `mapM` cqls
 	ccbls <- peekArray' cblc pccbls

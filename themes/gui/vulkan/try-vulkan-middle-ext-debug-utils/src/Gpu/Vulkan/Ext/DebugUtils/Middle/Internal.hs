@@ -44,7 +44,7 @@ labelFromCore C.Label {
 	C.labelPNext = _pnxt,
 	C.labelPLabelName = cln,
 	C.labelColor = [r, g, b, a] } = do
-	ln <- cstrToText cln
+	ln <- cStringToText cln
 	pure Label {
 		labelLabelName = ln,
 		labelColor = fromJust $ rgbaDouble r g b a }
@@ -67,7 +67,7 @@ objectNameInfoFromCore C.ObjectNameInfo {
 	mnxt <- peekMaybe $ castPtr pnxt
 	mon <- case con of
 		NullPtr -> pure Nothing
-		p -> Just <$> cstrToText p
+		p -> Just <$> cStringToText p
 	pure ObjectNameInfo {
 		objectNameInfoNext = mnxt,
 		objectNameInfoObjectType = ObjectType ot,
@@ -89,7 +89,7 @@ objectNameInfoResultFromCore C.ObjectNameInfo {
 	} = do
 	mon <- case con of
 		NullPtr -> pure Nothing
-		p -> Just <$> cstrToText p
+		p -> Just <$> cStringToText p
 	pure ObjectNameInfoResult {
 		objectNameInfoResultObjectType = ObjectType ot,
 		objectNameInfoResultObjectHandle = ObjectHandle oh,
