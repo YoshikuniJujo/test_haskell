@@ -2,7 +2,20 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 
 module Gpu.Vulkan.Base.Middle.Internal (
-	boolToBool32, bool32ToBool, ObjectHandle(..), pattern NullHandle ) where
+
+	-- * CONVERSION BETWEEN BOOL AND BOOL32
+
+	boolToBool32, bool32ToBool,
+
+	-- * NULL HANDLE
+
+	pattern NullHandle,
+
+	-- * OBJECT HANDLE
+
+	ObjectHandle(..)
+
+	) where
 
 import Foreign.Ptr
 import Data.Word
