@@ -15,6 +15,7 @@ module Gpu.Vulkan.DescriptorSet.Middle.Internal (
 
 import Foreign.Ptr
 import Foreign.Marshal.Array
+import Foreign.Storable
 import Foreign.Storable.PeekPoke (
 	WithPoked, withPoked, withPoked', withPtrS, pattern NullPtr )
 import Control.Arrow
@@ -27,7 +28,6 @@ import Data.Word
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.BufferView.Middle.Internal as BufferView
@@ -209,7 +209,11 @@ updateDs :: (WriteListToCore ws, CopyListToCore cs) =>
 	IO ()
 updateDs (Device.D dvc) ws cs =
 	writeListToCore ws \cws ->
-	allocaAndPokeArray' cws \(fromIntegral -> wc, pws) ->
+	allocaAndPokeArray cws \(fromIntegral -> wc, pws) ->
 	copyListToCore cs \ccs ->
-	allocaAndPokeArray' ccs \(fromIntegral -> cc, pcs) ->
+	allocaAndPokeArray ccs \(fromIntegral -> cc, pcs) ->
 	C.updateDs dvc wc pws cc pcs
+
+allocaAndPokeArray :: Storable a => [a] -> ((Int, Ptr a) -> IO b) -> IO b
+allocaAndPokeArray (length &&& id -> (xc, xs)) f
+	= allocaArray xc \p -> pokeArray p xs >> f (xc, p)

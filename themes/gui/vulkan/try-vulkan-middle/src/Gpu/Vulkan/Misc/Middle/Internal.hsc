@@ -8,7 +8,7 @@ module Gpu.Vulkan.Misc.Middle.Internal (
 
 	-- * Control
 
-	mapContM, allocaAndPokeArray',
+	mapContM,
 
 	-- * Values
 
@@ -77,10 +77,6 @@ bool32ToBool _ = error $
 	"Application must not pass any other values than " ++
 	"VK_TRUE or VK_FALSE into a Gpu.Vulkan implementation " ++
 	"where a VkBool32 is expected"
-
-allocaAndPokeArray' :: Storable a => [a] -> ((Int, Ptr a) -> IO b) -> IO b
-allocaAndPokeArray' (length &&& id -> (xc, xs)) f
-	= allocaArray xc \p -> pokeArray p xs >> f (xc, p)
 
 mapContM :: Monad m => (a -> (b -> m c) -> m c) -> [a] -> ([b] -> m c) -> m c
 -- mapContM f = runContT . mapM (ContT . f)

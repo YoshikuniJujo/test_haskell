@@ -2,24 +2,20 @@
 
 module Gpu.Vulkan.Memory.Middle (
 
-	-- * Type
+	-- * ALLOCATE AND FREE
 
-	M,
-
-	-- * Allocate and Free
-
-	allocate, reallocate, free, AllocateInfo(..),
+	allocate, reallocate, free, M, AllocateInfo(..),
 
 
-	-- * Map and Unmnap
+	-- * MAP AND UNMNAP
 
 	map, unmap, MapFlags(..),
 
-	-- * Requirements and Barrier
+	-- * REQUIREMENTS AND BARRIER
 
 	Requirements(..), Barrier(..),
 
-	-- * Memory Type
+	-- * MEMORY TYPE
 
 	MType(..), TypeBits, TypeIndex, elemTypeIndex ) where
 
