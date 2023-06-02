@@ -41,8 +41,6 @@ module Gpu.Vulkan.Middle.Internal (
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
 	C.viewportMinDepth, C.viewportMaxDepth,
 
-	pattern NullHandle,
-
 	) where
 
 import Foreign.Ptr
@@ -344,7 +342,3 @@ formatPropertiesFromCore C.FormatProperties {
 		formatPropertiesOptimalTilingFeatures =
 			FormatFeatureFlagBits otfs,
 		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }
-
-pattern NullHandle :: Ptr a
-pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
-	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}

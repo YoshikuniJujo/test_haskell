@@ -1,8 +1,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
+{-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 
 module Gpu.Vulkan.Base.Middle.Internal (
-	boolToBool32, bool32ToBool, ObjectHandle(..) ) where
+	boolToBool32, bool32ToBool, ObjectHandle(..), pattern NullHandle ) where
 
+import Foreign.Ptr
 import Data.Word
 
 #include <vulkan/vulkan.h>
@@ -20,3 +22,7 @@ bool32ToBool _ = error $
 	"where a VkBool32 is expected"
 
 newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show
+
+pattern NullHandle :: Ptr a
+pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
+	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}

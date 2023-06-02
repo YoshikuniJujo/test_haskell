@@ -36,7 +36,7 @@ import Data.HeteroParList (pattern (:**))
 import Data.Word
 import Data.Int
 
-import Gpu.Vulkan.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Pipeline.Enum

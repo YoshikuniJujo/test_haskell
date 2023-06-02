@@ -35,7 +35,6 @@ import Data.Default
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
