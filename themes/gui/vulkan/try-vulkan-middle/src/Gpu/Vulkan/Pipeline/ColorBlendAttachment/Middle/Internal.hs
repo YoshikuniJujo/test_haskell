@@ -5,7 +5,7 @@ module Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal (
 	State(..), stateToCore ) where
 
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 
 import qualified Gpu.Vulkan.ColorComponent.Enum as ColorComponent
 import qualified Gpu.Vulkan.Pipeline.ColorBlendAttachment.Core as C

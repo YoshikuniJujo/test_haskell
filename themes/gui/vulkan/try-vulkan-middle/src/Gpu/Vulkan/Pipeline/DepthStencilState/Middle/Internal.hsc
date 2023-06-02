@@ -19,9 +19,9 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState.Core as C
 

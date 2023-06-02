@@ -50,10 +50,6 @@ module Gpu.Vulkan.Middle (
 	viewportX, viewportY, viewportWidth, viewportHeight,
 	viewportMinDepth, viewportMaxDepth,
 
-	-- * Object Handle
-
-	ObjectHandle,
-
 	-- * Others
 
 	FormatProperties(..),

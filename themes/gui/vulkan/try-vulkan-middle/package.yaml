@@ -52,10 +52,12 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
+  - Data.Text.Foreign.Misc
   - Gpu.Vulkan.AllocationCallbacks.Middle
   - Gpu.Vulkan.AllocationCallbacks.Middle.Internal
   - Gpu.Vulkan.Attachment.Enum
   - Gpu.Vulkan.Attachment.Middle
+  - Gpu.Vulkan.Base.Middle.Internal
   - Gpu.Vulkan.Buffer.Enum
   - Gpu.Vulkan.Buffer.Middle
   - Gpu.Vulkan.BufferView.Middle

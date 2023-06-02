@@ -15,7 +15,6 @@ module Gpu.Vulkan.Middle.Internal (
 	ApiVersion(..), makeApiVersion, apiVersion_1_0, apiVersion_1_1,
 	LayerProperties(..), layerPropertiesFromCore,
 	ExtensionProperties(..), extensionPropertiesFromCore,
-	ObjectHandle(..),
 	StencilOpState(..), stencilOpStateToCore,
 	ClearValue(..), ClearValueListToCore(..),
 	ClearValueToCore, ClearColorValueToCore,
@@ -42,7 +41,9 @@ module Gpu.Vulkan.Middle.Internal (
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
 	C.viewportMinDepth, C.viewportMaxDepth,
 
-	StructCommon(..), FindPNextChainAll(..)
+	StructCommon(..), FindPNextChainAll(..),
+
+	pattern NullHandle,
 
 	) where
 
@@ -60,11 +61,11 @@ import Data.TypeLevel.Length qualified as TL
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
+import Data.Text.Foreign.Misc
 import Data.Color.Internal
 
 import qualified Data.Text as T
 
-import Gpu.Vulkan.Misc.Middle.Internal
 import Gpu.Vulkan.Enum
 
 import qualified Gpu.Vulkan.Core as C
@@ -156,8 +157,6 @@ applicationInfoToCore ApplicationInfo {
 			C.applicationInfoEngineVersion = engv,
 			C.applicationInfoApiVersion = apiv } in
 	withPoked appInfo f
-
-newtype ObjectHandle = ObjectHandle #{type uint64_t} deriving Show
 
 data ExtensionProperties = ExtensionProperties {
 	extensionPropertiesExtensionName :: T.Text,
@@ -383,3 +382,7 @@ formatPropertiesFromCore C.FormatProperties {
 		formatPropertiesOptimalTilingFeatures =
 			FormatFeatureFlagBits otfs,
 		formatPropertiesBufferFeatures = FormatFeatureFlagBits bfs }
+
+pattern NullHandle :: Ptr a
+pattern NullHandle <- (ptrToWordPtr -> (WordPtr #{const VK_NULL_HANDLE})) where
+	NullHandle = wordPtrToPtr $ WordPtr #{const VK_NULL_HANDLE}

@@ -31,15 +31,17 @@ import Data.Word
 import Data.UUID
 
 import qualified Data.ByteString.Lazy as LBS
-import qualified Data.Text as T
+
+import Data.Text qualified as T
+import Data.Text.Foreign.Misc
 
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.PhysicalDevice.Enum
 import Gpu.Vulkan.PhysicalDevice.Struct
-import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.Instance.Middle.Internal as Instance.M
 import qualified Gpu.Vulkan.PhysicalDevice.Core as C

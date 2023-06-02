@@ -29,13 +29,13 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 
-import qualified Data.Text as T
+import Data.Text qualified as T
+import Data.Text.Foreign.Misc
 
 import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Instance.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.Instance.Core as C
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal

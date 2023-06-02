@@ -45,7 +45,8 @@ import Data.List (genericLength)
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 
-import qualified Data.Text as T
+import Data.Text qualified as T
+import Data.Text.Foreign.Misc
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum

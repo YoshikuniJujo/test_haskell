@@ -15,7 +15,7 @@ import Foreign.Storable.PeekPoke
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum

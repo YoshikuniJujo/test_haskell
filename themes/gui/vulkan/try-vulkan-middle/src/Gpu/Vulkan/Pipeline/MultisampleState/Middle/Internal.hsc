@@ -18,7 +18,7 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Bits
 import Data.Word
 
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 
 import Gpu.Vulkan.Sample.Middle.Internal as Sample
 import Gpu.Vulkan.Sample.Enum as Sample
