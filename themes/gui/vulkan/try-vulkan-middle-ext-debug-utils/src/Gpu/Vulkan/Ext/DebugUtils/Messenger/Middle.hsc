@@ -40,6 +40,7 @@ import Data.Text.Foreign.Misc
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Base.Middle.Internal
+import Gpu.Vulkan.PNext.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal
