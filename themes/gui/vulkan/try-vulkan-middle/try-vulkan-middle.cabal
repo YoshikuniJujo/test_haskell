@@ -70,7 +70,6 @@ library
       Gpu.Vulkan.Memory.Enum
       Gpu.Vulkan.Memory.Middle
       Gpu.Vulkan.Middle
-      Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Enum
       Gpu.Vulkan.PhysicalDevice.Middle
       Gpu.Vulkan.PhysicalDevice.Middle.Internal
@@ -128,6 +127,7 @@ library
       Gpu.Vulkan.Framebuffer.Middle.Internal
       Gpu.Vulkan.ImageView.Middle.Internal
       Gpu.Vulkan.Memory.Middle.Internal
+      Gpu.Vulkan.Middle.Internal
       Gpu.Vulkan.Misc.Middle.Internal
       Gpu.Vulkan.PhysicalDevice.Struct.Th
       Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle.Internal

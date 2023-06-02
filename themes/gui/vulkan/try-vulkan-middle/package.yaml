@@ -97,7 +97,6 @@ library:
   - Gpu.Vulkan.Memory.Enum
   - Gpu.Vulkan.Memory.Middle
   - Gpu.Vulkan.Middle
-  - Gpu.Vulkan.Middle.Internal
   - Gpu.Vulkan.PhysicalDevice.Enum
   - Gpu.Vulkan.PhysicalDevice.Middle
   - Gpu.Vulkan.PhysicalDevice.Middle.Internal
