@@ -36,9 +36,10 @@ import Data.Word
 import Data.Int
 
 import qualified Data.Text as T
+import Data.Text.Foreign.Misc
 
-import Gpu.Vulkan.Middle.Internal
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Middle
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal

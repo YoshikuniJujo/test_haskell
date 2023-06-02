@@ -18,12 +18,13 @@ import Data.String
 import System.IO.Unsafe
 
 import qualified Data.Text as T
+import Data.Text.Foreign.Misc as T
 
 import Data.Color
 
-import Gpu.Vulkan.Middle.Internal
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
+-- import Gpu.Vulkan.Misc.Middle
 
 import qualified Gpu.Vulkan.Ext.DebugUtils.Core as C
 
