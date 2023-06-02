@@ -175,6 +175,7 @@ library
     , template-haskell
     , text
     , try-hetero-parameter-list
+    , try-monads-tf-misc-yj
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
@@ -203,6 +204,7 @@ test-suite try-vulkan-middle-test
     , template-haskell
     , text
     , try-hetero-parameter-list
+    , try-monads-tf-misc-yj
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke

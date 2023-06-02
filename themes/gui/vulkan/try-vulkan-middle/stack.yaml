@@ -41,10 +41,11 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: f31e4af446d9d611aa50bfc1ff92f075d2e137a4
+  commit: 08ffec5b9c0f8ada8e048fd42347b83682f69f40
   subdirs:
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
+  - themes/monad/try-monads-tf-misc-yj
   - themes/hetero-list/try-hetero-parameter-list
   - themes/gui/vulkan/try-vulkan-core
   - themes/gui/vulkan/try-shaderc

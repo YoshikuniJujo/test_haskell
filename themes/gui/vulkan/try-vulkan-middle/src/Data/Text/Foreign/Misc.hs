@@ -1,13 +1,27 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE BlockArguments, TupleSections #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.Text.Foreign.Misc where
+module Data.Text.Foreign.Misc (
+
+	-- * CONVERSION WITH CSTRING
+
+	-- ** From CString
+
+	cStringToText,
+
+	-- ** To CString
+
+	textToCString, textListToCStringArray
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.C.Types
 import Foreign.C.String
+import Control.Monad.Cont.Misc
 
 import qualified Data.Text as Txt
 import qualified Data.Text.Foreign as Txt
@@ -26,8 +40,8 @@ textToCString t f = Txt.withCStringLen t \(cs, ln) ->
 		poke (cs' `plusPtr` ln :: Ptr CChar) 0
 		f cs'
 
-cstrToText :: CString -> IO Txt.Text
-cstrToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
+cStringToText :: CString -> IO Txt.Text
+cStringToText cs = Txt.peekCStringLen =<< cstringToCStringLen cs
 
 cstringLength :: CString -> IO Int
 cstringLength pc = do
@@ -38,8 +52,3 @@ cstringLength pc = do
 
 cstringToCStringLen :: CString -> IO CStringLen
 cstringToCStringLen cs = (cs ,) <$> cstringLength cs
-
-mapContM :: Monad m => (a -> (b -> m c) -> m c) -> [a] -> ([b] -> m c) -> m c
--- mapContM f = runContT . mapM (ContT . f)
-mapContM _ [] g = g []
-mapContM f (x : xs) g = f x \y -> mapContM f xs \ys -> g $ y : ys

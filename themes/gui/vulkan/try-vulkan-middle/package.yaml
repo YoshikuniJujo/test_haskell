@@ -26,6 +26,7 @@ dependencies:
 - bytestring
 - data-default
 - monads-tf
+- try-monads-tf-misc-yj
 - uuid
 - c-enum
 - ranged-list
