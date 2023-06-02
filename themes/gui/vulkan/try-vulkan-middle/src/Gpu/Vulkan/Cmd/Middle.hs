@@ -10,11 +10,11 @@
 
 module Gpu.Vulkan.Cmd.Middle (
 
-	-- * Begin and End Render Pass
+	-- * BEGIN AND END RENDER PASS
 
 	beginRenderPass, endRenderPass,
 
-	-- * Draw and Dispatch
+	-- * DRAW AND DISPATCH
 
 	-- ** Draw
 
@@ -24,19 +24,19 @@ module Gpu.Vulkan.Cmd.Middle (
 
 	bindPipelineCompute, dispatch,
 
-	-- * Push Constants and Bind Descriptor Sets
+	-- * PUSH CONSTANTS AND BIND DESCRIPTOR SETS
 
 	pushConstants, bindDescriptorSets,
 
-	-- * Copy Buffers and Images
+	-- * COPY BUFFERS AND IMAGES
 
 	copyBuffer, copyBufferToImage, copyImageToBuffer, blitImage,
 
-	-- * Memory Dependency
+	-- * MEMORY DEPENDENCY
 
 	pipelineBarrier,
 
-	-- * Query
+	-- * QUERY
 
 	resetQueryPool, beginQuery, endQuery, writeTimestamp
 

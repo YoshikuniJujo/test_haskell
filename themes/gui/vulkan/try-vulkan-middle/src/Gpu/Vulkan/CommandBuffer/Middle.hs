@@ -2,11 +2,11 @@
 
 module Gpu.Vulkan.CommandBuffer.Middle (
 
-	-- * Allocate and Free
+	-- * ALLOCATE AND FREE
 
 	allocateCs, freeCs, C, AllocateInfo(..),
 
-	-- * Begin, End and Reset
+	-- * BEGIN, END AND RESET
 
 	begin, end, reset, BeginInfo(..), InheritanceInfo(..),
 
