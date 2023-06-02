@@ -21,7 +21,7 @@ import Foreign.Storable
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.Word
 
-import Gpu.Vulkan.Misc.Middle.Internal
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 

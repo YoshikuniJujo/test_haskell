@@ -30,12 +30,12 @@ import Data.IORef
 import qualified Data.Text as T
 
 import Gpu.Vulkan.Enum
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
 import Gpu.Vulkan.Khr.Swapchain.Enum
 import Gpu.Vulkan.Khr.Surface.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
 
 import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 	qualified as AllocationCallbacks

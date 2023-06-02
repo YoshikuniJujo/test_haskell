@@ -9,10 +9,10 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 
+import Gpu.Vulkan.Base.Middle.Internal
 import Gpu.Vulkan.Exception.Middle
 import Gpu.Vulkan.Exception.Enum
 import Gpu.Vulkan.Khr.Enum
-import Gpu.Vulkan.Misc.Middle.Internal
 
 import qualified Gpu.Vulkan.PhysicalDevice.Middle.Internal as PhysicalDevice
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
