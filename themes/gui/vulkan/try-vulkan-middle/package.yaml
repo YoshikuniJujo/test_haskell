@@ -23,6 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 - template-haskell
 - text
+- try-text-misc-yj
 - bytestring
 - data-default
 - monads-tf
@@ -53,7 +54,6 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-  - Data.Text.Foreign.Misc
   - Gpu.Vulkan.AllocationCallbacks.Middle
   - Gpu.Vulkan.AllocationCallbacks.Middle.Internal
   - Gpu.Vulkan.Attachment.Enum

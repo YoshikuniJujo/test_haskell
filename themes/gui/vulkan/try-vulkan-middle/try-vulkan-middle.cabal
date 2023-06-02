@@ -25,7 +25,6 @@ source-repository head
 
 library
   exposed-modules:
-      Data.Text.Foreign.Misc
       Gpu.Vulkan.AllocationCallbacks.Middle
       Gpu.Vulkan.AllocationCallbacks.Middle.Internal
       Gpu.Vulkan.Attachment.Enum
@@ -179,6 +178,7 @@ library
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-text-misc-yj
     , try-vulkan-core
     , typelevel-tools
     , union-color
@@ -208,6 +208,7 @@ test-suite try-vulkan-middle-test
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
+    , try-text-misc-yj
     , try-vulkan-core
     , try-vulkan-middle
     , typelevel-tools
