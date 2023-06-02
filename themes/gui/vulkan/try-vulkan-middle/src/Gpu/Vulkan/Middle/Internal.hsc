@@ -41,8 +41,6 @@ module Gpu.Vulkan.Middle.Internal (
 	C.viewportX, C.viewportY, C.viewportWidth, C.viewportHeight,
 	C.viewportMinDepth, C.viewportMaxDepth,
 
-	StructCommon(..), FindPNextChainAll(..),
-
 	pattern NullHandle,
 
 	) where
@@ -76,42 +74,6 @@ import {-# SOURCE #-} qualified
 	Gpu.Vulkan.CommandBuffer.Middle.Internal as CommandBuffer
 
 #include <vulkan/vulkan.h>
-
-data StructCommon = StructCommon {
-	structCommonSType :: StructureType,
-	structCommonPNext :: Ptr () }
-	deriving Show
-
-structCommonFromCore :: C.StructCommon -> StructCommon
-structCommonFromCore C.StructCommon {
-	C.structCommonSType = stp,
-	C.structCommonPNext = pn } = StructCommon {
-	structCommonSType = StructureType stp,
-	structCommonPNext = pn }
-
-instance Peek StructCommon where
-	peek' p = structCommonFromCore <$> peek (castPtr p)
-
-class Peek n => Nextable n where nextableType :: StructureType
-
-class FindPNextChainAll ns where
-	findPNextChainAll :: Ptr () -> IO (HeteroParList.PL Maybe ns)
-
-instance FindPNextChainAll '[] where
-	findPNextChainAll _ = pure HeteroParList.Nil
-
-instance (Nextable n, FindPNextChainAll ns) =>
-	FindPNextChainAll (n ': ns) where
-	findPNextChainAll p =
-		(:**) <$> findPNextChain p <*> findPNextChainAll p
-
-findPNextChain :: forall n . Nextable n => Ptr () -> IO (Maybe n)
-findPNextChain NullPtr = pure Nothing
-findPNextChain p = do
-	sc <- peek' $ castPtr p
-	if structCommonSType sc == nextableType @n
-	then Just <$> peek' (castPtr p)
-	else findPNextChain $ structCommonPNext sc
 
 data ApplicationInfo mn = ApplicationInfo {
 	applicationInfoNext :: TMaybe.M mn,

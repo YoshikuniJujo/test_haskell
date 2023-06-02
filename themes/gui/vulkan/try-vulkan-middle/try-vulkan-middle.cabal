@@ -94,6 +94,7 @@ library
       Gpu.Vulkan.Pipeline.TessellationState.Middle
       Gpu.Vulkan.Pipeline.VertexInputState.Middle
       Gpu.Vulkan.Pipeline.ViewportState.Middle
+      Gpu.Vulkan.PNext.Middle.Internal
       Gpu.Vulkan.PushConstant.Middle
       Gpu.Vulkan.Query.Enum
       Gpu.Vulkan.QueryPool.Middle

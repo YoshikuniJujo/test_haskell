@@ -52,8 +52,7 @@ module Gpu.Vulkan.Middle (
 
 	-- * Others
 
-	FormatProperties(..),
-	FindPNextChainAll
+	FormatProperties(..)
 
 	) where
 
