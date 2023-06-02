@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.1.
+-- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
@@ -41,6 +41,7 @@ library
     , text
     , try-hetero-parameter-list
     , try-storable-peek-poke
+    , try-text-misc-yj
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle
     , typelevel-tools
@@ -62,6 +63,7 @@ test-suite try-vulkan-middle-ext-debug-utils-test
     , text
     , try-hetero-parameter-list
     , try-storable-peek-poke
+    , try-text-misc-yj
     , try-vulkan-core-ext-debug-utils
     , try-vulkan-middle
     , try-vulkan-middle-ext-debug-utils
