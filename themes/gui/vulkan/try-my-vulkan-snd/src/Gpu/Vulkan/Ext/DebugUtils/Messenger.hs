@@ -15,9 +15,8 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
 
+import Gpu.Vulkan.PNext.Middle qualified as MI
 import Gpu.Vulkan.Ext.DebugUtils.Messenger.Type
-
-import Gpu.Vulkan.Middle.Internal qualified as MI
 
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
