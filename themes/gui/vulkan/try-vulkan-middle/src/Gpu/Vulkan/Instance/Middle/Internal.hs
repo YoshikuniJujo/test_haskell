@@ -8,9 +8,16 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Instance.Middle.Internal (
-	I(..), CreateInfo(..), create, destroy,
 
-	enumerateLayerProperties, enumerateExtensionProperties ) where
+	-- * CREATE AND DESTROY
+
+	create, destroy, I(..), CreateInfo(..),
+
+	-- * ENUMERATE
+
+	enumerateLayerProperties, enumerateExtensionProperties
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal
