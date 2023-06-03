@@ -188,9 +188,9 @@ stencilOpStateToCore StencilOpState {
 		C.stencilOpStateReference = rf }
 
 data ClearValue (ct :: ClearType) where
+	ClearValueColor :: Rgba Float -> ClearValue ('ClearTypeColor cct)
 	ClearValueDepthStencil ::
 		C.ClearDepthStencilValue -> ClearValue 'ClearTypeDepthStencil
-	ClearValueColor :: Rgba Float -> ClearValue ('ClearTypeColor cct)
 
 class ClearColorValueToCore (cct :: ClearColorType) where
 	clearColorValueToCore ::

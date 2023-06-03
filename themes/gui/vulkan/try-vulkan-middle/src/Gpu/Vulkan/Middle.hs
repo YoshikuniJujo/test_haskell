@@ -3,56 +3,66 @@
 
 module Gpu.Vulkan.Middle (
 
-	-- * Application Info and Api Version
+	-- * INFO
 
-	ApplicationInfo(..), ApiVersion, makeApiVersion, apiVersion_1_0, apiVersion_1_1,
+	-- ** ApplicationInfo
 
-	-- * Properties
+	ApplicationInfo(..),
+	ApiVersion, makeApiVersion, apiVersion_1_0, apiVersion_1_1,
 
-	LayerProperties(..), ExtensionProperties(..),
-
-	-- * Submit Info
+	-- ** SubmitInfo
 
 	SubmitInfo(..), SubmitInfoListToCore(..),
 
-	-- * Stencil Op State and Clear
+	-- * PROPERTIES
 
-	-- ** Stencil Op State
+	LayerProperties(..), ExtensionProperties(..), FormatProperties(..),
 
-	StencilOpState(..),
+	-- * PIPELINE VALUES
 
-	-- ** Clear Value
-
-	ClearValue(..), ClearValueListToCore,
-	ClearValueToCore, ClearColorValueToCore,
-
-	ClearDepthStencilValue, pattern ClearDepthStencilValue,
-	clearDepthStencilValueDepth, clearDepthStencilValueStencil,
-
-	-- ** Clear Type
-
-	ClearType(..),
-	ClearColorType(..),
-
-	-- * Rect, Offset and Extent
-
-	Rect2d, pattern Rect2d, rect2dExtent, rect2dOffset,
-
-	Offset2d, pattern Offset2d, offset2dX, offset2dY,
-	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
-
-	Extent2d, pattern Extent2d, extent2dWidth, extent2dHeight,
-	Extent3d, pattern Extent3d, extent3dWidth, extent3dHeight, extent3dDepth,
-
-	-- * View Port
+	-- ** ViewPort
 
 	Viewport, pattern Viewport,
 	viewportX, viewportY, viewportWidth, viewportHeight,
 	viewportMinDepth, viewportMaxDepth,
 
-	-- * Others
+	-- ** StencilOpState
 
-	FormatProperties(..)
+	StencilOpState(..),
+
+	-- ** ClearValue
+
+	ClearValue(..),
+	ClearValueListToCore, ClearValueToCore,
+
+	-- *** ClearType
+
+	ClearType(..), ClearColorType(..),
+
+	-- *** ClearColorValue
+
+	ClearColorValueToCore,
+
+	-- *** ClearDepthStencilValue
+
+	ClearDepthStencilValue, pattern ClearDepthStencilValue,
+	clearDepthStencilValueDepth, clearDepthStencilValueStencil,
+
+	-- * RECT, OFFSET AND EXTENT
+
+	-- ** Rect
+
+	Rect2d, pattern Rect2d, rect2dExtent, rect2dOffset,
+
+	-- ** Offset
+
+	Offset2d, pattern Offset2d, offset2dX, offset2dY,
+	Offset3d, pattern Offset3d, offset3dX, offset3dY, offset3dZ,
+
+	-- ** Extent
+
+	Extent2d, pattern Extent2d, extent2dWidth, extent2dHeight,
+	Extent3d, pattern Extent3d, extent3dWidth, extent3dHeight, extent3dDepth,
 
 	) where
 
