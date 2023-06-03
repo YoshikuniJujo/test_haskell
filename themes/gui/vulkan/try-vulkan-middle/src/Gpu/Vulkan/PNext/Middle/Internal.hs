@@ -6,7 +6,17 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.PNext.Middle.Internal where
+module Gpu.Vulkan.PNext.Middle.Internal (
+
+	-- * STRUCT COMMON
+
+	StructCommon(..), structCommonFromCore,
+
+	-- * FIND P NEXT CHAIN ALL
+
+	FindPNextChainAll(..), Nextable(..)
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Storable

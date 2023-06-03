@@ -2,22 +2,18 @@
 
 module Gpu.Vulkan.PhysicalDevice.Middle (
 
-	-- * Type
+	-- * ENUMERATE, PROPERTIES AND FEATURES
 
-	P,
+	enumerate, P, getProperties, Properties(..), getFeatures,
 
-	-- * Enumerate, Properties and Features
-
-	enumerate, getProperties, Properties(..), getFeatures,
-
-	-- * Other Properties
+	-- * OTHER PROPERTIES
 
 	enumerateExtensionProperties,
 	getQueueFamilyProperties,
 	getFormatProperties,
 	getMemoryProperties, MemoryProperties(..),
 
-	-- * Others
+	-- * OTHER FEATURES
 
 	ShaderDrawParametersFeatures(..)
 

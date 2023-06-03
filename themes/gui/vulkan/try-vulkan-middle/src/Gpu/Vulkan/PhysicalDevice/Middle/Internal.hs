@@ -9,15 +9,22 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PhysicalDevice.Middle.Internal (
-	P(..), enumerate,
-	getFeatures, getQueueFamilyProperties,
+
+	-- * ENUMERATE, PROPERTIES AND FEATURES
+
+	enumerate, P(..), getProperties, Properties(..), getFeatures,
+
+	-- * OTHER PROPERTIES
+
+	getQueueFamilyProperties,
 	enumerateExtensionProperties,
 	getFormatProperties,
+	getMemoryProperties, MemoryProperties(..),
 
-	Properties(..), getProperties,
-	MemoryProperties(..), getMemoryProperties,
+	-- * OTHER FEATURES
 
 	ShaderDrawParametersFeatures(..)
+
 	) where
 
 import Foreign.Ptr

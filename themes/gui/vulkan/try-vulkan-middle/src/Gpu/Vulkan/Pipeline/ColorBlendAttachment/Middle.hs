@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Pipeline.ColorBlendAttachment.Middle (
 
-	-- * State
+	-- * STATE
 
 	State(..) ) where
 
