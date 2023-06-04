@@ -2,13 +2,11 @@
 
 module Gpu.Vulkan.Pipeline.Graphics.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	G, gNull,
+	createGs, recreateGs, destroyGs, G, gNull,
+	CreateInfo(..), CreateInfoListToCore
 
-	-- * Create and Destroy
-
-	createGs, recreateGs, destroyGs,
-	CreateInfo(..), CreateInfoListToCore ) where
+	) where
 
 import Gpu.Vulkan.Pipeline.Graphics.Middle.Internal

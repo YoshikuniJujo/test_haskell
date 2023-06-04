@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Pipeline.DynamicState.Middle (
 
-	-- * CreateInfo
+	-- * CREATE INFO
 
 	CreateInfo(..), CreateFlags ) where
 

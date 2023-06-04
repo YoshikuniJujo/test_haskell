@@ -2,8 +2,8 @@
 
 module Gpu.Vulkan.Pipeline.MultisampleState.Middle (
 
-	-- * CreateInfo
+	-- * CREATE INFO
 
-	CreateInfo(..) ) where
+	CreateInfo(..), CreateFlags ) where
 
 import Gpu.Vulkan.Pipeline.MultisampleState.Middle.Internal

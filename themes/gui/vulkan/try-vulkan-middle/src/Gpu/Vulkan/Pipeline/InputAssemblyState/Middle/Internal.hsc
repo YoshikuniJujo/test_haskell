@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Pipeline.InputAssemblyState.Middle.Internal (
-	CreateInfo(..), createInfoToCore
+	CreateInfo(..), CreateFlags, createInfoToCore
 	) where
 
 import Foreign.Ptr
