@@ -51,6 +51,7 @@ tryCreateAndPrintData dv@(Device.D cdv) (C cc) = alloca \psz -> do
 	r <- C.getData cdv cc psz nullPtr
 	throwUnlessSuccess $ Result r
 	sz <- peek psz
+	print sz
 	allocaBytes (fromIntegral sz) \pdt -> do
 		r' <- C.getData cdv cc psz pdt
 		throwUnlessSuccess $ Result r'
