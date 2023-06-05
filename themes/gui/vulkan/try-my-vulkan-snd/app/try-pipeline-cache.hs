@@ -104,7 +104,9 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 	Vk.PplCch.M.writeData "pipeline.cache" cch'
 	cch'' <- readData "pipeline.cache"
 	print cch''
+	print $ cch' == cch''
 
+	putStrLn "TRY CREATE AND PRINT DATA"
 	Vk.PplCch.M.tryCreateAndPrintData mdv mpc
 
 --	Vk.PplCch.create dv (pplCchInfo cch') nil nil \pc' -> do
