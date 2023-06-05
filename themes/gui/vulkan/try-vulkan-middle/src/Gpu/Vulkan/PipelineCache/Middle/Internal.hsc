@@ -116,7 +116,7 @@ dataToRaw :: Data -> (DataRaw -> IO a) -> IO a
 dataToRaw (Data bs) f = BS.useAsCStringLen bs \(pd, sz) ->
 	f $ DataRaw (fromIntegral sz) pd
 
-newtype Data = Data BS.ByteString deriving Show
+newtype Data = Data BS.ByteString deriving (Show, Eq)
 
 data DataRaw = DataRaw #{type size_t} (Ptr CChar) deriving Show
 
