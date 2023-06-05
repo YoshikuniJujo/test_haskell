@@ -2,8 +2,8 @@
 
 module Gpu.Vulkan.Pipeline.RasterizationState.Middle (
 
-	-- * CreateInfo
+	-- * CREATE INFO
 
-	CreateInfo(..) ) where
+	CreateInfo(..), CreateFlags ) where
 
 import Gpu.Vulkan.Pipeline.RasterizationState.Middle.Internal

@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Pipeline.TessellationState.Middle (
 
-	-- * CreateInfo
+	-- * CREATE INFO
 
 	CreateInfo(..) ) where
 
