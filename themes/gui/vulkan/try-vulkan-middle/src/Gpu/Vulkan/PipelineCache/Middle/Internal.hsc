@@ -10,8 +10,6 @@
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
 	C(..), CreateInfo(..), create, destroy,
 	Data(..), getData, writeData, readData,
-
-	tryCreateAndPrintData
 	) where
 
 import Foreign.Ptr
@@ -35,8 +33,6 @@ import Gpu.Vulkan.AllocationCallbacks.Middle.Internal
 import qualified Gpu.Vulkan.Device.Middle.Internal as Device
 import qualified Gpu.Vulkan.PipelineCache.Core as C
 
-import Data.Bits
-
 #include <vulkan/vulkan.h>
 
 data CreateInfo mn = CreateInfo {
@@ -45,28 +41,6 @@ data CreateInfo mn = CreateInfo {
 	createInfoInitialData :: Data }
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn)
-
-tryCreateAndPrintData :: Device.D -> C -> IO ()
-tryCreateAndPrintData dv@(Device.D cdv) (C cc) = alloca \psz -> do
-	r <- C.getData cdv cc psz nullPtr
-	throwUnlessSuccess $ Result r
-	sz <- peek psz
-	print sz
-	allocaBytes (fromIntegral sz) \pdt -> do
-		r' <- C.getData cdv cc psz pdt
-		throwUnlessSuccess $ Result r'
-		let	cci = C.CreateInfo {
-				C.createInfoSType = (),
-				C.createInfoPNext = nullPtr,
-				C.createInfoFlags = zeroBits,
-				C.createInfoInitialDataSize = sz,
-				C.createInfoPInitialData = pdt }
-		alloca \pc -> withPoked cci \pcci -> do
-			_ <- C.create cdv pcci nullPtr pc
-			c' <- peek pc
-			print =<< getData dv (C c')
---		c' <- create @() @() dv ci Nothing
---		print =<< getData dv c'
 
 createInfoToCore :: WithPoked (TMaybe.M mn) =>
 	CreateInfo mn -> (Ptr C.CreateInfo -> IO a) -> IO ()
