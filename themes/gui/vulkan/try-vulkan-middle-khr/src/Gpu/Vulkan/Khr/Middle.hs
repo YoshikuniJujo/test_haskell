@@ -8,11 +8,11 @@
 
 module Gpu.Vulkan.Khr.Middle (
 
-	-- * Acquire Next Image
+	-- * ACQUIRE NEXT IMAGE
 
 	acquireNextImage, acquireNextImageResult,
 
-	-- * Queue Present
+	-- * QUEUE PRESENT
 
 	queuePresent, PresentInfo(..) ) where
 

@@ -2,20 +2,18 @@
 
 module Gpu.Vulkan.Khr.Swapchain.Middle (
 
-	-- * Name
+	-- * EXTENSION NAME
 
 	extensionName,
 
-	-- * Type
+	-- * CREAET AND DESTROY
 
-	S,
+	create, recreate, destroy, S, CreateInfo(..),
 
-	-- * Creaet and Destroy
+	-- * GET IMAGES
 
-	create, recreate, destroy, CreateInfo(..),
+	getImages
 
-	-- * Get Images
-
-	getImages ) where
+	) where
 
 import Gpu.Vulkan.Khr.Swapchain.Middle.Internal

@@ -4,7 +4,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface.Middle.Internal (
-	S(..), destroy,
+
+	-- * DESTROY
+
+	destroy, S(..),
+
+	-- * CAPABILITIES AND FORMAT
 
 	Capabilities(..), capabilitiesFromCore,
 	Format(..), formatFromCore ) where

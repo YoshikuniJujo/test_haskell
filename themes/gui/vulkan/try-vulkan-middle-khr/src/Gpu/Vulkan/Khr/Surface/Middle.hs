@@ -2,15 +2,11 @@
 
 module Gpu.Vulkan.Khr.Surface.Middle (
 
-	-- * Type
+	-- * DESTROY
 
-	S,
+	destroy, S,
 
-	-- * Destroy
-
-	destroy,
-
-	-- * Data Structures
+	-- * CAPABILITIES AND FORMAT
 
 	Capabilities(..), Format(..) ) where
 

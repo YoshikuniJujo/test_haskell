@@ -3,7 +3,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Surface.PhysicalDevice.Middle (
-	getSupport, getCapabilities, getFormats, getPresentModes ) where
+
+	-- * GET SUPPORT, CAPABILITIES, FORMATS AND PRESENT MODES
+
+	getSupport, getCapabilities, getFormats, getPresentModes
+
+	) where
 
 import Foreign.Marshal
 import Foreign.Storable

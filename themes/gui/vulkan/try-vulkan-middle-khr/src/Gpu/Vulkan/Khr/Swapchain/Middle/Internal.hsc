@@ -10,12 +10,23 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Khr.Swapchain.Middle.Internal (
+
+	-- * EXTENSION NAME
+
 	extensionName,
-	S, CreateInfo(..), create, recreate, destroy,
+
+	-- * CREAET AND DESTROY
+
+	create, recreate, destroy, S, CreateInfo(..),
+
+	-- * GET IMAGES
 
 	getImages,
 
+	-- * INTERNAL USE
+
 	sToCore
+
 	) where
 
 import Foreign.Ptr
