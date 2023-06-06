@@ -37,7 +37,6 @@ import Gpu.Vulkan.Misc
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
-import qualified Gpu.Vulkan.Middle as Vk.C
 import qualified Gpu.Vulkan.Instance as Vk.Instance
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhysicalDevice
 import qualified Gpu.Vulkan.Device as Vk.Device
@@ -145,9 +144,9 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 							Vk.RenderPass.beginInfoNext = TMaybe.N,
 							Vk.RenderPass.beginInfoRenderPass = rp,
 							Vk.RenderPass.beginInfoFramebuffer = fb,
-							Vk.RenderPass.beginInfoRenderArea = Vk.C.Rect2d {
-								Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-								Vk.C.rect2dExtent = Vk.C.Extent2d
+							Vk.RenderPass.beginInfoRenderArea = Vk.Rect2d {
+								Vk.rect2dOffset = Vk.Offset2d 0 0,
+								Vk.rect2dExtent = Vk.Extent2d
 									screenWidth screenHeight },
 							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
 					Vk.Cmd.beginRenderPass' @'Nothing @'[]
@@ -210,7 +209,7 @@ makeImage' phdvc dvc f = do
 			Vk.Img.createInfoFlagsNew = Vk.Img.CreateFlagsZero,
 			Vk.Img.createInfoImageTypeNew = Vk.Img.Type2d,
 			Vk.Img.createInfoExtentNew =
-				Vk.C.Extent3d screenWidth screenHeight 1,
+				Vk.Extent3d screenWidth screenHeight 1,
 			Vk.Img.createInfoMipLevelsNew = 1,
 			Vk.Img.createInfoArrayLayersNew = 1,
 			Vk.Img.createInfoTilingNew = Vk.Img.TilingLinear,
@@ -276,8 +275,8 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 	let	region :: Vk.Bffr.ImageCopy img inm
 		region = Vk.Bffr.ImageCopy {
 			Vk.Bffr.imageCopyImageSubresource = isr,
-			Vk.Bffr.imageCopyImageOffset = Vk.C.Offset3d 0 0 0,
-			Vk.Bffr.imageCopyImageExtent = Vk.C.Extent3d wdt hgt 1 }
+			Vk.Bffr.imageCopyImageOffset = Vk.Offset3d 0 0 0,
+			Vk.Bffr.imageCopyImageExtent = Vk.Extent3d wdt hgt 1 }
 		isr = Vk.Img.M.SubresourceLayers {
 			Vk.Img.M.subresourceLayersAspectMask =
 				Vk.Img.AspectColorBit,
@@ -562,17 +561,17 @@ makeRenderPass dvc f = do
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
 	(forall s sl . Vk.Ppl.Gr.GNew s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
 makePipelineNew dvc rp f = do
-	let	viewport = Vk.C.Viewport {
-			Vk.C.viewportX = 0,
-			Vk.C.viewportY = 0,
-			Vk.C.viewportMinDepth = 0,
-			Vk.C.viewportMaxDepth = 1,
-			Vk.C.viewportWidth = fromIntegral screenWidth,
-			Vk.C.viewportHeight = fromIntegral screenHeight }
-		scissor = Vk.C.Rect2d {
-			Vk.C.rect2dOffset = Vk.C.Offset2d 0 0,
-			Vk.C.rect2dExtent =
-				Vk.C.Extent2d screenWidth screenHeight }
+	let	viewport = Vk.Viewport {
+			Vk.viewportX = 0,
+			Vk.viewportY = 0,
+			Vk.viewportMinDepth = 0,
+			Vk.viewportMaxDepth = 1,
+			Vk.viewportWidth = fromIntegral screenWidth,
+			Vk.viewportHeight = fromIntegral screenHeight }
+		scissor = Vk.Rect2d {
+			Vk.rect2dOffset = Vk.Offset2d 0 0,
+			Vk.rect2dExtent =
+				Vk.Extent2d screenWidth screenHeight }
 		viewportState :: Vk.Ppl.ViewportState.CreateInfo 'Nothing
 		viewportState = Vk.Ppl.ViewportState.CreateInfo {
 			Vk.Ppl.ViewportState.createInfoNext = TMaybe.N,

@@ -38,7 +38,6 @@ import Gpu.Vulkan.Misc
 import qualified Gpu.Vulkan as Vk
 import qualified Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.TypeEnum as Vk.T
-import qualified Gpu.Vulkan.Middle as Vk.C
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.PhDvc
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
@@ -397,10 +396,10 @@ imageInfo ::
 imageInfo wdt hgt tlng = Vk.Image.CreateInfoNew {
 	Vk.Image.createInfoNextNew = TMaybe.N,
 	Vk.Image.createInfoImageTypeNew = Vk.Image.Type2d,
-	Vk.Image.createInfoExtentNew = Vk.C.Extent3d {
-		Vk.C.extent3dWidth = wdt,
-		Vk.C.extent3dHeight = hgt,
-		Vk.C.extent3dDepth = 1 },
+	Vk.Image.createInfoExtentNew = Vk.Extent3d {
+		Vk.extent3dWidth = wdt,
+		Vk.extent3dHeight = hgt,
+		Vk.extent3dDepth = 1 },
 	Vk.Image.createInfoMipLevelsNew = 1,
 	Vk.Image.createInfoArrayLayersNew = 1,
 	Vk.Image.createInfoTilingNew = tlng,

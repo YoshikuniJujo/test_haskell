@@ -8,7 +8,7 @@ module Gpu.Vulkan.Queue (
 import Data.TypeLevel.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 
-import Gpu.Vulkan
+import Gpu.Vulkan.Internal
 
 import qualified Gpu.Vulkan.Fence.Type as Fence
 
