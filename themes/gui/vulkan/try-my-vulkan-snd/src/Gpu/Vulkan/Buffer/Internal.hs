@@ -35,12 +35,11 @@ import Gpu.Vulkan.Enum hiding (ObjectType)
 import Gpu.Vulkan.Buffer.Enum
 
 import qualified Gpu.Vulkan.Middle as C
-import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
-import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+import qualified Gpu.Vulkan.Memory as Memory
 import qualified Gpu.Vulkan.Buffer.Middle as M
 import qualified Gpu.Vulkan.Buffer.Middle as C
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
@@ -84,7 +83,7 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 	(M.create dvc (createInfoToMiddle ci) mac) (\b -> M.destroy dvc b mac)
 	(f . B (createInfoLengths ci))
 
-getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.M.Requirements
+getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
 class OffsetList v (vs :: [VObj.Object]) where

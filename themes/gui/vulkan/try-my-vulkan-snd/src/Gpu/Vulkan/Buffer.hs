@@ -15,16 +15,19 @@ module Gpu.Vulkan.Buffer (
 
 	-- * CREATE
 
-	create, B, Binded, CreateInfo(..),
+	create, B, CreateInfo(..),
 
-	-- * OTHERS
+	-- * BINDED
 
-	getMemoryRequirements,
+	getMemoryRequirements, Binded, IndexedList(..),
+
+	-- * IMAGE COPY
 
 	ImageCopy(..),
 
---	ImageFormat,
-	IndexedList(..),
+	-- * MEMORY BARRIER
+
+	MemoryBarrier(..)
 	
 	) where
 
