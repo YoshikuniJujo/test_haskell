@@ -27,11 +27,11 @@ data CreateInfoNew mn fmts = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoAttachmentsNew ::
-		HeteroParList.PL Attachment.DescriptionNew fmts,
+		HeteroParList.PL Attachment.Description fmts,
 	createInfoSubpassesNew :: [Subpass.Description],
 	createInfoDependenciesNew :: [Subpass.Dependency] }
 
-createInfoFromNew :: Attachment.DescriptionsFromNew fmts =>
+createInfoFromNew :: Attachment.DescriptionListToMiddle fmts =>
 	CreateInfoNew n fmts -> CreateInfo n
 createInfoFromNew CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -41,12 +41,12 @@ createInfoFromNew CreateInfoNew {
 	createInfoDependenciesNew = dps } = CreateInfo {
 	createInfoNext = mnxt,
 	createInfoFlags = flgs,
-	createInfoAttachments = Attachment.descriptionsFromNew atts,
+	createInfoAttachments = Attachment.descriptionListToMiddle atts,
 	createInfoSubpasses = spss,
 	createInfoDependencies = dps }
 
 createNew :: (
-	WithPoked (TMaybe.M mn), Attachment.DescriptionsFromNew fmts,
+	WithPoked (TMaybe.M mn), Attachment.DescriptionListToMiddle fmts,
 	AllocationCallbacks.ToMiddle msc ) =>
 	Device.D -> CreateInfoNew mn fmts ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msc -> IO R

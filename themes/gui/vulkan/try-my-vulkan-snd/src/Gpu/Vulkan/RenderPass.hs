@@ -24,7 +24,7 @@ import qualified Gpu.Vulkan.RenderPass.Tmp as M
 import qualified Gpu.Vulkan.Attachment as Attachment
 
 createNew :: (
-	Attachment.DescriptionsFromNew fmts, WithPoked (TMaybe.M mn),
+	Attachment.DescriptionListToMiddle fmts, WithPoked (TMaybe.M mn),
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> M.CreateInfoNew mn fmts ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->

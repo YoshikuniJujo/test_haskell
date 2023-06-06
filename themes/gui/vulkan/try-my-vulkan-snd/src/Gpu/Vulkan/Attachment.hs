@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE DataKinds #-}
@@ -6,12 +7,19 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Attachment (
-	DescriptionNew(..), DescriptionsFromNew(..),
-	Reference(..), A ) where
+
+	-- * DESCRIPTION
+
+	Description(..), DescriptionListToMiddle(..),
+
+	-- * REFERENCE
+
+	M.Reference(..), M.A
+
+	) where
 
 import qualified Data.HeteroParList as HeteroParList
-import qualified Data.HeteroParList as HeteroParList
-import Data.HeteroParList (pattern (:*), pattern (:**))
+import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.Attachment.Enum
 
@@ -19,47 +27,47 @@ import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.Sample.Enum as Sample
 import qualified Gpu.Vulkan.Image.Enum as Image
 
-import Gpu.Vulkan.Attachment.Middle
+import Gpu.Vulkan.Attachment.Middle qualified as M
 
-data DescriptionNew (fmt :: T.Format) = DescriptionNew {
-	descriptionFlagsNew :: DescriptionFlags,
-	descriptionSamplesNew :: Sample.CountFlagBits,
-	descriptionLoadOpNew :: LoadOp,
-	descriptionStoreOpNew :: StoreOp,
-	descriptionStencilLoadOpNew :: LoadOp,
-	descriptionStencilStoreOpNew :: StoreOp,
-	descriptionInitialLayoutNew :: Image.Layout,
-	descriptionFinalLayoutNew :: Image.Layout }
+data Description (fmt :: T.Format) = Description {
+	descriptionFlags :: DescriptionFlags,
+	descriptionSamples :: Sample.CountFlagBits,
+	descriptionLoadOp :: LoadOp,
+	descriptionStoreOp :: StoreOp,
+	descriptionStencilLoadOp :: LoadOp,
+	descriptionStencilStoreOp :: StoreOp,
+	descriptionInitialLayout :: Image.Layout,
+	descriptionFinalLayout :: Image.Layout }
 	deriving Show
 
-class DescriptionsFromNew fmts where
-	descriptionsFromNew ::
-		HeteroParList.PL DescriptionNew fmts -> [Description]
+class DescriptionListToMiddle fmts where
+	descriptionListToMiddle ::
+		HeteroParList.PL Description fmts -> [M.Description]
 
-instance DescriptionsFromNew '[] where descriptionsFromNew HeteroParList.Nil = []
+instance DescriptionListToMiddle '[] where descriptionListToMiddle HeteroParList.Nil = []
 
-instance (T.FormatToValue fmt, DescriptionsFromNew fmts) =>
-	DescriptionsFromNew (fmt ': fmts) where
-	descriptionsFromNew (d :** ds) =
-		descriptionFromNew d : descriptionsFromNew ds
+instance (T.FormatToValue fmt, DescriptionListToMiddle fmts) =>
+	DescriptionListToMiddle (fmt ': fmts) where
+	descriptionListToMiddle (d :** ds) =
+		descriptionToMiddle d : descriptionListToMiddle ds
 
-descriptionFromNew :: forall fmt . T.FormatToValue fmt => DescriptionNew fmt -> Description
-descriptionFromNew DescriptionNew {
-	descriptionFlagsNew = flgs,
-	descriptionSamplesNew = smpls,
-	descriptionLoadOpNew = lop,
-	descriptionStoreOpNew = sop,
-	descriptionStencilLoadOpNew = slop,
-	descriptionStencilStoreOpNew = ssop,
-	descriptionInitialLayoutNew = ilyt,
-	descriptionFinalLayoutNew = flyt
-	} = Description {
+descriptionToMiddle :: forall fmt . T.FormatToValue fmt => Description fmt -> M.Description
+descriptionToMiddle Description {
 	descriptionFlags = flgs,
-	descriptionFormat = T.formatToValue @fmt,
 	descriptionSamples = smpls,
 	descriptionLoadOp = lop,
 	descriptionStoreOp = sop,
 	descriptionStencilLoadOp = slop,
 	descriptionStencilStoreOp = ssop,
 	descriptionInitialLayout = ilyt,
-	descriptionFinalLayout = flyt }
+	descriptionFinalLayout = flyt
+	} = M.Description {
+	M.descriptionFlags = flgs,
+	M.descriptionFormat = T.formatToValue @fmt,
+	M.descriptionSamples = smpls,
+	M.descriptionLoadOp = lop,
+	M.descriptionStoreOp = sop,
+	M.descriptionStencilLoadOp = slop,
+	M.descriptionStencilStoreOp = ssop,
+	M.descriptionInitialLayout = ilyt,
+	M.descriptionFinalLayout = flyt }

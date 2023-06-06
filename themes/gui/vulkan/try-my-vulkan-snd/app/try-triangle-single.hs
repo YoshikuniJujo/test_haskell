@@ -563,18 +563,18 @@ createRenderPassNew ::
 	forall (scifmt :: Vk.T.Format) sd a . Vk.T.FormatToValue scifmt =>
 	Vk.Dvc.D sd -> (forall sr . Vk.RndrPass.R sr -> IO a) -> IO a
 createRenderPassNew dvc f = do
-	let	colorAttachment :: Vk.Att.DescriptionNew scifmt
-		colorAttachment = Vk.Att.DescriptionNew {
-			Vk.Att.descriptionFlagsNew = zeroBits,
-			Vk.Att.descriptionSamplesNew = Vk.Sample.Count1Bit,
-			Vk.Att.descriptionLoadOpNew = Vk.Att.LoadOpClear,
-			Vk.Att.descriptionStoreOpNew = Vk.Att.StoreOpStore,
-			Vk.Att.descriptionStencilLoadOpNew = Vk.Att.LoadOpDontCare,
-			Vk.Att.descriptionStencilStoreOpNew =
+	let	colorAttachment :: Vk.Att.Description scifmt
+		colorAttachment = Vk.Att.Description {
+			Vk.Att.descriptionFlags = zeroBits,
+			Vk.Att.descriptionSamples = Vk.Sample.Count1Bit,
+			Vk.Att.descriptionLoadOp = Vk.Att.LoadOpClear,
+			Vk.Att.descriptionStoreOp = Vk.Att.StoreOpStore,
+			Vk.Att.descriptionStencilLoadOp = Vk.Att.LoadOpDontCare,
+			Vk.Att.descriptionStencilStoreOp =
 				Vk.Att.StoreOpDontCare,
-			Vk.Att.descriptionInitialLayoutNew =
+			Vk.Att.descriptionInitialLayout =
 				Vk.Img.LayoutUndefined,
-			Vk.Att.descriptionFinalLayoutNew =
+			Vk.Att.descriptionFinalLayout =
 				Vk.Img.LayoutPresentSrcKhr }
 		colorAttachmentRef = Vk.Att.Reference {
 			Vk.Att.referenceAttachment = 0,

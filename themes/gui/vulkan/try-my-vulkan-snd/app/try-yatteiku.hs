@@ -514,24 +514,24 @@ breakBits = bb (bit 0 `rotateR` 1)
 makeRenderPass ::
 	Vk.Device.D sd -> (forall s . Vk.RenderPass.R s -> IO a) -> IO a
 makeRenderPass dvc f = do
-	let	attachmentNew :: Vk.Attachment.DescriptionNew 'Vk.T.FormatR8g8b8a8Unorm
-		attachmentNew = Vk.Attachment.DescriptionNew {
-			Vk.Attachment.descriptionFlagsNew =
+	let	attachmentNew :: Vk.Attachment.Description 'Vk.T.FormatR8g8b8a8Unorm
+		attachmentNew = Vk.Attachment.Description {
+			Vk.Attachment.descriptionFlags =
 				Vk.Attachment.DescriptionFlagsZero,
-			Vk.Attachment.descriptionSamplesNew =
+			Vk.Attachment.descriptionSamples =
 				Vk.Sample.Count1Bit,
-			Vk.Attachment.descriptionLoadOpNew =
+			Vk.Attachment.descriptionLoadOp =
 				Vk.Attachment.LoadOpDontCare,
-			Vk.Attachment.descriptionStoreOpNew =
+			Vk.Attachment.descriptionStoreOp =
 				Vk.Attachment.StoreOpDontCare,
-			Vk.Attachment.descriptionStencilLoadOpNew =
+			Vk.Attachment.descriptionStencilLoadOp =
 				Vk.Attachment.LoadOpDontCare,
-			Vk.Attachment.descriptionStencilStoreOpNew =
+			Vk.Attachment.descriptionStencilStoreOp =
 				Vk.Attachment.StoreOpDontCare,
-			Vk.Attachment.descriptionInitialLayoutNew =
+			Vk.Attachment.descriptionInitialLayout =
 				Vk.Img.LayoutUndefined,
 --				Vk.Img.LayoutTransferSrcOptimal,
-			Vk.Attachment.descriptionFinalLayoutNew =
+			Vk.Attachment.descriptionFinalLayout =
 				Vk.Img.LayoutGeneral }
 		subpass0AttachmentRef = Vk.Attachment.Reference {
 			Vk.Attachment.referenceAttachment = 0,
