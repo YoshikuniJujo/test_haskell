@@ -23,12 +23,12 @@ import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks
 import qualified Gpu.Vulkan.AllocationCallbacks.Type as AllocationCallbacks
 import qualified Gpu.Vulkan.Fence.Middle as M
 
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> M.CreateInfo mn ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall sf . F sf -> IO a) -> IO a
 create (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle' -> macc) f = bracket
+	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dvc ci macc) (\fnc -> M.destroy dvc fnc macc) (f . F)
 
 waitForFs :: Device.D sd -> HeteroParList.PL F sfs -> Bool -> Word64 -> IO ()

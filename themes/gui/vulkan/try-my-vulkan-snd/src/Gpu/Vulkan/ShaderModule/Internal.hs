@@ -21,13 +21,13 @@ data M mn sknd mscc = M {
 	mCreateInfo :: M.CreateInfo mn sknd,
 	mAllocationCallbacks :: TPMaybe.M (U2 AllocationCallbacks.A) mscc }
 
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> M mn sknd mscc -> IO (M.M sknd)
 create (Device.D dvc) m =
 	M.create dvc (mCreateInfo m)
-		. AllocationCallbacks.toMiddle' $ mAllocationCallbacks m
+		. AllocationCallbacks.toMiddle $ mAllocationCallbacks m
 
-destroy :: AllocationCallbacks.ToMiddle' mscc =>
+destroy :: AllocationCallbacks.ToMiddle mscc =>
 	Device.D sd -> M.M sknd -> M n sknd mscc -> IO ()
 destroy (Device.D dvc) mm m =
-	M.destroy dvc mm . AllocationCallbacks.toMiddle' $ mAllocationCallbacks m
+	M.destroy dvc mm . AllocationCallbacks.toMiddle $ mAllocationCallbacks m

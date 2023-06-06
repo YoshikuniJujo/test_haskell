@@ -30,12 +30,12 @@ import qualified Gpu.Vulkan.Queue as Queue
 
 create :: (
 	WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M mns,
-	AllocationCallbacks.ToMiddle' msn3n3 ) =>
+	AllocationCallbacks.ToMiddle msn3n3 ) =>
 	PhysicalDevice.P -> M.CreateInfo mn mns ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn3n3 ->
 	(forall s . D s -> IO a) -> IO a
 create phdvc ci
-	(AllocationCallbacks.toMiddle' -> macc) f =
+	(AllocationCallbacks.toMiddle -> macc) f =
 	bracket (M.create phdvc ci macc) (`M.destroy` macc) (f . D)
 
 getQueue :: D s -> QueueFamily.Index -> Word32 -> IO Queue.Q

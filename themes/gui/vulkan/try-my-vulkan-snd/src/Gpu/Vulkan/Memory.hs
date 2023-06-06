@@ -172,14 +172,14 @@ memoryRequirementsListToSize sz0 (malgn : malgns) (reqs : reqss) =
 
 allocate :: (
 	WithPoked (TMaybe.M n), Alignments sibfoss,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . M s sibfoss -> IO a) -> IO a
 allocate dvc@(Device.D mdvc) bs ai
-	(AllocationCallbacks.toMiddle' -> mac) f = bracket
+	(AllocationCallbacks.toMiddle -> mac) f = bracket
 	do	mai <- allocateInfoToMiddle dvc bs ai
 		Memory.M.allocate mdvc mai mac
 	(\mem -> Memory.M.free mdvc mem mac)
@@ -187,12 +187,12 @@ allocate dvc@(Device.D mdvc) bs ai
 
 reallocate :: (
 	WithPoked (TMaybe.M n), Alignments sibfoss,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
 reallocate dvc@(Device.D mdvc) bs ai
-	(AllocationCallbacks.toMiddle' -> mac) mem = do
+	(AllocationCallbacks.toMiddle -> mac) mem = do
 	mai <- reallocateInfoToMiddle dvc bs ai
 	(_, oldmem) <- readM'' mem
 	Memory.M.reallocate mdvc mai mac oldmem
@@ -200,7 +200,7 @@ reallocate dvc@(Device.D mdvc) bs ai
 
 reallocateBind :: (
 	WithPoked (TMaybe.M n), RebindAll sibfoss sibfoss, Alignments sibfoss,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> HeteroParList.PL (U2 (ImageBufferBinded sm)) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M sm sibfoss -> IO ()
@@ -232,7 +232,7 @@ instance (
 allocateBind :: (
 	WithPoked (TMaybe.M n),
 	BindAll sibfoss sibfoss, Alignments sibfoss,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd ->
 	HeteroParList.PL (U2 ImageBuffer) sibfoss ->
 	Device.Memory.Buffer.AllocateInfo n ->

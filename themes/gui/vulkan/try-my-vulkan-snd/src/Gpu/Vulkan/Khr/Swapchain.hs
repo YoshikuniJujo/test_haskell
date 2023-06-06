@@ -39,16 +39,16 @@ import qualified Gpu.Vulkan.Khr.Surface.Type as Surface
 
 createNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall ssc . SNew ssc fmt -> IO a) -> IO a
-createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle' -> macd) f =
+createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle -> macd) f =
 	bracket (createNewM dvc ci macc) (\sc -> M.destroy dvc sc macd) (f . SNew)
 
 recreateNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn ssfc fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> SNew ssc fmt -> IO ()
 recreateNew (Device.D dvc) ci macc (SNew sc) = recreateNewM dvc ci macc sc
@@ -112,14 +112,14 @@ createInfoFromNew CreateInfoNew {
 
 createNewM :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' msn'n' ) =>
+	AllocationCallbacks.ToMiddle msn'n' ) =>
 	Device.M.D -> CreateInfoNew mn ss fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO M.S
 createNewM dvc ci mac = createM dvc (createInfoFromNew ci) mac
 
 recreateNewM :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.M.D -> CreateInfoNew mn ss fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	M.S -> IO ()
@@ -145,16 +145,16 @@ data CreateInfo mn ss = CreateInfo {
 
 deriving instance Show (TMaybe.M mn) => Show (CreateInfo mn ss)
 
-createM :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' msn'n') =>
+createM :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle msn'n') =>
 	Device.M.D -> CreateInfo mn ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO M.S
-createM dvc ci (AllocationCallbacks.toMiddle' -> mac) =
+createM dvc ci (AllocationCallbacks.toMiddle -> mac) =
 	M.create dvc (createInfoToMiddle ci) mac
 
-recreateM :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+recreateM :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.M.D -> CreateInfo mn ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> M.S -> IO ()
-recreateM dvc ci (AllocationCallbacks.toMiddle' -> mac) s =
+recreateM dvc ci (AllocationCallbacks.toMiddle -> mac) s =
 	M.recreate dvc (createInfoToMiddle ci) mac s
 
 createInfoToMiddle :: CreateInfo n ss -> M.CreateInfo n

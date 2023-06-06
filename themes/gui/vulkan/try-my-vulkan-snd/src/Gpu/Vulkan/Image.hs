@@ -45,17 +45,17 @@ import qualified Gpu.Vulkan.Image.Enum as I
 
 createNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' msn2n2 ) =>
+	AllocationCallbacks.ToMiddle msn2n2 ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn2n2 ->
 	(forall s . INew s nm fmt -> IO a) -> IO a
 createNew dvc@(Device.D mdvc) ci
-	macc@(AllocationCallbacks.toMiddle' -> macd) f =
+	macc@(AllocationCallbacks.toMiddle -> macd) f =
 	bracket (createNewM dvc ci macc) (\(INew i) -> M.destroy mdvc i macd) f
 
 recreateNew :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	BindedNew si sm nm fmt -> IO ()
@@ -121,23 +121,23 @@ instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsismnmfmts) =>
 
 createNewM :: (
 	WithPoked (TMaybe.M mn), T.FormatToValue fmt,
-	AllocationCallbacks.ToMiddle' msn'n' ) =>
+	AllocationCallbacks.ToMiddle msn'n' ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO (INew si nm fmt)
-createNewM (Device.D mdvc) ci (AllocationCallbacks.toMiddle' -> mac) =
+createNewM (Device.D mdvc) ci (AllocationCallbacks.toMiddle -> mac) =
 	INew <$> M.create mdvc (createInfoFromNew ci) mac
 
 recreateNewM :: (
 	T.FormatToValue fmt, WithPoked (TMaybe.M mn),
-	AllocationCallbacks.ToMiddle' mscc,
-	AllocationCallbacks.ToMiddle' msdd ) =>
+	AllocationCallbacks.ToMiddle mscc,
+	AllocationCallbacks.ToMiddle msdd ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msdd ->
 	BindedNew si sm nm fmt -> IO ()
 recreateNewM (Device.D mdvc) ci
-	(AllocationCallbacks.toMiddle' -> macc)
-	(AllocationCallbacks.toMiddle' -> macd) (BindedNew i) =
+	(AllocationCallbacks.toMiddle -> macc)
+	(AllocationCallbacks.toMiddle -> macd) (BindedNew i) =
 	M.recreate mdvc (createInfoFromNew ci) macc macd i
 
 data CreateInfoNew mn (fmt :: T.Format) = CreateInfoNew {

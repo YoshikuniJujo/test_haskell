@@ -60,19 +60,19 @@ createInfoToMiddleNew CreateInfoNew {
 		M.createInfoHeight = h,
 		M.createInfoLayers = lyrs }
 
-createNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+createNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . F s -> IO a) -> IO a
 createNew (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle' -> macc) f = bracket
+	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dvc (createInfoToMiddleNew ci) macc)
 	(\fb -> M.destroy dvc fb macc) (f . F)
 
-recreateNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+recreateNew :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> CreateInfoNew mn sr fmtnmsis ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	F sf -> IO ()
 recreateNew (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle' -> macc) (F fb) =
+	(AllocationCallbacks.toMiddle -> macc) (F fb) =
 	M.recreate dvc (createInfoToMiddleNew ci) macc macc fb

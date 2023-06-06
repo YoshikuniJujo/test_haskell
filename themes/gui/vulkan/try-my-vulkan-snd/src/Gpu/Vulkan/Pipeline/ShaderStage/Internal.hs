@@ -40,7 +40,7 @@ data CreateInfoNew mn m sknd mscc vs = CreateInfoNew {
 	createInfoSpecializationInfoNew :: Maybe (HeteroParList.L vs) }
 
 createInfoToMiddleNew ::
-	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle' mscc)  =>
+	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle mscc)  =>
 	Device.D ds -> CreateInfoNew n m sknd mscc vs -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleNew dvc CreateInfoNew {
 	createInfoNextNew = mnxt,
@@ -60,12 +60,12 @@ createInfoToMiddleNew dvc CreateInfoNew {
 		M.createInfoSpecializationInfo = spi }
 
 createInfoToMiddleFooNew ::
-	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle' mscc) =>
+	(WithPoked (TMaybe.M m), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D ds ->
 	U5 CreateInfoNew '(n, m, sknd, mscc, vs) -> IO (M.CreateInfo n sknd vs)
 createInfoToMiddleFooNew dvc (U5 ci) = createInfoToMiddleNew dvc ci
 
-destroyCreateInfoMiddleNew :: AllocationCallbacks.ToMiddle' mscc =>
+destroyCreateInfoMiddleNew :: AllocationCallbacks.ToMiddle mscc =>
 	Device.D ds ->
 	M.CreateInfo n sknd vs -> CreateInfoNew n m sknd mscc vs -> IO ()
 destroyCreateInfoMiddleNew dvc
@@ -91,7 +91,7 @@ instance CreateInfoListToMiddleNew '[] where
 instance (
 	WithPoked (TMaybe.M m),
 	CreateInfoListToMiddleNew nnskndcdvss,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	CreateInfoListToMiddleNew ('(n, m, sknd, mscc, vs) ': nnskndcdvss) where
 	type MiddleVarsNew ('(n, m, sknd, mscc, vs) ': nnskndcdvss) =
 		'(n, sknd, vs) ': MiddleVarsNew nnskndcdvss

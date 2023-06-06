@@ -25,9 +25,9 @@ import qualified Gpu.Vulkan.Attachment as Attachment
 
 createNew :: (
 	Attachment.DescriptionsFromNew fmts, WithPoked (TMaybe.M mn),
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> M.CreateInfoNew mn fmts ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . R s -> IO a) -> IO a
-createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle' -> macd) f =
+createNew (Device.D dvc) ci macc@(AllocationCallbacks.toMiddle -> macd) f =
 	bracket (M.createNew dvc ci macc) (\r -> M.destroy dvc r macd) (f . R)

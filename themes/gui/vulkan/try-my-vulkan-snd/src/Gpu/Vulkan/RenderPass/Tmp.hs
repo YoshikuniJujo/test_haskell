@@ -47,8 +47,8 @@ createInfoFromNew CreateInfoNew {
 
 createNew :: (
 	WithPoked (TMaybe.M mn), Attachment.DescriptionsFromNew fmts,
-	AllocationCallbacks.ToMiddle' msc ) =>
+	AllocationCallbacks.ToMiddle msc ) =>
 	Device.D -> CreateInfoNew mn fmts ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msc -> IO R
 createNew dvc ci mac =
-	create dvc (createInfoFromNew ci) (AllocationCallbacks.toMiddle' mac)
+	create dvc (createInfoFromNew ci) (AllocationCallbacks.toMiddle mac)

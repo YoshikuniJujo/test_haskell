@@ -33,13 +33,13 @@ import Gpu.Vulkan.BufferView.Middle qualified as M
 newtype B s (nm :: Symbol) t = B M.B deriving Show
 
 create :: (
-	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc,
+	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc,
 	TEnum.FormatToValue (FormatOf t), OffsetRange t nm objs ) =>
 	Device.D sd -> CreateInfo mn t nm '(sm, sb, bnm, objs) ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . B s nm t -> IO a) -> IO a
 create (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle' -> macc) f = bracket
+	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dvc (createInfoToMiddle ci) macc)
 	(\b -> M.destroy dvc b macc) (f . B)
 

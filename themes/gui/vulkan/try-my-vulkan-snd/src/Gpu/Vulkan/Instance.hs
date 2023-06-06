@@ -23,9 +23,9 @@ import qualified Gpu.Vulkan.Instance.Middle as M
 
 create :: (
 	WithPoked (TMaybe.M n), WithPoked (TMaybe.M n2),
-	AllocationCallbacks.ToMiddle' msn3n3 ) =>
+	AllocationCallbacks.ToMiddle msn3n3 ) =>
 	M.CreateInfo n n2 ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn3n3 ->
 	(forall s . I s -> IO a) -> IO a
-create ci (AllocationCallbacks.toMiddle' -> mac) f =
+create ci (AllocationCallbacks.toMiddle -> mac) f =
 	bracket (M.create ci mac) (`M.destroy` mac) (f . I)

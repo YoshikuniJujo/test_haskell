@@ -147,21 +147,21 @@ instance (
 
 createGs :: (
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
-	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle' msn'n' ) =>
+	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle msn'n' ) =>
 	Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn'n' -> IO [M.G]
-createGs dvc mc cis (AllocationCallbacks.toMiddle' -> mac) =
+createGs dvc mc cis (AllocationCallbacks.toMiddle -> mac) =
 	M.createGs dvc mc (createInfoListToMiddle cis) mac
 
 recreateGs :: (
 	M.CreateInfoListToCore (CreateInfoListArgs ss),
-	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle' mscc ) => Device.D -> Maybe Cache.C ->
+	CreateInfoListToMiddle ss, AllocationCallbacks.ToMiddle mscc ) => Device.D -> Maybe Cache.C ->
 	HeteroParList.PL (U11 CreateInfo) ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	[M.G] -> IO ()
 recreateGs dvc mc cis
-	(AllocationCallbacks.toMiddle' -> macc) gs =
+	(AllocationCallbacks.toMiddle -> macc) gs =
 	M.recreateGs dvc mc (createInfoListToMiddle cis) macc gs
 
 type family GListVars (ss :: [(

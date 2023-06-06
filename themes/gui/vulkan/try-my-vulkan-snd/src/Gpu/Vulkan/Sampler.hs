@@ -23,10 +23,10 @@ newtype S ss = S M.S deriving Show
 sToMiddle :: S ss -> M.S
 sToMiddle (S s) = s
 
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> M.CreateInfo mn ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall ss . S ss -> IO a) -> IO a
 create (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle' -> macc) f =
+	(AllocationCallbacks.toMiddle -> macc) f =
 	bracket (M.create dvc ci macc) (\s -> M.destroy dvc s macc) (f . S)

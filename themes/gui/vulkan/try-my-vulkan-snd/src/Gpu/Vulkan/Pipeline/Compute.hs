@@ -66,7 +66,7 @@ type family
 		CreateInfoListArgs4ToCArgs1 cias
 
 createInfoToMiddle ::
-	(WithPoked (TMaybe.M n'), AllocationCallbacks.ToMiddle' mscc) =>
+	(WithPoked (TMaybe.M n'), AllocationCallbacks.ToMiddle mscc) =>
 	Device.D ds ->
 	CreateInfo n '(n1, n', 'GlslComputeShader, mscc, vs) slsbtss sbph ->
 	IO (M.CreateInfo n n1 vs)
@@ -101,7 +101,7 @@ instance CreateInfoListToMiddle '[] where
 
 instance (
 	WithPoked (TMaybe.M n'), CreateInfoListToMiddle as,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	CreateInfoListToMiddle (
 		'(n, '(n1, n', 'GlslComputeShader, mscc, vs), slsbtss, sbph
 		) ': as) where
@@ -113,7 +113,7 @@ instance (
 		<*> createInfoListToMiddle dvc cis
 
 destroyCreateInfoMiddle ::
-	AllocationCallbacks.ToMiddle' mscc =>
+	AllocationCallbacks.ToMiddle mscc =>
 	Device.D sd -> M.CreateInfo n n1 vs ->
 	CreateInfo n '(n1, n2, 'GlslComputeShader, mscc, vs) slsbtss sbph -> IO ()
 destroyCreateInfoMiddle dvc mci ci = ShaderStage.destroyCreateInfoMiddleNew dvc
@@ -130,7 +130,7 @@ instance DestroyCreateInfoMiddleList '[] '[] where
 
 instance (
 	DestroyCreateInfoMiddleList vss vss',
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	DestroyCreateInfoMiddleList
 		('(n, n1, vs) ': vss)
 		('(n, '(n1, n2, 'GlslComputeShader, mscc, vs), slsbtss, sbph) ': vss') where
@@ -144,12 +144,12 @@ createCsNew :: (
 	DestroyCreateInfoMiddleList (Result vss) vss,
 	HeteroParList.HomoList '() (HeteroParList.ToDummies vss),
 	FromMiddleList (CreateInfoListArgs4ToCArgs1 vss),
-	AllocationCallbacks.ToMiddle' mscc' ) =>
+	AllocationCallbacks.ToMiddle mscc' ) =>
 	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) vss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc' ->
 	(forall s . HeteroParList.PL (CNew s) (CreateInfoListArgs4ToCArgs1 vss) -> IO a) -> IO a
 createCsNew dvc@(Device.D mdvc) mcch cis
-	(AllocationCallbacks.toMiddle' -> mac) f = do
+	(AllocationCallbacks.toMiddle -> mac) f = do
 	cis' <- createInfoListToMiddle dvc cis
 	let	mcch' = (\(Cache.C c) -> c) <$> mcch
 	bracket

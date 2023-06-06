@@ -47,12 +47,12 @@ import qualified Gpu.Vulkan.Sampler.Middle as Sampler.M
 
 create :: (
 	WithPoked (TMaybe.M mn), BindingsToMiddle bts,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfo mn bts ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . L s bts -> IO a) -> IO a
 create (Device.D dvc) ci
-	(AllocationCallbacks.toMiddle' -> macc) f =
+	(AllocationCallbacks.toMiddle -> macc) f =
 	bracket (M.create dvc (createInfoToMiddle ci) macc)
 		(\l -> M.destroy dvc l macc) (f . L)
 

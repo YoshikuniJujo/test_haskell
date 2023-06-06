@@ -33,12 +33,12 @@ newtype Q sq (tp :: Bool -> Type) = Q M.Q deriving Show
 
 create :: (
 	WithPoked (TMaybe.M mn), QueryType tp,
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfo mn tp ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall sq . Q sq tp -> IO a) -> IO a
 create (Device.D dv) ci
-	(AllocationCallbacks.toMiddle' -> macc) f = bracket
+	(AllocationCallbacks.toMiddle -> macc) f = bracket
 	(M.create dv (createInfoToMiddle ci) macc)
 	(\qp -> M.destroy dv qp macc) (f . Q)
 

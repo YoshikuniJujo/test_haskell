@@ -203,7 +203,7 @@ createGs :: (
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	CreateInfoListToMiddle ss,
 	U2g (CreateInfoListArgs14ToGArgs3 ss),
-	AllocationCallbacks.ToMiddle' mscc) =>
+	AllocationCallbacks.ToMiddle mscc) =>
 	Device.D sd -> Maybe (Cache.C sc) ->
 	HeteroParList.PL (U14 CreateInfo) ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
@@ -211,7 +211,7 @@ createGs :: (
 		HeteroParList.PL (U3 (GNew sg)) (CreateInfoListArgs14ToGArgs3 ss) ->
 		IO a) -> IO a
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis
-	macc@(AllocationCallbacks.toMiddle' -> macd) f = bracket
+	macc@(AllocationCallbacks.toMiddle -> macd) f = bracket
 	(createInfoListToMiddle d cis >>= \cis' ->
 		T.createGs dvc mc cis' macc <* destroyShaderStages d cis' cis)
 	(\gs -> M.destroyGs dvc gs macd) (f . v2g)
@@ -221,7 +221,7 @@ recreateGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
 	T.CreateInfoListToMiddle (MiddleVars ss),
 	U2g (CreateInfoListArgs14ToGArgs3 ss),
-	AllocationCallbacks.ToMiddle' mscc ) =>
+	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	HeteroParList.PL (U3 (GNew sg)) (CreateInfoListArgs14ToGArgs3 ss) -> IO ()
