@@ -55,7 +55,7 @@ getResults pd (Device.D dv) (Q qp) fq qc flgs = do
 
 data CreateInfo mn (tp :: Bool -> Type) = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
-	createInfoFlags :: M.CreateFlagBits,
+	createInfoFlags :: M.CreateFlags,
 	createInfoQueryCount :: Word32,
 	createInfoPipelineStatistics :: Q.PipelineStatisticFlags }
 
