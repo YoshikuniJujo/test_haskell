@@ -2,12 +2,8 @@
 
 module Gpu.Vulkan.Queue.Middle (
 
-	-- * Type
+	-- * SUBMIT AND WAIT IDLE
 
-	Q,
-
-	-- * Submit and WaitIdle
-
-	submit, waitIdle ) where
+	submit, waitIdle, Q ) where
 
 import Gpu.Vulkan.Queue.Middle.Internal

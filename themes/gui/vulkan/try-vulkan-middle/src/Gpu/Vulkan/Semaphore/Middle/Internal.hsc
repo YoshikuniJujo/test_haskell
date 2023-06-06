@@ -8,7 +8,13 @@
 {-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Semaphore.Middle.Internal where
+module Gpu.Vulkan.Semaphore.Middle.Internal (
+
+	-- * CREATE AND DESTROY
+
+	create, destroy, S(..), CreateInfo(..), CreateFlags
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Marshal.Alloc

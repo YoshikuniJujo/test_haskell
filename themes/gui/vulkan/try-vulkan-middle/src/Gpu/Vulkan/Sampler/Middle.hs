@@ -2,12 +2,8 @@
 
 module Gpu.Vulkan.Sampler.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	S,
-
-	-- * Create and Destroy
-
-	create, destroy, CreateInfo(..) ) where
+	create, destroy, S, CreateInfo(..) ) where
 
 import Gpu.Vulkan.Sampler.Middle.Internal

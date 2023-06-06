@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.Sample.Middle (
 
-	-- * CountAndMask
+	-- * COUNT AND MASK
 
 	CountAndMask(..) ) where
 

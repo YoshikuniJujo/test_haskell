@@ -2,15 +2,11 @@
 
 module Gpu.Vulkan.RenderPass.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	R,
+	create, destroy, R, CreateInfo(..),
 
-	-- * Create and Destroy
-
-	create, destroy, CreateInfo(..),
-
-	-- * BeginInfo
+	-- * BEGIN INFO
 
 	BeginInfo(..) ) where
 

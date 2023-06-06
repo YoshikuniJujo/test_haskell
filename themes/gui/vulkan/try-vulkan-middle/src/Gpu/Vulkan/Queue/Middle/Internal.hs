@@ -9,7 +9,13 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Queue.Middle.Internal where
+module Gpu.Vulkan.Queue.Middle.Internal (
+
+	-- * SUBMIT AND WAIT IDLE
+
+	submit, waitIdle, Q(..)
+
+	) where
 
 import Foreign.Marshal.Array
 import Data.HeteroParList qualified as HeteroParList

@@ -2,12 +2,8 @@
 
 module Gpu.Vulkan.Semaphore.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	S,
-
-	-- * Create and Destroy
-
-	create, destroy, CreateInfo(..), CreateFlags ) where
+	create, destroy, S, CreateInfo(..), CreateFlags ) where
 
 import Gpu.Vulkan.Semaphore.Middle.Internal

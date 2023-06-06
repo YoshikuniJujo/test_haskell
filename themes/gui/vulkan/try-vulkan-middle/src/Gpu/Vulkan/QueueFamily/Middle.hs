@@ -3,7 +3,7 @@
 
 module Gpu.Vulkan.QueueFamily.Middle (
 
-	-- * Properties
+	-- * PROPERTIES
 
 	Properties(..), Index(..), pattern Ignored ) where
 

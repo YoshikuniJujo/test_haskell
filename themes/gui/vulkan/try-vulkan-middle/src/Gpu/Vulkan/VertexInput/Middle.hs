@@ -2,11 +2,11 @@
 
 module Gpu.Vulkan.VertexInput.Middle (
 
-	-- * AttributeDescription
+	-- * ATTRIBUTE DESCRIPTION
 
 	AttributeDescription(..),
 
-	-- * BindingDescription
+	-- * BINDING DESCRIPTION
 
 	BindingDescription(..) ) where
 

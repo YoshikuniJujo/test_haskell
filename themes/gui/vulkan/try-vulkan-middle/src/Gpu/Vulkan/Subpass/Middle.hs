@@ -3,11 +3,11 @@
 
 module Gpu.Vulkan.Subpass.Middle (
 
-	-- * Description
+	-- * DESCRIPTION
 
 	Description(..),
 
-	-- * Dependency
+	-- * DEPENDENCY
 
 	Dependency(..), S(..), pattern SExternal ) where
 

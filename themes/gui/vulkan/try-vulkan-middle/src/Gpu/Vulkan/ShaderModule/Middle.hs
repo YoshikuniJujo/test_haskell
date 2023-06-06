@@ -2,12 +2,8 @@
 
 module Gpu.Vulkan.ShaderModule.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	M,
-
-	-- * Create and Destroy
-
-	create, destroy, CreateInfo(..), CreateFlags, CreateFlagBits ) where
+	create, destroy, M, CreateInfo(..), CreateFlags, CreateFlagBits ) where
 
 import Gpu.Vulkan.ShaderModule.Middle.Internal
