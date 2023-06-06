@@ -2,12 +2,14 @@
 
 module Gpu.Vulkan.Ext.DebugUtils.Middle (
 
-	-- * Name
+	-- * EXTENSION NAME
 
 	extensionName,
 
-	-- * Data Structures
+	-- * LABEL AND OBJECT NAME INFO
 
-	Label(..), ObjectNameInfo(..) ) where
+	Label(..), ObjectNameInfo(..)
+
+	) where
 
 import Gpu.Vulkan.Ext.DebugUtils.Middle.Internal

@@ -5,10 +5,24 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Ext.DebugUtils.Middle.Internal (
+
+	-- * EXTENSION NAME
+
+	extensionName,
+
+	-- * LABEL AND OBJECT NAME INFO
+
+	Label(..), labelFromCore,
+	ObjectNameInfo(..), ObjectNameInfoResult, objectNameInfoResultFromCore
+
+	) where
+
+{-
 	extensionName,
 	Label(..), labelFromCore,
 	ObjectNameInfo(..), objectNameInfoFromCore,
 	ObjectNameInfoResult(..), objectNameInfoResultFromCore ) where
+	-}
 
 import Foreign.Ptr
 import Foreign.Storable.PeekPoke

@@ -10,14 +10,15 @@
 
 module Gpu.Vulkan.Ext.DebugUtils.Messenger.Middle (
 
-	-- * Type
+	-- * CREATE AND DESTROY
 
-	M,
+	create, destroy, M, CreateInfo(..), CreateFlags,
 
-	-- * Create and Destroy
+	-- ** FnCallback
 
-	create, destroy, CreateInfo(..), CreateFlags,
-	FnCallback, CallbackData(..), CallbackDataFlags ) where
+	FnCallback, CallbackData(..), CallbackDataFlags
+
+	) where
 
 import Foreign.Ptr
 import Foreign.Concurrent
