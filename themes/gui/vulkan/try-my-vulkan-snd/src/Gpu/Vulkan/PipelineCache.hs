@@ -1,11 +1,12 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PipelineCache (
-	C, create, getData
+	C, create, getData, readData, writeData
 	) where
 
 import Foreign.Storable.PeekPoke
@@ -20,7 +21,17 @@ import Gpu.Vulkan.AllocationCallbacks qualified as AllocationCallbacks
 import Gpu.Vulkan.AllocationCallbacks.Type qualified as AllocationCallbacks
 import Gpu.Vulkan.Device qualified as Device
 import Gpu.Vulkan.Device.Type qualified as Device
-import Gpu.Vulkan.PipelineCache.Middle qualified as M
+import Gpu.Vulkan.PipelineCache.Middle qualified as M (
+	create, destroy, CreateInfo, getData, Data(..) )
+
+import Foreign.Ptr
+import Foreign.Storable
+import Foreign.Marshal.Alloc
+import Foreign.C.Types
+import Data.Word
+import System.IO
+
+import Data.ByteString qualified as BS
 
 create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle' mscc) =>
 	Device.D sd -> M.CreateInfo mn ->
@@ -31,3 +42,33 @@ create (Device.D dv) ci
 
 getData :: Device.D sd -> C s -> IO M.Data
 getData (Device.D dv) (C c) = M.getData dv c
+
+readData :: FilePath -> IO M.Data
+readData fp =
+	withBinaryFile fp ReadMode \h -> do
+	sz <- readDataSize h
+	allocaBytes (fromIntegral sz) \pd -> do
+		_ <- hGetBuf h pd (fromIntegral sz)
+		dataFromRaw sz pd
+
+writeData :: FilePath -> M.Data -> IO ()
+writeData fp d = dataToRaw d \sz pd -> withBinaryFile fp WriteMode \h ->
+	writeDataSize h sz >> hPutBuf h pd (fromIntegral sz)
+
+readDataSize :: Handle -> IO Word64
+readDataSize = readStorable
+
+readStorable :: forall a . Storable a => Handle -> IO a
+readStorable h = alloca \px -> hGetBuf h px (sizeOf @a undefined) >> peek px
+
+writeDataSize :: Handle -> Word64 -> IO ()
+writeDataSize = writeStorable
+
+writeStorable :: Storable a => Handle -> a -> IO ()
+writeStorable h x = alloca \px -> poke px x >> hPutBuf h px (sizeOf x)
+
+dataFromRaw :: Word64 -> Ptr CChar -> IO M.Data
+dataFromRaw sz pd = M.Data <$> BS.packCStringLen (pd, fromIntegral sz)
+
+dataToRaw :: M.Data -> (Word64 -> Ptr CChar -> IO a) -> IO a
+dataToRaw (M.Data bs) f = BS.useAsCStringLen bs \(pd, sz) -> f (fromIntegral sz) pd

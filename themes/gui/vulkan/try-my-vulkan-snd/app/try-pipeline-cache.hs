@@ -101,13 +101,10 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 		Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 	cch' <- Vk.PplCch.getData dv pc
 	print cch'
-	Vk.PplCch.M.writeData "pipeline.cache" cch'
+	Vk.PplCch.writeData "pipeline.cache" cch'
 	cch'' <- readData "pipeline.cache"
 	print cch''
 	print $ cch' == cch''
-
-	putStrLn "TRY CREATE AND PRINT DATA"
-	Vk.PplCch.M.tryCreateAndPrintData mdv mpc
 
 --	Vk.PplCch.create dv (pplCchInfo cch') nil nil \pc' -> do
 
@@ -130,7 +127,7 @@ main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
 readData :: FilePath -> IO Vk.PplCch.M.Data
 readData fp = do
 	b <- doesFileExist fp
-	if b then Vk.PplCch.M.readData fp else pure def
+	if b then Vk.PplCch.readData fp else pure def
 
 pplCchInfo :: Vk.PplCch.M.Data -> Vk.PplCch.M.CreateInfo 'Nothing
 pplCchInfo mid = Vk.PplCch.M.CreateInfo {
