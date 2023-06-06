@@ -9,7 +9,7 @@
 
 module Gpu.Vulkan.PipelineCache.Middle.Internal (
 	C(..), CreateInfo(..), create, destroy,
-	Data(..), getData, writeData, readData,
+	Data(..), getData,
 	) where
 
 import Foreign.Ptr
@@ -22,7 +22,6 @@ import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.Default
 import Data.Word
 import Data.ByteString qualified as BS
-import System.IO
 
 import Gpu.Vulkan.Exception.Middle.Internal
 import Gpu.Vulkan.Exception.Enum
@@ -98,35 +97,3 @@ data DataRaw = DataRaw #{type size_t} (Ptr CChar) deriving Show
 instance Default Data where def = Data ""
 
 instance Default DataRaw where def = DataRaw 0 nullPtr
-
-writeData :: FilePath -> Data -> IO ()
-writeData fp d = dataToRaw d (writeDataRaw fp)
-
-readData :: FilePath -> IO Data
-readData fp = -- alloca \pd -> dataFromRaw =<< readDataRaw fp pd
-	withBinaryFile fp ReadMode \h -> do
-	sz <- readDataSize h
-	allocaBytes (fromIntegral sz) \pd -> do
-		_ <- hGetBuf h pd (fromIntegral sz)
-		dataFromRaw $ DataRaw sz pd
-
-writeDataRaw :: FilePath -> DataRaw -> IO ()
-writeDataRaw fp (DataRaw sz pd) = withBinaryFile fp WriteMode \h ->
-	writeStorable h sz >> hPutBuf h pd (fromIntegral sz)
-
-readDataSize :: Handle -> IO #{type size_t}
-readDataSize h = readStorable h
-
-{-
-readDataRaw :: FilePath -> Ptr CChar -> IO DataRaw
-readDataRaw fp pd = withBinaryFile fp ReadMode \h -> do
-	sz <- readStorable h
-	_ <- hGetBuf h pd $ fromIntegral sz
-	pure $ DataRaw sz pd
-	-}
-
-writeStorable :: Storable a => Handle -> a -> IO ()
-writeStorable h x = alloca \px -> poke px x >> hPutBuf h px (sizeOf x)
-
-readStorable :: forall a . Storable a => Handle -> IO a
-readStorable h = alloca \px -> hGetBuf h px (sizeOf @a undefined) >> peek px
