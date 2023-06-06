@@ -42,7 +42,7 @@ type CreateFlags = CreateFlagBits
 
 data CreateInfo mn = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
-	createInfoFlags :: CreateFlagBits,
+	createInfoFlags :: CreateFlags,
 	createInfoQueryType :: Type,
 	createInfoQueryCount :: Word32,
 	createInfoPipelineStatistics :: PipelineStatisticFlags }
