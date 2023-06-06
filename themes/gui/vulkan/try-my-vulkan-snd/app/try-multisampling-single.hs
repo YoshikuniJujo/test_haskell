@@ -1176,7 +1176,7 @@ halves = iterate half
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
-type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
+-- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
@@ -1194,6 +1194,7 @@ listToTuple4 _ = error "The length of the list is not 4"
 
 instance KObj.IsImage MyImage where
 	type IsImagePixel MyImage = MyRgba8
+	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Srgb
 	isImageRow = KObj.isImageWidth
 	isImageWidth (MyImage img) = imageWidth img
 	isImageHeight (MyImage img) = imageHeight img
@@ -1356,7 +1357,8 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
-	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+--	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+	Vk.Img.BindedNew si sm' nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp bf img wdt hgt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -1371,7 +1373,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImage @1
+	Vk.Cmd.copyBufferToImageNew @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
 
 createTextureSampler :: Vk.PhDvc.P -> Vk.Dvc.D sd ->

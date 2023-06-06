@@ -39,7 +39,8 @@ import qualified Gpu.Vulkan.PipelineLayout.Type as Pipeline.Layout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
-import qualified Gpu.Vulkan.Buffer as Buffer
+import qualified Gpu.Vulkan.Buffer.Type as Buffer
+import qualified Gpu.Vulkan.Buffer.Internal as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image as Image
 import qualified Gpu.Vulkan.Image.Type as Image
@@ -386,34 +387,23 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)
 
-copyBufferToImage :: forall algn objs img inms sc sm sb nm si sm' nm' . (
+copyBufferToImageNew :: forall algn objs img inms sc sm sb nm si sm' nm' . (
 	ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc -> Buffer.Binded sm sb nm objs ->
-	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
+	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
-copyBufferToImage (CommandBuffer.C cb)
+copyBufferToImageNew (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = imageCopyListToMiddle @algn bf ics
 
-copyImageToBuffer :: forall algn objs img inms sc vs sm sb nm si sm' nm' . (
-	ImageCopyListToMiddle algn objs img inms ) =>
-	CommandBuffer.Binded sc vs ->
-	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
-	Buffer.Binded sm sb nm objs ->
-	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
-copyImageToBuffer (CommandBuffer.Binded cb)
-	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
-	M.copyImageToBuffer cb mim imlyt mbf mics
-	where mics = imageCopyListToMiddle @algn bf ics
-
-copyImageToBufferNew :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
+copyImageToBufferNewNew :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
 	ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc  ->
-	Image.BindedNew si sm' nm' (Buffer.ImageFormat img) -> Image.Layout ->
+	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
-copyImageToBufferNew (CommandBuffer.C cb)
+copyImageToBufferNewNew (CommandBuffer.C cb)
 	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = imageCopyListToMiddle @algn bf ics

@@ -48,6 +48,8 @@ library
       Gpu.Vulkan.AllocationCallbacks.Type
       Gpu.Vulkan.Attachment
       Gpu.Vulkan.Buffer
+      Gpu.Vulkan.Buffer.Internal
+      Gpu.Vulkan.Buffer.Type
       Gpu.Vulkan.BufferView
       Gpu.Vulkan.Command
       Gpu.Vulkan.Command.TypeLevel

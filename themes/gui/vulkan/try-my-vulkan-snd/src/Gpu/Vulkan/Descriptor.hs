@@ -37,6 +37,7 @@ import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 
 import qualified Gpu.Vulkan.Buffer as Buffer
+import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Descriptor.Middle as M
 
 import qualified Gpu.Vulkan.Sampler as Sampler

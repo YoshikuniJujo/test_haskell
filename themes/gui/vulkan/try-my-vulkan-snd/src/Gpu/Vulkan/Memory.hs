@@ -41,7 +41,7 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
-import qualified Gpu.Vulkan.Buffer as Buffer
+import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Memory.Kind as K
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Device.Memory.Buffer

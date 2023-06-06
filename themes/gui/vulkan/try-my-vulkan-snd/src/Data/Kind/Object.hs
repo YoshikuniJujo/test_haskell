@@ -39,6 +39,8 @@ import qualified Data.Sequences as Seq
 
 import Data.Kind.ObjectNew qualified as N
 
+import Gpu.Vulkan.TypeEnum qualified as T
+
 data Object = ObjObject N.Object | ObjImage N.Alignment Type Symbol
 
 type family ObjectAlignment obj where
@@ -175,6 +177,7 @@ instance (IsImage img, Storable (IsImagePixel img)) =>
 
 class IsImage img where
 	type IsImagePixel img
+	type ImageFormat img :: T.Format
 	isImageRow :: img -> Int
 	isImageWidth :: img -> Int
 	isImageHeight :: img -> Int

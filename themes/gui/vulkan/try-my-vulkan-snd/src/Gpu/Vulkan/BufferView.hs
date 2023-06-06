@@ -27,7 +27,7 @@ import Gpu.Vulkan.Device qualified as Device
 import Gpu.Vulkan.Device.Type qualified as Device
 import Gpu.Vulkan.Device.Middle qualified as Device.M
 import Gpu.Vulkan.TypeEnum qualified as TEnum
-import Gpu.Vulkan.Buffer qualified as Buffer
+import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.BufferView.Middle qualified as M
 
 newtype B s (nm :: Symbol) t = B M.B deriving Show

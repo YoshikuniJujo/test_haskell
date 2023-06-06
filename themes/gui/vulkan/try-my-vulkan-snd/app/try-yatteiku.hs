@@ -267,7 +267,8 @@ makeBuffer phdvc dvc wdt hgt f =
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
-	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+--	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
+	Vk.Img.BindedNew si sm' nm' (KObj.ImageFormat img) ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp img bf wdt hgt =
@@ -283,7 +284,7 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyImageToBufferNew @1
+	Vk.Cmd.copyImageToBufferNewNew @1
 		cb img Vk.Img.LayoutTransferSrcOptimal bf (HeteroParList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
@@ -407,7 +408,7 @@ findMemoryType phdvc flt props =
 
 newtype MyImage = MyImage (Image PixelRGBA8)
 
-type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Unorm
+-- type instance Vk.Bffr.ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Unorm
 
 newtype MyRgba8 = MyRgba8 { unMyRgba8 :: PixelRGBA8 }
 
@@ -425,6 +426,7 @@ listToTuple4 _ = error "The length of the list is not 4"
 
 instance KObj.IsImage MyImage where
 	type IsImagePixel MyImage = MyRgba8
+	type ImageFormat MyImage = 'Vk.T.FormatR8g8b8a8Unorm
 	isImageRow = KObj.isImageWidth
 	isImageWidth (MyImage img) = imageWidth img
 	isImageHeight (MyImage img) = imageHeight img
