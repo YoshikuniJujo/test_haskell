@@ -2,7 +2,7 @@
 
 module Gpu.Vulkan.PushConstant.Middle (
 
-	-- * Range
+	-- * RANGE
 
 	Range(..) ) where
 
