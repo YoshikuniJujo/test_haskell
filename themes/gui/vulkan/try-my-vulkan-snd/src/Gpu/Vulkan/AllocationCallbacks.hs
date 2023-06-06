@@ -3,9 +3,25 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.AllocationCallbacks (
-	create, M.FunctionsInfo(..), Functions, apply, A,
+
+	-- * CREATE
+
+	create, Functions, M.FunctionsInfo(..),
+
+	-- ** Function Types
+
 	M.FnAllocationFunction, M.FnReallocationFunction, M.FnFreeFunction,
-	M.FnInternalAllocationNotification, M.FnInternalFreeNotification ) where
+	M.FnInternalAllocationNotification, M.FnInternalFreeNotification,
+
+	-- *** Size and Alignment
+
+	M.Size, M.Alignment,
+
+	-- * APPLY
+
+	apply, A
+
+	) where
 
 import Control.Exception
 import Gpu.Vulkan.AllocationCallbacks.Type
