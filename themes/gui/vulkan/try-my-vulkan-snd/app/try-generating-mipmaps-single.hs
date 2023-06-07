@@ -1615,8 +1615,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
-		(HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb) >>
-	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedList @_ @_ @_ @Word32 ib) >>
+		(HeteroParList.Singleton . U4 $ Vk.Bffr.Indexed @_ @_ @_ @Vertex vb) >>
+	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.Indexed @_ @_ @_ @Word32 ib) >>
 	Vk.Cmd.bindDescriptorSets cbb Vk.Ppl.BindPointGraphics ppllyt
 		(HeteroParList.Singleton $ U2 ubds) [] >>
 	Vk.Cmd.drawIndexed cbb (fromIntegral $ V.length idcs) 1 0 0 0

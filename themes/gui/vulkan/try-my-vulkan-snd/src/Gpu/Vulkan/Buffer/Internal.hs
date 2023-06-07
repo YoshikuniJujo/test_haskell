@@ -47,8 +47,8 @@ import qualified Gpu.Vulkan.Image as Image.M
 
 import Gpu.Vulkan.Buffer.Type
 
-data CreateInfo n objs = CreateInfo {
-	createInfoNext :: TMaybe.M n,
+data CreateInfo mn objs = CreateInfo {
+	createInfoNext :: TMaybe.M mn,
 	createInfoFlags :: CreateFlags,
 	createInfoLengths :: HeteroParList.PL VObj.ObjectLength objs,
 	createInfoUsage :: UsageFlags,
@@ -86,20 +86,20 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
-class OffsetList v (vs :: [VObj.Object]) where
+class Offset v (vs :: [VObj.Object]) where
 	offsetList :: HeteroParList.PL VObj.ObjectLength vs -> Int -> Device.M.Size
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
 instance (KnownNat algn, WithPoked v, Sizable v) =>
-	OffsetList v (VObj.List algn v _nm ': vs) where
+	Offset v (VObj.List algn v _nm ': vs) where
 	offsetList _ = fromIntegral . adjust (
 		fromIntegral (natVal (Proxy :: Proxy algn)) `lcm`
 		alignment' @v )
 
 instance {-# OVERLAPPABLE #-} (
-	VObj.SizeAlignment v', OffsetList v vs ) => OffsetList v (v' ': vs) where
+	VObj.SizeAlignment v', Offset v vs ) => Offset v (v' ': vs) where
 	offsetList (objlen :** objlens) ost =
 		offsetList @v @vs objlens (ost + VObj.objectSize objlen)
 
@@ -114,18 +114,18 @@ sampleObjLens =
 	NObj.ObjectLengthList 3 :** HeteroParList.Nil
 	-}
 
-data IndexedList sm sb nm v =
-	forall vs . OffsetList v vs => IndexedList (Binded sm sb nm vs)
+data Indexed sm sb nm v =
+	forall vs . Offset v vs => Indexed (Binded sm sb nm vs)
 
-indexedListToOffset :: forall sm sb nm v a . IndexedList sm sb nm v ->
+indexedListToOffset :: forall sm sb nm v a . Indexed sm sb nm v ->
 	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a
-indexedListToOffset (IndexedList b@(Binded lns _)) f = f (b, offsetList @v lns 0)
+indexedListToOffset (Indexed b@(Binded lns _)) f = f (b, offsetList @v lns 0)
 
-indexedListToMiddle :: IndexedList sm sb nm v -> (M.B, Device.M.Size)
+indexedListToMiddle :: Indexed sm sb nm v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 
 indexedListToMiddles ::
-	HeteroParList.PL (U4 IndexedList) smsbvs -> [(M.B, Device.M.Size)]
+	HeteroParList.PL (U4 Indexed) smsbvs -> [(M.B, Device.M.Size)]
 indexedListToMiddles HeteroParList.Nil = []
 indexedListToMiddles (U4 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils

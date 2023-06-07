@@ -909,7 +909,7 @@ recordCommandBuffer cb rp fb sce gpl vb =
 	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb (HeteroParList.Singleton
-		. U4 $ Vk.Bffr.IndexedList @_ @_ @_ @Vertex vb) >>
+		. U4 $ Vk.Bffr.Indexed @_ @_ @_ @Vertex vb) >>
 	Vk.Cmd.draw cbb 3 1 0 0
 	where
 	rpInfo :: Vk.RndrPass.BeginInfo 'Nothing sr sf

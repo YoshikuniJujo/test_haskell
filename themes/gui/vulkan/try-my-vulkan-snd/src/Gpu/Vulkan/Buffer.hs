@@ -19,7 +19,7 @@ module Gpu.Vulkan.Buffer (
 
 	-- * BINDED
 
-	getMemoryRequirements, Binded, IndexedList(..),
+	getMemoryRequirements, Binded, Indexed(..), Offset,
 
 	-- * IMAGE COPY
 

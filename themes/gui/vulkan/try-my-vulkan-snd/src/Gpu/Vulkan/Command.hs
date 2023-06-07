@@ -332,14 +332,14 @@ type family MapForth tpl where
 
 bindVertexBuffers :: forall sc vs slbtss smsbvs .
 	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
-	CommandBuffer.GBinded sc vs slbtss -> HeteroParList.PL (U4 Buffer.IndexedList) smsbvs ->
+	CommandBuffer.GBinded sc vs slbtss -> HeteroParList.PL (U4 Buffer.Indexed) smsbvs ->
 	IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(MapForth smsbvs) @(MapSubType vs)
 
 bindIndexBuffer :: forall sc vs slbtss sm sb nm v . IsIndexType v =>
-	CommandBuffer.GBinded sc vs slbtss -> Buffer.IndexedList sm sb nm v -> IO ()
+	CommandBuffer.GBinded sc vs slbtss -> Buffer.Indexed sm sb nm v -> IO ()
 bindIndexBuffer (CommandBuffer.GBinded cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @v)
 
