@@ -859,7 +859,7 @@ data BindedUbo smsb where
 		BindedUbo '(sm, sb)
 
 data MemoryUbo smsb where
-	MemoryUbo :: UniformBufferMemory sb sm "uniform-buffer" -> MemoryUbo '(sm, sb)
+	MemoryUbo :: UniformBufferMemory sm sb "uniform-buffer" -> MemoryUbo '(sm, sb)
 
 createUniformBuffer1 :: Vk.PhDvc.P -> Vk.Dvc.D sd -> (forall sm sb .
 		BindedUbo '(sm, sb) -> MemoryUbo '(sm, sb) -> IO b) -> IO b
@@ -936,7 +936,7 @@ instance (
 createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[VObj.Atom 256 a 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 a 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm '[VObj.Atom 256 a 'Nothing] )] ->
@@ -946,7 +946,7 @@ createBufferAtom' p dv usg props = createBuffer' p dv VObj.ObjectLengthAtom usg 
 createBufferList' :: forall sd nm t a . Storable t =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Int -> Vk.Bffr.UsageFlags ->
 	Vk.Mem.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[VObj.List 256 t ""] ->
+		Vk.Bffr.Binded sm sb nm '[VObj.List 256 t ""] ->
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm '[VObj.List 256 t ""] ) ] ->
@@ -958,7 +958,7 @@ createBufferList' p dv ln usg props =
 createBuffer' :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> VObj.ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[o] ->
+		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Mem.M sm
 			'[ '(sb, 'Vk.Mem.K.Buffer nm '[o])] ->
 		IO a) -> IO a

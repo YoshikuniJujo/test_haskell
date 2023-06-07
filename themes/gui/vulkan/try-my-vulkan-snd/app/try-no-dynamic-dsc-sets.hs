@@ -210,7 +210,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
 type BffMem sm sb nm w = (
-	Vk.Bffr.Binded sb sm nm '[VObj.List 256 w ""],
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 w ""],
 	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[VObj.List 256 w ""])] )
 
 storageBufferNew3 :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
@@ -230,7 +230,7 @@ class StorageBufferNews f a where
 		HeteroParList.PL V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
-	Vk.Bffr.Binded sb sm nm '[VObj.List 256 w ""] ->
+	Vk.Bffr.Binded sm sb nm '[VObj.List 256 w ""] ->
 	Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm '[VObj.List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
@@ -248,7 +248,7 @@ type KBuffer = 'Vk.Dvc.Mem.ImgBffr.K.Buffer
 storageBufferNew :: forall {sd} v {nm} obj {a} . (
 	VObj.StoreObject v obj, VObj.SizeAlignment obj ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> (forall sb sm .
-		Vk.Bffr.Binded sb sm nm '[obj]  ->
+		Vk.Bffr.Binded sm sb nm '[obj]  ->
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj])] ->
 		IO a) -> IO a
 storageBufferNew phdvc dvc xs f =
@@ -268,7 +268,7 @@ storageBufferNew3Objs :: forall {sd} v {nm} obj0 obj1 obj2 {a} . (
 	Vk.Dvc.Mem.ImgBffr.OffsetSizeObject obj2 '[obj0, obj1, obj2]
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> v -> v -> v -> (forall sb sm .
-		Vk.Bffr.Binded sb sm nm '[obj0, obj1, obj2]  ->
+		Vk.Bffr.Binded sm sb nm '[obj0, obj1, obj2]  ->
 		Vk.Dvc.Mem.ImgBffr.M sm '[ '(sb, KBuffer nm '[obj0, obj1, obj2])] ->
 		IO a) -> IO a
 storageBufferNew3Objs phdvc dvc x y z f =

@@ -1014,7 +1014,7 @@ createCameraBuffers pd dv lyt n f = createCameraBuffer pd dv \b m ->
 	f (U2 lyt :** lyts) (BindedCamera b :** bs) (MemoryCamera m :** ms)
 
 data BindedCamera smsb where
-	BindedCamera :: Vk.Bffr.Binded sb sm "camera-buffer" '[CameraObj] ->
+	BindedCamera :: Vk.Bffr.Binded sm sb "camera-buffer" '[CameraObj] ->
 		BindedCamera '(sm, sb)
 
 data MemoryCamera smsb where
@@ -1024,7 +1024,7 @@ data MemoryCamera smsb where
 		MemoryCamera '(sm, sb)
 
 createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall sm sb . Vk.Bffr.Binded sb sm nm '[CameraObj] ->
+	(forall sm sb . Vk.Bffr.Binded sm sb nm '[CameraObj] ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[CameraObj]) ] ->
 		IO a) -> IO a
 createCameraBuffer pd dv = createBuffer pd dv
@@ -1035,7 +1035,7 @@ createBuffer :: forall objs nm sd a . (
 	Obj.WholeSize objs, forall s . SizeAlignmentAll s nm objs ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.ObjectLength objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sb sm nm objs ->
+		Vk.Bffr.Binded sm sb nm objs ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm objs)] -> IO a) ->
 	IO a
 createBuffer p dv lns usg prs f =
@@ -1072,7 +1072,7 @@ memoryInfo mt = Vk.Dvc.Mem.AllocateInfo {
 	Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sb sm nm '[SceneObj] ->
+	Vk.Bffr.Binded sm sb nm '[SceneObj] ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[SceneObj])] ->
 	IO a) -> IO a
 createSceneBuffer pd dv = createBuffer pd dv

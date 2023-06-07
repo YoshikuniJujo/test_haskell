@@ -197,7 +197,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (forall sb sm .
-		Vk.Buffer.Binded sb sm nm '[VObj.DynList 2 256 w ""]  ->
+		Vk.Buffer.Binded sm sb nm '[VObj.DynList 2 256 w ""]  ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[VObj.DynList 2 256 w ""])] ->
 		IO a) -> IO a
 storageBufferNew dvc phdvc xs f =

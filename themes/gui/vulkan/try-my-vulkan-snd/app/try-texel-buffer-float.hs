@@ -374,26 +374,26 @@ storageBufferNew4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> V.Vector w4 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
-		Vk.Buffer.Binded sb1 sm1 nm1 '[VObj.List 256 w1 ""] ->
+		Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
 		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
-		Vk.Buffer.Binded sb2 sm2 nm2 '[VObj.List 256 w2 ""] ->
+		Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
 		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
-		Vk.Buffer.Binded sb3 sm3 nm3 '[VObj.List 256 w3 ""] ->
+		Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
 		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] ->
-		Vk.Buffer.Binded sb4 sm4 nm4 '[VObj.List 256 w4 ""] ->
+		Vk.Buffer.Binded sm4 sb4 nm4 '[VObj.List 256 w4 ""] ->
 		Vk.Mem.M sm4 '[ '(sb4, 'Vk.Mem.K.Buffer nm4 '[VObj.List 256 w4 ""])] ->
 		IO a ) -> IO a
 storageBufferNew4 dvc phdvc x y z w f = storageBufferNews
 	dvc phdvc (x :** y :** z :** w :** HeteroParList.Nil) $ addArg4 f
 
 addArg4 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 sb4 sm4 .
-	Vk.Buffer.Binded sb1 sm1 nm1 '[VObj.List 256 w1 ""] ->
+	Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
 	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
-	Vk.Buffer.Binded sb2 sm2 nm2 '[VObj.List 256 w2 ""] ->
+	Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
 	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
-	Vk.Buffer.Binded sb3 sm3 nm3 '[VObj.List 256 w3 ""] ->
+	Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
 	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] ->
-	Vk.Buffer.Binded sb4 sm4 nm4 '[VObj.List 256 w4 ""] ->
+	Vk.Buffer.Binded sm4 sb4 nm4 '[VObj.List 256 w4 ""] ->
 	Vk.Mem.M sm4 '[ '(sb4, 'Vk.Mem.K.Buffer nm4 '[VObj.List 256 w4 ""])] ->
 	r) -> Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 (Arg nm4 w4 r)))
 addArg4 f = Arg \b1 m1 ->
@@ -403,21 +403,21 @@ storageBufferNew3 :: (Storable w1, Storable w2, Storable w3) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (
 		forall sb1 sm1 sb2 sm2 sb3 sm3 .
-		Vk.Buffer.Binded sb1 sm1 nm1 '[VObj.List 256 w1 ""] ->
+		Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
 		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
-		Vk.Buffer.Binded sb2 sm2 nm2 '[VObj.List 256 w2 ""] ->
+		Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
 		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
-		Vk.Buffer.Binded sb3 sm3 nm3 '[VObj.List 256 w3 ""] ->
+		Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
 		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] -> IO a ) -> IO a
 storageBufferNew3 dvc phdvc x y z f =
 	storageBufferNews dvc phdvc (x :** y :** z :** HeteroParList.Nil) $ addArg3 f
 
 addArg3 :: (forall sb1 sm1 sb2 sm2 sb3 sm3 .
-	Vk.Buffer.Binded sb1 sm1 nm1 '[VObj.List 256 w1 ""] ->
+	Vk.Buffer.Binded sm1 sb1 nm1 '[VObj.List 256 w1 ""] ->
 	Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
-	Vk.Buffer.Binded sb2 sm2 nm2 '[VObj.List 256 w2 ""] ->
+	Vk.Buffer.Binded sm2 sb2 nm2 '[VObj.List 256 w2 ""] ->
 	Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
-	Vk.Buffer.Binded sb3 sm3 nm3 '[VObj.List 256 w3 ""] ->
+	Vk.Buffer.Binded sm3 sb3 nm3 '[VObj.List 256 w3 ""] ->
 	Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] -> r) ->
 	Arg nm1 w1 (Arg nm2 w2 (Arg nm3 w3 r))
 addArg3 f = Arg \b1 m1 -> Arg \b2 m2 -> Arg \b3 m3 -> f b1 m1 b2 m2 b3 m3
@@ -428,7 +428,7 @@ class StorageBufferNews f a where
 		HeteroParList.PL V.Vector (Vectors f) -> f -> IO a
 
 data Arg nm w f = Arg (forall sb sm .
-	Vk.Buffer.Binded sb sm nm '[VObj.List 256 w ""] ->
+	Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""] ->
 	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w ""])] -> f)
 
 instance StorageBufferNews (IO a) a where
@@ -445,7 +445,7 @@ instance (Storable w, StorageBufferNews f a) =>
 storageBufferNew :: forall sd nm w a . Storable w =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P -> V.Vector w -> (
 		forall sb sm .
-		Vk.Buffer.Binded sb sm nm '[VObj.List 256 w ""]  ->
+		Vk.Buffer.Binded sm sb nm '[VObj.List 256 w ""]  ->
 		Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w ""])] -> IO a ) -> IO a
 storageBufferNew dvc phdvc xs f =
 	Vk.Buffer.create dvc (bufferInfo xs) nil' \buffer -> do

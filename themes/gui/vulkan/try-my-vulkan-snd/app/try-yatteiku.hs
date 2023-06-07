@@ -252,7 +252,7 @@ makeImage' phdvc dvc f = do
 
 makeBuffer :: Vk.PhysicalDevice.P -> Vk.Device.D sd -> Word32 -> Word32 ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm "image-buffer" '[ VObj.ObjImage 1 MyImage ""] ->
+		Vk.Bffr.Binded sm sb "image-buffer" '[ VObj.ObjImage 1 MyImage ""] ->
 		Vk.Memory.M sm '[ '(
 			sb,
 			'Vk.Memory.K.Buffer "image-buffer" '[ VObj.ObjImage 1 MyImage ""])] ->
@@ -360,7 +360,7 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ VObj.ObjImage 1 t inm] ->
+		Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 t inm] ->
 		Vk.Memory.M sm '[ '(
 			sb,
 			'Vk.Memory.K.Buffer nm '[ VObj.ObjImage 1 t inm])] ->
@@ -371,7 +371,7 @@ createBufferImage p dv (r, w, h, d) usg props =
 createBuffer :: forall sd nm o a . VObj.SizeAlignment o =>
 	Vk.PhysicalDevice.P -> Vk.Device.D sd -> VObj.ObjectLength o ->
 	Vk.Bffr.UsageFlags -> Vk.Memory.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[o] ->
+		Vk.Bffr.Binded sm sb nm '[o] ->
 		Vk.Memory.M sm
 			'[ '(sb, 'Vk.Memory.K.Buffer nm '[o])] ->
 		IO a) -> IO a

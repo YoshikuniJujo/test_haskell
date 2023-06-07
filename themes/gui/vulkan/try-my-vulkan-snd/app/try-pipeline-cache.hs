@@ -210,7 +210,7 @@ dscSetInfo pl lyt = Vk.DS.AllocateInfo {
 	Vk.DS.allocateInfoSetLayouts = HL.Singleton $ U2 lyt }
 
 storageBufferNew :: forall sd nm a . Vk.Phd.P -> Vk.Dv.D sd -> (forall sb sm .
-	Vk.Bffr.Binded sb sm nm '[Word32List]  ->
+	Vk.Bffr.Binded sm sb nm '[Word32List]  ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[Word32List])] -> IO a) -> IO a
 storageBufferNew pd dv f =
 	Vk.Bffr.create dv bufferInfo nil' \bf ->

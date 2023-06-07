@@ -1145,7 +1145,7 @@ createCameraBuffers phdvc dvc lyt n f = createCameraBuffer phdvc dvc \bnd mem ->
 
 createCameraBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[VObj.Atom 256 GpuCameraData 'Nothing] ->
+		Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 GpuCameraData 'Nothing] ->
 		Vk.Mem.M sm '[ '(
 			sb,
 			'Vk.Mem.K.Buffer nm
@@ -1156,7 +1156,7 @@ createCameraBuffer phdvc dvc = createBuffer phdvc dvc (HeteroParList.Singleton V
 
 createSceneBuffer :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[
+		Vk.Bffr.Binded sm sb nm '[
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 		Vk.Mem.M sm '[ '(
@@ -1178,7 +1178,7 @@ createBuffer :: forall obj nm sd a . (
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[obj] ->
+		Vk.Bffr.Binded sm sb nm '[obj] ->
 		Vk.Mem.M sm '[
 			'(sb, 'Vk.Mem.K.Buffer nm '[obj])
 			] -> IO a ) -> IO a
@@ -1212,7 +1212,7 @@ createBuffer2 :: forall obj obj2 nm sd a . (
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> HeteroParList.PL VObj.ObjectLength '[obj, obj2] ->
 	Vk.Bffr.UsageFlags -> Vk.Mem.PropertyFlags -> (
 		forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[obj, obj2] ->
+		Vk.Bffr.Binded sm sb nm '[obj, obj2] ->
 		Vk.Mem.M sm '[
 			'(sb, 'Vk.Mem.K.Buffer nm '[obj, obj2])
 			] -> IO a ) -> IO a
@@ -1299,7 +1299,7 @@ createDescriptorSets :: (
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
-	Vk.Bffr.Binded sb sm "scene-buffer" '[
+	Vk.Bffr.Binded sm sb "scene-buffer" '[
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
 	IO (HeteroParList.PL (Vk.DscSet.S sd sp) ss)
@@ -1318,7 +1318,7 @@ class Update smsbs slbtss where
 		Vk.Dvc.D sd ->
 		HeteroParList.PL BindedGcd smsbs ->
 		HeteroParList.PL (Vk.DscSet.S sd sp) slbtss ->
-		Vk.Bffr.Binded sb sm "scene-buffer" '[
+		Vk.Bffr.Binded sm sb "scene-buffer" '[
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] -> Int -> IO ()
 
@@ -1362,7 +1362,7 @@ descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
 
 data BindedGcd smsb where
 	BindedGcd ::
-		Vk.Bffr.Binded sb sm "camera-buffer" '[VObj.Atom 256 GpuCameraData 'Nothing] ->
+		Vk.Bffr.Binded sm sb "camera-buffer" '[VObj.Atom 256 GpuCameraData 'Nothing] ->
 		BindedGcd '(sm, sb)
 
 data MemoryGcd smsb where

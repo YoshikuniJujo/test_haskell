@@ -1133,12 +1133,12 @@ createCameraObjDataBuffers pd dv lyt lytod n f =
 		(U2 lytod :** lytods) (BindedObjData bod :** bods) (MemoryObjData mobjd :** mods)
 
 data BindedCamera smsb where
-	BindedCamera :: Vk.Bffr.Binded sb sm "camera-buffer" '[CameraObj] ->
+	BindedCamera :: Vk.Bffr.Binded sm sb "camera-buffer" '[CameraObj] ->
 		BindedCamera '(sm, sb)
 
 data BindedObjData smsb where
 	BindedObjData ::
-		Vk.Bffr.Binded sb sm "object-data-buffer" '[ObjDataList] ->
+		Vk.Bffr.Binded sm sb "object-data-buffer" '[ObjDataList] ->
 		BindedObjData '(sm, sb)
 
 data MemoryCamera smsb where
@@ -1154,7 +1154,7 @@ data MemoryObjData smsb where
 		MemoryObjData '(sm, sb)
 
 createCameraBuffer :: Vk.Phd.P -> Vk.Dvc.D sd ->
-	(forall sm sb . Vk.Bffr.Binded sb sm nm '[CameraObj] ->
+	(forall sm sb . Vk.Bffr.Binded sm sb nm '[CameraObj] ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[CameraObj]) ] ->
 		IO a) -> IO a
 createCameraBuffer pd dv = createBuffer pd dv
@@ -1165,7 +1165,7 @@ createBuffer :: forall objs nm sd a . (
 	Obj.WholeSize objs, forall s . SizeAlignmentAll s nm objs ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.ObjectLength objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
-		Vk.Bffr.Binded sb sm nm objs ->
+		Vk.Bffr.Binded sm sb nm objs ->
 		Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm objs)] -> IO a) ->
 	IO a
 createBuffer pd dv lns usg prs f =
@@ -1202,7 +1202,7 @@ memoryInfo mt = Vk.Dvc.Mem.AllocateInfo {
 	Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createSceneBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sb sm nm '[SceneObj] ->
+	Vk.Bffr.Binded sm sb nm '[SceneObj] ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[SceneObj])] ->
 	IO a) -> IO a
 createSceneBuffer pd dv = createBuffer pd dv
@@ -1228,7 +1228,7 @@ createObjDataBuffers pd dv lyt n f = createObjDataBuffer pd dv \b m ->
 	f (U2 lyt :** lyts) (BindedObjData b :** bs) (MemoryObjData m :** ms)
 
 createObjDataBuffer :: Vk.Phd.P -> Vk.Dvc.D sd -> (forall sm sb .
-	Vk.Bffr.Binded sb sm nm '[ObjDataList] ->
+	Vk.Bffr.Binded sm sb nm '[ObjDataList] ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Buffer nm '[ObjDataList])] ->
 	IO a) -> IO a
 createObjDataBuffer pd dv = createBuffer pd dv
@@ -2108,7 +2108,7 @@ createBufferImage :: Storable (KObj.IsImagePixel t) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> (Int, Int, Int, Int) ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags ->
 	(forall sm sb .
-		Vk.Bffr.Binded sb sm nm '[ Obj.ObjImage 1 t inm] ->
+		Vk.Bffr.Binded sm sb nm '[ Obj.ObjImage 1 t inm] ->
 		Vk.Dvc.Mem.M sm '[ '(
 			sb,
 			'Vk.Mm.K.Buffer nm '[ Obj.ObjImage 1 t inm])] ->
