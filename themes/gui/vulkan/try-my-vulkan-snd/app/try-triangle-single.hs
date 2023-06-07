@@ -102,7 +102,7 @@ import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ClrCmp
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Layout
 import qualified Gpu.Vulkan.Attachment as Vk.Att
-import qualified Gpu.Vulkan.Attachment.Enum as Vk.Att
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.Attachment.Enum as Vk.Att
 import qualified Gpu.Vulkan.Subpass as Vk.Subpass
 import qualified Gpu.Vulkan.Subpass.Enum as Vk.Subpass
 import qualified Gpu.Vulkan.Pipeline.Enum as Vk.Ppl
