@@ -42,8 +42,8 @@ import qualified Gpu.Vulkan.Device.Middle as Device.M
 import qualified Gpu.Vulkan.Memory as Memory
 import qualified Gpu.Vulkan.Buffer.Middle as M
 import qualified Gpu.Vulkan.Buffer.Middle as C
-import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
-import qualified Gpu.Vulkan.Image.Middle as Image.M
+import qualified Gpu.Vulkan.QueueFamily as QueueFamily
+import qualified Gpu.Vulkan.Image as Image.M
 
 import Gpu.Vulkan.Buffer.Type
 

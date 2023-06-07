@@ -14,7 +14,9 @@ module Gpu.Vulkan.Image (
 
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 	M.SubresourceRange(..), MemoryBarrier(..),
-	MemoryBarrierListToMiddle(..), FirstOfFives
+	MemoryBarrierListToMiddle(..), FirstOfFives,
+
+	M.SubresourceLayers(..), M.Blit(..)
 	) where
 
 import GHC.TypeLits
