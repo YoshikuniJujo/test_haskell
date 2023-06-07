@@ -70,6 +70,7 @@ library
       Gpu.Vulkan.DescriptorSetLayout.Type
       Gpu.Vulkan.Device
       Gpu.Vulkan.Device.Type
+      Gpu.Vulkan.Enum
       Gpu.Vulkan.Exception
       Gpu.Vulkan.Ext.DebugUtils
       Gpu.Vulkan.Ext.DebugUtils.Messenger
@@ -163,6 +164,7 @@ library
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -200,6 +202,7 @@ executable my-glslc
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -238,6 +241,7 @@ executable try-allocation-callbacks
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -276,6 +280,7 @@ executable try-copy-descriptor-set
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -314,6 +319,7 @@ executable try-depth-buffering
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -352,6 +358,7 @@ executable try-depth-buffering-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -390,6 +397,7 @@ executable try-dynamic-dsc-sets
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -428,6 +436,7 @@ executable try-generating-mipmaps
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -466,6 +475,7 @@ executable try-generating-mipmaps-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -504,6 +514,7 @@ executable try-hello-world
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -542,6 +553,7 @@ executable try-image-buffer
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -580,6 +592,7 @@ executable try-loading-models
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -618,6 +631,7 @@ executable try-loading-models-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -656,6 +670,7 @@ executable try-multisampling
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -694,6 +709,7 @@ executable try-multisampling-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -732,6 +748,7 @@ executable try-no-dynamic-dsc-sets
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -770,6 +787,7 @@ executable try-pipeline-cache
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -808,6 +826,7 @@ executable try-query
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -846,6 +865,7 @@ executable try-rectangle
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -884,6 +904,7 @@ executable try-rectangle-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -922,6 +943,7 @@ executable try-saitan
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -960,6 +982,7 @@ executable try-saitan-float
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -998,6 +1021,7 @@ executable try-saitan-simple
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1036,6 +1060,7 @@ executable try-shaderc
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1074,6 +1099,7 @@ executable try-shaderc-core
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1112,6 +1138,7 @@ executable try-texel-buffer-float
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1150,6 +1177,7 @@ executable try-texel-buffer-word32
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1188,6 +1216,7 @@ executable try-texture
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1226,6 +1255,7 @@ executable try-texture-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1264,6 +1294,7 @@ executable try-triangle
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1302,6 +1333,7 @@ executable try-triangle-single
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1340,6 +1372,7 @@ executable try-vulkan-guide
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1378,6 +1411,7 @@ executable try-vulkan-guide-dynamic
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1416,6 +1450,7 @@ executable try-vulkan-guide-storage
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1454,6 +1489,7 @@ executable try-vulkan-guide-texture
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1492,6 +1528,7 @@ executable try-wavefront-obj
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1530,6 +1567,7 @@ executable try-yatteiku
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list
@@ -1569,6 +1607,7 @@ test-suite try-my-vulkan-snd-test
     , ranged-list
     , size-alignment-list
     , template-haskell
+    , temporary
     , text
     , time
     , try-hetero-parameter-list

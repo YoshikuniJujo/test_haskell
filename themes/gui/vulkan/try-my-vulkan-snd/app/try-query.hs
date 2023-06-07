@@ -1,4 +1,4 @@
-{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE PackageImports, ImportQualifiedPost #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE BlockArguments, LambdaCase, OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
@@ -33,7 +33,7 @@ import Shaderc.EnumAuto
 import Gpu.Vulkan.Misc
 
 import qualified Gpu.Vulkan as Vk
-import qualified Gpu.Vulkan.Enum as Vk
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.Enum as Vk
 import qualified Gpu.Vulkan.Instance as Vk.Inst
 import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd

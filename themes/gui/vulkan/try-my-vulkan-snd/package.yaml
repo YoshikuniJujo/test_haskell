@@ -48,6 +48,7 @@ dependencies:
 - typelevel-tools
 
 - directory
+- temporary
 
 library:
   source-dirs: src
