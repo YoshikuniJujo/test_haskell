@@ -49,6 +49,7 @@ library
       Gpu.Vulkan.Attachment
       Gpu.Vulkan.Attachment.Enum
       Gpu.Vulkan.Buffer
+      Gpu.Vulkan.Buffer.Enum
       Gpu.Vulkan.Buffer.Internal
       Gpu.Vulkan.Buffer.Type
       Gpu.Vulkan.BufferView
