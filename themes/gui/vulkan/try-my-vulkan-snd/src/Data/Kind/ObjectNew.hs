@@ -95,7 +95,7 @@ data SizeAlignmentOfObj (obj :: Object) = SizeAlignmentOfObj Size ObjAlignment d
 type Size = Int
 type ObjAlignment = Int
 
-class  SizeAlignmentList objs where
+class SizeAlignmentList objs where
 	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
 		HeteroParList.PL SizeAlignmentOfObj objs
 

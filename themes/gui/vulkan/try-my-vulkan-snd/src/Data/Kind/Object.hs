@@ -13,7 +13,7 @@
 module Data.Kind.Object (
 	Object(..), ObjectLength(..), ObjectType, ObjectAlignment,
 
-	SizeAlignment(..), WholeSize(..),
+	SizeAlignment(..), WholeSize(..), wholeSizeNew,
 
 	StoreObject(..),
 	Offset(..),
@@ -108,12 +108,35 @@ instance (SizeAlignment obj, WholeSize objs) =>
 		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj
 
-data SizeAlignmentOfType t = SizeAlignmentOfType Size ObjAlignment deriving Show
+wholeSizeNew :: SizeAlignmentList objs =>
+	HeteroParList.PL ObjectLength objs -> Size
+wholeSizeNew = wholeSizeFromSizeAlignmentList 0 . sizeAlignmentList
+
+wholeSizeFromSizeAlignmentList ::
+	Size -> HeteroParList.PL SizeAlignmentOfObj objs -> Size
+wholeSizeFromSizeAlignmentList sz0 HeteroParList.Nil = sz0
+wholeSizeFromSizeAlignmentList sz0 (SizeAlignmentOfObj sz algn :** saoo) =
+	wholeSizeFromSizeAlignmentList
+		(((sz0 - 1) `div` algn + 1) * algn + sz) saoo
+
+data SizeAlignmentOfObj (obj :: Object) =
+	SizeAlignmentOfObj Size ObjAlignment deriving Show
 
 type Size = Int
 type ObjAlignment = Int
 
--- class SizeAlignmentList (objs ::
+class SizeAlignmentList objs where
+	sizeAlignmentList :: HeteroParList.PL ObjectLength objs ->
+		HeteroParList.PL SizeAlignmentOfObj objs
+
+instance SizeAlignmentList '[] where
+	sizeAlignmentList HeteroParList.Nil = HeteroParList.Nil
+
+instance (SizeAlignment obj, SizeAlignmentList objs) =>
+	SizeAlignmentList (obj ': objs) where
+	sizeAlignmentList (ln :** lns) =
+		SizeAlignmentOfObj (objectSize ln) (objectAlignment @obj) :**
+		sizeAlignmentList lns
 
 class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
