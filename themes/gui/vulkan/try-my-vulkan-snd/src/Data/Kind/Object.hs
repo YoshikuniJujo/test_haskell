@@ -108,6 +108,13 @@ instance (SizeAlignment obj, WholeSize objs) =>
 		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj
 
+data SizeAlignmentOfType t = SizeAlignmentOfType Size ObjAlignment deriving Show
+
+type Size = Int
+type ObjAlignment = Int
+
+-- class SizeAlignmentList (objs ::
+
 class SizeAlignment obj where
 	objectSize :: ObjectLength obj -> Int
 	objectAlignment :: Int
