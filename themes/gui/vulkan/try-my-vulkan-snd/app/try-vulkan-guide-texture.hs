@@ -1162,7 +1162,7 @@ createCameraBuffer pd dv = createBuffer pd dv
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 createBuffer :: forall objs nm sd a . (
-	Obj.WholeSize objs, forall s . SizeAlignmentAll s nm objs ) =>
+	Obj.SizeAlignmentList objs, forall s . SizeAlignmentAll s nm objs ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.ObjectLength objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm objs ->

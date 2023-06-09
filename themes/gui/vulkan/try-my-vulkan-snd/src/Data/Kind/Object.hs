@@ -13,7 +13,7 @@
 module Data.Kind.Object (
 	Object(..), ObjectLength(..), ObjectType, ObjectAlignment,
 
-	SizeAlignment(..), WholeSize(..), wholeSizeNew,
+	SizeAlignment(..), wholeSizeNew,
 
 	StoreObject(..),
 	Offset(..),
@@ -96,17 +96,6 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 		(((ofst - 1) `div` algn + 1) * algn + objectSize ln) lns
 		where algn = objectAlignment @obj'
 	range (_ :** lns) = range @obj lns
-
-class WholeSize objs where
-	wholeSize :: Int -> HeteroParList.PL ObjectLength objs -> Int
-
-instance WholeSize '[] where wholeSize sz _ = sz
-
-instance (SizeAlignment obj, WholeSize objs) =>
-	WholeSize (obj ': objs) where
-	wholeSize sz (ln :** lns) =
-		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
-		where algn = objectAlignment @obj
 
 wholeSizeNew :: SizeAlignmentList objs =>
 	HeteroParList.PL ObjectLength objs -> Size

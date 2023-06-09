@@ -59,7 +59,7 @@ deriving instance
 	(Show (TMaybe.M n), Show (HeteroParList.PL VObj.ObjectLength objs)) =>
 	Show (CreateInfo n objs)
 
-createInfoToMiddle :: VObj.WholeSize objs =>
+createInfoToMiddle :: VObj.SizeAlignmentList objs =>
 	CreateInfo n objs -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
@@ -70,12 +70,12 @@ createInfoToMiddle CreateInfo {
 	createInfoQueueFamilyIndices = qfis } = M.CreateInfo {
 	M.createInfoNext = mnxt,
 	M.createInfoFlags = flgs,
-	M.createInfoSize = fromIntegral $ VObj.wholeSize 0 lns,
+	M.createInfoSize = fromIntegral $ VObj.wholeSizeNew lns,
 	M.createInfoUsage = usg,
 	M.createInfoSharingMode = smd,
 	M.createInfoQueueFamilyIndices = qfis }
 
-create :: (WithPoked (TMaybe.M mn), VObj.WholeSize objs, AllocationCallbacks.ToMiddle ma) =>
+create :: (WithPoked (TMaybe.M mn), VObj.SizeAlignmentList objs, AllocationCallbacks.ToMiddle ma) =>
 	Device.D sd -> CreateInfo mn objs ->
 	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
 	(forall sb . B sb nm objs -> IO a) -> IO a

@@ -91,7 +91,7 @@ instance SizeAlignmentList '[] where
 instance (SizeAlignment obj, SizeAlignmentList objs) =>
 	SizeAlignmentList (obj ': objs) where
 	sizeAlignmentList (ln :** lns) =
-		SizeAlignmentOfObj (objectSize ln) (objectAlignment @obj) :**
+		SizeAlignmentOfObj (objectSize' ln) (objectAlignment @obj) :**
 		sizeAlignmentList lns
 
 class SizeAlignment obj where
@@ -109,16 +109,6 @@ instance (KnownNat n, K.SizeAlignment kobj) =>
 	objectSize (ObjectLengthDynamic kln) = K.objectSize kln
 	objectSize' obj = fromIntegral (natVal (Proxy :: Proxy n)) * objectSize obj
 	objectAlignment = K.objectAlignment @kobj
-
-class WholeSize objs where
-	wholeSize :: Int -> HeteroParList.PL ObjectLength objs -> Int
-
-instance WholeSize '[] where wholeSize sz _ = sz
-
-instance (SizeAlignment obj, WholeSize objs) => WholeSize (obj ': objs) where
-	wholeSize sz (ln :** lns) =
-		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize' ln) lns
-		where algn = objectAlignment @obj
 
 nextObject :: forall kobj . K.SizeAlignment kobj =>
 	Ptr (K.ObjectType kobj) -> K.ObjectLength kobj -> Ptr (K.ObjectType kobj)

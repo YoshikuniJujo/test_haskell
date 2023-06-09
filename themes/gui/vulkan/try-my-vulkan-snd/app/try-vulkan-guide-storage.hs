@@ -78,7 +78,6 @@ import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.PhysicalDevice.Middle as Vk.Phd.M
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFmly
-import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFmly
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
@@ -1109,7 +1108,7 @@ createCameraBuffer pd dv = createBuffer pd dv
 	Vk.Bffr.UsageUniformBufferBit Vk.Mm.PropertyHostVisibleBit
 
 createBuffer :: forall objs nm sd a . (
-	Obj.WholeSize objs, forall s . SizeAlignmentAll s nm objs ) =>
+	Obj.SizeAlignmentList objs, forall s . SizeAlignmentAll s nm objs ) =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> HL.PL Obj.ObjectLength objs ->
 	Vk.Bffr.UsageFlags -> Vk.Mm.PropertyFlags -> (forall sm sb .
 		Vk.Bffr.Binded sm sb nm objs ->

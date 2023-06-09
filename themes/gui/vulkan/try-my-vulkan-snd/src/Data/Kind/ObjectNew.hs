@@ -60,20 +60,9 @@ instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
 		where algn = objectAlignment @obj'
 	range (_ :** lns) = range @obj lns
 
-class WholeSize objs where
-	wholeSize :: Int -> HeteroParList.PL ObjectLength objs -> Int
-
-instance WholeSize '[] where wholeSize sz _ = sz
-
 minimumAlignment :: Int
 -- minimumAlignment = 256
 minimumAlignment = 1
-
-instance (SizeAlignment obj, WholeSize objs) =>
-	WholeSize (obj ': objs) where
-	wholeSize sz (ln :** lns) =
-		wholeSize (((sz - 1) `div` algn + 1) * algn + objectSize ln) lns
-		where algn = objectAlignment @obj
 
 class StoreObject v (obj :: Object) where
 	storeObject :: Ptr (ObjectType obj) -> ObjectLength obj -> v -> IO ()

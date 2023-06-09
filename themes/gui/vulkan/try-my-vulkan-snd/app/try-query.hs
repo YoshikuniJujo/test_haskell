@@ -40,7 +40,6 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
-import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr

@@ -1170,7 +1170,7 @@ createSceneBuffer phdvc dvc = createBuffer2 phdvc dvc
 	Vk.Bffr.UsageUniformBufferBit Vk.Mem.PropertyHostVisibleBit
 
 createBuffer :: forall obj nm sd a . (
-	VObj.WholeSize '[obj],
+	VObj.SizeAlignmentList '[obj],
 	VObj.SizeAlignment obj
 --	Vk.Mem.Alignments '[
 --		'(s, 'Vk.Mem.K.Buffer nm objs) ]
@@ -1204,7 +1204,7 @@ createBuffer p dv lns usg props f = Vk.Bffr.create dv bffrInfo nil'
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 createBuffer2 :: forall obj obj2 nm sd a . (
-	VObj.WholeSize '[obj, obj2],
+	VObj.SizeAlignmentList '[obj, obj2],
 	VObj.SizeAlignment obj, VObj.SizeAlignment obj2
 --	Vk.Mem.Alignments '[
 --		'(s, 'Vk.Mem.K.Buffer nm objs) ]
