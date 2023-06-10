@@ -86,6 +86,25 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
+offsetNew :: forall v vs . (
+	OffsetNew v vs, VObj.SizeAlignmentList vs ) =>
+	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
+offsetNew = offsetListFromSizeAlignmentList @v 0 . VObj.sizeAlignmentList
+
+class OffsetNew v (vs :: [VObj.Object]) where
+	offsetListFromSizeAlignmentList ::
+		Int -> HeteroParList.PL VObj.SizeAlignmentOfObj vs ->
+		Device.M.Size
+
+instance OffsetNew v (VObj.List _oalgn v _nm ': vs) where
+	offsetListFromSizeAlignmentList ost (VObj.SizeAlignmentOfObj _ algn :** _) =
+		fromIntegral $ adjust algn ost
+
+instance {-# OVERLAPPABLE #-}
+	OffsetNew v vs => OffsetNew v (v' ': vs) where
+	offsetListFromSizeAlignmentList ost (VObj.SizeAlignmentOfObj sz algn :** sas) =
+		offsetListFromSizeAlignmentList @v @vs (adjust algn ost + sz) sas
+
 class Offset v (vs :: [VObj.Object]) where
 	offsetList :: HeteroParList.PL VObj.ObjectLength vs -> Int -> Device.M.Size
 
@@ -115,11 +134,12 @@ sampleObjLens =
 	-}
 
 data Indexed sm sb nm v =
-	forall vs . Offset v vs => Indexed (Binded sm sb nm vs)
+	forall vs . (OffsetNew v vs, VObj.SizeAlignmentList vs) =>
+	Indexed (Binded sm sb nm vs)
 
 indexedListToOffset :: forall sm sb nm v a . Indexed sm sb nm v ->
 	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a
-indexedListToOffset (Indexed b@(Binded lns _)) f = f (b, offsetList @v lns 0)
+indexedListToOffset (Indexed b@(Binded lns _)) f = f (b, offsetNew @v lns)
 
 indexedListToMiddle :: Indexed sm sb nm v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
