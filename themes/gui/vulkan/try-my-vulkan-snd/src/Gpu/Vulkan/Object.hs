@@ -20,6 +20,9 @@ import Data.HeteroParList (pattern (:**))
 
 import Data.Maybe
 
+import Foreign.Storable
+import Gpu.Vulkan.Device.Middle qualified as Device.M
+
 data Object = Static K.Object | Dynamic Nat K.Object | Dummy
 
 type List algn t nm = Static (K.List algn t nm)
@@ -198,3 +201,26 @@ instance {-# OVERLAPPABLE #-}
 	ObjectLengthIndex obj objs =>
 	ObjectLengthIndex obj (obj' ': objs) where
 	objectLengthIndex (_ :** lns) = objectLengthIndex @obj @objs lns
+
+offsetNew :: forall v vs . OffsetOfList v vs =>
+	HeteroParList.PL ObjectLength vs -> Device.M.Size
+offsetNew = offsetListFromSizeAlignmentList @v 0 . sizeAlignmentList
+
+class SizeAlignmentList vs => OffsetOfList v (vs :: [Object]) where
+	offsetListFromSizeAlignmentList ::
+		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
+		Device.M.Size
+
+instance (
+	Storable v, KnownNat oalgn, SizeAlignmentList vs ) =>
+	OffsetOfList v (List oalgn v _nm ': vs) where
+	offsetListFromSizeAlignmentList ost (SizeAlignmentOfObj _ algn :** _) =
+		fromIntegral $ adjust algn ost
+
+instance {-# OVERLAPPABLE #-} (
+	SizeAlignment v', OffsetOfList v vs ) => OffsetOfList v (v' ': vs) where
+	offsetListFromSizeAlignmentList ost (SizeAlignmentOfObj sz algn :** sas) =
+		offsetListFromSizeAlignmentList @v @vs (adjust algn ost + sz) sas
+
+adjust :: Int -> Int -> Int
+adjust algn ost = ((ost - 1) `div` algn + 1) * algn
