@@ -79,7 +79,6 @@ import qualified Gpu.Vulkan.PhysicalDevice as Vk.Phd
 import qualified Gpu.Vulkan.PhysicalDevice.Middle as Vk.Phd.M
 import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.Phd
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFmly
-import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFmly
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle as Vk.Dvc.M
 import qualified Gpu.Vulkan.Khr.Surface as Vk.Khr.Sfc
@@ -1707,7 +1706,7 @@ drawObject ovb cb0 ds dsod dstx RenderObject {
 	readIORef ovb >>= \case
 		Just o | vb == o -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
-				. U4 $ Vk.Bffr.Indexed @_ @_ @_ @Vertex vb
+				. U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
 		$ HL.Id (Str.G.Wrap MeshPushConstants {
