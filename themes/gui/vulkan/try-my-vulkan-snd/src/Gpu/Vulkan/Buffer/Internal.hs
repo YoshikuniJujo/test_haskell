@@ -20,7 +20,7 @@ module Gpu.Vulkan.Buffer.Internal (
 	-- * BINDED
 
 	getMemoryRequirements, Binded,
-	IndexedForList(..), indexedListToMiddle, indexedListToMiddles,
+	IndexedForList(..), indexedListToMiddles, indexedListToMiddle,
 
 	-- * COPY
 
@@ -36,7 +36,6 @@ module Gpu.Vulkan.Buffer.Internal (
 	
 	) where
 
-import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Gpu.Vulkan.Object qualified as VObj
@@ -62,9 +61,6 @@ import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Image as Image.M
 
 import Gpu.Vulkan.Buffer.Type
-
-import Foreign.Storable
-import Data.Kind.Object qualified as KObj
 
 data CreateInfo mn objs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -283,11 +279,9 @@ data ImageCopy img inm = ImageCopy {
 	imageCopyImageExtent :: C.Extent3d }
 	deriving Show
 
-imageCopyToMiddle :: forall algn img (inm :: Symbol) sm sb nm objs . (
-	Storable (KObj.IsImagePixel img),
-	KnownNat algn,
-	VObj.OffsetNew (VObj.ObjImage algn img inm) objs,
-	VObj.ObjectLengthOf (VObj.ObjImage algn img inm) objs ) =>
+imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
+	obj ~ VObj.ObjImage algn img inm, VObj.SizeAlignment obj,
+	VObj.OffsetNew obj objs, VObj.ObjectLengthOf obj objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -301,4 +295,4 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageExtent = iext }
 	where
 	(ost, _) = offsetSize @(VObj.ObjImage algn img inm) lns 0
-	VObj.ObjectLengthImage r _w h _d = VObj.objectLengthOf @(VObj.ObjImage algn img inm) lns
+	VObj.ObjectLengthImage r _w h _d = VObj.objectLengthOf @obj lns
