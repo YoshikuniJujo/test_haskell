@@ -62,6 +62,8 @@ import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
 
+import Foreign.Storable
+
 beginRenderPass' :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
 	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
@@ -419,7 +421,9 @@ instance ImageCopyListToMiddle algn objs img '[] where
 	imageCopyListToMiddle _ HeteroParList.Nil = []
 
 instance (
-	Buffer.OffsetSize (VObj.ObjImage algn img nm) objs,
+	Storable (KObj.IsImagePixel img), KnownNat algn,
+	VObj.OffsetNew (VObj.ObjImage algn img nm) objs,
+	VObj.ObjectLengthOf (VObj.ObjImage algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where
 	imageCopyListToMiddle bf (ic :** ics) =

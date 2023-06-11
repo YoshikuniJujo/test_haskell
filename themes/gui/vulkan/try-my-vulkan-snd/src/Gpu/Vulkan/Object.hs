@@ -202,9 +202,9 @@ instance {-# OVERLAPPABLE #-}
 	ObjectLengthIndex obj (obj' ': objs) where
 	objectLengthIndex (_ :** lns) = objectLengthIndex @obj @objs lns
 
-offsetNew :: forall v vs . OffsetOfList v vs =>
+offsetOfList :: forall v vs . OffsetOfList v vs =>
 	HeteroParList.PL ObjectLength vs -> Device.M.Size
-offsetNew = offsetListFromSizeAlignmentList @v 0 . sizeAlignmentList
+offsetOfList = offsetListFromSizeAlignmentList @v 0 . sizeAlignmentList
 
 class SizeAlignmentList vs => OffsetOfList v (vs :: [Object]) where
 	offsetListFromSizeAlignmentList ::
@@ -224,3 +224,32 @@ instance {-# OVERLAPPABLE #-} (
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
+
+offsetNew :: forall v vs . OffsetNew v vs =>
+	HeteroParList.PL ObjectLength vs -> Device.M.Size
+offsetNew = offsetFromSizeAlignmentList @v 0 . sizeAlignmentList
+
+class SizeAlignmentList vs => OffsetNew (v :: Object) (vs :: [Object]) where
+	offsetFromSizeAlignmentList ::
+		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
+		Device.M.Size
+
+instance (SizeAlignment v, SizeAlignmentList vs) =>
+	OffsetNew v (v ': vs) where
+	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj _ algn :** _) =
+		fromIntegral $ adjust algn ost
+
+instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetNew v vs) =>
+	OffsetNew v (v' ': vs) where
+	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj sz algn :** sas) =
+		offsetFromSizeAlignmentList @v @vs (adjust algn ost + sz) sas
+
+class ObjectLengthOf (v :: Object) (vs :: [Object]) where
+	objectLengthOf :: HeteroParList.PL ObjectLength vs -> ObjectLength v
+
+instance ObjectLengthOf v (v ': vs) where
+	objectLengthOf (ln :** _) = ln
+
+instance {-# OVERLAPPABLE #-} ObjectLengthOf v vs =>
+	ObjectLengthOf v (v' ': vs) where
+	objectLengthOf (_ :** lns) = objectLengthOf @v lns

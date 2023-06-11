@@ -13,7 +13,6 @@
 
 module Main where
 
-import GHC.TypeNats
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke

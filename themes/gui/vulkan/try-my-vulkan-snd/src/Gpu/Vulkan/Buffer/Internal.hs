@@ -13,14 +13,30 @@
 
 module Gpu.Vulkan.Buffer.Internal (
 
-	B, Binded,
+	-- * CREATE
 
-	module Gpu.Vulkan.Buffer.Internal
+	create, B, CreateInfo(..),
+
+	-- * BINDED
+
+	getMemoryRequirements, Binded,
+	IndexedForList(..), indexedListToMiddle, indexedListToMiddles,
+
+	-- * COPY
+
+	MakeCopies(..), CopyInfo,
+
+	-- * IMAGE COPY
+
+	ImageCopy(..), imageCopyToMiddle,
+
+	-- * MEMORY BARRIER
+
+	MemoryBarrier(..), MemoryBarrierListToMiddle(..), FirstOfFives,
 	
 	) where
 
 import GHC.TypeLits
-import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Gpu.Vulkan.Object qualified as VObj
@@ -46,6 +62,9 @@ import qualified Gpu.Vulkan.QueueFamily as QueueFamily
 import qualified Gpu.Vulkan.Image as Image.M
 
 import Gpu.Vulkan.Buffer.Type
+
+import Foreign.Storable
+import Data.Kind.Object qualified as KObj
 
 data CreateInfo mn objs = CreateInfo {
 	createInfoNext :: TMaybe.M mn,
@@ -86,10 +105,6 @@ create (Device.D dvc) ci (AllocationCallbacks.toMiddle -> mac) f = bracket
 getMemoryRequirements :: Device.D sd -> B sb nm objs -> IO Memory.Requirements
 getMemoryRequirements (Device.D dvc) (B _ b) = M.getMemoryRequirements dvc b
 
-offsetNew :: forall v vs . VObj.OffsetOfList v vs =>
-	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
-offsetNew = VObj.offsetListFromSizeAlignmentList @v 0 . VObj.sizeAlignmentList
-
 {-
 sampleObjLens :: HeteroParList.PL NObj.ObjectLength
 	['NObj.List 256 Bool "", 'NObj.Atom 256 Char 'Nothing, 'NObj.Atom 256 Int 'Nothing, 'NObj.List 256 Double "", 'NObj.List 256 Char ""]
@@ -106,7 +121,7 @@ data IndexedForList sm sb nm v =
 
 indexedListToOffset :: forall sm sb nm v a . IndexedForList sm sb nm v ->
 	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a
-indexedListToOffset (IndexedForList b@(Binded lns _)) f = f (b, offsetNew @v lns)
+indexedListToOffset (IndexedForList b@(Binded lns _)) f = f (b, VObj.offsetOfList @v lns)
 
 indexedListToMiddle :: IndexedForList sm sb nm v -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
@@ -203,29 +218,20 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 	MakeCopies (as ': ass) ss ds where
 	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
 
-class OffsetSize (v :: VObj.Object) (vs :: [VObj.Object]) where
-	offsetSize :: HeteroParList.PL VObj.ObjectLength vs ->
-		Device.M.Size -> (Device.M.Size, Device.M.Size)
-	objectLength :: HeteroParList.PL VObj.ObjectLength vs -> VObj.ObjectLength v
+offsetSize :: forall v vs . (
+	VObj.OffsetNew v vs, VObj.SizeAlignment v,
+	VObj.ObjectLengthOf v vs ) =>
+	HeteroParList.PL VObj.ObjectLength vs ->
+	Device.M.Size -> (Device.M.Size, Device.M.Size)
+offsetSize lns _ = (VObj.offsetNew @v lns, sizeNew @v lns)
 
-instance VObj.SizeAlignment v => OffsetSize v (v ': vs) where
-	offsetSize (ln :** _) ost = (
-		((ost - 1) `div` algn + 1) * algn,
-		fromIntegral $ VObj.objectSize ln )
-		where algn = fromIntegral $ VObj.objectAlignment @v
-	objectLength (ln :** _) = ln
+sizeNew :: forall v vs . (
+	VObj.SizeAlignment v, VObj.ObjectLengthOf v vs ) =>
+	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
+sizeNew = fromIntegral . VObj.objectSize . VObj.objectLengthOf @v
 
-instance {-# OVERLAPPABLE #-}
-	(VObj.SizeAlignment v, VObj.SizeAlignment v', OffsetSize v vs ) =>
-	OffsetSize v (v' ': vs) where
-	offsetSize (ln :** lns) ost = offsetSize @v lns
-		$ ((ost - 1) `div` algn + 1) * algn + sz
-		where
-		algn = fromIntegral $ VObj.objectAlignment @v
-		sz = fromIntegral $ VObj.objectSize ln
-	objectLength (_ :** lns) = objectLength @v lns
-
-data MemoryBarrier n sm sb nm obj = forall objs . OffsetSize obj objs =>
+data MemoryBarrier n sm sb nm obj = forall objs . (
+	VObj.OffsetNew obj objs, VObj.ObjectLengthOf obj objs ) =>
 	MemoryBarrier {
 		memoryBarrierNext :: Maybe n,
 		memoryBarrierSrcAccessMask :: AccessFlags,
@@ -234,7 +240,7 @@ data MemoryBarrier n sm sb nm obj = forall objs . OffsetSize obj objs =>
 		memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
 		memoryBarrierBuffer :: Binded sm sb nm objs }
 
-memoryBarrierToMiddle :: forall n sm sb nm obj .
+memoryBarrierToMiddle :: forall n sm sb nm obj . VObj.SizeAlignment obj =>
 	MemoryBarrier n sm sb nm obj -> M.MemoryBarrier n
 memoryBarrierToMiddle MemoryBarrier {
 	memoryBarrierNext = mnxt,
@@ -266,7 +272,7 @@ type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
-instance (WithPoked n, MemoryBarrierListToMiddle nsmsbnmobjs) =>
+instance (WithPoked n, MemoryBarrierListToMiddle nsmsbnmobjs, VObj.SizeAlignment obj) =>
 	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
@@ -277,8 +283,11 @@ data ImageCopy img inm = ImageCopy {
 	imageCopyImageExtent :: C.Extent3d }
 	deriving Show
 
-imageCopyToMiddle :: forall algn img (inm :: Symbol) sm sb nm objs .
-	OffsetSize (VObj.ObjImage algn img inm) objs =>
+imageCopyToMiddle :: forall algn img (inm :: Symbol) sm sb nm objs . (
+	Storable (KObj.IsImagePixel img),
+	KnownNat algn,
+	VObj.OffsetNew (VObj.ObjImage algn img inm) objs,
+	VObj.ObjectLengthOf (VObj.ObjImage algn img inm) objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,
@@ -292,4 +301,4 @@ imageCopyToMiddle (Binded lns _) ImageCopy {
 	M.imageCopyImageExtent = iext }
 	where
 	(ost, _) = offsetSize @(VObj.ObjImage algn img inm) lns 0
-	VObj.ObjectLengthImage r _w h _d = objectLength @(VObj.ObjImage algn img inm) lns
+	VObj.ObjectLengthImage r _w h _d = VObj.objectLengthOf @(VObj.ObjImage algn img inm) lns
