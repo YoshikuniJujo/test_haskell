@@ -29,6 +29,8 @@ library
       Data.TypeLevel.List
       Data.TypeLevel.Maybe
       Data.TypeLevel.ParMaybe
+      Data.TypeLevel.Tuple.Uncurry
+      Data.TypeLevel.Tuple.Uncurry.TH
   other-modules:
       Paths_typelevel_tools
   hs-source-dirs:
@@ -36,6 +38,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
+    , template-haskell
   default-language: Haskell2010
 
 test-suite typelevel-tools-test
@@ -48,5 +51,6 @@ test-suite typelevel-tools-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , template-haskell
     , typelevel-tools
   default-language: Haskell2010
