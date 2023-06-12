@@ -190,7 +190,7 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	WithPokedHeteroToListCpsM' TMaybe.M ns, WithPokedHeteroToListCpsM ns',
+	WithPokedHeteroToListCpsM' TMaybe.M ns, WithPokedHeteroToListCpsM' TMaybe.M ns',
 	WithPokedHeteroToListCpsM' TMaybe.M ns'' ) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
@@ -205,7 +205,7 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 		let	mbc = length cmbs in
 		allocaArray mbc \pmbs ->
 		pokeArray pmbs cmbs >>
-		withPokedWithHeteroListCpsM bbs Buffer.M.memoryBarrierToCore' \cbbs ->
+		withPokedWithHeteroListCpsM' @TMaybe.M bbs Buffer.M.memoryBarrierToCore' \cbbs ->
 		let	bbc = length cbbs in
 		allocaArray bbc \pbbs ->
 		pokeArray pbbs cbbs >>

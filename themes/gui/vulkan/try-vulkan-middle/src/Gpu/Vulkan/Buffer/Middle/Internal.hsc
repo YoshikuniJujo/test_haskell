@@ -106,8 +106,8 @@ bindMemory (Device.D dvc) (B b) (Memory.M mem) (Device.Size sz) = do
 	m <- readIORef mem
 	throwUnlessSuccess . Result =<< C.bindMemory dvc b m sz
 
-data MemoryBarrier n = MemoryBarrier {
-	memoryBarrierNext :: Maybe n,
+data MemoryBarrier mn = MemoryBarrier {
+	memoryBarrierNext :: TMaybe.M mn,
 	memoryBarrierSrcAccessMask :: AccessFlags,
 	memoryBarrierDstAccessMask :: AccessFlags,
 	memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
@@ -115,10 +115,11 @@ data MemoryBarrier n = MemoryBarrier {
 	memoryBarrierBuffer :: B,
 	memoryBarrierOffset :: Device.Size,
 	memoryBarrierSize :: Device.Size }
-	deriving Show
 
-memoryBarrierToCore' :: WithPoked n =>
-	MemoryBarrier n -> (C.MemoryBarrier -> IO a) -> IO ()
+deriving instance Show (TMaybe.M mn) => Show (MemoryBarrier mn)
+
+memoryBarrierToCore' :: WithPoked (TMaybe.M mn) =>
+	MemoryBarrier mn -> (C.MemoryBarrier -> IO a) -> IO ()
 memoryBarrierToCore' MemoryBarrier {
 	memoryBarrierNext = mnxt,
 	memoryBarrierSrcAccessMask = AccessFlagBits sam,
@@ -128,7 +129,7 @@ memoryBarrierToCore' MemoryBarrier {
 	memoryBarrierBuffer = B b,
 	memoryBarrierOffset = Device.Size ofst,
 	memoryBarrierSize = Device.Size sz } f =
-	withPokedMaybe' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
+	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	f C.MemoryBarrier {
 		C.memoryBarrierSType = (),
 		C.memoryBarrierPNext = pnxt',
