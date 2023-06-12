@@ -29,7 +29,7 @@ import Control.Monad
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.TypeLevel.Uncurry
-import Data.TypeLevel.Length
+import Data.TypeLevel.List
 import Data.IORef
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))

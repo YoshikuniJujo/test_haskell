@@ -53,7 +53,7 @@ import Control.Arrow
 import Control.Monad
 import Data.Default
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Length qualified as TL
+import Data.TypeLevel.List qualified as TL
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word

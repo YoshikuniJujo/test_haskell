@@ -17,7 +17,7 @@ import Foreign.Storable.PeekPoke
 import Control.Arrow
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-import Data.TypeLevel.Length qualified as TL
+import Data.TypeLevel.List qualified as TL
 import qualified Data.HeteroParList as HeteroParList
 
 import Gpu.Vulkan.Middle.Internal
