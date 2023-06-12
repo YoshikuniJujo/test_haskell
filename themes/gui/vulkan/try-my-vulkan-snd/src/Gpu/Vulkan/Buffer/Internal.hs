@@ -32,7 +32,7 @@ module Gpu.Vulkan.Buffer.Internal (
 
 	-- * MEMORY BARRIER
 
-	MemoryBarrier(..), MemoryBarrierListToMiddle(..), FirstOfFives,
+	MemoryBarrier(..), MemoryBarrierListToMiddle(..)
 	
 	) where
 
@@ -40,6 +40,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HeteroParList
@@ -259,11 +260,7 @@ memoryBarrierToMiddle MemoryBarrier {
 class MemoryBarrierListToMiddle nsmsbnmobjs where
 	memoryBarrierListToMiddle ::
 		HeteroParList.PL (U5 MemoryBarrier) nsmsbnmobjs ->
-		HeteroParList.PL M.MemoryBarrier (FirstOfFives nsmsbnmobjs)
-
-type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
-	FirstOfFives '[] = '[]
-	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
+		HeteroParList.PL M.MemoryBarrier (TMapIndex.M0_5 nsmsbnmobjs)
 
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
