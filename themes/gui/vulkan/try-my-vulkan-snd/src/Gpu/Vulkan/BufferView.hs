@@ -34,7 +34,7 @@ newtype B s (nm :: Symbol) t = B M.B deriving Show
 
 create :: (
 	WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc,
-	TEnum.FormatToValue (FormatOf t), OffsetRange t nm objs ) =>
+	TEnum.FormatToValue (FormatOf t), OffsetOfListWithNameNew t nm objs, Range t nm objs ) =>
 	Device.D sd -> CreateInfo mn t nm '(sm, sb, bnm, objs) ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall s . B s nm t -> IO a) -> IO a
@@ -50,7 +50,7 @@ data CreateInfo mn t (nm :: Symbol) snmobjs = CreateInfo {
 
 createInfoToMiddle :: forall n t nm sm sb bnm objs . (
 	TEnum.FormatToValue (FormatOf t),
-	OffsetRange t nm objs ) =>
+	OffsetOfListWithNameNew t nm objs, Range t nm objs ) =>
 	CreateInfo n t nm '(sm, sb, bnm, objs) -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
 	createInfoNext = mnxt,
@@ -60,27 +60,41 @@ createInfoToMiddle CreateInfo {
 	M.createInfoFlags = flgs,
 	M.createInfoBuffer = b,
 	M.createInfoFormat = TEnum.formatToValue @(FormatOf t),
-	M.createInfoOffset = offset @t @nm 0 lns,
+	M.createInfoOffset = offsetNew @t @nm lns,
 	M.createInfoRange = range @t @nm lns }
 
 type family FormatOf t :: TEnum.Format
 
-class OffsetRange t (nm :: Symbol) (objs :: [VObj.Object]) where
-	offset :: Device.M.Size ->
-		HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
+offsetNew :: forall t nm objs .
+	OffsetOfListWithNameNew t nm objs =>
+	HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
+offsetNew = offsetListFromSizeAlignmentList @t @nm 0
+	. VObj.sizeAlignmentList
+
+class VObj.SizeAlignmentList objs =>
+	OffsetOfListWithNameNew t (nm :: Symbol) (objs :: [VObj.Object]) where
+	offsetListFromSizeAlignmentList ::
+		Int -> HeteroParList.PL VObj.SizeAlignmentOfObj objs ->
+		Device.M.Size
+
+instance (Storable t, KnownNat oalgn, VObj.SizeAlignmentList objs) =>
+	OffsetOfListWithNameNew t nm (VObj.List oalgn t nm ': objs) where
+	offsetListFromSizeAlignmentList ost (VObj.SizeAlignmentOfObj _ algn :** _) =
+		fromIntegral $ VObj.adjust algn ost
+
+instance {-# OVERLAPPABLE #-}
+	(VObj.SizeAlignment obj, OffsetOfListWithNameNew t nm objs) =>
+	OffsetOfListWithNameNew t nm (obj ': objs) where
+	offsetListFromSizeAlignmentList ost (VObj.SizeAlignmentOfObj sz algn :** sas) =
+		offsetListFromSizeAlignmentList @t @nm @objs (VObj.adjust algn ost + sz) sas
+
+class Range t (nm :: Symbol) (objs :: [VObj.Object]) where
 	range :: HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
 
 instance (KnownNat algn, Storable t) =>
-	OffsetRange t nm (VObj.List algn t nm ': _objs) where
-	offset sz _ = sz
+	Range t nm (VObj.List algn t nm ': _objs) where
 	range (ln :** _) = fromIntegral $ VObj.objectSize' ln
 
-instance {-# OVERLAPPABLE #-} (VObj.SizeAlignment obj, OffsetRange t nm objs) =>
-	OffsetRange t nm (obj ': objs) where
-	offset sz (ln :** lns) = offset @t @nm (sz + objectSize ln) lns
+instance {-# OVERLAPPABLE #-} (VObj.SizeAlignment obj, Range t nm objs) =>
+	Range t nm (obj ': objs) where
 	range (_ :** lns) = range @t @nm lns
-
-objectSize :: forall obj . VObj.SizeAlignment obj =>
-	VObj.ObjectLength obj -> Device.M.Size
-objectSize ln = ((fromIntegral (VObj.objectSize' ln) - 1) `div` algn + 1) * algn
-	where algn = fromIntegral (VObj.objectAlignment @obj)
