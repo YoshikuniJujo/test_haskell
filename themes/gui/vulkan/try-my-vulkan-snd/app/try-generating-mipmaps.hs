@@ -28,7 +28,7 @@ import Data.Kind
 import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Length qualified as TLength
+import Data.TypeLevel.List qualified as TLength
 import Data.Foldable
 import Data.Default
 import Data.Bits

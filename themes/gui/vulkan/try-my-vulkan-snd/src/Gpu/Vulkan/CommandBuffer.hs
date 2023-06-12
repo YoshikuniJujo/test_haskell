@@ -34,7 +34,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Length qualified as TLength
+import Data.TypeLevel.List qualified as TLength
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
 

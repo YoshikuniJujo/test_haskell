@@ -29,7 +29,7 @@ import Data.Default
 import Data.Bits
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Length qualified as TLength
+import Data.TypeLevel.List qualified as TLength
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy

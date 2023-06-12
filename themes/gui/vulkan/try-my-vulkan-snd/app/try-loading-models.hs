@@ -32,7 +32,7 @@ import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Length qualified as TLength
+import Data.TypeLevel.List qualified as TLength
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy

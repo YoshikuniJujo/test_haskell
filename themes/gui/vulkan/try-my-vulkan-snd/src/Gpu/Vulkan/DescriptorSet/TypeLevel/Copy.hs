@@ -8,7 +8,7 @@
 
 module Gpu.Vulkan.DescriptorSet.TypeLevel.Copy where
 
-import Data.TypeLevel.Length qualified as TypeLevel.Length
+import Data.TypeLevel.List qualified as TypeLevel.Length
 
 import GHC.TypeLits
 
