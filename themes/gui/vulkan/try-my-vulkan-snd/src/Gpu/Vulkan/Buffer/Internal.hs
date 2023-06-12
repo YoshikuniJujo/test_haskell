@@ -215,7 +215,7 @@ instance (CopyInfo as ss ds, MakeCopies ass ss ds) =>
 	makeCopies src dst = makeCopy @as src dst : makeCopies @ass src dst
 
 offsetSize :: forall v vs . (
-	VObj.OffsetNew v vs, VObj.SizeAlignment v,
+	VObj.Offset v vs, VObj.SizeAlignment v,
 	VObj.ObjectLengthOf v vs ) =>
 	HeteroParList.PL VObj.ObjectLength vs ->
 	Device.M.Size -> (Device.M.Size, Device.M.Size)
@@ -227,7 +227,7 @@ sizeNew :: forall v vs . (
 sizeNew = fromIntegral . VObj.objectSize . VObj.objectLengthOf @v
 
 data MemoryBarrier n sm sb nm obj = forall objs . (
-	VObj.OffsetNew obj objs, VObj.ObjectLengthOf obj objs ) =>
+	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs ) =>
 	MemoryBarrier {
 		memoryBarrierNext :: Maybe n,
 		memoryBarrierSrcAccessMask :: AccessFlags,
@@ -281,7 +281,7 @@ data ImageCopy img inm = ImageCopy {
 
 imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
 	obj ~ VObj.ObjImage algn img inm, VObj.SizeAlignment obj,
-	VObj.OffsetNew obj objs, VObj.ObjectLengthOf obj objs ) =>
+	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs ) =>
 	Binded sm sb nm objs -> ImageCopy img inm -> M.ImageCopy
 imageCopyToMiddle (Binded lns _) ImageCopy {
 	imageCopyImageSubresource = isr,

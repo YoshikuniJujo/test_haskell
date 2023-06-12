@@ -422,7 +422,7 @@ instance ImageCopyListToMiddle algn objs img '[] where
 
 instance (
 	Storable (KObj.IsImagePixel img), KnownNat algn,
-	VObj.OffsetNew (VObj.ObjImage algn img nm) objs,
+	VObj.Offset (VObj.ObjImage algn img nm) objs,
 	VObj.ObjectLengthOf (VObj.ObjImage algn img nm) objs,
 	ImageCopyListToMiddle algn objs img nms ) =>
 	ImageCopyListToMiddle algn objs img (nm ': nms) where

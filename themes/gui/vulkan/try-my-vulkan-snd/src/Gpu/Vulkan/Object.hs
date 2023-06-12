@@ -151,17 +151,17 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
 	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
 
-class Offset (obj :: Object) objs where
+class OffsetRange (obj :: Object) objs where
 	offset :: Int -> HeteroParList.PL ObjectLength objs -> Int
 	range :: HeteroParList.PL ObjectLength objs -> Int
 
-instance SizeAlignment obj => Offset obj (obj ': objs) where
+instance SizeAlignment obj => OffsetRange obj (obj ': objs) where
 	offset ofst _ = ((ofst - 1) `div` algn + 1) * algn
 		where algn = objectAlignment @obj
 	range (ln :** _) = objectSize ln
 
-instance {-# OVERLAPPABLE #-} (SizeAlignment obj', Offset obj objs) =>
-	Offset obj (obj' ': objs) where
+instance {-# OVERLAPPABLE #-} (SizeAlignment obj', OffsetRange obj objs) =>
+	OffsetRange obj (obj' ': objs) where
 	offset ofst (ln :** lns) = offset @obj
 		(((ofst - 1) `div` algn + 1) * algn + objectSize' ln) lns
 		where algn = objectAlignment @obj'
@@ -225,22 +225,22 @@ instance {-# OVERLAPPABLE #-} (
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
 
-offsetNew :: forall v vs . OffsetNew v vs =>
+offsetNew :: forall v vs . Offset v vs =>
 	HeteroParList.PL ObjectLength vs -> Device.M.Size
 offsetNew = offsetFromSizeAlignmentList @v 0 . sizeAlignmentList
 
-class SizeAlignmentList vs => OffsetNew (v :: Object) (vs :: [Object]) where
+class SizeAlignmentList vs => Offset (v :: Object) (vs :: [Object]) where
 	offsetFromSizeAlignmentList ::
 		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
 		Device.M.Size
 
 instance (SizeAlignment v, SizeAlignmentList vs) =>
-	OffsetNew v (v ': vs) where
+	Offset v (v ': vs) where
 	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj _ algn :** _) =
 		fromIntegral $ adjust algn ost
 
-instance {-# OVERLAPPABLE #-} (SizeAlignment v', OffsetNew v vs) =>
-	OffsetNew v (v' ': vs) where
+instance {-# OVERLAPPABLE #-} (SizeAlignment v', Offset v vs) =>
+	Offset v (v' ': vs) where
 	offsetFromSizeAlignmentList ost (SizeAlignmentOfObj sz algn :** sas) =
 		offsetFromSizeAlignmentList @v @vs (adjust algn ost + sz) sas
 

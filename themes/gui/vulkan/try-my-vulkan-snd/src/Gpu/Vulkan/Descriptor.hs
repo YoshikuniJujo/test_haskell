@@ -105,7 +105,7 @@ instance (
 	bufferInfoListToLength (bi :** bis) =
 		bufferInfoToLength bi :** bufferInfoListToLength bis
 
-bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.Offset obj objs =>
+bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.OffsetRange obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle BufferInfoObj {
 	bufferInfoObjBuffer = Buffer.Binded lns b } = M.BufferInfo {

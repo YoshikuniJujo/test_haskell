@@ -97,7 +97,7 @@ class BufferInfosToMiddle sbsmobjsobjs where
 
 instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.Nil = []
 
-instance (VObj.Offset obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
+instance (VObj.OffsetRange obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
 	bufferInfosToMiddle (bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis
