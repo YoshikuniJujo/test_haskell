@@ -29,6 +29,8 @@ library
       Data.TypeLevel.List
       Data.TypeLevel.Maybe
       Data.TypeLevel.ParMaybe
+      Data.TypeLevel.Tuple.MapIndex
+      Data.TypeLevel.Tuple.MapIndex.TH
       Data.TypeLevel.Tuple.Uncurry
       Data.TypeLevel.Tuple.Uncurry.TH
   other-modules:
