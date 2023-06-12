@@ -28,7 +28,7 @@ import Gpu.Vulkan.Object qualified as Obj
 import Data.Foldable
 import Data.Default
 import Data.Bits
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Bool qualified as TBool
 import Data.HeteroParList qualified as HL

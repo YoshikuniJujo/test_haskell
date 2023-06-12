@@ -19,7 +19,7 @@ module Gpu.Vulkan.AllocationCallbacks.Type (
 import Foreign.Ptr
 import Data.Kind
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 
 import Gpu.Vulkan.AllocationCallbacks.Middle qualified as M
 

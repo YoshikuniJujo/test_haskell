@@ -14,7 +14,7 @@ import GHC.TypeLits
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Exception
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HeteroParList

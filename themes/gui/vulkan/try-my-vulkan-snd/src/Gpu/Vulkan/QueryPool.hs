@@ -17,7 +17,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.Kind
 import Data.Word
 

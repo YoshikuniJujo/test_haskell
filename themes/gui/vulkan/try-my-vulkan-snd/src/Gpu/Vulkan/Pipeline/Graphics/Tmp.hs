@@ -19,7 +19,7 @@ import GHC.TypeNats
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word

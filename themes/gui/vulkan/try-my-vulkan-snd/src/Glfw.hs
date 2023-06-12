@@ -8,7 +8,7 @@ module Glfw where
 
 import Control.Exception
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 
 import qualified Graphics.UI.GLFW as GlfwB
 

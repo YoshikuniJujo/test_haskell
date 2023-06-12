@@ -23,7 +23,7 @@ import Data.Default
 import Data.Bits
 import Data.Bits.Utils
 import Data.List.Length
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))

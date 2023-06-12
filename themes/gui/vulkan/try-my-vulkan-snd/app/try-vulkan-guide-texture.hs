@@ -29,7 +29,7 @@ import Data.Kind.Object qualified as KObj
 import Data.Foldable
 import Data.Default
 import Data.Bits
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Bool qualified as TBool
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HL

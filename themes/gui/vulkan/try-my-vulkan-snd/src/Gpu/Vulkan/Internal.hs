@@ -79,7 +79,7 @@ module Gpu.Vulkan.Internal (
 import Foreign.Storable.PeekPoke
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
 

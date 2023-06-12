@@ -16,7 +16,7 @@ module Gpu.Vulkan.DescriptorSet.TypeLevel.Write (
 
 import GHC.TypeLits
 import Data.Kind
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word

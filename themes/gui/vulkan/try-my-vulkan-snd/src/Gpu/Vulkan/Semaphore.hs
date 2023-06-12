@@ -11,7 +11,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 
 import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.AllocationCallbacks as AllocationCallbacks

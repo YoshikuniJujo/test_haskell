@@ -39,7 +39,7 @@ module Gpu.Vulkan.Buffer.Internal (
 import Foreign.Storable.PeekPoke
 import Control.Exception
 import Gpu.Vulkan.Object qualified as VObj
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import Data.HeteroParList qualified as HeteroParList

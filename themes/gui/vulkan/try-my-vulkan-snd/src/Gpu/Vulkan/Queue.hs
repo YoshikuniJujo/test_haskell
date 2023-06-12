@@ -5,7 +5,7 @@ module Gpu.Vulkan.Queue (
 	M.Q, submit, M.waitIdle
 	) where
 
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.HeteroParList qualified as HeteroParList
 
 import Gpu.Vulkan.Internal

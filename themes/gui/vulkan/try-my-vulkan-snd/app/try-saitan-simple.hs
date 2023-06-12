@@ -21,7 +21,7 @@ import Data.Kind.Object qualified as KObj
 import Data.Default
 import Data.Bits
 import Data.List.Length
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))

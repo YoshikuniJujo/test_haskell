@@ -33,7 +33,7 @@ import Data.Foldable
 import Data.Default
 import Data.Bits
 import Data.Array hiding (indices)
-import Data.TypeLevel.Uncurry
+import Data.TypeLevel.Tuple.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
