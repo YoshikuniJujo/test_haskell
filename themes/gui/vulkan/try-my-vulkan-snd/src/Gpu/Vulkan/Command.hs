@@ -378,7 +378,7 @@ pushConstants' (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
 
 pipelineBarrier :: (
 	WithPokedHeteroToListCpsM' TMaybe.M ns,
-	WithPokedHeteroToListCpsM (TMapIndex.M0_5 nsmsbnmobjs),
+	WithPokedHeteroToListCpsM' TMaybe.M (TMapIndex.M0_5 nsmsbnmobjs),
 	WithPokedHeteroToListCpsM' TMaybe.M (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>

@@ -227,10 +227,10 @@ sizeNew :: forall v vs . (
 	HeteroParList.PL VObj.ObjectLength vs -> Device.M.Size
 sizeNew = fromIntegral . VObj.objectSize . VObj.objectLengthOf @v
 
-data MemoryBarrier n sm sb nm obj = forall objs . (
+data MemoryBarrier mn sm sb nm obj = forall objs . (
 	VObj.Offset obj objs, VObj.ObjectLengthOf obj objs ) =>
 	MemoryBarrier {
-		memoryBarrierNext :: Maybe n,
+		memoryBarrierNext :: TMaybe.M mn,
 		memoryBarrierSrcAccessMask :: AccessFlags,
 		memoryBarrierDstAccessMask :: AccessFlags,
 		memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
@@ -265,8 +265,8 @@ class MemoryBarrierListToMiddle nsmsbnmobjs where
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
 
-instance (WithPoked n, MemoryBarrierListToMiddle nsmsbnmobjs, VObj.SizeAlignment obj) =>
-	MemoryBarrierListToMiddle ('(n, sm, sb, nm, obj) ': nsmsbnmobjs) where
+instance (WithPoked (TMaybe.M mn), MemoryBarrierListToMiddle nsmsbnmobjs, VObj.SizeAlignment obj) =>
+	MemoryBarrierListToMiddle ('(mn, sm, sb, nm, obj) ': nsmsbnmobjs) where
 	memoryBarrierListToMiddle (U5 mb :** mbs) =
 		memoryBarrierToMiddle mb :** memoryBarrierListToMiddle mbs
 
