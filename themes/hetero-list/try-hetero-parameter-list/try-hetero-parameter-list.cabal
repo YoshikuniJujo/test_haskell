@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-hetero-parameter-list
-version:        0.1.0.1
+version:        0.1.0.2
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-hetero-parameter-list#readme>
 homepage:       https://github.com/YoshikuniJujo/try-hetero-parameter-list#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-hetero-parameter-list/issues
@@ -26,8 +26,6 @@ source-repository head
 library
   exposed-modules:
       Data.HeteroParList
-      Data.TypeLevel.Uncurry
-      Data.TypeLevel.Uncurry.TH
   other-modules:
       Paths_try_hetero_parameter_list
   hs-source-dirs:
