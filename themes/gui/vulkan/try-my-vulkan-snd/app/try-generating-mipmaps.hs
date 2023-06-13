@@ -1473,7 +1473,8 @@ createUniformBuffers :: forall ssmp siv sd sdsc a .
 		Vk.DscSet.SListFromMiddle slyts,
 		HeteroParList.FromList slyts,
 		Update smsbs slyts ssmp siv,
-		DescriptorSetIndex slyts sdsc ) =>
+		HeteroParList.HomoList (AtomUbo sdsc) slyts
+		) =>
 		HeteroParList.PL Vk.DscSet.Layout slyts ->
 		HeteroParList.PL BindedUbo smsbs ->
 		HeteroParList.PL MemoryUbo smsbs -> IO a) -> IO a
@@ -1730,7 +1731,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 mainLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers ss sfs,
-	DescriptorSetIndex slyts sdsc, HeteroParList.HomoList '() vss ) =>
+	HeteroParList.HomoList (AtomUbo sdsc) slyts,
+	HeteroParList.HomoList '() vss ) =>
 	FramebufferResized ->
 	Glfw.Window -> Vk.Khr.Surface.S ssfc ->
 	Vk.PhDvc.P -> QueueFamilyIndices -> Vk.Dvc.D sd ->
@@ -1767,7 +1769,8 @@ mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp drsrcs 
 runLoop :: (
 	Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	RecreateFramebuffers sis sfs,
-	DescriptorSetIndex slyts sdsc, HeteroParList.HomoList '() vss ) =>
+	HeteroParList.HomoList (AtomUbo sdsc) slyts,
+	HeteroParList.HomoList '() vss ) =>
 	Glfw.Window -> Vk.Khr.Surface.S ssfc -> Vk.PhDvc.P ->
 	QueueFamilyIndices -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q ->
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.Extent2d ->
@@ -1801,7 +1804,8 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
 			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp drsrcs)
 
 drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts . (
-	DescriptorSetIndex slyts sdsc, HeteroParList.HomoList '() vss ) =>
+	HeteroParList.HomoList (AtomUbo sdsc) slyts,
+	HeteroParList.HomoList '() vss ) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
@@ -1824,7 +1828,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
 	HeteroParList.index rfss cf \(rfs :: Vk.Semaphore.S srfs) ->
 	HeteroParList.index iffs cf \(id &&& HeteroParList.Singleton -> (iff, siff)) ->
 	HeteroParList.index ubs cf \ub -> HeteroParList.index ums cf \um ->
-	descriptorSetIndex dscss cf \dscs -> do
+	($ HeteroParList.homoListIndex dscss cf) \dscs -> do
 	Vk.Fence.waitForFs dvc siff True maxBound
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
@@ -1850,18 +1854,6 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib cbs
 	catchAndSerialize $ Vk.Khr.queuePresentNew @'Nothing pq presentInfo
 	where	HeteroParList.Dummy cb = cbs `HeteroParList.homoListIndex` cf ::
 			HeteroParList.Dummy (Vk.CmdBffr.C scb) '()
-
-class DescriptorSetIndex aus s where
-	descriptorSetIndex :: HeteroParList.PL (Vk.DscSet.S sdsc sp) aus -> Int ->
-		(Vk.DscSet.S sdsc sp (AtomUbo s) -> a) -> a
-
-instance DescriptorSetIndex '[] s where
-	descriptorSetIndex _ _ f = f $ error "index too large"
-
-instance DescriptorSetIndex aus s =>
-	DescriptorSetIndex (AtomUbo s ': aus) s where
-	descriptorSetIndex (ds :** _) 0 f = f ds
-	descriptorSetIndex (_ :** dss) n f = descriptorSetIndex dss (n - 1) f
 
 updateUniformBuffer :: Vk.Dvc.D sd -> MemoryUbo sm -> Vk.Extent2d -> Float -> IO ()
 updateUniformBuffer dvc (MemoryUbo um) sce tm =
