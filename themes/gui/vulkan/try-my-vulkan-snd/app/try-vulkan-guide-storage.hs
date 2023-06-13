@@ -1600,7 +1600,7 @@ drawObject ovb cb0 ds dsod RenderObject {
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
 				. U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb
 			writeIORef ovb $ Just vb
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
+	Vk.Cmd.pushConstants @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
 		$ HL.Id (Str.G.Wrap MeshPushConstants {
 			meshPushConstantsData =
 				Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,

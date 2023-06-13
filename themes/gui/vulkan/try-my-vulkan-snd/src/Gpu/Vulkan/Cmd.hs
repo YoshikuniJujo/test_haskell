@@ -20,9 +20,21 @@ beginRenderPass,
 
 -- ** Draw
 
-bindPipelineGraphics,
+bindPipelineGraphics, bindVertexBuffers, bindIndexBuffer, draw, drawIndexed,
 
 -- ** Dispatch
+
+bindPipelineCompute, dispatch,
+
+-- * PUSH CONSTANTS AND BIND DESCRIPTOR SETS
+
+pushConstants,
+
+-- * COPY BUFFER AND IMAGES
+
+-- * MEMORY DEPENDENCY
+
+-- * QUERY
 
 -- * MISC
 
@@ -373,13 +385,13 @@ copyBufferNew :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc sms sbs smd 
 copyBufferNew (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
-pushConstants' :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
+pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
 	PokableList ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
 	PushConstant.OffsetSize whole ts ) =>
 	CommandBuffer.GBinded sc vs '(s, sbtss, whole) -> Pipeline.Layout.L s sbtss whole ->
 	HeteroParList.L ts -> IO ()
-pushConstants' (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
+pushConstants (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
 	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
 		(PushConstant.offset @whole @ts 0) xs
 

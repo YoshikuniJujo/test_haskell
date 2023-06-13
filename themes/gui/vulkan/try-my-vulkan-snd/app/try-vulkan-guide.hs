@@ -1552,7 +1552,7 @@ drawObject om cb sce cmd RenderObject {
 		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HeteroParList.Singleton
 				. U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb
 			writeIORef om $ Just vb) >>
-	Vk.Cmd.pushConstants' @'[ 'Vk.T.ShaderStageVertexBit ] cbb lyt (HeteroParList.Id (Foreign.Storable.Generic.Wrap
+	Vk.Cmd.pushConstants @'[ 'Vk.T.ShaderStageVertexBit ] cbb lyt (HeteroParList.Id (Foreign.Storable.Generic.Wrap
 		MeshPushConstants {
 			meshPushConstantsData = Cglm.Vec4 $ 0 :. 0 :. 0 :. 0 :. NilL,
 			meshPushConstantsRenderMatrix = model
