@@ -10,7 +10,17 @@
 {-# LANGUAGe StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Cmd where
+module Gpu.Vulkan.Cmd (
+
+-- * BEGIN RENDER PASS
+
+beginRenderPass',
+
+-- * MISC
+
+module Gpu.Vulkan.Cmd
+
+) where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
@@ -69,13 +79,6 @@ beginRenderPass' :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
 	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass' (CommandBuffer.C cb) bi cnt f = bracket_
-	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
-	(M.endRenderPass cb) f
-
-beginRenderPass :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
-	CommandBuffer.Binded sc vs -> RenderPass.BeginInfo n sr sf ct ->
-	Subpass.Contents -> IO a -> IO a
-beginRenderPass (CommandBuffer.Binded cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 

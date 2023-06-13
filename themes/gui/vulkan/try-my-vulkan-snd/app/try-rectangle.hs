@@ -115,7 +115,6 @@ import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
-import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
 import qualified Gpu.Vulkan.Semaphore as Vk.Semaphore
 import qualified Gpu.Vulkan.Fence as Vk.Fence
 import qualified Gpu.Vulkan.Fence.Enum as Vk.Fence
@@ -1016,7 +1015,7 @@ copyBuffer dvc gq cp src dst = do
 		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
-	beginInfo = Vk.CmdBffr.M.BeginInfo {
+	beginInfo = Vk.CmdBffr.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
 		Vk.CmdBffr.beginInfoInheritanceInfo = Nothing }
