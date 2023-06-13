@@ -53,6 +53,7 @@ library
       Gpu.Vulkan.Buffer.Internal
       Gpu.Vulkan.Buffer.Type
       Gpu.Vulkan.BufferView
+      Gpu.Vulkan.BufferView.Internal
       Gpu.Vulkan.Command
       Gpu.Vulkan.Command.TypeLevel
       Gpu.Vulkan.CommandBuffer

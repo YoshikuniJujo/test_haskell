@@ -325,16 +325,8 @@ prepareMems phdvc dvc dscSetLyt da db dc dd mxx f =
 			Vk.BufferView.createInfoFlags = zeroBits,
 			Vk.BufferView.createInfoBuffer = U4 bd }
 		Vk.Dvc.D mdvc = dvc in
-	Vk.BufferView.create dvc bufferViewInfo' nil' \bv@(Vk.BufferView.B mbv) -> do
-	let	wds = Vk.DscSet.Write {
-			Vk.DscSet.writeNext = TMaybe.N,
-			Vk.DscSet.writeDstSet = dscSet,
-			Vk.DscSet.writeDescriptorType =
-				Vk.Dsc.TypeStorageTexelBuffer,
-			Vk.DscSet.writeSources =
-				Vk.DscSet.TexelBufferViewsOld 1 0 [mbv]
-			}
-		wds' = Vk.DscSet.Write {
+	Vk.BufferView.create dvc bufferViewInfo' nil' \bv -> do
+	let	wds' = Vk.DscSet.Write {
 			Vk.DscSet.writeNext = TMaybe.N,
 			Vk.DscSet.writeDstSet = dscSet,
 			Vk.DscSet.writeDescriptorType =

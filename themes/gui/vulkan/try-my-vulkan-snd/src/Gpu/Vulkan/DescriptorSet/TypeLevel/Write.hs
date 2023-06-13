@@ -30,7 +30,7 @@ import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
 import Gpu.Vulkan.DescriptorSet.Middle qualified as M
 
-import Gpu.Vulkan.BufferView qualified as BufferView
+import Gpu.Vulkan.BufferView.Internal qualified as BufferView
 import Gpu.Vulkan.BufferView.Middle qualified as BufferView.M
 
 class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where

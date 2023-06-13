@@ -1,5 +1,5 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeOperators #-}
@@ -11,6 +11,7 @@
 
 module Gpu.Vulkan.Object where
 
+import GHC.TypeLits (Symbol)
 import GHC.TypeNats
 import Foreign.Ptr
 import Data.Kind.Object qualified as K
@@ -253,3 +254,36 @@ instance ObjectLengthOf v (v ': vs) where
 instance {-# OVERLAPPABLE #-} ObjectLengthOf v vs =>
 	ObjectLengthOf v (v' ': vs) where
 	objectLengthOf (_ :** lns) = objectLengthOf @v lns
+
+class ObjectLengthForTypeName t nm objs where
+	objectLengthForTypeName ::
+		HeteroParList.PL ObjectLength objs -> (
+			forall algn . KnownNat algn =>
+			ObjectLength (List algn t nm) -> a) -> a
+
+instance KnownNat algn =>
+	ObjectLengthForTypeName t nm (List algn t nm ': _objs) where
+	objectLengthForTypeName (ln :** _) = ($ ln)
+
+instance {-# OVERLAPPABLE #-}
+	ObjectLengthForTypeName t nm objs =>
+	ObjectLengthForTypeName t nm (_obj ': objs) where
+	objectLengthForTypeName (_ :** lns) f =
+		objectLengthForTypeName @t @nm @objs lns f
+
+class SizeAlignmentList objs =>
+	OffsetOfListWithName t (nm :: Symbol) (objs :: [Object]) where
+	offsetListFromSizeAlignmentListWithName ::
+		Int -> HeteroParList.PL SizeAlignmentOfObj objs ->
+		Device.M.Size
+
+instance (Storable t, KnownNat oalgn, SizeAlignmentList objs) =>
+	OffsetOfListWithName t nm (List oalgn t nm ': objs) where
+	offsetListFromSizeAlignmentListWithName ost (SizeAlignmentOfObj _ algn :** _) =
+		fromIntegral $ adjust algn ost
+
+instance {-# OVERLAPPABLE #-}
+	(SizeAlignment obj, OffsetOfListWithName t nm objs) =>
+	OffsetOfListWithName t nm (obj ': objs) where
+	offsetListFromSizeAlignmentListWithName ost (SizeAlignmentOfObj sz algn :** sas) =
+		offsetListFromSizeAlignmentListWithName @t @nm @objs (adjust algn ost + sz) sas
