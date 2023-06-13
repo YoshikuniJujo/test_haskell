@@ -1544,8 +1544,11 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
-	Vk.Cmd.bindDescriptorSets cbb Vk.Ppl.BindPointGraphics lyt
-		(HeteroParList.Singleton $ U2 cmd) [] >>
+	Vk.Cmd.bindDescriptorSetsNew cbb Vk.Ppl.BindPointGraphics lyt
+		(HeteroParList.Singleton $ U2 cmd)
+		(HeteroParList.Singleton (
+			HeteroParList.Nil :** HeteroParList.Nil :**
+			HeteroParList.Nil )) >>
 	readIORef om >>= \movb ->
 	(case movb of
 		Just ovb | vb == ovb -> pure ()

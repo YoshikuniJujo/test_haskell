@@ -29,6 +29,8 @@ bindPipelineCompute, dispatch,
 -- * PUSH CONSTANTS AND BIND DESCRIPTOR SETS
 
 pushConstants,
+bindDescriptorSetsNew,
+bindDescriptorSetsComputeNew,
 
 -- * COPY BUFFER AND IMAGES
 
@@ -144,19 +146,6 @@ instance HeteroParListToListNew '[] where toListNew _ HeteroParList.Nil = []
 instance HeteroParListToListNew spslbtss =>
 	HeteroParListToListNew (spslbts ': spslbtss) where
 	toListNew f (x :** xs) = f x : toListNew f xs
-
-bindDescriptorSets :: forall sc vs s sbtss foo sd spslbtss . (
-	SetPos (TMapIndex.M1_2 spslbtss) sbtss, HeteroParListToList' spslbtss ) =>
-	CommandBuffer.GBinded sc vs '(s, sbtss, foo) -> Pipeline.BindPoint ->
-	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
-	[Word32] -> IO ()
-bindDescriptorSets (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss dosts =
-	M.bindDescriptorSets c bp l
-		(firstSet' @spslbtss @sbtss)
-		(toList'
-			(\(U2 (DescriptorSet.S _ s)) -> s)
-			dss)
-		dosts
 
 bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
 	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
