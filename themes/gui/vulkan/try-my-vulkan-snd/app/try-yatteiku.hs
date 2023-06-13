@@ -149,7 +149,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 								Vk.rect2dExtent = Vk.Extent2d
 									screenWidth screenHeight },
 							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
-					Vk.Cmd.beginRenderPass' @'Nothing @'[]
+					Vk.Cmd.beginRenderPass @'Nothing @'[]
 						cb renderpassBeginInfo Vk.Subpass.ContentsInline $
 						Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics ppl \cbb ->
 						Vk.Cmd.draw cbb 3 1 0 0

@@ -14,7 +14,7 @@ module Gpu.Vulkan.Cmd (
 
 -- * BEGIN RENDER PASS
 
-beginRenderPass',
+beginRenderPass,
 
 -- * DRAW AND DISPATCH
 
@@ -83,10 +83,10 @@ import Gpu.Vulkan.QueryPool qualified as QueryPool
 
 import Foreign.Storable
 
-beginRenderPass' :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
+beginRenderPass :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
 	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
 	Subpass.Contents -> IO a -> IO a
-beginRenderPass' (CommandBuffer.C cb) bi cnt f = bracket_
+beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 

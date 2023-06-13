@@ -1468,7 +1468,7 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 	Word32 -> IO ()
 recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb cbInfo $
-	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline $
+	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	newIORef Nothing >>= \om ->
 	drawObject om cb sce cmd RenderObject {
 		renderObjectPipeline = gpl,

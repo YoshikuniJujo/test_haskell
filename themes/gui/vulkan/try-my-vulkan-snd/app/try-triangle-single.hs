@@ -965,7 +965,7 @@ recordCommandBuffer :: forall scb sr sf sg sm sb nm sl .
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] -> IO ()
 recordCommandBuffer cb rp fb sce gpl vb =
 	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb def $
-	Vk.Cmd.beginRenderPass' cb rpInfo Vk.Subpass.ContentsInline $
+	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
 		(HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb) >>

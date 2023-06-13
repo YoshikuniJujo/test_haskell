@@ -1530,7 +1530,7 @@ recordCommandBuffer ::
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
 recordCommandBuffer sce rp lyt gpl fb ds dsod vb vbt cb vn ffn (fromIntegral -> fn) =
 	Vk.CBffr.beginNew @'Nothing @'Nothing cb binfo $
-	Vk.Cmd.beginRenderPass' cb rpinfo Vk.Subpass.ContentsInline do
+	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline do
 	ovb <- newIORef Nothing
 	drawObject ovb cb ds dsod RenderObject {
 		renderObjectPipeline = gpl,
