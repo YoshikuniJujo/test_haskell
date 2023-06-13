@@ -267,7 +267,7 @@ run w inst g =
 	createIndexBuffer phdv dv gq cp \ib ->
 	createUniformBuffer phdv dv \ub ubm ->
 	createDescriptorPool dv \dscp ->
-	createDescriptorSet dv dscp ub dscslyt >>= \ubds ->
+	createDescriptorSet dv dscp ub dscslyt \ubds ->
 	createCommandBuffer dv cp \cb ->
 	createSyncObjects dv \sos ->
 	getCurrentTime >>= \tm ->
@@ -856,12 +856,13 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 createDescriptorSet ::
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]] ->
-	IO (Vk.DscSet.S sd sp '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]))
-createDescriptorSet dvc dscp ub dscslyt = do
-	HeteroParList.Singleton dscs <- Vk.DscSet.allocateSs dvc allocInfo
-	Vk.DscSet.updateDsNew dvc
-		(HeteroParList.Singleton . U5 $ descriptorWrite ub dscs) HeteroParList.Nil
-	pure dscs
+	(forall sds .
+		Vk.DscSet.SNew sds '(sdsc, '[ 'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing]]) -> IO a) -> IO a
+createDescriptorSet dvc dscp ub dscslyt f =
+	Vk.DscSet.allocateSsNew dvc allocInfo \(HeteroParList.Singleton dscs) -> do
+	Vk.DscSet.updateDsNewNew dvc
+		(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) HeteroParList.Nil
+	f dscs
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
@@ -871,17 +872,16 @@ createDescriptorSet dvc dscp ub dscslyt = do
 
 descriptorWrite ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.DscSet.S sd sp slbts ->
-	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.SNew sds slbts ->
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing)])
-descriptorWrite ub dscs = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
-		HeteroParList.Singleton bufferInfo
-	}
+descriptorWrite ub dscs = Vk.DscSet.WriteNew {
+	Vk.DscSet.writeNextNew = TMaybe.N,
+	Vk.DscSet.writeDstSetNew = dscs,
+	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
+		HeteroParList.Singleton bufferInfo }
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 createBufferAtom' :: forall sd nm a b . Storable a => Vk.PhDvc.P -> Vk.Dvc.D sd ->
@@ -1027,7 +1027,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
@@ -1036,7 +1036,7 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl 
 		'[ '(0, Cglm.Vec2), '(1, Cglm.Vec3)] '(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
-	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
+	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb def $
@@ -1045,8 +1045,8 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.Cmd.bindVertexBuffers cbb
 		(HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb) >>
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 ib) >>
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics ppllyt
-		(HeteroParList.Singleton $ U2 ubds)
+	Vk.Cmd.bindDescriptorSetsGraphicsNew cbb Vk.Ppl.BindPointGraphics ppllyt
+		(HeteroParList.Singleton ubds)
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
@@ -1078,7 +1078,7 @@ mainLoop :: (RecreateFramebuffers ss sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
-	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
+	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs vb ib ubm ubds cb iasrfsifs tm0 = do
@@ -1103,7 +1103,7 @@ runLoop :: (RecreateFramebuffers sis sfs, Vk.T.FormatToValue scfmt) =>
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
-	Vk.DscSet.S sd sp (AtomUbo sdsl) ->
+	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.Extent2d -> IO ()) -> IO ()
@@ -1115,7 +1115,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl fbs vb ib 
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsc sp sdsl scfmt .
+drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsc sp sdsl scfmt sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
@@ -1126,7 +1126,7 @@ drawFrame :: forall sfs sd ssc sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias sr
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	UniformBufferMemory sm2 sb2 ->
-	Vk.DscSet.S sdsc sp (AtomUbo sdsl) ->
+	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = HeteroParList.Singleton iff
