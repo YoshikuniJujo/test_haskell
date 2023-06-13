@@ -1544,7 +1544,7 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
-	Vk.Cmd.bindDescriptorSetsNew cbb Vk.Ppl.BindPointGraphics lyt
+	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics lyt
 		(HeteroParList.Singleton $ U2 cmd)
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :** HeteroParList.Nil :**

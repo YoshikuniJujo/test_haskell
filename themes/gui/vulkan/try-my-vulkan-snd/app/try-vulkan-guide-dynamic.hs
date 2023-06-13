@@ -1419,7 +1419,7 @@ drawObject ovb cb0 ds RenderObject {
 	renderObjectMesh = vb, renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } ffn =
 	Vk.Cmd.bindPipelineGraphics cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
-	Vk.Cmd.bindDescriptorSetsNew cb Vk.Ppl.BindPointGraphics lyt
+	Vk.Cmd.bindDescriptorSetsGraphics cb Vk.Ppl.BindPointGraphics lyt
 		(HL.Singleton $ U2 ds) . HL.Singleton $
 		(HL.Nil :** (Vk.Cmd.DynamicIndex ffn :** HL.Nil) :** HL.Nil)
 	readIORef ovb >>= \case

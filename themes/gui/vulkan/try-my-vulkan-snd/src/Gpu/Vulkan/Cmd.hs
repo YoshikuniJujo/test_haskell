@@ -29,7 +29,7 @@ bindPipelineCompute, dispatch,
 -- * PUSH CONSTANTS AND BIND DESCRIPTOR SETS
 
 pushConstants,
-bindDescriptorSetsNew,
+bindDescriptorSetsGraphics,
 bindDescriptorSetsComputeNew,
 
 -- * COPY BUFFER AND IMAGES
@@ -147,7 +147,7 @@ instance HeteroParListToListNew spslbtss =>
 	HeteroParListToListNew (spslbts ': spslbtss) where
 	toListNew f (x :** xs) = f x : toListNew f xs
 
-bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
+bindDescriptorSetsGraphics :: forall sc vs s sbtss foo sd spslbtss . (
 	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
 	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
 	GetDscSetListLengthSnds spslbtss ~ sbtss,
@@ -157,7 +157,7 @@ bindDescriptorSetsNew :: forall sc vs s sbtss foo sd spslbtss . (
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
 	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
 	IO ()
-bindDescriptorSetsNew (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss idxs = do
+bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss idxs = do
 	lns <- getDscSetListLength dss
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
