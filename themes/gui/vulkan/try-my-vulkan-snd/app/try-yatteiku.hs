@@ -151,7 +151,7 @@ runDevice phdvc device graphicsQueueFamilyIndex =
 							Vk.RenderPass.beginInfoClearValues = HeteroParList.Nil }
 					Vk.Cmd.beginRenderPass' @'Nothing @'[]
 						cb renderpassBeginInfo Vk.Subpass.ContentsInline $
-						Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics ppl \cbb ->
+						Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics ppl \cbb ->
 						Vk.Cmd.draw cbb 3 1 0 0
 				transitionImageLayout device gq cp bimg'
 					Vk.Img.LayoutUndefined Vk.Img.LayoutTransferSrcOptimal

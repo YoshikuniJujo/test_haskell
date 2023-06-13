@@ -1543,7 +1543,7 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectMesh = vb,
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } =
-	Vk.Cmd.bindPipelineNew cb Vk.Ppl.BindPointGraphics gpl \cbb ->
+	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindDescriptorSets cbb Vk.Ppl.BindPointGraphics lyt
 		(HeteroParList.Singleton $ U2 cmd) [] >>
 	readIORef om >>= \movb ->
