@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
@@ -9,19 +10,16 @@
 module Gpu.Vulkan.Cmd.TypeLevel where
 
 import Data.Kind
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Word
 
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as DescriptorSetLayout
 
-type family MapSnd (ts :: [(Type, (Type, [DescriptorSetLayout.BindingType]))]) where
-	MapSnd '[] = '[]
-	MapSnd ('(a, b) ': abs) = b ': MapSnd abs
-
 firstSet' :: forall
 	(dss :: [(Type, (Type, [DescriptorSetLayout.BindingType]))])
 	(pl :: [(Type, [DescriptorSetLayout.BindingType])]) .
-	SetPos (MapSnd dss) pl => Word32
-firstSet' = firstSet @(MapSnd dss) @pl
+	SetPos (TMapIndex.M1_2 dss) pl => Word32
+firstSet' = firstSet @(TMapIndex.M1_2 dss) @pl
 
 class SetPos
 	(dss :: [(Type, [DescriptorSetLayout.BindingType])])
