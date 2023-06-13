@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Command.TypeLevel where
+module Gpu.Vulkan.Cmd.TypeLevel where
 
 import Data.Kind
 import Data.Word

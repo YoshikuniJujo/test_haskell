@@ -129,7 +129,7 @@ import qualified Gpu.Vulkan.Memory.Enum as Vk.Mem
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
 

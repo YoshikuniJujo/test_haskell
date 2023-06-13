@@ -10,7 +10,7 @@
 {-# LANGUAGe StandaloneDeriving #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Command where
+module Gpu.Vulkan.Cmd where
 
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
@@ -29,7 +29,7 @@ import TypeLevel.List
 
 import Gpu.Vulkan.Middle
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Command.TypeLevel
+import Gpu.Vulkan.Cmd.TypeLevel
 
 import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer

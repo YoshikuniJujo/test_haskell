@@ -62,7 +62,7 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
-import qualified Gpu.Vulkan.Command as Vk.Cmd
+import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
