@@ -918,15 +918,19 @@ descriptorWrite ub dscs = Vk.DscSet.WriteNew {
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 class Update smsbs slbtss where
-	update :: Vk.Dvc.D sd -> HeteroParList.PL BindedUbo smsbs -> HeteroParList.PL (Vk.DscSet.SNew sds) slbtss -> IO ()
+	update :: Vk.Dvc.D sd -> HeteroParList.PL BindedUbo smsbs ->
+		HeteroParList.PL (Vk.DscSet.SNew sds) slbtss -> IO ()
 
 instance Update '[] '[] where update _ HeteroParList.Nil HeteroParList.Nil = pure ()
 
 instance Update '[t] '[] where update _ (HeteroParList.Singleton _) HeteroParList.Nil = pure ()
 
 instance (
-	Vk.DscSet.T.BindingAndArrayElem (Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs)) '[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
-	Update ubs dscss) => Update (ub ': ubs) ('(ds, cs) ': dscss) where
+	Vk.DscSet.T.BindingAndArrayElem
+		(Vk.DscSet.T.BindingTypesFromLayoutArg '(ds, cs))
+		'[VObj.Atom 256 UniformBufferObject 'Nothing] 0,
+	Update ubs dscss ) =>
+	Update (ub ': ubs) ('(ds, cs) ': dscss ) where
 	update dvc (BindedUbo ub :** ubs) (dscs :** dscss) = do
 		Vk.DscSet.updateDsNewNew dvc
 			(HeteroParList.Singleton . U4 $ descriptorWrite ub dscs) HeteroParList.Nil
