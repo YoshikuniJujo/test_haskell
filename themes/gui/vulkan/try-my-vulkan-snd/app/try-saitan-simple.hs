@@ -154,20 +154,20 @@ prepareMems :: (
 		VObj.List 256 W1 "",VObj.List 256 W2 "",VObj.List 256 W3 "" ] 0
 	) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
-	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall s sm1 sb1 sm2 sb2 sm3 sb3 .
-		Vk.DscSet.S sd s '(sl, bts) ->
+	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
+		Vk.DscSet.SNew sds '(sl, bts) ->
 		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W1 ""])] ->
 		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W2 ""])] ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.K.Buffer "" '[VObj.List 256 W3 ""])] -> IO a) -> IO a
 prepareMems phdvc dvc dscSetLyt da db dc f =
 	Vk.DscPool.create dvc dscPoolInfo nil' \dscPool ->
-	Vk.DscSet.allocateSs dvc (dscSetInfo dscPool dscSetLyt)
-		>>= \(HeteroParList.Singleton dscSet) ->
+	Vk.DscSet.allocateSsNew dvc (dscSetInfo dscPool dscSetLyt)
+		\(HeteroParList.Singleton dscSet) ->
 	storageBufferNew dvc phdvc da \ba ma ->
 	storageBufferNew dvc phdvc db \bb mb ->
 	storageBufferNew dvc phdvc dc \bc mc ->
-	Vk.DscSet.updateDsNew dvc
-		(HeteroParList.Singleton . U5 $ writeDscSet dscSet ba bb bc)
+	Vk.DscSet.updateDsNewNew dvc
+		(HeteroParList.Singleton . U4 $ writeDscSet dscSet ba bb bc)
 		HeteroParList.Nil >>
 	f dscSet ma mb mc
 
@@ -240,18 +240,18 @@ checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
-	forall sd sp slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 .
-	Vk.DscSet.S sd sp slbts ->
+	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 sds .
+	Vk.DscSet.SNew sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
-	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sb1, sm1, "", objs1,VObj.List 256 W1 ""), '(sb2, sm2, "", objs2,VObj.List 256 W2 ""),
 		'(sb3, sm3, "", objs3,VObj.List 256 W3 "") ])
-writeDscSet ds ba bb bc = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = ds,
-	Vk.DscSet.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
+writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
+	Vk.DscSet.writeNextNew = TMaybe.N,
+	Vk.DscSet.writeDstSetNew = ds,
+	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
 		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @W1 ba :**
 		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @W2 bb :**
 		Vk.Dsc.BufferInfoList @_ @_ @_ @_ @_ @W3 bc :**
@@ -259,7 +259,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.Write {
 
 -- CALC
 
-calc :: forall slbts sl bts sd sp . (
+calc :: forall slbts sl bts sd sds . (
 	slbts ~ '(sl, bts),
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Show (HeteroParList.PL
@@ -267,7 +267,7 @@ calc :: forall slbts sl bts sd sp . (
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
+	Vk.DscSet.SNew sds slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dvc Nothing
@@ -297,7 +297,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
 	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
 
-run :: forall slbts sbtss sd sc sg sl sp . (
+run :: forall slbts sbtss sd sc sg sl sds . (
 	sbtss ~ '[slbts],
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	Show (HeteroParList.PL
@@ -305,12 +305,12 @@ run :: forall slbts sbtss sd sc sg sl sp . (
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.S sd sp slbts -> Word32 -> IO ()
+	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
-			Vk.Cmd.bindDescriptorSetsCompute ccb
+			Vk.Cmd.bindDescriptorSetsComputeNew ccb
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))
