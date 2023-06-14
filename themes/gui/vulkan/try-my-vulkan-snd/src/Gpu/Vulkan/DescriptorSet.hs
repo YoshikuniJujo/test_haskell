@@ -143,6 +143,12 @@ data Copy n sds sps (slbtss :: LayoutArg) sdd spd (slbtsd :: LayoutArg)
 	copySrcSet :: S sds sps slbtss,
 	copyDstSet :: S sdd spd slbtsd }
 
+data CopyNew n sdss (slbtss :: LayoutArg) sdsd (slbtsd :: LayoutArg)
+	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = CopyNew {
+	copyNextNew :: TMaybe.M n,
+	copySrcSetNew :: SNew sdss slbtss,
+	copyDstSetNew :: SNew sdsd slbtsd }
+
 class CopyListToMiddle copyArgs where
 	type CopyNexts copyArgs :: [Maybe Type]
 	copyListToMiddle ::
@@ -387,9 +393,11 @@ updateDsNew (Device.D dvc) ws cs =
 updateDsNewNew :: (
 	WriteListToMiddleNewNew sdspslbtssbsmobjsobjs,
 	M.WriteListToCore (WriteNextsNew sdspslbtssbsmobjsobjs),
-	CopyListToMiddle copyArgs, M.CopyListToCore (CopyNexts copyArgs) ) =>
+	CopyListToMiddle copyArgs,
+	M.CopyListToCore (CopyNexts copyArgs) ) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 WriteNew) sdspslbtssbsmobjsobjs ->
+--	HeteroParList.PL (U8 CopyNew) copyArgs  -> IO ()
 	HeteroParList.PL (U10 Copy) copyArgs  -> IO ()
 updateDsNewNew (Device.D dvc) ws cs =
 	writeListUpdateLengthNewNew ws >> M.updateDs dvc ws' cs'
