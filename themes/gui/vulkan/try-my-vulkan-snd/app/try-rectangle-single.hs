@@ -1046,7 +1046,7 @@ recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 		(HeteroParList.Singleton . U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb) >>
 	Vk.Cmd.bindIndexBuffer cbb (Vk.Bffr.IndexedForList @_ @_ @_ @Word16 ib) >>
 	Vk.Cmd.bindDescriptorSetsGraphicsNew cbb Vk.Ppl.BindPointGraphics ppllyt
-		(HeteroParList.Singleton ubds)
+		(HeteroParList.Singleton $ U2 ubds)
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
