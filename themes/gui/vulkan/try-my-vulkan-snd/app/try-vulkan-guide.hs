@@ -291,7 +291,7 @@ run w ist g obj = let
 	createCommandBuffers dv cp \cbs ->
 	createSyncObjects dv \sos ->
 	createDescriptorPool dv \cmdp ->
-	createDescriptorSets dv cmdp cmbs cmlyts scnb >>= \cmds ->
+	createDescriptorSets dv cmdp cmbs cmlyts scnb \cmds ->
 	mainLoop g w sfc phdv qfis dv gq pq sc ext scivs rp ppllyt
 		gpl0 gpl1 cp (dptImg, dptImgMem, dptImgVw) fbs vb vbtri cbs sos cmbs cmms scnm cmds (fromIntegral $ V.length vns)
 
@@ -1129,7 +1129,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
 	Int ->
 	(forall slyts sbsms . (
-		Vk.DscSet.SListFromMiddle slyts,
+		Vk.DscSet.SListFromMiddleNew slyts,
 		HeteroParList.FromList slyts, Update sbsms slyts,
 		HeteroParList.HomoList '(sdsc, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1295,18 +1295,18 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 createDescriptorSets :: (
-	Vk.DscSet.SListFromMiddle ss,
+	Vk.DscSet.SListFromMiddleNew ss,
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
 	Vk.Bffr.Binded sm sb "scene-buffer" '[
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
-	IO (HeteroParList.PL (Vk.DscSet.S sd sp) ss)
-createDescriptorSets dvc dscp ubs dscslyts scnb = do
-	dscss <- Vk.DscSet.allocateSs dvc allocInfo
+	(forall sds . HeteroParList.PL (Vk.DscSet.SNew sds) ss -> IO a) -> IO a
+createDescriptorSets dvc dscp ubs dscslyts scnb f =
+	Vk.DscSet.allocateSsNew dvc allocInfo \dscss -> do
 	update dvc ubs dscss scnb 0
-	pure dscss
+	f dscss
 	where
 	allocInfo = Vk.DscSet.AllocateInfo {
 		Vk.DscSet.allocateInfoNext = TMaybe.N,
@@ -1317,7 +1317,7 @@ class Update smsbs slbtss where
 	update ::
 		Vk.Dvc.D sd ->
 		HeteroParList.PL BindedGcd smsbs ->
-		HeteroParList.PL (Vk.DscSet.S sd sp) slbtss ->
+		HeteroParList.PL (Vk.DscSet.SNew sds) slbtss ->
 		Vk.Bffr.Binded sm sb "scene-buffer" '[
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] -> Int -> IO ()
@@ -1332,31 +1332,31 @@ instance (
 	) =>
 	Update (ub ': ubs) ('(ds, cs) ': dscss) where
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 0 = do
-		Vk.DscSet.updateDsNew dvc (
-			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+		Vk.DscSet.updateDsNewNew dvc (
+			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-0") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil ) HeteroParList.Nil
 		update dvc ubs dscss scnb 1
 	update dvc (BindedGcd ub :** ubs) (dscs :** dscss) scnb 1 = do
-		Vk.DscSet.updateDsNew dvc (
-			U5 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
-			U5 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
+		Vk.DscSet.updateDsNewNew dvc (
+			U4 (descriptorWrite0 @GpuCameraData @Nothing ub dscs Vk.Dsc.TypeUniformBuffer) :**
+			U4 (descriptorWrite0 @GpuSceneData0 @('Just "scene-data-1") scnb dscs Vk.Dsc.TypeUniformBuffer) :**
 			HeteroParList.Nil )
 			HeteroParList.Nil
 		update dvc ubs dscss scnb 2
 	update _ _ _ _ _ = error "bad"
 
-descriptorWrite0 :: forall tp objnm objs sm sb nm sd sp slbts .
+descriptorWrite0 :: forall tp objnm objs sm sb nm sd sp slbts sds .
 	Vk.Bffr.Binded sm sb nm objs ->
-	Vk.DscSet.S sd sp slbts -> Vk.Dsc.Type ->
-	Vk.DscSet.Write 'Nothing sd sp slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
+	Vk.DscSet.SNew sds slbts -> Vk.Dsc.Type ->
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		objs,VObj.Atom 256 tp objnm )])
-descriptorWrite0 ub dscs tp = Vk.DscSet.Write {
-	Vk.DscSet.writeNext = TMaybe.N,
-	Vk.DscSet.writeDstSet = dscs,
-	Vk.DscSet.writeDescriptorType = tp,
-	Vk.DscSet.writeSources = Vk.DscSet.BufferInfos $
+descriptorWrite0 ub dscs tp = Vk.DscSet.WriteNew {
+	Vk.DscSet.writeNextNew = TMaybe.N,
+	Vk.DscSet.writeDstSetNew = dscs,
+	Vk.DscSet.writeDescriptorTypeNew = tp,
+	Vk.DscSet.writeSourcesNew= Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo }
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
@@ -1446,7 +1446,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp .
+recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Graphics.GNew sg
@@ -1461,7 +1461,7 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 		'[WrapMeshPushConstants] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] -> Int ->
-	Vk.DscSet.S sd sp '(sdlyt, '[
+	Vk.DscSet.SNew sds '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
@@ -1532,7 +1532,7 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])) ->
 	Vk.CmdBffr.C scb ->
 	Vk.Extent2d ->
-	Vk.DscSet.S sd sp '(sdlyt, '[
+	Vk.DscSet.SNew sds '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
@@ -1544,8 +1544,8 @@ drawObject om cb sce cmd RenderObject {
 	renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = model } =
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
-	Vk.Cmd.bindDescriptorSetsGraphics cbb Vk.Ppl.BindPointGraphics lyt
-		(HeteroParList.Singleton $ U2 cmd)
+	Vk.Cmd.bindDescriptorSetsGraphicsNew cbb Vk.Ppl.BindPointGraphics lyt
+		(HeteroParList.Singleton cmd)
 		(HeteroParList.Singleton (
 			HeteroParList.Nil :** HeteroParList.Nil :**
 			HeteroParList.Nil )) >>
@@ -1615,7 +1615,7 @@ mainLoop :: (
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
-	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
+	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
 	Word32 -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms scnm cmds vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
@@ -1672,7 +1672,7 @@ runLoop :: (
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
-	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
+	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
 	Word32 ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms scnm cmds vn loop = do
@@ -1685,7 +1685,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp d
 
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
-		scb ssos vss sbsms sscnm sscnb sp slyts . (
+		scb ssos vss sbsms sscnm sscnb sp slyts sds . (
 	HeteroParList.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1717,7 +1717,7 @@ drawFrame ::
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
-	HeteroParList.PL (Vk.DscSet.S sd sp) slyts ->
+	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
 	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->
