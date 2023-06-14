@@ -171,6 +171,28 @@ instance (
 		copyArgs ) = n ': CopyNexts copyArgs
 	copyListToMiddle (U10 c :** cs) = copyToMiddle c :** copyListToMiddle cs
 
+class CopyListToMiddleNew copyArgs where
+	type CopyNextsNew copyArgs :: [Maybe Type]
+	copyListToMiddleNew ::
+		HeteroParList.PL (U8 CopyNew) copyArgs ->
+		HeteroParList.PL M.Copy (CopyNextsNew copyArgs)
+
+instance CopyListToMiddleNew '[] where
+	type CopyNextsNew '[] = '[]
+	copyListToMiddleNew HeteroParList.Nil = HeteroParList.Nil
+
+instance (
+	Copy.BindingAndArrayElement btss bts is,
+	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts,
+	CopyListToMiddleNew copyArgs ) =>
+	CopyListToMiddleNew (
+		'(n, sdss, '(sls, btss), sdsd, '(sld, btsd), bts, is, id) ':
+		copyArgs) where
+	type CopyNextsNew (
+		'(n, sdss, '(sls, btss), sdsd, '(sld, btsd), bts, is, id) ':
+		copyArgs ) = n ': CopyNextsNew copyArgs
+	copyListToMiddleNew (U8 c :** cs) = copyToMiddleNew c :** copyListToMiddleNew cs
+
 copyToMiddle :: (
 	Copy.BindingAndArrayElement btss bts is,
 	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
@@ -186,6 +208,21 @@ copyToMiddle c@Copy {
 		M.copyDstBinding = db,
 		M.copyDstArrayElement = dae, M.copyDescriptorCount = cnt }
 
+copyToMiddleNew :: (
+	Copy.BindingAndArrayElement btss bts is,
+	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
+	CopyNew n sdss '(sls, btss) sdsd '(sld, btsd) bts is id -> M.Copy n
+copyToMiddleNew c@CopyNew {
+	copyNextNew = mnxt, copySrcSetNew = SNew _ ss, copyDstSetNew = SNew _ ds } = let
+	(sb, sae, db, dae, cnt) = getCopyArgsNew c in
+	M.Copy {
+		M.copyNext = mnxt,
+		M.copySrcSet = ss,
+		M.copySrcBinding = sb,
+		M.copySrcArrayElement = sae, M.copyDstSet = ds,
+		M.copyDstBinding = db,
+		M.copyDstArrayElement = dae, M.copyDescriptorCount = cnt }
+
 getCopyArgs :: forall n sds sps sls btss sdd spd sld btsd bts is id . (
 	Copy.BindingAndArrayElement btss bts is,
 	Copy.BindingAndArrayElement btsd bts id,
@@ -193,6 +230,17 @@ getCopyArgs :: forall n sds sps sls btss sdd spd sld btsd bts is id . (
 	Copy n sds sps '(sls, btss) sdd spd '(sld, btsd) bts is id ->
 	(Word32, Word32, Word32, Word32, Word32)
 getCopyArgs _ = let
+	(sb, sae) = Copy.bindingAndArrayElement @btss @bts @is
+	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
+	(sb, sae, db, dae, Copy.bindingLength @bts)
+
+getCopyArgsNew :: forall n sdss sls btss sdsd sld btsd bts is id . (
+	Copy.BindingAndArrayElement btss bts is,
+	Copy.BindingAndArrayElement btsd bts id,
+	Copy.BindingLength bts ) =>
+	CopyNew n sdss '(sls, btss) sdsd '(sld, btsd) bts is id ->
+	(Word32, Word32, Word32, Word32, Word32)
+getCopyArgsNew _ = let
 	(sb, sae) = Copy.bindingAndArrayElement @btss @bts @is
 	(db, dae) = Copy.bindingAndArrayElement @btsd @bts @id in
 	(sb, sae, db, dae, Copy.bindingLength @bts)
@@ -393,12 +441,12 @@ updateDsNew (Device.D dvc) ws cs =
 updateDsNewNew :: (
 	WriteListToMiddleNewNew sdspslbtssbsmobjsobjs,
 	M.WriteListToCore (WriteNextsNew sdspslbtssbsmobjsobjs),
-	CopyListToMiddle copyArgs,
-	M.CopyListToCore (CopyNexts copyArgs) ) =>
+	CopyListToMiddleNew copyArgs,
+	M.CopyListToCore (CopyNextsNew copyArgs) ) =>
 	Device.D sd ->
 	HeteroParList.PL (U4 WriteNew) sdspslbtssbsmobjsobjs ->
---	HeteroParList.PL (U8 CopyNew) copyArgs  -> IO ()
-	HeteroParList.PL (U10 Copy) copyArgs  -> IO ()
+	HeteroParList.PL (U8 CopyNew) copyArgs  -> IO ()
+--	HeteroParList.PL (U10 Copy) copyArgs  -> IO ()
 updateDsNewNew (Device.D dvc) ws cs =
 	writeListUpdateLengthNewNew ws >> M.updateDs dvc ws' cs'
-	where ws' = writeListToMiddleNewNew ws; cs' = copyListToMiddle cs
+	where ws' = writeListToMiddleNewNew ws; cs' = copyListToMiddleNew cs
