@@ -82,7 +82,7 @@ bffSize = 30
 main :: IO ()
 main = withDevice \pd qfi dv -> putStrLn . map (chr . fromIntegral) =<<
 	Vk.DSLyt.create dv dscSetLayoutInfo nil' \dslyt ->
-	prepareMems pd dv dslyt \dscs dscs' m ->
+	prepareMems pd dv dslyt \_dscs dscs' m ->
 	calc qfi dv dslyt dscs' bffSize >>
 	Vk.Mm.read @"" @Word32List @[Word32] dv m zeroBits
 
@@ -132,18 +132,18 @@ prepareMems :: (
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElem bts '[Word32List] 0 ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
-	(forall s sm sb .
-		Vk.DS.S sd s '(sl, bts) ->
-		Vk.DS.S sd s '(sl, bts) ->
+	(forall sds sm sb .
+		Vk.DS.SNew sds '(sl, bts) ->
+		Vk.DS.SNew sds '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
-	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(ds :** ds' :** HL.Nil) ->
+	Vk.DS.allocateSsNew dv (dscSetInfo dp dslyt) \(ds :** ds' :** HL.Nil) ->
 	storageBufferNew pd dv \b m ->
-	Vk.DS.updateDsNew dv
-		(HL.Singleton . U5 $ writeDscSet ds b)
-		(HL.Singleton . U10 $ copyDscSet ds ds') >>
+	Vk.DS.updateDsNewNew dv
+		(HL.Singleton . U4 $ writeDscSet ds b)
+		(HL.Singleton . U8 $ copyDscSet ds ds') >>
 	f ds ds' m
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
@@ -205,30 +205,30 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSet :: forall sd sp slbts sb sm os .
-	Vk.DS.S sd sp slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.Write 'Nothing sd sp slbts
+writeDscSet :: forall slbts sb sm os sds .
+	Vk.DS.SNew sds slbts -> Vk.Bffr.Binded sm sb "" os ->
+	Vk.DS.WriteNew 'Nothing sds slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
-writeDscSet ds ba = Vk.DS.Write {
-	Vk.DS.writeNext = TMaybe.N,
-	Vk.DS.writeDstSet = ds,
-	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DS.writeSources =
+writeDscSet ds ba = Vk.DS.WriteNew {
+	Vk.DS.writeNextNew = TMaybe.N,
+	Vk.DS.writeDstSetNew = ds,
+	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
+	Vk.DS.writeSourcesNew =
 		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
 
-copyDscSet :: Vk.DS.S sd sp slbts -> Vk.DS.S sd sp slbts -> Vk.DS.Copy
-	'Nothing sd sp slbts sd sp slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0
-copyDscSet s d = Vk.DS.Copy
-	{ Vk.DS.copyNext = TMaybe.N, Vk.DS.copySrcSet = s, Vk.DS.copyDstSet = d }
+copyDscSet :: Vk.DS.SNew sds slbts -> Vk.DS.SNew sds' slbts -> Vk.DS.CopyNew
+	'Nothing sds slbts sds' slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0
+copyDscSet s d = Vk.DS.CopyNew
+	{ Vk.DS.copyNextNew = TMaybe.N, Vk.DS.copySrcSetNew = s, Vk.DS.copyDstSetNew = d }
 
 -- CALC
 
-calc :: forall slbts sl bts sd sp . (
+calc :: forall slbts sl bts sd sds . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
-	Vk.DS.S sd sp slbts -> Word32 -> IO ()
+	Vk.DS.SNew sds slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
@@ -257,16 +257,16 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
-run :: forall slbts sd sc sg sl sp . (
+run :: forall slbts sd sc sg sl sds . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.SNew sds slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.bindDescriptorSetsCompute
+		Vk.Cmd.bindDescriptorSetsComputeNew
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
