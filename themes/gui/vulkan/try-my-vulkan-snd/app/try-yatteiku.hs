@@ -75,7 +75,6 @@ import qualified Gpu.Vulkan.ColorComponent.Enum as Vk.ColorComponent
 import qualified Gpu.Vulkan.Pipeline.ColorBlendState as Vk.Ppl.ClrBlndSt
 import qualified Gpu.Vulkan.PipelineLayout as Vk.Ppl.Lyt
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Gr
-import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Gr
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.Pipeline.ShaderStage.Enum as Vk.Ppl.ShSt
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
@@ -561,7 +560,7 @@ makeRenderPass dvc f = do
 	Vk.RenderPass.createNew dvc renderPassCreateInfoNew nil' f
 
 makePipelineNew :: Vk.Device.D sd -> Vk.RenderPass.R sr ->
-	(forall s sl . Vk.Ppl.Gr.GNew s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
+	(forall s sl . Vk.Ppl.Gr.G s '[] '[] '(sl, '[], '[]) -> IO a) -> IO a
 makePipelineNew dvc rp f = do
 	let	viewport = Vk.Viewport {
 			Vk.viewportX = 0,

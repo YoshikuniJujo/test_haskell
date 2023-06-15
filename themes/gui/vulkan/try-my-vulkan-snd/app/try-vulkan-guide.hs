@@ -653,7 +653,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd ->
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
 	Int ->
-	(forall sg . Vk.Ppl.Graphics.GNew sg
+	(forall sg . Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) -> IO a) -> IO a
@@ -675,7 +675,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] -> Int ->
-	Vk.Ppl.Graphics.GNew sg
+	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) -> IO ()
@@ -1449,7 +1449,7 @@ createSyncObjects dvc f =
 recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
-	Vk.Ppl.Graphics.GNew sg
+	Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt, Foo sdlyt, '[WrapMeshPushConstants]) ->
@@ -1514,7 +1514,7 @@ recordCommandBuffer cb rp fb sce gpl lyt vb vbtri fn cmd vn =
 	blue = 0.5 + sin (fromIntegral fn / (180 * frashRate) * pi) / 2
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Graphics.GNew sg
+	renderObjectPipeline :: Vk.Ppl.Graphics.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo sdlyt, '[WrapMeshPushConstants]),
@@ -1593,11 +1593,11 @@ mainLoop :: (
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.GNew sg0
+	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Graphics.GNew sg1
+	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
@@ -1651,10 +1651,10 @@ runLoop :: (
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.GNew sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Graphics.GNew sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.CmdPl.C scp ->
@@ -1694,10 +1694,10 @@ drawFrame ::
 	HeteroParList.HomoList '() vss ) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
-	Vk.Ppl.Graphics.GNew sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Graphics.G sg0 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt, Foo s, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Graphics.GNew sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Graphics.G sg1 '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt, Foo s, '[WrapMeshPushConstants]) ->
 	Vk.Ppl.Layout.L slyt
@@ -1779,11 +1779,11 @@ catchAndRecreate :: (
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.GNew sg0
+	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Graphics.GNew sg1
+	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
@@ -1815,11 +1815,11 @@ recreateSwapchainEtc :: (
 			'Vk.DscSetLyt.Buffer '[
 				VObj.Atom 256 GpuSceneData0 'Nothing ] ])]
 		'[WrapMeshPushConstants] ->
-	Vk.Ppl.Graphics.GNew sg0
+	Vk.Ppl.Graphics.G sg0
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->
-	Vk.Ppl.Graphics.GNew sg1
+	Vk.Ppl.Graphics.G sg1
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, Foo s, '[WrapMeshPushConstants]) ->

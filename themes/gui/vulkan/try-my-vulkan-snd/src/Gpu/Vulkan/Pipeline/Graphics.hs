@@ -78,7 +78,7 @@ data CreateInfo mn nnskndscdvss nvsts n3 n4 n5 n6 n7 n8 n9 n10 slsbtss sr sbvsts
 		createInfoLayout :: U3 Layout.L slsbtss,
 		createInfoRenderPass :: RenderPass.R sr,
 		createInfoSubpass :: Word32,
-		createInfoBasePipelineHandle :: Maybe (U4 GNew sbvsts'),
+		createInfoBasePipelineHandle :: Maybe (U4 G sbvsts'),
 		createInfoBasePipelineIndex :: Int32 }
 
 type CreateInfoArgs14 = (
@@ -131,7 +131,7 @@ createInfoToMiddle dvc CreateInfo {
 	createInfoBasePipelineHandle = bph,
 	createInfoBasePipelineIndex = bpi } = do
 	stgs' <- ShaderStage.createInfoListToMiddleNew dvc stgs
-	bph' <- maybe M.gNull (\(U4 (GNew g)) -> pure g) bph
+	bph' <- maybe M.gNull (\(U4 (G g)) -> pure g) bph
 	pure T.CreateInfo {
 		T.createInfoNext = mnxt,
 		T.createInfoFlags = flgs,
@@ -189,14 +189,14 @@ instance (
 		destroyShaderStages dvc cims cis
 
 class U2g ss where
-	v2g :: [M.G] -> HeteroParList.PL (U3 (GNew sg)) ss
-	g2v :: HeteroParList.PL (U3 (GNew sg)) ss -> [M.G]
+	v2g :: [M.G] -> HeteroParList.PL (U3 (G sg)) ss
+	g2v :: HeteroParList.PL (U3 (G sg)) ss -> [M.G]
 
 instance U2g '[] where v2g [] = HeteroParList.Nil; g2v HeteroParList.Nil = []
 
 instance U2g ss => U2g ('(s, t, foo) ': ss) where
-	v2g (g : gs) = U3 (GNew @_ @s @t g) :** v2g @ss gs
-	g2v (U3 (GNew g) :** gs) = g : g2v gs
+	v2g (g : gs) = U3 (G @_ @s @t g) :** v2g @ss gs
+	g2v (U3 (G g) :** gs) = g : g2v gs
 
 createGs :: (
 	M.CreateInfoListToCore (T.CreateInfoListArgs (MiddleVars ss)),
@@ -208,7 +208,7 @@ createGs :: (
 	HeteroParList.PL (U14 CreateInfo) ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	(forall sg .
-		HeteroParList.PL (U3 (GNew sg)) (CreateInfoListArgs14ToGArgs3 ss) ->
+		HeteroParList.PL (U3 (G sg)) (CreateInfoListArgs14ToGArgs3 ss) ->
 		IO a) -> IO a
 createGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis
 	macc@(AllocationCallbacks.toMiddle -> macd) f = bracket
@@ -224,7 +224,7 @@ recreateGs :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> Maybe (Cache.C s) -> HeteroParList.PL (U14 CreateInfo) ss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	HeteroParList.PL (U3 (GNew sg)) (CreateInfoListArgs14ToGArgs3 ss) -> IO ()
+	HeteroParList.PL (U3 (G sg)) (CreateInfoListArgs14ToGArgs3 ss) -> IO ()
 recreateGs d@(Device.D dvc) ((Cache.cToMiddle <$>) -> mc) cis macc gpls = do
 	cis' <- createInfoListToMiddle d cis
 	T.recreateGs dvc mc cis' macc $ g2v gpls

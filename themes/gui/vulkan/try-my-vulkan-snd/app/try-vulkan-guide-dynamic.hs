@@ -629,7 +629,7 @@ createPipelineLayout dv dslyt f = Vk.Ppl.Lyt.createNew dv ci nil' f where
 
 createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
-	(forall sg . Vk.Ppl.Grph.GNew sg
+	(forall sg . Vk.Ppl.Grph.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(sdl, Buffers)], '[WMeshPushConstants]) -> IO a) ->
@@ -641,7 +641,7 @@ createGraphicsPipeline dv sce rp lyt f = Vk.Ppl.Grph.createGs dv Nothing
 recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(sdl, Buffers)], '[WMeshPushConstants]) -> IO ()
@@ -1201,7 +1201,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1230,7 +1230,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1257,7 +1257,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(s, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(s, Buffers)], '[WMeshPushConstants]) ->
@@ -1277,7 +1277,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Khr.Swpch.SNew ssc scfmt ->
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
@@ -1305,7 +1305,7 @@ drawFrame ::
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt '[ '(sl, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sl, Buffers)], '[WMeshPushConstants]) ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scmmbs ->
@@ -1359,7 +1359,7 @@ recordCommandBuffer ::
 	forall sr slyt sg sdlyt sf sd sp sm sb nm smtri sbtri nmtri scb sds .
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt '[ '(sdlyt, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sdlyt, Buffers)], '[WMeshPushConstants]) ->
@@ -1436,7 +1436,7 @@ drawObject ovb cb0 ds RenderObject {
 	Vk.Cmd.draw cb vn 1 0 0
 
 data RenderObject sg sl sdlyt sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
+	renderObjectPipeline :: Vk.Ppl.Grph.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(sdlyt, Buffers)], '[WMeshPushConstants]),

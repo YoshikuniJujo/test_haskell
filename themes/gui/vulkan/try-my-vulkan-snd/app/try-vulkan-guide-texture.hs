@@ -716,7 +716,7 @@ createGraphicsPipeline :: Vk.Dvc.D sd -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	(forall sg . Vk.Ppl.Grph.GNew sg
+	(forall sg . Vk.Ppl.Grph.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl, '[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
@@ -731,7 +731,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Ppl.Lyt.L sl
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers), '(sfoo, Foo)],
@@ -1434,7 +1434,7 @@ mainLoop :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Ppl.Lyt.L sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
@@ -1473,7 +1473,7 @@ step :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Ppl.Lyt.L sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
+	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
@@ -1506,7 +1506,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Ppl.Lyt.L sl
 		'[ '(s, Buffers), '(sod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl,	'[ '(s, Buffers), '(sod, ObjDataBuffers), '(sfoo, Foo)],
@@ -1529,7 +1529,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	Vk.Ppl.Lyt.L sl
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers), '(sfoo, Foo)],
@@ -1562,7 +1562,7 @@ drawFrame ::
 	Vk.Ppl.Lyt.L slyt
 		'[ '(sl, Buffers), '(slod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(slyt,	'[ '(sl, Buffers), '(slod, ObjDataBuffers), '(sfoo, Foo)],
 			'[WMeshPushConstants]) ->
@@ -1626,7 +1626,7 @@ recordCommandBuffer ::
 	Vk.Ppl.Lyt.L slyt
 		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.GNew sg
+	Vk.Ppl.Grph.G sg
 		'[AddType Vertex 'Vk.VtxInp.RateVertex]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(slyt,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)],
@@ -1719,7 +1719,7 @@ drawObject ovb cb0 ds dsod dstx RenderObject {
 	Vk.Cmd.draw cb vn 1 0 i
 
 data RenderObject sg sl sdlyt sdlytod sfoo sm sb nm = RenderObject {
-	renderObjectPipeline :: Vk.Ppl.Grph.GNew sg
+	renderObjectPipeline :: Vk.Ppl.Grph.G sg
 		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color), '(3, Uv)]
 		'(sl,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers), '(sfoo, Foo)],
