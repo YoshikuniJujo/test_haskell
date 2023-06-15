@@ -31,6 +31,7 @@ bindPipelineCompute, dispatch,
 pushConstants,
 bindDescriptorSetsGraphics,
 bindDescriptorSetsCompute,
+DynamicIndex(..),
 
 -- * COPY BUFFER AND IMAGES
 
@@ -41,11 +42,13 @@ blitImage,
 
 -- * MEMORY DEPENDENCY
 
+pipelineBarrier,
+
 -- * QUERY
 
--- * MISC
-
-module Gpu.Vulkan.Cmd
+resetQueryPool,
+beginQuery,
+writeTimestamp
 
 ) where
 
@@ -266,13 +269,6 @@ instance DynamicOffsetList3ToList ((os ': oss) ': osss) =>
 	DynamicOffsetList3ToList (((obj ': os) ': oss) ': osss) where
 	dynamicOffsetList3ToList (((DynamicOffset ofst :** dos) :** doss) :** dosss) =
 		ofst : dynamicOffsetList3ToList ((dos :** doss) :** dosss)
-
-printDscSetLengths ::
-	Show (HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
-		(DescriptorSet.LayoutArgOnlyDynamics slbts)) =>
-	DescriptorSet.S sd sp slbts -> IO ()
-printDscSetLengths (DescriptorSet.S lns _) = print =<< readIORef lns
 
 getDscSetLengths :: DescriptorSet.S sd sp slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
