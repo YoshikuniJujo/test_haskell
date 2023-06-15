@@ -135,6 +135,7 @@ library
       Gpu.Vulkan.ShaderModule
       Gpu.Vulkan.ShaderModule.Internal
       Gpu.Vulkan.Subpass
+      Gpu.Vulkan.Subpass.Enum
       Gpu.Vulkan.TypeEnum
       Gpu.Vulkan.TypeEnum.Th
       Gpu.Vulkan.VertexInput

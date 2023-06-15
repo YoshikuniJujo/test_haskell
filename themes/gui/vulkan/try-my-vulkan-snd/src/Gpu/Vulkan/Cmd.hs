@@ -104,8 +104,8 @@ import Gpu.Vulkan.QueryPool qualified as QueryPool
 
 import Foreign.Storable
 
-beginRenderPass :: (WithPoked (TMaybe.M n), ClearValueListToCore ct) =>
-	CommandBuffer.C sc -> RenderPass.BeginInfo n sr sf ct ->
+beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
+	CommandBuffer.C sc -> RenderPass.BeginInfo mn sr sf cts ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
