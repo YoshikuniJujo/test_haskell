@@ -1594,7 +1594,7 @@ drawObject ovb cb0 ds dsod RenderObject {
 	renderObjectMesh = vb, renderObjectMeshSize = vn,
 	renderObjectTransformMatrix = mdl } ffn i =
 	Vk.Cmd.bindPipelineGraphics cb0 Vk.Ppl.BindPointGraphics gpl \cb -> do
-	Vk.Cmd.bindDescriptorSetsGraphicsNew cb Vk.Ppl.BindPointGraphics lyt
+	Vk.Cmd.bindDescriptorSetsGraphics cb Vk.Ppl.BindPointGraphics lyt
 		(U2 ds :** U2 dsod :** HL.Nil) $
 		(HL.Nil :** (Vk.Cmd.DynamicIndex ffn :** HL.Nil) :** HL.Nil) :**
 		(HL.Nil :** HL.Nil) :** HL.Nil
