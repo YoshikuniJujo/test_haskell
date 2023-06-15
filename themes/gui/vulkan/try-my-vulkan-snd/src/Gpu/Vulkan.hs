@@ -42,7 +42,7 @@ module Gpu.Vulkan (
 
 	-- ** ClearValue
 
-	ClearValue(..),
+	ClearValue(..), ClearValueListToCore,
 
 	-- *** ClearType
 

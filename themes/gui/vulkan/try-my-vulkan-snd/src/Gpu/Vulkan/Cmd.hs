@@ -67,7 +67,7 @@ import Data.Word
 import Data.Int
 import TypeLevel.List
 
-import Gpu.Vulkan.Middle
+import Gpu.Vulkan
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Cmd.TypeLevel
 

@@ -42,7 +42,7 @@ module Gpu.Vulkan.Internal (
 
 	-- ** ClearValue
 
-	M.ClearValue(..),
+	M.ClearValue(..), M.ClearValueListToCore,
 
 	-- *** ClearType
 
