@@ -34,7 +34,7 @@ bindDescriptorSetsCompute,
 
 -- * COPY BUFFER AND IMAGES
 
-copyBufferNew,
+copyBuffer,
 
 -- * MEMORY DEPENDENCY
 
@@ -337,11 +337,11 @@ class IsIndexType a where indexType :: IndexType
 instance IsIndexType Word16 where indexType = IndexTypeUint16
 instance IsIndexType Word32 where indexType = IndexTypeUint32
 
-copyBufferNew :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc sms sbs smd sbd .
+copyBuffer :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
 	CommandBuffer.C sc ->
 	Buffer.Binded sms sbs nms sos -> Buffer.Binded smd sbd nmd sod -> IO ()
-copyBufferNew (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
+copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
 pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (

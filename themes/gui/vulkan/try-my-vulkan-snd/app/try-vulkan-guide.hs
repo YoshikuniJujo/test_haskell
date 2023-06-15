@@ -1387,7 +1387,7 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
 		Vk.CmdBffr.beginNew @'Nothing @'Nothing cb beginInfo do
-			Vk.Cmd.copyBufferNew @'[ '[VObj.List 256 Vertex ""]] cb src dst
+			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 Vertex ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where

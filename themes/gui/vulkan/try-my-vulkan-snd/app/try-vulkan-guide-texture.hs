@@ -1388,7 +1388,7 @@ createVertexBuffer pd dv gq cp vs f =
 			'Vk.Mm.K.Buffer nm '[Obj.List 256 Vertex ""])]) -> do
 	Vk.Mm.write @nm @(Obj.List 256 Vertex "") dv bm' zeroBits vs
 	beginSingleTimeCommands dv gq cp \cb ->
-		Vk.Cmd.copyBufferNew @'[ '[Obj.List 256 Vertex ""]] cb b' b
+		Vk.Cmd.copyBuffer @'[ '[Obj.List 256 Vertex ""]] cb b' b
 	f b
 	where lns = HL.Singleton . Obj.ObjectLengthList $ V.length vs
 
