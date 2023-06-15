@@ -40,7 +40,6 @@ import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFm
 import qualified Gpu.Vulkan.Device as Vk.Dv
-import qualified Gpu.Vulkan.Device.Type as Vk.Dv
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.Buffer.Enum as Vk.Bffr
 import qualified Gpu.Vulkan.Memory as Vk.Mm
@@ -69,7 +68,6 @@ import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
 import Gpu.Vulkan.PipelineCache qualified as Vk.PplCch
-import Gpu.Vulkan.PipelineCache.Type qualified as Vk.PplCch
 import Gpu.Vulkan.PipelineCache.Middle qualified as Vk.PplCch.M
 
 ---------------------------------------------------------------------------
@@ -87,10 +85,10 @@ bffSize :: Integral n => n
 bffSize = 30
 
 main :: IO ()
-main = withDevice \pd qfi dv@(Vk.Dv.D mdv) ->
+main = withDevice \pd qfi dv ->
 	readData "pipeline.cache" >>= \cch ->
 	print cch >>
-	Vk.PplCch.create dv (pplCchInfo cch) nil' \pc@(Vk.PplCch.C mpc) -> do
+	Vk.PplCch.create dv (pplCchInfo cch) nil' \pc -> do
 	threadDelay 1000000
 	print =<< Vk.PplCch.getData dv pc
 	putStrLn . map (chr . fromIntegral) =<<
@@ -180,15 +178,15 @@ prepareMems :: (
 		(Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts)),
 	Vk.DS.BindingAndArrayElem bts '[Word32List] 0 ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
-	(forall s sm sb .
-		Vk.DS.S sd s '(sl, bts) ->
+	(forall sds sm sb .
+		Vk.DS.SNew sds '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
 	Vk.DscPool.create dv dscPoolInfo nil' \dp ->
-	Vk.DS.allocateSs dv (dscSetInfo dp dslyt) >>= \(HL.Singleton ds) ->
+	Vk.DS.allocateSsNew dv (dscSetInfo dp dslyt) \(HL.Singleton ds) ->
 	storageBufferNew pd dv \b m ->
-	Vk.DS.updateDsNew dv (HL.Singleton . U5 $ writeDscSet ds b) HL.Nil >>
+	Vk.DS.updateDsNewNew dv (HL.Singleton . U4 $ writeDscSet ds b) HL.Nil >>
 	f ds m
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
@@ -250,26 +248,26 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSet :: forall sd sp slbts sb sm os .
-	Vk.DS.S sd sp slbts -> Vk.Bffr.Binded sm sb "" os ->
-	Vk.DS.Write 'Nothing sd sp slbts
+writeDscSet :: forall slbts sb sm os sds .
+	Vk.DS.SNew sds slbts -> Vk.Bffr.Binded sm sb "" os ->
+	Vk.DS.WriteNew 'Nothing sds slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
-writeDscSet ds ba = Vk.DS.Write {
-	Vk.DS.writeNext = TMaybe.N,
-	Vk.DS.writeDstSet = ds,
-	Vk.DS.writeDescriptorType = Vk.Dsc.TypeStorageBuffer,
-	Vk.DS.writeSources =
+writeDscSet ds ba = Vk.DS.WriteNew {
+	Vk.DS.writeNextNew = TMaybe.N,
+	Vk.DS.writeDstSetNew = ds,
+	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
+	Vk.DS.writeSourcesNew =
 		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
 
 -- CALC
 
-calc :: forall slbts sl bts sd spc sp . (
+calc :: forall slbts sl bts sd spc sds . (
 	slbts ~ '(sl, bts),
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	Vk.Cmd.SetPos '[slbts] '[slbts]) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.PplCch.C spc ->
 	Vk.DSLyt.L sl bts ->
-	Vk.DS.S sd sp slbts -> Word32 -> IO ()
+	Vk.DS.SNew sds slbts -> Word32 -> IO ()
 calc qfi dv pcch dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv (Just pcch)
@@ -298,16 +296,16 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
 	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
 
-run :: forall slbts sd sc sg sl sp . (
+run :: forall slbts sd sc sg sl sds . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	Vk.Cmd.SetPos '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.S sd sp slbts -> Vk.CBffr.C sc ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.SNew sds slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.bindDescriptorSetsCompute
+		Vk.Cmd.bindDescriptorSetsComputeNew
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
