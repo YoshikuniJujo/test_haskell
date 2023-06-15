@@ -284,7 +284,7 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyImageToBufferNewNew @1
+	Vk.Cmd.copyImageToBuffer @1
 		cb img Vk.Img.LayoutTransferSrcOptimal bf (HeteroParList.Singleton region)
 
 transitionImageLayout :: forall sd sc si sm nm fmt .

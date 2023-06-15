@@ -36,6 +36,7 @@ bindDescriptorSetsCompute,
 
 copyBuffer,
 copyBufferToImage,
+copyImageToBuffer,
 
 -- * MEMORY DEPENDENCY
 
@@ -380,13 +381,13 @@ copyBufferToImage (CommandBuffer.C cb)
 	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = imageCopyListToMiddle @algn bf ics
 
-copyImageToBufferNewNew :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
+copyImageToBuffer :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
 	ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc  ->
 	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
-copyImageToBufferNewNew (CommandBuffer.C cb)
+copyImageToBuffer (CommandBuffer.C cb)
 	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = imageCopyListToMiddle @algn bf ics
