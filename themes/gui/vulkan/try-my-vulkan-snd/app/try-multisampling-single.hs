@@ -1373,7 +1373,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 			Vk.Img.M.subresourceLayersMipLevel = 0,
 			Vk.Img.M.subresourceLayersBaseArrayLayer = 0,
 			Vk.Img.M.subresourceLayersLayerCount = 1 }
-	Vk.Cmd.copyBufferToImageNew @1
+	Vk.Cmd.copyBufferToImage @1
 		cb bf img Vk.Img.LayoutTransferDstOptimal (HeteroParList.Singleton region)
 
 createTextureSampler :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
