@@ -37,6 +37,7 @@ bindDescriptorSetsCompute,
 copyBuffer,
 copyBufferToImage,
 copyImageToBuffer,
+blitImage,
 
 -- * MEMORY DEPENDENCY
 
@@ -411,19 +412,11 @@ instance (
 		Buffer.imageCopyToMiddle @algn @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
 		imageCopyListToMiddle @algn bf ics
 
-blitImage :: CommandBuffer.Binded sc vs ->
+blitImage :: CommandBuffer.C sc ->
 	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
 	Image.BindedNew dsi dsm dnm dfmt -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()
-blitImage (CommandBuffer.Binded cb)
-	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
-	M.blitImage cb src slyt dst dlyt blts fltr
-
-blitImageNew :: CommandBuffer.C sc ->
-	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
-	Image.BindedNew dsi dsm dnm dfmt -> Image.Layout ->
-	[Image.M.Blit] -> Filter -> IO ()
-blitImageNew (CommandBuffer.C cb)
+blitImage (CommandBuffer.C cb)
 	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
 

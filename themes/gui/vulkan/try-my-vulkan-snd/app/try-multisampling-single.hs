@@ -1134,7 +1134,7 @@ generateMipmap1 cb img i w h = do
 	Vk.Cmd.pipelineBarrier cb
 		Vk.Ppl.StageTransferBit Vk.Ppl.StageTransferBit zeroBits
 		HeteroParList.Nil HeteroParList.Nil . HeteroParList.Singleton $ U5 barrier'
-	Vk.Cmd.blitImageNew cb
+	Vk.Cmd.blitImage cb
 		img Vk.Img.LayoutTransferSrcOptimal
 		img Vk.Img.LayoutTransferDstOptimal
 		[blit] Vk.FilterLinear
