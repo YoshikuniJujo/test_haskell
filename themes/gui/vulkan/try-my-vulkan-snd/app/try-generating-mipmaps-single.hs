@@ -49,8 +49,6 @@ import System.Environment
 import Codec.Picture
 import Codec.Picture.Tools
 
-import qualified TypeLevel.List as TpLvlLst
-
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
 import qualified Data.Text as Txt
