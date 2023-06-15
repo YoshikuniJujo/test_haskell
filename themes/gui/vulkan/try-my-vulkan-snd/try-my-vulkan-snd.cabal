@@ -105,6 +105,7 @@ library
       Gpu.Vulkan.Pipeline.Compute
       Gpu.Vulkan.Pipeline.DepthStencilState
       Gpu.Vulkan.Pipeline.DynamicState
+      Gpu.Vulkan.Pipeline.Enum
       Gpu.Vulkan.Pipeline.Graphics
       Gpu.Vulkan.Pipeline.Graphics.Tmp
       Gpu.Vulkan.Pipeline.Graphics.Type
