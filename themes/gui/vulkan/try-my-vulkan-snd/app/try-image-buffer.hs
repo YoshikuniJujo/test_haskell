@@ -173,7 +173,7 @@ run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qfam 0
 	Vk.CmdBuf.beginNew @'Nothing @'Nothing cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl $ \ccb -> do
-			Vk.Cmd.bindDescriptorSetsComputeNew ccb pplLyt
+			Vk.Cmd.bindDescriptorSetsCompute ccb pplLyt
 				(U2 dscSet :** HeteroParList.Nil)
 				(HeteroParList.Singleton $ HeteroParList.Singleton HeteroParList.Nil ::
 					HeteroParList.PL3 Vk.Cmd.DynamicIndex (Vk.DscSet.LayoutArgListOnlyDynamics sbtss))

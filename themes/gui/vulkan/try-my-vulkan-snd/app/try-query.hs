@@ -310,7 +310,7 @@ run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 		Vk.Cmd.resetQueryPool cb qp 0 10 >>
 		Vk.Cmd.beginQuery cb qp 0 zeroBits (
 			Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-			Vk.Cmd.bindDescriptorSetsComputeNew
+			Vk.Cmd.bindDescriptorSetsCompute
 				ccb lyt (HL.Singleton $ U2 ds) def >>
 			Vk.Cmd.dispatch ccb sz 1 1 ) >>
 

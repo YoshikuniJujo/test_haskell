@@ -259,7 +259,7 @@ run :: forall slbts sd sc sg sl s . (
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute pl \ccb ->
-		Vk.Cmd.bindDescriptorSetsComputeNew
+		Vk.Cmd.bindDescriptorSetsCompute
 			ccb lyt (HL.Singleton $ U2 ds) def >>
 		Vk.Cmd.dispatch ccb sz 1 1
 	Vk.Queue.submit q (HL.Singleton $ U4 sinfo) Nothing
