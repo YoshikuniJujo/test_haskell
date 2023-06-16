@@ -150,8 +150,6 @@ import qualified Gpu.Vulkan.Sampler.Enum as Vk.Smplr
 import qualified Gpu.Vulkan.Sampler.Middle as Vk.Smplr.M
 import qualified Gpu.Vulkan.Pipeline.DepthStencilState as Vk.Ppl.DptStnSt
 
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
-
 import Tools
 import Vertex
 
@@ -675,7 +673,7 @@ createPipelineLayout' dvc f =
 createGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	(forall sg . Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO a) -> IO a
 createGraphicsPipeline' dvc sce rp ppllyt f =
@@ -686,7 +684,7 @@ createGraphicsPipeline' dvc sce rp ppllyt f =
 recreateGraphicsPipeline' :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) -> IO ()
 recreateGraphicsPipeline' dvc sce rp ppllyt gpls = Vk.Ppl.Graphics.recreateGs
@@ -698,7 +696,7 @@ mkGraphicsPipelineCreateInfo' ::
 	Vk.Ppl.Graphics.CreateInfo 'Nothing '[
 			'( 'Nothing, 'Nothing, 'GlslVertexShader, 'Nothing, '[]),
 			'( 'Nothing, 'Nothing, 'GlslFragmentShader, 'Nothing, '[]) ]
-		'(	'Nothing, '[AddType Vertex 'Vk.VtxInp.RateVertex],
+		'(	'Nothing, '[ '(Vertex, 'Vk.VtxInp.RateVertex)],
 			'[ '(0, Pos), '(1, Color), '(2, TexCoord)] )
 		'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing 'Nothing '(sl, '[AtomUbo sdsl], '[]) sr '(sb, vs', ts', slbtss')
 mkGraphicsPipelineCreateInfo' sce rp ppllyt = Vk.Ppl.Graphics.CreateInfo {
@@ -1452,15 +1450,15 @@ createCommandBuffer dvc cp f = Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :
 class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
 	vssListIndex ::
 		HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
-		Vk.CmdBffr.Binded scb '[AddType Vertex 'Vk.VtxInp.RateVertex]
+		Vk.CmdBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 
 instance VssList '[] where
 	vssListIndex HeteroParList.Nil _ = error "index too large"
 
-type Vs = '[AddType Vertex 'Vk.VtxInp.RateVertex]
+type Vs = '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 
 instance VssList vss =>
-	VssList ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss) where
+	VssList ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss) where
 	vssListIndex (cb :** _) 0 = cb
 	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
 
@@ -1471,7 +1469,7 @@ mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
 
 addTypeToProxy ::
-	Proxy vss -> Proxy ('[AddType Vertex 'Vk.VtxInp.RateVertex] ': vss)
+	Proxy vss -> Proxy ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss)
 addTypeToProxy Proxy = Proxy
 
 data SyncObjects (ssos :: (Type, Type, Type)) where
@@ -1496,7 +1494,7 @@ recordCommandBuffer :: forall scb sr scfmt sf sl sg sm sb nm sm' sb' nm' sdsc sp
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
@@ -1543,7 +1541,7 @@ mainLoop :: (
 	HeteroParList.PL (Vk.ImgVw.INew scfmt nm) ss ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
@@ -1579,7 +1577,7 @@ runLoop :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt -> FramebufferResized -> Vk.Extent2d ->
 	HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
-	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
@@ -1612,7 +1610,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
-	Vk.Ppl.Graphics.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Graphics.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	HeteroParList.PL Vk.Frmbffr.F sfs ->
@@ -1688,7 +1686,7 @@ catchAndRecreate :: (
 	HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->
@@ -1715,7 +1713,7 @@ recreateSwapChainEtc :: (
 	Vk.Khr.Swapchain.SNew ssc scfmt -> HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis ->
 	Vk.RndrPass.R sr -> Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
 	Vk.Ppl.Graphics.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Pos), '(1, Color), '(2, TexCoord)]
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Img.BindedNew sdi sdm "depth-buffer" dptfmt ->

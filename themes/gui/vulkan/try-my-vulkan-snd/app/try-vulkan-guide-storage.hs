@@ -143,8 +143,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet.T
 
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
-
 import qualified Codec.Wavefront.ReadOld as Wv
 import Tools
 
@@ -679,7 +677,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 		'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(sdl, Buffers), '(sdlod, ObjDataBuffers)],
 			'[WMeshPushConstants]) -> IO ()
@@ -1403,7 +1401,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 		'[ '(s, Buffers), '(sod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(s, Buffers), '(sod, ObjDataBuffers)],
 			'[WMeshPushConstants]) ->
@@ -1426,7 +1424,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 		'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(slyt, Buffers), '(slytod, ObjDataBuffers)],
 			'[WMeshPushConstants]) ->
@@ -1458,7 +1456,7 @@ drawFrame ::
 	Vk.Ppl.Lyt.L slyt
 		'[ '(sl, Buffers), '(slod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sl, Buffers), '(slod, ObjDataBuffers)],
 			'[WMeshPushConstants]) ->
@@ -1521,7 +1519,7 @@ recordCommandBuffer ::
 		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)]
 		'[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)],
 			'[WMeshPushConstants]) ->

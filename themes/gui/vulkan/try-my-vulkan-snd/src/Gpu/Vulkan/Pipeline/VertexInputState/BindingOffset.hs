@@ -1,3 +1,4 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
@@ -7,16 +8,15 @@
 
 module Gpu.Vulkan.Pipeline.VertexInputState.BindingOffset where
 
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Foreign.Storable.SizeAlignment
 import Control.Arrow
 import Data.Kind
 
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
-
 class BindingOffset (tss :: [(Type, k)]) t where bindingOffset :: Maybe (Int, Offset)
 
-instance BindingOffsetNoType (MapSubType tss) t => BindingOffset tss t where
-	bindingOffset = bindingOffsetNoType @(MapSubType tss) @t
+instance BindingOffsetNoType (TMapIndex.M0_2 tss) t => BindingOffset tss t where
+	bindingOffset = bindingOffsetNoType @(TMapIndex.M0_2 tss) @t
 
 class BindingOffsetNoType (tss :: [Type]) t where
 	bindingOffsetNoType :: Maybe (Int, Offset)

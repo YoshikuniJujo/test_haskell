@@ -91,8 +91,6 @@ import qualified Gpu.Vulkan.RenderPass.Type as RenderPass
 import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Cmd.Middle as M
 
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList (MapSubType)
-
 import qualified Gpu.Vulkan.PushConstant as PushConstant
 import qualified Gpu.Vulkan.Memory.Middle as Memory.M
 
@@ -318,12 +316,12 @@ type family MapForth tpl where
 	MapForth ('(x :: j, y :: k, z :: l, w :: m) ': xs) = w ': MapForth xs
 
 bindVertexBuffers :: forall sc vs slbtss smsbvs .
-	InfixIndex (MapForth smsbvs) (MapSubType vs) =>
+	InfixIndex (MapForth smsbvs) (TMapIndex.M0_2 vs) =>
 	CommandBuffer.GBinded sc vs slbtss ->
 	HeteroParList.PL (U4 Buffer.IndexedForList) smsbvs -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
-	where fb = infixIndex @(MapForth smsbvs) @(MapSubType vs)
+	where fb = infixIndex @(MapForth smsbvs) @(TMapIndex.M0_2 vs)
 
 bindIndexBuffer :: forall sc vs slbtss sm sb nm v . IsIndexType v =>
 	CommandBuffer.GBinded sc vs slbtss ->

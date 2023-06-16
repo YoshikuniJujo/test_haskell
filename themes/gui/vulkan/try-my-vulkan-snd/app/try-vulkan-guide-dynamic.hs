@@ -142,8 +142,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet.T
 
-import Gpu.Vulkan.Pipeline.VertexInputState.BindingStrideList(AddType)
-
 import qualified Codec.Wavefront.ReadOld as Wv
 import Tools
 
@@ -642,7 +640,7 @@ recreateGraphicsPipeline :: Vk.Dvc.D sd ->
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(sdl, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl,	'[ '(sdl, Buffers)], '[WMeshPushConstants]) -> IO ()
 recreateGraphicsPipeline dv sce rp lyt gpls = Vk.Ppl.Grph.recreateGs dv Nothing
@@ -1134,7 +1132,7 @@ instance (
 			HL.Nil
 		update dv dscss csbs scnb
 
-descriptorWrite :: forall obj sd sp slbts sb sm nm objs sds .
+descriptorWrite :: forall obj slbts sb sm nm objs sds .
 	Vk.DscSet.SNew sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.WriteNew 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sb, sm, nm, objs, obj)])
@@ -1258,7 +1256,7 @@ catchAndRecreate :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(s, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(s, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1278,7 +1276,7 @@ recreateAll :: (Vk.T.FormatToValue scfmt, Vk.T.FormatToValue dptfmt,
 	HL.PL (Vk.ImgVw.INew scfmt nm) sis -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L sl '[ '(slyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(sl, '[ '(slyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.CmdPl.C scp -> DepthResources sdi sdm "depth-buffer" dptfmt sdiv ->
@@ -1299,13 +1297,13 @@ waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 drawFrame ::
-	forall sd ssc scfmt sr slyt sl sg sfs scmmbs ssm ssb sp lyts
+	forall sd ssc scfmt sr slyt sl sg sfs scmmbs ssm ssb lyts
 	sm sb nm smtri sbtri nmtri scb ssos sds .
 	(HL.HomoList '(sl, Buffers) lyts ) =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.Q.Q ->
 	Vk.Khr.Swpch.SNew ssc scfmt -> Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt '[ '(sl, Buffers)] '[WMeshPushConstants] ->
-	Vk.Ppl.Grph.G sg '[AddType Vertex 'Vk.VtxInp.RateVertex]
+	Vk.Ppl.Grph.G sg '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sl, Buffers)], '[WMeshPushConstants]) ->
 	HL.PL Vk.Frmbffr.F sfs -> HL.PL MemoryCamera scmmbs ->
@@ -1356,11 +1354,11 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss vb vbtri cbs
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 recordCommandBuffer ::
-	forall sr slyt sg sdlyt sf sd sp sm sb nm smtri sbtri nmtri scb sds .
+	forall sr slyt sg sdlyt sf sm sb nm smtri sbtri nmtri scb sds .
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt '[ '(sdlyt, Buffers)] '[WMeshPushConstants] ->
 	Vk.Ppl.Grph.G sg
-		'[AddType Vertex 'Vk.VtxInp.RateVertex]
+		'[ '(Vertex, 'Vk.VtxInp.RateVertex)]
 		'[ '(0, Position), '(1, Normal), '(2, Color)]
 		'(slyt,	'[ '(sdlyt, Buffers)], '[WMeshPushConstants]) ->
 	Vk.Frmbffr.F sf -> Vk.DscSet.SNew sds '(sdlyt, Buffers) ->
