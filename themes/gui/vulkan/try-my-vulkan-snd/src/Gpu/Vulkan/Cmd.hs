@@ -307,21 +307,13 @@ instance GetDscSetListLengthNew spslbtss =>
 	getDscSetListLengthNew (U2 ds :** dss) =
 		(:**) <$> getDscSetLengthsNew ds <*> getDscSetListLengthNew dss
 
-type family MapThird tpl where
-	MapThird '[] = '[]
-	MapThird ('(x, y, z) ': xs) = z ': MapThird xs
-
-type family MapForth tpl where
-	MapForth '[] = '[]
-	MapForth ('(x :: j, y :: k, z :: l, w :: m) ': xs) = w ': MapForth xs
-
 bindVertexBuffers :: forall sc vs slbtss smsbvs .
-	InfixIndex (MapForth smsbvs) (TMapIndex.M0_2 vs) =>
+	InfixIndex (TMapIndex.M3_4 smsbvs) (TMapIndex.M0_2 vs) =>
 	CommandBuffer.GBinded sc vs slbtss ->
 	HeteroParList.PL (U4 Buffer.IndexedForList) smsbvs -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
-	where fb = infixIndex @(MapForth smsbvs) @(TMapIndex.M0_2 vs)
+	where fb = infixIndex @(TMapIndex.M3_4 smsbvs) @(TMapIndex.M0_2 vs)
 
 bindIndexBuffer :: forall sc vs slbtss sm sb nm v . IsIndexType v =>
 	CommandBuffer.GBinded sc vs slbtss ->
