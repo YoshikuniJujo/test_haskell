@@ -110,8 +110,8 @@ beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.endRenderPass cb) f
 
 bindPipelineGraphics :: CommandBuffer.C sc ->
-	Pipeline.BindPoint -> Pipeline.G sg vs ts slbtss ->
-	(forall sb . CommandBuffer.GBinded sb vs slbtss -> IO a) -> IO a
+	Pipeline.BindPoint -> Pipeline.G sg vibs vias slbtss ->
+	(forall sb . CommandBuffer.GBinded sb vibs slbtss -> IO a) -> IO a
 bindPipelineGraphics (CommandBuffer.C c) bp (Pipeline.G g) f =
 	M.bindPipelineGraphics c bp g >> f (CommandBuffer.GBinded c)
 

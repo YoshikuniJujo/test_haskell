@@ -269,7 +269,7 @@ run txfp mdlfp mnld w inst g =
 	pickPhysicalDevice inst sfc >>= \(phdv, qfis, spcnt) ->
 	createLogicalDevice phdv qfis \dv gq pq ->
 	createSwapChain w sfc phdv qfis dv
-		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt)  scifmt ext ->
+		\(sc :: Vk.Khr.Swapchain.SNew ss scifmt) scifmt ext ->
 	Vk.Khr.Swapchain.getImagesNew dv sc >>= \imgs ->
 	createImageViews dv imgs \scivs ->
 	findDepthFormat phdv >>= \dptfmt ->
@@ -1678,7 +1678,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr scfmt sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl sds .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
@@ -1799,7 +1799,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl clrrscs dp
 			win sfc phdvc qfis dvc gq sc scivs
 			rp ppllyt gpl clrrscs dptImg dptImgMem dptImgVw cp fbs)
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsc sp sdsl sds .
+drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
