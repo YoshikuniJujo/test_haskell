@@ -20,7 +20,9 @@ beginRenderPass,
 
 -- ** Draw
 
-bindPipelineGraphics, bindVertexBuffers, bindIndexBuffer, draw, drawIndexed,
+bindPipelineGraphics,
+bindVertexBuffers, bindIndexBuffer, IsIndexType,
+draw, drawIndexed,
 
 -- ** Dispatch
 
@@ -111,7 +113,7 @@ beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 
 bindPipelineGraphics :: CommandBuffer.C sc ->
 	Pipeline.BindPoint -> Pipeline.G sg vibs vias slbtss ->
-	(forall sb . CommandBuffer.GBinded sb vibs slbtss -> IO a) -> IO a
+	(forall sg . CommandBuffer.GBinded sg vibs slbtss -> IO a) -> IO a
 bindPipelineGraphics (CommandBuffer.C c) bp (Pipeline.G g) f =
 	M.bindPipelineGraphics c bp g >> f (CommandBuffer.GBinded c)
 
@@ -307,19 +309,19 @@ instance GetDscSetListLengthNew spslbtss =>
 	getDscSetListLengthNew (U2 ds :** dss) =
 		(:**) <$> getDscSetLengthsNew ds <*> getDscSetListLengthNew dss
 
-bindVertexBuffers :: forall sb vibs slbtss smsbnmts .
+bindVertexBuffers :: forall sg vibs slbtss smsbnmts .
 	InfixIndex (TMapIndex.M3_4 smsbnmts) (TMapIndex.M0_2 vibs) =>
-	CommandBuffer.GBinded sb vibs slbtss ->
+	CommandBuffer.GBinded sg vibs slbtss ->
 	HeteroParList.PL (U4 Buffer.IndexedForList) smsbnmts -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(TMapIndex.M3_4 smsbnmts) @(TMapIndex.M0_2 vibs)
 
-bindIndexBuffer :: forall sc vs slbtss sm sb nm v . IsIndexType v =>
-	CommandBuffer.GBinded sc vs slbtss ->
-	Buffer.IndexedForList sm sb nm v -> IO ()
+bindIndexBuffer :: forall sg vibs slbtss sm sb nm i . IsIndexType i =>
+	CommandBuffer.GBinded sg vibs slbtss ->
+	Buffer.IndexedForList sm sb nm i -> IO ()
 bindIndexBuffer (CommandBuffer.GBinded cb) ib =
-	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @v)
+	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @i)
 
 class IsIndexType a where indexType :: IndexType
 
