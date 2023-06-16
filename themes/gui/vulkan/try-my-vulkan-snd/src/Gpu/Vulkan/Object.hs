@@ -271,6 +271,10 @@ instance {-# OVERLAPPABLE #-}
 	objectLengthForTypeName (_ :** lns) f =
 		objectLengthForTypeName @t @nm @objs lns f
 
+offsetOfListWithName :: forall v onm vs . OffsetOfListWithName v onm vs =>
+	HeteroParList.PL ObjectLength vs -> Device.M.Size
+offsetOfListWithName = offsetListFromSizeAlignmentListWithName @v @onm 0 . sizeAlignmentList
+
 class SizeAlignmentList objs =>
 	OffsetOfListWithName t (nm :: Symbol) (objs :: [Object]) where
 	offsetListFromSizeAlignmentListWithName ::
