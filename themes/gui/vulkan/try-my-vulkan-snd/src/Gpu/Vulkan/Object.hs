@@ -41,6 +41,8 @@ data ObjectLength obj where
 deriving instance Eq (ObjectLength obj)
 deriving instance Show (ObjectLength obj)
 
+{-# COMPLETE ObjectLengthImage #-}
+
 pattern ObjectLengthImage ::
 	Int -> Int -> Int -> Int -> ObjectLength ('Static (K.ObjImage algn t nm))
 pattern ObjectLengthImage kr kw kh kd <- (ObjectLengthStatic (K.ObjectLengthImage kr kw kh kd))

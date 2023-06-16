@@ -113,8 +113,8 @@ sampleObjLens =
 	NObj.ObjectLengthList 3 :** HeteroParList.Nil
 	-}
 
-data IndexedForList sm sb nm v =
-	forall vs . VObj.OffsetOfList v vs => IndexedForList (Binded sm sb nm vs)
+data IndexedForList sm sb nm t = forall objs .
+	VObj.OffsetOfList t objs => IndexedForList (Binded sm sb nm objs)
 
 indexedListToOffset :: forall sm sb nm v a . IndexedForList sm sb nm v ->
 	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a

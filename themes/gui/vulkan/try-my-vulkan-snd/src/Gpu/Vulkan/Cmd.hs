@@ -307,13 +307,13 @@ instance GetDscSetListLengthNew spslbtss =>
 	getDscSetListLengthNew (U2 ds :** dss) =
 		(:**) <$> getDscSetLengthsNew ds <*> getDscSetListLengthNew dss
 
-bindVertexBuffers :: forall sc vs slbtss smsbvs .
-	InfixIndex (TMapIndex.M3_4 smsbvs) (TMapIndex.M0_2 vs) =>
-	CommandBuffer.GBinded sc vs slbtss ->
-	HeteroParList.PL (U4 Buffer.IndexedForList) smsbvs -> IO ()
+bindVertexBuffers :: forall sb vibs slbtss smsbnmts .
+	InfixIndex (TMapIndex.M3_4 smsbnmts) (TMapIndex.M0_2 vibs) =>
+	CommandBuffer.GBinded sb vibs slbtss ->
+	HeteroParList.PL (U4 Buffer.IndexedForList) smsbnmts -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
-	where fb = infixIndex @(TMapIndex.M3_4 smsbvs) @(TMapIndex.M0_2 vs)
+	where fb = infixIndex @(TMapIndex.M3_4 smsbnmts) @(TMapIndex.M0_2 vibs)
 
 bindIndexBuffer :: forall sc vs slbtss sm sb nm v . IsIndexType v =>
 	CommandBuffer.GBinded sc vs slbtss ->
