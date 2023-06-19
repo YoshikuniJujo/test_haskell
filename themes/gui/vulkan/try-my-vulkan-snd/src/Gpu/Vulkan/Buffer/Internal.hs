@@ -113,20 +113,21 @@ sampleObjLens =
 	NObj.ObjectLengthList 3 :** HeteroParList.Nil
 	-}
 
-data IndexedForList sm sb nm t = forall objs .
-	VObj.OffsetOfList t objs => IndexedForList (Binded sm sb nm objs)
+data IndexedForList sm sb nm t onm = forall objs .
+	VObj.OffsetOfList t onm objs => IndexedForList (Binded sm sb nm objs)
 
-indexedListToOffset :: forall sm sb nm v a . IndexedForList sm sb nm v ->
+indexedListToOffset :: forall sm sb nm v onm a . IndexedForList sm sb nm v onm ->
 	(forall vs . (Binded sm sb nm vs, Device.M.Size) -> a) -> a
-indexedListToOffset (IndexedForList b@(Binded lns _)) f = f (b, VObj.offsetOfList @v lns)
+indexedListToOffset (IndexedForList b@(Binded lns _)) f =
+	f (b, VObj.offsetOfList @v @onm lns)
 
-indexedListToMiddle :: IndexedForList sm sb nm v -> (M.B, Device.M.Size)
+indexedListToMiddle :: IndexedForList sm sb nm v onm -> (M.B, Device.M.Size)
 indexedListToMiddle il = indexedListToOffset il \(Binded _ b, sz) -> (b, sz)
 
 indexedListToMiddles ::
-	HeteroParList.PL (U4 IndexedForList) smsbvs -> [(M.B, Device.M.Size)]
+	HeteroParList.PL (U5 IndexedForList) smsbvs -> [(M.B, Device.M.Size)]
 indexedListToMiddles HeteroParList.Nil = []
-indexedListToMiddles (U4 il :** ils) =
+indexedListToMiddles (U5 il :** ils) =
 	indexedListToMiddle il : indexedListToMiddles ils
 
 class CopyPrefix (area :: [VObj.Object]) (src :: [VObj.Object]) (dst :: [VObj.Object]) where

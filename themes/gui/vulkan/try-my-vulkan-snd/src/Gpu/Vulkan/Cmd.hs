@@ -310,16 +310,16 @@ instance GetDscSetListLengthNew spslbtss =>
 		(:**) <$> getDscSetLengthsNew ds <*> getDscSetListLengthNew dss
 
 bindVertexBuffers :: forall sg vibs slbtss smsbnmts .
-	InfixIndex (TMapIndex.M3_4 smsbnmts) (TMapIndex.M0_2 vibs) =>
+	InfixIndex (TMapIndex.M3_5 smsbnmts) (TMapIndex.M0_2 vibs) =>
 	CommandBuffer.GBinded sg vibs slbtss ->
-	HeteroParList.PL (U4 Buffer.IndexedForList) smsbnmts -> IO ()
+	HeteroParList.PL (U5 Buffer.IndexedForList) smsbnmts -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
-	where fb = infixIndex @(TMapIndex.M3_4 smsbnmts) @(TMapIndex.M0_2 vibs)
+	where fb = infixIndex @(TMapIndex.M3_5 smsbnmts) @(TMapIndex.M0_2 vibs)
 
-bindIndexBuffer :: forall sg vibs slbtss sm sb nm i . IsIndexType i =>
+bindIndexBuffer :: forall sg vibs slbtss sm sb nm i onm . IsIndexType i =>
 	CommandBuffer.GBinded sg vibs slbtss ->
-	Buffer.IndexedForList sm sb nm i -> IO ()
+	Buffer.IndexedForList sm sb nm i onm -> IO ()
 bindIndexBuffer (CommandBuffer.GBinded cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @i)
 

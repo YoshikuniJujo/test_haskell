@@ -1260,7 +1260,7 @@ instance (
 			HL.Nil
 		update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 
-descriptorWrite :: forall obj sd sp slbts sb sm nm objs sds .
+descriptorWrite :: forall obj slbts sb sm nm objs sds .
 	Vk.DscSet.SNew sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.WriteNew 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sb, sm, nm, objs, obj)])
@@ -1446,7 +1446,7 @@ waitFramebufferSize w = Glfw.getFramebufferSize w >>= \sz ->
 	where zero = uncurry (||) . ((== 0) *** (== 0))
 
 drawFrame ::
-	forall sd ssc scfmt sr slyt sl slod sg sfs scmmbs ssm ssb sp lyts
+	forall sd ssc scfmt sr slyt sl slod sg sfs scmmbs ssm ssb lyts
 	sm sb nm smtri sbtri nmtri scb ssos sods lytods sds sds' .  (
 	HL.HomoList '(sl, Buffers) lyts,
 	HL.HomoList '(slod, ObjDataBuffers) lytods
@@ -1513,7 +1513,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 		\(Vk.MultiResult rs) -> sequence_ $ (throw . snd) `NE.map` rs)
 
 recordCommandBuffer ::
-	forall sr slyt sg sdlyt sdlytod sf sd sp sm sb nm smtri sbtri nmtri scb sds sds' .
+	forall sr slyt sg sdlyt sdlytod sf sm sb nm smtri sbtri nmtri scb sds sds' .
 	Vk.Extent2d -> Vk.RndrPss.R sr ->
 	Vk.Ppl.Lyt.L slyt
 		'[ '(sdlyt, Buffers), '(sdlytod, ObjDataBuffers)]
@@ -1599,7 +1599,7 @@ drawObject ovb cb0 ds dsod RenderObject {
 	readIORef ovb >>= \case
 		Just o | vb == o -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cb . HL.Singleton
-				. U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb
+				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef ovb $ Just vb
 	Vk.Cmd.pushConstants @'[ 'Vk.T.ShaderStageVertexBit] cb lyt
 		$ HL.Id (Str.G.Wrap MeshPushConstants {

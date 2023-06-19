@@ -1344,7 +1344,7 @@ instance (
 		update dvc ubs dscss scnb 2
 	update _ _ _ _ _ = error "bad"
 
-descriptorWrite0 :: forall tp objnm objs sm sb nm sd sp slbts sds .
+descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds .
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.SNew sds slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
@@ -1444,7 +1444,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sd sp sds .
+recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Graphics.G sg
@@ -1551,7 +1551,7 @@ drawObject om cb sce cmd RenderObject {
 	(case movb of
 		Just ovb | vb == ovb -> pure ()
 		_ -> do	Vk.Cmd.bindVertexBuffers cbb . HeteroParList.Singleton
-				. U4 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex vb
+				. U5 $ Vk.Bffr.IndexedForList @_ @_ @_ @Vertex @"" vb
 			writeIORef om $ Just vb) >>
 	Vk.Cmd.pushConstants @'[ 'Vk.T.ShaderStageVertexBit ] cbb lyt (HeteroParList.Id (Foreign.Storable.Generic.Wrap
 		MeshPushConstants {
@@ -1683,7 +1683,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp d
 
 drawFrame ::
 	forall sfs sd ssc scfmt sr sg0 sg1 slyt s sm sb nm smtri sbtri nmtri
-		scb ssos vss sbsms sscnm sscnb sp slyts sds . (
+		scb ssos vss sbsms sscnm sscnb slyts sds . (
 	HeteroParList.HomoList
 		'(s, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],

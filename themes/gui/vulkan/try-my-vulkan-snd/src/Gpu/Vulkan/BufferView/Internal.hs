@@ -40,7 +40,7 @@ newtype B s (nm :: Symbol) t = B M.B deriving Show
 create :: (
 	WithPoked (TMaybe.M mn),
 	Storable t, TEnum.FormatToValue (FormatOf t),
-	VObj.OffsetOfListWithName t nm objs,
+	VObj.OffsetOfList t nm objs,
 	VObj.ObjectLengthForTypeName t nm objs,
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfo mn t nm '(sm, sb, bnm, objs) ->
@@ -58,7 +58,7 @@ data CreateInfo mn t (nm :: Symbol) snmobjs = CreateInfo {
 
 createInfoToMiddle :: forall n t nm sm sb bnm objs . (
 	TEnum.FormatToValue (FormatOf t),
-	VObj.OffsetOfListWithName t nm objs,
+	VObj.OffsetOfList t nm objs,
 	Storable t, VObj.ObjectLengthForTypeName t nm objs ) =>
 	CreateInfo n t nm '(sm, sb, bnm, objs) -> M.CreateInfo n
 createInfoToMiddle CreateInfo {
@@ -75,9 +75,9 @@ createInfoToMiddle CreateInfo {
 type family FormatOf t :: TEnum.Format
 
 offsetNew :: forall t nm objs .
-	VObj.OffsetOfListWithName t nm objs =>
+	VObj.OffsetOfList t nm objs =>
 	HeteroParList.PL VObj.ObjectLength objs -> Device.M.Size
-offsetNew = VObj.offsetListFromSizeAlignmentListWithName @t @nm 0
+offsetNew = VObj.offsetListFromSizeAlignmentList @t @nm 0
 	. VObj.sizeAlignmentList
 
 rangeNew :: forall t (nm :: Symbol) objs .
