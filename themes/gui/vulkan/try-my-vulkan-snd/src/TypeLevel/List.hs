@@ -33,16 +33,3 @@ type family MapFst' (zl :: [Type]) where
 type family MapAddSnd (t :: Type) (l :: [Type]) = r | r -> l  where
 	MapAddSnd t '[] = '[]
 	MapAddSnd t (x ': xs) = (x, t) ': MapAddSnd t xs
-
-class (xs :: [Type]) `IsPrefixOf` (ys :: [Type])
-instance '[] `IsPrefixOf` ys
-instance xs `IsPrefixOf` ys => (x ': xs) `IsPrefixOf` (x ': ys)
-
-class InfixIndex (xs :: [Type]) (ys :: [Type]) where infixIndex :: Int
-
-instance (x ': xs) `IsPrefixOf` (x ': ys) =>
-	InfixIndex (x ': xs) (x ': ys) where
-	infixIndex = 0
-
-instance {-# OVERLAPPABLE #-} InfixIndex xs ys => InfixIndex xs (y ': ys) where
-	infixIndex = infixIndex @xs @ys + 1
