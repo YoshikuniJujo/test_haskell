@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel.List (Length, IsPrefixOf, InfixIndex(..)) where
+module Data.TypeLevel.List (Length(..), IsPrefixOf, InfixIndex(..)) where
 
 import Prelude hiding (length)
 
