@@ -78,7 +78,7 @@ allocateInfoToMiddleNew AllocateInfoNew {
 	M.allocateInfoCommandBufferCount = TLength.length @_ @c }
 
 allocate ::
-	(WithPoked (TMaybe.M mn), TpLvlLst.Length [(Type, VertexInput.Rate)] vss, HeteroParList.FromList vss) =>
+	(WithPoked (TMaybe.M mn), TpLvlLst.Length vss, HeteroParList.FromList vss) =>
 	Device.D sd -> AllocateInfo mn scp vss ->
 	(forall s . HeteroParList.PL (Binded s) vss -> IO a) -> IO a
 allocate (Device.D dvc) ai f = bracket
@@ -95,7 +95,7 @@ data AllocateInfo mn s (vss :: [[(Type, VertexInput.Rate)]]) = AllocateInfo {
 deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn s vss)
 
 allocateInfoToMiddle :: forall n s vss .
-	TpLvlLst.Length [(Type, VertexInput.Rate)] vss => AllocateInfo n s vss -> M.AllocateInfo n
+	TpLvlLst.Length vss => AllocateInfo n s vss -> M.AllocateInfo n
 allocateInfoToMiddle AllocateInfo {
 	allocateInfoNext = mnxt,
 	allocateInfoCommandPool = CommandPool.C cp,
@@ -103,8 +103,7 @@ allocateInfoToMiddle AllocateInfo {
 	M.allocateInfoNext = mnxt,
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
-	M.allocateInfoCommandBufferCount =
-		fromIntegral (TpLvlLst.length @_ @vss) }
+	M.allocateInfoCommandBufferCount = TpLvlLst.length @_ @vss }
 
 begin :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M mn')) =>
 	Binded s vs -> M.BeginInfo mn mn' -> IO a -> IO a

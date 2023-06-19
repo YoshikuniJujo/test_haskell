@@ -927,7 +927,7 @@ instance VssList vss =>
 	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
 
 mkVss :: Int -> (forall (vss :: [[(Type, Vk.VtxInp.Rate)]]) .
-	(TpLvlLst.Length [(Type, Vk.VtxInp.Rate)] vss, VssList vss) =>
+	(TpLvlLst.Length vss, VssList vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p

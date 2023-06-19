@@ -1037,7 +1037,7 @@ createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
 mkVss :: Int -> (forall (vss :: [()]) . TLength.Length vss => (
-	TpLvlLst.Length () vss, HeteroParList.FromList vss,
+	TpLvlLst.Length vss, HeteroParList.FromList vss,
 	HeteroParList.HomoList '() vss ) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])

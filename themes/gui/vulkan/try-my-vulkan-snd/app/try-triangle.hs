@@ -865,7 +865,7 @@ createCommandBuffers dvc cp f =
 		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
 
 mkVss :: Int -> (forall (vss :: [()]) .
-	(TpLvlLst.Length () vss, HeteroParList.FromList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
+	(TpLvlLst.Length vss, HeteroParList.FromList vss, HeteroParList.HomoList '() vss, TLength.Length vss) =>
 	Proxy vss -> a) -> a
 mkVss 0 f = f (Proxy @'[])
 mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
