@@ -33,9 +33,8 @@ bindPipelineCompute, dispatch, GroupCountX, GroupCountY, GroupCountZ,
 
 -- * PUSH CONSTANTS AND BIND DESCRIPTOR SETS
 
-pushConstants,
-bindDescriptorSetsGraphics,
-bindDescriptorSetsCompute,
+pushConstantsGraphics, pushConstantsCompute,
+bindDescriptorSetsGraphics, bindDescriptorSetsCompute,
 DynamicIndex(..),
 
 -- * COPY BUFFER AND IMAGES
@@ -76,7 +75,6 @@ import Gpu.Vulkan
 import Gpu.Vulkan.Enum
 import Gpu.Vulkan.Cmd.TypeLevel
 
-import qualified Gpu.Vulkan.TypeEnum as T
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
@@ -126,7 +124,7 @@ bindPipelineCompute :: CommandBuffer.C scmdb -> Pipeline.BindPoint ->
 bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.C g) f =
 	M.bindPipelineCompute cb bp g >> f (CommandBuffer.CBinded cb)
 
-draw :: CommandBuffer.GBinded sc vs slbtss ->
+draw :: CommandBuffer.GBinded sc vibs slbtss ->
 	VertexCount -> InstanceCount -> FirstVertex -> FirstInstance -> IO ()
 draw (CommandBuffer.GBinded cb) vc ic fv fi = M.draw cb vc ic fv fi
 
@@ -135,7 +133,7 @@ type InstanceCount = Word32
 type FirstVertex = Word32
 type FirstInstance = Word32
 
-drawIndexed :: CommandBuffer.GBinded sc vs slbtss ->
+drawIndexed :: CommandBuffer.GBinded sc vibs slbtss ->
 	IndexCount -> InstanceCount ->
 	FirstIndex -> VertexOffset -> FirstInstance -> IO ()
 drawIndexed (CommandBuffer.GBinded cb) idxc istc fidx vo fist =
@@ -145,7 +143,7 @@ type IndexCount = Word32
 type FirstIndex = Word32
 type VertexOffset = Int32
 
-dispatch :: CommandBuffer.CBinded sc foo ->
+dispatch :: CommandBuffer.CBinded sc slbtss ->
 	GroupCountX -> GroupCountY -> GroupCountZ -> IO ()
 dispatch (CommandBuffer.CBinded cb) = M.dispatch cb
 
@@ -353,16 +351,25 @@ copyBuffer :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc sms sbs smd sbd
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst) =
 	M.copyBuffer cb src dst (Buffer.makeCopies @ass lnss lnsd)
 
-pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
-	PokableList ts,
-	PushConstant.ShaderStageFlagBitsToMiddle ss,
-	InfixOffsetSize ts whole ) =>
-	CommandBuffer.GBinded sc vs '(s, sbtss, whole) -> Pipeline.Layout.L s sbtss whole ->
-	HeteroParList.L ts -> IO ()
-pushConstants (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
-	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss) offt xs
-		where
-		(fromIntegral -> offt, _) = infixOffsetSize @ts @whole
+pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
+	PushConstant.ShaderStageFlagBitsToMiddle sss,
+	PokableList ts, InfixOffsetSize ts pcs ) =>
+	CommandBuffer.GBinded sc vibs '(sl, sbtss, pcs) ->
+	Pipeline.Layout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
+pushConstantsGraphics (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
+	M.pushConstants
+		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
+		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
+
+pushConstantsCompute :: forall sss sc sl sbtss pcs ts . (
+	PushConstant.ShaderStageFlagBitsToMiddle sss,
+	PokableList ts, InfixOffsetSize ts pcs ) =>
+	CommandBuffer.CBinded sc '(sl, sbtss, pcs) ->
+	Pipeline.Layout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
+pushConstantsCompute (CommandBuffer.CBinded cb) (Pipeline.Layout.L lyt) xs =
+	M.pushConstants
+		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
+		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
 
 pipelineBarrier :: (
 	WithPokedHeteroToListCpsM' TMaybe.M ns,
