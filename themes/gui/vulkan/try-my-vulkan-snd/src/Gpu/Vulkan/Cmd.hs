@@ -29,7 +29,7 @@ VertexOffset,
 
 -- ** Dispatch
 
-bindPipelineCompute, dispatch,
+bindPipelineCompute, dispatch, GroupCountX, GroupCountY, GroupCountZ,
 
 -- * PUSH CONSTANTS AND BIND DESCRIPTOR SETS
 
@@ -145,8 +145,13 @@ type IndexCount = Word32
 type FirstIndex = Word32
 type VertexOffset = Int32
 
-dispatch :: CommandBuffer.CBinded sc foo -> Word32 -> Word32 -> Word32 -> IO ()
+dispatch :: CommandBuffer.CBinded sc foo ->
+	GroupCountX -> GroupCountY -> GroupCountZ -> IO ()
 dispatch (CommandBuffer.CBinded cb) = M.dispatch cb
+
+type GroupCountX = Word32
+type GroupCountY = Word32
+type GroupCountZ = Word32
 
 class HeteroParListToList' (spslbtss :: [(Type, DescriptorSet.LayoutArg)]) where
 	toList' :: (forall spslbts . t spslbts -> t') ->

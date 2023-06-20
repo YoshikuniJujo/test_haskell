@@ -1408,7 +1408,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sl sdsc scfmt sf sg sm sb nm sm' sb' nm' sdsc' sp sds .
+recordCommandBuffer :: forall scb sr sl sdsc scfmt sf sg sm sb nm sm' sb' nm' sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsc] '[] ->
@@ -1515,7 +1515,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc sc scivs rp ppllyt gpl fbs)
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts sds . (
+drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs slyts sds . (
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
 	HeteroParList.HomoList '() vss ) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->

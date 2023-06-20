@@ -1659,10 +1659,6 @@ mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
 	addTypeToProxy :: Proxy vss -> Proxy ('() ': vss)
 	addTypeToProxy Proxy = Proxy
 
-addTypeToProxy ::
-	Proxy vss -> Proxy ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss)
-addTypeToProxy Proxy = Proxy
-
 data SyncObjects (ssos :: ([Type], [Type], [Type])) where
 	SyncObjects :: {
 		imageAvailableSemaphores :: HeteroParList.PL Vk.Semaphore.S siass,
@@ -1683,7 +1679,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl sds .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
@@ -1800,7 +1796,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext
 		(loop =<< recreateSwapChainEtc
 			win sfc phdvc qfis dvc gq sc scivs rp ppllyt gpl fbs cp drsrcs)
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs sdsc' sp slyts sds . (
+drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos vss smsbs slyts sds . (
 	HeteroParList.HomoList (AtomUbo sdsc) slyts,
 	HeteroParList.HomoList '() vss ) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
