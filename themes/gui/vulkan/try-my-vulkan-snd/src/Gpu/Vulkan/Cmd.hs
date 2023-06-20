@@ -356,12 +356,13 @@ copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss src) (Buffer.Binded lnsd dst
 pushConstants :: forall (ss :: [T.ShaderStageFlagBits]) sc vs s sbtss whole ts . (
 	PokableList ts,
 	PushConstant.ShaderStageFlagBitsToMiddle ss,
-	PushConstant.OffsetSize whole ts ) =>
+	PushConstant.InfixOffsetSize ts whole ) =>
 	CommandBuffer.GBinded sc vs '(s, sbtss, whole) -> Pipeline.Layout.L s sbtss whole ->
 	HeteroParList.L ts -> IO ()
 pushConstants (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
-	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss)
-		(PushConstant.offset @whole @ts 0) xs
+	M.pushConstants cb lyt (PushConstant.shaderStageFlagBitsToMiddle @ss) offt xs
+		where
+		(offt, _) = PushConstant.infixOffsetSize @ts @whole
 
 pipelineBarrier :: (
 	WithPokedHeteroToListCpsM' TMaybe.M ns,

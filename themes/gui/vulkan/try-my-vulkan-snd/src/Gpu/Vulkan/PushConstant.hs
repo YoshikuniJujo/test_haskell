@@ -1,9 +1,11 @@
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.PushConstant where
@@ -12,42 +14,72 @@ import Foreign.Storable
 import Data.Kind
 import Data.Bits
 import Data.Word
+import Data.HeteroParList qualified as HeteroParList
+import Data.HeteroParList (pattern (:**))
 
 import Gpu.Vulkan.Enum
+import Gpu.Vulkan.TypeEnum qualified as T
+import Gpu.Vulkan.PushConstant.Middle qualified as M
 
-import qualified Gpu.Vulkan.TypeEnum as T
-import qualified Gpu.Vulkan.PushConstant.Middle as M
+infixOffsetSize :: forall (part :: [Type]) (whole :: [Type]) .
+	InfixOffsetSize part whole => (Offset, Size)
+infixOffsetSize =
+	infixOffsetSizeFromSizeAlignmentList @part @whole 0 (sizeAlignmentList @whole)
 
-class IsPrefixOf (part :: [Type]) (whole :: [Type])
+data SizeAlignmentOfType (tp :: Type) = SizeAlignmentOfType Size Alignment
+	deriving Show
 
-instance IsPrefixOf '[] whole
+type Size = Word32; type Alignment = Word32
 
-instance IsPrefixOf part whole => IsPrefixOf (t ': part) (t ': whole)
+class SizeAlignmentList ts where
+	sizeAlignmentList :: HeteroParList.PL SizeAlignmentOfType ts
 
-class Size (ts :: [Type]) where sizeSize :: Int -> Int
+instance SizeAlignmentList '[] where
+	sizeAlignmentList = HeteroParList.Nil
 
-instance Size '[] where sizeSize sz = sz
+instance (Storable t, SizeAlignmentList ts) => SizeAlignmentList (t ': ts) where
+	sizeAlignmentList =
+		SizeAlignmentOfType
+			(fromIntegral $ sizeOf @t undefined)
+			(fromIntegral $ alignment @t undefined) :**
+		sizeAlignmentList @ts
 
-instance (Storable t, Size ts) => Size (t ': ts) where
-	sizeSize sz = ((sz - 1) `div` al + 1) * al + sizeOf @t undefined
-		where al = alignment @t undefined
+class SizeAlignmentList whole => InfixOffsetSize (part :: [Type]) whole where
+	infixOffsetSizeFromSizeAlignmentList :: Size ->
+		HeteroParList.PL SizeAlignmentOfType whole -> (Offset, Size)
 
-class OffsetSize (whole :: [Type]) (part :: [Type]) where
-	offset :: Word32 -> Word32
-	size :: Word32
+type Offset = Word32
 
-instance (IsPrefixOf (t ': part) (t ': whole), Size (t ': part), Storable t) =>
-	OffsetSize (t ': whole) (t ': part) where
-	offset oft = ((oft - 1) `div` al + 1) * al
-		where al = fromIntegral $ alignment @t undefined
-	size = fromIntegral $ sizeSize @(t ': part) 0
+instance (
+	Storable t, SizeAlignmentList whole,
+	(t ': ts) `PrefixSize` (t ': whole) ) =>
+	InfixOffsetSize (t ': ts) (t ': whole) where
+	infixOffsetSizeFromSizeAlignmentList sz0
+		saa@(SizeAlignmentOfType _ algn :** _) = (
+		align algn sz0,
+		prefixSizeFromSizeAlignmentList @(t ': ts) 0 saa )
 
-instance {-# OVERLAPPABLE #-} (Storable t, OffsetSize whole part) =>
-	OffsetSize (t ': whole) part where
-	offset oft = ((oft - 1) `div` al + 1) * al +
-		fromIntegral (sizeOf @t undefined)
-		where al = fromIntegral $ alignment @t undefined
-	size = size @whole @part
+instance {-# OVERLAPPABLE #-} (Storable t, InfixOffsetSize ts whole) =>
+	InfixOffsetSize ts (t ': whole) where
+	infixOffsetSizeFromSizeAlignmentList sz0
+		(SizeAlignmentOfType sz algn :** sas) =
+		infixOffsetSizeFromSizeAlignmentList @ts
+			(align algn sz0 + sz) sas
+
+class PrefixSize (part :: [Type]) whole where
+	prefixSizeFromSizeAlignmentList :: Size ->
+		HeteroParList.PL SizeAlignmentOfType whole -> Size
+
+instance PrefixSize '[] whole where
+	prefixSizeFromSizeAlignmentList sz _ = sz
+
+instance PrefixSize  ts whole => PrefixSize (t ': ts) (t ': whole) where
+	prefixSizeFromSizeAlignmentList sz0
+		(SizeAlignmentOfType sz algn :** sas) =
+		prefixSizeFromSizeAlignmentList @ts (align algn sz0 + sz) sas
+
+align :: Word32 -> Word32 -> Word32
+align algn offt = ((offt - 1) `div` algn + 1) * algn
 
 class ShaderStageFlagBitsToMiddle (sss :: [T.ShaderStageFlagBits]) where
 	shaderStageFlagBitsToMiddle :: ShaderStageFlagBits
@@ -66,12 +98,13 @@ data Range = Range [T.ShaderStageFlagBits] [Type]
 class RangeToMiddle (whole :: [Type]) (range :: Range) where
 	rangeToMiddle :: M.Range
 
-instance (ShaderStageFlagBitsToMiddle sss, OffsetSize whole part) =>
+instance (ShaderStageFlagBitsToMiddle sss, InfixOffsetSize part whole) =>
 	RangeToMiddle whole ('Range sss part) where
 	rangeToMiddle = M.Range {
 		M.rangeStageFlags = shaderStageFlagBitsToMiddle @sss,
-		M.rangeOffset = offset @whole @part 0,
-		M.rangeSize = size @whole @part }
+		M.rangeOffset = offt, M.rangeSize = sz }
+		where
+		(offt, sz) = infixOffsetSize @part @whole
 
 class RangesToMiddle (whole :: [Type]) (ranges :: [Range]) where
 	rangesToMiddle :: [M.Range]

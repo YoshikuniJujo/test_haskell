@@ -1457,7 +1457,7 @@ createCommandBuffer ::
 	IO a
 createCommandBuffer dvc cp f = Vk.CmdBffr.allocateNew dvc allocInfo $ f . \(cb :*. HeteroParList.Nil) -> cb
 	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew 'Nothing scp '[ '()]
+	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing scp '[ '()]
 	allocInfo = Vk.CmdBffr.AllocateInfoNew {
 		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
 		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
@@ -1484,7 +1484,7 @@ createSyncObjects dvc f =
 	where
 	fncInfo = def { Vk.Fence.createInfoFlags = Vk.Fence.CreateSignaledBit }
 
-recordCommandBuffer :: forall scb sr scfmt sf sl sg sm sb nm sm' sb' nm' sdsc sp sdsl sds .
+recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
 	Vk.CmdBffr.C scb ->
 	Vk.RndrPass.R sr -> Vk.Frmbffr.F sf -> Vk.Extent2d ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->
@@ -1604,7 +1604,7 @@ runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl dptImg dpt
 			win sfc phdvc qfis dvc gq sc scivs
 			rp ppllyt gpl dptImg dptImgMem dptImgVw cp fbs)
 
-drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsc sp sdsl sds .
+drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb sias srfs siff sdsl sds .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.Queue.Q -> Vk.Khr.Swapchain.SNew ssc scfmt ->
 	Vk.Extent2d -> Vk.RndrPass.R sr ->
 	Vk.Ppl.Layout.L sl '[AtomUbo sdsl] '[] ->

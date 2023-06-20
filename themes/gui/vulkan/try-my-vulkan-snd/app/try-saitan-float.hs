@@ -156,7 +156,7 @@ calc opt da db dc = withDevice \phdvc qFam dvc maxGroupCountX ->
 				(m :: Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""])]) ->
 			calc' @_ @_ @_ @nm @nm @nm dvc qFam dscSetLyt dscSet maxGroupCountX m m m
 
-calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sp sm1 sm2 sm3 sds .
+calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm2 sm3 sds .
 	(
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	slbts ~ '(sl, bts),
@@ -185,7 +185,7 @@ type ListBuffer1 w1 w2 w3 = '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 
 type ListBuffer3Memory3 w1 w2 w3 = '[ '[VObj.List 256 w1 ""], '[VObj.List 256 w2 ""], '[VObj.List 256 w3 ""]]
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
-	objss1 objss2 objss3 slbts sbtss sd sc vs sg sl sp sm1 sm2 sm3 sds . (
+	objss1 objss2 objss3 slbts sbtss sd sc sg sl sm1 sm2 sm3 sds . (
 	Vk.DscSet.LayoutArgListOnlyDynamics sbtss ~ '[ '[ '[]]],
 	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
@@ -579,7 +579,7 @@ checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
-	forall w1 w2 w3 sd sp slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds .
+	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds .
 	Vk.DscSet.SNew sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
@@ -594,7 +594,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 		bufferInfoList @w1 ba :** bufferInfoList @w2 bb :**
 		bufferInfoList @w3 bc :** HeteroParList.Nil }
 
-writeDscSet' :: forall w1 w2 w3 sd sp slbts sb sm nm objs sds .
+writeDscSet' :: forall w1 w2 w3 slbts sb sm nm objs sds .
 	Vk.DscSet.SNew sds slbts ->
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
