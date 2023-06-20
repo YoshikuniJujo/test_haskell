@@ -16,7 +16,7 @@ class Length (as :: [k]) where length :: Integral n => n
 instance Length '[] where length = 0
 instance Length as => Length (a ': as) where length = length @_ @as + 1
 
-class (xs :: [Type]) `IsPrefixOf` (ys :: [Type])
+class (xs :: [k]) `IsPrefixOf` (ys :: [k])
 instance '[] `IsPrefixOf` ys
 instance xs `IsPrefixOf` ys => (x ': xs) `IsPrefixOf` (x ': ys)
 
