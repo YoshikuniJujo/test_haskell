@@ -78,7 +78,7 @@ import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
-import qualified Gpu.Vulkan.PipelineLayout.Type as Pipeline.Layout
+import qualified Gpu.Vulkan.PipelineLayout.Type as PipelineLayout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as DescriptorSet
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
@@ -170,19 +170,19 @@ instance HeteroParListToListNew spslbtss =>
 	HeteroParListToListNew (spslbts ': spslbtss) where
 	toListNew f (x :** xs) = f x : toListNew f xs
 
-bindDescriptorSetsGraphics :: forall sc vs s sbtss sbtss' pcs sdssbtss . (
+bindDescriptorSetsGraphics :: forall sgbnd vibs sl sbtss pcs sdssbtss sbtss' . (
 	TMapIndex.M1_2 sdssbtss ~ sbtss',
 	GetDscSetListLengthNew sdssbtss,
 	InfixIndex sbtss' sbtss,
 	HeteroParListToListNew sdssbtss,
 	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
 	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss') ) =>
-	CommandBuffer.GBinded sc vs '(s, sbtss, pcs) -> Pipeline.BindPoint ->
-	Pipeline.Layout.L s sbtss pcs ->
+	CommandBuffer.GBinded sgbnd vibs '(sl, sbtss, pcs) -> Pipeline.BindPoint ->
+	PipelineLayout.L sl sbtss pcs ->
 	HeteroParList.PL (U2 DescriptorSet.SNew) sdssbtss ->
 	HeteroParList.PL3 DynamicIndex
 		(DescriptorSet.LayoutArgListOnlyDynamics sbtss') -> IO ()
-bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss idxs = do
+bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss idxs = do
 	lns <- getDscSetListLengthNew dss
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
@@ -201,10 +201,10 @@ bindDescriptorSetsCompute :: forall sc s sbtss sbtss' foo spslbtss' sdsspslbtss 
 	InfixIndex spslbtss' sbtss,
 	HeteroParListToListNew sdsspslbtss ) =>
 	CommandBuffer.CBinded sc '(s, sbtss, foo) ->
-	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 DescriptorSet.SNew) sdsspslbtss ->
+	PipelineLayout.L s sbtss foo -> HeteroParList.PL (U2 DescriptorSet.SNew) sdsspslbtss ->
 	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss') ->
 	IO ()
-bindDescriptorSetsCompute (CommandBuffer.CBinded c) (Pipeline.Layout.L l) dss idxs = do
+bindDescriptorSetsCompute (CommandBuffer.CBinded c) (PipelineLayout.L l) dss idxs = do
 	lns <- getDscSetListLengthNew dss
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
@@ -288,30 +288,10 @@ instance DynamicOffsetList3ToList ((os ': oss) ': osss) =>
 	dynamicOffsetList3ToList (((DynamicOffset ofst :** dos) :** doss) :** dosss) =
 		ofst : dynamicOffsetList3ToList ((dos :** doss) :** dosss)
 
-getDscSetLengths :: DescriptorSet.S sd sp slbts ->
-	IO (HeteroParList.PL2 KObj.ObjectLength
-		(DescriptorSet.LayoutArgOnlyDynamics slbts))
-getDscSetLengths (DescriptorSet.S lns _) = readIORef lns
-
 getDscSetLengthsNew :: DescriptorSet.SNew s slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
 		(DescriptorSet.LayoutArgOnlyDynamics slbts))
 getDscSetLengthsNew (DescriptorSet.SNew lns _) = readIORef lns
-
-class GetDscSetListLength spslbtss where
-	getDscSetListLength ::
-		HeteroParList.PL (U2 (DescriptorSet.S sd)) spslbtss ->
-		IO (HeteroParList.PL3 KObj.ObjectLength
-			(DescriptorSet.LayoutArgListOnlyDynamics
-				(TMapIndex.M1_2 spslbtss)))
-
-instance GetDscSetListLength '[] where
-	getDscSetListLength HeteroParList.Nil = pure HeteroParList.Nil
-
-instance GetDscSetListLength spslbtss =>
-	GetDscSetListLength ('(sp, slbts) ': spslbtss) where
-	getDscSetListLength (U2 ds :** dss) =
-		(:**) <$> getDscSetLengths ds <*> getDscSetListLength dss
 
 class GetDscSetListLengthNew sspslbtss where
 	getDscSetListLengthNew ::
@@ -356,8 +336,8 @@ pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
 	PushConstant.ShaderStageFlagBitsToMiddle sss,
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.GBinded sc vibs '(sl, sbtss, pcs) ->
-	Pipeline.Layout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
-pushConstantsGraphics (CommandBuffer.GBinded cb) (Pipeline.Layout.L lyt) xs =
+	PipelineLayout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
+pushConstantsGraphics (CommandBuffer.GBinded cb) (PipelineLayout.L lyt) xs =
 	M.pushConstants
 		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
@@ -366,8 +346,8 @@ pushConstantsCompute :: forall sss sc sl sbtss pcs ts . (
 	PushConstant.ShaderStageFlagBitsToMiddle sss,
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.CBinded sc '(sl, sbtss, pcs) ->
-	Pipeline.Layout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
-pushConstantsCompute (CommandBuffer.CBinded cb) (Pipeline.Layout.L lyt) xs =
+	PipelineLayout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
+pushConstantsCompute (CommandBuffer.CBinded cb) (PipelineLayout.L lyt) xs =
 	M.pushConstants
 		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
