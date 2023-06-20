@@ -154,7 +154,7 @@ type GroupCountZ = Word32
 bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
 	DescriptorSet.LayoutArgListOnlyDynamics dsls' ~ dyns,
-	InfixIndex dsls' dsls, HeteroList3ToList3 dyns,
+	InfixIndex dsls' dsls,
 	GetOffsetList3 dyns, GetDscSetListLength dss
 	) =>
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) -> Pipeline.BindPoint ->
@@ -175,7 +175,6 @@ bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss
 bindDescriptorSetsCompute :: forall sc s sbtss sbtss' foo spslbtss' sdsspslbtss . (
 	TMapIndex.M1_2 sdsspslbtss ~ spslbtss',
 	spslbtss' ~ sbtss',
-	HeteroList3ToList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
 	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
 	GetDscSetListLength sdsspslbtss,
 	InfixIndex spslbtss' sbtss ) =>
@@ -245,31 +244,10 @@ instance (GetOffsetList2 oss, GetOffsetList3 osss) =>
 	getOffsetList3 (lnss :** lnsss) (iss :** isss) =
 		getOffsetList2 lnss iss :** getOffsetList3 lnsss isss
 
-dynamicOffsetList3ToListNew :: HeteroList3ToList3 osss =>
+dynamicOffsetList3ToListNew ::
 	HeteroParList.PL3 DynamicOffset osss -> [Word32]
 dynamicOffsetList3ToListNew = concat . (concat <$>)
-	. heteroList3ToList3 (\(DynamicOffset ofst) -> ofst)
-
-class HeteroList3ToList3 asss where
-	heteroList3ToList3 ::
-		(forall a . t a -> b) -> HeteroParList.PL3 t asss -> [[[b]]]
-
-instance HeteroList3ToList3 '[] where heteroList3ToList3 _ HeteroParList.Nil = []
-
-instance HeteroList3ToList3 asss => HeteroList3ToList3 ('[] ': asss) where
-	heteroList3ToList3 f (HeteroParList.Nil :** xsss) = [] : heteroList3ToList3 f xsss
-
-instance HeteroList3ToList3 (ass ': asss) =>
-	HeteroList3ToList3 (('[] ': ass) ': asss) where
-	heteroList3ToList3 f ((HeteroParList.Nil :** xss) :** xsss) = let
-		yss : ysss = heteroList3ToList3 f $ xss :** xsss in
-		([] : yss) : ysss
-
-instance HeteroList3ToList3 ((as ': ass) ': asss) =>
-	HeteroList3ToList3 (((a ': as) ': ass) ': asss) where
-	heteroList3ToList3 f (((x :** xs) :** xss) :** xsss) = let
-		(ys : yss) : ysss = heteroList3ToList3 f $ (xs :** xss) :** xsss in
-		((f x : ys) : yss) : ysss
+	. HeteroParList.toList3 (\(DynamicOffset ofst) -> ofst)
 
 getDscSetLengthsNew :: DescriptorSet.SNew s slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
