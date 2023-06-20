@@ -144,7 +144,6 @@ library
       Sample.Image
       ThEnv
       Tools
-      TypeLevel.List
       TypeLevel.Nat
       TypeValues
       Vertex

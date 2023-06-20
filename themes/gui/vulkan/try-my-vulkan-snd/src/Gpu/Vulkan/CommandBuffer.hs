@@ -35,10 +35,9 @@ import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
+import Data.TypeLevel.List qualified as TpLvlLst
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
-
-import qualified TypeLevel.List as TpLvlLst
 
 import Gpu.Vulkan.CommandBuffer.Type
 import Gpu.Vulkan.CommandBuffer.Enum

@@ -61,13 +61,13 @@ import Control.Exception
 import Data.Kind
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
 import Data.Word
 import Data.Int
-import TypeLevel.List
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Enum

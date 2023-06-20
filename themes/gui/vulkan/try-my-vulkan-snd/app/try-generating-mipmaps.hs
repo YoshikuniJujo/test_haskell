@@ -29,6 +29,7 @@ import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List qualified as TLength
+import Data.TypeLevel.List qualified as TpLvlLst
 import Data.Foldable
 import Data.Default
 import Data.Bits
@@ -49,8 +50,6 @@ import Data.Time
 import System.Environment
 import Codec.Picture
 import Codec.Picture.Tools
-
-import qualified TypeLevel.List as TpLvlLst
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V

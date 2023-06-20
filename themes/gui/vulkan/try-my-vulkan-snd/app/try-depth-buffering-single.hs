@@ -32,6 +32,7 @@ import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.List qualified as TpLvlLst
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
@@ -45,8 +46,6 @@ import Data.Color
 import Data.Time
 import Codec.Picture
 import Codec.Picture.Tools
-
-import qualified TypeLevel.List as TpLvlLst
 
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Vector.Storable as V
