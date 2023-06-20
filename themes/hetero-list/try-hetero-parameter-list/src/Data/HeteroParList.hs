@@ -29,7 +29,7 @@ module Data.HeteroParList (
 
 	FromList(..),
 
-	toList, toListM,
+	toList, toListM, toList3,
 	ConstraintHeteroToListM(..),
 	ConstraintHeteroToListM'(..),
 	ConstraintHeteroToListCpsM(..),
@@ -142,6 +142,19 @@ toListM :: Applicative m =>
 	(forall (s :: k) . t s -> m a) -> PL t ss -> m [a]
 toListM _ Nil = pure []
 toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
+
+toList3 :: (forall a . t a -> b) -> PL3 t asss -> [[[b]]]
+toList3 _ Nil = []
+toList3 f (Nil :** xsss) = [] : toList3 f xsss
+toList3 f ((Nil :** xss) :** xsss) =
+	case toList3 f $ xss :** xsss of
+		yss : ysss -> ([] : yss) : ysss
+		[] -> error "never occur"
+toList3 f (((x :** xs) :** xss) :** xsss) =
+	case toList3 f $ (xs :** xss) :** xsss of
+		(ys : yss) : ysss -> ((f x : ys) : yss) : ysss
+		[] : _ -> error "never occur"
+		[] -> error "never occur"
 
 class HomoList (s :: k) ss where
 	homoListFromList :: [t s] -> PL t ss
