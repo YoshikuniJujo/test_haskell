@@ -10,8 +10,6 @@ module Data.TypeLevel.List (Length(..), IsPrefixOf, InfixIndex(..)) where
 
 import Prelude hiding (length)
 
-import Data.Kind
-
 class Length (as :: [k]) where length :: Integral n => n
 instance Length '[] where length = 0
 instance Length as => Length (a ': as) where length = length @_ @as + 1
@@ -20,11 +18,11 @@ class (xs :: [k]) `IsPrefixOf` (ys :: [k])
 instance '[] `IsPrefixOf` ys
 instance xs `IsPrefixOf` ys => (x ': xs) `IsPrefixOf` (x ': ys)
 
-class InfixIndex (xs :: [Type]) (ys :: [Type]) where infixIndex :: Int
+class InfixIndex (xs :: [k]) (ys :: [k]) where infixIndex :: Int
 
 instance (x ': xs) `IsPrefixOf` (x ': ys) =>
 	InfixIndex (x ': xs) (x ': ys) where
 	infixIndex = 0
 
 instance {-# OVERLAPPABLE #-} InfixIndex xs ys => InfixIndex xs (y ': ys) where
-	infixIndex = infixIndex @xs @ys + 1
+	infixIndex = infixIndex @_ @xs @ys + 1
