@@ -312,7 +312,7 @@ run :: forall slbts sbtss sd sc sg sl o0 o1 o2 sds . (
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
-	Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
+	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0

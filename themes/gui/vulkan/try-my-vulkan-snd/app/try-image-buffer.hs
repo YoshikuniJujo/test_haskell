@@ -165,7 +165,7 @@ run :: forall w1 w2 w3 slbts sbtss sd sc sg sl m1 m2 m3 sds . (
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	Vk.Cmd.SetPos '[slbts] sbtss ) =>
-	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.CNew sg '(sl, sbtss, '[]) ->
+	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])

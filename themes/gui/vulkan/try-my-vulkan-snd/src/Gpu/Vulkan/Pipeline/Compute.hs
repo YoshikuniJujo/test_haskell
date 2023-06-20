@@ -8,7 +8,7 @@
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Gpu.Vulkan.Pipeline.Compute (createCsNew, CNew(..), CreateInfo(..)) where
+module Gpu.Vulkan.Pipeline.Compute (createCsNew, C(..), CreateInfo(..)) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -35,8 +35,8 @@ import qualified Gpu.Vulkan.Pipeline.Compute.Middle as M
 
 import Gpu.Vulkan.DescriptorSetLayout.Type qualified as DscStLyt
 
-newtype CNew s (slbtss ::
-	(Type, [(Type, [DescriptorSetLayout.BindingType])], [Type])) = CNew M.C
+newtype C s (slbtss ::
+	(Type, [(Type, [DescriptorSetLayout.BindingType])], [Type])) = C M.C
 	deriving Show
 
 data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
@@ -45,7 +45,7 @@ data CreateInfo mn nncdvs slsbtss sbph = CreateInfo {
 	createInfoStage :: U5 ShaderStage.CreateInfoNew nncdvs,
 	createInfoLayout :: U3 Layout.L slsbtss,
 	createInfoBasePipelineHandleOrIndex ::
-		Maybe (Either (U2 CNew sbph) Int32) }
+		Maybe (Either (U2 C sbph) Int32) }
 
 type CreateInfoArgs4 = (
 	Maybe Type,
@@ -79,7 +79,7 @@ createInfoToMiddle dvc CreateInfo {
 	stg' <- ShaderStage.createInfoToMiddleFooNew dvc stg
 	let	(bph, bpi) = case mbphi of
 			Nothing -> (Nothing, Nothing)
-			Just (Left (U2 (CNew h))) -> (Just h, Nothing)
+			Just (Left (U2 (C h))) -> (Just h, Nothing)
 			Just (Right i) -> (Nothing, Just i)
 	pure M.CreateInfo {
 		M.createInfoNext = mnxt,
@@ -147,7 +147,7 @@ createCsNew :: (
 	AllocationCallbacks.ToMiddle mscc' ) =>
 	Device.D sd -> Maybe (Cache.C spc) -> HeteroParList.PL (U4 CreateInfo) vss ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc' ->
-	(forall s . HeteroParList.PL (CNew s) (CreateInfoListArgs4ToCArgs1 vss) -> IO a) -> IO a
+	(forall s . HeteroParList.PL (C s) (CreateInfoListArgs4ToCArgs1 vss) -> IO a) -> IO a
 createCsNew dvc@(Device.D mdvc) mcch cis
 	(AllocationCallbacks.toMiddle -> mac) f = do
 	cis' <- createInfoListToMiddle dvc cis
@@ -159,9 +159,9 @@ createCsNew dvc@(Device.D mdvc) mcch cis
 		(f . fromMiddleList)
 
 class FromMiddleList ss where
-	fromMiddleList :: [M.C] -> HeteroParList.PL (CNew sc) ss
+	fromMiddleList :: [M.C] -> HeteroParList.PL (C sc) ss
 
 instance FromMiddleList '[] where fromMiddleList [] = HeteroParList.Nil
 
 instance FromMiddleList ss => FromMiddleList (s ': ss) where
-	fromMiddleList (c : cs) = CNew c :** fromMiddleList cs
+	fromMiddleList (c : cs) = C c :** fromMiddleList cs

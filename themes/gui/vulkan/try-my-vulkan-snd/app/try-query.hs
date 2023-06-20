@@ -302,7 +302,7 @@ run :: forall slbts sd sq sq' tp sc sg sl sds . (
 	Vk.QP.Q sq tp -> Vk.QP.Q sq' Vk.QP.Timestamp ->
 	Vk.DS.SNew sds slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
-	Vk.Ppl.Cmpt.CNew sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
+	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
 	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
 		Vk.Cmd.resetQueryPool cb qpt 0 10 >>

@@ -424,7 +424,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
 
 run :: forall sd sc sg sl sdsl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
-	Vk.Ppl.Cmpt.CNew sg '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) ->
+	Vk.Ppl.Cmpt.C sg '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) ->
 	Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
 	Vk.DscSet.SNew sds '(sdsl, DscSetLytLstW123)  -> Word32 ->
 	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->

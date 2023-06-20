@@ -120,10 +120,10 @@ bindPipelineGraphics :: CommandBuffer.C sc ->
 bindPipelineGraphics (CommandBuffer.C c) bp (Pipeline.G g) f =
 	M.bindPipelineGraphics c bp g >> f (CommandBuffer.GBinded c)
 
-bindPipelineCompute :: CommandBuffer.C sc -> Pipeline.BindPoint ->
-	Pipeline.Compute.CNew sg slbtss ->
-	(forall sb . CommandBuffer.CBinded sb slbtss -> IO a) -> IO a
-bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.CNew g) f =
+bindPipelineCompute :: CommandBuffer.C scmdb -> Pipeline.BindPoint ->
+	Pipeline.Compute.C scp slbtss ->
+	(forall scbnd . CommandBuffer.CBinded scbnd slbtss -> IO a) -> IO a
+bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.C g) f =
 	M.bindPipelineCompute cb bp g >> f (CommandBuffer.CBinded cb)
 
 draw :: CommandBuffer.GBinded sc vs slbtss ->
