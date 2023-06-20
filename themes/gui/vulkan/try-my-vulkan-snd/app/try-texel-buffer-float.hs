@@ -42,7 +42,6 @@ import qualified Gpu.Vulkan.PhysicalDevice.Struct as Vk.PhDvc
 import qualified Gpu.Vulkan.Queue as Vk.Queue
 import qualified Gpu.Vulkan.Queue.Enum as Vk.Queue
 import qualified Gpu.Vulkan.QueueFamily as Vk.QFam
-import qualified Gpu.Vulkan.QueueFamily.Middle as Vk.QFam
 import qualified Gpu.Vulkan.Device as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Type as Vk.Dvc
 import qualified Gpu.Vulkan.Device.Middle.Internal as Vk.Dvc.M
@@ -112,7 +111,7 @@ type MemoryList sm sb nm w =
 	Vk.Mem.M sm '[ '( sb, 'Vk.Mem.K.Buffer nm '[VObj.List 256 w ""])]
 
 calc' :: forall nm1 nm2 nm3 w1 w2 w3 objss1 objss2 objss3 sm1 sm2 sm3
-		slbts sl bts sd sp sds . (
+		slbts sl bts sd sds . (
 	Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[], '[]],
 	slbts ~ '(sl, bts),
 	Show (HeteroParList.PL
@@ -183,7 +182,7 @@ commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
 	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
 
 run :: forall nm1 nm2 nm3 w1 w2 w3
-	objss1 objss2 objss3 slbts sbtss sd sc sg sl sp sm1 sm2 sm3 sds . (
+	objss1 objss2 objss3 slbts sbtss sd sc sg sl sm1 sm2 sm3 sds . (
 	Vk.DscSet.LayoutArgOnlyDynamics slbts ~ '[ '[], '[]],
 	sbtss ~ '[slbts],
 	Show (HeteroParList.PL
@@ -349,7 +348,7 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
 writeDscSet ::
-	forall w1 w2 w3 sd sp slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds .
+	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds .
 	Vk.DscSet.SNew sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->

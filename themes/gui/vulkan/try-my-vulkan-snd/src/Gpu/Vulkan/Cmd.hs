@@ -23,6 +23,9 @@ beginRenderPass,
 bindPipelineGraphics,
 bindVertexBuffers, bindIndexBuffer, IsIndex,
 draw, drawIndexed,
+VertexCount, IndexCount, InstanceCount,
+FirstVertex, FirstIndex, FirstInstance,
+VertexOffset,
 
 -- ** Dispatch
 
@@ -123,13 +126,24 @@ bindPipelineCompute :: CommandBuffer.C sc -> Pipeline.BindPoint ->
 bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.CNew g) f =
 	M.bindPipelineCompute cb bp g >> f (CommandBuffer.CBinded cb)
 
-draw :: CommandBuffer.GBinded sc vs slbtss -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+draw :: CommandBuffer.GBinded sc vs slbtss ->
+	VertexCount -> InstanceCount -> FirstVertex -> FirstInstance -> IO ()
 draw (CommandBuffer.GBinded cb) vc ic fv fi = M.draw cb vc ic fv fi
 
+type VertexCount = Word32
+type InstanceCount = Word32
+type FirstVertex = Word32
+type FirstInstance = Word32
+
 drawIndexed :: CommandBuffer.GBinded sc vs slbtss ->
-	Word32 -> Word32 -> Word32 -> Int32 -> Word32 -> IO ()
+	IndexCount -> InstanceCount ->
+	FirstIndex -> VertexOffset -> FirstInstance -> IO ()
 drawIndexed (CommandBuffer.GBinded cb) idxc istc fidx vo fist =
 	M.drawIndexed cb idxc istc fidx vo fist
+
+type IndexCount = Word32
+type FirstIndex = Word32
+type VertexOffset = Int32
 
 dispatch :: CommandBuffer.CBinded sc foo -> Word32 -> Word32 -> Word32 -> IO ()
 dispatch (CommandBuffer.CBinded cb) = M.dispatch cb
