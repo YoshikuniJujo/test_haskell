@@ -4,22 +4,23 @@
 {-# LANGUAGE DataKinds, PolyKinds, ConstraintKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms, ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Foreign.Storable.HeteroList (
 
-	-- * Size and Alignment
+	-- * SIZE AND ALIGNMENT
 
-	SizableList(..), sizeAlignments, wholeSize,
+	wholeSize, sizeAlignments, infixOffsetSize,
+	SizeAlignmentList, InfixOffsetSize, PrefixSize,
 
-	-- * Pokable
+	-- * POKABLE
 
 	PokableList(..),
 
-	-- * WithPoked
+	-- * WITHPOKED
 
 	-- ** Plain
 
@@ -43,6 +44,7 @@ import Data.HeteroParList (pattern (:**))
 
 -- Size and Alignment
 
+{-
 class SizableList (as :: [Type]) where sizes :: [Int]; alignments :: [Int]
 
 instance SizableList '[] where sizes = []; alignments = []
@@ -50,20 +52,82 @@ instance SizableList '[] where sizes = []; alignments = []
 instance (Sizable a, SizableList as) => SizableList (a ': as) where
 	sizes = sizeOf' @a: sizes @as
 	alignments = alignment' @a : alignments @as
+	-}
 
-sizeAlignments :: forall as . SizableList as => [(Int, Int)]
-sizeAlignments = zip (sizes @as) (alignments @as)
+sizeAlignments :: forall as . SizeAlignmentList as => [(Int, Int)]
+sizeAlignments = sizeAlignmentsFromSizeAlignmentList (sizeAlignmentList @as)
+	-- zip (sizes @as) (alignments @as)
 
-wholeSize :: forall as . SizableList as => Int
+sizeAlignmentsFromSizeAlignmentList ::
+	HeteroParList.PL SizeAlignmentOfType as -> [(Int, Int)]
+sizeAlignmentsFromSizeAlignmentList HeteroParList.Nil = []
+sizeAlignmentsFromSizeAlignmentList
+	(SizeAlignmentOfType sz algn :** sas) =
+	(sz, algn) : sizeAlignmentsFromSizeAlignmentList sas
+
+wholeSize :: forall as . SizeAlignmentList as => Int
 wholeSize = calcSize 0 $ sizeAlignments @as
 
 calcSize :: Int -> [(Int, Int)] -> Int
 calcSize n [] = n
 calcSize n ((sz, al) : szals) = calcSize (((n - 1) `div` al + 1) * al + sz) szals
 
+infixOffsetSize :: forall (part :: [Type]) (whole :: [Type]) .
+	InfixOffsetSize part whole => (Offset, Size)
+infixOffsetSize = infixOffsetSizeFromSizeAlignmentList @part @whole
+	0 (sizeAlignmentList @whole)
+
+data SizeAlignmentOfType (tp :: Type) = SizeAlignmentOfType Size Alignment
+	deriving Show
+
+type Size = Int; type Alignment = Int; type Offset = Int
+
+class SizeAlignmentList ts where
+	sizeAlignmentList :: HeteroParList.PL SizeAlignmentOfType ts
+
+instance SizeAlignmentList '[] where sizeAlignmentList = HeteroParList.Nil
+
+instance (Sizable t, SizeAlignmentList ts) => SizeAlignmentList (t ': ts) where
+	sizeAlignmentList = SizeAlignmentOfType (sizeOf' @t) (alignment' @t) :**
+		sizeAlignmentList @ts
+
+class SizeAlignmentList whole => InfixOffsetSize (part :: [Type]) whole where
+	infixOffsetSizeFromSizeAlignmentList :: Size ->
+		HeteroParList.PL SizeAlignmentOfType whole -> (Offset, Size)
+
+instance (
+	Sizable t, SizeAlignmentList whole,
+	(t ': ts) `PrefixSize` (t ': whole) ) =>
+	InfixOffsetSize (t ': ts) (t ': whole) where
+	infixOffsetSizeFromSizeAlignmentList sz0
+		saa@(SizeAlignmentOfType _ algn :** _) = (
+			align algn sz0,
+			prefixSizeFromSizeAlignmentList @(t ': ts) 0 saa )
+
+instance {-# OVERLAPPABLE #-} (Sizable t, InfixOffsetSize ts whole) =>
+	InfixOffsetSize ts (t ': whole) where
+	infixOffsetSizeFromSizeAlignmentList sz0
+		(SizeAlignmentOfType sz algn :** sas) =
+		infixOffsetSizeFromSizeAlignmentList @ts
+			(align algn sz0 + sz) sas
+
+class PrefixSize (part :: [Type]) whole where
+	prefixSizeFromSizeAlignmentList :: Size ->
+		HeteroParList.PL SizeAlignmentOfType whole -> Size
+
+instance PrefixSize '[] whole where prefixSizeFromSizeAlignmentList sz _ = sz
+
+instance PrefixSize ts whole => PrefixSize (t ': ts) (t ': whole) where
+	prefixSizeFromSizeAlignmentList sz0
+		(SizeAlignmentOfType sz algn :** sas) =
+		prefixSizeFromSizeAlignmentList @ts (align algn sz0 + sz) sas
+
+align :: Alignment -> Size -> Offset
+align algn sz = ((sz - 1) `div` algn + 1) * algn
+
 -- Pokable
 
-class SizableList as => PokableList (as :: [Type]) where
+class SizeAlignmentList as => PokableList (as :: [Type]) where
 	pokeList :: Ptr x -> HeteroParList.L as -> IO ()
 
 instance PokableList '[] where

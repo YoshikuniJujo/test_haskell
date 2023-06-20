@@ -45,7 +45,7 @@ packages:
     subdir: features/ffi/pointer/try-storable-peek-poke
 snapshots:
 - completed:
-    sha256: 1d25e3e0e2edb856951e8903821e0199a1112ab48b76c83f814e4f7596961e89
-    size: 598120
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/2/14.yaml
-  original: nightly-2023-02-14
+    sha256: 77d87bfafc69c55ea4b20e1017ef63add05cd0fbd6c1465a0d5a94fa4d6f7ae0
+    size: 639351
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/nightly/2023/6/18.yaml
+  original: nightly-2023-06-18
