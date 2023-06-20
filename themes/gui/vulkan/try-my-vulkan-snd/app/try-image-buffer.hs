@@ -25,6 +25,7 @@ import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.List
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
@@ -60,7 +61,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
-import qualified Gpu.Vulkan.Cmd.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
@@ -140,7 +140,7 @@ calc' :: (
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
-	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)],
+	InfixIndex '[slbts] '[ '(sl, bts)],
 	slbts ~ '(sl, bts) ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.SNew sds slbts -> Word32 ->
@@ -164,7 +164,7 @@ run :: forall w1 w2 w3 slbts sbtss sd sc sg sl m1 m2 m3 sds . (
 	Show (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
-	Vk.Cmd.SetPos '[slbts] sbtss ) =>
+	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->

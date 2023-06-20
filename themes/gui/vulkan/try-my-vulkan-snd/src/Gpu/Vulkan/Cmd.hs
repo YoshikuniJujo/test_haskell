@@ -73,7 +73,6 @@ import Data.Int
 
 import Gpu.Vulkan
 import Gpu.Vulkan.Enum
-import Gpu.Vulkan.Cmd.TypeLevel
 
 import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
@@ -171,43 +170,45 @@ instance HeteroParListToListNew spslbtss =>
 	HeteroParListToListNew (spslbts ': spslbtss) where
 	toListNew f (x :** xs) = f x : toListNew f xs
 
-bindDescriptorSetsGraphics :: forall sc vs s sbtss foo sdssbtss . (
-	TMapIndex.M1_2 sdssbtss ~ sbtss,
-	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
-	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
+bindDescriptorSetsGraphics :: forall sc vs s sbtss sbtss' pcs sdssbtss . (
+	TMapIndex.M1_2 sdssbtss ~ sbtss',
 	GetDscSetListLengthNew sdssbtss,
-	SetPos sbtss sbtss, HeteroParListToListNew sdssbtss ) =>
-	CommandBuffer.GBinded sc vs '(s, sbtss, foo) -> Pipeline.BindPoint ->
-	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 DescriptorSet.SNew) sdssbtss ->
-	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
-	IO ()
+	InfixIndex sbtss' sbtss,
+	HeteroParListToListNew sdssbtss,
+	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
+	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss') ) =>
+	CommandBuffer.GBinded sc vs '(s, sbtss, pcs) -> Pipeline.BindPoint ->
+	Pipeline.Layout.L s sbtss pcs ->
+	HeteroParList.PL (U2 DescriptorSet.SNew) sdssbtss ->
+	HeteroParList.PL3 DynamicIndex
+		(DescriptorSet.LayoutArgListOnlyDynamics sbtss') -> IO ()
 bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (Pipeline.Layout.L l) dss idxs = do
 	lns <- getDscSetListLengthNew dss
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
-		(firstSet @sbtss @sbtss)
+		(fromIntegral $ infixIndex @_ @sbtss' @sbtss)
 		(toListNew
 			(\(U2 (DescriptorSet.SNew _ s)) -> s)
 			dss)
 		dosts
 
-bindDescriptorSetsCompute :: forall sc s sbtss foo spslbtss sdsspslbtss . (
-	TMapIndex.M1_2 sdsspslbtss ~ spslbtss,
-	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
-	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss),
-	spslbtss ~ sbtss,
+bindDescriptorSetsCompute :: forall sc s sbtss sbtss' foo spslbtss' sdsspslbtss . (
+	TMapIndex.M1_2 sdsspslbtss ~ spslbtss',
+	spslbtss' ~ sbtss',
+	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
+	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
 	GetDscSetListLengthNew sdsspslbtss,
-	SetPos spslbtss sbtss,
+	InfixIndex spslbtss' sbtss,
 	HeteroParListToListNew sdsspslbtss ) =>
 	CommandBuffer.CBinded sc '(s, sbtss, foo) ->
 	Pipeline.Layout.L s sbtss foo -> HeteroParList.PL (U2 DescriptorSet.SNew) sdsspslbtss ->
-	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss) ->
+	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss') ->
 	IO ()
 bindDescriptorSetsCompute (CommandBuffer.CBinded c) (Pipeline.Layout.L l) dss idxs = do
 	lns <- getDscSetListLengthNew dss
 	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
-		(firstSet @spslbtss @sbtss)
+		(fromIntegral $ infixIndex @_ @spslbtss' @sbtss)
 		(toListNew
 			(\(U2 (DescriptorSet.SNew _ s)) -> s)
 			dss)
@@ -332,7 +333,7 @@ bindVertexBuffers :: forall sg vibs slbtss smsbnmts .
 	HeteroParList.PL (U5 Buffer.IndexedForList) smsbnmts -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
-	where fb = infixIndex @(TMapIndex.M3_5 smsbnmts) @(TMapIndex.M0_2 vibs)
+	where fb = infixIndex @_ @(TMapIndex.M3_5 smsbnmts) @(TMapIndex.M0_2 vibs)
 
 bindIndexBuffer :: forall sg vibs slbtss sm sb nm i onm . IsIndex i =>
 	CommandBuffer.GBinded sg vibs slbtss ->

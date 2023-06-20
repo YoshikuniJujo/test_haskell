@@ -24,6 +24,7 @@ import Data.Bits
 import Data.List.Length
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
+import Data.TypeLevel.List
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Word
@@ -62,7 +63,6 @@ import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
-import qualified Gpu.Vulkan.Cmd.TypeLevel as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Buffer
 import qualified Gpu.Vulkan.Memory.AllocateInfo as Vk.Dvc.Mem.Buffer
@@ -167,7 +167,7 @@ calc' :: forall w1 w2 w3 nm1 nm2 nm3 objss1 objss2 objss3 slbts sl bts sd sm1 sm
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
 	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
-	Vk.Cmd.SetPos '[slbts] '[ '(sl, bts)]) =>
+	InfixIndex '[slbts] '[ '(sl, bts)]) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
 	Vk.DscSet.SNew sds slbts -> Word32 ->
 	Vk.Mem.M sm1 objss1 -> Vk.Mem.M sm2 objss2 ->
@@ -195,7 +195,7 @@ run :: forall nm1 nm2 nm3 w1 w2 w3
 	Vk.Mem.OffsetSize' nm1 (VObj.List 256 w1 "") objss1,
 	Vk.Mem.OffsetSize' nm2 (VObj.List 256 w2 "") objss2,
 	Vk.Mem.OffsetSize' nm3 (VObj.List 256 w3 "") objss3,
-	Vk.Cmd.SetPos '[slbts] sbtss ) =>
+	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 ->
