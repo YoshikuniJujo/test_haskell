@@ -151,12 +151,11 @@ type GroupCountX = Word32
 type GroupCountY = Word32
 type GroupCountZ = Word32
 
-bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' . (
+bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
-	InfixIndex dsls' dsls,
-	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics dsls'),
-	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics dsls'),
-	GetDscSetListLength dss
+	DescriptorSet.LayoutArgListOnlyDynamics dsls' ~ dyns,
+	InfixIndex dsls' dsls, HeteroList3ToList3 dyns,
+	GetOffsetList3 dyns, GetDscSetListLength dss
 	) =>
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) -> Pipeline.BindPoint ->
 	PipelineLayout.L sl dsls pcs ->
@@ -165,7 +164,7 @@ bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' . (
 		(DescriptorSet.LayoutArgListOnlyDynamics dsls') -> IO ()
 bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss idxs = do
 	lns <- getDscSetListLength dss
-	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
+	let	dosts = dynamicOffsetList3ToListNew $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c bp l
 		(fromIntegral $ infixIndex @_ @dsls' @dsls)
 		(HeteroParList.toList
@@ -176,7 +175,7 @@ bindDescriptorSetsGraphics (CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss
 bindDescriptorSetsCompute :: forall sc s sbtss sbtss' foo spslbtss' sdsspslbtss . (
 	TMapIndex.M1_2 sdsspslbtss ~ spslbtss',
 	spslbtss' ~ sbtss',
-	DynamicOffsetList3ToList (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
+	HeteroList3ToList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
 	GetOffsetList3 (DescriptorSet.LayoutArgListOnlyDynamics sbtss'),
 	GetDscSetListLength sdsspslbtss,
 	InfixIndex spslbtss' sbtss ) =>
@@ -186,7 +185,7 @@ bindDescriptorSetsCompute :: forall sc s sbtss sbtss' foo spslbtss' sdsspslbtss 
 	IO ()
 bindDescriptorSetsCompute (CommandBuffer.CBinded c) (PipelineLayout.L l) dss idxs = do
 	lns <- getDscSetListLength dss
-	let	dosts = dynamicOffsetList3ToList $ getOffsetList3 lns idxs
+	let	dosts = dynamicOffsetList3ToListNew $ getOffsetList3 lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
 		(fromIntegral $ infixIndex @_ @spslbtss' @sbtss)
 		(HeteroParList.toList
@@ -246,27 +245,31 @@ instance (GetOffsetList2 oss, GetOffsetList3 osss) =>
 	getOffsetList3 (lnss :** lnsss) (iss :** isss) =
 		getOffsetList2 lnss iss :** getOffsetList3 lnsss isss
 
-class DynamicOffsetList3ToList osss where
-	dynamicOffsetList3ToList ::
-		HeteroParList.PL3 DynamicOffset osss -> [Word32]
+dynamicOffsetList3ToListNew :: HeteroList3ToList3 osss =>
+	HeteroParList.PL3 DynamicOffset osss -> [Word32]
+dynamicOffsetList3ToListNew = concat . (concat <$>)
+	. heteroList3ToList3 (\(DynamicOffset ofst) -> ofst)
 
-instance DynamicOffsetList3ToList '[] where
-	dynamicOffsetList3ToList HeteroParList.Nil = []
+class HeteroList3ToList3 asss where
+	heteroList3ToList3 ::
+		(forall a . t a -> b) -> HeteroParList.PL3 t asss -> [[[b]]]
 
-instance DynamicOffsetList3ToList osss =>
-	DynamicOffsetList3ToList ('[] ': osss) where
-	dynamicOffsetList3ToList (HeteroParList.Nil :** dosss) =
-		dynamicOffsetList3ToList dosss
+instance HeteroList3ToList3 '[] where heteroList3ToList3 _ HeteroParList.Nil = []
 
-instance DynamicOffsetList3ToList (oss ': osss) =>
-	DynamicOffsetList3ToList (('[] ': oss) ': osss) where
-	dynamicOffsetList3ToList ((HeteroParList.Nil :** doss) :** dosss) =
-		dynamicOffsetList3ToList $ doss :** dosss
+instance HeteroList3ToList3 asss => HeteroList3ToList3 ('[] ': asss) where
+	heteroList3ToList3 f (HeteroParList.Nil :** xsss) = [] : heteroList3ToList3 f xsss
 
-instance DynamicOffsetList3ToList ((os ': oss) ': osss) =>
-	DynamicOffsetList3ToList (((obj ': os) ': oss) ': osss) where
-	dynamicOffsetList3ToList (((DynamicOffset ofst :** dos) :** doss) :** dosss) =
-		ofst : dynamicOffsetList3ToList ((dos :** doss) :** dosss)
+instance HeteroList3ToList3 (ass ': asss) =>
+	HeteroList3ToList3 (('[] ': ass) ': asss) where
+	heteroList3ToList3 f ((HeteroParList.Nil :** xss) :** xsss) = let
+		yss : ysss = heteroList3ToList3 f $ xss :** xsss in
+		([] : yss) : ysss
+
+instance HeteroList3ToList3 ((as ': ass) ': asss) =>
+	HeteroList3ToList3 (((a ': as) ': ass) ': asss) where
+	heteroList3ToList3 f (((x :** xs) :** xss) :** xsss) = let
+		(ys : yss) : ysss = heteroList3ToList3 f $ (xs :** xss) :** xsss in
+		((f x : ys) : yss) : ysss
 
 getDscSetLengthsNew :: DescriptorSet.SNew s slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
