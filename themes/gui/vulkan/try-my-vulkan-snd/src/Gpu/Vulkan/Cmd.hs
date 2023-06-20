@@ -21,7 +21,7 @@ beginRenderPass,
 -- ** Draw
 
 bindPipelineGraphics,
-bindVertexBuffers, bindIndexBuffer, IsIndexType,
+bindVertexBuffers, bindIndexBuffer, IsIndex,
 draw, drawIndexed,
 
 -- ** Dispatch
@@ -317,16 +317,15 @@ bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
 	where fb = infixIndex @(TMapIndex.M3_5 smsbnmts) @(TMapIndex.M0_2 vibs)
 
-bindIndexBuffer :: forall sg vibs slbtss sm sb nm i onm . IsIndexType i =>
+bindIndexBuffer :: forall sg vibs slbtss sm sb nm i onm . IsIndex i =>
 	CommandBuffer.GBinded sg vibs slbtss ->
 	Buffer.IndexedForList sm sb nm i onm -> IO ()
 bindIndexBuffer (CommandBuffer.GBinded cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @i)
 
-class IsIndexType a where indexType :: IndexType
-
-instance IsIndexType Word16 where indexType = IndexTypeUint16
-instance IsIndexType Word32 where indexType = IndexTypeUint32
+class IsIndex a where indexType :: IndexType
+instance IsIndex Word16 where indexType = IndexTypeUint16
+instance IsIndex Word32 where indexType = IndexTypeUint32
 
 copyBuffer :: forall (ass :: [[VObj.Object]]) nms nmd sos sod sc sms sbs smd sbd .
 	Buffer.MakeCopies ass sos sod =>
