@@ -283,7 +283,7 @@ copyBufferToImage :: forall algn objs img inms sc sm sb nm si sm' nm' . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc -> Buffer.Binded sm sb nm objs ->
 	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
-	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
+	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics

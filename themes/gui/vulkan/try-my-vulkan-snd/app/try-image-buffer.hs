@@ -70,7 +70,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DscSetLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 
 import qualified Gpu.Vulkan.Image as Vk.Image
-import qualified Gpu.Vulkan.Image.Enum as Vk.Image
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Sample.Enum as Vk.Sample
 
 import Sample.GetOpt

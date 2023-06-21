@@ -82,6 +82,7 @@ library
       Gpu.Vulkan.Framebuffer
       Gpu.Vulkan.Framebuffer.Type
       Gpu.Vulkan.Image
+      Gpu.Vulkan.Image.Enum
       Gpu.Vulkan.Image.Type
       Gpu.Vulkan.ImageView
       Gpu.Vulkan.Instance

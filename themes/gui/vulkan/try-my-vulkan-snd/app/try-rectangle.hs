@@ -83,7 +83,7 @@ import qualified Gpu.Vulkan.Khr.Swapchain as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Type as Vk.Khr.Swapchain
 import qualified Gpu.Vulkan.Khr.Swapchain.Middle as Vk.Khr.Swapchain.M
 import qualified Gpu.Vulkan.Image.Type as Vk.Image
-import qualified Gpu.Vulkan.Image.Enum as Vk.Image
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.Image.Enum as Vk.Image
 import qualified Gpu.Vulkan.Image.Middle as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
@@ -141,7 +141,7 @@ import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet.T
 import Tools
 
 import Gpu.Vulkan.TypeEnum qualified as Vk.T
-import Gpu.Vulkan.Image.Enum qualified as Vk.Img
+import "try-my-vulkan-snd" Gpu.Vulkan.Image.Enum qualified as Vk.Img
 
 main :: IO ()
 main = do
