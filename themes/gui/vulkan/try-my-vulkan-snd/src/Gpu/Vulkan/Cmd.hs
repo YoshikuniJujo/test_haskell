@@ -161,7 +161,7 @@ bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsGraphics
 	(CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss idxs = do
-	lns <- getDscSetListLength dss
+	lns <- getDynamicLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c bp l
 		(fromIntegral $ infixIndex @_ @dsls' @dsls)
@@ -181,7 +181,7 @@ bindDescriptorSetsCompute :: forall scbnd sl dsls pcs dss dsls' dyns . (
 	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsCompute
 	(CommandBuffer.CBinded c) (PipelineLayout.L l) dss idxs = do
-	lns <- getDscSetListLength dss
+	lns <- getDynamicLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
 		(fromIntegral $ infixIndex @_ @dsls' @dsls)
@@ -205,18 +205,18 @@ getOffsetListNew :: HeteroParList.ZipListWithC3 KObj.SizeAlignment osss =>
 getOffsetListNew = HeteroParList.zipListWithC3 @KObj.SizeAlignment getOffset'
 
 class GetDynamicLength sspslbtss where
-	getDscSetListLength ::
+	getDynamicLength ::
 		HeteroParList.PL (U2 DescriptorSet.D) sspslbtss ->
 		IO (HeteroParList.PL3 KObj.ObjectLength
 			(DescriptorSet.LayoutArgListOnlyDynamics (TMapIndex.M1_2 sspslbtss)))
 
 instance GetDynamicLength '[] where
-	getDscSetListLength HeteroParList.Nil = pure HeteroParList.Nil
+	getDynamicLength HeteroParList.Nil = pure HeteroParList.Nil
 
 instance GetDynamicLength spslbtss =>
 	GetDynamicLength (slbts ': spslbtss) where
-	getDscSetListLength (U2 ds :** dss) =
-		(:**) <$> getDscSetLengthsNew ds <*> getDscSetListLength dss
+	getDynamicLength (U2 ds :** dss) =
+		(:**) <$> getDscSetLengthsNew ds <*> getDynamicLength dss
 
 getDscSetLengthsNew :: DescriptorSet.D s slbts ->
 	IO (HeteroParList.PL2 KObj.ObjectLength
