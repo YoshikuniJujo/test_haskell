@@ -29,7 +29,8 @@ module Data.HeteroParList (
 
 	FromList(..),
 
-	toList, toListM, toList3,
+	toList, toList2, toList3,
+	toListM, toListM2, toListM3, toListM_, toListM2_, toListM3_,
 	ConstraintHeteroToListM(..),
 	ConstraintHeteroToListM'(..),
 	ConstraintHeteroToListCpsM(..),
@@ -137,24 +138,34 @@ instance FromList ss => FromList (s ': ss) where
 toList :: (forall (s :: k) . t s -> a) -> PL t ss -> [a]
 toList _ Nil = []
 toList f (x :** xs) = f x : toList f xs
+ 
+toList2 :: (forall (s :: k) . t s -> a) -> PL2 t sss -> [[a]]
+toList2 f = toList $ toList f
 
-toListM :: Applicative m =>
-	(forall (s :: k) . t s -> m a) -> PL t ss -> m [a]
+toList3 :: (forall (s :: k) . t s -> a) -> PL3 t ssss -> [[[a]]]
+toList3 f = toList $ toList2 f
+
+toListM :: Applicative m => (forall (s :: k) . t s -> m a) -> PL t ss -> m [a]
 toListM _ Nil = pure []
 toListM f (x :** xs) = (:) <$> f x <*> toListM f xs
 
-toList3 :: (forall a . t a -> b) -> PL3 t asss -> [[[b]]]
-toList3 _ Nil = []
-toList3 f (Nil :** xsss) = [] : toList3 f xsss
-toList3 f ((Nil :** xss) :** xsss) =
-	case toList3 f $ xss :** xsss of
-		yss : ysss -> ([] : yss) : ysss
-		[] -> error "never occur"
-toList3 f (((x :** xs) :** xss) :** xsss) =
-	case toList3 f $ (xs :** xss) :** xsss of
-		(ys : yss) : ysss -> ((f x : ys) : yss) : ysss
-		[] : _ -> error "never occur"
-		[] -> error "never occur"
+toListM2 :: Applicative m =>
+	(forall (s :: k) . t s -> m a) -> PL2 t sss -> m [[a]]
+toListM2 f = toListM $ toListM f
+
+toListM3 :: Applicative m =>
+	(forall (s :: k) . t s -> m a) -> PL3 t sss -> m [[[a]]]
+toListM3 f = toListM $ toListM2 f
+
+toListM_ :: Applicative m => (forall (s :: k) . t s -> m a) -> PL t ss -> m ()
+toListM_ _ Nil = pure ()
+toListM_ f (x :** xs) = f x *> toListM_ f xs
+
+toListM2_ :: Applicative m => (forall (s :: k) . t s -> m a) -> PL2 t ss -> m ()
+toListM2_ f = toListM_ $ toListM_ f
+
+toListM3_ :: Applicative m => (forall (s :: k) . t s -> m a) -> PL3 t ss -> m ()
+toListM3_ f = toListM_ $ toListM2_ f
 
 class HomoList (s :: k) ss where
 	homoListFromList :: [t s] -> PL t ss
