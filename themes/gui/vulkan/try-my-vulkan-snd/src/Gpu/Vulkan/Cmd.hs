@@ -159,8 +159,7 @@ bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) ->
 	Pipeline.BindPoint -> PipelineLayout.L sl dsls pcs ->
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
-	HeteroParList.PL3 DynamicIndex
-		(DescriptorSet.LayoutArgListOnlyDynamics dsls') -> IO ()
+	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsGraphics
 	(CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss idxs = do
 	lns <- getDscSetListLength dss
