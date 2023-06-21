@@ -40,6 +40,9 @@ module Data.HeteroParList (
 
 	-- *** with constraint
 
+	ToListWithC(..), ToListWithC2(..),
+	ZipListWithC(..), ZipListWithC2(..), ZipListWithC3(..),
+
 	ConstraintHeteroToListM(..),
 	ConstraintHeteroToListM'(..),
 	ConstraintHeteroToListCpsM(..),
@@ -278,6 +281,55 @@ instance Default a => Default (Id a) where def = Id def
 instance Default a => Default (Dummy a d) where def = Dummy def
 
 -- Flatten
+
+class ToListWithC c ss where
+	toListWithC :: (forall s . c s => t s -> a) -> PL t ss -> [a]
+
+instance ToListWithC c '[] where toListWithC _ Nil = []
+
+instance (c s, ToListWithC c ss) => ToListWithC c (s ': ss) where
+	toListWithC f (x :** xs) = f x : toListWithC @c f xs
+
+class ToListWithC2 c sss where
+	toListWithC2 :: (forall s . c s => t s -> a) -> PL2 t sss -> [[a]]
+
+instance ToListWithC2 c '[] where toListWithC2 _ Nil = []
+
+instance (ToListWithC c ss, ToListWithC2 c sss) =>
+	ToListWithC2 c (ss ': sss) where
+	toListWithC2 f (xs :** xss) =
+		toListWithC @c f xs : toListWithC2 @c f xss
+
+class ZipListWithC c ss where
+	zipListWithC :: (forall s . c s => t s -> t' s -> a) ->
+		PL t ss -> PL t' ss -> [a]
+
+instance ZipListWithC c '[] where zipListWithC _ Nil Nil = []
+
+instance (c s, ZipListWithC c ss) => ZipListWithC c (s ': ss) where
+	zipListWithC f (x :** xs) (y :** ys) = f x y : zipListWithC @c f xs ys
+
+class ZipListWithC2 c sss where
+	zipListWithC2 :: (forall s . c s => t s -> t' s -> a) ->
+		PL2 t sss -> PL2 t' sss -> [[a]]
+
+instance ZipListWithC2 c '[] where zipListWithC2 _ Nil Nil = []
+
+instance (ZipListWithC c ss, ZipListWithC2 c sss) =>
+	ZipListWithC2 c (ss ': sss) where
+	zipListWithC2 f (xs :** xss) (ys :** yss) =
+		zipListWithC @c f xs ys : zipListWithC2 @c f xss yss
+
+class ZipListWithC3 c ssss where
+	zipListWithC3 :: (forall s . c s => t s -> t' s -> a) ->
+		PL3 t ssss -> PL3 t' ssss -> [[[a]]]
+
+instance ZipListWithC3 c '[] where zipListWithC3 _ Nil Nil = []
+
+instance (ZipListWithC2 c sss, ZipListWithC3 c ssss) =>
+	ZipListWithC3 c (sss ': ssss) where
+	zipListWithC3 f (xss :** xsss) (yss :** ysss) =
+		zipListWithC2 @c f xss yss : zipListWithC3 @c f xsss ysss
 
 class ConstraintHeteroToListM c ss where
 	constraintHeteroToListM :: Applicative m =>
