@@ -58,7 +58,8 @@ module Data.HeteroParList (
 
 	-- * Map and ReplicateM
 
-	map, mapM, replicate, replicateM,
+	map, mapM, MapM'(..),
+	replicate, replicateM,
 
 	) where
 
@@ -260,6 +261,17 @@ mapM :: Applicative m => (forall s . t s -> m (t' s)) -> PL t ss -> m (PL t' ss)
 mapM f = \case
 	Nil -> pure Nil
 	x :** xs -> (:**) <$> f x <*> mapM f xs
+
+class MapM' (f :: k -> k') ss where
+	type Ss' f ss :: [k']
+	mapM' :: Applicative m => (forall s . t s -> m (t' (f s))) ->
+		PL t ss -> m (PL t' (Ss' f ss))
+
+instance MapM' f '[] where type Ss' f '[] = '[]; mapM' _ Nil = pure Nil
+
+instance MapM' f ss => MapM' f (s ': ss) where
+	type Ss' f (s ': ss) = f s ': Ss' f ss
+	mapM' g (x :** xs) = (:**) <$> g x <*> mapM' g xs
 
 replicate :: Int -> (forall a . (forall s . t s -> a) -> a) ->
 	(forall ss . PL t ss -> b) -> b
