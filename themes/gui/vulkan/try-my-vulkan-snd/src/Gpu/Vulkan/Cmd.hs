@@ -153,8 +153,7 @@ type GroupCountZ = Word32
 bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	TMapIndex.M1_2 dss ~ dsls',
 	DescriptorSet.LayoutArgListOnlyDynamics dsls' ~ dyns,
-	InfixIndex dsls' dsls,
-	GetDynamicLength dss,
+	InfixIndex dsls' dsls, GetDynamicLength dss,
 	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
 	CommandBuffer.GBinded sgbnd vibs '(sl, dsls, pcs) ->
 	Pipeline.BindPoint -> PipelineLayout.L sl dsls pcs ->
@@ -171,23 +170,21 @@ bindDescriptorSetsGraphics
 			dss)
 		dosts
 
-bindDescriptorSetsCompute :: forall sc s sbtss sbtss' foo spslbtss' sdsspslbtss dyns . (
-	TMapIndex.M1_2 sdsspslbtss ~ spslbtss',
-	DescriptorSet.LayoutArgListOnlyDynamics spslbtss' ~ dyns,
-	spslbtss' ~ sbtss',
-	GetDynamicLength sdsspslbtss,
-	InfixIndex spslbtss' sbtss,
+bindDescriptorSetsCompute :: forall scbnd sl dsls pcs dss dsls' dyns . (
+	TMapIndex.M1_2 dss ~ dsls',
+	DescriptorSet.LayoutArgListOnlyDynamics dsls' ~ dyns,
+	InfixIndex dsls' dsls, GetDynamicLength dss,
 	HeteroParList.ZipListWithC3 KObj.SizeAlignment dyns ) =>
-	CommandBuffer.CBinded sc '(s, sbtss, foo) ->
-	PipelineLayout.L s sbtss foo -> HeteroParList.PL (U2 DescriptorSet.D) sdsspslbtss ->
-	HeteroParList.PL3 DynamicIndex (DescriptorSet.LayoutArgListOnlyDynamics sbtss') ->
-	IO ()
+	CommandBuffer.CBinded scbnd '(sl, dsls, pcs) ->
+	PipelineLayout.L sl dsls pcs ->
+	HeteroParList.PL (U2 DescriptorSet.D) dss ->
+	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsCompute
 	(CommandBuffer.CBinded c) (PipelineLayout.L l) dss idxs = do
 	lns <- getDscSetListLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
-		(fromIntegral $ infixIndex @_ @spslbtss' @sbtss)
+		(fromIntegral $ infixIndex @_ @dsls' @dsls)
 		(HeteroParList.toList (\(U2 (DescriptorSet.D _ s)) -> s)
 			dss)
 		dosts
