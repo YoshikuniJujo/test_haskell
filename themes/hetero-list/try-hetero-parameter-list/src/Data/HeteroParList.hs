@@ -176,52 +176,49 @@ toListM2_ f = toListM_ $ toListM_ f
 toListM3_ :: Applicative m => (forall (s :: k) . t s -> m a) -> PL3 t ss -> m ()
 toListM3_ f = toListM_ $ toListM2_ f
 
-zipList :: (forall (s :: k) (s' :: k') . t s -> t' s' -> a) ->
-	PL t ss -> PL t' ss' -> [a]
-zipList _ _ Nil = []
-zipList _ Nil _ = []
+zipList :: (forall (s :: k) . t s -> t' s -> a) ->
+	PL t ss -> PL t' ss -> [a]
+zipList _ Nil Nil = []
 zipList f (x :** xs) (y :** ys) = f x y : zipList f xs ys
 
-zipList2 :: (forall (s :: k) (s' :: k') . t s -> t' s' -> a) ->
-	PL2 t ss -> PL2 t' ss' -> [[a]]
+zipList2 :: (forall (s :: k) . t s -> t' s -> a) ->
+	PL2 t ss -> PL2 t' ss -> [[a]]
 zipList2 f = zipList $ zipList f
 
-zipList3 :: (forall (s :: k) (s' :: k') . t s -> t' s' -> a) ->
-	PL3 t ss -> PL3 t' ss' -> [[[a]]]
+zipList3 :: (forall (s :: k) . t s -> t' s -> a) ->
+	PL3 t ss -> PL3 t' ss -> [[[a]]]
 zipList3 f = zipList $ zipList2 f
 
 zipListM :: Applicative m =>
-	(forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	PL t ss -> PL t' ss' -> m [a]
-zipListM _ _ Nil = pure []
-zipListM _ Nil _ = pure []
+	(forall (s :: k) . t s -> t' s -> m a) ->
+	PL t ss -> PL t' ss -> m [a]
+zipListM _ Nil Nil = pure []
 zipListM f (x :** xs) (y :** ys) = (:) <$> f x y <*> zipListM f xs ys
 
 zipListM2 :: Applicative m =>
-	(forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	PL2 t ss -> PL2 t' ss' -> m [[a]]
+	(forall (s :: k) . t s -> t' s -> m a) ->
+	PL2 t ss -> PL2 t' ss -> m [[a]]
 zipListM2 f = zipListM $ zipListM f
 
 zipListM3 :: Applicative m =>
-	(forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	PL3 t ss -> PL3 t' ss' -> m [[[a]]]
+	(forall (s :: k) . t s -> t' s -> m a) ->
+	PL3 t ss -> PL3 t' ss -> m [[[a]]]
 zipListM3 f = zipListM $ zipListM2 f
 
 zipListM_ :: Applicative m =>
-	(forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	PL t ss -> PL t' ss' -> m ()
-zipListM_ _ _ Nil = pure ()
-zipListM_ _ Nil _ = pure ()
+	(forall (s :: k) . t s -> t' s -> m a) ->
+	PL t ss -> PL t' ss -> m ()
+zipListM_ _ Nil Nil = pure ()
 zipListM_ f (x :** xs) (y :** ys) = f x y *> zipListM_ f xs ys
 
 zipListM2_ :: Applicative m =>
-	(forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	PL2 t ss -> PL2 t' ss' -> m ()
+	(forall (s :: k) . t s -> t' s -> m a) ->
+	PL2 t ss -> PL2 t' ss -> m ()
 zipListM2_ f = zipListM_ $ zipListM_ f
 
 zipListM3_ :: Applicative m =>
-	(forall (s :: k) (s' :: k') . t s -> t' s' -> m a) ->
-	PL3 t ss -> PL3 t' ss' -> m ()
+	(forall (s :: k) . t s -> t' s -> m a) ->
+	PL3 t ss -> PL3 t' ss -> m ()
 zipListM3_ f = zipListM_ $ zipListM2_ f
 
 class HomoList (s :: k) ss where
