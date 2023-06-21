@@ -504,22 +504,22 @@ recreateImageViews _ _ _ =
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.BindedNew sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dvc timg asps f =
 	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg asps) nil' f
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.BindedNew sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
 	Vk.ImgVw.INew ivfmt nm s -> IO ()
 recreateImageView dvc timg asps iv =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo timg asps) nil' iv
 
 mkImageViewCreateInfo ::
-	Vk.Img.BindedNew si sm nm ifmt -> Vk.Img.AspectFlags ->
-	Vk.ImgVw.CreateInfoNew 'Nothing si sm nm ifmt ivfmt
+	Vk.Img.BindedNew sm si nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
 mkImageViewCreateInfo sci asps = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = TMaybe.N,
 	Vk.ImgVw.createInfoFlagsNew = zeroBits,
@@ -808,7 +808,7 @@ createDepthResources ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	Vk.Extent2d ->
 	(forall si sm fmt siv . Vk.T.FormatToValue fmt =>
-		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Img.BindedNew sm si nm fmt ->
 		Vk.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
 		Vk.ImgVw.INew fmt nm siv ->
@@ -832,7 +832,7 @@ recreateDepthResources :: Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd ->
 	Vk.Queue.Q -> Vk.CmdPl.C sc ->
 	Vk.Extent2d ->
-	Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Img.BindedNew sm sb nm fmt ->
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] ->
 	Vk.ImgVw.INew fmt nm sdiv -> IO ()
@@ -847,7 +847,7 @@ recreateDepthResources phdvc dvc gq cp ext dptImg dptImgMem dptImgVw = do
 		Vk.Img.LayoutDepthStencilAttachmentOptimal
 
 type DepthResources sb sm nm fmt sdiv = (
-	Vk.Img.BindedNew sb sm nm fmt,
+	Vk.Img.BindedNew sm sb nm fmt,
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)],
 	Vk.ImgVw.INew fmt nm sdiv )
@@ -883,7 +883,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
-		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Img.BindedNew sm si nm fmt ->
 		Vk.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
 		IO a) -> IO a
@@ -895,7 +895,7 @@ createImage pd dvc wdt hgt tlng usg prps f = Vk.Img.createNew @'Nothing dvc
 recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mem.PropertyFlags ->
-	Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Img.BindedNew sm sb nm fmt ->
 	Vk.Mem.M
 		sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] -> IO ()
 recreateImage pd dvc wdt hgt tlng usg prps img mem = do
@@ -926,7 +926,7 @@ imageInfo wdt hgt tlng usg = Vk.Img.CreateInfoNew {
 
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
 	Vk.Dvc.Mem.AllocateInfo 'Nothing -> (forall sm .
-		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Img.BindedNew sm si nm fmt ->
 		Vk.Mem.M sm
 			'[ '(si, 'Vk.Mem.K.Image nm fmt) ] ->
 		IO a) -> IO a
@@ -937,7 +937,7 @@ imageAllocateBind dvc img memInfo f =
 		f bnd m
 
 imageReallocateBind ::
-	Vk.Dvc.D sd -> Vk.Img.BindedNew sb sm nm fmt ->
+	Vk.Dvc.D sd -> Vk.Img.BindedNew sm sb nm fmt ->
 	Vk.Dvc.Mem.AllocateInfo 'Nothing ->
 	Vk.Mem.M sm '[ '(sb, 'Vk.Mem.K.Image nm fmt)] -> IO ()
 imageReallocateBind dvc img memInfo m =
@@ -967,11 +967,11 @@ imageMemoryInfoBinded pd dvc prps img = do
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	Vk.Img.BindedNew sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
 		barrier = Vk.Img.MemoryBarrier {
 			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,

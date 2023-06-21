@@ -551,14 +551,14 @@ recreateImageViews _ _ _ _ =
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew si sm nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.BindedNew sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dvc timg f =
 	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg) nil' f
 
 mkImageViewCreateInfo ::
-	Vk.Img.BindedNew si sm nm ifmt ->
-	Vk.ImgVw.CreateInfoNew 'Nothing si sm nm ifmt ivfmt
+	Vk.Img.BindedNew sm si nm ifmt ->
+	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
 mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = TMaybe.N,
 	Vk.ImgVw.createInfoFlagsNew = zeroBits,
@@ -869,7 +869,7 @@ createCommandPool qfis dvc f =
 createTextureImage ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
 		forall si sm .
-		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
+		Vk.Img.BindedNew sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
 createTextureImage phdvc dvc gq cp f = do
 	img <- readRgba8 "../../../../files/images/texture.jpg"
@@ -902,8 +902,8 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
---	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
-	Vk.Img.BindedNew si sm' nm' (KObj.ImageFormat img) ->
+--	Vk.Img.BindedNew sm' si nm' (Vk.Bffr.ImageFormat img) ->
+	Vk.Img.BindedNew sm' si nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp bf img wdt hgt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -923,11 +923,11 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	Vk.Img.BindedNew sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
 		barrier = Vk.Img.MemoryBarrier {
 			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
@@ -1050,7 +1050,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
-		Vk.Img.BindedNew si sm nm fmt ->
+		Vk.Img.BindedNew sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a

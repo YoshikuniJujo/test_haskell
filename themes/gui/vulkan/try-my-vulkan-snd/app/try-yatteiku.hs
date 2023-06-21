@@ -199,7 +199,7 @@ makeCommandBuffer device graphicsQueue cmdPool f = do
 
 makeImage' :: Vk.PhysicalDevice.P -> Vk.Device.D sd ->
 	(forall si sm .
-		Vk.Img.BindedNew si sm nm 'Vk.T.FormatR8g8b8a8Unorm ->
+		Vk.Img.BindedNew sm si nm 'Vk.T.FormatR8g8b8a8Unorm ->
 		Vk.Memory.M sm '[ '(si, 'Vk.Memory.K.Image nm 'Vk.T.FormatR8g8b8a8Unorm)] -> IO a) ->
 	IO a
 makeImage' phdvc dvc f = do
@@ -266,8 +266,8 @@ makeBuffer phdvc dvc wdt hgt f =
 copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
---	Vk.Img.BindedNew si sm' nm' (Vk.Bffr.ImageFormat img) ->
-	Vk.Img.BindedNew si sm' nm' (KObj.ImageFormat img) ->
+--	Vk.Img.BindedNew sm' si nm' (Vk.Bffr.ImageFormat img) ->
+	Vk.Img.BindedNew sm' si nm' (KObj.ImageFormat img) ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp img bf wdt hgt =
@@ -288,11 +288,11 @@ copyBufferToImage dvc gq cp img bf wdt hgt =
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Device.D sd -> Vk.Queue.Q -> Vk.CommandPool.C sc ->
-	Vk.Img.BindedNew si sm nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	Vk.Img.BindedNew sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
-	let	barrier :: Vk.Img.MemoryBarrier 'Nothing si sm nm fmt
+	let	barrier :: Vk.Img.MemoryBarrier 'Nothing sm si nm fmt
 		barrier = Vk.Img.MemoryBarrier {
 			Vk.Img.memoryBarrierNext = TMaybe.N,
 			Vk.Img.memoryBarrierOldLayout = olyt,
@@ -436,7 +436,7 @@ instance KObj.IsImage MyImage where
 		$ generateImage (\x y -> let MyRgba8 p = (pss' ! y) ! x in p) w h
 		where pss' = listArray (0, h - 1) (listArray (0, w - 1) <$> pss)
 
-makeImageView :: Vk.Device.D sd -> Vk.Img.BindedNew si sm nm fmt ->
+makeImageView :: Vk.Device.D sd -> Vk.Img.BindedNew sm si nm fmt ->
 	(forall s . Vk.ImgView.INew Vk.T.FormatR8g8b8a8Unorm nm s -> IO a) -> IO a
 makeImageView dvc bimg f =
 	Vk.ImgView.createNew dvc imgViewCreateInfo nil' \imgView -> do

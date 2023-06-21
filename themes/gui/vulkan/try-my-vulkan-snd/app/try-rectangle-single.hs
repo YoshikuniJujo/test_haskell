@@ -497,14 +497,14 @@ recreateImageViewsNew _ _ _ =
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Image.BindedNew si sm nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Image.BindedNew sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dvc timg f =
 	Vk.ImgVw.createNew dvc (mkImageViewCreateInfoNew timg) nil' f
 
 mkImageViewCreateInfoNew ::
-	Vk.Image.BindedNew si sm nm ifmt ->
-	Vk.ImgVw.CreateInfoNew 'Nothing si sm nm ifmt ivfmt
+	Vk.Image.BindedNew sm si nm ifmt ->
+	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
 mkImageViewCreateInfoNew sci = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = TMaybe.N,
 	Vk.ImgVw.createInfoFlagsNew = Vk.ImgVw.CreateFlagsZero,

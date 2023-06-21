@@ -94,7 +94,7 @@ deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
 	Show (ImageBuffer sib ('K.Buffer nm objs))
 
 data ImageBufferBinded sm sib (ib :: K.ImageBuffer) where
-	ImageBinded :: Image.BindedNew si sm nm fmt ->
+	ImageBinded :: Image.BindedNew sm si nm fmt ->
 		ImageBufferBinded sm si ('K.Image nm fmt)
 	BufferBinded :: Buffer.Binded sm sb nm objs ->
 		ImageBufferBinded sm sb ('K.Buffer nm objs)
@@ -268,7 +268,7 @@ instance (Offset' sb ('K.Buffer nm objs) sibfoss', BindAll fibfoss sibfoss') =>
 bindImage :: forall sd si nm fmt sm sibfoss .
 	Offset' si ('K.Image nm fmt) sibfoss =>
 	Device.D sd -> Image.INew si nm fmt -> M sm sibfoss ->
-	IO (Image.BindedNew si sm nm fmt)
+	IO (Image.BindedNew sm si nm fmt)
 bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
 	(_, mm) <- readM'' m
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
@@ -277,7 +277,7 @@ bindImage dvc@(Device.D mdvc) (Image.INew i) m = do
 
 rebindImage :: forall sd si sm nm fmt sibfoss .
 	Offset' si ('K.Image nm fmt) sibfoss =>
-	Device.D sd -> Image.BindedNew si sm nm fmt -> M sm sibfoss -> IO ()
+	Device.D sd -> Image.BindedNew sm si nm fmt -> M sm sibfoss -> IO ()
 rebindImage dvc@(Device.D mdvc) (Image.BindedNew i) m = do
 	(_, mm) <- readM'' m
 	ost <- offset @si @('K.Image nm fmt) dvc m 0
