@@ -61,13 +61,13 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoSetLayouts =
 			HeteroParList.toList layoutToMiddle dscsls }
 
-data SNew s (slbts :: LayoutArg) = SNew
+data D s (slbts :: LayoutArg) = D
 	(IORef (HeteroParList.PL2 KObj.ObjectLength
 		(LayoutArgOnlyDynamics slbts)))
 	M.D
 
 class SListFromMiddleNew slbtss where
-	sListFromMiddleNew :: [M.D] -> IO (HeteroParList.PL (SNew s) slbtss)
+	sListFromMiddleNew :: [M.D] -> IO (HeteroParList.PL (D s) slbtss)
 
 instance SListFromMiddleNew '[] where
 	sListFromMiddleNew = \case [] -> pure HeteroParList.Nil; _ -> error "bad"
@@ -80,14 +80,14 @@ instance (
 	SListFromMiddleNew (slbts ': slbtss) where
 	sListFromMiddleNew = \case
 		(d : ds) -> (:**)
-			<$> ((`SNew` d) <$> newDefaultIORef)
+			<$> ((`D` d) <$> newDefaultIORef)
 			<*> sListFromMiddleNew @slbtss ds
 		_ -> error "bad"
 
 
 allocateSsNew :: (WithPoked (TMaybe.M n), SListFromMiddleNew slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
-	(forall s . HeteroParList.PL (SNew s) slbtss -> IO a) -> IO a
+	(forall s . HeteroParList.PL (D s) slbtss -> IO a) -> IO a
 allocateSsNew (Device.D dvc) ai f = do
 	dsm <- M.allocateDs dvc (allocateInfoToMiddle ai)
 	ds <- sListFromMiddleNew dsm
@@ -98,15 +98,15 @@ allocateSsNew (Device.D dvc) ai f = do
 data WriteNew n s (slbts :: LayoutArg)
 	(sbsmobjsobjs :: WriteSourcesArg) = WriteNew {
 	writeNextNew :: TMaybe.M n,
-	writeDstSetNew :: SNew s slbts,
+	writeDstSetNew :: D s slbts,
 	writeDescriptorTypeNew :: Descriptor.Type,
 	writeSourcesNew :: WriteSources sbsmobjsobjs }
 
 data CopyNew n sdss (slbtss :: LayoutArg) sdsd (slbtsd :: LayoutArg)
 	(bts :: Layout.BindingType) (is :: Nat) (id :: Nat) = CopyNew {
 	copyNextNew :: TMaybe.M n,
-	copySrcSetNew :: SNew sdss slbtss,
-	copyDstSetNew :: SNew sdsd slbtsd }
+	copySrcSetNew :: D sdss slbtss,
+	copyDstSetNew :: D sdsd slbtsd }
 
 class CopyListToMiddleNew copyArgs where
 	type CopyNextsNew copyArgs :: [Maybe Type]
@@ -135,7 +135,7 @@ copyToMiddleNew :: (
 	Copy.BindingAndArrayElement btsd bts id, Copy.BindingLength bts ) =>
 	CopyNew n sdss '(sls, btss) sdsd '(sld, btsd) bts is id -> M.Copy n
 copyToMiddleNew c@CopyNew {
-	copyNextNew = mnxt, copySrcSetNew = SNew _ ss, copyDstSetNew = SNew _ ds } = let
+	copyNextNew = mnxt, copySrcSetNew = D _ ss, copyDstSetNew = D _ ds } = let
 	(sb, sae, db, dae, cnt) = getCopyArgsNew c in
 	M.Copy {
 		M.copyNext = mnxt,
@@ -163,7 +163,7 @@ writeUpdateLengthNew :: forall sbsmobjsobjs n s sl bts . (
 	) =>
 	WriteNew n s '(sl, bts) sbsmobjsobjs -> IO ()
 writeUpdateLengthNew WriteNew {
-	writeDstSetNew = SNew rlns _,
+	writeDstSetNew = D rlns _,
 	writeSourcesNew = ws } = do
 	lns <- readIORef rlns
 	maybe	(pure ())
@@ -202,7 +202,7 @@ writeToMiddleNew :: forall n s slbts wsa . WriteSourcesToMiddle slbts wsa =>
 	WriteNew n s slbts wsa -> M.Write n
 writeToMiddleNew WriteNew {
 	writeNextNew = mnxt,
-	writeDstSetNew = SNew _ ds,
+	writeDstSetNew = D _ ds,
 	writeDescriptorTypeNew = dt,
 	writeSourcesNew = srcs
 	} = M.Write {

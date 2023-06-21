@@ -153,7 +153,7 @@ dscSetLayoutInfo = Vk.DscSetLyt.CreateInfo {
 prepDscSets ::
 	String -> Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
-		Vk.DscSet.SNew sds '(sl, DscSetLytLstW123) ->
+		Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 		Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
 		Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
 		Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO a) -> IO a
@@ -325,7 +325,7 @@ findMemoryTypeIndex phdvc reqs mprop = do
 		[] -> error "No available memory types"
 
 writeDscSet :: forall sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
-	Vk.DscSet.SNew sds '(sl, DscSetLytLstW123) ->
+	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm1 sb1 nm1 '[ListW1] ->
 	Vk.Bffr.Binded sm2 sb2 nm2 '[ListW2] ->
 	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
@@ -347,7 +347,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 	bil = Vk.Dsc.BufferInfoList
 
 writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds .
-	Vk.DscSet.SNew sds '(sl, DscSetLytLstW123) ->
+	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.WriteNew 'Nothing sds '(sl, DscSetLytLstW123) (
 		'Vk.DscSet.WriteSourcesArgBuffer '[
@@ -363,7 +363,7 @@ writeDscSet2 ds bx = Vk.DscSet.WriteNew {
 		Vk.Dsc.BufferInfoAtom bx :** HeteroParList.Nil }
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
-	Word32 -> Vk.DscSet.SNew sds '(sl, DscSetLytLstW123) ->
+	Word32 -> Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] -> IO ([W1], [W2], [W3])
@@ -426,7 +426,7 @@ run :: forall sd sc sg sl sdsl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[ '(sdsl, DscSetLytLstW123)], '[]) ->
 	Vk.Ppl.Lyt.L sl '[ '(sdsl, DscSetLytLstW123)] '[] ->
-	Vk.DscSet.SNew sds '(sdsl, DscSetLytLstW123)  -> Word32 ->
+	Vk.DscSet.D sds '(sdsl, DscSetLytLstW123)  -> Word32 ->
 	Vk.Dvc.Mem.ImgBffr.M sm1 '[ '(sb1, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm1 '[ListW1])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm2 '[ '(sb2, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm2 '[ListW2])] ->
 	Vk.Dvc.Mem.ImgBffr.M sm3 '[ '(sb3, 'Vk.Dvc.Mem.ImgBffr.K.Buffer nm3 '[ListW3])] ->

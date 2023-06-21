@@ -143,7 +143,7 @@ calc' :: (
 	InfixIndex '[slbts] '[ '(sl, bts)],
 	slbts ~ '(sl, bts) ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.SNew sds slbts -> Word32 ->
+	Vk.DscSet.D sds slbts -> Word32 ->
 	(Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
@@ -166,7 +166,7 @@ run :: forall w1 w2 w3 slbts sbtss sd sc sg sl m1 m2 m3 sds . (
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc -> Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 -> (
+	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> (
 		Vk.Dvc.D sd -> m1 -> m2 -> m3 -> IO ([w1], [w2], [w3]) ) ->
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
@@ -281,7 +281,7 @@ prepareMems33 ::
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0 =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm1 sm2 sm3 sb1 sb2 sb3 .
-		Vk.DscSet.SNew sds '(sl, bts) ->
+		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mem.M sm1 '[ '(sb1, 'Vk.Mem.K.Buffer nm1 '[VObj.List 256 w1 ""])] ->
 		Vk.Mem.M sm2 '[ '(sb2, 'Vk.Mem.K.Buffer nm2 '[VObj.List 256 w2 ""])] ->
 		Vk.Mem.M sm3 '[ '(sb3, 'Vk.Mem.K.Buffer nm3 '[VObj.List 256 w3 ""])] -> IO a) -> IO a
@@ -303,7 +303,7 @@ prepareMems31 ::
 	Vk.DscSet.BindingAndArrayElem bts '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""] 0 ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm sb1 sb2 sb3 .
-		Vk.DscSet.SNew sds '(sl, bts) ->
+		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mem.M sm '[
 			'(sb1, 'Vk.Mem.K.Buffer "buffer1" '[VObj.List 256 w1 ""]),
 			'(sb2, 'Vk.Mem.K.Buffer "buffer2" '[VObj.List 256 w2 ""]),
@@ -337,7 +337,7 @@ prepareMems11 :: forall w1 w2 w3 sd sl bts a nmi . (
 	FilePath -> Vk.Image.Tiling ->
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector w1 -> V.Vector w2 -> V.Vector w3 -> (forall sds sm' si sb .
-		Vk.DscSet.SNew sds '(sl, bts) ->
+		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mem.M sm' '[
 			'(si, 'Vk.Mem.K.Image nmi 'Vk.T.FormatR8g8b8a8Srgb),
 			'(sb, 'Vk.Mem.K.Buffer "hello" '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]) ] ->
@@ -616,7 +616,7 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
 	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds .
-	Vk.DscSet.SNew sds slbts ->
+	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
@@ -631,7 +631,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 		bufferInfoList @w3 bc :** HeteroParList.Nil }
 
 writeDscSet' :: forall w1 w2 w3 slbts sb sm nm objs sds .
-	Vk.DscSet.SNew sds slbts ->
+	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
 		'(sb, sm, nm, objs,VObj.List 256 w1 ""), '(sb, sm, nm, objs,VObj.List 256 w2 ""),

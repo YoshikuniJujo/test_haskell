@@ -177,7 +177,7 @@ prepareMems :: (
 	Vk.DS.BindingAndArrayElem bts '[Word32List] 0 ) =>
 	Vk.Phd.P -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
 	(forall sds sm sb .
-		Vk.DS.SNew sds '(sl, bts) ->
+		Vk.DS.D sds '(sl, bts) ->
 		Vk.Mm.M sm '[ '( sb, 'Vk.Mm.K.Buffer "" '[Word32List])] ->
 		IO a) -> IO a
 prepareMems pd dv dslyt f =
@@ -249,7 +249,7 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		i : _ -> pure i
 
 writeDscSet :: forall slbts sb sm os sds .
-	Vk.DS.SNew sds slbts -> Vk.Bffr.Binded sm sb "" os ->
+	Vk.DS.D sds slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.WriteNew 'Nothing sds slbts
 		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
 writeDscSet ds ba = Vk.DS.WriteNew {
@@ -266,7 +266,7 @@ calc :: forall sd slbts sl bts sds . (
 	Vk.DSLyt.BindingTypeListBufferOnlyDynamics bts ~ '[ '[]],
 	InfixIndex '[slbts] '[slbts]) =>
 	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DSLyt.L sl bts ->
-	Vk.DS.SNew sds slbts -> Word32 -> IO ()
+	Vk.DS.D sds slbts -> Word32 -> IO ()
 calc qfi dv dslyt ds sz =
 	Vk.Ppl.Lyt.createNew dv (pplLayoutInfo dslyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
@@ -298,7 +298,7 @@ commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
 run :: forall slbts sd sc sg sl sds . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
 	InfixIndex '[slbts] '[slbts] ) =>
-	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.SNew sds slbts -> Vk.CBffr.C sc ->
+	Vk.QFm.Index -> Vk.Dv.D sd -> Vk.DS.D sds slbts -> Vk.CBffr.C sc ->
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do

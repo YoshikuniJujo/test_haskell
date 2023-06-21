@@ -1299,7 +1299,7 @@ createDescriptorSet ::
 	Vk.DscSetLyt.L sdsc '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ] ->
-	(forall sds . Vk.DscSet.SNew sds '(sdsc, '[
+	(forall sds . Vk.DscSet.D sds '(sdsc, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)] ]) -> IO a) -> IO a
 createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
@@ -1319,7 +1319,7 @@ createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.DscSet.SNew sds slbts ->
+	Vk.DscSet.D sds slbts ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject  'Nothing)])
@@ -1331,7 +1331,7 @@ descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 descriptorWrite1 ::
-	Vk.DscSet.SNew sds slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
+	Vk.DscSet.D sds slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.WriteNew {
@@ -1495,7 +1495,7 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
 	V.Vector Word32 ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word32 ""] ->
-	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
+	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl idcs vb ib ubds =
 	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb def $
@@ -1553,7 +1553,7 @@ mainLoop :: (
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
-	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
+	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> UTCTime -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp dptImg dptImgMem dptImgVw idcs vb ib ubm ubds cb iasrfsifs tm0 = do
@@ -1590,7 +1590,7 @@ runLoop :: (
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
-	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
+	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb ->
 	SyncObjects '(sias, srfs, siff) -> Float ->
 	(Vk.Extent2d -> IO ()) -> IO ()
@@ -1619,7 +1619,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sg sm sb nm sm' sb' nm' sm2 sb2 scb s
 		sb2,
 		'Vk.Dvc.Mem.ImageBuffer.K.Buffer "uniform-buffer"
 			'[VObj.Atom 256 UniformBufferObject 'Nothing] )] ->
-	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
+	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	Vk.CmdBffr.C scb -> SyncObjects '(sias, srfs, siff) -> Float -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs idcs vb ib ubm ubds cb (SyncObjects ias rfs iff) tm = do
 	let	siff = HeteroParList.Singleton iff

@@ -160,7 +160,7 @@ prepareMems :: (
 		VObj.DynList 2 256 W1 "",VObj.DynList 2 256 W2 "",VObj.DynList 2 256 W3 "" ] 0 ) =>
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sl bts ->
 	V.Vector W1 -> V.Vector W2 -> V.Vector W3 -> (forall sds sm1 sb1 sm2 sb2 sm3 sb3 .
-		Vk.DscSet.SNew sds '(sl, bts) ->
+		Vk.DscSet.D sds '(sl, bts) ->
 		Vk.Mm.M sm1 '[ '( sb1, 'Vk.Mm.K.Buffer "" '[VObj.DynList 2 256 W1 ""])] ->
 		Vk.Mm.M sm2 '[ '( sb2, 'Vk.Mm.K.Buffer "" '[VObj.DynList 2 256 W2 ""])] ->
 		Vk.Mm.M sm3 '[ '( sb3, 'Vk.Mm.K.Buffer "" '[VObj.DynList 2 256 W3 ""])] -> IO a) -> IO a
@@ -246,7 +246,7 @@ checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
 	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 sds .
-	Vk.DscSet.SNew sds slbts ->
+	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
@@ -273,7 +273,7 @@ calc :: forall sd slbts sl bts o0 o1 o2 sds . (
 		(Vk.DscSet.LayoutArgOnlyDynamics slbts)),
 	InfixIndex '[slbts] '[ '(sl, bts)] ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl bts ->
-	Vk.DscSet.SNew sds slbts -> Word32 -> IO ()
+	Vk.DscSet.D sds slbts -> Word32 -> IO ()
 calc dvc qFam dscSetLyt dscSet dsz =
 	Vk.Ppl.Lyt.createNew dvc (pplLayoutInfo dscSetLyt) nil' \plyt ->
 	Vk.Ppl.Cmpt.createCsNew dvc Nothing
@@ -313,7 +313,7 @@ run :: forall slbts sbtss sd sc sg sl o0 o1 o2 sds . (
 	InfixIndex '[slbts] sbtss ) =>
 	Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.CmdBuf.C sc ->
 	Vk.Ppl.Cmpt.C sg '(sl, sbtss, '[]) ->
-	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.SNew sds slbts -> Word32 -> IO ()
+	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
 	Vk.CmdBuf.beginNew @'Nothing @'Nothing cb def $

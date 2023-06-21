@@ -1299,7 +1299,7 @@ createDescriptorSets :: (
 	Vk.Bffr.Binded sm sb "scene-buffer" '[
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 		VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] ->
-	(forall sds . HeteroParList.PL (Vk.DscSet.SNew sds) ss -> IO a) -> IO a
+	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSets dvc dscp ubs dscslyts scnb f =
 	Vk.DscSet.allocateSsNew dvc allocInfo \dscss -> do
 	update dvc ubs dscss scnb 0
@@ -1314,7 +1314,7 @@ class Update smsbs slbtss where
 	update ::
 		Vk.Dvc.D sd ->
 		HeteroParList.PL BindedGcd smsbs ->
-		HeteroParList.PL (Vk.DscSet.SNew sds) slbtss ->
+		HeteroParList.PL (Vk.DscSet.D sds) slbtss ->
 		Vk.Bffr.Binded sm sb "scene-buffer" '[
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 			VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ] -> Int -> IO ()
@@ -1345,7 +1345,7 @@ instance (
 
 descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds .
 	Vk.Bffr.Binded sm sb nm objs ->
-	Vk.DscSet.SNew sds slbts -> Vk.Dsc.Type ->
+	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		objs,VObj.Atom 256 tp objnm )])
@@ -1458,7 +1458,7 @@ recordCommandBuffer :: forall scb sr sf sg slyt sdlyt sm sb nm smtri sbtri nmtri
 		'[WrapMeshPushConstants] ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded smtri sbtri nmtri '[VObj.List 256 Vertex ""] -> Int ->
-	Vk.DscSet.SNew sds '(sdlyt, '[
+	Vk.DscSet.D sds '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
@@ -1529,7 +1529,7 @@ data RenderObject sg sl sdlyt sm sb nm = RenderObject {
 drawObject :: IORef (Maybe (Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""])) ->
 	Vk.CmdBffr.C scb ->
 	Vk.Extent2d ->
-	Vk.DscSet.SNew sds '(sdlyt, '[
+	Vk.DscSet.D sds '(sdlyt, '[
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
 		'Vk.DscSetLyt.Buffer '[
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ]) ->
@@ -1612,7 +1612,7 @@ mainLoop :: (
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
-	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
+	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cmbs cmms scnm cmds vn = do
 	($ 0) . ($ Glfw.KeyState'Released) . ($ 0) . ($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) fn spst0 sdrn -> do
@@ -1669,7 +1669,7 @@ runLoop :: (
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
-	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
+	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 ->
 	(Vk.Extent2d -> IO ()) -> IO ()
 runLoop win sfc phdvc qfis dvc gq pq sc frszd ext scivs rp ppllyt gpl0 gpl1 cp drsrcs fbs vb vbtri cbs iasrfsifs cf fn sdrn cmbs cmms scnm cmds vn loop = do
@@ -1714,7 +1714,7 @@ drawFrame ::
 			"scene-buffer" '[
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-0"),
 				VObj.Atom 256 GpuSceneData0 ('Just "scene-data-1") ])] ->
-	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
+	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Word32 -> IO ()
 drawFrame dvc gq pq sc ext rp gpl0 gpl1 lyt fbs vb vbtri cbs (SyncObjects iass rfss iffs) cf fn sdrn cmbs cmms scnm cmds vn =
 	HeteroParList.index iass cf \(ias :: Vk.Semaphore.S sias) ->

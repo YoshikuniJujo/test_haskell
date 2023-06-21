@@ -1411,7 +1411,7 @@ createDescriptorSets :: (
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
 	Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv -> Vk.Smplr.S ssmp ->
-	(forall sds . HeteroParList.PL (Vk.DscSet.SNew sds) ss -> IO a) -> IO a
+	(forall sds . HeteroParList.PL (Vk.DscSet.D sds) ss -> IO a) -> IO a
 createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp f =
 	Vk.DscSet.allocateSsNew dvc allocInfo \dscss -> do
 	update dvc ubs dscss tximgvw txsmp
@@ -1424,7 +1424,7 @@ createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp f =
 
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
-	Vk.DscSet.SNew sds '(sl, bts) ->
+	Vk.DscSet.D sds '(sl, bts) ->
 	Vk.DscSet.WriteNew 'Nothing sds '(sl, bts) ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
 		sb, sm, nm,
 		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing )])
@@ -1438,7 +1438,7 @@ descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
 	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
 
 descriptorWrite1 ::
-	Vk.DscSet.SNew sds '(sl, bts) -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
+	Vk.DscSet.D sds '(sl, bts) -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
 	Vk.DscSet.WriteNew 'Nothing sds '(sl, bts)
 		('Vk.DscSet.WriteSourcesArgImage '[ '(ss, fmt, nm, si) ])
 descriptorWrite1 dscs tiv tsmp = Vk.DscSet.WriteNew {
@@ -1456,7 +1456,7 @@ class Update smsbs slbtss ssmp siv where
 	update ::
 		Vk.Dvc.D sd ->
 		HeteroParList.PL BindedUbo smsbs ->
-		HeteroParList.PL (Vk.DscSet.SNew sds) slbtss ->
+		HeteroParList.PL (Vk.DscSet.D sds) slbtss ->
 		Vk.ImgVw.INew 'Vk.T.FormatR8g8b8a8Srgb "texture" siv ->
 		Vk.Smplr.S ssmp ->
 		IO ()
@@ -1573,7 +1573,7 @@ recordCommandBuffer :: forall scb sr sf sl sg sm sb nm sm' sb' nm' sdsl sds .
 		'(sl, '[AtomUbo sdsl], '[]) ->
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 Vertex ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
-	Vk.DscSet.SNew sds (AtomUbo sdsl) ->
+	Vk.DscSet.D sds (AtomUbo sdsl) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib ubds =
 	Vk.CmdBffr.beginNew cb (def :: Vk.CmdBffr.BeginInfo 'Nothing 'Nothing) $
@@ -1626,7 +1626,7 @@ mainLoop :: (
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss -> SyncObjects siassrfssfs ->
 	HeteroParList.PL MemoryUbo smsbs ->
-	HeteroParList.PL (Vk.DscSet.SNew sds) slyts -> UTCTime -> IO ()
+	HeteroParList.PL (Vk.DscSet.D sds) slyts -> UTCTime -> IO ()
 mainLoop g w sfc phdvc qfis dvc gq pq sc ext0 scivs rp ppllyt gpl fbs cp drsrcs vb ib cbs iasrfsifs ums dscss tm0 = do
 	($ cycle [0 .. maxFramesInFlight - 1]) . ($ ext0) $ fix \loop ext (cf : cfs) -> do
 		Glfw.pollEvents
@@ -1658,7 +1658,7 @@ runLoop :: (
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss ->
 	SyncObjects siassrfssfs ->
 	HeteroParList.PL MemoryUbo smsbs ->
-	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
+	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Float ->
 	Int ->
 	(Vk.Extent2d -> IO ()) -> IO ()
@@ -1686,7 +1686,7 @@ drawFrame :: forall sfs sd ssc scfmt sr sl sdsc sg sm sb nm sm' sb' nm' scb ssos
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 Word16 ""] ->
 	HeteroParList.LL (Vk.CmdBffr.C scb) vss -> SyncObjects ssos ->
 	HeteroParList.PL MemoryUbo smsbs ->
-	HeteroParList.PL (Vk.DscSet.SNew sds) slyts ->
+	HeteroParList.PL (Vk.DscSet.D sds) slyts ->
 	Float -> Int -> IO ()
 drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
 	(SyncObjects iass rfss iffs) ums dscss tm cf =
