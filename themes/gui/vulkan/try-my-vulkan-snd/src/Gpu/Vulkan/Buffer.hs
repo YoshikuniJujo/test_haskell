@@ -23,7 +23,7 @@ module Gpu.Vulkan.Buffer (
 
 	-- * COPY
 
-	MakeCopies, ImageCopy(..),
+	MakeCopies, ImageCopy(..), ImageCopyListToMiddle,
 
 	-- * MEMORY BARRIER
 

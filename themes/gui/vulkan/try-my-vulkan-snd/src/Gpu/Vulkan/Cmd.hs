@@ -60,8 +60,6 @@ import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
 import Control.Exception
-import Data.Kind
-import Gpu.Vulkan.Object qualified as VObj
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.List
 import Data.TypeLevel.Tuple.Uncurry
@@ -83,7 +81,6 @@ import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as DescriptorSet
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
 import qualified Gpu.Vulkan.Buffer.Internal as Buffer
-import qualified Gpu.Vulkan.Buffer.Middle as Buffer.M
 import qualified Gpu.Vulkan.Image as Image
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
@@ -101,8 +98,6 @@ import Data.Kind.Object qualified as KObj
 
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
-
-import Foreign.Storable
 
 beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
 	CommandBuffer.C sc -> RenderPass.BeginInfo mn sr sf cts ->
@@ -285,17 +280,17 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 		(Image.memoryBarrierListToMiddle imbs)
 
 copyBufferToImage :: forall algn objs img inms sc sm sb nm si sm' nm' . (
-	ImageCopyListToMiddle algn objs img inms ) =>
+	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc -> Buffer.Binded sm sb nm objs ->
 	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
-	where mics = imageCopyListToMiddle @algn bf ics
+	where mics = Buffer.imageCopyListToMiddle @algn bf ics
 
 copyImageToBuffer :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
-	ImageCopyListToMiddle algn objs img inms ) =>
+	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc  ->
 	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
@@ -303,26 +298,7 @@ copyImageToBuffer :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
 copyImageToBuffer (CommandBuffer.C cb)
 	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
-	where mics = imageCopyListToMiddle @algn bf ics
-
-class ImageCopyListToMiddle algn objs (img :: Type) (inms :: [Symbol]) where
-	imageCopyListToMiddle ::
-		Buffer.Binded sm sb nm objs ->
-		HeteroParList.PL (Buffer.ImageCopy img) inms ->
-		[Buffer.M.ImageCopy]
-
-instance ImageCopyListToMiddle algn objs img '[] where
-	imageCopyListToMiddle _ HeteroParList.Nil = []
-
-instance (
-	Storable (KObj.IsImagePixel img), KnownNat algn,
-	VObj.Offset (VObj.ObjImage algn img nm) objs,
-	VObj.ObjectLengthOf (VObj.ObjImage algn img nm) objs,
-	ImageCopyListToMiddle algn objs img nms ) =>
-	ImageCopyListToMiddle algn objs img (nm ': nms) where
-	imageCopyListToMiddle bf (ic :** ics) =
-		Buffer.imageCopyToMiddle @algn @_ @nm bf (ic :: Buffer.ImageCopy img nm) :
-		imageCopyListToMiddle @algn bf ics
+	where mics = Buffer.imageCopyListToMiddle @algn bf ics
 
 blitImage :: CommandBuffer.C sc ->
 	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->

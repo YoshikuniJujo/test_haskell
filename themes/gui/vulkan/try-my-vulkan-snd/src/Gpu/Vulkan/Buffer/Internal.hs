@@ -28,7 +28,7 @@ module Gpu.Vulkan.Buffer.Internal (
 
 	-- * IMAGE COPY
 
-	ImageCopy(..), imageCopyToMiddle,
+	ImageCopy(..), ImageCopyListToMiddle(..),
 
 	-- * MEMORY BARRIER
 
@@ -36,9 +36,13 @@ module Gpu.Vulkan.Buffer.Internal (
 	
 	) where
 
+import GHC.TypeLits
+import Foreign.Storable
 import Foreign.Storable.PeekPoke
 import Control.Exception
+import Data.Kind.Object qualified as KObj
 import Gpu.Vulkan.Object qualified as VObj
+import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
@@ -276,6 +280,25 @@ data ImageCopy img inm = ImageCopy {
 	imageCopyImageOffset :: C.Offset3d,
 	imageCopyImageExtent :: C.Extent3d }
 	deriving Show
+
+class ImageCopyListToMiddle algn objs (img :: Type) (inms :: [Symbol]) where
+	imageCopyListToMiddle ::
+		Binded sm sb nm objs ->
+		HeteroParList.PL (ImageCopy img) inms ->
+		[M.ImageCopy]
+
+instance ImageCopyListToMiddle algn objs img '[] where
+	imageCopyListToMiddle _ HeteroParList.Nil = []
+
+instance (
+	Storable (KObj.IsImagePixel img), KnownNat algn,
+	VObj.Offset (VObj.ObjImage algn img nm) objs,
+	VObj.ObjectLengthOf (VObj.ObjImage algn img nm) objs,
+	ImageCopyListToMiddle algn objs img nms ) =>
+	ImageCopyListToMiddle algn objs img (nm ': nms) where
+	imageCopyListToMiddle bf (ic :** ics) =
+		imageCopyToMiddle @algn @_ @nm bf (ic :: ImageCopy img nm) :
+		imageCopyListToMiddle @algn bf ics
 
 imageCopyToMiddle :: forall algn img inm sm sb nm obj objs . (
 	obj ~ VObj.ObjImage algn img inm, VObj.SizeAlignment obj,
