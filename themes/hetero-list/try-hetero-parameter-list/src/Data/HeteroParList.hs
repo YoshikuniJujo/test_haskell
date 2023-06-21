@@ -58,11 +58,11 @@ module Data.HeteroParList (
 
 	-- * Map and ReplicateM
 
-	map, replicate, replicateM,
+	map, mapM, replicate, replicateM,
 
 	) where
 
-import Prelude hiding (map, replicate)
+import Prelude hiding (map, mapM, replicate)
 
 import GHC.TypeLits
 import Data.Kind
@@ -251,11 +251,15 @@ homoListIndex xs i = homoListToList xs `genericIndex` i
 
 -- Map and Replicate
 
-map ::
-	(forall s . t s -> t' s) -> PL t ss -> PL t' ss
+map :: (forall s . t s -> t' s) -> PL t ss -> PL t' ss
 map f = \case
 	Nil -> Nil
 	x :** xs -> f x :** map f xs
+
+mapM :: Applicative m => (forall s . t s -> m (t' s)) -> PL t ss -> m (PL t' ss)
+mapM f = \case
+	Nil -> pure Nil
+	x :** xs -> (:**) <$> f x <*> mapM f xs
 
 replicate :: Int -> (forall a . (forall s . t s -> a) -> a) ->
 	(forall ss . PL t ss -> b) -> b
