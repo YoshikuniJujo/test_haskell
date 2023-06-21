@@ -205,7 +205,7 @@ makeCopy src dst
 		C.copySize = copySize @as @ss @ds src }
 	| otherwise = error "List lengths are different"
 
-class MakeCopies (ass :: [[VObj.Object]]) (ss :: [VObj.Object]) (ds :: [VObj.Object]) where
+class MakeCopies (cpss :: [[VObj.Object]]) (ss :: [VObj.Object]) (ds :: [VObj.Object]) where
 	makeCopies ::
 		HeteroParList.PL VObj.ObjectLength ss ->
 		HeteroParList.PL VObj.ObjectLength ds -> [C.Copy]

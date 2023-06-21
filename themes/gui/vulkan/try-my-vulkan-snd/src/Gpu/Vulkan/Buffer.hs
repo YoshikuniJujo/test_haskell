@@ -21,9 +21,9 @@ module Gpu.Vulkan.Buffer (
 
 	getMemoryRequirements, Binded, IndexedForList(..),
 
-	-- * IMAGE COPY
+	-- * COPY
 
-	ImageCopy(..),
+	MakeCopies, ImageCopy(..),
 
 	-- * MEMORY BARRIER
 
