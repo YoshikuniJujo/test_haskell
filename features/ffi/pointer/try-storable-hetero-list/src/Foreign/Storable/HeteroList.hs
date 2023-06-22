@@ -20,6 +20,7 @@ module Foreign.Storable.HeteroList (
 
 	PokableList(..),
 
+{-
 	-- * WITHPOKED
 
 	-- ** Plain
@@ -33,6 +34,7 @@ module Foreign.Storable.HeteroList (
 	withPokedHeteroToListCpsM, withPokedWithHeteroListCpsM,
 	WithPokedHeteroToListCpsM',
 	withPokedHeteroToListCpsM', withPokedWithHeteroListCpsM'
+	-}
 
 	) where
 
@@ -138,6 +140,7 @@ instance (Pokable a, PokableList as) => PokableList (a ': as) where
 		poke' (castPtr p) x
 		pokeList (p `plusPtr` sizeOf' @a) xs
 
+{-
 -- WithPoked
 
 type WithPokedHeteroToListM = HeteroParList.ToListWithCM WithPoked
@@ -190,3 +193,4 @@ withPokedWithHeteroListCpsM' :: forall t' t ss a m b .
 	(forall s . WithPoked (t' s) => t s -> (a -> m b) -> m b) ->
 	([a] -> m b) -> m b
 withPokedWithHeteroListCpsM' f xs = withPokedHeteroToListCpsM' @_ @t' xs f
+-}
