@@ -41,7 +41,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 94a772472df0635763c59f7cceff4aa78dbc5ab8
+  commit: bd3c12e4697c87ab06f8dc347db794f0de2db6c7
   subdirs:
   - features/ffi/pointer/try-storable-peek-poke
   - features/ffi/pointer/try-storable-hetero-list
