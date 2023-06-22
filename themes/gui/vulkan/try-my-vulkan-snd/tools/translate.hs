@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Main where
@@ -16,9 +17,15 @@ main = do
 
 translate :: String -> String -> String -> String
 translate _ _ "" = ""
-translate a b s@(c : t)
+translate (prep -> a) (prep -> b) s@(c : t)
 	| a `isPrefixOf` s = b ++ translate a b (drop (length a) s)
 	| otherwise = c : translate a b t
+
+prep :: String -> String
+prep "" = ""
+prep ('\\' : '\\' : cs) = '\\' : prep cs
+prep ('\\' : 't' : cs) = '\t' : prep cs
+prep (c : cs) = c : prep cs
 
 changeFile :: String -> String -> FilePath -> IO ()
 changeFile a b fp = do

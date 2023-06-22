@@ -10,7 +10,7 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Image (
-	INew, BindedNew, createNew, recreateNew, CreateInfoNew(..),
+	INew, Binded, createNew, recreateNew, CreateInfoNew(..),
 
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 	M.SubresourceRange(..), MemoryBarrier(..),
@@ -60,15 +60,15 @@ recreateNew :: (
 	AllocationCallbacks.ToMiddle mscc ) =>
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
-	BindedNew si sm nm fmt -> IO ()
+	Binded si sm nm fmt -> IO ()
 recreateNew dvc ci macc i = recreateNewM dvc ci macc macc i
 
 getMemoryRequirementsNew :: Device.D sd -> INew s nm fmt -> IO Memory.Requirements
 getMemoryRequirementsNew (Device.D dvc) (INew img) =
 	M.getMemoryRequirements dvc img
 
-getMemoryRequirementsBindedNew :: Device.D sd -> BindedNew sm si nm fmt -> IO Memory.Requirements
-getMemoryRequirementsBindedNew (Device.D dvc) (BindedNew img) =
+getMemoryRequirementsBindedNew :: Device.D sd -> Binded sm si nm fmt -> IO Memory.Requirements
+getMemoryRequirementsBindedNew (Device.D dvc) (Binded img) =
 	M.getMemoryRequirements dvc img
 
 data MemoryBarrier mn si sm nm fmt = MemoryBarrier {
@@ -79,7 +79,7 @@ data MemoryBarrier mn si sm nm fmt = MemoryBarrier {
 	memoryBarrierNewLayout :: Layout,
 	memoryBarrierSrcQueueFamilyIndex :: QueueFamily.Index,
 	memoryBarrierDstQueueFamilyIndex :: QueueFamily.Index,
-	memoryBarrierImage :: BindedNew si sm nm fmt,
+	memoryBarrierImage :: Binded si sm nm fmt,
 	memoryBarrierSubresourceRange :: M.SubresourceRange }
 
 memoryBarrierToMiddle :: MemoryBarrier n si sm nm fmt -> M.MemoryBarrier n
@@ -91,7 +91,7 @@ memoryBarrierToMiddle MemoryBarrier {
 	memoryBarrierNewLayout = nlyt,
 	memoryBarrierSrcQueueFamilyIndex = sqfi,
 	memoryBarrierDstQueueFamilyIndex = dqfi,
-	memoryBarrierImage = BindedNew img,
+	memoryBarrierImage = Binded img,
 	memoryBarrierSubresourceRange = srr } = M.MemoryBarrier {
 	M.memoryBarrierNext = mnxt,
 	M.memoryBarrierSrcAccessMask = sam,
@@ -136,10 +136,10 @@ recreateNewM :: (
 	Device.D sd -> CreateInfoNew mn fmt ->
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msdd ->
-	BindedNew si sm nm fmt -> IO ()
+	Binded si sm nm fmt -> IO ()
 recreateNewM (Device.D mdvc) ci
 	(AllocationCallbacks.toMiddle -> macc)
-	(AllocationCallbacks.toMiddle -> macd) (BindedNew i) =
+	(AllocationCallbacks.toMiddle -> macd) (Binded i) =
 	M.recreate mdvc (createInfoFromNew ci) macc macd i
 
 data CreateInfoNew mn (fmt :: T.Format) = CreateInfoNew {

@@ -53,8 +53,8 @@ recreateNew :: (
 	TPMaybe.M (U2 AllocationCallbacks.A) mscc -> SNew ssc fmt -> IO ()
 recreateNew (Device.D dvc) ci macc (SNew sc) = recreateNewM dvc ci macc sc
 
-getImagesNew :: Device.D sd -> SNew ss fmt -> IO [Image.BindedNew ss ss nm fmt]
-getImagesNew (Device.D dvc) (SNew sc) = (Image.BindedNew <$>) <$> M.getImages dvc sc
+getImagesNew :: Device.D sd -> SNew ss fmt -> IO [Image.Binded ss ss nm fmt]
+getImagesNew (Device.D dvc) (SNew sc) = (Image.Binded <$>) <$> M.getImages dvc sc
 
 data CreateInfoNew mn ss (fmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M mn,

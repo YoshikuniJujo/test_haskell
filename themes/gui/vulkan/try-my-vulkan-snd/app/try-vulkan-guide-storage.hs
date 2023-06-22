@@ -458,7 +458,7 @@ chooseSwapSurfaceFormat = \case
 			Vk.Khr.ColorSpaceSrgbNonlinear
 
 createImageViews :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Img.BindedNew ss ss nm fmt] ->
+	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
 	(forall s . HL.PL (Vk.ImgVw.INew fmt nm) s -> IO a) -> IO a
 createImageViews _ [] f = f HL.Nil
 createImageViews dv (sci : scis) f =
@@ -466,14 +466,14 @@ createImageViews dv (sci : scis) f =
 	createImageViews dv scis \scivs -> f $ sciv :** scivs
 
 createImageView :: forall ivfmt sd si sm nm ifmt a . Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew sm si nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dv img asps =
 	Vk.ImgVw.createNew dv (imageViewCreateInfo img asps) nil'
 
 recreateImageViews :: Vk.T.FormatToValue fmt =>
-	Vk.Dvc.D sd -> [Vk.Img.BindedNew ss ss nm fmt] ->
+	Vk.Dvc.D sd -> [Vk.Img.Binded ss ss nm fmt] ->
 	HL.PL (Vk.ImgVw.INew fmt nm) sis -> IO ()
 recreateImageViews _dv [] HL.Nil = pure ()
 recreateImageViews dv (sci : scis) (iv :** ivs) =
@@ -483,13 +483,13 @@ recreateImageViews _ _ _ =
 	error "number of Vk.Image.M.I and Vk.ImageView.M.I should be same"
 
 recreateImageView :: Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew sm si nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	Vk.Img.AspectFlags -> Vk.ImgVw.INew ivfmt nm s -> IO ()
 recreateImageView dv img asps iv =
 	Vk.ImgVw.recreateNew dv (imageViewCreateInfo img asps) nil' iv
 
 imageViewCreateInfo ::
-	Vk.Img.BindedNew sm si nm ifmt -> Vk.Img.AspectFlags ->
+	Vk.Img.Binded sm si nm ifmt -> Vk.Img.AspectFlags ->
 	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
 imageViewCreateInfo img asps = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = TMaybe.N,
@@ -810,7 +810,7 @@ createCommandPool dv qfs = Vk.CmdPl.create dv crInfo nil'
 		Vk.CmdPl.createInfoQueueFamilyIndex = graphicsFamily qfs }
 
 type DepthResources sb sm nm fmt sdiv = (
-	Vk.Img.BindedNew sm sb nm fmt,
+	Vk.Img.Binded sm sb nm fmt,
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)],
 	Vk.ImgVw.INew fmt nm sdiv )
 
@@ -844,7 +844,7 @@ recreateDepthResources phd dv gq cp ex (dimg, dimgm, dimgv) = do
 createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mm.PropertyFlagBits -> (forall si sm .
-		Vk.Img.BindedNew sm si nm fmt ->
+		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
 createImage pd dv ex tlng usg prs f =
 	Vk.Img.createNew @'Nothing dv (imageInfo ex tlng usg) nil' \i ->
@@ -853,7 +853,7 @@ createImage pd dv ex tlng usg prs f =
 recreateImage :: Vk.T.FormatToValue fmt =>
 	Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Extent2d -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlags -> Vk.Mm.PropertyFlags ->
-	Vk.Img.BindedNew sm sb nm fmt ->
+	Vk.Img.Binded sm sb nm fmt ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
 recreateImage pd dv ex tlng usg prs i m = do
 	Vk.Img.recreateNew @'Nothing dv (imageInfo ex tlng usg) nil' i
@@ -888,7 +888,7 @@ imageMemoryInfo pd dv prs i = do
 		Vk.Dvc.Mem.allocateInfoMemoryTypeIndex = mt }
 
 imageMemoryInfoB :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.Mm.PropertyFlags ->
-	Vk.Img.BindedNew sm si nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
+	Vk.Img.Binded sm si nm fmt -> IO (Vk.Dvc.Mem.AllocateInfo 'Nothing)
 imageMemoryInfoB pd dv prs i = do
 	rqs <- Vk.Img.getMemoryRequirementsBindedNew dv i
 	mt <- findMemoryType pd (Vk.Mm.M.requirementsMemoryTypeBits rqs) prs
@@ -909,13 +909,13 @@ findMemoryType pd ts prs0 =
 
 imageAllocateBind :: Vk.Dvc.D sd -> Vk.Img.INew si nm fmt ->
 	Vk.Dvc.Mem.AllocateInfo 'Nothing -> (forall sm .
-		Vk.Img.BindedNew sm si nm fmt ->
+		Vk.Img.Binded sm si nm fmt ->
 		Vk.Mm.M sm '[ '(si, 'Vk.Mm.K.Image nm fmt) ] -> IO a) -> IO a
 imageAllocateBind dv i mi f = Vk.Mm.allocateBind @'Nothing dv
 	(HL.Singleton . U2 $ Vk.Mm.Image i) mi nil'
 	\(HL.Singleton (U2 (Vk.Mm.ImageBinded b))) m -> f b m
 
-imageReallocateBind :: Vk.Dvc.D sd -> Vk.Img.BindedNew sm sb nm fmt ->
+imageReallocateBind :: Vk.Dvc.D sd -> Vk.Img.Binded sm sb nm fmt ->
 	Vk.Dvc.Mem.AllocateInfo 'Nothing ->
 	Vk.Mm.M sm '[ '(sb, 'Vk.Mm.K.Image nm fmt)] -> IO ()
 imageReallocateBind dv i mi m = Vk.Mm.reallocateBind @'Nothing dv
@@ -923,7 +923,7 @@ imageReallocateBind dv i mi m = Vk.Mm.reallocateBind @'Nothing dv
 
 transitionImageLayout :: forall sd sc si sm nm fmt . Vk.T.FormatToValue fmt =>
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
-	Vk.Img.BindedNew sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
+	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout -> IO ()
 transitionImageLayout dv gq cp i ol nl = beginSingleTimeCommands dv gq cp \cb ->
 	Vk.Cmd.pipelineBarrier cb
 		sstg dstg zeroBits HL.Nil HL.Nil (HL.Singleton $ U5 barrier)

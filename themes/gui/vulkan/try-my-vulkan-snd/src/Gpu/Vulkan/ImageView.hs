@@ -33,7 +33,7 @@ newtype INew (fmt :: T.Format) (nm :: Symbol) si = INew M.I deriving Show
 data CreateInfoNew n si sm nm ifmt (ivfmt :: T.Format) = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M n,
 	createInfoFlagsNew :: CreateFlags,
-	createInfoImageNew :: Image.BindedNew si sm nm ifmt,
+	createInfoImageNew :: Image.Binded si sm nm ifmt,
 	createInfoViewTypeNew :: Type,
 	createInfoComponentsNew :: Component.Mapping,
 	createInfoSubresourceRangeNew :: Image.M.SubresourceRange }
@@ -43,7 +43,7 @@ createInfoToMiddleNew :: forall n si sm nm ifmt ivfmt . T.FormatToValue ivfmt =>
 createInfoToMiddleNew CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
-	createInfoImageNew = Image.BindedNew img,
+	createInfoImageNew = Image.Binded img,
 	createInfoViewTypeNew = tp,
 	createInfoComponentsNew = cps,
 	createInfoSubresourceRangeNew = srr } = M.CreateInfo {

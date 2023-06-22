@@ -282,30 +282,30 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 copyBufferToImage :: forall algn objs img inms sc sm sb nm sm' si inm . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc -> Buffer.Binded sm sb nm objs ->
-	Image.BindedNew sm' si inm (KObj.ImageFormat img) -> Image.Layout ->
+	Image.Binded sm' si inm (KObj.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
-	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =
+	bf@(Buffer.Binded _ mbf) (Image.Binded mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = Buffer.imageCopyListToMiddle @algn bf ics
 
 copyImageToBuffer :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc  ->
-	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
+	Image.Binded si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm sb nm objs ->
 	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
 copyImageToBuffer (CommandBuffer.C cb)
-	(Image.BindedNew mim) imlyt bf@(Buffer.Binded _ mbf) ics =
+	(Image.Binded mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = Buffer.imageCopyListToMiddle @algn bf ics
 
 blitImage :: CommandBuffer.C sc ->
-	Image.BindedNew ssi ssm snm sfmt -> Image.Layout ->
-	Image.BindedNew dsi dsm dnm dfmt -> Image.Layout ->
+	Image.Binded ssi ssm snm sfmt -> Image.Layout ->
+	Image.Binded dsi dsm dnm dfmt -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()
 blitImage (CommandBuffer.C cb)
-	(Image.BindedNew src) slyt (Image.BindedNew dst) dlyt blts fltr =
+	(Image.Binded src) slyt (Image.Binded dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
 
 resetQueryPool ::

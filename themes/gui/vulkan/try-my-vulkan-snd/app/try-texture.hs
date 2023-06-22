@@ -533,7 +533,7 @@ chooseSwapExtent win caps
 	x = Vk.Khr.Surface.M.capabilitiesMaxImageExtent caps
 
 createImageViews :: forall sd ss nm scfmt a . Vk.T.FormatToValue scfmt =>
-	Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.BindedNew ss ss nm scfmt] ->
+	Vk.Dvc.D sd -> Vk.Format -> [Vk.Img.Binded ss ss nm scfmt] ->
 	(forall si . HeteroParList.PL (Vk.ImgVw.INew scfmt nm) si -> IO a) -> IO a
 createImageViews _dvc _fmt [] f = f HeteroParList.Nil
 createImageViews dvc fmt (sci : scis) f =
@@ -541,7 +541,7 @@ createImageViews dvc fmt (sci : scis) f =
 	createImageViews dvc fmt scis \scivs -> f $ sciv :** scivs
 
 recreateImageViews :: Vk.T.FormatToValue scfmt => Vk.Dvc.D sd -> Vk.Format ->
-	[Vk.Img.BindedNew ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis -> IO ()
+	[Vk.Img.Binded ss ss nm scfmt] -> HeteroParList.PL (Vk.ImgVw.INew scfmt nm) sis -> IO ()
 recreateImageViews _dvc _scifmt [] HeteroParList.Nil = pure ()
 recreateImageViews dvc scifmt (sci : scis) (iv :** ivs) =
 	Vk.ImgVw.recreateNew dvc (mkImageViewCreateInfo sci) nil' iv >>
@@ -551,13 +551,13 @@ recreateImageViews _ _ _ _ =
 
 createImageView :: forall ivfmt sd si sm nm ifmt a .
 	Vk.T.FormatToValue ivfmt =>
-	Vk.Dvc.D sd -> Vk.Img.BindedNew sm si nm ifmt ->
+	Vk.Dvc.D sd -> Vk.Img.Binded sm si nm ifmt ->
 	(forall siv . Vk.ImgVw.INew ivfmt nm siv -> IO a) -> IO a
 createImageView dvc timg f =
 	Vk.ImgVw.createNew dvc (mkImageViewCreateInfo timg) nil' f
 
 mkImageViewCreateInfo ::
-	Vk.Img.BindedNew sm si nm ifmt ->
+	Vk.Img.Binded sm si nm ifmt ->
 	Vk.ImgVw.CreateInfoNew 'Nothing sm si nm ifmt ivfmt
 mkImageViewCreateInfo sci = Vk.ImgVw.CreateInfoNew {
 	Vk.ImgVw.createInfoNextNew = TMaybe.N,
@@ -869,7 +869,7 @@ createCommandPool qfis dvc f =
 createTextureImage ::
 	Vk.PhDvc.P -> Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc -> (
 		forall si sm .
-		Vk.Img.BindedNew sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
+		Vk.Img.Binded sm si nm 'Vk.T.FormatR8g8b8a8Srgb -> IO a ) ->
 	IO a
 createTextureImage phdvc dvc gq cp f = do
 	img <- readRgba8 "../../../../files/images/texture.jpg"
@@ -902,8 +902,8 @@ copyBufferToImage :: forall sd sc sm sb nm img inm si sm' nm' .
 	Storable (KObj.IsImagePixel img) =>
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	Vk.Bffr.Binded sm sb nm '[ VObj.ObjImage 1 img inm]  ->
---	Vk.Img.BindedNew sm' si nm' (Vk.Bffr.ImageFormat img) ->
-	Vk.Img.BindedNew sm' si nm' (KObj.ImageFormat img) ->
+--	Vk.Img.Binded sm' si nm' (Vk.Bffr.ImageFormat img) ->
+	Vk.Img.Binded sm' si nm' (KObj.ImageFormat img) ->
 	Word32 -> Word32 -> IO ()
 copyBufferToImage dvc gq cp bf img wdt hgt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -923,7 +923,7 @@ copyBufferToImage dvc gq cp bf img wdt hgt =
 
 transitionImageLayout :: forall sd sc si sm nm fmt .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
-	Vk.Img.BindedNew sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
+	Vk.Img.Binded sm si nm fmt -> Vk.Img.Layout -> Vk.Img.Layout ->
 	IO ()
 transitionImageLayout dvc gq cp img olyt nlyt =
 	beginSingleTimeCommands dvc gq cp \cb -> do
@@ -1050,7 +1050,7 @@ createImage :: forall nm fmt sd a . Vk.T.FormatToValue fmt =>
 	Vk.PhDvc.P ->
 	Vk.Dvc.D sd -> Word32 -> Word32 -> Vk.Img.Tiling ->
 	Vk.Img.UsageFlagBits -> Vk.Mem.PropertyFlagBits -> (forall si sm .
-		Vk.Img.BindedNew sm si nm fmt ->
+		Vk.Img.Binded sm si nm fmt ->
 		Vk.Dvc.Mem.ImageBuffer.M sm
 			'[ '(si, 'Vk.Dvc.Mem.ImageBuffer.K.Image nm fmt) ] ->
 		IO a) -> IO a

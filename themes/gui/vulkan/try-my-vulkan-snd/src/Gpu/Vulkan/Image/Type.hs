@@ -13,7 +13,7 @@ newtype I s = I M.I
 
 newtype INew s (nm :: Symbol) (fmt :: T.Format) = INew M.I
 
-newtype BindedNew sm si (nm :: Symbol) (fmt :: T.Format) = BindedNew M.I
+newtype Binded sm si (nm :: Symbol) (fmt :: T.Format) = Binded M.I
 
 iFromNew :: INew s nm fmt -> I s
 iFromNew (INew i) = I i
