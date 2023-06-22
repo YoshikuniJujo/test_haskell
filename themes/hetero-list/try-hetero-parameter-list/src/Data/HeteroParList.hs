@@ -377,7 +377,7 @@ instance (c n, ToListWithCCpsM c ns) =>
 	toListWithCCpsM f (x :** xs) g =
 		f x \y -> toListWithCCpsM @c f xs \ys -> g $ y : ys
 
-class ToListWithCCpsM' c (t' :: k -> Type) (ns :: [k]) where
+class ToListWithCCpsM' c (t' :: k -> k') (ns :: [k]) where
 	toListWithCCpsM' ::
 		(forall (s :: k) . c (t' s) => t s -> (a -> m b) -> m b) ->
 		PL t ns -> ([a] -> m b) -> m b
@@ -387,11 +387,11 @@ instance ToListWithCCpsM' c t' '[] where toListWithCCpsM' _ Nil = ($ [])
 instance (c (t' n), ToListWithCCpsM' c t' ns) =>
 	ToListWithCCpsM' c t' (n ': ns) where
 	toListWithCCpsM' f (x :** xs) g =
-		f x \y -> toListWithCCpsM' @_ @c @t' f xs \ys -> g $ y : ys
+		f x \y -> toListWithCCpsM' @_ @_ @c @t' f xs \ys -> g $ y : ys
 
 withListWithCCpsM' :: forall k c t' ns t m a b .
 	ToListWithCCpsM' c t' ns =>
 	PL t ns ->
 	(forall (s :: k) . c (t' s) => t s -> (a -> m b) -> m b) ->
 	([a] -> m b) -> m b
-withListWithCCpsM' xs f = toListWithCCpsM' @_ @c @t' f xs
+withListWithCCpsM' xs f = toListWithCCpsM' @_ @_ @c @t' f xs
