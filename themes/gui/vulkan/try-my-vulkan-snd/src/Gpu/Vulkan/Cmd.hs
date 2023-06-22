@@ -279,10 +279,10 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)
 
-copyBufferToImage :: forall algn objs img inms sc sm sb nm si sm' nm' . (
+copyBufferToImage :: forall algn objs img inms sc sm sb nm sm' si inm . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
 	CommandBuffer.C sc -> Buffer.Binded sm sb nm objs ->
-	Image.BindedNew si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
+	Image.BindedNew sm' si inm (KObj.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.BindedNew mim) imlyt ics =

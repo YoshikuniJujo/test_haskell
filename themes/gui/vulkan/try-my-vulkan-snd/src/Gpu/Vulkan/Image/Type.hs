@@ -11,8 +11,6 @@ import qualified Gpu.Vulkan.Image.Middle as M
 
 newtype I s = I M.I
 
-newtype Binded si sm = Binded M.I
-
 newtype INew s (nm :: Symbol) (fmt :: T.Format) = INew M.I
 
 newtype BindedNew sm si (nm :: Symbol) (fmt :: T.Format) = BindedNew M.I
@@ -22,9 +20,3 @@ iFromNew (INew i) = I i
 
 iToNew :: I s -> INew s nm fmt
 iToNew (I i) = INew i
-
-bindedFromNew :: BindedNew si sm nm fmt -> Binded si sm
-bindedFromNew (BindedNew i) = Binded i
-
-bindedToNew :: Binded si sm -> BindedNew si sm nm fmt
-bindedToNew (Binded i) = BindedNew i
