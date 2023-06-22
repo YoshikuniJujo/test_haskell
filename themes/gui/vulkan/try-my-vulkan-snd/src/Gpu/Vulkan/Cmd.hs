@@ -39,10 +39,7 @@ DynamicIndex(..), GetDynamicLength,
 
 -- * COPY BUFFER AND IMAGES
 
-copyBuffer,
-copyBufferToImage,
-copyImageToBuffer,
-blitImage,
+copyBuffer, copyBufferToImage, copyImageToBuffer, blitImage,
 
 -- * MEMORY DEPENDENCY
 
@@ -56,7 +53,6 @@ writeTimestamp
 
 ) where
 
-import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Foreign.Storable.HeteroList
 import Control.Exception
@@ -100,13 +96,13 @@ import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
 
 beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
-	CommandBuffer.C sc -> RenderPass.BeginInfo mn sr sf cts ->
+	CommandBuffer.C scb -> RenderPass.BeginInfo mn sr sf cts ->
 	Subpass.Contents -> IO a -> IO a
 beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 
-bindPipelineGraphics :: CommandBuffer.C sc ->
+bindPipelineGraphics :: CommandBuffer.C scb ->
 	Pipeline.BindPoint -> Pipeline.G sg vibs vias slbtss ->
 	(forall sgb . CommandBuffer.GBinded sgb vibs slbtss -> IO a) -> IO a
 bindPipelineGraphics (CommandBuffer.C c) bp (Pipeline.G g) f =
@@ -270,7 +266,7 @@ pipelineBarrier :: (
 	WithPokedHeteroToListCpsM' TMaybe.M (Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
-	CommandBuffer.C sc -> Pipeline.StageFlags -> Pipeline.StageFlags ->
+	CommandBuffer.C scb -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags -> HeteroParList.PL Memory.M.Barrier ns ->
 	HeteroParList.PL (U5 Buffer.MemoryBarrier) nsmsbnmobjs ->
 	HeteroParList.PL (U5 Image.MemoryBarrier) nsismnmfmts -> IO ()
@@ -279,9 +275,10 @@ pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 		(Buffer.memoryBarrierListToMiddle bmbs)
 		(Image.memoryBarrierListToMiddle imbs)
 
-copyBufferToImage :: forall algn objs img inms sc sm sb nm sm' si inm . (
+copyBufferToImage :: forall algn objs img inms scb sm sb nm sm' si inm . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
-	CommandBuffer.C sc -> Buffer.Binded sm sb nm objs ->
+	CommandBuffer.C scb ->
+	Buffer.Binded sm sb nm objs ->
 	Image.Binded sm' si inm (KObj.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
 copyBufferToImage (CommandBuffer.C cb)
@@ -289,20 +286,20 @@ copyBufferToImage (CommandBuffer.C cb)
 	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = Buffer.imageCopyListToMiddle @algn bf ics
 
-copyImageToBuffer :: forall algn objs img inms sc  sm sb nm si sm' nm' . (
+copyImageToBuffer :: forall algn objs img inms scb sm si inm sm' sb nm . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
-	CommandBuffer.C sc  ->
-	Image.Binded si sm' nm' (KObj.ImageFormat img) -> Image.Layout ->
-	Buffer.Binded sm sb nm objs ->
-	HeteroParList.PL (Buffer.ImageCopy img) (inms :: [Symbol]) -> IO ()
+	CommandBuffer.C scb  ->
+	Image.Binded sm si inm (KObj.ImageFormat img) -> Image.Layout ->
+	Buffer.Binded sm' sb nm objs ->
+	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
 copyImageToBuffer (CommandBuffer.C cb)
 	(Image.Binded mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = Buffer.imageCopyListToMiddle @algn bf ics
 
-blitImage :: CommandBuffer.C sc ->
-	Image.Binded ssi ssm snm sfmt -> Image.Layout ->
-	Image.Binded dsi dsm dnm dfmt -> Image.Layout ->
+blitImage :: CommandBuffer.C scb ->
+	Image.Binded sms sis nms fmts -> Image.Layout ->
+	Image.Binded smd sid nmd fmtd -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()
 blitImage (CommandBuffer.C cb)
 	(Image.Binded src) slyt (Image.Binded dst) dlyt blts fltr =
