@@ -265,7 +265,7 @@ pipelineBarrier :: (
 	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M
 		(TMapIndex.M0_5 nsmsbnmobjs),
 	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M
-		(Image.FirstOfFives nsismnmfmts),
+		(TMapIndex.M0_5 nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C scb -> Pipeline.StageFlags -> Pipeline.StageFlags ->

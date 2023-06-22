@@ -14,7 +14,7 @@ module Gpu.Vulkan.Image (
 
 	getMemoryRequirementsNew, getMemoryRequirementsBindedNew,
 	M.SubresourceRange(..), MemoryBarrier(..),
-	MemoryBarrierListToMiddle(..), FirstOfFives,
+	MemoryBarrierListToMiddle(..),
 
 	M.SubresourceLayers(..), M.Blit(..)
 	) where
@@ -24,6 +24,7 @@ import Foreign.Storable.PeekPoke
 import Control.Exception
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
 import qualified Data.HeteroParList as HeteroParList
@@ -103,15 +104,11 @@ memoryBarrierToMiddle MemoryBarrier {
 	M.memoryBarrierImage = img,
 	M.memoryBarrierSubresourceRange = srr }
 
-type family FirstOfFives (tpl :: [(i, j, k, l, m)]) :: [i] where
-	FirstOfFives '[] = '[]
-	FirstOfFives ('(x, y, z, w, v) ': xyzwvs) = x ': FirstOfFives xyzwvs
-
 class MemoryBarrierListToMiddle
 	(nsismnmfmts :: [(Maybe Type, Type, Type, Symbol, T.Format)])  where
 	memoryBarrierListToMiddle ::
 		HeteroParList.PL (U5 MemoryBarrier) nsismnmfmts ->
-		HeteroParList.PL M.MemoryBarrier (FirstOfFives nsismnmfmts)
+		HeteroParList.PL M.MemoryBarrier (TMapIndex.M0_5 nsismnmfmts)
 
 instance MemoryBarrierListToMiddle '[] where
 	memoryBarrierListToMiddle HeteroParList.Nil = HeteroParList.Nil
