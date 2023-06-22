@@ -349,7 +349,7 @@ createDevice ph qfis f = mkHeteroParList qcrInfo qfs \qcris ->
 		Vk.Dvc.M.createInfoEnabledFeatures = Just def }
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . WithPokedHeteroToListM' TMaybe.M ss => HL.PL t ss -> b) ->
+	(forall ss . HL.ToListWithCM' WithPoked TMaybe.M ss => HL.PL t ss -> b) ->
 	b
 mkHeteroParList _k [] f = f HL.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')

@@ -403,7 +403,7 @@ createLogicalDevice phdvc qfis f =
 		Vk.Dvc.queueCreateInfoQueuePriorities = [1] }
 
 mkHeteroParList :: WithPoked (TMaybe.M s) => (a -> t s) -> [a] ->
-	(forall ss . WithPokedHeteroToListM' TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
+	(forall ss . HeteroParList.ToListWithCM' WithPoked TMaybe.M ss => HeteroParList.PL t ss -> b) -> b
 mkHeteroParList _k [] f = f HeteroParList.Nil
 mkHeteroParList k (x : xs) f = mkHeteroParList k xs \xs' -> f (k x :** xs')
 

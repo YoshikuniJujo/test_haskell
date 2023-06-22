@@ -12,7 +12,6 @@ module Gpu.Vulkan.Device (
 	) where
 
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.HeteroList
 import Control.Exception
 import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.ParMaybe qualified as TPMaybe
@@ -28,8 +27,10 @@ import qualified Gpu.Vulkan.Device.Middle as M
 import qualified Gpu.Vulkan.QueueFamily.Middle as QueueFamily
 import qualified Gpu.Vulkan.Queue as Queue
 
+import Data.HeteroParList qualified as HeteroParList
+
 create :: (
-	WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M mns,
+	WithPoked (TMaybe.M mn), HeteroParList.ToListWithCM' WithPoked TMaybe.M mns,
 	AllocationCallbacks.ToMiddle msn3n3 ) =>
 	PhysicalDevice.P -> M.CreateInfo mn mns ->
 	TPMaybe.M (U2 AllocationCallbacks.A) msn3n3 ->

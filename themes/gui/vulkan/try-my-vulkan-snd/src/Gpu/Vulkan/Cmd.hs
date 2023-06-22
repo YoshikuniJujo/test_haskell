@@ -261,9 +261,11 @@ pushConstantsCompute (CommandBuffer.CBinded cb) (PipelineLayout.L lyt) xs =
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
 
 pipelineBarrier :: (
-	WithPokedHeteroToListCpsM' TMaybe.M ns,
-	WithPokedHeteroToListCpsM' TMaybe.M (TMapIndex.M0_5 nsmsbnmobjs),
-	WithPokedHeteroToListCpsM' TMaybe.M (Image.FirstOfFives nsismnmfmts),
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M ns,
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M
+		(TMapIndex.M0_5 nsmsbnmobjs),
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M
+		(Image.FirstOfFives nsismnmfmts),
 	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
 	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
 	CommandBuffer.C scb -> Pipeline.StageFlags -> Pipeline.StageFlags ->
