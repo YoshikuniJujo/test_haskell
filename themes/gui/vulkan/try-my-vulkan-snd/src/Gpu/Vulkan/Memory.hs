@@ -19,7 +19,9 @@ module Gpu.Vulkan.Memory (
 	offsetSize,
 	Alignments,
 
-	M.Requirements(..)
+	M.Requirements(..),
+
+	M.Barrier(..)
 	) where
 
 import Prelude hiding (map, read)

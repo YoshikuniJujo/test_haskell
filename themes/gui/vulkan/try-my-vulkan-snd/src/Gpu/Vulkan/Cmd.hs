@@ -87,7 +87,7 @@ import qualified Gpu.Vulkan.Subpass.Enum as Subpass
 import qualified Gpu.Vulkan.Cmd.Middle as M
 
 import qualified Gpu.Vulkan.PushConstant as PushConstant
-import qualified Gpu.Vulkan.Memory.Middle as Memory.M
+import qualified Gpu.Vulkan.Memory as Memory
 
 import Data.IORef -- for debug
 import Data.Kind.Object qualified as KObj
@@ -261,17 +261,17 @@ pushConstantsCompute (CommandBuffer.CBinded cb) (PipelineLayout.L lyt) xs =
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
 
 pipelineBarrier :: (
-	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M ns,
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M mbargs,
 	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M
-		(TMapIndex.M0_5 nsmsbnmobjs),
+		(TMapIndex.M0_5 bmbargss),
 	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M
-		(TMapIndex.M0_5 nsismnmfmts),
-	Buffer.MemoryBarrierListToMiddle nsmsbnmobjs,
-	Image.MemoryBarrierListToMiddle nsismnmfmts ) =>
+		(TMapIndex.M0_5 imbargss),
+	Buffer.MemoryBarrierListToMiddle bmbargss,
+	Image.MemoryBarrierListToMiddle imbargss ) =>
 	CommandBuffer.C scb -> Pipeline.StageFlags -> Pipeline.StageFlags ->
-	DependencyFlags -> HeteroParList.PL Memory.M.Barrier ns ->
-	HeteroParList.PL (U5 Buffer.MemoryBarrier) nsmsbnmobjs ->
-	HeteroParList.PL (U5 Image.MemoryBarrier) nsismnmfmts -> IO ()
+	DependencyFlags -> HeteroParList.PL Memory.Barrier mbargs ->
+	HeteroParList.PL (U5 Buffer.MemoryBarrier) bmbargss ->
+	HeteroParList.PL (U5 Image.MemoryBarrier) imbargss -> IO ()
 pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.memoryBarrierListToMiddle bmbs)
