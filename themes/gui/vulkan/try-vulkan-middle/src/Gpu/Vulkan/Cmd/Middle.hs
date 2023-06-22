@@ -190,8 +190,9 @@ copyImageToBuffer (CommandBuffer.M.C _ cb)
 		C.copyImageToBuffer cb si sil db (fromIntegral rc) prs
 
 pipelineBarrier :: (
-	WithPokedHeteroToListCpsM' TMaybe.M ns, WithPokedHeteroToListCpsM' TMaybe.M ns',
-	WithPokedHeteroToListCpsM' TMaybe.M ns'' ) =>
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M ns,
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M ns',
+	HeteroParList.ToListWithCCpsM' WithPoked TMaybe.M ns'' ) =>
 	CommandBuffer.M.C -> Pipeline.StageFlags -> Pipeline.StageFlags ->
 	DependencyFlags ->
 	HeteroParList.PL Memory.M.Barrier ns ->
@@ -201,15 +202,15 @@ pipelineBarrier (CommandBuffer.M.C _ cb)
 	(Pipeline.StageFlagBits ssm) (Pipeline.StageFlagBits dsm)
 	(DependencyFlagBits dfs)
 	mbs bbs ibs =
-		withPokedWithHeteroListCpsM' @TMaybe.M mbs Memory.M.barrierToCore \cmbs ->
+		HeteroParList.withListWithCCpsM' @_ @WithPoked @TMaybe.M mbs Memory.M.barrierToCore \cmbs ->
 		let	mbc = length cmbs in
 		allocaArray mbc \pmbs ->
 		pokeArray pmbs cmbs >>
-		withPokedWithHeteroListCpsM' @TMaybe.M bbs Buffer.M.memoryBarrierToCore' \cbbs ->
+		HeteroParList.withListWithCCpsM' @_ @WithPoked @TMaybe.M bbs Buffer.M.memoryBarrierToCore' \cbbs ->
 		let	bbc = length cbbs in
 		allocaArray bbc \pbbs ->
 		pokeArray pbbs cbbs >>
-		withPokedWithHeteroListCpsM' @TMaybe.M ibs Image.memoryBarrierToCore \cibs ->
+		HeteroParList.withListWithCCpsM' @_ @WithPoked @TMaybe.M ibs Image.memoryBarrierToCore \cibs ->
 		let	ibc = length cibs in
 		allocaArray ibc \pibs ->
 		pokeArray pibs cibs >>

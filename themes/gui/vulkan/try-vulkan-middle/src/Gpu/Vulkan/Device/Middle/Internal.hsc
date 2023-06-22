@@ -87,7 +87,8 @@ type family Map (f :: j -> k) xs where
 	Map _f '[] = '[]
 	Map f (x ': xs) = f x ': Map f xs
 
-createInfoToCore :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M qcis) =>
+createInfoToCore :: (
+	WithPoked (TMaybe.M mn), HeteroParList.ToListWithCM' WithPoked TMaybe.M qcis) =>
 	CreateInfo mn qcis -> (Ptr C.CreateInfo -> IO a) -> IO ()
 createInfoToCore CreateInfo {
 	createInfoNext = mnxt,
@@ -98,7 +99,7 @@ createInfoToCore CreateInfo {
 	createInfoEnabledFeatures = mef } f =
 	withPoked' mnxt \pnxt -> withPtrS pnxt \(castPtr -> pnxt') ->
 	alloca \pci ->
-		runContT (withPokedHeteroToListM' @_ @TMaybe.M (ContT . queueCreateInfoToCore) qcis) \cqcis ->
+		runContT (HeteroParList.toListWithCM' @_ @_ @WithPoked @TMaybe.M (ContT . queueCreateInfoToCore) qcis) \cqcis ->
 		let	qcic = length cqcis in
 		allocaArray qcic \pcqcis ->
 		pokeArray pcqcis cqcis >>
@@ -122,7 +123,7 @@ createInfoToCore CreateInfo {
 				poke pci (mk p)
 		() <$ f pci
 
-create :: (WithPoked (TMaybe.M mn), WithPokedHeteroToListM' TMaybe.M qcis) =>
+create :: (WithPoked (TMaybe.M mn), HeteroParList.ToListWithCM' WithPoked TMaybe.M qcis) =>
 	PhysicalDevice.P -> CreateInfo mn qcis -> TPMaybe.M AllocationCallbacks.A mc ->
 	IO D
 create (PhysicalDevice.P phdvc) ci mac = D <$> alloca \pdvc -> do
