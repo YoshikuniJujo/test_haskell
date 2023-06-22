@@ -27,7 +27,7 @@ module Gpu.Vulkan.Buffer (
 
 	-- * MEMORY BARRIER
 
-	MemoryBarrier(..)
+	MemoryBarrier(..), MemoryBarrierListToMiddle
 	
 	) where
 

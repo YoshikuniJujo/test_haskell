@@ -76,8 +76,10 @@ import qualified Gpu.Vulkan.PipelineLayout.Type as PipelineLayout
 import qualified Gpu.Vulkan.DescriptorSet as DescriptorSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as DescriptorSet
 import qualified Gpu.Vulkan.Buffer.Type as Buffer
-import qualified Gpu.Vulkan.Buffer.Internal as Buffer
+import qualified Gpu.Vulkan.Buffer as Buffer
+import qualified Gpu.Vulkan.Buffer.Internal as Buffer.I
 import qualified Gpu.Vulkan.Image as Image
+import qualified Gpu.Vulkan.Image.Internal as Image.I
 import qualified Gpu.Vulkan.Image.Type as Image
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.Image.Middle as Image.M
@@ -219,14 +221,14 @@ bindVertexBuffers :: forall sg vibs slbtss smsbnmts .
 	CommandBuffer.GBinded sg vibs slbtss ->
 	HeteroParList.PL (U5 Buffer.IndexedForList) smsbnmts -> IO ()
 bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
-	cb (fromIntegral fb) (Buffer.indexedListToMiddles bils)
+	cb (fromIntegral fb) (Buffer.I.indexedListToMiddles bils)
 	where fb = infixIndex @_ @(TMapIndex.M3_5 smsbnmts) @(TMapIndex.M0_2 vibs)
 
 bindIndexBuffer :: forall sg vibs slbtss sm sb nm i onm . IsIndex i =>
 	CommandBuffer.GBinded sg vibs slbtss ->
 	Buffer.IndexedForList sm sb nm i onm -> IO ()
 bindIndexBuffer (CommandBuffer.GBinded cb) ib =
-	uncurry (M.bindIndexBuffer cb) (Buffer.indexedListToMiddle ib) (indexType @i)
+	uncurry (M.bindIndexBuffer cb) (Buffer.I.indexedListToMiddle ib) (indexType @i)
 
 class IsIndex a where indexType :: IndexType
 instance IsIndex Word16 where indexType = IndexTypeUint16
@@ -238,7 +240,7 @@ copyBuffer :: forall cpobjss scb sms sbs nms objss smd sbd nmd objsd .
 	Buffer.Binded sms sbs nms objss -> Buffer.Binded smd sbd nmd objsd ->
 	IO ()
 copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss s) (Buffer.Binded lnsd d) =
-	M.copyBuffer cb s d (Buffer.makeCopies @cpobjss lnss lnsd)
+	M.copyBuffer cb s d (Buffer.I.makeCopies @cpobjss lnss lnsd)
 
 pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
 	PushConstant.ShaderStageFlagBitsToMiddle sss,
@@ -274,8 +276,8 @@ pipelineBarrier :: (
 	HeteroParList.PL (U5 Image.MemoryBarrier) imbargss -> IO ()
 pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
-		(Buffer.memoryBarrierListToMiddle bmbs)
-		(Image.memoryBarrierListToMiddle imbs)
+		(Buffer.I.memoryBarrierListToMiddle bmbs)
+		(Image.I.memoryBarrierListToMiddle imbs)
 
 copyBufferToImage :: forall algn objs img inms scb sm sb nm sm' si inm . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
@@ -286,7 +288,7 @@ copyBufferToImage :: forall algn objs img inms scb sm sb nm sm' si inm . (
 copyBufferToImage (CommandBuffer.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.Binded mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
-	where mics = Buffer.imageCopyListToMiddle @algn bf ics
+	where mics = Buffer.I.imageCopyListToMiddle @algn bf ics
 
 copyImageToBuffer :: forall algn objs img inms scb sm si inm sm' sb nm . (
 	Buffer.ImageCopyListToMiddle algn objs img inms ) =>
@@ -297,7 +299,7 @@ copyImageToBuffer :: forall algn objs img inms scb sm si inm sm' sb nm . (
 copyImageToBuffer (CommandBuffer.C cb)
 	(Image.Binded mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
-	where mics = Buffer.imageCopyListToMiddle @algn bf ics
+	where mics = Buffer.I.imageCopyListToMiddle @algn bf ics
 
 blitImage :: CommandBuffer.C scb ->
 	Image.Binded sms sis nms fmts -> Image.Layout ->
