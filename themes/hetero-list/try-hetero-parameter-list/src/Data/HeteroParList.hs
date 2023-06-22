@@ -43,10 +43,8 @@ module Data.HeteroParList (
 	ToListWithC(..), ToListWithC2(..),
 	ZipListWithC(..), ZipListWithC2(..), ZipListWithC3(..),
 
-	ConstraintHeteroToListM(..),
-	ConstraintHeteroToListM'(..),
-	ConstraintHeteroToListCpsM(..),
-	ConstraintHeteroToListCpsM'(..),
+	ToListWithCM(..), ToListWithCM'(..),
+	ToListWithCCpsM(..), ToListWithCCpsM'(..),
 
 	-- ** Homo List
 
@@ -347,52 +345,46 @@ instance (ZipListWithC2 c sss, ZipListWithC3 c ssss) =>
 	zipListWithC3 f (xss :** xsss) (yss :** ysss) =
 		zipListWithC2 @c f xss yss : zipListWithC3 @c f xsss ysss
 
-class ConstraintHeteroToListM c ss where
-	constraintHeteroToListM :: Applicative m =>
+class ToListWithCM c ss where
+	toListWithCM :: Applicative m =>
 		(forall s . c s => t s -> m a) -> PL t ss -> m [a]
 
-instance ConstraintHeteroToListM c '[] where
-	constraintHeteroToListM _ Nil = pure []
+instance ToListWithCM c '[] where toListWithCM _ Nil = pure []
 
-instance (c s, ConstraintHeteroToListM c ss) =>
-	ConstraintHeteroToListM c (s ': ss) where
-	constraintHeteroToListM f (x :** xs) =
-		(:) <$> f x <*> constraintHeteroToListM @c f xs
+instance (c s, ToListWithCM c ss) => ToListWithCM c (s ': ss) where
+	toListWithCM f (x :** xs) = (:) <$> f x <*> toListWithCM @c f xs
 
-class ConstraintHeteroToListM' c (t' :: k -> Type) (ss :: [k]) where
-	constraintHeteroToListM' :: Applicative m =>
+class ToListWithCM' c (t' :: k -> k') (ss :: [k]) where
+	toListWithCM' :: Applicative m =>
 		(forall (s :: k) . c (t' s) => t s -> m a) -> PL t ss -> m [a]
 
-instance ConstraintHeteroToListM' c t' '[] where
-	constraintHeteroToListM' _ Nil = pure []
+instance ToListWithCM' c t' '[] where toListWithCM' _ Nil = pure []
 
-instance (c (t' s), ConstraintHeteroToListM' c t' ss) =>
-	ConstraintHeteroToListM' c t' (s ': ss) where
-	constraintHeteroToListM' f (x :** xs) =
-		(:) <$> f x <*> constraintHeteroToListM' @_ @c @t' f xs
+instance (c (t' s), ToListWithCM' c t' ss) =>
+	ToListWithCM' c t' (s ': ss) where
+	toListWithCM' f (x :** xs) =
+		(:) <$> f x <*> toListWithCM' @_ @_ @c @t' f xs
 
-class ConstraintHeteroToListCpsM c ns where
-	constraintHeteroToListCpsM ::
+class ToListWithCCpsM c ns where
+	toListWithCCpsM ::
 		(forall s . c s => t s -> (a -> m b) -> m b) -> PL t ns ->
 		([a] -> m b) -> m b
 
-instance ConstraintHeteroToListCpsM c '[] where
-	constraintHeteroToListCpsM _ Nil g = g []
+instance ToListWithCCpsM c '[] where toListWithCCpsM _ Nil g = g []
 
-instance (c n, ConstraintHeteroToListCpsM c ns) =>
-	ConstraintHeteroToListCpsM c (n ': ns) where
-	constraintHeteroToListCpsM f (x :** xs) g =
-		f x \y -> constraintHeteroToListCpsM @c f xs \ys -> g $ y : ys
+instance (c n, ToListWithCCpsM c ns) =>
+	ToListWithCCpsM c (n ': ns) where
+	toListWithCCpsM f (x :** xs) g =
+		f x \y -> toListWithCCpsM @c f xs \ys -> g $ y : ys
 
-class ConstraintHeteroToListCpsM' c (t' :: k -> Type) (ns :: [k]) where
-	constraintHeteroToListCpsM' ::
+class ToListWithCCpsM' c (t' :: k -> Type) (ns :: [k]) where
+	toListWithCCpsM' ::
 		(forall (s :: k) . c (t' s) => t s -> (a -> m b) -> m b) ->
 		PL t ns -> ([a] -> m b) -> m b
 
-instance ConstraintHeteroToListCpsM' c t' '[] where
-	constraintHeteroToListCpsM' _ Nil = ($ [])
+instance ToListWithCCpsM' c t' '[] where toListWithCCpsM' _ Nil = ($ [])
 
-instance (c (t' n), ConstraintHeteroToListCpsM' c t' ns) =>
-	ConstraintHeteroToListCpsM' c t' (n ': ns) where
-	constraintHeteroToListCpsM' f (x :** xs) g =
-		f x \y -> constraintHeteroToListCpsM' @_ @c @t' f xs \ys -> g $ y : ys
+instance (c (t' n), ToListWithCCpsM' c t' ns) =>
+	ToListWithCCpsM' c t' (n ': ns) where
+	toListWithCCpsM' f (x :** xs) g =
+		f x \y -> toListWithCCpsM' @_ @c @t' f xs \ys -> g $ y : ys
