@@ -309,8 +309,8 @@ blitImage (CommandBuffer.C cb)
 	(Image.Binded src) slyt (Image.Binded dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
 
-resetQueryPool ::
-	CommandBuffer.C sc -> QueryPool.Q sq tp -> Word32 -> Word32 -> IO ()
+resetQueryPool :: CommandBuffer.C sc -> QueryPool.Q sq tp ->
+	QueryPool.FirstQuery -> QueryPool.QueryCount -> IO ()
 resetQueryPool (CommandBuffer.C cb) (QueryPool.Q qp) fq qc =
 	M.resetQueryPool cb qp fq qc
 

@@ -119,3 +119,6 @@ instance QueryType Timestamp where
 	getQueryArg pd = do
 		lmts <- PhysicalDevice.propertiesLimits <$> PhysicalDevice.getProperties pd
 		pure $ PhysicalDevice.limitsTimestampPeriod lmts
+
+type FirstQuery = Word32
+type QueryCount = Word32
