@@ -68,7 +68,7 @@ import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Vk.DSLyt
 import qualified Gpu.Vulkan.Khr as Vk.Khr
 import qualified Gpu.Vulkan.PushConstant as Vk.PushConstant
 
-import Gpu.Vulkan.Query.Enum as Vk.Qry
+import "try-my-vulkan-snd" Gpu.Vulkan.Query.Enum as Vk.Qry
 import Gpu.Vulkan.QueryPool.Middle as Vk.QP.M
 
 import Gpu.Vulkan.QueryPool as Vk.QP

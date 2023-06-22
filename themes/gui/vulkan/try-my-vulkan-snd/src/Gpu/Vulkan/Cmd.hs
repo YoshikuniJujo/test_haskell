@@ -96,6 +96,7 @@ import Data.Kind.Object qualified as KObj
 
 import Gpu.Vulkan.Query.Enum qualified as Query
 import Gpu.Vulkan.QueryPool qualified as QueryPool
+import Gpu.Vulkan.Query qualified as Query
 
 beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
 	CommandBuffer.C scb -> RenderPass.BeginInfo mn sr sf cts ->
@@ -309,17 +310,17 @@ blitImage (CommandBuffer.C cb)
 	(Image.Binded src) slyt (Image.Binded dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
 
-resetQueryPool :: CommandBuffer.C sc -> QueryPool.Q sq tp ->
-	QueryPool.FirstQuery -> QueryPool.QueryCount -> IO ()
+resetQueryPool :: CommandBuffer.C sc ->
+	QueryPool.Q sq tp -> Query.First -> Query.Count -> IO ()
 resetQueryPool (CommandBuffer.C cb) (QueryPool.Q qp) fq qc =
 	M.resetQueryPool cb qp fq qc
 
 beginQuery :: CommandBuffer.C sc ->
-	QueryPool.Q sq tp -> Word32 -> Query.ControlFlags -> IO a -> IO ()
+	QueryPool.Q sq tp -> Query.Q -> Query.ControlFlags -> IO a -> IO ()
 beginQuery (CommandBuffer.C cb) (QueryPool.Q qp) i flgs act =
 	M.beginQuery cb qp i flgs >> act >> M.endQuery cb qp i
 
 writeTimestamp :: CommandBuffer.C sc -> Pipeline.StageFlagBits ->
-	QueryPool.Q sq QueryPool.Timestamp -> Word32 -> IO ()
+	QueryPool.Q sq QueryPool.Timestamp -> Query.Q -> IO ()
 writeTimestamp (CommandBuffer.C cb) sflgs (QueryPool.Q qp) i =
 	M.writeTimestamp cb sflgs qp i
