@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           try-storable-hetero-list
-version:        0.1.0.2
+version:        0.1.0.3
 description:    Please see the README on GitHub at <https://github.com/YoshikuniJujo/try-storable-hetero-list#readme>
 homepage:       https://github.com/YoshikuniJujo/try-storable-hetero-list#readme
 bug-reports:    https://github.com/YoshikuniJujo/try-storable-hetero-list/issues

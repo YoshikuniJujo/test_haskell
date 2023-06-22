@@ -140,34 +140,33 @@ instance (Pokable a, PokableList as) => PokableList (a ': as) where
 
 -- WithPoked
 
-type WithPokedHeteroToListM = HeteroParList.ConstraintHeteroToListM WithPoked
+type WithPokedHeteroToListM = HeteroParList.ToListWithCM WithPoked
 
 withPokedHeteroToListM :: (
 	WithPokedHeteroToListM ss, Applicative m ) =>
 	(forall s . WithPoked s => t s -> m a) -> HeteroParList.PL t ss -> m [a]
-withPokedHeteroToListM = HeteroParList.constraintHeteroToListM @WithPoked
+withPokedHeteroToListM = HeteroParList.toListWithCM @WithPoked
 
-type WithPokedHeteroToListM' = HeteroParList.ConstraintHeteroToListM' WithPoked
+type WithPokedHeteroToListM' = HeteroParList.ToListWithCM' WithPoked
 
 withPokedHeteroToListM' :: forall k t' t ss m a .
 	(WithPokedHeteroToListM' t' ss, Applicative m) =>
 	(forall (s :: k) . WithPoked (t' s) => t s -> m a) ->
 	HeteroParList.PL t ss -> m [a]
-withPokedHeteroToListM' = HeteroParList.constraintHeteroToListM' @_ @WithPoked @t'
+withPokedHeteroToListM' = HeteroParList.toListWithCM' @_ @_ @WithPoked @t'
 
 withPokedWithHeteroListM :: (WithPokedHeteroToListM ss, Applicative m) =>
 		HeteroParList.PL t ss ->
 		(forall s . WithPoked s => t s -> m a) -> m [a]
 withPokedWithHeteroListM xs f = withPokedHeteroToListM f xs
 
-type WithPokedHeteroToListCpsM =
-	HeteroParList.ConstraintHeteroToListCpsM WithPoked
+type WithPokedHeteroToListCpsM = HeteroParList.ToListWithCCpsM WithPoked
 
 withPokedHeteroToListCpsM :: WithPokedHeteroToListCpsM ns =>
 	(forall s . WithPoked s => t s -> (a -> m b) -> m b) ->
 	HeteroParList.PL t ns ->
 	([a] -> m b) -> m b
-withPokedHeteroToListCpsM = HeteroParList.constraintHeteroToListCpsM @WithPoked
+withPokedHeteroToListCpsM = HeteroParList.toListWithCCpsM @WithPoked
 
 withPokedWithHeteroListCpsM :: WithPokedHeteroToListCpsM ss =>
 	HeteroParList.PL t ss ->
@@ -176,14 +175,14 @@ withPokedWithHeteroListCpsM :: WithPokedHeteroToListCpsM ss =>
 withPokedWithHeteroListCpsM f xs = withPokedHeteroToListCpsM xs f
 
 type WithPokedHeteroToListCpsM' =
-	HeteroParList.ConstraintHeteroToListCpsM' WithPoked
+	HeteroParList.ToListWithCCpsM' WithPoked
 
 withPokedHeteroToListCpsM' :: forall k t' t ns a m b .
 	WithPokedHeteroToListCpsM' t' ns =>
 	(forall (s :: k) . WithPoked (t' s) => t s -> (a -> m b) -> m b) ->
 	HeteroParList.PL t ns -> ([a] -> m b) -> m b
 withPokedHeteroToListCpsM' =
-	HeteroParList.constraintHeteroToListCpsM' @_ @WithPoked @t'
+	HeteroParList.toListWithCCpsM' @_ @WithPoked @t'
 
 withPokedWithHeteroListCpsM' :: forall t' t ss a m b .
 	WithPokedHeteroToListCpsM' t' ss =>

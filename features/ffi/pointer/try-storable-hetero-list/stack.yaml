@@ -42,7 +42,7 @@ packages:
 
 extra-deps:
 - git: https://github.com/YoshikuniJujo/test_haskell
-  commit: 97c3a114b5089cc998e93dae6574835332910f2c
+  commit: 7c2eadba819e421c52a0de5bc7483b9780de88c3
   subdirs:
   - themes/hetero-list/try-hetero-parameter-list
   - themes/type_level/typelevel-tools
