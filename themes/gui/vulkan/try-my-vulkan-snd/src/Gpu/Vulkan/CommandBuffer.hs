@@ -17,16 +17,6 @@ module Gpu.Vulkan.CommandBuffer (
 	allocateOld, AllocateInfoOld(..),
 
 	begin, beginNew, M.BeginInfo(..), reset, resetNew,
-	
-	Level,
-	pattern LevelPrimary, pattern LevelSecondary, pattern LevelMaxEnum,
-
-	UsageFlags, UsageFlagBits,
-	pattern UsageOneTimeSubmitBit, pattern UsageRenderPassContinueBit,
-	pattern UsageSimultaneousUseBit, pattern UsageFlagBitsMaxEnum,
-	
-	ResetFlags, ResetFlagBits,
-	pattern ResetReleaseResourcesBit, pattern ResetFlagBitsMaxEnum
 
 	) where
 

@@ -59,6 +59,7 @@ import qualified Gpu.Vulkan.Pipeline.Compute as Vk.Ppl.Cmpt
 import qualified Gpu.Vulkan.DescriptorSet as Vk.DscSet
 import qualified Gpu.Vulkan.DescriptorSet.TypeLevel.Write as Vk.DscSet
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBuf
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBuf
 import qualified Gpu.Vulkan.Cmd as Vk.Cmd
 
 import qualified Gpu.Vulkan.Buffer as Vk.Bffr

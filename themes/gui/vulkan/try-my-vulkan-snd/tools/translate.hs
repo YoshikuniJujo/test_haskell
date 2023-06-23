@@ -25,6 +25,7 @@ prep :: String -> String
 prep "" = ""
 prep ('\\' : '\\' : cs) = '\\' : prep cs
 prep ('\\' : 't' : cs) = '\t' : prep cs
+prep ('\\' : 'n' : cs) = '\n' : prep cs
 prep (c : cs) = c : prep cs
 
 changeFile :: String -> String -> FilePath -> IO ()
