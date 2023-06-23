@@ -275,7 +275,7 @@ calc dvc qFam dscSetLyt dscSet dsz =
 		(HeteroParList.Singleton . U4 $ computePipelineInfo plyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CmdPool.create dvc (commandPoolInfo qFam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(cb :*. HeteroParList.Nil) ->
+	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cb :*. HeteroParList.Nil) ->
 		run dvc qFam cb ppl plyt dscSet dsz
 
 pplLayoutInfo :: Vk.DscSetLyt.L sl bts ->
@@ -292,11 +292,11 @@ commandPoolInfo qFam = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qFam }
 
-commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s '[ '()]
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
-	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CmdBuf.AllocateInfo 'Nothing s '[ '()]
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
+	Vk.CmdBuf.allocateInfoNext = TMaybe.N,
+	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
+	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
 run :: forall slbts sbtss sd sc sg sl sds . (
 	sbtss ~ '[slbts],
@@ -309,7 +309,7 @@ run :: forall slbts sbtss sd sc sg sl sds . (
 	Vk.Ppl.Lyt.L sl sbtss '[] -> Vk.DscSet.D sds slbts -> Word32 -> IO ()
 run dvc qFam cb ppl pplLyt dscSet dsz = do
 	q <- Vk.Dvc.getQueue dvc qFam 0
-	Vk.CmdBuf.beginNew @'Nothing @'Nothing cb def $
+	Vk.CmdBuf.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.bindPipelineCompute cb Vk.Ppl.BindPointCompute ppl \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb
 				pplLyt (HeteroParList.Singleton $ U2 dscSet)

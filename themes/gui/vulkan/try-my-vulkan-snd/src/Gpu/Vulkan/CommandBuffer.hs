@@ -13,11 +13,11 @@ module Gpu.Vulkan.CommandBuffer (
 
 	-- * ALLOCATE
 
-	allocateNew, C, Binded, AllocateInfoNew(..),
+	allocate, C, Binded, AllocateInfo(..),
 
 	-- * BEGIN AND RESET
 
-	beginNew, resetNew, M.BeginInfo(..)
+	begin, reset, M.BeginInfo(..)
 
 	) where
 
@@ -37,44 +37,37 @@ import qualified Gpu.Vulkan.CommandBuffer.Middle as M
 
 import qualified Gpu.Vulkan.VertexInput as VertexInput
 
-allocateNew :: (
+allocate :: (
 	WithPoked (TMaybe.M mn), HeteroParList.FromList c, TLength.Length c ) =>
-	Device.D sd -> AllocateInfoNew mn scp c ->
+	Device.D sd -> AllocateInfo mn scp c ->
 	(forall s . HeteroParList.LL (C s) c -> IO a) -> IO a
-allocateNew (Device.D dvc) ai f = bracket
+allocate (Device.D dvc) ai f = bracket
 	(M.allocateCs dvc $ allocateInfoToMiddleNew ai)
 	(M.freeCs dvc
-		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPoolNew ai)
+		. (\(CommandPool.C cp) -> cp) $ allocateInfoCommandPool ai)
 	(f . HeteroParList.fromList (HeteroParList.Dummy . C))
 
-data AllocateInfoNew mn s (c :: [()]) = AllocateInfoNew {
-	allocateInfoNextNew :: TMaybe.M mn,
-	allocateInfoCommandPoolNew :: CommandPool.C s,
-	allocateInfoLevelNew :: Level }
+data AllocateInfo mn s (c :: [()]) = AllocateInfo {
+	allocateInfoNext :: TMaybe.M mn,
+	allocateInfoCommandPool :: CommandPool.C s,
+	allocateInfoLevel :: Level }
 
-deriving instance Show (TMaybe.M mn) => Show (AllocateInfoNew mn s c)
+deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn s c)
 
 allocateInfoToMiddleNew :: forall n s c . TLength.Length c =>
-	AllocateInfoNew n s c -> M.AllocateInfo n
-allocateInfoToMiddleNew AllocateInfoNew {
-	allocateInfoNextNew = mnxt,
-	allocateInfoCommandPoolNew = CommandPool.C cp,
-	allocateInfoLevelNew = lvl } = M.AllocateInfo {
+	AllocateInfo n s c -> M.AllocateInfo n
+allocateInfoToMiddleNew AllocateInfo {
+	allocateInfoNext = mnxt,
+	allocateInfoCommandPool = CommandPool.C cp,
+	allocateInfoLevel = lvl } = M.AllocateInfo {
 	M.allocateInfoNext = mnxt,
 	M.allocateInfoCommandPool = cp,
 	M.allocateInfoLevel = lvl,
 	M.allocateInfoCommandBufferCount = TLength.length @_ @c }
 
-data AllocateInfo mn s (vss :: [[(Type, VertexInput.Rate)]]) = AllocateInfo {
-	allocateInfoNext :: TMaybe.M mn,
-	allocateInfoCommandPool :: CommandPool.C s,
-	allocateInfoLevel :: Level }
-
-deriving instance Show (TMaybe.M mn) => Show (AllocateInfo mn s vss)
-
-beginNew :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M mn')) =>
+begin :: (WithPoked (TMaybe.M mn), WithPoked (TMaybe.M mn')) =>
 	C s -> M.BeginInfo mn mn' -> IO a -> IO a
-beginNew (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
+begin (C cb) bi act = bracket_ (M.begin cb bi) (M.end cb) act
 
-resetNew :: C sc -> ResetFlags -> IO ()
-resetNew (C cb) rfs = M.reset cb rfs
+reset :: C sc -> ResetFlags -> IO ()
+reset (C cb) rfs = M.reset cb rfs

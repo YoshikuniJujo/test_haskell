@@ -963,7 +963,7 @@ beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Queue.Q -> Vk.CmdPool.C sc ->
 	(forall s . Vk.CmdBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dvc gq cp cmd = do
-	Vk.CmdBffr.allocateNew
+	Vk.CmdBffr.allocate
 		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
@@ -971,15 +971,15 @@ beginSingleTimeCommands dvc gq cp cmd = do
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.beginNew @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
+		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo (cmd cb) <* do
 			Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 			Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1341,7 +1341,7 @@ copyBuffer :: forall sd sc sm sb nm sm' sb' nm' a . Storable' a =>
 	Vk.Bffr.Binded sm sb nm '[VObj.List 256 a ""] ->
 	Vk.Bffr.Binded sm' sb' nm' '[VObj.List 256 a ""] -> IO ()
 copyBuffer dvc gq cp src dst = do
-	Vk.CmdBffr.allocateNew
+	Vk.CmdBffr.allocate
 		dvc allocInfo \((cb :: Vk.CmdBffr.C s) :*. HeteroParList.Nil) -> do
 		let	submitInfo :: Vk.SubmitInfo 'Nothing '[] '[s] '[]
 			submitInfo = Vk.SubmitInfo {
@@ -1349,16 +1349,16 @@ copyBuffer dvc gq cp src dst = do
 				Vk.submitInfoWaitSemaphoreDstStageMasks = HeteroParList.Nil,
 				Vk.submitInfoCommandBuffers = HeteroParList.Singleton cb,
 				Vk.submitInfoSignalSemaphores = HeteroParList.Nil }
-		Vk.CmdBffr.beginNew @'Nothing @'Nothing cb beginInfo do
+		Vk.CmdBffr.begin @'Nothing @'Nothing cb beginInfo do
 			Vk.Cmd.copyBuffer @'[ '[VObj.List 256 a ""]] cb src dst
 		Vk.Queue.submit gq (HeteroParList.Singleton $ U4 submitInfo) Nothing
 		Vk.Queue.waitIdle gq
 	where
-	allocInfo :: Vk.CmdBffr.AllocateInfoNew 'Nothing sc '[ '()]
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: Vk.CmdBffr.AllocateInfo 'Nothing sc '[ '()]
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 	beginInfo = Vk.CmdBffr.M.BeginInfo {
 		Vk.CmdBffr.beginInfoNext = TMaybe.N,
 		Vk.CmdBffr.beginInfoFlags = Vk.CmdBffr.UsageOneTimeSubmitBit,
@@ -1370,13 +1370,13 @@ createCommandBuffers ::
 		HeteroParList.LL (Vk.CmdBffr.C scb) (vss :: [()]) -> IO a) ->
 	IO a
 createCommandBuffers dvc cp f = mkVss maxFramesInFlight \(_p :: Proxy vss1) ->
-	Vk.CmdBffr.allocateNew @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
+	Vk.CmdBffr.allocate @_ @vss1 dvc (allocInfo @vss1) (f @_ @vss1)
 	where
-	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfoNew 'Nothing scp vss
-	allocInfo = Vk.CmdBffr.AllocateInfoNew {
-		Vk.CmdBffr.allocateInfoNextNew = TMaybe.N,
-		Vk.CmdBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CmdBffr.allocateInfoLevelNew = Vk.CmdBffr.LevelPrimary }
+	allocInfo :: forall vss . Vk.CmdBffr.AllocateInfo 'Nothing scp vss
+	allocInfo = Vk.CmdBffr.AllocateInfo {
+		Vk.CmdBffr.allocateInfoNext = TMaybe.N,
+		Vk.CmdBffr.allocateInfoCommandPool = cp,
+		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
 mkVss :: Int -> (forall (vss :: [()]) . (
 	TpLvlLst.Length vss, TLength.Length vss,
@@ -1421,7 +1421,7 @@ recordCommandBuffer :: forall scb sr sl sdsc sf sg sm sb nm sm' sb' nm' sds .
 	Vk.DscSet.D sds (AtomUbo sdsc) ->
 	IO ()
 recordCommandBuffer cb rp fb sce ppllyt gpl vb ib dscs =
-	Vk.CmdBffr.beginNew @'Nothing @'Nothing cb def $
+	Vk.CmdBffr.begin @'Nothing @'Nothing cb def $
 	Vk.Cmd.beginRenderPass cb rpInfo Vk.Subpass.ContentsInline $
 	Vk.Cmd.bindPipelineGraphics cb Vk.Ppl.BindPointGraphics gpl \cbb ->
 	Vk.Cmd.bindVertexBuffers cbb
@@ -1544,7 +1544,7 @@ drawFrame dvc gq pq sc ext rp ppllyt gpl fbs vb ib cbs
 	imgIdx <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dvc sc uint64Max (Just ias) Nothing
 	Vk.Fence.resetFs dvc siff
-	Vk.CmdBffr.resetNew cb def
+	Vk.CmdBffr.reset cb def
 	HeteroParList.index fbs imgIdx \fb ->
 		recordCommandBuffer cb rp fb ext ppllyt gpl vb ib dscs
 	updateUniformBuffer dvc um ext tm

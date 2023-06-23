@@ -153,7 +153,7 @@ calc' dvc qfam dscSetLyt dscSet dsz rm ma mb mc =
 		(HeteroParList.Singleton . U4 $ cmptPipelineInfo pplLyt)
 		nil' \(ppl :** HeteroParList.Nil) ->
 	Vk.CommandPool.create dvc (commandPoolInfo qfam) nil' \cmdPool ->
-	Vk.CmdBuf.allocateNew dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HeteroParList.Nil) ->
+	Vk.CmdBuf.allocate dvc (commandBufferInfo cmdPool) \(cmdBuf :*. HeteroParList.Nil) ->
 		run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm ma mb mc
 
 type ListBuffer1 w1 w2 w3 = '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""]
@@ -172,7 +172,7 @@ run :: forall w1 w2 w3 slbts sbtss sd sc sg sl m1 m2 m3 sds . (
 	m1 -> m2 -> m3 -> IO ([w1], [w2], [w3])
 run dvc qfam cmdBuf ppl pplLyt dscSet dsz rm memA memB memC = do
 	queue <- Vk.Dvc.getQueue dvc qfam 0
-	Vk.CmdBuf.beginNew @'Nothing @'Nothing cmdBuf def do
+	Vk.CmdBuf.begin @'Nothing @'Nothing cmdBuf def do
 		Vk.Cmd.bindPipelineCompute cmdBuf Vk.Ppl.BindPointCompute ppl $ \ccb -> do
 			Vk.Cmd.bindDescriptorSetsCompute ccb pplLyt
 				(U2 dscSet :** HeteroParList.Nil)
@@ -568,11 +568,11 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoDescriptorPool = pl,
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
-commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfoNew 'Nothing s '[ '()]
-commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfoNew {
-	Vk.CmdBuf.allocateInfoNextNew = TMaybe.N,
-	Vk.CmdBuf.allocateInfoCommandPoolNew = cmdPool,
-	Vk.CmdBuf.allocateInfoLevelNew = Vk.CmdBuf.LevelPrimary }
+commandBufferInfo :: Vk.CommandPool.C s -> Vk.CmdBuf.AllocateInfo 'Nothing s '[ '()]
+commandBufferInfo cmdPool = Vk.CmdBuf.AllocateInfo {
+	Vk.CmdBuf.allocateInfoNext = TMaybe.N,
+	Vk.CmdBuf.allocateInfoCommandPool = cmdPool,
+	Vk.CmdBuf.allocateInfoLevel = Vk.CmdBuf.LevelPrimary }
 
 dscPoolInfo :: Vk.DscPool.CreateInfo 'Nothing
 dscPoolInfo = Vk.DscPool.CreateInfo {

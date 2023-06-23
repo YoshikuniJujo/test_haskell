@@ -976,16 +976,16 @@ beginSingleTimeCommands :: forall sd sc a .
 	Vk.Dvc.D sd -> Vk.Q.Q -> Vk.CmdPl.C sc ->
 	(forall s . Vk.CBffr.C s -> IO a) -> IO a
 beginSingleTimeCommands dv gq cp cmds =
-	Vk.CBffr.allocateNew dv allocInfo \(cb :*. HL.Nil) ->
-	Vk.CBffr.beginNew @'Nothing @'Nothing cb beginInfo (cmds cb) <* do
+	Vk.CBffr.allocate dv allocInfo \(cb :*. HL.Nil) ->
+	Vk.CBffr.begin @'Nothing @'Nothing cb beginInfo (cmds cb) <* do
 	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo cb) Nothing
 	Vk.Q.waitIdle gq
 	where
-	allocInfo :: Vk.CBffr.AllocateInfoNew 'Nothing sc '[ '()]
-	allocInfo = Vk.CBffr.AllocateInfoNew {
-		Vk.CBffr.allocateInfoNextNew = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
+	allocInfo :: Vk.CBffr.AllocateInfo 'Nothing sc '[ '()]
+	allocInfo = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cp,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 	beginInfo = Vk.CBffr.M.BeginInfo {
 		Vk.CBffr.beginInfoNext = TMaybe.N,
 		Vk.CBffr.beginInfoFlags = Vk.CBffr.UsageOneTimeSubmitBit,
@@ -1293,13 +1293,13 @@ createVertexBuffer pd dv gq cp vs f =
 createCommandBuffers ::
 	forall sd scp a . Vk.Dvc.D sd -> Vk.CmdPl.C scp ->
 	(forall scb . HL.LL' (Vk.CBffr.C scb) MaxFramesInFlight -> IO a) -> IO a
-createCommandBuffers dv cp f = Vk.CBffr.allocateNew dv allcInfo f
+createCommandBuffers dv cp f = Vk.CBffr.allocate dv allcInfo f
 	where
-	allcInfo :: Vk.CBffr.AllocateInfoNew 'Nothing scp (HL.Dummies MaxFramesInFlight)
-	allcInfo = Vk.CBffr.AllocateInfoNew {
-		Vk.CBffr.allocateInfoNextNew = TMaybe.N,
-		Vk.CBffr.allocateInfoCommandPoolNew = cp,
-		Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
+	allcInfo :: Vk.CBffr.AllocateInfo 'Nothing scp (HL.Dummies MaxFramesInFlight)
+	allcInfo = Vk.CBffr.AllocateInfo {
+		Vk.CBffr.allocateInfoNext = TMaybe.N,
+		Vk.CBffr.allocateInfoCommandPool = cp,
+		Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 createSyncObjects ::
 	Vk.Dvc.D sd -> (forall ssos . SyncObjects ssos -> IO a ) -> IO a
@@ -1484,7 +1484,7 @@ drawFrame dv gq pq sc ex rp lyt gpl fbs cmms scnm dss odms dssod vb vbtri cbs
 	iid <- Vk.Khr.acquireNextImageResultNew [Vk.Success, Vk.SuboptimalKhr]
 		dv sc uint64Max (Just ias) Nothing
 	Vk.Fnc.resetFs dv siff
-	Vk.CBffr.resetNew cb zeroBits
+	Vk.CBffr.reset cb zeroBits
 	HL.index fbs iid \fb -> recordCommandBuffer
 		ex rp lyt gpl fb ds dsod vb vbtri cb vnsln (fromIntegral ffn) fn
 	Vk.Q.submit gq (HL.Singleton . U4 $ submitInfo ias rfs) $ Just iff
@@ -1530,7 +1530,7 @@ recordCommandBuffer ::
 	Vk.Bffr.Binded smtri sbtri nmtri '[Obj.List 256 Vertex ""] ->
 	Vk.CBffr.C scb -> Word32 -> Word32 -> Int -> IO ()
 recordCommandBuffer sce rp lyt gpl fb ds dsod vb vbt cb vn ffn (fromIntegral -> fn) =
-	Vk.CBffr.beginNew @'Nothing @'Nothing cb binfo $
+	Vk.CBffr.begin @'Nothing @'Nothing cb binfo $
 	Vk.Cmd.beginRenderPass cb rpinfo Vk.Subpass.ContentsInline do
 	ovb <- newIORef Nothing
 	drawObject ovb cb ds dsod RenderObject {

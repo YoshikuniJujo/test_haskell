@@ -273,7 +273,7 @@ calc qfi dv qp qpt dslyt ds sz =
 	Vk.Ppl.Cmpt.createCsNew dv Nothing
 		(HL.Singleton . U4 $ pplInfo plyt) nil' \(pl :** HL.Nil) ->
 	Vk.CmdPool.create dv (commandPoolInfo qfi) nil' \cp ->
-	Vk.CBffr.allocateNew dv (commandBufferInfo cp) \(cb :*. HL.Nil) -> do
+	Vk.CBffr.allocate dv (commandBufferInfo cp) \(cb :*. HL.Nil) -> do
 	run qfi dv qp qpt ds cb plyt pl sz
 
 pplLayoutInfo :: Vk.DSLyt.L sl bts ->
@@ -290,11 +290,11 @@ commandPoolInfo qfi = Vk.CmdPool.CreateInfo {
 	Vk.CmdPool.createInfoFlags = Vk.CmdPool.CreateResetCommandBufferBit,
 	Vk.CmdPool.createInfoQueueFamilyIndex = qfi }
 
-commandBufferInfo :: Vk.CmdPool.C s -> Vk.CBffr.AllocateInfoNew 'Nothing s '[ '()]
-commandBufferInfo cmdPool = Vk.CBffr.AllocateInfoNew {
-	Vk.CBffr.allocateInfoNextNew = TMaybe.N,
-	Vk.CBffr.allocateInfoCommandPoolNew = cmdPool,
-	Vk.CBffr.allocateInfoLevelNew = Vk.CBffr.LevelPrimary }
+commandBufferInfo :: Vk.CmdPool.C s -> Vk.CBffr.AllocateInfo 'Nothing s '[ '()]
+commandBufferInfo cmdPool = Vk.CBffr.AllocateInfo {
+	Vk.CBffr.allocateInfoNext = TMaybe.N,
+	Vk.CBffr.allocateInfoCommandPool = cmdPool,
+	Vk.CBffr.allocateInfoLevel = Vk.CBffr.LevelPrimary }
 
 run :: forall slbts sd sq sq' tp sc sg sl sds . (
 	Vk.DS.LayoutArgListOnlyDynamics '[slbts] ~ '[ '[ '[]]],
@@ -305,7 +305,7 @@ run :: forall slbts sd sq sq' tp sc sg sl sds . (
 	Vk.Ppl.Lyt.L sl '[slbts] '[] ->
 	Vk.Ppl.Cmpt.C sg '(sl, '[slbts], '[]) -> Word32 -> IO ()
 run qfi dv qp qpt ds cb lyt pl sz = Vk.Dv.getQueue dv qfi 0 >>= \q -> do
-	Vk.CBffr.beginNew @'Nothing @'Nothing cb def $
+	Vk.CBffr.begin @'Nothing @'Nothing cb def $
 		Vk.Cmd.resetQueryPool cb qpt 0 10 >>
 		Vk.Cmd.writeTimestamp cb Vk.Ppl.StageTopOfPipeBit qpt 0 >>
 		Vk.Cmd.resetQueryPool cb qp 0 10 >>
