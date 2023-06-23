@@ -17,7 +17,6 @@ import GHC.Generics
 import Foreign.Ptr
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.HeteroList hiding (SizeAlignmentList)
 import Foreign.Storable.SizeAlignment
 import Foreign.Marshal.Array
 import Control.Arrow hiding (loop)
