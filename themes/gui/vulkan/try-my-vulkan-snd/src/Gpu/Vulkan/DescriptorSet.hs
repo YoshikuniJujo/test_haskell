@@ -29,7 +29,8 @@ import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
 import qualified Gpu.Vulkan.Device.Type as Device
-import qualified Gpu.Vulkan.Descriptor as Descriptor
+import qualified Gpu.Vulkan.Descriptor.Internal as Descriptor
+import qualified Gpu.Vulkan.Descriptor.Enum as Descriptor
 import qualified Gpu.Vulkan.DescriptorPool.Type as Descriptor.Pool
 import qualified Gpu.Vulkan.DescriptorSetLayout.Type as Layout
 import qualified Gpu.Vulkan.DescriptorSetLayout.Middle as Layout.M

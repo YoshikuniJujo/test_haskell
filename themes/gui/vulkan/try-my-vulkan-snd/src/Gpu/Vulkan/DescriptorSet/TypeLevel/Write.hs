@@ -24,7 +24,7 @@ import Data.Word
 import Gpu.Vulkan.TypeEnum qualified as T
 import Gpu.Vulkan.Object qualified as VObj
 
-import Gpu.Vulkan.Descriptor qualified as Descriptor
+import Gpu.Vulkan.Descriptor.Internal qualified as Descriptor
 import Gpu.Vulkan.Descriptor.Middle qualified as Descriptor.M
 
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Common
