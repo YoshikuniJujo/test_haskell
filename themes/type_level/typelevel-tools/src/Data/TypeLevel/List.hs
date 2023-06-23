@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
 {-# LANGUAGE TypeFamilies, TypeFamilyDependencies #-}
 {-# LANGUAGE DataKinds, PolyKinds #-}
@@ -6,9 +7,14 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
-module Data.TypeLevel.List (Length(..), IsPrefixOf, InfixIndex(..)) where
+module Data.TypeLevel.List (
+	Length(..), IsPrefixOf, InfixIndex(..),
+	module Data.TypeLevel.List.Unzip
+	) where
 
-import Prelude hiding (length)
+import Prelude hiding (length, unzip)
+
+import Data.TypeLevel.List.Unzip
 
 class Length (as :: [k]) where length :: Integral n => n
 instance Length '[] where length = 0

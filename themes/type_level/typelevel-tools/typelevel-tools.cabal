@@ -27,6 +27,9 @@ library
   exposed-modules:
       Data.TypeLevel.Bool
       Data.TypeLevel.List
+      Data.TypeLevel.List.Push
+      Data.TypeLevel.List.TH
+      Data.TypeLevel.List.Unzip
       Data.TypeLevel.Maybe
       Data.TypeLevel.ParMaybe
       Data.TypeLevel.Tuple.MapIndex
