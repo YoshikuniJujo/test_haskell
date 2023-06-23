@@ -260,9 +260,9 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBufferDynamic,
 	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
-		Vk.Dsc.BufferInfoDynList @_ @_ @_ @_ @_ @_ @W1 ba :**
-		Vk.Dsc.BufferInfoDynList @_ @_ @_ @_ @_ @_ @W2 bb :**
-		Vk.Dsc.BufferInfoDynList @_ @_ @_ @_ @_ @_ @W3 bc :**
+		Vk.Dsc.BufferInfoObj @_ @_ @_ @_ @(VObj.DynList 2 256 W1 "") ba :**
+		Vk.Dsc.BufferInfoObj @_ @_ @_ @_ @(VObj.DynList 2 256 W2 "") bb :**
+		Vk.Dsc.BufferInfoObj @_ @_ @_ @_ @(VObj.DynList 2 256 W3 "") bc :**
 		HeteroParList.Nil }
 
 -- CALC

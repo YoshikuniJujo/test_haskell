@@ -217,7 +217,7 @@ writeDscSet ds ba = Vk.DS.WriteNew {
 	Vk.DS.writeDstSetNew = ds,
 	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSourcesNew =
-		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
+		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoObj ba }
 
 copyDscSet :: Vk.DS.D sds slbts -> Vk.DS.D sds' slbts -> Vk.DS.CopyNew
 	'Nothing sds slbts sds' slbts (Vk.DSLyt.Buffer '[Word32List]) 0 0

@@ -615,7 +615,7 @@ writeDscSet' ds b = Vk.DscSet.WriteNew {
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo '(sb, sm, nm, objs,VObj.List 256 t "")
-bufferInfoList = Vk.Dsc.BufferInfoList
+bufferInfoList = Vk.Dsc.BufferInfoObj
 
 shaderStageInfo :: Vk.Ppl.ShaderSt.CreateInfoNew
 	'Nothing 'Nothing 'GlslComputeShader 'Nothing '[Word32, Word32]

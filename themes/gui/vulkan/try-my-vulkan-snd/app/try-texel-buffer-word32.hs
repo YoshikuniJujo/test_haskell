@@ -380,7 +380,7 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfo '(sb, sm, nm, objs,VObj.List 256 t "")
-bufferInfoList = Vk.Dsc.BufferInfoList
+bufferInfoList = Vk.Dsc.BufferInfoObj
 
 storageBufferNew4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->

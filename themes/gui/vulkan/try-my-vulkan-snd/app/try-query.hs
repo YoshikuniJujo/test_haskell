@@ -258,7 +258,7 @@ writeDscSet ds ba = Vk.DS.WriteNew {
 	Vk.DS.writeDstSetNew = ds,
 	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSourcesNew =
-		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoList ba }
+		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoObj ba }
 
 -- CALC
 

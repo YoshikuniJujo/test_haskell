@@ -92,7 +92,6 @@ import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
@@ -1358,7 +1357,7 @@ descriptorWrite0 ub dscs tp = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeDescriptorTypeNew = tp,
 	Vk.DscSet.writeSourcesNew= Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo }
-	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
+	where bufferInfo = Vk.Dsc.BufferInfoObj ub
 
 data BindedGcd smsb where
 	BindedGcd ::

@@ -16,7 +16,6 @@ module Main where
 import GHC.Generics
 import Foreign.Storable
 import Foreign.Storable.PeekPoke
-import Foreign.Storable.HeteroList hiding (SizeAlignmentList)
 import Foreign.Storable.SizeAlignment
 import Control.Arrow hiding (loop)
 import Control.Monad
@@ -88,7 +87,6 @@ import qualified Gpu.Vulkan.Image.Middle as Vk.Image.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
@@ -916,7 +914,7 @@ descriptorWrite ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = Vk.Dsc.BufferInfoAtom ub
+	where bufferInfo = Vk.Dsc.BufferInfoObj ub
 
 class Update smsbs slbtss where
 	update :: Vk.Dvc.D sd -> HeteroParList.PL BindedUbo smsbs ->

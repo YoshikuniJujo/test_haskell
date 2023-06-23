@@ -35,21 +35,6 @@ data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 		{ bufferInfoObjBuffer :: Buffer.Binded sm sb nm objs } ->
 		BufferInfo '(sb, sm, nm, objs, obj)
 
--- REMOVE FROM HERE
-	BufferInfoAtom ::
-		{ bufferInfoAtomBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, VObj.Atom algn v objnm)
-	BufferInfoList ::
-		{ bufferInfoListBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, VObj.List algn v objnm)
-	BufferInfoDynList ::
-		{ bufferInfoDynListBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, VObj.DynList n algn v objnm)
-	BufferInfoDynAtom ::
-		{ bufferInfoDynAtomBuffer :: Buffer.Binded sm sb nm objs } ->
-		BufferInfo '(sb, sm, nm, objs, VObj.DynAtom n algn v objnm)
--- REMOVE UNTIL HERE
-
 type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
 
 deriving instance Show (HeteroParList.PL VObj.ObjectLength objs) =>
@@ -59,14 +44,6 @@ bufferInfoToLength ::
 	VObj.ObjectLengthIndex obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> VObj.ObjectLength obj
 bufferInfoToLength (BufferInfoObj (Buffer.Binded lns _)) =
-	VObj.objectLengthIndex lns
-bufferInfoToLength (BufferInfoAtom (Buffer.Binded lns _)) =
-	VObj.objectLengthIndex lns
-bufferInfoToLength (BufferInfoList (Buffer.Binded lns _)) =
-	VObj.objectLengthIndex lns
-bufferInfoToLength (BufferInfoDynAtom (Buffer.Binded lns _)) =
-	VObj.objectLengthIndex lns
-bufferInfoToLength (BufferInfoDynList (Buffer.Binded lns _)) =
 	VObj.objectLengthIndex lns
 
 class BufferInfoListToLength sbsmobjsobjs where
@@ -93,26 +70,6 @@ bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.OffsetRange obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle BufferInfoObj {
 	bufferInfoObjBuffer = Buffer.Binded lns b } = M.BufferInfo {
-	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
-	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
-bufferInfoToMiddle BufferInfoAtom {
-	bufferInfoAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
-	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
-	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
-bufferInfoToMiddle BufferInfoList {
-	bufferInfoListBuffer = Buffer.Binded lns b } = M.BufferInfo {
-	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
-	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
-bufferInfoToMiddle BufferInfoDynList {
-	bufferInfoDynListBuffer = Buffer.Binded lns b } = M.BufferInfo {
-	M.bufferInfoBuffer = b,
-	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
-	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
-bufferInfoToMiddle BufferInfoDynAtom {
-	bufferInfoDynAtomBuffer = Buffer.Binded lns b } = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
