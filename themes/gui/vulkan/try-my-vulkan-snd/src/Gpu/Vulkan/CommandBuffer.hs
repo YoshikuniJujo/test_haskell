@@ -13,7 +13,7 @@ module Gpu.Vulkan.CommandBuffer (
 
 	-- * ALLOCATE
 
-	allocate, C, Binded, AllocateInfo(..),
+	allocate, C, GBinded, CBinded, AllocateInfo(..),
 
 	-- * BEGIN AND RESET
 

@@ -910,27 +910,6 @@ createCommandBuffer dvc cp f =
 		Vk.CmdBffr.allocateInfoCommandPool = cp,
 		Vk.CmdBffr.allocateInfoLevel = Vk.CmdBffr.LevelPrimary }
 
-class VssList (vss :: [[(Type, Vk.VtxInp.Rate)]]) where
-	vssListIndex ::
-		HeteroParList.PL (Vk.CmdBffr.Binded scb) vss -> Int ->
-		Vk.CmdBffr.Binded scb '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-
-instance VssList '[] where
-	vssListIndex HeteroParList.Nil _ = error "index too large"
-
-type Vs = '[ '(Vertex, 'Vk.VtxInp.RateVertex)]
-
-instance VssList vss =>
-	VssList ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss) where
-	vssListIndex (cb :** _) 0 = cb
-	vssListIndex (_ :** cbs) n = vssListIndex cbs (n - 1)
-
-mkVss :: Int -> (forall (vss :: [[(Type, Vk.VtxInp.Rate)]]) .
-	(TpLvlLst.Length vss, VssList vss) =>
-	Proxy vss -> a) -> a
-mkVss 0 f = f (Proxy @'[])
-mkVss n f = mkVss (n - 1) \p -> f $ addTypeToProxy p
-
 addTypeToProxy ::
 	Proxy vss -> Proxy ('[ '(Vertex, 'Vk.VtxInp.RateVertex)] ': vss)
 addTypeToProxy Proxy = Proxy

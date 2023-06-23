@@ -68,7 +68,8 @@ import Data.Int
 import Gpu.Vulkan
 import Gpu.Vulkan.Enum
 
-import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer as CommandBuffer
+import qualified Gpu.Vulkan.CommandBuffer.Type as CommandBuffer.T
 import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Pipeline
 import qualified Gpu.Vulkan.Pipeline.Compute as Pipeline.Compute
 import qualified Gpu.Vulkan.Pipeline.Enum as Pipeline
@@ -101,25 +102,25 @@ import Gpu.Vulkan.Query qualified as Query
 beginRenderPass :: (WithPoked (TMaybe.M mn), ClearValueListToCore cts) =>
 	CommandBuffer.C scb -> RenderPass.BeginInfo mn sr sf cts ->
 	Subpass.Contents -> IO a -> IO a
-beginRenderPass (CommandBuffer.C cb) bi cnt f = bracket_
+beginRenderPass (CommandBuffer.T.C cb) bi cnt f = bracket_
 	(M.beginRenderPass cb (RenderPass.beginInfoToMiddle bi) cnt)
 	(M.endRenderPass cb) f
 
 bindPipelineGraphics :: CommandBuffer.C scb ->
 	Pipeline.BindPoint -> Pipeline.G sg vibs vias slbtss ->
 	(forall sgb . CommandBuffer.GBinded sgb vibs slbtss -> IO a) -> IO a
-bindPipelineGraphics (CommandBuffer.C c) bp (Pipeline.G g) f =
-	M.bindPipelineGraphics c bp g >> f (CommandBuffer.GBinded c)
+bindPipelineGraphics (CommandBuffer.T.C c) bp (Pipeline.G g) f =
+	M.bindPipelineGraphics c bp g >> f (CommandBuffer.T.GBinded c)
 
 bindPipelineCompute :: CommandBuffer.C scmdb -> Pipeline.BindPoint ->
 	Pipeline.Compute.C scp slbtss ->
 	(forall scbnd . CommandBuffer.CBinded scbnd slbtss -> IO a) -> IO a
-bindPipelineCompute (CommandBuffer.C cb) bp (Pipeline.Compute.C g) f =
-	M.bindPipelineCompute cb bp g >> f (CommandBuffer.CBinded cb)
+bindPipelineCompute (CommandBuffer.T.C cb) bp (Pipeline.Compute.C g) f =
+	M.bindPipelineCompute cb bp g >> f (CommandBuffer.T.CBinded cb)
 
 draw :: CommandBuffer.GBinded sc vibs slbtss ->
 	VertexCount -> InstanceCount -> FirstVertex -> FirstInstance -> IO ()
-draw (CommandBuffer.GBinded cb) vc ic fv fi = M.draw cb vc ic fv fi
+draw (CommandBuffer.T.GBinded cb) vc ic fv fi = M.draw cb vc ic fv fi
 
 type VertexCount = Word32
 type InstanceCount = Word32
@@ -129,7 +130,7 @@ type FirstInstance = Word32
 drawIndexed :: CommandBuffer.GBinded sc vibs slbtss ->
 	IndexCount -> InstanceCount ->
 	FirstIndex -> VertexOffset -> FirstInstance -> IO ()
-drawIndexed (CommandBuffer.GBinded cb) idxc istc fidx vo fist =
+drawIndexed (CommandBuffer.T.GBinded cb) idxc istc fidx vo fist =
 	M.drawIndexed cb idxc istc fidx vo fist
 
 type IndexCount = Word32
@@ -138,7 +139,7 @@ type VertexOffset = Int32
 
 dispatch :: CommandBuffer.CBinded sc slbtss ->
 	GroupCountX -> GroupCountY -> GroupCountZ -> IO ()
-dispatch (CommandBuffer.CBinded cb) = M.dispatch cb
+dispatch (CommandBuffer.T.CBinded cb) = M.dispatch cb
 
 type GroupCountX = Word32
 type GroupCountY = Word32
@@ -154,7 +155,7 @@ bindDescriptorSetsGraphics :: forall sgbnd vibs sl dsls pcs dss dsls' dyns . (
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
 	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsGraphics
-	(CommandBuffer.GBinded c) bp (PipelineLayout.L l) dss idxs = do
+	(CommandBuffer.T.GBinded c) bp (PipelineLayout.L l) dss idxs = do
 	lns <- getDynamicLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c bp l
@@ -174,7 +175,7 @@ bindDescriptorSetsCompute :: forall scbnd sl dsls pcs dss dsls' dyns . (
 	HeteroParList.PL (U2 DescriptorSet.D) dss ->
 	HeteroParList.PL3 DynamicIndex dyns -> IO ()
 bindDescriptorSetsCompute
-	(CommandBuffer.CBinded c) (PipelineLayout.L l) dss idxs = do
+	(CommandBuffer.T.CBinded c) (PipelineLayout.L l) dss idxs = do
 	lns <- getDynamicLength dss
 	let	dosts = concat $ concat <$> getOffsetListNew lns idxs
 	M.bindDescriptorSets c Pipeline.BindPointCompute l
@@ -221,14 +222,14 @@ bindVertexBuffers :: forall sg vibs slbtss smsbnmts .
 	InfixIndex (TMapIndex.M3_5 smsbnmts) (TMapIndex.M0_2 vibs) =>
 	CommandBuffer.GBinded sg vibs slbtss ->
 	HeteroParList.PL (U5 Buffer.IndexedForList) smsbnmts -> IO ()
-bindVertexBuffers (CommandBuffer.GBinded cb) bils = M.bindVertexBuffers
+bindVertexBuffers (CommandBuffer.T.GBinded cb) bils = M.bindVertexBuffers
 	cb (fromIntegral fb) (Buffer.I.indexedListToMiddles bils)
 	where fb = infixIndex @_ @(TMapIndex.M3_5 smsbnmts) @(TMapIndex.M0_2 vibs)
 
 bindIndexBuffer :: forall sg vibs slbtss sm sb nm i onm . IsIndex i =>
 	CommandBuffer.GBinded sg vibs slbtss ->
 	Buffer.IndexedForList sm sb nm i onm -> IO ()
-bindIndexBuffer (CommandBuffer.GBinded cb) ib =
+bindIndexBuffer (CommandBuffer.T.GBinded cb) ib =
 	uncurry (M.bindIndexBuffer cb) (Buffer.I.indexedListToMiddle ib) (indexType @i)
 
 class IsIndex a where indexType :: IndexType
@@ -240,7 +241,7 @@ copyBuffer :: forall cpobjss scb sms sbs nms objss smd sbd nmd objsd .
 	CommandBuffer.C scb ->
 	Buffer.Binded sms sbs nms objss -> Buffer.Binded smd sbd nmd objsd ->
 	IO ()
-copyBuffer (CommandBuffer.C cb) (Buffer.Binded lnss s) (Buffer.Binded lnsd d) =
+copyBuffer (CommandBuffer.T.C cb) (Buffer.Binded lnss s) (Buffer.Binded lnsd d) =
 	M.copyBuffer cb s d (Buffer.I.makeCopies @cpobjss lnss lnsd)
 
 pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
@@ -248,7 +249,7 @@ pushConstantsGraphics :: forall sss sc vibs sl sbtss pcs ts . (
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.GBinded sc vibs '(sl, sbtss, pcs) ->
 	PipelineLayout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
-pushConstantsGraphics (CommandBuffer.GBinded cb) (PipelineLayout.L lyt) xs =
+pushConstantsGraphics (CommandBuffer.T.GBinded cb) (PipelineLayout.L lyt) xs =
 	M.pushConstants
 		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
@@ -258,7 +259,7 @@ pushConstantsCompute :: forall sss sc sl sbtss pcs ts . (
 	PokableList ts, InfixOffsetSize ts pcs ) =>
 	CommandBuffer.CBinded sc '(sl, sbtss, pcs) ->
 	PipelineLayout.L sl sbtss pcs -> HeteroParList.L ts -> IO ()
-pushConstantsCompute (CommandBuffer.CBinded cb) (PipelineLayout.L lyt) xs =
+pushConstantsCompute (CommandBuffer.T.CBinded cb) (PipelineLayout.L lyt) xs =
 	M.pushConstants
 		cb lyt (PushConstant.shaderStageFlagBitsToMiddle @sss) offt xs
 		where (fromIntegral -> offt, _) = infixOffsetSize @ts @pcs
@@ -275,7 +276,7 @@ pipelineBarrier :: (
 	DependencyFlags -> HeteroParList.PL Memory.Barrier mbargs ->
 	HeteroParList.PL (U5 Buffer.MemoryBarrier) bmbargss ->
 	HeteroParList.PL (U5 Image.MemoryBarrier) imbargss -> IO ()
-pipelineBarrier (CommandBuffer.C cb) ssm dsm dfs mbs bmbs imbs =
+pipelineBarrier (CommandBuffer.T.C cb) ssm dsm dfs mbs bmbs imbs =
 	M.pipelineBarrier cb ssm dsm dfs mbs
 		(Buffer.I.memoryBarrierListToMiddle bmbs)
 		(Image.I.memoryBarrierListToMiddle imbs)
@@ -286,7 +287,7 @@ copyBufferToImage :: forall algn objs img inms scb sm sb nm sm' si inm . (
 	Buffer.Binded sm sb nm objs ->
 	Image.Binded sm' si inm (KObj.ImageFormat img) -> Image.Layout ->
 	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
-copyBufferToImage (CommandBuffer.C cb)
+copyBufferToImage (CommandBuffer.T.C cb)
 	bf@(Buffer.Binded _ mbf) (Image.Binded mim) imlyt ics =
 	M.copyBufferToImage cb mbf mim imlyt mics
 	where mics = Buffer.I.imageCopyListToMiddle @algn bf ics
@@ -297,7 +298,7 @@ copyImageToBuffer :: forall algn objs img inms scb sm si inm sm' sb nm . (
 	Image.Binded sm si inm (KObj.ImageFormat img) -> Image.Layout ->
 	Buffer.Binded sm' sb nm objs ->
 	HeteroParList.PL (Buffer.ImageCopy img) inms -> IO ()
-copyImageToBuffer (CommandBuffer.C cb)
+copyImageToBuffer (CommandBuffer.T.C cb)
 	(Image.Binded mim) imlyt bf@(Buffer.Binded _ mbf) ics =
 	M.copyImageToBuffer cb mim imlyt mbf mics
 	where mics = Buffer.I.imageCopyListToMiddle @algn bf ics
@@ -306,21 +307,21 @@ blitImage :: CommandBuffer.C scb ->
 	Image.Binded sms sis nms fmts -> Image.Layout ->
 	Image.Binded smd sid nmd fmtd -> Image.Layout ->
 	[Image.M.Blit] -> Filter -> IO ()
-blitImage (CommandBuffer.C cb)
+blitImage (CommandBuffer.T.C cb)
 	(Image.Binded src) slyt (Image.Binded dst) dlyt blts fltr =
 	M.blitImage cb src slyt dst dlyt blts fltr
 
 resetQueryPool :: CommandBuffer.C sc ->
 	QueryPool.Q sq tp -> Query.First -> Query.Count -> IO ()
-resetQueryPool (CommandBuffer.C cb) (QueryPool.Q qp) fq qc =
+resetQueryPool (CommandBuffer.T.C cb) (QueryPool.Q qp) fq qc =
 	M.resetQueryPool cb qp fq qc
 
 beginQuery :: CommandBuffer.C sc ->
 	QueryPool.Q sq tp -> Query.Q -> Query.ControlFlags -> IO a -> IO ()
-beginQuery (CommandBuffer.C cb) (QueryPool.Q qp) i flgs act =
+beginQuery (CommandBuffer.T.C cb) (QueryPool.Q qp) i flgs act =
 	M.beginQuery cb qp i flgs >> act >> M.endQuery cb qp i
 
 writeTimestamp :: CommandBuffer.C sc -> Pipeline.StageFlagBits ->
 	QueryPool.Q sq QueryPool.Timestamp -> Query.Q -> IO ()
-writeTimestamp (CommandBuffer.C cb) sflgs (QueryPool.Q qp) i =
+writeTimestamp (CommandBuffer.T.C cb) sflgs (QueryPool.Q qp) i =
 	M.writeTimestamp cb sflgs qp i

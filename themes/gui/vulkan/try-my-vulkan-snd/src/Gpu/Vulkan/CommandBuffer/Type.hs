@@ -14,21 +14,10 @@ import Gpu.Vulkan.VertexInput qualified as VertexInput
 
 newtype C s = C { unC :: M.C }
 
-newtype Binded s (vs :: [(Type, VertexInput.Rate)]) = Binded { unBinded :: M.C }
-
-newtype GBinded s (vs :: [(Type, VertexInput.Rate)])
-	(slsbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
+newtype GBinded s (vibs :: [(Type, VertexInput.Rate)])
+	(largs :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
 	GBinded { unGBinded :: M.C }
 
 newtype CBinded s
-	(slbtss :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
+	(largs :: (Type, [(Type, [DscStLyt.BindingType])], [Type])) =
 	CBinded { unCBinded :: M.C }
-
-toBinded :: C s -> Binded s vs
-toBinded = Binded . unC
-
-fromBinded :: Binded s vs -> C s
-fromBinded = C . unBinded
-
-gBindedToBinded :: GBinded s vs slsbtss -> Binded s vs
-gBindedToBinded = Binded . unGBinded
