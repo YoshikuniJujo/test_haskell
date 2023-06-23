@@ -59,6 +59,7 @@ library
       Gpu.Vulkan.CommandBuffer.Enum
       Gpu.Vulkan.CommandBuffer.Type
       Gpu.Vulkan.CommandPool
+      Gpu.Vulkan.CommandPool.Enum
       Gpu.Vulkan.CommandPool.Type
       Gpu.Vulkan.Component
       Gpu.Vulkan.Data

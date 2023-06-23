@@ -6,11 +6,12 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.CommandPool (
-	C, create, reset, M.CreateInfo(..),
 
-	M.CreateFlags, M.CreateFlagBits,
-	pattern M.CreateTransientBit, pattern M.CreateResetCommandBufferBit,
-	pattern M.CreateProtectedBit, pattern M.CreateFlagBitsMaxEnum ) where
+	-- * CREATE
+
+	create, reset, C, M.CreateInfo(..),
+
+	) where
 
 import Foreign.Storable.PeekPoke
 import Control.Exception
@@ -26,9 +27,9 @@ import qualified Gpu.Vulkan.Device.Type as Device
 import qualified Gpu.Vulkan.CommandPool.Middle as M
 import qualified Gpu.Vulkan.CommandPool.Enum as M
 
-create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle mscc) =>
+create :: (WithPoked (TMaybe.M mn), AllocationCallbacks.ToMiddle ma) =>
 	Device.D sd -> M.CreateInfo mn ->
-	TPMaybe.M (U2 AllocationCallbacks.A) mscc ->
+	TPMaybe.M (U2 AllocationCallbacks.A) ma ->
 	(forall s . C s -> IO a) -> IO a
 create (Device.D dvc) ci
 	(AllocationCallbacks.toMiddle -> macc) f =

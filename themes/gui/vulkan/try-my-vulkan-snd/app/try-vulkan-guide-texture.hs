@@ -117,6 +117,7 @@ import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Grph
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPl
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPl
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CBffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CBffr.M

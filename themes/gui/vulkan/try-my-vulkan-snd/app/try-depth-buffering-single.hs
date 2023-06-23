@@ -31,7 +31,6 @@ import Data.Bits
 import Data.Array hiding (indices)
 import Data.TypeLevel.Tuple.Uncurry
 import Data.TypeLevel.Maybe qualified as TMaybe
-import Data.TypeLevel.List qualified as TpLvlLst
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:*.), pattern (:**))
 import Data.Proxy
@@ -119,6 +118,7 @@ import qualified Gpu.Vulkan.Pipeline.Graphics.Type as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Pipeline.Graphics as Vk.Ppl.Graphics
 import qualified Gpu.Vulkan.Framebuffer as Vk.Frmbffr
 import qualified Gpu.Vulkan.CommandPool as Vk.CmdPool
+import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandPool.Enum as Vk.CmdPool
 import qualified Gpu.Vulkan.CommandBuffer as Vk.CmdBffr
 import qualified "try-my-vulkan-snd" Gpu.Vulkan.CommandBuffer.Enum as Vk.CmdBffr
 import qualified Gpu.Vulkan.CommandBuffer.Middle as Vk.CmdBffr.M
