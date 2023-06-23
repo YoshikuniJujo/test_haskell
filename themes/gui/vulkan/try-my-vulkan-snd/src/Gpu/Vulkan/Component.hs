@@ -2,11 +2,10 @@
 {-# OPTIONS_GHC -Wall -fno-warn-tabs #-}
 
 module Gpu.Vulkan.Component (
-	Mapping(..),
-	Swizzle,
-	pattern SwizzleIdentity, pattern SwizzleZero, pattern SwizzleOne,
-	pattern SwizzleR, pattern SwizzleG, pattern SwizzleB, pattern SwizzleA,
-	pattern SwizzleMaxEnum ) where
+
+	-- * MAPPING
+	Mapping(..)
+
+	) where
 
 import Gpu.Vulkan.Component.Middle
-import Gpu.Vulkan.Component.Enum
