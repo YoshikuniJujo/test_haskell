@@ -31,8 +31,7 @@ import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
 
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
-	BufferInfoObj ::
-		{ bufferInfoObjBuffer :: Buffer.Binded sm sb nm objs } ->
+	BufferInfoObj :: Buffer.Binded sm sb nm objs ->
 		BufferInfo '(sb, sm, nm, objs, obj)
 
 type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
@@ -68,8 +67,7 @@ instance (
 
 bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.OffsetRange obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
-bufferInfoToMiddle BufferInfoObj {
-	bufferInfoObjBuffer = Buffer.Binded lns b } = M.BufferInfo {
+bufferInfoToMiddle (BufferInfoObj (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
