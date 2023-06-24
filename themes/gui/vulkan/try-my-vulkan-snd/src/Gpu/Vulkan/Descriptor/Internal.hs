@@ -14,6 +14,8 @@ module Gpu.Vulkan.Descriptor.Internal (
 
 	BufferInfoListToLength(..),
 
+	BufferInfoNew(..)
+
 	) where
 
 import GHC.TypeLits
@@ -33,6 +35,12 @@ import qualified Gpu.Vulkan.ImageView as ImageView
 data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 	BufferInfoObj :: Buffer.Binded sm sb nm objs ->
 		BufferInfo '(sb, sm, nm, objs, obj)
+
+data BufferInfoNew sm sb nm obj =
+	forall objs . (Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
+		BufferInfoNew (Buffer.Binded sm sb nm objs)
+
+deriving instance Show (BufferInfoNew sm sb nm obj)
 
 type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
 

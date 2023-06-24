@@ -4,7 +4,9 @@ module Gpu.Vulkan.Descriptor (
 
 	BufferInfo(..), BufferInfoArg, ImageInfo(..),
 
-	BufferInfoListToLength
+	BufferInfoListToLength,
+
+	BufferInfoNew(..)
 
 	) where
 
