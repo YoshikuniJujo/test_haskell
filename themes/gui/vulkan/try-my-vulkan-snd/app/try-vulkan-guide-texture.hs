@@ -1240,7 +1240,7 @@ createDescriptorPool ::
 createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil'
 	where poolInfo = Vk.DscPl.CreateInfo {
 		Vk.DscPl.createInfoNext = TMaybe.N,
-		Vk.DscPl.createInfoFlags = zeroBits,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
 		Vk.DscPl.createInfoMaxSets = 10,
 		Vk.DscPl.createInfoPoolSizes = [
 			Vk.DscPl.Size {

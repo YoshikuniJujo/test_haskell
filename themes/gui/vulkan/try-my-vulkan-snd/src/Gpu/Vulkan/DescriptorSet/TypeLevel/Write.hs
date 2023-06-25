@@ -17,6 +17,7 @@ module Gpu.Vulkan.DescriptorSet.TypeLevel.Write (
 import GHC.TypeLits
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.HeteroParList (pattern (:**))
 import Data.HeteroParList qualified as HeteroParList
 import Data.Word
@@ -41,14 +42,28 @@ class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 instance (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
-		(ObjectsFromBufferInfoArgs sbsmobjsobjs) 0,
+		(TMapIndex.M4_5 sbsmobjsobjs) 0,
 	BufferInfosToMiddle sbsmobjsobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer sbsmobjsobjs) where
 	type WriteSourcesObjs ('WriteSourcesArgBuffer sbsmobjsobjs) =
-		ObjectsFromBufferInfoArgs sbsmobjsobjs
+		TMapIndex.M4_5 sbsmobjsobjs
 	writeSourcesToMiddle (BufferInfos bis) = (
 		bindingAndArrayElem' @slbts @sbsmobjsobjs @0,
 		M.WriteSourcesBufferInfo $ bufferInfosToMiddle bis )
+
+instance (
+	BindingAndArrayElem
+		(BindingTypesFromLayoutArg slbts)
+		(TMapIndex.M3_4 smsbnmobjs) 0,
+	BufferInfoListToMiddleNew smsbnmobjs ) =>
+	WriteSourcesToMiddle slbts ('WriteSourcesArgBufferNew smsbnmobjs) where
+	type WriteSourcesObjs ('WriteSourcesArgBufferNew smsbnmobjs) =
+		TMapIndex.M3_4 smsbnmobjs
+	writeSourcesToMiddle (BufferInfosNew bis) = (
+		bindingAndArrayElem
+			@(BindingTypesFromLayoutArg slbts)
+			@(TMapIndex.M3_4 smsbnmobjs) @0 0,
+		M.WriteSourcesBufferInfo $ bufferInfoListToMiddleNew bis )
 
 instance (
 	BindingAndArrayElemImage bts ssfmtnmsis,
@@ -104,6 +119,20 @@ instance (VObj.OffsetRange obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
 	bufferInfosToMiddle (bi :** bis) =
 		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis
+
+class BufferInfoListToMiddleNew smsbnmobjs where
+	bufferInfoListToMiddleNew ::
+		HeteroParList.PL (U4 Descriptor.BufferInfoNew) smsbnmobjs ->
+		[Descriptor.M.BufferInfo]
+
+instance BufferInfoListToMiddleNew '[] where
+	bufferInfoListToMiddleNew HeteroParList.Nil = []
+
+instance BufferInfoListToMiddleNew smsbnmobjs =>
+	BufferInfoListToMiddleNew ('(sm, sb, nm, obj) ': smsbnmobjs) where
+	bufferInfoListToMiddleNew (U4 bi :** bis) =
+		Descriptor.bufferInfoToMiddleNew bi :
+		bufferInfoListToMiddleNew bis
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]

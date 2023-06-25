@@ -14,6 +14,7 @@ import GHC.TypeLits
 import Control.Arrow
 import Data.Kind
 import Data.Kind.Object qualified as KObj
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -39,20 +40,14 @@ bindingAndArrayElem' ::
 	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) i n . (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg tbts)
-		(ObjectsFromBufferInfoArgs bias) i, Integral n ) => (n, n)
+		(TMapIndex.M4_5 bias) i, Integral n ) => (n, n)
 bindingAndArrayElem' = bindingAndArrayElem
 	@(BindingTypesFromLayoutArg tbts)
-	@(ObjectsFromBufferInfoArgs bias) @i 0
+	@(TMapIndex.M4_5 bias) @i 0
 
 type family BindingTypesFromLayoutArg (tbts :: LayoutArg) ::
 	[DescriptorSetLayout.BindingType] where
 	BindingTypesFromLayoutArg '(t, bts) = bts
-
-type family ObjectsFromBufferInfoArgs (bias :: [Descriptor.BufferInfoArg]) ::
-	[VObj.Object] where
-	ObjectsFromBufferInfoArgs '[] = '[]
-	ObjectsFromBufferInfoArgs ('(sb, sm, nm, objs, obj) ': args)=
-		obj ': ObjectsFromBufferInfoArgs args
 
 class IsPrefix (objs :: [VObj.Object]) (objs' :: [VObj.Object]) where
 	isPrefixUpdateDynamicLength ::
