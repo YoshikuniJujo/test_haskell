@@ -83,6 +83,9 @@ data WriteSources arg where
 	BufferInfos ::
 		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
 		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
+	BufferInfosNew ::
+		HeteroParList.PL (U4 Descriptor.BufferInfoNew) smsbnmobjs ->
+		WriteSources ('WriteSourcesArgBufferNew smsbnmobjs)
 	TexelBufferViews ::
 		HeteroParList.PL (U2 (BufferView.B sb)) nmts ->
 		WriteSources ('WriteSourcesArgBufferView nmts)
@@ -105,6 +108,7 @@ instance (VObj.OffsetRange obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
 	| WriteSourcesArgBuffer [Descriptor.BufferInfoArg]
+	| WriteSourcesArgBufferNew [Descriptor.BufferInfoArgNew]
 	| WriteSourcesArgBufferView [(Symbol, Type)]
 	| WriteSourcesArgOther
 

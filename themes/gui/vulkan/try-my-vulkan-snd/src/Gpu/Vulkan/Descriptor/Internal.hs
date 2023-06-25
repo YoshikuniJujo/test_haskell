@@ -10,11 +10,12 @@
 
 module Gpu.Vulkan.Descriptor.Internal (
 
-	BufferInfo(..), BufferInfoArg, bufferInfoToMiddle, ImageInfo(..), imageInfoToMiddle,
+	BufferInfo(..), BufferInfoArg, bufferInfoToMiddle,
+	ImageInfo(..), imageInfoToMiddle,
 
 	BufferInfoListToLength(..),
 
-	BufferInfoNew(..)
+	BufferInfoNew(..), BufferInfoArgNew, bufferInfoToMiddleNew,
 
 	) where
 
@@ -41,6 +42,8 @@ data BufferInfoNew sm sb nm obj =
 		BufferInfoNew (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfoNew sm sb nm obj)
+
+type BufferInfoArgNew = (Type, Type, Symbol, VObj.Object)
 
 type BufferInfoArg = (Type, Type, Symbol, [VObj.Object], VObj.Object)
 
@@ -76,6 +79,13 @@ instance (
 bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.OffsetRange obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo
 bufferInfoToMiddle (BufferInfoObj (Buffer.Binded lns b)) = M.BufferInfo {
+	M.bufferInfoBuffer = b,
+	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
+	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }
+
+bufferInfoToMiddleNew :: forall sb sm nm obj .
+	BufferInfoNew sm sb nm obj -> M.BufferInfo
+bufferInfoToMiddleNew (BufferInfoNew (Buffer.Binded lns b)) = M.BufferInfo {
 	M.bufferInfoBuffer = b,
 	M.bufferInfoOffset = fromIntegral $ VObj.offset @obj 0 lns,
 	M.bufferInfoRange = fromIntegral $ VObj.range @obj lns }

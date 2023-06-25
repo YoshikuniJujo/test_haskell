@@ -6,7 +6,7 @@ module Gpu.Vulkan.Descriptor (
 
 	BufferInfoListToLength,
 
-	BufferInfoNew(..)
+	BufferInfoNew(..), BufferInfoArgNew, bufferInfoToMiddleNew
 
 	) where
 
