@@ -230,6 +230,15 @@ instance
 	writeSourcesToLengthList (BufferInfos bis) =
 		Just $ Descriptor.bufferInfoListToLength bis
 
+instance
+	Descriptor.BufferInfoListToLengthNew sbsmobjsobjs =>
+	WriteSourcesToLengthList ('WriteSourcesArgBufferNew sbsmobjsobjs) where
+	type WriteSourcesToLengthListObj
+		('WriteSourcesArgBufferNew sbsmobjsobjs) =
+		Descriptor.BufferInfoListToLengthObjsNew sbsmobjsobjs
+	writeSourcesToLengthList (BufferInfosNew bis) =
+		Just $ Descriptor.bufferInfoListToLengthNew bis
+
 instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
 	type WriteSourcesToLengthListObj
 		('WriteSourcesArgImage ssfmtnmsis) = '[]

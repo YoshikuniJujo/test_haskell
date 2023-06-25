@@ -16,11 +16,13 @@ module Gpu.Vulkan.Descriptor.Internal (
 	BufferInfoListToLength(..),
 
 	BufferInfoNew(..), BufferInfoArgNew, bufferInfoToMiddleNew,
+	BufferInfoListToLengthNew(..)
 
 	) where
 
 import GHC.TypeLits
 import Data.Kind
+import Data.TypeLevel.Tuple.Uncurry
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -38,7 +40,7 @@ data BufferInfo (sbsmobjsobj :: BufferInfoArg) where
 		BufferInfo '(sb, sm, nm, objs, obj)
 
 data BufferInfoNew sm sb nm obj =
-	forall objs . (Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
+	forall objs . (Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs, VObj.ObjectLengthIndex obj objs) =>
 		BufferInfoNew (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfoNew sm sb nm obj)
@@ -54,6 +56,12 @@ bufferInfoToLength ::
 	VObj.ObjectLengthIndex obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> VObj.ObjectLength obj
 bufferInfoToLength (BufferInfoObj (Buffer.Binded lns _)) =
+	VObj.objectLengthIndex lns
+
+bufferInfoToLengthNew ::
+--	VObj.ObjectLengthIndex obj objs =>
+	BufferInfoNew sb sm nm obj -> VObj.ObjectLength obj
+bufferInfoToLengthNew (BufferInfoNew (Buffer.Binded lns _)) =
 	VObj.objectLengthIndex lns
 
 class BufferInfoListToLength sbsmobjsobjs where
@@ -75,6 +83,26 @@ instance (
 		obj ': BufferInfoListToLengthObjs sbsmobjsobjs
 	bufferInfoListToLength (bi :** bis) =
 		bufferInfoToLength bi :** bufferInfoListToLength bis
+
+class BufferInfoListToLengthNew sbsmobjsobjs where
+	type BufferInfoListToLengthObjsNew sbsmobjsobjs :: [VObj.Object]
+	bufferInfoListToLengthNew ::
+		HeteroParList.PL (U4 BufferInfoNew) sbsmobjsobjs ->
+		HeteroParList.PL VObj.ObjectLength
+			(BufferInfoListToLengthObjsNew sbsmobjsobjs)
+
+instance BufferInfoListToLengthNew '[] where
+	type BufferInfoListToLengthObjsNew '[] = '[]
+	bufferInfoListToLengthNew HeteroParList.Nil = HeteroParList.Nil
+
+instance (
+--	VObj.ObjectLengthIndex obj objs,
+	BufferInfoListToLengthNew sbsmobjsobjs ) =>
+	BufferInfoListToLengthNew ('(sb, sm, nm, obj) ': sbsmobjsobjs) where
+	type BufferInfoListToLengthObjsNew ('(sb, sm, nm, obj) ': sbsmobjsobjs) =
+		obj ': BufferInfoListToLengthObjsNew sbsmobjsobjs
+	bufferInfoListToLengthNew (U4 bi :** bis) =
+		bufferInfoToLengthNew bi :** bufferInfoListToLengthNew bis
 
 bufferInfoToMiddle :: forall sb sm nm objs obj . VObj.OffsetRange obj objs =>
 	BufferInfo '(sb, sm, nm, objs, obj) -> M.BufferInfo

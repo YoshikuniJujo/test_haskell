@@ -206,16 +206,20 @@ findMemoryTypeIndex pd rqs prp0 = Vk.Phd.getMemoryProperties pd >>= \prps ->
 		[] -> error "No available memory types"
 		i : _ -> pure i
 
-writeDscSet :: forall s slbts sb sm os .
+writeDscSet :: forall s slbts sb sm os . (
+	Show (HL.PL Obj.ObjectLength os),
+	Obj.Offset ('Obj.Static (KObj.List 256 Word32 "")) os,
+	Obj.ObjectLengthIndex Word32List os
+	) =>
 	Vk.DS.D s slbts -> Vk.Bffr.Binded sm sb "" os ->
 	Vk.DS.WriteNew 'Nothing s slbts
-		('Vk.DS.WriteSourcesArgBuffer '[ '(sb, sm, "", os, Word32List)])
+		('Vk.DS.WriteSourcesArgBufferNew '[ '(sm, sb, "", Word32List)])
 writeDscSet ds ba = Vk.DS.WriteNew {
 	Vk.DS.writeNextNew = TMaybe.N,
 	Vk.DS.writeDstSetNew = ds,
 	Vk.DS.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
 	Vk.DS.writeSourcesNew =
-		Vk.DS.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoObj ba }
+		Vk.DS.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfoNew ba }
 
 -- CALC
 
