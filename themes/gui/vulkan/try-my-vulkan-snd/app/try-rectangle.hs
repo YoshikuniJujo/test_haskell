@@ -878,7 +878,8 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 	where
 	poolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,
-		Vk.DscPool.createInfoFlags = zeroBits,
+		Vk.DscPool.createInfoFlags =
+			Vk.DscPool.CreateFreeDescriptorSetBit,
 		Vk.DscPool.createInfoMaxSets = maxFramesInFlight,
 		Vk.DscPool.createInfoPoolSizes = [poolSize] }
 	poolSize = Vk.DscPool.Size {
@@ -904,17 +905,16 @@ createDescriptorSets dvc dscp ubs dscslyts f =
 descriptorWrite ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sb, sm, nm,
-		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing )])
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = Vk.Dsc.BufferInfoObj ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
 
 class Update smsbs slbtss where
 	update :: Vk.Dvc.D sd -> HeteroParList.PL BindedUbo smsbs ->
