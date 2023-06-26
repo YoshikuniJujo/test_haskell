@@ -1,7 +1,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances, UndecidableInstances #-}
@@ -190,9 +190,9 @@ instance OnlyDynamicLengths '[ 'Dummy] where
 	type OnlyDynamics '[ 'Dummy] = '[]
 	onlyDynamicLength _ = HeteroParList.Nil
 
-class ObjectLengthIndex obj objs where
+class ObjectLengthIndex (obj :: k) objs where
 	objectLengthIndex ::
-		HeteroParList.PL ObjectLength objs -> ObjectLength obj
+		HeteroParList.PL t objs -> t obj
 
 instance ObjectLengthIndex obj (obj ': objs) where
 	objectLengthIndex (ln :** _lns) = ln
@@ -200,7 +200,7 @@ instance ObjectLengthIndex obj (obj ': objs) where
 instance {-# OVERLAPPABLE #-}
 	ObjectLengthIndex obj objs =>
 	ObjectLengthIndex obj (obj' ': objs) where
-	objectLengthIndex (_ :** lns) = objectLengthIndex @obj @objs lns
+	objectLengthIndex (_ :** lns) = objectLengthIndex @_ @obj @objs lns
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
