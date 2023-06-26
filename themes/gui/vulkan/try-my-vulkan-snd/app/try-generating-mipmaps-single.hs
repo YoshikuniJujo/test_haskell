@@ -97,7 +97,6 @@ import qualified Gpu.Vulkan.Image as Vk.Img.M
 import qualified Gpu.Vulkan.ImageView as Vk.ImgVw
 import qualified Gpu.Vulkan.ImageView.Enum as Vk.ImgVw
 import qualified Gpu.Vulkan.Component as Vk.Component
-import qualified "try-my-vulkan-snd" Gpu.Vulkan.Component.Enum as Vk.Component
 import qualified Gpu.Vulkan.ShaderModule as Vk.Shader.Module
 import qualified Gpu.Vulkan.ShaderModule.Middle as Vk.Shader.Module.M
 import qualified Gpu.Vulkan.Pipeline.ShaderStage as Vk.Ppl.ShdrSt
@@ -1393,7 +1392,8 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 	where
 	poolInfo = Vk.DscPool.CreateInfo {
 		Vk.DscPool.createInfoNext = TMaybe.N,
-		Vk.DscPool.createInfoFlags = zeroBits,
+		Vk.DscPool.createInfoFlags =
+			Vk.DscPool.CreateFreeDescriptorSetBit,
 		Vk.DscPool.createInfoMaxSets = 1,
 		Vk.DscPool.createInfoPoolSizes = [poolSize0, poolSize1] }
 	poolSize0 = Vk.DscPool.Size {
@@ -1430,15 +1430,14 @@ createDescriptorSet dvc dscp ub tximgvw txsmp dscslyt f =
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds slbts ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sb, sm, nm,
-		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject  'Nothing)])
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+		sm, sb, nm, VObj.Atom 256 UniformBufferObject  'Nothing)])
 descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $ HeteroParList.Singleton bufferInfo }
-	where bufferInfo = Vk.Dsc.BufferInfoObj ub
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $ HeteroParList.Singleton bufferInfo }
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds slbts -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->

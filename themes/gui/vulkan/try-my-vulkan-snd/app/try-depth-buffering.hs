@@ -1427,17 +1427,16 @@ createDescriptorSets dvc dscp ubs dscslyts tximgvw txsmp f =
 descriptorWrite0 ::
 	Vk.Bffr.Binded sm sb nm '[VObj.Atom 256 UniformBufferObject 'Nothing] ->
 	Vk.DscSet.D sds '(sl, bts) ->
-	Vk.DscSet.WriteNew 'Nothing sds '(sl, bts) ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sb, sm, nm,
-		'[VObj.Atom 256 UniformBufferObject 'Nothing],VObj.Atom 256 UniformBufferObject 'Nothing )])
+	Vk.DscSet.WriteNew 'Nothing sds '(sl, bts) ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+		sm, sb, nm, VObj.Atom 256 UniformBufferObject 'Nothing )])
 descriptorWrite0 ub dscs = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeUniformBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo
 	}
-	where bufferInfo = Vk.Dsc.BufferInfoObj ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
 
 descriptorWrite1 ::
 	Vk.DscSet.D sds '(sl, bts) -> Vk.ImgVw.INew fmt nm si -> Vk.Smplr.S ss ->
