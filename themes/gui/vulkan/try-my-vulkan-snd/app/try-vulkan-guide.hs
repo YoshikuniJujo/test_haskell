@@ -1346,19 +1346,21 @@ instance (
 		update dvc ubs dscss scnb 2
 	update _ _ _ _ _ = error "bad"
 
-descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds .
+descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
+	Show (HeteroParList.PL VObj.ObjectLength objs),
+	VObj.Offset (VObj.Atom 256 tp objnm) objs,
+	VObj.ObjectLengthIndex (VObj.Atom 256 tp objnm) objs ) =>
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[ '(
-		sb, sm, nm,
-		objs,VObj.Atom 256 tp objnm )])
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(
+		sm, sb, nm, VObj.Atom 256 tp objnm )])
 descriptorWrite0 ub dscs tp = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,
-	Vk.DscSet.writeSourcesNew= Vk.DscSet.BufferInfos $
+	Vk.DscSet.writeSourcesNew= Vk.DscSet.BufferInfosNew $
 		HeteroParList.Singleton bufferInfo }
-	where bufferInfo = Vk.Dsc.BufferInfoObj ub
+	where bufferInfo = U4 $ Vk.Dsc.BufferInfoNew ub
 
 data BindedGcd smsb where
 	BindedGcd ::

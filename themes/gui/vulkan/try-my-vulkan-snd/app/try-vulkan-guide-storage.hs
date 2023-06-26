@@ -1187,7 +1187,7 @@ createDescriptorPool ::
 createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil'
 	where poolInfo = Vk.DscPl.CreateInfo {
 		Vk.DscPl.createInfoNext = TMaybe.N,
-		Vk.DscPl.createInfoFlags = zeroBits,
+		Vk.DscPl.createInfoFlags = Vk.DscPl.CreateFreeDescriptorSetBit,
 		Vk.DscPl.createInfoMaxSets = 10,
 		Vk.DscPl.createInfoPoolSizes = [
 			Vk.DscPl.Size {
@@ -1262,16 +1262,18 @@ instance (
 			HL.Nil
 		update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 
-descriptorWrite :: forall obj slbts sb sm nm objs sds .
+descriptorWrite :: forall obj slbts sb sm nm objs sds . (
+	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs,
+	Obj.ObjectLengthIndex obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.WriteNew 'Nothing sds slbts
-		('Vk.DscSet.WriteSourcesArgBuffer '[ '(sb, sm, nm, objs, obj)])
+		('Vk.DscSet.WriteSourcesArgBufferNew '[ '(sm, sb, nm, obj)])
 descriptorWrite dscs ub tp = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = dscs,
 	Vk.DscSet.writeDescriptorTypeNew = tp,
 	Vk.DscSet.writeSourcesNew =
-		Vk.DscSet.BufferInfos . HL.Singleton $ Vk.Dsc.BufferInfoObj ub }
+		Vk.DscSet.BufferInfosNew . HL.Singleton . U4 $ Vk.Dsc.BufferInfoNew ub }
 
 createVertexBuffer :: forall sd sc nm a . Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.Q.Q -> Vk.CmdPl.C sc -> V.Vector Vertex -> (forall sm sb .
