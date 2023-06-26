@@ -351,25 +351,37 @@ dscSetInfo pl lyt = Vk.DscSet.AllocateInfo {
 	Vk.DscSet.allocateInfoSetLayouts = U2 lyt :** HeteroParList.Nil }
 
 writeDscSet ::
-	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds .
+	forall w1 w2 w3 slbts sb1 sb2 sb3 sm1 sm2 sm3 nm1 nm2 nm3 objs1 objs2 objs3 sds . (
+	Show (HeteroParList.PL VObj.ObjectLength objs1),
+	Show (HeteroParList.PL VObj.ObjectLength objs2),
+	Show (HeteroParList.PL VObj.ObjectLength objs3),
+	VObj.Offset (VObj.List 256 w1 "") objs1,
+	VObj.ObjectLengthIndex (VObj.List 256 w1 "") objs1,
+	VObj.Offset (VObj.List 256 w2 "") objs2,
+	VObj.ObjectLengthIndex (VObj.List 256 w2 "") objs2,
+	VObj.Offset (VObj.List 256 w3 "") objs3,
+	VObj.ObjectLengthIndex (VObj.List 256 w3 "") objs3 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sb1, sm1, nm1, objs1,VObj.List 256 w1 ""), '(sb2, sm2, nm2, objs2,VObj.List 256 w2 ""),
-		'(sb3, sm3, nm3, objs3,VObj.List 256 w3 "") ])
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[
+		'(sm1, sb1, nm1, VObj.List 256 w1 ""), '(sm2, sb2, nm2, VObj.List 256 w2 ""),
+		'(sm3, sb3, nm3, VObj.List 256 w3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
-		bufferInfoList @w1 ba :** bufferInfoList @w2 bb :**
-		bufferInfoList @w3 bc :** HeteroParList.Nil }
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
+		U4 (bufferInfoList @w1 ba) :** U4 (bufferInfoList @w2 bb) :**
+		U4 (bufferInfoList @w3 bc) :** HeteroParList.Nil }
 
-bufferInfoList :: forall t {sb} {sm} {nm} {objs} .
+bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
+	Show (HeteroParList.PL VObj.ObjectLength objs),
+	VObj.Offset (VObj.List 256 t "") objs,
+	VObj.ObjectLengthIndex (VObj.List 256 t "") objs ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
-	Vk.Dsc.BufferInfo '(sb, sm, nm, objs,VObj.List 256 t "")
-bufferInfoList = Vk.Dsc.BufferInfoObj
+	Vk.Dsc.BufferInfoNew sm sb nm (VObj.List 256 t "")
+bufferInfoList = Vk.Dsc.BufferInfoNew
 
 storageBufferNew4 :: (Storable w1, Storable w2, Storable w3, Storable w4) =>
 	Vk.Dvc.D sd -> Vk.PhDvc.P ->
