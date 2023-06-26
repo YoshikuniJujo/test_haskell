@@ -243,21 +243,31 @@ checkBits :: Bits bs => bs -> bs -> Bool
 checkBits bs0 = (== bs0) . (.&. bs0)
 
 writeDscSet ::
-	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 sds .
+	forall slbts sb1 sb2 sb3 sm1 sm2 sm3 objs1 objs2 objs3 sds . (
+	Show (HeteroParList.PL VObj.ObjectLength objs1),
+	Show (HeteroParList.PL VObj.ObjectLength objs2),
+	Show (HeteroParList.PL VObj.ObjectLength objs3),
+	VObj.Offset ('VObj.Static (KObj.List 256 W1 "")) objs1,
+	VObj.Offset ('VObj.Static (KObj.List 256 W2 "")) objs2,
+	VObj.Offset ('VObj.Static (KObj.List 256 W3 "")) objs3,
+	VObj.ObjectLengthIndex (VObj.List 256 W1 "") objs1,
+	VObj.ObjectLengthIndex (VObj.List 256 W2 "") objs2,
+	VObj.ObjectLengthIndex (VObj.List 256 W3 "") objs3
+	) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
 	Vk.Buffer.Binded sm3 sb3 "" objs3 ->
-	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBuffer '[
-		'(sb1, sm1, "", objs1,VObj.List 256 W1 ""), '(sb2, sm2, "", objs2,VObj.List 256 W2 ""),
-		'(sb3, sm3, "", objs3,VObj.List 256 W3 "") ])
+	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[
+		'(sm1, sb1, "", VObj.List 256 W1 ""), '(sm2, sb2, "", VObj.List 256 W2 ""),
+		'(sm3, sb3, "", VObj.List 256 W3 "") ])
 writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
-		Vk.Dsc.BufferInfoObj @_ @_ @_ @_ @(VObj.List 256 W1 "") ba :**
-		Vk.Dsc.BufferInfoObj @_ @_ @_ @_ @(VObj.List 256 W2 "") bb :**
-		Vk.Dsc.BufferInfoObj @_ @_ @_ @_ @(VObj.List 256 W3 "") bc :**
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
+		U4 (Vk.Dsc.BufferInfoNew @_ @_ @_ @(VObj.List 256 W1 "") ba) :**
+		U4 (Vk.Dsc.BufferInfoNew @_ @_ @_ @(VObj.List 256 W2 "") bb) :**
+		U4 (Vk.Dsc.BufferInfoNew @_ @_ @_ @(VObj.List 256 W3 "") bc) :**
 		HeteroParList.Nil }
 
 -- CALC
