@@ -333,37 +333,40 @@ writeDscSet :: forall sl sm1 sb1 nm1 sm2 sb2 nm2 sm3 sb3 nm3 sds .
 	Vk.Bffr.Binded sm2 sb2 nm2 '[ListW2] ->
 	Vk.Bffr.Binded sm3 sb3 nm3 '[ListW3] ->
 	Vk.DscSet.WriteNew 'Nothing sds '(sl, DscSetLytLstW123) (
-		'Vk.DscSet.WriteSourcesArgBuffer '[
-			'(sb1, sm1, nm1, '[ListW1], ListW1),
-			'(sb2, sm2, nm2, '[ListW2], ListW2),
-			'(sb3, sm3, nm3, '[ListW3], ListW3)
-			] )
+		'Vk.DscSet.WriteSourcesArgBufferNew '[
+			'(sm1, sb1, nm1, ListW1),
+			'(sm2, sb2, nm2, ListW2),
+			'(sm3, sb3, nm3, ListW3) ] )
 writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
-		bil @W1 ba :** bil @W2 bb :** bil @W3 bc :** HeteroParList.Nil }
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
+		U4 (bil @W1 ba) :** U4 (bil @W2 bb) :** U4 (bil @W3 bc) :** HeteroParList.Nil }
 	where
-	bil :: forall t {sb} {sm} {nm} {objs} .  Vk.Bffr.Binded sm sb nm objs ->
-		Vk.Dsc.BufferInfo '(sb, sm, nm, objs,VObj.List 256 t "")
-	bil = Vk.Dsc.BufferInfoObj
+	bil :: forall t {sb} {sm} {nm} {objs} . (
+		Show (HeteroParList.PL VObj.ObjectLength objs),
+		VObj.Offset (VObj.List 256 t "") objs,
+		VObj.ObjectLengthIndex (VObj.List 256 t "") objs ) =>
+		Vk.Bffr.Binded sm sb nm objs ->
+		Vk.Dsc.BufferInfoNew sm sb nm (VObj.List 256 t "")
+	bil = Vk.Dsc.BufferInfoNew
 
-writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds .
+writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
+	Show (HeteroParList.PL VObj.ObjectLength objs),
+	VObj.Offset (VObj.Atom 256 Word32 ('Just nm)) objs,
+	VObj.ObjectLengthIndex (VObj.Atom 256 Word32 ('Just nm)) objs ) =>
 	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.WriteNew 'Nothing sds '(sl, DscSetLytLstW123) (
-		'Vk.DscSet.WriteSourcesArgBuffer '[
-			'(sb4, sm4, nm4,
-				objs,
-				VObj.Atom 256 Word32 ('Just nm))
-			] )
+		'Vk.DscSet.WriteSourcesArgBufferNew '[
+			'(sm4, sb4, nm4, VObj.Atom 256 Word32 ('Just nm)) ] )
 writeDscSet2 ds bx = Vk.DscSet.WriteNew {
 	Vk.DscSet.writeNextNew = TMaybe.N,
 	Vk.DscSet.writeDstSetNew = ds,
 	Vk.DscSet.writeDescriptorTypeNew = Vk.Dsc.TypeStorageBuffer,
-	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfos $
-		Vk.Dsc.BufferInfoObj bx :** HeteroParList.Nil }
+	Vk.DscSet.writeSourcesNew = Vk.DscSet.BufferInfosNew $
+		U4 (Vk.Dsc.BufferInfoNew bx) :** HeteroParList.Nil }
 
 calc :: Vk.Dvc.D sd -> Vk.QFam.Index -> Vk.DscSetLyt.L sl DscSetLytLstW123 ->
 	Word32 -> Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
