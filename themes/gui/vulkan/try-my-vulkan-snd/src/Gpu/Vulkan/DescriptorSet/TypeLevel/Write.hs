@@ -42,18 +42,6 @@ class WriteSourcesToMiddle (slbts :: LayoutArg) wsarg where
 instance (
 	BindingAndArrayElem
 		(BindingTypesFromLayoutArg slbts)
-		(TMapIndex.M4_5 sbsmobjsobjs) 0,
-	BufferInfosToMiddle sbsmobjsobjs ) =>
-	WriteSourcesToMiddle slbts ('WriteSourcesArgBuffer sbsmobjsobjs) where
-	type WriteSourcesObjs ('WriteSourcesArgBuffer sbsmobjsobjs) =
-		TMapIndex.M4_5 sbsmobjsobjs
-	writeSourcesToMiddle (BufferInfos bis) = (
-		bindingAndArrayElem' @slbts @sbsmobjsobjs @0,
-		M.WriteSourcesBufferInfo $ bufferInfosToMiddle bis )
-
-instance (
-	BindingAndArrayElem
-		(BindingTypesFromLayoutArg slbts)
 		(TMapIndex.M3_4 smsbnmobjs) 0,
 	BufferInfoListToMiddleNew smsbnmobjs ) =>
 	WriteSourcesToMiddle slbts ('WriteSourcesArgBufferNew smsbnmobjs) where
@@ -95,9 +83,6 @@ data WriteSources arg where
 	ImageInfos ::
 		HeteroParList.PL (U4 Descriptor.ImageInfo) ssfmtnmsis ->
 		WriteSources ('WriteSourcesArgImage ssfmtnmsis)
-	BufferInfos ::
-		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
-		WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs)
 	BufferInfosNew ::
 		HeteroParList.PL (U4 Descriptor.BufferInfoNew) smsbnmobjs ->
 		WriteSources ('WriteSourcesArgBufferNew smsbnmobjs)
@@ -107,18 +92,6 @@ data WriteSources arg where
 	TexelBufferViewsOld ::
 		Word32 -> Word32 -> [BufferView.M.B] ->
 		WriteSources 'WriteSourcesArgOther
-
-class BufferInfosToMiddle sbsmobjsobjs where
-	bufferInfosToMiddle ::
-		HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs ->
-		[Descriptor.M.BufferInfo]
-
-instance BufferInfosToMiddle '[] where bufferInfosToMiddle HeteroParList.Nil = []
-
-instance (VObj.OffsetRange obj objs, BufferInfosToMiddle sbsmobjsobjs) =>
-	BufferInfosToMiddle ('(sb, sm, nm, objs, obj) ': sbsmobjsobjs) where
-	bufferInfosToMiddle (bi :** bis) =
-		Descriptor.bufferInfoToMiddle bi : bufferInfosToMiddle bis
 
 class BufferInfoListToMiddleNew smsbnmobjs where
 	bufferInfoListToMiddleNew ::
@@ -136,7 +109,6 @@ instance BufferInfoListToMiddleNew smsbnmobjs =>
 
 data WriteSourcesArg
 	= WriteSourcesArgImage [(Type, T.Format, Symbol, Type)]
-	| WriteSourcesArgBuffer [Descriptor.BufferInfoArg]
 	| WriteSourcesArgBufferNew [Descriptor.BufferInfoArgNew]
 	| WriteSourcesArgBufferView [(Symbol, Type)]
 	| WriteSourcesArgOther

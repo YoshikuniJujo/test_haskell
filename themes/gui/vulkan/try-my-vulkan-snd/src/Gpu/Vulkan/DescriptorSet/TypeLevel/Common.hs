@@ -36,15 +36,6 @@ type family LayoutArgListOnlyDynamics las where
 	LayoutArgListOnlyDynamics (la ': las) =
 		LayoutArgOnlyDynamics la ': LayoutArgListOnlyDynamics las
 
-bindingAndArrayElem' ::
-	forall (tbts :: LayoutArg) (bias :: [Descriptor.BufferInfoArg]) i n . (
-	BindingAndArrayElem
-		(BindingTypesFromLayoutArg tbts)
-		(TMapIndex.M4_5 bias) i, Integral n ) => (n, n)
-bindingAndArrayElem' = bindingAndArrayElem
-	@(BindingTypesFromLayoutArg tbts)
-	@(TMapIndex.M4_5 bias) @i 0
-
 type family BindingTypesFromLayoutArg (tbts :: LayoutArg) ::
 	[DescriptorSetLayout.BindingType] where
 	BindingTypesFromLayoutArg '(t, bts) = bts

@@ -222,15 +222,6 @@ class WriteSourcesToLengthList arg where
 			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
 
 instance
-	Descriptor.BufferInfoListToLength sbsmobjsobjs =>
-	WriteSourcesToLengthList ('WriteSourcesArgBuffer sbsmobjsobjs) where
-	type WriteSourcesToLengthListObj
-		('WriteSourcesArgBuffer sbsmobjsobjs) =
-		Descriptor.BufferInfoListToLengthObjs sbsmobjsobjs
-	writeSourcesToLengthList (BufferInfos bis) =
-		Just $ Descriptor.bufferInfoListToLength bis
-
-instance
 	Descriptor.BufferInfoListToLengthNew sbsmobjsobjs =>
 	WriteSourcesToLengthList ('WriteSourcesArgBufferNew sbsmobjsobjs) where
 	type WriteSourcesToLengthListObj
@@ -253,9 +244,6 @@ instance WriteSourcesToLengthList 'WriteSourcesArgOther where
 	type WriteSourcesToLengthListObj 'WriteSourcesArgOther = '[]
 	writeSourcesToLengthList (WriteSourcesInNext _ _ _) = Nothing
 	writeSourcesToLengthList (TexelBufferViewsOld _ _ _) = Nothing
-
-deriving instance Show (HeteroParList.PL Descriptor.BufferInfo sbsmobjsobjs) =>
-	Show (WriteSources ('WriteSourcesArgBuffer sbsmobjsobjs))
 
 updateDsNewNew :: (
 	WriteListToMiddleNewNew sdspslbtssbsmobjsobjs,
