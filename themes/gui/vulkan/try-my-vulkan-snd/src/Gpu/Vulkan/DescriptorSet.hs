@@ -15,6 +15,7 @@ module Gpu.Vulkan.DescriptorSet where
 import GHC.TypeLits
 import Foreign.Storable.PeekPoke
 import Data.Kind
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Data.Default
 import Data.Word
 import Data.IORef
@@ -222,11 +223,11 @@ class WriteSourcesToLengthList arg where
 			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
 
 instance
-	Descriptor.BufferInfoListToLengthNew sbsmobjsobjs =>
+	Descriptor.Map3_4 sbsmobjsobjs =>
 	WriteSourcesToLengthList ('WriteSourcesArgBufferNew sbsmobjsobjs) where
 	type WriteSourcesToLengthListObj
 		('WriteSourcesArgBufferNew sbsmobjsobjs) =
-		Descriptor.BufferInfoListToLengthObjsNew sbsmobjsobjs
+		TMapIndex.M3_4 sbsmobjsobjs
 	writeSourcesToLengthList (BufferInfosNew bis) =
 		Just $ Descriptor.bufferInfoListToLengthNew bis
 

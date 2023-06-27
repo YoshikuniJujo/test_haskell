@@ -1,7 +1,8 @@
 {-# LANGUAGE ImportQualifiedPost #-}
-{-# LANGUAGE ScopedTypeVariables, TypeApplications #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, PolyKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -10,8 +11,12 @@
 
 module Gpu.Vulkan.Descriptor.Internal (
 
+	-- * BUFFER INFO
+
 	BufferInfo(..), BufferInfoArgs, bufferInfoToMiddleNew,
-	BufferInfoListToLengthNew(..),
+	bufferInfoListToLengthNew, Map3_4,
+
+	-- * IMAGE INFO
 
 	ImageInfo(..), imageInfoToMiddle,
 
@@ -20,6 +25,7 @@ module Gpu.Vulkan.Descriptor.Internal (
 import GHC.TypeLits
 import Data.Kind
 import Data.TypeLevel.Tuple.Uncurry
+import Data.TypeLevel.Tuple.MapIndex qualified as TMapIndex
 import Gpu.Vulkan.Object qualified as VObj
 import Data.HeteroParList qualified as HeteroParList
 import Data.HeteroParList (pattern (:**))
@@ -43,24 +49,19 @@ type BufferInfoArgs = (Type, Type, Symbol, VObj.Object)
 bufferInfoToLengthNew :: BufferInfo sb sm nm obj -> VObj.ObjectLength obj
 bufferInfoToLengthNew (BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
 
-class BufferInfoListToLengthNew sbsmobjsobjs where
-	type BufferInfoListToLengthObjsNew sbsmobjsobjs :: [VObj.Object]
-	bufferInfoListToLengthNew ::
-		HeteroParList.PL (U4 BufferInfo) sbsmobjsobjs ->
-		HeteroParList.PL VObj.ObjectLength
-			(BufferInfoListToLengthObjsNew sbsmobjsobjs)
+bufferInfoListToLengthNew :: Map3_4 sbsmobjsobjs =>
+	HeteroParList.PL (U4 BufferInfo) sbsmobjsobjs ->
+	HeteroParList.PL VObj.ObjectLength (TMapIndex.M3_4 sbsmobjsobjs)
+bufferInfoListToLengthNew = map3_4 $ bufferInfoToLengthNew . unU4
 
-instance BufferInfoListToLengthNew '[] where
-	type BufferInfoListToLengthObjsNew '[] = '[]
-	bufferInfoListToLengthNew HeteroParList.Nil = HeteroParList.Nil
+class Map3_4 (ss :: [(k0, k1, k2, k3)]) where
+	map3_4 :: (forall (a :: k0) (b :: k1) (c :: k2) (d :: k3) . t '(a, b, c, d) -> t' d) ->
+		HeteroParList.PL t (ss :: [(k0, k1, k2, k3)]) -> HeteroParList.PL t' (TMapIndex.M3_4 ss)
 
-instance (
-	BufferInfoListToLengthNew sbsmobjsobjs ) =>
-	BufferInfoListToLengthNew ('(sb, sm, nm, obj) ': sbsmobjsobjs) where
-	type BufferInfoListToLengthObjsNew ('(sb, sm, nm, obj) ': sbsmobjsobjs) =
-		obj ': BufferInfoListToLengthObjsNew sbsmobjsobjs
-	bufferInfoListToLengthNew (U4 bi :** bis) =
-		bufferInfoToLengthNew bi :** bufferInfoListToLengthNew bis
+instance Map3_4 '[] where map3_4 _ HeteroParList.Nil = HeteroParList.Nil
+
+instance Map3_4 ts => Map3_4 ('(a, b, c, d) ': ts) where
+	map3_4 f (x :** xs) = f x :** map3_4 f xs
 
 bufferInfoToMiddleNew :: forall sb sm nm obj .
 	BufferInfo sm sb nm obj -> M.BufferInfo
