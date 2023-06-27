@@ -40,10 +40,8 @@ deriving instance Show (BufferInfoNew sm sb nm obj)
 
 type BufferInfoArgNew = (Type, Type, Symbol, VObj.Object)
 
-bufferInfoToLengthNew ::
-	BufferInfoNew sb sm nm obj -> VObj.ObjectLength obj
-bufferInfoToLengthNew (BufferInfoNew (Buffer.Binded lns _)) =
-	VObj.objectLengthIndex lns
+bufferInfoToLengthNew :: BufferInfoNew sb sm nm obj -> VObj.ObjectLength obj
+bufferInfoToLengthNew (BufferInfoNew (Buffer.Binded lns _)) = VObj.typeIndex lns
 
 class BufferInfoListToLengthNew sbsmobjsobjs where
 	type BufferInfoListToLengthObjsNew sbsmobjsobjs :: [VObj.Object]

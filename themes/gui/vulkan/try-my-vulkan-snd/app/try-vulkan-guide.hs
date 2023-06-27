@@ -1348,8 +1348,7 @@ instance (
 
 descriptorWrite0 :: forall tp objnm objs sm sb nm slbts sds . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
-	VObj.Offset (VObj.Atom 256 tp objnm) objs,
-	VObj.ObjectLengthIndex (VObj.Atom 256 tp objnm) objs ) =>
+	VObj.Offset (VObj.Atom 256 tp objnm) objs ) =>
 	Vk.Bffr.Binded sm sb nm objs ->
 	Vk.DscSet.D sds slbts -> Vk.Dsc.Type ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[ '(

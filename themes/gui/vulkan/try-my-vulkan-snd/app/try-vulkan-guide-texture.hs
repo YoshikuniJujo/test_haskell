@@ -1332,8 +1332,7 @@ instance (
 		update @_ @_ @odbs @lytods dv dscss cmbs dscsods odbs scnb
 
 descriptorWrite :: forall obj slbts sb sm nm objs sds . (
-	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs,
-	Obj.ObjectLengthIndex obj objs ) =>
+	Show (HL.PL Obj.ObjectLength objs), Obj.Offset obj objs ) =>
 	Vk.DscSet.D sds slbts -> Vk.Bffr.Binded sm sb nm objs ->
 	Vk.Dsc.Type -> Vk.DscSet.WriteNew 'Nothing sds slbts
 		('Vk.DscSet.WriteSourcesArgBufferNew '[ '(sm, sb, nm, obj)])

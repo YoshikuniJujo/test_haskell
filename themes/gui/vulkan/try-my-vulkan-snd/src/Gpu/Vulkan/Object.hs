@@ -158,7 +158,7 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
 	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
 
-class (Offset obj objs, ObjectLengthIndex obj objs) =>
+class (Offset obj objs, TypeIndex obj objs) =>
 	OffsetRange (obj :: Object) objs where
 	offset :: Int -> HeteroParList.PL ObjectLength objs -> Int
 	range :: HeteroParList.PL ObjectLength objs -> Int
@@ -166,7 +166,7 @@ class (Offset obj objs, ObjectLengthIndex obj objs) =>
 	offset _ = fromIntegral . offsetNew @obj
 	range = fromIntegral . rangeNew @obj
 
-instance (Offset obj objs, ObjectLengthIndex obj objs) => OffsetRange obj objs
+instance (Offset obj objs, TypeIndex obj objs) => OffsetRange obj objs
 
 class OnlyDynamicLengths (os :: [Object]) where
 	type OnlyDynamics os :: [K.Object]
@@ -191,17 +191,14 @@ instance OnlyDynamicLengths '[ 'Dummy] where
 	type OnlyDynamics '[ 'Dummy] = '[]
 	onlyDynamicLength _ = HeteroParList.Nil
 
-class ObjectLengthIndex (obj :: k) objs where
-	objectLengthIndex ::
-		HeteroParList.PL t objs -> t obj
+class TypeIndex (obj :: k) objs where
+	typeIndex :: HeteroParList.PL t objs -> t obj
 
-instance ObjectLengthIndex obj (obj ': objs) where
-	objectLengthIndex (ln :** _lns) = ln
+instance TypeIndex obj (obj ': objs) where typeIndex (ln :** _lns) = ln
 
-instance {-# OVERLAPPABLE #-}
-	ObjectLengthIndex obj objs =>
-	ObjectLengthIndex obj (obj' ': objs) where
-	objectLengthIndex (_ :** lns) = objectLengthIndex @_ @obj @objs lns
+instance {-# OVERLAPPABLE #-} TypeIndex obj objs =>
+	TypeIndex obj (obj' ': objs) where
+	typeIndex (_ :** lns) = typeIndex @_ @obj @objs lns
 
 adjust :: Int -> Int -> Int
 adjust algn ost = ((ost - 1) `div` algn + 1) * algn
@@ -214,7 +211,9 @@ rangeNew :: forall obj objs . Offset obj objs =>
 	HeteroParList.PL ObjectLength objs -> Device.M.Size
 rangeNew = snd . offsetFromSizeAlignmentList @obj 0 . sizeAlignmentList
 
-class SizeAlignmentList vs => Offset (v :: Object) (vs :: [Object]) where
+class (
+	SizeAlignmentList vs, TypeIndex v vs ) =>
+	Offset (v :: Object) (vs :: [Object]) where
 	offsetFromSizeAlignmentList ::
 		Int -> HeteroParList.PL SizeAlignmentOfObj vs ->
 		(Device.M.Size, Device.M.Size)

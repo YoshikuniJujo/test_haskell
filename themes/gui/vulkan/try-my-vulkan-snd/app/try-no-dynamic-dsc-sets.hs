@@ -346,16 +346,14 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 	where
 	bil :: forall t {sb} {sm} {nm} {objs} . (
 		Show (HeteroParList.PL VObj.ObjectLength objs),
-		VObj.Offset (VObj.List 256 t "") objs,
-		VObj.ObjectLengthIndex (VObj.List 256 t "") objs ) =>
+		VObj.Offset (VObj.List 256 t "") objs ) =>
 		Vk.Bffr.Binded sm sb nm objs ->
 		Vk.Dsc.BufferInfoNew sm sb nm (VObj.List 256 t "")
 	bil = Vk.Dsc.BufferInfoNew
 
 writeDscSet2 :: forall nm objs sl sm4 sb4 nm4 sds . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
-	VObj.Offset (VObj.Atom 256 Word32 ('Just nm)) objs,
-	VObj.ObjectLengthIndex (VObj.Atom 256 Word32 ('Just nm)) objs ) =>
+	VObj.Offset (VObj.Atom 256 Word32 ('Just nm)) objs ) =>
 	Vk.DscSet.D sds '(sl, DscSetLytLstW123) ->
 	Vk.Bffr.Binded sm4 sb4 nm4 objs ->
 	Vk.DscSet.WriteNew 'Nothing sds '(sl, DscSetLytLstW123) (

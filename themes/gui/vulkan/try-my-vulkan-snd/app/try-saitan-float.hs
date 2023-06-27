@@ -125,10 +125,6 @@ datB :: V.Vector W2; datB = V.fromList $ W2 <$> [1 .. dataSize]
 datC :: V.Vector W3; datC = V.replicate dataSize $ W3 0
 
 calc :: forall w1 w2 w3 . (
-	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w2 ""))
-		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
-	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w3 ""))
-		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
 	Storable w1, Storable w2, Storable w3,
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w2 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
 	Vk.Mem.OffsetSizeObject (VObj.List 256 w3 "") '[VObj.List 256 w1 "",VObj.List 256 w2 "",VObj.List 256 w3 ""],
@@ -320,10 +316,6 @@ prepareMems' phdvc dvc dscSetLyt da db dc f =
 	f dscSet m
 
 prepareMems'' :: forall w1 w2 w3 sd sl bts nm a . (
-	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w2 ""))
-		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
-	VObj.ObjectLengthIndex ('VObj.Static (KObj.List 256 w3 ""))
-		'[VObj.List 256 w1 "", VObj.List 256 w2 "", VObj.List 256 w3 ""],
 	Default (HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(Vk.DscSetLyt.BindingTypeListBufferOnlyDynamics bts)),
@@ -587,11 +579,8 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.ObjectLength objs2),
 	Show (HeteroParList.PL VObj.ObjectLength objs3),
 	VObj.Offset (VObj.List 256 w1 "") objs1,
-	VObj.ObjectLengthIndex (VObj.List 256 w1 "") objs1,
 	VObj.Offset (VObj.List 256 w2 "") objs2,
-	VObj.ObjectLengthIndex (VObj.List 256 w2 "") objs2,
-	VObj.Offset (VObj.List 256 w3 "") objs3,
-	VObj.ObjectLengthIndex (VObj.List 256 w3 "") objs3 ) =>
+	VObj.Offset (VObj.List 256 w3 "") objs3 ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 nm1 objs1 -> Vk.Buffer.Binded sm2 sb2 nm2 objs2 ->
 	Vk.Buffer.Binded sm3 sb3 nm3 objs3 ->
@@ -610,11 +599,8 @@ writeDscSet ds ba bb bc = Vk.DscSet.WriteNew {
 writeDscSet' :: forall w1 w2 w3 slbts sb sm nm objs sds . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
 	VObj.Offset (VObj.List 256 w1 "") objs,
-	VObj.ObjectLengthIndex (VObj.List 256 w1 "") objs,
 	VObj.Offset (VObj.List 256 w2 "") objs,
-	VObj.ObjectLengthIndex (VObj.List 256 w2 "") objs,
-	VObj.Offset (VObj.List 256 w3 "") objs,
-	VObj.ObjectLengthIndex (VObj.List 256 w3 "") objs ) =>
+	VObj.Offset (VObj.List 256 w3 "") objs ) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.DscSet.WriteNew 'Nothing sds slbts ('Vk.DscSet.WriteSourcesArgBufferNew '[
@@ -632,8 +618,7 @@ writeDscSet' ds b = Vk.DscSet.WriteNew {
 
 bufferInfoList :: forall t {sb} {sm} {nm} {objs} . (
 	Show (HeteroParList.PL VObj.ObjectLength objs),
-	VObj.Offset (VObj.List 256 t "") objs,
-	VObj.ObjectLengthIndex (VObj.List 256 t "") objs ) =>
+	VObj.Offset (VObj.List 256 t "") objs ) =>
 	Vk.Buffer.Binded sm sb nm objs ->
 	Vk.Dsc.BufferInfoNew sm sb nm (VObj.List 256 t "")
 bufferInfoList = Vk.Dsc.BufferInfoNew

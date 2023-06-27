@@ -249,10 +249,7 @@ writeDscSet ::
 	Show (HeteroParList.PL VObj.ObjectLength objs3),
 	VObj.Offset ('VObj.Static (KObj.List 256 W1 "")) objs1,
 	VObj.Offset ('VObj.Static (KObj.List 256 W2 "")) objs2,
-	VObj.Offset ('VObj.Static (KObj.List 256 W3 "")) objs3,
-	VObj.ObjectLengthIndex (VObj.List 256 W1 "") objs1,
-	VObj.ObjectLengthIndex (VObj.List 256 W2 "") objs2,
-	VObj.ObjectLengthIndex (VObj.List 256 W3 "") objs3
+	VObj.Offset ('VObj.Static (KObj.List 256 W3 "")) objs3
 	) =>
 	Vk.DscSet.D sds slbts ->
 	Vk.Buffer.Binded sm1 sb1 "" objs1 -> Vk.Buffer.Binded sm2 sb2 "" objs2 ->
