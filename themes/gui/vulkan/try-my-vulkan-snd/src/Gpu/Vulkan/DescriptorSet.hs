@@ -14,7 +14,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- * ALLOCATE
 
-	allocateDs, D, AllocateInfo(..), DListFromMiddle,
+	allocateDs, D, AllocateInfo(..), DListFromMiddle, DefaultDynamicLengths,
 
 	-- * UPDATE
 
@@ -61,8 +61,8 @@ type Layout = U2 Layout.L
 layoutToMiddle :: Layout slbts -> Layout.M.L
 layoutToMiddle (U2 (Layout.L l)) = l
 
-data AllocateInfo n sp slbtss = AllocateInfo {
-	allocateInfoNext :: TMaybe.M n,
+data AllocateInfo mn sp slbtss = AllocateInfo {
+	allocateInfoNext :: TMaybe.M mn,
 	allocateInfoDescriptorPool :: Descriptor.Pool.P sp,
 	allocateInfoSetLayouts :: HeteroParList.PL Layout slbtss }
 
@@ -87,10 +87,7 @@ instance DListFromMiddle '[] where
 	dListFromMiddle = \case [] -> pure HeteroParList.Nil; _ -> error "bad"
 
 instance (
-	Default (
-		HeteroParList.PL
-			(HeteroParList.PL KObj.ObjectLength)
-			(LayoutArgOnlyDynamics slbts) ),
+	DefaultDynamicLengths slbts,
 	DListFromMiddle slbtss ) =>
 	DListFromMiddle (slbts ': slbtss) where
 	dListFromMiddle = \case
@@ -99,13 +96,13 @@ instance (
 			<*> dListFromMiddle @slbtss ds
 		_ -> error "bad"
 
-type DefaultDynamics slbts = Default
+type DefaultDynamicLengths slbts = Default
 	(HeteroParList.PL
 		(HeteroParList.PL KObj.ObjectLength)
 		(LayoutArgOnlyDynamics slbts))
 
-allocateDs :: (WithPoked (TMaybe.M n), DListFromMiddle slbtss) =>
-	Device.D sd -> AllocateInfo n sp slbtss ->
+allocateDs :: (WithPoked (TMaybe.M mn), DListFromMiddle slbtss) =>
+	Device.D sd -> AllocateInfo mn sp slbtss ->
 	(forall s . HeteroParList.PL (D s) slbtss -> IO a) -> IO a
 allocateDs (Device.D dvc) ai f = do
 	dsm <- M.allocateDs dvc (allocateInfoToMiddle ai)
