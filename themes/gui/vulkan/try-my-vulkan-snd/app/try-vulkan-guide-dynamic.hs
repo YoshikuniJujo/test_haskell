@@ -1003,7 +1003,7 @@ framebufferInfo Vk.Extent2d {
 
 createCameraBuffers :: Vk.Phd.P -> Vk.Dvc.D sd -> Vk.DscSetLyt.L sdsc Buffers ->
 	Int -> (forall slyts sbsms . (
-		Vk.DscSet.SListFromMiddleNew slyts, HL.FromList slyts,
+		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
 		Update sbsms slyts, HL.HomoList '(sdsc, Buffers) slyts ) =>
 		HL.PL Vk.DscSet.Layout slyts ->
 		HL.PL BindedCamera sbsms -> HL.PL MemoryCamera sbsms ->
@@ -1096,7 +1096,7 @@ createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil'
 				Vk.DscPl.sizeDescriptorCount = 10 } ] }
 
 createDescriptorSets ::
-	(Vk.DscSet.SListFromMiddleNew lyts, HL.FromList lyts, Update cmbs lyts) =>
+	(Vk.DscSet.DListFromMiddle lyts, HL.FromList lyts, Update cmbs lyts) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->
 	HL.PL BindedCamera cmbs -> HL.PL Vk.DscSet.Layout lyts ->
 	Vk.Bffr.Binded ssb ssm "scene-buffer" '[SceneObj] ->

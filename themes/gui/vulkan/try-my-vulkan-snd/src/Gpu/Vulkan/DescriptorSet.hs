@@ -2,7 +2,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables, RankNTypes, TypeApplications #-}
 {-# LANGUAGE GADTs, TypeFamilies #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, ConstraintKinds #-}
 {-# LANGUAGE KindSignatures, TypeOperators #-}
 {-# LANGUAGE MultiParamTypeClasses, AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, UndecidableInstances #-}
@@ -14,7 +14,7 @@ module Gpu.Vulkan.DescriptorSet (
 
 	-- * ALLOCATE
 
-	allocateDs, D, AllocateInfo(..), SListFromMiddleNew,
+	allocateDs, D, AllocateInfo(..), DListFromMiddle,
 
 	-- * UPDATE
 
@@ -80,31 +80,36 @@ allocateInfoToMiddle AllocateInfo {
 		M.allocateInfoSetLayouts =
 			HeteroParList.toList layoutToMiddle dscsls }
 
-class SListFromMiddleNew slbtss where
-	sListFromMiddleNew :: [M.D] -> IO (HeteroParList.PL (D s) slbtss)
+class DListFromMiddle slbtss where
+	dListFromMiddle :: [M.D] -> IO (HeteroParList.PL (D s) slbtss)
 
-instance SListFromMiddleNew '[] where
-	sListFromMiddleNew = \case [] -> pure HeteroParList.Nil; _ -> error "bad"
+instance DListFromMiddle '[] where
+	dListFromMiddle = \case [] -> pure HeteroParList.Nil; _ -> error "bad"
 
 instance (
-	Default (HeteroParList.PL
-		(HeteroParList.PL KObj.ObjectLength)
-		(LayoutArgOnlyDynamics slbts)),
-	SListFromMiddleNew slbtss ) =>
-	SListFromMiddleNew (slbts ': slbtss) where
-	sListFromMiddleNew = \case
+	Default (
+		HeteroParList.PL
+			(HeteroParList.PL KObj.ObjectLength)
+			(LayoutArgOnlyDynamics slbts) ),
+	DListFromMiddle slbtss ) =>
+	DListFromMiddle (slbts ': slbtss) where
+	dListFromMiddle = \case
 		(d : ds) -> (:**)
 			<$> ((`D` d) <$> newDefaultIORef)
-			<*> sListFromMiddleNew @slbtss ds
+			<*> dListFromMiddle @slbtss ds
 		_ -> error "bad"
 
+type DefaultDynamics slbts = Default
+	(HeteroParList.PL
+		(HeteroParList.PL KObj.ObjectLength)
+		(LayoutArgOnlyDynamics slbts))
 
-allocateDs :: (WithPoked (TMaybe.M n), SListFromMiddleNew slbtss) =>
+allocateDs :: (WithPoked (TMaybe.M n), DListFromMiddle slbtss) =>
 	Device.D sd -> AllocateInfo n sp slbtss ->
 	(forall s . HeteroParList.PL (D s) slbtss -> IO a) -> IO a
 allocateDs (Device.D dvc) ai f = do
 	dsm <- M.allocateDs dvc (allocateInfoToMiddle ai)
-	ds <- sListFromMiddleNew dsm
+	ds <- dListFromMiddle dsm
 	f ds <* M.freeDs dvc
 		((\(Descriptor.Pool.P p) -> p) $ allocateInfoDescriptorPool ai)
 		dsm

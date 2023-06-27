@@ -1352,7 +1352,7 @@ createUniformBuffers :: forall ssmp siv sd sdsc a .
 		'Vk.DscSetLyt.Buffer '[VObj.Atom 256 UniformBufferObject 'Nothing],
 		'Vk.DscSetLyt.Image '[ '("texture", 'Vk.T.FormatR8g8b8a8Srgb)]] ->
 	Int -> (forall slyts smsbs . (
-		Vk.DscSet.SListFromMiddleNew slyts,
+		Vk.DscSet.DListFromMiddle slyts,
 		HeteroParList.FromList slyts,
 		Update smsbs slyts ssmp siv,
 		HeteroParList.HomoList (AtomUbo sdsc) slyts
@@ -1408,7 +1408,7 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 		Vk.DscPool.sizeDescriptorCount = maxFramesInFlight }
 
 createDescriptorSets :: (
-	Vk.DscSet.SListFromMiddleNew ss,
+	Vk.DscSet.DListFromMiddle ss,
 	HeteroParList.FromList ss, Update smsbs ss ssmp siv) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedUbo smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->

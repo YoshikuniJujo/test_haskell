@@ -1060,8 +1060,8 @@ createCameraObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdsc Buffers ->
 	Vk.DscSetLyt.L sodlyt ObjDataBuffers ->
 	Int -> (forall slyts sbsms slytods sbsmods . (
-		Vk.DscSet.SListFromMiddleNew slyts, HL.FromList slyts,
-		Vk.DscSet.SListFromMiddleNew slytods,
+		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
+		Vk.DscSet.DListFromMiddle slytods,
 		Update sbsms slyts sbsmods slytods,
 		HL.HomoList '(sdsc, Buffers) slyts,
 		HL.HomoList '(sodlyt, ObjDataBuffers) slytods
@@ -1162,7 +1162,7 @@ maxObjects = 10000
 createObjDataBuffers :: Vk.Phd.P -> Vk.Dvc.D sd ->
 	Vk.DscSetLyt.L sdsc '[ 'Vk.DscSetLyt.Buffer '[ObjDataList] ] ->
 	Int -> (forall slyts sbsms . (
-		Vk.DscSet.SListFromMiddleNew slyts, HL.FromList slyts,
+		Vk.DscSet.DListFromMiddle slyts, HL.FromList slyts,
 --		Update sbsms slyts,
 		HL.HomoList
 			'(sdsc, '[ 'Vk.DscSetLyt.Buffer '[ObjDataList]]) slyts ) =>
@@ -1205,8 +1205,8 @@ createDescriptorPool dv = Vk.DscPl.create dv poolInfo nil'
 
 createDescriptorSets ::
 	forall odbs lytods lyts cmbs sd sp ssb ssm a . (
-	Vk.DscSet.SListFromMiddleNew lyts,
-	Vk.DscSet.SListFromMiddleNew lytods,
+	Vk.DscSet.DListFromMiddle lyts,
+	Vk.DscSet.DListFromMiddle lytods,
 	HL.FromList lyts,
 	Update cmbs lyts odbs lytods) =>
 	Vk.Dvc.D sd -> Vk.DscPl.P sp ->

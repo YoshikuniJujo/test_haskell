@@ -1129,7 +1129,7 @@ createCameraBuffers :: Vk.PhDvc.P -> Vk.Dvc.D sd ->
 			VObj.Atom 256 GpuSceneData0 'Nothing ] ] ->
 	Int ->
 	(forall slyts sbsms . (
-		Vk.DscSet.SListFromMiddleNew slyts,
+		Vk.DscSet.DListFromMiddle slyts,
 		HeteroParList.FromList slyts, Update sbsms slyts,
 		HeteroParList.HomoList '(sdsc, '[
 			'Vk.DscSetLyt.Buffer '[VObj.Atom 256 GpuCameraData 'Nothing],
@@ -1296,7 +1296,7 @@ createDescriptorPool dvc = Vk.DscPool.create dvc poolInfo nil'
 		Vk.DscPool.sizeDescriptorCount = 10 }
 
 createDescriptorSets :: (
-	Vk.DscSet.SListFromMiddleNew ss,
+	Vk.DscSet.DListFromMiddle ss,
 	HeteroParList.FromList ss, Update smsbs ss ) =>
 	Vk.Dvc.D sd -> Vk.DscPool.P sp -> HeteroParList.PL BindedGcd smsbs ->
 	HeteroParList.PL Vk.DscSet.Layout ss ->
