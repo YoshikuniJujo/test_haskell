@@ -25,7 +25,9 @@ import Data.TypeLevel.Maybe qualified as TMaybe
 import Data.TypeLevel.Tuple.Uncurry
 import qualified Data.HeteroParList as HeteroParList
 import Data.HeteroParList (pattern (:**))
+import qualified Data.HeteroParList.Tuple as HeteroParList
 
+import Gpu.Vulkan.Buffer.Type qualified as Buffer
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Write
 import Gpu.Vulkan.DescriptorSet.TypeLevel.Copy qualified as Copy
 
@@ -223,13 +225,21 @@ class WriteSourcesToLengthList arg where
 			VObj.ObjectLength (WriteSourcesToLengthListObj arg))
 
 instance
-	Descriptor.Map3_4 sbsmobjsobjs =>
+	HeteroParList.Map3_4 sbsmobjsobjs =>
 	WriteSourcesToLengthList ('WriteSourcesArgBufferNew sbsmobjsobjs) where
 	type WriteSourcesToLengthListObj
 		('WriteSourcesArgBufferNew sbsmobjsobjs) =
 		TMapIndex.M3_4 sbsmobjsobjs
 	writeSourcesToLengthList (BufferInfosNew bis) =
-		Just $ Descriptor.bufferInfoListToLengthNew bis
+		Just $ bufferInfoListToLengthNew bis
+
+bufferInfoListToLengthNew :: HeteroParList.Map3_4 sbsmobjsobjs =>
+	HeteroParList.PL (U4 Descriptor.BufferInfo) sbsmobjsobjs ->
+	HeteroParList.PL VObj.ObjectLength (TMapIndex.M3_4 sbsmobjsobjs)
+bufferInfoListToLengthNew = HeteroParList.map3_4 $ bufferInfoToLengthNew . unU4
+
+bufferInfoToLengthNew :: Descriptor.BufferInfo sb sm nm obj -> VObj.ObjectLength obj
+bufferInfoToLengthNew (Descriptor.BufferInfo (Buffer.Binded lns _)) = HeteroParList.typeIndex lns
 
 instance WriteSourcesToLengthList ('WriteSourcesArgImage ssfmtnmsis) where
 	type WriteSourcesToLengthListObj

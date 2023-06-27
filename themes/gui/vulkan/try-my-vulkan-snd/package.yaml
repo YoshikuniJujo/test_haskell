@@ -40,6 +40,7 @@ dependencies:
 - mono-traversable
 - data-default
 - try-hetero-parameter-list
+- try-hetero-parameter-list-with-typelevel-tools
 - try-storable-peek-poke
 - try-storable-hetero-list
 - try-vulkan-middle

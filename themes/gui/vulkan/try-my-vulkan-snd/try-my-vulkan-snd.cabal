@@ -180,6 +180,7 @@ library
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-shaderc
     , try-storable-hetero-list
     , try-storable-peek-poke
@@ -218,6 +219,7 @@ executable my-glslc
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -257,6 +259,7 @@ executable try-allocation-callbacks
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -296,6 +299,7 @@ executable try-copy-descriptor-set
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -335,6 +339,7 @@ executable try-depth-buffering
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -374,6 +379,7 @@ executable try-depth-buffering-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -413,6 +419,7 @@ executable try-dynamic-dsc-sets
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -452,6 +459,7 @@ executable try-generating-mipmaps
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -491,6 +499,7 @@ executable try-generating-mipmaps-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -530,6 +539,7 @@ executable try-hello-world
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -569,6 +579,7 @@ executable try-image-buffer
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -608,6 +619,7 @@ executable try-loading-models
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -647,6 +659,7 @@ executable try-loading-models-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -686,6 +699,7 @@ executable try-multisampling
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -725,6 +739,7 @@ executable try-multisampling-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -764,6 +779,7 @@ executable try-no-dynamic-dsc-sets
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -803,6 +819,7 @@ executable try-pipeline-cache
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -842,6 +859,7 @@ executable try-query
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -881,6 +899,7 @@ executable try-rectangle
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -920,6 +939,7 @@ executable try-rectangle-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -959,6 +979,7 @@ executable try-saitan
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -998,6 +1019,7 @@ executable try-saitan-float
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1037,6 +1059,7 @@ executable try-saitan-simple
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1076,6 +1099,7 @@ executable try-shaderc
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1115,6 +1139,7 @@ executable try-shaderc-core
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1154,6 +1179,7 @@ executable try-texel-buffer-float
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1193,6 +1219,7 @@ executable try-texel-buffer-word32
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1232,6 +1259,7 @@ executable try-texture
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1271,6 +1299,7 @@ executable try-texture-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1310,6 +1339,7 @@ executable try-triangle
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1349,6 +1379,7 @@ executable try-triangle-single
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1388,6 +1419,7 @@ executable try-vulkan-guide
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1427,6 +1459,7 @@ executable try-vulkan-guide-dynamic
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1466,6 +1499,7 @@ executable try-vulkan-guide-storage
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1505,6 +1539,7 @@ executable try-vulkan-guide-texture
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1544,6 +1579,7 @@ executable try-wavefront-obj
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1583,6 +1619,7 @@ executable try-yatteiku
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
@@ -1623,6 +1660,7 @@ test-suite try-my-vulkan-snd-test
     , text
     , time
     , try-hetero-parameter-list
+    , try-hetero-parameter-list-with-typelevel-tools
     , try-my-vulkan-snd
     , try-shaderc
     , try-storable-hetero-list
