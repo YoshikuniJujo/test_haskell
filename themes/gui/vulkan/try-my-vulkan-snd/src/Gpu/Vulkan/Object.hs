@@ -158,14 +158,15 @@ instance (K.SizeAlignment kobj, K.StoreObject v kobj, KnownNat n) =>
 		go p n = (:) <$> (Just <$> K.loadObject p kln) <*> go (nextObject p kln) (n - 1)
 	objectLength = ObjectLengthDynamic . K.objectLength . fromJust . head
 
-class Offset obj objs => OffsetRange (obj :: Object) objs where
+class (Offset obj objs, ObjectLengthIndex obj objs) =>
+	OffsetRange (obj :: Object) objs where
 	offset :: Int -> HeteroParList.PL ObjectLength objs -> Int
 	range :: HeteroParList.PL ObjectLength objs -> Int
 
 	offset _ = fromIntegral . offsetNew @obj
 	range = fromIntegral . rangeNew @obj
 
-instance Offset obj objs => OffsetRange obj objs
+instance (Offset obj objs, ObjectLengthIndex obj objs) => OffsetRange obj objs
 
 class OnlyDynamicLengths (os :: [Object]) where
 	type OnlyDynamics os :: [K.Object]

@@ -32,9 +32,9 @@ import qualified Gpu.Vulkan.Sampler as Sampler
 import qualified Gpu.Vulkan.Image.Enum as Image
 import qualified Gpu.Vulkan.ImageView as ImageView
 
-data BufferInfoNew sm sb nm obj =
-	forall objs . (Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs, VObj.ObjectLengthIndex obj objs) =>
-		BufferInfoNew (Buffer.Binded sm sb nm objs)
+data BufferInfoNew sm sb nm obj = forall objs .
+	(Show (Buffer.Binded sm sb nm objs), VObj.OffsetRange obj objs) =>
+	BufferInfoNew (Buffer.Binded sm sb nm objs)
 
 deriving instance Show (BufferInfoNew sm sb nm obj)
 
