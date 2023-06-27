@@ -71,7 +71,7 @@ bufferInfoToMiddleNew (BufferInfo (Buffer.Binded lns b)) = M.BufferInfo {
 
 data ImageInfo ss fmt nm si = ImageInfo {
 	imageInfoSampler :: Sampler.S ss,
-	imageInfoImageView :: ImageView.INew fmt nm si,
+	imageInfoImageView :: ImageView.I fmt nm si,
 	imageInfoImageLayout :: Image.Layout }
 	deriving Show
 
@@ -79,7 +79,7 @@ imageInfoToMiddle ::
 	ImageInfo ss fmt nm si -> M.ImageInfo
 imageInfoToMiddle ImageInfo {
 	imageInfoSampler = s,
-	imageInfoImageView = ImageView.INew iv,
+	imageInfoImageView = ImageView.I iv,
 	imageInfoImageLayout = lyt } = M.ImageInfo {
 	M.imageInfoSampler = Sampler.sToMiddle s,
 	M.imageInfoImageView = iv,

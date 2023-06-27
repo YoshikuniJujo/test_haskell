@@ -33,8 +33,7 @@ data CreateInfoNew mn sr fmtnmsis = CreateInfoNew {
 	createInfoNextNew :: TMaybe.M mn,
 	createInfoFlagsNew :: CreateFlags,
 	createInfoRenderPassNew :: RenderPass.R sr,
-	createInfoAttachmentsNew :: HeteroParList.PL (U3 ImageView.INew) fmtnmsis,
---	createInfoAttachmentsNew :: HeteroParList.PL (ImageView.INew fmt nm) sis,
+	createInfoAttachmentsNew :: HeteroParList.PL (U3 ImageView.I) fmtnmsis,
 	createInfoWidthNew :: Word32,
 	createInfoHeightNew :: Word32,
 	createInfoLayersNew :: Word32 }
@@ -48,7 +47,7 @@ createInfoToMiddleNew CreateInfoNew {
 	createInfoNextNew = mnxt,
 	createInfoFlagsNew = flgs,
 	createInfoRenderPassNew = RenderPass.R rp,
-	createInfoAttachmentsNew = HeteroParList.toList (\(U3 (ImageView.INew iv)) -> iv) -> ivs,
+	createInfoAttachmentsNew = HeteroParList.toList (\(U3 (ImageView.I iv)) -> iv) -> ivs,
 	createInfoWidthNew = w,
 	createInfoHeightNew = h,
 	createInfoLayersNew = lyrs } = M.CreateInfo {
